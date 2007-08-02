@@ -27,14 +27,17 @@ C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
      *        'UNFORMATTED',IDUMMY,.FALSE.)
       IF (NCSIM .GT. 0) THEN
-         IF (IPRRSP.GT.101) THEN
+Clara         IF (IPRRSP.GT.101) THEN
+         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** BEFORE IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
+C         write (lupri,*) 'lara bef. IEFLNC'
          CALL IEFLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
-         IF (IPRRSP.GT.101) THEN
+Clara         IF (IPRRSP.GT.101) THEN
+         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -46,8 +49,10 @@ C
              WRITE(LUPRI,*)' **** BEFORE IEFLNO **** '
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
           END IF
+C         write (lupri,*) 'lara bef. IEFLNO'
          CALL IEFLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
+C         write (lupri,*) 'lara aft. IEFLNO'
          IF (IPRRSP.GT.101) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
              WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
@@ -100,6 +105,7 @@ C
 #include <infpri.h>
 #include <pcm.h>
 #include <pcmlog.h>
+#include "sdpre.h"
 
 C
       DIMENSION VTEX(NTS,NCSIM)
@@ -109,7 +115,11 @@ C
 C     Core allocation
 C
       KUCMO  = 1
-      KJPX   = KUCMO  + NORBT*NBAST
+Clara define KJPXAO 
+      KJPXAO = KUCMO  + NORBT*NBAST
+      KJPX   = KJPXAO + NNBASX
+Clara
+C      KJPX   = KUCMO  + NORBT*NBAST
       KJPXAC = KJPX   + NNORBX
       KPCMXB = KJPXAC + NNASHX
       KXBAC  = KPCMXB + NCSIM*NNORBX
@@ -120,7 +130,9 @@ C
       KW20    = KCHRG + NTS
 C     2.1 read rlmao in ao basis and transform to rlm in mo basis
       KDV     = KW20
-      KW30    = KDV  + NCSIM*N2BASX
+Clara add definition of  KDW 
+      KDW     = KDV  + NCSIM*NNBASX 
+      KW30    = KDW  + NCSIM*N2BASX
 C
       KJPCMAO = KW10
       KW50    = KJPCMAO + NNBASX
@@ -137,6 +149,9 @@ C
 C
 C
       CALL DZERO(WRK(KJPX),NNORBX)
+Clara clear space for charges, jpxao
+      CALL DZERO(WRK(KCHRG),NTS)
+      CALL DZERO(WRK(KJPXAO),NNBASX)
 C
 C     Unpack symmetry blocked CMO
 C
@@ -146,13 +161,21 @@ CLF Read Potential integrals on tesserae
 C
       CALL DCOPY(NTS,QSN,1,WRK(KCHRG),1)
       CALL DAXPY(NTS,1.0D0,QSE,1,WRK(KCHRG),1)
+Clara multiply by -1 the tot charges
+      CALL DSCAL(NTS,-1.0D0,WRK(KCHRG),1)
+C         write (lupri,*),'qn'
+C         call output(qsn,1,nts,1,1,nts,1,1,lupri)
+C         write (lupri,*),'qe'
+C         call output(qse,1,nts,1,1,nts,1,1,lupri)
       CALL J1INT(WRK(KCHRG),.FALSE.,WRK(KJPXAO),1,.FALSE.,'NPETES ',
      &           1,WRK(KW30),LW30)
       CALL UTHU(WRK(KJPXAO),WRK(KJPX),WRK(KUCMO),WRK(KW30),NBAST,NORBT)
+C
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJPX),WRK(KJPXAC))
       END IF
-      IF (IPRRSP .GE. 15) THEN
+Clara      IF (IPRRSP .GE. 15) THEN
+      IF (.true.) THEN
          WRITE (LUPRI,'(/A)') ' J+X_mo matrix:'
          CALL OUTPAK(WRK(KJPX),  NORBT,1,LUPRI)
          IF (NASHT .GT. 0) THEN
@@ -164,36 +187,104 @@ C
 C     Expectation value of J+X
 C
       EXPJPX = SOLELM(DV,WRK(KJPXAC),WRK(KJPX),ACJPX)
-      IF (IPRRSP .GE. 6) THEN
+      IF (.true.) THEN
+Clara      IF (IPRRSP .GE. 6) THEN
          WRITE (LUPRI,'(A,F17.8)')
      *        ' --- J+X expectation value :',EXPJPX
          WRITE (LUPRI,'(A,F17.8)')
      *        ' --- active part of J1X    :',ACJPX
       END IF
+C
       DO ICSIM = 1, NCSIM
-         CALL FCKDEN(.FALSE.,.TRUE.,DUMMY,WRK(KDV),CMO,DTV(1,ICSIM),
+Clara first clear for KDV, KDW and charges
+         CALL DZERO(WRK(KCHRG),NTS)
+         CALL DZERO(WRK(KDW),N2BASX)
+         CALL DZERO(WRK(KDV),NNBASX)
+Clara
+      write (lupri,*) 'lara dtv='
+      call output(dtv(1,icsim),1,nasht,1,nasht,nasht,nasht,1,lupri)
+clara
+Clara change call to fckden with fckden2 and KDV with KDW
+         CALL FCKDEN2(.FALSE.,.TRUE.,DUMMY,WRK(KDW),CMO,DTV(1,ICSIM),
      &               WRK(KW30),LW30)
+Clara add call to dgfsp
+Clara
+      write (lupri,*) 'lara kdw='
+      call output(wrk(kdw),1,nbast,1,nbast,nbast,nbast,1,lupri)
+clara
+         CALL DGEFSP(NBAST,WRK(KDW),WRK(KDV))
+clara 
+      write (lupri,*) 'lara kdv='
+      call outpak (wrk(kdv),nbast,1,lupri)
+clara 
+C      if (abs(wrk(kdv+ 3)-0.00000000d0)<1d-7.and.
+C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
+C     &(/ 0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 1.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
+C      if (abs(wrk(kdv+ 3)-0.12249707d0)<1d-7.and.
+C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
+C     &(/ 0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   1.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 1.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
+C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
+clara 
+      write (lupri,*) 'lara kdv after='
+      call outpak (wrk(kdv),nbast,1,lupri)
+clara 
          CALL J1INT(WRK(KCHRG),.TRUE.,WRK(KDV),1,.FALSE.,'NPETES ',
-     &              1,WRK(KW30),LW30)
+     &              KSYMOP,WRK(KW30),LW30)
          CALL DSCAL(NTS,-1.0D0,WRK(KCHRG),1)
+Clara
+      write (lupri,*) 'lara kchrg='
+      call output (wrk(kchrg),1,nts,1,1,nts,1,1,lupri)
+clara
          CALL V2Q(WRK(KW30),WRK(KCHRG),VTEX(1,ICSIM),QET,NEQRSP)
+         IF (KSYMOP .NE. 1) THEN
+            CALL DCOPY(NTSIRR,VTEX((KSYMOP - 1)*NTSIRR + 1,ICSIM),1,
+     &                        VTEX(1,ICSIM),1)
+            CALL DZERO(VTEX(NTSIRR+1,ICSIM),NTS-NTSIRR)
+         END IF
       END DO
       CALL GPCLOSE(LUPCMD,'KEEP')
+C
       CALL DZERO(WRK(KPCMXB),NCSIM*NNORBX)
 C
       DO ICSIM = 1, NCSIM
          CALL DZERO(WRK(KJPCMAO),NNBASX)
+Clara
+      write (lupri,*) 'lara vtex='
+      call output(vtex,1,nts,1,ncsim,nts,ncsim,1,lupri)
+C      write (lupri,'(<1+(nts-1)/4>(4f18.12/))') vtex(:,icsim)
+clara
          CALL J1INT(VTEX(1,ICSIM),.FALSE.,WRK(KJPCMAO),1,.FALSE.,
-     &              'NPETES ',1,WRK(KW30),LW30)
+     &              'NPETES ',KSYMOP,WRK(KW30),LW30)
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
+Clara
+      write (lupri,*) 'lara icsim=', icsim,' nnbasx=', nnbasx, 'jpcmao='
+      call outpak(wrk(kjpcmao),nbast,1,lupri)
+clara
          CALL UTHU(WRK(KJPCMAO),WRK(JPCMXB),WRK(KUCMO),WRK(KW30),
      &             NBAST,NORBT)
       END DO
 C
+Clara clear for kxbac
+      CALL DZERO(WRK(KXBAC),NNASHX*NCSIM)
       DO ICSIM = 1, NCSIM
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
          JXBAC  = KXBAC  + (ICSIM - 1)*NNASHX
          CALL GETAC2(WRK(JPCMXB),WRK(JXBAC))
+Clara
+      write (lupri,*) 'lara icsim=',icsim,' nnashx=',nnashx, 'jxbac='
+      call outpak(wrk(jxbac),nbast,1,lupri)
+clara
          IF (TRPLET) THEN
             TEMP = SOLELM(DVTR,WRK(JXBAC),WRK(JPCMXB),XBAC)
             TEMP = XBAC
@@ -203,13 +294,21 @@ C
          WRK(KEXBAC - 1 + ICSIM) = XBAC
       END DO
 C
+      IF (.true.) THEN 
+clara      IF (IPRRSP.GT.101) THEN
+         WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+         WRITE(LUPRI,*)' **** BEFORE SLVSC in IEFLNC **** '
+         CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+      END IF
+C
       CALL SLVSC(NCSIM,0,NNASHX,BCVEC,CREF,SVEC,WRK(KXBAC),WRK(KJPXAC),
      *           WRK(KEXBAC),ACJPX,INDXCI,WRK(KW30),LW30)
 C     CALL SLVSC(NCSIM,NOSIM,NNASHX,BCVECS,CREF,SVECS,
 C    *           RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
 C
-      IF (IPRRSP.GT.101) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+      IF (.true.) THEN 
+Clara      IF (IPRRSP.GT.101) THEN
+         WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** AFTER SLVSC in IEFLNC **** '
          CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
       END IF
@@ -431,6 +530,11 @@ C Read AO potential integrals on tesserae
 C
 C     The totally symmetric case is always performed
 C
+Clara
+C         do j=1, nsym 
+C            WRITE (LUPRI,'(/A)') ' JJ1AO before UTHU'
+C            CALL OUTPAK(WRK(JJ1AO+(j-1)*NNBASX),NBAST,1,LUPRI)
+C         end do
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
          CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *             NBAST,NORBT)
@@ -505,11 +609,11 @@ C
                   CALL GETACQ(WRK(JJ1X),WRK(JJ1XAC))
                END IF
                IF (IPRRSP .GE. 15) THEN
-                  WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
+                  WRITE (LUPRI,'(/A)') ' J1X_mo matrix :'
                   CALL OUTPUT(WRK(JJ1X),1,NORBT,1,NORBT,
      &                 NORBT,NORBT,1,LUPRI)
                   IF (NASHT .GT. 0) THEN
-                     WRITE (LUPRI,'(/A)') ' J1X_ac matrix:'
+                     WRITE (LUPRI,'(/A)') ' J1X_ac matrix :'
                      CALL OUTPUT(WRK(JJ1XAC),1,NASHT,1,NASHT,
      &                    NASHT,NASHT,1,LUPRI)
                   END IF
@@ -598,7 +702,8 @@ C
          END DO
       END IF
 C
-      IF (.NOT.TDHF) THEN
+Clara add the case of KZCONF.GT.0 
+      IF ((.NOT.TDHF).AND.(KZCONF.GT.0)) THEN
 C
 C        ... CSF part of sigma vectors
 C

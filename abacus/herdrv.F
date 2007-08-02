@@ -277,7 +277,7 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 133)
+      PARAMETER (NDIR = 9, NTABLE = 136)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -340,7 +340,7 @@ cLig <> added RANGMO and RPSO
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
      &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP',
-     &             '.MQDPTS'/
+     &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH'/
 C
 C     Check if input has been processed earlier.
 C
@@ -421,7 +421,7 @@ C
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
-     &                231,232,233), I
+     &                231,232,233,234,235,236), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1097,6 +1097,17 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             MQDPTS = .TRUE.
             GOTO 100
+ 234     CONTINUE
+            ORBORB = .TRUE.
+            GOTO 100
+ 235     CONTINUE
+            DERAM  = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 236        CONTINUE
+            DIPANH  = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -1146,6 +1157,8 @@ cLig <>
       IF (AD2DAR) WRITE (LUPRI,'(/A/A,F18.14/)')
      &    ' Two-electron Darwin integrals are added to standard',
      &    ' repulsion integrals with perturbation parameter:',DARFAC
+      IF (ORBORB) WRITE (LUPRI,'(/A)')
+     &     ' Calculate 2-electron orbit-orbit integrals'
       IF (FINDPT) WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
      &    ' A direct relativistic perturbation is added to',
      &    ' Hamiltonian and metric with perturbation parameter:',DPTFAC,
@@ -1322,6 +1335,8 @@ cLig <<
      &      '- Cosine and sine integals'
          IF (DPLGRA) WRITE (LUPRI,'(10X,A)')
      &      '- Dipole gradient integrals'
+         IF (DIPANH) WRITE (LUPRI,'(10X,A)')
+     &        '- Anharmonic corrections to dipole gradients'
          IF (QUAGRA) WRITE (LUPRI,'(10X,A)')
      &      '- Quadrupole gradient integrals'
          IF (OCTGRA) WRITE (LUPRI,'(10X,A)')
@@ -1372,6 +1387,8 @@ cLig <<
      &           'field gradients will be tested'
          IF (DEROVL) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of overlap integrals'
+         IF (DERAM) WRITE (LUPRI,'(10X,A)')
+     &        '- Geometrical derivatives of angular momentum integrals'
          IF (DERHAM) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of one-electron Hamiltonian '//
      &        'integrals'
@@ -2949,6 +2966,15 @@ C
                CALL TIMER('DPLGRA',TIMSTR,TIMEND)
             END IF
 C
+C           ****  Second geometrical derivative of dipole integrals  ****
+C
+            IF (DIPANH) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('DIPANH ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('DIPANH',TIMSTR,TIMEND)
+            END IF
+C
 C           ****  First geometrical derivative of quadrupole integrals  ****
 C
             IF (QUAGRA) THEN
@@ -3062,6 +3088,15 @@ C
                CALL PR1INT('DEROVLP',WORK,LWORK,IDUMMY,IDUMMY,
      &                     TRIANG,PROPRI,IPRONE)
                CALL TIMER('DEROVL',TIMSTR,TIMEND)
+            END IF
+C
+C           **** First geometrical derivatives of integrals ***
+C
+            IF (DERAM) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('DERANGM',WORK,LWORK,IDUMMY,IDUMMY,
+     &                     TRIANG,PROPRI,IPRONE)
+               CALL TIMER('DERAM ',TIMSTR,TIMEND)
             END IF
 C
 C           **** First geometr. deriv. of 1el hamiltonian integrals ***
@@ -3356,6 +3391,52 @@ C
      &      '   =================================',
      &      '   Spin-orbit Darwin CPU  time ',DACPU,' seconds',
      &      '   Spin-orbit Darwin wall time ',DAWAL,' seconds'
+            CALL FLSHFO(LUPRI)
+         END IF
+C
+C        **********************************************
+C        ***** Two-electron orbit-orbit integrals *****
+C        **********************************************
+C
+         IF (ORBORB) THEN
+            NPAO = MXSHEL*MXAOVC
+            CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
+            CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &                  WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
+     &                  .FALSE.,IPRDEF)
+            CALL MEMREL('HERINT.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL GETTIM(DA1CPU,DA1WAL)
+            IRNTYP = 0
+            BPH2OO = .TRUE.
+            IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
+            CALL GPOPEN(LUINTA,'2-ORBORB','UNKNOWN',' ',' ',
+     &                  IDUMMY,.FALSE.)
+            CALL TWOINT(WORK(KFREE),LFREE,DUMMY,DUMMY,DUMMY,1,IDUMMY,
+     &                  IDUMMY,
+     &                  DUMMY,IDUMMY,NUMDIS,1,IRNTYP,0,0,.TRUE.,.TRUE.,
+     &                  .FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                  .FALSE.)
+            BPH2OO = .FALSE.
+            IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
+            CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
+            CALL GETTIM(DA2CPU,DA2WAL)
+            DACPU=DA2CPU-DA1CPU
+            DAWAL=DA2WAL-DA1WAL
+            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
+     &      '   Two-electron Darwin integrals',
+     &      '   =================================',
+     &      '   Orbit-orbit CPU  time ',DACPU,' seconds',
+     &      '   Orbit-orbit wall time ',DAWAL,' seconds'
             CALL FLSHFO(LUPRI)
          END IF
 C
@@ -3683,6 +3764,7 @@ C#endif
       SOFLD  = .FALSE.
       SOMM   = .FALSE.
       DEROVL = .FALSE.
+      DERAM  = .FALSE.
       DERHAM = .FALSE.   
       ELGDIA = .FALSE.
       ELGDIL = .FALSE.
@@ -3699,6 +3781,7 @@ C#endif
       DO2DAR = .FALSE.
       DAR2EL = .FALSE.
       AD2DAR = .FALSE.
+      ORBORB = .FALSE.
       FINDPT = .FALSE.
       NFIELD = 0
       DPTINT = .FALSE.

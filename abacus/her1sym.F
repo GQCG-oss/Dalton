@@ -550,104 +550,15 @@ C
          ISTR = ISTR + NORBI
 100   CONTINUE
       IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Total density matrix (sym. distinct AO basis)',-1)
+         CALL HEADER('Total density matrix in DSYM1 '//
+     &     '(sym. distinct AO basis)',-1)
          CALL OUTPAK(DENMAT,NBAST,1,LUPRI)
          IF (DOFOCK) THEN
-            CALL HEADER('Total Fock matrix (sym. distinct AO basis)',-1)
+            CALL HEADER('Total Fock matrix in DSYM1 '//
+     &           '(sym. distinct AO basis)',-1)
             CALL OUTPAK(FOCMAT,NBAST,1,LUPRI)
          END IF
       END IF
-      RETURN
-      END
-C  /* Deck dsym2 */
-      SUBROUTINE DSYM2(DENMAT,DSO,NBAST,KSYMP,IPRINT)
-C
-C     Take non-totally symmetry density matrix in symmetry orbital basis 
-C     and generate density matrix over distinct pairs of AOs
-C
-C     July 2007, K.Ruud, based on DSYM1
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-      DIMENSION DSO(*), DENMAT(*)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
-      IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
-C
-C     Loop over all irreps in molecule
-C
-      ISOFF = 0
-      ISTR = 1
-      NNBASX = NBAST*(NBAST + 1)/2
-      CALL DZERO(DENMAT,NNBASX)
-      DO 100 IREP = 0, MAXREP
-         write (lupri,*) 'irep,ksymp',irep,ksymp
-         IREPB = IBTXOR(IREP,KSYMP-1)
-         NORBI = NAOS(IREP+1)
-         NORBJ = NAOS(IREPB+1)
-         IF (NORBI .EQ. 0 .OR. NORBJ .EQ. 0) GOTO 110
-         ISTRB = 1
-         write (lupri,*) 'irepb,naos',irepb,naos
-         IF (IREPB .GT. 0) ISTRB = ISTRB + ISUM(IREPB,NAOS(1),1)
-         IF (ISTRB .LT. ISTR) GOTO 110
-         DO 200 I = ISTR,ISTR + NORBI - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-            IOFF = KSTRT(IA)
-            NHKTA = NHKT(IA)
-            KHKTA = KHKT(IA)
-            MULA = ISTBAO(IA)
-            DO 300 J = ISTRB,ISTRB + NORBJ - 1 
-               IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-               NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
-               JOFF   = KSTRT(IB)
-               NHKTB  = NHKT(IB)
-               KHKTB  = KHKT(IB)
-               MULB   = ISTBAO(IB)
-               MAB    = IBTOR(MULA,MULB)
-               KAB    = IBTAND(MULA,MULB)
-               HKAB   = FMULT(KAB)
-               ISOFF  = J*(J - 1)/2 + I
-               DSYMIJ = DSO(ISOFF)
-               write (lupri,*) 'i,j',i,j,isoff
-               INDA = IOFF + NA - KHKTA
-               DO 400 ISYM1 = 0, MAXOPR
-         write (lupri,*) 'isym1',isym1,isym1,mula,ibtand(isym1,mula)
-                  IF (IBTAND(ISYM1,MULA) .NE. 0) GOTO 400
-                  INDA = INDA + KHKTA
-                  INDB   = JOFF + NB - KHKTB
-                  DO 500 ISYM2 = 0, MAXOPR
-         write (lupri,*) 'isym2',isym2,isym2,mulb,ibtand(isym2,mulb)
-                     IF (IBTAND(ISYM2,MULB) .NE. 0) GOTO 500
-                     INDB = INDB + KHKTB
-C
-C                 Weight and parity factor
-C
-                     IREPT1 = IBTXOR(IREP,ISYMAO(NHKTA,NA))
-                     IREPT2 = IBTXOR(IREPB,ISYMAO(NHKTB,NB))
-                     FAC = HKAB*
-     *                    PT(IBTAND(ISYM2,IBTXOR(IREPT1,IREPT2)))
-                     INDM = MAX(INDA,INDB)
-                     IND  = (INDM*(INDM - 3))/2 + INDA + INDB
-                     write (lupri,*) 'inda/b/m,fac,sign',inda,indb,ind,
-     &                    fac,fac/hkab,dsymij
-                     DENMAT(IND) = DENMAT(IND) + FAC*DSYMIJ/2
- 500              CONTINUE
- 400           CONTINUE
- 300        CONTINUE
- 200     CONTINUE
- 110     CONTINUE
-         ISTR = ISTR + NORBI
-100   CONTINUE
-ckr      IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Total density matrix (sym. distinct AO basis)',-1)
-         CALL OUTPAK(DENMAT,NBAST,1,LUPRI)
-ckr      END IF
       RETURN
       END
 C  /* Deck drsym1 */
@@ -1005,8 +916,9 @@ C
                DO NB = 1, KHKTBB
                   IF (IBTAND(MULB,IBTXOR(JREP,ISYMAO(NHKTB,NB))).EQ.0) 
      &                 THEN
+                     FAC = FACSYM*PT(IBTAND(0,
+     &                     IBTXOR(JREP,ISYMAO(NHKTB,NB))))/(MULTA*MULTB)
                      IORBAB = ITRI(IDENA+NA,IDENB+NB)
-                     FAC = FACSYM/(MULTA*MULTB)
                      EXPVAL = EXPVAL + FAC*AO(NAT+NB)*DMAT(IORBAB)
                   END IF
                END DO
@@ -1113,6 +1025,91 @@ C
                      IBUF(LENGTH) = LABEL
                   ENDIF
                ENDIF
+            END IF
+300         CONTINUE
+         END IF
+200      CONTINUE
+100   CONTINUE
+      RETURN
+      END
+C  /* Deck sym1nc */
+      SUBROUTINE SYM1NC(AO,DMAT,EXPVAL,IREPO,KB,MULA,MULB,NHKTA,
+     *                  NHKTB,KHKTA,KHKTB,HKAB,LDIAG,ANTI,IPRINT)
+C
+C     Transform AO integrals to SO basis and contract with non-totally
+C     symmetric density matrix provided in SO basis. Based on SYM1N.
+C     K.Ruud, August 2005
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+      LOGICAL LDIAG, FULMAT, ANTI
+      DIMENSION AO(*), DMAT(*)
+#include <inftap.h>
+#include <csym1.h>
+#include <symmet.h>
+#include <symind.h>
+#include <ibtfun.h>
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Subroutine SYM1NC',-1)
+         WRITE (LUPRI, '(A,2I5)') ' IREPO, KB ', IREPO, KB
+         WRITE (LUPRI, '(A,2I5)') ' NHKTA/B ', NHKTA, NHKTB
+      END IF
+C
+C     Loop over irreps for first basis function - those for second
+C     are obtained from operator symmetry IREPO
+C
+      DO 100 IREPA = 0, MAXREP
+         IREPB = IBTXOR(IREPO,IREPA)
+         JOFFA = 0
+         JOFFB = 0
+         IF (IREPA .GT. 0) JOFFA = JOFFA + ISUM(IREPA,NAOS,1)
+         IF (IREPB .GT. 0) JOFFB = JOFFB + ISUM(IREPB,NAOS,1)
+         INDOFF = NPARNU(IREPO+1,MAX(IREPA,IREPB)+1)
+         IF (ANTI .AND. (IREPA .LT. IREPB)) THEN
+            FAB = - HKAB
+         ELSE
+            FAB = HKAB
+         END IF
+C
+C        Loop over AOs which are of symmetry IREPA in stabilizer MULA
+C
+         DO 200 NA = 1, KHKTA
+         IF (IBTAND(MULA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
+            NAT = KHKTB*(NA - 1)
+            IF (LDIAG) THEN
+               KHKTBB = NA
+            ELSE
+               KHKTBB = KHKTB
+            ENDIF
+            DO 300 NB = 1,KHKTBB
+            IF (NA.EQ.NB .AND. LDIAG .AND. IREPA .LT. IREPB) GOTO 300
+            IF (IBTAND(MULB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
+C
+C              Weight and parity factor
+C
+               FAC = FAB*PT(IBTAND(KB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+C
+C              Locate SO integrals to which AOs contribute
+C
+               INDA = INDFA(IREPA + 1,NA)
+               INDB = INDFB(IREPB + 1,NB)
+               JNDA = JOFFA + INDA
+               JNDB = JOFFB + INDB
+               IF (JNDA .GT. JNDB) THEN
+                  INDD = JNDA*(JNDA - 1)/2 + JNDB
+               ELSE
+                  INDD = JNDB*(JNDB - 1)/2 + JNDA
+               END IF
+               RINT = FAC*AO(NAT+NB)
+               IF (IREPA .GE. IREPB) THEN
+                  IND  = INDOFF + NAOS(IREPB+1)*(INDA-1) + INDB
+               ELSE
+                  IND  = INDOFF + NAOS(IREPA+1)*(INDB-1) + INDA
+               ENDIF
+               EXPVAL = EXPVAL - RINT*DMAT(INDD)
             END IF
 300         CONTINUE
          END IF

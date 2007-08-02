@@ -2862,3 +2862,133 @@ C
       END IF
       RETURN
       END
+C  /* Deck fckden2 */
+      SUBROUTINE FCKDEN2(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LFRSAV)
+C
+C Jan. 1990 Hans Joergen Aa. Jensen
+C l.r. 1997 hjaaj (d.m. now square matrices)
+C
+C Backtransform one-electron density matrices for
+C calculation of Fock matrices in AO basis
+C ( contravariant transformation ).
+C
+C Input:
+C   GETDC   if true calculate DCAO
+C   GETDV   if true calculate DVAO
+C   CMO(*)  molecular orbital coefficients
+C   DV(*)   active part of one-electron density matrix
+C           (over MO's) unpacked
+C
+C Scratch:
+C   WRK(LFRSAV)
+C
+#include <implicit.h>
+      DIMENSION CMO(*),DV(*),DCAO(NBAST,*),DVAO(NBAST,*), WRK(*)
+      LOGICAL   GETDC, GETDV
+C
+      PARAMETER (D2 = 2.0D0)
+C
+C Used from common blocks:
+C  INFORB : NSYM,MULD2H(8,8),NASHT,NNBASX,N2BASX,...
+C  INFVAR : JWOPSY
+C  INFPRI : P6FLAG()
+C
+#include <maxorb.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <infpri.h>
+C
+C
+      CALL QENTER('FCKDEN2')
+C
+C
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LFRSAV
+C
+C     ************************************
+C     DVAO matrix
+C
+      IF (GETDV) THEN
+         CALL DZERO(DVAO,N2BASX)
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KUDV ,N2ASHX,WRK,KFREE,LFREE)
+         CALL DCOPY(N2ASHX,DV,1,WRK(KUDV),1)
+Clf         CALL DSPTSI(NASHT,DV,WRK(KUDV))
+         DO 2000 ISYM = 1,NSYM
+            JSYM  = MULD2H(ISYM,JWOPSY)
+            NASHI = NASH(ISYM)
+            NASHJ = NASH(JSYM)
+         IF (NASHI .EQ. 0 .OR. NASHJ .EQ. 0) GO TO 2000
+            NORBI = NORB(ISYM)
+            NBASI = NBAS(ISYM)
+            NORBJ = NORB(JSYM)
+            NBASJ = NBAS(JSYM)
+            JCMO  = ICMO(JSYM) + 1 + NISH(JSYM)*NBASJ
+            JUDV  = KUDV + IASH(ISYM)*NASHT + IASH(JSYM)
+            CALL DGEMM('N','N',NBASJ,NASHI,NASHJ,1.D0,
+     &                 CMO(JCMO),NBASJ,
+     &                 WRK(JUDV),NASHT,0.D0,
+     &                 WRK(KDAO1),NBASJ)
+            JCMO  = ICMO(ISYM) + 1 + NISH(ISYM)*NBASI
+            CALL DGEMM('N','T',NBASJ,NBASI,NASHI,1.D0,
+     &                 WRK(KDAO1),NBASJ,
+     &                 CMO(JCMO),NBASI,0.D0,
+     &                 DVAO(IBAS(JSYM)+1,IBAS(ISYM)+1),NBAST)
+ 2000    CONTINUE
+      CALL MEMREL('FCKDEN2',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      END IF
+      END IF
+C
+C
+C     ************************************
+C     DCAO matrix
+C
+      IF (GETDC) THEN
+         CALL DZERO(DCAO,N2BASX)
+      IF (NISHT .GT. 0 .AND. JWOPSY .EQ. 1) THEN
+         DO 4000 ISYM = 1,NSYM
+            NISHI = NISH(ISYM)
+         IF (NISHI .GT. 0) THEN
+            NBASI = NBAS(ISYM)
+            JCMO  = ICMO(ISYM) + 1
+            CALL DGEMM('N','T',NBASI,NBASI,NISHI,1.D0,
+     &                 CMO(JCMO),NBASI,
+     &                 CMO(JCMO),NBASI,0.D0,
+     &                 DCAO(IBAS(ISYM)+1,IBAS(ISYM)+1),NBAST)
+         END IF
+ 4000    CONTINUE
+C
+C **     multiply with DC(i,i) = 2.0 factor to get final result
+C        (if transition density matrix, then DCAO must be
+C         multiplied with the <L | R> overlap outside this routine)
+C
+         CALL DSCAL(N2BASX,D2,DCAO,1)
+      END IF
+      END IF
+C
+C
+C
+C
+      IF (P6FLAG(18)) THEN
+        IF (GETDC) THEN
+          WRITE(LUPRI,'(/A)')
+     &       ' DCAO = Density matrix, inactive part (AO-basis)'
+          CALL OUTPUT(DCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        END IF
+        IF (GETDV) THEN
+          WRITE(LUPRI,'(/A)')
+     &       ' DVAO = Density matrix,   active part (AO-basis)'
+          CALL OUTPUT(DVAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        END IF
+      END IF
+C
+C
+      CALL QEXIT('FCKDEN2')
+      RETURN
+C
+C *** end of subroutine FCKDEN2
+C
+       END

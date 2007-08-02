@@ -190,7 +190,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 97)
+      PARAMETER (NTABLE = 99)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -245,7 +245,7 @@ cLig <> added RAGMO and RPSO
      &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
      &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ',
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2',
-     &            'MAGQDP '/
+     &            'MAGQDP ', 'DERANGM', 'DIPANH '/
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -275,7 +275,7 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
      &             79,80,81,82,83,84,85,86,87,88,89,90,91,92, 1,
-     &             94,95,96,97), I
+     &             94,95,96,97,98), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1477,7 +1477,7 @@ C
       GOTO 200
 C
 C     Derivative overlap integrals DEROVLP
-C     ----------------------------
+C     ------------------------------------
 C
  62   CONTINUE
          INTTYP = 59
@@ -2267,6 +2267,38 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
+C     Derivative angular momentum integrals DERAM
+C     -------------------------------------------
+C
+ 98   CONTINUE
+         INTTYP = 102
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of derivative angular momentum integrals.'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'AMDR',
+     &               INTADR)
+         ANTI = .TRUE.
+         SQUARE = .FALSE.
+         IF (MAXREP .GT. 0) CALL QUIT('Symmetry not yet tested'//
+     &        ' for differentiated ang.mom. integrals')
+      GO TO 200
+C
+C     Anharmonic corrections to dipole gradient integrals DIPANH
+C     ----------------------------------------------------------
+C
+ 99   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of dipole gradient integrals'
+         INTTYP = 103
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL DPHTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+CCH
+Cori     ANTI = .TRUE.
+         ANTI = .FALSE.
+CCH
+         SQUARE = .FALSE.
+      GOTO 200
+C
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -2809,13 +2841,15 @@ C
 C
       CALL QENTER('SETATM')
 cLig <> added SPIN = .TRUE. for INTTYP = 82
+Ckr   inttyp .eq. 102 is not really a spin-dependent property, but
+Ckr   SPIN is anyway only a local variable
       SPIN = INTTYP .EQ.  9 .OR. INTTYP .EQ. 10 .OR.
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.
      &       INTTYP .EQ. 26 .OR. INTTYP .EQ. 27 .OR. INTTYP .EQ. 28 .OR.
      &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48 .OR.
      &       INTTYP .EQ. 82 .OR. INTTYP .EQ. 92 .OR. INTTYP .EQ. 93 .OR.
      &       INTTYP .EQ. 94 .OR. INTTYP .EQ. 95 .OR. INTTYP .EQ. 96 .OR.
-     &       INTTYP .EQ. 97
+     &       INTTYP .EQ. 97 .OR. INTTYP .EQ. 102
       IF (.NOT.SPIN .OR. ALLATM) THEN
          NATOM = NUCDEP
          IF (QM3 .AND. (INTTYP .EQ. 29.OR.
@@ -3226,7 +3260,11 @@ C  /* Deck nsttyp */
          DO 200 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
                DO 300 LCOOR = 1, 3
-                  ISCOOR = IPTCNT(3*(IATOM - 1) + LCOOR, IREP,2)
+                  IF (LABEL .EQ. 'AMDR') THEN
+                     ISCOOR = IPTCNT(3*(IATOM - 1) + LCOOR, IREP,1)
+                  ELSE
+                     ISCOOR = IPTCNT(3*(IATOM - 1) + LCOOR, IREP,2)
+                  END IF
                   IF (ISCOOR .GT. 0) THEN
                      DO 400 ICOOR = 1, 3
                         ITYP = ITYP + 1

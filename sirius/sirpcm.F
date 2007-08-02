@@ -1227,6 +1227,7 @@ C
 #include <symmet.h>
 #include "infpar.h"
 #include "inftap.h"
+#include "krcom.h"
 C
       CHARACTER*7 INTLAB
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1270,6 +1271,7 @@ C
          KDEN = 1
          KLAST = KDEN + NNBASX
          LWRK = LWORK - KLAST
+         ISYMD = KSYMP - 1
          IF (KSYMP .EQ. 1) THEN
             CALL DCOPY(NNBASX,DENMAT,1,WORK(KDEN),1)
             CALL DZERO(DENMAT,MATDIM)
@@ -1277,7 +1279,7 @@ C
             CALL DSYM1(WORK(KDEN),DUMMY,DENMAT,DUMMY,.FALSE.,
      &                 NBAST,IPRPCM)
          ELSE
-            CALL DSYM2(WORK(KDEN),DENMAT,NBAST,KSYMP,IPRINT)
+            CALL DCOPY(NNBASX,DENMAT,1,WORK(KDEN),1)
          END IF
          IF (NOSIM .GT. 1) CALL QUIT('NOSIM .GT. 1 and EXP1VL not '//
      &        'permitted in J1INT')
