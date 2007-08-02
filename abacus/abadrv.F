@@ -1695,18 +1695,6 @@ cLig <<
          END IF
       END IF
 C
-      IF (DFTRUN .AND. VCD) THEN
-         WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
-         CALL QUIT('VCD not implemented for DFT')
-      END IF
-      IF (DFTRUN .AND. VCD) THEN
-         WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
-         CALL QUIT('VCD not implemented for DFT')
-      END IF
-      IF (DFTRUN .AND. VCD) THEN
-         WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
-         CALL QUIT('VCD not implemented for DFT')
-      END IF
 C
 C
 C     **** PROCESS INPUT FOR VARIOUS PROGRAM SECTIONS  *****
