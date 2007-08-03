@@ -3513,55 +3513,6 @@ C Diff.z direction on center 2
          SHLINT(INT,7) = SHLINT(INT,7) - (SY1*DZ2 - DY1*EZ2)*SX0
          SHLINT(INT,8) = SHLINT(INT,8) - (EZ2*DX1 - SX1*DZ2)*SY0
          SHLINT(INT,9) = SHLINT(INT,9) - (SX1*DY1 - DX1*SY1)*DZ1
-C
-C
-c         FX1 = 2.0D0*EXPA*SHGTF*ODC(LVALA+1,LVALB,0,0,0,1)
-c         IF (LVALA .GE. 1) FX1 = FX1 
-c     &                   - SHGTF*SDPRE(LVALA)*ODC(LVALA-1,LVALB,0,0,0,1)
-c         FY1 = 2.0D0*EXPA*SHGTF*ODC(MVALA+1,MVALB,0,0,0,2)
-c         IF (MVALA .GE. 1) FY1 = FY1 
-c     &                   - SHGTF*SDPRE(MVALA)*ODC(MVALA-1,MVALB,0,0,0,2)
-c         FZ1 = 2.0D0*EXPA*SHGTF*ODC(NVALA+1,NVALB,0,0,0,3)
-c         IF (NVALA .GE. 1) FZ1 = FZ1 
-c     &                   - SHGTF*SDPRE(NVALA)*ODC(NVALA-1,NVALB,0,0,0,3)
-cC
-cC        Redefine double-derivative to involve two centres
-cC
-c         DX2 = 2.0D0*EXPA*SHGTF*ODC(LVALA+1,LVALB,0,0,1,1)
-c         IF (LVALA .GE. 1) DX2 = DX2 
-c     &                   - SHGTF*SDPRE(LVALA)*ODC(LVALA-1,LVALB,0,0,1,1)
-c         DY2 = 2.0D0*EXPA*SHGTF*ODC(MVALA+1,MVALB,0,0,1,2)
-c         IF (MVALA .GE. 1) DY2 = DY2 
-c     &                   - SHGTF*SDPRE(MVALA)*ODC(MVALA-1,MVALB,0,0,1,2)
-c         DZ2 = 2.0D0*EXPA*SHGTF*ODC(NVALA+1,NVALB,0,0,1,3)
-c         IF (NVALA .GE. 1) DZ2 = DZ2 
-c     &                   - SHGTF*SDPRE(NVALA)*ODC(NVALA-1,NVALB,0,0,1,3)
-cC
-cC     Redefine mixed multipole/derivative integral to involve same centre
-cC     
-c         HX2 = 2.0D0*EXPA*SHGTF*ODC(LVALA+1,LVALB,0,1,0,1)
-c         IF (LVALA .GE. 1) HX2 = HX2 
-c     &                   - SHGTF*SDPRE(LVALA)*ODC(LVALA-1,LVALB,0,1,0,1)
-c         HY2 = 2.0D0*EXPA*SHGTF*ODC(MVALA+1,MVALB,0,1,0,2)
-c         IF (MVALA .GE. 1) HY2 = HY2 
-c     &                   - SHGTF*SDPRE(MVALA)*ODC(MVALA-1,MVALB,0,1,0,2)
-c         HZ2 = 2.0D0*EXPA*SHGTF*ODC(NVALA+1,NVALB,0,1,0,3)
-c         IF (NVALA .GE. 1) HZ2 = HZ2 
-c     &                   - SHGTF*SDPRE(NVALA)*ODC(NVALA-1,NVALB,0,1,0,3)
-cC
-cC Diff.x direction on center 1
-c         SHLINT(INT,10) = SHLINT(INT,10) - (SY1*DZ1 - DY1*SZ1)*FX1
-c         SHLINT(INT,11) = SHLINT(INT,11) - (SZ1*DX2 - MX2*DZ1)*SY0
-c         SHLINT(INT,12) = SHLINT(INT,12) - (MX2*DY1 - DX2*SY1)*SZ0
-cC Diff.y direction on center 1
-c         SHLINT(INT,13) = SHLINT(INT,13) - (MY2*DZ1 - DY2*SZ1)*SX0
-c         SHLINT(INT,14) = SHLINT(INT,14) - (SZ1*DX1 - SX1*DZ1)*DY1
-c         SHLINT(INT,15) = SHLINT(INT,15) - (SX1*DY2 - DX1*MY2)*SZ0
-cC Diff.z direction on center 1
-c         SHLINT(INT,16) = SHLINT(INT,16) - (SY1*DZ2 - DY1*MZ2)*SX0
-c         SHLINT(INT,17) = SHLINT(INT,17) - (MZ2*DX1 - SX1*DZ2)*SY0
-c         SHLINT(INT,18) = SHLINT(INT,18) - (SX1*DY1 - DX1*SY1)*DZ1
-cC
  100  CONTINUE
       RETURN
       END
