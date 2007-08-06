@@ -257,13 +257,13 @@ C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
 #include <implicit.h>
+#include <priunit.h>
 #include <maxorb.h>
 #include <inftap.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aosotr.h>
 #include <molde.h>
-#include <priunit.h>
 #include <cbieri.h>
 #include <inforb.h>
 #include <nuclei.h>
@@ -275,12 +275,13 @@ C           2 save orbital energies in ORVAL
 
 #include <chrsgn.h>
 
-C      SUBROUTINE TRAORB(ORBTRA,IDIM,IATOM,IPRINT)
       IF (ITASK .EQ. 1) THEN
          IF (.NOT. DONEIV) THEN 
             WRITE(LUMOLDEN,'(/A)') '[5D]' 
             WRITE(LUMOLDEN,'(/A)') '[MO]' 
-            CALL TRAORB(ORBTRA,NBAST,-1,16)
+C           call traorb to generate SO to AO transformation
+            CALL TRAORB(ORBTRA,NBAST,-1,0)
+C           CALL TRAORB(ORBTRA,IDIM,IATOM,IPRINT)
             CALL DZERO(UNPAK, NBAST * NORBT)
             CALL DZERO(ORBVEC,NBAST)
             CALL UPKCMO(ORVAL,UNPAK)
