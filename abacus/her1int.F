@@ -6491,7 +6491,6 @@ C
             IF (IBTAND(MULB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
                IB  = IPTSYM(IORBB + NB,IREPB)
                FAC = PT(IBTAND(ISYMOP,IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
-               write (2,*) 'fac,factor',fac,factor,ia,ib,ao(nat+nb)
                SO(IA,IB) = SO(IA,IB) + FAC*FACTOR*AO(NAT+NB)
             END IF
 300         CONTINUE
