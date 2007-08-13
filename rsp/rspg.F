@@ -104,7 +104,7 @@ C
 C
 C Calculate second-order properties
 C
-      DO 100 ISYM=1,NSYM
+      DO ISYM = 1,NSYM
          KSYMOP = ISYM
 C
 C Define variables that depend on symmetry
@@ -118,14 +118,14 @@ C Solve linear response equations
 C
          IF (NGPLR(ISYM).GT.0) THEN
             CALL RSPLR(
-     &      WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KFC),WORK(KFV),
-     &      WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1
-     &      )
+     &         WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KFC),WORK(KFV),
+     &         WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1)
             CALL MEMCHK('GDRV<-RSPLR',WORK,1)
             CALL GSET2(WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KINDX),
      &         WORK(KWRK1),LWRK1)
          END IF
-  100 END DO
+  100 CONTINUE
+      END DO
 C
       CALL GPRINT(WORK(KWRK1),LWRK1)
 C
