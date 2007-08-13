@@ -124,6 +124,8 @@ C
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX
 C
+      CALL QENTER('RSPDRV')
+C
       TIMRSP = SECOND()
       CALL GETTIM(CSTR,WSTR)
       WRITE (LUPRI,'(//A)')
@@ -567,6 +569,7 @@ C
 C
 C     *******************************************
 C
+      CALL QEXIT('RSPDRV')
       RETURN
       END
 C  /* Deck rsprea */
@@ -3395,6 +3398,8 @@ C
 C
       PARAMETER ( D1 = 1.0D0 )
 C
+      CALL QENTER('RSPVAR')
+C
       KSYMST = MULD2H(IREFSY,KSYMOP)
 C
 C READ IN ORBITAL EXITATION OPERATOR
@@ -3632,6 +3637,7 @@ C LPHPMX IS USED LATER AND ASSUMED ALWAYS TO HAVE LENGTH KZVAR
 C
 C *** END OF RSPVAR
 C
+      CALL QEXIT('RSPVAR')
       RETURN
       END
 C  /* Deck rspmc */
