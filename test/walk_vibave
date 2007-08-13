@@ -313,7 +313,7 @@ CRIT34=`$GREP "10 * (\-0| \-)\.0058461[0-9] * 0*\.1071547[0-9] * 0*\.1759615[0-9
 CRIT35=`$GREP "11 * (\-0| \-)\.0103640[0-9] * 0*\.1759615[0-9] * 0*\.4796055[0-9] * (\-0|\-|0| )\.0000000[0-9]"  $log | wc -l`
 CRIT36=`$GREP "12 * 0*\.0050760[0-9] * (\-0|\-|0| )\.0000000[0-9] * (\-0|\-|0| )\.0000000[0-9] * 0*\.0892346[0-9]"  $log | wc -l`
 TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 # 18-sep-2006 hjaaj: skip the rest because format changed and it
 # is not worthwhile to check all numbers
 #		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
