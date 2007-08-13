@@ -1438,6 +1438,8 @@ C 940510-hjaaj: same change for Cray's multifile datasets
          INQUIRE (UNIT=LU,NAME=FNNAME)
          WRITE(LUERR,4)A,LU,FNNAME
          CALL QTRACE(LUERR)
+         REWIND (LU)
+         CALL DMPLAB(LU,LUERR)
          CALL QUIT('ERROR (MOLLAB) MOLECULE label not found on file')
       END IF
     4 FORMAT(/' *** ERROR (MOLLAB), MOLECULE label ',A8,
@@ -1463,6 +1465,7 @@ C
 C 26-May-1985 hjaaj -- logical function version of SEARCH
 C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
 C
+#include "priunit.h"
       CHARACTER*8 A, B(4), C
       DATA C/'********'/
       IRDERR = 0
@@ -1477,12 +1480,17 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
 C 940510-hjaaj: same change for Cray's multifile datasets
-      BACKSPACE LU
+      BACKSPACE (LU,ERR=7)
+C     ... aug07-hjaaj: new ERR branch to avoid problems with backspace on empty files.
+      GO TO 8
+    7 write (LUPRI,*)
+     &  'FNDLAB WARNING: ERR branch for backspace on LU ',LU
+      call qdump(LUPRI)
 #endif
 C
     8 FNDLAB = .FALSE.
