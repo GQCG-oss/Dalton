@@ -4195,7 +4195,15 @@ C
          II = I*(I + 1)/2
          IF (TRMAT1(II) .LT. 1.0D-6) THEN
             WRITE (LUPRI,*) ' >>> ERROR DKDRIV: Linear dependency in '//
-     &           'primitive basis used in Douglas-Kroll'
+     &           'primitive basis used in Douglas-Kroll ', I, TRMAT1(II)
+            write (lupri,*) 'The corresponding eigenvector:'
+            call output(eigvec(1,i),1,1,1,nbast,1,nbast,-1,lupri)
+            DO J = 1,NBAST
+               II = J*(J + 1)/2
+               E1DIAG(J) = TRMAT1(II)
+            END DO
+            write (lupri,*) 'All eigenvalues of the overlap matrix:'
+            call output(E1DIAG,1,1,1,nbast,1,nbast,-1,lupri)
             CALL QUIT('Linear dependency in primitive Douglas-Kroll'//
      &           ' basis')
          END IF
