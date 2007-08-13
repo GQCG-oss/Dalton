@@ -118,7 +118,7 @@ C-----------------------------------------------
 C     Calculate the E(QM/MM) part of the energy:
 C-----------------------------------------------
 C
-      ECMCON = 0.0D0 
+      ECMCON = ZERO
          
       CALL CC_QM3E(ECMCON,EPOL,EEL,EELEL,EREP,AODEN,
      &             WORK,LWORK)
@@ -158,11 +158,11 @@ C
         CONVERGED = .TRUE.
         IF (LOEC3) THEN
 C
-          EPOL = D0
+          EPOL = ZERO
 C
-          WRITE(LUPRI,'(1X,A)')'Perturbative correction to polarization'
-     *          //' energy is calculated' 
-          WRITE(LUPRI,'(1X,A15//)')'(Model SPC_EC3)'
+          WRITE(LUPRI,'(1X,A)')
+     &    'Perturbative correction to polarization energy is calculated'
+     &   ,'(Model SPC_EC3)'
 C
           CALL EPERT2(EPOL,WORK,LWORK)
         END IF
@@ -291,14 +291,14 @@ C
         WRITE(LUPRI,'(1X,A1,70A,A1//)') '+',('=',J=1,70),'+'
 C
         IF (RELMOM) THEN
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
           WRITE(LUPRI,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
           WRITE(LUPRI,*)'Pind_a is determined without external field'
           WRITE(LUPRI,*)'Delta E(mm/mm) is WRONG !!!                '
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
           WRITE(LUPRI,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
         END IF
 C------------------------------------------------------
 C       Third information concerning the convergence is 
@@ -480,7 +480,7 @@ C
       EQM3T = ZERO
 C
       IF (.NOT. LOSPC) THEN
-        CALL CC_GET31(LUCCOB,'OBARFILE',NCOMS,
+        CALL CC_GET31('OBARFILE',NCOMS,
      *                 WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz)) 
 C
         IF (IQM3PR .GT. 10) THEN
@@ -728,16 +728,16 @@ C
       END IF 
 C
       IF (FIXMOM) THEN
-        WRITE(LUPRI,*)'NO ITER. DETERM. OF MYIND FIXMOM=',FIXMOM
+        WRITE(LUPRI,'(/A)')'FIXMOM: NO ITER. DETERM. OF MYIND'
       ELSE IF (LOSPC) THEN
-        WRITE(LUPRI,*)'All MM models are SPC INDMOM not called'
+        WRITE(LUPRI,'(/A)')'All MM models are SPC, INDMOM not called'
       ELSE 
         LOINDM = .FALSE.
         CALL INDMOM(EELEC,LOINDM,FFJ)
       END IF
 C
       CALL QM3_OBAR(FFJ)
-      CALL CC_PUT31(LUCCRA,'CC_RA',NCOMS,RAx,RAy,RAz)
+      CALL CC_PUT31('CC_RA',NCOMS,RAx,RAy,RAz)
 C
       END
 C
@@ -960,7 +960,7 @@ C-------------------------------------------------
 C
       IF ( (OLDTG) .AND. (LOSPC) ) GOTO 888 
 C
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+      CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
 C-------------------
@@ -1002,7 +1002,7 @@ C
          WRITE(LUPRI,'(//,A)')
       END IF
 C
-      CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,
+      CALL CC_GET31('ENSAFILE',NCOMS,
      *               WORK(KENSAx),WORK(KENSAy),WORK(KENSAz))
 
 C
@@ -1417,9 +1417,9 @@ C
       CALL DZERO(WORK(KRAx),3*NCOMS)
       CALL DZERO(WORK(KXIx),3*NTAMP)
 C 
-      CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,
+      CALL CC_GET31('ENSAFILE',NCOMS,
      *               WORK(KENSAx),WORK(KENSAy),WORK(KENSAz))
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+      CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
@@ -2206,9 +2206,9 @@ C
 C
       CALL DZERO(WORK(KRAx),6*NCOMS)
 C
-      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3')
+      IF (LWRK1.LT.0) CALL QUIT( 'Too little work space in CC_QM3')
 C
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+      CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
       DO 111 I = 1,NCOMS
@@ -2237,7 +2237,7 @@ C
       CALL QM3_OBAR(FFJ)
       CALL QM3_OTILDE(OTILDE,FFJ)
 C
-      CALL CC_GET31(LUCCOB,'OBARFILE',NCOMS,
+      CALL CC_GET31('OBARFILE',NCOMS,
      *                 WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz))
 C
       EQM3T = ZERO
@@ -2276,90 +2276,77 @@ C
 C
 C**************************************************************
 C  /* Deck cc_put31 */
-      SUBROUTINE CC_PUT31(NMBU,FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
+      SUBROUTINE CC_PUT31(FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
 C**************************************************************
 C
 #include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
 #include <dummy.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <ccinftap.h>
-C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-      PARAMETER (HALF = 0.5D0)
 C
       CHARACTER*(*) FLNAME
       INTEGER   NMBU,NULOOP
-      DIMENSION OMMSx(*)
-      DIMENSION OMMSy(*)
-      DIMENSION OMMSz(*)
+      DIMENSION OMMSx(*) , OMMSy(*) , OMMSz(*)
 C
-      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      NMBU = -1
+      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
 C
+      REWIND (NMBU)
       LM = 0
 C
       DO 820 L = 1,NULOOP
         LM = LM + 1
-        WRITE(NMBU,'(I5,3X,3E22.15)') LM,OMMSx(LM),OMMSy(LM),
-     *                                OMMSz(LM)
+        WRITE(NMBU,'(I5,3E25.15)') LM,OMMSx(LM),OMMSy(LM),OMMSz(LM)
   820 CONTINUE
 C
+      REWIND (NMBU)
       CALL GPCLOSE(NMBU,'KEEP')
 C
       END
 C
 C**************************************************************
 C  /* Deck cc_get31 */
-      SUBROUTINE CC_GET31(NMBU,FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
+      SUBROUTINE CC_GET31(FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
 C**************************************************************
 C
 #include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
 #include <dummy.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
 #include <priunit.h>
-#include <qm3.h>
-#include <ccinftap.h>
 C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-      PARAMETER (HALF = 0.5D0)
 C
       INTEGER   NMBU,NULOOP
       CHARACTER*(*) FLNAME
-      DIMENSION OMMSx(*)
-      DIMENSION OMMSy(*)
-      DIMENSION OMMSz(*)
+      DIMENSION OMMSx(*) , OMMSy(*) , OMMSz(*)
 C
-      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      LOGICAL FILE_EXIST
 C
-      LM = 0
+      INQUIRE(FILE=FLNAME,EXIST=FILE_EXIST)
+      IF (.NOT. FILE_EXIST) THEN
+         DO LM = 1,NULOOP
+            OMMSx(LM) = 0.0D0
+            OMMSy(LM) = 0.0D0
+            OMMSz(LM) = 0.0D0
+         END DO
+         GO TO 9000
+      END IF
 C
-      DO 820 L = 1,NULOOP
-        LM = LM + 1
-        READ(NMBU,'(I5,3X,3E22.15)',END=100) LM1,OMMSx(LM),OMMSy(LM),
-     *                                       OMMSz(LM)
-        GOTO 800
-C
-  100   OMMSx(LM) = 0.0D0
-        OMMSy(LM) = 0.0D0
-        OMMSz(LM) = 0.0D0
-C
-  800   CONTINUE
+
+      NMBU = -1
+      CALL GPOPEN(NMBU,FLNAME,'OLD',' ','FORMATTED',IDUMMY,.FALSE.)
+ 
+      DO 820 LM = 1,NULOOP
+
+        READ(NMBU,'(I5,3E25.15)',END=700,ERR=700)
+     &      LM1, OMMSx(LM), OMMSy(LM), OMMSz(LM)
+        IF (LM.NE.LM1) THEN
+           write (lupri,*) 'Error in CC_GET31 on ',FLNAME
+           write (lupri,*) 'LM, LM1, NULOOP',LM,LM1,NULOOP
+           CALL QUIT( 'Error in CC_GET31')
+        END IF
+  700   CONTINUE
   820 CONTINUE
-C
-      IF (LM.NE.NULOOP) CALL QUIT( 'Error on CC_GET31')
-C
+ 
       CALL GPCLOSE(NMBU,'KEEP')
+C
+ 9000 RETURN
 C
       END
 C
@@ -2440,7 +2427,8 @@ C
       NAMP2C  = NT2AM(ISYCTR)
       NAMPC   = NAMP1C + NAMP2C
 C
-      For the F = C X B vector
+C     For the F = C X B vector
+C
       ISYBC = MULD2H(ISYBTR,ISYCTR)
       NAMP1F  = NT1AM(ISYBC)
       NAMP2F  = NT2AM(ISYBC)

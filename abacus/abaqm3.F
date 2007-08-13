@@ -55,7 +55,7 @@ C
      &                        LWRK,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
 
-                  IF (IQM3PR .GE. 4) THEN
+                  IF (IQM3PR .GE. 12) THEN
                      WRITE (LUPRI,'(/A,I3,A)')
      *                    ' N(',L,')_ao matrix (Bx): '
                      CALL OUTPUT(WORK(KMAT),1,NBAST,1,NBAST,
@@ -95,11 +95,9 @@ C     system we need to skip the first NUALIS(0) points
       KLST   = KENSAZ + NCOMS
       CALL DZERO(WORK(KRAX),6*NCOMS)
 C
-      LUCCRA = -1
-      LUCCEA = -1
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,WORK(KRAX),
+      CALL CC_GET31('CC_RA',NCOMS,WORK(KRAX),
      &              WORK(KRAY),WORK(KRAZ))
-      CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,WORK(KENSAX),
+      CALL CC_GET31('ENSAFILE',NCOMS,WORK(KENSAX),
      &              WORK(KENSAY),WORK(KENSAZ))
 C
       DO I = 1, ISYTP
@@ -290,11 +288,9 @@ C     system we need to skip the first NUALIS(0) points
       KLST   = KENSAZ + NCOMS
       CALL DZERO(WORK(KRAX),6*NCOMS)
 C
-      LUCCRA = -1
-      LUCCEA = -1
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,WORK(KRAX),
+      CALL CC_GET31('CC_RA',NCOMS,WORK(KRAX),
      &              WORK(KRAY),WORK(KRAZ))
-      CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,WORK(KENSAX),
+      CALL CC_GET31('ENSAFILE',NCOMS,WORK(KENSAX),
      &              WORK(KENSAY),WORK(KENSAZ))
 C
       DO I = 1, ISYTP

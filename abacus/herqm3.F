@@ -46,6 +46,7 @@ C INPUT FROM ABACUS TO QM3 CALCULATIONS
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxsymm.h>
@@ -59,25 +60,25 @@ C
 #include <cbirea.h>
 #include <ccom.h>
 C
-      DATA TABLE /'.QM3'   , '.THRDIP', '.MAXDIP', '.FIXMOM',
-     *            '.OLDTG', '.PRINT', '.ATMVDW', '.CLONLY',
+      DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
+     *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
      *            '.VDWSKP', '.XXXXXX', '.XXXXXX', '.XXXXXX',
      *            '.XXXXXX', '.XXXXXX'/
 C
 C     Initializing QM3 keywords
 C
-      QM3 = .FALSE.
-      THDISC = 1.0D-9 
-      MXDIIT = 80
-      FIXMOM = .FALSE.
-      OLDTG  = .FALSE.
+      QM3     = .FALSE.
+      THDISC  = 1.0D-9 
+      MXDIIT  = 80
+      FIXMOM  = .FALSE.
+      OLDTG   = .FALSE.
       LONEPAR = .FALSE.
       LTWOPAR = .FALSE.
       LEPSADD = .FALSE.
       LSIGADD = .FALSE.
       LOCLAS  = .FALSE.
-      IQM3PR = 0
-      VDWSKP = .FALSE.
+      IQM3PR  = IPRUSR
+      VDWSKP  = .FALSE.
 C
 C
 C     CRUCIAL TEST : MXENT has to be equal to MXQM3
@@ -243,61 +244,45 @@ C
      *         '| ',' WORD:',' | ','CHANGE:',' |'
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
 C
-        IF (QM3) THEN
-          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *           '| ','   QM3',' | ',QM3,' |'
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        END IF
+        IF (QM3) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','   QM3',' | ',QM3,' |'
 C
-        IF (THDISC .NE. 1.0D-9) THEN
-          WRITE (LUPRI,'(1X,A2,A6,A3,D7.1,A2)')
-     *           '| ','THDISC',' | ',THDISC,' |'
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        END IF
+        IF (THDISC .NE. 1.0D-9) WRITE (LUPRI,'(1X,A2,A6,A3,1P,D7.1,A2)')
+     *         '| ','THDISC',' | ',THDISC,' |'
 C
-        IF (MXDIIT .NE. 80) THEN
-          WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')
-     *           '| ','MXDIIT',' | ',MXDIIT,' |'
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        END IF
+        IF (MXDIIT .NE. 80) WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')
+     *         '| ','MXDIIT',' | ',MXDIIT,' |'
 C
-        IF (FIXMOM) THEN
-          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *           '| ','FIXMOM',' | ',FIXMOM,' |'
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        END IF
+        IF (FIXMOM) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','FIXMOM',' | ',FIXMOM,' |'
 C
-        IF (OLDTG) THEN
-          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *           '| ',' OLDTG',' | ',OLDTG,' |'
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        END IF
+        IF (OLDTG) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ',' OLDTG',' | ',OLDTG,' |'
 C
-        IF (IQM3PR .NE. 0) THEN
-          WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')
-     *           '| ','PRINT',' | ',IQM3PR,' |'
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        END IF
+chj     IF (IQM3PR .NE. IPRUSR) THEN
+          WRITE (LUPRI,'(A3,A6,A3,I7,A2)')
+     *           ' | ','PRINT',' | ',IQM3PR,' |'
+chj     END IF
 C
         IF (LONEPAR) THEN
           WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *           '| ','ATMVDW',' | ',LONEPAR,' |'
           IF (LEPSADD) THEN
             WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *             '| ','EPSADD',' | ',LEPSADD,' |'
+     *           '| ','EPSADD',' | ',LEPSADD,' |'
           ELSE IF (.NOT. LEPSADD) THEN
             WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *             '| ','EPSMLT',' | ',(.NOT.LEPSADD),' |'
+     *           '| ','EPSMLT',' | ',(.NOT.LEPSADD),' |'
           END IF
           IF (LSIGADD) THEN
             WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *             '| ','SIGADD',' | ',LSIGADD,' |'
+     *           '| ','SIGADD',' | ',LSIGADD,' |'
           ELSE IF (.NOT. LSIGADD) THEN
             WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
-     *             '| ','SIGMLT',' | ',(.NOT.LSIGADD),' |'
+     *           '| ','SIGMLT',' | ',(.NOT.LSIGADD),' |'
           END IF
-          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
         END IF
+        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 C
       END IF
 C
@@ -837,7 +822,7 @@ C
      &                IDUMMY,.FALSE.)
           DO 1500 KL = 1, NSIGEPS
             READ(LUPOT,*) I,K,J,L,TEMP,TEMP1
-            WRITE(LUVDWSE,'(4I6,2E22.15)')
+            WRITE(LUVDWSE,'(4I6,2E25.15)')
      *            I,K,J,L,TEMP,TEMP1
  1500     CONTINUE
           CALL GPCLOSE(LUVDWSE,'KEEP')
@@ -922,7 +907,7 @@ C
                   ELSE IF (.NOT. LEPSADD) THEN
                     TEMP1 = SQRT(QM3EPS(I,K)*QM3EPS(J,L))
                   END IF
-                  WRITE(LUVDWSE,'(4I6,2E22.15)')
+                  WRITE(LUVDWSE,'(4I6,2E25.15)')
      *                  I,K,J,L,TEMP,TEMP1
  1630           CONTINUE
               END IF
@@ -1725,7 +1710,7 @@ C
         END IF
 C
         IF (LG .EQ. ISYTP)  THEN
-          WRITE(LUPRI,*)'All MM models are SPC'
+          WRITE(LUPRI,'(/A)')'All MM models are SPC'
           LOSPC = .TRUE.
           IF (MDLWRD(0) .EQ. 'SPC    ') THEN
             GOTO 117
@@ -1736,7 +1721,7 @@ C****************************************************************
 C If fixmom is true we do not want to calculate new fields
 C from the induced dipole moments. In such a run we have to 
 C restart from a set of known induced dipole moments. This option
-C is cruzial when testing the response functions as compared to
+C is crucial when testing the response functions as compared to
 C finite field calculations.
 C**************************************************************** 
 C 
@@ -1933,16 +1918,17 @@ C
             END IF
   50      CONTINUE
 C
-          WRITE(LUPRI,'(1X,A31,F20.15)')
-     *          'Norm2 of dipole moment vector: ',XDIP2
 C
           IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
             DIPCON = .TRUE.
-            WRITE(LUPRI,'(/1X,A27,I3,A12)')
-     *            'Dipole vector converged in ',LM,' iterations.'
+            WRITE(LUPRI,'(/A,I4,A/A,F20.15)')
+     *      ' QM3 induced dipole vector converged in',LM,' iterations.',
+     *      ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
             GOTO 1000
           ELSE
             XDIP1 = XDIP2
+            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
+     *      ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
           END IF
 C
   999   CONTINUE
@@ -1951,15 +1937,15 @@ C
 C
         IF (LOEC3L) THEN
           LOMIND = .TRUE.
-          WRITE(LUPRI,'(/1X,A/)')
-     *    'Epol is calculated according to scheme C3'
+          WRITE(LUPRI,'(/A/)')
+     *    ' QM3 Epol is calculated according to scheme C3'
           GOTO 116
         END IF
 C
       END IF
 C
-      IF (.NOT. DIPCON) WRITE(LUPRI,'(1X,A/)')
-     *   'Dipole moment not converged self-consistently'
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(/A)')
+     *   ' QM3 induced dipole moment not converged self-consistently'
 C
  117  CONTINUE
 C
@@ -1973,13 +1959,13 @@ C     --------------------------
 C      The classical 'QM' field:
 C     --------------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
         WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
+     &  A1,A14,A1)')
      &  '|',' Field ','|',' sys, alpha site','|',
      &  '      X       ','|','      Y       ',
      &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 753 I = 0, ISYTP
@@ -1988,7 +1974,7 @@ C
               DO 755 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' E(QM) ','|',J,',',L,
      &          '|',EQMCLF(1,NUM),'|',EQMCLF(2,NUM),
      &          '|',EQMCLF(3,NUM),'|'
@@ -1997,19 +1983,17 @@ C
           END IF
   753   CONTINUE
 C
-        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C
 C       ----------------
 C        The site field:
 C       ----------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' Field ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 756 I = 0, ISYTP
@@ -2018,7 +2002,7 @@ C
               DO 758 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' Esite ','|',J,',',L,
      &          '|',ESITE(1,NUM),'|',ESITE(2,NUM),
      &          '|',ESITE(3,NUM),'|'
@@ -2027,19 +2011,17 @@ C
           END IF
   756   CONTINUE
 C
-        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C
 C       ----------------------
 C        The nuclear QM field:
 C       ----------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' Field ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0 
         DO 759 I = 0, ISYTP
@@ -2048,7 +2030,7 @@ C
               DO 791 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' Enuc. ','|',J,',',L,
      &          '|',ENUC(1,NUM),'|',ENUC(2,NUM),
      &          '|',ENUC(3,NUM),'|'
@@ -2057,19 +2039,17 @@ C
           END IF
   759   CONTINUE
 C
-        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C
 C       ------------------------------------
 C        The field from the induced dipoles:
 C       ------------------------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' Field ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 761 I = 0, ISYTP
@@ -2078,7 +2058,7 @@ C
               DO 768 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' Eind  ','|',J,',',L,
      &          '|',EIND(1,NUM),'|',EIND(2,NUM),
      &          '|',EIND(3,NUM),'|'
@@ -2087,19 +2067,17 @@ C
           END IF
   761   CONTINUE
 C
-        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C
 C       ----------------------------
 C        The induced dipole moments:
 C       ----------------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' Field ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 763 I = 0, ISYTP
@@ -2108,7 +2086,7 @@ C
               DO 769 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' Dipole','|',J,',',L,
      &          '|',MYIND(1,NUM),'|',MYIND(2,NUM),
      &          '|',MYIND(3,NUM),'|'
@@ -2117,7 +2095,7 @@ C
           END IF
   763   CONTINUE
 C
-        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C
       END IF
 C
@@ -2407,22 +2385,23 @@ C
          END IF
   50    CONTINUE
 C
-        WRITE(LUPRI,'(1X,A31,F20.15)')
-     *        'Norm2 of dipole moment vector: ',XDIP2
         IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
           DIPCON = .TRUE.
-          WRITE(LUPRI,'(/1X,A27,I3,A12)')
-     *          'Dipole vector converged in ',LM,' iterations.'
+          WRITE(LUPRI,'(/A,I3,A/A,F20.15)')
+     *     ' QM3 induced Dipole vector converged in ',LM,' iterations.',
+     *     ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
           GOTO 1000
         ELSE
           XDIP1 = XDIP2
+          IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
+     *     ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
         END IF
 C
   999 CONTINUE
  1000 CONTINUE
 C
-      IF (.NOT. DIPCON) WRITE(LUPRI,'(1X,A/)')
-     *   'Dipole moment not converged self-consistently'
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(A/)')
+     *   ' QM3 induced dipole moment not converged self-consistently'
 C
 C     **********************************************************
 C     Print section. Printing if PRINT .GT. 1.
@@ -2434,13 +2413,11 @@ C       ------------------------------------
 C        The field from the induced dipoles:
 C       ------------------------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' Field ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 761 I = 1, ISYTP
@@ -2449,7 +2426,7 @@ C
               DO 768 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' Eind  ','|',J,',',L,
      &          '|',EIND(1,NUM),'|',EIND(2,NUM),
      &          '|',EIND(3,NUM),'|'
@@ -2458,19 +2435,17 @@ C
            END IF
   761    CONTINUE
 C
-         WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C
 C       ------------------------------------
 C        The total electric field:
 C       ------------------------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' E_tot ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 361 I = 1, ISYTP
@@ -2478,9 +2453,9 @@ C
             DO 362 J = NSYSBG(I), NSYSED(I)
               DO 368 L = 1, NUALIS(I)
                 NUM = NUM + 1
-                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
-     &          '|',' Etot  ','|',J,',',L,
+                WRITE(LUPRI,'(A,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
+     &          ' | Etot  |',J,',',L,
      &          '|',(EELEC(1,NUM)+ENUC(1,NUM)+ESITE(1,NUM)+EIND(1,NUM)+
      &              FFJ(1)),'|',(EELEC(2,NUM)+ENUC(2,NUM)+ESITE(2,NUM)+
      &              EIND(2,NUM)+FFJ(2)),
@@ -2491,18 +2466,16 @@ C
            END IF
   361    CONTINUE
 C
-         WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,71A,//)') ('-',J=1,71)
 C       ----------------------------
 C        The induced dipole moments:
 C       ----------------------------
 C
-        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
-     &  A1,A14,A2)')
-     &  '|',' Field ','|',' sys, alpha site','|',
-     &  '      X       ','|','      Y       ',
-     &  '|','      Z       ',' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(/1X,71A)') ('-',J=1,71)
+        WRITE(LUPRI,'(A)')
+     &  ' | Field | sys, alpha site|      X       |      Y       '//
+     &                            '|      Z       |'
+        WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         NUM = 0
         DO 763 I = 1, ISYTP
@@ -2511,7 +2484,7 @@ C
               DO 769 L = 1, NUALIS(I)
                 NUM = NUM + 1
                 WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
-     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          '|',' Dipole','|',J,',',L,
      &          '|',MYIND(1,NUM),'|',MYIND(2,NUM),
      &          '|',MYIND(3,NUM),'|'
@@ -2520,7 +2493,7 @@ C
            END IF
   763    CONTINUE
 C
-         WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,71A)') ('-',J=1,71)
 C
         END IF
 C
@@ -2717,26 +2690,18 @@ C
       CALL TITLER('The MM/MM classical interaction energy',
      *             '*',117)
 C
-      WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
-     *'|      ',EMMELC,' |'
+      WRITE(LUPRI,'(/1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(A52,A7,F12.8,A2)')
+     *' |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
+     * '|      ',EMMELC,' |',
+     *' |  Epol  = - 1/2*Sum_a[ Pind_a*E^site_a ]          ',
+     * '|      ',EMMPOL,' |',
+     *' |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
+     * '|      ',EMMVDW,' |'
       WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  Epol  = - 1/2*Sum_a[ Pind_a*E^site_a ]          ',
-     *'|      ',EMMPOL,' |'
-      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
-     *'|      ',EMMVDW,' |'
-      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,50A,A1,A20)')
-     *             '|',('*',J=1,50),'|',
-     *             '*******************|'
-      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  E(MM/MM) = Eelec + Epol + Evdw                  ',
-     *'|      ',EMM_MM,' |'
+      WRITE(LUPRI,'(A52,A7,F12.8,A2)')
+     *' |  E(MM/MM) = Eelec + Epol + Evdw                  ',
+     * '|      ',EMM_MM,' |'
       WRITE(LUPRI,'(1X,72A//)') ('-',J=1,72)
 C
 C***********************************************************
@@ -2746,26 +2711,18 @@ C
       CALL TITLER('The "QM"/MM classical interaction energy',
      *             '*',115)
 C
-      WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
-     *'|      ',ECULCL,' |'
+      WRITE(LUPRI,'(/1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(A52,A7,F12.8,A2)')
+     *' |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
+     * '|      ',ECULCL,' |',
+     *' |  Epol  = - 1/2*Sum_a[ Pind_a*E^(QMclassic)_a ]   ',
+     * '|      ',ECLPOL,' |',
+     *' |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
+     * '|      ',ECLVDW,' |'
       WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  Epol  = - 1/2*Sum_a[ Pind_a*E^(QMclassic)_a ]   ',
-     *'|      ',ECLPOL,' |'
-      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
-     *'|      ',ECLVDW,' |'
-      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,50A,A1,A20)')
-     *             '|',('*',J=1,50),'|',
-     *             '*******************|'
-      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
-     *'  E("QM"/MM) = Eelec + Epol + Evdw                ',
-     *'|      ',ECLQM3,' |'
+      WRITE(LUPRI,'(A52,A7,F12.8,A2)')
+     *' |  E("QM"/MM) = Eelec + Epol + Evdw                ',
+     * '|      ',ECLQM3,' |'
       WRITE(LUPRI,'(1X,72A//)') ('-',J=1,72)
 C
 C    If we have any shadow wave-functions substitute
@@ -2801,7 +2758,7 @@ C
      &            .FALSE.)
 C
       DO 930 LM = 1,NULOOP
-        WRITE(NMBU,'(I5,3X,3E22.15)') LM,
+        WRITE(NMBU,'(I5,3E25.15)') LM,
      *  PUTNU(1,LM),PUTNU(2,LM),PUTNU(3,LM)
   930 CONTINUE
 C
@@ -2831,10 +2788,10 @@ C
       REWIND(NMBU)
 C
       DO 920 LM = 1,NULOOP
-        READ (NMBU,'(I5,3X,3E22.15)',END=101) I,
+        READ (NMBU,'(I5,3E25.15)',END=101) I,
      *        PUTNU(1,LM),PUTNU(2,LM),PUTNU(3,LM)
 C
-        IF (I.NE.LM) STOP 'There is a problem in QM3_GET'
+        IF (I.NE.LM) CALL QUIT( 'There is a problem in QM3_GET' )
 C
         GOTO 920
   101   PUTNU(1,LM) = 1.0D0
@@ -2917,9 +2874,9 @@ C
      &                      EIND(L,NUM) + FFJ(L)
                 ENSA(L,NUM) = OBAR(L,NUM) + ESITE(L,NUM)+ FFJ(L) 
   400         CONTINUE
-              WRITE(LUEOBAR,'(I5,3X,3E22.15)') NUM,
+              WRITE(LUEOBAR,'(I5,3E25.15)') NUM,
      *              OBAR(1,NUM),OBAR(2,NUM),OBAR(3,NUM)
-              WRITE(LUENSA,'(I5,3X,3E22.15)') NUM,
+              WRITE(LUENSA,'(I5,3E25.15)') NUM,
      *              ENSA(1,NUM),ENSA(2,NUM),ENSA(3,NUM)
   300       CONTINUE
   200     CONTINUE
@@ -3281,7 +3238,7 @@ C
       REWIND (LUVDWSE)
 C
       DO 100 IVDW = 1, NSIGEPS
-        READ(LUVDWSE,'(4I6,2E22.15)')
+        READ(LUVDWSE,'(4I6,2E25.15)')
      *       I,K,J,L,SIG_IJ,EPS_IJ
         IF (LBEGIN .NE. 0) THEN
           IF (I .EQ. 0) GOTO 100

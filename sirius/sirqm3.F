@@ -185,16 +185,11 @@ C  /* Deck qm3_rra */
         END IF
   520 CONTINUE
 
-      IF (IQM3PR .GT. 15) THEN
-        WRITE(LUPRI,'(//,A)')
-     *        ' +============================================'
-     *      //'==============+'
-        WRITE(LUPRI,'(A)')
-     *        ' | COM| <Rra>_x         | <Rra>_y         |'
-     *      //' <Rra>_z         |'
-        WRITE(LUPRI,'(1X,A)')
-     *        '+============================================'
-     *      //'==============+'
+      IF (IQM3PR .GE. 5) THEN
+        WRITE(LUPRI,'(/A/A/A)')
+     *  ' +==========================================================+',
+     *  ' | COM| <Rra>_x         | <Rra>_y         | <Rra>_z         |',
+     *  ' +==========================================================+'
 
          NUM = 0
 
@@ -205,14 +200,10 @@ C  /* Deck qm3_rra */
 
                  NUM = NUM + 1
 
-                 WRITE(LUPRI,'(1X,A,I3,A,F16.10,A,
-     &                         F16.10,A,F16.10,A)')
-     *           '| ', J,'|', WRK(KRAx + NUM - 1),' |',
-     *           WRK(KRAy + NUM - 1),' |',
-     *           WRK(KRAz + NUM - 1),' |'
-                 WRITE(LUPRI,'(1X,A)')
-     *           '+---------------------------------------------'
-     *           //'-------------+'
+                 WRITE(LUPRI,'(A,I3,A,3(F16.10,A)/A)')
+     *  ' | ', J,'|', WRK(KRAx + NUM - 1),' |',
+     *           WRK(KRAy + NUM - 1),' |', WRK(KRAz + NUM - 1),' |',
+     *  ' +----------------------------------------------------------+'
   217          CONTINUE
   216        CONTINUE
            END IF
@@ -246,9 +237,9 @@ C     the determination of the induced dipole moments
       END IF
 
       IF (FIXMOM) THEN
-        WRITE(LUPRI,*)'NO ITER. DETERM. OF MYIND FIXMOM=',FIXMOM
+        WRITE(LUPRI,'(/A)')'FIXMOM: NO ITER. DETERM. OF MYIND'
       ELSE IF (LOSPC) THEN
-        WRITE(LUPRI,*)'All MM models are SPC INDMOM not called'
+        WRITE(LUPRI,'(/A)')'All MM models are SPC, INDMOM not called'
       ELSE
         LOINDM = .FALSE.
         CALL INDMOM(EELEC,LOINDM,FFJ)
@@ -256,7 +247,7 @@ C     the determination of the induced dipole moments
 
       CALL QM3_OBAR(FFJ)
 
-      CALL CC_PUT31(LUMOM,'CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))
+      CALL CC_PUT31('CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
       CALL GPCLOSE(LUQM3E,'KEEP')
 
@@ -318,7 +309,7 @@ C  /* Deck qm3_ns */
               DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KNSAO),1)
               ENSEL     = ENSEL - DFTNS(L) 
 
-              IF (IQM3PR .GE. 4) THEN
+              IF (IQM3PR .GE. 21) THEN
                 WRITE (LUPRI,'(/A,I3,A)')
      *             ' N(',L,')_ao matrix: '
                 CALL OUTPAK(WRK(KNSAO),NBAST,1,LUPRI)
@@ -335,13 +326,11 @@ C-------------------
 C     Print section:
 C-------------------
 C
-      IF (IQM3PR .GT. 15) THEN
-        WRITE(LUPRI,'(//,A)')
+      IF (IQM3PR .GT. 3) THEN
+        WRITE(LUPRI,'(/A/A/A)')
+     *        ' +======================+',
+     *        ' |Site| <N_s>           |',
      *        ' +======================+'
-        WRITE(LUPRI,'(A)')
-     *        ' |Site| <N_s>           |'
-        WRITE(LUPRI,'(1X,A)')
-     *        '+======================+'
 
         LS = 0
 
@@ -352,15 +341,14 @@ C
 
                 LS = LS + 1
 
-                WRITE(LUPRI,'(1X,A,I3,A,F16.10,A)')
-     *                      '| ', LS,'|', DFTNS(LS),' |'
-                WRITE(LUPRI,'(1X,A)')
-     *                      '+----------------------+'
+                WRITE(LUPRI,'(A,I3,A,F16.10,A/A)')
+     *                      ' | ', LS,'|', DFTNS(LS),' |',
+     *                      ' +----------------------+'
   217         CONTINUE
   216       CONTINUE
           END IF
   215   CONTINUE
-        WRITE(LUPRI,'(//,A)')
+        WRITE(LUPRI,'()')
       END IF
 
       CALL QEXIT('QM3_NS')
@@ -415,22 +403,17 @@ C  /* Deck qm3_fmo */
 
       IF (.NOT. LOSPC) THEN  
 
-        CALL CC_GET31(LUMOM,'CC_RA',NCOMS,
+        CALL CC_GET31('CC_RA',NCOMS,
      *                 WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
-        CALL CC_GET31(LUENSA,'ENSAFILE',NCOMS,
+        CALL CC_GET31('ENSAFILE',NCOMS,
      *                 WRK(KENSAx),WRK(KENSAy),WRK(KENSAz))
 
-        IF (IQM3PR .GT. 15) THEN
-          WRITE(LUPRI,'(//,A)')
-     *          ' +============================================'
-     *        //'==============+'
-          WRITE(LUPRI,'(A)')
-     *          ' | COM| <Rra>_x         | <Rra>_y         |'
-     *        //' <Rra>_z         |'
-          WRITE(LUPRI,'(1X,A)')
-     *          '+============================================'
-     *        //'==============+'
+        IF (IQM3PR .GT. 5) THEN
+          WRITE(LUPRI,'(/A/A/A)')
+     *  ' +==========================================================+',
+     *  ' | COM| <Rra>_x         | <Rra>_y         | <Rra>_z         |',
+     *  ' +==========================================================+'
 
           NUM = 0
 
@@ -441,29 +424,19 @@ C  /* Deck qm3_fmo */
 
                   NUM = NUM + 1
 
-                  WRITE(LUPRI,'(1X,A,I3,A,F16.10,A,
-     &                          F16.10,A,F16.10,A)')
-     *            '| ', J,'|', WRK(KRAx + NUM - 1),' |',
-     *            WRK(KRAy + NUM - 1),' |',
-     *            WRK(KRAz + NUM - 1),' |'
-                  WRITE(LUPRI,'(1X,A)')
-     *            '+---------------------------------------------'
-     *            //'-------------+'
+                  WRITE(LUPRI,'(A,I3,A,F16.10,A,F16.10,A,F16.10,A/A)')
+     *  ' | ', J,'|', WRK(KRAx + NUM - 1),' |',
+     *              WRK(KRAy + NUM - 1),' |', WRK(KRAz + NUM - 1),' |',
+     *  '+----------------------------------------------------------+'
   217           CONTINUE
   216         CONTINUE
             END IF
   215     CONTINUE
-          WRITE(LUPRI,'(//,A)')
 
-          WRITE(LUPRI,'(//,A)')
-     *          ' +============================================'
-     *        //'==============+'
-          WRITE(LUPRI,'(A)')
-     *          ' | COM| ENSA_x          | ENSA_y          |'
-     *        //' ENSA_z          |'
-          WRITE(LUPRI,'(1X,A)')
-     *          '+============================================'
-     *        //'==============+'
+          WRITE(LUPRI,'(/A/A/A)')
+     *  ' +==========================================================+',
+     *  ' | COM| ENSA_x          | ENSA_y          | ENSA_z          |',
+     *  ' +==========================================================+'
 
           NUM = 0
 
@@ -474,19 +447,15 @@ C  /* Deck qm3_fmo */
 
               DO 416 J = NSYSBG(I), NSYSED(I)
                 DO 417 K=1,NUALIS(I)
-                  WRITE(LUPRI,'(1X,A,I3,A,F16.10,A,
-     &                          F16.10,A,F16.10,A)')
-     *            '| ', J,'|', WRK(KENSAx + NUM - 1),' |',
-     *            WRK(KENSAy + NUM - 1),' |',
-     *            WRK(KENSAz + NUM - 1),' |'
-                  WRITE(LUPRI,'(1X,A)')
-     *            '+---------------------------------------------'
-     *            //'-------------+'
+                  WRITE(LUPRI,'(A,I3,A,F16.10,A,
+     &                          F16.10,A,F16.10,A/A)')
+     *  ' | ', J,'|', WRK(KENSAx + NUM - 1),' |',
+     *           WRK(KENSAy + NUM - 1),' |', WRK(KENSAz + NUM - 1),' |',
+     *  ' +----------------------------------------------------------+'
   417           CONTINUE
   416         CONTINUE
             END IF
   415     CONTINUE
-          WRITE(LUPRI,'(//,A)')
         END IF
 
         CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
@@ -503,45 +472,39 @@ C  /* Deck qm3_fmo */
 
                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
 
-                IF (IQM3PR .GE. 15) THEN
+                IF (IQM3PR .GE. 21) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao x matrix:'
                   CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
                 END IF
   
                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
   
-                IF (IQM3PR .GE. 15) THEN
+                IF (IQM3PR .GE. 21) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao y matrix:'
                   CALL OUTPAK(WRK(KRRAOy),NBAST,1,LUPRI)
                 END IF
 
                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
   
-                IF (IQM3PR .GE. 15) THEN
+                IF (IQM3PR .GE. 21) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao z matrix:'
                   CALL OUTPAK(WRK(KRRAOz),NBAST,1,LUPRI)
                 END IF
 
                 IF (MDLWRD(I) .EQ. 'SPC_E01') THEN
   
-                  FACx =  - ALPIMM(I,K) *
-     &                    (WRK(KRAx + LM - 1)
+                  FACx =  - ALPIMM(I,K) * (WRK(KRAx + LM - 1)
      &                  + 0.5D0 * WRK(KENSAx + LM - 1))
-                  FACy =  - ALPIMM(I,K) *
-     &                    (WRK(KRAy + LM - 1)
+                  FACy =  - ALPIMM(I,K) * (WRK(KRAy + LM - 1)
      &                  + 0.5D0 * WRK(KENSAy + LM - 1))
-                  FACz =  - ALPIMM(I,K) *
-     &                    (WRK(KRAz + LM - 1)
+                  FACz =  - ALPIMM(I,K) * (WRK(KRAz + LM - 1)
      &                  + 0.5D0 * WRK(KENSAz + LM - 1))
 
-                  CALL DAXPY(NNBASX,FACx,WRK(KRRAOx),
-     *                     1,WRK(KTAO),1)
+                  CALL DAXPY(NNBASX,FACx,WRK(KRRAOx),1,WRK(KTAO),1)
   
-                  CALL DAXPY(NNBASX,FACy,WRK(KRRAOy),
-     *                     1,WRK(KTAO),1)
+                  CALL DAXPY(NNBASX,FACy,WRK(KRRAOy),1,WRK(KTAO),1)
  
-                  CALL DAXPY(NNBASX,FACz,WRK(KRRAOz),
-     *                     1,WRK(KTAO),1)
+                  CALL DAXPY(NNBASX,FACz,WRK(KRRAOz),1,WRK(KTAO),1)
                 END IF
   522         CONTINUE
   521       CONTINUE
@@ -579,7 +542,7 @@ C       We use RRAOx in this case for the pot.energy integrals
 
                 CALL READT(LUQM3P,NNBASX,WRK(KRRAOx))
 
-                IF (IQM3PR .GE. 4) THEN
+                IF (IQM3PR .GE. 21) THEN
                   WRITE (LUPRI,'(/A,I3,A)')
      *               ' N(',L,')_ao matrix: '
                   CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
@@ -666,10 +629,10 @@ C-------------------------------------
       EQM3T = 0.0D0
 
       IF (.NOT. LOSPC) THEN
-        CALL CC_GET31(LUEOBAR,'OBARFILE',NCOMS,
+        CALL CC_GET31('OBARFILE',NCOMS,
      *                WRK(KOMMSx),WRK(KOMMSy),WRK(KOMMSz))
 
-        CALL CC_GET31(LUMOM,'CC_RA',NCOMS,
+        CALL CC_GET31('CC_RA',NCOMS,
      *                WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
         KS = 0
@@ -740,41 +703,39 @@ C-----------------------------------------------
 C   Testing the energy contributions one by one:
 C-----------------------------------------------
 
-      IF (IQM3PR .GT. 15) THEN
-        WRITE(LUPRI,'(//,A)')
-        WRITE(LUPRI,'(/A)')
+      IF (IQM3PR .GT. 1) THEN
+        WRITE(LUPRI,'(//A/A/A)')
      *       ' +====================================='
      *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(1X,A)')
-     *       '|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
+     *      //'==================================+',
+
+     *       ' |<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
      *      //'The different energy contributions outlined'
-     *      //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|'
-        WRITE(LUPRI,'(A)')
+     *      //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|',
+
      *       ' +====================================='
      *      //'======================================'
      *      //'==================================+'
-        WRITE(LUPRI,'(1X,A)')
-     *       '| Evdw                | E-nuclear           |'
-     *      //' -Sum_s <N_s>        |'
-     *      //'| -alpha*Sum_a[<Rra> | O-tilde             |'
-        WRITE(LUPRI,'(1X,A)')
-     *       '| contribution        | contribution        |'
-     *      //'                     |'
-     *      //'*{<Rra>+OmmS}]       | contribution        |'
         WRITE(LUPRI,'(A)')
+     *       ' | Evdw                | E-nuclear           |'
+     *      //' -Sum_s <N_s>        |'
+     *      //' -alpha*Sum_a[    >  | O-tilde             |',
+
+     *       ' | contribution        | contribution        |'
+     *      //'                     |'
+     *      //'<Rra>*{<Rra>+OmmS}]  | contribution        |',
+
      *       ' +-------------------------------------'
      *      //'--------------------------------------'
      *      //'----------------------------------+'
-        WRITE(LUPRI,'(1X,A,F20.16,A,F20.16,A,F20.16,A,
+        WRITE(LUPRI,'(A,F20.16,A,F20.16,A,F20.16,A,
      &                F20.16,A,F20.16,A)')
-     *       '|',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
+     *       ' |',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
      *      OTILDE,' |'
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A/)')
      *       ' +====================================='
      *      //'======================================'
      *      //'==================================+'
-        WRITE(LUPRI,'(//,A)')
       END IF
 
       CALL QEXIT('QM3_ENERGY')
