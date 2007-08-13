@@ -254,9 +254,7 @@ C     ... skip this symmetry if no operators
 C
 C        DEFINE VARIABLES THAT DEPEND ON SYMMETRY
 C
-         CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     *               WRK,LWRK)
-C        CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+         CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 C SET VARIABLES IN SYMMETRY KSYMOP
 C
@@ -363,11 +361,9 @@ C     ... skip this symmetry if no operators
      *         ' - triplet property operator(s) of symmetry',KSYMOP
             END IF
 C
-C        DEFINE VARIABLES THAT DEPEND ON SYMMETRY
+C DEFINE VARIABLES THAT DEPEND ON SYMMETRY
 C
-            CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     *                  WRK,LWRK)
-C           CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+            CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 C SET VARIABLES IN SYMMETRY KSYMOP
 C
@@ -453,9 +449,9 @@ C     space allocation for reduced E(2) and reduced S(2)
       END IF
 C
       IF (LWRK1 .LT. 3*KZYVAR) THEN
-         WRITE (LUERR,9000) LWRK1,3*KZYVAR
-         CALL QTRACE(LUERR)
-         CALL QUIT('ERROR, INSUFFICIENT SPACE FOR QRPPVE')
+         WRITE (LUPRI,9000) LWRK1,3*KZYVAR
+         CALL QTRACE(LUPRI)
+         CALL QUIT('ERROR, INSUFFICIENT WORK MEMORY FOR QRPPVE')
       ENDIF
  9000    FORMAT(/' QRPPVE, work space too small for 3 (z,y)-vectors',
      *          /'         had:',I10,', need more than:',I10)
@@ -487,8 +483,8 @@ C
       END IF
       IF ( NSIM.EQ.0) THEN
          WRITE(LUPRI,'(/A,I5)')
-     *   ' QRPPVE: TOO LITTLE WORK SPACE, NSIM= ',NSIM
-         CALL QUIT(' QRPPVE: TOO LITTLE WORK SPACE')
+     *   ' QRPPVE: TOO LITTLE WORK MEMORY, NSIM= ',NSIM
+         CALL QUIT(' QRPPVE: TOO LITTLE WORK MEMORY')
       END IF
       KBVECS = KWRK1
       KWRK2  = KBVECS + NSIM*KZYVAR
@@ -619,9 +615,9 @@ C     ... 3*KZYVAR is an estimate of space needed in RSPCTL
       LNEEDB = 1 + 2*MAXRM
       NFRQMX = (LWRK - LNEEDA) / LNEEDB
       IF (NFRQMX .LT. MXFRQ) THEN
-         WRITE (LUERR,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
-         CALL QTRACE(LUERR)
-         CALL QUIT('QRLRVE: INSUFFICIENT SPACE TO '//
+         WRITE (LUPRI,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
+         CALL QTRACE(LUPRI)
+         CALL QUIT('QRLRVE: INSUFFICIENT WORK MEMORY TO '//
      &             'SOLVE LINEAR EQUATIONS ')
       ENDIF
  9100 FORMAT(/' QRLRVE, work space too small for 3 (z,y)-vectors',
@@ -2138,7 +2134,7 @@ C
      &              RESSOM(2,3,IC,ISYMC)
             ELSE
                WRITE(LUPRI,'(/A)') 
-     &              'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
+     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
             END IF
          END DO
          END DO
@@ -2237,7 +2233,7 @@ C
 *********************************************************************
             ELSE
                WRITE(LUPRI,'(/A)') 
-     &              'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
+     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
             END IF
          END DO
          END DO
@@ -2695,9 +2691,9 @@ C     ... 3*KZYVAR is an estimate of space needed in RSPCTL
       LNEEDB = 1 + 2*MAXRM
       NFRQMX = (LWRK - LNEEDA) / LNEEDB
       IF (NFRQMX .LT. MXFRQ) THEN
-         WRITE (LUERR,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
-         CALL QTRACE(LUERR)
-         CALL QUIT('QRTRVE: INSUFFICIENT SPACE TO '//
+         WRITE (LUPRI,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
+         CALL QTRACE(LUPRI)
+         CALL QUIT('QRTRVE: INSUFFICIENT WORK MEMORY TO '//
      &             'SOLVE LINEAR EQUATIONS ')
       ENDIF
  9100 FORMAT(/' QRTRVE, work space too small for 3 (z,y)-vectors',
