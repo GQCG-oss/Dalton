@@ -867,7 +867,8 @@ C
 C     CALL DSPSOL(N,NSIM,AP,B,KPIVOT,INFO)
 C
       IF (INFO .NE. 0) THEN
-         WRITE (LUPRI,'(/A,I5)') ' *** ERROR IN ORPRED.DSPSOL, INFO =',INFO
+         WRITE (LUPRI,'(/A,I5)')
+     &      ' *** ERROR IN ORPRED.DSPSOL, INFO =',INFO
          CALL QUIT('*** ERROR IN ORPREDO.DSPSOL')
       END IF
 C
