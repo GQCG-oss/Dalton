@@ -3231,7 +3231,6 @@ C
                   NNRC  = NRC(KBCH)
                   IPSTRT = IPRIM + 1
                   IPRIM  = IPRIM + NNUC
-                  IOSTRT = IORB + 1
                   IORB = IORB + NNRC
                   DO 700 L = 1,NNRC
                      JPRIM = 0
