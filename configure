@@ -860,7 +860,7 @@ case "$WHICH" in
 	  inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     cray)
-          cpp="-DSYS_CRAY -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
+          cpp="-DSYS_CRAY -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp $parop"
           fi
@@ -869,7 +869,7 @@ case "$WHICH" in
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
-          cpp="-DSYS_T90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
+          cpp="-DSYS_T90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp $parop"
           fi
@@ -878,7 +878,7 @@ case "$WHICH" in
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
-          cpp="-DSYS_T3D -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_T3D -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
           fi
