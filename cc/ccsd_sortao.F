@@ -108,13 +108,9 @@ C
         NALLBAS = NBAST 
       ENDIF
 C
-#if defined (SYS_CRAY)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NALLBAS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NALLBAS .LE. 255) THEN
          NIBUF = 1

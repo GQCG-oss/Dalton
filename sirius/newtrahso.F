@@ -241,13 +241,9 @@ C
 C
       LBUF = 600
       JBUF = 256
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1

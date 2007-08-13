@@ -502,7 +502,7 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -766,7 +766,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <maxorb.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -935,7 +935,7 @@ C
 #include <dummy.h>
 #include <iratdef.h>
 C
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -1324,7 +1324,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 C
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -1372,8 +1372,6 @@ CHJ-860802:  find MEMS = available space for SORT(*), ISORT(*)
       MEMS  = IRAT * LWORK / (1+IRAT)
       IF (MEMS .LT. MINMEM)
      *   CALL STOPIT('PSORG',' ',(IRAT+1)*MINMEM,(IRAT+1)*MEMS)
-      MEMS2 = IRAT*MEMS
-      MEMSB = IRAT2*MEMS
       LBUF  = MAXBUF + IRAT*MAXBUF + 1
 C
 C           *************************************
@@ -1563,7 +1561,7 @@ C
 #include <2gbdef.h>
       CHARACTER*80 FNNAME, FNNM2
 #endif
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -2010,7 +2008,7 @@ C  /* Deck psrset */
 #include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -2208,7 +2206,7 @@ C  /* Deck pvcmp */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)

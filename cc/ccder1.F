@@ -177,13 +177,9 @@ C
 *----------------------------------------------------------------------*
 *     set buffer information.
 *----------------------------------------------------------------------*
-#if defined (SYS_CRAY)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBAST .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBAST .LE. 255) THEN
          NIBUF = 1

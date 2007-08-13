@@ -284,7 +284,7 @@ C
       IF (MSYM .NE. NSYM) THEN
          CALL QUIT('SIRFCK2: NSYM from AOxxxINT .ne. NSYM in common')
       END IF
-#if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (SYS_T90)
+#if !defined (VAR_INT64)
       IF (NBITS .NE. NIBUF*8) THEN
          CALL QUIT('SIRFCK2: NBITS from AOxxxINT .ne. NIBUF*8')
       END IF

@@ -206,7 +206,7 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort ifc efc pgf77 g77 gfortran'
+              complist='ifort ifc efc pgf77 gfortran g77'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='xlf g77'
@@ -860,7 +860,7 @@ case "$WHICH" in
 	  inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     cray)
-          cpp="-DSYS_CRAY -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
+          cpp="-DSYS_CRAY -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp $parop"
           fi
@@ -869,7 +869,7 @@ case "$WHICH" in
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
-          cpp="-DSYS_T90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
+          cpp="-DSYS_T90 -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp $parop"
           fi
@@ -878,7 +878,7 @@ case "$WHICH" in
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
-          cpp="-DSYS_T3D -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_T3D -DVAR_INT64 -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
           fi
@@ -888,7 +888,7 @@ case "$WHICH" in
           def='t3d.x'
           LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
     nec)
-          cpp="-DSYS_NEC D'INSTALL_WRKMEM=$memsiz' D'INSTALL_BASDIR=\"$basdir\"' D'INSTALL_MMWORK=$incoresiz' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
+          cpp="-DSYS_NEC DVAR_INT64 D'INSTALL_WRKMEM=$memsiz' D'INSTALL_BASDIR=\"$basdir\"' D'INSTALL_MMWORK=$incoresiz' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
           if [ "$mesp" = "dummy" ]; then
              cpp="-cpp $cpp"
           else
@@ -953,7 +953,7 @@ case "$WHICH" in
           copt=${copt}" -AC99"
           cpp=${cpp}${f90yes};;
     linux-alpha)
-          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
 	  if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
  	      set_def $mesp
@@ -1150,6 +1150,7 @@ ARCH        = $WHICH
 CPPFLAGS      = $cpp
 F77           = $F77
 CC            = $CC
+LOADER        = $F77
 RM            = rm -f
 FFLAGS        = $opt
 SAFEFFLAGS    = $safe_opt

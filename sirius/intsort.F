@@ -36,7 +36,6 @@ C
 C     FILE : intsort.F
 C
 #define VAR_AOCANORDER
-#define VAR_STAR2
 #ifdef OLD_REV_LOG
 !===========================================================================
 !961213-hjaaj
@@ -178,7 +177,7 @@ C
      &  /10X,'Author: Bjoern Roos',
      &  /10X,'Revised by hjaaj for Sirius release Jan 1989/April 1994')
 C
-      IF (IRAT .NE. 2 .OR. IRAT2 .NE. 4) THEN
+      IF (IRAT .NE. 2 ) THEN
          NWARN = NWARN + 1
          WRITE(LUPRI,'(/,3(/A))') 'WARNING-WARNING-WARNING'
      *  ,' This version of INTSORT only tested on computers with'
@@ -499,18 +498,11 @@ C     WRITE(LUPRI,'(Z8,2Z16)') I,VALUE,XLABEL
 C
       IF (NIBUF .EQ. 1) THEN
          ILABEL = IINT(IIND1 + I)
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-         IF (NBAST .LE. 255) THEN
-            NP =IBTAND(IBTSHR(ILABEL,24),IBT08)
-            NQ =IBTAND(IBTSHR(ILABEL,16),IBT08)
-            NR =IBTAND(IBTSHR(ILABEL, 8),IBT08)
-            NS =IBTAND(       ILABEL,    IBT08) 
-         ELSE
-            NP =IBTAND(IBTSHR(ILABEL,48),IBT16)
-            NQ =IBTAND(IBTSHR(ILABEL,32),IBT16)
-            NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
-            NS =IBTAND(       ILABEL,    IBT16) 
-         END IF
+#if defined (VAR_INT64)
+         NP =IBTAND(IBTSHR(ILABEL,48),IBT16)
+         NQ =IBTAND(IBTSHR(ILABEL,32),IBT16)
+         NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
+         NS =IBTAND(       ILABEL,    IBT16) 
 #else
          NP =IBTAND(IBTSHR(ILABEL,24),IBT08)
          NQ =IBTAND(IBTSHR(ILABEL,16),IBT08)
