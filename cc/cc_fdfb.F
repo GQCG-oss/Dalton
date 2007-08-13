@@ -57,6 +57,7 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <leinf.h>
+#include <ccinftap.h>
 #include <dummy.h>
 C
 C------------------------------------------------------------
