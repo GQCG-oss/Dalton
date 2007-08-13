@@ -1088,8 +1088,8 @@ C
                ELSE
                   TXT  = 'cartes'
                END IF
-               IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,
-     &                                 NDCOOR,NTIME,IPRINT)
+               IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,
+     &                                 NCOOR,NDCOOR,NTIME,IPRINT)
             END IF
          ELSE
 C
