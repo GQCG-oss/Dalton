@@ -97,8 +97,10 @@ C
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
+#ifdef FIXME
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK2 = z'3FFFFFFF')
+#endif
 
 C
 C---------------------------------------------------------------
@@ -131,14 +133,14 @@ C
 C
          R8WORD      = BUFFER(I)
 C
-         ISIGN       = IAND(I4WORD(IW1),MASK1)
+         ISIGN       = IAND( I4WORD(IW1),MASK1)
          I4WORD(IW1) = ISHFT(I4WORD(IW1),4)
-         I4WORD(IW1) = IAND(I4WORD(IW1),MASK2)
-         I4WORD(IW1) = IOR( I4WORD(IW1),ISIGN)
+         I4WORD(IW1) = IAND( I4WORD(IW1),MASK2)
+         I4WORD(IW1) = IOR(  I4WORD(IW1),ISIGN)
 C
          HBITS       = ISHFT(I4WORD(IW2),-28)
          I4WORD(IW2) = ISHFT(I4WORD(IW2),4)
-         I4WORD(IW1) = IOR(I4WORD(IW1),HBITS)
+         I4WORD(IW1) = IOR(  I4WORD(IW1),HBITS)
 C
          LTAB(IT1)   = L1BYTE(IB1)
 C
@@ -233,10 +235,12 @@ C
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
+#ifdef FIXME
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK3 = z'3C000000')
       PARAMETER (MASK4 = z'C3FFFFFF')
       PARAMETER (MASK5 = z'0000000F')
+#endif
 C
 C---------------------------------------------------------------
 C     if packing disabled, copy input data to output array
@@ -361,10 +365,11 @@ C
 #elif defined(BIGENDIAN)
       PARAMETER (IW1 = 1, IW2 = 2) 
 #else
-# define NOPACKING
+#define NOPACKING
 #endif
 C
 #if defined (LITTLEENDIAN) || defined(BIGENDIAN)
+#ifdef FIXME
       PARAMETER (JMASK = z'3C000000')
 C
       DATA IMASK / z'00000000', z'000FF000',
@@ -374,6 +379,9 @@ C
      &             z'000FF000', z'00000000',
      &             z'00000FF0', z'00000000',
      &             z'0000000F', z'00000000'/
+#else
+# define NOPACKING
+#endif
 #else
 # define NOPACKING
 #endif
