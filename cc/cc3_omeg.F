@@ -56,7 +56,6 @@ C         Isyres = isymt1*isymt2*isymop
 C
 #include <implicit.h>
 C
-      LOGICAL   FIRST,SECON
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2TP(*),
      *          FOCK(*),XLAMDP(*),XLAMDH(*),WORK(LWORK)
 C
@@ -72,8 +71,9 @@ C
       CHARACTER*(*) FN3SRT, FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FN3VI2
       CHARACTER*1 CDUMMY
 C
-      SAVE FIRST
-      DATA FIRST /.TRUE./
+      LOGICAL  FIRST,SECON
+      SAVE     FIRST,SECON
+      DATA     FIRST,SECON /.TRUE.,.FALSE./
 C
       CALL QENTER('CC3_OMEG')
 C
@@ -121,7 +121,8 @@ C
       TISORT = 0.0D0
       TISMAT = 0.0D0
       TIQMAT = 0.0D0
-      TICONT = 0.0D0
+      TICONO = 0.0D0
+      TICONV = 0.0D0
       TIOME1 = 0.0D0
 C
 C---------------------------------------------------------
