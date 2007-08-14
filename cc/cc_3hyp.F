@@ -305,7 +305,7 @@ c /* deck CC_3HYP */
       IOPT = 5
       CALL CC_FMATRIX(WORK(K1FTRAN),N1FTRAN,'L1 ','R2 ',IOPT,'R2 ',
      &                WORK(K1FDOTS),WORK(K1FCONS),MXVEC2,
-     &                WORK(KEND0), LEND0, IOPT)
+     &                WORK(KEND0), LEND0)
 
       IF (L_USE_CHI3) CALL DSCAL(MX1FDOTS,-1.0d0,WORK(K1FCONS),1)
 
@@ -313,7 +313,7 @@ c /* deck CC_3HYP */
         IOPT = 5
         CALL CC_FMATRIX(WORK(K2FTRAN),N2FTRAN,'L2 ','R1 ',IOPT,'R2 ',
      &                  WORK(K2FDOTS),WORK(K2FCONS),MXVEC2,
-     &                  WORK(KEND0), LEND0, IOPT )
+     &                  WORK(KEND0), LEND0)
       END IF
 
 *---------------------------------------------------------------------*

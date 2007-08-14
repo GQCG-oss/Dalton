@@ -78,12 +78,12 @@ c /* deck ccexlr */
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL TIM0, TIM1, TIMG, TIMF, TIMB
+      REAL TIM0, TIM1, TIMG, TIMF, TIMB, SECOND
       REAL TIMFA, TIMAA, TIMEA, TIMO
       REAL ZERO
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION TIM0, TIM1, TIMG, TIMF, TIMB
+      DOUBLE PRECISION TIM0, TIM1, TIMG, TIMF, TIMB, SECOND
       DOUBLE PRECISION TIMFA, TIMAA, TIMEA, TIMO
       DOUBLE PRECISION ZERO
 #endif
@@ -221,12 +221,12 @@ c /* deck ccexlr */
         IOPT = 5
         CALL CC_FMATRIX(WORK(KFTRAN),NFTRAN,'LE ','ER1',IOPT,'R1 ',
      &                  WORK(KFDOTS),WORK(KFCONS),MXVEC,
-     &                  WORK(KEND0), LEND0, IOPT )
+     &                  WORK(KEND0), LEND0)
       ELSE
         IOPT = 5
         CALL CC_FMATRIX(WORK(KFTRAN),NFTRAN,'EL1','RE ',IOPT,'R1 ',
      &                  WORK(KFDOTS),WORK(KFCONS),MXVEC,
-     &                  WORK(KEND0), LEND0, IOPT )
+     &                  WORK(KEND0), LEND0)
       END IF
 
       TIMF = SECOND() - TIM1
