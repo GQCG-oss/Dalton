@@ -829,7 +829,6 @@ C
                   ELSE IF (CCS) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
      *                      + NFROIJ(ISYMPQ)*(G - 1)
-                     KLAMDH = KEND3
                   ENDIF
 C
 C----------------------------------------------------------
@@ -847,6 +846,7 @@ C
                      KFD2II = KFD2IA + NT1FRO(ISYMPQ)
                      KEND3  = KFD2II + NFROFR(ISYMPQ)
                      LWRK3  = LWORK  - KEND3
+                     IF (CCS) KLAMDH = KEND3
 C
                      IF (LWRK3 .LT. 0) THEN
                         WRITE(LUPRI,*) 'Available:', LWORK
