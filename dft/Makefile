@@ -112,7 +112,7 @@ Makefile.depend depend: *.h ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 libdft.a: $(OBJS) Makefile
-	-rm $@
+	-rm -f $@
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 
