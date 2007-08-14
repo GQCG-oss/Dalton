@@ -14342,7 +14342,12 @@ c
 *
 *           fl( a + b ) .gt. a.
 *
-         B = 1
+C HJAaJ 10-Aug-2007: COMPILER BUG WORKAROUND:
+C HJAaJ 10-Aug-2007: B = 1 changed to B = 2 because of bug in gfortran4.1 compiler
+C
+Corig    B = 1
+         B = 2
+C
          C = DLAMC3( A, B )
 *
 *+       WHILE( C.EQ.A )LOOP
