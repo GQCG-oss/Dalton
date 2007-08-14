@@ -742,7 +742,7 @@ c    &                    WORK(KENDF1),LENDF1)
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
 
-        CALL WCLOSE2(LUDMAT,FILDMA,IERROR)
+        CALL WCLOSE2(LUDMAT,FILDMA,'KEEP')
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4 .OR. IOPTRES.EQ.5) THEN
         CONTINUE
