@@ -724,10 +724,12 @@ C
      &                 MODELW,DUMMY,DUMMY,WORK(KGAMMAR12),
      &                 WORK(KEND0),LEND0)
        END IF
+#if defined CC_AARHUS
        IF (CCSDT) THEN
          CALL CC_WRRSP(FILFA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &             WORK(KGAMMA1EFF),WORK(KGAMMA2EFF),WORK(KEND0),LEND0)
        END IF
+#endif
       ELSE IF (IOPTRES.EQ.4) THEN
        IFILE  = IFATRAN(4,ITRAN)
        IF (ILSTSYM(FILFA,IFILE).NE.ISYRES) THEN
@@ -740,10 +742,12 @@ C
      &                 MODELW,DUMMY,DUMMY,WORK(KGAMMAR12),
      &                 WORK(KEND0),LEND0)
        END IF
+#if defined CC_AARHUS
        IF (CCSDT) THEN
         CALL CC_WARSP(FILFA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &             WORK(KGAMMA1EFF),WORK(KGAMMA2EFF),WORK(KEND0),LEND0)
        END IF
+#endif
       ELSE IF (IOPTRES.EQ.5) THEN
        IF (LOCDBG) THEN
          IVEC = 1
