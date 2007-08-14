@@ -125,6 +125,10 @@ c/* Deck CC_XETST */
 *  number of simultaneous transformations:
       NXETRAN = 1
 *---------------------------------------------------------------------*
+*    some initialization
+      LORX1 = .FALSE.
+      LORX2 = .FALSE.
+*---------------------------------------------------------------------*
 *  test 1: use zeroth-order Hamiltonian as perturbation. this gives
 *          a xi vector which is 5 x vector function (omega) and a
 *          a eta vector which is 5 x (eta(0) + zeta(0) A). if the
@@ -683,6 +687,7 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <inftap.h>
+#include <ccinftap.h>
 #include <leinf.h>
 #include <ccfield.h>
 C
