@@ -343,6 +343,7 @@ c /* deck cc_fbta1 */
 #include <ccr1rsp.h>
 #include <chrxyz.h>
 #include <r12int.h>
+#include <cbieri.h>                ! for IPRERI
 
 * local parameters:
       LOGICAL LOCDBG
@@ -483,7 +484,7 @@ cs integer arrays addresses
       INTEGER MT2BGD, MT2ORT, MT2BCD, MT2AM, MT2SQ, M2BST, MEMAT1,MT1AO
       INTEGER MDISAO, MGAMMA, MSCRATCH0, MSCRATCH1, MWORK, NBATCH,MT1AM
       INTEGER ISYM, IATOM, ITRAN, IOPERB, IBATCH, IOPT, IFIELD, ILLL
-      INTEGER ISYHOP, ISYRES, ISYMD1, IPRERI, IVEC, ISYIJK, ISYMD, IOFF
+      INTEGER ISYHOP, ISYRES, ISYMD1, IVEC, ISYIJK, ISYMD, IOFF
       INTEGER IDR_OLD, IOP_OLD, IDL_OLD, ID_RES
       INTEGER NTOSYM, NTOT, NUMDIS, IDEL2, IDEL
       INTEGER ISY0DIS, ISY1DIS, ISYDEL, ISYMG, NUMG,ICOOR, ICORSY
@@ -1153,7 +1154,7 @@ C         --------------------------------------------------------------
             IORDER = 1 ! might need some generalization later...
 
             CALL CC_GET_RMAT(WORK(KRMAT),IOPERB,IORDER,ISYHOP,
-     &                                           WORK(KEND2),LWRK2)
+     &                       WORK(KEND2),LWRK2)
             IOPT = 1
             CALL CC_LAMBDAQ(WORK(KLAMDPQ(ITRAN)),WORK(KLAMDHQ(ITRAN)),
      &                      WORK(KCMOPQ(ITRAN)), WORK(KCMOHQ(ITRAN)),
@@ -1531,16 +1532,17 @@ C            WRITE(LUPRI,*) 'returned from CCETAINT1...'
          IF (DIRECT) THEN
             NTOSYM = 1
             IF (HERDIR) THEN
-              CALL HERDI1(WORK(KEND2),LWRK,IPRERI)
+              CALL HERDI1(WORK(KEND2),LWRK2,IPRERI)
             ELSE
               KCCFB1 = KEND2
               KINDXB = KCCFB1 + MXPRIM*MXCONT
               KEND   = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
               LWRK   = LWORK  - KEND
+              KEND2  = KEND
               CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      *                    KODPP1,KODPP2,KRDPP1,KRDPP2,
      *                    KFREE,LFREE,KEND,WORK(KCCFB1),WORK(KINDXB),
-     *                    WORK(KEND),LWRK,IPRERI)
+     *                    WORK(KEND2),LWRK,IPRERI)
             END IF
             KEND2 = KFREE
             LWRK2 = LFREE
@@ -2231,7 +2233,8 @@ c          WRITE (LUPRI,*) 'Norm of saved RQAIM       is ',XNORM
              CALL GETWA2(LU0IJKL,FN0IJKL,WORK(KOFF),IOFF,LENIJK)
              IF (LOCDBG) THEN
                XNORM = DNRM2(LENIJK,WORK(KOFF),1)
-               WRITE (LUPRI,*) 'CC_FBTA> ISYMD:',ISYMD, 'Norm XIJKdel0:',XNORM
+               WRITE (LUPRI,*)
+     &            'CC_FBTA> ISYMD:',ISYMD, ' Norm XIJKdel0:',XNORM
              END IF
            END IF
            KOFF = KOFF + LENIJK
@@ -2443,8 +2446,9 @@ c          WRITE (LUPRI,*) 'Norm of saved RQAIM       is ',XNORM
             END IF
             KRES1 = IFBTRAN(4,ITRAN)
             XNORM = DDOT(LEN, WORK(KRES1),1, WORK(KRES1),1)
-            WRITE (LUPRI,*) 'Read FB matrix transformation nb. ',NFBTRAN
-            WRITE (LUPRI,*) 'Adress,length,NORM:',IFBTRAN(4,NFBTRAN),LEN,XNORM
+            WRITE (LUPRI,*) 'Read FB matrix transformation nb. ',ITRAN
+            WRITE (LUPRI,*)
+     &         'Adress,length,NORM:',IFBTRAN(4,ITRAN),LEN,XNORM
           END DO
           CALL FLSHFO(LUPRI)
         END IF
