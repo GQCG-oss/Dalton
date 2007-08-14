@@ -438,7 +438,8 @@ c****************************************************************
                npos(jnu)=ndum
             endif
          enddo
- 1    enddo
+ 1    continue
+      enddo
       return
       end
 c----------------------------------------------------------
@@ -529,11 +530,11 @@ c
        npos=1
        kpos=0
        kposold=0
-       do 111 ijk=1,k-1
+       do ijk=1,k-1
           kpos=iel(ijk)-ijk-kposold
           if (kpos.eq.0) goto 111
           nogg=k-ijk
-          do 112 kl=ijk+kposold,iel(ijk)-1
+          do kl=ijk+kposold,iel(ijk)-1
              ncasel=n-kl
              ndistr=1
              do l=nogg+1,ncasel
@@ -543,9 +544,10 @@ c
                 ndistr=ndistr/l
              enddo
              npos=npos+ndistr
- 112      enddo
+          enddo
           kposold=kposold+kpos
- 111   enddo
+ 111   continue
+       enddo
        npos=npos+iel(k)-iel(k-1)-1
        
        

@@ -1274,7 +1274,7 @@ c     nhitsd=0
          nec=ne(minit)
          ndm=nd(minit)
          nfin=0
-         do  ncap=1,mcap      !do 2
+         do ncap = 1,mcap      !do 2
             ninit=nfin+1
             nfin=ninit+icomp(ninit)-1
             nedif=abs(ne(minit)-ne(ninit))
@@ -1905,10 +1905,14 @@ c     contributo a daabb
      $                       ,amat,nasht,m,n)
                      endif
                   endif
- 4             enddo
- 3          enddo
- 2       enddo
- 1    enddo
+ 4             continue
+               enddo
+ 3          continue
+            enddo
+ 2       continue
+         enddo
+ 1    continue
+      enddo
 c---renzo debug
       write(lupri,*)
       write(lupri,*)'number of single    differences=',nsings
@@ -2335,10 +2339,14 @@ c     casi aaa, bbb, aab, bba
                      endif
 c---- renzo            if(abs(c(n)).lt.thr)goto 2
                   endif
- 4          enddo
- 3          enddo
- 2       enddo
- 1    enddo
+ 4          continue
+            enddo
+ 3          continue
+            enddo
+ 2       continue
+         enddo
+ 1    continue
+      enddo
 c--costruzione matrice ro3 spinless
       do i=1,nasht
          do j=1,nasht
@@ -3573,7 +3581,8 @@ c-------------------
                         enddo
                      enddo
                   enddo
- 1             enddo
+ 1             continue
+               enddo
             enddo
          enddo
       enddo
@@ -3626,7 +3635,8 @@ c-------------------
                         enddo
                      enddo
                   enddo
- 2             enddo
+ 2             continue
+               enddo
             enddo
          enddo
       enddo
@@ -3967,7 +3977,8 @@ c-------------------
                               enddo
                            enddo
                         enddo
-   1                 enddo
+   1                 continue
+                     enddo
                   enddo
                enddo
             enddo
