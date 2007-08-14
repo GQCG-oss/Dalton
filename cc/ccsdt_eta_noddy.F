@@ -105,8 +105,8 @@ C
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
-      KDUM = 1
       CALL QENTER('CCSDT_ETA_NODDY')
+      KDUM = 1
 
       IF (DIRECT) CALL QUIT('CCSDT_ETA_NODDY: DIRECT NOT IMPLEMENTED')
 

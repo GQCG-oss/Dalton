@@ -236,9 +236,9 @@ C       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,HALF,WORK(KT3AMPXY),1)
 *---------------------------------------------------------------------*
 * print debug output, close files and return:
 *---------------------------------------------------------------------*
-      CALL WCLOSE2(LUDELD,FNDELD,64,0)
-      CALL WCLOSE2(LUCKJD,FNCKJD,64,0)
-      CALL WCLOSE2(LUDKBC,FNDKBC,64,0)
+      CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
+      CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+      CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
 
       RETURN
       END

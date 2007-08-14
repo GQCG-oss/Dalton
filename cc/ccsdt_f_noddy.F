@@ -190,6 +190,7 @@ C
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -262,6 +263,7 @@ C
 
       IF      (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ' .OR.
      &         LISTB(1:3).EQ.'RC '                              ) THEN
+        KDUM = KEND2
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
@@ -390,6 +392,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND3),LWRK3,
      *                  WORK(KRECNR),DIRECT)
  
@@ -482,6 +486,7 @@ C           ----------------------------------
 
       ! read T^0 doubles amplitudes from file and square up 
       IOPT   = 2
+      KDUM = KEND3
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND3))
       CALL CC_T2SQ(WORK(KEND3),WORK(KT02AM),ISYM0)
 
@@ -602,6 +607,7 @@ c       -------------------------------------------
      *    DDOT(NORBT*NORBT,WORK(KFLDB1),1,WORK(KFLDB1),1)
 
         L2INCL = .FALSE.
+        KDUM = KEND3
         CALL CCSDT_E3AM(WORK(KF3AM),WORK(KDUM),WORK(KL3AM),
      &                  WORK(KFLDB1),L2INCL)
       END IF
@@ -694,6 +700,7 @@ c       -------------------------------------------
 
         ! read T^0 doubles amplitudes from file and square up 
         IOPT   = 2
+        KDUM = KEND3
         Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND3))
         CALL CC_T2SQ(WORK(KEND3),WORK(KT02AM),ISYM0)
 
@@ -1317,6 +1324,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
      &                  WORK(KRECNR),DIRECT)
  
@@ -1639,6 +1648,7 @@ c       -------------------------------
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -1688,6 +1698,7 @@ c       -------------------------------
 
       IF (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ' .OR.
      &    LISTB(1:3).EQ.'RC '                               ) THEN
+        KDUM = KEND2
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),

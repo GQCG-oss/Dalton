@@ -179,6 +179,7 @@ C
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -260,6 +261,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
      *                  WORK(KRECNR),DIRECT)
  
@@ -408,6 +411,7 @@ C           ----------------------------------------------
 
       ! read T^0 doubles amplitudes from file and square up 
       IOPT   = 2
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND1))
       CALL CC_T2SQ(WORK(KEND1),WORK(KT2AM),ISYM0)
 

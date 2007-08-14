@@ -258,6 +258,7 @@ C
       IF (LISTA(1:3).EQ.'R1 ' .or. LISTA(1:3).EQ.'RE ' .or.
      &    LISTA(1:3).EQ.'RC '                              ) THEN
 
+        KDUM = KEND1
         CALL CCSDT_T31_NODDY(WORK(KTA3AM),LISTA,IDLSTA,FREQA,.FALSE.,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
@@ -307,6 +308,7 @@ C
       IF (LISTB(1:3).EQ.'R1 ' .or. LISTB(1:3).EQ.'RE ' .or.
      &    LISTB(1:3).EQ.'RC '                              ) THEN
 
+        KDUM = KEND1
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,.FALSE.,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT1T0),
@@ -531,6 +533,7 @@ C    &                       WORK(KEND1),LWRK1)
 
       ! add <nu_3|[H^AB,T^0_2]|HF>
       IOPT = 2
+      KDUM = KEND1
       CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND1))
       CALL CC_T2SQ(WORK(KEND1),WORK(KT2AM0),ISYM0)
 
@@ -543,6 +546,7 @@ C    &                       WORK(KEND1),LWRK1)
       ! add <nu_3|[H^A,T^B_2]|HF>
       ISYMB = ILSTSYM(LISTB,IDLSTB)
       IOPT  = 2
+      KDUM = KEND1
       CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
      &              WORK(KDUM),WORK(KEND1))
       CALL CCLR_DIASCL(WORK(KEND1),TWO,ISYMB) 
@@ -556,6 +560,7 @@ C    &                       WORK(KEND1),LWRK1)
       ! add <nu_3|[H^B,T^A_2]|HF>
       ISYMA = ILSTSYM(LISTA,IDLSTA)
       IOPT  = 2
+      KDUM = KEND1
       CALL CC_RDRSP(LISTA,IDLSTA,ISYMA,IOPT,MODEL,
      &              WORK(KDUM),WORK(KEND1))
       CALL CCLR_DIASCL(WORK(KEND1),TWO,ISYMA) 

@@ -163,6 +163,7 @@ C
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -328,6 +329,7 @@ C     ---------------------------------------------------
 C       -----------------------------------------
 C       calculate first-order triples amplitudes:
 C       -----------------------------------------
+        KDUM = KEND2
         CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTC,IDLSTC,FREQC,.FALSE.,
      &                       .FALSE.,WORK(KINT1S),WORK(KINT2S),
      &                       .FALSE.,WORK(KDUM),WORK(KDUM),

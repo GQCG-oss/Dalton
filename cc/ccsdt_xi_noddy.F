@@ -1394,6 +1394,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
      *                  WORK(KRECNR),DIRECT)
  
