@@ -147,7 +147,7 @@ C
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         WRITE(LUPRI,*) 'CC_DEN: Available:', LWORK, 'Needed:', KEND1
          CALL QUIT('Insufficient memory for initial allocation '//
      &             'in CC_DEN')
       ENDIF
@@ -259,7 +259,7 @@ C
       ENDIF
 C
       IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         WRITE(LUPRI,*) 'CC_DEN: Available:', LWORK, 'Needed:', KEND1
          CALL QUIT('Insufficient memory for allocation 1 CC_DEN')
       ENDIF
 C
@@ -319,11 +319,11 @@ C        finite field.
 C---------------------------------------------------------
 C
          DO 13 IF = 1, NFIELD
-            DTIME  = SECOND()
+c           DTIME  = SECOND()
             FF = EFIELD(IF)
             CALL CC_ONEP(WORK(KONINT),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
-            DTIME  = DTIME - SECOND()
-            TIMFCK = TIMFCK + DTIME
+c           DTIME  = DTIME - SECOND()
+c           TIMFCK = TIMFCK + DTIME
  13      CONTINUE
 C
 C--------------------------------------------------
@@ -341,9 +341,8 @@ C
 C
             DO 10 ISYM = 1,NSYM
 C
-               WRITE(LUPRI,*) ' '
                WRITE(LUPRI,333) 'Symmetry block number:', ISYM
-  333          FORMAT(3X,A22,2X,I1)
+  333          FORMAT(/3X,A22,2X,I1)
 C
                KOFFIJ = KINTIJ + IMATIJ(ISYM,ISYM)
                KOFFAI = KINTAI + IT1AM(ISYM,ISYM)
@@ -1310,8 +1309,8 @@ C------------------------------
 C
       IF ((FROIMP) .AND. (IOPT .EQ. 1)) THEN
 C
-         CALL WCLOSE2(LUN1,NAME1,IERR1)
-         CALL WCLOSE2(LUN2,NAME2,IERR2)
+         CALL WCLOSE2(LUN1,NAME1,'KEEP')
+         CALL WCLOSE2(LUN2,NAME2,'KEEP')
       ENDIF
 C
 C-----------------------
@@ -1327,7 +1326,7 @@ C
          WRITE (LUPRI,*) 'Total time used in CC_DEN:', TIMTOT
       ENDIF
       IF (IPRINT .GT. 9) THEN
-         WRITE (LUPRI,*) 'Time used for setting up 2 e- density:', TIMDEN
+         WRITE (LUPRI,*) 'Time used for setting up 2 e- density:',TIMDEN
          WRITE (LUPRI,*) 'Time used for contraction with integrals:',
      &        TIMRES
          WRITE (LUPRI,*) 'Time used for reading 2 e- AO-integrals:',
