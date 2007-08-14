@@ -260,7 +260,7 @@ c/* Deck CC_HMAT */
 *---------------------------------------------------------------------*
 * calculate H matrix transformation (for CCS the result is zero!):
 *---------------------------------------------------------------------*
-        IF (.NOT. CCS) THEN
+       IF (.NOT. CCS) THEN
 
 *---------------------------------------------------------------------*
 * initialize pointer for work space & read single parts of the vectors
@@ -344,7 +344,7 @@ c/* Deck CC_HMAT */
      &               WORK(KEPSI1),  ISYRES, !out: Epsilon result vector
      &               WORK(KEND1),   LEND1  )!wrk: work space    
 
-        END IF ! (.NOT. CCS) 
+       END IF ! (.NOT. CCS) 
 
 *---------------------------------------------------------------------*
 * add CC3 contributions:
@@ -382,6 +382,9 @@ c/* Deck CC_HMAT */
           END IF
 
 #endif
+        ELSE
+          KEPSI2 = KSTART
+C         ! to not get undefined address in calls below /hjaaj Aug 07
         END IF
 *=====================================================================*
 * store result vectors:
