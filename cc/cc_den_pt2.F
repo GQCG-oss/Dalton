@@ -555,7 +555,7 @@ C
          WRITE (LUPRI,*) 'Total time used in CC_DEN_PT2:', TIMTOT
       ENDIF
       IF (IPRINT .GT. 9) THEN
-         WRITE (LUPRI,*) 'Time used for setting up 2 e- density:', TIMDEN
+         WRITE (LUPRI,*) 'Time used for setting up 2 e- density:',TIMDEN
          WRITE (LUPRI,*) 'Time used for contraction with integrals:',
      &        TIMRES
          WRITE (LUPRI,*) 'Time used for reading 2 e- AO-integrals:',

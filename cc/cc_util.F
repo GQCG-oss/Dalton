@@ -2702,12 +2702,12 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
       REAL ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO, YCA
       REAL WORK(*), CTR2(*), T2AM(*), YINT(*)
       REAL TIMET, TIMIO, TIMZWV, TIMTAM, DTIME, TIMTI
-      REAL TIMZET,TIMSCL
+      REAL TIMZET,TIMSCL, SECOND
 #else
       DOUBLE PRECISION ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO, YCA
       DOUBLE PRECISION WORK(*), CTR2(*), T2AM(*), YINT(*)
       DOUBLE PRECISION TIMET,TIMIO,TIMTI,TIMZWV,TIMTAM,DTIME
-      DOUBLE PRECISION TIMZET,TIMSCL
+      DOUBLE PRECISION TIMZET,TIMSCL, SECOND
 #endif
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
@@ -3390,12 +3390,12 @@ C
       REAL ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO
       REAL WORK(*), CTR2(*), T2AM(*), YINT(*)
       REAL TIMET, TIMIO, TIMZWV, TIMTAM, DTIME, TIMTI
-      REAL TIMZET,TIMSCL
+      REAL TIMZET,TIMSCL, SECOND
 #else
       DOUBLE PRECISION ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO
       DOUBLE PRECISION WORK(*), CTR2(*), T2AM(*), YINT(*)
       DOUBLE PRECISION TIMET,TIMIO,TIMTI,TIMZWV,TIMTAM,DTIME
-      DOUBLE PRECISION TIMZET,TIMSCL
+      DOUBLE PRECISION TIMZET,TIMSCL, SECOND
 #endif
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
@@ -4413,8 +4413,8 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 180
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
@@ -4537,8 +4537,8 @@ C                             NAIBJ = IT2AM(ISYALI,ISYBEJ)
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 182
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            NAB  = KSCR3+ NVIR(ISYMA)*(B - 1) + A - 1

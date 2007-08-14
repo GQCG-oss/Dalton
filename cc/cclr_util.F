@@ -957,11 +957,11 @@ C-----------------------------------------------------------------------
    
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL XHALF, XMTWO, DELTA
+      REAL XHALF, XMTWO, DELTA, SECOND
       REAL TI,X11,X12,X21,X22,XNJ,X1R,XR1,X2R,XR2,XRR,DDOT
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION XHALF, XMTWO, DELTA, DELTAI
+      DOUBLE PRECISION XHALF, XMTWO, DELTA, DELTAI, SECOND
       DOUBLE PRECISION TI,X11,X12,X21,X22,XNJ,X1R,XR1,X2R,XR2,XRR,DDOT
 #endif 
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, 
@@ -1631,6 +1631,7 @@ C
 #include <ccsdio.h>
 #include <aovec.h>
 #include <leinf.h>
+#include <r12int.h>
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )
       CHARACTER*1 TRANS
       DIMENSION CVEC1(*),WORK(LWORK)
@@ -3453,6 +3454,7 @@ CCH   IF (IPRINT .GT. 10) THEN
          CALL AROUND(' The routine is outdated... Leaving CC_JACEXP.')
          RETURN
 CCH   ENDIF
+#ifdef OUTDATED_ROUTINE
 C
 C-------------------
 C     Open jac file.
@@ -3502,6 +3504,7 @@ C
       CALL GPCLOSE(LUJAC,'KEEP')
 C
       RETURN
+#endif
       END
 C
 C  /* Deck cc_pronelao */

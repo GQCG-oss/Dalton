@@ -2257,6 +2257,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <ccsdinp.h>
+#include <leinf.h>
 #include <ccexci.h>
 #include <ccsdsym.h>
 #include <r12int.h>

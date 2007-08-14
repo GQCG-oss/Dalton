@@ -216,6 +216,7 @@ C    *            'CC_RDAOD> LDERINT      = ',LDERINT(KCORSY,KCOOR)
 C
             ISYMD  = ISAO(IDEL(ID))
             D      = IDEL(ID) - IBAS(ISYMD)
+            IOFF0  = LENGTH(ISYMD)*(D-1)
 
             IF (D.LT.0 .OR. D.GT.NBAST) THEN
               WRITE (LUPRI,*) 'ORBITAL INDEX OUT OF RANGE IN CC_RDAOD.'
@@ -242,7 +243,6 @@ C
                WRITE (LUPRI,*) 'CC_RDAOD: LENGTH= ', LENGTH(ISYMD)
             END IF
 
-            IOFF0  = LENGTH(ISYMD)*(D-1)
 
             DO ICOOR  = 1, MXCOMP
             DO ICORSY = 1, NSYM
@@ -363,7 +363,7 @@ C
      &                 KCORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
      &                 WORK(KAOAB),NDIMAB,WORK(KDIST),IBIT1,
      &                 IRECNR(1,KSCOOR),NRECS(KSCOOR))
-     &                 
+
          CALL GPCLOSE(UNIAO2,'KEEP')
  
 *----------------------------------------------------------------------*
@@ -383,7 +383,7 @@ C
      &                   KCORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
      &                   WORK(KAOAB),NDIMAB,WORK(KDIST),IBIT1,
      &                   IRECNR(1,KSCOOR),NRECS(KSCOOR))
-     &                 
+
            CALL GPCLOSE(UNIAO2,'KEEP')
          END IF
 

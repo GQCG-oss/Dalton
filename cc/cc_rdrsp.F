@@ -278,7 +278,7 @@ C
 *---------------------------------------------------------------------*
 990   CONTINUE
       IF ((IOPTSV .NE. 33) .OR. (IPRINT .GT. 0)) THEN 
-        WRITE (LUPRI,'(2A)')' an error occured while inquireing file ',
+        WRITE (LUPRI,'(2A)')' an error occured while inquiring file ',
      &        FILEX
       END IF
       GOTO 996

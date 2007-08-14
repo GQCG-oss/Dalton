@@ -1961,6 +1961,7 @@ c /* deck ccqr_eadrv */
         IFILE  = IETRAN(3,ITRAN)
 
         LTWOEL = LPDBSOP(IOPERA)
+        LABELA = LBLOPR(IOPERA)
         IF (LTWOEL) THEN  
            WRITE (LUPRI,*) 'List inconsistency in CCQR_EADRV:'
            WRITE (LUPRI,*) 'LISTO, IOPERA :',LISTO,IOPERA
@@ -1969,7 +1970,6 @@ c /* deck ccqr_eadrv */
      &          'derivative integrals.'
         END IF 
 
-        LABELA = LBLOPR(IOPERA)
 
         ISYCTR = ILSTSYM(LISTL,IZETAV)
         ISYMTA = ILSTSYM(LISTO,IOPERA)

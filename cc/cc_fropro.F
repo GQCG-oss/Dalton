@@ -1472,7 +1472,6 @@ C
     1 FORMAT(7X,'Sirius order',5X,'CC order')
     2 FORMAT(6X,F14.10,3X,F14.10)
 C
-      RETURN
       END
 C  /* Deck cc_d1fcb */
       SUBROUTINE CC_D1FCB(AODEN,DIJ,DJI,DAI,DIA,WORK,LWORK,ISDEN,ICON)

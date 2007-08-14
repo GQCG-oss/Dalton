@@ -127,7 +127,6 @@ C
       TIMDAO = ZERO
       TIRDAO = ZERO
       TIMHE2 = ZERO
-      TIMONE = ZERO
       TIMONE = SECOND()
 C
 C----------------------------------------------------
@@ -1806,6 +1805,7 @@ C--------------------------------------------------------------
 C     calculate reorthonormalization contributions to gradient.
 C--------------------------------------------------------------
 C
+      TIMREO = SECOND()
       DO IATOM = 1, NUCIND
         DO ICOOR  = 1, 3
 C

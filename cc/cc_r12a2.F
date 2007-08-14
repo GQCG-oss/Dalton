@@ -3544,7 +3544,7 @@ c
         ndelj = ig1bas(isymd,isymj) + mbas1(isymd)*(j-1) + idelta 
         iadr  = ig2bas(isymai,isymdj) + ng1bas(isymai)*(ndelj-1)+1
       else 
-        call quit('There is something wrong in cc_r12whtfs',
+        call quit('There is something wrong in cc_r12whtfs'//
      &            ' with the auxiliary basis')
       end if
       ilen = ng1bas(isymai)

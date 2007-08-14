@@ -72,9 +72,9 @@ c /* deck CC_SOP */
       PARAMETER (MSGDBG = '[debug] CC_SOP> ')
 
 #if defined (SYS_CRAY)
-      REAL ZERO
+      REAL ZERO, SECOND
 #else
-      DOUBLE PRECISION ZERO
+      DOUBLE PRECISION ZERO, SECOND
 #endif
       PARAMETER (ZERO = 0.0d0)
 
@@ -330,7 +330,7 @@ c /* deck CC_SOP */
       ENDIF
 
 C     IF (NQRDISP.EQ.0) THEN
-        RETURN
+C       RETURN
 C     END IF
   
       CALL FLSHFO(LUPRI)

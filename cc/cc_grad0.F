@@ -991,6 +991,8 @@ C-------------------------------------------
 C
       IF (LOCDBG) WRITE(LUPRI,*) 'number of sets:',NTOT
 C
+      ECCSD2 = ZERO
+C
       DO 100 ILLD = 1,NTOT
 C
          KEND1 = KENDSV
@@ -1701,12 +1703,12 @@ C
 
         IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,'(/6(/A,f10.2))') 
-     &      'Time used for setting up d(pq,ga,de):',TIMDEN,
-     &      'Time used for full AO backtransformation:',TIMDAO,
-     &      'Time used for reading 2 e- AO-integrals:',TIRDAO,
+     &      'Time used for setting up d(pq,ga,de)       :',TIMDEN,
+     &      'Time used for full AO backtransformation   :',TIMDAO,
+     &      'Time used for reading 2 e- AO-integrals    :',TIRDAO,
      &      'Time used for calculating 2 e- AO-integrals:',TIMHE2,
-     &      'Time used for 1 e- part & intermediates:',TIMONE,
-     &      'Time used for reorthonormalization part:',TIMREO
+     &      'Time used for 1 e- part & intermediates    :',TIMONE
+C    &     ,'Time used for reorthonormalization part    :',TIMREO
         ENDIF
         CALL FLSHFO(LUPRI)
       END IF

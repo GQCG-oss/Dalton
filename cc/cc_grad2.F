@@ -518,7 +518,7 @@ C
 
             IF (LOCDBG) THEN
                WRITE (LUPRI,'(A,I3,2X,A,2X,L3)') 
-     &           'CC_GRAD2> IATOM,LABEL1,DIRECT:',IATOM,LABEL1,DIRECT
+     &           'CC_GRAD2> IATOM,LABEL1H,DIRECT:',IATOM,LABEL1H,DIRECT
             END IF
 
             ! precalculate and sort derivative integrals for this atom

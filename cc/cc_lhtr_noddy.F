@@ -80,7 +80,6 @@ C
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-      DIMENSION INDEXA(MXCORB)
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*), C1AM(*), C2AM(*)
       DIMENSION XLAMDP(*),XLAMDH(*),WORK(LWORK)
 C
@@ -1106,6 +1105,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
+#include <iratdef.h>
 #include <maxorb.h>
 #include <maxash.h>
 #include <aovec.h>
@@ -1225,12 +1225,14 @@ C     Start the loop over distributions of integrals.
 C====================================================
 C
       IF (DIRECT) THEN
+         CALL QUIT('Direct not implemented')
+#ifdef NOT_IMPLEMENTED
          NTOSYM = 1
          DTIME  = SECOND()
-c        CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
-         CALL QUIT('Direct not implemented')
+         CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
          DTIME  = SECOND() - DTIME
          TIMHER1 = TIMHER1 + DTIME
+#endif
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -1250,9 +1252,10 @@ C           If direct calculate the integrals and transposed t2am.
 C-----------------------------------------------------------------
 C
             IF (DIRECT) THEN
-               DTIME  = SECOND()
-c              CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,IPRINT)
                CALL QUIT('Direct not implemented')
+#ifdef NOT_IMPLEMENTED
+               DTIME  = SECOND()
+               CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,IPRINT)
                DTIME  = SECOND() - DTIME
                TIMHER2 = TIMHER2 + DTIME
 COMMENT COMMENT
@@ -1263,6 +1266,7 @@ COMMENT COMMENT
                   CALL QUIT('Insufficient core in CC_FOP3')
                END IF
 COMMENT COMMENT
+#endif
             ELSE
                NUMDIS = 1
             ENDIF
@@ -1274,12 +1278,14 @@ C
             DO 120 IDEL2 = 1,NUMDIS
 C
                IF (DIRECT) THEN
+#ifdef NOT_IMPLEMENTED
                   IDEL  = INDEXA(IDEL2)
                   IF (NOAUXB) THEN
                      IDUM = 1
                      CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
                   END IF
                   ISYMD = ISAO(IDEL)
+#endif
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
                   ISYMD = ISYMD1
@@ -1305,11 +1311,13 @@ C-----------------------------------------
 C              Read in batch of integrals.
 C-----------------------------------------
 C
-               DTIME   = SECOND()
+c              DTIME   = SECOND()
+      call quit('CC_LHTR_NODDY2: KRECNR not defined, FIXME')
+      krecnr = 1 ! hjaaj Aug 07: to silence ftnchek
                CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
      *                     WORK(KRECNR),DIRECT)
-               DTIME   = SECOND() - DTIME
-               TIMRDAO = TIMRDAO  + DTIME
+c              DTIME   = SECOND() - DTIME
+c              TIMRDAO = TIMRDAO  + DTIME
 C
 C----------------------------------------------------
 C              Calculate integrals needed in CCSD[T].
@@ -1390,9 +1398,10 @@ C     orbital energies does solve all problems...
 C     --> change to CCSDT_L3AM_R
       IF (NONHF) CALL QUIT('fix me!')
 C
+C hjaaj-aug-2007: changed undefined KSCR1 to KEND1, hope it is OK.
       CALL CCSDT_L03AM(WORK(KOME3),WORK(KINT1T),WORK(KINT2T),
      *                WORK(KIAJB),FOCK,C1AM,C2AM,
-     *                WORK(KSCR1),WORK(KFOCKD),
+     *                WORK(KEND1),WORK(KFOCKD),
      *                WORK(KONEP),WORK(KT3SCR))
 
       IF (NONHF .AND. NFIELD.GT.0) THEN

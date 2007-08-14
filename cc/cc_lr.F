@@ -4156,14 +4156,14 @@ C     Test if this property is already on the list.
 C     In that case find address else update NPRPC
 C--------------------------------------------------
 C
-      EXIST = .FALSE.
 C
       IF (NOEONL .AND. (NORD.EQ.0)) THEN
 C         if energy and NOEONList = true then skip addition to list.
         RETURN
       ELSE
+        EXIST = .FALSE.
         IF (EXIST) THEN
-           IPRPC = IHIT
+c          IPRPC = IHIT
         ELSE
            NPRPC = NPRPC + 1
            IPRPC = NPRPC
@@ -6849,14 +6849,14 @@ C
 C
 C--------------------------------------------------
 C
-      EXIST = .FALSE.
 C
       IF (NOEONL .AND. (NORD.EQ.0)) THEN
 C         if energy and NOEONList = true then skip addition to list.
         RETURN
       ELSE
+        EXIST = .FALSE.
         IF (EXIST) THEN
-           IPRMI = IHIT
+c          IPRMI = IHIT
         ELSE
            NPRMI = NPRMI + 1
            IPRMI = NPRMI

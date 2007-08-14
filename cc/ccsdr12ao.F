@@ -51,9 +51,11 @@
 #if defined (SYS_CRAY)
       real work(*), xlambdap(*), xlambdah(*), t2am(*), e1pim(*),
      &     timintr12, timrdao, timtrbt, timc, timd, timt2tr, timt2bt
+     &    ,second
 #else
       double precision work(*),xlambdap(*),xlambdah(*),t2am(*),e1pim(*),
      &     timintr12, timrdao, timtrbt, timc, timd, timt2tr, timt2bt
+     &    ,second
 #endif
 
 * local

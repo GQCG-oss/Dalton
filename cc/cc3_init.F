@@ -241,7 +241,7 @@ C
      *             WORK(KEND1),LWRK1)
 C
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
-          CALL QUIT('GET_FOCKX: error reading oper. ',LABELX)
+          CALL QUIT('GET_FOCKX: error reading oper. '//LABELX)
       ELSE IF (IERR.LT.0) THEN
           CALL DZERO(WORK(KFOCKX),LENFCKX)
       END IF

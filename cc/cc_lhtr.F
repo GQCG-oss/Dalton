@@ -1242,7 +1242,7 @@ C
         IF (CCSLV .AND. (.NOT. CCMM )) THEN
            DTIME = SECOND()
            CALL CCSL_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
-           TIMMLT = TIMMLT + SECOND() - DTIME
+c          TIMMLT = TIMMLT + SECOND() - DTIME
            IF (IPRINT .GT. 5) THEN
              WRITE(LUPRI,*)'Time used in CCSL_RHSTG (CC_LHTR) 1',
      *                      SECOND() - DTIME
@@ -1259,7 +1259,7 @@ C
         IF (CCMM) THEN
            DTIME = SECOND()
            CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
-           TIMMLT = TIMMLT + SECOND() - DTIME
+c          TIMMLT = TIMMLT + SECOND() - DTIME
            IF (IPRINT .GT. 5) THEN
              WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_LHTR) 1',
      *                      SECOND() - DTIME
@@ -1918,7 +1918,7 @@ C
          DTIME = SECOND()
          CALL CCSL_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,ISYMTR,LR,
      *                  WORK(KEND1),LWRK1)
-         TIMMLT = TIMMLT + SECOND() - DTIME
+c        TIMMLT = TIMMLT + SECOND() - DTIME
          IF (IPRINT .GT. 5) THEN
             WRITE(LUPRI,*)'Time used in CCSL_LTRB (CC_LHTR) 1',
      *                     SECOND() - DTIME
@@ -1939,7 +1939,7 @@ C
          DTIME = SECOND()
          CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
      *                  ISYMTR,LR,WORK(KEND1),LWRK1)
-         TIMMLT = TIMMLT + SECOND() - DTIME
+c        TIMMLT = TIMMLT + SECOND() - DTIME
          IF (IPRINT .GT. 5) THEN
             WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_LHTR) 1',
      *                     SECOND() - DTIME

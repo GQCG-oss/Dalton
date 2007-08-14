@@ -95,11 +95,11 @@ C-----------------------------------------------------------------------
       integer kappa,beta,ienddelta,istartdelta
 
 #if defined (SYS_CRAY)
-      real zero,one,work(*),fac,ddot,time,dummy
+      real zero,one,work(*),fac,ddot,time,dummy, second
 #else
-      double precision zero,one,work(*),fac,ddot,time,dummy
+      double precision zero,one,work(*),fac,ddot,time,dummy, second
 #endif
-      parameter (zero = 0.0D0, one = 1.0D0)
+      parameter (zero = 0.0D0, one = 1.0D0, dummy = -1.23D45)
       data lab123/'********','********','********'/
 
 C-----------------------------------------------------------------------
@@ -859,11 +859,12 @@ C-----------------------------------------------------------------------
       integer luvxint
 
 #if defined (SYS_CRAY)
-      real zero,one,work(*),rpkql(*),fac,ddot,time,dummy
+      real zero,one,work(*),rpkql(*),fac,ddot,time,dummy,second
 #else
-      double precision zero,one,work(*),rpkql(*),fac,ddot,time,dummy
+      double precision zero,one,work(*),rpkql(*),fac,ddot,
+     &   time,dummy,second
 #endif
-      parameter (zero = 0.0D0, one = 1.0D0)
+      parameter (zero = 0.0D0, one = 1.0D0, dummy = -1.23D45)
       data lab123/'********','********','********'/
 
 C-----------------------------------------------------------------------

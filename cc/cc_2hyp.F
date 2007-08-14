@@ -71,9 +71,9 @@ c /* deck CC_2HYP */
       PARAMETER (LOCDBG = .FALSE.)
 
 #if defined (SYS_CRAY)
-      REAL ZERO
+      REAL ZERO, SECOND
 #else
-      DOUBLE PRECISION ZERO
+      DOUBLE PRECISION ZERO, SECOND
 #endif
       PARAMETER (ZERO = 0.0d0)
 

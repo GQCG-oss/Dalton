@@ -78,10 +78,10 @@ C=====================================================================*
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL TIM0, GRDNRM
+      REAL TIM0, GRDNRM, SECOND
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION TIM0, GRDNRM
+      DOUBLE PRECISION TIM0, GRDNRM, SECOND
 #endif
 
       LOGICAL SYM1ONLY, LPTALSO
@@ -310,10 +310,11 @@ C        ------------------------------------------------------------
          WRITE (LUPRI,*) 'DOPERT set.'
          CALL FLSHFO(LUPRI)
 
+C        ICOOR = 0
          DO IATOM = 1, NUCIND
             DO IXYZ = 1, 3
-               ICOOR = ICOOR + 1
                DOCOOR(IXYZ,IATOM) = .TRUE.
+C              ICOOR = ICOOR + 1
 C              DO IREP = 0, 7
 C                IF (DOREPS(IREP).AND.(IPTCNT(ICOOR,IREP,1).GT.0)) THEN
 C                  DOCOOR(IXYZ,IATOM) = .TRUE.

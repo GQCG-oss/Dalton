@@ -4773,7 +4773,7 @@ C
                      ISYMBI = MULD2H(ISYMB,ISYMI)
 C
                      NBI = IT1AO(ISYMB,ISYMI) + NBAS(ISYMB)*(I-1) + 1
-     *
+      
 C
                      DO 750 J = 1,NRHF(ISYMJ)
 C
@@ -6717,8 +6717,9 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 180
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+chjaaj: next two lines are commented because it is dead code
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
@@ -6779,8 +6780,9 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 182
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+chjaaj: next two lines are commented because it is dead code
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            NAB  = KSCR3+ NVIR(ISYMA)*(B - 1) + A - 1
@@ -7097,14 +7099,13 @@ C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
-#if !defined (SYS_AIX)
 #include <iratdef.h>
-#endif
       DIMENSION XLAMDP(*), XLAMIP(*)
       DIMENSION WORK(LWORK)
       DIMENSION DET(2)
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <ccsdinp.h>
 C
       DO 100 ISYMA = 1,NSYM
 C

@@ -1838,7 +1838,7 @@ C
 3           CONTINUE
               IF (OSCSTR) GO TO 100
               GO TO 1
-            GO TO 100
+c           GO TO 100
 C
 C--------------------------------------------------------------------------
 C           Do NOT Use 2n+1 rule expression for transition matrix elements.
@@ -3783,7 +3783,7 @@ C
                   ELSE
                     WRITE(LUPRI,'(/2A,I5,/)')
      &               ' NB. OF STATES SPECIFIED',
-     &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXXGRST
+     &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXXGST
                     CALL QUIT('TO MANY STATES IN CCEXGR.')
                   END IF
                 END IF
@@ -6798,6 +6798,7 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT1OP(INDOP,NOP,MAXOP,OPERATOR,ROUTINE)
 C
+#include <priunit.h>
       CHARACTER*(*) ROUTINE
       CHARACTER*(*) OPERATOR
       CHARACTER*80 MESSAGE
@@ -6866,7 +6867,7 @@ C
      &  'TO MANY OPERATORS IN ',ROUTINE(1:LEN(ROUTINE)),'.'
         WRITE(LUPRI,'(2(/,A,I5),/)')
      &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
-     &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
+     &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MAXOP
         CALL QUIT(MESSAGE)
       ELSE
         NOP = NOP + NEWOP
@@ -6877,6 +6878,7 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT2OP(INDOP1,INDOP2,NOP,MAXOP,OPERATOR,ROUTINE)
 C
+#include <priunit.h>
       CHARACTER*(*) ROUTINE
       CHARACTER*(*) OPERATOR
       CHARACTER*80 MESSAGE
@@ -6921,7 +6923,7 @@ C
      &  'TO MANY OPERATORS IN ',ROUTINE(1:LEN(ROUTINE)),'.'
         WRITE(LUPRI,'(2(/,A,I5),/)')
      &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
-     &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
+     &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MAXOP
         CALL QUIT(MESSAGE)
       ELSE
         DO IDX1 = 1, NEWOP
@@ -8269,12 +8271,12 @@ CCN
       CHARACTER WORD*(7)
       CHARACTER TABLE(NTABLE)*(7)
       CHARACTER*120 CC2LAB
-      DATA TABLE /'.NO HYB','.NO A  ','.NO A'' ','.NO B  ',
+      DATA TABLE /'.NO HYB','.NO A  ',".NO A' ",'.NO B  ',
      &            '.NO RXR','.R12THR','.SVDTHR','.R12XXL',
      &            '.R12DIA','.R12SVD','.R12LEV','.R12RST',
      &            '.BASSCL','.NO 1  ','.NO 2  ','.R12PRP',
-     &            '.CABS  ','.NO B'' ','.NO 3  ','.CC2   ',
-     &            '.NATVIR','.CCVABKL'/
+     &            '.CABS  ',".NO B' ",'.NO 3  ','.CC2   ',
+     &            '.NATVIR','.CCVABK'/
       DATA SET/.FALSE./
       R12LEV = D0
       IF (SET) RETURN
@@ -8378,11 +8380,11 @@ celena
             DO I = 1, 120
               IF (CC2LAB(I:I) .NE. ' ') THEN
                 READ (CC2LAB(I:I),'(I1)',ERR=300) IANCC2
-                GOTO 400 
+                GOTO 201 
               END IF
             ENDDO
 	    GOTO 300
-  400       CONTINUE
+  201       CONTINUE
             DO I = 120, 1, -1
               IF (CC2LAB(I:I) .NE. ' ') THEN
 	        IF (CC2LAB(I:I) .EQ. 'A') THEN
@@ -8394,18 +8396,18 @@ celena
                 ELSE
 		  GOTO 300
 	        END IF
-                GOTO 100 
+c               GOTO 100 
 	      END IF
             END DO
             GO TO 300
-            CONTINUE
-   21          NATVIR = .TRUE.
+   21       CONTINUE ! .NATVIR
+               NATVIR = .TRUE.
                R12NOA = .TRUE.
                R12NOP = .TRUE.
                NOTTWO = .TRUE.
                NOTTRE = .TRUE.
             GO TO 100  
-   22       CONTINUE
+   22       CONTINUE ! .CCVABKL
                !use V^(alpha beta)_(kl) intermediate
                USEVABKL = .TRUE.
             GO TO 100      
@@ -8492,5 +8494,6 @@ CCN
       write(lupri,*)'for ket states (operator manifold)  :',ketscl
 
       RETURN
-  300 CALL QUIT('WRONG CC2LAB')
+  300 write (lupri,*) 'WRONG CC2LAB: ',CC2LAB
+      CALL QUIT('WRONG CC2LAB')
       END

@@ -113,8 +113,10 @@ C-----------------------------------
 C     initialize overall timing
 C-----------------------------------
 C
-      TIMALL    = SECOND()
-      NULL = 0
+      TIMALL  = SECOND()
+      TIMIO   = ZERO
+      TIMT2SQ = ZERO
+      NULL    = 0
 C
 C-----------------------------------
 C     echo input

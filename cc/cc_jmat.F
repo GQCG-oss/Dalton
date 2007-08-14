@@ -227,11 +227,9 @@ c/* Deck CC_JMAT */
       INTEGER ILSTSYM
 
 #if defined (SYS_CRAY) 
-      REAL DTIME, TIMALL
-      REAL DDOT, TIMTRN
+      REAL DDOT, DTIME, TIMALL, TIMTRN, SECOND
 #else 
-      DOUBLE PRECISION DDOT
-      DOUBLE PRECISION DTIME, TIMALL, TIMTRN
+      DOUBLE PRECISION DDOT, DTIME, TIMALL, TIMTRN, SECOND
 #endif 
   
 *---------------------------------------------------------------------*

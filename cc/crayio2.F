@@ -265,9 +265,9 @@ C
 C
            IF (IERR.NE.0) THEN
              WRITE (LUPRI,*) 'I/O ERROR IN WCLOSEALL:'
-             WRITE (LUPRI,*) 'FILE:', FILE
+c            WRITE (LUPRI,*) 'FILE:', FILE
              WRITE (LUPRI,*) 'UNIT:', LUNIT
-             WRITE (LUPRI,*) 'MODE:', MODE
+c            WRITE (LUPRI,*) 'MODE:', MODE
              CALL QUIT('I/O ERROR IN WCLOSEALL')
            END IF
  

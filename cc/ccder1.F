@@ -757,11 +757,11 @@ c /* deck ccgeth2d */
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL DMAT(*), FMAT(*)
-      REAL TIM0, TIM1, TIM2, TIM3
+      REAL TIM0, TIM1, TIM2, TIM3, SECOND
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION DMAT(*), FMAT(*)
-      DOUBLE PRECISION TIM0, TIM1, TIM2, TIM3
+      DOUBLE PRECISION TIM0, TIM1, TIM2, TIM3, SECOND
 #endif
 
 * external functions

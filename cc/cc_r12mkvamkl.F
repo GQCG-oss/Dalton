@@ -1739,8 +1739,8 @@ C     ------------------------------------
          isymij = muld2h(isymkl,isymc)
 CCN      uncomment the following lines if locdbg = .TRUE. 
 CCN            do idxkl = 1, nmatkl(isymkl)
-CCN         if (locdbg) vnrm = zero
-CCN         if (locdbg) vcprod = zero
+            if (locdbg) vnrm = zero
+            if (locdbg) vcprod = zero
          do isymn =1, nsym
             isymmu = isymn
             isymj  = muld2h(isymmuj,isymmu)

@@ -2357,7 +2357,6 @@ C
                      ISYMBI = MULD2H(ISYMB,ISYMI)
 C
                      NBI = IT1AO(ISYMB,ISYMI) + NBAS(ISYMB)*(I-1) + 1
-     *
 C
                      DO 750 J = 1,NRHF(ISYMJ)
 C
@@ -6322,8 +6321,8 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 180
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
@@ -6394,8 +6393,8 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 182
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            NAB  = KSCR3+ NVIR(ISYMA)*(B - 1) + A - 1
@@ -6549,7 +6548,6 @@ C
       END
 C  /* Deck hescompa */
       SUBROUTINE HESCOMPA(REDHES1,REDHES2,NREDH,NCOMPO,COMTHRES)
-     *             
 !
 !     Written by Kasper Hald 3/2-2000
 !

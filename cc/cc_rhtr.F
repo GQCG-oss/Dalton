@@ -629,9 +629,9 @@ C
                       WRITE(LUPRI,1) 'Norm of Rho1 :',RHO1N
                       RHO2N=DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
                       WRITE(LUPRI,1) 'Norm of Rho2 :',RHO2N
-                      IF (DEBUG.AND.CCR12) THEN
-                      WRITE(LUPRI,1) 'Norm of Rho12 :',RHO12N
-                      END IF
+c                     IF (DEBUG.AND.CCR12) THEN
+c                     WRITE(LUPRI,1) 'Norm of Rho12 :',RHO12N
+c                     END IF
                      CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,1)
                   ENDIF
 C
@@ -1858,7 +1858,7 @@ C
                WRITE(LUPRI,*) 'Trial vector:',IV
                WRITE(LUPRI,1) 'Norm of Rho1 -before R12:  ',RHO1N
                WRITE(LUPRI,1) 'Norm of Rho2 -before R12:  ',RHO2N
-               WRITE(LUPRI,1) 'Norm of Rho12 -before R12:  ',RHO12N
+c              WRITE(LUPRI,1) 'Norm of Rho12 -before R12:  ',RHO12N
             ENDIF
 C
               DTIME = SECOND()
@@ -3078,8 +3078,8 @@ C
               WRITE(LUPRI,9999)'CCRHS_HP 2 wall:', TIMHP2WAL
               WRITE(LUPRI,9999)'CCRHS_IP 2 cpu:', TIMIP2CPU 
               WRITE(LUPRI,9999)'CCRHS_IP 2 wall:', TIMIP2WAL 
-              WRITE(LUPRI,9999)'CCRHS_HP 1 cpu:', TIMHPCPU 
-              WRITE(LUPRI,9999)'CCRHS_HP 1 wall:', TIMHPWAL 
+c             WRITE(LUPRI,9999)'CCRHS_HP 1 cpu:', TIMHPCPU 
+c             WRITE(LUPRI,9999)'CCRHS_HP 1 wall:', TIMHPWAL 
               WRITE(LUPRI,9999)'CCRHS_IP 1 cpu:', TIMIPCPU 
               WRITE(LUPRI,9999)'CCRHS_IP 1 wall:', TIMIPWAL 
               WRITE(LUPRI,9999)'R12 cpu:', TIMR12CPU  

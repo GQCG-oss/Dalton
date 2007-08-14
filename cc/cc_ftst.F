@@ -110,7 +110,6 @@ C     IDLSTL = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,ISYML)
       IPRINT = 51
       CALL CC_FMATOLD(LISTL,IDLSTL,LISTR,IDLSTR,WORK,LWORK)
 
-      RETURN
 
 c     KTHETA1 = IBTRAN(3,1)
 c     KTHETA2 = KTHETA1 + NT1AM(ISYMAB)
@@ -270,7 +269,9 @@ C-----------------------------------
 C     initialize overall timing
 C-----------------------------------
 C
-      TIMALL    = SECOND()
+      TIMALL  = SECOND()
+      TIMIO   = ZERO
+      TIMT2SQ = ZERO
 C
 C-----------------------------------
 C     echo input
@@ -3353,12 +3354,12 @@ C----------------------------------------------------------------------
       REAL ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO
       REAL WORK(*)
       REAL TIMET, TIMIO, TIMZWV, TIMTAM, DTIME, TIMTI
-      REAL TIMZET,TIMSCL
+      REAL TIMZET,TIMSCL, SECOND
 #else
       DOUBLE PRECISION ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO
       DOUBLE PRECISION WORK(*)
       DOUBLE PRECISION TIMET,TIMIO,TIMTI,TIMZWV,TIMTAM,DTIME
-      DOUBLE PRECISION TIMZET,TIMSCL
+      DOUBLE PRECISION TIMZET,TIMSCL, SECOND
 #endif
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
