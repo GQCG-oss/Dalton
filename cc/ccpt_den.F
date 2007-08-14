@@ -355,11 +355,11 @@ C        finite field.
 C---------------------------------------------------------
 C
         DO 13 IF = 1, NFIELD
-           DTIME  = SECOND()
+c          DTIME  = SECOND()
            FF = EFIELD(IF)
            CALL CC_ONEP(WORK(KONINT),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
-           DTIME  = DTIME - SECOND()
-           TIMFCK = TIMFCK + DTIME
+c          DTIME  = DTIME - SECOND()
+c          TIMFCK = TIMFCK + DTIME
  13     CONTINUE
 C
 C--------------------------------------------------
@@ -1575,8 +1575,8 @@ C     Close intermediate files.
 C------------------------------
 C
       IF (FROIMP) THEN
-         CALL WCLOSE2(LUN1,NAME1,IERR1)
-         CALL WCLOSE2(LUN2,NAME2,IERR2)
+         CALL WCLOSE2(LUN1,NAME1,'KEEP')
+         CALL WCLOSE2(LUN2,NAME2,'KEEP')
       ENDIF
 C
 C-----------------------
