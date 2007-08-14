@@ -983,8 +983,8 @@ C
          KETAAI = KZKAM  + LENDEN
          KEXVAL = KETAAI + NALLAI(1)
          KSOLUT = KEXVAL + 1
-         YAJIJ  = KSOLUT + NALLAI(1)
-         KAJFR  = YAJIJ  + NALLAI(1)
+         KAJIJ  = KSOLUT + NALLAI(1)
+         KAJFR  = KAJIJ  + NALLAI(1)
          KWRK2  = KAJFR  + NALLAI(1)
          LWRK2  = LWORK  - KWRK2
 C
@@ -996,7 +996,7 @@ C
          CALL DZERO(WORK(KZKAM),LENDEN)
          CALL DZERO(WORK(KETAAI),NALLAI(1))
          CALL DZERO(WORK(KSOLUT),NALLAI(1))
-         CALL DZERO(WORK(YAJIJ),NALLAI(1))
+         CALL DZERO(WORK(KAJIJ),NALLAI(1))
          CALL DZERO(WORK(KAJFR),NALLAI(1))
 C
          IF (MP2) THEN
@@ -1050,10 +1050,10 @@ cElena
                        ICOU4 = ICOU4 + NVIR(ISYMA)*NRHFS(ISYMI)
                     ENDDO
                  ENDDO
-                 READ(LUVAJKL) (WORK(YAJIJ+I-1),I=1,NCVAI)
+                 READ(LUVAJKL) (WORK(KAJIJ+I-1),I=1,NCVAI)
                  CALL GPCLOSE(LUVAJKL,'KEEP')
                  DO ISYM = 1, NSYM
-                    CALL DAXPY(NCVAI2(ISYM,ISYM),ONE,WORK(YAJIJ+
+                    CALL DAXPY(NCVAI2(ISYM,ISYM),ONE,WORK(KAJIJ+
      &                         NCVAI1(ISYM,ISYM)),1,WORK(KETAAI
      &                         +NCVAI1(ISYM,ISYM)
      &                         +KOFF(ISYM,ISYM)),1)
@@ -1070,9 +1070,9 @@ cElena
                  ENDIF
 
               ELSE
-                 READ(LUVAJKL) (WORK(YAJIJ+I-1),I=1,NALLAI(1))
+                 READ(LUVAJKL) (WORK(KAJIJ+I-1),I=1,NALLAI(1))
                  CALL GPCLOSE(LUVAJKL,'KEEP')
-                 CALL DAXPY(NALLAI(1),ONE,WORK(YAJIJ),1,WORK(KETAAI),1)
+                 CALL DAXPY(NALLAI(1),ONE,WORK(KAJIJ),1,WORK(KETAAI),1)
               END IF
            ENDIF 
 cElena            
@@ -1238,10 +1238,9 @@ C
          FABRHS = FASAVE
          NCONF  = NCOSAV
 C
-         WRITE(LUPRI,*) ' '
          WRITE(LUPRI,48) 'Equations converged to residual less than:',
      *               THRLEQ
-  48     FORMAT(3X,A42,2X,F8.6)
+  48     FORMAT(/3X,A42,2X,F8.6)
 C
          CALL FLSHFO(LUPRI)
 C
@@ -1265,8 +1264,8 @@ C
      &               IDUMMY,.FALSE.)
          REWIND(LUBAR0)
          WRITE(LUBAR0) (WORK(KZKAM+I-1), I = 1,LENDEN)
-         write(lupri,*) 'cc_fop, KKABAR'
-         call output(WORK(KZKAM),1,nrhft,1,nrhft,nrhft,nrhft,1,lupri)
+c        write(lupri,*) 'cc_fop, KKABAR'
+c        call output(WORK(KZKAM),1,nrhft,1,nrhft,nrhft,nrhft,1,lupri)
          CALL GPCLOSE(LUBAR0,'KEEP')
 C
 C-------------------------------------------------------------
@@ -2768,6 +2767,7 @@ C
 !SONIA SONIA SONIA
 !
       SAVE IGRDCCPT_OLD
+      DATA IGRDCCPT_OLD/-1/
 C
       CALL QENTER('CC_ETA')
 C
@@ -3902,7 +3902,7 @@ C
                KEND1 = KENDSV
                LWRK1 = LWRKSV
 C
-               DTIME  = SECOND()
+c              DTIME  = SECOND()
                IF (HERDIR) THEN
                  CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
      &                       IPRERI)
@@ -3916,8 +3916,8 @@ C
      *                       WORK(KCCFB1),WORK(KINDXB),
      *                       WORK(KEND1), LWRK1,IPRERI)
                END IF
-               DTIME   = SECOND() - DTIME
-               TIMHE2 = TIMHE2 + DTIME
+c              DTIME   = SECOND() - DTIME
+c              TIMHE2 = TIMHE2 + DTIME
 C
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
@@ -5459,7 +5459,7 @@ C
                KEND1 = KENDSV
                LWRK1 = LWRKSV
 C
-               DTIME  = SECOND()
+c              DTIME  = SECOND()
                IF (HERDIR) THEN
                  CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
      &                       IPRERI)
@@ -5473,8 +5473,8 @@ C
      *                       WORK(KCCFB1),WORK(KINDXB),
      *                       WORK(KEND1), LWRK1,IPRERI)
                END IF
-               DTIME   = SECOND() - DTIME
-               TIMHE2 = TIMHE2 + DTIME
+c              DTIME   = SECOND() - DTIME
+c              TIMHE2 = TIMHE2 + DTIME
 C
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
@@ -6270,7 +6270,7 @@ C
                KEND1 = KENDSV
                LWRK1 = LWRKSV
 C
-               DTIME  = SECOND()
+c              DTIME  = SECOND()
                IF (HERDIR) THEN
                  CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
      &                       IPRERI)
@@ -6284,8 +6284,8 @@ C
      *                       WORK(KCCFB1),WORK(KINDXB),
      *                       WORK(KEND1), LWRK1,IPRERI)
                END IF
-               DTIME   = SECOND() - DTIME
-               TIMHE2 = TIMHE2 + DTIME
+c              DTIME   = SECOND() - DTIME
+c              TIMHE2 = TIMHE2 + DTIME
 C
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
@@ -7531,7 +7531,6 @@ C
                   ELSE IF (CCS) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
      *                      + NFROIJ(ISYMPQ)*(G - 1)
-                     KLAMDH = KEND3
                   ENDIF
 C
 C----------------------------------------------------------
@@ -7828,15 +7827,15 @@ C
       ENDIF
       IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,*) 
-     *        'Time used for setting up d(pq,ga,de):', TIMDEN
+     *        'Time used for setting up d(pq,ga,de)       :',TIMDEN
          WRITE(LUPRI,*) 
-     *        'Time used for full AO backtransformation:', TIMDAO
+     *        'Time used for full AO backtransformation   :',TIMDAO
          WRITE(LUPRI,*) 
-     *        'Time used for reading and writing d and I:',TIRDAO
+     *        'Time used for reading and writing d and I  :',TIRDAO
          WRITE(LUPRI,*) 
      *        'Time used for calculating 2 e- AO-integrals:',TIMHE2
          WRITE(LUPRI,*) 
-     *        'Time used for 1 e- density & intermediates:',TIMONE
+     *        'Time used for 1 e- density & intermediates :',TIMONE
       ENDIF
 C
       CALL QEXIT('CC_2EEXP')
