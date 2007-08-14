@@ -455,6 +455,7 @@ C----------------------
 C
       INTTR  = .FALSE.
       IMOD   = 0
+      IGRDCCPT = 0
 C
       DO 100 I = 0, NMODEL
 C
@@ -1470,7 +1471,6 @@ C
       LUBFDN  = 0
       LURES   = 0
       LUCSOL  = 0
-      LUCTLM  = 0
 C
       CALL QEXIT('CCTAPINI')
 C
