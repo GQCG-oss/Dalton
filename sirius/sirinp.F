@@ -4663,25 +4663,25 @@ C
 C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
- 200  FORMAT(1X,A)
+ 200  FORMAT(/,3(1X,A))
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/,T2,'Main authors of the SIRIUS module:'
+ 400     FORMAT(/' Main authors of the SIRIUS module:'
      *    /T5,'Hans Joergen Aa. Jensen, University of Odense,  Denmark',
      *        ' (principal author)',
      *    /T5,'Hans Agren,              University of Uppsala, Sweden')
          CALL CIAUTH(IWUNIT)
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
-c410     FORMAT(/,T2,'Questions and correspondence should be directed',
-c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@dou.dk',
+c410     FORMAT(/,' Questions and correspondence should be directed',
+c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@ifk.sdu.dk',
 c    *        //,T2,'Standard reference:',
 c    *        /,T5,'H.J.Aa. Jensen, H. Agren, and J. Olsen,',
 c    *        ' Chapter 8 in MOTECC-90')
          IF (FLAG(16)) CALL SOLREF(IWUNIT)
 #endif
 C
-C     stamp date, time and hostname to IWUNIT
+C     Stamp date, time and hostname to IWUNIT
 C
       CALL TSTAMP(' ',IWUNIT)
 C

@@ -522,8 +522,8 @@ Chj      ... if (GEOWLK) then
          NEVC   = MIN(MXERRV,JTDIIS)
 C
          IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)) THEN
-            WRITE (LUPRI,'(A,I5,L5)') 
-     &          ' Screening settings in next iteration (IFTHRS/DIFDEN)',
+            WRITE (LUPRI,'(I5,A,I5,L5)') 
+     &          ITDIIS,' Screening settings (IFTHRS/DIFDEN)',
      &           IFTHRS, DIFDEN
             CALL FLSHFO(LUPRI)
          END IF
@@ -673,7 +673,6 @@ C-----------------
 C CBN+JK 03.01.06
 C-----------------
          IF (QM3 .AND. .NOT. DOCCSD) THEN
-            WRITE(LUPRI,*)'EMCSCF before ',EMCSCF
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL DZERO(WRK(KFCSOL),NNBAST)
             CALL QM3FCK(DAOSAV(1,1),DAOSAV(1,2),
@@ -681,7 +680,6 @@ C-----------------
      &                  WRK(KFREE),LFREE,IPRDIS)
             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-            WRITE(LUPRI,*)'EMCSCF after ',EMCSCF
          END IF
 C-----------------
 C CBN+JK 03.01.06
@@ -737,7 +735,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPRDIS .GT. 1) THEN
-            WRITE (LUPRI,'(/A/A,I5,F22.12,1P,D15.5,D12.2,I5,L5)')
+            WRITE (LUPRI,'(/A/A,I5,1P,G22.12,D15.5,D12.2,I5,L5)')
      &' ITDIIS, energy, error norm, change in energy, scr.thr., difden:'
      & ,' DIIS iter.',ITDIIS,EMCSCF,GRDNRM,EMCDIF,-IFTHRS,DIFDEN
             IF (AUTOCC) THEN
@@ -749,35 +747,29 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
             IF (FLAG(16) .OR. PCM .OR. QM3) THEN
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
                IF (.NOT.AUTOCC) THEN
-                  WRITE (LUW4,'(I5,F20.12,F20.12,1P,D15.5,D12.2)')
+                  WRITE (LUW4,'(I5,1P,G20.12,G20.12,D15.5,D12.2)')
      &               ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
                ELSE IF (IOPRHF .EQ. 0) THEN
-                 WRITE (LUW4,'(I4,F20.12,F20.12,1P,D11.2,D11.2,2X,8I3)')
+                 WRITE (LUW4,'(I4,1P,G20.12,G20.12,D11.2,D11.2,2X,8I3)')
      &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 (NISH(I),I=1,NSYM)
                ELSE
-                 WRITE (LUW4,'(I4,F20.12,F20.12,1P,D11.2,D11.2,
+                 WRITE (LUW4,'(I4,1P,G20.12,G20.12,D11.2,D11.2,
      &                 I4,2X,8I3)')
      &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,IOPRHF,
      &                 (NISH(I),I=1,NSYM)
                END IF
             ELSE
                IF (.NOT.AUTOCC) THEN
-                  WRITE (LUW4,'(I5,F22.12,1P,D15.5,D12.2,I5)')
+                  WRITE (LUW4,'(I5,1P,G22.12,D15.5,D12.2,I5)')
      &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,NEVC
                ELSE IF (IOPRHF .EQ. 0) THEN
-                  WRITE (LUW4,'(I4,F20.12,1P,D11.2,D11.2,2X,8I3)')
+                  WRITE (LUW4,'(I4,1P,G20.12,D11.2,D11.2,2X,8I3)')
      &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,(NISH(I),I=1,NSYM)
                ELSE
-                  WRITE (LUW4,'(I4,F20.12,1P,D11.2,D11.2,I4,2X,8I3)')
+                  WRITE (LUW4,'(I4,1P,G20.12,D11.2,D11.2,I4,2X,8I3)')
      &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,IOPRHF,
      &                 (NISH(I),I=1,NSYM)
                END IF
@@ -1243,27 +1235,17 @@ Chj from siropt.F, should be modified
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
          IF (FLAG(16) .OR. PCM .OR. QM3)
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
+C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
             IF (FLAG(16) .OR. PCM .OR. QM3)
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
+C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
       END IF
 C

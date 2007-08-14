@@ -554,15 +554,15 @@ C----------------
          IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
- 1005 FORMAT(/' Total MCSCF energy       :',F25.15,T54,
+ 1005 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T54,
      *        '(after absorp ',I3,')' )
- 1010 FORMAT(/' Total MCSCF energy       :',F25.15,T60,
+ 1010 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T60,
      *        '(MACRO  ',I3,')' )
- 1015 FORMAT(/' - Nuclear repulsion      :',F25.15,
-     *       /' - Inactive energy        :',F25.15,
-     *       /' - Active energy          :',F25.15)
- 1016 FORMAT( ' - Dielec. solvation ener.:',F25.15)
- 1017 FORMAT( ' - QM/MM solvation ener.:',F25.15)
+ 1015 FORMAT(/' - Nuclear repulsion      :',1P,G25.15,
+     *       /' - Inactive energy        :',1P,G25.15,
+     *       /' - Active energy          :',1P,G25.15)
+ 1016 FORMAT( ' - Dielec. solvation ener.:',1P,G25.15)
+ 1017 FORMAT( ' - QM/MM solvation ener.  :',1P,G25.15)
  1020 FORMAT(/' Norm of total gradient   :',F22.12,
      *       /' -    of CI gradient      :',F22.12,
      *       /' -    of orbital gradient :',F22.12)
@@ -1225,8 +1225,22 @@ C
       IF (LNEED .GT. LSCRA) CALL ERRWRK('RHFENR',LNEED,LSCRA)
       CALL DZERO(SCRA,NORBT)
 C
+C     Print orbital energies.
 C     Check if orbitals are canonical orbitals
 C
+      IF (SUPSYM) THEN
+         IF (DODFT) THEN
+            WRITE (LUPRI,1841)
+         ELSE
+            WRITE (LUPRI,1741)
+         END IF
+      ELSE
+         IF (DODFT) THEN
+            WRITE (LUPRI,1840)
+         ELSE
+            WRITE (LUPRI,1740)
+         END IF
+      END IF
       VALCON =  D0
       EHOMO  = -DBIG
       IHOMO  = 0
@@ -1286,31 +1300,18 @@ C                     because the Fock matrix is not zero for these
             ELUMO = ELUMOI
             ILUMO = ISYM
          END IF
-         IF (SUPSYM) THEN
-            IF (DODFT) THEN
-               WRITE (LUPRI,1841) ISYM
-            ELSE
-               WRITE (LUPRI,1741) ISYM
-            END IF
-         ELSE
-            IF (DODFT) THEN
-               WRITE (LUPRI,1840) ISYM
-            ELSE
-               WRITE (LUPRI,1740) ISYM
-            END IF
-         END IF
          IF (IPRINT .GE. 10) THEN
             NLAST = NORBI
          ELSE
             NLAST = MIN(NORBI,NOCC(ISYM)+5)
          END IF
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
-     &      ' Note: the first',NFRHFI,' orbitals are frozen'
+     &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
          IF (SUPSYM) THEN
             WRITE (LUPRI,1751)
-     &         (SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
+     &         ISYM,(SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
          ELSE
-            WRITE (LUPRI,1750) (SCRA(IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1750) ISYM,(SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
       IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
@@ -1348,14 +1349,14 @@ C     take care of 1-electron case and no virtuals case
 C
 C1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
 C1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
- 1740 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2/)
- 1741 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2,
-     &         ' (supersymmetry in parenthesis)'/)
- 1840 FORMAT( /' Kohn-Sham orbital energies, symmetry',I2/)
- 1841 FORMAT( /' Kohn-Sham orbital energies, symmetry',I2,
-     &         ' (supersymmetry in parenthesis)'/)
- 1750 FORMAT(4X,5F15.8)
- 1751 FORMAT(4(F15.8,' (',I2,')'))
+ 1740 FORMAT( /' Sym       Hartree-Fock orbital energies')
+ 1741 FORMAT( /' Sym       Hartree-Fock orbital energies',
+     &         ' (supersymmetry in parenthesis)')
+ 1840 FORMAT( /' Sym       Kohn-Sham orbital energies')
+ 1841 FORMAT( /' Sym       Kohn-Sham orbital energies',
+     &         ' (supersymmetry in parenthesis)')
+ 1750 FORMAT(/I3,1X,5F15.8/,(4X,5F15.8) )
+ 1751 FORMAT(/I3,1X,4(F15.8,' (',I2,')')/,(4X,4(F15.8,' (',I2,')')) ) 
 C
 C
 C *** end of subroutine RHFENR
@@ -1805,11 +1806,11 @@ C        "UPDSAVE" restart
       END IF
       REWIND LUIT1
       GO TO 9000
- 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,F25.15,
+ 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,1P,G25.15,
      *       /T18,'for macro iteration no.',T49,I10
      *       /T23,'BETA value:',T49,F10.2,
      *       /T23,'Trust radius:',T44,F15.5,
-     *       /T18,'Predicted new MCSCF energy:',T50,F25.15)
+     *       /T18,'Predicted new MCSCF energy:',T50,1P,G25.15)
  6000 FORMAT(//' (OPTST) Geometry walk',
      *       /T16,'Old MCSCF energy:       ',F25.15,
      *       /T16,'Predicted energy change:',F25.15,
