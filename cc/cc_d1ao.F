@@ -100,9 +100,6 @@ C
          RETURN
 C
       ELSE IF (MP2) THEN
-cch
-         write(lupri,*) 'IN CC_D1AO'
-cch
 C
          KONEAI = 1
          KONEAB = KONEAI + NT1AMX
@@ -116,9 +113,9 @@ C
          LWRK1  = LWORK  - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            WRITE(LUPRI,*) 'MP2 - Available:', LWORK, 'Needed:', KEND1
             CALL QUIT('Insufficient memory for work '//
-     &           'allocation in CC_D1AO')
+     &           'allocation in CC_D1AO for MP2')
          ENDIF
 C
 C-----------------------------------------------------------------
@@ -562,7 +559,7 @@ C
 C
       ENDIF
 C
-      CALL CC_DEDIAN(WORK(KDENFO),MODEL,WORK(LWRK2),LWRK2)
+      CALL CC_DEDIAN(WORK(KDENFO),MODEL,WORK(KEND2),LWRK2)
 C
 C-----------------------
 C     write out timings.
