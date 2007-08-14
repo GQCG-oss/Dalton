@@ -372,7 +372,14 @@ c
      &                XLAMDP0,XLAMDH0,ISYM0,XLAMDPQ,ISYHOP,
      &                XLAMDPA,ISYMTA,XLAMPQA,ISYHTA,
      &                WORK(KEND1),LWRK1,IOPT,
-     &                .TRUE.,LTWOEL,LX1ISQ,IOPT)
+     &                .TRUE.,LTWOEL,LX1ISQ)
+c        CALL CC_21I3(RHO1, XINT0, ISYDIS0, XINT1, ISYDIS1,
+c    *                PINT0,QINT0,ISYPQ0,PINT1,QINT1,ISYPQ1,
+c    *                PAINT0,QAINT0,ISYPQA0,PAINT1,QAINT1,ISYPQA1,
+c    *                XLAMP0,XLAMH0, ISYML0,XLAMPQ,ISYMLQ,
+c    *                XLAMPA,ISYMLA,XLAMPQA,ISYMLQA,
+c    *                WORK,LWORK,IOPT,LRHOAO,LDERIV,LXI1SQ)
+
 
       END IF
 *---------------------------------------------------------------------*

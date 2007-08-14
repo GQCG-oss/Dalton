@@ -165,7 +165,7 @@ C
                KEND1 = KENDSV
                LWRK1 = LWRKSV
 C
-               DTIME  = SECOND()
+c              DTIME  = SECOND()
                IF (HERDIR) THEN
                   CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
      &                        IPRINT)
@@ -179,8 +179,8 @@ C
      *                        WORK(KCCFB1),WORK(KINDXB),
      *                        WORK(KEND1), LWRK1,IPRERI)
                ENDIF
-               DTIME  = SECOND() - DTIME
-               TIMHE2 = TIMHE2   + DTIME
+c              DTIME  = SECOND() - DTIME
+c              TIMHE2 = TIMHE2   + DTIME
 C
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
