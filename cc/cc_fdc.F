@@ -308,7 +308,7 @@ C          calculate new intermediates.
 C-------------------------------------------
 C
            LUTAM = 0
-           CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ''UNFORMATTED',
+           CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
            READ(LUTAM) (WORK(KC2AM + J -1 ) , J = 1, NT2AMX)
