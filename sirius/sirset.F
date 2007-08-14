@@ -916,7 +916,8 @@ C               if no orbital rotations!
          WRITE (LUINDX) NWOPT,NWOP,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,7)
          LENGTH = MAX(IRAT*4,2*NWOPH)
          CALL WRITI  (LUINDX,LENGTH,JWOP)
-         CALL WRITI  (LUINDX,NKLWOP,KLWOP)
+         LENGTH = MAX(IRAT*4,NKLWOP)
+         CALL WRITI  (LUINDX,LENGTH,KLWOP)
  1293    IF (IOPSY.EQ.1 .AND. MAKABS) THEN
              LVLABS = LVLABS + 1
              IF (LVLABS .LE. 3) GO TO 1292
