@@ -1822,8 +1822,8 @@ C
             CALL HDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFOBX,DIFOBY,DIFOBZ)
 C
-C        Potential energy at the individual nuclei
-C        -----------------------------------------
+C        Potential energy from each individual nucleus
+C        ---------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 35 .OR. INTTYP .EQ. 75) THEN
             CALL NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -4463,7 +4463,10 @@ C  /* Deck npeint */
       SUBROUTINE NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
 C
-C     Potential energy at the nuclei
+C     Potential energy from each individual nucleus IATOM in SHLINT(*,IATOM).
+C
+C     The total potential energy calculated in POTINT is the sum :
+C         POTINT = sum(iatom=1,natomc) NPEINT(iatom)
 C
 C     K.Ruud, July 1992
 C
@@ -4515,7 +4518,8 @@ C
 C  /* Deck potint */
       SUBROUTINE POTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
 C
-C     1-electron potential energy
+C     One-electron potential energy from all the nuclei
+C     (use NPEINT for potential energy from each individual energy)
 C
 C     K.Ruud, September 2000
 C
