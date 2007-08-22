@@ -455,7 +455,6 @@ C----------------------
 C
       INTTR  = .FALSE.
       IMOD   = 0
-      IGRDCCPT = 0
 C
       DO 100 I = 0, NMODEL
 C
