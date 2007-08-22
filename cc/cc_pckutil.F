@@ -97,10 +97,8 @@ C
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#ifdef FIXME
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK2 = z'3FFFFFFF')
-#endif
 
 C
 C---------------------------------------------------------------
@@ -235,12 +233,10 @@ C
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#ifdef FIXME
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK3 = z'3C000000')
       PARAMETER (MASK4 = z'C3FFFFFF')
       PARAMETER (MASK5 = z'0000000F')
-#endif
 C
 C---------------------------------------------------------------
 C     if packing disabled, copy input data to output array
@@ -369,7 +365,6 @@ C
 #endif
 C
 #if defined (LITTLEENDIAN) || defined(BIGENDIAN)
-#ifdef FIXME
       PARAMETER (JMASK = z'3C000000')
 C
       DATA IMASK / z'00000000', z'000FF000',
@@ -379,9 +374,6 @@ C
      &             z'000FF000', z'00000000',
      &             z'00000FF0', z'00000000',
      &             z'0000000F', z'00000000'/
-#else
-# define NOPACKING
-#endif
 #else
 # define NOPACKING
 #endif
