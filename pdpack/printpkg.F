@@ -544,6 +544,7 @@ C
 C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
 C                                                   2 FOR DOUBLE SPACE
 C                                                   3 FOR TRIPLE SPACE
+C                            hjaaj: negative for 132 col width
 C
 C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
 C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
@@ -615,6 +616,105 @@ C
  1000 FORMAT (/10X,8(4X,A6,I4))
 C2000 FORMAT (A1,'Row',I4,2X,1P,8D14.6)
 C2000 FORMAT (A1,I7,2X,1P,8D14.6)
+      END
+      SUBROUTINE OUTPUTx(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
+     *                   NCTL,LUPRI)
+C.......................................................................
+C Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
+C         16-Jun-1986 hjaaj ( removed Hollerith )
+C OUTPUTx based on OUTPUT 2007, Hans Jorgen Aa. Jensen
+C         prints 7F10.3/D10.3 instead of 5F14.6/D14.6
+C
+C OUTPUT PRINTS A REAL MATRIX IN FORMATTED FORM WITH NUMBERED ROWS
+C AND COLUMNS.  THE INPUT IS AS FOLLOWS;
+C
+C        AMATRX(',').........MATRIX TO BE OUTPUT
+C
+C        ROWLOW..............ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        ROWHI...............ROW NUMBER AT WHICH OUTPUT IS TO END
+C
+C        COLLOW..............COLUMN NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        COLHI...............COLUMN NUMBER AT WHICH OUTPUT IS TO END
+C
+C        ROWDIM..............ROW DIMENSION OF AMATRX(',')
+C
+C        COLDIM..............COLUMN DIMENSION OF AMATRX(',')
+C
+C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
+C                                                   2 FOR DOUBLE SPACE
+C                                                   3 FOR TRIPLE SPACE
+C                            hjaaj: negative for 132 col width
+C
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
+C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
+C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
+C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
+C OF COLUMNS.
+C
+C AUTHOR;  NELSON H.F. BEEBE, QUANTUM THEORY PROJECT, UNIVERSITY OF
+C          FLORIDA, GAINESVILLE
+C REVISED; FEBRUARY 26, 1971
+C
+C.......................................................................
+C
+#include <implicit.h>
+      INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
+      DIMENSION AMATRX(ROWDIM,COLDIM)
+      CHARACTER*1 ASA(3), BLANK, CTL
+      CHARACTER   PFMT*20, COLUMN*8
+      PARAMETER (ZERO=0.D00, KCOLP=7, KCOLN=10)
+      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
+C
+      IF (ROWHI.LT.ROWLOW) GO TO 3
+      IF (COLHI.LT.COLLOW) GO TO 3
+C
+      AMAX = ZERO
+      DO 10 J = COLLOW,COLHI
+         DO 10 I = ROWLOW,ROWHI
+            AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+   10 CONTINUE
+      IF (AMAX .EQ. ZERO) THEN
+         WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
+         GO TO 3
+      END IF
+      IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
+C        use F output format
+         PFMT = '(A1,I5,2X,10F10.3)'
+      ELSE
+C        use 1PD output format
+         PFMT = '(A1,I5,2X,1P,10D10.3)'
+      END IF
+C
+      IF (NCTL .LT. 0) THEN
+         KCOL = KCOLN
+      ELSE
+         KCOL = KCOLP
+      END IF
+      MCTL = ABS(NCTL)
+      IF ((MCTL.LE.3).AND.(MCTL.GT.0)) THEN
+         CTL = ASA(MCTL)
+      ELSE
+         CTL = BLANK
+      END IF
+C
+      LAST = MIN(COLHI,COLLOW+KCOL-1)
+      DO 2 BEGIN = COLLOW,COLHI,KCOL
+         WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
+         DO 1 K = ROWLOW,ROWHI
+            DO 4 I = BEGIN,LAST
+               IF (abs(AMATRX(K,I)).GT.0.5D-3) GO TO 5
+    4       CONTINUE
+         GO TO 1
+    5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
+    1    CONTINUE
+    2 LAST = MIN(LAST+KCOL,COLHI)
+    3 RETURN
+ 1000 FORMAT (/9X,10(A6,I3,1X),(3X,A6,I4))
+C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
+C2000 FORMAT (A1,I7,2X,1P,8D15.6)
       END
 C  /* Deck prtab */
       SUBROUTINE PRTAB(NTABLE,TABLE,TEXT,LUPRI)
