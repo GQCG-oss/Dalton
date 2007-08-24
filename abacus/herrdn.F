@@ -6878,10 +6878,22 @@ C
                   WRITE (LUPRI,*) 'Incorrect input for choice '//
      &                 'of atomic basis set'
                   WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
+                  WRITE (LUPRI,*) 'Input line was:'
+                  WRITE (LUPRI,*) BKPLIN
                   CALL QUIT('Incorrect input for choice of '//
      &                 'atomic basis set')
                ELSE
                   IPOS3 = INDEX(BKPLIN((IPOS+IPOS2):),' ')
+                  IF (IPOS3 .LE. 1) IPOS3 = LEN( BKPLIN((IPOS+IPOS2):) )
+                  IF (IPOS3 .LE. 1) THEN
+                     WRITE (LUPRI,*) 'Incorrect input for choice '//
+     &                 'of atomic basis set'
+                     WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
+                     WRITE (LUPRI,*) 'Input line was:'
+                     WRITE (LUPRI,*) BKPLIN
+                     CALL QUIT('Incorrect input for choice of '//
+     &                 'atomic basis set')
+                  END IF
                   IF (IPOS3 .LT. 10) THEN
                      WRITE (FRMT,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
                   ELSE
