@@ -19,8 +19,10 @@ C BCKSTP: allow for backstepping to previous Fock matrix if DIIS stalls
 C in infinp.h:
 C HSROHF: High spin open-shell RHF
 C
+      REAL*8  THRRHF
       LOGICAL RHFCAN, AUTOCC, BCKSTP
       COMMON /SCBRHF/ THRRHF,
      &                NFRRHF(8),NMVO(8),NMVOT,IOPRHF,MXHFMA,MXHFMI,
      &                MAXFCK, MXDIIS, MAXEVC, NRHFEL,INIOCC,
      &                RHFCAN, AUTOCC, BCKSTP
+C .. end of scbrhf.h ...
