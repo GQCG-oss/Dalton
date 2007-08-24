@@ -1009,9 +1009,9 @@ C               these may be converged orbitals thus MAXCIT = 20
       END IF
       IF (MAXMAC .LT. 0) THEN
          IF (ISTATE .EQ. 1) THEN
-            MAXMAC = 15
-         ELSE
             MAXMAC = 25
+         ELSE
+            MAXMAC = 40
          END IF
       END IF
       IF (MAXJT  .LT. 0) MAXJT  = 24
