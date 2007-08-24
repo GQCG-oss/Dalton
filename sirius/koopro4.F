@@ -3331,13 +3331,15 @@ C
 C     LE DETERMINANT - 1 - EST CHOISI COMME LE
 C     DETERMINANT AYANT LE PLUS D'O.M. EXCITEES
 C     
-      zshift=.false.
-      IF (NE(KR)-NE(KL)) 5,7,7
-    5 KKKK=KR
-      KR=KL
-      KL=KKKK
-      zshift=.true.
-    7 NE1=NE(KR)
+      IF (NE(KR) .lt. NE(KL)) then
+        KKKK=KR
+        KR=KL
+        KL=KKKK
+        zshift=.true.
+      else
+        zshift=.false.
+      end if
+      NE1=NE(KR)
 C     TEST SUR LE FONDAMENTAL
       IF (NE1.EQ.0) GOTO 44
       NE2=NE(KL)
