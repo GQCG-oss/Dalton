@@ -1,21 +1,36 @@
+C     File: dftcom.h
 C
-C     choose reasonably large MAXBLLEN- so that loop unrolling gives
+C     choose reasonably large MXBLLEN- so that loop unrolling gives
 C     speedup but small compared with a cache size max block length
-C     MXBLLEN.
+C
       INTEGER MXBLLEN
       PARAMETER (MXBLLEN=100)
 C
-      CHARACTER*6 DFTTYP
-      REAL*8          HFXFAC, HFXATT, HFXMU, DFTHR0, DFTHRL, DFTHRI, 
-     &                DFTELS, RADINT, WDFTMP
-      INTEGER ANGINT, ANGMIN, LEBMIN
+C     HFXSET: used in input to determine if HFXFAC has been specified by user with .HFXFAC
+      REAL*8  HFXFAC, HFXATT, HFXMU,
+     &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC
+      INTEGER ANGINT, ANGMIN, LEBMIN, IWINT
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG
-      COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU, DFTHR0, DFTHRL, DFTHRI, 
-     &                DFTELS, RADINT, WDFTMP,
-     &        ANGINT, ANGMIN, LEBMIN, 
-     &        DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES, 
-     &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG
-      COMMON /DFTCHR/ DFTTYP 
-
-
+C     variables for srDFT /hjaaj
+      LOGICAL DOSRXLDA, DOSRXGGA, DOSRBCK , DOHFEXCH, DOSRCLDA,
+     &        DOSRCGGA, DOSRMULO, DOSRGGA2, DOSRLYPT, DOSRXWIB,
+     &        DOSRCWIB, ISJT, DOSRXPBEHSE, DOSRXPBETCS, DOSRCPBETCS,
+     &        DOSRCPBETCSJ, DOSRCRI, DOSRCWI, DOSRXRI, HFXSET
+      COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,
+     &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,
+     &        ANGINT, ANGMIN, LEBMIN, IWINT,
+     &        DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,
+     &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG,
+     &
+     &        DOSRXLDA, DOSRXGGA, DOSRBCK , DOHFEXCH, DOSRCLDA, 
+     &        DOSRCGGA, DOSRMULO, DOSRGGA2, DOSRLYPT, DOSRXWIB,
+     &        DOSRCWIB, ISJT, DOSRXPBEHSE, DOSRXPBETCS, DOSRCPBETCS,
+     &        DOSRCPBETCSJ , DOSRCRI, DOSRCWI, DOSRXRI, HFXSET
+C
+      CHARACTER*6  DFTTYP
+C     variables for srDFT /JT
+      CHARACTER*10 SRXFUN, SRCFUN
+      COMMON /DFTCHR/ DFTTYP,
+     &                SRXFUN, SRCFUN
+C -- end of dftcom.h --
