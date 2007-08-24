@@ -154,15 +154,15 @@ C                work for ECP) /hjaaj Mar 2004
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(NUCLP, ATMARR)
-          END IF
+         END IF
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
+         WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
 C ::: If requested, a VRML representation of :::
 C ::: the symmetry elements is constructed.  :::
          IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
-     &                          DMRPLN,MAXMIR,WORK,LWORK)
+     &                         DMRPLN,MAXMIR,WORK,LWORK)
 C
-         WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
          IF (.NOT. NOMOVE) THEN
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
