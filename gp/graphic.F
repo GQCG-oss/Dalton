@@ -274,7 +274,11 @@ C
             IF(J.EQ.4) TYPE='F'
             IF(J.EQ.5) TYPE='G'
             IF(TYPE.EQ.' ') THEN
-               WRITE(LUPRI,*) 'PLTORB KNOWS S,P,D,F,G SHELLS'
+               WRITE(LUPRI,'(/A/A)')
+     &            'PLTORB knows S,P,D,F,G shells. The basis set'//
+     &            ' contains orbital(s) with higher angular momentum,',
+     &            ' and the writing of MOLPLT file is thus abandoned.'
+               CALL GPCLOSE(LUIP,'DELETE')
                GOTO 5000
             END IF
 C     
