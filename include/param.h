@@ -1,3 +1,4 @@
+c file: param.h
 cbs   
 cbs   this include files hold a lot of dimensioning parameters and arrays for 
 cbs   exponents, contraction coefficients and integrals. 
@@ -24,9 +25,10 @@ cbs   defining a big array with enough space for all modified contraction coeffi
 cbs   for each l-value there are five blocks of size (nprimit(l),ncontrac(l)) 
 cbs   the original contraction coefficients (for normalized functions) 
 cbs   and four modified blocks  depending on different kinematic factors and included exponents
+c
+cbs   the iadd* arrays hold the start adresses of the the contraction coefficients for each l-value 
       common /contco/ 
      *contrarray((Lmax+1)*5*MxcontL*MxprimL), 
-cbs   the following arrays hold the start adresses of the the contraction coefficients for each l-value 
      *iaddori(0:Lmax),iaddtyp1(0:Lmax),iaddtyp2(0:Lmax),
      *iaddtyp3(0:Lmax),iaddtyp4(0:Lmax)
 cbs   the exponents 
@@ -79,15 +81,16 @@ cbs   preXYZ holds some prefactors which are used regulary
      *icheckz(-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),        
      *interxyz(16,0:Lmax,0:Lmax,0:Lmax,0:Lmax),       
      *isgnprod(-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax)
-      common /onepar/ ! one-particle integrals 
-     *oneoverR3((MxprimL*MxprimL+MxprimL)/2,Lmax),
-     *onecontr(mxcontL,MxcontL,-Lmax:Lmax,3,Lmax),
-     *dummyone(MxcontL*MxcontL),
-cbs   one-electron-integrals: 
+c /onepar/: one-particle integrals 
+cbs   onecart* arrays for one-electron-integrals: 
 cbs   1. index: number of first contracted function
 cbs   2. index: number of second contracted function
 cbs   3. index: pointer(m1,m2)    m1< m2 otherwise change sign of integral
 cbs   4. index: L-value  
+      common /onepar/
+     *oneoverR3((MxprimL*MxprimL+MxprimL)/2,Lmax),
+     *onecontr(mxcontL,MxcontL,-Lmax:Lmax,3,Lmax),
+     *dummyone(MxcontL*MxcontL),
      *onecartX(mxcontL,MxcontL,
      *(Lmax+Lmax+1)*(Lmax+1),Lmax),
      *onecartY(mxcontL,MxcontL,
@@ -111,10 +114,10 @@ cbs  l-values
      *coulovlp(MxprimL,MxprimL,-1:1,-1:1,
      *0:Lmax,0:Lmax)
 cbs   express AOs in contracted functions 
-      common /AOincont/ AOcoeffs(MxcontL,MxcontL,0:Lmax),
 cbs   first index: number of contracted function                                    
 cbs   second index: number of AO                                                     
 cbs   third index: L-value 
+      common /AOincont/ AOcoeffs(MxcontL,MxcontL,0:Lmax),
      *occup(MxcontL,0:Lmax),noccorb(0:Lmax)  
 cbs   occupation numbers 
 cbs   first index: number of AO                    
