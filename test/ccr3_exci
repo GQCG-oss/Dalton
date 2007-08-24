@@ -67,7 +67,7 @@ cat > ccr3_exci.dal <<'%EOF%'
 **SIRIUS
 .CC 
 *SCF INPUT 
-.HF OCCUPATION
+.SCF OCCUPATION
  3 1 1 0 2 0 0 0
 .THRESH
 1.0D-11
@@ -101,7 +101,7 @@ cat > ccr3_exci.dal <<'%EOF%'
  0 0 0 0 0 0 0 0         
 .THREXC
 1.0D-05
-*END OF
+**END OF DALTON
 %EOF%
 
 #######################################################################

@@ -21,7 +21,7 @@ cat > hfmm_1.info <<'%EOF%'
    hfmm_1
    -----------
    Molecule:         CH2O(HF)/2 H2O(MM)
-   Wave Function:    B3LYP / STO-3G  
+   Wave Function:    RHF / STO-3G  
    Test Purpose:     Test of HF/MM energy, dipole moment and excitation energy
 %EOF%
 #######################################################################
@@ -100,27 +100,26 @@ cat > hfmm_1.dal <<'%EOF%'
 .PRINT
  2
 *QM3INP
+.QM3
 .PRINT
  1
-.QM3
 .THRDIP
  1.0D-12
 .MAXDIP
  180
-*END OF HERMIT
 **WAVE FUNCTIONS
 .HF
-*HF INP
-.THRESH
-1.0D-12
+*SCF INPUT
+.THRESHOLD
+ 1.0D-12
 **PROPERTIES
 .EXCITA
 *EXCITA
 .NEXCIT
  2
 .THRESH
-1.0D-9
-**END OF
+ 1.0D-9
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

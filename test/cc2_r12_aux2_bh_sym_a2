@@ -63,7 +63,7 @@ cat > cc2_r12_aux2_bh_sym_a2.dal <<'%EOF%'
 *SCF INPUT
 .THRESH
  1.0D-10
-.HF OCC
+.SCF OCC
  2 1 0 0
 *CC INPUT
 .CC2
@@ -89,7 +89,7 @@ cat > cc2_r12_aux2_bh_sym_a2.dal <<'%EOF%'
 !.NO 1
 .CC2
  2B
-*END OF
+**END OF DALTON
 %EOF%
 
 #######################################################################

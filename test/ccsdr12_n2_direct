@@ -124,7 +124,7 @@ cat > ccsdr12_n2_direct.dal <<'%EOF%'
 .MOSTART
  H1DIAG
 *SCF IN  
-.HF OCCUPATION
+.SCF OCCUPATION
   3 1 1 0 2 0 0 0
 .THRESH
  1.0D-10
@@ -142,7 +142,7 @@ cat > ccsdr12_n2_direct.dal <<'%EOF%'
 *R12 INPUT
 .CC2
  1B
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

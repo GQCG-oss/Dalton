@@ -111,12 +111,11 @@ cat > cc2mm_spc_fop.dal <<%EOF%
 .MAXDIP
  80
 !.OLDTG
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INP
 .THRESH
-1.0D-11
+ 1.0D-11
 *CC INP
 .CC2
 .THRLEQ
@@ -144,7 +143,7 @@ cat > cc2mm_spc_fop.dal <<%EOF%
 .QUADRU
 .SECMOM
 .NONREL
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
