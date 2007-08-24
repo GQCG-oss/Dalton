@@ -1684,12 +1684,13 @@ cLig <<
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
-         IF (DODRCT) THEN
-            WRITE (LUPRI,'(2X,A,/,2X,A)')
-     &      ' Inconsistent input - SOPPA calculations cannot yet',
-     &      ' be carried out "directly" (using .DIRECT and .SOPPA).'
-            IERR = IERR + 1
-         END IF
+CHJ feb 2007 let us try if it now works ... /hjaaj
+CHJ      IF (DODRCT) THEN
+CHJ         WRITE (LUPRI,'(2X,A,/,2X,A)')
+CHJ  &      ' Inconsistent input - SOPPA calculations cannot yet',
+CHJ  &      ' be carried out "directly" (using .DIRECT and .SOPPA).'
+CHJ         IERR = IERR + 1
+CHJ      END IF
          IF (IERR .GT. 0) THEN
             CALL QUIT('Inconsistent input in ABACUS for SOPPA')
          END IF
