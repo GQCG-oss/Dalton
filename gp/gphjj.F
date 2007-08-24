@@ -776,9 +776,9 @@ C  /* Deck jaco */
       SUBROUTINE JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
 C
 C     F is symmetric packed matrix of dimension NB.
-C     The first block of size NMAX will be diagonalized.
+C       The first block of size NMAX will be diagonalized.
 C     V is for eigenvectors, only V(NROWV,NMAX) will be referenced.
-C     On entry it must correspond the basis vectors corresponding to the
+C       On entry it must correspond the basis vectors corresponding to the
 C       F matrix on entry, e.g. unit matrix or AO coefficients for each MO.
 C
 C Revisions:
@@ -803,7 +803,8 @@ C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
 C  18-aug-2005 wmk    Changed C1 to 1.D-15
 #include "implicit.h"
-      DIMENSION F(*),V(*)
+#include "priunit.h"
+      DIMENSION F(*),V(NROWV,*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
@@ -815,6 +816,7 @@ Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
 Cwas: IF (NB.EQ.1) RETURN !900727-hjaaj
       CALL QENTER('JACO')
+      CALL GETTIM(TSTRT, WSTRT)
       DO 190 I=1,NB
          JBIGI=0
          J=MIN(I-1,NMAX)
@@ -884,7 +886,7 @@ C
   271       T2X2 =BIG(IB)/DIF
             T2X25=T2X2*T2X2
          IF(T2X25 .GT. C4) GO TO 240
-            CX=1.D 00
+            CX=D1
             SX=T2X2
          GO TO 270
   240    IF(T2X25 .GT. C5) GO TO 250
@@ -975,15 +977,20 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SX
                   IEBR = IEBR + 1
                END IF
   390       CONTINUE
-         JAA=(IA-1)*NROWV
-         JBB=(IB-1)*NROWV
+C
 #include "ivdep.h"
-         DO 400 I=1,NROWV
-            T=V(JBB+I)*SX
-            V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
-  400       V(JAA+I)= V(JAA+I)*CX + T
+         DO I=1,NROWV
+            VIIA = V(I,IA)
+            VIIB = V(I,IB)
+            V(I,IA) =  VIIA*CX + VIIB*SX
+            V(I,IB) = -VIIA*SX + VIIB*CX
+         END DO
       GO TO 410
   420 CONTINUE
+c     CALL GETTIM(TEND, WEND)
+c     WRITE(LUPRI,'(/A,4I10/A,2F20.2)')
+c    &    'JACO -- ITJACO, NB,NMAX,NROWV :',ITJACO, NB,NMAX,NROWV,
+c    &    'JACO -- CPUTIME, WALLTIME     :',TEND-TSTRT, WEND-WSTRT
       CALL QEXIT('JACO')
       RETURN
       END
