@@ -36,6 +36,7 @@ C
 #ifdef UNDEF
 !===========================================================================
 !/* Comdeck memlog */
+!060316-hjaaj: for DBG_LENID check memcb1.h
 !910110-hjaaj MEMREL: removed non-standard char. concat. in CALL MEMCHK
 !901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
 !===========================================================================
@@ -48,7 +49,7 @@ C
 C     Define output units for memory allocation routines
 C     Initialize mempkg warning count NWNMEM to zero
 C
-#include <memcb1.h>
+#include "memcb1.h"
 C
       LUWMEM = LUWME1
       LUEMEM = LUEME1
@@ -72,14 +73,7 @@ C
       DIMENSION     WORK(*)
 C
 #include <iratdef.h>
-#include <memcb1.h>
-C
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
+#include "memcb1.h"
 C
 Chj1  CALL QENTER('MEMGET  ')
       IF (TYPE(1:4) .EQ. 'REAL' .OR. TYPE(1:4) .EQ. 'INT8') THEN
@@ -114,28 +108,47 @@ C
 C
       MEMID(2) = LREAL
       IF (KFREE .NE. 1) THEN
+C        length error check:
+         IF (LREAL+LENID .GT. LFREE) GO TO 8001
 C
 C        error and warning checks:
 C
-         WMEMCK(1) = WORK(KFREE-LENID)
-         IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
 C        error check:
-         IF (LREAL+LENID .GT. LFREE) GO TO 8001
 #if !(defined(GFORTRAN) && GFORTRAN <= 410)
 c     either ugly aliasing or a bug in the compiler (seen with
 c     gfortran-4.0.2 20051125)
+         WMEMCK(1) = WORK(KFREE-LENID)
+         IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
+         WMEMCK(1) = WORK(KFREE-1)
          IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
 C        warning check:
+#ifdef VAR_INT64
+         WMEMCK(2) = WORK(KFREE-LENID+1)
+#endif
          IF (MEMCK(2) .NE. 0) GO TO 8003
 #endif
 C        ... go issue warning and continue at 8013
 C
+#ifdef DBG_LENID
+         do i = 0,lenid-1
+           WORK(KFREE-LENID+i) = WMEMID(1)
+         end do
+#else
          WORK(KFREE-LENID) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
+         WORK(KFREE-  1  ) = WMEMID(1)
+#endif
+#ifdef VAR_INT64
+         WORK(KFREE-LENID+1) = WMEMID(2)
+#endif
       ELSE
+C        KFREE = 1 case:
          IF (LREAL+2*LENID .GT. LFREE) GO TO 8001
-         WORK(KFREE) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE+1) = WMEMID(2)
+         do i = 1,lenid
+           WORK(i) = WMEMID(1)
+         end do
+#ifdef VAR_INT64
+         WORK(2) = WMEMID(2)
+#endif
          KFREE = KFREE + LENID
          LFREE = LFREE - LENID
       END IF
@@ -143,9 +156,18 @@ C
       KFREE  = KBASE + (LREAL + LENID)
       LFREE  = LFREE - (LREAL + LENID)
       MEMID(2) = 0
+#ifdef DBG_LENID
+      do i = 0,lenid-1
+         WORK(KFREE-LENID+i) = WMEMID(1)
+      end do
+#else
       WORK(KFREE-LENID) = WMEMID(1)
-      IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
-Chj1  CALL QEXIT('MEMGET  ')
+      WORK(KFREE-  1  ) = WMEMID(1)
+#endif
+#ifdef VAR_INT64
+      WORK(KFREE-LENID+1) = WMEMID(2)
+#endif
+Chj1  CALL QEXIT('MEMGET  ') ! too expensive as MEMGET is called many times
       RETURN
 C
 C     error branches:
@@ -179,13 +201,7 @@ C
      *      ' KFREE =',KFREE,
      *      ' found memory check :',MEMCK(1),
      *      ' expected           :',MEMID(1)
-         CALL QTRACE(LUWMEM)
-         IF (LUEMEM.NE.LUWMEM) THEN
-            WRITE (LUEMEM,'(/A/A)')
-     *      ' MEMGET ERROR, not a valid memget id in work(kfree)',
-     *      ' ---> see output file'
-            CALL QTRACE(LUEMEM)
-         END IF
+         CALL MEMCHK('MEMGET call of MEMCHK:',WORK,1)
          CALL QUIT('MEMGET ERROR, not a valid memget '//
      &             'id in work(kfree)')
 C
@@ -206,8 +222,17 @@ C
          END IF
          CALL QEXIT('MEMGET  ')
 C        Warning issued, do the assignment now and continue
+#ifdef DBG_LENID
+         do i = 0,lenid-1
+           WORK(KFREE-LENID+i) = WMEMID(1)
+         end do
+#else
          WORK(KFREE-LENID) = WMEMID(1)
-         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
+         WORK(KFREE-  1  ) = WMEMID(1)
+#endif
+#ifdef VAR_INT64
+         WORK(KFREE-LENID+1) = WMEMID(2)
+#endif
          GO TO 8013
 C
 C     end of MEMGET
@@ -224,17 +249,10 @@ C
 #include <implicit.h>
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
-#include <iratdef.h>
 C
-#include <memcb1.h>
+#include "memcb1.h"
 C
       CHARACTER     TMPTXT*71
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
 C
       CALL QENTER('MEMREL  ')
 C
@@ -255,18 +273,31 @@ C
       ELSE
          KFREE1 = 1 + LENID
       END IF
-      WMEMCK(1) = WORK(KFREE1-LENID)
 #if !(defined(GFORTRAN) && GFORTRAN <= 410)
 c     either ugly aliasing or a bug in the compiler (seen with
 c     gfortran-4.0.2 20051125)
-      IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
+      WMEMCK(1) = WORK(KFREE1-LENID)
+      memck1 = memck(1)
+      WMEMCK(1) = WORK(KFREE1-1)
+      memck2 = memck(1)
+      IF (MEMCK1 .NE. MEMID(1)) GO TO 8002
+      IF (MEMCK2 .NE. MEMID(1)) GO TO 8002
 #endif
 C
 C     release ...
 C
       MEMID(2) = 0
+#ifdef DBG_LENID
+      do i = 0,lenid-1
+        WORK(KFREE1-LENID+i) = WMEMID(1)
+      end do
+#else
       WORK(KFREE1-LENID) = WMEMID(1)
-      IF (LENID .EQ. 2) WORK(KFREE1-1) = WMEMID(2)
+      WORK(KFREE1-  1  ) = WMEMID(1)
+#endif
+#ifdef VAR_INT64
+      WORK(KFREE1-LENID+1) = WMEMID(2)
+#endif
       LFREE = LFREE + (KFREE-KREL)
       KFREE = KREL
 C
@@ -290,11 +321,11 @@ C
 C
 C     error branch IF (MEMCK(1) .NE. MEMID(1)) THEN
 C
- 8002    WRITE (LUWMEM,'(/A/2A/A,2I10,2(/A,I25))')
+ 8002    WRITE (LUWMEM,'(/A/2A/A,2I10,2(/A,2I25))')
      *      ' MEMREL ERROR, not a valid memget id in work(krel)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KREL =',KFIRST,KREL,
-     *      ' found memory check :',MEMCK(1),
+     *      ' found memory checks:',MEMCK1,MEMCK2,
      *      ' expected           :',MEMID(1)
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
@@ -319,16 +350,8 @@ C
 #include <implicit.h>
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
-#include <iratdef.h>
 C
-#include <memcb1.h>
-C
-      PARAMETER ( LENID = 1/IRAT + 1)
-      DIMENSION     WMEMID(2), WMEMCK(2)
-      INTEGER       MEMID(2),  MEMCK(2)
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
+#include "memcb1.h"
 C
 Chj1  CALL QENTER('MEMCHK  ')
 C
@@ -344,8 +367,20 @@ c     gfortran-.0.2 20051125)
   100 CONTINUE
          IALLOC = IALLOC + 1
          WMEMCK(1) = WORK(KFREE-LENID)
-         IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
-         IF (MEMCK(1) .NE. MEMID(1)) GO TO 8001
+         memck1 = memck(1)
+         WMEMCK(1) = WORK(KFREE-1)
+         memck2 = memck(1)
+#ifdef VAR_INT64
+         WMEMCK(2) = WORK(KFREE-LENID+1)
+#endif
+         IF (MEMCK1 .NE. MEMID(1)) GO TO 8001
+         IF (MEMCK2 .NE. MEMID(1)) GO TO 8001
+#ifdef DBG_LENID
+         do i = i1,lenid-2
+            WMEMCK(1) = WORK(KFREE-LENID+i)
+            IF (MEMCK(1) .NE. MEMID(1)) GO TO 8001
+         end do
+#endif
          LREAL = MEMCK(2)
          IF (LREAL .LT. 0) GO TO 8002
          IF (LREAL .GT. 0) THEN
@@ -358,24 +393,39 @@ Chj1  CALL QEXIT('MEMCHK  ')
 C
 C        error branch IF (MEMCK(1) .NE. MEMID(1)) THEN
 C
- 8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,I25))')
+ 8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,2I25))')
      *      ' MEMCHK ERROR, not a valid memget id in work(kfree-1)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KFREE,IALLOC =',KFIRST,KFREE,IALLOC,
-     *      ' found memory check :',MEMCK(1),
+     *      ' found memory checks:',MEMCK1,MEMCK2,
      *      ' expected           :',MEMID(1)
          WRITE (LUWMEM,'(/A/A)')
      &      ' Dump of allocations before invalid memget id:',
      &      ' IALLOC #    KBASE         Length'
          KFREE = KFIRST
          IF (KFREE .EQ. 1) KFREE = 1 + LENID
-         DO I = 1, IALLOC-1
+         DO I = 1, IALLOC
             WMEMCK(1) = WORK(KFREE-LENID)
-            IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
+#ifdef VAR_INT64
+            WMEMCK(2) = WORK(KFREE-LENID+1)
+#endif
             LREAL = MEMCK(2)
             WRITE (LUWMEM,'(I5,2I15)') I,KFREE,LREAL
             KFREE = KFREE + LENID + LREAL
          END DO
+#ifdef DBG_LENID
+#ifdef VAR_INT64
+C hjaaj: skip memory element with length tag (see WMEMCK(2) above)
+         i1 = 2
+#else
+         i1 = 1
+#endif
+         do i = i1,lenid-1
+            WMEMCK(1) = WORK(KFREE-LENID+i)
+            if (memck(1) .ne. memid(1)) write (luwmem,*)
+     &         'memchk error in debug element: ',i+1,memck(1)
+         end do
+#endif
          CALL QENTER('MEMCHK  ')
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
