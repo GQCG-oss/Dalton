@@ -273,8 +273,8 @@ C
          CALL HEADER('Distribution matrices in GETDIS',-1)
          DO 300 I = 1, NUMDIS
             CALL UNPKIJ(INDXAB(I),IA,IB)
-            WRITE(LUPRI,'(//A,I4)')' Distribution matrix No.',I
-            WRITE(LUPRI,'(A,2I4)')  ' Orbital indices:       ',IA,IB
+            WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
+            WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB
             CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
@@ -506,6 +506,7 @@ C
       ELSE
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
+            if (iprfck .gt. 1) write (lupri,*) '- using parallel ERI'
             CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
             IPRTYP = 2
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
@@ -515,6 +516,7 @@ C
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY)
 
          ELSE
+#endif
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
 #if defined (VAR_VECTOR)
@@ -523,22 +525,12 @@ C
 #else
            KFCKTP = KFREE
 #endif
+           if (iprfck .gt. 1) write (lupri,*) '- using sequential ERI'
            CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
+#if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
-#else
-         CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)           
-         CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)           
-#if defined (VAR_VECTOR)
-         CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS,
-     &               WORK,KFREE,LFREE)
-#else
-         KFCKTP = KFREE
-#endif
-         CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
-     &               WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &               WORK(KFREE),LFREE)
 #endif
          CALL MEMREL('ERIFCK',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
@@ -604,7 +596,7 @@ C
 #include <blocks.h>
 C
 #include <memint.h> 
-      IF (NDMAT .EQ. 0) RETURN  
+      IF (NDMAT .LE. 0) RETURN  
       CALL QENTER('HRFCK1')
       I2TYP = 0
 C
@@ -749,7 +741,7 @@ c           calculation.
          END IF
 
          CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
-      ELSE
+         IF (IPRINT .GT. 0) CALL SCRSTA('HRFCK1/PARDRV',WORK(KDSKP))
 #endif
 C
 C        Calculate full Coulomb and exchange weighted with hfxfac 
@@ -793,6 +785,7 @@ C
             HFXFAC = HFXFC0
          END IF
          IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
+         IF (IPRINT .GT. 0) CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP))
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
@@ -807,10 +800,12 @@ C
       IF (IPRINT.GT.5) THEN
          CALL HEADER('Density and Fock matrices in HRFCK1',-1)
          DO 300 I = 1, NDMAT
-            WRITE (LUPRI,'(//A,2I3)') ' Density matrix No.',I,NDMAT
-            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(//A,2I3)') ' Fock matrix No.',I,NDMAT
-            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(//A,I3,A,I3)')
+     &         ' Density matrix No.',I,' of',NDMAT
+            CALL OUTPUTx(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(//A,I3,A,I3)')
+     &         ' Fock matrix No.',I,' of',NDMAT
+            CALL OUTPUTx(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
 C
