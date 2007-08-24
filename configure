@@ -330,13 +330,13 @@ if [ "$answer" = "y" ]; then
 # MPI code is IBMs xlf
 #
         if [ "$WHICH" = "rs6000" -o "$WHICH" = "darwin" ]; then
-            complist="mpxlf mpif77 $complist"
+            complist="mpxlf mpif90 mpif77 $complist"
             ccmplist="mpcc  mpicc  $ccmplist"
             parlib='no'
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
         else
-            complist="mpif77 $complist"
+            complist="mpif90 mpif77 $complist"
             ccmplist="mpicc  $ccmplist"
             parlib='yes'
         fi
@@ -661,10 +661,10 @@ if [ "$answer" = "y" ]; then
     do
        $ECHO 'How many millions of *8 words to use for storing 2-el.integrals? \c'
        read incoresiz
+       incoresiz=`expr $incoresiz \* 1000000`
 #      check that user hasn't just hit return (giving an empty string)
        if [ "$incoresiz" = "" ]; then incoresiz=0; fi
     done
-    incoresiz=`expr $incoresiz \* 1000000`
     $ECHO '\n-->Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
     
 else
@@ -688,10 +688,10 @@ do
     else 
        read memsiz
     fi
+    memsiz=`expr $memsiz \* 1000000`
 #   check that user hasn't just hit return (giving an empty string)
     if [ "$memsiz" = "" ]; then memsiz=0; fi
 done
-memsiz=`expr $memsiz \* 1000000`
 $ECHO '\n-->Program will be installed with a default work memory of '$memsiz' words'
 
 #
@@ -835,21 +835,23 @@ case "$WHICH" in
 	  else
 	     copt="$copt -q64"
 	     opt="$opt -q64"
+	     cpp=${cpp}",-DVAR_INT64"
 	  fi;;
     iris4d)
+          cpp="-DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           case $opsys in
-               IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
-                       copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
-	       *) opt='-O2 -n32 -mips3 -G 0 -woff 2290 -OPT:Olimit=0'
+               IRIX64)  opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0 -woff 2290'
+                       copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0'
+                        cpp="$cpp -DVAR_INT64";;
+	       *)  opt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0 -woff 2290'
                   copt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0';;
           esac
 	  if [ $F77 = 'f90' ]; then
-                specopt="-DVAR_MFDS"
                 F77="f90 -cpp"
+                cpp="$cpp -DVAR_MFDS"
           else
-                specopt="-DNO_F90"
+                cpp="$cpp -DNO_F90"
           fi
-          cpp="-DSYS_IRIX $specopt -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ $split = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
@@ -930,15 +932,17 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"
           if [ $arch = "ia64/hpux" ]; then
-             opt='+O2 +U77 +Onolimit +Oparmsoverlap +ppu'
-             LIB="$LIB"
+              opt='+O2 +Onolimit +Oparmsoverlap +U77 +ppu'
              copt='+O2 +Onolimit +Oparmsoverlap'
+             LIB="$LIB"
+             cpp=${cpp}" -DVAR_INT64"
           else
              if [ $F77 = 'f90' ]; then
                  case $bit in
                      64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
                          LIB="$LIB +U77 +DA2.0W"
-                         copt='+DA2.0W +O3 +Onolimit +Ofastaccess';;
+                         copt='+DA2.0W +O3 +Onolimit +Ofastaccess'
+             		 cpp=${cpp}" -DVAR_INT64";;
                      *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
                          LIB="-lV7 +U77 $LIB"
                          copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
@@ -1015,8 +1019,8 @@ case "$WHICH" in
           pgf77)
              cpp="-DVAR_PGF77 $cpp"
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
-             copt="-fastsse -Mvect=idiom -Munroll -c9x -DRESTRICT=restrict"
-             opt="-fastsse -Munroll"; safe_opt="-fastsse"
+             copt="-fastsse -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
+              opt="-fastsse -Munroll"; safe_opt="-fastsse"
              ;;
           gfortran)
              gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
@@ -1025,11 +1029,12 @@ case "$WHICH" in
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                      march="-march=$prc -malign-double";;
-             x86_64) march="-march=x86-64";;
+             x86_64) march="-march=x86-64"
+		     cpp=${cpp}" -DVAR_INT64";;
                  *) march="";
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-             opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+              opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
              ;;
 
           *)
@@ -1062,11 +1067,12 @@ case "$WHICH" in
               cpp="-DVAR_G77 $cpp"
               case "$prc" in
               alpha)  copt="-mieee";;
-              x86_64) copt="-march=x86-64";;
+              x86_64) copt="-march=x86-64"
+		      cpp=${cpp}" -DVAR_INT64";;
                   *)  copt="-mcpu=$prc -malign-double" 
               esac
               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-              opt="$copt -fno-globals -Wno-globals"
+               opt="$copt -fno-globals -Wno-globals"
               copt="$copt -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
               ;;
           esac
