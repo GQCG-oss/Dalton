@@ -1435,12 +1435,12 @@ C     ... default print level for statistics /hjaaj apr 2000
          WRITE (LUPRI,'(4X,A)')
      &     'Integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
-         RUNERI = RUNERI .AND. .NOT. PARCAL
-         IF (.NOT. RUNERI) THEN
-            NINFO = NINFO + 1
-            WRITE (LUPRI,'(3X,A)')
-     & ' INFO: NO! ERI is only implemented for direct and not parallel'
-         END IF
+!        RUNERI = RUNERI .AND. .NOT. PARCAL
+!        IF (.NOT. RUNERI) THEN
+!           NINFO = NINFO + 1
+!           WRITE (LUPRI,'(3X,A)')
+!    & ' INFO: NO! ERI is only implemented for direct and not parallel'
+!        END IF
       END IF
       IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
      &     'Vector length used in direct Fock matrix calculations '//
