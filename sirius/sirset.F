@@ -959,15 +959,7 @@ C     Set up RAS active to active orbital rotations
 C     from symmetry ISYM to JSYM.
 C
 #include <implicit.h>
-#if defined (VAR_STAR2)
-      INTEGER*2 JWOP(2,*)
-#else
-#if defined (VAR_STAR4)
-      INTEGER*4 JWOP(2,*)
-#else
       INTEGER JWOP(2,*)
-#endif
-#endif
 C
 C Used from common blocks:
 C  INFINP : MCTYPE,NELMN1,NELMX1,NELMN3,NELMX3,NACTEL

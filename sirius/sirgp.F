@@ -285,15 +285,7 @@ C the kappa vector for use in one-index transformation.
 C
 #include <implicit.h>
       DIMENSION UPWOP(NORBT,NORBT),WOP(NWOPT)
-#if defined (VAR_STAR2)
-      INTEGER*2 JWOP(2,NWOPT)
-#else
-#if defined (VAR_STAR4)
-      INTEGER*4 JWOP(2,NWOPT)
-#else
       INTEGER JWOP(2,NWOPT)
-#endif
-#endif
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBX
@@ -321,15 +313,7 @@ C ("WOP") from matrix form (the reverse of UPKWOP)
 C
 #include <implicit.h>
       DIMENSION UPWOP(NORBT,NORBT),WOP(NWOPT)
-#if defined (VAR_STAR2)
-      INTEGER*2 JWOP(2,NWOPT)
-#else
-#if defined (VAR_STAR4)
-      INTEGER*4 JWOP(2,NWOPT)
-#else
       INTEGER JWOP(2,NWOPT)
-#endif
-#endif
 C
 C Used from common blocks:
 C   INFORB : NORBT
