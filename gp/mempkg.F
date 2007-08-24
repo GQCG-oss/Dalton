@@ -86,12 +86,14 @@ Chj1  CALL QENTER('MEMGET  ')
          LREAL = LENGTH
       ELSE IF (TYPE(1:4) .EQ. 'COMP') THEN
          LREAL = 2*LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE' .OR. TYPE(1:4) .EQ. 'INT4') THEN
+      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
+      ELSE IF (TYPE(1:4) .EQ. 'INT4') THEN
+         LREAL = (LENGTH-1)/2 + 1
+      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
+         LREAL = (LENGTH-1)/4 + 1
       ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
-         LREAL = (LENGTH-1)/IRAT2 + 1
       ELSE IF (TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
