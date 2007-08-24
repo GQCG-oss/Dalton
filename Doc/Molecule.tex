@@ -153,7 +153,7 @@ of 1.0D-15 will give integrals correct to approximately 1.0D-13.
 \end{description}
 \end{description}
 
-Note that if one wants to use the basis set
+Note that if one wants to use a basis set
 library\index{basis set!library}, there are two
 options. One option is to use a common basis set for the entire
 molecule in which the first line should be replaced by two lines,
@@ -319,8 +319,6 @@ by splitting
 basis functions of the quantum number into different blocks. However,
 this will decrease the performance of the
 integral\index{performance of integral program} calculation.
-%Use \verb|MAXPL1 = 0| for point charges (and first line cannot be
-%\verb|BASIS|).
 \item[Charge] \verb|(Real)|. {\em This keyword is required\/}.
   Charge of this atom\index{charge of atom} or point charge. 
 \item[Pol] \verb|(Integer+real)|. This keyword adds single, primitive
@@ -330,7 +328,7 @@ integral\index{performance of integral program} calculation.
   function with exponent $0.05$ and a $d$ function with exponents
   $0.6$ we can write \verb|Pol 2 0.05 3 0.6|.
 \item[Set] \verb|(Integer)|. Indicates whether the basis set specified
-  is the ordinary orbital basis or the auxiliray basis set needed for
+  is the ordinary orbital basis or the auxiliary basis set needed for
   instance in certain r12 calculations, see
   Sec.~\ref{sec:auxbasis}. The keyword is only active when the keyword
   \Key{AUXBAS} has been specified in the  \Sec{*INTEGRALS} input section.
@@ -342,7 +340,7 @@ each atom of the same type, although this is not required. Note that
 only the first four characters of the atom name will be used by the
 program, and that no spaces are allowed in naming the atom.
 \item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
-has been requested on line $4$ of the input).
+has been requested on line 4 of the input).
 \item[Y] $y$-coordinate.
 \item[Z] $z$-coordinate.
 \item[Isotope=] \index{Isotope=} Specify the atomic mass of the nucleus (closest
@@ -350,7 +348,7 @@ has been requested on line $4$ of the input).
   of the element will be used. When automatic symmetry detection is
   used, the program will distinguish between different nuclei if they
   have different atomic mass number. A calculation of HDO would thus
-  be run in C$_s$ symmetry. 
+  be run in $C_s$ symmetry. 
 \end{description}
 The Cartesian coordinates may
 be given in free format.

@@ -62,7 +62,7 @@ undifferentiated solvent integrals in the {\her} section, see Chapter~\ref{sec:o
 \item[\Key{CTOCD}] Starts the calculation of the magnetic properties with the
 CTOCD-DZ\index{CTOCD-DZ} method (Ref.~\cite{paololazz1,paololazz2,ctocd}). This sets also 
 automatically the .NOLOND option since the CTOCD-DZ formalism is gauge 
-independent for Nuclear Magnetic Shieldings. The default gauge origin is choosen to be 
+independent for Nuclear Magnetic Shieldings. The default gauge origin is chosen to be 
 the center of mass.  \Key{CTOCD} and \Key{SOPPA} or \Key{SOPPA(CCSD)} can be combined to 
 perform CTOCD calculations at the SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} level.
 
@@ -451,7 +451,7 @@ used during the calculation of spin-rotation constants.
 \item[\Key{SPIN-S}] Invokes the calculation of indirect nuclear
 spin-spin coupling\index{spin-spin coupling} constants. By default all
 spin-spin couplings 
-between nuclei with naturally occuring isotopes with abundance more
+between nuclei with naturally occurring isotopes with abundance more
 than 1\% and non-zero spin will be calculated, as well as all the different
 contributions (Fermi contact, dia- and paramagnetic spin-orbit and
 spin-dipole)\index{Fermi contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in 
@@ -532,7 +532,7 @@ Set the print level in the calculation of the necessary differentiated
 integrals when calculating Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Read one more line
 containing print level. Default value is value of \verb|IPRDEF|
 from the general input module. The print level of the rest of the
-calculation of Atomic Axial Tensors are controled by the keyword
+calculation of Atomic Axial Tensors are controlled by the keyword
 \verb|.PRINT |.
 
 \item[\Key{NODBDR}] Skip contributions originating from first
@@ -564,7 +564,7 @@ results for VCD\index{VCD}\index{vibrational circular dichroism}. Mainly for deb
 
 Set print level in the calculation of Atomic Axial Tensors\index{atomic axial tensor}\index{AAT} (this does
 not include the print level in the integral calculation, which are
-controled by the keyword \verb|.INTPRI|). Read one
+controlled by the keyword \verb|.INTPRI|). Read one
 more line containing print level. Default value is the value of
 \verb|IPRDEF| from the general input module.
 
@@ -765,7 +765,7 @@ integrals when calculating the linear response functions. Read one
 more line containing print level. Default value is the value of 
 \verb|IPRDEF| from the general input module. The print level of the
 rest of the calculation of electronic excitation energies are
-controled by the keyword \verb|.PRINT |. 
+controlled by the keyword \verb|.PRINT |. 
 
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXITE|
@@ -848,7 +848,7 @@ calculated.
 
 Directive that control the calculation of one-electron expectation
 values appear in the \verb|*EXPECT| input module. Notice, however,
-that the directives controling the calculation of one-electron
+that the directives controlling the calculation of one-electron
 expectation values to the geometric Hessian appear in the
 \verb|*ONEINT| section.
 
@@ -1153,7 +1153,7 @@ keywords \verb|.FCKPRI|, \verb|.GDYPRI|, \verb|.INTPRI|,
 Set print level for the  two-electron densities transformation. Read
 one more line containing print level. 
 Default value is the value of  \verb|IPRDEF| from the general input
-module. Note also that this print level is also controled by the keyword
+module. Note also that this print level is also controlled by the keyword
 \verb|.PRINT |. 
 
 \item[\Key{PTRSKI}] Skip transformation of active two-electron
@@ -1554,7 +1554,7 @@ Calculate the indirect spin--spin coupling constants for a given
 isotopic constitution of the molecule. The next line reads the isotope
 number for each of the atoms in the molecule (including also
 symmetry-dependent molecules). The isotopic number for each atom is
-given in terms of the occurance in the list of natural abundance of
+given in terms of the occurrence in the list of natural abundance of
 the isotopes for the given atom, {\it i.e.\/} the most abundant
 isotope is number 1, the second-most abundant is number 2 and so on.
 
@@ -1601,7 +1601,7 @@ dipole--Fermi\index{spin-dipole}\index{Fermi contact} contact cross
 term, and the 
 Fermi contact--Fermi contact contribution for the triplet
 responses. The first of these two terms only contribute to the
-anistotropy, and one may in this way obtain the most important triplet
+anisotropy, and one may in this way obtain the most important triplet
 contributions to the isotropic and 
 anisotropic\index{spin-spin coupling}\index{spin-spin anisotropy}
 spin-spin couplings by only solving one instead of seven response
@@ -1813,7 +1813,7 @@ noddy-routine for comparison.
 Set print level for the two-electron density matrix transformation.
 Read one more line containing print level. Default value is the
 value of  \verb|IPRDEF| from the general input module. Note also that
-this print level is controled by the keyword \verb|.PRINT |.
+this print level is controlled by the keyword \verb|.PRINT |.
 
 \item[\Key{PTRSKI}] Skip transformation of active two-electron
 density matrix. This will give wrong results for the total molecular
@@ -1828,7 +1828,7 @@ under \verb|.INTPRI| above. Mainly for debugging purposes.
 Set print level for the two-electron density matrix sorting. Read one
 more line containing print level. Default value is the value of
 \verb|IPRDEF| from the general input module. Note also that this print
-level is controled by the keyword \verb|.PRINT |.
+level is controlled by the keyword \verb|.PRINT |.
 
 \item[\Key{SORSKI}] Skip sorting of symmetry-orbital two-electron
 density matrix. This will give wrong results for the total molecular
