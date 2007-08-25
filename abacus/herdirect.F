@@ -742,6 +742,7 @@ c           calculation.
 
          CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
          IF (IPRINT .GT. 0) CALL SCRSTA('HRFCK1/PARDRV',WORK(KDSKP))
+      ELSE
 #endif
 C
 C        Calculate full Coulomb and exchange weighted with hfxfac 
