@@ -63,7 +63,7 @@ cat > cc2_r12_aux2_bh_sym_a2.dal <<'%EOF%'
 *SCF INPUT
 .THRESH
  1.0D-10
-.SCF OCC
+.DOUBLY OCCUPIED
  2 1 0 0
 *CC INPUT
 .CC2
