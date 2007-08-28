@@ -486,7 +486,7 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
             grid->curr_point  = ipnt;
             grid_blocked_getval(grid, ipnt, len, work, lwork);
             for(i=0; i<ndmat; i++) {
-                int doff = i*inforb_.n2orbx;
+                int doff = i*inforb_.n2basx;
                 int roff = i*DFT_BLLEN;
                 if(grid->dogga)
                     FSYM2(getrho_blocked_gga)(dmat+doff, grid->atv, grid->bas_bl_cnt,
