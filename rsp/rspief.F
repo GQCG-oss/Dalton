@@ -201,21 +201,27 @@ Clara first clear for KDV, KDW and charges
          CALL DZERO(WRK(KDW),N2BASX)
          CALL DZERO(WRK(KDV),NNBASX)
 Clara
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara dtv='
       call output(dtv(1,icsim),1,nasht,1,nasht,nasht,nasht,1,lupri)
+#endif
 clara
 Clara change call to fckden with fckden2 and KDV with KDW
          CALL FCKDEN2(.FALSE.,.TRUE.,DUMMY,WRK(KDW),CMO,DTV(1,ICSIM),
      &               WRK(KW30),LW30)
 Clara add call to dgfsp
 Clara
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara kdw='
       call output(wrk(kdw),1,nbast,1,nbast,nbast,nbast,1,lupri)
+#endif
 clara
          CALL DGEFSP(NBAST,WRK(KDW),WRK(KDV))
 clara 
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara kdv='
       call outpak (wrk(kdv),nbast,1,lupri)
+#endif
 clara 
 C      if (abs(wrk(kdv+ 3)-0.00000000d0)<1d-7.and.
 C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
@@ -236,15 +242,19 @@ C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
 C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
 C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
 clara 
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara kdv after='
       call outpak (wrk(kdv),nbast,1,lupri)
+#endif
 clara 
          CALL J1INT(WRK(KCHRG),.TRUE.,WRK(KDV),1,.FALSE.,'NPETES ',
      &              KSYMOP,WRK(KW30),LW30)
          CALL DSCAL(NTS,-1.0D0,WRK(KCHRG),1)
 Clara
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara kchrg='
       call output (wrk(kchrg),1,nts,1,1,nts,1,1,lupri)
+#endif
 clara
          CALL V2Q(WRK(KW30),WRK(KCHRG),VTEX(1,ICSIM),QET,NEQRSP)
          IF (KSYMOP .NE. 1) THEN
@@ -260,16 +270,20 @@ C
       DO ICSIM = 1, NCSIM
          CALL DZERO(WRK(KJPCMAO),NNBASX)
 Clara
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara vtex='
       call output(vtex,1,nts,1,ncsim,nts,ncsim,1,lupri)
 C      write (lupri,'(<1+(nts-1)/4>(4f18.12/))') vtex(:,icsim)
+#endif
 clara
          CALL J1INT(VTEX(1,ICSIM),.FALSE.,WRK(KJPCMAO),1,.FALSE.,
      &              'NPETES ',KSYMOP,WRK(KW30),LW30)
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
 Clara
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara icsim=', icsim,' nnbasx=', nnbasx, 'jpcmao='
       call outpak(wrk(kjpcmao),nbast,1,lupri)
+#endif
 clara
          CALL UTHU(WRK(KJPCMAO),WRK(JPCMXB),WRK(KUCMO),WRK(KW30),
      &             NBAST,NORBT)
@@ -282,8 +296,10 @@ Clara clear for kxbac
          JXBAC  = KXBAC  + (ICSIM - 1)*NNASHX
          CALL GETAC2(WRK(JPCMXB),WRK(JXBAC))
 Clara
+#ifdef PCM_DEBUG
       write (lupri,*) 'lara icsim=',icsim,' nnashx=',nnashx, 'jxbac='
       call outpak(wrk(jxbac),nbast,1,lupri)
+#endif
 clara
          IF (TRPLET) THEN
             TEMP = SOLELM(DVTR,WRK(JXBAC),WRK(JPCMXB),XBAC)
