@@ -72,9 +72,9 @@ c /* deck CC_SOP */
       PARAMETER (MSGDBG = '[debug] CC_SOP> ')
 
 #if defined (SYS_CRAY)
-      REAL ZERO, SECOND
+      REAL ZERO
 #else
-      DOUBLE PRECISION ZERO, SECOND
+      DOUBLE PRECISION ZERO
 #endif
       PARAMETER (ZERO = 0.0d0)
 

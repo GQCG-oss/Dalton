@@ -93,7 +93,6 @@ C  /* Deck cc3_triplet */
       REAL FOCK(*), XLAMDP(*), XLAMDH(*), XLAMPC(*)
       REAL XLAMHC(*), WORK(LWORK), C2AMP(*), C2AMM(*)
       REAL DDOT, RHO2N
-      REAL SECOND
       REAL XONE, XHALF, ECURR
       REAL C1AM(*)
 #else
@@ -104,7 +103,6 @@ C  /* Deck cc3_triplet */
       DOUBLE PRECISION DDOT, RHO2N
       DOUBLE PRECISION XONE, XHALF, ECURR
       DOUBLE PRECISION C1AM(*)
-      DOUBLE PRECISION SECOND
 #endif
 !
       LOGICAL LOCDBG
@@ -122,6 +120,7 @@ C  /* Deck cc3_triplet */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
+#include <second.h>
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !

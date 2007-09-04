@@ -235,9 +235,9 @@ c/* Deck CC_BMAT */
       INTEGER ILSTSYM
 
 #if defined (SYS_CRAY) 
-      REAL DDOT, DTIME, TIMALL, TIMTRN, SECOND
+      REAL DDOT, DTIME, TIMALL, TIMTRN
 #else 
-      DOUBLE PRECISION DDOT, DTIME, TIMALL, TIMTRN, SECOND
+      DOUBLE PRECISION DDOT, DTIME, TIMALL, TIMTRN
 #endif 
   
 *---------------------------------------------------------------------*

@@ -78,10 +78,10 @@ C=====================================================================*
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL TIM0, GRDNRM, SECOND
+      REAL TIM0, GRDNRM
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION TIM0, GRDNRM, SECOND
+      DOUBLE PRECISION TIM0, GRDNRM
 #endif
 
       LOGICAL SYM1ONLY, LPTALSO
