@@ -1680,9 +1680,6 @@ C
       LOGICAL DOHYP
       CHARACTER*8 ALAB,BLAB,CLAB
 C
-      KFREE = 1
-      LFREE = LWRK
-C
       NQRF = 0
       NFREQ_ALPHA = 0
 C

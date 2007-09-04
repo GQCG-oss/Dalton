@@ -154,7 +154,7 @@ C--------------------------------------------------------
          IF (IREFSY .EQ. KSYMST) THEN
             WRK(KOVLP-1+IOSIM) = DDOT(KZCONF,CREF,1,EVECS(1,IOSIM),1)
          ELSE
-            WRK(KOVLP-1+IOSIM) = D0
+            WRK(KOVLP-1+IOSIM) = 0.0D0
          END IF
 
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX

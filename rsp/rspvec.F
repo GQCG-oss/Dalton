@@ -2192,24 +2192,24 @@ C
                   WRITE(LUPRI,'(/,6x,a)')
      &    ' Rotationally averaged two-photon transition strengths',
      &    '                 and rate constants'
-                  DELTA_TPlpa = ZERO
+                  DELTA_TPlpa = 0.0D0
                   DELTA_TPlpa = ((2*DF)+(4*DG))
-                  DELTA_TPlpe = ZERO
+                  DELTA_TPlpe = 0.0D0
                   DELTA_TPlpe = ((-1*DF)+(5*DG))
-                  DELTA_TPc = ZERO
+                  DELTA_TPc = 0.0D0
                   DELTA_TPc = ((-2*DF)+(6*DG))
                   AUTIME = HBAR/XTJ
-                  dK_1 = ZERO
+                  dK_1 = 0.0D0
                   dK_1 = (XTANG*XTANG*XTANG*XTANG)*AUTIME
-                  dK_2 = ZERO
+                  dK_2 = 0.0D0
                   dK_2 = (8*PI*PI*PI)*(ALPHAC*ALPHAC)
-                  dK_3 = ZERO
+                  dK_3 = 0.0D0
                   dK_3 = RESFRE(IC,ISYMC)*RESFRE(IC,ISYMC)
-                  dK_lpa = ZERO
+                  dK_lpa = 0.0D0
                   dK_lpa = dK_1*dK_2*dK_3*DELTA_TPlpa
-                  dK_lpe = ZERO
+                  dK_lpe = 0.0D0
                   dK_lpe = dK_1*dK_2*dK_3*DELTA_TPlpe
-                  dK_c = ZERO
+                  dK_c = 0.0D0
                   dK_c = dK_1*dK_2*dK_3*DELTA_TPc
                   WRITE(LUPRI,'(/,6x,a)')
      &    ' +-------------------+----------------+----------------+'

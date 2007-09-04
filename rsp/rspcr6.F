@@ -751,7 +751,7 @@ C
 C
 #include <implicit.h>
 C
-      CHARACTER*7 LAB
+      CHARACTER*8 LAB
 C
 C Map dipole operators to integer number
 C X => 1, Y => 2, and Z => 3
@@ -786,7 +786,7 @@ c     unpack response vectors.
       CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
       CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
       CALL GTZYMT(NSIM,VECD,KZYVD,ISYMD,ZYMD,MJWOP)
-C      ADDFOCK = .NOT.DIRFCK
+C     ADDFOCK = .NOT.DIRFCK
       ADDFOCK = .FALSE.
 c     compute dft contribution
       CALL DFTCRCF(FI,CMO,

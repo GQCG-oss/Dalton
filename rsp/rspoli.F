@@ -714,9 +714,9 @@ C
             ISYMDM(1)=1
             IFCTYP(1)=12
             CALL SIRFCK(
-     &         WRK(KFA),WRK(KDA),1,ISYMDM,IFCTYP,DIRFCK,WRK(KFREE),LFREE
-     &         )
-            CALL AOTOMO(WRK(KFA),FVTD,CMO,1)
+     &        WRK(KFA),WRK(KDA),1,ISYMDM,IFCTYP,DIRFCK,WRK(KFREE),LFREE)
+            CALL AOTOMO(WRK(KFA),FVTD,CMO,1,WRK(KFREE),LFREE)
+C           CALL AOTOMO(XAO,XMO,CMO,XSYM,WRK,LWRK)
          END IF
       END IF
  2000 CONTINUE
@@ -734,9 +734,9 @@ C
             END DO
          ELSE
             call dft_lin_respf(NOSIM,fcone,cmo,zymat,
-     &                         trplet, ksymop,wrk(kwrk0),lfree)
+     &                         trplet, ksymop,wrk(kfree),lfree)
 c              CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
-c     &                    KSYMOP,WRK(KWRK0),LFREE)
+c     &                    KSYMOP,WRK(KFREE),LFREE)
          ENDIF
       END IF
 C

@@ -375,7 +375,7 @@ C
 C
       DIPORG(1) = XI
       DIPORG(2) = YI
-      DIPORG(3) = Z1
+      DIPORG(3) = ZI
 C
       IF (IPRRSP.GE.IPRLVL) THEN
          WRITE(LUPRI,'(/3A,2D22.14)') 'Norm of TOPGET in ', PRSTR,

@@ -273,7 +273,9 @@ C      CALL MEMGET('REAL',KV3Q0,N2ORBX,WORK,KFREE,LFREE)
 
       CALL UPKCMO(CMO,WORK(KUCMO))
 
+#ifdef PCM_DEBUG
       print *,'beg of rsppot',iklvl,isymv1,isymv2,isymdn
+#endif
 
 Clf this initialization of symmetry needs to be rethought if one is to implement CR!!!!
       ISYM = 1
@@ -291,7 +293,9 @@ Clf: NOTE: probably nosim needs to be changed according to symmetry.
       NOSIM = 1
       
 
+#ifdef PCM_DEBUG
       write(lupri,*) 'chg before pot',iklvl
+#endif
       CALL OUTPUT(CHG,1,NTS,1,1,NTS,1,1,LUPRI)
       CALL J1INT(CHG,.FALSE.,WORK(KVAOT),NOSIM,.FALSE.,'NPETES ',
      &     ISYMT,WORK(KFREE),LFREE)
@@ -299,7 +303,9 @@ Clf: NOTE: probably nosim needs to be changed according to symmetry.
      $     NBAST,NORBT)
       CALL DSPTSI(NORBT,WORK(KVMOT),WORK(KVMO2))
 
+#ifdef PCM_DEBUG
       write(lupri,*) 'potentialsXcharges', iklvl
+#endif
       CALL OUTPUT(WORK(KVMO2),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 
       IGRSPI = 0
@@ -327,7 +333,9 @@ C     Third transformation of potentials.....
       IF ((IKLVL.EQ.0).OR.(IKLVL.EQ.2)) THEN
          CALL DCOPY(N2ORBX,WORK(KVMO2),1,WORK(KVMO),1)
       END IF
+#ifdef PCM_DEBUG
       write(lupri,*) 'potentialsXcharges after transformations', iklvl
+#endif
       CALL OUTPUT(WORK(KVMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 
 C
@@ -399,7 +407,9 @@ C
       LFREE = LWORK
 Clf dirty fix!!
       NTSIRR = NTS
+#ifdef PCM_DEBUG
       print *,'rspasc',lwork,lfree,nnbasx,norbt,nbast,n2orbx,nts,ntsirr
+#endif
       CALL MEMGET('REAL',KCHGAO,NNBASX,     WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KUCMO ,NORBT*NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTELM ,N2ORBX,     WORK,KFREE,LFREE)
@@ -495,7 +505,9 @@ C     Third transformation of charges: hope you can figure out the formula.....
             END IF
 C     Contract transformed charges with the density
             CALL MELONE(WORK(KTELM),ISYM,DEN,OVLAP,FACT,200,'RSPASC')
+#ifdef PCM_DEBUG
             print *,its,fact,ilop,jts
+#endif
             WORK(KTCHG + JTS - 1) = FACT
             JCHGAO = JCHGAO + NNBASX
          END DO
@@ -540,7 +552,9 @@ C
       DIMENSION XINDX(*)
       DIMENSION WORK(*)
 C
+#ifdef PCM_DEBUG
       print *,'lorb,lcon,lrefst',lorb,lcon,lrefst
+#endif
 clf      IF ( IPRRSP .GT. 150 ) THEN
       IF ( .true. ) THEN
          WRITE(LUPRI,'(A)') ' Vector in PCM1GR'
