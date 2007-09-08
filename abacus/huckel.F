@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C   /* Deck hucdrv */
-      SUBROUTINE HUCDRV(WORK,LWORK,CMO)
+      SUBROUTINE HUCDRV(CMO,WORK,LWORK)
 C
 C     K.Ruud, July-96
 C
@@ -150,8 +150,8 @@ C
          JPOS   = 1
 C
          DO ISYM = 1, NSYM
-            NHAOSY = NHUCAO(ISYM)
-         IF (NHAOSY .GT. 0) THEN
+            NHUCAOI = NHUCAO(ISYM)
+         IF (NHUCAOI .GT. 0) THEN
             NBASI  = NBAS(ISYM)
             IBASTO = IBAS(ISYM) + NHUCT
             IHUCI  = IBASTO + NBASI
@@ -161,19 +161,19 @@ C           Copy the Huckel overlap matrix into a lower triangular matrix,
 C           where the elements are sorted in consecutive order
 C
             IPOS = JPOS
-            DO I = 1, NHAOSY
+            DO I = 1, NHUCAOI
                CALL DCOPY(I,TOTOVL(ISTRT + IHUCI + 1),1,HUCOVL(IPOS),1)
                IPOS = IPOS + I
                ISTRT = ISTRT + (IHUCI + I)
-            END DO   ! I = 1,NHAOSY
+            END DO   ! I = 1,NHUCAOI
             IF (P6FLAG(6) .OR. IPRRHF.GE.6) THEN
                WRITE (LUPRI,'(/A,I3,/A)')
      &            ' Extracted EWMO overlap matrix of symmetry :',ISYM,
      &            ' ------------------------------------------------'
-               CALL OUTPAK(HUCOVL(JPOS),NHAOSY,1,LUPRI)
+               CALL OUTPAK(HUCOVL(JPOS),NHUCAOI,1,LUPRI)
             END IF
             JPOS = IPOS
-            NHUCT = NHUCT + NHAOSY
+            NHUCT = NHUCT + NHUCAOI
          END IF
          END DO   ! ISYM = 1,NSYM
       END IF
@@ -210,8 +210,8 @@ C
       JPOS   = 1
 C
       DO 100 ISYM = 1, NSYM
-         NHAOSY = NHUCAO(ISYM)
-         IF (NHAOSY .EQ. 0) GO TO 100
+         NHUCAOI = NHUCAO(ISYM)
+         IF (NHUCAOI .EQ. 0) GO TO 100
          NBASI  = NBAS(ISYM)
          IBASTO = IBAS(ISYM) + NHUCT
          IHUCI  = IBASTO + NBASI
@@ -219,10 +219,10 @@ C
          IF (NORBI .EQ. 0) THEN
             WRITE (LUPRI,'(/A,I3/I5,A/A)')
      &         'HUCDRV warning in symmetry',ISYM,
-     &         NHAOSY,' Huckel orbitals, but no orbitals!',
+     &         NHUCAOI,' Huckel orbitals, but no orbitals!',
      &         'Thus no Huckel projection in this symmetry!'
             GO TO 100
-c           CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
+c           CALL QUIT('HUCDRV error, NHUCAOI.ne.0 .and. NORBI.eq.0')
          END IF
          ISTRT  = (IHUCI*(IHUCI + 1))/2
          ICSYM  = ICMO(ISYM) + 1
@@ -244,7 +244,7 @@ C
 C     Also extract the transformation matrix from HUCKEL basis to full basis
 C
          IPOS = 1
-         DO 110 I = 1, NHAOSY
+         DO 110 I = 1, NHUCAOI
             CALL DCOPY(I,TOTOVL(ISTRT + IHUCI + 1),1,
      &                 HUCMAT(IPOS),1)
             CALL DCOPY(NBASI,TOTOVL(ISTRT + IBASTO + 1),1,
@@ -256,52 +256,52 @@ C
             WRITE (LUPRI,'(/A,I3,/A)')
      &           ' Extracted Huckel matrix of symmetry :',ISYM,
      &           ' ------------------------------------------------'
-            CALL OUTPAK(HUCMAT,NHAOSY,1,LUPRI)
+            CALL OUTPAK(HUCMAT,NHUCAOI,1,LUPRI)
          END IF
          IF (P6FLAG(6) .OR. IPRRHF.GE.15) THEN
             WRITE (LUPRI,'(/A,I3,/A)')
      &           ' Extracted transformation matrix of symmetry :',ISYM,
      &           ' ------------------------------------------------'
-            CALL OUTPUT(TRANMT,1,NBASI,1,NHAOSY,NBASI,NHAOSY,1,LUPRI)
+            CALL OUTPUT(TRANMT,1,NBASI,1,NHUCAOI,NBASI,NHUCAOI,1,LUPRI)
          END IF
 C
-C        EWMO or EHT ?
+C       ??? EWMO or EHT ?
 C
         IF (EWMO) THEN
 C        ... call EISPACK routine RSG
-         N2HAOSY = NHAOSY*NHAOSY
+         N2HUCAOI = NHUCAOI*NHUCAOI
          IPOS = 1 + (NHUCT*(NHUCT + 1))/2 + NHUCT
          KHMAT = KWRK
-         KSMAT = KHMAT+ N2HAOSY
-         KFV1  = KSMAT+ N2HAOSY
-         KFV2  = KFV1 + NHAOSY
-         KLAST = KFV2 + NHAOSY
+         KSMAT = KHMAT+ N2HUCAOI
+         KFV1  = KSMAT+ N2HUCAOI
+         KFV2  = KFV1 + NHUCAOI
+         KLAST = KFV2 + NHUCAOI
          IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV','RSG',KLAST,LWORK)
-         CALL DSPTSI(NHAOSY,HUCMAT,WORK(KHMAT))
-         CALL DSPTSI(NHAOSY,HUCOVL(JPOS),WORK(KSMAT))
+         CALL DSPTSI(NHUCAOI,HUCMAT,WORK(KHMAT))
+         CALL DSPTSI(NHUCAOI,HUCOVL(JPOS),WORK(KSMAT))
          IF (P6FLAG(6) .OR. IPRRHF.GE.8) THEN
             WRITE (LUPRI,*) 'EWMO AO Hamiltonian matrix W'//
      &                      ' corresponding to separate atoms'
-            CALL OUTPUT(WORK(KHMAT),1,NHAOSY,1,NHAOSY,
-     &                  NHAOSY,NHAOSY,1,LUPRI)
+            CALL OUTPUT(WORK(KHMAT),1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
-         CALL DGEMM('N','N',NHAOSY,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KHMAT),NHAOSY, WORK(KSMAT),NHAOSY,0.D0,
-     &              EIGVEC,NHAOSY)
-         CALL DGEMM('N','N',NHAOSY,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KSMAT),NHAOSY, EIGVEC,NHAOSY,0.D0,
-     &              WORK(KHMAT),NHAOSY)
+         CALL DGEMM('N','N',NHUCAOI,NHUCAOI,NHUCAOI,1.D0,
+     &              WORK(KHMAT),NHUCAOI, WORK(KSMAT),NHUCAOI,0.D0,
+     &              EIGVEC,NHUCAOI)
+         CALL DGEMM('N','N',NHUCAOI,NHUCAOI,NHUCAOI,1.D0,
+     &              WORK(KSMAT),NHUCAOI, EIGVEC,NHUCAOI,0.D0,
+     &              WORK(KHMAT),NHUCAOI)
 C        HMAT = SWS , SMAT = S
          IF (P6FLAG(6) .OR. IPRRHF.GE.4) THEN
             WRITE (LUPRI,*) 'EWMO Hamiltonian matrix SWS'
-            CALL OUTPUT(WORK(KHMAT),1,NHAOSY,1,NHAOSY,
-     &                  NHAOSY,NHAOSY,1,LUPRI)
+            CALL OUTPUT(WORK(KHMAT),1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
             WRITE (LUPRI,*) 'EWMO overlap matrix S'
-            CALL OUTPUT(WORK(KSMAT),1,NHAOSY,1,NHAOSY,
-     &                  NHAOSY,NHAOSY,1,LUPRI)
+            CALL OUTPUT(WORK(KSMAT),1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
-         JPOS = JPOS + ( NHAOSY * (NHAOSY+1) ) / 2
-         CALL RSG(NHAOSY,NHAOSY,WORK(KHMAT),WORK(KSMAT),
+         JPOS = JPOS + ( NHUCAOI * (NHUCAOI+1) ) / 2
+         CALL RSG(NHUCAOI,NHUCAOI,WORK(KHMAT),WORK(KSMAT),
      &            EIGVAL(NHUCT+1),1,EIGVEC,WORK(KFV1),WORK(KFV2),IERR)
          IF ( IERR.NE.0 ) THEN
             WRITE(LUPRI,'(/A,I10)')
@@ -309,7 +309,7 @@ C        HMAT = SWS , SMAT = S
             CALL QUIT('HUCDRV: EWMO eigenvalue equation not converged')
          END IF
 C           Save orbital symmetry in EIGVLS
-            DO I = 1, NHAOSY
+            DO I = 1, NHUCAOI
                EIGVLS(NHUCT + I) = ISYM
             END DO
         ELSE
@@ -317,11 +317,11 @@ C
 C       EHT: Diagonalize Huckel matrix (Note: KLAST is not a misprint)
 C
          KSCRA1 = KWRK
-         KSCRA2 = KSCRA1 + NBASI
-         KLAST  = KSCRA1 + NBASI*NHAOSY
+         KSCRA2 = KSCRA1 + NHUCAOI
+         KLAST  = KSCRA1 + NBASI*NHUCAOI
          IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV','JACO',KLAST,LWORK)
-         CALL DUNIT(EIGVEC,NHAOSY)
-         CALL JACO(HUCMAT,EIGVEC,NHAOSY,NHAOSY,NHAOSY,WORK(KSCRA1),
+         CALL DUNIT(EIGVEC,NHUCAOI)
+         CALL JACO(HUCMAT,EIGVEC,NHUCAOI,NHUCAOI,NHUCAOI,WORK(KSCRA1),
      &             WORK(KSCRA2))
 C
 C     Sort the eigenvalues and eigenvectors
@@ -329,12 +329,12 @@ C     Save orbital symmetry in EIGVLS
 C
          II = 0
          DISYM = ISYM
-         DO 120 I = 1, NHAOSY
+         DO 120 I = 1, NHUCAOI
             II = II + I
             EIGVAL(NHUCT + I) = HUCMAT(II)
             EIGVLS(NHUCT + I) = DISYM
  120     CONTINUE 
-         CALL ORDER(EIGVEC,EIGVAL(NHUCT + 1),NHAOSY,NHAOSY)
+         CALL ORDER(EIGVEC,EIGVAL(NHUCT + 1),NHUCAOI,NHUCAOI)
         END IF
 C
 C
@@ -349,7 +349,7 @@ C
                WRITE (LUPRI,'(/A,I3)') ' Huckel EHT eigenvalues for'//
      &           ' symmetry :',ISYM
             END IF
-            WRITE (LUPRI,'(5X,5F15.6)') (EIGVAL(NHUCT+I), I = 1, NHAOSY)
+            WRITE (LUPRI,'(5X,5F15.6)') (EIGVAL(NHUCT+I), I=1, NHUCAOI)
          END IF
          IF (P6FLAG(6) .OR. IPRRHF.GE.2) THEN
             IF (EWMO) THEN
@@ -359,9 +359,10 @@ C
                WRITE (LUPRI,'(/A,I3)') ' Huckel EHT eigenvectors for'//
      &           ' symmetry :',ISYM
             END IF
-            CALL OUTPUT(EIGVEC,1,NHAOSY,1,NHAOSY,NHAOSY,NHAOSY,1,LUPRI)
+            CALL OUTPUT(EIGVEC,1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
-         NHUCT = NHUCT + NHAOSY
+         NHUCT = NHUCT + NHUCAOI
 C         
 C     Project eigenvectors onto complete basis
 C
@@ -378,36 +379,39 @@ C     where N,n is new basis NBASI,NORBI; O is old basis (Huckel basis);
 C     and CMO_(OO) contains the Huckel molecular orbitals in Huckel basis.
 
          KSCRA1 = KWRK
-         KSCRA2 = KSCRA1 + NBASI*NHAOSY
-         KLAST  = KSCRA2 + NBASI*NHAOSY
+         KSCRA2 = KSCRA1 + NBASI*NHUCAOI
+         KLAST  = KSCRA2 + NBASI*NHUCAOI
          IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEMM ',KLAST,LWORK)
 C        1) Do (S_{NO}*CMO_{O}) part: 
-         CALL DGEMM('N','N',NBASI,NHAOSY,NHAOSY,1.D0,
-     &              TRANMT,NBASI, EIGVEC,NHAOSY,0.D0,
+         CALL DGEMM('N','N',NBASI,NHUCAOI,NHUCAOI,1.D0,
+     &              TRANMT,NBASI, EIGVEC,NHUCAOI, 0.D0,
      &              WORK(KSCRA1),NBASI)
 C        2) Check for orbital types in Huckel basis not in regular basis
 C           (e.g. a 3d on Aluminium, not included in basis sets w/o pol)
-         MHAOSY = 0
-         DO IHAOSY = 1, NHAOSY
-            JSCRA1 = KSCRA1 + (IHAOSY-1)*NBASI
+         MHUCAOI = 0
+         DO IHUCAOI = 1, NHUCAOI
+            JSCRA1 = KSCRA1 + (IHUCAOI-1)*NBASI
             TNORM = DNRM2(NBASI,WORK(JSCRA1),1)
             IF (TNORM .GT. 1.0D-8) THEN
-               JSCRA2 = KSCRA2 + MHAOSY*NBASI
-               MHAOSY = MHAOSY + 1
+               JSCRA2 = KSCRA2 + MHUCAOI*NBASI
+               MHUCAOI = MHUCAOI + 1
                CALL DCOPY(NBASI,WORK(JSCRA1),1,WORK(JSCRA2),1)
             END IF
          END DO
-         IF (NHAOSY .NE. MHAOSY) THEN
+         IF (MHUCAOI .GT. NORBI) MHUCAOI = NORBI
+C        ... hjaaj sep 07: decrease if huckel basis bigger than user basis,
+C            e.g. if user is calculating with S without d-orbitals.
+         IF (NHUCAOI .NE. MHUCAOI) THEN
             WRITE(LUPRI,'(/A,I2,A,I3,A,I3)')
      &      'HUCDRV: reduced number of huckel orbitals in sym',ISYM,
-     &      ' from',NHAOSY,' to',MHAOSY
-            NHAOSY = MHAOSY
+     &      ' from',NHUCAOI,' to',MHUCAOI
+            NHUCAOI = MHUCAOI
          END IF
 C        3) DO (CMO_{Nn})^{T}* (work(kscra2)) part
-         CALL DGEMM('T','N',NORBI,NHAOSY,NBASI,1.D0,
+         CALL DGEMM('T','N',NORBI,NHUCAOI,NBASI,1.D0,
      &              CMO(ICSYM),NBASI, WORK(KSCRA2),NBASI,0.D0,
      &              WORK(KSCRA1),NORBI)
-         CALL DGEMM('N','N',NBASI,NHAOSY,NORBI,1.D0,
+         CALL DGEMM('N','N',NBASI,NHUCAOI,NORBI,1.D0,
      &              WORK(KCMO1-1+ICSYM),NBASI, WORK(KSCRA1),NORBI,0.D0,
      &              CMO(ICSYM),NBASI)
  100  CONTINUE 
@@ -959,6 +963,9 @@ C
          NBASI = NBAS(ISYM)
          NHUCI = NHUCAO(ISYM)
          IF (NORBI .EQ. 0) GO TO 101
+         NHUCI = MIN(NHUCI,NORBI)
+C        ... hjaaj Sep07: take care of calculations with minimum basis set
+C                         smaller than Huckel, e.g. S atoms without d-orbitals
 C
 C     We orthogonalize the projected Huckel eigenvectors first
 C
