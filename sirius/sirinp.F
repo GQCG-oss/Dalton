@@ -1069,7 +1069,7 @@ C        Note: H1MO called first anyway, to generate symmetry adapted
 C        MO's when supersymmetry exists. /hjaaj
 C
          IF (DOHUCKEL .AND. .NOT.AUTOCC)
-     &      CALL HUCDRV(CMO(KSCRA),LSCRA,CMO)
+     &      CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
 C
          FLAG(13) = .FALSE.
       ELSE IF (FLAG(13)) THEN
@@ -1307,7 +1307,7 @@ C
          LSCRA = LCMO - KSCRA
          IF (INIOCC .LE. 0) THEN
             IF (DOHUCKEL) THEN
-               CALL HUCDRV(CMO(KSCRA),LSCRA,CMO(1))
+               CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
                FLAG(13) = .FALSE.
                INIOCC = 5
             ELSE
@@ -1318,7 +1318,7 @@ C
             AUTOCC = .FALSE.
 C           ... otherwise HUCDRV will destroy user input
 C               of initial occupation guess
-            CALL HUCDRV(CMO(KSCRA),LSCRA,CMO(1))
+            CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
             FLAG(13) = .FALSE.
             AUTOCC = .TRUE.
          END IF
