@@ -450,12 +450,13 @@ do
   step=1
   while [ "$step" -le "$numsteps" ]
   do
+      potfile=
       if [ "$multi" -eq 1 ]; then
           myprint "-----------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
           myprint "-----------------------------------------------------------"
           molfile=$item
-          potfile=$item
+          if [ -r $item.pot ]; then potfile=$item ; fi
 	  cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
@@ -464,7 +465,7 @@ do
           moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
-          potfile=$item
+          if [ -r $item.pot ]; then potfile=$item ; fi
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
