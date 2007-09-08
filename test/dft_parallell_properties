@@ -80,9 +80,6 @@ else
    GREP="egrep"
 fi
 
-Final DFT energy:            -75.274230986935
-
-
 # FINAL ENERGY
 #    Final DFT energy:            -75.274230986935
 #    Nuclear repulsion:             9.218170507464
