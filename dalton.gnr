@@ -19,6 +19,7 @@ optn=0
 optlam=
 opti=0
 opto=0
+potfil=
 frl=rel
 #
 # Define usage message
@@ -26,8 +27,8 @@ frl=rel
 usage (){
 	  echo
 	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
-	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
-          echo  "pot{.$POTEXT} (if QM3 calculation)"
+	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dalinp{.$DALEXT} molinp{.$MOLEXT}"
+          echo  "[potinp{.$POTEXT} (if QM3 calculation)]"
           echo
 	  echo 'Options:'
 	  echo ' -b dir    prepend dir to directory list for basis set searches.'
@@ -36,7 +37,7 @@ usage (){
 	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
-          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to job before calculation starts'
+          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
 	  echo ' -M mb     set scratch memory to mb Megabytes'
 	  echo ' -m mem    set scratch memory to mem double precision words'
 	  echo ' -N num    use MPI version with num nodes'
@@ -91,6 +92,7 @@ done
 # check for correct input
 if [ -z "$1" ]; then
    echo 'Input file[s] not specified'
+   echo "Your command was: $0 $paramlist"
    usage
    exit 1
 fi
@@ -98,8 +100,8 @@ fi
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
 #  only one common input file;
-   molfil=$dalfil
-   outnam=$molfil
+   molfil=
+   outnam=$dalfil
    input_files="input file: $dalfil.$DALEXT"
 else
 #  two input files;
@@ -110,7 +112,7 @@ else
    else
       outnam=${dalfil}_${molfil}
    fi
-   input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+   input_files="input file: $dalfil.$DALEXT , $molfil.$MOLEXT"
 fi
 #  Added option for including a potential.inp file for QM3 calculations
 if [ -n "$3" ]; then
@@ -121,7 +123,7 @@ if [ -n "$3" ]; then
    else
       outnam=${dalfil}_${molfil}_${potfil}
    fi
-   input_files="input files: $dalfil.$DALEXT ,$molfil.$MOLEXT and $potfil.$POTEXT"
+   input_files="$input_files , $potfil.$POTEXT"
 fi
 #
 export TMPDIR
@@ -173,15 +175,14 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
    else
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
-#      ierr=1
+      echo " => assuming user has written MOLECULE input in dalton input file"
    fi
    if [ "$potfil" != "" ]; then 
      if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
         cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
      else
-        echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
-        echo "A file with the extension $POTEXT only exist in QM/MM calc."
-#       ierr=1
+        echo "$WRKDIR/$potfil.$POTEXT for QM/MM does not exist or is not readable"
+        ierr=1
      fi
    fi
    if [ "$optf" != "0" ] ; then
