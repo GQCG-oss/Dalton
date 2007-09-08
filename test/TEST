@@ -13,6 +13,11 @@
 #       he/she ran 'configure', the you should modify the
 #       DALTON definition to pint to that place.
 
+if [ -x '/usr/bin/time' ]; then
+ TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
+else
+ TIMING_OF="time"
+fi
 DALTON="`pwd`/../bin/dalton"
 
 #########################################################################
@@ -402,11 +407,11 @@ myprint "                          DALTON test suite"
 myprint "#####################################################################"
 myprint "invoked with          : $TESTparams"
 myprint "date and time         : `date`"
-myprint "dalton script         : $DALTON"
+myprint "dalton script         : $TIMING_OF $DALTON"
 myprint "parameter list passed : $paramlist"
+myprint "test job directory    : $testdir"
 myprint "test listing          : $listing"
 myprint "test cases            : $testcase"
-myprint "test job directory    : $testdir"
 
 #########################################################################
 # loop over test cases:
@@ -418,7 +423,8 @@ for item in ${testcase}
 do
   trouble=0
   myprint "###########################################################"
-  myprint "start now with test $item:"
+  myprint "`date`"
+  myprint "Starting now with test $item:"
   myprint "-----------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
@@ -488,11 +494,11 @@ do
           failed=false
           if [ "$step" -eq "1" ]; then
 #             make sure that directory is clear before start
-              $DALTON -d $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+              $TIMING_OF $DALTON -d $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           else
 #             copy $item.tar.gz for multistep jobs (-f option)
-              $DALTON -f $item $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+              $TIMING_OF $DALTON -f $item $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
