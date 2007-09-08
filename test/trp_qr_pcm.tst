@@ -1,6 +1,7 @@
 ########## Test description ########################
+# 24-aug-07 hjaaj: changed from short to long, uses > 8 min on 2GHz pentium
 START DESCRIPTION
-KEYWORDS: triplet quadratic response dft pcm short 
+KEYWORDS: triplet quadratic response dft pcm long
 END DESCRIPTION
 
 ########## Check list ##############################
