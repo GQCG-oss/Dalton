@@ -46,8 +46,7 @@ rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
 rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_absorp rsp_prop_file"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s dft_qr_sym"
-SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK
-           $SHORTREST"
+SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6"
 #
