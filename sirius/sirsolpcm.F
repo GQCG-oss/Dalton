@@ -451,7 +451,7 @@ C
 C     end of pcmgrd.
       END
 C  /* Deck pcmfck */
-      SUBROUTINE PCMFCK(DC,DV,FSOL,CMO,MOBAS,ESOLT,WRK,LFREE,IPRINT)
+      SUBROUTINE PCMFCK(DC,DV,FSOL,CMO,MOBAS,ESOLT,WRK,LFREE,JPRINT)
 C
 C     Written by L. Frediani and K.Ruud,
 C                June 2001, based on SOLGRD by hjj.
@@ -509,6 +509,8 @@ C     define automatic arrays (dynamic core allocation)
 C
       CALL QENTER('PCMFCK')
 C
+      IPRINT = MAX(JPRINT,IPRPCM)
+C
 C
 C     Core allocation
 C        UCMO   CMO unpacked (i.e. no symmetry blocking)
@@ -558,7 +560,7 @@ C
 C     Loop over all tesserae. We temporarily use FSOL for the unpacked
 C     inactive density matrix
 C
-ckr         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
+         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
 C
 C    PCMEN = interaction solute electrons - polarization nuclear charges
 C             PCMEN = sum_i [Vel(i) * QSN(i)]
@@ -622,10 +624,10 @@ C
          WRITE(LUPRI,1100) QET, TCH
       END IF
 C      
- 1000 FORMAT(1X,'ELECTRONIC APPARENT CHARGE',F10.5,' THEORETICAL ',
-     * F10.5,' RENORMALIZED',F10.5)
- 1100 FORMAT(1X,'ELECTRONIC APPARENT CHARGE',F10.5,' THEORETICAL ',
-     * F10.5,' NOT RENORMALIZED')
+ 1000 FORMAT(' Electronic apparent charge',F10.5,' Theoretical ',
+     * F10.5,' Renormalized',F10.5)
+ 1100 FORMAT(' Electronic apparent charge',F10.5,' Theoretical ',
+     * F10.5,' Not renormalized')
 C
       EXP1VL = .FALSE.
       TOFILE = .FALSE.
@@ -653,6 +655,10 @@ C     Electrostatic contribution:
 C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
 C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
       ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
+C
+      IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
+     &   'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
+     &            PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
