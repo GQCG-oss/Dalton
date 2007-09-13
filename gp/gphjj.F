@@ -197,7 +197,7 @@ C
       itimwl = darr(1) - iwall0
       TIMWAL = itimwl
 #else
-#if defined (SYS_LINUX) && defined (VAR_G77)
+#if defined (VAR_G77) || defined (VAR_GFORTRAN)
 C 990819-ekd: Use time8() and second() system routines for timings
 C             ONLY available for GNU g77 compiler!!!!!!!!
       logical first
@@ -225,7 +225,7 @@ C
 C insert appropriate routine to get elapsed real time (wall time)
 C here
       TIMWAL = D0
-#endif  /* VAR_G77 */
+#endif  /* VAR_G77, VAR_GFORTRAN */
 #endif  /* VAR_IFC */
 #endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
 #endif  /* SYS_NEC */
@@ -1743,7 +1743,7 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77)
+#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77) && !defined (VAR_GFORTRAN)
       FUNCTION SECOND ()
 #if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
  || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
