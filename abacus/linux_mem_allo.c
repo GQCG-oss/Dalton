@@ -67,6 +67,7 @@ void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm,
     drv(mem_block, nwords, wrkdlm,master,mynum);
     if(debug) fprintf(stderr,"CEXE finished.\n");
 }
+#ifdef VAR_G77
 /* ioff=iallor8(work,nwords)  work(ioff) is the first position */
 int  iallor8_(double *work,int *nwords){
   double *iadd=(double *)calloc((*nwords),8);
@@ -100,3 +101,4 @@ free(work);
 void memreli1_(char *work){
 free(work);
 }
+#endif /* #ifdef VAR_G77 */
