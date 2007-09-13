@@ -70,8 +70,9 @@ C     but has no problem with NaN /931022-hjaaj
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C     Necessary to zero out because of NaN, tuh
+Chj sep07: I think this error must have been fixed in all libraries now
+Chj   CALL DZERO(C,NAR*NBC)
 C
-      CALL DZERO(C,NAR*NBC)
       CALL DGEMM('N','N',NAR,NBC,NAC,D1,A,NAR,B,NAC,D0,C,NAR)
 #else
 C
