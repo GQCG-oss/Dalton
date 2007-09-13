@@ -67,12 +67,12 @@ c-----------------------------------------------------------------------
 #if defined (SYS_CRAY)
       real xlamdh(*),work(*),vijkl(*),vajkl(*)
       real dtime,timrdao,timfr12,timintr12,ddot,xlamdhs(*),xlamdps(*)
-      real vabkl(*),xlamdhcs(*),facterm23, second
+      real vabkl(*),xlamdhcs(*),facterm23
 #else
       double precision xlamdh(*),work(*),vijkl(*),vajkl(*)
       double precision dtime,timrdao,timfr12,timintr12,ddot,
      &                 xlamdhs(*),xlamdps(*)
-      double precision vabkl(*),xlamdhcs(*),facterm23, second
+      double precision vabkl(*),xlamdhcs(*),facterm23
 #endif
       
       character*8 filback

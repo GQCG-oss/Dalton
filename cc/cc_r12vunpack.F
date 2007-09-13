@@ -1029,10 +1029,10 @@ c----------------------------------------------------------------------
       integer kbb,kuu,kpp,kqq,krr,ian,iap,iopt,isym
       integer nkilj(8),nij,isymij,inmatij(8),it,jt,isymi,isymj,norbtsx
 #if defined (SYS_CRAY)
-      real tamp12(*),omeg12(*),er12,work(*), second
+      real tamp12(*),omeg12(*),er12,work(*)
       real ensing,entrip,delta,xf,fs,ft,ws,wt,ddot,timnxtam
 #else
-      double precision tamp12(*),omeg12(*),er12,work(*), second
+      double precision tamp12(*),omeg12(*),er12,work(*)
       double precision ensing,entrip,delta,xf,fs,ft,ws,wt,ddot,timnxtam
 #endif
       character*3 aprox
@@ -2019,10 +2019,10 @@ c----------------------------------------------------------------------
       integer nij,nkl,inmatij(8),inmatkl(8),norbtsx
 #if defined (SYS_CRAY)
       real tamp12(*),omeg12(*),er12,work(*),ddot,one,half,zero,factor,
-     &     rcond,thrzero,timnxtam, second
+     &     rcond,thrzero,timnxtam
 #else
       double precision tamp12(*),omeg12(*),er12,work(*),ddot,one,half,
-     &                 zero,factor,rcond,thrzero,timnxtam, second
+     &                 zero,factor,rcond,thrzero,timnxtam
 #endif
       character*3 aprox
       character*10 model
