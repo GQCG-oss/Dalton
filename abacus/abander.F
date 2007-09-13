@@ -618,9 +618,6 @@ C
       LWRK1 = LWORK - (KLAST - IWOFF) + 1
 C
       IWSAV = IWOFF
-C#if defined (SYS_HAL) || defined (VAR_G77)
-C      IWOFF = 0
-C#endif
       CALL NUMDR1(WORK(KDERIV),WORK(KFUVAL),WORK(KCOOR),WORK(KCSTAR),
      &            WORK(KSYMCO),WORK(KDCOEF),WORK(KTSTGD),WORK(KTSTSD),
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC),
@@ -629,9 +626,6 @@ C#endif
      &            WORK(KISOTP),WORK(KMBKLN),LWRK1,IWOFF,NDERIV,NDIME,
      &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
 C
-C#if defined (SYS_HAL) || defined (VAR_G77)
-C      IWOFF = IWSAV
-C#endif
 C
 c#if defined (VAR_MPI)
 cC
