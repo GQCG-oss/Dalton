@@ -161,6 +161,7 @@ c remco
 #include <infvar.h>
 #include <priunit.h>
 #if (defined(VAR_G77))
+!     integer*8 i_detvec, i_cvec
       dimension detvec(1),cvec(1)
 #elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
       allocatable detvec(:),cvec(:)
@@ -196,8 +197,8 @@ C. CSF basis (INCSFB .ne. 0)
            i_detvec=iallor8(detvec,ncdets)
            i_cvec=iallor8(cvec,ncdets)
            write (0,*) 'i_detvec, i_cvec',i_detvec,i_cvec
-           call dcopy(nconf,civec,1,cvec(i_cvec:),1)
-           call csdtvc(cvec(i_cvec:),detvec(i_detvec:),1,XNDXCI(KDTOC),
+           call dcopy(nconf,civec,1,cvec(i_cvec),1)
+           call csdtvc(cvec(i_cvec),detvec(i_detvec),1,XNDXCI(KDTOC),
      *                XNDXCI(KICTS(1)),lsym,0,0)
 #endif
            IF( ICOMBI .EQ. 0 ) THEN
@@ -214,7 +215,7 @@ C. CSF basis (INCSFB .ne. 0)
            deallocate (detvec)
            deallocate (cvec)
 #else
-      CALL ANACI2(detvec(i_detvec:),XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,
+      CALL ANACI2(detvec(i_detvec),XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,
      &              NOCTPB,MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
      &              XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
      &              NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
@@ -483,8 +484,10 @@ C
                       write (iout,*) 'Overflow  beta orbital:', ibel
                    end if
                 end do
-                write(iout,'(2A)') ' alpha-string:',TRIM(aline)
-                write(iout,'(2A)') '  beta-string:',TRIM(bline)
+                iend = LNBLNK(aline)
+                write(iout,'(2A)') ' alpha-string:',aline(1:iend)
+                iend = LNBLNK(bline)
+                write(iout,'(2A)') '  beta-string:',bline(1:iend)
 c               WRITE(IOUT,'(A,20I4:/,(14X,20I4))')
 c    &          ' alpha-string:',(ILTSOB(IASTR(IEL,IA)),IEL = 1, NAEL )
 c               WRITE(IOUT,'(A,20I4:/,(14X,20I4))')
