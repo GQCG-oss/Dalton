@@ -35,7 +35,7 @@ C
      *           inact,iact,nact,lfermi,nisht,nsym,LUN98,mult)
 #include <implicit.h>
 #include <priunit.h>
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)) && defined (NO_F90)
+#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)||defined(VAR_GFORTRAN)) && defined (NO_F90)
       return
       end
 #else

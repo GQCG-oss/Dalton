@@ -77,14 +77,13 @@ C-----------------------------------------------------------------------
       CALL QUIT('NEVPT2 not available for this platform')
       return
 #endif
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)) && defined (NO_F90)
-      write(lupri,*)' '
-      write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
-      write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
-      write(lupri,*
-     $     )'sorry, NEVPT2 at present needs the INTEL FORTRAN COMPILER'
-      write(lupri,*)' or the Portland Group FORTRAN Compiler'
-      write(lupri,*)' or G77 FORTRAN Compiler'
+#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)||defined(VAR_GFORTRAN)) && defined (NO_F90)
+      write(lupri,'(A)') ' ',
+     &   '<<<<<<<<<<<===========>>>>>>>>>>>>',
+     &   'ATTENTION ATTENTION ATTENTION ATTENTION', ' ',
+     &   'Sorry, NEVPT2 at present needs the INTEL FORTRAN COMPILER',
+     &   ' or the Portland Group FORTRAN Compiler',
+     &   ' or g77 FORTRAN Compiler or gfortran FORTRAN compiler'
       CALL QUIT('NEVPT2 not available for this compiler')
       return
       end
