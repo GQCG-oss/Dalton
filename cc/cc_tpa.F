@@ -76,11 +76,11 @@ c /* deck CC_TPA */
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL TIM0, TIM1, TIMG, TIMFA, TIMF, TIMAA, 
-     &                 TIMX2, TIMO1, TIMO2, SECOND
+     &                 TIMX2, TIMO1, TIMO2
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION TIM0, TIM1, TIMG, TIMFA, TIMF, TIMAA, 
-     &                 TIMX2, TIMO1, TIMO2, SECOND
+     &                 TIMX2, TIMO1, TIMO2
 #endif
 
       LOGICAL LADD
