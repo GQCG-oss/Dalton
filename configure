@@ -19,7 +19,7 @@
 # Check specific processor for optimization flags for linux machines 
 # (uname -m) -mpentiumpro for i686, -mpentium for i586, and -m486 otherwise
 # 990831-ekd
-# Defined new VAR-PGF77 for Portland Group compiler on Linux systems (has 
+# Defined new VAR_PGF77 for Portland Group compiler on Linux systems (has 
 # POINTER statement, so memory allocation is easier) and VAR_G77 for g77 gnu
 # compiler 990831-ekd
 # More intelligent attempts at including pdpack files according to available
@@ -55,6 +55,7 @@ get_yes_or_no() {
     do
       $ECHO "$1 [y/n] \c"
       read answer
+#     standardize answer
       case $answer in
 	y* | Y*) answer="y" ;;
 	n* | N*) answer="n" ;;
@@ -281,22 +282,6 @@ elif [ $WHICH = 'rs6000' ]; then
 fi
 
 #
-# Compile the coupled-cluster code as well?
-#
-#cc='false'
-#if [ -e cc ]; then
-#    answer=
-#    cc='dummy'
-#    while [ "$answer" != "y" -a "$answer" != "n" ]
-#    do
-#	$ECHO 'Do you want to install the coupled-cluster program? [y/n] \c'
-#	read answer
-#    done
-#    if [ "$answer" = "y" ]; then
-#	cc='true'
-#    fi
-#fi
-#
 # Parallel Dalton?
 #
 
@@ -430,18 +415,6 @@ if [ -z "$F77" ]; then
     $ECHO "\n   No compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a Fortran compiler"
     exit 1
-fi
-if [ $F77 = "g77" ]; then
-# the 3.3.3 version 
-    test_linux_g77="`$F77 -v 2>&1 | grep '3.3.3'`"
-    if [ "$test_linux_g77" != "" ]; then
-      $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-      echo $test_linux_g77
-      $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-      $ECHO "Version 3.3.3 is known to give erroneous Dalton code"
-      $ECHO "(e.g. for SuSe Linux 9.1, while 9.2 has 3.3.4 which is OK)"
-      $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-    fi
 fi
 
 #
@@ -706,24 +679,14 @@ get_yes_or_no 'Use ./bin as installation directory for binaries and scripts?' y
 
 while [ "$answer" = "n" ]
 do
-    $ECHO 'Please enter installation directory: \c'
+    $ECHO 'Please enter another installation directory: \c'
     read INSTALL_DIR
     $ECHO '\n-->DALTON executable and script will be placed in '$INSTALL_DIR' directory\n'
     if [ ! -d "$INSTALL_DIR" ]; then
-        $ECHO "ERROR: $INSTALL_DIR does not exist"
-	answer2=
-	while [ "$answer2" != "y" -a "$answer2" != "n" ]
-	do
-	   $ECHO 'Do you want me to create this directory? [y/n] \c'
-	   read answer2
-	done
-        if [ "$answer2" = "y" ]; then
-	   mkdir "$INSTALL_DIR"
-	else
-	   $ECHO "Note that the final copying of the dalton executables may fail"
-	   $ECHO "during installation if you do not create this directory before"
-	   $ECHO "building the program"
-	fi
+        $ECHO "ERROR: $INSTALL_DIR does not exist, will be created now."
+	mkdir "$INSTALL_DIR"; mkdir_ok=$?
+        if [ $mkdir_ok ]; then answer="ok"
+        else $ECHO "Sorry, the specified directory could not be created"; fi
     else
         answer="ok"
     fi
@@ -737,13 +700,22 @@ fi
 #
 
 basdir=$curr'/basis/'
+$ECHO '\n-->Default basis set directory will be '$basdir'\n'
+if [ -d "$basdir" ]; then 
+  get_yes_or_no '\nUse this directory as default basis set directory?' y
+else
+  $ECHO "Sorry, this directory does not exist."
+  answer=n
+fi
 
-get_yes_or_no '\nUse '$basdir' as default basis set directory?' y
-if [ "$answer" = "n" ];  then
-    $ECHO '\nPlease enter default basis set directory (must end with /) \c'
+while [ "$answer" = "n" ]
+do
+    $ECHO '\nPlease choose another default basis set directory (must end with /) \c'
     read basdir
     $ECHO '\n-->Default basis set directory will be '$basdir'\n'
-fi
+    if [ ! -d "$basdir" ]; then $ECHO "Sorry, this directory does not exist"
+    else answer="ok"; fi
+done
 
 #
 # Determine default scratch disk space for calculations
@@ -906,7 +878,7 @@ case "$WHICH" in
           cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
-             set_parallel_def $cc
+             set_parallel_def $mesp
 	  fi
 	  inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
@@ -980,19 +952,26 @@ case "$WHICH" in
              cpp="$cpp -D$parop"
              set_parallel_def $mesp
           fi
-          # if we have mpif77, we need to find backend compiler to set the right options
-          F77_be=$F77
-          if [ "$F77" = mpif77 ]; then
-              if mpif77 -V 2>&1 | grep -q Intel 2> /dev/null; then
-                  F77_be=ifort
-              elif mpif77 -v 2>&1 | grep -q 'gcc version 3' 2> /dev/null; then
-                  F77_be=g77
-              elif mpif77 -v 2>&1 | grep -q 'gcc version 4' 2> /dev/null; then
-                  F77_be=gfortran
-              else
-                  # wild guess.
-                  F77_be=pgf77
-              fi
+          # if we have mpif77 or mpif90, we need to find backend compiler to set the right options
+          if [ "$F77" = mpif77 -o "$F77" = mpif90 ]; then
+             if mpif77 -V 2>&1 | grep -q Intel 2> /dev/null; then
+                F77_be=ifort
+             elif mpif77 -v 2>&1 | grep -q 'gcc version 3' 2> /dev/null; then
+                F77_be=g77
+             elif mpif77 -v 2>&1 | grep -q 'gcc version 4' 2> /dev/null; then
+                F77_be=gfortran
+             else
+                # wild guess.
+                F77_be=pgf77
+             fi
+             get_yes_or_no "Is backend compiler $F77_be ?" y
+             if [ "$answer" = "n" ]; then
+                $ECHO 'Then please specify correct backend compiler : \c'
+                read F77_be
+                $ECHO "Continuing with backend compiler $F77_be"
+             fi
+          else
+             F77_be=$F77
           fi
           case $F77_be in
           [ei]fc|ifort)
@@ -1022,47 +1001,23 @@ case "$WHICH" in
              copt="-fastsse -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
               opt="-fastsse -Munroll"; safe_opt="-fastsse"
              ;;
-          gfortran)
-             gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-             echo "gfortran version $gfver prc=$prc"
-             cpp="-DVAR_G77 $cpp -DGFORTRAN=$gfver"
-             case $prc in
-             i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
-                     march="-march=$prc -malign-double";;
-             x86_64) march="-march=x86-64"
-		     cpp=${cpp}" -DVAR_INT64";;
-                 *) march="";
-             esac
-             copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-              opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
-             ;;
-
-          *)
-              test_linux_g77=false
-              if [ -s /etc/redhat-release ]; then
-                 if [ `grep "Red Hat Linux 7\.0" /etc/redhat-release | wc -l ` != 0 ]; then
-                     test_linux_g77="true"
-                 fi
-              elif [ -d /proc ]; then
-                   if [ `cat /proc/version | grep "Red Hat Linux 7\.0" | wc -l` != "0" ]; then
-                      test_linux_g77="true"
-                   fi
+          g77)
+              test_linux_g77="`$F77 -v 2>&1 | grep '2.96.54'`"
+              if [ $test_linux_g77 != "" ]; then
+                 $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                 $ECHO "There are problems with the native Red Hat 7.0 compiler."
+                 $ECHO "You should upgrade your gcc and gcc-g77-2.96.54 compiler to version 2.96.69 or later."
+                 $ECHO "Dalton does NOT run correct with the current compiler."
+                 $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
               fi
-              if [ $test_linux_g77 != "false" ]; then
-                 if [ `which rpm | wc -l ` != 0 ]; then
-                    if [ `rpm -q gcc-g77 | grep '2.96.54' | wc -l` != 0 ]; then
-                       $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                       $ECHO "There are problems with the native Red Hat 7.0 compiler."
-                       $ECHO "You should upgrade your gcc and gcc-g77-2.96.54 compiler to version 2.96.69 or later."
-                       $ECHO "Dalton does NOT run correct with the current compiler."
-                       $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                    fi
-                 else
-                    $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                    $ECHO "I cannot determine if you use the original g77 compiler from Red Hat Linux 7.0."
-                    $ECHO "If you do, upgrade gcc & gcc-g77 to version 2.96.69 or later."
-                    $ECHO "Dalton does NOT run correct with the gcc-g77 2.96.54 compiler"
-                 fi
+              test_linux_g77="`$F77 -v 2>&1 | grep '3.3.3'`"
+              if [ "$test_linux_g77" != "" ]; then
+                $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                echo $test_linux_g77
+                $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                $ECHO "Version 3.3.3 is known to give erroneous Dalton code"
+                $ECHO "(e.g. for SuSe Linux 9.1, while 9.2 has 3.3.4 which is OK)"
+                $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
               fi
               cpp="-DVAR_G77 $cpp"
               case "$prc" in
@@ -1075,7 +1030,28 @@ case "$WHICH" in
                opt="$copt -fno-globals -Wno-globals"
               copt="$copt -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
               ;;
+          *)
+#            assuming gfortran
+             if [ $F77_be == "gfortran" ]; then
+               gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+               echo "gfortran version $gfver prc=$prc"
+	     else
+	       gfver=400
+               echo "$F77_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
+	     fi
+             cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
+             case $prc in
+             i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                     march="-march=$prc -malign-double -fdefault-double-8";;
+             x86_64) march="-march=x86-64 -fdefault-integer-8 -fdefault-double-8"
+		     cpp="${cpp} -DVAR_INT64";;
+                  *) march="-fdefault-double-8";
+             esac
+             copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+              opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+             ;;
           esac
+
           if [ "$mesp" = "dummy" ]; then
               def='linux.x'
           else
@@ -1307,22 +1283,31 @@ else cat <<EOF>> Makefile.config
 # hjaaj Oct 04: .g is a "cheat" suffix, for debugging.
 #               'make x.g' will create x.o from x.F or x.c with -g debug flag set.
 #
-.SUFFIXES : .F .o .c .i .g
+.SUFFIXES : .F .c .o .i .g .s
 
 .F.o:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
+.F.i:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+
 .F.g:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
+
+.F.s:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
 
+.c.i:
+$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -E \$*.c > \$.i
+
 .c.g:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -g -c \$*.c 
 
-.F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+.c.s:
+$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -S -g -c \$*.c 
 EOF
 fi
 #
