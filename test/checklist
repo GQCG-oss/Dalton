@@ -96,7 +96,7 @@
 {$params={
   name   => "surf",
   type   => 0,
-  string => "SURFACE AREA",
+  string => "Surface area",
   pos    => 6,
   thr    => 1.0e-7};
 }
@@ -106,7 +106,7 @@
 {$params={
   name   => "nucchg",
   type   => 0,
-  string => "NUCLEAR APPARENT CHARGE",
+  string => "Nuclear apparent charge",
   pos    => 4,
   thr    => 1.0e-4};
 }
