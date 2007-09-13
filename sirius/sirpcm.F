@@ -27,7 +27,7 @@ C
       DATA SOLWD/'PCM   '/
       DATA TABLE/'.SOLVNT','.EPS   ','.EPSINF','.RSOLV ',
      *           '.RET   ','.NESFP ','.ICESPH','.ICOMPC',
-     *           '.IPRINT','.NON-EQ','.NEQRSP','.NPCMMT',
+     *           '.PRINT ','.NON-EQ','.NEQRSP','.NPCMMT',
      *           '.ANISO ','.LOCFLD','.OUTFLD','.NEWQR '/
 C
       DATA RINPUT/'INPUT   '/
@@ -229,7 +229,7 @@ C
       END IF
 C
       IF(NERR.GT.0) THEN
-         WRITE(LUPRI,*) 'PLEASE FIX THE ABOVE ERROR(S) IN $PCM'
+         WRITE(LUPRI,*) 'PLEASE FIX THE ABOVE ERROR(S) IN *PCM'
          CALL QUIT('Errors detected in PCM input')
       END IF
 C
@@ -239,9 +239,9 @@ C
 C
       RETURN
 C
- 9010 FORMAT(1X,'*** INCONSISTENCY FOUND IN $PCM INPUT GROUP ***')
- 9020 FORMAT(/5X,35(1H-)/
-     *   5X,'INPUT FOR PCM SOLVATION CALCULATION '/5X,35(1H-)/
+ 9010 FORMAT(' *** INCONSISTENCY FOUND IN *PCM INPUT GROUP ***')
+ 9020 FORMAT(/5X,35('-')/
+     *   5X,'INPUT FOR PCM SOLVATION CALCULATION '/5X,35('-')/
      *   5X,'ICOMPCM =',I8,  5X,
      *   5X,'SOLVNT=',A8,  5X,'EPS   =',F8.4,5X,'EPSINF=',F8.4/
      *   5X,'RSOLV =',F8.4//
@@ -376,14 +376,13 @@ C
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL PCMVNN
       IF(SOME) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) ' ..... DONE WITH INDUCED NUCLEAR CHARGES .....'
+         WRITE(LUPRI,'(/A)')
+     &   ' ..... DONE WITH INDUCED NUCLEAR CHARGES .....'
          CALL TIMER('PCMVNN   ',TIMSTR,TIMEND)
-      END IF
+      ELSE
 C
-      IF(.NOT.SOME) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '..... DONE SETTING UP PCM CALCULATION .....'
+         WRITE(LUPRI,'(/A)')
+     &   ' ..... DONE SETTING UP PCM CALCULATION .....'
       END IF
       RETURN
 C

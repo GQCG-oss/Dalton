@@ -50,7 +50,7 @@ C
 C
       RETURN
 C
-  910 FORMAT(/1X,'MEMORY USED TO GENERATE CAVITY=',I10/)
+  910 FORMAT(/' MEMORY USED TO GENERATE CAVITY=',I10/)
       END
 c/* Comdeck pedra*/
       SUBROUTINE PEDRA(INTSPH,VERT,CENTR,NEWSPH,ICAV1,ICAV2, XVAL,YVAL
@@ -508,8 +508,8 @@ C      call flshfo(lupri)
  1242 FORMAT('Now tessellating sphere n.',i4)
  1243 FORMAT('Coordinates: X=',F12.8,'  Y=',F12.8,'  Z=',F12.8,
      $     '  R=',F12.8)
- 1244 FORMAT('VERTICES INDEXES: ',3I6)
- 1245 FORMAT('N. OF VERTICES: ',I6)
+ 1244 FORMAT('VERTICES INDICES: ',3I6)
+ 1245 FORMAT('NO. OF VERTICES: ',I6)
  1246 FORMAT('ADDING TESSERA DATA TO THE LIST. NN=',I6)
  1247 FORMAT('CENTER: ',3F15.11)
  1248 FORMAT('BOH???: ',3F15.11)
@@ -611,7 +611,6 @@ C Probably they will not be used anymore. If this happen I will remove them.
 C
       IF(IPRSOL .GT. 5) THEN
          WRITE(LUPRI,9070)
-         WRITE(LUPRI,9080)
          WRITE(LUPRI,9090) (I,ISPHE(I),AS(I),XTSCOR(I),YTSCOR(I),
      *                   ZTSCOR(I),XTSCOR(NTS+I),YTSCOR(NTS+I),
      *                   ZTSCOR(NTS+I), I=1,NTS)
@@ -632,22 +631,22 @@ C
       RETURN
 C
  9000 FORMAT(10X,'-- CENTER OF CHARGE --'/
-     *        1X,'X =',F8.4,' A  Y =',F8.4,' A  Z =',F8.4,' A')
- 9010 FORMAT(/1X,'WARNING: THE DISTANCE OF THE CENTER OF TESSERAE ',I4,
-     *         ',',I4,' IS ',F8.6,', LESS THAN ',F8.6,' A'/)
- 9020 FORMAT(/1X,'TOTAL NUMBER OF SPHERES=',I5/
-     *        1X,'SPHERE             CENTER  (X,Y,Z) (A)            ',
-     *           '   RADIUS (A)      AREA(A*A)')
+     *        ' X =',F8.4,' A  Y =',F8.4,' A  Z =',F8.4,' A')
+ 9010 FORMAT(/' WARNING: The distance between center of tessera',I4,
+     *         'and',I4,' is ',F8.6,', less than ',F8.6,' A'/)
+ 9020 FORMAT(/' Total number of spheres =',I5/
+     *        ' Sphere             Center  (X,Y,Z) (A)            ',
+     *           '   Radius (A)      Area (A^2)')
  9030 FORMAT(I4,4F15.9,F15.9)
- 9040 FORMAT(/1X,'TOTAL NUMBER OF TESSERAE=',I8/
-     *        1X,'SURFACE AREA=',F14.8,'(A**2)',4X,'CAVITY VOLUME=',
-     *            F14.8,' (A**3)')
- 9050 FORMAT(1X,'PEDRA: CONFUSION ABOUT SPHERE COUNTS. NESFP,NATM=',2I6)
- 9060 FORMAT(/1X,'ADDITIONAL MEMORY NEEDED TO SETUP GRADIENT RUN=',I10)
- 9061 FORMAT(/1X,'ADDITIONAL MEMORY NEEDED TO SETUP IEF RUN=',I10)
- 9070 FORMAT(1X,'***  PARTITION OF THE SURFACE  ***')
- 9080 FORMAT(' TESSERA  SPHERE   AREA   X Y Z TESSERA CENTER  ',
-     *       'X Y Z NORMAL VECTOR')
+ 9040 FORMAT(/' Total number of tesserae =',I8/
+     *        ' Surface area =',F14.8,'(A^2)',4X,'Cavity volume =',
+     *            F14.8,' (A^3)')
+ 9050 FORMAT(' PEDRA: CONFUSION ABOUT SPHERE COUNTS. NESFP,NATM=',2I6)
+ 9060 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP GRADIENT RUN=',I10)
+ 9061 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP IEF RUN=',I10)
+ 9070 FORMAT(/' ***  PARTITION OF THE SURFACE  ***'
+     &      //' TESSERA  SPHERE   AREA   X Y Z TESSERA CENTER  ',
+     &        'X Y Z NORMAL VECTOR')
  9090 FORMAT(2I4,7F12.7)
       END
 C/* Comdeck SphPer */
@@ -1714,7 +1713,7 @@ C
  1020 FORMAT('THIS TESSERA IS COMPLETELY COVERED BY SPHERE N.',I4)
  1025 FORMAT('EDGE N.',I4,' STATUS: ',A18)
  1030 FORMAT('EDGE N.',I2,' IS IN STATUS ',A16,' CASE N.',I2)
- 1035 FORMAT('VERICES NUMBERS:',I3,' AND',I3)
+ 1035 FORMAT('VERTICES NUMBERS:',I3,' AND',I3)
  1040 FORMAT('CALLING INTER, CASE N.',I2,' INTERSECTING SPHERE:',I4)
  1045 FORMAT('P',I1,' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9)
  1050 FORMAT('AFTER INTER')
@@ -1846,8 +1845,8 @@ C
       END IF
       RETURN
 
- 1000 FORMAT('INTER, DISTANCE CONSISTENCY CHECK: ',F14.12)
- 1005 FORMAT('FINAL RESULT FROM INTER!')
+ 1000 FORMAT('INTER, distance consistency check: ',F14.12)
+ 1005 FORMAT(/'Final result from INTER!')
  1010 FORMAT('P',I1,' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9)
  1015 FORMAT('SPHERE',' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9,
      $     ' R = ',F12.9)
