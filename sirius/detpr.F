@@ -193,10 +193,8 @@ C. CSF basis (INCSFB .ne. 0)
            call csdtvc(cvec,detvec,1,XNDXCI(KDTOC),
      *                XNDXCI(KICTS(1)),lsym,0,0)
 #else
-           write (0,*) 'ncdets,nconf',ncdets,nconf
            i_detvec=iallor8(detvec,ncdets)
            i_cvec=iallor8(cvec,ncdets)
-           write (0,*) 'i_detvec, i_cvec',i_detvec,i_cvec
            call dcopy(nconf,civec,1,cvec(i_cvec),1)
            call csdtvc(cvec(i_cvec),detvec(i_detvec),1,XNDXCI(KDTOC),
      *                XNDXCI(KICTS(1)),lsym,0,0)
