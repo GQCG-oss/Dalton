@@ -122,11 +122,13 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Integrals
 CRIT1=`$GREP "SO\-integrals are calculated for * O\: \[He\]2s\^2 2p\^4" $log | wc -l`
-CRIT2=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
-CRIT3=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
-CRIT4=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
-TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[4]=4
+# hjaaj: I have reduced print level. The headings doesn't say anything about the integrals correct anyway.
+#CRIT2=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
+#CRIT3=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
+#CRIT4=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
+#TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
 ERROR[4]="INTEGRALS NOT SET UP CORRECTLY"
 
 # Energy
