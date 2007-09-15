@@ -68,7 +68,7 @@ C  /* Deck qm3fck */
       KTAO = KDTAO + NNBASX
       KEND = KTAO + NNBASX
       LWRK1 = LWRK - KEND
-      IF (LWRK1 .LT. 0) CALL ERRWRK('SOLFCK',-KEND,LFREE)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QM3FCK',-KEND,LWRK)
 
       HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 
@@ -642,7 +642,7 @@ C-------------------------------------
             DO 120 J = NSYSBG(I), NSYSED(I)
               DO 121 K = 1, NUALIS(I)
                 KS = KS+1
-                RAT = ZERO
+                RAT = 0.0D0
                 RAT =  0.5D0 * ALPIMM(I,K) * WRK(KRAx + KS - 1) *
      &                (WRK(KRAx + KS - 1) + WRK(KOMMSx + KS - 1))
      &               + 0.5D0 * ALPIMM(I,K) * WRK(KRAy + KS - 1) *
