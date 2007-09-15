@@ -5765,7 +5765,7 @@ C
                            LUPRPCO = 0
                            CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                          ' ','FORMATTED',IDUMMY,.FALSE.)
-                           CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV))
+                           CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV),NPRMI)
                            CALL GPCLOSE(LUPRPCO,'KEEP')
                         ELSE
 C
@@ -5775,7 +5775,7 @@ C
                            LUPRPCO = 0
                            CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                          ' ','FORMATTED',IDUMMY,.FALSE.)
-                           CALL PRPRPC(LUPRPCO,2,WORK(KSTART))
+                           CALL PRPRPC(LUPRPCO,2,WORK(KSTART),NPRMI)
                            CALL GPCLOSE(LUPRPCO,'KEEP')
 C
 C                          *** Update value for printout. ***
@@ -5808,7 +5808,7 @@ C
                         LUPRPCO = 0
                         CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                              ' ','FORMATTED',IDUMMY,.FALSE.)
-                        CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV))
+                        CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV),NPRMI)
                         CALL GPCLOSE(LUPRPCO,'KEEP')
                      END IF
                   END DO

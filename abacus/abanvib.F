@@ -625,7 +625,7 @@ C
                LUPRPCO = 0
                CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                     ' ','FORMATTED',IDUMMY,.FALSE.)
-               CALL PRPRPC(LUPRPCO,2,CCPRFV(1,IMPCAL))
+               CALL PRPRPC(LUPRPCO,2,CCPRFV(1,IMPCAL),NPRMI)
                CALL GPCLOSE(LUPRPCO,'KEEP')
             END DO
          END IF
