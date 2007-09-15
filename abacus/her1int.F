@@ -6194,6 +6194,8 @@ C  /* Deck dphtra */
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include <onecom.h>
+#include <nuclei.h>
+! nuclei.h needed for NUCDEP
 #include <symmet.h>
 #include <ibtfun.h>
       FULMAT = .TRUE.
