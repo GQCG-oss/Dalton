@@ -145,6 +145,8 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
+! nuclei.h needed for NUCDEP
 #include <abainf.h>
 #include <cbitro.h>
 #include <infinp.h>
