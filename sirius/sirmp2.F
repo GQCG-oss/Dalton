@@ -59,6 +59,75 @@ C
 !--- Revised module for SOPPA
 !===========================================================================
 #endif
+C  /* Deck mp2inp */
+      SUBROUTINE MP2INP(WORD,INPERR,ALLOPT)
+C
+C 17/9 - 1990 Hans Agren, Revised Sep 2007, Hans Joergen Aa. Jensen
+C
+#include <implicit.h>
+      PARAMETER (NTABLE = 2)
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
+     *          REWORD*12
+      LOGICAL ALLOPT
+C
+C Used from common:
+C
+C INFORB : NSYM
+C INFMP2 : IPRMP2, NFRMP2(*)
+C
+#include <maxorb.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <infmp2.h>
+C
+      DATA TABLE /'.MP2 FR','.PRINT '/
+CMAERKE 900918: MP2SAV not implemented, should it be?
+CMAERKE 900918: always NEWORB in this version.
+C
+C     ***** PROCESS INPUT FOR MP2INP *****
+C
+      WORD1 = WORD
+      IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
+     &                       LUPRI)
+  100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
+         PROMPT = WORD(1:1)
+         IF (PROMPT .EQ. '.') THEN
+            DO 1102 II = 1, NTABLE
+               IF (TABLE(II) .EQ. WORD) THEN
+                  GO TO (101,102), II
+               END IF
+ 1102       CONTINUE
+            IF (WORD .EQ. '.OPTION') THEN
+               IF (.NOT.ALLOPT)
+     &            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
+     &                       LUPRI)
+               GO TO 100
+            END IF
+            WRITE (LUPRI,'(/4A/)') ' Keyword ',WORD,
+     *         ' not recognized for ',WORD1
+         ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
+            GO TO 100
+         ELSE IF (PROMPT .EQ. '*') THEN
+            RETURN
+         ELSE
+            WRITE (LUPRI,'(/3A/2A/)')
+     *         ' Keyword ',WORD,' does not begin with',
+     *         ' one of the four characters ".*!#" for ',WORD1
+         END IF
+         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+         CALL QUIT(' ILLEGAL KEYWORD IN MP2INP ')
+C
+C *** Option 1 >MP2 FROZEN<   Frozen MP2 orbitals
+  101 CONTINUE
+         READ(LUCMD,*) (NFRMP2(I),I=1,NSYM)
+      GO TO 100
+C
+C *** Option 2 >PRINT <  General print level in MP2
+  102 READ(LUCMD,*) IPRMP2
+      GO TO 100
+C
+      END
 C  /* Deck mp2ctl */
       SUBROUTINE MP2CTL(WRK,LFRSAV)
 C
@@ -104,7 +173,7 @@ C
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(TIMMP2,DUMMY)
-      IF (IPRMP2 .GT. 0) WRITE (LUW4,'(//A//A/A)')
+      IF (IPRMP2 .GT. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' >>>>> Output from SIRIUS MP2 module <<<<<'
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
@@ -190,12 +259,12 @@ C     Make load per batch even :
          NBATCH = 0
       END IF
       IF ( IPRMP2 .GE. 6 .OR. NPSTP .LE. 0) THEN
-         WRITE (LUW4,'(3(/A,I8))')
+         WRITE (LUPRI,'(3(/A,I8))')
      &      ' Number of PARTICLE-HOLE distributions ',NP*NH,
      &      ' Number of BATCHES                     ',NBATCH,
      &      ' Number of P-H distributions each BATCH',NPSTP*NH
       IF ( NPSTP .LE. 0 ) THEN
-         WRITE (LUW4,'(/A)')
+         WRITE (LUPRI,'(/A)')
      &      ' ERROR: Insufficient work memory for one p-h distribution.'
          CALL ERRWRK('MP2CTL Dirac p-h distributions',(-NP*NH*NH),LFREE)
       END IF
@@ -254,18 +323,18 @@ C
 C
       IF (IPRMP2 .GE. 1) THEN
          IF (MP2FRZ) THEN
-            WRITE (LUW4,'(/A,8I5)')
+            WRITE (LUPRI,'(/A,8I5)')
      *      ' MP2 frozen orbitals per symmetry :',(NFRMP2(I),I=1,NSYM)
-            WRITE (LUW4,'(/A)')
+            WRITE (LUPRI,'(/A)')
      *      ' Total energy and NO:s calculated with frozen orbitals.'
          END IF
          IF (.NOT.DODFT) THEN
-            WRITE (LUW4,'(/,3(/A,F25.10))')
+            WRITE (LUPRI,'(/,3(/A,F25.10))')
      *       ' Hartree-Fock total energy :',EMY,
      *       ' + MP2 contribution        :',EMP2,
      *       ' = MP2 second order energy :',EMY+EMP2
          ELSE
-            WRITE (LUW4,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
+            WRITE (LUPRI,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
      *        (/A,F25.10))')
      *       ' Kohn--Sham contribution   :',EMY,
      *       ' + scaled PT2 contribution :',EMP2,' *',WDFTMP,
@@ -307,16 +376,16 @@ C     If iprmp2 .le. 0 then mp2fro will be false
          END IF
 C
          IF (FCKFRO) THEN
-            WRITE (LUW4,'(/A,8I5//A)')
+            WRITE (LUPRI,'(/A,8I5//A)')
      &      ' RHF frozen orbitals per symmetry :',(NFRRHF(I),I=1,NSYM),
      &      ' Total MP2 energy and NO occupations calculated with'//
      &      ' frozen orbitals from RHF.'
          ELSE
-            WRITE (LUW4,'(/A)')
+            WRITE (LUPRI,'(/A)')
      *      ' Full MP2 energy and NO occupations obtained without'//
      *      ' frozen orbitals.'
          END IF
-         WRITE (LUW4,'(/A/3(/A,F25.10))')
+         WRITE (LUPRI,'(/A/3(/A,F25.10))')
      *     ' NOTE that the orbitals saved on disk are those obtained'//
      *     ' with frozen orbitals (see above).',
      *    ' Hartree-Fock total energy :',EMY,
@@ -329,7 +398,7 @@ C
       CALL GETTIM(TIMEND,DUMMY)
       TIMMP2 = TIMEND - TIMMP2
       WRITE (LUERR,1860) TIMMP2
-      IF (IPRMP2 .GE. 2) WRITE (LUW4,1860) TIMMP2
+      IF (IPRMP2 .GE. 2) WRITE (LUPRI,1860) TIMMP2
  1860 FORMAT (/' Time used for MP2 natural orbitals :',F12.3,
      *        ' CPU seconds.')
       CALL MEMREL('MP2CTL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -412,20 +481,17 @@ C          Done, Aug. 2004 /hjaaj
 #endif
          IF (IPRNO .GE. 1) THEN
             OCCRHF = 2 * NRHF(ISYM)
+            WRITE (LUPRI,1840) ISYM,OCCSUM,OCCRHF,OCCSUM-OCCRHF
 #if !defined (VAR_MP2SUPSYM)
-            WRITE (LUW4,1840) ISYM
-            WRITE (LUW4,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
+            WRITE (LUPRI,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
 #else
             IF (.NOT.SUPSYM) THEN
-               WRITE (LUW4,1840) ISYM
-               WRITE (LUW4,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
+               WRITE (LUPRI,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
             ELSE
-               WRITE (LUW4,1841) ISYM
-               WRITE (LUW4,1851)
+               WRITE (LUPRI,1851)
      &            (WRK(KORBEN-1+IORBI+I),ISSMO(IORBI+I),I=1,NORBI)
             END IF
 #endif
-            WRITE (LUW4,1860) OCCSUM,OCCRHF,OCCSUM-OCCRHF
          END IF
   200 CONTINUE
 #if defined (VAR_MP2SUPSYM)
@@ -433,14 +499,12 @@ C          Done, Aug. 2004 /hjaaj
 C     ... remake ISSORD() as ISSMO() may have changed in ORD2SS
 #endif
 C
- 1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2/)
- 1850 FORMAT(4X,5F15.8)
+ 1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2
+     &       /' Sum =',F15.8,'; RHF =',F15.8,'; Difference =',F15.8)
+ 1850 FORMAT(/,(4X,5F15.8))
 #if defined (VAR_MP2SUPSYM)
- 1841 FORMAT(/' Natural orbital occupation numbers, symmetry',I2,
-     &        ' (supersymmetry in parenthesis)')
- 1851 FORMAT(4(F14.9,' (',I2,')'))
+ 1851 FORMAT(' (supersymmetry in parenthesis)'//,(5(F12.8,' (',I2,')')))
 #endif
- 1860 FORMAT(/' Sum',F15.8,/' RHF',F15.8,/' Diff.',F13.8)
 C
       CALL MEMREL('NATORB',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('NATORB')
@@ -620,8 +684,8 @@ C     ... return from MP2DEN
 C  /* Deck mp2fac */
       SUBROUTINE MP2FAC(DONE,ORBEN)
 C
-C MODIFY DONE TO OBTAIN CORRECT ONE ELECTRON DENSITY MATRIX
-C ( FACTORS ARE DEFINED IN MP2DEN )
+C Modify DONE to obtain correct one electron density matrix
+C ( Factors are defined in MP2DEN )
 C
 #include <implicit.h>
 C
@@ -630,8 +694,9 @@ C
       PARAMETER (D0 = 0.0D0 , D2 = 2.0D0 ,TOLELE = 1.0D-4 )
 C
 #include <priunit.h>
+#include <maxorb.h>
 #include <inforb.h>
-#include <infpri.h>
+#include <infmp2.h>
 C
       CALL QENTER('MP2FAC')
 C
@@ -665,7 +730,7 @@ C
 C
       IF ( ABS(-ELERMV+ELERCV).GT.TOLELE ) THEN
          NWARN = NWARN + 1
-         WRITE(LUW4,'(/A,/A,/A,F12.6,A)') ' *******WARNING*********',
+         WRITE(LUPRI,'(/A,/A,/A,F12.6,A)') ' *******WARNING*********',
      *   ' MP2 CALCULATION CARRIED OUT INCORRECTLY ',
      *   ' TRACE OF ONE ELECTRON DENSITY MATRIX GIVE ',
      *   (-ELERMV+ELERCV),' ELECTRONS  IN ADDITION TO SPECIFIED NUMBER'
@@ -675,7 +740,7 @@ C
       END IF
       IF (ELERMV .LT. 0 .OR. ELERMV .GT. 2*NRHFT) THEN
          NWARN = NWARN + 1
-         WRITE(LUW4,'(/A/A,I5/A,F12.6/A/A)')
+         WRITE(LUPRI,'(/A/A,I5/A,F12.6/A/A)')
      &   ' *******WARNING from MP2*********',
      &   ' Number of electrons in Hartree-Fock orbitals :',2*NRHFT,
      &   ' Number of electrons removed from HF orbitals :',ELERMV,
@@ -686,10 +751,10 @@ C
          I = 0
       END IF
       IF (IPRMP2 .GE. 2 .OR. I .EQ. 1) THEN
-         WRITE(LUW4,'(/A,F11.6,A)')
+         WRITE(LUPRI,'(/A,F11.6,A)')
      *      ' MP2 move',ELERCV,' electrons to unoccupied HF orbitals'
          IF (IPRMP2 .GE. 6 .OR. I .EQ. 1)
-     &      WRITE(LUW4,'(/A,F11.6,A/A,1P,D10.2,A)')
+     &      WRITE(LUPRI,'(/A,F11.6,A/A,1P,D10.2,A)')
      *      ' MP2 MOVE',ELERMV,' ELECTRONS FROM OCCUPIED HF ORBITALS',
      *      ' MP2 CHANGE IN TRACE OF ONE ELECTRON DENSITY MATRIX :',
      *      -ELERMV+ELERCV,' ELECTRONS.'

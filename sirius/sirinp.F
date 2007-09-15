@@ -2782,77 +2782,6 @@ C
       SET = .TRUE.
       RETURN
       END
-C  /* Deck mp2inp */
-      SUBROUTINE MP2INP(WORD,INPERR,ALLOPT)
-C
-C 17/9 - 1990 Hans Agren
-C
-#include <implicit.h>
-      PARAMETER (NTABLE = 2)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*12
-      LOGICAL ALLOPT
-C
-C Used from common:
-C
-C INFORB : NSYM
-C INFMP2 : NFRMP2(*)
-C INFPRI : IPRMP2
-C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infmp2.h>
-#include <infpri.h>
-C
-      DATA TABLE /'.MP2 FR','.PRINT '/
-CMAERKE 900918: MP2SAV not implemented, should it be?
-CMAERKE 900918: always NEWORB in this version.
-C
-C     ***** PROCESS INPUT FOR MP2INP *****
-C
-      WORD1 = WORD
-      IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
-     &                       LUPRI)
-  100    READ (LUCMD, '(A7)') WORD
-         CALL UPCASE(WORD)
-         PROMPT = WORD(1:1)
-         IF (PROMPT .EQ. '.') THEN
-            DO 1102 II = 1, NTABLE
-               IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102), II
-               END IF
- 1102       CONTINUE
-            IF (WORD .EQ. '.OPTION') THEN
-               IF (.NOT.ALLOPT)
-     &            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
-     &                       LUPRI)
-               GO TO 100
-            END IF
-            WRITE (LUPRI,'(/4A/)') ' Keyword ',WORD,
-     *         ' not recognized for ',WORD1
-         ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
-            GO TO 100
-         ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
-         ELSE
-            WRITE (LUPRI,'(/3A/2A/)')
-     *         ' Keyword ',WORD,' does not begin with',
-     *         ' one of the four characters ".*!#" for ',WORD1
-         END IF
-         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN MP2INP ')
-C
-C *** Option 1 >MP2 FROZEN<   Frozen MP2 orbitals
-  101 CONTINUE
-         READ(LUCMD,*) (NFRMP2(I),I=1,NSYM)
-      GO TO 100
-C
-C *** Option 2 >PRINT <  General print level in MP2
-  102 READ(LUCMD,*) IPRMP2
-      GO TO 100
-C
-      END
 C  /* Deck optinp */
       SUBROUTINE OPTINP(WORD,INPERR,ALLOPT)
 C
@@ -4663,13 +4592,13 @@ C
 C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
- 200  FORMAT(/,3(1X,A))
+ 200  FORMAT(3(/1X,A))
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
  400     FORMAT(/' Main authors of the SIRIUS module:'
-     *    /T5,'Hans Joergen Aa. Jensen, University of Odense,  Denmark',
-     *        ' (principal author)',
-     *    /T5,'Hans Agren,              University of Uppsala, Sweden')
+     *   /T5,'Hans Joergen Aa. Jensen, Univ. Southern Denmark, Denmark',
+     *       ' (principal author)',
+     *   /T5,'Hans Agren,              Royal Inst. Technology, Sweden')
          CALL CIAUTH(IWUNIT)
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
