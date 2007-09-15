@@ -191,9 +191,9 @@ C     Make load per batch even :
       END IF
       IF ( IPRMP2 .GE. 6 .OR. NPSTP .LE. 0) THEN
          WRITE (LUW4,'(3(/A,I8))')
-     &      ' NUMBER OF PARTICLE-HOLE DISTRIBUTIONS ',NP*NH,
-     &      ' NUMBER OF BATCHES                     ',NBATCH,
-     &      ' NUMBER OF P-H DISTRIBUTIONS EACH BATCH',NPSTP*NH
+     &      ' Number of PARTICLE-HOLE distributions ',NP*NH,
+     &      ' Number of BATCHES                     ',NBATCH,
+     &      ' Number of P-H distributions each BATCH',NPSTP*NH
       IF ( NPSTP .LE. 0 ) THEN
          WRITE (LUW4,'(/A)')
      &      ' ERROR: Insufficient work memory for one p-h distribution.'
@@ -202,9 +202,9 @@ C     Make load per batch even :
       END IF
       CALL MEMGET('REAL',KH2PHD,NPSTP*NH*NH*NP,WRK,KFREE,LFREE)
 C
-      CALL DZERO(WRK(KDONE),N2ORBX)
       EMP2   = D0
       EMP2FL = D0
+      CALL DZERO(WRK(KDONE),N2ORBX)
       IF (MP2FRO) THEN
          CALL DCOPY(NCMOT,WRK(KCMO),1,WRK(KCMO1),1)
          CALL DZERO(WRK(KDONEF),N2ORBX)
@@ -212,23 +212,19 @@ C
 C
       IPLOW  = 1
 C
-C REPEAT UNTIL IPLOW .GT. NP
+C     ... DO WHILE (IPLOW .LE. NP)
 C
  100  CONTINUE
          IPHIGH  =  MIN(NP,IPLOW+NPSTP-1)
 C
-C        RETRIEVE DIRAC PARTICLE-HOLE INTEGRAL DISTRIBUTIONS
-C        FOR THIS LOAD
+C        Retrieve DIRAC particle-hole integral distributions
+C        for this load
 C
-         CALL MP2PHD(WRK(KH2PHD),WRK(KH2M),
-     *               IPLOW,IPHIGH,WRK,KFREE,LFREE)
-C        CALL MP2PHD(WRK(KH2PHD),WRK(KINDXP),WRK(KH2M),
-C    *               NP,NH,IPLOW,IPHIGH,WRK,KFREE,LFREE)
-C        CALL MP2PHD(H2PHD,INDXPH,H2CD,
-C    *               NP,NH,IPLOW,IPHIGH,WRK,KFREE,LFREE)
+         CALL MP2PHD(WRK(KH2PHD),WRK(KH2M),IPLOW,IPHIGH,WRK,KFREE,LFREE)
+C        CALL MP2PHD(H2PHD,H2CD,IPLOW,IPHIGH,WRK,KFREE,LFREE)
 C
-C        DETERMINE SECOND ORDER CONTRIBUTIONS TO ONE ELECTRON
-C        DENSITY MATRIX
+C        Determine second order contributions to one electron
+C        density matrix
 C
          CALL MP2MUL(IPLOW,IPHIGH, WRK(KDONE),WRK(KKAPPA),WRK(KDONEF),
      *               WRK(KORBEN),WRK(KH2PHD),WRK(KH2M),WRK(KH2D),
@@ -238,11 +234,11 @@ C        CALL MP2MUL(IPLOW,IPHIGH,DONE,COEMP2,DONEFL,ORBEN,H2PHD,
 C    *               H2M,H2D,IFRRHF,EMP2,EMP2FL,IADR1,WRK,KFRSAV,LFRSAV)
          IPLOW   =  IPHIGH + 1
       IF (IPLOW.LE.NP) GO TO 100
-C     ... END REPEAT
+C     ... END DO WHILE
 C
-C     MODIFY DONE TO OBTAIN CORRECT ONE ELECTRON DENSITY MATRIX
-C     ( FACTORS ARE DEFINED IN MP2DEN ) AND ADD ZEROTH ORDER
-C     CONTRIBUTIONS
+C     Modify DONE to obtain correct one electron density matrix
+C     ( factors are defined in MP2DEN ) and add zeroth order
+C     contributions
 C
       IF ( IPRMP2 .GE. 20 ) THEN
          WRITE(LUPRI,'(/A)')
@@ -252,7 +248,7 @@ C
       CALL MP2FAC(WRK(KDONE),WRK(KORBEN))
       IF ( IPRMP2 .GE. 10 ) THEN
          WRITE(LUPRI,'(/A)')
-     *     ' MP2 one-electron density matrix'
+     *     ' Final MP2 one-electron density matrix'
          CALL OUTPUT(WRK(KDONE),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
@@ -279,13 +275,17 @@ C
          END IF
       END IF
       ECORR = EMY + EMP2
-C write the correlation coefficients and second order one-density to
-C the interface file LUSIFC
+C
+C     write the correlation coefficients and second order one-density to
+C     the interface file LUSIFC
+C
       IF (FLAG(25)) THEN
          CALL MP2IFC(WRK(KDONE),WRK(KKAPPA))
       END IF
       CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
-C     Save MP2 orbitals if not SOPPA
+C
+C     Save MP2 orbitals for MCSCF/CI if not SOPPA
+C
       IF (.NOT.FLAG(25)) THEN
          CALL NEWORB('MP2SAVE ',WRK(KCMO),.TRUE.)
       END IF
@@ -900,8 +900,8 @@ C
       END
 C  /* Deck mp2mul */
       SUBROUTINE MP2MUL(IPLOW,IPHIGH,DONE,COEMP2,DONEFL,ORBEN,H2PHD,
-     *                  H2M,H2D,IFRRHF,EMP2,EMP2FL,IADR1,WRK,
-     *                  KFRSAV,LFRSAV)
+     *                  H2M,H2D,IFRRHF,EMP2,EMP2FL,IADR1,
+     *                  WRK,KFRSAV,LFRSAV)
 C
 C WRITTEN APRIL-1-87
 C   Revision 891017-hjaaj: use NXTH2M
@@ -962,17 +962,13 @@ C     Loop over Mulliken distributions allowed in NEEDTP(6)
 C
       IDIST = 0
   100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
-C     CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
-         ISYMC = ISMO(IC)
-         ISYMD = ISMO(ID)
-         ISYMCD= MULD2H(ISYMC,ISYMD)
          CHOLE = ( INDXPH(IC) .GT. 0 )
          DHOLE = ( INDXPH(ID) .GT. 0 )
 C
-C        See if we need this distribution:
+C        Check if we need this distribution:
 C        HOLE-HOLE AND PARTICLE-PARTICLE  DISTRIBUTIONS NOT NEEDED
 C
       IF ( CHOLE .EQV. DHOLE ) GO TO 100
@@ -992,6 +988,10 @@ C
          ICHO  = INDXPH(IC)
          ICHDP = ( IDPA - IPLOW ) * NH + ICHO
 C
+         ISYMC = ISMO(IC)
+         ISYMD = ISMO(ID)
+         ISYMCD= MULD2H(ISYMC,ISYMD)
+C
 C        MULLIKEN DISTRIBUTION (**,CD) IN H2M(*,*)
 C        DIRAC PARTICLE-HOLE DISTRIBUTION IN H2PHD(*,*,ICHPH) C<D
 C
@@ -1009,7 +1009,7 @@ C           CALL MP2DEN(NFROZ,IFROZ,ICHO,IDPA,ICHDP,ISYMCD,H2PHD,DONE,
 C     *                 COEMP2,IADR1,ORBEN,H2M),H2D,EMP2,KFRO)
          END IF
 C
-C        IF MP2FRO, that is if some orbitals are frozen above,
+C        IF MP2FRO, that is, if some orbitals are frozen above,
 C        then also collect full MP2 density matrix and energy.
 C        IFRRHF is defined to correspond to only RHF frozen orbitals.
 C
@@ -1068,7 +1068,7 @@ C
 C  /* Deck mp2phd */
       SUBROUTINE MP2PHD(H2PHD,H2CD,IPLOW,IPHIGH,WRK,KFRSAV,LFRSAV)
 C
-C (get Particle-Hole integrals in Dirac format)
+C (retrieve Particle-Hole integrals in Dirac format)
 C Written  18. May 1987 by Hans Jorgen Aa. Jensen.
 C Revisions:
 C   891017-hjaaj: use NXTH2M
@@ -1283,8 +1283,9 @@ C
 C Pack or unpack ph-array for MP2/SOPPA.
 C
 C If IWAY.LT.0 then unpack the linear array XKP into XK. Else pack the
-C the array XK into XKP. IPHLAB>0, pack XK(OCC,VIRT); IPHLAB<0
-C pack XK(VIRT,OCC), and IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
+C   the array XK into XKP. 
+C If IPHLAB>0, pack XK(OCC,VIRT); IPHLAB<0 C pack XK(VIRT,OCC),
+C   and IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
 C
 #include <implicit.h>
       DIMENSION XK(NORBT,NORBT), XKP(*)
@@ -1354,9 +1355,11 @@ C
 C  /* Deck phadr1 */
       SUBROUTINE PHADR1(IADR1,KSYMOP)
 C
-C Written by Martin Packer 090394. IADR1(A,I) is an address
-C array giving the offsets to the set of ph excitations
-C associated with A,I.
+C Written by Martin Packer 090394.
+C
+C IADR1(A,I) is an address C array giving the offsets to
+C   the set of ph excitations associated with A,I.
+C
 #include <implicit.h>
 C
 C
@@ -1393,8 +1396,9 @@ C  /* Deck phadr2 */
       SUBROUTINE PHADR2(IADR2,NCOL,NROW)
 C
 C 30-Nov-1995 Hans Joergen Aa. Jensen.
+C
 C The address of the MP2 first order 2p2h coefficients
-C kappa(ia,jb) er IADR1(B,J) + IADR2(A,I)
+C   kappa(ia,jb) er IADR1(B,J) + IADR2(A,I)
 C
 C Based on code written by Erik Kragh Dalskov fall 1994.
 C
@@ -1434,3 +1438,4 @@ C
       ENDDO
       RETURN
       END
+C --- end of sirius/sirmp2.F ---
