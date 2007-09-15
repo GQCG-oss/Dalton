@@ -2,6 +2,9 @@
 #
 # Copyright (C) 2006 Luca Frediani
 #
+# Revised Sep-2007 Hans Joergen Aa. Jensen
+#   - ignore case when searching for PATTERN (as if "grep -i PATTERN"  instead of "grep PATTERN")
+#
 # Setting default command line options
 #
 my $options = "";
@@ -14,8 +17,8 @@ my $check = '';
 my $keyword = '';
 my $oldout = '';
 my $quiet = '';
-my $biglog = 'test.log';
-my $bigerr = 'test.err';
+my $biglog = 'perl_test.log';
+my $bigerr = 'perl_test.err';
 chomp(my $tstdir =`pwd`);
 my $dalton   = $tstdir."/../bin/dalton";
 $verbose = 0;
@@ -300,12 +303,12 @@ sub verify_hash_element_types($$$$$) {
 		if (($n_array_right == @{$value}) and ($n_array_wrong == 0)) {
 		    $n_right++;
 		    if ($verbose > $verb{all}) {
-			print $log "Array \"$key\" has ben checked\n";
+			print $log "Array \"$key\" has been checked\n";
 			print $log "Content \"@{$value}\" is correct\n";
 		    }
 		} else {
 		    $n_wrong++;
-		    print $err "Array \"$key\" has ben checked\n";
+		    print $err "Array \"$key\" has been checked\n";
 		    print $err "Content \"@{$value}\" is NOT correct\n";
 		}
 	    } else {
@@ -440,7 +443,7 @@ sub parse_test_file($$$) {
 
 ##################################################################################
 sub check_num($)
-# check wether the argument is numeric and returns an integer
+# check whether the argument is numeric and returns an integer
 #  0 non numeric
 #  1 integer
 #  2 real
@@ -468,7 +471,8 @@ sub compare($$$$$) {
     my $check = check_num($test_value) * check_num($ref_value) * check_num($thr) * check_num($abs);    
     my $result = 0;
     if ($check == 0) {
-	print $err "compare(): non numeric value(s) as input, test skipped\n";;
+	print $err "compare(): non numeric value(s) as input, test skipped\n";
+	print $err "compare(): $test_value * $ref_value * $thr * $abs\n";
     } else {
 	if ($abs == 1) {
 	    $test_value = abs($test_value);
@@ -519,7 +523,7 @@ sub line_compare($$$$$$)
 	    while ($ref_value=~s/\s//){};
 	    last PREPRO;
 	}
-	print $err "line_comapre: Only preprocessing 1 is implemented.\n";
+	print $err "line_compare: Only preprocessing 1 is implemented.\n";
     }
 
     if($test_value eq $ref_value)
@@ -575,7 +579,7 @@ sub rm_empty_lines
 sub post_coord {
 #
 # Input geometry check. Compare the coordinates from the test files with the ones obtained from the reference one
-# assume it is called with the followng input:
+# assume it is called with the following input:
 # number of elements in the test list  
 # number of elements in the ref list  
 # the test list 
@@ -612,9 +616,9 @@ sub post_coord {
 		$n_right += compare($t_list[$#t_list],$r_list[$#r_list],$threshold,0,\%files);
 	    }
 	    else {
-		print $log "post_coord(): empty ot not matching lists\n" if $verbose > $verb{check_det};
+		print $log "post_coord(): empty or not matching lists\n" if $verbose > $verb{check_det};
 		print $log "post_coord():\n @t_list\n @r_list\n" if $verbose > $verb{all};
-		print $err "post_coord(): empty ot not matching lists\n";
+		print $err "post_coord(): empty or not matching lists\n";
 		print $err "post_coord():\n @t_list\n @r_list\n";
 		$n_wrong++
 	    }
@@ -941,7 +945,7 @@ sub get_portion ($$$$$) {
 #
 # search for $start_key and $end_key and returns the portion of the file 
 # which is included there. The portion can be shrinked by $start_offset and $end_offset
-# $end_offset can be negative (portion enlargd) whereas $start_offset can be zero or positive.
+# $end_offset can be negative (portion enlarged) whereas $start_offset can be zero or positive.
 # a negative $start_offset will be considered as zero
 #
     my ($start_key, $end_key, $start_offset, $end_offset) = ($_[0],$_[1],$_[2],$_[3]);
@@ -1002,21 +1006,23 @@ sub get_line($$$$) {
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     print {$log} "get_line() called wit the following input:\n $keyword, $position, $maxread\n" if $verbose > $verb{fetch_inp};
+    my $tline = ""; #debug# print {$err} "get_line debug, keyword $keyword\n";
     while(<OUT>) {
 	$maxread--;
-	if(/$keyword/) {
+        $tline = "\L$_"; #debug# print {$err} "get_line debug, tline $tline"; # $tline is lower case version of line
+	if($tline =~ /\L$keyword/) {
 	    s/^\s+//; # remove leading spaces	    
 	    @line=split(/\s+/,$_);
 	    if ($position > 0)  {
 		push @line, $line[$position-1];
 	    }
 	    print $log "get_line() successful.\n"  if $verbose > $verb{all};
-	    print $log "returninig the following list:\n $_ @line"  if $verbose > $verb{all};
+	    print $log "returning the following list:\n $_ @line"  if $verbose > $verb{all};
 	    return $_,@line;
 	}
 	last if ($maxread == 0);
     }
-    print $err "get_line() could not find a matching line.\n";
+    print $err "get_line() could not find a matching line to keyword $keyword.\n";
     return ();
 }
 ##############################################################################
@@ -1042,14 +1048,13 @@ sub get_substring ($$$) {
 ############################################################################
 sub make_dirname() {
 #
-# creade a unique directory name where files are placed
-# based ond date, time and process ID
+# create a unique directory name where files are placed
+# based on date, time and process ID
 #
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-    $mday++; 
     $mon++; 
     $year = $year + 1900;
-    my $name = "perl-tests-date-".$year."-".$mon."-".$mday."-time-".$hour."-".$min."-".$sec."-pid-".$$;
+    my $name = "perl-tests-".$year."-".$mon."-".$mday."T".$hour."-".$min."-pid-".$$;
     return $name;
 }
 ############################################################################
@@ -1069,8 +1074,10 @@ sub get_lines ($$$$) {
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     print {$log} "get_lines() called with the following input:\n $keyword, $maxread, $maxget\n" if $verbose > $verb{fetch_inp};
 
+    my $tline = ""; #debug# print {$err} "get_lines debug, keyword $keyword\n";
     while(<OUT>) {
-	if(/$keyword/) {
+        $tline = "\L$_"; #debug# print {$err} "get_lines debug, tline $tline"; # $tline is lower case version of line
+	if($tline =~ /\L$keyword/) {
 	    s/^\s+//;
 	    push @lines, $_;
 	    $maxget--;
@@ -1147,8 +1154,8 @@ sub preprocess_files($) {
 # we need to have "clean" output and reference files before performing any checks
 # things to be cleaned:
 # 1) all real defined with D/d need to be changed in E 
-#    since perl does not recognize xxxx.xxD+xxx and similar
-#    as numbers
+#    since perl does not recognize xxxx.xxD+xxx and similar as numbers
+# 2) change line to lower case with "lc"; we will ignore case when matching strings
 #
     my %files = %{$_[$#_]};
     my $file="";
@@ -1157,7 +1164,7 @@ sub preprocess_files($) {
     {    
 	tie @array, 'Tie::File', $file or die "Cannot tie file $file";
 	for (@array) {
-	    s/([.\d])D([+-]\d)/$1E$2/g;
+	    s/([.\d])[DEd]([+-]\d)/$1e$2/g;
 	}
 	untie @array;
     }
@@ -1202,7 +1209,7 @@ my $MOLINP  = "MOLINP";
 my $REFOUT  = "REFOUT";
 my $DALOUT  = "DALOUT";
 
-# list of gloabal fileahandles
+# list of global filehandles
 
 my %bigfiles = (log    => $BIGLOG,
 		err    => $BIGERR,
@@ -1298,7 +1305,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 	next TEST;
     }
 #
-# Test wether input files are corrupted
+# Test whether input files are corrupted
 #
     if (check_files($dalinp,$molinp,$refout,\%files)) {
 	title_print($BIGLOG, "Corrupted input files. Test $test will be skipped\n");
@@ -1409,10 +1416,14 @@ if ((@passed_tests) or (@failed_tests)) {
     if (@failed_tests) {
 	print "The following perl tests have failed:\n" unless $quiet;
 	print "@failed_tests\n" unless $quiet;
+	print $BIGERR "@failed_tests\n";
+	print $BIGERR "THERE IS A PROBLEM\n";
 	print $BIGLOG "The following perl tests have failed:\n";
 	print $BIGLOG "@failed_tests\n";
+	print $BIGERR "THERE IS A PROBLEM\n";
 	print $BIGERR "The following perl tests have failed:\n";
 	print $BIGERR "@failed_tests\n";
+        exit 1;
     } else {
 	print "All tests completed successfully\n" unless $quiet;
 	print $BIGLOG "All tests completed successfully\n";
@@ -1436,9 +1447,9 @@ if ((@passed_tests) or (@failed_tests)) {
 #    zero for symmetry)
 # 3) a better mechanism for parsing through the test and reference 
 #    files: e.g. use Tie::File
-# 4) check wether a hash element which is supposed to be a list is correctly
-#    initialized as a list and viceversa. Currently we siliently check the
-#    elemnts of a list if a list is given but there is no check to determine
+# 4) check whether a hash element which is supposed to be a list is correctly
+#    initialized as a list and vice versa. Currently we silently check the
+#    elements of a list if a list is given but there is no check to determine
 #    if that is correct.
 #
 
@@ -1452,7 +1463,7 @@ test.pl [options]
 
 Options:
   
-    keyword  value     expaination  
+    keyword  value     explanation  
  
    --dalton  'string'  dalton script
    --options 'string'  option passed to the dalton script
@@ -1541,7 +1552,7 @@ the test.log file is attached to TESTLOG.
 
 =item B<--keep>
 
-All output files are kept. The defult behavior is to keep the output files 
+All output files are kept. The default behavior is to keep the output files 
 from failed tests only.
 
 =item B<--oldout>
