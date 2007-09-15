@@ -4017,10 +4017,12 @@ C     for calculation of Douglas-Kroll integrals.
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <maxaqn.h>
+
+#include <priunit.h>
       DIMENSION WORK(LWORK)
       LOGICAL UNCONTBKP
       CHARACTER*7 WORD
-#include <maxaqn.h>
 #include <ccom.h>
 #include <mxsymm.h>
 #include <cbirea.h>
