@@ -741,7 +741,6 @@ c           calculation.
          END IF
 
          CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
-         IF (IPRINT .GT. 0) CALL SCRSTA('HRFCK1/PARDRV',WORK(KDSKP))
       ELSE
 #endif
 C
@@ -786,7 +785,6 @@ C
             HFXFAC = HFXFC0
          END IF
          IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
-         IF (IPRINT .GT. 0) CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP))
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
