@@ -3759,8 +3759,7 @@ C
 C
 #if defined (SYS_CRAY)
       CALL GATHER(LENGTH,VEC1,VEC2,INDEX)
-#endif
-#if !defined (SYS_CRAY)
+#else
       DO 100 I = 1,LENGTH
 C
          VEC1(I) = VEC2(INDEX(I))

@@ -67,8 +67,7 @@ C
 C
 #if defined (SYS_CRAY)
       CALL WOPEN(FILE,ILEN,BLOCKSIZE,STATUS,IERR)
-#endif
-#if !defined (SYS_CRAY)
+#else
       CALL WOPEN(LUNIT,FILE,ILEN,BLOCKSIZE,STATUS,IERR)
 #endif
 C
@@ -116,8 +115,7 @@ c/* Deck PUTWA2 */
 
 #if defined (SYS_CRAY)
       CALL PUTWA(FILE,DATA(1),IADR,LEN,IERR)
-#endif
-#if !defined (SYS_CRAY)
+#else
       CALL PUTWA(LUNIT,DATA(1),IADR,LEN,IERR)
 #endif
 
@@ -149,7 +147,7 @@ c/* Deck GETWA2 */
 
 #if defined (SYS_CRAY)
       CALL GETWA(FILE,DATA(1),IADR,LEN,IERR)
-#elif !defined (SYS_CRAY)
+#else
       CALL GETWA(LUNIT,DATA(1),IADR,LEN,IERR)
 #endif
 
@@ -185,8 +183,7 @@ c/* Deck WCLOSE2 */
 C
 #if defined (SYS_CRAY)
       CALL WCLOSE(FILE,IERR)
-#endif
-#if !defined (SYS_CRAY)
+#else
       CALL WCLOSE(LUNIT,IERR)
 #endif
 C

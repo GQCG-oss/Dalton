@@ -5766,25 +5766,16 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C     
-#if defined (SYS_CRAY) || defined (SYS_T90) || (defined (SYS_AIX) && defined (VAR_INT64))
+#if defined (INT_STAR8) || defined (VAR_INT64)
             LRECL = LBFINP + LBFINP + 1
-#endif
-#if (defined (SYS_AIX) && !defined (VAR_INT64)) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_IRIX) || defined (SYS_DEC)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
             LRECL = LBFINP + LBFINP/IRAT + 1
+#else
+            IF (NBASIS .LE. 255) THEN
+               LRECL = 2*LBFINP + LBFINP + 1
+            ELSE
+               LRECL = 2*LBFINP + 2*LBFINP + 1
+            END IF
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -7660,8 +7651,7 @@ C
             XINTM(KOFF + I) = SCRAB(INDV2(I))
 C
   130    CONTINUE
-#endif
-#if defined (SYS_CRAY)
+#else
          CALL GATHER(NNBST(ISYMAB),XINTP(KOFF + 1),SCRAB,INDV1)
          CALL GATHER(NNBST(ISYMAB),XINTM(KOFF + 1),SCRAB,INDV2)
 #endif
