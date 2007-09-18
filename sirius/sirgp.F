@@ -1193,7 +1193,7 @@ C Used from common blocks:
 C  INFORB : NBAST,N2BASX
 C  INFTAP : LUSUPM
 C  INFPRI : IPRERR,LUERR
-C  CBIHRS : parameters for FRMSUP
+C  CBIHRS : parameters for FORMSUP
 C
 #include <inforb.h>
 #include <inftap.h>
@@ -1221,10 +1221,10 @@ C
          I = I + 1
          CALL REWSPL(LUSUPM)
          IF (.NOT. FNDLAB('PSUPMAT ',LUSUPM)) THEN
-            IF (I.GT.1) CALL QUIT('CALL FRMSUP failed')
+            IF (I.GT.1) CALL QUIT('CALL FORMSUP failed')
             CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL FRMSUP(WORK,LFREE,NOSSUP,THRSUP,IPRSUP)
-            CALL TIMER('FRMSUP',TIMSTR,TIMEND)
+            CALL FORMSUP(WORK,LFREE,NOSSUP,THRSUP,IPRSUP)
+            CALL TIMER('FORMSUP',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
             GO TO 100
          END IF
