@@ -1,7 +1,7 @@
 C     LEINF : space nedded in LELIN = LLEWA + nsim*LLEWB
 C             NSIDE=0, symmetric; =1 from left side; =2 from right side
 #if defined (SYS_CRAY)
-     REAL THRLE
+      REAL THRLE
 #else
       DOUBLE PRECISION THRLE
 #endif

@@ -1,10 +1,9 @@
       LOGICAL RESTPP,ABCHK,ABSYM,RESTLR,RESTC6,DETERM
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL
+      REAL AFREQ
 #else
-      DOUBLE PRECISION
+      DOUBLE PRECISION AFREQ
 #endif
-     * AFREQ
       INTEGER
      *                KSYMOP, KZVAR,  KZYVAR, KZCONF, KZYCON, KZWOPT, 
      *                KZYWOP, KZRED , KZYRED, KEXCNV, KEXSIM, KEXSTV,
