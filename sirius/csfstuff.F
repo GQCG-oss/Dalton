@@ -2656,7 +2656,7 @@ c Loop over RAS 3 occupancies
            WRITE(LUPRI,*) ' RAS 1 2 3 STRING '
            CALL IWRTMA(IOC,1,NEL,1,NEL)
          ENDIF
-c Next string has been constructed , Enlist it |.
+c Next string has been constructed , Enlist it !.
              NSTRIN = NSTRIN + 1
              IADRES = IZNUM( IOC ,NEL,Z,NEL,NORB,IREORD,IPRINT)
              IF(IADRES .GT. MAXSTR) THEN
@@ -2712,11 +2712,11 @@ c
 c     Purpose
 c
 c     AN ORDERED SET OF NUMBERS INUM(I),I=1,NELMNT IS
-c     GIVEN IN STRICTLY ASCENDING ORDER. VALUES OF INUM(*) IS
-c     RESTRICTED TO THE INTERVAL MINVAL,MAXVAL .
+c        GIVEN IN STRICTLY ASCENDING ORDER.
+c     VALUES OF INUM(*) IS RESTRICTED TO THE INTERVAL MINVAL,MAXVAL .
 c     FIND NEXT HIGHER NUMBER.
 c     NONEW = 1 ON RETURN INDICATES THAT NO ADDITIONAL NUMBERS
-c     COULD BE OBTAINED.
+c        COULD BE OBTAINED.
 c
 c     Externals
 c
@@ -2757,7 +2757,7 @@ c
  1001 CONTINUE
 c
       IF( IPRINT.GT.30 ) THEN
-        WRITE(LUPRI,*) ' New number '
+        WRITE(LUPRI,*) ' New number in NXTORD:'
         CALL IWRTMA(INUM,1,NELMNT,1,NELMNT)
       END IF
 c

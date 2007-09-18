@@ -161,7 +161,6 @@ c remco
 #include <infvar.h>
 #include <priunit.h>
 #if (defined(VAR_G77))
-!     integer*8 i_detvec, i_cvec
       dimension detvec(1),cvec(1)
 #elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
       allocatable detvec(:),cvec(:)
