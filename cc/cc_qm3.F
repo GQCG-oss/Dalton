@@ -3773,9 +3773,6 @@ C
 C  /* Deck quitmm */
       SUBROUTINE QUITMM(TEXT)
 #include <implicit.h>
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include <priunit.h>
       CHARACTER TEXT*(*)
 C
