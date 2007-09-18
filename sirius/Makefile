@@ -40,7 +40,15 @@ libsirius.a : $(F_OBJS)
 # sirtra.o has to be compiled without less optimization under HP-UX
 
 #sirtra.o: sirtra.F
-#	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $*.F
+#	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFFLAGS) -c $*.F
+# gfortran 4.1 gives error with -O3 and -O2 when integer*8 is default,
+#   must have -O1 to get correct results from detfi.o -- but let us just compile
+#   always with SAFEFFLAGS, detfi and dets0 are anyway mostly integer arithmetic /hjaaj Sep07
+#
+detfi.o: detfi.F
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+dets0.o: dets0.F
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
 
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
