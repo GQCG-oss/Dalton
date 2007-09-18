@@ -3274,7 +3274,7 @@ C
 #include <dummy.h>
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
-      CHARACTER*8 BLANK
+      CHARACTER BLANK*8, PRI_LINE*80
 C
       PARAMETER ( MAXSIM = 15, LMXFR = 1000, BLANK = '        ' )
       PARAMETER ( TOLRTT = 1.0D-12)
@@ -3718,15 +3718,16 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                END IF
  600        CONTINUE
          END IF
-         WRITE (LUPRI,'(/,3(/A,I3))')
-     *   '@ Reference  state    symmetry',IREFSY,
-     *   '@ Excitation operator symmetry',KSYMOP,
-     *   '@ Excited    state    symmetry',KSYMST
+         WRITE (PRI_LINE,'(3(A,I3))')
+     *   '@ Reference state symmetry',IREFSY,
+     *   '& excitation operator symmetry',KSYMOP,
+     *   '=> excited state symmetry',KSYMST
+         CALL HEADER(PRI_LINE,-1)
          DO 555 INUM = 1,NBX
-            WRITE(LUPRI,'(/A,I5,//A,1P,G16.8,A,3(/A1,19X,G16.8,A),
+            WRITE(LUPRI,'(/A,I5,A,I3,//A,1P,G16.8,A,3(/A1,19X,G16.8,A),
      *                   //A,T21,G16.8,A)')
-     *      '@ State no:',(ISIM-1+INUM),
-     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     *      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
+     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),'au',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
      *      ' ',WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
@@ -3748,21 +3749,19 @@ C                 ... skip HDO
 C
                   JOP = JOP + 1
                   WRITE(LUPRI,'(/A,A)')
-     *               '@ Operator type:    ',LBLPP(KSYMOP,IOP)
+     *                  '@ Operator type:    ',LBLPP(KSYMOP,IOP)
 C
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
      *                  '@ Oscillator strength (LENGTH)   :',
-     *                  OSCSTR(INUM,JOP)
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment   (LENGTH)   :',
+     *                  OSCSTR(INUM,JOP),
+     *                  '  Transition moment   (LENGTH)   :',
      *                  TRSMOM(INUM,JOP)
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
      *                  '@ Oscillator strength (VELOCITY) :',
-     *                  OSCSTR(INUM,JOP)
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment   (VELOCITY) :',
+     *                  OSCSTR(INUM,JOP),
+     *                  '  Transition moment   (VELOCITY) :',
      *                  TRSMOM(INUM,JOP)
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
@@ -3771,11 +3770,11 @@ C
      *                  OSCSTR(INUM,JOP)
                      IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
                         WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment  (cos(kr)/k) :',
+     *                  '@ Transition moment  (cos(kr)/k) :',
      *                  TRSMOM(INUM,JOP)
                      ELSE
                         WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment  (sin(kr)/k) :',
+     *                  '@ Transition moment  (sin(kr)/k) :',
      *                  TRSMOM(INUM,JOP)
                      END IF
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
