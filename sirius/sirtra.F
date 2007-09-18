@@ -420,7 +420,7 @@ C
          CALL QUIT('Only NIBUF.eq.1 on AOTWOINT has been implemented')
       END IF
 C
-      IBITMASK  = 2*NBITSAO - 1
+      IBITMASK  = 2**NBITSAO - 1
       IBITSHR_1 = 3*NBITSAO
       IBITSHR_2 = 2*NBITSAO
       IBITSHR_3 =   NBITSAO
