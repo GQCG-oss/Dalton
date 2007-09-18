@@ -147,13 +147,12 @@ C
   275    CONTINUE
 C
          IF (NCONF.GT.1 .AND. .NOT.ONLYFD .AND. IPRCAN .GT. 0) THEN
-            WRITE (LUW4,3040) ISYM, (OCC(JOCC1+I),I=1,NASHI)
-            WRITE (LUW4,3041) OCCSUM
+            WRITE (LUW4,3040) ISYM, OCCSUM, (OCC(JOCC1+I),I=1,NASHI)
          END IF
   300 CONTINUE
 C
- 3040 FORMAT(/' Symmetry',I3,//,(5F14.9))
- 3041 FORMAT(/' Sum =',T15,F14.9)
+ 3040 FORMAT(/' Symmetry',I3,'  Total occupancy this symmetry',F14.9,
+     &      //,(5F14.9))
 C
 C     Print out natural orbitals
 C
@@ -937,7 +936,7 @@ C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
      *      ' Occupancies of natural orbitals',
      *      ' -------------------------------'
          IF (SUPSYM .AND. .NOT. NOAVER) WRITE (LUPRI,'(/A)')
-     *      ' NOTE: degenerate orbitals are averaged'
+     *      ' NOTE: degenerate orbitals have been averaged.'
          DO 520 ISYM = 1,NSYM
             NOCCI = NOCC(ISYM)
             IF (NOCCI .EQ. 0) THEN
@@ -947,20 +946,18 @@ C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
                IOCCI = IOCC(ISYM)
                IORBI = IORB(ISYM)
                IF (SUPSYM) THEN
-                  WRITE (LUPRI,3045) ISYM,
+                  WRITE (LUPRI,3045) ISYM,OCCSUM,
      &               (OCCNO(IOCCI+I),ISSMO(IORBI+I),I=1,NOCCI)
                ELSE
-                  WRITE (LUPRI,3040) ISYM,
+                  WRITE (LUPRI,3040) ISYM,OCCSUM,
      &               (OCCNO(IOCCI+I),I=1,NOCCI)
                END IF
-               WRITE (LUPRI,3041) OCCSUM
             END IF
   520    CONTINUE
 C  HJAAJ MAERKE 921106: if (supsym) print also sorted after supsym
       END IF
  3030 FORMAT(/' Symmetry',I3,//,'   No occupied orbitals')
- 3040 FORMAT(/' Symmetry',I3,//,(5F14.9))
- 3041 FORMAT(/' Sum =',T15,F14.9)
+ 3040 FORMAT(/' Symmetry',I3,' Sum for this symmetry',F14.9,//,(5F14.9))
  3045 FORMAT(/' Symmetry',I3,' (supersymmetry in parenthesis)',
      *       //,4(F14.9,' (',I2,')'))
       IF (IPRINT .GT. 5 .AND. NASHT .GT. 0 .AND. .NOT.MOISNO) THEN
