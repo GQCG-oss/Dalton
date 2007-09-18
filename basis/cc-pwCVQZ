@@ -1,13 +1,16 @@
 $ Basis = cc-pwCVQZ                                                              
-$ 23.07.06 Sc-Zn added. david.wilson@latrobe.edu.au
-
+$    
+$ VERSION HISTORY
+$ 23.07.06 Sc-Zn added. (david.wilson@latrobe.edu.au)
+$    
+$***********************************************************************
 $ Elements supported
 $ H He B C N O F Ne Al Si P S Cl Ar
 $ Sc Ti V Cr Mn Fe Co Ni Cu Zn
 $
 $ Note: H, He are cc-pVQZ basis sets
 $
-$  REFERENCE
+$ REFERENCE
 $ Elements                             References
 $ --------                             ----------
 $ He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
@@ -2419,4 +2422,3 @@ $ H-TYPE FUNCTIONS
  
 $ END OF BASIS
  
-

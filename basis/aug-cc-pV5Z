@@ -1,6 +1,9 @@
 $Basis = aug-cc-pV5Z
+$
+$ VERSION HISTORY
 $ 23.07.06 Sc-Zn added. david.wilson@latrobe.edu.au
-
+$
+$***********************************************************************
 $ Elements supported
 $ H He B C N O F Ne Al Si P S Cl Ar
 $ Sc Ti V Cr Mn Fe Co Ni Cu Zn

@@ -1,5 +1,8 @@
 $Basis = cc-pCV5Z
 $
+$ VERSION HISTORY
+$
+$***********************************************************************
 $ Elements supported
 $ H He B C N O F Ne 
 $
@@ -668,4 +671,4 @@ $ H-TYPE FUNCTIONS
     1    1    0
       3.7760000  1.00000000
 
-
+$ END OF BASIS
