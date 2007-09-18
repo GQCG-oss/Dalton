@@ -712,9 +712,12 @@ C Used from common blocks:
 C   INFLIN : NWOPPT,NVARPT
 C
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <priunit.h>
 #include <inflin.h>
 #include <infvar.h>
-#include <priunit.h>
+#include <pcm.h>
 C
       CALL QENTER('PCMLIN')
 C

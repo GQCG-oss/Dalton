@@ -1,4 +1,8 @@
-C/* Comdeck pedram */
+C
+C  -- dalton/sirius/sircav.F --
+C     (Luca Frediano)
+C
+C/* Deck pedram */
       SUBROUTINE PEDRAM(WORK,LWORK)
 C
 #include <implicit.h>
@@ -13,6 +17,8 @@ C
 #include <pcm.h>
 #include <pcmlog.h>
 C
+      CALL QENTER('PEDRA')
+C
 C     ----- set memory pointers for polyhedra setup -----
 C
       SOME = IPRPCM.NE.-5
@@ -20,9 +26,9 @@ C
 C     maximum number of tessalations is not known, take worst case
 C     maximum number of spheres is not known, take worst case
 C
-      NUMTS = MXTS
+      NUMTS  = MXTS
       NUMSPH = MXSP
-      NATM = MXCENT
+      NATM   = MXCENT
       NUMVER = MXVER
 C
       LOADFM = 1
@@ -48,14 +54,14 @@ C
      $     WORK(LJTR),WORK(LCV),NUMTS,NUMSPH,NUMVER,NATM,SOME,
      $     WORK(LAST),LWRK,WORK(LNPERM))
 C
+      CALL QEXIT('PEDRA')
       RETURN
 C
-  910 FORMAT(/' MEMORY USED TO GENERATE CAVITY=',I10/)
+  910 FORMAT(/' MEMORY USED TO GENERATE CAVITY =',I10/)
       END
-c/* Comdeck pedra*/
-      SUBROUTINE PEDRA(INTSPH,VERT,CENTR,NEWSPH,ICAV1,ICAV2, XVAL,YVAL
-     $     ,ZVAL,JTR,CV,NUMTS,NUMSPH,NUMVER,NATM,SOME,WORK,LWORK
-     $     ,NPERM)
+c/* Deck pedra*/
+      SUBROUTINE PEDRA(INTSPH,VERT,CENTR,NEWSPH,ICAV1,ICAV2, XVAL,YVAL,
+     $      ZVAL,JTR,CV,NUMTS,NUMSPH,NUMVER,NATM,SOME,WORK,LWORK,NPERM)
 C
 #include <implicit.h>
 #include <maxorb.h>
@@ -180,7 +186,7 @@ C
          DO 130 J=1,NES
             RIJ2=(XE(I)-XE(J))**2+
      $           (YE(I)-YE(J))**2+
-     $        (ZE(I)-ZE(J))**2
+     $           (ZE(I)-ZE(J))**2
             RIJ=SQRT(RIJ2)
             RJD=RE(J)+RSOLV
             TEST1=RE(I)+RJD+RSOLV
@@ -638,10 +644,10 @@ C
      *        ' Sphere             Center  (X,Y,Z) (A)            ',
      *           '   Radius (A)      Area (A^2)')
  9030 FORMAT(I4,4F15.9,F15.9)
- 9040 FORMAT(/' Total number of tesserae =',I8/
-     *        ' Surface area =',F14.8,'(A^2)',4X,'Cavity volume =',
+ 9040 FORMAT(/' Total number of tesserae =',I8
+     *       /' Surface area =',F14.8,' (A^2)    Cavity volume =',
      *            F14.8,' (A^3)')
- 9050 FORMAT(' PEDRA: CONFUSION ABOUT SPHERE COUNTS. NESFP,NATM=',2I6)
+ 9050 FORMAT( ' PEDRA: CONFUSION ABOUT SPHERE COUNTS. NESFP,NATM=',2I6)
  9060 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP GRADIENT RUN=',I10)
  9061 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP IEF RUN=',I10)
  9070 FORMAT(/' ***  PARTITION OF THE SURFACE  ***'
@@ -649,7 +655,7 @@ C
      &        'X Y Z NORMAL VECTOR')
  9090 FORMAT(2I4,7F12.7)
       END
-C/* Comdeck SphPer */
+C/* Deck SphPer */
       SUBROUTINE SPHPER(NESF,NESF0,NUMSPH,NPERM,NEWSPH,XE,YE,ZE,RE)
 C
 #include <implicit.h>
@@ -706,7 +712,7 @@ C
           If (I.LT.NESF0) THEN
              WRITE(LUPRI,*) 'CAVITIY IS NOT CONSISTENT WITH SYMMETRY'
              CALL QUIT(
-     $            'SIRCAV: Cavity inconsistent with symmetry')
+     $            'SIRCAV: Cavity is inconsistent with symmetry')
           ELSE
             NESF1=NESF1+1
             NPerm(i,j+1)=NESF1
@@ -777,7 +783,7 @@ c
  2000 format (I4,4F18.8)
       RETURN
       END
-C/* Comdeck Polygen */
+C/* Deck Polygen */
       SUBROUTINE POLYGEN(IPFLAG,TSARE,ITSNUM,XEN,YEN,ZEN,REN,
      $  ITSEFF,CV,JTR,NPERM,NSFE,NUMTS,NUMSPH,NUMVER,ROTCAV)
 C
@@ -1095,12 +1101,12 @@ Check    WRITE(LUPRI,'(3F10.4)')  (CV(i,II),II=1,3)
 C
       RETURN
  1000 FORMAT(/' ** WARNING ** A VERY POOR TESSELATION HAS BEEN CHOSEN',
-     $     / 'IT IS VALUABLE ALMOST ONLY FOR TESTING')
+     $       /' IT IS VALUABLE ALMOST ONLY FOR TESTING')
  1100 FORMAT(/' ** WARNING ** A VERY EXPENSIVE TESSELATION ',
-     $     'HAS BEEN CHOSEN',
-     $     / 'IT WILL PROBABLY PRODUCE A HUGE AMOUNT OF TESSERAE')
+     $   'HAS BEEN CHOSEN',
+     $       /' IT WILL PROBABLY PRODUCE A HUGE AMOUNT OF TESSERAE')
       END
-c/* Comdeck Repcav */
+c/* Deck Repcav */
       SUBROUTINE REPCAV(VERT,CENTR,NPERM,NUMTS,NUMSPH)
 C
 #include <implicit.h>
@@ -1188,7 +1194,7 @@ C      enddo
 Clf
       RETURN
       END
-C/* Comdeck tessera */
+C/* Deck tessera */
       SUBROUTINE TESSERA(NS,NV,PTS,CCC,PP,PP1,AREA,INTSPH,NUMTS)
 C
 #include <implicit.h>
@@ -1367,7 +1373,7 @@ C
          ENDDO
          ICUT = ICUT / 2
          IF(ICUT.GT.1) THEN
-            WRITE(LUPRI,*) 'TESSERA SPEZZATA IN TRONCONI'
+            WRITE(LUPRI,*) 'Tessera cut in pieces and removed.'
             RETURN
          END IF
 C     
@@ -1706,7 +1712,7 @@ C
       CALL GAUBON(NV,NS,PTS,CCC,PP,PP1,AREA,INTSPH,NUMTS)
       RETURN
  1000 FORMAT('NS=',I4,' NV=',I4,' NUMTS=', I4)
- 1005 FORMAT('CHECHING INTERSECTIONS WITH SPHERE N.',I4)
+ 1005 FORMAT('CHECKING INTERSECTIONS WITH SPHERE N.',I4)
  1010 FORMAT('Coordinates: X=',F12.8,'  Y=',F12.8,'  Z=',F12.8,
      $     ' R=',F12.8)
  1015 FORMAT('VERT-OTHER CENTER DIST:',F10.8,' SPHERE RADIUS',F10.8)
@@ -1719,7 +1725,7 @@ C
  1050 FORMAT('AFTER INTER')
  1055 FORMAT('DIST CHECK EDGE N.',I2,' DIFFERENCE:',F12.10)
       END
-C/* Comdeck inter */
+C/* Deck inter */
       SUBROUTINE INTER(P1,P2,P3,P4,NS,I)
 C
 #include <implicit.h>
@@ -1746,7 +1752,6 @@ Clf Don't change this threshold unless you know exactly what you are doing.
       TOL = 1.0D-12
       ALPHAT = 0.5D+00
       DELTA = 0.0D+00
-      M = 1
 Clf Check distances of P1 and P2 from P3
       P1P3 = SQRT((P1(1)-P3(1))**2+(P1(2)-P3(2))**2+(P1(3)-P3(3))**2)
       P2P3 = SQRT((P2(1)-P3(1))**2+(P2(2)-P3(2))**2+(P2(3)-P3(3))**2)
@@ -1794,8 +1799,36 @@ Clf Check if one or both starting points are below the threshold
          END IF
          GOTO 100
       END IF
+C
+C     Start iterations
+C
+      M = 1
  10   CONTINUE
-      IF (M.GT.300)THEN
+        ALPHAT = ALPHAT + DELTA
+        DNORM = 0.0D+00
+        DO JJ = 1,3
+         P4(JJ)=P1(JJ)+ALPHAT*(P2(JJ)-P1(JJ))-P3(JJ)
+         DNORM = DNORM + P4(JJ)**2
+        ENDDO
+        DNORM = SQRT(DNORM)
+        DO JJ = 1,3
+         P4(JJ)= P4(JJ)*R/DNORM + P3(JJ)
+        ENDDO
+        DIFF2=(P4(1)-XE(NS))**2 + (P4(2)-YE(NS))**2 + (P4(3)-ZE(NS))**2
+        DIFF = SQRT(DIFF2) - RE(NS)
+      IF(ABS(DIFF).LT.TOL) GOTO 100
+        IF(I.EQ.0) THEN
+         IF(DIFF.GT.0.0D+00) DELTA = 1.0D+00/(2.0D+00**DBLE(M+1))
+         IF(DIFF.LT.0.0D+00) DELTA = - 1.0D+00/(2.0D+00**DBLE(M+1))
+         M = M + 1
+        ELSE IF(I.EQ.1) THEN
+         IF(DIFF.GT.0.0D+00) DELTA = - 1.0D+00/(2.0D+00**DBLE(M+1))
+         IF(DIFF.LT.0.0D+00) DELTA = 1.0D+00/(2.0D+00**DBLE(M+1))
+         M = M + 1
+        ELSE
+         CALL QUIT('Illegal I in subroutine INTER')
+        END IF
+        IF (M.GT.300)THEN
          WRITE(LUPRI,*)'Too many iterations in INTER! BYE BYE ...'
          WRITE(LUPRI,*)'P1',P1(1),P1(2),P1(3),DIFFA,LALOW
          WRITE(LUPRI,*)'P2',P2(1),P2(2),P2(3),DIFFB,LBLOW
@@ -1803,34 +1836,8 @@ Clf Check if one or both starting points are below the threshold
          WRITE(LUPRI,*)'P4',P4(1),P4(2),P4(3),DIFF,I
          WRITE(LUPRI,*)'SPHERE',XE(NS),YE(NS),ZE(NS),RE(NS)
          CALL QUIT('Too many iterations in INTER! BYE BYE ...')
-      END IF
-      ALPHAT = ALPHAT + DELTA
-      DNORM = 0.0D+00
-      DO JJ = 1,3
-         P4(JJ)=P1(JJ)+ALPHAT*(P2(JJ)-P1(JJ))-P3(JJ)
-         DNORM = DNORM + P4(JJ)**2
-      ENDDO
-      DNORM = SQRT(DNORM)
-      DO JJ = 1,3
-         P4(JJ)= P4(JJ)*R/DNORM + P3(JJ)
-      ENDDO
-      DIFF2=(P4(1)-XE(NS))**2 + (P4(2)-YE(NS))**2 + (P4(3)-ZE(NS))**2
-      DIFF = SQRT(DIFF2) - RE(NS)
-      IF(ABS(DIFF).LT.TOL) THEN 
-         GOTO 100
-      END IF
-      IF(I.EQ.0) THEN
-         IF(DIFF.GT.0.0D+00) DELTA = 1.0D+00/(2.0D+00**DBLE(M+1))
-         IF(DIFF.LT.0.0D+00) DELTA = - 1.0D+00/(2.0D+00**DBLE(M+1))
-         M = M + 1
-         GO TO 10
-      END IF
-      IF(I.EQ.1) THEN
-         IF(DIFF.GT.0.0D+00) DELTA = - 1.0D+00/(2.0D+00**DBLE(M+1))
-         IF(DIFF.LT.0.0D+00) DELTA = 1.0D+00/(2.0D+00**DBLE(M+1))
-         M = M + 1
-         GO TO 10
-      END IF
+        END IF
+      GO TO 10
 C
 C Final printing and return
 C
@@ -1851,7 +1858,7 @@ C
  1015 FORMAT('SPHERE',' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9,
      $     ' R = ',F12.9)
       END
-C/* Comdeck gaubon */
+C/* Deck gaubon */
       SUBROUTINE GAUBON(NV,NS,PTS,CCC,PP,PP1,AREA,INTSPH,NUMTS)
 C
 #include <implicit.h>
@@ -2071,7 +2078,7 @@ C     tessere puo' risultare negativa, e viene in questo caso trascurata
       END IF
       RETURN
       END
-C/* Comdeck vecp */
+C/* Deck vecp */
       SUBROUTINE VECP(P1,P2,P3,DNORM3)
 C
 #include <implicit.h>
@@ -2086,7 +2093,7 @@ C
       DNORM3 = SQRT(P3(1)*P3(1) + P3(2)*P3(2) + P3(3)*P3(3))
       RETURN
       END
-C/* Comdeck cavspl */
+C/* Deck cavspl */
       SUBROUTINE CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
 C
 #include <implicit.h>
@@ -2168,7 +2175,7 @@ C
  400  FORMAT(/10X,'THE FIRST CAVITY IS FORMED BY SPHERE(S) :'/)
  500  FORMAT(/10X,'THE SECOND CAVITY IS FORMED BY SPHERE(S) :'/)
       END
-C/* Comdeck plotcav */
+C/* Deck plotcav */
       SUBROUTINE PLOTCAV(Vert,NUMTS)
 C
 #include <implicit.h>
@@ -2223,7 +2230,7 @@ C
 3000  FORMAT('  ',14i10)
       RETURN
       END
-C/* Comdeck Colour */
+C/* Deck Colour */
       SUBROUTINE COLOUR(N,C1,C2,C3)
 #include <implicit.h>
 #include <priunit.h>
@@ -2520,7 +2527,7 @@ C            write(lupri,*) 'iax',i,isop(i),iax(isop(i))
       ENDIF
       RETURN
       END
-ClfC/* Comdeck ANLINT */
+ClfC/* Deck ANLINT */
 Clf      SUBROUTINE ANLINT(H0,K0,A0,B0,P0,Q0,O0,RP,RQ,L,NEXIT)
 ClfC
 ClfC     Luca Frediani February 2 2002. This is a replacemement for the old

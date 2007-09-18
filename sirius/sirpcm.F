@@ -14,7 +14,6 @@ C
 C     ----- set up the NAMELIST $PCM -----
 C
       PARAMETER (NTABLE=16)
-      CHARACTER RINPUT*8
       CHARACTER*8 RZSOL
       CHARACTER*6 SOLWD
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
@@ -28,9 +27,8 @@ C
       DATA TABLE/'.SOLVNT','.EPS   ','.EPSINF','.RSOLV ',
      *           '.RET   ','.NESFP ','.ICESPH','.ICOMPC',
      *           '.PRINT ','.NON-EQ','.NEQRSP','.NPCMMT',
-     *           '.ANISO ','.LOCFLD','.OUTFLD','.NEWQR '/
+     *           'xANISO ','.LOCFLD','.OUTFLD','.NEWQR '/
 C
-      DATA RINPUT/'INPUT   '/
 C
 C     --- READ IN PARAMETERS TO PERFORM A PCM SOLVATION CALCULATION ---
 C
@@ -40,10 +38,10 @@ C     around each solute atom.
 C
 C       this group defines the solvent (no default)
 C
-      PCM = .TRUE.
-      NEWQR = .FALSE.
-      RZSOL = RINPUT
-      EPSI = D0
+      PCM    = .TRUE.
+      NEWQR  = .FALSE.
+      RZSOL  = 'INPUT   '
+      EPSI   = D0
       EPSINI = D0
       RSOLVI = D0
       NONEQ  = .FALSE.
@@ -60,14 +58,14 @@ C
 C       this group defines the cavity
 C
       ICESPH = 0
-      NESFP = 0
-      OMEGA = 40.0D+00
-      FRO = 0.7D+00
-      RET = 0.2D+00
+      NESFP  = 0
+      OMEGA  = 40.0D+00
+      FRO    = 0.7D+00
+      RET    = 0.2D+00
       NRWCAV = 0
       AREATS = 0.4D+00
 Clf oldcen true means that we use the old tessera center definition
-C     (average ov the vertices).
+C     (average of the vertices).
       OLDCEN = .FALSE.
       ICOMPCM = 0
       IPRPCM = 0
@@ -208,23 +206,19 @@ C        Check that input for booboos
 C
       NERR=0
       IF(RZSOL.EQ.'INPUT   ' .AND. (EPS.EQ.D0.OR.RSOLV.EQ.D0)) THEN
-         WRITE(LUPRI,9010)
-         WRITE(LUPRI,*) 'PICK SOLVNT OR RSOLV/EPS/EPSINF...'
+         WRITE(LUPRI,9010) 'PICK SOLVNT OR RSOLV/EPS/EPSINF...'
          NERR = NERR+1
       END IF
       IF(NESFP.GT.MXSP) THEN
-         WRITE(LUPRI,9010)
-         WRITE(LUPRI,*) 'EXCESSIVE NUMBER OF RADII (>MXSP)'
+         WRITE(LUPRI,9010) 'EXCESSIVE NUMBER OF RADII (>MXSP)'
          NERR=NERR+1
       END IF
       IF(ICESPH.GT.3) THEN
-         WRITE(LUPRI,9010)
-         WRITE(LUPRI,*) 'WRONG VALUE FOR -ICESPH- (>2)'
+         WRITE(LUPRI,9010) 'WRONG VALUE FOR -ICESPH- (>2)'
          NERR=NERR+1
       END IF
       IF(ICOMPCM.GT.3) THEN
-         WRITE(LUPRI,9010)
-         WRITE(LUPRI,*) 'WRONG VALUE FOR -ICOMPCM- (>3)'
+         WRITE(LUPRI,9010) 'WRONG VALUE FOR -ICOMPCM- (>3)'
          NERR=NERR+1
       END IF
 C
@@ -239,9 +233,9 @@ C
 C
       RETURN
 C
- 9010 FORMAT(' *** INCONSISTENCY FOUND IN *PCM INPUT GROUP ***')
+ 9010 FORMAT(' *** INCONSISTENCY FOUND IN *PCM INPUT GROUP ***'/5X,A)
  9020 FORMAT(/5X,35('-')/
-     *   5X,'INPUT FOR PCM SOLVATION CALCULATION '/5X,35('-')/
+     *   5X,'Input for PCM solvation calculation '/5X,35('-')/
      *   5X,'ICOMPCM =',I8,  5X,
      *   5X,'SOLVNT=',A8,  5X,'EPS   =',F8.4,5X,'EPSINF=',F8.4/
      *   5X,'RSOLV =',F8.4//
@@ -592,11 +586,11 @@ C
       ENDDO
       RETURN
 C
- 9000 FORMAT(1X,'**** ERROR IN $',A8,' INPUT')
+C9000 FORMAT(' **** ERROR IN $',A8,' INPUT')
  9010 FORMAT(/5X,'INPUT FOR CAVITY DEFINITION '/5X,27(1H-)/
      *   5X,'ATOM         COORDINATES           RADIUS ')
  9020 FORMAT(2X,I4,4(2X,F8.4))
- 9030 FORMAT(1X,'**** ERROR **** PCM SPHERE(S) MUST HAVE',
+ 9030 FORMAT(' **** ERROR **** PCM SPHERE(S) MUST HAVE',
      *          ' A POSITIVE RADIUS')
       END
 C/* Comdeck pcmvnn */
@@ -961,17 +955,17 @@ C
  200  CONTINUE
       WRITE(LUPRI,9020) ZSOL,EPS,EPSINF,RSOLV,VMOL,TCE,STEN,DSTEN,CMF
 C     
- 9010 FORMAT(/,'*** ERROR: NO DATA TABULATED FOR SOLVENT=',A8//
-     *     'ALLOWED SOLVENTS ARE:')
+ 9010 FORMAT(/'*** ERROR: NO DATA TABULATED FOR SOLVENT = ',A8
+     *      //'ALLOWED SOLVENTS ARE:')
  9015 FORMAT('      ',A10,' ( OR ',A10,' )')
 C     
- 9020 FORMAT(/1X,'** LOOKING UP INTERNALLY STORED DATA FOR SOLVENT=',
-     *     A8,' **'/
-     *     1X,'OPTICAL AND PHYSICAL CONSTANTS:'/
-     *     1X,'EPS= ',F6.3,';',1X,'EPSINF= ',F6.3,';',
-     *     ' RSOLV= ',F6.3,' A;',1X,'VMOL= ',F7.3,' ML/MOL;'/
-     *     1X,'TCE= ',E10.5,' 1/K;',1X,'STEN= ',F6.3,
-     *     ' DYN/CM;',1X,' DSTEN= ',F7.4,';',1X,'CMF= ',F7.4/)
+ 9020 FORMAT(/' ** LOOKING UP INTERNALLY STORED DATA FOR SOLVENT = ',
+     *     A8,' **'
+     *    /' Optical and physical constants:'
+     *    /' EPS=',F7.3,'; EPSINF=',F7.3,';',
+     *     ' RSOLV=',F7.3,' A; VMOL=',F8.3,' ML/MOL;'
+     *    /' TCE=',1P,D11.5,0P,' 1/K; STEN=',F7.3,
+     *     ' DYN/CM;  DSTEN=',F8.4,'; CMF=',F8.4/)
       RETURN
       END
 C/* Deck v2q */
@@ -1070,15 +1064,13 @@ Clf      LUPCMBK = LUPCMD
       KFREE  = KFRSAV
       LFREE  = LWRK
 
-Clf      KFREE = 1
-      LWORK=LWRK
+      LWORK  = LWRK
       CALL PEDRAM(WORK,LWORK)
-Clf      IF(SOME) THEN
-      IF(.TRUE.) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '..... DONE GENERATING CAVITY .....'
+Clf   IF(SOME) THEN
+         WRITE(LUPRI,'(/A)')
+     &   ' ..... DONE GENERATION CAVITY .....'
          CALL TIMER('PEDRAM',TIMSTR,TIMEND)
-      END IF
+Clf   END IF
       NTS2 = NTS*NTS
       CALL FLSHFO(LUPRI)
       CALL MEMGET('REAL',LDMATM,NTS2,    WORK,KFREE,LWORK)
@@ -1529,11 +1521,11 @@ CLF      IF(IPRCAV.GE.5) THEN
       RETURN
 
  5000 CONTINUE
-      WRITE (LUPRI,'(2(A,I3),A,D15.5)')
+      WRITE (LUPRI,'(2(A,I3),A,1P,D15.5)')
      &     ' The nucleus',N,' is too close to its ',K,
      &     'th transformation DIST=',DIST
       CALL QUIT('SPHGEN: Nuclei too close.')
  5010 CONTINUE
       CALL QUIT('SPHGEN: MXCENT exceeded.')
- 1000 FORMAT(I4,4D20.10)
+ 1000 FORMAT(I4,1P,4D20.10)
       END
