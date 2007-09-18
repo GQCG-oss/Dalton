@@ -68,10 +68,10 @@ C
       IF (IN .GE. 0) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = (72 - LENGTH)/2 + 1
+         INDENT = MAX(1,(72 - LENGTH)/2 + 1)
       END IF
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-      WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), ('-',I=1,LENGTH)
+      WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD
+      WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), ('-',I=1,LENGTH)
       WRITE (LUPRI, '()')
       RETURN
       END
@@ -149,23 +149,23 @@ C
          INDENT = MAX(1,(72 - LENGTH)/2 + 1)
       END IF
       IF (IN .EQ. 200) THEN
-         WRITE (LUPRI, '(//,80A)')
+         WRITE (LUPRI, '(//,150A)')
      *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
-         WRITE (LUPRI,'(80A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
-         WRITE (LUPRI, '(80A)')
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
+         WRITE (LUPRI, '(150A)')
      *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
       ELSE IF (IN .EQ. 100) THEN
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI,'(//,150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE IF (IN .GT. 100) THEN
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT),
+         WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT),
      *      (A,I=1,MARG-1), ' ', HEAD, ' ', (A,I=1,MARG-1)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       END IF
       WRITE (LUPRI, '()')
       CALL FLSHFO(LUPRI)
@@ -176,13 +176,13 @@ C  /* Deck around */
       CHARACTER HEAD*(*)
 #include <priunit.h>
       LNG = LEN(HEAD) + 2
-      IND = (72 - LNG)/2 + 1
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '! ', HEAD, ' !'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-C     WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '| ', HEAD, ' |'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
+      IND = MAX(1,(72 - LNG)/2 + 1)
+      WRITE (LUPRI, '(//,150A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+      WRITE (LUPRI, '(150A)')    (' ',I=1,IND), '! ', HEAD, ' !'
+      WRITE (LUPRI, '(150A)')    (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+Cx    WRITE (LUPRI, '(//,150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
+Cx    WRITE (LUPRI, '(150A)')    (' ',I=1,IND), '| ', HEAD, ' |'
+Cx    WRITE (LUPRI, '(150A)')    (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       WRITE (LUPRI, '()')
       RETURN
       END
