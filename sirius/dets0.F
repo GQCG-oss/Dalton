@@ -354,9 +354,6 @@ c
       DO 1000 ISTRIN = 1,NSTRIN
 c. Expand string
         CALL ISETVC(IEXP(1),0,NORB)
-        write (lupri,*) 'hjaaj istrin, nel, string',istrin,nel
-        write (lupri,*) 'hjaaj',(string(i,istrin),i=1,nel)
-        call flshfo (lupri)
         DO 10 I = 1,NEL
            IEXP(STRING(I,ISTRIN) ) = 1
    10   CONTINUE
