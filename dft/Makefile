@@ -58,7 +58,7 @@ FUNFILES = \
 	fun-lyp.c	\
 	fun-lypr.c	\
 	fun-mpbex.c	\
-	fun-mpw.c	\
+	fun-mpwx.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\
