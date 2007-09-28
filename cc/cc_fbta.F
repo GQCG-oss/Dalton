@@ -343,7 +343,7 @@ c /* deck cc_fbta1 */
 #include <ccr1rsp.h>
 #include <chrxyz.h>
 #include <r12int.h>
-#include <cbieri.h>                ! for IPRERI
+#include <cbieri.h>
 
 * local parameters:
       LOGICAL LOCDBG
