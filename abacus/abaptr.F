@@ -2295,7 +2295,7 @@ C  /* Deck makpvm */
      &               WORK(KWRK),LWRK,PANTI,IPRINT)
       ELSE IF (ZFS2EL) THEN
          CALL MAKPVQ(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
-     &            WORK(KWRK),LWRK,IPRINT)
+     &            WORK(KWRK),LWRK,ANTI,IPRINT)
       ELSE
          CALL MAKPV1(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
      &               WORK(KWRK),LWRK,ANTI,IPRINT)
@@ -2506,7 +2506,7 @@ C
  10   CONTINUE
       RETURN
       END
-C  /* Deck makpv3 */
+C  /* Deck makpvq */
       SUBROUTINE MAKPVQ(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
