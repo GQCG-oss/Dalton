@@ -214,7 +214,7 @@ C
       MELFLD = (SPINRO .AND. NOLOND)
       MQUADR = QUADRU
       MSECND = SECNDM
-      MOCTUP = OCTUPO
+      MTHIRD = THIRDM
       MNQCC  = NQCC
       ALLCOM = .NOT. DODRCT
       MPQUAD = 40
@@ -398,7 +398,7 @@ c        identical results.
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &               MPRINT,MNODC,MNODV,WORD,NCOMP)
       END IF
-      IF (MOCTUP) THEN
+      IF (MTHIRD) THEN
          WORD = 'THRMOM '
          NCOMP = 10
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
