@@ -341,7 +341,7 @@ cLig <> added RANGMO and RPSO
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
      &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP',
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
-     &             '.OCTUPO'. 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
+     &             '.OCTUPO', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
