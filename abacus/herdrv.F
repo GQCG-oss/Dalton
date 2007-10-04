@@ -215,7 +215,7 @@ C     ***** P Supermatrix Elements *****
 C     **********************************
 C
 C     Integrals on AOSUPINT
-C     HJAaJ Oct 2003: CALL FRMSUP has been moved to SIRIUS and
+C     HJAaJ Oct 2003: CALL FORMSUP has been moved to SIRIUS and
 C     is only done when relevant ...
 C
 C     **********************************
@@ -277,7 +277,7 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 136)
+      PARAMETER (NDIR = 9, NTABLE = 140)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -340,7 +340,8 @@ cLig <> added RANGMO and RPSO
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
      &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP',
-     &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH'/
+     &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
+     &             '.OCTUPO'. 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
@@ -421,7 +422,7 @@ C
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
-     &                231,232,233,234,235,236), I
+     &                231,232,233,234,235,236,237,238,239,240), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1104,8 +1105,17 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             DERAM  = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
- 236        CONTINUE
-            DIPANH  = .TRUE.
+ 236     CONTINUE
+            DIPANH = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 237     CONTINUE
+            OCTUPO = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 238     CONTINUE
+ 239     CONTINUE
+ 240     CONTINUE
             ONEPRP = .TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1170,19 +1180,17 @@ cLig <>
          IF (DIPLEN) WRITE (LUPRI,'(10X,A)') '- dipole length integrals'
          IF (DIPVEL) WRITE (LUPRI,'(10X,A)')
      &                         '- dipole velocity integrals'
+C
          IF (QUADRU) WRITE (LUPRI,'(10X,A)')
      &                         '- quadrupole moment integrals'
          IF (THETA)  WRITE (LUPRI,'(10X,A)')
      &                         '- traceless quadrupole moment integrals'
-         IF (SECMOM) WRITE (LUPRI,'(10X,A)')'- second moments integrals'
-         IF (THRMOM) WRITE (LUPRI,'(10X,A)')'- third moment integrals'
-         IF (SPNORB) WRITE (LUPRI,'(10X,A)')
-     &                         '- spatial spin-orbit integrals'
-c ach
-         IF (no2so) WRITE (LUPRI,'(10X,A)')
-     &                        'but no two-electron spin-orbit integrals'
+         IF (SECMOM) WRITE (LUPRI,'(10X,A)')'- second moment integrals'
+C
          IF (OCTUPO) WRITE (LUPRI,'(10X,A)')
      &                         '- octupole moment integrals'
+         IF (THRMOM) WRITE (LUPRI,'(10X,A)')'- third moment integrals'
+C
          IF (CARMOM) THEN
             IF (IORCAR .GT. 0) THEN
                WRITE (LUPRI,'(10X,A,I2,A)')
@@ -1205,12 +1213,18 @@ c ach
      &           ABS(IORSPH)
             END IF
          END IF
+C
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
      &      '- electronic kinetic energy'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
      &       '- 1-electron Darwin integrals'
+         IF (SPNORB) WRITE (LUPRI,'(10X,A)')
+     &                         '- spatial spin-orbit integrals'
+c ach
+         IF (no2so) WRITE (LUPRI,'(10X,A)')
+     &                        'but no two-electron spin-orbit integrals'
          IF (NMRISS) THEN
             IF (FERMI) THEN
                WRITE (LUPRI,'(10X,A)')'- Fermi contact integrals'
@@ -1494,13 +1508,13 @@ C
                GO TO (1,2,3,4,5,6,7,8,9), I
             END IF
   310    CONTINUE
-         WRITE (LUPRI,'(/3A/)') ' Directory ',WORD,' nonexistent.'
-         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in HERINP.')
+         WRITE (LUPRI,'(/3A/)') ' Input module ',WORD,' nonexistent.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
+         CALL QUIT('Illegal input directive in HERINP.')
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,
      *      '" illegal or out of order.'
-         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
     2   CALL REAINP(WORD,IPRDEF,RELCAL,TSTINP)
