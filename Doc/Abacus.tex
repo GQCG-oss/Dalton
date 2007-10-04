@@ -76,11 +76,12 @@ intensity}.
 \item[\Key{DIPORG}]\verb| |\newline
 \verb|READ (LUCMD, *) (DIPORG(ICOOR), ICOOR = 1, 3)|
 
-Reads in a user defined dipole origin\index{dipole origin}. This may
-affect properties in 
+Reads in a user defined dipole origin\index{dipole origin}\index{origin!dipole, second order, quadrupole, third order} in bohrs.
+It is also used for second order (.SECMOM), quadrupole (.QUADRU),
+and third order (.THIRDM) moments.  This may affect properties in 
 which changes in the dipole origin\index{dipole origin} is canceled by
-similar changes in the 
-nuclear part. It should also be used with care, as the same dipole
+similar changes in the nuclear part.
+It should also be used with care, as the same dipole
 origin must be used during the integral evaluation sections, in
 particular if one is doing numerical 
 differentiation with respect to electric field perturbations. For such
@@ -102,7 +103,7 @@ excitation\index{electronic excitation}\index{excitation energy}
 energies as residues of linear response functions\index{linear response}\index{response!linear}\index{single residue}
 as described by Olsen and J\o rgensen \cite{jopjjcp82}. It also
 calculates closely related properties like transition
-moments\index{transition moment}\index{rotatory strength} and 
+moments\index{transition moments}\index{rotatory strength} and 
 rotatory strengths. Combined with the 
 keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
 or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of electronic
@@ -341,9 +342,9 @@ more line containing print level. Default print level is the
 value of \verb|IPRDEF| from the general input module.
 
 \item[\Key{QUADRU}] Calculates the molecular quadrupole
-moment\index{quadrupole moment}. This
-includes both the electronic and nuclear contribution to the
-quadrupole moment. These will printed separately only if a printed
+moment\index{quadrupole moments}\index{moments!total quadrupole}. This
+includes both the electronic and nuclear contributions to the
+quadrupole moments. These will printed separately only if a print
 level of 2 or higher has been chosen. Note that the quadrupole moment is
 defined according to Buckingham \cite{adbacp12}. The quadrupole moment
 is printed in the molecular input orientation as well as being 
@@ -381,6 +382,12 @@ only those perturbations specified in the sequence will be considered.
 The perturbation ordering follows the ordering of the symmetrized
 nuclear coordinates. This ordering can be obtained by setting the
 print level in the \verb|*READIN| module to 20 or higher.
+
+\item[\Key{SECMOM}] Calculates the 9 cartesian molecular second order
+moments\index{second order moments}\index{moments!total second order}.
+This includes both the electronic and nuclear contribution to the
+second order moment. These will printed separately only if a print
+level of 2 or higher has been chosen.
 
 \item[\Key{SHIELD}] Invokes the calculation of nuclear
 shielding\index{nuclear shielding} constants. By default this is done
@@ -462,6 +469,12 @@ consult the chapter describing the calculation of NMR-parameters
 (Ch.~\ref{ch:magnetic}). The main control of which
 contributions and which nuclei to calculate spin-spin couplings
 between is done in the \verb|*SPIN-S| module.
+
+\item[\Key{THIRDM}] Calculates the 27 cartesian molecular third order
+moments\index{third order moments}\index{moments!third order}.
+This includes both the electronic and nuclear contribution to the
+third order moments. These will printed separately only if a print
+level of 2 or higher has been chosen.
 
 \item[\Key{VCD}] Invokes the calculation of Vibrational Circular
 Dichroism (VCD)\index{VCD}\index{vibrational circular dichroism}
@@ -915,9 +928,9 @@ Read one more line containing print level. Default value is the
 value of \verb|IPRDEF| from the general input module.
 
 \item[\Key{QUADRU}] Calculates the electronic contribution to the
-molecular (traceless) quadrupole moment\index{quadrupole
-moment}. Default value is \verb|TRUE| 
-if molecular quadrupole moment have been requested in the general input
+molecular (traceless) quadrupole moments\index{quadrupole
+moments}\index{moments!electronic quadrupole}. Default value is \verb|TRUE| 
+if molecular quadrupole moment has been requested in the general input
 module, otherwise \verb|FALSE|.
 
 \item[\Key{SHIELD}] Invokes the calculation of the one-electron
