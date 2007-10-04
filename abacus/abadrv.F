@@ -719,7 +719,7 @@ Caug04-hjaaj: disabled currently inactive .NACME
      &             '.CAVORG', '.HYPER ', '.VERDET',
      &             '.MCD   ', '.SOPPA ', '.EXPGRA',
      &             '.CTOCD ', '.D2DQ2 ', '.QPGRAD',
-     &             '.DISDIP', '.SECMOM', '.OCTUPO'/
+     &             '.DISDIP', '.SECMOM', '.THIRDM'/
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -818,7 +818,7 @@ C
       SKIPAB = .FALSE.
       CTOCD  = .FALSE.
       EXPGRD = .FALSE.
-      OCTUPO = .FALSE.
+      THIRDM = .FALSE.
       ESG    = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
@@ -1176,7 +1176,7 @@ C .D2DQ2
             QPGRAD = .TRUE.
          GOTO 100
  156     CONTINUE
-            OCTUPO = .TRUE.
+            THIRDM = .TRUE.
          GOTO 100
  157     CONTINUE
             SECNDM = .TRUE.
@@ -1372,6 +1372,11 @@ C
      *            ' calculated in this run:',0)
       IF (MOLGRD) WRITE (LUPRI,'(5X,A)') ' The molecular gradient'
       IF (MOLHES) WRITE (LUPRI,'(5X,A)') ' The molecular Hessian'
+      IF (DOWALK) WRITE (LUPRI,'(5X,A)') ' Geometry optimization'
+      IF (VIB)    WRITE (LUPRI,'(5X,A)') ' Vibrational analysis'
+      IF (SECNDM) WRITE (LUPRI,'(5X,A)') ' Second order moments'
+      IF (QUADRU) WRITE (LUPRI,'(5X,A)') ' Quadrupole moments'
+      IF (THIRDM) WRITE (LUPRI,'(5X,A)') ' Third order moments'
       IF (DIPDER .AND. .NOT.POPULA)
      &            WRITE (LUPRI,'(5X,A)') ' Dipole moment gradient'
       IF (QPGRAD) WRITE (LUPRI,'(5X,A)') ' Quadrupole moment'//
@@ -1387,12 +1392,7 @@ C
      &            WRITE (LUPRI,'(5X,A)') ' Static polarizabilities'
       IF (HYPER)  WRITE (LUPRI,'(5X,A)') 
      &          ' First hyperpolarizabilities (beta)'
-      IF (QUADRU) WRITE (LUPRI,'(5X,A)') ' Quadrupole moments'
-      IF (SECNDM) WRITE (LUPRI,'(5X,A)') ' Second moments'
       IF (NQCC)   WRITE (LUPRI,'(5X,A)') ' Nuclear quadrupole moments'
-      IF (OCTUPO) WRITE (LUPRI,'(5X,A)') ' Octupole (third) moments'
-      IF (DOWALK) WRITE (LUPRI,'(5X,A)') ' Geometry optimization'
-      IF (VIB)    WRITE (LUPRI,'(5X,A)') ' Vibrational analysis'
       IF (POPULA) WRITE (LUPRI,'(5X,A)') ' Cioslowski population'
      &               //' analysis and static polarizabilities only.'
       IF (DOLRES) WRITE (LUPRI,'(5X,A)') ' Linear response calculation'
@@ -1479,17 +1479,18 @@ cLig <<
      &   'for perturbation dependent basis sets.'
       END IF
       IF (GAGT) THEN
-         IF (MOLGFA .OR. SPINRO .OR. ((MAGSUS .OR. SHIELD)
-     &              .AND. NOLOND)) THEN
-            WRITE(LUPRI,'(1X,2A)') 'Origin changed from default. ',
-     &           'This may give wrong results for some properties'
-         END IF
-         IF ((MAGSUS .OR. SHIELD) .AND. .NOT. NODIFC)
-     &      WRITE(LUPRI,'(1X,2A)') ' WARNING: User defined gauge '//
-     &           'may give wrong results when using symmetry'
          WRITE (LUPRI,'(A,3F15.10)')
      &        ' User defined gauge origin       :',
      &        (GAGORG(I), I = 1, 3)
+         IF (MOLGFA .OR. SPINRO .OR. ((MAGSUS .OR. SHIELD)
+     &              .AND. NOLOND)) THEN
+            WRITE(LUPRI,'(2A)')
+     &           ' WARNING! Gauge origin changed from default. ',
+     &           'This may give wrong results for some properties'
+         END IF
+         IF ((MAGSUS .OR. SHIELD) .AND. .NOT. NODIFC)
+     &      WRITE(LUPRI,'(1X,2A)') ' WARNING! User defined gauge '//
+     &           'may give wrong results when using symmetry'
       END IF
       IF (DNRM2(3,CAVORG,1) .GT. D0) THEN
          WRITE (LUPRI,'(A,3F15.10)')
@@ -1497,9 +1498,10 @@ cLig <<
      &        (CAVORG(I), I = 1, 3)
       END IF
       IF (DNRM2(3,DIPORG,1) .GT. D0) THEN
-         WRITE (LUPRI,'(A,3F15.10)')
+         WRITE (LUPRI,'(A,3F15.10/A)')
      &        ' User defined dipole origin      :',
-     &        (DIPORG(I), I = 1, 3)
+     &        (DIPORG(I), I = 1, 3),
+     &        ' (Also used for .QUADRU, .SECMOM, .THIRDM multipoles)'
       END IF
       IF (DNRM2(3,ORIGIN,1) .GT. D0) THEN
         WRITE(LUPRI,'(A,3F15.10)')
@@ -1624,8 +1626,8 @@ cLig <<
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
-         IF (OCTUPO)   THEN
-            WRITE(LUPRI,'(A)') ' Incompatible input. OCTUPO '//
+         IF (THIRDM)   THEN
+            WRITE(LUPRI,'(A)') ' Incompatible input. THIRDM '//
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
@@ -1889,22 +1891,26 @@ C
       ELSE
          IPRGAG = 0
       END IF
-      IF ((QUADRU .OR. SECNDM .OR. OCTUPO) .AND. (.NOT.NOCMC))
-     &     CALL DCOPY(3,CMXYZ,1,DIPORG,1)
       IF (.NOT.NOCMC) THEN
+         IF (DNRM2(3,DIPORG,1) .EQ. D0) THEN
+C           ... i.e. user hasn't changed DIPORG with .DIPORG
+            CALL DCOPY(3,CMXYZ,1,DIPORG,1)
+            WRITE(LUPRI,'(/A,3F12.6)')
+     &         ' Center of mass dipole origin  :',(DIPORG(I), I = 1, 3)
+         END IF
          IF (GAGT) THEN
-            IF (IPRGAG .GT. 0) WRITE(LUPRI,'(/,A,3F12.6)') 
-     &           'User defined gauge origin used:',(GAGORG(I), I = 1, 3)
+            IF (IPRGAG .GT. 0) WRITE(LUPRI,'(/A,3F12.6)') 
+     &         ' User defined gauge origin used:',(GAGORG(I), I = 1, 3)
          ELSE
             CALL DCOPY(3,CMXYZ,1,GAGORG,1)
             IF (IPRGAG .GT. 0)
-     &           WRITE(LUPRI,'(/,A,3F12.6)') ' Center of mass '//
-     &                    'gauge origin:',(GAGORG(I), I = 1, 3)
+     &         WRITE(LUPRI,'(/A,3F12.6)')
+     &         ' Center of mass gauge origin   :',(GAGORG(I), I = 1, 3)
          END IF
          IF (SOLVNT) THEN
             CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-            WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity origin              :',
-     &           (CAVORG(I), I = 1, 3)
+            WRITE(LUPRI,'(/,A,3F12.6)')
+     &         ' Center of mass cavity origin  :',(CAVORG(I), I = 1, 3)
          END IF
       ELSE
          CALL DZERO(GAGORG,3)
@@ -1927,7 +1933,7 @@ C
       IF (SECNDM) CALL NUCSCM(WORK(KGEOM),DIPORG,LUPRI,IPRDEF)
       IF (QUADRU) CALL NUCQDR(WORK(KGEOM),DIPORG,LUPRI,IPRDEF)
       IF (NQCC)   CALL NUCNQC(WORK(KGEOM),LUPRI,IPRDEF)
-      IF (OCTUPO) CALL NUC3RD(WORK(KGEOM),DIPORG,LUPRI,IPRDEF)
+      IF (THIRDM) CALL NUC3RD(WORK(KGEOM),DIPORG,LUPRI,IPRDEF)
 C     
  789  CONTINUE
       CALL GPCLOSE(LUCMD,'KEEP')
@@ -2339,6 +2345,20 @@ C
          CALL QDRRES(IPRDEF)
       END IF
 C
+C     Second moment gradient
+C
+      IF (QPGRAD) THEN
+         CALL HEADER('Second moment gradient (au)',-1)
+         CALL PRISEC(SEC1,'SECDER',CSTRA,SCTRA)
+chs
+         IF (DIPDER) CALL ATMDIP(CSTRA,SCTRA)
+chs
+      END IF
+C
+C     Molecular third moments (cartesian, not spherical octupole)
+C
+      IF (THIRDM) CALL THRDRES(IPRDEF)
+C
 C     Nuclear quadrupole moments
 C
       IF (NQCC) THEN
@@ -2349,20 +2369,6 @@ C
      &        STOPIT('RESULT','NQCRES',KLAST,LWORK)
          CALL NQCRES(IPRDEF,WORK(KAXIS))
       END IF
-C  
-C     Second moment gradient
-C  
-      IF (QPGRAD) THEN
-         CALL HEADER('Second moment gradient (au)',-1)
-         CALL PRISEC(SEC1,'SECDER',CSTRA,SCTRA)
-chs
-         IF (DIPDER) CALL ATMDIP(CSTRA,SCTRA)
-chs
-      END IF
-C
-C     Molecular octupole moments
-C
-      IF (OCTUPO) CALL OCTRES(IPRDEF)
 cLig >> added the call to SUSRES and SHIRES for CTOCD
 C
 C     CTOCD-DZ Susceptibilities and Nuclear Shieldings
@@ -2763,7 +2769,7 @@ C  /* Deck secres */
 #include <secmom.h>
 #include <abainf.h>
 C
-      CALL TITLER('ABACUS - Molecular second moments','*',113)
+      CALL TITLER('ABACUS - Molecular second order moments','*',113)
       CALL DCOPY(9,SCMEL,1,SECNDT,1)
       CALL DSCAL(9,DM1,SECNDT,1)
       IF (IPRINT .GE. 2) THEN
@@ -2773,14 +2779,15 @@ C
          CALL POLPRI(SECNDT,'   ',1)
       END IF
       CALL DAXPY(9,D1,SCMNUC,1,SECNDT,1)
-      CALL HEADER('Total second moments (au)',-1)
+      CALL HEADER('Total second order moments (au)',-1)
       CALL POLPRI(SECNDT,'   ',1)
-      CALL HEADER('Total second moments (cgs, Debye*AAngstroem)',-1)
+      CALL HEADER('Total second order moments (cgs, Debye*AAngstroem)',
+     &            -1)
       CALL POLPRI(SECNDT,'CGS',1)
       RETURN
       END
 C  /* Deck octres */
-      SUBROUTINE OCTRES(IPRINT)
+      SUBROUTINE THRDRES(IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -2792,7 +2799,7 @@ C  /* Deck octres */
 #include <thimom.h>
 #include <abainf.h>
 C
-      CALL TITLER('ABACUS - Molecular octupole moments','*',113)
+      CALL TITLER('ABACUS - Molecular third order moments','*',113)
       CALL DCOPY(27,THDMEL,1,THDTOT,1)
       CALL DSCAL(27,DM1,THDTOT,1)
       IF (IPRINT .GE. 2) THEN
@@ -2802,10 +2809,11 @@ C
          CALL PRIOCT(THDTOT)
       END IF
       CALL DAXPY(27,D1,THDNUC,1,THDTOT,1)
-      CALL HEADER('Total octupole moments (au)',-1)
+      CALL HEADER('Total third order moments (au)',-1)
       CALL PRIOCT(THDTOT)
-c      CALL HEADER('Total octupole moments (cgs, Debye*AAngstroem)',-1)
-c      CALL PRIOCT(THDTOT,'CGS',1)
+c     CALL HEADER('Total third order moments (cgs, Debye*AAngstroem)',
+c    &             -1)
+c     CALL PRIOCT(THDTOT,'CGS',1)
       RETURN
       END
 C

@@ -18,7 +18,7 @@ C
      &        RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
      &        ABA_ALPHA, EXPGRD, CTOCD, NUMHES, DOD2DQ2,
-     &        OECD, MVEOR, QPGRAD, SECNDM, OCTUPO
+     &        OECD, MVEOR, QPGRAD, SECNDM, THIRDM
       COMMON /ABAINF/ IPRDEF, NWNABA, 
      &                MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &                VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -30,4 +30,5 @@ C
      &                RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &                MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
      &                ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
-     &                OECD, MVEOR, QPGRAD, SECNDM, OCTUPO
+     &                OECD, MVEOR, QPGRAD, SECNDM, THIRDM
+C -- end of abainf.h --
