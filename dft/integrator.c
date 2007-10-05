@@ -202,7 +202,7 @@ dft_integrate_collect_info(real *electrons)
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
     MPI_Reduce(&tmp, electrons, 1, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       daltoninfpar_.master, MPI_COMM_WORLD);
 }
 #else /* VAR_MPI */
 #define dft_integrate_collect_info(electrons)

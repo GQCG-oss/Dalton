@@ -1276,7 +1276,7 @@ dft_cr_resp_collect_info(real* fi, real*work, int lwork)
     CHECK_WRKMEM(inforb_.n2orbx, lwork);
     dcopy_(&inforb_.n2orbx, fi, &ONEI, work, &ONEI);
     MPI_Reduce(work, fi, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM,
-               infpar_.master, MPI_COMM_WORLD);
+               daltoninfpar_.master, MPI_COMM_WORLD);
 }
 
 #else /* VAR_MPI */
