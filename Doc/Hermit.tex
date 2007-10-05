@@ -421,8 +421,9 @@ directions. The center of expansion is always~(0,0,0).
   \verb|COS KZ/K|, \verb|SIN KX/K|, \verb|SIN KY/K|, \verb|SIN KZ/K|.
 \end{list}
 
-\item[\Key{FC}] Fermi-contact\index{Fermi contact} integrals, see
-Ref.~\cite{ovhapjhjajsbpthjcp96}.
+\item[\Key{FC}] Fermi contact integrals,
+\index{Fermi contact integrals}\index{integrals!Fermi contact}
+see Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{4\pi g_e}{3}\left<\chi_{\mu}\left|\delta\left({\bf
@@ -433,8 +434,9 @@ first letters in the name of this atom, as given in the
 symmetry-adapted nucleus.
 \end{list}
 
-\item[\Key{FC-KE}] Kinetic energy correction to
-  Fermi-contact\index{Fermi contact} integrals, see Ref.~\cite{pmpljvkrjcp119}.
+\item[\Key{FC-KE}] Kinetic energy correction to Fermi-contact integrals,
+\index{Fermi contact integrals!kinetic energy correction}
+see Ref.~\cite{pmpljvkrjcp119}.
 
 \begin{list}{}{}
 \item Integral: $\frac{2\pi g_e}{3}\left<\chi_{\mu}\left|\left[\nabla^2,\delta\left({\bf
@@ -697,9 +699,11 @@ to distinguish between integrals, the first two letters in an
 atom's name must be unique.
 \end{list}
 
+
 \item[\Key{OCTGRA}]
 Calculate octupole gradient integrals, that is, the geometrical first
 derivatives of the third moment integrals (\Key{THIRDM}).
+(note: it is NOT the gradient of the \Key{OCTUPO} integrals).
 
 \begin{list}{}{}
 \item Integral: $\frac{\partial}{\partial {\mathbf
@@ -819,8 +823,9 @@ may be XX/XY/XZ/YY/YZ/ZZ-FGRD.
 \item[\Key{QDBTST}] Test of the \Key{QDBINT} integrals, mainly for
   debugging purposes.
 
-\item[\Key{QUADRU}] Quadrupole moment\index{quadrupole
-moment} integrals. For traceless quadrupole moment integrals as
+\item[\Key{QUADRU}] Quadrupole moment integrals.
+\index{quadrupole moment integrals}\index{integrals!quadrupole moment}
+For traceless quadrupole moment integrals as
 defined by Buckingham~\cite{adbacp12}, see the keyword \Key{THETA}.
 
 \begin{list}{}{}
@@ -962,8 +967,9 @@ r}^{T}\right|\chi_{\nu}\right>Q_{MN}$
 \item[\Key{S2MAGT}] Test the integrals calculated with the keyword
 \Key{S2MAG}. Mainly for debugging purposes.
 
-\item[\Key{SD}] Spin-dipole integrals\index{spin-dipole}, see
-Ref.~\cite{ovhapjhjajsbpthjcp96}.
+\item[\Key{SD}] Spin-dipole integrals,
+\index{spin-dipole integrals}\index{integrals!spin-dipole},
+see Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
@@ -974,8 +980,9 @@ symmetry-adapted nuclear magnetic moments) and \verb|d| is the x, y,
 or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
-\item[\Key{SD+FC}] Calculate the sum of the spin-dipole\index{spin-dipole} and
-Fermi-contact integrals\index{Fermi contact}.
+\item[\Key{SD+FC}] Calculate the sum of the spin-dipole\index{spin-dipole integrals} and
+Fermi-contact integrals\index{Fermi contact integrals}
+\index{integrals!spin-dipole plus Fermi-contact}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
@@ -988,8 +995,10 @@ symmetry-adapted nuclear magnetic moments) and \verb|d| is the x, y,
 or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
-\item[\Key{SD-KE}] Kinetic energy correction to spin--dipole
-  integrals\index{spin-dipole}, see Ref.~\cite{pmpljvkrjcp119}.
+\item[\Key{SD-KE}] Kinetic energy correction to spin--dipole integrals
+\index{spin-dipole integrals!kinetic energy correction}
+\index{integrals!kinetic energy correction to spin-dipole},
+see Ref.~\cite{pmpljvkrjcp119}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{4}\left<\chi_{\mu}\left|\left[\nabla^2,\frac{3{\bf
@@ -1000,8 +1009,8 @@ symmetry-adapted nuclear magnetic moments) and \verb|c| is the x, y,
 or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
-\item[\Key{SECMOM}] Second-moment integrals\index{multipole
-integral}\index{second-moment}.
+\item[\Key{SECMOM}] Second moment integrals
+\index{integrals!second moment}\index{second moment integrals}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}{\bf
@@ -1109,7 +1118,7 @@ presence of the two-electron integral file\index{two-electron
 integral}\index{supermatrix}.
 
 \item[\Key{SUSCGO}] Diamagnetic magnetizability\index{diamagnetic
-magnetizability} integrals calculated
+magnetizability integrals} integrals calculated
 without the use of London atomic orbitals. The choice of gauge
 origin\index{gauge origin}
 can be controlled by the keyword \Key{GAUGEO}.
@@ -1122,7 +1131,7 @@ can be controlled by the keyword \Key{GAUGEO}.
 \end{list}
 
 \item[\Key{THETA}] Traceless quadrupole moment\index{quadrupole
-moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
+moment integrals!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}\left<\chi_{\mu}\left|
@@ -1133,8 +1142,8 @@ moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 \verb|XZTHETA |, \verb|YYTHETA |, \verb|YZTHETA |, \verb|ZZTHETA |
 \end{list}
 
-\item[\Key{THIRDM}] Third-moment integrals\index{multipole
-integral}\index{third-moment}.
+\item[\Key{THIRDM}] Third moment integrals\index{integrals!third moment}
+\index{third moment integrals}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}^3\right|\chi_{\nu}\right>$
