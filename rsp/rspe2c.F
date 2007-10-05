@@ -3718,10 +3718,10 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                END IF
  600        CONTINUE
          END IF
-         WRITE (PRI_LINE,'(3(A,I3))')
-     *   '@ Reference state symmetry',IREFSY,
-     *   '& excitation operator symmetry',KSYMOP,
-     *   '=> excited state symmetry',KSYMST
+         WRITE (PRI_LINE,'(3(A,I2))')
+     *   '@ Reference state sym',IREFSY,
+     *   ' & excitation operator sym',KSYMOP,
+     *   ' => excited state sym',KSYMST
          CALL HEADER(PRI_LINE,-1)
          DO 555 INUM = 1,NBX
             WRITE(LUPRI,'(/A,I5,A,I3,//A,1P,G16.8,A,3(/A1,19X,G16.8,A),
@@ -3818,7 +3818,7 @@ C
          WRITE (LUPRI,'(/,3(/,5X,A,I3))')
      &   ' Reference  state    symmetry:',IREFSY,
      &   ' Excitation operator symmetry:',KSYMOP,
-     &   ' Excitation state    symmetry:',KSYMST
+     &   ' Excited    state    symmetry:',KSYMST
 
          WRITE (LUPRI,'(/,5X,A,/5X,A,//)')
      &      ' Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
@@ -3827,7 +3827,7 @@ C
          CALL HEADER('Oscillator and Scalar Rotatory Strength',18)
          WRITE(LUPRI,'(/,8X,A,/,8X,A,/,8X,A)')
      &   ' State Frequency   Oscillator Strength    Rotatory  Strength',
-     &   '         (eV)      Velocity     Length   Velocity     Length',
+     &   '         (eV)      Velocity     Length    Velocity    Length',
      &   ' -----------------------------------------------------------'
 
          DO LOCST = 1,NPPCNV(KSYMOP)
