@@ -74,9 +74,9 @@ cat >>rsp_soppa1excinosymm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -a -i"
 else
-   GREP="egrep"
+   GREP="egrep -i"
 fi
 
 # Basis set
@@ -135,7 +135,7 @@ CTRL[5]=19
 ERROR[5]="TRANSITION MOMENTS NOT CORRECT"
 
 # State 1
-CRIT1=`$GREP "\@ *State no\: * 1" $log | wc -l`
+CRIT1=`$GREP "\@ *Excited state no\: * 1" $log | wc -l`
 CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.2849708[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.740711 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.26 \%" $log | wc -l`
@@ -148,7 +148,7 @@ CTRL[6]=7
 ERROR[6]="STATE 1 NOT CORRECT"
 
 # State 2
-CRIT1=`$GREP "\@ *State no\: * 2" $log | wc -l`
+CRIT1=`$GREP "\@ *Excited state no\: * 2" $log | wc -l`
 CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.3593292[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.666352 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.51 \%" $log | wc -l`
@@ -158,7 +158,7 @@ CTRL[7]=5
 ERROR[7]="STATE 2 NOT CORRECT"
 
 # State 3
-CRIT1=`$GREP "\@ *State no\: * 3" $log | wc -l`
+CRIT1=`$GREP "\@ *Excited state no\: * 3" $log | wc -l`
 CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.382022.[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.643659 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.22 \%" $log | wc -l`
@@ -171,7 +171,7 @@ CTRL[8]=7
 ERROR[8]="STATE 3 NOT CORRECT"
 
 # State 4
-CRIT1=`$GREP "\@ *State no\: * 4" $log | wc -l`
+CRIT1=`$GREP "\@ *Excited state no\: * 4" $log | wc -l`
 CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.458087.[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.567594 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.54 \%" $log | wc -l`

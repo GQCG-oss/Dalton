@@ -89,9 +89,9 @@ cat >>rsp_mnf.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -a -i"
 else
-   GREP="egrep"
+   GREP="egrep -i"
 fi
 
 # Basis set
@@ -154,8 +154,8 @@ CTRL[7]=2
 ERROR[7]="TRANSITION MOMENT NOT CORRECT"
 
 # Excitation energy
-CRIT1=`$GREP "\@ *Excitation operator symmetry * 4" $log | wc -l`
-CRIT2=`$GREP "\@ *Excited * state * symmetry * 4" $log | wc -l`
+CRIT1=`$GREP "\@.*Excitation operator sym.* * 4" $log | wc -l`
+CRIT2=`$GREP "\@.*Excited * state * sym.* * 4" $log | wc -l`
 CRIT3=`$GREP "\@ *Excitation energy \: (\-0| \-)\.1070339[0-9] * au" $log | wc -l`
 CRIT4=`$GREP "\@ *Total energy \: * \-149\.662[45][0-9] * au" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
