@@ -341,7 +341,7 @@ cLig <> added RANGMO and RPSO
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
      &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP',
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
-     &             '.OCTUPO', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
+     &             'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
@@ -1110,9 +1110,6 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GO TO 100
  237     CONTINUE
-            OCTUPO = .TRUE.
-            ONEPRP = .TRUE.
-            GO TO 100
  238     CONTINUE
  239     CONTINUE
  240     CONTINUE
@@ -1187,8 +1184,6 @@ C
      &                         '- traceless quadrupole moment integrals'
          IF (SECMOM) WRITE (LUPRI,'(10X,A)')'- second moment integrals'
 C
-         IF (OCTUPO) WRITE (LUPRI,'(10X,A)')
-     &                         '- octupole moment integrals'
          IF (THRMOM) WRITE (LUPRI,'(10X,A)')'- third moment integrals'
 C
          IF (CARMOM) THEN
@@ -2332,16 +2327,6 @@ C
                CALL PR1INT('SPNORB ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('SPNORB',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Octupole integrals *****
-C
-            IF (OCTUPO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('OCTUPOL',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('OCTUPO',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
 C
@@ -3715,7 +3700,6 @@ C#endif
       SECMOM = .FALSE.
       CARMOM = .FALSE.
       SPHMOM = .FALSE.
-      OCTUPO = .FALSE.
       FERMI  = .FALSE.
       PSO    = .FALSE.
       SPIDIP = .FALSE.
