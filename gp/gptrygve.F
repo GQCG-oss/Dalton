@@ -357,7 +357,7 @@ C
 #else
 #ifdef VAR_INT64
       LRECL  = 8*NELEM
-#else 
+#else
       LRECL  = 4*NELEM
 #endif
 #endif
@@ -473,8 +473,8 @@ C
 C     Error branch for very large record lengths
 C
       IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)') 
-     &        ' ERROR: The requested record length of ', LRECL, 
+         WRITE (LUPRI,'(/A,I14,A)')
+     &        ' ERROR: The requested record length of ', LRECL,
      &        ' is larger than 2Gb'
          WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
      &        'single record to file!'
@@ -558,8 +558,8 @@ C
 C     Error branch for very large record lengths
 C
       IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)') 
-     &        ' ERROR: The requested record length of ', LRECL, 
+         WRITE (LUPRI,'(/A,I14,A)')
+     &        ' ERROR: The requested record length of ', LRECL,
      &        ' is larger than 2Gb'
          WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
      &        'single record to file!'
@@ -594,7 +594,7 @@ C
          CALL GPOPEN(LU,FNNM2(1:LN2),'UNKNOWN','DIRECT',' ',LRECL,
      &               OLDDX)
       ELSE
-         IRECT = I   
+         IRECT = I
       END IF
 #else
       IRECT = I
@@ -673,10 +673,10 @@ C
 C   Direct access files are provided with a UNIT-number, but the rest
 C   of the file opening process is taken care of by a call to OPENDX.
 C
-C   These files are strongly machine dependent, although care has been 
+C   These files are strongly machine dependent, although care has been
 C   taken to avoid using unit numbers that are illegal or reserved on a
 C   particular architecture. However, the use of GPOPEN and GPCLSE should
-C   remove much of the machine dependence in the rest of the Dalton 
+C   remove much of the machine dependence in the rest of the Dalton
 C   program
 C
 C Input:
@@ -689,7 +689,6 @@ C  ACCEIN   Access method. 'DIRECT' or 'SEQUENTIAL'. Default is sequential.
 C  FORMIN   Formatted or unformatted file format. Default is 'UNFORMATTED'
 C
 C Direct access-specific input:
-C
 C  NELEM    number of integer words per logical record
 C  NREC     number of logical records
 C
@@ -697,9 +696,7 @@ C
 C Output:
 C  LUNIT    Assigned file unit number
 C
-C  Direct access-specific output (through 
-C  LRDX     physical record length (in integers)
-C  NBDX     number of physical records per logical record
+C Direct access-specific output:
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
