@@ -245,7 +245,7 @@ C
       NBONDS = 0
       IF (NUCDEP .EQ. 1) RETURN
 C
-C     set up bond vectors
+C     set up bond vectors in Angstrom in VEC
 C
       IATOMA = 0
       DO 100 ICENTA = 1, NUCIND
@@ -281,9 +281,9 @@ C                       ... next IATOMA, only IATOMB .le. IATOMA needed
   110    CONTINUE
   100 CONTINUE
 C
-C     set up distance matrix
+C     set up distance matrix in Angstrom
 C
-      DISTMX = D0
+      DISTMX  = D0
       IDISTMX = 0
       JDISTMX = 0
       IJ = 0
@@ -293,15 +293,15 @@ C
             DISTAN = VEC(1,J,I)*VEC(1,J,I) + VEC(2,J,I)*VEC(2,J,I)
      *             + VEC(3,J,I)*VEC(3,J,I)
             DISTAN = SQRT(DISTAN)
-            DIST2(I,J) = DISTAN
-            DIST2(J,I) = DISTAN
             IF (.NOT.DIF) THEN
-               DIST(IJ) = DISTAN
+               DIST2(I,J) = DISTAN
+               DIST2(J,I) = DISTAN
+               DIST(IJ)   = DISTAN
             ELSE
-               DIST(IJ) = DISTAN - DIST(IJ)
+               DIST(IJ)   = DISTAN - DIST(IJ)
             END IF
             IF (ABS(DIST(IJ)) .GT. DISTMX) THEN
-               DISTMX  = DIST(IJ)
+               DISTMX  = ABS(DIST(IJ))
                IDISTMX = I
                JDISTMX = J
             END IF
@@ -310,13 +310,14 @@ C
 C
       IF (.NOT. QM3) THEN
         IF (PRINT) THEN
-          IF (NUCDEP .LE. 12*(IPRUSR+1) .AND. DISTMX .NE. D0) THEN
+          JPRIDIS = MAX(1,IPRUSR)
+          IF (NUCDEP .LE. 16*JPRIDIS .AND. DISTMX .NE. D0) THEN
 C hjaaj Oct 2003: this output is only useful for small molecules ...
             IF (DIF) THEN
               CALL HEADER
-     *        ('Differential interatomic separations (in Angstroms):',2)
+     *        ('Differential interatomic separations (in Angstrom):',2)
             ELSE
-              CALL HEADER('Interatomic separations (in Angstroms):',2)
+              CALL HEADER('Interatomic separations (in Angstrom):',2)
             END IF
             CALL PRIDIS(NAMDEP,DIST,NUCDEP)
           END IF
@@ -324,12 +325,12 @@ C hjaaj Oct 2003: this output is only useful for small molecules ...
           IF (DIF) THEN
             WRITE(LUPRI,'(/A,F12.6,A/5A)')
      &         '  Max differential change in interatomic separation is',
-     &         DISTMX,' Angstroms','  between atoms "',
+     &         DISTMX,' Angstrom','  between atoms "',
      &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
           ELSE
             WRITE(LUPRI,'(/A,F10.4,A/5A)')
      &         '  Max interatomic separation is',
-     &         DISTMX,' Angstroms','  between atoms "',
+     &         DISTMX,' Angstrom','  between atoms "',
      &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
           END IF
           END IF
@@ -370,7 +371,7 @@ C             not bonded if cavity center or floating orbital /hjaaj
           BONDED(J,J) = .FALSE.
  10     CONTINUE
         IF (.NOT. QM3) THEN
-          CALL HEADER('Bond distances (angstroms):',1)
+          CALL HEADER('Bond distances (Angstrom):',1)
           WRITE (LUPRI,'(18X,A/18X,A)')
      $          'atom 1     atom 2       distance',
      $          '------     ------       --------'
