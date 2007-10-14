@@ -47,22 +47,19 @@ c/* Deck WOPEN2 */
       CHARACTER*(*) FILE
       COMMON /UNICRAYIO/ IUNCRAY(1:99)
 C
-      ILEN=LEN(FILE)
-      DO J = LEN(FILE), 1, -1
-        IF (FILE(J:J).EQ.' ') ILEN = MIN(ILEN,J)
-      END DO
+      ILEN=LNBLNK(FILE)
 C
-      IF (LUNIT .EQ. 0) THEN
+      IF (LUNIT .LE. 0) THEN
          IUN = 0
  10      CONTINUE
          IUN = IUN + 1
+         IF (IUN .GT. 99) GOTO 9001
          IF (IUNCRAY(IUN) .NE. 0) GOTO 10
          LUNIT = IUN
-         IF (LUNIT .GT. 99) GOTO 9001
          IUNCRAY(LUNIT) = 1
       END IF
 C
-      IF (DEBUG) WRITE(LUPRI,*) 'OPEN FILE "',FILE(1:ILEN),
+      IF (DEBUG) WRITE(LUPRI,*) 'WOPEN2 : open file "',FILE(1:ILEN),
      & '" with unit number ',LUNIT
 C
 #if defined (SYS_CRAY)
@@ -73,12 +70,12 @@ C
 C
       IF (IERR.NE.0) THEN
         WRITE (LUPRI,*) 'I/O ERROR IN WOPEN2:'
-        WRITE (LUPRI,'(1x,3a)') 'FILE: >', FILE(1:ILEN),'<'
-        WRITE (LUPRI,*) 'ILEN:', ILEN
-        WRITE (LUPRI,*) 'UNIT:', LUNIT
-        WRITE (LUPRI,*) 'IERR:', IERR
-        WRITE (LUPRI,*) 'STATUS:', STATUS
-        WRITE (LUPRI,*) 'BLOCKSIZE:', BLOCKSIZE
+        WRITE (LUPRI,'(3a)') ' FILE: >', FILE(1:ILEN),'<'
+        WRITE (LUPRI,*) 'ILEN      : ', ILEN
+        WRITE (LUPRI,*) 'UNIT      : ', LUNIT
+        WRITE (LUPRI,*) 'IERR      : ', IERR
+        WRITE (LUPRI,*) 'STATUS    : ', STATUS
+        WRITE (LUPRI,*) 'BLOCKSIZE : ', BLOCKSIZE
         CALL QUIT( 'I/O ERROR IN WOPEN2')
       END IF
       RETURN
@@ -86,15 +83,14 @@ C
 C error branch
 C
  9001 CONTINUE
-      WRITE (LUPRI,'(//A/A/A)')
-     &     ' *** ERROR (WOPEN2) NO MORE AVAILABLE FILENUMBERS! ',
+      WRITE (LUPRI,'(//A//A/A//A)')
+     &     ' *** ERROR (WOPEN2) NO MORE FILENUMBERS AVAILABLE!',
      &     ' *** THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
-     &     'FILES OR', ' *** SOMEBODY HAS FORGOT TO CLOSE FILES IN '//
-     &     'THE SOURCE CODE'
-      WRITE (LUPRI,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+     &     'FILES OR',
+     &     ' *** SOMEBODY HAS FORGOT TO CLOSE FILES IN THE SOURCE CODE',
+     &     ' ### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (WOPEN2) NO MORE FILE NUMBERS')
+      CALL QUIT('*** ERROR (WOPEN2) NO MORE FILE NUMBERS AVAILABLE')
 C
       RETURN
       END
@@ -184,7 +180,12 @@ C
 #if defined (SYS_CRAY)
       CALL WCLOSE(FILE,IERR)
 #else
-      CALL WCLOSE(LUNIT,IERR)
+      IF (LUNIT .LT. 1 .OR. LUNIT .GT. 99) THEN
+         WRITE(LUPRI,*) 'WCLOSE2 called with illegal unit number',LUNIT
+         IERR = -1
+      ELSE
+         CALL WCLOSE(LUNIT,IERR)
+      END IF
 #endif
 C
       IF (IERR.NE.0) THEN
@@ -192,27 +193,34 @@ C
         WRITE (LUPRI,*) 'FILE:', FILE
         WRITE (LUPRI,*) 'UNIT:', LUNIT
         WRITE (LUPRI,*) 'MODE:', MODE
-        CALL QUIT('I/O ERROR IN CLOSE2')
+        WRITE (LUPRI,*) 'IERR:', IERR
+        CALL QUIT('I/O ERROR IN WCLOSE2')
       END IF
 
-      ILEN = MIN(LEN(FILE),74)
+      ILEN = LNBLNK(FILE)
 
       IF (DEBUG) WRITE(LUPRI,*) 'CLOSE FILE "',FILE(1:ILEN),
      & '" with unit number ',LUNIT
 C
       IF (MODE(1:6).EQ.'DELETE') THEN
 
-        WRITE(COMMAND,'(2A)') 'rm -f ', FILE(1:ILEN)
+        IF (ILEN .LE. 74) THEN
+           WRITE(COMMAND,'(2A)') 'rm -f ', FILE(1:ILEN)
 
 #if defined (SYS_CRAY)
-        CALL INFO = ISHELL(COMMAND)
+           CALL INFO = ISHELL(COMMAND)
 #else
-        CALL SYSTEM(COMMAND)
+           CALL SYSTEM(COMMAND)
 #endif
+        ELSE
+           NWARN = NWARN + 1
+           WRITE(LUPRI,*) 'WARNING! "rm -f ',FILE(1:ILEN),'" failed!'
+           WRITE(LUPRI,*) '(increase length of COMMAND in WCLOSE2)'
+        END IF
 
       END IF
       IUNCRAY(LUNIT) = 0
-      LUNIT = 0
+      LUNIT = -1
       RETURN
       END
 *=====================================================================*
