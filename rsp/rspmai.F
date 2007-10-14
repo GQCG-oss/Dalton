@@ -3411,7 +3411,7 @@ C
       ELSE
          IF ( KSYMOP .NE. JWOPSY ) THEN
             JWOPSY = KSYMOP
-            LUINDX = 0
+            LUINDX = -1
             CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND LUINDX
