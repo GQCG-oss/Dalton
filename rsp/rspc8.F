@@ -499,7 +499,7 @@ c-- compute gridpoints according to Gauss Chebychev scheme
 c
 c write header output file when first call
 c
-      LURSP7 = 0
+      LURSP7 = -1
       CALL GPOPEN(LURSP7,'RESPONSE.C8','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       IF ( FIRST .AND. C6IFC ) THEN

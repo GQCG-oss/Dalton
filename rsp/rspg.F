@@ -809,7 +809,7 @@ C
 C
 C  Check that diamagnetic spin-orbit integrals exist
 C
-      LUPROP = 0
+      LUPROP = -1
       CALL GPOPEN(LUPROP,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',
      &   IDUMMY,OLDDX)
       REWIND LUPROP
@@ -935,7 +935,7 @@ C
 C
 C  Check that scalled diamagnetic spin-orbit integrals exist
 C
-      LUPROP = 0
+      LUPROP = -1
       CALL GPOPEN(LUPROP,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',
      &   IDUMMY,OLDDX)
       REWIND LUPROP

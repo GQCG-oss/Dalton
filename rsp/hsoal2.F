@@ -86,7 +86,7 @@ C
 C
 C Symmetry 1
 C
-      LUINDX = 0
+      LUINDX = -1
       CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINDX

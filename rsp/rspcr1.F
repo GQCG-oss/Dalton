@@ -940,7 +940,7 @@ C
 C Delete files to save disk space
 C Keep LURSP and LUXYVE for later use
 C
-      LURSP1 = 0
+      LURSP1 = -1
       CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPCLOSE(LURSP1,'DELETE')

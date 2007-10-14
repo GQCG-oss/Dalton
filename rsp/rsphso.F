@@ -147,7 +147,7 @@ C
 C Check if gradient is on file
 C
       INQUIRE(FILE='HSOGRAD',EXIST=FILE_EXISTS)
-      LUHSO = 0
+      LUHSO = -1
       CALL GPOPEN(LUHSO,'HSOGRAD','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUHSO
@@ -2101,7 +2101,7 @@ C
 C
 C Symmetry 1
 C
-      LUINDX = 0
+      LUINDX = -1
       CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINDX

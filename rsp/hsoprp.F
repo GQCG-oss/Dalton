@@ -134,7 +134,7 @@ C
 C
 C Check if gradient is on file
 C
-      LUHSO = 0
+      LUHSO = -1
       CALL GPOPEN(LUHSO,'HSOGRAD','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUHSO

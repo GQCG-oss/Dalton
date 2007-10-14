@@ -383,7 +383,7 @@ C
 C
 C     Delete LR files to save disk space /910109-hjaaj
 C
-      LURSP1 = 0
+      LURSP1 = -1
       CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPCLOSE(LURSP1,'DELETE')

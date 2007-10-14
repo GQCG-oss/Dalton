@@ -88,8 +88,8 @@ C     ... needed in RSPRED and RSPRED.RSPSLI irrespective of NSIM
 C     ... needed for each trial vector here and in RSPRED.RSPSLI
       MAXSIM = (LWRK - LWRKA)/LWRKB
 C
-      KZRED = 0
-      LURSP1 = 0
+      KZRED  = 0
+      LURSP1 = -1
       CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND (LURSP1)
