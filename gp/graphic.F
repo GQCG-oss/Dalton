@@ -77,7 +77,7 @@ C
 C
 C     ----- PUNCH AN INPUT FILE FOR THE -MOLPLT- PROGRAM -----
 C
-      LUIP = 0
+      LUIP = -1
       CALL GPOPEN(LUIP,'DALTON.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND (LUIP)
@@ -202,7 +202,7 @@ C
 C
 C     ----- PUNCH AN INPUT FILE FOR THE -PLTORB- PROGRAM -----
 C
-      LUIP = 0
+      LUIP = -1
       CALL GPOPEN(LUIP,'DALTON.ORB','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND (LUIP)
