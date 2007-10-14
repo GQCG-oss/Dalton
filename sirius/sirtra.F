@@ -1963,9 +1963,9 @@ C
       IADH2  = -1
       IADH2X = -1
       IADH2D = -1
-      LUHALF = 0
-      LUDA   = 0
-      LUDA2  = 0
+      LUHALF = -1
+      LUDA   = -1
+      LUDA2  = -1
 C
 C     ***** TYPE OF TRANSFORMATION                             *****
 C     ***** ITRLVL=0:FIRST INDEX,ALL ORBITALS                  *****

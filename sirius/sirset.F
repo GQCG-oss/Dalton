@@ -714,7 +714,7 @@ C              in order to implement combination runs.
 C     used to be: WRINDX = FIRST, now for DALTON:
 C     WRINDX moved to common block GNRINF in order to have external control
 C
-      LUINDX = 0
+      LUINDX = -1
       IF (WRINDX) THEN
          CALL GETDAT(LAB123(2),LAB123(3))
          CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',

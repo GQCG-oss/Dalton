@@ -346,7 +346,7 @@ C
 C
 C     SET UP INITIAL CONDITIONS IN UPDST
 C
-      LUIT7 = 0
+      LUIT7 = -1
       CALL GPOPEN(LUIT7,'BROYDEN','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       TIM = SECOND()

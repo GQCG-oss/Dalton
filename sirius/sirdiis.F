@@ -522,9 +522,9 @@ Chj      ... if (GEOWLK) then
          NEVC   = MIN(MXERRV,JTDIIS)
 C
          IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)) THEN
-            WRITE (LUPRI,'(I5,A,I5,L5)') 
-     &          ITDIIS,' Screening settings (IFTHRS/DIFDEN)',
-     &           IFTHRS, DIFDEN
+            WRITE (LUPRI,'(I4,A,I5,L5)') 
+     &          ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
+     &           -IFTHRS, DIFDEN
             CALL FLSHFO(LUPRI)
          END IF
          HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)

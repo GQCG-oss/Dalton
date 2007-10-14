@@ -2313,7 +2313,7 @@ c
       KLFREE = KLFREE + NDETL*NDETR
       LFREE  = LSCR - KLFREE + 1
 c
-C     SUBROUTINE DIHDJ(IASTR,IBSTR,NIDET,JASTR,JBSTR,NJDET,NAEL,NBEL,
+C     CALL DIHDJ(IASTR,IBSTR,NIDET,JASTR,JBSTR,NJDET,NAEL,NBEL,
 C    &   IWORK,LWORK,NORB,ONEBOD,RJ,RK,FIJKL,ILTSOB,
 C    &   HAMIL,ISYM,ECORE,ICOMBI,PSIGN)
       CALL DIHDJ(SCR(KLDTLA),SCR(KLDTLB),NDETL,
@@ -5742,10 +5742,10 @@ c. Information about CL and CR
 c
 c CL : Left side vector, or buffer for it
 c CR : Right side vector, or buffer for it
-c LUL : Logical unit containing CL, if LUL .ne. 0
+c LUL : Logical unit containing CL, if LUL .gt. 0
 c       CL is assumed to be stored on LUL and is read in in symmetry
 c       blocks
-c LUR : Logical unit containing CR, if LUR .ne. 0
+c LUR : Logical unit containing CR, if LUR .gt. 0
 c       CR is assumed to be stored on LUR and is read in in symmetry
 c       blocks
 c ILSMOS(ISM) : If symmetry of one string in CL is of symmetry ISM,
@@ -5803,12 +5803,12 @@ c
 c. Loop over symmetry blocks of CL(IASM,IBSM) and CR(JASM,JBSM)
 c
 
-      IF(LUL.NE.0) CALL REWINO (LUL)
+      IF(LUL.GT.0) CALL REWINO (LUL)
       ICLSOF = 1
       DO 7000 IASM = 1, NSMST
         IBSM = ILSMOS(IASM)
 c. first element in symmetry block
-        IF(LUL.NE.0.OR.IASM.EQ.1) THEN
+        IF(LUL.GT.0.OR.IASM.EQ.1) THEN
           ILSOFF = 1
         ELSE
           ILSOFF = ILSOFF + NLDTBL
@@ -5820,11 +5820,11 @@ c. occupation class
      &       NSSOB(1,IBSM),NLDTBL,ILOFF,NLDT,MXPTP,IMXATP,IMXBTP)
 c
         IF(NLDTBL.EQ.0) GOTO 7000
-        IF(LUR.NE.0) CALL REWINO(LUR)
+        IF(LUR.GT.0) CALL REWINO(LUR)
         DO 6000 JASM = 1, NSMST
           JBSM = IRSMOS(JASM)
 c. first element in symmetry block
-          IF(LUR.NE.0.OR.JASM.EQ.1) THEN
+          IF(LUR.GT.0.OR.JASM.EQ.1) THEN
            IRSOFF = 1
           ELSE
            IRSOFF = IRSOFF + NRDTBL

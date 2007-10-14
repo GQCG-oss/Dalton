@@ -1623,8 +1623,8 @@ C
          WRITE(LUPRI,'(/A)')' *DENSD2* RIGHT REFERENCE VECTOR'
          CALL OUTPUT(CR,1,NRDET,1,1,NRDET,1,1,LUPRI)
       END IF
-      LUL = 0
-      LUR = 0
+      LUL = -1
+      LUR = -1
 c. Allocate local memory
       KFREEO = KFREE
       CALL MEMADD(KLLSOS,MAXSYM,KFREE,1)
@@ -1698,11 +1698,11 @@ c
          WRITE(LUPRI,'(/A,/I6,I7,L7)') ' ISPIN1 ISPIN2 PERMSM :',
      *      ISPIN1,ISPIN2,PERMSM
       END IF
-      IF ( IPRDNS.GT.45 ) THEN
-         WRITE (LUPRI,1100)
-         CALL OUTPUT(RHO1,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+      IF ( IPRDNS.GT.15 ) THEN
+         CALL HEADER(
+     &   'DENSD2: One-el. density matrix, active part, MO-basis',-1)
+         CALL OUTPUT(RHO1,1,NASHT,1,NASHT,NASHT,NASHT,-11,LUPRI)
       ENDIF
- 1100 FORMAT(/' DENSD2: One-el. density matrix, active part, MO-basis')
 C
       CALL MEMADD(KDUMMY,KFREEO-KFREE,KFREE,2 )
 C     ... release space

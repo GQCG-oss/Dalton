@@ -327,7 +327,7 @@ c         NOCCI = NOCC(ISYM)
      *              WORK(KSMO+2*NMORBT),WORK(KSMO+NMORBT),WORK(KSMO), 
      *              WORK(KFCAO),WORK(KFCAO),WORK(KWRK),LWRK,
      *              NBAST,NORBT,NOCCT_R12,NVIRT,.FALSE.)
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,'AUXQA12','UNKNOWN','SEQUENTIAL',
      &                      'FORMATTED',IDUMMY,LDUMMY)
          WRITE(LUNIT,112) (WORK(KFQQA + J), J = 0, NVIRT*NOCCT**3 - 1)
@@ -592,7 +592,7 @@ C
      *           WORK(KSMO2),WORK(KSMO1),WORK(KSMO), 
      *           WORK(KFMO),WORK(KFMO),WORK(KWRK),LWRK,
      *           NBAST,NOCCT)
-      LUMULB = 0
+      LUMULB = -1
       CALL GPOPEN(LUMULB,'AUXQ12','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUMMY)
       WRITE(LUMULB,'(4E30.20)') (WORK(KFQQ + J), J = 0, NOCCT**4 - 1)
@@ -600,7 +600,7 @@ C
 C
 C     **** CONSTRUCT EXCHANGE MATRIX IN AUXILIARY BASIS ****
 C
-      LUMULB = 0
+      LUMULB = -1
       CALL GPOPEN(LUMULB,'AUXAOX','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUMMY)
       READ(LUMULB,112) (WORK(KFCAO + J), J = 0, NNBAST - 1)
@@ -614,7 +614,7 @@ C
       END DO
       CALL UTHUB(WORK(KFCAO),WORK(KSMO),CMO,WORK(KDCAO),NSYM,
      *           NBAS,NBASF)
-      LUMULB = 0
+      LUMULB = -1
       CALL GPOPEN(LUMULB,'AUXFCKN','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUMMY)
       WRITE(LUMULB,112) (WORK(KSMO + J), J = 0, NNBASF - 1)
@@ -622,7 +622,7 @@ C
 C
 C     **** FORM OVERLAP IN ORTHOGONAL BASIS ****
 C
-      LUMULB = 0
+      LUMULB = -1
       FOUND = .TRUE.
       CALL GPOPEN(LUMULB,'AUXOVLN','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUMMY)

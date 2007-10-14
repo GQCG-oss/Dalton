@@ -127,9 +127,8 @@ C
 C Jan. 1990 Hans Joergen Aa. Jensen
 C l.r. 1997 hjaaj (d.m. now square matrices)
 C
-C Backtransform one-electron density matrices for
-C calculation of Fock matrices in AO basis
-C ( contravariant transformation ).
+C Backtransform one-electron density matrices for calculation
+C of Fock matrices in AO basis ( contravariant transformation ).
 C
 C Input:
 C   GETDC   if true calculate DCAO
@@ -251,9 +250,9 @@ C *** end of subroutine FCKDEN
 C
        END
 C  /* Deck gtdmso */
-      SUBROUTINE GTDMSO(UDV,CMO,DI,DV,WRK) 
+      SUBROUTINE GTDMSO(UDV,CMO,DCAO,DVAO,WRK) 
 C
-C     Compute inactive (DI) and active (DV) density matrices in AO basis
+C     Compute inactive (DCAO) and active (DVAO) density matrices in AO basis
 C     from molecular orbitals given in CMO matrix and the occupation
 C     data as contained in NISH array (the closed shells) and the open
 C     shell occupation data in _quadratic_ UDV matrix.
@@ -263,18 +262,18 @@ C
 #include <inforb.h>
       DIMENSION UDV(NASHT,NASHT)
       DIMENSION CMO(*)
-      DIMENSION DI(NBAST,NBAST)
-      DIMENSION DV(NBAST,NBAST)
+      DIMENSION DCAO(NBAST,NBAST)
+      DIMENSION DVAO(NBAST,NBAST)
       DIMENSION WRK(*)
 C
       CALL QENTER('GTDMSO')
 C
-C Input: active density matrix MO basis
-C Output: inactive and active density matrix SO basis
+C Input : MO coefficents in CMO and active density matrix in MO basis
+C Output: inactive and active density matrix AO (actually SO) basis
 C
 C
-      CALL DZERO(DI,N2BASX)
-      IF (NASHT.GT.0) CALL DZERO(DV,N2BASX)
+      CALL DZERO(DCAO,N2BASX)
+      IF (NASHT.GT.0) CALL DZERO(DVAO,N2BASX)
 C
       DO ISYM = 1, NSYM
          ICMOI = ICMO(ISYM) + 1
@@ -293,7 +292,7 @@ C
      &        'N', 'T', NBASI, NBASI, NISHI,
      &        D2, CMO(ICMOI), NBASI,
      &            CMO(ICMOI), NBASI,
-     &        D1, DI(IBASI,IBASI),NBAST
+     &        D1, DCAO(IBASI,IBASI),NBAST
      &        )
          END IF
 C
@@ -311,7 +310,7 @@ C
      &         'N', 'T', NBASI, NBASI, NASHI,
      &         D1, WRK,       NBASI,
      &             CMO(ICMOA),NBASI,
-     &         D1, DV(IBASI,IBASI),NBAST
+     &         D1, DVAO(IBASI,IBASI),NBAST
      &      )
          END IF
       END DO
@@ -2590,7 +2589,7 @@ C         CI diagonals to LUIT2.
 C
       IF (DOCIGR) THEN
          LUIT2S = LUIT2
-         LUIT2  = 0
+         LUIT2  = -1
          CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),
      *               WRK(KH2AC),INDXCI,G,WRK(KWRK4),LWRK4)
 C        CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,INDXCI,DIAGC,WRK,LFREE)

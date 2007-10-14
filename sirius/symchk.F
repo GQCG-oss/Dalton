@@ -121,7 +121,7 @@ C
 C
 C     Read CI - vectors from LUIT1
 C
-      LUTEMP = 0
+      LUTEMP = -1
       IF ((JCIDIA-1) .LT. LROOTS) THEN
          CALL GPOPEN(LUTEMP,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)

@@ -779,7 +779,7 @@ C *** Open print unit(s).
 C     and initialize units for memory allocation routines
 C
       IF (LUW4 .NE. LUPRI) THEN
-         LUW4 = 0
+         LUW4 = -1
          CALL GPOPEN(LUW4,'SIRIUS.RES','UNKNOWN',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
       END IF

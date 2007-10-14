@@ -1597,9 +1597,9 @@ C
 C
       CALL QENTER('TRA2  ')
 C
-      LUHLF1 = 0
-      LUHLF2 = 0
-      LUHLF3 = 0
+      LUHLF1 = -1
+      LUHLF2 = -1
+      LUHLF3 = -1
       DOTUPQ = .NOT. NOCOUL .AND. NOCR*NOCS .GT. 0
       IF (NOEXCH) THEN
          DORUPQ = .FALSE.
