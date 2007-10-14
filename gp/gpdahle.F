@@ -539,6 +539,7 @@ C
 C  /* Deck getdate */
       SUBROUTINE GETDATE
 #include <implicit.h>
+#include <priunit.h>
 #if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
 #if !defined (VAR_G77)
       CHARACTER*(24) FDATE
@@ -550,33 +551,33 @@ C  /* Deck getdate */
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
       CDATE = DATE()
       CTIME = CLOCK()
-      WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
+      WRITE (LUPRI,'(T6,A,A8,1X,A8)')
      *   'Date and time (CRAY) : ',CDATE,CTIME
 #endif
 #if defined (SYS_HAL)
       CALL FDATE(CFDATE)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
 #endif
 #if 0 && defined (SYS_HPUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #endif
 #if defined (SYS_DEC)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
 #endif
 #if defined (SYS_IRIX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (IRIX)   : ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (IRIX)   : ',FDATE()
 #endif
 #if defined (SYS_NEC)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (NEC-SX4): ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (NEC-SX4): ',FDATE()
 #endif
 #if defined (SYS_SUN)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
 #if defined (SYS_LINUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_AIX)
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
+      WRITE (LUPRI,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
 #endif
 C
       RETURN
