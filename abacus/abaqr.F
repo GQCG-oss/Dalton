@@ -405,9 +405,9 @@ cs    Probabilmente con questa chiamata parte il calcolo vero e proprio
 cs    ABARSP e' in abarspn.F
 cs
       ISYM = 1
-      LUSOVE = 0
-      LUGDVE = 0
-      LUREVE = 0
+      LUSOVE = -1
+      LUGDVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)

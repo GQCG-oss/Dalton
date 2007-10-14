@@ -3901,11 +3901,11 @@ C
 C
 C     Open Mean-field input file generate in READIN
 C
-      LUTMP2 = 0
-      MNFPRP = 0
+      LUTMP2 = -1
+      LUMNFPRP = -1
       CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-      CALL GPOPEN(MNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
+      CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
 C
 C     For the time being, no Breit-integrals (but soon....)
@@ -3915,20 +3915,20 @@ CBS  SO FAR ONLY BREIT-PAULI  !!!   Not no-pair
 C
 C     We loop over symmetry-independent center
 C
-      REWIND (MNFPRP)
+      REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
-         CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM),
+         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM),
      &             WORK,LWORK)
       END DO
 C
 C     We should now have all the atomic mean-field SO integrals, 
 C     now generate them in symmetry-orbital basis
 C
-      REWIND (MNFPRP)
-      CALL SYMTRAFO(MNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+      REWIND (LUMNFPRP)
+      CALL SYMTRAFO(LUMNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
 C
       CALL GPCLOSE(LUTMP2,'KEEP')
-      CALL GPCLOSE(MNFPRP,'DELETE')
+      CALL GPCLOSE(LUMNFPRP,'DELETE')
       RETURN
       END
 C  /* Deck dkint */
@@ -4029,7 +4029,7 @@ C     Define cbirea.h for call of READIN below
 C
       THRS = 1.0D-15
 C
-      LUMLCL = 0
+      LUMLCL = -1
       MAXPRI = MAXPRD
       BIGVC  = .FALSE.
       DIRAC  = .FALSE.
@@ -4753,7 +4753,7 @@ c----& /
         ggas(k)=ggax(k,i)*alpha**2
        enddo
        write(fn,'(a4,i1)') 'sin.',i
-       LUCFN=0
+       LUCFN=-1
        CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
        write(LUCFN,'(a,i1,a)') 'set output ''rsg',i,'.ps'''
        write(LUCFN,'(a)') 'set term postscript'
@@ -4818,7 +4818,7 @@ C
         ggas(k)=ggax(k,i)*alpha**2
        enddo
        write(fn,'(a4,i1)') 'gin.',i
-       LUCFN=0
+       LUCFN=-1
        CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
        write(LUCFN,'(a,i1,a)') 'set output ''stg',i,'.ps'''
        write(LUCFN,'(a)') 'set term postscript'
@@ -4882,7 +4882,7 @@ C
         ggas(k)=ggax(k,i)*alpha**2
        enddo
        write(fn,'(a4,i1)') 'cin.',i
-       LUCFN=0
+       LUCFN=-1
        CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
        write(LUCFN,'(a,i1,a)') 'set output ''etg',i,'.ps'''
        write(LUCFN,'(a)') 'set term postscript'
@@ -4946,7 +4946,7 @@ C
         ggas(k)=ggax(k,i)*alpha**2
        enddo
        write(fn,'(a4,i1)') 'din.',i
-       LUCFN=0
+       LUCFN=-1
        CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
        write(LUCFN,'(a,i1,a)') 'set output ''reg',i,'.ps'''
        write(LUCFN,'(a)') 'set term postscript'

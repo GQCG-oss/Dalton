@@ -299,7 +299,7 @@ C
       THRS = 1.0D-15
 C
       IPREAD = IPRDEF
-      LUMLCL = 0
+      LUMLCL = -1
       MAXPRI = MAXPRD
 C     ... parameter MAXPRD is in cbirea.h
       UNCONT = .FALSE.
@@ -3898,7 +3898,7 @@ C
 C
 C     Write SYMINFO file
 C
-      LUSYMF = 0
+      LUSYMF = -1
       CALL GPOPEN(LUSYMF,'SYMINFO',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       WRITE (LUSYMF,'(A,/A)')
      &     'Symmetry information from Dalton (Hermit module)',
@@ -6341,9 +6341,9 @@ C
       CHARACTER*1 SPD(8)
       DATA SPD/'S','P','D','F','G','H','I','J'/
 C
-      LUTMP1 = 0
-      LUTMP2 = 0
-      LUSHB  = 0
+      LUTMP1 = -1
+      LUTMP2 = -1
+      LUSHB  = -1
       CALL GPOPEN(LUTMP1, 'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       CALL GPOPEN(LUTMP2,'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)

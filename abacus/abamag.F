@@ -1860,9 +1860,9 @@ C
 C
 C     Open direct access file
 C
-      LUGDVE = 0
-      LUSOVE = 0
-      LUREVE = 0
+      LUGDVE = -1
+      LUSOVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
 C     ...changed NREC to 2*NREC to cover residuals
       CALL GPOPEN(LURDT,ABARDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)

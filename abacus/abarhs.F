@@ -519,7 +519,7 @@ C     matrices for each coordinate are written by WRINTD called from
 C     GETGDY. (860401-hjaaj)
 C
       IF (GDHAM) THEN
-         LUGDH = 0
+         LUGDH = -1
          CALL GPOPEN(LUGDH,'ABACUS.GDHAM','NEW',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND LUGDH
@@ -2916,7 +2916,7 @@ C
 C
 C     Two-electron part
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL REWSPL(LUINTA)

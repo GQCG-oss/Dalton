@@ -468,7 +468,7 @@ C
          KWRK1  = KDIACI + NCONST
          LWRK1  = LWRK   - KWRK1
          LUIT2S = LUIT2
-         LUIT2  = 0
+         LUIT2  = -1
 C        ... set LUIT2 = 0 so that diagonal isn't written to LUIT2
          CALL CIDIAG(LSYMST,NOH2,FCAC,H2AC,XNDXCI,WRK(KDIACI),
      &               WRK(KWRK1),LWRK1)

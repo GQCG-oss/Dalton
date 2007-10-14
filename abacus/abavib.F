@@ -261,7 +261,7 @@ C
 #include <cbivib.h>
 C
       CALL QENTER('VIBCTL')
-      LUHES = 0
+      LUHES = -1
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL TITLER
      &   ('ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS','*',115)
@@ -1035,7 +1035,7 @@ C
 C     We punch out the normal coordinates on the file DALTON.NCA for
 C     use with the Gamess-US visualization software
 C
-      LUIP = 0
+      LUIP = -1
       CALL GPOPEN(LUIP,'DALTON.NCA','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE(LUIP,8000)
@@ -1051,7 +1051,7 @@ C
 C     We punch out harmonic freqs and normal coordinates on file
 C     DALTON.NOR
 
-      LUNOR = 0
+      LUNOR = -1
       CALL GPOPEN(LUNOR,'DALTON.NOR','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE(LUNOR,'(A)') 'Harmonic Freqs. in cm^-1'
@@ -2347,7 +2347,7 @@ C
 C
 C     If we have asked that the Hessian be punched, so be it
 C
-      LUHES = 0
+      LUHES = -1
       IF (HESPUN) THEN
          CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)

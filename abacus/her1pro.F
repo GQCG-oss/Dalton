@@ -2544,7 +2544,7 @@ C
                     CALL QUIT('Error in INTTYP in ONLYOV stuff')
                   END IF
                   FILMME  = 'MMOVER'
-                  LUMMOV  = 0
+                  LUMMOV  = -1
                   IOFFMEM = IQMBA1
                   IADRFIL = 1
                   NDATA   = IQMBAS

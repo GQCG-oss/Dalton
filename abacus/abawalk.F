@@ -7322,7 +7322,7 @@ C  /* Deck ircpot */
 #include <mxcent.h>
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
-      LUTRJ = 0
+      LUTRJ = -1
       CALL GPOPEN(LUTRJ,'DALTON.IRC','OLD','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       NPOINT = 2

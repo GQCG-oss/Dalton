@@ -133,7 +133,11 @@ C
          CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
       ELSE
+#ifdef SYS_LINUX
          LUERR = 0
+#else
+         LUERR = 6
+#endif
       END IF
       LMWORK = 0
 C
@@ -330,7 +334,7 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER(' DALTON - An electronic structure program ',
+         CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
 C
          WRITE (LUPRI,'(T5,A//,(T5,A))')

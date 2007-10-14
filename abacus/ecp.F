@@ -64,7 +64,7 @@ C
       END IF
 C
       STRING = 'ecp-sdd-pseudo'
-      LU = 0
+      LU = -1
       CALL FIND_BASFIL(STRING,LU,IPRINT)
 C
 C     Search for label identfying atom

@@ -260,9 +260,9 @@ C
 C
       HFCLC  = NASHT .LE. 1
       IF (HFCLC) NCONF = 1
-      LUREVE = 0
-      LUSOVE = 0
-      LUGDVE = 0
+      LUREVE = -1
+      LUSOVE = -1
+      LUGDVE = -1
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)

@@ -320,7 +320,7 @@ C
 C
 C     Open direct access file
 C
-      LUAAT = 0
+      LUAAT = -1
       CALL GPOPEN(LUAAT,'ABAAAT','UNKNOWN','DIRECT',' ',IRAT*N2ORBX,
      &            OLDDX)
 C

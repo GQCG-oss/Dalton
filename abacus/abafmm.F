@@ -290,7 +290,7 @@ C     =========================
 C
 C     total
 C
-      LUONEL = 0
+      LUONEL = -1
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
@@ -304,7 +304,7 @@ C    &            nodv,difdip,difqdp,hfonly,nclone,pcm)
 C
 C     nonclassical
 C
-      LUONEL = 0
+      LUONEL = -1
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
@@ -323,7 +323,7 @@ C     =========================
 C
 C     total
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KLAST),LWRK)
@@ -331,7 +331,7 @@ C
 C
 C     nonclassical
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       NCLERI = .TRUE.
@@ -507,7 +507,7 @@ C
 C
       CALL HEADER('Output from SPHAVE',-1)
 C
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'ABAFMM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINTM
@@ -643,7 +643,7 @@ C
       ERGTOT = D0
       ERGCOU = D0
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -732,7 +732,7 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION DIS(NDIM,8)
 C
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'ABAFMM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINTM

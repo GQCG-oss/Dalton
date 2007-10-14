@@ -1870,7 +1870,7 @@ C     iterations, also if no '**PROPER' input has been given.
 C     This should be OK with this location.
 C
       LUSUPM = - 1
-      IF (SUPMAT .AND. .NOT.DODRCT) LUSUPM = 0
+      IF (SUPMAT .AND. .NOT.DODRCT) LUSUPM = -1
 C
 C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
@@ -2237,9 +2237,8 @@ C
             DIPMOM = SQRT(DIP0(1)*DIP0(1) + DIP0(2)*DIP0(2) + 
      &           DIP0(3)*DIP0(3))
 C
-            WRITE (LUPRI,'(17X,A,15X,A,10X,A/)') 
-     *             'au','Debye','C m (/(10**-30)'
-            WRITE (LUPRI,'(7X,3(F15.6,4X))') 
+            WRITE (LUPRI,'(17X,A,15X,A,10X,A//3X,3F19.6)') 
+     *             'au','Debye','C m (/(10**-30)',
      *             DIPMOM, DEBYE*DIPMOM, DIPSI*DIPMOM
             CALL HEADER('Dipole moment components',-1)
             CALL DP0PRI(DIP0)
@@ -2476,7 +2475,7 @@ C
 #include <aatens.h>
 #include <gdvec.h>
 C
-      LUSTAR = 0
+      LUSTAR = -1
       CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
       IF (AROUND) THEN
          CALL GPOPEN(LUSTAR,'ABACUS.RESTART','OLD',' ','UNFORMATTED',
@@ -2581,7 +2580,7 @@ C
 #include <aatens.h>
 #include <gdvec.h>
 C
-      LUSTAR = 0
+      LUSTAR = -1
       CALL GPOPEN(LUSTAR,'ABACUS.RESTART','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       NCOR = 3*NUCDEP
@@ -3060,7 +3059,7 @@ C
       PARAMETER (XMUB =  ECHARGE*HBAR/(2.0D0*EMASS))
       PARAMETER (AUFGR = XTJ*1D10*1D10/(ECHARGE*XTANG**2))
       PARAMETER (CONV = ECHARGE*AUFGR*1D-28*1D-6/(HBAR*2.0*PI),
-     &           CONV2 = 1D-10*2.0D0*XMUB/(2.0D0*PI*HBAR))
+     &           CONV2 = 1.0D-10*2.0D0*XMUB/(2.0D0*PI*HBAR))
       DIMENSION PVAL(6), AXIS(3,3,MXCENT), WRK(3), IWRK(3)
       CHARACTER*33 TEXT
 #include <nuclei.h>
@@ -3131,7 +3130,7 @@ C
               NUCCHA = IZATOM(IATOM)
               IF (NUCCHA  .EQ. 0) GOTO 100
               IF (IPRINT .GE. 0) CALL HEADER('Nuclear quadrupole '//
-     &                         'moment for   '//NAMDEP(NATOM),-1)
+     &                         'moment for '//NAMDEP(NATOM),-1)
               DO 120 ISO = 1, 5
                 QMOM = DISOTP(NUCCHA,ISO,'QMOM')
                 IF (QMOM .NE. 0.D0) THEN

@@ -764,12 +764,12 @@ C
 C
 C     *** Restart ***
 C
-      LURSTR = 0
+      LURSTR = -1
       CALL GPOPEN(LURSTR,'RSTRT.FC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LURSTR)
       IF (NPRPDR) THEN
-         LUNDPR = 0
+         LUNDPR = -1
          CALL GPOPEN(LUNDPR,'PROPERTY.NDER','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND(LUNDPR)
@@ -1037,7 +1037,7 @@ C
 C
 C        *** Restart ***
 C
-         LURSTR = 0
+         LURSTR = -1
          CALL GPOPEN(LURSTR,'RSTRT.FC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LURSTR)
@@ -3768,7 +3768,7 @@ C
 C     We punch out harmonic freqs and normal coordinates on file
 C     DALTON.NOR for use in Midas Vibrational calculations
 
-      LUNOR = 0
+      LUNOR = -1
       CALL GPOPEN(LUNOR,'DALTON.NOR','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE(LUNOR,'(A)') 'Harmonic Freqs. in cm^-1'
@@ -5441,7 +5441,7 @@ C     *** No hessian specified. ***
       IF (.NOT. HESEXS) CALL QUIT('Unable to open the file DALTON.HES.')
 C
 C     *** Open hessian file. ***
-      LUHES = 0
+      LUHES = -1
       CALL GPOPEN(LUHES,'DALTON.HES','OLD',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -5762,7 +5762,7 @@ C
 C                          *** Update value for printout in ***
 C                          *** symmetry coordinates.        ***
 C
-                           LUPRPCO = 0
+                           LUPRPCO = -1
                            CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                          ' ','FORMATTED',IDUMMY,.FALSE.)
                            CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV),NPRMI)
@@ -5772,7 +5772,7 @@ C
 C                          *** Update value for printout in ***
 C                          *** cartesian coordinates.       ***
 C
-                           LUPRPCO = 0
+                           LUPRPCO = -1
                            CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                          ' ','FORMATTED',IDUMMY,.FALSE.)
                            CALL PRPRPC(LUPRPCO,2,WORK(KSTART),NPRMI)
@@ -5805,7 +5805,7 @@ C
      &                       'Derivative with respect to coordinate',
      &                       ICOOR2, ' and ', ICOOR1
 C
-                        LUPRPCO = 0
+                        LUPRPCO = -1
                         CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                              ' ','FORMATTED',IDUMMY,.FALSE.)
                         CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV),NPRMI)
@@ -6848,7 +6848,7 @@ C     *************************************************************
       DIMENSION TRLNFV(NPRPC,NMPCAL)
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
 C
-      LUPRPCO = 0
+      LUPRPCO = -1
       CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
 C
@@ -7031,7 +7031,7 @@ C
      &            IDDCMP,MXCOEF,1,NMPCAL,NTYPE,NPPDER*NFINNR,
      &            NFINNR,LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)
 C
-      LUPRPCO = 0
+      LUPRPCO = -1
       CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
 C
