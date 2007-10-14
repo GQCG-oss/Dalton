@@ -377,7 +377,7 @@ C
             KLAMDH = KDENS  + N2BST(ISYMOP)
             KLAMDP = KLAMDH + NLAMDT
             KWRK1  = KLAMDP + NLAMDT
-            LWRK1 = LWORK - KWRK1
+            LWRK1  = LWORK - KWRK1
 C
             IF (LWRK1 .LT. NT2AM(1)) THEN
                CALL QUIT('Not enough working space in '
@@ -404,7 +404,7 @@ C
 
 C
 C------------------------------------
-C        Readin T1 amplitudes.
+C        Read in T1 amplitudes.
 C------------------------------------
 C
            IOPT = 1
@@ -419,7 +419,7 @@ C
 
 C
 C------------------------------------
-C        Readin T2 amplitude.
+C        Read in T2 amplitude.
 C------------------------------------
 C
            DTIME = SECOND()
@@ -458,19 +458,19 @@ C--------------------------------
 C          Open files for CCSD(T)
 C--------------------------------
 C
-           LUTOC   = 0
-           LU3VI   = 0
-           LU3VI2  = 0
-           LU3FOP  = 0
-           LU3FOP2 = 0
-           LU3FOPX  = 0
-           LU3FOP2X = 0
+           LUTOC    = -1
+           LU3VI    = -1
+           LU3VI2   = -1
+           LU3FOP   = -1
+           LU3FOP2  = -1
+           LU3FOPX  = -1
+           LU3FOP2X = -1
 C
-           FNTOC   = 'CCSDT_OC'
-           FN3VI   = 'CC3_VI'
-           FN3VI2  = 'CC3_VI12'
-           FN3FOP  = 'PTFOP'
-           FN3FOP2 = 'PTFOP2'
+           FNTOC    = 'CCSDT_OC'
+           FN3VI    = 'CC3_VI'
+           FN3VI2   = 'CC3_VI12'
+           FN3FOP   = 'PTFOP'
+           FN3FOP2  = 'PTFOP2'
            FN3FOPX  = 'PTFOPX'
            FN3FOP2X = 'PTFOP2X'
 C
@@ -486,7 +486,7 @@ C--------------------------------------------------------------
 C     Calculate the (T) one electron densities.
 C     If (RELORB) calculate also the (T) two-electron densities that
 C     are needed to calculate the KappaBAR orbital multiplier.
-C     Readin T2 again since it is destroyed by CCSDPT_DENS2
+C     Read in T2 again since it is destroyed by CCSDPT_DENS2
 C
 C     OBS: we are calculating here the tbar_3 contributions to 
 C          the densities as well as t_3 ones. As we don't have
@@ -587,7 +587,7 @@ C
             KLAMDH = KDENS  + N2BST(ISYMOP)
             KLAMDP = KLAMDH + NLAMDT
             KWRK1  = KLAMDP + NLAMDT
-            LWRK1 = LWORK - KWRK1
+            LWRK1  = LWORK - KWRK1
 C
             IF (LWRK1 .LT. NT2AM(1)) THEN
                CALL QUIT('Not enough working space in '
@@ -595,7 +595,7 @@ C
             ENDIF
 C
 C-----------------------------------------------
-C        Readin the T1 and T2 amplitudes.
+C        Read in the T1 and T2 amplitudes.
 C-----------------------------------------------
 C
             IOPT = 3
@@ -631,7 +631,7 @@ C
             ENDIF
 C
 C-----------------------------------------------
-C        Readin the L1 and L2 amplitudes.
+C        Read in the L1 and L2 amplitudes.
 C-----------------------------------------------
 C
             IOPT = 3
@@ -670,25 +670,25 @@ C----------------------------------------
 C           Open triples files
 C----------------------------------------
 C
-            LUDELD  = 0
-            LUCKJD  = 0
-            LUDKBC  = 0
-            LUTOC   = 0
-            LU3VI   = 0
-            LUDKBC3 = 0
-            LU3FOP  = 0
-            LU3FOP2 = 0
-            LU3FOPX  = 0
-            LU3FOP2X = 0
+            LUDELD   = -1
+            LUCKJD   = -1
+            LUDKBC   = -1
+            LUTOC    = -1
+            LU3VI    = -1
+            LUDKBC3  = -1
+            LU3FOP   = -1
+            LU3FOP2  = -1
+            LU3FOPX  = -1
+            LU3FOP2X = -1
 C
-            FNDELD  = 'CKDELD'
-            FNCKJD  = 'CKJDEL'
-            FNDKBC  = 'DKBC'
-            FNTOC   = 'CCSDT_OC'
-            FN3VI   = 'CC3_VI'
-            FNDKBC3 = 'DKBC3'
-            FN3FOP  = 'PTFOP'
-            FN3FOP2 = 'PTFOP2'
+            FNDELD   = 'CKDELD'
+            FNCKJD   = 'CKJDEL'
+            FNDKBC   = 'DKBC'
+            FNTOC    = 'CCSDT_OC'
+            FN3VI    = 'CC3_VI'
+            FNDKBC3  = 'DKBC3'
+            FN3FOP   = 'PTFOP'
+            FN3FOP2  = 'PTFOP2'
             FN3FOPX  = 'PTFOPX'
             FN3FOP2X = 'PTFOP2X'
 C
@@ -1007,7 +1007,7 @@ C
 cElena
            IF (R12PRP .AND. (IPDD .EQ. 2 .OR. IPDD .EQ. 3 .OR. 
      &         IPDD .EQ. 5)) THEN
-              LUVAJKL = 0
+              LUVAJKL = -1
               IF (IPDD .EQ. 2) THEN
                  CALL GPOPEN(LUVAJKL,'CCR12YAJIJ','UNKNOWN',' ',
      &                    'UNFORMATTED',IDUMMY,.FALSE.)
@@ -1018,7 +1018,7 @@ cElena
                  CALL GPOPEN(LUVAJKL,'CCR12XAJIJ','UNKNOWN',' ',
      &                    'UNFORMATTED',IDUMMY,.FALSE.)
                  IF (FROIMP) THEN
-                     LUFAJKL = 0
+                     LUFAJKL = -1
                      CALL GPOPEN(LUFAJKL,'CCR12YAIFR','UNKNOWN',' ',
      &                        'UNFORMATTED',IDUMMY,.FALSE.)
                  ENDIF  
@@ -1165,7 +1165,7 @@ C     Close the 'AOTWOINT' file before entering the abarsp.
 C
          IF (LUINTA .GT. 0) THEN
             CALL GPCLOSE(LUINTA,'KEEP')
-            LUINTA = 0
+            LUINTA = -1
          ENDIF
 C
 C     Open the 'SIRIFC' file before entering the abarsp.
@@ -1320,13 +1320,13 @@ C----------------------------------------------------------
 C
       ILSTNR = 1
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
-     &             LWRK3,MODELPRI, LIST,ILSTNR,.TRUE.,
+     &             LWRK3,MODEL, LIST,ILSTNR,.TRUE.,
      &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
 C
 C
-        CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK3),LWRK3,MODELPRI)
+        CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK3),LWRK3,MODEL)
 C
 C
       ENDIF
@@ -1385,7 +1385,7 @@ C
 C
          CALL CCS_D1AO(WORK(KDENS),WORK(KWRK3),LWRK3)
          IF (FROIMP .OR. FROEXP) THEN
-           CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK3),LWRK3,MODELPRI)
+           CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK3),LWRK3,MODEL)
          ENDIF
          IF (IPRINT .GT. 50) THEN
             CALL AROUND('CCS One electron density in cc_fop')
@@ -1473,10 +1473,10 @@ C
           CALL DZERO(WORK(KONEIA),NT1AM(ISYMOP))
 C
 C------------------------
-C      Readin ia part :
+C      Read in ia part :
 C------------------------
 C
-          LUPTIA = 0
+          LUPTIA = -1
           CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
           IOFF = 1
@@ -1504,7 +1504,7 @@ C-------------------------------------------------
 C
           IF (.NOT. RELORB) THEN
 C
-             LUPTAB = 0
+             LUPTAB = -1
              CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
 C
              IOFF = 1
@@ -1512,7 +1512,7 @@ C
      *                   NMATAB(ISYMOP))
              CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
 C
-             LUPTIJ = 0
+             LUPTIJ = -1
              CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
 C
              IOFF = 1
@@ -1537,7 +1537,7 @@ C
      *                     ISYMOP,WORK(KCMO),1,WORK(KCMO),1,WORK(KWRK4),
      *                     LWRK4)
 C
-             LUPTIA2 = 0
+             LUPTIA2 = -1
              CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
 C
              IOFF = 1
@@ -2805,7 +2805,7 @@ C----------------------------------------------
 C
       IF (ETADSC .AND. (.NOT. FIRST)) THEN
 C
-         LUETA = 0
+         LUETA = -1
          CALL GPOPEN(LUETA,'PT_ETA','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
 C
@@ -2858,7 +2858,7 @@ C----------------------------------------------------
 C
       IF ( RSPIM ) THEN
 C
-         LUFCK = 0
+         LUFCK = -1
          CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUFCK )
@@ -2933,7 +2933,7 @@ C
          CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KEND2))
          CALL CC_T2SQ(WORK(KEND2),WORK(KT2AM),1)
 C
-         LUFCK = 0
+         LUFCK  = -1
          ISYFAO = 1
          ISYMPA = 1
          ISYMHO = 1
@@ -2961,11 +2961,11 @@ C--------------------------
 C          Open files :
 C--------------------------
 C
-         LUTOC   = 0
-         LU3VI   = 0
-         LU3VI2  = 0
-         LU3FOP  = 0
-         LU3FOP2 = 0
+         LUTOC   = -1
+         LU3VI   = -1
+         LU3VI2  = -1
+         LU3FOP  = -1
+         LU3FOP2 = -1
 C
          FNTOC   = 'CCSDT_OC'
          FN3VI   = 'CC3_VI'
@@ -2990,7 +2990,7 @@ C-------------------------------------------
 C        Write the contribution to disc.
 C-------------------------------------------
 C
-         LUETA = 0
+         LUETA = -1
          CALL GPOPEN(LUETA,'PT_ETA','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
 C
@@ -6970,7 +6970,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ',
      *               'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -7409,7 +7409,7 @@ C         OPEN(LUDE,STATUS='UNKNOWN',FORM='UNFORMATTED',FILE='CCTWODEN',
 C     *        ACCESS='DIRECT',RECL= LDECH)
 C
          LDECH = N2BSTM*NFRL+1
-         LUDE = 0
+         LUDE = -1
          CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT','UNFORMATTED',
      *               LDECH,OLDDX)
 C
@@ -7791,7 +7791,7 @@ C
 C
       IF (.FALSE.) THEN
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMMATED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC
