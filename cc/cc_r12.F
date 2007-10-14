@@ -79,7 +79,7 @@ C
   100 CONTINUE
       NBASF = NORB1(NSYM) + NORB2(NSYM)
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE (LUMULB,'KEEP')
@@ -323,7 +323,7 @@ C
   706    WRITE(LUPRI,*)
       END IF
 C
-      LUMUL = 34
+      LUMUL = -34
       GOTO (701,702,707), IFLAG
       CALL QUIT('INVALID IFLAG IN RXR')
   701 CALL GPOPEN(LUMUL,'XMATSN','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -384,7 +384,7 @@ C
             NONV = NVIR(ISYM) + NRHFS(ISYM)
             NNBASF = NNBASF + NONV * (NONV + 1) / 2 
          END DO
-         LUNT = 0
+         LUNT = -1
          IF (NNBASF .GT. LWORK) CALL QUIT('Not enough memory in MAKEGX')
          CALL GPOPEN(LUNT,'AUXFCKN','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
          READ(LUNT,'(4E30.20)') (WORK(I), I = 1, NNBASF)
@@ -402,7 +402,7 @@ C
             NONV = NVIR(ISYMP) + NRHFS(ISYMP)
             IOFF = IOFF + NONV * (NONV + 1) / 2
          END DO
-c        LUNT = 0
+c        LUNT = -1
 c        CALL GPOPEN(LUNT,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
 c        READ(LUNT,'(4E30.20)') (WORK(I), I = 1, NNBASF)
 c        CALL GPCLOSE(LUNT,'KEEP')
@@ -936,7 +936,7 @@ C
       END IF
       DELTA = R12LEV
       FF = D1 / SQRT(D2)
-      LU33 = 33
+      LU33 = -33
       CALL GPOPEN(LU33,'AUXQ12','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ(LU33,'(4E30.20)') QQ11
       CALL GPCLOSE(LU33,'KEEP')
@@ -975,12 +975,13 @@ C
             NCT = NCT + NRHFFR(ISYM)
             NRT = NRT + NORB1(ISYM)
          END DO
-         OPEN(99,FILE='FLOCA',FORM='FORMATTED')
+         LU99 = -99
+         CALL GPOPEN(LU99,'FLOCA','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
          NBASM = (NRT-NCT)*(NRT-NCT+1)/2
          DO I=1,NBASM 
-            READ(99,'(D30.20)') FLMAT(I)
+            READ(LU99,'(D30.20)') FLMAT(I)
          END DO
-         CLOSE(99)
+         CALL GPCLOSE(LU99,'KEEP')
          DO IJ  = 1, NSPAIR
             NI  = III(IJ)
             NJ  = JJJ(IJ)
@@ -1316,7 +1317,7 @@ C
 C
 C        WRITE AMPLITUDES AND RESTORE R12 INTEGRALS
 C
-         LU43 = 43
+         LU43 = -43
          CALL GPOPEN(LU43,'TIJAB',
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          WRITE(LU43) (R2AM(I), I = 1,NH2AMX)
@@ -1727,7 +1728,7 @@ C
       CALL OUTPUT(BT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW triplet <S> matrix') 
       CALL OUTPUT(RT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-  998 LUMULO = 34
+  998 LUMULO = -34
       LUMULN = LUMULO + 1
       CALL GPOPEN (LUMULO,'AOR12O','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN (LUMULN,'AOR12N','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -1746,9 +1747,9 @@ c      write(lupri,*) 'LUMULN=',LUMULN
       WRITE(LUMULN,'(4E30.20)') BT11
       WRITE(LUMULN,'(4E30.20)') RT11
 C
-      LU43 = 43
-      LU44 = 44
-      LU45 = 45
+      LU43 = -43
+      LU44 = -44
+      LU45 = -45
       IF (R12OLD) THEN
         LUMULA = LUMULO
         LUMULE = LUMULO  
@@ -2275,9 +2276,9 @@ c
 c
 c    Write out amplitudes for MP2-R12-Gradient(Elena) 
 c
-         LUNIT = 0
+         LUNIT = -1
          IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
-           LUNIT = 0
+           LUNIT = -1
            CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
      &                 IDUM,LDUM)
            WRITE(LUNIT,'(4E30.20)') CS11
@@ -2297,7 +2298,7 @@ cElena
      *   E2S+E2T+F2S+F2T
       ELSE IF (IPDD .EQ. 3) THEN 
 
-         LUNIT = 0
+         LUNIT = -1
          IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
             IF (IPRINT .GE. 4) THEN
               CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A'')')
@@ -2305,7 +2306,7 @@ cElena
               CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A'')')
               CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
            END IF
-           LUNIT = 0
+           LUNIT = -1
            CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
      &                 IDUM,LDUM)
            WRITE(LUNIT,'(4E30.20)') CS11
@@ -2353,9 +2354,9 @@ c
               CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/B)')
               CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
             END IF
-            LUNIT = 0
+            LUNIT = -1
             IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
-              LUNIT = 0
+              LUNIT = -1
               CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
      &                    IDUM,LDUM)
               WRITE(LUNIT,'(4E30.20)') CS11
@@ -2710,7 +2711,7 @@ celena
          NORB2T = NORB2T + NORB2(ISYM)
          NRHFST = NRHFST + NRHFS(ISYM)
       ENDDO   
-      LUSIRG = 0
+      LUSIRG = -1
       CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,LDUM)
       REWIND LUSIRG
 
@@ -2727,7 +2728,7 @@ C
 celena
 
       NOCCT = NRHFT
-      LUSIRG = 30
+      LUSIRG = -30
       KEND = NLAMDS + 2*NOCCT*NBAST + 14*NOCCT*NOCCT + 1
       IF (KEND .GT. LWORK) CALL STOPIT('MAKEUG',' ',LWORK,KEND)
       CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',IDUM,LDUM)
@@ -2798,7 +2799,7 @@ C
          KFCKHF = KEND + NR12xVIR * NBAST
          KEND = KFCKHF
          IF (KEND .GT. LWORK) CALL STOPIT('MAKEUG',' ',LWORK,KEND)
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,'R12FVIR','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
          READ (LUNIT) (WORK(KFCKMIX+I-1), I=1, NR12xVIR)
@@ -2846,7 +2847,7 @@ C
 C 
       NTOTGU = IUG - 1
       WRITE(GUNAM,'(A6,I1)') 'GUMAT.',IPBAS
-      LU43 = 43
+      LU43 = -43
       CALL GPOPEN(LU43,GUNAM,'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
       REWIND(LU43)
       WRITE(LU43) NTOTGU
@@ -2941,7 +2942,7 @@ celena
      *           WORK(ISMX2),WORK(ISMY2),WORK(ISMZ2), 
      *           WORK(ISMO2),WORK(ISMO1),
      *           WORK(IEND),LQQ,NBAST,NOCCT)
-        LUNIT = 0
+        LUNIT = -1
 celena
       IF (R12PRP .AND. R12HYB) THEN
          NVIR0T = NORB1T-NRHFST
@@ -2955,7 +2956,7 @@ celena
      *              WORK(ISMRZ2), 
      *              WORK(ISMRO2),WORK(ISMRO1),
      *              WORK(IEND),LQQ,NBAST,NORB1T,NOCCT,NVIR0T,.FALSE.)
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,'AUXQSA12','UNKNOWN','SEQUENTIAL',
      &                      'FORMATTED',IDUMMY,LDUMMY)
          WRITE(LUNIT,'(4E30.20)') (QV(J+1), J = 0, (NORB1T-NRHFST)
@@ -2971,7 +2972,7 @@ celena
      *              WORK(ISMRZ2), 
      *              WORK(ISMRO2),WORK(ISMRO1),
      *              WORK(IEND),LQQ,NBAST,NORB1T,NOCCT,NVIR0T,.TRUE.)
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,'AUXQSAJ12','UNKNOWN','SEQUENTIAL',
      &                      'FORMATTED',IDUMMY,LDUMMY)
          WRITE(LUNIT,'(4E30.20)') (QV(J+1), J = 0, (NVIR0T)
@@ -2987,7 +2988,7 @@ celena
      *              WORK(ISMRZ2), 
      *              WORK(ISMRO2),WORK(ISMRO1),
      *              WORK(IEND),LQQ,NBAST,NORB1T,NOCCT,NVIR0T,.FALSE.)
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,'AUXQSAI12','UNKNOWN','SEQUENTIAL',
      &                      'FORMATTED',IDUMMY,LDUMMY)
          WRITE(LUNIT,'(4E30.20)') (QV(J+1), J = 0, (NVIR0T)
@@ -3436,7 +3437,7 @@ C
       CALL AROUND('Triplet <Q@> matrix')
       CALL OUTPUT(QT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI) 
 C
-  998 LUMUL = 43
+  998 LUMUL = -43
       GOTO (996,997), IFLAG          
       CALL QUIT('INVALID IFLAG IN QCAL1')
   996 CALL GPOPEN(LUMUL,'QMATSO','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -3500,8 +3501,8 @@ C
       TEMP_DIRECT = DIRECT
       DIRECT = .TRUE.
       MKVAJKL=.FALSE.
-      LUSIRG = 30
-      LU43 = 43
+      LUSIRG = -30
+      LU43   = -43
       PROFIL = .FALSE.
       R12CAL = R12CAL .OR. LMULBS
       IF (R12CAL) THEN
@@ -3744,7 +3745,7 @@ cWK        END IF
      &        LWORK,KEND1)
          IF (R12EOR) THEN
 C
-            LUSIFC = 0
+            LUSIFC = -1
             CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
             REWIND LUSIFC
@@ -3837,7 +3838,7 @@ C
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
             R12EIN = .FALSE.
             CCR12SM = .FALSE.
-            LUSIFC = 0
+            LUSIFC = -1
             CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
             REWIND LUSIFC
@@ -3979,14 +3980,14 @@ C
             call dzero(WORK(KFRIN),NFROVR(1)) 
             call dzero(WORK(KFRIN1),NFROVF(1)) 
             IF (IANR12.EQ.1.AND.R12PRP) THEN
-                LUNIT = 0
+                LUNIT = -1
                 CALL GPOPEN(LUNIT,'INCJDA',
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
                 REWIND(LUNIT)
                 READ(LUNIT) (WORK(KFRIN+I-1), I = 1,NFROVR(1))
                 CALL GPCLOSE(LUNIT,'DELETE')  
 
-                LUNIT = 0
+                LUNIT = -1
                 CALL GPOPEN(LUNIT,'INCJDI',
      &                         'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
                 REWIND(LUNIT)
@@ -4092,7 +4093,7 @@ C
          IF (R12EOR) THEN   
             R12EIN = .TRUE.
             IF (.NOT. R12NOB) THEN
-               LUSIFC = 0
+               LUSIFC = -1
                CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
                REWIND LUSIFC
@@ -4126,7 +4127,7 @@ C
                CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
      &                        LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
                CALL CCSD_IKJL(WORK(KQQAM),NRHFT,WXRK(KU2AM))
-               LUSIFC = 0
+               LUSIFC = -1
                CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
                REWIND LUSIFC
@@ -4933,7 +4934,7 @@ C
   100 CONTINUE
       NBASF = NORB1(NSYM) + NORB2(NSYM)
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE(LUMULB,'KEEP')
@@ -5258,9 +5259,9 @@ C
   102    CONTINUE
   101 CONTINUE
 C
-      LU33 = 33
-      LU34 = 34
-      LU35 = 35
+      LU33 = -33
+      LU34 = -34
+      LU35 = -35
       CALL GPOPEN(LU33,'PROFILE.1','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN(LU34,'PROFILE.2','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN(LU35,'PROFILE.3','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
