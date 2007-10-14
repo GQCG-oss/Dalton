@@ -2794,7 +2794,7 @@ C
         
         IOPT=3
         CALL CC_WRRSP('D0',0,1,IOPT,MODEL,DUMMY,WORK(KC1),WORK(KC2),
-     &                WORK(KEND1),LEND1)
+     &                WORK(KEND1),LWRK1)
 
         WORK(KC1-1+IVEC) = 0.0d0
 
