@@ -159,9 +159,9 @@ C
      *      TRIPLET
          ENDIF                      
 C
-         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
-     *                 .TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
+         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 TRIPLET,.TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
      *                 FS2AM,IDUMMY,
      *                 ISIDE,0,NUPVEC,WRK,LWRK,APROXR12)
 C
