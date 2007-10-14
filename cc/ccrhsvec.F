@@ -879,6 +879,7 @@ c /* deck CC_RHS_SETUP */
         END DO
       END IF
       IF (TYPE(1:2).EQ.'EO' .AND. ORDER.GT.1) THEN
+        call quit('Sonia: please define LPROJ in IER1AMP call')
         DO IDXA = 1, ORDER
          IE1(IDXA)=IER1AMP(ISTAT(IVEC,1),EIGV(IVEC),ISYMS,
      &                     LAB(IVEC,IDXA),FREQ(IVEC,IDXA),ISYM(IDXA))
