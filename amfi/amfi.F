@@ -3570,7 +3570,7 @@ CBS   write(6,*) 'get occupations from DATA-block'
       call getAOs2(lhigh)
       return
       endif 
-      LUAOEX = 0
+      LUAOEX = -1
       CALL GPOPEN(LUAOEX,'AO-expansion','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       write(LUPRI,*) 'Orbitals for mean-field' 

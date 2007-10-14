@@ -128,7 +128,7 @@ C
 C
 C        Open the file to which these integrals are to be written
 C
-         LUINTA = 0
+         LUINTA = -1
          CALL GPOPEN(LUINTA,'FIT_INTS','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
 C        Generate and write the integrals
@@ -909,7 +909,7 @@ C     where |f> is a fit function and |n> the null function
 C
 C     Two-electron part
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'FIT_INTS','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL REWSPL(LUINTA)
