@@ -1216,7 +1216,7 @@ C
             CALL QUIT('LRST error: Implement RSPAVE for RESTLR')
          END IF
 C
-         LURSP1 = 0
+         LURSP1 = -1
          CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LURSP1)
@@ -2963,7 +2963,7 @@ C
          KTOT = KZRED + KOFFTY
          IF (IPRRSP.GT.7)
      *      WRITE(LUPRI,'(/A,I5)')' TRIAL VECTORS FOR RESTART:',KTOT
-         LURSP1 = 0
+         LURSP1 = -1
          CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LURSP1)
@@ -3718,15 +3718,18 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                END IF
  600        CONTINUE
          END IF
+         PRI_LINE = ' '
          WRITE (PRI_LINE,'(3(A,I2))')
-     *   '@ Reference state sym',IREFSY,
-     *   ' & excitation operator sym',KSYMOP,
-     *   ' => excited state sym',KSYMST
-         CALL HEADER(PRI_LINE,-1)
+     &   '@ Excit. operator sym',KSYMOP,' & ref. state sym',IREFSY,
+     &   ' => excited state symmetry',KSYMST
+         CALL TITLER(PRI_LINE,'*',103)
          DO 555 INUM = 1,NBX
-            WRITE(LUPRI,'(/A,I5,A,I3,//A,1P,G16.8,A,3(/A1,19X,G16.8,A),
+            PRI_LINE = ' '
+            WRITE (PRI_LINE,'(A,I5,A,I3))')
+     *      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST
+            CALL HEADER(PRI_LINE,0)
+            WRITE(LUPRI,'( A,1P,G16.8,A,3(/A1,19X,G16.8,A),
      *                   //A,T21,G16.8,A)')
-     *      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
      *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),'au',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
@@ -3752,17 +3755,15 @@ C
      *                  '@ Operator type:    ',LBLPP(KSYMOP,IOP)
 C
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8)')
+                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
      *                  '@ Oscillator strength (LENGTH)   :',
      *                  OSCSTR(INUM,JOP),
-     *                  '  Transition moment   (LENGTH)   :',
-     *                  TRSMOM(INUM,JOP)
+     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8)')
+                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
      *                  '@ Oscillator strength (VELOCITY) :',
      *                  OSCSTR(INUM,JOP),
-     *                  '  Transition moment   (VELOCITY) :',
-     *                  TRSMOM(INUM,JOP)
+     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
@@ -4230,7 +4231,7 @@ C        residual vectors.
 C
       NSOLVC = NFREQ * NGPLR(KSYMOP)
 C
-      LURSP2 = 0
+      LURSP2 = -1
       IF (NSOLVC .GE. 1) CALL GPOPEN(LURSP2,'RSPSOLVEC.DA','NEW',
      &     'DIRECT',' ',IRAT*KZYVAR,OLDDX)
 C
@@ -4422,7 +4423,7 @@ C
 C
 C     Open LURD file from ABACUS
 C
-      LURD = 0
+      LURD = -1
       CALL GPOPEN(LURD,'ABACUS.RD','OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
 C     Read RD_Z from ABACUS
       CALL READDX(LURD,NREC,IRAT*KZVAR,WRK(KRD))
