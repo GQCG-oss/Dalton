@@ -350,7 +350,7 @@ C
             REWIND LUINTR
          ELSE IF (GDER .OR. BDER) THEN
             DO I = 1, NPERTS 
-               LUINTD(I) = 0
+               LUINTD(I) = -1
                FAODER = 'AO2DER'//CHRNOS(I/10)
      &                         //CHRNOS(MOD(I,10))
                CALL GPOPEN(LUINTD(I),FAODER,'UNKNOWN',' ',
