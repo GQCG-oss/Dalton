@@ -5559,12 +5559,12 @@ C       IPRINT  = 0
           WRITE (LUPRI,*) 'finite difference Theta vector:'
           Call CC_PRP(WORK(KRESLT1),WORK(KRESLT2),ISYMAB,1,1)
           IF (CCR12) THEN
-            Call CC_PRPR12(WORK(KRESLTR12),ISYMAB,1,1,.TRUE.)
+            Call CC_PRPR12(WORK(KRESLTR12),ISYMAB,1,.TRUE.)
           END IF
           WRITE (LUPRI,*) 'analytical Theta vector:'
           Call CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,1,1)
           IF (CCR12) THEN
-            Call CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,1,.TRUE.)
+            Call CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,.TRUE.)
           END IF
           WRITE(LUPRI,*) 'Norm of analytical Theta vector: ',
      &      DSQRT(DDOT(NT1AM(ISYMAB)+NT2AM(ISYMAB)+NTR12AB,
@@ -5600,7 +5600,7 @@ C       IPRINT  = 0
         WRITE (LUPRI,*) 'difference vector:'
         Call CC_PRP(WORK(KRESLT1),WORK(KRESLT2),ISYMAB,1,1)
         IF (CCR12) THEN
-          Call CC_PRPR12(WORK(KRESLTR12),ISYMAB,1,1,.TRUE.)
+          Call CC_PRPR12(WORK(KRESLTR12),ISYMAB,1,.TRUE.)
         END IF
 
         CALL FLSHFO(LUPRI)
@@ -5615,7 +5615,7 @@ C       IPRINT  = 0
         WRITE (LUPRI,*) 'analytical Theta vector:'
         Call CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,1,1)
         IF (CCR12) THEN
-          Call CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,1,.TRUE.)
+          Call CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,.TRUE.)
         END IF
         WRITE(LUPRI,*) 'Norm of analytical Theta vector: ',
      &    DSQRT(DDOT(NT1AM(ISYMAB)+NT2AM(ISYMAB)+NTR12AB,
