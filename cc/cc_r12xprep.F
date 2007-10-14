@@ -860,7 +860,7 @@ c---------------------------------------------------------------------
       kend1 = kdmo+ nlamds 
 
       call dzero(work(kemo),nlamds)
-      lu43 = 0
+      lu43 = -1
       call gpopen(lu43,'GUMAT.1','UNKNOWN',' ','UNFORMATTED',
      &                      IDUMMY,LDUM)
       REWIND(LU43)
@@ -876,7 +876,7 @@ c---------------------------------------------------------------------
       kugz  = kug
 
       call dzero(work(kcmo),nlamds)
-      LUSIRG = 0  
+      LUSIRG = -1
       CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,LDUM)
       REWIND LUSIRG
 
@@ -1038,7 +1038,7 @@ C
       ENDDO
 
 
-      LUNIT = 0
+      LUNIT = -1
       CALL GPOPEN(LUNIT,'EXFRO','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUM)
       WRITE(LUNIT,'(4E30.20)') (work(kUG+J-1), J = 1,NB1FRO(1)) 
@@ -1069,7 +1069,7 @@ C
      *           WORK(ISMRZ2),
      *           WORK(ISMO2),WORK(ISMO1),
      *           WORK(IEND),LQQ,NBAST,NRHFST,NRHFT,NRHFFRT,.FALSE.)
-      LUNIT = 0
+      LUNIT = -1
       CALL GPOPEN(LUNIT,'AUXQSF12','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUM)
       WRITE(LUNIT,'(4E30.20)') (WORK(KQF+J-1), J = 1, NRHFFRT*NRHFT**3)
@@ -1085,7 +1085,7 @@ C
      *           WORK(ISMRZ2),
      *           WORK(ISMO2),WORK(ISMO1),
      *           WORK(IEND),LQQ,NBAST,NRHFST,NRHFT,NRHFFRT,.TRUE.)
-      LUNIT = 0
+      LUNIT = -1
       CALL GPOPEN(LUNIT,'AUXQSFJ12','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUM)
       WRITE(LUNIT,'(4E30.20)') (WORK(KQF+J-1), J = 1, NRHFFRT*NRHFT**3)
@@ -1100,7 +1100,7 @@ C
      *           WORK(ISMRZ2),
      *           WORK(ISMO2),WORK(ISMO1),
      *           WORK(IEND),LQQ,NBAST,NRHFST,NRHFT,NRHFFRT,.FALSE.)
-      LUNIT = 0
+      LUNIT = -1
       CALL GPOPEN(LUNIT,'AUXQSFI12','UNKNOWN','SEQUENTIAL',
      &                   'FORMATTED',IDUMMY,LDUM)
       WRITE(LUNIT,'(4E30.20)') (WORK(KQF+J-1), J = 1, NRHFFRT*NRHFT**3)

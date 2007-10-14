@@ -159,7 +159,7 @@ c-----------------------------------------------------------------------
          call quit('Insufficient work space in R12BATF')
       end if
       
-      lusifc = 0
+      lusifc = -1
       call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',
      &            idummy,.false.)
       rewind(lusifc)
@@ -205,10 +205,10 @@ c-----------------------------------------------------------------------
 c     open file for back transformed r12 integrals
 c-----------------------------------------------------------------------
         if ((inttyp .eq. 1) .or. (inttyp .eq. 2)) then
-          lur2back = 0
+          lur2back = -1
           call wopen2(lur2back,fback,64,0)
         else if ((inttyp .eq. 3) .or. (inttyp .eq. 4)) then
-          lur2back2 = 0
+          lur2back2 = -1
           call wopen2(lur2back2,fback2,64,0)
         end if
  

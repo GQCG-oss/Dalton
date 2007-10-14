@@ -591,7 +591,7 @@ C
      &       'Insufficient core for allocation in CC_2EEXP (CCSD(T))')
            ENDIF
 C
-           LUPTIA = 0
+           LUPTIA = -1
            FNDPTIA  = 'DPTIA'
            CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
            IOFF = 1
@@ -1512,7 +1512,7 @@ C------------------------------
 C
       IF (KEEPAOTWO.LT.2) THEN
          IF (LUINTA.LE.0) THEN
-           LUINTA = 0
+           LUINTA = -1
            CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
          END IF

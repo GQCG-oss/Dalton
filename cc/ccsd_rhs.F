@@ -151,8 +151,8 @@ C----------------
 C     Open files.
 C----------------
 C
-      LUC = 0
-      LUD = 0
+      LUC = -1
+      LUD = -1
       CFIL = 'PMAT_C'
       DFIL = 'PMAT_D'
 C
@@ -165,13 +165,13 @@ C
 C
       IF (CCSDT) THEN
 C
-         LU3SRT = 0
-         LUCKJD = 0
-         LUDELD = 0
-         LUDKBC = 0
-         LUTOC  = 0
-         LU3VI  = 0
-         LU3VI2 = 0
+         LU3SRT = -1
+         LUCKJD = -1
+         LUDELD = -1
+         LUDKBC = -1
+         LUTOC  = -1
+         LU3VI  = -1
+         LU3VI2 = -1
          FN3SRT = 'CC3_SORT'
          FNCKJD = 'CKJDEL'
          FNDELD = 'CKDELD'
@@ -191,12 +191,12 @@ C
       ENDIF
 
       IF (CCSDR12 .AND. (IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
-         LUIADJ = 0
-         LUIJDA = 0
+         LUIADJ = -1
+         LUIJDA = -1
          CALL WOPEN2(LUIADJ,FNIADJ,64,0)
          CALL WOPEN2(LUIJDA,FNIJDA,64,0)
-         LUCP = 0
-         LUDP = 0
+         LUCP = -1
+         LUDP = -1
          CALL WOPEN2(LUCP,CPFIL,64,0)
          CALL WOPEN2(LUDP,DPFIL,64,0)
       END IF
@@ -332,7 +332,7 @@ C------------------------------------
 C     Save the CC amplitudes on disk.
 C------------------------------------
 C
-      LURHS1 = 0
+      LURHS1 = -1
       CALL GPOPEN(LURHS1,'CCRHS1','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LURHS1)
@@ -1037,7 +1037,7 @@ C     ------------------------------------------------------------------
 C     save the special fock matrix computed for CCSD(R12) ansaetze 2/3
 C     ------------------------------------------------------------------
       IF (CCSDR12 .AND. (IANR12.EQ.2 .OR. IANR12.EQ.3)) THEN
-        LUFHATAD = 0
+        LUFHATAD = -1
         CALL GPOPEN(LUFHATAD,'CCFHATADEL','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND(LUFHATAD)
@@ -1097,7 +1097,7 @@ C     ----------------------------------------------------------------
 C
       IF (CC2 .AND. CCR12 .AND. IANR12.EQ.3) THEN
          ! get R12 integrals
-         lunit = 0
+         lunit = -1
          call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
          read(lunit)(t2am(i),i=1,nt2r12(1))  
@@ -1179,7 +1179,7 @@ C
             call ccr12unpck2(work(ktr12),1,work(ktr12sq),'N',iopt)
  
             ! read R12 overlap matrix and reorder to full square
-            lunit = 0
+            lunit = -1
             call gpopen(lunit,fccr12x,'old',' ','unformatted',idummy,
      &                  .false.)
             rewind(lunit)
@@ -1208,7 +1208,7 @@ C           call cclr_trsqr12(work(kxir12),1)
 
         IF (CC2) THEN
           DTIME = SECOND()
-          LUSIFC = 0
+          LUSIFC = -1
           CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *                IDUMMY,.FALSE.)
           REWIND(LUSIFC)
@@ -1220,7 +1220,7 @@ C           call cclr_trsqr12(work(kxir12),1)
           
           CALL CMO_REORDER(WORK(KCMO),WORK(KEND2),LWRK2)   
 
-          LUFCK = 0
+          LUFCK = -1
           CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
      *                IDUMMY,.FALSE.)
           REWIND(LUFCK)
@@ -1321,7 +1321,7 @@ C             calculate contributions for ansatz 2
      &                          WORK(KLAMDHS),ISYMH,WORK(KEND1),LWRK1)
             END IF
 C           WRITE(LUPRI,*)'write Vajtkl on disk'
-            LUVAJTKL = 0
+            LUVAJTKL = -1
             CALL GPOPEN(LUVAJTKl,FVAJTKL,'UNKNOWN',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND(LUVAJTKL)
@@ -1385,7 +1385,7 @@ c           symmetrize Vijkl
      &                NRHF,IMATIJ,ITR12SQT,NMATIJ,WORK(KEND1),LWRK1)
 
 c           write V^ij_kl on file to calculate later numerically V bar
-            LUVIJKL = 0
+            LUVIJKL = -1
             CALL GPOPEN(LUVIJKL,FVIJKL,'UNKNOWN',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
             WRITE(LUVIJKL)(WORK(KVSYM-1+I),I=1,NTR12SQ(1))
@@ -1465,7 +1465,7 @@ c
 c
         IF ((IANR12.EQ.2.OR.IANR12.EQ.3).AND.DEBUGV) THEN
 c         write V^ij_kl on file to calculate later numerically RHOR12 
-          LUVIJKL = 0
+          LUVIJKL = -1
           CALL GPOPEN(LUVIJKL,FVIJKL,'UNKNOWN',' ','UNFORMATTED',
      &                IDUMMY,.FALSE.)
           WRITE(LUVIJKL)(WORK(KVIJKL-1+I),I=1,NTR12SQ(1))
@@ -1509,7 +1509,7 @@ C----------------------------------------------------------------------
 C
          IF ( RSPIM ) THEN
 C
-            LUBF = 0
+            LUBF = -1
             CALL GPOPEN(LUBF,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',
      *                  IDUMMY,.FALSE.)
             REWIND(LUBF)
@@ -1570,7 +1570,7 @@ C---------------------------------------------------------------------
 C
          IF ( RSPIM ) THEN
 C
-            LUGAM = 0
+            LUGAM = -1
             CALL GPOPEN(LUGAM,'CC_GAMIM','UNKNOWN',' ','UNFORMATTED',
      *                  IDUMMY,.FALSE.)
             REWIND(LUGAM)
@@ -1611,7 +1611,7 @@ C---------------------------------------
 C
       IF ( RSPIM ) THEN
 C
-         LUFCK = 0
+         LUFCK = -1
          CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUFCK)
@@ -1851,14 +1851,14 @@ C
 C
          IF ( RSPIM ) THEN
 C
-            LUE1 = 0
+            LUE1 = -1
             CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',
      *                  IDUMMY,.FALSE.)
             REWIND(LUE1)
             WRITE(LUE1)(WORK(KEMAT1+ I-1),I = 1,NMATAB(ISYMOP))
             CALL GPCLOSE(LUE1,'KEEP' )
 C
-            LUE2 = 0
+            LUE2 = -1
             CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',
      *                  IDUMMY,.FALSE.)
             REWIND(LUE2)
@@ -1866,7 +1866,7 @@ C
             CALL GPCLOSE(LUE2,'KEEP' )
 C
             IF (CCR12) THEN
-             LUE2P = 0
+             LUE2P = -1
              CALL GPOPEN(LUE2P,'CC_E2PIM','UNKNOWN',' ','UNFORMATTED',
      *                   IDUMMY,.FALSE.)
              REWIND(LUE2P)
@@ -2048,7 +2048,7 @@ C-----------------------------------------------------------------
 C
       IF (CCSDR12 .AND. (IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
          ! save vector function on disk, since memory is needed  
-         LUOME1 = 0
+         LUOME1 = -1
          CALL GPOPEN(LUOME1,'CCOME1','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
 cch
@@ -2078,7 +2078,7 @@ cch
      &                  WORK(KEND3),LWRK3)
 
          ! restore vector function
-         LUOME1 = 0
+         LUOME1 = -1
          CALL GPOPEN(LUOME1,'CCOME1','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
          REWIND(LUOME1)

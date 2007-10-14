@@ -100,8 +100,8 @@ C
          NAME1 = 'CCFRO1IN'
          NAME2 = 'CCFRO2IN'
 C
-         LUN1  = 0
-         LUN2  = 0
+         LUN1  = -1
+         LUN2  = -1
 C
          CALL WOPEN2(LUN1,NAME1,64,0)
          CALL WOPEN2(LUN2,NAME2,64,0)

@@ -159,7 +159,7 @@ C-----------------------------------------------
 C     Read zeroth-order AO Fock matrix from file
 C-----------------------------------------------
 C
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUFOCK)
@@ -526,7 +526,7 @@ C-------------------------------------
 C     Read canonical orbital energies:
 C-------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
 C
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)

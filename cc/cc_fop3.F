@@ -217,7 +217,7 @@ C--------------------------------------------------
 C     Read in AO fock matrix and transform to MO
 C--------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     The T1 transformed density is used to calculate this AO fock matrix.
 C      CALL GPOPEN(LUFCK,'CC_FCKH','OLD',' ','UNFORMATTED',
 C     *            IDUMMY,.FALSE.)

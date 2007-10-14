@@ -439,7 +439,7 @@ c    &             nrhftria,nrhftria,1,lupri)
 c     ----------------------
 c     read orbital energies 
 c     ---------------------
-      lunit = 0
+      lunit = -1
       ldum = .false.
       call gpopen(lunit,fccr12e,'old',' ','formatted',
      &                   idum,ldum)
@@ -449,7 +449,7 @@ c     ---------------------
 c     ----------------     
 c     read B matrices 
 c     ----------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12b,'old',' ','unformatted',
      &                   idum,ldum)
  8888 read(lunit) ian, iap, aprox
@@ -466,7 +466,7 @@ c     ----------------
 c     -------------------------
 c     read R12 overlap matrices
 c     ------------------------- 
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
@@ -495,7 +495,7 @@ c       end if
 c       --------------------
 c       read R12 amplitudes
 c       --------------------
-c       lunit = 0 
+c       lunit = -1 
 c       call gpopen(lunit,fccr12c,'unknown',' ','unformatted',
 c    &                   idum,ldum)
 c       read(lunit) (work(kpckc+i), i = 0, ntr12am(1)-1 )
@@ -615,7 +615,7 @@ c       write result vector as ground state vector function to file:
 c       ------------------------------------------------------------
         call ccr12pck(work(kpckc),isymv,work(ksing),work(ktrip),nrhfb,
      &                nrhf,nkilj)
-        lunit = 0 
+        lunit = -1 
         call gpopen(lunit,'CC_OMEGAR12','unknown',' ','unformatted',
      &                   idum,ldum)
         write(lunit) (work(kpckc+i), i=0, ntr12am(isymv)-1 )
@@ -797,7 +797,7 @@ c     -----------------------------------
 c     ----------------
 c     read B matrices
 c     ----------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12b,'old',' ','unformatted',
      &                   idum,ldum)
  8888 read(lunit) ian, iap, aprox
@@ -876,7 +876,7 @@ c       kekl  = kevl + norbts
           call quit('Insufficient work space in ccrhs_ep')
         end if
 c
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &              idum,ldum)
  9999   read(lunit) ian
@@ -899,7 +899,7 @@ c       ------------------------------------
 c       Read orbital energies.
 c       -------------------------------------
 c
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,'SIRIFC','OLD',' ','UNFORMATTED',idummy,
      &              .false.)
         rewind lunit
@@ -982,7 +982,7 @@ c       write result vector as ground state vector function to file:
 c       ------------------------------------------------------------
         iopt = 1
         call ccr12pck2(work(ktr12),isymv,.false.,vijkl,'T',iopt)
-        lunit = 0 
+        lunit = -1 
         call gpopen(lunit,'CC_OMEGAR12','unknown',' ','unformatted',
      &                   idum,ldum)
         write(lunit) (work(ktr12+i), i=0, ntr12am(isymv)-1 )
@@ -1106,7 +1106,7 @@ c     -------------
 c     ----------------------
 c     read orbital energies 
 c     ---------------------
-      lunit = 0
+      lunit = -1
       ldum = .false.
       call gpopen(lunit,fccr12e,'old',' ','formatted',
      &                   idum,ldum)
@@ -1122,7 +1122,7 @@ c     ---------------------
 c       ---------------    
 c       read V matrices 
 c       ---------------
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fccr12v,'old',' ','unformatted',
      &                     idum,ldum)
  7777   read(lunit) ian
@@ -1154,7 +1154,7 @@ CCN
 c     ---------------    
 c     read B matrices
 c     --------------- 
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12b,'old',' ','unformatted',
      &                   idum,ldum)
  8888 read(lunit) ian, iap, aprox
@@ -1167,7 +1167,7 @@ c     ---------------
 c     ----------------------------
 c     read R12 overlap matrices X 
 c     ----------------------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
@@ -1192,7 +1192,7 @@ c       --------------------
 c       -------------------------------
 c       read vector function omega_R12
 c       -------------------------------
-        lunit = 0 
+        lunit = -1 
         call gpopen(lunit,'CC_OMEGAR12','old',' ','unformatted',
      &              idum,ldum)
         read(lunit) (omeg12(i), i=1, ntr12am(1))
@@ -1266,7 +1266,7 @@ c       if (iapr12.le.2) then
 c     -----------------------------------------------
 c     Get orbital energy pairs for OCCUPIED orbitals:
 c     -----------------------------------------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,'SIRIFC','OLD',' ','UNFORMATTED',idum,
      &            .false.)
       rewind lunit
@@ -1472,7 +1472,7 @@ c---------------------------------------------------------------------
 c     -------------------------
 c     read R12 overlap matrices
 c     ------------------------- 
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12x,'unknown',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
@@ -1485,7 +1485,7 @@ c     -------------------------
 c     ------------------------
 c     read try vector R^ij_kl
 c     ------------------------
-      lunit = 0 
+      lunit = -1
       call cc_rvec(lufc12,fc12am,ntr12am(isymr),ntr12am(isymr),
      *             ifile,work(kpck))
       call cclr_diasclr12(work(kpck),basscl2,isymr)
@@ -1524,7 +1524,7 @@ c     -------------------------------------------------
 
       if (ianr12.eq.2) then
 c       read r^ab_kl integrals
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(krabkl-1+i),i=1,nt2r12(1))
@@ -1714,7 +1714,7 @@ c---------------------------------------------------------------------
 c     --------------------------------------------------------
 c     read R12 overlap matrices and pack to symmetrized square
 c     -------------------------------------------------------- 
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12x,'unknown',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
@@ -1758,7 +1758,7 @@ c     -------------
       ! conv. doubles contributions for Ansatz 2:
       if (ianr12.eq.2) then
 c       read r^ab_kl integrals
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(krabkl-1+i),i=1,nt2r12(1))
@@ -1867,7 +1867,7 @@ c
       end if
 
 c     read r^ab_kl integrals
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &            idummy,.false.)
       read(lunit)(work(krabkl-1+i),i=1,nt2r12(1))
@@ -2060,7 +2060,7 @@ c
 c     ----------------
 c     read B matrices
 c     ----------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12b,'old',' ','unformatted',
      &                   idum,ldum)
  8881 read(lunit) ian, iap, aprox
@@ -2086,7 +2086,7 @@ c
 c       -------------------------------
 c       read vector function omega_R12
 c       -------------------------------
-        lunit = 0 
+        lunit = -1 
         call gpopen(lunit,'CC_OMEGAR12','old',' ','unformatted',
      &              idum,ldum)
         read(lunit) (omeg12(i), i=1, ntr12am(1))
@@ -2142,7 +2142,7 @@ c
         call quit('Insufficient work space in cc_r12nxtam')
       end if
 c
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &            idum,ldum)
  9991 read(lunit) ian
@@ -2153,7 +2153,7 @@ c
       call ccr12unpck2(work(kscr),1,work(kxintsq),'N',iopt)
 c
       !read orbital energies
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,'SIRIFC','OLD',' ','UNFORMATTED',idum,
      &            .false.)
       rewind lunit
@@ -2242,7 +2242,7 @@ c
 c         -------------    
 c         read V matrix 
 c         -------------
-          lunit = 0
+          lunit = -1
           call gpopen(lunit,fccr12v,'old',' ','unformatted',
      &                idum,ldum)
  7771     read(lunit) ian

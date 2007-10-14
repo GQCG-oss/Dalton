@@ -302,7 +302,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -640,7 +640,7 @@ C     Open file for effective two electron densities.
 C-------------------------------------------------------
 C
       LDECH = N2BSTM*2 + 1
-      LUDE = 0
+      LUDE = -1
       CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT',
      *            'UNFORMATTED',LDECH,OLDDX)
 C

@@ -131,13 +131,13 @@ C
 *---------------------------------------------------------------------*
 *     Open some files needed:
 *---------------------------------------------------------------------*
-      LUDELD  = 0
+      LUDELD  = -1
       CALL WOPEN2(LUDELD,FNDELD,64,0)
 
-      LUCKJD  = 0
+      LUCKJD  = -1
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
 
-      LUDKBC  = 0
+      LUDKBC  = -1
       CALL WOPEN2(LUDKBC,FNDKBC,64,0)
 
 *---------------------------------------------------------------------*
@@ -846,7 +846,7 @@ C       ---------------------------------------
      &                        .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         REWIND LUSIFC
@@ -880,7 +880,7 @@ C       ---------------------------------------
         ! of three W intermediates give the complete Tbar3
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,ONE/THREE,WYINT,1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (T3AMP0(I),I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -947,7 +947,7 @@ C       ---------------------------------------
      &                        .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         REWIND LUSIFC
@@ -981,7 +981,7 @@ C       ---------------------------------------
         ! of three W intermediates give the complete Tbar3
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,ONE/THREE,WXINT,1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (T3AMP0(I),I=1,NT1AMX*NT1AMX*NT1AMX)

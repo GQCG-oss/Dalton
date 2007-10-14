@@ -212,7 +212,7 @@ C
 *---------------------------------------------------------------------*
 * open & rewind file:
 *---------------------------------------------------------------------*
-      LUSAVE = 0
+      LUSAVE = -1
 
       INQUIRE(FILE=FILEX,EXIST=LEXIST,IOSTAT=IOS,ERR=990)
       IF (.NOT. LEXIST) GOTO 991
@@ -230,17 +230,17 @@ C
 
       IF (IOPT.EQ.0) THEN
         IF (IAND(IOPTIN,3).GT.0) THEN
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate singles/doubles vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate singles/doubles vector found on file ',FILEX
         ELSE IF (IAND(IOPTIN,24).GT.0) THEN
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate eff. CC3 rhs vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate eff. CC3 rhs vector found on file ',FILEX
         ELSE IF (IAND(IOPTIN,32).GT.0) THEN
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate R12 doubles vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate R12 doubles vector found on file ',FILEX
         ELSE
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate vector found on file ',FILEX
         END IF
         GOTO 996
       END IF
@@ -248,12 +248,13 @@ C
 *---------------------------------------------------------------------*
 * find the multiplicity of the vector:
 *---------------------------------------------------------------------*
-      ! default is singlett
-      IMUL = 1
 
-      ! for excited states we get it from the common block:
       IF (LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE') THEN
+      ! for excited states we get it from the common block:
          IMUL = IMULTE(IDXLST)
+      ELSE
+      ! default is singlet
+         IMUL = 1
       END IF
                                                 
 *---------------------------------------------------------------------*
@@ -325,10 +326,10 @@ C
       WRITE (LUPRI,'(A,I5)')      ' returned IOSTAT:',IOS
       CALL QUIT ('fatal i/o error in '//SUBRNAME)
 
-      END 
 *---------------------------------------------------------------------*
 *                    END OF SUBROUTINE CC_RDRSP
 *---------------------------------------------------------------------*
+      END 
 c/* Deck cc_rwpre */
       SUBROUTINE CC_RWPRE(LIST,IDXLST,ISYM,LISTI,IDXVEC,FILEX)
 C---------------------------------------------------------------------*
@@ -1372,7 +1373,7 @@ C
 C
       INTEGER ISYM, IOPT, IMUL
 
-      DIMENSION VEC0(*), VEC1(*),VEC2(*)
+      DIMENSION VEC0(*), VEC1(*), VEC2(*)
 C
       INTEGER IOS
 

@@ -404,7 +404,7 @@ C
      &                   IDUM,IDUM,IDUM,LISTB,ITAMPB,WORK(KEND2),LEND2)
 
 * read R12 overlap matrix:
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
      &              IDUM,.FALSE.)
         REWIND(LUNIT)

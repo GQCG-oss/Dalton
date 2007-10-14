@@ -103,14 +103,14 @@ C------------------------------------
 C
 C     CALL TIMER('START ',TIMEIN,TIMOUT)
 C
-      LUFC1  = 0
-      LUFC2  = 0
-      LUFC12 = 0
-      LUFR1  = 0
-      LUFR2  = 0
-      LUFR12 = 0
-      LUFS12 = 0
-      LUFS2  = 0
+      LUFC1  = -1
+      LUFC2  = -1
+      LUFC12 = -1
+      LUFR1  = -1
+      LUFR2  = -1
+      LUFR12 = -1
+      LUFS12 = -1
+      LUFS2  = -1
 
       IF (CCR12) THEN
          LABR12 = '-R12'

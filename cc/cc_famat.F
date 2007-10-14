@@ -591,7 +591,7 @@ C
      &                   IDUM,IDUM,IDUM,LISTB,ITAMPB,WORK(KEND1),LEND1)
 
 * read R12 overlap matrix:
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
      &              IDUM,.FALSE.)
         REWIND(LUNIT)
@@ -931,7 +931,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -952,7 +952,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -1199,7 +1199,7 @@ C           ----------------------------------
       END DO
 
 ctest
-C     LUFOCK = 0
+C     LUFOCK = -1
 C     CALL GPOPEN(LUFOCK,'CCTEST'//LISTL(1:2)//LISTB(1:2),
 C    &            'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
 C     REWIND(LUFOCK)
@@ -1643,7 +1643,7 @@ C     -------------------------
 *---------------------------------------------------------------------*
 *     get zeroth-order AO Fock in Lambda-MO basis:
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -1656,17 +1656,17 @@ C     -------------------------
 *---------------------------------------------------------------------*
 *     open some files:
 *---------------------------------------------------------------------*
-      LUINTER = 0
+      LUINTER = -1
       CALL WOPEN2(LUINTER,FNINTER,64,0)
 
-      LUDELD  = 0
-      LUCKJD  = 0
-      LUDKBC  = 0
-      LUTOC   = 0
-      LU3VI   = 0
-      LUDKBC3 = 0
-      LU3FOPX = 0
-      LU3FOP2X= 0
+      LUDELD  = -1
+      LUCKJD  = -1
+      LUDKBC  = -1
+      LUTOC   = -1
+      LU3VI   = -1
+      LUDKBC3 = -1
+      LU3FOPX = -1
+      LU3FOP2X= -1
  
       CALL WOPEN2(LUDELD,FNDELD,64,0)
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -1775,7 +1775,7 @@ c       ---------------------------------------------
 c       read and resort doubles response multipliers:
 c       ---------------------------------------------
         IF (NEED_R2TP) THEN
-          LUR2TP = 0
+          LUR2TP = -1
           CALL WOPEN2(LUR2TP,FNR2TP,64,0)
 
           KR2TP = KEND2
@@ -1954,7 +1954,7 @@ c       -------------------------------------------------
 *---------------------------------------------------------------------*
 *     now compute the F{A} densities from the intermediates:
 *---------------------------------------------------------------------*
-      LUDEFF = 0
+      LUDEFF = -1
       CALL WOPEN2(LUDEFF,FNDEFF,64,0)
 
       IADRIA = 1

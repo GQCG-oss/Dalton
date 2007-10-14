@@ -629,8 +629,8 @@ C     END IF
 *---------------------------------------------------------------------*
 * check return option for the result vectors and initialize output:
 *---------------------------------------------------------------------*
-      LUXI  = 0
-      LUETA = 0
+      LUXI  = -1
+      LUETA = -1
       IF (IOPTRES.EQ.0 .OR. IOPTRES.EQ.1) THEN
          CALL WOPEN2(LUXI, FILXI, 64,0)
          CALL WOPEN2(LUETA,FILETA,64,0)
@@ -686,16 +686,16 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
 *---------------------------------------------------------------------*
 * open files for the different integrals:
 *---------------------------------------------------------------------*
-      LU0AIBJ = 0
-      LU0IABJ = 0
-      LU0IAJB = 0
-      LU0IJBA = 0
-      LU1AIBJ = 0
-      LU1IABJ = 0
-      LU1IAJB = 0
-      LU1IJBA = 0
-      LUHINT0 = 0
-      LUHINT1 = 0
+      LU0AIBJ = -1
+      LU0IABJ = -1
+      LU0IAJB = -1
+      LU0IJBA = -1
+      LU1AIBJ = -1
+      LU1IABJ = -1
+      LU1IAJB = -1
+      LU1IJBA = -1
+      LUHINT0 = -1
+      LUHINT1 = -1
       CALL WOPEN2(LU0IAJB, FN0IAJB, 64, 0)
       CALL WOPEN2(LU1IAJB, FN1IAJB, 64, 0)
       IF (CC2) THEN
@@ -713,9 +713,9 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
 *---------------------------------------------------------------------*
 * open files for P and Q intermediates: 
 *---------------------------------------------------------------------*
-      LUPQMO = 0
-      LUPQ0  = 0
-      LUPQ1  = 0
+      LUPQMO = -1
+      LUPQ0  = -1
+      LUPQ1  = -1
       CALL WOPEN2(LUPQMO, FILPQMO, 64, 0)
       CALL WOPEN2(LUPQ0,  FILPQ0,  64, 0)
       CALL WOPEN2(LUPQ1,  FILPQ1,  64, 0)
@@ -974,7 +974,7 @@ C
         CALL DCOPY(N2BST(ISYM0),WORK(KONEH0),1,WORK(KFOCK0),1)
       ELSE
 *       read zeroth-order AO Fock matrix from file: 
-        LUFOCK = 0
+        LUFOCK = -1
         CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         REWIND(LUFOCK)
@@ -1334,10 +1334,10 @@ C            END IF
 *---------------------------------------------------------------------*
 * open files for several effective densities: 
 *---------------------------------------------------------------------*
-        LUBFDX0 = 0
-        LUBFDX1 = 0
-        LUBFDE0 = 0
-        LUBFDE1 = 0
+        LUBFDX0 = -1
+        LUBFDX1 = -1
+        LUBFDE0 = -1
+        LUBFDE1 = -1
         CALL WOPEN2(LUBFDX0, FNBFDX0, 64, 0)
         CALL WOPEN2(LUBFDX1, FNBFDX1, 64, 0)
         CALL WOPEN2(LUBFDE0, FNBFDE0, 64, 0)
@@ -2171,7 +2171,7 @@ C           END DO
 *---------------------------------------------------------------------*
       IF ( (LLTWOEL.OR.LLRELAX) .AND. CCSD )THEN
 
-         LUBFIM = 0
+         LUBFIM = -1
          CALL WOPEN2(LUBFIM, FNBFIM, 64, 0)
 
          IADR = 1
@@ -2199,7 +2199,7 @@ C           END DO
 
 
          ! open the file for the BFZ intermediates
-         LUBFZI = 0
+         LUBFZI = -1
          CALL WOPEN2(LUBFZI,FNBFZI,64,0)
 
          IADR = 1
@@ -2386,8 +2386,8 @@ C                ----------------------------------------------------
 *---------------------------------------------------------------------*
 * open files for C and D intermediates:
 *---------------------------------------------------------------------*
-      LUCIM = 0
-      LUDIM = 0
+      LUCIM = -1
+      LUDIM = -1
       CALL WOPEN2(LUCIM, FNCIM, 64, 0)
       CALL WOPEN2(LUDIM, FNDIM, 64, 0)
 
@@ -2584,7 +2584,7 @@ C-----------------------------------------------------------------------
 C         read X-integrals (R12 overlap matrix) from disk and reorder
 C         to full square:
 C-----------------------------------------------------------------------
-          luxint = 0
+          luxint = -1
           call gpopen(luxint,fccr12x,'old',' ','unformatted',idummy,
      &                .false.)
           rewind(luxint)
@@ -2691,12 +2691,12 @@ C           -----------
 C           Open files:
 C           -----------
 C
-            LUDELD  = 0
-            LUCKJD  = 0
-            LUDKBC  = 0
-            LUTOC   = 0
-            LU3VI  = 0
-            LU3VI2 = 0
+            LUDELD  = -1
+            LUCKJD  = -1
+            LUDKBC  = -1
+            LUTOC   = -1
+            LU3VI   = -1
+            LU3VI2  = -1
 C
             CALL WOPEN2(LUDELD,FNDELD,64,0)
             CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -2975,7 +2975,7 @@ C-----------------------------------------------------------------------
 C         read X-integrals (R12 overlap matrix) from disk and reorder
 C         to full square:
 C-----------------------------------------------------------------------
-            luxint = 0
+            luxint = -1
             call gpopen(luxint,fccr12x,'old',' ','unformatted',idummy,
      &                  .false.)
             rewind(luxint)
@@ -3080,13 +3080,13 @@ C             -----------
 C             Open files:
 C             -----------
  
-              LUDKBC   = 0
-              LUCKJD   = 0
-              LUTOC    = 0
-              LU3VI    = 0
-              LUDKBC3  = 0  
-              LU3FOPX   = 0  
-              LU3FOP2X  = 0  
+              LUDKBC   = -1
+              LUCKJD   = -1
+              LUTOC    = -1
+              LU3VI    = -1
+              LUDKBC3  = -1
+              LU3FOPX  = -1
+              LU3FOP2X = -1
  
               CALL WOPEN2(LUDKBC,FNDKBC,64,0)
               CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -4716,7 +4716,7 @@ C     --------------------------------------------
 
       IF (CC2 .AND. LRELAX) THEN
         ! read SCF AO-Fock matrix (includes all relaxed fields)
-        LUFCK = 0
+        LUFCK = -1
         CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         REWIND(LUFCK)
@@ -4917,7 +4917,7 @@ C         ---------------------------------------------------------
 C           -----------------------------------------------------------
 C           read zero-order BF intermediate (overwriting the other BF):
 C           -----------------------------------------------------------
-            LUBF0 = 0
+            LUBF0 = -1
             CALL GPOPEN(LUBF0,'CC_BFIM','OLD',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
             READ(LUBF0) (WORK(KBF-1+I),I=1,LENBF0)
@@ -5633,7 +5633,7 @@ C       ------------------------------------------------------
 C            ----------------------------------
 C            read zeroth-order BF intermediate:
 C            ----------------------------------
-             LUBF0 = 0
+             LUBF0 = -1
              CALL GPOPEN(LUBF0,'CC_BFIM','OLD',' ','UNFORMATTED',
      &                   IDUMMY,.FALSE.)
              READ(LUBF0) (WORK(KBF-1+I),I=1,2*NT2ORT(ISYM0))

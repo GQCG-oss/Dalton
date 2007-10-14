@@ -349,7 +349,7 @@ C        Read MO-coefficients from interface file and reorder.
 C-------------------------------------------------------------
 C
          IF (LUSIFC .LE. 0) THEN
-            LUSIFC = 0
+            LUSIFC = -1
             CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *                  IDUMMY,.FALSE.)
          ENDIF
@@ -1040,7 +1040,7 @@ C
           CALL QUIT('Illegal value of I1DXORD in CCEFFFOCK.')
         END IF
 
-        LUFCK = 0
+        LUFCK = -1
         CALL WOPEN2(LUFCK,FILFCK,64,0)
       END IF
 C
@@ -1211,7 +1211,7 @@ C
 C
 C
          LDECH = N2BSTM*NFRL+1
-         LUDE = 0
+         LUDE = -1
          CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT','UNFORMATTED',
      *               IDUMMY,OLDDX)
 C

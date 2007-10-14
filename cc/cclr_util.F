@@ -984,10 +984,10 @@ C
 C
       CALL QENTER('FDJAC')
  
-      LUFC2 = 0
-      LUFS2 = 0 
-      LUFS12 = 0 
-      LUFC12 = 0 
+      LUFC2  = -1
+      LUFS2  = -1
+      LUFS12 = -1
+      LUFC12 = -1
 
       IF (OMEGSQ) CALL QUIT('CCLR_FDJAC incompatible with OMEGSQ.')
       IF (LCOR.OR.LSEC) 
@@ -1009,13 +1009,13 @@ C     Write the jacobian to disk if FDJAC is done.
 C--------------------------------------------------
 C
       IF (FDJAC ) THEN
-         LUJAC = 0
+         LUJAC = -1
          CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          IF (IPRINT.GT.5) WRITE(LUPRI,'(3X,A,//)') 
      &        'FINITE DIFF. JACOBIAN WILL BE WRITTEN TO DISK'
          IF (CCR12) THEN
-           LUMET = 0
+           LUMET = -1
            CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            IF (IPRINT.GT.5) WRITE(LUPRI,'(3X,A,//)') 
@@ -1023,10 +1023,10 @@ C
            CALL WOPEN2(LUFC12,FC12AM,64,0)
            CALL WOPEN2(LUFS12,FS12AM,64,0)
            IF (IANR12.EQ.2) THEN
-             LUMET2 = 0
+             LUMET2 = -1
              CALL GPOPEN(LUMET2,'CCLR_MET2','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
-             LUMET3 = 0
+             LUMET3 = -1
              CALL GPOPEN(LUMET3,'CCLR_MET3','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
              CALL WOPEN2(LUFS2,FS2AM,64,0)
@@ -1153,7 +1153,7 @@ C
       CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1),1)
       CALL DCOPY(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2),1)
       IF (CCR12) THEN
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      *                     IDUMMY,.FALSE.)
         READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
@@ -1186,7 +1186,7 @@ C        Compute Omega(t - 0.5 delta)
      &               WORK(KC2AM),
      *               WORK(KEND1),LWRK1,APROXR12)
          IF (CCR12) THEN
-           LUNIT = 0
+           LUNIT = -1
            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
            READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
@@ -1218,7 +1218,7 @@ C        Calculate [Omega(t+0.5delta)-(omega(t-0.5delta)]/delta
          CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
 
          IF (CCR12) THEN
-           LUNIT = 0
+           LUNIT = -1
            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
            READ(LUNIT) (WORK(KRHOR12D+N), N = 0, NTR12AM(1)-1 )
@@ -1280,7 +1280,7 @@ C          Compute Omega(t - 0.5 delta)
            CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
      *               WORK(KC2AM),WORK(KEND1),LWRK1,APROXR12)
            IF (CCR12) THEN
-            LUNIT = 0
+            LUNIT = -1
             CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &                      IDUMMY,.FALSE.)
             READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
@@ -1313,7 +1313,7 @@ C          Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
            CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
 
            IF (CCR12) THEN
-             LUNIT = 0
+             LUNIT = -1
              CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ',
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
              READ(LUNIT) (WORK(KRHOR12D+N), N = 0, NTR12AM(1)-1 )
@@ -1402,7 +1402,7 @@ C
 
        ! make copy from which correct amplitudes can be 
        ! restored after finite difference calculation
-       LUNIT = 0
+       LUNIT = -1
        CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
        WRITE(LUNIT) (WORK(KCR12AM+N), N = 0, NTR12AM(1)-1 )
@@ -1422,7 +1422,7 @@ C          Compute Omega(t - 0.5 delta)
 
            CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
      *               WORK(KC2AM),WORK(KEND1),LWRK1,APROXR12)
-           LUNIT = 0
+           LUNIT = -1
            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
            READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
@@ -1456,7 +1456,7 @@ C          Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
            CALL DSCAL(NT1AMX,DELTAI,WORK(KRHO1D),1)
            CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
 
-           LUNIT = 0
+           LUNIT = -1
            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
            READ(LUNIT) (WORK(KRHOR12D+N), N = 0, NTR12AM(1)-1 )
@@ -1534,7 +1534,7 @@ C
        END DO
 
        ! restore R12 amplitudes
-       LUNIT = 0
+       LUNIT = -1
        CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','UNFORMATTED',
      &         IDUMMY,.FALSE.)
        READ(LUNIT) (WORK(KCR12AM+N), N = 0, NTR12AM(1)-1 )
@@ -1660,7 +1660,7 @@ C------------------------
 C     Open Jacobian file.
 C------------------------
 C
-      LUJAC = 0
+      LUJAC = -1
       CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUJAC)
@@ -1765,7 +1765,7 @@ C
        IF (LWRK1 .LT. 0)
      &     CALL QUIT(' INSUFFICIENT WORK SPACE IN CCLR_DUMTRR ')
 
-       LUMET = 0
+       LUMET = -1
        CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
      *             IDUMMY,.FALSE.)
        CALL DZERO(WORK(KSMAT),NTR12AM(ISYMTR)*NTR12AM(ISYMTR))
@@ -1776,7 +1776,7 @@ C
        CALL GPCLOSE(LUMET,'KEEP')
 
        IF (IANR12.EQ.2) THEN
-         LUMET2 = 0
+         LUMET2 = -1
          CALL GPOPEN(LUMET2,'CCLR_MET2','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          CALL DZERO(WORK(KS2MAT),NT2AM(ISYMTR)*NT2AM(ISYMTR))
@@ -2580,7 +2580,7 @@ C------------------------
 C     Open Jacobian file.
 C------------------------
 C
-      LUJAC = 0
+      LUJAC = -1
       CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUJAC)
@@ -2593,7 +2593,7 @@ C
 
 
       IF (CCR12) THEN
-        LUMET = 0
+        LUMET = -1
         CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         CALL DZERO(SMATRIX,MAXRED*MAXRED)
@@ -2602,10 +2602,10 @@ C
         END DO
 chf
         IF (IANR12.EQ.2) THEN
-          LUMET2 = 0
+          LUMET2 = -1
           CALL GPOPEN(LUMET2,'CCLR_MET2','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
-          LUMET3 = 0
+          LUMET3 = -1
           CALL GPOPEN(LUMET3,'CCLR_MET3','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
 
@@ -3460,7 +3460,7 @@ C-------------------
 C     Open jac file.
 C-------------------
 C
-      LUJAC = 0
+      LUJAC = -1
       CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUJAC)

@@ -573,7 +573,7 @@ c
 c----------------------------------------------------------------------
 c     get MO coefficients defined for combined orbital + aux. basis:
 c----------------------------------------------------------------------
-c     lusifc = 0
+c     lusifc = -1
 c     call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',
 c    &            idummy,.false.)
 c
@@ -813,7 +813,7 @@ c
       end if 
 c
 c     read V_alphajkl from file
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,fvajkl,'unknown',' ','unformatted',
      &            idummy,.false.)
       rewind(luvajkl)
@@ -832,7 +832,7 @@ c
      &                 (work(kvajkl-1+i),i=1,nvajkl(1))
       end if
 c     write V_alphajkl on file
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkL,fvajkl,'unknown',' ','unformatted',
      &            idummy,.false.)
       rewind(luvajkl)
@@ -1241,7 +1241,7 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005
 c     ---------------------------------------------
 c     read t^ab_kl integrals from file
 c     ---------------------------------------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fkr12,'unknown',' ','unformatted',idum,.false.)
       read(lunit)(work(kpck-1+i),i=1,nt2r12(1))  
       call gpclose(lunit,'KEEP')
@@ -1250,7 +1250,7 @@ c     ----------------------------------------------------
 c     for approximation B substract K^ab_kl from t^ab_kl
 c     ----------------------------------------------------
       if (aproxr12(1:1).eq.'B') then
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,ftr12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(kt2pck+i-1),i=1,nt2r12(1))  
@@ -1266,7 +1266,7 @@ c        (eps_k + eps_l - eps_a - eps_b) * r^ab_kl
 c     ------------------------------------------------------------
       if (ianr12.eq.3 .and. 
      &   (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(kt2pck+i-1),i=1,nt2r12(1))  
@@ -1318,7 +1318,7 @@ c     ------------------------------------------------------------
           call quit('Insufficient work space in ccrhs_epp')
         end if
 
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(kpck-1+i),i=1,nt2r12(1))  
@@ -1596,7 +1596,7 @@ c
       lwrk1 = lwork - kend1
       if (lwrk1.lt.0) call quit('Insufficient memory in CC_T2XE')
 c
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,'SIRIFC','OLD',' ','UNFORMATTED',idum,
      &            .false.)
       rewind lunit
@@ -1995,7 +1995,7 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005
 c     ---------------------------------------------
 c     read t^ab_kl integrals from file
 c     ---------------------------------------------
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fkr12,'unknown',' ','unformatted',idum,.false.)
       read(lunit)(work(ktint+i-1),i=1,nt2r12(1))  
       call gpclose(lunit,'KEEP')
@@ -2005,7 +2005,7 @@ c     for approximation B substract K^ab_kl from t^ab_kl
 c     ----------------------------------------------------
       if (aproxr12(1:1).eq."B") then
         ! read K^ab_kl from file
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,ftr12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(krint+i-1),i=1,nt2r12(1))  
@@ -2021,7 +2021,7 @@ c        (eps_k + eps_l - eps_a - eps_b) * r^ab_kl
 c     ------------------------------------------------------------
       if (ianr12.eq.3 .and. 
      &   (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(krint+i-1),i=1,nt2r12(1))  
@@ -2086,7 +2086,7 @@ c     ------------------------------------------------------------
           call cc_prpr12(work(kcamp),isymtr,1,.false.)
         end if
 
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
         read(lunit)(work(ktint+i-1),i=1,nt2r12(1))  
@@ -2386,7 +2386,7 @@ c
 c----------------------------------------------------------------------
 c     get MO coefficients defined for combined orbital + aux. basis:
 c----------------------------------------------------------------------
-      lusifc = 0
+      lusifc = -1
       call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',
      &            idummy,.false.)
 
@@ -3600,7 +3600,7 @@ c---------------------------------------------------------------------
       idelta = idel - ibas(isymd)
       if (lauxd) idelta = idelta - ibasx(isymd)
 
-      lur2back = 0
+      lur2back = -1
       call wopen2(lur2back,fconst,64,0)
       
       do isyml = 1, nsym
@@ -3788,7 +3788,7 @@ c       calculate V^alpha_j_ kl
      *              work(kend1),lwrk1,aproxr12)
       
 c       read Valpajtildekl
-        luvajkl = 0
+        luvajkl = -1
         call gpopen(luvajkl,fvajtkl,'unknown',' ','unformatted',
      &              idummy,.false.)
         read(luvajkl)(work(kvajkl-1+i),i=1,nvajkl(isymtr))
@@ -3815,14 +3815,14 @@ c     Compute V(t - 0.5 delta * C)
      *            work(kend1),lwrk1,aproxr12)
 
 c     Read V(t - 0.5 delta * C) into WORK(KVINTM)
-      luvijkl = 0
+      luvijkl = -1
       call gpopen(luvijkl,fvijkl,'unknown',' ','unformatted',
      &            idummy,.false.)
       read(luvijkl)(work(kvintm-1+i),i=1,ngamsq(isymtr))
       call gpclose(luvijkl,'KEEP')
 
 c     Read HP or IP TERM 'CCR12HTST' or 'CCR12ITST'
-c     luvijkl = 0
+c     luvijkl = -1
 c     call gpopen(luvijkl,'CCR12ITST','unknown',' ','unformatted',
 c    &            idummy,.false.)
 c     read(luvijkl)(work(khintm-1+i),i=1,nt1amx)
@@ -3830,7 +3830,7 @@ c     call gpclose(luvijkl,'KEEP')
 
       if (testrbar) then
 c       Read R(t - 0.5 delta * C) into WORK(KRM)
-        luvijkl = 0
+        luvijkl = -1
         call gpopen(luvijkl,'RMTNTKL','unknown',' ','unformatted',
      &              idummy,.false.)
         read(luvijkl)(work(krm-1+i),i=1,ngamsm(isymtr))
@@ -3843,14 +3843,14 @@ c     Compute V(t + 0.5 delta * C)
      *            work(kend1),lwrk1,aproxr12)
 
 c     Read V(t + 0.5 delta * C) into WORK(KVINTP)
-      luvijkl = 0
+      luvijkl = -1
       call gpopen(luvijkl,fvijkl,'unknown',' ','unformatted',
      &            idummy,.false.)
       read(luvijkl)(work(kvintp-1+i),i=1,ngamsq(isymtr))
       call gpclose(luvijkl,'KEEP')
 
 c     Read HP or IP TERM
-c     luvijkl = 0
+c     luvijkl = -1
 c     call gpopen(luvijkl,'CCR12ITST','unknown',' ','unformatted',
 c    &            idummy,.false.)
 c     read(luvijkl)(work(khintp-1+i),i=1,nt1amx)
@@ -3858,7 +3858,7 @@ c     call gpclose(luvijkl,'KEEP')
 
       if (testrbar) then
 c       Read R(t - 0.5 delta * C) into WORK(KRP)
-        luvijkl = 0
+        luvijkl = -1
         call gpopen(luvijkl,'RMTNTKL','unknown',' ','unformatted',
      &              idummy,.false.)
         read(luvijkl)(work(krp-1+i),i=1,ngamsm(isymtr))
@@ -4209,7 +4209,7 @@ c
 c    ---------------------------------------------------------------
 c     open output file
 c    ---------------------------------------------------------------
-      lunit = 0
+      lunit = -1
       call wopen2(lunit,framnp,64,0)
 c
 c    ---------------------------------------------------------------

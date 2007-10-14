@@ -219,9 +219,9 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 
 * open file for right hand side and solution vectors:
 
-      LUGDVE = 0
-      LUSOVE = 0
-      LUREVE = 0
+      LUGDVE = -1
+      LUSOVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUGDVE,FNGDVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL GPOPEN(LUSOVE,FNSOVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -241,7 +241,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         IF (FILCPHF(I:I).EQ.' ') FILCPHF(I:I) = '_'
       END DO
 
-      LUCPHF = 0
+      LUCPHF = -1
       CALL WOPEN2(LUCPHF,FILCPHF,64,0)
 
 *---------------------------------------------------------------------*
@@ -482,7 +482,7 @@ C  Christof Haettig, summer 2003
       END DO
 
 * open direct access file: 
-      LUCPHF = 0
+      LUCPHF = -1
       CALL WOPEN2(LUCPHF,FILCPHF,64,0)
 
 * read vector number IDXLST from file:

@@ -520,7 +520,7 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -541,7 +541,7 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -612,7 +612,7 @@ C           ----------------------------------
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT03AM),1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         WRITE(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -639,7 +639,7 @@ C           ----------------------------------
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT03AM),1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODL30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         WRITE(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -693,7 +693,7 @@ C           ---------------------------
 *---------------------------------------------------------------------*
 *     Save fock-like intermediates and Lambda matrices
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODFOCK,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       WRITE(LUTEMP) (WORK(KFOCKD+I-1),  I=1,NORBT)
@@ -707,7 +707,7 @@ C           ---------------------------
 *---------------------------------------------------------------------*
 *     Save integrals XINT1T0 and XINT2T0
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODINTT,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       WRITE(LUTEMP) (WORK(KINT1T0+I-1), I=1,NT1AMX*NVIRT*NVIRT)
@@ -717,7 +717,7 @@ C           ---------------------------
 *---------------------------------------------------------------------*
 *     Save integrals XINT1S0 and XINT2S0
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODINTS,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       WRITE(LUTEMP) (WORK(KINT1S0+I-1), I=1,NT1AMX*NVIRT*NVIRT)
@@ -727,7 +727,7 @@ C           ---------------------------
 *---------------------------------------------------------------------*
 *     Save integrals XIAJB and YIAJB
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODINTX,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       WRITE(LUTEMP) (WORK(KXIAJB+I-1),  I=1,NT1AMX*NT1AMX)
@@ -737,7 +737,7 @@ C           ---------------------------
 *---------------------------------------------------------------------*
 *     Save integrals XOOOO, XOVVO, XOOVV and XVVVV
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODINTV,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       WRITE(LUTEMP) (WORK(K0IOVVO+I-1), I=1,NRHFT*NVIRT*NVIRT*NRHFT)
@@ -801,7 +801,7 @@ C           ---------------------------
 *     Read integrals and triples cluster amplitudes on file
 *---------------------------------------------------------------------*
       IF (RD_FOCK0) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODFOCK,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (FOCKD(I),I=1,NORBT)
@@ -814,7 +814,7 @@ C           ---------------------------
       END IF
 
       IF (RD_INTT0) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODINTT,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (XINT1T0(I),I=1,NT1AMX*NVIRT*NVIRT)
@@ -823,7 +823,7 @@ C           ---------------------------
       ENDIF
 
       IF (RD_INTS0) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODINTS,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (XINT1S0(I),I=1,NT1AMX*NVIRT*NVIRT)
@@ -832,7 +832,7 @@ C           ---------------------------
       END IF
  
       IF (RD_INTXY) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODINTX,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (XIAJB(I),I=1,NT1AMX*NT1AMX)
@@ -841,7 +841,7 @@ C           ---------------------------
       END IF
  
       IF (RD_INTV0) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODINTV,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (XOVVO(I),I=1,NRHFT*NVIRT*NVIRT*NRHFT)

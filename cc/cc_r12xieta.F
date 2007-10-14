@@ -205,14 +205,14 @@ C     if locdbg do some printout of variables:
 C-----------------------------------------------------------------------
 C open output file
 C-----------------------------------------------------------------------
-      luvxint = 0
+      luvxint = -1
       call gpopen(luvxint,'CCR12VXINT','UNKNOWN',' ','UNFORMATTED',
      &            idum,.false.)
 
 C-----------------------------------------------------------------------
 C read in MO coefficients
 C-----------------------------------------------------------------------
-      lusifc = 0
+      lusifc = -1
       call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',idum,.false.)
       ! read dimensions for CMO coefficients for full basis (nlamdsx)
       rewind(lusifc)
@@ -911,7 +911,7 @@ C
 C-----------------------------------------------------------------------
 C open output file
 C-----------------------------------------------------------------------
-      luvxint = 0
+      luvxint = -1
       call gpopen(luvxint,'CCR12VXINT','UNKNOWN',' ','UNFORMATTED',
      &            idum,.false.)
 
@@ -1999,7 +1999,7 @@ C----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C read in VXINT
 C-----------------------------------------------------------------------
-      luvxint = 0
+      luvxint = -1
       call gpopen(luvxint,'CCR12VXINT','OLD',' ','UNFORMATTED',
      &        idum,.false.)
       rewind(luvxint)
@@ -2331,7 +2331,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Read in V(alpha j,kl)
 C-----------------------------------------------------------------------
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,fvajkl,'old',' ','unformatted',
      &     idummy,.false.)
       rewind(luvajkl)
@@ -2478,7 +2478,7 @@ C       write(lupri,*) 'Will calculate R12 part for ',labelh
         call ccr12unpck2(work(ktr12),1,work(ktr12sq),'N',iopt)
 
         ! read X-integrals (R12 overlap matrix)
-        luxint = 0
+        luxint = -1
         call gpopen(luxint,fccr12x,'old',' ','unformatted',idummy,
      &              .false.)
         rewind(luxint)
@@ -3022,7 +3022,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C read in MO coefficients
 C-----------------------------------------------------------------------
-      lusifc = 0
+      lusifc = -1
       call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',idum,.false.)
       ! read dimensions for CMO coefficients for full basis (nlamdsx)
       rewind(lusifc)

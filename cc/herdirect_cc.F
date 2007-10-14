@@ -176,7 +176,7 @@ C
          CALL GPOPEN(LUAORC(0),'AO2DIS00','UNKNOWN','DIRECT',
      &        'UNFORMATTED',LRECL,OLDDX)
          IF (U21INT) THEN
-            LU21INT = 0
+            LU21INT = -1
             CALL GPOPEN(LU21INT,'AOTDIS00','UNKNOWN','DIRECT',
      &                  'UNFORMATTED',LRECL,OLDDX)
          END IF

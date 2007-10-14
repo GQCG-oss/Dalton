@@ -454,7 +454,7 @@ C     ---------------------------------
 
       LEN       = NT1AMX + NT2AMX
       IADRF_XI  = IXETRAN(3,1)
-      LUETA = 0
+      LUETA = -1
       CALL WOPEN2(LUETA,FILXI,64,0)
       CALL GETWA2(LUETA,FILXI,WORK(KRHO1),IADRF_XI,LEN)
       CALL WCLOSE2(LUETA,FILXI,'KEEP')

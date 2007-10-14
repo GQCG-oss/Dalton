@@ -172,7 +172,7 @@ C     different length.
 C------------------------------------------------------------------
 C
       IF (.NOT. (CCS.OR.CC2)) THEN
-         LUFSD = 0
+         LUFSD = -1
          FR2SD = 'CC_TRA2_'
       ELSE
          LUFSD = LUFR2

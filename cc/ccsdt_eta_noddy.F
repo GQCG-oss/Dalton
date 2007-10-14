@@ -224,14 +224,14 @@ C
 *---------------------------------------------------------------------*
 *     Compute zeroth-order triples amplitudes:
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       READ(LUTEMP) (WORK(KT3AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
       CALL GPCLOSE(LUTEMP,'KEEP')
 
       IF (NONHF) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP

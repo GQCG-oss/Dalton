@@ -117,7 +117,7 @@ C
 * loop over orthogonal auxiliary basis functions:
 *----------------------------------------------------------------------*
       ! open file with r12 integrals
-      lunit = 0
+      lunit = -1
       call wopen2(lunit,framnp,64,0)
 
       do isymp = 1, nsym

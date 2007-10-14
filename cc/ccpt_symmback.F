@@ -140,7 +140,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC
@@ -156,23 +156,23 @@ C---------------------------------------------------------
 C     Open files for backtransformed/symmetrized densities
 C---------------------------------------------------------
 C
-      LUIJKAS  = 0
-      LUIJKDS  = 0
-      LUABICS  = 0
-      LUABIDS  = 0
+      LUIJKAS  = -1
+      LUIJKDS  = -1
+      LUABICS  = -1
+      LUABIDS  = -1
 C
 C Temporarily keep the other "S" files with the resorted densities
 C (instead of symmetrized)
 C 
-      LUIAJKS = 0
-      LUAIJKS = 0
-      LUAIBCS = 0
-      LUIABCS = 0
+      LUIAJKS = -1
+      LUAIJKS = -1
+      LUAIBCS = -1
+      LUIABCS = -1
 C
-      LUIAJDE  = 0
-      LUAIJDE  = 0
-      LUAIBDE  = 0
-      LUIABDE  = 0
+      LUIAJDE  = -1
+      LUAIJDE  = -1
+      LUAIBDE  = -1
+      LUIABDE  = -1
 C
 C Symmetrized and backtransformed
 C
@@ -728,7 +728,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC
@@ -744,23 +744,23 @@ C---------------------------------------------------------
 C     Open files for backtransformed/symmetrized densities
 C---------------------------------------------------------
 C
-!      LUIJKAS  = 0
-      LUABICS  = 0
-      LUIJKDS  = 0
-      LUABIDS  = 0
+!      LUIJKAS  = -1
+      LUABICS  = -1
+      LUIJKDS  = -1
+      LUABIDS  = -1
 C
 C Temporarily keep the other "S" files with the resorted densities
 C (instead of symmetrized)
 C 
-!      LUIAJKS = 0
-!      LUAIJKS = 0
-      LUAIBCS = 0
-      LUIABCS = 0
+!      LUIAJKS = -1
+!      LUAIJKS = -1
+      LUAIBCS = -1
+      LUIABCS = -1
 C
-      LUIAJDE  = 0
-      LUAIJDE  = 0
-      LUAIBDE  = 0
-      LUIABDE  = 0
+      LUIAJDE  = -1
+      LUAIJDE  = -1
+      LUAIBDE  = -1
+      LUIABDE  = -1
 C
 C Symmetrized and backtransformed
 C
@@ -793,10 +793,10 @@ C     d^s_{iabc}
 
       if (BP2EOO) then
 
-!        LUIJKAA  = 0
-        LUABICA  = 0
-        LUIJKDA  = 0
-        LUABIDA  = 0
+!        LUIJKAA  = -1
+        LUABICA  = -1
+        LUIJKDA  = -1
+        LUABIDA  = -1
 C
 C Antisymmetrized and backtransformed
 C

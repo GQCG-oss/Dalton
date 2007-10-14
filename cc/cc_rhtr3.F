@@ -183,11 +183,11 @@ c*DECK CC_RHTR3
 !----------------
 !
       IF (DUMPCD .AND. (.NOT. CCS )) THEN
-         LUB3 = 0
-         LUC  = 0
-         LUD  = 0
-         LUCS = 0
-         LUP  = 0
+         LUB3 = -1
+         LUC  = -1
+         LUD  = -1
+         LUCS = -1
+         LUP  = -1
 !
          BFFIL = 'CCLR_B3'
          CTFIL = 'CCLR_CT'
@@ -203,8 +203,8 @@ c*DECK CC_RHTR3
 !
          IF (.NOT. CC2) THEN
 !
-            LUDTIM  = 0
-            LUCSIM  = 0
+            LUDTIM  = -1
+            LUCSIM  = -1
 !
             DTIMFIL  = 'PMAT_DT'
             CSIMFIL  = 'PMAT_C'
@@ -218,15 +218,15 @@ c*DECK CC_RHTR3
 !
       IF (CCSDT) THEN
 !
-         LUSRTT1  = 0
-         LU3VI    = 0
-         LU3VI2   = 0
-         LUCKJDT1 = 0
-         LUCKJDT2 = 0
-         LUCKJDT3 = 0
-         LUSRTT2  = 0
-         LUSRTT3  = 0
-         LUTOC    = 0
+         LUSRTT1  = -1
+         LU3VI    = -1
+         LU3VI2   = -1
+         LUCKJDT1 = -1
+         LUCKJDT2 = -1
+         LUCKJDT3 = -1
+         LUSRTT2  = -1
+         LUSRTT3  = -1
+         LUTOC    = -1
 !
          FNSRTT1  = 'CC3_SORTT1'
          FN3VI    = 'CC3_VI'
@@ -1479,7 +1479,7 @@ c*DECK CC_RHTR3
       ISYMHO = 1
 !
       IF ( .NOT. CCS) THEN
-         LFOCK = 0
+         LFOCK = -1
          CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LFOCK)
@@ -1776,14 +1776,14 @@ C
 !
          DTIME = SECOND() - DTIME
 !
-         LUE1 = 0
+         LUE1 = -1
          CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE1)
          READ (LUE1)(WORK(KEI1 + J-1),J = 1,NMATAB(ISYMOP))
          CALL GPCLOSE(LUE1,'KEEP' )
 !
-         LUE2 = 0
+         LUE2 = -1
          CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE2)
@@ -1908,7 +1908,7 @@ C
         KGAMI  = KEND1
         KEND2  = KGAMI + NGAMMA(ISYMOP)
         LWRK2  = LWORK - KEND2
-        LUGAM = 0
+        LUGAM  = -1
         CALL GPOPEN(LUGAM,'CC_GAMIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         REWIND(LUGAM)
@@ -2044,7 +2044,7 @@ C
 !
             DTIME = SECOND()
 !
-            LUBF = 0
+            LUBF = -1
             CALL GPOPEN(LUBF,'CC_BFIM','OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
             READ(LUBF) (WORK(KC2AM +J - 1),J = 1,2*NT2ORT(1))

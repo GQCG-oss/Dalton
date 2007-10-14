@@ -187,6 +187,7 @@ C
       END IF
 C
       IF (ONLYMO) THEN
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
         REWIND LUSIFC
@@ -201,7 +202,7 @@ C
 C
 C       Unit no. for info file set to zero
 C
-        LUMMMO = 0
+        LUMMMO = -1
 C
         CALL QUITMM('SCF orbitals and energies calculated')
 C
@@ -224,14 +225,17 @@ C----------------------------------------------------------------------
 C     Open files needed open throughout entire CC calculation.
 C----------------------------------------------------------------------
 C
+      LURES = -1
       CALL GPOPEN(LURES,'CC_RES','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LURES)
 
+      LUPRPC = -1
       CALL GPOPEN(LUPRPC,'CC_PRPC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUPRPC)
 
+      LUIAJB = -1
       CALL GPOPEN(LUIAJB,'CCSD_IAJB','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUIAJB)
@@ -1246,7 +1250,7 @@ C
          DO ISYM=1,8
             NPRPINSYM(ISYM) = 0
          ENDDO
-         LUPRPCO = 0
+         LUPRPCO = -1
          CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *        IDUMMY,.FALSE.)
          REWIND(LUPRPCO)
@@ -1467,9 +1471,9 @@ C
 C
       CALL QENTER('CCTAPINI')
 C
-      LUBFDN  = 0
-      LURES   = 0
-      LUCSOL  = 0
+      LUBFDN  = -1
+      LURES   = -1
+      LUCSOL  = -1
 C
       CALL QEXIT('CCTAPINI')
 C
@@ -1490,7 +1494,7 @@ C
 C
       CALL QENTER('CC_WPRPC  ')
 C
-      LUPRP = 0
+      LUPRP = -1
       CALL GPOPEN(LUPRP,'PRPCOP','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
 C
@@ -1537,7 +1541,7 @@ C-----------------------------------------------
 C     Save the current list on ("prpc_tmp") on file.
 C-----------------------------------------------
 C
-      LUPRPCTMP = 0
+      LUPRPCTMP = -1
       CALL GPOPEN(LUPRPCTMP,'CC_PRPC_TMP','UNKNOWN',' ','FORMATTED',
      *           IDUMMY,.FALSE.)
       REWIND(LUPRPCTMP)
@@ -1559,7 +1563,7 @@ C-----------------------------------------------
 C     Open the saved list ("prpc_o") on file.
 C-----------------------------------------------
 C
-      LUPRPCO   = 0
+      LUPRPCO   = -1
       CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
 C

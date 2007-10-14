@@ -145,8 +145,8 @@ C---------------------------
 C     Open files
 C---------------------------
 C
-      LUDELD = 0
-      LUDKBC = 0
+      LUDELD = -1
+      LUDKBC = -1
       FNDELD = 'CC3_OMEG3_1'
       FNDKBC = 'CC3_OMEG3_2'
       CALL WOPEN2(LUDELD,FNDELD,64,0)
@@ -2110,14 +2110,14 @@ C-------------------------------
 C     Open temp. files.
 C-------------------------------
 C
-      LUDKBC2 = 0
-      LUDKBC3 = 0
-      LUDKBC4 = 0
-      LUDKBC5 = 0
-      LU3VI3 = 0
-      LU3VI4 = 0
-      LUDELD = 0
-      LUDKBC = 0
+      LUDKBC2 = -1
+      LUDKBC3 = -1
+      LUDKBC4 = -1
+      LUDKBC5 = -1
+      LU3VI3  = -1
+      LU3VI4  = -1
+      LUDELD  = -1
+      LUDKBC  = -1
 C
       FNDKBC2 = 'CC3_OMEG33_1'
       FNDKBC3 = 'CC3_OMEG33_2'

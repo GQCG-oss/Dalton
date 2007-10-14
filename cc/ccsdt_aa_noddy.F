@@ -172,7 +172,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -184,7 +184,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)

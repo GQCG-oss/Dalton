@@ -661,6 +661,7 @@ C
         WRITE(LUPRI,*) 'Input symmetry claimed', isymt 
       ENDIF
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -776,6 +777,7 @@ C
 C
       CHARACTER*8 LABEL
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCPO)
@@ -1045,6 +1047,7 @@ C---------------------------------------
 C Read Rr(s) in ao basis and add to tao:
 C---------------------------------------
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -1125,6 +1128,7 @@ C-----------------------------------------------------------
 C
       IF (OLDTG) THEN
 C
+        LUCCPO = -1
         CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
         REWIND (LUCCPO)
@@ -1217,7 +1221,7 @@ C
         CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
         FILMMR  = 'MMREPOP_0'
-        LUMMRE  = 0
+        LUMMRE  = -1
         IADRFIL = 1
         NDATA   = N2BST(ISYMOP)
 C
@@ -1354,8 +1358,8 @@ C
 C------------------------------
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCMM_ETA'
         FILMMX = 'CCMM__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -1422,6 +1426,7 @@ C
       CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -1679,6 +1684,7 @@ C
           IF (LWRK3.LT.0) 
      &        CALL QUIT( 'Too little work in CCMM_LTRB, 5')
 C
+          LUCCPO = -1
           CALL GPOPEN(LUCCPO,'POTMM','OLD',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)
           REWIND (LUCCPO)
@@ -1743,7 +1749,7 @@ C
         CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
         FILMMR  = 'MMREPOP_0'
-        LUMMRE  = 0
+        LUMMRE  = -1
         IADRFIL = 1
         NDATA   = N2BST(ISYMOP)
 C
@@ -2082,6 +2088,7 @@ C     Read integrals from file
 C     and perform the calculation of HFNS: 
 C-----------------------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCPO)
@@ -2635,8 +2642,8 @@ C
       IF (CCS)  NT2AM(ISYMTR) = IZERO
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCMM_ETA'
         FILMMX = 'CCMM__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -2686,6 +2693,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -2961,6 +2969,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3343,6 +3352,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3664,8 +3674,8 @@ C
         CALL FLSHFO(LUPRI)
       ENDIF
 C
-      LUMMET = 0
-      LUMMXI = 0
+      LUMMET = -1
+      LUMMXI = -1
       FILMME = 'CCMM_ETA'
       FILMMX = 'CCMM__XI'
 C
@@ -3699,6 +3709,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3831,6 +3842,7 @@ C     First we write to the INFO file
 C
       NTAL = NRHFS(1)*NBAS(1)
 C
+      LUMMMO = -1
       CALL GPOPEN(LUMMMO,'MMMO_INFO','UNKNOWN',' ',
      &                       'FORMATTED',IDUMMY,.FALSE.)
 C
@@ -3842,7 +3854,7 @@ C
       CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
 C
       FILMM   = 'MMMOS'
-      LUMMMO  = 0
+      LUMMMO  = -1
       IADRFIL = 1
       NDATA   = NTAL
 C
@@ -3860,6 +3872,7 @@ C
         CALL QUIT('Insufficient memory for allocation in CCMM_REP1 2')
       ENDIF
 C
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &           .FALSE.)
       REWIND LUSIFC
@@ -3881,7 +3894,7 @@ C
       ENDIF
 C
       FILMM   = 'MMEPS'
-      LUMMEP  = 0
+      LUMMEP  = -1
       IADRFIL = 1
       NDATA   = NRHFS(1)
 C
@@ -3943,7 +3956,7 @@ C
       CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
       FILMMR  = 'MMREPOP_0'
-      LUMMRE  = 0
+      LUMMRE  = -1
       IADRFIL = 1
       NDATA   = N2BST(ISYMOP)
 C

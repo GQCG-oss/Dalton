@@ -428,7 +428,7 @@ c/* Deck CC_BMAT */
       END IF
 
 * check return option for the result vectors:
-      LUBMAT = 0
+      LUBMAT = -1
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
          CALL WOPEN2(LUBMAT, FILBMA, 64, 0)
       ELSE IF (IOPTRES .EQ. 3 .OR. IOPTRES .EQ. 4) THEN
@@ -721,8 +721,8 @@ C
      &             NINT1, NINT2, WORK(KEND0), LWRK0 )
 
 * open file for effective densities in BF term:
-      LUBFD  = 0
-      LUAIBJ = 0
+      LUBFD  = -1
+      LUAIBJ = -1
       IF (.NOT.(CCS.OR.CC2)) CALL WOPEN2(LUBFD,  FNBFD,  64, 0)
       IF (.NOT.CCS)          CALL WOPEN2(LUAIBJ, FNAIBJ, 64, 0)
 
@@ -1678,7 +1678,7 @@ C
         END IF
 
 * read zeroth-order BF intermediate:
-        LUBF0 = 0
+        LUBF0 = -1
         DTIME = SECOND()
         CALL GPOPEN(LUBF0,'CC_BFIM','OLD',' ','UNFORMATTED',KDUM,
      &              .FALSE.)
@@ -3838,14 +3838,14 @@ c/* Deck CCBOPEN*/
 *---------------------------------------------------------------------*
 * open files for local intermediates:
 *---------------------------------------------------------------------*
-      LUBF   = 0
-      LUC    = 0
-      LUD    = 0
-      LUCBAR = 0
-      LUDBAR = 0
-      LUR    = 0
-      LUF    = 0
-      LUFK   = 0
+      LUBF   = -1
+      LUC    = -1
+      LUD    = -1
+      LUCBAR = -1
+      LUDBAR = -1
+      LUR    = -1
+      LUF    = -1
+      LUFK   = -1
       IF (.NOT. (CCS.OR.CC2)) THEN
          CALL WOPEN2(LUBF,   BFFIL,  64, 0)
          CALL WOPEN2(LUC,    CTFIL,  64, 0)
@@ -4635,7 +4635,7 @@ C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -4730,14 +4730,14 @@ C-------------------------------------
            CALL QUIT('Insufficient memory in CC_FDB.')
          END IF
 C
-         LUE1 = 0
+         LUE1 = -1
          CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE1)
          READ (LUE1)(WORK(KEI1+ J-1),J = 1,NMATAB(ISYMOP))
          CALL GPCLOSE(LUE1,'KEEP' )
 C
-         LUE2 = 0
+         LUE2 = -1
          CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE2)
@@ -4761,7 +4761,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUTAM)
@@ -4882,7 +4882,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            REWIND(LUTAM)
@@ -5017,7 +5017,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            REWIND(LUTAM)
@@ -5210,7 +5210,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -6291,9 +6291,9 @@ C
          RETURN
       ENDIF
 
-      LUBFD  = 0
-      LUCBAR = 0
-      LUDBAR = 0
+      LUBFD  = -1
+      LUCBAR = -1
+      LUDBAR = -1
       CALL WOPEN2(LUCBAR,CBAFIL,64,0)
       CALL WOPEN2(LUDBAR,DBAFIL,64,0)
       CALL WOPEN2(LUBFD, FNBFD, 64,0)
@@ -6611,7 +6611,7 @@ C
         END DO
 C
         !read r12 overlap matrix
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND(LUNIT)

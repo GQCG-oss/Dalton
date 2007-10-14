@@ -354,7 +354,7 @@ c
 c
 c     write out  F_(gamma delta'):
       if (mkfock) then
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,'R12FOCK','UNKNOWN',' ','UNFORMATTED',idummy,
      &              .false.)
         call writt(lunit,ngdp(1),work(kfgdp))

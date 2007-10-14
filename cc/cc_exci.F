@@ -113,14 +113,14 @@ C
 C
       CALL QENTER('CC_EXCI')
 C
-      LUFC1  = 0
-      LUFC2  = 0
-      LUFC12 = 0
-      LUFR1  = 0
-      LUFR2  = 0
-      LUFR12 = 0
-      LUFS12 = 0
-      LUFS2  = 0
+      LUFC1  = -1
+      LUFC2  = -1
+      LUFC12 = -1
+      LUFR1  = -1
+      LUFR2  = -1
+      LUFR12 = -1
+      LUFS12 = -1
+      LUFS2  = -1
 C
       IF (CCP2)   CCS = .TRUE.
       TRIPLET = .FALSE.
@@ -1694,10 +1694,10 @@ C
 C
       CALL QENTER('CC_PCEXCI')
 C
-      LUFC1 = 0
-      LUFC2 = 0
-      LUFR1 = 0
-      LUFR2 = 0
+      LUFC1 = -1
+      LUFC2 = -1
+      LUFR1 = -1
+      LUFR2 = -1
 C
       WRITE (LUPRI,'(1X,A,/)') '  '
       WRITE (LUPRI,'(1X,A)')
@@ -2413,14 +2413,14 @@ C
       NSIMTR = 1
       ISYMTR = ISYMV
 C
-      LUFR1  = 0
-      LUFR2  = 0
-      LUFR12 = 0
-      LUFC1  = 0
-      LUFC2  = 0
-      LUFC12 = 0
-      LUFS12 = 0
-      LUFS2  = 0
+      LUFR1  = -1
+      LUFR2  = -1
+      LUFR12 = -1
+      LUFC1  = -1
+      LUFC2  = -1
+      LUFC12 = -1
+      LUFS12 = -1
+      LUFS2  = -1
 C
 C----------------
 C     Open files.
@@ -2437,7 +2437,7 @@ C     due to different length.
 C----------------------------------------------------------------------
 C
       IF (.NOT. (CCS.OR.CC2)) THEN
-         LUFSD = 0
+         LUFSD = -1
          FR2SD = 'CC_TRA2_'
       ELSE
          LUFSD = LUFR2

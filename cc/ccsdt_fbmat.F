@@ -157,12 +157,12 @@ C--------------------------------
 C     Open files
 C--------------------------------
 C
-      LUCKJD   = 0
-      LUTOC    = 0
-      LU3VI    = 0
-      LU3VI2   = 0
-      LUDKBC   = 0
-      LUDELD   = 0
+      LUCKJD   = -1
+      LUTOC    = -1
+      LU3VI    = -1
+      LU3VI2   = -1
+      LUDKBC   = -1
+      LUDELD   = -1
 C
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
       CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -403,8 +403,8 @@ C
          DO MCAU = 0, NCAU
 C
             !Open temporary files
-            LU3SRTR  = 0
-            LUDELDR  = 0
+            LU3SRTR  = -1
+            LUDELDR  = -1
             CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
             CALL WOPEN2(LUDELDR,FNDELDR,64,0)
 C
@@ -448,8 +448,8 @@ C
             END IF
 C
             !Open the files for T1-transformed integrals
-            LUCKJDR  = 0
-            LUDKBCR  = 0
+            LUCKJDR  = -1
+            LUDKBCR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
             CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
@@ -689,7 +689,7 @@ C
             END IF
 C
             !Open the file for T1B-transformed integrals
-            LUCKJDR  = 0
+            LUCKJDR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
 C
             !Get the offset for the integrals depending on MCAU
@@ -875,7 +875,7 @@ C
                   END IF
 C
                   !Open the files for T1B-transformed integrals
-                  LUDKBCR  = 0
+                  LUDKBCR  = -1
                   CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                   !Get the offset for a given MCAU
@@ -1024,7 +1024,7 @@ C
                         END IF
 C
                         !Open the files for T1B-transformed integrals
-                        LUDKBCR  = 0
+                        LUDKBCR  = -1
                         CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                         !Get the offset for a given MCAU

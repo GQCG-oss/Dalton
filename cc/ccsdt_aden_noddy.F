@@ -273,7 +273,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -314,7 +314,7 @@ C
 *---------------------------------------------------------------------*
       IF (LISTL.EQ.'L0 ') THEN
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODL30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (WORK(KWBAR+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -539,7 +539,7 @@ C       ---------------------------------------
         ! of three W intermediates give the complete Tbar3
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,ONE/THREE,WORK(KWYINT),1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (WORK(KT3AMP0+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -2302,7 +2302,7 @@ c        thetay(em,fn,dk) * xprop(kl) + thetax(em,fn,dk) * yprop(kl)
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -2683,9 +2683,9 @@ c
 *---------------------------------------------------------------------*
 * open files:
 *---------------------------------------------------------------------*
-      LU3VI2  = 0
-      LU3FOP  = 0
-      LU3FOP2 = 0
+      LU3VI2  = -1
+      LU3FOP  = -1
+      LU3FOP2 = -1
 
       CALL WOPEN2(LU3VI2,FN3VI2,64,0) 
       CALL WOPEN2(LU3FOP,FN3FOP,64,0) 
@@ -2746,7 +2746,7 @@ C-------------------------------------
 C-------------------------------------
 C     Read canonical orbital energies:
 C-------------------------------------
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -3580,11 +3580,11 @@ C---------------------
 C     Open some files: 
 C---------------------
       IF (TOT_T3Y) THEN
-         LU3SRTR  = 0
-         LUCKJDR  = 0
-         LUDELDR  = 0
-         LUDKBCR  = 0
-         LUDKBCR4 = 0
+         LU3SRTR  = -1
+         LUCKJDR  = -1
+         LUDELDR  = -1
+         LUDKBCR  = -1
+         LUDKBCR4 = -1
  
          CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
          CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
@@ -3667,7 +3667,7 @@ C-------------------------------------
 C     Read canonical orbital energies:
 C-------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC

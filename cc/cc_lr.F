@@ -323,7 +323,7 @@ C-------------------------------------------------------------------
                 IFOCK = IEFFFOCK('HAM0    ',ISYM0,1)
                 IADRF = IADRFCK(1,IFOCK)
 
-                LUFCK = 0
+                LUFCK = -1
                 CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
                 CALL GETWA2(LUFCK,FILFCKEFF,WORK(KFOCK0),
      &                      IADRF,N2BST(ISYM0))
@@ -660,7 +660,7 @@ C
                KEND2  = KR1DEN + N2BST(ISYMB)
                LWRK2  = LWORK  - KEND2
 
-               LUFCK = 0
+               LUFCK = -1
                IFOCK = IEFFFOCK(LABELA,ISYM,1)
                IADRF = IADRFCK(2,IFOCK)
                CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
@@ -682,7 +682,7 @@ C
                KEND2  = KR1DEN + N2BST(ISYMA)
                LWRK2  = LWORK  - KEND2
 
-               LUFCK = 0
+               LUFCK = -1
                IFOCK = IEFFFOCK(LABELB,ISYM,1)
                IADRF = IADRFCK(2,IFOCK)
                CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
@@ -3291,7 +3291,7 @@ C
      *            WORK(KEND2),LEND2)
 C
       IF (CC2 .AND. IOPTCC2.EQ.1) THEN
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         REWIND(LUSIFC)
@@ -3534,7 +3534,7 @@ C
      *            WORK(KEND21),LEND21)
 C
       IF (CC2 .AND. IOPTCC2.EQ.1) THEN
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         REWIND(LUSIFC)

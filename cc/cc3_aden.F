@@ -117,9 +117,9 @@ C
 C
 C     Open the file
 C
-      LU3FOP  = 0
-      LU3VI2  = 0
-      LU3FOP2  = 0
+      LU3FOP  = -1
+      LU3VI2  = -1
+      LU3FOP2 = -1
       CALL WOPEN2(LU3FOP,FN3FOP,64,0)
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
       CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
@@ -9274,10 +9274,10 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
@@ -9514,7 +9514,7 @@ C     get T2 amplitudes for R1 list in a special manner
 C------------------------------------------------------
 C     
       IF (DO_YMMAT) THEN
-          LUT2Y = 0
+          LUT2Y = -1
           CALL WOPEN2(LUT2Y,FNT2Y,64,0)
 
           KR2TP = KEND1
@@ -9749,9 +9749,9 @@ C---------------------------------------------
 C     Open files for Tbar and W intermediates:
 C---------------------------------------------
 C
-      LUT3 = 0
-      LUWBMAT = 0
-      LUTHETA = 0
+      LUT3 = -1
+      LUWBMAT = -1
+      LUTHETA = -1
 
       CALL WOPEN2(LUT3,FNT3,64,0)
       CALL WOPEN2(LUWBMAT,FNWBMAT,64,0)

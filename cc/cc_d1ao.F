@@ -145,7 +145,7 @@ C-------------------------------------
 C
 celena
          IF (R12PRP .AND. (IPDD .EQ. 3 .OR. IPDD .EQ. 5)) THEN
-            lunit = 0
+            lunit = -1
             IF (IPDD .EQ. 3) THEN
                call gpopen(lunit,'CCR12YIJ','unknown',' ','unformatted',
      &                     idummy,.false.)
@@ -384,28 +384,28 @@ C
                CALL QUIT('Out of memory in CC_D1AO (CC3)')
             ENDIF
 C
-            LUPTIA = 0
+            LUPTIA = -1
             CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
             IOFF = 1 + NT1AMX*(ILLNR-1)
             CALL GETWA2(LUPTIA,FNDPTIA,WORK(KEND1),IOFF,NT1AMX)
             CALL WCLOSE2(LUPTIA,FNDPTIA,'KEEP')
             CALL DAXPY(NT1AMX,1.0D0,WORK(KEND1),1,WORK(KONEIA),1)
 C
-            LUPTAB = 0
+            LUPTAB = -1
             CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
             IOFF = 1 + NMATAB(1)*(ILLNR-1)
             CALL GETWA2(LUPTAB,FNDPTAB,WORK(KEND1),IOFF,NMATAB(1))
             CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
             CALL DAXPY(NMATAB(1),1.0D0,WORK(KEND1),1,WORK(KONEAB),1)
 C
-            LUPTIJ = 0
+            LUPTIJ = -1
             CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
             IOFF = 1 + NMATIJ(1)*(ILLNR-1)
             CALL GETWA2(LUPTIJ,FNDPTIJ,WORK(KEND1),IOFF,NMATIJ(1))
             CALL WCLOSE2(LUPTIJ,FNDPTIJ,'KEEP')
             CALL DAXPY(NMATIJ(1),1.0D0,WORK(KEND1),1,WORK(KONEIJ),1)
 C
-            LUPTIA2 = 0
+            LUPTIA2 = -1
             CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
             IOFF = 1 + NT1AMX*(ILLNR-1)
             CALL GETWA2(LUPTIA2,FNDPTIA2,WORK(KEND1),IOFF,NT1AMX)
@@ -430,7 +430,7 @@ C----------------------------------------------------------------
 C           Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------------
 C
-            LUSIFC = 0
+            LUSIFC = -1
             CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
             REWIND LUSIFC
@@ -2850,7 +2850,7 @@ C----------------------------------------------
 C     Read MO-coefficients from interface file.
 C----------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -3064,7 +3064,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC

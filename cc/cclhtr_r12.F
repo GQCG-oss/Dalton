@@ -84,7 +84,7 @@ C     end do
 C     -----------------------
 C     read V^{alpha jt}_{kl}
 C     -----------------------
-      luvajkl=0
+      luvajkl=-1
       call gpopen(luvajkl,'CCR12VAJTKL','old',' ','unformatted',idummy,
      &            .false.)
       rewind(luvajkl)

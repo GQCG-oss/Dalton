@@ -197,7 +197,7 @@ CCN
 
       CALL DZERO(WORK(KRHOANA1),LENALL)
 
-      LUFMAT = 0
+      LUFMAT = -1
       CALL WOPEN2(LUFMAT,FILFMAT,64,0)
       CALL GETWA2(LUFMAT,FILFMAT,WORK(KRHOANA1),1,LENALL) 
       CALL WCLOSE2(LUFMAT,FILFMAT,'DELETE')
@@ -551,7 +551,7 @@ C---------------------------------------------------------------------*
           call lammat(work(klamdp),work(klamdh),work(kt1amp0),
      &                work(kend2),lwrk2)
 
-          lunit = 0
+          lunit = -1
           call gpopen(lunit,fvabkl,'OLD',' ','UNFORMATTED',idummy,
      &                .FALSE.)
           read(lunit) (work(kvabkl+i-1), i=1, nvabkl(1))
@@ -607,7 +607,7 @@ C---------------------------------------------------------------------*
         end if
 
         if (ltestv) then
-          lunit = 0
+          lunit = -1
           call gpopen(lunit,'R12VCTDTKL','OLD',' ','UNFORMATTED',idummy,
      &                .FALSE.)
           read(lunit) (work(kvcdkl+i-1), i=1, nvcdkl)
@@ -661,7 +661,7 @@ C---------------------------------------------------------------------*
         call lammat(work(klamdp),work(klamdh),work(kt1amp0),
      &              work(kend2),lwrk2)
 
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fvabkl,'OLD',' ','UNFORMATTED',idummy,
      &              .FALSE.)
         read(lunit) (work(kvabkl+i-1), i=1, nvabkl(1))

@@ -117,7 +117,7 @@ c
 
 c     symmetrize V^ kl_alpha_beta and write it on file
       call cc_r12_symv(work(kvabkl),work(kend2),lwrk2)
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fvabkl,'unknown',' ','unformatted',idum,.false.)
       write(lunit)(work(kvabkl-1+i),i=1,nvabkl(1))
       call gpclose(lunit,'KEEP')
@@ -209,7 +209,7 @@ c--------------------------------------------------------------------
       
       if (lv) then
 c       read in Vabkl
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fvabkl,'unknown',' ','unformatted',
      &            idummy,.false.)     
         read (lunit)(vabkl(i),i=1,nvabkl(1))
@@ -261,7 +261,7 @@ c
 c       -----------------------------
 c        write V(alpha j,kl) on file
 c       -----------------------------
-        luvajkl = 0
+        luvajkl = -1
         call gpopen(luvajkl,filvajkl,'unknown',' ','unformatted',
      &       idummy,.false.)
         rewind(luvajkl)
@@ -631,7 +631,7 @@ c
       end if
 
 c     read V 
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,fvabkl,'unknown',' ','unformatted',idum,.false.)
       read(lunit)(work(kvabkl-1+i),i=1,nvabkl(1))
       call gpclose(lunit,'KEEP')
@@ -1293,7 +1293,7 @@ c    &               ddot(nvckdl(isymv),work(kvcdkl),1,work(kvcdkl),1)
       end if
 
 c     write Vabkl on file
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,filename,'unknown',' ','unformatted',idum,
      &            .false.)
       rewind(lunit)
@@ -1419,7 +1419,7 @@ c     pack T2 amplitudes as a triangular matrix and put on T2AM
       end if
 
 c     read V^ab_kl
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,filev,'old',' ','unformatted',idum,.false.)
       read(lunit)(work(kvpk-1+i),i=1,nvckdl(isymvint))
       call gpclose(lunit,'KEEP')
@@ -1524,7 +1524,7 @@ C     read r12 amlitudes:
       call cc_rdrsp('R0 ',0,isymc,iopt,model,dummy,work(kcamp))
 C
 C     open file with r12-integrals r_(b,mn)^p'
-      lunit = 0
+      lunit = -1
       call wopen2(lunit,framnp,64,0)
 C
 C     loop over contractions:
@@ -1683,7 +1683,7 @@ C
       end if
 C
 C     read F_(gamma delta); delta runs over MO- and aux-basis (NBAS2)
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,'R12FOCK','UNKNOWN',' ','UNFORMATTED',idummy,
      &            .false.)
       call readt(lunit,ngdp(isymfck),work(kfgdp))

@@ -848,7 +848,7 @@ c    ------------------------------
 c     read overlap matrix from file
 c    ------------------------------
       if (.not. R12EOR) then
-      lusak = 0
+      lusak = -1
       call gpopen(lusak,fnsak,'UNKNOWN',' ','UNFORMATTED',
      &            idummy,.false.)
       rewind(lusak)
@@ -1273,7 +1273,7 @@ c---------------------------------------------------------------------
       idelta = idel - ibas(isymd)
       if (lauxd) idelta = idelta - ibasx(isymd)
 
-      lur2back = 0
+      lur2back = -1
       call wopen2(lur2back,fconst,64,0)
       if (locdbg) then
         write(lupri,*) 'integrals read from file ',fconst
@@ -1427,7 +1427,7 @@ c---------------------------------------------------------------------
       idelta = idel - ibas(isymd)
       if (lauxd) idelta = idelta - ibasx(isymd)
 
-      lur2back = 0
+      lur2back = -1
       call wopen2(lur2back,fconst,64,0)
       
       do isyml = 1, nsym
@@ -1606,7 +1606,7 @@ c---------------------------------------------------------------------
 c     --------------------
 c      read V(alpha j,kl)
 c     --------------------
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,fvajkl,'unknown',' ','unformatted',
      &     idummy,.false.)
       rewind(luvajkl)
@@ -1706,7 +1706,7 @@ c---------------------------------------------------------------------
 c     --------------------
 c      read V(alpha j,kl)
 c     --------------------
-        luvajkl = 0
+        luvajkl = -1
         call gpopen(luvajkl,fvajkl,'old',' ','unformatted',
      &       idummy,.false.)
         rewind(luvajkl)
@@ -2375,7 +2375,7 @@ c    --------------------------------------------------------------
 c     -------------------------------------------
 c     read MO-coefficients from interface file
 c     -------------------------------------------
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -2427,7 +2427,7 @@ c       -------------------------------------------
 c     ----------------------------------
 c     write result to file
 c     ----------------------------------
-      lusak = 0
+      lusak = -1
       call gpopen(lusak,fnsak,'UNKNOWN',' ','UNFORMATTED',
      &            idummy,.false.)
       rewind(lusak)
@@ -2476,7 +2476,7 @@ c---------------------------------------------------------------------
 
       call qenter('getvxykl') 
 
-      lunit = 0
+      lunit = -1
       call wopen2(lunit,filename,64,0)
 
       kend1 = 1

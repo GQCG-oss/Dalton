@@ -92,7 +92,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C 
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC

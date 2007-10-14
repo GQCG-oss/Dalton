@@ -365,13 +365,13 @@ C
       IERRTR = 0
       IERRBF = 0
 C
-      LUTR = 0
+      LUTR = -1
       IF ( .NOT. CCS ) THEN
          CALL WOPEN2(LUTR, TRFIL,64,0)
       ENDIF
 C
-      LUBFI = 0
-      LUBFD = 0
+      LUBFI = -1
+      LUBFD = -1
       IF (CCSD) THEN
          CALL WOPEN2(LUBFI,FNBFI,64,0)
          CALL WOPEN2(LUBFD,FNBFD,64,0)
@@ -398,8 +398,8 @@ C
 C       -----------------------------------------
 C       open file for P and Q intermediates:
 C       -----------------------------------------
-        LUPQR0 = 0
-        LUPQRR = 0
+        LUPQR0 = -1
+        LUPQRR = -1
         CALL WOPEN2(LUPQR0,FILPQR0,64,0)
         CALL WOPEN2(LUPQRR,FILPQRR,64,0)
 
@@ -559,8 +559,8 @@ C     Open files.
 C----------------
 C
       IF (.NOT.(CCS .OR. CC2)) THEN
-         LUC = 0
-         LUD = 0
+         LUC = -1
+         LUD = -1
 C
          CTFIL = 'CCLR_C'
          DTFIL = 'CCLR_D'
@@ -568,8 +568,8 @@ C
          CALL WOPEN2(LUC,CTFIL,64,0)
          CALL WOPEN2(LUD,DTFIL,64,0)
 C
-         LUCIM = 0
-         LUDIM = 0
+         LUCIM = -1
+         LUDIM = -1
 C
          CFIL = 'PMAT_C'
          DFIL = 'PMAT_D'
@@ -583,12 +583,12 @@ C-----------------------------------------
 C     Open scratch file CCINT3O and O3TFIL
 C-----------------------------------------
 C
-      LUO3 = 0
+      LUO3 = -1
       O3FIL = 'CCINT3O'
 C
       CALL WOPEN2(LUO3,O3FIL,64,0)
 C
-      LUO3T =  0
+      LUO3T =  -1
       O3TFIL = 'CCO3INT'
 C
       CALL WOPEN2(LUO3T,O3TFIL,64,0)
@@ -764,7 +764,7 @@ C           zeroth-order Zeta and T2AMP0 from file
 C           ---------------------------------------------------
 C
             DTIME = SECOND()
-            LUXYM = 0
+            LUXYM = -1
             CALL GPOPEN(LUXYM,FILXYM,'OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
 
@@ -1685,7 +1685,7 @@ C
       ISYMHO = 1
 C
       IF ( .NOT. CCS) THEN
-         LFOCK = 0
+         LFOCK = -1
          CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LFOCK)
@@ -1916,7 +1916,7 @@ C        Read Omega intermediate.
 C--------------------------------
 C
          TIMEBF = SECOND()
-         LUOM = 0
+         LUOM = -1
          CALL GPOPEN(LUOM,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUOM)
@@ -2977,7 +2977,7 @@ C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -3065,7 +3065,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -3164,7 +3164,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -3288,7 +3288,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -3407,7 +3407,7 @@ C----------------------------------------------------------------------
 *----------------------------------------------------------------------
 * open file and initialize start address:
 *----------------------------------------------------------------------
-      LUPQIM = 0
+      LUPQIM = -1
       CALL WOPEN2(LUPQIM,FILNAM,64,0)
 * reserve at the beginning a record for the start addresses:
       IADR = (MXCORB+IRAT)/IRAT + 1
@@ -3718,7 +3718,7 @@ C
       CALL CC_MI(WORK(KMIM),WORK(KZETA),ISYZETA,WORK(KTAMP),ISYTAMP,
      &           WORK(KEND1),LWRK1)
 
-      LUXYM = 0
+      LUXYM = -1
       CALL GPOPEN(LUXYM,FILNAM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 

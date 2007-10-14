@@ -245,7 +245,7 @@ C  /* Deck cc3_triplet */
 !----------------------------------------------
 !
       IF (LUSIFC .LE. 0) THEN
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
       ENDIF

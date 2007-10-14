@@ -285,6 +285,7 @@ C-------------------------------------------------------
 C     Check integrals and readin nuclear contributions.
 C-------------------------------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -630,9 +631,10 @@ C
       ENDIF
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -834,8 +836,8 @@ C
       NTAMP   = NTAMP1 + NTAMP2
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCSL_ETA'
         FILMMX = 'CCSL__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -843,9 +845,10 @@ C
       END IF
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -1432,9 +1435,10 @@ C     element from the left hand side. The ' means that
 C     the HF contribution is skipped.
 C 
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -1609,8 +1613,8 @@ C
 C
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCSL_ETA'
         FILMMX = 'CCSL__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -1634,9 +1638,10 @@ C
      *              WORK(KDUM),WORK(KT2AMPA))
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -2053,9 +2058,10 @@ C
       END IF
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -2356,8 +2362,8 @@ C
       CHARACTER*(8) FILMME, FILMMX, LABEL
       CHARACTER*2 LIST
 C
-      LUMMET = 0
-      LUMMXI = 0
+      LUMMET = -1
+      LUMMXI = -1
       FILMME = 'CCSL_ETA'
       FILMMX = 'CCSL__XI'
 C
@@ -2365,9 +2371,10 @@ C
       CALL WOPEN2(LUMMXI, FILMMX, 64, 0)
 
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)

@@ -173,7 +173,7 @@ C
           write(lupri,'(1x,a)')   '---------------------------'
           write(lupri,'(1x,a)')   'State  Excitation Energy'
 
-          ludeg = 0
+          ludeg = -1
           call wopen2(ludeg,fndeg,64,0) 
 
 c         ---------------------------------------------------
@@ -703,7 +703,7 @@ C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
 *---------------------------------------------------------------------*
 *     Read zeroth-order AO Fock matrix from file:
 *---------------------------------------------------------------------*
-      lufock = 0
+      lufock = -1
       call gpopen(lufock,'CC_FCKH','OLD',' ','UNFORMATTED',idummy,
      &            .false.)
       rewind(lufock)
@@ -1097,13 +1097,13 @@ C     Open the files
 C-------------------
 C
 
-      LU3VI   = 0
-      LU3VI2   = 0
-      LU3FOP  = 0
-      LU3FOP2 = 0
-      LUCKJD  = 0
-      LUTOC   = 0
-      LUDKBC   = 0
+      LU3VI   = -1
+      LU3VI2  = -1
+      LU3FOP  = -1
+      LU3FOP2 = -1
+      LUCKJD  = -1
+      LUTOC   = -1
+      LUDKBC  = -1
 C
       CALL WOPEN2(LU3VI,FN3VI,64,0)
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
@@ -1283,12 +1283,12 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUWEB    = 0
-      LUWE     = 0
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUWEB    = -1
+      LUWE     = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)

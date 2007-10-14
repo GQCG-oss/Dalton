@@ -41,7 +41,7 @@ c
       fnelena = fnelena(1:5)//fnvajkl(6:10)
 
       if (fnvajkl .eq. 'CCR12QAJKL' .and. fel .eqv. .true.) then
-         lu43 = 0
+         lu43 = -43
          call dzero(cmo,nlamds)
          if (R12HYB) then
              call gpopen(lu43,'GUMAT.1','UNKNOWN',' ','UNFORMATTED',
@@ -60,7 +60,7 @@ c
       if (fnvajkl .eq. 'CCR12QAJKL' .and. fel .eqv. .false.) then
          kend1 = 1
          lwrk1 = lwork - kend1
-         lu43 = 0
+         lu43 = -43
          call dzero(cmo,nlamds)
          call gpopen(lu43,'SIRIFC','OLD',' ','UNFORMATTED',
      &                      IDUMMY,.FALSE.)
@@ -188,7 +188,7 @@ c
       if (r12cbs) call dscal(nvajkl(1),1.00d0,work(yajkl),1)
 
 
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,fnelena,'unknown',' ','unformatted',
      &               idummy,.false.)
       rewind(luvajkl)
@@ -271,7 +271,7 @@ c     read R12 amplitudes
 c     ----------------------------------------
 
 
-      lu43 = 0
+      lu43 = -43
       call gpopen(lu43,'CCR12_C','unknown',' ','formatted',
      &                   idummy,.false.)
       read(lu43,'(4e30.20)') (work(krsing+i), i = 0, n2-1 )
@@ -434,7 +434,7 @@ c     -----------------------------------------------------
 
       call dzero(work(kbajkl),ntklaj)
       call dzero(work(kbijal),ntklaj)
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'DDR12BAJKL','unknown',' ','unformatted',
      &                   idummy,.false.)
       rewind(luvajkl)
@@ -582,7 +582,7 @@ c
       end if
 
       if (ipdd .eq. 2) then
-        luvajkl = 0
+        luvajkl = -1
         call gpopen(luvajkl,'CCR12YAJIJ','unknown',' ','unformatted',
      &               idummy,.false.)
         write(luvajkl) (work(kajij+i-1), i = 1,ncvai)
@@ -592,7 +592,7 @@ c
         call r12gradap(ipdd,work(res),orb,work(kend2),v2am,lwrk2)
         call dscal(ncvai,2.0D0,work(res),1)
         call daxpy(ncvai,one,work(kajij),1,work(res),1)
-        luvajkl = 0
+        luvajkl = -1
         call gpopen(luvajkl,'CCR12ZAJIJ','unknown',' ','unformatted',
      &               idummy,.false.)
         write(luvajkl) (work(res+i-1), i = 1,ncvai)
@@ -602,7 +602,7 @@ c
         call r12gradap(ipdd,work(res),orb,work(kend2),v2am,lwrk2)
         call dscal(ncvai,2.00D0,work(res),1)
         call daxpy(ncvai,one,work(kajij),1,work(res),1)
-        luvajkl = 0
+        luvajkl = -1
         call gpopen(luvajkl,'CCR12XAJIJ','unknown',' ','unformatted',
      &               idummy,.false.)
         write(luvajkl) (work(res+i-1), i = 1,ncvai)
@@ -679,7 +679,7 @@ C  /* Deck r12gradap */
 c     ----------------------------------------
 c     read R12 amplitudes
 c     ----------------------------------------
-      lu43 = 0
+      lu43 = -43
       call gpopen(lu43,'CCR12_C','unknown',' ','formatted',
      &                   idummy,.false.)
       read(lu43,'(4e30.20)') (work(krsing+i), i = 0, n2-1 )
@@ -961,7 +961,7 @@ c     Calculate d_{kl}^{ij} = c_{kl}^{mn}*ctilde_{ij}^{mn}
       call daxpy(ngamsq(1),one,work(dklij),1,work(kdotil),1)
 
 
-      luvajkl = 0
+      luvajkl = -1
       call dzero(work(kxajkl),ntklaj)
       call gpopen(luvajkl,'DDR12XAJKL','unknown',' ','unformatted',
      &                   idummy,.false.)
@@ -972,7 +972,7 @@ c     Calculate d_{kl}^{ij} = c_{kl}^{mn}*ctilde_{ij}^{mn}
 
 
       call dzero(work(krajkl),nvir0t*nrhfst**3)
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'AUXQA12','unknown',' ','formatted',
      &                   idummy,.false.)
       rewind(luvajkl)
@@ -1177,7 +1177,7 @@ C     Calculate some offsets
       
 C     Read matrix X
 
-      lu43 = 0
+      lu43 = -43
       call gpopen(lu43,'CCR12_XP','unknown',' ','formatted',
      &                   idummy,.false.)
       read(lu43,*) i
@@ -1303,7 +1303,7 @@ C     Calculate   F_{}^{} = C_{ij}^{kl} * XC_{ij}^{ol}
       call daxpy(ncvij,one,work(eijkl),1,work(rklij),1)
       call daxpy(ncvij,-two,work(fklij),1,work(rklij),1)
       call dscal(ncvij,two,work(rklij),1)
-      lunit = 0
+      lunit = -1
       if (ipdd .eq. 3) then 
          call gpopen(lunit,'CCR12YIJ','unknown',' ','unformatted',
      &               idummy,.false.)
@@ -1493,7 +1493,7 @@ C  /* Deck r12gradb */
       lwrk1  = lwork  - kend1
 
 
-      luvajkl = 0
+      luvajkl = -1
       call dzero(work(kqajkl),ntklaj)
       call gpopen(luvajkl,'DDR12QAJKL','unknown',' ','unformatted',
      &                   idummy,.false.)
@@ -1502,7 +1502,7 @@ C  /* Deck r12gradb */
       call gpclose(luvajkl,'DELETE')
 
 
-      luvajkl = 0
+      luvajkl = -1
       call dzero(work(kqijal),ntklaj)
       call gpopen(luvajkl,'DDR12QIJAL','unknown',' ','unformatted',
      &                   idummy,.false.)
@@ -1512,7 +1512,7 @@ C  /* Deck r12gradb */
   
       call dzero(work(kqijals),ntklaj)
 
-      luvajkl = 0
+      luvajkl = -1
       call dzero(work(kuijal),ntklaj)
       call gpopen(luvajkl,'DDR12UIJAL','unknown',' ','unformatted',
      &                   idummy,.false.)
@@ -1523,7 +1523,7 @@ C  /* Deck r12gradb */
       call dzero(work(kuijals),ntklaj)
 
   
-      luvajkl = 0
+      luvajkl = -1
       call dzero(work(kuajkl),ntklaj)
       call gpopen(luvajkl,'DDR12UAJKL','unknown',' ','unformatted',
      &                   idummy,.false.)
@@ -1532,7 +1532,7 @@ C  /* Deck r12gradb */
       call gpclose(luvajkl,'DELETE')
 
       call dzero(work(krajkl),nvir0t*nrhft**3)
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'AUXQSA12','unknown',' ','formatted',
      &                   idummy,.false.)
       rewind(luvajkl)
@@ -1544,7 +1544,7 @@ C  /* Deck r12gradb */
 
 
       call dzero(work(ksajkl),nvir0t*nrhft**3)
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'AUXQSAJ12','unknown',' ','formatted',
      &                   idummy,.false.)
       rewind(luvajkl)
@@ -1560,7 +1560,7 @@ C  /* Deck r12gradb */
 
 
       call dzero(work(ktijal),nvir0t*nrhft**3)
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'AUXQSAI12','unknown',' ','formatted',
      &                   idummy,.false.)
       rewind(luvajkl)
@@ -1880,7 +1880,7 @@ C  /* Deck r12gradbd */
 
       
       call dzero(work(kxmujkl),nvajkl(1))
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'CCR12QAJKL','unknown',' ','unformatted',
      &               idummy,.false.)
       rewind(luvajkl)
@@ -1888,7 +1888,7 @@ C  /* Deck r12gradbd */
       call gpclose(luvajkl,'KEEP')
 c
       call dzero(work(smujkl),nrhfst**4)
-      luvajkl = 0
+      luvajkl = -1
 
       call gpopen(luvajkl,'AUXQ12','unknown',' ','formatted',
      &               idummy,.false.)
@@ -1897,7 +1897,7 @@ c
      &                        nrhfst**4)
       call gpclose(luvajkl,'KEEP')
 c
-      luvajkl = 0
+      luvajkl = -1
       call gpopen(luvajkl,'AUXQA12','unknown',' ','formatted',
      &               idummy,.false.)
       rewind(luvajkl)
@@ -2013,7 +2013,7 @@ c
 c     Read MO-coefficients
 
       call dzero(work(kcmo),nlamds)
-      lusifc = 0
+      lusifc = -1
       call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',
      &            idummy,.false.)
       rewind(lusifc)
@@ -2396,7 +2396,7 @@ c N2BASX = NBAST*NBAST!
             enddo
           enddo
 
-          luvajkl = 0
+          luvajkl = -1
           call gpopen(luvajkl,'CCR12YAIFR','unknown',' ','unformatted',
      &                idummy,.false.)
           write(luvajkl) (work(kajfr+i-1), i = 1,ncfai)

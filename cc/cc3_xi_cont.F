@@ -125,7 +125,7 @@ C
 *---------------------------------------------------------------------*
       CALL QENTER('CC3XICNT')
 
-      LUDEFF = 0
+      LUDEFF = -1
       CALL WOPEN2(LUDEFF,FNDEFF,64,0)
 
       M2BST = 0
@@ -156,17 +156,17 @@ C
         CALL DZERO(WORK(KDAB),NMATAB(ISYML))
         CALL DZERO(WORK(KDIA),NT1AM(ISYML))
 C
-             LUTOC   = 0
-             LU3VI   = 0
-             LU3VI2   = 0
-             LUDKBC3 = 0
-             LU3FOPX  = 0
-             LU3FOP2X = 0
-             LU3FOP  = 0
-             LU3FOP2 = 0
-             LUCKJD  = 0
-             LUDKBC  = 0
-             LUDELD  = 0
+             LUTOC    = -1
+             LU3VI    = -1
+             LU3VI2   = -1
+             LUDKBC3  = -1
+             LU3FOPX  = -1
+             LU3FOP2X = -1
+             LU3FOP   = -1
+             LU3FOP2  = -1
+             LUCKJD   = -1
+             LUDKBC   = -1
+             LUDELD   = -1
 C
              CALL WOPEN2(LUTOC,FNTOC,64,0)
              CALL WOPEN2(LU3VI,FN3VI,64,0)
@@ -825,8 +825,8 @@ C---------------------------------------------
 C     Open files for Tbar and W intermediates:
 C---------------------------------------------
 C
-      LUT3 = 0
-      LUWBMAT = 0
+      LUT3    = -1
+      LUWBMAT = -1
 
       CALL WOPEN2(LUT3,FNT3,64,0)
       CALL WOPEN2(LUWBMAT,FNWBMAT,64,0)

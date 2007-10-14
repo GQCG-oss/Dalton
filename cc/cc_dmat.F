@@ -248,7 +248,7 @@ C     END IF
 
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
-        LUDMAT = 0
+        LUDMAT = -1
         CALL WOPEN2(LUDMAT,FILDMA,64,0)
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN

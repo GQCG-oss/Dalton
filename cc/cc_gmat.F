@@ -457,7 +457,7 @@ c/* Deck CC_GMAT */
 
          FILGMA = LISTD(1:6)
 
-         LUGMAT = 0
+         LUGMAT = -1
          CALL WOPEN2(LUGMAT,FILGMA,64,0)
          IADRDEL = 1
 
@@ -1599,12 +1599,12 @@ C
      &                               WORK(KEND1),LEND1)
             ELSE
 
-             LUCKJD  = 0
-             LUTOC   = 0
-             LU3VI   = 0
-             LUDKBC3 = 0
-             LU3FOPX  = 0
-             LU3FOP2X = 0
+             LUCKJD   = -1
+             LUTOC    = -1
+             LU3VI    = -1
+             LUDKBC3  = -1
+             LU3FOPX  = -1
+             LU3FOP2X = -1
 C
              CALL WOPEN2(LUCKJD,FNCKJD,64,0)
              CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -1695,7 +1695,7 @@ C
            IF (LEND2 .LT. 0) THEN
              CALL QUIT('Insuff. work space for V^(albe)_kl in CC_GMAT')
            END IF
-           lunit = 0
+           lunit = -1
            call gpopen(lunit,fvabkl,'unknown',' ','unformatted',
      &                 idum,.false.)
            read (lunit)(work(kvabkl+i-1),i=1,nvabkl(1))
@@ -2434,7 +2434,7 @@ CCN
         CALL CC_RDRSP(LISTC,IDLSTC,ISYMTC,IOPT,MODEL,WORK(KDUM),
      &                WORK(KTR12AM))
 
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12V,'OLD',' ','UNFORMATTED',
      &              KDUM,.FALSE.)
  9999   READ(LUNIT) IAN
@@ -5171,7 +5171,7 @@ c/* Deck CCG_LXD */
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)

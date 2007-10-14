@@ -81,13 +81,13 @@ C---------------------------------------------------------
 C     Open files for backtransformed/symmetrized densities
 C---------------------------------------------------------
 C
-      LUIJKDS  = 0
-      LUABIDS  = 0
+      LUIJKDS  = -1
+      LUABIDS  = -1
 C
-      LUIAJDE  = 0
-      LUAIJDE  = 0
-      LUAIBDE  = 0
-      LUIABDE  = 0
+      LUIAJDE  = -1
+      LUAIJDE  = -1
+      LUAIBDE  = -1
+      LUIABDE  = -1
 C
 C     d^s_{ijkdelta}
       CALL WOPEN2(LUIJKDS,FNDSIJKD,64,0)
@@ -330,13 +330,13 @@ C---------------------------------------------------------
 C     Open files for backtransformed/symmetrized densities
 C---------------------------------------------------------
 C
-      LUIJKDA  = 0
-      LUABIDA  = 0
+      LUIJKDA  = -1
+      LUABIDA  = -1
 C
-      LUIAJDE  = 0
-      LUAIJDE  = 0
-      LUAIBDE  = 0
-      LUIABDE  = 0
+      LUIAJDE  = -1
+      LUAIJDE  = -1
+      LUAIBDE  = -1
+      LUIABDE  = -1
 C
 C     d^s_{ijkdelta}
       CALL WOPEN2(LUIJKDA,FNDAIJKD,64,0)

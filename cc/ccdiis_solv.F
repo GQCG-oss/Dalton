@@ -790,8 +790,8 @@ C----------------------------------------------------
 C     Open files and dump CPERT and CAMP:
 C----------------------------------------------------
 C
-      LUSS = 0
-      LUST = 0
+      LUSS = -1
+      LUST = -1
       CALL WOPEN2(LUSS,FILDIISS,64,0)
       CALL WOPEN2(LUST,FILDIIST,64,0)
 C

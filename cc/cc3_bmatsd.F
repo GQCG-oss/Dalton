@@ -206,9 +206,9 @@ C------------------------------------------
 C     Open files (integrals in contraction)
 C------------------------------------------
 C
-      LUTOC    = 0
-      LU3VI    = 0
-      LU3VI2   = 0
+      LUTOC    = -1
+      LU3VI    = -1
+      LU3VI2   = -1
 C
       CALL WOPEN2(LUTOC,FNTOC,64,0)
       CALL WOPEN2(LU3VI,FN3VI,64,0)
@@ -218,10 +218,10 @@ C-----------------------------------------
 C     Open temporary files (H^B integrals)
 C-----------------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
@@ -232,8 +232,8 @@ C------------------------------------------
 C     Open temporary files (H^BC integrals)
 C------------------------------------------
 C
-      LUCKJDR1  = 0
-      LUDKBCR1  = 0
+      LUCKJDR1  = -1
+      LUDKBCR1  = -1
 C
       CALL WOPEN2(LUCKJDR1,FNCKJDR1,64,0)
       CALL WOPEN2(LUDKBCR1,FNDKBCR1,64,0)
@@ -242,8 +242,8 @@ C------------------------------------------
 C     Open temporary files (H^C integrals)
 C------------------------------------------
 C
-      LUCKJDR2  = 0
-      LUDKBCR2  = 0
+      LUCKJDR2  = -1
+      LUDKBCR2  = -1
 C
       CALL WOPEN2(LUCKJDR2,FNCKJDR2,64,0)
       CALL WOPEN2(LUDKBCR2,FNDKBCR2,64,0)

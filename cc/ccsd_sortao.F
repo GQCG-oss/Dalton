@@ -82,7 +82,7 @@ C     Open integral files.
 C-------------------------
 C
       IF (LUINTA.LE.0) THEN
-        LUINTA = 0
+        LUINTA = -1
         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
       END IF

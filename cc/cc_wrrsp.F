@@ -250,7 +250,7 @@ C---------------------------------------------------------------------*
 *---------------------------------------------------------------------*
       INQUIRE(FILE=FILEX,EXIST=LEXISTS)
 
-      LUSAVE = 0
+      LUSAVE = -1
       CALL GPOPEN(LUSAVE,FILEX,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
 

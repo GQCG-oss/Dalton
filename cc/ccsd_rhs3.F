@@ -129,8 +129,8 @@ C  /* Deck ccrhsn3 */
 !     Open files.
 !----------------
 !
-      LUDTIM  = 0
-      LUCSIM  = 0
+      LUDTIM  = -1
+      LUCSIM  = -1
       CSFIL   = 'PMAT_C'
       DTFIL   = 'PMAT_DT'
 !

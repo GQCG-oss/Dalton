@@ -493,7 +493,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ',
      *               'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -586,7 +586,7 @@ C
      &       'Insufficient core for allocation in CC_2EEXP (CCSD(T))')
            ENDIF
 C
-           LUPTIA = 0
+           LUPTIA = -1
            FNDPTIA  = 'DPTIA'
            CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
@@ -891,7 +891,7 @@ C     Open file for effective two electron densities:
 C----------------------------------------------------
 C
 !      LDECH = N2BSTM*2 + 1
-!      LUDE = 0
+!      LUDE = -1
 !     CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT',
 !     *            'UNFORMATTED',LDECH,OLDDX)
 C
@@ -1007,7 +1007,7 @@ C         OPEN(LUDE,STATUS='UNKNOWN',FORM='UNFORMATTED',FILE='CCTWODEN',
 C     *        ACCESS='DIRECT',RECL= LDECH)
 C
          LDECH = N2BSTM*NFRL+1
-         LUDE = 0
+         LUDE = -1
          CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT','UNFORMATTED',
      *               LDECH,OLDDX)
 C
@@ -1484,7 +1484,7 @@ C
 C
       IF (.FALSE.) THEN
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC

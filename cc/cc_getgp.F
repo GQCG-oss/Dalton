@@ -181,7 +181,7 @@ c /* deck cc_gethfgd */
            WRITE (LUPRI,*) 'CC_GETHFGD> KFOCK0 = ',KFOCK0 
         END IF
 
-        LFOCK = 0
+        LFOCK = -1
         CALL WOPEN2(LFOCK,FILFCKEFF,64,0)
 
         CALL GETWA2(LFOCK,FILFCKEFF,WORK(KFOCK0),IADR0,N2BST(ISYM0))

@@ -116,7 +116,7 @@ c       write(lupri,*) 'i,it2del(i):',i,it2del(i)
       if (lwrk2 .lt. 0) call quit('Insufficient memory in CCSDR12CD 2')
 
       ! read the Fhat(c,delta) and Fhat(c,delta-p) matrices
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,'CCFHATADEL','UNKNOWN',' ','UNFORMATTED',
      &            idummy,.false.)
       read(lunit) (work(kfckvao-1+i), i=1,nemat1(isymim))
@@ -140,7 +140,7 @@ C     end if
       ! read the F^val(gamma,delta-p) matrix, which contains the
       ! two-electron contribution of a Fock matrix computed from
       ! the SCF valence electron density (i.e. w/o core orbitals)
-      lunit = 0
+      lunit = -1
       call gpopen(lunit,'R12FOCK','UNKNOWN',' ','UNFORMATTED',idummy,
      &            .false.)
       call readt(lunit,ngdp(1),work(kfgdp))
@@ -320,7 +320,7 @@ C        end if
       if (lwrk1 .lt. 0) call quit('Insufficient memory in CCSDR12CD 5')
 
       ! read present result vector from file:
-      lunit = 0 
+      lunit = -1 
       call gpopen(lunit,'CC_OMEGAR12','unknown',' ','unformatted',
      &                 idum,ldum)
       read(lunit) (work(komegpk+i), i=0, ntr12am(isymom)-1 )
@@ -341,7 +341,7 @@ C        end if
       end if
 
       ! write updated result vector back to file:
-      lunit = 0 
+      lunit = -1 
       call gpopen(lunit,'CC_OMEGAR12','unknown',' ','unformatted',
      &                 idum,ldum)
       write(lunit) (work(komegpk+i), i=0, ntr12am(isymom)-1 )

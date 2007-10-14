@@ -225,7 +225,7 @@ C
           CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (T03)')
         END IF
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -233,7 +233,7 @@ C
 
 
         ! store triples amplitudes on file
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -294,7 +294,7 @@ C
       END IF
 
       IF (NONHF .OR. FD_TEST) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3BARAM','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -519,7 +519,7 @@ C           ----------------------------------
           CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (nhf1)')
         ENDIF
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3BARAM','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -627,7 +627,7 @@ c       -------------------------------------------
            CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (9)')
         ENDIF
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3BARAM','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -956,7 +956,7 @@ C------------------------------------------------------
       Call CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT3AM))
       CALL CC_T2SQ(WORK(KT3AM),WORK(KT2AM),1)
 
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'T3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -973,7 +973,7 @@ C------------------------------------------------------
       Call CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KL1AM),WORK(KL3AM))
       CALL CC_T2SQ(WORK(KL3AM),WORK(KL2AM),1)
 
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'L3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC

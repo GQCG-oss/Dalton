@@ -132,7 +132,7 @@ C
         CALL QUIT('Illegal value of I1DXORD in CC_GRAD2.')
       END IF
 C
-      LUFCK = 0
+      LUFCK = -1
       CALL WOPEN2(LUFCK,FILFCK,64,0)
 C
 C-----------------------------------------

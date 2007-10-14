@@ -116,14 +116,14 @@ C----------------------------------------------------
 C
       CDUMMY = ' '
 C
-      LUDKBC4  = 0
-      LU4V     = 0
-      LU4VB    = 0
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUDKBCR4 = 0
+      LUDKBC4  = -1
+      LU4V     = -1
+      LU4VB    = -1
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUDKBCR4 = -1
 C
       FNDKBC4  = 'CC3_FMAT_TMP1'
       FN4V     = 'CC3_FMAT_TMP2'
@@ -383,7 +383,7 @@ C-----------------------------------------------------
 C     Construct the transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
       CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -1288,8 +1288,8 @@ C-------------------------------
 C     Open scratch files
 C-------------------------------
 C
-      LUIN3O  = 0   
-      LU3V    = 0
+      LUIN3O  = -1
+      LU3V    = -1
 C
       FNIN3O = 'CC3_INT_TMP1'
       FN3V   = 'CC3_INT_TMP2'
@@ -1300,7 +1300,7 @@ C
       END IF
 C
       IF (DO_LAMB) THEN
-         LUIN3O2 = 0   
+         LUIN3O2 = -1
          FNIN3O2 = 'CC3_INT_TMP3'
          CALL WOPEN2(LUIN3O2,FNIN3O2,64,0)
       ENDIF

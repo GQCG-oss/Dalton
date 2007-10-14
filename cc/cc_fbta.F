@@ -561,7 +561,7 @@ cstest
 * check return option for the result vectors, initialize output:
 *---------------------------------------------------------------------*
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
-         LUFBTA = 0
+         LUFBTA = -1
          CALL WOPEN2(LUFBTA, FILFBTA, 64, 0)
          IADR_FBTA = 1
       ELSE IF (IOPTRES .EQ. 3 .OR. IOPTRES .EQ. 4) THEN
@@ -619,17 +619,17 @@ cstest
 *---------------------------------------------------------------------*
 * open 2 files for the different integrals:
 *---------------------------------------------------------------------*
-      LU0IAJB = 0
-      LU1IAJB = 0
+      LU0IAJB = -1
+      LU1IAJB = -1
       CALL WOPEN2(LU0IAJB, FN0IAJB, 64, 0)
       CALL WOPEN2(LU1IAJB, FN1IAJB, 64, 0)
 *---------------------------------------------------------------------*
 * open additional 4  for the special (combined) integrals (C, D terms):
 *---------------------------------------------------------------------*
-      LU0IJCB = 0
-      LU0CJIB = 0
-      LU1IJCB = 0
-      LU1CJIB = 0
+      LU0IJCB = -1
+      LU0CJIB = -1
+      LU1IJCB = -1
+      LU1CJIB = -1
       CALL WOPEN2(LU0IJCB, FN0IJCB, 64, 0)
       CALL WOPEN2(LU0CJIB, FN0CJIB, 64, 0)
       CALL WOPEN2(LU1IJCB, FN1IJCB, 64, 0)
@@ -637,17 +637,17 @@ cstest
 *---------------------------------------------------------------------*
 * open 2 files for the 3 occupied integrals:
 *---------------------------------------------------------------------*
-      LU0IJKL = 0
-      LU1IJKL = 0
+      LU0IJKL = -1
+      LU1IJKL = -1
       CALL WOPEN2(LU0IJKL, FN0IJKL, 64, 0)
       CALL WOPEN2(LU1IJKL, FN1IJKL, 64, 0)
 *---------------------------------------------------------------------*
 * open files for several effective densities: 
 *---------------------------------------------------------------------*
-      LUBFDA  = 0
-      LUBFDQA = 0
-      LUBFDE0 = 0
-      LUBFDE1 = 0
+      LUBFDA  = -1
+      LUBFDQA = -1
+      LUBFDE0 = -1
+      LUBFDE1 = -1
       CALL WOPEN2(LUBFDA,  FNBFDA,  64, 0)
       CALL WOPEN2(LUBFDQA, FNBFDQA, 64, 0)
       CALL WOPEN2(LUBFDE0, FNBFDE0, 64, 0)
@@ -655,25 +655,25 @@ cstest
 *---------------------------------------------------------------------*
 * open files for BZ(A) intermediates 
 *---------------------------------------------------------------------*
-      LUBFZA  = 0
-      LUBFZQA = 0
+      LUBFZA  = -1
+      LUBFZQA = -1
       CALL WOPEN2(LUBFZA,  FILBFZA,  64, 0)
       CALL WOPEN2(LUBFZQA, FILBFZQA, 64, 0)
 *---------------------------------------------------------------------*
 * open files for P and Q intermediates: 
 *---------------------------------------------------------------------*
-      LUPQMO = 0
-      LUPQ0  = 0
-      LUPQ1  = 0
+      LUPQMO = -1
+      LUPQ0  = -1
+      LUPQ1  = -1
       CALL WOPEN2(LUPQMO, FILPQMO, 64, 0)
       CALL WOPEN2(LUPQ0,  FILPQ0,  64, 0)
       CALL WOPEN2(LUPQ1,  FILPQ1,  64, 0)
 *---------------------------------------------------------------------*
 * open files for calP and calQ intermediates (PQA): 
 *---------------------------------------------------------------------*
-      LUPQAMO = 0
-      LUPQA0  = 0
-      LUPQA1  = 0
+      LUPQAMO = -1
+      LUPQA0  = -1
+      LUPQA1  = -1
       CALL WOPEN2(LUPQAMO, FILPQAMO, 64, 0)
       CALL WOPEN2(LUPQA0,  FILPQA0,  64, 0)
       CALL WOPEN2(LUPQA1,  FILPQA1,  64, 0)
@@ -892,7 +892,7 @@ C!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         CALL DCOPY(N2BST(ISYM0),WORK(KONEH0),1,WORK(KFOCK0),1)
       ELSE
 *       read zeroth-order AO Fock matrix from file:
-        LUFOCK = 0
+        LUFOCK = -1
         CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         REWIND(LUFOCK)
@@ -2041,8 +2041,8 @@ c          END IF
 *---------------------------------------------------------------------*
       IF ((LLTWOEL .OR. LLRELAX).AND.(CCSD)) THEN
 
-         LUBFA  = 0
-         LUBFQA = 0
+         LUBFA  = -1
+         LUBFQA = -1
          CALL WOPEN2(LUBFA,  FILBFA,  64, 0)
          CALL WOPEN2(LUBFQA, FILBFQA, 64, 0)
 *

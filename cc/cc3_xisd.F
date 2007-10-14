@@ -262,8 +262,8 @@ C
          DO MCAU = 0, NCAU
 C
             !Open temporary files
-            LU3SRTR  = 0
-            LUDELDR  = 0
+            LU3SRTR  = -1
+            LUDELDR  = -1
             CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
             CALL WOPEN2(LUDELDR,FNDELDR,64,0)
 C
@@ -289,8 +289,8 @@ C
             CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
             !Open the files for C1-transformed integrals
-            LUCKJDR  = 0
-            LUDKBCR  = 0
+            LUCKJDR  = -1
+            LUDKBCR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
             CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
@@ -363,7 +363,7 @@ C-----------------------------------------------------
 C     Construct the T1 transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
        CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -612,7 +612,7 @@ C
             CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
             !Open the file for C1-transformed integrals
-            LUCKJDR  = 0
+            LUCKJDR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
 C
             !Get the offset for a given MCAU
@@ -784,7 +784,7 @@ C
                   CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
                   !Open the files for C1-transformed integrals
-                  LUDKBCR  = 0
+                  LUDKBCR  = -1
                   CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                   !Get the offset for a given MCAU
@@ -961,7 +961,7 @@ C
                         CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
                         !Open the files for C1-transformed integrals
-                        LUDKBCR  = 0
+                        LUDKBCR  = -1
                         CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                         !Get the offset for a given MCAU

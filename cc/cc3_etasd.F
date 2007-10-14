@@ -146,7 +146,7 @@ C----------------------------------------------------
 C
       CDUMMY = ' '
 
-      LU4V     = 0
+      LU4V     = -1
 C
       FN4V     = 'CC3_ETASD_TMP'
 C
@@ -154,16 +154,16 @@ C
          CALL WOPEN2(LU4V,FN4V,64,0)
       END IF
 C
-      LUDKBC4 = 0
+      LUDKBC4 = -1
       FNDKBC4 = 'CC3_L3_TMP1'
 C
       CALL WOPEN2(LUDKBC4,FNDKBC4,64,0)
 C
       IF (.NOT.LVVVV) THEN
          !Open files for N1MAT intermediates
-         LUGEI = 0
-         LUFEI = 0
-         LUN1  = 0
+         LUGEI = -1
+         LUFEI = -1
+         LUN1  = -1
          CALL WOPEN2(LUGEI,FNGEI,64,0)
          CALL WOPEN2(LUFEI,FNFEI,64,0)
          CALL WOPEN2(LUN1,FNN1,64,0)
@@ -5174,8 +5174,8 @@ C
          CALL QUIT('Not enough space in cc3_eta_1')
       END IF
 C
-      LUPTIJ = 0
-      LUPTAB = 0
+      LUPTIJ = -1
+      LUPTAB = -1
 C
       ! read intermediates from ground state density from file...
 C

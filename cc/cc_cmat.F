@@ -254,7 +254,7 @@ C     END IF
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
 
-        LUCMAT = 0
+        LUCMAT = -1
         CALL WOPEN2(LUCMAT,FILCMA,64,0)
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -1265,7 +1265,7 @@ c    &                    WORK(KENDF1),LENDF1)
           CALL CC_RDRSP(LISTC,IDLSTC,ISYMTC,IOPT,MODEL,WORK(KDUM),
      &                  WORK(KTR12AM))
 
-          LUNIT = 0
+          LUNIT = -1
           CALL GPOPEN(LUNIT,FCCR12V,'OLD',' ','UNFORMATTED',
      &                KDUM,.FALSE.)
  9999     READ(LUNIT) IAN

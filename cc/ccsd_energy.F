@@ -216,7 +216,7 @@ C     ----------------------------------------------------------------
            IF (LWRK1 .LT. 0) THEN
              CALL QUIT('Not enough work space for R12')
            END IF
-           LU43  = 43
+           LU43  = -43
            CALL GPOPEN(LU43,FCCR12D,'UNKNOWN',' ','UNFORMATTED',
      &                 IDUM,LDUM)
  1816      READ(LU43,end=1817) IAN,IAP,APROXR12
@@ -451,7 +451,7 @@ C
          IF (IOPT.EQ.33) THEN
            INQUIRE(FILE='CCSD_TAM',EXIST=LEXIST,IOSTAT=IOS,ERR=990)
            IF (LEXIST) THEN ! read old CCSD_TAM file
-             LUTAM = 0
+             LUTAM = -1
              CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
      *                   IDUMMY,.FALSE.)
              REWIND (LUTAM)
@@ -608,7 +608,7 @@ C
               WRITE(LUPRI,529) 'Norm^2 of omega2 in sol. part.:',
      *              DDOT(NT2AM(ISYMOP),WORK(KOMEG2),1,WORK(KOMEG2),1)
            END IF
-           LUSLV = 0
+           LUSLV = -1
            CALL GPOPEN(LUSLV,'CC_OME','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            REWIND (LUSLV)
@@ -702,7 +702,7 @@ C
 C
          IF (CCR12.AND..NOT.(CCS.OR.CIS)) THEN
 C          Save new R12 amplitudes on disk:
-           LUNIT = 0 
+           LUNIT = -1
            CALL GPOPEN(LUNIT,FCCR12C,'UNKNOWN',' ','UNFORMATTED',
      &                       IDUM,LDUM)
            WRITE(LUNIT) (WORK(KTAMP12-1+I),I=1,NTR12AM(1))
@@ -1201,7 +1201,7 @@ C
          CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
      &               WORK(KEND1),LWRK1)
 C  
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,FVABKL,'OLD',' ','UNFORMATTED',IDUM,.FALSE.)
          READ(LUNIT)(WORK(KVABKL+I-1),I=1,NVABKL(1))
          CALL GPCLOSE(LUNIT,'KEEP')
@@ -1654,7 +1654,7 @@ C       IF ( LWRK1 .LT. 0 )
 C    *   CALL QUIT(' Too little workspace in ccsd_eccsd-3')
 C
 C        read V matrices
-C        LUNIT = 0
+C        LUNIT = -1
 C        CALL GPOPEN(LUNIT,FCCR12V,'UNKNOWN',' ','FORMATTED',
 C    &                    IDUM,LDUM)
 C6666     READ(LUNIT,'(I3)') IAN
@@ -1675,7 +1675,7 @@ C        XECCSD = XECCSD + ER12S + ER12T
      *    CALL QUIT(' Too little workspace in ccsd_eccsd-3')
 C
 C       read V matrices
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
 6666    READ(LUNIT) IAN
@@ -1765,8 +1765,7 @@ C
       RETURN
       END
 C  /* Deck ccsd_iajb */
-      SUBROUTINE CCSD_IAJB(XAIBJ,T1AM,LHTF,
-     &                     CCR12RSP,MKVAJKL,WORK,LWORK)
+      SUBROUTINE CCSD_IAJB(XAIBJ,T1AM,LHTF,CCR12RSP,MKVAJKL,WORK,LWORK)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
@@ -1894,7 +1893,7 @@ C----------------------------------------
 C     Open files needed for CC-R12:
 C----------------------------------------
       IF (LHTF) THEN
-        LUNITR12 = 0
+        LUNITR12 = -1
         IF (R12EOR.AND.CCR12SM) THEN
 c       case for new correlation factor: need (ialpha|f12/r12|jbeta) on file
 c                                        for initialisation if V-interm.
@@ -1904,7 +1903,7 @@ c                                        for initialisation if V-interm.
         END IF
         CALL WOPEN2(LUNITR12,FILER12,64,0)
         IF (CCR12RSP.AND..NOT.CCR12SM) THEN
-          LUNITR12_2 = 0
+          LUNITR12_2 = -1
           FILER12_2  = FRHTF2
           CALL WOPEN2(LUNITR12_2,FILER12_2,64,0)
           CALL FLSHFO(LUPRI)
@@ -1913,10 +1912,10 @@ c                                        for initialisation if V-interm.
 
       IF (CCR12.AND.V12INT.AND.LHTF.AND.
      &           (IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
-        LUNITR12 = 0
+        LUNITR12 = -1
         FILER12  = FGHTF
         CALL WOPEN2(LUNITR12,FILER12,64,0)
-        LU44 = 0 
+        LU44 = -1
         CALL WOPEN2(LU44,FCCGMNAB,64,0)
       END IF
 C
@@ -1928,7 +1927,7 @@ C
       IF (R12SQR) THEN
 C        Read MO coefficients from GUMAT.n for n=1,2 (WK/UniKA/04-11-2002).
          KLAMDQ = KLAMDP + NLAMDT
-         LU43 = 43 
+         LU43 = -43 
          IF (COMBSS) THEN
             CALL GPOPEN(LU43,'GUMAT.2','UNKNOWN',' ','UNFORMATTED',
      &                  IDUM,LDUM)
@@ -1987,7 +1986,7 @@ C       this matrix is needed for relaxed CC2 response, the
 C       numerical Xksi and Eta vectors (CC_FDXI, CC_FDETA)
 C---------------------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND(LUSIFC)
@@ -2338,7 +2337,7 @@ C------------------------------------------------------------------
 C
                   IF (CCSDT .OR. CCPT .OR.
      *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
-                      LUTOC = 0
+                      LUTOC = -1
                       FNTOC = 'CCSDT_OC'
                       CALL WOPEN2(LUTOC,FNTOC,64,0)
                   ENDIF
@@ -2507,7 +2506,7 @@ C
 
                      KOFF5 = KXINT + IDSAOG(ISYMG,ISYDIS)
 C
-                     LU3SRT = 0
+                     LU3SRT = -1
                      FN3SRT = 'CC3_SORT'
                      CALL WOPEN2(LU3SRT,FN3SRT,64,0)
 C
@@ -2538,7 +2537,7 @@ C     write AO-Fock matrix to file:
 C-------------------------------------
 C
       IF (.NOT. R12TRA) THEN
-         LUFCK = 0
+         LUFCK = -1
          CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LUFCK)
@@ -2554,7 +2553,7 @@ C
       IF (ANAAOD) THEN
         CALL AROUND('Analysis of integral distributions')
 C
-        WRITE(LUPRI,'(10X,/,A,D10.5)') 'Thereshold in analysis : ',
+        WRITE(LUPRI,'(10X,/,A,D10.5)') 'Threshold in analysis : ',
      &       THRDIS
         WRITE(LUPRI,'(10X,A,I7)')'Total number of dist.           : ',
      *                        ICOUNT2
@@ -2607,7 +2606,7 @@ C     -----------------------------------------
      &                        WORK(KEND1),LWRK1,.FALSE.,DUMMY,DUMMY)
          END IF
 
-         LUVAJKL = 0
+         LUVAJKL = -1
          CALL GPOPEN(LUVAJKL,FVAJKL,'UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND(LUVAJKL)
@@ -2619,7 +2618,7 @@ C     Compute Y(a,j,k,l) for MP2-R12 first order properties (Y=B,V,X)
             IF (FNVAJKL .EQ. 'CCR12QAJKL') THEN 
                CALL CC_R12MKXAJKL(WORK(KVAJKL),WORK(KCMO),WORK(KEND1),
      &                            LWRK1,.true.)
-               LUVAJKL = 0
+               LUVAJKL = -1
                CALL GPOPEN(LUVAJKl,FNVAJKL,'UNKNOWN',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
                REWIND(LUVAJKL)
@@ -2662,21 +2661,21 @@ C     Modified for MP2 frozen-core geometry opt. Sonia 2002
      *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .AND.
      *    (R12TRA .OR. RELORB .OR. MP2)) THEN
 C
-         LUCJDK = 0
+         LUCJDK = -1
          CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUCJDK)
          WRITE(LUCJDK) (WORK(KFRIN+I-1), I = 1,NT2FRO(1))
          CALL GPCLOSE(LUCJDK,'KEEP')
         IF (R12PRP) THEN
-            LUCJDK = 0
+            LUCJDK = -1
             CALL GPOPEN(LUCJDK,'INCJDA','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
             REWIND(LUCJDK)
             WRITE(LUCJDK) (WORK(KFRGR+I-1), I = 1,NFROVR(1))
             CALL GPCLOSE(LUCJDK,'KEEP')
 
-            LUCJDK = 0
+            LUCJDK = -1
             CALL GPOPEN(LUCJDK,'INCJDI','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
             REWIND(LUCJDK)
@@ -2692,11 +2691,11 @@ C------------------------------------
 C        Sort integrals (kc,d alpha).
 C------------------------------------
 C
-         LU3SRT  = 0
-         LU3VI   = 0
-         LU3VI2  = 0
-         LU3FOP  = 0
-         LU3FOP2 = 0
+         LU3SRT  = -1
+         LU3VI   = -1
+         LU3VI2  = -1
+         LU3FOP  = -1
+         LU3FOP2 = -1
          FN3SRT  = 'CC3_SORT'
          FN3VI   = 'CC3_VI'
          FN3VI2  = 'CC3_VI12'

@@ -126,7 +126,7 @@ C---------------------------------------------
 C     Read the reference CMO vector from disk:
 C---------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
@@ -477,7 +477,7 @@ C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
-      LUETA = 0
+      LUETA = -1
       CALL WOPEN2(LUETA,FILETA,64,0)
       CALL GETWA2(LUETA,FILETA,WORK(KRHO1),IADRF_ETA,LEN)
       CALL WCLOSE2(LUETA,FILETA,'KEEP')
@@ -742,7 +742,7 @@ C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
-      LUETA = 0
+      LUETA = -1
       CALL WOPEN2(LUETA,FILETA,64,0)
       CALL GETWA2(LUETA,FILETA,WORK(KRHO1),IADRF_ETA,LEN)
       CALL WCLOSE2(LUETA,FILETA,'KEEP')

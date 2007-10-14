@@ -1690,7 +1690,7 @@ c /* deck ccqr_fadrv */
  
             IADR = IFBTRAN(4)
             LEN  = NT1AM(ISYRES) + NT2AM(ISYRES)
-            LUFBTA = 0
+            LUFBTA = -1
             CALL WOPEN2(LUFBTA,FILFBTA,64,0)
             CALL GETWA2(LUFBTA,FILFBTA,WORK(KGAMMA1),IADR,LEN)
             CALL WCLOSE2(LUFBTA,FILFBTA,'DELETE')

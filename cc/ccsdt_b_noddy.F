@@ -199,7 +199,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -211,7 +211,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -293,7 +293,7 @@ C
       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KTA3AM),1)
 
       IF (NONHF) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPA','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -343,7 +343,7 @@ C
       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KTB3AM),1)
 
       IF (NONHF) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPB','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -602,7 +602,7 @@ ctest
 C       CALL DSCAL(NORBT*NORBT,-1.0D0,WORK(KFLDA1),1)
 ctest
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPB','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -626,7 +626,7 @@ ctest
 C       CALL DSCAL(NORBT*NORBT,-1.0D0,WORK(KFLDB1),1)
 ctest
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPA','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP

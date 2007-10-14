@@ -108,8 +108,8 @@ C
          NAME1 = 'CCFRO1IN'
          NAME2 = 'CCFRO2IN'
 C
-         LUN1  = 0
-         LUN2  = 0
+         LUN1  = -1
+         LUN2  = -1
 C
          CALL WOPEN2(LUN1,NAME1,64,0)
          CALL WOPEN2(LUN2,NAME2,64,0)
@@ -524,7 +524,7 @@ C--------------------------------------------------
         KEND1     = KONEIA_PT + NT1AMX
         LWRK1     = LWORK - KEND1
 C
-        LUPTIA = 0
+        LUPTIA = -1
         FNDPTIA = 'DPTIA'
         CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
@@ -1331,8 +1331,8 @@ C
          if (.true.) then
          IF (IMODEL.EQ.1) THEN
 
-           LUKAPAB = 0
-           LUKAPIJ = 0
+           LUKAPAB  = -1
+           LUKAPIJ  = -1
            FNKAPAB  = 'KAPAB'
            FNKAPIJ  = 'KAPIJ'
 
@@ -1757,7 +1757,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC

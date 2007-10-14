@@ -170,7 +170,7 @@ C
 * open files for sorted integrals:
 *----------------------------------------------------------------------*
       DO ISYM = 1,NSYM
-         LUAODR(ISYM) = 0
+         LUAODR(ISYM) = -1
          CALL WOPEN2(LUAODR(ISYM),NAME(ISYM),64,0)
       END DO
 

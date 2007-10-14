@@ -2487,14 +2487,14 @@ C-----------------------------------------------
 C     Read RMAT and SMAT written by energy code.
 C-----------------------------------------------
 C
-      LUE1 = 0
+      LUE1 = -1
       CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUE1)
       READ(LUE1) (WORK(KRMAT+I-1),I = 1,NMATAB(ISYMOP))
       CALL GPCLOSE(LUE1,'KEEP')
 C
-      LUE2 = 0
+      LUE2 = -1
       CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUE2)

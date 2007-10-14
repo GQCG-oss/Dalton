@@ -161,14 +161,14 @@ C
 C-------------------------------------
 C     Get the T3 amplitudes.
 C-------------------------------------
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       READ(LUTEMP) (WORK(KT3AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
       CALL GPCLOSE(LUTEMP,'KEEP')
 C
       IF (IOPT .EQ. 1 .OR. (NONHF .AND. NFIELD.GT.0)) THEN
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'T3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUSIFC
@@ -218,7 +218,7 @@ C
 
 
       IF (IOPT .EQ. 1) THEN
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'L3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUSIFC
@@ -668,7 +668,7 @@ c     ------------------------------------------
 c     contributions from non-HF external fields:
 c     ------------------------------------------
       IF (NONHF) THEN
-         LUTEMP = 0
+         LUTEMP = -1
          CALL GPOPEN(LUTEMP,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND LUTEMP

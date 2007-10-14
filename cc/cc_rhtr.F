@@ -149,8 +149,8 @@ C     Open files.
 C----------------
 C
       IF (DUMPCD .AND. (.NOT.(CCS .OR. CC2))) THEN
-         LUC = 0
-         LUD = 0
+         LUC = -1
+         LUD = -1
 C
          CTFIL = 'CCLR_C'
          DTFIL = 'CCLR_D'
@@ -158,8 +158,8 @@ C
          CALL WOPEN2(LUC,CTFIL,64,0)
          CALL WOPEN2(LUD,DTFIL,64,0)
 C
-         LUCIM = 0
-         LUDIM = 0
+         LUCIM = -1
+         LUDIM = -1
 C
          CFIL = 'PMAT_C'
          DFIL = 'PMAT_D'
@@ -170,13 +170,13 @@ C
       END IF
 C
       IF (CCSDT) THEN
-         LU3SRTR = 0
-         LUDELDR = 0
-         LUCKJDR = 0
-         LUDKBCR = 0
-         LUTOC   = 0
-         LU3VI   = 0
-         LU3VI2  = 0
+         LU3SRTR = -1
+         LUDELDR = -1
+         LUCKJDR = -1
+         LUDKBCR = -1
+         LUTOC   = -1
+         LU3VI   = -1
+         LU3VI2  = -1
          FN3SRTR = 'CC3_SORT_R'
          FNDELDR = 'CKDELD_R'
          FNCKJDR = 'CKJDEL_R'
@@ -1070,7 +1070,7 @@ C
       ISYMHO = 1
 C
       IF ( .NOT. CCS) THEN
-         LFOCK = 0
+         LFOCK = -1
          CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LFOCK)
@@ -1203,7 +1203,7 @@ C
          ! read R12 integrals (also triangular packed storage),
          ! exploits that C2AM is large enough to hold a totally
          ! symmetric amplitude/integral vector (see CC_TRDRV)
-         LUNIT = 0
+         LUNIT = -1
          CALL GPOPEN(LUNIT,FR12R12,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,.FALSE.)
          READ(LUNIT)(C2AM(I),I=1,NT2R12(1))  
@@ -1486,14 +1486,14 @@ C
 C
          DTIME = SECOND() - DTIME
 C
-         LUE1 = 0
+         LUE1 = -1
          CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE1 )
          READ (LUE1 )(WORK(KEI1+ J-1),J = 1,NMATAB(ISYMOP))
          CALL GPCLOSE(LUE1,'KEEP')
 C
-         LUE2 = 0
+         LUE2 = -1
          CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE2 )
@@ -1551,7 +1551,7 @@ C
            CALL DZERO(WORK(KEI1P),NMATAB(ISYMOP))
 
            ! read the r12 contribution to E^(2) 
-           LUE2P = 0
+           LUE2P = -1
            CALL GPOPEN(LUE2P,'CC_E2PIM','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            REWIND(LUE2P)
@@ -1609,7 +1609,7 @@ C
          KGAMI  = KEND1
          KEND2  = KGAMI + NGAMMA(ISYMOP)
          LWRK2  = LWORK - KEND2
-         LUGAM = 0
+         LUGAM = -1
          CALL GPOPEN(LUGAM,'CC_GAMIM','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND(LUGAM)
@@ -1761,7 +1761,7 @@ C
 C
             DTIME = SECOND()
 C
-            LUBF = 0
+            LUBF = -1
             CALL GPOPEN(LUBF,'CC_BFIM','OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
             READ(LUBF) (C2AM(J),J = 1,2*NT2ORT(1))
@@ -1932,7 +1932,7 @@ C
      &                           'N',lufc12,fc12am,ifile,cdummy,
      &                           idummy,work(kend3),lwrk3)
                 !read R12 overlap matrix
-                lunit = 0
+                lunit = -1
                 call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &                      idummy,.false.)
                 rewind(lunit)
@@ -2035,7 +2035,7 @@ c
             END IF
           
             ! read V(mu jt,kl)
-            LUVAJTKL = 0
+            LUVAJTKL = -1
             CALL GPOPEN(LUVAJTKL,FVAJTKL,'UNKNOWN',' '
      &           ,'UNFORMATTED', IDUMMY,.FALSE.) 
             REWIND(LUVAJTKL)

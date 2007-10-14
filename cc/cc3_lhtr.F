@@ -92,8 +92,8 @@ C-----------------------------
 C
       CDUMMY = ' '
 C
-      LUDELD = 0
-      LUDKBC = 0
+      LUDELD = -1
+      LUDKBC = -1
       FNDELD = 'CC3_T3_TMP1'
       FNDKBC = 'CC3_T3_TMP2'
 C
@@ -1518,12 +1518,12 @@ C     Initialise character strings and open files
 C----------------------------------------------------
 C
       CDUMMY = ' '
-      LUDKBC4 = 0
+      LUDKBC4 = -1
       FNDKBC4 = 'CC3_L3_TMP1'
 C
-      LU3FOP  = 0
-      LU3FOP2 = 0
-      LU3VI2  = 0
+      LU3FOP  = -1
+      LU3FOP2 = -1
+      LU3VI2  = -1
 C
       CALL WOPEN2(LU3FOP,FN3FOP,64,0)
       CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
@@ -1533,9 +1533,9 @@ C
 C
       IF (.NOT.LVVVV) THEN
          !Open files for N1MAT intermediates
-         LUGEI = 0
-         LUFEI = 0
-         LUN1  = 0
+         LUGEI = -1
+         LUFEI = -1
+         LUN1  = -1
          CALL WOPEN2(LUGEI,FNGEI,64,0)
          CALL WOPEN2(LUFEI,FNFEI,64,0)
          CALL WOPEN2(LUN1,FNN1,64,0)
@@ -1677,7 +1677,7 @@ C-----------------------------------------------------
 C     Construct the transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
       CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -2316,10 +2316,10 @@ C------------------------------------
 C     Open temporary files
 C------------------------------------
 C
-         LUTMP1 = 0
-         LUTMP2 = 0
-         LUTMP3 = 0
-         LUTMP4 = 0
+         LUTMP1 = -1
+         LUTMP2 = -1
+         LUTMP3 = -1
+         LUTMP4 = -1
          FNTMP1 = 'CC3_TCME_1'
          FNTMP2 = 'CC3_TCME_2'
          FNTMP3 = 'CC3_TCME_3'

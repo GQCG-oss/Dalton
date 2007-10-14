@@ -223,15 +223,15 @@ C-------------------------------
 C     Open scratch file CCINT3O.
 C-------------------------------
 C
-      LUIN30 = 0
+      LUIN30 = -1
       CALL WOPEN2(LUIN30,'CCINT3O',64,0)
 C
 C-------------------------------------------------------------
 C     Open files with C- & D-intermediates needed in 22-block.
 C-------------------------------------------------------------
 C
-      LUCIM = 0
-      LUDIM = 0
+      LUCIM = -1
+      LUDIM = -1
 C
       CFIL = 'PMAT_C'
       DFIL = 'PMAT_D'
@@ -245,7 +245,7 @@ C-------------------------------------------------------------
 C
       IF (.TRUE.) THEN
 
-         LUPQ = 0
+         LUPQ = -1
          PQFIL = 'CCPQIM'
 C
          CALL WOPEN2(LUPQ,PQFIL,64,0)
@@ -259,27 +259,27 @@ C--------------------------------------------------
 C
       IF (CC3) THEN
 C
-         LU3SRT  = 0
-         LUCKJD  = 0
-         LUDKBC  = 0
-         LUTOC   = 0
-         LU3VI   = 0
-         LUDKBC3 = 0
-         LU3FOPX  = 0
-         LU3FOP2X = 0
-         LU3V    = 0
-         LU4V    = 0
+         LU3SRT   = -1
+         LUCKJD   = -1
+         LUDKBC   = -1
+         LUTOC    = -1
+         LU3VI    = -1
+         LUDKBC3  = -1
+         LU3FOPX  = -1
+         LU3FOP2X = -1
+         LU3V     = -1
+         LU4V     = -1
 C
-         FN3SRT  = 'CC3_SORT'
-         FNCKJD  = 'CKJDEL'
-         FNDKBC  = 'DKBC'
-         FNTOC   = 'CCSDT_OC'
-         FN3VI   = 'CC3_VI'
-         FNDKBC3 = 'DKBC3'
+         FN3SRT   = 'CC3_SORT'
+         FNCKJD   = 'CKJDEL'
+         FNDKBC   = 'DKBC'
+         FNTOC    = 'CCSDT_OC'
+         FN3VI    = 'CC3_VI'
+         FNDKBC3  = 'DKBC3'
          FN3FOPX  = 'PTFOPX'
          FN3FOP2X = 'PTFOP2X'
-         FN3V    = 'ABCDEL'
-         FN4V    = 'ABCD'
+         FN3V     = 'ABCDEL'
+         FN4V     = 'ABCD'
 C
          CALL WOPEN2(LU3SRT,FN3SRT,64,0)
          CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -1161,7 +1161,7 @@ C            WRITE(LUPRI,*) IF, NHFFIELD(IF), EFIELD(IF), LFIELD(IF)
              END IF
            END DO
 
-           LUSIFC = 0
+           LUSIFC = -1
            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            REWIND(LUSIFC)
@@ -1181,7 +1181,7 @@ C            WRITE(LUPRI,*) IF, NHFFIELD(IF), EFIELD(IF), LFIELD(IF)
      &                         cdummy,idummy,work(kend2),lwrk2)
 C
               ! read R12 overlap matrix and reorder to full square
-              lunit = 0
+              lunit = -1
               call gpopen(lunit,fccr12x,'old',' ','unformatted',idummy,
      &                    .false.)
               rewind(lunit)
@@ -1221,7 +1221,7 @@ C
            END IF
 C
            IF (CC2) THEN
-             LUFCK = 0
+             LUFCK = -1
              CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
      *                   IDUMMY,.FALSE.)
              REWIND(LUFCK)
@@ -1419,7 +1419,7 @@ C
                CALL QUIT('Insufficient memory for V-intermediate '//
      &                   'in CC_LHTR')
              ENDIF
-             lunit = 0
+             lunit = -1
              call gpopen(lunit,fccr12v,'old',' ','unformatted',
      &                       idum,ldum)
  9999        read(lunit) ian
@@ -1600,7 +1600,7 @@ C---------------------------------------------
 C        Save RHO2 on disc to gain work space.
 C---------------------------------------------
 C
-         LURHO2 = 0
+         LURHO2 = -1
          CALL GPOPEN(LURHO2,'LSRHO2','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LURHO2)
@@ -1611,7 +1611,7 @@ C        Read Omega(albe,ij) written to disc by energy code.
 C-----------------------------------------------------------
 C
          TIMEBF = SECOND()
-         LUOM = 0
+         LUOM = -1
          CALL GPOPEN(LUOM,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUOM)
@@ -1666,14 +1666,14 @@ C
          ENDIF
 C
          AUTIME = SECOND()
-         LUE1 = 0
+         LUE1 = -1
          CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE1)
          READ(LUE1) (WORK(KE1INT + J - 1), J = 1,NMATAB(ISYMOP))
          CALL GPCLOSE(LUE1,'KEEP')
 C
-         LUE2 = 0
+         LUE2 = -1
          CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUE2)
@@ -1720,7 +1720,7 @@ C
          ENDIF
 C
          AUTIME = SECOND()
-         LUGI = 0
+         LUGI = -1
          CALL GPOPEN(LUGI,'CC_GAMIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUGI)
@@ -1796,7 +1796,7 @@ C     Ove: Read in AO Fock.
 C     Transform AO Fock matrix to MO basis.
 C------------------------------------------
 C
-      LFOCK = 0
+      LFOCK = -1
       CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LFOCK)

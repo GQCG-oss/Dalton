@@ -114,7 +114,7 @@ C
       END IF
 C
       !read SCF AO-Fock matrix:
-      LUFCK = 0
+      LUFCK = -1
       CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
      *           IDUMMY,.FALSE.)
       REWIND(LUFCK)
@@ -391,7 +391,7 @@ C
      &                1,LUPRI)
         END DO
       END IF
-      LUNIT = 0
+      LUNIT = -1
       CALL GPOPEN(LUNIT,'R12FVIR','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE (LUNIT) (WORK(KFCKMIX+I-1), I=1, NR12xVIR)

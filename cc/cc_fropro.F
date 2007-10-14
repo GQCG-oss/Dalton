@@ -456,11 +456,11 @@ C-------------------------------------
                NCVIJ = NCVIJ + NRHFFR(ISYMA)*NRHF(ISYMI)
             ENDDO
          ENDDO
-         YIJIJ = KEND1
-         YIJIJT= YIJIJ + NCVIJ  
-         KEND1 = YIJIJT+ NCVIJ
+         YIJIJ  = KEND1
+         YIJIJT = YIJIJ + NCVIJ  
+         KEND1  = YIJIJT+ NCVIJ
          LWRK1  = LWORK  - KEND1
-         LUVAJKL = 0 
+         LUVAJKL = -1
          IF (IPDD .EQ. 2) THEN
             CALL GPOPEN(LUVAJKL,'CCR12YIJIJ','UNKNOWN',' ',
      *                  'UNFORMATTED',IDUMMY,.FALSE.)
@@ -508,7 +508,7 @@ C--------------------------------------
 C     Read integrals (cJ|dk) from disk.
 C--------------------------------------
 C
-      LUCJDK = 0
+      LUCJDK = -1
       CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCJDK)

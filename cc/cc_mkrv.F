@@ -96,10 +96,10 @@ C
      & 'B'' ','B  ','B  ','B*''','B*''','B* ','B* '/
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
-      LU43 = 43
-      LU44 = 44
-      LU45 = 45
-      LU46 = 46
+      LU43 = -43
+      LU44 = -44
+      LU45 = -45
+      LU46 = -46
       CALL GPOPEN(LU46,FCCR12K,'UNKNOWN',' ','FORMATTED',
      &                 IDUM,LDUM)
       FF = D1 / SQRT(D2)
@@ -143,7 +143,7 @@ C
          XPDD = DP5
       END IF
 
-      LU33 = 33
+      LU33 = -33
       CALL GPOPEN(LU33,'AUXQ12','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ(LU33,'(4E30.20)') QQ11
       CALL GPCLOSE(LU33,'KEEP')
@@ -881,7 +881,7 @@ C
       END IF
 C
       IF (DOB) THEN
-         LU43 = 43
+         LU43 = -43
          IF (IANSAZ .EQ. 2) THEN
          CALL GPOPEN(LU43,'QMATSP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
          READ(LU43,'(4E30.20)') QS11
@@ -912,7 +912,7 @@ C
            END DO
         END DO
         IF (DOBP) THEN         
-          LU43 = 43
+          LU43 = -43
           IF (IANSAZ .EQ. 2) THEN
           CALL GPOPEN(LU43,'XMATSP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
           READ(LU43,'(4E30.20)') QS11  
@@ -1135,7 +1135,7 @@ C
   100 CONTINUE
       NBASF = NORB1(NSYM) + NORB2(NSYM)
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2 
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM) 
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE(LUMULB,'KEEP')
@@ -1432,7 +1432,7 @@ C
   100 CONTINUE
       NBASF = NORB1(NSYM) + NORB2(NSYM)
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2 
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE(LUMULB,'KEEP')
@@ -1754,7 +1754,7 @@ C
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2
       IF (NNBASF .GT. LSF) 
      * CALL QUIT('NOT ENOUGH SPACE IN COMKR')
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE(LUMULB,'KEEP')

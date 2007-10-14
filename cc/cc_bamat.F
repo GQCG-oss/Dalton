@@ -230,7 +230,7 @@ c/* Deck CC_BAMAT */
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
 
-        LUBMAT = 0
+        LUBMAT = -1
         CALL WOPEN2(LUBMAT,FILBAM,64,0)
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -556,7 +556,7 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
         CALL CCLR_LAMTRA(WORK(KLAMDP0),WORK(KLAMDPB), WORK(KLAMDH0),
      &                   WORK(KLAMDHB),WORK(KT1AMPB),ISYMTB)
 
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
      &              DUMMY,.FALSE.)
         REWIND(LUNIT)

@@ -416,7 +416,7 @@ c/* Deck CC_FTRAN */
          CALL QUIT('Insufficient work space in CC_FTRAN.')
       END IF
 
-      LUFMAT = 0
+      LUFMAT = -1
       CALL WOPEN2(LUFMAT, FILFMA, 64, 0)
       CALL GETWA2(LUFMAT,FILFMA,WORK(1),1,LENALL) 
       CALL WCLOSE2(LUFMAT, FILFMA, 'DELETE')
@@ -759,7 +759,7 @@ C     DOUBLE PRECISION ECURRSAV
       CCSDR12 = CCR12 .AND. .NOT.(CC2.OR.CCS)
 
 * check return option for the result vectors:
-      LUFMAT = 0
+      LUFMAT = -1
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
          CALL WOPEN2(LUFMAT, FILFMA, 64, 0)
       ELSE IF (IOPTRES .EQ. 3 .OR. IOPTRES .EQ. 4) THEN
@@ -1088,17 +1088,17 @@ C
 
 * open some other files needed in the loop over integrals, but need
 * not to be initialized:
-      LUBFD  = 0
-      LUZDN  = 0
-      LUC    = 0
-      LUD    = 0
-      LUMGD  = 0
-      LUBFI  = 0
-      LUBFD  = 0
-      LUPQR0 = 0
-      LUPQRR = 0
-      LUBDZ0 = 0
-      LUO3   = 0
+      LUBFD  = -1
+      LUZDN  = -1
+      LUC    = -1
+      LUD    = -1
+      LUMGD  = -1
+      LUBFI  = -1
+      LUBFD  = -1
+      LUPQR0 = -1
+      LUPQRR = -1
+      LUBDZ0 = -1
+      LUO3   = -1
       IF (CCS.OR.CC2) THEN
          CALL WOPEN2(LUZDN, FILZDN, 64,0)
       ELSE IF (.NOT.(CCS.OR.CC2)) THEN
@@ -1682,12 +1682,12 @@ C         OMEGOR = .TRUE.
 *---------------------------------------------------------------------*
 * open files for CBAR, DBAR, X & Y intermediates:
 *---------------------------------------------------------------------*
-      LUCBAR = 0
-      LUDBAR = 0
-      LUPQMO = 0
-      LUXIM  = 0
-      LUYIM  = 0
-      LUMIM  = 0
+      LUCBAR = -1
+      LUDBAR = -1
+      LUPQMO = -1
+      LUXIM  = -1
+      LUYIM  = -1
+      LUMIM  = -1
       IF (.NOT.(CCS.OR.CC2)) THEN
          CALL WOPEN2(LUCBAR,CBAFIL, 64,0)
          CALL WOPEN2(LUDBAR,DBAFIL, 64,0)
@@ -2217,16 +2217,16 @@ C            ----------------------------------------
 
              END IF
  
-             LUCKJD  = 0
-             LUDKBC  = 0
-             LUTOC   = 0
-             LU3VI   = 0
-             LU3VI2   = 0
-             LUDKBC3 = 0
-             LU3FOP  = 0
-             LU3FOP2 = 0
-             LU3FOPX  = 0
-             LU3FOP2X = 0
+             LUCKJD   = -1
+             LUDKBC   = -1
+             LUTOC    = -1
+             LU3VI    = -1
+             LU3VI2   = -1
+             LUDKBC3  = -1
+             LU3FOP   = -1
+             LU3FOP2  = -1
+             LU3FOPX  = -1
+             LU3FOP2X = -1
  
              CALL WOPEN2(LUCKJD,FNCKJD,64,0)
              CALL WOPEN2(LUDKBC,FNDKBC,64,0)
@@ -2758,14 +2758,14 @@ C  /* Deck ccfpreint */
 * open direct access files:
 *---------------------------------------------------------------------*
 
-      LUPQ   = 0
-      LUZDN  = 0
-      LUXIM  = 0
-      LUYIM  = 0
-      LUMGD  = 0
-      LUBDZ0 = 0
-      LUPQMO = 0
-      LUMIM  = 0
+      LUPQ   = -1
+      LUZDN  = -1
+      LUXIM  = -1
+      LUYIM  = -1
+      LUMGD  = -1
+      LUBDZ0 = -1
+      LUPQMO = -1
+      LUMIM  = -1
 C
       IF (CCSD .OR. CCSDT) THEN
         CALL WOPEN2(LUPQ, FILPQ, 64,0)
@@ -3113,12 +3113,12 @@ c/* Deck CCFOPEN*/
 *---------------------------------------------------------------------*
 * open files for local intermediates:
 *---------------------------------------------------------------------*
-      LUBF  = 0
-      LUR   = 0
-      LUFIM = 0
-      LUGIM = 0
-      LUFK  = 0
-      LURHO = 0
+      LUBF  = -1
+      LUR   = -1
+      LUFIM = -1
+      LUGIM = -1
+      LUFK  = -1
+      LURHO = -1
       IF (.NOT. (CCS.OR.CC2)) THEN
          CALL WOPEN2(LUBF, BFFIL, 64,0)
          CALL WOPEN2(LUR,  RFIL,  64,0)
@@ -4153,7 +4153,7 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
            CALL QUIT('Insufficient memory in CCFMAT2.')
         END IF
 
-        LUBF0 = 0
+        LUBF0 = -1
         CALL GPOPEN(LUBF0,'CC_BFIM','OLD',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         READ(LUBF0) (WORK(KBF-1+I),I=1,2*NT2ORT(ISYM0))
@@ -5710,7 +5710,7 @@ C       !read V_(alpha beta)^(kl) from disk
         IF (LWRK2 .LT. 0) THEN
           CALL QUIT('Insuff. work space for V^(albe)_kl in CC_R12FMAT')
         END IF
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fvabkl,'unknown',' ','unformatted',
      &            idummy,.false.)
         read (lunit)(work(kvabkl+i-1),i=1,nvabkl(1))
@@ -5745,7 +5745,7 @@ C
           CALL QUIT('Insufficient memory for V-intermediate '//
      &              'in CC_R12FMAT')
         ENDIF
-        lunit = 0
+        lunit = -1
         call gpopen(lunit,fccr12v,'old',' ','unformatted',
      &                  idummy,.FALSE.)
  9999   read(lunit) ian
@@ -5831,7 +5831,7 @@ C       read r12 response amplitudes:
      &               DUMMY,CDUMMY,DUMMY,LISTR,IDLSTR,WORK(KEND2),LWRK2)
 
 C       read r12 overlap matrix:
-        LUNIT = 0
+        LUNIT = -1
         CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND(LUNIT)

@@ -895,7 +895,7 @@ C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -956,7 +956,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -1053,7 +1053,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -1181,7 +1181,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -1397,7 +1397,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)

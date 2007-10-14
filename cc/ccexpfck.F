@@ -130,7 +130,7 @@ C
       END IF                           
 
       ! open file for effective Fock matrices
-      LUFCK = 0
+      LUFCK = -1
       CALL WOPEN2(LUFCK,FILFCK,64,0)        
 
       ! initialize start address for eff. Fock matrices on file
