@@ -167,7 +167,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order effective Fock matrix if available:
 *---------------------------------------------------------------------*
-      IFOCK = IEFFFOCK(LABEL0,ISYM,1)
+      IFOCK = IEFFFOCK(LABEL0,ISYM0,1)
 
       IF (LEXPFCK(2,IFOCK)) THEN
          IADRF = IADRFCK(1,IFOCK)
