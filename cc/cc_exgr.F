@@ -92,6 +92,10 @@ C
       CHARACTER MODELPRI*4, MODELPRI2*30
       CHARACTER LABEL*8, LABR12*4
       CHARACTER*2 LIST
+      CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
+      CHARACTER*6 FNDPTIA2
+      PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
+     *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
 C
 #include <leinf.h>
 C
@@ -480,8 +484,8 @@ C
 C
             ILLNR = IX
             CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
-     &                   LWRK2,MODELPRI,
-     *                   LIST,ILLNR,.FALSE.)
+     &                   LWRK2,MODEL,LIST,ILLNR,.FALSE.,
+     &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
             IF (FROIMP .OR. FROEXP) THEN
               CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK2),LWRK2,MODELPRI)
             ENDIF
