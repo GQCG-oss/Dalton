@@ -343,7 +343,7 @@ C     ========================
 C
       IF (FIRST) THEN
          IF (DODIST) THEN
-           IF (LUINTR .LE. 0) THEN
+           IF (LUINTR .LT. 0) THEN
                CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',' ',
      *                     IDUMMY,.FALSE.)
             ENDIF

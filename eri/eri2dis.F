@@ -182,7 +182,7 @@ C
 C
 C     Open files
 C
-      IF (LUINTR.EQ.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
+      IF (LUINTR.LT.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
 #if defined (SYS_CRAY) || defined (SYS_T90) || (defined (SYS_AIX) && defined (VAR_INT64))
       LRECL = LBFINP + LBFINP + 1
