@@ -426,7 +426,7 @@ C
       NERR = 0
       IF (NSYM .NE. MSYM) NERR = NERR + 1
       DO ISYM = 1,NSYM
-         IF (NAOS(I) .NE. NBAS(I)) NERR = NERR + 1
+         IF (NAOS(ISYM) .NE. NBAS(ISYM)) NERR = NERR + 1
       END DO
       IF (NERR .GT. 0) THEN
          WRITE(LUPRI,'(//A//A,2I5//A/)')
