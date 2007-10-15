@@ -1371,7 +1371,7 @@ C
 C
 C     /ERITAP/
 C
-      DO I = 1, MXCOOR
+      DO I = 0, MXCOOR
          LUAORC(I) = -10000 - I
       ENDDO
 C
