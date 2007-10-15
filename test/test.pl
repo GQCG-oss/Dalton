@@ -1405,24 +1405,23 @@ continue {
 }
 
 if ((@passed_tests) or (@failed_tests)) {
-    print "Tests finished!\n" unless $quiet;
-    print $BIGLOG "Tests finished!\n";
+    print "Tests finished!\n\n" unless $quiet;
+    print $BIGLOG "Tests finished!\n\n";
     if (@passed_tests) {
-	print $BIGLOG "The following perl tests have been computed successfully:\n";
-	print $BIGLOG "@passed_tests\n";
 	print "The following perl tests have been computed successfully:\n" unless $quiet;
-	print "@passed_tests\n" unless $quiet;
+	print "@passed_tests\n\n" unless $quiet;
+	print $BIGLOG "The following perl tests have been computed successfully:\n";
+	print $BIGLOG "@passed_tests\n\n";
     }
     if (@failed_tests) {
 	print "The following perl tests have failed:\n" unless $quiet;
 	print "@failed_tests\n" unless $quiet;
-	print $BIGERR "@failed_tests\n";
-	print $BIGERR "THERE IS A PROBLEM\n";
 	print $BIGLOG "The following perl tests have failed:\n";
 	print $BIGLOG "@failed_tests\n";
-	print $BIGERR "THERE IS A PROBLEM\n";
+	print $BIGLOG "THERE IS A PROBLEM\n\n";
 	print $BIGERR "The following perl tests have failed:\n";
 	print $BIGERR "@failed_tests\n";
+	print $BIGERR "THERE IS A PROBLEM\n\n";
         exit 1;
     } else {
 	print "All tests completed successfully\n" unless $quiet;
