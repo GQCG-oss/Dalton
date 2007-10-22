@@ -580,7 +580,7 @@ C
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
          WRITE (LUPRI,'(A,L5)') ' ANTI   ', ANTI
          WRITE (LUPRI,'(A,L5)') ' SQUARE ', SQUARE
-         WRITE (LUPRI,'(A,(10I5))') ' INTREP ', (INTREP(I),I=1,NOPTYP)
+         WRITE (LUPRI,'(A,(10I9))')    ' INTREP ',(INTREP(I),I=1,NOPTYP)
          WRITE (LUPRI,'(A,(10(1X,A)))')' LABINT ',(LABINT(I),I=1,NOPTYP)
          WRITE (LUPRI,'(A,3F20.10)') ' ORIGIN ', (ORIGIN(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' GAUGE  ', (GAGORG(I),I=1,3)
@@ -793,7 +793,7 @@ C  /* Deck pr1sop */
 #include <mxcent.h>
 #include <qm3.h>
 #include <nuclei.h>
-      LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1,
+      LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DONUC1, DOMOM1,
      &        EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
@@ -840,7 +840,7 @@ C  /* Deck pr1so1 */
 #include <maxaqn.h>
 #include <nuclei.h>
 C
-      LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
+      LOGICAL FULMAT, ANTI, DOATOM(*), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB, EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), SHLINT(KCKTAB,NSHINT),
@@ -966,7 +966,7 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
 C
-         IF (INTTYP .EQ. 75 .OR. INTTYP .EQ. 66
+         IF (      INTTYP .EQ. 75 .OR. INTTYP .EQ. 66
      &        .OR. INTTYP .EQ. 67 .OR. INTTYP .EQ. 99
      &        .OR. INTTYP .EQ. 100) THEN
             NATOMC = 0
@@ -1036,6 +1036,11 @@ C
   310          CONTINUE
             END IF
   300       CONTINUE
+         ELSE
+C        ... here if INTTYP.EQ.12 .OR. INTTYP.EQ.58 .OR. INTTYP.EQ.96
+            NATOMC = NUCDEP
+C           ... hjaaj Oct07: must be sure allocation for AHGTF
+C               in PR1PRM is big enough for PR1PRD
          END IF
       END IF
 C
@@ -1123,10 +1128,10 @@ C
          IF (EXP1EL) THEN
             CALL DZERO(WORK,NOPTYP)
             IF ((INTTYP .EQ. 26) .OR. (INTTYP .EQ. 27) .OR.
-     &            (INTTYP .EQ. 28) .OR. (INTTYP .EQ. 38) .OR.
-     &            (INTTYP .EQ. 48) .OR. (INTTYP .EQ. 74) .OR.
-     &            (INTTYP .EQ. 82) .OR. (INTTYP .EQ. 93) .OR.
-     &            (INTTYP .EQ. 97)) THEN
+     &          (INTTYP .EQ. 28) .OR. (INTTYP .EQ. 38) .OR.
+     &          (INTTYP .EQ. 48) .OR. (INTTYP .EQ. 74) .OR.
+     &          (INTTYP .EQ. 82) .OR. (INTTYP .EQ. 93) .OR.
+     &          (INTTYP .EQ. 97)) THEN
                CALL NSTTRA(SHLINT,DUMMY,FACINT,JSYMC,JCENTC,NATOMC,
      &                  ISYMOP,NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,
      &                  MULTB,NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DENMAT,
@@ -1271,6 +1276,7 @@ C
      &          NCENTC(*)
 #include <onecom.h>
 C
+      CALL QENTER('PR1PRM')
       JMAXA  = NHKTA - 1
       IF (INTTYP .EQ. 42) JMAXA = JMAXA + 1
       IF (INTTYP .EQ. 43) JMAXA = JMAXA + 2
@@ -1281,26 +1287,30 @@ C
       JMAXT  = JMAXA + JMAXB + JMAXD + JMAXM
       IF (INTTYP .EQ. 92) JMAXT = JMAXT + 3
 C
-      KODC   = 1
-      KAHGTF = KODC+ 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)*(JMAXM+1)
-      KLAST  = KAHGTF + NAHGTF*(NATOMC + 1)
-      IF (KLAST .GT. LWORK) CALL STOPIT('PR1PRM',' ',KLAST,LWORK)
-      LWRK   = LWORK - KLAST + 1
+      KFRWRK = 1
+      KFREE  = KFRWRK
+      LFREE  = LWORK
+      LODC   = 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)*(JMAXM+1)
+      CALL MEMGET('REAL',KODC,  LODC,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KAHGTF,NAHGTF*(NATOMC + 1),WORK,KFREE,LFREE)
 C
       IF (INTTYP .NE. 12 .AND. INTTYP .NE. 58 .AND. INTTYP .NE. 96) THEN
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
+     &               WORK(KAHGTF),SHLINT,WORK(KFREE),LFREE,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC,
      &               NCENTC,NSHINT)
       ELSE
          CALL PR1PRD(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,NPOINT,LABINT,
-     &               INTTYP,NOPTYP,NBAST,DOATOM,WEIGHT,ABSCIS,TRIANG,
-     &               IPRINT,TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,
-     &               CORCZ,DIFABX,DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
+     &               WORK(KAHGTF),SHLINT,WORK(KFREE),LFREE,
+     &               NPOINT,LABINT,INTTYP,NOPTYP,NBAST,
+     &               DOATOM,WEIGHT,ABSCIS,TRIANG,IPRINT,
+     &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
+     &               DIFABX,DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
       END IF
+      CALL MEMREL('PR1PRM',WORK,1,KFRWRK,KFREE,LFREE)
+      CALL QEXIT('PR1PRM')
       RETURN
       END
 C  /* Deck pr1pra */
@@ -2187,7 +2197,7 @@ C     Print
 C
       IF (IPRINT .GT. 30) THEN
          DO 400 I = 1, NSHINT
-            CALL AROUND('SHLINT for '//LABINT(I)//' in PR1DR1')
+            CALL AROUND('SHLINT for '//LABINT(I)//' in PR1PRA')
             CALL OUTPUT(SHLINT(1,I),1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
   400    CONTINUE
       END IF
@@ -2208,12 +2218,13 @@ C  /* Deck pr1prd */
 #include <nuclei.h>
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3)
 C
-      LOGICAL DOATOM(NUCIND), TRIANG, SAMECD, DONUC1, DOMOM1
+      LOGICAL DOATOM(*), TRIANG, SAMECD, DONUC1, DOMOM1
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION WORK(LWORK), WEIGHT(NPOINT), ABSCIS(NPOINT),
-     &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
-     &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
+     &          SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,3)
+      DIMENSION FACINT(NATOMC),
+     &          CORCX(NATOMC), CORCY(NATOMC), CORCZ(NATOMC)
 C
 #include <onecom.h>
 #include <orgcom.h>
@@ -2232,8 +2243,8 @@ C
          CONTB  = PRICCF(JPRIMB,NUMCFB)
          EXPB   = PRIEXP(JPRIMB)
 C
-C        Loop over fourth center
-C        -----------------------
+C        Loop over fourth center, atom D
+C        -------------------------------
 C
          ISTDSO = 1
          DO 200 IATOMD = 1, NUCIND
@@ -2254,7 +2265,7 @@ C
 C              Prepare for loop over atom C
 C              ----------------------------
 C
-               NATOMC = 0
+               JATOMC = 0
                MXATMC = NUCIND
                IF (TRIANG .AND. (INTTYP .EQ. 12 .OR. INTTYP .EQ. 96))
      &              MXATMC = IATOMD
@@ -2267,16 +2278,21 @@ C
                   DO 500 ISYMC = 0, MAXOPR
                   IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 500
                   IF (IBTAND(ISYMC,MABCD) .EQ. 0) THEN
-                     NATOMC = NATOMC + 1
-                     CORCX(NATOMC) = XYZ(1,ISYMC)*CORD(1,IATOMC)
-                     CORCY(NATOMC) = XYZ(2,ISYMC)*CORD(2,IATOMC)
-                     CORCZ(NATOMC) = XYZ(3,ISYMC)*CORD(3,IATOMC)
-                     FACINT(NATOMC)= FACTOR
+                     JATOMC = JATOMC + 1
+                     CORCX(JATOMC) = XYZ(1,ISYMC)*CORD(1,IATOMC)
+                     CORCY(JATOMC) = XYZ(2,ISYMC)*CORD(2,IATOMC)
+                     CORCZ(JATOMC) = XYZ(3,ISYMC)*CORD(3,IATOMC)
+                     FACINT(JATOMC)= FACTOR
                   END IF
   500             CONTINUE
                END IF
   400          CONTINUE
-               IF (NATOMC .EQ. 0) GO TO 300
+               IF (JATOMC .EQ. 0) GO TO 300
+               IF (JATOMC .GT. NATOMC) THEN
+                 WRITE(LUPRI,*) 'DSO error, JATOMC,NATOMC',JATOMC,NATOMC
+                 CALL QUIT(
+     &            'JATOMC.gt.NATOMC, insufficient allocation for AHGTF')
+               END IF
 C
 C              Loop over quadrature points
 C              ---------------------------
@@ -2326,7 +2342,7 @@ C                 ********************************************
 C                 **** Calculation of Hermitian integrals ****
 C                 ********************************************
 C
-                  DO 700 I = 1, NATOMC
+                  DO 700 I = 1, JATOMC
                      FACTOR = FACINT(I)
                      DIFCPX = CORCX(I) - CORPX
                      DIFCPY = CORCY(I) - CORPY
@@ -2343,13 +2359,13 @@ C                 ********************************************
 C
                   IF (INTTYP .EQ. 12 .OR. INTTYP .EQ. 58) THEN
                      CALL DSOINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &                           AHGTF,SHLINT(1,ISTDSO),NOPTYP,NATOMC)
+     &                           AHGTF,SHLINT(1,ISTDSO),NOPTYP,JATOMC)
                   ELSE IF (INTTYP .EQ. 96) THEN
                      CALL DSOKIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &                           AHGTF,SHLINT(1,ISTDSO),NOPTYP,NATOMC)
+     &                           AHGTF,SHLINT(1,ISTDSO),NOPTYP,JATOMC)
                   END IF
   600          CONTINUE
-               ISTDSO = ISTDSO + 9*NATOMC
+               ISTDSO = ISTDSO + 9*JATOMC
             END IF
   300       CONTINUE
          END IF
@@ -2363,7 +2379,7 @@ C     Print
 C
       IF (IPRINT .GT. 30) THEN
          DO 900 I = 1, NOPTYP
-            CALL AROUND('SHLINT for '//LABINT(I)//' in PR1DR1')
+            CALL AROUND('SHLINT for '//LABINT(I)//' in PR1PRD')
             CALL OUTPUT(SHLINT(1,I),1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
   900    CONTINUE
       END IF
@@ -3472,7 +3488,6 @@ C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
 #include <onecom.h>
-#include "sdpre.h"
 #include <lmns.h>
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -3675,7 +3690,6 @@ C
      &          SHLINT(KCKTAB), AHGTF(*)
 #include <onecom.h>
 #include <lmns.h>
-#include <sdpre.h>
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5308,7 +5322,7 @@ C
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
       PARAMETER (DFAC = D4*GFAC*PI/D3)
-      LOGICAL DOATOM(NUCIND)
+      LOGICAL DOATOM(*)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include <onecom.h>
 #include <lmns.h>
@@ -5370,7 +5384,7 @@ C
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
       PARAMETER (D1 = 1.0D0, DFAC = D2*GFAC*PI/D3)
-      LOGICAL DOATOM(NUCIND)
+      LOGICAL DOATOM(*)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include <onecom.h>
 #include <lmns.h>
@@ -7345,7 +7359,7 @@ C  /* Deck dsotra */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <nuclei.h>
-      LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR,
+      LOGICAL FULMAT, ANTI, DOATOM(*), SAMECD, TRIANG, TRICR,
      &        EXP1EL
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), DMAT(*)
@@ -7368,9 +7382,9 @@ C
 C
 C           Atom C
 C
-C           (First determine NATOMC)
+C           (First determine JATOMC)
 C
-            NATOMC = 0
+            JATOMC = 0
             MXATMC = NUCIND
             IF (TRIANG .AND. INTTYP .EQ. 12) MXATMC = IATOMD
             DO 130 IATOMC = 1, MXATMC
@@ -7379,11 +7393,11 @@ C
                MABCD  = IBTOR(ISTBNU(IATOMC),KABD)
                DO 135 ISYMC = 0, MAXOPR
                   IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 135
-                  IF (IBTAND(ISYMC,MABCD) .EQ. 0) NATOMC = NATOMC + 1
+                  IF (IBTAND(ISYMC,MABCD) .EQ. 0) JATOMC = JATOMC + 1
   135          CONTINUE
             END IF
   130       CONTINUE
-            IF (NATOMC .GT. 0) THEN
+            IF (JATOMC .GT. 0) THEN
               ITYP0 = ISTAO
               MXATMC = NUCIND
               IF (TRIANG .AND. INTTYP .EQ. 12) MXATMC = IATOMD
@@ -7443,7 +7457,7 @@ C
   210           CONTINUE
               END IF
   200         CONTINUE
-              ISTAO = ISTAO + 9*NATOMC
+              ISTAO = ISTAO + 9*JATOMC
             END IF
           END IF
   120     CONTINUE
