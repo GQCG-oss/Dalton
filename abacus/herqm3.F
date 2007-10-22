@@ -360,6 +360,7 @@ C
 C
 C     **** Find potential input *****
 C
+      LUPOT = -1
       CALL GPOPEN(LUPOT,'POTENTIAL.INP','OLD',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -702,6 +703,7 @@ C
 C
 C Initialization of Two-body interaction parameters:
 C
+      LUVDWSE = -1
       DO 1400 IBG = 0,MXTYPE
         DO 1410 JBG = 0,MXTYPE
           QM3LJA(IBG,JBG) = D0
@@ -882,6 +884,7 @@ C
         LCOUNT = 0
         TEMP = D0
         TEMP1= D0
+        
         CALL GPOPEN(LUVDWSE,'VDWSIEP','UNKNOWN',' ','FORMATTED',
      &              IDUMMY,.FALSE.)
         DO 1600 I = 0, ISYTP
@@ -1292,6 +1295,7 @@ C
         IF (RDFILE(I)) KG = KG + 1
    43 CONTINUE
 C
+      LUOSCR = -1
       IF (KG .GT. 0) THEN
          CALL GPOPEN(LUOSCR,'QM3CORD','OLD',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
@@ -2135,6 +2139,10 @@ C     If FIXMOM is true non of the fields are written to
 C     files. This means that both the ENUCFILE, ESITFILE and
 C     the EINDFILE from a previous run must be used.
 C
+      LUENUC = -1
+      LUSITE = -1
+      LUEIND = -1
+      LUPMOM = -1
       IF ( .NOT. (FIXMOM) ) THEN
         IF (MDLWRD(0) .EQ. 'SPC    ') THEN
           CALL QM3_PUT3(LUENUC,'ENUCFILE',ENUC,KTEMP2)
@@ -2223,6 +2231,9 @@ C
 C
 C     Get electric fields from files
 C
+      LUENUC = -1
+      LUESITE = -1
+      LUEIND = -1
       CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
@@ -2497,6 +2508,7 @@ C
 C
         END IF
 C
+        LUMOM = -1
         CALL QM3_PUT3(LUEIND,'EINDFILE',EIND,NCOMS)
         CALL QM3_PUT3(LUMOM,'QMIND   ',MYIND,NCOMS)
 C
@@ -2754,6 +2766,7 @@ C
       INTEGER   NMBU,NULOOP
       DIMENSION PUTNU(3,MXQM3) 
 C
+      NMBU = -1
       CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -2782,6 +2795,7 @@ C
       INTEGER   NMBU,NULOOP
       DIMENSION PUTNU(3,MXQM3)
 C
+      NMBU = -1
       CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -2852,6 +2866,11 @@ C      IF (RELMOM) THEN
 C        WRITE(LUPRI,*)'External electric fields added in QM3_OBAR'
 C      END IF
 C
+      LUENUC = -1
+      LUESITE = -1
+      LUEIND = -1
+      LUEOBAR = -1
+      LUENSA = -1
       CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
@@ -2932,6 +2951,9 @@ C----------------------
 C get field from files:
 C----------------------
 C
+      LUENUC = -1
+      LUESITE = -1
+      LUEIND = -1
       CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
@@ -3038,6 +3060,9 @@ C---------------------------------------
 C get induced dipole moments from files:
 C---------------------------------------
 C
+      LUMOM = -1
+      LUPMOM = -1
+      LUESITE = -1
       CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
       CALL QM3_GET3(LUPMOM,'CLIND   ',PIND,NCOMS)
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
@@ -3233,6 +3258,7 @@ C
       SIG_IJ = D0
       EPS_IJ = D0
 C
+      LUVDWSE = -1
       CALL GPOPEN(LUVDWSE,'VDWSIEP','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND (LUVDWSE)
@@ -3602,6 +3628,7 @@ C
 C
 C     get induced dipole moments from files:
 C
+      LUMOM = -1
       CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
 C
       IF (OLDTG)  THEN
