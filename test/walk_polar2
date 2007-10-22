@@ -191,7 +191,7 @@ ERROR[9]="INITIAL HESSIAN NOT CORRECT"
 CRIT1=`$GREP "(0| )\.216(5|6)(0|9)[0-9] * (0| )\.55053[0-9] * 1\.836(39|40)[0-9]" $log | wc -l`
 CRIT2=`$GREP "x * (\-0|\-)\.2165986[0-9] * (\-0|\-)\.5505387[0-9] * \-1.836399[6-7][0-9]" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2`
-CTRL[10]=2
+CTRL[10]=3
 ERROR[10]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
