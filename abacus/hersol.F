@@ -33,6 +33,26 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C  /* Deck rlmset */
+      SUBROUTINE RLMSET_CBISOL(LMAX)
+C
+C  17-Oct-2007 hjaaj
+C
+C  Set some /cbisol/ variables which are used in some calls,
+C  also when DORLM is false.
+C
+#include <implicit.h>
+C
+C  CBISOL : LCAVMX,LMTOT,LMNTOT
+C
+#include <cbisol.h>
+C
+C     transfer information to CBISOL (for SOLNUC)
+      LCAVMX = LMAX
+      LMTOT  = (LCAVMX+1) ** 2
+      LMNTOT = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3) / 6
+      RETURN
+      END
 C  /* Deck ireplm */
       FUNCTION IREPLM(L,M)
 C
@@ -89,8 +109,11 @@ C
          IF (IPRINT .GT. 2) WRITE (LUPRI,'(A,3I4)')
      &         ' l, m, symmetry of R(l,m)',L,M,INTREP(L+1+M)
   100 CONTINUE
-      NOPTP8 = MAX(8,NOPTYP)
-      WRITE (LUSOL) L,(INTREP(I),I=1,NOPTP8)
+      IF (NOPTYP .GE. 8) THEN
+         WRITE (LUSOL) L,(INTREP(I),I=1,NOPTYP)
+      ELSE
+         WRITE (LUSOL) L,(INTREP(I),I=1,NOPTYP),0,0,0,0,0,0,0,0
+      ENDIF
       DO 200 M = -L, L
       IF (INTREP(L+1+M) .GT. 0) THEN
 C        Find R(l,m), they come in the order 0,1,-1,2,-2,...
@@ -112,7 +135,7 @@ C        Find R(l,m), they come in the order 0,1,-1,2,-2,...
       RETURN
       END
 C  /* Deck rlmnuc */
-      SUBROUTINE RLMNUC(WORK,LWORK,LMAX,IPRINT)
+      SUBROUTINE RLMNUC(WORK,LWORK,IPRINT)
 C
 C  9-Feb-1993 hjaaj
 C
@@ -142,11 +165,6 @@ C
       DIMENSION   FILL4(4)
       DATA LABSOL/'********',' HERMIT ',' HERMIT ','SOLVRLM '/,
      *     FILL4 /4*1.0D20/
-C
-C     transfer information to CBISOL (for SOLNUC)
-      LCAVMX = LMAX
-      LMTOT  = (LCAVMX+1) ** 2
-      LMNTOT = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3) / 6
 C     Memory allocation
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -176,7 +194,7 @@ C
       CALL GETDAT(LABSOL(2),LABSOL(3))
       REWIND LUSOL
       WRITE (LUSOL) LABSOL
-      WRITE (LUSOL) LMAX, (LMAX+1)*(LMAX+1), NBAST, CAVORG
+      WRITE (LUSOL) LCAVMX, (LCAVMX+1)*(LCAVMX+1), NBAST, CAVORG
       CALL WRITT(LUSOL,LMTOT4,WORK(KRNUC))
       CALL MEMREL('RLMNUC',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
