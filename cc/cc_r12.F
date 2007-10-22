@@ -929,6 +929,12 @@ C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
  1001 FORMAT('CSMAT.',I2.2,'.',I2.2)
  1002 FORMAT('CTMAT.',I2.2,'.',I2.2)
+Ckr   We need to have the next two unit numbers in consecutive order, and
+Ckr   thus assign a very large unit number in order to avoid conflicts with 
+Ckr   already open records.\kr-231007\
+Ckr
+      LUMULO = 90
+      LUMULN = 91
       IF (R12CBS) THEN
         FACX = - D1
       ELSE
@@ -1728,12 +1734,9 @@ C
       CALL OUTPUT(BT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW triplet <S> matrix') 
       CALL OUTPUT(RT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-  998 LUMULO = -34
-      LUMULN = LUMULO + 1
+  998 CONTINUE
       CALL GPOPEN (LUMULO,'AOR12O','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN (LUMULN,'AOR12N','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
-c      write(lupri,*) 'LUMULO=',LUMULO
-c      write(lupri,*) 'LUMULN=',LUMULN
       WRITE(LUMULO,'(4E30.20)') VS11
       WRITE(LUMULO,'(4E30.20)') US11
       WRITE(LUMULO,'(4E30.20)') QS11
