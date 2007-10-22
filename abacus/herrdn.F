@@ -497,7 +497,7 @@ C
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
-      IF (IPREAD .GT. 20) CALL REAPRI
+      IF (IPREAD .GT. 10) CALL REAPRI
       IF (NEWFILE) CALL GPCLOSE(LUINFO,'KEEP')
 C
       IF (NODDYDF) CALL DENFIT_NODDY_INT
@@ -1427,8 +1427,8 @@ C Performing some QM3 test after having read the nuclei
 C positions and generated the center of masses of the systems.
 C-------------------------------------------------------------
 C
-C 1: Testing if number of QM classical charges read matches the
-C    number of QM nuclei:
+C 1: Testing if the number of QM classical charges read from input
+C    matches the number of QM nuclei:
 C
           IF ( ICHRGS(0) .NE. NSISY(0) ) THEN
            CALL QUIT('Error in no. of classical charges for '//
@@ -1440,7 +1440,7 @@ C
           JK = 0
           DO 655 IK = 1, NCTOT
             IF (ISUBSY(IK) .EQ. 0 .AND.
-     &          ISUBSI(IK) .LE. NSISY(IK)) THEN
+     &          ISUBSI(IK) .LE. NSISY(0)) THEN
             JK = JK + 1
             END IF
  655      CONTINUE
@@ -1890,7 +1890,7 @@ C
          NSMLSH = KMAX - NLRGSH
          NORBS  = IORB
          NBASIS = IORBD
-         IF (IPREAD .GT. 20) THEN
+         IF (IPREAD .GT. 10) THEN
             WRITE(LUPRI,'(A)') 'PRIEXP:'
             WRITE(LUPRI,'(I5,F15.5)') (KK,PRIEXP(KK),KK=1,IPRIM)
          END IF
@@ -3471,7 +3471,6 @@ C
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
 #include <chrxyz.h>
       DATA IS/0,1,1,2,1,2,2,3/
-#include <sdpre.h>
 #include <ibtfun.h>
 C
 C     Initialization
@@ -3559,7 +3558,7 @@ C
            NAXREP(IREP,ITYPE) = NAXIS
   205   CONTINUE
   200 CONTINUE
-      IF (IPREAD.GT. 20) THEN
+      IF (IPREAD.GT. 10) THEN
          WRITE (LUPRI,'(A,3I5)') '  IPTAX(*,1)  ',
      &                           (IPTAX(I,1),I=1,3)
          WRITE (LUPRI,'(A,3I5)') '  IPTAX(*,2)  ',
@@ -3583,7 +3582,7 @@ C     =======================================================
 C
       DO 101 I = 0,7
          MULT(I)  = 2**MAX(0,NSYMOP-IS(I))
-         FMULT(I) = SDPRE(MULT(I))
+         FMULT(I) = MULT(I)
   101 CONTINUE
 C
       RETURN
@@ -3764,6 +3763,7 @@ C*****************************************************************************
       CALL IZERO(NCOS,16)
       CALL IZERO(IRREP,MXCORB)
       CALL DZERO(CTRAN,8*MXCORB)
+      CALL IZERO(ITRAN,8*MXCORB)
 C
 C     Run over Irreducible Representations LAMBDA
 C
@@ -3804,14 +3804,14 @@ C
 C
 C                 loop over symmetry dependent centers
 C
-                  DO 430 KB = 0, MAXREP
-                  IF (IBTAND(KB,MULA) .EQ. 0) THEN
-                     JKB              = JKB + 1
-                     NAORBD           = NAORBD + 1
-                     CTRAN(NSORB,JKB) = PT(IBTAND(KB,IVARB))
-                     ITRAN(NSORB,JKB) = NAORBD
-                  END IF
-  430             CONTINUE
+                  DO KB = 0, MAXREP
+                     IF (IBTAND(KB,MULA) .EQ. 0) THEN
+                        JKB              = JKB + 1
+                        NAORBD           = NAORBD + 1
+                        CTRAN(NSORB,JKB) = PT(IBTAND(KB,IVARB))
+                        ITRAN(NSORB,JKB) = NAORBD
+                     END IF
+                  END DO
                   NAOS(LA+1)    = NAOS(LA+1) + 1
                   NCOS(LA+1,IC) = NCOS(LA+1,IC) + 1
                   IPTYP(NSORB)  = NHKOFF(NHKTA) + NA
@@ -4019,7 +4019,7 @@ C
         END IF
   10  CONTINUE
       IF (MAXREP .GT. 0 .AND. IPREAD .GT. 0) THEN
-         IF (IPREAD .GT. 10) THEN
+         IF (IPREAD .GE. 10) THEN
             WRITE(LUPRI,'(10X,A/)') 'Symmetry pointer indices'
             WRITE(LUPRI,'(4X,8I4)')
      &           ((IPTSYM(I,J),J = 0,MAXREP),I=1,NORBS)
@@ -4059,7 +4059,7 @@ C
       CALL IZERO(IPTCNT(1,0,1),LENGTH)
       IOFFT = 0
       IOFFR = 0
-      IOFFTN = 0
+c     IOFFTN = 0
       DO 100 IREP = 0,MAXREP
          ICENTA = 0
          ICENTB = 0
@@ -4076,14 +4076,14 @@ C
                   IPTCNT(ICENTA,IREP,2) = IOFFR
                ENDIF
   200       CONTINUE
-            DO 300 IDIR1 = 1, 3
-            DO 300 IDIR2 = IDIR1, 3
-               ICENTB = ICENTB + 1
-               ISYMIJ = IBTXOR(ISYMAX(IDIR1,1),ISYMAX(IDIR2,1))
-               IF (IBTAND(MULC,IBTXOR(IREP,ISYMIJ)) .EQ. 0) THEN
-                  IOFFTN = IOFFTN + 1
-               ENDIF
-  300       CONTINUE
+c           DO 300 IDIR1 = 1, 3
+c           DO 300 IDIR2 = IDIR1, 3
+c              ICENTB = ICENTB + 1
+c              ISYMIJ = IBTXOR(ISYMAX(IDIR1,1),ISYMAX(IDIR2,1))
+c              IF (IBTAND(MULC,IBTXOR(IREP,ISYMIJ)) .EQ. 0) THEN
+c                 IOFFTN = IOFFTN + 1
+c              ENDIF
+c 300       CONTINUE
   110    CONTINUE
   100 CONTINUE
 C
@@ -4101,36 +4101,39 @@ C
   420    CONTINUE
   400 CONTINUE
 C
-      IF (IPREAD .GE. 20) THEN
+      IF (IPREAD .GT. 10) THEN
          CALL HEADER('Symmetry-adapted nuclear coordinates',-1)
-         WRITE(LUPRI,'(11X,8I4)') (IREP, IREP = 0,MAXREP)
+         WRITE(LUPRI,'(6X,A//4X,A,3X,8I5)') '( IPTCNT(:,:,1) array )',
+     &   'Irrep:',(IREP, IREP = 0,MAXREP)
          ICENTA = 0
          DO 500 ICENT = 1,NUCIND
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'X', (IPTCNT(ICENTA+1,IREP,1),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Y', (IPTCNT(ICENTA+2,IREP,1),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Z', (IPTCNT(ICENTA+3,IREP,1),IREP = 0,MAXREP)
             ICENTA = ICENTA + 3
   500    CONTINUE
          CALL HEADER('Symmetry-adapted nuclear magnetic moments',-1)
-         WRITE(LUPRI,'(11X,8I4)') (IREP, IREP = 0,MAXREP)
+         WRITE(LUPRI,'(6X,A//4X,A,3X,8I5)') '( IPTCNT(:,:,2) array )',
+     &   'Irrep:',(IREP, IREP = 0,MAXREP)
          ICENTA = 0
          DO 510 ICENT = 1,NUCIND
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'X', (IPTCNT(ICENTA+1,IREP,2),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Y', (IPTCNT(ICENTA+2,IREP,2),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Z', (IPTCNT(ICENTA+3,IREP,2),IREP = 0,MAXREP)
             ICENTA = ICENTA + 3
   510    CONTINUE
          CALL HEADER('Symmetry-adapted nuclei',-1)
-         WRITE (LUPRI,'(11X,8I4)') (IREP, IREP = 0, MAXREP)
+         WRITE(LUPRI,'(6X,A//4X,A,3X,8I5)') '( IPTNUC(:,:) array )',
+     &   'Irrep:',(IREP, IREP = 0,MAXREP)
          DO 520 ICENT = 1, NUCIND
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
-     &      NAMN(ICENT),CHRXYZ(1),(IPTNUC(ICENT,IREP),IREP = 0,MAXREP)
+            WRITE(LUPRI,'(4X,A6,3X,8I5)')
+     &      NAMN(ICENT),(IPTNUC(ICENT,IREP),IREP = 0,MAXREP)
   520    CONTINUE
       END IF
 C
@@ -4522,10 +4525,10 @@ C  /* Deck carlab */
 C  /* Deck aotoao */
       SUBROUTINE AOTOAO(IAOAO,JAOAO,IPREAD)
 C
-C     This subroutine sets up pointer IAOAO which convertes between
-C     two different orderings of AO's: from the ordering
-C     of MOLECULE to an ordering in which the outer loop is over
-C     atoms. (This orderings are identical when no symmetry is used.)
+C     This subroutine sets up pointer IAOAO which converts between
+C     two different orderings of AO's: from the ordering of
+C     MOLECULE to an ordering in which the outer loop is over atoms.
+C     (These orderings are identical when no symmetry is used.)
 C
 C     The purpose of this ordering is to make the AO's appear in the
 C     same order as in the corresponding run with no symmetry.
@@ -4589,13 +4592,18 @@ Clf and not for cartesians.
 Clf
                         IF(KHKT(ISHELL) .GE. 5) THEN
                            LMAX = (KHKT(ISHELL)-1)/2
-                           LZ = ICMP - 1 - LMAX
-                           ISGN = ISIGN(1,LZ)
-                           IF(LZ .EQ. 0) ISGN = 0
-                           ISHIFT = LMAX + LZ - 2*ABS(LZ) +
+                           LZ   = ICMP - 1 - LMAX
+                           IF (LZ .EQ. 0) THEN
+                              ISHIFT = LMAX
+                           ELSE
+                              ISGN   = ISIGN(1,LZ)
+                              ISHIFT = LMAX + LZ - 2*ABS(LZ) +
      $                          (ISGN+1) * ISGN**2 / 2
-                           KAO = IAO-ISHIFT
+                           END IF
+                           KAO = IAO - ISHIFT
                            JAOAO(KAO,2) = ISHIFT
+                        ELSE
+                           JAOAO(IAO,2) = 0
                         END IF
                      END IF
                   END IF
@@ -4612,9 +4620,9 @@ C
 C     End loop over atoms
 C
       IF (IPREAD .GE. 10) THEN
-         CALL HEADER('I - IAOAO',6)
+         CALL HEADER('i -> IAOAO(i), JAOAO(i,1:2)',6)
          DO 600 I = 1, IAO
-            WRITE (LUPRI,'(I9,I6)') I, IAOAO(I)
+            WRITE (LUPRI,'(I9,3I6)') I, IAOAO(I), JAOAO(I,1), JAOAO(I,2)
   600    CONTINUE
       END IF
       RETURN
