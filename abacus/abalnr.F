@@ -301,9 +301,10 @@ C
             END IF
             IF (ABSORP) THEN
                WRITE(LUPRI,'(A,F9.6,A)') 
-     &              ' Damping parameter equals  :',
-     &              DAMPING, ' a.u.'
+     &              ' Damping parameter equals  :',DAMPING, ' a.u.'
                NFREQ_ALPHA = NFRVAL
+               ABS_INTERVAL = .FALSE.
+               NFREQ_INTERVAL = NFREQ_ALPHA
                DO I=1,NFREQ_ALPHA
                   FREQ_ALPHA(I) = FRVAL(I)
                END DO
