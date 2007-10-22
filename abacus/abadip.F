@@ -203,6 +203,7 @@ C
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
 #include <dipole.h>
+#include <orgcom.h>
 #include <moldip.h>
 #include <cbidip.h>
 C
@@ -249,10 +250,19 @@ C
       KREP   = KINT + (9*MXCENT + 1)/IRAT
       KLAST  = KREP + (9*MXCENT + 1)/IRAT
       LWRK   = LWORK - KLAST + 1
+      DIPTMX = DIPORG(1)
+      DIPTMY = DIPORG(2)
+      DIPTMZ = DIPORG(3)
+      DIPORG(1) = 0.0D0
+      DIPORG(2) = 0.0D0
+      DIPORG(3) = 0.0D0
       IF (KLAST .GT. LWORK) CALL STOPIT('DIPCT1','GET1IN',KLAST,LWORK)
       CALL GET1IN(SOPACK,'DIPLEN ',NCOMP,WORK(KLAST),LWRK,LABINT,
      &            WORK(KINT),WORK(KREP),IDUMMY,.FALSE.,NPATOM,.TRUE.,
      &            DUMMY,.FALSE.,DUMMY,IPRINT)
+      DIPORG(1) = DIPTMX
+      DIPORG(2) = DIPTMY
+      DIPORG(3) = DIPTMZ
       IF (NNBASX .GT. LWORK) CALL STOPIT('DIPCT1','SYMUPK',NNBASX,LWORK)
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Dipole (x) SO  matrix in DIPCT1',-1)
