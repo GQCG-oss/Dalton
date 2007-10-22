@@ -142,15 +142,15 @@ CTRL[6]=6
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Hessian, 1st iteration:
-CRIT1=`$GREP "O * z * (0| )\.47225[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (\-0|\-)\.36392[0-9] * (0| )\.78089[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (\-0|\-)\.47225[0-9] * (0| )\.36392[0-9] * (0| )\.47225[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * x * (0| )\.03648[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * x * (\-0|\-)\.03648[0-9] * (0| )\.03648[0-9]" $log | wc -l`
-CRIT6=`$GREP "O * y * (0| )\.65773[0-9]" $log | wc -l`
-CRIT7=`$GREP "H * y * (\-0|\-)\.65773[0-9] * (0| )\.65773[0-9]" $log | wc -l`
-CRIT8=`$GREP "H * z * (\-0|\-)\.48102[0-9] * (0| )\.48102[0-9] * (0| )\.4065[3-4][0-9]" $log | wc -l`
-CRIT9=`$GREP "H * x * (0| )\.0340[8-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "O * z * 0*\.47225." $log | wc -l`
+CRIT2=`$GREP "H * y * \-0*\.36392. * 0*\.78089." $log | wc -l`
+CRIT3=`$GREP "H * z * \-0*\.47225. * 0*\.36392. * 0*\.47225." $log | wc -l`
+CRIT4=`$GREP "O * x * 0*\.000000" $log | wc -l`
+CRIT5=`$GREP "H * x * 0*\.000000 * 0\.000000" $log | wc -l`
+CRIT6=`$GREP "O * y *   0*\.67811." $log | wc -l`
+CRIT7=`$GREP "H * y * \-0*\.67811. * 0*\.67811." $log | wc -l`
+CRIT8=`$GREP "H * z * \-0*\.52505. * 0*\.52505. * 0*\.4065[3-4]." $log | wc -l`
+CRIT9=`$GREP "H * x * 0\.000000" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \
            \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[7]=10
