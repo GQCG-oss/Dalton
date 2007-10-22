@@ -328,6 +328,8 @@ C
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
+      CALL QENTER('RDPOT')
+C
 C     Initialization
 C    
       ISYTP = 0
@@ -405,6 +407,13 @@ C
 C
 C     ***** Process input for COMMON  /QM3SYS/  *****
 C
+      IF ( ISYTP .GT. MXTYPE ) THEN
+         WRITE (LUPRI,'(/A,I4/A,I4/A)')
+     &   ' You specified .NUMMTP under **SYSTP as',ISYTP,
+     &   ' Max number of system types is MXTYPE =',MXTYPE,
+     &   ' Increase MXTYPE in "include/qm3.h" and recompile'
+         CALL QUIT('Too many system types, see output')
+      END IF
 C
   100 DO 555 J=0,ISYTP
 C
@@ -469,20 +478,20 @@ C
                 READ(INLINE(K+1:80),*) NSYSED(J)
 C
                 IF (.NOT. NSYSBG(J) .LE. NSYSED(J) ) THEN
-                  CALL QUIT('The MM types has been given' //
+                  CALL QUIT('The MM types have been given' //
      &                      ' in wrong order')
                 END IF
 C
                 IF ( NSYSBG(J) .NE. LSTART ) THEN
-                  CALL QUIT('The MM types has to be given' //
-     &                      ' in continously order')
+                  CALL QUIT('The MM types have to be given' //
+     &                      ' in continuous order')
                 ELSE
                   LSTART = NSYSED(J) + 1
                 END IF
                 GOTO 156
               END IF
   343       CONTINUE
-            CALL QUIT('The MM types has to be seperated by a "-"')
+            CALL QUIT('The MM types have to be seperated by a "-"')
           END IF
           GO TO 156
 C
@@ -510,7 +519,7 @@ C
   104     CONTINUE
           LOALTE = .TRUE.
           READ (LUPOT,*) ALTXX(J),ALTXY(J),ALTXZ(J),
-     &                  ALTYY(J),ALTYZ(J),ALTZZ(J)
+     &                   ALTYY(J),ALTYZ(J),ALTZZ(J)
           GO TO 156
 C
   105     CONTINUE
@@ -696,10 +705,10 @@ C***********************************
 C Interaction parameter input table:
 C***********************************
 C
-      DATA TABLE1  /'.LJ_A', '.LJ_B', '.LJ_Aa','.LJ_Ba',
-     &             '.SIGEPS', '.XXXXXX', 'XXXXXX', '.XXXXXX',
-     &             'XXXXXX', '.XXXXXX', 'XXXXXX', '.XXXXXX',
-     &             'XXXXXX', '.XXXXXX', 'XXXXXX', '.XXXXXX'/
+      DATA TABLE1 /'.LJ_A  ', '.LJ_B  ', '.LJ_Aa ', '.LJ_Ba ',
+     &             '.SIGEPS', 'xXXXXXX', 'xXXXXXX', 'xXXXXXX',
+     &             'xXXXXXX', 'xXXXXXX', 'xXXXXXX', 'xXXXXXX',
+     &             'xXXXXXX', 'xXXXXXX', 'xXXXXXX', 'xXXXXXX'/
 C
 C Initialization of Two-body interaction parameters:
 C
@@ -1218,6 +1227,8 @@ C
         WRITE(LUPRI,*)'**** Shadow wavefunction calculation ****'
         WRITE(LUPRI,*)'-----------------------------------------'
       END IF
+      CALL QEXIT('RDPOT')
+      RETURN
       END
 C
 C----------------------------------------------------------------
@@ -1351,24 +1362,23 @@ C
                 NAMN(NCTOT+KURT) = 
      *               'A  '//CHRNOS(MOD((KURT1-1),10))
               ELSE IF (((KURT-1) .GT. 9) .AND. 
-     &          ((KURT-1) .LT. 100)) THEN
+     &                 ((KURT-1) .LT. 100)) THEN
                 NAMN(NCTOT+KURT) = 
      *               'A '//CHRNOS((KURT1-1)/10)
      &                   //CHRNOS(MOD((KURT1-1),10))
               ELSE IF (((KURT-1) .GT. 99) .AND.
-     &          ((KURT-1) .LT. 1000)) THEN
+     &                 ((KURT-1) .LT. 1000)) THEN
                 NAMN(NCTOT+KURT) = 
      *               'A'//CHRNOS((KURT1-1)/100)
      &                  //CHRNOS(MOD((KURT1-1),100)/10)
      &                  //CHRNOS(MOD((MOD((KURT1-1),100)),10))
+              ELSE
+                CALL QUIT('KURT is too big (.ge.1000)')
               END IF
 C
-              NAMEX(3*(NCTOT+KURT))   = 
-     *                 NAMN(NCTOT+KURT)//' z'
-              NAMEX(3*(NCTOT+KURT)-1) = 
-     *                 NAMN(NCTOT+KURT)//' y'
-              NAMEX(3*(NCTOT+KURT)-2) = 
-     *                 NAMN(NCTOT+KURT)//' x'
+              NAMEX(3*(NCTOT+KURT)-2) = NAMN(NCTOT+KURT)//' x'
+              NAMEX(3*(NCTOT+KURT)-1) = NAMN(NCTOT+KURT)//' y'
+              NAMEX(3*(NCTOT+KURT))   = NAMN(NCTOT+KURT)//' z'
   45        CONTINUE
 C
             NSISY(L) = LTEMP1
@@ -1394,26 +1404,25 @@ C
 C
                   IF ((KURT - 1) .LT. 10) THEN
                     NAMN(NCTOT+KURT) = 
-     &                   'A  '//CHRNOS(MOD((KURT1-1),10))
+     &                'A  '//CHRNOS(MOD((KURT1-1),10))
                   ELSE IF (((KURT-1) .GT. 9) .AND.
-     &              ((KURT-1) .LT. 100)) THEN
+     &                     ((KURT-1) .LT. 100)) THEN
                     NAMN(NCTOT+KURT) = 
-     &                   'A '//CHRNOS((KURT1-1)/10)
-     &                   //CHRNOS(MOD((KURT1-1),10))
+     &                'A '//CHRNOS((KURT1-1)/10)
+     &                    //CHRNOS(MOD((KURT1-1),10))
                   ELSE IF (((KURT-1) .GT. 99) .AND.
-     &              ((KURT-1) .LT. 1000)) THEN
+     &                     ((KURT-1) .LT. 1000)) THEN
                     NAMN(NCTOT+KURT) = 
-     &                   'A'//CHRNOS((KURT1-1)/100)
+     &                'A'//CHRNOS((KURT1-1)/100)
      &                   //CHRNOS(MOD((KURT1-1),100)/10)
      &                   //CHRNOS(MOD((MOD((KURT1-1),100)),10))
+                  ELSE
+                    CALL QUIT('KURT is too big (.ge.1000)')
                   END IF
 C
-                  NAMEX(3*(NCTOT+KURT))   = 
-     *                                  NAMN(NCTOT+KURT)//' z'
-                  NAMEX(3*(NCTOT+KURT)-1) = 
-     *                                  NAMN(NCTOT+KURT)//' y'
-                  NAMEX(3*(NCTOT+KURT)-2) = 
-     *                                  NAMN(NCTOT+KURT)//' x'
+                  NAMEX(3*(NCTOT+KURT)-2) = NAMN(NCTOT+KURT)//' x'
+                  NAMEX(3*(NCTOT+KURT)-1) = NAMN(NCTOT+KURT)//' y'
+                  NAMEX(3*(NCTOT+KURT))   = NAMN(NCTOT+KURT)//' z'
                 END IF
   47          CONTINUE
 C
@@ -1483,26 +1492,25 @@ C
 C
                 IF ((KURT - 1) .LT. 10) THEN
                   NAMN(NCTOT+KURT) = 
-     &                 'A  '//CHRNOS(MOD((KURT1-1),10))
+     &             'A  '//CHRNOS(MOD((KURT1-1),10))
                 ELSE IF (((KURT-1) .GT. 9) .AND.
-     &            ((KURT-1) .LT. 100)) THEN
+     &                  ((KURT-1) .LT. 100)) THEN
                   NAMN(NCTOT+KURT) = 
-     &                 'A '//CHRNOS((KURT1-1)/10)
+     &             'A '//CHRNOS((KURT1-1)/10)
      &                 //CHRNOS(MOD((KURT1-1),10))
                 ELSE IF (((KURT-1) .GT. 99) .AND.
-     &            ((KURT-1) .LT. 1000)) THEN
+     &                  ((KURT-1) .LT. 1000)) THEN
                   NAMN(NCTOT+KURT) = 
-     &                 'A'//CHRNOS((KURT1-1)/100)
+     &              'A'//CHRNOS((KURT1-1)/100)
      &                 //CHRNOS(MOD((KURT1-1),100)/10)
      &                 //CHRNOS(MOD((MOD((KURT1-1),100)),10))
+                ELSE
+                  CALL QUIT('KURT is too big (.ge.1000)')
                 END IF
 C
-                NAMEX(3*(NCTOT+KURT))   =
-     *                                NAMN(NCTOT+KURT)//' z'
-                NAMEX(3*(NCTOT+KURT)-1) =
-     *                                NAMN(NCTOT+KURT)//' y'
-                NAMEX(3*(NCTOT+KURT)-2) =
-     *                                NAMN(NCTOT+KURT)//' x'
+                NAMEX(3*(NCTOT+KURT)-2) = NAMN(NCTOT+KURT)//' x'
+                NAMEX(3*(NCTOT+KURT)-1) = NAMN(NCTOT+KURT)//' y'
+                NAMEX(3*(NCTOT+KURT))   = NAMN(NCTOT+KURT)//' z'
   50          CONTINUE
 C
               NSISY(L) = LTEMP
@@ -1557,9 +1565,11 @@ C code has to be a part of the released DALTON code!!A
 C---------------------------------------------------------------------
 C     
       IF (NSISY(0) .GT. MXNEW) THEN
-        WRITE(LUPRI,'(/1X,A,I3,A/)')'Maximum number of QM atoms '
-     *                 //'allowed is MXNEW = ',MXNEW,
-     *                 '. Turn up the number in "mxcent.h" FILE.' 
+        WRITE(LUPRI,'(/A,I5/A,I5/A)')
+     &    ' Maximum number of QM atoms allowed is MXNEW =',MXNEW,
+     &    ' You have specified in input                  ',NSISY(0),
+     &    ' To run this calculation you must'//
+     &    ' turn up the MXNEW number in the "include/mxcent.h" FILE.' 
         CALL QUIT('The max. number of QM atoms allowed is exceeded.')
       END IF
 C
@@ -1628,7 +1638,7 @@ C
           DO 13 I = NSYSBG(KI), NSYSED(KI)
             DO 14 J = 1,NCTOT
               IF ( (ISUBSY(J) .EQ. I) .AND. 
-     &          (ISUBSI(J) .GT. NSISY(KI)) ) THEN
+     &             (ISUBSI(J) .GT. NSISY(KI)) ) THEN
 C
                 NU = NU + 1
 C
@@ -1643,7 +1653,7 @@ C
 C
                         IF (ISUBSY(L) .EQ. LM) THEN
                           IF ( (ISUBSY(L) .EQ. 0) .AND.
-     &                      (ISUBSI(L) .LE. NSISY(K)) ) THEN
+     &                         (ISUBSI(L) .LE. NSISY(K)) ) THEN
 C
                             DIST = (CORD(1,J)-CORD(1,L))**2 +
      &                             (CORD(2,J)-CORD(2,L))**2 + 
@@ -2284,7 +2294,7 @@ C
             DO 60 J = NSYSBG(I), NSYSED(I)
              DO 70 K = 1, NCTOT
               IF ( (ISUBSY(K) .EQ. J) .AND.
-     &          (ISUBSI(K) .GT. NSISY(I)) ) THEN
+     &             (ISUBSI(K) .GT. NSISY(I)) ) THEN
                 NUM = NUM + 1
                 IF  (LOINDM) THEN  
                 IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
@@ -2299,7 +2309,7 @@ C
                       DO 90 M = NSYSBG(L), NSYSED(L)
                         DO 100 N = 1, NCTOT
                           IF ( (ISUBSY(N) .EQ. M) .AND.
-     &                      (ISUBSI(N) .GT. NSISY(L)) ) THEN
+     &                         (ISUBSI(N) .GT. NSISY(L)) ) THEN
                             KURT = KURT + 1
                             IF (J .NE. M) THEN
 C
@@ -2351,7 +2361,7 @@ C
                         DO 91 M = NSYSBG(L), NSYSED(L)
                           DO 101 N = 1, NCTOT
                             IF ( (ISUBSY(N) .EQ. M) .AND.
-     &                        (ISUBSI(N) .GT. NSISY(L)) ) THEN
+     &                           (ISUBSI(N) .GT. NSISY(L)) ) THEN
                               LARS = LARS + 1
                               IF (J .NE. M) THEN
 C
@@ -2545,7 +2555,7 @@ C
             DO 810 J = NSYSBG(I), NSYSED(I)
               DO 820 K = 1, NCTOT
                 IF ( (ISUBSY(K) .EQ. J) .AND.
-     *            (ISUBSI(K) .LE. NSISY(I)) ) THEN
+     *               (ISUBSI(K) .LE. NSISY(I)) ) THEN
                   TEMPX = TEMPX + CORD(1,K)*CHARGE(K)
                   TEMPY = TEMPY + CORD(2,K)*CHARGE(K)
                   TEMPZ = TEMPZ + CORD(3,K)*CHARGE(K)
@@ -2621,7 +2631,7 @@ C
                   IF (JM .GT. J) THEN
                     DO 550 KM = 1, NCTOT
                       IF ( (ISUBSY(KM) .EQ. JM) .AND.
-     *                  (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
+     *                     (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
                         DIST = SQRT((CORD(1,K)-CORD(1,KM))**2 +
      *                        (CORD(2,K)-CORD(2,KM))**2 +
      *                        (CORD(3,K)-CORD(3,KM))**2)
@@ -2659,7 +2669,7 @@ C*******************************************************
 C
       DO 300 K=1,NCTOT
         IF ( (ISUBSY(K) .EQ. 0) .AND.
-     &    (ISUBSI(K) .LE. NSISY(0)) ) THEN
+     &       (ISUBSI(K) .LE. NSISY(0)) ) THEN
           DO 310 I = 1, ISYTP
 C
             IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 310
@@ -2667,10 +2677,10 @@ C
             DO 320 J = NSYSBG(I), NSYSED(I)
               DO 330 L=1,NCTOT
                 IF ( (ISUBSY(L) .EQ. J) .AND.
-     &            (ISUBSI(L) .LE. NSISY(I)) ) THEN
-                  DIST = SQRT((CORD(1,K)-CORD(1,L))**2 +
-     *                   (CORD(2,K)-CORD(2,L))**2 +
-     *                   (CORD(3,K)-CORD(3,L))**2)
+     &               (ISUBSI(L) .LE. NSISY(I)) ) THEN
+                  DIST = SQRT((CORD(1,K)-CORD(1,L))**2
+     *                      + (CORD(2,K)-CORD(2,L))**2
+     *                      + (CORD(3,K)-CORD(3,L))**2)
                   TEMP = TEMP + CHARGE(K)*CHARGE(L)/DIST
                   TEMP1 = TEMP1 +
      *                    QM3CHG(ISUBSY(K),ISUBSI(K))*
@@ -3129,7 +3139,7 @@ C
               QMMASS = D0
 C
               IF ( (ISUBSY(K) .EQ. J) .AND.
-     &          (ISUBSI(K) .LE. NSISY(I)) ) THEN
+     &             (ISUBSI(K) .LE. NSISY(I)) ) THEN
                 CALL MASFIND(QMMASS,K)
                 QMCORX = QMCORX + QMMASS * CORD(1,K)
                 QMCORY = QMCORY + QMMASS * CORD(2,K)
@@ -3150,7 +3160,7 @@ C
 C
             DO 230 K = 1, NCTOT
               IF ( (ISUBSY(K) .EQ. J) .AND.
-     &          (ISUBSI(K) .GT. NSISY(I)) ) THEN
+     &             (ISUBSI(K) .GT. NSISY(I)) ) THEN
                 QMCORX = CORD(1,K)
                 QMCORY = CORD(2,K)
                 QMCORZ = CORD(3,K)
@@ -3177,7 +3187,7 @@ C
 C
                   DO 260 KM = 1, NCTOT
                     IF ( (ISUBSY(KM) .EQ. JM) .AND.
-     &                (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
+     &                   (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
 C
                       CALL MASFIND(TMMASS,KM)
                   
@@ -3195,7 +3205,7 @@ C
                 ELSE IF (.NOT. (DISMOD(IM)) ) THEN
                   DO 270 KM = 1, NCTOT
                     IF ( (ISUBSY(KM) .EQ. JM) .AND.
-     &                (ISUBSI(KM) .GT. NSISY(IM)) ) THEN
+     &                   (ISUBSI(KM) .GT. NSISY(IM)) ) THEN
                       TMCORX = CORD(1,KM)
                       TMCORY = CORD(2,KM)
                       TMCORZ = CORD(3,KM)
@@ -3554,7 +3564,7 @@ C
              DO 50 J = NSYSBG(I2), NSYSED(I2) 
                DO 60 L=1,NCTOT
                  IF ( (ISUBSY(L) .EQ. J) .AND.
-     &                 (ISUBSI(L) .LE. NSISY(I2)) ) THEN
+     &                (ISUBSI(L) .LE. NSISY(I2)) ) THEN
                    IF (CHARGE(L) .EQ. 0.0D0) GOTO 60 
                    XCOOR = CORD(1,L) - CORD(1,I)
                    YCOOR = CORD(2,L) - CORD(2,I)
@@ -3651,7 +3661,7 @@ C
              DO 50 J = NSYSBG(I2), NSYSED(I2)
                DO 60 L=1,NCTOT
                  IF ( (ISUBSY(L) .EQ. J) .AND.
-     &                 (ISUBSI(L) .GT. NSISY(I2)) ) THEN
+     &                (ISUBSI(L) .GT. NSISY(I2)) ) THEN
                    TEXXX = 0.0D0
                    TEXXY = 0.0D0
                    TEXXZ = 0.0D0
