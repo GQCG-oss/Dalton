@@ -2153,26 +2153,14 @@ C
             CALL DKCONT(PROPRI,IPRONE,WORK,LWORK)
          END IF
 C
-C        Integrals written on LUONEL -
-C        Some previous information has been written in READIN
-C
-         IF (.NOT. ONLYOV) THEN
-            IF (HAMILT) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                     .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,PCM)
-               CALL TIMER('ONEDRV',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-         END IF
-C
 C        *****************************************
 C        ***** R(l,m) integrals for solvent  *****
 C        *****************************************
 C
          IF (DORLM) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL RLMNUC(WORK,LWORK,LMAX,IPRONE)
+            CALL RLMSET_CBISOL(LMAX)
+            CALL RLMNUC(WORK,LWORK,IPRONE)
             CALL TIMER('RLMNUC',TIMSTR,TIMEND)
             CALL DCOPY(3,DIPORG,1,RLMORI,1)
             CALL DCOPY(3,CAVORG,1,DIPORG,1)
@@ -2183,6 +2171,26 @@ C
             CALL DCOPY(3,RLMORI,1,DIPORG,1)
             CALL TIMER('RLMINT',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
+         ELSE
+! some /cbisol/ variables are used for allocation, also when DORLM false /hjaaj
+            CALL RLMSET_CBISOL(0)
+         END IF
+C
+C        *****************************************
+C        Integrals written on LUONEL -
+C        Some previous information has been written in READIN
+C        NOTE: must be called after CALL RLMSET_CBISOL
+C              because /CBISOL/ is used for allocation in ONEDRV
+C        *****************************************
+C
+         IF (.NOT. ONLYOV) THEN
+            IF (HAMILT) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
+     &                     .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,PCM)
+               CALL TIMER('ONEDRV',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
          END IF
 C
 C        *******************************************
