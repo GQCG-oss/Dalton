@@ -385,7 +385,7 @@ C
          CALL TITLER('Output from READIN input processing','*',118)
       END IF
       IF(MYNUM.EQ.0) THEN
-         IF (LUCMD .LE. 0) THEN
+         IF (LUCMD .LT. 0) THEN
             CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
      &           .FALSE.)
             CMDOPN = .TRUE.
@@ -403,6 +403,8 @@ C
          ELSE
             LUINFO = -1
          END IF
+      ELSE
+         LUINFO = -MYNUM
       END IF
 C
 C Only the master in a parallel calc. reads the input file. The
