@@ -9058,13 +9058,13 @@ C
 #include <symsq.h>
 C
       CHARACTER LABPT*(*)
-      CALL DZERO(WORK,N2BST(ISYMPT))
 C
       LSYUNK = .FALSE.
       IF (ISYMPT .EQ.-1) THEN
          LSYUNK =.TRUE.
          ISYMPT = 1
       ENDIF
+C
 C
       IF (IPRINT .GT. 20 ) THEN
          DN = DDOT(N2BST(ISYMPT),FOCK,1,FOCK,1)
@@ -9077,6 +9077,7 @@ C
 C
       IF (LEND1 .LT. 0 )CALL QUIT('Insufficient space in CC_ONEP')
 C
+      CALL DZERO(WORK(K2),N2BST(ISYMPT))
       IERR = -1
       CALL CCPRPAO(LABPT,.TRUE.,WORK(K2),IRREP,ISYM,IERR,
      &             WORK(KEND1),LEND1)
