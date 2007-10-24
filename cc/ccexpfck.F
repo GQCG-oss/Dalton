@@ -1072,6 +1072,7 @@ C  /* Deck cc_expfck_init */
 *---------------------------------------------------------------------*
 *     if needed, first magnetic derivative (London) integrals 
 *---------------------------------------------------------------------*
+      LDHDB = .FALSE.
       DO I = 1, NRSOLBL
          IF ( LBLOPR(I)(1:5).EQ.'dh/dB' ) LDHDB = .TRUE.
       END DO
