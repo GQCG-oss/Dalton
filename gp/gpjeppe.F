@@ -296,7 +296,7 @@ C VERY SUBTLE ROUTINE FOR DYNAMIC ALLOCATION
 C
 #include <iratdef.h>
 C
-      IF (KADD .GT. 0) THEN
+      IF (KADD .GE. 0) THEN
          KBASE = KFREE
          IF ( IR .EQ. 1 ) THEN
             KFREE = KFREE + (KADD-1)/IRAT + 1
