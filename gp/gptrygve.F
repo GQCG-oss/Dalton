@@ -117,6 +117,7 @@ C  /* Deck timpri */
 C 980826-hjaaj: initialize TREST for next abacus call
          TREST = 0.0D0
       END IF
+      IF (TIMALL .EQ. 0.0D0) RETURN
       ITIME = NINT(HUN*TIME/TIMALL)
       IF (ITIME .GT. 0 .AND. INT(TIME) .GT. 0) THEN
          MINUTE = INT(TIME)/60
@@ -854,12 +855,13 @@ C
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
             END IF
          ELSE
-            IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &          MYNUM .GT. 0) THEN
+            IF (MYNUM .GT. 0) THEN
+             IF (FILENM(FILELN-3:FILELN-3) .NE. '#') THEN
                FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
                FILELN = FILELN + 4
+             END IF
             END IF
          END IF
          IF (IPRERR.GT.1) WRITE (LUERR,*) 'GPOPEN calling OPENDX ',
@@ -872,9 +874,10 @@ C
 C     This better be a file with a name, and it better exist
 C
             IF (FILELN .LE. 0) GOTO 9005
-            IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &           MYNUM .GT. 0 .AND. .NOT. OLDDX
-     &           .AND. FILENM(FILELN-5:FILELN) .NE. 'NUMCAL') THEN
+C
+            IF (MYNUM .GT. 0 .AND. .NOT. OLDDX) THEN
+             IF (INDEX(FILENM,'#') .NE. FILELN-3 .AND.
+     &           INDEX(FILENM,'NUMCAL') .EQ. 0) THEN
 C
 C     The last test will not be necessary anymore when we get
 C     locking RMA operations in MPI2
@@ -883,7 +886,9 @@ C
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
                FILELN = FILELN + 4
+             END IF
             END IF
+C
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
             IF (.NOT. FEXST) GOTO 9007
             IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq OLD ',LUNIT,
@@ -908,12 +913,13 @@ C
      &                      CHRNOS(MOD(MOD(MYNUM,100),10))
                END IF
             ELSE
-               IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &             MYNUM .GT. 0) THEN
+               IF (MYNUM .GT. 0) THEN
+                IF (INDEX(FILENM,'#') .NE. FILELN-3) THEN
                   FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
      &                                     CHRNOS(MOD(MYNUM,100)/10)//
-     &                                  CHRNOS(MOD(MOD(MYNUM,100),10))
+     &                                 CHRNOS(MOD(MOD(MYNUM,100),10))
                   FILELN = FILELN + 4
+                END IF
                END IF
             END IF
             IF (STATUF(1:7) .EQ. 'SCRATCH') THEN
