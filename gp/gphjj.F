@@ -359,18 +359,20 @@ C
 #endif
 C
       LTEXT = LEN(TEXT)
-      IF (TEXT(1:4) .EQ. 'INIT') THEN
+      IF (LTEXT .GT. 0) THEN
+        IF (TEXT(1:LTEXT) .EQ. 'INIT') THEN
 CHJ March 2005: this is not working on all machines, so ...
-C        WRITE (LUPRIN,'(3(/T6,2A)/)')
+C        WRITE (LUPRIN,'(3(/T3,2A)/)')
 C    &   'Last compilation       : ',
 C    &   LAST_DALTON_COMPILATION
 C    &  ,'Fortran and C compilers: ',
 C    &   F_AND_C_COMPILERS
 C    &  ,'Scientific libraries   : ',
 C    &   LIBRARY_LIST
-         WRITE (LUPRIN,'()')
-      ELSE IF (LTEXT .GT. 0) THEN
-         WRITE (LUPRIN,'(/A)') TEXT
+           WRITE (LUPRIN,'()')
+         ELSE
+           WRITE (LUPRIN,'(/A)') TEXT
+         END IF
       ELSE
          WRITE (LUPRIN,'()')
       END IF
@@ -1023,10 +1025,12 @@ C
 C     N = 1 special case
 C
       IF (N .EQ. 1) THEN
-         IF (VC(1,1)*VC(1,1) .LT. THNORM) THEN
-            IRETUR=-1
-         ELSE
-            VC(1,1) = D1/SQRT(S(1))
+         IF (M .EQ. 1) THEN
+            IF (VC(1,1)*VC(1,1) .LT. THNORM) THEN
+               IRETUR=-1
+            ELSE
+               VC(1,1) = D1/SQRT(S(1))
+            END IF
          END IF
          RETURN
       END IF
