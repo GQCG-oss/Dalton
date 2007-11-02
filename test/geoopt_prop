@@ -192,7 +192,7 @@ CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * 1\.93853. * (\-0|\-|0| )\.000000" $log
 CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (\-0|\-)\.18287." $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
-ERROR[13]="QUADROPOLE MOMENT NOT CORRECT"
+ERROR[13]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Magnetizability:
 CRIT1=`$GREP "Isotropic magnetizability\: * \-2\.8986 * \-228\.7311 * \-13\.7745" $log | wc -l`
@@ -244,17 +244,17 @@ CTRL[16]=18
 ERROR[16]="SHIELDINGS NOT CORRECT"
 
 # Vibrational frequencies:
-CRIT1=`$GREP "2 * A1 * 4142\.56 * (0| )\.01887[0-9] * 29\.84[0-9] * (0| )\.706[0-9]" $log | wc -l`
-CRIT2=`$GREP "3 * A1 * 1726\.2. * (0| )\.00786[0-9] * 85\.61[0-9] * 2\.026[0-9]" $log | wc -l`
-CRIT3=`$GREP "1 * B2 * 4244\.54 * (0| )\.01934[0-9] * 88\.27[0-9] * 2\.089[0-9]" $log | wc -l`
+CRIT1=`$GREP "2 * A1 * 4142\.5. * 0*\.01887. * 29\.84. * 0*\.706" $log | wc -l`
+CRIT2=`$GREP "3 * A1 * 1726\.2. * 0*\.00786. * 85\.61. * 2\.026" $log | wc -l`
+CRIT3=`$GREP "1 * B2 * 4244\.5. * 0*\.01934. * 88\.27. * 2\.089" $log | wc -l`
 TEST[17]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[17]=3
 ERROR[17]="FREQUENCIES NOT CORRECT"
 
 # Geometry optimization:
-CRIT1=`$GREP "Geometry converged in * 5( |  )iterations\!" $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 5 * iterations\!" $log | wc -l`
 CRIT2=`$GREP "Energy at final geometry is * \: * \-76\.053424 a\.u\." $log | wc -l`
-CRIT3=`$GREP "Energy change during optimization \: * (\-0|\-)\.001964 a\.u\." $log | wc -l`
+CRIT3=`$GREP "Energy change during optimization \: * \-0*\.001964 a\.u\." $log | wc -l`
 TEST[18]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[18]=3
 ERROR[18]="GEOMETRY OPTIMIZATION FAILED"
