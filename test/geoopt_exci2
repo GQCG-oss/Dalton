@@ -235,13 +235,13 @@ CTRL[13]=11
 ERROR[13]="FINAL HESSIAN NOT CORRECT"
 
 # Frequency
-CRIT1=`$GREP "1 * A1 * 259\.7[3-4] * (0| )\.00118. * 865\.35. * 20\.479." $log | wc -l`
+CRIT1=`$GREP "1 * A1 * 259\.7[3-4] * (0| )\.00118. * 865\..* * 20\.4" $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
-ERROR[14]="VIBRATIONAL FREQUENCY NOT CORRECT"
+ERROR[14]="VIBRATIONAL FREQUENCY or IR INTENSITY NOT CORRECT"
 
 # Partition function
-CRIT1=`$GREP "50\.00 * 1\.0289(D|E)\+04 * 13\.01 * 1\.0006 * 1\.339062(D|E)\+05" $log | wc -l`
+CRIT1=`$GREP  "50\.00 * 1\.0289(D|E)\+04 * 13\.01 * 1\.0006 * 1\.339062(D|E)\+05" $log | wc -l`
 CRIT2=`$GREP "100\.00 * 5\.8202(D|E)\+04 * 25\.67 * 1\.0244 * 1\.530721(D|E)\+06" $log | wc -l`
 CRIT3=`$GREP "200\.00 * 3\.2924(D|E)\+05 * 51\.01 * 1\.1825 * 1\.986006(D|E)\+07" $log | wc -l`
 CRIT4=`$GREP "273\.15 * 7\.1769(D|E)\+05 * 69\.54 * 1\.3416 * 6\.695859(D|E)\+07" $log | wc -l`
