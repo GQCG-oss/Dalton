@@ -46,7 +46,7 @@ Do not read S(2) CI diagonal but use ilicit that itit is D1
 merged with SOPPA changes by ekd
 LRST  : modification needed for proper handling of cubic response
 950705-hjaaj
-RSPPP : New code of GOS oscillator strengths.
+RSPPP : New code for GOS oscillator strengths.
 940523-hjaaj
 RSPCTL: removed CALL FLUSH(LURSP1) (system dependent); instead REWIND LURSP1
 941117-hjaaj
@@ -3269,6 +3269,7 @@ C
 C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
+C     (PP for Polarization Propagator)
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -4158,6 +4159,9 @@ C
 C  /* Deck rsplr */
       SUBROUTINE RSPLR(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
+C     Driver Routine for Linear Response:
+C     DETERMINE SECOND ORDER MOLECULAR PROPERTIES
+C
 #include <implicit.h>
 #include <iratdef.h>
 #include <thrzer.h>
@@ -4182,7 +4186,6 @@ C Local variables
 C
       LOGICAL OLDDX, FOUND, CONV, NOSEL
 C
-C DETERMINE SECOND ORDER MOLECULAR PROPERTIES
 C
       NOSEL  = .FALSE.
 C
@@ -4219,12 +4222,12 @@ C NUMBER OF SIMULTANEOUS VECTORS
 C
       IF (MXFREQ .LE. 0) THEN
         WRITE (LUERR,9100) LWRK1,KWRK1+MWRK+MRES
-        WRITE (LUPRI ,9100) LWRK1,KWRK1+MWRK+MRES
+        WRITE (LUPRI,9100) LWRK1,KWRK1+MWRK+MRES
         CALL QTRACE(LUERR)
         CALL QUIT('RSPLR: INSUFFICIENT SPACE TO SOLVE LINEAR EQUATIONS')
       ENDIF
  9100 FORMAT(/' RSPLR, work space too small for RSPRES',
-     *       /'         had:',I10,', need more than:',I10)
+     *       /'        had:',I10,', need more than:',I10)
 C
 C     Open LURSP2 for NSOLVC solution vectors and NSOLVC
 C        residual vectors.
@@ -4370,12 +4373,12 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
          KVECB = 1
          KWRK1 = KVECB + KZYVAR
          LWRK1 = LWRK - KWRK1
-         WRITE (LUPRI,'(/A)')'@ WARNING>>>>> Linear response function'//
+         NINFO = NINFO + 1
+         WRITE (LUPRI,'(/A)')'@ INFO >>>>> Linear response functions'//
      &        ' calculated using presolved response vectors',
-     &        '@ WARNING>>>>> These results will not have quadratic '//
+     &        '@ INFO >>>>> These results will not have quadratic '//
      &        'accuracy'
-         CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),
-     &              WRK(KWRK1),LWRK1)
+         CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),WRK(KWRK1),LWRK1)
       ELSE
          NOP   = NGPLR(KSYMOP)
          KSOPR = 1
