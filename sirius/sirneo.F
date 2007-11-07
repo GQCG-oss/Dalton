@@ -2358,7 +2358,7 @@ C
 #include <implicit.h>
 C
       DIMENSION REDL(*),EVEC(NREDL,*),EVAL(*)
-      PARAMETER (ITBMAX = 50)
+      PARAMETER (ITBMAX = 100)
       DIMENSION WRK(ITBMAX,4)
 C
       PARAMETER (BETINC = 0.2D0, SECFAC = 0.1D0)
@@ -2563,7 +2563,7 @@ C    *                IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
             J = MAX(ITB-2,1)
             BETL = WRK(J,1)
             GAMMA = RTRUST / WRK(J,2)
-            GO TO 700
+            IF (ITB.LT.ITBMAX) GO TO 700
          END IF
       IF (ITB.LT.ITBMAX) GO TO 400
 C
