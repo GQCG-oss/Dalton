@@ -643,16 +643,21 @@ C   DONE(A,M) = (A,D)*[M,D]
 C   DONE(M,N) = (N,D)*[M,D]
 C
       DO 1000 ISSYM = 1,NSYM
-         IOFFI = IORB(ISSYM) + 1
+
          NORBI = NORB(ISSYM)
+      IF (NORBI .EQ. 0) GOTO 1000
+         IOFFI = IORB(ISSYM) + 1
          NRHFI = NRHF(ISSYM)
-         NFRMPI = NFROZ(ISSYM)
+         NFRMPI= NFROZ(ISSYM)
          NVIRI = NORBI - NRHFI
+
          JSYM  = MULD2H(ISYMAM,ISSYM)
+         NORBJ = NORB(JSYM)
+      IF (NORBJ .EQ. 0) GOTO 1000
          IOFFJ = IORB(JSYM) + 1
          NRHFJ = NRHF(JSYM)
-         NFRMPJ = NFROZ(JSYM)
-         NVIRJ = NORB(JSYM) - NRHFJ
+         NFRMPJ= NFROZ(JSYM)
+         NVIRJ = NORBJ - NRHFJ
 C
 C   DONE(A,B) = (A,Q)*[Q,B]
 C   DONE(M,B) = (M,Q)*[Q,B]
