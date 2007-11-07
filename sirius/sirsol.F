@@ -33,8 +33,23 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C===========================================================================
+C
+C File   : sirius/sirsol.F
+C
+C Module for spherical dielectric continuum model.
+C
+C Original code written in fall 1986 in Minneapolis, USA,
+C when we all four visited Jan Almloef there.
+C
+C Original reference for the MCSCRF solvation model:
+C          K. V. Mikkelsen, H. Agren, H. J. Aa. Jensen, and T. Helgaker.
+C          J. Chem. Phys. 89 (1988) 3086-3095
+C
+C Intial polarization added later.
+C
+C===========================================================================
 #ifdef REV_LOG
-===========================================================================
 TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
 hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
        in Oslo stating
@@ -95,7 +110,7 @@ C     Reference for solvent routines in Sirius;
 C     called by SIRIUS.PRTINP
 C
       WRITE(IWUNIT,100)
-  100 FORMAT(/T2,'Reference for MCSCRF solvation model (version n01):'
+  100 FORMAT(/T2,'Original reference for MCSCRF solvation model:'
      *   /T5,'K.V.Mikkelsen, H.Agren, H.J.Aa.Jensen, and T. Helgaker',
      *   /T5,'J. Chem. Phys. 89 (1988) 3086-3095')
       RETURN
@@ -1990,26 +2005,4 @@ C
       CALL QEXIT('SOLSC ')
       RETURN
       END
-C  /* Deck upkcmo */
-      SUBROUTINE UPKCMO(CMO,UCMO)
-C
-C  Copyright 6-May-1990 Hans Joergen Aa. Jensen
-C
-C  Unpack CMO from symmetry packed form to  UCMO
-C
-#include <implicit.h>
-      DIMENSION CMO(1), UCMO(NBAST,NORBT)
-C
-C Used from common blocks:
-C  INFORB : NSYM,NBAST,NORBT,...
-C
-#include <inforb.h>
-C
-      CALL DZERO(UCMO,NBAST*NORBT)
-      DO 400 ISYM = 1,NSYM
-         CALL MCOPY(NBAS(ISYM),NORB(ISYM),CMO(ICMO(ISYM)+1),NBAS(ISYM),
-     *              UCMO(IBAS(ISYM)+1,IORB(ISYM)+1),NBAST)
-C        CALL MCOPY(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
-  400 CONTINUE
-      RETURN
-      END
+C --- end of sirsol.F ---

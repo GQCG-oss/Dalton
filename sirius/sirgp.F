@@ -549,7 +549,7 @@ C
       LBLERR = -1
       CALL MOLLAB(MOLABL,LUIT1,LBLERR)
       IF (LBLERR .GE. 0) THEN
-         CALL READT(LUIT1,NCMOT,CMO(1))
+         CALL READT(LUIT1,NCMOT,CMO)
       ELSE IF (LBLERR .EQ. -1) THEN
          WRITE (LUPRI,'(//3A)')
      & ' >>> FATAL ERROR, MO label "',MOLABL,'" not found on SIRIUS.RST'
@@ -1986,5 +1986,29 @@ C
 C
 C *** END OF SRWPHP
 C
+      RETURN
+      END
+C  /* Deck upkcmo */
+      SUBROUTINE UPKCMO(CMO,UCMO)
+C
+C  Copyright 6-May-1990 Hans Joergen Aa. Jensen
+C
+C  Unpack CMO from symmetry packed form to  UCMO
+C
+#include <implicit.h>
+      DIMENSION CMO(*), UCMO(NBAST,NORBT)
+C
+C Used from common blocks:
+C  INFORB : NSYM,NBAST,NORBT,...
+C
+#include <inforb.h>
+C
+      CALL DZERO(UCMO,NBAST*NORBT)
+      DO 400 ISYM = 1,NSYM
+         IF (NORB(ISYM) .GT. 0)
+     &   CALL MCOPY(NBAS(ISYM),NORB(ISYM),CMO(ICMO(ISYM)+1),NBAS(ISYM),
+     &              UCMO(IBAS(ISYM)+1,IORB(ISYM)+1),NBAST)
+C        CALL MCOPY(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
+  400 CONTINUE
       RETURN
       END
