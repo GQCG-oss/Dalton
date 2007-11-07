@@ -1923,7 +1923,6 @@ cbs   including kinematic factors and even exponents as factors
      &     2.0d0,-1.6329932d0,0.0d0,
      &     3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
      &   -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/   
-      IPNT(I,J)=(J*J-J)/2+I 
 cbs   get back the real number of functions for the finite nucleus   
       if (ifinite.eq.2) ncontrac(0)=ncontrac_keep
 c###############################################################################
