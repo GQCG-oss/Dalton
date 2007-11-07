@@ -193,20 +193,21 @@ C
 #include "optinf.h"
 #include "codata.h"
       DIMENSION VALINT(ICRD)
-      CHARACTER CRDTXT*26, EMPTXT*8, MARK*1, UNTTXT*5
+      CHARACTER CRDTXT*26, MARK*3, UNTTXT*5
       LOGICAL REMCRD
 C
       CALL HEADER('Redundant internal coordinates',-1)
-      EMPTXT = '        '
+      IF (IPRINT .LT. 3) WRITE(LUPRI,'(A/)')
+     &   ' (Auxiliary bonds are not printed at this print level.)'
       REMCRD = .FALSE.
       DO 10 I = 1, ICRD
-         CRDTXT = '                          '
-         MARK = ' '
-         IF (CONOPT .AND. (ICNSTR(I) .EQ. 1)) MARK = '*'
+         MARK = '   '
+         IF (CONOPT .AND. (ICNSTR(I) .EQ. 1)) MARK = '*  '
          IF (ICNSTR(I) .EQ. 2) THEN
-            MARK = '#'
+            MARK = '#  '
             REMCRD = .TRUE.
          END IF
+         CRDTXT = '                          '
          IF (INTCRD(I,1) .LT. 10) THEN
             UNTTXT = ' Ang.'
             IF (INTCRD(I,1) .EQ. 1) CRDTXT='Regular bond'
@@ -215,35 +216,34 @@ C
             IF (INTCRD(I,1) .EQ. 5) CRDTXT='Hydrogen bond'
             IF (INTCRD(I,1) .EQ. 7) CRDTXT='Auxiliary bond'
             IF ((INTCRD(I,1) .NE. 7) .OR. (IPRINT .GE. 3))
-     &           WRITE(LUPRI,'(A,I3,2A,A26,2I4,A,F14.5,A5)') EMPTXT,I,
-     &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),EMPTXT,
+     &           WRITE(LUPRI,'(I8,2A,2I4,F22.5,A5)') I,
+     &           MARK,CRDTXT,INTCRD(I,2),INTCRD(I,3),
      &           XTANG*VALINT(I),UNTTXT
          ELSE IF (INTCRD(I,1) .GT. 20) THEN
             UNTTXT = ' deg.'
             IF (INTCRD(I,1) .EQ. 21) CRDTXT='Dihedral angle'
             IF (INTCRD(I,1) .EQ. 23) CRDTXT='Extra dihedral angle'
-            WRITE(LUPRI,'(A,I3,2A,A26,4I4,F14.3,A5)') EMPTXT,I,
-     &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),
+            WRITE(LUPRI,'(I8,2A,4I4,F14.3,A5)') I,
+     &           MARK,CRDTXT,INTCRD(I,2),INTCRD(I,3),
      &           INTCRD(I,4),INTCRD(I,5),1.8D2*VALINT(I)/PI,UNTTXT
          ELSE
             UNTTXT = ' deg.'
             IF (INTCRD(I,1) .EQ. 11) CRDTXT='Regular angle'
             IF (INTCRD(I,1) .EQ. 12) CRDTXT='Additional angle'
-            WRITE(LUPRI,'(A,I3,2A,A22,3I4,A,F14.3,A5)') EMPTXT,I,
-     &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),
-     &           INTCRD(I,4),EMPTXT(1:4),1.8D2*VALINT(I)/PI,UNTTXT
+            WRITE(LUPRI,'(I8,2A,3I4,F18.3,A5)') I,
+     &           MARK,CRDTXT,INTCRD(I,2),INTCRD(I,3),
+     &           INTCRD(I,4),180.D0*VALINT(I)/PI,UNTTXT
          END IF
  10   CONTINUE
       IF (CONOPT .OR. REMCRD) THEN
          WRITE(LUPRI,*)
          IF (CONOPT) WRITE(LUPRI,*)
-     &        '*) Constrained (fixed) coordinates.'
+     &        '*) Constrained (fixed) coordinate.'
          IF (REMCRD) WRITE(LUPRI,*)
      &        '#) Coordinate will be removed.'
       END IF
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A,I5)')
-     &     ' Total number of redundant internal coordinates: ',ICRD
+      WRITE(LUPRI,'(/A,I6)')
+     &     ' Total number of redundant internal coordinates:',ICRD
       RETURN
       END
 
