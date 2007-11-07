@@ -336,7 +336,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION H2CD(1),NEEDTP(6),WRK(1)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -437,7 +437,7 @@ C
 C ****************************************************************
 C
 #include "implicit.h"
-      DIMENSION H2CD(NORBT,NORBT),BUF(1)
+      DIMENSION H2CD(NORBT,NORBT),BUF(*)
       INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
 C
 #include "iratdef.h"
@@ -713,7 +713,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION H2CD(1),NEEDTP(6),WRK(1)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -813,7 +813,7 @@ C
 C ****************************************************************
 C
 #include "implicit.h"
-      DIMENSION H2CD(NORBT,NORBT),BUF(1)
+      DIMENSION H2CD(NORBT,NORBT),BUF(*)
       INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
 C
 #include "iratdef.h"
@@ -1246,9 +1246,9 @@ C
       CALL DAREAD(LUMINT,IADOUT,3*LIADUT,IDISKM)
       IDISKM = IADOUT(1,LIADUT)
 C
-C     LOOP OVER QUADRUPLES OF SYMMETRIES (NSP,NSQ,NSR,NSS)
-C     NOTE THAT THE INTEGRALS ON LUORDA HAVE TO BE SORTED IN THE SAME
-C     ORDER AS THE LOOP STRUCTURE BELOW (USE PROGRAM INTSORT)
+C     Loop over quadruples of symmetries (NSP,NSQ,NSR,NSS)
+C     NOTE that the integrals on LUORDA must be sorted in the same
+C     order as the loop structure below (use program INTSORT)
 C     890826: This is not neccessary now because we have switched
 C             to absolute addressing of a given quadruplet.
 C
@@ -1369,9 +1369,9 @@ C
             CALL QUIT(' TR2CTL error, LADX .le. 0')
           END IF
 C
-C         CALLING SEQUENCE FOR SECOND ORDER TRANSFORMATION TRA2
+C         Calling sequence for second order transformation TRA2
 C         for symmetry quadruplet (isp,isq;isr,iss)
-C         FIRST ALLOCATE AND CHECK MEMORY
+C         First allocate and check memory
 C
           NBPQ = NBP*NBQ
           IF(ISP.EQ.ISQ) NBPQ = (NBP**2+NBP)/2
@@ -1389,7 +1389,7 @@ C         LX2X3 is buffer space needed by TRRDAO,
 C         LX2X3 is defined in TRASET
           LW4    = MAX(LW4, LW2 + LX2X3)
           MEMLFT = MEMX-LW4+1
-C         CORE ALLOCATION FOR THE SORTING AREAS RUPQ,USPQ, AND TUPQ
+C         Core allocation for the sorting areas RUPQ, USPQ, and TUPQ
           IF (NOCOUL .OR. NOTU.EQ.0) THEN
            NBPQMAX= NBPQ
            LTUPQCM= 0
@@ -1459,6 +1459,8 @@ C
           CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
      &              WORK(LW1),WORK(LW2),WORK(LW3),
      &              WORK(LW4),WORK(LW5),WORK(LW6))
+C         CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
+C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
           IF (IPRTRA .GE. 2) THEN
              CALL TIMING(CPT,CPE,TIOT,TIOE)
              IF (IPRTRA .GE. 5) WRITE(LUPRI,2000)
@@ -2866,9 +2868,7 @@ C
          LX2X3  = ( LMSBIN*(IRAT+1)+2 - 1 ) / IRAT + 1
       ELSE IF (IRDAO.EQ.2) THEN
          ITUSYM = -1
-         LX2X3  = 2*600
-C MAERKE: husk at rette her naar ny DSOUT2
-         CALL TRASET_2
+         CALL TRASET_2(LX2X3)
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
@@ -2996,7 +2996,7 @@ C     ITRTYP(1:NORBT) = number of integral indices in which this orbital
 C     enters (i.e. 0,1,2,3, or 4)
 C
 #include "implicit.h"
-      DIMENSION ICDTRA(1), ITRTYP(1)
+      DIMENSION ICDTRA(*), ITRTYP(*)
 C
 C Used from common blocks:
 C  TRINP  : MFRO,MISH,MASH,MORB

@@ -47,7 +47,7 @@ C
 C Copyright Mar 1990 Hans Joergen Aa. Jensen
 C
 #include <implicit.h>
-      DIMENSION CMO(1),WRK(KWORK)
+      DIMENSION CMO(*),WRK(KWORK)
 C
 #include <dummy.h>
 #include <maxorb.h>
@@ -144,7 +144,7 @@ C     restore LUORDA, LUMINT (may point to normal integrals)
       RETURN
       END
 C/*deck  traset_2*/
-      SUBROUTINE TRASET_2
+      SUBROUTINE TRASET_2(LX2X3)
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -167,6 +167,12 @@ C
 #include <trunit.h>
 C
       CALL QENTER('TRASET_2')
+C
+         LX2X3  = 2*600 + 4*600
+C        for BUF(600), IBUF(600), and INDX(4,600) for both i*4 and i*8
+C        /Bugfix Oct07-hjaaj
+C MAERKE: remember to change here when new DR2OUT in her2out.F
+C
       KEEP(1) = MSYM
       INTSYM  = KSYMSO
       KEEP(2) = INTSYM
@@ -211,7 +217,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
-      DIMENSION HSOPQ(1), BUF(600*(1+IRAT) + 1), IBUF(4,600)
+      DIMENSION HSOPQ(*), BUF(*), IBUF(4,600)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
@@ -249,12 +255,13 @@ C
          NIBUF = 1
          NBITS = 8
       ELSE
+         CALL QUIT('NBASIS .gt. 255 not implemented yet here')
          NIBUF = 2
          NBITS = 16
       END IF
 #endif
 C
-      LENINT = IRAT*LBUF + LBUF + 1
+      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KINT = 1
       KIINT = KINT + LBUF
 C
