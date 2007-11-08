@@ -1148,11 +1148,13 @@ C  /* Deck readt */
       RETURN
  10   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: END reading file ',FNAME, 'length ',N
+      WRITE (LUPRI,*) 'READT: END reading file ',FNAME,
+     & ' UNIT ',IT, ' record length ',N
       CALL QUIT('READT: END reading file')
  20   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME, 'length ',N
+      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME,
+     & ' UNIT ',IT, ' record length ',N
       CALL QUIT('READT: Error reading file')
  30   CONTINUE
       WRITE (LUPRI,*) 'READT ERRROR: non-positive file unit number ',IT
@@ -1941,6 +1943,8 @@ C     K.Ruud, April 19 (2000)
 C
 #if !defined (VAR_SPLITFILES)
       IF (LU .LT. 1) THEN
+         WRITE (LUPRI,'(/A,I10)')
+     &      'ERROR in REWSPL: negative unit number =',LU
          CALL QUIT('REWSPL called with negative unit number LU')
       END IF
       REWIND (LU)
