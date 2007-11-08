@@ -1942,6 +1942,8 @@ C
 C     K.Ruud, April 19 (2000)
 C
 #if !defined (VAR_SPLITFILES)
+#include "priunit.h"
+      INTEGER LU
       IF (LU .LT. 1) THEN
          WRITE (LUPRI,'(/A,I10)')
      &      'ERROR in REWSPL: negative unit number =',LU
