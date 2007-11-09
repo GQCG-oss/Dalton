@@ -727,9 +727,9 @@ C     Punch MOLECULE input with updated coordinates to XXX_mol.inp
 C
                FILENM = 'XXXX_mol.inp'
                WRITE(FILENM(1:4),'(I4)') ITERNR + 1
-               IF (ITERNR .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
-               IF (ITERNR .LT. 99) WRITE(FILENM(2:2),'(A1)') '0'
-               IF (ITERNR .LT. 9) WRITE(FILENM(3:3),'(A1)') '0'
+               IF (ITERNR .LE. 999) WRITE(FILENM(1:1),'(A1)') '0'
+               IF (ITERNR .LE.  99) WRITE(FILENM(2:2),'(A1)') '0'
+               IF (ITERNR .LE.   9) WRITE(FILENM(3:3),'(A1)') '0'
                CALL GPOPEN(LUMOL,FILENM,' ',' ','FORMATTED',IDUMMY,
      &                     .FALSE.)
                DO 330 IMLINE = 1,NMLINE
@@ -1425,12 +1425,12 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (TOTSYM) WRITE (LUPRI,'(4X,A)') 
      &     'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
-     &         'AO-direct calculation, where implemented'
+     &         'AO-direct calculation (in sections where implemented)'
       CALL MOHEAD
       IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
-     &     'HERMIT 2-electron integral sections will be executed'
+     &     'HERMIT 1- and 2-electron integral sections will be executed'
       IF (RUNERI) THEN
          WRITE (LUPRI,'(4X,A)')
      &     '2-elctron integrals are calculated using ERI '//
