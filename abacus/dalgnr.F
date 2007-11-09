@@ -1011,7 +1011,7 @@ C
             CALL WLKINI
             IF (WALKIN) THEN
 C
-C     We made some changes to walk default. Need to process these
+C     User has made some changes to walk default. Need to process these
 C
                CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
@@ -1383,12 +1383,28 @@ C
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in GNRLIN.')
       END IF
+C
+C
   999 CONTINUE
       WRITE (LUPRI,'(/A,I5/)') ' Default print level:    ',IPRUSR
       IF (IPRERR .EQ. -10)IPRERR = IPRUSR + 1
       WRITE (LUERR,'(/A,I5)') ' Error file print level: ',IPRERR
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(A/)') ' *** Input test run only ***'
+#if defined (VAR_MPI)
+      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
+#endif
+#if defined (VAR_PVM)
+      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using PVM'
+#endif
+#if ! defined (VAR_MPI) && ! defined (VAR_PVM)
+      IF (PARCAL) THEN
+         WRITE (LUPRI,'(//4X,A/4X,A)')
+     &      'Parallel calculation requested, but this is not a',
+     &      'parallel version. Please recompile for MPI or PVM'
+         CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
+      END IF
+#endif
       IF (OPTWLK) THEN
          WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
      &      'Geometry optimization',
@@ -1408,30 +1424,16 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
       IF (TOTSYM) WRITE (LUPRI,'(4X,A)') 
      &     'Only totally symmetric part of molecular Hessian calculated'
-      IF (DIRCAL .AND. .NOT. PARCAL) WRITE(LUPRI,'(4X,A)')
-     &         'Direct calculation'
-#if defined (VAR_MPI)
-      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
-#endif
-#if defined (VAR_PVM)
-      IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using PVM'
-#endif
-#if ! defined (VAR_MPI) && ! defined (VAR_PVM)
-      IF (PARCAL) THEN
-         WRITE (LUPRI,'(//4X,A/4X,A)')
-     &      'Parallel calculation requested, but this is not a',
-     &      'parallel version. Please recompile for MPI or PVM'
-         CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
-      END IF
-#endif
+      IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
+     &         'AO-direct calculation, where implemented'
       CALL MOHEAD
       IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
-     &   'The second order Douglas-Kroll transformation is applied'
+     &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
-     &     'Integral sections will be executed'
+     &     'HERMIT 2-electron integral sections will be executed'
       IF (RUNERI) THEN
          WRITE (LUPRI,'(4X,A)')
-     &     'Integrals are calculated using ERI '//
+     &     '2-elctron integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
 !        RUNERI = RUNERI .AND. .NOT. PARCAL
 !        IF (.NOT. RUNERI) THEN
@@ -1445,21 +1447,26 @@ C     ... default print level for statistics /hjaaj apr 2000
      &     '(assuming vector machine)',IVECLN
       IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
-     &     '"New" integral transformation used'
+     &     '"New" (from 1988!) integral transformation used'
       ELSE IF (.NOT. DIRCAL) THEN
          WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
      &     ' (limited to max 255 basis functions)'
       END IF
       IF (RNSIRI) WRITE (LUPRI,'(4X,A)')
-     &     'Wave function sections will be executed'
+     &     'Wave function sections will be executed (SIRIUS module)'
       IF (RNRESP) WRITE (LUPRI,'(4X,A)')
-     &     'Dynamic molecular property section will be executed'
+     &     'Dynamic molecular response properties section will be'//
+     &          ' executed (RESPONSE module)'
       IF (RNABAC) WRITE (LUPRI,'(4X,A)')
-     &     'Static molecular property section will be executed'
+     &     'Static molecular property section will be executed'//
+     &          ' (ABACUS module)'
       IF (NMWALK) WRITE (LUPRI,'(4X,A)') 
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+C
+C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*MINIMI', '*NMDDRV',
+C              '*OPTIMI', '*PCM   '
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          READ (LUCMD,'(A7)') WORD
@@ -1468,7 +1475,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,4,7), I
+               GOTO (1,2,3,4,5,6,7), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1481,48 +1488,52 @@ C     ... default print level for statistics /hjaaj apr 2000
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in GNRLIN, error in prompt.')
       END IF
+C     "*PARALL" input
  2    CONTINUE 
 #if defined (VAR_MPI) || defined (VAR_PVM)
         CALL PRLINP(WORD)
 #else
-         WRITE (LUPRI,'(//4X,A/4X,A)')
-     &      'Parallel input module found, but this is not a',
-     &      'parallel version. Please recompile for MPI or PVM'
-         CALL QUIT('Parallel input module w/o MPI or PVM activated')
+        WRITE (LUPRI,'(//4X,A/4X,A)')
+     &    '"*PARALL" input sprecified, but this is not a parallel',
+     &    'version. Please recompile DALTON for MPI or PVM.'
+         CALL QUIT('*PARALL input specified w/o MPI or PVM activated')
 #endif
       GO TO 200
-    3   WALKIN = .TRUE.
+C     "*WALK  " input
+    3 WALKIN = .TRUE.
 C
-C     We have to wait with the input processing until we know 
-C     more about the molecule
+C     We have to wait with the input processing of "*WALK  "
+C     until we know more about the molecule
 C
  203    READ (LUCMD,'(A7)') WORD
-        CALL UPCASE(WORD)
         IF (WORD(1:1) .NE. '*') GOTO 203
       GO TO 200
-    4   CONTINUE
+C     "*MINIMI" input
+    4 CONTINUE
         CALL OPINPU(WORD)
       GO TO 200
-    5   CONTINUE
+C     "*NMDDRV" input
+    5 CONTINUE
 C
-C     We have to wait with the input processing until we know 
-C     more about the molecule
+C     We have to wait with the input processing of "*NMDDRV"
+C     until we know more about the molecule
 C       
- 204    READ (LUCMD,'(A7)') WORD
-        CALL UPCASE(WORD)
-        IF (WORD(1:1) .NE. '*') GOTO 204        
+  205   READ (LUCMD,'(A7)') WORD
+        IF (WORD(1:1) .NE. '*') GOTO 205        
       GO TO 200
-    6   CONTINUE
-      GO TO 200
+C     "*OPTIMI", old form of "*MINIMI"
+    6 CONTINUE
+      GO TO 4
 C
-Clf: PCM input processing
+Clf:  "*PCM   " input processing
 C
- 7    CONTINUE
+    7 CONTINUE
 C     INPERR is defined as a precaution (not used during PCM input processing)
       INPERR = 0
       ALLOPT = .FALSE.
       CALL PCMINP(WORD,INPERR,ALLOPT)
       GO TO 200
+C     "*END OF" or "**something"
     1 CONTINUE
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
