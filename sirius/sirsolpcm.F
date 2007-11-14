@@ -560,6 +560,7 @@ C
 C     Loop over all tesserae. We temporarily use FSOL for the unpacked
 C     inactive density matrix
 C
+         
          CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
 C
 C    PCMEN = interaction solute electrons - polarization nuclear charges
@@ -570,6 +571,8 @@ C
          TOFILE = .FALSE.
          CALL J1INT(WRK(KTJ2),EXP1VL,FSOL,1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
+Clf quick fix: J1INT overwrites FSOL here!
+         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
          CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
       ELSE
          DO ITS = 1, NTSIRR

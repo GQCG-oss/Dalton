@@ -5,12 +5,12 @@ END DESCRIPTION
 
 ########## Check list ##############################
 START CHECKLIST
+gauge_or
 dipole
 nuc
 tes
 sym
 cmass
-gauge_or
 shield
 Icoupl
 Acoupl
@@ -533,7 +533,7 @@ IT IS VALUABLE ALMOST ONLY FOR TESTING
    6    1.890072804   -0.684273079    0.000000000    1.440000000    9.350796585
 
  TOTAL NUMBER OF TESSERAE =     126
- SURFACE AREA=   88.97401433(A**2)    CAVITY VOLUME=   68.53843516 (A**3)
+ SURFACE AREA=   88.97401433 (A**2)    CAVITY VOLUME=   68.53843516 (A**3)
 
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 

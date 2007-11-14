@@ -349,14 +349,20 @@ sub load_check($$$) {
     open OUT, $file or die;
     my @list = get_portion("$check start","$check end",1,1,\%files);
     close OUT;
-    my $string = '';
-    foreach (@list) {$string = $string.$_}
-    if ($verbose > $verb{check_det}) {
-	print $log "----$check start----------------\n";
-	print $log "$string\n";
-	print $log "----$check end------------------\n";
-    }
-    eval $string;
+    if (@list) {
+	my $string = '';
+	foreach (@list) {$string = $string.$_}
+	if ($verbose > $verb{check_det}) {
+	    print $log "----$check start----------------\n";
+	    print $log "$string\n";
+	    print $log "----$check end------------------\n";
+	}
+	eval $string;
+    } else {
+	$params={name => "$check"};
+	print {$log} "Warning: Check $check not found on checklist file\n" if $verbose > $verb{test_inp};
+	print {$err} "Warning: Check $check not found on checklist file\n";
+    } 
     print {$log} "Check $check has been loaded\n" if $verbose > $verb{test_inp};
     return %$params;
 }
@@ -421,7 +427,7 @@ sub parse_test_file($$$) {
     my $check = "";
     foreach $check (@list) {
 	$idx++;
-	%check = load_check($check,$tstdir,\%files);
+	%check = load_check($check, $tstdir, \%files);
 	while (($idx <= $#list) and ($list[$idx]=~/OVERRIDE/)) {
 	    my $override = splice(@list,$idx,1);
 	    my @override = split(/\s+/,$override);
@@ -449,30 +455,29 @@ sub check_num($)
 #  2 real
 {	      
     $_ = shift;
-    if (/^\d+$/)                      { return 1 }
-    elsif (/^-?\d+$/)                 { return 1 }
-    elsif (/^[+-]?\d+$/)              { return 1 }
-    elsif (/^-?\d+\.?\d*$/)           { return 2 }
-    elsif (/^-?(?:\d+(?:\.\d*)?|\.\d+)$/) { return 2 }
+    if (/^\d+$/)                                               { return 1 }
+    elsif (/^-?\d+$/)                                          { return 1 }
+    elsif (/^[+-]?\d+$/)                                       { return 1 }
+    elsif (/^-?\d+\.?\d*$/)                                    { return 2 }
+    elsif (/^-?(?:\d+(?:\.\d*)?|\.\d+)$/)                      { return 2 }
     elsif (/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/) { return 2 }
-    else {return 0}
+    else                                                       { return 0 }
 }
 
 
 ############################################################################
-sub compare($$$$$) {
+sub compare($$$$$$) {
 # 
 # Compare two numbers up to the required precision
 #
-    my ($test_value, $ref_value, $thr, $abs) = ($_[0],$_[1],$_[2],$_[3]);
+    my ($test_value, $ref_value, $thr, $abs, $rel) = ($_[0], $_[1], $_[2], $_[3], $_[4]);
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
 
     my $check = check_num($test_value) * check_num($ref_value) * check_num($thr) * check_num($abs);    
     my $result = 0;
     if ($check == 0) {
-	print $err "compare(): non numeric value(s) as input, test skipped\n";
-	print $err "compare(): $test_value * $ref_value * $thr * $abs\n";
+	print $err "compare(): non numeric value(s) as input, test skipped\n";;
     } else {
 	if ($abs == 1) {
 	    $test_value = abs($test_value);
@@ -613,7 +618,7 @@ sub post_coord {
 	    my @r_list = split(/\s+/,$ref[$idx]);
 	    if(($#t_list == $#r_list) && $#t_list >= 0)
 	    {
-		$n_right += compare($t_list[$#t_list],$r_list[$#r_list],$threshold,0,\%files);
+		$n_right += compare($t_list[$#t_list],$r_list[$#r_list],$threshold,0,1.0e-5,\%files);
 	    }
 	    else {
 		print $log "post_coord(): empty or not matching lists\n" if $verbose > $verb{check_det};
@@ -667,7 +672,8 @@ sub test_line {
 #
 # fetches the first line of text matching a string, extracts a number and compares it with the reference 
 # 
-    my ($string, $pos, $thr, $name, $abs) = ($_[0]{string}, $_[0]{pos}, $_[0]{thr}, $_[0]{name}, $_[0]{abs});    
+    my ($string, $pos, $thr, $name, $abs, $rel, $num_type) = 
+       ($_[0]{string}, $_[0]{pos}, $_[0]{thr}, $_[0]{name}, $_[0]{abs}, $_[0]{rel}, $_[0]{num_type});    
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     my %files = %{$_[$#_]};
 
@@ -676,23 +682,24 @@ sub test_line {
     my $result = 0;
      
     open OUT, $files{out_f} or die;
-    my @test = get_line($string, $pos, -1, \%files);
+    $tst_line = get_line($string, \%files);
     close OUT;
-    print $log "Fetched list from test output\n @test\n\n" if $verbose > $verb{fetch_out};
-
 
     open OUT, $files{ref_f} or die;
-    my @ref = get_line($string, $pos, -1, \%files);
+    $ref_line = get_line($string, \%files);
     close OUT;
-    print {$log} "Fetched list from reference output\n @test\n\n" if $verbose > $verb{fetch_out};
 
-    if (@test and @ref) {
-	print $log "Checking values.....\n test value: $test[$#test]\n  ref value: $ref[$#ref]\n" if $verbose > $verb{check_res};
- 	$result = compare($test[$#test],$ref[$#ref],$thr,$abs,\%files);
+    @tst = extract_numbers($tst_line, $num_type, \%files) if $tst_line;
+    @ref = extract_numbers($ref_line, $num_type, \%files) if $ref_line;
+
+    my $lpos = $pos - 1; #we want to be user friendly!! 
+    if (@tst > 0 and @ref > 0) {
+	print $log "Checking values.....\n test value: $tst[$lpos]\n  ref value: $ref[$lpos]\n" if $verbose > $verb{check_res};
+ 	$result = compare($tst[$lpos], $ref[$lpos], $thr, $abs, $rel, \%files);
     } else {
 	print $log "ERROR: empty test or reference list, check $name skipped!\n";
 	print $err "ERROR: empty test or reference list, check $name skipped!\n";
-	print $err "from output file: @test\n from ref file: @ref\n";
+	print $err "from output file: @tst\n from ref file: @ref\n";
     }
     return $result;
 }
@@ -701,8 +708,8 @@ sub test_lines {
 #
 # fetches some/all lines of text matching a string, extracts a number and compares with the reference 
 #
-    my (     $name,       $string,       $maxout,       $maxget,       $pos,       $thr,       $abs) = 
-       ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget}, $_[0]{pos}, $_[0]{thr}, $_[0]{abs});
+    my (     $name,       $string,       $maxout,       $maxget,       $pos,       $thr,       $abs,       $rel) = 
+       ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget}, $_[0]{pos}, $_[0]{thr}, $_[0]{abs}, $_[0]{rel});
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     my %files = %{$_[$#_]};
 
@@ -734,7 +741,7 @@ sub test_lines {
 	    my $test = get_substring($test_lines[$i],$pos,\%files);
 	    my $ref  = get_substring($ref_lines[$i], $pos,\%files);
 	    print $log ($i+1)." $test $ref\n" if $verbose > $verb{check_res};
-	    $matching = $matching + compare($test, $ref, $thr, $abs, \%files);
+	    $matching = $matching + compare($test, $ref, $thr, $abs, $rel, \%files);
 	}
 	$result = 1 if $matching == $#test_lines + 1;
     }
@@ -746,16 +753,14 @@ sub test_portion ($$) {
 # fetches a portion of text, go to a specific line, extract a number and compares it to the reference
 # fore more info about the input see test type 1
 #
-    my $start_s      = $_[0]{start_string};            
-    my $start_offset = $_[0]{start_offset};     
-    my $end_s        = $_[0]{end_string};      
-    my $end_offset   = $_[0]{end_offset};      
-    my $line_pos     = $_[0]{line};        
-    my $name         = $_[0]{name};        
-    my $abs   	     = $_[0]{abs};         
-    my $pos   	     = $_[0]{pos};         
-    my $thr       = $_[0]{thr};
-
+    my ($start_s,    $start_offset, $end_s, 
+	$end_offset, $line_pos,     $name, 
+	$abs,        $rel,          $pos, 
+	$thr) = 
+      ($_[0]{start_string}, $_[0]{start_offset}, $_[0]{end_string}, 
+       $_[0]{end_offset},   $_[0]{line},         $_[0]{name}, 
+       $_[0]{abs},          $_[0]{rel},          $_[0]{pos}, 
+       $_[0]{thr});          
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
 
@@ -799,13 +804,14 @@ sub test_portion ($$) {
 	my $t_val = get_substring($test,$pos,\%files);
 	my $r_val = get_substring($ref, $pos,\%files);
 	print $log "test value: $t_val\n ref value: $r_val\n" if $verbose > $verb{check_res};
-	$result = compare($t_val,$r_val,$thr, $abs, \%files);
+	$result = compare($t_val,$r_val,$thr, $abs, $rel, \%files);
     }
     return $result;
 }
 ############################################################################
 sub test_lines_mult {
-    my ($name, $string, $maxout, $maxget) = ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget});
+    my ($name, $string, $maxout, $maxget, $num_type) = 
+       ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget}, $_[0]{num_type});
     my @pos = @{$_[0]{pos}};
     my @abs = @{$_[0]{abs}};
     my @thr = @{$_[0]{thr}};
@@ -824,16 +830,19 @@ sub test_lines_mult {
     while ($#abs < $#pos) {
 	push @abs, $abs[$#abs];
     }
+    while ($#rel < $#pos) {
+	push @rel, $rel[$#rel];
+    }
     open OUT, $files{out_f};
-    my @test_lines = get_lines($string, $maxout, $maxget, \%files);
-    print $log "Fetched list from output\n @test_lines\n\n" if $verbose > $verb{fetch_out};
+    my @tst_lines = get_lines($string, $maxout, $maxget, \%files);
+    print $log "Fetched list from output\n @tst_lines\n\n" if $verbose > $verb{fetch_out};
     close OUT;
     open OUT, $files{ref_f};
     my @ref_lines = get_lines($string, $maxout, $maxget, \%files); 
     print $log "Fetched list from reference\n @ref_lines\n\n" if $verbose > $verb{fetch_out};
     close OUT;
 
-    if (not @test_lines) {
+    if (not @tst_lines) {
 	print $err "Check $name:\n".
 	    "No matching lines found in output file.\n".
 	    "Check aborted\n";
@@ -842,26 +851,25 @@ sub test_lines_mult {
 	    "No matching lines found in reference file.\n".
 	    "Check aborted\n";
     }
-    elsif ($#ref_lines != $#test_lines) {
+    elsif ($#ref_lines != $#tst_lines) {
 	print $err 
              "Number of lines in test file does not match the reference file 
               Test will be skipped: check results manually\n";
     }
     else {
 	print $log "Checking values.....\n" if $verbose > $verb{check_res};
-	for ($i = 0; $i <= $#test_lines; $i++) {
+	for ($i = 0; $i <= $#tst_lines; $i++) {
+	    my @tst = extract_numbers($tst_lines[$i], $num_type, \%files);
+	    my @ref = extract_numbers($ref_lines[$i], $num_type, \%files);
 	    for ($j=0; $j <= $#pos; $j++) {
-		my $pos = $pos[$j];
-		my $thr = $thr[$j];
-		my $abs = $abs[$j];
-		my $test = get_substring($test_lines[$i],$pos,\%files);
-		my $ref  = get_substring($ref_lines[$i], $pos,\%files);
-		print $log "test value: $test\n ref value: $ref\n" if $verbose > $verb{check_res};
-		$matching = $matching + compare($test,$ref,$thr,$abs,\%files);
+		$tst_val = $tst[$pos[$j]-1];
+		$ref_val = $ref[$pos[$j]-1];
+		print $log "test value: $tst_val\n ref value: $ref_val\n" if $verbose > $verb{check_res};
+		$matching = $matching + compare($tst_val, $ref_val, $thr[$j], $abs[$j], $rel[$j], \%files);
 	    }
 	}
     }
-    $result = 1 if $matching == (@test_lines) * (@pos);
+    $result = 1 if $matching == (@tst_lines) * (@pos);
     return $result;
 }
 ############################################################################
@@ -879,12 +887,12 @@ sub test_line_fetch {
     my $result = 0;
 
     open OUT, $files{out_f} or die;
-    my @test = get_line($string, $maxout, -1, \%files);
+    my @test = get_line_old($string, $maxout, -1, \%files);
     print {$log} "Fetched list from output\n @test\n\n" if $verbose > $verb{fetch_out};
     close OUT;
 
     open OUT, $files{ref_f} or die;
-    my @ref = get_line($string, $maxout, -1, \%files);
+    my @ref = get_line_old($string, $maxout, -1, \%files);
     print {$log} "Fetched list from reference\n @ref\n\n" if $verbose > $verb{fetch_out};
     close OUT;
 
@@ -996,7 +1004,7 @@ sub get_portion ($$$$$) {
     return @lines;
 }
 ############################################################################
-sub get_line($$$$) {
+sub get_line_old($$$$) {
 #
 # search for $keyword in input and returns a list composed by the line
 # itself followed by the splitted line (spaces removed). Returns an
@@ -1005,24 +1013,46 @@ sub get_line($$$$) {
     my ($keyword, $position, $maxread) = ($_[0],$_[1],$_[2]);
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
-    print {$log} "get_line() called wit the following input:\n $keyword, $position, $maxread\n" if $verbose > $verb{fetch_inp};
-    my $tline = ""; #debug# print {$err} "get_line debug, keyword $keyword\n";
+    print {$log} "get_line_old() called wit the following input:\n $keyword, $position, $maxread\n" if $verbose > $verb{fetch_inp};
     while(<OUT>) {
 	$maxread--;
-        $tline = "\L$_"; #debug# print {$err} "get_line debug, tline $tline"; # $tline is lower case version of line
-	if($tline =~ /\L$keyword/) {
+	if(/$keyword/) {
 	    s/^\s+//; # remove leading spaces	    
 	    @line=split(/\s+/,$_);
 	    if ($position > 0)  {
 		push @line, $line[$position-1];
 	    }
-	    print $log "get_line() successful.\n"  if $verbose > $verb{all};
+	    print $log "get_line_old() successful.\n"  if $verbose > $verb{all};
 	    print $log "returning the following list:\n $_ @line"  if $verbose > $verb{all};
 	    return $_,@line;
 	}
 	last if ($maxread == 0);
     }
-    print $err "get_line() could not find a matching line to keyword $keyword.\n";
+    print $err "get_line_old() could not find a matching line.\n";
+    return ();
+}
+############################################################################
+sub get_line($$) {
+#
+# search for $keyword in input and returns the first matching line in the output
+# the file is parsed up to maxread lines (whole file if maxread is negative)
+#
+    my ($keyword, $maxread) = ($_[0], $_[1]);
+    my %files = %{$_[$#_]};
+    my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
+    print {$log} "get_line() called wit the following input:\n $keyword, $maxread\n" if $verbose > $verb{fetch_inp};
+    $keyword = lc $keyword;
+    while(<OUT>) {
+	$_ = lc;
+	$maxread--;
+	if(/$keyword/) {
+	    print $log "get_line_old() successful.\n"  if $verbose > $verb{all};
+	    print $log "returning the following line:\n $_"  if $verbose > $verb{all};
+	    return $_;
+	}
+	last if ($maxread == 0);
+    }
+    print $err "get_line() could not find a matching line.\n";
     return ();
 }
 ##############################################################################
@@ -1054,7 +1084,7 @@ sub make_dirname() {
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
     $mon++; 
     $year = $year + 1900;
-    my $name = "perl-tests-".$year."-".$mon."-".$mday."T".$hour."-".$min."-pid-".$$;
+    my $name = "perl-pid.".$$."__".$year."_".$mon."_".$mday."__".$hour.".".$min;
     return $name;
 }
 ############################################################################
@@ -1073,11 +1103,8 @@ sub get_lines ($$$$) {
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     print {$log} "get_lines() called with the following input:\n $keyword, $maxread, $maxget\n" if $verbose > $verb{fetch_inp};
-
-    my $tline = ""; #debug# print {$err} "get_lines debug, keyword $keyword\n";
     while(<OUT>) {
-        $tline = "\L$_"; #debug# print {$err} "get_lines debug, tline $tline"; # $tline is lower case version of line
-	if($tline =~ /\L$keyword/) {
+	if(/$keyword/) {
 	    s/^\s+//;
 	    push @lines, $_;
 	    $maxget--;
@@ -1154,8 +1181,8 @@ sub preprocess_files($) {
 # we need to have "clean" output and reference files before performing any checks
 # things to be cleaned:
 # 1) all real defined with D/d need to be changed in E 
-#    since perl does not recognize xxxx.xxD+xxx and similar as numbers
-# 2) change line to lower case with "lc"; we will ignore case when matching strings
+#    since perl does not recognize xxxx.xxD+xxx and similar
+#    as numbers
 #
     my %files = %{$_[$#_]};
     my $file="";
@@ -1178,6 +1205,41 @@ sub print_hash($$)
     foreach my $k (sort keys %hash_to_print) {
 	print $filehand "$k => $hash_to_print{$k}\n";
     }
+}
+##############################################################################
+sub extract_numbers($$$) {
+    my %files = %{$_[$#_]};
+    my ($line, $kind) = ($_[0], $_[1]);
+    my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
+    print {$log} "extract_numbers() called with the following input:\n $line, $kind\n" if $verbose > $verb{fetch_inp};
+    chomp $line;
+    my $piece = "";
+    my @strings  = ();
+    my @integers = ();
+    my @floats   = ();
+    my @numbers  = ();
+    foreach $piece (split(/\s+/,$line)) {
+	my $check = check_num($piece);
+	push @strings,  $piece if ($check == 0);
+	push @integers, $piece if ($check == 1);
+	push @floats,   $piece if ($check == 2);
+	push @numbers,  $piece if ($check == 1 or $check == 2);
+	if ($check < 0 or $check > 2) {
+	    print $log "Argument $piece was found neither a number nor string.\n Please check manually\n ";
+	    print $err "Argument $piece was found neither a number nor string.\n Please check manually\n ";
+	}
+    }
+    if ($verbose >= $verb{fetch_out}) {
+	print "line\n".$line."\n has been split in the following way:\n";
+	print "Strings:\n".@strings."\n";
+	print "Integers:\n".@integers."\n";
+	print "Floats:\n".@floats."\n";
+	print "Numbers:\n".@numbers."\n";
+    }
+    return @strings  if ($kind == 0);
+    return @integers if ($kind == 1);
+    return @floats   if ($kind == 2);
+    return @numbers;
 }
 ###########################################################################################################
 #
@@ -1307,7 +1369,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 #
 # Test whether input files are corrupted
 #
-    if (check_files($dalinp,$molinp,$refout,\%files)) {
+    if (check_files($dalinp, $molinp, $refout, \%files)) {
 	title_print($BIGLOG, "Corrupted input files. Test $test will be skipped\n");
 	title_print($LOGFILE,"Corrupted input files. Test $test will be skipped\n");
 	title_print($ERRFILE,"Corrupted input files. Test $test will be skipped\n");
@@ -1437,19 +1499,13 @@ if ((@passed_tests) or (@failed_tests)) {
 #
 # TO DO
 #
-# 1) allow for absolute or relative error check to avoid 
-#    problems with small numbers or with multiple tests 
-#    where the different values can have different orders 
-#    of magnitude.
-# 2) insert a threshold for discarding tests on numbers which 
-#    are too small (e.g. properties that should be in principle 
-#    zero for symmetry)
-# 3) a better mechanism for parsing through the test and reference 
+# 1) a better mechanism for parsing through the test and reference 
 #    files: e.g. use Tie::File
-# 4) check whether a hash element which is supposed to be a list is correctly
-#    initialized as a list and vice versa. Currently we silently check the
-#    elements of a list if a list is given but there is no check to determine
+# 2) check whether a hash element which is supposed to be a list is correctly
+#    initialized as a list and viceversa. Currently we siliently check the
+#    elemnts of a list if a list is given but there is no check to determine
 #    if that is correct.
+# 3) Better string search mechanisnm
 #
 
 __END__
