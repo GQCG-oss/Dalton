@@ -60,10 +60,10 @@ C
 #include <cbirea.h>
 #include <ccom.h>
 C
-      DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
-     *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
-     *            '.VDWSKP', '.XXXXXX', '.XXXXXX', '.XXXXXX',
-     *            '.XXXXXX', '.XXXXXX'/
+      DATA TABLE /'.QM3'   , '.THRDIP', '.MAXDIP', '.FIXMOM',
+     *            '.OLDTG', '.PRINT', '.ATMVDW', '.CLONLY',
+     *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPING',
+     *            '.PRFQM3', '.XXXXXX'/
 C
 C     Initializing QM3 keywords
 C
@@ -79,6 +79,11 @@ C
       LOCLAS  = .FALSE.
       IQM3PR  = IPRUSR
       VDWSKP  = .FALSE.
+      SKIPNC = .FALSE.
+      MYMAT  = .FALSE.
+      MYITE  = .TRUE.
+      EXPON  = .FALSE.
+      PRFQM3 = .FALSE.
 C
 C
 C     CRUCIAL TEST : MXENT has to be equal to MXQM3
@@ -210,15 +215,35 @@ C
           GO TO 100
 C
    10     CONTINUE
+            SKIPNC = .TRUE.
           GO TO 100
 C
    11     CONTINUE
+            READ(LUCMD,'(A)') INLINE
+            IF (INLINE .EQ. 'MYMAT') THEN
+              MYMAT = .TRUE.
+              MYITE = .FALSE.
+            ELSE IF (INLINE .EQ. 'MYITE')  THEN
+              MYMAT = .FALSE.
+              MYITE = .TRUE.
+            ELSE
+              WRITE(LUPRI,*) 'Unknown my-model on input. I quit'
+              CALL QUIT('')
+            END IF
           GO TO 100
 C
    12     CONTINUE
+            READ(LUCMD,'(A)') INLINE
+            IF (INLINE .EQ. 'EXPON') THEN
+              EXPON = .TRUE.
+            ELSE
+              WRITE(lupri,*) 'only exponentila damping implemented.'
+              CALL QUIT('')
+            END IF
           GO TO 100
 C
    13     CONTINUE
+            PRFQM3 = .TRUE.
           GO TO 100
 C
    14     CONTINUE
@@ -259,10 +284,8 @@ C
         IF (OLDTG) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ',' OLDTG',' | ',OLDTG,' |'
 C
-chj     IF (IQM3PR .NE. IPRUSR) THEN
           WRITE (LUPRI,'(A3,A6,A3,I7,A2)')
      *           ' | ','PRINT',' | ',IQM3PR,' |'
-chj     END IF
 C
         IF (LONEPAR) THEN
           WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
@@ -282,6 +305,17 @@ C
      *           '| ','SIGMLT',' | ',(.NOT.LSIGADD),' |'
           END IF
         END IF
+C
+        WRITE(LUPRI,*) 'Settings for determination of induced dipoles:'
+        IF (MYITE) THEN
+          WRITE(LUPRI,*) 'Iterative Method is used'
+        ELSE IF (MYMAT) THEN
+          WRITE(LUPRI,*) 'Matrix inversion is used'
+        END IF
+        IF (EXPON) THEN
+          WRITE(LUPRI,*) 'Exponential Dampiing is active'
+        END IF
+        
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 C
       END IF
@@ -1607,7 +1641,7 @@ C
       DOUBLE PRECISION  ENUC, EQMCLF, EIND, MYIND
       DOUBLE PRECISION  XDIP1, XDIP2
 #endif
-C 
+C  
 C-------------------------
 C     Initializing fields:
 C-------------------------
@@ -1742,7 +1776,7 @@ C
       IF (FIXMOM) THEN
         WRITE(LUPRI,'(1X,A38)')'Induced dipole moments are kept fixed.'
         WRITE(LUPRI,'(1X,A9,L2)')'FIXMOM = ',FIXMOM
-      ELSE
+      ELSE IF (MYITE) THEN
 C
   116   CONTINUE
 C
@@ -1932,7 +1966,6 @@ C
             END IF
   50      CONTINUE
 C
-C
           IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
             DIPCON = .TRUE.
             WRITE(LUPRI,'(/A,I4,A/A,F20.15)')
@@ -1955,7 +1988,12 @@ C
      *    ' QM3 Epol is calculated according to scheme C3'
           GOTO 116
         END IF
-C
+ 
+      ELSE IF (MYMAT) THEN
+
+        IMODE = 0
+        CALL MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,MYIND,EIND,DIPCON)
+
       END IF
 C
       IF (.NOT. DIPCON) WRITE(LUPRI,'(/A)')
@@ -2191,7 +2229,7 @@ C  /* Deck indmom */
       SUBROUTINE INDMOM(EELEC,LOINDM,FFJ)
 C
 C     Calculates the induced dipole moments by an iterative
-C     procedure.
+C     procedure or by direct matrix inversion.
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -2204,7 +2242,7 @@ C
       DIMENSION  MYIND(3,MXQM3), EIND1(3,MXQM3)
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
       DIMENSION  ENUC(3,MXQM3),EQMCLF(3,MXQM3)
-      DIMENSION  EELEC(3,MXQM3)
+      DIMENSION  EELEC(3,MXQM3),QMFIELD(3,MXQM3)
       DIMENSION  FFJ(*)
       PARAMETER  (D0 = 0.0D0)
 C
@@ -2212,12 +2250,12 @@ C
       REAL              DIST, DISM1, DISM2, DISM3, DISM5
       REAL              XDIP1, XDIP2, MYIND, EIND
       REAL              TEMPX, TEMPY, TEMPZ
-      REAL              ESITE,ENUC,EQMCLF
+      REAL              ESITE,ENUC,EQMCLF,QMFIELD
 #else
       DOUBLE PRECISION  DIST, DISM1, DISM2, DISM3, DISM5
       DOUBLE PRECISION  XDIP1, XDIP2, MYIND, EIND1
       DOUBLE PRECISION  TEMPX, TEMPY, TEMPZ
-      DOUBLE PRECISION  ESITE,ENUC,EQMCLF
+      DOUBLE PRECISION  ESITE,ENUC,EQMCLF,QMFIELD
 #endif
 C
       DO 879 I = 1,MXQM3 
@@ -2227,6 +2265,7 @@ C
            EIND(J,I) = D0
            EIND1(J,I) = D0
            MYIND(J,I) = D0
+           QMFIELD(J,I) = D0
   880    CONTINUE
   879 CONTINUE
 C
@@ -2244,125 +2283,90 @@ C
       LUENUC = -1
       LUESITE = -1
       LUEIND = -1
-      CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
-      CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
-      CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
+
+      IF (MYMAT) THEN
+
+        CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
+        CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
+
+        DO 881 I = 1,MXQM3
+          DO 882 J = 1, 3
+            QMFIELD(J,I) = ENUC(J,I) + EELEC(J,I)
+  882     CONTINUE
+  881   CONTINUE
+
+        IMODE = 1
+        CALL MUMATINV(IMODE,NCOMS,QMFIELD,ESITE,MYIND,EIND,DIPCON)
+
+      ELSE IF (MYITE) THEN
+
+        CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
+        CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
+        CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
 C
-      DIPCON = .FALSE.
-      XDIP1 = D0
-      LM = 0
-      DO 999 ITER = 1, MXDIIT
-        XDIP2 = D0
-        LM = LM +1
+        DIPCON = .FALSE.
+        XDIP1 = D0
+        LM = 0
+        DO 999 ITER = 1, MXDIIT
+          XDIP2 = D0
+          LM = LM +1
 C
-        NUM = 0
-        DO 10 I= 1, ISYTP
-          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
-            DO 20 J = NSYSBG(I), NSYSED(I)
-             DO 102 K = 1, NUALIS(I)
-               NUM = NUM + 1
-               DO 40 M = 1, 3
-                 IF ( (MDLWRD(I) .EQ. 'SPC_E01') .OR. 
-     &             (MDLWRD(I) .EQ. 'SPC_EC1') ) THEN 
-                   MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
-     &             + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
-                   XDIP2 = XDIP2 + MYIND(M,NUM)**2
-                 ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
-     &             (LOINDM) )THEN
-                   MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
-     &             + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
-                   XDIP2 = XDIP2 + MYIND(M,NUM)**2
-                 ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
-     &             (.NOT. (LOINDM)) )THEN
-                   MYIND(M,NUM) = D0
-                 END IF
-   40          CONTINUE
-  102        CONTINUE
+          NUM = 0
+          DO 10 I= 1, ISYTP
+            IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+              DO 20 J = NSYSBG(I), NSYSED(I)
+               DO 102 K = 1, NUALIS(I)
+                 NUM = NUM + 1
+                 DO 40 M = 1, 3
+                   IF ( (MDLWRD(I) .EQ. 'SPC_E01') .OR. 
+     &               (MDLWRD(I) .EQ. 'SPC_EC1') ) THEN 
+                     MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
+     &              + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
+                     XDIP2 = XDIP2 + MYIND(M,NUM)**2
+                   ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
+     &               (LOINDM) )THEN
+                     MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
+     &              + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
+                     XDIP2 = XDIP2 + MYIND(M,NUM)**2
+                   ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
+     &               (.NOT. (LOINDM)) )THEN
+                     MYIND(M,NUM) = D0
+                   END IF
+   40            CONTINUE
+  102          CONTINUE
 C
-             IF ( (MDLWRD(I) .EQ. 'SPC_E02') .OR.
-     &          (MDLWRD(I) .EQ. 'SPC_EC2') .OR.
-     &          (MDLWRD(I) .EQ. 'SPC_EC4') ) THEN
-                CALL QUIT('SPC_EX2 model not implemented yet')
-             END IF
-  20        CONTINUE
-          END IF
-  10    CONTINUE
+               IF ( (MDLWRD(I) .EQ. 'SPC_E02') .OR.
+     &            (MDLWRD(I) .EQ. 'SPC_EC2') .OR.
+     &            (MDLWRD(I) .EQ. 'SPC_EC4') ) THEN
+                  CALL QUIT('SPC_EX2 model not implemented yet')
+               END IF
+  20          CONTINUE
+            END IF
+  10      CONTINUE
 C
-        NUM = 0
-        DO 50 I= 1, ISYTP
-          IF  (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
-            DO 60 J = NSYSBG(I), NSYSED(I)
-             DO 70 K = 1, NCTOT
-              IF ( (ISUBSY(K) .EQ. J) .AND.
-     &             (ISUBSI(K) .GT. NSISY(I)) ) THEN
-                NUM = NUM + 1
-                IF  (LOINDM) THEN  
-                IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
-C
-                  TEMPX = D0
-                  TEMPY = D0
-                  TEMPZ = D0
-C
-                  KURT = 0
-                  DO 80 L = 1, ISYTP
-                    IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
-                      DO 90 M = NSYSBG(L), NSYSED(L)
-                        DO 100 N = 1, NCTOT
-                          IF ( (ISUBSY(N) .EQ. M) .AND.
-     &                         (ISUBSI(N) .GT. NSISY(L)) ) THEN
-                            KURT = KURT + 1
-                            IF (J .NE. M) THEN
-C
-                            DIST2 =((CORD(1,K)-CORD(1,N))**2 +
-     *                      (CORD(2,K)-CORD(2,N))**2 +
-     *                      (CORD(3,K)-CORD(3,N))**2)
-C
-                            DIST = SQRT(DIST2)
-                            DIST3 = DIST2*DIST
-                            DIST4 = DIST2**2
-                            DIST5 = DIST4*DIST
-C
-                            DOTPR =
-     &                      (CORD(1,K)-CORD(1,N))*MYIND(1,KURT) +
-     &                      (CORD(2,K)-CORD(2,N))*MYIND(2,KURT) +
-     &                      (CORD(3,K)-CORD(3,N))*MYIND(3,KURT)
-C
-                            TEMPX = TEMPX +
-     &                      3.0*(CORD(1,K)-CORD(1,N)) *
-     &                      DOTPR/DIST5 - MYIND(1,KURT)/DIST3
-                            TEMPY = TEMPY +
-     &                      3.0*(CORD(2,K)-CORD(2,N)) *
-     &                      DOTPR/DIST5 - MYIND(2,KURT)/DIST3
-                            TEMPZ = TEMPZ +
-     &                      3.0*(CORD(3,K)-CORD(3,N)) *
-     &                      DOTPR/DIST5 - MYIND(3,KURT)/DIST3
-                            END IF
-                          END IF
-  100                   CONTINUE
-  90                  CONTINUE
-                    END IF
-  80              CONTINUE
-C
-                  EIND(1,NUM) = TEMPX
-                  EIND(2,NUM) = TEMPY
-                  EIND(3,NUM) = TEMPZ
-C
-                END IF
-                ELSE 
-                  IF (MDLWRD(I) .NE. 'SPC_EC3') THEN
+          NUM = 0
+          DO 50 I= 1, ISYTP
+            IF  (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+              DO 60 J = NSYSBG(I), NSYSED(I)
+               DO 70 K = 1, NCTOT
+                IF ( (ISUBSY(K) .EQ. J) .AND.
+     &               (ISUBSI(K) .GT. NSISY(I)) ) THEN
+                  NUM = NUM + 1
+                  IF  (LOINDM) THEN  
+                  IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
 C
                     TEMPX = D0
                     TEMPY = D0
                     TEMPZ = D0
 C
-                    LARS = 0
-                    DO 81 L = 1, ISYTP
+                    KURT = 0
+                    DO 80 L = 1, ISYTP
                       IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
-                        DO 91 M = NSYSBG(L), NSYSED(L)
-                          DO 101 N = 1, NCTOT
+                        DO 90 M = NSYSBG(L), NSYSED(L)
+                          DO 100 N = 1, NCTOT
                             IF ( (ISUBSY(N) .EQ. M) .AND.
      &                           (ISUBSI(N) .GT. NSISY(L)) ) THEN
-                              LARS = LARS + 1
+                              KURT = KURT + 1
                               IF (J .NE. M) THEN
 C
                               DIST2 =((CORD(1,K)-CORD(1,N))**2 +
@@ -2375,51 +2379,105 @@ C
                               DIST5 = DIST4*DIST
 C
                               DOTPR =
-     &                        (CORD(1,K)-CORD(1,N))*MYIND(1,LARS) +
-     &                        (CORD(2,K)-CORD(2,N))*MYIND(2,LARS) +
-     &                        (CORD(3,K)-CORD(3,N))*MYIND(3,LARS)
+     &                        (CORD(1,K)-CORD(1,N))*MYIND(1,KURT) +
+     &                        (CORD(2,K)-CORD(2,N))*MYIND(2,KURT) +
+     &                        (CORD(3,K)-CORD(3,N))*MYIND(3,KURT)
+C
                               TEMPX = TEMPX +
      &                        3.0*(CORD(1,K)-CORD(1,N)) *
-     &                        DOTPR/DIST5 - MYIND(1,LARS)/DIST3
+     &                        DOTPR/DIST5 - MYIND(1,KURT)/DIST3
                               TEMPY = TEMPY +
      &                        3.0*(CORD(2,K)-CORD(2,N)) *
-     &                        DOTPR/DIST5 - MYIND(2,LARS)/DIST3
+     &                        DOTPR/DIST5 - MYIND(2,KURT)/DIST3
                               TEMPZ = TEMPZ +
      &                        3.0*(CORD(3,K)-CORD(3,N)) *
-     &                        DOTPR/DIST5 - MYIND(3,LARS)/DIST3
+     &                        DOTPR/DIST5 - MYIND(3,KURT)/DIST3
                               END IF
                             END IF
-  101                     CONTINUE
-  91                    CONTINUE
+  100                     CONTINUE
+  90                    CONTINUE
                       END IF
-  81                CONTINUE
+  80                CONTINUE
 C
                     EIND(1,NUM) = TEMPX
                     EIND(2,NUM) = TEMPY
                     EIND(3,NUM) = TEMPZ
 C
                   END IF
-                END IF
-              END IF
-  70         CONTINUE
-  60        CONTINUE
-         END IF
-  50    CONTINUE
+                  ELSE 
+                    IF (MDLWRD(I) .NE. 'SPC_EC3') THEN
 C
-        IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
-          DIPCON = .TRUE.
-          WRITE(LUPRI,'(/A,I3,A/A,F20.15)')
+                      TEMPX = D0
+                      TEMPY = D0
+                      TEMPZ = D0
+C
+                      LARS = 0
+                      DO 81 L = 1, ISYTP
+                        IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+                          DO 91 M = NSYSBG(L), NSYSED(L)
+                            DO 101 N = 1, NCTOT
+                              IF ( (ISUBSY(N) .EQ. M) .AND.
+     &                             (ISUBSI(N) .GT. NSISY(L)) ) THEN
+                                LARS = LARS + 1
+                                IF (J .NE. M) THEN
+C
+                                DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+     *                          (CORD(2,K)-CORD(2,N))**2 +
+     *                          (CORD(3,K)-CORD(3,N))**2)
+C 
+                                DIST = SQRT(DIST2)
+                                DIST3 = DIST2*DIST
+                                DIST4 = DIST2**2
+                                DIST5 = DIST4*DIST
+C
+                                DOTPR =
+     &                          (CORD(1,K)-CORD(1,N))*MYIND(1,LARS) +
+     &                          (CORD(2,K)-CORD(2,N))*MYIND(2,LARS) +
+     &                          (CORD(3,K)-CORD(3,N))*MYIND(3,LARS)
+                                TEMPX = TEMPX +
+     &                          3.0*(CORD(1,K)-CORD(1,N)) *
+     &                          DOTPR/DIST5 - MYIND(1,LARS)/DIST3
+                                TEMPY = TEMPY +
+     &                          3.0*(CORD(2,K)-CORD(2,N)) *
+     &                          DOTPR/DIST5 - MYIND(2,LARS)/DIST3
+                                TEMPZ = TEMPZ +
+     &                          3.0*(CORD(3,K)-CORD(3,N)) *
+     &                          DOTPR/DIST5 - MYIND(3,LARS)/DIST3
+                                END IF
+                              END IF
+  101                       CONTINUE
+  91                      CONTINUE
+                        END IF
+  81                  CONTINUE
+C
+                      EIND(1,NUM) = TEMPX
+                      EIND(2,NUM) = TEMPY
+                      EIND(3,NUM) = TEMPZ
+C
+                    END IF
+                  END IF
+                END IF
+  70           CONTINUE
+  60          CONTINUE
+           END IF
+  50      CONTINUE
+C
+          IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
+            DIPCON = .TRUE.
+            WRITE(LUPRI,'(/A,I3,A/A,F20.15)')
      *     ' QM3 induced Dipole vector converged in ',LM,' iterations.',
      *     ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
-          GOTO 1000
-        ELSE
-          XDIP1 = XDIP2
-          IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
-     *     ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
-        END IF
+            GOTO 1000
+          ELSE
+            XDIP1 = XDIP2
+            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
+     *       ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
+          END IF
 C
   999 CONTINUE
  1000 CONTINUE
+
+      END IF
 C
       IF (.NOT. DIPCON) WRITE(LUPRI,'(A/)')
      *   ' QM3 induced dipole moment not converged self-consistently'
@@ -3566,23 +3624,23 @@ C
                  IF ( (ISUBSY(L) .EQ. J) .AND.
      &                (ISUBSI(L) .LE. NSISY(I2)) ) THEN
                    IF (CHARGE(L) .EQ. 0.0D0) GOTO 60 
-                   XCOOR = CORD(1,L) - CORD(1,I)
-                   YCOOR = CORD(2,L) - CORD(2,I)
-                   ZCOOR = CORD(3,L) - CORD(3,I)
+                   XCOOR = CORD(1,I) - CORD(1,L)
+                   YCOOR = CORD(2,I) - CORD(2,L)
+                   ZCOOR = CORD(3,I) - CORD(3,L)
                    R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
                    R5 = R2*R2*SQRT(R2)
                    UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
-     &                     + CHARGE(L)*(D3*XCOOR*XCOOR - R2)/R5
+     &                     - CHARGE(L)*(D3*XCOOR*XCOOR - R2)/R5
                    UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
-     &                     + CHARGE(L)*(D3*YCOOR*YCOOR - R2)/R5
+     &                     - CHARGE(L)*(D3*YCOOR*YCOOR - R2)/R5
                    UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
-     &                     + CHARGE(L)*(D3*ZCOOR*ZCOOR - R2)/R5
+     &                     - CHARGE(L)*(D3*ZCOOR*ZCOOR - R2)/R5
                    UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
-     &                     + CHARGE(L)*D3*XCOOR*YCOOR/R5
+     &                     - CHARGE(L)*D3*XCOOR*YCOOR/R5
                    UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
-     &                     + CHARGE(L)*D3*XCOOR*ZCOOR/R5
+     &                     - CHARGE(L)*D3*XCOOR*ZCOOR/R5
                    UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
-     &                     + CHARGE(L)*D3*YCOOR*ZCOOR/R5
+     &                     - CHARGE(L)*D3*YCOOR*ZCOOR/R5
                  END IF
  60            CONTINUE
  50          CONTINUE
@@ -3673,9 +3731,9 @@ C
                    TEZZZ = 0.0D0
                    TEXYZ = 0.0D0
                    NUM = NUM +1
-                   XCOOR = CORD(1,L) - CORD(1,I)
-                   YCOOR = CORD(2,L) - CORD(2,I)
-                   ZCOOR = CORD(3,L) - CORD(3,I)
+                   XCOOR = CORD(1,I) - CORD(1,L)
+                   YCOOR = CORD(2,I) - CORD(2,L)
+                   ZCOOR = CORD(3,I) - CORD(3,L)
                    R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
                    R5 = R2*R2*SQRT(R2)
                    R7 = R5*R2
@@ -3737,7 +3795,6 @@ C
       RETURN
 C
       END
-C*************************************************************
 C*******************************************************
 C  /* Deck elnuc */
               SUBROUTINE EQMNTEST()
@@ -3827,3 +3884,392 @@ C
 C
       END
 C*********************************************************************
+C  /* Deck mumatinv */
+      SUBROUTINE MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,MYIND,EIND,
+     &                    DIPCON)
+C**************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+#include <inftap.h>
+
+#if defined (SYS_CRAY)
+      REAL              DIST
+      REAL              TMAT, TMATI, EQMCLT, TMUM, EINDT
+      REAL              EQMCLF, ESITE, MYIND, EIND
+#else
+      DOUBLE PRECISION  DIST
+      DOUBLE PRECISION  TMAT, TMATI, EQMCLT, TMUM, EINDT
+      DOUBLE PRECISION  EQMCLF, ESITE, MYIND, EIND
+#endif
+
+      INTEGER    IMODE, KTEMP2  
+
+      DIMENSION  TMAT(3*KTEMP2,3*KTEMP2), TMATI(3*KTEMP2,3*KTEMP2)
+      DIMENSION  EQMCLT(3*KTEMP2), TMUM(3*KTEMP2), EINDT(3*KTEMP2)
+      DIMENSION  EQMCLF(3,MXQM3), ESITE(3,MXQM3), MYIND(3,MXQM3) 
+      DIMENSION  EIND(3,MXQM3)
+
+      PARAMETER  (D0 = 0.0D0)
+
+      LOGICAL    DIPCON
+
+C initialization
+
+      DO 001 I=1,3*KTEMP2
+        TMUM(I)  = 0.0D0
+        EINDT(I) = 0.0D0
+  001 CONTINUE
+
+      KSIT1 = 1
+      KSIT2 = 1
+
+        DO 133 L = IMODE, ISYTP
+          IF ( NUALIS(L) .GT. 1 ) THEN
+            CALL QUIT('Matrix inversion not impl. for distributed pol')
+          END IF
+          IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+            DO 134 M = NSYSBG(L), NSYSED(L)
+              DO 135 N = 1, NCTOT
+                IF ( (ISUBSY(N) .EQ. M) .AND.
+     &          (ISUBSI(N) .GT. NSISY(L)) ) THEN
+
+                 KSIT2 = 1
+
+                  DO 136 L1 = IMODE, ISYTP
+                    IF (MDLWRD(L1)(1:5) .EQ. 'SPC_E') THEN
+                      DO 137 M1 = NSYSBG(L1), NSYSED(L1)
+                        DO 138 N1 = 1, NCTOT
+                          IF ( (ISUBSY(N1) .EQ. M1) .AND.
+     &                    (ISUBSI(N1) .GT. NSISY(L1)) ) THEN
+
+                            IF (M .EQ. M1) THEN
+
+                              TMAT(KSIT1,KSIT2)     = -1/ALPIMM(L1,1)
+                              TMAT(KSIT1,KSIT2+1)   = 0.0D0
+                              TMAT(KSIT1,KSIT2+2)   = 0.0D0
+                              TMAT(KSIT1+1,KSIT2)   = 0.0D0
+                              TMAT(KSIT1+1,KSIT2+1) = -1/ALPIMM(L1,1)
+                              TMAT(KSIT1+1,KSIT2+2) = 0.0D0
+                              TMAT(KSIT1+2,KSIT2)   = 0.0D0
+                              TMAT(KSIT1+2,KSIT2+1) = 0.0D0
+                              TMAT(KSIT1+2,KSIT2+2) = -1/ALPIMM(L1,1)
+
+                            ELSE
+
+                              DIST2 =((CORD(1,N1)-CORD(1,N))**2 +
+     *                               (CORD(2,N1)-CORD(2,N))**2 +
+     *                               (CORD(3,N1)-CORD(3,N))**2)
+
+                              DIST = SQRT(DIST2)
+                              DIST3 = DIST2*DIST
+                              DIST4 = DIST2**2
+                              DIST5 = DIST4*DIST
+
+                              IF (EXPON) THEN
+                                ALPEFF1 = (ALPIMM(L,1)*ALPIMM(L1,1))
+                                ALPEFF  = ALPEFF1**(1.0D0/6.0D0)
+                                SCREEN  = 2.1304*DIST/ALPEFF
+                                FEPQ    = 1- (1+SCREEN+0.5D0*SCREEN**2)*
+     *                                    EXP(-SCREEN)
+                                FTPQ    = FEPQ - (1.0D0/6.0D0)*
+     *                                    SCREEN**3*EXP(-SCREEN)
+                              ELSE
+                                FEPQ = 1.0D0
+                                FTPQ = 1.0D0
+                              END IF 
+
+                              TMAT(KSIT1,KSIT2) = 
+     &                        3*FTPQ*(CORD(1,N1)-CORD(1,N))**2/DIST5 -
+     &                        FEPQ*1.0D0/DIST3
+
+                              TMAT(KSIT1,KSIT2+1) = 
+     &                        3*FTPQ*(CORD(1,N1)-CORD(1,N))*
+     &                        (CORD(2,N1)-CORD(2,N))/DIST5
+
+                              TMAT(KSIT1,KSIT2+2) = 
+     &                        3*FTPQ*(CORD(1,N1)-CORD(1,N))*
+     &                        (CORD(3,N1)-CORD(3,N))/DIST5
+
+                              TMAT(KSIT1+1,KSIT2) = 
+     &                        3*FTPQ*(CORD(2,N1)-CORD(2,N))*
+     &                        (CORD(1,N1)-CORD(1,N))/DIST5
+
+                              TMAT(KSIT1+1,KSIT2+1) = 
+     &                        3*FTPQ*(CORD(2,N1)-CORD(2,N))**2/DIST5 -
+     &                        FEPQ*1.0D0/DIST3
+
+                              TMAT(KSIT1+1,KSIT2+2) = 
+     &                        3*FTPQ*(CORD(2,N1)-CORD(2,N))*
+     &                        (CORD(3,N1)-CORD(3,N))/DIST5
+
+                              TMAT(KSIT1+2,KSIT2) = 
+     &                        3*FTPQ*(CORD(3,N1)-CORD(3,N))*
+     &                        (CORD(1,N1)-CORD(1,N))/DIST5
+
+                              TMAT(KSIT1+2,KSIT2+1) = 
+     &                        3*FTPQ*(CORD(3,N1)-CORD(3,N))*
+     &                        (CORD(2,N1)-CORD(2,N))/DIST5
+
+                              TMAT(KSIT1+2,KSIT2+2) = 
+     &                        3*FTPQ*(CORD(3,N1)-CORD(3,N))**2/DIST5 -
+     &                        FEPQ*1.0D0/DIST3
+
+                            END IF
+
+                          KSIT2 = KSIT2 + 3
+
+                          END IF
+  138                   CONTINUE
+  137                 CONTINUE
+                    END IF
+  136             CONTINUE
+
+                  KSIT1 = KSIT1 + 3
+
+                END IF
+  135         CONTINUE
+  134       CONTINUE
+          END IF
+  133   CONTINUE
+
+      CALL MATINV(TMAT,TMATI,3*KTEMP2)    
+
+      JJ = 1
+      DO 557 I=1,KTEMP2
+        EQMCLT(JJ)   = EQMCLF(1,I) + ESITE(1,I)
+        EQMCLT(JJ+1) = EQMCLF(2,I) + ESITE(2,I)
+        EQMCLT(JJ+2) = EQMCLF(3,I) + ESITE(3,I)
+        JJ=JJ+3
+  557 CONTINUE
+
+
+      DO 558 I=1,3*KTEMP2
+        DO 559 J=1,3*KTEMP2
+         TMUM(I) = TMUM(I) - TMATI(I,J)*EQMCLT(J)
+  559   CONTINUE
+  558 CONTINUE
+
+      I = 1
+      DO 560 J=1,KTEMP2
+            MYIND(1,J) = TMUM(I)
+            MYIND(2,J) = TMUM(I+1)
+            MYIND(3,J) = TMUM(I+2)
+            I = I +3
+  560 CONTINUE
+C
+        DO 561 J=1,3*KTEMP2
+          DO 562 I=1,3*KTEMP2
+           IF (J .NE. I) EINDT(J) = EINDT(J) + TMAT(J,I)*TMUM(I)
+  562     CONTINUE
+  561   CONTINUE
+
+      I = 1
+      DO 563 J=1,KTEMP2
+            EIND(1,J) = EINDT(I)
+            EIND(2,J) = EINDT(I+1)
+            EIND(3,J) = EINDT(I+2)
+            I = I +3
+  563 CONTINUE
+
+      DIPCON = .TRUE.
+      END
+C*********************************************************************
+C  /* Deck  */
+      SUBROUTINE RFQMMM()
+C
+C     Calculate the reaction field (RF) at the QM nuclei 
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+C
+      PARAMETER (D3 = 3.0D0)
+      PARAMETER (ZERO = 0.0D0)
+      DIMENSION  MYIND(3,MXQM3)
+      DIMENSION  RFQM(3,MXNEW)
+      CHARACTER  LAPRPC*8
+C
+#if defined (SYS_CRAY)
+      REAL              MYIND, RFQM
+#else
+      DOUBLE PRECISION  MYIND, RFQM
+#endif
+
+      IF (.NOT. PRFQM3) RETURN
+
+      DO 11 I=1,MXNEW
+        RFQM(1,I)=ZERO
+        RFQM(2,I)=ZERO
+        RFQM(3,I)=ZERO
+  11  CONTINUE
+
+C     if oldtg then put in charges 
+
+      IF (OLDTG)  THEN
+        DO 873 I= 1, ISYTP
+         DO 874 J = NSYSBG(I), NSYSED(I)
+           DO 875 K = 1, NCTOT
+              IF (ISUBSY(K) .EQ. J) CHARGE(K) = CHAOLD(K)
+  875      CONTINUE
+  874    CONTINUE
+  873   CONTINUE
+      END IF
+  
+C     now, find a QM nuclei and do the RF due to the charges
+ 
+      NU = 0
+ 
+      DO 14 J = 1,NUCIND ! loop only over the QM nuclei (NUCIND). This is the most correct way ... 
+        NU = NU + 1      ! The counter could just be over J instead but I keep the refernce to NU
+        DO 15 K = 1, ISYTP  ! exclude the QM system here, i.e. begin the loop from 1
+          DO 21 LM = NSYSBG(K), NSYSED(K)
+            DO 16 L = 1, NCTOT
+ 
+              DIST = D0
+              DISM1 = D0
+              DISM3 = D0
+ 
+              IF ( (ISUBSY(L) .EQ. LM) .AND. 
+     &             (ISUBSI(L) .LE. NSISY(K)) ) THEN
+
+                DIST = (CORD(1,J)-CORD(1,L))**2 +
+     &                 (CORD(2,J)-CORD(2,L))**2 +
+     &                 (CORD(3,J)-CORD(3,L))**2
+                       DIST = SQRT(DIST)
+                       DISM1 = 1/DIST
+                       DISM3 = DISM1**3
+ 
+                       DO 18 M = 1, 3
+                         RFQM(M,NU) = RFQM(M,NU) +
+     &                   CHARGE(L)*(CORD(M,J)-CORD(M,L))*DISM3
+  18                   CONTINUE
+ 
+              END IF
+  16        CONTINUE
+  21      CONTINUE
+  15    CONTINUE
+  14  CONTINUE
+ 
+      IF (NUCIND .NE. NU) THEN
+        CALL QUIT('Something is wrong w. the no. of nuclei in RFQMMM')
+      ENDIF
+ 
+      WRITE(LUPRI,*) 'The QM coordinates:'
+      DO 22 JK=1,NU
+        WRITE(LUPRI,*) CORD(1,JK),CORD(2,JK),CORD(3,JK)
+  22  CONTINUE
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*) 'The reaction field due to the charges:'
+      DO 23 JK=1,NU
+        WRITE(LUPRI,*) RFQM(1,JK),RFQM(2,JK),RFQM(3,JK)
+  23  CONTINUE
+      WRITE(LUPRI,*)
+
+C     Finally, we set the charges to zero if OLDTG
+ 
+      IF (OLDTG) THEN
+       DO 876 I= 1, ISYTP
+          DO 877 J = NSYSBG(I), NSYSED(I)
+            DO 878 K = 1, NCTOT
+               IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
+  878       CONTINUE
+  877    CONTINUE
+  876   CONTINUE
+      END IF
+
+C     Now continue with the contribution due to the induced dipole moments
+
+C     1. get induced dipole moments from files:
+ 
+      LUMOM = -1
+      CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
+C
+      NUM = 0
+      NATOM = 0
+      DO 30 I = 1, NCTOT
+        IF ( (ISUBSY(I) .EQ. 0) .AND.
+     &       (ISUBSI(I) .LE. NSISY(0)) ) THEN  ! we have a QM nuclei
+           NATOM = NATOM + 1
+           NUM = 0
+           DO 40 I2 =1, ISYTP ! loop only over MM systens
+           IF (MDLWRD(I2)(1:5) .NE. 'SPC_E') GOTO 40
+             DO 50 J = NSYSBG(I2), NSYSED(I2)
+               DO 60 L=1,NCTOT
+                 IF ( (ISUBSY(L) .EQ. J) .AND.
+     &                 (ISUBSI(L) .GT. NSISY(I2)) ) THEN
+                   TEXX = 0.0D0
+                   TEXY = 0.0D0
+                   TEXZ = 0.0D0
+                   TEYX = 0.0D0
+                   TEYY = 0.0D0
+                   TEYZ = 0.0D0
+                   TEZX = 0.0D0
+                   TEZY = 0.0D0
+                   TEZZ = 0.0D0
+                   NUM = NUM +1
+                   XCOOR = CORD(1,I) - CORD(1,L)
+                   YCOOR = CORD(2,I) - CORD(2,L)
+                   ZCOOR = CORD(3,I) - CORD(3,L)
+                   R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                   R5 = R2*R2*SQRT(R2)
+                   TEXX = (D3*XCOOR*XCOOR-R2)/R5
+                   TEXY = (D3*XCOOR*YCOOR)/R5
+                   TEXZ = (D3*XCOOR*ZCOOR)/R5
+                   TEYX = (D3*YCOOR*XCOOR)/R5 
+                   TEYY = (D3*YCOOR*YCOOR-R2)/R5
+                   TEYZ = (D3*YCOOR*ZCOOR)/R5
+                   TEZX = (D3*ZCOOR*XCOOR)/R5
+                   TEZY = (D3*ZCOOR*YCOOR)/R5
+                   TEZZ = (D3*ZCOOR*ZCOOR-R2)/R5
+
+                   RFQM(1,NATOM) = RFQM(1,NATOM) + MYIND(1,NUM)*TEXX 
+     &                                           + MYIND(2,NUM)*TEXY
+     &                                           + MYIND(3,NUM)*TEXZ
+
+                   RFQM(2,NATOM) = RFQM(2,NATOM) + MYIND(1,NUM)*TEYX
+     &                                           + MYIND(2,NUM)*TEYY
+     &                                           + MYIND(3,NUM)*TEYZ
+
+                   RFQM(3,NATOM) = RFQM(3,NATOM) + MYIND(1,NUM)*TEZX
+     &                                           + MYIND(2,NUM)*TEZY
+     &                                           + MYIND(3,NUM)*TEZZ
+                 END IF
+ 60            CONTINUE
+ 50          CONTINUE
+ 40        CONTINUE
+        END IF
+ 30   CONTINUE
+
+      IF (NUCIND .NE. NATOM) THEN
+        CALL QUIT('Something is wrong w. the no. of nuclei in RFQMMM')
+      ENDIF
+
+      WRITE(LUPRI,*) 'The QM coordinates:'
+      DO 24 JK=1,NATOM
+        WRITE(LUPRI,*) CORD(1,JK),CORD(2,JK),CORD(3,JK)
+  24  CONTINUE
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*) 'The total reaction field:'
+      DO 25 JK=1,NATOM
+        WRITE(LUPRI,*) RFQM(1,JK),RFQM(2,JK),RFQM(3,JK)
+  25  CONTINUE
+      WRITE(LUPRI,*)
+
+      DO 26 JK=1,NATOM
+        DO IPRPC = 1,3
+           IF (IPRPC .EQ. 1) LAPRPC = 'XREFIELD'
+           IF (IPRPC .EQ. 2) LAPRPC = 'YREFIELD'
+           IF (IPRPC .EQ. 3) LAPRPC = 'ZREFIELD'
+           CALL WRIPRO(RFQM(IPRPC,JK),"SCF/DFT   ",1,
+     *                 LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
+        END DO
+  26  CONTINUE
+      END
+C*********************************************************************
+

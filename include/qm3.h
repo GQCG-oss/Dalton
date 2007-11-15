@@ -3,7 +3,8 @@
       LOGICAL LONUPO, LOELFD, LOSPC, LOEC3
       LOGICAL LOSHAW,REPTST,RELMOM,SLOTH
       LOGICAL LONEPAR, LTWOPAR, LEPSADD, LSIGADD
-      LOGICAL SKIPNC, VDWSKP
+      LOGICAL SKIPNC, VDWSKP, MYITE, MYMAT, EXPON
+      LOGICAL PRFQM3
 C 
 C ---------------------------------------------------------
 C In the present implementation the MXQM3 parameter follows 
@@ -56,7 +57,7 @@ C
      *                OLDTG,LONUPO,LOELFD,LOSPC,LOEC3,QM3,
      *                SHAWFC,LOSHAW,REPTST,RELMOM,SLOTH,
      *                LONEPAR,LTWOPAR,LEPSADD,LSIGADD,LOCLAS,
-     *                SKIPNC,VDWSKP
+     *                SKIPNC,VDWSKP,MYITE,MYMAT,EXPON,PRFQM3
 
       COMMON /INTQM3/ IQM3PR,ISYTP,NTOTQM3,NUSITE,NCOMS,NTOTIN,
      *                MXDIIT, IQMBAS, NREPMT, NSIGEPS
