@@ -1964,7 +1964,7 @@ C
 #include <ccinftap.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
-      CHARACTER NAME*6, SPDCAR*1, LAPRPC*10
+      CHARACTER NAME*6, SPDCAR*1, LAPRPC*8
       DIMENSION PRAPOL(3,3), PRVPOL(6), CSTRA(*), SCTRA(*), POLDD(*),
      *          POLDL(*), POLDA(*), POLVL(*), POLVV(*)
       DIMENSION WORK(LWORK)
@@ -2836,6 +2836,7 @@ C  /* Deck susres */
 #include <abainf.h>
 #include <inftap.h>
       CHARACTER*6 ABC(3)
+      CHARACTER*8 LAPRPC
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
       CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
 cLig <> added the .NOT. CTOCD
@@ -2995,6 +2996,22 @@ cLig <<
      &         ABC(I),PVAL(I),SI*PVAL(I)*1.0D31,CGS*PVAL(I),
      &         (AXES(IPTAX(J,2),I),J=1,3)
  700     CONTINUE
+         LAPRPC = 'ISO_MAGNE'
+         CALL WRIPRO(SI*AVE*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'ANI_MAGNE'
+         CALL WRIPRO(SI*ANI*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'DIA_MAGNE'
+         CALL WRIPRO(SI*DIAMAG*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'PAR_MAGNE'
+         CALL WRIPRO(SI*PARAMA*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
       ELSE
          CALL DSWAP(1,PVAL(2),1,PVAL(1),1)
          CALL DSWAP(3,AXES(1,2),1,AXES(1,1),1)
@@ -3017,6 +3034,26 @@ cLig <<
      &         ABC(I),PVAL(I),SI*PVAL(I)*1.0D31,CGS*PVAL(I),
      &         (AXES(IPTAX(J,2),I),J=1,3)
  800     CONTINUE
+         LAPRPC = 'ISO_MAGNE'
+         CALL WRIPRO(SI*AVE*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'ANI1MAGNE'
+         CALL WRIPRO(SI*ANI1*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'ANI2MAGNE'
+         CALL WRIPRO(SI*ANI2*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'DIA_MAGNE'
+         CALL WRIPRO(SI*DIAMAG*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
+         LAPRPC = 'PAR_MAGNE'
+         CALL WRIPRO(SI*PARAMA*1.0D31,"SCF/DFT   ",403,
+     *               LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *               0.0D0,0.0D0,0.0D0,1,0,0,0)
       END IF
 C
       CALL HEADER('Total magnetizability tensor (au)',-1)
