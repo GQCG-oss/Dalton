@@ -337,6 +337,15 @@ C
         CALL WRIPRO(ECMCON,MODEL,0,
      *              LABEL,LABEL,LABEL,LABEL,
      *              ZERO,ZERO,ZERO,1,0,0,0)
+
+C------------------------------------------------------
+C       Print information concerning the reaction field
+C------------------------------------------------------
+
+        CALL RFQMMM()
+
+C------------------------------------------------------
+
       ELSE 
 C
         ICCSLIT = ICCSLIT + 1
