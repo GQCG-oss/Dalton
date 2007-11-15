@@ -2935,7 +2935,11 @@ C
      *    'Principal axis of diagonalized oscillator strength matrix:'
       CALL OUTPUT(PAXIS,1,3,1,3,3,3,1,LUPRI)
       OSCS = PVAL(1)+PVAL(2)+PVAL(3)
-C
+
+      CALL WRIPRO(OSCS,MODEL,-21,
+     &            "OSCI-LEN","OSCI-LEN","OSCI-LEN","OSCI-LEN",
+     &            0.0,0.0,0.0,ISYM,ISYM,1,IEX)
+
       CDIP = 'unknown'
       IF (IPAR .EQ.1) CDIP = '   X   '
       IF (IPAR .EQ.2) CDIP = '   Y   '
