@@ -3040,6 +3040,12 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
+
+      IF ( (QM3) .AND. (.NOT. (SKIPNC)) ) THEN
+        CALL QM3QCC1(LUPRI,IASGER)
+        IF ( .NOT. (LOSPC) ) CALL QM3QCC2(LUPRI,IPRINT)
+      END IF
+
       IF (IPRINT .GE. 5) THEN
          CALL HEADER('Nuclear contribution to electric field gradient',
      &        -1)
