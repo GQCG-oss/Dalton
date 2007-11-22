@@ -133,39 +133,36 @@ C
       CMAXMO = CMXMOB
       THROVL = TROVLB
       THRSSY = TRSSYB
-      TITLE(1) = TITLEB(1)
-      TITLE(2) = TITLEB(2)
-      TITLE(3) = TITLEB(3)
-      TITLE(4) = TITLEB(4)
-      TITLE(5) = TITLEB(5)
-      TITLE(6) = TITLEB(6)
-      DO 100 I = 1, MAXRTS
+      DO I = 1, MAXRTS
          IROOT(I) = IROOTB(I)
- 100  CONTINUE
-      DO 110 I = 1, MXCORB
+      END DO
+      DO I = 1, MXCORB
          NOROT(I)  = NOROTB(I)
          IMOORD(I) = IMORDB(I)
          CENT(I)   = CENTB(I)
          TYPE(I)   = TYPEB(I)
- 110  CONTINUE
-      DO 130 I = 1, NFLAG
+      END DO
+      DO I = 1, NFLAG
          FLAG(I) = FLAGB(I)
- 130  CONTINUE
-      DO 140 I = 1, 12
-         TITMOL(I,1) = TITMLB(I,1)
-         TITMOL(I,2) = TITMLB(I,2)
- 140  CONTINUE
-      DO 150 I = 1, MXFELT
+      END DO
+      DO I = 1, 6
+         TITLE(I)      = TITLEB(I)
+         TITMOL(I,1)   = TITMLB(I,1)
+         TITMOL(I,2)   = TITMLB(I,2)
+         TITMOL(6+I,1) = TITMLB(6+I,1)
+         TITMOL(6+I,2) = TITMLB(6+I,2)
+      END DO
+      DO I = 1, MXFELT
          EFIELD(I) = EFILDB(I)
          LFIELD(I) = LFILDB(I)
- 150  CONTINUE
+      END DO
 C     
 C     /INFPRI/ values are restored
 C     
-      DO 200 I = 1, NPFLAG
+      DO I = 1, NPFLAG
          P4FLAG(I) = P4FLGB(I)
          P6FLAG(I) = P6FLGB(I)
- 200  CONTINUE
+      END DO
       IPRI4  = IPRI4B - 2
       IPRI6  = IPRI6B
       IPRSIR = IPRSRB
@@ -1094,7 +1091,7 @@ Clf
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
-     &             '*MINIMI', '*NMDDRV', '*OPTIMI',
+     &             '*OPTIMI', '*NMDDRV', 'xXXXXXX',
      &             '*PCM   '/
       DATA TABLE  /'.PRINT ', '.ITERAT', '.PRIERR',
      &             '.INTEGR', '.WAVE F', '.PROPER',
@@ -1103,10 +1100,10 @@ Clf
      &             '.RUN PR', '.RUN RE', '.RUN WA',
      &             '.PRESOR', '.WESTA ', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX',
-     &             '.XXXXXX', '.XXXXXX', '.TOTSYM',
+     &             '.XXXXXX', '.OPTIMI', '.TOTSYM',
      &             '.VECLEN', '.RUNERI', '.XXXXXX',
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
-     &             '.OPTIMI', '.DOUGLA'/
+     &             'xXXXXXX', '.DOUGLA'/
 C
       CALL QENTER('GNRLIN')
 C
@@ -1259,6 +1256,15 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
+C Table(01:32) :
+C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
+C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
+C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
+C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
+C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
+C 31-32: '.OPTIMI', '.DOUGLA'
+C
       IPRERR = -10
   100 READ (LUCMD, '(A7)') WORD
       CALL UPCASE(WORD)
@@ -1271,7 +1277,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,112,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                123,130), I
+     &                131,132), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1312,6 +1318,7 @@ C
   109    CONTINUE
             DIRCAL = .TRUE.
          GO TO 100
+C        ".WALK  "
   110    CONTINUE
             OPTWLK = .TRUE.
             DOWALK = .TRUE.
@@ -1348,6 +1355,7 @@ C
  121     CONTINUE
  122     CONTINUE
          GO TO 100
+C        '.OPTIMI'
  123     CONTINUE
             OPTNEW = .TRUE.
          GO TO 100
@@ -1368,12 +1376,15 @@ C
             RNABAC = .TRUE.
             RNRESP = .TRUE.
          GO TO 100
+C        '.NMDDRV' and '.PARNMD'
  129     CONTINUE
             NMWALK = .TRUE.
             NOMOVE = .TRUE.
             OPTWLK = .TRUE.
          GOTO 100
- 130     CONTINUE
+ 131     CONTINUE
+         GOTO 100
+ 132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1386,11 +1397,20 @@ C
 C
 C
   999 CONTINUE
-      WRITE (LUPRI,'(/A,I5/)') ' Default print level:    ',IPRUSR
+      WRITE (LUPRI,'(1X,A)') SEPARATOR
+      WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
       IF (IPRERR .EQ. -10)IPRERR = IPRUSR + 1
-      WRITE (LUERR,'(/A,I5)') ' Error file print level: ',IPRERR
+      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.ERR :',IPRERR
+      WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.ERR ',IPRERR
 C     ... default print level for statistics /hjaaj apr 2000
-      IF (TESTIN) WRITE (LUPRI,'(A/)') ' *** Input test run only ***'
+      IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
+      IF (PARCAL .AND. NODTOT .EQ. 0) THEN
+         NINFO = NINFO + 1
+         WRITE (LUPRI,'(4X,A)') SEPARATOR,'INFO: '//
+     &   'Request for parallel calculation (.PARALL) is ignored '//
+     &   'because only one CPU process available.',SEPARATOR
+         PARCAL = .FALSE.
+      END IF
 #if defined (VAR_MPI)
       IF (PARCAL) WRITE (LUPRI,'(4X,A)')'Parallel calculation using MPI'
 #endif
@@ -1411,21 +1431,23 @@ C     ... default print level for statistics /hjaaj apr 2000
      &        'Starting at iteration:', ITERNR,
      &        'Maximum number of iterations:', ITERMX
       ELSE IF (ITERNR .GT. 0) THEN
-         WRITE (LUPRI,'(4X,A)')
-     &  'Specification of iteration number only valid for optimization',
-     &  'Iteration number has been reset to 0'
+         INFO = INFO + 1
+         WRITE (LUPRI,'(4X,A/4X,A/6X,A/4X,A)') SEPARATOR,
+     &   'INFO: Input specification of geometry iteration number '//
+     &     'is only valid for ".WALK  ", ".NMDDRV", or ".PARNMD"',
+     &   'Geometry iteration number has been reset to 0',SEPARATOR
          ITERNR = 0
       END IF
       IF (TOTSYM .AND. OPTNEW) THEN
-         WRITE(LUPRI,'(4X,A,/A)') 
-     &        '.TOTSYM is incompatible with .OPTIMIZE',
-     &        'Use instead the .WALK module together with .TOTSYM'
+         WRITE(LUPRI,'(//A/4X,A/6X,A)') SEPARATOR,
+     &     'ERROR: .TOTSYM is incompatible with .OPTIMIZE',
+     &     'Use instead the .WALK module together with .TOTSYM'
          CALL QUIT('.TOTSYM and .OPTIMIZE is incompatible options')
       END IF
       IF (TOTSYM) WRITE (LUPRI,'(4X,A)') 
-     &     'Only totally symmetric part of molecular Hessian calculated'
+     &   'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
-     &         'AO-direct calculation (in sections where implemented)'
+     &   'AO-direct calculation (in sections where implemented)'
       CALL MOHEAD
       IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
      &   'The second order Douglas-Kroll-Hess transformation is applied'
@@ -1464,9 +1486,10 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+      WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
-C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*MINIMI', '*NMDDRV',
-C              '*OPTIMI', '*PCM   '
+C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
+C              'xXXXXXX', '*PCM   '
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          READ (LUCMD,'(A7)') WORD
@@ -1508,7 +1531,7 @@ C
  203    READ (LUCMD,'(A7)') WORD
         IF (WORD(1:1) .NE. '*') GOTO 203
       GO TO 200
-C     "*MINIMI" input
+C     "*OPTIMI" input
     4 CONTINUE
         CALL OPINPU(WORD)
       GO TO 200
@@ -1521,9 +1544,9 @@ C
   205   READ (LUCMD,'(A7)') WORD
         IF (WORD(1:1) .NE. '*') GOTO 205        
       GO TO 200
-C     "*OPTIMI", old form of "*MINIMI"
+C
     6 CONTINUE
-      GO TO 4
+      GO TO 200
 C
 Clf:  "*PCM   " input processing
 C
