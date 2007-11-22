@@ -409,31 +409,6 @@ C
 C       stamp date, time, and hostname to LUW4
         CALL TSTAMP(' ',LUW4)
 C
-#if defined (VAR_OCCPRINT)
-
-MAERKE 901102-hjaaj: KOCC is not defined here any more !!!!
-
-C
-C ***  Natural occupancies
-C
-      IF (FLAG(3) .AND. IPRI4.GT.0) THEN
-      IF (NASHT .GT. 0) THEN
-         DO 3040 ISYM = 1,NSYM
-            IF (NOCC(ISYM) .GT. 0) THEN
-               JOCC1 = KOCC + IORB(ISYM) - 1
-               OCCSUM = DSUM(NOCC(ISYM),WRK(JOCC1+1),1)
-               WRITE (LUW4,'(//A,I3/)')
-     *           ' Occupancies of natural orbitals, symmetry',
-     *           ISYM
-               WRITE (LUW4,'(6F12.6)') (WRK(JOCC1+I),I=1,NOCC(ISYM))
-               WRITE (LUW4,'(/A,T13,F12.6)') ' Sum =',OCCSUM
-            END IF
- 3040    CONTINUE
-C     ELSE
-CMAERKE-901025 write orbital energies for Hartree-Fock
-      END IF
-      END IF
-#endif
       IF (MCTYPE .GT. 0 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
      *    .NOT.(CICALC.AND.DOCINO) ) THEN
 C     if MC/CI and NO's not already printed
@@ -461,8 +436,8 @@ C
          REWIND LUIT1
          IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
             NWARN = NWARN + 1
-            WRITE (LUPRI,'(//2A/)')
-     *         ' WARNING, new orbitals not found on LUIT1,',
+            WRITE (LUPRI,'(//A/)')
+     *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *         ' will try "OLDORB "'
             REWIND LUIT1
             CALL MOLLAB(TABLE(2),LUIT1,LUW4)
@@ -504,8 +479,8 @@ C
             REWIND LUIT1
             IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
                NWARN = NWARN + 1
-               WRITE (LUPRI,'(//2A/)')
-     *            ' WARNING, new orbitals not found on LUIT1,',
+               WRITE (LUPRI,'(//A/)')
+     *            ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *            ' will try "OLDORB "'
                REWIND LUIT1
                CALL MOLLAB(TABLE(2),LUIT1,LUERR)
@@ -556,8 +531,9 @@ c--renzo modif
             IF (RTNLBL(2) .EQ. 'CISAVE ') THEN
                IF (.NOT. CICALC) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,*) 'WARNING, internal error in SIROUT'
-                  WRITE (LUW4,*) 'CICALC false, but CISAVE on LUIT1'
+                  WRITE (LUW4,'(//A/A/)')
+     &               ' WARNING, internal error in SIROUT subroutine',
+     &               ' CICALC false, but CISAVE label on SIRIUS.RST'
                END IF
                CICALC = .TRUE.
                IF (I .GT. 0 .AND. I .NE. ISTACI) THEN
@@ -569,8 +545,9 @@ c--renzo modif
             ELSE
                IF (CICALC) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,*) 'WARNING, internal error in SIROUT'
-                  WRITE (LUW4,*) 'CICALC true, but not CISAVE on LUIT1'
+                  WRITE (LUW4,'(//A/A/)')
+     &               ' WARNING, internal error in SIROUT subroutine',
+     &               ' CICALC true, but no CISAVE label on SIRIUS.RST'
                   CICALC = .FALSE.
                END IF
                IF (ABS(I) .NE. ISTATE) THEN
@@ -627,8 +604,8 @@ C
             WRITE (LUPRI,'(/A/)') ' "NEWORB " orbitals punched.'
          ELSE
             NWARN = NWARN + 1
-            WRITE (LUPRI,'(//2A/)')
-     *         ' WARNING, new orbitals not found on LUIT1,',
+            WRITE (LUPRI,'(//A/)')
+     *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *         ' will try "OLDORB "'
             REWIND LUIT1
             CALL MOLLAB(TABLE(2),LUIT1,LUERR)
@@ -684,7 +661,8 @@ C
 C
 C *** FORMAT statements
 C
- 2400 FORMAT(/5X,'Molecular orbitals for symmetry species',I4)
+ 2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
+     &       /' ------------------------------------------')
  2600 FORMAT(/' Orbital   ',7I9)
  2620 FORMAT( ' Sup.sym.  ',7I9)
  2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
@@ -695,8 +673,8 @@ C
       DO 400 ISYM = 1,NSYM
          IF (PROCC) THEN
 C           NENDI = NOCC(ISYM)
-            NENDI = NOCC(ISYM) + MIN(5,NORB(ISYM)-NOCC(ISYM)) - 
-     *                NRXR12(ISYM)
+            NENDI = NOCC(ISYM)
+     *            + MIN(5,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
          ELSE
             NENDI = NORB(ISYM)
          END IF
