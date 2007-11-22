@@ -1929,7 +1929,7 @@ C
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &            BIGMAS = 1.0D20 )
 C
-      DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3*NNATOM), ORIGIN(3)
+      DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NNATOM), ORIGIN(3)
 C
 #include "cbisol.h"
 #include "nuclei.h"
@@ -1938,7 +1938,6 @@ C
       TOTMAS = D0
       ABUND  = D100
       CALL DZERO(ORIGIN,3)
-      KK = 1
       DO 100 IATOM = 1, NNATOM
          IF (SOLVNT .AND. IATOM .EQ. NNATOM) THEN
             RMASS = BIGMAS
@@ -1949,13 +1948,12 @@ C
             TOTMAS       = TOTMAS + RMASS
             PMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
             ABUND        = ABUND*DP01*PMASS
-            ORIGIN(1) = ORIGIN(1) + RMASS*GEOM(KK)
-            ORIGIN(2) = ORIGIN(2) + RMASS*GEOM(KK + 1)
-            ORIGIN(3) = ORIGIN(3) + RMASS*GEOM(KK + 2)
+            ORIGIN(1) = ORIGIN(1) + RMASS*GEOM(1,IATOM)
+            ORIGIN(2) = ORIGIN(2) + RMASS*GEOM(2,IATOM)
+            ORIGIN(3) = ORIGIN(3) + RMASS*GEOM(3,IATOM)
          END IF
          IF (IPRINT .GE. 0)
      &      WRITE (LUPRI,'(27X,A6,2X,F12.6)')  NAMDEP(IATOM), RMASS
-         KK = KK + 3
  100  CONTINUE
       ORIGIN(1) = ORIGIN(1)/TOTMAS
       ORIGIN(2) = ORIGIN(2)/TOTMAS
@@ -1964,20 +1962,22 @@ C
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
         WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'
         WRITE (LUPRI,'(/A,3F12.6)')
-     &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
+     &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
       END IF
       RETURN
       END
-      LOGICAL FUNCTION FNDKEY(KEYWRD)
+      LOGICAL FUNCTION FNDKEY(KEYWRD_INP)
 C
 C     Search DALTON.INP for general key-word KEYWRD
 C
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL OPENED
-      CHARACTER WORD*7, KEYWRD*7
+      CHARACTER WORD*7, KEYWRD*7, KEYWRD_INP*7
 C
-      FNDKEY = .FALSE.
+      KEYWRD = KEYWRD_INP
+      CALL UPCASE(KEYWRD)
+C
       OPENED = .FALSE.
       IF (LUCMD.LE.0) THEN
          CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -1985,12 +1985,17 @@ C
          OPENED = .TRUE.
       END IF
       REWIND (LUCMD,IOSTAT=IOS)
+C
+      FNDKEY = .FALSE.
  5000 READ (LUCMD,'(A7)',END=8000) WORD
       CALL UPCASE(WORD)
-      CALL UPCASE(KEYWRD)
-      IF (WORD .EQ. KEYWRD) FNDKEY=.TRUE.
-      GOTO 5000
+      IF (WORD .EQ. KEYWRD) THEN
+         FNDKEY=.TRUE.
+      ELSE
+         GOTO 5000
+      END IF
  8000 CONTINUE
+C
       IF (OPENED) CALL GPCLOSE(LUCMD,'KEEP')
 C
       RETURN
