@@ -281,7 +281,7 @@ C                       ... next IATOMA, only IATOMB .le. IATOMA needed
   110    CONTINUE
   100 CONTINUE
 C
-C     set up distance matrix in Angstrom
+C     Set up distance matrix in Angstrom
 C
       DISTMX  = D0
       IDISTMX = 0
@@ -328,10 +328,11 @@ C hjaaj Oct 2003: this output is only useful for small molecules ...
      &         DISTMX,' Angstrom','  between atoms "',
      &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
           ELSE
-            WRITE(LUPRI,'(/A,F10.4,A/5A)')
+            WRITE(LUPRI,'(/A,2(F10.4,A)/5A)')
      &         '  Max interatomic separation is',
-     &         DISTMX,' Angstrom','  between atoms "',
-     &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
+     &         DISTMX,' Angstrom (',DISTMX/XTANG,' Bohr)',
+     &         '  between atoms "',NAMDEP(IDISTMX),
+     &         '" and "',NAMDEP(JDISTMX),'".'
           END IF
           END IF
         END IF
@@ -403,10 +404,9 @@ C
                     NUCNAM(2) = NAMDEP(I)
                     NUCNAM(3) = NAMDEP(K)
                     ANG = VECANG(VEC(1,I,J),VEC(1,I,K))
-                    ANG = ANG*FACANG
                     WRITE(LUPRI,'(A,5X,A6,5X,A6,5X,A6,F14.3)')
      *                    '  bond angle:',NUCNAM(1),NUCNAM(2),
-     *                    NUCNAM(3),ANG
+     *                    NUCNAM(3),FACANG*ANG
                   END IF
  60             CONTINUE
  50           CONTINUE
@@ -448,8 +448,7 @@ C
             NUCNAM(2) = NAMDEP(I2)
             NUCNAM(3) = NAMDEP(I3)
             IF (I1 .NE. I2 .AND. I2 .NE. I3) THEN
-               ANG = VECANG(VEC(1,I2,I1),VEC(1,I2,I3))
-               ANG = ANG*FACANG
+               ANG = FACANG*VECANG(VEC(1,I2,I1),VEC(1,I2,I3))
                IF (.NOT.DIF) THEN
                   ANGLE(I) = ANG
                ELSE
