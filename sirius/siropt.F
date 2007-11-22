@@ -457,17 +457,27 @@ C        use PRWF here ?? 890925-hjaaj
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
-C
-C dec99 hjaaj: set screening threshold for direct SCF gradient
+C Dec99 hjaaj: set screening threshold for direct SCF gradient
 C              GNORM(3) = grdnrm from prev.iter. (THRGRD in iter 1)
 C              (based on code in sirdiis.F)
+C Nov07 hjaaj: we expect quadratic convergence and GNORM(3) is from
+C              prev.iter., thus GNORM(3)**2 
+C              NORBT factor: statistical error is ca. sqrt(# elements) ~ NORBT
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
-         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GNORM(3)))+5 )
+         IF (UPDATE) THEN
+           ! Hessian update gives max a factor 0.1, so 0.01 should be safe
+           GRDACC  = MAX(THRGRD,0.01D0*GNORM(3))
+         ELSE
+           ! quadratic convergence
+           GRDACC  = MAX(THRGRD,GNORM(3)**2)
+         END IF
+         GRDACC  = GRDACC / NORBT
+         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GRNACC)) + 1)
          IFTHRS  = MAX( 7, IFTHRS )
-         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I5)')
-     &      ' Fock matrix screening setting for gradient: IFTHRS =',
-     &      IFTHRS
+         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
+     &   ' Fock matrix screening setting for this macro iteration: 10^('
+     &   ,-IFTHRS,')'
       END IF
       IF (.NOT.UPDATE) THEN
          CALL GRAD (WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
@@ -566,6 +576,12 @@ C----------------
  1020 FORMAT(/' Norm of total gradient   :',F22.12,
      *       /' -    of CI gradient      :',F22.12,
      *       /' -    of orbital gradient :',F22.12)
+
+
+      IF (IPRI6 .GE. LIM_POPPRI) THEN
+         call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
+      END IF
+
 C
 C
       IF (SOLVNT .AND. IPRI6 .GT. 1) THEN
@@ -758,26 +774,6 @@ C
 C **********
 C We have not converged (yet),
 C
-C dec99 hjaaj: set screening threshold for direct SCF in NEO/NR
-C              (based on code in sirdiis.F)
-C              -- note that NEO/NR trial vectors are normalized
-C
-      IF (DIRFCK .AND. .NOT. USRSCR .AND. .NOT.UPDATE) THEN
-         IFTHOLD = IFTHRS
-C           - norm(DCAO elements)*norm(BVEC) is assumed to 
-C             approximate norm(DXCAO elements) 
-C           - grdnrm is used for screening with DCAO
-C           - 0.1*grdnrm is for global region where
-C             we need new trial vector within 10%
-C           - grdnrm*grdnrm is for quadratic accuracy in NEO/NR
-C             where we want solution accurate to grdnrm 
-         FTEST = MIN(0.1D0,GNORM(3)) * GNORM(3)
-         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(FTEST))+5 )
-         IFTHRS  = MAX( 7, IFTHRS )
-         IF (IFTHRS.NE.IFTHOLD .AND. IPRI6.GE.0) WRITE (LUPRI,'(A,I5)')
-     &      ' New Fock matrix screening setting for NEO/NR: IFTHRS =',
-     &      IFTHRS
-      END IF
 C
 C if (ABSORP) then call SIRORB for orbital optimization.
 C
@@ -785,8 +781,7 @@ C
       IF (ITABS .EQ. 0) THEN
          CHKSTP = .FALSE.
          CALL SIRORB(MAXAPM,ITABS,WRK(KCMO),WRK(KGTOT+NCONF),WRK(KDV),
-     *      WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ),
-     &      WRK(KWOCTL),LWOCTL)
+     &      WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ), WRK(KWOCTL),LWOCTL)
 C        CALL SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,WRK,LFREE)
          GO TO 700
 C        ... change 870607/hjaaj, was GO TO 100
@@ -807,7 +802,7 @@ C
          CALL DCOPY(NCONF,WRK(KCREF),1,WRK(KREFU),1)
          CALL DCOPY(NVAR,WRK(KGTOT),1,WRK(KGRDU),1)
          CALL SIRUPD(ICONV,MAXUIT,WRK(KREFU),WRK(KGRDU),WRK(KCMO),
-     *               WRK(KCINDX),WRK(KWU),LWU)
+     &               WRK(KCINDX),WRK(KWU),LWU)
 C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
          LTRLVL = ITRLVL
          ITRLVL = ITRLSV
@@ -818,7 +813,7 @@ C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
          IF (ICONV .GT. 0) THEN
             IF (FLAG(25)) THEN
                WRITE (LUPRI,'(//A/)')
-     *            ' >>> after UPDATE: recalculate gradient for SIRIFC'
+     &            ' >>> after UPDATE: recalculating gradient for SIRIFC'
                ICONV    = 0
                UPDATE   = .FALSE.
                IF (.NOT. RHFCLC) FLAG(14) = .TRUE.

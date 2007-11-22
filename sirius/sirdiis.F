@@ -328,13 +328,8 @@ C
 #include <r12int.h>
 #include "incore.h"
 C------------------------
-C CBN+JK 03.01.06 Begin
-C------------------------
-C
+C CBN+JK 03.01.06 added qm3.h
 #include <qm3.h>
-C
-C------------------------
-C CBN+JK 03.01.06 End
 C------------------------
 C
       PARAMETER (THDDEF = 1.0D-5)
@@ -749,7 +744,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
          IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
             IF (FLAG(16) .OR. PCM .OR. QM3) THEN
                IF (.NOT.AUTOCC) THEN
-                  WRITE (LUW4,'(I5,1P,G20.12,G20.12,D15.5,D12.2)')
+                  WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
      &               ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
                ELSE IF (IOPRHF .EQ. 0) THEN
                  WRITE (LUW4,'(I4,1P,G20.12,G20.12,D11.2,D11.2,2X,8I3)')
@@ -763,7 +758,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
                END IF
             ELSE
                IF (.NOT.AUTOCC) THEN
-                  WRITE (LUW4,'(I5,1P,G22.12,D15.5,D12.2,I5)')
+                  WRITE (LUW4,'(I4,1P,G22.12,D15.5,D12.2,I5)')
      &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,NEVC
                ELSE IF (IOPRHF .EQ. 0) THEN
                   WRITE (LUW4,'(I4,1P,G20.12,D11.2,D11.2,2X,8I3)')
@@ -1048,6 +1043,11 @@ C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
          CALL NEWORB(CMOLBL,CMO,.FALSE.)
 C        ... REWIT1 false: do not destroy any GEOWALK information
+
+C        print atomic populations in each iteration ? /hjaaj
+         if (iprdis .ge. lim_poppri)
+     &      call sirpop('DIIS ',DV,wrk(kfree),lfree)
+
 C
          IF (HSFOCK) THEN
 C
@@ -1055,10 +1055,8 @@ C Update FCAO with the FV correction in AO basis
 C
             CALL DAXPY(NNBAST,D1,H1AO,1,FAOSAV(1,INDEVC,1),1)
             CALL DCOPY(NNBAST,FAOSAV(1,INDEVC,1),1,FCAO,1)
-            CALL FVCORR(
-     &            1,D1,DAOSAV,FAOSAV(1,INDEVC,1),MXERRV,FCAO,
-     &            WRK,KFREE,LFREE
-     &            )
+            CALL FVCORR(1,D1,DAOSAV,FAOSAV(1,INDEVC,1),MXERRV,FCAO,
+     &            WRK,KFREE,LFREE )
 C
 C Update the latest FAOSAV with the effective fock matrix
 C
@@ -1527,7 +1525,7 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
 C
-      IF (IPRDIS .GE. 9) WRITE (LUPRI,7555) C2DIIS,NEVC
+      IF (IPRDIS .GE. 5) WRITE (LUPRI,7555) C2DIIS,NEVC
  7555 FORMAT(/' (DISRED) CONTROL PARAMETERS C2DIIS =',L10,
      *        ' NEVC =',I5)
 C
@@ -1631,7 +1629,7 @@ C
       CVEC(NLEQ) = D1
       CALL DSPSOL(NLEQ,1,WRK(KBTMP),CVEC,WRK(KIPVT),INFO)
       XLMBDA = CVEC(NLEQ)
-      IF ( IPRDIS.GE.3 ) THEN
+      IF ( IPRDIS.GE.7 ) THEN
          WRITE(LUPRI,'(/A)')
      *      ' (DISRED) Solutions to C1-DIIS set of linear equations'
          CALL OUTPUT(CVEC,1,NLEQ,1,1,NLEQ,1,1,LUPRI)
@@ -1865,9 +1863,6 @@ C
          DO 175 I=1,NORBI
             FC(IORBI+I)=FC(IFSYM+IROW(I+1))
   175    CONTINUE
-         IF (IPRDIS .GE. 3) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
-     &      ' DIIS Fock eigenvalues in symmetry',ISYM,
-     &      (FC(IORBI+I), I = 1,NORBI)
 C
          IF (AUTOCC) THEN
             CALL DCOPY(NORBI,FC(IORBI + 1),1,SCRA(KEIG + IORBI),1)
@@ -1881,6 +1876,10 @@ C
          JORBI = IORBI + JFRZI + 1
          NNOTFR= NORBI - JFRZI
          CALL ORDRSS(CMO(JCSYM),FC(JORBI),ISSMO(JORBI),NNOTFR,NBASI)
+C
+         IF (IPRDIS .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
+     &      ' DIIS Fock eigenvalues in symmetry',ISYM,
+     &      (FC(IORBI+I), I = 1,NORBI)
   200 CONTINUE
       IF (SUPSYM) CALL AVEORD()
 C     ... remake ISSORD() as ISSMO() may have changed in ORDRSS

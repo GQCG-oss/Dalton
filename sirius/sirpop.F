@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck sirpop */
-      SUBROUTINE SIRPOP(WRK,LFREE)
+      SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE)
 C
 C Nov-10-85 Hans Agren
 C l.r. 910708-hjaaj
@@ -53,7 +53,8 @@ C  modified for SIRIUS.)
 C
 C
 #include <implicit.h>
-      DIMENSION WRK(*)
+      CHARACTER*(*)   INP_POPKEY
+      DIMENSION DV(*), WRK(*)
 C
 #include <iratdef.h>
 C
@@ -84,19 +85,39 @@ C
 C
       LOGICAL DIPOLM, QUADRM, MULLKM
       LOGICAL FNDLAB
+      CHARACTER*(6) POPKEY
 C
 C
       CALL QENTER('SIRPOP')
-      WRITE (LUW4,'(///2A/)')
-     *   ' <<< SIRPOP -- Expectation properties and',
-     *   ' MCSCF wave function analysis. >>>'
-      IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(A,///2A/)') '1',
-     *   ' <<< SIRPOP -- Expectation properties and',
-     *   ' MCSCF wave function analysis. >>>'
+C 
+      POPKEY = INP_POPKEY
+      IPPRMUL_SAVE = IPRMUL
+      IF (POPKEY(1:4) .EQ. 'DIIS') THEN
+         iprmul = -1
+         DIPOLM = .false.
+         QUADRM = .false.
+         MULLKM = .true.
+      ELSE IF (POPKEY(1:6) .EQ. 'MCITER') THEN
+         iprmul = -1
+         DIPOLM = .false.
+         QUADRM = .false.
+         MULLKM = .true.
+      ELSE IF (POPKEY(1:5) .EQ. 'FINAL') THEN
+         WRITE (LUW4,'(//A/)')
+     &   ' <<< SIRIUS Population analysis. >>>'
+         IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(//A/)')
+     &   ' <<< SIRIUS Population analysis. >>>'
+         DIPOLM = .NOT.FLAG(71)
+         QUADRM = .NOT.FLAG(72)
+         MULLKM = .NOT.FLAG(73)
+      ELSE
+         CALL QUIT('Unrecognized POPKEY : '//POPKEY)
+      END IF
 C
-      DIPOLM = .NOT.FLAG(71)
-      QUADRM = .NOT.FLAG(72)
-      MULLKM = .NOT.FLAG(73)
+      IF (NASHT .GT. 0) THEN
+         write (LUPRI,*) ' SIRPOP skipped because NASHT > 0'
+         go to 9999
+      END IF
 C
 C     *****   core allocation  *****
 C
@@ -134,11 +155,7 @@ C
       KOVLP  = KIPR   + NBAST
       KJTRAN = KOVLP  + MATDIM
       KITRAN = KJTRAN + NBAST
-#if defined (VAR_ITRAN2)
-      KCTRAN = KITRAN + NBAST*MXCGTO/IRAT2 + 1
-#else
       KCTRAN = KITRAN + NBAST*MXCGTO/IRAT
-#endif
       KWRK   = MAX(KCTRAN + NBAST*MXCGTO,KWRK)
       KCMOCG = KWRK
       KSS    = KCMOCG + NBAST*NOCCT
@@ -267,6 +284,7 @@ C
          CALL QUADRP (MATDIM,MATCMO,WRK(KCMO),WRK(KOCC),WRK(KQUMAT))
       END IF
  9999 CALL QEXIT('SIRPOP')
+      IPPRMUL = IPRMUL_SAVE
       RETURN
       END
 C  /* Deck virial */
@@ -395,8 +413,8 @@ C     **********     Energy analysis and virial theorem     **********
 C
       V   = EMCSCF - TK
       VIR = -V/TK
-      WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
+c     WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
+c     IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
  1001 FORMAT(//' Energy analysis'
      *        /' ---------------'
      *        /' Total energy',T30,F18.10
@@ -759,6 +777,7 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
          CALL GPCLOSE(LUTEMP,'DELETE')
       END IF
 C
+      if (iprmul .ge. 0) then
       WRITE (LUPRI,1004)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1004)
  1004 FORMAT(//6X,'Mulliken total overlap populations',
@@ -767,9 +786,9 @@ C
 C
       IEND = 0
     5    IST  = IEND + 1
-C        IEND = MIN(NNUC, IEND + 10)
+         IEND = MIN(NNUC, IEND + 10)
 C901028: use 7 instead of 10 (to fit in 80 columns)
-         IEND = MIN(NNUC, IEND + 7)
+C        IEND = MIN(NNUC, IEND + 7)
          WRITE (LUPRI,1009) (NAME(NUC),NUC=IST,IEND)
          WRITE (LUPRI,1009)
          IF (LUW4 .NE. LUPRI) THEN
@@ -786,6 +805,7 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
             END IF
   140    CONTINUE
       IF (IEND.LT.NNUC)   GO TO 5
+      end if
 C
 C     Gross populations of cgto's
 C
@@ -808,12 +828,14 @@ C
  1006    FORMAT (6(1X,I3,F8.4))
       END IF
 C
+      if (iprmul .gt. 0) then
       WRITE (LUPRI,1007)
       WRITE (LUPRI,1006) (IA,POPCGT(IA),IA = 1,NBAST)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,1007)
          WRITE (LUW4,1006) (IA,POPCGT(IA),IA = 1,NBAST)
       END IF
+      end if
  1007 FORMAT(//6X,
      *   'Mulliken total gross populations of CGTO basis functions A',
      *        /6X,'Sum over all MOs'//)
@@ -845,9 +867,9 @@ C
 C
             IEND = 0
     7       IST = IEND + 1
-C           IEND = IEND + 10
+            IEND = IEND + 10
 C901028: use 7 instead of 10 (to fit in 80 columns)
-            IEND = IEND + 7
+C           IEND = IEND + 7
             IF (IEND.GT.NNUC) IEND = NNUC
             WRITE (LUPRI,1009) (NAME(NUC),NUC = IST,IEND)
             WRITE (LUPRI,1011)
@@ -856,7 +878,7 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
                WRITE (LUW4,1011)
             END IF
  1009       FORMAT (' Centre',4X,A4,(9(6X,A4)))
- 1011       FORMAT ('  Type')
+ 1011       FORMAT ('  Type'/)
             DO 190 ITYP = 1,NTYP
                WRITE (LUPRI,1012)
      &         GTOTYP(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
@@ -868,6 +890,7 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
   200    CONTINUE
       END IF
 C
+      if (iprmul .gt. 0) then
       WRITE (LUPRI,1013)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1013)
  1013 FORMAT (//6X,'Mulliken total gross population of CGTO basis ',
@@ -875,18 +898,15 @@ C
      *         /6X,'Sum over all MOs'//)
       IEND = 0
     9 IST  = IEND + 1
-C     IEND = MIN(NNUC, IEND + 10)
+      IEND = MIN(NNUC, IEND + 10)
 C901028: use 7 instead of 10 (to fit in 80 columns)
-      IEND = MIN(NNUC, IEND + 7)
+C     IEND = MIN(NNUC, IEND + 7)
       WRITE (LUPRI,1009) (NAME(NUC),NUC = IST,IEND)
       WRITE (LUPRI,1011)
-      WRITE (LUPRI,1099)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,1009) (NAME(NUC),NUC = IST,IEND)
          WRITE (LUW4,1011)
-         WRITE (LUW4,1099)
       END IF
- 1099 FORMAT (1X)
       LQ     = 0
       DO NUC = IST,IEND
          POPTSM(NUC) = D0
@@ -919,7 +939,9 @@ C     using GTOTYP to decide works both for cartesian and spherical
          END DO
          LQ = LQ + 1
   210 CONTINUE
+ 1099 FORMAT (1X)
       IF (IEND.LT.NNUC)   GO TO 9
+      end if
 C
 C     POPULATION AT EACH CENTRE
 C
@@ -941,7 +963,8 @@ C
 C
          WRITE (LUPRI,1002) IP
          WRITE (LUPRI,1015) (NAME(NUC),POPABI(NUC,1),NUC=1,NNUC)
- 1015    FORMAT (/(4(3X,A4,F10.4)))
+c1015    FORMAT (4(3X,A4,F10.4))
+ 1015    FORMAT (5(3X,A4,F8.2))
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002) IP
          IF (LUW4 .NE. LUPRI)
      *   WRITE (LUW4,1015) (NAME(NUC),POPABI(NUC,1),NUC=1,NNUC)
@@ -950,12 +973,15 @@ C
       END IF
 C
       WRITE (LUPRI,1016)
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1016)
- 1016 FORMAT (//6X,'Mulliken total gross population of centre A',
-     *         /6X,'Sum over all MOs'/)
       WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
-      IF (LUW4 .NE. LUPRI)
-     *   WRITE (LUW4,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
+      WRITE (LUPRI,'()')
+      IF (LUW4 .NE. LUPRI) THEN
+         WRITE (LUW4,1016)
+         WRITE (LUW4,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
+      END IF
+ 1016 FORMAT (/' Mulliken total gross populations')
+c1016 FORMAT (//6X,'Mulliken total gross population of centre A',
+c    *         /6X,'Sum over all MOs'/)
 C
 C
 C
@@ -969,9 +995,9 @@ C
          IEND = 0
          INDEND = 0
    12    IST = IEND + 1
-C        IEND = MIN(NBAST, IEND + 10)
+         IEND = MIN(NBAST, IEND + 10)
 C901028: use 7 instead of 10 (to fit in 80 columns)
-         IEND = MIN(NBAST, IEND + 7)
+C        IEND = MIN(NBAST, IEND + 7)
          WRITE (LUW4,1018) (I,I=IST,IEND)
  1018    FORMAT (5X,'CGTO',10I9)
          WRITE (LUW4,1018)
@@ -990,13 +1016,13 @@ C
 C     Print error messages
 C
   910 WRITE (LUW4,9001) NNUC,MXCENT
- 9001 FORMAT (//10X,'YOU REALLY MADE IT. THE NUMBER OF NUCLEI,',I4,',',
-     *        //10X,'EXCEEDS THE PRESENT DIMENSION,',I3//)
+ 9001 FORMAT (/10X,'YOU REALLY MADE IT. THE NUMBER OF NUCLEI,',I5,','
+     *        /10X,'EXCEEDS THE PRESENT DIMENSION,',I5/)
       IF (NTYP.LE.MAXTYP)   GO TO 9999
 C
   920 WRITE (LUW4,9002) NTYP,MAXTYP
- 9002 FORMAT (//10X,'YOU REALLY MADE IT. THE HIGHEST ORBITAL TYPE,',
-     *        I4,',',//10X,'EXCEEDS THE PRESENT DIMENSION,',I3//)
+ 9002 FORMAT(/10X,'YOU REALLY MADE IT. THE HIGHEST ORBITAL TYPE,',I4,','
+     *       /10X,'EXCEEDS THE PRESENT DIMENSION,',I3/)
 C     GO TO 9999
 C
  9999 CONTINUE
