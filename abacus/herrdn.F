@@ -628,9 +628,11 @@ C*****************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)') TITLE(2)
       IF (IPREAD .GT. 0) THEN
-         CALL HEADER('Title Cards',1)
-         WRITE (LUPRI,'(2X,A,/,2X,A)') TITLE(1),TITLE(2)
-         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A,/,2X,A)') TITLE(1),TITLE(2)
+         WRITE (LUPRI,'(4X,A/4X,A/2A/2A/4X,A)')
+     &   'The two title cards from your ".mol" input:', SEPARATOR(1:72),
+     &   ' 1: ',TITLE(1),' 2: ',TITLE(2),SEPARATOR(1:72)
+         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A)')
+     &      SEPARATOR(1:72),TITLE(1),TITLE(2),SEPARATOR(1:72)
       END IF
 C*****************************************************************************
 C     Card 4:
@@ -1118,11 +1120,12 @@ C       (if ZMAT then it is done later)
 C
          IF (ZMTTST) GO TO 100
 C
-         IF (INPTST .OR. IPREAD .GT. 3 .OR. NONT(I).LE.0) THEN
-            WRITE(LUPRI,'(/A,I5)') 'Atomic type: ',I
-            WRITE(LUPRI,'(3X,A,F4.1)') 'Nuclear charge:  ',Q
-            WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//
-     &           'independent centres: ',NONT(I)
+         IF (INPTST .OR. IPREAD .GT. 0 .OR. NONT(I).LE.0) THEN
+            WRITE(LUPRI,'(/A,I5/A)') '  Atomic type no.',I,
+     &         '  --------------------'
+            WRITE(LUPRI,'(A,F10.5)') '  Nuclear charge:',Q
+            WRITE(LUPRI,'(A,I5)')
+     &         '  Number of symmetry independent centres:',NONT(I)
             IF (NONT(I).LE.0) THEN
                WRITE(LUPRI,'(/A)') 'INPUT ERROR: '//
      &         'Number of symmetry independent centres invalid.'
@@ -1230,39 +1233,34 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
  34                CONTINUE
                    AUXNAM = AUXNAM(IAUX:)
                  ENDIF
+                 LBASNAM = LNBLNK(BASNAM)
                  IF (INPTST .OR. IPREAD .GT. 0) THEN
                     IF (DOHUCKEL .AND. J.EQ.2) THEN
-                        IF (BASNAM(1:2) .NE. 'MM')
-     &                  WRITE (LUPRI,'(/A,I3)')
-     &                 ' Huckel basis read for atomic type no.',I
+                        IF (BASNAM(1:2) .NE. 'MM') WRITE(LUPRI,'(3X,A)')
+     &                 'Huckel basis read for this type.'
                     ELSE IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
-                       WRITE (LUPRI,'(/A,I3,A)')
-     &                    ' For atomic type no.',I,
-     &                    ' the basis set will be read from input.'
+                       WRITE (LUPRI,'(3X,A)')
+     &                    'The basis set will be read from input file.'
                     ELSE IF (BASNAM(1:11) .EQ. 'pointcharge') THEN
-                       WRITE (LUPRI,'(/A,I3,A)')
-     &                    ' Atomic type no.',I,
-     &                    ' is a point charge without basis functions.'
+                       WRITE (LUPRI,'(3X,A)') 'This is a point charge'//
+     &                    ' without basis functions.'
                     ELSE IF (BASNAM(1:2) .EQ. 'MM') THEN
-                       WRITE (LUPRI,'(/A,I3,A)')
-     &                    ' Atomic type no.',I,
-     &                    ' is a MM atom without'//
-     &                    ' basis functions.'
+                       WRITE (LUPRI,'(3X,A)')
+     &                    'This is an MM atom without basis functions.'
                     ELSE IF (INDEX(BASNAM,'ecp') .NE. 0) THEN
-                       WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
-     &                 ' For atomic type no.',I,
-     &                 ' the effective core potential basis set ',
-     &                 BASNAM,
-     &                 ' from the basis set library will be used.'
+                       WRITE (LUPRI,'(3X,3A)')
+     &                 'This basis set is '//
+     &                 'the effective core potential basis set "',
+     &                 BASNAM(1:LBASNAM),
+     &                 '" from the basis set library.'
                     ELSE IF (ATOMDF) THEN
-                       WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
-     &                 ' For atomic type no.',I,' the auxiliary ' //
-     &                 'basis set',AUXNAM,
-     &                 ' from the basis set library will be used.'
+                       LAUXNAM = LNBLNK(AUXNAM)
+                       WRITE (LUPRI,'(3X,3A)')
+     &                 'The auxiliary basis set is "',
+     &                 AUXNAM(1:LAUXNAM),'" from the basis set library.'
                     ELSE
-                       WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
-     &                 ' For atomic type no.',I,' the basis set',BASNAM,
-     &                 ' from the basis set library will be used.'
+                       WRITE (LUPRI,'(3X,3A)') 'The basis set is "',
+     &                 BASNAM(1:LBASNAM),'" from the basis set library.'
                     END IF
                  END IF
               END IF
@@ -1510,7 +1508,7 @@ C
  5000 CONTINUE
          WRITE (LUPRI,'(6X,A,I3,3A/9X,2A)')
      &      '*  Input specifies highest orbital of atomic type ',
-     &      I,' AS "',SPDCAR(NHTYP - 1),'".',
+     &      I,' as "',SPDCAR(NHTYP - 1),'".',
      &      ' Highest allowed orbital in this version: ',
      &      SPDCAR(MXSPD - 1)
          IF (NHTYP.GT.MXQN) WRITE (LUPRI,'(9X,2(A,I3),A)')
@@ -2759,11 +2757,12 @@ C
       END IF
       RETURN
  1000 CONTINUE
-        WRITE (LUPRI,'(/A,2(I3,A),A1,A/A,2I4)')
+         WRITE (LUPRI,'(/A,2(I3,A),A1,A/A,2I4)')
      &    ' INPUT ERROR: CGTO no.',N,' for block',NBLOCK,
      &    ' of ',SPDCAR(I-1),' type has zero norm.',
-     &    ' Contraction matrix: ',NUCIJ,NRCIJ
-         CALL QUIT('CGTO with zero norm.')
+     &    ' Contraction matrix dimensions: ',NUCIJ,NRCIJ
+         CALL OUTPUT(CPRIMU,1,NUCIJ,1,NRCIJ,KPRIM,KPRIM,-1,LUPRI)
+         CALL QUIT('NRMORB: CGTO with zero norm.')
       END
 C  /* Deck orbpro */
       SUBROUTINE ORBPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -5543,11 +5542,11 @@ C
            IF (LUCME.GT.0)
      &     WRITE(LUCME,'(A,A3)') 'Point group: ',GROUP
         ELSE
-           WRITE(LUPRI,'(A,A)') 'Full group is:  ',CLASS
-           WRITE(LUPRI,'(A,A3)') 'Represented as: ',GROUP
+           WRITE(LUPRI,'(A,A)')  'Full point group is: ',CLASS
+           WRITE(LUPRI,'(A,A3)') 'Represented as:      ',GROUP
            IF (LUCME.GT.0) THEN
-              WRITE(LUCME,'(A,A)') 'Full group is:  ',CLASS
-              WRITE(LUCME,'(A,A3)') 'Represented as: ',GROUP
+              WRITE(LUCME,'(A,A)')  'Full point group is: ',CLASS
+              WRITE(LUCME,'(A,A3)') 'Represented as:      ',GROUP
            END IF
         END IF
 C
@@ -6354,10 +6353,10 @@ C
       LUTMP1 = -1
       LUTMP2 = -1
       LUSHB  = -1
-      CALL GPOPEN(LUTMP1, 'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,
+      CALL GPOPEN(LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       CALL GPOPEN(LUTMP2,'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUSHB,'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
 C    
       IPRIMD = 0
