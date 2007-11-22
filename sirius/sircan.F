@@ -921,7 +921,7 @@ C            for non-zero diagonal elements.
      &                  ISSMO(JORB),NASHI,NASHT)
   420    CONTINUE
          IF (SUPSYM) CALL AVEORD()
-C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
+C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
          IF (MOISNO) THEN
             DO 430 I = 1,NASHT
   430          IF (UNO(I,I) .NE. D1) MOISNO = .FALSE.
@@ -954,11 +954,14 @@ C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
                END IF
             END IF
   520    CONTINUE
-C  HJAAJ MAERKE 921106: if (supsym) print also sorted after supsym
+C  HJAAJ MAERKE TODO 921106: if (supsym) print also sorted after supsym
+C  HJAAJ MAERKE TODO 071108: if (supsym) also OCCSUM for each supersym
       END IF
- 3030 FORMAT(/' Symmetry',I3,//,'   No occupied orbitals')
- 3040 FORMAT(/' Symmetry',I3,' Sum for this symmetry',F14.9,//,(5F14.9))
+ 3030 FORMAT(/' Symmetry',I3,' -- No occupied orbitals')
+ 3040 FORMAT(/' Symmetry',I3,' -- Total occupation in this symmetry is',
+     &          F14.9,//,(5F14.9))
  3045 FORMAT(/' Symmetry',I3,' (supersymmetry in parenthesis)',
+     &       /' -- Total occupation in this symmetry is',F14.9,
      *       //,4(F14.9,' (',I2,')'))
       IF (IPRINT .GT. 5 .AND. NASHT .GT. 0 .AND. .NOT.MOISNO) THEN
          DO 620 ISYM = 1,NSYM
