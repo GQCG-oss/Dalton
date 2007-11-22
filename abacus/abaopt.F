@@ -73,9 +73,9 @@ C
       IF (.NOT. FIRST) THEN
          IF ((WORD .NE. '*END OF') .AND. (WORD(1:2) .NE. '**')) THEN
  969        READ(LUCMD, '(A7)') WORD
-            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GOTO 969
+            CALL UPCASE(WORD)
          END IF
          RETURN
       END IF
@@ -221,10 +221,10 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                GOTO 100
             END IF
-            WRITE(LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     &                         '" not recognized in OPINPU.'
-            CALL PRTAB(NTABLE,TABLE,WORD1//' INPUT KEYWORDS',LUPRI)
-            CALL QUIT('Illegal keyword in OPINPU.')
+            WRITE(LUPRI,'(/4A/)') ' Keyword "',WORD,
+     &                         '" not recognized for ',WORD1
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            CALL QUIT('Illegal keyword in '//WORD1//' input.')
  1          READ(LUCMD,*) IPRINT
             GOTO 100
  2          READ(LUCMD,*) ITRMAX
@@ -411,17 +411,19 @@ C
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
          ELSE
-            WRITE(LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     &           '" not recognized in OPINPU.'
-            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal prompt in OPINPU.')
+            WRITE(LUPRI,'(/4A/)')
+     &         ' Prompt "',WORD,'" not recognized for ',WORD1
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            CALL QUIT('Illegal prompt in '//WORD1//' input.')
          END IF
       END IF
  300  CONTINUE
 C
       IF ((.NOT. OPTNEW) .AND. (ICHANG .GT. 0)) THEN
-         WRITE(LUPRI,'(//A/)')
-     &          ' Optimization not requested, *OPTIMI input ignored.'
+         WRITE(LUPRI,'(//A/3A/A/)') SEPARATOR,
+     &     ' Geomotry optimization not requested, ',
+     &     WORD1,' input ignored.', SEPARATOR
          RETURN
       END IF
 C
@@ -434,20 +436,17 @@ C         TRSTDE = 0.5D0
 C      END IF
 C
       IF (.NOT. OPTNEW) RETURN
-      CALL HEADER('Chosen parameters for OPTIMI:',0)
+      CALL HEADER('Chosen parameters for '//WORD1//' :',0)
 C
-C     Check if only redundant internal coordinates should
-C     be determinded.
+C     Check if only redundant internal coordinates should be determinded.
 C
       IF (FINDRE) THEN
          WRITE(LUPRI,'(A)') ' Determination of redundant internal '
      &        // 'will be performed.'
          IF (.NOT. VISUAL) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,'(A)') ' *** NOTE! ***'
-            WRITE(LUPRI,'(A)') ' No optimization will be done, ' //
-     &           'other keywords will be ignored!!!!!'
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(/A/A/)') ' *** NOTE! ***',
+     &         ' No geometry optimization will be done, ' //
+     &         'other keywords will be ignored!!!!!'
          END IF
       END IF
 C
@@ -455,32 +454,31 @@ C     Check for visualization
 C
       IF (VISUAL) THEN
          WRITE(LUPRI,'(A)') ' Visualization has been ' //
-     &        'requested. No optimization will be done.'
-         WRITE(LUPRI,'(A)')
+     &        'requested. No geometry optimization will be done.',
      &        ' VRML-file of geometry will be created.'
          IF (VRBOND) WRITE(LUPRI,'(A)')
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
          IF (VRSYMM) THEN
-            WRITE(LUPRI,'(A)') ' Symmetry elements will be visualized.'
-            WRITE(LUPRI,'(A)')
-     &        ' Please note that no symmetry should be specified' //
+            WRITE(LUPRI,'(A)') ' Symmetry elements will be visualized.',
+     &        ' Please note that symmetry should NOT be specified' //
      &        ' in the input file.'
          END IF
          IF (VREIGV) THEN
             WRITE(LUPRI,'(A)') ' Eigenvectors can ' //
-     &           'only be visualized during a optimization.'
-            WRITE(LUPRI,'(A)') ' Keyword will be ignored!'
+     &       'only be visualized during a optimization.',
+     &       ' Keyword will be ignored!'
             VREIGV = .FALSE.
          END IF
          IF (VRVIBA) THEN
             WRITE(LUPRI,'(A)') ' Vibrational modes can ' //
-     &           'only be visualized during a optimization.'
-            WRITE(LUPRI,'(A)') ' Keyword will be ignored!'
+     &       'only be visualized during a optimization.',
+     &       ' Keyword will be ignored!'
             VRVIBA = .FALSE.
          END IF
-         WRITE(LUPRI,'(A)') ' Other keywords will be ignored!'
+         WRITE(LUPRI,'(A)')
+     &      ' Any other keywords in this module are ignored!'
          RETURN
       END IF
 C
@@ -601,9 +599,9 @@ C
          FSTORD = .TRUE.
       ELSE IF (ITYP .GT. 1) THEN
          WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
-     &        'optimization method has been selected.'
+     &        'optimization method has been selected under '//WORD1
          CALL QUIT
-     &        ('More than one optimization method chosen in OPINPU.')
+     &        ('More than one optimization method chosen for '//WORD1)
       END IF
       IF (HFPROP) THEN
          WRITE(LUPRI,'(A)') ' The Hellmann-Feynman theorem will ' //
@@ -641,9 +639,9 @@ C
          END IF
       ELSE IF (ITYP .GT. 1) THEN
          WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
-     &        'coordinate system has been selected.'
+     &        'coordinate system has been selected in '//WORD1
          CALL QUIT
-     &        ('More than one coordinate system chosen in OPINPU.')
+     &        ('More than one coordinate system chosen under '//WORD1)
       END IF
       IF (NOAUX) THEN
             WRITE(LUPRI,'(A)') ' No extra (auxiliary) bonds will ' //
@@ -667,10 +665,10 @@ C
 C
       IF (HSFILE) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .HESFIL only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .HESFIL only has effect when a 1st order ' //
+     &           'method has been specified => Keyword ignored.'
          ELSE
             WRITE(LUPRI,'(A)')
      &           ' Initial Hessian will be read from file.'
@@ -678,15 +676,15 @@ C
       END IF
       IF (INITHS) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INITHE only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INITHE only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INITHE has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INITHE has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             INITHS = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)')
@@ -695,74 +693,72 @@ C
       END IF
       IF (MODHES) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .MODHES only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .MODHES only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
             MODHES = .FALSE.
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .MODHES has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .MODHES has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             MODHES = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)')
-     &           ' An approximate model Hessian will be used.'
-            WRITE(LUPRI,'(A)') ' The model Hessian ' //
-     &           'parameters of Roland Lindh will be used.'
+     &           ' An approximate model Hessian will be used.',
+     &           ' The model Hessian parameters ' //
+     &           'of Roland Lindh will be used.'
             IF (.NOT. DELINT) REDINT = .TRUE.
          END IF
       END IF
       IF (CMBMOD) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .CMBMOD only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .CMBMOD only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
             CMBMOD = .FALSE.
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .CMBMOD has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .CMBMOD has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             CMBMOD = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)')
-     &           ' An approximate model Hessian will be used,'
-            WRITE(LUPRI,'(A)') ' with the model Hessian ' //
-     &           'parameters of Roland Lindh.'
-            WRITE(LUPRI,'(A)') ' The Hessian will be updated ' //
-     &           'through a combination of a calculated'
-            WRITE(LUPRI,'(A)') ' model Hessian and an BFGS ' //
-     &           'update of the last Hessian.'
+     &           ' An approximate model Hessian will be used,',
+     &           ' with the model Hessian parameters of Roland Lindh.',
+     &           ' The Hessian will be updated ' //
+     &             'through a combination of a calculated',
+     &           ' model Hessian and a BFGS update of the last Hessian.'
             IF (.NOT. DELINT) REDINT = .TRUE.
          END IF
       END IF
       IF (INMDHS) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INIMOD only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INIMOD only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
             INMDHS = .FALSE.
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INIMOD has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INIMOD has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             INMDHS = .FALSE.
          ELSE IF (INITHS) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INIMOD has no effect when .INITHE ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INIMOD has no effect when .INITHE ' //
+     &           'has been specified => Keyword ignored.'
             INRDHS = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)')
-     &           ' Model Hessian will be used as initial Hessian.'
-            WRITE(LUPRI,'(A)') ' The model Hessian ' //
-     &           'parameters of Roland Lindh will be used.'
+     &           ' Model Hessian will be used as initial Hessian.',
+     &           ' The model Hessian ' //
+     &             'parameters of Roland Lindh will be used.'
          END IF
       END IF
       IF (INRDHS) THEN
@@ -2184,7 +2180,7 @@ C
      &        'integration in DFT optimization'
               WRITE (LUPRI,'(A)') ' INFO>>>> thresholds for convergence'
      &        //' of geometry optimization have been reset'
-              WRITE (LUPRI,'(/A/,3(/,20X,A,F10.8))') ' New thresholds:',
+              WRITE (LUPRI,'(/A/,3(/20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
             END IF
