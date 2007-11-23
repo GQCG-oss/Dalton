@@ -31,13 +31,15 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C File: sirius/sirpop.F
+C
 #include <single.h>
 C
 C  /* Deck sirpop */
       SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE)
 C
 C Nov-10-85 Hans Agren
-C l.r. 910708-hjaaj
+C l.r. 910708-hjaaj/0710-hjaaj
 C
 C Purpose :
 C        To control calculations of certain properties from SIRIUS
@@ -91,7 +93,7 @@ C
       CALL QENTER('SIRPOP')
 C 
       POPKEY = INP_POPKEY
-      IPPRMUL_SAVE = IPRMUL
+      IPRMUL_SAVE = IPRMUL
       IF (POPKEY(1:4) .EQ. 'DIIS') THEN
          iprmul = -1
          DIPOLM = .false.
@@ -122,9 +124,7 @@ C
 C     *****   core allocation  *****
 C
       MATCMO = 0
-      MATDIM = 0
       DO 10 ISYM = 1,NSYM
-         MATDIM = MATDIM + NBAS(ISYM)*(NBAS(ISYM)+1)/2
          MATCMO = MATCMO + NBAS(ISYM)*(NISH(ISYM)+NASH(ISYM))
    10 CONTINUE
 C
@@ -153,7 +153,7 @@ C
       KIAMN  = KCMO1
       KIPR   = KIAMN  + NBAST
       KOVLP  = KIPR   + NBAST
-      KJTRAN = KOVLP  + MATDIM
+      KJTRAN = KOVLP  + NNBAST
       KITRAN = KJTRAN + NBAST
       KCTRAN = KITRAN + NBAST*MXCGTO/IRAT
       KWRK   = MAX(KCTRAN + NBAST*MXCGTO,KWRK)
@@ -192,9 +192,9 @@ C     3)  DIPMAT dipole moment matrix
 C     3') QUMAT  quadrupole moment matrix
 C
       KDIPM  = KIAMN
-      KWRK3D = KDIPM  + MATDIM*3
+      KWRK3D = KDIPM  + NNBAST*3
       KQUMAT = KIAMN
-      KWRK3Q = KQUMAT + MATDIM*6
+      KWRK3Q = KQUMAT + NNBAST*6
       KWRK3  = MAX(KWRK3D,KWRK3Q)
       IF (KWRK3 .GE. LFREE) CALL ERRWRK('SIRPOP-3',KWRK3,LFREE)
 C
@@ -253,13 +253,13 @@ C
 C
 C     *****     Perform energy analysis   ****
 C
-      CALL VIRIAL (MATDIM,MXCGTO,MATCMO,
+      CALL VIRIAL (NNBAST,MXCGTO,MATCMO,
      *             WRK(KCMO),WRK(KOCC),WRK(KIAMN),WRK(KIPR),
      *             WRK(KOVLP),WRK(KJTRAN),WRK(KITRAN),WRK(KCTRAN))
 C
 C     *****     Transform from symmetry orbital basis to cgto basis
 C
-      CALL POPTRA (MATDIM,MXCGTO,MATCMO,
+      CALL POPTRA (NNBAST,MXCGTO,MATCMO,
      *             WRK(KCMO),WRK(KOVLP),WRK(KJTRAN),WRK(KITRAN),
      *             WRK(KCTRAN),WRK(KCMOCG),WRK(KSS))
 C
@@ -577,7 +577,8 @@ C
 C
       DIMENSION OCCUP(NOCCT),IAMN(NBAST),IPR(NBAST),NUMBER(NBAST),
      &          POPNAB(MXCENT,MXCENT),POPABI(MXCENT,MXCENT),
-     *          POPCGT(NBAST),POPC(NBAST),CMOCGT(*),SS(*),POPNET(*)
+     &          POPCGT(NBAST),POPC(NBAST,NOCCT),CMOCGT(NBAST,NOCCT),
+     &          SS(*),POPNET(*)
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
 C
@@ -669,7 +670,6 @@ C
      &               .FALSE.)
          REWIND LUTEMP
       END IF
-      IPSTRT = 0
       DO 80 IP = 1,NOCCT
          DO 60 NUCB = 1,NNUC
             DO 60 NUCA = 1,NNUC
@@ -689,7 +689,7 @@ C
                   NUCB = NUC
                END IF
 C
-               POPAB = CMOCGT(IPSTRT+IA)*CMOCGT(IPSTRT+IB)
+               POPAB = CMOCGT(IA,IP)*CMOCGT(IB,IP)
      *               * OCCUP(IP)*SS(IND)
                IF (IA.NE.IB)   POPAB = D2*POPAB
 C
@@ -702,13 +702,12 @@ C
 C              (gross populations follow)
 C
                POPAB = DP5 * POPAB
-               POPC(IPSTRT + IA) = POPC(IPSTRT + IA) + POPAB
-               POPC(IPSTRT + IB) = POPC(IPSTRT + IB) + POPAB
+               POPC(IA,IP) = POPC(IA,IP) + POPAB
+               POPC(IB,IP) = POPC(IB,IP) + POPAB
    70    CONTINUE
 C
          IF (IPRMUL .GE. 5) WRITE (LUTEMP) POPABI
 C
-         IPSTRT = IPSTRT + NBAST
    80 CONTINUE
 C
 C     *****     compute some refined results
@@ -726,13 +725,11 @@ C
    90 CONTINUE
 C
       DO 100 IA = 1,NBAST
-         IPSTRT = 0
          NUC = NUMBER(IA)
          ITYP = IPR(IA)
          DO 100 IP = 1,NOCCT
-            POPTYP(ITYP,NUC) = POPTYP(ITYP,NUC) + POPC(IPSTRT+IA)
-            POPCGT(IA)       = POPCGT(IA)       + POPC(IPSTRT+IA)
-            IPSTRT = IPSTRT + NBAST
+            POPTYP(ITYP,NUC) = POPTYP(ITYP,NUC) + POPC(IA,IP)
+            POPCGT(IA)       = POPCGT(IA)       + POPC(IA,IP)
   100 CONTINUE
 C
       DO 110 NUCA = 1,NNUC
@@ -815,15 +812,13 @@ C
  1005    FORMAT (//6X,'Partial orbital gross populations',
      *            /6X,'Gross populations of CGTO basis functions A',
      *            /6X,'Contribution from MO no. P'//)
-         IPSTRT = 0
          DO 160 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP
-            WRITE (LUPRI,1006) (IA,POPC(IPSTRT+IA),IA=1,NBAST)
+            WRITE (LUPRI,1006) (IA,POPC(IA,IP),IA=1,NBAST)
             IF (LUW4 .NE. LUPRI) THEN
                WRITE (LUW4,1002) IP
-               WRITE (LUW4,1006) (IA,POPC(IPSTRT+IA),IA=1,NBAST)
+               WRITE (LUW4,1006) (IA,POPC(IA,IP),IA=1,NBAST)
             END IF
-            IPSTRT = IPSTRT + NBAST
   160    CONTINUE
  1006    FORMAT (6(1X,I3,F8.4))
       END IF
@@ -848,7 +843,6 @@ C
  1008    FORMAT(//6X,'Partial gross population of CGTO basis',
      *               ' functions of type T',/6X,'for each centre',
      *           /6X,'Contribution from MO no. P'//)
-         IPSTRT = 0
          DO 200 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002) IP
@@ -861,9 +855,8 @@ C
             DO 180 IA = 1,NBAST
                ITYP = IPR(IA)
                NUC = NUMBER(IA)
-               POPTY(ITYP,NUC) = POPTY(ITYP,NUC) + POPC(IPSTRT+IA)
+               POPTY(ITYP,NUC) = POPTY(ITYP,NUC) + POPC(IA,IP)
   180       CONTINUE
-            IPSTRT = IPSTRT + NBAST
 C
             IEND = 0
     7       IST = IEND + 1
@@ -946,29 +939,28 @@ C
 C     POPULATION AT EACH CENTRE
 C
       IF (IPRMUL.GE.1) THEN
-      WRITE (LUPRI,1014)
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1014)
+        WRITE (LUPRI,1014)
+        IF (LUW4 .NE. LUPRI) WRITE (LUW4,1014)
  1014 FORMAT (//6X,'Partial gross population of centre A',
      *         /6X,'Contribution from MO no. P'//)
 C
-      IPSTRT = 0
-      DO 240 IP = 1,NOCCT
-         DO 220 NUC = 1,NNUC
+        DO 240 IP = 1,NOCCT
+          DO 220 NUC = 1,NNUC
             POPABI(NUC,1) = D0
-  220    CONTINUE
-         DO 230 IA = 1,NBAST
+  220     CONTINUE
+          DO 230 IA = 1,NBAST
             NUC = NUMBER(IA)
-            POPABI(NUC,1) = POPABI(NUC,1) + POPC(IPSTRT+IA)
-  230    CONTINUE
+            POPABI(NUC,1) = POPABI(NUC,1) + POPC(IA,IP)
+  230     CONTINUE
 C
-         WRITE (LUPRI,1002) IP
-         WRITE (LUPRI,1015) (NAME(NUC),POPABI(NUC,1),NUC=1,NNUC)
-c1015    FORMAT (4(3X,A4,F10.4))
- 1015    FORMAT (5(3X,A4,F8.2))
-         IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002) IP
-         IF (LUW4 .NE. LUPRI)
-     *   WRITE (LUW4,1015) (NAME(NUC),POPABI(NUC,1),NUC=1,NNUC)
-         IPSTRT = IPSTRT + NBAST
+          WRITE (LUPRI,1002) IP
+          WRITE (LUPRI,1015) (NAME(NUC),POPABI(NUC,1),NUC=1,NNUC)
+c1015     FORMAT (4(3X,A4,F10.4))
+ 1015     FORMAT (5(1X,A4,F8.2,' ;'))
+          IF (LUW4 .NE. LUPRI) THEN
+            WRITE (LUW4,1002) IP
+            WRITE (LUW4,1015) (NAME(NUC),POPABI(NUC,1),NUC=1,NNUC)
+          END IF
   240 CONTINUE
       END IF
 C
@@ -1073,8 +1065,8 @@ C     *****     Compute the electronic contribution to dipole moment
 C
       WRITE (LUPRI,1002)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002)
- 1002 FORMAT(//25X,'ORBITAL DIPOLE MOMENTS'//28X,'VECTOR COMPONENT'
-     *       //10X,'ORBITAL',12X,'X',11X,'Y',11X,'Z',5X,'OCC.NUMBER'/)
+ 1002 FORMAT(//25X,'Orbital dipole moments'//28X,'Vector component'
+     *       //10X,'Orbital',12X,'X',11X,'Y',11X,'Z',5X,'Occ.number'/)
       IP = 0
       IPSTRT = 0
       MATBLK = 0
@@ -1213,12 +1205,12 @@ C
          WRITE(LUPRI,2002)
          IF (LUW4 .NE. LUPRI) WRITE(LUW4,2002)
       END IF
- 1002 FORMAT(//23X,'OCCUPATION WEIGHTED ORBITAL QUADRUPOLE MOMENTS',
+ 1002 FORMAT(//23X,'Occupation weighted orbital quadrupole moments',
      *        /23X,'(except <r2> which shows spatial extent of orbital)'
-     *       //' ORBITAL',5X,'XX',7X,'YY',7X,'ZZ',7X,'XY',7X,'XZ',
+     *       //' Orbital',5X,'XX',7X,'YY',7X,'ZZ',7X,'XY',7X,'XZ',
      *         7X,'YZ',7X,'RR     <r2>',/)
- 2002 FORMAT(//23X,'OCCUPATION WEIGHTED ORBITAL QUADRUPOLE MOMENTS',
-     *       //' ORBITAL',5X,'XX',7X,'YY',7X,'ZZ',7X,'XY',7X,'XZ',
+ 2002 FORMAT(//23X,'Occupation weighted orbital quadrupole moments',
+     *       //' Orbital',5X,'XX',7X,'YY',7X,'ZZ',7X,'XY',7X,'XZ',
      *         7X,'YZ',7X,'RR',/)
 C
       IP = 0
@@ -1357,8 +1349,8 @@ C
 C
          WRITE(LUPRI,1009)
          IF (LUW4 .NE. LUPRI) WRITE(LUW4,1009)
- 1009    FORMAT(//,3X,'DIAGONALIZATION OF QUADRUPOLE TENSOR RELATIVE',
-     *          ' MASS CENTRE')
+ 1009    FORMAT(//'   Diagonalization of quadrupole tensor relative',
+     *          ' to mass centre')
          A(1)=0.5D0*(3.0D0*QOPOL(1)-SUM)
          A(3)=0.5D0*(3.0D0*QOPOL(2)-SUM)
          A(6)=0.5D0*(3.0D0*QOPOL(3)-SUM)
@@ -1370,4 +1362,5 @@ C     ^-----------
       END IF
 C
       RETURN
+C -- end of sirpop.F --
       END
