@@ -4023,7 +4023,9 @@ C  /* Deck paoset */
 #include "implicit.h"
 #include "maxorb.h"
 #include "aovec.h"
-      PARAMETER (DSM = 1.0D-10)
+C
+C     DSM = parameter to determine zero coefficients for segmented contractions
+      PARAMETER (DSM = 1.0D-15)
 C
       DIMENSION KORBSH(MXSHEL,MXAOVC), IPRVPR(MXSHEL)
       DIMENSION JSTRSH(MXSHEL,MXAOVC,2), NPRIMS(MXSHEL,MXAOVC,2),
@@ -4053,7 +4055,7 @@ C
             JSTRSH(I,J,1) = IPRVPR(KORBSH(I,J))
   300    CONTINUE
 C
-C           Segmented transformation matrix: Each contracted is one set
+C        Segmented transformation matrix: Each contracted is one set
 C
          IF (SEGMSH(I)) THEN
             ISET = 0
