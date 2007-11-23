@@ -78,9 +78,7 @@ C
       DIMENSION XINDX(*)
       DIMENSION UDV(*)
       DIMENSION PV(*), MJWOP(2,MAXWOP,8)
-      DIMENSION VECB(*)
-      DIMENSION VECC(*)
-      DIMENSION VECA(*)
+      DIMENSION VECB(*), VECC(*), VECA(*)
       DIMENSION CMO(*),FC(*)
 C
       CALL QENTER('T3DRV')
@@ -487,16 +485,12 @@ C
       DIMENSION XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI)
       DIMENSION PV(N2ASHX*N2ASHX,*)
-      DIMENSION DEN1(NASHDI,NASHDI)
-      DIMENSION DEN2(N2ASHX*N2ASHX,*)
+      DIMENSION DEN1(NASHDI,NASHDI), DEN2(N2ASHX*N2ASHX,*)
       DIMENSION FI(NORBT,NORBT)
-      DIMENSION ZYMB(*)
-      DIMENSION ZYMC(*)
+      DIMENSION ZYMB(*), ZYMC(*)
       DIMENSION WRK(*)
       DIMENSION CMO(*),FC(*)
-      DIMENSION VECB(KZYVB)
-      DIMENSION VECC(KZYVC)
-      DIMENSION VECA(KZYVA)
+      DIMENSION VECB(KZYVB), VECC(KZYVC), VECA(KZYVA)
 C
       LOGICAL   ATEST, LCON, LORB, LREFST
       LOGICAL   TDM, NORHO2, LREF
@@ -1063,13 +1057,10 @@ C
       DIMENSION WRK(*)
       DIMENSION ETRS(KZYVA)
       DIMENSION XINDX(*)
-      DIMENSION DEN1(*)
-      DIMENSION DEN2(N2ASHX*N2ASHX,*)
+      DIMENSION DEN1(*), DEN2(N2ASHX*N2ASHX,*)
       DIMENSION FI(*)
-      DIMENSION VEC(NZYVEC),CMO(2),FC(2)
-      DIMENSION ZYMAT1(*)
-      DIMENSION ZYMAT2(*)
-      DIMENSION ZYMAT3(*)
+      DIMENSION VEC(NZYVEC),CMO(*),FC(*)
+      DIMENSION ZYMAT1(*), ZYMAT2(*), ZYMAT3(*)
 C
       LOGICAL LCON, LORB, LREFST, HSORUN
 C
@@ -1172,13 +1163,13 @@ C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
       DIMENSION H2 (NORBT,NORBT)
       DIMENSION H2X (NORBT,NORBT)
-      DIMENSION H2AX(NASHDI,NASHDI,NASHDI,NASHDI,2)
-      DIMENSION DEN1(NASHDI,NASHDI)
-      DIMENSION DEN2(NASHDI,NASHDI,NASHDI,NASHDI,*)
+      DIMENSION H2AX(NASHDI,NASHDI,NASHDI,NASHDI,*)
+      DIMENSION DEN1(NASHDI,NASHDI), DEN2(NASHDI,NASHDI,NASHDI,NASHDI,*)
       DIMENSION PVDEN(NASHDI,NASHDI)
-      DIMENSION VEC(NZYVEC),CMO(2),FC(2)
+      DIMENSION VEC(NZYVEC),CMO(*),FC(*)
       DIMENSION XINDX(*)
       DIMENSION WRKO(*), WRKC(*)
+C
       DIMENSION NEEDED(6)
       DATA NEEDED /1,1,1,0,0,0/
 C
@@ -1338,8 +1329,7 @@ C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
       DIMENSION H2X (NORBT,NORBT)
       DIMENSION H2AX(NASHDI,NASHDI,NASHDI,NASHDI)
-      DIMENSION DEN1(NASHDI,NASHDI)
-      DIMENSION DEN2(NASHDI,NASHDI,NASHDI,NASHDI)
+      DIMENSION DEN1(NASHDI,NASHDI), DEN2(NASHDI,NASHDI,NASHDI,NASHDI)
       DIMENSION PVDEN(NASHDI,NASHDI)
       DIMENSION WRK(*)
       DIMENSION NEEDED(6)
@@ -1704,8 +1694,7 @@ C
 #include <infpri.h>
 C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
-      DIMENSION DEN2(N2ASHX,N2ASHX)
-      DIMENSION PVDEN(NASHDI,NASHDI)
+      DIMENSION DEN2(N2ASHX,N2ASHX), PVDEN(NASHDI,NASHDI)
       DIMENSION H2X(NORBT,NORBT)
 C
       IF (IPQTYP .NE. 4) THEN
@@ -1809,16 +1798,16 @@ C
          IF( IPRRSP .GT. 200 ) THEN
             WRITE(LUPRI,'(/A)') ' Matrices in ORBEX'
             WRITE(LUPRI,'(A)')  ' ================='
-            WRITE(LUPRI,'(///A)') ' Density matrix'
-            CALL OUTPUT(DEN1,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
-            WRITE(LUPRI,'(///A)') ' Inactive fock matrix'
-            CALL OUTPUT(FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-            WRITE(LUPRI,'(///A)') ' Active fock matrix'
-            CALL OUTPUT(FA,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-            WRITE(LUPRI,'(///A)') ' Qa matrix'
-            CALL OUTPUT(QA,1,NORBT,1,NASHT,NORBT,NASHT,1,LUPRI)
-            WRITE(LUPRI,'(///A)') ' Qb matrix'
-            CALL OUTPUT(QB,1,NORBT,1,NASHT,NORBT,NASHT,1,LUPRI)
+            WRITE(LUPRI,'(/A)') ' Density matrix in ORBEX'
+            CALL OUTPUT(DEN1,1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+            WRITE(LUPRI,'(/A)') ' Inactive fock matrix in ORBEX'
+            CALL OUTPUT(FI,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+            WRITE(LUPRI,'(/A)') ' Active fock matrix in ORBEX'
+            CALL OUTPUT(FA,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+            WRITE(LUPRI,'(/A)') ' Qa matrix in ORBEX'
+            CALL OUTPUT(QA,1,NORBT,1,NASHT,NORBT,NASHT,-1,LUPRI)
+            WRITE(LUPRI,'(/A)') ' Qb matrix in ORBEX'
+            CALL OUTPUT(QB,1,NORBT,1,NASHT,NORBT,NASHT,-1,LUPRI)
          END IF
 C
 C
@@ -1875,28 +1864,25 @@ C
      *                    - D2 * OVLAP * FI(K,L)
                   END IF
                   IF ( NASHT . GT . 0 ) THEN
-                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
-     *                    +  D2 * FA(L,K)
-                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
-     *                    -  D2 * FA(K,L)
+                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG) +  D2 * FA(L,K)
+                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG) -  D2 * FA(K,L)
                   END IF
                   IF ( ITYPL.EQ.JTACT ) THEN
 C
 C                 Complete F(t,i) and F(i,t)
 C
                      NWL = ISW(L) - NISHT
-                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
+                     IF (NASHLX .GT. 0) THEN
+                       ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
      *                  - DDOT(NASHLX,FI(IORBLX+NISHLX+1,K),1,
      *                                   DEN1(IASHLX+1,NWL),1)
-                     DO 730 IX = 1,NASHLX
-                        ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
-     *                  + FI(K,IORBLX+NISHLX+IX)*
-     *                                     DEN1(NWL,IASHLX+IX)
- 730                 CONTINUE
-                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
-     *                     - QA(K,NWL)
-                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
-     *                     + QB(K,NWL)
+                       DO IX = 1,NASHLX
+                         ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
+     *                     + FI(K,IORBLX+NISHLX+IX)*DEN1(NWL,IASHLX+IX)
+                       END DO
+                     END IF
+                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG) - QA(K,NWL)
+                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG) + QB(K,NWL)
                   END IF
             ELSE
 C
@@ -1908,51 +1894,52 @@ C                 Do F(t,u)
 C
                   NWL = ISW(L) - NISHT
                   NWK = ISW(K) - NISHT
-                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
+                  IF (NASHLX .GT. 0) THEN
+                    ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
      *               -DDOT(NASHLX,FI(IORBLX+NISHLX+1,K),1,
      *                           DEN1(IASHLX+1,NWL),1)
-                     DO 740 IX = 1,NASHLX
-                        ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
-     *                     +FI(K,IORBLX+NISHLX+IX)*
-     *                      DEN1(NWL,IASHLX+IX)
- 740                 CONTINUE
-                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
+                    DO IX = 1,NASHLX
+                      ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
+     *                  + FI(K,IORBLX+NISHLX+IX)*DEN1(NWL,IASHLX+IX)
+                    END DO
+                  END IF
+                  IF (NASHKX .GT. 0) THEN
+                    ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
      *                  -DDOT(NASHKX,FI(IORBKX+NISHKX+1,L),1,
      *                               DEN1(IASHKX+1,NWK),1)
-                     DO 750 IX = 1,NASHKX
-                        ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
-     *                     +FI(L,IORBKX+NISHKX+IX)*
-     *                      DEN1(NWK,IASHKX+IX)
- 750                 CONTINUE
-                     ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
+                    DO IX = 1,NASHKX
+                      ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
+     *                  + FI(L,IORBKX+NISHKX+IX)*DEN1(NWK,IASHKX+IX)
+                    END DO
+                  END IF
+                  ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
      *                  +QB(L,NWK) - QA(K,NWL)
-                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
+                  ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
      *                  +QB(K,NWL) - QA(L,NWK)
                ELSE
 C
 C                 Do F(a,t) and F(t,a)
 C
                   NWK = ISW(K) - NISHT
-                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
-     *                  -DDOT(NASHKX,FI(IORBKX+NISHKX+1,L),1,
+                  IF (NASHKX .GT. 0) THEN
+                    ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
+     *                  - DDOT(NASHKX,FI(IORBKX+NISHKX+1,L),1,
      *                              DEN1(IASHKX+1,NWK),1)
-                     DO 760 IX = 1,NASHKX
-                        ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
-     *                     +FI(L,IORBKX+NISHKX+IX)*
-     *                      DEN1(NWK,IASHKX+IX)
- 760                 CONTINUE
-                     ETRS(NYCONF+IG) = ETRS(NYCONF+IG)
-     *                     -QA(L,NWK)
+                    DO IX = 1,NASHKX
                      ETRS(NZCONF+IG) = ETRS(NZCONF+IG)
-     *                     +QB(L,NWK)
+     *                  + FI(L,IORBKX+NISHKX+IX)*DEN1(NWK,IASHKX+IX)
+                    END DO
+                  END IF
+                  ETRS(NYCONF+IG) = ETRS(NYCONF+IG) - QA(L,NWK)
+                  ETRS(NZCONF+IG) = ETRS(NZCONF+IG) + QB(L,NWK)
                ENDIF
             ENDIF
  1300    CONTINUE
 C
-      IF (IPRRSP.GT. 200 ) THEN
-         WRITE(LUPRI,'(///,A,/,A,//)')
-     *   ' Orbital part of linear transformation',
-     *   ' ====================================='
+      IF (IPRRSP .GT. 200 ) THEN
+         WRITE(LUPRI,'(//A/A)')
+     &   ' ORBEX: Orbital part of linear transformation',
+     &   ' ============================================'
          CALL OUTPUT(ETRS,1,KZYVA,1,1,KZYVA,1,1,LUPRI)
       END IF
       RETURN
@@ -2782,8 +2769,7 @@ C
 #include <qrinf.h>
 #include <infpri.h>
 C
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
       DIMENSION ZYMAT(NORBT,NORBT), MJWOP(2,MAXWOP,8)
       DIMENSION WRK(*)
 C
@@ -2849,12 +2835,14 @@ C
 C
       DIMENSION WRK(*)
       DIMENSION X2TRS(KZYVR), MJWOP(2,MAXWOP,8)
-      DIMENSION GRVEC(KZYVR)
-      DIMENSION VEC(KZYV)
+      DIMENSION GRVEC(KZYVR), VEC(KZYV)
       DIMENSION XINDX(*)
       DIMENSION CMO(*)
-      DIMENSION UDV(NASHDI,NASHDI)
-      DIMENSION PV(*)
+      DIMENSION UDV(NASHDI,NASHDI), PV(*)
+C
+C     Any variables in this symmetry?
+C
+      IF (KZYVR .EQ. 0) RETURN
 C
       IF( (NSIM .GT. 1) ) THEN
          WRITE(LUERR,'(//A,/A,I5,/A)')
@@ -2942,8 +2930,7 @@ C
 C
       DIMENSION WRK(*)
       DIMENSION X2TRS(KZYVR), MJWOP(2,MAXWOP,8)
-      DIMENSION GRVEC(KZYVR)
-      DIMENSION VEC(KZYV)
+      DIMENSION GRVEC(KZYVR), VEC(KZYV)
       DIMENSION DEN1(NASHDI,NASHDI)
       DIMENSION OPMAT(NORBT,NORBT)
       DIMENSION XINDX(*)
@@ -3151,9 +3138,8 @@ C
          IF (FACT .NE. D0) THEN
             NZCONF = MZCONF(IGRSYM)
             NZVAR  = MZVAR(IGRSYM)
-            CALL DAXPY(NZCONF,FACT,VEC,1,X2TRS,1)
-            CALL DAXPY(NZCONF,FACT,VEC(NZVAR+1),1,
-     *                 X2TRS(NZVAR+1),1)
+            CALL DAXPY(NZCONF,FACT,VEC         ,1,X2TRS         ,1)
+            CALL DAXPY(NZCONF,FACT,VEC(NZVAR+1),1,X2TRS(NZVAR+1),1)
          END IF
       END IF
 C
@@ -3195,7 +3181,7 @@ C  /* Deck a2init */
      *                  OPLBL,IOPSYM,IOPSPI,
      *                  CMO,MJWOP,WRK,LWRK)
 C
-C     Layout the core for the calculation of A2 times one vector
+C     Layout the core for the calculation of A[2] times one vector
 C
 #include <implicit.h>
 #include <maxash.h>
@@ -3212,11 +3198,14 @@ C
 C
       DIMENSION WRK(*)
       DIMENSION A2TRS(KZYVR), MJWOP(2,MAXWOP,8)
-      DIMENSION GRVEC(KZYVR)
-      DIMENSION VEC(KZYV)
+      DIMENSION GRVEC(KZYVR), VEC(KZYV)
       DIMENSION XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI)
       DIMENSION CMO(*)
+C
+C     Any variables in this symmetry?
+C
+      IF (KZYVR .EQ. 0) RETURN
 C
       IF( (NSIM .GT. 1) ) THEN
          WRITE(LUERR,'(//A,/A,I5,/A)')
@@ -3296,8 +3285,7 @@ C
 C
       DIMENSION WRK(*)
       DIMENSION A2TRS(KZYVR), MJWOP(2,MAXWOP,8)
-      DIMENSION GRVEC(KZYVR)
-      DIMENSION VEC(KZYV)
+      DIMENSION GRVEC(KZYVR), VEC(KZYV)
       DIMENSION OPMAT(NORBT,NORBT)
       DIMENSION XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI)
@@ -3502,8 +3490,7 @@ C
             NZCONF = MZCONF(IGRSYM)
             NZVAR  = MZVAR(IGRSYM)
             CALL DAXPY(NZCONF,FACT,VEC,1,A2TRS,1)
-            CALL DAXPY(NZCONF,FACT,VEC(NZVAR+1),1,
-     *                 A2TRS(NZVAR+1),1)
+            CALL DAXPY(NZCONF,FACT,VEC(NZVAR+1),1,A2TRS(NZVAR+1),1)
          END IF
       END IF
 C
@@ -3544,8 +3531,7 @@ C
 C
 C     Swap the final result to conform with the notation for A[2]
 C
-      CALL DSWAP(MZVAR(IGRSYM),A2TRS,1,
-     *           A2TRS(MZVAR(IGRSYM)+1),1)
+      CALL DSWAP(MZVAR(IGRSYM), A2TRS,1, A2TRS(MZVAR(IGRSYM)+1),1)
 C
       IF ( IPRRSP .GT.  100 ) THEN
          WRITE(LUPRI,'(//A)') ' Gradient after swapping in A2DRV'
@@ -3718,7 +3704,7 @@ C
                   OTRS(NYCONF+IG) = OTRS(NYCONF+IG)
      *                 - D2 * OVLAP * OPMAT(K,L)
                END IF
-               IF ( ITYPL.EQ.JTACT ) THEN
+               IF ( ITYPL.EQ.JTACT .AND. NASHLX .GT. 0) THEN
 C
 C              Do k(t,i) and k(i,t)
 C
@@ -3742,35 +3728,36 @@ C                 Do k(t,u)
 C
                   NWL = ISW(L) - NISHT
                   NWK = ISW(K) - NISHT
+                  IF (NASHLX .GT. 0) THEN
                      OTRS(NZCONF+IG) = OTRS(NZCONF+IG)
      *               -DDOT(NASHLX,OPMAT(IORBLX+NISHLX+1,K),1,
      *                                     DEN1(IASHLX+1,NWL),1)
                      DO 740 IX = 1,NASHLX
                         OTRS(NYCONF+IG) = OTRS(NYCONF+IG)
-     *                     +OPMAT(K,IORBLX+NISHLX+IX)*
-     *                                     DEN1(NWL,IASHLX+IX)
+     *                    +OPMAT(K,IORBLX+NISHLX+IX)*DEN1(NWL,IASHLX+IX)
  740                 CONTINUE
+                  END IF
+                  IF (NASHKX .GT. 0) THEN
                      OTRS(NYCONF+IG) = OTRS(NYCONF+IG)
      *                  -DDOT(NASHKX,OPMAT(IORBKX+NISHKX+1,L),1,
      *                                     DEN1(IASHKX+1,NWK),1)
                      DO 750 IX = 1,NASHKX
                         OTRS(NZCONF+IG) = OTRS(NZCONF+IG)
-     *                     +OPMAT(L,IORBKX+NISHKX+IX)*
-     *                                     DEN1(NWK,IASHKX+IX)
+     *                    +OPMAT(L,IORBKX+NISHKX+IX)*DEN1(NWK,IASHKX+IX)
  750                 CONTINUE
-               ELSE
+                  END IF
+               ELSE IF (NASHKX .GT. 0) THEN
 C
 C                 Do k(a,t) and k(t,a)
 C
                   NWK = ISW(K) - NISHT
-                     OTRS(NYCONF+IG) = OTRS(NYCONF+IG)
+                  OTRS(NYCONF+IG) = OTRS(NYCONF+IG)
      *                  -DDOT(NASHKX,OPMAT(IORBKX+NISHKX+1,L),1,
      *                                     DEN1(IASHKX+1,NWK),1)
-                     DO 760 IX = 1,NASHKX
-                        OTRS(NZCONF+IG) = OTRS(NZCONF+IG)
-     *                     +OPMAT(L,IORBKX+NISHKX+IX)*
-     *                                     DEN1(NWK,IASHKX+IX)
- 760                 CONTINUE
+                  DO 760 IX = 1,NASHKX
+                     OTRS(NZCONF+IG) = OTRS(NZCONF+IG)
+     *                  +OPMAT(L,IORBKX+NISHKX+IX)*DEN1(NWK,IASHKX+IX)
+ 760              CONTINUE
                ENDIF
             ENDIF
  1300    CONTINUE
@@ -3783,9 +3770,8 @@ C
       RETURN
       END
 C  /* Deck consx */
-      SUBROUTINE CONSX(NSIM,KZYVR,IGRSYM,OPMAT,VEC,NZYVEC,
-     *                 NZCVEC,ISYMV,NZCSTJ,ISYMJ,LREFST,OTRS,XINDX,
-     *                 WRK,LWRK)
+      SUBROUTINE CONSX(NSIM,KZYVR,IGRSYM,OPMAT,VEC,NZYVEC,NZCVEC,
+     *                 ISYMV,NZCSTJ,ISYMJ,LREFST,OTRS,XINDX,WRK,LWRK)
 C
 C     Purpose:
 C     Perform the configuration part of the linear transformation.
@@ -3819,14 +3805,10 @@ C
 #include <qrinf.h>
 #include <cbgetdis.h>
 C
-      DIMENSION OPMAT(NORBT,NORBT)
-      DIMENSION VEC(NZYVEC)
-      DIMENSION WRK(*)
-      DIMENSION OTRS(KZYVR)
-      DIMENSION XINDX(*)
+      DIMENSION OPMAT(NORBT,NORBT), VEC(NZYVEC)
+      DIMENSION WRK(*), OTRS(KZYVR), XINDX(*)
 C
-      LOGICAL NOH2,IH8SM,LREFST
-      LOGICAL ITEST
+      LOGICAL NOH2,IH8SM,LREFST, ITEST
       DATA ITEST /.FALSE./
 C
 C     Allocate work space for copying inactive part of one
@@ -4086,14 +4068,14 @@ C
       CALL MEMGET('REAL',KD,N2ASHX,WORK,KFREE,LFREE)
       IF (TDHF) THEN
          CALL DUNIT(WORK(KD),NASHT)
+         CALL MEMGET('REAL',KCREF,0,WORK,KFREE,LFREE)
       ELSE
-         CALL MEMGET('REAL',KP,1,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KCREF,MZCONF(1),WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KP,1,WORK,KFREE,LFREE)
          CALL GETREF(WORK(KCREF),MZCONF(1))
          CALL RSPDM(IREFSY,IREFSY,MZCONF(1),MZCONF(1),
-     &   WORK(KCREF),WORK(KCREF),
-     &   WORK(KD),WORK(KP),IGRSPI,IOPSPI,.FALSE.,.TRUE.,XINDX,WORK,
-     &   KFREE,LFREE)
+     &      WORK(KCREF),WORK(KCREF),WORK(KD),WORK(KP),
+     &      IGRSPI,IOPSPI,.FALSE.,.TRUE.,XINDX,WORK,KFREE,LFREE)
       END IF
 C
 C Gradient

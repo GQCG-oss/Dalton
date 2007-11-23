@@ -1015,14 +1015,13 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
      *                               MSYMC.EQ.IREFSY) THEN
                                     KSYMOP = 1
                                     CALL RSPVAR(UDV,FC,FC,FV,
-     *                              FCAC,H2AC,XINDX,
-     *                              WRK(KX3WRK),LX3WRK)
+     *                              FCAC,H2AC,XINDX,WRK(KX3WRK),LX3WRK)
                                     CALL DCOPY(KZWOPT,VECB(1+KZCONF),1,
      *                                         WRK(KX3WRK),1)
                                     CALL DCOPY(KZWOPT,
      *                                         VECB(1+KZCONF+KZVAR),1,
      *                                         WRK(KX3WRK+KZWOPT),1)
-                                    IF (ISPINA.EQ.ISPINB) THEN
+                                  IF (ISPINA.EQ.ISPINB) THEN
                                     TRPLET = ISPINA.EQ.1.AND.ISPINB.EQ.1
                                     WRITE(LUPRI,'(/3A)')
      *                                 ' LINEAR TRANSFORMATION WITH',
@@ -1033,13 +1032,13 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
      *                                          H2AC,XINDX,
      *                                          WRK(KX3WRK+KZYWOP),
      *                                          LX3WRK-KZYWOP)
-                                    END IF
+                                  END IF
                                     CALL DCOPY(KZWOPT,VECC(1+KZCONF),1,
      *                                         WRK(KX3WRK),1)
                                     CALL DCOPY(KZWOPT,
      *                                         VECC(1+KZCONF+KZVAR),1,
      *                                         WRK(KX3WRK+KZWOPT),1)
-                                    IF (ISPINA.EQ.ISPINC) THEN
+                                  IF (ISPINA.EQ.ISPINC) THEN
                                     TRPLET = ISPINA.EQ.1.AND.ISPINC.EQ.1
                                     WRITE(LUPRI,'(/3A)')
      *                                 ' LINEAR TRANSFORMATION WITH',
@@ -1050,7 +1049,7 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
      *                                          H2AC,XINDX,
      *                                          WRK(KX3WRK+KZYWOP),
      *                                          LX3WRK-KZYWOP)
-                                    END IF
+                                  END IF
                                     CALL GETREF(VECB,KZCONF)
                                     CALL DCOPY(KZCONF,VECB,1,
      &                                         VECB(KZVAR+1),1)
@@ -1071,12 +1070,14 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
                               END IF
                               IF (IAABB.NE.0) THEN
                                  IF (IAABB.EQ.1) THEN
+                                    NWARN = NWARN + 1
                                     WRITE(LUPRI,'(/A//3A)')
      *                                 ' ****WARNING******',
      *                              'WARNING: ONLY ALFA-ALFA AND',
      *                              ' BETA-BETA COMPONENTS IN',
      *                              ' DENSITY AND CI ROUTINES'
                                  ELSE IF (IAABB.EQ.2) THEN
+                                    NWARN = NWARN + 1
                                     WRITE(LUPRI,'(/A//3A)')
      *                                 ' ****WARNING******',
      *                              'WARNING: ONLY ALFA-BETA',
@@ -2856,6 +2857,7 @@ C
 C MEMFLG is false only if all A-operators are done before,
 C DOCAL controls a certain A-operator in the  IAOP loop
 C
+      ONFIL  = .FALSE.
       MEMFLG = .FALSE.
       DO IAOP = 1,NAQROP(ISYMA)
          DOCAL = .TRUE.
@@ -2990,6 +2992,9 @@ C     lf 1234 continue there is a minor bug here: for some components
 C     both the number is given and afterwards beta is set equal to a
 C     previously calculated component It affects just the printout, I
 C     hope...
+C     -- hjaaj 17oct07: discovered ONFIL was not always defined, maybe
+C     that was the reason for this error ? ONFIL is now always
+C     initialized to .false..
 
          IF (DOCAL .OR. ONFIL) THEN
             N = N + 1

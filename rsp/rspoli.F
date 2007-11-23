@@ -46,14 +46,14 @@ new GETREF call; LUINTD .gt. 0 check for GPCLOSE call
 940708-hjaaj: SOPPA changes
 940602-hjaaj: do not call QONEDI and QTD for nasht.eq.1
 931124-martin packer
-RSPOLI: added call to HRPA which adds A(2) and B(2) matrices to FCONE
+RSPOLI: added call to HRPA which adds A(2) and B(2) matrices to FCX
 920721-hinne hettema
 RSPOLI: implemented RSPSUP (super symmetry averaging)
 ===========================================================================
 #endif
 C  /* Deck rspoli */
-      SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,FCONE,
-     *                  FVONE,QAONE,QBONE,FVTD,QATD,QBTD,EVECS,
+      SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
+     *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
      *                  H2,H2X,XINDX,CMO,WRK,LWRK)
 C
 C Copyright 13 FEB 1986 Poul Joergensen and Hans Joergen Aa. Jensen
@@ -62,6 +62,8 @@ C 21-1-1992: Changed for Direct RPA (KEYWORD: DIRFCK), HA.
 C 21-7-1992: Supersymmetry averaging added. Hinne Hettema
 C 28-2-1995: Changed for Direct RPA with AO integrals read
 C            from disk, NOITRA=.TRUE. P&D /is not included?/hjaaj
+C Oct-2007-hjaaj: added LZYCVEC because in lagrang.F RSPOLI is called
+C            with ZYCVEC=CREF, and for some RHF cases KZCONF=0 and NCREF=1
 C
 C DFT modifications T. Helgaker 
 C
@@ -73,16 +75,20 @@ C FLOW:
 C    1) READ IN MULLIKEN INTEGRAL DISTRIBUTION AND ADD CONTRIBUTIONS
 C       TO FOCK CORE , FOCK VALENCE , QA AND QB MATRICES
 C    2) READ IN DIRAC INTEGRAL DISTRIBUTION AND ADD CONTRIBUTIONS
-C       TO QAONE AND QBONE MATRICES
+C       TO QAX AND QBX MATRICES
 C    3) DISTRIBUTE FOCK CORE , FOCK VALENCE , QA AND QB MATRICES
 C       INTO ORBITAL PART OF LINEAR TRANSFORMED VECTORS
+C
+C Naming conventions:
+C    FCX, FVX, ... are FC, FV, ... with one-index transformed integrals
+C    FVT, ...      are FV calculated with Transition dens.mat.
 C
 #include <implicit.h>
 C
       DIMENSION UDV(NASHDI,*),ZYCVEC(*),FC(*),FV(*),PVX(*)
-      DIMENSION ZYMAT(N2ORBX,*),FCONE(NORBT,NORBT,*)
-      DIMENSION FVONE(NORBT,NORBT,*),QAONE(NORBT,NASHDI,*)
-      DIMENSION QBONE(NORBT,NASHDI,*),FVTD(NORBT,NORBT,*)
+      DIMENSION ZYMAT(N2ORBX,*),FCX(NORBT,NORBT,*)
+      DIMENSION FVX(NORBT,NORBT,*),QAX(NORBT,NASHDI,*)
+      DIMENSION QBX(NORBT,NASHDI,*),FVTD(NORBT,NORBT,*)
       DIMENSION QATD(NORBT,NASHDI,*),QBTD(NORBT,NASHDI,*)
       DIMENSION EVECS(*),H2(NORBT,*),H2X(NORBT,*)
       DIMENSION XINDX(*),WRK(*),CMO(*)
@@ -181,7 +187,7 @@ C
             ISPIN1 = 0
             ISPIN2 = 0
          END IF
-         CALL RSPTDM(NCSIM,IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
+         CALL RSPTDM(NCSIM,IREFSY,KSYMST,NCREF,LZYCVEC,WRK(KCREF),
      *                 ZYCVEC,WRK(KDVT),WRK(KPVTD),
      *                 ISPIN1,ISPIN2,.TRUE.,.FALSE.,
      *                 XINDX,WRK,KFREE,LFREE)
@@ -192,8 +198,8 @@ C    *                 XNDXCI,WORK,KFREE,LFREE)
       END IF
 
 C
-C INITIALIZE ONE INDEX TRANSFORMED AND TRANSITION DENSITY Q,FC
-C AND FV MATRICES
+C INITIALIZE ONE INDEX TRANSFORMED (X) AND TRANSITION DENSITY (TD)
+C Q, FC AND FV MATRICES
 C
       IF (NOSIM.GT.0) THEN
          IF (SOPPA) THEN
@@ -206,12 +212,12 @@ C            IF (.NOT.A2EXIST) CALL DZERO(XINDX,N2ORBX)
 C             CALL MTRSP(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
             END DO
          END IF
-         CALL DZERO(FCONE,N2ORBX*NOSIM)
+         CALL DZERO(FCX,N2ORBX*NOSIM)
          IF (NASHT.GT.0) THEN
-            CALL DZERO(FVONE,N2ORBX*NOSIM)
+            CALL DZERO(FVX,N2ORBX*NOSIM)
             NTOT = NORBT*NASHT*NOSIM
-            CALL DZERO(QAONE,NTOT)
-            CALL DZERO(QBONE,NTOT)
+            CALL DZERO(QAX,NTOT)
+            CALL DZERO(QBX,NTOT)
             IF (KZCONF.GT.0 ) THEN
                NTOT = NOSIM*N2ASHX*NNASHX
                CALL DZERO(WRK(KH2XAC),NTOT)
@@ -309,17 +315,17 @@ C
 C
       IF (NOSIM.GT.0) THEN
 C
-C CONTRIBUTIONS TO FCONE AND FVONE
+C CONTRIBUTIONS TO FCX AND FVX
 C
          IF (ITYPCD .LE. 3) CALL FONEMU(NOSIM,ICI,IDI,H2,
-     *               FCONE,FVONE,ZYMAT,WRK(KDENA),WRK(KDENB),
+     *               FCX,FVX,ZYMAT,WRK(KDENA),WRK(KDENB),
      *               WRK(KWRK2),LWRK2)
 C        CALL FONEMU(NSIM,ICI1,IDI1,H2,
 C    *                  FCOEX,FVOEX,ZYMAT,DENA,DENB,WRK,LWRK)
 C
 Cmjp CONTRIBTUIONS FORM THE HRPA TERMS
          IF (SOPPA) THEN
-            CALL HRPA(FCONE,UDV,PVX,H2,ZYMAT,WRK(KTZYMT),H2X,WRK(KH2XP),
+            CALL HRPA(FCX,UDV,PVX,H2,ZYMAT,WRK(KTZYMT),H2X,WRK(KH2XP),
      *                WRK(KCOEUN),ICI,IDI,ICDSYM,ITYPCD,NOSIM,
      *                XINDX(KIADR1),WRK(KWRK2),LWRK2)
             IF (ITYPCD .EQ. 4) THEN
@@ -342,12 +348,12 @@ C  for the symmetrization of A(2)b
          IF ((NASHT.GT.1).AND.(ITYPCD.EQ.3)) THEN
 C
 C
-C CONTRIBUTIONS TO QAONE AND QBONE
+C CONTRIBUTIONS TO QAX AND QBX
 C
             CALL QONEMU(NOSIM,NCIW,NDIW,ICDSYM,
-     *                  QAONE,QBONE,ZYMAT,H2,H2X,WRK(KH2XAC),
+     *                  QAX,QBX,ZYMAT,H2,H2X,WRK(KH2XAC),
      *                  PVX,WRK(KPVCD),WRK(KWRK2),LWRK2)
-C           CALL QONEMU(NOSIM,NCIW,NDIW,ICDSYM,QAONE,QBONE,
+C           CALL QONEMU(NOSIM,NCIW,NDIW,ICDSYM,QAX,QBX,
 C    *                  ZYMAT,H2,H2X,H2XAC,PVX,PVCD,WRK,LWRK)
          END IF
       END IF
@@ -385,12 +391,12 @@ C
          DO 1001 IOSIM = 1,NOSIM
          WRITE(LUPRI,'(/A)') ' MULLIKEN DISTRIBUTION CONTRIBUTION'
          WRITE(LUPRI,'(/A,I5,A)')
-     *      ' QAONE FOR',IOSIM,' ORBITAL TRIAL VECTOR'
-         CALL OUTPUT(QAONE(1,1,IOSIM),
+     *      ' QAX FOR',IOSIM,' ORBITAL TRIAL VECTOR'
+         CALL OUTPUT(QAX(1,1,IOSIM),
      *                     1,NORBT,1,NASHT,NORBT,NASHT,1,LUPRI)
          WRITE(LUPRI,'(/A,I5,A)')
-     *      ' QBONE FOR',IOSIM,' ORBITAL TRIAL VECTOR'
-         CALL OUTPUT(QBONE(1,1,IOSIM),
+     *      ' QBX FOR',IOSIM,' ORBITAL TRIAL VECTOR'
+         CALL OUTPUT(QBX(1,1,IOSIM),
      *                     1,NORBT,1,NASHT,NORBT,NASHT,1,LUPRI)
  1001    CONTINUE
       END IF
@@ -398,11 +404,11 @@ C
          DO 1002 IOSIM = 1,NOSIM
          WRITE(LUPRI,'(/2A,I5)')' FCOEX MULLIKEN DISTRIBUTION CONTRB'
      *      ,' FOR VECTOR ',IOSIM
-         CALL OUTPUT(FCONE(1,1,IOSIM),
+         CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          WRITE(LUPRI,'(/2A,I5)')' FVOEX MULLIKEN DISTRIBUTION CONTRB'
      *      ,' FOR VECTOR ',IOSIM
-         CALL OUTPUT(FVONE(1,1,IOSIM),
+         CALL OUTPUT(FVX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
  1002    CONTINUE
       END IF
@@ -475,19 +481,19 @@ C
          ENDIF
          IF (NOSIM.GT.0) THEN
             CALL FONEDR(NOSIM,ICI,IDI,H2,WRK(KFCOCO),WRK(KFVOCO),
-     *                  FCONE,FVONE,ZYMAT,WRK(KDENA),WRK(KDENB),
+     *                  FCX,FVX,ZYMAT,WRK(KDENA),WRK(KDENB),
      *                  WRK(KFREE),LFREE)
 C           CALL FONEDR(NSIM,ICI1,IDI1,H2D,FCOCO,FVOCO,
 C    *                     FCOEX,FVOEX,ZYMAT,DENA,DENB,WRK,LWRK)
 C
-C CONTRIBUTIONS TO QAONE AND QBONE
+C CONTRIBUTIONS TO QAX AND QBX
 C
             IF( (IOBTYP(ICI).EQ.JTACT) .AND. (IOBTYP(IDI).EQ.JTACT))
-     *      CALL QONEDI(NOSIM,NCIW,NDIW,ICDSYM,QAONE,QBONE,ZYMAT,
+     *      CALL QONEDI(NOSIM,NCIW,NDIW,ICDSYM,QAX,QBX,ZYMAT,
      *            H2,H2X,PVX,WRK(KPVCD2),WRK(KPVCD3),WRK(KPVDC2),
      *            WRK(KPVDC3),WRK(KFREE),LFREE)
 C           CALL QONEDI(NOSIM,NCIW,NDIW,ICDSYM,
-C    *               QAONE,QBONE,ZYMAT,H2,H2X,
+C    *               QAX,QBX,ZYMAT,H2,H2X,
 C    *               PVX,PVCD2,PVCD3,PVDC2,PVDC3,WRK,LWRK)
          END IF
          IF (NCSIM.GT.0 .AND. .NOT.SOPPA) THEN
@@ -502,7 +508,7 @@ C
  1095 CONTINUE
       IF (LUINTD .GT. 0) CALL GPCLOSE(LUINTD,'KEEP')
 C
-C ADD CONTRIBUTION TO FCONE AND FVONE FROM ONE INDEX TRANSFORMED
+C ADD CONTRIBUTION TO FCX AND FVX FROM ONE INDEX TRANSFORMED
 C TOTAL SYMMETRIC FOCK MATRICES
 C
       IF ( NOSIM .GT. 0 )  THEN
@@ -514,7 +520,7 @@ C
             DO 1010 IOSIM = 1,NOSIM
                WRITE(LUPRI,'(/2A,I5)')' FCOEX  CONTRB'
      *                              ,' FOR VECTOR ',IOSIM
-               CALL OUTPUT(FCONE(1,1,IOSIM),
+               CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
                WRITE(LUPRI,'(/2A,I5)')' FCOCO CONTRB'
      *                              ,' FOR VECTOR ',IOSIM
@@ -523,7 +529,7 @@ C
                IF (NASHT.GT.0) THEN
                   WRITE(LUPRI,'(/2A,I5)')' FVOEX  CONTRB'
      *                                 ,' FOR VECTOR ',IOSIM
-                  CALL OUTPUT(FVONE(1,1,IOSIM),
+                  CALL OUTPUT(FVX(1,1,IOSIM),
      *                        1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
                   WRITE(LUPRI,'(/2A,I5)')' FVOCO CONTRB'
      *                                 ,' FOR VECTOR ',IOSIM
@@ -532,7 +538,7 @@ C
                END IF
  1010       CONTINUE
          END IF
-         CALL FONEDN(NOSIM,WRK(KFCOCO),WRK(KFVOCO),FCONE,FVONE)
+         CALL FONEDN(NOSIM,WRK(KFCOCO),WRK(KFVOCO),FCX,FVX)
       ENDIF
 C
       CALL MEMREL('RSPOLI.h2m+d',WRK,KFRSAV,KWRK0,KFREE,LFREE)
@@ -656,9 +662,9 @@ C
 C FC+Q 
          CALL DAXPY(NOSIM*N2BASX,-D1,WRK(KFXVAO),1,WRK(KFXCAO),1)
       END IF
-C ***** Transform FXCAO and FXVAO to MO basis and add to FCONE
-C ***** and FVONE, resp. (the one-index transformations of FCONE
-C ***** and FVONE are added after this routine).
+C ***** Transform FXCAO and FXVAO to MO basis and add to FCX
+C ***** and FVX, resp. (the one-index transformations of FC
+C ***** and FV are added after this routine).
 C           CALL AUTPV(ISYM,JSYM,U,V,
 C    &                 PRPAO,NBAS,NBAST,PRPMO,NORB,NORBT,WRK,LWRK)
 C
@@ -673,12 +679,12 @@ C
          IF (NORBI.EQ.0 .OR. NORBJ.EQ.0) GO TO 300
             IF (NISHT .GT. 0) THEN
                CALL AUTPV(ISYM,JSYM,CMO(ICMO(ISYM)+1),CMO(ICMO(JSYM)+1),
-     &              WRK(KFXCAO+JOFFAO),NBAS,NBAST,FCONE(1,1,IOSIM),NORB,
+     &              WRK(KFXCAO+JOFFAO),NBAS,NBAST,FCX(1,1,IOSIM),NORB,
      &                  NORBT,WRK(KFREE),LFREE)
             END IF
             IF (NASHT .GT. 0) THEN
                CALL AUTPV(ISYM,JSYM,CMO(ICMO(ISYM)+1),CMO(ICMO(JSYM)+1),
-     &              WRK(KFXVAO+JOFFAO),NBAS,NBAST,FVONE(1,1,IOSIM),NORB,
+     &              WRK(KFXVAO+JOFFAO),NBAS,NBAST,FVX(1,1,IOSIM),NORB,
      &                  NORBT,WRK(KFREE),LFREE)
             END IF
   300    CONTINUE
@@ -728,14 +734,14 @@ C
       IF (DODFT) THEN
          IF(NASHT.GT.0) THEN
             DO IOSIM = 1, NOSIM
-               call dft_lin_respab(fcone(1,1,iosim),fvone(1,1,iosim),
+               call dft_lin_respab(fcx(1,1,iosim),fvx(1,1,iosim),
      &              cmo,zymat(1,iosim),trplet,ksymop,wrk(kwrk0),
      &              lfree)
             END DO
          ELSE
-            call dft_lin_respf(NOSIM,fcone,cmo,zymat,
+            call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree)
-c              CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+c              CALL DFTATR(FCX(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
 c     &                    KSYMOP,WRK(KFREE),LFREE)
          ENDIF
       END IF
@@ -743,7 +749,7 @@ C
 C ADD CONTRIBUTION FROM THE A(0)S(2) TERM IF HRPA
 C
       IF (SOPPA .AND. NOSIM .GT. 0) THEN
-         CALL A0S2(FCONE,FC,UDV,ZYMAT,WRK(KTZYMT),H2X,WRK(KH2XP),
+         CALL A0S2(FCX,FC,UDV,ZYMAT,WRK(KTZYMT),H2X,WRK(KH2XP),
      *             WRK(KCOEUN),NOSIM, WRK,LWRK)
 C
 C  Cancel out the nonsymmetric parts of A(2) matrix. Use the explicitly
@@ -758,15 +764,14 @@ C
             END IF
             A2EXIST = .TRUE.
          END IF
-         CALL HRPAHM(FCONE,XINDX(KAB2),ZYMAT,NOSIM)
+         CALL HRPAHM(FCX,XINDX(KAB2),ZYMAT,NOSIM)
       ENDIF
 C
-C ADD CONTRIBUTION TO FCONE AND FVONE FROM ONE INDEX TRANSFORMED
+C ADD CONTRIBUTION TO FCX AND FVX FROM ONE INDEX TRANSFORMED
 C TOTAL SYMMETRIC FOCK MATRICES
 C
       IF (NOSIM. GT. 0) THEN
-         CALL FCKOIN(NOSIM,FC,FV,ZYMAT,FCONE,FVONE)
-C        CALL FCKOIN(NSIM, FC,FV,ZYMAT,FCONE,FVONE)
+         CALL FCKOIN(NOSIM,FC,FV,ZYMAT,FCX,FVX)
 C
       END IF
 C
@@ -776,7 +781,7 @@ C HALF TRANSFORMED INTEGRALS ARE NOW IN H2XAC AND CONFIGURATION
 C PART OF LINEAR TRANSFORMATION CAN BE CARRIED OUT FOR EACH ORBITAL
 C TRIAL VECTOR
 C
-         CALL H2XSIG(NOSIM,FCONE,ZYMAT,WRK(KH2XAC),
+         CALL H2XSIG(NOSIM,FCX,ZYMAT,WRK(KH2XAC),
      *               EVECS(1+NCSIM*KZYVAR),
      *               XINDX,WRK(KFREE),LFREE)
 C
@@ -788,34 +793,33 @@ C
       IF (NOSIM.GT.0) THEN
          IF ((IPRRSP.GT.30).AND.(NASHT.GT.1)) THEN
             DO 700 IOSIM = 1,NOSIM
-               WRITE(LUPRI,'(/A,I5,A)') ' QAONE FOR ',IOSIM,
+               WRITE(LUPRI,'(/A,I5,A)') ' QAX FOR ',IOSIM,
      *             ' ORBITAL TRIAL VECTOR'
-               CALL OUTPUT(QAONE(1,1,IOSIM),1,NORBT,1,NASHT,
+               CALL OUTPUT(QAX(1,1,IOSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,1,LUPRI)
-               WRITE(LUPRI,'(/A,I5,A)') ' QBONE FOR',IOSIM,
+               WRITE(LUPRI,'(/A,I5,A)') ' QBX FOR',IOSIM,
      *             ' ORBITAL TRIAL VECTOR'
-               CALL OUTPUT(QBONE(1,1,IOSIM),1,NORBT,1,NASHT,
+               CALL OUTPUT(QBX(1,1,IOSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,1,LUPRI)
  700        CONTINUE
          END IF
          IF (IPRRSP.GT.50) THEN
             DO 1012 IOSIM = 1,NOSIM
-               WRITE(LUPRI,'(/2A,I5)')' FCONE total contribution'
+               WRITE(LUPRI,'(/2A,I5)')' FCX total contribution'
      *                              ,' FOR VECTOR ',IOSIM
-               CALL OUTPUT(FCONE(1,1,IOSIM),
+               CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
                IF (NASHT .GT. 0) THEN
-                  WRITE(LUPRI,'(/2A,I5)')' FVONE total contribution'
+                  WRITE(LUPRI,'(/2A,I5)')' FVX total contribution'
      *                                 ,' FOR VECTOR ',IOSIM
-                  CALL OUTPUT(FVONE(1,1,IOSIM),
+                  CALL OUTPUT(FVX(1,1,IOSIM),
      *                           1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
                END IF
  1012       CONTINUE
          END IF
-         CALL RSPORB(.TRUE.,NOSIM,FC,FCONE,FVONE,QAONE,QBONE,UDV,
+         CALL RSPORB(.TRUE.,NOSIM,FC,FCX,FVX,QAX,QBX,UDV,
      *               EVECS(NCSIM*KZYVAR+1),ZYMAT)
-C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-C    *                  EVECS,ZYMAT)
+C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,EVECS,ZYMAT)
       END IF
       IF (NCSIM.GT.0) THEN
          IF (IPRRSP.GT.30 .AND. .NOT.SOPPA) THEN

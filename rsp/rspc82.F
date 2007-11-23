@@ -625,19 +625,18 @@ C
          ELSE
             CALL RSPCLI(NCSIM,ZYCVEC,FCAC,H2AC,
      *                  WRK(KEVECS),XINDX,WRK(KRSPCL),LWRKRS)
-C           CALL RSPCLI(NCSIM,ZYCVEC,FCAC,H2AC,
-C    *                  EVECS,XINDX,WRK,LWRK)
+C           CALL RSPCLI(NCSIM,ZYCVEC,FCAC,H2AC,EVECS,XINDX,WRK,LWRK)
          END IF
       END IF
 C
 C ALLOCATE WORK SPACE FOR RSPOLI
 C
       KZYMAT = KRSPCL
-      KFCONE = KZYMAT + NOSIM * NORBT * NORBT
-      KFVONE = KFCONE + NOSIM * NORBT * NORBT
-      KQAONE = KFVONE + NOSIM * NORBT * NORBT
-      KQBONE = KQAONE + NOSIM * NORBT * NASHT
-      KFVTD  = KQBONE + NOSIM * NORBT * NASHT
+      KFCX   = KZYMAT + NOSIM * NORBT * NORBT
+      KFVX   = KFCX   + NOSIM * NORBT * NORBT
+      KQAX   = KFVX   + NOSIM * NORBT * NORBT
+      KQBX   = KQAX   + NOSIM * NORBT * NASHT
+      KFVTD  = KQBX   + NOSIM * NORBT * NASHT
       KQATD  = KFVTD  + NCSIM * NORBT * NORBT
       KQBTD  = KQATD  + NCSIM * NORBT * NASHT
       KH2    = KQBTD  + NCSIM * NORBT * NASHT
@@ -661,18 +660,14 @@ C
 C CONSTRUCT ORBITAL PART OF LINEAR TRANSFORMED VECTORS
 C
       IF (.NOT.RSPCI) THEN
-       CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,WRK(KZYMAT),
-     *            WRK(KFCONE),WRK(KFVONE),
-     *            WRK(KQAONE),WRK(KQBONE),WRK(KFVTD),
-     *            WRK(KQATD),WRK(KQBTD),WRK(KEVECS),
-     *            WRK(KH2),WRK(KH2X),XINDX,CMO,
-     *            WRK(KWRK1),LWRK1)
+        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,KZCONF,FC,FV,PVX,WRK(KZYMAT),
+     *              WRK(KFCX),WRK(KFVX), WRK(KQAX),WRK(KQBX),
+     *              WRK(KFVTD),WRK(KQATD),WRK(KQBTD),WRK(KEVECS),
+     *              WRK(KH2),WRK(KH2X),XINDX,CMO,WRK(KWRK1),LWRK1)
+C       CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
+C    *              FCX,FVX,QAX,QBX, FVTD,QATD,QBTD,EVECS,
+C    *              H2,H2X,XINDX,CMO,WRK,LWRK)
       ENDIF
-C        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,
-C    *               FCONE,FVONE,
-C    *               QAONE,QBONE,FVTD,
-C    *               QATD,QBTD,EVECS,
-C    *               H2,H2X,XINDX,CMO,WRK,LWRK)
 C
 C *** END OF RSPLIN
 C
@@ -693,8 +688,7 @@ C---------------------
       RETURN
       END
 C  /* Deck rsporb */
-      SUBROUTINE RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-     *                  EVECS,ZYMAT)
+      SUBROUTINE RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV, EVECS,ZYMAT)
 C
 C WRITTEN 14-FEB 1986
 C
@@ -786,6 +780,11 @@ C
 C
 C
       KYCONF = KZCONF + KZVAR
+      if (KYCONF + kzwopt .gt. kzyvar) then
+         write (lupri,*) 'hjaaj kzconf, kzvar, kzwopt, kzyvar',
+     &                    kzconf, kzvar, kzwopt, kzyvar
+         call quit('hjaaj problem in rsporb')
+      end if
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
 C

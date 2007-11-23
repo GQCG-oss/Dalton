@@ -337,9 +337,8 @@ C
 C
          IF (ABS_INTERVAL) THEN 
             IF( FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
-     &           (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.
-     &           FREQ_INTERVAL(3) .OR.
-     &           FREQ_INTERVAL(3).LE.0.0D0 ) THEN
+     &         (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.FREQ_INTERVAL(3)
+     &         .OR. FREQ_INTERVAL(3).LE.0.0D0 ) THEN
                WRITE(LUPRI,'(/,A,/,A,/,/,A,/,A,/,/,A)')
      & ' Warning: Frequency interval for absorption calculation is not',
      & '          correctly specified according to:',

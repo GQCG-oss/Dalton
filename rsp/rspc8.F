@@ -50,8 +50,8 @@ C
 #include <iratdef.h>
 C
       CHARACTER*8 BLANK
-      DIMENSION CMO(2),UDV(2),PV(2),FC(2),FV(2),FCAC(2),H2AC(2)
-      DIMENSION XINDX(2),WRK(2)
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION XINDX(*),WRK(LWRK)
 C
 #include <priunit.h>
 #include <infpri.h>
@@ -282,9 +282,9 @@ C
 #include <implicit.h>
 C
       LOGICAL IDONE
-      DIMENSION XMOM(MAXRM,2)
-      DIMENSION IBTYP(2),REDS(2),REDE(2),UDV(2),XINDX(2),WRK(2)
-      DIMENSION EIVAL(2),EIVEC(2),GP(KZYVAR,2)
+      DIMENSION XMOM(MAXRM,*)
+      DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*),XINDX(*),WRK(LWRK)
+      DIMENSION EIVAL(*),EIVEC(*),GP(KZYVAR,*)
       DIMENSION OLDAL(*)
 C
 #include <priunit.h>
@@ -828,9 +828,9 @@ C
       END IF
       CALL DZERO(SUMOSC,NSUM)
       WRITE(LUPRI,'(/2A)')
-     *   ' STATE NO:   TRANSITION MOMENT:',
-     *   '    3*OSCILLATOR STRENGTH:   ENERGY(eV):'
-C:STATE NO:   TRANSITION MOMENT:    3*OSCILLATOR STRENGTH:   ENERGY(eV):
+     *   ' State no:   Transition moment:',
+     *   '    3*Oscillator strength:   Energy (eV):'
+C:State no:   Transition moment:    3*Oscillator strength:   Energy (eV):
 C:    5        0.123456789012          0.123456789012      0.123456789012
 C(I5,1P,G26.12,G24.12,G20.12)
       DO 500 INUM = 1,KZRED
@@ -875,7 +875,7 @@ C920722: Old C6 code by Patrick Fowler
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 )
 C
       DIMENSION PLVAL(16)
-      DIMENSION CAUCHY(2),COMI(2),WRK(2)
+      DIMENSION CAUCHY(*),COMI(*),WRK(*)
 C
 C DETERMINE DIMENSION OF LINEAR SET OF EQUATIONS
 C
@@ -922,32 +922,32 @@ C
  400     CONTINUE
  300  CONTINUE
       WRITE(LUPRI,'(/A,I2,A,I2,A,I3,A/)')
-     *' [',N,',',M,'] PADE APPROXIMANT FOR ',NCAUCH,' MOMENTS'
+     *' [',N,',',M,'] Pade approximant for ',NCAUCH,' moments'
       IF (IPRRSP.GT.5) THEN
          WRITE(LUPRI,'(/A)')
-     *   ' M+1 COEFFICIENTS IN P NUMERATOR'
+     *   ' M+1 coefficients in P numerator'
          CALL OUTPUT(WRK(KAVEC),1,M+1,1,1,M+1,1,1,LUPRI)
          WRITE(LUPRI,'(/A)')
-     *   ' N+1 COEFFICIENTS IN Q DENOMINATOR'
+     *   ' N+1 coefficients in Q denominator'
          CALL OUTPUT(WRK(KBVEC),1,N+1,1,1,N+1,1,1,LUPRI)
       END IF
       DO 500 I = 1,NI
          CALL POLVAL(M+1,WRK(KAVEC),COMI(I),VALP)
          CALL POLVAL(N+1,WRK(KBVEC),COMI(I),VALQ)
          PLVAL(I) = VALP/VALQ
-         WRITE(LUPRI,'(I5,A,G16.8,A,G16.8)')
-     *  I, ' ALPHA AT IMAGINARY FREQ:',SQRT(COMI(I)),' = '
+         WRITE(LUPRI,'(I5,A,1P,G16.8,A,G16.8)')
+     *  I, ' alpha at imaginary frequency',SQRT(COMI(I)),' = '
      *  ,PLVAL(I)
  500  CONTINUE
       CALL C6INT(PLVAL,PLVAL,C6TEMP)
       WRITE(LUPRI,'(/A,I2,A,I2,A,G16.8) ')
-     *' C6 COEFFICIENT FOR [',N,',',M,'] PADE APPROXIMANT = ',
+     *' C6 coefficient for [',N,',',M,'] Pade approximant = ',
      *C6TEMP
       RETURN
       END
       SUBROUTINE POLVAL(NUM,POLCOF,FREQ,VALUE)
 #include <implicit.h>
-      DIMENSION POLCOF(2)
+      DIMENSION POLCOF(NUM)
       VALUE = 0.0D0
       DO 100 I = 1,NUM
          VALUE = VALUE + POLCOF(I)*((-FREQ)**(I-1))

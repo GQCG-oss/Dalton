@@ -65,7 +65,7 @@ C-- common blocks:
 #include <dftcom.h>
 #include <pcmlog.h>
 C
-      PARAMETER (DHALF=0.5D0,ONE=1.0D0,DMONE=-1.0D0)
+      PARAMETER (DHALF=0.5D0,D1=1.0D0,DM1=-1.0D0)
 C
       CALL QENTER('LAGRAN')
 C
@@ -113,19 +113,19 @@ C
          LWRK1  = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('LAGRAN',KWRK1-1,LWRK)
          IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
-            CALL DAXPY(NNORBT,ONE,FC,1,FV,1)
-            CALL DSCAL(NNORBT,DMONE,FV,1)
+            CALL DAXPY(NNORBT,D1,FC,1,FV,1)
+            CALL DSCAL(NNORBT,DM1,FV,1)
          END IF
-         CALL RSPOLI(1,0,UDV,WRK(KCREF),FC,FV,PV,DUMMY,
+         CALL RSPOLI(1,0,UDV,WRK(KCREF),NDREF,FC,FV,PV,DUMMY,
      *            DUMMY,DUMMY, DUMMY,DUMMY,WRK(KFVTD),
      *            WRK(KQATD),WRK(KQBTD),WRK(KGP),
      *            WRK(KH2),WRK(KH2X),XINDX,CMO,WRK(KWRK1),LWRK1)
-C        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,FCONE,
-C    *                  FVONE,QAONE,QBONE,FVTD,QATD,QBTD,EVECS,
-C    *                  H2,H2X,XINDX,CMO,WRK,LWRK)
+C        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
+C    *            FCONE,FVONE,QAONE,QBONE,FVTD,QATD,QBTD,EVECS,
+C    *            H2,H2X,XINDX,CMO,WRK,LWRK)
          IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
-            CALL DAXPY(NNORBT,ONE,FC,1,FV,1)
-            CALL DSCAL(NNORBT,DMONE,FV,1)
+            CALL DAXPY(NNORBT,D1,FC,1,FV,1)
+            CALL DSCAL(NNORBT,DM1,FV,1)
          END IF
 C
       END IF
@@ -424,6 +424,13 @@ C
                GO TO 100
     9          CONTINUE
                   READ (LUCMD,*) ESRNUC
+                  IF (ESRNUC .GT. ATMNUM) THEN
+                     WRITE(LUPRI,'(/A,I4,A,I4/A)')
+     &         ' Sorry, but .ATOMS under *ESR is',ESRNUC,
+     &           ' which is bigger than ATMNUM in parnmr.h',ATMNUM,
+     &         ' Either reduce .ATOMS or increase ATMNUM and recompile.'
+                     CALL QUIT('.ATOMS too big, see output')
+                  END IF
                   READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC)
                GO TO 100
    10          CONTINUE
@@ -432,9 +439,9 @@ C
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' PROMPT "',WORD,
-     *            '" NOT RECOGNIZED IN ESRINP.'
-               CALL QUIT(' ILLEGAL PROMPT IN ESRINP ')
+               WRITE (LUPRI,'(/3A/)') ' PROMPT "',WORD,
+     *            '" NOT RECOGNIZED IN ESRINP FOR *ESR.'
+               CALL QUIT(' ILLEGAL PROMPT under *ESR')
             END IF
          GO TO 100
       END IF
@@ -695,9 +702,15 @@ C
                 LABEL=LBESRT(KSYMOP,IOP)
                 READ (LABEL,'(3X,I3)') INDSD1
                 CTMP=LABEL(7:8)
+                indsd2 = -9898
                 IF (CTMP .EQ. ' x') INDSD2=1
                 IF (CTMP .EQ. ' y') INDSD2=2
                 IF (CTMP .EQ. ' z') INDSD2=3
+                if (indsd2 .eq. -9898) then
+                   write(lupri,*) 'hjaaj label=',label, indsd1
+                   write(lupri,*) 'hjaaj no x or y or z in label(7:8) !'
+                   call quit('hjaaj: problem in lagrang.F')
+                end if
                 SDVAL(SDIND(2,INDSD1),INDSD2,SDIND(1,INDSD1))=HYPFIN
             END IF
 C
@@ -1341,12 +1354,13 @@ C  /* Deck SDOPER */
 #include <chrxyz.h>
 #include <ibtfun.h>
 C
-       NCOOR=0
-       DEGEN(ATMIND) = 0.0D0
-       DO 100 IREP=0,MAXREP
-          DO  200 ICOOR1=1,3
-              ISCOR1 = IPTCNT(3*(NUCINF(ATMIND ) - 1) + ICOOR1,IREP,2)
-              IF (ISCOR1 .GT. 0) THEN
+      NCOOR=0
+      DEGEN(ATMIND) = 0.0D0
+      DO 100 IREP=0,MAXREP
+         DO 200 ICOOR1=1,3
+            ISCOR1 = IPTCNT(3*(NUCINF(ATMIND ) - 1) + ICOOR1,IREP,2)
+            IF (ISCOR1 .GT. 0) THEN
+              IF (ICOOR1 .EQ. 1) DEGEN(ATMIND)=DEGEN(ATMIND)+1.0D0
               DO 300 ICOOR2 = 1, 3
                  NCOOR=NCOOR+1
                  LABINT(NCOOR) = 'SD '//CHRNOS(ISCOR1/100)
@@ -1354,12 +1368,11 @@ C
      *                            //CHRNOS(MOD(ISCOR1,10))
      *                            //' '//CHRXYZ(-ICOOR2)
  300          CONTINUE
-              IF (ICOOR1 .EQ. 1) DEGEN(ATMIND)=DEGEN(ATMIND)+1.0D0
-              SDIND(1,ISCOR1)=NUCINF(ATMIND)
+              SDIND(1,ISCOR1)=ATMIND
               SDIND(2,ISCOR1)=ICOOR1
-              ENDIF
- 200              CONTINUE
- 100           CONTINUE
+            ENDIF
+ 200     CONTINUE
+ 100  CONTINUE
 C
       RETURN
       END

@@ -467,8 +467,8 @@ C
       LOGICAL FOUND, CONV
       CHARACTER*8 ALAB,BLAB,CLAB,DLAB,BLANK
       PARAMETER (BLANK='       ', D0=0.0D0)
-      DIMENSION VECA(2),VECB(2),VECC(2),VECD(2)
-      DIMENSION VECBC(2),VECCD(2),VECBD(2)
+      DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
+      DIMENSION VECBC(*),VECCD(*),VECBD(*)
 C
 #include <infrsp.h>
 #include <maxorb.h>
