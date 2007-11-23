@@ -939,8 +939,9 @@ C                  This will often be the case if we restart a
 C                  calculation.
                   INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
                   IF (FEXST) THEN
-                     IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN INFO: '//
-     &               'this file exists and is deleted first.'
+                     IF (IPRERR.gt.1) write (LUERR,*)
+     &                  'GPOPEN INFO: file ',FILENM(1:FILELN),
+     &                  ' already exists and is deleted first.'
                      OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),
      &                   STATUS='OLD',ACCESS='SEQUENTIAL',
      &                   FORM=FORMF(1:FORMLN),ERR=9004,IOSTAT=IOS)
