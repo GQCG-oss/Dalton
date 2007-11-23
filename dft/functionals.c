@@ -98,6 +98,7 @@ Functional* available_functionals[] = {
     &VWN3Functional,
     &VWN5Functional,
     &VWNIFunctional,
+    &VWN3IFunctional,
     &VWNFunctional,
     &XAlphaFunctional,
     &WignerFunctional,

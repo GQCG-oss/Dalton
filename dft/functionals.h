@@ -373,6 +373,7 @@ extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;
 extern Functional VWNIFunctional;
+extern Functional VWN3IFunctional;
 extern Functional VWNFunctional;
 extern Functional XAlphaFunctional;
 extern Functional WignerFunctional;
