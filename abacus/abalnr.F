@@ -96,7 +96,7 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+               WRITE (LUPRI,'(/3A/)') ' Keyword "',WORD,
      *            '" not recognized in LNRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword under *ABALNR.')
@@ -250,18 +250,23 @@ C
       END IF
 C
       IF ((VROA .OR. RAMAN .OR. OPTROT) .AND. NODIFC) THEN
-         WRITE (LUPRI,'(/,3A,/)')
-     &   ' Raman properties calculation is NOT ',
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(/2A/A/A/)')
+     &   ' WARNING: Raman properties calculation is NOT ',
      &   ' implemented with the NODIFC keyword active. ',
-     &   ' Try calculation again without specifying NODIFC.'
+     &   ' WARNING: Raman properties calculation ignord',
+     &   ' WARNING: Try calculation again without specifying NODIFC.'
          ROAA = .FALSE.
          ROAG = .FALSE.
       ELSEIF (VROA) THEN
-         ROAG = .TRUE.
          ROAA = .TRUE.
+         ROAG = .TRUE.
       ELSE IF (OPTROT) THEN
+         ROAA = .FALSE.
          ROAG = .TRUE.
       ELSE IF (RAMAN) THEN
+         ROAA = .FALSE.
+         ROAG = .FALSE.
          ALFA = .TRUE.
       ELSE
          ROAA = .FALSE.
@@ -269,7 +274,7 @@ C
       END IF
 C
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for LNRABA:',0)
+         CALL HEADER('Changes of defaults for *ABALNR:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' LNRABA skipped in this run.'
          ELSE
@@ -290,15 +295,9 @@ C
      &         'You have asked for too many frequencies under *ABALNR')
              END IF
             END IF
-            WRITE (LUPRI,'(A,I4)')
-     &         ' Print level in LNRABA     :',IPRLNR
-            WRITE (LUPRI,'(A,1P,D10.2)')
-     &         ' Threshold in LNRABA       :',THCLNR
-            WRITE(LUPRI,'(A,I4)')' Max. iterations in LNRABA :',
-     &                           MAXITE
-            IF (CUT) THEN
-               WRITE (LUPRI,'(/,A)') ' Program is stopped after LNRINP.'
-            END IF
+            IF (STATIC) WRITE(LUPRI,'(A)') 
+     &         ' (Also) using static approximation for'//
+     &         ' optical activity G tensor.'
             IF (ABSORP) THEN
                WRITE(LUPRI,'(A,F9.6,A)') 
      &              ' Damping parameter equals  :',DAMPING, ' a.u.'
@@ -316,8 +315,17 @@ C
                MAX_MICRO  = 10
                MAX_ITORB = 5
             END IF
-            IF (STATIC) WRITE(LUPRI,'(/,A)') 
-     &          ' Using static approximation.'
+            WRITE (LUPRI,'(A,I4)')
+     &         ' Print level                    :',IPRLNR
+            WRITE (LUPRI,'(A,1P,D10.2)')
+     &         ' Lin Resp convergence threshold :',THCLNR
+            WRITE (LUPRI,'(A,I4)')
+     &         ' Max. Lin Resp iterations       :',MAXITE
+            IF (OOTV) WRITE (LUPRI,'(A)')
+     &         ' Optimal orbital microiterations used.'
+            IF (CUT) THEN
+               WRITE (LUPRI,'(/A)') ' Program is stopped after LNRABA.'
+            END IF
          END IF
       END IF
 C
@@ -1032,8 +1040,9 @@ C
       END IF
 C
 C     Skip point if no frequencies specified
-      IF (STATIC) CALL LNRAST(POLDLS,POLDAS,WORK(KCMO),WORK(KWORK1),
-     &     LWORK1)
+C     STATIC = static approximation to optical rotation G tensor
+      IF (STATIC)
+     &   CALL LNRAST(POLDLS,POLDAS,WORK(KCMO),WORK(KWORK1),LWORK1)
 C
  999  CONTINUE
 C
@@ -1044,10 +1053,10 @@ C
       CALL TIMER ('LNRABA',TIMEIN,TIMOUT)
       PASS = .TRUE.
       IF (CUT) THEN
-         WRITE (LUPRI,'(/,A)')
-     &          ' Program stopped after LNRABA as required.'
-         WRITE (LUPRI,'(A)') ' No restart file has been written.'
-         CALL QUIT(' ***** End of ABACUS (in LNRABA) *****')
+         WRITE (LUPRI,'(/A/A)')
+     &     ' Program stopped after LNRABA as requested.',
+     &     ' No restart file has been written.'
+         CALL QUIT(' ***** End of ABACUS (.STOP in *ABALNR) *****')
       END IF
 C
       CALL QEXIT('LNRABA')
@@ -1056,6 +1065,8 @@ C
 C
 C  /* Deck lnrast */ 
       SUBROUTINE LNRAST(POLDLS,POLDAS,CMO,WORK,LWORK)
+C
+C     _ST_atic approximation to optical rotation G tensors.
 C      
 #include <implicit.h>
 #include <dummy.h>
@@ -1189,14 +1200,13 @@ C
             END IF
          END DO
       END DO
-      WRITE(LUPRI,9000)
       WRITE(LUPRI,9003)
       WRITE(LUPRI,9007)
       WRITE(LUPRI,9009) 'Bx','By','Bz'
       WRITE(LUPRI,9008) 'Ex',(POLDLS(1,JDIP), JDIP=1,3)
       WRITE(LUPRI,9008) 'Ey',(POLDLS(2,JDIP), JDIP=1,3)
       WRITE(LUPRI,9008) 'Ez',(POLDLS(3,JDIP), JDIP=1,3)
-      WRITE(LUPRI,9000)
+C
       WRITE(LUPRI,9004)
       WRITE(LUPRI,9007)
       WRITE(LUPRI,9009) 'Bx','By','Bz'
@@ -1204,7 +1214,6 @@ C
       WRITE(LUPRI,9008) 'Ey',(POLDAS(2,JDIP), JDIP=1,3)
       WRITE(LUPRI,9008) 'Ez',(POLDAS(3,JDIP), JDIP=1,3)         
       DO IFRVAL=1,NFRVAL
-         WRITE(LUPRI,9000)
          WRITE(LUPRI,9005) FRVAL(IFRVAL)
          WRITE(LUPRI,9007)
          WRITE(LUPRI,9009) 'Bx','By','Bz'
@@ -1214,6 +1223,7 @@ C
      &        JDIP=1,3)
          WRITE(LUPRI,9008) 'Ez',(POLDLS(3,JDIP)*FRVAL(IFRVAL),
      &        JDIP=1,3)   
+
          WRITE(LUPRI,9006) FRVAL(IFRVAL)
          WRITE(LUPRI,9007)
          WRITE(LUPRI,9009) 'Bx','By','Bz'
@@ -1224,12 +1234,11 @@ C
          WRITE(LUPRI,9008) 'Ez',(POLDAS(3,JDIP)*FRVAL(IFRVAL),
      &        JDIP=1,3)           
       END DO
- 9000 FORMAT (/)
- 9003 FORMAT (/,10X,'London    G tensor using static approximation')
- 9004 FORMAT (/,10X,'No-London G tensor using static approximation')
- 9005 FORMAT (/,10X,'London    G tensor stat. appr. for freq ',F12.6,
+ 9003 FORMAT (//10X,'London    G tensor using static approximation')
+ 9004 FORMAT (//10X,'No-London G tensor using static approximation')
+ 9005 FORMAT (//10X,'London    G tensor stat. appr. for freq ',F12.6,
      &     ' au') 
- 9006 FORMAT (/,10X,'No-London G tensor stat. appr. for freq ',F12.6,
+ 9006 FORMAT (/10X,'No-London G tensor stat. appr. for freq ',F12.6,
      &     ' au')
  9007 FORMAT (10X,'------------------------------------------------')
  9008 FORMAT (16X,A,2X,3F12.7)
@@ -1617,13 +1626,13 @@ C
             DO IFRVAL = 1,NFRVAL
                WRITE(LUPRI,9005) FRVAL(IFRVAL)
                WRITE(LUPRI,9007)
-               IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+               IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                WRITE(LUPRI,9009) 'Bx','By','Bz'
                WRITE(LUPRI,9008) 'Ex',(POLDL(1,1,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ey',(POLDL(1,2,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ez',(POLDL(1,3,JDIP,IFRVAL), JDIP=1,3)
                IF (ABSORP) THEN
-                  WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                  WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                   WRITE(LUPRI,9009) 'Bx','By','Bz'
                   WRITE(LUPRI,9008) 'Ex',(POLDL(2,1,JDIP,IFRVAL), 
      &                 JDIP=1,3)
@@ -1636,13 +1645,13 @@ C
             DO IFRVAL = 1,NFRVAL
                WRITE(LUPRI,9006) FRVAL(IFRVAL)
                WRITE(LUPRI,9007)
-               IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+               IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                WRITE(LUPRI,9009) 'Bx','By','Bz'
                WRITE(LUPRI,9008) 'Ex',(POLDA(1,1,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ey',(POLDA(1,2,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ez',(POLDA(1,3,JDIP,IFRVAL), JDIP=1,3)
                IF (ABSORP) THEN
-                  WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                  WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                   WRITE(LUPRI,9009) 'Bx','By','Bz'
                   WRITE(LUPRI,9008) 'Ex',(POLDA(2,1,JDIP,IFRVAL), 
      &                 JDIP=1,3)
@@ -1664,7 +1673,7 @@ C
                      CALL DSCAL(18,FRQINV,POLVL(1,1,1,IFRVAL),1)
                      WRITE(LUPRI,9010) FRVAL(IFRVAL)
                      WRITE(LUPRI,9007)
-                     IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+                     IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                      WRITE(LUPRI,9009) 'Bx','By','Bz'
                      WRITE(LUPRI,9008) 'Ex',(POLVL(1,1,JDIP,IFRVAL),
      &                    JDIP=1,3)
@@ -1673,7 +1682,7 @@ C
                      WRITE(LUPRI,9008) 'Ez',(POLVL(1,3,JDIP,IFRVAL),
      &                    JDIP=1,3)
                      IF (ABSORP) THEN
-                        WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                        WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                         WRITE(LUPRI,9009) 'Bx','By','Bz'
                         WRITE(LUPRI,9008) 'Ex',(POLVL(2,1,JDIP,IFRVAL),
      &                       JDIP=1,3)
@@ -1695,7 +1704,7 @@ C
                      CALL DSCAL(18,FRQINV,POLVV(1,1,1,IFRVAL),1)
                      WRITE(LUPRI,9011) FRVAL(IFRVAL)
                      WRITE(LUPRI,9007)
-                     IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+                     IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                      WRITE(LUPRI,9009) 'Bx','By','Bz'
                      WRITE(LUPRI,9008) 'Ex',(POLVV(1,1,JDIP,IFRVAL),
      &                    JDIP=1,3)
@@ -1704,7 +1713,7 @@ C
                      WRITE(LUPRI,9008) 'Ez',(POLVV(1,3,JDIP,IFRVAL),
      &                    JDIP=1,3)
                      IF (ABSORP) THEN
-                        WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                        WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                         WRITE(LUPRI,9009) 'Bx','By','Bz'
                         WRITE(LUPRI,9008) 'Ex',(POLVV(2,1,JDIP,IFRVAL),
      &                       JDIP=1,3)
@@ -1849,7 +1858,7 @@ C
                END IF
             END IF
             IF (IPRINT .GE. 1) THEN
-               WRITE(LUPRI,'(/,A,1P,D16.9)')
+               WRITE(LUPRI,'(/A,1P,D16.9)')
      &         'Conversion, beta --> alpha: ',XXXCON
             END IF
          END DO
@@ -1871,18 +1880,18 @@ C
          END DO
       END IF
 C
- 9001 FORMAT (/,10X,'Polarizability tensor for frequency ',F12.6,' au')
+ 9001 FORMAT (/10X,'Polarizability tensor for frequency ',F12.6,' au')
  9002 FORMAT (10X,'----------------------------------------------------'
      &       )
  9003 FORMAT (16X,3(A14,1X),/)
  9004 FORMAT (16X,A,2X,1P,3(G14.7,1X))
- 9005 FORMAT (/,10X,'London    G tensor for frequency ',F12.6,' au')
- 9006 FORMAT (/,10X,'No-London G tensor for frequency ',F12.6,' au')
+ 9005 FORMAT (/10X,'London    G tensor for frequency ',F12.6,' au')
+ 9006 FORMAT (/10X,'No-London G tensor for frequency ',F12.6,' au')
  9007 FORMAT (10X,'-------------------------------------------------')
  9008 FORMAT (16X,A,2X,3F12.7)
  9009 FORMAT (27X,3(A,10X)/)
- 9010 FORMAT (/,10X,'Velocity  G tensor for frequency ',F12.6,' au')
- 9011 FORMAT (/,10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
+ 9010 FORMAT (/10X,'Velocity  G tensor for frequency ',F12.6,' au')
+ 9011 FORMAT (/10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
 C
       RETURN
       END
