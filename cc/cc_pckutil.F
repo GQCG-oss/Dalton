@@ -97,7 +97,11 @@ C
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
+#if defined (VAR_GFORTRAN)
+      PARAMETER (MASK1 = -z'40000000')
+#else
       PARAMETER (MASK1 = z'C0000000')
+#endif
       PARAMETER (MASK2 = z'3FFFFFFF')
 
 C
@@ -233,10 +237,17 @@ C
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
+#if defined (VAR_GFORTRAN)
+      PARAMETER (MASK1 = -z'40000000')
+      PARAMETER (MASK3 = z'3C000000')
+      PARAMETER (MASK4 = -z'3C000001')
+      PARAMETER (MASK5 = z'0000000F')
+#else
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK3 = z'3C000000')
       PARAMETER (MASK4 = z'C3FFFFFF')
       PARAMETER (MASK5 = z'0000000F')
+#endif
 C
 C---------------------------------------------------------------
 C     if packing disabled, copy input data to output array
@@ -367,6 +378,17 @@ C
 #if defined (LITTLEENDIAN) || defined(BIGENDIAN)
       PARAMETER (JMASK = z'3C000000')
 C
+#if defined (VAR_GFORTRAN)
+      INTEGER*4 F0000000
+      PARAMETER ( F0000000 = -z'10000000' )
+      DATA IMASK / z'00000000', z'000FF000',
+     &             z'00000000', z'00000FF0',
+     &               F0000000 , z'0000000F',
+     &             z'0FF00000', z'00000000', 
+     &             z'000FF000', z'00000000',
+     &             z'00000FF0', z'00000000',
+     &             z'0000000F', z'00000000'/
+#else
       DATA IMASK / z'00000000', z'000FF000',
      &             z'00000000', z'00000FF0',
      &             z'F0000000', z'0000000F',
@@ -374,6 +396,7 @@ C
      &             z'000FF000', z'00000000',
      &             z'00000FF0', z'00000000',
      &             z'0000000F', z'00000000'/
+#endif
 #else
 # define NOPACKING
 #endif
