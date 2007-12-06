@@ -89,7 +89,7 @@ Cef begin
 Cef end
       EXTERNAL EXEDRV
 #if defined (VAR_MPI)
-      EXTERNAL NODSTR
+      EXTERNAL NODEDRIVER
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
@@ -470,9 +470,9 @@ C
 #else /* VAR_MPI */
          CALL RECVNAMES
 #if defined (SYS_LINUX)
-         CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+         CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
-         CALL EXEDRV(WORK, LMWORK, WRKDLM,MASTER,MYNUM)
+         CALL EXEDRV(WORK, LMWORK, WRKDLM)
 #endif
          CALL FLSHFO(LUPRI)
 
@@ -501,9 +501,9 @@ C     ... I am a "slave" ... (MYNUM .ne. 0)
                CALL QUIT('*** End of input test for GENERAL ***')
             END IF
 #if defined (SYS_LINUX)
-            CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+            CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
-            CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
+            CALL EXEDRV(WORK, LMWORK,WRKDLM)
 #endif
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
@@ -526,9 +526,9 @@ C
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
 #if defined (SYS_LINUX)
-            CALL CEXE(NODSTR,LMWORK,WRKDLM,MASTER,MYNUM)
+            CALL CEXE(NODEDRIVER,LMWORK,WRKDLM)
 #else
-            CALL NODSTR(WORK,LMWORK,WRKDLM,MASTER,MYNUM)
+            CALL NODEDRIVER(WORK,LMWORK,WRKDLM)
 #endif
          END IF
       END IF
@@ -551,9 +551,9 @@ C
 #endif
 #if !defined (VAR_MPI)
 #if defined (SYS_LINUX)
-      CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+      CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
-      CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
+      CALL EXEDRV(WORK, LMWORK,WRKDLM)
 #endif
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '
