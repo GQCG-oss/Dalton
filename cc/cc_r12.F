@@ -3644,41 +3644,41 @@ C
             WRITE(APPROX,'(A10)') 's A and B.'
          END IF
          IF (NOTTWO .AND. NOTTRE) THEN
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansatz 1 is used and results are'//
      *       ' printed for approximation'//APPROX
          ELSE IF (NOTONE .AND. NOTTRE) THEN
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansatz 2 is used and results are'//
      *       ' printed for approximation'//APPROX
          ELSE IF (NOTONE .AND. NOTTWO) THEN
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansatz 3 is used and results are'//
      *       ' printed for approximation'//APPROX
          ELSE IF (NOTTRE) THEN
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansaetze 1 and 2 are used and results are'//
      *       ' printed for approximation'//APPROX
          ELSE IF (NOTTWO) THEN
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansaetze 1 and 3 are used and results are'//
      *       ' printed for approximation'//APPROX
          ELSE IF (NOTONE) THEN
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansaetze 2 and 3 are used and results are'//
      *       ' printed for approximation'//APPROX
          ELSE
-            WRITE(LUPRI,'(A))')
+            WRITE(LUPRI,'(A)')
      *       ' Ansaetze 1, 2, 3 are used and results are'//
      *       ' printed for approximation'//APPROX
          END IF
-         IF (R12EOR) WRITE(LUPRI,'(1X,A,3(/1X,A))')
+         IF (R12EOR) WRITE(LUPRI,'(A,3(/A))')
      *    '----------------------------------------'//
      *    '--------------------------------------',
-     *    'The Gaussian-damped R12 integrals'//
+     *    ' The Gaussian-damped R12 integrals'//
      *    ' are computed as described in:',
-     *    'C. C. M. Samson, W. Klopper and T. Helgaker,',
-     *    'Comp. Phys. Commun. 149, 1-10 (2002).'
+     *    ' C. C. M. Samson, W. Klopper and T. Helgaker,',
+     *    ' Comp. Phys. Commun. 149, 1-10 (2002).'
          WRITE(LUPRI,'(1X,78A1/)') ('*',I=1,78)
 C
          KFOCKD = 1

@@ -7221,8 +7221,8 @@ C           ------------------------------------------------
               ISTART = NEXLRFREQ+1
               IEND   = NEXLRFREQ+MFREQ
               READ (LUCMD,*) (BEXLRFR(IDX),IDX=ISTART,IEND)
-              WRITE (LUPRI,*) 'CC_EXLRINP> ', BEXLRFR(NEXLRFREQ),
-     &             NEXLRFREQ
+              IF (NEXLRFREQ.NE.0) WRITE (LUPRI,*)
+     &           'CC_EXLRINP> ', BEXLRFR(NEXLRFREQ), NEXLRFREQ
               NEXLRFREQ = NEXLRFREQ+MFREQ
               IF (HALFFR .AND. MFREQ.GT.0) THEN
                 WRITE(LUPRI,'(/2a/)')

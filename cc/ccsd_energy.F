@@ -209,6 +209,7 @@ C     ----------------------------------------------------------------
 C     Read packed r12 amplitudes from file CCR12_D for present
 C     Ansatz and approximation and put on CCR12_C and CCR0_1___1
 C     ----------------------------------------------------------------
+      IOPT = 0
       IF (CCR12.AND..NOT.(CIS.OR.CCS.OR.MP2)) THEN
            KTAMP12 = 1
            KEND1   = KTAMP12 + NTR12AM(1)
@@ -334,8 +335,8 @@ C
      *               LABEL1,LABEL1,LABEL1,LABEL1,
      *               ZERO,ZERO,ZERO,1,0,0,0)
 
-         CALL QEXIT('CCSD_ENERGY')
-         RETURN
+         GO TO 9999
+C        ... exit this routine
       ENDIF
 C
 C------------------------
@@ -362,8 +363,11 @@ C     --> R12 doubles cannot be stored directly after conv. doubles
       KT1AM   = KFOCKD  + NORBTS
       KOMEG1  = KT1AM   + NT1AMX
       KOMEG2  = KOMEG1  + NT1AM(ISYMOP)
+      KTAMP12 = KOMEG2  + NT2AMX
       KT2AM   = KOMEG2  +
      *          MAX(NTAMP,NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
+      IF ( (KTAMP12 + NTAMR12) .GT. KT2AM )
+     *     CALL QUIT('Allocation error for KTAMP12 in CCSD_ENERGY!')
       KEND1   = KT2AM   + 
      *          MAX(NT2SQ(ISYMOP),(NT2AMX+NTAMR12),NT2R12(1),NTG2SQ(1)) 
                 ! CCRHSN uses T2AM for a squared array.
@@ -514,9 +518,6 @@ C
 C
       IF (CCR12.AND..NOT.(CCS.OR.CIS)) THEN
 C       read R12 amplitudes
-        KTAMP12 = KOMEG2 + NT2AMX
-        IF ( (KTAMP12+NTR12AM(1)) .GT. KT2AM )
-     *    CALL QUIT('Allocation error in CCSD_ENERGY!')
         IF (R12PRP) THEN
           CALL DZERO(WORK(KTAMP12),NTR12AM(1))
         ELSE
@@ -1772,7 +1773,7 @@ C
 C     Small modifications by Asger Halkier 22/5 - 1998 for extra
 C     MO integrals needed for gradients and frozen core FOP.
 C
-C     Added calculation of V(alpha j,kl) for CC2-R12,H.Fliegl, C. Haettig
+C     Added calculation of V(alpha j,kl) for CC2-R12, H.Fliegl, C. Haettig
 C
 C     Added flag for computation of additional half transformed 
 C     integrals needed for R12 response (e.g. r12 integrals with 
@@ -2153,6 +2154,7 @@ C
                END IF
 C
             ELSE
+               KRECNR = KEND1
                NUMDIS = 1
             ENDIF
 C

@@ -133,7 +133,10 @@ C
 #include <leinf.h>
 C
       CALL QENTER('CC_FOP')
+C     Define CCDC and initialize local variables
       CCDC = CCSLV .AND. (.NOT. CCMM)
+      CCMMCONV = .FALSE.
+      DIELCONV = .FALSE.
 C
 C------------------------------------
 C     Header of Property calculation.
@@ -217,21 +220,20 @@ C
          MODELPRI = 'CCSD'
       ENDIF
 C
-      IF (MP2) RLORBS = .TRUE.
-      IF (CC2) RLORBS = .FALSE.
       IF (RELORB .AND. CC2) THEN
          IF ((FROIMP) .OR. (FROEXP)) THEN
             WRITE(LUPRI,*) 
-     *         'No frozen core for relaxed cc2 implemented yet'
+     *         'No frozen core for relaxed CC2 implemented yet'
             CALL QUIT('NO FROZEN CORE FOR RELAXED CC2 YET')
          ENDIF
       ENDIF
 C
+      RLORBS = RELORB
       IF ((.NOT.RELORB) .AND. MP2) THEN
+         NWARN = NWARN + 1
          WRITE(LUPRI,*) 'WARNING: MP2 unrelaxed first order properties '
      *              //'not implemented '
          WRITE(LUPRI,*) 'Orbital relaxation switched on for MP2.'
-         RLORBS = RELORB
          RELORB = .TRUE. 
       ENDIF
 C
@@ -1238,9 +1240,8 @@ C
          FABRHS = FASAVE
          NCONF  = NCOSAV
 C
-         WRITE(LUPRI,48) 'Equations converged to residual less than:',
-     *               THRLEQ
-  48     FORMAT(/3X,A42,2X,F8.6)
+         WRITE(LUPRI,'(/A,F10.6)')
+     &      '   Equations converged to residual less than:',THRLEQ
 C
          CALL FLSHFO(LUPRI)
 C
@@ -2711,7 +2712,7 @@ C
       ENDIF
 C
 C------------------------------------
-C     Restore RELORB for CC2 and MP2.
+C     Restore RELORB for MP2.
 C------------------------------------
 C
       IF ((.NOT.RLORBS).AND.MP2) RELORB = RLORBS 

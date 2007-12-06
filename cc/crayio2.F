@@ -202,7 +202,8 @@ C
       IF (DEBUG) WRITE(LUPRI,*) 'CLOSE FILE "',FILE(1:ILEN),
      & '" with unit number ',LUNIT
 C
-      IF (MODE(1:6).EQ.'DELETE') THEN
+      L = MIN(6,LEN(MODE))
+      IF (MODE(1:L).EQ.'DELETE') THEN
 
         IF (ILEN .LE. 74) THEN
            WRITE(COMMAND,'(2A)') 'rm -f ', FILE(1:ILEN)

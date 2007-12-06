@@ -6071,7 +6071,7 @@ C  /* Deck ilstsym */
          IF (INDEX.LE.0 .OR. INDEX.GT.NCL2LBL) LEOOR = .TRUE.
          ILSTSYM = MULD2H(ISYCL2(INDEX,1),ISYCL2(INDEX,2))
       ELSE IF (LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR') THEN
-         IF (INDEX.LT.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
+         IF (INDEX.LE.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
          ILSTSYM = MULD2H(ISYIN2(INDEX),ISYFN2(INDEX))
       ELSE IF (LIST(1:3).EQ.'PL1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
@@ -6092,7 +6092,8 @@ C        WRITE (LUPRI,*) LIST(-999999:-999999)
       END IF
 
       IF (ILSTSYM.LT.1 .OR. ILSTSYM.GT.NSYM) THEN
-        WRITE (LUPRI,*) 'warning from ILSTSYM: symmetry out of range:'
+        NWARN = NWARN + 1
+        WRITE (LUPRI,*) 'WARNING from ILSTSYM: symmetry out of range:'
         WRITE (LUPRI,*) 'LIST,INDEX,ILSTSYM:',LIST(1:3),INDEX,ILSTSYM
       END IF
 
@@ -6145,8 +6146,9 @@ C        WRITE (LUPRI,*) LIST(-999999:-999999)
       END IF
 
       IF (ILSTSYMRLX.LT.1 .OR. ILSTSYMRLX.GT.NSYM) THEN
+        NWARN = NWARN + 1
         WRITE (LUPRI,*) 
-     &    'warning from ILSTSYMRLX: symmetry out of range:'
+     &    'WARNING from ILSTSYMRLX: symmetry out of range:'
         WRITE (LUPRI,*) 'LIST,INDEX,ILSTSYMRLX:',
      &    LIST(1:3),INDEX,ILSTSYMRLX
       END IF
@@ -6214,7 +6216,7 @@ C  /* Deck freqlst */
 * begin:
       IF (LIST(1:2).EQ.'o1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NRSOLBL) LEOOR = .TRUE.
-         CALL QUIT('Illegal list in function FREQLST.')
+         CALL QUIT('Illegal list in function FREQLST: '//LIST)
       ELSE IF (LIST(1:3).EQ.'O1 ') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NO1LBL) LEOOR = .TRUE.
          FREQLST = FRQO1(INDEX)
@@ -6250,7 +6252,7 @@ C  /* Deck freqlst */
       ELSE IF (LIST(1:2).EQ.'L0' .OR. LIST(1:2).EQ.'R0') THEN
          FREQLST = 0.0D0
       ELSE IF (LIST(1:2).EQ.'D0') THEN
-         CALL QUIT('Illegal list in function FREQLST.')
+         CALL QUIT('Illegal list in function FREQLST: '//LIST)
       ELSE IF (LIST(1:2).EQ.'E0' .OR. LIST(1:2).EQ.'BE') THEN
          FREQLST = 0.0D0
       ELSE IF (LIST(1:2).EQ.'LE') THEN
@@ -6316,9 +6318,9 @@ C  /* Deck freqlst */
          IF (INDEX.LE.0 .OR. INDEX.GT.NCL2LBL) LEOOR = .TRUE.
          FREQLST = 0.0D0
       ELSE IF (LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR') THEN
-         IF (INDEX.LT.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
+         IF (INDEX.LE.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
          FREQLST = -EIGN2(INDEX,1) - EIGN2(INDEX,2)
-         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "N2 " VECTORS'
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGGED FOR "N2 " VECTORS'
       ELSE IF (LIST(1:3).EQ.'PL1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
          FREQLST = FRQPL1(INDEX)
@@ -6326,12 +6328,12 @@ C  /* Deck freqlst */
          WRITE(LUPRI,*) 'Unknown LIST in FREQLST:"',LIST(1:3),'"'
 C to force a core dump:
 C        WRITE (LUPRI,*) LIST(999999:999999)
-         CALL QUIT('Unknown LIST in FREQLST.')
+         CALL QUIT('Unknown LIST in function FREQLST: '//LIST)
       END IF
 
       IF (LEOOR) THEN  
         WRITE (LUPRI,*) 'INDEX out of range in FREQLST:'
-        WRITE (LUPRI,*) 'LIST,INDEX:',LIST(1:3),INDEX
+        WRITE (LUPRI,*) 'LIST,INDEX: ',LIST(1:3),INDEX
 C to force a core dump:
 C        WRITE (LUPRI,*) LIST(-999999:-999999)
         CALL QUIT('INDEX out of range in FREQLST.')

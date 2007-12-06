@@ -460,10 +460,8 @@ C
          KSOLEQ = KEIVAL + MAXRED
          KWRK1  = KSOLEQ + MAXRED*MAXRED
 
-         IF (LREDS) THEN
-            KREDS  = KWRK1 
-            KWRK1  = KREDS  + MAXRED*MAXRED
-         END IF
+         KREDS  = KWRK1 
+         IF (LREDS) KWRK1  = KREDS  + MAXRED*MAXRED
 
          IF (CCSDT .AND. CCSDT_DIIS) THEN
             KAMAT  = KWRK1

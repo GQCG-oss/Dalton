@@ -162,7 +162,7 @@ C
       INTEGER LUSAVE
 C
       INTEGER IDXLST, ISYM, IOPT, IDXVEC
-      CHARACTER LIST*(*),LISTI*(4)
+      CHARACTER LIST*(*),LISTI*(4), LIST3*(3)
 C
       CHARACTER FILEX*(10), MODFIL*(10)
       LOGICAL LEXIST
@@ -180,6 +180,12 @@ C
 * external functions:
       INTEGER IDXSYM
       INTEGER ILSTSYM
+*
+      IF (LEN(LIST) .EQ. 2) THEN
+         LIST3 = LIST//' '
+      ELSE
+         LIST3 = LIST(1:3)
+      END IF
  
 *---------------------------------------------------------------------*
 *     get file name and modified LIST label and IDXVEC:
@@ -203,7 +209,7 @@ C
 *---------------------------------------------------------------------*
 * return a fake zero vector for CCS R0/L0 vector:
 *---------------------------------------------------------------------*
-      IF ( (LIST(1:2).EQ.'R0'.OR.LIST(1:2).EQ.'L0') .AND. CCS ) THEN
+      IF ( (LIST3(1:2).EQ.'R0'.OR.LIST3(1:2).EQ.'L0') .AND. CCS ) THEN
          IOPT = IAND(IOPT,1)
          IF (IOPT.NE.0) CALL DZERO(VEC1,NT1AMX)
          RETURN
@@ -249,7 +255,7 @@ C
 * find the multiplicity of the vector:
 *---------------------------------------------------------------------*
 
-      IF (LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE') THEN
+      IF (LIST3(1:2).EQ.'RE' .OR. LIST3(1:2).EQ.'LE') THEN
       ! for excited states we get it from the common block:
          IMUL = IMULTE(IDXLST)
       ELSE
@@ -317,7 +323,7 @@ C
 
 999   CONTINUE
       WRITE (LUPRI,'(A,A)')       ' Fatal I/O error in ',SUBRNAME
-      WRITE (LUPRI,'(A,3A)')      ' LIST / LISTI   :',LIST(1:3),' / ',
+      WRITE (LUPRI,'(A,3A)')      ' LIST / LISTI   :',LIST3,' / ',
      &     LISTI
       WRITE (LUPRI,'(A,I5,A,I5)') ' IOPTSV / IOPT  :',IOPTSV,' / ',
      &     IOPT
@@ -355,26 +361,18 @@ C
       PARAMETER (SUBRNAME = 'CC_RWPRE')
 C
       INTEGER IDXLST, ISYM, ISYM1, ISYM2, IDXFIL, IDXVEC
-      CHARACTER LIST*(*), LISTI*(*)
+      CHARACTER LIST*(*), LISTI*(*), LIST3*(3)
 C
       CHARACTER FILEX*(*)
-#if defined (SYS_CRAY)
-      REAL ZERO
-#else
-      DOUBLE PRECISION ZERO
-#endif
+      REAL*8  ZERO
       PARAMETER (ZERO = 0.0d0)
 
 
 * external functions:
-      INTEGER IDXSYM
-      INTEGER ILSTSYM
-      INTEGER IR1TAMP
-      INTEGER IR2TAMP
-      INTEGER IL1ZETA
-      INTEGER IL2ZETA
-      INTEGER IRHSR2
-      INTEGER ICHI2
+      INTEGER IDXSYM,  ILSTSYM
+      INTEGER IR1TAMP, IR2TAMP
+      INTEGER IL1ZETA, IL2ZETA
+      INTEGER IRHSR2,  ICHI2
 
  
 *---------------------------------------------------------------------*
@@ -394,12 +392,17 @@ C
 *---------------------------------------------------------------------*
 *     Make symmetry reduced list numbers.
 *---------------------------------------------------------------------*
+      IF (LEN(LIST) .EQ. 2) THEN
+         LIST3 = LIST(1:2)//' '
+      ELSE
+         LIST3 = LIST(1:3)
+      END IF
       IF ( LIST(1:2).EQ.'R0' .OR. LIST(1:2).EQ.'L0' .OR.
      &     LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'L1' .OR.
      &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
      &     LIST(1:2).EQ.'R3' .OR. LIST(1:2).EQ.'L3' .OR.
      &     LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'L4' .OR.
-     &     LIST(1:3).EQ.'O1 '.OR. LIST(1:3).EQ.'X1 '.OR.
+     &     LIST3(1:3).EQ.'O1 '.OR. LIST3(1:3).EQ.'X1 '.OR.
      &     LIST(1:2).EQ.'O2' .OR. LIST(1:2).EQ.'X2' .OR.
      &     LIST(1:2).EQ.'O3' .OR. LIST(1:2).EQ.'X3' .OR.
      &     LIST(1:2).EQ.'O4' .OR. LIST(1:2).EQ.'X4' .OR.
@@ -424,42 +427,52 @@ C
 *---------------------------------------------------------------------*
 * special treatment for cauchy vectors with zero Cauchy orders:
 *---------------------------------------------------------------------*
-      IF      ( LIST(1:2).EQ.'RC' .AND. ILRCAU(IDXLST).EQ.0 ) THEN
+      IF      ( LIST(1:2).EQ.'RC') THEN
+       IF (ILRCAU(IDXLST).EQ.0 ) THEN
         LISTI(1:3) = 'R1_'
         IDXVEC = IR1TAMP(LRCLBL(IDXLST),.FALSE.,ZERO,ISYM)
         IDXFIL = IDXSYM('R1',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:2).EQ.'FC' .AND. ILRCAU(IDXLST).EQ.0 ) THEN
+       END IF
+      ELSE IF ( LIST(1:2).EQ.'FC') THEN
+       IF (ILRCAU(IDXLST).EQ.0 ) THEN
         LISTI(1:3) = 'F1_'
         IDXVEC = IR1TAMP(LRCLBL(IDXLST),.FALSE.,ZERO,ISYM)
         IDXFIL = IDXSYM('F1',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:2).EQ.'LC' .AND. ILC1CAU(IDXLST).EQ.0 ) THEN
+       END IF
+      ELSE IF ( LIST(1:2).EQ.'LC') THEN
+       IF (ILC1CAU(IDXLST).EQ.0 ) THEN
         LISTI(1:3) = 'L1_'
         IDXVEC = IL1ZETA(LBLLC1(IDXLST),.FALSE.,ZERO,ISYM)
         IDXFIL = IDXSYM('L1',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CR2' .AND. 
-     &      ICR2CAU(IDXLST,1).EQ.0 .AND. ICR2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CR2') THEN
+       IF (ICR2CAU(IDXLST,1).EQ.0 .AND. ICR2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'R2_'
         IDXVEC = IR2TAMP(LBLCR2(IDXLST,1),.FALSE.,ZERO,ISYM1,
      &                   LBLCR2(IDXLST,2),.FALSE.,ZERO,ISYM2)
         IDXFIL = IDXSYM('R2',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CO2' .AND. 
-     &      ICO2CAU(IDXLST,1).EQ.0 .AND. ICO2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CO2') THEN
+       IF (ICO2CAU(IDXLST,1).EQ.0 .AND. ICO2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'O2_'
         IDXVEC = IRHSR2(LBLCO2(IDXLST,1),.FALSE.,ZERO,ISYM1,
      &                  LBLCO2(IDXLST,2),.FALSE.,ZERO,ISYM2)
         IDXFIL = IDXSYM('O2',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CL2' .AND. 
-     &      ICL2CAU(IDXLST,1).EQ.0 .AND. ICL2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CL2') THEN
+       IF (ICL2CAU(IDXLST,1).EQ.0 .AND. ICL2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'L2_'
         IDXVEC = IL2ZETA(LBLCL2(IDXLST,1),ZERO,ISYM1,
      &                   LBLCL2(IDXLST,2),ZERO,ISYM2)
         IDXFIL = IDXSYM('L2',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CX2' .AND. 
-     &      ICX2CAU(IDXLST,1).EQ.0 .AND. ICX2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CX2') THEN
+       IF (ICX2CAU(IDXLST,1).EQ.0 .AND. ICX2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'X2_'
         IDXVEC = ICHI2(LBLCX2(IDXLST,1),.FALSE.,ZERO,ISYM1,
      &                 LBLCX2(IDXLST,2),.FALSE.,ZERO,ISYM2)
         IDXFIL = IDXSYM('X2',ISYM,IDXVEC)
+       END IF
       END IF
 
 *---------------------------------------------------------------------*
@@ -541,7 +554,7 @@ c/* Deck cc_rcrsp */
       INTEGER LUSAVE, MAXORDER
       PARAMETER (MAXORDER = 4)
  
-      CHARACTER LIST*(*), FILEX*(*)
+      CHARACTER LIST*(*), FILEX*(*), LIST3*(3)
       INTEGER IDXLST, IOPT, IOPTSV, NVEC, IOS
  
       CHARACTER MODFIL*(10), TYPE*(3)
@@ -569,6 +582,12 @@ c/* Deck cc_rcrsp */
 *=====================================================================*
 * set up the information to check the header:
 *=====================================================================*
+
+      IF (LEN(LIST) .EQ. 2) THEN
+         LIST3 = LIST//' '
+      ELSE
+         LIST3 = LIST(1:3)
+      end if
 
 *.....................................................................
 * 'R0' - zeroth-order amplitudes:
@@ -631,7 +650,7 @@ c/* Deck cc_rcrsp */
 * 'CR2' -  second-order right Cauchy vectors
 * 'CF2' -  F-transformed second-order right Cauchy vectors
 *.....................................................................
-      ELSE IF (LIST(1:3).EQ.'CR2' .OR. LIST(1:3).EQ.'CF2') THEN
+      ELSE IF (LIST3.EQ.'CR2' .OR. LIST3.EQ.'CF2') THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -643,7 +662,7 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'CO2' -  RHS vector for second-order right Cauchy vectors
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CO2' ) THEN
+      ELSE IF ( LIST3.EQ.'CO2' ) THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -655,7 +674,7 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'CL2' -  second-order left Cauchy vectors
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CL2' ) THEN
+      ELSE IF ( LIST3.EQ.'CL2' ) THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -667,7 +686,7 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'CX2' -  second-order Cauchy eta vectors
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CX2' ) THEN
+      ELSE IF ( LIST3.EQ.'CX2' ) THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -705,7 +724,7 @@ c/* Deck cc_rcrsp */
 * 'ER1' -  Right eigenvectors first-order response
 * 'EO1' -  RHS vector for right eigenvectors first-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER1' .OR. LIST(1:3).EQ.'EO1' ) THEN
+      ELSE IF ( LIST3.EQ.'ER1' .OR. LIST3.EQ.'EO1' ) THEN
           ORDER = 2
           FRQLST(1)  = EIGER1(IDXLST)
           LABLST(1)  = '        '
@@ -721,7 +740,7 @@ c/* Deck cc_rcrsp */
 * 'ER2' -  Right eigenvectors second-order response
 * 'EO2' -  RHS vector for right eigenvectors second-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER2' .OR. LIST(1:3).EQ.'EO2' ) THEN
+      ELSE IF ( LIST3.EQ.'ER2' .OR. LIST3.EQ.'EO2' ) THEN
           ORDER = 3
           FRQLST(1)  = EIGER2(IDXLST)
           LABLST(1)  = '        '
@@ -739,7 +758,7 @@ c/* Deck cc_rcrsp */
 * 'EL1' -  Left eigenvectors first-order response
 * 'EX1' -  RHS vector for left eigenvectors first-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'EL1' .OR. LIST(1:3).EQ.'EX1' ) THEN
+      ELSE IF ( LIST3.EQ.'EL1' .OR. LIST3.EQ.'EX1' ) THEN
           ORDER = 2
           FRQLST(1)  = EIGEL1(IDXLST)
           LABLST(1)  = '        '
@@ -755,7 +774,7 @@ c/* Deck cc_rcrsp */
 * 'EL2' -  Left eigenvectors second-order response
 * 'EX2' -  RHS vector for left eigenvectors second-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'EL2' .OR. LIST(1:3).EQ.'EX2' ) THEN
+      ELSE IF ( LIST3.EQ.'EL2' .OR. LIST3.EQ.'EX2' ) THEN
           ORDER = 3
           FRQLST(1)  = EIGEL2(IDXLST)
           LABLST(1)  = '        '
@@ -909,7 +928,7 @@ Cold        LORXLST(IOP) = .FALSE.
 *.....................................................................
 * 'X1_'/'X1e' -  rhs for first-order lagrangian multipliers equations:
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'X1_'.OR.LIST(1:3).EQ.'X1e' ) THEN
+      ELSE IF ( LIST3.EQ.'X1_'.OR.LIST3.EQ.'X1e' ) THEN
           ORDER = 1
           FRQLST(1)  = FRQX1(IDXLST)
           LABLST(1)  = LBLX1(IDXLST)
@@ -983,7 +1002,7 @@ Cold        LORXLST(IOP) = .FALSE.
 *.....................................................................
 * 'PL1' -  Projected left eigenvectors first-order response (sonia)
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'PL1' ) THEN
+      ELSE IF ( LIST3.EQ.'PL1' ) THEN
           !info expected to be on header as obtained from the list
           ORDER = 1
           DO IOP = 1, ORDER
@@ -1002,7 +1021,7 @@ Cold        LORXLST(IOP) = .FALSE.
 * unknown list:
 *.....................................................................
       ELSE
-         CALL QUIT ('unknown list '//LIST(1:3)//' in '//SUBRNAME)
+         CALL QUIT ('unknown list '//LIST//' in '//SUBRNAME)
       ENDIF
 
 
@@ -1068,8 +1087,8 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * ER1, EO1, EL1, EX1
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER1' .OR. LIST(1:3).EQ.'EO1' .OR.
-     &          LIST(1:3).EQ.'EL1' .OR. LIST(1:3).EQ.'EX1'      ) THEN
+      ELSE IF ( LIST3.EQ.'ER1' .OR. LIST3.EQ.'EO1' .OR.
+     &          LIST3.EQ.'EL1' .OR. LIST3.EQ.'EX1'      ) THEN
 
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      INDFIL(1), ISYFIL(1), FRQFIL(1),
@@ -1083,7 +1102,7 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * PL1 (sonia)
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'PL1' ) THEN
+      ELSE IF ( LIST3.EQ.'PL1' ) THEN
         !read the header of the PL1 vector on file
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
      &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
@@ -1106,9 +1125,9 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * CR2, CL2, CO2, CX2, CF2
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CR2' .OR. LIST(1:3).EQ.'CL2' .OR.
-     &          LIST(1:3).EQ.'CO2' .OR. LIST(1:3).EQ.'CX2' .OR.
-     &          LIST(1:3).EQ.'CF2'                              ) THEN
+      ELSE IF ( LIST3.EQ.'CR2' .OR. LIST3.EQ.'CL2' .OR.
+     &          LIST3.EQ.'CO2' .OR. LIST3.EQ.'CX2' .OR.
+     &          LIST3.EQ.'CF2'                              ) THEN
 
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), INDFIL(1),
@@ -1139,8 +1158,8 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * ER2, EO2, EL2, EX2
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER2' .OR. LIST(1:3).EQ.'EO2' .OR.
-     &          LIST(1:3).EQ.'EL2' .OR. LIST(1:3).EQ.'EX2'      ) THEN
+      ELSE IF ( LIST3.EQ.'ER2' .OR. LIST3.EQ.'EO2' .OR.
+     &          LIST3.EQ.'EL2' .OR. LIST3.EQ.'EX2'      ) THEN
 
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      INDFIL(1), ISYFIL(1), FRQFIL(1),
@@ -1202,7 +1221,7 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * unknown list:
       ELSE
-         CALL QUIT ('unknown list '//LIST(1:3)//' in '//SUBRNAME)
+         CALL QUIT ('unknown list '//LIST//' in '//SUBRNAME)
       ENDIF
 
 *=====================================================================*
@@ -1213,10 +1232,10 @@ Cold    TYPE(3:3)  = '_'
         CALL QUIT (' no vector found on file '//FILEX(1:10))
       END IF
 
-      IF (TYPE(1:3) .NE. LIST(1:3) ) THEN
+      IF (TYPE(1:3) .NE. LIST3 ) THEN
         WRITE (LUPRI,*) ' wrong type of vector found on file '//
      &        FILEX(1:10)
-        WRITE (LUPRI,*) ' on file:',TYPE(1:3),' expected:',LIST(1:3)
+        WRITE (LUPRI,*) ' on file:',TYPE(1:3),' expected:',LIST3
         CALL QUIT (' wrong type of vector found on file '//FILEX(1:10))
       END IF
 

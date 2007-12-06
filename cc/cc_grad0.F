@@ -1699,7 +1699,7 @@ C
      *              ' calculation completed'
 
         TIMTOT = SECOND() - TIMTOT
-        WRITE(LUPRI,'(A,f10.2))') 'Total time used in CC_GRAD2E:',TIMTOT
+        WRITE(LUPRI,'(A,f10.2)') 'Total time used in CC_GRAD2E:',TIMTOT
 
         IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,'(/6(/A,f10.2))') 
@@ -1713,7 +1713,7 @@ C    &     ,'Time used for reorthonormalization part    :',TIMREO
         CALL FLSHFO(LUPRI)
       END IF
 C
-C     restorte DIRECT flag
+C     restore DIRECT flag
 C
       DIRECT = DIRSAV
 C
