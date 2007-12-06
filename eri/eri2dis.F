@@ -506,15 +506,15 @@ C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from PICKAO',-1)
          IF (NSELCT(1)+NSELCT(2)+NSELCT(3)+NSELCT(4).GT.0) THEN
-            WRITE (LUPRI,'(1X,A,4I5,/)')
-     &         ' Number of active AO batches for each electron:',
-     &         (NSELCT(I),I=1,4)
-            WRITE (LUPRI,'(1X,A,/)') ' ACTVBT in PICKAO:'
+            WRITE (LUPRI,'(A,4I5/A/)')
+     &         '  Number of active AO batches for each electron:',
+     &         (NSELCT(I),I=1,4),
+     &         '  ACTVBT(1:NAOBCH,1:4) in PICKAO:'
             DO I = 1, NAOBCH
-               WRITE (LUPRI,'(10X,I5,5X,4L5))') I, (ACTVBT(I,J),J=1,4)
+               WRITE (LUPRI,'(10X,I5,5X,4L5)') I, (ACTVBT(I,J),J=1,4)
             END DO
          ELSE
-            WRITE (LUPRI,'(1X,A)') ' All AO batches active.'
+            WRITE (LUPRI,'(A)') '  All AO batches active.'
          END IF
       END IF
 C

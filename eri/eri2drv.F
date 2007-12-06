@@ -282,7 +282,7 @@ C
             END IF
             DO IELCTR = 1, 4
                IF (NSELCT(IELCTR).GT.0) THEN
-                  WRITE (LUPRI,'(/A,I3,A,I2,A,5I5,/,(43X,5I5)))')
+                  WRITE (LUPRI,'(/A,I3,A,I2,A,5I5,/,(43X,5I5))')
      &            ' Only ',NSELCT(IELCTR),
      &            ' AO batches active for electron',IELCTR,':',
      &            (NACTAO(I,IELCTR),I=1,NSELCT(IELCTR))

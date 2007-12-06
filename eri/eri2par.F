@@ -950,16 +950,19 @@ C
 C
       RETURN
       END
-C  /* Deck node */
+C  /* Deck nodedriver */
 #if defined (VAR_MPI)
-      SUBROUTINE NODSTR(WORK,MWORK,WRKDLM,MASTER,MYNUM)
+      SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <mtags.h>
+C infpar.h: MASTER,MYNUM
+#include <maxorb.h>
+#include <infpar.h>
       DIMENSION WORK(MWORK)
 C
-C     Get calculation type (iprtyp)
+C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
@@ -994,9 +997,9 @@ C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL J2XS(WORK,MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(NODSTR) ERROR on slave',MYTID,
+     &         '(NODEDRIVER) ERROR on slave',MYTID,
      &         ': Unknown calculation type request',IPRTYP
-            CALL QUIT('NODSTR: Unknown calculation type')
+            CALL QUIT('NODEDRIVER: Unknown calculation type')
          END IF
 C
          GO TO 100

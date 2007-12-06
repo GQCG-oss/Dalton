@@ -50,7 +50,7 @@ C
 C
       IF (DOCART) THEN
          WRITE (LUPRI,'(1X,2A)') 
-     &     ' Only spherical-harmonic basis implemented in ERI.',
+     &     ' Only spherical-harmonic basis is implemented in ERI.',
      &     ' Run TWOINT instead.' 
          CALL QUIT('ERI does not work with Cartesian basis.')
       END IF
@@ -256,27 +256,28 @@ C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
       RETURN
       END
 C  /* Deck nspher */
-      FUNCTION NSPHER(L,X,Y,Z)
+      INTEGER FUNCTION NSPHER(L,X,Y,Z)
 #include <implicit.h>
 #include <maxaqn.h>
 #include <ccom.h>
       INTEGER D, X, Y, Z 
 C
+
       D = X + Y + Z 
       LMAX = NHTYP - 1
       NSPHER = (24 + 2*(1 + 2*D)*L*
-     &         (-2 + (3 + 2*D + 2*D**2)*L + 8*L**2 + 3*L**3) + 
-     &    (D*(2 + 3*D + D**2)*(1 + LMAX)*
-     &       (-54 - 134*LMAX - 85*LMAX**2 - 15*LMAX**3 - 
-     &         12*D**2*(1 + LMAX) + 20*D**3*(1 + LMAX) + 
-     &         D*(166 + 406*LMAX + 255*LMAX**2 + 45*LMAX**3)))/30 + 
-     &    (1 + 2*D)*(1 + LMAX)*
-     &     (12 + 28*LMAX + 17*LMAX**2 + 3*LMAX**3 + 2*D*(1 + LMAX) + 
-     &       2*D**2*(1 + LMAX))*(y + y**2 + 2*y*z + z*(3 + z)))/24
+     &          (-2 + (3 + 2*D + 2*D**2)*L + 8*L**2 + 3*L**3)
+     &      + (D*(2 + 3*D + D**2)*(1 + LMAX)*
+     &         (-54 - 134*LMAX - 85*LMAX**2 - 15*LMAX**3 - 
+     &          12*D**2*(1 + LMAX) + 20*D**3*(1 + LMAX) + 
+     &          D*(166 + 406*LMAX + 255*LMAX**2 + 45*LMAX**3)))/30
+     &      + (1 + 2*D)*(1 + LMAX)*
+     &         (12 + 28*LMAX + 17*LMAX**2 + 3*LMAX**3 + 2*D*(1 + LMAX) +
+     &          2*D**2*(1 + LMAX))*(y + y**2 + 2*y*z + z*(3 + z)))/24
       RETURN
       END 
 C  /* Deck lspher */
-      FUNCTION LSPHER(NDER)
+      INTEGER FUNCTION LSPHER(NDER)
 #include <implicit.h>
       LSPHER = NSPHER(0,NDER+1,0,0) - 1
       RETURN
@@ -288,6 +289,7 @@ C  /* Deck sphdim */
 #include <mxcent.h>
 #include <nuclei.h>
 #include <ericom.h>
+
       NCSQ1 = NSPHER(0,MAXDER+1,0,0) - 1
       IF (BDER) THEN
          NCSQ2 = NATOMS

@@ -33,6 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C FILE: eri/eri2r12.F
+C
 C  /* Deck eriifc */
       SUBROUTINE ERIIFC(NNTUV,NNPPX,NIPQ0X,NIPQ0Y,NIPQ0Z,NJMAX)
 C
@@ -1577,11 +1579,11 @@ C
       CALL DZERO(CURH,NPPX*NTUV)
 C
       IF (SLATER) THEN
-      DOH = .FALSE.
-      DOG = INTGAC .EQ. 6
+         DOH = .FALSE.
+         DOG = INTGAC .EQ. 6
       ELSE
-      DOH = INTGAC .EQ. 6
-      DOG = INTGAC .EQ. 4 .OR. DOH
+         DOH = INTGAC .EQ. 6
+         DOG = INTGAC .EQ. 4 .OR. DOH
       ENDIF
 C
       IPQX = IPQ0(1) + 1
@@ -1592,19 +1594,26 @@ C
       PQYGT0 = IPQY .EQ. 1
       PQZGT0 = IPQZ .EQ. 1
 C
+      M1T = 1 ! to avoid INDHER(-1,0,0)
+      M2T = 1 ! to avoid INDHER(-2:-1,0,0)
       DO T = 0, JMAX, IPQX
-      DO U = 0, JMAX - T, IPQY
-      DO V = 0, JMAX - T - U , IPQZ
-         TUV = INDHER(T,U,V  )
-         M1T = INDHER(T-1,0,0)
-         M2T = INDHER(T-2,0,0)
-         M1U = INDHER(T,U-1,0)
-         M2U = INDHER(T,U-2,0)
-         M1V = INDHER(T,U,V-1)
-         M2V = INDHER(T,U,V-2)
          TMIN1 = SDPRE(T - 1)
+         IF (T .GT. 0) M1T = INDHER(T-1,0,0)
+         IF (T .GT. 1) M2T = INDHER(T-2,0,0)
+         M1U = 1 ! to avoid INDHER(T,-1,0)
+         M2U = 1 ! to avoid INDHER(T,-2:-1,0)
+      DO U = 0, JMAX - T, IPQY
          UMIN1 = SDPRE(U - 1)
+         IF (U .GT. 0) M1U = INDHER(T,U-1,0)
+         IF (U .GT. 1) M2U = INDHER(T,U-2,0)
+         M1V = 1 ! to avoid INDHER(T,U,-1)
+         M2V = 1 ! to avoid INDHER(T,U,-2:-1)
+      DO V = 0, JMAX - T - U , IPQZ
          VMIN1 = SDPRE(V - 1)
+         IF (V .GT. 0) M1V = INDHER(T,U,V-1)
+         IF (V .GT. 1) M2V = INDHER(T,U,V-2)
+C
+         TUV = INDHER(T,U,V)
 C
 C        (0,0,0)
 C
@@ -1670,7 +1679,7 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL AROUND('Output from ERIFGHTUV')
          DO ITUV = 1, NTUV
-            WRITE(LUPRI,'(1X,A5,I5)') 'TUV =', ITUV
+            WRITE(LUPRI,'(A5,I5)') ' TUV =', ITUV
             WRITE(LUPRI,'(3X,3(10X,A4))') 'CURF','CURG','CURH'
             DO I = 1, NPPX
                WRITE(LUPRI,'(I3,5F14.9)') I,
@@ -1772,3 +1781,4 @@ C
       END IF
       RETURN
       END 
+C --- end of eri2r12.F ---
