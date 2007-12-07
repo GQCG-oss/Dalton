@@ -330,7 +330,7 @@ C
       WRITE (LUPRI,'(A,2I5)')     ' IDXLST, IDXVEC :',IDXLST,IDXVEC
       WRITE (LUPRI,'(A,I5)')      ' unit number    :',LUSAVE
       WRITE (LUPRI,'(A,I5)')      ' returned IOSTAT:',IOS
-      CALL QUIT ('fatal i/o error in '//SUBRNAME)
+      CALL QUIT ('Fatal i/o error in '//SUBRNAME)
 
 *---------------------------------------------------------------------*
 *                    END OF SUBROUTINE CC_RDRSP
@@ -1021,7 +1021,7 @@ Cold        LORXLST(IOP) = .FALSE.
 * unknown list:
 *.....................................................................
       ELSE
-         CALL QUIT ('unknown list '//LIST//' in '//SUBRNAME)
+         CALL QUIT ('Unknown list '//LIST3//' in '//SUBRNAME)
       ENDIF
 
 
@@ -1221,7 +1221,7 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * unknown list:
       ELSE
-         CALL QUIT ('unknown list '//LIST//' in '//SUBRNAME)
+         CALL QUIT ('Unknown list '//LIST3//' in '//SUBRNAME)
       ENDIF
 
 *=====================================================================*
