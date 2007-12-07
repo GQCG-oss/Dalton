@@ -620,8 +620,9 @@ if [ "$perl_style" -gt 0 ]; then
         rm *.tst
         rm checklist
     fi	
+    myprint "---------- Copy of LOG FILE from perl-style tests: ----"
     myprint "`cat perl-tests-*.log`"
-    myprint ""
+    myprint "---------- End of LOG FILE from perl-style tests ----"
 fi
 
 #########################################################################
