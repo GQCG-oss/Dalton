@@ -483,8 +483,8 @@ C
 C  /* Deck dsym1 */
       SUBROUTINE DSYM1(DENMAT,FOCMAT,DSO,FSO,DOFOCK,NBAST,IPRINT)
 C
-C     Take density matrix in symmetry orbital basis and generate
-C     density matrix over distinct pairs of AOs
+C     Take packed density matrix in symmetry orbital basis (NNBAST)
+C     and generate density matrix (NNBASX) over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
@@ -503,23 +503,24 @@ C
 C
 C     Loop over all irreps in molecule
 C
-      ISOFF = 0
-      ISTR = 1
       NNBASX = NBAST*(NBAST + 1)/2
       CALL DZERO(DENMAT,NNBASX)
       IF (DOFOCK) CALL DZERO(FOCMAT,NNBASX)
+
+      ISOFF = 0
+      ISTR  = 1
       DO 100 IREP = 0, MAXREP
-         NORBI = NAOS(IREP+1)
-         IF (NORBI .EQ. 0) GOTO 110
-         DO 200 I = ISTR,ISTR + NORBI - 1
+         NAOSI = NAOS(IREP+1)
+         IF (NAOSI .EQ. 0) GOTO 110
+         DO 200 I = ISTR,ISTR + NAOSI - 1
             IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
             NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
             IOFF = KSTRT(IA)
             MULA = ISTBAO(IA)
             INDA = IOFF + NA
             DO 300 J = ISTR,I
-               IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-               NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+               IB     = IBTAND(IBTSHR(IPIND(J),16),65535)
+               NB     = IBTAND(IBTSHR(IPIND(J), 8),  255)
                JOFF   = KSTRT(IB)
                NHKTB  = NHKT(IB)
                KHKTB  = KHKT(IB)
@@ -547,8 +548,14 @@ C
 300         CONTINUE
 200      CONTINUE
 110      CONTINUE
-         ISTR = ISTR + NORBI
+         ISTR = ISTR + NAOSI
 100   CONTINUE
+      IF (ISTR - 1 .NE. NBAST) THEN
+         CALL QENTER('DSYM1  ')
+         WRITE (LUPRI,*)
+     &      'ERROR in DSYM1: NBAST =',NBAST,', sum NAOS =',ISTR-1
+         CALL QUIT('parameter NBAST does not agree with NAOS array')
+      END IF
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Total density matrix in DSYM1 '//
      &     '(sym. distinct AO basis)',-1)
