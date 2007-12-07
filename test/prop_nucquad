@@ -131,7 +131,7 @@ CRIT11=`$GREP "Auxiliary value au * 1\/T * (0| )\.356615(D|E)\-02" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
 CTRL[4]=12
-ERROR[4]="CL QUADROPOLE COUPLING NOT CORRECT"
+ERROR[4]="Cl QUADRUPOLE COUPLING NOT CORRECT"
 
 # O quadropole coupling
 CRIT1=`$GREP "Spin * \: * 2\.5 * Quadrupole moment\:\-\.02558000" $log | wc -l`
@@ -146,7 +146,7 @@ CRIT9=`$GREP "Auxiliary value au * 1\/T * (0| )\.468562(D|E)\-04" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[5]=12
-ERROR[5]="O QUADROPOLE COUPLING NOT CORRECT"
+ERROR[5]="O QUADRUPOLE COUPLING NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5
