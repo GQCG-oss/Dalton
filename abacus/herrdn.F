@@ -1290,8 +1290,10 @@ C                Use DIRAC style format for specifying IQM and JCO.
      &                SEG(IBLOCK(J),J),
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
      &                CPRIMU(1,1,IBLOCK(J),J),NBLOCK,KAOVEC,KPRIM)
-              ELSE IF (BASNAM(1:11) .NE. 'pointcharge' .AND.
-     &                 BASNAM(1: 2) .NE. 'MM') THEN
+              ELSE IF (BASNAM(1:11) .EQ. 'pointcharge' .OR.
+     &                 BASNAM(1: 2) .EQ. 'MM') THEN
+                 IQM(I,J) = 0 ! tell later sections that no basis functions
+              ELSE
                  IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
 C     Read effective core potential information from file for atom. 
 C     The charge of atom type will be set to the effective charge below
