@@ -1,19 +1,19 @@
 C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
+C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
+C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -31,11 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
 C
 C------------------------------------------------------------------------
 C||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 C------------------------------------------------------------------------
-C written by JK+AO 2002
+C File: abacus/herqm3.F
+C
+C Written by JK+AO 2002
 C
 C-------------------------------------------------------------------------
 C  /* Deck qm3inp */
@@ -79,11 +82,11 @@ C
       LOCLAS  = .FALSE.
       IQM3PR  = IPRUSR
       VDWSKP  = .FALSE.
-      SKIPNC = .FALSE.
-      MYMAT  = .FALSE.
-      MYITE  = .TRUE.
-      EXPON  = .FALSE.
-      PRFQM3 = .FALSE.
+      SKIPNC  = .FALSE.
+      MYMAT   = .FALSE.
+      MYITE   = .TRUE.
+      EXPON   = .FALSE.
+      PRFQM3  = .FALSE.
 C
 C
 C     CRUCIAL TEST : MXENT has to be equal to MXQM3
@@ -119,7 +122,7 @@ C
           END IF
 C
           WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *                             '" not recognized in QM3INP.'
+     *                             '" not recognized for *QM3INP.'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
           CALL QUIT('Illegal keyword in REAINP.')
 C
@@ -252,17 +255,17 @@ C
         ELSE IF (PROMPT .EQ. '*') THEN
           GO TO 300
         ELSE
-          WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *                             '" not recognized in QM3INP.'
+          WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
+     *                             '" not recognized for *QM3INP.'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal prompt in QM3INP.')
+          CALL QUIT('Illegal prompt for *QM3INP.')
         END IF
       END IF
 C
   300 CONTINUE
 C
       IF (ICHANG .GT. 0) THEN
-        CALL HEADER('Changes of defaults for QM3INP:',0)
+        CALL HEADER('Changes of defaults for *QM3INP:',0)
 C
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
         WRITE (LUPRI,'(1X,A2,A6,A3,A7,A2)')
@@ -355,7 +358,7 @@ C
       DOUBLE PRECISION QM3EPS(0:MXTYPE,MXQM3)
 #endif
 C
-      DATA TABLE  /'.TYPE', '.MODEL', '.ALPISO','.ALPTSR',
+      DATA TABLE  /'.TYPE  ', '.MODEL ', '.ALPISO', '.ALPTSR',
      &             '.CHARGS', '.FILINP', '.SHAWFC', '.SIGEPS',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
@@ -808,8 +811,8 @@ C
         READ(LUPOT,*) M
 C
         IF (M .NE. ISYTP1) THEN
-          WRITE(6,'(1X,A36,I3)')
-     *    'Numbers of LJ_A parameters needed: ',ISYTP1
+          WRITE(LUPRI,'(A,I5)')
+     *    ' Number of LJ_A parameters needed: ',ISYTP1
            CALL QUIT('Error in number of Lennard-Jones parameters A')
         END IF
 C
@@ -829,8 +832,8 @@ C
         READ(LUPOT,*) M
 C
         IF (M .NE. ISYTP1) THEN
-          WRITE(6,'(1X,A36,I3)')
-     *    'Numbers of LJ_A parameters needed: ',ISYTP1
+          WRITE(LUPRI,'(A,I5)')
+     *    ' Number of LJ_A parameters needed: ',ISYTP1
           CALL QUIT('Error in number of Lennard-Jones parameters B')
         END IF
 C
@@ -1388,22 +1391,23 @@ C
               CORD(2,NCTOT+KURT) = TMINV * COMY
               CORD(3,NCTOT+KURT) = TMINV * COMZ
               CHARGE(NCTOT+KURT) = 0.0000
+              IZATOM(NCTOT+KURT) = -2
               ISUBSY(NCTOT+KURT) = M
               ISUBSI(NCTOT+KURT) = LTEMP + 1
               LTEMP1 = LTEMP
 C
               IF ((KURT - 1) .LT. 10) THEN
                 NAMN(NCTOT+KURT) = 
-     *               'A  '//CHRNOS(MOD((KURT1-1),10))
+     *               'a  '//CHRNOS(MOD((KURT1-1),10))
               ELSE IF (((KURT-1) .GT. 9) .AND. 
      &                 ((KURT-1) .LT. 100)) THEN
                 NAMN(NCTOT+KURT) = 
-     *               'A '//CHRNOS((KURT1-1)/10)
+     *               'a '//CHRNOS((KURT1-1)/10)
      &                   //CHRNOS(MOD((KURT1-1),10))
               ELSE IF (((KURT-1) .GT. 99) .AND.
      &                 ((KURT-1) .LT. 1000)) THEN
                 NAMN(NCTOT+KURT) = 
-     *               'A'//CHRNOS((KURT1-1)/100)
+     *               'a'//CHRNOS((KURT1-1)/100)
      &                  //CHRNOS(MOD((KURT1-1),100)/10)
      &                  //CHRNOS(MOD((MOD((KURT1-1),100)),10))
               ELSE
@@ -1433,21 +1437,22 @@ C
                   CORD(2,NCTOT+KURT) = CORD(2,J)
                   CORD(3,NCTOT+KURT) = CORD(3,J)
                   CHARGE(NCTOT+KURT) = 0.0000
+                  IZATOM(NCTOT+KURT) = -2
                   ISUBSY(NCTOT+KURT) = M
                   ISUBSI(NCTOT+KURT) = NUALIS(L) + LTEMP
 C
                   IF ((KURT - 1) .LT. 10) THEN
                     NAMN(NCTOT+KURT) = 
-     &                'A  '//CHRNOS(MOD((KURT1-1),10))
+     &                'a  '//CHRNOS(MOD((KURT1-1),10))
                   ELSE IF (((KURT-1) .GT. 9) .AND.
      &                     ((KURT-1) .LT. 100)) THEN
                     NAMN(NCTOT+KURT) = 
-     &                'A '//CHRNOS((KURT1-1)/10)
+     &                'a '//CHRNOS((KURT1-1)/10)
      &                    //CHRNOS(MOD((KURT1-1),10))
                   ELSE IF (((KURT-1) .GT. 99) .AND.
      &                     ((KURT-1) .LT. 1000)) THEN
                     NAMN(NCTOT+KURT) = 
-     &                'A'//CHRNOS((KURT1-1)/100)
+     &                'a'//CHRNOS((KURT1-1)/100)
      &                   //CHRNOS(MOD((KURT1-1),100)/10)
      &                   //CHRNOS(MOD((MOD((KURT1-1),100)),10))
                   ELSE
@@ -1521,21 +1526,22 @@ C
                 END IF
 C
                 CHARGE(NCTOT+KURT) = 0.0000
+                IZATOM(NCTOT+KURT) = -2
                 ISUBSY(NCTOT+KURT) = M
                 ISUBSI(NCTOT+KURT) = LTEMP1
 C
                 IF ((KURT - 1) .LT. 10) THEN
                   NAMN(NCTOT+KURT) = 
-     &             'A  '//CHRNOS(MOD((KURT1-1),10))
+     &             'a  '//CHRNOS(MOD((KURT1-1),10))
                 ELSE IF (((KURT-1) .GT. 9) .AND.
      &                  ((KURT-1) .LT. 100)) THEN
                   NAMN(NCTOT+KURT) = 
-     &             'A '//CHRNOS((KURT1-1)/10)
+     &             'a '//CHRNOS((KURT1-1)/10)
      &                 //CHRNOS(MOD((KURT1-1),10))
                 ELSE IF (((KURT-1) .GT. 99) .AND.
      &                  ((KURT-1) .LT. 1000)) THEN
                   NAMN(NCTOT+KURT) = 
-     &              'A'//CHRNOS((KURT1-1)/100)
+     &              'a'//CHRNOS((KURT1-1)/100)
      &                 //CHRNOS(MOD((KURT1-1),100)/10)
      &                 //CHRNOS(MOD((MOD((KURT1-1),100)),10))
                 ELSE
@@ -1603,7 +1609,7 @@ C
      &    ' Maximum number of QM atoms allowed is MXNEW =',MXNEW,
      &    ' You have specified in input                  ',NSISY(0),
      &    ' To run this calculation you must'//
-     &    ' turn up the MXNEW number in the "include/mxcent.h" FILE.' 
+     &    ' turn up the MXNEW number in the "include/mxcent.h" file.' 
         CALL QUIT('The max. number of QM atoms allowed is exceeded.')
       END IF
 C
@@ -1614,8 +1620,7 @@ C  /* Deck mmflds */
       SUBROUTINE MMFLDS()
 C     ******************************************************
 C     This routine calculates the electric fields from the 
-C     different contributers at given positions in the MM
-C     medium.
+C     different contributers at given positions in the MM medium.
 C     ******************************************************
 C
 #include <implicit.h>
@@ -1646,15 +1651,15 @@ C-------------------------
 C     Initializing fields:
 C-------------------------
 C
-      DO 19 I = 1, MXQM3
-        DO 26 J = 1, 3
-          ENUC(J,I) = D0
-          ESITE(J,I)= D0
+      DO I = 1, MXQM3
+        DO J = 1, 3
+          ENUC(J,I)  = D0
+          ESITE(J,I) = D0
           EQMCLF(J,I)= D0
-          EIND(J,I) = D0
+          EIND(J,I)  = D0
           MYIND(J,I) = D0
-   26   CONTINUE
-   19 CONTINUE
+        END DO
+      END DO
 C
 C     **********************************************************
 C     Calculates the static electric fields 
@@ -1758,7 +1763,7 @@ C
         END IF
 C
         IF (LG .EQ. ISYTP)  THEN
-          WRITE(LUPRI,'(/A)')'All MM models are SPC'
+          WRITE(LUPRI,'(/A)') 'All MM models are SPC'
           LOSPC = .TRUE.
           IF (MDLWRD(0) .EQ. 'SPC    ') THEN
             GOTO 117
@@ -4271,5 +4276,4 @@ C
         END DO
   26  CONTINUE
       END
-C*********************************************************************
-
+C**** end of herqm3.F *****************************************************************
