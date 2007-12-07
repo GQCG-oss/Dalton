@@ -110,8 +110,8 @@ CTRL[1]=1
 ERROR[1]="GEOMETRY OPTIMIZATION SETUP NOT CORRECT"
 
 # Symmetry
-CRIT1=`$GREP "Full group is\: * C\(2v\)" $log | wc -l`
-CRIT2=`$GREP "Represented as\: C2v" $log | wc -l`
+CRIT1=`$GREP "Full point group is\: * C\(2v\)" $log | wc -l`
+CRIT2=`$GREP "Represented as\: * C2v" $log | wc -l`
 CRIT3=`$GREP "Reflection in the yz\-plane" $log | wc -l`
 CRIT4=`$GREP "Reflection in the xz\-plane" $log | wc -l`
 CRIT5=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
