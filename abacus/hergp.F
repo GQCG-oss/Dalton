@@ -1879,8 +1879,8 @@ C
 #include "codata.h"
 #include "qm3.h"
 #include "nuclei.h"
-      DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
-     &          NUMIS(NATOMS)
+      DIMENSION GEOM(3*NUCDEP), AMASS(NUCDEP), NATTYP(NUCDEP),
+     &          NUMIS(NUCDEP)
 #include "orgcom.h"
 #include "cbisol.h"
 #include "symmet.h"
