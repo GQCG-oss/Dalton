@@ -1981,6 +1981,9 @@ Cef begin
       
       CALL QENTER('SYMLOP')
 C
+      INTS = .FALSE.
+
+C
       LMCORE = MMCORE
       JSCORE = ISCORE
 C
@@ -2027,8 +2030,6 @@ C
       DOXYZ(1) = DOX
       DOXYZ(2) = DOY
       DOXYZ(3) = DOZ
-C
-      INTS = .FALSE.
 C
       ICENTA = -1
       ICENTB = -2
@@ -2592,6 +2593,10 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
+           IF (NBASIS .GT. 255) THEN
+            CALL QENTER('DR2OUT')
+            CALL QUIT('NBASIS .gt. 255 not implemented here yet, sorry')
+           END IF
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
