@@ -578,7 +578,7 @@ C----------------
      *       /' -    of orbital gradient :',F22.12)
 
 
-      IF (IPRI6 .GE. LIM_POPPRI) THEN
+      IF (lim_poppri .gt. 0) THEN
          call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
       END IF
 

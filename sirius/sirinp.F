@@ -693,6 +693,8 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRSOL = IPRUSR + 5
       IPRCNO = IPRUSR + 1
       IPRFCK = IPRUSR
+C     set limit for POPPRI in each DIIS/QCHF/MCSCF iter to 10 nuclei
+      LIM_POPPRI = 16
 C
 C  ***************************************************
 C  *****        Read Sirius input                *****
@@ -4169,7 +4171,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       PARAMETER (NPDIM = 50)
       INTEGER   NPPATH(NPDIM)
@@ -4190,7 +4192,7 @@ C
       DATA TABLE /'XXXXXXX','.IPRKAP','.IPRDIA','.IPRSIG','.IPRDNS',
      *            '.IPRSOL','.RESFIL','.PRINTL','.PRINTF','.IPRCIX',
      *            '.THRPWF','.IPRCNO','.NOSUMM','.CANONI','.IPRAVE',
-     *            '.IPRFCK'/
+     *            '.IPRFCK','.POPPRI'/
 C
 C     ***** PROCESS INPUT FOR PRIINP *****
 C
@@ -4204,7 +4206,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,116), II
+     *                   111,112,113,114,115,116,117), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -4348,6 +4350,10 @@ C *** Option 15 >IPRAVE< Printout level for super sym. section
 C
 C *** Option 16 >IPRFCK< Printout level for super sym. section
   116 READ(LUCMD,*) IPRFCK
+      GO TO 100
+C
+C *** Option 17 >POPPRInt< print popana each iter for first LIM_POPPRI atoms
+  117 READ(LUCMD,*) LIM_POPPRI
       GO TO 100
 C
       END

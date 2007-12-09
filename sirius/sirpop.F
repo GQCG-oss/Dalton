@@ -95,12 +95,12 @@ C
       POPKEY = INP_POPKEY
       IPRMUL_SAVE = IPRMUL
       IF (POPKEY(1:4) .EQ. 'DIIS') THEN
-         iprmul = -1
+         iprmul = -lim_poppri
          DIPOLM = .false.
          QUADRM = .false.
          MULLKM = .true.
       ELSE IF (POPKEY(1:6) .EQ. 'MCITER') THEN
-         iprmul = -1
+         iprmul = -lim_poppri
          DIPOLM = .false.
          QUADRM = .false.
          MULLKM = .true.
@@ -134,7 +134,7 @@ C     The structure of the working area will be
 C
 C       1) CMO      MO coefficients (occupied only)
 C       2) OCCUP    occupation numbers (inactive and active only)
-C       3) IAMN     label of the centre to which this cgto belongs
+C       3) IAMN     label of the center to which this cgto belongs
 C       4) IPR      index for the type of the cgto (s,x,y,...)
 C       5) T OR S   kinetic energy matrix, overlap matrix
 C       6) JTRAN    number of cgto's that contribute to the i'th
@@ -167,7 +167,7 @@ C
 C     ***---MULLIK---***
 C
 C     5)  NUMBER   For each cgto basis function number of the
-C                  centre to which the function belongs
+C                  center to which the function belongs
 C     6)  POPCGT   population of each cgto - sum over MO's
 C     7)  POPC     population of each cgto - contribution from
 C                  each MO separately
@@ -177,7 +177,8 @@ C     10') SS          - " -
 C     11') POPNET  net and overlap populations over cgto basis
 C                  functions - sum over all MO's
 C
-      KNUMB  = KOVLP
+      KNAME  = KOVLP
+      KNUMB  = KNAME  + MXCENT
       KPOPNAB= KNUMB  + NBAST
       KPOPABI= KPOPNAB+ MXCENT*MXCENT
       KPOPCG = KPOPABI+ MXCENT*MXCENT
@@ -208,7 +209,7 @@ C
          CALL READT(LUIT1,NASHT,WRK(KAOCC))
       ELSE
          NWARN = NWARN + 1
-         WRITE (LUW4,'(//A//A/A/A/)')
+         WRITE (LUPRI,'(//A//A/A/A/)')
      &      ' *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP',
      &      ' WARNING, occupation of active orbitals not available',
      &      '          population analysis aborted.',
@@ -217,7 +218,7 @@ C
       END IF
       IF (MCTYPE .EQ. 2) THEN
          NWARN = NWARN + 1
-         WRITE (LUW4,'(/A/A/A)')
+         WRITE (LUPRI,'(/A/A/A)')
      &       ' WARNING, population analysis for RAS wave functions'//
      &       ' uses pseudo-natural orbitals,',
      &       '          that is, the off-diagonal elements of the'//
@@ -266,8 +267,8 @@ C
 C     *****     Perform Mulliken population analysis  *****
 C
       IF (MULLKM) THEN
-         CALL MULLIK (WRK(KOCC),WRK(KIAMN),WRK(KIPR),WRK(KNUMB),
-     &                WRK(KPOPNAB),WRK(KPOPABI),
+         CALL MULLIK (WRK(KOCC),WRK(KIAMN),WRK(KNAME),WRK(KIPR),
+     &                WRK(KNUMB),WRK(KPOPNAB),WRK(KPOPABI),
      *                WRK(KPOPCG),WRK(KPOPC),WRK(KCMOCG),WRK(KSS),
      *                WRK(KPPNET))
       END IF
@@ -334,7 +335,7 @@ C
       REWIND LUONEL
       IF ( .NOT. FNDLAB('SCFINP  ',LUONEL)) THEN
 #endif
-         WRITE (LUW4,'(//A/2A/)')
+         WRITE (LUPRI,'(//A/2A/)')
      *     ' *** Label "SCFINP" not found on unit LUONEL,',
      *     '     basic information for VIRIAL and MULLIKEN routines',
      *     ' is missing.'
@@ -356,7 +357,7 @@ C
       FOUND = .FALSE.
       CALL RDONEL('KINETINT',FOUND,T,NNBAST)
       IF ( .NOT. FOUND) THEN
-         WRITE (LUW4,'(//A/A/)')
+         WRITE (LUPRI,'(//A/A/)')
      *     ' *** Label "KINETINT" not found on unit LUONEL,',
      *     '     basic information for VIRIAL routine is missing.'
          RETURN
@@ -461,7 +462,7 @@ C
       FOUND = .FALSE.
       CALL RDONEL('OVERLAP ',FOUND,S,NNBAST)
       IF ( .NOT. FOUND) THEN
-         WRITE (LUW4,'(//A/A/)')
+         WRITE (LUPRI,'(//A/A/)')
      *     ' *** Label "OVERLAP" not found on unit LUONEL,',
      *     '     basic information for POPTRA is missing.'
          RETURN
@@ -562,7 +563,7 @@ C
       RETURN
       END
 C  /* Deck mullik */
-      SUBROUTINE MULLIK (OCCUP,IAMN,IPR,NUMBER,
+      SUBROUTINE MULLIK (OCCUP,IAMN,NAME,IPR,NUMBER,
      *                   POPNAB,POPABI,POPCGT,POPC,CMOCGT,SS,POPNET)
 C
 C  Purpose:
@@ -575,7 +576,8 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 C
-      DIMENSION OCCUP(NOCCT),IAMN(NBAST),IPR(NBAST),NUMBER(NBAST),
+      DIMENSION OCCUP(NOCCT),IAMN(NBAST),NAME(MXCENT),
+     &          IPR(NBAST),NUMBER(NBAST),
      &          POPNAB(MXCENT,MXCENT),POPABI(MXCENT,MXCENT),
      &          POPCGT(NBAST),POPC(NBAST,NOCCT),CMOCGT(NBAST,NOCCT),
      &          SS(*),POPNET(*)
@@ -604,10 +606,10 @@ C     Various matrices in INFPOP should then be allocated acc.
 C     to actual dimensions.
 C
 C
-C     *****     Number of the centres
+C     *****     Number of the centers
 C
-C     given the label of the centre to which the cgto belongs, assign
-C     the centre a number. also collect the different labels to a
+C     given the label of the center to which the cgto belongs, assign
+C     the center a number. also collect the different labels to a
 C     separate list
 C
       NNUC = 1
@@ -620,7 +622,7 @@ C
          DO 10 NUC = 1,NNUC
             IF (IAMN(IA).EQ.NAME(NUC)) THEN
 C
-C              This centre is already known to us
+C              This center is already known to us
 C
                NUMBER(IA) = NUC
                GO TO 20
@@ -713,7 +715,7 @@ C
 C     *****     compute some refined results
 C
 C     Now   POPTYP will contain gross populations on the cgto's
-C                  of type t on centre a, summed over all mo's
+C                  of type t on center a, summed over all mo's
 C           POPCGT will contain the gross populations on each cgto,
 C                  summed over all mo's
 C           POPNUC will contain the gross populations on each atom,
@@ -749,7 +751,7 @@ C
       IF ( IPRMUL.GE.5 ) THEN
          WRITE (LUPRI,1001)
  1001    FORMAT (//6X,'Mulliken net and overlap populations',
-     *           //6X,'Net and overlap between centres A and B',
+     *           //6X,'Net and overlap between centers A and B',
      *           //6X,'Contributions from individual MOs')
          REWIND LUTEMP
          DO 130 IP = 1,NOCCT
@@ -778,7 +780,7 @@ C
       WRITE (LUPRI,1004)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1004)
  1004 FORMAT(//6X,'Mulliken total overlap populations',
-     *        /6X,'Net and overlap populations between centres A and B',
+     *        /6X,'Net and overlap populations between centers A and B',
      *        /6X,'Sum over all MOs P',//)
 C
       IEND = 0
@@ -841,7 +843,7 @@ C
          WRITE (LUPRI,1008)
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1008)
  1008    FORMAT(//6X,'Partial gross population of CGTO basis',
-     *               ' functions of type T',/6X,'for each centre',
+     *               ' functions of type T',/6X,'for each center',
      *           /6X,'Contribution from MO no. P'//)
          DO 200 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP
@@ -887,7 +889,7 @@ C
       WRITE (LUPRI,1013)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1013)
  1013 FORMAT (//6X,'Mulliken total gross population of CGTO basis ',
-     *             'functions of type T',/6X,'for each centre'
+     *             'functions of type T',/6X,'for each center'
      *         /6X,'Sum over all MOs'//)
       IEND = 0
     9 IST  = IEND + 1
@@ -941,7 +943,7 @@ C
       IF (IPRMUL.GE.1) THEN
         WRITE (LUPRI,1014)
         IF (LUW4 .NE. LUPRI) WRITE (LUW4,1014)
- 1014 FORMAT (//6X,'Partial gross population of centre A',
+ 1014 FORMAT (//6X,'Partial gross population of center A',
      *         /6X,'Contribution from MO no. P'//)
 C
         DO 240 IP = 1,NOCCT
@@ -964,15 +966,22 @@ c1015     FORMAT (4(3X,A4,F10.4))
   240 CONTINUE
       END IF
 C
-      WRITE (LUPRI,1016)
-      WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
-      WRITE (LUPRI,'()')
-      IF (LUW4 .NE. LUPRI) THEN
-         WRITE (LUW4,1016)
-         WRITE (LUW4,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
-      END IF
+C     ... only print max -iprmul populations in each iteration
+      IF (iprmul .lt. 0) then
+         mnuc = min(nnuc,-iprmul)
+         WRITE (LUPRI,2015) (NAME(NUC),POPNUC(NUC),NUC=1,mnuc)
+ 2015    FORMAT ((' POP',8(1X,A2,F6.2,';')))
+      else
+         WRITE (LUPRI,1016)
+         WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
+         WRITE (LUPRI,'()')
+         IF (LUW4 .NE. LUPRI) THEN
+            WRITE (LUW4,1016)
+            WRITE (LUW4,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
+         END IF
+      end if
  1016 FORMAT (/' Mulliken total gross populations')
-c1016 FORMAT (//6X,'Mulliken total gross population of centre A',
+c1016 FORMAT (//6X,'Mulliken total gross population of center A',
 c    *         /6X,'Sum over all MOs'/)
 C
 C
@@ -1301,7 +1310,7 @@ C
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1006) QPOL,SUM
  1006 FORMAT(/'  TOTAL ',7F9.4)
 C
-C     *****     Quadrupole moments relative to mass centre
+C     *****     Quadrupole moments relative to mass center
 C
       QOPOL(1)=QPOL(1)-2*QQFAC(1)*DIPOL(1)
       QOPOL(2)=QPOL(2)-2*QQFAC(2)*DIPOL(2)
@@ -1320,8 +1329,8 @@ C
       ITURN=0
       WRITE(LUPRI,1008)
       IF (LUW4 .NE. LUPRI) WRITE(LUW4,1008)
- 1008 FORMAT(//,6X,
-     *   'DIAGONALIZATION OF QUADRUPOLE TENSOR RELATIVE ORIGO')
+ 1008 FORMAT(//6X,
+     *   'Diagonalization of quadrupole tensor relative ORIGO')
       A(1)=0.5D0*(3.0D0*QPOL(1)-SUM)
       A(3)=0.5D0*(3.0D0*QPOL(2)-SUM)
       A(6)=0.5D0*(3.0D0*QPOL(3)-SUM)
@@ -1335,7 +1344,7 @@ C
       A(3)=A(6)
       WRITE(LUPRI,140)
       IF (LUW4 .NE. LUPRI) WRITE(LUW4,140)
-  140 FORMAT(//,18X,'EIGENVALUES',16X,'EIGENVECTORS')
+  140 FORMAT(//,18X,'Eigenvalues',16X,'Eigenvectors')
       IEND=0
       DO 141 I=1,3
          IST =IEND+1
@@ -1350,7 +1359,7 @@ C
          WRITE(LUPRI,1009)
          IF (LUW4 .NE. LUPRI) WRITE(LUW4,1009)
  1009    FORMAT(//'   Diagonalization of quadrupole tensor relative',
-     *          ' to mass centre')
+     *          ' to mass center')
          A(1)=0.5D0*(3.0D0*QOPOL(1)-SUM)
          A(3)=0.5D0*(3.0D0*QOPOL(2)-SUM)
          A(6)=0.5D0*(3.0D0*QOPOL(3)-SUM)
@@ -1362,5 +1371,5 @@ C     ^-----------
       END IF
 C
       RETURN
-C -- end of sirpop.F --
       END
+C -- end of sirpop.F --

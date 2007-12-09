@@ -1047,7 +1047,7 @@ C        Iteration accepted; save current CMO for restart
 C        ... REWIT1 false: do not destroy any GEOWALK information
 
 C        print atomic populations in each iteration ? /hjaaj
-         if (iprdis .ge. lim_poppri)
+         if (lim_poppri .gt. 0)
      &      call sirpop('DIIS ',DV,wrk(kfree),lfree)
 
 C
