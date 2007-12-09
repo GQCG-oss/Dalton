@@ -1127,7 +1127,7 @@ C ... JEPPE OLSEN JANUARY 1989
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION AI(1),AO(1)
+      DIMENSION AI(*),AO(*)
       DIMENSION LRC(NRC),LCC(NCC)
       DIMENSION IBLKI(NRC,NCC),IBLKO(NRC,NCC)
 C

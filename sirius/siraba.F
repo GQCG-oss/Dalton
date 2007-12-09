@@ -91,11 +91,11 @@ C Symmetry and number of variational parameters are defined through
 C INFLIN.
 C
 #include <implicit.h>
-      DIMENSION DV(1), PV(1), FC(1), FV(1), CREF(1), CMO(1)
-      DIMENSION FDC(N2ORBX,1),FDV(N2ORBX,1),FDQ(1)
-      DIMENSION H2DAC(LH2DAC,1), DFTFD(N2ORBX,1)
-      DIMENSION TD(1), GRDICT(NGD),  GRDACT(NGD),  GD(NVARPT,NGD)
-      DIMENSION XNDXCI(1),    WRK(1)
+      DIMENSION DV(*), PV(*), FC(*), FV(*), CREF(*), CMO(*)
+      DIMENSION FDC(N2ORBX,*),FDV(N2ORBX,*),FDQ(*)
+      DIMENSION H2DAC(LH2DAC,*), DFTFD(N2ORBX,*)
+      DIMENSION TD(*), GRDICT(NGD),  GRDACT(NGD),  GD(NVARPT,NGD)
+      DIMENSION XNDXCI(*),    WRK(*)
       LOGICAL   LONDON
 C
       PARAMETER ( DM1 = -1.0D0, D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0,
@@ -247,8 +247,8 @@ C     Jan 90 hjaaj
 C     Apr 92 (revised to also handle London orbitals)
 C
 #include <implicit.h>
-      DIMENSION UDV(NASHDI,1)
-      DIMENSION FDC(NORBT,1),FDV(NORBT,1),FDQ(NORBT,1), GDORB(1)
+      DIMENSION UDV(NASHDI,*)
+      DIMENSION FDC(NORBT,*),FDV(NORBT,*),FDQ(NORBT,*), GDORB(*)
       LOGICAL   IMAGOP
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
@@ -357,8 +357,8 @@ C             London gauge-invariant orbitals
 C
 #include <implicit.h>
       DIMENSION UDV(*), PV(*), FC(*), FV(*), CMO(*)
-      DIMENSION FXC(N2ORBX,1), FXV(N2ORBX,1), FXQ(NASHT*NORBT,1),
-     &          TR1MAT(N2ORBX,1), H2XAC(LH2XAC,1)
+      DIMENSION FXC(N2ORBX,*), FXV(N2ORBX,*), FXQ(NASHT*NORBT,*),
+     &          TR1MAT(N2ORBX,*), H2XAC(LH2XAC,*)
       DIMENSION WRK(*)
       LOGICAL   ADDTR1, LONDON
 C
@@ -509,10 +509,10 @@ C Symmetry and number of variational parameters are defined through
 C INFLIN.
 C
 #include <implicit.h>
-      DIMENSION BCVECS(1), BOVECS(1)
-      DIMENSION CREF(1), GORB(1), CMO(1), DV(1), PV(1)
-      DIMENSION FC(1), FV(1), FCAC(1), H2AC(1)
-      DIMENSION INDXCI(1),WRK(1)
+      DIMENSION BCVECS(*), BOVECS(*)
+      DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
+      DIMENSION FC(*), FV(*), FCAC(*), H2AC(*)
+      DIMENSION INDXCI(*),WRK(*)
 C
 #include <thrzer.h>
 C
@@ -575,8 +575,8 @@ C  FXC and FXV, resp.
 C
 #include <implicit.h>
       LOGICAL LONDON
-      DIMENSION FXC(N2ORBX,1),FXV(N2ORBX,1)
-      DIMENSION TMAT(N2ORBX,1), FC(1),FV(1)
+      DIMENSION FXC(N2ORBX,*),FXV(N2ORBX,*)
+      DIMENSION TMAT(N2ORBX,*), FC(*),FV(*)
       DIMENSION WRK(LFRSAV)
 C
       PARAMETER ( DP5 = 0.5D0 )
@@ -680,11 +680,11 @@ C Externals:
 C   DDOT, DZERO, MOLLAB, QTRACE
 #include <line.h>
 #include <implicit.h>
-      DIMENSION PV(LPV,1),TMAT(N2ORBX,1)
-      DIMENSION H2XAC(NASHT,NASHT,NASHT,NASHT,1)
+      DIMENSION PV(LPV,*),TMAT(N2ORBX,*)
+      DIMENSION H2XAC(NASHT,NASHT,NASHT,NASHT,*)
 C     HJMAERK: N2ASHX,NNASHX eller NNASHX,NNASHX half-transf. int. ?
 C     921002: use N2ASHX,N2ASHX so we may use old GETINT option
-      DIMENSION FXQ(NASHT*NORBT,1)
+      DIMENSION FXQ(NASHT*NORBT,*)
       DIMENSION WRK(LFRSAV)
       LOGICAL   NODRC, LONDON
       PARAMETER ( D2 = 2.0D0 )
@@ -1397,8 +1397,8 @@ C   WRK(LWRK)
 C
 #include <implicit.h>
       LOGICAL LONDON
-      DIMENSION CMO(1),TMAT(NORBT,NORBT,NTMAT),UDV(NASHT,1),
-     &          DXCAO(NBAST,NBAST,NTMAT),DXVAO(NBAST,NBAST,NTMAT),WRK(1)
+      DIMENSION CMO(*),TMAT(NORBT,NORBT,NTMAT),UDV(NASHT,*),
+     &          DXCAO(NBAST,NBAST,NTMAT),DXVAO(NBAST,NBAST,NTMAT),WRK(*)
 C
       PARAMETER ( D2 = 2.0D0, D4 = 4.0D0 )
 C

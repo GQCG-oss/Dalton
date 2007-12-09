@@ -53,8 +53,8 @@ c      integer*1 ast,bst
       integer*1 occu
       dimension occu(1),iel(1),npos(1000)
 #endif
-      integer tri
-      tri(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     integer tri
+c     tri(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
       zplus='+'
       zmoins='-'
       ngelo=0
@@ -532,7 +532,7 @@ c
        kposold=0
        do ijk=1,k-1
           kpos=iel(ijk)-ijk-kposold
-          if (kpos.eq.0) goto 111
+       if (kpos.eq.0) goto 111
           nogg=k-ijk
           do kl=ijk+kposold,iel(ijk)-1
              ncasel=n-kl
@@ -671,23 +671,27 @@ c      allocate(npos(norb))   !wrong should be maximum of a deter space
                  iorbb=iorb(trou(i+ndk))
                  ispp=ispin(part(i+ndk))
                  iorbp=iorb(part(i+ndk))
-                 if((iorbp.eq.k.and.ispp.eq.1).or.(iorbb.eq.k
-     $                .and.ispb.eq.0))then
+                 if((iorbp.eq.k.and.ispp.eq.1).or.
+     $              (iorbb.eq.k.and.ispb.eq.0))then
                     indalf=indalf+1
                     iel(indalf)=isingle
                     if(indalf.gt.norb)then
-                       print*,'indalf and norb',indalf,norb
-                       stop
+                       print*,'ERROR: indalf .gt. norb',indalf,norb
+                       CALL QUIT('givepos: indalf .gt. norb')
                     endif
                  endif
                 enddo
              endif
             enddo
             if((kdet-ifirst+1).gt.1000)then
-               print*,'arg of npos too large'
-               stop
+               print*,'givepos: arg of npos too large'
+               CALL QUIT('givepos: arg of npos too large')
             endif
-            call givepos(iel,isingle,indalf,npos(kdet-ifirst+1))
+            if (indalf.gt.0) then
+               call givepos(iel,isingle,indalf,npos(kdet-ifirst+1))
+            else
+               npos(kdet-ifirst+1) = -999 999 999
+            end if
            enddo
            call orderfe(ifirst,ilast,c,ne,nd,trou,part,npos)
            ifirst=ilast+1

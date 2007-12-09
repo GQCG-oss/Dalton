@@ -304,8 +304,8 @@ c         NOCCI = NOCC(ISYM)
          ISMO1 = ISMO1 + (NORBI - NOCCI) * NBASI
          ISMO = ISMO + NBASI
       END DO 
-      ISMO = KFCAO + NOCCT_R12*NBAST
-      ISMO2 = KCMO + (NOCC(1)+NRXR12(1))*NBAS(1)
+      ISMO  = KFCAO + NOCCT_R12*NBAST
+      ISMO2 = KCMO  + (NOCC(1)+NRXR12(1))*NBAS(1)
       CALL DZERO(WORK(ISMO),NVIRT*NBAST)
       DO ISYM = 1, NSYM
          NOCCI = NOCC(ISYM) + NRXR12(ISYM)
@@ -317,8 +317,9 @@ c         NOCCI = NOCC(ISYM)
            ISMO = ISMO + NBAST
            ISMO2 = ISMO2 + NBASI
          END DO
-         ISMO2 = ISMO2 + (NOCC(ISYM+1) + NRXR12(ISYM+1)) * NBAS(ISYM+1)   
          ISMO = ISMO + NBASI
+         IF (ISYM .LT. NSYM)
+     &   ISMO2 = ISMO2 + (NOCC(ISYM+1) + NRXR12(ISYM+1)) * NBAS(ISYM+1)
       END DO 
       IF (R12PRP) THEN 
          CALL R12QV(.FALSE.,.FALSE.,WORK(KFQQA),WORK(KSMO+6*NMORBT),

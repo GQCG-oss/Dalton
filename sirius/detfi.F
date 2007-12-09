@@ -241,7 +241,7 @@ C WITH ZERO STRINGS
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION NSTAOC(1), IPOINT(1)
+      DIMENSION NSTAOC(*), IPOINT(*)
       DIMENSION NL1FTP(*),NL2FTP(*),NL3FTP(*)
 C
       IF (NTEST .GT. 2) THEN
@@ -683,8 +683,6 @@ C
         CALL MEMADD(KTBSYM,(MAXSYM+1)*NBSTR,KFREE,1)
         CALL MEMADD(KNXFSB,NBSTR,KFREE,1)
       END IF
-      KIXSOA = -1
-      KIXSOB = -1
 C
       IF( NTEST .GE. 3 ) THEN
         WRITE(LUPRI,'(//A/)') ' >>> Output from MEMDET <<<'
@@ -730,7 +728,7 @@ C
 C NOSYM added Nov '88
 #include <implicit.h>
       INTEGER   CLCTYP
-      DIMENSION WORK(1)
+      DIMENSION WORK(*)
       DIMENSION NRAS1(8),NRAS2(8),NRAS3(8)
       LOGICAL   REFSPC
 C
@@ -963,7 +961,7 @@ C
 #include <priunit.h>
       INTEGER ORBSYM(1)
       DIMENSION NRAS1(MAXSYM),NRAS2(MAXSYM),NRAS3(MAXSYM)
-      DIMENSION ILTSOB(1),ISTLOB(1)
+      DIMENSION ILTSOB(*),ISTLOB(*)
 #include <cbreor.h>
 C
         MINTP = 1

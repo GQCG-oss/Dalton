@@ -164,7 +164,7 @@ c      allocatable sppm(:),orbfe(:)
 c      integer orbfe
 c      character*1 sppm
 C--- Cele  Debug
-      indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
 C--- Cele  Debug
 c       nexc(1)='F'
@@ -2406,7 +2406,7 @@ c-------------------------------------------------------
       dimension iocca(*),ioccb(*),flip(*)
       external index
       parameter (pt5=0.5d0)
-      indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 c common e dimensionamenti mettere dopo
 #if !defined(VAR_G77)
       allocate(d2bebe(1:nasht,1:nasht,1:nasht,1:nasht))
@@ -3465,15 +3465,10 @@ c------------------------------------------------------------------
      *            normind(14,14,14,14)
       dimension amat(nwords,nasht,nasht,nasht,nasht)
       integer op,pp
+      lindice(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
+
       ind=lindice(ip,jp,kp,lp)
       amat(ind,mp,np,op,pp)=amat(ind,mp,np,op,pp)+val
-      return
-      end
-c------------------------------------------------------------------
-      function lindice(i,j,k,l)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14),
-     *            normind(14,14,14,14)
-      lindice=lindi(i)+lindj(j)+lindk(k)+l
       return
       end
 c-----------------------------------------------------------------
@@ -4227,9 +4222,9 @@ c-------------------------------------------------------------------
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
 c----four-particle density matrix dealt with here
 c--a,c,e,g    b,d,f,h
-      lindice1(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
+      lindice(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
       call ord8(a,c,e,g,b,d,f,h,i1,i2,i3,i4,i5,i6,i7,i8)
-      ind=lindice1(i1,i2,i3,i4)
+      ind=lindice(i1,i2,i3,i4)
       eeee=ro4(ind,i5,i6,i7,i8)
       if(b.eq.c)eeee=eeee+d3(a,e,g,d,f,h)
       if(b.eq.e)eeee=eeee+d3(a,c,g,f,d,h)
@@ -5142,6 +5137,7 @@ c-----------------------------------------------------------------
       common/lndc/nwords,lindi(14),lindj(14),lindk(14)
      *     ,normind(14,14,14,14)
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
+      lindice(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
 cc---controllo su contrazione della ro4
       do i=1,nasht
          do j=1,nasht

@@ -64,7 +64,7 @@ C Output:
 C  in INDXCI(*) : string information
 C
 #include <implicit.h>
-      DIMENSION INDXCI(1), WRK(LFRSAV)
+      DIMENSION INDXCI(*), WRK(LFRSAV)
 C
 C Used from common blocks:
 C   INFINP : NACTEL, ISPIN, FLAG(26), FLAG(27), LSYM
@@ -154,14 +154,14 @@ C   Modify H2AC and FCAC as expected by CI routines.
 C
 C   >>> No modification for determinant CI <<<
 C
-#include <implicit.h>
-      DIMENSION FCAC(NNASHX),H2AC(NNASHX,NNASHX), WRK(LFREE)
+Cinclude <implicit.h>
+C     DIMENSION FCAC(NNASHX),H2AC(NNASHX,NNASHX), WRK(LFREE)
 C
 C
 C Used from common blocks:
 C   INFORB : NNASHX
 C
-#include <inforb.h>
+Cinclude <inforb.h>
 C
 C
 C

@@ -159,7 +159,7 @@ C            described in Chapter 8 Section D.5 of MOTECC-90
 C            "Counter Rotations of CI coefficients"
 C
 #include <implicit.h>
-      DIMENSION CVEC(LCVEC,NCVEC), UMO(1), XNDXCI(1), WRK(LFREE)
+      DIMENSION CVEC(LCVEC,NCVEC), UMO(*), XNDXCI(*), WRK(LFREE)
 C
 C Used from common blocks:
 C  INFINP : LSYM
@@ -605,8 +605,8 @@ C                 FIJ  : (II/JJ) integrals
 C                 FJI  : (IJ/IJ) integrals
 C
 #include <implicit.h>
-      DIMENSION DIAG(1), FCAC(1), FIJ(1), FJI(1), WRK(1)
-      DIMENSION XNDXCI(1)
+      DIMENSION DIAG(*), FCAC(*), FIJ(*), FJI(*), WRK(LFREE)
+      DIMENSION XNDXCI(*)
 #include <priunit.h>
 C
 C
@@ -729,7 +729,7 @@ C   WRK(LFREE)
 C
 C
 #include <implicit.h>
-      DIMENSION BCVECS(NCONST,1),FCAC(1),H2AC(1),SCVECS(LSCVEC,1)
+      DIMENSION BCVECS(NCONST,*),FCAC(*),H2AC(*),SCVECS(LSCVEC,*)
       DIMENSION XNDXCI(*), WRK(LFREE)
 #include <iratdef.h>
       LOGICAL   NOH2, IH8SM
@@ -822,7 +822,7 @@ C
 C
 #include <implicit.h>
       DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
-      DIMENSION XNDXCI(1), WRK(LFREE)
+      DIMENSION XNDXCI(*), WRK(LFREE)
 #include <iratdef.h>
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
@@ -888,8 +888,8 @@ C        HC : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCVEC
 C
 C
 #include <implicit.h>
-      DIMENSION C(1), HC(1)
-      DIMENSION FCAC(1), H2AC(1), WRK(1), XNDXCI(1)
+      DIMENSION C(*), HC(*)
+      DIMENSION FCAC(*), H2AC(*), WRK(LFREE), XNDXCI(*)
       LOGICAL   ONLYH1,IH8SM
 C
 C   THRSML : THRESHOLD FOR INTEGRALS AND CI COEFFICIENTS TO BE ZAPPED
@@ -1031,8 +1031,8 @@ C       HC  : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCDET
 C
 C
 #include <implicit.h>
-      DIMENSION C(1), HC(1), FCAC(1)
-      DIMENSION H2AC(1), WRK(1), XNDXCI(1)
+      DIMENSION C(*), HC(*), FCAC(*)
+      DIMENSION H2AC(*), WRK(LFREE), XNDXCI(*)
       LOGICAL   ONLYH1,IH8SM,PERMSM
 C
 C   THRSML : THRESHOLD FOR INTEGRALS AND CI COEFFICIENTS TO BE ZAPPED
@@ -1200,7 +1200,7 @@ C
 #include <implicit.h>
 C
       DIMENSION CREF(NCONRF), SOVECS(NVARPT,NOSIM),EMYX(NOSIM),XNDXCI(*)
-      DIMENSION FXCAC(NNASHX,2),H2XAC(NNASHX,NNASHX,2)
+      DIMENSION FXCAC(NNASHX,*),H2XAC(NNASHX,NNASHX,*)
       DIMENSION WRK(LFREE)
 #include <iratdef.h>
       PARAMETER (IDTIM = 10)

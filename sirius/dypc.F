@@ -127,7 +127,7 @@ C
       dimension daa(1)
       dimension daat(1)
 #endif
-      indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
       write(lupri,*)
       write(lupri,*) 'STARTING THE PERTURBATION SUMMATION'
