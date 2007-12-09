@@ -413,7 +413,7 @@ C
                   CALL WRITDX (LURDI,IREC2,IRAT*NVARPT,
      &                         WORK(NVARPT + 1))
 ckr                  IDORCI(IREC,2) = 2
-                  CALL WRITRS
+                  CALL ABAWRITRS
                   IF (IPRCLC .GT. 5) THEN
                      CALL HEADER('Response and residuum vectors in '//
      &                   'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)

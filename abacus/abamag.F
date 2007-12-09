@@ -200,6 +200,7 @@ C
 #include <abainf.h>
 #include <magone.h>
 C
+
       MPRINT = IPRDEF
       MSKIP  = .NOT.(SHIELD .OR. MAGSUS .OR. SPNSPN .OR. VCD .OR.
      &               MASSVE .OR. DARWIN .OR. SPINRO .OR. MOLGFA)
@@ -245,8 +246,8 @@ C
 #include <relcor.h>
 #include <dipole.h>
 #include <pcmlog.h>
-      IF (MSKIP .OR. ((.NOT. DODSO) .AND. (SST
-     &          .AND. .NOT. (NST .OR. MDIASU)))) RETURN
+      IF (MSKIP) RETURN
+      IF (.NOT.DODSO .AND. (SST .AND. .NOT.(NST .OR. MDIASU))) RETURN
       CALL QENTER('MAGINT')
       IF (MPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (MPRINT .GT. 2) CALL TITLER('Output from MAGINT','*',103)
@@ -452,9 +453,10 @@ C
 C
 #include <ibtfun.h>       
 C
+      CALL QENTER('MAGDRV')
+C
       MAXTYP = 3*MXCOOR
       IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
-      CALL QENTER('MAGDRV')
       KEXPVA = 1
       KINTRP = KEXPVA + NCOMP
       KINTAD = KINTRP + (9*MXCENT**2+1)/IRAT
@@ -1957,7 +1959,7 @@ C
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
 ckr               IDORCT(IREC) = 1
-               CALL WRITRS
+               CALL ABAWRITRS
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residuum vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)

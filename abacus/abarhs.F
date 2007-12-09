@@ -736,6 +736,10 @@ C
                IF (ITYPE .EQ. 1) THEN
                   NDMAT  = 1
                   NFMAT  = NDMAT
+                  KDMAT  = KLAST
+                  KFMAT  = KLAST
+C                 ... so KDMAT, KFMAT is defined in subroutine calls below,
+C                     also when WORK(KFMAT) is not used.
                   MAXDIF = 1
                ELSE IF (ABS(ITYPE) .EQ. 5) THEN
                   NDMAT = 2
@@ -1261,17 +1265,18 @@ CKeinSPASmehr
       ELSE
          KFREE = KCINDX
       END IF
-      IF (LONDON) THEN
-         NDIMPV = N2ASHX
-      ELSE
-         NDIMPV = NNASHX
-      END IF
+      LFREE = LWORK  - KFREE  + 1
 C
 C     **************************************
 C     ***** Get two-electron densities *****
 C     **************************************
 C
       IF (NASHT .GT. 0) THEN
+         IF (LONDON) THEN
+            NDIMPV = N2ASHX
+         ELSE
+            NDIMPV = NNASHX
+         END IF
          IF (NOPV) THEN
             CALL DZERO(PV,NDIMPV*NDIMPV)
          ELSE
@@ -1302,7 +1307,7 @@ C
 C           Case 2: Densities read in
 C
             ELSE
-               CALL RDSIFC('PV',FOUND,PV,WORK(KLAST),LWRK)
+               CALL RDSIFC('PV',FOUND,PV,WORK(KFREE),LFREE)
                IF (.NOT.FOUND)
      &            CALL QUIT('RHSIDE error: PV not found on SIRIFC')
             END IF
@@ -1675,7 +1680,7 @@ ckr            IDORCI(ISCOOR,2) = 1
          ELSE
 ckr            IDORCI(ISCOOR,1) = 1
          END IF
-         CALL WRITRS
+         CALL ABAWRITRS
   300    CONTINUE
   100 CONTINUE
 C

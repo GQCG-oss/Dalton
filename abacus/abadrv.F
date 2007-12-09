@@ -119,7 +119,7 @@ C
          PROPTY = .TRUE.
          EXPGRA = EXPGRD
          CALL ONEINT(WORK,LWORK,PASONE,PROPTY,PCM)
-         IF (PASONE) CALL WRITRS
+         IF (PASONE) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMONE,TIMDUM)
@@ -150,7 +150,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASMAG) THEN
          CALL MAGINT(WORK(KDSO),WORK(KLAST),LWRK,PASMAG)
-         IF (PASMAG) CALL WRITRS
+         IF (PASMAG) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMMAG,TIMDUM)
@@ -169,7 +169,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASTWO) THEN
          CALL TWOEXP(WORK(KLAST),LWRK,PASTWO)
-         IF (PASTWO) CALL WRITRS
+         IF (PASTWO) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMTEX,TIMDUM)
@@ -205,7 +205,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASORT) THEN
          CALL MCORL(WORK(KLAST),LWRK,PASORT)
-         IF (PASORT) CALL WRITRS
+         IF (PASORT) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMORT,TIMDUM)
@@ -223,7 +223,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASDIP) THEN
          CALL DIPCTL(WORK(KLAST),LWRK,PASDIP)
-         IF (PASDIP) CALL WRITRS
+         IF (PASDIP) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMDIP,TIMDUM)
@@ -243,7 +243,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASQPG) THEN
          CALL QPGCTL(WORK(KLAST),LWRK,PASQPG)
-         IF (PASQPG) CALL WRITRS
+         IF (PASQPG) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMQPG,TIMDUM)
@@ -306,26 +306,28 @@ C     ***** Relaxation terms (singlet) *****
 C     **************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASREL .AND. (MOLHES .OR. SHIELD .OR. MAGSUS
-     &    .OR.  VCD .OR. DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN
-     &    .AND. DOPSO) .OR. ECD .OR. VROA .OR. MOLGFA .OR.SPINRO .OR.
-     &                      OPTROT)) THEN
+      IF (.NOT. PASREL) THEN
+      IF (MOLHES .OR. SHIELD .OR. MAGSUS .OR. VCD .OR.
+     &    DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN .AND. DOPSO) .OR.
+     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASREL,.FALSE.)
-         IF (PASREL) CALL WRITRS
+         IF (PASREL) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
+      END IF
       END IF
 C
 C     **************************************
 C     ***** Relaxation terms (triplet) *****
 C     **************************************
 C
-      IF ((SPNSPN .AND. (DOSD .OR. DOFC .OR. DOSDFC))
-     &            .AND. .NOT. PASRTR) THEN
+      IF (.NOT. PASRTR) THEN
+      IF (SPNSPN .AND. (DOSD .OR. DOFC .OR. DOSDFC) ) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASRTR,.TRUE.)
-         IF (PASRTR) CALL WRITRS
+         IF (PASRTR) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
+      END IF
       END IF
       CALL GETTIM(TIMREL,TIMDUM)
       TIMREL = TIMREL - TIMSTR
@@ -338,7 +340,7 @@ C
       IF (.NOT. PASAAT) THEN
          CALL AATDRV(WORK(KLAST),LWRK,PASAAT)
          CALL FLSHFO(LUPRI)
-         IF (PASAAT) CALL WRITRS
+         IF (PASAAT) CALL ABAWRITRS
       END IF
       CALL GETTIM(TIMAAT,TIMDUM)
       TIMAAT = TIMAAT - TIMSTR
@@ -365,7 +367,7 @@ C
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
      &                  WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
      &                  WORK(KLST1),LWRK1,PASLNR)
-            IF (PASLNR) CALL WRITRS
+            IF (PASLNR) CALL ABAWRITRS
             CALL FLSHFO(LUPRI)
          END IF
       ELSE
@@ -411,7 +413,7 @@ C
      &               WORK(KTQVEL),WORK(KTRLON),WORK(KTRMAG),
      &               WORK(KBSRLO),WORK(KEXENG),WORK(KFONAC),
      &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
-         IF (PASEXC) CALL WRITRS
+         IF (PASEXC) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       ELSE
          KTRLEN = KLST1
@@ -568,7 +570,7 @@ C
       KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
       KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
       LWRK3  = LWORK - KLAST + 1
-      CALL RESULT(WORK(KPOLDD),WORK(KPOLDL),WORK(KPOLDA),
+      CALL ABARESULT(WORK(KPOLDD),WORK(KPOLDL),WORK(KPOLDA),
      &            WORK(KPOLVL),WORK(KPOLVV),WORK(KCSTRA),
      &            WORK(KSCTRA),WORK(KDSO),WORK(KPSO),WORK(KSD),
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
@@ -625,7 +627,7 @@ C
 
 #if !defined (SYS_T3D)
 cLig <> added the TIMCTO
-      CALL TIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,TIMDRC,
+      CALL ABATIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,TIMDRC,
      &     TIMORT,TIMDIP,TIMQPG,TIMRES,TIMREL,TIMTST,TIMVIB,TIMWLK,
      &     TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
 #endif
@@ -774,7 +776,7 @@ C
 C     Initializing some properties depends on if this is a numerical 
 C     differentiation. If so initialization is done elsewhere.
 C      
-      IF (.NOT.NMWALK.OR.(WRDSRC .EQ. '**PROPE')) THEN
+      IF (.NOT.NMWALK .OR. (WRDSRC .EQ. '**PROPE')) THEN
          SPNSPN = .FALSE.
       END IF
       DODRCT = DIRCAL
@@ -826,7 +828,7 @@ C
       CALL DZERO(GAGORG,3)
       CALL DZERO(CAVORG,3)
       ABALNR = .FALSE.
-      IF (TOTSYM .AND. .NOT. WRDSRC .EQ. '**PROPE') THEN
+      IF (TOTSYM .AND. WRDSRC .NE. '**PROPE') THEN
          DOSYM(1) = .TRUE.
          DO 40 I = 2, 8
             DOSYM(I) = .FALSE.
@@ -890,7 +892,7 @@ C         geometry if not overridden with '**START' /Feb 2003 hjaaj
             WORD1 = '**EACH '
             GO TO 900
          END IF
-         CALL INIALL
+         CALL ABAINIALL
          GOTO 1
   930 CONTINUE
       WORD1 = WORD
@@ -1205,7 +1207,7 @@ C-----RESTART-------------------------------------------------
 C
       IF (RESTAR) THEN
          CALL HEADER('This is a restart run!',0)
-         CALL READRS
+         CALL ABAREADRS
          IF (RWORD .EQ.'      ') THEN
             IF (DIPDER .AND. .NOT.PASDIP) PASONE = .FALSE.
             IF (QPGRAD .AND. .NOT.PASQPG) PASONE = .FALSE.
@@ -1370,6 +1372,8 @@ C
       END IF
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
+      WRITE (LUPRI,'(A,I5/)') ' Default print level:    ',IPRDEF
+      IF (TSTINP) WRITE (LUPRI,'(/A/)')  ' Input test run only '
       IF (MOLGRD) WRITE (LUPRI,'(5X,A)') ' The molecular gradient'
       IF (MOLHES) WRITE (LUPRI,'(5X,A)') ' The molecular Hessian'
       IF (DOWALK) WRITE (LUPRI,'(5X,A)') ' Geometry optimization'
@@ -1514,30 +1518,6 @@ cLig <<
          CALL QUIT('Inconsistent input in ABACUS')
       END IF
       IF (ABALNR) WRITE (LUPRI,'(5X,A)') ' Linear response properties'
-      IF ((POPULA .OR. POLAR .OR. DIPDER .OR. QPGRAD .OR. VCD) .AND. 
-     &    (TOTSYM .AND. WRDSRC .NE. '**PROPE')) THEN
-         WRITE(LUPRI)
-         IF (POPULA) WRITE (LUPRI,'(2(5X,A))') 
-     &        ' Population incompatible with .TOTSYM.',
-     &        ' No population analysis carried out'
-         IF (POLAR) WRITE (LUPRI,'(2(5X,A))') 
-     &        ' Static polarizability incompatible with .TOTSYM.',
-     &        ' No calculation of polarizabilities'
-         IF (DIPDER) WRITE (LUPRI,'(2(5X,A))') 
-     &        ' Dipole gradient incompatible with .TOTSYM.',
-     &        ' No dipole gradient calculated'
-         IF (QPGRAD) WRITE (LUPRI,'(2(5X,A))') 
-     &        ' Quadrupole gradient incompatible with .TOTSYM.',
-     &        ' No quadupole gradient calculated'
-         IF (VCD) WRITE (LUPRI,'(2(5X,A))') 
-     &        ' VCD incompatible with .TOTSYM.',
-     &        ' No VCD tensors calculated'
-         VCD = .FALSE.
-         POPULA = .FALSE.
-         DIPDER = .FALSE.
-         QPGRAD = .FALSE.
-         POLAR  = .FALSE.
-      END IF
       IF (INPSYM .GT. 0) THEN
          IF (NREPS .EQ. 0) THEN
             WRITE (LUPRI,'(/2(/5X,A))')
@@ -1558,12 +1538,35 @@ cLig <<
          WRITE (LUPRI,'(//A)')
      &        ' Only totally symmetric distortions are considered.'
       END IF
-      WRITE (LUPRI,'(//A,I5/)') ' Default print level:    ',IPRDEF
-      IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only '
+      IF ((POPULA .OR. POLAR .OR. DIPDER .OR. QPGRAD .OR. VCD) .AND. 
+     &    (TOTSYM .AND. WRDSRC .NE. '**PROPE')) THEN
+         NWARN = NQARN + 1
+         WRITE(LUPRI,'(/A)') 'WARNING, incompatible input options:'
+         IF (POPULA) WRITE (LUPRI,'(2(5X,A))') 
+     &      'Cioslowski population analysis incompatible with .TOTSYM.',
+     &      '  WARNING: Population analysis is not carried out.'
+         IF (POLAR) WRITE (LUPRI,'(2(5X,A))') 
+     &      'Static polarizability incompatible with .TOTSYM.',
+     &      '  WARNING: No calculation of static polarizabilities.'
+         IF (DIPDER) WRITE (LUPRI,'(2(5X,A))') 
+     &      'Dipole gradient incompatible with .TOTSYM.',
+     &      '  WARNING: Dipole gradient is not calculated.'
+         IF (QPGRAD) WRITE (LUPRI,'(2(5X,A))') 
+     &      'Quadrupole gradient incompatible with .TOTSYM.',
+     &      '  WARNING: Quadupole gradient is not calculated.'
+         IF (VCD) WRITE (LUPRI,'(2(5X,A))') 
+     &      'VCD incompatible with .TOTSYM.',
+     &      '  WARNING: VCD tensors are not calculated.'
+         VCD    = .FALSE.
+         POPULA = .FALSE.
+         DIPDER = .FALSE.
+         QPGRAD = .FALSE.
+         POLAR  = .FALSE.
+      END IF
       IF (DIPDER .AND. .NOT. (MOLHES .OR. POLAR)) THEN
          WRITE (LUPRI,'(//2A/A)')
-     *      ' Dipole moment gradient requires either',
-     *      ' molecular Hessian or polarizabilities. ',
+     *      ' FATAL ERROR .DIPOLE: Dipole moment gradient requires',
+     *      ' either molecular Hessian or polarizabilities. ',
      *      ' Set ".POLARI" or delete ".NOHESS" in input!'
          CALL QUIT
      *      ('Inconsistency in input for ".DIPOLE", cannot proceed.')
@@ -1573,7 +1576,7 @@ cLig <<
          WRITE (LUPRI,'(/A/A)')
      &      ' >>>>> WARNING - RHF calculations of spin-spin coupling'//
      &      ' constants are likely to give', 
-     &      ' qualitatively incorrect results !!!'
+     &      ' >>>>>>WARNING - qualitatively incorrect results !!!'
       END IF
 cLig >> added the control to right CTOCD input
       IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
@@ -1705,7 +1708,7 @@ C
 cs    introdotta *QRPROP (posizione 25 di TABDIR)
 cs    legge input e vede cosa e' attivo
 cs
-      CALL INIALL
+      CALL ABAINIALL
  200  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -1944,7 +1947,7 @@ C
 C
       END
 C  /* Deck result */
-      SUBROUTINE RESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
+      SUBROUTINE ABARESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
      &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,
@@ -2035,22 +2038,22 @@ C     Energy
 C
          CALL HEADER('Molecular wave function and energy',-1)
          CALL MOLCHR(ICHRGE)
-         WRITE (LUPRI,'(3(5X,A,I3)/)')
+         WRITE (LUPRI,'(3(5X,A,I3))')
      *        'Spin multiplicity',ISPIN,
      *        'State number     ',ISTATE,
      *        'Total charge     ',ICHRGE
-         WRITE (LUPRI,'(/T6,A,F17.10,A/T6,A,F17.8,A/T6,A,F17.4,A//)')
+         WRITE (LUPRI,'(/T6,A,F17.10,A/T6,A,F17.8,A/T6,A,F17.4,A)')
      *        'Total energy     ',       EMCSCF,' au (Hartrees)',
      *        '                 ',  XTEV*EMCSCF,' eV',
      *        '                 ',XKJMOL*EMCSCF,' kJ/mol'
 csonia 04/10/95
          IF (LUCME.GT.0) THEN
             WRITE (LUCME,'(A)') 'Molecular wave function and energy'
-            WRITE (LUCME,'(3(5X,A,I3)/)')
+            WRITE (LUCME,'(3(5X,A,I3))')
      *        'Spin multiplicity',ISPIN,
      *        'State number     ',ISTATE,
      *        'Total charge     ',ICHRGE
-            WRITE (LUCME,'(/T6,A,D24.15,A/T6,A,F17.8,A/T6,A,F17.4,A//)')
+            WRITE (LUCME,'(/T6,A,D24.15,A/T6,A,F17.8,A/T6,A,F17.4,A/)')
      *        'Total energy     ',       EMCSCF,' au (Hartrees)',
      *        '                 ',  XTEV*EMCSCF,' eV',
      *        '                 ',XKJMOL*EMCSCF,' kJ/mol'
@@ -2067,7 +2070,7 @@ C
      &           'Mass-velocity correction:     ',       RMASSV,' au'
             IF (DARWIN .AND. MASSVE) THEN
                RELTOT = DARWN + RMASSV
-               WRITE (LUPRI,'(/,5X,A,F17.10,A,F6.4,A)')
+               WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)')
      &              'Total relativistic correction:         ',  RELTOT,
      &              ' au (', D100*RELTOT/EMCSCF,'%)'
                WRITE (LUPRI,'(5X,A,F17.10,A//)')
@@ -2108,7 +2111,7 @@ C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(/,5X,A,19X,E12.6,5X,E12.6)')
+            WRITE (LUPRI,'(/5X,A,19X,1P,D12.6,5X,D12.6)')
      &         '##     Norm of gradient:   ',ALPNRM,ALPNRL
 C
             MAXZ = 0
@@ -2139,10 +2142,9 @@ C
                END DO
             END DO
             CALL HEADER('Orbital-exponent gradient (au)',-1)
-            WRITE (LUPRI,'(7X,A)')  'Z    l            '//
+            WRITE (LUPRI,'(7X,A/)')  'Z    l            '//
      &       '    exponent                grad             grad ln'//
      &       '             grad ln'
-            WRITE (LUPRI,'()')
             ALPNRM = D0
             ALPNRL = D0
             DO K = 1, MAXZ
@@ -2237,7 +2239,7 @@ C
             DIPMOM = SQRT(DIP0(1)*DIP0(1) + DIP0(2)*DIP0(2) + 
      &           DIP0(3)*DIP0(3))
 C
-            WRITE (LUPRI,'(17X,A,15X,A,10X,A//3X,3F19.6)') 
+            WRITE (LUPRI,'(17X,A,15X,A,10X,A/3X,3F19.6)') 
      *             'au','Debye','C m (/(10**-30)',
      *             DIPMOM, DEBYE*DIPMOM, DIPSI*DIPMOM
             CALL HEADER('Dipole moment components',-1)
@@ -2261,9 +2263,8 @@ Clf Printout of the LF dipole moment
                CALL HEADER('Local-field corrected dipole moment',-1)
                DIPLF = SQRT(DIPLF0(1)*DIPLF0(1) + DIPLF0(2)*DIPLF0(2) + 
      &              DIPLF0(3)*DIPLF0(3))
-            WRITE (LUPRI,'(17X,A,15X,A,10X,A/)')
-     *             'au','Debye','C m (/(10**-30)'
-            WRITE (LUPRI,'(7X,3(F15.6,4X))')
+            WRITE (LUPRI,'(17X,A,15X,A,10X,A/3X,3F19.6)') 
+     *             'au','Debye','C m (/(10**-30)',
      *             DIPLF, DEBYE*DIPLF, DIPSI*DIPLF
                CALL HEADER(
      $              'Local-field corrected dipole moment components',-1)
@@ -2365,7 +2366,7 @@ C
          KLAST = KAXIS + MXCENT*9
          LWRK  = LWORK - KLAST + 1
          IF (KLAST .GT. LWORK) CALL
-     &        STOPIT('RESULT','NQCRES',KLAST,LWORK)
+     &        STOPIT('ABARESULT','NQCRES',KLAST,LWORK)
          CALL NQCRES(IPRDEF,WORK(KAXIS))
       END IF
 cLig >> added the call to SUSRES and SHIRES for CTOCD
@@ -2403,7 +2404,7 @@ C
          KLAST  = KAMASS + JATOM
          LWRK   = LWORK - KLAST + 1
          IF (KLAST .GT. LWORK) CALL
-     &        STOPIT('RESULT','MGFRES',KLAST,LWORK)
+     &        STOPIT('ABARESULT','MGFRES',KLAST,LWORK)
          CALL MGFRES(WORK(KGEOM),WORK(KAMASS),WORK(KLAST),LWRK,JATOM,
      &        IPRDEF)
       END IF
@@ -2431,7 +2432,7 @@ C
          KLAST  = KPARMA + 9*JATOM
          LWRK   = LWORK - KLAST + 1
          IF (KLAST .GT. LWORK) CALL
-     &        STOPIT('RESULT','SPRRES',KLAST,LWORK)
+     &        STOPIT('ABARESULT','SPRRES',KLAST,LWORK)
          CALL SPRRES(WORK(KGEOM),WORK(KAMASS),WORK(KGVAL),
      &               WORK(KDIAMA),WORK(KPARMA),WORK(KLAST),LWRK,
      &               JATOM,IPRDEF)
@@ -2446,7 +2447,7 @@ C
  1000 FORMAT (1X,A6,F17.10,2F24.10)
       END
 C  /* Deck readrs */
-      SUBROUTINE READRS
+      SUBROUTINE ABAREADRS
 C
 C     Read ABACUS restart information
 C     TUH 1985
@@ -2554,7 +2555,7 @@ C
       RETURN
       END
 C  /* Deck writrs */
-      SUBROUTINE WRITRS
+      SUBROUTINE ABAWRITRS
 C
 C     Write ABACUS restart information
 C     tuh 1985
@@ -2645,10 +2646,10 @@ C
       RETURN
       END
 C  /* Deck timsta */
-      SUBROUTINE TIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,
-     *                  TIMDRC,TIMORT,TIMDIP,TIMQPG,TIMRES,TIMREL,
-     *                  TIMTST,TIMVIB,TIMWLK,
-     *                  TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
+      SUBROUTINE ABATIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,
+     *                     TIMDRC,TIMORT,TIMDIP,TIMQPG,TIMRES,TIMREL,
+     *                     TIMTST,TIMVIB,TIMWLK,
+     *                     TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2729,9 +2730,9 @@ C
       PVAL(3) = PVAL(6)
       CALL ORDER2(AXES,PVAL,3,3)
 C
-      WRITE (LUPRI,'(2(/1X,A)),/')
-     &      ' Units:  C m**2/(10**(-40))   (SI) ',
-     &      '         Debye*AAngstroem     (cgs)'
+      WRITE (LUPRI,'(2(/A))')
+     &      '  Units:  C m**2/(10**(-40))   (SI) ',
+     &      '          Debye*AAngstroem     (cgs)'
 C
       CALL HEADER('Principal values (au, SI and cgs) and axes:',1)
       DO 200 I = 1, 3
@@ -3258,7 +3259,7 @@ C
       RETURN
       END
 C  /* Deck iniall */
-      SUBROUTINE INIALL
+      SUBROUTINE ABAINIALL
 C
 #include <implicit.h>
       LOGICAL RELCAL
