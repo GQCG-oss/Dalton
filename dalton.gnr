@@ -26,9 +26,9 @@ frl=rel
 #
 usage (){
 	  echo
-	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
-	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dalinp{.$DALEXT} molinp{.$MOLEXT}"
-          echo  "[potinp{.$POTEXT} (if QM3 calculation)]"
+	  echo "Usage: $0 [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
+	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory]"
+          echo  " dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
           echo
 	  echo 'Options:'
 	  echo ' -b dir    prepend dir to directory list for basis set searches.'
@@ -99,10 +99,20 @@ fi
 #  remove .dal, if added by user
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
-#  only one common input file;
-   molfil=
+#  only one input file, check if molfil exist with same base name;
+   if [ -r ${dalfil}.mol ]; then
+      molfil=$dalfil
+    if [ -r ${dalfil}.pot ]; then
+      potfil=$dalfil
+      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+    else
+      input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+    fi
+   else
+      molfil=
+      input_files="input file: $dalfil.$DALEXT"
+   fi
    outnam=$dalfil
-   input_files="input file: $dalfil.$DALEXT"
 else
 #  two input files;
 #  remove .mol, if added by user
@@ -112,7 +122,7 @@ else
    else
       outnam=${dalfil}_${molfil}
    fi
-   input_files="input file: $dalfil.$DALEXT , $molfil.$MOLEXT"
+   input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
 #  Added option for including a potential.inp file for QM3 calculations
 if [ -n "$3" ]; then
@@ -123,7 +133,7 @@ if [ -n "$3" ]; then
    else
       outnam=${dalfil}_${molfil}_${potfil}
    fi
-   input_files="$input_files , $potfil.$POTEXT"
+   input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
 #
 export TMPDIR
@@ -212,12 +222,13 @@ if [ $optn -gt 1 ] ; then
 	    wipe    -v  $WRKDIR/$optlam
 	 else
 	    $MPIRUN -np $optn $DALMPI
+#	    $MPIRUN --prefix /usr/local/lib/openmpi -np $optn $DALMPI
             ierr=$?
 	 fi
          if [ $ierr -ne 0 ];then
             echo "Error in $MPIRUN -np $optn $DALMPI, exit code $ierr"
 #           No "exit $ierr" here, because we want to save output and 
-#           tar-file for restart possibilities.
+#           tar-file for restart possibilities !!!!!!
          fi
       else
 	 echo "$DALMPI does not exist or is not executable"
@@ -302,7 +313,8 @@ cd $WRKDIR
 
 NERR=`grep -c ERROR $OUTFIL`
 if [ $ierr -ne 0 -o $NERR -gt 0 ] ; then
-   echo; echo "WARNING for ERROR  (Dalton program stopped with exit code $ierr)"
+   echo "----------------------------------------------------------"
+   echo "WARNING for ERROR  (Dalton program stopped with exit code $ierr)"
    if [ $optD -eq 1 ] ; then
       echo "- THEREFORE scratch directory $SCRATCHDIR is not deleted"
       echo "  by this script so you may restart the calculation, if possible"
@@ -315,19 +327,19 @@ fi
 
 nwrn=`grep -c -i WARNING $OUTFIL`
 if [ $nwrn -gt 0 ] ; then
-   echo
+   echo "----------------------------------------------------------"
    echo "$nwrn WARNINGS have been issued by Dalton,"
-   echo "output from 'grep -n -i WARNING'  (max 5 warnings):"
-   grep -n -i "WARNING" $OUTFIL | head -5
+   echo "output from 'grep -n -i WARNING'  (max 10 warnings):"
+   grep -n -i "WARNING" $OUTFIL | head -10
 fi
 
-if [ `grep -c '[^"]INFO' $OUTFIL` -gt 0 ] ; then
-   echo
-   echo "Informational messages have been issued by Dalton,"
-   echo "output from 'grep -n INFO'  (max 5 lines):"
-   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -5
+ninfo=`grep -c '[^"]INFO' $OUTFIL`
+if [ $ninfo -gt 0 ] ; then
+   echo "----------------------------------------------------------"
+   echo "$ninfo informational messages have been issued by Dalton,"
+   echo "output from 'grep -n INFO'  (max 10 lines):"
+   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -10
 fi
-
 
 # Disabled check of DALTON.ERR, it is generally duplication
 # of the warnings etc. in DALTON.OUT /hjaaj
