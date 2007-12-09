@@ -779,9 +779,9 @@ C     Determine center of mass
 C
       KGEOM = 1
       KMASS = KGEOM + 3*NUCDEP
-      KNAT  = KMASS + NUCDEP
-      KNUMIS= KNAT  + (NUCDEP + 1)/IRAT
-      KLAST = KNUMIS+ (NUCDEP + 1)/IRAT
+      KNAT  = KMASS +   NUCDEP
+      KNUMIS= KNAT  +  (NUCDEP + 1)/IRAT
+      KLAST = KNUMIS+  (NUCDEP + 1)/IRAT
       IF (KLAST .GT. LWORK) CALL STOPIT('READI1','CMMASS',KLAST,
      &                                   LWORK)
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
@@ -875,8 +875,8 @@ C
   200    CONTINUE
          II = 1
          DO 300 I = 1, NSYMOP
-            IF(IBTAND(II,MAXLO).EQ.0) MAXOPR = 2*II
             II = 2*II
+            IF(IBTAND(II,MAXLO).EQ.0) MAXOPR = II
   300    CONTINUE
       END IF
       MAXOPR = MAXOPR - 1
@@ -1069,10 +1069,10 @@ C
 C
 C        Check MBSI (WK/UniKA/04-11-2002).
          IF (LMULBS .AND. MBSI .LE. 0) CALL QUIT(
-     &      'READI1: Please provide proper basis-set identifier')
+     &   'READI1: Please provide proper basis-set identifier, i.e. > 0')
 C        Check MBSI (WK/UniKA/04-11-2002).
          IF (LMULBS .AND. MBSI .LT. MBSIP) CALL QUIT('READI1: '//
-     &      'Please provide multiple basis sets in increasing order')
+     &   'Please provide multiple basis sets in increasing order')
 C        Check MBSI (WK/UniKA/04-11-2002).
          MBSIP = MBSI
          NMULBS = MAX(MBSI,NMULBS)
@@ -1861,14 +1861,14 @@ C
      &              KATOM,KANG,KBLOCK,KPRIM,NPLRG,NLARGE)
       END IF
 C*****************************************************************************
-C       Process orbital data for small components
+C       Process orbital data for small components or Huckel
 C*****************************************************************************
       LCOMP = 2
       CALL ORBPRO(NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
      &            NRC(1,2),SEG(1,2),
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
-     &            KATOM,KANG,KBLOCK,KPRIM,
-     &            ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
+     &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
+     &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
       IF (DOHUCKEL) THEN
          IF (ISHELL .GT. MXSHEL) GOTO 5040
          IF (IORBD  .GT. MXCORB) GOTO 5050
@@ -2126,8 +2126,8 @@ C
             NUCTYP = NUCTYP + NUCDEG(ICENT)
 
             NCHARG = MAX(0,IZATOM(ICENT))
-C           hjaaj: do not add code -2 for point charges
-C           and code -1 for multiple basis to total charge
+C           hjaaj: do not add the code for point charges (-2)
+C           or the code for multiple basis (-1) to the total charge !!
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
 
             IF (IZATOM(ICENT) .EQ. -1) THEN
@@ -2841,7 +2841,7 @@ C       NHKT    - angular quantum number (s=1,p=2,d=3 etc.)
 C       KHKT    - number of spherical (Cartesian) components
 C       KCKT    - number of Cartesian components
 C       SEGM    - segmented contraction
-C       LCLASS  - component: large(1) or small(0)
+C       LCLASS  - class: large component (1), small or Huckel(2), density fitting (0)
 C       CENT    - coordinates of center
 C*****************************************************************************
                      NUCO  (ISHELL) = NUC(KBCH)
@@ -3338,15 +3338,13 @@ C
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
+         IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav')
+     &      NFLOAT = NFLOAT + 1
          IF (.NOT. QM3) THEN
-           IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav')
-     &         NFLOAT = NFLOAT + 1
            DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
            DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
            DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
          ELSE
-           IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav')
-     &         NFLOAT = NFLOAT + 1
            IF ( (ISUBSY(N) .EQ. 0) .AND. (CHARGE(N) .NE. 0) ) THEN
              DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
              DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
@@ -3381,7 +3379,7 @@ C
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
 ckr      IF (NUCDEP .GT. MXCENT) GOTO 5010
-ckr   This is not a very elegant solution and must be fixed
+ckr   This is not a very elegant solution and must be fixed TODO TODO
       IF (QM3) NUCDEP = NCDTOT
       IF (NCDTOT .GT. MXCENT) GOTO 5010
 C
@@ -3504,9 +3502,9 @@ C     ===============================================================
 C
       IAXIS = 0
       MAXREP = 2**NSYMOP - 1
-      IF (NSYMOP.GT.0.AND.IPREAD .GT. 0) THEN
+      IF (NSYMOP.GT.0.AND.IPREAD .GT. 5) THEN
          CALL HEADER('Symmetry Operations',1)
-         WRITE (LUPRI,'(A,I2,/)') '  Symmetry operations:',NSYMOP
+         WRITE (LUPRI,'(A,I2)') '  Symmetry operations:',NSYMOP
       END IF
       DO 100 J = 1,NSYMOP
         DO 110 I = 1,3
@@ -3561,7 +3559,7 @@ C
            NAXREP(IREP,ITYPE) = NAXIS
   205   CONTINUE
   200 CONTINUE
-      IF (IPREAD.GT. 10) THEN
+      IF (IPREAD .GT. 5) THEN
          WRITE (LUPRI,'(A,3I5)') '  IPTAX(*,1)  ',
      &                           (IPTAX(I,1),I=1,3)
          WRITE (LUPRI,'(A,3I5)') '  IPTAX(*,2)  ',
@@ -3578,7 +3576,7 @@ C
 C
 C     For DIRAC: double group symmetry
 C
-      IF(DIRAC) CALL DBLGRP
+      IF (DIRAC) CALL DBLGRP
 C
 C     Determine MULT(I) and FMULT(I) - multiplicity of center
 C     =======================================================
@@ -3763,7 +3761,7 @@ C*****************************************************************************
       NPARSU(1) = 0
       NSYM      = 0
       CALL IZERO(NAOS,8)
-      CALL IZERO(NCOS,16)
+      CALL IZERO(NCOS(1,-1),32)
       CALL IZERO(IRREP,MXCORB)
       CALL DZERO(CTRAN,8*MXCORB)
       CALL IZERO(ITRAN,8*MXCORB)
@@ -3780,11 +3778,26 @@ C
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             NUMCFA = NUMCF(IA)
-C           IC is basis-set identifier for multiple basis sets (WK/UniKA/04-11-2002).
-            IF (LMULBS) THEN
-               IC     = MBSID(IA)
-            ELSE
-               IC     = LCLASS(IA)
+            IC = LCLASS(IA)
+            IF (DIRAC) THEN
+               JC = IC
+            ELSE IF (IC .EQ. 2) THEN
+C              ... Huckel basis
+               JC = 0
+            ELSE IF (IC .EQ. 0) THEN
+C              ... Density fitting basis
+               JC = -1
+            ELSE IF (LMULBS) THEN
+C           IC .eq. 1 .and. LMULBS, and
+C           JC is then basis-set identifier for multiple basis sets (WK/UniKA/04-11-2002).
+               JC = MBSID(IA)
+            ELSE 
+               JC = 1
+            END IF
+            IF (JC .GT. 2 .OR. JC .LT. -1) THEN
+C              Dimensions of COMP(-1:2) and NCOS(8,-1:2) and ? must be changed
+C              for JC .gt. 2 /hjaaj Oct 2007
+               CALL QUIT('JC .gt. 2 or .lt. -1 is not implemented')
             END IF
             IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
             DO 420 NA = 1, KHKTA
@@ -3816,11 +3829,11 @@ C
                      END IF
                   END DO
                   NAOS(LA+1)    = NAOS(LA+1) + 1
-                  NCOS(LA+1,IC) = NCOS(LA+1,IC) + 1
+                  IF (JC .GE. 0) NCOS(LA+1,JC) = NCOS(LA+1,JC) + 1
                   IPTYP(NSORB)  = NHKOFF(NHKTA) + NA
                   IPCEN(NSORB)  = NCENT(IA)
-                  ICLASS(NSORB) = IC
-                  IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
+                  ICLASS(NSORB) = JC
+                  IF (.NOT.DIRAC .AND. IC .EQ. 2 .AND. DOHUCKEL) THEN
                      NQ     = IZATOM(NCENT(IA))
 C                    ... atomic charge of this center
                   IF (NQ .GT. 0) THEN
@@ -3893,8 +3906,9 @@ C
 #include <pincom.h>
 #include <cbirea.h>
 #include <aosotr.h>
-      CHARACTER COMP(2)*1
+      CHARACTER COMP(-1:2)*1
 #include <r12int.h>
+#include <huckel.h>
 #include <chrsgn.h>
 C
 #include <ibtfun.h>
@@ -3949,6 +3963,19 @@ C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
         COMP(1) = ' '
         COMP(2) = ' '
       ENDIF
+C
+      COMP(-1) = 'D' ! for density fitting
+      COMP( 0) = 'H' ! for Huckel
+      IF (ATOMDF .AND. IPREAD.GT.0) WRITE (LUPRI,'(A,8I4)')
+     &    '  Number of density fitting functions in each symmetry: ',
+     &    (NCOS(I,-1),I=1,MAXREP+1)
+Chjaaj Nov 07: Huckel orbitals are not counted here, as KMAX
+C in DO 410 loop in SYMPRO does not include Huckel orbitals
+C (see IF (DOHUCKEL) ... code in BASPRO)
+C     IF (DOHUCKEL .AND. IPREAD.GT.0) WRITE (LUPRI,'(A,8I4)')
+C    &    '  Number of Huckel orbitals in each symmetry:     ',
+C    &    (NCOS(I,0),I=1,MAXREP+1)
+Chjaaj Nov 07 - end.
       I=0
       DO 10 LA=1,MAXREP+1
         NBI=NAOS(LA)
@@ -5450,7 +5477,7 @@ C
       ENDIF
    50 CONTINUE
 
-      IF(IND.NE.MAXREP) CALL QUIT('SYMGRP:IND.NE.MAXREP!')
+      IF(IND.NE.MAXREP) CALL QUIT('SYMGRP: IND.NE.MAXREP!')
 C
 C     Classify group
 C     ==============
