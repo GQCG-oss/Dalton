@@ -706,8 +706,8 @@ C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
 C Common driver for PCMLNC and PCMLNO
 C
 #include <implicit.h>
-      DIMENSION BCVECS(1),BOVECS(1),CREF(1),CMO(1),INDXCI(1)
-      DIMENSION DV(1),DTV(1),SCVECS(1),SOVECS(1),WRK(LWRK)
+      DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
+      DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       DIMENSION VTEX(*)
       LOGICAL   ORBLIN
 C
