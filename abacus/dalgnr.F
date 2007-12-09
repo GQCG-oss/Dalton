@@ -380,9 +380,9 @@ C
          RETURN
       END
 C  /* Deck bndchk */
-      SUBROUTINE BNDCHK(WORK, LMWORK, WRKDLM, PROG)
+      SUBROUTINE BNDCHK(WORK, LMWORK2, WRKDLM, PROG)
 #include <implicit.h>
-      DIMENSION WORK(LMWORK)
+      DIMENSION WORK(LMWORK2)
       CHARACTER*6 PROG
 #include <priunit.h>
 C
@@ -390,12 +390,12 @@ C     Check memory traps. Gives error message if any of the programs
 C     have been outside the declared memory area.
 C
       IF (WORK(1) .NE. WRKDLM .OR.
-     &    WORK(LMWORK + 2) .NE. WRKDLM) THEN
+     &    WORK(LMWORK2) .NE. WRKDLM) THEN
          WRITE (LUPRI,'(//A,A6,A)')
      *      ' >>> WARNING, ',PROG,' has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(0) has been destroyed'
-         IF (WORK(LMWORK + 2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
+         IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(LMWORK+1) has been destroyed'
          CALL QUIT('WARNING, ' // PROG // ' has been out of bounds.')
       END IF
@@ -405,7 +405,7 @@ C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
 #include <dummy.h>
-      DIMENSION WORK(LMWORK)
+      DIMENSION WORK(0:LMWORK)
 #include <priunit.h>
 #include <gnrinf.h>
 #include <dftcom.h>
@@ -425,7 +425,7 @@ C     the necessary integrals in the primitive basis.
 C     See further notes in DKINTF routine.
 C
       IF (DKTRAN) THEN
-         CALL DKINTF(WORK(2),LMWORK)
+         CALL DKINTF(WORK(1),LMWORK)
          NEWPRP = .TRUE.
       END IF
 C
@@ -433,11 +433,11 @@ C     Now we generate all requested integrals in the contracted
 C     basis (if DKTRAN: including transformation of the Douglas-
 C     Kroll integrals to contracted basis).
 C
-      CALL HERCTL(WORK(2),LMWORK)
+      CALL HERCTL(WORK(1),LMWORK)
 C     ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C     for transformation control, old AO/MO files cannot be used
 C     any more.
-      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'HERMIT')
+      CALL BNDCHK(WORK, LMWORK+2, WRKDLM, 'HERMIT')
       WRITE(LUPRI, '(/A/)') '- End of Integral Section'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('HERMIT')
@@ -446,7 +446,7 @@ C     any more.
 C  /* Deck exesir */
       SUBROUTINE EXESIR(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
-      DIMENSION WORK(LMWORK)
+      DIMENSION WORK(0:LMWORK)
 #include <priunit.h>
 #include <maxorb.h>
 #include <siripc.h>
@@ -468,8 +468,8 @@ C
       CALL SIRINI
 C
       WRINDX = .TRUE.
-      CALL SIRCTL(ICONV,WORK(2),LMWORK)
-      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'SIRIUS')
+      CALL SIRCTL(ICONV,WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS')
 C
 C     If not numerical differentiation:
 C     We should now have MO's on file, no need for DOHUCKEL anymore
@@ -504,7 +504,7 @@ C
 C  /* Deck execc */
       SUBROUTINE EXECC(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
-      DIMENSION WORK(LMWORK)
+      DIMENSION WORK(0:LMWORK)
 #include <priunit.h>
 #include <siripc.h>
 #include <inftra.h>
@@ -519,7 +519,7 @@ C
 C     The dollar sign in the previous line may not be standard.
 C     It causes the End of Record to be skipped.
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
-         CALL SETHER(IPRUSR,.FALSE.,WORK(2),LMWORK)
+         CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          CALL QUIT('No CC in parallel code')
 #else
@@ -531,11 +531,11 @@ C     It causes the End of Record to be skipped.
       ISAVITR = ITRNMR
       ITRNMR = 1
 
-      CALL CC_DRV(WORK(2),LMWORK)
+      CALL CC_DRV(WORK(1),LMWORK)
 
       ITRNMR = ISAVITR 
 
-      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'CC    ')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC    ')
       WRITE(LUPRI, '(/A/)') '- End of Coupled Cluster'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
@@ -544,7 +544,7 @@ C     It causes the End of Record to be skipped.
 C  /* Deck exeaba */
       SUBROUTINE EXEABA(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
-      DIMENSION WORK(LMWORK)
+      DIMENSION WORK(0:LMWORK)
 #include <priunit.h>
 #include <maxorb.h>
 #include <mxcent.h>
@@ -561,8 +561,8 @@ C
       CALL QENTER('ABACUS')
       WRITE(LUPRI, '(/A/)') 'Starting in Static Property Section -'
 C
-      CALL ABACTL(WORK(2),LMWORK)
-      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'ABACUS')
+      CALL ABACTL(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ABACUS')
 C
 C     Several files left open, have to be closed manually.
 C
@@ -575,7 +575,12 @@ C
       RETURN
       END
 C  /* Deck exedrv */
-      SUBROUTINE EXEDRV(WORK, LMWORK, WRKDLM,MAST1,MYNUM1)
+      SUBROUTINE EXEDRV(WORK, LMWORK, WRKDLM)
+C
+C     Top driver for execution of Dalton.
+C     Called by PROGRAM DALTON after reading environment
+C     variables and allocating WORK memory.
+C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -601,7 +606,7 @@ C  /* Deck exedrv */
 Cef begin
 #include <incore.h>
 Cef end
-      DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
+      DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
       CALL QENTER('DALTON')
@@ -688,7 +693,7 @@ C
                CORD(3,NUCIND) = D0
                ISTBNU(NUCIND) = 7
                CHARGE(NUCIND) = D0
-               CALL NUCPRO(WORK(2),LMWORK)
+               CALL NUCPRO(WORK(1),LMWORK)
 CLF
             ELSE IF(PCM) THEN
                NPCMIN =.TRUE.
@@ -705,7 +710,7 @@ C
                CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',' ',IDUMMY,
      &                     .FALSE.)
                CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                     WORK(2),LMWORK)
+     &                     WORK(1),LMWORK)
                CALL GPCLOSE(LUSIFC,'KEEP')
                REJECT = .FALSE.
                RDINPC = .FALSE.
@@ -786,9 +791,9 @@ C
                   END IF
                END IF
                IF (ITERNR .EQ. 0) THEN
-                  CALL ABAINP('**START',WORK(2),LMWORK)
+                  CALL ABAINP('**START',WORK(1),LMWORK)
                ELSE
-                  CALL ABAINP('**EACH ',WORK(2),LMWORK)
+                  CALL ABAINP('**EACH ',WORK(1),LMWORK)
                END IF
                IF (NEWWLK) THEN
                   NEWWLK = .FALSE.
@@ -816,7 +821,7 @@ C     We may have more DOSYM under **START than under **PROPE
                   CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
                   READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                        WORK(2),LMWORK)
+     &                        WORK(1),LMWORK)
                ELSE
                   CALL EXEABA(WORK,LMWORK,WRKDLM)
                END IF
@@ -884,8 +889,8 @@ C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
 C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
-               CALL ABAINP('**PROPE',WORK(2),LMWORK)
-               CALL VIBCTL(WORK(2),LMWORK)
+               CALL ABAINP('**PROPE',WORK(1),LMWORK)
+               CALL VIBCTL(WORK(1),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
 ckr            IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
@@ -919,10 +924,10 @@ ckr            IF (IWKTYP .EQ. 6) THEN
                CORD(3,NUCIND) = D0
                ISTBNU(NUCIND) = 7
                CHARGE(NUCIND) = D0
-               CALL NUCPRO(WORK(2),LMWORK)
+               CALL NUCPRO(WORK(1),LMWORK)
             END IF
             END IF
-            CALL ABAINP('**PROPE',WORK(2),LMWORK)
+            CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL EXEABA(WORK,LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
@@ -939,10 +944,10 @@ C
             IF (WORD .EQ. '**RESPO') THEN
                REWIND (LUCMD)
                RNRESP = .TRUE.
-               CALL SETSIR(WORK(2),LMWORK)
+               CALL SETSIR(WORK(1),LMWORK)
                IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL RSPDRV(WORK(2),LMWORK)
+               CALL RSPDRV(WORK(1),LMWORK)
             ELSE
                GOTO 133
             END IF
@@ -992,19 +997,19 @@ C
             CORD(3,NUCIND) = D0
             ISTBNU(NUCIND) = 7
             CHARGE(NUCIND) = D0
-            CALL NUCPRO(WORK(2),LMWORK)
+            CALL NUCPRO(WORK(1),LMWORK)
          END IF
          WRINDX = .TRUE.
          IF (RNRESP) THEN
             IF (.NOT. RNSIRI) THEN
-               CALL SETSIR(WORK(2),LMWORK)
+               CALL SETSIR(WORK(1),LMWORK)
                IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
             END IF
-            CALL RSPDRV(WORK(2),LMWORK)
+            CALL RSPDRV(WORK(1),LMWORK)
          END IF
 C
          IF (RNABAC) THEN
-            CALL ABAINP('**PROPE',WORK(2),LMWORK)
+            CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI
             IF (WALKIN) THEN
 C
@@ -1027,12 +1032,12 @@ C
 C     We finally punch information for Gamess-US graphic packages
 C
       IF (SOLVNT) NUCIND = NUCIND - 1
-      IKIND = 2
+      IKIND = 1
       IKOL  = IKIND + MXCENT
-      KLAST = IKOL + MXCENT
-      KLEFT = 2 + LMWORK - KLAST
+      KLAST = IKOL  + MXCENT
+      LLEFT = LMWORK - KLAST
 C
-      CALL MOLPLT(WORK(IKIND),WORK(IKOL),WORK(KLAST),KLEFT)
+      CALL MOLPLT(WORK(IKIND),WORK(IKOL),WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(IKIND),LMWORK)
 C
       CALL GETTIM(CEND,WEND)
