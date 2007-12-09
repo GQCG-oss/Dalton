@@ -757,20 +757,20 @@ C
          CALL HEADER('Output from PICK_ACT_BATCH',-1)
          DO J = 1, 4
              IF (NCENTS(J).EQ.0) THEN
-                WRITE (LUPRI,'(1X,A,I1,A)')
-     &         ' Index ',J,', all centers active'
+                WRITE (LUPRI,'(A,I1,A)')
+     &         '  Index ',J,', all centers active'
              ELSE
-                WRITE (LUPRI,'(1X,A,I1,A,2I5)')
-     &         ' Index ',J,', active centers :',
+                WRITE (LUPRI,'(A,I1,A,(10I5))')
+     &         '  Index ',J,', active centers :',
      &           (ICENTS(K,J),K=1,NCENTS(J))
              ENDIF
          ENDDO
-         WRITE (LUPRI,'(1X,A,4I5,/)')
-     &      ' Active classes for each index:',
+         WRITE (LUPRI,'(A,4I5,/)')
+     &      '  Active classes for each index:',
      &      (ICLASSES(I),I=1,4)
-         WRITE (LUPRI,'(1X,A,/)') ' ACTVBT in PICKAO:'
+         WRITE (LUPRI,'(A/)') '  ACTVBT(1:NAOBCH,1:4) in PICKAO:'
          DO I = 1, NAOBCH
-            WRITE (LUPRI,'(10X,I5,5X,4L5))') I, (ACTVBT(I,J),J=1,4)
+            WRITE (LUPRI,'(I15,5X,4L5)') I, (ACTVBT(I,J),J=1,4)
          END DO
       END IF
 C
