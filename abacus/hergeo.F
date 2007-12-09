@@ -33,12 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REV_LOG
-c===========================================================================
-c942508-kr: As P.Taylor pointed out, IPRINT never used, and thus removed from
-cCBIANA.
-c===========================================================================
-#endif
 C  /* Deck anainp */
       SUBROUTINE ANAINP(WORD)
 C
@@ -331,37 +325,37 @@ C hjaaj Oct 2003: this output is only useful for small molecules ...
             END IF
             CALL PRIDIS(NAMDEP,DIST,NUCDEP)
          END IF
-      END IF
 C
-      IF (DISTMX .NE. D0) THEN
-        IF (DIF) THEN
-          WRITE(LUPRI,'(/A,F12.6,A/A,I5,A,I5,5A)')
+         IF (DISTMX .NE. D0) THEN
+           IF (DIF) THEN
+            WRITE(LUPRI,'(/A,F12.6,A/A,I5,A,I5,5A)')
      &      '  Max differential change in interatomic separation is',
      &      ADISTMX,' Angstrom',
      &      '  between atoms',IADISTMX,' and',JADISTMX,
      &      ', "',NAMDEP(IADISTMX),'" and "',NAMDEP(JADISTMX),'".'
-        ELSE
-          WRITE(LUPRI,'(/A,2(F10.4,A)/A,I5,A,I5,5A)')
+           ELSE
+            WRITE(LUPRI,'(/A,2(F10.4,A)/A,I5,A,I5,5A)')
      &      '  Max interatomic separation is',
      &       ADISTMX,' Angstrom (',ADISTMX/XTANG,' Bohr)',
      &      '  between atoms',IADISTMX,' and',JADISTMX,
      &      ', "',NAMDEP(IADISTMX),'" and "',NAMDEP(JADISTMX),'".'
-        END IF
-        IF (N_QMATOMS .NE. NUCDEP) THEN
-          IF (DIF) THEN
-            WRITE(LUPRI,'(/A,F12.6,A/A,I5,A,I5,5A)')
+           END IF
+           IF (N_QMATOMS .NE. NUCDEP) THEN
+            IF (DIF) THEN
+             WRITE(LUPRI,'(/A,F12.6,A/A,I5,A,I5,5A)')
      &         '  Max differential change in QM+MM interatomic '//
      &           'separation is',DISTMX,' Angstrom',
      &         '  between the QM+MM centers ',IDISTMX,' and',JDISTMX,
      &         ', "',NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
-        ELSE
-            WRITE(LUPRI,'(/A,2(F10.4,A)/A,I5,A,I5,5A)')
+            ELSE
+             WRITE(LUPRI,'(/A,2(F10.4,A)/A,I5,A,I5,5A)')
      &         '  Max QM+MM interatomic separation is',
      &         DISTMX,' Angstrom (',DISTMX/XTANG,' Bohr)',
      &         '  between the QM+MM centers ',IDISTMX,' and',JDISTMX,
      &         ', "',NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
-          END IF
-        END IF
+            END IF
+           END IF
+         END IF
       END IF
 C
       IF (PRINT .AND. .NOT. DIF) THEN
