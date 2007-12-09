@@ -33,31 +33,37 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C  FILE: abacus/abaltra.F
+C  PRINCIPAL AUTHOR: Hans Joergen Aa. Jensen 1992, 1995
+C  PURPOSE: MO transformation of London two-electron integrals
+C           for H2LAC(u,v,x,y) and FQL(p,u)
+C
 #ifdef UNDEF
 ===========================================================================
 /* Comdeck log */
-950102-hjaaj
-TRLTDS: improved vectorization (now not NASHA in inner loop)
-941215-hjaaj
-removed TRFDIS (routine was duplicated in abadtra.u)
+950102-hjaaj TRLTDS: improved vectorization (now not NASHA in inner loop)
+941215-hjaaj removed TRFDIS (routine was duplicated in abadtra.F)
 921117:to do: skip pack/unpack if NSYM .eq. 1
               option for only FQL if open-shell Hartree-Fock ?
               probably not worth the effort
-no changes made today; abaltra.f and abaltra.o from Nov. 10 is still OK
 ===========================================================================
 #endif
 C  /* Deck lontra */
       SUBROUTINE LONTRA(IBXYZ,IBOPSY,H2LAC,FQL,CMO,PVSQ,WRK,LWRK,IPRINT)
 C
-C 23-Sep-1992 hjaaj
+C Copyright (c) 1992, 1995 Hans Joergen Aa. Jensen
+C
+C Purpose: MO transformation of London two-electron integrals
 C
 C Input:
 C  IBXYZ = 1,2,3 for Bx, By, Bz component, respectively.
-C  CMO(NCMOT) MO coefficients
-C  PVSQ(NASHT,NASHT,NASHT,NASHT) full 2-el. density matrix
+C  IBOPSY : symmetry of B operator component
+C  CMO(NCMOT) : MO coefficients
+C  PVSQ(NASHT,NASHT,NASHT,NASHT) : full 2-el. density matrix
+C  IPRINT : print level
 C Output:
-C  H2LAC(NASHT,NASHT,NASHT,NASHT) active 2-el. London int.s
-C  FQL(NORBT,NASHT) FQ matrix for London integrals
+C  H2LAC(NASHT,NASHT,NASHT,NASHT) : active 2-el. London int.s
+C  FQL(NORBT,NASHT) : FQ matrix for London integrals
 C Scratch:
 C  WRK(LWRK)
 C
@@ -76,7 +82,7 @@ C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       CALL QENTER('LONTRA')
       if (iprint .gt. 2) then
@@ -211,7 +217,9 @@ C  /* Deck trldrv */
      *                  H2LBUF,INDAO,INDAC,INDRS,INDDIS,
      *                  WRK,KFRSAV,LFRSAV,IPRINT)
 C
-C 2.Oct.1992 hjaaj
+C Written 2.Oct.1992 hjaaj
+C
+C Driver for transformation of two-electron London integrals (H2L)
 C
 #include <implicit.h>
 #include <iratdef.h>
@@ -230,7 +238,7 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       PARAMETER (LBINT = 600)
 C
@@ -455,7 +463,7 @@ C   INFTRL: IH1AO(8,8),IH1AC(8,8),NDAO(8), NDAC(8)
 C
 #include <priunit.h>
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       MXNDAO = 0
       MXNDAC = 0
@@ -550,7 +558,7 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       DO 800 KR = 1,NBAST
          KRSYM = ISAO(KR)
@@ -609,7 +617,7 @@ C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
 C  INFTRL : IH1AO(8,8), IH1AC(8,8)
 C
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       DO 100 IBSYM = 1,NSYM
          IASYM = MULD2H(IBSYM,IABSYM)
@@ -665,7 +673,7 @@ C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
 C     Local variables:
 C
@@ -766,7 +774,7 @@ C   INFTRL : NDAC(8),MXNDAO,NXNDAC
 C
 #include <priunit.h>
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       IF (IPRINT .GT. 25) THEN
          write (lupri,*) 'output from trlah2, kr,kssym=',kr,kssym
@@ -916,7 +924,7 @@ C  INFORB : NASHT
 C  INFTRL : NDAC(8), IH1AC(8,8)
 C
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       NDACUV = NDAC(KUVSYM)
       CALL DZERO(PVXS,2*MXNDAC)
@@ -990,6 +998,7 @@ C
          IASYM  = MULD2H(IBSYM,IH1SYM)
          NBLKA  = NBLK(IASYM)
          NBLKB  = NBLK(IBSYM)
+      IF (NBLKA .EQ. 0 .OR. NBLKB .EQ. 0) GO TO 300
          IAST   = IBLK(IASYM) + 1
          IBST   = IBLK(IBSYM) + 1
          IF (IWAY .GE. 0) THEN
