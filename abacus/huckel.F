@@ -58,6 +58,10 @@ C
       N2HUCBA = NHUCBA*NHUCBA
       NTRDIM = MAX(NHUCMX*NBASMA,NBASMA*(NBASMA + 1)/2)
 C
+      IF (NHUCBA .LE. 0) THEN
+         CALL QUIT('No Huckel basis functions.')
+      END IF
+C
       KFREE = 1
       LFREE = LWORK
       CALL MEMGET('REAL',KTOTOV,NELMNT,WORK,KFREE,LFREE)
@@ -969,8 +973,10 @@ C                         smaller than Huckel, e.g. S atoms without d-orbitals
 C
 C     We orthogonalize the projected Huckel eigenvectors first
 C
-         CALL NORM(S(ISTS),CMO(ISTC),NBASI,NHUCI,WORK,THNORM,IRETUR)
-         IF (IRETUR.NE.0) GO TO 5000
+         IF (NHUCI .GT. 0) THEN
+            CALL NORM(S(ISTS),CMO(ISTC),NBASI,NHUCI,WORK,THNORM,IRETUR)
+            IF (IRETUR.NE.0) GO TO 5000
+         END IF
 C
 C     Now we add vectors that span the entire space and orthogonalize 
 C     them to the previous vectors
