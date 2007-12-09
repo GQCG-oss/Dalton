@@ -92,10 +92,10 @@ C
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             GO TO 100
          END IF
-         WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *        '" not recognized in NMDINP.'
+         WRITE (LUPRI,'(/3A/)') ' Keyword "',WORD,
+     *        '" not recognized for '//WORD1
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal keyword in NMDINP.')
+         CALL QUIT('Illegal keyword for '//WORD1)
  1       CONTINUE
             READ (LUCMD,'(2I4)') NMORDR, NAORDR
             GOTO 100
@@ -175,17 +175,17 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *        '" not recognized in NMDINP.'
+         WRITE (LUPRI,'(/4A/)') ' Prompt "',WORD,
+     *        '" not recognized for ',WORD1
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal prompt in NMDINP.')
+         CALL QUIT('Illegal prompt for '//WORD1)
       END IF
 C
 C     *** Print section. ***
 C
  300  CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for NMDINP:',0)
+         CALL HEADER('Changes of defaults for '//WORD1//':',0)
 
          IF (NUMVIB) THEN
             WRITE (LUPRI,'(/5X,A)') 'A vibrational analysis is done.'
@@ -201,15 +201,15 @@ C
      &                           GRPTMP
          WRITE (LUPRI,'(5x,A,F6.4)') 'Step size used: ', DISPLC
          IF (SDRTST) THEN
-            WRITE (LUPRI,'(/5X,A)') 'Comparison of numerical Hessian ' //
-     &           'with analytical Hessian is performed'
+            WRITE (LUPRI,'(/5X,A)') 'Comparison of numerical Hessian '
+     &          // 'with analytical Hessian is performed'
          END IF
          IF (DRYRUN) THEN
             WRITE (LUPRI,'(/5X,A)') 'Numerical derivatives will be' //
      &           'conducted as a dry run.'
             WRITE (LUPRI,'(5X,A)') 'No actual derivatives will be' //
      &           'calculated.'
-            WRITE (LUPRI,'(A,I4)') 'Number of redundant coordinates:',
+            WRITE (LUPRI,'(A,I5)') 'Number of redundant coordinates:',
      &           NMREDU
          END IF
 C
@@ -229,15 +229,14 @@ C
          END IF
 C
          IF (REUHES) THEN
-            WRITE (LUPRI,'(/5X,A)') 'Hessian (if specified elsewhere)' //
-     &           ' will be saved for future work.'
-            WRITE (LUPRI,'(5X,A)') 'Hessian will be saved on the file'//
-     &           ' DALTON.HES'
+            WRITE (LUPRI,'(/5X,A)') 'Hessian (if specified elsewhere)'
+     &           // ' will be saved for future work.',
+     &      'Hessian will be saved on the file "DALTON.HES"'
          END IF
 C
          IF (NRMCRD.AND.HTEST) THEN
-            WRITE (LUPRI,'(/5X,A)') 'A test of the normal coordinates '//
-     &           'will be done.'
+            WRITE (LUPRI,'(/5X,A)') 'A test of the normal coordinates '
+     &           // 'will be done.'
          END IF
 C
          IF (MANUAL) THEN
