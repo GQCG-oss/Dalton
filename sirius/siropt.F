@@ -473,7 +473,7 @@ C
            GRDACC  = MAX(THRGRD,GNORM(3)**2)
          END IF
          GRDACC  = GRDACC / NORBT
-         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GRNACC)) + 1)
+         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GRDACC)) + 1)
          IFTHRS  = MAX( 7, IFTHRS )
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
      &   ' Fock matrix screening setting for this macro iteration: 10^('
@@ -1852,6 +1852,7 @@ C
             WRK(KCVECS) = D1
             ICREF  = 1
             NCVECS = 1
+            JSTA   = 1
          ELSE
             REWIND (LUIT1)
 C           ... search for "STARTVEC"
