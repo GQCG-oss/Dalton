@@ -342,7 +342,7 @@ C
          RETURN
 #if !defined (VAR_FASTIO)
       END IF
-      READ (LUONEL) TITLEM, NS,(NB(I),I=1,NS), DUMM,
+      READ (LUONEL) (TITLEM,I=1,24),NS,(NB(I),I=1,NS), DUMM,
      *              KMA,(MNUC,I=1,KMA), NBRO,(JTRAN(I),I=1,NBRO),
      *              ((ITRAN(I,J),J=1,MXCGTO),I=1,NBRO),
      *              ((CTRAN(I,J),J=1,MXCGTO),I=1,NBRO),
