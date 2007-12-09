@@ -1,3 +1,4 @@
+C --- FILE: qm3.h ---
       LOGICAL QM3, QM3LO1, QM3LO2,LOCLAS 
       LOGICAL CCMM, FIXMOM, OLDTG
       LOGICAL LONUPO, LOELFD, LOSPC, LOEC3
@@ -8,7 +9,7 @@
 C 
 C ---------------------------------------------------------
 C In the present implementation the MXQM3 parameter follows 
-C the MXCENT parameter in the mxcent.h include file. This 
+C the MXCENT parameter in the mxcent.h include file. This is
 C crucial for this implementation to work properly!!
 C ---------------------------------------------------------
 C 
@@ -19,7 +20,7 @@ C
       INTEGER ISIGEPS, NSIGEPS
 C
       PARAMETER(NMMBA1 = 5000)
-      PARAMETER(MXQM3 = 120)
+      PARAMETER(MXQM3  = 120)
       PARAMETER(MXTYPE = 20)
 C
       CHARACTER MDLWRD*7
@@ -77,3 +78,4 @@ C
      *                ALTXX(0:MXTYPE),ALTXY(0:MXTYPE),
      *                ALTXZ(0:MXTYPE),ALTYY(0:MXTYPE),
      *                ALTYZ(0:MXTYPE),ALTZZ(0:MXTYPE)
+C --- end of qm3.h ---
