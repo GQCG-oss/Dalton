@@ -549,7 +549,7 @@ C  /* Deck sklfck */
 #include <inforb.h>
       LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR, SPNORB
       DIMENSION FMAT(N2BASX,*), WORK(LWORK), HESSEE(*), ISYMDM(*),
-     &          IFCTYP(NDMAT)
+     &          IFCTYP(*)
 #include <abainf.h>
 #include <ccom.h>
 #include <shells.h>
@@ -1246,8 +1246,9 @@ C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton Fock matrices in SKLOND",1)
          DO 100 X = 1, NFMAT
+            WRITE(LUPRI,*) 'Input skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+     &                                NBASIS,NBASIS,-1,LUPRI)
   100    CONTINUE
       END IF
 C
@@ -1266,6 +1267,7 @@ C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Symmetric skeleton Fock matrix in SKLOND",1)
          DO 300 X = 1, NFMAT
+            WRITE(LUPRI,*) 'Symmetric skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
      &                              1,LUPRI)
   300    CONTINUE
@@ -1337,6 +1339,7 @@ C
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)
             DO 700 X = 1, NFMAT
+               WRITE(LUPRI,*) 'AO skeleton Fock matrix no.',X,NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
      &                                   NBASIS,NBASIS,1,LUPRI)
   700       CONTINUE
@@ -1403,3 +1406,4 @@ C
       END IF
       RETURN
       END
+C --- end of her2fck.F ---

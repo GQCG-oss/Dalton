@@ -79,7 +79,7 @@ C
          KLAST = KIREP + MXCORB
          CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &               .FALSE.)
-         CALL ICOPY(8,NCOS(1,2),1,NHUCAO(1),1)
+         CALL ICOPY(8,NCOS(1,0),1,NHUCAO(1),1)
          NHUCBA = 0
          DO 14 I = 1, MAXREP + 1
             NHUCBA = NHUCBA + NHUCAO(I)
@@ -117,7 +117,11 @@ C
       LFREE = LWORK
       CALL MEMGET('REAL',KLBINT,MAXTYP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
-      IF (EXP1EL) CALL MEMGET('REAL',KEXPVL,MAXTYP,WORK,KFREE,LFREE)
+      IF (EXP1EL) THEN
+         CALL MEMGET('REAL',KEXPVL,MAXTYP,WORK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KEXPVL,     0,WORK,KFREE,LFREE)
+      END IF
       IF (WORD .EQ. 'ELFGRDC' .OR. WORD .EQ. 'ELFGRDS') THEN
          LINTAD = 9*NUCIND*(MAXREP + 1)
       ELSE
@@ -2347,8 +2351,11 @@ C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
-      IF (.NOT. EXP1EL) CALL MEMGET('REAL',KSOINT,NOPTYP*NELMNT,
-     &                              WORK,KFREE,LFREE)
+      IF (.NOT. EXP1EL) THEN
+         CALL MEMGET('REAL',KSOINT,NOPTYP*NELMNT,WORK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KSOINT,0,WORK,KFREE,LFREE)
+      END IF
       CALL PR1DRV(WORK(KSOINT),NELMNT,WORK(KFREE),LFREE,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,WORK(KATOM),INTADR,TRIANG,NATOM,SQUARE,
@@ -2835,7 +2842,7 @@ C  /* Deck setatm */
 #include <maxaqn.h>
 C
 #include <nuclei.h>
-      LOGICAL DOATOM(NUCIND), SPIN
+      LOGICAL DOATOM(MXCENT), SPIN
 #include <symmet.h>
 #include <cbiher.h>
 C

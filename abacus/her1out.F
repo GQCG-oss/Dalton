@@ -62,7 +62,7 @@ C
       DATA LAB123/'********','        ','        '/
       DATA TITLES/'OVERLAP '/, TITLEH/'ONEHAMIL'/, TITLET/'KINETINT'/
 #include <sdpre.h>
-      ITRI(I,J) = I*(I-1)/2 + J
+c     ITRI(I,J) = I*(I-1)/2 + J
       INDEX1(IJ) = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C

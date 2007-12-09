@@ -1063,6 +1063,12 @@ C
          DIFABZ = CORAZ - CORBZ
          DISTAB = DIFABX*DIFABX + DIFABY*DIFABY + DIFABZ*DIFABZ
 C
+         IF (IPRINT .GT. 05) THEN
+            WRITE (LUPRI, 1000) ISYMOP
+            IF (IPRINT .GE. 10) WRITE (LUPRI,'(A,3F12.6)')
+     &         ' CORB[XYZ] ', CORBX,CORBY,CORBZ
+         END IF
+C
 C        Huckel / EWMO information matrix
 C        ...  INTTYP .eq. -1 signals HUCKEL integrals
 C
@@ -1080,32 +1086,26 @@ C
             END IF
             IF (LCLASS(ISHELA) .EQ. 2 .AND. LCLASS(ISHELB) .EQ. 2) THEN
                IHUCA = IHUCPT(ISHELA)
-               IF (ISHELA .EQ. ISHELB .AND. DISTAB .LT. 1.0D-3) THEN
+               IHUCB = IHUCPT(ISHELB)
+               IF (IHUCA .EQ. 0 .OR. IHUCB .EQ. 0) THEN
+                  CALL QUIT('Program error IHUCPT(ISHELx) .eq. 0')
+               ELSE IF (ISHELA .EQ. ISHELB .AND. DISTAB .LT. 1.D-3) THEN
                   HUCFAC = HUCEXC(IHUCA)
                ELSE IF (DISTAB .LT. 1.0D-3 .OR. EWMO) THEN
 C                 ... no intercenter terms in Hamiltonian matrix in EWMO
                   HUCFAC = D0
                ELSE
-                  IHUCB = IHUCPT(ISHELB)
                   HUCFAC = DP5*HUCCNT*(HUCEXC(IHUCA) + HUCEXC(IHUCB))
                END IF
             END IF
             HUCFAC = HUCFAC/SQRT(SCAL)
          END IF
-         IF (IPRINT .GT. 05) THEN
-            WRITE (LUPRI, 1000) ISYMOP
-            IF (IPRINT .GE. 10) THEN
-               WRITE (LUPRI,'(A,1F12.6)') ' CORBX    ', CORBX
-               WRITE (LUPRI,'(A,1F12.6)') ' CORBY    ', CORBY
-               WRITE (LUPRI,'(A,1F12.6)') ' CORBZ    ', CORBZ
-            END IF
-         END IF
-         CALL DZERO(SHLINT,KCKTAB*NSHINT)
 C
 C        *****************************************
 C        ***** Calculate Cartesian integrals *****
 C        *****************************************
 C
+         CALL DZERO(SHLINT,KCKTAB*NSHINT)
          CALL PR1PRM(SHLINT,WORK,LWORK,LABINT,INTTYP,
      &               NOPTYP,NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,
      &               NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,

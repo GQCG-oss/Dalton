@@ -124,21 +124,21 @@ C and allocate memory for IBIT vector in IWORK
       LWRK1 = LWORK - LWRK2
       KWRK1 = 1
       KWRK2 = KWRK1 + LWRK1
-      LDWRK2 = IRAT*LWRK2
-      CALL SUPDRV(NOSYM,WORK(KWRK1),LWRK1,WORK(KWRK2),LDWRK2,
+      LIWRK2 = IRAT*LWRK2
+      CALL SUPDRV(NOSYM,WORK(KWRK1),LWRK1,WORK(KWRK2),LIWRK2,
      &            THRESH,IPRINT)
       CALL QEXIT('FORMSUP')
       RETURN
       END
 C  /* Deck supdrv */
-      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,NWORK1,THRESH,
+      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,LIWORK,THRESH,
      &                  IPRINT)
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
 #include <iratdef.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
-      DIMENSION WORK(LWORK), IWORK(NWORK)
+      DIMENSION WORK(LWORK), IWORK(LIWORK)
       LOGICAL   NOSYM, OPTST
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
@@ -150,7 +150,7 @@ C  /* Deck supdrv */
 C
 C*** DEFAULTS
 C
-      NWORK = NWORK1
+      NWORK = LIWORK
       DST1  = SECOND()
       NBMAX = 255
       NUT   = 0
