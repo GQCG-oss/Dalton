@@ -659,7 +659,7 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                 FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
-         IF(DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+         IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPRDIS)
 C
@@ -675,6 +675,8 @@ C-----------------
      &                  WRK(KFREE),LFREE,IPRDIS)
             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+         ELSE
+            EELEL = 0.0D0
          END IF
 C-----------------
 C CBN+JK 03.01.06
@@ -1695,7 +1697,6 @@ C     EXCTRO = DP5*DDOT(NNBASX,DCAO,1,FCAO,1)
          END IF 
       ELSE
 C     memory allocation
-C        stop "TODO"
          KDENA = KLST
          KKSMA = KDENA +N2BASX*2
          KKSPA = KKSMA +N2BASX*2
@@ -1711,11 +1712,11 @@ C     Kohn-Sham contribution evaluation
             CALL DAXPY(N2BASX,DP5,DCAO,1,WRK(KDENA),1)
             CALL DAXPY(N2BASX,DP5,DCAO,1,WRK(KDENA+N2BASX),1)
          END IF
-         CALL DAXPY(N2BASX,1D0,DCAO(1+N2BASX),1,WRK(KDENA),1)     
+         CALL DAXPY(N2BASX,1.D0,DCAO(1+N2BASX),1,WRK(KDENA),1)     
 c         CALL OUTPUT(WRK(KDENA),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 c         CALL OUTPUT(WRK(KDENA+N2BASX),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
-         CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),EDFTY,WRK(KFREE),
-     &      LFREE,1)
+         CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),EDFTY,
+     &      WRK(KFREE),LFREE,1)
 C     packing
          CALL DGETSP(NBAST,WRK(KKSMA),WRK(KTMP1))
          IF (NSYM .GT. 1) THEN
@@ -1734,14 +1735,14 @@ c     CALL OUTPKB(WRK(KKSPA),NORB,NSYM,1,LUPRI)
 c     WRITE(LUPRI,'(/A)') 'ksmB: '
 c     CALL OUTPKB(WRK(KKSPB),NORB,NSYM,1,LUPRI)
 c
-         CALL DAXPY(NNBAST,DP5,WRK(KKSPA),1,FCAO,1)
-         CALL DAXPY(NNBAST,DP5,WRK(KKSPB),1,FCAO,1)
+         CALL DAXPY(NNBAST, DP5,WRK(KKSPA),1,FCAO,1)
+         CALL DAXPY(NNBAST, DP5,WRK(KKSPB),1,FCAO,1)
 c     
          CALL DAXPY(NNBAST,-DP5,WRK(KKSPA),1,FVAO,1)
          CALL DAXPY(NNBAST, DP5,WRK(KKSPB),1,FVAO,1)
       END IF
 C
-      EMY = EMY+EDFTY
+      EMY = EMY + EDFTY
 C     EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
       CALL QEXIT('DFT_ADD_KS')
       RETURN
