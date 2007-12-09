@@ -753,7 +753,8 @@ c*    common /zlmtab/ zlm(130)
       common /dfac/ dfac(29)
 c*    common /dfac/ dfac(23)
 c*    dimension ang(7,2), xab(2), yab(2), zab(2)
-      dimension ang(9,2), xab(2), yab(2), zab(2)
+chj   dimension ang(9,2), xab(2), yab(2), zab(2)
+      dimension ang(9,*), xab(*), yab(*), zab(*)
 c*    dimension lf(7),lmf(49),lml(49),lmx(130),lmy(130),lmz(130)
       dimension lf(9),lmf(81),lml(81),lmx(377),lmy(377),lmz(377)
 c*    data lf /0,1,4,9,16,25,36/
@@ -1056,7 +1057,7 @@ c**
       subroutine facab(na1,nb1,crda,crdb,xab)
       implicit double precision (a-h,o-z)
 c*    dimension crda(2), crdb(2), bic(10), ind(4), xab(2)
-      dimension crda(2), crdb(2), bic(15), ind(5), xab(2)
+      dimension crda(*), crdb(*), bic(15), ind(5), xab(*)
 c*    data bic/4*1.0d0,2.0d0,2*1.0d0,2*3.0d0,1.0d0/
       data bic/4*1.0d0,2.0d0,2*1.0d0,2*3.0d0,1.0d0,1.0d0,4.0d0,6.0d0,
      a         4.0d0,1.0d0/

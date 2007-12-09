@@ -1331,8 +1331,8 @@ C
          KEVEC  = KATARR + 8*MXCENT
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
-         KWRK2   = KEVC2  + MXCOOR
-         LWRK = LWORK  - (KWRK2 - IWOFF) + 1
+         KWRK2  = KEVC2  + MXCOOR
+         LWRK   = LWORK  - (KWRK2 - IWOFF) + 1
          IF (KWRK2-IWOFF .GT. LWORK) CALL STOPIT('RUNOPT',' ',
      &        KWRK2,LWORK)
          CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
@@ -1754,8 +1754,8 @@ C     Check if increase of gradient norm should cause reinitialization
 C     of Hessian. Reinitialization occurs when the norm of the gradient
 C     is larger than the norm of the gradient two iterations earlier.
 C
-         IF ((.NOT. NEWTON) .AND. (GRDINI .AND. (ITRNMR .GE. 2) .AND.
-     &        (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)))) THEN
+         IF (.NOT.NEWTON .AND. GRDINI .AND. (ITRNMR .GE. 2)) THEN
+         IF (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)) THEN
             WRITE(LUPRI,*)
             WRITE(LUPRI,*)'***** NOTE! *****'
             WRITE(LUPRI,*)'Due to increasing gradient norm, ' //
@@ -1767,6 +1767,7 @@ C
      &           WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
             TRSTRA = GEINFO(0,5)
             GEINFO(ITRNMR+1,5) = TRSTRA
+         END IF
          END IF
 C
 C     Check if symmetry should be broken
@@ -4976,7 +4977,7 @@ C
 #include "symmet.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
-      DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
+      DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(MX2CRD*MX2CRD)
       DIMENSION TMPHES(MX2CRD,MX2CRD)
       DIMENSION HESPCK(NCRDHS*NCRDHS)
       DIMENSION WORK(LWORK)
@@ -5145,9 +5146,8 @@ C
          RATIO = ERGDIF/ERGPRD 
          IF (IPRINT .GT. 2) THEN
             CALL HEADER('Energy difference to previous geometry:',-1)
-            WRITE(LUPRI,'(/A),/)')
-     &      '      Actual           /  Predicted       =    Ratio '
-            WRITE(LUPRI,'(5X,F15.10,2(A,F15.10))')
+            WRITE(LUPRI,'(/A/5X,F15.10,2(A,F15.10))')
+     &      '      Actual           /  Predicted       =    Ratio ',
      &            ERGDIF,'  /  ',ERGPRD,'  =  ',RATIO
          END IF
       ELSE

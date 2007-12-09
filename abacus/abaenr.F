@@ -234,6 +234,8 @@ C
       ELSE
          ITNR = 1
          ICTL = 2
+         KBCNRV = 1
+         KBONRV = 1
          KWRK1  = 1
          KIWRK  = KWRK1 + IROW(NREDH+1)
          LWRKNR = KIWRK + (NREDH+1)

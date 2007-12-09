@@ -58,9 +58,9 @@ C
 #include <mxcent.h>
 #include <iratdef.h>
 C
-      DIMENSION REDH(2),REDGD(2),SOLEQ(2),IBNDX(2)
-      DIMENSION CMO(2),UDV(2),PV(2),FC(2),FV(2),FCAC(2),H2AC(2)
-      DIMENSION CREF(2),GORB(2),DIAOR(2),DIACI(2),INDXCI(2),WRK(2)
+      DIMENSION REDH(*),REDGD(*),SOLEQ(*),IBNDX(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION CREF(*),GORB(*),DIAOR(*),DIACI(*),INDXCI(*),WRK(*)
       DIMENSION GD(1)
 C
 #include <abainf.h>
@@ -440,8 +440,8 @@ C
       LOGICAL NOH2
       PARAMETER (NOH2 = .FALSE.)
 C
-      DIMENSION UDV(2),FOCK(2),FC(2),FV(2),FCAC(2),H2AC(2)
-      DIMENSION XNDXCI(2), WRK(2)
+      DIMENSION UDV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION XNDXCI(*), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NSYM, NASHT, NORB(), ?
@@ -562,8 +562,8 @@ C
 #include <priunit.h>
 C
 C
-      DIMENSION FC(2),FV(2),FOCK(2),UDV(NASHDI,NASHDI)
-      DIMENSION EODIA(2)
+      DIMENSION FC(*),FV(*),FOCK(*),UDV(NASHDI,NASHDI)
+      DIMENSION EODIA(*)
 C
 #include <maxash.h>
 #include <maxorb.h>

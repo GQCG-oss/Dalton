@@ -1813,6 +1813,8 @@ C     /* Deck ffcdep */
       SUBROUTINE FFCDEP(KDPMTX,INDSTP,IDXTMP,NLDPMX,LDPMTX,IFRSTD,
      &                  IRSRDR,IORDR,IEIIN,IPRINT,DEPFC)
 #include <implicit.h>
+Chjaaj DEBUG priunit.h
+#include <priunit.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DTHR = 1.0D-12)
 #include <fcsym.h>
@@ -1847,6 +1849,12 @@ C
  300  CONTINUE
 C
       ITHDIM = ISTRT+IRSRDR+IEIIN
+      if (ITHDIM+1 .gt. NSTRDR) then
+         write(lupri,*)
+     &'hjaaj FFCDEP error: ITHDIM,ISTRT,IRSRDR,IEIIN,NSTRDR',
+     & ITHDIM,ISTRT,IRSRDR,IEIIN,NSTRDR
+         call quit('hjaaj error in FFCDEP')
+      end if
       MINTST = MIN(ITHDIM,NMORDR)
       DO 600 II = 1, NLDPMX
          IF (((KDPMTX(II,ITHDIM+1,1).EQ.0).OR.(MINTST.EQ.NMORDR)).AND.

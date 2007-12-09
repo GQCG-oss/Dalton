@@ -439,8 +439,8 @@ C
 C
 C     Work space allocations:
 C
+      KGD    = 1
       IF (INGD) THEN
-         KGD    = 1
          KREDH  = KGD    + NVARPT
       ELSE
          KREDH  = 1

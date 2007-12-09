@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
-C File:  abarint.F
+C File:  abacus/abarint.F
 C
 C New module taking care of redundant internal coordinates.
 C The procedures are called from abaopt.F /960818-vebjornb
@@ -800,6 +800,7 @@ C     angles has been found, need addition of dihedral angles to take
 C     care of out of plane bending. First we find the central atom.
 C
       ICNT = 0
+      IBNDNR = 0
       IF ((IATOM .GE. 4) .AND. (IBEFOR .EQ. IINTCR)) THEN
          DO 50 I = 1, IATOM
             INUMBN = 0
@@ -2061,7 +2062,8 @@ C
 C
 C     We remove all vectors in V corresponding to singular values.
 C
-         WMAT(IDIM2+1,IDIM2+1) = 1.1D6
+Chjaaj   WMAT(IDIM2+1,IDIM2+1) = 1.1D6
+Chjaaj-Oct07: bugfix: this goes out of bounds!!!!!
          IDIM3 = IDIM2
          IC = 1
  550     CONTINUE
@@ -2075,12 +2077,17 @@ C
  567           CONTINUE
                WMAT(I,I) = WMAT(I+1,I+1)
  560        CONTINUE
-            WMAT(IDIM3,IDIM3) = WMAT(IDIM3+1,IDIM3+1)
+Chjaaj-Oct07: new code follows next 5 lines
+            IF (IDIM3 .EQ. IDIM2) THEN
+               WMAT(IDIM3,IDIM3) = 1.1D6
+            ELSE
+               WMAT(IDIM3,IDIM3) = WMAT(IDIM3+1,IDIM3+1)
+            END IF
             IDIM3 = IDIM3 - 1
             GOTO 550
          ELSE IF (ABS(WMAT(IC,IC)) .LT. 1.0D6) THEN
             IC = IC + 1
-            GOTO 550
+            IF (IC .LE. IDIM2) GOTO 550
          END IF
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Reduced U matrix',-1)
@@ -3505,6 +3512,10 @@ C
          CALL GETINT(IATOM,MXRCRD,CRDOLD,VALOLD)
          RMSLIM = 1.0D-6
       ELSE
+         IATOM = ICRTCR / 3
+C        ... BUGFIX hjaaj Oct 07, IATOM was not defined.
+C            Is used for TMPVEC below, which has dimension ICRTCR,
+C            based on this I divided by three to get IATOM (see DO 15 loop)
          DO 3 I = 1, NRIC
             VALORG(I) = VALOLD(I)
             VALOLD(I) = VALNEW(I)
@@ -4464,3 +4475,4 @@ C
       VPRD(3) =  VEC1(1)*VEC2(2) - VEC2(1)*VEC1(2)
       RETURN
       END
+C --- end of abarint.F ---

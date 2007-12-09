@@ -33,12 +33,14 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVLOG
-c961019-kruud: Added ROA changes from Gilbert Hangartner
-c960417-hjaaj: Rudimentary initial implementation of .RESTART
-c950601-vebjorn:
-c  A flag for geometry convergence has been added in common block GNRINF.
-#endif
+C  FILE: abacus/abawalk.F
+C
+C  Geometry "walking" algorithms.
+C  Implementation started in 1985 in Aarhus
+C  by Trygve Helgaker and Hans Joergen Aa. Jensen.
+C
+C  Convention: routine names in this module are of the form 'WLK*'
+C
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
 #include <implicit.h>
@@ -4566,22 +4568,24 @@ C
                   ANGLE = WINKEL(STPDIA,GRDDIA,NCART)
                   ANGOK = ABS(ANGLE-D180) .LT. ANGMAX
                END IF
+            ELSE
+               ANGOK = .TRUE.
             END IF
 C
 C           ***** Calculate wave-function prediction and test *****
 C
             IF (.NOT.ADPOK) THEN
-               WRITE (LUPRI,'(/,A)') ' Step rejected since atomic'//
-     *                               ' displacements are too large.'
+               WRITE (LUPRI,'(/A)') '@ Step rejected since atomic'//
+     *                              ' displacements are too large.'
                RADIUS = REDADP*MIN(STPNRM,RADIUS)
             ELSE IF (.NOT.ANHOK) THEN
-               WRITE (LUPRI,'(/,A)') ' Step rejected since'//
-     *                               ' anharmonic term is too large.'
+               WRITE (LUPRI,'(/A)') '@ Step rejected since'//
+     *                              ' anharmonic term is too large.'
                RADIUS = REDANH*MIN(STPNRM,RADIUS)
             ELSE IF ((IWKTYP .EQ. 7) .AND. (.NOT.ANGOK)) THEN
-               WRITE (LUPRI,'(/,A)') ' Step rejected since '//
-     *                               'step-gradient angle is too large.'
-               WRITE (LUPRI,'(A,F12.6)') ' Angle: ',ANGLE
+               WRITE (LUPRI,'(/A)') '@ Step rejected since '//
+     *                              'step-gradient angle is too large.'
+               WRITE (LUPRI,'(A,F12.6)') '@ Angle: ',ANGLE
                RADIUS = REDANG*MIN(STPNRM,RADIUS)
             ELSE
 C              IF (WFPRED) THEN
@@ -4592,8 +4596,8 @@ C              ELSE
 C              END IF
                IF (MCOK) GO TO 1000
                RADIUS = TRUSTD*MIN(STPNRM,RADIUS)
-               IF (IPRINT .GT. 2) THEN
-                  WRITE (LUPRI,'(/,A)') ' Step rejected since '//
+               IF (IPRINT .GT. 0) THEN
+                  WRITE (LUPRI,'(/,A)') '@ Step rejected since '//
      *                              ' orbital rotations are too large.'
                END IF
             END IF
@@ -6618,8 +6622,8 @@ C
 #include <symmet.h>
 C
 #include <ibtfun.h>
-      NEXT1(I) = MOD(I,3) + 1
-      NEXT2(I) = NEXT1(NEXT1(I))
+c     NEXT1(I) = MOD(I,3) + 1
+c     NEXT2(I) = NEXT1(NEXT1(I))
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCARX in WLKDA1',-1)
@@ -7829,3 +7833,4 @@ C
       END IF
       RETURN
       END
+C --- end of abawalk.F ---

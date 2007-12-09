@@ -1199,7 +1199,7 @@ C
       DIMENSION ORBTRA(IDIM,IDIM)
 #include <ibtfun.h>
 C
-      IF (IATOM .EQ. 0) THEN
+      IF (IATOM .LE. 0) THEN
          FACTOR = 1.0D0
       ELSE
          FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
@@ -1223,16 +1223,17 @@ C
             DO 400 J = 1, IDIM
                SUM = SUM + ABS(ORBTRA(I,J))
  400        CONTINUE
-            SUM = FACTOR*SUM
+            SUM = 1.0D0/(FACTOR*SUM)
             DO 500 J = 1, IDIM
-               ORBTRA(I,J) = ORBTRA(I,J)/SUM
+               ORBTRA(I,J) = ORBTRA(I,J)*SUM
  500        CONTINUE
  300     CONTINUE
       END IF
 C
       IF (IPRINT .GE. 15) THEN
          CALL HEADER('SO to AO transformation matrix',-1)
-         CALL OUTPUT(ORBTRA,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
+         WRITE(LUPRI,*) '   for IATOM = ',IATOM
+         CALL OUTPUT(ORBTRA,1,IDIM,1,IDIM,IDIM,IDIM,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1517,16 +1518,16 @@ C
 C
 C     ***** Print Section *****
 C
-      IF (IPRINT .GT. 5) THEN
+      IF (IPRINT .GT. 5 .or. iatom.eq.0) THEN
          CALL HEADER('Output from ONETRA',-1)
          WRITE (LUPRI,'(A,I5)') ' IATOM  ', IATOM
          WRITE (LUPRI,'(A,I5)') ' ICOOR  ', ICOOR
          WRITE (LUPRI,'(A,I5)') ' NORBT  ', NORBT
          WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
-         WRITE (LUPRI,'(A,2I5)') ' NNBASX, N2BASX ', NNBASX, N2BASX
-         WRITE (LUPRI,'(A,2I5)') ' NNORBX, N2ORBX ', NNORBX, N2ORBX
-         WRITE (LUPRI,'(A,I5)')  ' NCMOT  ', NCMOT
-         WRITE (LUPRI,'(A,I10)') ' LWORK  ', LWORK
+         WRITE (LUPRI,'(A,2I5)')' NNBASX, N2BASX ', NNBASX, N2BASX
+         WRITE (LUPRI,'(A,2I5)')' NNORBX, N2ORBX ', NNORBX, N2ORBX
+         WRITE (LUPRI,'(A,I5)') ' NCMOT  ', NCMOT
+         WRITE (LUPRI,'(A,I10)')' LWORK  ', LWORK
       END IF
 C
 C     ***** Make square matrix *****
@@ -1543,7 +1544,8 @@ C
 C     Loop over irreps for orbitals
 C
       NONSYM = .FALSE.
-      JCOOR = 3*(IATOM - 1) + ICOOR
+      JCOOR = MAX(1,3*(IATOM - 1) + ICOOR)
+C     ... hjaaj: to avoid referring to IPTCNT(-2,...) below when IATOM.eq.0
       DO 100 IREPA = 1,NSYM
       IF (NORB(IREPA) .GT. 0) THEN
          DO 200 IREPB = 1, IREPA
@@ -1600,24 +1602,27 @@ C  /* Deck transx */
        SUBROUTINE TRANSX(A,B,NA,NB,ANTSYM,IPRINT)
 C
 C Modified from TRANSA, tuh 2-Sep-1988
-C WRITTEN 1-FEB-1984 PJ
+C TRANSA written 1-Feb-1984 PJ
 C
-C PUT THE TRANSPOSED OF THE MATRIX A IN B
+C Put the lower triangle of A into the upper triangle of B
+C (if A = B, the matrix will become (anti)symmetric
+C  based on the lower triangle)
 C
 #include <implicit.h>
 #include <priunit.h>
 C
 C
-       DIMENSION A(NA,2),B(NB,2)
+       DIMENSION A(NA,*), B(NB,*)
        IF (IPRINT.GT.15) THEN
-          WRITE(LUPRI,150)NA,NB
- 150      FORMAT(/,' Dimension of matrix A is ',I5,I5)
+          WRITE(LUPRI,150) NA,NB,ANTSYM
+ 150      FORMAT(/' Dimension of matrix A is ',I5,I5,
+     &           /' ANTSYM =',F10.2)
           WRITE(LUPRI,'(/A)')' Matrix to be (anti)symmetrized '
           CALL OUTPUT(A(1,1),1,NA,1,NB,NA,NB,1,LUPRI)
        END IF
        DO 200 I=1,NB
          DO 100 J=1,I
-         B(J,I)=A(I,J)*ANTSYM
+           B(J,I)=A(I,J)*ANTSYM
  100     CONTINUE
  200   CONTINUE
        IF (IPRINT.GT.15) THEN

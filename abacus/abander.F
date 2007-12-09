@@ -33,6 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C  FILE: abacus/abander.F
+C
 C  /* Deck nmdinp */
       SUBROUTINE NMDINP(WORD,IDRPRI)
 #include <implicit.h>
@@ -184,31 +186,26 @@ C
  300  CONTINUE
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for NMDINP:',0)
-         WRITE (LUPRI,'(A)') '                                    '
 
          IF (NUMVIB) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'A vibrational analysis is done.'
-            WRITE (LUPRI,'(5X,A)') 'Which/how is specified in ' //
+            WRITE (LUPRI,'(/5X,A)') 'A vibrational analysis is done.'
+            WRITE (LUPRI,'(5X,A)')  'Which/how is specified in ' //
      &           '*VIBANA (and **PROPERTIES).'
          ELSE
-            WRITE (LUPRI,'(5X,A,I4)') 'Numerical derivatives' //
-     &           'calculated to order', NMORDR
-            WRITE (LUPRI,'(5X,A,I4,A)') 'using analytical', NAORDR,
-     &           '. derivatives'
+            WRITE (LUPRI,'(/5X,A,I4/5X,A,I4,A)')
+     &         'Numerical derivatives calculated to order', NMORDR,
+     &         'using analytical', NAORDR, '. derivatives'
          END IF
 C
          WRITE (LUPRI,'(5x,A)') 'Group used for force constants ' //
      &                           GRPTMP
          WRITE (LUPRI,'(5x,A,F6.4)') 'Step size used: ', DISPLC
          IF (SDRTST) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'Comparison of numerical Hessian ' //
+            WRITE (LUPRI,'(/5X,A)') 'Comparison of numerical Hessian ' //
      &           'with analytical Hessian is performed'
          END IF
          IF (DRYRUN) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'Numerical derivatives will be' //
+            WRITE (LUPRI,'(/5X,A)') 'Numerical derivatives will be' //
      &           'conducted as a dry run.'
             WRITE (LUPRI,'(5X,A)') 'No actual derivatives will be' //
      &           'calculated.'
@@ -217,54 +214,47 @@ C
          END IF
 C
          IF (RESTRT) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'This is a restart of an old run.'
+            WRITE (LUPRI,'(/5X,A)') 'This is a restart of an old run.'
          END IF
 C
          IF (NRMCRD) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'Normal coordinates will be found.'
+            WRITE (LUPRI,'(/5X,A)') 'Normal coordinates will be found.'
             WRITE (LUPRI,'(5X,A)') 'Energy and property derivatives' //
      &           'will be with respect to these coordinates.'
          END IF
 C
          IF (PREHES) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'A precalculated hessian will be' //
+            WRITE (LUPRI,'(/5X,A)') 'A precalculated hessian will be' //
      &           ' used to find normal coordinates.'
          END IF
 C
          IF (REUHES) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'Hessian (if specified elsewhere)' //
+            WRITE (LUPRI,'(/5X,A)') 'Hessian (if specified elsewhere)' //
      &           ' will be saved for future work.'
             WRITE (LUPRI,'(5X,A)') 'Hessian will be saved on the file'//
      &           ' DALTON.HES'
          END IF
 C
          IF (NRMCRD.AND.HTEST) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'A test of the normal coordinates '//
+            WRITE (LUPRI,'(/5X,A)') 'A test of the normal coordinates '//
      &           'will be done.'
          END IF
 C
          IF (MANUAL) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(A)') 'The mol file will be printed for '//
-     &                          'geometries.'
+            WRITE (LUPRI,'(/A)')
+     &         'The mol file will be printed for geometries.'
          END IF
 C
          IF (NPRPDR) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)') 'Property derivatives will be ' //
-     &           'calculated.'
+            WRITE (LUPRI,'(/5X,A)')
+     &         'Property derivatives will be calculated.'
             IF (NMORDR.GT.0) THEN
                WRITE (LUPRI,'(5X,A,I4)') 'Order of the' //
      &              'differentiation is equal to: ', NMORDR
             END IF
          END IF
          IF (MIDAS) THEN 
-            WRITE (LUPRI,'(5X,A)') 
+            WRITE (LUPRI,'(/5X,A)') 
      &                  'Operator file for MidasCpp interface '//
      &                  'will be generated.'
             WRITE (LUPRI,'(5x,A,A,E24.10)')
@@ -507,6 +497,8 @@ c#endif
       LOGICAL MOLECU
       CHARACTER WORD*7
 C
+      CALL QENTER('NUMDRV')
+C
 C 100  CONTINUE
 C
       MOLECU = .TRUE.
@@ -532,6 +524,10 @@ C
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
  300  CONTINUE
+      if (nderiv .le. 0) then
+         write(lupri,*) 'hjaaj: nderiv .le. 0',nderiv
+         write(lupri,*) 'hjaaj: nmordr,naordr,ncoor',nmordr,naordr,ncoor
+      end if
 C
       DO 500 IORDR = 1, NMORDR
          IKDIME = 1
@@ -550,9 +546,12 @@ C
          NDIME = NDIME + 2*NCOOR
       END IF
 C
-      KDERIV = IWOFF + 2
-      KFUVAL = KDERIV +   NDERIV
-      KCOOR  = KFUVAL +   NDIME*NINNER
+      KTEST  = IWOFF  + 2
+Chjaaj-Oct07: KTEST a simple device to check if arrays which
+C     supposedly not are used, are used anyway.
+      KDERIV = KTEST  + 1
+      KFUVAL = KDERIV + NDERIV
+      KCOOR  = KFUVAL + NDIME*NINNER
       KCSTAR = KCOOR  + 3*NCOOR
       KSYMCO = KCSTAR + 3*NCOOR
       KTRNRC = KSYMCO +   NCOOR**2
@@ -568,11 +567,16 @@ C
          KTSTGD = KLAST
          KTSTSD = KTSTGD + NCOOR
          KLAST  = KTSTSD + NCOOR**2
+      ELSE
+         KTSTGD = KTEST
+         KTSTSD = KTEST
       END IF
       IF (PGMTST) THEN
          LTHTST = 2**NMORDR
          KENTST = KLAST
          KLAST  = KENTST + LTHTST
+      ELSE
+         KENTST = KTEST
       END IF
 C
 C     *** Memory for screening of rendundant force constants. ***
@@ -591,6 +595,10 @@ C
          KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
          KNIDPC = KDCOEF +   IFRSTD       *LDPMTX
          KLAST  = KNIDPC +                 LDPMTX
+      ELSE
+         KDPMTX = KTEST
+         KDCOEF = KTEST
+         KNIDPC = KTEST
       END IF
       NSTRDR = NMORDR
 C
@@ -604,6 +612,8 @@ C
       IF (NAORDR.GT.0) THEN
          KISOTP = KLAST
          KLAST  = KISOTP + NUCDEP
+      ELSE
+         KISOTP = KTEST
       END IF
 C
 C     *** Symmetry initialization and symmetry ***
@@ -618,6 +628,9 @@ C
       LWRK1 = LWORK - (KLAST - IWOFF) + 1
 C
       IWSAV = IWOFF
+Chjaaj-Oct07: KTEST a simple device to check if arrays which
+C     supposedly not are used, are used anyway.
+      WORK(KTEST) = -999.9D0
       CALL NUMDR1(WORK(KDERIV),WORK(KFUVAL),WORK(KCOOR),WORK(KCSTAR),
      &            WORK(KSYMCO),WORK(KDCOEF),WORK(KTSTGD),WORK(KTSTSD),
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC),
@@ -625,6 +638,9 @@ C
      &            WORK(KLAST) ,WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),
      &            WORK(KISOTP),WORK(KMBKLN),LWRK1,IWOFF,NDERIV,NDIME,
      &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
+      IF (WORK(KTEST) .NE. -999.9D0) THEN
+         CALL QUIT('WORK(KTEST) has been modified!')
+      END IF
 C
 C
 c#if defined (VAR_MPI)
@@ -661,6 +677,7 @@ C     *** No more numerical derivative. ***
 C
       NMWALK = .FALSE.
 C
+      CALL QEXIT('NUMDRV')
       RETURN
       END
 C
@@ -841,6 +858,8 @@ C
          KINDST = KIADRS + MAXADR
          KNPRTN = KINDST + NMORDR
          KINDTM = KNPRTN + NMORDR
+         NTORDR = NMORDR
+C        ... NTORDR is used for DIMENSION in NMDER /hjaaj
          KIDCMP = KINDTM + MAXINR
          KIEQVG = KIDCMP + NCOOR
          KICIN  = KIEQVG + 2*NMORDR
@@ -1267,6 +1286,7 @@ C
      &          ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
      &          NMIDPC(LDPMTX), IEQVGM(NMORDR,2), NPRTNR(MAXINR)
 C
+      CALL QENTER('NMDER')
 c#if defined (VAR_MPI2)
 c      LUNMCL = -9056
 c#endif
@@ -1678,6 +1698,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('NMDER')
       RETURN
       END
 C
@@ -1734,6 +1755,8 @@ c
       DIMENSION INDSTP(NTORDR), ICRIRP(NCOOR,2), NPRTNR(MAXINR),
      &          ICIN(NMORDR), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
      &          IRPIND(NMORDR), IDCOMP(NCOOR)
+C
+      CALL QENTER('GTNPNT')
 C
 C     *** Symmetry initilization. ***
 C
@@ -2005,6 +2028,7 @@ c#endif
          IDIME = IDIME + 1
       END IF
 C
+      CALL QEXIT('GTNPNT')
       RETURN
       END
 C
@@ -2486,7 +2510,7 @@ C
       CALL DZERO(TCOEFF,KDIM2)
       COEFF(0,0) = D1
 C
-C     *** Temporary coeffesients used to generate coeffisients ***
+C     *** Temporary coeffesients used to generate coefficients ***
 C     ***            for even-numbered derivatives.            ***
 C
       IF (NMNMDR .GT. 1) THEN
@@ -2561,6 +2585,8 @@ C /* Deck NMNDER */
      &          IDDCMP(NCOOR), NCVAL(NCOOR),
      &          KDPMTX(LDPMTX,NSTRDR,IFRSTD), ICRIRP(NCOOR,2)
 C
+      CALL QENTER('NMNDER')
+C
       IF (FCCAL) THEN
          KDIM = MXCOOR**2
          IF (NAORDR .LT. 1) THEN
@@ -2570,10 +2596,10 @@ C
             CALL DZERO(HESMOL,  KDIM)
          END IF
       END IF
-      CALL DZERO(DERIV,NDERIV)
+      IF (NDERIV .GT. 0) CALL DZERO(DERIV,NDERIV)
 C
 C     ***************************************************
-C     *** This subroutine calculates the coeffisients ***
+C     *** This subroutine calculates the coefficients ***
 C     ***      for the numerical differentiation.     ***
 C     ***************************************************
 C
@@ -2819,7 +2845,7 @@ C
                      END DO
  600                 CONTINUE
 C
-C                    *** Calculate the coeffisient for this ***
+C                    *** Calculate the coefficient for this ***
 C                    *** function value                     ***
 C
                      BCOEFF = D1
@@ -2984,7 +3010,7 @@ C
                      END DO
  800                 CONTINUE
 C
-C                    *** Calculate the coeffisient for this ***
+C                    *** Calculate the coefficient for this ***
 C                    *** function value                     ***
 C
                      BCOEFF = D1
@@ -3038,6 +3064,7 @@ C
 C
  100  CONTINUE
 C
+      CALL QEXIT('NMNDER')
       RETURN
       END
 C
@@ -6457,7 +6484,7 @@ C
       IF (IPRINT.GT.0) THEN
          WRITE (LUPRI,'(/A)')
      &         'Symmetries of frozen core orbitals in reduced symmetry:'
-         WRITE (LUPRI,'(2X,8A4))') (REP(I), I=0,MAXREP)
+         WRITE (LUPRI,'(2X,8A4)') (REP(I), I=0,MAXREP)
          WRITE (LUPRI,'(8I4)') (NRHFFR(I), I=1,MAXREP+1)
          WRITE (LUPRI,'(/)')
       END IF
@@ -6581,7 +6608,7 @@ C
 C
 C     *** NTIME = 1 -> write the frequencies and norm of ***
 C     ***              the normal coordinates.           ***
-C     *** NTIME = 2 -> write the qubic and quartic force ***
+C     *** NTIME = 2 -> write the cubic and quartic force ***
 C     ***              field.                            ***
 C
       IF (NTIME .EQ. 1) THEN
@@ -7128,7 +7155,7 @@ C         IF ((NTIME.EQ.2).OR.(NTIME.EQ.1 .AND.
       ENDIF
 C
 C     *** NTIME = 1 -> write the frequencies 
-C     *** NTIME = 2 -> write the qubic and quartic force field. 
+C     *** NTIME = 2 -> write the cubic and quartic force field. 
 C
 C
       FAC = 0.5D0
@@ -7373,3 +7400,4 @@ C
 C
       RETURN
       END
+C --- end of abander.F ---
