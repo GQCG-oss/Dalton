@@ -46,12 +46,10 @@ C
 #include <stdlib.h>
 
 void dalton_quit(const char* format, ...);
-typedef void (*DaltonDriver)(double* work, int* lmwork, double* wrkdlm,
-                             int* master, int* mynum);
-extern DaltonDriver nodstr_;
+typedef void (*DaltonDriver)(double* work, int* lmwork, double* wrkdlm);
+extern DaltonDriver nodedriver_;
 extern DaltonDriver exedrv_;
-void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm, 
-           int* master, int* mynum)
+void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm)
 {
     double* mem_block;
     static const int debug = 0;
@@ -64,7 +62,7 @@ void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm,
     mem_block[0] = *wrkdlm;
     mem_block[1+*nwords] = *wrkdlm;
     if(debug) fprintf(stderr,"CEXE: Allocating  work: %i dwords\n", *nwords);
-    drv(mem_block, nwords, wrkdlm,master,mynum);
+    drv(mem_block, nwords, wrkdlm);
     if(debug) fprintf(stderr,"CEXE finished.\n");
 }
 #ifdef VAR_G77
