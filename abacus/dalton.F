@@ -122,12 +122,18 @@ C
 C
 
       CALL QENTER('DALTON main')
+C
 #if defined (VAR_MPI)
       CALL MPIXINIT
-      PARIO = .FALSE.
 #else
-      MYNUM = 0
+      MYNUM  = 0
+      MASTER = 0
+      NODTOT = 0
 #endif
+      PARIO = .FALSE.
+C
+C     Initialize file pointers; open error file for MASTER
+C
       CALL GPIOIN
       IF (MYNUM .EQ. 0) THEN
          CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',
