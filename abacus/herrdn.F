@@ -3417,9 +3417,7 @@ C
 C
 C LF Generate coordinates of cavity spheres if need be
 C
-      IF(PCM) THEN
-         CALL SPHGEN
-      END IF
+      IF (PCM) CALL PCMSPHGEN
 C
       RETURN
 C
