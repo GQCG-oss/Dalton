@@ -1,35 +1,41 @@
 C
-C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dalton, an ab initio electronic structure program, Release 1.0
-C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
-C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
-C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
-C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
-C...   P. R. Taylor, and O. Vahtras"
-C...
-C...   This source code is provided under a written licence and may be 
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
+C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C File: sirius/sirsolpcm.F
+C       (sirsol.F modified for pcm)
 C
 #include <single.h>
+C
 C  /* Deck pcmgrd */
       SUBROUTINE PCMGRD(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE)
 C
@@ -214,7 +220,6 @@ C
       CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
       CALL DZERO(WRK(KDENV),N2BASX)
       CALL DGEFSP(NBAST,WRK(KDENC),WRK(KDENV))
-ckr      CALL PKSYM1(WRK(KDENV),WRK(KDENC),NBAS,NSYM,1)
       EXP1VL = .TRUE.
       TOFILE = .FALSE.
       CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENV),1,TOFILE,'NPETES ',
@@ -451,15 +456,22 @@ C
 C     end of pcmgrd.
       END
 C  /* Deck pcmfck */
-      SUBROUTINE PCMFCK(DC,DV,FSOL,CMO,MOBAS,ESOLT,WRK,LFREE,JPRINT)
+      SUBROUTINE PCMFCK(DCAO,DVAO,FSOL,CMO,MOBAS,ESOLT,WRK,LFREE,JPRINT)
 C
 C     Written by L. Frediani and K.Ruud,
 C                June 2001, based on SOLGRD by hjj.
 C
 C   Purpose:  calculate effective solvent Fock operator
 C
+C   Input:
+C    DCAO, DVAO: only used if MOBAS .false.
+C    MOBAS : return FSOL in MOBAS instead of AOBAS
+C            (if AOBAS, then also excpectation values with DCAO+DVAO calculated)
+C    CMO   : MO coefficients
+C    JPRINT: extra print control (in addition to IPRPCM)
+C
 C   Output:
-C    FSOL     MCSCF gradient with solvation contribution added
+C    FSOL  : generalized Fock matrix  with solvation contribution added
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -494,7 +506,7 @@ C
       PARAMETER (ANTOAU=1.0D+00/XTANG)
 C
       LOGICAL FNDLAB, EXP1VL, TOFILE
-      DIMENSION DV(NNBAST), DC(NNBAST)
+      DIMENSION DVAO(NNBAST), DCAO(NNBAST)
       DIMENSION FSOL(*), CMO(*), WRK(LFREE)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0,  D2 = 2.0D0, DP5 = 0.5D0 )
 C
@@ -521,24 +533,15 @@ C
       KJ1AO  = KJENAO + NNBASX
       KJAO   = KJ1AO  + NNBASX
       KTJ2   = KJAO   + NNBASX
-      KPKDEN = KTJ2   + NTS
-      KWRK1  = KPKDEN + NNBASX
+      KWRK1  = KTJ2   + NTS
       LWRK1  = LFREE  - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMFCK',-KWRK1,LFREE)
 C
       ESOLT = D0
-      QET = D0
+      QET   = D0
 C
       CALL DZERO(WRK(KTJ2),NTS)
 
-C
-C lf Adding active and inactive density
-C
-CLF      CALL DZERO(WRK(KDTOT),NNBAST)
-CLF      IF(NASHT.GT.0) THEN
-clf         CALL DAXPY(NNBAST,1.0D0,DV,1,WRK(KDTOT),1)
-CLF      ENDIF 
-CLF      CALL DAXPY(NNBAST,1.0D0,DC,1,WRK(KDTOT),1)
 C
 C        Read JEN in ao basis 
 C
@@ -551,48 +554,54 @@ C
       REWIND (LUPROP)
       CALL REAPCM('NE-PCMIN','PCMFCK  ',LUPROP,WRK(KJENAO),NNBASX)
       IF (IPRINT .GE. 15) THEN
-         WRITE (LUPRI,'(/A)') ' JNE_ao matrix:'
+         WRITE (LUPRI,'(/A)') ' PCMFCK - JNE_ao matrix:'
          CALL OUTPAK(WRK(KJENAO),NBAST,1,LUPRI)
       END IF
 C
       IF (.NOT. MOBAS) THEN
 C
-C     Loop over all tesserae. We temporarily use FSOL for the unpacked
-C     inactive density matrix
+C     Loop over all tesserae.
 C
-         
-         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
+C     First add active and inactive density
 C
-C    PCMEN = interaction solute electrons - polarization nuclear charges
-C             PCMEN = sum_i [Vel(i) * QSN(i)]
+         KDAOX = KWRK1
+         KWRK1 = KDAOX + NNBASX
+         LWRK1 = LFREE  - KWRK1
+         IF (LWRK1 .LT. N2BASX) CALL ERRWRK('PCMFCK-2',-KWRK1,LFREE)
+         IF (NASHT.GT.0) THEN
+            CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
+            CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
+            CALL PKSYM1(WRK(KDAOX),WRK(KWRK1),NBAS,NSYM,-1)
+         ELSE
+            CALL PKSYM1(WRK(KDAOX),DCAO,NBAS,NSYM,-1)
+         END IF
 C
-         PCMEN = -DDOT(NNBASX,FSOL,1,WRK(KJENAO),1)
+C     PCMEN = interaction solute electrons - polarization nuclear charges
+C     PCMEN = sum_i [Vel(i) * QSN(i)]
+C
+         PCMEN  = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
-         CALL J1INT(WRK(KTJ2),EXP1VL,FSOL,1,TOFILE,'NPETES ',
+         CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
-Clf quick fix: J1INT overwrites FSOL here!
-         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
          CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
       ELSE
          DO ITS = 1, NTSIRR
             QET = QET + QSE(ITS)
          END DO
-         QET = QET * DBLE (MAXREP+1)
+         QET = QET * (MAXREP+1)
       END IF
 C
 C     Normalization of electronic apparent charges
 C     For ICOMPCM=1 the correction on charge ITS is done proportionally to
-C     the area of the tessera ITS
+C        the area of the tessera ITS
 C     For ICOMPCM=2 the correction is done with a constant factor.
 C
-C for Ruud: I'm not sure that NRHFEL is the number of electrons, and where it
-C           is stored.
-      DNE = SDPRE(2*NISHT+NACTEL)
+      DNELEC = 2*NISHT+NACTEL  ! total number of electrons
       IF (NONEQ) THEN
-         TCH = DNE * (EPSINF - D1) / EPSINF
+         TCH = DNELEC * (EPSINF - D1) / EPSINF
       ELSE
-         TCH = DNE * (EPS - D1) / EPS
+         TCH = DNELEC * (EPS - D1) / EPS
       END IF         
 C
 C     Option 1
@@ -602,7 +611,7 @@ C
 Clf dirty trick
 Clf      ICOMPCM = 0
 CLF
-      IF(ICOMPCM.EQ.1) THEN
+      IF (ICOMPCM.EQ.1) THEN
          SUPTOT = STOT * ANTOAU * ANTOAU
          DIFF = TCH - QET
          DO ITS = 1, NTSIRR
@@ -612,25 +621,25 @@ CLF
 C
 C     Option 2
 C
-      ELSE IF(ICOMPCM.EQ.2) THEN
+      ELSE IF( ICOMPCM.EQ.2) THEN
          FE = TCH / QET
          DO ITS = 1, NTSIRR
             QSE(ITS) = QSE(ITS) * FE
             QETN = QETN + QSE(ITS)
          ENDDO
       ENDIF
-      QETN = QETN * DBLE(MAXREP + 1)
+      QETN = QETN * (MAXREP + 1)
 C
 C     Print total induced charge before and after renormalization
 C
-      IF(IPRPCM.GE.5)THEN
+      IF (IPRPCM.GE.5) THEN
          WRITE(LUPRI,1100) QET, TCH
       END IF
 C      
  1000 FORMAT(' Electronic apparent charge',F10.5,' Theoretical ',
-     * F10.5,' Renormalized',F10.5)
+     &   F10.5,' Renormalized',F10.5)
  1100 FORMAT(' Electronic apparent charge',F10.5,' Theoretical ',
-     * F10.5,' Not renormalized')
+     &   F10.5,' *** Not renormalized ***')
 C
       EXP1VL = .FALSE.
       TOFILE = .FALSE.
@@ -681,16 +690,16 @@ C
             CALL UTHU(WRK(J1AO),FSOL(J1MO),CMO(JCMO),
      &                WRK(KWRK1),NBAS(ISYM),NORB(ISYM))
   700    CONTINUE
-       ELSE 
-          CALL DCOPY(NNBASX,WRK(KJAO),1,FSOL(1),1)
-       END IF
-C
-C
-       IF (IPRINT .GE. 6 .AND. MOBAS) THEN
-         WRITE (LUPRI,'(/A)')
+         IF (IPRINT .GE. 6) THEN
+             WRITE (LUPRI,'(/A)')
      &      ' PCMFCK: effective solvent one-electron matrix (MO basis):'
-         CALL OUTPKB(FSOL,NORB,NSYM,1,LUPRI)
+           CALL OUTPKB(FSOL,NORB,NSYM,1,LUPRI)
+         END IF
+      ELSE 
+         CALL DCOPY(NNBASX,WRK(KJAO),1,FSOL,1)
       END IF
+C
+C
       FIRST = .FALSE.
       IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMFCK')
@@ -730,11 +739,8 @@ C
             WRITE(LUPRI,*)' **** BEFORE PCMLNC **** '
             CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
          END IF
-C     CALL PCMLNC(NCSIM,BCVEC,CREF,CMO,INDXCI,
-C     *               DV,DTV,SVEC,VTEX,WRK,LFREE)
-C     
          CALL PCMLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
-     *        DV,DTV,SCVECS,VTEX,WRK,LWRK)
+     &               DV,DTV,SCVECS,VTEX,WRK,LWRK)
          IF (IPRPCM.GT.101) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER PCMLNC **** '
@@ -753,9 +759,7 @@ C
             CALL OUTPUT(SOVECS,1,NWOPPT,1,NOSIM,NWOPPT,NOSIM,1,LUPRI)
          END IF
          CALL PCMLNO(NOSIM,BOVECS,CREF,CMO,INDXCI,
-     *        DV, SOVECS,NSVAR,VTEX,WRK,LWRK)
-C     CALL PCMLNO(NOSIM,BOVEC,CREF,CMO,INDXCI,
-C     *               DV, SVEC,NSVEC,VTEX,,WRK,LFREE)
+     &               DV, SOVECS,NSVAR,VTEX,WRK,LWRK)
          IF (IPRPCM.GT.101) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
             WRITE(LUPRI,*)' **** AFTER PCMLNO **** '
@@ -882,14 +886,12 @@ C
       END IF
 C
       DO ICSIM = 1, NCSIM
-         CALL DZERO(WRK(KCHRG),NTS)
          CALL DZERO(WRK(KDW),N2BASX)
-         CALL DZERO(WRK(KDV),NNBASX)
          CALL FCKDEN(.FALSE.,.TRUE.,DUMMY,WRK(KDW),CMO,DTV(1,ICSIM),
      &               WRK(KW30),LW30)
-
          CALL DGEFSP(NBAST,WRK(KDW),WRK(KDV))
 
+         CALL DZERO(WRK(KCHRG),NTS)
          CALL J1INT(WRK(KCHRG),.TRUE.,WRK(KDV),1,.FALSE.,'NPETES ',
      &              1,WRK(KW30),LW30)
          CALL V2Q(WRK(KW30),WRK(KCHRG),VTEX(1,ICSIM),QET,.FALSE.)
@@ -1156,7 +1158,7 @@ Ckr
 C     
 C     Expectation value of transformed potential on tesserae
 C     
-            VTEX(I,IOSIM)     = SOLELM(DV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
+            VTEX(I,IOSIM) = SOLELM(DV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
             IF (IPRPCM .GE. 6) THEN
                WRITE (LUPRI,'(A,F17.8)')
      *              ' --- J1X expectation value :',VTEX(I,IOSIM)
@@ -1390,11 +1392,12 @@ C
 Clf      
       IF (IPRPCM .GE. 6) THEN         
          WRITE (LUPRI,*) 'Contributions to',
-     $        'QSSLW = (UELOR+VTOTQS)*DP5*FACSLO'
+     &        'QSSLW = (UELOR+VTOTQS)*DP5*FACSLO'
          WRITE (LUPRI,*) 'UELOR,VTOTQS,FACSLO',
-     $        UELOR,VTOTQS,FACSLO
-         WRITE(LUPRI,*) 'ESOLT WITH NONEQ CONTRIB'
-         WRITE(LUPRI,*) ESOLT, QSSLW, PORT 
+     &        UELOR,VTOTQS,FACSLO
+         WRITE(LUPRI,*) 'ESOLT WITH NONEQ CONTRIB:',
+     &        ESOLT, QSSLW, PORT 
       END IF
       RETURN
       END
+C --- end of sirius/sirsolpcm.F ---
