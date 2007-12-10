@@ -2295,7 +2295,7 @@ C  /* Deck makpvm */
      &               WORK(KWRK),LWRK,PANTI,IPRINT)
       ELSE IF (ZFS2EL) THEN
          CALL MAKPVQ(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
-     &            WORK(KWRK),LWRK,ANTI,IPRINT)
+     &            WORK(KWRK),LWRK,IPRINT)
       ELSE
          CALL MAKPV1(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
      &               WORK(KWRK),LWRK,ANTI,IPRINT)

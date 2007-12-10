@@ -63,10 +63,12 @@ C
 #include <cbirea.h>
 #include <ccom.h>
 C
-      DATA TABLE /'.QM3'   , '.THRDIP', '.MAXDIP', '.FIXMOM',
-     *            '.OLDTG', '.PRINT', '.ATMVDW', '.CLONLY',
-     *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPING',
-     *            '.PRFQM3', '.XXXXXX'/
+      DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
+     *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
+     *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPIN',
+     *            '.PRFQM3', 'xXXXXXX'/
+C
+      CALL QENTER('QM3INP')
 C
 C     Initializing QM3 keywords
 C
@@ -89,7 +91,7 @@ C
       PRFQM3  = .FALSE.
 C
 C
-C     CRUCIAL TEST : MXENT has to be equal to MXQM3
+C     CRUCIAL TEST : MXCENT has to be equal to MXQM3
 C
       IF (MXCENT .NE. MXQM3) THEN
         CALL QUIT('MXCENT has to be equal to MXQM3')
@@ -223,15 +225,17 @@ C
 C
    11     CONTINUE
             READ(LUCMD,'(A)') INLINE
-            IF (INLINE .EQ. 'MYMAT') THEN
+            IF (INLINE(1:5) .EQ. 'MYMAT') THEN
               MYMAT = .TRUE.
               MYITE = .FALSE.
-            ELSE IF (INLINE .EQ. 'MYITE')  THEN
+            ELSE IF (INLINE(1:5) .EQ. 'MYITE')  THEN
               MYMAT = .FALSE.
               MYITE = .TRUE.
             ELSE
-              WRITE(LUPRI,*) 'Unknown my-model on input. I quit'
-              CALL QUIT('')
+              WRITE (lupri,'(/A/A)')
+     &        'Unknown my-model on input. I quit. You specified:',
+     &        INLINE
+              CALL QUIT('Unknown my-model on input. I quit')
             END IF
           GO TO 100
 C
@@ -240,8 +244,10 @@ C
             IF (INLINE .EQ. 'EXPON') THEN
               EXPON = .TRUE.
             ELSE
-              WRITE(lupri,*) 'only exponentila damping implemented.'
-              CALL QUIT('')
+              WRITE (lupri,'(/A/A)')
+     &        'Only exponential damping implemented. You specified:',
+     &        INLINE
+              CALL QUIT('Only exponential damping implemented.')
             END IF
           GO TO 100
 C
@@ -323,6 +329,8 @@ C
 C
       END IF
 C
+      CALL QEXIT('QM3INP')
+      RETURN
       END
 C
 C------------------------------------------------------------------------
@@ -644,7 +652,7 @@ C
 C       Testing input according to chosen model
 C
   444   IF ( (MDLWRD(J) .EQ. 'SPC    ') .AND. 
-     &    ( (LOALIS) .OR. (LOALTE) ) ) THEN
+     &     ( (LOALIS) .OR. (LOALTE) ) ) THEN
           CALL QUIT('Wrong input for SPC model')
         END IF
 C
@@ -3603,8 +3611,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <qm3.h>
-      PARAMETER (D3 = 3.0D0)
-      PARAMETER (ZERO = 0.0D0)
+      PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
 #include <nuclei.h>
 #include <nqcc.h>
 C
@@ -3668,7 +3675,7 @@ C
        DO 876 I= 1, ISYTP
           DO 877 J = NSYSBG(I), NSYSED(I)
             DO 878 K = 1, NCTOT
-               IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
+               IF (ISUBSY(K) .EQ. J) CHARGE(K) = D0
   878       CONTINUE
   877    CONTINUE
   876   CONTINUE
@@ -3689,8 +3696,7 @@ C
 #include <nuclei.h>
 #include <nqcc.h>
 C
-      PARAMETER (D3 = 3.0D0)
-      PARAMETER (ZERO = 0.0D0)
+      PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
 C
 #if defined (SYS_CRAY)
@@ -3792,7 +3798,7 @@ C
        DO 876 I= 1, ISYTP
           DO 877 J = NSYSBG(I), NSYSED(I)
             DO 878 K = 1, NCTOT
-               IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
+               IF (ISUBSY(K) .EQ. J) CHARGE(K) = D0
   878       CONTINUE
   877    CONTINUE
   876   CONTINUE
@@ -4093,8 +4099,7 @@ C
 #include <qm3.h>
 #include <nuclei.h>
 C
-      PARAMETER (D3 = 3.0D0)
-      PARAMETER (ZERO = 0.0D0)
+      PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
       DIMENSION  RFQM(3,MXNEW)
       CHARACTER  LAPRPC*8
@@ -4108,9 +4113,9 @@ C
       IF (.NOT. PRFQM3) RETURN
 
       DO 11 I=1,MXNEW
-        RFQM(1,I)=ZERO
-        RFQM(2,I)=ZERO
-        RFQM(3,I)=ZERO
+        RFQM(1,I)=D0
+        RFQM(2,I)=D0
+        RFQM(3,I)=D0
   11  CONTINUE
 
 C     if oldtg then put in charges 
@@ -4181,7 +4186,7 @@ C     Finally, we set the charges to zero if OLDTG
        DO 876 I= 1, ISYTP
           DO 877 J = NSYSBG(I), NSYSED(I)
             DO 878 K = 1, NCTOT
-               IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
+               IF (ISUBSY(K) .EQ. J) CHARGE(K) = D0
   878       CONTINUE
   877    CONTINUE
   876   CONTINUE
