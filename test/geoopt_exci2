@@ -172,11 +172,10 @@ CTRL[5]=3
 ERROR[5]="ENERGIES NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "Li * z * 0*\.02846....." $log | wc -l`
-CRIT2=`$GREP  "H * z * \-0*\.02846....." $log | wc -l`
+CRIT1=`$GREP "Li * z * 0*\.0284" $log | wc -l`
+CRIT2=`$GREP  "H * z * \-0*\.0284" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=2
-ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # First step
 CRIT1=`$GREP "Li * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.1250000..." $log | wc -l`
