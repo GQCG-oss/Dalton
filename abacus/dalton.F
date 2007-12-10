@@ -211,6 +211,7 @@ C
          CALL QUIT(' DALTON: Core HPALLOC failure')
       END IF
 #endif
+
 Cef begin
 C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
 C are stored in memory on each slave for reuse. Take a look at the header
@@ -243,35 +244,9 @@ C
          CALL QUIT('MMCORE must equal MMWORK.')
       END IF
 Cef end
-Clf
-      IEND=0
-Clf
-      IF (INDEX(BASDIR,
-     &     INSTALL_BASDIR
-     &     ) .LE. 0) THEN
-         IEND = 0
-Chjaaj   IEND = INDEX(BASDIR,' ') - 1
-Chjaaj   not good, will give wrong IEND if any directories
-Chjaaj   contains blanks, as in '/home/my basdir/'); thus
-         DO I = LBASDIR,1,-1
-            IF (BASDIR(I:I) .NE. ' ') THEN
-               IEND = I
-               GO TO 20
-            END IF
-         END DO
-   20    CONTINUE
-C
-#if defined (VAR_ABSOFT)
-         BASDIR="Insert basis-directory path here"
-C        Example:
-C        BASDIR="/Users/helgaker/Dalton/basis/"
-#else
-         BASDIR=BASDIR(1:IEND)//':'//
-     &INSTALL_BASDIR
-#endif
-      END IF
-      WRITE(LUERR,'(/A/8X,A)') ' Directories for basis set searches:',
-     &                         BASDIR
+
+      WRITE(LUERR,'(/A/5X,A)')
+     &   ' Directories for basis set searches:',BASDIR
 C
 C     Set memory traps and initialize unit numbers
 C

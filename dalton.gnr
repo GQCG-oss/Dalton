@@ -1,7 +1,7 @@
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
-# (before standard dalton basis library, predefined in dalton.x)
-BASDIR=$WRKDIR ; export BASDIR
+# (before standard dalton basis library in INSTALL_BASDIR, appended below)
+BASDIR=$WRKDIR
 #
 paramlist="$*"
 
@@ -72,7 +72,7 @@ backup () {
 #
 while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
-      -b ) BASDIR="$2:$BASDIR"; export BASDIR; shift;;
+      -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
       -ext ) OUTEXT=$2; shift;;
@@ -89,6 +89,15 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
    esac
    shift
 done
+
+# append default basis set direcotry /hjaaj Apr 2006
+len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
+if [ $len_INSTALL_BASDIR -gt 1 ]; then
+   # do not count newline char
+   BASDIR="$BASDIR:$INSTALL_BASDIR"
+fi
+export BASDIR
+
 # check for correct input
 if [ -z "$1" ]; then
    echo 'Input file[s] not specified'
