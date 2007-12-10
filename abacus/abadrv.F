@@ -1540,7 +1540,7 @@ cLig <<
       END IF
       IF ((POPULA .OR. POLAR .OR. DIPDER .OR. QPGRAD .OR. VCD) .AND. 
      &    (TOTSYM .AND. WRDSRC .NE. '**PROPE')) THEN
-         NWARN = NQARN + 1
+         NWARN = NWARN + 1
          WRITE(LUPRI,'(/A)') 'WARNING, incompatible input options:'
          IF (POPULA) WRITE (LUPRI,'(2(5X,A))') 
      &      'Cioslowski population analysis incompatible with .TOTSYM.',
