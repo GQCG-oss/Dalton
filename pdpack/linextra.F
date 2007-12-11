@@ -544,7 +544,10 @@ C     (860516 - hjaaj - based on BLAS DCOPY)
 C
       INTEGER IX(*),IY(*)
       IF(N.LE.0)RETURN
-      IF(INCX.EQ.INCY) IF(INCX-1) 5,20,60
+      IF(INCX.EQ.INCY) THEN
+         IF(INCX.EQ.1) GOTO 20
+         IF(INCX.GT.1) GOTO 60
+      END IF
     5 CONTINUE
 C
 C        CODE FOR UNEQUAL OR NONPOSITIVE INCREMENTS.
@@ -602,7 +605,8 @@ C     (901219 - hjaaj - based on ICOPY)
 C
       INTEGER IX(*)
       IF(N.LE.0)RETURN
-      IF(INCX-1) 5,20,60
+      IF(INCX.EQ.1) GOTO 20
+      IF(INCX.GT.1) GOTO 60
     5 CONTINUE
 C
 C        CODE FOR NONPOSITIVE INCREMENT.
