@@ -59,6 +59,7 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PR1INT')
+c     write (0,*) 'PR1INT called with ',WORD
 C
       NCOMP    = 0
       TOFILE   = .TRUE.
@@ -194,7 +195,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 99)
+      PARAMETER (NTABLE = 100)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -249,7 +250,7 @@ cLig <> added RAGMO and RPSO
      &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
      &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ',
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2',
-     &            'MAGQDP ', 'DERANGM', 'DIPANH '/
+     &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP'/
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -270,7 +271,7 @@ C
       TRASPH = .FALSE.
       SQUARE = .FALSE.
       SOLVNT = .FALSE.
-      DO 100 I = 1, NTABLE
+      DO I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
 cLig <> added goto 75 and 76 for RANGMO and RPSO
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
@@ -279,23 +280,23 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
      &             79,80,81,82,83,84,85,86,87,88,89,90,91,92, 1,
-     &             94,95,96,97,98), I
+     &             94,95,96,97,98,99,100), I
          END IF
-  100 CONTINUE
+      END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *    '" not recognized in PR1IN1.'
       CALL PRTAB(NTABLE,TABLE,'PR1IN1 input keywords',LUPRI)
       CALL QUIT('Illegal keyword in PR1IN1.')
 C
 C     Overlap integrals OVERLAP or HUCKEL
-C     -----------------
+C     -----------------------------------
 C
     1 CONTINUE
-         IF (WORD .EQ. 'HUCKEL') THEN
+         IF (WORD(1:6) .EQ. 'HUCKEL') THEN
             LABINT(1) = 'HUCKOVLP'
             LABINT(2) = 'HUCKEL  '
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &      ' Calculation of overlap and Huckel matrices for Huckel.'
+     &      ' Calculation of overlap and Huckel matrices.'
             INTTYP = -1
             NOPTYP = 2
             INTREP(1) = 0
@@ -2295,12 +2296,29 @@ C
      &   ' Calculation of dipole gradient integrals'
          INTTYP = 103
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL DPHTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
+         call quit('stopping because DPHTYP is missing ...')
+CHJAaJ   CALL DPHTYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
 CCH
 Cori     ANTI = .TRUE.
          ANTI = .FALSE.
 CCH
          SQUARE = .FALSE.
+      GOTO 200
+C
+C     POPOVLP - modified overlap for population analysis
+C     hjaaj March 2006
+C
+  100 CONTINUE
+         INTTYP = 1001
+         LABINT(1) = 'HJPOPOVL'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of modified overlap integrals for pop. anal.'
+         NOPTYP = 1
+         INTREP(1) = 0
+         SQUARE = .TRUE.
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         ANTI = .FALSE.
       GOTO 200
 C
   200 CONTINUE
@@ -2332,13 +2350,6 @@ C
   400 CONTINUE
       NELMNT = NBAST*(NBAST + 1)/2
       IF (SQUARE) NELMNT = NBAST*NBAST
-C
-C     *******************************
-C     Check if too little was allocated for
-C     LABINT, INTYP, and INTREP:
-C     *******************************
-C
-      CALL MEMCHK('PR1IN1 labels for '//WORD,WORK,1)
 C
 C     *******************************
 C     Check if too little was allocated for
@@ -2481,7 +2492,7 @@ C             Direct Reaction Field ALLRLM must be .true.
           CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C         Replace time information with symmetry information
         IF (SQUARE) THEN
-          RTNLBL(2)='SQUARE  '
+            RTNLBL(2)='SQUARE  '
         ELSE
           IF (ANTI) THEN
             RTNLBL(2)='ANTISYMM'
