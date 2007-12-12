@@ -25,7 +25,7 @@ DALTON="`pwd`/../bin/dalton"
 #########################################################################
 ESSENTIAL=""
 #
-SHORTENRGY="energy_direct energy_douglaskroll energy_nosymm energy_restart \
+SHORTENRGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc"
 SHORTDFT="dft_hcth120"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
@@ -228,7 +228,7 @@ else
    GREP="egrep"
 fi
 
-while [ -n "`echo $1 | grep '-'`" ]; do
+while [ -n "`echo $1 | grep '^ *-'`" ]; do
    case $1 in
      "-h" | "-help" | "--help" ) help="true" ; break;;
      "-dalton" )  shift; DALTON=$1; shift;;
