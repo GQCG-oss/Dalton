@@ -159,18 +159,18 @@ C              ------- We save GAB for next electron
       KRDPP1 = KODPP1 + (NITPP*NODPP1 - 1)/IRAT + 1
       KLAST1 = KRDPP1 +  NRTPP*NODPP1
 C
-      IF (KLAST1 .GT. KLASTO) THEN
+      IF (KLAST1 .GT. KLAST0) THEN
          WRITE (LUPRI,'(/,1X,A,2(2X,A,I10))')
-     &      ' Error in ODBCHS: KLAST1 greater than KLASTO.',
-     &      ' KLAST1: ',KLAST1,' KLASTO: ',KLASTO
+     &      ' Error in ODBCHS: KLAST1 greater than KLAST0.',
+     &      ' KLAST1: ',KLAST1,' KLAST0: ',KLAST0
          CALL QUIT('Error in ODBCHS')
       END IF
 C
       KODCLX = KODCL1 + (KLAST0 - KGABWRK)
-      KODBCX = KODCL1 + (KLAST0 - KGABWRK)
-      KRDBCX = KODBC1 + (KLAST0 - KGABWRK)
-      KODPPX = KRDBC1 + (KLAST0 - KGABWRK)
-      KRDPPX = KODPP1 + (KLAST0 - KGABWRK)
+      KODBCX = KODBC1 + (KLAST0 - KGABWRK)
+      KRDBCX = KRDBC1 + (KLAST0 - KGABWRK)
+      KODPPX = KODPP1 + (KLAST0 - KGABWRK)
+      KRDPPX = KRDPP1 + (KLAST0 - KGABWRK)
       KRDPPY = KRDPPX +  NRTPP*NODPP1
       KLAST  = KRDPPY +  NRTPB*NODPP1
 C
@@ -186,7 +186,7 @@ C
       CALL DCOPY(NRTPB*NODPP1,WORK(KSTART),1,WORK(KRDPPY),1)
       CALL RTRMAT(NODPP1,NRTPB,WORK(KRDPPY),WORK(KSTART))
 C
-      CALL DCOPY((KLAST1-KODCL1),WORK(KODCLX),1,WORK(KOCL1),1)
+      CALL DCOPY((KLAST1-KODCL1),WORK(KODCLX),1,WORK(KODCL1),1)
 C
 C     **********************
 C     ***** Electron 2 *****
@@ -227,11 +227,11 @@ C        OD classes
 C        ==========
 C
          KCLASS = KLAST
-         KLASTO = KCLASS + (NITCL*NODCLS - 1)/IRAT + 1
-         LWRK   = LWORK  - KLASTO + 1
+         KLAST0 = KCLASS + (NITCL*NODCLS - 1)/IRAT + 1
+         LWRK   = LWORK  - KLAST0 + 1
          IF (KLAST.GT.LWORK)CALL STOPIT('ODBCHS','CLSINF 2',KLAST,LWORK)
          CALL CLSINF(WORK(KODBCH),WORK(KODTRA),WORK(KCLASS),
-     &               WORK(KLASTO),LWRK,IPRINT)
+     &               WORK(KLAST0),LWRK,IPRINT)
 C
 C        Compress and save results
 C        =========================
@@ -247,14 +247,14 @@ C
          KRDPP2 = KODPP2 + (NITPP*NODPP2 - 1)/IRAT + 1
          KLAST2 = KRDPP2 +  NRTPP*NODPP2
 C
-         IF (KLAST2 .GT. KLASTO) THEN
+         IF (KLAST2 .GT. KLAST0) THEN
             WRITE (LUPRI,'(/,1X,A,2(2X,A,I10))')
-     &         ' Error in ODBCHS: KLAST2 greater than KLASTO.',
-     &         ' KLAST2: ',KLAST2,' KLASTO: ',KLASTO
+     &         ' Error in ODBCHS: KLAST2 greater than KLAST0.',
+     &         ' KLAST2: ',KLAST2,' KLAST0: ',KLAST0
             CALL QUIT('Error in ODBCHS')
          END IF
 C
-         KODCLX = KLASTO
+         KODCLX = KLAST0
          KODBCX = KODCLX + (NITCL*NODCL2 - 1)/IRAT + 1
          KRDBCX = KODBCX + (NITBC*NODBC2 - 1)/IRAT + 1
          KODPPX = KRDBCX +  NRTBC*NODBC2
