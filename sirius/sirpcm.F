@@ -1312,7 +1312,7 @@ C
      &        'permitted in J1INT')
       ELSE
          KDEN = 1
-         IF (NODTOT .GT. 1) THEN
+         IF (NODTOT .GE. 1) THEN
             KLAST = KDEN + MATDIM*NOSIM
             CALL DCOPY(MATDIM*NOSIM,DENMAT,1,WORK(KDEN),1)
          ELSE
