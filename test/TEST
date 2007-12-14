@@ -43,7 +43,7 @@ rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm rsp_soppafcsymm \
 rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
-rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfsmc rsp_absorp rsp_prop_file"
+rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s dft_qr_sym"
 SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST"
