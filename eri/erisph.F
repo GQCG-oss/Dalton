@@ -214,6 +214,8 @@ C
                      IF (NCOLS.EQ.1) THEN
                         CSQ(IADR,1) = CSQ(IADR,1) + FACTOR 
                         IF (IPRINT.GT.20) THEN
+                           IATOM = 0
+                           BFAC  = 0.0D0
                            ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                            WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
      &                               F10.5,I4,2X,2(3I3,2X),4I3)') 
@@ -330,7 +332,7 @@ C  /* Deck sphadr */
 #include <ccom.h>
 C
       SAVE FIRST, ACOEF, BCOEF, NHOLD
-      DATA FIRST /.TRUE./
+      DATA FIRST,NHOLD /.TRUE.,0/
 C
       IF (FIRST .OR. NHTYP.NE.NHOLD) THEN
          DO J = 0, MXQN - 1
