@@ -90,7 +90,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
    shift
 done
 
-# append default basis set direcotry /hjaaj Apr 2006
+# append default basis set directory /hjaaj Apr 2006
 len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
 if [ $len_INSTALL_BASDIR -gt 1 ]; then
    # do not count newline char
