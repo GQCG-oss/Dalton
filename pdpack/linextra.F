@@ -1,35 +1,27 @@
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
+C
+C...   Dalton, Release 2.0
 C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
+C...   These routines are in the public domain and can be
+C...   used freely in other programs.
 C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+C FILE : pdpack/linextra.F
+C
+C Extra matrix and vector manipulation routines and driver routines,
+C which not (always) are included in blas and linpack.
+C
+C Most of them are written by Hans Jørgen Aa. Jensen in the late 1980's.
+C These routines may be freely used by anyone.
+C
+C 1) DNORM2
+C 2) DAPTGE, etc. for changing matrix packing
+C                 (AP: Antisymmetric Packed, SP, Symmetric Packed, etc.
+C                 (ex: DAPTGE: Antisymmetric Packed To GEneral matrix)
+C 3) DSUM, IDAMIN, IDMAX, IDMIN (supplement DASUM and IDAMAX)
+C 4) "iblas": ICOPY, ISWAP, ...
+C 5) DSPSOL, DGESOL, DGEINV : driver rouutines calling LINPACK
+C
 C
 #include <single.h>
 C  /* Deck dnorm2 */
@@ -927,3 +919,4 @@ C
 C
       RETURN
       END
+C --- end of linextra.F ---
