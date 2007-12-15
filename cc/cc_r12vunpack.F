@@ -1839,8 +1839,8 @@ c
 #include <ccsdinp.h>
 #include <ccorb.h>
 c
-#include<r12int.h>
-#include<ccr12int.h>
+#include <r12int.h>
+#include <ccr12int.h>
       logical locdbg,lnoread
       parameter (locdbg = .false.)
 

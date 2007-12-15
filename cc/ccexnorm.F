@@ -1034,8 +1034,8 @@ C  /* Deck cc3_lr_ovlp */
 C
       IMPLICIT NONE
 C
-#include<ccexci.h>
-#include<priunit.h>
+#include <ccexci.h>
+#include <priunit.h>
 C
       INTEGER ilstnrst,ilstnrnd,istartend(maxexci,2),lwork
       INTEGER LU3VI,LU3VI2,LU3FOP,LU3FOP2,LUCKJD,LUTOC,LUDKBC
@@ -1195,14 +1195,14 @@ C  /* Deck eb3_e3_ovlp */
 C
       IMPLICIT NONE 
 C
-#include<priunit.h>
-#include<ccorb.h>
-#include<ccexci.h>
-#include<ccsdsym.h>
-#include<dummy.h>
-#include<iratdef.h>
-#include<cc3t3d.h>
-#include<ccinftap.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccexci.h>
+#include <ccsdsym.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <cc3t3d.h>
+#include <ccinftap.h>
 C
       INTEGER IDLSTEB,ISYMEB,IDLSTE,ISYME,ISYM0,ISINTETR,LWORK
       INTEGER IOPT,IOFF
@@ -2013,7 +2013,7 @@ C     Construct TMAT^AC(bjik) = WE^AC(bkji) + WE^AC(bjki)
 C-----------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include<priunit.h>
+#include <priunit.h>
 C
       INTEGER ISWEMAT,LENSQ,INDSQ(LENSQ,6)
       INTEGER I
@@ -2047,8 +2047,8 @@ C******************************************************************
 C
       IMPLICIT NONE 
 C
-#include<ccorb.h>
-#include<ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
 C
       INTEGER ISAIBJ,ISYMB,ISYAIJ,ISYMJ,ISYMBJ,ISYMAI,ISYMI,ISYMA
       INTEGER NBJ,NAI,KOFF1,KOFF2

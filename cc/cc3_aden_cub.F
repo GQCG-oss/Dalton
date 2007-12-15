@@ -278,14 +278,14 @@ C  /* Deck cc3_adenocc_cub */
 *************************************************************************
 *            
       IMPLICIT NONE
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<ccsdsym.h>
-#include<dummy.h>
-#include<priunit.h>
-#include<iratdef.h>
-#include<ccinftap.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <ccinftap.h>
 #include <ccsdinp.h>
 #include <ccr2rsp.h>
 C
@@ -8382,9 +8382,9 @@ C     Filip Pawlowski, Aarhus, Winter 2003
 *     Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYT30JK,ISYMT2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCL,ISYML,ISYMC,ISYBAI
@@ -8769,9 +8769,9 @@ C
 C     F. Pawlowski, Aarhus, Fall 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBAC,ISYMC,ISYAB,ISYBA,ISYMB,ISYMA
       INTEGER KOFF1,KOFF2

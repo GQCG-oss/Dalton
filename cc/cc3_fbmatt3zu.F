@@ -1837,16 +1837,16 @@ C  /* Deck cc3_amatt3zuocc */
 **************************************************************
 C
       IMPLICIT NONE
-#include<priunit.h>
-#include<ccsdsym.h>
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<dummy.h>
-#include<iratdef.h>
-#include<ccinftap.h>
-#include<ccsdinp.h>
-#include<ccr2rsp.h>
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccinftap.h>
+#include <ccsdinp.h>
+#include <ccr2rsp.h>
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LU3FOP,LU3VI
@@ -2543,7 +2543,7 @@ C
 #include <ccsdinp.h>
 #include <dummy.h>
 #include <ccorb.h>
-#include<ccr2rsp.h>
+#include <ccr2rsp.h>
 #include <ccer1rsp.h>
 C
       CHARACTER*6 FN3VI

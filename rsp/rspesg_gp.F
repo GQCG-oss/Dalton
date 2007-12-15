@@ -112,11 +112,11 @@ C     Transform the integrals to MO basis
       END
 
       SUBROUTINE GETESG_DENMAT_FOCMAT(D,F,NBAST,NNBAST)
-#include<implicit.h>
+#include <implicit.h>
 #include "rspprp.h"
-#include<esg.h>
-#include<dummy.h>
-#include<priunit.h>
+#include <esg.h>
+#include <dummy.h>
+#include <priunit.h>
 
       DIMENSION D(NNBAST), F(NNBAST)
 
@@ -134,14 +134,14 @@ C     Transform the integrals to MO basis
       END
 
       SUBROUTINE GETESG_DENMAT(DMAT,NDMAT,WRK,LWRK)
-#include<implicit.h>
+#include <implicit.h>
 #include <mxcent.h>
 #include "rspprp.h"
-#include<esg.h>
-#include<dummy.h>
-#include<inforb.h>
-#include<abainf.h>
-#include<priunit.h>
+#include <esg.h>
+#include <dummy.h>
+#include <inforb.h>
+#include <abainf.h>
+#include <priunit.h>
 
       DIMENSION DMAT(NBAST,NBAST,NDMAT),WRK(*)
       PARAMETER (MXDMAT=50)
@@ -518,8 +518,8 @@ C     End of MO2AO
 C
 
       SUBROUTINE ESG_PVAL(DODFT,HFXFAC,PVAL,DMAT,A,B,C,D,F)
-#include<implicit.h>
-#include<inforb.h>
+#include <implicit.h>
+#include <inforb.h>
       INTEGER A, B, C, D
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,

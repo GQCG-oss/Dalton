@@ -7569,9 +7569,9 @@ C  /* Deck n1_resort */
 *
       IMPLICIT NONE
 C
-#include<ccorb.h>
-#include<ccsdsym.h>
-#include<priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <priunit.h>
 C
       LOGICAL SKIPGEI
 C

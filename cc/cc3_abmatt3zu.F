@@ -1518,14 +1518,14 @@ C  /* Deck cc3_amatt3zuocc */
 **************************************************************
 C
       IMPLICIT NONE
-#include<priunit.h>
-#include<ccsdsym.h>
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<dummy.h>
-#include<iratdef.h>
-#include<ccinftap.h>
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccinftap.h>
 #include <ccsdinp.h>
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI

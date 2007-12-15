@@ -319,6 +319,8 @@ C
 
          KE1PIM = KEND1
          KEND1  = KE1PIM + NADP(1)
+      ELSE
+         KE1PIM = KEND1
       END IF
 C
       LWRK1  = LWORK  - KEND1
