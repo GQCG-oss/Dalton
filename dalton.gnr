@@ -371,6 +371,9 @@ if [ $optD -eq 1 ] ; then
    rm -rf $SCRATCHDIR
 fi
 
+echo; echo "   `date`"
+echo "   ***************************************** "
+
 if [ $ierr -ne 0 ]; then
    exit $ierr
 fi
