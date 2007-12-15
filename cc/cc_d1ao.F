@@ -338,9 +338,9 @@ C
          LWRK1  = LWORK  - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
-            CALL QUIT('Insufficient memory for first '//
-     &           'allocation in CC_D1AO')
+            WRITE(LUPRI,*) 'CC_D1AO; Available:',LWORK, 'Needed:',KEND1
+            CALL QUIT(
+     &           'Insufficient memory for first allocation in CC_D1AO')
          ENDIF
 C
 C---------------------------------------------------------
