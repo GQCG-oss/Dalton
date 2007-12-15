@@ -81,7 +81,7 @@ C
       END IF
       FIRST = .FALSE.
 C
-      NEWDEF = ((WORD .EQ. '*MINIMI') .OR. (WORD .EQ. '*OPTIMI'))
+      NEWDEF = WORD .EQ. '*OPTIMI'
       ICHANG = 0
       IPDEF  = 0
       NSPMOD = -1
@@ -196,6 +196,7 @@ C     satisfactorily yet.
          INDHES(I) = 0
  123  CONTINUE
 C
+      WORD1 = '*OPTIMI'
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
