@@ -587,11 +587,14 @@ C
       IF (NMORDR .GE. 3) THEN
          LDPMTX = LDPMTX + (NCOOR*(NCOOR+1)*(NCOOR+2))/6
       END IF
+      NSTRDR = NMORDR + 1
+C     ... hjaaj Dec 07: used for allocation, and NMORDR+1 is sometimes referenced
       IF (NMORDR .GE. 2) THEN
          IFRSTD = 2**NMORDR
          LDPMTX = LDPMTX + (NCOOR*(NCOOR+1))/2
          KDPMTX = KLAST
-         KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
+chj      KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
+         KDCOEF = KDPMTX +   IFRSTD*NSTRDR*LDPMTX
          KNIDPC = KDCOEF +   IFRSTD       *LDPMTX
          KLAST  = KNIDPC +                 LDPMTX
       ELSE
@@ -599,7 +602,6 @@ C
          KDCOEF = KTEST
          KNIDPC = KTEST
       END IF
-      NSTRDR = NMORDR
 C
 C     *** Space for backup av MOLECULE.INP ***
 C
@@ -1314,7 +1316,7 @@ C
 C     *** Finding force constants that are dependent on each-other ***
 C
       NLDPMX = 0
-      KDIM = IFRSTD*NMORDR*LDPMTX
+      KDIM = IFRSTD*NSTRDR*LDPMTX
       CALL IZERO(KDPMTX,KDIM)
       CALL FSDCST(SYMCOR,GRIREP,DCOEFF,WORK,KDPMTX,NMIDPC,ICRIRP,LDPMTX,
      &            IFRSTD,NLDPMX,LWORK,IPRINT)

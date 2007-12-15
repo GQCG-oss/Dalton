@@ -1850,10 +1850,11 @@ C
 C
       ITHDIM = ISTRT+IRSRDR+IEIIN
       if (ITHDIM+1 .gt. NSTRDR) then
+         write(lupri,*) 'FFCDEP error: ITHDIM+1 .gt. NSTRDR'
          write(lupri,*)
-     &'hjaaj FFCDEP error: ITHDIM,ISTRT,IRSRDR,IEIIN,NSTRDR',
-     & ITHDIM,ISTRT,IRSRDR,IEIIN,NSTRDR
-         call quit('hjaaj error in FFCDEP')
+     &   'FFCDEP error: ITHDIM,ISTRT,IRSRDR,IEIIN,NSTRDR',
+     &    ITHDIM,ISTRT,IRSRDR,IEIIN,NSTRDR
+         call quit('error in FFCDEP')
       end if
       MINTST = MIN(ITHDIM,NMORDR)
       DO 600 II = 1, NLDPMX
