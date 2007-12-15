@@ -309,7 +309,7 @@ C     ... parameter MAXPRD is in cbirea.h
       INPTST = TSTINP
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
-*     ATOMDF = .FALSE.
+!     ATOMDF = .FALSE. ! done each time MOLECULE.INP is opened
       OLDNRM = .FALSE.
       WRTLIN  = .FALSE.
       TOLLRN = 0.0D0
@@ -1256,7 +1256,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                     ELSE IF (ATOMDF) THEN
                        LAUXNAM = LNBLNK(AUXNAM)
                        WRITE (LUPRI,'(3X,3A)')
-     &                 'The auxiliary basis set is "',
+     &                 'The auxiliary density fit basis set is "',
      &                 AUXNAM(1:LAUXNAM),'" from the basis set library.'
                     ELSE
                        WRITE (LUPRI,'(3X,3A)') 'The basis set is "',
