@@ -190,12 +190,12 @@ C
 C           Error message in case of insufficient memory
 C
             IF (.NOT.MEMOK) THEN
-               WRITE (LUPRI,'(//,1X,A,3(/,1X,A,I10))')
+               WRITE (LUPRI,'(//A,3(/A,I12))')
      &            ' Not enough memory for this run of ERIFCK.',
      &            ' Available memory in ERIFCK:',LWORK,
      &            ' Required memory for ERIFCK:',LWORK + MEMADD,
      &            ' Increase memory (LWORK) by:',MEMADD
-               WRITE (LUPRI,'(/,1X,A,2I5)')
+               WRITE (LUPRI,'(/A,2I5)')
      &            ' Memory requirements largest for OD classes :',
      &              MODAB,MODCD
                CALL QUIT('Insufficient memory in ERIFCK.')

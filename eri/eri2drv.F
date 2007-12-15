@@ -772,7 +772,7 @@ C     NRTPP = 3
 C
 C     RODPP1(*,1): exponent for primitive a
 C     RODPP1(*,2): exponent for primitive b
-C     RODPP1(*,*): preexponential factors for ab
+C     RODPP1(*,3): preexponential factors for ab
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from subroutine ODCDR1',-1)
@@ -1090,13 +1090,11 @@ C           Memory requirements
 C
             CALL MEMPQB(MEMBCH,NALLOI,IPRINT)
             IF (MEMBCH .GT. LWORK) THEN
-               IF (IPRINT .GT. 5) THEN
-                  WRITE (LUPRI,'(/,1X,A,2I5,2(/1X,A,I10))')
+               WRITE (LUPRI,'(/,1X,A,2I5,2(/1X,A,I10))')
      &              ' Not enough memory for one PQ batch for'//
      &              ' OD classes: ',IODAB, IODCD,
      &              ' Available memory in ODCPAR:',LWORK,
      &              ' Required memory for ODCPAR:',MEMBCH
-               END IF
                MEMOK = .FALSE.
                NEEDMR = MEMBCH - LWORK
                IF (NEEDMR .GT. MEMADD) THEN
@@ -2077,7 +2075,7 @@ C        Preexponential factors
 C        =======================
 C
          CALL ERIPFS(FACINT,FACPQ,COORAB,COORCD,
-     &               RODPP1(2*NODPP1+1,1),RODPP2(2*NODPP2+1,1),
+     &               RODPP1(1,3),RODPP2(1,3),
      &               IPNTPP,ROD1,ROD2,IPRINT)
 C
 C        Set up coordinate vectors
@@ -2800,13 +2798,13 @@ C
       RETURN
       END
 C  /* Deck npairs */
-      FUNCTION NPAIRS(J)
-#include <implicit.h>
+      INTEGER FUNCTION NPAIRS(J)
+      INTEGER J
       NPAIRS = J*(J+1)/2
       RETURN
       END
 C  /* Deck kcdim */
-      FUNCTION KCDIM(JMAX1,JMAX2)
+      INTEGER FUNCTION KCDIM(JMAX1,JMAX2)
 #include <implicit.h>
       ITRI1(I) = (I + 1)*(I + 2)/2
       ITRI2(I) = (I + 1)*(I + 2)*(I + 3)/6
@@ -2837,6 +2835,7 @@ C  /* Deck mempqb */
 #include <eribuf.h>
 #include <symmet.h>
 #include <r12int.h>
+C
       MEMI(I) = I
       MEMR(I) = IRAT*I
 C------------------------------------
@@ -3081,11 +3080,12 @@ C
 C     Total memory
 C     ============
 C
+      MEM_CR1  = NCR1 + MAX(MEMC1T,MEMC1O)
       MEMORY = MEMPAR + MEMPAS + MAX(
      &                               NQ52,
      &                               NGAM + MEMGAM + MEMGGM,
      &                               NHER + MEMTUV,
-     &                               NCR1 + MAX(MEMC1T,MEMC1O),
+     &                               MEM_CR1,
      &                               NCR2 + MEMC2T,
      &                               NOUT + MEMOUT
      &                              )
@@ -3094,51 +3094,54 @@ C
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from MEMPQB',-1)
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMPAR ',MEMPAR
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMPAS ',MEMPAS
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMGAM ',MEMGAM
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMGGM ',MEMGGM
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMTUV ',MEMTUV
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMC1T ',MEMC1T
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMC1O ',MEMC1O
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMOUT ',MEMOUT
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMORY ',MEMORY
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMPAR',MEMPAR
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMPAS',MEMPAS
+         WRITE (LUPRI,'(2X,A,I12)') 'NQ52  ',NQ52
+         WRITE (LUPRI,'(2X,A,I12)') 'NGAM  ',NGAM
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMGAM',MEMGAM
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMGGM',MEMGGM
+         WRITE (LUPRI,'(2X,A,I12)') 'NHER  ',NHER
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMTUV',MEMTUV
+         WRITE (LUPRI,'(2X,A,I12)') 'NCR1  ',NCR1
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMC1T',MEMC1T
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMC1O',MEMC1O
+         WRITE (LUPRI,'(2X,A,I12)') 'NCR2  ',NCR2
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMC2T',MEMC2T
+         WRITE (LUPRI,'(2X,A,I12)') 'NOUT  ',NOUT
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMOUT',MEMOUT
+         WRITE (LUPRI,'(2X,A,I12)') 'MLTPZ ',MLTPZ
+         WRITE (LUPRI,'(2X,A,I12)') 'NPRFPQ',NPRFPQ
+         WRITE (LUPRI,'(A,I12)')  '**MEMORY',MEMORY
+         WRITE (LUPRI,'(A,I12)')  '**NALLOI',NALLOI
       END IF
 C
       RETURN
       END
 C  /* Deck memcr1 */
-      FUNCTION MEMCR1(KHKT12,KCKT12,KHKT1,KHKT2,JMAX12,JMAX1,JMAX2,
-     &                SPHR12,SPHR1,SPHR2,NPRF34,NTUV34,NPRFPQ)
+      INTEGER FUNCTION MEMCR1(KHKT12,KCKT12,KHKT1,KHKT2,
+     &        JMAX12,JMAX1,JMAX2,
+     &        SPHR12,SPHR1,SPHR2, NPRF34,NTUV34,NPRFPQ)
 C
 #include <implicit.h>
 #include <r12int.h>
 C
       LOGICAL SPHR12, SPHR1, SPHR2
 C
-      LCCONT = 0
-      LCSINT = 0
-      LFCSNT = 0
-      LFCINT = 0
-      LECOEF = 0
-      LHPI   = 0
-      LPA    = 0
-      LPB    = 0
-      LEUV   = 0
-      LETUV  = 0
-      LHCPRM = 0
-C
-      LFIRST = NTUV34
-C
       IF (KHKT12 .GT. 1 .OR. U12INT) THEN
 C        No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
          IF (SPHR12) THEN
             LCCONT = NPRF34*NTUV34*KCKT12
             LFCINT = NTUV34*KHKT12
+         ELSE
+            LCCONT = 0
+            LFCINT = 0
          END IF
          IF (SPHR1 .AND. SPHR2) THEN
             LCSINT = NPRF34*NTUV34*KHKT2
             LFCSNT = NTUV34*KHKT2
+         ELSE
+            LCSINT = 0
+            LFCSNT = 0
          END IF
 C
          LECOEF = 3*NPRFPQ*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
@@ -3150,46 +3153,37 @@ C
          LETUV  = NPRFPQ
 C
          LHCPRM = NPRFPQ*NTUV34
+         MEM_A  = MAX(LHPI+LPA+LPB,LEUV+LETUV+LHCPRM+NTUV34)
+         MEMCR1 = LCCONT
+     &       + MAX(LCSINT + LFCSNT + LFCINT, LECOEF + MEM_A)
+      ELSE
+         MEMCR1 = NTUV34
       END IF
 C
-      MEMCR1 = LCCONT
-     &       + MAX(
-     &              LCSINT + LFCSNT + LFCINT,
-     &              LECOEF + MAX(
-     &                           LHPI+LPA+LPB,
-     &                           LEUV+LETUV+LHCPRM+LFIRST
-     &                          )
-     &         )
       RETURN
       END
 C  /* Deck memcr2 */
-      FUNCTION MEMCR2(KHKT12,KHKT34,KHKT4,KCKT34,JMAX34,JMAX3,JMAX4,
-     &                SPHR34,SPHR3,SPHR4,NCTF12,NPRF34,NCTFPQ)
+      INTEGER FUNCTION MEMCR2(KHKT12,KHKT34,KHKT4,KCKT34,
+     &                 JMAX34,JMAX3,JMAX4,
+     &                 SPHR34,SPHR3,SPHR4, NCTF12,NPRF34,NCTFPQ)
 C
 #include <implicit.h>
       LOGICAL SPHR34,SPHR3,SPHR4
-C
-      LCCONT = 0
-      LCSINT = 0
-      LFCSNT = 0
-      LFAONT = 0
-      LECOEF = 0
-      LHPI   = 0
-      LPC    = 0
-      LPD    = 0
-      LEUV   = 0
-      LETUV  = 0
-      LCCPRM = 0
-      LFIRST = KHKT12
 C
       IF (KHKT34 .GT. 1) THEN
          IF (SPHR34) THEN
             LCCONT = NCTFPQ*KHKT12*KCKT34
             LFAONT = KHKT12*KHKT34
+         ELSE
+            LCCONT = 0
+            LFAONT = 0
          END IF
          IF (SPHR3 .AND. SPHR4) THEN
             LCSINT = NCTFPQ*KHKT12*KHKT4
             LFCSNT = KHKT12*KHKT4
+         ELSE
+            LCSINT = 0
+            LFCSNT = 0
          END IF
 C
          LECOEF = 3*NCTF12*NPRF34*(JMAX34+1)*(JMAX3+1)*(JMAX4+1)
@@ -3201,15 +3195,12 @@ C
          LETUV  = NCTF12*NPRF34
 C
          LCCPRM = NCTF12*NPRF34*KHKT12
+         MEM_A  = MAX(LHPI+LPC+LPD,LEUV+LETUV+LCCPRM+KHKT12)
+         MEMCR2 = LCCONT + MAX(LCSINT + LFCSNT + LFAONT,LECOEF + MEM_A)
+      ELSE
+         MEMCR2 = KHKT12
       END IF
 C
-      MEMCR2 = LCCONT + MAX(
-     &                      LCSINT + LFCSNT + LFAONT,
-     &                      LECOEF + MAX(
-     &                                   LHPI+LPC+LPD,
-     &                                   LEUV+LETUV+LCCPRM+LFIRST
-     &                                  )
-     &                      )
       RETURN
       END
 

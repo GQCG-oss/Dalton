@@ -31,12 +31,15 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C FILE: eri2car1.F
+C
 #include <single.h>
 C
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
      &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
      &                  WORK,LWORK,IPRINT)
+C
 C     HERR12 integrals have been added (WK/UniKA/04-11-2002).
 C
 #include <implicit.h>
@@ -662,6 +665,8 @@ C  /* Deck cont12 */
          DO 200 K = 1, NPRF1
             DO 200 M = 1, NCTF1
                DO 200 N = 1, NPQBCX*NPRF2
+C              ... "dirty trick" for CPINT to get long loop length
+C                  on last two indices (will go out of bounds on 2. index)
                   CPINT(M,N,1) = CPINT(M,N,1) +
      &                 CMAT1(K,M)*PPINT(N,K,L)
  200     CONTINUE
@@ -669,6 +674,8 @@ C  /* Deck cont12 */
          DO 300 K = 1, NPRF2
             DO 300 M = 1, NCTF2
                DO 300 N = 1, NCTF1*NPQBCX
+C              ... "dirty trick" for CPINT to get long loop length
+C                  on first two indices (will go out of bounds on 1. index)
                   CCINT(M,N,L) = CCINT(M,N,L) + 
      &                 CMAT2(K,M)*CPINT(N,1,K)
  300     CONTINUE
@@ -1146,3 +1153,4 @@ C               code due to AIX xlf version 2.2 bug
 
       RETURN
       END
+C --- end of eri2car1.F ---

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C FILE : erisph.F
+C
 #include <single.h>
 C
 C  /* Deck sphmat */
@@ -149,7 +151,7 @@ C
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
       HCF(I,J,K) = FACULT(I)/(FACULT(J)*FACULT(K/2)*FACULT(I-J-K))
-#include<ibtfun.h>
+#include <ibtfun.h>
 C
       M = M1 - L
       IF (L.EQ.1) THEN
@@ -263,25 +265,24 @@ C  /* Deck nspher */
 #include <implicit.h>
 #include <maxaqn.h>
 #include <ccom.h>
-      INTEGER D, X, Y, Z 
+      INTEGER D, L, X, Y, Z 
 C
-
       D = X + Y + Z 
       LMAX = NHTYP - 1
       NSPHER = (24 + 2*(1 + 2*D)*L*
      &          (-2 + (3 + 2*D + 2*D**2)*L + 8*L**2 + 3*L**3)
-     &      + (D*(2 + 3*D + D**2)*(1 + LMAX)*
+     &       + (D*(2 + 3*D + D**2)*(1 + LMAX)*
      &         (-54 - 134*LMAX - 85*LMAX**2 - 15*LMAX**3 - 
      &          12*D**2*(1 + LMAX) + 20*D**3*(1 + LMAX) + 
      &          D*(166 + 406*LMAX + 255*LMAX**2 + 45*LMAX**3)))/30
-     &      + (1 + 2*D)*(1 + LMAX)*
-     &         (12 + 28*LMAX + 17*LMAX**2 + 3*LMAX**3 + 2*D*(1 + LMAX) +
+     &       + (1 + 2*D)*(1 + LMAX)*
+     &        (12 + 28*LMAX + 17*LMAX**2 + 3*LMAX**3 + 2*D*(1 + LMAX) +
      &          2*D**2*(1 + LMAX))*(y + y**2 + 2*y*z + z*(3 + z)))/24
       RETURN
       END 
 C  /* Deck lspher */
       INTEGER FUNCTION LSPHER(NDER)
-#include <implicit.h>
+      INTEGER NDER
       LSPHER = NSPHER(0,NDER+1,0,0) - 1
       RETURN
       END 
@@ -292,7 +293,6 @@ C  /* Deck sphdim */
 #include <mxcent.h>
 #include <nuclei.h>
 #include <ericom.h>
-
       NCSQ1 = NSPHER(0,MAXDER+1,0,0) - 1
       IF (BDER) THEN
          NCSQ2 = NATOMS
@@ -302,7 +302,7 @@ C  /* Deck sphdim */
       RETURN
       END
 C  /* Deck nsphad */
-      FUNCTION NSPHAD(L,LEVEL,NDER)
+      INTEGER FUNCTION NSPHAD(L,LEVEL,NDER)
 #include <implicit.h>
       NSPHAD = ((LEVEL + NDER)*(1 + 2*L)*(2 + LEVEL**2 
      &        + NDER**2 + 6*L + 3*L**2 - 3*NDER*(1 + L) 
@@ -310,19 +310,19 @@ C  /* Deck nsphad */
       RETURN
       END
 C  /* Deck ncrt */
-      FUNCTION NCRT(I,J,K)
+      INTEGER FUNCTION NCRT(I,J,K)
 #include <implicit.h>
       NCRT = 1 + J + 2*K + (J + K)*(J + K - 1)/2
       RETURN
       END 
 C  /* Deck lmcrt */
-      FUNCTION LMCRT(L,M,I,J,K)
+      INTEGER FUNCTION LMCRT(L,M,I,J,K)
 #include <implicit.h>
       LMCRT = (2*L+1)*(NCRT(I,J,K) - 1) + L + M + 1
       RETURN
       END 
 C  /* Deck sphadr */
-      FUNCTION KSQADR(L,X,Y,Z,C)
+      INTEGER FUNCTION KSQADR(L,X,Y,Z,C)
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxdr.h>
@@ -366,3 +366,4 @@ C  /* Deck sphab */
      &     2*D**2*(1+LX))
       RETURN
       END
+C --- end of erisph.F ---

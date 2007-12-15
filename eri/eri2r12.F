@@ -1692,9 +1692,9 @@ C
 C  /* Deck ericrx */
       SUBROUTINE ERICRX(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include<implicit.h>
+#include <implicit.h>
       PARAMETER (D0 = 0D0)
-#include<ericom.h>
+#include <ericom.h>
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C
@@ -1724,9 +1724,9 @@ C
 C  /* Deck ericri */
       SUBROUTINE ERICRI(R,S,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include<implicit.h>
+#include <implicit.h>
       PARAMETER (D0 = 0D0)
-#include<ericom.h>
+#include <ericom.h>
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX)
 C
@@ -1756,9 +1756,9 @@ C
 C  /* Deck ericrp */
       SUBROUTINE ERICRP(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include<implicit.h>
+#include <implicit.h>
       PARAMETER (D0 = 0D0)
-#include<ericom.h>
+#include <ericom.h>
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C

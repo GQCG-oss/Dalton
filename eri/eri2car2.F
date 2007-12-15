@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C FILE : eri2car2.F
+C
 #include <single.h>
 C
 C  /* Deck cr2drv */
@@ -639,6 +641,8 @@ C  /* Deck cont34 */
       DO 200 K = 1, NPRF3
          DO 200 M = 1, NCTF3
             DO 200 N = 1, NCC12*NPRF4
+C           ... "dirty trick" for CPINT to get long loop length
+C               on last two indices (will go out of bounds on 2. index)
                CPINT(M,N,1) = CPINT(M,N,1) +
      &              CMAT3(K,M)*PPINT(N,K)
  200  CONTINUE
@@ -646,8 +650,11 @@ C  /* Deck cont34 */
       DO 300 K = 1, NPRF4
          DO 300 M = 1, NCTF4
             DO 300 N = 1, NCTF3*NCC12
+C           ... "dirty trick" for CPINT to get long loop length
+C               on first two indices (will go out of bounds on 1. index)
                CCINT(M,N) = CCINT(M,N) + 
      &              CMAT4(K,M)*CPINT(N,1,K)
  300  CONTINUE
       RETURN
       END
+C --- end of eri2car2.F ---
