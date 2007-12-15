@@ -1253,7 +1253,7 @@ C
       END IF
 C
       !Invert M matrix: MINV = M^{-1}
-      CALL MATINV(XM,XMINV,NAUX)
+      CALL DF_MATINV(XM,XMINV,NAUX)
 C
       IF (LDEBUG) THEN
          WRITE(LUPRI,*) 
@@ -1310,8 +1310,8 @@ C  /* Deck get_gamma_vec */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
       CHARACTER*17 FNABAL
       PARAMETER(FNABAL = 'DENFIT_NODDY_INT3')
@@ -1398,8 +1398,8 @@ C  /* Deck get_m_mat */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
       CHARACTER*17 FNAB
       PARAMETER(FNAB = 'DENFIT_NODDY_INT2')
@@ -1431,7 +1431,7 @@ C
       RETURN
       END 
 C  /* Deck matinv */
-      SUBROUTINE MATINV(A,AINV,N)
+      SUBROUTINE DF_MATINV(A,AINV,N)
 *
 ****************************************************************************
 *
@@ -1452,8 +1452,8 @@ C  /* Deck matinv */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
 C
@@ -1464,7 +1464,7 @@ C
       DIMENSION C(N,N)
 C
       IF (LDEBUG) THEN
-         WRITE(LUPRI,*)'Input matrix in MATINV:'
+         WRITE(LUPRI,*)'Input matrix in DF_MATINV:'
          CALL OUTPUT(A,1,N,1,N,N,N,1,LUPRI)
       END IF
 C
@@ -1472,7 +1472,7 @@ C
       CALL DGEINV(N,A,AINV,IPVT,WRKV,INFO)
 C
       IF (LDEBUG) THEN
-         WRITE(LUPRI,*)'Output matrix in MATINV:'
+         WRITE(LUPRI,*)'Output matrix in DF_MATINV:'
          CALL OUTPUT(AINV,1,N,1,N,N,N,1,LUPRI)
       END IF
 C
@@ -1489,7 +1489,7 @@ C
      &              D1,A,MAX(1,N),
      &              AINV,MAX(1,N),
      &              D1,C,MAX(1,N))
-         WRITE(LUPRI,*)'MATINV: Checking that A * AINV = I'
+         WRITE(LUPRI,*)'DF_MATINV: Checking that A * AINV = I'
          CALL OUTPUT(C,1,N,1,N,N,N,1,LUPRI)
       END IF
 C
@@ -1511,8 +1511,8 @@ C  /* Deck get_coeffs */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
       PARAMETER (D1 = 1.0D0)
 C
@@ -1585,8 +1585,8 @@ C  /* Deck jab_noddy */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
       CHARACTER*17 FNABCD
       PARAMETER(FNABCD = 'DENFIT_NODDY_INT4')
@@ -1685,8 +1685,8 @@ C  /* Deck jab_denfit_noddy */
 *
 ****************************************************************************
 *
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
       CHARACTER*17 FNABAL
       PARAMETER(FNABAL = 'DENFIT_NODDY_INT3')

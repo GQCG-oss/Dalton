@@ -4046,7 +4046,7 @@ C initialization
           END IF
   133   CONTINUE
 
-      CALL MATINV(TMAT,TMATI,3*KTEMP2)    
+      CALL DF_MATINV(TMAT,TMATI,3*KTEMP2)    
 
       JJ = 1
       DO 557 I=1,KTEMP2

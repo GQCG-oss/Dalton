@@ -2186,8 +2186,8 @@ C       *** are degenerate with respect to some rotations, and not  ***
 C       *** degenerate with respect to others.                      ***
 C       ***************************************************************
 C
-#include<implicit.h>
-#include<priunit.h>
+#include <implicit.h>
+#include <priunit.h>
 C
         PARAMETER (THRS = 1.0D-10)
         LOGICAL ONAXS, HAVAXS
