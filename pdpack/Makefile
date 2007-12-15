@@ -3,7 +3,7 @@ all :	libpdpack.a
 include ../Makefile.config
 
 C_OBJS = scatter-io.o
-F_OBJS = arhpack.o linextra.o printpkg.o jacobi.o gp_zblas.o
+F_OBJS = arhpack.o linextra.o printpkg.o jacobi.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
