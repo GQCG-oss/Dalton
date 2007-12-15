@@ -158,7 +158,7 @@ CTRL[5]=3
 ERROR[5]="CC EXCITATION ENERGIES NOT CORRECT"
 
 # check if it is AO direct:
-CRIT1=`$GREP "Direct calculation" $log | wc -l`
+CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
 CRIT2=`$GREP "This is a direct atomic orbital integral based" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2`
 CTRL[6]=2
