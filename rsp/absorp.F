@@ -846,12 +846,14 @@ C
          BTMP = 99.9D9
          CTMP = 99.9D9
          BTERM = 0.0
+         RMORD = 0.0
          DO IQRF=1,NQRF
             IF (BTMP.NE.QRFFRQ(IQRF,1).OR.CTMP.NE.QRFFRQ(IQRF,2)) THEN
                IF ((ABS_MCD).AND.(.NOT.IQRF.EQ.1)) THEN
-                  WRITE(LUPRI,'(5X,A14,44X,F16.6)') 
-     &                 'Faraday B term',BTERM
+                  WRITE(LUPRI,'(5X,A21,37X,2F16.6)') 
+     &                 'Orientational average',BTERM,RMORD
                   BTERM = 0.0
+                  RMORD = 0.0
                END IF
                WRITE(LUPRI,'(A)') ' '
                BTMP = QRFFRQ(IQRF,1)
@@ -866,36 +868,43 @@ C
      &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &              RES_BETA(IQRF,2),RES_BETA(IQRF,1)
 C
-C              Add contribution to B term
+C              Add contribution to orientational average
 C
                IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
      &              .AND.(QRFLAB(IQRF,2)(:1).EQ.'Y') 
      &              .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
-                  BTERM = BTERM + RES_BETA(IQRF,2) 
+                  BTERM = BTERM - RES_BETA(IQRF,2) 
+                  RMORD = RMORD - RES_BETA(IQRF,1) 
                ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
      &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Z') 
      &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
-                  BTERM = BTERM + RES_BETA(IQRF,2)
+                  BTERM = BTERM - RES_BETA(IQRF,2)
+                  RMORD = RMORD - RES_BETA(IQRF,1)
                ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
      &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'X') 
      &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
-                  BTERM = BTERM + RES_BETA(IQRF,2) 
+                  BTERM = BTERM - RES_BETA(IQRF,2) 
+                  RMORD = RMORD - RES_BETA(IQRF,1) 
                ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
      &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Y') 
      &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
-                  BTERM = BTERM - RES_BETA(IQRF,2) 
+                  BTERM = BTERM + RES_BETA(IQRF,2) 
+                  RMORD = RMORD + RES_BETA(IQRF,1) 
                ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
      &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Z') 
      &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
-                  BTERM = BTERM - RES_BETA(IQRF,2) 
+                  BTERM = BTERM + RES_BETA(IQRF,2) 
+                  RMORD = RMORD + RES_BETA(IQRF,1) 
                ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
      &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'X') 
      &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
-                  BTERM = BTERM - RES_BETA(IQRF,2) 
+                  BTERM = BTERM + RES_BETA(IQRF,2) 
+                  RMORD = RMORD + RES_BETA(IQRF,1) 
                END IF
            END IF
          END DO
-         WRITE(LUPRI,'(5X,A14,44X,F16.6)') 'Faraday B term',BTERM
+         WRITE(LUPRI,'(5X,A21,37X,2F16.6)') 'Orientational average',
+     &        BTERM,RMORD
 
          WRITE(LUPRI,'(A)')' '
          CALL PRSYMB(LUPRI,'-',94,1)
