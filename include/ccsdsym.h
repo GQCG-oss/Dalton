@@ -42,7 +42,8 @@
      &        IRHFA,IRHFB,
      &        NMATKL,NMATKI,NTR12AM,NR12R12P,NTR12SQ,NR12R12SQ,
      &        IMATKL,IMATKI,ITR12AM,IR12R12P,ITR12SQ,ITR12SQT,
-     &        IR12R12SQ,NT2R12,IT2R12,NTG2SQ,ITG2SQ
+     &        IR12R12SQ,NT2R12,IT2R12,NTG2SQ,ITG2SQ,
+     &        NCKIJMAX
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
@@ -99,6 +100,7 @@
      &                 IMATKL(8,8),IMATKI(8,8),ITR12AM(8,8),
      &                 IR12R12P(8,8),ITR12SQ(8,8),ITR12SQT(8,8),
      &                 IR12R12SQ(8,8),NT2R12(8),IT2R12(8,8),
-     &                 NTG2SQ(8),ITG2SQ(8,8)
+     &                 NTG2SQ(8),ITG2SQ(8,8),
+     &                 NCKIJMAX
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N

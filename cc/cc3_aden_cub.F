@@ -3569,12 +3569,9 @@ C              Can use kend3 since we do not need the integrals anymore.
                KW3MATZ      = KW3BMAT     + NCKIJ(ISWBMAT)
 c
 C
-               MAXX1 = MAX(NCKIJ(ISWMATZ),NCKIJ(ISWMATZU))
-               MAXX2 = MAX(NCKIJ(ISCKIJ),NCKIJ(ISWBMAT))
-C
                KWTEMP     = KW3MATZ      + NCKIJ(ISWMATZ)
-               KEND4  =     KWTEMP  + MAX(MAXX1,MAXX2)
-               LWRK4      = LWORK     - KEND4
+               KEND4      = KWTEMP       + NCKIJMAX
+               LWRK4      = LWORK        - KEND4
 C
                KW3MATU  = KEND4
                KINDSQWU = KW3MATU  + NCKIJ(ISWMATU)

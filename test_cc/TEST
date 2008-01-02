@@ -81,7 +81,7 @@ myprint(){
 #########################################################################
 help=""
 keep="false"
-DALTON="../dalton"
+DALTON="../bin/dalton"
 paramlist=""
 reftest=""
 bell=""

@@ -2687,6 +2687,9 @@ C
 C     Ove Christiansen 14-7-1994 generalized to 1. non-tot.symmetric FockAO
 C                                               2. non-tot symmetric LAM.
 C
+C     Filip Pawlowski  03-Jan-2007: introduced zeroing of fock array as
+C     a symmetry bug fix
+C
 C              ISYFAO is the symmtry of the AO fock matrix.
 C              isymp(isymh) is the symmetry of lamp(lamh)
 C
@@ -2788,6 +2791,9 @@ C
       KOFF1 = KFOCK
       KOFF2 = 1
       KOFF3 = NLRHFR(ISYFMO)  + 1
+
+      CALL DZERO(FOCK,N2BST(ISYFMO))
+
       DO 110 ISYMQ = 1,NSYM
 C
          ISYMP = MULD2H(ISYMQ,ISYFMO)
