@@ -850,8 +850,9 @@ C
          DO IQRF=1,NQRF
             IF (BTMP.NE.QRFFRQ(IQRF,1).OR.CTMP.NE.QRFFRQ(IQRF,2)) THEN
                IF ((ABS_MCD).AND.(.NOT.IQRF.EQ.1)) THEN
-                  WRITE(LUPRI,'(5X,A21,37X,2F16.6)') 
-     &                 'Orientational average',BTERM,RMORD
+                  WRITE(LUPRI,'(5X,A21,7X,3F10.6,2F16.6)') 
+     &                 'Orientational average',(QRFFRQ(IQRF-1,I),I=1,3),
+     &                 BTERM,RMORD
                   BTERM = 0.0
                   RMORD = 0.0
                END IF
@@ -903,8 +904,9 @@ C
                END IF
            END IF
          END DO
-         WRITE(LUPRI,'(5X,A21,37X,2F16.6)') 'Orientational average',
-     &        BTERM,RMORD
+         WRITE(LUPRI,'(5X,A21,7X,3F10.6,2F16.6)')
+     &                 'Orientational average',(QRFFRQ(NQRF,I), I=1,3),
+     &                 BTERM,RMORD
 
          WRITE(LUPRI,'(A)')' '
          CALL PRSYMB(LUPRI,'-',94,1)
