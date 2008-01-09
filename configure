@@ -1047,10 +1047,10 @@ case "$WHICH" in
              cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
-                     march="-march=$prc -malign-double -fdefault-double-8";;
-             x86_64) march="-march=x86-64 -fdefault-integer-8 -fdefault-double-8"
+                     march="-march=$prc -malign-double";;
+             x86_64) march="-march=x86-64 -fdefault-integer-8"
 		     cpp="${cpp} -DVAR_INT64";;
-                  *) march="-fdefault-double-8";
+                  *) march=" ";
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
