@@ -94,7 +94,7 @@ blas3="false"
 lapack="false"
 MACHTYPE=`uname -s`
 if [ "$MACHTYPE" = 'Linux' -o "$MACHTYPE" = Darwin ]; then
-    ECHO='echo -e'
+    ECHO='/bin/echo -e'
     prc=`uname -m`
 else
     ECHO=echo

@@ -580,6 +580,8 @@ done
 # PCM test suite
 #########################################################################
 if [ "$perl_style" -gt 0 ]; then
+    perl_log="perl_tests.log"
+    perl_err="perl_tests.err"
     perl_fail=""
     myprint ""
     myprint "Now running perl-style tests..."
@@ -587,42 +589,45 @@ if [ "$perl_style" -gt 0 ]; then
     cp ../test.pl .    
     cp ../*.tst .
     cp ../checklist .
-    parameters="--quiet --dalton=$DALTON"
+    options=""
+    parameters="--dalton=$DALTON --log=$perl_log --err=$perl_err"
     if [ "$keep" = "true" ]; then
 	parameters="$parameters --keep"
-    fi
-    if [ "$paramlist" != "" ]; then
-	parameters="$parameters --options=$paramlist"
     fi
     if [ "$reftest" = "true" ]; then
 	parameters="$parameters --checkref"
     fi
-    myprint "Perl-style testsuite invoked with the following parameters"
-    myprint "$parameters"
-    perl_fail=false
     if [ -n "$perl_style_kwd" ]; then
-	./test.pl $parameters --keyword "$perl_style_kwd"
-        if [ $? -ne 0 ]; then perl_fail=true; fi
+	parameters="$parameters --keyword $perl_style_kwd"
     else
 	parameters="$parameters --all"
-	./test.pl $parameters
-        if [ $? -ne 0 ]; then perl_fail=true; fi
+    fi
+    if [ "$paramlist" != "" ]; then
+	options="--options=$paramlist"
+    fi
+    perl_fail=""
+    myprint "Perl-style testsuite invoked with the following parameters"
+    myprint "$parameters $options"
+    ./test.pl $parameters "$options"
+    perl_exit=$?
+    if [ $perl_exit -eq 0 ]; then
+	myprint "Perl-style tests computed successfully"
+    elif [ $perl_exit -eq 1 ]; then
+        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
+	problems="$problems $perl_fail"
+        myprint "THERE IS A PROBLEM in perl-style tests"
+    else
+        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+	myprint ""
+	myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
     fi
     myprint ""
     myprint "Perl-style tests finished!"
-    if [ -n "$perl_fail" ]; then
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
-        perl_fail="`grep -A1 'tests have failed' perl-tests-*.log | tail -1`"
-	problems="$problems $perl_fail"
-        myprint "THERE IS A PROBLEM in perl-style tests"
-    elif [ "$keep" = "false" ]; then
-        rm test.pl    
-        rm *.tst
-        rm checklist
-    fi	
-    myprint "---------- Copy of LOG FILE from perl-style tests: ----"
-    myprint "`cat perl-tests-*.log`"
-    myprint "---------- End of LOG FILE from perl-style tests ----"
+    rm test.pl 
+    rm *.tst
+    rm checklist
+    cat $perl_log >> $listing
 fi
 
 #########################################################################

@@ -993,7 +993,6 @@ Starting in Static Property Section -
                               -------------
 
 
-
                     0.761783 au           1.936260 Debye
 
 

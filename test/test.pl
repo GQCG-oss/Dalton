@@ -53,7 +53,7 @@ sub parse_input {
 			     "checkref" => \$checkref,
 			     "keep"     => \$keep,
 			     "quiet"    => \$quiet,
-			     "oldout=s" => \$oldout,
+			     "oldout"   => \$oldout,
 			     "tstdir=s" => \$tstdir,
 			     "help"     => \$help);
     pod2usage(1) if $help;
@@ -328,14 +328,6 @@ sub verify_hash_element_types($$$$$) {
     return $result;	    
 }
 ############################################################################
-#sub load_check_def_val($$) {
-##
-## load default values of check elements
-##
-#$def_test_1
-##
-#
-############################################################################
 sub load_check($$$) {
 #
 # Load the check defined by the first argument from the library of available checks
@@ -483,7 +475,12 @@ sub compare($$$$$$) {
 	    $test_value = abs($test_value);
 	    $ref_value  = abs($ref_value);
 	}
-	my $diff = abs($test_value - $ref_value);
+	my $diff = 0;
+	if ($rel) {
+	    $diff = abs(($test_value - $ref_value)/$ref_value);
+	} else {
+	    $diff = abs($test_value - $ref_value);
+	}
 	if($diff <= $thr) {
 	    print $log 
 		"Numeric comparison successful\n" 
@@ -689,6 +686,8 @@ sub test_line {
     $ref_line = get_line($string, \%files);
     close OUT;
 
+    @tst=();
+    @ref=();
     @tst = extract_numbers($tst_line, $num_type, \%files) if $tst_line;
     @ref = extract_numbers($ref_line, $num_type, \%files) if $ref_line;
 
@@ -815,6 +814,7 @@ sub test_lines_mult {
     my @pos = @{$_[0]{pos}};
     my @abs = @{$_[0]{abs}};
     my @thr = @{$_[0]{thr}};
+    my @rel = @{$_[0]{rel}};
     
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
@@ -1296,8 +1296,6 @@ my $TOT_ERR = 0;
 #
 my $dir = make_dirname();
 mkdir $dir || die "Fatal: Unable to create perl-tests directory!";
-$biglog = "$dir.log";
-$bigerr = "$dir.err";
 open $BIGLOG, ">$biglog" or die;
 open $BIGERR, ">$bigerr" or die;
 chdir $dir || die "Fatal: Unable to enter perl-tests directory!"; 
@@ -1316,12 +1314,12 @@ my $errfile = '';
 my $tgzfile = '';
 
 print $BIGLOG "Perl testsuite started.....\n";
-print $BIGLOG "Global logfiles will be stored in $tstdir/$dir\n";
+print $BIGLOG "Global logfiles will be stored in $biglog and $bigerr\n";
 print $BIGLOG "Test-specific logfiles will be kept only for failed tests\n" unless $keep;
 print $BIGLOG "Test-specific logfiles will be kept for all tests\n" if $keep;
 unless ($quiet) {
     print "Perl testsuite started.....\n";
-    print "Global logfiles will be stored in $tstdir/$dir\n";
+    print "Global logfiles will be stored in $biglog and $bigerr\n";
     print "Test-specific logfiles will be kept only for failed tests\n" unless $keep;
     print "Test-specific logfiles will be kept for all tests\n" if $keep;
 }
@@ -1382,9 +1380,9 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     if ($checkref) {
 	system("cp $refout $dalout");
     } elsif ($oldout) {
-	system("cp $tstdir/$oldout $dalout");
+	system("cp $tstdir/$dalout $dalout");
     } else { 
-	system("$dalton $options $dalinp $molinp 1> $logdal 2> $errdal") unless $oldout;
+	system("$dalton $options $dalinp $molinp 1> $logdal 2> $errdal");
     }
     if (check_files($dalout,\%files)) {
 	title_print($BIGLOG ,"Corrupted output file. Test $test will be skipped\n");
@@ -1495,6 +1493,13 @@ if ((@passed_tests) or (@failed_tests)) {
     print $BIGLOG "WARNING! No tests have been performed!\n";
     print $BIGLOG "use test.pl --help for more info on how to choose the perl tests\n";
 }
+
+my $exit_status = 0;
+if (($#passed_tests != $#testlist) or ( $#failed_tests >= 0 )) {
+    my $exit_status = 1;
+}
+exit $exit_status;
+
 ##############################################################################
 #
 # TO DO
@@ -1612,8 +1617,9 @@ from failed tests only.
 
 =item B<--oldout>
 
-Checks previously generated outputs. Output files should be present in the same directory. 
-Mostly useful for debugging of the test script.
+Checks previously generated outputs. Output files should be present in the 
+same directory as the test script and have the same name as the .tst file
+Mostly useful to debug the test script.
 
 =item B<--help>
 

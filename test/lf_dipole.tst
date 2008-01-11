@@ -685,7 +685,6 @@ Starting in Static Property Section -
                               -------------
 
 
-
                     0.675590 au           1.717177 Debye
 
 
@@ -708,7 +707,6 @@ Starting in Static Property Section -
 
                    Local-field corrected dipole moment
                    -----------------------------------
-
 
 
                     0.900539 au           2.288940 Debye

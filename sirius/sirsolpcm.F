@@ -585,6 +585,13 @@ C
          CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
          CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
+         IF (NASHT.GT.0) THEN
+            CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
+            CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
+            CALL PKSYM1(WRK(KDAOX),WRK(KWRK1),NBAS,NSYM,-1)
+         ELSE
+            CALL PKSYM1(WRK(KDAOX),DCAO,NBAS,NSYM,-1)
+         END IF
       ELSE
          DO ITS = 1, NTSIRR
             QET = QET + QSE(ITS)
@@ -661,7 +668,7 @@ C
           PCMNE = PCMNE + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
         ENDDO
       ENDDO
-      PCMEE = DDOT(NNBASX,FSOL,1,WRK(KJENAO),1) - PCMEN
+      PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
 C
 C     Electrostatic contribution:
 C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN

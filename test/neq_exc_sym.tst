@@ -5,13 +5,13 @@ END DESCRIPTION
 
 ########## Check list ##############################
 START CHECKLIST
+tramom
 enedft
 tes
 nuc
 sym
 cmass
 neqrsp
-tramom
 END CHECKLIST
 
 ########## DALTON.INP ##############################

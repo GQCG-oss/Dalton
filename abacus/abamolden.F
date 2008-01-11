@@ -275,20 +275,18 @@ C           2 save orbital energies in ORVAL
 
 #include <chrsgn.h>
 
+      MOPRIN = 0
       IF (ITASK .EQ. 1) THEN
          IF (.NOT. DONEIV) THEN 
             WRITE(LUMOLDEN,'(/A)') '[5D]' 
             WRITE(LUMOLDEN,'(/A)') '[MO]' 
 C           call traorb to generate SO to AO transformation
-            CALL TRAORB(ORBTRA,NBAST,-1,0)
-C           CALL TRAORB(ORBTRA,IDIM,IATOM,IPRINT)
+            CALL TRAORB(ORBTRA,NBAST,-1,MOPRIN)
             CALL DZERO(UNPAK, NBAST * NORBT)
             CALL DZERO(ORBVEC,NBAST)
             CALL UPKCMO(ORVAL,UNPAK)
             JOCC = 0
             IIO = 0
-C     lf         WRITE(LUPRI,*) 'unpakd'
-C     lf         CALL OUTPUT(UNPAK,1,NBAST,1,NORBT,NBAST,NORBT,1,LUPRI)
             DO ISYM = 1,NSYM
                NOCCI = NOCC(ISYM)
                DO I=1,NORB(ISYM)
