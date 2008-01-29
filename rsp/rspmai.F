@@ -2517,6 +2517,7 @@ C
 #include "indcr.h"
 #include "inftmo.h"
 #include "inftpa.h"
+#include "orgcom.h"
 #include "gtensor.h"
 C
       LOGICAL FNDLAB,FNDLB2,TRIMAT,TOFILE
@@ -2764,6 +2765,14 @@ C
             KLAST  = KINTRP + 4/IRAT
             LWRK1  = LWRK   - KLAST
             IF (LWRK1.LT.0) CALL ERRWRK('RSPSYM',KLAST,LWRK)
+C
+C     If you are doing a PCM calculation with symmetry, you may risk
+C     that a symmetry-breaking tesserae geometry is left over in the 
+C     DIPORG array. Reset it to a symmetry-conserving number
+C
+            DO I = 1, 3
+               DIPORG(I) = CMXYZ(I)
+            END DO
             CALL GET1IN(DUMMY,PRPWRD,NCOMP,WRK(KLAST),LWRK1,LABINT,
      &                  WRK(KINTRP),WRK(KINTAD),IDUMMY,TOFILE,NPATOM,
      &                  TRIMAT,DUMMY,.FALSE.,DUMMY,IPRRSP - 120)
