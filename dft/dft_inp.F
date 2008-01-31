@@ -92,6 +92,7 @@ c     >.ANGINT< check keyword
       GO TO 100  
 c     >.ANGMIN< check keyword
  6    CONTINUE
+      READ(LUCMD,*) ANGMIN
       GO TO 100  
 c     >.NOPRUN< check keyword
  7    CONTINUE

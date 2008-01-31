@@ -1159,6 +1159,17 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
 default : $def
 EOF
 
+# Intel compiler seems to be a bit less optimized for certain routines, at
+# least Itanium processors
+# PS: Which version? Are they assumed to be ethernally buggy? And
+# don't even THINK about modifying source files, including
+# Makefiles.
+if [ $F77 = 'ifc' -o $F77 = 'efc' -o $F77 = 'ifort' ]; then
+echo 'SAFE2_FFLAGS = $(SAFEFFLAGS)' >> Makefile.config
+else
+echo 'SAFE2_FFLAGS = $(FFLAGS)' >> Makefile.config
+fi
+
 #
 # Insert necessary additional features for parallel calculations
 #
@@ -1318,39 +1329,9 @@ fi
 #
 # Make sure Makefile.depend files exist
 #
-touch abacus/Makefile.depend
-touch amfi/Makefile.depend
-touch cc/Makefile.depend
-touch densfit/Makefile.depend
-touch dft/Makefile.depend
-touch eri/Makefile.depend
-touch gp/Makefile.depend
-touch pdpack/Makefile.depend
-touch rsp/Makefile.depend
-touch sirius/Makefile.depend
-#
-# Intel compiler seems to be a bit less optimized for certain routines, at
-# least Itanium processors
-#
-if [ $F77 = 'ifc' -o $F77 = 'efc' -o $F77 = 'ifort' ]; then
-cat <<EOF>>abacus/Makefile
-her2el2.o: her2el2.F
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
-
-hersym.o: hersym.F
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
-EOF
-
-cat <<EOF>>eri/Makefile
-eri2cft.o: eri2cft.F
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
-EOF
-
-cat<<EOF>>amfi/Makefile
-amfi.o: amfi.F
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
-EOF
-fi
+for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius; do
+ touch $i/Makefile.depend
+done
 #
 # Update the DALTON run-script
 #

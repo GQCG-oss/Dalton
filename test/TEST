@@ -217,6 +217,7 @@ listing="TESTLOG"
 perl_log="test.log"
 perl_err="test.err"
 emptystring="                                "
+answer_yes=
 
 tmpfile=/tmp/dalton-$$.log
 touch "$tmpfile"   || { echo "cannot create temporary file. Aborting execution."; exit 1; }
@@ -228,7 +229,7 @@ else
    GREP="egrep"
 fi
 
-while [ -n "`echo $1 | grep '^ *-'`" ]; do
+while echo $1 | egrep -q '^-'; do
    case $1 in
      "-h" | "-help" | "--help" ) help="true" ; break;;
      "-dalton" )  shift; DALTON=$1; shift;;
@@ -237,6 +238,7 @@ while [ -n "`echo $1 | grep '^ *-'`" ]; do
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
      "-bell" ) bell="true"; shift;;
+     "-y") answer_yes=true; shift;;
      "-benchmark" ) benchmark="true"; shift;;
      * ) echo "---> ERROR: $1 is an unknown option!"; usage;;
    esac
@@ -379,21 +381,21 @@ cd $testdir || exit 1
 #########################################################################
 # check files for test listing:
 #########################################################################
-if [ -s $listing ]; then
+if [ -s $listing -a "$answer_yes" = '' ]; then
    echo "$listing already exists... should it be deleted first? (y/n)"
    read answer
    if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
        rm -f $listing
    fi
 fi
-if [ -s $perl_log ]; then
+if [ -s $perl_log  -a "$answer_yes" = '' ]; then
    echo "$perl_log already exists... should it be deleted first? (y/n)"
    read answer
    if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
        rm -f $perl_log
    fi
 fi
-if [ -s $perl_err ]; then
+if [ -s $perl_err  -a "$answer_yes" = '' ]; then
    echo "$perl_err already exists... should it be deleted first? (y/n)"
    read answer
    if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then

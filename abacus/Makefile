@@ -48,8 +48,9 @@ Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
+
 her2el2.o: her2el2.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 
 
 hersym.o: hersym.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 
