@@ -212,7 +212,8 @@ commute_matrices(real alpha, const real* a, const real* b, real* c, int addp)
 
 static real inactive_trace(real *mat)
 {
-   int isym,stride,symoff;
+   int isym,symoff;
+   integer stride;
    real result = 0;
    symoff =0;
    stride=inforb_.norbt+1;
@@ -295,7 +296,7 @@ add_dft_contribution(DftGrid* grid, QuadStrictData* d)
 {
     static const real sgn[2]={1.0,-1.0};
     int stride, x;
-    int norbt2 = inforb_.norbt*inforb_.norbt;
+    integer norbt2 = inforb_.norbt*inforb_.norbt;
     real pref;
     real* dftcontr = d->dftcontr;
     ThirdDrv drvs; /* the functional derivatives */
@@ -422,11 +423,11 @@ strict_callback(DftGrid* grid, QuadStrictData* data)
    contribution to quadratic response.
 */
 void
-dftqrcs_(real* fi, real* cmo, real* kappaY, int* symY, int* ispinY,
-         real* kappaZ, int* symZ, int* ispinZ, int* addfock, 
-         real* work, int* lwork)
+dftqrcs_(real* fi, real* cmo, real* kappaY, integer* symY, integer* ispinY,
+         real* kappaZ, integer* symZ, integer* ispinZ, integer* addfock, 
+         real* work, integer* lwork)
 {
-    int norbt2 = inforb_.norbt*inforb_.norbt;
+    integer norbt2 = inforb_.norbt*inforb_.norbt;
     DftCallbackData cbdata[1];
     QuadStrictData* data;
 

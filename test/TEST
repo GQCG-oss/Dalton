@@ -218,6 +218,7 @@ perl_log="test.log"
 perl_err="test.err"
 emptystring="                                "
 answer_yes=
+keep_quiet=
 
 tmpfile=/tmp/dalton-$$.log
 touch "$tmpfile"   || { echo "cannot create temporary file. Aborting execution."; exit 1; }
@@ -239,6 +240,7 @@ while echo $1 | egrep -q '^-'; do
      "-reftest" ) reftest="true"; shift;;
      "-bell" ) bell="true"; shift;;
      "-y") answer_yes=true; shift;;
+     "-q") keep_quiet=true; shift;;
      "-benchmark" ) benchmark="true"; shift;;
      * ) echo "---> ERROR: $1 is an unknown option!"; usage;;
    esac
@@ -429,7 +431,7 @@ do
   myprint "-----------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
-  if [ -f $item.info ]; then
+  if [ -f $item.info -a "$keep_quiet" = "" ]; then
     cat $item.info
     cat $item.info >> $listing
   fi

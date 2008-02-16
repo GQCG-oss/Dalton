@@ -130,7 +130,6 @@ struct GridGenWork_ {
 };
 typedef struct GridGenWork_ GridGenWork;
 
-void dzero_(real*arr, const int* cnt);
 /* atom grid init */
 GridGenAtomGrid*
 agrid_new(int uniq_no, int Z)
@@ -238,23 +237,24 @@ gen_gc2_quad(GridGenAtomGrid* grid, real thrl, void *quad_data)
  *  Gagliardi. */
 
 struct lmg_data {
-    int  *nucorb;
+    integer  *nucorb;
     real *aa;
-    int maxl;
+    integer maxl;
 };
-extern void FSYM2(get_maxl_nucind)(int *maxl, int*nucind);
-extern void FSYM(nucbas)(int*, real* , const int*);
-extern void FSYM(radlmg)(real*rad, real* wght, int *nr, real* raderr,
-                         const int*maxrad, int *nucorb, real *aa, const int *);
+extern void FSYM2(get_maxl_nucind)(integer *maxl, integer*nucind);
+extern void FSYM(nucbas)(integer*, real* , const integer*);
+extern void FSYM(radlmg)(real*rad, real* wght, integer *nr, real* raderr,
+                         const integer*maxrad, integer *nucorb,
+			 real *aa, const integer *);
 
 static void*
 gen_lmg_init(void)
 {
-    int nucind;
+    integer nucind;
     struct lmg_data *lmg = dal_new(1, struct lmg_data);
 
     FSYM2(get_maxl_nucind)(&lmg->maxl, &nucind);
-    lmg->nucorb = malloc(2*lmg->maxl*nucind*sizeof(int));
+    lmg->nucorb = malloc(2*lmg->maxl*nucind*sizeof(integer));
     lmg->aa     = calloc(4*lmg->maxl*nucind,sizeof(real));
     if(!lmg->nucorb|| !lmg->aa) {
         fprintf(stderr,"no enough memory. in gen_lmg_init.\n");
@@ -267,14 +267,16 @@ gen_lmg_init(void)
 static void
 gen_lmg_quad(GridGenAtomGrid* grid, real thrl, void *quad_data)
 {
-    static const int MAXRAD = 2000;
+    static const integer MAXRAD = 2000;
     struct lmg_data *lmg = (struct lmg_data*)quad_data;
+    integer pc;
 
     agrid_set_radial(grid, MAXRAD); 
-    FSYM(radlmg)(grid->rad, grid->wght, &grid->pnt, &thrl, &MAXRAD,
+    FSYM(radlmg)(grid->rad, grid->wght, &pc, &thrl, &MAXRAD,
                  lmg->nucorb+2*grid->uniq_no*lmg->maxl,
                  lmg->aa    +4*grid->uniq_no*lmg->maxl,
                  &ZEROI);
+    grid->pnt = pc;
 
     grid->rad  = realloc(grid->rad,  grid->pnt*sizeof(real));
     grid->wght = realloc(grid->wght, grid->pnt*sizeof(real));
@@ -483,6 +485,7 @@ becke_orig_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
     int atno, atno2, ptno, h, isign=-1;
     real mu, mu2, g_mu, apasc;
     real xpasc[HARDNESS1], facult[HARDNESS1];
+    integer pc;
     /* compute confocal ellipical coordinates for the batch of points to
      * be processed. */
 
@@ -522,7 +525,7 @@ becke_orig_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
         }
     }
     /* compute weight normalization factors */
-    dzero_(ggw->vec, &point_cnt);
+    pc = point_cnt; dzero_(ggw->vec, &pc);
     for(atno=0; atno<mg->atom_cnt; atno++)
         for(ptno=0; ptno<point_cnt; ptno++)
             ggw->vec[ptno] += ggw->IDX(p_kg,atno,ptno); 
@@ -541,6 +544,7 @@ becke_corr_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
 {
     int atno, atno2, ptno, h;
     real mu, g_mu;
+    integer pc;
     /* compute confocal ellipical coordinates for the batch of points to
      * be processed. */
 
@@ -566,7 +570,7 @@ becke_corr_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
         }
     }
     /* compute weight normalization factors */
-    dzero_(ggw->vec, &point_cnt);
+    pc = point_cnt; dzero_(ggw->vec, &pc);
     for(atno=0; atno<mg->atom_cnt; atno++)
         for(ptno=0; ptno<point_cnt; ptno++)
             ggw->vec[ptno] += ggw->IDX(p_kg,atno,ptno); 
@@ -592,6 +596,7 @@ ssf_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
     real mu, g_mu, pr, rx, ry, rz;
     int * relevant_atoms = dal_new(mg->atom_cnt, int);
     int atomi=0, ati, ati2, rel_atom_cnt = 0;
+    integer pc;
 
     rx = ggw->x[idx] - mg->atom_coords[atom].x;
     ry = ggw->y[idx] - mg->atom_coords[atom].y;
@@ -658,7 +663,7 @@ ssf_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
         }
     }
     /* compute weight normalization factors */
-    dzero_(ggw->vec, &point_cnt);
+    pc = point_cnt; dzero_(ggw->vec, &pc);
     for(ati=0; ati<rel_atom_cnt; ati++)
         for(ptno=0; ptno<point_cnt; ptno++)
             ggw->vec[ptno] += ggw->IDX(p_kg,ati,ptno); 
@@ -737,6 +742,7 @@ block_postprocess(GridGenMolGrid *mg, real *center,
     int uniq_atoms;
     GGBlockWork ggw;
     int dest;
+    integer pc;
 
     /* we find first atoms that relevant for this cell.
      * We do it by linear search which will scale as N^2
@@ -819,7 +825,7 @@ block_postprocess(GridGenMolGrid *mg, real *center,
         }
     }
     /* compute weight normalization factors */
-    dzero_(ggw.vec, &point_cnt);
+    pc = point_cnt; dzero_(ggw.vec, &pc);
     for(i=0; i<uniq_atoms; i++) {
         for(ptno=0; ptno<point_cnt; ptno++)
             ggw.vec[ptno] += ggw.p_kg[ggw.LDA*i+ptno];
@@ -831,12 +837,12 @@ block_postprocess(GridGenMolGrid *mg, real *center,
      */
     for(dest=0, ptno=0; ptno<point_cnt; ptno++) {
         int atom = map2r[atom_nums[ptno]];
-        coorw[dest][3] =
-            coorw[ptno][3]*ggw.p_kg[ggw.LDA*atom+ptno]/ggw.vec[ptno];
+	real factor = ggw.p_kg[ggw.LDA*atom+ptno]/ggw.vec[ptno];
+        coorw[dest][3] = coorw[ptno][3]*factor;
         coorw[dest][0] = coorw[ptno][0];
         coorw[dest][1] = coorw[ptno][1];
         coorw[dest][2] = coorw[ptno][2];
-        if(coorw[dest][3] >= WEIGHT_THRESHOLD) dest++;
+        if(factor >= WEIGHT_THRESHOLD) dest++;
     }
     free(relevant_atoms);
     free(map2r);
@@ -1008,7 +1014,7 @@ write_final_coords_and_weights(int cnt, int nblocks, int *shlblocks,
     }
     /* qsort(coorw, cnt, 4*sizeof(real), comp_weight); */
     if(fwrite(&nblocks,  sizeof(nblocks), 1, f) != 1) abort();
-    if(fwrite(shlblocks, sizeof(int), nblocks*2, f) != nblocks*2)
+    if(fwrite(shlblocks, sizeof(integer), nblocks*2, f) != nblocks*2)
         dalton_quit("write error in %s(), point 1", __FUNCTION__);
     for(i=0; i<cnt; i++)
         if(fwrite(coorw+i*4, sizeof(real), 3, f) != 3)
@@ -1122,7 +1128,8 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
     FILE *f;
     int idx, cnt;
     real *rshel2;
-    int nblocks, (*shlblocks)[2] = malloc(2*FSYM2(ishell_cnt)()*sizeof(int));
+    int nblocks;
+    integer (*shlblocks)[2] = malloc(2*FSYM2(ishell_cnt)()*sizeof(integer));
     int bpc = KEY_BITS/3; /* bits per coordinate */
     GridPointKey mask = ~((-1)<<bpc);
     int points_saved = 0;
@@ -1397,7 +1404,8 @@ mgrid_compute_coords_worker(GridGenMolGrid* mgrid)
             idx += leb_gen[ind].point_cnt;
         }
         /* degeneracy multiplication here */
-        cnt = compress_grid(idx, ggw.x, ggw.y, ggw.z, ggw.wg);
+        /* cnt = compress_grid(idx, ggw.x, ggw.y, ggw.z, ggw.wg); */
+	cnt = idx;
         if(mgrid->verbose)
             fort_print("Atom: %4d*%d points=%5d compressed from %5d (%3d radial)", 
                        atom+1, mult, cnt, idx, grid->pnt);
@@ -1486,7 +1494,7 @@ int
 grid_generate(const char* filename, int atom_cnt, 
               const GridGenAtom* atom_arr, real threshold,
               GridGeneratingFunc generating_function, void* arg,
-              int minang, int maxang, real* work, int *lwork)
+              int minang, int maxang, real* work, integer *lwork)
 {
     int res;
     struct tms starttm, endtm; clock_t utm;
@@ -1626,14 +1634,16 @@ FSYM(dftgridinput)(const char *line, int line_len)
    - ... but all atoms need to be taken into account when performing
    the space partitioning.
 */
-extern void FSYM2(get_no_atoms)(int* atom_cnt);
-extern void FSYM2(get_atom_by_icent)(const int* icent, real* charge, int *cnt,
-                                     int *mult, real *x, real *y, real *z);
+extern void FSYM2(get_no_atoms)(integer* atom_cnt);
+extern void FSYM2(get_atom_by_icent)(const integer* icent, real* charge,
+				     integer *cnt, integer *mult,
+				     real *x, real *y, real *z);
 
-GridGenAtom*
-grid_gen_atom_new(int* atom_cnt)
+static GridGenAtom*
+grid_gen_atom_new(integer* atom_cnt)
 {
-    int nat = 0, icent, i, mult;
+    int nat = 0, i;
+    integer icent, mult;
     real x[8], y[8], z[8], charge;
     GridGenAtom* atoms;
 
@@ -1642,7 +1652,7 @@ grid_gen_atom_new(int* atom_cnt)
     
     icent = 0;
     do {
-        int cnt;
+        integer cnt;
         icent++;
         FSYM2(get_atom_by_icent)(&icent, &charge, &cnt, &mult, x,y,z);
         for(i=0; i<cnt; i++) {
@@ -1683,7 +1693,7 @@ grid_par_shutdown(void)
 static void
 grid_par_slave(const char *fname, real threshold)
 {
-    int *shlblocks;
+    integer *shlblocks;
     MPI_Status s;
     char *     nm = grid_get_fname(fname, mynum);
     FILE *f;
@@ -1698,7 +1708,7 @@ grid_par_slave(const char *fname, real threshold)
     if((f=fopen(nm, "wb")) == NULL) dalton_quit("Slave could not save.");
     mgrid_set_radial(mg, threshold); /* so that it knows the atom radii */
 
-    shlblocks = malloc(ishlcnt*sizeof(int));
+    shlblocks = malloc(2*ishlcnt*sizeof(integer));
     do {
         int arr[2], lda;
         real center[3];
@@ -1739,7 +1749,7 @@ void FSYM2(get_grid_paras)(int *grdone, real *radint, int *angmin, int *angint);
 void FSYM2(set_grid_done)(void);
 
 DftGridReader*
-grid_open(int nbast, real *dmat, real *work, int *lwork)
+grid_open(int nbast, real *dmat, real *work, integer *lwork)
 {
     DftGridReader *res = dal_new(1, DftGridReader);
     int grdone, angmin, angint;
@@ -1753,8 +1763,8 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
         grid_par_init(&radint, &angmin, &angint, &grdone);
 #endif
         if(!grdone) {
-            int atom_cnt;
-            int lwrk = *lwork - nbast;
+            integer atom_cnt;
+            integer lwrk = *lwork - nbast;
             GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
             struct RhoEvalData dt; /* = { grid, work, lwork, dmat, dmgao}; */
             dt.grid =  NULL; dt.work = work+nbast; dt.lwork = &lwrk;
@@ -1819,7 +1829,7 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
 
 
 DftGridReader*
-grid_open_cmo(int nbast, const real *cmo, real *work, int *lwork)
+grid_open_cmo(int nbast, const real *cmo, real *work, integer *lwork)
 {
     real *dmat = dal_new(nbast*nbast, real);
     DftGridReader *reader;
@@ -1835,7 +1845,7 @@ grid_open_cmo(int nbast, const real *cmo, real *work, int *lwork)
  */
 int
 grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
-                      int *nblocks, int *shlblocks, 
+                      integer *nblocks, integer (*shlblocks)[2],
                       real (*coor)[3], real *weight)
 {
     int sz = 0, rc, bl_cnt;
@@ -1852,18 +1862,19 @@ grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
         return -1; /* stop this! */
     }
 
-    if(fread(&bl_cnt, sizeof(unsigned), 1, f) <1) {
+    if(fread(&bl_cnt, sizeof(int), 1, f) <1) {
         puts("OCNT reading error."); return -1;
     }
     if(nblocks) *nblocks = bl_cnt;
 
     if(shlblocks) {
-        rc = fread(shlblocks, sizeof(int), bl_cnt*2, f);
+        rc = fread(shlblocks, sizeof(integer), bl_cnt*2, f);
     } else {
-        int buf, cnt;
+        int cnt;
+	integer buf;
         rc = 0;
         for(cnt=0; cnt<bl_cnt*2; cnt+=rc) {
-            rc=fread(&buf, sizeof(int), 1, f);
+            rc=fread(&buf, sizeof(integer), 1, f);
             if( rc < 1)
                 break;
         }
@@ -1893,21 +1904,22 @@ grid_close(DftGridReader *rawgrid)
 /* ------------------------------------------------------------------- */
 static DftGridReader *grid = NULL;
 void
-opnqua_(int *nbast, real *dmat, real *work, int *lwork)
+FSYM(opnqua)(const integer *nbast, real *dmat, real *work, integer *lwork)
 {
     grid = grid_open(*nbast, dmat, work, lwork);
 }
 
 void
-clsqua_(void)
+FSYM(clsqua)(void)
 {
     grid_close(grid);
     grid = NULL;
 }
 
 void
-reaqua_(int *nshell, int *shell_blocks, int *buf_sz, 
-        real (*coor)[3], real *weight, int *nlen)
+FSYM(reaqua)(integer *nshell, integer (*shell_blocks)[2],
+	     const integer *buf_sz, 
+	     real (*coor)[3], real *weight, integer *nlen)
 {
     *nlen = grid_getchunk_blocked(grid, *buf_sz, nshell, shell_blocks,
                                   coor, weight);

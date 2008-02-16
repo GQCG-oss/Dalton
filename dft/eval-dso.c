@@ -88,9 +88,10 @@ struct dso_data {
 
 void FSYM(getdsosz)(int *dsodim);
 void
-numdso_slave(real* work, int* lwork, const int* iprint)
+numdso_slave(real* work, integer* lwork, const integer* iprint)
 {
-    int dsodim,sz, new_lwork;
+    int sz, new_lwork;
+    integer dsodim;
     int nucind;            /* IN: will be synced from master */
     real *spndso;
     
@@ -150,7 +151,7 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  */
 extern void FSYM2(numdso_finish)(real* spndso);
 void
-FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
+FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
 {
     extern void dunfld_(const int* n, const real* dsp, real* dge);
     struct tms starttm, endtm; clock_t utm;

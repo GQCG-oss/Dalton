@@ -171,7 +171,7 @@ mpwx_first_helper(real rhoa, real grada, real *res)
     t15 = 1/pow(rhoa,2.333333333333333);
     t16 = 1/pow(t6,2.0);
     t17 = pow(rhoa,1.333333333333333);
-    t18 = 1/pow(abs(rhoa),3.626666666666667);
+    t18 = 1/pow(fabs(rhoa),3.626666666666667);
     t19 = pow(grada,2.72);
 
    /* code */
@@ -241,7 +241,7 @@ mpwx_second_helper(real rhoa, real grada, real *res)
     t22 = pow(grada,4.0);
     t23 = 1/pow(rhoa,6.333333333333333);
     t24 = pow(grada,3.72);
-    t25 = abs(rhoa);
+    t25 = fabs(rhoa);
     t26 = 1/pow(t25,3.626666666666667);
     t27 = 2.666666666666667*t11*t12*t16*t9+4.96E-6*t24*t18*
         t26-0.01136*t9*t16-4.388*t11*t22*t23*t12;
@@ -357,7 +357,7 @@ mpwx_third_helper(real rhoa, real grada, real *res)
     t22 = pow(grada,4.0);
     t23 = 1/pow(rhoa,6.333333333333333);
     t24 = pow(grada,3.72);
-    t25 = abs(rhoa);
+    t25 = fabs(rhoa);
     t26 = 1/pow(t25,3.626666666666667);
     t27 = 2.666666666666667*t11*t12*t16*t9+4.96E-6*t24*t18*
         t26-0.01136*t9*t16-4.388*t11*t22*t23*t12;
@@ -553,7 +553,7 @@ mpwx_fourth_helper(real rhoa, real grada, real *res)
     t22 = pow(grada,4.0);
     t23 = 1/pow(rhoa,6.333333333333333);
     t24 = pow(grada,3.72);
-    t25 = abs(rhoa);
+    t25 = fabs(rhoa);
     t26 = 1/pow(t25,3.626666666666667);
     t27 = 2.666666666666667*t11*t12*t16*t9+4.96E-6*t24*t18*
         t26-0.01136*t9*t16-4.388*t11*t22*t23*t12;

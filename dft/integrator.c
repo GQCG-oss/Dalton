@@ -70,6 +70,7 @@ C
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define __CVERSION__
 #include "integrator.h"
@@ -105,12 +106,12 @@ typedef int blocksz_t;
  * header interface file.
  */
 
-extern void setupsos_(const int* geodrv, const int* dolnd,
-                      int *ntypso, int *lndoff);
-extern void getsos_(real* atv, int* ncnt, real* coorx,
-                    real* work, int* lwork, const int* nbast, 
-                    const int* dolnd, const int* dogga,
-                    const real* dfthri, const int* iprint);
+extern void FSYM(setupsos)(const integer* geodrv, const integer* dolnd,
+			   integer *ntypso, integer *lndoff);
+extern void FSYM(getsos)(real* atv, integer* ncnt, real* coorx,
+			 real* work, integer* lwork, const integer* nbast, 
+			 const integer* dolnd, const integer* dogga,
+			 const real* dfthri, const integer* iprint);
 extern void FSYM2(dft_get_thresholds)(real* dfthri, real *dfthr0);
 
 
@@ -136,7 +137,7 @@ DftGrid*
 dft_grid_new(int needgrad, int needlap, int needgb)
 {
     real dfthri, dfthr0;
-    int geodrv;
+    integer geodrv;
     DftGrid* grid = malloc(sizeof(DftGrid));
     
     grid->coor   = calloc(3*GRID_BUFF_SZ, sizeof(real));
@@ -152,7 +153,7 @@ dft_grid_new(int needgrad, int needlap, int needgb)
 
     geodrv = grid->dogga ? 1 : 0;
     if(needlap) geodrv++;
-    setupsos_(&geodrv, &grid->needgb, &grid->ntypso, &grid->london_off);
+    FSYM(setupsos)(&geodrv, &grid->needgb, &grid->ntypso, &grid->london_off);
     grid->atv   = calloc(grid->ntypso*inforb_.nbast, sizeof(real));
     grid->mov   = calloc(inforb_.norbt, sizeof(real));
     if(grid->dogga) grid->mog = calloc(3*inforb_.norbt, sizeof(real));
@@ -178,12 +179,12 @@ dft_grid_free(DftGrid* res)
 }
 
 static __inline__ void
-dft_grid_getval(DftGrid* grid, int ipnt, real* work, int* lwork)
+dft_grid_getval(DftGrid* grid, int ipnt, real* work, integer* lwork)
 {
     real thrint = grid->dfthri/grid->weight[ipnt];
-    getsos_(grid->atv, grid->ncnt, &grid->coor[ipnt][0], 
-            work, lwork, &inforb_.nbast, &grid->needgb,
-	    &grid->dogga, &thrint, &ONEI);
+    FSYM(getsos)(grid->atv, grid->ncnt, &grid->coor[ipnt][0], 
+		 work, lwork, &inforb_.nbast, &grid->needgb,
+		 &grid->dogga, &thrint, &ONEI);
 }
 
 void 
@@ -214,14 +215,15 @@ dft_integrate_collect_info(real *electrons)
    FIXME: adapt to open-shell scheme.
  */
 real
-dft_integrate(real* cmo, real* work, int* lwork, 
+dft_integrate(real* cmo, real* work, integer* lwork, 
 	      const DftCallbackData* cbarr, int cbcount)
 {
     int npoints, ipnt, cbno;
     int blocksz;
     real electrons;
     DftGrid* grid;
-    int isym, nbasi,norbi,nocci;
+    int isym;
+    integer nbasi, norbi, nocci;
     real *atvi, *movi, *cmoi, *mogi;
     DftGridReader* rawgrid;
 
@@ -249,12 +251,13 @@ dft_integrate(real* cmo, real* work, int* lwork,
                   atvi=grid->atv + inforb_.ibas[isym];
                   movi=grid->mov + inforb_.iorb[isym];
                   cmoi=cmo + inforb_.icmo[isym];
-                  dgemv_("T",&nbasi, &norbi, &ONER,
+                  FSYM(dgemv)("T",&nbasi, &norbi, &ONER,
                          cmoi, &nbasi, atvi, &ONEI, &ZEROR, movi, 
                          &ONEI);
                   nocci = inforb_.nocc[isym];
                   if (nocci > 0) {
-                     grid->dp.rhoa += ddot_(&nocci,movi, &ONEI, movi, &ONEI);
+		    grid->dp.rhoa +=
+		      FSYM(ddot)(&nocci,movi, &ONEI, movi, &ONEI);
                   }
                }
             }
@@ -274,15 +277,15 @@ dft_integrate(real* cmo, real* work, int* lwork,
                      movi=grid->mov + inforb_.iorb[isym];
                      mogi=grid->mog + inforb_.iorb[isym];
                      cmoi=cmo + inforb_.icmo[isym];
-                     dgemm_("T", "N", &norbi, &THREEI, &nbasi,
+                     FSYM(dgemm)("T", "N", &norbi, &THREEI, &nbasi,
                              &ONER, cmoi, &nbasi, 
                              atvi, &inforb_.nbast, &ZEROR, 
                              mogi, &inforb_.norbt);
                      nocci=inforb_.nocc[isym];
                      if (nocci > 0) {
-                         dgemv_("T", &nocci, &THREEI, &TWOR,
-                             mogi, &inforb_.norbt, 
-                             movi, &ONEI,  &ONER, grid->grada, &ONEI);
+		       FSYM(dgemv)("T", &nocci, &THREEI, &TWOR,
+				   mogi, &inforb_.norbt, 
+				   movi, &ONEI,  &ONER, grid->grada, &ONEI);
                      }
                   }
                }
@@ -312,7 +315,7 @@ dft_integrate(real* cmo, real* work, int* lwork,
    Returns integrated charge.
  */
 real
-dft_integrate_ao(DftDensity* dens, real* work, int* lwork,
+dft_integrate_ao(DftDensity* dens, real* work, integer* lwork,
                  int needgrad, int needlap, int needgb, 
                  const DftCallbackData* cbarr, int cbcount)
 {
@@ -372,7 +375,7 @@ dft_integrator_bl_new(Functional* f, int ndmat,
                       int bllen, int needlondon)
 {
     real dfthri, dfthr0;
-    int geodrv, kmax;
+    integer geodrv, kmax;
     DftIntegratorBl* grid = dal_malloc(sizeof(DftIntegratorBl));
 
     grid->coor   = calloc(3*GRID_BUFF_SZ, sizeof(real));
@@ -387,11 +390,11 @@ dft_integrator_bl_new(Functional* f, int ndmat,
 
     kmax = FSYM2(ishell_cnt)();
     geodrv = grid->dogga ? 1 : 0;
-    setupsos_(&geodrv, &grid->needgb, &grid->ntypso, &grid->london_off);
+    FSYM(setupsos)(&geodrv, &grid->needgb, &grid->ntypso, &grid->london_off);
     grid->london_off--; /* convert from fortran offset type */
     grid->atv   = calloc(bllen*inforb_.nbast*grid->ntypso, sizeof(real));
-    grid->shlblocks = dal_malloc(2*kmax*sizeof(int));
-    grid->basblocks = dal_malloc(2*kmax*8*sizeof(int));
+    grid->shlblocks = dal_malloc(2*kmax*sizeof(integer));
+    grid->basblocks = dal_malloc(2*kmax*8*sizeof(integer));
 
     /* Allocate memory for rho, taking advantage of the union. */
     grid->r.rho    = dal_malloc(ndmat*bllen*sizeof(real));
@@ -422,43 +425,48 @@ dft_integrator_bl_free(DftIntegratorBl *res)
 /* grid_blocked_getval:
    evaluates a block of bllen orbitals
 */
-void blgetsos_(int *nvclen, real GSO[], real COOR[],
-               int *NBLCNT, int IBLCKS[], real WORK[], int *LWORK,
-               int *NBAST, int *DOLND, int *DOGGA, real *DFTHRI,
-               const int*IPRINT);
+void FSYM(blgetsos)(integer *nvclen, real GSO[], real COOR[],
+		    integer *NBLCNT, integer IBLCKS[],
+		    real WORK[], integer *LWORK,
+		    integer *NBAST, integer *DOLND, integer *DOGGA,
+		    real *DFTHRI, const integer *IPRINT);
 
 void __inline__
-grid_blocked_getval(DftIntegratorBl* grid, int ipnt, int bllen,
-                    real* work, int *lwork)
+grid_blocked_getval(DftIntegratorBl* grid, int ipnt, integer bllen,
+                    real* work, integer *lwork)
 {
     real thrint = grid->dfthri/grid->weight[ipnt];
-    blgetsos_(&bllen, grid->atv, &grid->coor[ipnt][0],
-              &grid->shl_bl_cnt, &grid->shlblocks[0][0],
-              work, lwork, &inforb_.nbast, &grid->needgb,
-              &grid->dogga, &thrint, &ONEI);
+    FSYM(blgetsos)(&bllen, grid->atv, &grid->coor[ipnt][0],
+		   &grid->shl_bl_cnt, &grid->shlblocks[0][0],
+		   work, lwork, &inforb_.nbast, &grid->needgb,
+		   &grid->dogga, &thrint, &ONEI);
 }
 extern void
-shltoorb_(const int* nblocks, int (*shlblocks)[2], int shlcnt[],
-          int (*basblocks)[2], int *iroidx);
-extern void FSYM2(construct_ioridx)(int *ioridx);
+FSYM(shltoorb)(const integer* shlcnt, integer (*shlblocks)[2],
+	       integer aocnt[], integer (*basblocks)[2],
+	       const integer *iroidx);
+extern void FSYM2(construct_ioridx)(integer *ioridx);
 
 extern void
 FSYM2(getrho_blocked_lda)(real*dmat, const real* atv, 
-                    const int *bas_bl_cnt, int (*basblocks)[2], const int *shl,
-                    real *tmp, const int * bllen, real *rho);
+			  const integer *bas_bl_cnt, integer (*basblocks)[2],
+			  const integer *shl,
+			  real *tmp, const integer *bllen, real *rho);
 
 extern void
 FSYM2(getrho_blocked_gga)(real*dmat, const real* atv, 
-                    const int *bas_bl_cnt, int (*basblocks)[2], const int *shl,
-                    real *tmp, const int * bllen, real *rho, real (*grad)[3]);
+			  const integer *bas_bl_cnt,
+			  integer (*basblocks)[2], const integer *shl,
+			  real *tmp, const integer * bllen,
+			  real *rho, real (*grad)[3]);
 
 real
-dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
+dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
                     int needlnd, DftBlockCallback cb, void *cb_data)
 {
     int npoints, ipnt, i, j;
     int blocksz, lo, hi;
-    int *ioridx = dal_malloc(FSYM2(ishell_cnt)()*2*8*sizeof(real));
+    integer *ioridx = dal_malloc(FSYM2(ishell_cnt)()*2*8*sizeof(real));
     real electrons; /* alpha electrons only most of the time */
     DftIntegratorBl* grid;
     real *dmagao;
@@ -475,14 +483,14 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
     npoints = 0;
     while( (blocksz=grid_getchunk_blocked(rawgrid, GRID_BUFF_SZ,
                                           &grid->shl_bl_cnt, 
-                                          &grid->shlblocks[0][0],
+                                          &grid->shlblocks[0],
                                           &grid->coor[0],
                                           grid->weight)) >=0) {
-        shltoorb_(&grid->shl_bl_cnt, grid->shlblocks, 
-                  grid->bas_bl_cnt, grid->basblocks, ioridx);
+      FSYM(shltoorb)(&grid->shl_bl_cnt, grid->shlblocks, 
+		     grid->bas_bl_cnt, grid->basblocks, ioridx);
 
         for(ipnt=0; ipnt<blocksz; ipnt+=DFT_BLLEN) {
-            int len = ipnt+DFT_BLLEN<blocksz ? DFT_BLLEN : blocksz-ipnt;
+            integer len = ipnt+DFT_BLLEN<blocksz ? DFT_BLLEN : blocksz-ipnt;
             grid->curr_point  = ipnt;
             grid_blocked_getval(grid, ipnt, len, work, lwork);
             for(i=0; i<ndmat; i++) {

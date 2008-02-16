@@ -36,30 +36,29 @@ extern int dftgrid_adaptive;
 struct RhoEvalData {
     DftGrid* grid;
     real* work;
-    int*  lwork;
+    integer*  lwork;
     real* dmat;
     real* dmagao;
 };
 
 real rho_grid_func(real x, real y, real z, void* arg);
 
-GridGenAtom* grid_gen_atom_new(int* atom_cnt);
 int grid_gen_save(const char* filename, GridGenMolGrid* mgrid);
 int grid_gen_generate(const char* filename, int atom_cnt, 
                       const GridGenAtom* atom_arr, real threshold,
                       GridGeneratingFunc generating_function, void* data,
-                      int minang, int maxang, real* work, int *lwork);
+                      int minang, int maxang, real* work, integer *lwork);
 void grid_gen_set_part_scheme(GridGenPartScheme scheme);
 
 typedef struct DftGridReader_ DftGridReader;
 
-DftGridReader* grid_open(int nbast, real *dmat, real *work, int *lwork);
+DftGridReader* grid_open(int nbast, real *dmat, real *work, integer *lwork);
 DftGridReader* grid_open_cmo(int nbast, const real *cmo, 
-                             real *work, int *lwork);
+                             real *work, integer *lwork);
 
 int
 grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
-                      int *nblocks, int *shlblocks, 
+                      integer *nblocks, integer (*shlblocks)[2], 
                       real (*coor)[3], real *weight);
 
 #define grid_getchunk_plain(r,m,coor,w) \

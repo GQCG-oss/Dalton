@@ -157,4 +157,4 @@ ftnchek: pre
 pre :
 	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done
 check:
-	cd test && ./TEST -y short
+	cd test && ./TEST -y -q short

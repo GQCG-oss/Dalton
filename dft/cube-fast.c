@@ -364,12 +364,12 @@ matn_times_vec_symm(real PM, int ops,const real* mat, const real* vec, real a, r
                                                                                                               
     for(isym=0; isym<inforb_.nsym; isym++) {
         int iorbs = inforb_.iorb[isym];
-        int noccs = inforb_.nocc[isym];
-        int nvirs = inforb_.nvir[isym];
+        integer noccs = inforb_.nocc[isym];
+        integer nvirs = inforb_.nvir[isym];
         int i     = inforb_.muld2h[ops][isym]-1;
         int iorbi = inforb_.iorb[i];
-        int nocci = inforb_.nocc[i];
-        int nviri = inforb_.nvir[i];
+        integer nocci = inforb_.nocc[i];
+        integer nviri = inforb_.nvir[i];
         int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
         int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(nviri>0) {
@@ -394,12 +394,12 @@ matt_times_vec_symm(real PM, int ops,const real* mat, const real* vec, real a, r
                                                                                                               
     for(isym=0; isym<inforb_.nsym; isym++) {
         int iorbs = inforb_.iorb[isym];
-        int noccs = inforb_.nocc[isym];
-        int nvirs = inforb_.nvir[isym];
+        integer noccs = inforb_.nocc[isym];
+        integer nvirs = inforb_.nvir[isym];
         int i     = inforb_.muld2h[ops][isym]-1;
         int iorbi = inforb_.iorb[i];
-        int nocci = inforb_.nocc[i];
-        int nviri = inforb_.nvir[i];
+        integer nocci = inforb_.nocc[i];
+        integer nviri = inforb_.nvir[i];
         int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
         int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(noccs>0) {
@@ -1288,14 +1288,14 @@ dft_cr_resp_collect_info(real* fi, real*work, int lwork)
    contribution to cubic response.
 */
 void
-dftcrcf_(real* fi, real* cmo,
-	 real* kappaB, int* symB,
-         real* kappaC, int* symC,
-	 real* kappaD, int* symD, 
-         real* work, int* lwork)
+FSYM(dftcrcf)(real* fi, real* cmo,
+	      real* kappaB, integer* symB,
+	      real* kappaC, integer* symC,
+	      real* kappaD, integer* symD, 
+	      real* work, integer* lwork)
 {
     static int msg_printed = 0;
-    int norbt2 = inforb_.norbt*inforb_.norbt;
+    integer norbt2 = inforb_.norbt*inforb_.norbt;
     void gettim_(real *a, real *b);
     real sec, tmpsec, dummy;
     DftCallbackData cbdata[1];

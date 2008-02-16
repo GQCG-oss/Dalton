@@ -175,8 +175,8 @@ kohn_sham_cb(DftGrid* grid, real* excmat)
    compute Fock matrix ksm corresponding to given density matrix dmat.
 */
 void
-dft_kohn_sham_(real* dmat, real* ksm, real *edfty, 
-               real* work, int *lwork, int* iprfck)
+FSYM2(dft_kohn_sham)(real* dmat, real* ksm, real *edfty, 
+		     real* work, integer *lwork, integer* iprfck)
 {
     int nbast2, i, j;
     DftCallbackData cbdata[1];
@@ -224,15 +224,17 @@ dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
 /* ---------- DFT LINEAR RESPONSE CONTRIBUTION EVALUATOR ------------- */
 /* ------------------------------------------------------------------- */
 void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv, 
-                 real* dxcao, real* dxvao, real* wrk, int* lfrsav);
-void FSYM(autpv)(const int*isym,const int*jsym, const real*u,const real* v, 
-                 real*prpao, const int*nbas,const int*nbast,real*prpmo,
-                 const int*norb, const int*norbt, real* wrk,int* lwrk);
+                 real* dxcao, real* dxvao, real* wrk, integer* lfrsav);
+void FSYM(autpv)(const integer*isym,const integer*jsym,
+		 const real*u,const real* v, 
+                 real*prpao, const integer*nbas,const integer*nbast, real*prpmo,
+                 const integer*norb, const integer*norbt,
+		 real* wrk,integer* lwrk);
 
 typedef struct {
     real* dmat, *kappa, *res;
     real* dtgao;
-    int   trplet, ksymop;
+    integer   trplet, ksymop;
 } LinRespData;
 
 
@@ -255,8 +257,8 @@ max(real a, real b)
 
 extern void FSYM(dftlrsync)(void);
 static void
-dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat,
-                         int* trplet, int* ksymop,
+dft_lin_resp_sync_slaves(real* cmo, integer *nvec, real**zymat,
+                         integer* trplet, integer* ksymop,
                          real **work, int lwork)
 {
     static SyncData data2[] = 
@@ -405,8 +407,8 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
    trplet - triplet excitation? (bool)
 */
 void
-dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
-	      int *ksymop, real* work,int* lwork)
+FSYM2(dft_lin_resp)(real* fmat, real *cmo, real *zymat, integer *trplet,
+		    integer *ksymop, real* work, integer* lwork)
 {
     struct tms starttm, endtm; clock_t utm;
     real electrons;
@@ -465,7 +467,7 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     }
     
     /* transform to MO Fock matrix contribution  */
-    lrao2mo_(cmo, ksymop, lr_data.res, fmat, work, lwork);
+    FSYM(lrao2mo)(cmo, ksymop, lr_data.res, fmat, work, lwork);
 
     /* FIXME: parallelization here! */
     free(lr_data.dmat);
@@ -482,10 +484,11 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
 /* ------------------------------------------------------------------- */
 /* ---------- DFT LONDON ORBITAL TRANSFORMATION EVALUATOR ------------ */
 /* ------------------------------------------------------------------- */
-void dftmag_(real* excmat,const real* x,const real* y,const real* z,
+void
+FSYM(dftmag)(real* excmat,const real* x,const real* y,const real* z,
 	     const real* gao, const real* gao1,const real* gab1,
 	     const real* gab2,const real* vxc, const real* vxb,
-	     const real* rh, const int* dogga,const int* fromvx);
+	     const real* rh, const integer* dogga,const integer* fromvx);
 
 static void
 london_cb(DftGrid* grid, real* d)
@@ -512,18 +515,22 @@ london_cb(DftGrid* grid, real* d)
 	    &ZEROI);
 }
 
-void stopit_(const char* sub,const char* place,
-	     const int* int1, const int* int2, int sub_len, int place_len);
+void
+FSYM(stopit)(const char* sub,const char* place,
+	     const integer* int1, const integer* int2,
+	     int sub_len, int place_len);
 
 void
-dft_london_(real* fx, real* fy, real* fz, real* work, int* lwork, int* iprint)
+FSYM2(dft_london)(real* fx, real* fy, real* fz, real* work,
+		  integer* lwork, integer* iprint)
 {
     DftCallbackData cbdata[1];
     DftDensity dens = { dft_dens_restricted, NULL, NULL };
     struct tms starttm, endtm; clock_t utm;
     real electrons;
-    int i, j, new_lwork, xc_sz=3*inforb_.n2basx;
+    int i, j;
     real* new_work, *xcmat, *dmat;
+    integer new_lwork, xc_sz=3*inforb_.n2basx;
 
     xcmat    = work;
     dmat     = work + 3*inforb_.n2basx;
@@ -535,7 +542,7 @@ dft_london_(real* fx, real* fy, real* fz, real* work, int* lwork, int* iprint)
     dens.dmata = dmat;
 
     times(&starttm);
-    dftdns_(dmat, work, &new_lwork, iprint);
+    FSYM(dftdns)(dmat, work, &new_lwork, iprint);
     dzero_(xcmat, &xc_sz);
     electrons = dft_integrate_ao(&dens, new_work, &new_lwork, 0, 0, 1,
 				 cbdata, ELEMENTS(cbdata));
@@ -604,7 +611,7 @@ typedef struct {
    the main property evaluator (dft_kohn_shamab in this case) and call it.
 */
 void
-dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint)
+dft_kohn_shamab_slave(real* work, integer* lwork, const integer* iprint)
 {
     real* dmat = malloc(2*inforb_.n2basx*sizeof(real));
     real* ksm  = calloc(2*inforb_.n2basx,sizeof(real));
@@ -726,14 +733,15 @@ kohn_shamab_cb(DftGrid* grid, DftKohnShamU* exc)
  */
 void
 FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
-		       real* work, int *lwork, int* iprfck)
+		       real* work, integer *lwork, integer* iprfck)
 {
-    int nbast2, i, j, sz;
+    int nbast2, i, j;
     DftCallbackData cbdata[1];
     DftKohnShamU res; /* res like result */
     DftDensity dens = { dft_dens_unrestricted, NULL, NULL };
     struct tms starttm, endtm; clock_t utm;
     real electrons, exp_el = 2.0*inforb_.nrhft+inforb_.nasht;
+    integer sz;
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_kohn_shamab));/* NO-OP in serial */
@@ -1056,7 +1064,8 @@ lin_resp_cbab_nogga(DftGrid* grid, LinRespDataab* data)
 
 void
 FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat, 
-		      int *trplet, int *ksymop, real* work,int* lwork)
+		      integer *trplet, integer *ksymop,
+		      real* work, integer* lwork)
 {
     const real DP5R = 0.5;
     const real MONER = -1.0;
@@ -1064,11 +1073,12 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
     struct tms starttm, endtm; clock_t utm;
     LinRespDataab lr_data;
     DftCallbackData cbdata[1];
-    int i=1, j, ioff, joff, isym, jsym, norbi, norbj;
+    int i=1, j, ioff, joff, norbi, norbj;
     real averag;
     real *fmata, *fmatb; 
     real *runit;
     DftDensity dens = { dft_dens_unrestricted, NULL, NULL };    
+    integer isym, jsym;
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
@@ -1186,7 +1196,7 @@ distribute_lda_bl(DftIntegratorBl *grid, int bllen, int blstart, int blend,
     real * RESTRICT aos = grid->atv;
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
+        integer (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
         int bl_cnt = grid->bas_bl_cnt[isym];
 
         for(jbl=0; jbl<bl_cnt; jbl++)
@@ -1228,7 +1238,7 @@ distribute_gga_bl(DftIntegratorBl *grid, int bllen, int blstart, int blend,
     real * RESTRICT aos = grid->atv;
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
+        integer (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
         int nblocks = grid->bas_bl_cnt[isym];
         for(jbl=0; jbl<nblocks; jbl++)
             for(j=blocks[jbl][0]-1; j<blocks[jbl][1]; j++) { 
@@ -1324,8 +1334,8 @@ kohn_sham_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
    fast version - uses memory bandwidth-efficient algorithm.
 */
 void
-dft_kohn_shamf_(real* dmat, real* ksm, real* edfty,
-                real* work, int *lwork, int* iprfck)
+FSYM2(dft_kohn_shamf)(real* dmat, real* ksm, real* edfty,
+		      real* work, integer *lwork, integer* iprfck)
 {
     int nbast2, i, j;
     struct tms starttm, endtm; clock_t utm;
@@ -1381,7 +1391,8 @@ typedef struct {
     real* dmat, *kappa, *res;
     real* dtgao;
     real* vt; /* dimensioned [bllen] for LDA, [bllen][4] for GGA */
-    int   trplet, ksymop, vecs_in_batch;
+    integer trplet, ksymop;
+    int   vecs_in_batch;
 } LinRespBlData;
 
 static void
@@ -1394,12 +1405,13 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
     real (* RESTRICT vt) = data->vt; /* [bllen][4] */
     int ibl, i, jbl, j, k, isym, ivec;
     FunDensProp dp = { 0 };
+    integer blen = bllen;
 
     for(ivec=0; ivec<data->vecs_in_batch; ivec++) {
         /* compute vector of transformed densities vt */
         FSYM2(getexp_blocked_lda)(&data->ksymop, data->kappa + ivec*inforb_.n2basx,
                                   grid->atv, grid->bas_bl_cnt, grid->basblocks,
-                                  &grid->shl_bl_cnt, tmp, &bllen, vt);
+                                  &grid->shl_bl_cnt, tmp, &blen, vt);
 
         for(i=blstart; i<blend; i++) {
             SecondDrv vxc;
@@ -1410,7 +1422,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
         }
 
         for(isym=0; isym<grid->nsym; isym++) {
-            int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+            integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
             int ibl_cnt = grid->bas_bl_cnt[isym];
             
             for(ibl=0; ibl<ibl_cnt; ibl++)
@@ -1424,7 +1436,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
                 for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
                     int ioff = i*inforb_.nbast + ivec*inforb_.n2basx;
                     int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
-                    int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                    integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                     int jbl_cnt = grid->bas_bl_cnt[jsym];
                     real *RESTRICT tmpi = &tmp[i*bllen];
                     if (isym<jsym) continue;
@@ -1457,12 +1469,14 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
     real * RESTRICT aoz = grid->atv+bllen*inforb_.nbast*3;
     real * RESTRICT excmat = data->res;
     FunDensProp dp = { 0 };
+    integer blen = bllen;
 
     for(ivec=0; ivec<data->vecs_in_batch; ivec++) {
         /* compute vector of transformed densities and dens. gradients vt3 */
         FSYM2(getexp_blocked_gga)(&data->ksymop,data->kappa + ivec*inforb_.n2basx,
                                   grid->atv, grid->bas_bl_cnt,
-                                  grid->basblocks, &grid->shl_bl_cnt, tmp, &bllen, vt3);
+                                  grid->basblocks, &grid->shl_bl_cnt, tmp,
+				  &blen, vt3);
         for(i=blstart; i<blend; i++) {
             SecondDrv vxc;
             real facr, facg;
@@ -1493,7 +1507,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
         }
 
         for(isym=0; isym<grid->nsym; isym++) {
-            int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+            integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
             int ibl_cnt = grid->bas_bl_cnt[isym];
 
             for(ibl=0; ibl<ibl_cnt; ibl++) {
@@ -1504,7 +1518,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                     real *RESTRICT gzi = &aoz[i*bllen];
                     int ioff = i*inforb_.nbast + ivec*inforb_.n2basx;
                     int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
-                    int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                    integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                     int jbl_cnt = grid->bas_bl_cnt[jsym];
                     for(k=blstart; k<blend; k++)
                         tmp[k] = (vt3[k][0]*g0i[k] + 
@@ -1536,8 +1550,9 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
    NOSIM - number of simultaneously transformed response vectors.
 */
 void
-FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet,
-                    int *ksymop, real* work,int* lwork)
+FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,
+		     integer *trplet, integer *ksymop,
+		     real* work, integer* lwork)
 {
     /* MAX_VEC determines the number of simultaneusly transformed
        vectors.  Set it to a small mumber (eg. 3) - the only operation
@@ -1571,7 +1586,7 @@ FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet
     FSYM2(dft_get_ao_dens_mat)(cmo, lr_data.dmat, work, lwork);
     
     for(ivec=0; ivec<*nosim; ivec+=max_vecs) {
-        int sz;
+        integer sz;
         lr_data.vecs_in_batch = ivec + max_vecs > *nosim ? *nosim - ivec : max_vecs;
         sz = lr_data.vecs_in_batch * inforb_.n2basx;
         FSYM(dzero)(lr_data.kappa, &sz);
@@ -1628,11 +1643,11 @@ FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet
 }
 
 void
-dft_lin_respf_slave(real* work, int* lwork, const int* iprint)
+dft_lin_respf_slave(real* work, integer* lwork, const integer* iprint)
 {
     real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
-    int trplet;                         /* IN: will be synced from master */
-    int ksymop, nosim;
+    integer trplet;                     /* IN: will be synced from master */
+    integer ksymop, nosim;
     FSYM2(dft_lin_respf)(&nosim, NULL, cmo, NULL,
                          &trplet, &ksymop, work, lwork);
     free(cmo);
@@ -1686,7 +1701,7 @@ distribute_ab_gga_bl(DftIntegratorBl *grid, int bllen, int blstart, int blend,
     real * RESTRICT aos = grid->atv;
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
+        integer (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
         int nblocks = grid->bas_bl_cnt[isym];
         for(jbl=0; jbl<nblocks; jbl++)
             for(j=blocks[jbl][0]-1; j<blocks[jbl][1]; j++) { 
@@ -1758,13 +1773,14 @@ kohn_shamab_cb_b_gga(DftIntegratorBl *grid, real * RESTRICT tmp,
 /*  unrestricted, blocked version:
  */
 void
-dft_kohn_shamab_b_(real* dmat, real* ksm, real *edfty,
-                   real* work, int *lwork, int* iprfck)
+FSYM2(dft_kohn_shamab_b)(real* dmat, real* ksm, real *edfty,
+			 real* work, integer *lwork, integer* iprfck)
 {
-    int i, j, sz;
+    int i, j;
     struct ks_data_ab result; /* res like result */
     struct tms starttm, endtm; clock_t utm;
     real electrons, exp_el = 2.0*inforb_.nrhft+inforb_.nasht;
+    integer sz;
 
     result.ksma = calloc(2*inforb_.n2basx, sizeof(real));
     result.ksmb = result.ksma + inforb_.n2basx;
@@ -1833,7 +1849,7 @@ dft_mol_grad_ab(DftGrid* grid, real* dmat)
 
 
 void
-dftmolgradab_(real* work, int* lwork, int* iprint)
+FSYM(dftmolgradab)(real* work, integer* lwork, integer* iprint)
 {
     DftCallbackData cbdata[1];
     DftDensity dens = { dft_dens_unrestricted, NULL, NULL };

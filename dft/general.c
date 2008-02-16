@@ -68,7 +68,7 @@ C
 #include "inforb.h"
 
 /* C-wide constants */
-const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
+const integer ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
 const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 
 
@@ -106,7 +106,7 @@ dal_set_cam_param(int cnt, const real *w, const real *be) {
 */
 static char* DftConfString = NULL;
 int
-FSYM(dftsetfunc)(const char* line, int * inperr, int len)
+FSYM(dftsetfunc)(const char* line, integer * inperr, int len)
 {
     int i, off;
 
@@ -186,7 +186,7 @@ dftpot0_(FirstDrv *ds, const real* weight, const FunDensProp* dp)
 
 void
 dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp, 
-         const int* triplet)
+         const integer* triplet)
 {
     
     FunSecondFuncDrv drvs;
@@ -289,7 +289,8 @@ dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
 }
 
 void
-dftpot3ab_(FourthDrv *ds, real *factor, const FunDensProp* dp, int *isgga)
+dftpot3ab_(FourthDrv *ds, const real *factor, const FunDensProp* dp,
+	   const integer *isgga)
 {
      FunFourthFuncDrv drvs;
      
@@ -456,9 +457,9 @@ dft_dens_restricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
     /* transform grad vectors to molecular orbitals */
     if(rho>grid->dfthr0 && grid->dogga) {
         /* compute only half density gradient, i.e only grad_alpha. */
-        dgemv_("T", &inforb_.nbast, &THREEI, &ONER,
-               &grid->atv[inforb_.nbast], &inforb_.nbast, tmp_vec,
-               &ONEI, &ZEROR, grid->grada, &ONEI);
+      FSYM(dgemv)("T", &inforb_.nbast, &THREEI, &ONER,
+		  &grid->atv[inforb_.nbast], &inforb_.nbast, tmp_vec,
+		  &ONEI, &ZEROR, grid->grada, &ONEI);
         
         ngrad = sqrt(grid->grada[0]*grid->grada[0]+
                      grid->grada[1]*grid->grada[1]+
@@ -585,7 +586,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
    that slaves should absolutely know but for some reason do not.
 */
 void
-FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
+FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
 {
     int rank, size;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
@@ -599,7 +600,7 @@ FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
 }
 #else
 void
-FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
+FSYM2(dft_cslave)(real* work,integer*lwork,integer*iprint)
 {
    fort_print("DFT slave called but does nothing now.");
 }
@@ -622,19 +623,20 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-extern void FSYM2(fort_wrt)(const char* str, const int* len, int ln);
+extern void FSYM2(fort_wrt)(const char* str, const integer* len, int ln);
 int
 fort_print(const char* format, ...)
 {
     char line[128];
-    int len;
+    integer len;
+    integer l;
     va_list a;
 
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
-    len = strlen(line);
-    FSYM2(fort_wrt)(line, &len, len);
+    len = l = strlen(line);
+    FSYM2(fort_wrt)(line, &len, l);
     return len;
 }
 
@@ -647,7 +649,7 @@ fort_print(const char* format, ...)
 /* dftfuncsync synchronises the selected functional between all
  * nodes. */
 void
-FSYM(dftfuncsync)(int *mynum, int *nodes)
+FSYM(dftfuncsync)(integer *mynum, integer *nodes)
 {
     static int done = 0;
     int len = DftConfString ? strlen(DftConfString) + 1: 0;

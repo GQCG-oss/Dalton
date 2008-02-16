@@ -120,10 +120,9 @@ so_ints_lda_cb(DftGrid* grid, real* excmat)
    computes DFT contribution to SO integrals for given reference density
    and saves them to usual file.
 */
-void FSYM2(write_soi)(const real* soints, real* wrk, int* lwrk);
-
+void FSYM2(write_soi)(const real* soints, real* wrk, integer* lwrk);
 void
-dftsoi_(real* cmo, real* work, int *lwork, int* iprfck)
+FSYM(dftsoi)(real* cmo, real* work, integer *lwork, integer* iprfck)
 {
     int nbast2, m, i, j;
     DftCallbackData cbdata[1];

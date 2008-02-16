@@ -41,7 +41,7 @@ C     MXSSYM = maximum number of "super symmetries"
 /*     MXSSYM = maximum number of "super symmetries" */
 #define MXSSYM 100 
 extern struct common_inforb {
-    int muld2h[8][8], nrhf[8],nrohf[8],nvir[8], nfro[8],
+    integer muld2h[8][8], nrhf[8],nrohf[8],nvir[8], nfro[8],
 	nish[8],nash[8],nssh[8],nocc[8],norb[8],nbas[8],
 	nnorb[8],nnbas[8], n2orb[8],n2bas[8],
 	iish[8],iash[8],issh[8],iocc[8],iorb[8],ibas[8],
@@ -56,7 +56,7 @@ extern struct common_inforb {
 } inforb_;
 extern struct common_infoss {
     /* NOTICE that the index range is inverted for ninfss */
-    int nssym, norbss[MXSSYM], iorbss[MXSSYM],
+    integer nssym, norbss[MXSSYM], iorbss[MXSSYM],
 	ninfss[3][MXSSYM], mxdgss;
 } infoss_;
 #endif
