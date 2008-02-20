@@ -33,12 +33,15 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
 /* 
-   this version of CC was generated from version used 1998/99 on
+   This version of CC was generated from version used 1998/99 on
    jensen by a merge with the version used on Linux PCs
    Christof Haettig, April 1999
 
    fixed for 64 bit mode on IBM AIX with VAR_INT64 and SYS_AIX set
    Christof Haettig, Mar 19 2003
+   
+   General interfacing with fortran code compiled with non-default
+   integer size done by Pawel Salek, Feb 2008.
 */
 
 /* Simulate the cray 64 bit word addressable I/O routines and
@@ -56,6 +59,7 @@ C
 
    Currently the I/O is syncronous and unbuffered */
 #define _BSD_SOURCE 1
+#define _LARGEFILE64_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,20 +71,36 @@ C
 
 #define max_file 99
 
+/* define here the integer type, which has the same lengths
+   as the integers used under fortran */
+#if defined (VAR_INT64) || defined (SYS_AIX)
+#include <stdint.h>
+typedef int64_t INTEGER;
+#else
+typedef int INTEGER;
+#endif
+
+/* Mark Fortran-callable API with FSYM */
+#if defined(NO_UNDERSCORE) || (defined(FUNDERSCORE) &&FUNDERSCORE == 0)
+#define FSYM(a) a
+#define FSYM2(a) a
+#else
+#define FSYM(a) a ## _
+#if (defined(FUNDERSCORE) && FUNDERSCORE == 2)
+#define FSYM2(a) a ## __
+#else
+#define FSYM2(a) a ## _
+#endif
+#endif
+
+/* Disable old cruft. */
+#if defined(OLD_CRUFT)
 /* for machines, which don´t have lseek64, we overwrite here
    lseek64 by lseek and off64_t by off_t
 */
-#if defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_HPUX)
+#if defined (SYS_DEC) || defined (SYS_HPUX)
 #define lseek64 lseek
 #define off64_t off_t
-#endif
-
-/* define here the integer type, which has the same lengths
-   as the integers used under fortran */
-#if defined (VAR_INT64) && defined (SYS_AIX)
-#define INTEGER long
-#else
-#define INTEGER int
 #endif
 
 #if defined (SYS_FUJITSU)
@@ -89,27 +109,17 @@ C
 #define lseek64 lseek
 #define _LLTYPES
 #endif
-#endif
 
-/* for some machines we have to add an underscore to the routine names:  */
-#if defined(SYS_AIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) ||  defined (SYS_SUN) || defined(SYS_HPUX)
-#define WOPEN wopen_
-#define WCLOSE wclose_
-#define GETWA getwa_
-#define PUTWA putwa_
-#else
-#define WOPEN wopen
-#define WCLOSE wclose
-#define GETWA getwa
-#define PUTWA putwa
-#endif
+#endif /* OLD_CRUFT */
 
-static INTEGER first_call = 1;   /* need to do stuff on the first call */
+#endif 
+
+static int first_call = 1;   /* need to do stuff on the first call */
 
 static struct w_file {
   int fds;                     /* file descriptor */
-  long long length;            /* file length in bytes */
-  long long position;          /* current file position in bytes a la lseek */
+  off64_t length;              /* file length in bytes */
+  off64_t position;            /* current file position in bytes a la lseek */
   char *path;                  /* file name */
   INTEGER stats;                   /* boolean flag to collect statistics */
   double words_write;          /* total no. of words written */
@@ -122,10 +132,10 @@ static struct w_file {
   INTEGER seek_write;              /* no. of seeks on write */
 } file_array[max_file];
 
-void walltm_(ai)
-    double *ai;
-/* return ai with the wall clock time in seconds as a double.
-   it might be accurate to about 0.01s at best */
+/** returns ai with the wall clock time in seconds as a double.  The
+    actual accuracy is OS-dependent. */
+void
+FSYM(walltm)(double *ai)
 {
   struct timeval tp;
   struct timezone tzp;
@@ -134,8 +144,9 @@ void walltm_(ai)
   *ai = (double) tp.tv_sec + ((double) tp.tv_usec) * 1.0e-6;
 }
 
-static INTEGER CheckUnit(unit)
-     INTEGER unit;
+
+static INTEGER
+isUnitValidAndOpen(INTEGER unit)
 {
   if ( (unit < 0) || (unit >= max_file) )
     return -1;
@@ -146,26 +157,20 @@ static INTEGER CheckUnit(unit)
   return 0;
 }
 
-static INTEGER CheckAddr(addr)
-     INTEGER addr;
+static INTEGER
+isAddressValid(INTEGER addr)
 {
-  if (addr <= 0)
-    return -4;
-  else
-    return 0;
+  return (addr <= 0) ?  -4 : 0;
 }
 
-static INTEGER CheckCount(count)
-     INTEGER count;
+static INTEGER
+isCountValid(INTEGER count)
 {
-  if (count < 0)
-    return -4;
-  else
-    return 0;
+  return (count < 0) ? -4 : 0;
 }
 
-void InitFileStats(file)
-     struct w_file *file;
+static void
+InitFileStats(struct w_file* file)
 {
   file->stats = 1;
   file->words_write = 0.0e0;
@@ -178,9 +183,8 @@ void InitFileStats(file)
   file->seek_write = 0;
 }
 
-void PrintFileStats(unit, file)
-     struct w_file *file;
-     INTEGER unit;
+static void
+PrintFileStats(INTEGER unit, const struct w_file *file)
 {
   double ave_read=0.0e0, ave_write=0.0e0;
   double rate_read=0.0e0, rate_write=0.0e0;
@@ -211,16 +215,17 @@ void PrintFileStats(unit, file)
           (int) ave_write, file->time_write, rate_write);
 }
 
-void InitFileData(file)
-     struct w_file *file;
+static void
+InitFileData(struct w_file *file)
 {
   file->fds = -1;
-  file->length = (long long) -1;
-  file->path = (char *) NULL;
-  file->position = (long long) -1;
+  file->length = (off64_t) -1;
+  file->path = NULL;
+  file->position = (off64_t) -1;
 }
 
-void FirstCall()
+static void
+FirstCall()
      /* Initialization on first call to anything */
 {
   INTEGER i;
@@ -228,22 +233,21 @@ void FirstCall()
   for (i=0; i<max_file; i++) {
 
     InitFileData(&file_array[i]);
-
     InitFileStats(&file_array[i]);
   }
 
   first_call = 0;
 }
 
-void WCLOSE(unit, ierr)
-     INTEGER *unit, *ierr;
+void
+FSYM(wclose)(const INTEGER *unit, INTEGER *ierr)
 {
   struct w_file *file;
 
   if (first_call)
     FirstCall();
 
-  if (*ierr = CheckUnit(*unit))
+  if (*ierr = isUnitValidAndOpen(*unit))
     return;
 
   file = file_array + *unit;
@@ -259,9 +263,8 @@ void WCLOSE(unit, ierr)
 }
 
 /* ARGSUSED */
-void WOPEN(unit, name, lennam, blocks, stats, ierr)
-     INTEGER *unit, *lennam, *blocks, *stats, *ierr;
-     char *name;
+void FSYM(wopen)(const INTEGER *unit, const char *name, const INTEGER *lennam,
+		 const INTEGER* blocks, const INTEGER *stats, INTEGER *ierr)
 {
   struct w_file *file;
 
@@ -300,25 +303,25 @@ void WOPEN(unit, name, lennam, blocks, stats, ierr)
 
 }
 
-void GETWA(unit, result, addr, count, ierr)
-     INTEGER *unit, *addr, *count, *ierr;
-     double *result;
+void
+FSYM(getwa)(const INTEGER *unit, double *result, const INTEGER *addr, 
+	    const INTEGER *count, INTEGER *ierr)
 {
-  long nbytes, con2;
-  long long where, con1;
+  size_t nbytes, con2;
+  off64_t where, con1;
   double start, end;
   struct w_file *file;
 
   if (first_call)
     FirstCall();
 
-  if (*ierr = CheckUnit(*unit))
+  if (*ierr = isUnitValidAndOpen(*unit))
     return;
 
-  if (*ierr = CheckAddr(*addr))
+  if (*ierr = isAddressValid(*addr))
     return;
 
-  if (*ierr = CheckCount(*count))
+  if (*ierr = isCountValid(*count))
     return;
 
   file = file_array + *unit;
@@ -326,17 +329,18 @@ void GETWA(unit, result, addr, count, ierr)
   con1 = *addr;
   con2 = *count;
 
-  nbytes = con2 * (long) 8;
-  where = (con1 - (long long) 1) * (long long) 8;
+  nbytes = con2 * 8;
+  where = (con1 - (off64_t) 1) * (off64_t) 8;
 
   if ( (where+nbytes) > file->length ) {
     *ierr = -5;
     fflush(stdout);
     fprintf(stderr,
-            "GETWA: where %ld \n"
-            "GETWA: nbytes %ld \n"
-            "GETWA: file->length %ld \n",
-            (long)where, (long)nbytes, (long)file->length);
+            "GETWA: where %lu \n"
+            "GETWA: nbytes %lu \n"
+            "GETWA: file->length %lu \n",
+            (unsigned long)where, (unsigned long)nbytes,
+	    (unsigned long)file->length);
     PrintFileStats(*unit, file);
     return;
   }
@@ -346,13 +350,13 @@ void GETWA(unit, result, addr, count, ierr)
 
   if (where != file->position) {
     file->seek_read++;
-    if ( (file->position = lseek64(file->fds, (off64_t) where, SEEK_SET)) == (long long) -1) {
+    if ( (file->position = lseek64(file->fds, where, SEEK_SET)) == (off64_t) -1) {
       *ierr = -4;
       return;
     }
   }
 
-  if ((long) read(file->fds, (char *) result, (long) nbytes) != nbytes) {
+  if ( read(file->fds, result, nbytes) != nbytes) {
     *ierr = -6;
     return;
   }
@@ -369,26 +373,25 @@ void GETWA(unit, result, addr, count, ierr)
   *ierr = 0;
 }
   
-void PUTWA(unit, source, addr, count, ierr)
-     INTEGER *unit, *addr, *count, *ierr;
-     double *source;
+void
+FSYM(putwa)(const INTEGER *unit, const double *source, const INTEGER *addr,
+	    const INTEGER *count, INTEGER *ierr)
 {
   size_t nbytes,con2;
-  long long where, con1;
+  off64_t where, con1;
   double start, end;
-/*  long long jerr; */
   struct w_file *file;
 
   if (first_call)
     FirstCall();
 
-  if ( *ierr = CheckUnit(*unit))
+  if ( *ierr = isUnitValidAndOpen(*unit))
     return;
 
-  if (*ierr = CheckAddr(*addr))
+  if (*ierr = isAddressValid(*addr))
     return;
 
-  if (*ierr = CheckCount(*count))
+  if (*ierr = isCountValid(*count))
     return;
 
   file = file_array + *unit;
@@ -396,21 +399,21 @@ void PUTWA(unit, source, addr, count, ierr)
   con1 = *addr;
   con2 = *count;
 
-  nbytes = con2 * (long) 8;
-  where = (con1 - (long long) 1) * (long long) 8;
+  nbytes = con2 * 8;
+  where = (con1 - (off64_t) 1) * (off64_t) 8;
   
   if (file->stats)
     walltm_(&start);
 
   if (where != file->position) {
     file->seek_write++;
-    if ( (file->position = lseek64(file->fds, (off64_t) where, SEEK_SET)) == (long long) -1) {
+    if ( (file->position = lseek64(file->fds, where, SEEK_SET)) == (off64_t) -1) {
       *ierr = -4;
       return;
     }
   }
 
-  if ( (*ierr=write(file->fds, (char *) source, nbytes)) != nbytes) {
+  if ( (*ierr=write(file->fds, source, nbytes)) != nbytes) {
     printf("\n write returned %d \n",*ierr);
     *ierr = -6;
     return;
@@ -431,4 +434,3 @@ void PUTWA(unit, source, addr, count, ierr)
 
   *ierr = 0;
 }
-

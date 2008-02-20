@@ -909,7 +909,7 @@ comp_point_key(const void* a, const void* b)
 
 void FSYM(gtexts)(real* r2);
 void FSYM(getblocks)(real *center, real *CELLSZ, real RSHEL2[],
-                     int *NBLCNT, int (*IBLCKS)[2]);
+                     integer *NBLCNT, integer (*IBLCKS)[2]);
 static void
 boxify_load_grid(const char *fname, int point_cnt, real *work, int worksz,
                  real (**coorw)[4], int *x_allocated,
@@ -1003,7 +1003,7 @@ comp_weight(const void *a, const void *b)
 }
 #endif
 static void
-write_final_coords_and_weights(int cnt, int nblocks, int *shlblocks,
+write_final_coords_and_weights(int cnt, int nblocks, integer (*shlblocks)[2],
 			       real *coorw, FILE *f)
 {
     int i;
@@ -1026,7 +1026,7 @@ write_final_coords_and_weights(int cnt, int nblocks, int *shlblocks,
 
 static void
 boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
-                        int nblocks, int shlblocks[][2],
+                        int nblocks, integer (*shlblocks)[2],
                         real *center, const int *atom_nums,
                         real *coorw)
 {
@@ -1036,7 +1036,7 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
                                                  (real(*)[4])coorw);
     }
     if(cnt == 0) return;
-    write_final_coords_and_weights(cnt, nblocks, &shlblocks[0][0], coorw, f);
+    write_final_coords_and_weights(cnt, nblocks, shlblocks, coorw, f);
 }
 
 #ifdef VAR_MPI
@@ -1128,7 +1128,7 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
     FILE *f;
     int idx, cnt;
     real *rshel2;
-    int nblocks;
+    integer nblocks;
     integer (*shlblocks)[2] = malloc(2*FSYM2(ishell_cnt)()*sizeof(integer));
     int bpc = KEY_BITS/3; /* bits per coordinate */
     GridPointKey mask = ~((-1)<<bpc);
