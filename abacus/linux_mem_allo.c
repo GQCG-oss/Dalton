@@ -45,44 +45,51 @@ C
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(VAR_INT64)
+#include <stdint.h>
+typedef int64_t integer;
+#else
+typedef int integer;
+#endif
+
 void dalton_quit(const char* format, ...);
-typedef void (*DaltonDriver)(double* work, int* lmwork, double* wrkdlm);
+typedef void (*DaltonDriver)(double* work, integer* lmwork, double* wrkdlm);
 extern DaltonDriver nodedriver_;
 extern DaltonDriver exedrv_;
-void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm)
+void cexe_(DaltonDriver drv, integer* nwords, double* wrkdlm)
 {
     double* mem_block;
     static const int debug = 0;
 
     mem_block = (double*)malloc((*nwords+2)*sizeof(double));
     if(!mem_block) {
-        fprintf(stderr,"CEXE: Cannot allocate  work: %i dwords\n", *nwords);
-        dalton_quit("CEXE: Cannot allocate work: %i dwords\n", *nwords);
+        fprintf(stderr,"CEXE: Cannot allocate  work: %ld dwords\n", (long)*nwords);
+        dalton_quit("CEXE: Cannot allocate work: %ld dwords\n", (long)*nwords);
     }
     mem_block[0] = *wrkdlm;
     mem_block[1+*nwords] = *wrkdlm;
-    if(debug) fprintf(stderr,"CEXE: Allocating  work: %i dwords\n", *nwords);
+    if(debug) fprintf(stderr,"CEXE: Allocating  work: %ld dwords\n", (long)*nwords);
     drv(mem_block, nwords, wrkdlm);
     if(debug) fprintf(stderr,"CEXE finished.\n");
 }
 #ifdef VAR_G77
 /* ioff=iallor8(work,nwords)  work(ioff) is the first position */
-int  iallor8_(double *work,int *nwords){
+integer  iallor8_(double *work,integer *nwords){
   double *iadd=(double *)calloc((*nwords),8);
   if(iadd==NULL){fprintf(stderr,"iallor8: cannot allocate\n");exit(2);}
   return (iadd-work +1);
 }
-int  ialloi4_(int *work,int *nwords){
+integer ialloi4_(int *work,integer *nwords){
   int *iadd=(int *)calloc((*nwords),4);
   if(iadd==NULL){fprintf(stderr,"ialloi4: cannot allocate\n");exit(2);}
   return (iadd-work +1);
 }
-int  ialloi2_(short int *work,int *nwords){
+integer ialloi2_(short int *work,integer *nwords){
   short int *iadd=(short int *)calloc((*nwords),2);
   if(iadd==NULL){fprintf(stderr,"ialloi2: cannot allocate\n");exit(2);}
   return (iadd-work +1);
 }
-int  ialloi1_(char *work,int *nwords){
+integer  ialloi1_(char *work,integer *nwords){
   char *iadd=(char *)calloc((*nwords),1);
   if(iadd==NULL){fprintf(stderr,"ialloi1: cannot allocate\n");exit(2);}
   return (iadd-work +1);
