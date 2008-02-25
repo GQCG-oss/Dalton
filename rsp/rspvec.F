@@ -2104,8 +2104,8 @@ C
          WRITE(LUPRI,'(A64,5(/A64))') 
      & ' The two-photon absorption strength for an average molecular  ',
      & ' orientation is computed according to formulas given by       ',
-     & ' P.R. Monson and W.M. MacClain in J. Chem. Phys. 53:29, 1970  ',
-     & ' and W.M. MacClain in J. Chem. Phys. 55:2789, 1971.           ',
+     & ' P.R. Monson and W.M. McClain in J. Chem. Phys. 53:29, 1970   ',
+     & ' and W.M. McClain in J. Chem. Phys. 55:2789, 1971.            ',
      & ' The absorption depends on the light polarization.            ',
      & ' A monochromatic light source is assumed.                     '
          WRITE(LUPRI,'(3(/A64))')
