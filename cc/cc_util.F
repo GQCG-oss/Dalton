@@ -71,23 +71,46 @@ C
 C     PURPOSE:
 C             Calculate the C-term 
 C
-#include <implicit.h>
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
-      DIMENSION WORK(LWORK)
-      CHARACTER CFIL*(*)
-      LOGICAL   R12CON
-      INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
-     &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
+C#include <implicit.h>
+      implicit none
+
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <maxorb.h>
 #include <ccsdio.h>
 #include <r12int.h>
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-C
+
+      integer lwork, isyvec, isycim, luc, iv, iopt,ioptb, lucb,
+     &        ioffb, iopte
+#if defined (SYS_CRAY) 
+      real zero,half,one,two,omega2,t2am,xlamdh,emat1,
+     &     work, facb
+#else 
+      double precision zero,half,one,two,omega2,t2am,xlamdh,emat1,
+     &     work, facb
+#endif 
+
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
+      DIMENSION WORK(LWORK)
+      CHARACTER*(*) CFIL, CBFIL
+      LOGICAL   R12CON
+      INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
+     &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
+      integer isaibj, mbas1t, icoun1, icoun2, isym, isym1, isym2,
+     &        isymbj, isymck, isymdk, nt1ai, lenai, lenmin, ndisai,
+     &        nbatai, ilstai, ibatai, ifstai, kscr1, kscr2,
+     &        kscr3, kend, lwrk1, koff1, isymk, idelta, id, ioff, klen,
+     &        koff2, koff3, kai, nai, isydel, nbasd1, nbasd2, nvirc,
+     &        koff4, koff5, koff6, isyma, isymai, isymc, nak, kak,
+     &        nck, iadr, nt1bj, koff7, isymb, isymj, isymaj, isymbi,
+     &        naj, isymi, koff8, icoun3, icoun4
+#if defined (SYS_CRAY) 
+      real xnorm, ddot
+#else 
+      double precision xnorm, ddot
+#endif 
       XNORM = 0.0d0
 C
       IF (OMEGSQ) THEN
@@ -117,15 +140,24 @@ C     Define offsets/dimensions:
       ICOUN1 = 0
       ICOUN2 = 0
       DO ISYM = 1, NSYM
+        ICOUN3 =0
+        ICOUN4 =0
+        DO ISYM2 = 1, NSYM
+          ISYM1 = MULD2H(ISYM,ISYM2)
+          IMATAC(ISYM1,ISYM2) = ICOUN3
+          IT1AO2(ISYM1,ISYM2) = ICOUN4
+          ICOUN3 = ICOUN3 + NVIR(ISYM1)*NC(ISYM2)
+          ICOUN4 = ICOUN4 + MBAS2(ISYM1)*NRHF(ISYM2)
+        END DO
+
         NMATAC(ISYM) = 0
         NT1AO2(ISYM) = 0
         DO ISYM2 = 1, NSYM
           ISYM1 = MULD2H(ISYM,ISYM2)
-          IMATAC(ISYM1,ISYM2) = NMATAC(ISYM)
           NMATAC(ISYM) = NMATAC(ISYM) + NVIR(ISYM1)*NC(ISYM2)
-          IT1AO2(ISYM1,ISYM2) = NT1AO2(ISYM)
           NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
         END DO
+
         MBAS1T = MBAS1T + MBAS1(ISYM)
         IBASX(ISYM) = ICOUN1
         ILAMDX(ISYM) = ICOUN2
@@ -212,10 +244,10 @@ C
      *                    + NRHF(ISYMK)*(IFSTAI - 1) + 1
                   ENDIF
 C
-                  LEN  = NDISAI*NRHF(ISYMK)
+                  KLEN  = NDISAI*NRHF(ISYMK)
 C
-                  IF (LEN .GT. 0) THEN
-                     CALL GETWA2(LUC,CFIL,WORK(KOFF1),IOFF,LEN)
+                  IF (KLEN .GT. 0) THEN
+                     CALL GETWA2(LUC,CFIL,WORK(KOFF1),IOFF,KLEN)
                   ENDIF
 C
                   DO 140 NAI = IFSTAI,ILSTAI
@@ -231,7 +263,7 @@ C
 C
   140             CONTINUE
 C
-                  KOFF1 = KOFF1 + LEN
+                  KOFF1 = KOFF1 + KLEN
 C
   130          CONTINUE
   120       CONTINUE
@@ -275,8 +307,8 @@ C
   150       CONTINUE
 
 C           XNORM = XNORM + 
-C    &         DDOT(NDISAI*NT1AM(ISYMDK),WORK(KSCR1),1,WORK(KSCR1),1)
-C           WRITE (LUPRI,*) 'CCRHS_CIO2> XNORM,YNORM:',XNORM,YNORM
+C    &         DDOT(NDISAI*NT1CK(ISYMCK),WORK(KSCR1),1,WORK(KSCR1),1)
+C           WRITE (LUPRI,*) 'CCRHS_CIO2> XNORM:',XNORM
 C
             IF (R12CON) THEN 
 C
@@ -301,10 +333,10 @@ C
      *                    + NRHF(ISYMK)*(IFSTAI - 1) + 1
                   ENDIF
 C
-                  LEN  = NDISAI*NRHF(ISYMK)
+                  KLEN  = NDISAI*NRHF(ISYMK)
 C
-                  IF (LEN .GT. 0) THEN
-                     CALL GETWA2(LUC,CFIL,WORK(KOFF1),IOFF,LEN)
+                  IF (KLEN .GT. 0) THEN
+                     CALL GETWA2(LUC,CFIL,WORK(KOFF1),IOFF,KLEN)
                   ENDIF
 C
                   DO 141 NAI = IFSTAI,ILSTAI
@@ -320,7 +352,7 @@ C
 C
   141             CONTINUE
 C
-                  KOFF1 = KOFF1 + LEN
+                  KOFF1 = KOFF1 + KLEN
 C
   131          CONTINUE
   121       CONTINUE
@@ -583,15 +615,24 @@ C     Define offsets/dimensions:
       ICOUN1 = 0
       ICOUN2 = 0
       DO ISYM = 1, NSYM
+        ICOUN3 =0
+        ICOUN4 =0
+        DO ISYM2 = 1, NSYM
+          ISYM1 = MULD2H(ISYM,ISYM2)
+          IMATAC(ISYM1,ISYM2) = ICOUN3
+          IT1AO2(ISYM1,ISYM2) = ICOUN4
+          ICOUN3 = ICOUN3 + NVIR(ISYM1)*NC(ISYM2)
+          ICOUN4 = ICOUN4 + MBAS2(ISYM1)*NRHF(ISYM2)
+        END DO
+
         NMATAC(ISYM) = 0
         NT1AO2(ISYM) = 0
         DO ISYM2 = 1, NSYM
           ISYM1 = MULD2H(ISYM,ISYM2)
-          IMATAC(ISYM1,ISYM2) = NMATAC(ISYM)
           NMATAC(ISYM) = NMATAC(ISYM) + NVIR(ISYM1)*NC(ISYM2)
-          IT1AO2(ISYM1,ISYM2) = NT1AO2(ISYM)
           NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
         END DO
+
         MBAS1T = MBAS1T + MBAS1(ISYM)
         IBASX(ISYM) = ICOUN1
         ILAMDX(ISYM) = ICOUN2
