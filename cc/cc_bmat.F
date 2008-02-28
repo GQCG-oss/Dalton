@@ -58,7 +58,7 @@ c/* Deck CC_BMATRIX */
 #include <ccsdio.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 
       LOGICAL DO_O2
       CHARACTER*(*) LISTA, LISTB, FILBMA
@@ -207,7 +207,7 @@ c/* Deck CC_BMAT */
       PARAMETER (MSGDBG='[debug] CC_BMAT> ')
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 
       LOGICAL APPEND, NOAPPEND
       PARAMETER (APPEND = .TRUE., NOAPPEND = .FALSE.)
