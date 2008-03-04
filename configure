@@ -1048,8 +1048,8 @@ case "$WHICH" in
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                      march="-march=$prc -malign-double";;
-             x86_64) march="-march=x86-64 -fdefault-integer-8"
-		     cpp="${cpp} -DVAR_INT64";;
+             x86_64) march="-march=x86-64"
+		     ;;
                   *) march=" ";
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
