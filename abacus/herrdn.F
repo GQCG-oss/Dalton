@@ -1298,6 +1298,8 @@ C                Use DIRAC style format for specifying IQM and JCO.
 C     Read effective core potential information from file for atom. 
 C     The charge of atom type will be set to the effective charge below
 C     after J=2: reading Huckel basis (if DOHUCKEL)
+                    IF(ADDSYM) CALL QUIT('ECP not implemented '//
+     &                   'with auto-detected symmetry.')
                     CALL ECPINP(Q,QEFF,I,IPREAD)
                     INDECP(NTYECP) = NCTOT+1 - NONT(I)
                     NECP(NTYECP) = NONT(I)
