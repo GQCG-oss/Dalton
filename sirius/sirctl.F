@@ -345,6 +345,7 @@ C
             MAXMAC = MXHFMA
             MAXJT  = MXHFMI
             MAXMIC = MIN(200,MAXMAC*MAXJT)
+            MAXMIC = MAX(MAXMIC,MXMISV)
             THRGRD = THRRHF
 C
             THRLDG = 100*NWOPT*THRLDP
