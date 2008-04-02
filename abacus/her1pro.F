@@ -2759,7 +2759,7 @@ c  /* Deck SCACHRG */
 C      
       PARAMETER (CHGLi = 3D0, CHGF  = 9D0,  CHGNa = 11D0, CHGCl = 17D0,
      &     CHGSc = 21D0, CHGZn = 30D0, CHGY  = 39D0, CHGCd = 48D0,
-     &     CHGLa = 57D0, CHGHg = 80D0, CHGK=19, CHGCA=20, CHGGE=32,
+     &     CHGHf = 72D0, CHGHg = 80D0, CHGK=19, CHGCA=20, CHGGE=32,
      &     CHGGA=31, CHGBR=35, CHGRB=37, CHGSR=38, CHGIN=49, CHGSN=50,
      &     CHGI=53)       
 C
@@ -2808,8 +2808,8 @@ c     second-row transition metals
                VLE = CHG - 38D0
                FAC = 4.680 + 0.060*VLE 
 c     third-row transition metals
-            ELSE IF(CHG.GE.CHGLa.AND.CHG.LE.CHGHg) THEN
-               VLE = CHG - 56D0
+            ELSE IF(CHG.GE.CHGHf.AND.CHG.LE.CHGHg) THEN
+               VLE = CHG - 70D0
                FAC = 13.960 + 0.140*VLE
             ELSE
                FAC = 1D0
@@ -2832,7 +2832,7 @@ Chjaaj   CHARGE(I) = CHARGE(I)*FAC
 C        ... use true charge in CHG, not effective
 C            charge in CHARGE(I) /hjaaj mar 2004
 C            
-         WRITE(LUPRI,'(A4,11X,F5.2)')ELEMENTS(IND),CHARGE(I)
+         WRITE(LUPRI,'(A4,11X,F8.2)')ELEMENTS(IND),CHARGE(I)
       END DO
       END
 C  /* Deck ioden */
