@@ -641,7 +641,7 @@ C
      *         '--------------------------------------'
 C
                     CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*LETOT),
-     *                           PT1,ISYM)
+     *                           PT1,ISYM,.FALSE.)
                     IF ((IPRINT.GT.2).OR.DEBUG) THEN
                       RHO1N = DSQRT(DDOT(NT1AM(ISYM),WORK(KT1),1,
      *                                               WORK(KT1),1))

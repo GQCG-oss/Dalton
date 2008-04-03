@@ -485,7 +485,7 @@ C           Print MP2 pair energies (WK/UniKA/21-11-2002).
             CALL AROUND('Largest amplitudes in MP2 guess')
             CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
             CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
-            CALL CC_PRAM(WORK(KOMEG1),PT1,1)
+            CALL CC_PRAM(WORK(KOMEG1),PT1,1,.FALSE.)
          ENDIF
          ETY1 = 'MP2  '
  
@@ -792,7 +792,7 @@ C
          CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
          CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
 C
-         CALL CC_PRAM(WORK(KOMEG1),PT1,1)
+         CALL CC_PRAM(WORK(KOMEG1),PT1,1,.TRUE.)
 C
       ENDIF
 C
@@ -998,7 +998,7 @@ C
                CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
                CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
 C
-               CALL CC_PRAM(WORK(KOMEG1),PT1,1)
+               CALL CC_PRAM(WORK(KOMEG1),PT1,1,FALSE)
 C
             ENDIF
 C
