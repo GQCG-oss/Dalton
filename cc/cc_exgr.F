@@ -421,7 +421,7 @@ C
          WRITE(LUPRI,'(1X,A)')
      *'--------------------------------------------------------'
                  CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*LETOT),
-     *                        PT1LOCAL,ISYM)
+     *                        PT1LOCAL,ISYM,.FALSE.)
                ENDIF
                IF (CCSTST) THEN
                   CALL DZERO(WORK(KWRK2+(ICOUNT-1)*LETOT+

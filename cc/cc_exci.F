@@ -659,10 +659,12 @@ C
                  KCAMP = KCAM1 + NT1AM(ISYMTR)
                  KCAMM = KCAMP + NT2AM(ISYMTR)
                  CALL CC_PRAM3(WORK(KCAM1), WORK(KCAMP), WORK(KCAMM),
-     *                         WORK(KT1PS+(ICOUNT-1)),PTP,PTM,ISYMTR)
+     *                         WORK(KT1PS+(ICOUNT-1)),PTP,PTM,ISYMTR,
+     *                         .FALSE.)
                ELSE
                  CALL CC_PRAM(WORK(KWRK2+(J-1)*NCCVAR),
-     *                        WORK(KT1PS+(ICOUNT-1)),ISYMTR)
+     *                        WORK(KT1PS+(ICOUNT-1)),ISYMTR,
+     *                        .FALSE.)
                END IF
                CALL FLSHFO(LUPRI)
  
@@ -944,10 +946,10 @@ C
                       KCAMM = KCAMP + NT2AM(ISYMTR)
                       CALL CC_PRAM3(WORK(KCAM1), WORK(KCAMP),
      *                              WORK(KCAMM),PT1,
-     *                              PTP,PTM,ISYMTR)
+     *                              PTP,PTM,ISYMTR,.FALSE.)
                     ELSE
                       CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*NCCVAR),
-     *                             PT1,ISYMTR)
+     *                             PT1,ISYMTR,.FALSE.)
                     ENDIF
                     IF (ICOUNT .EQ. ISTATE) THEN
                        WORK(KEXCIS+(ICOUNT-1)) = WORK(KEIVAL+ICOUNT-1)

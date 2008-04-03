@@ -4985,7 +4985,7 @@ C
       RETURN
       END
 C  /* Deck cc_pram */
-      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR)
+      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
@@ -5005,6 +5005,7 @@ C
 #include <ccsdinp.h>
 C
 C
+      LOGICAL LGRS
       DIMENSION CAM1(*), CAMP(*), CAMM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -5043,7 +5044,7 @@ C
         WRITE(LUPRI,'(/5X,A,5X,F10.4)')
      *     '||T1||/||T2||                       : ',
      *      SQRT(C1NOSQ/(C2PNOSQ+C2MNOSQ))
-        WRITE(LUPRI,'(/5X,A,5X,F10.4)')
+        IF (LGRS) WRITE(LUPRI,'(/5X,A,5X,F10.4)')
      *     'Tau1 diagnostic                     : ',
      *      SQRT(C1NOSQ/(TWO*DFLOAT(NRHFT)))
       END IF

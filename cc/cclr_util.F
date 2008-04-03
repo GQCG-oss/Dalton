@@ -2542,7 +2542,7 @@ C
          WRITE(LUPRI,'(/15X,A,F10.5,A)')
      *   'Excitation Energy   :  ',WORK(KEIVAL+I-1)*XTEV,
      *   ' eV'
-         CALL CC_PRAM(WORK(KSOLEQ + (I-1)*MAXRED),PT1,1)
+         CALL CC_PRAM(WORK(KSOLEQ + (I-1)*MAXRED),PT1,1,.FALSE.)
   500 CONTINUE
 C
       CALL QEXIT('FDEXCI')
@@ -2795,7 +2795,7 @@ C
       RETURN
       END
 C  /* Deck cc_pram */
-      SUBROUTINE CC_PRAM(CAM,PT1,ISYMTR)
+      SUBROUTINE CC_PRAM(CAM,PT1,ISYMTR,LGRS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
@@ -2814,6 +2814,7 @@ C
 #include <priunit.h>
 C
 C
+      LOGICAL LGRS
       DIMENSION CAM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -2845,7 +2846,7 @@ C
          WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *     '||T1||/||T2||                  : ',
      *      SQRT(C1NOSQ/C2NOSQ)
-         WRITE(LUPRI,'(/10X,A,10X,F10.4)')
+         IF (LGRS) WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *     'Tau1 diagnostic                : ',
      *      SQRT(C1NOSQ/(TWO*DFLOAT(NRHFT)))
          PT1 = (C1NOSQ/CNOSQ)*HUNDRED

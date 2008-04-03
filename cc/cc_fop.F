@@ -303,7 +303,7 @@ C
      *       'Analysis of the undifferentiated Lagrangian multipliers:'
            WRITE(LUPRI,'(1X,A)')
      *       '--------------------------------------------------------'
-           CALL CC_PRAM(WORK(KWRK2),DDUMMY,ISYMTR)
+           CALL CC_PRAM(WORK(KWRK2),DDUMMY,ISYMTR,.FALSE.)
          END IF
 C
          KWRK3  = KWRK2 + NT1AMX + NT2AMX
