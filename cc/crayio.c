@@ -93,16 +93,21 @@ typedef int INTEGER;
 #endif
 #endif
 
-/* Disable old cruft. */
-#if defined(OLD_CRUFT)
-/* for machines, which don´t have lseek64, we overwrite here
-   lseek64 by lseek and off64_t by off_t
+/* For propertiary machines, which have no lseek64() because their
+   developers though that 64-bit lseek should be good enough for
+   everybody, map the symbols to the old API that makes so guarantees
+   about file pointer size - and hope it works.
+
+   This problem has been reported for many other programs, for eg. OS
+   X and HP/UX. Web searching engines are your friends.
 */
-#if defined (SYS_DEC) || defined (SYS_HPUX)
+#if defined (HAVE_NO_LSEEK64)
 #define lseek64 lseek
 #define off64_t off_t
 #endif
 
+/* Disable old cruft. */
+#if defined(OLD_CRUFT)
 #if defined (SYS_FUJITSU)
 #ifdef __uxp__
 #define L_XTND SEEK_END

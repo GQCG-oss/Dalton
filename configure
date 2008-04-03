@@ -1130,6 +1130,21 @@ fi
 # for safe compilers, set safe_opt to opt
 if [ -z "$safe_opt" ]; then safe_opt="$opt"; fi
 
+# Check for existence of lseek64 library call.
+cat <<EOF >> conftest.c
+/* #define _LARGEFILE64_SOURCE */
+#include <sys/types.h>
+#include <unistd.h>
+int main(){ off64_t l = lseek64(1,0,SEEK_SET); } 
+EOF
+if $CC $copt conftest.c -o conftest > config.log 2>&1; then
+  echo "Proper 64-bit file access detected."
+else
+  cpp="$cpp -DHAVE_NO_LSEEK64"
+  echo "Use default file access routines and hope for the best."
+fi
+rm conftest.c conftest > /dev/null 2>&1
+
 cat <<EOF > Makefile.config
 ARCH        = $WHICH
 #
