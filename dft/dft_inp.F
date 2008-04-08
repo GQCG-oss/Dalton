@@ -36,12 +36,13 @@ C
 #include <dftinf.h>
 #include <dftcom.h>
 #include <priunit.h>
-      PARAMETER ( NTABLE = 14 )
+      PARAMETER ( NTABLE = 19 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
       DATA TABLE /'.PRINT ','.DFTELS','.DFTTHR','.RADINT','.ANGINT',
      &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR',
-     &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF'/
+     &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF','.GRID1 ',
+     &            '.GRID2 ','.GRID3 ','.GRID4 ','.GRID5 '/
 C
       WORD1 = WORD
 C
@@ -55,7 +56,8 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+     &                      17,18,19), I
                   END IF
  200           CONTINUE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -133,6 +135,36 @@ c     >.ULTRAF< grid parameters.
  14   CONTINUE
       RADINT = 2D-15
       ANGINT = 65
+      GO TO 100 
+c     >.GRID1 < grid parameters.
+ 15   CONTINUE
+      CALL DFTGRIDINPUT("GC2")
+      RADINT = 1D-3
+      ANGINT = 17
+      GO TO 100 
+c     >.GRID2 < grid parameters.
+ 16   CONTINUE
+      CALL DFTGRIDINPUT("GC2")
+      RADINT = 1D-5
+      ANGINT = 23
+      GO TO 100 
+c     >.GRID3 < grid parameters.
+ 17   CONTINUE
+      CALL DFTGRIDINPUT("GC2")
+      RADINT = 1D-6
+      ANGINT = 29
+      GO TO 100 
+c     >.GRID4 < grid parameters.
+ 18   CONTINUE
+      CALL DFTGRIDINPUT("GC2")
+      RADINT = 1D-7
+      ANGINT = 35
+      GO TO 100 
+c     >.GRID5 < grid parameters.
+ 19   CONTINUE
+      CALL DFTGRIDINPUT("GC2")
+      RADINT = 1D-9
+      ANGINT = 47
       GO TO 100 
  300  CONTINUE
 

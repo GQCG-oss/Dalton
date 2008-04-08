@@ -1132,7 +1132,7 @@ if [ -z "$safe_opt" ]; then safe_opt="$opt"; fi
 
 # Check for existence of lseek64 library call.
 cat <<EOF >> conftest.c
-/* #define _LARGEFILE64_SOURCE */
+#define _LARGEFILE64_SOURCE
 #include <sys/types.h>
 #include <unistd.h>
 int main(){ off64_t l = lseek64(1,0,SEEK_SET); } 
