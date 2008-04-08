@@ -37,7 +37,7 @@ dalton.x: $(MODULES)
 #       Linux version of the program
 #
 linux.x: $(MODULES)
-	@echo "---------------> Linking sequential dalton.x ..."
+	@echo "---------------> Linking sequential dalton.x for linux ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalton.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
@@ -45,7 +45,7 @@ linux.x: $(MODULES)
 #     Linux MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
 linuxparallel.x: linux.x
-	@echo "---------------> Linking parallel dalpar.x ..."
+	@echo "---------------> Linking parallel dalpar.x for linux ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalpar.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS) \
