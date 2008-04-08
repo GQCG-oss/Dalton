@@ -1029,7 +1029,7 @@ case "$WHICH" in
               alpha)  copt="-mieee";;
               x86_64) copt="-march=x86-64"
 		      cpp=${cpp}" -DVAR_INT64";;
-                  *)  copt="-mcpu=$prc -malign-double" 
+                  *)  copt="-mcpu=$prc -malign-double";;
               esac
               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
                opt="$copt -fno-globals -Wno-globals"
@@ -1047,10 +1047,14 @@ case "$WHICH" in
              cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
-                     march="-march=$prc -malign-double";;
+                     march="-march=$prc";;
+#            x86_64) march="-march=x86-64 -fdefault-integer-8"
+#		     cpp="${cpp} -DVAR_INT64";;
+# remove VAR_INT64 for gfortran - it breaks linking against
+# precompiled BLAS libraries./pawsa-Mar-08
              x86_64) march="-march=x86-64"
 		     ;;
-                  *) march=" ";
+                  *) march=" ";;
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
