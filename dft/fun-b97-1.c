@@ -192,6 +192,8 @@ b97_1_energy(const FunDensProp *dp)
     real t35, t36, t37, t38, t39, t40, t41, t42;
     real t43, t44, t45, t46;
 
+    if(rhoa+rhob<1e-40)
+	return 0;
     t1 = pow(3.0,.6666666666666666);
     t2 = 1/pow(4.0,.6666666666666666);
     t3 = 1/pow(3.141592653589793,.6666666666666666);
