@@ -30,46 +30,50 @@ OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 #
 dalton.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x ..."
-	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalton.x abacus/dalton.o $(OBJSLAVE) \
+	$(LOADER) $(FFLAGS) \
+	-o ./dalton.x abacus/dalton.o $(OBJSLAVE) \
 	$(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
+	mv ./dalton.x $(INSTALLDIR)/dalton.x
 #
 #       Linux version of the program
 #
 linux.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x for linux ..."
-	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalton.x abacus/dalton.o \
+	$(LOADER) $(FFLAGS) \
+	-o ./dalton.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
+	mv ./dalton.x $(INSTALLDIR)/dalton.x
 #
 #     Linux MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
 linuxparallel.x: linux.x
 	@echo "---------------> Linking parallel dalpar.x for linux ..."
-	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpar.x abacus/dalton.o \
-	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS) \
-	$(MPI_LIB_PATH) $(MPI_LIB) 
+	$(LOADER) $(FFLAGS) \
+	-o ./dalpar.x abacus/dalton.o $(OBJSLAVE) $(OBJSAMFI) \
+	$(DALTON_LIBS) $(LIBS) $(MPI_LIB_PATH) $(MPI_LIB)
+	mv ./dalpar.x $(INSTALLDIR)/dalpar.x
 #
 #	MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
 parallel.x: dalton.x
 	@echo "---------------> Linking parallel dalpar.x ..."
-	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpar.x abacus/dalton.o $(OBJSLAVE) $(OBJSAMFI) \
+	$(LOADER) $(FFLAGS) \
+	-o ./dalpar.x abacus/dalton.o $(OBJSLAVE) $(OBJSAMFI) \
 	$(DALTON_LIBS) $(LIBS) $(MPI_LIB_PATH) $(MPI_LIB)
+	mv ./dalpar.x $(INSTALLDIR)/dalpar.x
+#
 #
 #	Build with PVMe
 #	We will never need MPILIB when using PVM
 #       First build master, then slave
 #
 dalpvm.x: $(MODULES)
-	$(F77) $(FFLAGS) \
+	$(LOADER) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalpvm.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) \
 	$(DALTON_LIBS) $(PVM_LIB_PATH) \
 	$(PVM_LIBS) $(PVM_INC_PATH)
-	$(F77) $(FFLAGS) -o $(INSTALLDIR)/node.x $(OBJNODE) $(OBJSLAVE) \
+	$(LOADER) $(FFLAGS) -o $(INSTALLDIR)/node.x $(OBJNODE) $(OBJSLAVE) \
 	$(OBJSAMFI) $(LIBS) $(DALTON_LIBS) $(PVM_LIB_PATH) \
 	$(PVM_LIBS)  $(PVM_INC_PATH)
 #
@@ -77,18 +81,18 @@ dalpvm.x: $(MODULES)
 #	OBJSEIS
 #
 cray.x: $(MODULES)
-	$(F77) $(FFLAGS) -o $(INSTALLDIR)/dalton.x \
+	$(LOADER) $(FFLAGS) -o $(INSTALLDIR)/dalton.x \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) $(DALTON_LIBS)
 #
 #	This is a proper build for the Cray-T3D
 #
 t3d.x: $(MODULES)
-	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
+	$(LOADER) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o $(INSTALLDIR)/dalpar.x $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
 
 t90.x: $(MODULES)
-	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
+	$(LOADER) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o $(INSTALLDIR)/dalpar.x $(IO_OBJS) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
 #
