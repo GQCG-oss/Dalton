@@ -1236,30 +1236,29 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  LBASNAM = LNBLNK(BASNAM)
                  IF (INPTST .OR. IPREAD .GT. 0) THEN
                     IF (DOHUCKEL .AND. J.EQ.2) THEN
-                        IF (BASNAM(1:2) .NE. 'MM') WRITE(LUPRI,'(3X,A)')
+                        IF (BASNAM(1:2) .NE. 'MM') WRITE(LUPRI,'(2X,A)')
      &                 'Huckel basis read for this type.'
                     ELSE IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
-                       WRITE (LUPRI,'(3X,A)')
+                       WRITE (LUPRI,'(2X,A)')
      &                    'The basis set will be read from input file.'
                     ELSE IF (BASNAM(1:11) .EQ. 'pointcharge') THEN
-                       WRITE (LUPRI,'(3X,A)') 'This is a point charge'//
+                       WRITE (LUPRI,'(2X,A)') 'This is a point charge'//
      &                    ' without basis functions.'
                     ELSE IF (BASNAM(1:2) .EQ. 'MM') THEN
-                       WRITE (LUPRI,'(3X,A)')
+                       WRITE (LUPRI,'(2X,A)')
      &                    'This is an MM atom without basis functions.'
                     ELSE IF (INDEX(BASNAM,'ecp') .NE. 0) THEN
-                       WRITE (LUPRI,'(3X,3A)')
-     &                 'This basis set is '//
+                       WRITE (LUPRI,'(2X,3A)')
+     &                 'Basis set : '//
      &                 'the effective core potential basis set "',
-     &                 BASNAM(1:LBASNAM),
-     &                 '" from the basis set library.'
+     &                 BASNAM(1:LBASNAM),'"'
                     ELSE IF (ATOMDF) THEN
                        LAUXNAM = LNBLNK(AUXNAM)
-                       WRITE (LUPRI,'(3X,3A)')
+                       WRITE (LUPRI,'(2X,3A)')
      &                 'The auxiliary density fit basis set is "',
      &                 AUXNAM(1:LAUXNAM),'" from the basis set library.'
                     ELSE
-                       WRITE (LUPRI,'(3X,3A)') 'The basis set is "',
+                       WRITE (LUPRI,'(2X,3A)') 'The basis set is "',
      &                 BASNAM(1:LBASNAM),'" from the basis set library.'
                     END IF
                  END IF
@@ -1357,7 +1356,7 @@ C
             END IF
             IF (IQM(I,J).GT.0) THEN
                IF(INPTST .OR. IPREAD .GT. 3) THEN
-                  WRITE(LUPRI,'(3X,A5,A)') BSET,' set:'
+                  WRITE(LUPRI,'(2X,A5,A)') BSET,' set:'
                   WRITE(LUPRI,'(6X,A,I5,A,12I5)')
      &                 'Max.ang.quantum no.:',(IQM(I,J)-1),
      &                 '  Blocks:',(JCO(K,I,J), K=1,IQM(I,J))
