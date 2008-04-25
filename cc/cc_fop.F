@@ -2567,7 +2567,7 @@ C-------------------------------------------------------
 C        Calculate energy for modifies CCSD(T) or CC(3).
 C-------------------------------------------------------
 C
-      IF (CCPT .OR. CCP3) THEN
+      IF ((CCPT .OR. CCP3).AND. MTRIP)  THEN
 C
          CALL AROUND( ' Modified triples corrections ')
          CCSDT = .TRUE.

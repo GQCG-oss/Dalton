@@ -130,7 +130,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
-     &            '.THRVEC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THRVEC','.MTRIP ','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -234,6 +234,7 @@ C
       THRLEQ   = 1.0D-05
       THRENR   = 1.0D-08
       THRVEC   = 1.0D9
+      MTRIP    = .FALSE.
       THRLDPHF = 1.0D-13
 CWMK  NFIELD = 0
       NSIMLE = 0
@@ -807,6 +808,8 @@ C                 '.THRVEC' convergence threshold for norm of vector function
                   IF (RDTHVC .GT. 0.0D0) THRVEC = RDTHVC
                GO TO 1000
  107           CONTINUE
+                  MTRIP  = .TRUE.
+               GO TO 1000
  108           CONTINUE
  109           CONTINUE
  110           CONTINUE

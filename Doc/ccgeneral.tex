@@ -58,6 +58,13 @@ model(s) and other parameters common to all submodules are specified.
         \index{Coupled Cluster!Singles and Doubles}
         \index{CCSD}
 %
+%
+\item[\Key{MTRIP}]   
+        Run calculation of modified triples corrections for (MCCSD(T) for CCSD(T) and MCC(3) for CC(3))
+        meaning that if the ground state lagrangian multipliers are calculated 
+        they are used instead of amplitudes. Specialists option. 
+        Do not use with analytical gradients. 
+%
 \item[\Key{CCSTST}] 
    Test option which runs the CCS finite field calculation as a pseudo CC2
    calculation. \verb+CCSTST+ disables all terms which depend on the
