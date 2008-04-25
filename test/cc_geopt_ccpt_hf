@@ -104,7 +104,7 @@ CRIT8=`$GREP "Norm of gradient * : * ( |0)\.004849" $log | wc -l`
 CRIT9=`$GREP "Norm of step * : * ( |0)\.004371" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[1]=12
+CTRL[1]=15
 ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
@@ -120,7 +120,7 @@ CRIT8=`$GREP "Norm of gradient * : * ( |0)\.000943" $log | wc -l`
 CRIT9=`$GREP "Norm of step * : * ( |0)\.001055" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[2]=14
+CTRL[2]=17
 ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
 #
 # Final summary:

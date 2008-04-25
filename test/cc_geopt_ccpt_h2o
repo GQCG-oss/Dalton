@@ -105,7 +105,7 @@ CRIT8=`$GREP "Energy at this geometry is * : * -76\.241049" $log | wc -l`
 CRIT9=`$GREP "Norm of gradient * : * ( |0)\.019470" $log | wc -l`
 CRIT0=`$GREP "Norm of step * : * ( |0)\.02258." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT0`
-CTRL[1]=13
+CTRL[1]=16
 ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
@@ -121,7 +121,7 @@ CRIT8=`$GREP "Energy at this geometry is * : * -76\.241244" $log | wc -l`
 CRIT9=`$GREP "Norm of gradient * : * ( |0)\.00751." $log | wc -l`
 CRIT0=`$GREP "Norm of step * : * ( |0)\.02419." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT0`
-CTRL[2]=13
+CTRL[2]=16
 ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
 #
 # Final summary:
