@@ -3100,6 +3100,9 @@ C
      &           CONV2 = 1.0D-10*2.0D0*XMUB/(2.0D0*PI*HBAR))
       DIMENSION PVAL(6), AXIS(3,3,MXCENT), WRK(3), IWRK(3)
       CHARACTER*33 TEXT
+cmbh string variable
+      CHARACTER*8 laname 
+cmbh end
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
@@ -3145,6 +3148,36 @@ C
               IJ = IJ + 1
  30         CONTINUE
  20       CONTINUE
+cmbh print EFG tensor for midas here
+          inotblank=0
+          laname='        '
+          do imbh=1,6
+             if(NAMDEP(IATOM)(imbh:imbh) .ne. ' ') then
+                inotblank=inotblank+1
+                laname(inotblank:inotblank)=
+     *          NAMDEP(IATOM)(imbh:imbh)
+             endif
+          enddo
+          call wripro(PVAL(1),"SCF/DFT   ",1,
+     *            laname,'EFG_XX  ','EFG_XX  ','EFG_XX  ',
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(PVAL(2),"SCF/DFT   ",1,
+     *            laname,'EFG_XY  ','EFG_XY  ','EFG_XY  ',
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(PVAL(3),"SCF/DFT   ",1,
+     *            laname,'EFG_YY  ','EFG_YY  ','EFG_YY  ',
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(PVAL(4),"SCF/DFT   ",1,
+     *            laname,'EFG_XZ  ','EFG_XZ  ','EFG_XZ  ',
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(PVAL(5),"SCF/DFT   ",1,
+     *            laname,'EFG_YZ  ','EFG_YZ  ','EFG_YZ  ',
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(PVAL(6),"SCF/DFT   ",1,
+     *            laname,'EFG_ZZ  ','EFG_ZZ  ','EFG_ZZ  ',
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+
+cmbh end
           CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,WRK,IWRK)
           DIANQC(1,IATOM) = PVAL(1)
           DIANQC(2,IATOM) = PVAL(3)
@@ -3202,6 +3235,29 @@ C
      &              NAMDEP(NATOM),MASS,'Vz =     ',
      &              DIANQC(3,NATOM),DIANQC(3,NATOM)*FACT,
      &              DIANQC(3,NATOM)*FACT2
+cmbh here: Vx,Vy,Vz terms to be written to PROP file here
+c need to do something about the atom name for midas:
+c move all chars to the left and move blanks between the
+c chars.
+                    inotblank=0
+                    laname='        '
+                    do imbh=1,6
+                       if(NAMDEP(NATOM)(imbh:imbh) .ne. ' ') then
+                          inotblank=inotblank+1
+                          laname(inotblank:inotblank)=
+     *                       NAMDEP(NATOM)(imbh:imbh)
+                       endif
+                    enddo
+                    call wripro(DIANQC(1,NATOM),"SCF/DFT   ",1,
+     *                 laname,'XEFGDIA ','XEFGDIA ','XEFGDIA ',
+     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
+                    call wripro(DIANQC(2,NATOM),"SCF/DFT   ",1,
+     *                 laname,'YEFGDIA ','YEFGDIA ','YEFGDIA ',
+     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
+                    call wripro(DIANQC(3,NATOM),"SCF/DFT   ",1,
+     *                 laname,'ZEFGDIA ','ZEFGDIA ','ZEFGDIA ',
+     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
+cmbh: done!
                    END IF
                    IZ = IDAMAX(3,DIANQC(1,NATOM),1)
                    CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)

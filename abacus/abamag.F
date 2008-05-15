@@ -2551,6 +2551,7 @@ C  /* Deck isospn */
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
+      CHARACTER LAPRPC*8, LANAM1*8, LANAM2*8
 #include <dorps.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -2689,6 +2690,31 @@ C
                         PSO    = AVEISO(IATIJ,3)*FACTOR
                         SD     = AVEISO(IATIJ,4)*FACTOR
                         FC     = AVEISO(IATIJ,5)*FACTOR
+C MBH+JK
+                        LANAM1 = NAMDEP(IATOM1)//'  '
+                        LANAM2 = NAMDEP(IATOM2)//'  '
+                        LAPRPC = 'SP-SPISO'
+                        CALL WRIPRO(AVETOT/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPDSO'
+                        CALL WRIPRO(DSO/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPPSO'
+                        CALL WRIPRO(PSO/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPSD '
+                        CALL WRIPRO(SD/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPFC '
+                        CALL WRIPRO(FC/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+C                        WRITE(LUPRI,*)'MBH: AUTOHZ VALUE: ',AUTOHZ
+C MBH+JK
                         WRITE(LUPRI,'(9(/,2X,A,F12.4,A),/,/)')
      &                       'Isotropic coupling        :',AVETOT,' Hz',
      &                       'Anisotropic coupling      :',ANIS  ,' Hz',
