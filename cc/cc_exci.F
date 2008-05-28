@@ -1434,10 +1434,10 @@ c                    WRITE(LURES,9993) IEX,OME,
 c    *                  OME*XTEV,OME*XTKAYS
 c                 ENDIF
                   ETOT  = ECCGRS+OME
-                  CALL WRIPRO(OME,MOPRPC,0,
+                  CALL WRIPRO(OME,MODEL1,0,
      *                        LABEL,LABEL,LABEL,LABEL,
      *                        0.0D0,0.0D0,0.0D0,1,ISYM,IMULT,IEX)
-                  CALL WRIPRO(ETOT,MOPRPC,0,
+                  CALL WRIPRO(ETOT,MODEL1,0,
      *                        LABEL1,LABEL1,LABEL1,LABEL1,
      *                        0.0D0,0.0D0,0.0D0,1,ISYM,IMULT,IEX)
 
