@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C-----------------------------------------------------------------------
 C  /* Deck qm3lno */
-      SUBROUTINE QM3LNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,EVECS,
+      SUBROUTINE QM3LNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,EVECS,
      &               WRK,LWRK)
 C
 C  CBN+JK, Nov. 05
@@ -50,15 +50,29 @@ C
 #include <maxash.h>
 #include <infind.h>
 #include <qm3.h>
+#include <mxcent.h>
 #include <priunit.h>
 #include <dummy.h>
 #include <inftap.h>
 #include <ccinftap.h>
 #include <wrkrsp.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
+      DIMENSION UDVTR(*)
       DIMENSION WRK(*), DV(*), CREF(*)
       LOGICAL LOPEN 
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      IF (NASHT .GT. 0) THEN
+         CALL QUIT('QM3 only implemented for clsoed shell')
+      ENDIF
 
       LOPEN = .FALSE.
 
@@ -68,20 +82,22 @@ C
          RETURN
       END IF
 
-      IF (TRPLET) CALL QUIT('TRIPLET NOT IMPLEMENTED FOR QM/MM YET')
-
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
       KFSOLMO = KUBO    + NOSIM*N2ORBX
       KUFSOL  = KFSOLMO + NNORBX
       KUTGX   = KUFSOL  + N2ORBX
       KRXYO   = KUTGX   + N2ORBX
-      KRRAOx  = KRXYO   + NOSIM*N2ORBX
+      IF (TRPLET) THEN
+        KRXYOT  = KRXYO   + NOSIM*N2ORBX
+        KRRAOx  = KRXYOT  + NOSIM*N2ORBX
+      ELSE
+        KRRAOx  = KRXYO   + NOSIM*N2ORBX
+      ENDIF
       KTRMO   = KRRAOx  + NNBASX
       KUTR    = KTRMO   + NNORBX
       KUTRX   = KUTR    + N2ORBX
-      KOVLP   = KUTRX   + N2ORBX
-      KWRK    = KOVLP   + NOSIM
+      KWRK    = KUTRX   + N2ORBX
       LWRK1   = LWRK    - KWRK      
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3LNO',-KWRK,LWRK)
@@ -92,17 +108,14 @@ C
       CALL DZERO(WRK(KUFSOL),N2ORBX)
       CALL DZERO(WRK(KUTGX),N2ORBX)
       CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
+      IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
       CALL DZERO(WRK(KRRAOx),NNBASX)
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
       CALL DZERO(WRK(KUTRX),N2ORBX)
-      CALL DZERO(WRK(KOVLP),NOSIM)
-
-      IF (IPRRSP .GE. 40) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
-      END IF
 
       IF (IPRRSP .GE. 140) THEN
+          WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
          WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on entry'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
@@ -126,6 +139,12 @@ C    This includes N_s contribution if OLDTG = .TRUE..
 C    If OLDTG = .FALSE. N_s is included in one-electron 
 C    part of vacuum Hamiltonian
 C--------------------------------------------------------
+
+       IF (INTDIR) THEN
+         OBKPX = DIPORG(1)
+         OBKPY = DIPORG(2)
+         OBKPZ = DIPORG(3)
+       ENDIF
 
       IF (LUSIFC .LE. 0) THEN
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
@@ -151,13 +170,8 @@ C--------------------------------------------------------
 
       DO 200 IOSIM = 1,NOSIM
 
-         IF (IREFSY .EQ. KSYMST) THEN
-            WRK(KOVLP-1+IOSIM) = DDOT(KZCONF,CREF,1,EVECS(1,IOSIM),1)
-         ELSE
-            WRK(KOVLP-1+IOSIM) = 0.0D0
-         END IF
-
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX
+         IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
          JUBO  = KUBO  + (IOSIM-1)*N2ORBX
 
          CALL DZERO(WRK(KUTGX),N2ORBX)
@@ -165,21 +179,37 @@ C--------------------------------------------------------
          CALL ONEXH1(WRK(JUBO),WRK(KUFSOL),WRK(KUTGX))
 
          FAC = 1.0D0
-         CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYO),1)
+         IF (TRPLET) THEN
+           CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYOT),1)
+         ELSE
+           CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYO),1)
+         ENDIF
+ 
+C        Since only hf/dft closed shell no contribution can arrise from 
+C        the one-index transformed electric field if triplet.
+C        Also, if LGSPOL neglect the time-dependece of the expectation value 
+C        contained in the interaction operator, i.e. keep the ground state polarization only. 
+C        
+  
+         IF (TRPLET. OR. LGSPOL) GOTO 300
 
 C-------------------------------------------------------
 C 2. Construct -alpha \sum_a <0|Q_a|0>Rra
 C-------------------------------------------------------
-         LUCCEF = -1
-         CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
-     &               'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LUCCEF)
 
+         IF (.NOT. INTDIR) THEN
+           LUCCEF=-1
+           CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)
+           REWIND(LUCCEF)
+         ENDIF
 C
 C        Readin Rra integrals (ao) and transform to mo
 C        ---------------------------------------------
 C
          LM = 0
+
+         IF (INTDIR) L = NUSITE + NUALIS(0)
 
          DO 520 I = 1, ISYTP
            IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -194,19 +224,42 @@ C x-component
                  CALL DZERO(WRK(KUTR),N2ORBX)
                  CALL DZERO(WRK(KUTRX),N2ORBX)
 
+                 IF (INTDIR) THEN
+                   KMAT = KWRK
+                   KLAST = KMAT + 3*NNBASX
+                   LWRK2 = LWRK - KLAST + 1
+                   IATNOW = NUCIND + L + LM
 
-                 CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                   KPATOM = 0
+                   NOSIM = 3
+                   TOFILE = .FALSE.
+                   TRIMAT = .TRUE.
+                   EXP1VL = .FALSE.
+                   DIPORG(1) = CORD(1,IATNOW)
+                   DIPORG(2) = CORD(2,IATNOW)
+                   DIPORG(3) = CORD(3,IATNOW)
 
-                 CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
+                   FORQM3 = .TRUE.
+                   CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+     &                         LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                         KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
+                   FORQM3 = .FALSE.
 
-                 CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-                 CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-
-                 FACx = FAC * QM3QLM(WRK(KUTRX))
-
-                 CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+                   CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
+     &                       NBAST,NORBT)
+                   CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                   CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
+                   FACx = FAC * QM3QLM(WRK(KUTRX))
+                   CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+                 ELSE
+                   CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                   CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KWRK),NBAST,NORBT)
+                   CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                   CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
+                   FACx = FAC * QM3QLM(WRK(KUTRX))
+                   CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+                 ENDIF
 
 C y-component
                  CALL DZERO(WRK(KRRAOx),NNBASX)
@@ -214,29 +267,36 @@ C y-component
                  CALL DZERO(WRK(KUTR),N2ORBX)
                  CALL DZERO(WRK(KUTRX),N2ORBX)
 
-                 CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-                 CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
+                 IF (INTDIR) THEN
+                   CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KLAST),NBAST,NORBT)
+                 ELSE
+                    CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                    CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
+     &                        WRK(KWRK),NBAST,NORBT)
+                 ENDIF
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-
                  FACy = FAC * QM3QLM(WRK(KUTRX))
-
                  CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
+
 C z-component
                  CALL DZERO(WRK(KRRAOx),NNBASX)
                  CALL DZERO(WRK(KTRMO),NNORBX)
                  CALL DZERO(WRK(KUTR),N2ORBX)
                  CALL DZERO(WRK(KUTRX),N2ORBX)
 
-                 CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-                 CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
+                 IF (INTDIR) THEN
+                   CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KLAST),NBAST,NORBT)
+                 ELSE
+                   CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                   CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KWRK),NBAST,NORBT)
+                 ENDIF
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-
                  FACz = FAC * QM3QLM(WRK(KUTRX))
-
                  CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
 
   522       CONTINUE
@@ -244,15 +304,27 @@ C z-component
         END IF
   520 CONTINUE
 C
-      CALL GPCLOSE(LUCCEF,'KEEP')
+      IF (.NOT. INTDIR) CALL GPCLOSE(LUCCEF,'KEEP')
 
+  300 CONTINUE 
   200 CONTINUE
+
+      IF (INTDIR) THEN
+        DIPORG(1) = OBKPX
+        DIPORG(2) = OBKPY
+        DIPORG(3) = OBKPZ
+      ENDIF
 
 C--------------------------------------------
 C 3.  Add effective operators to response
 C--------------------------------------------
 
-      CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYO))
+
+      IF (TRPLET) THEN
+         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYOT))
+      ELSE
+         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYO))
+      ENDIF
 
       IF (IPRRSP .GE. 140) THEN
          WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on exit'
@@ -262,17 +334,6 @@ C--------------------------------------------
          CALL OUTPUT(EVECS(KZVAR+KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,
      *               1,1,LUPRI)
       END IF
-
-      DO 900 IOSIM = 1,NOSIM
-         TEST = DDOT(KZCONF,CREF,1,EVECS(1,IOSIM),1)
-     *        - WRK(KOVLP-1+IOSIM)
-         IF (ABS(TEST) .GT. 1.D-8) THEN
-            NWARN = NWARN + 1
-            WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *         ' >>> SLVLNO WARNING, for IOSIM =',IOSIM,
-     *         ' <CREF | SVEC_solvent(iosim) > =',TEST
-         END IF
-  900    CONTINUE
 
       CALL QEXIT('QM3LNO')
       RETURN
@@ -303,8 +364,12 @@ C
 #include <inftap.h>
 #include <qrinf.h>
 #include <qm3.h>
+#include <mxcent.h>
 #include <priunit.h>
+#include <wrkrsp.h>
+#include <orgcom.h>
 #include <ccinftap.h>
+#include "nuclei.h"
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
       DIMENSION ETRS(KZYVR),XINDX(*)
@@ -313,6 +378,9 @@ C
       DIMENSION VEC1(KZYV1),VEC2(KZYV2)
       DIMENSION MJWOP(2,MAXWOP,8)
       LOGICAL LCON, LORB, LREF, LOPEN
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       CALL QENTER('QM3QRO')
       IF ( (.NOT. (OLDTG)) .AND. (LOSPC) ) THEN
@@ -322,7 +390,7 @@ C
 
       LOPEN = .FALSE.
   
-      IF (TRPLET) CALL QUIT('TRIPLET NOT IMPLEMENTED FOR QM/MM YET')
+      IF (TRPLET) CALL QUIT('TRIPLET NOT IMPLEMENTED FOR QR-QM/MM YET')
 
       KCREF   = 1
       KTRES   = KCREF   + NCREF
@@ -352,7 +420,8 @@ C
 
       NSIM = 1
 
-C NB NB NB We assume no symmetry in the DFT/MM calculations
+C We assume no symmetry in the DFT/MM calculations although we have kept 
+C some symmetry options below ...
 
       ISYMT = 1
 
@@ -415,14 +484,30 @@ C     TRES = Tg(k1,k2) + A1(k2) + A12
           CALL DAXPY(N2ORBX,0.5D0,WRK(KTLMB),1,WRK(KTRES),1)
       END IF
 
-      CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
-     &               'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LUCCEF)
+C     If LGSPOL neglect the time-dependece of the expectation value 
+C     contained in the interaction operator, i.e. keep the ground state polarization only. 
+
+      IF (LGSPOL) GOTO 600
+
+
+      IF (.NOT. INTDIR) THEN
+        CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)
+        REWIND(LUCCEF)
+      ENDIF
 
 C     Readin Rra integrals (ao) and transform to mo
 C     ---------------------------------------------
 
       LM = 0
+
+      IF (INTDIR) THEN
+        L = NUSITE + NUALIS(0)
+        OBKPX = DIPORG(1)
+        OBKPY = DIPORG(2)
+        OBKPZ = DIPORG(3)
+      ENDIF 
+
 
       DO 520 I = 1, ISYTP
         IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -444,10 +529,35 @@ C x-component
               CALL DZERO(WRK(KRRAOx),NNBASX)
               CALL DZERO(WRK(KTRMO),NNORBX)
               CALL DZERO(WRK(KUTR),N2ORBX)
-C
-              CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-              CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
+
+              IF (INTDIR) THEN
+                KMAT = KWRK
+                KLAST = KMAT + 3*NNBASX
+                LWRK2 = LWRK - KLAST + 1
+                IATNOW = NUCIND + L + LM
+
+                KPATOM = 0
+                NOSIM = 3
+                TOFILE = .FALSE.
+                TRIMAT = .TRUE.
+                EXP1VL = .FALSE.
+                DIPORG(1) = CORD(1,IATNOW)
+                DIPORG(2) = CORD(2,IATNOW)
+                DIPORG(3) = CORD(3,IATNOW)
+
+                FORQM3 = .TRUE.
+                CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+     &                      LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                      KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
+                FORQM3 = .FALSE.
+                CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
+     &                    NBAST,NORBT)
+              ELSE
+                CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
+     &                    NBAST,NORBT)
+              ENDIF 
+
               CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
 C
               IF (ISYMT.EQ.ISYMV1) THEN
@@ -459,7 +569,6 @@ C
 
                  CALL DZERO(WRK(KTLMA),N2ORBX)
                  CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
-
                  CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)
               END IF
 
@@ -482,9 +591,15 @@ C y-component
               CALL DZERO(WRK(KTRMO),NNORBX)
               CALL DZERO(WRK(KUTR),N2ORBX)
 
-              CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-              CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                  NBAST,NORBT)
+              IF (INTDIR) THEN
+                CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &                    WRK(KLAST),NBAST,NORBT)
+              ELSE
+                CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
+     &                    NBAST,NORBT)
+              ENDIF
+
               CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
 
               IF (ISYMT.EQ.ISYMV1) THEN
@@ -519,9 +634,15 @@ C z-component
               CALL DZERO(WRK(KTRMO),NNORBX)
               CALL DZERO(WRK(KUTR),N2ORBX)
 
-              CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-              CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                  NBAST,NORBT)
+              IF (INTDIR) THEN
+                CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &                    WRK(KLAST),NBAST,NORBT)
+              ELSE
+                CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
+     &                    NBAST,NORBT)
+              ENDIF 
+
               CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
 
               IF (ISYMT.EQ.ISYMV1) THEN
@@ -554,9 +675,16 @@ C z-component
         END IF
   520 CONTINUE
 
-      CALL GPCLOSE(LUCCEF,'KEEP')
+      IF (INTDIR) THEN
+        DIPORG(1) = OBKPX
+        DIPORG(2) = OBKPY
+        DIPORG(3) = OBKPZ
+      ENDIF
 
-C
+      IF (.NOT. INTDIR) CALL GPCLOSE(LUCCEF,'KEEP')
+
+  600 CONTINUE ! if lgspol
+
 C       Make the gradient
 C
 C     / <0| [qj ,TRES] |0> \
@@ -589,8 +717,6 @@ C
 C*****************************************************************************************
 C  /* Deck qm3qlm */
       FUNCTION QM3QLM(RLM)
-C
-C QUADRATIC PACKED DENSITY MATRIX AND ACTIVE INTEGRALS
 C
 #include <implicit.h>
       DIMENSION RLM(NORBT,*)
