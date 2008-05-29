@@ -235,6 +235,8 @@ C
       ARCCOS(ARG) = FACANG*ACOS(ARG)
 #include <ibtfun.h>
 C
+      IF (REDCNT) RETURN
+      
       NBONDS = 0
       IF (NUCDEP .EQ. 1) RETURN
 C
