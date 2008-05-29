@@ -55,7 +55,7 @@ C
 #include <mxsymm.h>
 #include <qm3.h>
 C
-      PARAMETER ( NTABLE = 14, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 16, D1 = 1.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -66,7 +66,7 @@ C
       DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
      *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPIN',
-     *            '.PRFQM3', 'xXXXXXX'/
+     *            '.PRFQM3', '.INTDIR', '.REDCNT', '.LGSPOL'/
 C
       CALL QENTER('QM3INP')
 C
@@ -89,6 +89,8 @@ C
       MYITE   = .TRUE.
       EXPON   = .FALSE.
       PRFQM3  = .FALSE.
+      INTDIR  = .FALSE.
+      REDCNT  = .FALSE.
 C
 C
 C     CRUCIAL TEST : MXCENT has to be equal to MXQM3
@@ -115,7 +117,7 @@ C
           ICHANG = ICHANG + 1
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -256,6 +258,15 @@ C
           GO TO 100
 C
    14     CONTINUE
+            INTDIR = .TRUE.
+          GO TO 100
+
+   15     CONTINUE
+            REDCNT = .TRUE.
+          GO TO 100
+
+   16     CONTINUE
+            LGSPOL = .TRUE.
           GO TO 100
 C
         ELSE IF (PROMPT .EQ. '*') THEN
@@ -315,14 +326,14 @@ C
           END IF
         END IF
 C
-        WRITE(LUPRI,*) 'Settings for determination of induced dipoles:'
+        WRITE(LUPRI,*) ' Settings for determination of induced dipoles:'
         IF (MYITE) THEN
-          WRITE(LUPRI,*) 'Iterative Method is used'
+          WRITE(LUPRI,*) ' Iterative Method is used'
         ELSE IF (MYMAT) THEN
-          WRITE(LUPRI,*) 'Matrix inversion is used'
+          WRITE(LUPRI,*) ' Matrix inversion is used'
         END IF
         IF (EXPON) THEN
-          WRITE(LUPRI,*) 'Exponential Dampiing is active'
+          WRITE(LUPRI,*) ' Exponential Dampiing is active'
         END IF
         
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
@@ -3642,17 +3653,17 @@ C
                    R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
                    R5 = R2*R2*SQRT(R2)
                    UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
-     &                     - CHARGE(L)*(D3*XCOOR*XCOOR - R2)/R5
+     &                     + CHARGE(L)*(D3*XCOOR*XCOOR - R2)/R5
                    UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
-     &                     - CHARGE(L)*(D3*YCOOR*YCOOR - R2)/R5
+     &                     + CHARGE(L)*(D3*YCOOR*YCOOR - R2)/R5
                    UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
-     &                     - CHARGE(L)*(D3*ZCOOR*ZCOOR - R2)/R5
+     &                     + CHARGE(L)*(D3*ZCOOR*ZCOOR - R2)/R5
                    UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
-     &                     - CHARGE(L)*D3*XCOOR*YCOOR/R5
+     &                     + CHARGE(L)*D3*XCOOR*YCOOR/R5
                    UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
-     &                     - CHARGE(L)*D3*XCOOR*ZCOOR/R5
+     &                     + CHARGE(L)*D3*XCOOR*ZCOOR/R5
                    UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
-     &                     - CHARGE(L)*D3*YCOOR*ZCOOR/R5
+     &                     + CHARGE(L)*D3*YCOOR*ZCOOR/R5
                  END IF
  60            CONTINUE
  50          CONTINUE
@@ -3759,23 +3770,23 @@ C
                    TEZZZ = -(15*ZCOOR*ZCOOR*ZCOOR-D3*R2*D3*ZCOOR)/R7
                    TEXYZ = -(15*XCOOR*YCOOR*ZCOOR)/R7
                    UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
-     &                        + TEXXX*MYIND(1,NUM) + TEXXY*MYIND(2,NUM)
-     &                        + TEXXZ*MYIND(3,NUM)
+     &                        - TEXXX*MYIND(1,NUM) - TEXXY*MYIND(2,NUM)
+     &                        - TEXXZ*MYIND(3,NUM)
                    UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
-     &                        + TEYYX*MYIND(1,NUM) + TEYYY*MYIND(2,NUM)
-     &                        + TEYYZ*MYIND(3,NUM)
+     &                        - TEYYX*MYIND(1,NUM) - TEYYY*MYIND(2,NUM)
+     &                        - TEYYZ*MYIND(3,NUM)
                    UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
-     &                        + TEZZX*MYIND(1,NUM) + TEZZY*MYIND(2,NUM)
-     &                        + TEZZZ*MYIND(3,NUM)
+     &                        - TEZZX*MYIND(1,NUM) - TEZZY*MYIND(2,NUM)
+     &                        - TEZZZ*MYIND(3,NUM)
                    UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
-     &                        + TEXXY*MYIND(1,NUM) + TEYYX*MYIND(2,NUM)
-     &                        + TEXYZ*MYIND(3,NUM)
+     &                        - TEXXY*MYIND(1,NUM) - TEYYX*MYIND(2,NUM)
+     &                        - TEXYZ*MYIND(3,NUM)
                    UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
-     &                        + TEXXZ*MYIND(1,NUM) + TEXYZ*MYIND(2,NUM)
-     &                        + TEZZX*MYIND(3,NUM)
+     &                        - TEXXZ*MYIND(1,NUM) - TEXYZ*MYIND(2,NUM)
+     &                        - TEZZX*MYIND(3,NUM)
                    UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
-     &                        + TEXYZ*MYIND(1,NUM) + TEYYZ*MYIND(2,NUM)
-     &                        + TEZZY*MYIND(3,NUM)
+     &                        - TEXYZ*MYIND(1,NUM) - TEYYZ*MYIND(2,NUM)
+     &                        - TEZZY*MYIND(3,NUM)
                  END IF
  60            CONTINUE
  50          CONTINUE

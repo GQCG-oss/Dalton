@@ -126,11 +126,26 @@ C  /* Deck qm3_rra */
 #include <symmet.h>
 #include <orgcom.h>
 #include <infinp.h>
+#include "nuclei.h"
+
 
       DIMENSION WRK(LWRK)
       DIMENSION EELEC(3,MXQM3)
       DIMENSION FFJ(3)
       LOGICAL   LOINDM
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+C From here. 
+C This is NOT good. In fact very bad. Needs to be fixed. 
+C Neede for f.ex. spin-spin couplings since nucdep is used here for allocation.
+C Can only be done AFTER coordinates for charges and polarizabilities have been defined 
+C since nudep defines no. of coordinates !! Only active when requsted by the user.
+
+      IF (REDCNT) NUCDEP=NUCIND 
+
+C To here
 
       IF (LOSPC) RETURN
 
@@ -155,15 +170,25 @@ C  /* Deck qm3_rra */
   880   CONTINUE
   879 CONTINUE
 
-      IF (IQM3PR .GT. 15) THEN
-        WRITE(LUPRI,*) 'QM3RAINT: Read in integrals'
-      ENDIF
+      IF (.NOT. INTDIR) THEN
+        IF (IQM3PR .GT. 15) THEN
+          WRITE(LUPRI,*) 'QM3RAINT: Read in integrals'
+        ENDIF
 
-      CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
+        CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LUQM3E)
+        REWIND(LUQM3E)
+      END IF
 
       LM = 0
+
+      IF (INTDIR) THEN
+        L = NUSITE + NUALIS(0)
+        OBKPX = DIPORG(1)
+        OBKPY = DIPORG(2)
+        OBKPZ = DIPORG(3)
+      END IF
+
 
       DO 520 I = 1, ISYTP
         IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -171,19 +196,80 @@ C  /* Deck qm3_rra */
             DO 522 K = 1, NUALIS(I)
               LM = LM + 1
 
-              CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
-              WRK(KRAx+LM-1) = DDOT(NNBASX,WRK(KRRAOx),1,DCAO,1)
+              IF (INTDIR) THEN
+                KMAT = KWRK1
+                KLAST = KMAT + 3*NNBASX
+                LWRK2 = LWRK - KLAST + 1
+                IATNOW = NUCIND + L + LM
 
-              CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
-              WRK(KRAy+LM-1) = DDOT(NNBASX,WRK(KRRAOy),1,DCAO,1)
+                KPATOM = 0
+                NOSIM = 3
+                TOFILE = .FALSE.
+                TRIMAT = .TRUE.
+                EXP1VL = .FALSE.
+                DIPORG(1) = CORD(1,IATNOW)
+                DIPORG(2) = CORD(2,IATNOW)
+                DIPORG(3) = CORD(3,IATNOW)
 
-              CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
-              WRK(KRAz+LM-1) = DDOT(NNBASX,WRK(KRRAOz),1,DCAO,1)
+                FORQM3=.TRUE.
+                CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+     &                      LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                      KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
+                FORQM3=.FALSE.
 
+                IF (IPRINT.GT.15) THEN
+                  WRITE (LUPRI,'(/A)') ' Rra_ao_x matrix:'
+                  CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+
+                  WRITE (LUPRI,'(/A)') ' Rra_ao_y matrix:'
+                  CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
+
+                  WRITE (LUPRI,'(/A)') ' Rra_ao_z matrix:'
+                  CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
+                END IF
+
+                WRK(KRAx+LM-1) = DDOT(NNBASX,WRK(KMAT),1,DCAO,1)
+                WRK(KRAy+LM-1) = DDOT(NNBASX,WRK(KMAT+NNBASX),1,DCAO,1)
+                WRK(KRAz+LM-1) = DDOT(NNBASX,WRK(KMAT+2*NNBASX),
+     *                                1,DCAO,1)
+              ELSE   
+
+                CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
+                WRK(KRAx+LM-1) = DDOT(NNBASX,WRK(KRRAOx),1,DCAO,1)
+
+                IF (IPRINT.GT.15) THEN
+                  CALL AROUND('Rra_ao_x matrix:')
+                  CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
+                END IF 
+
+                CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
+                WRK(KRAy+LM-1) = DDOT(NNBASX,WRK(KRRAOy),1,DCAO,1)
+
+                IF (IPRINT.GT.15) THEN
+                  CALL AROUND('Rra_ao_y matrix:')
+                  CALL OUTPAK(WRK(KRRAOy),NBAST,1,LUPRI)
+                END IF
+
+                CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
+                WRK(KRAz+LM-1) = DDOT(NNBASX,WRK(KRRAOz),1,DCAO,1)
+
+                IF (IPRINT.GT.15) THEN
+                  CALL AROUND('Rra_ao_z matrix:')
+                  CALL OUTPAK(WRK(KRRAOz),NBAST,1,LUPRI)
+                END IF
+
+              END IF
   522       CONTINUE
   521     CONTINUE
         END IF
   520 CONTINUE
+
+      IF (INTDIR) THEN
+        DIPORG(1) = OBKPX
+        DIPORG(2) = OBKPY
+        DIPORG(3) = OBKPZ
+      END IF
+
 
       IF (IQM3PR .GE. 5) THEN
         WRITE(LUPRI,'(/A/A/A)')
@@ -249,7 +335,7 @@ C     the determination of the induced dipole moments
 
       CALL CC_PUT31('CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
-      CALL GPCLOSE(LUQM3E,'KEEP')
+      IF (.NOT. INTDIR) CALL GPCLOSE(LUQM3E,'KEEP')
 
       CALL QEXIT('QM3_RRA')
       RETURN
@@ -273,11 +359,28 @@ C  /* Deck qm3_ns */
 #include <maxaqn.h>
 #include <symmet.h>
 #include <orgcom.h>
+#include "nuclei.h"
+
 
       DIMENSION WRK(LWRK) 
       DIMENSION DFTNS(*)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
       
       CALL QENTER('QM3_NS')
+
+C From here. 
+C This is NOT good. In fact very bad. Needs to be fixed. 
+C Neede for f.ex. spin-spin couplings since nucdep is used here for allocation.
+C Can only be done AFTER coordinates for charges and polarizabilities have been defined 
+C since nudep defines no. of coordinates !! Only active when requsted by the user.
+
+      IF (REDCNT) NUCDEP=NUCIND
+
+C To here
+
 
       KNSAO  = 1
       KWRK1  = KNSAO + NNBASX
@@ -288,14 +391,22 @@ C  /* Deck qm3_ns */
       CALL DZERO(WRK(KNSAO),NNBASX)
 
       ENSEL = 0.0D0
-       
-      CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
-     &          'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND (LUQM3P)
+
+      IF (.NOT. INTDIR) THEN
+        CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+        REWIND (LUQM3P)
+      ENDIF
 
       FAC1 = -1.0D0
 
       L = 0
+
+      IF (INTDIR) THEN
+        OBKPX = DIPORG(1)
+        OBKPY = DIPORG(2)
+        OBKPZ = DIPORG(3)
+      ENDIF
 
       DO 525 I = 1, ISYTP
         IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
@@ -304,23 +415,71 @@ C  /* Deck qm3_ns */
 
               L = L +1
 
-              CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
+                IF (INTDIR) THEN
 
-              DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KNSAO),1)
+                  KMAT = KWRK1
+                  KLAST = KMAT + NNBASX
+                  LWRK2 = LWRK - KLAST + 1
+                  IATNOW = NUCIND + L 
+
+                  KPATOM = 0
+                  NOSIM = 1
+                  TOFILE = .FALSE.
+                  TRIMAT = .TRUE.
+                  EXP1VL = .FALSE.
+                  DIPORG(1) = CORD(1,IATNOW)
+                  DIPORG(2) = CORD(2,IATNOW)
+                  DIPORG(3) = CORD(3,IATNOW)
+
+                  FORQM3=.TRUE.
+                  CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
+     &                        LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
+                  FORQM3=.FALSE.
+
+                  IF (OLDTG) THEN
+                     FACQ = -1.0D0*CHAOLD(IATNOW)
+                  ELSE
+                     FACQ = -1.0D0*CHARGE(IATNOW)
+                  ENDIF
+
+                  CALL DSCAL(NNBASX,FACQ,WRK(KMAT),1)
+
+                  IF (IPRINT.GT.15) THEN
+                    WRITE (LUPRI,'(/A)') 'NUCPOT matrix'
+                    CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+                  ENDIF 
+
+                  DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
+
+              ELSE
+
+                CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
+
+                IF (IPRINT.GT.15) THEN
+                  WRITE (LUPRI,'(/A,I3,A)')
+     *               ' N(',L,')_ao matrix: '
+                  CALL OUTPAK(WRK(KNSAO),NBAST,1,LUPRI)
+                ENDIF 
+
+                DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KNSAO),1)
+
+              ENDIF
+
               ENSEL     = ENSEL - DFTNS(L) 
-
-              IF (IQM3PR .GE. 21) THEN
-                WRITE (LUPRI,'(/A,I3,A)')
-     *             ' N(',L,')_ao matrix: '
-                CALL OUTPAK(WRK(KNSAO),NBAST,1,LUPRI)
-              END IF
 
   527       CONTINUE
   526     CONTINUE
         END IF
   525 CONTINUE       
 
-      CALL GPCLOSE(LUQM3P,'KEEP')
+      IF (INTDIR) THEN
+        DIPORG(1) = OBKPX
+        DIPORG(2) = OBKPY
+        DIPORG(3) = OBKPZ
+      ENDIF
+
+      IF (.NOT. INTDIR) CALL GPCLOSE(LUQM3P,'KEEP')
 
 C-------------------
 C     Print section:
@@ -374,9 +533,15 @@ C  /* Deck qm3_fmo */
 #include <symmet.h>
 #include <orgcom.h>
 #include <infinp.h>
+#include "nuclei.h"
+
 
       DIMENSION WRK(LWRK)
       DIMENSION FSOL(*)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
 
       IF (LOSPC .AND. (.NOT. OLDTG)) RETURN
 
@@ -458,11 +623,20 @@ C  /* Deck qm3_fmo */
   415     CONTINUE
         END IF
 
-        CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
-     &              'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND(LUQM3E)
+        IF (.NOT. INTDIR) THEN
+          CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+          REWIND(LUQM3E)
+        ENDIF
 
         LM = 0
+
+      IF (INTDIR) THEN
+        L = NUSITE + NUALIS(0)
+        OBKPX = DIPORG(1)
+        OBKPY = DIPORG(2)
+        OBKPZ = DIPORG(3)
+      ENDIF
 
         DO 520 I = 1, ISYTP
           IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -470,29 +644,37 @@ C  /* Deck qm3_fmo */
               DO 522 K = 1, NUALIS(I)
                 LM = LM + 1
 
-                CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
+                IF (INTDIR) THEN
+                  KMAT = KWRK1
+                  KLAST = KMAT + 3*NNBASX
+                  LWRK2 = LWRK - KLAST + 1
+                  IATNOW = NUCIND + L + LM
 
-                IF (IQM3PR .GE. 21) THEN
-                  WRITE (LUPRI,'(/A)') ' Rra_ao x matrix:'
-                  CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
-                END IF
-  
-                CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
-  
-                IF (IQM3PR .GE. 21) THEN
-                  WRITE (LUPRI,'(/A)') ' Rra_ao y matrix:'
-                  CALL OUTPAK(WRK(KRRAOy),NBAST,1,LUPRI)
-                END IF
+                  KPATOM = 0
+                  NOSIM = 3
+                  TOFILE = .FALSE.
+                  TRIMAT = .TRUE.
+                  EXP1VL = .FALSE.
+                  DIPORG(1) = CORD(1,IATNOW)
+                  DIPORG(2) = CORD(2,IATNOW)
+                  DIPORG(3) = CORD(3,IATNOW)
 
-                CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
-  
-                IF (IQM3PR .GE. 21) THEN
-                  WRITE (LUPRI,'(/A)') ' Rra_ao z matrix:'
-                  CALL OUTPAK(WRK(KRRAOz),NBAST,1,LUPRI)
-                END IF
+                  FORQM3=.TRUE.
+                  CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+     &                       LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                       KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
+                  FORQM3=.FALSE.
+
+                ELSE
+
+                  CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
+                  CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
+                  CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
+
+                ENDIF
 
                 IF (MDLWRD(I) .EQ. 'SPC_E01') THEN
-  
+ 
                   FACx =  - ALPIMM(I,K) * (WRK(KRAx + LM - 1)
      &                  + 0.5D0 * WRK(KENSAx + LM - 1))
                   FACy =  - ALPIMM(I,K) * (WRK(KRAy + LM - 1)
@@ -500,18 +682,25 @@ C  /* Deck qm3_fmo */
                   FACz =  - ALPIMM(I,K) * (WRK(KRAz + LM - 1)
      &                  + 0.5D0 * WRK(KENSAz + LM - 1))
 
-                  CALL DAXPY(NNBASX,FACx,WRK(KRRAOx),1,WRK(KTAO),1)
-  
-                  CALL DAXPY(NNBASX,FACy,WRK(KRRAOy),1,WRK(KTAO),1)
- 
-                  CALL DAXPY(NNBASX,FACz,WRK(KRRAOz),1,WRK(KTAO),1)
-                END IF
+                  IF (INTDIR) THEN
+                    CALL DAXPY(NNBASX,FACx,WRK(KMAT),1,WRK(KTAO),1)
+                    CALL DAXPY(NNBASX,FACy,WRK(KMAT+NNBASX),1,
+     *                         WRK(KTAO),1)
+                    CALL DAXPY(NNBASX,FACz,WRK(KMAT+2*NNBASX),1,
+     *                         WRK(KTAO),1)
+                  ELSE
+                    CALL DAXPY(NNBASX,FACx,WRK(KRRAOx),1,WRK(KTAO),1)
+                    CALL DAXPY(NNBASX,FACy,WRK(KRRAOy),1,WRK(KTAO),1)
+                    CALL DAXPY(NNBASX,FACz,WRK(KRRAOz),1,WRK(KTAO),1)
+                  ENDIF
+
+                ENDIF
   522         CONTINUE
   521       CONTINUE
           END IF
   520   CONTINUE
 
-        CALL GPCLOSE(LUQM3E,'KEEP')
+        IF (.NOT. INTDIR) CALL GPCLOSE(LUQM3E,'KEEP')
 
         IF (IQM3PR .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' QM/MM contribution:'
@@ -525,13 +714,21 @@ C  /* Deck qm3_fmo */
 C       We use RRAOx in this case for the pot.energy integrals
         CALL DZERO(WRK(KRRAOx),NNBASX)
 
-        CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
-     &            'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND (LUQM3P)
+        IF (.NOT. INTDIR) THEN
+          CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
+     &              'UNFORMATTED',IDUMMY,.FALSE.)
+          REWIND (LUQM3P)
+        ENDIF
 
         FAC1 = -1.0D0
 
         L = 0
+
+        IF (INTDIR) THEN
+          OBKPX = DIPORG(1)
+          OBKPY = DIPORG(2)
+          OBKPZ = DIPORG(3)
+        ENDIF 
 
         DO 525 I = 1, ISYTP
           IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
@@ -540,22 +737,70 @@ C       We use RRAOx in this case for the pot.energy integrals
 
                 L = L +1
 
-                CALL READT(LUQM3P,NNBASX,WRK(KRRAOx))
+                IF (INTDIR) THEN
 
-                IF (IQM3PR .GE. 21) THEN
-                  WRITE (LUPRI,'(/A,I3,A)')
-     *               ' N(',L,')_ao matrix: '
-                  CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
-                END IF
+                  KMAT = KWRK1
+                  KLAST = KMAT + NNBASX
+                  LWRK2 = LWRK - KLAST + 1
 
-                CALL DAXPY(NNBASX,FAC1,WRK(KRRAOx),
-     *                     1,WRK(KTAO),1)
+                  IATNOW = NUCIND + L
+
+                  CALL DZERO(WRK(KMAT),NNBASX)
+
+                  KPATOM = 0
+                  NOSIM = 1
+                  TOFILE = .FALSE.
+                  TRIMAT = .TRUE.
+                  EXP1VL = .FALSE.
+                  DIPORG(1) = CORD(1,IATNOW)
+                  DIPORG(2) = CORD(2,IATNOW)
+                  DIPORG(3) = CORD(3,IATNOW)
+
+                  FORQM3=.TRUE.
+                  CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
+     &                        LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
+                  FORQM3=.FALSE.
+
+                  FACQ =  -1.0D0*CHAOLD(IATNOW)
+
+                  CALL DSCAL(NNBASX,FACQ,WRK(KMAT),1)
+
+                  IF (IPRINT.GT.15) THEN
+                    WRITE (LUPRI,'(/A)') 'NUCPOT matrix in QM3_FMO'
+                    CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+                  ENDIF
+
+                  CALL DAXPY(NNBASX,FAC1,WRK(KMAT),
+     *                       1,WRK(KTAO),1)
+
+                ELSE   
+
+                  CALL READT(LUQM3P,NNBASX,WRK(KRRAOx))
+
+                  IF (IPRINT.GT.15) THEN
+                    WRITE (LUPRI,'(/A,I3,A)')
+     *                 ' N(',L,')_ao matrix: '
+                    CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
+                  ENDIF  
+
+                  CALL DAXPY(NNBASX,FAC1,WRK(KRRAOx),
+     *                       1,WRK(KTAO),1)
+
+                ENDIF
+
   527         CONTINUE
   526       CONTINUE
           END IF
   525   CONTINUE
 
-        CALL GPCLOSE(LUQM3P,'KEEP')
+        IF (INTDIR) THEN
+          DIPORG(1) = OBKPX
+          DIPORG(2) = OBKPY
+          DIPORG(3) = OBKPZ
+        ENDIF
+
+        IF (.NOT. INTDIR)  CALL GPCLOSE(LUQM3P,'KEEP')
 
       END IF
 
@@ -828,13 +1073,6 @@ C     Calculate gradients
      &                 + WRK(KGRDLM+I) * WRK(KGRDLM+I)
   420    CONTINUE
 
-      TEST = DDOT(NCONF,CREF,1,WRK(KGRDLM),1)
-      IF (ABS(TEST) .GT. 1.D-8) THEN
-          NWARN = NWARN + 1
-          WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     &      ' >>> QM3GRD WARNING <CREF | GRAD > =',TEST
-         END IF
-
       FAC=1.0D0
       CALL DAXPY(NVARH,FAC,WRK(KGRDLM),1,G,1)
 
@@ -916,16 +1154,26 @@ C
 #include <maxash.h>
 #include <infind.h>
 #include <qm3.h>
+#include <mxcent.h>
 #include <priunit.h>
 #include <dummy.h>
 #include <inftap.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include "nuclei.h"
 C
       DIMENSION BOVECS(NWOPPT,*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),SVEC(NSVEC,*),WRK(LWRK)
       LOGICAL   FULHES
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 C
       CALL QENTER('QM3HESS')
+
+      CALL QUIT('QM3HESS needs further debuging. Sorry !')
 C
       KRXYO   = 1
       KUCMO   = KRXYO   + NOSIM*NNORBX
@@ -1014,15 +1262,22 @@ C        1.d. Calculate one-index transformed Tg integrals
          CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
 
 
-         CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
-     &               'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LUQM3E)
+         IF (.NOT. INTDIR) THEN
+           CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)
+           REWIND(LUQM3E)
+         ENDIF
 
 C        1.e. Readin Rra integrals and transform to mo
 
          LM = 0
 
-         FAC = 1.0D0
+         IF (INTDIR) THEN
+           L = NUSITE + NUALIS(0)
+           OBKPX = DIPORG(1)
+           OBKPY = DIPORG(2)
+           OBKPZ = DIPORG(3)
+         ENDIF
 
          DO 520 I = 1, ISYTP
            IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -1032,17 +1287,44 @@ C        1.e. Readin Rra integrals and transform to mo
 
                  FAC = -ALPIMM(I,K)
 
-                 CALL DZERO(WRK(KRRAOx),NNBASX)
-                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
-
 C                Calculate one-index transformed Rra.x integrals
 
-                 CALL DZERO(WRK(KTRMO),NNORBX)
+                 IF (INTDIR) THEN
+                   KMAT = KWRK
+                   KLAST = KMAT + 3*NNBASX
+                   LWRK2 = LWRK - KLAST + 1
+                   IATNOW = NUCIND + L + LM
+
+                   CALL DZERO(WRK(KMAT),3*NNBASX)
+
+                   KPATOM = 0
+                   NOSIM = 3
+                   TOFILE = .FALSE.
+                   TRIMAT = .TRUE.
+                   EXP1VL = .FALSE.
+                   DIPORG(1) = CORD(1,IATNOW)
+                   DIPORG(2) = CORD(2,IATNOW)
+                   DIPORG(3) = CORD(3,IATNOW)
+
+                   FORQM3=.TRUE.
+                   CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+     &                         LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                         KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
+                   FORQM3=.FALSE.
+                   CALL DZERO(WRK(KTRMO),NNORBX)
+                   CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
+     &                       NBAST,NORBT)
+                 ELSE
+                   CALL DZERO(WRK(KRRAOx),NNBASX)
+                   CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
+                   CALL DZERO(WRK(KTRMO),NNORBX)
+                   CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KWRK),NBAST,NORBT)
+                 ENDIF
+
                  CALL DZERO(WRK(KUTR),N2ORBX)
                  CALL DZERO(WRK(KUTRX),N2ORBX)
                  CALL DZERO(WRK(KTRX),NNORBX)
-                 CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL TR1UH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX),1)
                  CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTRX))
@@ -1056,17 +1338,23 @@ C                Calculate one-index transformed Rra.x integrals
   
                  CALL DAXPY(NNORBX,FACx,WRK(KTRMO),1,WRK(JRXYO),1)
 
-                 CALL DZERO(WRK(KRRAOy),NNBASX)
-                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
-
 C                Calculate one-index transformed Rra.y integrals
 
-                 CALL DZERO(WRK(KTRMO),NNORBX)
+                 IF (INTDIR) THEN
+                   CALL DZERO(WRK(KTRMO),NNORBX)
+                   CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KLAST),NBAST,NORBT)
+                 ELSE
+                   CALL DZERO(WRK(KRRAOy),NNBASX)
+                   CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
+                   CALL DZERO(WRK(KTRMO),NNORBX)
+                   CALL UTHU(WRK(KRRAOy),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KWRK),NBAST,NORBT)
+                 ENDIF
+
                  CALL DZERO(WRK(KUTR),N2ORBX)
                  CALL DZERO(WRK(KUTRX),N2ORBX)
                  CALL DZERO(WRK(KTRX),NNORBX)
-                 CALL UTHU(WRK(KRRAOy),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL TR1UH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX),1)
                  CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTRX))
@@ -1080,17 +1368,23 @@ C                Calculate one-index transformed Rra.y integrals
 
                  CALL DAXPY(NNORBX,FACy,WRK(KTRMO),1,WRK(JRXYO),1)
 
-                 CALL DZERO(WRK(KRRAOz),NNBASX)
-                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
-
 C                Calculate one-index transformed Rra.z integrals
 
-                 CALL DZERO(WRK(KTRMO),NNORBX)
+                 IF (INTDIR) THEN
+                   CALL DZERO(WRK(KTRMO),NNORBX)
+                   CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KLAST),NBAST,NORBT)
+                 ELSE
+                   CALL DZERO(WRK(KRRAOz),NNBASX)
+                   CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
+                   CALL DZERO(WRK(KTRMO),NNORBX)
+                   CALL UTHU(WRK(KRRAOz),WRK(KTRMO),WRK(KUCMO),
+     &                       WRK(KWRK),NBAST,NORBT)
+                 ENDIF
+
                  CALL DZERO(WRK(KUTR),N2ORBX)
                  CALL DZERO(WRK(KUTRX),N2ORBX)
                  CALL DZERO(WRK(KTRX),NNORBX)
-                 CALL UTHU(WRK(KRRAOz),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
-     &                     NBAST,NORBT)
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL TR1UH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX),1)
                  CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTRX))
@@ -1109,18 +1403,24 @@ C                Calculate one-index transformed Rra.z integrals
            END IF
   520    CONTINUE
 C
-         CALL GPCLOSE(LUQM3E,'KEEP')
+         IF (.NOT. INTDIR) CALL GPCLOSE(LUQM3E,'KEEP')
+
+         IF (INTDIR) THEN
+           DIPORG(1) = OBKPX
+           DIPORG(2) = OBKPY
+           DIPORG(3) = OBKPZ
+         END IF
 
   200 CONTINUE
 
-C      IF (IQM3PR .GT. 15) THEN
+      IF (IQM3PR .GT. 15) THEN
          DO 600 IOSIM = 1,NOSIM
             JRXYO = KRXYO + (IOSIM-1)*NNORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
      *         ' >>> SOLLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
             CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
   600    CONTINUE
-C      END IF
+      END IF
 
 C     2. Add effective operators Tgxo and RRayo contribution to SVEC(NSVEC,NOSIM) 
 C     Tell SOLGO only to use the NWOPPT first JWOP entries
@@ -1184,3 +1484,4 @@ C
       CALL QEXIT('QM3FCKMO')
       RETURN
       END
+*******************************************************************************

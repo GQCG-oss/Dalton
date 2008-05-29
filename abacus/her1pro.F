@@ -2640,7 +2640,8 @@ C
                         ELSE IF ( (ISUBSY(K) .NE. 0) .AND.
      &                          (ISUBSI(K) .LE. NSISY(I))
      &                         .AND. (INTTYP .EQ. 35) .AND.
-     &                          (MDLWRD(I)(1:3) .EQ. 'SPC') ) THEN
+     &                          (MDLWRD(I)(1:3) .EQ. 'SPC') 
+     &                         .AND.(.NOT.INTDIR)) THEN
                           NUSITE = NUSITE + 1
                           IF (PROPRI .OR. IPRINT .GT. 4) THEN
                             CALL AROUND(
@@ -2660,7 +2661,8 @@ C
                         ELSE IF ( (ISUBSY(K) .NE. 0) .AND.
      &                          (ISUBSI(K) .GT. NSISY(I))
      &                         .AND. (INTTYP .EQ. 29) .AND.
-     &                         (MDLWRD(I)(1:5) .EQ. 'SPC_E') )THEN
+     &                         (MDLWRD(I)(1:5) .EQ. 'SPC_E') 
+     &                         .AND.(.NOT.INTDIR) )THEN
                           NCOMS = NCOMS + 1
                           IF (PROPRI .OR. IPRINT .GT. 4) THEN
                             CALL AROUND(
@@ -2689,6 +2691,32 @@ C
           END IF
         END IF
       END IF
+
+      IF ( (QM3) .AND. (INTDIR) ) THEN
+        NUSITE = 0
+        DO 525 I = 1, ISYTP
+          IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+            DO 526 J = NSYSBG(I), NSYSED(I)
+              DO 527 K = 1,NSISY(I)
+
+                NUSITE = NUSITE +1
+  527         CONTINUE
+  526       CONTINUE
+          END IF
+  525   CONTINUE
+
+        NCOMS = 0
+        DO 520 I = 1, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 521 J = NSYSBG(I), NSYSED(I)
+              DO 522 K = 1, NUALIS(I)
+                NCOMS = NCOMS + 1
+  522         CONTINUE
+  521       CONTINUE
+          END IF
+  520   CONTINUE
+      END IF
+
 C
 C     If integrals requested from ABACUS, copy matrices from SOINT to
 C     SINTMA for further use in ABACUS. KR, Spring 1992
@@ -2870,8 +2898,12 @@ Ckr   SPIN is anyway only a local variable
      &       INTTYP .EQ. 97 .OR. INTTYP .EQ. 102
       IF (.NOT.SPIN .OR. ALLATM) THEN
          NATOM = NUCDEP
-         IF (QM3 .AND. (INTTYP .EQ. 29.OR.
-     &                  INTTYP .EQ. 30.OR. INTTYP .EQ. 35)) NATOM=NCTOT
+         IF ( (QM3) .AND. (.NOT. INTDIR) ) THEN
+           IF (INTTYP .EQ. 29.) NATOM=NCTOT
+           IF (INTTYP .EQ. 30.) NATOM=NCTOT
+           IF (INTTYP .EQ. 35.) NATOM=NCTOT
+         END IF
+C
          DO 100 I = 1, NATOM
             DOATOM(I) = .TRUE.
   100    CONTINUE
@@ -3869,6 +3901,7 @@ C  /* Deck efntyp */
 #include <chrnos.h>
 #include <ibtfun.h>
       NOPTYP = 3*NATOM
+      IF (QM3 .AND. INTDIR .AND. FORQM3) NOPTYP = 3
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0

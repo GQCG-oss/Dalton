@@ -156,6 +156,7 @@ C
          CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',' ',
      &               IDUMMY,.FALSE.)
       END IF
+      FORQM3 = .FALSE.
 C
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -192,7 +193,7 @@ C
          CALL IEFMAT(WORK,LWORK)
       END IF
 C
-      IF (QM3) THEN
+      IF ( (QM3) .AND. (.NOT.INTDIR) ) THEN
         DO 752 KI = 1, ISYTP
         IF (MDLWRD(KI)(1:3) .EQ. 'SPC') THEN
           IF ( .NOT. (LONUPO) ) THEN
