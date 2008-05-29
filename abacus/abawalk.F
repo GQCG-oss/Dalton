@@ -3856,6 +3856,7 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <abainf.h>
+#include <dftcom.h>
 C
 #include <moldip.h>
 #include <suscpt.h>
@@ -3877,6 +3878,9 @@ C
                   SUSTOT(I,J) = SUSREL(I,J) + SUSDIA(I,J)
      &                        + SUS2EL(I,J) + SUSFS (I,J)
      &                        + SUSFSY(I,J)
+        IF (DFTRUN) THEN
+          SUSTOT(I,J) = SUSTOT(I,J) + SUSDFT(I,J)
+        ENDIF
                END IF
             END DO
          END DO
