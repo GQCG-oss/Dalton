@@ -130,7 +130,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
-     &            '.THRVEC','.MTRIP ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THRVEC','.MTRIP ','.SOPPA2','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -811,6 +811,10 @@ C                 '.THRVEC' convergence threshold for norm of vector function
                   MTRIP  = .TRUE.
                GO TO 1000
  108           CONTINUE
+                  SIRSOP = .TRUE.
+                  CC2   = .TRUE.
+                  KEEPAOTWO = MAX(KEEPAOTWO,2)
+               GO TO 1000
  109           CONTINUE
  110           CONTINUE
                GO TO 1000
@@ -971,9 +975,12 @@ C
      *         ' -Relativistic two-electron Darwin term calculated'
             IF (DPTECO) WRITE(LUPRI,'(A)')
      *         ' -First-order DPT energy corrections calculated'
-            IF (SIRSOP) WRITE (LUPRI,'(A)')
+            IF (SIRSOP .AND. CCSD) WRITE (LUPRI,'(A)')
      *         ' -CCSD Amplitudes appended to Sirius interface'//
      *         ' for SOPPA(CCSD)'
+            IF (SIRSOP .AND. CC2) WRITE (LUPRI,'(A)')
+     *         ' -CC2 Amplitudes appended to Sirius interface'//
+     *         ' for SOPPA(CC2)'
 C
          END IF
          WRITE (LUPRI,'(A)') '  '
