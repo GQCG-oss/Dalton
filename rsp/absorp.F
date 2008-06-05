@@ -63,7 +63,7 @@ C
 #include <codata.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 18 )
+      PARAMETER ( NTABLE = 19 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3), ANGMOM(3)
@@ -73,7 +73,7 @@ C
       DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAX MI','.MAXITO',
      &            '.PRINT ','.DAMPIN','.EXCITA','.MAX MA','.THCPP ',
      &            '.BETA  ','.BFREQ ','.CFREQ ','.SHG   ','.ANALYZ',
-     &            '.BATCH ','.FREQ I','.MCD   '/
+     &            '.BATCH ','.FREQ I','.MCD   ','.REDUCE'/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
@@ -81,34 +81,9 @@ C
 C     Set default values
 C
       IF (NEWDEF) THEN
-         ABS_ALPHA  = .FALSE.
-         ABS_BETA   = .FALSE.
-         ABS_GAMMA  = .FALSE.
-         ABS_SHG    = .FALSE.
-         ABS_MCD    = .FALSE.
-         ABS_ANALYZE = .FALSE.
-         ABS_INTERVAL = .FALSE.
 C     Common default value of the damping parameter is set to 
 C     be 1000 cm-1 = 4.556333D-3 a.u.
          DAMPING = 1000/XTKAYS
-         NFREQ_ALPHA = 1
-         NFREQ_BETA_B = 1
-         NFREQ_BETA_C = 1
-         FREQ_ALPHA(1) = D0
-         FREQ_BETA_B(1) = D0
-         FREQ_BETA_C(1) = D0
-         NFREQ_BATCH = 10
-         FREQ_INTERVAL(1) = D0
-         FREQ_INTERVAL(2) = D0
-         FREQ_INTERVAL(3) = D1
-         THCLR_ABSORP = 1.0D-3
-         THCPP_ABSORP = 1.0D-3
-         IPRABS = 0
-         NEXCITED_STATES = 5
-         MAX_MACRO  = 5
-         MAX_MICRO  = 20
-         MAX_ITORB = 5
-         WORD1 = WORD
   100    CONTINUE
 C
 C     Read in input
@@ -122,7 +97,7 @@ C
                DO I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,
-     &                 11,12,13,14,15,16,17,18),I
+     &                 11,12,13,14,15,16,17,18,19),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -247,6 +222,7 @@ C     User input of damping parameter
                GOTO 100
  17            CONTINUE
                ABS_INTERVAL = .TRUE.
+               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) (FREQ_INTERVAL(I), I=1,3)
                GOTO 100
  18            CONTINUE
@@ -254,6 +230,9 @@ C     User input of damping parameter
                ABS_BETA =.FALSE.
                ABS_GAMMA=.FALSE.
                ABS_MCD  =.TRUE.
+               GOTO 100
+ 19            CONTINUE
+               ABS_REDUCE=.TRUE.
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
@@ -412,7 +391,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
 C
-      IPRRSP = IPRABS
+      IPRRSP = IPRABS - 1
       KFREE = 1
       LFREE = LWRK
 C
@@ -529,7 +508,7 @@ C
 C
       PARAMETER ( BLANK='        ' )
 C
-      IF (IPRABS.GE.0) THEN
+      IF (IPRABS.GT.0) THEN
          WRITE(LUPRI,'(/,2A,/,2(A,I4),/A)')
      &        ' RESONANT -- Solve the eigenvalue equation',
      &        ' ( E[2] - w*S[2] )*X = 0', 
@@ -563,7 +542,7 @@ C
 C      
       RETURN
       END
-      SUBROUTINE ABSREDUC(IOP,LABEL,NFREQ_ABS,FREQ_ABS,
+      SUBROUTINE ABSREDUC(LABEL,NFREQ_ABS,FREQ_ABS,
      &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
      &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,NBATCH,RESLRF,WRK,LWRK)
 C
@@ -642,7 +621,7 @@ C
       CALL DSPTGE(KZYRED,REDE,WRK(KREDE))
       CALL DSPTGE(KZYRED,REDS,WRK(KREDS))
 C
-      IF (IPRABS.GE.20) THEN
+      IF (IPRABS.GE.10) THEN
          WRITE(LUPRI,'(2(/,5X,A))') ' Reduced B[1] gradient',
      &        '========================'
          CALL OUTPUT(REDGD,1,2,1,KZRED,2,KZRED,1,LUPRI)
@@ -729,11 +708,11 @@ C
      &         DAMPING, (RESLRF(I,IFREQ+NBATCH*NFREQ_BATCH,
      &                          INDEX,INDEX,ITYPE),I=1,2)
          END DO
+         CALL FLSHFO(LUPRI)
       END IF
 C
       RETURN
       END
-
       SUBROUTINE FINDMAXN(X,IXLEN,IMAX,NMAX)
 C     Put indices to the NMAX elements of X with largest magnitude
 C     in IMAX.
@@ -760,7 +739,6 @@ C     now put I after J is there is space
       ENDDO
       NMAX = N
       END
-
       SUBROUTINE ABSRESULT(MJWOP,RESLRF,WRK,LWRK)
 C
 #include <implicit.h>
@@ -1022,7 +1000,7 @@ C
      &     CONVERGED,REDVEC,IBTYP,FC,CMO,UDV,PV,XINDX,WRK,LWRK)
 C
 C PURPOSE:
-C     Compute the imaginary residual vector to the linear response 
+C     Compute the complex residual vector to the linear response 
 C     equation.
 C
 C     R = B[1] - ( E[2] - {w+iW}*S[2] )*(NR + iNI)
@@ -1375,15 +1353,19 @@ C
 C
       RETURN
       END
-      SUBROUTINE ABSWRT(LABEL,IOP,NFREQ_ABS,FREQ_ABS,
+      SUBROUTINE ABSWRT(LUIN,LUOUT,LABEL,IOP,NFREQ_ABS,FREQ_ABS,
      &     IBTYP,REDVEC,WRK,LWRK)
 C
 C PURPOSE:
 C
-C     Construct and write response vectors to file
+C     If LUIN=LURSP3, construct and write response vectors N to file
+C     If LUIN=LURSP5, construct and write vectors E[2]*N to file
 C
 C     From file we read:
-C         LURSP3 contains trial vectors
+C     LUIN contains trial (LUIN=LURSP3) vectors or 
+C     sigma vectors (LUIN=LURSP5). Output vectors are written to LUOUT
+C     which normally is LURSP, apart from when we perform a reduction of
+C     the dimension of the reduced space.
 C
 C                          / b1 \                    / b2 \
 C     NR = sum(i=1,KZRED) |      | * REDVEC(4i-3) + |      | * REDVEC(4i-1)
@@ -1398,7 +1380,6 @@ C
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <absorp.h>
-#include <inftap.h>
 #include <ibndxdef.h>
 C
       CHARACTER*8 LABEL,BLANK
@@ -1420,13 +1401,13 @@ C
 C
 C     Read trial vectors and add contributions to response vector
 C
-         CALL REWSPL(LURSP3)
+         CALL REWSPL(LUIN)
          KRSP3 = 0
          IF (KOFFTY.EQ.1) THEN 
 #if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,IREC,DUMMY,KRSP3,.FALSE.)
+            CALL READST(LUIN,IREC,DUMMY,KRSP3,.FALSE.)
 #else        
-            READ (LURSP3)
+            READ (LUIN)
 #endif
          END IF
 C
@@ -1439,10 +1420,10 @@ C
 C
             IF (IBTYP(KOFFTY+I).EQ.JBCNDX) THEN
 #if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
+               CALL READST(LUIN,IREC,WRK(KBVEC),KRSP3,.TRUE.)
                IF (IREC.NE.KZCONF) CALL QUIT('Read error in ABSWRT')
 #else        
-               CALL READT(LURSP3,KZCONF,WRK(KBVEC))
+               CALL READT(LUIN,KZCONF,WRK(KBVEC))
 #endif
                CALL DAXPY(KZCONF,FR1,WRK(KBVEC),1,WRK(KNR),1)
                CALL DAXPY(KZCONF,FR2,WRK(KBVEC),1,WRK(KNR+KZVAR),1)
@@ -1450,10 +1431,10 @@ C
                CALL DAXPY(KZCONF,FI2,WRK(KBVEC),1,WRK(KNI+KZVAR),1)
             ELSE
 #if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
+               CALL READST(LUIN,IREC,WRK(KBVEC),KRSP3,.TRUE.)
                IF (IREC.NE.KZYWOP) CALL QUIT('Read error in ABSWRT')
 #else        
-               CALL READT(LURSP3,KZYWOP,WRK(KBVEC))
+               CALL READT(LUIN,KZYWOP,WRK(KBVEC))
 #endif
 C
                CALL DAXPY(KZWOPT,FR1,WRK(KBVEC),1,WRK(KNR+KZCONF),1)
@@ -1476,20 +1457,20 @@ C
 C
 C     Write response vectors to file
 C
-         CALL WRTRSP(LURSP,2*KZYVAR,WRK(KNR),LABEL,'COMPLEX ',
+         CALL WRTRSP(LUOUT,2*KZYVAR,WRK(KNR),LABEL,'COMPLEX ',
      &        FREQ_ABS(IFREQ),D0,KSYMOP,0,
      &        RESID(3,IFREQ,IOP,KSYMOP),D1)
 C
-      IF (IPRRSP.GE.10) THEN
-         WRITE(LUPRI,'(/A,A10,A,I4,/A,F12.8,A,I4)') 
-     &        ' Response vector in ABSWRT for operator',LABEL,
-     &        ' of symmetry',
-     &        KSYMOP,' and frequency',FREQ_ABS(IFREQ),
-     &        ' is written to file LURSP=',LURSP
-         CALL PRSYMB(LUPRI,'=',72,1)
-         WRITE(LUPRI,'(4X,4A15)') 'ZR','YR','ZI','YI'
-         CALL OUTPUT(WRK(KNR),1,KZYVAR/2,1,4,KZYVAR/2,4,1,LUPRI)
-      END IF
+         IF (IPRABS.GE.10) THEN
+            WRITE(LUPRI,'(/A,A10,A,I4,/A,F12.8,A,I4)') 
+     &           ' Response vector in ABSWRT for operator',LABEL,
+     &           ' of symmetry',
+     &           KSYMOP,' and frequency',FREQ_ABS(IFREQ),
+     &           ' is written to file LU=',LUOUT
+            CALL PRSYMB(LUPRI,'=',72,1)
+            WRITE(LUPRI,'(4X,4A15)') 'ZR','YR','ZI','YI'
+            CALL OUTPUT(WRK(KNR),1,KZYVAR/2,1,4,KZYVAR/2,4,1,LUPRI)
+         END IF
 C
       END DO
 C
@@ -1549,6 +1530,7 @@ C     NFREQ_BATCH = number of frequencies per batch
 C
       IBATCH = 0
  10   CONTINUE
+C
       IF (ABS_INTERVAL) THEN
          NFREQ_ABS=MIN(NFREQ_BATCH,NFREQ_INTERVAL-IBATCH*NFREQ_BATCH)
          DO I=1,NFREQ_ABS
@@ -1565,7 +1547,33 @@ C
      &        ' of symmetry',KSYMOP,' at frequencies:',
      &        ' ABSVEC1 --',(FREQ_ABS(I),I=1,NFREQ_ABS)
       END IF
-C     
+C
+C     Check if response solution vectors already exist on file unit
+C     LURSP with name RSPVEC.
+C
+      CALL CHKONFILE(LURSP,CONVERGED,LABEL,KSYMOP,
+     &     NFREQ_ABS,FREQ_ABS,THCLR_ABSORP,WRK(KFREE))
+      IF (CONVERGED) THEN
+         WRITE(LUPRI,'(/A,I3)') 
+     &        ' ABSCTL: converged response vectors found on file'//
+     &        ' RSPVEC with unit=',LURSP
+         CALL GETLRF(LURSP,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     FC,FV,CMO,UDV,PV,XINDX,IBATCH,RESLRF,
+     &     WRK(KFREE),LFREE)
+         GOTO 990
+      END IF
+C
+C     Reduce the dimension of the reduced space
+C
+      IF (ABS_REDUCE) THEN
+         CALL ABSREDUC(LABEL,NFREQ_ABS,FREQ_ABS,
+     &        REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
+     &        REDVEC,FC,FV,CMO,UDV,PV,XINDX,IBATCH,RESLRF,
+     &        WRK(KFREE),LFREE)
+         CALL REDSPACE(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
+     &        REDE,REDS,REDVEC,IBTYP,WRK(KFREE),LFREE)
+      END IF
+C
       ITER = 0
  100  CONTINUE
 C     
@@ -1579,7 +1587,7 @@ C
 C     
 C     Solve for resonse vector in reduced space
 C
-      CALL ABSREDUC(IOPER,LABEL,NFREQ_ABS,FREQ_ABS,
+      CALL ABSREDUC(LABEL,NFREQ_ABS,FREQ_ABS,
      &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
      &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,IBATCH,RESLRF,
      &     WRK(KFREE),LFREE)
@@ -1595,7 +1603,7 @@ C
       IF (ITER.GE.MAX_MACRO) GOTO 910
 C     
 C     Not converged, expand reduced space by solving coupled LR equations
-C     
+C
       CALL ABSLR(IOPER,LABEL,NFREQ_ABS,FREQ_ABS,
      &     REDE,REDS,REDZ,REDGD,REDZGD,
      &     IBTYP,REDVEC,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
@@ -1611,25 +1619,25 @@ C
  900  CONTINUE
       IF (IPRABS.GE.0) THEN
          WRITE(LUPRI,'(/,1X,A,I4,A)')
-     &        '*** THE REQUESTED',NFREQ_ABS,
+     &        '*** ABSCTL: THE REQUESTED',NFREQ_ABS,
      &        ' SOLUTION VECTORS CONVERGED'
       END IF
-      GOTO 990
+      GOTO 920
  910  CONTINUE
       IF (IPRABS.GE.0) THEN
          WRITE(LUPRI,'(/,1X,A,I4,A)')
-     &        '*** THE REQUESTED',NFREQ_ABS,
+     &        '*** ABSCTL: THE REQUESTED',NFREQ_ABS,
      &        ' SOLUTION VECTORS NOT CONVERGED'
          WRITE(LUPRI,'(/,1X,A)')
      &        '--- MAXIMUM NUMBER OF ITERATIONS REACHED ---'
       END IF
-      GOTO 990
+      GOTO 920
 C     
 C     Construct and write response vectors to file
 C     
- 990  CONTINUE
-      CALL ABSWRT(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,IBTYP,REDVEC,
-     &     WRK(KFREE),LFREE)
+ 920  CONTINUE
+      CALL ABSWRT(LURSP3,LURSP,LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
+     &     IBTYP,REDVEC,WRK(KFREE),LFREE)
 C     
       IF (IPRABS.GE.0) THEN
          WRITE(LUPRI,'(2(/,1X,A),1P,D9.2,/,1X,A,/,1X,A,I4,A)')
@@ -1671,10 +1679,313 @@ C
 C     If this an absorption calculation over a specified frequency
 C     interval then we need to do another batch of freqs. 
 C
+ 990  CONTINUE
       IBATCH = IBATCH + 1
       IF (ABS_INTERVAL .AND. 
      &     NFREQ_INTERVAL-IBATCH*NFREQ_BATCH.GT.0) THEN
          GOTO 10
+      END IF
+C
+      RETURN
+      END
+      SUBROUTINE GETLRF(LU,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     FC,FV,CMO,UDV,PV,XINDX,NBATCH,RESLRF,
+     &     WRK,LWRK)
+#include <implicit.h>
+#include <priunit.h>
+#include <wrkrsp.h>
+#include <absorp.h>
+C
+      CHARACTER*8 LABEL
+      LOGICAL FOUND,CONV
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
+     &     WRK(LWRK),RESLRF(2,NFREQ_INTERVAL,3,3,2),
+     &     FREQ_ABS(MXFREQ)
+C
+      KFREE = 1
+      LFREE = LWRK
+      CALL MEMGET('REAL',KVEC,2*KZYVAR,WRK,KFREE,LFREE)
+      KGD = KFREE
+      KFREE = KGD + KZYVAR
+      LFREE = LWRK - KFREE
+      CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &     WRK(KGD),LFREE)
+C
+      IF (LABEL(2:8).EQ.'DIPLEN') THEN
+         ITYPE = 1
+      ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
+         ITYPE = 2
+      ELSE
+         WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+         RETURN
+      END IF
+      CALL DIPLAB(LABEL,INDEX)
+      DO IFREQ=1,NFREQ_ABS
+         CALL REARSP(LU,2*KZYVAR,WRK(KVEC),LABEL,'COMPLEX ',
+     &        ABS(FREQ_ABS(IFREQ)),0.0D0,KSYMOP,0,THCLR_ABSORP,
+     &        FOUND,CONV,ANTSYM)
+         RESLRF(1,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX,ITYPE) = 
+     &        DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
+         RESLRF(2,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX,ITYPE) = 
+     &        DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC+KZYVAR),1)
+      END DO
+C
+      RETURN
+      END
+      SUBROUTINE CHKONFILE(LU,FOUND,LABEL,ISYM,NFREQ_ABS,FREQ_ABS,
+     &     THD,FLAGS)
+#include <priunit.h>
+C
+      LOGICAL FOUND,FLAGS(NFREQ_ABS)
+      CHARACTER*8 LABEL,LAB1,LAB2
+      INTEGER*4 LU,ISYM,NFREQ_ABS,ISYM1,ISYM2,LEN,NBAS,NORB
+      REAL*8 FREQ_ABS(NFREQ_ABS),THD,FREQ1,FREQ2,ANTSYM,RSD,EMCSCF
+C
+      FOUND = .TRUE.
+      DO I=1,NFREQ_ABS
+         FLAGS(I)=.FALSE.
+      END DO
+C
+      REWIND(LU)
+ 100  READ(LU,END=900,ERR=900) LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
+     &     ANTSYM,RSD,LEN,EMCSCF,NBAS,NORB
+C
+      IF (LAB1.NE.LABEL .OR. LAB2.NE.'COMPLEX ' .OR.
+     &     ISYM1.NE.ISYM .OR. ISYM2.NE.0 .OR. RSD.GT.THD .OR.
+     &     FREQ2.NE.0.0D0) GOTO 100
+C
+      DO I=1,NFREQ_ABS
+         IF (FREQ1.EQ.FREQ_ABS(I)) THEN
+            FLAGS(I)=.TRUE.
+         END IF
+      END DO
+C
+      READ(LU,END=900,ERR=900)
+C      
+      GOTO 100
+C
+ 900  CONTINUE
+      DO I=1,NFREQ_ABS
+         FOUND = FOUND .AND. FLAGS(I)
+      END DO
+      RETURN
+      END
+      SUBROUTINE REDSPACE(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
+     &     REDE,REDS,REDVEC,IBTYP,WRK,LWRK)
+#include <implicit.h>
+#include <priunit.h>
+#include <infrsp.h>
+#include <wrkrsp.h>
+#include <absorp.h>
+#include <inftap.h>
+#include <ibndxdef.h>
+C
+      CHARACTER*8 LABEL
+      LOGICAL FOUND,CONV,READFLAG
+      DIMENSION REDVEC(2*MAXRM,MXFREQ),IBTYP(MAXRM),
+     &     REDE(MAXRM*MAXRM),REDS(MAXRM*MAXRM),
+     &     FREQ_ABS(MXFREQ),WRK(LWRK)
+C
+      IF (IPRABS.GE.2) WRITE(LUPRI,'(2(/A))')
+     &     ' INFO: lowering dimension of reduced space'
+      CALL FLSHFO(LUPRI)
+C
+C     Reduction of dimension in reduced space only implented for SCF
+C     type wave functions.
+C
+      IF (KZCONF .GT. 0) RETURN
+C
+      KBVEC = 1
+      KSVEC = KBVEC + KZYVAR
+      KB    = KSVEC + KZYVAR
+      KS    = KB    + 2*KZYVAR
+      KFREE = KS    + 2*KZYVAR
+      LFREE = LWRK  - KFREE
+      IF (LFREE.LT.0) CALL ERRWRK('ABSWRT',KFREE,LWRK)
+C
+C     Write response vectors N and sigma vectors E[2]*N to respective
+C     temporary files LUBTMP and LUSTMP. Unit numbers are set in GPOPEN.
+C
+      LUBTMP=-1
+      LUSTMP=-1
+      CALL GPOPEN(LUBTMP,'RSPBTMP','NEW','SEQUENTIAL','UNFORMATTED',
+     &     0,.FALSE.)
+      CALL GPOPEN(LUSTMP,'RSPSTMP','NEW','SEQUENTIAL','UNFORMATTED',
+     &     0,.FALSE.)
+      WRITE(LUBTMP) 'EOFLABEL'
+      WRITE(LUSTMP) 'EOFLABEL'
+      CALL ABSWRT(LURSP3,LUBTMP,LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
+     &     IBTYP,REDVEC,WRK(KFREE),LFREE)
+      CALL ABSWRT(LURSP5,LUSTMP,LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
+     &     IBTYP,REDVEC,WRK(KFREE),LFREE)
+C
+C     Read response and sigma vectors from temporary files and perform
+C     Gram-Schmidt orthogonalization of the respective real and
+C     imaginary parts of the response vectors (these then form the new
+C     set of trial vectors which are written to LURSP3). The
+C     corresponding sigma vectors are contructed and written to LURSP5.
+C     We keep NBOLD of the old trial vectors in order to avoid linear
+C     dependence.
+C
+      NBOLD = 2
+      NLINDEP = 0
+      IFREQ=0
+      READFLAG = .TRUE.
+      DO I=1+NBOLD,2*NFREQ_ABS+NBOLD
+         IF (READFLAG) THEN
+            IFREQ=IFREQ+1
+            CALL REARSP(LUBTMP,LENGTH,WRK(KB),LABEL,'COMPLEX ',
+     &           ABS(FREQ_ABS(IFREQ)),0.0D0,
+     &           KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
+            IF (LENGTH.NE.2*KZYVAR) CALL QUIT(' REDSPACE: read error')
+            CALL REARSP(LUSTMP,LENGTH,WRK(KS),LABEL,'COMPLEX ',
+     &           ABS(FREQ_ABS(IFREQ)),0.0D0,
+     &           KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
+            IF (LENGTH.NE.2*KZYVAR) CALL QUIT(' REDSPACE: read error')
+            CALL DCOPY(KZYVAR,WRK(KB),1,WRK(KBVEC),1)
+            CALL DCOPY(KZYVAR,WRK(KS),1,WRK(KSVEC),1)
+            READFLAG = .FALSE.
+C
+            IF (IPRABS.GE.10) THEN
+               WRITE(LUPRI,'(/A,A10,A,I4,/A,F12.8,A,I4)') 
+     &              ' Response vector in REDSPACE for operator',LABEL,
+     &              ' of symmetry',
+     &              KSYMOP,' and frequency',FREQ_ABS(IFREQ),
+     &              ' is read from file LUBTMP=',LUBTMP
+               CALL PRSYMB(LUPRI,'=',72,1)
+               WRITE(LUPRI,'(4X,4A15)') 'ZR','YR','ZI','YI'
+               CALL OUTPUT(WRK(KB),1,KZVAR,1,4,KZVAR,4,1,LUPRI)
+               WRITE(LUPRI,'(/A,A10,A,I4,/A,F12.8,A,I4)') 
+     &              ' Sigma vector in REDSPACE for operator',LABEL,
+     &              ' of symmetry',
+     &              KSYMOP,' and frequency',FREQ_ABS(IFREQ),
+     &              ' is read from file LUSTMP=',LUSTMP
+               CALL PRSYMB(LUPRI,'=',72,1)
+               WRITE(LUPRI,'(4X,4A15)') 'ZR','YR','ZI','YI'
+               CALL OUTPUT(WRK(KS),1,KZVAR,1,4,KZVAR,4,1,LUPRI)
+            END IF
+         ELSE
+            CALL DCOPY(KZYVAR,WRK(KB+KZYVAR),1,WRK(KBVEC),1)
+            CALL DCOPY(KZYVAR,WRK(KS+KZYVAR),1,WRK(KSVEC),1)
+            READFLAG = .TRUE.
+         END IF
+C
+         KRSP3 = 0
+         KRSP5 = 0
+         CALL REWSPL(LURSP3)
+         CALL REWSPL(LURSP5)
+         DO J=1,I-1-NLINDEP
+            KBTMP=KB
+            KSTMP=KS
+#if defined (VAR_SPLITFILES)
+            CALL READST(LURSP3,KZYVAR,WRK(KBTMP),KRSP3,.TRUE.)
+            CALL READST(LURSP5,KZYVAR,WRK(KSTMP),KRSP5,.TRUE.)
+#else        
+            CALL READT(LURSP3,KZYVAR,WRK(KBTMP))
+            CALL READT(LURSP5,KZYVAR,WRK(KSTMP))
+#endif
+C
+            FAC = DDOT(KZYVAR,WRK(KBVEC),1,WRK(KBTMP),1)
+            CALL DAXPY(KZYVAR,-FAC,WRK(KBTMP),1,WRK(KBVEC),1)
+            CALL DAXPY(KZYVAR,-FAC,WRK(KSTMP),1,WRK(KSVEC),1)
+C
+         END DO
+C
+C     Check linear dependence.
+C
+         BNORM = DNORM2(KZYVAR,WRK(KBVEC),1)
+         IF (BNORM.LT.1.0D-6) THEN
+            IF (IPRABS.GE.2) WRITE(LUPRI,'(A)') 
+     &           ' INFO: vector not used as trial vector'//
+     &           ' due to linear dependence'
+            NLINDEP = NLINDEP + 1
+         ELSE
+            FAC = 1.0D0/BNORM
+            CALL DSCAL(KZYVAR,FAC,WRK(KBVEC),1)
+            CALL DSCAL(KZYVAR,FAC,WRK(KSVEC),1)
+C
+#if defined (VAR_SPLITFILES)
+            CALL WRITST(LURSP3,KZYVAR,WRK(KBVEC),KRSP3)
+            CALL WRITST(LURSP5,KZYVAR,WRK(KSVEC),KRSP5)
+#else        
+            CALL WRITT(LURSP3,KZYVAR,WRK(KBVEC))
+            CALL WRITT(LURSP5,KZYVAR,WRK(KSVEC))
+#endif
+            IF (IPRABS.GE.2) THEN
+               WRITE(LUPRI,'(/A,I4,A,I2)') 
+     &              ' INFO: Normalized trial vector',I,
+     &              ' is written to file LURSP3=',LURSP3
+               IF (IPRABS.GE.20) THEN
+                  CALL PRSYMB(LUPRI,'=',72,1)
+                  WRITE(LUPRI,'(4X,2A15)') 'Z','Y'
+                  CALL OUTPUT(WRK(KBVEC),1,KZYVAR/2,1,2,
+     &                 KZYVAR/2,2,1,LUPRI)
+                  CALL FLSHFO(LUPRI)
+               END IF
+            END IF
+         END IF
+C
+      END DO
+C
+      CALL GPCLOSE(LUBTMP,'DELETE')
+      CALL GPCLOSE(LUSTMP,'DELETE')
+C
+C     Construct the reduced E[2] and S[2] matrices in triangular packed
+C     format.
+C
+      KZRED = 2*NFREQ_ABS+NBOLD-NLINDEP
+      KZYRED = 2*KZRED
+C
+      DO I=1,KZRED
+         IROW=2*I-1
+         JOFF1 = IROW*(IROW-1)/2
+         JOFF2 = JOFF1+IROW
+         REWIND(LURSP3)
+         DO IDUM=1,I
+            CALL READT(LURSP3,KZYVAR,WRK(KBVEC))
+         END DO            
+         REWIND(LURSP5)
+         DO J=1,I
+            REWIND(LURSP3)
+            DO IDUM=1,J
+               CALL READT(LURSP3,KZYVAR,WRK(KSVEC))
+            END DO            
+            CALL READT(LURSP5,KZYVAR,WRK(KSNR))
+            ICOL=2*J-1
+            REDE(JOFF1+ICOL) = 
+     &           DDOT(KZYVAR,WRK(KBVEC),1,WRK(KSNR),1)
+            IF (I.NE.J) REDE(JOFF1+ICOL+1) = 
+     &              DDOT(KZVAR,WRK(KBVEC),1,WRK(KSNR+KZVAR),1) +
+     &              DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSNR),1)
+            REDE(JOFF2+ICOL) = 
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSNR),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSNR+KZVAR),1)
+            REDE(JOFF2+ICOL+1) = 
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSNR+KZVAR),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSNR),1)
+            CALL DSCAL(KZVAR,-1.0D0,WRK(KSVEC+KZVAR),1)
+            REDS(JOFF1+ICOL) = 
+     &           DDOT(KZYVAR,WRK(KBVEC),1,WRK(KSVEC),1)
+            REDS(JOFF2+ICOL) = 
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSVEC),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC+KZVAR),1)
+            CALL DSCAL(KZYVAR,-1.0D0,WRK(KSVEC),1)
+            IF (I.NE.J) REDS(JOFF1+ICOL+1) = 
+     &              DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC+KZVAR),1) +
+     &              DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSVEC),1)
+            REDS(JOFF2+ICOL+1) = 
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSVEC+KZVAR),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC),1)
+         END DO
+      END DO
+      CALL DSCAL(KZYRED*(KZYRED+1)/2,2.0D0,REDS,1)
+C
+      IF (IPRABS.GE.10) THEN
+         WRITE(LUPRI,'(/A)') 'Reduced E[2] after reduction = '
+         CALL OUTPAK(REDE,KZYRED,1,LUPRI)
+         WRITE(LUPRI,'(/A)') 'Reduced S[2] after reduction = '
+         CALL OUTPAK(REDS,KZYRED,1,LUPRI)
+         CALL FLSHFO(LUPRI)
       END IF
 C
       RETURN
@@ -2432,7 +2743,7 @@ C
      &               WRK(KDEN1),WRK(KDEN2),WRK(KFREE),LFREE,
      &               TMP(1,3))
       END IF
-c
+C
       IPRRSP=IPRTMP
 C
 C     Multiply by -i*W (minus i times the gamma factor).

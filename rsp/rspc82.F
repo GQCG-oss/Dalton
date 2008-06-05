@@ -2722,6 +2722,7 @@ C
 #include <wrkrsp.h>
 #include <infind.h>
 #include <infpri.h>
+#include <absorp.h>
       DIMENSION IVENU(MAXNVE)
 C
       LOGICAL LINEQ
@@ -3028,7 +3029,7 @@ C
             INEG     = ISNDX(2)
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
-            IF (IPRRSP.GE.4 .OR. ISNDX(3).GT.0) THEN
+            IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
@@ -3038,7 +3039,8 @@ C
      *             /' DETERMINANT OF REDUCED MATRIX IS',F6.2,
      *              ' * 10 **',F5.1)
 C
-            IF (ISNDX(3) .GT. 0) WRITE(LUPRI,'(//2A,3I5)')
+            IF (ISNDX(3).GT.0 .AND. .NOT.ABSORP) 
+     *           WRITE(LUPRI,'(//2A,3I5)')
      *         ' ***WARNING, negative eigenvalues in reduced matrix,',
      *         ' inertia is',ISNDX
 C

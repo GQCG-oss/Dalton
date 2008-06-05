@@ -58,7 +58,7 @@ C
 #include <codata.h>
 #include <pcmlog.h>
 C
-      PARAMETER (NTABLE = 14)
+      PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -70,8 +70,8 @@ C
 C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.STATIC','.XXXXXX',
-     *            '.OPTORB', '.FREQUE','.XXXXXX','.PRINT ',
-     *            '.DAMPIN', '.STOP  '/
+     *            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
+     *            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -89,7 +89,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -201,6 +201,11 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
    11             CONTINUE
+                  READ(LUCMD,*) NFREQ_BATCH
+                  IF (NFREQ_BATCH.GT.MXFR) THEN
+                     NFREQ_BATCH = MXFR
+                  END IF
+               GOTO 100
                GO TO 100
    12             CONTINUE
                   READ (LUCMD,*) IPRLNR
@@ -215,6 +220,14 @@ C
    14             CONTINUE
                   CUT    = .TRUE.
                   ICHANG = ICHANG + 1
+               GO TO 100
+ 15            CONTINUE
+                  ABS_INTERVAL = .TRUE.
+                  ABS_REDUCE = .TRUE.
+                  READ(LUCMD,*) (FREQ_INTERVAL(I), I=1,3)
+               GO TO 100
+ 16            CONTINUE
+                 ABS_REDUCE=.TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -278,6 +291,47 @@ C
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' LNRABA skipped in this run.'
          ELSE
+            IF (ABSORP) THEN
+               IF (ABS_INTERVAL) THEN
+                  NFREQ_INTERVAL = 1 +
+     &                 INT((FREQ_INTERVAL(2)-FREQ_INTERVAL(1))/
+     &                 FREQ_INTERVAL(3))
+                  NFRVAL = NFREQ_INTERVAL
+                  DO I=1,NFRVAL
+                     FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
+                  END DO                  
+               ELSE
+                  NFREQ_ALPHA = NFRVAL
+                  NFREQ_INTERVAL = NFRVAL
+                  DO I=1,NFREQ_ALPHA
+                     FREQ_ALPHA(I) = FRVAL(I)
+                  END DO
+               END IF
+               THCLR_ABSORP = THCLNR
+               IPRABS = IPRLNR
+               MAX_MACRO  = MAXITE
+               IF(ABS_INTERVAL .AND.
+     &              (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
+     &           (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.FREQ_INTERVAL(3)
+     &            .OR. FREQ_INTERVAL(3).LE.0.0D0) ) THEN
+                  WRITE(LUPRI,'(/,A,/,A,/,/,A,/,A,/,/,A)')
+     & ' Warning: Frequency interval for absorption calculation is not',
+     & '          correctly specified according to:',
+     & '                 .FREQ_INTERVAL',
+     & '                 STARTFREQ ENDFREQ STEPSIZE',
+     & '          This input will be ignored. Calculation continues.'
+                  ABS_INTERVAL = .FALSE.
+                  FREQ_INTERVAL(1)=D0
+                  FREQ_INTERVAL(2)=D0
+                  FREQ_INTERVAL(3)=D1
+               END IF
+            ELSE IF (ABS_INTERVAL) THEN
+               ABS_INTERVAL = .FALSE.
+               WRITE(LUPRI,'(/A,/A)')
+     & ' Warning: Frequency interval input only available for'//
+     & '          absorption calculation.',
+     & '          This input will be ignored. Calculation continues.'
+            END IF
             IF (NFRVAL .GT. 0) THEN
                IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
                J = MIN(MXFR,NFRVAL)
@@ -301,19 +355,6 @@ C
             IF (ABSORP) THEN
                WRITE(LUPRI,'(A,F9.6,A)') 
      &              ' Damping parameter equals  :',DAMPING, ' a.u.'
-               NFREQ_ALPHA = NFRVAL
-               ABS_INTERVAL = .FALSE.
-               NFREQ_INTERVAL = NFREQ_ALPHA
-               DO I=1,NFREQ_ALPHA
-                  FREQ_ALPHA(I) = FRVAL(I)
-               END DO
-               THCLR_ABSORP = THCLNR
-               THCPP_ABSORP = 1.0D-3
-               IPRABS = IPRLNR
-               NEXCITED_STATES = 2
-               MAX_MACRO  = MAXITE
-               MAX_MICRO  = 10
-               MAX_ITORB = 5
             END IF
             WRITE (LUPRI,'(A,I4)')
      &         ' Print level                    :',IPRLNR
@@ -771,7 +812,7 @@ C
                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                          ' ',IDUMMY,.FALSE.)
                            CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
-     &                          'COMPLEX ',FREQ_ALPHA(IFRVAL),0.0D0,
+     &                          'COMPLEX ',FRVAL(IFRVAL),0.0D0,
      &                          ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
                            CALL GPCLOSE(LURSP,'KEEP')
                            SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
