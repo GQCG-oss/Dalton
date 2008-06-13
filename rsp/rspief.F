@@ -174,8 +174,7 @@ C
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJPX),WRK(KJPXAC))
       END IF
-Clara      IF (IPRRSP .GE. 15) THEN
-      IF (.true.) THEN
+      IF (IPRRSP .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' J+X_mo matrix:'
          CALL OUTPAK(WRK(KJPX),  NORBT,1,LUPRI)
          IF (NASHT .GT. 0) THEN
@@ -187,8 +186,7 @@ C
 C     Expectation value of J+X
 C
       EXPJPX = SOLELM(DV,WRK(KJPXAC),WRK(KJPX),ACJPX)
-      IF (.true.) THEN
-Clara      IF (IPRRSP .GE. 6) THEN
+      IF (IPRRSP .GE. 6) THEN
          WRITE (LUPRI,'(A,F17.8)')
      *        ' --- J+X expectation value :',EXPJPX
          WRITE (LUPRI,'(A,F17.8)')

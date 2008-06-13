@@ -11,6 +11,7 @@ FFILES = \
         dft_exp.F    \
         dft_gridLL.F \
         dft_mag.F    \
+	dft_mos.F    \
         dft_grad.F   \
         dft_hes.F    \
         dft_aux.F    \

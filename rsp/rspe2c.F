@@ -3272,6 +3272,7 @@ C     MOMENTS
 C     (PP for Polarization Propagator)
 C
 #include <implicit.h>
+#include "maxorb.h"
 #include <dummy.h>
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -3286,6 +3287,7 @@ C
       DIMENSION XLEVICI(3,3,3)
       DIMENSION XNACS2(MAXSIM+1) ,XNACGD(MAXSIM+1)
       LOGICAL REFST
+      LOGICAL DOMO2
       PARAMETER ( D2 = 2.0D0, D100 = 100.0D0, D0 = 0.0D0)
       PARAMETER ( D2R3 = (2.0D0/3.0D0))
 C
@@ -3309,11 +3311,13 @@ C
 #include <inflr.h>
 #include <inforb.h>
 #include <infdim.h>
+#include "infinp.h"
 #include <infpri.h>
 #include <inftap.h>
 #include <esg.h>
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
+      DOMO2 = DODFT
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
@@ -3351,7 +3355,15 @@ C for reduced E(2) and reduced S(2)
          LROTL  = 0
          LROTV  = 0
       END IF
-      KFREX  = 1
+      IF (DOMO2) THEN
+         KCMO2 = 1
+         KLAST = KCMO2 + 2*NORBT*NORBT
+         LWRK1 = LWRK + 1 - KLAST
+         CALL DFTMOMO(WRK(KCMO2),WRK(KLAST),LWRK1,IPRPP)
+      ELSE
+         KLAST = 1
+      END IF
+      KFREX  = KLAST
       KTRLEN = KFREX  + LFREX
       KTRVEL = KTRLEN + LTRVEC
       KTRMAG = KTRVEL + LTRVEC
@@ -3805,6 +3817,8 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
+            IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
+     &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
      &                  'EXCITLAB',BLANK,WRK(KEIVAL-1+ISIM-1+INUM),D0,
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
@@ -5978,3 +5992,48 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
 
       return
       end
+C  /* Deck RSPPMO */
+      SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
+C
+C     based on RSPPRO tuh
+C
+#include <implicit.h>
+      PARAMETER(PTHRS = 1.D-08)
+      DIMENSION WOP(*)
+      DIMENSION CMO2(NORBT,NORBT,2)
+C
+#include <maxorb.h>
+#include <maxash.h>
+#include <infind.h>
+#include <inforb.h>
+#include <infvar.h>
+ 
+      CALL HEADER('PBHT MO Overlap Diagnostic',-1)
+      IF (NWOPT.GT.0) THEN 
+C        WRITE (LUPRI,1010) JWOPSY
+C        WRITE (LUPRI, '(2X,2A,/)')  '            I    A       ',
+C    &       'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
+         CMOTOT=0.d0
+         WOPTOT=0.d0
+         DO IG = 1,NWOPT
+            K  = JWOP(1,IG)
+            L  = JWOP(2,IG)
+            KS = ISMO(K)
+            LS = ISMO(L)
+            WOP1 = WOP(IG)
+            WOP2 = WOP(IOFFY+IG)
+            IF (ABS(WOP1).GT.PTHRS .OR. ABS(WOP2).GT.PTHRS) THEN
+C              WRITE (LUPRI,'(2X,A,3I5,4F15.10)') 
+C    &            '@@@', IG,K,L,WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2)
+                  WMJGP=(WOP1-WOP2)**2.0d0
+                  CMOMJGP=WMJGP*CMO2(K,L,1)
+                  CMOTOT=CMOTOT+CMOMJGP
+                  WOPTOT=WOPTOT+WMJGP
+            END IF
+         END DO
+         ALAMBDA=CMOTOT/WOPTOT
+         WRITE(LUPRI,'(25X,"Lambda:",2X,F15.10)')ALAMBDA
+      END IF
+      RETURN
+ 1010 FORMAT(5X,'Response orbital operator symmetry =',I2,/)
+      END
