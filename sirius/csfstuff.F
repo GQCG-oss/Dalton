@@ -3491,30 +3491,29 @@ c
 c
             DO 1750 IATP = MNIATP,NOCTPA
               NIA = NSSOA(IATP,IASM)
-            IF(NIA.EQ.0.OR.IOCOC(IATP,IBTP).NE.1 ) GOTO 1750
+              IF(NIA.EQ.0.OR.IOCOC(IATP,IBTP).NE.1 ) GOTO 1750
               IHC = IHCOOS(IBTP,IATP,IASM) + (IBREL-1)*NIA
               IC  = ICOOS (1   ,IATP,IASM)
               CALL ISETVC(INDX4,0,NSTASB(JBSM))
 c
-              NJBEFF = 0
-              NJBXCL = 0
-              NJBDIM = 0
+              NJBEFF = 1
+              NJBXCL= 0
 c for given alpha type find the allowed beta types
               DO 1740 JBTP = 1, NOCTPB
                 IF(IOCOC(IATP,JBTP) .NE. 1) THEN
                   NJBXCL = NJBXCL + NSSOB(JBTP,JBSM)
                 ELSE
-                  NJBDIM = NJBDIM + NSSOB(JBTP,JBSM)
-                  DO 1730 JB = 1, NJBFTP(JBTP)
-                    FACTOR(JB+NJBEFF,1) = F3(JB,JBTP)
-                    INDX4(JB+NJBEFF) = INDEX2(JB,JBTP)-NJBXCL
- 1730             CONTINUE
-                  NJBEFF = NJBEFF + NJBFTP(JBTP)
+                 DO 1730 JB = 1, NJBFTP(JBTP)
+                   FACTOR(JB+NJBEFF-1,1) = F3(JB,JBTP)
+                   INDX4(JB+NJBEFF-1) = INDEX2(JB,JBTP)-NJBXCL
+ 1730            CONTINUE
+                 NJBEFF = NJBEFF + NJBFTP(JBTP)
                 END IF
  1740         CONTINUE
+              NJBEFF = NJBEFF - 1
 c Perform multiple SAXPY operation
               CALL MSAXPY(HC(IHC),FACTOR,C(IC),TEST,
-     &             NIA,NJBDIM,INDX4,NJBEFF)
+     &             NIA,NJBEFF,INDX4,NJBEFF)
  1750       CONTINUE
  1800     CONTINUE
  1801   CONTINUE
@@ -3523,7 +3522,9 @@ c
       END IF
 c
       IF( IPRINT.GE. 5 ) THEN
-        WRITE(LUPRI,'(/A/)') ' CISIG9: SIGMA VECTOR AFTER FIRST LOOP'
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' SIGMA VECTOR AFTER FIRST LOOP '
+        WRITE(LUPRI,*)
         CALL WRTMAT(HC(1),1,NHCDET,1,NHCDET,0)
       END IF
 c
@@ -3550,22 +3551,17 @@ c symmetry of strings in sigma(ia,ib) and c(ja,jb)
         JASM = SYMPRO(ICSM,IBSM)
 c Transpose symmetry block of C
         IBASE = 1
-        DO JATP = 1, NOCTPA
-          NRIN = NSSOA(JATP,JASM)
-        IF (NRIN .GT. 0) THEN
-          DO JBTP = 1, NOCTPB
-            IC2OOS(JBTP,JATP) = IBASE
+        DO 5607 JBTP = 1, NOCTPB
+        DO 5607 JATP = 1, NOCTPA
+          IC2OOS(JBTP,JATP) = IBASE
           IF(IOCOC(JATP,JBTP).EQ.1  ) THEN
+            NRIN = NSSOA(JATP,JASM)
             NCIN = NSSOB(JBTP,JBSM)
-            IF (NCIN .GT. 0) THEN
-              CALL TRPMAT(C(ICOOS(JBTP,JATP,JASM)),
-     &          NRIN,NCIN,C2(IBASE) )
-              IBASE = IBASE + NRIN * NCIN
-            END IF
+            CALL TRPMAT(C(ICOOS(JBTP,JATP,JASM)),
+     &           NRIN,NCIN,C2(IBASE) )
+            IBASE = IBASE + NRIN * NCIN
           END IF
-          END DO
-        END IF
-        END DO
+ 5607   CONTINUE
 c
         DO 3000 IATP = 1, NOCTPA
           NIA    = NSSOA(IATP,IASM)
@@ -3617,7 +3613,6 @@ c
               CALL ISETVC(INDX4,0,NSTASA(JASM))
 c for the given beta type find the allowed alpha types
               NJAEFF = 0
-              NJADIM = 0
               NJAXCL = 0
               DO 2740 JATP = 1, NOCTPA
                 IF(IOCOC(JATP,IBTP) .NE. 1) THEN
@@ -3628,12 +3623,11 @@ c for the given beta type find the allowed alpha types
                     INDX4(JA+NJAEFF) = INDEX2(JA,JATP) - NJAXCL
  2730             CONTINUE
                   NJAEFF = NJAEFF + NJAFTP(JATP)
-                  NJADIM = NJADIM + NSSOA(JATP,JASM)
                 END IF
  2740         CONTINUE
 c Perform multiple SAXPY operation
               CALL MSAXTY(VEC2,FACTOR,C2(IC),TEST,
-     &              NIB,NJADIM,INDX4,NJAEFF)
+     &              NIB,NJAEFF,INDX4,NJAEFF)
 c add to total sigma vector
               DO 2300 IB = 1, NIB
                 IIIHC = IHC + ( IB - 1 ) * NIA
@@ -3896,7 +3890,7 @@ c
                   IBREL = IB - ISSOB(IBTP,IBSM) + 1
 c* all single excitations out from string IB
                   CALL ISETVC(NJBFTP,0,NOCTPB)
-                  NJBTOT = 0
+                  NJBEFF = 0
                   DO 3400 IJEX = TBSYM(IJSM,IB),TBSYM(IJSM+1,IB)-1
                     IJ = TBIJ(IJEX)
                     JB = TBTO(IJEX)
@@ -3916,17 +3910,18 @@ c
      &                                        SIGN*IJKL(IJ,LL)
  9020                 CONTINUE
                     ELSE
-                      NJBTOT=NJBTOT+1
-                      INDX1(JBREL) = NJBTOT
-                      INDX6(NJBTOT) = JBREL
+                      NJBEFF=NJBEFF+1
+                      INDX1(JBREL) = NJBEFF
+                      INDX6(NJBEFF) = JBREL
                       NJBFTP(JBTP) = NJBFTP(JBTP)+1
                       DO 9030 LL = 1, NL
-                        F3(NJBTOT,LL) = SIGN*IJKL(IJ,LL)
+                        F3(NJBEFF,LL) = SIGN*IJKL(IJ,LL)
  9030                 CONTINUE
                     END IF
 c
  3400             CONTINUE
  3401             CONTINUE
+                  NJBTOT = NJBEFF
 c
                   DO 4800 IATP = IATPMN, NOCTPA
                     IF(IOCOC(IATP,IBTP) .NE. 1 ) GOTO 4800
@@ -3954,34 +3949,29 @@ c
                     IASTR = ISSOA(IATP,IASM)
                     IC =IC2OOS(1,JATP)
 c
-                    NJBXCL = 0
-                    NJBDIM = 0
                     NJBEFF = 1
-                    NJBT   = 1
+                    NJBT = 1
+                    NJBXCL = 0
                     DO 4785 JBTP = 1, JBTPMX
 C?                    WRITE(LUPRI,*)' JATP,JBTP,IDIASM',JATP,JBTP,IDIASM
+                      FCT = 1.0D0
                       IF(IDIASM.EQ.1.AND.JATP.LT.JBTP)GOTO 4785
+                      IF(IDIASM.EQ.1.AND.JATP.NE.JBTP) FCT = 2.0D0
                       NJB = NJBFTP(JBTP)
                       IF(IOCOC(JATP,JBTP) .NE. 1 ) THEN
                         NJBXCL = NJBXCL + NSSOB(JBTP,JBSM)
                       ELSE
-                        NJBDIM = NJBDIM + NSSOB(JBTP,JBSM)
-                        IFCT = 1
-                        IF(IDIASM.EQ.1.AND.JATP.NE.JBTP) IFCT = 2
-                        DO LL = 1, NL
-                          IF (IFCT .EQ. 1) THEN
-                           DO JB = 0, NJB-1
-                             FACTOR(NJBEFF+JB,LL) = F3(NJBT+JB,LL)
-                           END DO
-                          ELSE
-                           DO JB = 0, NJB-1
-                             FACTOR(NJBEFF+JB,LL) = 2.0D0*F3(NJBT+JB,LL)
-                           END DO
-                          END IF
-                        END DO
-                        DO JB = 0, NJB-1
-                          INDX4(JB+NJBEFF) = INDX6(JB+NJBT)-NJBXCL
-                        END DO
+                        DO 9040 LL = 1, NL
+                          CALL COPVEC(F3(NJBT,LL),FACTOR(NJBEFF,LL),NJB)
+                          IF(IDIASM.EQ.1.AND.FCT.EQ.2.0D0)
+     &                    CALL SCALVE(FACTOR(NJBEFF,LL),FCT,NJB)
+ 9040                   CONTINUE
+                        CALL ICOPVE(INDX6(NJBT),INDX4(NJBEFF),NJB)
+                        IF(NJBXCL .NE. 0 ) THEN
+                          DO 4783 JB = NJBEFF, NJBEFF+NJB-1
+                            INDX4 (JB) = INDX4(JB)-NJBXCL
+ 4783                     CONTINUE
+                        END IF
                         NJBEFF = NJBEFF + NJB
                       END IF
                       NJBT = NJBT + NJB
@@ -3989,8 +3979,6 @@ C?                    WRITE(LUPRI,*)' JATP,JBTP,IDIASM',JATP,JBTP,IDIASM
                     NJBEFF = NJBEFF - 1
 c
                     IF( NJBEFF.EQ.0) GOTO 4800
-c
-                    NJBT   = NJBT   - 1
                     NCGROW = IFTP2(JATP)
                     IIHC = IHC + ( IB-IBSTR)*NIA-ISSOA(IATP,IASM)
      &                   +                       ISSOA(1,IASM)-1
@@ -4000,7 +3988,7 @@ c
                       IAGSTR = IFTPA(JATP,LL)
                       IAGSTP = IFTPA(JATP,LL) + NIAG - 1
                       CALL MSAXTY(VEC2(1),FACTOR(1,LL),
-     &                     C2(IC),TEST,NCGROW,NJBDIM,INDX4,NJBEFF)
+     &                     C2(IC),TEST,NCGROW,NJBEFF,INDX4,NJBEFF)
                       DO 3430 I = IAGSTR,IAGSTP
                         HC(IIHC+R(I,LL)) = HCDUM(IIHC+R(I,LL))
      &                              + FAC2(I,LL)*VEC2(L(I,LL))
