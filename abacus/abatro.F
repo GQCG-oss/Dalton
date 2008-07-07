@@ -1658,8 +1658,8 @@ C
                      FACA = FACTOR*CORD(IA,IATOM)
                      FACB = FACTOR*CORD(IB,IATOM)
                   ELSE
-                     ISCORA = IPTCNT(3*(IATOM - 1) + IA,IREP,1)
-                     ISCORB = IPTCNT(3*(IATOM - 1) + IB,IREP,1)
+                     ISCORA = IPTCNT(3*(IATOM - 1) + IA,0,1)
+                     ISCORB = IPTCNT(3*(IATOM - 1) + IB,0,1)
                      IF (ISCORA .GT. 0) THEN
                         FACA = FACTOR*GRDMOL(ISCORA)
                      ELSE
