@@ -668,16 +668,18 @@ C
           PCMNE = PCMNE + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
         ENDDO
       ENDDO
-      PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
+      IF (.NOT. MOBAS) THEN
+         PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
 C
 C     Electrostatic contribution:
 C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
 C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
-      ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
+         ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
 C
-      IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
-     &   'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
-     &            PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
+         IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
+     &        'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
+     &        PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
+      END IF
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
