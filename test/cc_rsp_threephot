@@ -124,7 +124,7 @@ CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)5\.05244." $log |
        $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)2\.4896(7|8)." $log | wc -l`
 CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.5789(7|8)." $log | wc -l`
 CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.5789(7|8)." $log | wc -l`
-CRIT5=`$GREP "CC2  S\^of_ABC,DEF" $log | $GREP "12\.578974" | wc -l`
+CRIT5=`$GREP "CC2  S\^of_ABC,DEF" $log | $GREP "12\.5789(7|8)." | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=5
 ERROR[3]="CC2 THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
@@ -136,7 +136,7 @@ CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.590(29|30)." $log |
        $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)1\.6687(3|4).." $log | wc -l`
 CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.6662.." $log | wc -l`
 CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.6662.." $log | wc -l`
-CRIT5=`$GREP "CCSD S\^of_ABC,DEF" $log | $GREP "12\.666220" | wc -l`
+CRIT5=`$GREP "CCSD S\^of_ABC,DEF" $log | $GREP "12\.6662.." | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=5
 ERROR[4]="CCSD THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
