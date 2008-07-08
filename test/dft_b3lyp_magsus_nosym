@@ -35,11 +35,11 @@ dalton='**DALTON INPUT
 
 test='
 
-check_scf_energy DFT -175.457032841072 1e-10
+check_scf_energy DFT -175.457032841072 5e-8
 
 check_magnetizabilities -2.8715 -9.7870 6.9155 -1.8761 1.1057
 
-check_mag_tensors 1e-7 "
+check_mag_tensors 1e-6 "
        -4.122228940351      0.003446281640      0.000000000000
         0.003446281640     -2.134349705410      0.000000000000
         0.000000000000      0.000000000000     -2.357867371547
