@@ -110,20 +110,20 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Total SCF   energy: * \-100.00891992" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: * \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * \-100.008919(8|9)." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=7
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CCS Linear response 
-CRIT1=`$GREP  "YDIPVEL .* 001RPSOZ .* -2.265881.*" $log | wc -l`
-CRIT2=`$GREP  "ZDIPVEL .* 001RPSOY .* -2.334422.*" $log | wc -l`
-CRIT3=`$GREP  "ZDIPVEL .* 002RPSOX .*  2.334422.*" $log | wc -l`
-CRIT4=`$GREP  "XDIPVEL .* 002RPSOZ .*  2.265881.*" $log | wc -l`
-CRIT5=`$GREP  "XDIPVEL .* 003RPSOY .*  2.222991.*" $log | wc -l`
-CRIT6=`$GREP  "YDIPVEL .* 003RPSOX .* -2.222991.*" $log | wc -l`
+CRIT1=`$GREP  "YDIPVEL .* 001RPSOZ .* -2.26588(0|1).*" $log | wc -l`
+CRIT2=`$GREP  "ZDIPVEL .* 001RPSOY .* -2.33442(1|2).*" $log | wc -l`
+CRIT3=`$GREP  "ZDIPVEL .* 002RPSOX .*  2.33442(1|2).*" $log | wc -l`
+CRIT4=`$GREP  "XDIPVEL .* 002RPSOZ .*  2.26588(0|1).*" $log | wc -l`
+CRIT5=`$GREP  "XDIPVEL .* 003RPSOY .*  2.22299(0|1).*" $log | wc -l`
+CRIT6=`$GREP  "YDIPVEL .* 003RPSOX .* -2.22299(0|1).*" $log | wc -l`
 CRIT7=`$GREP  "YDIPVEL .* 004RPSOZ .*  2.469724.*" $log | wc -l`
 CRIT8=`$GREP  "ZDIPVEL .* 004RPSOY .* (\-0|\-).613453.*" $log | wc -l`
 CRIT9=`$GREP  "ZDIPVEL .* 005RPSOX .* (0| ).613453.*" $log | wc -l`
@@ -139,7 +139,7 @@ ERROR[2]="CCS LINEAR RESPONSE NOT CORRECT"
 # CCS Quadratic response
 CRIT1=`$GREP "ZDIPLEN .* YDIPVEL .* 001RPSOZ .*\-44\.6960.*" $log | wc -l`
 CRIT2=`$GREP "ZDIPLEN .* ZDIPVEL .* 001RPSOY .* (0| )\.2785.*" $log | wc -l`
-CRIT3=`$GREP "ZDIPLEN .* YDIPVEL .* 004RPSOZ .* (\-0|\-)\.7091.*" $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN .* YDIPVEL .* 004RPSOZ .* (\-0|\-)\.70(89|90|91).*" $log | wc -l`
 CRIT4=`$GREP "ZDIPLEN .* ZDIPVEL .* 004RPSOY .* (\-0|\-)\.2395.*" $log | wc -l`
 CRIT5=`$GREP "ZDIPLEN .* XDIPVEL .* 003RPSOY .* (\-0|\-)\.5405.*" $log | wc -l`
 CRIT6=`$GREP "ZDIPLEN .* YDIPVEL .* 003RPSOX .* (0| )\.5405.*" $log | wc -l`
@@ -171,13 +171,13 @@ ERROR[4]="CCSD LINEAR RESPONSE NOT CORRECT"
 
 # CCSD quadratic response
 CRIT1=`$GREP "ZDIPLEN .* YDIPVEL .* 001RPSOZ .*\-41\.2158.*" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN .* ZDIPVEL .* 001RPSOY .* (0| )\.65497.*" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN .* ZDIPVEL .* 001RPSOY .* (0| )\.6549(6|7).*" $log | wc -l`
 CRIT3=`$GREP "ZDIPLEN .* YDIPVEL .* 004RPSOZ .* (\-0|\-)\.3301.*" $log | wc -l`
 CRIT4=`$GREP "ZDIPLEN .* ZDIPVEL .* 004RPSOY .* (\-0|\-)\.5631.*" $log | wc -l`
 CRIT5=`$GREP "ZDIPLEN .* XDIPVEL .* 003RPSOY .* (\-0|\-)\.1670.*" $log | wc -l`
 CRIT6=`$GREP "ZDIPLEN .* YDIPVEL .* 003RPSOX .* (0| )\.16700.*" $log | wc -l`
 CRIT7=`$GREP "ZDIPLEN .* XDIPVEL .* 006RPSOY .* (0| )\.35111.*" $log | wc -l`
-CRIT8=`$GREP "ZDIPLEN .* YDIPVEL .* 006RPSOX .* (\-0|\-)\.3511.*" $log | wc -l`
+CRIT8=`$GREP "ZDIPLEN .* YDIPVEL .* 006RPSOX .* (\-0|\-)\.35111.*" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6 \+ $CRIT7 \+ $CRIT8`
 CTRL[5]=8

@@ -83,12 +83,12 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total MP2   energy:                  \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:                  \-100.1977909." $log | wc -l`
 CRIT4=`$GREP "The E4 doubles and triples:            ( \-|\-0)\.00236061" $log | wc -l`
 CRIT5=`$GREP "The E5 singles and triples:             ( |0)\.00026249" $log | wc -l`
-CRIT6=`$GREP "Total energy CCSD\(T\):                \-100\.19988905" $log | wc -l`
+CRIT6=`$GREP "Total energy CCSD\(T\):                \-100\.1998890." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[1]=11
 ERROR[1]="ENERGIES NOT CORRECT"

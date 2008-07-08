@@ -98,44 +98,44 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total MP2   energy:                  \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:                  \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CCS threephoton transition moment
-CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)7\.538375" $log |
-       $GREP "M\^DEF_fo\(w1,w2\): *( |\-)3\.500103" | wc -l`
-CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.538375" $log |
-       $GREP "M\^ABC_fo\(w1,w2\): *( |\-)3\.500103" $log | wc -l`
-CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 26\.385090" $log | wc -l`
-CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 26\.385090" $log | wc -l`
-CRIT5=`$GREP "CCS  S\^of_ABC,DEF" $log | $GREP "26\.385090" | wc -l`
+CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)7\.5383.." $log |
+       $GREP "M\^DEF_fo\(w1,w2\): *( |\-)3\.5001(0|1)." | wc -l`
+CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.5383.." $log |
+       $GREP "M\^ABC_fo\(w1,w2\): *( |\-)3\.5001(0|1)." $log | wc -l`
+CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 26\.385(0|1).." $log | wc -l`
+CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 26\.385(0|1).." $log | wc -l`
+CRIT5=`$GREP "CCS  S\^of_ABC,DEF" $log | $GREP "26\.385(0|1)." | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=5
 ERROR[2]="CCS THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
 
 # CC2 threephoton transition moment
-CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)5\.052446" $log |
-       $GREP "M\^DEF_fo\(w1,w2\): * ( |\-)2\.489679" | wc -l`
-CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)5\.052446" $log |
-       $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)2\.489679" $log | wc -l`
-CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.578974" $log | wc -l`
-CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.578974" $log | wc -l`
+CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)5\.05244." $log |
+       $GREP "M\^DEF_fo\(w1,w2\): * ( |\-)2\.4896(7|8)." | wc -l`
+CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)5\.05244." $log |
+       $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)2\.4896(7|8)." $log | wc -l`
+CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.5789(7|8)." $log | wc -l`
+CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.5789(7|8)." $log | wc -l`
 CRIT5=`$GREP "CC2  S\^of_ABC,DEF" $log | $GREP "12\.578974" | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=5
 ERROR[3]="CC2 THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
 
 # CCSD threephoton transition moment
-CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)7\.590291" $log |
-       $GREP "M\^DEF_fo\(w1,w2\): * ( |\-)1\.6687397" | wc -l`
-CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.590291" $log |
-       $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)1\.6687397" $log | wc -l`
-CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.666220" $log | wc -l`
-CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.666220" $log | wc -l`
+CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)7\.590(29|30)." $log |
+       $GREP "M\^DEF_fo\(w1,w2\): * ( |\-)1\.6687(3|4).." | wc -l`
+CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.590(29|30)." $log |
+       $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)1\.6687(3|4).." $log | wc -l`
+CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.6662.." $log | wc -l`
+CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.6662.." $log | wc -l`
 CRIT5=`$GREP "CCSD S\^of_ABC,DEF" $log | $GREP "12\.666220" | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=5

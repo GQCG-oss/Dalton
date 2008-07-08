@@ -97,8 +97,8 @@ else
 fi
 
 # SCF energy:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total SCF   energy:                  \-100.00891992" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total SCF   energy:                  \-100.008919(8|9)." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2` 
 CTRL[1]=2
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -114,11 +114,11 @@ ERROR[1]="ENERGIES NOT CORRECT"
 # A         4.3508506
 # B         13.760163         B        -6.4912034               
 CRIT1=`$GREP "0    133\.4156.       133\.4156.       133\.4156.       133\.4156." $log | wc -l`
-CRIT2=`$GREP "2    6168\.252.       3084\.126.       2056\.084.       1028\.042." $log | wc -l`
-CRIT3=`$GREP "4    185371\.8.       48397\.31.       24249\.06.       5377\.479." $log | wc -l`
-CRIT4=`$GREP "0    31\.36710.       31\.36710.       31\.36710.       31\.36710." $log | wc -l`
-CRIT5=`$GREP "2    1637\.683.       818\.8416.       545\.8944.       272\.9472." $log | wc -l`
-CRIT6=`$GREP "4    59709\.45.       15538\.19.       7720\.305.       1726\.466." $log | wc -l`
+CRIT2=`$GREP "2    6168\.25(2|3).       3084\.126.       2056\.084.       1028\.042." $log | wc -l`
+CRIT3=`$GREP "4    185371\.8.       48397\.3(1|2).       24249\.0(6|7).       5377\.4(79|80)." $log | wc -l`
+CRIT4=`$GREP "0    31\.3671(0|1).       31\.3671(0|1).       31\.3671(0|1).       31\.3671(0|1)." $log | wc -l`
+CRIT5=`$GREP "2    1637\.683.       818\.841(6|7|8).       545\.894(4|5).       272\.9472." $log | wc -l`
+CRIT6=`$GREP "4    59709\.4..       15538\.(19|20).       7720\.30..       1726\.466." $log | wc -l`
 CRIT7=`$GREP "gamma_0   31\.3671.." $log | wc -l`
 CRIT8=`$GREP "A         4\.35085.." $log | wc -l`
 CRIT9=`$GREP "B         13\.7601..         B.       \-6\.49120.." $log | wc -l`

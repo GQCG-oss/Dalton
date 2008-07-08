@@ -110,10 +110,10 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\--100.00891992" | wc -l`
-CRIT2=`$GREP "Total SCF   energy:                  \-100.00891992" $log | wc -l`
-CRIT3=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT4=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\--100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total SCF   energy:                  \-100.008919(8|9)." $log | wc -l`
+CRIT3=`$GREP "Total MP2   energy:                  \-100.193662(5|6)." $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy:                  \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -126,11 +126,11 @@ ERROR[1]="ENERGIES NOT CORRECT"
 # gamma_0   26.650035
 # A         5.5617554   
 CRIT1=`$GREP "0    105\.3291.       105\.3291.       105\.3291.       105\.3291." $log | wc -l`
-CRIT2=`$GREP "2    5756\.566.       2878\.283.       1918\.855.       959\.4276." $log | wc -l`
+CRIT2=`$GREP "2    5756\.566.       2878\.283.       1918\.855.       959\.427(5|6|7)." $log | wc -l`
 CRIT3=`$GREP "0    26\.65003.       26\.65003.       26\.65003.       26\.65003." $log | wc -l`
-CRIT4=`$GREP "2    1778\.651.       889\.3258.       592\.8839.       296\.4419." $log | wc -l`
+CRIT4=`$GREP "2    1778\.65(1|2).       889\.32(5|6)..       592\.88(3|4)..       296\.44(19|20)." $log | wc -l`
 CRIT5=`$GREP "gamma_0   26\.65003." $log | wc -l`
-CRIT6=`$GREP "A         5\.561755." $log | wc -l`
+CRIT6=`$GREP "A         5\.56175(5|6)." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 + $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[2]=6
 ERROR[2]="CCSD GAMMA DISPERSION COEFFICIENTS NOT CORRECT"
@@ -142,7 +142,7 @@ ERROR[2]="CCSD GAMMA DISPERSION COEFFICIENTS NOT CORRECT"
 # gamma_||     0.0000      0.0000      0.0000      0.0000    -26.650035
 #             -0.0100      0.0000      0.0000      0.0100    -26.679703
 #             -0.0300      0.0100      0.0100      0.0100    -26.828720             
-CRIT1=`$GREP "ZDIPLEN (\-0| \-|  | 0)\.[ 0]+ZDIPLEN  ( |0)\.[ 0]+ZDIPLEN (\-0| \-|  | 0)\.[ 0]+ZDIPLEN (\-0| \-|  | 0)\.[ 0]+ \-105\.32914" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN (\-0| \-|  | 0)\.[ 0]+ZDIPLEN  ( |0)\.[ 0]+ZDIPLEN (\-0| \-|  | 0)\.[ 0]+ZDIPLEN (\-0| \-|  | 0)\.[ 0]+ \-105\.3291(3|4)" $log | wc -l`
 CRIT2=`$GREP "( \-|\-0)\.0100[ ]* ( |0)\.0000[ ]* ( |0)\.0000[ ]* ( |0)\.0100     \-105\.4251" $log | wc -l`
 CRIT3=`$GREP "( \-|\-0)\.0300[ ]* ( |0)\.0100[ ]* ( |0)\.0100[ ]* ( |0)\.0100     \-105\.9067" $log | wc -l`
 CRIT4=`$GREP "gamma_\|\| * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * \-26\.6500" $log | wc -l`

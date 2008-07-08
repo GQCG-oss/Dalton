@@ -95,9 +95,9 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Total SCF   energy: * \-100.00891992" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: * \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * \-100.008919(8|9)." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=7
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -114,15 +114,15 @@ CTRL[2]=5
 ERROR[2]="STATIC CCS FIRST HYPERPOLARIZABILITIES NOT CORRECT"
 
 # CCS hyperpolarizability disperion coefficients
-CRIT1=`$GREP "2    29.55019.       3.861373.       12.84441." $log | wc -l`
-CRIT2=`$GREP "4    679.5170.       20.92422.       110.3988." $log | wc -l`
-CRIT3=`$GREP "2    167.2555.       55.75185.       55.75185." $log | wc -l`
-CRIT4=`$GREP "4    2169.496.       241.0551.       241.0551." $log | wc -l`
+CRIT1=`$GREP "2    29.550(1|2)..       3.86137(3|4).       12.84441." $log | wc -l`
+CRIT2=`$GREP "4    679.517..       20.9242(2|3).       110.398(8|9)." $log | wc -l`
+CRIT3=`$GREP "2    167.255(5|6).       55.7518(5|6).       55.7518(5|6)." $log | wc -l`
+CRIT4=`$GREP "4    2169.49(6|7).       241.055(1|2).       241.055(1|2)." $log | wc -l`
 CRIT5=`$GREP "beta\(0\)   10.75462" $log | wc -l`
-CRIT6=`$GREP "A         2.591995" $log | wc -l`
-CRIT7=`$GREP "B         5.603525" $log | wc -l`
-CRIT8=`$GREP "A       ( |0).8352723." $log | wc -l`
-CRIT9=`$GREP "B        4\.159824.         B.     ( \-|\-0)\.7074301." $log | wc -l`
+CRIT6=`$GREP "A         2.59199(5|6)" $log | wc -l`
+CRIT7=`$GREP "B         5.60352." $log | wc -l`
+CRIT8=`$GREP "A       ( |0).835272.." $log | wc -l`
+CRIT9=`$GREP "B        4\.15982..         B.     ( \-|\-0)\.707430.." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
 CTRL[3]=11
 ERROR[3]="CCS FIRST HYPERPOLARIZABILITIES DISPERSION COEFFICIENTS NOT CORRECT"
@@ -139,15 +139,15 @@ CTRL[4]=5
 ERROR[4]="STATIC CCSD FIRST HYPERPOLARIZABILITIES NOT CORRECT"
 
 # CCSD hyperpolarizability disperion coefficients
-CRIT1=`$GREP "2    45.48266.       6.438778.       19.52194." $log | wc -l`
-CRIT2=`$GREP "4    1253.789.       41.95081.       201.1623." $log | wc -l`
-CRIT3=`$GREP "2    188.2000.       62.73334.       62.73334." $log | wc -l`
-CRIT4=`$GREP "4    2909.705.       323.3006.       323.3006." $log | wc -l`
+CRIT1=`$GREP "2    45.4826(6|7).       6.4387(7|8)..       19.52194." $log | wc -l`
+CRIT2=`$GREP "4    1253.7(8|9)..       41.9508..       201.162(3|4)." $log | wc -l`
+CRIT3=`$GREP "2    188.2000.       62.7333(4|5).       62.7333(4|5)." $log | wc -l`
+CRIT4=`$GREP "4    2909.70(5|6).       323.300(6|7).       323.300(6|7)." $log | wc -l`
 CRIT5=`$GREP "beta\(0\)   10.31179" $log | wc -l`
-CRIT6=`$GREP "A         3.041823" $log | wc -l`
-CRIT7=`$GREP "B         7.838124" $log | wc -l`
-CRIT8=`$GREP "A        1.268756." $log | wc -l`
-CRIT9=`$GREP "B        7.719873.         B.      \-1.277449." $log | wc -l`
+CRIT6=`$GREP "A         3.04182(3|4)" $log | wc -l`
+CRIT7=`$GREP "B         7.83812." $log | wc -l`
+CRIT8=`$GREP "A        1.26875(6|7)." $log | wc -l`
+CRIT9=`$GREP "B        7.71987..         B.      \-1.2774(4|5).." $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
 CTRL[5]=11
 ERROR[5]="CCSD FIRST HYPERPOLARIZABILITIES DISPERSION COEFFICIENTS NOT CORRECT"
