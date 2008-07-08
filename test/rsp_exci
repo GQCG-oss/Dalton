@@ -120,9 +120,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.97734936.[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.9773493(6|7).[0-9]" $log | wc -l`
 CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.9901927..[0-9]" $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9941305296.[0-9]" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9941305(2|3)...[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -147,12 +147,12 @@ CTRL[6]=5
 ERROR[6]="EXCITATION ENERGY (ZDIPLEN) NOT CORRECT"
 
 # Excitation energy (XDIPLEN)
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )1\.58610.. * \*ENERGY\(eV\)\: * 4\.29301.." $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )1\.5861(0|1).. * \*ENERGY\(eV\)\: * 4\.29301.." $log | wc -l`
 CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.157765.. * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-7\.836365. * au" $log | wc -l`
 CRIT4=`$GREP "\@ *Operator type\: * XDIPLEN " $log | wc -l`
 CRIT5=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * (0| )\.26459..." $log | wc -l`
-CRIT6=`$GREP "Transition moment.* \: * \-*1\.58610.." $log | wc -l`
+CRIT6=`$GREP "Transition moment.* \: * \-*1\.5861(0|1).." $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[7]=6
 ERROR[7]="EXCITATION ENERGY (XDIPLEN) NOT CORRECT"
