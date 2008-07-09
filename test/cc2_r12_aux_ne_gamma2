@@ -110,12 +110,12 @@ else
    GREP="egrep"
 fi
 # 
-#            Total SCF   energy:                  -128.4409133265
-#            Total MP2-R12/B energy:              -128.7168462495
-#            Total CC2-R12/B energy:              -128.7173988419
+#            Total SCF   energy:                  -128.5225530540                
+#            Total MP2-R12/B energy:              -128.7984758804                
+#            Total CC2-R12/B energy:              -128.7990310512              
 # 
 # 
-#            XXSECMOM:   3.09386866
+#                    XXSECMOM:   3.09626510
 # 
 # 
 #      +--------------------------------------------------------------+
@@ -123,27 +123,27 @@ fi
 #      +--------------------------------------------------------------+
 # 
 # 
-#  A operator                  B operator                     property
-# -----------------------------------------------------------------------
-# 
-# XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.29273347
-# 
+#  A operator                  B operator                     property 
+#------------------------------------------------------------------------
+#
+# XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.29358408    
+#
 # XDIPLEN  (unrel.)    -.-    YDIPLEN  (unrel.)    -.-          ---
-# 
+#
 # XDIPLEN  (unrel.)    -.-    ZDIPLEN  (unrel.)    -.-          ---
-# 
+#
 # YDIPLEN  (unrel.)    -.-    XDIPLEN  (unrel.)    -.-          ---
-# 
-# YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.29273347
-# 
+#
+# YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.29358408    
+#
 # YDIPLEN  (unrel.)    -.-    ZDIPLEN  (unrel.)    -.-          ---
-# 
+#
 # ZDIPLEN  (unrel.)    -.-    XDIPLEN  (unrel.)    -.-          ---
-# 
+#
 # ZDIPLEN  (unrel.)    -.-    YDIPLEN  (unrel.)    -.-          ---
-# 
-# ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.29273347
-# -----------------------------------------------------------------------
+#
+# ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.29358408    
+#------------------------------------------------------------------------
 # 
 # ----------------------------------------------------------------------------+
 #            FINAL CC2 RESULTS FOR THE SECOND HYPERPOLARIZABILITIES           !
@@ -151,30 +151,30 @@ fi
 # 
 # 
 #  A operator        B operator        C operator        D operator           gamma
-# -------------------------------------------------------------------------------------
-# 
-# XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.23950030    
-# 
+#--------------------------------------------------------------------------------------
+#
+# XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.24110857    
+#
 # XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
 # XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
 # XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.80369525E-01
+#
 # XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
 # XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
 # XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.80369525E-01
+#
 # XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000    -0.80369525E-01
+#
 # XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
-# 
-# XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000    -0.80369525E-01
+#
 # XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
 # XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
 # XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
@@ -182,69 +182,69 @@ fi
 # XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
 # XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
 # XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000    -0.80369525E-01
+#
 # XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
 # XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
 # XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
-# 
-# XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000    -0.80369525E-01
+#
 # XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
 # XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
 # YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000    -0.80369525E-01
+#
 # YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000    -0.80369525E-01
+#
 # YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
 # YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
 # YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
 # YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
 # YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.80369525E-01
+#
 # YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
 # YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
 # YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.23950030    
-# 
+#
+# YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.24110857    
+#
 # YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
 # YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
 # YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.80369525E-01
+#
 # YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
 # YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
 # YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
 # YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
 # YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000    -0.80369525E-01
+#
 # YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000    -0.80369525E-01
+#
 # YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
 # ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
 # ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000    -0.80369525E-01
+#
 # ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
 # ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
 # ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000    -0.80369525E-01
+#
 # ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
 # ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
 # ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
@@ -252,51 +252,52 @@ fi
 # ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
 # ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
 # ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000    -0.80369525E-01
+#
 # ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000    -0.80369525E-01
+#
 # ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.80369525E-01
+#
 # ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
 # ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
 # ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
-# 
+#
+# ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.80369525E-01
+#
 # ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
 # ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
 # ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
-# 
-# ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.23950030    
-# -------------------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-CRIT1=`$GREP "Total CC2-R12/B energy: *\-128\.7173988419" $log | wc -l`
+#
+# ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.24110857    
+#--------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------
+
+CRIT1=`$GREP "Total CC2-R12/B energy: *\-128\.7990310512" $log | wc -l`
 TEST[1]=`expr $CRIT1` 
 CTRL[1]=2
 ERROR[1]="CC2-R12/B ENERGY NOT CORRECT"
 
-CRIT2=`$GREP "XXSECMOM: *3\.09386866" $log | wc -l`
+CRIT2=`$GREP "XXSECMOM: *3\.09626510" $log | wc -l`
 TEST[2]=`expr $CRIT2`
 CTRL[2]=1
 ERROR[2]="CC2-R12/A FIRST ORDER PROPERTIES NOT CORRECT"
 
-CRIT3=`$GREP "XDIPLEN .*\.29273347" $log | wc -l`
-CRIT4=`$GREP "YDIPLEN .*\.29273347" $log | wc -l`
-CRIT5=`$GREP "ZDIPLEN .*\.29273347" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN .*\.29358408" $log | wc -l`
+CRIT4=`$GREP "YDIPLEN .*\.29358408" $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN .*\.29358408" $log | wc -l`
 TEST[3]=`expr $CRIT3 + $CRIT4 + $CRIT5`
 CTRL[3]=3
 ERROR[3]="CC2-R12/A SECOND ORDER PROPERTIES NOT CORRECT"
 
-CRIT6=`$GREP "XDIPLEN .*(\-0|\-)\.23950030" $log | wc -l`
-CRIT7=`$GREP "YDIPLEN .*(\-0|\-)\.23950030" $log | wc -l`
-CRIT8=`$GREP "ZDIPLEN .*(\-0|\-)\.23950030" $log | wc -l`
-CRIT9=`$GREP "(\-0|\-)\.79833432.\-01" $log | wc -l`
+CRIT6=`$GREP "XDIPLEN .*(\-0|\-)\.24110857" $log | wc -l`
+CRIT7=`$GREP "YDIPLEN .*(\-0|\-)\.24110857" $log | wc -l`
+CRIT8=`$GREP "ZDIPLEN .*(\-0|\-)\.24110857" $log | wc -l`
+CRIT9=`$GREP "(\-0|\-)\.80369525.\-01" $log | wc -l`
 TEST[4]=`expr $CRIT6 + $CRIT7 + $CRIT8 +  $CRIT9`
 CTRL[4]=21
 ERROR[4]="CC2-R12/A SECOND HYPERPOLARIZABILITY  NOT CORRECT"
