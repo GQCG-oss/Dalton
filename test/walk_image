@@ -210,7 +210,7 @@ CTRL[12]=18
 ERROR[12]="SECOND HESSIAN NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final * HF energy\: * \-56\.186537355..[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-56\.18653735(4|5)..[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1`
 CTRL[13]=1
 ERROR[13]="THIRD ENERGY NOT CORRECT"
@@ -273,8 +273,8 @@ ERROR[19]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 # Static polarizabilities
 CRIT1=`$GREP "Ex * 8\.47954[0-9] * (0| |\-0|\-)\.000000 * (0| |\-0|\-)\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| |\-0|\-)\.000000 * 8\.47953[0-9] * (0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| |\-0|\-)\.000000 * (0| )\.000000 * 4\.13429[0-9]" $log | wc -l`
+CRIT2=`$GREP "Ey * (0| |\-0|\-)\.000000 * 8\.47953[0-9] * (0| |\-0|\-)\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * (0| |\-0|\-)\.000000 * (0| |\-0|\-)\.000000 * 4\.13429[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[20]=3
 ERROR[20]="STATIC POLARIZABILITIES NOT CORRECT"
