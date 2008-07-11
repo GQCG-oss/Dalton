@@ -502,6 +502,7 @@ C
 #include <symmet.h>
 C
 #include <orgcom.h>
+#include <dftcom.h>
 C
       PARAMETER (ANTOAU=1.0D+00/XTANG)
 C
@@ -568,7 +569,7 @@ C
          KWRK1 = KDAOX + NNBASX
          LWRK1 = LFREE  - KWRK1
          IF (LWRK1 .LT. N2BASX) CALL ERRWRK('PCMFCK-2',-KWRK1,LFREE)
-         IF (NASHT.GT.0) THEN
+         IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
             CALL PKSYM1(WRK(KDAOX),WRK(KWRK1),NBAS,NSYM,-1)
@@ -585,7 +586,7 @@ C
          CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
          CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
-         IF (NASHT.GT.0) THEN
+         IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
             CALL PKSYM1(WRK(KDAOX),WRK(KWRK1),NBAS,NSYM,-1)
