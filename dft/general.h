@@ -75,7 +75,7 @@ struct DftDensity_ {
 
 /* FirstDrv: matrix of first order derivatives with respect to two
  * parameters: density rho and SQUARE of the gradient of density grho.
- * zeta_i = |\nabla\rho_i|%Gï¿¿%@
+ * zeta_i = |\nabla\rho_i|%G￿%@
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
 
@@ -92,14 +92,14 @@ typedef struct {
 typedef struct {
     real fR; /* d/drho  F */
     real fZ; /* d/dzeta F */
-    real fRR; /* d/drho%Gï¿¿%@ F */
+    real fRR; /* d/drho%G￿%@ F */
     real fRZ; /* d/(drho dzeta) F */
-    real fZZ; /* d/dzeta%Gï¿¿%@ F */
+    real fZZ; /* d/dzeta%G￿%@ F */
     /* additional derivatives required by  */
     /* general linear response scheme     */
     real fRG; /* d/(drho dgamma) F */
     real fZG; /* d/(dzeta dgamma) F */
-    real fGG; /* d/dzgamma%Gï¿¿%@ F */
+    real fGG; /* d/dzgamma%G￿%@ F */
     real fG;  /* d/dgamma F */
 } SecondDrv;
 
@@ -110,17 +110,17 @@ typedef struct {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
     real fG;   /* d/dgamma F */
-    real fRR[2];  /* d/drho%Gï¿¿%@ F */
+    real fRR[2];  /* d/drho%G￿%@ F */
     real fRZ[2];  /* d/(drho dzeta) F */
-    real fZZ[2];  /* d/dzeta%Gï¿¿%@ F */
+    real fZZ[2];  /* d/dzeta%G￿%@ F */
     real fRG[2];  /* d/(drho dgamma) F */
-    real fRRR[2]; /* d/drho%Gï¿¿%@ F */
-    real fRRZ[2][2]; /* d/(drho%Gï¿¿%@ dzeta) F */
+    real fRRR[2]; /* d/drho%G￿%@ F */
+    real fRRZ[2][2]; /* d/(drho%G￿%@ dzeta) F */
     /* two forms of fRRG needed as the formulae is non symmetric */
     real fRRG[2];     /* d/(drho? dgamma) F */
     real fRRGX[2][2]; /* d/(drho? dgamma) F */
-    real fRZZ[2][2]; /* d/(drho dzeta%Gï¿¿%@) F */
-    real fZZZ[2]; /* d/dzeta%Gï¿¿%@ F */
+    real fRZZ[2][2]; /* d/(drho dzeta%G￿%@) F */
+    real fZZZ[2]; /* d/dzeta%G￿%@ F */
 } ThirdDrv;
 
 
@@ -201,6 +201,12 @@ void FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
                            integer *trplet, integer *ksymop,
 			   real* work, integer* lwork);
 void FSYM(dftmolgradab)(real* work, integer* lwork, integer* iprint);
+void FSYM2(dft_kohn_shamab_b)(real* dmat, real* ksm, real *edfty,
+			      real* work, int *lwork, int* iprfck);
+void FSYM2(dft_lin_respab_b)(int *nosim, real* fmatc, real* fmato, real *cmo,
+			     real *zymat, int *trplet, int *ksymop, real* work,
+			     int* lwork);
+
 typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);
 #if defined(VAR_MPI)
@@ -215,7 +221,8 @@ void dft_qr_resp_slave  (real* work, int* lwork, const int* iprint);
 void dft_qrbl_slave     (real* work, int* lwork, const int* iprint);
 void dft_cr_resp_slave(real* work, int* lwork, const int* iprint);
 void numdso_slave(real* work, int* lwork, const int* iprint);
-
+void dft_kohn_shamab_b_slave(real* work, int* lwork, const int* iprint);
+void dft_lin_respab_b_slave(real* work, int* lwork, const int* iprint);
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
     void*        data;

@@ -732,17 +732,21 @@ C
 C add DFT contribution 
 C
       IF (DODFT) THEN
-         IF(NASHT.GT.0) THEN
+C         Special case of alpha density only (old code)  
+         IF((NISHT.EQ.0) .AND. (NASHT.GT.0)) THEN
             DO IOSIM = 1, NOSIM
                call dft_lin_respab(fcx(1,1,iosim),fvx(1,1,iosim),
-     &              cmo,zymat(1,iosim),trplet,ksymop,wrk(kwrk0),
+     &              cmo,zymat(1,iosim),trplet,ksymop,wrk(kfree),
      &              lfree)
             END DO
+         ENDIF 
+C       Proceed normal way otherwise 
+        IF ((NASHT.GT.0) .AND. (NOSIM.GT.0) .AND. (NISHT.GT.0)) THEN 
+           call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
+     &                           trplet, ksymop,wrk(kfree),lfree) 
          ELSE
             call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree)
-c              CALL DFTATR(FCX(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
-c     &                    KSYMOP,WRK(KFREE),LFREE)
          ENDIF
       END IF
 C

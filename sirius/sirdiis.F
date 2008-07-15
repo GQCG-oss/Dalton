@@ -1706,11 +1706,19 @@ C     Kohn-Sham contribution evaluation
             CALL DAXPY(N2BASX,DP5,DCAO,1,WRK(KDENA),1)
             CALL DAXPY(N2BASX,DP5,DCAO,1,WRK(KDENA+N2BASX),1)
          END IF
-         CALL DAXPY(N2BASX,1.D0,DCAO(1+N2BASX),1,WRK(KDENA),1)     
-c         CALL OUTPUT(WRK(KDENA),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-c         CALL OUTPUT(WRK(KDENA+N2BASX),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
-         CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),EDFTY,
-     &      WRK(KFREE),LFREE,1)
+         CALL DAXPY(N2BASX,1.D0,DCAO(1+N2BASX),1,WRK(KDENA),1)
+C
+C  For specific case of molecules bearing only alpha electron(s), 
+C  like hydrogen atom, we call "old" open-shell code, which  
+C  can handle zero beta density. 
+C    
+         IF (NISHT .EQ. 0) THEN 
+            CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),EDFTY,
+     &                           WRK(KFREE),LFREE,IPRFCK)
+         ELSE 
+            CALL dft_kohn_shamab_b(WRK(KDENA),WRK(KKSMA),EDFTY,
+     &                             WRK(KFREE),LFREE,IPRFCK)
+         ENDIF         
 C     packing
          CALL DGETSP(NBAST,WRK(KKSMA),WRK(KTMP1))
          IF (NSYM .GT. 1) THEN

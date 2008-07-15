@@ -533,7 +533,9 @@ struct {
     { (DFTPropEvalMaster)dftqrcf_,              dft_qr_resp_slave   },
     { (DFTPropEvalMaster)FSYM2(dft_qr_respons), dft_qrbl_slave      },
     { (DFTPropEvalMaster)FSYM(dftcrcf),         dft_cr_resp_slave   },
-    { (DFTPropEvalMaster)FSYM(numdso),          numdso_slave        }
+    { (DFTPropEvalMaster)FSYM(numdso),          numdso_slave        }, 
+    { (DFTPropEvalMaster)FSYM2(dft_kohn_shamab_b), dft_kohn_shamab_b_slave}, 
+    { (DFTPropEvalMaster)FSYM2(dft_lin_respab_b),  dft_lin_respab_b_slave}
 };
 
 /* mpi_sync_data:
