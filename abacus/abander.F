@@ -318,7 +318,8 @@ C
 #include <dftcom.h>
 #include <ecpinf.h>
 #include <ccsdinp.h>
-      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOCISRDFT, DOMCSRDFT, WAVTP, DPCM
+      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROHF, DOCISRDFT, DOMCSRDFT, 
+     &        WAVTP, DPCM
 C
 C     *** Workaround to many common variables with the same name ***
 C     *** MCSCF is set to DOMC (in infinp.h), and DMP2 is set    ***
@@ -328,6 +329,7 @@ C
       MCSCF      = WAVTP('MCSCF')
       DMP2       = WAVTP('MP2')
       DPCM       = WAVTP('PCM')
+      DOROHF     = WAVTP('ROHF')
 #ifdef MC_SRDFT
       DOHFSRDFT  = WAVTP('HFSRDFT')
       DOCISRDFT  = WAVTP('CISRDFT')
@@ -347,7 +349,7 @@ C
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
-     &        DPCM) THEN
+     &        DPCM .OR. DOROHF) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
@@ -379,6 +381,8 @@ C
          WAVTP = DOMC
       ELSE IF (STRING.EQ.'MP2') THEN
          WAVTP = DOMP2
+      ELSE IF (STRING.EQ.'ROHF') THEN
+         WAVTP = HSROHF
       ELSE IF (STRING .EQ. 'PCM') THEN
          WAVTP = PCM
 #ifdef MC_SRDFT

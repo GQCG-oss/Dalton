@@ -79,6 +79,7 @@ C
       DIMENSION COOR(3,NBUFLEN), WEIGHT(NBUFLEN)
       DIMENSION NSHLBLCK(2,KMAX), NBLCNT(8), NBLOCKS(2,NBAST,8)
       DIMENSION RHOA(MXBLLEN), GRADA(3,MXBLLEN)
+      DIMENSION RHOB(MXBLLEN), GRADB(3,MXBLLEN) 
 C
       LOGICAL DOGGA, DFT_ISGGA, CHECKELS
       EXTERNAL DFT_ISGGA
@@ -104,15 +105,30 @@ C
             IF(DOGGA) THEN
                CALL GETRHO_BLOCKED_GGA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOA,GRADA)
+               IF (NDMAT .EQ. 2) CALL GETRHO_BLOCKED_GGA(DMAT(1,1,2),
+     &                                 GAO,NBLCNT,NBLOCKS,NSHELL,
+     &                                 DMAGAO,NCURLEN,RHOB,GRADB)
             ELSE
                CALL GETRHO_BLOCKED_LDA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOA)
+               IF (NDMAT .EQ. 2) CALL GETRHO_BLOCKED_LDA(DMAT(1,1,2),
+     &                                 GAO,NBLCNT,NBLOCKS,NSHELL,
+     &                                 DMAGAO,NCURLEN,RHOB)
             END IF
-            DO I = 1, NCURLEN
-               ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)
-            END DO
-            CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
-     &              COOR(1,IPT),WEIGHT(IPT),CBDATA)
+            IF (NDMAT .EQ. 2) THEN
+              DO I = 1, NCURLEN
+                 ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1) 
+     &                     * (RHOA(I)+RHOB(I))
+              END DO
+              CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,RHOB, 
+     &                GRADA,GRADB,COOR(1,IPT),WEIGHT(IPT),CBDATA)
+            ELSE 
+               DO I = 1, NCURLEN
+                  ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)              
+               END DO
+               CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
+     &                 COOR(1,IPT),WEIGHT(IPT),CBDATA)
+            END IF 
          END DO
          GO TO 100
  200     CONTINUE

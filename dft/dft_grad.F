@@ -44,26 +44,38 @@ C
 #include "dftmolgrad.h"
       DIMENSION WORK(LWORK)
 #include <energy.h>
-      EXTERNAL DFTMOLGRD 
+      EXTERNAL DFTMOLGRD
+      EXTERNAL DFTMOLGRDAB 
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
 C
       DOGGA = DFT_ISGGA()
 C      
       CALL DZERO(GRADFT,MXCOOR)
-      IF (NASHT.GT.0) THEN 
-          CALL DFTMOLGRADAB(WORK,LWORK,1)
-          RETURN 
-      END IF    
 C
+      IF (NASHT .GT. 0) THEN 
+         NDMAT = 2
+      ELSE 
+         NDMAT = 1
+      END IF  
       KDMAT = 1
-      KLAST = KDMAT + NBAST*NBAST
+      KLAST = KDMAT + NDMAT*NBAST*NBAST
       LWRK  = LWORK - KLAST +1
       IF(KLAST.GT.LWORK) CALL QUIT('NOMEM IN DFTGRAD')
-      CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
-      CALL KICK_SLAVES_GRAD(NBAST,WORK(KDMAT),IPRINT)
-      CALL DFTINT(WORK(KDMAT),1,1,.FALSE.,WORK(KLAST),LWRK,
-     &            DFTMOLGRD,WORK(KDMAT),ELE) 
+      IF (NASHT .GT. 0) THEN
+         CALL DFTDNSAB(WORK(KDMAT),WORK(KDMAT+NBAST*NBAST), 
+     &                 WORK(KLAST),LWRK,0) 
+      ELSE    
+         CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
+      END IF   
+      CALL KICK_SLAVES_GRAD(NBAST,NDMAT,WORK(KDMAT),IPRINT)
+      IF (NASHT .GT. 0) THEN 
+         CALL DFTINT(WORK(KDMAT),NDMAT,1,.FALSE.,WORK(KLAST),LWRK,
+     &               DFTMOLGRDAB,WORK(KDMAT),ELE)
+      ELSE    
+         CALL DFTINT(WORK(KDMAT),NDMAT,1,.FALSE.,WORK(KLAST),LWRK,
+     &               DFTMOLGRD,WORK(KDMAT),ELE)
+      END IF  
       CALL GRADSLAVE_COLLECT(GRADFT,WORK(KLAST),LWRK)
       RETURN
       END
@@ -188,7 +200,164 @@ C
       RETURN
       END
 C
-      SUBROUTINE KICK_SLAVES_GRAD(NBAST,DMAT,IPRINT)
+      SUBROUTINE DFTMOLGRDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,RHOB, 
+     &                       GRADA,GRADB,COORD,WGHT,DMAT)
+C                           
+C     Open-shell adaptation of DFTMOLGRD 
+C                                        
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
+#include "dftmolgrad.h"
+#include <inforb.h>
+C                                                                                                                                                                                                                
+      DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
+     &          RHOA(NBLEN), GRADA(3,NBLEN),
+     &          RHOB(NBLEN), GRADB(3,NBLEN),
+     &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
+     &          DMAT(NBAST,NBAST,2)
+C                                                                                                                                                                                                                
+#include <dftinf.h>
+#include <energy.h>
+#include <symmet.h>
+#include <shells.h>
+c                                                                                                                                                                                                                
+      LOGICAL ACTIVE(0:NBAST)
+      DIMENSION VXA(NBLEN), VXB(NBLEN), VXGA(NBLEN), VXGB(NBLEN), 
+     &          VXZ(NBLEN),VX(5)  
+      DIMENSION TMPA(NBLEN), TMPB(NBLEN), KVALS(3,3)
+      DATA ((KVALS(I,J), I = 1,3), J = 1,3) /1, 2, 3, 2, 4, 5, 3, 5, 6/
+C                                                                          
+#include <ibtfun.h>
+C
+       DO I = 0, NBAST
+         ACTIVE(I) = .FALSE.
+       END DO
+       DO ISYM = 1, NSYM
+         DO IBLA = 1, NBLCNT(ISYM)
+         DO I = NBLOCKS(1,IBLA,ISYM), NBLOCKS(2,IBLA,ISYM)
+            ACTIVE(I) = .TRUE.
+         END DO
+         END DO
+      END DO
+C 
+C     Exchange-correlation contribution to molecular gradient
+C                           
+      IF (DOGGA) THEN
+         DO I = 1, NBLEN
+            GRDA  = SQRT(GRADA(1,I)**2+GRADA(2,I)**2+GRADA(3,I)**2)
+            GRDB  = SQRT(GRADB(1,I)**2+GRADB(2,I)**2+GRADB(3,I)**2)
+            GRDAB   = GRADA(1,I)*GRADB(1,I)+GRADA(2,I)*GRADB(2,I) 
+     &              + GRADA(3,I)*GRADB(3,I)
+            CALL VXCFAB(RHOA(I),RHOB(I),GRDA,GRDB,GRDAB,WGHT(I),VX)  
+            VXA(I)  = D2*VX(1)
+            VXB(I)  = D2*VX(2)
+            VXGA(I) = D2*VX(3)/GRDA
+            VXGB(I) = D2*VX(4)/GRDB
+            VXZ(I)  = D2*VX(5)
+         END DO
+      ELSE
+         DO I = 1, NBLEN
+             CALL VXCFAB(RHOA(I),RHOB(I),D0,D0,D0,WGHT(I),VX)
+             VXA(I) = D2*VX(1) 
+             VXB(I) = D2*VX(2)     
+         END DO
+      END IF
+C 
+      DO IX = 1, 3
+         DO ISYM = 1, NSYM
+            IORBA = 0
+            DO ISHELA = 1, KMAX
+               ISCOOR = IPTCNT(3*(NCENT(ISHELA) - 1) + IX,0,1)
+               DO ICOMPA = 1, KHKT(ISHELA)
+                  IORBA = IORBA + 1
+                  IA = IPTSYM(IORBA,ISYM-1)
+                  KA = IPTSYM(IORBA,IBTXOR(ISYM-1,ISYMAX(IX,1)))
+                  IF (ACTIVE(IA) .AND. KA.GT.0) THEN
+                     IF (.NOT.DOGGA) THEN
+                        DO I = 1, NBLEN
+                           TMPA(I) = D0
+                           TMPB(I) = D0
+                        END DO
+                        DO IBLB = 1, NBLCNT(ISYM)
+                        DO IB=NBLOCKS(1,IBLB,ISYM),NBLOCKS(2,IBLB,ISYM)
+                           DO I = 1, NBLEN
+                              TMPA(I)=TMPA(I)+GAO(I,IB,1)*DMAT(IB,IA,1)
+                              TMPB(I)=TMPB(I)+GAO(I,IB,1)*DMAT(IB,IA,2)
+                           END DO
+                        END DO
+                        END DO
+                        FRC = D0
+                        DO I = 1, NBLEN
+                           FRC = FRC + VXA(I)*TMPA(I)*GAO(I,KA,IX+1)
+     &                         + VXB(I)*TMPB(I)*GAO(I,KA,IX+1)      
+                        END DO
+                     ELSE
+                        FRC = D0
+                        K1 = KVALS(1,IX) + 4
+                        K2 = KVALS(2,IX) + 4
+                        K3 = KVALS(3,IX) + 4
+                        DO I = 1, NBLEN
+                           GA  = GAO(I,KA,IX+1)
+                           GAX = GRADA(1,I)*GA
+                           GAY = GRADA(2,I)*GA
+                           GAZ = GRADA(3,I)*GA
+                           GA2 = GRADA(1,I)*GAO(I,KA,K1)
+     &                         + GRADA(2,I)*GAO(I,KA,K2)
+     &                         + GRADA(3,I)*GAO(I,KA,K3)
+                           GBX = GRADB(1,I)*GA
+                           GBY = GRADB(2,I)*GA
+                           GBZ = GRADB(3,I)*GA
+                           GB2 = GRADB(1,I)*GAO(I,KA,K1)
+     &                         + GRADB(2,I)*GAO(I,KA,K2)
+     &                         + GRADB(3,I)*GAO(I,KA,K3) 
+                           GDA = D0
+                           GDB = D0
+                           GFA = D0
+                           GFB = D0
+                           GGA = D0
+                           GGB = D0
+                           DO IBLB = 1, NBLCNT(ISYM)
+                              ISTRB = NBLOCKS(1,IBLB,ISYM)
+                              IENDB = NBLOCKS(2,IBLB,ISYM)
+                              DO IB = ISTRB, IENDB
+                                 GDA = GDA + DMAT(IB,IA,1)*GAO(I,IB,1)
+                                 GDB = GDB + DMAT(IB,IA,2)*GAO(I,IB,1) 
+                                 GFA = GFA + DMAT(IB,IA,1)*(GAO(I,IB,1)
+     &                               * GA2 + GAO(I,IB,2)*GAX
+     &                               + GAO(I,IB,3)*GAY 
+     &                               + GAO(I,IB,4)*GAZ)
+                                 GFB = GFB + DMAT(IB,IA,2)*(GAO(I,IB,1)
+     &                               * GB2 + GAO(I,IB,2)*GBX
+     &                               + GAO(I,IB,3)*GBY
+     &                               + GAO(I,IB,4)*GBZ)
+                                 GGA = GGA + DMAT(IB,IA,1)*(GAO(I,IB,1)
+     &                               * GB2 + GAO(I,IB,2)*GBX
+     &                               + GAO(I,IB,3)*GBY
+     &                               + GAO(I,IB,4)*GBZ) 
+                                 GGB = GGB + DMAT(IB,IA,2)*(GAO(I,IB,1)
+     &                               * GA2 + GAO(I,IB,2)*GAX
+     &                               + GAO(I,IB,3)*GAY
+     &                               + GAO(I,IB,4)*GAZ)
+                              END DO
+                           END DO
+                           FRC = FRC + GA*(VXA(I)*GDA + VXB(I)*GDB)
+     &                         + VXGA(I)*GFA + VXGB(I)*GFB
+     &                         + VXZ(I)*(GGA+GGB) 
+                        END DO
+                     END IF
+                     GRADFT(ISCOOR) = GRADFT(ISCOOR) - FRC
+                   END IF
+               END DO
+            END DO
+         END DO
+      END DO
+      RETURN
+      END  
+C
+      SUBROUTINE KICK_SLAVES_GRAD(NBAST,NDMAT,DMAT,IPRINT)
 #if defined (VAR_MPI)
 #include "implicit.h"
 #include "maxorb.h"
@@ -196,13 +365,15 @@ C
 #include "infpar.h"
 #include "mpif.h"
 C
-      DIMENSION DMAT(NBAST,NBAST)
+      DIMENSION DMAT(NBAST,NBAST,NDMAT)
       IF (MYNUM .EQ. MASTER) THEN
          IPRTYP = 6
          CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
-         CALL KSMSYNC(DMAT)
+         CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(DMAT,NDMAT*NBAST*NBAST,MPI_DOUBLE_PRECISION,0,
+     &                  MPI_COMM_WORLD,IERR)        
       END IF
       RETURN
 #endif
@@ -217,21 +388,30 @@ C
 #include "inforb.h"
 #include "dftmolgrad.h"
 #include "energy.h"
+#include "mpif.h"
       DIMENSION WORK(LWORK)
       EXTERNAL DFTMOLGRD 
+      EXTERNAL DFTMOLGRDAB
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
 C
       DOGGA = DFT_ISGGA()
       KDMAT  = 1
-      KFREE  = KDMAT + N2BASX
+      KFREE  = KDMAT + 2*N2BASX
       IF (KFREE .GT. LWORK)CALL STOPIT('DFT_GRAD_SLAVE',' ',KFREE,LWORK)
       LFREE = LWORK - KFREE + 1
       CALL DFTINTBCAST
-      CALL KSMSYNC(WORK(KDMAT))
+      CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(WORK(KDMAT),NDMAT*NBAST*NBAST,MPI_DOUBLE_PRECISION,
+     &               0,MPI_COMM_WORLD,IERR)       
       CALL DZERO(GRADFT,MXCOOR)
-      CALL DFTINT(WORK(KDMAT),1,1,.FALSE.,WORK(KFREE),LFREE,
-     &            DFTMOLGRD,WORK(KDMAT),ELE) 
+      IF (NDMAT .EQ. 2 ) THEN 
+         CALL DFTINT(WORK(KDMAT),NDMAT,1,.FALSE.,WORK(KFREE),LFREE,
+     &               DFTMOLGRDAB,WORK(KDMAT),ELE)
+      ELSE 
+        CALL DFTINT(WORK(KDMAT),NDMAT,1,.FALSE.,WORK(KFREE),LFREE,
+     &               DFTMOLGRD,WORK(KDMAT),ELE)
+      END IF 
       CALL GRADSLAVE_COLLECT(GRADFT,WORK(KFREE),LFREE)
       RETURN
       END
@@ -248,121 +428,5 @@ C
       RETURN
 #endif
       END
-C
-C   DFT contribution to open-shell gradients 
-C   Adaptation of "old" T. Helgaker code  
-C   ZR 
-C 
-      SUBROUTINE UDFTMOLGRDAB(GAO,DMATA,DMATB,RHA,RHB,
-     &           VRA,VRB,VZA,VZB,VZG)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-C
-      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-C
-      LOGICAL DOGGA, DFT_ISGGA
-      EXTERNAL DFT_ISGGA
-      DIMENSION DMATA(NBAST,NBAST), DMATB(NBAST,NBAST)
-      DIMENSION GAO(NBAST,*)
-      DIMENSION RHA(3),RHB(3)
-C
-#include <inforb.h>
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
-C
-#include <ibtfun.h>
-C
-      DOGGA = DFT_ISGGA()
-      VRA = D2*VRA
-      VRB = D2*VRB
-      GRDNRMA = DSQRT(RHA(1)**2 + RHA(2)**2 + RHA(3)**2)
-      GRDNRMB = DSQRT(RHB(1)**2 + RHB(2)**2 + RHB(3)**2)
-      VZA = D2*VZA/GRDNRMA
-      VZB = D2*VZB/GRDNRMB
-      VZG = D2*VZG
-      DO IX = 1, 3
-         IF (IX.EQ.1) THEN
-            K1 = 1
-            K2 = 2
-            K3 = 3
-         ELSE IF (IX.EQ.2) THEN
-            K1 = 2
-            K2 = 4
-            K3 = 5
-         ELSE
-            K1 = 3
-            K2 = 5
-            K3 = 6
-         END IF
-         DO IREPA = 0, MAXREP
-            ISTR = IBAS(IREPA+1) + 1
-            IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
-            IRPAX = IBTXOR(IREPA,ISYMAX(IX,1))
-            IORBA = 0
-            DO ISHELA = 1, KMAX
-               ISCOOR = IPTCNT(3*(NCENT(ISHELA) - 1) + IX,0,1)
-               DO ICOMPA = 1, KHKT(ISHELA)
-                  IORBA = IORBA + 1
-                  IA = IPTSYM(IORBA,IREPA)
-                  KA = IPTSYM(IORBA,IRPAX)
-                  IF (KA.GT.0) THEN
-                    IF (.NOT.DOGGA) THEN
-                        GDA = D0
-                        GDB = D0
-                        DO IB = ISTR, IEND
-                           GDA = GDA + GAO(IB,1)*DMATA(IB,IA)
-                           GDB = GDB + GAO(IB,1)*DMATB(IB,IA)
-                        END DO
-                        FRC = VRA*GDA*GAO(KA,IX+1)
-                        FRC = FRC + VRB*GDB*GAO(KA,IX+1)
-                    ELSE
-                        GA   = GAO(KA,IX+1)
-                        GAAX = RHA(1)*GA
-                        GAAY = RHA(2)*GA
-                        GAAZ = RHA(3)*GA
-                        GAA2 = RHA(1)*GAO(KA,K1+4)
-     &                       + RHA(2)*GAO(KA,K2+4)
-     &                       + RHA(3)*GAO(KA,K3+4)
-                        GABX = RHB(1)*GA
-                        GABY = RHB(2)*GA
-                        GABZ = RHB(3)*GA
-                        GAB2 = RHB(1)*GAO(KA,K1+4)
-     &                       + RHB(2)*GAO(KA,K2+4)
-     &                       + RHB(3)*GAO(KA,K3+4)
-                        GDA = D0
-                        GDB = D0
-                        GFA = D0
-                        GFB = D0
-                        GGA = D0
-                        GGB = D0
-                        DO IB = ISTR, IEND
-                           GDA = GDA + DMATA(IB,IA)*GAO(IB,1)
-                           GDB = GDB + DMATB(IB,IA)*GAO(IB,1)
-                           GAA = GAO(IB,1)*GAA2 + GAO(IB,2)*GAAX +
-     &                           GAO(IB,3)*GAAY + GAO(IB,4)*GAAZ
-                           GAB = GAO(IB,1)*GAB2 + GAO(IB,2)*GABX +
-     &                           GAO(IB,3)*GABY + GAO(IB,4)*GABZ
-                           GFA = GFA + DMATA(IB,IA)*GAA
-                           GFB = GFB + DMATB(IB,IA)*GAB
-                           GGA = GGA + DMATA(IB,IA)*GAB
-                           GGB = GGB + DMATB(IB,IA)*GAA
-                        END DO
-                        FRC = VRA*GDA*GA+VRB*GDB*GA
-                        FRC = FRC + VZA*GFA + VZB*GFB
-                        FRC = FRC + VZG*GGA + VZG*GGB
-                    END IF
-                    GRADFT(ISCOOR) = GRADFT(ISCOOR) - FRC
-                  END IF
-               END DO
-            END DO
-         END DO
-      END DO
-      RETURN
-      END
-
 
 

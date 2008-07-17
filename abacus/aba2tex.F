@@ -493,8 +493,9 @@ C
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-            IF (NDMAT .NE. 1) CALL QUIT
-     &         (' ERROR in TWOEXP: PARCAL only implemented for SCF')
+            IF ((NASHT .GT. O) .AND. (.NOT.(HSROHF.OR.DFTADD)))
+     &         CALL QUIT(' ERROR in TWOEXP: PARCAL only'// 
+     &                   ' implemented for SCF')
 C
             KNSTAT = KLAST
             KLAST  = KNSTAT + (NODTOT + 1)/IRAT

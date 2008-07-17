@@ -441,6 +441,37 @@ dftpot3ab_(FourthDrv *ds, const real *factor, const FunDensProp* dp,
 }
 
 
+void
+vxcfab_(real *rhoa, real *rhob, real *grada, real *gradb, 
+        real *gradab, real *wght, real *vx)
+{
+  FunFirstFuncDrv drvs;
+  FunDensProp dp;
+ 
+  dp.rhoa   = *rhoa;
+  dp.rhob   = *rhob; 
+  dp.grada  = *grada;
+  dp.gradb  = *gradb;
+  dp.gradab = *gradab;
+
+  if(dp.rhoa<1e-13)   dp.rhoa   = 1e-13;
+  if(dp.rhob<1e-13)   dp.rhob   = 1e-13;
+  if(dp.grada<1e-13)  dp.grada  = 1e-13;
+  if(dp.gradb<1e-13)  dp.gradb  = 1e-13;
+  if(dp.gradab<1e-13) dp.gradab = 1e-13;
+
+  drv1_clear(&drvs);
+  selected_func->first(&drvs, *wght, &dp);
+
+  vx[0] = drvs.df1000;
+  vx[1] = drvs.df0100;
+  vx[2] = drvs.df0010; 
+  vx[3] = drvs.df0001;
+  vx[4] = drvs.df00001; 
+}
+
+
+
 /* =================================================================== */
 /*    DFT density evaluators for restricted and unrestricted cases.    */
 /*    evaluate density properties                                      */

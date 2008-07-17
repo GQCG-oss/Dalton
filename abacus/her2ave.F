@@ -352,21 +352,23 @@ C
                               ELSE
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
-                              PFAC = DP5*FAB*FCD*FCABCD
+                              PFAC = DP5*FAB*FCD*FCABCD 
+                              IF (DFTADD) THEN
+                                 XFAC = HFXFAC
+                              ELSE
+                                 XFAC = 1.0D0
+                              END IF
                               IF (HFXMU .NE. D0) THEN
                                  PVAL = PFAC*( - HFXFAC*DP25*
      &                                  (DTAC*DTBD + DTAD*DTBC))
-                              ELSE IF (DFTADD) THEN
-                                 PVAL = PFAC*(DTAB*DTCD
-     &                                - HFXFAC*DP25*
-     &                                  (DTAC*DTBD + DTAD*DTBC))
                               ELSE IF (NODV) THEN
                                  PVAL = PFAC*(DTAB*DTCD
-     &                                - DP25*(DTAC*DTBD + DTAD*DTBC)
+     &                                - XFAC*DP25*(DTAC*DTBD+DTAD*DTBC)
      &                                + PAOVAL)
-                              ELSE IF (HSROHF) THEN
+                              ELSE IF (HSROHF .OR. 
+     &                                (DFTADD .AND. .NOT. NODV)) THEN
                                  PVAL = PFAC*(DTAB*DTCD
-     &                                - DP25*(DTAC*DTBD + DVAC*DVBD
+     &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD
      &                                      + DTAD*DTBC + DVAD*DVBC))
                               ELSE IF (ESG) THEN 
                                  CALL ESG_PVAL(DFTADD,HFXFAC,
