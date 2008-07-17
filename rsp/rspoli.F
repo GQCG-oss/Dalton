@@ -731,7 +731,7 @@ C From here the code is as before DIRFCK
 C
 C add DFT contribution 
 C
-      IF (DODFT) THEN
+      IF (DODFT .AND. (NOSIM .GT.0)) THEN
 C         Special case of alpha density only (old code)  
          IF((NISHT.EQ.0) .AND. (NASHT.GT.0)) THEN
             DO IOSIM = 1, NOSIM
@@ -741,7 +741,7 @@ C         Special case of alpha density only (old code)
             END DO
          ENDIF 
 C       Proceed normal way otherwise 
-        IF ((NASHT.GT.0) .AND. (NOSIM.GT.0) .AND. (NISHT.GT.0)) THEN 
+        IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN 
            call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                           trplet, ksymop,wrk(kfree),lfree) 
          ELSE
