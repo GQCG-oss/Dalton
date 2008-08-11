@@ -55,7 +55,7 @@ C
 #include <mxsymm.h>
 #include <qm3.h>
 C
-      PARAMETER ( NTABLE = 16, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 17, D1 = 1.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -66,7 +66,8 @@ C
       DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
      *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPIN',
-     *            '.PRFQM3', '.INTDIR', '.REDCNT', '.LGSPOL'/
+     *            '.PRFQM3', '.INTDIR', '.REDCNT', '.LGSPOL',
+     *            '.MMPCM '/
 C
       CALL QENTER('QM3INP')
 C
@@ -91,6 +92,7 @@ C
       PRFQM3  = .FALSE.
       INTDIR  = .FALSE.
       REDCNT  = .FALSE.
+      MMPCM   = .FALSE.
 C
 C
 C     CRUCIAL TEST : MXCENT has to be equal to MXQM3
@@ -117,7 +119,7 @@ C
           ICHANG = ICHANG + 1
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -268,6 +270,10 @@ C
    16     CONTINUE
             LGSPOL = .TRUE.
           GO TO 100
+
+   17     CONTINUE
+            MMPCM  = .TRUE.
+          GO TO 100
 C
         ELSE IF (PROMPT .EQ. '*') THEN
           GO TO 300
@@ -335,6 +341,10 @@ C
         IF (EXPON) THEN
           WRITE(LUPRI,*) ' Exponential Dampiing is active'
         END IF
+        IF (MMPCM) THEN
+          WRITE(LUPRI,*) ' MM/PCM interface active'
+        END IF
+
         
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 C
