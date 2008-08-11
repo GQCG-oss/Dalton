@@ -96,6 +96,13 @@ C     Calculate RRa, Obar and ENSA and write these to file
 C     Calculate Ns and keep in memory (DFTNS). 
       CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
 
+      IF (MMPCM) THEN
+        write(lupri,*) 'information given to PCM'
+        DO 879 I = 1, NUSITE
+          write(lupri,*) XMMQ(I), YMMQ(I), ZMMQ(I), MMQ(I)
+  879   CONTINUE
+      ENDIF
+
 C     Modify the fock operator. Modification returned in FSOL. 
       CALL QM3_FMO(FSOL,WRK(KEND),LWRK1,IPRINT)
 
@@ -452,6 +459,21 @@ C To here
 
                   DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
 
+C                 MM/PCM interface. Coordinates and charges are fixed
+C                 here so in fact on needed on the first call. Leave it
+C                 for now.
+
+                  write(lupri,*) 'MMPCM:', MMPCM 
+
+                  IF (MMPCM) THEN
+                    XMMQ(L) = CORD(1,IATNOW)
+                    YMMQ(L) = CORD(2,IATNOW)
+                    ZMMQ(L) = CORD(3,IATNOW)
+                    MMQ(L)  = CHARGE(IATNOW)
+                    IF (L.GT.MXQ) THEN
+                      CALL QUIT('Too many chargees in MM. Increase MXQ')
+                    ENDIF
+                  ENDIF
               ELSE
 
                 CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
