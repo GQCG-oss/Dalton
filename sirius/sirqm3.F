@@ -96,12 +96,12 @@ C     Calculate RRa, Obar and ENSA and write these to file
 C     Calculate Ns and keep in memory (DFTNS). 
       CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
 
-      IF (MMPCM) THEN
-        write(lupri,*) 'information given to PCM'
-        DO 879 I = 1, NUSITE
-          write(lupri,*) XMMQ(I), YMMQ(I), ZMMQ(I), MMQ(I)
-  879   CONTINUE
-      ENDIF
+c      IF (MMPCM) THEN
+c        write(lupri,*) 'information given to PCM'
+c        DO 879 I = 1, NUSITE
+c          write(lupri,*) XMMQ(I), YMMQ(I), ZMMQ(I), MMQ(I)
+c  879   CONTINUE
+c      ENDIF
 
 C     Modify the fock operator. Modification returned in FSOL. 
       CALL QM3_FMO(FSOL,WRK(KEND),LWRK1,IPRINT)
@@ -463,7 +463,7 @@ C                 MM/PCM interface. Coordinates and charges are fixed
 C                 here so in fact on needed on the first call. Leave it
 C                 for now.
 
-                  write(lupri,*) 'MMPCM:', MMPCM 
+c                  write(lupri,*) 'MMPCM:', MMPCM 
 
                   IF (MMPCM) THEN
                     XMMQ(L) = CORD(1,IATNOW)
