@@ -2323,6 +2323,7 @@ C
 C     In case of MM/PCM coupling calculate the PCM electric field at
 C     each polarizable point
 
+      write(lupri,*) '1. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
       IF (MYMAT) THEN
@@ -2630,6 +2631,9 @@ C
         CALL QM3_PUT3(LUEIND,'EINDFILE',EIND,NCOMS)
         CALL QM3_PUT3(LUMOM,'QMIND   ',MYIND,NCOMS)
 C
+C       if mm/pcm we transfer the induced dipole moments to pcm        
+        IF (MMPCM) CALL GIVEMY(MYIND)
+
         IF (SLOTH) THEN
           NUM = 0
           TEMMY1 = 0.0D0
@@ -3000,6 +3004,7 @@ C
       CALL GPOPEN(LUENSA,'ENSAFILE','UNKNOWN',' ','FORMATTED',IDUMMY,
      &           .FALSE.)
 C
+      write(lupri,*) '2. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
@@ -3090,6 +3095,7 @@ C
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
 C
+      write(lupri,*) '3. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
@@ -3212,6 +3218,7 @@ C
    20    CONTINUE
    19 CONTINUE
 
+      write(lupri,*) '4. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
@@ -4380,7 +4387,13 @@ C
 #endif
  
       DIMENSION  EFPCM(3,MXQM3)
- 
+
+      DO 19 I = 1, MXQM3
+         DO 20 J = 1, 3
+            EFPCM(J,I) = D0
+   20    CONTINUE
+   19 CONTINUE
+
       LM = 0
       L = NUSITE + NUALIS(0)
 
@@ -4406,11 +4419,11 @@ C             Loop over the contribution from the PCM tesseras
                 DIST = SQRT(DIST2)
                 DISTM1 = 1/DIST
                 DISTM3 = DISTM1**3
-                EFPCM(1,M) = EFPCM(1,M) 
+                EFPCM(1,LM) = EFPCM(1,LM) 
      *                     + PCMCHARGE*(XCORD-XTSCOR(M))*DISTM3
-                EFPCM(2,M) = EFPCM(2,M) 
+                EFPCM(2,LM) = EFPCM(2,LM) 
      *                     + PCMCHARGE*(YCORD-YTSCOR(M))*DISTM3
-                EFPCM(3,M) = EFPCM(3,M) 
+                EFPCM(3,LM) = EFPCM(3,LM) 
      *                     + PCMCHARGE*(ZCORD-ZTSCOR(M))*DISTM3
   523         CONTINUE
   522       CONTINUE
@@ -4423,4 +4436,64 @@ C             Loop over the contribution from the PCM tesseras
       END IF
 
       END
+C*********************************************************************************
+C  /* Deck GIVEMY */
+      SUBROUTINE GIVEMY(MYIND)
+C
+C     Transfer the induced dipole moments to pcm
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <inftap.h>
+#include <pcmdef.h>
+#include <orgcom.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include "nuclei.h"
+ 
+      PARAMETER  (D0 = 0.0D0)
+#if defined (SYS_CRAY)
+      REAL              MYIND
+#else
+      DOUBLE PRECISION  MYIND
+#endif
+
+      DIMENSION  MYIND(3,MXQM3)
+
+      LM = 0
+      L = NUSITE + NUALIS(0)
+
+      DO 520 I = 1, ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 521 J = NSYSBG(I), NSYSED(I)
+            DO 522 K = 1, NUALIS(I)
+              LM = LM + 1
+
+              IATNOW = NUCIND + L + LM
+
+C             This is a MM polarazable site
+              XMMMY(LM) = CORD(1,IATNOW)
+              YMMMY(LM) = CORD(2,IATNOW)
+              ZMMMY(LM) = CORD(3,IATNOW)
+              MMMYX(LM) = MYIND(1,LM)
+              MMMYY(LM) = MYIND(2,LM)
+              MMMYZ(LM) = MYIND(3,LM)
+             IF (L.GT.MXQ) THEN
+               CALL QUIT('Too many pols.in MM. Increase MXQ')
+             ENDIF
+  522       CONTINUE
+  521     CONTINUE
+        END IF
+  520 CONTINUE
+
+      IF (LM.NE.NCOMS) THEN
+        CALL QUIT('Wrong number of MM pol. sites in PCMFIELD')
+      END IF
+
+      END
 C**** end of herqm3.F *****************************************************************
+
+
+

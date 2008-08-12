@@ -96,13 +96,6 @@ C     Calculate RRa, Obar and ENSA and write these to file
 C     Calculate Ns and keep in memory (DFTNS). 
       CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
 
-c      IF (MMPCM) THEN
-c        write(lupri,*) 'information given to PCM'
-c        DO 879 I = 1, NUSITE
-c          write(lupri,*) XMMQ(I), YMMQ(I), ZMMQ(I), MMQ(I)
-c  879   CONTINUE
-c      ENDIF
-
 C     Modify the fock operator. Modification returned in FSOL. 
       CALL QM3_FMO(FSOL,WRK(KEND),LWRK1,IPRINT)
 
