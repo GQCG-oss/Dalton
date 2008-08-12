@@ -337,7 +337,7 @@ C
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
-      LOGICAL   HSFOCK
+      LOGICAL   HSFOCK, LCONV
       DIMENSION MISH(8)
       CHARACTER*8 CMOLBL
 C
@@ -358,6 +358,7 @@ C----------------
 C CBN+JK 03.01.06
 C----------------
       IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+C     this also includes the case of MMPCM   
 C----------------
 C CBN+JK 03.01.06
 C----------------
@@ -479,15 +480,12 @@ C       keep vectors until GRDNRM fallen a factor 100
       ITNOCC = 0
       NEWOCC = 0
       NOSCIL = 0
-C------------------
-C CBN+JK 03.01.06
-C------------------
+
       DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
      &           .AND. .NOT. PCM .AND. .NOT. HSROHF .AND. .NOT. QM3 
      &           .AND. .NOT. AOSAVE
-C------------------
-C CBN+JK 03.01.06
-C------------------
+C this also includes the case of MMPCM     
+
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
@@ -663,51 +661,91 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPRDIS)
 C
-         ESOLT = D0
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
-         IF (QM3 .AND. .NOT. DOCCSD) THEN
-            CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
-            CALL DZERO(WRK(KFCSOL),NNBAST)
-            CALL QM3FCK(DAOSAV(1,1),DAOSAV(1,2),
-     &                  WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
-     &                  WRK(KFREE),LFREE,IPRDIS)
-            CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-            CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-         ELSE
-            EELEL = 0.0D0
-         END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
-         IF (FLAG(16)) THEN
-            CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
-            CALL SOLFCK(DAOSAV(1,1),DAOSAV(1,2),
-     &                  WRK(KFCSOL),DUMMY,TNLM,.FALSE.,ESOLT,
-     &                  WRK(KFREE),LFREE,IPRDIS)
-            CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-            CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-         ELSE IF (PCM) THEN
-            CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
-C
-            CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
-     &                  DUMMY,.FALSE.,ESOLT,WRK(KFREE),
-     &                  LFREE,IPRDIS)
-C
-            CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-            CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-         END IF
+c        we need to divide the solvent calls into mmpcm and not mmpcm
+c        since we in the latter iterate between the mm and pcm for a given QM
+c        density    
+       
+         IF (.NOT. MMPCM) THEN ! do as we usually do ...
+           ESOLT = D0
+           IF (QM3 .AND. .NOT. DOCCSD) THEN
+             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
+             CALL DZERO(WRK(KFCSOL),NNBAST)
+             CALL QM3FCK(DAOSAV(1,1),DAOSAV(1,2),
+     &                   WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
+     &                   WRK(KFREE),LFREE,IPRDIS)
+             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+           ELSE
+             EELEL = 0.0D0
+           END IF
+
+           IF (FLAG(16)) THEN
+             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
+             CALL SOLFCK(DAOSAV(1,1),DAOSAV(1,2),
+     &                   WRK(KFCSOL),DUMMY,TNLM,.FALSE.,ESOLT,
+     &                   WRK(KFREE),LFREE,IPRDIS)
+             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+
+           ELSE IF (PCM) THEN
+             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+             CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
+     &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
+     &                   LFREE,IPRDIS)
+             CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+           END IF
+         ELSE  ! the mmpcm interface is only implemented for hf/dft so
+C                no reference to doccsd
+
+C        For now we just have these parameters here. Should be moved to
+C        input
+         MXDIIT = 20
+         THDISC = 1.0D-05
+
+           LCONV = .FALSE. 
+           XTEST1 = D0
+           DO 998 ITER = 1, MXDIIT
+C            First the MM part ...
+             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
+             CALL DZERO(WRK(KFCSOL),NNBAST)
+             CALL QM3FCK(DAOSAV(1,1),DAOSAV(1,2),
+     &                   WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
+     &                   WRK(KFREE),LFREE,IPRDIS)
+             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+
+             TEMP = ESOLT
+
+C            Now the PCM part ...        
+             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+             CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
+     &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
+     &                   LFREE,IPRDIS)
+             CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+
+             ESOLT = ESOLT + TEMP
+             XTEST2 = ESOLT
+             IF ( ((ABS(XTEST1-XTEST2)) .LT. THDISC) .OR. LOSPC) THEN
+               LCONV = .TRUE.
+               write(lupri,*) 'MMPCM converged for given density'
+               write(lupri,*) 'No. of iterations: ',ITER
+               GOTO 999
+             ELSE 
+               XTEST1 = XTEST2
+             ENDIF
+  998      CONTINUE
+  999 CONTINUE
+           IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
+         ENDIF
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
+
          IF (QM3 .AND. (.NOT. OLDTG)) EMCSCF = EMCSCF - EELEL
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
+C        this also includes the case of MMPCM   
+
          EMCDIF = EMCSCF - EMCDIF
          EGSAV(1,INDEVC) = EMCSCF
 C
@@ -739,6 +777,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
             IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
      &               ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
@@ -1227,6 +1266,7 @@ C
 Chj from siropt.F, should be modified
        END IF
 C
+C      if qm3 .or. pcm then also mmpcm automatically
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3)
