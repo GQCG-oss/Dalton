@@ -2323,7 +2323,6 @@ C
 C     In case of MM/PCM coupling calculate the PCM electric field at
 C     each polarizable point
 
-      write(lupri,*) '1. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
       IF (MYMAT) THEN
@@ -2343,6 +2342,7 @@ C       present this will just be zero
         IMODE = 1
         CALL MUMATINV(IMODE,NCOMS,QMFIELD,ESITE,EFPCM,
      *                MYIND,EIND,DIPCON)
+
 
       ELSE IF (MYITE) THEN
 
@@ -2686,6 +2686,7 @@ C
      &    TEMPX+TEMMY1,'au', TEMPY+TEMMY2,'au', TEMPZ+TEMMY3,'au'
           WRITE(lUPRI,*)
         END IF
+
 C
         IF (RELMOM) THEN
           IF (.NOT.(SLOTH)) CALL QUIT('PUT IN .SLOTH in *CCSLV and do'//
@@ -3004,7 +3005,6 @@ C
       CALL GPOPEN(LUENSA,'ENSAFILE','UNKNOWN',' ','FORMATTED',IDUMMY,
      &           .FALSE.)
 C
-      write(lupri,*) '2. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
@@ -3095,7 +3095,6 @@ C
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
 C
-      write(lupri,*) '3. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
@@ -3218,7 +3217,6 @@ C
    20    CONTINUE
    19 CONTINUE
 
-      write(lupri,*) '4. call to PCMFIELD'
       IF (MMPCM) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not

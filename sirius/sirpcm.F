@@ -1413,6 +1413,7 @@ C
 #include <pcm.h>
 #include <codata.h>
 #include <symmet.h>
+#include <qm3.h>
       PARAMETER (LASTAR=99)
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)
@@ -1447,9 +1448,14 @@ Clf      RVDW(3) = 1.45D+00
 Clf      RVDW(4) = 1.45D+00
 C
 C
+      IF(QM3 .AND. MMPCM) THEN
+         NNUC = NUCDEP
+      ELSE
+         NNUC = NUCIND
+      ENDIF
 
       I=0
-      DO N=1,NUCIND
+      DO N=1,NNUC
          I=I+1
          PCMCORD(1,I)=CORD(1,N)
          PCMCORD(2,I)=CORD(2,N)
@@ -1457,7 +1463,7 @@ C
          PCMCHG(I)=CHARGE(N)
       END DO
       DO K = 1, MAXREP
-         DO N = 1, NUCIND
+         DO N = 1, NNUC
             IF (IBTAND(K,ISTBNU(N)) .EQ. 0) THEN
                DS = (CORD(1,N)-CORD(1,N)*PT(IBTAND(ISYMAX(1,1),K)))**2
      &            + (CORD(2,N)-CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K)))**2
@@ -1475,7 +1481,7 @@ C
          END DO
       END DO
 
-      IF(I.NE.NUCDEP) CALL QUIT('PCMSPHGEN: WRONG NUMBER OF NUCLEI')
+Clf      IF(I.NE.NUCDEP) CALL QUIT('PCMSPHGEN: WRONG NUMBER OF NUCLEI')
 
 Clf      IPCM = 0
 ClfC

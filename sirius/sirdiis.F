@@ -718,6 +718,7 @@ C            First the MM part ...
              TEMP = ESOLT
 
 C            Now the PCM part ...        
+              
              CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),

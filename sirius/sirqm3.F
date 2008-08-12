@@ -189,7 +189,6 @@ C To here
         OBKPZ = DIPORG(3)
       END IF
 
-
       DO 520 I = 1, ISYTP
         IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
           DO 521 J = NSYSBG(I), NSYSED(I)
