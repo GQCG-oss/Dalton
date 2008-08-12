@@ -330,7 +330,7 @@ csonia 04/10/95
          IF (INERSF) WRITE (LUW4,'(/5X,A)')
      *      'This is the final state in a calculation with'//
      *      ' inertial polarization.'
-      ELSE IF (PCM) THEN
+      ELSE IF (PCM .AND. (.NOT.MMPCM)) THEN
          IF (NONEQ) THEN
             WRITE (LUW4,'(/5X,A,2(/10X,A,F12.6))')
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
@@ -344,12 +344,18 @@ csonia 04/10/95
 C------------------
 C CBN+JK 03.01.06
 C------------------
-      ELSE IF (QM3) THEN
+      ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
          WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
          WRITE(LUW4,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
          WRITE(LUW4,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
          WRITE(LUW4,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUW4,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
+      ELSE IF (MMPCM) THEN
+         WRITE(LUW4,'(/5X,A/)') 'QM/MM/PCM calculation converged :'
+         WRITE(LUW4,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
+         WRITE(LUW4,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
+         WRITE(LUW4,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
+         WRITE(LUW4,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE
 C------------------
 C CBN+JK 03.01.06
