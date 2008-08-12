@@ -1662,6 +1662,7 @@ C
       DIMENSION  ENUC(3,MXQM3), ESITE(3,MXQM3)
       DIMENSION  EQMCLF(3,MXQM3), EELEC(3,MXQM3)
       DIMENSION  EIND(3,MXQM3), MYIND(3,MXQM3)
+      DIMENSION  EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
 C
       LOGICAL    DIPCON, LOEC3L, LOMIND 
@@ -1669,11 +1670,11 @@ C
 #if defined (SYS_CRAY)
       REAL              DIST, DISM1, DISM3, ESITE
       REAL              ENUC, EQMCLF, EIND, MYIND
-      REAL              XDIP1, XDIP2
+      REAL              XDIP1, XDIP2, EFPCM
 #else
       DOUBLE PRECISION  DIST, DISM1, DISM3, ESITE
       DOUBLE PRECISION  ENUC, EQMCLF, EIND, MYIND
-      DOUBLE PRECISION  XDIP1, XDIP2
+      DOUBLE PRECISION  XDIP1, XDIP2, EFPCM
 #endif
 C  
 C-------------------------
@@ -1687,6 +1688,7 @@ C
           EQMCLF(J,I)= D0
           EIND(J,I)  = D0
           MYIND(J,I) = D0
+          EFPCM(J,I) = D0
         END DO
       END DO
 C
@@ -2026,7 +2028,8 @@ C
       ELSE IF (MYMAT) THEN
 
         IMODE = 0
-        CALL MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,MYIND,EIND,DIPCON)
+        CALL MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,EFPCM,
+     *                MYIND,EIND,DIPCON)
 
       END IF
 C
@@ -4492,6 +4495,7 @@ C             This is a MM polarazable site
 
       END
 C**** end of herqm3.F *****************************************************************
+
 
 
 
