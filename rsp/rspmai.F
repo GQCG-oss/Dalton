@@ -3902,6 +3902,15 @@ C     (i) read solvent t matrix (ii) subtract it from FC
 C     (because the response program requires a FC matrix
 C      without solvent contributions).
 C
+      IF (QM3) THEN
+        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
+          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
+          CALL READT (LUSIFC,NNORBT,WRK)
+          DO 21 I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+ 21       CONTINUE
+        END IF
+      END IF
       IF (FLAG(16)) THEN
         CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
@@ -3916,22 +3925,6 @@ C
         ENDDO
       END IF
 C
-C----------------------
-C CBN+JK 03.01.06
-C----------------------
-      IF (QM3) THEN
-        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
-          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
-          CALL READT (LUSIFC,NNORBT,WRK)
-          DO 21 I = 1,NNORBT
-             FC(I) = FC(I) - WRK(I)
- 21       CONTINUE
-        END IF
-      END IF
-C----------------------
-C CBN+JK 03.01.06
-C----------------------
-
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN

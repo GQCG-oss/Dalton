@@ -2678,6 +2678,28 @@ C     Write Solvent information, if Solvent calculation.
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
+C Write qm3 solvent part of the Fock matrix to interface file
+
+      IF (QM3) THEN
+         KTMAT = KWRK1
+         KFSOLAO = KTMAT + NNORBT
+         KUCMO = KFSOLAO + NNBASX
+         KWRK2 = KUCMO + NORBT*NBAST
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-2',KWRK2,LFREE)
+         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IQM3PR)
+         CALL UPKCMO(CMO,WRK(KUCMO))
+         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
+     &             NBAST,NORBT)
+         WRITE (LUSIFC) LAB123,TABLE(7)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+      END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
 C     Write PCM solvent info if PCM calculation
       IF (PCM) THEN
          KTMAT = 1
@@ -2728,28 +2750,6 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
-C Write qm3 solvent part of the Fock matrix to interface file
-
-      IF (QM3) THEN
-         KTMAT = KWRK1
-         KFSOLAO = KTMAT + NNORBT
-         KUCMO = KFSOLAO + NNBASX
-         KWRK2 = KUCMO + NORBT*NBAST
-         LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-2',KWRK2,LFREE)
-         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IQM3PR)
-         CALL UPKCMO(CMO,WRK(KUCMO))
-         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
-     &             NBAST,NORBT)
-         WRITE (LUSIFC) LAB123,TABLE(7)
-         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
-      END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
 C
 C     Write CREF in determinants here, if NCDETS .gt. NCONF
 C
