@@ -97,8 +97,19 @@ C
       KTRMO   = KRRAOx  + NNBASX
       KUTR    = KTRMO   + NNORBX
       KUTRX   = KUTR    + N2ORBX
-      KWRK    = KUTRX   + N2ORBX
-      LWRK1   = LWRK    - KWRK      
+      IF (MMPCM) THEN
+        KXCOOR  = KUTRX   + N2ORBX
+        KYCOOR  = KXCOOR  + NCOMS
+        KZCOOR  = KYCOOR  + NCOMS
+        KXDIP   = KZCOOR  + NCOMS
+        KYDIP   = KXDIP   + NCOMS
+        KZDIP   = KYDIP   + NCOMS
+        KWRK    = KZDIP   + NCOMS
+        LWRK1   = LWRK    - KWRK      
+      ELSE
+        KWRK    = KUTRX   + N2ORBX
+        LWRK1   = LWRK    - KWRK
+      ENDIF
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3LNO',-KWRK,LWRK)
 
@@ -113,6 +124,14 @@ C
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
       CALL DZERO(WRK(KUTRX),N2ORBX)
+      IF (MMPCM) THEN
+        CALL DZERO(WRK(KXCOOR),NCOMS)
+        CALL DZERO(WRK(KYCOOR),NCOMS)
+        CALL DZERO(WRK(KZCOOR),NCOMS)
+        CALL DZERO(WRK(KXDIP),NCOMS)
+        CALL DZERO(WRK(KYDIP),NCOMS)
+        CALL DZERO(WRK(KZDIP),NCOMS)
+      ENDIF
 
       IF (IPRRSP .GE. 140) THEN
           WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
@@ -167,6 +186,13 @@ C--------------------------------------------------------
       END IF
 
       CALL DSPTSI(NORBT,WRK(KFSOLMO),WRK(KUFSOL))
+
+      IF (MMPCM) THEN
+        LFILE = -1
+        CALL GPOPEN(LFILE,'MYFPCM','NEW',' ','FORMATTED',IDUMMY,
+     &              .FALSE.)
+             REWIND(LFILE)
+      ENDIF
 
       DO 200 IOSIM = 1,NOSIM
 
@@ -231,7 +257,7 @@ C x-component
                    IATNOW = NUCIND + L + LM
 
                    KPATOM = 0
-                   NOSIM = 3
+                   NOSIMI = 3
                    TOFILE = .FALSE.
                    TRIMAT = .TRUE.
                    EXP1VL = .FALSE.
@@ -240,7 +266,7 @@ C x-component
                    DIPORG(3) = CORD(3,IATNOW)
 
                    FORQM3 = .TRUE.
-                   CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+                   CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,WRK(KLAST),
      &                         LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                         KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
                    FORQM3 = .FALSE.
@@ -251,6 +277,12 @@ C x-component
                    CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                    FACx = FAC * QM3QLM(WRK(KUTRX))
                    CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+                   IF (MMPCM) THEN
+                      WRK(KXCOOR+LM-1) = CORD(1,IATNOW)
+                      WRK(KYCOOR+LM-1) = CORD(2,IATNOW)
+                      WRK(KZCOOR+LM-1) = CORD(3,IATNOW)
+                      WRK(KXDIP+LM-1)  = -FACx
+                   ENDIF 
                  ELSE
                    CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
                    CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
@@ -279,6 +311,7 @@ C y-component
                  CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                  FACy = FAC * QM3QLM(WRK(KUTRX))
                  CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
+                 IF (MMPCM) WRK(KYDIP+LM-1)  = -FACy
 
 C z-component
                  CALL DZERO(WRK(KRRAOx),NNBASX)
@@ -298,6 +331,7 @@ C z-component
                  CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                  FACz = FAC * QM3QLM(WRK(KUTRX))
                  CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
+                 IF (MMPCM) WRK(KZDIP+LM-1)  = -FACz
 
   522       CONTINUE
   521     CONTINUE
@@ -307,7 +341,27 @@ C
       IF (.NOT. INTDIR) CALL GPCLOSE(LUCCEF,'KEEP')
 
   300 CONTINUE 
+
+      IF (MMPCM) WRITE(LFILE,*) NOSIM
+      IF (MMPCM) THEN
+        DO 820 L = 1,NCOMS
+          WRITE(LFILE,'(I5,6(E25.15,2x))') L,WRK(KXCOOR+L-1),
+     &    WRK(KYCOOR+L-1),
+     &    WRK(KXCOOR+L-1),WRK(KXDIP+L-1),WRK(KYDIP+L-1),
+     &    WRK(KZDIP+L-1)
+  820   CONTINUE
+
+        CALL DZERO(WRK(KXCOOR),NCOMS)
+        CALL DZERO(WRK(KYCOOR),NCOMS)
+        CALL DZERO(WRK(KZCOOR),NCOMS)
+        CALL DZERO(WRK(KXDIP),NCOMS)
+        CALL DZERO(WRK(KYDIP),NCOMS)
+        CALL DZERO(WRK(KZDIP),NCOMS)
+      ENDIF
+
   200 CONTINUE
+
+      IF (MMPCM) CALL GPCLOSE(LFILE,'KEEP')
 
       IF (INTDIR) THEN
         DIPORG(1) = OBKPX
