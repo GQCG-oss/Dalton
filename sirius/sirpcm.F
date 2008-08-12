@@ -1418,7 +1418,6 @@ C
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)
 #include <ibtfun.h>
-#include <qm3.h>
 C
 C       van der Waals radii taken from "The Elements", 2nd edition,
 C       John Emsley, Clarendon Press, Oxford, 1991.  Unknown values
