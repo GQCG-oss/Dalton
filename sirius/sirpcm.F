@@ -399,6 +399,13 @@ C
       CALL ICVEV(WORK(LDMATM),WORK(LSE1),WORK(LSE1),
      $     WORK(LBMCHG),WORK(LVEC0),WORK(LMEP),WORK(LCAM),NTS,NNBASX,
      $     SOME,WORK(KFREE),LWRK)
+Clf      call COMP_NUC_POT_CAV(work(lcam))
+Clf      print *, 'lmep'
+Clf      print *,(WORK(LMEP + i - 1), i=1,ntsirr)
+Clf      print *, 'lcam'
+Clf      print *,(WORK(LCAM + i - 1), i=1,ntsirr)
+Clf      print *, 'diff'
+Clf      print *,(WORK(LMEP + i - 1) - WORK(LCAM + i - 1), i=1,ntsirr)
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
 C     4) Calculation of the interaction free energy between
