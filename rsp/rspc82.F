@@ -678,6 +678,7 @@ C
 C---------------------
 C CBN+JK 03.01.06
 C---------------------
+C     This covers also mm/pcm
       IF (FLAG(16) .OR. PCM .OR. QM3) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
