@@ -2584,6 +2584,7 @@ C
 #include <infpri.h>
 #include <inftap.h>
 #include <infsop.h>
+#include <qm3.h>
 C
       LOGICAL BINMEM, LINEQ, OPTSAV, LMAXIT
       CHARACTER*8 LAB123(3),RESTAR, LAB1, LAB2
@@ -2591,6 +2592,7 @@ C
       DATA RESTAR/'RESTART '/
 C
       CALL QENTER('RSPCTL')
+      IF (MMPCM) CALL MMPCMINIT()
       IF (IPRRSP .GE. 2) THEN
       IF (LINEQ) THEN
          WRITE (LUPRI,'(///2A//A,I3,A,L3/)')

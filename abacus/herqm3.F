@@ -4418,7 +4418,7 @@ C             Loop over the contribution from the PCM tesseras
      *               + (YCORD-YTSCOR(M))**2
      *               + (ZCORD-ZTSCOR(M))**2
                 DIST = SQRT(DIST2)
-                DISTM1 = 1/DIST
+                DISTM1 = 1.0/DIST
                 DISTM3 = DISTM1**3
                 EFPCM(1,LM) = EFPCM(1,LM) 
      *                     + PCMCHARGE*(XCORD-XTSCOR(M))*DISTM3
@@ -4494,6 +4494,27 @@ C             This is a MM polarazable site
       END IF
 
       END
+
+C**************************************************************************************
+C  /* Deck MMPCMINIT */
+      SUBROUTINE MMPCMINIT()
+C
+C     Initializes ICQM3 array keeping information on the convergence of
+C     the response vectors
+C
+C     1: initialized 
+C     0: not converged
+C    -1: converged 
+
+#include <implicit.h>
+#include <qm3.h>
+
+      DO 100 I=1,NSTATES
+         ICQM3(I) = 1
+  100 CONTINUE 
+
+      END
+
 C**** end of herqm3.F *****************************************************************
 
 

@@ -1039,6 +1039,7 @@ C
 #include <infdim.h>
 #include <abares.h>
 #include <thrldp.h>
+#include <qm3.h>
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       DIMENSION KEX(MAXVEC), TEST(*)
@@ -1491,6 +1492,16 @@ C
             ENDIF
  2000    CONTINUE
          NTCONV = NTCONV + NOTCNV
+
+         IF (MMPCM) THEN
+            IF (NSTATES.NE.MAXVEC) THEN
+              CALL QUIT('NSTATES.NE.MAXVEC for MMPCM')
+            ENDIF 
+            DO 3333 KL=1,NBX
+              ICQM3(KL) = KEX(KL)
+ 3333       CONTINUE     
+         ENDIF
+
          IF (NTCONV.EQ.0 .OR. NCSIM+NOSIM.EQ.0) GO TO 3999
 C        ... NTCONV is number of non-converged response vectors
 C

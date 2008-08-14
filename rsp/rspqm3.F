@@ -51,6 +51,7 @@ C
 #include <infind.h>
 #include <qm3.h>
 #include <mxcent.h>
+#include <pcmdef.h>
 #include <priunit.h>
 #include <dummy.h>
 #include <inftap.h>
@@ -59,19 +60,77 @@ C
 #include <orgcom.h>
 #include <infinp.h>
 #include <nuclei.h>
+#include <pcm.h>
+#include <pcmlog.h>
 
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
       DIMENSION UDVTR(*)
       DIMENSION WRK(*), DV(*), CREF(*)
-      LOGICAL LOPEN 
+      LOGICAL LOPEN
+
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
+      LOGICAL FIRST1, FILE_EXIST
+c      LOGICAL FIRST 
+c      SAVE    FIRST
+c      DATA    FIRST /.TRUE./
+
+      IF (MMPCM) THEN
+
+        KCOUNT = 0
+        DO 100 I=1,NSTATES
+          KCOUNT = KCOUNT + ICQM3(I)
+  100   CONTINUE
+        IF (KCOUNT.EQ.NSTATES) THEN
+          FIRST1 = .TRUE.
+        ELSE 
+          FIRST1 = .FALSE.
+        ENDIF
+
+        IF (FIRST1) THEN
+C         This is a new perturbation and we need to delete old interface
+C         files between mm/pcm
+C         1) The MM_TO_PCM file
+          INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
+          IF (FILE_EXIST) THEN
+            LFILE = -1
+            CALL GPOPEN(LFILE,'MYFPCM','OLD',' ','FORMATTED',IDUMMY,
+     &                  .FALSE.)
+            CALL GPCLOSE(LFILE,'DELETE')
+          ENDIF 
+C         2) do the same for the PCM_TO_MM file
+          INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
+          IF (FILE_EXIST) THEN
+            LFILE = -1
+            CALL GPOPEN(LFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
+     &                  .FALSE.)
+            CALL GPCLOSE(LFILE,'DELETE')
+          ENDIF
+        ELSE 
+C         open the file for PCM_TO_MM data
+          KFILE = -1
+          CALL GPOPEN(KFILE,'QFQM3','NEW',' ','FORMATTED',IDUMMY,
+     &                .FALSE.)
+               REWIND(KFILE)
+        ENDIF
+      ENDIF
+
+C     See if some vectors have converged
+c      DO 101 I=1,NOSIMFIRST
+c        IF (ICQM3(I).EQ.-1) THEN
+c          write(lupri,*) 'root converged:',I
+c        ENDIF
+c  101 CONTINUE
+c      IF ( (NOSIM.NE.NOSIMOLD) .AND. (.NOT.FIRST1) )THEN
+c        write(lupri,*) 'convergence since last iteration'
+c      ENDIF
+
       IF (NASHT .GT. 0) THEN
-         CALL QUIT('QM3 only implemented for clsoed shell')
+         CALL QUIT('QM3 only implemented for closed shell')
       ENDIF
 
       LOPEN = .FALSE.
@@ -104,8 +163,13 @@ C
         KXDIP   = KZCOOR  + NCOMS
         KYDIP   = KXDIP   + NCOMS
         KZDIP   = KYDIP   + NCOMS
-        KWRK    = KZDIP   + NCOMS
-        LWRK1   = LWRK    - KWRK      
+        KXPCM   = KZDIP   + NCOMS
+        KYPCM   = KXPCM   + NTS*NOSIM
+        KZPCM   = KYPCM   + NTS*NOSIM
+        KQEX    = KZPCM   + NTS*NOSIM
+        KSTATE  = KQEX    + NTS*NOSIM
+        KWRK    = KSTATE  + NOSIM
+        LWRK1   = LWRK    - KWRK 
       ELSE
         KWRK    = KUTRX   + N2ORBX
         LWRK1   = LWRK    - KWRK
@@ -131,6 +195,10 @@ C
         CALL DZERO(WRK(KXDIP),NCOMS)
         CALL DZERO(WRK(KYDIP),NCOMS)
         CALL DZERO(WRK(KZDIP),NCOMS)
+        CALL DZERO(WRK(KXPCM),NTS*NOSIM)
+        CALL DZERO(WRK(KYPCM),NTS*NOSIM)
+        CALL DZERO(WRK(KZPCM),NTS*NOSIM)
+        CALL DZERO(WRK(KQEX),NTS*NOSIM)
       ENDIF
 
       IF (IPRRSP .GE. 140) THEN
@@ -143,6 +211,46 @@ C
      *               1,1,LUPRI)
       END IF
 
+      IF (MMPCM .AND. (.NOT.FIRST1)) THEN
+C       Read in the PCM coordinates ans charges but only for the states
+C       that we are still converging (it might be that some of the
+C       states on the PCM_TO_MM interface file have converged after the
+C       last PCM correction and before this MM correction) 
+
+        READ(KFILE,*) NOSIMPCM, NTSPCM
+        IF (NOSIMPC.NE.NOSIMOLD) THEN
+          CALL QUIT('Error in no. of converged vectors in mm/pcm')
+        ENDIF
+        IF (NTS.NE.NTSPCM) THEN
+          CALL QUIT('Error in no. of tesseras in mm/pcm')
+        ENDIF
+        KL = 0
+        DO 150 IOSIM = 1,NOSIMOLD ! nosimold entries on this file
+          READ(KFILE,*) NVECIT
+          IF (ICQM3(NVECIT).NE.-1) THEN ! -1 means converged
+C           we only enter here NOSIM times even though the loop is over
+C           NOSIMOLD   
+            WRK(KSTATE+KL) = ICQM3(NVECIT) ! save state number
+            DO 151 L = 1,NTSPCM
+              READ(KFILE,'(4(E25.15,2x))') 
+     &        WRK(KXPCM+KL*NTS+L-1),
+     &        WRK(KYPCM+KL*NTS+L-1),
+     &        WRK(KZPCM+KL*NTS+L-1),
+     &        WRK(KQEX+KL*NTS+L-1)
+  151       CONTINUE
+            KL=KL+1
+          ELSE ! this vector has converged and we do not need this
+            DO 152 L = 1,NTSPCM
+              READ(KFILE,'(4(E25.15,2x))')
+     &        WRK(KWRK),
+     &        WRK(KWRK),
+     &        WRK(KWRK),
+     &        WRK(KWRK)
+  152       CONTINUE
+C           do not update KL in this case
+          ENDIF
+  150  CONTINUE
+      ENDIF
 
       CALL UPKCMO(CMO,WRK(KUCMO))
 
@@ -192,6 +300,7 @@ C--------------------------------------------------------
         CALL GPOPEN(LFILE,'MYFPCM','NEW',' ','FORMATTED',IDUMMY,
      &              .FALSE.)
              REWIND(LFILE)
+             WRITE(LFILE,*) NOSIM, NCOMS
       ENDIF
 
       DO 200 IOSIM = 1,NOSIM
@@ -276,6 +385,23 @@ C x-component
                    CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                    CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                    FACx = FAC * QM3QLM(WRK(KUTRX))
+                   IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
+                     TEMP = 0.0D0
+                     DO 523 IPCM = 1, NTS
+                       XPCMNOW = WRK(KXPCM+(IOSIM-1)*NTS+IPCM-1)
+                       YPCMNOW = WRK(KYPCM+(IOSIM-1)*NTS+IPCM-1)
+                       ZPCMNOW = WRK(KZPCM+(IOSIM-1)*NTS+IPCM-1)
+                       QPCMNOW = WRK(KQEX+(IOSIM-1)*NTS+IPCM-1)
+                       DIST2 = (CORD(1,IATNOW)-XPCMNOW)**2
+     &                       + (CORD(2,IATNOW)-YPCMNOW)**2
+     &                       + (CORD(3,IATNOW)-ZPCMNOW)**2
+                       DIST1 = SQRT(DIST2)
+                       DISTM3 = 1.0/(DIST1**3)
+                       TEMP = TEMP 
+     &                      + QPCMNOW*(CORD(1,IATNOW)-XPCMNOW)*DISTM3
+  523                CONTINUE
+                     FACx = FACx + FAC*TEMP
+                   ENDIF
                    CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
                    IF (MMPCM) THEN
                       WRK(KXCOOR+LM-1) = CORD(1,IATNOW)
@@ -310,6 +436,23 @@ C y-component
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                  FACy = FAC * QM3QLM(WRK(KUTRX))
+                 IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
+                   TEMP = 0.0D0
+                   DO 524 IPCM = 1, NTS
+                     XPCMNOW = WRK(KXPCM+(IOSIM-1)*NTS+IPCM-1)
+                     YPCMNOW = WRK(KYPCM+(IOSIM-1)*NTS+IPCM-1)
+                     ZPCMNOW = WRK(KZPCM+(IOSIM-1)*NTS+IPCM-1)
+                     QPCMNOW = WRK(KQEX+(IOSIM-1)*NTS+IPCM-1)
+                     DIST2 = (CORD(1,IATNOW)-XPCMNOW)**2
+     &                     + (CORD(2,IATNOW)-YPCMNOW)**2
+     &                     + (CORD(3,IATNOW)-ZPCMNOW)**2
+                     DIST1 = SQRT(DIST2)
+                     DISTM3 = 1.0/(DIST1**3)
+                     TEMP = TEMP 
+     &                    + QPCMNOW*(CORD(2,IATNOW)-YPCMNOW)*DISTM3
+  524              CONTINUE
+                   FACy = FACy + FAC*TEMP
+                 ENDIF
                  CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
                  IF (MMPCM) WRK(KYDIP+LM-1)  = -FACy
 
@@ -330,6 +473,23 @@ C z-component
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                  CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                  FACz = FAC * QM3QLM(WRK(KUTRX))
+                 IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
+                   TEMP = 0.0D0
+                   DO 525 IPCM = 1, NTS
+                     XPCMNOW = WRK(KXPCM+(IOSIM-1)*NTS+IPCM-1)
+                     YPCMNOW = WRK(KYPCM+(IOSIM-1)*NTS+IPCM-1)
+                     ZPCMNOW = WRK(KZPCM+(IOSIM-1)*NTS+IPCM-1)
+                     QPCMNOW = WRK(KQEX+(IOSIM-1)*NTS+IPCM-1)
+                     DIST2 = (CORD(1,IATNOW)-XPCMNOW)**2
+     &                     + (CORD(2,IATNOW)-YPCMNOW)**2
+     &                     + (CORD(3,IATNOW)-ZPCMNOW)**2
+                     DIST1 = SQRT(DIST2)
+                     DISTM3 = 1.0/(DIST1**3)
+                     TEMP = TEMP
+     &                    + QPCMNOW*(CORD(3,IATNOW)-ZPCMNOW)*DISTM3
+  525              CONTINUE
+                   FACz = FACz + FAC*TEMP
+                 ENDIF
                  CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
                  IF (MMPCM) WRK(KZDIP+LM-1)  = -FACz
 
@@ -342,25 +502,24 @@ C
 
   300 CONTINUE 
 
-      IF (MMPCM) WRITE(LFILE,*) NOSIM
       IF (MMPCM) THEN
+        IF (FIRST1) THEN
+          WRITE(LFILE,*) IOSIM
+        ELSE
+          WRITE(LFILE,*) WRK(KSTATE+IOSIM-1)
+        ENDIF 
+
         DO 820 L = 1,NCOMS
-          WRITE(LFILE,'(I5,6(E25.15,2x))') L,WRK(KXCOOR+L-1),
+          WRITE(LFILE,'(6(E25.15,2x))') WRK(KXCOOR+L-1),
      &    WRK(KYCOOR+L-1),
-     &    WRK(KXCOOR+L-1),WRK(KXDIP+L-1),WRK(KYDIP+L-1),
+     &    WRK(KZCOOR+L-1),WRK(KXDIP+L-1),WRK(KYDIP+L-1),
      &    WRK(KZDIP+L-1)
   820   CONTINUE
-
-        CALL DZERO(WRK(KXCOOR),NCOMS)
-        CALL DZERO(WRK(KYCOOR),NCOMS)
-        CALL DZERO(WRK(KZCOOR),NCOMS)
-        CALL DZERO(WRK(KXDIP),NCOMS)
-        CALL DZERO(WRK(KYDIP),NCOMS)
-        CALL DZERO(WRK(KZDIP),NCOMS)
       ENDIF
 
   200 CONTINUE
 
+      IF ( (MMPCM) .AND. (.NOT.FIRST1) ) CALL GPCLOSE(KFILE,'KEEP')
       IF (MMPCM) CALL GPCLOSE(LFILE,'KEEP')
 
       IF (INTDIR) THEN
@@ -388,6 +547,15 @@ C--------------------------------------------
          CALL OUTPUT(EVECS(KZVAR+KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,
      *               1,1,LUPRI)
       END IF
+
+C     Save nosim for use with mm/pcm
+
+      IF (FIRST1) NOSIMFIRST = NOSIM
+      NOSIMOLD = NOSIM
+
+c      IF (FIRST) THEN
+c         FIRST = .FALSE.
+c      END IF
 
       CALL QEXIT('QM3LNO')
       RETURN

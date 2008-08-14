@@ -122,6 +122,8 @@ B3LYP
  0.040
 .THCLR
 1.0D-9
+.PRINT
+10
 **END OF
 %EOF%
 #
