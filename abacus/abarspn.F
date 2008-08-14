@@ -102,10 +102,12 @@ C
 #include <infhyp.h>
 #include <priunit.h>
 #include <infsop.h>
+#include <qm3.h>
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
 C
       CALL QENTER('ABARSP')
+      IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
       IPRRSP = IPRCLC - 2
       IF (IPRRSP .GE. 0) THEN
@@ -132,7 +134,7 @@ C
          ENDIF
       END IF
       CALL FLSHFO(LUPRI)
-C
+
       IF (DODRCT .AND. NCONRF.LE.1) FABRHS = .FALSE.
 C     ... no integral transformation for HF or DFT direct calculations.
 C
@@ -519,6 +521,7 @@ C
 #include <infpp.h>
 #include <inforb.h>
 #include <infpri.h>
+#include <qm3.h>
 C
       CALL QENTER('RSPLEX')
 C     space allocation for reduced E(2) and reduced S(2)
