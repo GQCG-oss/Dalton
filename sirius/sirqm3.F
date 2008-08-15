@@ -455,8 +455,6 @@ C                 MM/PCM interface. Coordinates and charges are fixed
 C                 here so in fact on needed on the first call. Leave it
 C                 for now.
 
-c                  write(lupri,*) 'MMPCM:', MMPCM 
-
                   IF (MMPCM) THEN
                     XMMQ(L) = CORD(1,IATNOW)
                     YMMQ(L) = CORD(2,IATNOW)
