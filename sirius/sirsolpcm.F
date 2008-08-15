@@ -500,6 +500,7 @@ C
 #include <scbrhf.h>
 #include <maxaqn.h>
 #include <symmet.h>
+#include <qm3.h>
 C
 #include <orgcom.h>
 #include <dftcom.h>
@@ -509,7 +510,8 @@ C
       LOGICAL FNDLAB, EXP1VL, TOFILE
       DIMENSION DVAO(NNBAST), DCAO(NNBAST)
       DIMENSION FSOL(*), CMO(*), WRK(LFREE)
-      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0,  D2 = 2.0D0, DP5 = 0.5D0 )
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0,  D2 = 2.0D0, DP5 = 0.5D0)
+      PARAMETER ( DM1 = -1.0D0 )
 C
       LOGICAL     MOBAS
       LOGICAL     FIRST
@@ -522,7 +524,8 @@ C     define automatic arrays (dynamic core allocation)
 C
       CALL QENTER('PCMFCK')
 C
-      IPRINT = MAX(JPRINT,IPRPCM)
+Clf      IPRINT = MAX(JPRINT,IPRPCM)
+      IPRINT = 10
 C
 C
 C     Core allocation
@@ -531,10 +534,14 @@ C        RLM    R(l,m) integrals for current l,m value in l,m loop
 C
 C
       KJENAO = 1
-      KJ1AO  = KJENAO + NNBASX
+      KXAO   = KJENAO + NNBASX
+      KJ1AO  = KXAO   + NNBASX
       KJAO   = KJ1AO  + NNBASX
       KTJ2   = KJAO   + NNBASX
-      KWRK1  = KTJ2   + NTS
+      KPOTMM = KTJ2   + NTS
+      KPTQMN = KPOTMM + NTS
+      KQMAT  = KPTQMN + NTS
+      KWRK1  = KQMAT  + NTS * NTSIRR
       LWRK1  = LFREE  - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMFCK',-KWRK1,LFREE)
 C
@@ -542,14 +549,27 @@ C
       QET   = D0
 C
       CALL DZERO(WRK(KTJ2),NTS)
+      CALL DZERO(WRK(KXAO),NNBASX)
 
+      CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.)
+      IF(MMPCM .AND. QM3) THEN
+         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.)
+Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
+         CALL V2Q(WRK(KQMAT), WRK(KPOTMM), QSMM, QTMM, .FALSE.)
+         print *, 'qtmm', qtmm
+      ELSE
+         CALL DZERO(WRK(KPOTMM), NTS)
+         CALL DZERO(QSMM, NTS)
+      ENDIF
+Clf      CALL V2Q(WRK(KQMAT), WRK(KPTQMN), QSENEQ, XXX, .FALSE.)
 C
-C        Read JEN in ao basis 
+C        Read JEN in ao basis (\sum_i V^e_{\mu \nu, i} (q^n_i+q^{mm}_i))
 C
       LUPBKP = LUPROP
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
-      IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
+Clf      IF ((.NOT.(FNDLAB('NE-PCMIN',LUPROP))).OR.(MMPCM.AND.QM3)) THEN
+      IF (.true.) THEN
          CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
       END IF
       REWIND (LUPROP)
@@ -578,14 +598,14 @@ C
          END IF
 C
 C     PCMEN = interaction solute electrons - polarization nuclear charges
-C     PCMEN = sum_i [Vel(i) * QSN(i)]
+C     PCMEN = sum_i [Vel(i) * QSN(i)+QSMM(i)]
 C
-         PCMEN  = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
+         PCMEN_op = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
          CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
-         CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
+         CALL V2Q(WRK(KQMAT),WRK(KTJ2),QSE,QET,.FALSE.)
          IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
@@ -651,7 +671,7 @@ C
 C
       EXP1VL = .FALSE.
       TOFILE = .FALSE.
-      CALL J1INT(QSE,EXP1VL,WRK(KJENAO),1,TOFILE,'NPETES ',
+      CALL J1INT(QSE,EXP1VL,WRK(KXAO),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LWRK1)
 C
 C    PCMNE = interaction solute nuclei - polarization electronic charges
@@ -660,31 +680,73 @@ C
 C    PCMEE = interaction solute electrons - polarization electronic charges
 C             PCMEE = sum_i [Vel(i) * QSE(i)]
 C
-        PCMNE = D0
-	DO ITS = 1, NTSIRR
-        DO JATOM = 1, NUCDEP
-          R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
-     *         YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
-          R = DSQRT(R2)
-          PCMNE = PCMNE + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
-        ENDDO
+      PCMEE = D0
+      PCMEN = D0
+      PCMNE = D0
+      PCMMM = D0
+      PCMNM = D0
+      PCMMN = D0
+      PCMME = D0
+      PCMEM = D0
+      PCMNN = D0
+      DO ITS = 1, NTSIRR
+Clf         VCHECK = ZERO 
+Clf         DO JATOM = 1, NUCDEP
+Clf            R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
+Clf     *           YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
+Clf            R = DSQRT(R2)
+Clf            VCHECK = VCHECK + PCMCHG(JATOM) / R
+Clf         ENDDO
+Clf         print *, VCHECK, WRK(KPTQMN+ITS-1), WRK(KPOTMM+ITS-1)
+         PCMMM = PCMMM + NSYM * QSMM(ITS) * WRK(KPOTMM + ITS -1)
+         PCMNN = PCMNN + NSYM * QSN(ITS)  * WRK(KPTQMN + ITS -1)
+         PCMEE = PCMEE + NSYM * QSE(ITS)  * WRK(KTJ2   + ITS -1)
+
+         PCMEN = PCMEN + NSYM * QSN(ITS) * WRK(KTJ2+ITS-1)
+         PCMNE = PCMNE + NSYM * QSE(ITS) * WRK(KPTQMN+ITS-1)
+
+         PCMEM = PCMEM + NSYM * QSMM(ITS) * WRK(KTJ2+ITS-1)
+         PCMME = PCMME + NSYM * QSE(ITS)  * WRK(KPOTMM + ITS -1)
+
+         PCMMN = PCMMN + NSYM * QSMM(ITS) * WRK(KPTQMN + ITS -1)
+         PCMNM = PCMNM + NSYM * QSN(ITS)  * WRK(KPOTMM + ITS -1)
+
       ENDDO
       IF (.NOT. MOBAS) THEN
-         PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
+Clf         PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
+         PCMEE_op = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KXAO),1)
 C
 C     Electrostatic contribution:
 C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
 C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
-         ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
+C     PCMMN =     interaction mm chg - polarization nuclear charges
+C     PCMNM =     interaction nuclei - polarization mm chg         
+C     PCMMM =     interaction mm chg - polarization mm chg         
+         ESOLT = DP5 * (PCMEN + PCMNE + PCMEE + PCMNN) + 
+     *           DP5 * (PCMMM + PCMMN + PCMNM) +
+     *           DP5 * (PCMEM + PCMME)
 C
-         IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
-     &        'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
-     &        PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
+         IF (IPRINT .GT. 2) THEN 
+            WRITE(LUPRI,'(A)')
+     *           'PCMFCK: PCM solvation energy contributions'
+            WRITE(LUPRI,*) 'PCMEE', PCMEE
+            WRITE(LUPRI,*) 'PCMEN', PCMEN
+            WRITE(LUPRI,*) 'PCMEM', PCMEM
+            WRITE(LUPRI,*) 'PCMNE', PCMNE
+            WRITE(LUPRI,*) 'PCMNN', PCMNN
+            WRITE(LUPRI,*) 'PCMNM', PCMNM
+            WRITE(LUPRI,*) 'PCMME', PCMME
+            WRITE(LUPRI,*) 'PCMMN', PCMMN
+            WRITE(LUPRI,*) 'PCMMM', PCMMM
+            WRITE(LUPRI,*) 'PCMEE_op', PCMEE_op
+            WRITE(LUPRI,*) 'PCMEN_op', PCMEN_op
+         ENDIF
       END IF
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
 C
+      CALL DAXPY(NNBASX,1.0D0,WRK(KXAO),1,WRK(KJENAO),1)
       CALL PKSYM1(WRK(KJENAO),WRK(KJAO),NBAS,NSYM,+1)
       IF (IPRINT .GE. 15) THEN
          WRITE (LUPRI,'(/A)')

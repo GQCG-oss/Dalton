@@ -675,7 +675,7 @@ C
       RETURN
       END
 C/* Deck pcmjmat */
-      SUBROUTINE PCMJMAT(VEC2,NUM2,WORK,LWORK)
+      SUBROUTINE PCMJMAT(VEC2,NUM2,WRK,LWRK)
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -686,10 +686,11 @@ C
 C
       CHARACTER*8 RTNLBL(2)
       LOGICAL FNDLAB
-      DIMENSION VEC(NUM2),VEC2(NUM2)
+      DIMENSION VEC2(NUM2), WRK(*)
 C
 #include <pcm.h>
 #include <pcmlog.h>
+#include <qm3.h>
 C
 C     This routine computes J matrix  (interaction between induced
 C     nuclear charges and electronic potential due to the solute):
@@ -703,8 +704,20 @@ C     solvent (they are stored in file 11, or for MCSCF in file 87).
 C
       CALL DZERO(VEC2,NUM2)
 C
+      KQNUC = 1
+      KWRK1 = KQNUC + NTSIRR
+      LWRK1 = LWRK - KWRK1 + 1
+      IF (LWRK1 .LT. 0) CALL ERRWRK('PCMJMAT',-KWRK1, LWRK)
+
+      CALL DCOPY(NTSIRR,QSN,1,WRK(KQNUC),1)
+      IF(QM3.AND.MMPCM) THEN
+         CALL DAXPY(NTSIRR,1.0D0,QSMM,1,WRK(KQNUC),1)
+      ENDIF         
+      
       LUBKP = LUPROP
-      CALL J1INT(QSN,.FALSE.,VEC2,1,.FALSE.,'NPETES ',1,WORK,LWORK)
+      
+      CALL J1INT(WRK(KQNUC),.FALSE.,VEC2,1,.FALSE.,'NPETES ',1,
+     *           WRK(KWRK1), LWRK)
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
 C        

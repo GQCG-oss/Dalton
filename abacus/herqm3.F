@@ -4413,7 +4413,7 @@ C             This is a MM polarazable site
 
 C             Loop over the contribution from the PCM tesseras
               DO 523 M = 1, NTS
-                PCMCHARGE = QSN(M)+QSE(M)
+                PCMCHARGE = QSN(M)+QSE(M)+QSMM(M)
                 DIST2 = (XCORD-XTSCOR(M))**2
      *               + (YCORD-YTSCOR(M))**2
      *               + (ZCORD-ZTSCOR(M))**2

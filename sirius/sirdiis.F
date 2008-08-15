@@ -705,40 +705,45 @@ C        input
 
            LCONV = .FALSE. 
            XTEST1 = D0
+           CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
+           CALL MEMGET('REAL',KMMPCM,NNBAST,WRK,KFREE,LFREE)
            DO 998 ITER = 1, MXDIIT
 C            First the MM part ...
-             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)
+             CALL DZERO(WRK(KMMPCM),NNBAST)
              CALL QM3FCK(DAOSAV(1,1),DAOSAV(1,2),
      &                   WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
      &                   WRK(KFREE),LFREE,IPRDIS)
-             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+             CALL DCOPY(NNBAST,WRK(KFCSOL),1,WRK(KMMPCM),1)
+Clf             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
 
              TEMP = ESOLT
 
 C            Now the PCM part ...        
               
-             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+             print *,'before pcmfck', iter
+             CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
      &                   LFREE,IPRDIS)
-             CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+             CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,WRK(KMMPCM),1)
 
              ESOLT = ESOLT + TEMP
              XTEST2 = ESOLT
              IF ( ((ABS(XTEST1-XTEST2)) .LT. THDISC) .OR. LOSPC) THEN
                LCONV = .TRUE.
+               CALL DAXPY(NNBAST,D1,WRK(KMMPCM),1,FAOSAV(1,INDEVC,1),1)
                write(lupri,*) 'MMPCM converged for given density'
                write(lupri,*) 'No. of iterations: ',ITER
                GOTO 999
              ELSE 
                XTEST1 = XTEST2
              ENDIF
-  998      CONTINUE
-  999 CONTINUE
+ 998       CONTINUE
+ 999       CONTINUE
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
+           CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
 C
          EMCDIF = EMCSCF
