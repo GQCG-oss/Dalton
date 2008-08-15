@@ -2336,7 +2336,7 @@ C
 C     In case of MM/PCM coupling calculate the PCM electric field at
 C     each polarizable point
 
-      IF (MMPCM) CALL PCMFIELD(EFPCM)
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
 
       IF (MYMAT) THEN
 
@@ -2645,7 +2645,7 @@ C
         CALL QM3_PUT3(LUMOM,'QMIND   ',MYIND,NCOMS)
 C
 C       if mm/pcm we transfer the induced dipole moments to pcm        
-        IF (MMPCM) CALL GIVEMY(MYIND)
+        IF (MMPCM .AND. (.NOT.LOSPC)) CALL GIVEMY(MYIND)
 
         IF (SLOTH) THEN
           NUM = 0
@@ -3018,7 +3018,7 @@ C
       CALL GPOPEN(LUENSA,'ENSAFILE','UNKNOWN',' ','FORMATTED',IDUMMY,
      &           .FALSE.)
 C
-      IF (MMPCM) CALL PCMFIELD(EFPCM)
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
 C     present this will just be zero
@@ -3108,7 +3108,7 @@ C
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
 C
-      IF (MMPCM) CALL PCMFIELD(EFPCM)
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
 C     present this will just be zero
@@ -3230,7 +3230,7 @@ C
    20    CONTINUE
    19 CONTINUE
 
-      IF (MMPCM) CALL PCMFIELD(EFPCM)
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
 C     present this will just be zero
