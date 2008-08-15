@@ -698,16 +698,12 @@ c        density
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
 
-C        For now we just have these parameters here. Should be moved to
-C        input
-         MXDIIT = 20
-         THDISC = 1.0D-05
-
+C          parameters on input: MXITMP and THRSMP
            LCONV = .FALSE. 
            XTEST1 = D0
            CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
            CALL MEMGET('REAL',KMMPCM,NNBAST,WRK,KFREE,LFREE)
-           DO 998 ITER = 1, MXDIIT
+           DO 998 ITER = 1, MXITMP
 C            First the MM part ...
              CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL DZERO(WRK(KMMPCM),NNBAST)
@@ -731,7 +727,7 @@ Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
 
              ESOLT = ESOLT + TEMP
              XTEST2 = ESOLT
-             IF ( ((ABS(XTEST1-XTEST2)) .LT. THDISC) .OR. LOSPC) THEN
+             IF ( ((ABS(XTEST1-XTEST2)) .LT. THRSMP) .OR. LOSPC) THEN
                LCONV = .TRUE.
                CALL DAXPY(NNBAST,D1,WRK(KMMPCM),1,FAOSAV(1,INDEVC,1),1)
                write(lupri,*) 'MMPCM converged for given density'

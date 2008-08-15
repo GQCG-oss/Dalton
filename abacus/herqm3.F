@@ -55,7 +55,7 @@ C
 #include <mxsymm.h>
 #include <qm3.h>
 C
-      PARAMETER ( NTABLE = 17, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 19, D1 = 1.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -67,7 +67,7 @@ C
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
      *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPIN',
      *            '.PRFQM3', '.INTDIR', '.REDCNT', '.LGSPOL',
-     *            '.MMPCM '/
+     *            '.MMPCM ', '.MXITMP', '.THRSMP'/
 C
       CALL QENTER('QM3INP')
 C
@@ -93,6 +93,8 @@ C
       INTDIR  = .FALSE.
       REDCNT  = .FALSE.
       MMPCM   = .FALSE.
+      MXITMP  = 20
+      THRSMP  = 1.0D-05
 C
 C
 C     CRUCIAL TEST : MXCENT has to be equal to MXQM3
@@ -119,7 +121,7 @@ C
           ICHANG = ICHANG + 1
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
+              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -273,6 +275,14 @@ C
 
    17     CONTINUE
             MMPCM  = .TRUE.
+          GO TO 100
+
+   18     CONTINUE
+            READ(LUCMD,*) MXITMP
+          GO TO 100
+
+   19     CONTINUE
+            READ(LUCMD,*) THDISC 
           GO TO 100
 C
         ELSE IF (PROMPT .EQ. '*') THEN
