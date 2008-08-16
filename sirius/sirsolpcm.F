@@ -550,6 +550,7 @@ C
 C
       CALL DZERO(WRK(KTJ2),NTS)
       CALL DZERO(WRK(KXAO),NNBASX)
+      CALL DZERO(WRK(KJENAO),NNBASX)
 
       CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.)
       IF(MMPCM .AND. QM3) THEN
@@ -571,14 +572,15 @@ C
 Clf      IF ((.NOT.(FNDLAB('NE-PCMIN',LUPROP))).OR.(MMPCM.AND.QM3)) THEN
       IF (.true.) THEN
          CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
+      ELSE
+         REWIND (LUPROP)
+         CALL REAPCM('NE-PCMIN','PCMFCK  ',LUPROP,WRK(KJENAO),NNBASX)
       END IF
-      REWIND (LUPROP)
-      CALL REAPCM('NE-PCMIN','PCMFCK  ',LUPROP,WRK(KJENAO),NNBASX)
       IF (IPRINT .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' PCMFCK - JNE_ao matrix:'
          CALL OUTPAK(WRK(KJENAO),NBAST,1,LUPRI)
       END IF
-C
+C     
       IF (.NOT. MOBAS) THEN
 C
 C     Loop over all tesserae.
@@ -729,17 +731,22 @@ C
          IF (IPRINT .GT. 2) THEN 
             WRITE(LUPRI,'(A)')
      *           'PCMFCK: PCM solvation energy contributions'
-            WRITE(LUPRI,*) 'PCMEE', PCMEE
-            WRITE(LUPRI,*) 'PCMEN', PCMEN
-            WRITE(LUPRI,*) 'PCMEM', PCMEM
-            WRITE(LUPRI,*) 'PCMNE', PCMNE
-            WRITE(LUPRI,*) 'PCMNN', PCMNN
-            WRITE(LUPRI,*) 'PCMNM', PCMNM
-            WRITE(LUPRI,*) 'PCMME', PCMME
-            WRITE(LUPRI,*) 'PCMMN', PCMMN
-            WRITE(LUPRI,*) 'PCMMM', PCMMM
             WRITE(LUPRI,*) 'PCMEE_op', PCMEE_op
-            WRITE(LUPRI,*) 'PCMEN_op', PCMEN_op
+            WRITE(LUPRI,*) 'PCMEE', PCMEE
+            WRITE(LUPRI,*) 'PCMNN', PCMNN
+            WRITE(LUPRI,*) 'PCMMM', PCMMM
+
+            WRITE(LUPRI,*) 'PCMEN', PCMEN
+            WRITE(LUPRI,*) 'PCMNE', PCMNE
+
+            WRITE(LUPRI,*) 'PCMEM', PCMEM
+            WRITE(LUPRI,*) 'PCMME', PCMME
+
+            WRITE(LUPRI,*) 'PCMNM', PCMNM
+            WRITE(LUPRI,*) 'PCMMN', PCMMN
+
+            WRITE(LUPRI,*) 'PCMEN_op', PCMEN_op, PCMEN + PCMEM
+            WRITE(LUPRI,*) 'ESOLT', ESOLT
          ENDIF
       END IF
 C     

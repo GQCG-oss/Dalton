@@ -702,12 +702,14 @@ C     (S=overlap matrix, E_i=matrix of normal components of the field)
 C     These matrices are used to correct 1-e integrals obtained without
 C     solvent (they are stored in file 11, or for MCSCF in file 87).
 C
-      CALL DZERO(VEC2,NUM2)
 C
       KQNUC = 1
       KWRK1 = KQNUC + NTSIRR
       LWRK1 = LWRK - KWRK1 + 1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMJMAT',-KWRK1, LWRK)
+
+      CALL DZERO(VEC2,NUM2)
+      CALL DZERO(WRK(KQNUC),NTSIRR)
 
       CALL DCOPY(NTSIRR,QSN,1,WRK(KQNUC),1)
       IF(QM3.AND.MMPCM) THEN
@@ -717,7 +719,7 @@ C
       LUBKP = LUPROP
       
       CALL J1INT(WRK(KQNUC),.FALSE.,VEC2,1,.FALSE.,'NPETES ',1,
-     *           WRK(KWRK1), LWRK)
+     *           WRK(KWRK1), LWRK1)
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
 C        
