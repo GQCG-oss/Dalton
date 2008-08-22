@@ -524,8 +524,7 @@ C     define automatic arrays (dynamic core allocation)
 C
       CALL QENTER('PCMFCK')
 C
-Clf      IPRINT = MAX(JPRINT,IPRPCM)
-      IPRINT = 10
+      IPRINT = MAX(JPRINT,IPRPCM)
 C
 C
 C     Core allocation
@@ -553,15 +552,16 @@ C
       CALL DZERO(WRK(KJENAO),NNBASX)
 
       CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.)
+
       IF(MMPCM .AND. QM3) THEN
          CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
          CALL V2Q(WRK(KQMAT), WRK(KPOTMM), QSMM, QTMM, .FALSE.)
-         print *, 'qtmm', qtmm
       ELSE
          CALL DZERO(WRK(KPOTMM), NTS)
          CALL DZERO(QSMM, NTS)
       ENDIF
+
 Clf      CALL V2Q(WRK(KQMAT), WRK(KPTQMN), QSENEQ, XXX, .FALSE.)
 C
 C        Read JEN in ao basis (\sum_i V^e_{\mu \nu, i} (q^n_i+q^{mm}_i))
@@ -608,6 +608,7 @@ C
          CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
          CALL V2Q(WRK(KQMAT),WRK(KTJ2),QSE,QET,.FALSE.)
+
          IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
@@ -691,6 +692,7 @@ C
       PCMME = D0
       PCMEM = D0
       PCMNN = D0
+
       DO ITS = 1, NTSIRR
 Clf         VCHECK = ZERO 
 Clf         DO JATOM = 1, NUCDEP

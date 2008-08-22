@@ -936,10 +936,10 @@ C
             ENDDO
          ENDIF
          IF(DO_MMPOT .AND. QM3 .AND. MMPCM) THEN
-            DO IATOM = 1, NUSITE  
+            DO IATOM = 1, NUSITE
                XL = XMMQ(IATOM)    
-               YL = XMMQ(IATOM)    
-               ZL = XMMQ(IATOM)
+               YL = YMMQ(IATOM)    
+               ZL = ZMMQ(IATOM)
                CHGMM = MMQ(IATOM)
                RIL=DSQRT((XTSCOR(ITS)-XL)**2+(YTSCOR(ITS)-YL)**2
      &              +(ZTSCOR(ITS)-ZL)**2) 
