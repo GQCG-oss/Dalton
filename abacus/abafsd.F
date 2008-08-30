@@ -1183,8 +1183,9 @@ C  /* Deck traorb */
       SUBROUTINE TRAORB(ORBTRA,IDIM,IATOM,IPRINT)
 C
 C     Sets up transformation matrices between SO and AO orbitals
-C
 C     tuh Sep 07 1988
+C
+C     hjaaj 2008: IATOM .eq. -1 introduced, called p.t. by abamolden.F
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1199,10 +1200,13 @@ C
       DIMENSION ORBTRA(IDIM,IDIM)
 #include <ibtfun.h>
 C
-      IF (IATOM .LE. 0) THEN
+      IF (IATOM .GT. 0) THEN
+         FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
+      ELSE IF (IATOM .EQ. 0 .OR. IATOM .EQ. -1) THEN
          FACTOR = 1.0D0
       ELSE
-         FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
+         CALL QENTER('TRAORB')
+         CALL QUIT('IATOM .lt. -1')
       END IF
       CALL DZERO(ORBTRA,IDIM*IDIM)
       DO 100 I = 1, IDIM
@@ -1518,7 +1522,7 @@ C
 C
 C     ***** Print Section *****
 C
-      IF (IPRINT .GT. 5 .or. iatom.eq.0) THEN
+      IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from ONETRA',-1)
          WRITE (LUPRI,'(A,I5)') ' IATOM  ', IATOM
          WRITE (LUPRI,'(A,I5)') ' ICOOR  ', ICOOR
