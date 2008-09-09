@@ -361,12 +361,13 @@ C
          KPOLDA = KPOLDL + 2*9*MXFR
          KPOLVL = KPOLDA + 2*9*MXFR
          KPOLVV = KPOLVL + 2*9*MXFR
-         KLST1  = KPOLVV + 2*9*MXFR
+         KFOVIB = KPOLVV + 2*9*MXFR
+         KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
          LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
      &                  WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
-     &                  WORK(KLST1),LWRK1,PASLNR)
+     &                  WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
             IF (PASLNR) CALL ABAWRITRS
             CALL FLSHFO(LUPRI)
          END IF
@@ -377,6 +378,7 @@ C
          KPOLDA = KLAST
          KPOLVL = KLAST
          KPOLVV = KLAST
+         KFOVIB = KLAST
          KLST1  = KLAST
          LWRK1  = LWRK
       END IF
@@ -576,7 +578,7 @@ C
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
      &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
-     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),
+     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
      &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
      &            WORK(KSLEN),WORK(KSVEL),WORK(KLAST),LWRK3)
@@ -654,7 +656,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <priunit.h>
-      PARAMETER (NDIR = 28, NTABLE = 57, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 58, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
       LOGICAL   GRDINP
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -701,8 +703,8 @@ C
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
-cLig <> added CTOCD in the 51st position
 Caug04-hjaaj: disabled currently inactive .NACME
+Csep08-spas: .NACME reactivated for Vib_g
       DATA TABLE  /'.PRINT ', '.MOLGRA', '.SELECT',
      &             '.DIPGRA', '.POLARI', '.MOLHES',
      &             '.INPTES', '.VIBANA', '.RESTAR',
@@ -710,7 +712,7 @@ Caug04-hjaaj: disabled currently inactive .NACME
      &             '.NUMHES', '.POPANA', '.OECD  ',
      &             '.EXCITA', '.SHIELD', '.VCD   ',
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
-     &             'xNACME ', '.NOLOND', '.NOHESS',
+     &             '.NACME ', '.NOLOND', '.NOHESS',
      &             '.WRTINT', '.ECD   ', '.NODIFC',
      &             '.MOLGFA', '.SPIN-R', '.OR    ',
      &             '.PHASEO', '.NOMASV', '.NODARW',
@@ -721,7 +723,8 @@ Caug04-hjaaj: disabled currently inactive .NACME
      &             '.CAVORG', '.HYPER ', '.VERDET',
      &             '.MCD   ', '.SOPPA ', '.EXPGRA',
      &             '.CTOCD ', '.D2DQ2 ', '.QPGRAD',
-     &             '.DISDIP', '.SECMOM', '.THIRDM'/
+     &             '.DISDIP', '.SECMOM', '.THIRDM',
+     &             '.VIB_G '/ 
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -822,6 +825,7 @@ C
       EXPGRD = .FALSE.
       THIRDM = .FALSE.
       ESG    = .FALSE.
+      VIB_G  = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -912,13 +916,12 @@ C
       ELSE IF (PROMPT .EQ. '.') THEN
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-cLig <> added goto 151
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157),I
+     &                151,152,153,154,155,156,157,158),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1183,6 +1186,14 @@ C .D2DQ2
  157     CONTINUE
             SECNDM = .TRUE.
          GOTO 100
+ 158     CONTINUE
+            VIB_G  = .TRUE.
+            NACME  = .TRUE.
+            VIB    = .TRUE.
+            MOLGRD = .TRUE.
+            MOLHES = .TRUE.
+            ABALNR = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1421,6 +1432,11 @@ cLig <<
      &               ' Vibrational circular dichroism (VCD)'
       IF (NACME)  WRITE (LUPRI,'(5X,A)')
      &   ' First-order non-adiabatic coupling matrix elements (NACMEs)'
+      IF (VIB_G)  WRITE (LUPRI,'(5X,A,/,5x,A,A,/,5x,A)')
+     &            ' Vibrational g-factors :',
+     &              '    (Ref.: K. L. Bak, S. P. A. Sauer,',
+     &              ' J. Oddershede and J. F. Ogilvie,',
+     &              '     Phys. Chem. Chem. Phys. 7, 1747-1758 (2005))' 
       IF (DOD2DQ2)  WRITE (LUPRI,'(5X,A)')
      &   ' < d Psi/dQ | d Psi/dQ > (Q = nuclear coordinates)'
       IF (NOLOND) WRITE (LUPRI,'(5X,A)')
@@ -1950,7 +1966,7 @@ C  /* Deck result */
       SUBROUTINE ABARESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
-     &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,
+     &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
 C
@@ -1976,7 +1992,7 @@ C
      &          SPSDFC(MXCOOR,MXCOOR)
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
      &          TRLON(*), TRMAG(*), BSRLON(*),
-     &          EXENG(*), FONAC(*), FONA2(*),
+     &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
@@ -2325,7 +2341,8 @@ C
 C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
-      IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRDEF)
+      IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
+     &                        IPRDEF,WORK,LWORK)
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C

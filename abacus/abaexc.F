@@ -42,7 +42,7 @@ C  /* Deck excinp */
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <inforb.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 C
 #include <abainf.h>
 #include <anrinf.h>
@@ -220,7 +220,7 @@ C     Initialize /cbiexc/
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <abainf.h>
 C
       IPR1IN = IPRDEF
@@ -251,7 +251,7 @@ C  /* Deck excita */
 #include <priunit.h>
 #include <mxcent.h>
 #include <inforb.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <infrsp.h>
 #include <nuclei.h>
       LOGICAL PASS
@@ -294,7 +294,7 @@ C  /* Deck excit1 */
 #include <maxorb.h>
 #include <iratdef.h>
 #include <priunit.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <inflin.h>
@@ -589,6 +589,11 @@ C     ========================
 C
       LUSOVE = -9002
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C
+CSPAS : 26/02-2008 Keld Bak's VIB-G 
+      NBR = 0
+C
+CKeinSPASmehr
       DO 100 ISYM = 1, NSYM
 C
          CALL ABAVAR(ISYM,EXCTRP,IPREXC,WORK(KWORK2),LWORK2)
@@ -606,7 +611,9 @@ C
             KWRKG1 = KGD1
             LWRKG1 = LWORK - KGD1
             KSLV   = KGD1 + 2*NVARPT
-            KLAST  = KSLV + 2*NVARPT
+C           KLAST  = KSLV + 2*NVARPT
+            KWRK2  = KSLV + 2*NVARPT
+            KLAST  = KWRK2 + 2*NVARPT
             IF (KLAST.GT.LWORK) CALL STOPIT('EXCITA',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
@@ -621,6 +628,47 @@ C
             DO 70 IEXVAL = 1,NEXVAL
                EXENG(ISYM,IEXVAL) = WORK(KEXVAL-1+IEXVAL)
    70       CONTINUE
+C
+            IF (FNAC .AND. (.NOT. NODIFC)) THEN
+C
+              DO 72 IATOM = 1,NUCIND
+C
+                DO 71 ICOOR = 1,3
+C
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM-1,1)
+C
+                  IF (ISCOOR.GT.0) THEN
+C
+                    NBR = NBR + 1
+C
+                    CALL RDS2X(NBR,WORK(KUDV),WORK(KXINDX),
+     &                         WORK(KWRK2),LWRK)
+C
+                    IF (IPREXC.GT.3) THEN
+                       WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
+                       CALL OUTPUT(WORK(KWRK2),1,2*NVARPT,1,1,2*NVARPT,
+     &                             1,1,LUPRI)
+                    END IF
+C
+                    REWIND LUSOVE
+C
+                    DO 73 IEXVAL = 1,NEXVAL
+C
+                      CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                      EXMOM = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KWRK2),1)
+C
+                      FONAC(NBR,ISYM,IEXVAL) = EXMOM
+C
+   73               CONTINUE
+C
+                  END IF
+C
+   71           CONTINUE
+C
+   72         CONTINUE
+C
+            ENDIF
 C
 C           Loop over property labels
 C           =========================
@@ -732,9 +780,20 @@ C
      &                                     -EXMOM * EXENG(ISYM,IEXVAL)
                   ELSE IF (LABEL(1:4).EQ.'HDO ') THEN
                     DO 57 INR = 1, 3*NUCDEP
-                       READ(LABEL(5:6),'(I1)') NR
-                       IF (INR.EQ.NR) FONAC(NR,ISYM,IEXVAL) = -EXMOM
+                       READ(LABEL(4:6),'(I3)') NR
+                       IF (INR.EQ.NR) FONA2(NR,ISYM,IEXVAL) = EXMOM
    57               CONTINUE
+C
+                    CALL RDS2(LABEL,WORK(KUDV),WORK(KXINDX),
+     &                        WORK(KWRK2),LWRK)
+C
+                    EXMOM = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KWRK2),1)
+C
+                    DO 58 INR = 1, 3*NUCDEP
+                       READ(LABEL(4:6),'(I3)') NR
+                       IF (INR.EQ.NR) FONAC(NR,ISYM,IEXVAL) = EXMOM
+   58               CONTINUE
+C
                   ENDIF
    80           CONTINUE
               ENDIF
@@ -756,7 +815,7 @@ C  /* Deck excout */
 #include <mxcent.h>
 #include <codata.h>
 #include <gnrinf.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <abainf.h>
@@ -1387,33 +1446,47 @@ C
       END IF
 C
       IF (FNAC) THEN
+         NCOOR  = 3*NUCDEP
          KCSTRA = 1
-         KSCTRA = KCSTRA + 9*NUCDEP
-         KLAST  = KSCTRA + 9*NUCDEP
+         KSCTRA = KCSTRA + NCOOR*NCOOR
+         KLAST  = KSCTRA + NCOOR*NCOOR
          IF (KLAST .GT. LWORK) CALL STOPIT('EXCOUT',' ',KLAST,LWORK)
-         CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,3*NUCDEP,0)
+         CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,0)
          WRITE (LUPRI,'()')
          CALL HEADER
      &   ('Non adiabatic coupling matrix elements <O|d/dR|f> (in a.u.)',
      &    9)
          WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   '    Coordinate R       Sym.  Mode  Ex. energy   WFR-term ',
+     &   ' Coordinate R          Sym.  Mode Ex. energy    WFR-term ',
      &   ' BSR-term   Total ',
-     &   'No.   Cartesian no.     st.   No.     (Ev)               ',
+     &   ' Cartesian no.          st.   No.    (Ev)                ',
      &   '                 ',
-     &   '---------------------------------------------------------',
+     &   '----------------------------------------------------------',
      &   '------------------'
          DO 1100 ISYM = 1, NSYM
-            DO 1000 IEXVAL = 1,NEXCIT(ISYM)
-               DO 900 ISCOOR = 1, 3*NATOMS
-                  CALL GENCOR(WORK(KCSTRA),3*NUCDEP,ISCOOR,COORDI)
-                  WRITE (LUPRI,'(1X,I2,2X,A,2X,I2,4X,I2,1X,F10.6,1X,
-     &                   3F10.4)')
-     &            ISCOOR, COORDI, ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
-     &            FONAC(ISCOOR,ISYM,IEXVAL), FONA2(ISCOOR,ISYM,IEXVAL),
-     &            FONAC(ISCOOR,ISYM,IEXVAL) + FONA2(ISCOOR,ISYM,IEXVAL)
+            DO 1000 ISCOOR = 1, 3*NATOMS
+               FX = ZERO
+               ICOUNT = 0
+               DO 900 IEXVAL = 1,NEXCIT(ISYM)
+                  CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
+                  IF (ICORSY .EQ. ISYM) THEN
+                     WRITE (LUPRI,'(1X,A,2X,I2,4X,I2,2X,F10.6,1X,
+     &                      2F10.4,F12.6)')
+     &               COORDI, ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &               FONAC(ISCOOR,ISYM,IEXVAL), 
+     &               FONA2(ISCOOR,ISYM,IEXVAL),
+     &               FONAC(ISCOOR,ISYM,IEXVAL)+FONA2(ISCOOR,ISYM,IEXVAL)
+C
+                     FX = FX + FONAC(ISCOOR,ISYM,IEXVAL)**2 /
+     &                         EXENG(ISYM,IEXVAL)
+                     ICOUNT = ICOUNT + 1
+                  END IF
   900          CONTINUE
-               WRITE (LUPRI,'(A)') ' '
+C
+               IF (ICOUNT .GT. 0) WRITE(LUPRI,'(/,1X,A,A,22X,1F11.6,/)') 
+     &                                  'Vibrational g-factor: ',COORDI,
+     &                                  FX*DTWO
+C
  1000       CONTINUE
  1100    CONTINUE
       END IF
@@ -1579,7 +1652,7 @@ C
       LOGICAL INTTRS, CICLC, HFCLC, TRIPLE, EXECLC
       DIMENSION WORK(LWORK), EXVAL(NEXENG)
 C
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <infvar.h>
 #include <inforb.h>
 C
@@ -1621,7 +1694,7 @@ C     symmetries from LAB1 and ISYM1 to LAB2 and ISYM2.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
       CHARACTER LAB1(*)*8, LAB2(*)*8
       DIMENSION ISYM1(*), ISYM2(*)
 C
@@ -1645,7 +1718,7 @@ C
       RETURN
       END
 C  /* Deck gencor */
-      SUBROUTINE GENCOR(CSTRA,NCOOR,ISCOOR,COORDI)
+      SUBROUTINE GENCOR(CSTRA,NCOOR,ISCOOR,COORDI,ICORSY)
 C
 C     Purpose: To generate a readable description of the symmetry
 C     coordinate ISCOOR in COORDI.
@@ -1669,8 +1742,9 @@ C
             DO 200 ICOOR = 1, 3
                JSCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM,1)
                IF (JSCOOR.EQ.ISCOOR) THEN
+                  ICORSY = ISYM + 1
                   NB = 0
-                  DO 100 I = 1, 3*NUCDEP
+                  DO 100 I = 1, NCOOR
                      NSGN = NINT(CSTRA(ISCOOR,I))
                      IF (NSGN .NE. 0) THEN
                         NB = NB + 1
@@ -1680,26 +1754,23 @@ C
   100             CONTINUE
                   IF (NB .EQ. 1) THEN
                      WRITE(CNBASE,'(I2)') NBASE(1)
-                     COORDI = NAMEX(3*IATOM)(1:4)//' '//CHRXYZ(-ICOOR)
-     &                        //CNBASE
-C                     WRITE (LUPRI,'(1X,I3,3X,A,2X,A,3X,I2)') ISCOOR,
-C     &                  NAMEX(3*IATOM)(1:4), CHRXYZ(-ICOOR), NBASE(1)
+                     COORDI = NAMEX(3*IATOM)(1:4)//CHRXYZ(-ICOOR)
+     &                        //'['//CNBASE//']'
                   ELSE IF (NB .LT. 4) THEN
                      WRITE(CNBASE,'(I2)') NBASE(1)
-                     COORDI = NAMEX(3*IATOM)(1:4)//' '//CHRXYZ(-ICOOR)
+                     COORDI = NAMEX(3*IATOM)(1:4)//CHRXYZ(-ICOOR)
      &                        //'['//CNBASE
                      J = 10
-                     DO 150 IB = 2, NB
-                        WRITE(CNBASE,'(I2)') NBASE(IB)
-                        COORDI(J:J+2) = CHRSGN(NSIGN(IB))//CNBASE
-                        J = J + 3
-  150                CONTINUE
-                     COORDI(J:J+2) = ']/'//CHRNOS(NB)
-C                     WRITE (LUPRI,'(1X,I3,3X,A,2X,A,3X,A,I2,'
-C     &                //CHRNOS(NB-1)//'(2X,A,1X,I2),A,I1)')
-C     &                ISCOOR,NAMEX(3*IATOM)(1:4),CHRXYZ(-ICOOR),' [',
-C     &                NBASE(1),(CHRSGN(NSIGN(I)),NBASE(I),I=2,NB),
-C     &                ' ]/',NB
+                     IF ( NB .GE. 2 ) THEN
+                        WRITE(CNBASE,'(I2)') NBASE(2)
+                        COORDI = COORDI(1:9)//CHRSGN(NSIGN(2))//CNBASE
+                        COORDI = COORDI(1:12)//']/'//CHRNOS(2)
+                     END IF
+                     IF ( NB .GE. 3 ) THEN
+                        WRITE(CNBASE,'(I2)') NBASE(3)
+                        COORDI = COORDI(1:13)//CHRSGN(NSIGN(3))//CNBASE
+                        COORDI = COORDI(1:16)//']/'//CHRNOS(2)
+                     END IF
                   ELSE
                      COORDI = '    See above    '
                   END IF
