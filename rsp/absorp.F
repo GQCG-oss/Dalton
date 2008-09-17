@@ -62,8 +62,8 @@ C
 #include <symmet.h>
 #include <codata.h>
 C
-      LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 19 )
+      LOGICAL NEWDEF, ALLCOMP
+      PARAMETER ( NTABLE = 22 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3), ANGMOM(3)
@@ -73,10 +73,14 @@ C
       DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAX MI','.MAXITO',
      &            '.PRINT ','.DAMPIN','.EXCITA','.MAX MA','.THCPP ',
      &            '.BETA  ','.BFREQ ','.CFREQ ','.SHG   ','.ANALYZ',
-     &            '.BATCH ','.FREQ I','.MCD   ','.REDUCE'/
+     &            '.BATCH ','.FREQ I','.MCD   ','.REDUCE','.XXCOMP',
+     &            '.YYCOMP','.ZZCOMP'/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
+C
+      ALLCOMP = .TRUE.
+      ICOMP=0
 C
 C     Set default values
 C
@@ -97,7 +101,7 @@ C
                DO I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,
-     &                 11,12,13,14,15,16,17,18,19),I
+     &                 11,12,13,14,15,16,17,18,19,20,21,22),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -234,6 +238,18 @@ C     User input of damping parameter
  19            CONTINUE
                ABS_REDUCE=.TRUE.
                GOTO 100
+ 20            CONTINUE
+               ALLCOMP=.FALSE.
+               ICOMP=1
+               GOTO 100
+ 21            CONTINUE
+               ALLCOMP=.FALSE.
+               ICOMP=2
+               GOTO 100
+ 22            CONTINUE
+               ALLCOMP=.FALSE.
+               ICOMP=3
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -258,14 +274,16 @@ C     Put operators in lists
 C
          CALL IZERO(NOPER,8)
          DO ILABEL=1,3
-            ISYM = ISYMAX(ILABEL,1)+1
-            NOPER(ISYM) = NOPER(ISYM) + 1
-            LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
-            IF (ABS_MCD) THEN
-               ISYM = ISYMAX(ILABEL,2)+1
+            IF (ALLCOMP .OR. ICOMP.EQ.ILABEL) THEN
+               ISYM = ISYMAX(ILABEL,1)+1
                NOPER(ISYM) = NOPER(ISYM) + 1
-               LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
-            END IF 
+               LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+               IF (ABS_MCD) THEN
+                  ISYM = ISYMAX(ILABEL,2)+1
+                  NOPER(ISYM) = NOPER(ISYM) + 1
+                  LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+               END IF
+            END IF
          END DO
 C
          CALL AROUND('Variable settings for absorption calculation')
