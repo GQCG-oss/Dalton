@@ -294,7 +294,7 @@ C jan00 hjaaj: set screening threshold for SIRCNO in OPTST for direct
 C    SCF (canonical orbitals are not needed with high precision).
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
-         IFTHRS  = MIN( IFTHSV, 7 )
+         IFTHRS  = MIN( IFTHSV, 9 )
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I5)')
      &      ' Fock matrix screening setting for SIRCNO: IFTHRS =',
      &      IFTHRS
@@ -474,7 +474,7 @@ C
          END IF
          GRDACC  = GRDACC / NORBT
          IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GRDACC)) + 1)
-         IFTHRS  = MAX( 7, IFTHRS )
+         IFTHRS  = MAX( 9, IFTHRS )
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
      &   ' Fock matrix screening setting for this macro iteration: 10^('
      &   ,-IFTHRS,')'
@@ -2026,7 +2026,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.THDE ) THEN
+      IF ( ABS(DEPRED).GT.ABS(THDE*EMCSCF) ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
