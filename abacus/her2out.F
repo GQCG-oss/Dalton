@@ -273,7 +273,6 @@ C  /* Deck un2wrt */
 #include <chrnos.h>
 #endif
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       IF (ITYPE .EQ. -1) THEN
          CALL REWSPL(LUINTA)
@@ -399,14 +398,15 @@ Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
             FBYTES = LBUF*IRAT + NIBUF*LBUF + 1
             FBYTES = NBUF*FBYTES
             FBYTES = LWORD*FBYTES
-            FBYTES = FBYTES / SDPRE(1024*1024)
-            FNALL   = (NBASIS*(NBASIS + 1))/2
-            FNALL   = (FNALL*(FNALL + 1.0D0))*0.5D0
-            PERCNT = 100.0D0*SDPRE(N2WRIT) / FNALL
-            WRITE (LUPRI,'(/1X,A,I12,A,F5.1,A,/1X,A,F12.3//)')
-     &         'Number of two-electron integrals written:',N2WRIT,
+            FBYTES = FBYTES / (1024.D0**2)
+            FNALL  = (NBASIS*(NBASIS + 1))/2
+            FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
+            PERCNT = N2WRIT
+            PERCNT = 100.0D0*PERCNT / FNALL
+            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3//)')
+     &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'% )',
-     &         'Megabytes written:                       ',FBYTES
+     &         ' Megabytes written:                       ',FBYTES
          END IF
          CALL GPCLOSE(LUINTA,'KEEP')
       END IF
@@ -1268,6 +1268,9 @@ C
 #include <aovec.h>
 #include <eribuf.h>
 #include <nuclei.h>
+C
+      INTEGER*8 NWRIT
+      SAVE      NWRIT
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1279,7 +1282,6 @@ C
 #include <drw2el.h>
 C
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       IF (LBUF .NE. LDSBUF) THEN
         WRITE (LUPRI,*) 'LBUF  :',LBUF
@@ -1504,10 +1506,14 @@ C
 C            CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
 C     &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
-         NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
-         PERCNT = SDPRE(100*NWRIT) / SDPRE(NALL)
-         IF (IPRINT.GT.0) WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
-     &         'Number of two-electron spin-orbit integrals written:',
+C        HJAaJ Sep08: calculation of PERCNT rewritten, to avoid integer*4 overflows
+C        NALL   = NDIST*(NBASIS + 1)*(NBASIS**2)/2
+         FNBASIS= NBASIS
+         FNALL  = NDIST*(FNBASIS+1.0D0)*FNBASIS*FNBASIS*0.5D0
+         PERCNT = N2WRIT
+         PERCNT = 100.0D0*PERCNT / FNALL
+         IF (IPRINT.GT.0) WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
+     &         ' Number of two-electron spin-orbit integrals written:',
      &         NWRIT,' (',PERCNT,'%)'
       END IF
 C
@@ -1530,7 +1536,6 @@ C  /* Deck un2wrn */
 #include <nuclei.h>
 #include <symmet.h>
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       NBUFX(0) = NBUFX(0) + 1
 C
@@ -1611,15 +1616,16 @@ C
             END IF
             IF (IRAT .EQ. 1) LWORD = 8
             IF (IRAT .EQ. 2) LWORD = 4
-            KBYTES = NBUFX(0)*LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
-            KBYTES = (KBYTES + 999)/1000
-            NALL   = (NBASIS*(NBASIS + 1))/2
-            NALL   = (NALL*(NALL + 1))/2
-            PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
-            WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A,/1X,A,I10//)')
-     &         'Number of two-electron integrals written:',N2WRIT,
+            FMBYTES = LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
+            FMBYTES = NBUFX(0) * FMBYTES / (1024.D0**2)
+            FNALL  = (NBASIS*(NBASIS + 1))/2
+            FNALL  = (FNALL*(FNALL + 1))/2
+            PERCNT = N2WRIT
+            PERCNT = 100.0D0 * PERCNT / FNALL
+            WRITE (LUPRI,'(/A,I10,A,F4.1,A/A,F10.3//)')
+     &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'%)',
-     &         'Kilobytes written:                       ',KBYTES
+     &         ' Megabytes written:                       ',FMBYTES
          END IF
       END IF
       RETURN
@@ -1867,7 +1873,6 @@ C  /* Deck un2wrt */
 #include <chrnos.h>
 #endif
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       IF (ITYPE .EQ. -1) THEN
          CALL REWSPL(LUSRINT)
@@ -1989,15 +1994,17 @@ C
             END IF
             IF (IRAT .EQ. 1) LWORD = 8
             IF (IRAT .EQ. 2) LWORD = 4
-            FBYTES = NBUF*LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
-            FBYTES = FBYTES / SDPRE(1024*1024)
-            NALL   = (NBASIS*(NBASIS + 1))/2
-            NALL   = (NALL*(NALL + 1))/2
-            PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
-            WRITE (LUPRI,'(/1X,A,I12,A,F5.1,A,/1X,A,F12.3//)')
-     &         'Number of two-electron short-range integrals written:',
+            FBYTES = LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
+            FBYTES = NBUF*FBYTES
+            FBYTES = FBYTES / (1024.D0**2)
+            FNALL  = (NBASIS*(NBASIS + 1))/2
+            FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
+            PERCNT = N2WRIT
+            PERCNT = 100.0D0* PERCNT / FNALL
+            WRITE (LUPRI,'(/A,I12,A,F5.1,A/A,F12.3//)')
+     &         ' Number of two-electron short-range integrals written:',
      &         N2WRIT,' (',PERCNT,'% )',
-     &         'Megabytes written:                       ',FBYTES
+     &         ' Megabytes written:                       ',FBYTES
          END IF
          CALL GPCLOSE(LUSRINT,'KEEP')
       END IF

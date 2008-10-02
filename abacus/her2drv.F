@@ -4235,16 +4235,15 @@ C  /* Deck twoper */
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (DMEGA = 1.0D6)
+      INTEGER*8 N2CART, N2PRIM
 #include "twosta.h"
 #include "nuclei.h"
-#include "sdpre.h"
-      ITRI(I) = I*(I + 1)/2
 C
       CALL HEADER('Performance of TWOINT',1)
-      N2CART = ITRI(NBASIS)
-      N2CART = ITRI(N2CART)
-      N2PRIM = ITRI(NPBAS)
-      N2PRIM = ITRI(N2PRIM)
+      N2CART = NBASIS*(NBASIS+1)/2
+      N2CART = N2CART*(N2CART+1)/2
+      N2PRIM = NPBAS *(NPBAS +1)/2
+      N2PRIM = N2PRIM*(N2PRIM+1)/2
       WRITE (LUPRI,'(2(2X,A,I5,/),/,3(2X,A,I12,/))')
      &   'Number of contracted functions:',NBASIS,
      &   'Number of primitive  functions:',NPBAS,
@@ -4252,9 +4251,12 @@ C
      &   'Number of contracted integrals (counting zeros):',N2CART,
      &   'Number of primitive integrals (counting zeros) :',N2PRIM
       IF (N2WRIT .GT. 0) THEN
-         PRFNON = DMEGA*T2INT/SDPRE(N2WRIT)
-         PRFCAR = DMEGA*T2INT/SDPRE(N2CART)
-         PRFPRM = DMEGA*T2INT/SDPRE(N2PRIM)
+         PRFNON = N2WRIT
+         PRFNON = DMEGA*T2INT/ PRFNON
+         PRFCAR = N2CART
+         PRFCAR = DMEGA*T2INT/ PRFCAR
+         PRFPRM = N2PRIM
+         PRFPRM = DMEGA*T2INT/ PRFPRM
          WRITE (LUPRI,'(3(/,2X,A,F7.1,A))')
      &      'Average time for non-zero (written) integrals:',
      &       PRFNON,' microseconds',
@@ -4263,8 +4265,10 @@ C
      &      'Average time for primitive integrals         :',
      &       PRFPRM,' microseconds'
       ELSE
-         PRFCAR = DMEGA*T2INT/SDPRE(N2CART)
-         PRFPRM = DMEGA*T2INT/SDPRE(N2PRIM)
+         PRFCAR = N2CART
+         PRFCAR = DMEGA*T2INT/ PRFCAR
+         PRFPRM = N2PRIM
+         PRFPRM = DMEGA*T2INT/ PRFPRM
          WRITE (LUPRI,'(2(/,2X,A,F7.1,A))')
      &      'Average time for zero/non-zero integrals     :',
      &       PRFCAR,' microseconds',
