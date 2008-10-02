@@ -790,8 +790,16 @@ C
             END IF
  400     CONTINUE
          IF (.NOT. FOUND) THEN
-            WRITE (LUPRI,'(A)')
-     &        'Error in transformation matrix for ' // TEXT
+
+            WRITE (LUPRI,'(/A/A,I5)')
+     &        'Error in transformation matrix for ' // TEXT,
+     &        'Atom ',IATOM2
+            CALL OUTPUT(TRAMAT,1,3,1,3,3,3,1,LUPRI)
+            WRITE (LUPRI,'(/A,3F20.10//A)')
+     &        'Transformed coordinates:',(TMPCOR(IX2),IX2=1,3),
+     &        'All atom coordinates:'
+            CALL OUTPUT(ATMCOR,1,3,1,NUCDEP,3,NUCDEP,1,LUPRI)
+              
             CALL QUIT('You may have entered wrong group information.')
          END IF
  200  CONTINUE
