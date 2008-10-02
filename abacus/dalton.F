@@ -443,9 +443,6 @@ C
 C     Read general input
 C
          CALL GNRLIN
-         IF (TESTIN) THEN
-            CALL QUIT('*** End of input test for GENERAL ***')
-         END IF
 #if !defined (VAR_MPI)
       END IF
 #else /* VAR_MPI */
@@ -478,9 +475,6 @@ C
 C     ... I am a "slave" ... (MYNUM .ne. 0)
          IF (PARIO) THEN
             CALL GNRLIN
-            IF (TESTIN) THEN
-               CALL QUIT('*** End of input test for GENERAL ***')
-            END IF
 #if defined (SYS_LINUX)
             CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else

@@ -684,9 +684,9 @@ C
                NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
-     &         ' Too many atomic centers: MXCENT exceed in READIN for',
+     &         ' Too many atomic centers: MXCENT exceed in EXEDRV for',
      &         ' solvent cavity,',' Current limit:',MXCENT
-                  CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
+                  CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
                END IF
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
@@ -915,9 +915,9 @@ ckr            IF (IWKTYP .EQ. 6) THEN
                NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
-     &         ' Too many atomic centers: MXCENT exceed in READIN for',
+     &         ' Too many atomic centers: MXCENT exceed in EXEDRV for',
      &         ' solvent cavity,',' Current limit:',MXCENT
-                  CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
+                  CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
                END IF
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
@@ -962,7 +962,7 @@ C     &       '*** WARNING:  Maximum number of iterations exceeded ***'
       ELSE
 C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
-         IF (RNHERM) CALL EXEHER(WORK,LMWORK,WRKDLM)
+         IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
          IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
@@ -988,9 +988,9 @@ C
             NAMDPX(3*NUCDEP  ) = 'cavity z'
             IF (NUCDEP .GT. MXCENT) THEN
                WRITE (LUPRI,'(//2A,/A,I5)')
-     &          ' Too many atomic centers: MXCENT exceed in READIN for',
+     &          ' Too many atomic centers: MXCENT exceed in EXEDRV for',
      &          ' solvent cavity,',' Current limit:',MXCENT
-               CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
+               CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
             END IF
             CORD(1,NUCIND) = D0
             CORD(2,NUCIND) = D0
