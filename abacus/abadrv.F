@@ -1440,7 +1440,7 @@ cLig <<
       IF (DOD2DQ2)  WRITE (LUPRI,'(5X,A)')
      &   ' < d Psi/dQ | d Psi/dQ > (Q = nuclear coordinates)'
       IF (NOLOND) WRITE (LUPRI,'(5X,A)')
-     &   ' London orbitals are NOT used'
+     &   ' INFO - London orbitals are NOT used'
       IF (DODRCT) WRITE (LUPRI,'(5X,A)')
      &   ' Direct calculation - no two-electron integrals '//
      &   'written or read.'
