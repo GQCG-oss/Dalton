@@ -716,6 +716,9 @@ C                 ==============================================
 C                 We have calculated <f|Operator|0> but want to
 C                 keep them as <O|Operator|f>. Therefore, for anti-
 C                 hermitian operators we multiply with a minus-sign.
+C hjaaj 080830 TODO CHECK: sounds strange, p_x = -i d/dx, does that
+C                 not give a double sign change ????????
+C                 cf. the tbp comments later, changing signs of l_x etc back!!!
 C
                   IF (LABEL(2:7).EQ.'DIPLEN') THEN
                     IF (LABEL(1:1).EQ.'X') TRLEN(1,ISYM,IEXVAL) =  EXMOM
@@ -897,7 +900,7 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
          IF (EXCTRP) THEN
             CALL HEADER('Triplet electronic excitation energies',15)
          ELSE
-            CALL HEADER ('Singlet electronic excitation energies',15)
+            CALL HEADER('Singlet electronic excitation energies',15)
          END IF
          WRITE (LUPRI,'(14X,A,/,14X,A,/,14X,A)')
      &      ' Sym.   Mode   Frequency    Frequency',
@@ -905,7 +908,7 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
      &      '---------------------------------------'
          DO 15 ISYM = 1, NSYM
             DO 14 IEXVAL = 1, NEXCIT(ISYM)
-               WRITE (LUPRI,'(16X,I2,6X,I3,2F12.6)')
+               WRITE (LUPRI,'(I18,I9,2F12.6)')
      &            ISYM,IEXVAL,EXENG(ISYM,IEXVAL),
      &            EXENG(ISYM,IEXVAL)*XTEV
                   LAPRPC = 'Excita  '
@@ -920,16 +923,16 @@ C-tbp END IF
       IF (DIPSTR .OR. ROTSTR .OR. ROTVEL) THEN
          WRITE (LUPRI,'()')
          CALL HEADER('Electric transition dipole moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
-     &   '            Length       ',
-     &   'ex. st.  No.      (au)          x       y       z   ',
-     &   '      x       y       z  ',
-     &   '--------------------------------------------------',
-     &   '----------------------------'
+         WRITE (LUPRI,'(A,A,2(/A,A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  ',
+     &   '            Length',
+     &   ' ex. st.  No.      (au)          x       y       z   ',
+     &   '      x       y       z',
+     &   ' ----------------------------------------------------',
+     &   '--------------------------'
          DO 200 ISYM = 1, NSYM
             DO 100 IEXVAL = 1,NEXCIT(ISYM)
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.4,2X,3F8.4)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TRVEL(1,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TRVEL(2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
@@ -947,16 +950,16 @@ C
          WRITE (LUPRI,'()')
          CALL HEADER('Diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
-     &   '            Length       ',
-     &   'ex. st.  No.      (au)          xx      yy      zz  ',
-     &   '      xx      yy      zz ',
-     &   '--------------------------------------------------',
-     &   '----------------------------'
+         WRITE (LUPRI,'(A,A,2(/A,A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  ',
+     &   '            Length',
+     &   ' ex. st.  No.      (au)          xx      yy      zz  ',
+     &   '      xx      yy      zz',
+     &   ' ----------------------------------------------------',
+     &   '--------------------------'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.4,2X,3F8.4)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TQVEL(1,1,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TQVEL(2,2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
@@ -999,8 +1002,6 @@ C
      &            XNEW(1),XNEW(2),XNEW(3)
                END DO
             END DO
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
          END IF
          WRITE (LUPRI,'()')
          CALL HEADER('Off-diagonal electric quadrupole transition '
@@ -1074,12 +1075,14 @@ C
       IF (ROTSTR .OR. ROTVEL) THEN
          WRITE (LUPRI,'()')
          CALL HEADER('Magnetic transition dipole moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency        Conventional     ',
+         WRITE (LUPRI,'(A/)')
+     &   '  ( mu_B*<0|l_i|n>, where mu_B = 0.5 is the Bohr magneton)'
+         WRITE (LUPRI,'(A,A,2(/A,A))')
+     &   '  Sym.   Mode    Frequency        Conventional     ',
      &   '            London       ',
-     &   'ex. st.  No.      (eV)          x       y       z   ',
+     &   ' ex. st.  No.      (eV)          x       y       z   ',
      &   '      x       y       z  ',
-     &   '--------------------------------------------------',
+     &   ' --------------------------------------------------',
      &   '----------------------------'
          DO 400 ISYM = 1,NSYM
             DO 300 IEXVAL = 1,NEXCIT(ISYM)
@@ -1087,7 +1090,7 @@ C-tbp: correct signs!
                CALL DSCAL(3,-1.0D0,TRMAG(1,ISYM,IEXVAL),1)
                CALL DSCAL(3,-1.0D0,TRLON(1,ISYM,IEXVAL),1)
 C              The factor 0.5 is the Bohr-magneton
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.5,2X,3F8.5)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            D05*TRMAG(1,ISYM,IEXVAL), D05*TRMAG(2,ISYM,IEXVAL),
      &            D05*TRMAG(3,ISYM,IEXVAL), D05*TRLON(1,ISYM,IEXVAL),
@@ -1125,8 +1128,7 @@ C-tbp: correct sign!
      &            D05*XNEW(1),D05*XNEW(2),D05*XNEW(3)
                END DO
             END DO
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(/)')
          END IF
       END IF
 C
@@ -1137,9 +1139,9 @@ C
          WRITE (LUPRI,'()')
          CALL HEADER('Oscillator and Scalar Rotational Strengths',
      &   18)
-         WRITE (LUPRI,'(2X,A,/2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)',
-     &      '       dimensionless              (oscillator strength)'
+         WRITE (LUPRI,'(2(A/))')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)',
+     &      '         dimensionless              (oscillator strength)'
          WRITE (LUPRI,'(3(/,1X,A,A))')
      &   ' Sym.   Mode     Frequency       Oscillator-strength ',
      &   '     Rotational-strength   ',
@@ -1182,8 +1184,8 @@ C
          WRITE (LUPRI,'()')
          CALL HEADER('Magnetic Dipole Rotatory Strength Tensor',
      &               18)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(A/)')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2)'
          WRITE (LUPRI,'(3(/,1X,A,A))')
      &   ' Sym. Mode Gauge         Magnetic Dipole Rotatory Strength ',
      &   'Tensor          ',
@@ -1269,8 +1271,8 @@ C
          WRITE (LUPRI,'()')
          CALL HEADER('Electric Quadrupole Rotatory Strength Tensor',
      &               18)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(A/)')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2)'
          WRITE (LUPRI,'(3(/,1X,A,A))')
      &   ' Sym. Mode Gauge     Electric Quadrupole Rotatory Strength ',
      &   'Tensor          ',
@@ -1348,8 +1350,8 @@ C
 
          WRITE (LUPRI,'()')
          CALL HEADER('Total Rotatory Strength Tensor',18)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(A/)')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2)'
          WRITE (LUPRI,'(3(/,1X,A,A))')
      &   ' Sym. Mode Gauge                   Total Rotatory Strength ',
      &   'Tensor          ',
