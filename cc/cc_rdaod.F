@@ -86,7 +86,7 @@ C
 C
       LOGICAL OLDDX, LONDON2
       INTEGER LENGTH(8), NDIMAB(8), NDIMDIS(8),IDSAO(8,8)
-      INTEGER KSCOOR, KCOOR, KCORSY, MAXCMP, MCSYM
+      INTEGER KSCOOR, KCOOR, KCORSY, MAXCMP, MCSYM, UNIAO2
       CHARACTER*8 NAME(16)
       CHARACTER*8 FNAME, FAODER
 C
@@ -349,7 +349,8 @@ C
 *----------------------------------------------------------------------*
 *        open file, read integral distributions and close file again:
 *----------------------------------------------------------------------*
-         UNIAO2 = 0
+         !SONIA, changed to -1, UNIAO2 = 0
+         UNIAO2 = -1
          FAODER = 'AO2DIS'//CHRNOS(KSCOOR/10)
      &                    //CHRNOS(MOD(KSCOOR,10))
          CALL GPOPEN(UNIAO2,FAODER,'OLD','DIRECT',
@@ -373,7 +374,8 @@ C
            LONDON2 = .TRUE.
            KSCOOR = KSCOOR + 3
 
-           UNIAO2 = 0
+           !SONIA, changed to -1, UNIAO2 = 0
+           UNIAO2 = -1
            FAODER = 'AO2DIS'//CHRNOS(KSCOOR/10)
      &                      //CHRNOS(MOD(KSCOOR,10))
            CALL GPOPEN(UNIAO2,FAODER,'OLD','DIRECT',
