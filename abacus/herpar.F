@@ -503,6 +503,7 @@ C
 #include <parint.h>
 #include <blocks.h>
 #include <r12int.h>
+C
 #if defined (SYS_T3e)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER on
@@ -598,6 +599,8 @@ Cef end
      &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
+C Arnfinn, nov -08: Sending NONTP1, numbers of atomtypes except MM
+         CALL MPIXBCAST(NONTP1,1,'INTEGER',MASTER)
 C  /molinc/
 #if defined (SYS_T3e)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
@@ -1059,6 +1062,10 @@ C
 #include <mtags.h>
       PARAMETER (D0 = 0.0D0)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST
+C     Arnfinn, nov -08: Added because of LINE4 and LINE4W
+      LOGICAL DOOWN,AUTOSY,ADDSYM,DOCART
+      CHARACTER KASYM,ID3
+C
       DIMENSION WORK(*), ISYMDM(*), IFCTYP(*), JSTRSH(*), NPRIMS(*),
      &          NCONTS(*), IORBSH(*), JORBSH(*), KORBSH(*)
 #include <infpar.h>
@@ -1119,6 +1126,7 @@ C
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER)
 C
+C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
 C     IF (AOSAVE .AND. NEWGEO) THEN
@@ -1148,6 +1156,8 @@ C
      &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
             CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
+C Arnfinn nov -08: Receiving number of QM atom types: 
+            CALL MPIXBCAST(NONTP1,1,'INTEGER',MASTER)
 C  /molinc/
 #if defined (SYS_T3e)
             CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
@@ -1212,6 +1222,24 @@ C  /parint/
       CALL PVMXUNPACK(JATOM,NINTI,'INTEGER')
       CALL PVMXUNPACK(JNODV,NINTL,'LOGICAL')
 #endif
+C
+C     Arnfinn ->
+C     In case of QM3 calculation, update number of atom types
+C     in line 4 (line 5 if BASIS) in the molecule file
+C     (only # of QM atom types, not # of MM atom types)
+      IPOS = 0
+      IPOS = INDEX(MLINE(1),'BASIS')
+      IF (IPOS .EQ. 1) THEN
+         ILN = 5
+      ELSE
+         ILN = 4
+      END IF
+      CALL LINE4(MLINE(ILN),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
+     &           KASYM,ID3,DOCART,DOOWN)
+      AUTOSY = .FALSE.
+      IF (NSYMOP.EQ.0) NOSYM = .TRUE.
+      CALL LINE4W(MLINE(ILN),NONTP1,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
+     &           KASYM,ID3,DOCART,DOOWN)
 C
 C     Retain information from PARINT.
 C

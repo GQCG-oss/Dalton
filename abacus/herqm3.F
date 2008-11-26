@@ -1346,8 +1346,8 @@ C
   111 CONTINUE
 C
       IF ((KTEMP + NCTOT) .GT. MXCENT) THEN
-        WRITE(LUPRI,'(//1X,A32,I5)')'Number of coordinates',
-     &        ' required:',(NCTOT + KTEMP)
+        WRITE(LUPRI,'(//1X,A21,A11,I5)')'Number of coordinates',
+     &        ' required: ',(NCTOT + KTEMP)
         WRITE(LUPRI,'(1X,A32,I5)')
      &        'Maximum number of atoms allowed:',MXCENT
         CALL QUIT('Maximum number of coordinates exceeded')
@@ -1622,7 +1622,7 @@ C in READIN in herrdn.F. This is not the most consistent way to do
 C it and we have to return to this issue later on. IMPORTANT if the
 C code has to be a part of the released DALTON code!!A
 C---------------------------------------------------------------------
-C     
+C
       IF (NSISY(0) .GT. MXNEW) THEN
         WRITE(LUPRI,'(/A,I5/A,I5/A)')
      &    ' Maximum number of QM atoms allowed is MXNEW =',MXNEW,
