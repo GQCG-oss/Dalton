@@ -899,7 +899,7 @@ C
 C  TODO: symmetrized version for QM part
 C        get rid of PCMCOORD and PCMCHG
 C
-      SUBROUTINE COMP_NUC_POT_CAV(POTEN, DO_QMPOT, DO_MMPOT)
+      SUBROUTINE COMP_NUC_POT_CAV(POTEN, DO_QMPOT, DO_MMPOT, DO_DIPOT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -915,7 +915,7 @@ C
 #include <ibtfun.h>
 
       DIMENSION POTEN(*)
-      LOGICAL DO_QMPOT, DO_MMPOT
+      LOGICAL DO_QMPOT, DO_MMPOT, DO_DIPOT
       IF(QM3 .AND. MMPCM) THEN
          NUCPCM = NUCIND
       ELSE
@@ -945,6 +945,8 @@ C
      &              +(ZTSCOR(ITS)-ZL)**2) 
                VNUC = VNUC + CHGMM/RIL
             ENDDO
+         ENDIF
+         IF(DO_DIPOT .AND. QM3 .AND. MMPCM) THEN
             DO IPOLAR = 1, NCOMS
                XL = XTSCOR(ITS) - XMMMY(IPOLAR)
                YL = YTSCOR(ITS) - YMMMY(IPOLAR)
@@ -956,6 +958,82 @@ C
                R2 = XL ** 2 + YL ** 2 + ZL ** 2
                R3 = (DSQRT(R2)) ** 3
                VNUC = VNUC + SCALAR/R3
+            ENDDO
+         ENDIF
+         POTEN(ITS) = VNUC
+      ENDDO
+
+      RETURN
+      END
+C
+C Arnfinn ->
+C As above, but coordinates and induced dipole moments are given as arguments. 
+C To calculate V^{[1]} from \mu^{[1]} (for instance).
+C
+      SUBROUTINE COMP_NUC_POT_CAV_MM(POTEN, DO_QMPOT, DO_MMPOT,
+     &                      DO_DIPOT, MMCOR, MMDIP, NOSIMMM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+      PARAMETER (D0 = 0.0D0, D100=100.0D0)
+#include <nuclei.h>
+#include <pcmnuclei.h>
+#include <dipole.h>
+#include <dorps.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <qm3.h>
+#include <ibtfun.h>
+
+      DIMENSION POTEN(*),MMCOR(3,*),MMDIP(3,*)
+      LOGICAL DO_QMPOT, DO_MMPOT, DO_DIPOT
+      IF(QM3 .AND. MMPCM) THEN
+         NUCPCM = NUCIND
+      ELSE
+         NUCPCM = NUCDEP
+      ENDIF
+
+      DO ITS = 1, NTSIRR
+         VNUC = D0
+         L=ISPHE(ITS)
+         IF(DO_QMPOT) THEN
+            DO  JATOM = 1, NUCPCM  
+               XL = PCMCORD(1,JATOM)    
+               YL = PCMCORD(2,JATOM)   
+               ZL = PCMCORD(3,JATOM)  
+               RIL=DSQRT((XTSCOR(ITS)-XL)**2+(YTSCOR(ITS)-YL)**2
+     &              +(ZTSCOR(ITS)-ZL)**2) 
+               VNUC = VNUC + PCMCHG(JATOM)/RIL
+            ENDDO
+         ENDIF
+         IF(DO_MMPOT .AND. QM3 .AND. MMPCM) THEN
+            DO IATOM = 1, NUSITE
+               XL = XMMQ(IATOM)    
+               YL = YMMQ(IATOM)    
+               ZL = ZMMQ(IATOM)
+               CHGMM = MMQ(IATOM)
+               RIL=DSQRT((XTSCOR(ITS)-XL)**2+(YTSCOR(ITS)-YL)**2
+     &              +(ZTSCOR(ITS)-ZL)**2) 
+               VNUC = VNUC + CHGMM/RIL
+            ENDDO
+         ENDIF
+         IF(DO_DIPOT .AND. QM3 .AND. MMPCM) THEN
+            IPOLAR = 0
+            DO I = 1, NOSIMMM
+               DO J = 1, NCOMS
+                  IPOLAR = IPOLAR + 1
+                  XL = XTSCOR(ITS) - MMCOR(1,IPOLAR)
+                  YL = YTSCOR(ITS) - MMCOR(2,IPOLAR)
+                  ZL = ZTSCOR(ITS) - MMCOR(3,IPOLAR)
+                  XD = MMDIP(1,IPOLAR)
+                  YD = MMDIP(2,IPOLAR)
+                  ZD = MMDIP(3,IPOLAR)
+                  SCALAR = XL * XD + YL * YD + ZL * ZD
+                  R2 = XL ** 2 + YL ** 2 + ZL ** 2
+                  R3 = (DSQRT(R2)) ** 3
+                  VNUC = VNUC + SCALAR/R3
+               ENDDO
             ENDDO
          ENDIF
          POTEN(ITS) = VNUC

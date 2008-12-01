@@ -532,16 +532,18 @@ C        UCMO   CMO unpacked (i.e. no symmetry blocking)
 C        RLM    R(l,m) integrals for current l,m value in l,m loop
 C
 C
-      KJENAO = 1
-      KXAO   = KJENAO + NNBASX
-      KJ1AO  = KXAO   + NNBASX
-      KJAO   = KJ1AO  + NNBASX
-      KTJ2   = KJAO   + NNBASX
-      KPOTMM = KTJ2   + NTS
-      KPTQMN = KPOTMM + NTS
-      KQMAT  = KPTQMN + NTS
-      KWRK1  = KQMAT  + NTS * NTSIRR
-      LWRK1  = LFREE  - KWRK1
+      KJENAO  = 1
+      KXAO    = KJENAO  + NNBASX
+      KJ1AO   = KXAO    + NNBASX
+      KJAO    = KJ1AO   + NNBASX
+      KTJ2    = KJAO    + NNBASX
+      KPOTMM  = KTJ2    + NTS
+      KPOTQMM = KPOTMM  + NTS
+      KPOTPMM = KPOTQMM + NTS
+      KPTQMN  = KPOTPMM + NTS
+      KQMAT   = KPTQMN  + NTS
+      KWRK1   = KQMAT   + NTS * NTSIRR
+      LWRK1   = LFREE   - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMFCK',-KWRK1,LFREE)
 C
       ESOLT = D0
@@ -551,12 +553,26 @@ C
       CALL DZERO(WRK(KXAO),NNBASX)
       CALL DZERO(WRK(KJENAO),NNBASX)
 
-      CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.)
+      CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.,.FALSE.)
 
       IF(MMPCM .AND. QM3) THEN
-         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.)
+C     Arnfinn ->
+C     Seperated the potential made of the charge and dipole of MM molecules
+C     false true false makes potential from charge
+C     false false true makes potential from dipole
+C     false true true makes the potential from both charge and dipole
+C         CALL COMP_NUC_POT_CAV(WRK(KPOTQMM), .FALSE., .TRUE.,.FALSE.)
+C         CALL COMP_NUC_POT_CAV(WRK(KPOTDMM), .FALSE., .FALSE.,.TRUE.)
+C         CALL DZERO(WRK(KPOTMM),NTS)
+C         DO I = 1,NTS
+C            WRK(KPOTMM+I-1) = WRK(KPOTQMM+I-1) + WRK(KPOTPMM+I-1)
+C         ENDDO
+         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.,.TRUE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
          CALL V2Q(WRK(KQMAT), WRK(KPOTMM), QSMM, QTMM, .FALSE.)
+C         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .FALSE.,.TRUE.)
+Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
+C         CALL V2Q(WRK(KQMAT), WRK(KPOTPMM), QSMM(1,2), QTMM, .FALSE.)
       ELSE
          CALL DZERO(WRK(KPOTMM), NTS)
          CALL DZERO(QSMM, NTS)
@@ -608,7 +624,6 @@ C
          CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
          CALL V2Q(WRK(KQMAT),WRK(KTJ2),QSE,QET,.FALSE.)
-
          IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
@@ -698,15 +713,15 @@ Clf         VCHECK = ZERO
 Clf         DO JATOM = 1, NUCDEP
 Clf            R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
 Clf     *           YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
-Clf            R = DSQRT(R2)
+Clf            R3 = DSQRT(R2)
 Clf            VCHECK = VCHECK + PCMCHG(JATOM) / R
 Clf         ENDDO
 Clf         print *, VCHECK, WRK(KPTQMN+ITS-1), WRK(KPOTMM+ITS-1)
          PCMMM = PCMMM + NSYM * QSMM(ITS) * WRK(KPOTMM + ITS -1)
          PCMNN = PCMNN + NSYM * QSN(ITS)  * WRK(KPTQMN + ITS -1)
-         PCMEE = PCMEE + NSYM * QSE(ITS)  * WRK(KTJ2   + ITS -1)
+         PCMEE = PCMEE + QSE(ITS)  * WRK(KTJ2   + ITS -1)
 
-         PCMEN = PCMEN + NSYM * QSN(ITS) * WRK(KTJ2+ITS-1)
+         PCMEN = PCMEN + QSN(ITS) * WRK(KTJ2+ITS-1)
          PCMNE = PCMNE + NSYM * QSE(ITS) * WRK(KPTQMN+ITS-1)
 
          PCMEM = PCMEM + NSYM * QSMM(ITS) * WRK(KTJ2+ITS-1)

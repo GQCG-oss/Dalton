@@ -8,7 +8,9 @@ C     FILE: priunit.h
       CHARACTER*80 SEPARATOR
       PARAMETER (SEPARATOR = '----------------------------------------'
      &                     //'----------------------------------------')
-      INTEGER LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT
+      INTEGER LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT,
+     &        LQM3PCM, LPCMQM3
       COMMON /PRIUNIT/
-     &        LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT
+     &        LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT,
+     &        LQM3PCM, LPCMQM3
 #endif

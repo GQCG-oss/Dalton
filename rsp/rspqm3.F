@@ -105,15 +105,15 @@ C         1) The MM_TO_PCM file
 C         2) do the same for the PCM_TO_MM file
           INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
           IF (FILE_EXIST) THEN
-            LFILE = -1
-            CALL GPOPEN(LFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
+            KFILE = -1
+            CALL GPOPEN(KFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
      &                  .FALSE.)
-            CALL GPCLOSE(LFILE,'DELETE')
+            CALL GPCLOSE(KFILE,'DELETE')
           ENDIF
         ELSE 
 C         open the file for PCM_TO_MM data
           KFILE = -1
-          CALL GPOPEN(KFILE,'QFQM3','NEW',' ','FORMATTED',IDUMMY,
+          CALL GPOPEN(KFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
      &                .FALSE.)
                REWIND(KFILE)
         ENDIF
@@ -174,7 +174,6 @@ c      ENDIF
         KWRK    = KUTRX   + N2ORBX
         LWRK1   = LWRK    - KWRK
       ENDIF
-
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3LNO',-KWRK,LWRK)
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
@@ -202,7 +201,7 @@ c      ENDIF
       ENDIF
 
       IF (IPRRSP .GE. 140) THEN
-          WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
+         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
          WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on entry'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
@@ -210,46 +209,45 @@ c      ENDIF
          CALL OUTPUT(EVECS(KZVAR+KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,
      *               1,1,LUPRI)
       END IF
-
       IF (MMPCM .AND. (.NOT.FIRST1)) THEN
-C       Read in the PCM coordinates ans charges but only for the states
-C       that we are still converging (it might be that some of the
-C       states on the PCM_TO_MM interface file have converged after the
-C       last PCM correction and before this MM correction) 
+C     Read in the PCM coordinates and charges but only for the states
+C     that we are still converging (it might be that some of the
+C     states on the PCM_TO_MM interface file have converged after the
+C     last PCM correction and before this MM correction) 
 
-        READ(KFILE,*) NOSIMPCM, NTSPCM
-        IF (NOSIMPC.NE.NOSIMOLD) THEN
-          CALL QUIT('Error in no. of converged vectors in mm/pcm')
-        ENDIF
-        IF (NTS.NE.NTSPCM) THEN
-          CALL QUIT('Error in no. of tesseras in mm/pcm')
-        ENDIF
-        KL = 0
-        DO 150 IOSIM = 1,NOSIMOLD ! nosimold entries on this file
-          READ(KFILE,*) NVECIT
-          IF (ICQM3(NVECIT).NE.-1) THEN ! -1 means converged
+         READ(KFILE,*) NOSIMPCM, NTSPCM
+         IF (NOSIMPCM.NE.NOSIMOLD) THEN
+            CALL QUIT('Error in no. of converged vectors in mm/pcm')
+         ENDIF
+         IF (NTS.NE.NTSPCM) THEN
+            CALL QUIT('Error in no. of tesseras in mm/pcm')
+         ENDIF
+         KL = 0
+         DO 150 IOSIM = 1,NOSIMOLD ! nosimold entries on this file
+            READ(KFILE,*) NVECIT
+            IF (ICQM3(NVECIT).NE.-1) THEN ! -1 means converged
 C           we only enter here NOSIM times even though the loop is over
 C           NOSIMOLD   
-            WRK(KSTATE+KL) = ICQM3(NVECIT) ! save state number
-            DO 151 L = 1,NTSPCM
-              READ(KFILE,'(4(E25.15,2x))') 
-     &        WRK(KXPCM+KL*NTS+L-1),
-     &        WRK(KYPCM+KL*NTS+L-1),
-     &        WRK(KZPCM+KL*NTS+L-1),
-     &        WRK(KQEX+KL*NTS+L-1)
-  151       CONTINUE
-            KL=KL+1
-          ELSE ! this vector has converged and we do not need this
-            DO 152 L = 1,NTSPCM
-              READ(KFILE,'(4(E25.15,2x))')
-     &        WRK(KWRK),
-     &        WRK(KWRK),
-     &        WRK(KWRK),
-     &        WRK(KWRK)
-  152       CONTINUE
-C           do not update KL in this case
-          ENDIF
-  150  CONTINUE
+               WRK(KSTATE+KL) = ICQM3(NVECIT) ! save state number
+               DO 151 L = 1,NTSPCM
+                  READ(KFILE,'(4(E25.15,2x))') 
+     &                 WRK(KXPCM+KL*NTS+L-1),
+     &                 WRK(KYPCM+KL*NTS+L-1),
+     &                 WRK(KZPCM+KL*NTS+L-1),
+     &                 WRK(KQEX+KL*NTS+L-1)
+ 151           CONTINUE
+               KL=KL+1
+            ELSE                ! this vector has converged and we do not need this
+               DO 152 L = 1,NTSPCM
+                  READ(KFILE,'(4(E25.15,2x))')
+     &                 WRK(KWRK),
+     &                 WRK(KWRK),
+     &                 WRK(KWRK),
+     &                 WRK(KWRK)
+ 152           CONTINUE
+C     do not update KL in this case
+            ENDIF
+ 150     CONTINUE
       ENDIF
 
       CALL UPKCMO(CMO,WRK(KUCMO))
@@ -296,11 +294,18 @@ C--------------------------------------------------------
       CALL DSPTSI(NORBT,WRK(KFSOLMO),WRK(KUFSOL))
 
       IF (MMPCM) THEN
-        LFILE = -1
-        CALL GPOPEN(LFILE,'MYFPCM','NEW',' ','FORMATTED',IDUMMY,
+         INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
+         IF (FILE_EXIST) THEN
+            LFILE = -1
+            CALL GPOPEN(LFILE,'MYFPCM','OLD',' ','FORMATTED',IDUMMY,
      &              .FALSE.)
-             REWIND(LFILE)
-             WRITE(LFILE,*) NOSIM, NCOMS
+            CALL GPCLOSE(LFILE,'DELETE')
+         ENDIF
+         LFILE = -1
+         CALL GPOPEN(LFILE,'MYFPCM','NEW',' ','FORMATTED',IDUMMY,
+     &              .FALSE.)
+         REWIND(LFILE)
+         WRITE(LFILE,*) NOSIM, NCOMS
       ENDIF
 
       DO 200 IOSIM = 1,NOSIM
@@ -503,18 +508,18 @@ C
   300 CONTINUE 
 
       IF (MMPCM) THEN
-        IF (FIRST1) THEN
-          WRITE(LFILE,*) IOSIM
-        ELSE
-          WRITE(LFILE,*) WRK(KSTATE+IOSIM-1)
-        ENDIF 
+         IF (FIRST1) THEN
+            WRITE(LFILE,*) IOSIM
+         ELSE
+            WRITE(LFILE,*) WRK(KSTATE+IOSIM-1)
+         ENDIF 
 
-        DO 820 L = 1,NCOMS
-          WRITE(LFILE,'(6(E25.15,2x))') WRK(KXCOOR+L-1),
-     &    WRK(KYCOOR+L-1),
-     &    WRK(KZCOOR+L-1),WRK(KXDIP+L-1),WRK(KYDIP+L-1),
-     &    WRK(KZDIP+L-1)
-  820   CONTINUE
+         DO 820 L = 1,NCOMS
+            WRITE(LFILE,'(6(E25.15,2x))') WRK(KXCOOR+L-1),
+     &           WRK(KYCOOR+L-1),
+     &           WRK(KZCOOR+L-1),WRK(KXDIP+L-1),WRK(KYDIP+L-1),
+     &           WRK(KZDIP+L-1)
+ 820     CONTINUE
       ENDIF
 
   200 CONTINUE
@@ -556,7 +561,6 @@ C     Save nosim for use with mm/pcm
 c      IF (FIRST) THEN
 c         FIRST = .FALSE.
 c      END IF
-
       CALL QEXIT('QM3LNO')
       RETURN
       END 

@@ -45,15 +45,17 @@ Clara         IF (IPRRSP.GT.101) THEN
       END IF
       IF ( NOSIM .GT.0 ) THEN
          IF (IPRRSP.GT.101) THEN
+C         IF (.true.) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
              WRITE(LUPRI,*)' **** BEFORE IEFLNO **** '
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
           END IF
-C         write (lupri,*) 'lara bef. IEFLNO'
+C         PRINT *, 'lara bef. IEFLNO'
          CALL IEFLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
-C         write (lupri,*) 'lara aft. IEFLNO'
+C         PRINT *, 'lara aft. IEFLNO'
          IF (IPRRSP.GT.101) THEN
+C         IF (.true.) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
              WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -390,6 +392,10 @@ C
       DIMENSION INDXCI(*),   UDV(*),   DV(*)
       DIMENSION SVEC(KZYVAR,*),    WRK(*)
       DIMENSION UDVTR(*),DVTR(*)
+C Arnfinn -> 
+C      DIMENSION STATE(*)
+C      INTEGER NOSIMMM, NCOMS
+C <- Arnfinn
 C
 #include <iratdef.h>
 C
@@ -416,6 +422,7 @@ Ckr     the call
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       DIMENSION VTEX(NTS,NOSIM), QTEX(NTS,NOSIM)
       CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL FILE_EXIST
 #include "orgcom.h"
 #include <priunit.h>
 #include <infinp.h>
@@ -428,6 +435,7 @@ Ckr     the call
 #include <inftap.h>
 #include <infpri.h>
 #include "infpar.h"
+#include "qm3.h"
 C
 C
 C
@@ -444,6 +452,24 @@ C
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 C
+C     Arnfinn Nov. -08 ->
+C     Read the value of NOSIM and NCOMS from the QM3 calculations 
+C     (from the file MYFPCM).
+      IF (MMPCM) THEN
+         INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
+         IF (FILE_EXIST) THEN
+            LQM3PCM = -1
+            CALL GPOPEN(LQM3PCM,'MYFPCM','OLD',' ','FORMATTED ',IDUMMY,
+     &                  .FALSE.)
+            REWIND(LQM3PCM)
+            READ(LQM3PCM,*) NOSIMMM,NCOMS
+            PRINT *,NOSIMMM,NCOMS,NOSIM
+         ELSE
+            NOSIMMM = NOSIM
+         ENDIF
+      ENDIF
+C <- Arnfinn
+
 C
 C     Core allocation
 C
@@ -479,12 +505,38 @@ C
       ELSE
          KW30    = KJ1XAC   + NOSIM * N2ASHX
       ENDIF
+C Arnfinn Nov. -08 ->
+C Alocate memory and read coordinats and dipole moments from MM
+      IF(MMPCM) THEN
+         KMMCOR = KW30
+         KMMDIP = KMMCOR + NOSIMMM*3*NCOMS
+         KSTATE = KMMDIP + NOSIMMM*3*NCOMS
+         KW30   = KSTATE + NOSIMMM
+         IF (FILE_EXIST) THEN
+            L = 0
+            DO I = 1,NOSIMMM
+               READ(LQM3PCM,*) WRK(KSTATE+I-1)
+               DO J = 1,NCOMS
+                  L = L + 1
+                  READ(LQM3PCM,'(6(E25.15,2x))') WRK(KMMCOR + 1*(L-1)),
+     &                 WRK(KMMCOR + 2*(L-1)),WRK(KMMCOR + 3*(L-1)),
+     &                 WRK(KMMDIP + 1*(L-1)),
+     &                 WRK(KMMDIP + 2*(L-1)),WRK(KMMDIP + 3*(L-1))
+               ENDDO
+            ENDDO
+            CALL GPCLOSE(LQM3PCM,'KEEP')
+         ENDIF
+      ENDIF
+C <- Arnfinn
 C
 C     3.0 SOLSC
       KOVLP = KW30
       KW50   = KOVLP  + NOSIM
       LW50   = LFREE  + 1 - KW50
 C
+
+
+
       KNEED = MAX(KW30,KW50)
       IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
 C
@@ -507,7 +559,7 @@ C
  210        CONTINUE
          END IF
       END IF
- 2110  FORMAT (/,' Orbital trial vector unpacked to matrix form (no.',
+ 2110 FORMAT (/,' Orbital trial vector unpacked to matrix form (no.',
      *        I3,' of',I3,')')
 C
 C     Contributions from all tesserae are included.
@@ -526,6 +578,24 @@ C
      &             WRK(KW50),LW50)
       ELSE
 #endif
+C Arnfinn Nov. -08 ->
+C Convert dipole moments to potentials
+      IF (MMPCM) THEN
+         KMMPOT = KW50
+         KQNMM  = KMMPOT + NTSIRR
+         KQMAT  = KQNMM + NTSIRR
+         KW50   = KQMAT + NTS*NTSIRR
+         LW50   = LFREE + 1 - KW50
+         KNEED  = MAX(KW30,KW50)
+         IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
+C
+C false false true makes potential from dipole moments only
+         CALL COMP_NUC_POT_CAV_MM(WRK(KMMPOT),.FALSE.,.FALSE.,
+     &         .TRUE.,WRK(KMMCOR),WRK(KMMDIP),NOSIMMM)
+C Convert potentials to charges, q
+         CALL V2Q(WRK(KW50),WRK(KMMPOT),WRK(KQNMM),QNMM,.FALSE.)
+      ENDIF
+C <- Arnfinn
       DO I = 1, NTSIRR
 C Read AO potential integrals on tesserae
          L = 1
@@ -593,12 +663,34 @@ C
                END IF
             END IF
          ENDDO
+C Arnfinn Nov. -08 ->
+C Added QSM 
          IF (TRPLET) THEN
-            CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
-     &                 1,WRK(KPCMXT),1)
+            IF (MMPCM) THEN
+               IF(.false.) THEN
+                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+WRK(KQNMM+I-1),
+     &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
+               ELSE
+                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+QSMM(I),
+     &                    WRK(KJ1XSQ),1,WRK(KPCMXT),1)
+               ENDIF
+            ELSE
+               CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
+     &                    1,WRK(KPCMXT),1)
+            ENDIF
          ELSE
-            CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
-     &                 1,WRK(KPCMX),1)
+            IF (MMPCM) THEN
+               IF(.false.) THEN
+                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+WRK(KQNMM+I-1),
+     &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
+               ELSE
+                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+QSMM(I),
+     &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
+               ENDIF
+            ELSE
+               CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
+     &                    1,WRK(KPCMX),1)
+            ENDIF
          ENDIF
 C KPCMX: \tilde{J} + \tilde{X}
 C
@@ -676,6 +768,31 @@ C
       ENDDO
       CALL GPCLOSE(LUPCMD,'KEEP')
 C
+C Arnfinn Nov. -08 ->
+C Make the file QFQM3 with charges for use by QM3 response calculations
+      IF (MMPCM) THEN
+         INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
+         IF (FILE_EXIST) THEN
+            LPCMQM3 = -1
+            CALL GPOPEN(LPCMQM3,'QFQM3','OLD',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+            CALL GPCLOSE(LPCMQM3,'DELETE')
+         ENDIF
+         LPCMQM3 = -1
+         CALL GPOPEN(LPCMQM3,'QFQM3','NEW',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+         WRITE (LPCMQM3,*) NOSIMMM, NTS
+         DO I = 1, NOSIMMM
+            WRITE (LPCMQM3,*) WRK(KSTATE+I-1)
+            DO ITS = 1, NTS
+               WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
+     &                ZTSCOR(ITS),QTEX(ITS,I)+WRK(KQNMM+ITS-1)
+            ENDDO
+         ENDDO
+         CALL GPCLOSE(LPCMQM3,'KEEP')
+      ENDIF
+C <- Arnfinn
+C
 C     TRANSFORMED CHARGES MULTIPIED TO POTENTIALS.
 C     There are only one-index-transformed charges for the totally
 C     symmetric irrep.
@@ -688,8 +805,8 @@ C
             CALL DZERO(QTEX((KSYMOP - 1)*NTSIRR + 1,IOSIM),NTSIRR)
          END DO
       END IF
-      CALL J1INT(QTEX,.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,'NPETES ',
-     &           KSYMOP,WRK(KW50),LW50)
+      CALL J1INT((QTEX+WRK(KQNMM)),.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,
+     &           'NPETES ',KSYMOP,WRK(KW50),LW50)
       DO IOSIM = 1, NOSIM
          JAOP  = KJ1XSQ + (IOSIM - 1) * NNBASX
          JPCMX = KPCMX  + (IOSIM - 1) * N2ORBX

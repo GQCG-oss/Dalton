@@ -2594,17 +2594,17 @@ C
       CALL QENTER('RSPCTL')
       IF (MMPCM) CALL MMPCMINIT()
       IF (IPRRSP .GE. 2) THEN
-      IF (LINEQ) THEN
-         WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
+         IF (LINEQ) THEN
+            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
      *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
      *   'FOR LINEAR RESPONSE PROPERTIES >>>',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
-      ELSE
-         WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
+         ELSE
+            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
      *   ' <<< EXCITATION ENERGIES',
      *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
-      END IF
+         END IF
       END IF
 C
 C  DEFINE MAXIMUM NUMBER OF TRIAL VECTORS IN RSPLIN AND RSPNEX
@@ -2893,15 +2893,15 @@ C        CALL RSPELI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
 C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *               XINDX,WRK,LWRK)
 C
-          KEVECS = KWRK1
-          KSOP1  = KEVECS + (NCSIM+NOSIM)*KZYVAR
-          IF (SOPPA) THEN
-             KWRK2 = KSOP1 + KZYWOP
-          ELSE
-             KWRK2 = KSOP1
-          ENDIF
-          LWRK2  = LWRK   - KWRK2
-          IF (LWRK2.LT.0) CALL ERRWRK('RSPCTL 2',KWRK2-1,LWRK)
+         KEVECS = KWRK1
+         KSOP1  = KEVECS + (NCSIM+NOSIM)*KZYVAR
+         IF (SOPPA) THEN
+            KWRK2 = KSOP1 + KZYWOP
+         ELSE
+            KWRK2 = KSOP1
+         ENDIF
+         LWRK2  = LWRK   - KWRK2
+         IF (LWRK2.LT.0) CALL ERRWRK('RSPCTL 2',KWRK2-1,LWRK)
 C
 C        WRITE E(2)*X ON LURSP5
 C
