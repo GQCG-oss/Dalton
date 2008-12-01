@@ -1746,6 +1746,10 @@ C
 #include <pcmlog.h>
 #include "qm3.h"
 #include <efield.h>
+#include <infpar.h>
+#include <mtags.h>
+#include <mpif.h>
+
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
       IF (IPRINT .GT. 5) CALL TITLER('Output from ONEDRL','*',103)
@@ -1865,7 +1869,14 @@ C
             MWRK  = KTMAT + 3*N2BASX
             IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','QM3-1',MWRK,LWRK)
             LLEFT = LWRK - MWRK + 1
-            CALL QM3FIRST(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),LLEFT)
+C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
+            IF (NODTOT.GE.1) THEN
+               CALL QM3FIRST_P(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),
+     &                       LLEFT)
+            ELSE
+               CALL QM3FIRST(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),
+     &                       LLEFT)
+            ENDIF
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
          END IF
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
