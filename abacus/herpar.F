@@ -1225,20 +1225,13 @@ C  /parint/
 C
 C     Arnfinn ->
 C     In case of QM3 calculation, update number of atom types
-C     in line 4 (line 5 if BASIS) in the molecule file
+C     in "line 4" in the molecule file
 C     (only # of QM atom types, not # of MM atom types)
-      IPOS = 0
-      IPOS = INDEX(MLINE(1),'BASIS')
-      IF (IPOS .EQ. 1) THEN
-         ILN = 5
-      ELSE
-         ILN = 4
-      END IF
-      CALL LINE4(MLINE(ILN),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
+      CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
       AUTOSY = .FALSE.
       IF (NSYMOP.EQ.0) NOSYM = .TRUE.
-      CALL LINE4W(MLINE(ILN),NONTP1,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
+      CALL LINE4W(MLINE(NMLAU),NONTP1,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C
 C     Retain information from PARINT.
