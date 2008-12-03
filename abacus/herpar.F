@@ -601,6 +601,7 @@ C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn, nov -08: Sending NONTP1, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTP1,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
 #if defined (SYS_T3e)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
@@ -1158,6 +1159,7 @@ C  /molinp/
             CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn nov -08: Receiving number of QM atom types: 
             CALL MPIXBCAST(NONTP1,1,'INTEGER',MASTER)
+            CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
 #if defined (SYS_T3e)
             CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
