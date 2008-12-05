@@ -392,10 +392,6 @@ C
       DIMENSION INDXCI(*),   UDV(*),   DV(*)
       DIMENSION SVEC(KZYVAR,*),    WRK(*)
       DIMENSION UDVTR(*),DVTR(*)
-C Arnfinn -> 
-C      DIMENSION STATE(*)
-C      INTEGER NOSIMMM, NCOMS
-C <- Arnfinn
 C
 #include <iratdef.h>
 C
@@ -463,7 +459,6 @@ C     (from the file MYFPCM).
      &                  .FALSE.)
             REWIND(LQM3PCM)
             READ(LQM3PCM,*) NOSIMMM,NCOMS
-            PRINT *,NOSIMMM,NCOMS,NOSIM
          ELSE
             NOSIMMM = NOSIM
          ENDIF
@@ -518,10 +513,10 @@ C Alocate memory and read coordinats and dipole moments from MM
                READ(LQM3PCM,*) WRK(KSTATE+I-1)
                DO J = 1,NCOMS
                   L = L + 1
-                  READ(LQM3PCM,'(6(E25.15,2x))') WRK(KMMCOR + 1*(L-1)),
-     &                 WRK(KMMCOR + 2*(L-1)),WRK(KMMCOR + 3*(L-1)),
-     &                 WRK(KMMDIP + 1*(L-1)),
-     &                 WRK(KMMDIP + 2*(L-1)),WRK(KMMDIP + 3*(L-1))
+                  READ(LQM3PCM,'(6(E25.15,2x))') WRK(KMMCOR+3*(L-1)),
+     &                 WRK(KMMCOR + 3*(L-1)+1),WRK(KMMCOR + 3*(L-1)+2),
+     &                 WRK(KMMDIP + 3*(L-1)),
+     &                 WRK(KMMDIP + 3*(L-1)+1),WRK(KMMDIP + 3*(L-1)+2)
                ENDDO
             ENDDO
             CALL GPCLOSE(LQM3PCM,'KEEP')
@@ -667,26 +662,16 @@ C Arnfinn Nov. -08 ->
 C Added QSM 
          IF (TRPLET) THEN
             IF (MMPCM) THEN
-               IF(.false.) THEN
-                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+WRK(KQNMM+I-1),
-     &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
-               ELSE
-                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+QSMM(I),
+               CALL DAXPY(NOSIM*N2ORBX,(QSN(I)+QSE(I)+QSMM(I)),
      &                    WRK(KJ1XSQ),1,WRK(KPCMXT),1)
-               ENDIF
             ELSE
                CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
      &                    1,WRK(KPCMXT),1)
             ENDIF
          ELSE
             IF (MMPCM) THEN
-               IF(.false.) THEN
-                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+WRK(KQNMM+I-1),
+               CALL DAXPY(NOSIM*N2ORBX,(QSN(I)+QSE(I)+QSMM(I)),
      &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
-               ELSE
-                  CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I)+QSMM(I),
-     &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
-               ENDIF
             ELSE
                CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
      &                    1,WRK(KPCMX),1)
@@ -758,6 +743,7 @@ C
          END DO
       END IF
       DO IOSIM = 1, NOSIM
+C
          CALL V2Q(WRK(KW50),VTEX(1,IOSIM),QTEX(1,IOSIM),QTEXS,NEQRSP)
          IF (IPRRSP .GE. 6) THEN
             DO I = 1, NTS
@@ -785,8 +771,9 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
          DO I = 1, NOSIMMM
             WRITE (LPCMQM3,*) WRK(KSTATE+I-1)
             DO ITS = 1, NTS
+               QTEX(ITS,I) = QTEX(ITS,I) + WRK(KQNMM+ITS-1+(I-1)*NTS)
                WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
-     &                ZTSCOR(ITS),QTEX(ITS,I)+WRK(KQNMM+ITS-1)
+     &                ZTSCOR(ITS),QTEX(ITS,I)
             ENDDO
          ENDDO
          CALL GPCLOSE(LPCMQM3,'KEEP')
@@ -805,7 +792,7 @@ C
             CALL DZERO(QTEX((KSYMOP - 1)*NTSIRR + 1,IOSIM),NTSIRR)
          END DO
       END IF
-      CALL J1INT((QTEX+WRK(KQNMM)),.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,
+      CALL J1INT(QTEX,.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,
      &           'NPETES ',KSYMOP,WRK(KW50),LW50)
       DO IOSIM = 1, NOSIM
          JAOP  = KJ1XSQ + (IOSIM - 1) * NNBASX
