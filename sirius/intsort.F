@@ -91,7 +91,10 @@ C
 !  set KEEP(I)=1 if NBAS(I)=0  
 !===========================================================================
 #endif
+C ======================================================================
       SUBROUTINE SORTAO(SCR,LSORT)
+C ======================================================================
+C     AUTHOR ORIGINAL VERSION: B. ROOS IN ENSILLRE AUG 1981.
 C
 C     THIS PROGRAM PERFORMS A SORT OF THE AO INTEGRAL FILE (LUINTA)
 C     PRIOR TO THE TRANSFORMATION OF THE AO TWO-ELECTRON INTEGRALS
@@ -100,7 +103,6 @@ C     AFTER SYMMETRY BLOCKS AND AT THE SAME TIME SKIPS INTEGRALS WHICH A
 C     NOT TO BE USED IN THE SUBSEQUENT CI OR CASSCF RUN FOR SYMMETRY
 C     REASONS. INTEGRAL LABELS ARE SORTED CANONICALLY AND WRITTEN AS
 C     RELATIVE PAIR INDICES FOR EACH SYMMETRY BLOCK.
-C     B. ROOS IN ENSILLRE AUG 1981.
 C     MODIFIED IN APRIL 1984 TO ALLOW CANONICAL ORDERING OF THE
 C     INTEGRALS IN EACH SYMMETRY BLOCK. THE ORDERED LIST OF INTEGRALS
 C     IS ALSO SQUARED ( PQRS AND RSPQ IF PQ NOT EQUAL TO RS) FOR
@@ -147,9 +149,6 @@ C
 #include <n_sort.h>
 #include <inftra.h>
 C
-#if defined (VAR_PROGRAM)
-#include <lsort.h>
-#endif
       DIMENSION SCR(LSORT)
 C
       PARAMETER (LRECL = 8*LRECAO)
@@ -158,6 +157,8 @@ C     ... record length on LUINTA and LUORD
 C     *********** THRESHOLD FOR ZERO INTEGRAL
       PARAMETER (D0 = 0.0D0)
 C
+C
+      INTEGER*8 NPQRS, LPQRS, NINTAO, NINTSO
 C
       REAL*8    XLABEL
       INTEGER*4 XI4LAB(2)
@@ -175,7 +176,7 @@ C
       WRITE(LUPRI,1000)
  1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01',
      &  /10X,'Author: Bjoern Roos',
-     &  /10X,'Revised by hjaaj for Sirius release Jan 1989/April 1994')
+     &  /10X,'Revised by hjaaj for Sirius release Jan89/Apr94/Sep08')
 C
       IF (IRAT .NE. 2 ) THEN
          NWARN = NWARN + 1
@@ -315,8 +316,8 @@ C     COMPUTE VECTOR IT(I) = I*(I-1)/2
 C
       K = 0
       DO 3 I = 1,MXCORB
-         IT(I) = K
-         K = K+I
+        IT(I) = K
+        K = K+I
     3 CONTINUE
 C
 C     COMPUTE SYMMETRY LABELS FOR ALL ORBITALS
@@ -326,20 +327,20 @@ C
       IBAS(1) = 0
       NBAST   = 0
       DO 5 ISYM = 1,NSYM
-      NBASI = NBAS(ISYM)
-      NBAST = NBAST + NBASI
-      IF(ISYM.NE.1) IBAS(ISYM) = IBAS(ISYM-1)+NBAS(ISYM-1)
-      DO 4 I = 1,NBASI
-      K = K+1
-      IS(K) = ISYM
-    4 CONTINUE
+        NBASI = NBAS(ISYM)
+        NBAST = NBAST + NBASI
+        IF(ISYM.NE.1) IBAS(ISYM) = IBAS(ISYM-1)+NBAS(ISYM-1)
+        DO 4 I = 1,NBASI
+          K = K+1
+          IS(K) = ISYM
+    4   CONTINUE
     5 CONTINUE
 C
       IF (NBAST .GT. MXCORB) THEN
          WRITE (LUPRI,'(/A/2(A,I8))')
      *      ' Insufficient length of IT(*) and IS(*) in common N_SORT',
      *      ' Length is',MXCORB,', need',NBAST
-         CALL QUIT(' ')
+         CALL QUIT('IT(*) and IS(*) too short in common N_SORT')
       END IF
 C
 C     COMPUTE BATCH NUMBER FOR EACH SYMMETRY BLOCK
@@ -351,6 +352,7 @@ C     COMPUTE BATCH NUMBER FOR EACH SYMMETRY BLOCK
     8 CONTINUE
 C
       LPQRS = 0
+      nbpq_max = 0
       DO 10 ISP = 1,NSYM
          NBP = NBAS(ISP)
          KEEPP = KEEP(ISP)
@@ -358,6 +360,7 @@ C
          NBQ = NBAS(ISQ)
          NBPQ = NBP*NBQ
          IF(ISP.EQ.ISQ) NBPQ = IT(NBP)+NBP
+         nbpq_max = max(nbpq_max,nbpq)
          ISPQ = IEOR(ISP-1,ISQ-1)
          KEEPQ = KEEP(ISQ)
       DO 10 ISR = 1,ISP
@@ -370,8 +373,11 @@ C
          NBS = NBAS(ISS)
          NBRS = NBR*NBS
          IF(ISR.EQ.ISS) NBRS = IT(NBR)+NBR
-         NPQRS = NBPQ*NBRS
-         IF(ISP.EQ.ISR) NPQRS = (NBPQ**2+NBPQ)/2
+         IF(ISP.EQ.ISR) THEN
+           NPQRS = (NBPQ**2+NBPQ)/2
+         ELSE
+           NPQRS = NBPQ*NBRS
+         END IF
          LSPQRS = LSPQRS+1
 C
 C     Check if this block is totally symmetric
@@ -417,16 +423,15 @@ C     ******* ALWAYS ONE STEP IN THIS VERSION
 C     NUMBER OF BLOCKS PER PASS
       NBP=(NBATCH+NSTEP-1)/NSTEP
 C     BATCH SIZE
-      LBATCH=LSORT/NBP
-      IF(LBATCH.GT.LBMAX) LBATCH=LBMAX
-      LINT=MIN((LBATCH-2)/2,LPQRS)
+      LBATCH=MIN( LBMAX, LSORT/NBP )
+      LINT  =MIN( LPQRS, (LBATCH-2)/2 )
       LBATCH=2*LINT+2
       LBATC2=IRAT*LBATCH
       WRITE(LUPRI,1200) NBATCH,LBATCH,LSORTX,NSTEP
- 1200 FORMAT(/' NUMBER OF BATCHES',I10/
-     *        ' BATCH LENGTH     ',I10/
-     *        ' TOTAL SORT AREA  ',I10/
-     *        ' NUMBER OF STEPS  ',I10)
+ 1200 FORMAT(/' NUMBER OF BATCHES',I12/
+     *        ' BATCH LENGTH     ',I12/
+     *        ' TOTAL SORT AREA  ',I12/
+     *        ' NUMBER OF STEPS  ',I12)
 C
 C     NBP IS THE NUMBER OF BATCHES  LBATCH IS THE LENGTH OF EACH BATCH
 C
@@ -468,8 +473,8 @@ C
       KBUF2=NBUF + 1
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-      JBUF = 608
 #if defined (VAR_SPLITFILES)
+      JBUF = 608
       CALL READSI(LUINTA,NBUF2,RINT(KBUF1),JBUF) 
 #else
       CALL READI(LUINTA,NBUF2,RINT(KBUF1)) 
@@ -503,12 +508,13 @@ C
          NQ =IBTAND(IBTSHR(ILABEL,32),IBT16)
          NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
          NS =IBTAND(       ILABEL,    IBT16) 
+      ELSE
+         CALL QUIT('Programming error: NIBUF .ne. 1 for VAR_INT64')
 #else
          NP =IBTAND(IBTSHR(ILABEL,24),IBT08)
          NQ =IBTAND(IBTSHR(ILABEL,16),IBT08)
          NR =IBTAND(IBTSHR(ILABEL, 8),IBT08)
          NS =IBTAND(       ILABEL,    IBT08) 
-#endif
       ELSE
          ILABEL = IINT(IIND1 + I)
          NP =IBTAND(IBTSHR(ILABEL,16),IBT16)
@@ -516,6 +522,7 @@ C
          ILABEL = IINT(IIND2 + I)
          NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
          NS =IBTAND(       ILABEL,    IBT16) 
+#endif
       END IF
 #if defined VAR_AOCANORDER
 C     --- indices are assumed to be in canonical order
@@ -649,11 +656,11 @@ C
       WRITE(LUPRI,1250) NINTAO,NINTSO,NCHAIN
       WRITE(LUPRI,1260) (NREC(I),I=1,NBATCH)
       WRITE(LUPRI,1261) (NSOINT(I),I=1,NBATCH)
- 1250 FORMAT(/' NUMBER OF INTEGRALS READ',I12,
-     *       /' NUMBER OF INTEGRALS SORTED',I10,
-     *       /' NUMBER OF BUFFERS ON LUSORT',I9)
- 1260 FORMAT(/' NUMBER OF RECORDS IN EACH CHAIN'/,(10I8))
- 1261 FORMAT(/' NUMBER OF INTEGRALS IN EACH CHAIN'/,(10I8))
+ 1250 FORMAT(/' NUMBER OF INTEGRALS READ  ',I15,
+     *       /' NUMBER OF INTEGRALS SORTED',I15,
+     *       /' NUMBER OF BUFFERS ON SORINT',I14)
+ 1260 FORMAT(/' NUMBER OF RECORDS IN EACH BATCH'/,(10I8))
+ 1261 FORMAT(/' NUMBER OF INTEGRALS IN EACH BATCH'/,(10I8))
       IF (DELAO) THEN
          CALL GPCLOSE(LUINTA,'DELETE')
          WRITE (LUPRI,*) 'AOTWOINT deleted.'
@@ -674,8 +681,8 @@ C
       TCP=TCP/60
       TIO=TIO/60
       WRITE(LUPRI,1300) TCP,TIO
- 1300 FORMAT(//' CPU TIME USED (MINUTES)',F9.3,
-     *        /' I/O TIME USED (MINUTES)',F9.3)
+ 1300 FORMAT(/' CPU TIME USED (MINUTES)',F9.3,
+     *       /' I/O TIME USED (MINUTES)',F9.3)
 #endif
       RETURN
 C
@@ -685,7 +692,9 @@ C
  9000 FORMAT(//10X,'SYMMETRY LABELS',4I4,' NOT CONSISTENT FOR'
      *        ,' INTEGRAL',4I4,/10X,'PROGRAM STOPS HERE')
       END
+C ======================================================================
       SUBROUTINE N_ORDER(X,LUSORT,LWORK)
+C ======================================================================
 C
 C     PURPOSE: STARTING FROM A SYMMETRY SORTED LIST OF TWO-ELECTRON
 C              INTEGRALS AN ORDERED LIST IS CREATED WHICH IS QUADRATIC
@@ -713,12 +722,12 @@ C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
       DIMENSION IADUT(2*LIADUT),NRECUT(LIADUT)
       EQUIVALENCE (IADUT(LIADUT+1),NRECUT(1))
 C
-C     WRITE(LUPRI,1000)
       IF (IPRINT.GE.5) WRITE(LUPRI,1000)
- 1000 FORMAT(' AO INTEGRAL ORDERING PROGRAM ACTIVE - '
-     *      ,'RELEASE 86 12 01',/' SYMMETRY   BASIS     CHAIN LADX '
-     *      ,'NRECX LPQ NPQ NBUF LBUF   LX   NOINTX NOINT IOUTCH'
-     *      ,' NRECUT IADUT'/'   BLOCK   FUNCTIONS   IN')
+ 1000 FORMAT(
+     & ' AO INTEGRAL ORDERING PROGRAM ACTIVE - RELEASE 86 12 01',
+     &/' SYMMETRY   BASIS     CHAIN LADX NRECX LPQ NPQ NBUF LBUF',
+     &   '   LX   NOINTX NOINT IOUTCH NRECUT IADUT',
+     &/'   BLOCK   FUNCTIONS   IN')
       LBATC2=IRAT*LBATCH
       IF (LBATCH .GT. LRINT) THEN
          WRITE (LUPRI,'(/A/2(A,I8))')
@@ -804,19 +813,27 @@ C
           ELSE
            NRS  = NBR*NBS
           ENDIF
-          IF (IPRINT .GE. 5) WRITE(LUPRI,*) '% ISW,NPQM,NRS',ISW,
-     &                                       NPQM,NRS
+          IF (IPRINT .GE. 5)
+     &       WRITE(LUPRI,*) '% ISW,NPQM,NRS',ISW,NPQM,NRS
 C
 C         NUMBER OF PQ VALUES PER BUFFER: LPQ
 C
           LPQ = MIN(NPQM,LBUFM/NRS)
-          IF(LPQ.LT.1) GO TO 900
+          IF (LPQ.LT.1) THEN
+             WRITE(LUPRI,9000) LBUFM,NRS
+ 9000 FORMAT(' Buffersize too small in N_ORDER in INTSORT'
+     &      /' LBUFM=',I15,' but NRS=',I15,
+     &      /' Buffersize reset to NRS')
+c            CALL QUIT('INTSORT ERROR: buffersize too small in N_ORDER')
+             LPQ = 1
+          END IF
           NRECUT(IOUTCH) = LPQ
 C         LENGTH OF EACH BUFFER: LBUF
           LBUF  = LPQ*NRS
           LBUF2 = IRAT*LBUF
 C         NUMBER OF PQ-VALUES IN CORE: NPQ
           NPQ   = MIN(NPQM,(LWORK/LBUF)*LPQ)
+          IF (NPQ .LE. 0) CALL ERRWRK('INTSORT.N_ORDER',-LBUF,LWORK)
 C         NUMBER OF BUFFERS IN CORE: NBUF
           NBUF  = (NPQ-1)/LPQ+1
           LX    = NBUF*LBUF
@@ -907,10 +924,5 @@ C     CALL PRPQRS
       CALL DACLOS(LUORD)
       RETURN
 C
-  900 WRITE(LUPRI,9000) LBUFM,NRS
- 9000 FORMAT(' BUFFERSIZE TOO SMALL IN N_ORDER'/
-     &       ' LBUFM=',I6,' BUT NRS=',I6/
-     &       ' STOP IN SUBROUTINE N_ORDER')
-      CALL QUIT('INTSORT ERROR: buffersize too small in N_ORDER')
 C
       END

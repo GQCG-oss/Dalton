@@ -375,7 +375,7 @@ C     ***** Close units *****
 C     ***********************
 C
       IF (DOREAL) THEN
-         IF (DOWALK .OR. VCD) THEN
+         IF (DOWALK .OR. VCD .OR. NACME) THEN
             CALL GPCLOSE(LUGDR,'KEEP')
             CALL GPCLOSE(LURDR,'KEEP')
          ELSE

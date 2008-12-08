@@ -56,6 +56,7 @@ C  /* Deck qm3fck */
 #include <maxaqn.h>
 #include <symmet.h>
 #include <orgcom.h>
+#include <infpar.h>
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
@@ -93,8 +94,13 @@ C     From COMMON
 C     Calculate RRa, Obar and ENSA and write these to file
       CALL QM3_RRA(WRK(KDTAO),WRK(KEND),LWRK1,IPRINT) 
 
-C     Calculate Ns and keep in memory (DFTNS). 
-      CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
+C     Calculate Ns and keep in memory (DFTNS).
+C     (Run QM3_NSP instead of QM3_NS if #nodes > 1, Arnfinn nov. -08)
+      IF (NODTOT.GE.1) THEN 
+         CALL QM3_NSP(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
+      ELSE
+         CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
+      END IF
 
 C     Modify the fock operator. Modification returned in FSOL. 
       CALL QM3_FMO(FSOL,WRK(KEND),LWRK1,IPRINT)
@@ -362,7 +368,7 @@ C  /* Deck qm3_ns */
 
 
       DIMENSION WRK(LWRK) 
-      DIMENSION DFTNS(*)
+      DIMENSION DFTNS(*), DCAO(NNBASX)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -392,9 +398,9 @@ C To here
       ENSEL = 0.0D0
 
       IF (.NOT. INTDIR) THEN
-        CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
-     &            'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND (LUQM3P)
+         CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
+     &              'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND (LUQM3P)
       ENDIF
 
       FAC1 = -1.0D0
@@ -402,93 +408,87 @@ C To here
       L = 0
 
       IF (INTDIR) THEN
-        OBKPX = DIPORG(1)
-        OBKPY = DIPORG(2)
-        OBKPZ = DIPORG(3)
+         OBKPX = DIPORG(1)
+         OBKPY = DIPORG(2)
+         OBKPZ = DIPORG(3)
       ENDIF
 
       DO 525 I = 1, ISYTP
-        IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
-          DO 526 J = NSYSBG(I), NSYSED(I)
-            DO 527 K = 1,NSISY(I)
+         IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+            DO 526 J = NSYSBG(I), NSYSED(I)
+               DO 527 K = 1,NSISY(I)
 
-              L = L +1
+                  L = L +1
 
-                IF (INTDIR) THEN
+                  IF (INTDIR) THEN
 
-                  KMAT = KWRK1
-                  KLAST = KMAT + NNBASX
-                  LWRK2 = LWRK - KLAST + 1
-                  IATNOW = NUCIND + L 
+                     KMAT = KWRK1
+                     KLAST = KMAT + NNBASX
+                     LWRK2 = LWRK - KLAST + 1
+                     IATNOW = NUCIND + L 
 
-                  KPATOM = 0
-                  NOSIM = 1
-                  TOFILE = .FALSE.
-                  TRIMAT = .TRUE.
-                  EXP1VL = .FALSE.
-                  DIPORG(1) = CORD(1,IATNOW)
-                  DIPORG(2) = CORD(2,IATNOW)
-                  DIPORG(3) = CORD(3,IATNOW)
+                     KPATOM = 0
+                     NOSIM = 1
+                     TOFILE = .FALSE.
+                     TRIMAT = .TRUE.
+                     EXP1VL = .FALSE.
+                     DIPORG(1) = CORD(1,IATNOW)
+                     DIPORG(2) = CORD(2,IATNOW)
+                     DIPORG(3) = CORD(3,IATNOW)
 
-                  FORQM3=.TRUE.
-                  CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
+                     FORQM3=.TRUE.
+                     CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
      &                        LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
-                  FORQM3=.FALSE.
+                     FORQM3=.FALSE.
+                     IF (OLDTG) THEN
+                        FACQ = -1.0D0*CHAOLD(IATNOW)
+                     ELSE
+                        FACQ = -1.0D0*CHARGE(IATNOW)
+                     ENDIF
 
-                  IF (OLDTG) THEN
-                     FACQ = -1.0D0*CHAOLD(IATNOW)
-                  ELSE
-                     FACQ = -1.0D0*CHARGE(IATNOW)
-                  ENDIF
+                     CALL DSCAL(NNBASX,FACQ,WRK(KMAT),1)
 
-                  CALL DSCAL(NNBASX,FACQ,WRK(KMAT),1)
+                     IF (IPRINT.GT.15) THEN
+                        WRITE (LUPRI,'(/A)') 'NUCPOT matrix'
+                        CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+                     ENDIF 
 
-                  IF (IPRINT.GT.15) THEN
-                    WRITE (LUPRI,'(/A)') 'NUCPOT matrix'
-                    CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
-                  ENDIF 
-
-                  DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-
+                     DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
 C                 MM/PCM interface. Coordinates and charges are fixed
 C                 here so in fact on needed on the first call. Leave it
 C                 for now.
+C     Is this place correct? Arnfinn
+                     IF (MMPCM) THEN
+                        XMMQ(L) = CORD(1,IATNOW)
+                        YMMQ(L) = CORD(2,IATNOW)
+                        ZMMQ(L) = CORD(3,IATNOW)
+                        MMQ(L)  = CHARGE(IATNOW)
+                        IF (L.GT.MXQ) THEN
+                     CALL QUIT('Too many chargees in MM. Increase MXQ')
+                        ENDIF
+                     ENDIF
+C <- Arnfinn
+                  ELSE
+                     CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
+                     IF (IPRINT.GT.15) THEN
+                        WRITE (LUPRI,'(/A,I3,A)')
+     *                       ' N(',L,')_ao matrix: '
+                        CALL OUTPAK(WRK(KNSAO),NBAST,1,LUPRI)
+                     ENDIF 
 
-                  IF (MMPCM) THEN
-                    XMMQ(L) = CORD(1,IATNOW)
-                    YMMQ(L) = CORD(2,IATNOW)
-                    ZMMQ(L) = CORD(3,IATNOW)
-                    MMQ(L)  = CHARGE(IATNOW)
-                    IF (L.GT.MXQ) THEN
-                      CALL QUIT('Too many chargees in MM. Increase MXQ')
-                    ENDIF
+                     DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KNSAO),1)
+                     ENSEL     = ENSEL - DFTNS(L) 
                   ENDIF
-              ELSE
-
-                CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
-
-                IF (IPRINT.GT.15) THEN
-                  WRITE (LUPRI,'(/A,I3,A)')
-     *               ' N(',L,')_ao matrix: '
-                  CALL OUTPAK(WRK(KNSAO),NBAST,1,LUPRI)
-                ENDIF 
-
-                DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KNSAO),1)
-
-              ENDIF
-
-              ENSEL     = ENSEL - DFTNS(L) 
-
-  527       CONTINUE
-  526     CONTINUE
-        END IF
-  525 CONTINUE       
+ 527           CONTINUE
+ 526        CONTINUE
+         END IF
+ 525  CONTINUE       
 
       IF (INTDIR) THEN
-        DIPORG(1) = OBKPX
-        DIPORG(2) = OBKPY
-        DIPORG(3) = OBKPZ
+         DIPORG(1) = OBKPX
+         DIPORG(2) = OBKPY
+         DIPORG(3) = OBKPZ
       ENDIF
 
       IF (.NOT. INTDIR) CALL GPCLOSE(LUQM3P,'KEEP')
@@ -498,34 +498,340 @@ C     Print section:
 C-------------------
 C
       IF (IQM3PR .GT. 3) THEN
-        WRITE(LUPRI,'(/A/A/A)')
+         WRITE(LUPRI,'(/A/A/A)')
      *        ' +======================+',
      *        ' |Site| <N_s>           |',
      *        ' +======================+'
 
-        LS = 0
+         LS = 0
 
-        DO 215 I = 1, ISYTP
-          IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
-            DO 216 J = NSYSBG(I), NSYSED(I)
-              DO 217 K = 1, NSISY(I)
+         DO 215 I = 1, ISYTP
+            IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+               DO 216 J = NSYSBG(I), NSYSED(I)
+                  DO 217 K = 1, NSISY(I)
 
-                LS = LS + 1
+                     LS = LS + 1
 
-                WRITE(LUPRI,'(A,I3,A,F16.10,A/A)')
+                     WRITE(LUPRI,'(A,I3,A,F16.10,A/A)')
      *                      ' | ', LS,'|', DFTNS(LS),' |',
      *                      ' +----------------------+'
-  217         CONTINUE
-  216       CONTINUE
-          END IF
-  215   CONTINUE
-        WRITE(LUPRI,'()')
+ 217              CONTINUE
+ 216           CONTINUE
+            END IF
+ 215     CONTINUE
+         WRITE(LUPRI,'()')
       END IF
-
       CALL QEXIT('QM3_NS')
       RETURN
       END
+
+
 C*********************************************************************
+C  /* Deck qm3_nsp */
+      SUBROUTINE QM3_NSP(DCAO,DFTNS,WRK,LWRK,IPRINT)
+C
+C     The parallel version of the routine QM3_NS, Arnfinn nov. -08
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include "nuclei.h"
+#include "mtags.h"
+#include "infpar.h"
+
+      DIMENSION WRK(LWRK) 
+      DIMENSION DFTNS(MXQM3), DCAO(NNBASX)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+#include <ibtfun.h>
+      IPRTYP = 16
+      
+      CALL QENTER('QM3_NSP')
+
+C From here. 
+C This is NOT good. In fact very bad. Needs to be fixed. 
+C Neede for f.ex. spin-spin couplings since nucdep is used here for allocation.
+C Can only be done AFTER coordinates for charges and polarizabilities have been defined 
+C since nudep defines no. of coordinates !! Only active when requsted by the user.
+
+      IF (REDCNT) NUCDEP=NUCIND
+
+C To here
+
+      KDFTNS = 1
+      KWRK1  = KDFTNS + MXQM30
+      LWRK1  = LWRK   - KWRK1 + 1
+
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QM3_NSP',-KWRK1,LWRK)
+
+      ENSEL = 0.0D0
+
+      FAC1 = -1.0D0
+
+      L = 0
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      DO 525 I = 1, ISYTP
+         IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+            CALL QM3_NSPM(IPRTYP,DCAO,DFTNS,WRK(KWRK1),
+     &                    LWRK1,IPRINT,EXP1VL,.FALSE.,ENSEL,FAC1,L,I)
+
+         END IF
+ 525  CONTINUE       
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+
+
+C-------------------
+C     Print section:
+C-------------------
+C
+      IF (IQM3PR .GT. 3) THEN
+         WRITE(LUPRI,'(/A/A/A)')
+     *        ' +======================+',
+     *        ' |Site| <N_s>           |',
+     *        ' +======================+'
+
+         LS = 0
+         
+         DO 215 I = 1, ISYTP
+            IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+               DO 216 J = NSYSBG(I), NSYSED(I)
+                  DO 217 K = 1, NSISY(I)
+                     
+                     LS = LS + 1
+
+                     WRITE(LUPRI,'(A,I3,A,F16.10,A/A)')
+     *                      ' | ', LS,'|', DFTNS(LS),' |',
+     *                      ' +----------------------+'
+ 217              CONTINUE
+ 216           CONTINUE
+            END IF
+ 215     CONTINUE
+         WRITE(LUPRI,'()')
+      END IF
+      CALL QEXIT('QM3_NSP')
+      RETURN
+      END
+C*********************************************************************
+      SUBROUTINE QM3_NSPM(IPRTYP,DCAO,DFTNS,WRK,LWRK,IPRINT,
+     &                     EXP1VL,TOFILE,ENSEL,FAC1,LNUM,INUM)
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
+#include "mpif.h"
+
+#include <cbiher.h>
+
+C     The master routine
+
+      LOGICAL TOFILE, EXP1VL
+      DIMENSION WRK(LWRK)
+      DIMENSION DCAO(NNBASX)
+      DIMENSION DFTNS(MXQM3)
+
+      IF (TOFILE) CALL QUIT('Parallel calculations do not allow '//
+     &     'for storing NS-integrals on disk')
+
+      KDCAO=1
+      KDFTNS=KDCAO+NNBASX
+      KLAST=KDFTNS+MXQM3
+      LWRK1=LWRK-KLAST+1
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+C
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ENSEL,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(FAC1,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+      CALL DZERO(DFTNS,MXQM3)
+
+C     Loop over all MM nuclei
+
+C      ENSEL = 0.0D0
+C      FAC1 = -1.0D0
+
+      DO J = NSYSBG(INUM), NSYSED(INUM)
+         DO K = 1, NSISY(INUM)
+            LNUM = LNUM + 1
+            IWHO = -1
+            CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
+            CALL MPIXSEND(LNUM,1,'INTEGER',NWHO,MPTAG2)
+         END DO
+      END DO
+
+C     Send end message to all slaves
+
+      LEND = -1
+      DO ISLAVE = 1, NODTOT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(LEND ,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+
+C     Collect data from all slaves      
+      CALL DZERO(WRK(KDFTNS),MXQM3)
+      CALL MPI_REDUCE(WRK(KDFTNS),DFTNS,MXQM3,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      RETURN
+      END
+
+C*********************************************************************
+
+      SUBROUTINE QM3_NSPS(WRK,LWRK,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
+#include "mpif.h"
+
+#include <cbiher.h>
+
+C     The slave routine
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, EXP1VL, TRIMAT
+      DIMENSION WRK(LWRK)
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+
+      QM3 = .TRUE.
+
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      KDCAO  = 1
+      KDFTNS = KDCAO  + NNBASX
+      KLAST1 = KDFTNS + MXQM3
+      LWRK1  = LWRK - KLAST1 + 1
+      CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ENSEL,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(FAC1,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+      KMAT   = KLAST1
+      KLAST2 = KMAT   + NNBASX
+      LWRK2  = LWRK1  - KLAST2 + KLAST1
+
+      CALL DZERO(WRK(KDFTNS),MXQM3)
+
+C Run loop over MM nuclear charges
+
+ 20   CONTINUE
+
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(L,1,'INTEGER',MASTER,MPTAG2)
+      CALL DZERO(WRK(KMAT),NNBASX)
+      IF (L .GT. 0) THEN
+         IATNOW = NUCIND + L
+         KPATOM = 0
+         NOSIM = 1
+         TOFILE = .FALSE.
+         TRIMAT = .TRUE.
+         EXP1VL = .FALSE.
+         DIPORG(1) = CORD(1,IATNOW)
+         DIPORG(2) = CORD(2,IATNOW)
+         DIPORG(3) = CORD(3,IATNOW)
+
+         FORQM3=.TRUE.
+         CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST2),
+     &               LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+
+         FORQM3=.FALSE.
+         IF (OLDTG) THEN
+            FACQ = -1.0D0*CHAOLD(IATNOW)
+         ELSE
+            FACQ = -1.0D0*CHARGE(IATNOW)
+         ENDIF
+         CALL DSCAL(NNBASX,FACQ,WRK(KMAT),1)
+         WRK(KDFTNS + L - 1) = DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT),1)
+         ENSEL     = ENSEL - WRK(KDFTNS + L - 1)
+         GO TO 20
+      END IF
+
+C     No more Ns to calculate
+
+      CALL MPI_REDUCE(WRK(KDFTNS),WRK(KDFTNS),MXQM3,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+      RETURN
+      END
+
+C*********************************************************************  
 C  /* Deck qm3_fmo */
       SUBROUTINE QM3_FMO(FSOL,WRK,LWRK,IPRINT)   
 
@@ -846,7 +1152,6 @@ C  /* Deck qm3_energy */
       DIMENSION FFJ(3), DFTNS(*)
 
       CALL QENTER('QM3_ENERGY')
-
       IF ( .NOT. (LOSPC) ) THEN
 
         KOMMSx = 1

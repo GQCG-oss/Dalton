@@ -1586,6 +1586,11 @@ C
       IF (DORLM .AND. .NOT. CAVUSR)
      &   WRITE(LUPRI,'(/A,3F12.6)') ' Cavity center (center of mass):',
      &                               (CAVORG(I), I = 1, 3)
+C
+      IF (TESTIN) THEN
+         CALL QUIT('*** End of input test for Molecule specification')
+      END IF
+C
       CALL QEXIT('HERINP')
       RETURN
 C

@@ -63,9 +63,10 @@ C
          ECP = .TRUE.
       END IF
 C
-      STRING = 'ecp-sdd-pseudo'
+      STRING = 'ecp-sdd-pseudo '
+      LEN_STRING = LNBLNK(STRING)
       LU = -1
-      CALL FIND_BASFIL(STRING,LU,IPRINT)
+      CALL FIND_BASFIL(STRING(1:LEN_STRING),LU,IPRINT)
 C
 C     Search for label identfying atom
 C
@@ -75,7 +76,7 @@ C
       READ(LU,'(A80)', ERR=900,END=910)
      &     STRING
       READ (STRING, '(A1)') LAB
-      IF (LAB.EQ.'A') THEN
+      IF (LAB.EQ.'A' .OR. LAB.EQ.'a') THEN
          READ (STRING, '(A1,I4)') LAB,INTQ
          IF (INTQ.EQ.INTQINP) THEN
             GOTO 100
@@ -136,13 +137,13 @@ C
 C     Print
 C
       IF (IPRINT.GE.0) THEN
-         WRITE(LUPRI,'(/A,I2,A,/A,2(/A,F5.1),2(/A,I5))')
-     &        ' Pseudo potential parameters for ECP type ',NTYECP,'.',
-     &        '------------------------------------------------',
-     &        ' Atomic charge  :', Q,
-     &        ' Effectiv charge:', QEFF,
-     &        ' Core electrons :', NCORE,
-     &        ' Max angular mom:', LMAX-1 
+         WRITE(LUPRI,'(5X,A,I2,A,/5X,A,2(/5X,A,F5.1),2(/5X,A,I5))')
+     &        'Pseudo potential parameters for ECP type ',NTYECP,'.',
+     &        '-----------------------------------------------',
+     &        'Atomic charge  :', Q,
+     &        'Effectiv charge:', QEFF,
+     &        'Core electrons :', NCORE,
+     &        'Max angular mom:', LMAX-1 
       END IF
 C
       IF (IPRINT.GE.2) THEN
@@ -268,21 +269,28 @@ C
       COMMON /TRQ77/  XI,YI,ZI,XJ,YJ,ZJ,XC,YC,ZC
 C
       PARAMETER ( D4 = 4.0D0, D1 = 1D0 )
-      DIMENSION WORK(*),ADER(L1*(L1+3)/2+1,L2*(L2+3)/2+1),
-     &          IORDER(35),IOFF(0:4)
-C
-#include <ibtfun.h>
+      DIMENSION WORK(*),ADER(L1*(L1+3)/2+1,L2*(L2+3)/2+1)
 C
 C     Used to scatter GOUT into ADER, the reason for the difference
 C     in ordering is that PSEUDO routines order according to ZYX whereas
 C     Dalton uses XYZ. Maximum g-functions at the moment.
 C
+      PARAMETER (MAX_L = 4)
+      DIMENSION IORDER(35),IOFF(0:MAX_L)
       DATA IORDER/1,
      &            1,2,3,
      &            1,4,6,2,3,5,
      &            1,7,10,2,3,4,8,6,9,5,
      &            1,11,15,2,3,7,12,10,14,4,6,13,5,8,9/
       DATA IOFF/0,1,4,10,20/  
+C
+#include <ibtfun.h>
+C
+      IF (L1 .GT. MAX_L .OR. L2 .GT. MAX_L) THEN
+         write(lupri,'(//A,3I8)')
+     &   'ERROR ECPINT: L1 or L2 .gt. MAX_L',L1,L2,MAX_L
+         CALL QUIT('ECPINT: L1 or L2 .gt. MAX_L')
+      END IF
 C
       KFREE = 1
       LFREE = LWORK

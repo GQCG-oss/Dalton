@@ -42,7 +42,7 @@ C  /* Deck excinp */
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <inforb.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 C
 #include <abainf.h>
 #include <anrinf.h>
@@ -220,7 +220,7 @@ C     Initialize /cbiexc/
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <abainf.h>
 C
       IPR1IN = IPRDEF
@@ -251,7 +251,7 @@ C  /* Deck excita */
 #include <priunit.h>
 #include <mxcent.h>
 #include <inforb.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <infrsp.h>
 #include <nuclei.h>
       LOGICAL PASS
@@ -294,7 +294,7 @@ C  /* Deck excit1 */
 #include <maxorb.h>
 #include <iratdef.h>
 #include <priunit.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <inflin.h>
@@ -589,6 +589,11 @@ C     ========================
 C
       LUSOVE = -9002
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C
+CSPAS : 26/02-2008 Keld Bak's VIB-G 
+      NBR = 0
+C
+CKeinSPASmehr
       DO 100 ISYM = 1, NSYM
 C
          CALL ABAVAR(ISYM,EXCTRP,IPREXC,WORK(KWORK2),LWORK2)
@@ -606,7 +611,9 @@ C
             KWRKG1 = KGD1
             LWRKG1 = LWORK - KGD1
             KSLV   = KGD1 + 2*NVARPT
-            KLAST  = KSLV + 2*NVARPT
+C           KLAST  = KSLV + 2*NVARPT
+            KWRK2  = KSLV + 2*NVARPT
+            KLAST  = KWRK2 + 2*NVARPT
             IF (KLAST.GT.LWORK) CALL STOPIT('EXCITA',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
@@ -621,6 +628,47 @@ C
             DO 70 IEXVAL = 1,NEXVAL
                EXENG(ISYM,IEXVAL) = WORK(KEXVAL-1+IEXVAL)
    70       CONTINUE
+C
+            IF (FNAC .AND. (.NOT. NODIFC)) THEN
+C
+              DO 72 IATOM = 1,NUCIND
+C
+                DO 71 ICOOR = 1,3
+C
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM-1,1)
+C
+                  IF (ISCOOR.GT.0) THEN
+C
+                    NBR = NBR + 1
+C
+                    CALL RDS2X(NBR,WORK(KUDV),WORK(KXINDX),
+     &                         WORK(KWRK2),LWRK)
+C
+                    IF (IPREXC.GT.3) THEN
+                       WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
+                       CALL OUTPUT(WORK(KWRK2),1,2*NVARPT,1,1,2*NVARPT,
+     &                             1,1,LUPRI)
+                    END IF
+C
+                    REWIND LUSOVE
+C
+                    DO 73 IEXVAL = 1,NEXVAL
+C
+                      CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                      EXMOM = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KWRK2),1)
+C
+                      FONAC(NBR,ISYM,IEXVAL) = EXMOM
+C
+   73               CONTINUE
+C
+                  END IF
+C
+   71           CONTINUE
+C
+   72         CONTINUE
+C
+            ENDIF
 C
 C           Loop over property labels
 C           =========================
@@ -668,6 +716,9 @@ C                 ==============================================
 C                 We have calculated <f|Operator|0> but want to
 C                 keep them as <O|Operator|f>. Therefore, for anti-
 C                 hermitian operators we multiply with a minus-sign.
+C hjaaj 080830 TODO CHECK: sounds strange, p_x = -i d/dx, does that
+C                 not give a double sign change ????????
+C                 cf. the tbp comments later, changing signs of l_x etc back!!!
 C
                   IF (LABEL(2:7).EQ.'DIPLEN') THEN
                     IF (LABEL(1:1).EQ.'X') TRLEN(1,ISYM,IEXVAL) =  EXMOM
@@ -732,9 +783,20 @@ C
      &                                     -EXMOM * EXENG(ISYM,IEXVAL)
                   ELSE IF (LABEL(1:4).EQ.'HDO ') THEN
                     DO 57 INR = 1, 3*NUCDEP
-                       READ(LABEL(5:6),'(I1)') NR
-                       IF (INR.EQ.NR) FONAC(NR,ISYM,IEXVAL) = -EXMOM
+                       READ(LABEL(4:6),'(I3)') NR
+                       IF (INR.EQ.NR) FONA2(NR,ISYM,IEXVAL) = EXMOM
    57               CONTINUE
+C
+                    CALL RDS2(LABEL,WORK(KUDV),WORK(KXINDX),
+     &                        WORK(KWRK2),LWRK)
+C
+                    EXMOM = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KWRK2),1)
+C
+                    DO 58 INR = 1, 3*NUCDEP
+                       READ(LABEL(4:6),'(I3)') NR
+                       IF (INR.EQ.NR) FONAC(NR,ISYM,IEXVAL) = EXMOM
+   58               CONTINUE
+C
                   ENDIF
    80           CONTINUE
               ENDIF
@@ -756,7 +818,7 @@ C  /* Deck excout */
 #include <mxcent.h>
 #include <codata.h>
 #include <gnrinf.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <abainf.h>
@@ -780,7 +842,7 @@ C  /* Deck excout */
       LOGICAL   LCOECD, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       PARAMETER (TOLRTT = 1.0D-12)
-      PARAMETER (D05 = 0.5D0, DTWO =  2.0D0, DTHREE = 3.0D0,
+      PARAMETER (DTWO =  2.0D0, DTHREE = 3.0D0,
      &           ZERO = 0.0D0, ESUDIP = 1D4*DEBYE**2,
      &           ESUECD =  ECHARGE*XTANG*CCM*1D36*ECHARGE*HBAR/EMASS)
 C
@@ -834,19 +896,18 @@ C     Write electric transition dipole moments to output:
 C     ====================================================
 C
 C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
-         WRITE (LUPRI,'()')
          IF (EXCTRP) THEN
             CALL HEADER('Triplet electronic excitation energies',15)
          ELSE
-            CALL HEADER ('Singlet electronic excitation energies',15)
+            CALL HEADER('Singlet electronic excitation energies',15)
          END IF
-         WRITE (LUPRI,'(14X,A,/,14X,A,/,14X,A)')
+         WRITE (LUPRI,'(16X,A/16X,A/16X,A)')
      &      ' Sym.   Mode   Frequency    Frequency',
      &      'ex. st.  No.      (au)          (eV)',
-     &      '---------------------------------------'
+     &      '======================================='
          DO 15 ISYM = 1, NSYM
             DO 14 IEXVAL = 1, NEXCIT(ISYM)
-               WRITE (LUPRI,'(16X,I2,6X,I3,2F12.6)')
+               WRITE (LUPRI,'(I20,I9,2F12.6)')
      &            ISYM,IEXVAL,EXENG(ISYM,IEXVAL),
      &            EXENG(ISYM,IEXVAL)*XTEV
                   LAPRPC = 'Excita  '
@@ -856,48 +917,51 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
      *                        LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                        0.0D0,0.0D0,0.0D0,1,ISYM,ISPINEX,IEXVAL)
  14         CONTINUE
+            WRITE(LUPRI,'(16X,A)')
+     &      '---------------------------------------'
  15      CONTINUE
 C-tbp END IF
       IF (DIPSTR .OR. ROTSTR .OR. ROTVEL) THEN
-         WRITE (LUPRI,'()')
          CALL HEADER('Electric transition dipole moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
-     &   '            Length       ',
-     &   'ex. st.  No.      (au)          x       y       z   ',
-     &   '      x       y       z  ',
-     &   '--------------------------------------------------',
-     &   '----------------------------'
-         DO 200 ISYM = 1, NSYM
-            DO 100 IEXVAL = 1,NEXCIT(ISYM)
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  '//
+     &   '            Length',
+     &   ' ex. st.  No.      (au)          x       y       z   '//
+     &   '      x       y       z',
+     &   ' ===================================================='//
+     &   '=========================='
+         DO ISYM = 1, NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.4,2X,3F8.4)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TRVEL(1,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TRVEL(2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TRVEL(3,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TRLEN(1,ISYM,IEXVAL),  TRLEN(2,ISYM,IEXVAL),
      &            TRLEN(3,ISYM,IEXVAL)
-  100       CONTINUE
-  200    CONTINUE
+            END DO
+            WRITE (LUPRI,'(A)')
+     &   ' ----------------------------------------------------'//
+     &   '--------------------------'
+         END DO
       END IF
 C
 C     Write electric quadrupole transition moments to output:
 C     =======================================================
 C
       IF (OECD) THEN
-         WRITE (LUPRI,'()')
          CALL HEADER('Diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
-     &   '            Length       ',
-     &   'ex. st.  No.      (au)          xx      yy      zz  ',
-     &   '      xx      yy      zz ',
-     &   '--------------------------------------------------',
-     &   '----------------------------'
+         WRITE (LUPRI,'(A,A,2(/A,A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  ',
+     &   '            Length',
+     &   ' ex. st.  No.      (au)          xx      yy      zz  ',
+     &   '      xx      yy      zz',
+     &   ' ----------------------------------------------------',
+     &   '--------------------------'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.4,2X,3F8.4)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TQVEL(1,1,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TQVEL(2,2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
@@ -940,19 +1004,16 @@ C
      &            XNEW(1),XNEW(2),XNEW(3)
                END DO
             END DO
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
          END IF
-         WRITE (LUPRI,'()')
          CALL HEADER('Off-diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
+         WRITE (LUPRI,'(1X,A,2(/1X,A))')
+     &   ' Sym.   Mode    Frequency       Velocity/Frequency  '//
      &   '            Length       ',
-     &   'ex. st.  No.      (au)          xy      xz      yz  ',
+     &   'ex. st.  No.      (au)          xy      xz      yz  '//
      &   '      xy      xz      yz ',
-     &   '--------------------------------------------------',
-     &   '----------------------------'
+     &   '=================================================='//
+     &   '============================'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
                WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
@@ -964,6 +1025,9 @@ C
      &            TQLEN(1,3,ISYM,IEXVAL),
      &            TQLEN(2,3,ISYM,IEXVAL)
             END DO
+            WRITE(LUPRI,'(1X,A)')
+     &   '--------------------------------------------------'//
+     &   '----------------------------'
          END DO
          IF (LOCDBG) THEN
             WRITE(LUPRI,'(//,A,3F10.5)')
@@ -1013,42 +1077,43 @@ C     Write magnetic transition dipole moments to output:
 C     ===================================================
 C
       IF (ROTSTR .OR. ROTVEL) THEN
-         WRITE (LUPRI,'()')
          CALL HEADER('Magnetic transition dipole moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Sym.   Mode    Frequency        Conventional     ',
-     &   '            London       ',
-     &   'ex. st.  No.      (eV)          x       y       z   ',
-     &   '      x       y       z  ',
-     &   '--------------------------------------------------',
-     &   '----------------------------'
+         WRITE (LUPRI,'(A//A/A/A)')
+     &   '  ( mu_B*<0|l_i|n>, where mu_B = 0.5 is the Bohr magneton)',
+     &   ' Symm.  Mode   Frequency         Conventional     '//
+     &   '             London',
+     &   ' ex.st.  No.     (eV)        x        y       z   '//
+     &   '      x        y        z',
+     &   ' =================================================='//
+     &   '============================'
+C
+C      The factor 0.5 is the Bohr-magneton
+C      -tbp: correct signs! was FAC_BM = +0.5D0
+         FAC_BM = -0.5D0
+C
          DO 400 ISYM = 1,NSYM
             DO 300 IEXVAL = 1,NEXCIT(ISYM)
-C-tbp: correct signs!
-               CALL DSCAL(3,-1.0D0,TRMAG(1,ISYM,IEXVAL),1)
-               CALL DSCAL(3,-1.0D0,TRLON(1,ISYM,IEXVAL),1)
-C              The factor 0.5 is the Bohr-magneton
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
-     &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
-     &            D05*TRMAG(1,ISYM,IEXVAL), D05*TRMAG(2,ISYM,IEXVAL),
-     &            D05*TRMAG(3,ISYM,IEXVAL), D05*TRLON(1,ISYM,IEXVAL),
-     &            D05*TRLON(2,ISYM,IEXVAL), D05*TRLON(3,ISYM,IEXVAL)
+               WRITE (LUPRI,'(I4,I7,F11.4,2X,3F9.5,1X,3F9.5)')
+     &    ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &    FAC_BM*TRMAG(1,ISYM,IEXVAL), FAC_BM*TRMAG(2,ISYM,IEXVAL),
+     &    FAC_BM*TRMAG(3,ISYM,IEXVAL), FAC_BM*TRLON(1,ISYM,IEXVAL),
+     &    FAC_BM*TRLON(2,ISYM,IEXVAL), FAC_BM*TRLON(3,ISYM,IEXVAL)
                IF (NODIFC) THEN
-C-tbp: correct sign!
-                  CALL DSCAL(3,-1.0D0,BSRLON(1,ISYM,IEXVAL),1)
-                  WRITE (LUPRI,'(51X,3(A,F7.3))')
-     &            '+', D05*BSRLON(1,ISYM,IEXVAL),
-     &            '+', D05*BSRLON(2,ISYM,IEXVAL),
-     &            '+', D05*BSRLON(3,ISYM,IEXVAL)
-                  WRITE (LUPRI,'(51X,3(A,F7.3))')
-     &            '=', D05*(TRLON(1,ISYM,IEXVAL)+BSRLON(1,ISYM,IEXVAL)),
-     &            '=', D05*(TRLON(2,ISYM,IEXVAL)+BSRLON(2,ISYM,IEXVAL)),
-     &            '=', D05*(TRLON(3,ISYM,IEXVAL)+BSRLON(3,ISYM,IEXVAL))
+                  WRITE (LUPRI,'(51X,SP,3F9.5/33X,A,S,3F9.5/51X,A)')
+     &            FAC_BM*BSRLON(1,ISYM,IEXVAL),
+     &            FAC_BM*BSRLON(2,ISYM,IEXVAL),
+     &            FAC_BM*BSRLON(3,ISYM,IEXVAL),
+     & 'Total:  ',FAC_BM*(TRLON(1,ISYM,IEXVAL)+BSRLON(1,ISYM,IEXVAL)),
+     &            FAC_BM*(TRLON(2,ISYM,IEXVAL)+BSRLON(2,ISYM,IEXVAL)),
+     &            FAC_BM*(TRLON(3,ISYM,IEXVAL)+BSRLON(3,ISYM,IEXVAL)),
+     &       '----------------------------'
                END IF
   300       CONTINUE
+            WRITE (LUPRI,'(A)') ' ----------------------------------'//
+     &         '--------------------------------------------'
   400    CONTINUE
          IF (LOCDBG) THEN
-            WRITE(LUPRI,'(//,A,3F10.5)')
+            WRITE(LUPRI,'(//,A,3F12.5)')
      &      'Conventional after translation along a = ',(AVEC(I),I=1,3)
             DO ISYM = 1,NSYM
                DO IEXVAL = 1,NEXCIT(ISYM)
@@ -1063,11 +1128,10 @@ C-tbp: correct sign!
      &                    + AVEC(2)*TRVEL(1,ISYM,IEXVAL)
                   WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
-     &            D05*XNEW(1),D05*XNEW(2),D05*XNEW(3)
+     &            FAC_BM*XNEW(1),FAC_BM*XNEW(2),FAC_BM*XNEW(3)
                END DO
             END DO
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(/)')
          END IF
       END IF
 C
@@ -1075,39 +1139,37 @@ C     Write oscilator and rotational strengths to output:
 C     ===================================================
 C
       IF (ROTSTR .OR. ROTVEL) THEN
-         WRITE (LUPRI,'()')
          CALL HEADER('Oscillator and Scalar Rotational Strengths',
      &   18)
-         WRITE (LUPRI,'(2X,A,/2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)',
-     &      '       dimensionless              (oscillator strength)'
-         WRITE (LUPRI,'(3(/,1X,A,A))')
-     &   ' Sym.   Mode     Frequency       Oscillator-strength ',
+         WRITE (LUPRI,'(2(A/))')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)',
+     &      '         dimensionless              (oscillator strength)'
+         WRITE (LUPRI,'(A/A/A)')
+     &   ' Symm.  Mode   Frequency    Oscillator-strength '//
      &   '     Rotational-strength   ',
-     &   'ex. st.  No.        (eV)          velocity  length   ',
+     &   ' ex.st.  No.     (eV)        velocity  length   '//
      &   '  velocity  length   London',
-     &   '------------------------------------------------',
-     &   '-------------------------------'
+     &   ' ==============================================='//
+     &   '==========================='
          DO 600 ISYM = 1,NSYM
             DO 500 IEXVAL = 1,NEXCIT(ISYM)
                DIPSTV = DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
      &                  TRVEL(1,ISYM,IEXVAL),1) / EXENG(ISYM,IEXVAL)
                DIPSTL = DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRLEN(1,ISYM,IEXVAL),1) * EXENG(ISYM,IEXVAL)
-C              The factor 0.5 is the Bohr-magneton
-C-tbp          correct signs
-               ROTV   = D05 * DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
+C              FAC_BM factor is the Bohr-magneton
+               ROTV   = FAC_BM * DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
      &                  TRMAG(1,ISYM,IEXVAL),1) / EXENG(ISYM,IEXVAL)
-               ROTL   = D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+               ROTL   = FAC_BM * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRMAG(1,ISYM,IEXVAL),1)
-               ROTLON = D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+               ROTLON = FAC_BM * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRLON(1,ISYM,IEXVAL),1)
                IF (NODIFC) THEN
-                  ROTLO2 = D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+                  ROTLO2 = FAC_BM * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                     BSRLON(1,ISYM,IEXVAL),1)
                   ROTLON = ROTLON + ROTLO2
                ENDIF
-               WRITE (LUPRI,'(2X,I2,6X,I3,2X,F12.6,5X,2F9.4,3X,3F9.3)')
+               WRITE (LUPRI,'(I4,I7,F11.4,5X,2F9.4,3X,3F9.3)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            (DTWO/DTHREE)*DIPSTV, (DTWO/DTHREE)*DIPSTL,
      &            ESUECD*ROTV,   ESUECD*ROTL,   ESUECD*ROTLON
@@ -1116,22 +1178,22 @@ C-tbp          correct signs
                   SLEN(ISYM,IEXVAL) = ESUECD*ROTL
                END IF
   500       CONTINUE
+            WRITE (LUPRI,'(A)')
+     &   ' -------------------------------------------------'//
+     &   '-------------------------'
   600    CONTINUE
 C
-         IF (OECD .AND. (.NOT.LCOECD)) THEN
-
-         WRITE (LUPRI,'()')
-         CALL HEADER('Magnetic Dipole Rotatory Strength Tensor',
-     &               18)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2)'
-         WRITE (LUPRI,'(3(/,1X,A,A))')
-     &   ' Sym. Mode Gauge         Magnetic Dipole Rotatory Strength ',
+       IF (OECD .AND. (.NOT.LCOECD)) THEN
+            CALL HEADER('Magnetic Dipole Rotatory Strength Tensor',18)
+            WRITE (LUPRI,'(A/)')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2)'
+            WRITE (LUPRI,'(3(/1X,A))')
+     &   ' Sym. Mode Gauge         Magnetic Dipole Rotatory Strength '//
      &   'Tensor          ',
-     &   '       No.            xx        xy        xz        yy     ',
+     &   '       No.            xx        xy        xz        yy     '//
      &   '   yz        zz ',
-     &   '-----------------------------------------------------------',
-     &   '----------------'
+     &   '==========================================================='//
+     &   '================'
          DO ISYM = 1,NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
 
@@ -1205,20 +1267,21 @@ C
                END IF
 
             END DO
+            WRITE (LUPRI,'(1X,A)')
+     &   '-----------------------------------------------------------'//
+     &   '----------------'
          END DO
 
-         WRITE (LUPRI,'()')
-         CALL HEADER('Electric Quadrupole Rotatory Strength Tensor',
-     &               18)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2)'
-         WRITE (LUPRI,'(3(/,1X,A,A))')
-     &   ' Sym. Mode Gauge     Electric Quadrupole Rotatory Strength ',
+         CALL HEADER('Electric Quadrupole Rotatory Strength Tensor',18)
+         WRITE (LUPRI,'(A/)')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(3(/1X,A))')
+     &   ' Sym. Mode Gauge     Electric Quadrupole Rotatory Strength '//
      &   'Tensor          ',
-     &   '       No.            xx        xy        xz        yy     ',
+     &   '       No.            xx        xy        xz        yy     '//
      &   '   yz        zz ',
-     &   '-----------------------------------------------------------',
-     &   '----------------'
+     &   '==========================================================='//
+     &   '================'
          DO ISYM = 1,NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
 
@@ -1285,12 +1348,14 @@ C
                END IF
 
             END DO
+            WRITE(LUPRI,'(1X,A)')
+     &   '-----------------------------------------------------------'//
+     &   '----------------'
          END DO
 
-         WRITE (LUPRI,'()')
          CALL HEADER('Total Rotatory Strength Tensor',18)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(A/)')
+     &      '  Units: 10**(-40) (esu**2)*(cm**2)'
          WRITE (LUPRI,'(3(/,1X,A,A))')
      &   ' Sym. Mode Gauge                   Total Rotatory Strength ',
      &   'Tensor          ',
@@ -1346,24 +1411,22 @@ C
          END DO
 
          IF (LOCWRN .NE. 0) THEN
-            WRITE(LUPRI,'(//,1X,A,I6,A,A,/,1X,A,//)')
-     &      'WARNING:',LOCWRN,' warnings were issued for rotatory ',
-     &      ' strength tensors.',
-     &      '         Averages are incorrect!!!!'
+            WRITE(LUPRI,'(//A,I6,A/A//)') ' WARNING:',LOCWRN,
+     &      ' warnings were issued for rotatory strength tensors.',
+     &      ' WARNING: Averages are incorrect!!!!'
          END IF
 
-         END IF  ! (OECD .AND. (.NOT.LCOECD))
+       END IF  ! (OECD .AND. (.NOT.LCOECD))
 C
-      ELSE IF (DIPSTR .AND. (.NOT. ROTSTR) .AND. (.NOT. ROTVEL)
-     &                .AND. (.NOT. OECD)) THEN
-         WRITE (LUPRI,'()')
+C     next line is end of "IF (ROTSTR .OR. ROTVEL) THEN"
+      ELSE IF (DIPSTR .AND. (.NOT. OECD)) THEN
          CALL HEADER('Oscillator strengths',30)
-         WRITE (LUPRI,'(2X,A)')
-     &      'Oscillator strengths are dimensionless.'
-         WRITE (LUPRI,'(3(/,1X,A))')
-     &   ' Sym.   Mode        Frequency     Oscillator-strength ',
-     &   'ex. st.  No.           (eV)        velocity   length   ',
-     &   '-------------------------------------------------------'
+         WRITE (LUPRI,'(A)')
+     &      '  Oscillator strengths are dimensionless.'
+         WRITE (LUPRI,'(3(/A))')
+     &   '  Sym.   Mode        Frequency     Oscillator-strength ',
+     &   ' ex. st.  No.           (eV)        velocity   length   ',
+     &   ' -------------------------------------------------------'
          DO 800 ISYM = 1,NSYM
             DO 700 IEXVAL = 1,NEXCIT(ISYM)
                DIPSTV = DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
@@ -1387,33 +1450,46 @@ C
       END IF
 C
       IF (FNAC) THEN
+         NCOOR  = 3*NUCDEP
          KCSTRA = 1
-         KSCTRA = KCSTRA + 9*NUCDEP
-         KLAST  = KSCTRA + 9*NUCDEP
+         KSCTRA = KCSTRA + NCOOR*NCOOR
+         KLAST  = KSCTRA + NCOOR*NCOOR
          IF (KLAST .GT. LWORK) CALL STOPIT('EXCOUT',' ',KLAST,LWORK)
-         CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,3*NUCDEP,0)
-         WRITE (LUPRI,'()')
+         CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,0)
          CALL HEADER
-     &   ('Non adiabatic coupling matrix elements <O|d/dR|f> (in a.u.)',
+     &   ('Non-adiabatic coupling matrix elements <O|d/dR|f> (in a.u.)',
      &    9)
          WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   '    Coordinate R       Sym.  Mode  Ex. energy   WFR-term ',
+     &   ' Coordinate R          Sym.  Mode Ex. energy    WFR-term ',
      &   ' BSR-term   Total ',
-     &   'No.   Cartesian no.     st.   No.     (Ev)               ',
+     &   ' Cartesian no.          st.   No.    (Ev)                ',
      &   '                 ',
-     &   '---------------------------------------------------------',
+     &   '----------------------------------------------------------',
      &   '------------------'
          DO 1100 ISYM = 1, NSYM
-            DO 1000 IEXVAL = 1,NEXCIT(ISYM)
-               DO 900 ISCOOR = 1, 3*NATOMS
-                  CALL GENCOR(WORK(KCSTRA),3*NUCDEP,ISCOOR,COORDI)
-                  WRITE (LUPRI,'(1X,I2,2X,A,2X,I2,4X,I2,1X,F10.6,1X,
-     &                   3F10.4)')
-     &            ISCOOR, COORDI, ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
-     &            FONAC(ISCOOR,ISYM,IEXVAL), FONA2(ISCOOR,ISYM,IEXVAL),
-     &            FONAC(ISCOOR,ISYM,IEXVAL) + FONA2(ISCOOR,ISYM,IEXVAL)
+            DO 1000 ISCOOR = 1, 3*NATOMS
+               FX = ZERO
+               ICOUNT = 0
+               DO 900 IEXVAL = 1,NEXCIT(ISYM)
+                  CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
+                  IF (ICORSY .EQ. ISYM) THEN
+                     WRITE (LUPRI,'(1X,A,2X,I2,4X,I2,2X,F10.6,1X,
+     &                      2F10.4,F12.6)')
+     &               COORDI, ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &               FONAC(ISCOOR,ISYM,IEXVAL), 
+     &               FONA2(ISCOOR,ISYM,IEXVAL),
+     &               FONAC(ISCOOR,ISYM,IEXVAL)+FONA2(ISCOOR,ISYM,IEXVAL)
+C
+                     FX = FX + FONAC(ISCOOR,ISYM,IEXVAL)**2 /
+     &                         EXENG(ISYM,IEXVAL)
+                     ICOUNT = ICOUNT + 1
+                  END IF
   900          CONTINUE
-               WRITE (LUPRI,'(A)') ' '
+C
+               IF (ICOUNT .GT. 0) WRITE(LUPRI,'(/,1X,A,A,22X,1F11.6,/)') 
+     &                                  'Vibrational g-factor: ',COORDI,
+     &                                  FX*DTWO
+C
  1000       CONTINUE
  1100    CONTINUE
       END IF
@@ -1492,7 +1568,6 @@ C
             ENDDO
          ENDDO
 C
-         WRITE (LUPRI,'()')
          CALL HEADER('Oscillator strength sum rules',30)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Length Approximation in a.u.',
@@ -1579,7 +1654,7 @@ C
       LOGICAL INTTRS, CICLC, HFCLC, TRIPLE, EXECLC
       DIMENSION WORK(LWORK), EXVAL(NEXENG)
 C
-#include "cbiexc.h"
+#include <cbiexc.h>
 #include <infvar.h>
 #include <inforb.h>
 C
@@ -1621,7 +1696,7 @@ C     symmetries from LAB1 and ISYM1 to LAB2 and ISYM2.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include "cbiexc.h"
+#include <cbiexc.h>
       CHARACTER LAB1(*)*8, LAB2(*)*8
       DIMENSION ISYM1(*), ISYM2(*)
 C
@@ -1645,7 +1720,7 @@ C
       RETURN
       END
 C  /* Deck gencor */
-      SUBROUTINE GENCOR(CSTRA,NCOOR,ISCOOR,COORDI)
+      SUBROUTINE GENCOR(CSTRA,NCOOR,ISCOOR,COORDI,ICORSY)
 C
 C     Purpose: To generate a readable description of the symmetry
 C     coordinate ISCOOR in COORDI.
@@ -1669,8 +1744,9 @@ C
             DO 200 ICOOR = 1, 3
                JSCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM,1)
                IF (JSCOOR.EQ.ISCOOR) THEN
+                  ICORSY = ISYM + 1
                   NB = 0
-                  DO 100 I = 1, 3*NUCDEP
+                  DO 100 I = 1, NCOOR
                      NSGN = NINT(CSTRA(ISCOOR,I))
                      IF (NSGN .NE. 0) THEN
                         NB = NB + 1
@@ -1680,26 +1756,23 @@ C
   100             CONTINUE
                   IF (NB .EQ. 1) THEN
                      WRITE(CNBASE,'(I2)') NBASE(1)
-                     COORDI = NAMEX(3*IATOM)(1:4)//' '//CHRXYZ(-ICOOR)
-     &                        //CNBASE
-C                     WRITE (LUPRI,'(1X,I3,3X,A,2X,A,3X,I2)') ISCOOR,
-C     &                  NAMEX(3*IATOM)(1:4), CHRXYZ(-ICOOR), NBASE(1)
+                     COORDI = NAMEX(3*IATOM)(1:4)//CHRXYZ(-ICOOR)
+     &                        //'['//CNBASE//']'
                   ELSE IF (NB .LT. 4) THEN
                      WRITE(CNBASE,'(I2)') NBASE(1)
-                     COORDI = NAMEX(3*IATOM)(1:4)//' '//CHRXYZ(-ICOOR)
+                     COORDI = NAMEX(3*IATOM)(1:4)//CHRXYZ(-ICOOR)
      &                        //'['//CNBASE
                      J = 10
-                     DO 150 IB = 2, NB
-                        WRITE(CNBASE,'(I2)') NBASE(IB)
-                        COORDI(J:J+2) = CHRSGN(NSIGN(IB))//CNBASE
-                        J = J + 3
-  150                CONTINUE
-                     COORDI(J:J+2) = ']/'//CHRNOS(NB)
-C                     WRITE (LUPRI,'(1X,I3,3X,A,2X,A,3X,A,I2,'
-C     &                //CHRNOS(NB-1)//'(2X,A,1X,I2),A,I1)')
-C     &                ISCOOR,NAMEX(3*IATOM)(1:4),CHRXYZ(-ICOOR),' [',
-C     &                NBASE(1),(CHRSGN(NSIGN(I)),NBASE(I),I=2,NB),
-C     &                ' ]/',NB
+                     IF ( NB .GE. 2 ) THEN
+                        WRITE(CNBASE,'(I2)') NBASE(2)
+                        COORDI = COORDI(1:9)//CHRSGN(NSIGN(2))//CNBASE
+                        COORDI = COORDI(1:12)//']/'//CHRNOS(2)
+                     END IF
+                     IF ( NB .GE. 3 ) THEN
+                        WRITE(CNBASE,'(I2)') NBASE(3)
+                        COORDI = COORDI(1:13)//CHRSGN(NSIGN(3))//CNBASE
+                        COORDI = COORDI(1:16)//']/'//CHRNOS(2)
+                     END IF
                   ELSE
                      COORDI = '    See above    '
                   END IF

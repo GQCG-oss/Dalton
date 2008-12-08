@@ -62,8 +62,8 @@ C
 #include <symmet.h>
 #include <codata.h>
 C
-      LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 19 )
+      LOGICAL NEWDEF, ALLCOMP
+      PARAMETER ( NTABLE = 22 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3), ANGMOM(3)
@@ -73,10 +73,14 @@ C
       DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAX MI','.MAXITO',
      &            '.PRINT ','.DAMPIN','.EXCITA','.MAX MA','.THCPP ',
      &            '.BETA  ','.BFREQ ','.CFREQ ','.SHG   ','.ANALYZ',
-     &            '.BATCH ','.FREQ I','.MCD   ','.REDUCE'/
+     &            '.BATCH ','.FREQ I','.MCD   ','.REDUCE','.XXCOMP',
+     &            '.YYCOMP','.ZZCOMP'/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
+C
+      ALLCOMP = .TRUE.
+      ICOMP=0
 C
 C     Set default values
 C
@@ -97,7 +101,7 @@ C
                DO I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,
-     &                 11,12,13,14,15,16,17,18,19),I
+     &                 11,12,13,14,15,16,17,18,19,20,21,22),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -234,6 +238,18 @@ C     User input of damping parameter
  19            CONTINUE
                ABS_REDUCE=.TRUE.
                GOTO 100
+ 20            CONTINUE
+               ALLCOMP=.FALSE.
+               ICOMP=1
+               GOTO 100
+ 21            CONTINUE
+               ALLCOMP=.FALSE.
+               ICOMP=2
+               GOTO 100
+ 22            CONTINUE
+               ALLCOMP=.FALSE.
+               ICOMP=3
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -258,14 +274,16 @@ C     Put operators in lists
 C
          CALL IZERO(NOPER,8)
          DO ILABEL=1,3
-            ISYM = ISYMAX(ILABEL,1)+1
-            NOPER(ISYM) = NOPER(ISYM) + 1
-            LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
-            IF (ABS_MCD) THEN
-               ISYM = ISYMAX(ILABEL,2)+1
+            IF (ALLCOMP .OR. ICOMP.EQ.ILABEL) THEN
+               ISYM = ISYMAX(ILABEL,1)+1
                NOPER(ISYM) = NOPER(ISYM) + 1
-               LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
-            END IF 
+               LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+               IF (ABS_MCD) THEN
+                  ISYM = ISYMAX(ILABEL,2)+1
+                  NOPER(ISYM) = NOPER(ISYM) + 1
+                  LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+               END IF
+            END IF
          END DO
 C
          CALL AROUND('Variable settings for absorption calculation')
@@ -787,12 +805,19 @@ C
             FREQ = FREQ_ALPHA(IFREQ)
          END IF
          WRITE(LUPRI,'(3(/,I3,2A10,F12.6,2F16.6))') 
-     &        3*IFREQ-2,'XDIPLEN','XDIPLEN',FREQ,
+     &        6*IFREQ-5,'XDIPLEN','XDIPLEN',FREQ,
      &        RESLRF(1,IFREQ,1,1,1),RESLRF(2,IFREQ,1,1,1),
-     &        3*IFREQ-1,'YDIPLEN','YDIPLEN',FREQ,
+     &        6*IFREQ-4,'YDIPLEN','YDIPLEN',FREQ,
      &        RESLRF(1,IFREQ,2,2,1),RESLRF(2,IFREQ,2,2,1),
-     &        3*IFREQ,'ZDIPLEN','ZDIPLEN',FREQ,
+     &        6*IFREQ-3,'ZDIPLEN','ZDIPLEN',FREQ,
      &        RESLRF(1,IFREQ,3,3,1),RESLRF(2,IFREQ,3,3,1)
+         WRITE(LUPRI,'(3(I3,2A10,F12.6,2F16.6,/))') 
+     &        6*IFREQ-2,'XDIPLEN','YDIPLEN',FREQ,
+     &        RESLRF(1,IFREQ,1,2,1),RESLRF(2,IFREQ,1,2,1),
+     &        6*IFREQ-1,'XDIPLEN','ZDIPLEN',FREQ,
+     &        RESLRF(1,IFREQ,1,3,1),RESLRF(2,IFREQ,1,3,1),
+     &        6*IFREQ,'YDIPLEN','ZDIPLEN',FREQ,
+     &        RESLRF(1,IFREQ,2,3,1),RESLRF(2,IFREQ,2,3,1)
          WRITE(LUPRI,'(6X,A14,3X,F12.6,2F16.6)') 
      &        'Averaged value',FREQ,
      &        (RESLRF(1,IFREQ,1,1,1)+RESLRF(1,IFREQ,2,2,1)+
@@ -1638,6 +1663,9 @@ C
  920  CONTINUE
       CALL ABSWRT(LURSP3,LURSP,LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
      &     IBTYP,REDVEC,WRK(KFREE),LFREE)
+      CALL GETLRF(LURSP,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     FC,FV,CMO,UDV,PV,XINDX,IBATCH,RESLRF,
+     &     WRK(KFREE),LFREE)
 C     
       IF (IPRABS.GE.0) THEN
          WRITE(LUPRI,'(2(/,1X,A),1P,D9.2,/,1X,A,/,1X,A,I4,A)')
@@ -1696,7 +1724,7 @@ C
 #include <wrkrsp.h>
 #include <absorp.h>
 C
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL,LABGD
       LOGICAL FOUND,CONV
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
      &     WRK(LWRK),RESLRF(2,NFREQ_INTERVAL,3,3,2),
@@ -1704,13 +1732,8 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      CALL MEMGET('REAL',KVEC,2*KZYVAR,WRK,KFREE,LFREE)
-      KGD = KFREE
-      KFREE = KGD + KZYVAR
-      LFREE = LWRK - KFREE
-      CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
-     &     WRK(KGD),LFREE)
 C
+      CALL DIPLAB(LABEL,INDEX)
       IF (LABEL(2:8).EQ.'DIPLEN') THEN
          ITYPE = 1
       ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
@@ -1719,15 +1742,26 @@ C
          WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
          RETURN
       END IF
-      CALL DIPLAB(LABEL,INDEX)
-      DO IFREQ=1,NFREQ_ABS
-         CALL REARSP(LU,2*KZYVAR,WRK(KVEC),LABEL,'COMPLEX ',
-     &        ABS(FREQ_ABS(IFREQ)),0.0D0,KSYMOP,0,THCLR_ABSORP,
-     &        FOUND,CONV,ANTSYM)
-         RESLRF(1,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX,ITYPE) = 
-     &        DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
-         RESLRF(2,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX,ITYPE) = 
-     &        DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC+KZYVAR),1)
+C
+      CALL MEMGET('REAL',KVEC,2*KZYVAR,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
+C
+      DO IOPER=1,NOPER(KSYMOP)
+         LABGD = LABOP(IOPER,KSYMOP)
+         IF (LABEL(2:8).EQ.LABGD(2:8)) THEN
+            CALL DIPLAB(LABGD,INXGD)
+            CALL GETGPV(LABGD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &           WRK(KGD),LFREE)
+            DO IFREQ=1,NFREQ_ABS
+               CALL REARSP(LU,2*KZYVAR,WRK(KVEC),LABEL,'COMPLEX ',
+     &              ABS(FREQ_ABS(IFREQ)),0.0D0,KSYMOP,0,THCLR_ABSORP,
+     &              FOUND,CONV,ANTSYM)
+               RESLRF(1,IFREQ+NBATCH*NFREQ_BATCH,INXGD,INDEX,ITYPE) = 
+     &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
+               RESLRF(2,IFREQ+NBATCH*NFREQ_BATCH,INXGD,INDEX,ITYPE) = 
+     &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC+KZYVAR),1)
+            END DO
+         END IF
       END DO
 C
       RETURN

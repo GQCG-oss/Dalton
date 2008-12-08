@@ -237,12 +237,12 @@ C integer (we used IEIR=3000000).
       MSAVE = .TRUE.
       LINTSV = .FALSE.
       LINTMP = .FALSE.
-	INDX_SHL1 = 0
-	INDX_SHL2 = 0
-	INDX_SHL3 = 0
-	INDX_SHL4 = 0
+      INDX_SHL1 = 0
+      INDX_SHL2 = 0
+      INDX_SHL3 = 0
+      INDX_SHL4 = 0
 #if defined (VAR_MPI)
-     	CALL IZERO(INDX_SHL,MXSHL_KEEP)
+      CALL IZERO(INDX_SHL,MXSHL_KEEP)
 #endif
 C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 C
@@ -439,13 +439,25 @@ C
 C     Stamp date and time and hostname to output
 C
          CALL TSTAMP('INIT',LUPRI)
+         IF (GBYTES .GE. 1.D0) THEN
+           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')
+     &        ' * Work memory size             :',
+     &        LMWORK,' =',GBYTES,' gigabytes.'
+         ELSE
+           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')
+     &        ' * Work memory size             :',
+     &        LMWORK,' =',XMBYTES,' megabytes.'
+         END IF
+         IF (AOSAVE) THEN
+           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+     &        MMCORE
+         END IF
+         WRITE(LUPRI,'(/A/5X,A)')
+     &   ' * Directories for basis set searches:',BASDIR
 C
 C     Read general input
 C
          CALL GNRLIN
-         IF (TESTIN) THEN
-            CALL QUIT('*** End of input test for GENERAL ***')
-         END IF
 #if !defined (VAR_MPI)
       END IF
 #else /* VAR_MPI */
@@ -476,11 +488,23 @@ C
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. 0)
+         CALL TITLER('DALTON - An electronic structure program',
+     &               '*',111)
+         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+         CALL TSTAMP('INIT',LUPRI)
+         IF (GBYTES .GE. 1.D0) THEN
+           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+     &        LMWORK,' =',GBYTES,' gigabytes.'
+         ELSE
+           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+     &        LMWORK,' =',XMBYTES,' megabytes.'
+         END IF
+         IF (AOSAVE) THEN
+           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+     &        MMCORE
+         END IF
          IF (PARIO) THEN
             CALL GNRLIN
-            IF (TESTIN) THEN
-               CALL QUIT('*** End of input test for GENERAL ***')
-            END IF
 #if defined (SYS_LINUX)
             CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else

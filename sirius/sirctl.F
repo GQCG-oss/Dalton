@@ -347,13 +347,14 @@ C
             MAXMIC = MIN(1000,MAXMAC*MAXJT)
             THRGRD = THRRHF
 C
-            THRLDG = 100*NWOPT*THRLDP
+            thrldg = nwopt
+            THRLDG = 1.0d2*thrldg*THRLDP
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL error: SCF threshold below lin.dep. limit',
-     *         ' SCF convergence threshold:',THRGRD,
-     *         ' lin.dep. limit           :',THRLDG
+     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit' 
+     *        ,' SCF convergence threshold:',THRGRD
+     *        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
      &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
@@ -532,13 +533,14 @@ C        ... if CI it is again OK to call sirout.
          MCTYPE = MCTPSV
          IF (DOMC) FLAG(25) = .FALSE.
 C        ... do not write interface file if followed by MCSCF
-         THRLDG = 100*NCONF*THRLDP
+         thrldg = nconf
+         THRLDG = 1.0d2*thrldg*THRLDP
          THRLDG = SQRT(THRLDG)
          IF (THRCI .LT. THRLDG) THEN
             WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *      ' SIRCTL error: CI threshold below lin.dep. limit',
+     *      ' SIRCTL FATAL ERROR: CI threshold below lin.dep. limit',
      *      ' CI convergence threshold:',THRCI,
-     *      ' lin.dep. limit          :',THRLDG
+     *      ' linear dependency limit :',THRLDG
             CALL QUIT('SIRCTL error: CI threshold below lin.dep. limit')
          END IF
 C
@@ -603,13 +605,17 @@ C
          END IF
          THRGRD = THRMC
 C
-         THRLDG = 100*NVAR*THRLDP
+C        thrldg = 100*nvar*thrldp
+C        ^- gave negative number with both gfortran and ifort
+C           when nvar = 37 000 000. Thus the new code. /aug08-hjaaj
+         thrldg = nvar
+         THRLDG = 1.0d2*thrldg*THRLDP
          THRLDG = SQRT(THRLDG)
          IF (THRGRD .LT. THRLDG) THEN
             WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *      ' SIRCTL error: MC threshold below lin.dep. limit',
+     *      ' SIRCTL FATAL ERROR: MC threshold below lin.dep. limit',
      *      ' MC convergence threshold:',THRGRD,
-     *      ' lin.dep. limit          :',THRLDG
+     *      ' linear dependency limit :',THRLDG
             CALL QUIT('SIRCTL error: MC threshold below lin.dep. limit')
          END IF
 C

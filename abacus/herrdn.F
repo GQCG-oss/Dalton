@@ -958,6 +958,7 @@ C
 C     Run over atomic centers
 C     =======================
 C
+      NONTP1 = 0
       DO 100 I = 1, NONTYP
          NOORBI = .TRUE.
          INUC = NCTOT
@@ -1042,10 +1043,10 @@ C ach
             ENDIF
 C
             LMMINP = .FALSE.
-            IF (QM3) THEN
-              IPOS = INDEX(BKPLIN,'MM')
-              IF (IPOS .GT. 0) LMMINP = .TRUE.
-            END IF
+ckr            IF (QM3) THEN
+            IPOS = INDEX(BKPLIN,'MM')
+            IF (IPOS .GT. 0) LMMINP = .TRUE.
+ckr            END IF
 C
             IF (LMMINP) THEN
                 READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
@@ -1062,6 +1063,13 @@ C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
               END IF
             END IF
          END IF
+C
+C     Arnfinn, nov -08: add 1 to NONTP1 if not MM
+C     Counting the numbers of QM type atoms
+         LMMINP = .FALSE.
+         IPS23 = INDEX(BKPLIN,'MM')
+         IF (IPS23 .GT. 0) LMMINP = .TRUE.
+         IF (.NOT. LMMINP) NONTP1 = NONTP1 + 1
 C
 C     End of processing of old input format for line "5"
 C         
@@ -1132,7 +1140,6 @@ C
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
-
          CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI,KSPH)
 C        .. MBSI has been added (WK/UniKA/04-11-2002).
 C
@@ -1690,7 +1697,13 @@ C     To avoid problems in later stages, we now rewrite the coordinates
 C     of the nuclei in traditional Dalton format, with 4 characters for the
 C     name of the atom
 C
-        IF (IPOS .EQ. 0) THEN
+C     Arnfinn, nov. -08: ISUBSY and ISUBSI included in MLINE if QM3
+C
+        IF (QM3) THEN
+           WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,2I4,A3)') NAMN(NCTOT),
+     &        (CORD(J,NCTOT),J = 1, 3),ISUBSY(NCTOT),ISUBSI(NCTOT),'   '
+C
+        ELSEIF (IPOS .EQ. 0) THEN
 #if (defined(GFORTRAN) && GFORTRAN <= 402)
 c     a bug in the compiler (seen with gfortran-4.0.2 20051125)
 c     allegedly fixed in 4.1.x series.
@@ -6743,7 +6756,7 @@ C           ... tell READIN that user hasn't specified THRS
 C     
 C     Since the number of atom types have not been specified, assume old
 C     input format
-C         
+C
          READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
@@ -6755,7 +6768,7 @@ C        ... tell READIN that user hasn't specified THRS
             NSYMOP = 0
          END IF
          DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
-         DOOWN  = CRT. EQ. 'X'
+         DOOWN  = CRT .EQ. 'X'
       END IF
 C
       RETURN
@@ -6766,6 +6779,9 @@ C
       CALL QUIT('Error in determining the number of different '//
      &     'atom types')
       END
+C
+C --------------------------------------------------------------------------
+C
       SUBROUTINE LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
      &                  KASYM,ID3,DOCART,DOOWN)
 C
@@ -6776,57 +6792,63 @@ C
       CHARACTER*1 KASYM(3,3), ID3
       LOGICAL AUTOSY, NOSYM, DOCART, DOOWN
 C
+C     Arnfinn, nov -08: Changed all letters to upper case
+C     (ie Atomtypes -> ATOMTYPES).
+C
       DO I = 1, 71, 10
          WRITE (TMPLN(I:),'(A10)') '          '
       END DO
       IF (NONTYP .LT. 10) THEN
-         WRITE (TMPLN,'(A10,I1)') 'Atomtypes=', NONTYP
+         WRITE (TMPLN,'(A10,I1)') 'ATOMTYPES=', NONTYP
          ISTART = 13
       ELSE IF (NONTYP .LT. 100) THEN
-         WRITE (TMPLN,'(A10,I2)') 'Atomtypes=', NONTYP
+         WRITE (TMPLN,'(A10,I2)') 'ATOMTYPES=', NONTYP
          ISTART = 14
       ELSE
-         WRITE (TMPLN,'(A10,I3)') 'Atomtypes=', NONTYP
+         WRITE (TMPLN,'(A10,I3)') 'ATOMTYPES=', NONTYP
          ISTART = 15
       END IF
 C
 C     We assume we will not pass +/-9 as a total charge for the molecule
 C
       IF (KCHARG .LT. 0) THEN
-         WRITE (TMPLN(ISTART:),'(A7,I2)') 'Charge=',KCHARG
+         WRITE (TMPLN(ISTART:),'(A7,I2)') 'CHARGE=',KCHARG
          ISTART = ISTART + 10
       ELSE IF (KCHARG .GT. 0) THEN
-         WRITE (TMPLN(ISTART:),'(A7,I1)') 'Charge=',KCHARG
+         WRITE (TMPLN(ISTART:),'(A7,I1)') 'CHARGE=',KCHARG
          ISTART = ISTART + 9
       END IF
 C
       IF (NOSYM) THEN
-         WRITE (TMPLN(ISTART:),'(A11)') 'Nosymmetry'
+         WRITE (TMPLN(ISTART:),'(A11)') 'NOSYMMETRY'
          ISTART = ISTART + 12
+Ckr      END IF
+C
+      ELSE
+         IF (.NOT. AUTOSY) THEN
+            WRITE (TMPLN(ISTART:),'(A11,I1,A1)')  'GENERATORS=',
+     &             NSYMOP,' '
+            ISTART = ISTART + 13
+            DO I = 1, 3
+               DO J = 1, 3
+                  WRITE (TMPLN(ISTART:ISTART),'(A1)') KASYM(J,I)
+                  ISTART = ISTART + 1
+               END DO
+            END DO
+         END IF 
       END IF
 C
-      IF (.NOT. AUTOSY) THEN
-         WRITE (TMPLN(ISTART:),'(A11,I1,A1)')  'Generators=',NSYMOP,' '
-         ISTART = ISTART + 13
-         DO I = 1, 3
-            DO J = 1, 3
-               WRITE (TMPLN(ISTART:ISTART),'(A1)') KASYM(J,I)
-               ISTART = ISTART + 1
-            END DO
-         END DO
-      END IF 
-C
       IF (DOCART) THEN
-         WRITE (TMPLN(ISTART:),'(A10)') 'Cartesian '
+         WRITE (TMPLN(ISTART:),'(A10)') 'CARTESIAN '
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A10)') 'Own '
+         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C
       IF (ID3 .NE. ' ') THEN
-         WRITE (TMPLN(ISTART:),'(A7)') 'Angstrom'
+         WRITE (TMPLN(ISTART:),'(A7)') 'ANGSTROM'
       END IF
       RETURN
       END

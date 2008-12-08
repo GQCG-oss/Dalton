@@ -1683,6 +1683,7 @@ dft_kohn_shamab_b_slave(real* work, int* lwork, const int* iprint)
   free(dmat);
 }
 
+void
 dft_kohn_shamab_b_sync_slaves(real* dmat)
 {
   MPI_Bcast(dmat, 2*inforb_.n2basx,MPI_DOUBLE,

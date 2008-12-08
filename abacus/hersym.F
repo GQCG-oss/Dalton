@@ -67,10 +67,10 @@ C*****************************************************************************
       CHARACTER*1 KASYM(3,3), CLASS*15
       IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
       ZERTOL = 1.0D-12
-      MAXAXS = 50
+      MAXAXS = 100
       MAXMIR = 25
       CALL HEADER('SYMADD: Requested addition of symmetry',-1)
-      WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
+      WRITE(LUPRI,'(A,1P,G9.2)') ' Symmetry threshold: ', TOLLRN
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWORK
@@ -83,14 +83,14 @@ C*****************************************************************************
       CALL MEMGET('REAL',KTEMP2,6*(MXCENT+1),WORK,KFREE,LFREE)
       CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
-     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK(KFREE),LFREE)
+     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK,KFREE,LFREE)
       CALL MEMREL('SYMADD',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
      &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
-     &                         CLASS,VRML,WORK,LWORK)
+     &                         CLASS,VRML,WORK,KFREE,LFREE)
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxsymm.h>
@@ -113,7 +113,7 @@ C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
-         DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
+         DIMENSION TMPARR(7,0:LENTMP), WORK(*)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM), JCO(MXAQN)
          LOGICAL VRML, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
          PARAMETER (D0 = 0.0D0)
@@ -163,7 +163,7 @@ C               /hjaaj Mar 2004
 C ::: If requested, a VRML representation of :::
 C ::: the symmetry elements is constructed.  :::
          IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
-     &                         DMRPLN,MAXMIR,WORK,LWORK)
+     &                         DMRPLN,MAXMIR,WORK(KFREE),LFREE)
 C
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
          IF (.NOT. NOMOVE) THEN
@@ -411,16 +411,40 @@ C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
 #include <implicit.h>
+#include <priunit.h>
 #include <mxsymm.h>
          DIMENSION ARR(6,0:MXM), VEC(3)
          IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
          IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
          IF (ABS(VEC(3)) .LT. TOLLRN) VEC(3) = 0.0D0
          VCNORM = SQRT(VEC(1)*VEC(1)+VEC(2)*VEC(2)+VEC(3)*VEC(3))
+         IF (VCNORM .LT. TOLLRN) RETURN
          VEC(1) = VEC(1)/VCNORM
          VEC(2) = VEC(2)/VCNORM
          VEC(3) = VEC(3)/VCNORM
          N = NINT(ARR(1,0))
+         DO I = 1, N
+            J = 0
+            IF (ABS(ARR(1,I) - VEC(1)) .LT. TOLLRN) J = J + 1
+            IF (ABS(ARR(2,I) - VEC(2)) .LT. TOLLRN) J = J + 1
+            IF (ABS(ARR(3,I) - VEC(3)) .LT. TOLLRN) J = J + 1
+            IF (J .EQ. 3) THEN
+Chjaaj Sep08: remove duplicates already here, to include as many axes
+Chjaaj        as possible before N .ge. MXM.
+Cdbg           WRITE(LUPRI,*) 'FIND_AXIS info   : duplicate axis',I,N+1
+               RETURN
+            END IF
+         END DO
+         IF (N .GE. MXM) THEN
+Cdbg        WRITE(LUPRI,*) 'FIND_AXIS warning: axis not added',N+1,MXM
+Cdbg        WRITE(LUPRI,*) 'FIND_AXIS warning: the axis',
+Cdbg &VEC(1),VEC(2),VEC(3)
+            RETURN
+         ELSE
+Cdbg        WRITE(LUPRI,*) 'FIND_AXIS info   : axis added',N+1,MXM
+Cdbg        WRITE(LUPRI,*) 'FIND_AXIS info   : the axis',
+Cdbg &VEC(1),VEC(2),VEC(3)
+         END IF
          I = 1
 C ::: The vector is placed in its correct position in the array, :::
 C ::: so no sorting is necessary.                                :::
@@ -457,7 +481,6 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          N = NINT(AXARR(1,0))
          I = 1
  100     CONTINUE
-         IF (I .LT. N) THEN
             V1(1) = AXARR(1,I)
             V1(2) = AXARR(2,I)
             V1(3) = AXARR(3,I)
@@ -484,9 +507,9 @@ C ::: equal or lesser order, and should be removed.         :::
                END IF
                GOTO 150
             END IF
-            I = I + 1
-            GOTO 100
-         END IF
+         I = I + 1
+         IF (I .LT. N) GOTO 100
+
          AXARR(1,0) = N
          RETURN
       END

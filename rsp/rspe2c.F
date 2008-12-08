@@ -4426,6 +4426,7 @@ C Used from common blocks:
 C   INFDIM : NVARMA
 C
 #include <priunit.h>
+#include <inftap.h>
 #include <infdim.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
@@ -4443,13 +4444,69 @@ C
 C     Open LURD file from ABACUS
 C
       LURD = -1
-      CALL GPOPEN(LURD,'ABACUS.RD','OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
+      CALL GPOPEN(LURD,ABARDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
 C     Read RD_Z from ABACUS
       CALL READDX(LURD,NREC,IRAT*KZVAR,WRK(KRD))
       CALL GPCLOSE(LURD,'KEEP')
       IF (IPRRSP .GT. 120) THEN
          WRITE (LUPRI,*) 'RDS2 test print of ABACUS RD vector'
          WRITE (LUPRI,*) 'label : ',LABEL
+         WRITE (LUPRI,*) 'NREC  : ',NREC
+         WRITE (LUPRI,*) 'NVARMA: ',NVARMA
+         WRITE (LUPRI,*) 'KZVAR : ',KZVAR
+         CALL OUTPUT(WRK(KRD),1,KZVAR,1,1,KZVAR,1,1,LUPRI)
+      END IF
+C     Calculate S[2] * RD where we use RD_Y = -RD_Z
+      CALL DZERO(WRK(KS2LIN),KZYVAR)
+      IF (KZCONF.GT.0) THEN
+         CALL RSPSLI(1,0,WRK(KRD),DUMMY,UDV,WRK(KS2LIN),
+     *   XINDX,WRK(KWRK1),LWRK1)
+      END IF
+      IF (KZWOPT.GT.0) THEN
+         CALL DZERO(WRK(KRD+KZVAR),KZWOPT)
+         CALL RSPSLI(0,1,DUMMY,WRK(KRD+KZCONF),UDV,WRK(KS2LIN),
+     *   XINDX,WRK(KWRK1),LWRK1)
+      END IF
+      CALL DAXPY(KZVAR,D1,WRK(KS2LIN),1,WRK(KS2LIN+KZVAR),1)
+      CALL DCOPY(KZVAR,WRK(KS2LIN+KZVAR),1,WRK(KS2LIN),1)
+      RETURN
+      END
+C  /* Deck rds2x */
+      SUBROUTINE RDS2X(NLAB,UDV,XINDX,WRK,LWRK)
+C Made from RDS2 by klb feb. 1997.
+#include <implicit.h>
+#include <iratdef.h>
+      DIMENSION XINDX(*),UDV(*),WRK(*)
+      PARAMETER ( D1 = 1.0D0 )
+C
+C Used from common blocks:
+C   INFDIM : NVARMA
+C
+#include <priunit.h>
+#include <inftap.h>
+#include <infdim.h>
+#include <infrsp.h>
+#include <wrkrsp.h>
+C
+      LOGICAL OLDDX
+C
+      KS2LIN = 1
+      KRD    = KS2LIN + KZYVAR
+      KWRK1  = KRD    + KZVAR + KZWOPT
+      LWRK1  = LWRK   - KWRK1
+      IF (LWRK1.LT.0) CALL ERRWRK('RDS2X',KWRK1-1,LWRK)
+      NREC = 2*NLAB -1
+C
+C     Open LURD file from ABACUS
+C   
+      LURD = -1
+      CALL GPOPEN(LURD,ABARDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
+C     Read RD_Z from ABACUS
+      CALL READDX(LURD,NREC,IRAT*KZVAR,WRK(KRD))
+      CALL GPCLOSE(LURD,'KEEP')
+      IF (IPRRSP .GT. 120) THEN
+         WRITE (LUPRI,*) 'RDS2X test print of ABACUS RD vector'
+         WRITE (LUPRI,*) 'NLAB  : ',NLAB
          WRITE (LUPRI,*) 'NREC  : ',NREC
          WRITE (LUPRI,*) 'NVARMA: ',NVARMA
          WRITE (LUPRI,*) 'KZVAR : ',KZVAR

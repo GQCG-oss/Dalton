@@ -1230,7 +1230,7 @@ C
 #endif
 C
 C     The environment variable is a : separated string, e.g.:
-C     /programs/Dirac/basis:/programs/Dalton/basis:.
+C     .:/programs/Dirac/basis:/programs/Dalton/basis
 C
 C     We loop over these directories in search for the basis set and
 C     element given.
@@ -1255,7 +1255,9 @@ C        as /home/xxx/My jobs/My basdir/ )
 C
          DO I = LBASDIR,ISTART,-1
             IF (BASDIR(I:I) .NE. ' ') THEN
-               ICOLON = I
+               ICOLON = I+1
+C              ... the address of the "virtual" colon
+C                  (because IEND = ICOLON - 1 below)
                GO TO 20
             END IF
          END DO
@@ -1283,10 +1285,15 @@ C
          LSTR = LSTR + 1
          STRING(LSTR:LSTR) = '/'
       END IF
+      LBAS = INDEX(BASNAM,' ') - 1
+C     ... cannot use LNBLNK becuse some basis sets have additional
+C         information in BASNAM, e.g. "ano-2 4 3 2'
+      IF (LBAS .LE. 0) LBAS = LEN(BASNAM)
+C     ... take care of basis set names with no trailing blanks
       STRING = STRING(1:LSTR)//BASNAM
-      LSTR = LSTR + INDEX(BASNAM,' ') - 1
-      IF (IPRINT .GT. 1) WRITE(LUPRI,'(4A)')
-     &   '  Trying file: ','"',STRING(1:LSTR),'"'
+      LSTR = LSTR + LBAS
+      IF (IPRINT .GT. 1) WRITE(LUPRI,'(3A)')
+     &   '  Trying file: "',STRING(1:LSTR),'"'
 C
 C     Inquire if "/path/basis-set" exists.
 C
@@ -1308,8 +1315,9 @@ C         IPRINT = IPREAD - 1 for HUCKEL) /hjaaj
          GO TO 10
       END IF
 C
-  300 WRITE (LUPRI,'(/2A/A)')
-     +      'Basis : ',BASNAM, 'does not exist.'
+  300 WRITE (LUPRI,'(/3A//A/A)')
+     +      'Basis "',BASNAM,'" does not exist.',
+     +      'The following directories have been searched :',BASDIR
       IF (INDEX(BASNAM,'Huckel') .GT. 0) THEN
          WRITE (LUPRI,'(/A)')
      +   'NB! This basis must be available to use Huckel guess!'

@@ -42,6 +42,9 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+C     Oct - Dev. 99: Extended by K.L.Bak for calculation of
+C     vibrational g-factors.
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -286,6 +289,14 @@ C
          ROAG = .FALSE.
       END IF
 C
+      IF (VIB_G .AND. NODIFC) THEN
+         WRITE(LUPRI,'(/,3A,/)')
+     &   ' Vibrational g-factors are NOT',
+     &   ' implemented with the NODIFC keyword active. ',
+     &   ' Try calculation again without specifying NODIFC.'
+         VIB_G = .FALSE.
+      END IF
+C
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for *ABALNR:',0)
          IF (SKIP) THEN
@@ -399,8 +410,8 @@ C
       RETURN
       END
 C  /* Deck lnraba */
-      SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,WORK,LWORK,
-     &                  PASS)
+      SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,FOVIBG,
+     &                  WORK,LWORK,PASS)
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -415,6 +426,7 @@ C  /* Deck lnraba */
       DIMENSION POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR)
       DIMENSION POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR)
       DIMENSION POLDLS(3,3), POLDAS(3,3)
+      DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
       CHARACTER*8 LABEL1, LABEL2, LABINT(3*MXCOOR), BLANK
       PARAMETER (DP5=0.5D0)
       PARAMETER (LOCDBG = 3)
@@ -611,6 +623,11 @@ C
          END IF
 C
       END IF
+C
+C     Start calculation of polarizabilities and raman optical activity.
+C     =================================================================
+C
+      IF (ALFA .OR. ROAA .OR. ROAG) THEN
 C
 C     Set variables and logicals
 C
@@ -1090,6 +1107,180 @@ C
 C-tbp CALL GPCLOSE(LUSOVE,'DELETE')
 C-tbp CALL GPCLOSE(LUGDVE,'DELETE')
 C-tbp CALL GPCLOSE(LUREVE,'DELETE')
+C
+      END IF
+C
+C     Start calculation of vibrational g-factors.
+C     ===========================================
+C
+      IF (VIB_G) THEN
+C
+C        Set variables and logicals
+C
+         CICLC  = .FALSE.
+         HFCLC  = NASHT .LE. 1
+         TRIPLE = .FALSE.
+         EXECLC = .FALSE.
+         NABATY = -1
+         LUSOVE = -1
+         LUGDVE = -1
+         LUREVE = -1
+         NABAOP = 1
+         BLANK  = '        '
+C
+         CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C
+         CALL DZERO(FOVIBG,3*NATOMS*3*NATOMS*NSYM*NFRVAL)
+C
+C        Loop over the first operators in the linear response function.
+C        These are derivatives with respect to the nuclear cartesian 
+C        coordinates.
+C        ==============================================================
+C
+         NBR = 0
+C
+         DO ISYM = 1,NSYM
+C
+            CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
+C
+C           3. Work Allocations:
+C
+            KGD1   = KWORK1
+            KWRKG1 = KGD1
+            LWRKG1 = LWORK - KWRKG1
+            KSLV   = KGD1 + 2*NVARPT
+            KLAST  = KSLV + 2*NVARPT
+            IF (KLAST.GT.LWORK) CALL STOPIT('LNRABA',' ',KLAST,LWORK)
+            KWRK   = KLAST
+            LWRK   = LWORK - KLAST + 1
+C
+            DO IATOM = 1,NUCIND
+               DO ICOOR = 1,3
+C
+C                 Determine the displacement coordinate number ISCOOR
+C                 of symmetry ISYM. If the displacement coordinate
+C                 does not have symmetry ISYM, ISCOOR is set to zero.
+C                 =================================================== 
+C
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM-1,1)
+C
+                  IF (ISCOOR.GT.0) THEN
+C
+                     NBR = NBR + 1
+C
+                     IF (NBR .NE. ISCOOR) THEN
+                        WRITE(6,'(A)') 
+     &                       'Keld, why are NBR and ISCOOR different?'
+                     END IF
+C
+C                    Find right hand side for first operator 
+C                    and write to file
+C                    =======================================
+C
+                     CALL RDS2X(NBR,WORK(KUDV),WORK(KXINDX),
+     &                          WORK(KWRKG1),LWRKG1)
+                     REWIND LUGDVE
+                     CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
+C
+                     IF (IPRLNR.GT.3) THEN
+                        WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
+                        CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,1,
+     &                              2*NVARPT,1,1,LUPRI)
+                     ENDIF
+C
+C                    Calculate eigenvector for first operator
+C                    (i.e. derivatives with respect to the 
+C                    nuclear cartesian coordinates) and write to file.
+C                    =================================================
+C
+                     CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
+     &                           FRVAL,NFRVAL,NABATY,NABAOP,'d/dR    ',
+     &                           LUGDVE,LUSOVE,LUREVE,THCLNR,MAXITE,
+     &                           IPRRSP,MXRM,MXPHP,WORK(KWRK),LWRK)
+C
+C                    Loop over the second operators in the linear 
+C                    response function.
+C                    These are derivatives with respect to the nuclear 
+C                    cartesian coordinates.
+C                    =================================================
+C
+                     DO JATOM = 1,NUCIND
+                        DO JCOOR = 1,3
+C
+C                       Determine the displacement coordinate number 
+C                       JSCOOR of symmetry ISYM. If the displacement 
+C                       coordinate does not have symmetry ISYM, 
+C                       JSCOOR is set to zero.
+C                       ============================================
+C
+                           JSCOOR = IPTCNT(3*(JATOM-1)+JCOOR,ISYM-1,1)
+C
+                           IF (JSCOOR.GT.0) THEN
+C
+C                             Find right hand side for second operator
+C                             ========================================
+C
+                              CALL RDS2X(JSCOOR,WORK(KUDV),WORK(KXINDX),
+     &                                   WORK(KWRKG1),LWRKG1)
+C
+                              IF (IPRLNR.GT.3) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'GP Vector, label: ','d/dR'
+                                 CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+
+C                             Form the second order property: 
+C                             vibrational g-factor.
+C                             ===============================
+C
+                              REWIND LUSOVE
+C
+                              DO IFRVAL = 1,NFRVAL
+C
+                                 CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                                 FOVIBG(NBR,JSCOOR,ISYM,IFRVAL) 
+     &                               = DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                      WORK(KGD1),1)
+C
+                                 IF (IPRLNR.GT.3) THEN
+                                    WRITE (LUPRI,'(A,I4)') 
+     &                                  'Solution Vector no. ', IFRVAL
+                                    CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,
+     &                                          1,2*NVARPT,1,1,LUPRI)
+                                 ENDIF
+C
+                                 IF (IPRLNR.GT.2) THEN
+                                    WRITE (LUPRI,'(A,F15.8)')
+     &                                  'Frequence = ',FRVAL(IFRVAL)
+                                    WRITE (LUPRI,'(4A,F15.8)')
+     &                                  'Second order property for ',
+     &                                  'd/dR','d/dR',' = ',
+     &                                  FOVIBG(NBR,JSCOOR,ISYM,IFRVAL)
+                                 ENDIF
+C     
+                              END DO
+C     
+                           END IF
+C     
+                        END DO
+                     END DO
+C     
+                  END IF
+C
+               END DO
+            END DO
+C
+         END DO
+C
+         CALL GPCLOSE(LUSOVE,'DELETE')
+         CALL GPCLOSE(LUGDVE,'DELETE')
+         CALL GPCLOSE(LUREVE,'DELETE')
+C
+      END IF
 C
       CALL TIMER ('LNRABA',TIMEIN,TIMOUT)
       PASS = .TRUE.
@@ -1610,7 +1801,8 @@ C
       RETURN
       END
 C  /* Deck lnrout */
-      SUBROUTINE LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRINT)
+      SUBROUTINE LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,IPRINT,
+     &                  WORK,LWORK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1630,6 +1822,9 @@ C
      &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
      &          BETAVL(2), BETAVV(2), ALPHVL(2), ALPHVV(2)
+      CHARACTER COORDI*19,COORDJ*19
+      DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
+      DIMENSION WORK(LWORK)
 #include <ibtfun.h>
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
@@ -1921,6 +2116,41 @@ C
          END DO
       END IF
 C
+      IF (VIB_G) THEN
+         NCOOR  = 3*NUCDEP
+         KCSTRA = 1
+         KSCTRA = KCSTRA + NCOOR*NCOOR
+         KLAST  = KSCTRA + NCOOR*NCOOR
+         IF (KLAST .GT. LWORK) CALL STOPIT('EXCOUT',' ',KLAST,LWORK)
+         CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,0)
+C
+         CALL HEADER('Vibrational g-factor',-1)
+         DO IFRVAL = 1,NFRVAL
+            WRITE(LUPRI,9110) FRVAL(IFRVAL)
+            WRITE(LUPRI,9111)
+            WRITE(LUPRI,'(25X,A,19X,A,5X,A)') 'Coordinates','Sym','(au)'
+            WRITE(LUPRI,'(14X,A)') 
+     &          '------------------------------------------------------'
+            DO ISYM = 1,NSYM
+               DO ISCOOR = 1,3*NATOMS
+                  CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
+                  IF (ICORSY .EQ. ISYM) THEN
+                     DO JSCOOR = 1,3*NATOMS
+                        CALL GENCOR(WORK(KCSTRA),NCOOR,JSCOOR,COORDJ,
+     &                              JCORSY)
+                        IF (JCORSY .EQ. ISYM) THEN
+                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+     &                           COORDI, COORDJ, ISYM, 
+     &                           FOVIBG(ISCOOR,JSCOOR,ISYM,IFRVAL)
+                        END IF
+                     END DO
+                  END IF
+               END DO
+            END DO
+            WRITE(LUPRI,9111)
+         END DO
+      END IF
+C
  9001 FORMAT (/10X,'Polarizability tensor for frequency ',F12.6,' au')
  9002 FORMAT (10X,'----------------------------------------------------'
      &       )
@@ -1933,6 +2163,8 @@ C
  9009 FORMAT (27X,3(A,10X)/)
  9010 FORMAT (/10X,'Velocity  G tensor for frequency ',F12.6,' au')
  9011 FORMAT (/10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
+ 9110 FORMAT (14X,'Vibrational g-factors for frequency ',F12.6,' au',/)
+ 9111 FORMAT (14X,54(1H=))
 C
       RETURN
       END

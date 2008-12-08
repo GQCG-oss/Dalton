@@ -136,6 +136,7 @@ C
 #include <infslv.h>
 C---------------------
 #include <qm3.h>
+#include <infpar.h>
 C qm3.h by CBN+JK 03.01.06
 C---------------------
 C
@@ -314,12 +315,19 @@ C
       IF (QM3) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
-         CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
+         IF (NODTOT .GE. 1) THEN
+            CALL QM3LNO_P(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
+         ELSE
+            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+     &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
+     &               WRK(KFREE),LFREE)
+         END IF
       ENDIF
       IF (FLAG(16)) THEN
-      IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
          CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),

@@ -1,25 +1,25 @@
 C File: memcb1.h   (for mempkg.F package)
-      COMMON /MEMCB1/ LUWMEM, LUEMEM, NWNMEM
-#ifdef VAR_INT64
-Chjaaj mar 2005: standard size for Integer*8
-C     (1) tag, (2) length, (3) tag
-      PARAMETER ( LENID = 3)
-#else
-Chjaaj mar 2005: standard size for Integer*4
-C     (1) tag + length, (2) tag+length
-      PARAMETER ( LENID = 2)
-#endif
+
+      COMMON /MEMCB1/ WIDENT_KFREE, LUWMEM, LUEMEM, NWNMEM
+
+Chjaaj sep 2008: new standard (MEMGET2)
+C     (1) ident, (2) length, (3) tag (here to catch VEC(0) errors)
+#ifdef DBG_LENID
 Chjaaj mar 2005: make LENID .gt. standard size for extra debugging
-Cdbg  PARAMETER ( LENID = 100)
-cdbg  remember to cpp define DBG_LENID if LENID .gt. 2
-C
-      REAL*8        WMEMID(2), WMEMCK(3)
-#ifdef VAR_INT64
-      INTEGER*8     MEMID(2),  MEMCK(3)
+      PARAMETER ( LENID = 100)
 #else
-      INTEGER*4     MEMID(4),  MEMCK(6)
+      PARAMETER ( LENID = 3)
 #endif
-      EQUIVALENCE  (MEMID, WMEMID), (MEMCK, WMEMCK)
-      SAVE          MEMID
-      DATA          MEMID(1) /1234567890/
+
+      REAL*8        WLREAL, WLZERO
+      INTEGER*8      LREAL,  LZERO
+      EQUIVALENCE  (WLREAL, LREAL), (WLZERO, LZERO)
+      CHARACTER*8   IDENT8
+
+      REAL*8        WMEMID, WMEMCK
+      INTEGER*8      MEMID,  MEMCK
+      EQUIVALENCE  (WMEMID, MEMID), (WMEMCK, MEMCK)
+
+      SAVE          LZERO,    MEMID
+      DATA          LZERO/0/, MEMID /1234567890/
 C -- end of memcb1.h

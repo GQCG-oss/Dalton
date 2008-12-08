@@ -277,6 +277,10 @@ C-------------------
 C CBN+JK 03.01.06
 C-------------------
 C
+#include <infpar.h>
+#include <mtags.h>
+#include <mpif.h>
+
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -393,19 +397,31 @@ C
          END IF
       END IF
 
-C-------------------
+C---------------------------------------------------------
 C CBN+JK 03.01.06
-C-------------------
+C Arnfinn Nov. -08, call qm3qro_p if parallel and #nodes>1
+C---------------------------------------------------------
       IF (QM3) THEN
          IF (TDHF) THEN
-            CALL QM3QRO(VECB,VECC,
+            IF (NODTOT.GE.1) THEN
+               CALL QM3QRO_P(VECB,VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
-            CALL QM3QRO(VECC,VECB,
+               CALL QM3QRO_P(VECC,VECB,
      *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
+            ELSE
+               CALL QM3QRO(VECB,VECC,
+     *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
+               CALL QM3QRO(VECC,VECB,
+     *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
+            ENDIF
          END IF
       END IF
 C-------------------
