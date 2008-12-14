@@ -279,8 +279,9 @@ C-------------------
 C
 #include <infpar.h>
 #include <mtags.h>
+#if defined(VAR_MPI)
 #include <mpif.h>
-
+#endif
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
