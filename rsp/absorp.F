@@ -547,6 +547,8 @@ C
          CALL SETZY(MJWOP)
       END IF
 C
+      IF (NEXCITED_STATES.EQ.0) RETURN
+C
       KZRED  = 0
       KZYRED = 0
       KEXCNV = NEXCITED_STATES
