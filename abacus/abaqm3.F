@@ -226,11 +226,11 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include "nuclei.h"
 #include "qm3.h"
 #include <inforb.h>
-#include <infpar.h>
-#include <mtags.h>
-#if defined(VAR_MPI)
-#include <mpif.h>
-#endif
+Cahs#include <infpar.h>
+Cahs#include <mtags.h>
+Cahs#if defined(VAR_MPI)
+Cahs#include <mpif.h>
+Cahs#endif
 C#include <infpri.h>
 C#include <infvar.h>
 C

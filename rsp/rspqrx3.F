@@ -36,7 +36,7 @@ c#define DFTQRC dftqrcf
 #include <single.h>
 C
 #ifdef REVLOG
-C===========================================================================
+C=========================================================================
 CRevision 1.2  2000/05/24 19:06:44  hjj
 Cnew getref calls with appropriate NDREF instead of NCREF
 C(fixing error for triplet with CSF)
@@ -278,10 +278,6 @@ C CBN+JK 03.01.06
 C-------------------
 C
 #include <infpar.h>
-#include <mtags.h>
-#if defined(VAR_MPI)
-#include <mpif.h>
-#endif
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
