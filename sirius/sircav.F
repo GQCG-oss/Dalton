@@ -92,6 +92,10 @@ C
 
       Save D0,First
       DATA D0,FIRST/0.0D0,0.0174533D0/
+      DATA ROTCAV/1.0D0, 0.0D0, 0.0D0,
+     &            0.0D0, 1.0D0, 0.0D0, 
+     &            0.0D0, 0.0D0, 1.0D0/ 
+      
 C
 C     Se stiamo costruendo una nuova cavita' per il calcolo del
 C     contributo dispersivo e repulsivo:
@@ -293,8 +297,10 @@ C
       LWRK =  LWORK - LEND
 Clf      write(lupri,*) 'katom',katom,lgeom,lmass,lend
       IF (LWRK .LT. 0) CALL QUIT ('Not enough memory to call PCMTNS')
-      CALL PCMTNS(ROTCAV,WORK(LGEOM),WORK(LMASS),KATOM)
-C
+      IF (KATOM .GT. 1) THEN
+         CALL PCMTNS(ROTCAV,WORK(LGEOM),WORK(LMASS),KATOM)
+      END IF
+C     
 C    Division of the surface into tesserae
 C
       VOL=D0
@@ -1021,7 +1027,6 @@ Clf Replication generate the right irreducible part of the cavity
 C   for the selected group
 C
       CALL PREREP(NV,NT,ITSEFF,CV,JTR,NUMVER,NUMTS)
-C      SUBROUTINE PREREP(NV,NT,ITS,CV,JTR,NVERT,NUMTS)
       DO i=1,nv
          V1(1) = 0.0D0
          V1(2) = 0.0D0
@@ -1034,8 +1039,8 @@ C      SUBROUTINE PREREP(NV,NT,ITS,CV,JTR,NVERT,NUMTS)
          CV(I,1) = V1(1)
          CV(I,2) = V1(2)
          CV(I,3) = V1(3)
-Check    WRITE(LUPRI,*)'CV',I
-Check    WRITE(LUPRI,'(3F10.4)')  (CV(i,II),II=1,3)
+Clf         WRITE(LUPRI,*)'CV',I
+Clf         WRITE(LUPRI,'(3F10.4)')  (CV(i,II),II=1,3)
       ENDDO
 
 c
@@ -1095,8 +1100,8 @@ CcheckWRITE(LUPRI,*) NV,ITsEff,NV
          CV(I,1) = CV(I,1) * REN + XEN
          CV(I,2) = CV(I,2) * REN + YEN
          CV(I,3) = CV(I,3) * REN + ZEN
-Check    WRITE(LUPRI,*)'CV',I
-Check    WRITE(LUPRI,'(3F10.4)')  (CV(i,II),II=1,3)
+Clf         WRITE(LUPRI,*)'CV',I
+Clf         WRITE(LUPRI,'(3F10.4)')  (CV(i,II),II=1,3)
       ENDDO
 C
       RETURN
@@ -1641,14 +1646,14 @@ C     Controlla che il numero di vertici creati non sia eccessivo
             CALL QUIT('TOO MANY VERTICES IN TESSERA: BYE BYE...')
          END IF
  150  CONTINUE
-         IF(IPRCAV.GE.10) THEN
-            CALL AROUND('FINAL TESSERA STATUS')
-            WRITE(LUPRI,1000) NS,NV,NUMTS
-            WRITE(LUPRI,*) '=======PSCR=======' 
-            CALL OUTPUT(PSCR,1,3,1,NV,3,NV,1,LUPRI)
-            WRITE(LUPRI,*) '=======CCCP=======' 
-            CALL OUTPUT(CCCP,1,3,1,NV,3,NV,1,LUPRI)
-         END IF
+      IF(IPRCAV.GE.10) THEN
+         CALL AROUND('FINAL TESSERA STATUS')
+         WRITE(LUPRI,1000) NS,NV,NUMTS
+         WRITE(LUPRI,*) '=======PSCR=======' 
+         CALL OUTPUT(PSCR,1,3,1,NV,3,NV,1,LUPRI)
+         WRITE(LUPRI,*) '=======CCCP=======' 
+         CALL OUTPUT(CCCP,1,3,1,NV,3,NV,1,LUPRI)
+      END IF
 C     
 C     Se la tessera non e' stata scartata, a questo punto ne troviamo
 C     l'area e il punto rappresentativo
