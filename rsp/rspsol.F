@@ -304,14 +304,6 @@ C
          END IF
          CALL DZERO(EVECS,(NOSIM+NCSIM)*KZYVAR)
       END IF
-      IF (PCM) THEN
-         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
-         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &               WRK(KDVT),WRK(KDVTTR),
-     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      ENDIF
       IF (QM3) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
@@ -325,6 +317,14 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
          END IF
+      ENDIF
+      IF (PCM) THEN
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+     *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ENDIF
       IF (FLAG(16)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
