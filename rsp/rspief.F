@@ -511,7 +511,6 @@ C Alocate memory and read coordinats and dipole moments from MM
             L = 0
             DO I = 1,NOSIMMM
                READ(LQM3PCM,*) WRK(KSTATE+I-1)
-               NSTATE = INT(WRK(KSTATE+I-1))
                DO J = 1,NCOMS
                   L = L + 1
                   READ(LQM3PCM,'(6(E25.15,2x))') WRK(KMMCOR+3*(L-1)),
@@ -770,6 +769,7 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
      &               IDUMMY,.FALSE.)
          WRITE (LPCMQM3,*) NOSIMMM, NTS
          DO I = 1, NOSIMMM
+            NSTATE = INT(WRK(KSTATE+I-1))
             WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
                QTEX(ITS,I) = QTEX(ITS,I) + WRK(KQNMM+ITS-1+(I-1)*NTS)
