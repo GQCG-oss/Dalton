@@ -6646,6 +6646,7 @@ C
          ELSE
             READ (LINE((IPOS+IPOS2):),*) NONTYP
          END IF
+         DOCART = .FALSE.
 C
 C     Kind of basis set
 C     
