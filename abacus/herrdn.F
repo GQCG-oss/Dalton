@@ -1064,6 +1064,10 @@ C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             END IF
          END IF
 C
+C     End of processing of old input format for line "5"
+C         
+         END IF
+C
 C     Arnfinn, nov -08: add 1 to NONTP1 if not MM
 C     Counting the numbers of QM type atoms
          LMMINP = .FALSE.
@@ -1071,9 +1075,6 @@ C     Counting the numbers of QM type atoms
          IF (IPS23 .GT. 0) LMMINP = .TRUE.
          IF (.NOT. LMMINP) NONTP1 = NONTP1 + 1
 C
-C     End of processing of old input format for line "5"
-C         
-         END IF
 C
 C        Check MBSI (WK/UniKA/04-11-2002).
          IF (LMULBS .AND. MBSI .LE. 0) CALL QUIT(
