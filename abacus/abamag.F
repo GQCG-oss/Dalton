@@ -3506,16 +3506,16 @@ C
             AVEDIA = GFACDI(1,1)*PMASS*EIGVAL(3)
             AVEEL  = ELMGF (1,1)*PMASS*EIGVAL(3)
             AVENUC = GFANUC(1,1)*PMASS*EIGVAL(3)
-            CALL DZERO(GTRAN,9)
-            GTRAN(1,1) = AVETOT
          ELSE
             AVETOT = TOTMGF(2,2)*PMASS*EIGVAL(3)
             AVEDIA = GFACDI(2,2)*PMASS*EIGVAL(3)
             AVEEL  = ELMGF (2,2)*PMASS*EIGVAL(3)
             AVENUC = GFANUC(2,2)*PMASS*EIGVAL(3)
-            CALL DZERO(GTRAN,9)
-            GTRAN(1,1) = AVETOT
          END IF
+         CALL DZERO(GTRAN,9)
+         GTRAN(1,1) = TOTMGF(1,1)*PMASS*EIGVAL(3)
+         GTRAN(2,2) = TOTMGF(2,2)*PMASS*EIGVAL(3)
+         GTRAN(3,3) = TOTMGF(3,3)*PMASS*EIGVAL(3)
          IF (IPRDEF .GE. 0) THEN
             WRITE (LUPRI,'(A,F16.6)') ' Moment of inertia :',
      &           D1/EIGVAL(3)

@@ -159,7 +159,7 @@ C
 C     We will need rotational g tensors and spin-rotation constants in 
 C     space-fixed xyz axis system
 C
-      IF (MOLGFA) THEN
+      IF (MOLGFA .AND. .NOT. LINEAR) THEN
          CALL DGEMM('N','N',3,3,3,1.D0,
      &              CMAT,3,
      &              GTRAN,3,0.D0,
