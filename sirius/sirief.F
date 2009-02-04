@@ -390,6 +390,10 @@ C
       ENDDO
 C
       DO ITS = 1, NTSIRR
+C
+C For some bizarre reason VPOT is computed with the wrong sign!!
+C
+         POTCAVNUC(ITS) = -(MAXREP+1)*VPOT(ITS)
          QSN(ITS) = QSN(ITS) * AS(ITS)
          QNTOT = QNTOT + QSN(ITS)
          QNUC2 = QNUC2 + VCAM(ITS)*AS(ITS)
@@ -438,11 +442,8 @@ C
 C
 C     Total apparent charge before and after renormalization.
 C
-      IF(SOME) THEN
-         IF(ICOMPCM.NE.0) WRITE(LUPRI,1000) SQTNOP * QNTOT, TCH, QNTOTN
-         IF(ICOMPCM.EQ.0) WRITE(LUPRI,1100) SQTNOP * QNTOT, TCH
-      END IF
-Chj   write(lupri,*) 'this is icompcm in icvev',icompcm
+      IF(ICOMPCM.NE.0) WRITE(LUPRI,1000) SQTNOP * QNTOT, TCH, QNTOTN
+      IF(ICOMPCM.EQ.0) WRITE(LUPRI,1100) SQTNOP * QNTOT, TCH
       RETURN
 C
  1000 FORMAT(' NUCLEAR APPARENT CHARGE',F10.5/

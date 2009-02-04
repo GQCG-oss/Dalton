@@ -533,15 +533,14 @@ C
       KJENAO = 1
       KJ1AO  = KJENAO + NNBASX
       KJAO   = KJ1AO  + NNBASX
-      KTJ2   = KJAO   + NNBASX
-      KWRK1  = KTJ2   + NTS
+      KWRK1  = KJAO   + NNBASX
       LWRK1  = LFREE  - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMFCK',-KWRK1,LFREE)
 C
       ESOLT = D0
       QET   = D0
 C
-      CALL DZERO(WRK(KTJ2),NTS)
+      CALL DZERO(POTCAVELE, NTS)
 
 C
 C        Read JEN in ao basis 
@@ -583,9 +582,9 @@ C
          PCMEN  = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
-         CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
+         CALL J1INT(POTCAVELE,EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
-         CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
+         CALL V2Q(WRK(KWRK1),POTCAVELE,QSE,QET,.FALSE.)
          IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
@@ -649,35 +648,33 @@ C
  1100 FORMAT(' Electronic apparent charge',F10.5,' Theoretical ',
      &   F10.5,' *** Not renormalized ***')
 C
+C
+C Adding the 2el term (X) to the PCM Fock operator
+C
       EXP1VL = .FALSE.
       TOFILE = .FALSE.
       CALL J1INT(QSE,EXP1VL,WRK(KJENAO),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LWRK1)
+
+      IF(.NOT.MOBAS) THEN
+         PCMEE = D0
+         PCMNE = D0
+         PCMEN = D0
+         PCMNN = D0
+         DO ITS = 1, NTSIRR
+            PCMEE = PCMEE + QSE(ITS) * POTCAVELE(ITS)
+            PCMNE = PCMNE + QSN(ITS) * POTCAVELE(ITS)
+            PCMEN = PCMEN + QSE(ITS) * POTCAVNUC(ITS)
+            PCMNN = PCMNN + QSN(ITS) * POTCAVNUC(ITS)
+         ENDDO
+         
+         ESOLT = DP5 * (PCMEE + PCMEN + PCMNE + PCMNN)
+C     
+C     lf Nuclear energy divided by two for backward compatibility
+C     
+         PCMNN = PCMNN / 2.0D0 
 C
-C    PCMNE = interaction solute nuclei - polarization electronic charges
-C             PCMNE = sum_i [Vnuc(i) * QSE(i)]
-C
-C    PCMEE = interaction solute electrons - polarization electronic charges
-C             PCMEE = sum_i [Vel(i) * QSE(i)]
-C
-        PCMNE = D0
-	DO ITS = 1, NTSIRR
-        DO JATOM = 1, NUCDEP
-          R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
-     *         YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
-          R = DSQRT(R2)
-          PCMNE = PCMNE + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
-        ENDDO
-      ENDDO
-      IF (.NOT. MOBAS) THEN
-         PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
-C
-C     Electrostatic contribution:
-C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
-C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
-         ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
-C
-         IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
+         IF (.true.) WRITE(LUPRI,'(A,5F12.5)')
      &        'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
      &        PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
       END IF
