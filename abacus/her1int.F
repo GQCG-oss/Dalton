@@ -6446,35 +6446,6 @@ C  /* Deck hdotra */
             IF (INTTYP .EQ. 14) THEN
                ISCOOR = IPTCNT(3*(NCENTA - 1) + ICOOR,IREPO,1)
                FAC = HKAB
-            ELSE IF (INTTYP .EQ. 59 .OR. INTTYP .EQ. 70) THEN
-C              ... not use (hjaaj Oct 2004)
-               ISCOOR = 0
-               IF (NCENTA .NE. NCENTB) THEN
-                  ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREPO,1)
-                  FACA   = HKAB
-                  ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREPO,1)
-                  FACB   = -HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     &                          *PT(IBTAND(IREPO, ISYMOP))
-                  IF (IREPO .EQ. 0) THEN
-                     CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORA),
-     &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
-     &                          KHKTB,FACA,LDIAG,FULMAT,DUMMY,IDUMMY,
-     &                          IPRINT)
-                     CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORB),
-     &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
-     &                          KHKTB,FACB,LDIAG,FULMAT,DUMMY,IDUMMY,
-     &                          IPRINT)
-                  ELSE
-                     CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORA),
-     &                          IREPO,ISYMOP,MULA,MULB,NHKTA,NHKTB,
-     &                          KHKTA,KHKTB,FACA,LDIAG,FULMAT,ANTI,
-     &                          DUMMY,IDUMMY,IPRINT)
-                     CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORB),
-     &                          IREPO,ISYMOP,MULA,MULB,NHKTA,NHKTB,
-     &                          KHKTA,KHKTB,FACB,LDIAG,FULMAT,ANTI,
-     &                          DUMMY,IDUMMY,IPRINT)
-                  END IF
-               END IF
             ELSE
 C              ... INTTYP 44 and 98
                ISCOOR = IPTCNT(3*(NCENTB - 1) + ICOOR,IREPO,1)
