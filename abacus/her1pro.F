@@ -3766,6 +3766,8 @@ C  /* Deck hdotyp */
      &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE IF (INTTYP .EQ. 70) THEN
+!                          radovan: i don't think it can ever become 70
+!                                   maybe some old code?
                            LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
      &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
