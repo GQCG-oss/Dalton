@@ -15,7 +15,7 @@ cat > mcdlao_ch2o.info <<%EOF%
 #######################################################################
 cat > mcdlao_ch2o.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 ch2o--formaldeide (on XZ plane)
 This is a two step test. Test gauge independence of LAO results
     3    2  X  Y      1.00D-15

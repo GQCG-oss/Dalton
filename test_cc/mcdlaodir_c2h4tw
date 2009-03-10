@@ -15,7 +15,7 @@ cat > mcdlaodir_c2h4tw.info <<%EOF%
 #######################################################################
 cat > mcdlaodir_c2h4tw.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 LAO B term of MCD of twisted ethene
     start geom from CPL 288 (1998) 371-376
     2    2 YZ XZ
