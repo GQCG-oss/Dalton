@@ -520,6 +520,10 @@ C Alocate memory and read coordinats and dipole moments from MM
                ENDDO
             ENDDO
             CALL GPCLOSE(LQM3PCM,'KEEP')
+         ELSE
+            CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
+            CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
+            CALL DZERO(WRK(KSTATE),NOSIMMM)
          ENDIF
       ENDIF
 C <- Arnfinn
@@ -574,7 +578,7 @@ C
       ELSE
 #endif
 C Arnfinn Nov. -08 ->
-C Convert dipole moments to potentials
+C Convert MM dipole moments to potentials
       IF (MMPCM) THEN
          KMMPOT = KW50
          KQNMM  = KMMPOT + NTSIRR
@@ -615,6 +619,9 @@ C            WRITE (LUPRI,'(/A)') ' JJ1AO before UTHU'
 C            CALL OUTPAK(WRK(JJ1AO+(j-1)*NNBASX),NBAST,1,LUPRI)
 C         end do
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
+C
+C ??? Include MM contributions here? Arnfinn
+C
          CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *             NBAST,NORBT)
 C Transform V(MO) from triangular to square format
