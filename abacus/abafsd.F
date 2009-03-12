@@ -1748,8 +1748,9 @@ C
 #include <efield.h>
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
-
+#endif
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
       IF (IPRINT .GT. 5) CALL TITLER('Output from ONEDRL','*',103)

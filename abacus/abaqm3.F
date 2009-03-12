@@ -228,7 +228,9 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include <inforb.h>
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 C#include <infpri.h>
 C#include <infvar.h>
 C
@@ -324,7 +326,10 @@ C
 #include <magone.h>
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
+
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
@@ -413,7 +418,9 @@ C-----------------------------------------------------
 
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
@@ -517,7 +524,9 @@ C-----------------------------------------------------
 
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
@@ -619,7 +628,9 @@ C-----------------------------------------------------
 
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT

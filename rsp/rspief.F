@@ -110,6 +110,7 @@ C
 #include "sdpre.h"
 
 C
+Clf this is wrong!!! Must be fixed!!!!!11
       DIMENSION VTEX(NTS,NCSIM)
 C
       CALL QENTER('IEFLNC')
@@ -413,10 +414,7 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <mxcent.h>
-Ckr     VTEX and QTEX should be brought into this subroutine through
-Ckr     the call
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      DIMENSION VTEX(NTS,NOSIM), QTEX(NTS,NOSIM)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL FILE_EXIST
 #include "orgcom.h"
@@ -468,11 +466,14 @@ C <- Arnfinn
 C
 C     Core allocation
 C
-      KUBO   = 1
-      KW10   = KUBO   + NOSIM*N2ORBX
+      KVTEX  = 1
+      KQTEX  = KVTEX + NTS*NOSIM
+      KUBO   = KQTEX + NTS*NOSIM
+      KW10   = KUBO  + NOSIM*N2ORBX
 C
       KUCMO  = KW10
       KPCMX  = KUCMO  + NORBT*NBAST
+
       IF (TRPLET) THEN
          KPCMXT  = KPCMX  + NOSIM*N2ORBX
          KPCMXA  = KPCMXT + NOSIM*N2ORBX
@@ -501,22 +502,25 @@ C
          KW30    = KJ1XAC   + NOSIM * N2ASHX
       ENDIF
 C Arnfinn Nov. -08 ->
-C Alocate memory and read coordinats and dipole moments from MM
+C Allocate memory and read coordinats and dipole moments from MM
       IF(MMPCM) THEN
          KMMCOR = KW30
-         KMMDIP = KMMCOR + NOSIMMM*3*NCOMS
-         KSTATE = KMMDIP + NOSIMMM*3*NCOMS
+         KMMDIP = KMMCOR + NOSIMMM * 3 * NCOMS
+         KSTATE = KMMDIP + NOSIMMM * 3 * NCOMS
          KW30   = KSTATE + NOSIMMM
          IF (FILE_EXIST) THEN
             L = 0
             DO I = 1,NOSIMMM
-               READ(LQM3PCM,*) WRK(KSTATE+I-1)
-               DO J = 1,NCOMS
+               READ(LQM3PCM,*) WRK(KSTATE + I - 1)
+               DO J = 1, NCOMS
                   L = L + 1
-                  READ(LQM3PCM,'(6(E25.15,2x))') WRK(KMMCOR+3*(L-1)),
-     &                 WRK(KMMCOR + 3*(L-1)+1),WRK(KMMCOR + 3*(L-1)+2),
-     &                 WRK(KMMDIP + 3*(L-1)),
-     &                 WRK(KMMDIP + 3*(L-1)+1),WRK(KMMDIP + 3*(L-1)+2)
+                  READ(LQM3PCM,'(6(E25.15,2x))') 
+     &                 WRK(KMMCOR + 3 * ( L - 1 )     ),
+     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 1 ),
+     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 2 ),
+     &                 WRK(KMMDIP + 3 * ( L - 1 )     ),
+     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 1 ),
+     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 2 )
                ENDDO
             ENDDO
             CALL GPCLOSE(LQM3PCM,'KEEP')
@@ -533,9 +537,6 @@ C     3.0 SOLSC
       KW50   = KOVLP  + NOSIM
       LW50   = LFREE  + 1 - KW50
 C
-
-
-
       KNEED = MAX(KW30,KW50)
       IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
 C
@@ -544,7 +545,6 @@ C
       CALL UPKCMO(CMO,WRK(KUCMO))
 C
 C     Calculate unpacked orbital trial vectors in UBO
-C
 C
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
@@ -564,6 +564,7 @@ C
 C     Contributions from all tesserae are included.
 C
 C
+
       CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
       REWIND LUPROP
@@ -572,7 +573,7 @@ C
       ZI = DIPORG(3)
 #if defined (VAR_MPI)
       IF (NODTOT .GE. 1) THEN
-         CALL J1XP(NOSIM,VTEX,WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
+         CALL J1XP(NOSIM,WRK(KVTEX),WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
      &             WRK(KPCMX),WRK(KPCMXT),.FALSE.,TRPLET,JWOPSY,
      &             WRK(KW50),LW50)
       ELSE
@@ -582,7 +583,7 @@ C Convert MM dipole moments to potentials
       IF (MMPCM) THEN
          KMMPOT = KW50
          KQNMM  = KMMPOT + NTSIRR
-         KQMAT  = KQNMM + NTSIRR
+         KQMAT  = KQNMM + NTSIRR * NOSIMMM
          KW50   = KQMAT + NTS*NTSIRR
          LW50   = LFREE + 1 - KW50
          KNEED  = MAX(KW30,KW50)
@@ -656,10 +657,11 @@ C
                ELSE
                   FACTOR = SLVQLM(UDV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
                END IF
-               VTEX(I,IOSIM) = FACTOR
+               WRK(KVTEX + (I-1) + (IOSIM-1)*NTS) = FACTOR
                IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
-     *                 ' --- J1X expectation value :',VTEX(I,IOSIM)
+     *                 ' --- J1X expectation value :',
+     &                 WRK(KVTEX + (I-1) + (IOSIM-1)*NTS)
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- active part of J1X    :',TJ1XAC
                END IF
@@ -667,22 +669,13 @@ C
          ENDDO
 C Arnfinn Nov. -08 ->
 C Added QSM 
+         QFACTOR = QSN(I)+QSE(I)
+         IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
+         print *, qfactor, qsn(i), qsmm(i), qse(i)
          IF (TRPLET) THEN
-            IF (MMPCM) THEN
-               CALL DAXPY(NOSIM*N2ORBX,(QSN(I)+QSE(I)+QSMM(I)),
-     &                    WRK(KJ1XSQ),1,WRK(KPCMXT),1)
-            ELSE
-               CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
-     &                    1,WRK(KPCMXT),1)
-            ENDIF
+            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),1,WRK(KPCMXT),1)
          ELSE
-            IF (MMPCM) THEN
-               CALL DAXPY(NOSIM*N2ORBX,(QSN(I)+QSE(I)+QSMM(I)),
-     &                    WRK(KJ1XSQ),1,WRK(KPCMX),1)
-            ELSE
-               CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
-     &                    1,WRK(KPCMX),1)
-            ENDIF
+            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),1,WRK(KPCMX),1)
          ENDIF
 C KPCMX: \tilde{J} + \tilde{X}
 C
@@ -725,10 +718,11 @@ C
                ELSE
                   FACTOR = SLVQLM(UDV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
                END IF
-               VTEX(ITS,IOSIM) = FACTOR
+               WRK(KVTEX + (ITS-1) + (IOSIM-1)*NTS) = FACTOR
                IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
-     *                 ' --- J1X expectation value :',VTEX(ITS,IOSIM)
+     *                 ' --- J1X expectation value :',
+     &                 WRK(KVTEX + (ITS-1) + (IOSIM-1)*NTS)
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- active part of J1X    :',TJ1XAC
                END IF
@@ -751,11 +745,14 @@ C
       END IF
       DO IOSIM = 1, NOSIM
 C
-         CALL V2Q(WRK(KW50),VTEX(1,IOSIM),QTEX(1,IOSIM),QTEXS,NEQRSP)
+         CALL V2Q(WRK(KW50),WRK(KVTEX + NTS*(IOSIM-1)),
+     &        WRK(KQTEX + NTS*(IOSIM-1)),
+     &        QTEXS,NEQRSP)
          IF (IPRRSP .GE. 6) THEN
             DO I = 1, NTS
                WRITE (LUPRI,'(A,F17.8)')
-     *              ' --- J2X expectation value :',QTEX(I,IOSIM)
+     *              ' --- J2X expectation value :',
+     &          WRK(KQTEX + NTS*(IOSIM-1) + I - 1)
             END DO
          END IF
       ENDDO
@@ -776,12 +773,17 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
      &               IDUMMY,.FALSE.)
          WRITE (LPCMQM3,*) NOSIMMM, NTS
          DO I = 1, NOSIMMM
+            print *, 'NOSIMMM',NOSIMMM
             NSTATE = INT(WRK(KSTATE+I-1))
             WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
-               QTEX(ITS,I) = QTEX(ITS,I) + WRK(KQNMM+ITS-1+(I-1)*NTS)
+C luca this will not work with more than one perturbation (see above for how WRK(KQNMM) is created)
+               INDEX = NTS * (I-1) + ITS - 1
+Clf               print *, kqtex, nts, its, i, ntsirr,index
+               WRK(KQTEX + INDEX) = 
+     &             WRK(KQTEX + INDEX) + WRK(KQNMM + INDEX) 
                WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
-     &                ZTSCOR(ITS),QTEX(ITS,I)
+     &              ZTSCOR(ITS), WRK(KQTEX + INDEX) 
             ENDDO
          ENDDO
          CALL GPCLOSE(LPCMQM3,'KEEP')
@@ -795,12 +797,14 @@ C
       CALL DZERO(WRK(KJ1XSQ),NOSIM*NNBASX)
       IF (KSYMOP .GT. 1) THEN
          DO IOSIM = 1, NOSIM
-            CALL DCOPY(NTSIRR,QTEX((KSYMOP - 1)*NTSIRR + 1,IOSIM),1,
-     &                 QTEX(1,IOSIM),1)
-            CALL DZERO(QTEX((KSYMOP - 1)*NTSIRR + 1,IOSIM),NTSIRR)
+            KTSSIM = (IOSIM-1) * NTS
+            KTSSYMOP = (KSYMOP-1) * NTSIRR
+            CALL DCOPY(NTSIRR,WRK(KQTEX + KTSSIM + KTSSYMOP),1,
+     &                 WRK(KQTEX + KTSSIM))
+            CALL DZERO(WRK(KQTEX + KTSSIM + KTSSYMOP), NTSIRR)
          END DO
       END IF
-      CALL J1INT(QTEX,.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,
+      CALL J1INT(WRK(KQTEX),.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,
      &           'NPETES ',KSYMOP,WRK(KW50),LW50)
       DO IOSIM = 1, NOSIM
          JAOP  = KJ1XSQ + (IOSIM - 1) * NNBASX

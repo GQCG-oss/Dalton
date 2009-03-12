@@ -654,7 +654,9 @@ C*********************************************************************
 #include "nuclei.h"
 #include "infpar.h"
 #include "mtags.h"
+#if defined (VAR_MPI)
 #include "mpif.h"
+#endif
 
 #include <cbiher.h>
 
@@ -746,7 +748,9 @@ C*********************************************************************
 #include "nuclei.h"
 #include "infpar.h"
 #include "mtags.h"
+#if defined (VAR_MPI)
 #include "mpif.h"
+#endif
 
 #include <cbiher.h>
 

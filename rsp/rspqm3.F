@@ -234,7 +234,7 @@ C           NOSIMOLD
      &                 WRK(KXPCM+KL*NTS+L-1),
      &                 WRK(KYPCM+KL*NTS+L-1),
      &                 WRK(KZPCM+KL*NTS+L-1),
-     &                 WRK(KQEX+KL*NTS+L-1)
+     &                 WRK(KQEX +KL*NTS+L-1)
  151           CONTINUE
                KL=KL+1
             ELSE                ! this vector has converged and we do not need this
@@ -812,7 +812,9 @@ C
 #include <nuclei.h>
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 
 #include <cbiher.h>
 
@@ -920,7 +922,9 @@ C
 #include <nuclei.h>
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 
 #include <cbiher.h>
 
@@ -1668,7 +1672,10 @@ C
 #include "nuclei.h"
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
+
 #include <cbiher.h>
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
@@ -1783,7 +1790,9 @@ C
 
 #include <infpar.h>
 #include <mtags.h>
+#if defined (VAR_MPI)
 #include <mpif.h>
+#endif
 
 #include <cbiher.h>
 
