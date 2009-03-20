@@ -1822,7 +1822,7 @@ C
      &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
      &          BETAVL(2), BETAVV(2), ALPHVL(2), ALPHVV(2)
-      CHARACTER COORDI*19,COORDJ*19
+      CHARACTER COORDI*21,COORDJ*21
       DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
       DIMENSION WORK(LWORK)
 #include <ibtfun.h>
@@ -2139,7 +2139,7 @@ C
                         CALL GENCOR(WORK(KCSTRA),NCOOR,JSCOOR,COORDJ,
      &                              JCORSY)
                         IF (JCORSY .EQ. ISYM) THEN
-                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+                           WRITE(LUPRI,'(10X,A,A,2X,I2,F12.6)') 
      &                           COORDI, COORDJ, ISYM, 
      &                           FOVIBG(ISCOOR,JSCOOR,ISYM,IFRVAL)
                         END IF
