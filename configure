@@ -94,7 +94,8 @@ blas3="false"
 lapack="false"
 MACHTYPE=`uname -s`
 if [ "$MACHTYPE" = 'Linux' -o "$MACHTYPE" = Darwin ]; then
-    ECHO='/bin/echo -e'
+    ECHO='echo -e'
+    if [ `$ECHO` = '-e' ]; then ECHO=echo; fi
     prc=`uname -m`
 else
     ECHO=echo
@@ -210,7 +211,7 @@ case $WHICH in
               complist='ifort ifc efc pgf77 gfortran g77'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
-              complist='xlf g77'
+              complist='xlf g77 gfortran'
 #             complist='xlf g77 f77'
 #                       f77 is the Absoft v8.0 compiler
               ccmplist='xlc gcc';;
@@ -731,7 +732,7 @@ elif [ -d '/temp' ]; then
     worksp='/temp'
 else
     $ECHO '\nI did not find /work, /scratch, /scr, or /temp. I will use /tmp'
-    worksp='/tmp/'
+    worksp='/tmp'
 fi
 
 $ECHO '\n-->Job specific directories under $SCRATCH/$USER\n-->will be used for temporary files when running DALTON\n'
@@ -1069,7 +1070,7 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
     darwin) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' --D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
@@ -1101,6 +1102,38 @@ case "$WHICH" in
 #   1) set -O2 to -O3 in Makefile.config and run "make -k" 
 #   2) reset -O3 to -O2 and rerun "make" 
 #
+# gfortran: Bin Gao, Mar. 9, 2009
+          elif [ "$F77" = gfortran -o "$F77" = mpif90 ]; then
+               gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+               echo "gfortran version $gfver prc=$prc"
+               cpp="-DVAR_GFORTRAN -DGFORTRAN=$gfver $cpp"
+               case $prc in
+               i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                       march="-march=$prc";;
+#              x86_64) march="-march=x86-64 -fdefault-integer-8"
+#                      cpp="${cpp} -DVAR_INT64";;
+# remove VAR_INT64 for gfortran - it breaks linking against
+# precompiled BLAS libraries./pawsa-Mar-08
+               x86_64) march="-march=x86-64"
+                       ;;
+                    *) march=" ";;
+               esac
+               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
+               opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize"
+               f90opt="$opt -I. -x f95-cpp-input"
+#               cxx_ldflags="-lstdc++"
+               if [ "$mesp" != "dummy" ]; then
+                  copt="$copt -D$parop"
+                  opt="$opt -D$parop"
+                  f90opt="$f90opt -D$parop"
+                  def='linuxparallel.x'
+               fi
+               inc='-I../include'
+               LIB="-lgcc"
+               cpp=${cpp}" -DIMPLICIT_NONE"
+# use Vector Libraries for BLAS and LAPACK
+               pdpackextras='linpack.o eispack.o'
+# Done with Bin Gao
           else
                cpp="-D SYS_LINUX -D VAR_ABSOFT -D NO_F90 -D 'INSTALL_WRKMEM=$memsiz' -D IMPLICIT_NONE"
 #              F90FLAGS = -YEXT_SFX=_ -YEXT_NAMES=LCS -s -w
