@@ -623,7 +623,7 @@ C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
 C
 C ??? Include MM contributions here? Arnfinn
 C
-         CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
+         CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW50),
      *             NBAST,NORBT)
 C Transform V(MO) from triangular to square format
          CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
@@ -671,7 +671,6 @@ C Arnfinn Nov. -08 ->
 C Added QSM 
          QFACTOR = QSN(I)+QSE(I)
          IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
-         print *, qfactor, qsn(i), qsmm(i), qse(i)
          IF (TRPLET) THEN
             CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),1,WRK(KPCMXT),1)
          ELSE
@@ -685,7 +684,7 @@ C
             ITS = (KSYMOP - 1)*NTSIRR + I
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
             JJ1AO = KJ1AO + (KSYMOP - 1)*NNBASX
-            CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
+            CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW50),
      *                 NBAST,NORBT)
 C Transform V(MO) from triangular to square format
             CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
@@ -773,13 +772,11 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
      &               IDUMMY,.FALSE.)
          WRITE (LPCMQM3,*) NOSIMMM, NTS
          DO I = 1, NOSIMMM
-            print *, 'NOSIMMM',NOSIMMM
             NSTATE = INT(WRK(KSTATE+I-1))
             WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
 C luca this will not work with more than one perturbation (see above for how WRK(KQNMM) is created)
                INDEX = NTS * (I-1) + ITS - 1
-Clf               print *, kqtex, nts, its, i, ntsirr,index
                WRK(KQTEX + INDEX) = 
      &             WRK(KQTEX + INDEX) + WRK(KQNMM + INDEX) 
                WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
@@ -809,7 +806,7 @@ C
       DO IOSIM = 1, NOSIM
          JAOP  = KJ1XSQ + (IOSIM - 1) * NNBASX
          JPCMX = KPCMX  + (IOSIM - 1) * N2ORBX
-         CALL UTHU(WRK(JAOP),WRK(KJ1),WRK(KUCMO),WRK(KW30),
+         CALL UTHU(WRK(JAOP),WRK(KJ1),WRK(KUCMO),WRK(KW50),
      *             NBAST,NORBT)
          CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
          CALL DAXPY(N2ORBX,-D1,WRK(KJ1SQ),1,
