@@ -1003,6 +1003,7 @@ C
          END IF
       END IF
       IF (DISPLA .NE. DEFDSP) THEN
+C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
          WRITE (LUPRI,'(A,1P,D13.2)')
      &        ' In case of numerical gradients, displacements are : ',
      &        DISPLA
@@ -1018,10 +1019,8 @@ C
          END IF
       END IF
       IF (BAKER) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(/A/)')
      &        ' Baker''s convergence criteria will be used.'
-         WRITE(LUPRI,*)
       END IF
       IF (CONOPT) THEN
          WRITE(LUPRI,'(A)')
@@ -1172,7 +1171,7 @@ C     If only determination of internal coordinates has been requested,
 C     the program stops.
 C
          IF (FINDRE .AND. (.NOT. VISUAL)) THEN
-            CALL TITLER('Coordinates determined','#',103)
+            CALL TITLER('Internal coordinates determined','#',103)
             CALL QEXIT('OPTMIN')
             RETURN
          END IF
