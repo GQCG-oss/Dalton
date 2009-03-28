@@ -50,10 +50,15 @@ C  /* Deck mpixinit */
 C
 #include <implicit.h>
 #include <priunit.h>
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
 #include <maxorb.h>
 #include <infpar.h>
+C
+#if !defined (VAR_MPI)
+      MYNUM  = 0
+      MASTER = 0
+      NODTOT = 0
+#else
+      INCLUDE 'mpif.h'
 C
       CALL MPI_INIT(IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
