@@ -152,11 +152,11 @@ C
       END IF
       IF (IN .EQ. 200) THEN
          WRITE (LUPRI, '(//150A)')
-     *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
+     *      (' ',I=1,INDENT),'.', ('-',I=1,LENGTH),'.'
          WRITE (LUPRI, '(150A)')
      &      (' ',I=1,INDENT),'| ', HEAD(1:LHEAD), ' |'
          WRITE (LUPRI, '(150A)')
-     *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
+     *      (' ',I=1,INDENT),'`', ('-',I=1,LENGTH),"'"
       ELSE IF (IN .EQ. 100) THEN
          WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
          WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
@@ -219,6 +219,9 @@ C  /* Deck quit */
       INCLUDE 'mpif.h'
 #endif
 #include <priunit.h>
+C INFPAR: MYNUM (maxorb for infpar.h)
+#include <maxorb.h>
+#include <infpar.h>
       CHARACTER TEXT*(*)
 C
 C     Stamp date and time and hostname to output
@@ -233,15 +236,20 @@ C
       END IF
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
      &   LUPRIN)
+#if defined (VAR_MPI)
+      WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
+#else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
+#endif
 #if defined (SYS_CRAY) || defined (SYS_UNIX) || defined (SYS_AIX)  \
  || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC)  \
  || defined (SYS_DEC)  || defined (SYS_T3D)  || defined (SYS_LINUX)\
  || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)   \
  || defined (SYS_T90)
 C     Write to stderr
-      WRITE (0,'(/A/1X,A)')
-     *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
+      WRITE (0,'(/A,I6,A/1X,A)') ' Node ',MYNUM,
+     &   ':  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
       CALL GETTIM(CTOT,WTOT)
       CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
