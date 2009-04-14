@@ -522,25 +522,17 @@ C
             IF (LUPRI .NE. LUW4) WRITE (LUPRI,2001) JSTATE
             NATORB = .FALSE.
          END IF
- 2000    FORMAT(/' CI eigenvector no.',I3,' (the reference vector)',
-     *          /' --------------------------------------------')
- 2001    FORMAT(/' CI eigenvector no.',I3,
-     *          /' ---------------------')
+ 2000    FORMAT(/' CI eigenvector no.',I4,' (= the reference state)',
+     *          /' ------------------------------------------------')
+ 2001    FORMAT(/' CI eigenvector no.',I4,
+     *          /' ----------------------')
 C
-         IF (P6FLAG(32)) THEN
-C           use PRWF here ?? 890925-hjaaj
-            WRITE (LUPRI,'(/A,F7.4/)') ' Cutoff for print:',THRPWF
-            CALL PRVEC(NCONF,WRK(KCVEC),1,THRPWF,120,LUPRI)
-            CALL PRMGN(NCONF,WRK(KCVEC),1,12,LUPRI)
-#if defined (VAR_OLDCODE) || defined (VAR_SECSEC)
-            DO 202 I = 1,NCONF
-               CVECI = WRK((KCVEC-1)+I)
-               IF (ABS(CVECI) .GE. THRPWF) WRITE (LUPRI,2020) I,CVECI
-  202       CONTINUE
-     *            //' Configuration no.           value',
-     *             /' -----------------           -----')
- 2020       FORMAT(I16,F20.10)
-#endif
+         IF (P6FLAG(32) .OR. NATORB) THEN
+C           NATORB is true if CINO and reference state
+            WRITE (LUPRI,'(/A,F8.5)')
+     &         ' Printout of CI-coefficients abs greater than:',THRPWF
+            CALL PRWF(WRK(KCVEC),INDXCI,LUPRI,THRPWF)
+C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
          END IF
 C
 C        MAERKE insert calculation of spin-density matrix here,
@@ -566,7 +558,7 @@ C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          IF (NATORB) THEN
             WRITE (LUW4,'(/A/)')
-     *         ' The natural orbitals are saved with label "NEWORB".'
+     *         ' The natural orbitals are saved with label "NEWORB  ".'
             CALL NEWORB('CINOSAVE',WRK(KCMO),.TRUE.)
          END IF
   900 CONTINUE
@@ -605,7 +597,7 @@ C           CALL CIRSPS(ECIREF,EMY,CMO,FCAC,H2AC,HDIAG,INDXCI,WRK,LFREE)
          END IF
       END IF
 C
-      IF (IPRI6 .GT. 1) THEN
+      IF (IPRI6 .GT. 0) THEN
          TIMTOT = SECOND() - TIMTOT
          WRITE (LUPRI,'(2(/A,F10.2),2(/A,I3,A,F10.2))')
      *      ' Total time used in CICTL                   :',TIMTOT,
