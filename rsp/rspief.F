@@ -457,9 +457,11 @@ C     (from the file MYFPCM).
      &                  .FALSE.)
             REWIND(LQM3PCM)
             READ(LQM3PCM,*) NOSIMMM,NCOMS
-         ELSE
-            NOSIMMM = NOSIM
          ENDIF
+      ENDIF
+
+      IF (NOSIMMM .NE. NOSIM) THEN
+        CALL QUIT('NOSIM error in MM/PM interface IEF')
       ENDIF
 C <- Arnfinn
 
@@ -497,21 +499,24 @@ C
       KJ1XAC = KJ1XSQ + N2ORBX*NOSIM
       IF (TRPLET) THEN
          KJ1XACT = KJ1XAC   + NOSIM * N2ASHX
-         KW30    = KJ1XACT  + NOSIM * N2ASHX
+         KW29    = KJ1XACT  + NOSIM * N2ASHX
       ELSE
-         KW30    = KJ1XAC   + NOSIM * N2ASHX
+         KW29    = KJ1XAC   + NOSIM * N2ASHX
       ENDIF
 C Arnfinn Nov. -08 ->
 C Allocate memory and read coordinats and dipole moments from MM
       IF(MMPCM) THEN
-         KMMCOR = KW30
+
+         KMMCOR = KW29
          KMMDIP = KMMCOR + NOSIMMM * 3 * NCOMS
-         KSTATE = KMMDIP + NOSIMMM * 3 * NCOMS
-         KW30   = KSTATE + NOSIMMM
+         KW30   = KMMDIP + NOSIMMM * 3 * NCOMS
+
+         CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
+         CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
+
          IF (FILE_EXIST) THEN
             L = 0
             DO I = 1,NOSIMMM
-               READ(LQM3PCM,*) WRK(KSTATE + I - 1)
                DO J = 1, NCOMS
                   L = L + 1
                   READ(LQM3PCM,'(6(E25.15,2x))') 
@@ -527,17 +532,17 @@ C Allocate memory and read coordinats and dipole moments from MM
          ELSE
             CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
             CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
-            CALL DZERO(WRK(KSTATE),NOSIMMM)
          ENDIF
       ENDIF
+
 C <- Arnfinn
 C
 C     3.0 SOLSC
       KOVLP = KW30
-      KW50   = KOVLP  + NOSIM
-      LW50   = LFREE  + 1 - KW50
+      KW49   = KOVLP  + NOSIM
+      LW49   = LFREE  + 1 - KW49
 C
-      KNEED = MAX(KW30,KW50)
+      KNEED = MAX(KW30,KW49)
       IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
 C
 C     Unpack symmetry blocked CMO
@@ -575,25 +580,30 @@ C
       IF (NODTOT .GE. 1) THEN
          CALL J1XP(NOSIM,WRK(KVTEX),WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
      &             WRK(KPCMX),WRK(KPCMXT),.FALSE.,TRPLET,JWOPSY,
-     &             WRK(KW50),LW50)
+     &             WRK(KW49),LW49)
       ELSE
 #endif
 C Arnfinn Nov. -08 ->
 C Convert MM dipole moments to potentials
       IF (MMPCM) THEN
-         KMMPOT = KW50
+         KMMPOT = KW49
          KQNMM  = KMMPOT + NTSIRR
          KQMAT  = KQNMM + NTSIRR * NOSIMMM
-         KW50   = KQMAT + NTS*NTSIRR
+         KW50   = KQMAT + NTS * NTSIRR
          LW50   = LFREE + 1 - KW50
-         KNEED  = MAX(KW30,KW50)
+         KNEED  = MAX(KW49,KW50)
          IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
+
+         CALL DZERO(WRK(KMMPOT),NTSIRR)
+         CALL DZERO(WRK(KQNMM),NTSIRR*NOSIMMM)
+         CALL DZERO(WRK(KQMAT),NTS*NTSIRR)
 C
 C false false true makes potential from dipole moments only
          CALL COMP_NUC_POT_CAV_MM(WRK(KMMPOT),.FALSE.,.FALSE.,
      &         .TRUE.,WRK(KMMCOR),WRK(KMMDIP),NOSIMMM)
 C Convert potentials to charges, q
-         CALL V2Q(WRK(KW50),WRK(KMMPOT),WRK(KQNMM),QNMM,.FALSE.)
+         CALL V2Q(WRK(KQMAT),WRK(KMMPOT),WRK(KQNMM),QNMM,.FALSE.)
+
       ENDIF
 C <- Arnfinn
       DO I = 1, NTSIRR
@@ -620,8 +630,6 @@ C            WRITE (LUPRI,'(/A)') ' JJ1AO before UTHU'
 C            CALL OUTPAK(WRK(JJ1AO+(j-1)*NNBASX),NBAST,1,LUPRI)
 C         end do
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
-C
-C ??? Include MM contributions here? Arnfinn
 C
          CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW50),
      *             NBAST,NORBT)
@@ -772,15 +780,13 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
      &               IDUMMY,.FALSE.)
          WRITE (LPCMQM3,*) NOSIMMM, NTS
          DO I = 1, NOSIMMM
-            NSTATE = INT(WRK(KSTATE+I-1))
-            WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
 C luca this will not work with more than one perturbation (see above for how WRK(KQNMM) is created)
                INDEX = NTS * (I-1) + ITS - 1
                WRK(KQTEX + INDEX) = 
      &             WRK(KQTEX + INDEX) + WRK(KQNMM + INDEX) 
                WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
-     &              ZTSCOR(ITS), WRK(KQTEX + INDEX) 
+     &              ZTSCOR(ITS), WRK(KQTEX + INDEX)
             ENDDO
          ENDDO
          CALL GPCLOSE(LPCMQM3,'KEEP')
@@ -874,6 +880,11 @@ C    *              RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
          END IF
       END IF
 C \sigma_{oo} = <0|[q_j,\tilde{Z}]|0> 
+      IF (.NOT. LADDMM) THEN
+        CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
+        IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
+      ENDIF
+
       IF(TRPLET) THEN
          CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KPCMX))
          CALL SLVSOR(.TRUE.,.TRUE., NOSIM,UDV,  SVEC(1,1),WRK(KPCMXT))

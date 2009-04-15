@@ -2260,6 +2260,12 @@ C
      *             DIPMOM, DEBYE*DIPMOM, DIPSI*DIPMOM
             CALL HEADER('Dipole moment components',-1)
             CALL DP0PRI(DIP0)
+
+            write(lupri,*) 'Dipole moment with more digits'
+            write(lupri,'(F17.15)') DIP0(1)
+            write(lupri,'(F17.15)') DIP0(2)
+            write(lupri,'(F17.15)') DIP0(3)
+
 C
          WRITE (LUPRI,'(2X,A,2X,A,F9.5,A)') ' Units:',
      *          ' 1 a.u. = ',DEBYE,' Debye '

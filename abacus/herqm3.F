@@ -4405,8 +4405,11 @@ C
    20    CONTINUE
    19 CONTINUE
 
+
+
       LM = 0
       L = NUSITE + NUALIS(0)
+      ITEST = 0
 
       DO 520 I = 1, ISYTP
         IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -4431,11 +4434,11 @@ C             Loop over the contribution from the PCM tesseras
                 DISTM1 = 1.0/DIST
                 DISTM3 = DISTM1**3
                 EFPCM(1,LM) = EFPCM(1,LM) 
-     *                     + PCMCHARGE*(XCORD-XTSCOR(M))*DISTM3
+     *                      + PCMCHARGE*(XCORD-XTSCOR(M))*DISTM3
                 EFPCM(2,LM) = EFPCM(2,LM) 
-     *                     + PCMCHARGE*(YCORD-YTSCOR(M))*DISTM3
+     *                      + PCMCHARGE*(YCORD-YTSCOR(M))*DISTM3
                 EFPCM(3,LM) = EFPCM(3,LM) 
-     *                     + PCMCHARGE*(ZCORD-ZTSCOR(M))*DISTM3
+     *                      + PCMCHARGE*(ZCORD-ZTSCOR(M))*DISTM3
   523         CONTINUE
   522       CONTINUE
   521     CONTINUE
@@ -4524,7 +4527,33 @@ C    -1: converged
   100 CONTINUE 
 
       END
+C***************************************************************************************
 
+C*************************************************************
+C  /* Deck MMPCM_FIXMOM */
+      SUBROUTINE MMPCM_FIXMOM()
+C*************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      DIMENSION  MYIND(3,MXQM3)
+C
+#if defined (SYS_CRAY)
+      REAL              MYIND
+#else
+      DOUBLE PRECISION  MYIND
+#endif
+C
+      LUMOM = -1
+      CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
+      CALL GIVEMY(MYIND)
+C
+      END
 C**** end of herqm3.F *****************************************************************
 
 

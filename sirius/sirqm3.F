@@ -336,6 +336,8 @@ C     the determination of the induced dipole moments
         CALL INDMOM(EELEC,LOINDM,FFJ)
       END IF
 
+      IF (FIXMOM .AND. MMPCM) CALL MMPCM_FIXMOM()
+
       CALL QM3_OBAR(FFJ)
 
       CALL CC_PUT31('CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))

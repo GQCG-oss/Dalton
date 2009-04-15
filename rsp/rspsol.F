@@ -304,7 +304,7 @@ C
          END IF
          CALL DZERO(EVECS,(NOSIM+NCSIM)*KZYVAR)
       END IF
-      IF (QM3) THEN
+      IF (QM3 .AND. (.NOT. MMPCM)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
 C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
@@ -318,7 +318,8 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               WRK(KFREE),LFREE)
          END IF
       ENDIF
-      IF (PCM) THEN
+      IF (PCM .AND. (.NOT. MMPCM)) THEN
+         LADDMM = .TRUE. 
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
@@ -326,6 +327,23 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ENDIF
+
+      IF (MMPCM) THEN
+         LADDMM = .FALSE.
+         DMMSAVE = 0.0D0
+         FIRST1 = .TRUE.
+         DO WHILE (.NOT. LADDMM)
+           CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+     &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
+     &                 WRK(KFREE),LFREE)
+           CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &                 UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &                 WRK(KDVT),WRK(KDVTTR),
+     &                 EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+           FIRST1 = .FALSE.
+         ENDDO
+      ENDIF
+
       IF (FLAG(16)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
