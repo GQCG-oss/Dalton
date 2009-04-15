@@ -2381,13 +2381,14 @@ c
 
       TIMIO  = TIMIO + SECOND() - DTIME
       TIMALL = SECOND() - TIMALL
-      CONVRT = 100.0D0/TIMALL
 
       IF (IPRINT.GE.0) THEN
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          WRITE (LUPRI,'(1X,A,I4,A,F10.2,A)') 
      &     '| total time for',NBTRAN,' B transforms.:',TIMALL,' secs.|'
+      IF (TIMALL .GE. 1.0D0) THEN
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
+         CONVRT = 100.0D0/TIMALL
          WRITE (LUPRI,'(1X,"|  % of time used in ",A,":",
      &        F10.2,"      |")')
      &      'start up org.', TIMPRE*CONVRT,
@@ -2403,6 +2404,7 @@ c
      &      'C term       ', TIMC*CONVRT,
      &      'D term       ', TIMD*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
+      END IF
 
          WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
       END IF

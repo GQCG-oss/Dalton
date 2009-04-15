@@ -2604,11 +2604,11 @@ C
       TIMALL = SECOND() - TIMALL
 
       IF (IPRINT.GT.2) THEN
-        IF (DABS(TIMALL).GT.1.0D0) THEN
-         CONVRT = 100.0D0/TIMALL
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          WRITE (LUPRI,'(1X,A,I4,A,F10.2,A)')
      &     '| total time for',NFTRAN,' F transforms.:',TIMALL,' secs.|'
+        IF (TIMALL.GE.1.0D0) THEN
+         CONVRT = 100.0D0/TIMALL
          WRITE (LUPRI,'(1X,A1,50("-"),A1)')'+','+'
          WRITE
      &    (LUPRI,'(1X,"|  % of time used in ",A,":",F10.2,"      |")')
