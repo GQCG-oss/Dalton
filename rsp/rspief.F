@@ -524,7 +524,7 @@ C Allocate memory and read coordinats and dipole moments (\mu^{[-1]}) from MM
             DO I = 1,NOSIMMM
                DO J = 1, NCOMS
                   L = L + 1
-                  READ(LQM3PCM,'(6(E25.17,2x))') 
+                  READ(LQM3PCM,'(6(E25.15,2x))') 
      &                 WRK(KMMCOR + 3 * ( L - 1 )     ),
      &                 WRK(KMMCOR + 3 * ( L - 1 ) + 1 ),
      &                 WRK(KMMCOR + 3 * ( L - 1 ) + 2 ),
@@ -960,7 +960,7 @@ C     ... end of IEFLNO.
 
 C  /* Deck pcm_comp_pot */
       SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
-     &                        NOSIM, JWOPSY, KSYMP, WORK, LWORK)
+     &                        NOSIM, KSYMP, WORK, LWORK)
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -975,6 +975,7 @@ C  /* Deck pcm_comp_pot */
 #include <dftcom.h>
 #include <inforb.h>
 #include <infrsp.h>
+#include <infvar.h>
 
       IF (VSNFLG .EQ. -1) THEN
          CALL DZERO(VSN, NTS)
@@ -1064,8 +1065,6 @@ C /* Deck pcm_comp_el_pot1 */
       CALL J1X(NOSIM,VSE1,UCMO,WORK(KUBO),DENMAT,UDVTR,XJ1SQ,XJ1SQT,
      &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
 #endif
-      SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,XJ1SQ,XJ1SQT,
-     &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
       RETURN
       END
 

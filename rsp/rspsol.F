@@ -326,7 +326,9 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
-     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE) 
+         CALL PCM_COMP_POT(CMO, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
+     &                     NOSIM, KSYMP, WORK, LWORK)
       ENDIF
 
       IF (MMPCM) THEN
