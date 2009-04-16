@@ -458,6 +458,9 @@ C     (from the file MYFPCM).
      &                  .FALSE.)
             REWIND(LQM3PCM)
             READ(LQM3PCM,*) NOSIMMM,NCOMS
+Cahs         ELSE
+Cahs            CALL QUIT('There is no input from QM/MM response 
+Cahs     &                to PCM response')
          ENDIF
       ENDIF
 
@@ -505,12 +508,13 @@ C
          KW29    = KJ1XAC   + NOSIM * N2ASHX
       ENDIF
 C Arnfinn Nov. -08 ->
-C Allocate memory and read coordinats and dipole moments from MM
+C Allocate memory and read coordinats and dipole moments (\mu^{[-1]}) from MM
       IF(MMPCM) THEN
 
          KMMCOR = KW29
          KMMDIP = KMMCOR + NOSIMMM * 3 * NCOMS
-         KW30   = KMMDIP + NOSIMMM * 3 * NCOMS
+         KSTATE = KMMDIP + NOSIMMM * 3 * NCOMS
+         KW30   = KSTATE + NOSIMMM
 
          CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
          CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
@@ -520,7 +524,7 @@ C Allocate memory and read coordinats and dipole moments from MM
             DO I = 1,NOSIMMM
                DO J = 1, NCOMS
                   L = L + 1
-                  READ(LQM3PCM,'(6(E25.15,2x))') 
+                  READ(LQM3PCM,'(6(E25.17,2x))') 
      &                 WRK(KMMCOR + 3 * ( L - 1 )     ),
      &                 WRK(KMMCOR + 3 * ( L - 1 ) + 1 ),
      &                 WRK(KMMCOR + 3 * ( L - 1 ) + 2 ),
@@ -580,7 +584,6 @@ C
 C     Contributions from all tesserae are included.
 C
 C
-
       CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
       REWIND LUPROP
@@ -767,7 +770,6 @@ Clf      IF (IPRRSP .GE. 50) THEN
          END DO
       END IF
       DO IOSIM = 1, NOSIM
-C
          CALL V2Q(WRK(KW50),WRK(KVTEX + NTS*(IOSIM-1)),
      &        WRK(KQTEX + NTS*(IOSIM-1)),
      &        QTEXS,NEQRSP)
@@ -799,7 +801,8 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
             NSTATE = INT(WRK(KSTATE+I-1))
             WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
-C luca this will not work with more than one perturbation (see above for how WRK(KQNMM) is created)
+C luca this will not work with more than one perturbation 
+C (see above for how WRK(KQNMM) is created)
                INDEX = NTS * (I-1) + ITS - 1
                WRK(KQTEX + INDEX) = 
      &             WRK(KQTEX + INDEX) - 2.0D0 * WRK(KQNMM + INDEX)
@@ -970,6 +973,8 @@ C  /* Deck pcm_comp_pot */
 #include <qm3.h>
 #include <orgcom.h>
 #include <dftcom.h>
+#include <inforb.h>
+#include <infrsp.h>
 
       IF (VSNFLG .EQ. -1) THEN
          CALL DZERO(VSN, NTS)
@@ -978,7 +983,8 @@ C  /* Deck pcm_comp_pot */
       END IF
       IF (VSEFLG .EQ. -1) THEN 
          CALL DZERO(VSE, NTS)
-         CALL PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, KSYMP, WORK, LWORK)
+         CALL PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX, 
+     &                        KSYMP, WORK, LWORK)
          VSEFLG = 1
       END IF
       IF (VSE1FLG .EQ. -1) THEN 
@@ -1012,10 +1018,22 @@ C  /* Deck pcm_comp_nuc_pot */
       END
 
 C /* Deck pcm_comp_el_pot */
-      SUBROUTINE PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, KYSMP, WORK, LWORK)
+      SUBROUTINE PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX,
+     &                           KSYMP, WORK, LWORK)
 #include <implicit.h>
-      CALL J1INT(VSE, .TRUE., DENMAT, NOSIM, .FALSE., 'NPETES',
-     &                 KSYMP, WORK, LWORK)
+      DIMENSION WORK(*), DENMAT(*), VSE(*)
+      KDEN = 1
+      KFREE = KDEN + NNBASX
+      LFREE = LWORK - KFREE + 1
+      IF (LFREE .LT. 0) THEN
+         CALL QUIT('Not enough memory in pcm_comp_el_pot')
+      ENDIF
+      
+      print *,'luca',nbas,nsym,nnbasx,nosim,ksymp
+      CALL PKSYM1(WORK(KDEN),DENMAT,NBAS,NSYM,-1)
+
+      CALL J1INT(VSE, .TRUE., WORK(KDEN), NOSIM, .FALSE., 'NPETES ',
+     &                 KSYMP, WORK(KFREE), LFREE)
       RETURN
       END
 
@@ -1036,7 +1054,7 @@ C /* Deck pcm_comp_el_pot1 */
       
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WORK(KUBO))
-         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
+         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WORK(KUBO),1)
       END IF
 
 #if defined (VAR_MPI)
@@ -1046,18 +1064,22 @@ C /* Deck pcm_comp_el_pot1 */
       CALL J1X(NOSIM,VSE1,UCMO,WORK(KUBO),DENMAT,UDVTR,XJ1SQ,XJ1SQT,
      &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
 #endif
+      SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,XJ1SQ,XJ1SQT,
+     &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
       RETURN
       END
 
 C /* Deck pcm_comp_mm_pot */
-      SUBROUTINE PCM_COMP_MM_POT(VCAV, NTS, COORD, SOURCE, 
-     &                           NSOURCES, TYPE)
+      SUBROUTINE PCM_COMP_MM_POT(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM, 
+     &                           ZMM, SOURCE, NSOURCES, TYPE)
 #include <implicit.h>
       CHARACTER*3 TYPE
       IF (TYPE .EQ. 'CHG') THEN
-         CALL PCM_COMP_POT_CHG(VCAV, NTS, COORD, SOURCE, NSOURCES)
+         CALL PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                         ZMM, SOURCE, NSOURCES)
       ELSE IF (TYPE .EQ. 'DIP') THEN
-         CALL PCM_COMP_POT_DIP(VCAV, NTS, COORD, SOURCE, NSOURCES)
+         CALL PCM_COMP_POT_DIP(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                         ZMM, SOURCE, NSOURCES)
 Clf   quadrupole not yet imlemented
 Clf      ELSE IF (TYPE .EQ. 'QDR') THEN
 Clf         PCM_COMP_POT_QDR(VCAV, NTS, COORD, SOURCE, NSOURCES)
@@ -1071,40 +1093,43 @@ Clf
       END
 
 C /* Deck pcm_comp_mm_pot */
-      SUBROUTINE PCM_COMP_POT_CHG(VCAV, NTS, COORD, SOURCE, NSITES)
+      SUBROUTINE PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                            ZMM, SOURCE, NSITES)
 #include <implicit.h>
+      DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*),XMM(*),YMM(*),ZMM(*),
+     &          SOURCE(*)
       DO IATOM = 1, NSITES
-         XL = COORD(3*IATOM-2)    
-         YL = COORD(3*IATOM-1)    
-         ZL = COORD(3*IATOM)
+         XL = XMM(IATOM)    
+         YL = YMM(IATOM)    
+         ZL = ZMM(IATOM)
          CHGMM = SOURCE(IATOM)
          DO ITS = 1, NTS
-            RIL=DSQRT((XTSCOR(ITS)-XL)**2+(YTSCOR(ITS)-YL)**2
-     &           +(ZTSCOR(ITS)-ZL)**2) 
-            VNUC = VNUC + CHGMM/RIL
+            RIL=DSQRT((XTS(ITS)-XL)**2+(YTS(ITS)-YL)**2
+     &           +(ZTS(ITS)-ZL)**2) 
+            VCAV(ITS) = VCAV(ITS) + CHGMM/RIL
          ENDDO
       ENDDO
       RETURN
       END
       
 C /* Deck pcm_comp_pot_dip */
-      SUBROUTINE PCM_COMP_POT_DIP(VCAV, NTS, COORD, SOURCE, NSITES)
+      SUBROUTINE PCM_COMP_POT_DIP(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                            ZMM, SOURCE, NSITES)
 #include <implicit.h>
+      DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*),XMM(*),YMM(*),ZMM(*),
+     &          SOURCE(*)
       DO IATOM = 1, NSITES
-         XL = COORD(3*IATOM-2)    
-         YL = COORD(3*IATOM-1)    
-         ZL = COORD(3*IATOM)
          XDIP = SOURCE(3*IATOM-2)
-         XDIP = SOURCE(3*IATOM-1)
-         XDIP = SOURCE(3*IATOM)
+         YDIP = SOURCE(3*IATOM-1)
+         ZDIP = SOURCE(3*IATOM)
          DO ITS = 1, NTS
-            XL = XTSCOR(ITS) - XDIP
-            YL = YTSCOR(ITS) - YDIP
-            ZL = ZTSCOR(ITS) - ZDIP
+            XL = XTS(ITS) - XMM(IATOM)
+            YL = YTS(ITS) - YMM(IATOM)
+            ZL = ZTS(ITS) - ZMM(IATOM)
             SCALAR = XL * XD + YL * YD + ZL * ZD
             R2 = XL ** 2 + YL ** 2 + ZL ** 2
             R3 = (DSQRT(R2)) ** 3
-            VNUC = VNUC + SCALAR/R3
+            VCAV(ITS) = VCAV(ITS) + SCALAR/R3
          ENDDO
       ENDDO
       RETURN

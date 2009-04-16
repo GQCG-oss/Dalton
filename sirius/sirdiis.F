@@ -331,6 +331,9 @@ C------------------------
 C CBN+JK 03.01.06 added qm3.h
 #include <qm3.h>
 C------------------------
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -693,7 +696,24 @@ c        density
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
      &                   LFREE,IPRDIS)
              CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+Clf             VSNFLG = -1
+Clf             VSEFLG = -1
+Clf             VSMMFLG = 0
+Clf             VSE1FLG = 0
+Clf             VSEMM1FLG = 0
+Clf             QSNFLG = -1
+Clf             QSEFLG = -1
+Clf             QSMMFLG = 0
+Clf             QSE1FLG = 0
+Clf             QSEMM1FLG = 0
+Clf             PRINT *,(QSE(II),II=1,10)
+Clf             CALL PCM_COMP_POT(DUMMY, DAOSAV(1,1), DUMMY, DUMMY, DUMMY, 
+Clf     &                         DUMMY, 1, IDUMMY, 1, WRK(KFREE), LFREE)
+Clf             CALL DZERO(QSE,NTS)
+Clf             PRINT *,(QSE(II),II=1,10)
+Clf             CALL PCM_COMP_CHG(WRK(KFREE),LFREE)
+Clf             PRINT *,(QSE(II),II=1,10)
+Clf             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd

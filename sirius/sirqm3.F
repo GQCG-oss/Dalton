@@ -460,14 +460,14 @@ C To here
 C                 MM/PCM interface. Coordinates and charges are fixed
 C                 here so in fact on needed on the first call. Leave it
 C                 for now.
-C     Is this place correct? Arnfinn
                      IF (MMPCM) THEN
                         XMMQ(L) = CORD(1,IATNOW)
                         YMMQ(L) = CORD(2,IATNOW)
                         ZMMQ(L) = CORD(3,IATNOW)
                         MMQ(L)  = CHARGE(IATNOW)
                         IF (L.GT.MXQ) THEN
-                     CALL QUIT('Too many chargees in MM. Increase MXQ')
+                           CALL QUIT('Too many charges in MM.'// 
+     &                               ' Increase MXQ')
                         ENDIF
                      ENDIF
 C <- Arnfinn

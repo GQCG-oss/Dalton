@@ -965,13 +965,15 @@ C
 
       RETURN
       END
+C /* Deck comp_nuc_pot_cav_mm */
+C
+      SUBROUTINE COMP_NUC_POT_CAV_MM(POTEN, DO_QMPOT, DO_MMPOT,
+     &                      DO_DIPOT, CMMCOR, CMMDIP, NOSIMMM)
 C
 C Arnfinn ->
 C As above, but coordinates and induced dipole moments are given as arguments. 
 C To calculate V^{[1]} from \mu^{[1]} (for instance).
 C
-      SUBROUTINE COMP_NUC_POT_CAV_MM(POTEN, DO_QMPOT, DO_MMPOT,
-     &                      DO_DIPOT, CMMCOR, CMMDIP, NOSIMMM)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -1041,8 +1043,76 @@ C
 
       RETURN
       END
+C
+C /* Deck pcm_comp_chg */
+C
+      SUBROUTINE PCM_COMP_CHG(WRK, LWRK)
 
+#include <implicit.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <ibtfun.h>
+
+      QTOT = 0.0D0
+      IF (QSEFLG.EQ.-1.AND.VSEFLG.EQ.1) THEN
+         CALL COMP_CHG(QSE,VSE,QTOT,QSEFLG,WRK,LWRK)
+      ENDIF
+      IF (QSNFLG.EQ.-1.AND.VSNFLG.EQ.1) THEN
+         CALL COMP_CHG(QSN,VSN,QTOT,QSNFLG,WRK,LWRK)
+      ENDIF
+      IF (QSMMFLG.EQ.-1.AND.VSMMFLG.EQ.1) THEN
+         CALL COMP_CHG(QSMM,VSMM,QTOT,QSMMFLG,WRK,LWRK)
+      ENDIF
+      IF (QSMM1FLG.EQ.-1.AND.VSMM1FLG.EQ.1) THEN
+         CALL COMP_CHG(QSMM1,VSMM1,QTOT,QSMM1FLG,WRK,LWRK)
+      ENDIF
+      IF (QSE1FLG.EQ.-1.AND.VSE1FLG.EQ.1) THEN
+         CALL COMP_CHG(QSE1,VSE1,QTOT,QSE1FLG,WRK,LWRK)
+      ENDIF
+      
+      RETURN
+      END
+
+
+C
+C /* comp_chg */
+C
+      SUBROUTINE COMP_CHG(CHG, POTEN, QET, DO_FLAG, WRK, LWRK)
+C
+C Arnfinn, April 2009, Odense
+C Calculate charge on tesserae from potential, if necessary. 
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <ibtfun.h>
+      
+      INTEGER DO_FLAG
+      DIMENSION POTEN(*), CHG(*), WRK(LWRK)
+
+      IF ((DO_FLAG .NE. -1) .AND. (DO_FLAG .NE. 1) 
+     &                      .AND. (DO_FLAG .NE. 0)) THEN
+         print *, 'do_flag', do_flag
+         CALL QUIT('Something wrong in COMP_CHG. Wrong value of flag')
+      ENDIF
+
+      KQMAT = 1
+      KLAST = KQMAT + NTS*NTSIRR - 1
+      IF (KLAST .GT. LWRK) CALL ERRWRK('COMP_NUC',KLAST,LWRK)
+      
+      CALL DZERO(WRK(KQMAT),NTS*NTSIRR)
+      IF (DO_FLAG .EQ. -1) THEN
+         CALL V2Q(WRK(KQMAT),POTEN,CHG,QET,.FALSE.)
+         DO_FLAG = 1
+      ENDIF
+      
+      RETURN
+      END
+C
 C /* Deck j1x */
+C
       SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,XJ1SQ,XJ1SQT,
      &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
 #include "implicit.h"
@@ -1070,37 +1140,9 @@ C
 #include "orgcom.h"
 #include "symmet.h"
 #include "wrkrsp.h"
-C
-      IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
-     &     'storing PCM-integrals on disk')
-C     
-C     Wake up the slaves
-C     
-      IPRTYP = 12
-C
-C     Loop over all tesserae
-C
-      DO ITS = 1, NTSIRR
-
-      END DO
-C
-C     Send end message to all slaves
-C
       NDIMZ = MAX(N2ORBX,NTS)
       CALL DZERO(WORK,NOSIM*NDIMZ)
       CALL DZERO(VTEX,NTS*NOSIM)
-      CALL MPI_REDUCE(WORK,VTEX,NOSIM*NTS,MPI_DOUBLE_PRECISION,MPI_SUM,
-     &                0,MPI_COMM_WORLD,IERR)
-Clf      IF (TRPLET) THEN
-Clf         CALL MPI_REDUCE(WORK,XJ1SQT,NOSIM*N2ORBX,
-Clf     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-Clf     &                   IERR)
-Clf      ELSE
-Clf         CALL MPI_REDUCE(WORK,XJ1SQ,NOSIM*N2ORBX,
-Clf     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-Clf     &                   IERR)
-Clf      END IF
-
       IPRPCM = IPRTMP
       KINTRP = 1
       KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
@@ -1121,9 +1163,8 @@ C     Loop over tesseraes to be calculated on this node
 C
       CALL DZERO(WORK(KPCMX),NOSIM*N2ORBX)
       CALL DZERO(WORK(KEXPVL),NOSIM*NTSIRR*(MAXREP + 1))
- 10   CONTINUE
-C
-      IF (ITS .GT. 0) THEN
+
+      DO I = 1, NTSIRR
          L = 1
          NCOMP     = MAXREP + 1
          DIPORG(1) = XTSCOR(ITS)
@@ -1228,7 +1269,8 @@ C
                ENDIF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+JTS-1
                WORK(IADR) = FACTOR
-               IF (IPRRSP .GE. 6) THEN
+Clf               IF (IPRRSP .GE. 6) THEN
+               IF (.TRUE.) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
                   WRITE (LUPRI,'(A,F17.8)')

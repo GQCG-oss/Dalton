@@ -572,14 +572,7 @@ C         ENDDO
          CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.,.TRUE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
          CALL V2Q(WRK(KQMAT), WRK(KPOTMM), QSMM, QTMM, .FALSE.)
-Clf
-         write(lupri,*) 'MM surface charges SIRIUS'
-         do i=1,nts
-            write(lupri,*) i, qsmm(i)
-         enddo
-C         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .FALSE.,.TRUE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
-C         CALL V2Q(WRK(KQMAT), WRK(KPOTPMM), QSMM(1,2), QTMM, .FALSE.)
       ELSE
          CALL DZERO(WRK(KPOTMM), NTS)
          CALL DZERO(QSMM,MXTS)
@@ -752,7 +745,8 @@ C     PCMMM =     interaction mm chg - polarization mm chg
      *           DP5 * (PCMMM + PCMMN + PCMNM) +
      *           DP5 * (PCMEM + PCMME)
 C
-         IF (IPRINT .GT. 2) THEN 
+C         IF (IPRINT .GT. 2) THEN 
+         IF (.true.) THEN 
             WRITE(LUPRI,'(A)')
      *           'PCMFCK: PCM solvation energy contributions'
             WRITE(LUPRI,*) 'PCMEE_op', PCMEE_op

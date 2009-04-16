@@ -423,7 +423,7 @@ c                        ENDIF
                            WRK(KYCOOR+LM-1) = CORD(2,IATNOW)
                            WRK(KZCOOR+LM-1) = CORD(3,IATNOW)
                            WRK(KXDIP+LM-1)  = -FACx
-                        ENDIF 
+                        ENDIF
                      ELSE
                         CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
                         CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
