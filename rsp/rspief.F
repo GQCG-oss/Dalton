@@ -441,7 +441,8 @@ C
       IF (IPRRSP .GE. 40) THEN
          WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM IEFLNO >>>'
       END IF
-      IF (IPRRSP .GE. 140) THEN
+Clf      IF (IPRRSP .GE. 140) THEN
+      IF (.true.) THEN
          WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
@@ -526,6 +527,15 @@ C Allocate memory and read coordinats and dipole moments from MM
      &                 WRK(KMMDIP + 3 * ( L - 1 )     ),
      &                 WRK(KMMDIP + 3 * ( L - 1 ) + 1 ),
      &                 WRK(KMMDIP + 3 * ( L - 1 ) + 2 )
+Clf                  Write(lupri,*) 'transformed dipoles in rspief',
+Clf     &                 l, j, i, ncoms, nosimm
+Clf                  WRITE(LUPRI,'(6(E25.15,2x))') 
+Clf     &                 WRK(KMMCOR + 3 * ( L - 1 )     ),
+Clf     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 1 ),
+Clf     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 2 ),
+Clf     &                 WRK(KMMDIP + 3 * ( L - 1 )     ),
+Clf     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 1 ),
+Clf     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 2 )
                ENDDO
             ENDDO
             CALL GPCLOSE(LQM3PCM,'KEEP')
@@ -554,7 +564,8 @@ C
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
-         IF (IPRRSP .GE. 55) THEN
+Clf         IF (IPRRSP .GE. 55) THEN
+         IF (.true.) THEN
             DO 210 IOSIM = 1,NOSIM
                JUBO = KUBO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,2110) IOSIM,NOSIM
@@ -602,8 +613,7 @@ C false false true makes potential from dipole moments only
          CALL COMP_NUC_POT_CAV_MM(WRK(KMMPOT),.FALSE.,.FALSE.,
      &         .TRUE.,WRK(KMMCOR),WRK(KMMDIP),NOSIMMM)
 C Convert potentials to charges, q
-         CALL V2Q(WRK(KQMAT),WRK(KMMPOT),WRK(KQNMM),QNMM,.FALSE.)
-
+         CALL V2Q(WRK(KW50),WRK(KMMPOT),WRK(KQNMM),QNMMT,.FALSE.)
       ENDIF
 C <- Arnfinn
       DO I = 1, NTSIRR
@@ -631,7 +641,7 @@ C            CALL OUTPAK(WRK(JJ1AO+(j-1)*NNBASX),NBAST,1,LUPRI)
 C         end do
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
 C
-         CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW50),
+         CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *             NBAST,NORBT)
 C Transform V(MO) from triangular to square format
          CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
@@ -740,8 +750,14 @@ C KPCMX: \tilde{J} + \tilde{X}
 #if defined (VAR_MPI)
       END IF
 #endif
+Clf
+         write(lupri,*) 'MM surface charges RESPONSE'
+         do i=1,nts
+            write(lupri,*) i, qsmm(i)
+         enddo
 C
-      IF (IPRRSP .GE. 50) THEN
+Clf      IF (IPRRSP .GE. 50) THEN
+      IF (.true.) THEN
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
@@ -780,13 +796,15 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
      &               IDUMMY,.FALSE.)
          WRITE (LPCMQM3,*) NOSIMMM, NTS
          DO I = 1, NOSIMMM
+            NSTATE = INT(WRK(KSTATE+I-1))
+            WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
 C luca this will not work with more than one perturbation (see above for how WRK(KQNMM) is created)
                INDEX = NTS * (I-1) + ITS - 1
                WRK(KQTEX + INDEX) = 
-     &             WRK(KQTEX + INDEX) + WRK(KQNMM + INDEX) 
+     &             WRK(KQTEX + INDEX) - 2.0D0 * WRK(KQNMM + INDEX)
                WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
-     &              ZTSCOR(ITS), WRK(KQTEX + INDEX)
+     &              ZTSCOR(ITS), WRK(KQTEX + INDEX) 
             ENDDO
          ENDDO
          CALL GPCLOSE(LPCMQM3,'KEEP')
@@ -825,7 +843,8 @@ C
       DIPORG(2) = YI
       DIPORG(3) = ZI
 C
-      IF (IPRRSP .GE. 50) THEN
+Clf      IF (IPRRSP .GE. 50) THEN
+      IF (.true.) THEN
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
@@ -873,7 +892,8 @@ C KW30???
      *              WRK(KJPXAC),DUMMY,INDXCI,WRK(KW50),LW50)
 C        CALL SLVSC(NCSIM,NOSIM,BCVECS,CREF,SVECS,
 C    *              RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
-         IF (IPRRSP.GT.101) THEN
+Clf         IF (IPRRSP.GT.101) THEN
+         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
             WRITE(LUPRI,*)' **** AFTER SLVSC in IEFLNO **** '
             CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -912,14 +932,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C        ... test print
 C
-      IF (IPRRSP .GE. 140) THEN
+Clf      IF (IPRRSP .GE. 140) THEN
+      IF (.true.) THEN
          WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(ci,1) on exit'
          DO 930 I = 1,KZCONF
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
   930    CONTINUE
       END IF
-      IF (IPRRSP .GE. 140) THEN
+Clf      IF (IPRRSP .GE. 140) THEN
+      IF (.true.) THEN
          WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(SVEC(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
@@ -931,4 +953,159 @@ C
       CALL QEXIT('IEFLNO')
       RETURN
 C     ... end of IEFLNO.
+      END
+
+C  /* Deck pcm_comp_pot */
+      SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
+     &                        NOSIM, JWOPSY, KSYMP, WORK, LWORK)
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <thrzer.h>
+#include <iratdef.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <qm3.h>
+#include <orgcom.h>
+#include <dftcom.h>
+
+      IF (VSNFLG .EQ. -1) THEN
+         CALL DZERO(VSN, NTS)
+         CALL PCM_COMP_NUC_POT(VSN)
+         VSNFLG = 1
+      END IF
+      IF (VSEFLG .EQ. -1) THEN 
+         CALL DZERO(VSE, NTS)
+         CALL PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, KSYMP, WORK, LWORK)
+         VSEFLG = 1
+      END IF
+      IF (VSE1FLG .EQ. -1) THEN 
+         CALL DZERO(VSE1, NTS)
+c      SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
+c     &                            UCMO, BOVECS, XJSQ, XJSQT, TRPLET, 
+c     &                            WORK, LWORK)
+         CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
+     &                         UCMO, BOVECS, XJSQ, XJSQT, TRPLET,
+     &                         WORK, LWORK)
+         VSE1FLG = 1
+      END IF
+      IF (VSMMFLG .EQ. -1) THEN
+         CALL DZERO(VSMM, NTS)
+         CALL PCM_COMP_MM_POT(VSMM)
+         VSMMFLG = 1
+      END IF
+      IF (VSMMFLG .EQ. -1) THEN
+         CALL DZERO(VSMM1, NTS)
+         CALL PCM_COMP_MM_POT(VSMM1)
+         VSMMFLG = 1
+      END IF
+      RETURN
+      END
+
+C  /* Deck pcm_comp_nuc_pot */
+      SUBROUTINE PCM_COMP_NUC_POT(VSN)
+#include <implicit.h>
+      CALL COMP_NUC_POT_CAV(VSN, .TRUE., .FALSE.,.FALSE.)
+      RETURN
+      END
+
+C /* Deck pcm_comp_el_pot */
+      SUBROUTINE PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, KYSMP, WORK, LWORK)
+#include <implicit.h>
+      CALL J1INT(VSE, .TRUE., DENMAT, NOSIM, .FALSE., 'NPETES',
+     &                 KSYMP, WORK, LWORK)
+      RETURN
+      END
+
+C /* Deck pcm_comp_el_pot1 */
+      SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
+     &                            UCMO, BOVECS, XJSQ, XJSQT, TRPLET, 
+     &                            WORK, LWORK)
+#include <implicit.h>
+      LOGICAL TRPLET
+      DIMENSION BOVECS(*)
+
+      KUBO = 1
+      KFREE = KUBO + NOSIM * N2ORBX
+      LFREE = LWORK - KFREE + 1
+      IF (LFREE .LT. 0) THEN 
+         CALL QUIT('PCM_COMP_EL_POT1: insufficient memory')
+      END IF
+      
+      IF (NOSIM.GT.0) THEN
+         CALL RSPZYM(NOSIM,BOVECS,WORK(KUBO))
+         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
+      END IF
+
+#if defined (VAR_MPI)
+      CALL J1XP(NOSIM,VSE1,UCMO,WORK(KUBO),DENMAT,DENTRP,XJ1SQ,XJ1SQT,
+     &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
+#else
+      CALL J1X(NOSIM,VSE1,UCMO,WORK(KUBO),DENMAT,UDVTR,XJ1SQ,XJ1SQT,
+     &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
+#endif
+      RETURN
+      END
+
+C /* Deck pcm_comp_mm_pot */
+      SUBROUTINE PCM_COMP_MM_POT(VCAV, NTS, COORD, SOURCE, 
+     &                           NSOURCES, TYPE)
+#include <implicit.h>
+      CHARACTER*3 TYPE
+      IF (TYPE .EQ. 'CHG') THEN
+         CALL PCM_COMP_POT_CHG(VCAV, NTS, COORD, SOURCE, NSOURCES)
+      ELSE IF (TYPE .EQ. 'DIP') THEN
+         CALL PCM_COMP_POT_DIP(VCAV, NTS, COORD, SOURCE, NSOURCES)
+Clf   quadrupole not yet imlemented
+Clf      ELSE IF (TYPE .EQ. 'QDR') THEN
+Clf         PCM_COMP_POT_QDR(VCAV, NTS, COORD, SOURCE, NSOURCES)
+Clf   quadrupole components order xx, xy, xz, yy, yz, zz
+Clf   quadrupole potential: sum_{a,b} 1/2*(3*Ra*Rb-R^2*delta_ab)/R^5 Q_ab
+Clf
+      ELSE
+         CALL QUIT('Wrong type in PCM_COMP_MM_POT')
+      END IF
+      RETURN
+      END
+
+C /* Deck pcm_comp_mm_pot */
+      SUBROUTINE PCM_COMP_POT_CHG(VCAV, NTS, COORD, SOURCE, NSITES)
+#include <implicit.h>
+      DO IATOM = 1, NSITES
+         XL = COORD(3*IATOM-2)    
+         YL = COORD(3*IATOM-1)    
+         ZL = COORD(3*IATOM)
+         CHGMM = SOURCE(IATOM)
+         DO ITS = 1, NTS
+            RIL=DSQRT((XTSCOR(ITS)-XL)**2+(YTSCOR(ITS)-YL)**2
+     &           +(ZTSCOR(ITS)-ZL)**2) 
+            VNUC = VNUC + CHGMM/RIL
+         ENDDO
+      ENDDO
+      RETURN
+      END
+      
+C /* Deck pcm_comp_pot_dip */
+      SUBROUTINE PCM_COMP_POT_DIP(VCAV, NTS, COORD, SOURCE, NSITES)
+#include <implicit.h>
+      DO IATOM = 1, NSITES
+         XL = COORD(3*IATOM-2)    
+         YL = COORD(3*IATOM-1)    
+         ZL = COORD(3*IATOM)
+         XDIP = SOURCE(3*IATOM-2)
+         XDIP = SOURCE(3*IATOM-1)
+         XDIP = SOURCE(3*IATOM)
+         DO ITS = 1, NTS
+            XL = XTSCOR(ITS) - XDIP
+            YL = YTSCOR(ITS) - YDIP
+            ZL = ZTSCOR(ITS) - ZDIP
+            SCALAR = XL * XD + YL * YD + ZL * ZD
+            R2 = XL ** 2 + YL ** 2 + ZL ** 2
+            R3 = (DSQRT(R2)) ** 3
+            VNUC = VNUC + SCALAR/R3
+         ENDDO
+      ENDDO
+      RETURN
       END

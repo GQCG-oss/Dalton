@@ -124,6 +124,7 @@ C  /* Deck rspslv */
      &                  UDV,EVECS,WRK,LWRK)
 C
 #include <implicit.h>
+#include <dummy.h>
 #include <maxorb.h>
 C
 #include <priunit.h>
@@ -332,16 +333,30 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
          LADDMM = .FALSE.
          DMMSAVE = 0.0D0
          FIRST1 = .TRUE.
+         VSE1FLG = -1
+         QSE1FLG = -1
+C      SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
+C     &                        NOSIM, JWOPSY, KSYMP, WORK, LWORK)
+         CALL PCM_COMP_POT(CMO, WRK(KDV), WRK(KUDVTR), BOVECS, DUMMY, 
+     &                     DUMMY, NOSIM, IDUMMY, KSYMOP, 
+     &                     WRK(KFREE), LFREE)
+         CALL PCM_COMP_CHG()
          DO WHILE (.NOT. LADDMM)
            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
-     &                 WRK(KFREE),LFREE)
-           CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &                 UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &                 WRK(KDVT),WRK(KDVTTR),
-     &                 EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     &                 WRK(KFREE),LFREE)           
+
+           VSMM1FLG = -1
+           QSMM1LFG = -1
+           CALL PCM_COMP_POT(CMO,WRK(KDV),WRK(KUDVTR),WRK(KFREE),LFREE)
+           CALL PCM_COMP_CHG()
            FIRST1 = .FALSE.
          ENDDO
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
+     &        INDXCI,
+     &        UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &        WRK(KDVT),WRK(KDVTTR),
+     &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ENDIF
 
       IF (FLAG(16)) THEN

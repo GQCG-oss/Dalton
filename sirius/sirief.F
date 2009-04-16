@@ -1041,3 +1041,203 @@ C
 
       RETURN
       END
+
+C /* Deck j1x */
+      SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,XJ1SQ,XJ1SQT,
+     &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "pcmdef.h"
+#include "iratdef.h"
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL TOFILE, EXP1VL, TRIMAT, TRPLET
+      CHARACTER*8 LABINT(3*MXCOOR)
+      DIMENSION WORK(LWORK)
+C
+#include "priunit.h"
+#include "pcm.h"
+#include "inforb.h"
+#include "infind.h"
+      DIMENSION VTEX(NTS,NOSIM), UCMO(NORBT*NBAST), UBO(NOSIM*N2ORBX),
+     &          UDV(N2ASHX), UDVTR(N2ASHX), XJ1SQ(NOSIM*N2ORBX),
+     &          XJ1SQT(NOSIM*N2ORBX)
+#include "mtags.h"
+#include "infpar.h"
+#include "orgcom.h"
+#include "symmet.h"
+#include "wrkrsp.h"
+C
+      IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
+     &     'storing PCM-integrals on disk')
+C     
+C     Wake up the slaves
+C     
+      IPRTYP = 12
+C
+C     Loop over all tesserae
+C
+      DO ITS = 1, NTSIRR
+
+      END DO
+C
+C     Send end message to all slaves
+C
+      NDIMZ = MAX(N2ORBX,NTS)
+      CALL DZERO(WORK,NOSIM*NDIMZ)
+      CALL DZERO(VTEX,NTS*NOSIM)
+      CALL MPI_REDUCE(WORK,VTEX,NOSIM*NTS,MPI_DOUBLE_PRECISION,MPI_SUM,
+     &                0,MPI_COMM_WORLD,IERR)
+Clf      IF (TRPLET) THEN
+Clf         CALL MPI_REDUCE(WORK,XJ1SQT,NOSIM*N2ORBX,
+Clf     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+Clf     &                   IERR)
+Clf      ELSE
+Clf         CALL MPI_REDUCE(WORK,XJ1SQ,NOSIM*N2ORBX,
+Clf     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+Clf     &                   IERR)
+Clf      END IF
+
+      IPRPCM = IPRTMP
+      KINTRP = 1
+      KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
+      KEXPVL = KINTAD + (3*MXCOOR + 1)/IRAT
+      KJ1AO  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
+      KJ1    = KJ1AO  + NNBASX*(MAXREP + 1)
+      KJ1SQ  = KJ1    + NNORBX
+      KJ1XSQ = KJ1SQ  + N2ORBX
+      KJ1XAC = KJ1XSQ + N2ORBX*NOSIM
+      KUCMO  = KJ1XAC + N2ASHX*NOSIM
+      KUDV   = KUCMO  + NORBT*NBAST
+      KUBO   = KUDV   + N2ASHX
+      KPCMX  = KUBO   + N2ORBX*NOSIM
+      KLAST  = KPCMX  + N2ORBX*NOSIM
+      LWRK   = LWORK - KLAST + 1
+C
+C     Loop over tesseraes to be calculated on this node
+C
+      CALL DZERO(WORK(KPCMX),NOSIM*N2ORBX)
+      CALL DZERO(WORK(KEXPVL),NOSIM*NTSIRR*(MAXREP + 1))
+ 10   CONTINUE
+C
+      IF (ITS .GT. 0) THEN
+         L = 1
+         NCOMP     = MAXREP + 1
+         DIPORG(1) = XTSCOR(ITS)
+         DIPORG(2) = YTSCOR(ITS)
+         DIPORG(3) = ZTSCOR(ITS)
+         EXP1VL    = .FALSE.
+         TOFILE    = .FALSE.
+         KPATOM    = 0
+         TRIMAT    = .TRUE.
+         CALL GET1IN(WORK(KJ1AO),'NPETES ',NCOMP,WORK(KLAST),LWRK,
+     &               LABINT,WORK(KINTRP),WORK(KINTAD),L,TOFILE,KPATOM,
+     &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRPCM)
+         JJ1AO = KJ1AO
+C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
+         CALL UTHU(WORK(JJ1AO),WORK(KJ1),WORK(KUCMO),WORK(KLAST),
+     *             NBAST,NORBT)
+C Transform V(MO) from triangular to square format
+         CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
+         CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
+         DO IOSIM = 1, NOSIM
+            JUBO = KUBO + (IOSIM - 1) * N2ORBX
+            JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
+            JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
+            JPCMX  = KPCMX + (IOSIM - 1)*N2ORBX
+            CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
+C     
+            IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
+            IF (IPRRSP .GE. 15) THEN
+               WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
+               CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
+     &              NORBT,NORBT,1,LUPRI)
+               IF (NASHT .GT. 0) THEN
+                  WRITE (LUPRI,'(/A)') ' J1X_ac matrix:'
+                  CALL OUTPUT(WORK(JJ1XAC),1,NASHT,1,NASHT,
+     &                 NASHT,NASHT,1,LUPRI)
+               END IF
+            END IF
+C
+C     Expectation value of transformed potential on tesserae:
+C                     <0|\tilde{V}|0> 
+C
+            IF (KSYMOP .EQ. 1) THEN
+               IF (TRPLET) THEN
+                  FACTOR = SLVTLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               ELSE
+                  FACTOR = SLVQLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               END IF
+               IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+ITS-1
+               WORK(IADR) = FACTOR
+               IF (IPRRSP .GE. 6) THEN
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- J1X expectation value :',WORK(IADR)
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- active part of J1X    :',TJ1XAC
+               END IF
+            END IF
+C     KPCMX: \tilde{J} + \tilde{X}
+            CALL DAXPY(N2ORBX,QSN(ITS)+QSE(ITS),WORK(JJ1X),
+     &                 1,WORK(JPCMX),1)
+         END DO
+C
+C     Non-totally symmetric perturbation operators
+C
+         IF (KSYMOP .GT. 1) THEN
+            JJ1AO = KJ1AO + (KSYMOP - 1)*NNBASX
+            JTS = (KSYMOP - 1)*NTSIRR + ITS
+C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
+            CALL UTHU(WORK(JJ1AO),WORK(KJ1),WORK(KUCMO),WORK(KLAST),
+     *                NBAST,NORBT)
+C Transform V(MO) from triangular to square format
+            CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
+            CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
+            DO IOSIM = 1, NOSIM
+               JUBO = KUBO + (IOSIM - 1) * N2ORBX
+               JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
+               JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
+               CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
+C     
+               IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
+               IF (IPRRSP .GE. 15) THEN
+                  WRITE (LUPRI,'(/A)') ' J1X_mo matrix (KSYMOP):'
+                  CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
+     &                 NORBT,NORBT,1,LUPRI)
+                  IF (NASHT .GT. 0) THEN
+                     WRITE (LUPRI,'(/A)') ' J1X_ac matrix (KSYMOP):'
+                     CALL OUTPUT(WORK(JJ1XAC),1,NASHT,1,NASHT,
+     &                    NASHT,NASHT,1,LUPRI)
+                  END IF
+               END IF
+C
+C     Expectation value of transformed potential on tesserae:
+C                     <0|\tilde{V}|0> 
+C
+               IF (TRPLET) THEN
+                  FACTOR = SLVTLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               ELSE
+                  FACTOR = SLVQLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               ENDIF
+               IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+JTS-1
+               WORK(IADR) = FACTOR
+               IF (IPRRSP .GE. 6) THEN
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- J1X expectation value :',WORK(IADR)
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- active part of J1X    :',TJ1XAC
+               END IF
+            ENDDO
+         END IF
+         GO TO 10
+      END IF
+      RETURN
+      END
+      

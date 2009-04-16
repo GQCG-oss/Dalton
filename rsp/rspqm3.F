@@ -415,7 +415,7 @@ c                        ENDIF
                               TEMP = TEMP 
      &                        + QPCMNOW*(CORD(1,IATNOW)-XPCMNOW)*DISTM3
  523                       CONTINUE
-                           FACx = FACx + FAC*TEMP
+                           FACx = FACx + FAC * TEMP
                         ENDIF
                         CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
                         IF (MMPCM) THEN
@@ -516,7 +516,7 @@ c                       ENDIF
                            TEMP = TEMP
      &                      + QPCMNOW*(CORD(3,IATNOW)-ZPCMNOW)*DISTM3
  525                    CONTINUE
-                        FACz = FACz + FAC*TEMP
+                        FACz = FACz + FAC * TEMP
                      ENDIF
                      CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
                      IF (MMPCM) WRK(KZDIP+LM-1)  = -FACz
