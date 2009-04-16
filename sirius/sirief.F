@@ -1278,8 +1278,7 @@ Clf               IF (IPRRSP .GE. 6) THEN
                END IF
             ENDDO
          END IF
-         GO TO 10
-      END IF
+      END DO
       RETURN
       END
       

@@ -326,32 +326,21 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
-     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE) 
-         CALL PCM_COMP_POT(CMO, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
-     &                     NOSIM, KSYMP, WORK, LWORK)
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+         print *, 'out of pcmltr'
+Clf         CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), UBO, XJSQ, XJSQT, 
+Clf     &                        NOSIM, KSYMP, WORK, LWORK)
+         
       ENDIF
 
       IF (MMPCM) THEN
          LADDMM = .FALSE.
          DMMSAVE = 0.0D0
          FIRST1 = .TRUE.
-         VSE1FLG = -1
-         QSE1FLG = -1
-C      SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
-C     &                        NOSIM, JWOPSY, KSYMP, WORK, LWORK)
-         CALL PCM_COMP_POT(CMO, WRK(KDV), WRK(KUDVTR), BOVECS, DUMMY, 
-     &                     DUMMY, NOSIM, IDUMMY, KSYMOP, 
-     &                     WRK(KFREE), LFREE)
-         CALL PCM_COMP_CHG()
          DO WHILE (.NOT. LADDMM)
            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &                 WRK(KFREE),LFREE)           
-
-           VSMM1FLG = -1
-           QSMM1LFG = -1
-           CALL PCM_COMP_POT(CMO,WRK(KDV),WRK(KUDVTR),WRK(KFREE),LFREE)
-           CALL PCM_COMP_CHG()
            FIRST1 = .FALSE.
          ENDDO
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,

@@ -29,33 +29,33 @@ C
       IF (NCSIM .GT. 0) THEN
 Clara         IF (IPRRSP.GT.101) THEN
          IF (.true.) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** BEFORE IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
 C         write (lupri,*) 'lara bef. IEFLNC'
          CALL IEFLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
-Clara         IF (IPRRSP.GT.101) THEN
-         IF (.true.) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+         IF (IPRRSP.GT.101) THEN
+Clf         IF (.true.) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
       END IF
       IF ( NOSIM .GT.0 ) THEN
-         IF (IPRRSP.GT.101) THEN
-C         IF (.true.) THEN
+C         IF (IPRRSP.GT.101) THEN
+         IF (.true.) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-             WRITE(LUPRI,*)' **** BEFORE IEFLNO **** '
+             WRITE(LUPRI,*)' **** BEFORE IEFLNO **** ',kzyvar,nosim
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
           END IF
 C         PRINT *, 'lara bef. IEFLNO'
          CALL IEFLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
 C         PRINT *, 'lara aft. IEFLNO'
-         IF (IPRRSP.GT.101) THEN
-C         IF (.true.) THEN
+C         IF (IPRRSP.GT.101) THEN
+         IF (.true.) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
              WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -441,8 +441,7 @@ C
       IF (IPRRSP .GE. 40) THEN
          WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM IEFLNO >>>'
       END IF
-Clf      IF (IPRRSP .GE. 140) THEN
-      IF (.true.) THEN
+      IF (IPRRSP .GE. 140) THEN
          WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
@@ -464,7 +463,7 @@ Cahs     &                to PCM response')
          ENDIF
       ENDIF
 
-      IF (NOSIMMM .NE. NOSIM) THEN
+      IF (MMPCM .AND. NOSIMMM .NE. NOSIM) THEN
         CALL QUIT('NOSIM error in MM/PM interface IEF')
       ENDIF
 C <- Arnfinn
@@ -503,15 +502,15 @@ C
       KJ1XAC = KJ1XSQ + N2ORBX*NOSIM
       IF (TRPLET) THEN
          KJ1XACT = KJ1XAC   + NOSIM * N2ASHX
-         KW29    = KJ1XACT  + NOSIM * N2ASHX
+         KW30    = KJ1XACT  + NOSIM * N2ASHX
       ELSE
-         KW29    = KJ1XAC   + NOSIM * N2ASHX
+         KW30    = KJ1XAC   + NOSIM * N2ASHX
       ENDIF
 C Arnfinn Nov. -08 ->
 C Allocate memory and read coordinats and dipole moments (\mu^{[-1]}) from MM
       IF(MMPCM) THEN
 
-         KMMCOR = KW29
+         KMMCOR = KW30
          KMMDIP = KMMCOR + NOSIMMM * 3 * NCOMS
          KSTATE = KMMDIP + NOSIMMM * 3 * NCOMS
          KW30   = KSTATE + NOSIMMM
@@ -558,6 +557,7 @@ C     3.0 SOLSC
 C
       KNEED = MAX(KW30,KW49)
       IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
+      print *, 'lfree', lfree
 C
 C     Unpack symmetry blocked CMO
 C
@@ -568,8 +568,7 @@ C
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
-Clf         IF (IPRRSP .GE. 55) THEN
-         IF (.true.) THEN
+         IF (IPRRSP .GE. 55) THEN
             DO 210 IOSIM = 1,NOSIM
                JUBO = KUBO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,2110) IOSIM,NOSIM
@@ -617,6 +616,9 @@ C false false true makes potential from dipole moments only
      &         .TRUE.,WRK(KMMCOR),WRK(KMMDIP),NOSIMMM)
 C Convert potentials to charges, q
          CALL V2Q(WRK(KW50),WRK(KMMPOT),WRK(KQNMM),QNMMT,.FALSE.)
+      ELSE
+         LW50 = LW49
+         KW50 = KW49
       ENDIF
 C <- Arnfinn
       DO I = 1, NTSIRR
@@ -658,7 +660,8 @@ C
             IF (NASHT .GT. 0) THEN
                CALL GETACQ(WRK(JJ1X),WRK(JJ1XAC))
             END IF
-            IF (IPRRSP .GE. 15) THEN
+Clf            IF (IPRRSP .GE. 15) THEN
+            IF (.true.) THEN
                WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
                CALL OUTPUT(WRK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
@@ -692,11 +695,17 @@ C Arnfinn Nov. -08 ->
 C Added QSM 
          QFACTOR = QSN(I)+QSE(I)
          IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
+         print *, 'factor', i, QFACTOR
          IF (TRPLET) THEN
-            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),1,WRK(KPCMXT),1)
+            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
+     &                1,WRK(KPCMXT),1)
          ELSE
-            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),1,WRK(KPCMX),1)
+            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
+     &                 1,WRK(KPCMX),1)
          ENDIF
+         write(lupri,*) 'kpcmx', kpcmx, nosim
+         CALL OUTPUT(WRK(KPCMX),1,NORBT,1,NORBT,NORBT,NORBT,
+     *                  1,LUPRI)
 C KPCMX: \tilde{J} + \tilde{X}
 C
 C     For non-totally symmetric perturbation operators
@@ -753,12 +762,6 @@ C KPCMX: \tilde{J} + \tilde{X}
 #if defined (VAR_MPI)
       END IF
 #endif
-Clf
-         write(lupri,*) 'MM surface charges RESPONSE'
-         do i=1,nts
-            write(lupri,*) i, qsmm(i)
-         enddo
-C
 Clf      IF (IPRRSP .GE. 50) THEN
       IF (.true.) THEN
          DO IOSIM = 1,NOSIM
@@ -895,18 +898,17 @@ C KW30???
      *              WRK(KJPXAC),DUMMY,INDXCI,WRK(KW50),LW50)
 C        CALL SLVSC(NCSIM,NOSIM,BCVECS,CREF,SVECS,
 C    *              RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
-Clf         IF (IPRRSP.GT.101) THEN
-         IF (.true.) THEN
+         IF (IPRRSP.GT.101) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
             WRITE(LUPRI,*)' **** AFTER SLVSC in IEFLNO **** '
             CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
          END IF
       END IF
 C \sigma_{oo} = <0|[q_j,\tilde{Z}]|0> 
-      IF (.NOT. LADDMM) THEN
-        CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
-        IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
-      ENDIF
+Clf      IF (MMPCM .AND. .NOT. LADDMM) THEN
+Clf        CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
+Clf        IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
+Clf      ENDIF
 
       IF(TRPLET) THEN
          CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KPCMX))
@@ -959,8 +961,8 @@ C     ... end of IEFLNO.
       END
 
 C  /* Deck pcm_comp_pot */
-      SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, UBO, XJSQ, XJSQT, 
-     &                        NOSIM, KSYMP, WORK, LWORK)
+      SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, BOVECS, 
+     &                        XJSQ, XJSQT, NOSIM, KSYMP, WORK, LWORK)
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -990,11 +992,8 @@ C  /* Deck pcm_comp_pot */
       END IF
       IF (VSE1FLG .EQ. -1) THEN 
          CALL DZERO(VSE1, NTS)
-c      SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
-c     &                            UCMO, BOVECS, XJSQ, XJSQT, TRPLET, 
-c     &                            WORK, LWORK)
          CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
-     &                         UCMO, BOVECS, XJSQ, XJSQT, TRPLET,
+     &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
      &                         WORK, LWORK)
          VSE1FLG = 1
       END IF
@@ -1039,7 +1038,7 @@ C /* Deck pcm_comp_el_pot */
       END
 
 C /* Deck pcm_comp_el_pot1 */
-      SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
+      SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, UDV, UDVTR, JWOPSY, 
      &                            UCMO, BOVECS, XJSQ, XJSQT, TRPLET, 
      &                            WORK, LWORK)
 #include <implicit.h>
@@ -1047,22 +1046,27 @@ C /* Deck pcm_comp_el_pot1 */
       DIMENSION BOVECS(*)
 
       KUBO = 1
-      KFREE = KUBO + NOSIM * N2ORBX
+      KUCMO = KUBO + NOSIM * N2ORBX
+      KFREE = KUCMO + NORBT * NBAST
       LFREE = LWORK - KFREE + 1
       IF (LFREE .LT. 0) THEN 
          CALL QUIT('PCM_COMP_EL_POT1: insufficient memory')
       END IF
-      
+
+      CALL UPKCMO(CMO,WORK(KUCMO))      
+
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WORK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WORK(KUBO),1)
       END IF
 
 #if defined (VAR_MPI)
-      CALL J1XP(NOSIM,VSE1,UCMO,WORK(KUBO),DENMAT,DENTRP,XJ1SQ,XJ1SQT,
-     &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
+      CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
+     &          XJ1SQ,XJ1SQT,
+     &          .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
 #else
-      CALL J1X(NOSIM,VSE1,UCMO,WORK(KUBO),DENMAT,UDVTR,XJ1SQ,XJ1SQT,
+      CALL J1X(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
+     &     XJ1SQ,XJ1SQT,
      &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
 #endif
       RETURN
