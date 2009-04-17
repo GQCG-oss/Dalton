@@ -1113,7 +1113,7 @@ C
 C
 C /* Deck j1x */
 C
-      SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,XJ1SQ,XJ1SQT,
+      SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,
      &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
 #include "implicit.h"
 #include "dummy.h"
@@ -1133,16 +1133,19 @@ C
 #include "inforb.h"
 #include "infind.h"
       DIMENSION VTEX(NTS,NOSIM), UCMO(NORBT*NBAST), UBO(NOSIM*N2ORBX),
-     &          UDV(N2ASHX), UDVTR(N2ASHX), XJ1SQ(NOSIM*N2ORBX),
-     &          XJ1SQT(NOSIM*N2ORBX)
+     &          UDV(N2ASHX), UDVTR(N2ASHX)
 #include "mtags.h"
 #include "infpar.h"
 #include "orgcom.h"
 #include "symmet.h"
 #include "wrkrsp.h"
       NDIMZ = MAX(N2ORBX,NTS)
+      write(lupri,*) 'UBO',(ubo(i),i=1,n2orbx)
+      print *, 'in j1x', nosim, n2orbx, nts, ndimz, lwork
       CALL DZERO(WORK,NOSIM*NDIMZ)
+      write(lupri,*) 'UBO2',(ubo(i),i=1,n2orbx)
       CALL DZERO(VTEX,NTS*NOSIM)
+      write(lupri,*) 'UBO3',(ubo(i),i=1,n2orbx)
       IPRPCM = IPRTMP
       KINTRP = 1
       KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
@@ -1158,42 +1161,62 @@ C
       KPCMX  = KUBO   + N2ORBX*NOSIM
       KLAST  = KPCMX  + N2ORBX*NOSIM
       LWRK   = LWORK - KLAST + 1
+      write(lupri,*) 'jubo after mem alloc',jubo,norbt
+      write(lupri,*) (ubo(i), i=1,n2orbx)
 C
 C     Loop over tesseraes to be calculated on this node
 C
+      print *, 'after mem alloc'
       CALL DZERO(WORK(KPCMX),NOSIM*N2ORBX)
       CALL DZERO(WORK(KEXPVL),NOSIM*NTSIRR*(MAXREP + 1))
 
+      JUBO = 1
+      write(lupri,*) 'jubo',jubo,norbt
+      write(lupri,*) (ubo(i), i=1,n2orbx)
+      CALL OUTPUT(UBO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+
+      DIPX = DIPORG(1)
+      DIPY = DIPORG(2)
+      DIPZ = DIPORG(3)
       DO I = 1, NTSIRR
          L = 1
          NCOMP     = MAXREP + 1
-         DIPORG(1) = XTSCOR(ITS)
-         DIPORG(2) = YTSCOR(ITS)
-         DIPORG(3) = ZTSCOR(ITS)
+         DIPORG(1) = XTSCOR(I)
+         DIPORG(2) = YTSCOR(I)
+         DIPORG(3) = ZTSCOR(I)
          EXP1VL    = .FALSE.
          TOFILE    = .FALSE.
          KPATOM    = 0
          TRIMAT    = .TRUE.
+
+         WRITE(LUPRI,*) 'CAB some parameters', ncomp,l,kpatom,iprpcm
+         WRITE(LUPRI,*) 'CAB some parameters', tofile,trimat,exp1vl
+         CALL OUTPUT(UCMO,1,NORBT,1,NBAST,NORBT,NBAST,1,LUPRI)
          CALL GET1IN(WORK(KJ1AO),'NPETES ',NCOMP,WORK(KLAST),LWRK,
      &               LABINT,WORK(KINTRP),WORK(KINTAD),L,TOFILE,KPATOM,
      &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRPCM)
          JJ1AO = KJ1AO
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
-         CALL UTHU(WORK(JJ1AO),WORK(KJ1),WORK(KUCMO),WORK(KLAST),
+         CALL UTHU(WORK(JJ1AO),WORK(KJ1),UCMO,WORK(KLAST),
      *             NBAST,NORBT)
+         write(lupri,*) 'CAB KJ1'
+         CALL OUTPAK(WORK(KJ1),NORBT,1,LUPRI)         
 C Transform V(MO) from triangular to square format
          CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
+         write(lupri,*) 'CAB KJ1SQ'
+         CALL OUTPUT(WORK(KJ1SQ),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
          DO IOSIM = 1, NOSIM
-            JUBO = KUBO + (IOSIM - 1) * N2ORBX
+            JUBO = 1 + (IOSIM - 1) * N2ORBX
             JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
             JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
             JPCMX  = KPCMX + (IOSIM - 1)*N2ORBX
-            CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
+            CALL ONEXH1(UBO(JUBO),WORK(KJ1SQ),WORK(JJ1X))
 C     
             IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
-            IF (IPRRSP .GE. 15) THEN
-               WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
+Clf            IF (IPRRSP .GE. 15) THEN
+            IF (.true.) THEN
+               WRITE (LUPRI,'(/A,I5)') 'J1X_mo matrix tess:',I
                CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
                IF (NASHT .GT. 0) THEN
@@ -1214,9 +1237,10 @@ C
                   FACTOR = SLVQLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
      &                            TJ1XAC)
                END IF
-               IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+ITS-1
-               WORK(IADR) = FACTOR
-               IF (IPRRSP .GE. 6) THEN
+               IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+I-1
+               VTEX(I,1) = FACTOR
+Clf               IF (IPRRSP .GE. 6) THEN
+               IF (.true.) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
                   WRITE (LUPRI,'(A,F17.8)')
@@ -1224,7 +1248,7 @@ C
                END IF
             END IF
 C     KPCMX: \tilde{J} + \tilde{X}
-            CALL DAXPY(N2ORBX,QSN(ITS)+QSE(ITS),WORK(JJ1X),
+            CALL DAXPY(N2ORBX,QSN(I)+QSE(I),WORK(JJ1X),
      &                 1,WORK(JPCMX),1)
          END DO
 C
@@ -1232,18 +1256,18 @@ C     Non-totally symmetric perturbation operators
 C
          IF (KSYMOP .GT. 1) THEN
             JJ1AO = KJ1AO + (KSYMOP - 1)*NNBASX
-            JTS = (KSYMOP - 1)*NTSIRR + ITS
+            JTS = (KSYMOP - 1)*NTSIRR + I
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
-            CALL UTHU(WORK(JJ1AO),WORK(KJ1),WORK(KUCMO),WORK(KLAST),
+            CALL UTHU(WORK(JJ1AO),WORK(KJ1),UCMO,WORK(KLAST),
      *                NBAST,NORBT)
 C Transform V(MO) from triangular to square format
             CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
             CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
             DO IOSIM = 1, NOSIM
-               JUBO = KUBO + (IOSIM - 1) * N2ORBX
+               JUBO = 1 + (IOSIM - 1) * N2ORBX
                JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
                JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
-               CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
+               CALL ONEXH1(UBO(JUBO),WORK(KJ1SQ),WORK(JJ1X))
 C     
                IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
                IF (IPRRSP .GE. 15) THEN
@@ -1268,9 +1292,9 @@ C
      &                            TJ1XAC)
                ENDIF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+JTS-1
-               WORK(IADR) = FACTOR
-Clf               IF (IPRRSP .GE. 6) THEN
-               IF (.TRUE.) THEN
+               VTEX(JTS,IOSIM) = FACTOR
+               print *,'factor', jts,factor
+               IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
                   WRITE (LUPRI,'(A,F17.8)')
@@ -1279,6 +1303,9 @@ Clf               IF (IPRRSP .GE. 6) THEN
             ENDDO
          END IF
       END DO
+      DIPORG(1) = DIPX
+      DIPORG(2) = DIPY
+      DIPORG(3) = DIPZ
       RETURN
       END
       

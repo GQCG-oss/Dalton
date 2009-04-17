@@ -327,10 +327,10 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-         print *, 'out of pcmltr'
-Clf         CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), UBO, XJSQ, XJSQT, 
-Clf     &                        NOSIM, KSYMP, WORK, LWORK)
-         
+         print *, 'out of pcmltr', lfree
+         CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, DUMMY, 
+     &                     NOSIM, IDUMMY, WRK(KFREE), LFREE)
+         CALL QUIT('stop here for the time being')
       ENDIF
 
       IF (MMPCM) THEN

@@ -222,28 +222,6 @@ clara
 #ifdef PCM_DEBUG
       write (lupri,*) 'lara kdv='
       call outpak (wrk(kdv),nbast,1,lupri)
-#endif
-clara 
-C      if (abs(wrk(kdv+ 3)-0.00000000d0)<1d-7.and.
-C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
-C     &(/ 0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 1.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
-C      if (abs(wrk(kdv+ 3)-0.12249707d0)<1d-7.and.
-C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
-C     &(/ 0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   1.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 1.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
-clara 
-#ifdef PCM_DEBUG
       write (lupri,*) 'lara kdv after='
       call outpak (wrk(kdv),nbast,1,lupri)
 #endif
@@ -471,7 +449,9 @@ C <- Arnfinn
 C
 C     Core allocation
 C
-      KVTEX  = 1
+      KINTRP = 1
+      KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
+      KVTEK  = KINTAD + (3*MXCOOR + 1)/IRAT
       KQTEX  = KVTEX + NTS*NOSIM
       KUBO   = KQTEX + NTS*NOSIM
       KW10   = KUBO  + NOSIM*N2ORBX
@@ -568,7 +548,8 @@ C
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
-         IF (IPRRSP .GE. 55) THEN
+Clf         IF (IPRRSP .GE. 55) THEN
+         IF (.true.) THEN
             DO 210 IOSIM = 1,NOSIM
                JUBO = KUBO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,2110) IOSIM,NOSIM
@@ -577,7 +558,7 @@ C
  210        CONTINUE
          END IF
       END IF
- 2110 FORMAT (/,' Orbital trial vector unpacked to matrix form (no.',
+ 2110 FORMAT (/,'ABC Orbital trial vector unpacked to matrix form (no.',
      *        I3,' of',I3,')')
 C
 C     Contributions from all tesserae are included.
@@ -632,24 +613,21 @@ C Read AO potential integrals on tesserae
          TOFILE    = .FALSE.
          KPATOM    = 0
          TRIMAT    = .TRUE.
+         write (lupri,*) 'ABC some parameters', ncomp,l,kpatom,iprrsp
+         WRITE(LUPRI,*) 'ABC some parameters', tofile,trimat,exp1vl
+         CALL OUTPUT(WRK(KUCMO),1,NORBT,1,NBAST,NORBT,NBAST,1,LUPRI)
          CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KW50),LW50,
-     &               LABINT,INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,
-     &               DUMMY,EXP1VL,DUMMY,IPRRSP)
+     &               LABINT,WRK(KINTRP),WRK(KINTAD),L,TOFILE,KPATOM,
+     &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
          JJ1AO = KJ1AO
-C
-C     The totally symmetric case is always performed
-C
-Clara
-C         do j=1, nsym 
-C            WRITE (LUPRI,'(/A)') ' JJ1AO before UTHU'
-C            CALL OUTPAK(WRK(JJ1AO+(j-1)*NNBASX),NBAST,1,LUPRI)
-C         end do
-C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
-C
          CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *             NBAST,NORBT)
+         write(lupri,*) 'ABC KJ1'
+         CALL OUTPAK(WRK(KJ1),NORBT,1,LUPRI)         
 C Transform V(MO) from triangular to square format
          CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
+         write(lupri,*) 'ABC KJ1SQ'
+         CALL OUTPUT(WRK(KJ1SQ),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          CALL DZERO(WRK(KJ1XSQ),N2ORBX*NOSIM)
          DO IOSIM = 1, NOSIM
             JUBO = KUBO + (IOSIM - 1) * N2ORBX
@@ -662,7 +640,7 @@ C
             END IF
 Clf            IF (IPRRSP .GE. 15) THEN
             IF (.true.) THEN
-               WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
+               WRITE (LUPRI,'(/A,I5)') 'J1X_mo matrix: tess',I
                CALL OUTPUT(WRK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
                IF (NASHT .GT. 0) THEN
@@ -682,7 +660,8 @@ C
                   FACTOR = SLVQLM(UDV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
                END IF
                WRK(KVTEX + (I-1) + (IOSIM-1)*NTS) = FACTOR
-               IF (IPRRSP .GE. 6) THEN
+Clf               IF (IPRRSP .GE. 6) THEN
+               IF (.true.) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',
      &                 WRK(KVTEX + (I-1) + (IOSIM-1)*NTS)
@@ -695,7 +674,6 @@ C Arnfinn Nov. -08 ->
 C Added QSM 
          QFACTOR = QSN(I)+QSE(I)
          IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
-         print *, 'factor', i, QFACTOR
          IF (TRPLET) THEN
             CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
      &                1,WRK(KPCMXT),1)
@@ -703,9 +681,6 @@ C Added QSM
             CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
      &                 1,WRK(KPCMX),1)
          ENDIF
-         write(lupri,*) 'kpcmx', kpcmx, nosim
-         CALL OUTPUT(WRK(KPCMX),1,NORBT,1,NORBT,NORBT,NORBT,
-     *                  1,LUPRI)
 C KPCMX: \tilde{J} + \tilde{X}
 C
 C     For non-totally symmetric perturbation operators
@@ -759,6 +734,9 @@ C
 C KPCMX: \tilde{J} + \tilde{X}
          END IF
       ENDDO
+      print *, 'pcm potentials'
+      print *, (wrk(kvtex + ii - 1),ii=1,10)
+      
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -979,6 +957,8 @@ C  /* Deck pcm_comp_pot */
 #include <infrsp.h>
 #include <infvar.h>
 
+      DIMENSION MOCOEF(*), DENMAT(*), DENTRP(*), BOVECS(*),
+     &          XJSQ(*), XJSQT(*), WORK(*)
       IF (VSNFLG .EQ. -1) THEN
          CALL DZERO(VSN, NTS)
          CALL PCM_COMP_NUC_POT(VSN)
@@ -990,11 +970,14 @@ C  /* Deck pcm_comp_pot */
      &                        KSYMP, WORK, LWORK)
          VSEFLG = 1
       END IF
+      VSE1FLG = -1
       IF (VSE1FLG .EQ. -1) THEN 
          CALL DZERO(VSE1, NTS)
+         print *, 'before PCM_COMP_EL_POT1', nosim, lwork
          CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
      &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
      &                         WORK, LWORK)
+         print *, 'after PCM_COMP_EL_POT1'
          VSE1FLG = 1
       END IF
       IF (VSMMFLG .EQ. -1) THEN
@@ -1007,6 +990,8 @@ C  /* Deck pcm_comp_pot */
          CALL PCM_COMP_MM_POT(VSMM1)
          VSMMFLG = 1
       END IF
+      print *, 'pcm potentials new'
+      print *, (vse1(ii),ii=1,10)
       RETURN
       END
 
@@ -1029,7 +1014,6 @@ C /* Deck pcm_comp_el_pot */
          CALL QUIT('Not enough memory in pcm_comp_el_pot')
       ENDIF
       
-      print *,'luca',nbas,nsym,nnbasx,nosim,ksymp
       CALL PKSYM1(WORK(KDEN),DENMAT,NBAS,NSYM,-1)
 
       CALL J1INT(VSE, .TRUE., WORK(KDEN), NOSIM, .FALSE., 'NPETES ',
@@ -1039,12 +1023,16 @@ C /* Deck pcm_comp_el_pot */
 
 C /* Deck pcm_comp_el_pot1 */
       SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, UDV, UDVTR, JWOPSY, 
-     &                            UCMO, BOVECS, XJSQ, XJSQT, TRPLET, 
+     &                            CMO, BOVECS, XJSQ, XJSQT, TRPLET, 
      &                            WORK, LWORK)
 #include <implicit.h>
-      LOGICAL TRPLET
-      DIMENSION BOVECS(*)
+#include <inforb.h>
+#include <priunit.h>
+      LOGICAL TRPLET, TOFILE
+      DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
 
+
+      print *, 'in pcm_comp_el_pot1', nosim, lwork, n2orbx, norbt, nbast
       KUBO = 1
       KUCMO = KUBO + NOSIM * N2ORBX
       KFREE = KUCMO + NORBT * NBAST
@@ -1052,22 +1040,33 @@ C /* Deck pcm_comp_el_pot1 */
       IF (LFREE .LT. 0) THEN 
          CALL QUIT('PCM_COMP_EL_POT1: insufficient memory')
       END IF
+      print *, 'll5', nosim, n2orbx, kubo, kucmo, kfree, lfree
 
       CALL UPKCMO(CMO,WORK(KUCMO))      
 
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WORK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WORK(KUBO),1)
+         IF (IPRRSP .GE. 55) THEN
+            DO 210 IOSIM = 1,NOSIM
+               JUBO = KUBO + (IOSIM-1)*N2ORBX
+               WRITE (LUPRI,2110) IOSIM,NOSIM
+               CALL OUTPUT(WORK(JUBO),1,NORBT,1,NORBT,NORBT,NORBT,1,
+     &                     LUPRI)
+ 210        CONTINUE
+         END IF
       END IF
+ 2110 FORMAT (/,'Orbital trial vector unpacked to matrix form (no.',
+     *        I3,' of',I3,')')
 
+      print *, 'll3', nosim
 #if defined (VAR_MPI)
       CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
      &          XJ1SQ,XJ1SQT,
-     &          .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
+     &          .FALSE.,TRPLET,JWOPSY,WORK(KFREE),LFREE)
 #else
       CALL J1X(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
-     &     XJ1SQ,XJ1SQT,
-     &     .FALSE.,TRPLET,JWOPSY,WORK,LWORK)
+     &     TOFILE,TRPLET,JWOPSY,WORK(KFREE),LFREE)
 #endif
       RETURN
       END
