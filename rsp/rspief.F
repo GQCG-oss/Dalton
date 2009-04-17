@@ -949,39 +949,38 @@ C  /* Deck pcm_comp_pot */
 
       DIMENSION MOCOEF(*), DENMAT(*), DENTRP(*), BOVECS(*),
      &          XJSQ(*), XJSQT(*), WORK(*)
+      VSNFLG = 1
       IF (VSNFLG .EQ. -1) THEN
          CALL DZERO(VSN, NTS)
          CALL PCM_COMP_NUC_POT(VSN)
          VSNFLG = 1
       END IF
+      VSEFLG = 1
       IF (VSEFLG .EQ. -1) THEN 
          CALL DZERO(VSE, NTS)
          CALL PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX, 
      &                        KSYMP, WORK, LWORK)
          VSEFLG = 1
       END IF
-      VSE1FLG = -1
       IF (VSE1FLG .EQ. -1) THEN 
          CALL DZERO(VSE1, NTS)
-         print *, 'before PCM_COMP_EL_POT1', nosim, lwork
          CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
      &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
      &                         WORK, LWORK)
-         print *, 'after PCM_COMP_EL_POT1'
          VSE1FLG = 1
       END IF
+      VSMMFLG = 1
       IF (VSMMFLG .EQ. -1) THEN
          CALL DZERO(VSMM, NTS)
          CALL PCM_COMP_MM_POT(VSMM)
          VSMMFLG = 1
       END IF
-      IF (VSMMFLG .EQ. -1) THEN
+      IF (VSMM1FLG .EQ. -1) THEN
          CALL DZERO(VSMM1, NTS)
-         CALL PCM_COMP_MM_POT(VSMM1)
-         VSMMFLG = 1
+         CALL PCM_COMP_MM_POT1(VSMM1, NTS, XTSCOR, YTSCOR, ZTSCOR, 
+     &                         WORK, LWORK)
+         VSMM1FLG = 1
       END IF
-      print *, 'pcm potentials new'
-      print *, (vse1(ii),ii=1,10)
       RETURN
       END
 
@@ -1085,6 +1084,28 @@ Clf
       END
 
 C /* Deck pcm_comp_mm_pot */
+      SUBROUTINE PCM_COMP_MM_POT1(VCAV, NTS, XTS, YTS, ZTS,
+     &                            WORK, LWORK)
+#include <implicit.h>
+      CHARACTER*3 TYPE
+      DIMENSION WORK(*), VCAV(*), XTS(*), YTS(*), ZTS(*)
+
+      CALL PCM_READ_MM_INDIP(NOSIMMM, KXMM, KYMM, KZMM, KSOURCES, 
+     &           NSOURCES, WORK, KFREE, LWORK)
+      DO I = 1, NOSIMMM
+         JXMM = KXMM + NSOURCES * (I-1)
+         JYMM = KYMM + NSOURCES * (I-1)
+         JZMM = KZMM + NSOURCES * (I-1)
+         JSOURCES = KSOURCES + 3 * (I-1) * NSOURCES 
+         JPOT = 1 + NTS * (I-1)
+         CALL PCM_COMP_POT_DIP(VCAV(JPOT), NTS, XTS, YTS, ZTS,
+     &                         WORK(JXMM), WORK(JYMM), WORK(JZMM), 
+     &                         WORK(JSOURCES), NSOURCES)
+      END DO
+      RETURN
+      END
+
+C /* Deck pcm_comp_mm_pot */
       SUBROUTINE PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
      &                            ZMM, SOURCE, NSITES)
 #include <implicit.h>
@@ -1108,7 +1129,8 @@ C /* Deck pcm_comp_pot_dip */
       SUBROUTINE PCM_COMP_POT_DIP(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
      &                            ZMM, SOURCE, NSITES)
 #include <implicit.h>
-      DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*),XMM(*),YMM(*),ZMM(*),
+      DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*), 
+     &          XMM(*), YMM(*),ZMM(*),
      &          SOURCE(*)
       DO IATOM = 1, NSITES
          XDIP = SOURCE(3*IATOM-2)
@@ -1118,11 +1140,57 @@ C /* Deck pcm_comp_pot_dip */
             XL = XTS(ITS) - XMM(IATOM)
             YL = YTS(ITS) - YMM(IATOM)
             ZL = ZTS(ITS) - ZMM(IATOM)
-            SCALAR = XL * XD + YL * YD + ZL * ZD
+            SCALAR = XL * XDIP + YL * YDIP + ZL * ZDIP
             R2 = XL ** 2 + YL ** 2 + ZL ** 2
             R3 = (DSQRT(R2)) ** 3
             VCAV(ITS) = VCAV(ITS) + SCALAR/R3
          ENDDO
       ENDDO
+      RETURN
+      END
+
+C
+C /* Deck pcm_read_mm_indip */
+C
+      SUBROUTINE PCM_READ_MM_INDIP(NOSIMMM, KXMM, KYMM, KZMM, KSOURCES, 
+     &           NSOURCES, WORK, KFREE, LWORK)
+#include <implicit.h>
+#include <priunit.h>
+      LOGICAL FILE_EXIST
+      DIMENSION WORK(*)
+      INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
+      IF (FILE_EXIST) THEN
+         print *, 'file exist' 
+         LQM3PCM = -1
+         CALL GPOPEN(LQM3PCM,'MYFPCM','OLD',' ','FORMATTED ',IDUMMY,
+     &        .FALSE.)
+         REWIND(LQM3PCM)
+         READ(LQM3PCM,*) NOSIMMM,NSOURCES
+      ELSE
+         CALL QUIT('There is no input from QM/MM response 
+     &        to PCM response')
+      ENDIF
+      KXMM = 1
+      KYMM     = KXMM +         NSOURCES * NOSIMMM
+      KZMM     = KYMM +         NSOURCES * NOSIMMM
+      KSOURCES = KZMM +         NSOURCES * NOSIMMM
+      KFREE    = KSOURCES + 3 * NSOURCES * NOSIMMM
+      LFREE    = LWORK - KFREE + 1
+      L = 0
+      DO I = 1, NOSIMMM
+         DO J = 1, NSOURCES
+            L = L + 1
+            READ(LQM3PCM,'(6(E25.15,2x))')
+     &           WORK(KXMM + L - 1),
+     &           WORK(KYMM + L - 1),
+     &           WORK(KZMM + L - 1),
+     &           WORK(KSOURCES + 3 * L - 3 ),
+     &           WORK(KSOURCES + 3 * L - 2 ),
+     &           WORK(KSOURCES + 3 * L - 1 )
+
+         ENDDO
+      ENDDO
+      CALL GPCLOSE(LQM3PCM,'KEEP')
+      LWORK = LFREE
       RETURN
       END

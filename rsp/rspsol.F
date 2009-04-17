@@ -137,6 +137,9 @@ C
 #include <infslv.h>
 C---------------------
 #include <qm3.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
 #include <infpar.h>
 C qm3.h by CBN+JK 03.01.06
 C---------------------
@@ -328,8 +331,6 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          print *, 'out of pcmltr', lfree
-         CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, DUMMY, 
-     &                     NOSIM, IDUMMY, WRK(KFREE), LFREE)
          CALL QUIT('stop here for the time being')
       ENDIF
 
@@ -341,13 +342,27 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &                 WRK(KFREE),LFREE)           
-           CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
+           IF (FIRST1) THEN
+              VSE1FLG = -1
+              QSE1FLG = -1
+              CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
+     &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
+              CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
+           END IF
+           VSMM1FLG = -1
+           QSMM1FLG = -1
+           CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, 
+     &                       IDUMMY, IDUMMY, WRK(KFREE), LFREE)
+           CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
+           FIRST1 = .FALSE.
+           CALL QUIT('stop here for the time being')
+         ENDDO
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
      &        INDXCI,
      &        UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &        WRK(KDVT),WRK(KDVTTR),
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
            FIRST1 = .FALSE.
-         ENDDO
       ENDIF
 
       IF (FLAG(16)) THEN
