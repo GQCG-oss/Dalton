@@ -84,8 +84,6 @@ c      DATA    FIRST /.TRUE./
       IF (.NOT. MMPCM) FIRST1 = .TRUE.
       IF (.NOT. MMPCM) LADDMM = .TRUE.
 
-c      write(lupri,*) 'FIRST1:',FIRST1
-
       IF (MMPCM) THEN
 
         IF (FIRST1) THEN
@@ -102,35 +100,35 @@ C         1) The MM_TO_PCM file
 C         2) do the same for the PCM_TO_MM file
           INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
           IF (FILE_EXIST) THEN
-            KFILE = -2
+            KFILE = -1
             CALL GPOPEN(KFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
      &                  .FALSE.)
             CALL GPCLOSE(KFILE,'DELETE')
           ENDIF
 C         3)  and to the file holding the electronic transformed moments (MM)
-c          INQUIRE(FILE='QM3TMR',EXIST=FILE_EXIST)
-c          IF (FILE_EXIST) THEN
-c            MFILE = -3
-c            CALL GPOPEN(MFILE,'QM3TMR','OLD',' ','FORMATTED',IDUMMY,
-c     &                  .FALSE.)
-c            CALL GPCLOSE(MFILE,'DELETE')
-c            CALL GPOPEN(MFILE,'QM3TMR','NEW',' ','FORMATTED',IDUMMY,
-c     &                  .FALSE.)
-c          ELSE
-c            CALL GPOPEN(MFILE,'QM3TMR','NEW',' ','FORMATTED',IDUMMY,
-c     &                  .FALSE.)
-c            write(lupri,*) 'opening file'
-c          ENDIF
+          INQUIRE(FILE='QM3TMR',EXIST=FILE_EXIST)
+          IF (FILE_EXIST) THEN
+            MFILE = -1
+            CALL GPOPEN(MFILE,'QM3TMR','OLD',' ','FORMATTED',IDUMMY,
+     &                  .FALSE.)
+            CALL GPCLOSE(MFILE,'DELETE')
+            CALL GPOPEN(MFILE,'QM3TMR','NEW',' ','FORMATTED',IDUMMY,
+     &                  .FALSE.)
+          ELSE
+            MFILE = -1
+            CALL GPOPEN(MFILE,'QM3TMR','NEW',' ','FORMATTED',IDUMMY,
+     &                  .FALSE.)
+          ENDIF
         ELSE 
 C         open the file for PCM_TO_MM data
-          KFILE = -2
+          KFILE = -1
           CALL GPOPEN(KFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
      &                .FALSE.)
                REWIND(KFILE)
-c          MFILE = -3
-c          CALL GPOPEN(MFILE,'QM3TMR','OLD',' ','FORMATTED',IDUMMY,
-c     &                .FALSE.)
-c               REWIND(MFILE)
+          MFILE = -1
+          CALL GPOPEN(MFILE,'QM3TMR','OLD',' ','FORMATTED',IDUMMY,
+     &                .FALSE.)
+               REWIND(MFILE)
         ENDIF
       ENDIF
 
@@ -240,16 +238,16 @@ C        Read in the PCM coordinates and charges.
             KL=KL+1
  150     CONTINUE
 C     Do the same for the electronic components of the transformed MM induced moments   
-c         KL = 0
-c         DO 148 IOSIM = 1,NOSIM
-c            DO 149 L = 1,NCOMS
-c               READ(MFILE,'(3(E25.15,2x))')
-c     &              WRK(KXEDIP+KL*NCOMS+L-1),
-c     &              WRK(KYEDIP+KL*NCOMS+L-1),
-c     &              WRK(KZEDIP+KL*NCOMS+L-1)
-c 149        CONTINUE
-c            KL=KL+1
-c 148     CONTINUE
+         KL = 0
+         DO 148 IOSIM = 1,NOSIM
+            DO 149 L = 1,NCOMS
+               READ(MFILE,'(3(E25.15,2x))')
+     &              WRK(KXEDIP+KL*NCOMS+L-1),
+     &              WRK(KYEDIP+KL*NCOMS+L-1),
+     &              WRK(KZEDIP+KL*NCOMS+L-1)
+ 149        CONTINUE
+            KL=KL+1
+ 148     CONTINUE
 
 
       ENDIF
@@ -383,23 +381,23 @@ C x-component
                         DIPORG(2) = CORD(2,IATNOW)
                         DIPORG(3) = CORD(3,IATNOW)
 
-c                        IF (FIRST1) THEN
-                          FORQM3 = .TRUE.
-                          CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,
-     &                                WRK(KLAST),LWRK2,LABINT,INTREP,
-     &                                INTADR,IATNOW,TOFILE,KPATOM,
-     &                                TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-                          FORQM3 = .FALSE.
+                        FORQM3 = .TRUE.
+                        CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,
+     &                              WRK(KLAST),LWRK2,LABINT,INTREP,
+     &                              INTADR,IATNOW,TOFILE,KPATOM,
+     &                              TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
+                        FORQM3 = .FALSE.
 
-                          CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),
-     &                            WRK(KLAST),NBAST,NORBT)
-                          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                        CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),
+     &                          WRK(KLAST),NBAST,NORBT)
+                        CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                        IF (FIRST1) THEN
                           CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                           FACx = FAC * QM3QLM(WRK(KUTRX))
-c                          WRK(KXEDIP+LM-1) = FACx
-c                        ELSE 
-c                          FACx = WRK(KXEDIP+LM-1)
-c                        ENDIF
+                          WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1) = FACx
+                        ELSE 
+                          FACx = WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1)
+                        ENDIF
                         IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
                            TEMP = 0.0D0
                            DO 523 IPCM = 1, NTS
@@ -415,7 +413,7 @@ c                        ENDIF
                               TEMP = TEMP 
      &                        + QPCMNOW*(CORD(1,IATNOW)-XPCMNOW)*DISTM3
  523                       CONTINUE
-                           FACx = FACx + FAC * TEMP
+                           FACx = FACx + FAC*TEMP
                         ENDIF
                         CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
                         IF (MMPCM) THEN
@@ -423,7 +421,7 @@ c                        ENDIF
                            WRK(KYCOOR+LM-1) = CORD(2,IATNOW)
                            WRK(KZCOOR+LM-1) = CORD(3,IATNOW)
                            WRK(KXDIP+LM-1)  = -FACx
-                        ENDIF
+                        ENDIF 
                      ELSE
                         CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
                         CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
@@ -440,23 +438,21 @@ C y-component
                      CALL DZERO(WRK(KUTRX),N2ORBX)
 
                        IF (INTDIR) THEN
-c                          IF (FIRST1) THEN
-                            CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),
-     &                              WRK(KUCMO),WRK(KLAST),NBAST,NORBT)
-c                          ENDIF
+                          CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),
+     &                            WRK(KUCMO),WRK(KLAST),NBAST,NORBT)
                        ELSE
                           CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
                           CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
      &                              WRK(KWRK),NBAST,NORBT)
                        ENDIF
-c                       IF (FIRST1) THEN
                          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                       IF (FIRST1) THEN
                          CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                          FACy = FAC * QM3QLM(WRK(KUTRX))
-c                         WRK(KYEDIP+LM-1) = FACy
-c                       ELSE
-c                         FACy = WRK(KYEDIP+LM-1)
-c                       ENDIF
+                         WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1) = FACy
+                       ELSE
+                         FACy = WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1)
+                       ENDIF
                      IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
                         TEMP = 0.0D0
                         DO 524 IPCM = 1, NTS
@@ -484,23 +480,21 @@ C z-component
                      CALL DZERO(WRK(KUTRX),N2ORBX)
                      
                        IF (INTDIR) THEN
-c                          IF (FIRST1) THEN
-                            CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),
-     &                           WRK(KUCMO),WRK(KLAST),NBAST,NORBT)
-c                          ENDIF
+                          CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),
+     &                         WRK(KUCMO),WRK(KLAST),NBAST,NORBT)
                        ELSE
                           CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
                           CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
      &                         WRK(KWRK),NBAST,NORBT)
                        ENDIF
-c                       IF (FIRST1) THEN
                          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                       IF (FIRST1) THEN
                          CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
                          FACz = FAC * QM3QLM(WRK(KUTRX))
-c                         WRK(KZEDIP+LM-1) = FACz
-c                       ELSE
-c                         FACz = WRK(KZEDIP+LM-1)
-c                       ENDIF 
+                         WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1) = FACz
+                       ELSE
+                         FACz = WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1)
+                       ENDIF 
                      IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
                         TEMP = 0.0D0
                         DO 525 IPCM = 1, NTS
@@ -516,7 +510,7 @@ c                       ENDIF
                            TEMP = TEMP
      &                      + QPCMNOW*(CORD(3,IATNOW)-ZPCMNOW)*DISTM3
  525                    CONTINUE
-                        FACz = FACz + FAC * TEMP
+                        FACz = FACz + FAC*TEMP
                      ENDIF
                      CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
                      IF (MMPCM) WRK(KZDIP+LM-1)  = -FACz
@@ -540,22 +534,21 @@ C
 
  200  CONTINUE
 
-c         IF (MMPCM .AND. FIRST1) THEN
-c           KL = 0
-c           DO 819 IOSIM = 1,NOSIM
-c             DO 818 L = 1,NCOMS
-cc                write(mfile,*) 'TTT'
-c               WRITE(MFILE,'(3(E25.15,2x))')
-c     &              WRK(KXEDIP+KL*NCOMS+L-1),
-c     &              WRK(KYEDIP+KL*NCOMS+L-1),
-c     &              WRK(KZEDIP+KL*NCOMS+L-1)
-c 818         CONTINUE
-c             KL=KL+1
-c 819       CONTINUE
-c        ENDIF
+         IF (MMPCM .AND. FIRST1) THEN
+           KL = 0
+           DO 819 IOSIM = 1,NOSIM
+             DO 818 L = 1,NCOMS
+               WRITE(MFILE,'(3(E25.15,2x))')
+     &              WRK(KXEDIP+KL*NCOMS+L-1),
+     &              WRK(KYEDIP+KL*NCOMS+L-1),
+     &              WRK(KZEDIP+KL*NCOMS+L-1)
+ 818         CONTINUE
+             KL=KL+1
+ 819       CONTINUE
+        ENDIF
 
 
-c      IF (MMPCM) CALL GPCLOSE(MFILE,'KEEP')
+      IF (MMPCM) CALL GPCLOSE(MFILE,'KEEP')
       IF ( (MMPCM) .AND. (.NOT.FIRST1) ) CALL GPCLOSE(KFILE,'KEEP')
       IF (MMPCM) CALL GPCLOSE(LFILE,'KEEP')
 
@@ -574,7 +567,7 @@ c      IF (MMPCM) CALL GPCLOSE(MFILE,'KEEP')
      &             WRK(KZDIP+L-1)*WRK(KZDIP+L-1)         
  821    CONTINUE
 
-        IF (ABS((DIPDOT - DMMSAVE)) .LT. 1.0D-12) THEN ! to be replaced by input keyword !
+        IF (ABS((DIPDOT - DMMSAVE)) .LT. THRSMP) THEN 
           LADDMM = .TRUE.
         ELSE
           LADDMM = .FALSE.
