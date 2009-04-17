@@ -567,8 +567,8 @@ C        ----------------------------------------------
                NEWSTR = .FALSE.
                WRITE(LUPRI,'(A,I3,A,I3,A)') ' Vector nr.',ILSTNR,
      &         ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
-               WRITE(LUPRI,'(3A)') ' Start vector is a ',
-     &         MODEL//LIST(1:LEN_LIST),' vector'
+               WRITE(LUPRI,'(4A)') ' Start vector is a ',
+     &         MODEL,LIST(1:LEN_LIST),' vector'
             ENDIF
          ENDIF
 C
