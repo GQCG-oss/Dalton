@@ -85,7 +85,7 @@ c      DATA    FIRST /.TRUE./
       IF (.NOT. MMPCM) LADDMM = .TRUE.
 
       IF (MMPCM) THEN
-
+         print *,'arnfinn rspqm3'
         IF (FIRST1) THEN
 C         This is a new iteration and we need to delete old interface
 C         files between mm/pcm
@@ -98,6 +98,7 @@ C         1) The MM_TO_PCM file
             CALL GPCLOSE(LFILE,'DELETE')
           ENDIF 
 C         2) do the same for the PCM_TO_MM file
+          print *,'arnfinn3 rspqm3'
           INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
           IF (FILE_EXIST) THEN
             KFILE = -1
@@ -122,9 +123,11 @@ C         3)  and to the file holding the electronic transformed moments (MM)
         ELSE 
 C         open the file for PCM_TO_MM data
           KFILE = -1
+          print *,'arnfinn1 rspqm3'
           CALL GPOPEN(KFILE,'QFQM3','OLD',' ','FORMATTED',IDUMMY,
      &                .FALSE.)
                REWIND(KFILE)
+          print *,'arnfinn2 rspqm3'
           MFILE = -1
           CALL GPOPEN(MFILE,'QM3TMR','OLD',' ','FORMATTED',IDUMMY,
      &                .FALSE.)

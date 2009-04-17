@@ -427,6 +427,7 @@ C
 C     Arnfinn Nov. -08 ->
 C     Read the value of NOSIM and NCOMS from the QM3 calculations 
 C     (from the file MYFPCM).
+      IF (.NOT. MMPCM) LADDMM = .TRUE.
       IF (MMPCM) THEN
          INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
          IF (FILE_EXIST) THEN
@@ -492,8 +493,7 @@ C Allocate memory and read coordinats and dipole moments (\mu^{[-1]}) from MM
 
          KMMCOR = KW30
          KMMDIP = KMMCOR + NOSIMMM * 3 * NCOMS
-         KSTATE = KMMDIP + NOSIMMM * 3 * NCOMS
-         KW30   = KSTATE + NOSIMMM
+         KW30   = KMMDIP + NOSIMMM * 3 * NCOMS
 
          CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
          CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
@@ -510,15 +510,6 @@ C Allocate memory and read coordinats and dipole moments (\mu^{[-1]}) from MM
      &                 WRK(KMMDIP + 3 * ( L - 1 )     ),
      &                 WRK(KMMDIP + 3 * ( L - 1 ) + 1 ),
      &                 WRK(KMMDIP + 3 * ( L - 1 ) + 2 )
-Clf                  Write(lupri,*) 'transformed dipoles in rspief',
-Clf     &                 l, j, i, ncoms, nosimm
-Clf                  WRITE(LUPRI,'(6(E25.15,2x))') 
-Clf     &                 WRK(KMMCOR + 3 * ( L - 1 )     ),
-Clf     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 1 ),
-Clf     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 2 ),
-Clf     &                 WRK(KMMDIP + 3 * ( L - 1 )     ),
-Clf     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 1 ),
-Clf     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 2 )
                ENDDO
             ENDDO
             CALL GPCLOSE(LQM3PCM,'KEEP')
@@ -779,8 +770,6 @@ C Make the file QFQM3 with charges for use by QM3 response calculations
      &               IDUMMY,.FALSE.)
          WRITE (LPCMQM3,*) NOSIMMM, NTS
          DO I = 1, NOSIMMM
-            NSTATE = INT(WRK(KSTATE+I-1))
-            WRITE (LPCMQM3,*) NSTATE
             DO ITS = 1, NTS
 C luca this will not work with more than one perturbation 
 C (see above for how WRK(KQNMM) is created)
@@ -792,6 +781,7 @@ C (see above for how WRK(KQNMM) is created)
             ENDDO
          ENDDO
          CALL GPCLOSE(LPCMQM3,'KEEP')
+         print *,'arnfinn1 rspief'
       ENDIF
 C <- Arnfinn
 C
@@ -883,10 +873,10 @@ C    *              RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
          END IF
       END IF
 C \sigma_{oo} = <0|[q_j,\tilde{Z}]|0> 
-Clf      IF (MMPCM .AND. .NOT. LADDMM) THEN
-Clf        CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
-Clf        IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
-Clf      ENDIF
+      IF (.NOT. LADDMM) THEN
+         CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
+         IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
+      ENDIF
 
       IF(TRPLET) THEN
          CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KPCMX))

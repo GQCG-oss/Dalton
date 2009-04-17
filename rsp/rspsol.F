@@ -341,13 +341,13 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &                 WRK(KFREE),LFREE)           
-           FIRST1 = .FALSE.
-         ENDDO
-         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
+           CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
      &        INDXCI,
      &        UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &        WRK(KDVT),WRK(KDVTTR),
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+           FIRST1 = .FALSE.
+         ENDDO
       ENDIF
 
       IF (FLAG(16)) THEN
