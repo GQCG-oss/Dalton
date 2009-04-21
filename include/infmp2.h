@@ -6,8 +6,8 @@ C
 C     Off-set to (bj) block of kappa(ai,bj) is IADR1(B,J), which is calculated when needed.
 C
       PARAMETER (MAXVIR = MXCORB)
-      LOGICAL MP2FRO, SOSMP2, SCSMP2, TDAMP2
+      LOGICAL MP2FRO, SOSMP2, SCSMP2, TDAMP2, MP2_NO_OV
       COMMON /INFMP2/ IPRMP2, NFRMP2(8), NPHSYM(8), NPHMAX, NP, NH,
      &        IPHORD(MXCORB), INDXPH(MXCORB), IFRMP2(MXCORB), NPHTOT(8),
-     &        MP2FRO, SOSMP2, SCSMP2, TDAMP2
+     &        MP2FRO, SOSMP2, SCSMP2, TDAMP2, MP2_NO_OV
 C  -- end of infmp2.h --
