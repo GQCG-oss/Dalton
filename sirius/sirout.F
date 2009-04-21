@@ -586,13 +586,13 @@ C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
          CALL MEMREL('SIROUT.PRWF',WRK,KFRSAV,KCINDX,KFREE,LFREE)
       END IF
   110 CONTINUE
- 1050 FORMAT(//' Printout of CI-coefficients larger than',F8.5,
-     *         ' for root',I3,/)
- 1051 FORMAT(' (this is the reference state)'/)
- 1052 FORMAT(' (this is the CI reference state)'/)
+ 1050 FORMAT(/' Printout of CI-coefficients abs greater than',F8.5,
+     *         ' for root',I3)
+ 1051 FORMAT(' *** NOTE: this root is the reference state ***')
+ 1052 FORMAT(' *** NOTE: this root is the CI reference state ***')
  1077 FORMAT(/' *** SIROUT, Wave function not printed as requested',
      *  /,15X,'Reason: insufficient work memory space',
-     *  /,15X,'need more than',I10,' additional real*8 work space')
+     *  /,15X,'need more than',I12,' additional real*8 work space')
 C
 C If FLAG(18):
 C punch final orbitals (and, if FLAG(3): call sircan, also
