@@ -65,7 +65,7 @@ C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007, Hans Joergen Aa. Jensen
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 2)
+      PARAMETER (NTABLE = 3)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -80,7 +80,7 @@ C
 #include <inforb.h>
 #include <infmp2.h>
 C
-      DATA TABLE /'.MP2 FR','.PRINT '/
+      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV '/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 CMAERKE 900918: always NEWORB in this version.
 C
@@ -95,7 +95,7 @@ C
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102), II
+                  GO TO (101,102,103), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -109,7 +109,7 @@ C
          ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
+            GO TO 2000
          ELSE
             WRITE (LUPRI,'(/3A/2A/)')
      *         ' Keyword ',WORD,' does not begin with',
@@ -126,6 +126,14 @@ C
 C *** Option 2 >PRINT <  General print level in MP2
   102 READ(LUCMD,*) IPRMP2
       GO TO 100
+C
+C *** Option 3 >NO OV <  Do not add occ-virt mp2 part to density matrix
+  103 MP2_NO_OV = .TRUE.
+      GO TO 100
+C
+ 2000 CONTINUE
+      IF (MP2_NO_OV) WRITE(LUPRI,'(/A)')
+     &  ' Occ-virt block of MP2 density matrix ignored'
 C
       END
 C  /* Deck mp2ctl */
@@ -173,7 +181,7 @@ C
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(TIMMP2,DUMMY)
-      IF (IPRMP2 .GT. 0) WRITE (LUPRI,'(//A//A/A)')
+      IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' >>>>> Output from SIRIUS MP2 module <<<<<'
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
@@ -219,12 +227,20 @@ cmjp If response calculation then make space for the correlation coefficients.
          USEDRC = .TRUE.
       ELSE
          CALL MEMGET('REAL',KKAPPA,0,WRK,KFREE,LFREE)
-         JTRLVL = 5
+         IF (MP2_NO_OV) THEN
+C           2. order integral transformation (ir/js)
+            JTRLVL = 4
+         ELSE
+C           3. order integral transformation (ir/st)
+C           (needed for occ-virt block of density matrix)
+            JTRLVL = 5
+         END IF
       ENDIF
 C
 C
 C     PERFORM INTEGRAL TRANSFORMATION
-C     JTRLVL =  5 : code for MP2 transformation.
+C     JTRLVL =  4 : code for 2. order transformation for MP2 with MP2_NO_OV.
+C     JTRLVL =  5 : code for 3. order transformation for MP2 density matrix.
 C     JTRLVL = 10 : code for full transformation if SOPPA response follows.
 C     JTRLVL negative: delete AO integral file after transformation.
 C
@@ -321,7 +337,9 @@ C
          CALL OUTPUT(WRK(KDONE),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
-      IF (IPRMP2 .GE. 1) THEN
+      IF (IPRMP2 .GE. 0) THEN
+         IF (MP2_NO_OV) WRITE(LUPRI,'(/A)')
+     &      ' Occ-virt block of MP2 density matrix ignored.'
          IF (MP2FRZ) THEN
             WRITE (LUPRI,'(/A,8I5)')
      *      ' MP2 frozen orbitals per symmetry :',(NFRMP2(I),I=1,NSYM)
@@ -345,7 +363,7 @@ C
       END IF
       ECORR = EMY + EMP2
 C
-C     write the correlation coefficients and second order one-density to
+C     Write the correlation coefficients and second order one-density to
 C     the interface file LUSIFC
 C
       IF (FLAG(25)) THEN
@@ -642,6 +660,8 @@ C
 C   DONE(A,M) = (A,D)*[M,D]
 C   DONE(M,N) = (N,D)*[M,D]
 C
+C TODO: if (MP2_NO_OV) then occ-virt in DONE not needed in DGEMM calls below /Apr09
+C
       DO 1000 ISSYM = 1,NSYM
 
          NORBI = NORB(ISSYM)
@@ -715,16 +735,23 @@ C
          NRHFI = NRHF(ISYM)
          NORBI = NORB(ISYM)
          DO 1600 I = (IORBI+1),(IORBI+NRHFI)
-            DO 1700 J = (IORBI+1+NRHFI),(IORBI+NORBI)
-               DONE(J,I) = ( DONE(J,I) - DONE(I,J))/(ORBEN(I)-ORBEN(J) )
-               DONE(I,J) = DONE(J,I)
- 1700       CONTINUE
-            DO 1800 J = (IORBI+1),(IORBI+NRHFI)
+            DO J = (IORBI+1),(IORBI+NRHFI)
                DONE(J,I) = -DONE(J,I)
- 1800       CONTINUE
+            END DO
+            IF (MP2_NO_OV) THEN
+               DO J = (IORBI+1+NRHFI),(IORBI+NORBI)
+                  DONE(J,I) = D0
+                  DONE(I,J) = D0
+               END DO
+            ELSE
+               DO J = (IORBI+1+NRHFI),(IORBI+NORBI)
+                  DONE(J,I) = (DONE(J,I)-DONE(I,J))/(ORBEN(I)-ORBEN(J))
+                  DONE(I,J) = DONE(J,I)
+               END DO
+            END IF
             ELERMV = ELERMV - DONE(I,I)
 C
-C           ADD ZERO'TH ORDER CONTRIBUTION
+C           Add zero'th order contribution
 C
             DONE(I,I) = D2 + DONE(I,I)
  1600    CONTINUE
