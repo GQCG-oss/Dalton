@@ -558,6 +558,10 @@ C
          LUSUPM = -9999
       END IF
 C
+C********** Default values section MP2INP *****
+C
+      MP2_NO_OV = .FALSE.
+C
 C********** Default values section DFTINP *****
 C
       CALL DFTINI
