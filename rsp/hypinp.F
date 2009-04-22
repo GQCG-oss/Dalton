@@ -648,7 +648,7 @@ C
                      READ (LUCMD,*) (BSMFR(J),J=1,NBSMFR)
                   ELSE
                      WRITE (LUPRI,'(3(/,A,I5),/)')
-     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBSMFR,
+     *               ' NUMBER OF B FREQUENCIES SPECIFIED  :',NBSMFR,
      *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBSMFR,
      *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBSMFR
                      READ (LUCMD,*) (BSMFR(J),J=1,MBSMFR),
@@ -838,16 +838,16 @@ C photons match the excitation. At this point we set the frequencies
 C to dummy values, later they become half of the excitation energies.
 C
       IF (TWOPHO) THEN
-         NBSMFR = ISUM(NSYM,NSMCNV,1)
-         IF (NBSMFR .EQ. 0) THEN
+         NSMCNV_TOT = ISUM(NSYM,NSMCNV,1)
+         IF (NSMCNV_TOT .EQ. 0) THEN
             WRITE (LUPRI,'(/2A)')
-     *      ' Input ignored because no excited states specified.',
-     *      ' Use the .ROOTS keyword.'
-            WRITE(LUPRI,'(/A)') ' <<<<<<< End of DALTON >>>>>>>'
-            CALL QUIT('***** End of DALTON *****')
+     * ' Two-photon input ignored because no excited states specified.',
+     * ' Use the .ROOTS keyword.'
+            CALL QUIT('***** Input error for two-photon *****')
          END IF
+         NBSMFR = NSMCNV_TOT
          DO J=1,NBSMFR
-            BSMFR(J)=1.0D0
+            BSMFR(J)=-1.0D0
          END DO
       END IF
 C
@@ -872,13 +872,15 @@ C
      &      ' - no B frequencies requested, NBSMFR =',NBSMFR
       ELSE IF (SOMOM) THEN
          CALL HEADER('Quadratic Response single residue calculation',0)
+         WRITE(LUPRI,'(A)')
+     &   ' That is, calculation of second order moments.'
          IF (PHOSPH) THEN
-           WRITE(LUPRI,'(/A)') ' Phosporescence calculation requested'//
-     &       ' with full spin-orbit operator.'
+           WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
+     &     //' with full spin-orbit operator.'
          END IF
          IF (MNFPHO) THEN
-           WRITE(LUPRI,'(/A)') ' Phosporescence calculation requested'//
-     &       ' with atomic mean-field spin-orbit operator (AMFI).'
+           WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
+     &     //' with atomic mean-field spin-orbit operator (AMFI).'
          END IF
          IF (PHOSPH .OR. MNFPHO) THEN
             IF (JSPABC .GT. 0 .AND. ISPINA .NE. 0 .AND.
@@ -887,7 +889,7 @@ C
                WRITE (LUPRI,'(/A/A,3I4/A)')
      &         ' WARNING : inconsistent phosphorescence input as',
      &         ' .ISPABC has been specified with',ISPINA,ISPINB,ISPINC,
-     &         ' .ISPABC has been reset to         0   1   1'
+     &         ' .ISPABC is reset to               0   1   1'
             END IF
             ISPINA = 0
             ISPINB = 1
@@ -910,9 +912,12 @@ C
             END IF
          END IF
          IF (TWOPHO) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Two-photon transition process computed         : TWOPHO ='
-     *      ,TWOPHO
+            WRITE(LUPRI,'(/A/A)')
+     &      ' Two-photon transition processes computed (.TWO-PHOTON).',
+     &      ' Both photon frequencies are half the excitation energy.'
+         ELSE
+            WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
+     *      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
          END IF
          WRITE (LUPRI,'(/A,I5)') ' Spin of operator A , ISPINA=',ISPINA
          WRITE (LUPRI,'( A,I5)') ' Spin of operator B , ISPINB=',ISPINB
@@ -922,8 +927,6 @@ C
             TRPLET = .TRUE.
             TRPFLG = .TRUE.
          END IF
-         WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
-     *      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A,L2,/)')
      *      ' Equilibrium solvent model requested            : SOLVNT ='
@@ -1181,8 +1184,9 @@ C
 #include <infpri.h>
 #include <infspi.h>
 C
-C If two-photon calculation is specified we only compute a restricted 
-C number of response vectors.
+C If two-photon calculation and .BFREQ is not specified
+C we only compute a restricted number of response vectors
+C corresponding to BFREQ=CFREQ=EXCITA/2.
 C
       IF (TWOPHO) THEN
          NBSMFR = 0
