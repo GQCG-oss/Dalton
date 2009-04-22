@@ -311,7 +311,6 @@ C
       IF (QM3 .AND. (.NOT. MMPCM)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
-C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
          IF (NODTOT .GE. 1) THEN
             CALL QM3LNO_P(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
@@ -330,8 +329,6 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-         print *, 'out of pcmltr', lfree
-         CALL QUIT('stop here for the time being')
       ENDIF
 
       IF (MMPCM) THEN
@@ -339,30 +336,32 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
          DMMSAVE = 0.0D0
          FIRST1 = .TRUE.
          DO WHILE (.NOT. LADDMM)
-           CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &                 WRK(KFREE),LFREE)           
-           IF (FIRST1) THEN
-              VSE1FLG = -1
-              QSE1FLG = -1
-              CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
+            IF (FIRST1) THEN
+               VSE1FLG = -1
+               QSE1FLG = -1
+               CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
      &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
-              CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
-           END IF
-           VSMM1FLG = -1
-           QSMM1FLG = -1
-           CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, 
+               CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
+            END IF
+            VSMM1FLG = -1
+            QSMM1FLG = -1
+            CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, 
      &                       IDUMMY, IDUMMY, WRK(KFREE), LFREE)
-           CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
-           FIRST1 = .FALSE.
-           CALL QUIT('stop here for the time being')
+            CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
+            NOSIMMM = NOSIM
+            CALL PCM_WRITE_PCM2MM(NOSIMMM,NTS,XTSCOR,YTSCOR,ZTSCOR,
+     &                           QSE1,QSMM1)
+            FIRST1 = .FALSE.
          ENDDO
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
      &        INDXCI,
      &        UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &        WRK(KDVT),WRK(KDVTTR),
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-           FIRST1 = .FALSE.
+         FIRST1 = .FALSE.
       ENDIF
 
       IF (FLAG(16)) THEN

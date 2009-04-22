@@ -128,7 +128,7 @@ C   If they are not, then are properly stored
 C   if they are, then are set to zero
 C     
       IF (NPCMMT.GE.2) THEN
-         write(lupri,*) 'npcmmt grater than 1'
+         write(lupri,*) 'npcmmt greater than 1'
          DO LSYM =0, MAXREP
             LSTART = NTSIRR * LSYM
             DO JTS = 1,NTSIRR
@@ -1065,7 +1065,6 @@ C
          CALL COMP_CHG(QSMM,VSMM,QTOT,QSMMFLG,WRK,LWRK)
       ENDIF
       IF (QSMM1FLG.EQ.-1.AND.VSMM1FLG.EQ.1) THEN
-         print *, 'qsmm1flg',qsmm1flg, vsmm1flg
          CALL COMP_CHG(QSMM1,VSMM1,QTOT,QSMM1FLG,WRK,LWRK)
       ENDIF
       IF (QSE1FLG.EQ.-1.AND.VSE1FLG.EQ.1) THEN
@@ -1082,7 +1081,7 @@ C
       SUBROUTINE COMP_CHG(CHG, POTEN, QET, DO_FLAG, WRK, LWRK)
 C
 C Arnfinn, April 2009, Odense
-C Calculate charge on tesserae from potential, if necessary. 
+C Calculate charges on tesseraes from potentials on tesseraes.
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -1095,7 +1094,6 @@ C
 
       IF ((DO_FLAG .NE. -1) .AND. (DO_FLAG .NE. 1) 
      &                      .AND. (DO_FLAG .NE. 0)) THEN
-         print *, 'do_flag', do_flag
          CALL QUIT('Something wrong in COMP_CHG. Wrong value of flag')
       ENDIF
 
@@ -1115,7 +1113,7 @@ C
 C /* Deck j1x */
 C
       SUBROUTINE J1X(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,
-     &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
+     &                TOFILE,JWOPSY,WORK,LWORK)
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -1125,7 +1123,7 @@ C
 #include "pcmdef.h"
 #include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
-      LOGICAL TOFILE, EXP1VL, TRIMAT, TRPLET
+      LOGICAL TOFILE, EXP1VL, TRIMAT
       CHARACTER*8 LABINT(3*MXCOOR)
       DIMENSION WORK(LWORK)
 C
@@ -1140,13 +1138,11 @@ C
 #include "orgcom.h"
 #include "symmet.h"
 #include "wrkrsp.h"
+#include "infrsp.h"
+
       NDIMZ = MAX(N2ORBX,NTS)
-      write(lupri,*) 'UBO',(ubo(i),i=1,n2orbx)
-      print *, 'in j1x', nosim, n2orbx, nts, ndimz, lwork
       CALL DZERO(WORK,NOSIM*NDIMZ)
-      write(lupri,*) 'UBO2',(ubo(i),i=1,n2orbx)
       CALL DZERO(VTEX,NTS*NOSIM)
-      write(lupri,*) 'UBO3',(ubo(i),i=1,n2orbx)
       IPRPCM = IPRTMP
       KINTRP = 1
       KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
@@ -1162,19 +1158,13 @@ C
       KPCMX  = KUBO   + N2ORBX*NOSIM
       KLAST  = KPCMX  + N2ORBX*NOSIM
       LWRK   = LWORK - KLAST + 1
-      write(lupri,*) 'jubo after mem alloc',jubo,norbt
-      write(lupri,*) (ubo(i), i=1,n2orbx)
 C
 C     Loop over tesseraes to be calculated on this node
 C
-      print *, 'after mem alloc'
       CALL DZERO(WORK(KPCMX),NOSIM*N2ORBX)
       CALL DZERO(WORK(KEXPVL),NOSIM*NTSIRR*(MAXREP + 1))
 
       JUBO = 1
-      write(lupri,*) 'jubo',jubo,norbt
-      write(lupri,*) (ubo(i), i=1,n2orbx)
-      CALL OUTPUT(UBO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 
       DIPX = DIPORG(1)
       DIPY = DIPORG(2)
@@ -1190,9 +1180,6 @@ C
          KPATOM    = 0
          TRIMAT    = .TRUE.
 
-         WRITE(LUPRI,*) 'CAB some parameters', ncomp,l,kpatom,iprpcm
-         WRITE(LUPRI,*) 'CAB some parameters', tofile,trimat,exp1vl
-         CALL OUTPUT(UCMO,1,NORBT,1,NBAST,NORBT,NBAST,1,LUPRI)
          CALL GET1IN(WORK(KJ1AO),'NPETES ',NCOMP,WORK(KLAST),LWRK,
      &               LABINT,WORK(KINTRP),WORK(KINTAD),L,TOFILE,KPATOM,
      &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRPCM)
@@ -1200,12 +1187,8 @@ C
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
          CALL UTHU(WORK(JJ1AO),WORK(KJ1),UCMO,WORK(KLAST),
      *             NBAST,NORBT)
-         write(lupri,*) 'CAB KJ1'
-         CALL OUTPAK(WORK(KJ1),NORBT,1,LUPRI)         
 C Transform V(MO) from triangular to square format
          CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
-         write(lupri,*) 'CAB KJ1SQ'
-         CALL OUTPUT(WORK(KJ1SQ),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
          DO IOSIM = 1, NOSIM
             JUBO = 1 + (IOSIM - 1) * N2ORBX
@@ -1215,8 +1198,7 @@ C Transform V(MO) from triangular to square format
             CALL ONEXH1(UBO(JUBO),WORK(KJ1SQ),WORK(JJ1X))
 C     
             IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
-Clf            IF (IPRRSP .GE. 15) THEN
-            IF (.true.) THEN
+            IF (IPRRSP .GE. 15) THEN
                WRITE (LUPRI,'(/A,I5)') 'J1X_mo matrix tess:',I
                CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
@@ -1240,8 +1222,7 @@ C
                END IF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+I-1
                VTEX(I,1) = FACTOR
-Clf               IF (IPRRSP .GE. 6) THEN
-               IF (.true.) THEN
+               IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
                   WRITE (LUPRI,'(A,F17.8)')
@@ -1294,7 +1275,6 @@ C
                ENDIF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+JTS-1
                VTEX(JTS,IOSIM) = FACTOR
-               print *,'factor', jts,factor
                IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)

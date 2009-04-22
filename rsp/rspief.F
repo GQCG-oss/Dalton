@@ -33,33 +33,30 @@ Clara         IF (IPRRSP.GT.101) THEN
             WRITE(LUPRI,*)' **** BEFORE IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
-C         write (lupri,*) 'lara bef. IEFLNC'
          CALL IEFLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
-         IF (IPRRSP.GT.101) THEN
-Clf         IF (.true.) THEN
+Clara         IF (IPRRSP.GT.101) THEN
+         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
       END IF
       IF ( NOSIM .GT.0 ) THEN
-C         IF (IPRRSP.GT.101) THEN
-         IF (.true.) THEN
-             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-             WRITE(LUPRI,*)' **** BEFORE IEFLNO **** ',kzyvar,nosim
-             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
-          END IF
-C         PRINT *, 'lara bef. IEFLNO'
+         IF (IPRRSP.GT.101) THEN
+C         IF (.true.) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE IEFLNO **** ',kzyvar,nosim
+            CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
          CALL IEFLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
-C         PRINT *, 'lara aft. IEFLNO'
-C         IF (IPRRSP.GT.101) THEN
-         IF (.true.) THEN
-             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-             WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
-             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
-          END IF
+         IF (IPRRSP.GT.101) THEN
+C         IF (.true.) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
+            CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
       END IF
       IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMLTR')
@@ -289,8 +286,8 @@ clara
          WRK(KEXBAC - 1 + ICSIM) = XBAC
       END DO
 C
-      IF (.true.) THEN 
-clara      IF (IPRRSP.GT.101) THEN
+C      IF (.true.) THEN 
+      IF (IPRRSP.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** BEFORE SLVSC in IEFLNC **** '
          CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -301,8 +298,8 @@ C
 C     CALL SLVSC(NCSIM,NOSIM,NNASHX,BCVECS,CREF,SVECS,
 C    *           RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
 C
-      IF (.true.) THEN 
-Clara      IF (IPRRSP.GT.101) THEN
+C      IF (.true.) THEN 
+      IF (IPRRSP.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** AFTER SLVSC in IEFLNC **** '
          CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -424,29 +421,7 @@ C
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 C
-C     Arnfinn Nov. -08 ->
-C     Read the value of NOSIM and NCOMS from the QM3 calculations 
-C     (from the file MYFPCM).
       IF (.NOT. MMPCM) LADDMM = .TRUE.
-      IF (MMPCM) THEN
-         INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
-         IF (FILE_EXIST) THEN
-            LQM3PCM = -1
-            CALL GPOPEN(LQM3PCM,'MYFPCM','OLD',' ','FORMATTED ',IDUMMY,
-     &                  .FALSE.)
-            REWIND(LQM3PCM)
-            READ(LQM3PCM,*) NOSIMMM,NCOMS
-Cahs         ELSE
-Cahs            CALL QUIT('There is no input from QM/MM response 
-Cahs     &                to PCM response')
-         ENDIF
-      ENDIF
-
-      IF (MMPCM .AND. NOSIMMM .NE. NOSIM) THEN
-        CALL QUIT('NOSIM error in MM/PM interface IEF')
-      ENDIF
-C <- Arnfinn
-
 C
 C     Core allocation
 C
@@ -487,48 +462,14 @@ C
       ELSE
          KW30    = KJ1XAC   + NOSIM * N2ASHX
       ENDIF
-C Arnfinn Nov. -08 ->
-C Allocate memory and read coordinats and dipole moments (\mu^{[-1]}) from MM
-      IF(MMPCM) THEN
-
-         KMMCOR = KW30
-         KMMDIP = KMMCOR + NOSIMMM * 3 * NCOMS
-         KW30   = KMMDIP + NOSIMMM * 3 * NCOMS
-
-         CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
-         CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
-
-         IF (FILE_EXIST) THEN
-            L = 0
-            DO I = 1,NOSIMMM
-               DO J = 1, NCOMS
-                  L = L + 1
-                  READ(LQM3PCM,'(6(E25.15,2x))') 
-     &                 WRK(KMMCOR + 3 * ( L - 1 )     ),
-     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 1 ),
-     &                 WRK(KMMCOR + 3 * ( L - 1 ) + 2 ),
-     &                 WRK(KMMDIP + 3 * ( L - 1 )     ),
-     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 1 ),
-     &                 WRK(KMMDIP + 3 * ( L - 1 ) + 2 )
-               ENDDO
-            ENDDO
-            CALL GPCLOSE(LQM3PCM,'KEEP')
-         ELSE
-            CALL DZERO(WRK(KMMCOR),NOSIMMM*3*NCOMS)
-            CALL DZERO(WRK(KMMDIP),NOSIMMM*3*NCOMS)
-         ENDIF
-      ENDIF
-
-C <- Arnfinn
 C
 C     3.0 SOLSC
       KOVLP = KW30
-      KW49   = KOVLP  + NOSIM
-      LW49   = LFREE  + 1 - KW49
+      KW50   = KOVLP  + NOSIM
+      LW50   = LFREE  + 1 - KW50
 C
-      KNEED = MAX(KW30,KW49)
+      KNEED = MAX(KW30,KW50)
       IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
-      print *, 'lfree', lfree
 C
 C     Unpack symmetry blocked CMO
 C
@@ -539,8 +480,7 @@ C
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
-Clf         IF (IPRRSP .GE. 55) THEN
-         IF (.true.) THEN
+         IF (IPRRSP .GE. 55) THEN
             DO 210 IOSIM = 1,NOSIM
                JUBO = KUBO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,2110) IOSIM,NOSIM
@@ -568,31 +508,6 @@ C
      &             WRK(KW49),LW49)
       ELSE
 #endif
-C Arnfinn Nov. -08 ->
-C Convert MM dipole moments to potentials
-      IF (MMPCM) THEN
-         KMMPOT = KW49
-         KQNMM  = KMMPOT + NTSIRR
-         KQMAT  = KQNMM + NTSIRR * NOSIMMM
-         KW50   = KQMAT + NTS * NTSIRR
-         LW50   = LFREE + 1 - KW50
-         KNEED  = MAX(KW49,KW50)
-         IF (KNEED .GT. LFREE) CALL ERRWRK('IEFLNO',KNEED,LFREE)
-
-         CALL DZERO(WRK(KMMPOT),NTSIRR)
-         CALL DZERO(WRK(KQNMM),NTSIRR*NOSIMMM)
-         CALL DZERO(WRK(KQMAT),NTS*NTSIRR)
-C
-C false false true makes potential from dipole moments only
-         CALL COMP_NUC_POT_CAV_MM(WRK(KMMPOT),.FALSE.,.FALSE.,
-     &         .TRUE.,WRK(KMMCOR),WRK(KMMDIP),NOSIMMM)
-C Convert potentials to charges, q
-         CALL V2Q(WRK(KW50),WRK(KMMPOT),WRK(KQNMM),QNMMT,.FALSE.)
-      ELSE
-         LW50 = LW49
-         KW50 = KW49
-      ENDIF
-C <- Arnfinn
       DO I = 1, NTSIRR
 C Read AO potential integrals on tesserae
          L = 1
@@ -604,21 +519,14 @@ C Read AO potential integrals on tesserae
          TOFILE    = .FALSE.
          KPATOM    = 0
          TRIMAT    = .TRUE.
-         write (lupri,*) 'ABC some parameters', ncomp,l,kpatom,iprrsp
-         WRITE(LUPRI,*) 'ABC some parameters', tofile,trimat,exp1vl
-         CALL OUTPUT(WRK(KUCMO),1,NORBT,1,NBAST,NORBT,NBAST,1,LUPRI)
          CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KW50),LW50,
      &               LABINT,WRK(KINTRP),WRK(KINTAD),L,TOFILE,KPATOM,
      &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
          JJ1AO = KJ1AO
          CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *             NBAST,NORBT)
-         write(lupri,*) 'ABC KJ1'
-         CALL OUTPAK(WRK(KJ1),NORBT,1,LUPRI)         
 C Transform V(MO) from triangular to square format
          CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
-         write(lupri,*) 'ABC KJ1SQ'
-         CALL OUTPUT(WRK(KJ1SQ),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          CALL DZERO(WRK(KJ1XSQ),N2ORBX*NOSIM)
          DO IOSIM = 1, NOSIM
             JUBO = KUBO + (IOSIM - 1) * N2ORBX
@@ -629,8 +537,7 @@ C
             IF (NASHT .GT. 0) THEN
                CALL GETACQ(WRK(JJ1X),WRK(JJ1XAC))
             END IF
-Clf            IF (IPRRSP .GE. 15) THEN
-            IF (.true.) THEN
+            IF (IPRRSP .GE. 15) THEN
                WRITE (LUPRI,'(/A,I5)') 'J1X_mo matrix: tess',I
                CALL OUTPUT(WRK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
@@ -651,8 +558,7 @@ C
                   FACTOR = SLVQLM(UDV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
                END IF
                WRK(KVTEX + (I-1) + (IOSIM-1)*NTS) = FACTOR
-Clf               IF (IPRRSP .GE. 6) THEN
-               IF (.true.) THEN
+               IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',
      &                 WRK(KVTEX + (I-1) + (IOSIM-1)*NTS)
@@ -725,14 +631,11 @@ C
 C KPCMX: \tilde{J} + \tilde{X}
          END IF
       ENDDO
-      print *, 'pcm potentials'
-      print *, (wrk(kvtex + ii - 1),ii=1,10)
       
 #if defined (VAR_MPI)
       END IF
 #endif
-Clf      IF (IPRRSP .GE. 50) THEN
-      IF (.true.) THEN
+      IF (IPRRSP .GE. 50) THEN
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
@@ -755,35 +658,17 @@ Clf      IF (IPRRSP .GE. 50) THEN
       ENDDO
       CALL GPCLOSE(LUPCMD,'KEEP')
 C
-C Arnfinn Nov. -08 ->
-C Make the file QFQM3 with charges for use by QM3 response calculations
+C     Adds charges from MM induced dipole moments (Arnfinn)
+C 
       IF (MMPCM) THEN
-         INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
-         IF (FILE_EXIST) THEN
-            LPCMQM3 = -1
-            CALL GPOPEN(LPCMQM3,'QFQM3','OLD',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
-            CALL GPCLOSE(LPCMQM3,'DELETE')
-         ENDIF
-         LPCMQM3 = -1
-         CALL GPOPEN(LPCMQM3,'QFQM3','NEW',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
-         WRITE (LPCMQM3,*) NOSIMMM, NTS
-         DO I = 1, NOSIMMM
+         DO I = 1, NOSIM
             DO ITS = 1, NTS
-C luca this will not work with more than one perturbation 
-C (see above for how WRK(KQNMM) is created)
                INDEX = NTS * (I-1) + ITS - 1
                WRK(KQTEX + INDEX) = 
-     &             WRK(KQTEX + INDEX) - 2.0D0 * WRK(KQNMM + INDEX)
-               WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
-     &              ZTSCOR(ITS), WRK(KQTEX + INDEX) 
+     &                 QSMM1(1 + INDEX) + WRK(KQTEX + INDEX)
             ENDDO
          ENDDO
-         CALL GPCLOSE(LPCMQM3,'KEEP')
-         print *,'arnfinn1 rspief'
       ENDIF
-C <- Arnfinn
 C
 C     TRANSFORMED CHARGES MULTIPIED TO POTENTIALS.
 C     There are only one-index-transformed charges for the totally
@@ -817,8 +702,7 @@ C
       DIPORG(2) = YI
       DIPORG(3) = ZI
 C
-Clf      IF (IPRRSP .GE. 50) THEN
-      IF (.true.) THEN
+      IF (IPRRSP .GE. 50) THEN
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
@@ -905,16 +789,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C        ... test print
 C
-Clf      IF (IPRRSP .GE. 140) THEN
-      IF (.true.) THEN
+      IF (IPRRSP .GE. 140) THEN
          WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(ci,1) on exit'
          DO 930 I = 1,KZCONF
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
   930    CONTINUE
       END IF
-Clf      IF (IPRRSP .GE. 140) THEN
-      IF (.true.) THEN
+      IF (IPRRSP .GE. 140) THEN
          WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(SVEC(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
@@ -1020,8 +902,7 @@ C /* Deck pcm_comp_el_pot1 */
       LOGICAL TRPLET, TOFILE
       DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
 
-
-      print *, 'in pcm_comp_el_pot1', nosim, lwork, n2orbx, norbt, nbast
+C      iprrsp = 1
       KUBO = 1
       KUCMO = KUBO + NOSIM * N2ORBX
       KFREE = KUCMO + NORBT * NBAST
@@ -1029,8 +910,6 @@ C /* Deck pcm_comp_el_pot1 */
       IF (LFREE .LT. 0) THEN 
          CALL QUIT('PCM_COMP_EL_POT1: insufficient memory')
       END IF
-      print *, 'll5', nosim, n2orbx, kubo, kucmo, kfree, lfree
-
       CALL UPKCMO(CMO,WORK(KUCMO))      
 
       IF (NOSIM.GT.0) THEN
@@ -1048,14 +927,17 @@ C /* Deck pcm_comp_el_pot1 */
  2110 FORMAT (/,'Orbital trial vector unpacked to matrix form (no.',
      *        I3,' of',I3,')')
 
-      print *, 'll3', nosim
 #if defined (VAR_MPI)
-      CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
+      IF (NODTOT.ge.1) THEN
+         CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
      &          XJ1SQ,XJ1SQT,
      &          .FALSE.,TRPLET,JWOPSY,WORK(KFREE),LFREE)
-#else
+      ELSE
+#endif
       CALL J1X(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
-     &     TOFILE,TRPLET,JWOPSY,WORK(KFREE),LFREE)
+     &         TOFILE,JWOPSY,WORK(KFREE),LFREE)
+#if defined (VAR_MPI)
+      ENDIF
 #endif
       RETURN
       END
@@ -1160,7 +1042,6 @@ C
       DIMENSION WORK(*)
       INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
       IF (FILE_EXIST) THEN
-         print *, 'file exist' 
          LQM3PCM = -1
          CALL GPOPEN(LQM3PCM,'MYFPCM','OLD',' ','FORMATTED ',IDUMMY,
      &        .FALSE.)
@@ -1192,5 +1073,46 @@ C
       ENDDO
       CALL GPCLOSE(LQM3PCM,'KEEP')
       LWORK = LFREE
+      RETURN
+      END
+C
+C /* Deck pcm_write_pcm2mm */
+C
+      SUBROUTINE PCM_WRITE_PCM2MM(NOSIMMM,NTS,XTSCOR,YTSCOR,ZTSCOR,
+     &                            QSE1,QSMM1)
+C     Arnfinn Apr. -09
+C     Make the file QFQM3 with induced charges for use 
+C     by QM3 response calculations.
+#include <implicit.h>
+#include <priunit.h>
+C#include <mxcent.h>
+C#include <pcmdef.h>
+C#include <pcm.h>
+
+      LOGICAL FILE_EXIST
+      DIMENSION XTSCOR(*),YTSCOR(*),ZTSCOR(*),QSE1(*),QSMM1(*)
+
+      INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
+      IF (FILE_EXIST) THEN
+         LPCMQM3 = -1
+         CALL GPOPEN(LPCMQM3,'QFQM3','OLD',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+         CALL GPCLOSE(LPCMQM3,'DELETE')
+      ENDIF
+      LPCMQM3 = -1
+      CALL GPOPEN(LPCMQM3,'QFQM3','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE (LPCMQM3,*) NOSIMMM, NTS
+      DO I = 1, NOSIMMM
+         DO ITS = 1, NTS
+C luca this will not work with more than one perturbation 
+C (see above for how WRK(KQNMM) is created)
+            INDEX = NTS * (I-1) + ITS
+            CHG1 = QSE1(INDEX)+QSMM1(INDEX)
+            WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
+     &             ZTSCOR(ITS), CHG1
+         ENDDO
+      ENDDO
+      CALL GPCLOSE(LPCMQM3,'KEEP')
       RETURN
       END
