@@ -386,7 +386,13 @@ C
 C        Statistics
 C
          IF (INDA .EQ. 0) THEN
-            N2WRIT = LBUF*NBUF + ICOUNT
+C           N2WRIT = LBUF*NBUF + ICOUNT
+C           hjaaj: do all intermediates with integer*8 N2WRIT
+C                  to avoid integer*4 overflows for big basis sets
+            N2WRIT = LBUF
+            N2WRIT = N2WRIT*NBUF
+            N2WRIT = N2WRIT + ICOUNT
+C
             IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
                NBUF = NBUF + 2
             ELSE
@@ -403,7 +409,7 @@ Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
             FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
             PERCNT = N2WRIT
             PERCNT = 100.0D0*PERCNT / FNALL
-            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3//)')
+            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3/)')
      &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'% )',
      &         ' Megabytes written:                       ',FBYTES
@@ -1503,14 +1509,14 @@ C
             NWRIT = NWRIT + NCOUNT(IDIST)
             CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
      &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
-C            CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
-C     &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
+C           CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
+C     &                 NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
 C        HJAaJ Sep08: calculation of PERCNT rewritten, to avoid integer*4 overflows
 C        NALL   = NDIST*(NBASIS + 1)*(NBASIS**2)/2
          FNBASIS= NBASIS
          FNALL  = NDIST*(FNBASIS+1.0D0)*FNBASIS*FNBASIS*0.5D0
-         PERCNT = N2WRIT
+         PERCNT = NWRIT
          PERCNT = 100.0D0*PERCNT / FNALL
          IF (IPRINT.GT.0) WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
      &         ' Number of two-electron spin-orbit integrals written:',
@@ -1608,7 +1614,13 @@ C
 C        Statistics
 C
          IF (INDA .EQ. 0) THEN
-            N2WRIT = LBUF*NBUFX(0) + ICOUNT
+C           N2WRIT = LBUF*NBUFX(0) + ICOUNT
+C           hjaaj: do all intermediates with integer*8 N2WRIT
+C                  to avoid integer*4 overflows
+            N2WRIT = LBUF
+            N2WRIT = N2WRIT*NBUFX(0)
+            N2WRIT = N2WRIT + ICOUNT
+C
             IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
                NBUFX(0) = NBUFX(0) + 2
             ELSE
@@ -1985,8 +1997,14 @@ C
 C
 C        Statistics
 C
-         IF (INDA .EQ. 0) THEN
-            N2WRIT = LBUF*NBUF + ICOUNT
+         IF (INDA .EQ. I) THEN
+C           N2WRIT = LBUF*NBUF + ICOUNT
+C           hjaaj: do all intermediates with integer*8 N2WRIT
+C                  to avoid integer*4 overflows for big basis sets
+            N2WRIT = LBUF
+            N2WRIT = N2WRIT*NBUF
+            N2WRIT = N2WRIT + ICOUNT
+C
             IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
                NBUF = NBUF + 2
             ELSE
@@ -2001,7 +2019,7 @@ C
             FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
             PERCNT = N2WRIT
             PERCNT = 100.0D0* PERCNT / FNALL
-            WRITE (LUPRI,'(/A,I12,A,F5.1,A/A,F12.3//)')
+            WRITE (LUPRI,'(/A,I12,A,F5.1,A/A,F12.3/)')
      &         ' Number of two-electron short-range integrals written:',
      &         N2WRIT,' (',PERCNT,'% )',
      &         ' Megabytes written:                       ',FBYTES
