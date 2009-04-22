@@ -115,7 +115,7 @@ ERROR[5]="FINAL HF ENERGY NOT CORRECT"
 
 # Response calculation
 CRIT1=`$GREP "Quadratic Response single residue calculation" $log | wc -l`
-CRIT2=`$GREP "Two\-photon transition process computed" $log | wc -l`
+CRIT2=`$GREP "Two\-photon transition processes computed" $log | wc -l`
 CRIT3=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT4=`$GREP "Spin of operator B \, ISPINB\= * 0" $log | wc -l`
 CRIT5=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 0" $log | wc -l`
