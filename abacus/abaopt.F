@@ -1278,6 +1278,8 @@ C
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
 C
+      CALL QENTER('RUNOPT')
+C
 C     Initialization of variables.
 C
       THRLDP = 1.0D-4
@@ -1920,6 +1922,7 @@ C     No single point energy has been calculated.
      &                          // 'calculated.'
          WRITE(LUPRI,*)
       END IF
+      CALL QEXIT('RUNOPT')
       RETURN
       END
 
@@ -2317,8 +2320,6 @@ C         NAORDR = 2; Analytical gradients and hessians available.
 C
          CALL FNDANA(NAORDR)
 C
-C      IF ((DOMP2 .AND. .NOT. DOMC) .OR. ((DOCI .OR. DOCINO)
-C     &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
          IF (NAORDR.EQ.0) THEN 
             CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
          ELSE
@@ -7435,6 +7436,7 @@ C
       SAVE FIRST
       DATA FIRST /.TRUE./
 C
+      CALL QENTER('NUMGRD')
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IF (FIRST) THEN
@@ -7465,8 +7467,8 @@ C     Call new numerical derivative routines.
 C
       IWOTMP = IWOFF
       CALL NMDINI(IPRINT)
-      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
-     &            IDUMMY,.FALSE.)
+      IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',
+     &   ' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
  1100 READ (LUCMD,'(A7)',END=1110) WORD
       CALL UPCASE(WORD)
@@ -7478,5 +7480,6 @@ C
       CALL NUMDRV(WORK,LWORK,IWOFF,IPRINT,WRKDLM)
       IF (IWOTMP .NE. IWOFF) IWOFF = IWOTMP
 C
+      CALL QEXIT('NUMGRD')
       RETURN
       END
