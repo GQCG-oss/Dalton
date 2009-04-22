@@ -1030,10 +1030,10 @@ C     Initialization of INFHYP
       DATA REFCHK/.FALSE./
       DATA IAABB/0/
 C     Initialization of INFSMO
-      DATA SOMOM/.FALSE./
-      DATA MCDCAL/.FALSE./
+      DATA SOMOM/.FALSE./ , TWOPHO/.FALSE./, MCDCAL/.FALSE./
       DATA IPRSMO/2/
       DATA NBSMFR/1/ , BSMFR(1)/0.0D0/
+C     Initialization of INFESR
       DATA IPRESR/2/ , MAXESR/60/ ,THCESR/1.0D-5/ ,ESRCAL/.FALSE./
 C     Initialization of INFSPI
       DATA ISPINA/0/,ISPINB/0/,ISPINC/0/,ISPIND/0/
@@ -4189,7 +4189,7 @@ C
       CALL PPINP(WORD)
       RETURN
 C
- 2100 CALL QUIT('**END OF not found in DALTON input')
+ 2100 CALL QUIT('**QUADRA not found in DALTON input')
 C
       RETURN
       END
