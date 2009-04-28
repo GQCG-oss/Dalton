@@ -711,7 +711,7 @@ Clf             CALL PCM_COMP_POT(DUMMY, DAOSAV(1,1), DUMMY, DUMMY, DUMMY,
 Clf     &                         DUMMY, 1, IDUMMY, 1, WRK(KFREE), LFREE)
 Clf             CALL DZERO(QSE,NTS)
 Clf             PRINT *,(QSE(II),II=1,10)
-Clf             CALL PCM_COMP_CHG(WRK(KFREE),LFREE)
+Clf             CALL PCM_COMP_CHG(IDUMMY,WRK(KFREE),LFREE)
 Clf             PRINT *,(QSE(II),II=1,10)
 Clf             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
            END IF

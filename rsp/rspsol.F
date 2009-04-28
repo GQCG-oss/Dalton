@@ -340,17 +340,15 @@ C
      &                 WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &                 WRK(KFREE),LFREE)           
             IF (FIRST1) THEN
-               VSE1FLG = -1
-               QSE1FLG = -1
+               CALL PCM_INIT_QVFLAGS('EL1')
                CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
      &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
-               CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
+               CALL PCM_COMP_CHG(NOSIM,WRK(KFREE), LFREE)
             END IF
-            VSMM1FLG = -1
-            QSMM1FLG = -1
-            CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, 
-     &                       IDUMMY, IDUMMY, WRK(KFREE), LFREE)
-            CALL PCM_COMP_CHG(WRK(KFREE), LFREE)
+            CALL PCM_INIT_QVFLAGS('MM1')
+            CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
+     &                       DUMMY,NOSIM,IDUMMY, WRK(KFREE), LFREE)
+            CALL PCM_COMP_CHG(NOSIM,WRK(KFREE), LFREE)
             NOSIMMM = NOSIM
             CALL PCM_WRITE_PCM2MM(NOSIMMM,NTS,XTSCOR,YTSCOR,ZTSCOR,
      &                           QSE1,QSMM1)

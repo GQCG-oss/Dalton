@@ -46,7 +46,7 @@ polish in output
 do not save S(2) CI diagonal on LURSP4 ( all 1's)
 
 revision 1.2 2000/04/14 14:33:01 hjj
-1) partial bug fix for triplet and CSF's (more need to be done)
+1) partial bug fix for triplet and CSFs (more need to be done)
 2) polishing
 =============================================================================
 950208-hjaaj

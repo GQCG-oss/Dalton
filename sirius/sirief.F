@@ -1046,7 +1046,7 @@ C
 C
 C /* Deck pcm_comp_chg */
 C
-      SUBROUTINE PCM_COMP_CHG(WRK, LWRK)
+      SUBROUTINE PCM_COMP_CHG(NOSIM, WRK, LWRK)
 
 #include <implicit.h>
 #include <mxcent.h>
@@ -1057,18 +1057,31 @@ C
       QTOT = 0.0D0
       IF (QSEFLG.EQ.-1.AND.VSEFLG.EQ.1) THEN
          CALL COMP_CHG(QSE,VSE,QTOT,QSEFLG,WRK,LWRK)
+         QSEFLG = 1
       ENDIF
       IF (QSNFLG.EQ.-1.AND.VSNFLG.EQ.1) THEN
          CALL COMP_CHG(QSN,VSN,QTOT,QSNFLG,WRK,LWRK)
+         QSNFLG = 1
       ENDIF
       IF (QSMMFLG.EQ.-1.AND.VSMMFLG.EQ.1) THEN
          CALL COMP_CHG(QSMM,VSMM,QTOT,QSMMFLG,WRK,LWRK)
+         QSMMFLG = 1
       ENDIF
       IF (QSMM1FLG.EQ.-1.AND.VSMM1FLG.EQ.1) THEN
-         CALL COMP_CHG(QSMM1,VSMM1,QTOT,QSMM1FLG,WRK,LWRK)
+         DO IOSIM = 1, NOSIM
+            INDEX = NTS * (IOSIM -1) + 1
+            CALL COMP_CHG(QSMM1(INDEX),VSMM1(INDEX),
+     &                    QTOT,QSMM1FLG,WRK,LWRK)
+         ENDDO
+         QSMM1FLG = 1
       ENDIF
       IF (QSE1FLG.EQ.-1.AND.VSE1FLG.EQ.1) THEN
-         CALL COMP_CHG(QSE1,VSE1,QTOT,QSE1FLG,WRK,LWRK)
+         DO IOSIM = 1, NOSIM
+            INDEX = NTS * (IOSIM -1) + 1
+            CALL COMP_CHG(QSE1(INDEX),VSE1(INDEX),
+     &                    QTOT,QSE1FLG,WRK,LWRK)
+         ENDDO
+         QSE1FLG = 1
       ENDIF
       
       RETURN
@@ -1104,7 +1117,6 @@ C
       CALL DZERO(WRK(KQMAT),NTS*NTSIRR)
       IF (DO_FLAG .EQ. -1) THEN
          CALL V2Q(WRK(KQMAT),POTEN,CHG,QET,.FALSE.)
-         DO_FLAG = 1
       ENDIF
       
       RETURN
@@ -1221,7 +1233,7 @@ C
      &                            TJ1XAC)
                END IF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+I-1
-               VTEX(I,1) = FACTOR
+               VTEX(I,IOSIM) = FACTOR
                IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
@@ -1230,6 +1242,7 @@ C
                END IF
             END IF
 C     KPCMX: \tilde{J} + \tilde{X}
+C 
             CALL DAXPY(N2ORBX,QSN(I)+QSE(I),WORK(JJ1X),
      &                 1,WORK(JPCMX),1)
          END DO
@@ -1289,4 +1302,52 @@ C
       DIPORG(3) = DIPZ
       RETURN
       END
-      
+
+C
+C /* Deck pcm_init_qvflags */
+      SUBROUTINE PCM_INIT_QVFLAGS(WORD)
+C     Sets the pcm flags, which controls from what the potential
+C     and charges on the tesseraes are calculated.
+#include <implicit.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+
+      CHARACTER*3 WORD
+
+      VSNFLG   = 1
+      QSNFLG   = 1
+
+      VSEFLG   = 1
+      QSEFLG   = 1
+
+      VSMMFLG  = 1
+      QSMMFLG  = 1
+
+      VSE1FLG  = 1
+      QSE1FLG  = 1
+
+      VSMM1FLG = 1
+      QSMM1FLG = 1
+
+      IF (WORD .EQ. 'NUC') THEN
+         VSNFLG   = -1
+         QSNFLG   = -1
+      ELSE IF (WORD .EQ. 'EL ') THEN
+         VSEFLG   = -1
+         QSEFLG   = -1
+      ELSE IF (WORD .EQ. 'MM ') THEN
+         VSMMFLG  = -1
+         QSMMFLG  = -1
+      ELSE IF (WORD .EQ. 'EL1') THEN
+         VSE1FLG  = -1
+         QSE1FLG  = -1
+      ELSE IF (WORD .EQ. 'MM1') THEN
+         VSMM1FLG = -1
+         QSMM1FLG = -1
+      ELSE
+         CALL QUIT('Wrong WORD in INIT_PCM_QVFLAGS')
+      ENDIF
+         
+      RETURN
+      END

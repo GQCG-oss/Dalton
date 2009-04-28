@@ -44,7 +44,6 @@ Clara         IF (IPRRSP.GT.101) THEN
       END IF
       IF ( NOSIM .GT.0 ) THEN
          IF (IPRRSP.GT.101) THEN
-C         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
             WRITE(LUPRI,*)' **** BEFORE IEFLNO **** ',kzyvar,nosim
             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -52,7 +51,6 @@ C         IF (.true.) THEN
          CALL IEFLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
          IF (IPRRSP.GT.101) THEN
-C         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
             WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -286,7 +284,6 @@ clara
          WRK(KEXBAC - 1 + ICSIM) = XBAC
       END DO
 C
-C      IF (.true.) THEN 
       IF (IPRRSP.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** BEFORE SLVSC in IEFLNC **** '
@@ -298,7 +295,6 @@ C
 C     CALL SLVSC(NCSIM,NOSIM,NNASHX,BCVECS,CREF,SVECS,
 C    *           RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
 C
-C      IF (.true.) THEN 
       IF (IPRRSP.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** AFTER SLVSC in IEFLNC **** '
@@ -567,8 +563,6 @@ C
                END IF
             END IF
          ENDDO
-C Arnfinn Nov. -08 ->
-C Added QSM 
          QFACTOR = QSN(I)+QSE(I)
          IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
          IF (TRPLET) THEN
@@ -658,8 +652,6 @@ C KPCMX: \tilde{J} + \tilde{X}
       ENDDO
       CALL GPCLOSE(LUPCMD,'KEEP')
 C
-C     Adds charges from MM induced dipole moments (Arnfinn)
-C 
       IF (MMPCM) THEN
          DO I = 1, NOSIM
             DO ITS = 1, NTS
@@ -831,34 +823,31 @@ C  /* Deck pcm_comp_pot */
 
       DIMENSION MOCOEF(*), DENMAT(*), DENTRP(*), BOVECS(*),
      &          XJSQ(*), XJSQT(*), WORK(*)
-      VSNFLG = 1
       IF (VSNFLG .EQ. -1) THEN
          CALL DZERO(VSN, NTS)
          CALL PCM_COMP_NUC_POT(VSN)
          VSNFLG = 1
       END IF
-      VSEFLG = 1
       IF (VSEFLG .EQ. -1) THEN 
          CALL DZERO(VSE, NTS)
          CALL PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX, 
      &                        KSYMP, WORK, LWORK)
          VSEFLG = 1
       END IF
-      IF (VSE1FLG .EQ. -1) THEN 
-         CALL DZERO(VSE1, NTS)
+      IF (VSE1FLG .EQ. -1) THEN
+         CALL DZERO(VSE1, NTS*NOSIM)
          CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
      &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
      &                         WORK, LWORK)
          VSE1FLG = 1
       END IF
-      VSMMFLG = 1
       IF (VSMMFLG .EQ. -1) THEN
          CALL DZERO(VSMM, NTS)
          CALL PCM_COMP_MM_POT(VSMM)
          VSMMFLG = 1
       END IF
       IF (VSMM1FLG .EQ. -1) THEN
-         CALL DZERO(VSMM1, NTS)
+         CALL DZERO(VSMM1, NTS*NOSIM)
          CALL PCM_COMP_MM_POT1(VSMM1, NTS, XTSCOR, YTSCOR, ZTSCOR, 
      &                         WORK, LWORK)
          VSMM1FLG = 1
@@ -965,7 +954,7 @@ Clf
       RETURN
       END
 
-C /* Deck pcm_comp_mm_pot */
+C /* Deck pcm_comp_mm_pot1 */
       SUBROUTINE PCM_COMP_MM_POT1(VCAV, NTS, XTS, YTS, ZTS,
      &                            WORK, LWORK)
 #include <implicit.h>
@@ -1105,8 +1094,6 @@ C#include <pcm.h>
       WRITE (LPCMQM3,*) NOSIMMM, NTS
       DO I = 1, NOSIMMM
          DO ITS = 1, NTS
-C luca this will not work with more than one perturbation 
-C (see above for how WRK(KQNMM) is created)
             INDEX = NTS * (I-1) + ITS
             CHG1 = QSE1(INDEX)+QSMM1(INDEX)
             WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
