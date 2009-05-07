@@ -970,6 +970,7 @@ C
 #include "elweak.h"
 #include "absorp.h"
 #include "esg.h"
+#include "channel.h"
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -1072,6 +1073,9 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
+C  Initializing CHANNEL
+      DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
+      DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
 C  Initializing ESG
       DATA ESG/.FALSE./
       DATA IESG/1/
@@ -1091,9 +1095,10 @@ C
 #include "mxcent.h"
 #include "pcmdef.h"
       LOGICAL NEWDEF, ISLINR
-      PARAMETER ( NTABLE = 51 )
+      PARAMETER ( NTABLE = 53 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
+      INTEGER NUMBER_ORBS(8)
 C
 #include "priunit.h"
 #include "inforb.h"
@@ -1111,6 +1116,7 @@ C
 #include "inftap.h"
 #include "pcm.h"
 #include "pcmlog.h"
+#include "channel.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -1129,7 +1135,7 @@ C
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.ECD   ',
      *            '.X2TEST', '.A2TEST', '.SINGLE', '.DOUBLE','.THCLR ',
      *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART','.OECD  ',
-     *            '.ESA   '/
+     *            '.ESA   ', '.CHANNE', '.VIRTUA'/
       INTEGER IXARR(MAXLPP)
 C
 C READ IN  INPUT
@@ -1156,7 +1162,8 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,
-     *                      40,41,42,43,44,45,46,47,48,49,50,51), I
+     *                      40,41,42,43,44,45,46,47,48,49,50,51,
+     *                      52,53), I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -1439,6 +1446,37 @@ C     subsequent line.
                CALL QUIT(' ILLEGAL PROMPT IN PPINP ')
             END IF
       END IF
+      GOTO 100
+C .CHANNEL - restrict to excitations from particular orbitals
+ 52   CONTINUE
+      CHANNEL_CALC = .TRUE.
+      CHANNEL_NORB = 0
+      READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
+      DO I=1,NSYM
+         CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
+      END DO
+      IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for CHANNEL calculation: ' //
+     &               'increase CHANNEL_MAX and recompile'
+     &     )
+      IOFF=0
+      DO ISYM=1,NSYM
+         IF (NUMBER_ORBS(ISYM).GT.0) THEN 
+            READ(LUCMD,*) (CHANNEL_ORB(I+IOFF), I=1,NUMBER_ORBS(ISYM))
+            DO I=1,NUMBER_ORBS(ISYM)
+               CHANNEL_ORB(I+IOFF) = CHANNEL_ORB(I+IOFF) + IORB(ISYM)
+            END DO
+            IOFF = IOFF + NUMBER_ORBS(ISYM)
+         ELSE
+            READ(LUCMD,*)
+         END IF 
+      END DO
+      GOTO 100
+C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
+ 53   CONTINUE
+      CHANNEL_VCALC = .TRUE.
+      READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
+      GOTO 100
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
@@ -1503,6 +1541,17 @@ C-------------------
      *      ' Excited state absorption calculattion requested: DOESA  ='
      *      ,DOESA
          END IF
+         IF (CHANNEL_CALC) THEN
+            WRITE(LUPRI,'(/A,15(/,10I5))')
+     &         ' Restricted channel RPA,   excitations from orbs:',
+     &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
+       END IF
+       IF (CHANNEL_VCALC) THEN 
+          DO I=1,NSYM
+             WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
+     &           CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
+          ENDDO 
+       ENDIF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
      *       ,IPRPP
@@ -1590,6 +1639,7 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
+#include "channel.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -1599,9 +1649,10 @@ C CBN+JK 03.01.06
 C--------------------
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
-      PARAMETER ( NTABLE = 45 )
+      PARAMETER ( NTABLE = 47 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND
+      INTEGER NUMBER_ORBS(8)
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
@@ -1614,7 +1665,8 @@ C
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
      *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
      *            '.FERMI ', '.SPIN-D',
-     *            '.DIPLF ', '.DIPLFX', '.DIPLFY', '.DIPLFZ'/
+     *            '.DIPLF ', '.DIPLFX', '.DIPLFY', '.DIPLFZ',
+     *            '.CHANNE', '.VIRTUA'/
 C
 C
 C
@@ -1636,7 +1688,7 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41,
-     *                      42,43,44,45),I
+     *                      42,43,44,45,46,47),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1903,6 +1955,38 @@ C
                CALL QUIT(' ILLEGAL PROMPT IN LRINP ')
             END IF
       END IF
+C .CHANNEL
+ 46            CONTINUE
+               CHANNEL_CALC = .TRUE.
+               CHANNEL_NORB = 0
+               READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
+               DO I=1,NSYM
+                  CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
+               END DO
+               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for CHANNEL calculation: ' //
+     &               'increase CHANNEL_MAX and recompile'
+     &     )
+               IOFF=0
+               DO ISYM=1,NSYM
+                  IF (NUMBER_ORBS(ISYM).GT.0) THEN 
+                     READ(LUCMD,*) 
+     &                    (CHANNEL_ORB(I+IOFF), I=1,NUMBER_ORBS(ISYM))
+                     DO I=1,NUMBER_ORBS(ISYM)
+                        CHANNEL_ORB(I+IOFF) = 
+     &                       CHANNEL_ORB(I+IOFF) + IORB(ISYM)
+                     END DO
+                     IOFF = IOFF + NUMBER_ORBS(ISYM)
+                  ELSE
+                     READ(LUCMD,*)
+                  END IF
+               END DO
+               GO TO 100
+C     .VIRTUAL
+ 47            CONTINUE
+               CHANNEL_VCALC = .TRUE.
+               READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
+               GO TO 100
   300 CONTINUE
       NLRTOT = 0
       IF (ICHANG .GT. 0) THEN
@@ -1964,6 +2048,17 @@ C--------------------
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
+         IF (CHANNEL_CALC) THEN
+            WRITE(LUPRI,'(/A,10(/,10I5))')
+     &         ' Restricted channel RPA,   excitations from orbs:',
+     &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
+         END IF
+         IF (CHANNEL_VCALC) THEN
+            DO I=1,NSYM
+              WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
+     &              CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
+         ENDDO
+      ENDIF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRLR  ='
      *       ,IPRLR
@@ -3409,6 +3504,7 @@ C
 #include "infpp.h"
 #include "inflr.h"
 #include "infsop.h"
+#include "channel.h"
 C
       CHARACTER*8 OPLBL(8)
       DATA OPLBL/'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
@@ -3440,6 +3536,8 @@ C
          END IF
          KZWOPT = NWOPT
          KZYWOP = 2*KZWOPT
+         IF (CHANNEL_CALC) CALL CHANNEL_VAR()         
+         IF (CHANNEL_VCALC) CALL CHANNEL_VIR()
       END IF
 C
 C READ IN CONFIGURATION SPACE VARIABLES

@@ -55,6 +55,7 @@ F_OBJS = \
 	rsptpa3.o	\
 	rspvec.o	\
 	absorp.o	\
+	rspchannel.o	\
 	rspzfs.o	\
 	x2expl.o        \
 	rspief1.o       \
