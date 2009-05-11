@@ -1625,6 +1625,7 @@ C
 #include "mxcent.h"
 #include "pcmdef.h"
 #include "infrsp.h"
+#include "inforb.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
 #include "inflr.h"
