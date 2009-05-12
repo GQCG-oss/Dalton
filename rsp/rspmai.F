@@ -1438,6 +1438,37 @@ C     subsequent line.
                   NPPTOT = NPPTOT + NPPCNV(J)
                END DO
                GO TO 100
+C .CHANNEL - restrict to excitations from particular orbitals
+ 52            CONTINUE
+               CHANNEL_CALC = .TRUE.
+               CHANNEL_NORB = 0
+               READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
+               DO I=1,NSYM
+                  CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
+               END DO
+               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for CHANNEL calculation: ' //
+     &               'increase CHANNEL_MAX and recompile')
+               IOFF=0
+               DO ISYM=1,NSYM
+                  IF (NUMBER_ORBS(ISYM).GT.0) THEN 
+                     READ(LUCMD,*) (CHANNEL_ORB(I+IOFF),
+     &                  I=1,NUMBER_ORBS(ISYM))
+                     DO I=1,NUMBER_ORBS(ISYM)
+                        CHANNEL_ORB(I+IOFF) =
+     &                  CHANNEL_ORB(I+IOFF) + IORB(ISYM)
+                     END DO
+                     IOFF = IOFF + NUMBER_ORBS(ISYM)
+                  ELSE
+                     READ(LUCMD,*)
+                  END IF 
+               END DO
+               GOTO 100
+C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
+ 53            CONTINUE
+               CHANNEL_VCALC = .TRUE.
+               READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1445,38 +1476,8 @@ C     subsequent line.
      *            '" NOT RECOGNIZED IN PPINP.'
                CALL QUIT(' ILLEGAL PROMPT IN PPINP ')
             END IF
-      END IF
-      GOTO 100
-C .CHANNEL - restrict to excitations from particular orbitals
- 52   CONTINUE
-      CHANNEL_CALC = .TRUE.
-      CHANNEL_NORB = 0
-      READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
-      DO I=1,NSYM
-         CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
-      END DO
-      IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
-     &               'Too many orbitals for CHANNEL calculation: ' //
-     &               'increase CHANNEL_MAX and recompile'
-     &     )
-      IOFF=0
-      DO ISYM=1,NSYM
-         IF (NUMBER_ORBS(ISYM).GT.0) THEN 
-            READ(LUCMD,*) (CHANNEL_ORB(I+IOFF), I=1,NUMBER_ORBS(ISYM))
-            DO I=1,NUMBER_ORBS(ISYM)
-               CHANNEL_ORB(I+IOFF) = CHANNEL_ORB(I+IOFF) + IORB(ISYM)
-            END DO
-            IOFF = IOFF + NUMBER_ORBS(ISYM)
-         ELSE
-            READ(LUCMD,*)
-         END IF 
-      END DO
-      GOTO 100
-C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
- 53   CONTINUE
-      CHANNEL_VCALC = .TRUE.
-      READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
-      GOTO 100
+      END IF   ! for IF (NEWDEF)
+C ------------------ 
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
@@ -1490,21 +1491,16 @@ C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
             CALL HEADER(' Linear Response single residue calculation',0)
          END IF
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Equilibrium solvent model requested            : SOLVNT ='
-     *      ,FLAG(16)
-            WRITE(LUPRI,'(A,F8.4)')
+            WRITE(LUPRI,'(A/A,F8.4)')
+     *      ' Equilibrium continuum solvent model requested.',
      *      ' Dielectric constant                            : EPSOL  ='
      *      ,EPSOL
          END IF
          IF (FLAG(16) .AND. INERSI) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Non-equilibrium solvent model requested        : INERSI ='
-     *      ,INERSI
-            WRITE(LUPRI,'(A,F8.4)')
+            WRITE(LUPRI,'(A,2(/A,F8.4))')
+     *      ' Non-equilibrium continuum solvent model requested.',
      *      ' Static dielectric constant                     : EPSTAT ='
-     *      ,EPSTAT
-            WRITE(LUPRI,'(A,F8.4)')
+     *      ,EPSTAT,
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
@@ -1545,13 +1541,13 @@ C-------------------
             WRITE(LUPRI,'(/A,15(/,10I5))')
      &         ' Restricted channel RPA,   excitations from orbs:',
      &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
-       END IF
-       IF (CHANNEL_VCALC) THEN 
+         END IF
+         IF (CHANNEL_VCALC) THEN 
           DO I=1,NSYM
              WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
      &           CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
           ENDDO 
-       ENDIF
+         ENDIF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
      *       ,IPRPP
@@ -1559,7 +1555,7 @@ C-------------------
      *      ' Maximum number of iterations for eigenval.eqs. : MAXITP ='
      *       ,MAXITP
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence of eigenval.eqs.     : THCPP  ='
+     *      ' Threshold for convergence of eigenvalue eqs.   : THCPP  ='
      *      ,THCPP
          IF (EXMOM) THEN
             WRITE(LUPRI,'(A,I4)')
@@ -1948,14 +1944,6 @@ C
                   LLROP( INDPRP('ZDIPLOC ')) = .TRUE.
                GO TO 100
 C
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
-     *              '" NOT RECOGNIZED IN LRINP.'
-               CALL QUIT(' ILLEGAL PROMPT IN LRINP ')
-            END IF
-      END IF
 C .CHANNEL
  46            CONTINUE
                CHANNEL_CALC = .TRUE.
@@ -1988,6 +1976,15 @@ C     .VIRTUAL
                CHANNEL_VCALC = .TRUE.
                READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
                GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
+     *              '" NOT RECOGNIZED IN LRINP.'
+               CALL QUIT(' ILLEGAL PROMPT IN LRINP ')
+            END IF
+      END IF
+C     ---------------------------------------------
   300 CONTINUE
       NLRTOT = 0
       IF (ICHANG .GT. 0) THEN
