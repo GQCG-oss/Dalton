@@ -693,13 +693,13 @@ C     Aug. 97/spas+hjaaj
 #include <infrsp.h>
 #include <infinp.h>
 C
-      DATA TABDIR /'*END OF', '*READIN', '*NUCREP',
+      DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
      &             '*EXCITA', '*REORT ', '*RESPON',
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
-     &             '*FLOAT ', '*QM3INP', '*QPGCTL',
-     &             '*XXXXXX', '*XXXXXX', '*SOPPA ',
+     &             '*FLOAT ', 'xxxxxxx', '*QPGCTL',
+     &             'xXXXXXX', 'xXXXXXX', '*SOPPA ',
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
@@ -1592,7 +1592,7 @@ cLig <<
          WRITE (LUPRI,'(/A/A)')
      &      ' >>>>> WARNING - RHF calculations of spin-spin coupling'//
      &      ' constants are likely to give', 
-     &      ' >>>>>>WARNING - qualitatively incorrect results !!!'
+     &      ' >>>>> WARNING - qualitatively incorrect results !!!'
       END IF
 cLig >> added the control to right CTOCD input
       IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
@@ -1746,7 +1746,7 @@ cs
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in ABAINP, error in prompt.')
       END IF
-    2   CALL REAINP(WORD,IPRDEF,RELCAL,TSTINP)
+    2   CONTINUE
       GO TO 200
     3   CALL NUCINP(WORD)
       GO TO 200
@@ -1777,7 +1777,6 @@ cs
    16   CALL FLTINP(WORD)
       GO TO 200
    17   CONTINUE
-        CALL QM3INP(WORD)
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
@@ -1824,7 +1823,11 @@ C     integral transformation in TRACTL (IPRTRA also specifies print
 C     level in DERTRA) can be specified in RHSINP and are here trans-
 C     ferred from /CBIRHS/ to Sirius common blocks.
 C
-      CALL READIN(WORK,LWORK,.FALSE.)
+Chj   CALL READIN(WORK,LWORK,.FALSE.)
+Chj   this call had survived from when ABACUS was a separate program.
+Chj   I have now made sure that READIN always is called in the beginning,
+Chj   also if RNHERM is false. /April 2009 hjaaj
+
       CALL SETSIR(WORK,LWORK)
 C
 C     If SOPPA calculation, then
@@ -1872,13 +1875,23 @@ C        ... FCKDDR cannot be used in this calculation
       END IF
 C
       IF ((VROA .OR. RAMAN) .AND. MAXREP .GT. 0) THEN
-         WRITE (LUPRI,'(2X,A,I5,/,A,/,A)')
+         WRITE (LUPRI,'(2X,A,I5/A/A)')
      &   ' Number of symmetries:',MAXREP + 1,
      &   ' Vibrational Raman calculations can only be run without '//
      &   'symmetry.',' Calculation aborted.'
          CALL QUIT('ERROR: Inconsistent input (Raman with symmetry)')
       END IF
 C
+      IF (DKTRAN .AND. MOLGRD) THEN
+         WRITE(LUPRI,'(/A)') 'ERROR: molecular gradient not implemented'
+     &   //' for Douglas-Kroll-Hess Hamiltonian'
+         CALL QUIT('ERROR: mol. grad. not implemented for DKH(2)')
+      END IF
+      IF (DKTRAN .AND. .NOT.NOLOND) THEN
+         WRITE(LUPRI,'(/A)') 'ERROR: London orbitals not implemented'
+     &   //' for Douglas-Kroll-Hess Hamiltonian'
+         CALL QUIT('ERROR: London orbitals not implemented for DKH(2)')
+      END IF
 C
 C     LUSUPM = -1 means AOSUPMAT not used.
 C     AOSUPMAT is only used for non-direct calculations when
@@ -2014,8 +2027,7 @@ C
 C
 C     Heading
 C
-      IF (IPRDEF .GE. 0) 
-     &     CALL TITLER('FINAL RESULTS FROM ABACUS','*',124)
+      CALL TITLER('FINAL RESULTS from ABACUS','*',124)
 C
 C     Time and date
 C
@@ -2025,7 +2037,6 @@ C
      *      ' please check the output above !'
          NWNABA = 0
       END IF
-      WRITE (LUPRI,'()')
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',' ',
      &                               IDUMMY,.FALSE.)
@@ -2566,12 +2577,12 @@ C     &              ((SPSDFC(I,J), I=1,NCOR), J=1,NCOR)
 C
   900 CONTINUE
       NWNABA = NWNABA + 1
-      WRITE (LUPRI,'(//A,/A,/)')
+      WRITE (LUPRI,'(//A/A/)')
      *   ' WARNING: No restart file found.',
-     *   '          Calculation proceeds without restart.'
+     *   ' WARNING: Calculation proceeds without restart.'
       RETURN
       END
-C  /* Deck writrs */
+C  /* Deck abawritrs */
       SUBROUTINE ABAWRITRS
 C
 C     Write ABACUS restart information
@@ -2695,7 +2706,7 @@ C  /* Deck timsta */
       CALL TIMPRI('REST  ',TIMWLK,TIMALL)
       WRITE (LUPRI,'()')
       CALL TIMPRI('TOTAL ',TIMALL,TIMALL)
-      WRITE (LUPRI,'(//)')
+      WRITE (LUPRI,'(/)')
       RETURN
       END
 C  /* Deck abadrc */
@@ -2856,7 +2867,7 @@ C  /* Deck susres */
       CHARACTER*6 ABC(3)
       CHARACTER*8 LAPRPC
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
-      CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
+      CALL TITLER('ABACUS - Magnetizabilities','*',124)
 cLig <> added the .NOT. CTOCD
       IF ((.NOT.NOLOND).AND.(.NOT.CTOCD)) THEN
 C
