@@ -332,6 +332,12 @@ C
       ENDIF
 
       IF (MMPCM) THEN
+         write(lupri,*) 'NOSIM',NOSIM
+         write(lupri,*) 'MXEPCM',MXEPCM 
+         IF (NOSIM .GT. MXEPCM) THEN
+           WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM 
+           CALL QUIT('Increase MXEPCM')
+         ENDIF 
          LADDMM = .FALSE.
          DMMSAVE = 0.0D0
          FIRST1 = .TRUE.

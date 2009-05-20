@@ -575,6 +575,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
+#include <qm3.h>
 C
       DIMENSION OCCUP(NOCCT),IAMN(NBAST),NAME(MXCENT),
      &          IPR(NBAST),NUMBER(NBAST),
@@ -612,6 +613,7 @@ C     given the label of the center to which the cgto belongs, assign
 C     the center a number. also collect the different labels to a
 C     separate list
 C
+      IF (QM3) RETURN
       NNUC = 1
       NAME(1) = IAMN(1)
       NUMBER(1) = 1
