@@ -136,6 +136,12 @@ QM3="$SHORTQM3 $MEDIUMQM3"
 #
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
 #
+GEOOPT="cc_geoopt cc_geoopt2 cc_geoopt_mp2 geoopt_cartmin geoopt_cartsad \
+geoopt_cartsad2 geoopt_constrain1a geoopt_constrain1b geoopt_dckerr \
+geoopt_delintmin geoopt_delintsad geoopt_exci geoopt_exci2 geoopt_mp2froz \
+geoopt_numgrd geoopt_preopt geoopt_prop geoopt_prop2 geoopt_prop3 \
+geoopt_redintmin geoopt_redintsad geoopt_symbrk geoopt_vrml"
+#
 ALL="$SHORT $MEDIUM $LONG $DFT $NUMDER $R12 $DPT"
 #
 ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
@@ -181,6 +187,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           benchmark            -- run all BENCHMARK testcases
           dpt                  -- run all DPT testcases
           numder               -- run all numerical derivatives testcases
+          geoopt               -- run all OPTIMIZE testcases
           pcm                  -- run all pcm testcases
           perl                 -- run all perl-style testcases 
           all                  -- run all non-parallel testcases
@@ -354,6 +361,9 @@ while [ -n "$1" ]; do
    shift ;;
    "numder" )
    testcase="$testcase $NUMDER"; 
+   shift ;;
+   "geoopt" )
+   testcase="$testcase $GEOOPT"; 
    shift ;;
    "qm3" )
    testcase="$testcase $QM3"; 

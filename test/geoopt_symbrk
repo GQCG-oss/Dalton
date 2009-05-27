@@ -213,7 +213,7 @@ CTRL[13]=14
 ERROR[13]="SYMMETRY-BROKEN GEOMETRY NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final * HF energy\: * \-150\.783313671[6-7][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-150\.783313671[5-7][0-9][0-9]" $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="FINAL ENERGY NOT CORRECT"
