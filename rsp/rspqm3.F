@@ -83,7 +83,6 @@ c      DATA    FIRST /.TRUE./
 
       IF (.NOT. MMPCM) FIRST1 = .TRUE.
       IF (.NOT. MMPCM) LADDMM = .TRUE.
-
       IF (MMPCM) THEN
         IF (FIRST1) THEN
 C         This is a new iteration and we need to delete old interface
@@ -321,9 +320,9 @@ C--------------------------------------------------------
 
          FAC = 1.0D0
          IF (TRPLET) THEN
-           CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYOT),1)
+            CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYOT),1)
          ELSE
-           CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYO),1)
+            CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYO),1)
          ENDIF
  
 C        Since only hf/dft closed shell no contribution can arrise from 
@@ -391,11 +390,11 @@ C x-component
      &                          WRK(KLAST),NBAST,NORBT)
                         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                         IF (FIRST1) THEN
-                          CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                          FACx = FAC * QM3QLM(WRK(KUTRX))
-                          WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1) = FACx
+                           CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
+                           FACx = FAC * QM3QLM(WRK(KUTRX))
+                           WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1) = FACx
                         ELSE 
-                          FACx = WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1)
+                           FACx = WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1)
                         ENDIF
                         IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
                            TEMP = 0.0D0
@@ -436,22 +435,22 @@ C y-component
                      CALL DZERO(WRK(KUTR),N2ORBX)
                      CALL DZERO(WRK(KUTRX),N2ORBX)
 
-                       IF (INTDIR) THEN
-                          CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),
+                     IF (INTDIR) THEN
+                        CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),
      &                            WRK(KUCMO),WRK(KLAST),NBAST,NORBT)
-                       ELSE
-                          CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-                          CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
-     &                              WRK(KWRK),NBAST,NORBT)
-                       ENDIF
-                         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-                       IF (FIRST1) THEN
-                         CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                         FACy = FAC * QM3QLM(WRK(KUTRX))
-                         WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1) = FACy
-                       ELSE
-                         FACy = WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1)
-                       ENDIF
+                     ELSE
+                        CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                        CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
+     &                            WRK(KWRK),NBAST,NORBT)
+                     ENDIF
+                     CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR)) 
+                     IF (FIRST1) THEN
+                        CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
+                        FACy = FAC * QM3QLM(WRK(KUTRX))
+                        WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1) = FACy
+                     ELSE
+                        FACy = WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1)
+                     ENDIF
                      IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
                         TEMP = 0.0D0
                         DO 524 IPCM = 1, NTS
@@ -478,22 +477,22 @@ C z-component
                      CALL DZERO(WRK(KUTR),N2ORBX)
                      CALL DZERO(WRK(KUTRX),N2ORBX)
                      
-                       IF (INTDIR) THEN
-                          CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),
+                     IF (INTDIR) THEN
+                        CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),
      &                         WRK(KUCMO),WRK(KLAST),NBAST,NORBT)
-                       ELSE
-                          CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
-                          CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
+                     ELSE
+                        CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                        CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
      &                         WRK(KWRK),NBAST,NORBT)
-                       ENDIF
-                         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-                       IF (FIRST1) THEN
-                         CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                         FACz = FAC * QM3QLM(WRK(KUTRX))
-                         WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1) = FACz
-                       ELSE
-                         FACz = WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1)
-                       ENDIF 
+                     ENDIF
+                     CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+                     IF (FIRST1) THEN
+                        CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
+                        FACz = FAC * QM3QLM(WRK(KUTRX))
+                        WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1) = FACz
+                     ELSE
+                        FACz = WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1)
+                     ENDIF 
                      IF ( (MMPCM) .AND. (.NOT.FIRST1) ) THEN
                         TEMP = 0.0D0
                         DO 525 IPCM = 1, NTS
@@ -507,7 +506,7 @@ C z-component
                            DIST1 = SQRT(DIST2)
                            DISTM3 = 1.0/(DIST1**3)
                            TEMP = TEMP
-     &                      + QPCMNOW*(CORD(3,IATNOW)-ZPCMNOW)*DISTM3
+     &                        + QPCMNOW*(CORD(3,IATNOW)-ZPCMNOW)*DISTM3
  525                    CONTINUE
                         FACz = FACz + FAC*TEMP
                      ENDIF
@@ -523,12 +522,12 @@ C
  300     CONTINUE 
 
          IF (MMPCM) THEN
-          DO 820 L = 1,NCOMS
-             WRITE(LFILE,'(6(E25.15,2x))') WRK(KXCOOR+L-1),
+            DO 820 L = 1,NCOMS
+               WRITE(LFILE,'(6(E25.15,2x))') WRK(KXCOOR+L-1),
      &            WRK(KYCOOR+L-1),
      &            WRK(KZCOOR+L-1),WRK(KXDIP+L-1),WRK(KYDIP+L-1),
      &            WRK(KZDIP+L-1)
- 820      CONTINUE
+ 820        CONTINUE
          ENDIF
 
  200  CONTINUE
@@ -538,9 +537,9 @@ C
          DO 819 IOSIM = 1,NOSIM
             DO 818 L = 1,NCOMS
                WRITE(MFILE,'(3(E25.15,2x))')
-     &              WRK(KXEDIP+KL*NCOMS+L-1),
-     &              WRK(KYEDIP+KL*NCOMS+L-1),
-     &              WRK(KZEDIP+KL*NCOMS+L-1)
+     &                WRK(KXEDIP+KL*NCOMS+L-1),
+     &                WRK(KYEDIP+KL*NCOMS+L-1),
+     &                WRK(KZEDIP+KL*NCOMS+L-1)
  818        CONTINUE
             KL=KL+1
  819     CONTINUE
@@ -558,20 +557,20 @@ C
       ENDIF
 
       IF (MMPCM) THEN
-        DIPDOT = 0.0D0
-        DO 821 L = 1,NCOMS
-          DIPDOT = DIPDOT + 
+         DIPDOT = 0.0D0
+         DO 821 L = 1,NCOMS
+            DIPDOT = DIPDOT + 
      &             WRK(KXDIP+L-1)*WRK(KXDIP+L-1) +
      &             WRK(KYDIP+L-1)*WRK(KYDIP+L-1) +
      &             WRK(KZDIP+L-1)*WRK(KZDIP+L-1)         
- 821    CONTINUE
+ 821     CONTINUE
 
-        IF (ABS((DIPDOT - DMMSAVE)) .LT. THRSMP) THEN 
-          LADDMM = .TRUE.
-        ELSE
-          LADDMM = .FALSE.
-          DMMSAVE = DIPDOT
-        ENDIF
+         IF (ABS((DIPDOT - DMMSAVE)) .LT. THRSMP) THEN 
+            LADDMM = .TRUE.
+         ELSE
+            LADDMM = .FALSE.
+            DMMSAVE = DIPDOT
+         ENDIF
       ENDIF
  
 C--------------------------------------------
@@ -580,8 +579,8 @@ C--------------------------------------------
 
 
       IF (.NOT. LADDMM) THEN
-        CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
-        IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
+         CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
+         IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
       ENDIF
 
       IF (TRPLET) THEN
@@ -596,7 +595,7 @@ C--------------------------------------------
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZVAR+KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,
-     *               1,1,LUPRI)
+     *        1,1,LUPRI)
       END IF
 
 c      IF (FIRST) THEN
@@ -1034,7 +1033,7 @@ C x-component
          IATNOW = NUCIND + L + LM
 
          KPATOM = 0
-         NOSIM = 3
+         NOSIMI = 3
          TOFILE = .FALSE.
          TRIMAT = .TRUE.
          EXP1VL = .FALSE.
@@ -1043,7 +1042,7 @@ C x-component
          DIPORG(3) = CORD(3,IATNOW)
 
          FORQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,
+         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,
      &              WRK(KLAST),LWRK2,LABINT,INTREP,INTADR,
      &              IATNOW,TOFILE,KPATOM,TRIMAT,DUMMY,EXP1VL,
      &              DUMMY,IPRRSP)

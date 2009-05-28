@@ -1046,7 +1046,7 @@ C
 C
 C /* Deck pcm_comp_chg */
 C
-      SUBROUTINE PCM_COMP_CHG(NOSIM, WRK, LWRK)
+      SUBROUTINE PCM_COMP_CHG(NOSIM, NEQ, WRK, LWRK)
 
 #include <implicit.h>
 #include <mxcent.h>
@@ -1054,24 +1054,26 @@ C
 #include <pcm.h>
 #include <ibtfun.h>
 
+      LOGICAL NEQ
+
       QTOT = 0.0D0
       IF (QSEFLG.EQ.-1.AND.VSEFLG.EQ.1) THEN
-         CALL COMP_CHG(QSE,VSE,QTOT,QSEFLG,WRK,LWRK)
+         CALL COMP_CHG(QSE,VSE,QTOT,QSEFLG,NEQ,WRK,LWRK)
          QSEFLG = 1
       ENDIF
       IF (QSNFLG.EQ.-1.AND.VSNFLG.EQ.1) THEN
-         CALL COMP_CHG(QSN,VSN,QTOT,QSNFLG,WRK,LWRK)
+         CALL COMP_CHG(QSN,VSN,QTOT,QSNFLG,NEQ,WRK,LWRK)
          QSNFLG = 1
       ENDIF
       IF (QSMMFLG.EQ.-1.AND.VSMMFLG.EQ.1) THEN
-         CALL COMP_CHG(QSMM,VSMM,QTOT,QSMMFLG,WRK,LWRK)
+         CALL COMP_CHG(QSMM,VSMM,QTOT,QSMMFLG,NEQ,WRK,LWRK)
          QSMMFLG = 1
       ENDIF
       IF (QSMM1FLG.EQ.-1.AND.VSMM1FLG.EQ.1) THEN
          DO IOSIM = 1, NOSIM
             INDEX = NTS * (IOSIM -1) + 1
             CALL COMP_CHG(QSMM1(INDEX),VSMM1(INDEX),
-     &                    QTOT,QSMM1FLG,WRK,LWRK)
+     &                    QTOT,QSMM1FLG,NEQ,WRK,LWRK)
          ENDDO
          QSMM1FLG = 1
       ENDIF
@@ -1079,7 +1081,7 @@ C
          DO IOSIM = 1, NOSIM
             INDEX = NTS * (IOSIM -1) + 1
             CALL COMP_CHG(QSE1(INDEX),VSE1(INDEX),
-     &                    QTOT,QSE1FLG,WRK,LWRK)
+     &                    QTOT,QSE1FLG,NEQ,WRK,LWRK)
          ENDDO
          QSE1FLG = 1
       ENDIF
@@ -1091,7 +1093,7 @@ C
 C
 C /* comp_chg */
 C
-      SUBROUTINE COMP_CHG(CHG, POTEN, QET, DO_FLAG, WRK, LWRK)
+      SUBROUTINE COMP_CHG(CHG, POTEN, QET, DO_FLAG, NEQ, WRK, LWRK)
 C
 C Arnfinn, April 2009, Odense
 C Calculate charges on tesseraes from potentials on tesseraes.
@@ -1104,6 +1106,7 @@ C
       
       INTEGER DO_FLAG
       DIMENSION POTEN(*), CHG(*), WRK(LWRK)
+      LOGICAL NEQ
 
       IF ((DO_FLAG .NE. -1) .AND. (DO_FLAG .NE. 1) 
      &                      .AND. (DO_FLAG .NE. 0)) THEN
@@ -1116,7 +1119,7 @@ C
       
       CALL DZERO(WRK(KQMAT),NTS*NTSIRR)
       IF (DO_FLAG .EQ. -1) THEN
-         CALL V2Q(WRK(KQMAT),POTEN,CHG,QET,.FALSE.)
+         CALL V2Q(WRK(KQMAT),POTEN,CHG,QET,NEQ)
       ENDIF
       
       RETURN

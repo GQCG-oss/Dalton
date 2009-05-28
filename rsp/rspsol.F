@@ -332,8 +332,6 @@ C
       ENDIF
 
       IF (MMPCM) THEN
-         write(lupri,*) 'NOSIM',NOSIM
-         write(lupri,*) 'MXEPCM',MXEPCM 
          IF (NOSIM .GT. MXEPCM) THEN
            WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM 
            CALL QUIT('Increase MXEPCM')
@@ -349,14 +347,13 @@ C
                CALL PCM_INIT_QVFLAGS('EL1')
                CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
      &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
-               CALL PCM_COMP_CHG(NOSIM,WRK(KFREE), LFREE)
+               CALL PCM_COMP_CHG(NOSIM, NEQRSP, WRK(KFREE), LFREE)
             END IF
             CALL PCM_INIT_QVFLAGS('MM1')
             CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
      &                       DUMMY,NOSIM,IDUMMY, WRK(KFREE), LFREE)
-            CALL PCM_COMP_CHG(NOSIM,WRK(KFREE), LFREE)
-            NOSIMMM = NOSIM
-            CALL PCM_WRITE_PCM2MM(NOSIMMM,NTS,XTSCOR,YTSCOR,ZTSCOR,
+            CALL PCM_COMP_CHG(NOSIM, NEQRSP, WRK(KFREE), LFREE)
+            CALL PCM_WRITE_PCM2MM(NOSIM,NTS,XTSCOR,YTSCOR,ZTSCOR,
      &                           QSE1,QSMM1)
             FIRST1 = .FALSE.
          ENDDO
