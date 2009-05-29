@@ -1341,7 +1341,7 @@ C
          NOSIM = 0
          NOTCNV = 0
          KCOFF = 0
-         IF (IPRRSP.GE.3 .AND. IPRRSP.LE.5) THEN
+         IF (IPRRSP.GE.2 .AND. IPRRSP.LE.5) THEN
             IF (LINEQ) THEN
                WRITE(LUPRI,'(/6X,A)')
      &' No.  Residual tot.,    conf., and orb.    Bnorm      Frequency '
@@ -1357,7 +1357,7 @@ C
             JROOTJ = IBOFF+JR
             QONORM = DDOT(KZWOPT,BVECS(1+KZCONF+JROFF),1,
      *                               BVECS(1+KZCONF+JROFF),1)
-     *              + DDOT(KZWOPT,BVECS(1+KZVAR+KZCONF+JROFF),1,
+     *             + DDOT(KZWOPT,BVECS(1+KZVAR+KZCONF+JROFF),1,
      *                               BVECS(1+KZVAR+KZCONF+JROFF),1)
             QCZNOR = DDOT(KZCONF,BVECS(1+JROFF),1,
      *                               BVECS(1+JROFF),1)
@@ -1376,13 +1376,11 @@ C
      *           ' ROOT:',JROOTJ,' RESIDUAL TOT:',QNORM,
      *           ' CONF:',QCNORM,' ORB:',QONORM,
      *           ' BNORM:',BNORM,' EIVAL:',EIVAL(JROOTJ)
-            ELSE IF (IPRRSP.GE.3) THEN
+               IF (QCNORM .NE. D0) WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
+     *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
+            ELSE IF (IPRRSP.GE.2) THEN
                WRITE(LUPRI,'(I10,1P,D15.5,3D10.2,D15.5)')
      *           JROOTJ,QNORM,QCNORM,QONORM,BNORM,EIVAL(JROOTJ)
-            END IF
-            IF (IPRRSP.GT.7 .AND. QCNORM .NE. D0) THEN
-               WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
-     *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
             END IF
 CHJAAJ      BNORM = MIN(BNORM,D1)
 C           ... 880309: ask for absolute convergence if BNORM
@@ -1569,13 +1567,15 @@ C
  3010    CONTINUE
       ENDIF
       IF ((IPRRSP.GT.105).AND.(NCSIM.GT.0)) THEN
-         WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS AFTER RSPORT',NCSIM
+         WRITE(LUPRI,*)' NCSIM CSF trial vectors after RSPORT',NCSIM
          CALL OUTPUT(BVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,LUPRI)
       ENDIF
       IF ((IPRRSP.GT.105).AND.(NOSIM.GT.0)) THEN
-         WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS AFTER RSPORT',NOSIM
-         CALL OUTPUT(BVECS(1+NCSIM*KZCONF),1,KZYWOP,
-     *             1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
+         WRITE(LUPRI,'(/A,I5/A)')
+     +      ' NOSIM orbital trial vectors after RSPORT',NOSIM,
+     +      ' ( columns: Z_1 Y_1 Z_2 Y_2 ... Z_NOSIM Y_NOSIM)'
+         CALL OUTPUT(BVECS(1+NCSIM*KZCONF),1,KZWOPT,
+     *             1,NOSIM*2,KZWOPT,NOSIM*2,1,LUPRI)
       ENDIF
 C
  3999 CONTINUE
@@ -1697,7 +1697,7 @@ C
       PARAMETER (COMPLX = 1.0D7 )
       PARAMETER (D0=0.0D0, D1=1.0D0)
 C
-      IF (IPRRSP .GE. 81) THEN
+      IF (IPRRSP .GT. 20) THEN
          WRITE (LUPRI,'(//A/A)')
      *      '  (ALFAR + i ALFAI) / BETA are eigenvalues;',
      *      '     ALFAR           ALFAI          BETA'
@@ -1731,7 +1731,7 @@ C
             ALFAR(I) = COMPLX
          END IF
   10  CONTINUE
-      IF (IPRRSP .GT. 120) THEN
+      IF (IPRRSP .GT. 15) THEN
          WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
       END IF
@@ -3029,20 +3029,18 @@ C
             INEG     = ISNDX(2)
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
+            IF (ISNDX(3).GT.0 .AND. .NOT.ABSORP) 
+     *           WRITE(LUPRI,'(/A)')
+     *         ' *** INFO, negative eigenvalues in reduced matrix.'
             IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
- 1800       FORMAT(/' GP * SOLUTION VECTOR AT FREQUENCY',F12.5,' AU',
-     *             /' AFTER',I5,' LINEAR TRANSFORMATIONS IS ',F15.8,
-     *             /' INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS',3I5,
-     *             /' DETERMINANT OF REDUCED MATRIX IS',F6.2,
+ 1800       FORMAT(/' GP * SOLUTION vector at frequency',F12.5,' a.u.',
+     *             /' after',I5,' linear transformations is ',F15.8,
+     *             /' INERTIA (POS,ZER,NEG) of reduced matrix is',3I5,
+     *             /' Determinant of reduced matrix is',F6.2,
      *              ' * 10 **',F5.1)
-C
-            IF (ISNDX(3).GT.0 .AND. .NOT.ABSORP) 
-     *           WRITE(LUPRI,'(//2A,3I5)')
-     *         ' ***WARNING, negative eigenvalues in reduced matrix,',
-     *         ' inertia is',ISNDX
 C
             IF (IPRRSP .GE. 14) THEN
                WRITE (LUPRI,'(/A)')
@@ -3208,9 +3206,9 @@ C
       KEXST2 = MIN(5*KEXSTV+8,KZVAR)
       KEXST2 = MIN(KEXST2,  MAXST)
       IF (IPRRSP .GT.110 ) THEN
-         WRITE(LUPRI,'(/A)') ' DIAGONAL E(2)'
+         WRITE(LUPRI,'(/A)') ' DIAGONAL of E(2)'
          CALL OUTPUT(WRK(KDIAE),1,KZVAR,1,1,KZVAR,1,1,LUPRI)
-         WRITE(LUPRI,'(/A)') ' DIAGONAL orbital part of S(2)'
+         WRITE(LUPRI,'(/A)') ' DIAGONAL of orbital part of S(2)'
          CALL OUTPUT(WRK(KDIASO),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
       END IF
       DO 53 I = 1,KZWOPT
