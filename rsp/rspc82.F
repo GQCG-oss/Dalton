@@ -636,8 +636,14 @@ C
       KFVX   = KFCX   + NOSIM * NORBT * NORBT
       KQAX   = KFVX   + NOSIM * NORBT * NORBT
       KQBX   = KQAX   + NOSIM * NORBT * NASHT
+C
+      LFVTD  = NCSIM * N2ORBX
+      IF (DOMCSRDFT) LFVTD = 2*LFVTD
+C     ... Extra allocation for "FCTD" in MCSCF-SRDFT,
+C         is needed for the VxcTD matrices.
       KFVTD  = KQBX   + NOSIM * NORBT * NASHT
-      KQATD  = KFVTD  + NCSIM * NORBT * NORBT
+      KQATD  = KFVTD  + LFVTD
+C
       KQBTD  = KQATD  + NCSIM * NORBT * NASHT
       KH2    = KQBTD  + NCSIM * NORBT * NASHT
       IF (DIRFCK) THEN
@@ -1341,7 +1347,7 @@ C
          NOSIM = 0
          NOTCNV = 0
          KCOFF = 0
-         IF (IPRRSP.GE.2 .AND. IPRRSP.LE.5) THEN
+         IF (IPRRSP.GE.3 .AND. IPRRSP.LE.5) THEN
             IF (LINEQ) THEN
                WRITE(LUPRI,'(/6X,A)')
      &' No.  Residual tot.,    conf., and orb.    Bnorm      Frequency '
@@ -1349,7 +1355,7 @@ C
                WRITE(LUPRI,'(/6X,A)')
      &'Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue'
             END IF
-            WRITE(LUPRI,'(/6X,A)')
+            WRITE(LUPRI,'(6X,A)')
      &'----------------------------------------------------------------'
          END IF
          DO 2000 JR = 1,NBX
@@ -1378,7 +1384,7 @@ C
      *           ' BNORM:',BNORM,' EIVAL:',EIVAL(JROOTJ)
                IF (QCNORM .NE. D0) WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
      *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
-            ELSE IF (IPRRSP.GE.2) THEN
+            ELSE IF (IPRRSP.GE.3) THEN
                WRITE(LUPRI,'(I10,1P,D15.5,3D10.2,D15.5)')
      *           JROOTJ,QNORM,QCNORM,QONORM,BNORM,EIVAL(JROOTJ)
             END IF

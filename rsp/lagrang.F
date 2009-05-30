@@ -105,13 +105,20 @@ C     ALLOCATE WORK SPACE FOR RSPOLI
 C        NCSIM  = 1, NOSIM = 0
 C
          KFVTD  = KTOT
-         KQATD  = KFVTD  + NORBT * NORBT
+         LFVTD  = N2ORBX
+         IF (DOMCSRDFT) LFVTD = 2*LFVTD
+C     ... Extra allocation for "FCTD" in MCSCF-SRDFT,
+C         is needed for the VxcTD matrix.
+         KQATD  = KFVTD  + LFVTD
          KQBTD  = KQATD  + NORBT * NASHT
          KH2    = KQBTD  + NORBT * NASHT
          KH2X   = KH2    + NORBT * NORBT
          KWRK1  = KH2X   + NORBT * NORBT
          LWRK1  = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('LAGRAN',KWRK1-1,LWRK)
+         IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+            CALL QUIT('LAGRANGE is not implemented yet for srDFT')
+         END IF
          IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
             CALL DAXPY(NNORBT,D1,FC,1,FV,1)
             CALL DSCAL(NNORBT,DM1,FV,1)

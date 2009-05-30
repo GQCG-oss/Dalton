@@ -128,10 +128,10 @@ C
 C
       TIMRSP = SECOND()
       CALL GETTIM(CSTR,WSTR)
-      WRITE (LUPRI,'(//A)')
-     *   '  This is output from RESPONSE  -  '//
-     *   'an MCSCF and SOPPA response property program'
-      WRITE (LUPRI,'(1X,78A1/)') ('-',I=1,78)
+      WRITE (LUPRI,'(/1X,78A1/A/1X,78A1)') ('-',I=1,78),
+     &   '  RESPONSE  -  '//
+     &   'an MCSCF, MC-srDFT, DFT, and SOPPA response property program',
+     &   ('-',I=1,78)
 C
 C     *************************
 C     ***** INPUT SECTION *****
@@ -316,6 +316,29 @@ C
      *           WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),
      *           WRK(KWRK1),LWRK1)
 C     CALL RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,WRK,LWRK)
+C
+C
+      IF (DOMCSRDFT) THEN
+         CALL TITLER('MC-srDFT response calculation','*',103)
+      ELSE IF (DOHFSRDFT) THEN
+         CALL TITLER('HF-srDFT response calculation','*',103)
+      ELSE IF (DODFT .AND. NASHT.EQ.0) THEN
+         CALL TITLER('High-spin DFT response calculation','*',103)
+      ELSE IF (DODFT) THEN
+         CALL TITLER('DFT response calculation (TD-DFT)','*',103)
+      ELSE IF (HSROHF) THEN
+         CALL TITLER('High-spin ROHF response calculation','*',103)
+      ELSE IF (TDHF) THEN
+         CALL TITLER('RHF response calculation','*',103)
+      ELSE IF (CCPPA) THEN
+         CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+      ELSE IF (SOPPA) THEN
+         CALL TITLER('SOPPA response calculation','*',103)
+      ELSE
+         CALL TITLER('MCSCF response calculation','*',103)
+      END IF
+C
+C
 C
       IF ( .NOT.TDHF ) THEN
          CALL GETCIX(WRK(KINDX),IREFSY,IREFSY,WRK(KFREE),LFREE,0)

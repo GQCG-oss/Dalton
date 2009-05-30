@@ -291,6 +291,9 @@ C
 C     Initialise variables and layout some workspace
 C
       CALL QENTER('E3INIT')
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('srDFT not implemented in E3INIT')
+      END IF
       KFREE = 1
       LFREE = LWRK
       CALL MEMGET('REAL',KZYMB,NORBT*NORBT,WRK,KFREE,LFREE)
@@ -1189,6 +1192,10 @@ C
       LOGICAL LCON, LORB, LREFST, HSORUN, DFTSAV, ADDFOCK
 C
       CALL QENTER('RSP2GR')
+C
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('srDFT not implemented in RSP2GR')
+      END IF
 C
       CALL DZERO(FA,NORBT*NORBT)
       IF (NASHT .GT. 0) THEN

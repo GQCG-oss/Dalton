@@ -1225,8 +1225,8 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <aovec.h>
-#include <dummy.h>
 #include <dftcom.h>
+#include <dummy.h>
 C
 C Local
 C
@@ -1331,10 +1331,9 @@ C
          IPRTWO = 0
          TKTIME = .FALSE.
          CALL DZERO(WORK(KF),NDMAT*N2BASX)
-         IF (DFTRUN) THEN
-            HFXSAV=HFXFAC
-            HFXFAC=D1
-         END IF
+C        Always full exchange in spin-orbit integrals:
+         HFXSAV=HFXFAC
+         HFXFAC=D1
          CALL TWOINT(WORK(KFREE),LFREE,WORK(KFREE),
      &               WORK(KF),WORK(KD),NDMAT,
      &               IDUMMY, IFCTYP,
@@ -1345,9 +1344,7 @@ C
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &               .FALSE.)
          CALL MEMREL('HSOFCKAO.TWOINT',WORK,KF,KJSTRS,KFREE,LFREE)
-         IF (DFTRUN) THEN
-            HFXFAC=HFXSAV
-         END IF
+         HFXFAC=HFXSAV
       IF (DEBUG) THEN
          CALL MAOPRI(WORK(KF1),'X2HSOAO(TWOINT):Fock 1')
          CALL MAOPRI(WORK(KF2),'X2HSOAO(TWOINT):Fock 2')

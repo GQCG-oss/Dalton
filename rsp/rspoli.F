@@ -134,7 +134,8 @@ C
       DATA NEEDMU /1,1,1,0,0,0/
       DATA NEEDDI /1,1,1,0,0,0/
       CALL QENTER('RSPOLI')
-      ROKS = NASHT.GT.0 .AND. DFTADD
+C
+      ROKS = NASHT.GT.0 .AND. DODFT
 C
       IF (SOPPA) THEN
          IF (DIRFCK) THEN
@@ -145,7 +146,7 @@ C        exclude virt-virt contributions to B(2) matrix
 C        for .OPTORB iterations from ORPCTL
          IF (NOSIM .GT. 0 .AND. KZCONF .GT. 0) NEEDMU(6) = 1
       ENDIF
-      IF(ROKS.AND..NOT.TDHF) THEN
+      IF (ROKS.AND..NOT.TDHF) THEN
          CALL QUIT('RSPOLI: ROKS not implemented for '
      &        //   'MO-integral method')
       END IF
@@ -225,6 +226,11 @@ C             CALL MTRSP(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
          END IF
       END IF
       IF (NCSIM.GT.0) THEN
+         IF (DOMCSRDFT) THEN
+C           ... we need to use SIRFCK and allocate two matrices,
+C               see sirius/sirtr1.F /hjaaj May 09
+            CALL QUIT('MC-srDFT of FVTD not implemented in RSPOLI yet')
+         END IF
          NTOT = NORBT * NORBT * NCSIM
          CALL DZERO(FVTD,NTOT)
          NTOT = NORBT*NASHT*NCSIM
@@ -239,6 +245,9 @@ C IF DIRFCK (direct RPA) compute new densities
 C and Fock matrices in AO basis
 C
       IF (DIRFCK .OR. HSROHF .OR. DODFT) GO TO 1000
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('MO srDFT not implemented yet in RSPOLI')
+      END IF
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
@@ -544,6 +553,9 @@ C
       CALL MEMREL('RSPOLI.h2m+d',WRK,KFRSAV,KWRK0,KFREE,LFREE)
       GO TO 2000
  1000 CONTINUE
+      IF (DOMCSRDFT) THEN
+         CALL QUIT('AO-direct MC-srDFT not implemented yet in RSPOLI')
+      END IF
 C
 C end up here if DIRFCK
 C       
@@ -553,8 +565,9 @@ C       DXCAO,DXVAO must be stored consecutively
 C       (requirement for SIRFCK call)
 C
       NFMAT  = 0
-      IF (NISHT .GT. 0 .OR. DFTRUN) NFMAT = NFMAT + NOSIM
-C     ... for FXCAO
+      IF (NISHT .GT. 0 .OR. DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT)
+     &   NFMAT = NFMAT + NOSIM
+C     ... for FXCAO (+ VxcAO when DFT or srDFT)
       IF (NASHT .GT. 0) NFMAT = NFMAT + NOSIM
 C     ... for FXVAO
 C
@@ -637,7 +650,7 @@ C           Coulomb+exchange
       END DO
 C     Change IFCTYP for all Fa matrices 
       IF (ROKS.OR.HSROHF) THEN
-      DO 1443 I=1,NOSIM  
+        DO I=1,NOSIM  
           IF (TRPLET) THEN
              IFCTYP(I)=10*(IFCTYP(I)/10) + 2
              IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 3
@@ -645,7 +658,7 @@ C     Change IFCTYP for all Fa matrices
              IFCTYP(I)=10*(IFCTYP(I)/10) + 3
              IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 2
           END IF
- 1443 CONTINUE   
+        END DO
       END IF  
       DFTADX = DFTADD
       DFTADD = .FALSE.
@@ -846,7 +859,7 @@ C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,EVECS,ZYMAT)
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
  1014       CONTINUE
          END IF
-         IF (HSROHF.OR.DFTADD) THEN
+         IF (HSROHF.OR.DODFT) THEN
             CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
      *               EVECS,DUMMY)
 C

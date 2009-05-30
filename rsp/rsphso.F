@@ -1453,18 +1453,18 @@ C Build HSO inactive fockmatrix from AO integrals
 C If DIRFCK=.TRUE. call TWOINT
 C else read from AO2SOINT
 C
+#include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <dummy.h>
 #include <infinp.h>
 #include <wrkrsp.h>
 #include <inforb.h>
 #include <aovec.h>
 #include <infrsp.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <symmet.h>
 #include <dftcom.h>
+#include <symmet.h>
 #ifdef VAR_DEBUG
 #define DEBUG .TRUE.
 #else
@@ -1542,10 +1542,9 @@ C
          IPRTWO = 0
          TKTIME = .FALSE.
          CALL DZERO(WRK(KFC),NDMAT*N2BASX)
-         IF (DFTRUN) THEN
-            HFXSAV=HFXFAC
-            HFXFAC=D1
-         END IF
+C        Always full exchange for spin-orbit integrals:
+         HFXSAV=HFXFAC
+         HFXFAC=D1
          CALL TWOINT(WRK(KFREE),LFREE,WRK(KFREE),
      &               WRK(KFC),WRK(KDC),NDMAT,
      &               IDUMMY, IFCTYP,
@@ -1555,15 +1554,13 @@ C
      &               WRK(KNPRIM),WRK(KNCONT),WRK(KIORBS),
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &               .FALSE.)
+         HFXFAC=HFXSAV
          CALL MEMREL('HSOFCKAO.TWOINT',WRK,KFC,KJSTRS,KFREE,LFREE)
          IF (DEBUG) THEN
             CALL MAOPRI(WRK(KFC),':TWOINT:Calculated F1')
             IF (NASHT.GT.0) THEN
                CALL MAOPRI(WRK(KFC+N2BASX),':TWOINT:Calculated F2')
             END IF
-         END IF
-         IF (DFTRUN) THEN
-            HFXFAC=HFXSAV
          END IF
 C
 C  Transform to SO

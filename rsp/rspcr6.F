@@ -238,6 +238,9 @@ C
       END IF
 
       IF (DFTADD) THEN
+         IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+            CALL QUIT('srDFT not implemented yet for cubic response')
+         END IF
          CALL DZERO(WRK(KFI),N2ORBX)
          CALL DFT4DRV(VECB, VECC, VECD,
      &                   WRK(KFI),WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
