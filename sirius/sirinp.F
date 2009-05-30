@@ -325,7 +325,6 @@ C
                CALL QUIT('Lowering of symmetry for MCSCF not'//
      &            ' implemented in SIRIUS yet, sorry!')
             END IF
-            NEWSYM = .FALSE.
             ICI0 = 1
          ELSE
             ICI0 = 6
@@ -418,19 +417,26 @@ C
          P6FLAG(I) = .FALSE.
   670 CONTINUE
 C
-      DORHF = .FALSE.
-      DOMP2 = .FALSE.
-      DOCINO= .FALSE.
-      DOCI  = .FALSE.
-      DOMC  = .FALSE.
-      DODFT = .FALSE.
-      DONEVPT= .FALSE.
-      DORSP = RNRESP
-      ABAIPH= RNABAC
-      ADDMP2 = .FALSE.
+      DORHF     = .FALSE.
+      DOMP2     = .FALSE.
+      DOCINO    = .FALSE.
+      DOCI      = .FALSE.
+      DOMC      = .FALSE.
+      DODFT     = .FALSE.
+      DONEVPT   = .FALSE.
+C  ---> Initialize SR-DFT stuff here !
+      DOMCSRDFT = .FALSE.
+      DOCISRDFT = .FALSE.
+      DOHFSRDFT = .FALSE.
+      ADDSRI    = .FALSE.
+      SRHYBR    = .FALSE.
+C <---
+      DORSP     = RNRESP
+      ABAIPH    = RNABAC
+      ADDMP2    = .FALSE.
 C     ... It's followed by an abacus run
-      CORHOL= .FALSE.
-      CORRLX= .FALSE.
+      CORHOL    = .FALSE.
+      CORRLX    = .FALSE.
 C
 C********** Default values section HAMINP *****
 C
@@ -697,8 +703,8 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRSOL = IPRUSR + 5
       IPRCNO = IPRUSR + 1
       IPRFCK = IPRUSR
-C     set limit for POPPRI in each DIIS/QCHF/MCSCF iter to 10 nuclei
-      LIM_POPPRI = 16
+C     set limit for POPPRI in each DIIS/QCHF/MCSCF iter to 30 nuclei
+      LIM_POPPRI = 30
 C
 C  ***************************************************
 C  *****        Read Sirius input                *****
@@ -809,8 +815,8 @@ C
 C
 C     This is where we jump back in if input has been processed earlier.
 C
-      INPPRC = .TRUE.
- 124    CONTINUE
+ 124  CONTINUE
+C
       IF (DIRFCK) THEN
          LUSUPM = -1
 c        IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
@@ -1091,7 +1097,9 @@ C               Find out if any orbitals deleted
             REWIND LUIT1
             IF (FNDLAB('BASINFO ',LUIT1)) THEN
 C           ... 921202: old LUIT1 files do not have BASINFO
-               IF (INIOCC .LE. 0) THEN
+               IF (INIOCC .EQ. 0 .OR. IREST .GT. 0) THEN
+C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
+C                  may restart with old orbitals, but new charge.
                   READ (LUIT1) MSYM,MBAS,NORB,NRHF,IOPRHF
                   INIOCC = 2
                ELSE
@@ -1112,7 +1120,9 @@ C               Find out if any orbitals deleted
      &               JSTATE,JSPIN,MACTEL,LXSYM,KXAVER
 C              READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
 C    *               ISTATE,ISPIN,NACTEL,LSYM
-             IF (INIOCC .LE. 0 .AND. MACTEL .LE. 1) THEN
+             IF (INIOCC .EQ. 0 .AND. MACTEL .LE. 1) THEN
+C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
+C                  may restart with old orbitals, but new charge.
                READ (LUSIFC) (IDUM,I=1,13),MSYM,(IDUM,I=1,64),
      &            NRHF,(IDUM,I=1,24),NORB,MBAS
                IF (MACTEL .EQ. 1) THEN
@@ -1134,8 +1144,8 @@ C            IF (XPOTNC .NE. POTNUC) INPERR = INPERR + 1
 C            IF (XPOTNC .NE. POTNUC .AND. IREST .NE. 0) IREST = -1
 C              ... we cannot use this test because we
 C                  may have a new geometry (geometry optimization)
-C                  However, code info in IREST if restarted
-C                  calculation for PRTINP /hjaaj feb. 2003
+C                  However, code info for PRTINP in IREST if restarted
+C                  calculation /hjaaj feb. 2003
             ELSE
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/2A/3A)')
@@ -1304,9 +1314,9 @@ C
       IF (DORHF .AND. AUTOCC .AND. IREST .EQ. 0
      &   .AND. INPERR .EQ. 0) THEN
 C
-C        Initial occupation may have been specified in input
-C        or read from LUIT1 or LUSIFC. If not, we find it now
-C        from diagonal elements of the H1 matrix.
+C        Initial occupation may have been specified in input or read
+C        from LUIT1 or LUSIFC. If not, and more than one symmetry,
+C        we find it now from diagonal elements of the H1 matrix.
 C        If DOHUCKEL use Huckel guess (INIOCC = 5).
 C
          KSCRA = 1    + NCMOT
@@ -1316,6 +1326,12 @@ C
                CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
                FLAG(13) = .FALSE.
                INIOCC = 5
+            ELSE IF (NSYM .EQ. 1) THEN
+               CALL IZERO(NRHF,8)
+               MOCC = NRHFEL/2
+               NRHF(1) = MOCC
+               IF (2*MOCC .NE. NRHFEL) IOPRHF = 1
+               INIOCC = 6
             ELSE
                CALL H1OCC(CMO,CMO(KSCRA),1,LSCRA)
                INIOCC = 4
@@ -1622,14 +1638,16 @@ C
 C
       CALL SIROPN
 C
-C
+C      
+      NEWSYM = .FALSE.
+      INPPRC = .TRUE.
       CALL QEXIT('SIRRDI')
       RETURN
 C
 C *****  ERROR MESSAGES AND ERROR STOP *****
 C
- 9010 WRITE (LUERR,9000) INPERR
-      WRITE(LUW4,9000) INPERR
+ 9010 WRITE (LUW4,9000) INPERR
+      IF (LUERR.NE.LUW4) WRITE(LUERR,9000) INPERR
       IF (LUPRI.NE.LUW4) WRITE(LUPRI,9000) INPERR
  9000 FORMAT(//20X,I5,' errors occured in SIRIUS input processing.'
      *        /20X,'Check error file for information about errors.'
@@ -4559,6 +4577,8 @@ C   INFDIM : MAXPHP
 C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
+C   siripc : INPPRC
+C   gnrinf : NEWSYM,?
 C
 #include <priunit.h>
 #include <mxcent.h>
@@ -4575,6 +4595,7 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <huckel.h>
+#include <siripc.h>
 #include <gnrinf.h>
 #include <dfterg.h>
 #include <dftacb.h>
@@ -4583,13 +4604,14 @@ C
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'HUCKEL','EWMO  '/
-      CHARACTER*33 TXTOCC(0:5)
+      CHARACTER*33 TXTOCC(0:6)
       DATA TXTOCC/'NOTHING because of error(s).     ',
      &            'user input.                      ',
      &            'SIRIUS restart file (SIRIUS.RST).',
      &            'SIRIUS interface file (SIRIFC).  ',
      &            'diagonal of H1 matrix.           ',
-     &            'Huckel guess.                    '/
+     &            'Huckel guess.                    ',
+     &            'total charge (only one symmetry!)'/
 C
       CHARACTER*70 STARS,RELEAS
       DATA STARS(1:36)  /'************************************'/
@@ -4603,6 +4625,19 @@ C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
  200  FORMAT(3(/1X,A))
+
+      IF (INPPRC) THEN
+         IF (NEWSYM) THEN
+            WRITE(IWUNIT,'(/A)')
+     &   ' (Wave function specification NOT suppressed here,'//
+     &   ' because symmetry has changed.)'
+         ELSE
+            WRITE(IWUNIT,'(/A)')
+     &   ' (Wave function specification suppressed here,'//
+     &   ' see output above for initial geometry.)'
+            GO TO 8000
+         END IF
+      END IF
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
  400     FORMAT(/' Main authors of the SIRIUS module:'
@@ -4636,7 +4671,7 @@ C
   500 FORMAT(/' Title     :',T14,A60)
   600 FORMAT(T14,A60)
       WRITE (IWUNIT,700) ((TITMOL(I,J),I=1,12), J=1,2)
-  700 FORMAT(/' Title lines from integral program:'/T6,12A6/T6,12A6)
+  700 FORMAT(/' Title lines from ".mol" input file:'/T6,12A6/T6,12A6)
 C
       WRITE(IWUNIT,1700) LUPRI,IPRI6,LUW4,IPRI4
  1700 FORMAT(/' Print level on unit LUPRI =',I4,' is',I4,
