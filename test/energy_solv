@@ -183,13 +183,13 @@ CTRL[6]=2
 ERROR[6]="INERTIAL POLARIZATION NOT REQUESTED"
 
 # SCF energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-113\.416137335[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-113\.416137335" $log | wc -l`
 TEST[7]=`expr	$CRIT1`
 CTRL[7]=1
 ERROR[7]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-113\.609683[4-5][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy \: * \-113\.609683[4-5]" $log | wc -l`
 TEST[8]=`expr	$CRIT1`
 CTRL[8]=1
 ERROR[8]="MP2 ENERGY  NOT CORRECT"
@@ -201,9 +201,9 @@ CTRL[9]=1
 ERROR[9]="MCSCF ENERGY NOT CORRECT"
 
 # Occupancy
-CRIT1=`$GREP "2\.000000000 * 2\.000000000 * 1\.98917878[0-9] * 1\.98081609[0-9] * 1\.97259851[0-9]" $log | wc -l`
-CRIT2=`$GREP "(0| )\.02858843[0-9] * (0| )\.02155218[0-9] * (0| )\.01083859[0-9]" $log | wc -l`
-CRIT3=`$GREP "1\.98020209[0-9] * 1\.97179716[0-9] * (0| )\.01198551[0-9] * (0| )\.02965842[0-9]" $log | wc -l`
+CRIT1=`$GREP "2\.000000000 * 2\.000000000 * 1\.9891787.. * 1\.9808160.. * 1\.9725985.." $log | wc -l`
+CRIT2=`$GREP "0*\.0285884.. * 0*\.0215521.. * 0*\.0108385.." $log | wc -l`
+CRIT3=`$GREP "1\.9802020.. * 1\.9717971.. * 0*\.0119855.. * 0*\.0296584.." $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[10]=5
