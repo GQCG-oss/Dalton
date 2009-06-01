@@ -442,6 +442,8 @@ do
   myprint "-----------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
+# remove any directory path now the files are unpacked
+  item=`basename $item`
   if [ -f $item.info -a "$keep_quiet" = "" ]; then
     cat $item.info
     cat $item.info >> $listing
