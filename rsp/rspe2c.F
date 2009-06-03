@@ -798,7 +798,7 @@ C WRITTEN 13 FEB 1986
 C revised 941117-hjaaj
 C
 C PURPOSE:
-C    ADD CONTRIBUTION TO ONE INDEX TRANSFORMED FOCK MATRICES WHICH
+C    ADD CONTRIBUTION TO ONE-INDEX TRANSFORMED FOCK MATRICES WHICH
 C    ORIGINATE FROM TRANSFORMING THE FOCK MATRICES
 C
 #include <implicit.h>
@@ -819,13 +819,13 @@ C
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
-     &           ' ONE INDEX TRANSFORMED FOCK CORE MATRIX',
+     &           ' ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
      *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *           ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX',
+     *           ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
      *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
@@ -888,13 +888,13 @@ C
 C
       IF (IPRRSP.GT.90) THEN
          DO 2000 ISIM = 1,NSIM
-            WRITE(LUPRI,*) ISIM,' ONE INDEX TRANSFORMED FOCK CORE '//
+            WRITE(LUPRI,*) ISIM,' ONE-INDEX TRANSFORMED FOCK CORE '//
      &                          'MATRIX'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                  ,1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *                   ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX'
+     *                   ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
@@ -3317,7 +3317,8 @@ C
 #include <esg.h>
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
-      DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
+!     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
+      DOMO2 = DODFT
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
