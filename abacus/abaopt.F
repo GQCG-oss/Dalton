@@ -45,7 +45,7 @@ C  /* Deck opinpu */
 #include "infinp.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
-      PARAMETER (NTABLE = 64, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
+      PARAMETER (NTABLE = 73, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -66,7 +66,10 @@ C
      &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
      &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
-     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA'/
+     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA',
+     &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM',
+     &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT',
+     &            '.NOHSWR'/
 C
       DATA FIRST /.TRUE./
 C
@@ -83,6 +86,8 @@ C
 C
       NEWDEF = WORD .EQ. '*OPTIMI'
       ICHANG = 0
+      ICHGTH = 0
+      ICNLVL = -1
       IPDEF  = 0
       NSPMOD = -1
       SADDLE = .FALSE.
@@ -92,6 +97,7 @@ C
       ITRBRK = -1
       NWSYMM = .FALSE.
       NEWSYM = .FALSE.
+      NOHSWR = .FALSE.
       DOSPE  = .FALSE.
       DOPRE  = .FALSE.
       FINPRE = .FALSE.
@@ -101,6 +107,7 @@ C
       CHGRDT = .FALSE.
       CONOPT = .FALSE.
       REMCRD = .FALSE.
+      ADDCRD = .FALSE.
       REBILD = .FALSE.
       NUMPRE = 0
       IPRE   = 0
@@ -159,6 +166,8 @@ C
       BAKER  = .FALSE.
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
+      NOADDA = .FALSE.
+      REDRED = .FALSE.
       LINDHD = .TRUE.
 C     ... hjaaj Mar 2004: disable generalization of Lindh
 C     algorithm for model Hessian as this is not working
@@ -170,6 +179,12 @@ C     satisfactorily yet.
       GRDTHR = DEFTH2
       THRSTP = DEFTH2
       THRERG = DEFTHE
+C     When running linsca version, NATNRM is always used
+#ifdef VAR_LINSCA
+      NATNRM = .TRUE.
+#else
+      NATNRM = .FALSE.
+#endif
       THRSYM = MIN(5.0D-3,SQRT(DEFTHE))
       ICONDI = 2
       NCRTOT = 0
@@ -191,6 +206,7 @@ C     satisfactorily yet.
       CALL DZERO(CRDINT,8*MXCENT)
       CALL DZERO(CRDIN1,8*MXCENT)
       CALL IZERO(ICNSTR,8*MXCENT)
+      CALL IZERO(IADDCR,11*4)
       DO 123 I = 0, 7
          CNDHES(I) = D0
          INDHES(I) = 0
@@ -215,7 +231,8 @@ C
      &                  31,32,33,34,35,36,37,38,39,40,
      &                  41,42,43,44,45,46,47,48,49,50,
      &                  51,52,53,54,55,56,57,58,59,60,
-     &                  61,62,63,64), I
+     &                  61,62,63,64,65,66,67,68,69,70,
+     &                  71,72,73), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -249,9 +266,11 @@ C
             GOTO 100
  9          READ(LUCMD,*) GRDTHR
             CHGRDT = .TRUE.
+            ICHGTH = ICHGTH + 1
             GOTO 100
  10         READ(LUCMD,*) THRSTP
             CHGRDT = .TRUE.
+            ICHGTH = ICHGTH + 1
             GOTO 100
  11         READ(LUCMD,*) ICONDI
             GOTO 100
@@ -409,6 +428,40 @@ C
             GOTO 100
  64         GEOALL = .TRUE.
             GOTO 100
+ 65         READ (LUCMD,*) NADD
+            IF ((NADD .LE. 0) .OR. (NADD .GT. 10)) THEN
+               WRITE(LUPRI,'(/,A/)')
+     &              ' Number of coordinates to be added must '
+     &              // 'be between 1 and 10!'
+               CALL QUIT('Illegal number of coordinates to be added.')
+            END IF
+            IADDCR(0,1) = NADD
+            DO 465 I = 1, NADD
+               READ (LUCMD,*) IADDCR(I,1), IADDCR(I,2),
+     &              IADDCR(I,3), IADDCR(I,4)
+ 465        CONTINUE
+            ADDCRD = .TRUE.
+            GOTO 100
+ 66         NOADDA = .TRUE.
+            GOTO 100
+ 67         REDRED = .TRUE.
+            GOTO 100
+ 68         NATNRM = .TRUE.
+            GOTO 100
+ 69         ICNLVL = 1
+            ICHGTH = ICHGTH + 1
+            GOTO 100
+ 70         ICNLVL = 2
+            ICHGTH = ICHGTH + 1
+            GOTO 100
+ 71         ICNLVL = 4
+            ICHGTH = ICHGTH + 1
+            GOTO 100
+ 72         ICNLVL = 5
+            ICHGTH = ICHGTH + 1
+            GOTO 100
+ 73         NOHSWR = .TRUE.
+            GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
          ELSE
@@ -423,7 +476,7 @@ C
 C
       IF ((.NOT. OPTNEW) .AND. (ICHANG .GT. 0)) THEN
          WRITE(LUPRI,'(//A/3A/A/)') SEPARATOR,
-     &     ' Geomotry optimization not requested, ',
+     &     ' Geometry optimization not requested, ',
      &     WORD1,' input ignored.', SEPARATOR
          RETURN
       END IF
@@ -652,6 +705,14 @@ C
             WRITE(LUPRI,'(A)') ' No dihedral angles will be used ' //
      &           'as coordinates (just bonds and angles).'
       END IF
+      IF (NOADDA) THEN
+            WRITE(LUPRI,'(A)') ' No stabilizing additional angles ' //
+     &           'will be used.'
+      END IF
+      IF (REDRED) THEN
+            WRITE(LUPRI,'(A)') ' Redundancy will be decreased by ' //
+     &           'removing a number of dihedral coordinates.'
+      END IF
 C
       IF (.NOT. (NEWTON .OR. HSFILE .OR. INITHS .OR. MODHES .OR.
      &     INMDHS .OR. CMBMOD .OR. INRDHS .OR.
@@ -822,6 +883,10 @@ C
          EVLINI = 1.0D0
       END IF
       WRITE(LUPRI,*)
+      IF (NOHSWR) THEN
+         WRITE(LUPRI,'(A/)')
+     &        ' Current Hessian will not be written out to DALTON.HES.'
+      END IF
       IF (REJINI) THEN
          IF (NEWTON .OR. QUADSD) THEN
             WRITE(LUPRI,'(A)')
@@ -972,55 +1037,135 @@ C
             WRITE(LUPRI,*)
          END IF
       END IF
-      IF (GRDTHR .NE. DEFTH2) THEN
+C
+#ifdef VAR_LINSCA
+      IF (BAKER) THEN
+         WRITE(LUPRI,'(/,A)')' ERROR! Can not use .BAKER when ' //
+     &        'running linsca. Only NATNRM can be used!'
+         CALL QUIT('Conflicting specifications of ' //
+     &        'convergence setup in '//WORD1)
+      END IF
+#endif     
+      IF (BAKER) THEN
+         WRITE(LUPRI,'(/A/)')
+     &        ' Baker''s convergence criteria will be used.'
+      ELSE IF (NATNRM) THEN
+C
+C     Tweaked convergence criterias more suitable for large systems (linsca)
+C
+         WRITE(LUPRI,'(/A)') ' New thresholding scheme for ' //
+     &        'geometry convergence will be used'
+         IF ((ICNLVL .GT. 0) .AND. ((GRDTHR .NE. DEFTH2)
+     &        .OR. (THRSTP .NE. DEFTH2))) THEN
+            WRITE(LUPRI,'(/,A)')' WARNING! Conflicting specifications'//
+     &           ' of convergence thresholds in '//WORD1
+            WRITE(LUPRI,'(A/A/)') ' Please use *either* ''GRADIE'' '//
+     &           'and ''STEP T'' *or* one of the keywords',
+     &           ' ''.VLOOSE'', ''.LOOSE'', ''.TIGHT'' and ''.VTIGHT.'''
+            CALL QUIT('Conflicting specifications of ' //
+     &           'convergence threshold in '//WORD1)
+         ELSE IF (ICNLVL .GT. 0) THEN
+C
+C     VLOOSE, LOOSE, TIGHT and VTIGHT are simply predefined threshold for
+C     the gradient convergence criteria
+C            
+            IF (ICNLVL .EQ. 1) THEN
+               GRDTHR = 1.D-3
+               THRSTP = 1.D-3
+            ELSE IF (ICNLVL .EQ. 2) THEN
+               GRDTHR = 1.D-4
+               THRSTP = 1.D-4
+            ELSE IF (ICNLVL .EQ. 4) THEN
+               GRDTHR = 1.D-6
+               THRSTP = 1.D-6
+            ELSE IF (ICNLVL .EQ. 5) THEN
+               GRDTHR = 1.D-7
+               THRSTP = 1.D-7
+            END IF
+         ELSE
+            IF (GRDTHR .NE. DEFTH2) THEN
+               IF ((GRDTHR .LE. D0) .OR. (GRDTHR .GT. 0.1D0))
+     &              WRITE(LUPRI,*) 'RMS gradient threshold negative ' //
+     &              'or larger than 0.1, value is reset!'
+            ELSE
+C     Default value for new scheme
+               GRDTHR = 1.D-5
+            END IF
+            IF (THRSTP .NE. DEFTH2) THEN
+               IF ((THRSTP .LE. D0) .OR. (THRSTP .GT. 0.1D0))
+     &              WRITE(LUPRI,*) 'RMS step threshold negative ' //
+     &              'or larger than 0.1, value is reset!'
+            ELSE
+C     Default value for new scheme
+               THRSTP = 1.D-5
+            END IF
+         END IF
+         THGRMX = GRDTHR*1.5D0
+         THSTMX = THRSTP*1.5D0
+         WRITE(LUPRI,'(A)') ' --------------' //
+     &        '-----------------------------------------------'
          WRITE(LUPRI,'(A,1P,D13.2)')
-     &        ' Convergence threshold for gradient set to : ', GRDTHR
-         IF ((GRDTHR .LE. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
-            WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
+     &     ' Root-mean-square gradient threshold set to    : ', GRDTHR,
+     &     ' Maximum gradient element threshold set to     : ', THGRMX,
+     &     ' Root-mean-square step threshold set to        : ', THRSTP,
+     &     ' Maximum step element threshold set to         : ', THSTMX
+      ELSE
+C
+C     The old (and still default) convergence setup
+C
+         IF (ICNLVL .GT. 0) THEN
+            WRITE(LUPRI,*) 'Keywords VLOOSE, LOOSE, TIGHT and VTIGHT '//
+     &           'currently only have effect',
+     &           'when .NATNRM is specified.'
+            WRITE(LUPRI,*)
+         END IF
+         IF (GRDTHR .NE. DEFTH2) THEN
             WRITE(LUPRI,'(A,1P,D13.2)')
-     &           ' Threshold reset to:', DEFTH2
-            GRDTHR = DEFTH2
+     &           ' Convergence threshold for gradient set to : ', GRDTHR
+            IF ((GRDTHR .LE. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
+               WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
+               WRITE(LUPRI,'(A,1P,D13.2)')
+     &              ' Threshold reset to:', DEFTH2
+               GRDTHR = DEFTH2
+            END IF
+         END IF
+         IF (THRERG .NE. DEFTHE) THEN
+            WRITE(LUPRI,'(A,1P,D13.2)')
+     &           ' Convergence threshold for energy set to   : ', THRERG
+            IF ((THRERG .LE. D0) .OR. (THRERG .GT. 0.1D0)) THEN
+               WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
+               WRITE(LUPRI,'(A,1P,D13.2)')
+     &              ' Threshold reset to:', DEFTHE
+               THRERG = DEFTHE
+            END IF
+         END IF
+         IF (THRSTP .NE. DEFTH2) THEN
+            WRITE(LUPRI,'(A,1P,D13.2)')
+     &           ' Convergence threshold for step set to     : ', THRSTP
+            IF ((THRSTP .LE. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
+               WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
+               WRITE(LUPRI,'(A,1P,D13.2)')
+     &              ' Threshold reset to:', DEFTH2
+               THRSTP = DEFTH2
+            END IF
+         END IF
+         IF (ICONDI .NE. 2) THEN
+            WRITE(LUPRI,'(A,I3)')
+     &           ' Number of convergence criteria set to     : ', ICONDI
+            IF ((ICONDI .LT. 1) .OR. (ICONDI .GT. 3)) THEN
+               WRITE(LUPRI,*) 'Acceptable values are 1, 2 and 3.'
+               ICONDI = 2
+               WRITE(LUPRI,'(A,I3)')
+     &              ' Number reset to:', ICONDI
+            END IF
          END IF
       END IF
-      IF (THRERG .NE. DEFTHE) THEN
-         WRITE(LUPRI,'(A,1P,D13.2)')
-     &        ' Convergence threshold for energy set to   : ', THRERG
-         IF ((THRERG .LE. D0) .OR. (THRERG .GT. 0.1D0)) THEN
-            WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,1P,D13.2)')
-     &           ' Threshold reset to:', DEFTHE
-            THRERG = DEFTHE
-         END IF
-      END IF
-      IF (THRSTP .NE. DEFTH2) THEN
-         WRITE(LUPRI,'(A,1P,D13.2)')
-     &        ' Convergence threshold for step set to     : ', THRSTP
-         IF ((THRSTP .LE. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
-            WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,1P,D13.2)')
-     &           ' Threshold reset to:', DEFTH2
-            THRSTP = DEFTH2
-         END IF
-      END IF
+C
       IF (DISPLA .NE. DEFDSP) THEN
 C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
          WRITE (LUPRI,'(A,1P,D13.2)')
      &        ' In case of numerical gradients, displacements are : ',
      &        DISPLA
-      END IF
-      IF (ICONDI .NE. 2) THEN
-         WRITE(LUPRI,'(A,I3)')
-     &        ' Number of convergence criteria set to     : ', ICONDI
-         IF ((ICONDI .LT. 1) .OR. (ICONDI .GT. 3)) THEN
-            WRITE(LUPRI,*) 'Acceptable values are 1, 2 and 3.'
-            ICONDI = 2
-            WRITE(LUPRI,'(A,I3)')
-     &           ' Number reset to:', ICONDI
-         END IF
-      END IF
-      IF (BAKER) THEN
-         WRITE(LUPRI,'(/A/)')
-     &        ' Baker''s convergence criteria will be used.'
       END IF
       IF (CONOPT) THEN
          WRITE(LUPRI,'(A)')
@@ -1061,6 +1206,34 @@ C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
             DO 335 I = 1, 8*MXCENT
                IF (ICNSTR(I) .EQ. 2) WRITE(LUPRI,*) '    Coordinate #',I
  335        CONTINUE
+            WRITE(LUPRI,*)
+         END IF
+      END IF
+      IF (ADDCRD) THEN
+         WRITE(LUPRI,'(A)')
+     &        ' Addition of coordinates has been requested.'
+         IF (.NOT. REDINT) THEN
+            WRITE(LUPRI,'(A)') ' WARNING! Only internal coordinates '
+     &           // 'can be added! Keyword ignored.'
+            ADDCRD = .FALSE.
+         ELSE
+            WRITE(LUPRI,'(A)')
+     &           ' The following coordinates will be added:'
+            DO 345 I = 1, IADDCR(0,1)
+               IF (IADDCR(I,4) .GT. 0) THEN
+                  WRITE(LUPRI,'(A,4I6)') ' Dihedral between atoms: ',
+     &            IADDCR(I,1), IADDCR(I,2), IADDCR(I,3), IADDCR(I,4)
+               ELSE IF (IADDCR(I,3) .GT. 0) THEN
+                  WRITE(LUPRI,'(A,3I6)') ' Angle between atoms   : ',
+     &            IADDCR(I,1), IADDCR(I,2), IADDCR(I,3)
+               ELSE IF (IADDCR(I,2) .GT. 0) THEN
+                  WRITE(LUPRI,'(A,2I6)') ' Bond between atoms    : ',
+     &            IADDCR(I,1), IADDCR(I,2)
+               ELSE
+                  CALL QUIT(' Error detected in the '
+     &                 // 'specification of additional coordinates!')
+               END IF
+ 345        CONTINUE
             WRITE(LUPRI,*)
          END IF
       END IF
@@ -1160,10 +1333,18 @@ C
          KMTMP  = KATARR + 8*MXCENT
          KWRK   = KMTMP  + MXCENT*MXCENT
          LWRK = LWORK  - KWRK + 1
-         IF (KWRK .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
+         IF (KWRK+8*MXCENT .GT. LWORK)
+     &        CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
          IPSAVE = IPRINT
          IF (.NOT. FINDRE) IPRINT = -1
+C     Save ICNSTR vector (coordinate constraints and removals)
+         DO 10 I = 1, 8*MXCENT
+            WORK(KWRK+I) = ICNSTR(I)
+ 10      CONTINUE
          CALL FNDRED(WORK(KATARR),WORK(KMTMP))
+         DO 15 I = 1, 8*MXCENT
+            ICNSTR(I) = WORK(KWRK+I)
+ 15      CONTINUE
          IPRINT = IPSAVE
          MXRINT = MAX(MAX(IINTCR, ICRTCR), 8)
 C
@@ -1277,6 +1458,7 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
+      PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       CALL QENTER('RUNOPT')
 C
@@ -1374,7 +1556,8 @@ C
       IF (DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
          CALL INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,WORK(KBMINV),
      &        WORK(KPJINM),WORK(KTEMP1),WORK(KTEMP2),
-     &        WORK(KTEMP3),WORK(KTEMP4))
+     &        WORK(KTEMP3),WORK(KTEMP4),WORK(KTEMP5),WORK(KTEMP6),
+     &        WORK(KWRK2),LWRK2)
       END IF
       IF (DELINT .OR. REDINT) THEN
          NCRDHS = IINTCR
@@ -1425,7 +1608,8 @@ C
      &        ACTIVE,EMOD)
          IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS - 1
          CALL DIAINT(MXRCRD,MX2CRD,NCRDHS,WORK(KEVEC),WORK(KTEMP1),
-     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),THRIND,HESINT)
+     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),THRIND,HESINT,
+     &        WORK(KTEMP5),WORK(KWRK2),LWRK2)
          IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
       ELSE
          IF (NEWTON) CALL MKSCVC(SCLVEC)
@@ -1447,7 +1631,8 @@ C
 C
 C     Write Hessian to file (for 1st order restarts).
 C
-      CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
+      IF (.NOT. NOHSWR)
+     &     CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
      &     WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
 C
 C     Determine step, check for convergence, print output and
@@ -1553,6 +1738,11 @@ C     maximum number of iterations is reached.
 C
  10   CONTINUE
       IF ((ITRNMR .LT. ITRMAX) .AND. (.NOT. GECONV)) THEN
+#ifdef VAR_LINSCA
+CANDREAS: reset the SAVEAOPT parameter. there might be a better place to do this, but where?
+         CALL DASINI
+CANDREAS END.
+#endif
          ITRNMR = ITRNMR + 1
          ERGPRO = ERGPRD
          NCRD = NCRTOT
@@ -1584,10 +1774,12 @@ C
          IF (REDINT .OR. DELINT) THEN
             CALL GETWIL(MXRCRD,MX2CRD,WORK(KTEMP1),WILBMT,
      &           BMTRAN,WORK(KTEMP2))
-            CALL GETDWL(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WILBMT)
+            IF (IPRINT .GE. IPRMAX)
+     &           CALL GETDWL(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),
+     &           WORK(KTEMP3),WILBMT)
             CALL GTBINV(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WORK(KTEMP4),WILBMT,BMTRAN,WORK(KBMINV),WORK(KPJINM))
+     &           WORK(KTEMP4),WILBMT,BMTRAN,WORK(KBMINV),WORK(KPJINM),
+     &           WORK(KTEMP5),WORK(KTEMP6),WORK(KWRK2),LWRK2)
          END IF
 C
 C     If new symmetry has been applied, coordinates has to counted
@@ -1637,7 +1829,8 @@ C
      &           ACTIVE,EMOD)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS - 1
             CALL DIAINT(MXRCRD,MX2CRD,NCRDHS,WORK(KEVEC),WORK(KTEMP1),
-     &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),THRIND,HESINT)
+     &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),THRIND,HESINT,
+     &           WORK(KTEMP5),WORK(KWRK2),LWRK2)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
          ELSE
             CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
@@ -1659,8 +1852,9 @@ C
 C
 C     Write Hessian to file
 C
-         CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
-     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
+         IF (.NOT. NOHSWR)
+     &      CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
+     &      WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
 C
  756     CONTINUE
          IF (REDINT .OR. DELINT) THEN
@@ -1757,19 +1951,19 @@ C     of Hessian. Reinitialization occurs when the norm of the gradient
 C     is larger than the norm of the gradient two iterations earlier.
 C
          IF (.NOT.NEWTON .AND. GRDINI .AND. (ITRNMR .GE. 2)) THEN
-         IF (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)'***** NOTE! *****'
-            WRITE(LUPRI,*)'Due to increasing gradient norm, ' //
-     &           'Hessian is reinitialized.'
-            WRITE(LUPRI,*)
-            CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
-     &           WORK(KTEMP1),WORK(KTEMP2),
-     &           WORK(KTEMP3),WORK(KTEMP4),WILBMT,BMTRAN,
-     &           WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
-            TRSTRA = GEINFO(0,5)
-            GEINFO(ITRNMR+1,5) = TRSTRA
-         END IF
+            IF (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)) THEN
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,*)'***** NOTE! *****'
+               WRITE(LUPRI,*)'Due to increasing gradient norm, ' //
+     &              'Hessian is reinitialized.'
+               WRITE(LUPRI,*)
+               CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
+     &              WORK(KTEMP1),WORK(KTEMP2),
+     &              WORK(KTEMP3),WORK(KTEMP4),WILBMT,BMTRAN,
+     &              WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
+               TRSTRA = GEINFO(0,5)
+               GEINFO(ITRNMR+1,5) = TRSTRA
+            END IF
          END IF
 C
 C     Check if symmetry should be broken
@@ -1942,7 +2136,9 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "infinp.h"
+#ifndef VAR_LINSCA
 #include "pcmlog.h"
+#endif
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
       CHARACTER*1 MARK
       INTEGER     START
@@ -1961,7 +2157,9 @@ C
       IF (.NOT. GECONV) THEN
          CALL HEADER('Next geometry (au)',-1)
          CALL PRIGEO(CORDNW)
+#ifndef VAR_LINSCA
          IF (PCM) CALL UPDCAV(CORDNW)
+#endif
       ELSE
          CALL HEADER('Final geometry (au)',-1)
          CALL PRIGEO(CORD)
@@ -2052,10 +2250,10 @@ C
       CALL HEADER('Final geometry',-1)
       CALL PRIGEO(CORD)
       WRITE(LUPRI,*)
-     & 'Iter     Energy     Change    GradNorm  Index   StepLen'
+     & 'Iter      Energy        Change       GradNorm  Index   StepLen'
      & // '    TrustRad #Rej'
       WRITE(LUPRI,*)
-     & '------------------------------------------------------'
+     & '-------------------------------------------------------------'
      & // '------------------'
       DO 10 I = 0, ITRNMR
          IF (I .GT. 0) TMPNRG = GEINFO(I,1) - GEINFO(I-1,1)
@@ -2075,7 +2273,7 @@ C
             REDMRK = '#'
             RED = .TRUE.
          END IF
-         WRITE(LUPRI,'(I4,A1,F12.6,2F11.6,I5,F12.6,A1,F11.6,I4,A1)')
+         WRITE(LUPRI,'(I4,A1,F15.6,2F13.6,I5,F12.6,A1,F11.6,I4,A1)')
      &        I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
      &        NINT(ABS(GEINFO(I,3))),GEINFO(I,4),NWSMRK,GEINFO(I,5),
      &        NINT(GEINFO(I,6)),REDMRK
@@ -2118,16 +2316,24 @@ C
 #include "gnrinf.h"
 #include "siripc.h"
 #include "dftcom.h"
+#ifndef VAR_LINSCA
 #include "pcmlog.h"
+#endif
 #include "molinp.h"
 #include "abainf.h"
 #include "rspprp.h"
 #include "esg.h"
+#ifdef VAR_LINSCA
+#include "esg2.h"
+#endif
 Cef begin
+#ifndef VAR_LINSCA
 #include <incore.h>
+#endif
 Cef end
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
+      REAL EXCQQ2
       CALL QENTER('GTNRGY')
       WORK(IWOFF+1) = WRKDLM
       IF (.NOT. EXHER) THEN
@@ -2135,6 +2341,7 @@ Cef end
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
+#ifndef VAR_LINSCA
       NPCMIN = .TRUE.
       IF (AOSAVE) THEN
          LINTSV = .FALSE.
@@ -2153,6 +2360,7 @@ Cef end
          INDX_SHL4 = 0
 C     CALL CLEAR_INCOREMEM()
       END IF
+#endif
 Cef end
 C ach 
       IF (DFTRUN) GRDONE = .FALSE.
@@ -2174,7 +2382,7 @@ C
 C
 C        Reduce gradient criterion for DFT optimization
 C
-         IF (DFTRUN .AND.
+         IF (.NOT.NATNRM .AND. DFTRUN .AND.
      &       (GRDTHR .LT. 5.0D-05 .OR. THRSTP .LT. 5.0D-05)) THEN
             GRDTHR = MAX(GRDTHR,5.0D-05)
             THRSTP = MAX(THRSTP,5.0D-05)
@@ -2191,8 +2399,17 @@ C
          END IF
          IF (DOCCSD) THEN
 C
+#ifdef VAR_LINSCA
+#ifdef MOD_CC
             CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK,WRKDLM)
+#else
+            CALL QUIT('CC disabled in this build')
+#endif
+#else
+            CALL CC_GEOFLAG
+            CALL EXECC(WORK,LWORK,WRKDLM)
+#endif
          ENDIF
          EXSIR = .TRUE.
       END IF
@@ -2201,7 +2418,8 @@ C
      &        'optimization module. Use .WALK'
          CALL QUIT('Solvent incompatible with .OPTIMIZE')
       END IF
-      IF ((2.0D0*THRGRD) .GT. GRDTHR .AND. .NOT. CHGRDT) THEN
+      IF (.NOT.NATNRM .AND. (2.0D0*THRGRD) .GT. GRDTHR
+     &     .AND. .NOT. CHGRDT) THEN
          GRDTHR = 2.0D0*THRGRD
          THRSTP = GRDTHR
          THRERG = GRDTHR
@@ -2224,7 +2442,13 @@ C     Well, en excited electronic state cannot necessarily be expected to be
 C     as quadratic as the ground state, and thus we should not walk to far 
 C     away. This is necessary for instance to get test15 through....
 C
+#ifdef VAR_LINSCA
+      IF ((ISTATE .GT. 1 .OR.(FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')))
+     &      .AND. ITRNMR .EQ. 0) 
+     &   THEN
+#else
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
+#endif
          WRITE (LUPRI,'(/A)') ' INFO >>>> As this is an excited '//
      &        'optimization some thresholds have been updated'
          IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
@@ -2260,7 +2484,13 @@ Cdj moved from gtgrad
          CALL RSPDRV(WORK,LWORK)
          ENERGY = ENERGY + EXCITA(ISYME,IESG,1)
       END IF
-
+#ifdef VAR_LINSCA
+      IF (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) THEN
+         MOLGRD = .TRUE.
+         CALL PRIOMA(EXCQQ2)
+         ENERGY= ENERGY + EXCQQ2
+      END IF
+#endif
       CALL QEXIT('GTNRGY')
       RETURN
       END
@@ -2289,6 +2519,9 @@ C
 #include "pvibav.h"
 #include "rspprp.h"
 #include "esg.h"
+#ifdef VAR_LINSCA
+#include "esg2.h"
+#endif
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
@@ -2308,8 +2541,12 @@ C
       END IF
 C
 C     Find out if we are running an excited state calculation
-
+#ifdef VAR_LINSCA
+      IF (.NOT.( FNDKEY('*ESG   ') .OR. 
+     &    (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) )) THEN
+#else
       IF (.NOT. FNDKEY('*ESG   ')) THEN
+#endif
 C
 C     TR: Using FNDANA to find highest order of analytical 
 C         derivatives (NAORDR). If this is 0, we use numerical 
@@ -2329,7 +2566,11 @@ C
             IF (ITRNMR .EQ. 0) THEN
                CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
             ELSE
+#ifdef VAR_LINSCA
+               CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+#else
                CALL ABAINP('**EACH ',WORK(IWOFF + 2),LWORK)
+#endif
             END IF
 C        *** For numerical differentiation (vibrational ***
 C        *** average), we don't nescesary calculate all ***
@@ -2340,8 +2581,17 @@ C
             END IF
 C     
             IF ( DOCCSD ) THEN
+#ifdef VAR_LINSCA
+#ifdef MOD_CC
                CALL CC_GEOFLAG
                CALL EXECC(WORK,LWORK,WRKDLM)
+#else
+               CALL QUIT('CC disabled in this build')
+#endif
+#else
+               CALL CC_GEOFLAG
+               CALL EXECC(WORK,LWORK,WRKDLM)
+#endif
             ELSE
                CALL EXEABA(WORK,LWORK,WRKDLM)
             END IF
@@ -2352,6 +2602,11 @@ C
       END IF
       CALL TRAGRD(GRDMOL,EGRAD,WORK(IWOFF + 2),
      &            WORK(IWOFF + MXCOOR*MXCOOR + 2),NCRREP(0,1),3*NUCDEP)
+#ifdef VAR_LINSCA
+      IF (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) THEN
+        MOLGRD = .TRUE.
+      END IF
+#endif
       CALL QEXIT('GTGRAD')
       RETURN
       END
@@ -2386,6 +2641,9 @@ C
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
       CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+#ifdef VAR_LINSCA
+      CLOSE (13)
+#endif
       WRINDX = .TRUE.
       MOLGRD = .TRUE.
       MOLHES = .TRUE.
@@ -2393,7 +2651,11 @@ C
       IF (ITRNMR .EQ. 0) THEN
          CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
       ELSE
+#ifdef VAR_LINSCA
+         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+#else
          CALL ABAINP('**EACH ',WORK(IWOFF + 2),LWORK)
+#endif
       END IF
 C
 C     *** For numerical differentiation (vibrational ***
@@ -5139,6 +5401,18 @@ C
       ERGDIF = ENERGY - ERGOLD
       REJGEO = .FALSE.
       REBILD = .FALSE.
+#ifdef VAR_LINSCA
+cfilip - print always info about the actual and predicted energy (according to Vebjorn's
+c        suggestion). 07.11.2008.
+      call header('StepInfo:Energy difference to previous geometry:',-1)
+      write(lupri,'(/a),/)')
+     &'      Energy       Old_Energy     Actual_diff  Predicted_diff'
+     & //'  Ratio'
+      write(lupri,'(2F20.10,3F15.10)')
+     & ENERGY, ERGOLD, ERGDIF, ERGPRD, ERGDIF/ERGPRD
+      write(lupri,*)
+cfilip - end.
+#endif
 C
 C     The ratio between actual and predicted energy change is calculated,
 C     and this ratio is then used to update the trust radius.
@@ -5996,6 +6270,9 @@ C
 #include "priunit.h"
 #include "rspprp.h"
 #include "esg.h"
+#ifdef VAR_LINSCA
+#include "esg2.h"
+#endif
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT), ICRD(3)
       DIMENSION WORK(LWORK)
@@ -6768,7 +7045,7 @@ C
 #include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
-      LOGICAL CNVERG, CNVGRD, CNVSTP, INDXOK
+      LOGICAL CNVERG, CNVGRD, CNVSTP, INDXOK, CNVRGD(1:4)
       CHARACTER*4 LOGTXT
       CNVERG = .FALSE.
       CNVGRD = .FALSE.
@@ -6777,40 +7054,11 @@ C
       IF (REDINT .OR. DELINT) ICOOR = IINTCR
       IF (CONOPT) GNRM = SQRT(DDOT(IINTCR,GRDINT,1,GRDINT,1))
 C
-C     First we check the different convergence criterias.
-C
-      IF (.NOT. BAKER) THEN
-         ICONV = 0
-         EDIFF = ABS(ERGOLD-ENERGY)
-         IF (EDIFF .LE. THRERG) THEN
-            CNVERG = .TRUE.
-            ICONV = ICONV + 1
-         END IF
-         IF (CONOPT) THEN
-            IF (GNRM .LE. GRDTHR) THEN
-               CNVGRD = .TRUE.
-               ICONV = ICONV + 1
-            END IF
-         ELSE
-            IF (GRADNM .LE. GRDTHR) THEN
-               CNVGRD = .TRUE.
-               ICONV = ICONV + 1
-            END IF
-         END IF
-         IF (STPNRM .LE. THRSTP) THEN
-            CNVSTP = .TRUE.
-            ICONV = ICONV + 1
-         END IF
-         INDXOK = (INDTOT .EQ. 0)
-         IF (SADDLE) INDXOK = (INDTOT .EQ. 1)
-         MINEND = INDXOK .AND. (ICONV .GE. ICONDI)
-         IF (NOBRKS) MINEND = (ICONV .GE. ICONDI)
-C
-C     Alternatively we use the convergence criteria of Baker.
+C     First, the convergence criteria of Baker.
 C     To make the convergence criteria more fair, we transform
 C     the delocalized internals to the primitive space.
 C
-      ELSE
+      IF (BAKER) THEN
          IF (DELINT) THEN
             CALL DZERO(TMPVC1,MXRCRD)
             CALL DZERO(TMPVC2,MXRCRD)
@@ -6841,6 +7089,115 @@ C
          MINEND = (INDXOK .AND. CNVGRD) .AND. (CNVERG .OR. CNVSTP)
          IF (NOBRKS .OR. (.NOT. NEWTON) .OR. SADDLE)
      &        MINEND =  (CNVGRD .AND. (CNVERG .OR. CNVSTP))
+C
+C     Next, the default (old) convergence check
+C
+      ELSE IF (.NOT. NATNRM) THEN
+         ICONV = 0
+         EDIFF = ABS(ERGOLD-ENERGY)
+         IF (EDIFF .LE. THRERG) THEN
+            CNVERG = .TRUE.
+            ICONV = ICONV + 1
+         END IF
+         IF (CONOPT) THEN
+            IF (GNRM .LE. GRDTHR) THEN
+               CNVGRD = .TRUE.
+               ICONV = ICONV + 1
+            END IF
+         ELSE
+            IF (GRADNM .LE. GRDTHR) THEN
+               CNVGRD = .TRUE.
+               ICONV = ICONV + 1
+            END IF
+         END IF
+         IF (STPNRM .LE. THRSTP) THEN
+            CNVSTP = .TRUE.
+            ICONV = ICONV + 1
+         END IF
+         INDXOK = (INDTOT .EQ. 0)
+         IF (SADDLE) INDXOK = (INDTOT .EQ. 1)
+         MINEND = INDXOK .AND. (ICONV .GE. ICONDI)
+         IF (NOBRKS) MINEND = (ICONV .GE. ICONDI)
+C
+C     Finally, the new convergence scheme (NATNRM)
+C
+      ELSE
+         CALL MAXELM(GRDMOL,ICOOR,SCLVEC,2,GRDMAX)
+         CALL MAXELM(STPSYM,ICOOR,SCLVEC,1,STPMAX)
+         CNVRGD(1) = .FALSE.
+         CNVRGD(2) = .FALSE.
+         CNVRGD(3) = .FALSE.
+         CNVRGD(4) = .FALSE.
+         IF (GRADNM/SQRT(1.D0*ICRTCR) .LT. GRDTHR) CNVRGD(1) = .TRUE.
+         IF (GRDMAX .LT. THGRMX) CNVRGD(2)                   = .TRUE.
+         IF (STPNRM/SQRT(1.D0*ICRTCR) .LT. THRSTP) CNVRGD(3) = .TRUE.
+         IF (STPMAX .LT. THSTMX) CNVRGD(4)                   = .TRUE.
+C
+         IF (CONOPT) THEN
+C
+C     For constrained optimizations we examine the change in the RMS gradient
+C     and the change in the maximum element. The threshold for these differences
+C     are 1/10 of the current regular gradient threshold.
+C            
+            IF (ITRNMR .EQ. 0) THEN
+               GRDTHR = MAX(0.1D0*GRDTHR,1.D-7)
+               THGRMX = 1.5D0*GRDTHR
+               DIFRMS = 0.D0
+               DIFMAX = 0.D0
+               PRVRMS = GRADNM/SQRT(1.D0*ICRTCR)
+               PRVMAX = GRDMAX
+            ELSE
+               DIFRMS = ABS(PRVRMS-(GRADNM/SQRT(1.D0*ICRTCR)))
+               DIFMAX = ABS(PRVMAX-GRDMAX)
+               PRVRMS = GRADNM/SQRT(1.D0*ICRTCR)
+               PRVMAX = GRDMAX
+            END IF
+            IF (DIFRMS .LT. GRDTHR) CNVRGD(1) = .TRUE.
+            IF (DIFMAX .LT. THGRMX) CNVRGD(2) = .TRUE.
+            WRITE(LUPRI,'(///A)') ' -----------------------' //
+     &     '-----------------------------------------------------------'
+            WRITE(LUPRI,'(14X,A)') 'RMS grad    Max grad    ' //
+     &           'RMS diff*   Max diff*   RMS step    Max step'
+            WRITE(LUPRI,'(A)')' -----------------------' //
+     &     '-----------------------------------------------------------'
+            WRITE(LUPRI,'(A,6F12.8)') ' Curr.val. ',
+     &           GRADNM/SQRT(1.D0*ICRTCR), GRDMAX,
+     &           DIFRMS, DIFMAX,
+     &           STPNRM/SQRT(1.D0*ICRTCR), STPMAX
+            WRITE(LUPRI,'(A,24X,4F12.8)') ' Threshold ',
+     &           GRDTHR, THGRMX, THRSTP, THSTMX
+            WRITE(LUPRI,'(A,24X,4(L,10X))') ' Converged?      ',
+     &           (CNVRGD(I), I = 1,4)
+            WRITE(LUPRI,'(A)')' -----------------------' //
+     &     '-----------------------------------------------------------'
+            WRITE(LUPRI,'(A)') '*) For constrained optimizations' //
+     &           ' the change in RMS gradient and the change'
+            WRITE(LUPRI,'(A///)') '   in the maximum gradient ' //
+     &           'element are used as convergence criteria.'
+         ELSE
+            WRITE(LUPRI,'(///A)')
+     &     ' ----------------------------------------------------------'
+            WRITE(LUPRI,'(14X,A)')
+     &           'RMS grad    Max grad    RMS step    Max step'
+            WRITE(LUPRI,'(A)')
+     &     ' ----------------------------------------------------------'
+            WRITE(LUPRI,'(A,4F12.8)') ' Curr.val. ',
+     &           GRADNM/SQRT(1.D0*ICRTCR), GRDMAX,
+     &           STPNRM/SQRT(1.D0*ICRTCR), STPMAX
+            WRITE(LUPRI,'(A,4F12.8)') ' Threshold ',
+     &           GRDTHR, THGRMX, THRSTP, THSTMX
+            WRITE(LUPRI,'(A,4(L,10X))') ' Converged?      ',
+     &           (CNVRGD(I), I = 1,4)
+            WRITE(LUPRI,'(A///)')
+     &     ' ----------------------------------------------------------'
+         END IF
+C
+         INDXOK = (INDTOT .EQ. 0)
+         IF (SADDLE) INDXOK = (INDTOT .EQ. 1)
+         MINEND = INDXOK .AND. CNVRGD(1) .AND. CNVRGD(2) .AND.
+     &        CNVRGD(3) .AND. CNVRGD(4)
+         IF (NOBRKS) MINEND = CNVRGD(1) .AND. CNVRGD(2) .AND.
+     &        CNVRGD(3) .AND. CNVRGD(4)
       END IF
 C
 C     If the energy difference is below THRSYM and the total Hessian is
@@ -6858,7 +7215,7 @@ C
 C
 C     Output from the testing is written.
 C
-      IF (IPRINT .GT. 2) THEN
+      IF (.NOT. NATNRM .AND. (IPRINT .GT. 2)) THEN
          CALL TITLER('Output from MINEND','*',103)
          LOGTXT = 'no  '
          IF (CNVERG) LOGTXT = 'yes '

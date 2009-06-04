@@ -1879,4 +1879,693 @@ C     ILAENV = 0
 *     End of XERBLA
 *
       END
+      SUBROUTINE DSYGV( ITYPE, JOBZ, UPLO, N, A, LDA, B, LDB, W, WORK,
+     $                  LWORK, INFO )
+*
+*  -- LAPACK driver routine (version 3.0) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     June 30, 1999
+*
+*     .. Scalar Arguments ..
+      CHARACTER          JOBZ, UPLO
+      INTEGER            INFO, ITYPE, LDA, LDB, LWORK, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), B( LDB, * ), W( * ), WORK( * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DSYGV computes all the eigenvalues, and optionally, the eigenvectors
+*  of a real generalized symmetric-definite eigenproblem, of the form
+*  A*x=(lambda)*B*x,  A*Bx=(lambda)*x,  or B*A*x=(lambda)*x.
+*  Here A and B are assumed to be symmetric and B is also
+*  positive definite.
+*
+*  Arguments
+*  =========
+*
+*  ITYPE   (input) INTEGER
+*          Specifies the problem type to be solved:
+*          = 1:  A*x = (lambda)*B*x
+*          = 2:  A*B*x = (lambda)*x
+*          = 3:  B*A*x = (lambda)*x
+*
+*  JOBZ    (input) CHARACTER*1
+*          = 'N':  Compute eigenvalues only;
+*          = 'V':  Compute eigenvalues and eigenvectors.
+*
+*  UPLO    (input) CHARACTER*1
+*          = 'U':  Upper triangles of A and B are stored;
+*          = 'L':  Lower triangles of A and B are stored.
+*
+*  N       (input) INTEGER
+*          The order of the matrices A and B.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA, N)
+*          On entry, the symmetric matrix A.  If UPLO = 'U', the
+*          leading N-by-N upper triangular part of A contains the
+*          upper triangular part of the matrix A.  If UPLO = 'L',
+*          the leading N-by-N lower triangular part of A contains
+*          the lower triangular part of the matrix A.
+*
+*          On exit, if JOBZ = 'V', then if INFO = 0, A contains the
+*          matrix Z of eigenvectors.  The eigenvectors are normalized
+*          as follows:
+*          if ITYPE = 1 or 2, Z**T*B*Z = I;
+*          if ITYPE = 3, Z**T*inv(B)*Z = I.
+*          If JOBZ = 'N', then on exit the upper triangle (if UPLO='U')
+*          or the lower triangle (if UPLO='L') of A, including the
+*          diagonal, is destroyed.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,N).
+*
+*  B       (input/output) DOUBLE PRECISION array, dimension (LDB, N)
+*          On entry, the symmetric positive definite matrix B.
+*          If UPLO = 'U', the leading N-by-N upper triangular part of B
+*          contains the upper triangular part of the matrix B.
+*          If UPLO = 'L', the leading N-by-N lower triangular part of B
+*          contains the lower triangular part of the matrix B.
+*
+*          On exit, if INFO <= N, the part of B containing the matrix is
+*          overwritten by the triangular factor U or L from the Cholesky
+*          factorization B = U**T*U or B = L*L**T.
+*
+*  LDB     (input) INTEGER
+*          The leading dimension of the array B.  LDB >= max(1,N).
+*
+*  W       (output) DOUBLE PRECISION array, dimension (N)
+*          If INFO = 0, the eigenvalues in ascending order.
+*
+*  WORK    (workspace/output) DOUBLE PRECISION array, dimension (LWORK)
+*          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+*
+*  LWORK   (input) INTEGER
+*          The length of the array WORK.  LWORK >= max(1,3*N-1).
+*          For optimal efficiency, LWORK >= (NB+2)*N,
+*          where NB is the blocksize for DSYTRD returned by ILAENV.
+*
+*          If LWORK = -1, then a workspace query is assumed; the routine
+*          only calculates the optimal size of the WORK array, returns
+*          this value as the first entry of the WORK array, and no error
+*          message related to LWORK is issued by XERBLA.
+*
+*  INFO    (output) INTEGER
+*          = 0:  successful exit
+*          < 0:  if INFO = -i, the i-th argument had an illegal value
+*          > 0:  DPOTRF or DSYEV returned an error code:
+*             <= N:  if INFO = i, DSYEV failed to converge;
+*                    i off-diagonal elements of an intermediate
+*                    tridiagonal form did not converge to zero;
+*             > N:   if INFO = N + i, for 1 <= i <= N, then the leading
+*                    minor of order i of B is not positive definite.
+*                    The factorization of B could not be completed and
+*                    no eigenvalues or eigenvectors were computed.
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            LQUERY, UPPER, WANTZ
+      CHARACTER          TRANS
+      INTEGER            LWKOPT, NB, NEIG
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      INTEGER            ILAENV
+      EXTERNAL           LSAME, ILAENV
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DPOTRF, DSYEV, DSYGST, DTRMM, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      WANTZ = LSAME( JOBZ, 'V' )
+      UPPER = LSAME( UPLO, 'U' )
+      LQUERY = ( LWORK.EQ.-1 )
+*
+      INFO = 0
+      IF( ITYPE.LT.1 .OR. ITYPE.GT.3 ) THEN
+         INFO = -1
+      ELSE IF( .NOT.( WANTZ .OR. LSAME( JOBZ, 'N' ) ) ) THEN
+         INFO = -2
+      ELSE IF( .NOT.( UPPER .OR. LSAME( UPLO, 'L' ) ) ) THEN
+         INFO = -3
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -6
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -8
+      ELSE IF( LWORK.LT.MAX( 1, 3*N-1 ) .AND. .NOT.LQUERY ) THEN
+         INFO = -11
+      END IF
+*
+      IF( INFO.EQ.0 ) THEN
+         NB = ILAENV( 1, 'DSYTRD', UPLO, N, -1, -1, -1 )
+         LWKOPT = ( NB+2 )*N
+         WORK( 1 ) = LWKOPT
+      END IF
+*
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DSYGV ', -INFO )
+         RETURN
+      ELSE IF( LQUERY ) THEN
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     Form a Cholesky factorization of B.
+*
+      CALL DPOTRF( UPLO, N, B, LDB, INFO )
+      IF( INFO.NE.0 ) THEN
+         INFO = N + INFO
+         RETURN
+      END IF
+*
+*     Transform problem to standard eigenvalue problem and solve.
+*
+      CALL DSYGST( ITYPE, UPLO, N, A, LDA, B, LDB, INFO )
+      CALL DSYEV( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO )
+*
+      IF( WANTZ ) THEN
+*
+*        Backtransform eigenvectors to the original problem.
+*
+         NEIG = N
+         IF( INFO.GT.0 )
+     $      NEIG = INFO - 1
+         IF( ITYPE.EQ.1 .OR. ITYPE.EQ.2 ) THEN
+*
+*           For A*x=(lambda)*B*x and A*B*x=(lambda)*x;
+*           backtransform eigenvectors: x = inv(L)'*y or inv(U)*y
+*
+            IF( UPPER ) THEN
+               TRANS = 'N'
+            ELSE
+               TRANS = 'T'
+            END IF
+*
+            CALL DTRSM( 'Left', UPLO, TRANS, 'Non-unit', N, NEIG, ONE,
+     $                  B, LDB, A, LDA )
+*
+         ELSE IF( ITYPE.EQ.3 ) THEN
+*
+*           For B*A*x=(lambda)*x;
+*           backtransform eigenvectors: x = L*y or U'*y
+*
+            IF( UPPER ) THEN
+               TRANS = 'T'
+            ELSE
+               TRANS = 'N'
+            END IF
+*
+            CALL DTRMM( 'Left', UPLO, TRANS, 'Non-unit', N, NEIG, ONE,
+     $                  B, LDB, A, LDA )
+         END IF
+      END IF
+*
+      WORK( 1 ) = LWKOPT
+      RETURN
+*
+*     End of DSYGV
+*
+      END
+      SUBROUTINE DSYGST( ITYPE, UPLO, N, A, LDA, B, LDB, INFO )
+*
+*  -- LAPACK routine (version 3.0) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     September 30, 1994
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, ITYPE, LDA, LDB, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DSYGST reduces a real symmetric-definite generalized eigenproblem
+*  to standard form.
+*
+*  If ITYPE = 1, the problem is A*x = lambda*B*x,
+*  and A is overwritten by inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T)
+*
+*  If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or
+*  B*A*x = lambda*x, and A is overwritten by U*A*U**T or L**T*A*L.
+*
+*  B must have been previously factorized as U**T*U or L*L**T by DPOTRF.
+*
+*  Arguments
+*  =========
+*
+*  ITYPE   (input) INTEGER
+*          = 1: compute inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T);
+*          = 2 or 3: compute U*A*U**T or L**T*A*L.
+*
+*  UPLO    (input) CHARACTER
+*          = 'U':  Upper triangle of A is stored and B is factored as
+*                  U**T*U;
+*          = 'L':  Lower triangle of A is stored and B is factored as
+*                  L*L**T.
+*
+*  N       (input) INTEGER
+*          The order of the matrices A and B.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+*          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*          N-by-N upper triangular part of A contains the upper
+*          triangular part of the matrix A, and the strictly lower
+*          triangular part of A is not referenced.  If UPLO = 'L', the
+*          leading N-by-N lower triangular part of A contains the lower
+*          triangular part of the matrix A, and the strictly upper
+*          triangular part of A is not referenced.
+*
+*          On exit, if INFO = 0, the transformed matrix, stored in the
+*          same format as A.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,N).
+*
+*  B       (input) DOUBLE PRECISION array, dimension (LDB,N)
+*          The triangular factor from the Cholesky factorization of B,
+*          as returned by DPOTRF.
+*
+*  LDB     (input) INTEGER
+*          The leading dimension of the array B.  LDB >= max(1,N).
+*
+*  INFO    (output) INTEGER
+*          = 0:  successful exit
+*          < 0:  if INFO = -i, the i-th argument had an illegal value
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, HALF
+      PARAMETER          ( ONE = 1.0D0, HALF = 0.5D0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            K, KB, NB
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DSYGS2, DSYMM, DSYR2K, DTRMM, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      INTEGER            ILAENV
+      EXTERNAL           LSAME, ILAENV
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( ITYPE.LT.1 .OR. ITYPE.GT.3 ) THEN
+         INFO = -1
+      ELSE IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -2
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -5
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -7
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DSYGST', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment.
+*
+      NB = ILAENV( 1, 'DSYGST', UPLO, N, -1, -1, -1 )
+*
+      IF( NB.LE.1 .OR. NB.GE.N ) THEN
+*
+*        Use unblocked code
+*
+         CALL DSYGS2( ITYPE, UPLO, N, A, LDA, B, LDB, INFO )
+      ELSE
+*
+*        Use blocked code
+*
+         IF( ITYPE.EQ.1 ) THEN
+            IF( UPPER ) THEN
+*
+*              Compute inv(U')*A*inv(U)
+*
+               DO 10 K = 1, N, NB
+                  KB = MIN( N-K+1, NB )
+*
+*                 Update the upper triangle of A(k:n,k:n)
+*
+                  CALL DSYGS2( ITYPE, UPLO, KB, A( K, K ), LDA,
+     $                         B( K, K ), LDB, INFO )
+                  IF( K+KB.LE.N ) THEN
+                     CALL DTRSM( 'Left', UPLO, 'Transpose', 'Non-unit',
+     $                           KB, N-K-KB+1, ONE, B( K, K ), LDB,
+     $                           A( K, K+KB ), LDA )
+                     CALL DSYMM( 'Left', UPLO, KB, N-K-KB+1, -HALF,
+     $                           A( K, K ), LDA, B( K, K+KB ), LDB, ONE,
+     $                           A( K, K+KB ), LDA )
+                     CALL DSYR2K( UPLO, 'Transpose', N-K-KB+1, KB, -ONE,
+     $                            A( K, K+KB ), LDA, B( K, K+KB ), LDB,
+     $                            ONE, A( K+KB, K+KB ), LDA )
+                     CALL DSYMM( 'Left', UPLO, KB, N-K-KB+1, -HALF,
+     $                           A( K, K ), LDA, B( K, K+KB ), LDB, ONE,
+     $                           A( K, K+KB ), LDA )
+                     CALL DTRSM( 'Right', UPLO, 'No transpose',
+     $                           'Non-unit', KB, N-K-KB+1, ONE,
+     $                           B( K+KB, K+KB ), LDB, A( K, K+KB ),
+     $                           LDA )
+                  END IF
+   10          CONTINUE
+            ELSE
+*
+*              Compute inv(L)*A*inv(L')
+*
+               DO 20 K = 1, N, NB
+                  KB = MIN( N-K+1, NB )
+*
+*                 Update the lower triangle of A(k:n,k:n)
+*
+                  CALL DSYGS2( ITYPE, UPLO, KB, A( K, K ), LDA,
+     $                         B( K, K ), LDB, INFO )
+                  IF( K+KB.LE.N ) THEN
+                     CALL DTRSM( 'Right', UPLO, 'Transpose', 'Non-unit',
+     $                           N-K-KB+1, KB, ONE, B( K, K ), LDB,
+     $                           A( K+KB, K ), LDA )
+                     CALL DSYMM( 'Right', UPLO, N-K-KB+1, KB, -HALF,
+     $                           A( K, K ), LDA, B( K+KB, K ), LDB, ONE,
+     $                           A( K+KB, K ), LDA )
+                     CALL DSYR2K( UPLO, 'No transpose', N-K-KB+1, KB,
+     $                            -ONE, A( K+KB, K ), LDA, B( K+KB, K ),
+     $                            LDB, ONE, A( K+KB, K+KB ), LDA )
+                     CALL DSYMM( 'Right', UPLO, N-K-KB+1, KB, -HALF,
+     $                           A( K, K ), LDA, B( K+KB, K ), LDB, ONE,
+     $                           A( K+KB, K ), LDA )
+                     CALL DTRSM( 'Left', UPLO, 'No transpose',
+     $                           'Non-unit', N-K-KB+1, KB, ONE,
+     $                           B( K+KB, K+KB ), LDB, A( K+KB, K ),
+     $                           LDA )
+                  END IF
+   20          CONTINUE
+            END IF
+         ELSE
+            IF( UPPER ) THEN
+*
+*              Compute U*A*U'
+*
+               DO 30 K = 1, N, NB
+                  KB = MIN( N-K+1, NB )
+*
+*                 Update the upper triangle of A(1:k+kb-1,1:k+kb-1)
+*
+                  CALL DTRMM( 'Left', UPLO, 'No transpose', 'Non-unit',
+     $                        K-1, KB, ONE, B, LDB, A( 1, K ), LDA )
+                  CALL DSYMM( 'Right', UPLO, K-1, KB, HALF, A( K, K ),
+     $                        LDA, B( 1, K ), LDB, ONE, A( 1, K ), LDA )
+                  CALL DSYR2K( UPLO, 'No transpose', K-1, KB, ONE,
+     $                         A( 1, K ), LDA, B( 1, K ), LDB, ONE, A,
+     $                         LDA )
+                  CALL DSYMM( 'Right', UPLO, K-1, KB, HALF, A( K, K ),
+     $                        LDA, B( 1, K ), LDB, ONE, A( 1, K ), LDA )
+                  CALL DTRMM( 'Right', UPLO, 'Transpose', 'Non-unit',
+     $                        K-1, KB, ONE, B( K, K ), LDB, A( 1, K ),
+     $                        LDA )
+                  CALL DSYGS2( ITYPE, UPLO, KB, A( K, K ), LDA,
+     $                         B( K, K ), LDB, INFO )
+   30          CONTINUE
+            ELSE
+*
+*              Compute L'*A*L
+*
+               DO 40 K = 1, N, NB
+                  KB = MIN( N-K+1, NB )
+*
+*                 Update the lower triangle of A(1:k+kb-1,1:k+kb-1)
+*
+                  CALL DTRMM( 'Right', UPLO, 'No transpose', 'Non-unit',
+     $                        KB, K-1, ONE, B, LDB, A( K, 1 ), LDA )
+                  CALL DSYMM( 'Left', UPLO, KB, K-1, HALF, A( K, K ),
+     $                        LDA, B( K, 1 ), LDB, ONE, A( K, 1 ), LDA )
+                  CALL DSYR2K( UPLO, 'Transpose', K-1, KB, ONE,
+     $                         A( K, 1 ), LDA, B( K, 1 ), LDB, ONE, A,
+     $                         LDA )
+                  CALL DSYMM( 'Left', UPLO, KB, K-1, HALF, A( K, K ),
+     $                        LDA, B( K, 1 ), LDB, ONE, A( K, 1 ), LDA )
+                  CALL DTRMM( 'Left', UPLO, 'Transpose', 'Non-unit', KB,
+     $                        K-1, ONE, B( K, K ), LDB, A( K, 1 ), LDA )
+                  CALL DSYGS2( ITYPE, UPLO, KB, A( K, K ), LDA,
+     $                         B( K, K ), LDB, INFO )
+   40          CONTINUE
+            END IF
+         END IF
+      END IF
+      RETURN
+*
+*     End of DSYGST
+*
+      END
+      SUBROUTINE DSYGS2( ITYPE, UPLO, N, A, LDA, B, LDB, INFO )
+*
+*  -- LAPACK routine (version 3.0) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     February 29, 1992
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, ITYPE, LDA, LDB, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DSYGS2 reduces a real symmetric-definite generalized eigenproblem
+*  to standard form.
+*
+*  If ITYPE = 1, the problem is A*x = lambda*B*x,
+*  and A is overwritten by inv(U')*A*inv(U) or inv(L)*A*inv(L')
+*
+*  If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or
+*  B*A*x = lambda*x, and A is overwritten by U*A*U` or L'*A*L.
+*
+*  B must have been previously factorized as U'*U or L*L' by DPOTRF.
+*
+*  Arguments
+*  =========
+*
+*  ITYPE   (input) INTEGER
+*          = 1: compute inv(U')*A*inv(U) or inv(L)*A*inv(L');
+*          = 2 or 3: compute U*A*U' or L'*A*L.
+*
+*  UPLO    (input) CHARACTER
+*          Specifies whether the upper or lower triangular part of the
+*          symmetric matrix A is stored, and how B has been factorized.
+*          = 'U':  Upper triangular
+*          = 'L':  Lower triangular
+*
+*  N       (input) INTEGER
+*          The order of the matrices A and B.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+*          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*          n by n upper triangular part of A contains the upper
+*          triangular part of the matrix A, and the strictly lower
+*          triangular part of A is not referenced.  If UPLO = 'L', the
+*          leading n by n lower triangular part of A contains the lower
+*          triangular part of the matrix A, and the strictly upper
+*          triangular part of A is not referenced.
+*
+*          On exit, if INFO = 0, the transformed matrix, stored in the
+*          same format as A.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,N).
+*
+*  B       (input) DOUBLE PRECISION array, dimension (LDB,N)
+*          The triangular factor from the Cholesky factorization of B,
+*          as returned by DPOTRF.
+*
+*  LDB     (input) INTEGER
+*          The leading dimension of the array B.  LDB >= max(1,N).
+*
+*  INFO    (output) INTEGER
+*          = 0:  successful exit.
+*          < 0:  if INFO = -i, the i-th argument had an illegal value.
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, HALF
+      PARAMETER          ( ONE = 1.0D0, HALF = 0.5D0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            K
+      DOUBLE PRECISION   AKK, BKK, CT
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DAXPY, DSCAL, DSYR2, DTRMV, DTRSV, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( ITYPE.LT.1 .OR. ITYPE.GT.3 ) THEN
+         INFO = -1
+      ELSE IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -2
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -5
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -7
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DSYGS2', -INFO )
+         RETURN
+      END IF
+*
+      IF( ITYPE.EQ.1 ) THEN
+         IF( UPPER ) THEN
+*
+*           Compute inv(U')*A*inv(U)
+*
+            DO 10 K = 1, N
+*
+*              Update the upper triangle of A(k:n,k:n)
+*
+               AKK = A( K, K )
+               BKK = B( K, K )
+               AKK = AKK / BKK**2
+               A( K, K ) = AKK
+               IF( K.LT.N ) THEN
+                  CALL DSCAL( N-K, ONE / BKK, A( K, K+1 ), LDA )
+                  CT = -HALF*AKK
+                  CALL DAXPY( N-K, CT, B( K, K+1 ), LDB, A( K, K+1 ),
+     $                        LDA )
+                  CALL DSYR2( UPLO, N-K, -ONE, A( K, K+1 ), LDA,
+     $                        B( K, K+1 ), LDB, A( K+1, K+1 ), LDA )
+                  CALL DAXPY( N-K, CT, B( K, K+1 ), LDB, A( K, K+1 ),
+     $                        LDA )
+                  CALL DTRSV( UPLO, 'Transpose', 'Non-unit', N-K,
+     $                        B( K+1, K+1 ), LDB, A( K, K+1 ), LDA )
+               END IF
+   10       CONTINUE
+         ELSE
+*
+*           Compute inv(L)*A*inv(L')
+*
+            DO 20 K = 1, N
+*
+*              Update the lower triangle of A(k:n,k:n)
+*
+               AKK = A( K, K )
+               BKK = B( K, K )
+               AKK = AKK / BKK**2
+               A( K, K ) = AKK
+               IF( K.LT.N ) THEN
+                  CALL DSCAL( N-K, ONE / BKK, A( K+1, K ), 1 )
+                  CT = -HALF*AKK
+                  CALL DAXPY( N-K, CT, B( K+1, K ), 1, A( K+1, K ), 1 )
+                  CALL DSYR2( UPLO, N-K, -ONE, A( K+1, K ), 1,
+     $                        B( K+1, K ), 1, A( K+1, K+1 ), LDA )
+                  CALL DAXPY( N-K, CT, B( K+1, K ), 1, A( K+1, K ), 1 )
+                  CALL DTRSV( UPLO, 'No transpose', 'Non-unit', N-K,
+     $                        B( K+1, K+1 ), LDB, A( K+1, K ), 1 )
+               END IF
+   20       CONTINUE
+         END IF
+      ELSE
+         IF( UPPER ) THEN
+*
+*           Compute U*A*U'
+*
+            DO 30 K = 1, N
+*
+*              Update the upper triangle of A(1:k,1:k)
+*
+               AKK = A( K, K )
+               BKK = B( K, K )
+               CALL DTRMV( UPLO, 'No transpose', 'Non-unit', K-1, B,
+     $                     LDB, A( 1, K ), 1 )
+               CT = HALF*AKK
+               CALL DAXPY( K-1, CT, B( 1, K ), 1, A( 1, K ), 1 )
+               CALL DSYR2( UPLO, K-1, ONE, A( 1, K ), 1, B( 1, K ), 1,
+     $                     A, LDA )
+               CALL DAXPY( K-1, CT, B( 1, K ), 1, A( 1, K ), 1 )
+               CALL DSCAL( K-1, BKK, A( 1, K ), 1 )
+               A( K, K ) = AKK*BKK**2
+   30       CONTINUE
+         ELSE
+*
+*           Compute L'*A*L
+*
+            DO 40 K = 1, N
+*
+*              Update the lower triangle of A(1:k,1:k)
+*
+               AKK = A( K, K )
+               BKK = B( K, K )
+               CALL DTRMV( UPLO, 'Transpose', 'Non-unit', K-1, B, LDB,
+     $                     A( K, 1 ), LDA )
+               CT = HALF*AKK
+               CALL DAXPY( K-1, CT, B( K, 1 ), LDB, A( K, 1 ), LDA )
+               CALL DSYR2( UPLO, K-1, ONE, A( K, 1 ), LDA, B( K, 1 ),
+     $                     LDB, A, LDA )
+               CALL DAXPY( K-1, CT, B( K, 1 ), LDB, A( K, 1 ), LDA )
+               CALL DSCAL( K-1, BKK, A( K, 1 ), LDA )
+               A( K, K ) = AKK*BKK**2
+   40       CONTINUE
+         END IF
+      END IF
+      RETURN
+*
+*     End of DSYGS2
+*
+      END
 C --- gp_dlapack.F ---

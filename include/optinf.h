@@ -15,18 +15,19 @@ C
      &                CHGRDT, CONOPT, MODHES, INMDHS, FINDRE, TRSTRG,
      &                RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH, SADDLE,
      &                REBILD, CMBMOD, HFPROP, CONFRM, NOAUX,  NODIHE,
-     &                LINDHD
+     &                LINDHD, ADDCRD, REDRED, NOADDA, NATNRM, NOHSWR
       COMMON /OPTINF/ TRSTRA, TRSTIN, TRSTDE, RTENBD, RTENGD, RTRJMN,
      &                RTRJMX, ENERGY, ERGOLD, ERGPRD, ERGPRO, STPNRM,
      &                STPNRO, GRADNM, THRERG, GRDTHR, THRSTP, THRSYM,
-     &                EVLINI, DISPLA, STPDIA(8*MXCENT), 
+     &                THGRMX, THSTMX, EVLINI, DISPLA, PRVRMS, PRVMAX,
+     &                STPDIA(8*MXCENT), 
      &                STPSYM(8*MXCENT), STPINT(8*MXCENT), 
      &                GRDDIA(8*MXCENT), EVAL(8*MXCENT), 
      &                EVALOL(8*MXCENT), GRDINT(8*MXCENT),
      &                CRDIN1(8*MXCENT), CRDINT(8*MXCENT),
      &                CNDHES(0:7), INDHES(0:7), INTCRD(8*MXCENT,6),
-     &                ICONF(0:5), ICNSTR(8*MXCENT), ISTBLZ,
-     &                IAUXRD, ITOTRJ, KEPTIT, NSPMOD, NCNSTP,
+     &                ICONF(0:5), ICNSTR(8*MXCENT), IADDCR(0:10,1:4),
+     &                ISTBLZ, IAUXRD, ITOTRJ, KEPTIT, NSPMOD, NCNSTP,
      &                INDTOT, ITRNMR, ITRMAX, MAXREJ, IPRINT, NCRTOT,
      &                NCART,  NPROJ,  NTMAT,  IINTCR, IREDIC, ICRTCR,
      &                ICONDI, ITRBRK, NUMPRE, IPRE,   PREBTX(MAXPRE),
@@ -39,4 +40,5 @@ C
      &                MULTI,  CHGRDT, CONOPT, MODHES, INMDHS, FINDRE,
      &                TRSTRG, RATFUN, GDIIS,  DELINT, RSTARR, LNSRCH,
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
-     &                NOAUX,  NODIHE, LINDHD
+     &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
+     &                NATNRM, NOHSWR
