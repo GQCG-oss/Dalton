@@ -3928,7 +3928,7 @@ C
 #include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3)
-      PARAMETER (D0 = 0.0D0, DEG175 = 175D0*PI/180D0)
+      PARAMETER (D0 = 0.0D0, DEG179 = 179D0*PI/180D0)
       CALL DZERO(VALINT,MXRCRD)
       NRIC = IINTCR
       IF (DELINT) NRIC = IREDIC
@@ -3999,10 +3999,12 @@ C
             IF ((DDOT(3,VEC1,1,VEC1,1) .GT. 1.0D-16) .AND.
      &           (DDOT(3,VEC3,1,VEC3,1) .GT. 1.0D-16)) THEN
                VALINT(IC) = VECANG(VEC1,VEC3)
-               IF (ABS(VALINT(IC)) .GT. DEG175) THEN
+               IF (ABS(VALINT(IC)) .GT. DEG179) THEN
                   CALL VECPRD(VEC1,VEC2,VEC4)
                   CALL NRMLVC(VEC4)
-                  VALINT(IC) = VECANG(VEC1,VEC4) + VECANG(VEC4,VEC3)
+                  DCMP2 = VECANG(VEC4,VEC3)
+                  IF (DCMP2 .GE. PI/2.D0) DCMP2 = PI - DCMP2
+                  VALINT(IC) = VECANG(VEC1,VEC4) + DCMP2
                END IF
                CALL VECPRD(VEC1,VEC3,VEC4)
                IF (DDOT(3,VEC2,1,VEC4,1) .LT. 0.0D0)
