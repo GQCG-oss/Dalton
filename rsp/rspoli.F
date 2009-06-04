@@ -584,11 +584,13 @@ C
          KDXVAO = KDXCAO
       END IF
       KDTOTAO = KDXVAO + NOSIM*N2BASX
+#ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
          CALL SRDFT_DENS(WRK(KDTOTAO),UDV,PVX,CMO,WRK,KFREE,LFREE)
 C        Get DtotAO, allocation for DXtotAO in SIRFCK.SRDFT can here be
 C        used temporarily for DVAO if NASHT.gt.0
       END IF
+#endif
 
 C
 C Construct NOSIM Inactive and Active density matrices according to eq.27
@@ -669,7 +671,7 @@ C     Change IFCTYP for all Fa matrices
           END IF
         END DO
       END IF  
-!     IF (IPRRSP .GT. 60) THEN
+      IF (IPRRSP .GT. 60) THEN
          WRITE(LUPRI,*) 'RSPOLI:SIRFCK NFMAT DIRFCK',NFMAT,DIRFCK
          WRITE(LUPRI,*) 'ISYMDM ',(ISYMDM(I),I=1,NFMAT)
          WRITE(LUPRI,*) 'IFCTYP ',(IFCTYP(I),I=1,NFMAT)
@@ -679,7 +681,7 @@ C     Change IFCTYP for all Fa matrices
             CALL OUTPUT(WRK(JDXCAO),1,NBAST,1,NBAST,
      &                  NBAST,NBAST,-1,LUPRI)
          END DO
-!     END IF
+      END IF
       DFTADX = DFTADD
       DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
