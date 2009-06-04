@@ -313,8 +313,8 @@ C     *******************************************************
 #include <maxorb.h>
 C
       PARAMETER (D0 = 0.0D0)
-#include <inforb.h>
 #include <gnrinf.h>
+#include <inforb.h>
 #include <dftcom.h>
 #include <ecpinf.h>
 #include <ccsdinp.h>
@@ -330,7 +330,7 @@ C
       DMP2       = WAVTP('MP2')
       DPCM       = WAVTP('PCM')
       DOROHF     = WAVTP('ROHF')
-#ifdef MC_SRDFT
+#ifdef MOD_SRDFT
       DOHFSRDFT  = WAVTP('HFSRDFT')
       DOCISRDFT  = WAVTP('CISRDFT')
       DOMCSRDFT  = WAVTP('MCSRDFT')
@@ -344,7 +344,7 @@ C
      &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
@@ -385,7 +385,7 @@ C
          WAVTP = HSROHF
       ELSE IF (STRING .EQ. 'PCM') THEN
          WAVTP = PCM
-#ifdef MC_SRDFT
+#ifdef MOD_SRDFT
       ELSE IF (STRING.EQ.'HFSRDFT') THEN
          WAVTP = DOHFSRDFT
       ELSE IF (STRING.EQ.'CISRDFT') THEN
