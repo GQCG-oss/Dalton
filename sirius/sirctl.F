@@ -665,7 +665,14 @@ C
          LWRK1 = LWORK - KWRK1
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
          USEDRC = .TRUE.
-         CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
+         IF (NEWTRA) THEN
+C        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
+C            they are only calculated for level 5 in "NEWTRA"
+C            transformation  /hjaaj June 09
+            CALL TRACTL(5,WORK(KCMO),WORK(KWRK1),LWRK1)
+         ELSE
+            CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
+         END IF
          CALL KOOPRO4(WORK,LWORK)
       ENDIF
 C

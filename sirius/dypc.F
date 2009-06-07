@@ -129,10 +129,9 @@ C
 #endif
 c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
-      write(lupri,*)
-      write(lupri,*) 'STARTING THE PERTURBATION SUMMATION'
-      write(lupri,*)
-      write(lupri,*)
+      CALL QENTER('DYPC')
+
+      write(lupri,'(/A//)') ' STARTING THE PERTURBATION SUMMATION'
  
       nwall=0
       ntotdet=0
@@ -772,17 +771,15 @@ c      WRITE (lupri,1105) ESCF
       E2SC(1)=E2SC(1)+E(1)
       E2PC(1)=E2PC(1)+E(1)
       WRITE (lupri,1100) 1,E(1),E2SC(1),E2PC(1)
-      WRITE (lupri,'(//)')
-      WRITE (lupri,'(/)')
-      write (lupri,'(a,f8.2,a)')' Total elapsed time in dypc',
+      write (lupri,'(///a,f8.2,a/)')' Total elapsed time in dypc',
      *  tpp-t,' sec.'
-      write (lupri,*)
  1060 FORMAT (5X,'TOTAL ENERGY CONTRIBUTIONS')
  1070 FORMAT (' STATE',3X,'DIAGONALISATION        PERTURBATION SC-D',
      * '        PERTURBATION PC-D')
  1100 FORMAT (1x,I4,F17.8,3F24.8)
 c 1105 FORMAT (' REFERENCE: ',F16.8,//)
  2000 FORMAT (5X,32('*'))
+      CALL QEXIT('DYPC')
       return
       END
 c----------------------------------------------------------------------
@@ -790,7 +787,8 @@ c----------------------------------------------------------------------
       subroutine rdd2(lun31,da,nact)
 #include <implicit.h>      
       DIMENSION da(nact,nact)
-      read(lun31)((da(i,j),i=1,nact),j=1,nact)
+!     read(lun31)((da(i,j),i=1,nact),j=1,nact)
+      read(lun31) da
       return
       end
       subroutine rdd4(lun31,daat,i,j,nact)

@@ -1001,7 +1001,10 @@ C        ... include (ii/aa) and (ia/ia) for orbital diagonal
 C        ... exclude (ii/aa) and (ia/ia) for orbital diagonal
             ITRLVL = 3
          END IF
-         IF (DONEVPT) ITRLVL=4
+C        IF (DONEVPT) ITRLVL=4
+C        ... this is instead done just before the KOOPRO4 call in SIRCTL
+C            in this way we don't spend CPU time on too big integral
+C            transformations in the MCSCF step /hjaaj June 09
       END IF
 C
 C     Set print parameters in /INFTRA/ for TRACTL

@@ -166,6 +166,7 @@ c      character*1 sppm
 C--- Cele  Debug
 c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
+      CALL QENTER('KOOPRO4')
 C--- Cele  Debug
 c       nexc(1)='F'
 c       nexc(2)='M'
@@ -1207,6 +1208,8 @@ c-----scrittura matrici A e D-----------------------------------
       call nwdel(nwall,2*nasht*4)
 #endif
 c----that's all folks
+      CALL QEXIT('KOOPRO4')
+      return
       end
 c-------------------------------------------------------------------
       subroutine rofour(c,amat,nisht,nasht,thr,icomp,iconf,ioccfe,
