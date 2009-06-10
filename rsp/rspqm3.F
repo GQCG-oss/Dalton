@@ -676,6 +676,7 @@ C  Arnfinn, Aug.-08: The slave routine for QM3LNO_P
 C
 #include <implicit.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 #include <inflin.h>
 #include <inforb.h>
 #include <infvar.h>
@@ -1546,6 +1547,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 #include <inforb.h>
 #include <infdim.h>
 #include <infinp.h>
