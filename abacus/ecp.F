@@ -54,7 +54,7 @@ C
 C
 C     Slaves can return here.
 C
-      IF (MYNUM.NE.0) RETURN
+      IF (SLAVE) RETURN
 C
 C     Initialize ECP specifics.
 C

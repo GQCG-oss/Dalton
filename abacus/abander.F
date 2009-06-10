@@ -506,7 +506,6 @@ C 100  CONTINUE
 C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
-      ADSTBK = DOHUCKEL.AND.((NMORDR.GT.1).OR.(NMRDRP.GT.0))
 C
       NDERIV = 0
       NDIME  = 1
@@ -607,12 +606,12 @@ chj      KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
          KNIDPC = KTEST
       END IF
 C
-C     *** Space for backup av MOLECULE.INP ***
+C     *** Space for backup of MOLECULE.INP ***
 C
       KMBKLN = KLAST
       KLAST  = KMBKLN + 80*NMLINE
 C
-C     *** Space for backup av isotopes if abacus is run. ***
+C     *** Space for backup of isotopes if abacus is run. ***
 C
       IF (NAORDR.GT.0) THEN
          KISOTP = KLAST
@@ -633,7 +632,7 @@ C
       LWRK1 = LWORK - (KLAST - IWOFF) + 1
 C
       IWSAV = IWOFF
-Chjaaj-Oct07: KTEST a simple device to check if arrays which
+Chjaaj-Oct07: KTEST is a simple device to check if arrays which
 C     supposedly not are used, are used anyway.
       WORK(KTEST) = -999.9D0
       CALL NUMDR1(WORK(KDERIV),WORK(KFUVAL),WORK(KCOOR),WORK(KCSTAR),
@@ -933,8 +932,8 @@ C
 C     *** Printing the derivatives ***
 C
       IF (MYNUM.EQ.0) THEN
-         PRTEXT(1:9) = 'symmetric'
-         LTEXT  = 9
+         LTEXT  = 8
+         PRTEXT(1:8) = 'symmetry'
          IF (NRMCRD) THEN
             NPRRDR = 2
          ELSE
@@ -1167,9 +1166,9 @@ C
          END IF
 C
          IF (MYNUM.EQ.0) THEN
+            LTEXT  = 6
             PRTEXT(1:6) = 'normal'
 C
-            LTEXT  = 6
             NPRRDR = NAORDR + NMORDR
             NDIMT  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)/6
             NDIMF  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NCOOR+3)/24
@@ -1865,15 +1864,12 @@ c#endif
 C
 C           *** Header print ***
 C
-            CALL HEADER('Component calulated',0)
-            WRITE (LUPRI,'(A)') '                       '
+            CALL HEADER('Next numerical derivative component',0)
             IF (IDIME.NE.1) THEN
                WRITE (LUPRI,'(12I5)')  (INDSTP(I),I=1,IRSRDR+1)
             ELSE
                WRITE (LUPRI,'(5X,A)') 'Starting geometry.'
             END IF
-            WRITE (LUPRI,'(A)') '                       '
-            WRITE (LUPRI,'(A)') '                       '
 C
             IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.(RESTRT.AND.RSTDON
      &           .AND.((IDIME.GT.IDIMAX).OR.(IDIME.LT.IDIMIN))))) THEN
@@ -2085,8 +2081,6 @@ C
                MLINE(NMLAU)(10:20) = '           '
             END IF
          ELSE
-            DOCART = .FALSE.
-            DOOWN = .FALSE.
             CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,
      &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .TRUE.
@@ -2286,22 +2280,15 @@ C
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
 C
-C     *** Reseting aba ***
+C     *** unset ABA variable to false ***
 C
       CALL ABUSET
-C
-C     *** NOADSY -> If no automatic symmetry detection is requested ***
-C     ***           we need to use Huckel start-guess first time.   ***
-C
-c      IF (ADSTBK) THEN
-         DOHUCKEL = .TRUE.
-c         NOADSY = .FALSE.
-c      END IF
 C
 C     *** If there are possibilities for  new symmetry. ***
 C
       IF (((NMORDR+NAORDR).GT.1).OR.(NPRPDR)) THEN
          NEWSYM = .TRUE.
+         DOHUCKEL = .TRUE.
       END IF
 C
 C     *** For higher order derivatives. ****
@@ -3267,7 +3254,7 @@ C     *** Transformation to cartesian  ***
 C     ***  coordinstes, and printing.  ***
 C     ************************************
 C
-      IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:LTXT).NE.'normal')) THEN
+      IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
          LTXT = 9
          TEXT(1:9) = 'cartesian'
 C
@@ -3410,7 +3397,7 @@ C     *** Transformation to cartesian  ***
 C     ***  coordinstes, and printing.  ***
 C     ************************************
 C
-      IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:LTXT).NE.'normal')) THEN
+      IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
 C
 C        *** Coordinate transformation. ***
 C
@@ -3420,7 +3407,7 @@ C
 C        *** Printing in cartesian coordinates. ***
 C
          IF (.NOT.MINOUT) 
-     &      CALL PRFDER(FDER,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
+     &      CALL PRFDER(FDER,NCOOR,NUMCOR,'cartesian',9,IPRINT)
       ELSE
          CALL DCOPY(NCOOR**4,SYMFDR,1,FDER,1)
       END IF
@@ -4105,8 +4092,7 @@ C
 C
       DO 100 ICOL3 = 1, NCOR
          WRITE (LUPRI,'(A,I4)') '      The fourth dimension', ICOL3
-         WRITE (LUPRI,'(A)') '      ------------------------'
-         WRITE (LUPRI,'(A)') '                                  '
+         WRITE (LUPRI,'(A/)') '      ------------------------'
          DO 200 ICOL2 = 1, NCOR
             WRITE (LUPRI,'(A,I4)') '        The third Dimension', ICOL2
             INLC = 0
@@ -4257,7 +4243,7 @@ C
          KSYMTD = KTDER  + NCOOR**3
          KLAST  = KSYMTD + NCOOR**3
          CALL HEADER('Numerical third derivative of energy in ' //
-     &                TEXT(1:LTXT) // 'coordinates',-1)
+     &                TEXT(1:LTXT) // ' coordinates',-1)
          CALL PRITDR(TDER,SYMCOR,TTMPDR,WORK(KSYMTD),NDIMT,NDCOOR,LTXT,
      &               IPRINT,PRWHLE,TEXT)
       END IF
@@ -4271,7 +4257,7 @@ C
          KCSTRA = KSCTRA + NCOOR**2
          KLAST  = KCSTRA + NCOOR**2
          CALL HEADER('Numerical fourth derivative of energy in ' //
-     &                TEXT(1:LTXT) // 'coordinates',-1)
+     &                TEXT(1:LTXT) // ' coordinates',-1)
          CALL PRIFDR(FDER,SYMCOR,FTMPDR,WORK(KSYMFD),NDIMF,NDCOOR,LTXT,
      &               IPRINT,TEXT)
       END IF
@@ -4323,7 +4309,7 @@ C
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
 C
-      CALL HEADER('Gradient in ' // TEXT(1:LTXT) // 'coordinates',-1)
+      CALL HEADER('Gradient in ' // TEXT(1:LTXT) // ' coordinates',-1)
 C
       DO 100 ICOOR = 1, NDCOOR
          IF (ICRIRP(ICOOR,1).EQ.1) THEN

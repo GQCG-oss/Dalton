@@ -102,7 +102,7 @@ C     The actual number of elements in these arrays is later
 C     tested for in NTYPTS.
 C
       MAXTYP = 3*MXCOOR
-      IF (QM3) MAXTYP = 9*NCTOT
+      IF (FORQM3) MAXTYP = MAX(MAXTYP,9*NCTOT)
 C
 C     For DSO integrals the following number of elements are
 C     needed. NTYPTS is therefore not called.
@@ -884,7 +884,7 @@ C     --------------------------------------
 C
  31   CONTINUE
          INTTYP = 29
-         IF (QM3) LOELFD = .TRUE.
+         IF (FORQM3) LOELFD = .TRUE.
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
@@ -975,7 +975,7 @@ C     -----------------------------
 C
  37   CONTINUE
          INTTYP = 35
-         IF (QM3) LONUPO = .TRUE.
+         IF (FORQM3) LONUPO = .TRUE.
          IF (MAXREP .GT. 0) THEN
             WRITE (LUPRI,'(/A/)')
      &           ' Program cannot calculate potential energy '//
@@ -2500,7 +2500,7 @@ C         Replace time information with symmetry information
             RTNLBL(2)='SYMMETRI'
           END IF
         END IF
-        IF (.NOT. QM3) THEN
+        IF (.NOT. FORQM3) THEN
           IADR = KSOINT
           DO 600 I = 1, NOPTYP
             IF (PROPRI .OR. IPRINT .GT. 4) THEN
@@ -2527,7 +2527,7 @@ C
             CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
             IADR = IADR + NELMNT
   600     CONTINUE
-       ELSE IF (QM3) THEN
+       ELSE IF (FORQM3) THEN
           IF ( (INTTYP .NE. 29) .AND.
      &         (INTTYP .NE. 35) ) THEN 
              IADR = KSOINT
@@ -2545,36 +2545,36 @@ C
                   END IF
                 END IF
                 IF (ONLYOV) THEN
-                  IQMBA1 = IQMBAS*(IQMBAS-1)/2 + IQMBAS
-                  IMMBAS = NBAST - IQMBAS
+                  NNQMBAS = NQMBAS*(NQMBAS+1)/2
+                  NMMBAS = NBAST - NQMBAS
                   IF (IPRINT .GT. 4) THEN
-                    WRITE(LUPRI,'(//5X,A6,I10)')'IQMBAS',IQMBAS
+                    WRITE(LUPRI,'(//5X,A6,I10)')'NQMBAS',NQMBAS
                     WRITE(LUPRI,'(5X,A6,I10)')'NBAST',NBAST
                     WRITE(LUPRI,'(5X,A6,I10)')'NELMNT',NELMNT
-                    WRITE(LUPRI,'(5X,A6,I10)')'IQMBA1',IQMBA1
-                    WRITE(LUPRI,'(5X,A6,I10//)')'IMMBAS',IMMBAS
+                    WRITE(LUPRI,'(5X,A6,I10)')'NNQMBAS',NNQMBAS
+                    WRITE(LUPRI,'(5X,A6,I10//)')'NMMBAS',NMMBAS
                   END IF
                   CALL GPOPEN(LUOVER,'MMOVER_INFO','UNKNOWN',' ',
      &                       'FORMATTED',IDUMMY,.FALSE.)
-                  WRITE(LUOVER,'(I10,5X,I10)') IMMBAS, IQMBAS
+                  WRITE(LUOVER,'(I10,5X,I10)') NMMBAS, NQMBAS
                   CALL GPCLOSE(LUOVER,'KEEP')
                   IF (INTTYP .NE. 1) THEN
                     CALL QUIT('Error in INTTYP in ONLYOV stuff')
                   END IF
                   FILMME  = 'MMOVER'
                   LUMMOV  = -1
-                  IOFFMEM = IQMBA1
+                  IOFFMEM = NNQMBAS
                   IADRFIL = 1
-                  NDATA   = IQMBAS
+                  NDATA   = NQMBAS
                   CALL WOPEN2(LUMMOV,FILMME,64,0)
-                  DO 389 LK=1,IMMBAS
+                  DO 389 LK=1,NMMBAS
                     CALL PUTWA2(LUMMOV,FILMME,WORK(IADR+IOFFMEM),
      *                          IADRFIL,NDATA)
                     IOFFMEM = IOFFMEM + NDATA + LK
                     IADRFIL = IADRFIL + NDATA
   389             CONTINUE
-                  IF ((IQMBAS*IMMBAS) .GT. NMMBA1) THEN
-                    ITEMP = (IQMBAS*IMMBAS) - NMMBA1
+                  IF ((NQMBAS*NMMBAS) .GT. NMMBA1) THEN
+                    ITEMP = (NQMBAS*NMMBAS) - NMMBA1
                     WRITE(LUPRI,'(/A,I10)')
      *              'Overlap sums not correct because QMTEST array is'//
      *              ' too small. Increase NMMBA1 with at least',ITEMP
@@ -2585,7 +2585,7 @@ C
                     QMTEST(LJ) = 0.0D0
   391             CONTINUE
                   IADRFIL = 1
-                  CALL GETWA2(LUMMOV,FILMME,QMTEST,IADRFIL,NDATA*IMMBAS)
+                  CALL GETWA2(LUMMOV,FILMME,QMTEST,IADRFIL,NDATA*NMMBAS)
                   DO 390 LI = 1,NMMBA1
                     TEMP = TEMP + QMTEST(LI)**2
   390             CONTINUE
@@ -2605,8 +2605,8 @@ C
                   IADR = IADR + NELMNT
                 END IF
   721         CONTINUE
-            ELSE IF ( (INTTYP .EQ. 29) .OR.
-     &              (INTTYP .EQ. 35) ) THEN
+            ELSE IF ( (INTTYP .EQ. 29)
+     &           .or. (INTTYP .EQ. 35) ) THEN
               LM3TMP = NOPTYP/NCTOT
               IF (INTTYP .EQ. 29) THEN
                 NCOMS = 0
@@ -2692,7 +2692,7 @@ C
         END IF
       END IF
 
-      IF ( (QM3) .AND. (INTDIR) ) THEN
+      IF ( (FORQM3) .AND. (INTDIR) ) THEN
         NUSITE = 0
         DO 525 I = 1, ISYTP
           IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
@@ -2898,10 +2898,10 @@ Ckr   SPIN is anyway only a local variable
      &       INTTYP .EQ. 97 .OR. INTTYP .EQ. 102
       IF (.NOT.SPIN .OR. ALLATM) THEN
          NATOM = NUCDEP
-         IF ( (QM3) .AND. (.NOT. INTDIR) ) THEN
-           IF (INTTYP .EQ. 29.) NATOM=NCTOT
-           IF (INTTYP .EQ. 30.) NATOM=NCTOT
-           IF (INTTYP .EQ. 35.) NATOM=NCTOT
+         IF ( (FORQM3) .AND. (.NOT. INTDIR) ) THEN
+           IF (INTTYP .EQ. 29) NATOM=NCTOT
+           IF (INTTYP .EQ. 30) NATOM=NCTOT
+           IF (INTTYP .EQ. 35) NATOM=NCTOT
          END IF
 C
          DO 100 I = 1, NATOM
@@ -2924,7 +2924,7 @@ C
   300    CONTINUE
       END IF
 C
-      IF (QM3 .AND. (INTTYP .EQ. 29)) THEN
+      IF (FORQM3 .AND. (INTTYP .EQ. 29)) THEN
         DO 111 N = 1, NCTOT
           DOATOM(N) = .FALSE.
  111    CONTINUE
@@ -2944,7 +2944,7 @@ C
  121      CONTINUE
  120    CONTINUE
       END IF
-      IF (QM3 .AND. (INTTYP .EQ. 35)) THEN
+      IF (FORQM3 .AND. (INTTYP .EQ. 35)) THEN
         DO 113 N = 1, NCTOT
           DOATOM(N) = .FALSE.
  113    CONTINUE
@@ -2964,7 +2964,7 @@ C
  115      CONTINUE
  114    CONTINUE
       END IF
-      IF (QM3 .AND. (INTTYP .EQ. 30)) THEN
+      IF (FORQM3 .AND. (INTTYP .EQ. 30)) THEN
         DO 117 N = 1, NCTOT
           DOATOM(N) = .FALSE.
  117    CONTINUE
@@ -3804,7 +3804,7 @@ C
 C
       ITYP = 0
 C
-      IF (.NOT. QM3) THEN
+      IF (.NOT. FORQM3) THEN
         DO 100 IATOM = 1, NUCIND
           IF (DOATOM(IATOM)) THEN
             NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
@@ -3897,12 +3897,12 @@ C  /* Deck efntyp */
 #include <chrnos.h>
 #include <ibtfun.h>
       NOPTYP = 3*NATOM
-      IF (QM3 .AND. INTDIR .AND. FORQM3) NOPTYP = 3
+      IF (INTDIR .AND. FORQM3) NOPTYP = 3
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
 C
-      IF (.NOT. QM3) THEN
+      IF (.NOT. FORQM3) THEN
         DO 50 IREP = 0, MAXREP
           DO 100 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
@@ -3927,6 +3927,7 @@ C
  100      CONTINUE
  50     CONTINUE
       ELSE
+C     ... FORQM3
         DO 60 IREP = 0, MAXREP
           DO 110 IATOM = 1, NCTOT
             DO 210 ICOOR = 1, 3
@@ -3973,7 +3974,7 @@ C
       CALL NTYPTS(NOPTYP)
       CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
 C
-      IF (.NOT.QM3) THEN
+      IF (.NOT.FORQM3) THEN
         ITYP = 0
         DO 100 IATOM = 1, NUCIND
           IF (DOATOM(IATOM)) THEN

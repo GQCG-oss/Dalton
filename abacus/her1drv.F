@@ -322,7 +322,6 @@ C
       PARAMETER (D0 = 0.00 D00)
 C
 #include <nuclei.h>
-#include <qm3.h>
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
      &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2, PCM
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,*),
@@ -334,6 +333,7 @@ C
      &          HSOLNN(MXCOOR,MXCOOR), HESDFT(MXCOOR,MXCOOR),
      &          CSTRA(*), SCTRA(*)
       CHARACTER*8 RTNLBL(2)
+#include <gnrinf.h>
 #include <inftap.h>
 #include <onecom.h>
 #include <lmns.h>
@@ -349,7 +349,6 @@ C
 #include <difsec.h>
 #include <cbisol.h>
 #include <dftcom.h>
-#include <gnrinf.h>
 #include <expopt.h>
 #include <rspprp.h>
 #include <esg.h>
@@ -1150,7 +1149,6 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP

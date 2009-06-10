@@ -1319,13 +1319,15 @@ C     these coordinates
 C
       TSTIN  = TSTINP
       TSTINP = .TRUE.
-      IPRSAV = IPRUSR
+      IPRUSR_SAV = IPRUSR
+      IPREAD_SAV = IPREAD
       IPRUSR = -10
-      CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-      CALL HERINP(WORK(2),LWORK-2)
-      CALL GPCLOSE(LUONEL,' ')
+      IPREAD = -10
+C     Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
+      CALL READIN(WORK(2),LWORK-2,.FALSE.)
       TSTINP = TSTIN
-      IPRUSR = IPRSAV
+      IPRUSR = IPRUSR_SAV
+      IPREAD = IPREAD_SAV
       HRINPC = .FALSE.
 C
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
@@ -1354,7 +1356,6 @@ C
          IF (FINDRE .AND. (.NOT. VISUAL)) THEN
             CALL TITLER('Internal coordinates determined','#',103)
             CALL QEXIT('OPTMIN')
-            RETURN
          END IF
       ELSE
          KATARR = 2
@@ -1396,7 +1397,6 @@ C
      &     WORK(KHESOL),WORK(KGRDAR), WORK(KSTPAR),WORK(KINFO),
      &     WORK(KWILBM),WORK(KBMTRN),WORK(KHSINT),WORK(KVCMOD),
      &     WORK(KWRK),LWRK)
-      CALL QEXIT('OPTMIN')
 C
 C     Commented out this part, the finalizing is done in the main
 C     program (dalton.F) for all kinds of calculations - vb
@@ -1408,6 +1408,7 @@ C         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
 C     &                  MPI_COMM_WORLD,IERR)
 C      END IF
 C#endif      
+      CALL QEXIT('OPTMIN')
       RETURN
       END
 
@@ -1569,14 +1570,18 @@ C
 C     aug 99 - hjaaj
 C     cut down on hermit and abacus output after initial iteration
 C
-      IPRUS1 = IPRUSR
+      IPRUSR_orig = IPRUSR
+      IPREAD_orig = IPREAD
       IF (USRIPR) THEN
 C        if user has asked for higher print level, no change
-         IPRUS2 = IPRUSR
+         IPRUSR_reduced = IPRUSR
+         IPREAD_reduced = IPREAD
       ELSE
-         IPRUS2 = -2
+         IPRUSR_reduced = -2
+         IPREAD_reduced = -2
       END IF
-      IPRUSR = IPRUS2
+      IPRUSR = IPRUSR_reduced
+      IPREAD = IPREAD_reduced
 C
 C     Initialize Hessian if first order method is used.
 C
@@ -1722,7 +1727,8 @@ C
      &           WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
          END IF
 CChj aug 99: now new basis, reset hermit/abacus print
-         IPRUSR = IPRUS1
+         IPRUSR = IPRUSR_orig
+         IPREAD = IPREAD_orig
 C
 C     Check if preoptimization is finished
 C
@@ -1730,7 +1736,8 @@ C
          CALL ENDPRE(EXHER,EXSIR,EXABA)
          KEEPHE = .FALSE.
 Chj aug 99: now new basis, reset hermit/abacus print
-         IPRUSR = IPRUS1
+         IPRUSR = IPRUSR_orig
+         IPREAD = IPREAD_orig
       END IF
 C
 C     DO-WHILE loop that runs until geometry has converged or
@@ -1766,7 +1773,8 @@ C
      &           IWOFF,WRKDLM)
          END IF
 C hj aug 99: reset hermit/abacus print to lower level for following iter.
-         IPRUSR = IPRUS2
+         IPRUSR = IPRUSR_reduced
+         IPREAD = IPREAD_reduced
 C
 C     If redundant internal coordinates are used, Wilson's B matrix,
 C     its derivative and its inverse must be updated.
@@ -1978,7 +1986,8 @@ C
      &              WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
             END IF
 Chj aug 99: now new basis, reset hermit/abacus print
-            IPRUSR = IPRUS1
+            IPRUSR = IPRUSR_orig
+            IPREAD = IPREAD_orig
 C
 C     Check if preoptimization is finished
 C
@@ -1986,7 +1995,8 @@ C
             CALL ENDPRE(EXHER,EXSIR,EXABA)
             KEEPHE = .FALSE.
 Chj aug 99: now new basis, reset hermit/abacus print
-            IPRUSR = IPRUS1
+            IPRUSR = IPRUSR_orig
+            IPREAD = IPREAD_orig
          END IF
 C
 C     Make VRML-file of next geometry if requested
@@ -2004,7 +2014,8 @@ C
          WORK(IWOFF+1) = WRKDLM
          WRINDX = .TRUE.
 Chj aug 99: reset IPRUSR to original level
-         IPRUSR = IPRUS1
+         IPRUSR = IPRUSR_orig
+         IPREAD = IPREAD_orig
          CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
          CALL EXEABA(WORK,LWORK,WRKDLM)
 C
@@ -2527,17 +2538,24 @@ C
       DIMENSION EGRAD(MXCOOR)
       CALL QENTER('GTGRAD')
       WORK(IWOFF+1) = WRKDLM
+      KFREE = IWOFF + 2
+      LFREE = LWORK - KFREE + 1
       CALL DZERO(EGRAD,MXCOOR)
       
       EXESG = FNDKEY('*ESG   ')
       IF ((.NOT.PARIO) .OR. (MYNUM .EQ. 0)) THEN
          CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
       ELSE
-         HRINPC = .FALSE.
-         CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-         CALL HERINP(WORK,LWORK)
-         CALL GPCLOSE(LUONEL,'KEEP')
-         HRINPC = .FALSE.
+chj-s-090516
+chj      HRINPC = .FALSE.
+chj      CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
+chj      CALL HERINP(WORK,LWORK)
+chj      CALL GPCLOSE(LUONEL,'KEEP')
+chj      HRINPC = .FALSE.
+C        Third parameter .FALSE. in CALL READIN
+C        indicates that LUONEL will NOT be written.
+         CALL READIN(WORK(KFREE),LFREE,.FALSE.)
+chj-e-090516
       END IF
 C
 C     Find out if we are running an excited state calculation
@@ -2564,12 +2582,12 @@ C
             MOLGRD = .TRUE.
             IF (HFPROP) HELFEY = .TRUE.
             IF (ITRNMR .EQ. 0) THEN
-               CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
+               CALL ABAINP('**START',WORK(KFREE),LFREE)
             ELSE
 #ifdef VAR_LINSCA
-               CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+               CALL ABAINP('**PROPE',WORK(KFREE),LWORK)
 #else
-               CALL ABAINP('**EACH ',WORK(IWOFF + 2),LWORK)
+               CALL ABAINP('**EACH ',WORK(KFREE),LWORK)
 #endif
             END IF
 C        *** For numerical differentiation (vibrational ***
@@ -2600,8 +2618,8 @@ C
             HELFEY = .FALSE.
          END IF
       END IF
-      CALL TRAGRD(GRDMOL,EGRAD,WORK(IWOFF + 2),
-     &            WORK(IWOFF + MXCOOR*MXCOOR + 2),NCRREP(0,1),3*NUCDEP)
+      CALL TRAGRD(GRDMOL,EGRAD,WORK(KFREE),
+     &            WORK(KFREE + MXCOOR*MXCOOR),NCRREP(0,1),3*NUCDEP)
 #ifdef VAR_LINSCA
       IF (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) THEN
         MOLGRD = .TRUE.
@@ -2638,6 +2656,8 @@ C
       DIMENSION ALLHES(NCRTOT*NCRTOT)
       CALL QENTER('GTHESS')
       WORK(IWOFF+1) = WRKDLM
+      KFREE = IWOFF + 2
+      LFREE = LWORK - KFREE + 1
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
       CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
@@ -2649,12 +2669,12 @@ C
       MOLHES = .TRUE.
       IF (HFPROP) HELFEY = .TRUE.
       IF (ITRNMR .EQ. 0) THEN
-         CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
+         CALL ABAINP('**START',WORK(KFREE),LFREE)
       ELSE
 #ifdef VAR_LINSCA
-         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+         CALL ABAINP('**PROPE',WORK(KFREE),LWORK)
 #else
-         CALL ABAINP('**EACH ',WORK(IWOFF + 2),LWORK)
+         CALL ABAINP('**EACH ',WORK(KFREE),LFREE)
 #endif
       END IF
 C
@@ -2678,7 +2698,7 @@ C
 C        *** For numerical derivatives, the Hessian is ***
 C        *** "desymmetrized".                          ***
 C
-         KCSTRA = 1
+         KCSTRA = KFREE
          KSCTRA = KCSTRA + NCOOR**2
          CALL TRAHES(HESMOL,MXCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
      &               MXCOOR,NCOOR,1)
@@ -2686,7 +2706,7 @@ C
 C
 C        For all iterations except the first, MINCGH is run here.
 C
-         CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
+         CALL MINCGH(EGRAD,EHESS,ALLHES,WORK(KFREE),LFREE)
       END IF
       CALL QEXIT('GTHESS')
       RETURN
@@ -6703,8 +6723,6 @@ C
       IF (II .GT. 0) BRKALS = .TRUE.
       CALL UPCASE(TMPLN)
       IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
-         DOCART = .FALSE.
-         DOOWN = .FALSE.
          CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
      &              ID3,DOCART,DOOWN)
          AUTOSY = .TRUE.
@@ -6834,11 +6852,11 @@ C  /* Deck visulz */
 C
 C     HERINP has to be run to process geometry input.
 C
-C      IPRSAV = IPRUSR
+C      IPRUSR_SAV = IPRUSR
 C      IPRUSR = -2
 C      CALL HERINP(WORK,LWORK)
 C      CALL GPCLOSE(LUONEL,'KEEP')
-C      IPRUSR = IPRSAV
+C      IPRUSR = IPRUSR_SAV
 C      WORK(1) = WRKDLM
 C
 C     Make VRML-file of geometry
@@ -6869,13 +6887,17 @@ C  /* Deck inipre */
       CHARACTER TMPLIN*80
       DIMENSION WORK(LWORK)
 C
-C     When preoptimization is scheduled, we have to change the basis set.
-C     HERINP has to be run before we can do the first change.
-C
-      CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-      CALL HERINP(WORK,LWORK)
-      CALL GPCLOSE(LUONEL,'KEEP')
       WORK(1) = WRKDLM
+      KFREE = 2
+      LFREE = 2
+C
+C     When preoptimization is scheduled, we have to change the basis set.
+C     READIN has to be run before we can do the first change.
+C
+C        Third parameter .FALSE. in CALL READIN
+C        indicates that LUONEL will NOT be written.
+C
+      CALL READIN(WORK(KFREE),LFREE,.FALSE.)
 C
 C     Basis set library has to be used for preoptimization to work
 C
@@ -6888,10 +6910,11 @@ C
          ITRNMR = ITRNMR + 1
       ELSE
          DOPRE = .FALSE.
-         WRITE(LUPRI,'(/A/A/A/)')
-     &      '*** WARNING! ***',
+         WRITE(LUPRI,'(/A/A/)')
+     &      '*** WARNING! *** '//
      &      'Preoptimization can only be done when ' //
      &        'basis set library is used.',
+     &      '*** WARNING! *** '//
      &      'Preoptimization has been turned off!'
       END IF
       RDINPC = .FALSE.
@@ -6901,7 +6924,7 @@ C
 C     Make VRML-file of initial geometry if requested
 C
       IF (VRML) THEN
-         KATARR = 2
+         KATARR = KFREE
          KEVEC  = KATARR + 8*MXCENT
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
@@ -6955,8 +6978,6 @@ C
       TMPLIN = MLINE(NMLAU)
       IF ((MAXOPR .EQ. 0) .AND. (ITRBRK .GE. 0)) THEN
          IF (INDEX(TMPLIN,'ATO') .NE. 0) THEN
-            DOCART = .FALSE.
-            DOOWN = .FALSE.
             CALL LINE4(TMPLIN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &                 KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .TRUE.

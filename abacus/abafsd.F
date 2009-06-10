@@ -1740,11 +1740,11 @@ C
       CHARACTER*4 KEY
       CHARACTER*7 KEY2
 #include <inforb.h>
+#include "gnrinf.h"
 #include <abainf.h>
 #include <cbisol.h>
 #include <infinp.h>
 #include <pcmlog.h>
-#include "qm3.h"
 #include <efield.h>
 #include <infpar.h>
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),

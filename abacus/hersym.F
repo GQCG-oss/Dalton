@@ -65,6 +65,8 @@ C*****************************************************************************
 #include <optinf.h>
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER*1 KASYM(3,3), CLASS*15
+C
+      CALL QENTER('SYMADD')
       IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
       ZERTOL = 1.0D-12
       MAXAXS = 100
@@ -85,6 +87,7 @@ C*****************************************************************************
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
      &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK,KFREE,LFREE)
       CALL MEMREL('SYMADD',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('SYMADD')
       RETURN
       END
 C  /* Deck fndsym */
@@ -223,8 +226,6 @@ C ::: If there's any Angstrom mark, it's removed.    :::
             WRITE(TMPLN(10:10), '(I1)') NSYMOP
             WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            DOCART = .FALSE.
-            DOOWN = .FALSE.
             CALL LINE4(TMPLN,NONTYP,NSMOP2,CRT,KCHARG,THRS,ADDSYM,KASYM,
      &                 ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.

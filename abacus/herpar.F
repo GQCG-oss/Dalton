@@ -594,13 +594,13 @@ C         CALL CLEAR_INCOREMEM()
       END IF
 Cef end
       IF (FIRST .OR. NEWBAS .OR. NEWGEO) THEN
-         IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
-     &        ' Sending new orbital inf.',
+         IF (IPRINT .GT. 3) WRITE(LUPRI,'(/A/A,3L10)')
+     &        ' Sending new orbital information',
      &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
 C  /molinp/
          CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
-C Arnfinn, nov -08: Sending NONTP1, numbers of atomtypes except MM
-         CALL MPIXBCAST(NONTP1,1,'INTEGER',MASTER)
+C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
+         CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
          CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
 #if defined (SYS_T3e)
@@ -953,9 +953,11 @@ C     Start timing
 C
       CALL GETTIM(CPU1,WALL1)
 C
-C     This is a slave in a parallel run
+C     This is a slave in a parallel run; check for programming error
 C
-      SLAVE = .TRUE.
+      IF (.NOT.SLAVE) THEN
+         CALL QUIT('ERROR: in HER_NODSTR but not SLAVE')
+      END IF
 C
 C     For the time being we assume long-range and short-range integrals
 C     will not be done in parallel, otherwise we need to initialize
@@ -1064,8 +1066,8 @@ C
       PARAMETER (D0 = 0.0D0)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST
 C     Arnfinn, nov -08: Added because of LINE4 and LINE4W
-      LOGICAL DOOWN,AUTOSY,ADDSYM,DOCART,NOSYM
-      CHARACTER KASYM,ID3
+      LOGICAL AUTOSY,NOSYM,DOCART,DOOWN
+      CHARACTER*1 KASYM(3,3),ID3
 C
       DIMENSION WORK(*), ISYMDM(*), IFCTYP(*), JSTRSH(*), NPRIMS(*),
      &          NCONTS(*), IORBSH(*), JORBSH(*), KORBSH(*)
@@ -1158,7 +1160,7 @@ C
 C  /molinp/
             CALL MPIXBCAST(NMLINE,1,'INTEGER',MASTER)
 C Arnfinn nov -08: Receiving number of QM atom types: 
-            CALL MPIXBCAST(NONTP1,1,'INTEGER',MASTER)
+            CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
             CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
 #if defined (SYS_T3e)
@@ -1229,13 +1231,12 @@ C     Arnfinn ->
 C     In case of QM3 calculation, update number of atom types
 C     in "line 4" in the molecule file
 C     (only # of QM atom types, not # of MM atom types)
-      CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
+      CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,AUTOSY,
      &           KASYM,ID3,DOCART,DOOWN)
       AUTOSY = .FALSE.
-      NOSYM = .FALSE.
-      IF (NSYMOP.EQ.0) NOSYM = .TRUE.
-      CALL LINE4W(MLINE(NMLAU),NONTP1,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
-     &           KASYM,ID3,DOCART,DOOWN)
+      NOSYM  = NSYMOP.EQ.0
+      CALL LINE4W(MLINE(NMLAU),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
+     &            NOSYM,KASYM,ID3,DOCART,DOOWN)
 C
 C     Retain information from PARINT.
 C
@@ -1297,7 +1298,7 @@ C
 C
       CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
-C     Set common-block BLOCKS
+C     Set common block BLOCKS
 C
       CALL PAOVEC(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,0,.FALSE.,0)
 C

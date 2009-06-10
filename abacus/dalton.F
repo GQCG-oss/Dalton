@@ -46,8 +46,8 @@ C  /* Deck dalton */
 C
 C     NOTE
 C
-C     This is an experimental code for the evaluation of SCF, CC and
-C     MCSCF molecular properties as energy derivatives or response
+C     This is an experimental code for the evaluation of SCF, DFT, MCSCF
+C     and CC molecular properties as energy derivatives or response
 C     functions.  The authors accept no responsibility for the
 C     performance of the code or for the correctness of the results.
 C
@@ -77,8 +77,8 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mtags.h>
-#include <maxorb.h>
 #include <priunit.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <infpri.h>
 #include <gnrinf.h>
@@ -123,22 +123,22 @@ C
 
       CALL QENTER('DALTON main')
 C
-#if defined (VAR_MPI)
+C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
+C If not MPI, MPIXINIT defines: MYNUM  = 0; MASTER = 0; NODTOT = 0
+C
       CALL MPIXINIT
-#else
-      MYNUM  = 0
-      MASTER = 0
-      NODTOT = 0
-#endif
       PARIO = .FALSE.
 C
+C     Define SLAVE variable (only false for MASTER, MYNUM.eq.0)
 C     Initialize file pointers; open error file for MASTER
 C
       CALL GPIOIN
-      IF (MYNUM .EQ. 0) THEN
+      IF (MYNUM .EQ. MASTER) THEN
+         SLAVE = .FALSE.
          CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
       ELSE
+         SLAVE = .TRUE.
 #ifdef SYS_LINUX
          LUERR = 0
 #else
@@ -150,7 +150,7 @@ C
 C     Read environment variables for LMWORK and BASDIR
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
 C
-      CALL GETMMBAS(MYNUM,LMWORK,BASDIR,LBASDIR)
+      CALL GETMMBAS(LMWORK,BASDIR,LBASDIR)
       IF (LMWORK .LE. 0) LMWORK = LWORK_DEF
 C
       NBYTES  = (LMWORK+2) * 8
@@ -251,8 +251,10 @@ C
       END IF
 Cef end
 
-      WRITE(LUERR,'(/A/5X,A)')
-     &   ' Directories for basis set searches:',BASDIR
+      LEN_BASDIR = MAX(1,LNBLNK(BASDIR))
+      WRITE(LUERR,'(/I4,A/5X,A)')
+     &   MYNUM,': Directories for basis set searches:',
+     &   BASDIR(1:LEN_BASDIR)
 C
 C     Set memory traps and initialize unit numbers
 C
@@ -265,7 +267,6 @@ C     Next 20+ lines commented out, does not work for general parallel
 C     calculations.
 C
 c#if defined (VAR_MPI)
-c      CALL MPIXINIT
 c#if defined (SYS_CRAY)
 c      CALL INFO = ISHELL('mkdir $SCRATCHDIR')
 c      CALL INFO = ISHELL('cd $SCRATCHDIR')
@@ -281,19 +282,12 @@ C     the keyword .PARNMD. If found, read DALTON/MOLECULE.INP and send them
 C     to the slaves, who writes them out in their own files
 C
 c      IF (NODTOT .GT. 0) THEN
-c         IF (MYNUM .EQ. 0) THEN
+c         IF (MYNUM .EQ. MASTER) THEN
 c            CALL PARIOT
 c         ELSE
 c            CALL PARION
 c         END IF
 c      END IF
-c#else
-C
-C     This is not an MPI version, but we anyway set
-C     variable MYNUM = 0 which for MPI identifies
-C     this node as the master node for output below
-C
-C      MYNUM = 0
 C#endif
 C
 C
@@ -310,7 +304,7 @@ C         "DALTON.OUT#<slave no>" in GPOPEN
 C
       CALL MEMINI(LUPRI,LUERR)
 C
-      IF (MYNUM .EQ. 0) THEN
+      IF (MYNUM .EQ. MASTER) THEN
 C         
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
@@ -453,11 +447,13 @@ C
      &        MMCORE
          END IF
          WRITE(LUPRI,'(/A/5X,A)')
-     &   ' * Directories for basis set searches:',BASDIR
+     &   ' * Directories for basis set searches:',
+     &   BASDIR(1:LEN_BASDIR)
 C
-C     Read general input
+C        Read general input for Dalton
 C
-         CALL GNRLIN
+         CALL DALTON_GNRLINP
+C
 #if !defined (VAR_MPI)
       END IF
 #else /* VAR_MPI */
@@ -487,7 +483,7 @@ C
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
-C     ... I am a "slave" ... (MYNUM .ne. 0)
+C     ... I am a "slave" ... (MYNUM .ne. MASTER)
          CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
          WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
@@ -504,7 +500,7 @@ C     ... I am a "slave" ... (MYNUM .ne. 0)
      &        MMCORE
          END IF
          IF (PARIO) THEN
-            CALL GNRLIN
+            CALL DALTON_GNRLINP
 #if defined (SYS_LINUX)
             CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
@@ -588,17 +584,18 @@ C
 #endif
       CALL QEXIT('DALTON main')
       END
-      SUBROUTINE GETMMBAS(MYNUM,LMWORK,BASDIR,LBASDIR)
+      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER*(*) BASDIR
-#if defined(SYS_AIX)||defined(SYS_CRAY)||defined(SYS_IRIX)||defined(SYS_NEC)||defined(SYS_CONVEX)||defined(SYS_T3D)||defined(SYS_SUN)||defined (SYS_LINUX)||defined(SYS_HPUX)||defined(SYS_HAL)||defined(SYS_T90)||defined(SYS_DEC)
-      CHARACTER*20 WRKMEM
+      CHARACTER*20  WRKMEM
+#include <maxorb.h>
+#include <infpar.h>
 C
 C     Dynamic memory allocation; check for WRKMEM in environment
 C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96
 C
-      IF (MYNUM .EQ. 0) THEN
+      IF (.NOT. SLAVE) THEN
 C     ... only master reads environment, transferred
 C         to slave with MPI_BCAST.
 C         On some MPI implementations it requires extra
@@ -627,11 +624,7 @@ C
 C
 C       ... or user specified memory size.
 C
-          DO I=20,1,-1
-            IF(WRKMEM(I:I).NE.' ') GOTO 1312
-          ENDDO
-          CALL QUIT('Empty environment variable WRKMEM')
- 1312     LWMEM = I
+          LWMEM = MAX(1,LNBLNK(WRKMEM))
           WRITE(LUERR,'(/A/3A)')
      &    ' DALTON: user specified work memory size used,',
      &    '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
@@ -641,8 +634,7 @@ C
 C
 C     Transfer LMWORK and BASDIR to slaves
 C
-      CALL MPIXBCAST(LMWORK,1,'INTEGE',0)
-      CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',0)
+      CALL MPIXBCAST(LMWORK,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',MASTER)
 #endif /* defined(VAR_MPI) */
-#endif
       END

@@ -297,10 +297,10 @@ C
 C     
 C        /INFPRI/ values are saved
 C
-      DO 200 I = 1, NPFLAG
+      DO I = 1, NPFLAG
          P4FLGB(I) = P4FLAG(I)
          P6FLGB(I) = P6FLAG(I)
- 200  CONTINUE
+      END DO
       IPRI4B = IPRI4
       IPRI6B = IPRI6
       IPRSRB = IPRSIR
@@ -324,8 +324,8 @@ C  /* Deck prestr */
       SUBROUTINE PRESTR
 C
 C     ABACUS-variables concerning execution of modules are restored.
-C     Called from ABADRV. Necessary because modules should be runned
-C     in each iteration.
+C     Called from ABADRV. Necessary because modules should be run
+C     in each geometry iteration.
 C
 #include <implicit.h>
 #include <past.h>
@@ -405,11 +405,13 @@ C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
 #include <dummy.h>
+#include <maxaqn.h>
       DIMENSION WORK(0:LMWORK)
 #include <priunit.h>
 #include <gnrinf.h>
 #include <dftcom.h>
 #include <pcmlog.h>
+#include <ccom.h>
 C
 C     Run Integral section
 C
@@ -418,28 +420,50 @@ C
       NEWMAT = .TRUE.
       GRDONE = .FALSE.
 C
-      WRITE(LUPRI, '(/A/)') 'Starting in Integral Section -'
+C     ***************************************************************
+C     Reading in the interaction parameters for the MM system types:
+C     ***************************************************************
+C
+      IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_RDPOT()
+C
+C     ***************************************************************
+C     Read initial geometry, orbital spec., etc. (MOLECULE format).
+C     ***************************************************************
 C
 C     If we use the Douglas-Kroll transformation, we first generate
 C     the necessary integrals in the primitive basis.
 C     See further notes in DKINTF routine.
 C
-      IF (DKTRAN) THEN
+      IF (DKTRAN .AND. RNHERM) THEN
          CALL DKINTF(WORK(1),LMWORK)
          NEWPRP = .TRUE.
       END IF
 C
-C     Now we generate all requested integrals in the contracted
-C     basis (if DKTRAN: including transformation of the Douglas-
-C     Kroll integrals to contracted basis).
+C     Third parameter .TRUE. in call indicates that LUONEL will be written.
+      CALL READIN(WORK(1),LMWORK,.TRUE.)
 C
-      CALL HERCTL(WORK(1),LMWORK)
-C     ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
-C     for transformation control, old AO/MO files cannot be used
-C     any more.
-      CALL BNDCHK(WORK, LMWORK+2, WRKDLM, 'HERMIT')
-      WRITE(LUPRI, '(/A/)') '- End of Integral Section'
+C     ***************************************************************
+C     Setup of MM information.
+C     ***************************************************************
+C
+      IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_SETUP()
       CALL FLSHFO(LUPRI)
+C
+C     ***************************************************************
+C     Now we generate all requested integrals in the contracted basis
+C     (if DKTRAN: including transformation of the Douglas-Kroll
+C     integrals to contracted basis).
+C
+      IF (RNHERM) THEN
+         CALL TITLER('Starting in Integral Section (HERMIT)',' ',200)
+         CALL HERCTL(WORK(1),LMWORK)
+C        ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
+C        for transformation control, old AO/MO files cannot be used any more.
+C     ***************************************************************
+         CALL BNDCHK(WORK, LMWORK+2, WRKDLM, 'HERMIT')
+         CALL TITLER('End of Integral Section (HERMIT)',' ',200)
+         CALL FLSHFO(LUPRI)
+      END IF
       CALL QEXIT('HERMIT')
       RETURN
       END
@@ -459,9 +483,8 @@ C
 C     Run SIRIUS
 C
       CALL QENTER('SIRIUS')
-      WRITE(LUPRI, '(/A/)') 'Starting in Wave Function Section -'
-C     The dollar sign in the previous line may not be standard.
-C     It causes the End of Record to be skipped.
+C
+      CALL TITLER('Starting in Wave Function Section (SIRIUS)',' ',200)
 C
 C     SIRINI defines buffer lengths for I/O and IROW()
 C
@@ -474,9 +497,11 @@ C
 C     If not numerical differentiation:
 C     We should now have MO's on file, no need for DOHUCKEL anymore
 C
-      IF (.NOT.NMWALK) THEN
+CHJ   IF (.NOT.NMWALK) THEN
+CHJ: May09: we try to set DOHUCKEL true later if NEWSYM true instead
+CHJ         HUCKEL guess is only used in SIRIUS if first call or NEWSYM
          DOHUCKEL = .FALSE.
-      END IF
+CHJ   END IF
 C
 C     Several files left open, have to be closed manually
 C
@@ -491,7 +516,7 @@ C
       CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
       IF (.NOT. USRSCR) IFTHRS = 10
-      WRITE(LUPRI, '(/A/)') '- End of Wave Function Section'
+      CALL TITLER('End of Wave Function Section (SIRIUS)',' ',200)
       IF (ICONV .LT. 1 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
      &      '- DALTON aborted because wave function not converged!'
@@ -515,9 +540,9 @@ C
 C     Run Coupled Cluster program
 C
       CALL QENTER('CC')
-      WRITE(LUPRI, '(/A/)') 'Starting Coupled Cluster -'
-C     The dollar sign in the previous line may not be standard.
-C     It causes the End of Record to be skipped.
+C
+      CALL TITLER('Starting in Coupled Cluster Section (CC)',' ',200)
+C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
 #if defined (VAR_MPI) || defined (VAR_PVM)
@@ -536,7 +561,7 @@ C     It causes the End of Record to be skipped.
       ITRNMR = ISAVITR 
 
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC    ')
-      WRITE(LUPRI, '(/A/)') '- End of Coupled Cluster'
+      CALL TITLER('End of Coupled Cluster Section (CC)',' ',200)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
       RETURN
@@ -559,7 +584,8 @@ C     Run ABACUS
 C
       IF (SKIPAB) RETURN
       CALL QENTER('ABACUS')
-      WRITE(LUPRI, '(/A/)') 'Starting in Static Property Section -'
+      CALL TITLER('Starting in Static Property Section (ABACUS) -',
+     &   ' ',200)
 C
       CALL ABACTL(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ABACUS')
@@ -569,7 +595,9 @@ C
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
-      WRITE(LUPRI, '(/A/)') '- End of Static Property Section'
+C
+      CALL TITLER('End of Static Property Section (ABACUS) -',
+     &   ' ',200)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('ABACUS')
       RETURN
@@ -587,6 +615,8 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
+C
+#include <gnrinf.h>
 #include <siripc.h>
 #include <nuclei.h>
 #include <infinp.h>
@@ -596,7 +626,6 @@ C
 #endif
 #include <infpar.h>
 #include <inftra.h>
-#include <gnrinf.h>
 #include <abainf.h>
 #include <molinp.h>
 #include <cbiwlk.h>
@@ -611,12 +640,17 @@ Cef end
       CHARACTER FILENM*12, WORD*7
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
+C
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
+         IF (QM3)
+     &      CALL QUIT('Geometry optimization not implemented for .QM3')
+         RNHERM = .TRUE.
          RNABAC = .TRUE.
          DOWALK = .FALSE.
          CALL OPTMIN(WORK,LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
+         RNHERM = .TRUE.
          RNABAC = .TRUE.
          IF (.NOT. NMWALK) THEN
             DOWALK = .TRUE.
@@ -629,7 +663,9 @@ Cef end
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
          CALL TITLER('Commencing geometry optimization using .WALK',
-     &   '*',111)
+     &   ' ',200)
+         IF (QM3)
+     &      CALL QUIT('Geometry optimization not implemented for .QM3')
  10      CONTINUE
             IF (LUCME.GT.0) REWIND (LUCME)
             SOLVNT = .FALSE.
@@ -701,7 +737,7 @@ CLF
 C
             IF (WLKREJ) THEN
                WRITE (LUPRI,'(/A)')
-     &         '@ >>> Geometry step was rejected, we backstep ... >>>'
+     &         '@ >>> Geometry step was rejected, must backstep ... >>>'
 C
 C     We have to backstep, get old geometry and call for an update
 C
@@ -753,6 +789,9 @@ C
 C           *** Walk to make numerical derivatives. ***
 C
             IF (NMWALK) THEN
+               CALL TITLER(
+     &            'Geometry steps to make numerical derivatives',
+     &            ' ',200)
                CALL NMDINI(IPRINT)
                CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
@@ -833,8 +872,10 @@ C     We may have more DOSYM under **START than under **PROPE
                      IPRUSR = -2
                   END IF
                END IF
-               WRITE (LUPRI,'(/4X,A,F12.6,A,F13.10)')'Energy: ', ERGMOL,
-     &                                           '   Gradient:', GRADML
+               WRITE (LUPRI,'(/A,I4,A,F14.6,A,F10.6)')
+     &            '@  Geometry walk step no.',ITERNR,
+     &            ':  Molecular energy =', ERGMOL,
+     &            '   Molecular gradient =', GRADML
             END IF
 C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
@@ -842,9 +883,9 @@ C
             CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND (LUMOL)
-            DO 200 IMLINE = 1,NMLINE
+            DO IMLINE = 1,NMLINE
                WRITE (LUMOL,'(A)') MLINE(IMLINE)
- 200        CONTINUE
+            END DO
             CALL GPCLOSE(LUMOL,'KEEP')
 C
 C     Punch MOLECULE input with updated coordinates to XXXX_mol.inp
@@ -856,9 +897,9 @@ C
             IF (ITERNR .LT. 9) WRITE(FILENM(3:3),'(A1)') '0'
             CALL GPOPEN(LUMOL,FILENM,' ',' ','FORMATTED',IDUMMY,
      &                  .FALSE.)
-            DO 300 IMLINE = 1,NMLINE
+            DO IMLINE = 1,NMLINE
                WRITE (LUMOL,'(A)') MLINE(IMLINE)
- 300        CONTINUE
+            END DO
             CALL GPCLOSE(LUMOL,'KEEP')
 C
             START = .FALSE.
@@ -879,10 +920,7 @@ C
 C
 C
          IF (GEOCNV) THEN
-C            WRITE (LUPRI,'(/A//)')
-C     &                ' >>>>>>>>>> Geometry has converged <<<<<<<<<<'
-            WRITE (LUPRI,'(//5X,A//)')
-     &                ' >>>>>>>>>> Geometry has converged <<<<<<<<<<'
+            CALL TITLER('Geometry walk has converged',' ',200)
 C
 C     We need to read in starting geometry before doing the vibrational
 C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
@@ -892,13 +930,12 @@ C
                CALL ABAINP('**PROPE',WORK(1),LMWORK)
                CALL VIBCTL(WORK(1),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
-ckr            IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
                CALL EXEHER(WORK,LMWORK,WRKDLM)
                CALL EXESIR(WORK,LMWORK,WRKDLM)
-            SOLVNT = FLAG(16)
-            IF (SOLVNT) THEN
+               SOLVNT = FLAG(16)
+              IF (SOLVNT) THEN
                NEWGEO = .TRUE.
                NUCIND = NUCIND + 1
                NUCDEP = NUCDEP + 1
@@ -925,7 +962,7 @@ ckr            IF (IWKTYP .EQ. 6) THEN
                ISTBNU(NUCIND) = 7
                CHARGE(NUCIND) = D0
                CALL NUCPRO(WORK(1),LMWORK)
-            END IF
+              END IF
             END IF
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL EXEABA(WORK,LMWORK,WRKDLM)
@@ -942,27 +979,34 @@ C
             READ (LUCMD,'(A7)',END=134,ERR=134) WORD
             CALL UPCASE(WORD)
             IF (WORD .EQ. '**RESPO') THEN
+               CALL TITLER(
+     &         'Starting in Dynamic Property Section (RESPONS)',' ',200)
                REWIND (LUCMD)
                RNRESP = .TRUE.
                CALL SETSIR(WORK(1),LMWORK)
                IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
                CALL GPCLOSE(LUCMD,'KEEP')
                CALL RSPDRV(WORK(1),LMWORK)
+               CALL TITLER(
+     &         'End of Dynamic Property Section (RESPONS)',' ',200)
             ELSE
                GOTO 133
             END IF
  134        CONTINUE 
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
          ELSE IF (ITERNR .GT. ITERMX) THEN
-C            WRITE (LUPRI,'(//3X,A//)')
-C     &       '*** WARNING:  Maximum number of iterations exceeded ***'
-            WRITE (LUPRI,'(//3X,A//)')
-     &       '*** WARNING:  Maximum number of iterations exceeded ***'
+            CALL TITLER('WARNING - Geometry not converged',' ',200)
+            WRITE (LUPRI,'(/A//)') '@ *** WARNING:  '//
+     &         'Maximum number of geometry iterations exceeded.'
          END IF
       ELSE
 C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
-         IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
+Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
+         CALL EXEHER(WORK,LMWORK,WRKDLM)
+Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
+Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
+C
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
          IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
@@ -1001,11 +1045,15 @@ C
          END IF
          WRINDX = .TRUE.
          IF (RNRESP) THEN
+            CALL TITLER(
+     &         'Starting in Dynamic Property Section (RESPONS)',' ',200)
             IF (.NOT. RNSIRI) THEN
                CALL SETSIR(WORK(1),LMWORK)
                IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
             END IF
             CALL RSPDRV(WORK(1),LMWORK)
+            CALL TITLER(
+     &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
 C
          IF (RNABAC) THEN
@@ -1055,17 +1103,18 @@ C
       RETURN
       END
 C  /* Deck gnrlin */
-      SUBROUTINE GNRLIN
+      SUBROUTINE DALTON_GNRLINP(WORK,LWORK)
 C
-C     GENERAL input
+C     GENERAL input for Dalton
 C
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <priunit.h>
-#include <siripc.h>
 #include <gnrinf.h>
+#include <siripc.h>
+C
 #include <molde.h>
 #include <abainf.h>
 #include <exeinf.h>
@@ -1082,7 +1131,7 @@ C
 CSONIA
 #include <grdccpt.h>
 #include <infpar.h>
-      PARAMETER (NDIR = 7, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 8, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1094,8 +1143,8 @@ Clf
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
-     &             '*OPTIMI', '*NMDDRV', 'xXXXXXX',
-     &             '*PCM   '/
+     &             '*OPTIMI', '*NMDDRV', '*READIN',
+     &             '*PCM   ', '*QM3   '/
       DATA TABLE  /'.PRINT ', '.ITERAT', '.PRIERR',
      &             '.INTEGR', '.WAVE F', '.PROPER',
      &             '.INPTES', '.PARALL', '.DIRECT',
@@ -1108,7 +1157,7 @@ Clf
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
      &             'xXXXXXX', '.DOUGLA'/
 C
-      CALL QENTER('GNRLIN')
+      CALL QENTER('DALTON_GNRLINP')
 C
 C     Initialize /SIRIPC/
 C
@@ -1230,8 +1279,7 @@ C
 
 C
 C
-      WRITE (LUPRI,'(/A/)')
-     *   ' <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>'
+      CALL TITLER('Output from DALTON general input processing','*',111)
 C
 C     **** Find General input *****
 C
@@ -1264,7 +1312,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-32: '.OPTIMI', '.DOUGLA'
+C 31-32: 'xxxxxxx', '.DOUGLA'
 C
       IPRERR = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1287,9 +1335,9 @@ C
               GO TO 100
             END IF
             WRITE (LUPRI,'(/,3A,/)')
-     &         ' Keyword ',WORD,' not recognized in GNRLIN.'
+     &         ' Keyword ',WORD,' not recognized in DALTON_GNRLINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-            CALL QUIT('Illegal keyword in GNRLIN.')
+            CALL QUIT('Illegal keyword in DALTON_GNRLINP.')
   101    CONTINUE
             READ (LUCMD,*) IPRUSR
             USRIPR = .TRUE.
@@ -1393,7 +1441,7 @@ C        '.NMDDRV' and '.PARNMD'
       ELSE
          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal prompt in GNRLIN.')
+         CALL QUIT('Illegal prompt in DALTON_GNRLINP.')
       END IF
 C
 C
@@ -1490,7 +1538,12 @@ C     ... default print level for statistics /hjaaj apr 2000
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              'xXXXXXX', '*PCM   '
+C              '*READIN', '*PCM   ', '*QM3   '
+C
+C     Initialize for REAINP and READIN (reading of .mol input file)
+      IPREAD_ini = IPRUSR + 1
+      CALL REAINI(IPREAD_ini,RELCAL,TSTINP)
+C
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          READ (LUCMD,'(A7)') WORD
@@ -1499,18 +1552,18 @@ C              'xXXXXXX', '*PCM   '
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7), I
+               GOTO (1,2,3,4,5,6,7,8), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in GNRLIN.')
+         CALL QUIT('Illegal directory in DALTON_GNRLINP.')
       ELSE
          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal or',
      *                        ' out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Program stopped in GNRLIN, error in prompt.')
+         CALL QUIT('Program stopped in DALTON_GNRLINP, illegal prompt.')
       END IF
 C     "*PARALL" input
  2    CONTINUE 
@@ -1546,19 +1599,27 @@ C
         IF (WORD(1:1) .NE. '*') GOTO 205        
       GO TO 200
 C
+C     "*READIN" input
     6 CONTINUE
+        CALL REAINP(WORD,RELCAL,TSTINP)
       GO TO 200
 C
 Clf:  "*PCM   " input processing
 C
     7 CONTINUE
-C     INPERR is defined as a precaution (not used during PCM input processing)
-      INPERR = 0
-      ALLOPT = .FALSE.
-      CALL PCMINP(WORD,INPERR,ALLOPT)
+C       INPERR is defined as a precaution (not used during PCM input processing)
+        INPERR = 0
+        ALLOPT = .FALSE.
+        CALL PCMINP(WORD,INPERR,ALLOPT)
+      GO TO 200
+C
+C     "*QM3   " input
+    8 CONTINUE
+        CALL QM3INP(WORD)
       GO TO 200
 C     "*END OF" or "**something"
     1 CONTINUE
+C
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
 #endif
@@ -1611,7 +1672,7 @@ c     &                             .OR.(WORD.EQ.'**SIRIUS'))) GOTO 8100
 c      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
 C
       CALL GPCLOSE(LUCMD,'KEEP')
-      CALL QEXIT('GNRLIN')
+      CALL QEXIT('DALTON_GNRLINP')
       RETURN
       END
 #if defined (VAR_MPI)

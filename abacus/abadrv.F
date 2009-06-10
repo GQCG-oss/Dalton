@@ -3117,7 +3117,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <codata.h>
@@ -3133,6 +3132,7 @@ cmbh string variable
 cmbh end
 #include <nuclei.h>
 #include <symmet.h>
+#include <qm3.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C
@@ -3149,8 +3149,10 @@ C
 C     Add nuclear and electronic contribution. Keep in electronic part
 C
       DO 70 I = 1, NUCDEP
-        IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
-     &     (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
+c       IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
+c    &     (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+        IF ( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 60 J = 1, 3
             DO 50 K = 1, 3
                ELNQC(J,K,I) = ELNQC(J,K,I) + UCNNQC(J,K,I)
@@ -3166,8 +3168,7 @@ C
 C     Diagonalize each atomic EFG tensor
 C
       DO 10 IATOM = 1, NUCDEP
-        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &     (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+        IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           CALL DUNIT(AXIS(1,1,IATOM),3)
           IJ = 1
           DO 20 I = 1, 3
@@ -3221,8 +3222,7 @@ C     Calculate the nuclear quadrupole moments
 C
       NATOM = 0
       DO 100 IATOM = 1, NUCIND
-        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+        IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 110 ISYM = 0, MAXOPR
             IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
               NATOM = NATOM + 1
@@ -3329,8 +3329,8 @@ C  /* Deck efgpri */
 C
       NATOM = 1
       DO 10 I = 1, NUCIND
-        IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
-     &    (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
+        IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 20 J = 0, MAXOPR
             IF (IBTAND(ISTBNU(I),J) .EQ. 0) THEN
               WRITE (LUPRI,'(/A,3X,A)') TEXT,NAMDEP(NATOM)
@@ -3346,13 +3346,9 @@ C  /* Deck iniall */
       SUBROUTINE ABAINIALL
 C
 #include <implicit.h>
-      LOGICAL RELCAL
 #include <mxcent.h>
 #include <abainf.h>
 C
-      RELCAL = .FALSE.
-      TSTINP = .FALSE.
-      CALL REAINI(IPRDEF,RELCAL,TSTINP)
       CALL NUCINI
       CALL ONEINI
       CALL TWOINI

@@ -497,6 +497,7 @@ C
       DIMENSION SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
      &          FOCMAT(NNBASX), EXPVAL(NCOMP), FMOVL(6),WORK(LWORK)
+#include <gnrinf.h>
 #include <abainf.h>
 #include <efield.h>
 #include <cbisol.h>
@@ -505,7 +506,6 @@ C
 #include <onecom.h>
 #include <nuclei.h>
 #include <symmet.h>
-#include <qm3.h>
 cDM added to pass vectors to MAGPCMSEC
 #include <pcmdef.h>
 #include <pcm.h>
@@ -3014,13 +3014,14 @@ C     Nuclear contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 #include <nuclei.h>
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
 #include <symmet.h>
+#include <qm3.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C
@@ -3089,7 +3090,6 @@ C     K.Ruud, nov.-94
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
@@ -3855,7 +3855,6 @@ C     Collect and arrange electronic contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nqcc.h>

@@ -802,7 +802,7 @@ C  /* Deck pr1sop */
 #include <onecom.h>
 C
       INATM = NUCDEP
-      IF (QM3 .AND. (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29
+      IF (FORQM3 .AND. (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29
      &               .OR. INTTYP .EQ. 30)) INATM = NCTOT
       KSHINT = 1
       KSYMC  = KSHINT + KCKTAB*NSHINT
@@ -995,9 +995,9 @@ C
      &      .AND. INTTYP.NE.96) THEN
             NATOMC = 0
             IMXATM = NUCIND
-            IF (QM3 .AND. (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29
-     &                .OR. INTTYP .EQ. 30))
-     &                IMXATM = NCTOT
+            IF (FORQM3 .AND.
+     &         (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29 .OR. INTTYP .EQ. 30))
+     &         IMXATM = NCTOT
             DO 300 IATOMC = 1, IMXATM
             IF (DOATOM(IATOMC)) THEN
                MULC   = ISTBNU(IATOMC)
@@ -1007,15 +1007,13 @@ C
                CORCZ0 =  CORD(3,IATOMC)
                FACTOR = - FMULT(IBTAND(MULC,KAB))
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
-               IF ( (QM3) .AND. (.NOT. (OLDTG) )
-     &                    .AND. (INTTYP .EQ. 35) ) THEN
+               IF ( FORQM3 .AND. (INTTYP .EQ. 35) ) THEN
                  IF (ISUBSY(IATOMC) .NE. 0) THEN
-                   FACTOR = - FACTOR*CHARGE(IATOMC)/HKAB
-                 END IF
-               END IF
-               IF ( (QM3) .AND. (OLDTG) .AND. (INTTYP .EQ. 35) ) THEN
-                 IF (ISUBSY(IATOMC) .NE. 0) THEN
-                   FACTOR = - FACTOR*CHAOLD(IATOMC)/HKAB
+                   IF ( OLDTG ) THEN
+                     FACTOR = - FACTOR*CHAOLD(IATOMC)/HKAB
+                   ELSE
+                     FACTOR = - FACTOR*CHARGE(IATOMC)/HKAB
+                   END IF
                  END IF
                END IF
                IF (INTTYP .EQ. 80) THEN

@@ -99,7 +99,7 @@ C
         CALL QUIT('MXCENT has to be equal to MXQM3')
       END IF
 C
-      NEWDEF = (WORD .EQ. '*QM3INP')
+      NEWDEF = (WORD .EQ. '*QM3   ')
       ICHANG = 0
 C
       IF (NEWDEF) THEN
@@ -125,10 +125,10 @@ C
             GO TO 100
           END IF
 C
-          WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *                             '" not recognized for *QM3INP.'
+          WRITE (LUPRI,'(/3A/)') ' Keyword "',WORD,
+     *                           '" not recognized for *QM3'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal keyword in REAINP.')
+          CALL QUIT('Illegal keyword for *QM3')
 C
     1     CONTINUE
             QM3 = .TRUE.
@@ -273,19 +273,19 @@ C
           GO TO 300
         ELSE
           WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
-     *                             '" not recognized for *QM3INP.'
+     *                             '" not recognized for *QM3'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal prompt for *QM3INP.')
+          CALL QUIT('Illegal prompt for *QM3')
         END IF
       END IF
 C
   300 CONTINUE
 C
       IF (ICHANG .GT. 0) THEN
-        CALL HEADER('Changes of defaults for *QM3INP:',0)
+        CALL HEADER('Changes of defaults for *QM3   :',0)
 C
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        WRITE (LUPRI,'(1X,A2,A6,A3,A7,A2)')
+        WRITE(LUPRI,'(1X,A2,A6,A3,A7,A2)')
      *         '| ',' WORD:',' | ','CHANGE:',' |'
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
 C
@@ -325,6 +325,7 @@ C
      *           '| ','SIGMLT',' | ',(.NOT.LSIGADD),' |'
           END IF
         END IF
+        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 C
         WRITE(LUPRI,*) ' Settings for determination of induced dipoles:'
         IF (MYITE) THEN
@@ -333,20 +334,54 @@ C
           WRITE(LUPRI,*) ' Matrix inversion is used'
         END IF
         IF (EXPON) THEN
-          WRITE(LUPRI,*) ' Exponential Dampiing is active'
+          WRITE(LUPRI,*) ' Exponential Damping is active'
         END IF
         
-        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 C
       END IF
 C
       CALL QEXIT('QM3INP')
       RETURN
       END
+C------------------------------------------------------------------------
+      SUBROUTINE QM3_SETUP()
+C
+C     April 2009, hjaaj
+C
+C     Moved setup of MM info to this new subroutine.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <qm3.h>
+C
+C     ***************************************************************
+C     Calculating the classical interaction terms from the given
+C     geometry and interaction terms:
+C     ***************************************************************
+C
+      CALL MMFLDS()
+      CALL ELNUC(ENUQM3)
+C
+      IF ( OLDTG ) THEN
+        DO I= 1, ISYTP
+          DO J = NSYSBG(I), NSYSED(I)
+            DO K = 1, NCTOT
+              IF (ISUBSY(K) .EQ. J) THEN
+                CHAOLD(K) = CHARGE(K)
+                CHARGE(K) = 0.0D0
+              END IF
+            END DO
+          END DO
+        END DO
+      END IF
+      RETURN
+      END
 C
 C------------------------------------------------------------------------
 C  /* Deck rdpot */
-      SUBROUTINE RDPOT()
+      SUBROUTINE QM3_RDPOT()
 C------------------------------------------------------------------------
 C
 C <<< General Input for MM potentials>>>
@@ -384,7 +419,7 @@ C
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
-      CALL QENTER('RDPOT')
+      CALL QENTER('QM3_RDPOT')
 C
 C     Initialization
 C    
@@ -414,7 +449,7 @@ C
 C
   909 CONTINUE   
 C
-      CALL TITLER('Output from RDPOT input processing','*',118)
+      CALL TITLER('Output from MM potential input processing','*',115)
 C
 C     **** Find potential input *****
 C
@@ -439,7 +474,7 @@ C
   910 CONTINUE
 C
       NWARN = NWARN + 1
-      WRITE (LUPRI,*) 'WARNING RDPOT: error reading potential input' 
+      WRITE (LUPRI,*) 'WARNING QM3_RDPOT: error reading potential input'
 C
   930 CONTINUE
 C
@@ -449,17 +484,17 @@ C
       IF (WORD .EQ. '.NUMMTP') THEN
         READ (LUPOT,'(I5)',ERR=940) ISYTP
       ELSE
-        CALL QUIT('Illegal keyword in POTENTIAL.INP.
-     &  (**SYSTP has to be followed by .NUMMTP)') 
+        CALL QUIT('Illegal keyword in POTENTIAL.INP. '//
+     &            '(**SYSTP has to be followed by .NUMMTP)') 
       END IF
 C
       GOTO 100
 C
   940 CONTINUE
 C
-      WRITE (LUPRI,*) 'WARNING RDPOT: error reading
-     &                 number of system types'
-      CALL QUIT('Wrong input for number of system types.')
+      WRITE (LUPRI,*) 'WARNING QM3_RDPOT: error reading '//
+     &                'number of system types'
+      CALL QUIT('QM3_RDPOT: Wrong input for number of system types.')
 C
 C     ***** Process input for COMMON  /QM3SYS/  *****
 C
@@ -499,8 +534,8 @@ C
             GO TO 100
           END IF
 C
-          WRITE (LUPRI,'(/,3A,/)')
-     *      ' Keyword ',WORD,' not recognized in RDPOT(1).'
+          WRITE (LUPRI,'(/3A/)') ' Keyword ',WORD,
+     &     ' in POTENTIAL.INP is not recognized in QM3_RDPOT.'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
           CALL QUIT('Illegal keyword in POTENTIAL.INP 1.')
 C
@@ -595,7 +630,7 @@ C
 C
   108     CONTINUE
             IF (.NOT. LONEPAR) THEN
-              CALL QUIT('Atomic vdW-par. not specified in *QM3INP')
+              CALL QUIT('Atomic vdW-par. not specified in *QM3')
             END IF
             LOTEST(J) = .TRUE.
             READ(LUPOT,*) ISIGEPS(J)
@@ -673,9 +708,9 @@ C
 C
         IF (NUALIS(J) .GT. 1) THEN
           IF ((MDLWRD(J) .EQ. 'SPC_E02') .OR.
-     &      (MDLWRD(J) .EQ. 'SPC_EC2') .OR.
-     &      (MDLWRD(J) .EQ. 'SPC_EC4') .OR.
-     &      (MDLWRD(J) .EQ. 'SPC    ')) THEN
+     &        (MDLWRD(J) .EQ. 'SPC_EC2') .OR.
+     &        (MDLWRD(J) .EQ. 'SPC_EC4') .OR.
+     &        (MDLWRD(J) .EQ. 'SPC    ')) THEN
             CALL QUIT('No distributed alpha allowed for this model.')
           END IF
         END IF
@@ -769,12 +804,12 @@ C
 C Initialization of Two-body interaction parameters:
 C
       LUVDWSE = -1
-      DO 1400 IBG = 0,MXTYPE
-        DO 1410 JBG = 0,MXTYPE
+      DO JBG = 0,MXTYPE
+        DO IBG = 0,MXTYPE
           QM3LJA(IBG,JBG) = D0
           QM3LJB(IBG,JBG) = D0
- 1410   CONTINUE
- 1400 CONTINUE
+        END DO
+      END DO
 C
       READ (LUPOT,'(A7)') WORD
 C
@@ -788,7 +823,7 @@ C
      &         (LONEPAR)) THEN
         GOTO 666
       ELSE
-        CALL QUIT('**TWOIA NOT FOUND in POTENTIAL.INP')
+        CALL QUIT('**TWOIA not found in POTENTIAL.INP')
       END IF
 C
   911 CONTINUE
@@ -818,7 +853,7 @@ C
         END IF
 C
         WRITE (LUPRI,'(/,3A,/)')
-     *         ' Keyword ',WORD,' not recognized in RDPOT(2).'
+     *         ' Keyword ',WORD,' not recognized in QM3_RDPOT(2).'
         CALL PRTAB(NTAB1,TABLE1,WORD1//' input keywords',LUPRI)
         CALL QUIT('Illegal keyword in POTENTIAL.INP 3.')
 C
@@ -1283,7 +1318,7 @@ C
         WRITE(LUPRI,*)'**** Shadow wavefunction calculation ****'
         WRITE(LUPRI,*)'-----------------------------------------'
       END IF
-      CALL QEXIT('RDPOT')
+      CALL QEXIT('QM3_RDPOT')
       RETURN
       END
 C
@@ -1379,8 +1414,8 @@ C
 C
       DO 44 L = 0, ISYTP
         IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
-          IF ( (.NOT. (DISMOD(L))) .AND. 
-     &      (.NOT. (RDFILE(L))) ) THEN
+          IF ( (.NOT. DISMOD(L)) .AND. 
+     &         (.NOT. RDFILE(L)) ) THEN
             DO 45 M = NSYSBG(L), NSYSED(L)
 C
               TOTALM = D0
@@ -1882,11 +1917,11 @@ C
                                   KURT = KURT + 1
 C
                                   IF (J .NE. M)  THEN
-                                    DIST2 =((CORD(1,K)-CORD(1,N))**2 +
-     *                                     (CORD(2,K)-CORD(2,N))**2 +
-     *                                     (CORD(3,K)-CORD(3,N))**2)
+                                    DIST2 =(CORD(1,K)-CORD(1,N))**2
+     *                                    +(CORD(2,K)-CORD(2,N))**2
+     *                                    +(CORD(3,K)-CORD(3,N))**2
 C
-                                    DIST = SQRT(DIST2)
+                                    DIST  = SQRT(DIST2)
                                     DIST3 = DIST2*DIST
                                     DIST4 = DIST2**2
                                     DIST5 = DIST4*DIST
@@ -1942,11 +1977,11 @@ C
 C
                                   IF (J .NE. M) THEN
 C
-                                    DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+                                    DIST2 =(CORD(1,K)-CORD(1,N))**2 +
      *                                     (CORD(2,K)-CORD(2,N))**2 +
-     *                                     (CORD(3,K)-CORD(3,N))**2)
+     *                                     (CORD(3,K)-CORD(3,N))**2
 C
-                                    DIST = SQRT(DIST2)
+                                    DIST  = SQRT(DIST2)
                                     DIST3 = DIST2*DIST
                                     DIST4 = DIST2**2
                                     DIST5 = DIST4*DIST
@@ -2668,7 +2703,7 @@ C
 C    
 C*******************************************************
 C  /* Deck elnuc */
-	      SUBROUTINE ELNUC(ENUCLE)
+      SUBROUTINE ELNUC(ENUCLE)
 C*******************************************************
 C
 C     Calculate the nuclear part of the electrostatic
@@ -2837,7 +2872,7 @@ C
       ENDIF
 C
       IF (LOCLAS) THEN
-        CALL QUIT('Exit dalton forced by keyword CLONLY in QM3INP')
+        CALL QUIT('Exit dalton forced by keyword CLONLY for *QM3')
       END IF
 C
       END
@@ -3606,8 +3641,9 @@ C
       ELSE IF (NAMN(J)(1:2) .EQ. 'XX') THEN
         TMPMAS = D0
       ELSE
-        WRITE(LUPRI,*) 'Check atom no.',J,' in input file.'
-        CALL QUIT('This atom not recognized.')
+        WRITE(LUPRI,*)
+     &    'MASFIND: Check atom no.',J,' in input file: ',NAMN(J)
+        CALL QUIT('MASFIND: This atom not recognized.')
       END IF
 C
       END
@@ -3818,8 +3854,7 @@ C
 C
       END
 C*******************************************************
-C  /* Deck elnuc */
-              SUBROUTINE EQMNTEST()
+      SUBROUTINE EQMNTEST()
 C*******************************************************
 C
 C     Calculate the QM nuclear part of the electric field
@@ -4099,7 +4134,6 @@ C
       DIPCON = .TRUE.
       END
 C*********************************************************************
-C  /* Deck  */
       SUBROUTINE RFQMMM()
 C
 C     Calculate the reaction field (RF) at the QM nuclei 
@@ -4184,12 +4218,10 @@ C     now, find a QM nuclei and do the RF due to the charges
       DO 22 JK=1,NU
         WRITE(LUPRI,*) CORD(1,JK),CORD(2,JK),CORD(3,JK)
   22  CONTINUE
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) 'The reaction field due to the charges:'
+      WRITE(LUPRI,'(/A)') ' The reaction field due to the charges:'
       DO 23 JK=1,NU
         WRITE(LUPRI,*) RFQM(1,JK),RFQM(2,JK),RFQM(3,JK)
   23  CONTINUE
-      WRITE(LUPRI,*)
 
 C     Finally, we set the charges to zero if OLDTG
  
@@ -4270,16 +4302,14 @@ C
         CALL QUIT('Something is wrong w. the no. of nuclei in RFQMMM')
       ENDIF
 
-      WRITE(LUPRI,*) 'The QM coordinates:'
+      WRITE(LUPRI,'(/A)') ' The QM coordinates:'
       DO 24 JK=1,NATOM
         WRITE(LUPRI,*) CORD(1,JK),CORD(2,JK),CORD(3,JK)
   24  CONTINUE
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) 'The total reaction field:'
+      WRITE(LUPRI,'(/A)') ' The total reaction field:'
       DO 25 JK=1,NATOM
         WRITE(LUPRI,*) RFQM(1,JK),RFQM(2,JK),RFQM(3,JK)
   25  CONTINUE
-      WRITE(LUPRI,*)
 
       DO 26 JK=1,NATOM
         DO IPRPC = 1,3
@@ -4292,4 +4322,4 @@ C
         END DO
   26  CONTINUE
       END
-C**** end of herqm3.F *****************************************************************
+C**** end of herqm3.F **********************************************************

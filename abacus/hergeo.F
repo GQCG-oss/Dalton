@@ -220,18 +220,17 @@ C
 C
 #include <gnrinf.h>
 #include <inftap.h>
-#include <qm3.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <qm3.h>
 C
-      DIMENSION COORD(3,*),
-     *          DIST(MXCENT*(MXCENT+1)/2),
-     *          ANGLE(MAXANG), DIHED(MAXANG), ICHARG(NUCDEP)
-      DIMENSION VEC(3,NUCDEP,NUCDEP),
-     &          IPAIRS(2,NUCDEP*NUCDEP)
+      DIMENSION COORD(3,*), DIST(MXCENT*(MXCENT+1)/2),
+     &          ANGLE(MAXANG), DIHED(MAXANG), ICHARG(NUCDEP)
+      DIMENSION VEC(3,NUCDEP,NUCDEP), IPAIRS(2,NUCDEP*NUCDEP)
       LOGICAL   BONDED(NUCDEP,NUCDEP)
       CHARACTER*6 NUCNAM(4)
       SAVE DIST, ANGLE, DIHED
+C
       ARCCOS(ARG) = FACANG*ACOS(ARG)
 #include <ibtfun.h>
 C
@@ -588,7 +587,6 @@ C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include <implicit.h>
 #include <priunit.h>
-#include <qm3.h>
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable
 C     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,

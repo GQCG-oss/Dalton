@@ -402,6 +402,8 @@ C
 C     Initialize /CBIREA/ and call readin
 C
       IF (SFIRST .OR. NEWGEO) THEN
+chj May 09: should we really call REAINI and READIN here now,
+chj   when they always are called in the beginning, also when RNHERM false??
          RELCAL = .FALSE.
          TSTINP = .FALSE.
          CALL REAINI(JPRINT,RELCAL,TSTINP)

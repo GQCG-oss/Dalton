@@ -74,7 +74,7 @@ C
 C     ... and the derivative of the B matrix
 C
       IF (IPRINT .GE. IPRDBG)
-     &     CALL GETDWL(MXRCRD,TMPMAT,TMPMT2,TMPMT3,WILBMT)
+     &   CALL GETDWL(MXRCRD,TMPMAT,TMPMT2,TMPMT3,WILBMT)
 C
 C     We also need the inverse of the rectangular B matrix.
 C
@@ -167,7 +167,7 @@ C
             WRITE(LUPRI,'(/A)') 'Try running the calculation in ' //
      &           'Cartesian coordinates.'
          END IF
-         CALL QUIT('Too many internal ccordinates!')
+         CALL QUIT('Too many internal coordinates!')
       END IF
       IC = 1
  20   CONTINUE
@@ -205,15 +205,17 @@ C
       LOGICAL REMCRD
 C
       CALL HEADER('Redundant internal coordinates',-1)
-      IF (IPRINT .LT. 3) WRITE(LUPRI,'(A/)')
-     &   ' (Auxiliary bonds are not printed at this print level.)'
+      IF (IPRINT .LT. 3) WRITE(LUPRI,'(11X,A/)')
+     &   '(Auxiliary bonds are not printed at this print level.)'
       REMCRD = .FALSE.
+      IREMCRD = 0
       DO 10 I = 1, ICRD
          MARK = '   '
          IF (CONOPT .AND. (ICNSTR(I) .EQ. 1)) MARK = '*  '
          IF (ICNSTR(I) .EQ. 2) THEN
             MARK = '#  '
             REMCRD = .TRUE.
+            IREMCRD = IREMCRD + 1
          END IF
          CRDTXT = '                          '
          IF (INTCRD(I,1) .LT. 10) THEN
@@ -257,6 +259,8 @@ C
       END IF
       WRITE(LUPRI,'(/A,I6)')
      &     ' Total number of redundant internal coordinates:',ICRD
+      IF (IREMCRD .GT. 0) WRITE(LUPRI,'(/A,I6)')
+     &     ' Total number of removed internal coordinates:  ',IREMCRD
       RETURN
       END
 
@@ -462,8 +466,7 @@ C
          GOTO 20
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A,I4)') 
+         WRITE(LUPRI,'(/A,I4)') 
      &        ' Number of separate fragments found: ', IFRAG
       END IF
 C
@@ -1214,10 +1217,8 @@ C
          GOTO 20
       END IF
       IF (IPRINT .GE. IPRMIN) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) IBEFOR-IINTCR,
+         WRITE(LUPRI,'(/I10,A/)') IBEFOR-IINTCR,
      &        ' dihedral angles were removed to reduce redundancy!'
-         WRITE(LUPRI,*)
       END IF
       RETURN
       END
@@ -1284,7 +1285,7 @@ C
                VEC1(3) = ATMARR(INTCRD(IC,2),4) - ATMARR(INTCRD(IC,3),4)
                BNDL1 = SQRT(DDOT(3,VEC1,1,VEC1,1))
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*) 'Numerical results for coordinate',IC
                WRITE(LUPRI,*)
                DO 27 II = 1, IATOM
                   DO 28 JJ = 1, 3
@@ -1370,7 +1371,7 @@ C
                IF ((INTCRD(IC,1) .EQ. 12) .OR. (INTCRD(IC+1,1) .EQ. 12))
      &              ANGLE = VECANG(VEC1,VEC4) + VECANG(VEC4,VEC2)
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*) 'Numerical results for coordinate',IC
                WRITE(LUPRI,*)
                DO 47 II = 1, IATOM
                   DO 48 JJ = 1, 3
@@ -1475,9 +1476,8 @@ C
                VEC6(1) = VEC3(1)
                VEC6(2) = VEC3(2)
                VEC6(3) = VEC3(3)
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
-               WRITE(LUPRI,*)
+               WRITE(LUPRI,'(/A,I6/)')
+     &         'Numerical results for dihedral coordinate:',IC
                FAC = -D1
                DO 97 II = 1, IATOM
                   DO 98 JJ = 1, 3
@@ -1539,12 +1539,10 @@ C
             WRITE(TXT(28:32),'(I5)') IC
             CALL HEADER(TXT,-1)
             DO 99 K = 1, IATOM
-               WRITE(LUPRI,'(I25,A,F16.6)')
-     &              K,'x',WILBMT(IC,(K-1)*3+1)
-               WRITE(LUPRI,'(I25,A,F16.6)')
-     &              K,'y',WILBMT(IC,(K-1)*3+2)
-               WRITE(LUPRI,'(I25,A,F16.6)')
-     &              K,'z',WILBMT(IC,(K-1)*3+3)
+               WRITE(LUPRI,'(I10,3(5X,A,F16.6))')
+     &              K,'x',WILBMT(IC,(K-1)*3+1),
+     &                'y',WILBMT(IC,(K-1)*3+2),
+     &                'z',WILBMT(IC,(K-1)*3+3)
  99         CONTINUE
          END IF
  20   CONTINUE
@@ -1669,6 +1667,7 @@ C
  58               CONTINUE
  56            CONTINUE
                CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1678,6 +1677,7 @@ C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1772,6 +1772,7 @@ C
  98               CONTINUE
  96            CONTINUE
                CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1781,6 +1782,7 @@ C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1876,6 +1878,7 @@ C
  255              CONTINUE
  250           CONTINUE
                CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1885,6 +1888,7 @@ C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -2247,7 +2251,7 @@ C  /* Deck gtbinv */
      &     BMTINV,PJINMT,VMATRED,TMPMAT,WRK,LWRK)
 C
 C     Decomposes the transpose of Wilson's B matrix, then one can
-C     construct the inverse of the rectangulat matrix.
+C     construct the inverse of the rectangular matrix.
 C
 C     7/5-2009 Optimization of code, mostly by replacing matrix multiplies 
 C              with dgemm (and by introducing VMATRED). /Simen Reine
@@ -2292,7 +2296,7 @@ C
 C
 C     Based on the singular value decomposition of the B matrix,
 C     we can construct a non-redundant B matrix mixing the various
-C     internal primitives. The eigenvectors is stored in BMTRAN.
+C     internal primitives. The eigenvectors are stored in BMTRAN.
 C
 C     Not optimized time-wise! /SR
 C
@@ -2468,11 +2472,9 @@ C
          CALL OUTPUT(BMTINV,1,IDIM2,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Total number of internal coordinates: ',IINTCR
-         WRITE(LUPRI,*) 'Number of non-redundant coordinates : ',NPROJ
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(//A,I8/A,I8/)')
+     &      ' Total number of internal coordinates:',IINTCR,
+     &      ' Number of non-redundant coordinates :',NPROJ
       END IF
 C
 C     Put number of coordinates to be projected away in NPROJ
@@ -4557,8 +4559,6 @@ C
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
       IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
-         DOCART = .FALSE.
-         DOOWN = .FALSE.
          CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
      &              ID3,DOCART,DOOWN)
          AUTOSY = .TRUE.
