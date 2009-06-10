@@ -776,7 +776,7 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
          CALL GPCLOSE(LUTEMP,'DELETE')
       END IF
 C
-      if (iprmul .ge. 0) then
+      if (iprmul .ge. 1) then
       WRITE (LUPRI,1004)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1004)
  1004 FORMAT(//6X,'Mulliken total overlap populations',
@@ -808,7 +808,7 @@ C        IEND = MIN(NNUC, IEND + 7)
 C
 C     Gross populations of cgto's
 C
-      IF (IPRMUL.GE.2) THEN
+      IF (IPRMUL.GE.4) THEN
          WRITE (LUPRI,1005)
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1005)
  1005    FORMAT (//6X,'Partial orbital gross populations',
@@ -822,10 +822,10 @@ C
                WRITE (LUW4,1006) (IA,POPC(IA,IP),IA=1,NBAST)
             END IF
   160    CONTINUE
- 1006    FORMAT (6(1X,I3,F8.4))
+ 1006    FORMAT (6(I4,F8.4))
       END IF
 C
-      if (iprmul .gt. 0) then
+      if (iprmul .ge. 3) then
       WRITE (LUPRI,1007)
       WRITE (LUPRI,1006) (IA,POPCGT(IA),IA = 1,NBAST)
       IF (LUW4 .NE. LUPRI) THEN
@@ -970,7 +970,7 @@ C     ... only print max -iprmul populations in each iteration
       IF (iprmul .lt. 0) then
          mnuc = min(nnuc,-iprmul)
          WRITE (LUPRI,2015) (NAME(NUC),POPNUC(NUC),NUC=1,mnuc)
- 2015    FORMAT ((' POP',8(1X,A2,F6.2,';')))
+ 2015    FORMAT ((' MULPOP',10(1X,A4,F6.2,';')))
       else
          WRITE (LUPRI,1016)
          WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
@@ -1273,7 +1273,7 @@ C
             IF (JFXYZ(1).EQ.1)   QUPOL(4) = D0
             IF (JFXYZ(2).EQ.1)   QUPOL(5) = D0
             IF (JFXYZ(3).EQ.1)   QUPOL(6) = D0
-            IF (IPRMUL .GE. 3) THEN
+            IF (IPRMUL .GE. 2) THEN
                WRITE (LUPRI,1003) IP,(QUPOL(ICOMP),ICOMP=1,6),RR,R2
                IF (LUW4 .NE. LUPRI)
      1         WRITE (LUW4,1003) IP,(QUPOL(ICOMP),ICOMP=1,6),RR,R2
