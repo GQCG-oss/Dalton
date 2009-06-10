@@ -1355,7 +1355,7 @@ C     the program stops.
 C
          IF (FINDRE .AND. (.NOT. VISUAL)) THEN
             CALL TITLER('Internal coordinates determined','#',103)
-            CALL QEXIT('OPTMIN')
+            GO TO 9999
          END IF
       ELSE
          KATARR = 2
@@ -1371,8 +1371,7 @@ C
       IF (VISUAL) THEN
          CALL VISULZ(WORK,LWORK,WRKDLM)
          CALL TITLER('End of visualization','#',103)
-         CALL QEXIT('OPTMIN')
-         RETURN
+         GO TO 9999
       END IF
 C
       KGRAD  = 1
@@ -1408,7 +1407,7 @@ C         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
 C     &                  MPI_COMM_WORLD,IERR)
 C      END IF
 C#endif      
-      CALL QEXIT('OPTMIN')
+ 9999 CALL QEXIT('OPTMIN')
       RETURN
       END
 
