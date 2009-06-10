@@ -3231,11 +3231,13 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <qm3.h>
       DIMENSION WORK(LWORK)
 #include <cbiher.h>
 #include <orgcom.h>
 #include <nuclei.h>
+! gnrinf.h : QM3
+#include <gnrinf.h>
+#include <qm3.h>
 C
       CALL QENTER('CCNUCQUA')
 C
@@ -3258,13 +3260,11 @@ C
          CALL NUCQDR(WORK(KGEOM),CMXYZ,LUPRI,IASGER)
       ELSE IF (IOPT .EQ. 2) THEN
          CALL NUCNQC(WORK(KGEOM),LUPRI,IASGER)
-      ENDIF
 C
-      IF (IOPT .EQ. 2) THEN
-        IF ( (QM3) .AND. (.NOT. (SKIPNC)) ) THEN
-          CALL QM3QCC1(LUPRI,IASGER)
-          IF ( .NOT. (LOSPC) ) CALL QM3QCC2(LUPRI,IASGER)
-        END IF
+         IF ( QM3 .AND. .NOT.SKIPNC ) THEN
+           CALL QM3QCC1(LUPRI,IASGER)
+           IF ( .NOT.LOSPC ) CALL QM3QCC2(LUPRI,IASGER)
+         END IF
       END IF
 C
       CALL QEXIT('CCNUCQUA')
@@ -3446,8 +3446,8 @@ C
       ITYP = 0
 C
       DO 100 IATOM = 1,NUCIND
-       IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+       IF ( (ISUBSY(IATOM) .EQ. 0) .AND.
+     &      (ISUBSI(IATOM) .LE. NSISY(0)) ) THEN
          DO 110 ICOOR1 = 1,3
             DO 120 ICOOR2 = ICOOR1,3
 C

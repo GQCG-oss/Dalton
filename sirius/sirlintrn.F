@@ -135,17 +135,12 @@ C
 #include <infpri.h>
 #include <cbgetdis.h>
 #include <dftcom.h> 
+! gnrinf.h: QM3 /CBN+JK 03.01.06
+#include <gnrinf.h>
 #include <wrkrsp.h>
 C ---
       PARAMETER (IDTIM1 = 6, IDTIM2 = 8, D4 = 4.0D0)
 #include <inftim.h>
-C------------------
-C CBN+JK 03.01.06
-C------------------
-#include <qm3.h>
-C------------------
-C CBN+JK 03.01.06
-C------------------
 C
       LOGICAL SOLVNT, ORBLIN, MEMLIN, DFTADX
 C
@@ -454,6 +449,7 @@ C
       IF (QM3) THEN
          CALL QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &               WRK(KSOVEC),ORBLIN,WRK(K3A),L3A)
+         CALL GETTIM(T5,W5)
       END IF
 C---------------------------
 C CBN 03.01.06

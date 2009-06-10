@@ -1143,7 +1143,7 @@ C
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
-#include <qm3.h>
+#include <gnrinf.h>
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -1530,9 +1530,7 @@ C ------------------
 C-------------------
 C CBN+JK 03.01.06
 C-------------------
-         IF (QM3) THEN
-           WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
+         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
 C-------------------
 C CBN+JK 03.01.06
 C-------------------
@@ -1660,12 +1658,6 @@ C
 #include "chrnos.h"
 #include "elweak.h"
 #include "channel.h"
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
-#include <qm3.h>
-C--------------------
-C CBN+JK 03.01.06
 C--------------------
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
@@ -2063,9 +2055,7 @@ C     ---------------------------------------------
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
-         IF (QM3) THEN
-           WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
+         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -3819,6 +3809,7 @@ C
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
+#include <gnrinf.h>
 #include <qm3.h>
 C--------------------
 C CBN+JK 03.01.06
@@ -4435,7 +4426,7 @@ C
 C------------------
 C CBN+JK 03.01.06
 C------------------
-#include <qm3.h>
+#include <gnrinf.h>
 C------------------
 C CBN+JK 03.01.06
 C------------------
@@ -4557,9 +4548,7 @@ C
 C------------------
 C CBN+JK, 03.01.06
 C------------------
-         IF (QM3) THEN
-           WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
+         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
 C------------------
 C CBN+JK, 03.01.06
 C------------------

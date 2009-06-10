@@ -63,7 +63,7 @@ C
 #include <inftap.h>
 #include <cclr.h>
 #include <ccslvinf.h>
-#include <qm3.h>
+#include <gnrinf.h>
 #include <ccfdgeo.h>
 #include <r12int.h>
 #include <ccr12int.h>
@@ -1034,10 +1034,9 @@ C
       WRITE(LUPRI,'(//)')
       CALL AROUND
      * ('Final results from the Coupled Cluster energy program')
-      WRITE(LUPRI,'(/)')
-      WRITE(LUPRI,'(12X,A,A,A,F32.10,/)') 'Total ',ETY0,' energy: ',ESCF
-      WRITE(LURES,'(/)')
-      WRITE(LURES,'(12X,A,A,A,F32.10)') 'Total ',ETY0,' energy: ',ESCF
+      WRITE(LUPRI,'(//12X,A,A,A,F32.10,/)')
+     &   'Total ',ETY0,' energy: ',ESCF
+      WRITE(LURES,'(//12X,A,A,A,F32.10)') 'Total ',ETY0,' energy: ',ESCF
       CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
       WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') 'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI

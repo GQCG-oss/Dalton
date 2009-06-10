@@ -135,9 +135,9 @@ C
 #include <inforb.h>
 #include <infslv.h>
 C---------------------
-#include <qm3.h>
+#include <gnrinf.h>
 #include <infpar.h>
-C qm3.h by CBN+JK 03.01.06
+C gnrinf.h for QM3 by CBN+JK 03.01.06
 C---------------------
 C
       PARAMETER ( DM1 = -1.0D0 )

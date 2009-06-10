@@ -48,7 +48,8 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-#include <qm3.h>
+! gnrinf.h: QM3
+#include <gnrinf.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
       PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -525,9 +526,7 @@ C
 C-----------------
 C CBN+JK 03.01.06
 C-----------------
-         IF (QM3) THEN
-          WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
+         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
 C-----------------
 C CBN+JK 03.01.06
 C-----------------
@@ -594,7 +593,8 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-#include <qm3.h>
+! gnrinf.h: QM3
+#include <gnrinf.h>
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 25)
@@ -949,9 +949,7 @@ C
 C-----------------
 C CBN+JK 03.01.06
 C-----------------
-         IF (QM3) THEN
-          WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
+         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
 C-----------------
 C CBN+JK 03.01.06
 C-----------------
