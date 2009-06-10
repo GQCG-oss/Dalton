@@ -438,7 +438,7 @@ C        DV(1) = D0
 C
 C     Level shift ("restricted step" type step reduction)
 C     - initial value: zero
-C     - used to modify FD matrix: FDAO(shifted) = FDAO + SHFLTVL*DCAO
+C     - used to modify FD matrix: FDAO(shifted) = FDAO + SHFTLVL*DCAO
 C       - this corresponds to increasing occ-unocc orb.en. gap by
 C         SHFTLVL and approximately to add -SHFTLVL to the
 C         approximate Hessian diagonal implicit in the Roothaan diag.
@@ -446,7 +446,7 @@ C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
       SHFTLVL = DEFLVL
-      SHFTFAC = 0.7D0 
+      SHFTFAC = 0.4D0 
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
 C     SCRFAC = 100*NBAST
@@ -1119,8 +1119,13 @@ C        If requested (by SHFTLVL .ne. 0) :
 C        Perform "restricted step" step reduction (i.e. level shift)
 C        by adding 0.5*SHFTLVL*DENS(i,i) to all diagonal elements;
 C        /hjaaj-Feb.2001
+
+         IF (SHFTLVL .NE. D0) WRITE(LUPRI,'(I4,A,F10.4)') ITDIIS,
+     &   '  Level shift: occupied orbital energies shifted by',SHFTLVL
+chjaaj: improve comment with something about "restricted step"
+chjaaj: and "0.5*occ(i)* " /23may hjaaj
 C
-C        Diagonalize FC (saved in DCAO)
+C        Diagonalize (level-shifted) FC (saved in DCAO)
 C
          CALL ICOPY(8,NISH,1,MISH,1)
          JOPRHF = IOPRHF
@@ -1806,12 +1811,8 @@ C
       KSYMS = KEIG  + NORBT
       KLAST = KSYMS + NORBT
 C
-C     Step 1: Diagonalize Fock-matrix:
+C     Step 1: Diagonalize (level-shifted) Fock-matrix:
 C
-      IF (SHFTLVL .NE. D0) WRITE(LUPRI,'(/A,F10.4)')
-     &   ' Level shift: occupied orbital energies shifted by',SHFTLVL
-chjaaj: improve comment with something about "restricted step"
-chjaaj: and "0.5*occ(i)* " /23may hjaaj
       DO 200 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
