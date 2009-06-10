@@ -721,6 +721,7 @@ C*********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
+#include <gnrinf.h>
 #include <qm3.h>
 #include <mxcent.h>
 #include <iratdef.h>
