@@ -1075,7 +1075,7 @@ C ach
                CALL FLSHFO(LUPRI)
             ENDIF
 C
-            IF (MM_ATOMPTYPE) THEN
+            IF (MM_ATOMTYPE) THEN
                 READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
             ELSE
 C              Read basis set identifier from MLINE(NMLINE)
