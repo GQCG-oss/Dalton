@@ -2348,12 +2348,12 @@ Cef end
       WORK(IWOFF+1) = WRKDLM
       IF (.NOT. EXHER) THEN
          CALL EXEHER(WORK,LWORK,WRKDLM)
-         EXHER = .TRUE.
+         EXHER  = .TRUE.
+         NEWGEO = .TRUE.
+         NPCMIN = .TRUE.
       END IF
-      NEWGEO = .TRUE.
 #ifndef VAR_LINSCA
-      NPCMIN = .TRUE.
-      IF (AOSAVE) THEN
+      IF (AOSAVE .AND. NEWGEO) THEN
          LINTSV = .FALSE.
          LINTMP = .FALSE.
          INITX = .FALSE.
@@ -2373,7 +2373,6 @@ C     CALL CLEAR_INCOREMEM()
 #endif
 Cef end
 C ach 
-      IF (DFTRUN) GRDONE = .FALSE.
       IF (.NOT. EXSIR) THEN
 C     
 C        *** For numerical derivatives we might need to  ***
@@ -7278,7 +7277,7 @@ C
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
       DIMENSION WORK(LWORK)
-      EXHER = .FALSE.
+      EXHER  = .FALSE.
       EXSIR  = .FALSE.
       EXABA  = .FALSE.
       RDINPC = .FALSE.
