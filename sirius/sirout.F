@@ -645,7 +645,6 @@ C
 #include <implicit.h>
       DIMENSION CMO(*)
       LOGICAL   PROCC
-      PARAMETER (THRPRI = 1.0D-4)
 C
 C Used from common blocks:
 C   INFINP : CENT,TYPE,SUPSYM,?
@@ -669,24 +668,40 @@ C
 C
 C *** Print molecular orbitals
 C
+      IF (PROCC) THEN
+         THRPRI = 1.0D-2
+         WRITE(IOUT,'(/A,F6.4,A)')
+     &   ' (Only coefficients >',THRPRI,' are printed.)'
+      ELSE
+         THRPRI = 1.0D-4
+      END IF
+C
       ISTBAS = 0
       DO 400 ISYM = 1,NSYM
-         IF (PROCC) THEN
-C           NENDI = NOCC(ISYM)
-            NENDI = NOCC(ISYM)
-     *            + MIN(5,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
-         ELSE
-            NENDI = NORB(ISYM)
-         END IF
          NBASI = NBAS(ISYM)
          MBASI = NBAS(ISYM)
          IF (LMULBS) MBASI = MBAS1(ISYM)
+C
+         IF (PROCC) THEN
+            IF (NBAST .LE. 25) THEN
+C           print all occupied and 2 lowest unoccupied this symmetry
+               IEND = 0
+            ELSE
+C           print 5 highest occupied and 2 lowest unoccupied this symmetry
+C           (output becomes too big otherwise ... /hjaaj Dec08)
+               IEND  = MAX(0,NOCC(ISYM)-5)
+            END IF
+            NENDI = NOCC(ISYM)
+     &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
+         ELSE
+            IEND  = 0
+            NENDI = NORB(ISYM)
+         END IF
       IF (NENDI.EQ.0) GO TO 300
          WRITE(IOUT,2400) ISYM
 C
          ICMOI = ICMO(ISYM)
          ISTORB = IORB(ISYM)
-         IEND=0
   100       IST =IEND+1
             ISTMO=IEND*NBASI+ICMOI
             IEND=IEND+7
