@@ -1134,7 +1134,7 @@ C
          IF (IPRERR.gt.1) write (LUERR,*) 'GPCLOSE keep',LUNIT
          CLOSE (LUNIT,STATUS='KEEP',ERR=9003)
          IUNTAB(LUNIT) = 0
-         LUNIT = -10000-LUNIT
+         LUNIT = -30000-LUNIT
          GOTO 30
       ELSE
 #if defined (VAR_SPLITFILES)
