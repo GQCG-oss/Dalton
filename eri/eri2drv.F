@@ -391,6 +391,8 @@ C  /* Deck er2int */
 #include <symmet.h>
 #include <inforb.h>
 C
+      CALL QENTER('ER2INT')
+C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
@@ -496,6 +498,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('ER2INT')
       RETURN
       END
 C  /* Deck odcdrv */
