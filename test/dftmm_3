@@ -92,26 +92,24 @@ cat > dftmm_3.pot <<'%EOF%'
 cat > dftmm_3.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.NOSUP
-.PRINT
- 2
-*QM3INP
+*QM3
+.QM3
 .PRINT
  1
-.QM3
 .THRDIP
  1.0D-12
 .MAXDIP
  180
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.PRINT
+ 2
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-12
 **PROPERTIES
@@ -122,7 +120,7 @@ B3LYP
 .FREQUE
  1
  0.040
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

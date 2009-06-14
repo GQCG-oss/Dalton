@@ -119,7 +119,7 @@ cat > cc2mm_atmvdw.pot <<%EOF%
  6.708867  0.0001115   # Interaction is calculated as 
  6.708867  0.0001115   # Evdw_ij = 4*epsilon_ij*[sigma_ij/R^12-sigma_ij/R^6]
  6.708867  0.0001115   # Construction of two-body parameters are given
- 6.708867  0.0001115   # as input in DALTON.INP, *QM3INP with the keyword
+ 6.708867  0.0001115   # as input in DALTON.INP, *QM3 with the keyword
  6.708867  0.0001115   # .ATMVDW. A multiplication and an additive rule
  5.801443  0.0002709   # is implemented for both parameters:
  4.572986  0.0000478   # SIGADD (+), SIGMLT (*), EPSADD (+), EPSMLT  (*)
@@ -151,12 +151,7 @@ cat > cc2mm_atmvdw.pot <<%EOF%
 cat > cc2mm_atmvdw.dal <<%EOF%
 **DALTON
 .RUN WAVEFUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.THETA
-.NELFLD
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-9
@@ -165,10 +160,14 @@ cat > cc2mm_atmvdw.dal <<%EOF%
 .ATMVDW  # (Giving the Van der Waals sigma and epsilon parameters atomic specific)
  SIGMLT  # (Sigma_ij= sqrt[sigma_i*sigma_j]: Option 2: .SIGADD s_ij=1/2(s_i+s_j))
  EPSMLT  # (epsilon_ij=sqrt[epsilon_i*epsilon_j]: Option 2: .EPSADD)
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.THETA
+.NELFLD
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INP
 .THRESH
 1.0D-10
 *CC INP

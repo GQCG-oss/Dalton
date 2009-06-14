@@ -132,13 +132,7 @@ cat > ccsdmm_twopar_vdw.pot <<%EOF%
 cat > ccsdmm_twopar_vdw.dal <<%EOF%
 **DALTON
 .RUN WAVEFUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.THETA
-.SECMOM
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-10
@@ -147,10 +141,15 @@ cat > ccsdmm_twopar_vdw.dal <<%EOF%
 .OLDTG
 .ATMVDW
  TWOPAR
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.THETA
+.SECMOM
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-11
 *CC INP
