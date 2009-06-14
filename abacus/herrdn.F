@@ -281,10 +281,9 @@ C ach easier to debug intgrl input.
 C  /* Deck reaini */
       SUBROUTINE REAINI(IPREAD_ini,RELCAL,TSTINP)
 C
-C     Define THRS in CCOM
+C     Define default THRS in CCOM
 C
-C
-C     Initialize /CBIREA/
+C     Initialize /CBIREA/, control variables in ecpinf.h,
 C     and parts of qm3.h
 C
 #include <implicit.h>
@@ -293,8 +292,14 @@ C
 #include <ccom.h>
 #include <mxsymm.h>
 #include <cbirea.h>
+#include <ecpinf.h>
 #include <qm3.h>
+C
+C     ccom.h:
+C
       THRS = 1.0D-15
+C
+C     cbirea.h:
 C
       IPREAD = IPREAD_ini
       LUMLCL = -1
@@ -314,11 +319,19 @@ C     ... parameter MAXPRD is in cbirea.h
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
+C
+C     Initialize effective core potential parameters (ecpinf.h)
+C
+      ECP = .FALSE.
+      NTYECP = 0
+C
 C     Initialize ISUBSI , NSISY from qm3.h
 C     (ISUBSI(:), NSISY are not defined as for QM3, but making them all
 C     zero will pass if tests correctly also when QM3 is .false. /hjaaj May09
+C
       CALL IZERO(ISUBSI,MXQM3)
       NSISY(0) = 0
+C
       RETURN
       END
 C  /* Deck readin */

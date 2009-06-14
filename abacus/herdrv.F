@@ -305,7 +305,6 @@ C
 #include <inftap.h>
 #include <infinp.h>
 #include <cbisor.h>
-#include <ecpinf.h>
 #include <elweak.h>
 #include <r12int.h>
 #include <codata.h>
@@ -3631,18 +3630,12 @@ C/* Deck herini */
 #include <cbisol.h>
 #include <cbisor.h>
 #include <cbiher.h>      
-#include <ecpinf.h>
 #include <drw2el.h>
 #include <orgcom.h>
 #include <elweak.h>
 #include <r12int.h>
 #include <infinp.h>
 #include <qm3.h>
-C
-C     Initialize effective core potential parameters
-C
-      ECP = .FALSE.
-      NTYECP = 0
 C
 C     Initialize /CBIHER/
 C
