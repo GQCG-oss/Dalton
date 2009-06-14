@@ -1599,7 +1599,6 @@ C
       DORLM  = .FALSE.
       ALLRLM = .TRUE.
       CAVUSR = .FALSE.
-      CALL DZERO(CAVORG,3)
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
