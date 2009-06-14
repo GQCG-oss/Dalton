@@ -57,7 +57,7 @@ cat > r12_prop.dal <<'%EOF%'
 *END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
 *ORBITAL INPUT
@@ -115,7 +115,7 @@ PASSED=1
 for i in 1
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -48,7 +48,7 @@ cat > aba_prop_file.dal <<'%EOF%'
 .RUN PROPERTIES
 **WAVE FUNCTIONS
 .HF
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-12
 .PRINT
@@ -107,7 +107,7 @@ PASSED=1
 for i in 1 2 
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done
