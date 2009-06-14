@@ -1291,8 +1291,8 @@ C  /* Deck optmin */
       INCLUDE 'mpif.h'
 #endif
 #include "gnrinf.h"
+#include "cbirea.h"
 #include "optinf.h"
-#include "cbiher.h"
       DIMENSION WORK(LWORK)
       LOGICAL TSTIN
       CALL QENTER('OPTMIN')
@@ -1316,16 +1316,18 @@ C     The number of Cartesian and redundant internal coordinates
 C     are counted to reduce the memory requirement.
 C     The input processing in Hermit has to be run to determine
 C     these coordinates
+C     Using "INPTST true" to only run the necessary parts of READIN.
 C
-      TSTIN  = TSTINP
-      TSTINP = .TRUE.
+      TSTIN  = INPTST
+      INPTST = .TRUE.
       IPRUSR_SAV = IPRUSR
       IPREAD_SAV = IPREAD
       IPRUSR = -10
       IPREAD = -10
 C     Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
+      write (lupri,*) 'Read .mol file to determine number of atoms:'
       CALL READIN(WORK(2),LWORK-2,.FALSE.)
-      TSTINP = TSTIN
+      INPTST = TSTIN
       IPRUSR = IPRUSR_SAV
       IPREAD = IPREAD_SAV
       HRINPC = .FALSE.
@@ -1504,8 +1506,8 @@ C
 C     First order methods only require the energy and the gradient.
 C
       ELSE
-         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &        IWOFF,WRKDLM)
+         CALL GTGRAD(EGRAD, EXHER,EXSIR,EXABA,
+     &        WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
       END IF
 C
 C     Make VRML-file of initial geometry if requested.
