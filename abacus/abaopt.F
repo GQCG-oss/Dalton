@@ -1315,7 +1315,9 @@ C
 C     The number of Cartesian and redundant internal coordinates
 C     are counted to reduce the memory requirement.
 C     The input processing in Hermit has to be run to determine
-C     these coordinates
+C     these coordinates.
+C     The call is also necessary for PREOPT with different basis, see
+C     INIPRE.
 C     Using "INPTST true" to only run the necessary parts of READIN.
 C
       TSTIN  = INPTST
@@ -6889,7 +6891,7 @@ C  /* Deck inipre */
 C
       WORK(1) = WRKDLM
       KFREE = 2
-      LFREE = 2
+      LFREE = LWORK - KFREE + 1
 C
 C     When preoptimization is scheduled, we have to change the basis set.
 C     READIN has to be run before we can do the first change.
@@ -6897,7 +6899,9 @@ C
 C        Third parameter .FALSE. in CALL READIN
 C        indicates that LUONEL will NOT be written.
 C
-      CALL READIN(WORK(KFREE),LFREE,.FALSE.)
+C     CALL READIN(WORK(KFREE),LFREE,.FALSE.)
+Chjaaj Juni 2009: READIN has always already been called in OPTMIN
+C                 before coming here ...
 C
 C     Basis set library has to be used for preoptimization to work
 C
