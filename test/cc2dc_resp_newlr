@@ -55,7 +55,7 @@ cat > cc2dc_resp_newlr.dal <<%EOF%
 *END OF HERMIT
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-11
 *CC INP
@@ -126,7 +126,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 
