@@ -1887,9 +1887,9 @@ C
                CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
      &                     MBKLIN,NMBKLN,LASTE)
 C
-C              *** Reset nescesary variables ***
+C              *** Reset necessary variables ***
 C
-               CALL NUMRES(EXHER,EXSIR,EXABA)
+               CALL NDER_RESET(EXHER,EXSIR,EXABA)
 cdj
                EXESG = FNDKEY('*ESG   ')
 C     
@@ -2250,7 +2250,7 @@ C
       END
 C
 C  /* Deck numres */
-      SUBROUTINE NUMRES(EXHER,EXSIR,EXABA)
+      SUBROUTINE NDER_RESET(EXHER,EXSIR,EXABA)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -4474,7 +4474,7 @@ C
                   END DO
                ELSE
 C
-C              *** Printing nescecary pre-hessian information. ***
+C              *** Printing necessary pre-hessian information. ***
                   WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
                   WRITE(LUHES,*) NCOOR
                   WRITE(LUHES,'(A)') '                                '
@@ -5219,7 +5219,7 @@ C        *** Open hessian file. ***
          CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
 C
-C        *** Printing nescecary pre-hessian information. ***
+C        *** Printing necessary pre-hessian information. ***
          WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
          WRITE(LUHES,*) NCOOR
          WRITE(LUHES,'(A)') '                                   '
@@ -5731,7 +5731,7 @@ C
       END IF
 C
 C     ***********************************************
-C     *** Write nescesary results to file for the ***
+C     *** Write necessary results to file for the ***
 C     *** for the vibrational analysis.           ***
 C     ***********************************************
 C
@@ -6582,7 +6582,7 @@ C     /* Deck wrispc */
       SUBROUTINE WRISPC(FREQ,RNNORM,QUBIC,QUARTC,TXT,NCOOR,NDCOOR,NTIME,
      &                  IPRINT)
 **************************************************************
-*** Writes nescesary information to DALTON.SPC in order to ***
+*** Writes necessary information to DALTON.SPC in order to ***
 *** run the dal2spectro.pl script.                         ***
 **************************************************************
 #include <implicit.h>
@@ -7111,7 +7111,7 @@ C     /* Deck wrimop */
       SUBROUTINE WRIMOP(FREQ,RNNORM,QUBIC,QUARTC,TXT,NCOOR,NDCOOR,NTIME,
      &                  IPRINT)
 **************************************************************
-*** Writes nescesary information to DALTON.MOP :           ***
+*** Writes necessary information to DALTON.MOP :           ***
 *** An operator file to be read in by MidasCpp             ***
 *** Ove Christiansen based on Torgeirs WRISPC 
 *** At this stage it makes only sense with norm. coord. 

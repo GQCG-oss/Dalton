@@ -419,6 +419,7 @@ C
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
       GRDONE = .FALSE.
+C     ... we need new grid for numerical integrations when new geometry
 C
 C     ***************************************************************
 C     Reading in the interaction parameters for the MM system types:
