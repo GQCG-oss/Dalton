@@ -630,6 +630,7 @@ C
 #include <abainf.h>
 #include <molinp.h>
 #include <cbiwlk.h>
+#include <cbirea.h>
 #include <cbisol.h>
 #include <taymol.h>
 #include <pcmlog.h>
@@ -663,10 +664,15 @@ C
          START  = .TRUE.
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
+         IPREAD_orig = IPREAD
+         IPREAD_reduced = -2
          CALL TITLER('Commencing geometry optimization using .WALK',
      &   ' ',200)
          IF (QM3)
      &      CALL QUIT('Geometry optimization not implemented for .QM3')
+C        ---------------------------------------
+C        loop over geometries
+C        ---------------------------------------
  10      CONTINUE
             IF (LUCME.GT.0) REWIND (LUCME)
             SOLVNT = .FALSE.
@@ -674,6 +680,8 @@ C
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
      &       ' <<<<<<<<<<'
             CALL EXEHER(WORK,LMWORK,WRKDLM)
+            IPREAD = IPREAD_reduced
+C           ... reduce output from READIN in following geometries
             WLKREJ = .FALSE.
             NEWGEO = .TRUE.
 Cef begin
@@ -918,7 +926,7 @@ C
             GOTO 10
          END IF
 C
-C
+C        ---------------------------------------------------------------
 C
          IF (GEOCNV) THEN
             CALL TITLER('Geometry walk has converged',' ',200)
