@@ -130,7 +130,7 @@ ERROR[2]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 CRIT1=`$GREP "Number of coordinates in each symmetry: * 3 * 3 * 2 * 1" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry: * 27 * 21 * 12 * 9" $log | wc -l`
 TEST[3]=`expr $CRIT1  \+ $CRIT2`
-CTRL[3]=4
+CTRL[3]=2
 ERROR[3]="SYMMETRY IS NOT CORRECT"
 
 # SCF energy, 1st iteration:

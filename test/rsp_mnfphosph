@@ -153,7 +153,7 @@ CTRL[5]=1
 ERROR[5]="MCSCF ENERGY NOT CORRECT"
 
 # Response setup
-CRIT1=`$GREP "Phosporescence calculation requested with atomic mean\-field spin\-orbit operator \(AMFI\)\." $log | wc -l`
+CRIT1=`$GREP "Phosphorescence calculation requested with atomic mean\-field spin\-orbit operator \(AMFI\)\." $log | wc -l`
 CRIT2=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT3=`$GREP "Spin of operator B \, ISPINB\= * 1" $log | wc -l`
 CRIT4=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 1" $log | wc -l`

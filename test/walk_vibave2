@@ -106,14 +106,14 @@ CRIT2=`$GREP "F * 1 * 9\.0000 * 43 * 23 * \[10s6p3d\|4s3p2d\]" $log | wc -l`
 CRIT3=`$GREP "total\: * 2 * 10\.0000 * 59 * 32" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=16
+CTRL[1]=4
 ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "3 * z * 1\.7497928937" $log | wc -l`
 CRIT2=`$GREP "6 * z * (0| )\.0241892414" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[2]=4
+CTRL[2]=2
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Numerical differentiation

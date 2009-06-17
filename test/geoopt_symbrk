@@ -93,7 +93,7 @@ CTRL[2]=8
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "Coordinates are entered in Angstroms and converted to atomic units\." $log | wc -l`
+CRIT1=`$GREP "Coordinates are entered in Angstrom and converted to atomic units\." $log | wc -l`
 CRIT2=`$GREP "1 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * 1\.3795000778" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0|\-|0| )\.0000000000" $log | wc -l`
