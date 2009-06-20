@@ -515,9 +515,10 @@ C
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
          IF (VRSYMM) THEN
-            WRITE(LUPRI,'(A)') ' Symmetry elements will be visualized.',
-     &        ' Please note that symmetry should NOT be specified' //
-     &        ' in the input file.'
+            WRITE(LUPRI,'(A/A)')
+     &        ' Symmetry elements will be visualized.',
+     &        ' Please note that symmetry should NOT be explicitly' //
+     &        ' specified in the input file.'
          END IF
          IF (VREIGV) THEN
             WRITE(LUPRI,'(A)') ' Eigenvectors can ' //
@@ -1123,9 +1124,9 @@ C
             WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Convergence threshold for gradient set to : ', GRDTHR
             IF ((GRDTHR .LE. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
-               WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
                WRITE(LUPRI,'(A,1P,D13.2)')
-     &              ' Threshold reset to:', DEFTH2
+     &           ' Threshold negative or larger than 0.1,'//
+     &           ' threshold reset to:', DEFTH2
                GRDTHR = DEFTH2
             END IF
          END IF
@@ -1133,9 +1134,9 @@ C
             WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Convergence threshold for energy set to   : ', THRERG
             IF ((THRERG .LE. D0) .OR. (THRERG .GT. 0.1D0)) THEN
-               WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
                WRITE(LUPRI,'(A,1P,D13.2)')
-     &              ' Threshold reset to:', DEFTHE
+     &           ' Threshold negative or larger than 0.1,'//
+     &           ' threshold reset to:', DEFTHE
                THRERG = DEFTHE
             END IF
          END IF
@@ -1143,9 +1144,9 @@ C
             WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Convergence threshold for step set to     : ', THRSTP
             IF ((THRSTP .LE. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
-               WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
                WRITE(LUPRI,'(A,1P,D13.2)')
-     &              ' Threshold reset to:', DEFTH2
+     &           ' Threshold negative or larger than 0.1,'//
+     &           ' threshold reset to:', DEFTH2
                THRSTP = DEFTH2
             END IF
          END IF
@@ -1248,11 +1249,10 @@ C
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
          IF (VRSYMM) THEN
-            WRITE(LUPRI,'(A)') ' Symmetry elements will be visualized.'
-            WRITE(LUPRI,'(A)')
-     &        ' Please note that no symmetry should be specified'
-            WRITE(LUPRI,'(A)')
-     &        ' in the input file.'
+            WRITE(LUPRI,'(A/A)')
+     &        ' Symmetry elements will be visualized.',
+     &        ' Please note that symmetry should NOT be explicitly' //
+     &        ' specified in the input file.'
          END IF
          IF (VREIGV) WRITE(LUPRI,'(A)')
      &        ' Eigenvectors will be visualized.'
@@ -2377,6 +2377,7 @@ C     CALL CLEAR_INCOREMEM()
 #endif
 Cef end
 C ach 
+      IF (DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) GRDONE = .FALSE.
       IF (.NOT. EXSIR) THEN
 C     
 C        *** For numerical derivatives we might need to  ***
@@ -2395,8 +2396,8 @@ C
 C
 C        Reduce gradient criterion for DFT optimization
 C
-         IF (.NOT.NATNRM .AND. DFTRUN .AND.
-     &       (GRDTHR .LT. 5.0D-05 .OR. THRSTP .LT. 5.0D-05)) THEN
+         IF ((DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) .AND. .NOT.NATNRM
+     &      .AND. (GRDTHR .LT. 5.0D-05 .OR. THRSTP .LT. 5.0D-05)) THEN
             GRDTHR = MAX(GRDTHR,5.0D-05)
             THRSTP = MAX(THRSTP,5.0D-05)
             IF (CHGRDT) THEN
@@ -7853,8 +7854,9 @@ C
      &   ' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
  1100 READ (LUCMD,'(A7)',END=1110) WORD
-      CALL UPCASE(WORD)
+        CALL UPCASE(WORD)
       IF (WORD .NE. '**NMDDR') GOTO 1100
+C
       CALL NMDINP(WORD,IPRINT)
  1110 CALL GPCLOSE(LUCMD,'KEEP')
       FCLASS = GROUP
