@@ -571,6 +571,10 @@ C
       CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
 C
 Cef begin 
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
@@ -959,31 +963,6 @@ C
          CALL QUIT('ERROR: in HER_NODSTR but not SLAVE')
       END IF
 C
-C     For the time being we assume long-range and short-range integrals
-C     will not be done in parallel, otherwise we need to initialize
-C     through message passing
-C
-C
-C ...............
-C     Flags for calculation of long and short range integrals
-C     (mostly programmed by Jesper Kielberg Pedersen) /hjaaj
-C     For ERFEXP false:
-C       g(R12) = g_erf(R12) = erf(CHIVAL*R12) / R12
-C       where CHIVAL .ge. 0, and CHIVAL.eq.0 is normal 1/R12
-C     For ERFEXP true:
-C       g(R12) = g_erfexp(R12)
-C              = g_erf(R12) - 2*CHIVAL/SQRT(PI) * EXP(-CHIVAL**2*R12**2/3.0D0)
-      ERFEXP = .FALSE.
-C
-C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
-C                             ELSE calculate g(R12) listed above
-C
-      CHIVAL = -1.0D0
-C
-C     SRINTS: calculate 1/R12 - g(R12)
-C
-      DOSRIN = .FALSE.
-      SRINTS = .FALSE.
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_NODSTR','*',103)
 C
@@ -1116,6 +1095,8 @@ Cef begin
 #include <incore.h>
 Cef end
 C
+      CALL QENTER('HER_RVINIT')
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVINIT','*',103)
 C
 C-----------------------------------------
@@ -1128,6 +1109,14 @@ C
       CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
+C
+C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
+C                             ELSE calculate g_lr(R12)
+C     IF (SRINTS) THEN  calculate 1/R12 - g_lr(R12)
 C
 C
 Cef begin
@@ -1347,6 +1336,7 @@ C
       KDMRSO = KFREE
 #endif
 C
+      CALL QEXIT('HER_RVINIT')
       RETURN
       END
 C     /* Deck parlop */

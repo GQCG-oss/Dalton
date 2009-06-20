@@ -399,6 +399,8 @@ C
       SAVE    SFIRST
       DATA    SFIRST /.TRUE./
 C
+      CALL QENTER('SETHER')
+C
 C     Initialize /CBIREA/ and call readin
 C
       IF (SFIRST .OR. NEWGEO) THEN
@@ -434,6 +436,7 @@ C
          END IF
          SFIRST = .FALSE.
       END IF
+      CALL QEXIT('SETHER')
       RETURN
       END
 C  /* Deck herfck */
