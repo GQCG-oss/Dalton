@@ -358,7 +358,7 @@ C
      &                      //'Germany    ',
      *  'Rika Kobayashi,           ANU Supercomputer Facility,   '
      &                      //'Australia  ',
-     *  'Jakob Kongsted,           Aarhus University,            '
+     *  'Jacob Kongsted,           Univ. of Southern Denmark,    '
      &                      //'Denmark    ',
      *  'Henrik Koch,              University of Trondheim,      '
      &                      //'Norway     ',
@@ -442,13 +442,32 @@ C
      &        ' * Work memory size             :',
      &        LMWORK,' =',XMBYTES,' megabytes.'
          END IF
-         IF (AOSAVE) THEN
-           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
-     &        MMCORE
+         IF (AOSAVE) WRITE(LUPRI,'(A,I12)')
+     &        ' + memory for in-core integrals :',MMCORE
+C
+         WRITE(LUPRI,'(/A)')
+     &   ' * Directories for basis set searches:'
+         J_END = LNBLNK(BASDIR)
+         IF (J_END .LE. 0) THEN
+            WRITE(LUPRI,'(5X,A)') 'NONE SPECIFIED!'
+         ELSE
+C           structure of BASDIR: 'dir1:dir2:dir3'
+            I = 0
+            I_END = -1
+   20       CONTINUE
+               I_ST = I_END + 2
+               I_END = INDEX(BASDIR(I_ST:J_END),':') - 1
+               IF (I_END .LE. 0) THEN
+                  I_END = J_END
+               ELSE
+                  I_END = I_ST - 1 + I_END
+               END IF
+               IF (I_END .GT. I_ST) THEN
+                  I = I + 1
+                  WRITE(LUPRI,'(I4,2A)') I,') ',BASDIR(I_ST:I_END)
+                  GO TO 20
+               END IF
          END IF
-         WRITE(LUPRI,'(/A/5X,A)')
-     &   ' * Directories for basis set searches:',
-     &   BASDIR(1:LEN_BASDIR)
 C
 C        Read general input for Dalton
 C
