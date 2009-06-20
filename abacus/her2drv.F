@@ -2237,8 +2237,10 @@ C Largest Coulomb contribution
      &                                    DMRAO(ISYBLB,ISYBLA,I),
      &                                    DMRAO(ISYBLC,ISYBLD,I),
      &                                    DMRAO(ISYBLD,ISYBLC,I))
+                        DNSMAX = MAX(DNSMAX,D4*DNSBUF(1,I))
 C Largest exchange contribution
-                        DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
+                        IF (HFXFAC .NE. 0.0D0) THEN
+                          DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
      &                                    DMRAO(ISYBLA,ISYBLC,I),
      &                                    DMRAO(ISYBLC,ISYBLB,I),
      &                                    DMRAO(ISYBLB,ISYBLC,I),
@@ -2246,7 +2248,10 @@ C Largest exchange contribution
      &                                    DMRAO(ISYBLA,ISYBLD,I),
      &                                    DMRAO(ISYBLB,ISYBLD,I),
      &                                    DMRAO(ISYBLD,ISYBLB,I))
-                        DNSMAX = MAX(DNSMAX,D4*DNSBUF(1,I),DNSBUF(2,I))
+                          DNSMAX = MAX(DNSMAX,DNSBUF(2,I))
+                        ELSE
+                          DNSBUF(2,I) = 0.0D0
+                        END IF
                       ENDDO
                       FCKMAX = DNSMAX*ULINT
                       IF(FCKMAX.LT.FCKTHR) THEN
