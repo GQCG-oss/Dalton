@@ -3458,25 +3458,33 @@ C  INFTAP: LUINTA, LUSRINT
 #include "cbihr2.h"
 #include "inftap.h"
 C
-      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, RUNTWO_SAV
+      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, RUNTWO_SAV, DOSRIN_SAV
 C
       CALL GPINQ('AOTWOINT','EXIST',AOEXIST)
       IF (.NOT. AOEXIST) THEN
-         WRITE (LUPRI,'(/A)') '---> (Re)generating AOTWOINT'
-C        Open LUINTA/LUSRINT for new integrals
-         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-         IF (DOSRIN) CALL
-     &      GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-         DIRCAL_SAV = DIRCAL
          RUNONE_SAV = RUNONE
          RUNTWO_SAV = RUNTWO
-         DIRCAL = .FALSE.
+         DOSRIN_SAV = DOSRIN
+         DIRCAL_SAV = DIRCAL
          RUNONE = .FALSE.
          RUNTWO = .TRUE.
+         DOSRIN = DOSRIN .AND. .NOT.DIRCAL
+         DIRCAL = .FALSE.
+C       ... hjaaj: AOSR2INT is only needed if not DIRCAL (not direct)
+C       /Jun 09
+C        Open LUINTA/LUSRINT for new integrals
+         WRITE (LUPRI,'(/A)') '---> (Re)generating AOTWOINT'
+         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         IF (DOSRIN) THEN
+            WRITE (LUPRI,'(A)') '---> and (re)generating AOSR2INT'
+            CALL GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',
+     &                  IDUMMY,.FALSE.)
+         END IF
          CALL HERINT(WORK,LWORK)
-         DIRCAL = DIRCAL_SAV
          RUNONE = RUNONE_SAV
          RUNTWO = RUNTWO_SAV
+         DOSRIN = DOSRIN_SAV
+         DIRCAL = DIRCAL_SAV
       END IF
 
       RETURN
@@ -3636,6 +3644,16 @@ C/* Deck herini */
 #include <r12int.h>
 #include <infinp.h>
 #include <qm3.h>
+C
+C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
+C
+      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
+         NEWTRA = .TRUE.
+         WRITE(LUPRI,'(/4X,A)') 'INFORMATION: Switched to "new" '//
+     &     'integral transformation (from 1988 ;-) )',
+     &     'because more than 255 basis functions.'
+      END IF
+C
 C
 C     Initialize /CBIHER/
 C
