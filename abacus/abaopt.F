@@ -45,7 +45,7 @@ C  /* Deck opinpu */
 #include "infinp.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
-      PARAMETER (NTABLE = 73, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
+      PARAMETER (NTABLE = 75, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -69,7 +69,7 @@ C
      &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA',
      &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM',
      &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT',
-     &            '.NOHSWR'/
+     &            '.NOHSWR', '.FREEZE', '.FRZITR'/
 C
       DATA FIRST /.TRUE./
 C
@@ -189,6 +189,7 @@ C     When running linsca version, NATNRM is always used
       ICONDI = 2
       NCRTOT = 0
       NCART  = 0
+      ITRFRZ = -1
       ENERGY = D0
       ERGOLD = D0
       ERGPRD = D0
@@ -207,6 +208,7 @@ C     When running linsca version, NATNRM is always used
       CALL DZERO(CRDIN1,8*MXCENT)
       CALL IZERO(ICNSTR,8*MXCENT)
       CALL IZERO(IADDCR,11*4)
+      CALL IZERO(IFREEZ,11)
       DO 123 I = 0, 7
          CNDHES(I) = D0
          INDHES(I) = 0
@@ -232,7 +234,7 @@ C
      &                  41,42,43,44,45,46,47,48,49,50,
      &                  51,52,53,54,55,56,57,58,59,60,
      &                  61,62,63,64,65,66,67,68,69,70,
-     &                  71,72,73), I
+     &                  71,72,73,74,75), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -461,6 +463,27 @@ C
             ICHGTH = ICHGTH + 1
             GOTO 100
  73         NOHSWR = .TRUE.
+            GOTO 100
+ 74         READ (LUCMD,*) NFREEZ
+            IF ((NFREEZ .LE. 0) .OR. (NFREEZ .GE. MXCENT)) THEN
+               WRITE(LUPRI,'(/,A,I2,A/)')
+     &              ' Number of frozen atoms must '
+     &              // 'be between 1 and ', MXCENT,'!'
+               CALL QUIT('Illegal number of frozen atoms.')
+            END IF
+            DO 474 I = 1, NFREEZ
+               READ (LUCMD,*) NFRZ
+               IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
+                  WRITE(LUPRI,'(/,A,I2,A/)')
+     &                 ' The constrained coordinate should have a '
+     &                 // 'value between 1 and', MXCENT,'!'
+                  CALL QUIT('Illegal frozen atom.')
+               END IF
+               IFREEZ(0) = IFREEZ(0) + 1
+               IFREEZ(IFREEZ(0)) = NFRZ
+ 474        CONTINUE
+            GOTO 100
+ 75         READ (LUCMD,*) ITRFRZ
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -1169,7 +1192,7 @@ C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
      &        DISPLA
       END IF
       IF (CONOPT) THEN
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(/A)')
      &        ' Constrained optimization has been requested.'
          NOAUX = .TRUE.
          IF (.NOT. REDINT) THEN
@@ -1237,6 +1260,36 @@ C NB TODO hjaaj Jan09: DISPLA is never used !!!!! Remove ???
  345        CONTINUE
             WRITE(LUPRI,*)
          END IF
+      END IF
+C
+C     Experimental atom freezing
+C
+      IF (IFREEZ(0) .GT. 0) THEN
+         WRITE(LUPRI,'(A)')
+     &        ' Freezing of atoms has been requested.'
+         WRITE(LUPRI,'(A)') ' WARNING: .FREEZE is an ' //
+     &        'experimental feature, use it at your own risk...'
+         IF (.NOT. CONOPT) THEN
+            WRITE(LUPRI,'(A)') ' WARNING: Freezing of atoms is really '
+     &           /  'intended to be used for constrained optimizations!'
+         END IF
+         WRITE(LUPRI,'(A,I2,A)') ' The following ',IFREEZ(0),
+     &        ' atoms will be held frozen: '
+C     Do a simple bubble sort
+         DO 351 I = 1, IFREEZ(0)-1
+            DO 352 J = I+1, IFREEZ(0)
+               IF (IFREEZ(I) .GT. IFREEZ(J)) THEN
+                  ITMP = IFREEZ(I)
+                  IFREEZ(I) = IFREEZ(J)
+                  IFREEZ(J) = ITMP
+               END IF
+ 352        CONTINUE
+            WRITE(LUPRI,*) '    Atom #      ', IFREEZ(I)
+ 351     CONTINUE
+         WRITE(LUPRI,*) '    Atom #      ', IFREEZ(IFREEZ(0))
+         IF (ITRFRZ .GT. 0) WRITE(LUPRI,'(A,I4,A)')
+     &        '     Atoms will be kept frozen for ',
+     &        ITRFRZ, ' iterations'
       END IF
 C
 C     VRML options
@@ -1785,9 +1838,11 @@ C
          IF (REDINT .OR. DELINT) THEN
             CALL GETWIL(MXRCRD,MX2CRD,WORK(KTEMP1),WILBMT,
      &           BMTRAN,WORK(KTEMP2))
+#ifndef VAR_LINSCA
             IF (IPRINT .GE. IPRMAX)
      &           CALL GETDWL(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),
      &           WORK(KTEMP3),WILBMT)
+#endif
             CALL GTBINV(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
      &           WORK(KTEMP4),WILBMT,BMTRAN,WORK(KBMINV),WORK(KPJINM),
      &           WORK(KTEMP5),WORK(KTEMP6),WORK(KWRK2),LWRK2)

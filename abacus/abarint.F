@@ -4400,6 +4400,46 @@ C
          STPSYM(I) = STPSYM(I)/SCLVEC(I)
  90   CONTINUE
       CALL WLKCOR(STPSYM,CSTEP,ICRTCR,MXCOOR,IPRINT)
+C
+C     Experimental extra stabilization by freezing atoms.
+C     All Cartesian step vector components are simply set to zero
+C     for the selected frozen atoms. Note that this is only applied
+C     to the correctional step
+C
+      IF (CORREC .AND. (IFREEZ(0) .GT. 0)) THEN
+         DO 510 I = 1, IFREEZ(0)
+            DO 515 J = 1, 3
+               CSTEP(3*(IFREEZ(I)-1)+J) = 0.D0
+ 515        CONTINUE
+ 510     CONTINUE
+C     Calculate new internal coordinates
+         DO 530 I = 1, IATOM
+            DO 535 J = 1, 3
+               CRDNEW(I,J+1) = CRDORG(I,J+1)+ CSTEP(3*(I-1)+J)
+ 535        CONTINUE
+ 530     CONTINUE
+         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
+         DO 550 I = 1, NRIC
+            STPINT(I) = VALNEW(I) - VALORG(I)
+            IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
+            IF ((INTCRD(I,1) .GT. 20)
+     &           .AND. (ABS(STPINT(I)) .GT. PI)) THEN
+               IF (STPINT(I) .GT. 0.0D0) THEN
+                  STPINT(I) = STPINT(I) - 2.0D0*PI
+               ELSE
+                  STPINT(I) = STPINT(I) + 2.0D0*PI
+               END IF
+            END IF
+ 550     CONTINUE
+         IF (IPRINT .GE. IPRMAX) THEN
+            CALL HEADER('Adjusted step after freezing',-1)
+            CALL OUTPUT(STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+         END IF
+C     If .FRZITR has been specified, the freezing is turned off after
+C     the requested number of iterations
+         IF ((ITRFRZ .GT. 0) .AND. ((ITRNMR+1) .GE. ITRFRZ))
+     &        IFREEZ(0) = 0
+      END IF
       RETURN
       END
 
