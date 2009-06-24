@@ -466,15 +466,15 @@ C
             GOTO 100
  74         READ (LUCMD,*) NFREEZ
             IF ((NFREEZ .LE. 0) .OR. (NFREEZ .GE. MXCENT)) THEN
-               WRITE(LUPRI,'(/,A,I2,A/)')
+               WRITE(LUPRI,'(/A,I6,A/)')
      &              ' Number of frozen atoms must '
-     &              // 'be between 1 and ', MXCENT,'!'
+     &              // 'be between 1 and', MXCENT,'!'
                CALL QUIT('Illegal number of frozen atoms.')
             END IF
             DO 474 I = 1, NFREEZ
                READ (LUCMD,*) NFRZ
                IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
-                  WRITE(LUPRI,'(/,A,I2,A/)')
+                  WRITE(LUPRI,'(/A,I6,A/)')
      &                 ' The constrained coordinate should have a '
      &                 // 'value between 1 and', MXCENT,'!'
                   CALL QUIT('Illegal frozen atom.')
@@ -545,13 +545,13 @@ C
          END IF
          IF (VREIGV) THEN
             WRITE(LUPRI,'(A)') ' Eigenvectors can ' //
-     &       'only be visualized during a optimization.',
+     &       'only be visualized during an optimization.',
      &       ' Keyword will be ignored!'
             VREIGV = .FALSE.
          END IF
          IF (VRVIBA) THEN
             WRITE(LUPRI,'(A)') ' Vibrational modes can ' //
-     &       'only be visualized during a optimization.',
+     &       'only be visualized during an optimization.',
      &       ' Keyword will be ignored!'
             VRVIBA = .FALSE.
          END IF
@@ -948,8 +948,8 @@ C
          WRITE(LUPRI,'(A,I10)') ' Max # of rejected steps:',MAXREJ
       END IF
       IF (VRML) THEN
-         WRITE(LUPRI,'(A)') ' VRML-files of initial and final ' //
-     &        'geometry will be created.'
+         WRITE(LUPRI,'(A)') ' VRML-files for initial and final ' //
+     &        'geometries will be created.'
          IF (VRBOND) WRITE(LUPRI,'(A)')
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VREIGV) WRITE(LUPRI,'(A)')
@@ -1271,9 +1271,9 @@ C
      &        'experimental feature, use it at your own risk...'
          IF (.NOT. CONOPT) THEN
             WRITE(LUPRI,'(A)') ' WARNING: Freezing of atoms is really '
-     &           /  'intended to be used for constrained optimizations!'
+     &           // 'intended to be used for constrained optimizations!'
          END IF
-         WRITE(LUPRI,'(A,I2,A)') ' The following ',IFREEZ(0),
+         WRITE(LUPRI,'(A,I4,A)') ' The following',IFREEZ(0),
      &        ' atoms will be held frozen: '
 C     Do a simple bubble sort
          DO 351 I = 1, IFREEZ(0)-1
@@ -1288,8 +1288,7 @@ C     Do a simple bubble sort
  351     CONTINUE
          WRITE(LUPRI,*) '    Atom #      ', IFREEZ(IFREEZ(0))
          IF (ITRFRZ .GT. 0) WRITE(LUPRI,'(A,I4,A)')
-     &        '     Atoms will be kept frozen for ',
-     &        ITRFRZ, ' iterations'
+     &        '     Atoms will be kept frozen for',ITRFRZ, ' iterations'
       END IF
 C
 C     VRML options
@@ -1310,7 +1309,7 @@ C
          IF (VREIGV) WRITE(LUPRI,'(A)')
      &        ' Eigenvectors will be visualized.'
          IF (VRVIBA) WRITE(LUPRI,'(A)')
-     &        ' Eigenvectors will be visualized.'
+     &        ' Vibrational modes will be visualized.'
       END IF
 C
 C     Geometry analysis
