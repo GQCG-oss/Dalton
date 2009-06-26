@@ -714,7 +714,11 @@ C
 #include <chrnos.h>
       CHARACTER*80 STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
-      CHARACTER OUTFIL*40, WRKDIR*80, FILENM*121
+      integer max_filename_length
+      parameter (max_filename_length = 500)
+      CHARACTER OUTFIL*(max_filename_length)
+      CHARACTER WRKDIR*(max_filename_length)
+      CHARACTER FILENM*(max_filename_length)
       INTEGER FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
@@ -724,6 +728,8 @@ c maxorb for infpar.h
 #include <infpar.h>
       DATA FIRST /.TRUE./
       SAVE FIRST
+C
+      CALL QENTER('GPOPEN')
 C
 C     Initialization
 C     
@@ -737,9 +743,9 @@ C
 C     Just return if user has asked explicitly for stderr, stdinp, or stdout
 C     /HJAaJ Sep 2007
       IF (LUNIT .EQ. 0) GO TO 9002
-      IF (LUNIT .EQ. 0) RETURN
-      IF (LUNIT .EQ. 5) RETURN
-      IF (LUNIT .EQ. 6) RETURN
+      IF (LUNIT .EQ. 0) GO TO 8000
+      IF (LUNIT .EQ. 5) GO TO 8000
+      IF (LUNIT .EQ. 6) GO TO 8000
 #endif 
 C
 C     Copy input strings to local strings,
@@ -821,25 +827,44 @@ C
 #else 
          CALL GETENV ('OUTFIL',OUTFIL)
 #endif
-         IF (OUTFIL(1:1) .NE. ' ') THEN
-            LENOUT = 0
-            DO I = 1, 40
-               IF (OUTFIL(I:I) .EQ. ' ') GO TO 43
-               LENOUT = LENOUT + 1
-            END DO
- 43         CONTINUE
+         LENOUT = LNBLNK(OUTFIL)
+         if (LENOUT .EQ. max_filename_length) then
+            write (lupri,*) 'max_filename_length is too short'
+            write (lupri,*) OUTFIL
+            call quit('file name too long')
+         end if
+         if (LENOUT .gt. 0) then
+c        IF (OUTFIL(1:1) .NE. ' ') THEN
+c           LENOUT = 0
+c           DO I = 1, max_filename_length
+c              IF (OUTFIL(I:I) .EQ. ' ') GO TO 43
+c              LENOUT = LENOUT + 1
+c           END DO
+c43         CONTINUE
 #if defined (SYS_T3D) || defined (SYS_T90)
             CALL PXFGETENV ('WRKDIR',6,WRKDIR,LWRKDR,IERR)
 #else 
             CALL GETENV ('WRKDIR',WRKDIR)
 #endif
-            LENWRK = 0
-            DO I = 1, 80
-               IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
-               LENWRK = LENWRK + 1
-            END DO
- 44         CONTINUE
+            LENWRK = lnblnk(WRKDIR)
+            if (LENWRK .EQ. max_filename_length) then
+               write (lupri,*) 'max_filename_length is too short'
+               write (lupri,*) WRKDIR
+               call quit('work directory name too long')
+            end if
+c           LENWRK = 0
+c           DO I = 1, max_filename_length
+c              IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
+c              LENWRK = LENWRK + 1
+c           END DO
+c44         CONTINUE
             FILELN = LENWRK + LENOUT + 1
+            if (FILELN .EQ. max_filename_length) then
+               write (lupri,*) 'max_filename_length is too short'
+               write (lupri,*) WRKDIR(1:LENWRK)//'/'//
+     &                         OUTFIL(1:LENOUT)
+               call quit('file name too long')
+            end if
             FILENM(1:FILELN) = WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
          END IF
@@ -962,7 +987,8 @@ C                  calculation.
             END IF
          END IF
       END IF
-  100 IUNTAB(LUNIT) = 1
+ 8000 IUNTAB(LUNIT) = 1
+      CALL QEXIT('GPOPEN')
       RETURN
 C     
 C error branches
