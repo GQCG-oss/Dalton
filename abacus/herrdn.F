@@ -140,7 +140,6 @@ C  /* Deck reainp */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxsymm.h>
       PARAMETER ( NTABLE = 11, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -199,7 +198,7 @@ C
                   ONLYOV= .TRUE.
                GO TO 100
  6             CONTINUE
-                  READ (LUCMD,*) TOLLRN
+                  READ (LUCMD,*) TOL_SYMADD
                GO TO 100
  7             CONTINUE 
                   READ (LUCMD,*) LCMMAX, CMSTR, CMEND
@@ -238,8 +237,8 @@ C ach easier to debug intgrl input.
             WRITE (LUPRI,'(A)')
      &         ' Dalton 1.0 normalization of spherical GTOs used.'
          END IF
-         IF (TOLLRN .NE. 0.0D0) THEN
-            WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOLLRN
+         IF (TOL_SYMADD .NE. 0.0D0) THEN
+            WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOL_SYMADD
          END IF
          IF (UNCONT) THEN
             WRITE (LUPRI,'(/A)')
@@ -316,7 +315,7 @@ C     ... parameter MAXPRD is in cbirea.h
 !     ATOMDF = .FALSE. ! done each time MOLECULE.INP is opened
       OLDNRM = .FALSE.
       WRTLIN  = .FALSE.
-      TOLLRN = 0.0D0
+      TOL_SYMADD = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
 C
@@ -763,7 +762,8 @@ C
             WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
             WRITE (LUPRI,'(/)')
          END IF
-         CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
+         CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
+     &               CLASS,TOL_SYMADD,IPREAD)
       END IF
 C
 C     ***************************************
@@ -1231,7 +1231,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
      &                                                             '=')
                            IF (IPOS4 .EQ. 0 .OR. (IPOS4 .GT. 11)) THEN
                               WRITE (LUPRI,'(A/A//A)')
-     &                          'Incorrect input for auxilary basis'//
+     &                          'Incorrect input for auxiliary basis'//
      &                          ' set name in input line:',
      &                          MLINE(NMLINE-NONT(I)),
      &                          'Format is "Aux=?"'
@@ -6664,6 +6664,8 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
+#include <maxorb.h>
+#include <infpar.h>
       LOGICAL ADDSYM, DOCART, DOOWN
       CHARACTER*80 LINE
       CHARACTER CRT*1, ID3*1, SYMTXT*2
@@ -6677,13 +6679,15 @@ C
 C
 C     Number of different atom types
 C
+        WRITE(0,'(I5,2A)') mynum,' LINE4: ',LINE
+
       IPOS = INDEX(LINE,'ATO')
       IF (IPOS .NE. 0) THEN
          IPOS2 = INDEX(LINE(IPOS:),'=')
          IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 10)) THEN
-            WRITE (LUPRI,*) 'Incorrect input for # atomtypes:'
-            WRITE (LUPRI,*) LINE
+            WRITE (LUPRI,*) 'Incorrect input for number of atom types.'
             WRITE (LUPRI,*) 'Format is "Atomtypes=?"'
+            WRITE (LUPRI,*) LINE
             CALL QUIT('Incorrect input for # atomtypes')
          ELSE
             READ (LINE((IPOS+IPOS2):),*) NONTYP
@@ -6723,6 +6727,7 @@ C
             IF ((IPOS2 .EQ. 0) .OR. (IPOS2 .GT. 7)) THEN
                WRITE (LUPRI,*) 'Incorrect input for molecular charge'
                WRITE (LUPRI,*) 'Format is "Charge=?"'
+               WRITE (LUPRI,*) LINE
                CALL QUIT('Incorrect input for molecular charge')
             ELSE
                READ (LINE(IPOS+IPOS2:),*) KCHARG
@@ -6747,17 +6752,17 @@ C
          IPOS = INDEX(LINE,'GEN')
          IPSO = INDEX(LINE,'NOS')
          IF (IPOS .NE. 0 .AND. IPSO .NE. 0) THEN
-            WRITE (LUPRI,*) 'Incorrect symmetry input. No symmetry '//
-     &           'requested, but generators given'
+            WRITE (LUPRI,*) 'Incorrect symmetry input. "Nosymmetry" '//
+     &           'requested, but generators given.'
             WRITE (LUPRI,*) LINE
             CALL QUIT('Inconsistent symmetry input')
          ELSE IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(LINE(IPOS:),'=')
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
-               WRITE (LUPRI,*) 'Incorrect input for # generators'
-               WRITE (LUPRI,*) LINE
+               WRITE (LUPRI,*) 'Incorrect input for symmetry generators'
                WRITE (LUPRI,*) 'Format is "Generators=?"'
-               CALL QUIT('Incorrect input for # generators')
+               WRITE (LUPRI,*) LINE
+               CALL QUIT('Incorrect input for symmetry generators')
             ELSE
                READ (LINE((IPOS+IPOS2):),*) NSYMOP
             END IF
@@ -6781,9 +6786,9 @@ C
                END DO
             ELSE
                IF (NSYMOP .GT. 3) THEN
-                  WRITE (LUPRI,*) 'Incorrect number of symmetry '//
-     &                 'generating elements'
-                  CALL QUIT('Incorrect number of group generators')
+                  WRITE (LUPRI,*) 'Too many (>3) group generators'
+                  WRITE (LUPRI,*) LINE
+                  CALL QUIT('Too many (>3) group generators')
                END IF
             END IF
             ADDSYM = .FALSE.
@@ -6803,6 +6808,7 @@ C
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
                WRITE (LUPRI,*) 'Incorrect input for integral threshold'
                WRITE (LUPRI,*) 'Format is "Integrals=?"'
+               WRITE (LUPRI,*) LINE
                CALL QUIT('Incorrect input for integral threshold')
             ELSE
                CALL FREFRM(LINE,IPOS+IPOS2,IDUMMY,THRS,'REA',IERR)
@@ -6833,8 +6839,9 @@ C
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(A)') ' Error in the determination of the number '//
-     &     'of atomic types'
+     &     'of different atomic types'
       WRITE (LUPRI,*) "Correct input structure is: Atomtypes=???"
+      WRITE (LUPRI,*) LINE
       CALL QUIT('Error in determining the number of different '//
      &     'atom types')
       END
