@@ -91,7 +91,7 @@ CRIT3=`$GREP "Final * HF energy\: * \-55\.455419779253" $log | wc -l`
 CRIT4=`$GREP "Nuclear repulsion\: * 11\.737180794400" $log | wc -l`
 CRIT5=`$GREP "Electronic energy\: * \-67\.192600573652" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[1]=54
+CTRL[1]=36
 ERROR[1]="STARTING GEOMETRY/ENERGY NOT CORRECT"
 
 # Symmetry input.
