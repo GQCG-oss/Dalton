@@ -404,11 +404,14 @@ C
 C     Initialize /CBIREA/ and call readin
 C
       IF (SFIRST .OR. NEWGEO) THEN
-chj May 09: should we really call REAINI and READIN here now,
+chj May 09: should we really call READIN here now,
 chj   when they always are called in the beginning, also when RNHERM false??
-         RELCAL = .FALSE.
-         TSTINP = .FALSE.
-         CALL REAINI(JPRINT,RELCAL,TSTINP)
+Chj   June 09: maybe READIN may still be needed for NEWGEO, keep it for
+Chj   now for safety, but REAINI should definitely NOT be called, it will
+Chj   reiinitialize variables changed by user under *READIN
+CHJ      RELCAL = .FALSE.
+CHJ      TSTINP = .FALSE.
+CHJ      CALL REAINI(JPRINT,RELCAL,TSTINP)
 C
          IPREAD = JPRINT
          HERMIT = .FALSE.

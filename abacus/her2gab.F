@@ -1608,7 +1608,7 @@ C
      &            '1234','xxxx','xxxx','xxxx','xxxx','xxxx','xxxx'/
       DATA NTYPE /7,6,1/
 C
-#ifdef DEBUG
+#ifdef VAR_DEBUG
       DO I =1,3 
       DO J =1,14
       DO K =1,3

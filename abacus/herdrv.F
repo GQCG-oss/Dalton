@@ -309,7 +309,7 @@ C
 #include <r12int.h>
 #include <codata.h>
 #include <denfit.h>
-C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-11-2002).
+C     Keywords for R12 have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',
@@ -928,15 +928,16 @@ C           R12 calculation requested with Gaussian-type geminals (WK/UniKA/03-2
             R12EOR = .TRUE.
 C           SLATER = .TRUE.
             READ(LUCMD,*) NTOGAM
-	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+            IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussian-damped terms.')
-	    DO NTGAM = 1, NTOGAM
+            DO NTGAM = 1, NTOGAM
               READ(LUCMD,*) GAMAB(NTGAM), GAMAX(NTGAM)
-	    END DO
+            END DO
             GOTO 100
   205    CONTINUE
 C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002).
-            LMULBS = .TRUE.
+            CALL QUIT('ERROR, .AUXBAS has been renamed to .R12AUX'//
+     &        ' and moved to *READIN')
             GOTO 100
   206    CONTINUE
 C           No calculation of 1/r12 integrals (WK/UniKA/04-11-2002).
@@ -1020,7 +1021,7 @@ C           R12 calculation requested with fitted Slater-type geminal (WK/UniKA/
             SLATER = .TRUE.
             READ(LUCMD,*) ALPSTG
             READ(LUCMD,*) NTOGAM
-	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+            IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussians.')
             CALL STGFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
             GOTO 100
@@ -1033,7 +1034,7 @@ C           R12 calculation requested with fitted "r12-times-Slater" geminal (WK
             R12EOR = .TRUE.
             READ(LUCMD,*) ALPSTG
             READ(LUCMD,*) NTOGAM
-	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+            IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussians.')
             CALL RSTGFT(ALPSTG,NTOGAM,GAMAB,GAMAX)
             GOTO 100
@@ -1045,11 +1046,11 @@ C           R12 calculation requested with Gaussian-damped r12 integrals (WK/Uni
             ONEPRP = .TRUE.
             R12EOR = .TRUE.
             READ(LUCMD,*) NTOGAM
-	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+            IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussians.')
-	    DO NTGAM = 1, NTOGAM
+            DO NTGAM = 1, NTOGAM
               READ(LUCMD,*) GAMAB(NTGAM), GAMAX(NTGAM)
-	    END DO
+            END DO
             GOTO 100
   226    CONTINUE
 C           R12 calculation requested with fitted ERFC-type geminal (WK/UniKA/03-29-2005).
@@ -1061,7 +1062,7 @@ C           R12 calculation requested with fitted ERFC-type geminal (WK/UniKA/03
             SLATER = .TRUE.
             READ(LUCMD,*) ALPSTG
             READ(LUCMD,*) NTOGAM
-	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+            IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussians.')
             CALL ERFFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
             GOTO 100
@@ -1074,7 +1075,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             R12EOR = .TRUE.
             READ(LUCMD,*) ALPSTG
             READ(LUCMD,*) NTOGAM
-	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+            IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussians.')
             CALL RRFFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
             GOTO 100
@@ -3779,7 +3780,7 @@ C#endif
       DPTOVL = .FALSE.
       DPTPOT = .FALSE.
       XDDXR3 = .FALSE.
-C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
+C     Initialize R12 logical variables R12CAL (WK/UniKA/04-11-2002).
       R12DIA = .TRUE.
       R12SVD = .FALSE.
       NOAUXB = .FALSE.
@@ -3829,7 +3830,6 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       INTGAD = 0
       COMBSS = .FALSE.
       LAUXBS = .FALSE.
-      LMULBS = .FALSE.
       LOOPDP = .FALSE.
       VCLTHR =  0D0
       SVDTHR =  1D-12
@@ -4761,18 +4761,18 @@ c----& /
        do k=1,i
         if (k.eq.1) then
          if (k.lt.i) then
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),')'
          endif
-	else
+        else
          if (k.lt.i) then
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*x*exp(-x**2*',ggas(k),')'
          endif
         endif
@@ -4826,18 +4826,18 @@ C
        do k=1,i
         if (k.eq.1) then
          if (k.lt.i) then
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),')'
          endif
-	else
+        else
          if (k.lt.i) then
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*exp(-x**2*',ggas(k),')'
          endif
         endif
@@ -4890,18 +4890,18 @@ C
        do k=1,i
         if (k.eq.1) then
          if (k.lt.i) then
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),')'
          endif
-	else
+        else
          if (k.lt.i) then
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*exp(-x**2*',ggas(k),')'
          endif
         endif
@@ -4954,18 +4954,18 @@ C
        do k=1,i
         if (k.eq.1) then
          if (k.lt.i) then
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+           write(LUCFN,'(a,f25.20,a,f25.20,a)') 
      &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),')'
          endif
-	else
+        else
          if (k.lt.i) then
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
          else
-	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+           write(LUCFN,'(f25.20,a,f25.20,a)') 
      &    ggan(k),'*x*exp(-x**2*',ggas(k),')'
          endif
         endif

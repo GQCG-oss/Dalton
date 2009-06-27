@@ -140,18 +140,19 @@ C  /* Deck reainp */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-      PARAMETER ( NTABLE = 11, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 12, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
 C     Parameter MAXPRD in cbirea.h is default for MAXPRI
 C
 #include <cbirea.h>
+#include <r12int.h>
 #include <ccom.h>
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.WRTLIN', '.UNCONT', '.ANGSTR'/
+     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX'/
 C
       ONLYOV = .FALSE.
 C
@@ -169,7 +170,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -197,26 +198,31 @@ C
     5          CONTINUE
                   ONLYOV= .TRUE.
                GO TO 100
- 6             CONTINUE
+    6          CONTINUE
                   READ (LUCMD,*) TOL_SYMADD
                GO TO 100
- 7             CONTINUE 
+    7          CONTINUE 
                   READ (LUCMD,*) LCMMAX, CMSTR, CMEND
                   NCMSTR = NINT(2*CMSTR + 0.01D0)
                   NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
- 8             CONTINUE 
+    8          CONTINUE 
                   READ (LUCMD,*) ZCMVAL
                GO TO 100
- 9             CONTINUE
+    9          CONTINUE
 C ach easier to debug intgrl input. 
                   WRTLIN= .TRUE.
                GO TO 100
    10          CONTINUE
                   UNCONT = .TRUE.
                GO TO 100
- 11            CONTINUE
+   11          CONTINUE
                   ANGS = .TRUE.
+               GO TO 100
+C  .R12AUX (moved here June 0, because LMULBS used in READIN
+C          (renamed from .AUXBAS) /hjaaj
+   12          CONTINUE
+                  LMULBS = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -249,6 +255,10 @@ C ach easier to debug intgrl input.
             WRITE (LUPRI,'(/A,I5)')
      *         ' Maximum number of primitives per integral block :',
      *         MAXPRI
+         END IF
+         IF (LMULBS) THEN
+            WRITE (LUPRI,'(/A)')
+     &         ' Reading auxiliary basis sets from .mol file for R12'
          END IF
          IF (BIGVC) THEN
             WRITE (LUPRI,'(/A)')
@@ -293,6 +303,7 @@ C
 #include <cbirea.h>
 #include <ecpinf.h>
 #include <qm3.h>
+#include <r12int.h>
 C
 C     ccom.h:
 C
@@ -331,6 +342,9 @@ C
       CALL IZERO(ISUBSI,MXQM3)
       NSISY(0) = 0
 C
+C     Initialize LMULBS from r12int.h (done here because used in READIN)
+C
+      LMULBS = .FALSE.
       RETURN
       END
 C  /* Deck readin */
@@ -1098,6 +1112,13 @@ C              Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
                  READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)',ERR=299)
      &           MBSI,Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
               ELSE
+                 IF (MLINE(NMLINE)(1:3) .ne. '   ' .AND.
+     &               MLINE(NMLINE)(4:4) .eq. ' ' ) THEN
+                     WRITE(LUPRI,*)
+     &            'ERROR, multiple basis set, but no .R12AUX specified.'
+                     WRITE(LUPRI,*) MLINE(NMLINE)
+                     CALL QUIT('Error when reading .mol file')
+                 END IF
                  READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)',ERR=299)
      &                Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
                  MBSI = 1
@@ -1112,7 +1133,7 @@ C
 C        Check Multiple Basis Set Identifier, MBSI (WK/UniKA/04-11-2002).
 C
          IF (LMULBS .AND. MBSI .LE. 0) CALL QUIT(
-     &   'READI1: Please provide proper basis set identifier, i.e. > 0')
+     &   'READIN: Please provide proper basis set identifier, i.e. > 0')
          IF (LMULBS .AND. MBSI .LT. MBSIP) CALL QUIT('READI1: '//
      &   'Please provide multiple basis sets in increasing order')
          MBSIP = MBSI
@@ -2095,20 +2116,14 @@ C
          IF (BASIS) THEN
           IF (LMULBS) THEN
 C           Output for multiple basis sets (WK/UniKA/04-11-2002).
-            DO IMULBS = 1, NMULBS
-             DO ILEN = LEN(MULNAM(IMULBS)),1,-1
-              IF (MULNAM(IMULBS)(ILEN:ILEN) .NE. ' ') GO TO 331
-             END DO
- 331         CONTINUE
-             WRITE (LUPRI,'(A,I2,A/)') '  Basis set',IMULBS,
+           DO IMULBS = 1, NMULBS
+            ILEN = LNBLNK(MULNAM(IMULBS))
+            WRITE (LUPRI,'(A,I2,A/)') '  Basis set',IMULBS,
      &      ' refers to the basis "'//MULNAM(IMULBS)(1:ILEN)//
      &      '" from the basis set library.'
-            ENDDO 
+           END DO
           ELSE
-            DO ILEN = LEN(BASNAM),1,-1
-              IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 332
-            END DO
- 332        CONTINUE
+            ILEN = LNBLNK(BASNAM)
             WRITE (LUPRI,'(3A/)') '  Basis set used is "',
      &      BASNAM(1:ILEN),'" from the basis set library.'
           END IF
@@ -3973,7 +3988,7 @@ C*****************************************************************************
       IF(DIRAC) THEN
         COMP(1) = 'L'
         COMP(2) = 'S'
-        IF (MAXREP.GT.0.AND.IPREAD.GT.0) THEN
+        IF (IPREAD.GT.0) THEN
            WRITE (LUPRI,'(A,8I3)')
      *          '  Number of large orbitals in each symmetry: ',
      &          (NCOS(I,1),I=1,MAXREP+1)
@@ -3986,7 +4001,7 @@ C       Output for multiple basis sets. Determine total numbers of orbital-basis
 C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
         COMP(1) = 'M'
         COMP(2) = 'A'
-        IF (MAXREP.GT.0.AND.IPREAD.GT.0) THEN
+        IF (IPREAD.GE.0) THEN
            WRITE (LUPRI,'(/A,8I4)')
      *          '  Number of main orbitals in each symmetry:       ',
      &          (NCOS(I,1),I=1,MAXREP+1)
@@ -6679,7 +6694,10 @@ C
 C
 C     Number of different atom types
 C
-        WRITE(0,'(I5,2A)') mynum,' LINE4: ',LINE
+#ifdef VAR_DEBUG
+C     to test if .mol input transferred OK to slaves
+      write(0,'(I5,2A)') mynum,' LINE4: ',LINE
+#endif
 
       IPOS = INDEX(LINE,'ATO')
       IF (IPOS .NE. 0) THEN
@@ -6958,8 +6976,8 @@ C
 C     
 C     Multiple basis sets used
 C         
+         IPOS = INDEX(BKPLIN,'SET')
          IF (LMULBS) THEN
-            IPOS = INDEX(BKPLIN,'SET')
             IF (IPOS .NE. 0) THEN
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2. GT. 5)) THEN
@@ -6972,6 +6990,11 @@ C
                   READ (BKPLIN((IPOS+IPOS2):),*) MBSI
                END IF
             END IF
+         ELSE IF (IPOS .GT. 0) THEN
+            WRITE(LUPRI,*)
+     &         'ERROR, multiple basis set, but no .R12AUX specified.'
+            WRITE(LUPRI,*) TMPLIN
+            CALL QUIT('Error when reading .mol file')
          END IF
 C     
 C     Read in basis set information
