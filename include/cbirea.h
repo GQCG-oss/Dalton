@@ -6,7 +6,7 @@ C     MAXPRD = default value for MAXPRI
 C
       LOGICAL         BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  ATOMBA,
      &                UNCONT, OLDNRM, WRTLIN, ANGS,   ATOMDF, NODDYDF
-      COMMON /CBIREA/ ZCMVAL,
+      COMMON /CBIREA/ ZCMVAL, TOL_SYMADD,
      &                IPREAD, MAXPRI, LUMLCL, LCMMAX, NCMSTR, NCMEND,
      &                BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  ATOMBA,
      &                UNCONT, OLDNRM, WRTLIN, ANGS,   ATOMDF, NODDYDF

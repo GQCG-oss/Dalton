@@ -44,3 +44,4 @@ C
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
      &                NATNRM, NOHSWR
+C --- end of optinf.h ---
