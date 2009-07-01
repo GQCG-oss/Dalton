@@ -550,9 +550,9 @@ C
       
       CALL QENTER('QM3_NSP')
 
-C From here. 
+C From here.  TODO TODO TODO
 C This is NOT good. In fact very bad. Needs to be fixed. 
-C Neede for f.ex. spin-spin couplings since nucdep is used here for allocation.
+C Needed for f.ex. spin-spin couplings since nucdep is used here for allocation.
 C Can only be done AFTER coordinates for charges and polarizabilities have been defined 
 C since nudep defines no. of coordinates !! Only active when requsted by the user.
 
@@ -560,8 +560,11 @@ C since nudep defines no. of coordinates !! Only active when requsted by the use
 
 C To here
 
-      KDFTNS = 1
-      KWRK1  = KDFTNS + MXQM30
+CHJAaJ-b KDFTNS not used /June 09
+C     KDFTNS = 1
+C     KWRK1  = KDFTNS + MXQM3
+CHJAaJ-e
+      KWRK1  = 1
       LWRK1  = LWRK   - KWRK1 + 1
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3_NSP',-KWRK1,LWRK)

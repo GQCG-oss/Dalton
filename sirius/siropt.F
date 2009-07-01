@@ -116,6 +116,8 @@ C
 #include <itinfo.h>
 #include <gnrinf.h>
 #include <cbihr2.h>
+C------------------------
+#include <dfterg.h>
 C ---
 C
 C *** local:
@@ -217,7 +219,12 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
       KPV    = KDV    + NNASHX
       KFC    = KPV    + NNASHX*NNASHX
       KFV    = KFC    + NNORBT
-      KFQ    = KFV    + NNORBT
+      KSRHYB = KFV    + NNORBT
+      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+         KFQ = KSRHYB + NNORBT
+      ELSE
+         KFQ = KSRHYB
+      END IF
       KFCAC  = KFQ    + NASHT*NORBT
       KCREF  = KFCAC  + NNASHX
       KH2AC  = KCREF  + NCONF
@@ -462,7 +469,7 @@ C
            ! Hessian update gives max a factor 0.1, so 0.01 should be safe
            GRDACC  = MAX(THRGRD,0.01D0*GNORM(3))
          ELSE
-           ! quadratic convergence
+           ! quadratic convergence; IFTHRS .ge. 9 takes care of linear region
            GRDACC  = MAX(THRGRD,GNORM(3)**2)
          END IF
          GRDACC  = GRDACC / NORBT
@@ -490,15 +497,12 @@ C
 C     hj-861130 solvent contribution, ESOLT is saved in /INFOPT/
 C
       IF (SOLVNT) THEN
-         CALL SOLGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
-     *               WRK(KDV),WRK(KGTOT),ESOLT,
-     *               WRK(KERLM),WRK(KWRKG),LWRKG)
-C        CALL SOLGRD(CREF,CMO,INDXCI,DV,
-C    *               G,ESOLT,ERLM,WRK,LFREE)
+         CALL SOLGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     &               WRK(KGTOT),ESOLT,WRK(KERLM),WRK(KWRKG),LWRKG)
+C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (PCM) THEN
-         CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
-     *               WRK(KDV),WRK(KGTOT),ESOLT,
-     *               WRK(KWRKG),LWRKG)
+         CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     %               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
       ELSE
          ESOLT = D0
       END IF
@@ -508,7 +512,7 @@ C----------------
       IF (QM3) THEN
          CALL QM3GRAD(WRK(KCREF),WRK(KCMO),
      &                WRK(KCINDX),WRK(KGTOT),
-     &                EQM3,WRK(KWRKG),LWRKG,IPRINT)
+     &                EQM3,WRK(KWRKG),LWRKG,IPRSOL)
       ELSE
          EQM3=D0
       END IF
@@ -528,29 +532,39 @@ C
       END IF
 C
 C----------------
-C CBN+JK 03.01.06
-C----------------
       EMCSCF = POTNUC + EMY + EACTIV + ESOLT + EQM3
 C----------------
-C CBN+JK 03.01.06
-C----------------
+C
       IF (ITABS .GT. 0) THEN
          WRITE (LUW4,1005) EMCSCF,ITABS
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1005) EMCSCF,ITABS
       ELSE
-         WRITE (LUW4,1010) EMCSCF,ITMAC
-         IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
-      END IF
-      IF (P4FLAG(2)) THEN
-         WRITE (LUW4,1015) POTNUC,EMY,EACTIV
-      END IF
-      IF (P6FLAG(1)) THEN
-         IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
-            WRITE (LUPRI,1015) POTNUC,EMY,EACTIV
+         IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
+            WRITE (LUW4,1011) EMCSCF,ITMAC
+            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1011) EMCSCF,ITMAC
+         ELSE
+            WRITE (LUW4,1010) EMCSCF,ITMAC
+            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
          END IF
       END IF
-      IF (SOLVNT.OR.PCM) WRITE (LUW4,1016) ESOLT
-      IF (QM3) WRITE (LUW4,1017) EQM3
+      IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
+         EMYTMP = EMY - ESRDFTY
+      ELSE
+         EMYTMP = EMY
+      ENDIF
+      IF (P4FLAG(2)) THEN
+         WRITE (LUW4,1015) POTNUC,EMYTMP,EACTIV
+         IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1017) ESRDFTY
+      END IF
+chj   IF (P6FLAG(1)) THEN
+         IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
+            WRITE (LUPRI,1015) POTNUC,EMYTMP,EACTIV
+            IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUPRI,1018) ESRDFTY
+         END IF
+chj   END IF
+      IF (SOLVNT) WRITE (LUW4,1016) ESOLT
+      IF (PCM)    WRITE (LUW4,1019) ESOLT
+      IF (QM3)    WRITE (LUW4,1017) EQM3
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
@@ -558,18 +572,21 @@ C----------------
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T54,
-     *        '(after absorp ',I3,')' )
+     *        '(after absorp',I4,')' )
  1010 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T60,
-     *        '(MACRO  ',I3,')' )
+     *        '(MACRO ',I4,')' )
+ 1011 FORMAT(/' Total MC-SRDFT energy    :',1P,G25.15,T60,
+     *        '(MACRO ',I4,')' )
  1015 FORMAT(/' - Nuclear repulsion      :',1P,G25.15,
      *       /' - Inactive energy        :',1P,G25.15,
      *       /' - Active energy          :',1P,G25.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',1P,G25.15)
  1017 FORMAT( ' - QM/MM solvation ener.  :',1P,G25.15)
+ 1018 FORMAT( ' - SRDFT effective energy :',1P,G25.15)
+ 1019 FORMAT( ' - PCM solvation energy   :',1P,G25.15)
  1020 FORMAT(/' Norm of total gradient   :',F22.12,
      *       /' -    of CI gradient      :',F22.12,
      *       /' -    of orbital gradient :',F22.12)
-
 
       IF (lim_poppri .gt. 0) THEN
          call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
@@ -739,7 +756,8 @@ C        close to convergence, no step control performed
      &         ' ERROR EXIT: gradient norm increasing in local region.',
      &         ' Probable cause: numerical round-off errors'//
      &         ' or too many integrals neglected.'
-            GO TO 750
+c           GO TO 750
+            write(lupri,*) 'Well, let us try anyway ...'
          END IF
          ITBCK = 0
       ELSE
@@ -1037,7 +1055,7 @@ C------------------
          KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
          CALL QM3FCKMO(WRK(KCMO),WRK(KFCSOL),WRK(KWRKG),
-     &                 LWRKG,IPRINT)
+     &                 LWRKG,IPRSOL)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
       ELSE
          KFCSOL = KFC
@@ -1628,10 +1646,18 @@ C        ... we do not know which root will become ISTATE
             ISTACI = ISTATE
          END IF
 C
+         IF (DOMCSRDFT) THEN
+            ADDSRI    = .FALSE.
+            DOCISRDFT = .TRUE.
+         END IF
          CALL CICTL(1,LROOTS,MAXCIT,THRCIX,WRK(KCMO),INDXCI,
      *              WRK(KECI),ICONV,WRK(KICROO),WRK(KW22),LW22)
 C        CALL CICTL(ICICTL,NCROOT,MAXITC,THRCIX,CMO,INDXCI,
 C    *              ECI,ICONV,ICROOT,WRK,LFREE)
+         IF (DOMCSRDFT) THEN
+            ADDSRI    = .TRUE.
+            DOCISRDFT = .FALSE.
+         END IF
          FLAG(15) = LSAV15
          ISTACI   = ISTASV
 C
@@ -1966,7 +1992,7 @@ C
       DIMENSION CMO(*), IBNDX(*), INDXCI(*), WRK(LFREE)
       PARAMETER ( DP1 = 0.1D0, DP5 = 0.5D0,
      *            D0  = 0.0D0, D1  = 1.0D0, D2  = 2.0D0 )
-      PARAMETER ( THDE = 1.D-10 )
+      PARAMETER ( THDE = 1.D-5 )
 #include <dummy.h>
 C
 C Used from common blocks:
@@ -2022,9 +2048,15 @@ C
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
+         IF (DEPRED .NE. 0.0D0) THEN
+           RATIO = DEACT / DEPRED
+           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
+         ELSE
+           IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
+         END IF
          RATIO = D1
          ISTEP = -1
-         IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
       END IF
  1100 FORMAT (/' (SIRSTP) Energy difference;',
      *        /' actual, predicted and ratio:',2F15.10,F12.6)
@@ -2664,9 +2696,8 @@ C     Write Solvent information, if Solvent calculation.
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1))
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,2))
          WRITE (LUSIFC) NSYM, NBAS
-         IPRTMP = 0
          CALL SOLFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,ERLM(1,1),.TRUE.,
-     *               DUMSOL,WRK(KWRK2),LWRK2,IPRTMP)
+     *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
@@ -2680,9 +2711,8 @@ C     Write PCM solvent info if PCM calculation
          LWRK2 = LFREE - KWRK2 + 1
          IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-PCM',KWRK2,LFREE)
 C
-         IPRTMP = 0
          CALL PCMFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,.TRUE.,
-     *               DUMSOL,WRK(KWRK2),LWRK2,IPRTMP)
+     *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
          WRITE (LUSIFC) LAB123,TABLE(10)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
          WRITE (LUSIFC) LAB123,TABLE(9)
@@ -2732,7 +2762,7 @@ C Write qm3 solvent part of the Fock matrix to interface file
          KWRK2 = KUCMO + NORBT*NBAST
          LWRK2 = LFREE - KWRK2 + 1
          IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-QM3',KWRK2,LFREE)
-         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IQM3PR)
+         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
          CALL UPKCMO(CMO,WRK(KUCMO))
          CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
      &             NBAST,NORBT)
