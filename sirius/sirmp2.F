@@ -33,6 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C  FILE: sirius/sirmp2.F
+C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
+C  Reference: H. J. Aa. Jensen, P. Jorgensen, H. Agren, and J. Olsen,
+C             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
+C
 #ifdef OLD_REV_LOG
 !===========================================================================
 !NOTE (961114/hjaaj): if solvent is implemented in MP2 then
@@ -42,21 +47,13 @@ C
 !951130-hjaaj
 !removed IADR2 from comdeck INFMP2; moved calculation of IADR2 to new
 !  subroutine PHADR2, to be called from RESPONSE.
-!corrected dimension for initialization if IADR1.
-!renamed PHADDR to PHADR1
-!950517-hjaaj
-!new call to READMO
-!941115-hjaaj
-!PHPACK: rewritten code completely (old version used 10% of CPU time on
-!  Cray for SOPPA!)
-!941028-hjaaj
-!MP2CTL: JTRLVL = -10 for SOPPA (was JTRLVL = 10)
+!941115-hjaaj - PHPACK: rewritten code completely
+!   (old version used 10% of CPU time on Cray for SOPPA!)
 !941005-hjaaj
 !FCKIFR: new routine for "not frozen" index arrays
 !MP2FCK: use NRHF instead of IFRMP2 so MP2SET can be called after FCKFRO
 !--- Major overhaul of SOPPA code and other code, in particular FCKFRO.
-!December 1993-mjp (Martin J. Packer)
-!--- Revised module for SOPPA
+!December 1993-mjp (Martin J. Packer) --- Revised module for SOPPA
 !===========================================================================
 #endif
 C  /* Deck mp2inp */
@@ -65,7 +62,7 @@ C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007, Hans Joergen Aa. Jensen
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 3)
+      PARAMETER (NTABLE = 5)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -80,13 +77,13 @@ C
 #include <inforb.h>
 #include <infmp2.h>
 C
-      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV '/
+      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','       '/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 CMAERKE 900918: always NEWORB in this version.
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
 C
-      WORD1 = WORD
+      WORD1  = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
@@ -95,7 +92,7 @@ C
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102,103), II
+                  GO TO (101,102,103,104,105), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -131,6 +128,12 @@ C *** Option 3 >NO OV <  Do not add occ-virt mp2 part to density matrix
   103 MP2_NO_OV = .TRUE.
       GO TO 100
 C
+C *** Option 4 >TDASOP<  Diagonal 2. order 2p-2h correction in SOPPA
+  104 TDAMP2 = .TRUE.
+      GO TO 100
+  105 CONTINUE
+      GO TO 100
+C
  2000 CONTINUE
       IF (MP2_NO_OV) WRITE(LUPRI,'(/A)')
      &  ' Occ-virt block of MP2 density matrix ignored'
@@ -141,14 +144,14 @@ C  /* Deck mp2ctl */
 C
 C MP2 routines written by Poul Joergensen and Hans Joergen Aa. Jensen
 C June 1987.
-C MODIFIED OCT 1989 TO INCLUDE FROZEN ORBITALS.
+C Modified Oct 1989 to include frozen orbitals.
 C 011293 mjp Correlation coefficients saved to LUSIFC if SOPPA follows.
 C
-C PURPOSE:
-C  1)  CALCULATE ONE ELECTRON DENSITY MATRIX CORRECT THROUGH
-C      SECOND ORDER
-C  1A) CALCULATE SECOND ORDER ENERGY
-C  2)  DETERMINE THE NATURAL ORBITALS
+C PURPOSES:
+C 1)  CALCULATE ONE ELECTRON DENSITY MATRIX CORRECT THROUGH SECOND ORDER
+C 1A) CALCULATE SECOND ORDER ENERGY
+C 2)  DETERMINE THE NATURAL ORBITALS
+C 3)  SAVE INFORMATION FOR SOPPA
 C
 #include <implicit.h>
 C
@@ -344,7 +347,7 @@ C
             WRITE (LUPRI,'(/A,8I5)')
      *      ' MP2 frozen orbitals per symmetry :',(NFRMP2(I),I=1,NSYM)
             WRITE (LUPRI,'(/A)')
-     *      ' Total energy and NO:s calculated with frozen orbitals.'
+     *      " Total energy and NO's calculated with frozen orbitals."
          END IF
          IF (.NOT.DODFT) THEN
             WRITE (LUPRI,'(/,3(/A,F25.10))')
@@ -354,7 +357,7 @@ C
          ELSE
             WRITE (LUPRI,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
      *        (/A,F25.10))')
-     *       ' Kohn--Sham contribution   :',EMY,
+     *       ' Kohn-Sham contribution    :',EMY,
      *       ' + scaled PT2 contribution :',EMP2,' *',WDFTMP,
      *       ' = ',EMP2*WDFTMP,
      *       ' = KS-PT2 energy           :',EMY+WDFTMP*EMP2
@@ -762,10 +765,10 @@ C
 C
       IF ( ABS(-ELERMV+ELERCV).GT.TOLELE ) THEN
          NWARN = NWARN + 1
-         WRITE(LUPRI,'(/A,/A,/A,F12.6,A)') ' *******WARNING*********',
+         WRITE(LUPRI,'(/A/A,F12.6,A)') ' *******WARNING*********'//
      *   ' MP2 CALCULATION CARRIED OUT INCORRECTLY ',
      *   ' TRACE OF ONE ELECTRON DENSITY MATRIX GIVE ',
-     *   (-ELERMV+ELERCV),' ELECTRONS  IN ADDITION TO SPECIFIED NUMBER'
+     *   (-ELERMV+ELERCV),' ELECTRONS IN ADDITION TO SPECIFIED NUMBER'
          I = 1
       ELSE
          I = 0
@@ -787,9 +790,9 @@ C
      *      ' MP2 move',ELERCV,' electrons to unoccupied HF orbitals'
          IF (IPRMP2 .GE. 6 .OR. I .EQ. 1)
      &      WRITE(LUPRI,'(/A,F11.6,A/A,1P,D10.2,A)')
-     *      ' MP2 MOVE',ELERMV,' ELECTRONS FROM OCCUPIED HF ORBITALS',
-     *      ' MP2 CHANGE IN TRACE OF ONE ELECTRON DENSITY MATRIX :',
-     *      -ELERMV+ELERCV,' ELECTRONS.'
+     *      ' MP2 move',ELERMV,' electrons from occupied HF orbitals',
+     *      ' MP2 change in trace of one electron density matrix :',
+     *      -ELERMV+ELERCV,' electrons.'
       END IF
 C
       CALL QEXIT('MP2FAC')
@@ -912,9 +915,10 @@ C
 200   CONTINUE
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          NWARN = NWARN + 1
-         WRITE(LUW4,'(/A/A/A)')
-     &   ' *******WARNING from MP2*********',
+         WRITE(LUW4,'(/A/A)')
+     &   ' *******WARNING from MP2*********'//
      &   ' This molecule is probably not suitable for MP2',
+     &   ' *******WARNING from MP2*********'//
      &   ' because E(LUMO) - E(HOMO) small or negative.'
          I = 1
       ELSE
@@ -932,12 +936,12 @@ C
      *   ' MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS',
      *   ' ABS SUM OF OFF-DIAGONAL FOCK MATRIX ELEMENTS ARE :',VALCON,
      *   ' The Fock matrix :'
-         CALL OUTPKB(FC(1),NORB,NSYM,1,LUW4)
+         CALL OUTPKB(FC,NORB,NSYM,1,LUW4)
          CALL QTRACE(LUW4)
-         CALL QUIT('MP2FCK: MO:S ARE NOT CANONICAL HF ORBITALS')
+         CALL QUIT("MP2FCK: MO'S ARE NOT CANONICAL HF ORBITALS")
       ELSE IF (IPRMP2 .GE. 2) THEN
          WRITE(LUW4,'(/A,1P,D10.2)')
-     *      ' ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :',VALCON
+     *      ' ABS SUM of off-diagonal Fock matrix elements are :',VALCON
       END IF
       CALL QEXIT('MP2FCK')
       RETURN
@@ -979,19 +983,22 @@ C
       CALL GETDAT(LAB123(2),LAB123(3))
 C     ... place date in LAB123(2) and time in LAB123(3)
 C
-C Open the file LUSIFC (we must write to the end so check it is open!
-      CALL GPOPEN(LUSIFC,FNSIFC,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
+C Open the FNSIFC file
+      IF (LUSIFC .LT. 0) CALL GPOPEN(LUSIFC,FNSIFC,
+     &   'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
+C Append MP2->SOPPA info at the end of the file
+      REWIND (LUSIFC)
       CALL MOLLAB(LABEOD,LUSIFC,LUERR)
       BACKSPACE (LUSIFC)
+C Write "MP2INFO " label
       WRITE (LUSIFC) LAB123,LMP2INFO
 C Write the correlation coefficients
       CALL WRITT (LUSIFC,NPHTOT(1),COEMP2)
-C
-C Write the second order one-density to LUSIFC
-C
+C Write the second order one-electron density
       CALL WRITT (LUSIFC,N2ORBX,DONE)
+C Write "End Of DATA" label
       WRITE (LUSIFC) LAB123,LABEOD
+C Close the FNSIFC file
       CALL GPCLOSE(LUSIFC,'KEEP')
       RETURN
       END
@@ -1035,7 +1042,7 @@ C
 #include <infmp2.h>
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C     
-      LOGICAL CHOLE,DHOLE
+      LOGICAL CHOLE,DHOLE, L_TDA_MP2
 #include <line.h>
       DIMENSION NEEDTP(6)
       DATA NEEDTP /0,1,1,1,1,0/
@@ -1053,6 +1060,19 @@ C
          CALL MEMGET('REAL',KH2M1 ,0,WRK,KFREE,LFREE)
       END IF
       CALL DZERO(H2D,N2ORBX)
+      L_TDA_MP2 = TDAMP2 .AND. IPLOW .EQ. 1
+      IF (L_TDA_MP2) THEN
+         NEEDTP(1) = 1
+         NEEDTP(6) = 1
+         CALL MEMGET('REAL',KJ,N2ORBX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KK,N2ORBX,WRK,KFREE,LFREE)
+         CALL DZERO(WRK(KJ),N2ORBX)
+         CALL DZERO(WRK(KK),N2ORBX)
+!        write(0,*) 'hjaaj MP2MUL: allocated RJ and RK, KFREE',KFREE
+      ELSE
+         NEEDTP(1) = 0
+         NEEDTP(6) = 0
+      END IF
 C
 C ****************************************************************
 C     Loop over Mulliken distributions allowed in NEEDTP(6)
@@ -1068,6 +1088,18 @@ C
 C        Check if we need this distribution:
 C        HOLE-HOLE AND PARTICLE-PARTICLE  DISTRIBUTIONS NOT NEEDED
 C
+      IF (L_TDA_MP2) THEN
+         IF (IC.EQ.ID) THEN
+            DO IA = 1,NORBT
+               WRK(KJ+(IC-1)*NORBT+(IA-1)) = H2M(IA,IA)
+               WRK(KJ+(IA-1)*NORBT+(IC-1)) = H2M(IA,IA)
+            END DO
+            WRK(KK+(IC-1)*NORBT+(IC-1)) = H2M(IC,IC)
+         ELSE
+            WRK(KK+(IC-1)*NORBT+(ID-1)) = H2M(IC,ID)
+            WRK(KK+(ID-1)*NORBT+(IC-1)) = H2M(IC,ID)
+         END IF
+      END IF
       IF ( CHOLE .EQV. DHOLE ) GO TO 100
 C
          IF (DHOLE) THEN
@@ -1129,6 +1161,15 @@ C
 C     arrive at 800 when finished with all Mulliken distributions
 C
   800 CONTINUE
+C
+      IF (L_TDA_MP2) THEN
+!        write(0,*) 'hjaaj MP2MUL: writing RJ and RK to LUJK=99'
+         LUJK = 99
+         REWIND (LUJK)
+         CALL WRITT (LUJK,N2ORBX,WRK(KJ))
+         CALL WRITT (LUJK,N2ORBX,WRK(KK))
+         REWIND (LUJK)
+      END IF
 C
       CALL MEMREL('MP2MUL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('MP2MUL')

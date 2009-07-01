@@ -239,7 +239,7 @@ C   INFOPT : EPOT,?
 C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
-C   INFMP2 : NFRMP2(*)
+C   INFMP2 : NFRMP2(*), ...
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
 C
@@ -469,6 +469,12 @@ C
       NELMX1 = 0
       NELMN3 = 0
       NELMX3 = 0
+C
+C********** Default values section MP2INP *****
+C
+      TDAMP2 = .FALSE.
+      SCSMP2 = .FALSE.
+      SOSMP2 = .FALSE.
 C
 C
 C********** Default values section OPTINP *****
@@ -4745,7 +4751,8 @@ C          to get here unless someone modifies SIRIUS incorrectly
      *      '      Active-active rotations included by user.'
          END IF
       ELSE IF ( DOMP2 ) THEN
-         WRITE (IWUNIT,1050) ' Moller-Plesset PT2 calculation.'
+         WRITE (IWUNIT,1050)
+     &      ' MP2, Moller-Plesset second-order calculation.'
       ELSE IF ( DOCCSD) THEN
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
       ELSE IF ( DORHF ) THEN
@@ -4803,7 +4810,14 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IRUN = IRUN + 1
          END IF
          IF (DOMP2 .AND. IRUN .LT. NUMRUN) THEN
-            WRITE(IWUNIT,1051) 'an MP2 calculation '
+            IF (SCSMP2) THEN
+               WRITE(IWUNIT,1051) 'a SCS-MP2 calculation'
+            ELSE IF (SOSMP2) THEN
+               WRITE(IWUNIT,1051) 'a SOS-MP2 calculation'
+            ELSE
+               WRITE(IWUNIT,1051) 'an MP2 calculation'
+            END IF
+            IF (TDAMP2) WRITE(IWUNIT,1051) '   (saving for TDA-SOPPA)'
             IRUN = IRUN + 1
          END IF
          IF (FCVORB) THEN
