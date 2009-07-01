@@ -1021,13 +1021,12 @@ C
      &               WRK(KERLM),.TRUE.,DUMSOL,
      &               WRK(KWRKG),LWRKG,IPRSOL)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
-      ELSEIF (PCM) THEN
+      ELSE IF (PCM) THEN
          KFCSOL = KWRKG
          KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
          CALL PCMFCK(DUMMY,DUMMY,WRK(KFCSOL),WRK(KCMO),
-     &               .TRUE.,DUMSOL,
-     &               WRK(KWRKG),LWRKG,IPRSOL)
+     &               .TRUE.,DUMSOL, WRK(KWRKG),LWRKG,IPRSOL)
          CALL DSCAL(NNORBT,-1.0D0,WRK(KFCSOL),1)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
 C------------------
@@ -2657,7 +2656,7 @@ C     Write Solvent information, if Solvent calculation.
          KTMAT = KWRK1
          KWRK2 = KTMAT + NNORBT
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-2',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-SOLVENT',KWRK2,LFREE)
          WRITE (LUSIFC) LAB123,TABLE(6)
          WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
          WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
@@ -2679,7 +2678,7 @@ C     Write PCM solvent info if PCM calculation
          KPOT  = KDVAO + N2BASX
          KWRK2 = KPOT  + NTS
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-3',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-PCM',KWRK2,LFREE)
 C
          IPRTMP = 0
          CALL PCMFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,.TRUE.,
@@ -2732,7 +2731,7 @@ C Write qm3 solvent part of the Fock matrix to interface file
          KUCMO = KFSOLAO + NNBASX
          KWRK2 = KUCMO + NORBT*NBAST
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-2',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-QM3',KWRK2,LFREE)
          CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IQM3PR)
          CALL UPKCMO(CMO,WRK(KUCMO))
          CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
