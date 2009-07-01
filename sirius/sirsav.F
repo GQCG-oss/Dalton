@@ -1,3 +1,8 @@
+!hjaaj 17. april 2006: husk at implementere ny ide til RSTEP,
+! nemlig ROSTEP = max(i) (sum(j) xkap(j,i)**2 ) i stedet for
+!        ROSTEP = 0.5 sum(j,i) xkap(j,i)**2
+! dette burde være OK, jvf. erfaring med Roothaan og Lea/Stinne/Jeppe
+!---
 C
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -199,10 +204,10 @@ C     ... if (neosave or nrsave) then
          IF (ICTL .EQ. 1) THEN
             CALL WRITT(LUIT1,NNRED4,REDL(1))
          ELSE
-Chj-aug99:  NR, we must create REDL matrix in WRK(KREDL)
+Chj-aug99:  NR; we must therefore create REDL matrix in WRK(KREDL)
 C           so backup to NEO and use in UPDATE is possible
-C           REDL(1:MAXRL) = REDG
-C           REDL(MAXRL+1:) = REDH
+C           REDG = REDL(1:MAXRL)
+C           REDH = REDL(MAXRL+1:)
 C
             KREDL = 1
             KEND  = KREDL + NREDL*(NREDL+1)/2
@@ -212,7 +217,7 @@ C
 Chj:        redl(1,1) = 0
             NREDH = NREDL - 1
             IREDH = MAXRL
-            IREDL = 1
+            IREDL = KREDL
             DO I = 1, NREDH
                WRK(IREDL + 1) = REDL(I)
 Chj:           redl(1+i,1) = redg(i)
