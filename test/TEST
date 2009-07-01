@@ -672,5 +672,6 @@ fi
 myprint "$passedall"
 myprint "$problems"
 rm "$tmpfile"
+myprint "date and time         : `date`"
 
 exit 0
