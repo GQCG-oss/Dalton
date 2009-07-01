@@ -53,7 +53,7 @@ LDA
 .DIPLEN 
 .ROOTS
 2 2 2 2
-*END OF INPUT
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

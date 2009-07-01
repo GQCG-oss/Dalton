@@ -68,7 +68,7 @@ cat > energy_restart__1.dal <<'%EOF%'
 *OPTIMIZATION
 .THRESH
 2.0D-3
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 cat > energy_restart__2.dal <<'%EOF%'
@@ -88,7 +88,7 @@ cat > energy_restart__2.dal <<'%EOF%'
  8
 .CAS SPACE
  4 2 2 0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
