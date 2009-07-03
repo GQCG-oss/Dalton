@@ -1275,7 +1275,7 @@ C
             KWO    = KODIAG + NWOPT
             REWIND LUIT2
 C           Find label ORBDIAG, for diagonal of orbital Hessian.
-            CALL MOLLAB(LABIT2(3),LUIT2,LUERR)
+            CALL MOLLAB(LABIT2(3),LUIT2,lupri)
             CALL READT(LUIT2,NWOPT,WRK(KODIAG))
 C
 C-----------------------
@@ -1285,7 +1285,7 @@ C----------------------
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------
-               CALL MOLLAB(LABIT2(4),LUIT2,LUERR)
+               CALL MOLLAB(LABIT2(4),LUIT2,lupri)
                IF (NCONF .GT. 1) READ (LUIT2)
                CALL READT (LUIT2,NWOPT,WRK(KWO))
                CALL DAXPY (NWOPT,D1,WRK(KWO),1,WRK(KODIAG),1)
@@ -2003,7 +2003,7 @@ C           ... if orbital trial vectors, test if available
                   OTRIAL = .FALSE.
    46          CONTINUE
                REWIND LUIT1
-               CALL MOLLAB(LABIT1,LUIT1,LUERR)
+               CALL MOLLAB(LABIT1,LUIT1,lupri)
             END IF
          ELSE
             NCVEC = 0

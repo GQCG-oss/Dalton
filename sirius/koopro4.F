@@ -595,14 +595,13 @@ C
 
       if (DOCI) then
       REWIND LUIT1
-      CALL MOLLAB('ENERGIES',LUIT1,LUERR)
+      CALL MOLLAB('ENERGIES',LUIT1,lupri)
       READ (LUIT1) (escf,I=1,ISTNEVCI)
       else
       escf=emcscf
       endif
 
-      write (lupri,*)
-      write (lupri,'(1x,a,i7)')   'NORB   =',norbt
+      write (lupri,'(/1x,a,i7)')  'NORB   =',norbt
       write (lupri,'(1x,a,i7)')   'NOCB   =',NOCB
       write (lupri,'(1x,a,i7)')   'NCF    =',ncf
       write (lupri,'(1x,a,i7)')   'NTOTHP =',ntothp

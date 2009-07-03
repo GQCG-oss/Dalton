@@ -340,7 +340,7 @@ C
   100 CONTINUE
 C
       REWIND LUIT1
-      CALL MOLLAB('STARTVEC',LUIT1,LUERR)
+      CALL MOLLAB('STARTVEC',LUIT1,lupri)
       REWIND LUIT3
       MXCSIM = 2*MAXSIM - 1
 C     reuse space for orthonormalization,
@@ -507,7 +507,7 @@ C
          LW3   = LWRK  - KW3
 C
          REWIND LUIT1
-         CALL MOLLAB('STARTVEC',LUIT1,LUERR)
+         CALL MOLLAB('STARTVEC',LUIT1,lupri)
       DO 900 JSTATE = 1,NCROOT
          CALL READT(LUIT1,NCONF,WRK(KCVEC))
 C
@@ -1964,7 +1964,7 @@ C
 C     save ECI on LUIT1
 C
       REWIND LUIT1
-      CALL MOLLAB('NEWORB  ',LUIT1,LUERR)
+      CALL MOLLAB('NEWORB  ',LUIT1,lupri)
       READ (LUIT1)
 C     ... skip "new orbitals", and write energies label:
 C
@@ -2127,7 +2127,7 @@ C
          ELSE
 C           ... some, but not all, requested CI trial vectors available
             REWIND LUIT1
-            CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+            CALL MOLLAB(TABLE(3),LUIT1,lupri)
             DO 161 I = 1,MCSIM
                READ (LUIT1)
   161       CONTINUE
@@ -2335,7 +2335,7 @@ C
       ELSE
 C        ... some, but not all, requested CI trial vectors available
          REWIND LUIT1
-         CALL MOLLAB(LBLIT1(4),LUIT1,LUERR)
+         CALL MOLLAB(LBLIT1(4),LUIT1,lupri)
          DO 161 I = 1,MCSIM
             READ (LUIT1)
   161    CONTINUE
@@ -2522,7 +2522,7 @@ C
       LWRK1 = LFREE + 1 - KWRK1
 C
       REWIND LUIT1
-      CALL MOLLAB('STARTVEC ',LUIT1,LUERR)
+      CALL MOLLAB('STARTVEC ',LUIT1,lupri)
       DO 100 I = 1, (ISTACI-1)
          READ (LUIT1)
   100 CONTINUE

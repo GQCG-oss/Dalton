@@ -583,7 +583,11 @@ C *** Write diagonal of CI matrix on LUIT2 (label: 'CIDIAG2 ' )
 C
          NC4 = MAX(4,NCONF)
          REWIND LUIT2
-         IF( FNDLAB(TABLE(4),LUIT2) ) BACKSPACE LUIT2
+         IF( FNDLAB(TABLE(4),LUIT2) ) THEN
+            BACKSPACE LUIT2
+         ELSE
+            REWIND LUIT2
+         END IF
          WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(3)
          CALL WRITT(LUIT2,NC4,DIAGC)
          WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(4)

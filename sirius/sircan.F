@@ -175,7 +175,7 @@ C
      *             WRK(KCINDX),CREF,NCONF)
 C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
       IF (NASHT .EQ. 1 .OR. (.NOT.ONLYFD .AND. NASHT.GT.1)) THEN
-         CALL MOLLAB('NEWORB  ',LUIT1,LUERR)
+         CALL MOLLAB('NEWORB  ',LUIT1,lupri)
          READ (LUIT1)
          CALL GETDAT(LAB123(2),LAB123(3))
          WRITE (LUIT1) LAB123(1),LAB123(2),'(SIRCAN)','NATOCCAC'
@@ -217,7 +217,7 @@ C        get the CREF for NO's calculated by CICTL
 C
          IF (FLAG(47)) THEN
             REWIND LUIT1
-            CALL MOLLAB('STARTVEC',LUIT1,LUERR)
+            CALL MOLLAB('STARTVEC',LUIT1,lupri)
             DO 980 I = 1,(ISTATE-1)
                READ (LUIT1)
   980       CONTINUE

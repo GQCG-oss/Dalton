@@ -473,7 +473,7 @@ C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,'OLD',' ',
      &                               'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSIFC)
-      CALL MOLLAB('PCMINFO ',LUSIFC,LUERR)
+      CALL MOLLAB('PCMINFO ',LUSIFC,lupri)
       READ (LUSIFC) MTS
       IF (MTS .NE. NTS) THEN
          WRITE (LUPRI,'(/A)') 

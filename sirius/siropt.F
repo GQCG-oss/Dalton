@@ -1906,7 +1906,7 @@ C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CREF,CMO,AOCC,
 C    *               INDXCI,WRK,KFRSAV,LFRSAV)
 C
          REWIND (LUIT1)
-         CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+         CALL MOLLAB(TABLE(3),LUIT1,lupri)
 C        search for "STARTVEC"
          WRITE (LBLINF(1),'(2I4)') NCVECS,JSTA
          LBLINF(2) = 'CNOSAVE '
@@ -2165,7 +2165,7 @@ C
 C     Recover old orbitals, IBNDX and REDL from previous macro iteration
 C
       REWIND LUIT1
-      CALL MOLLAB(TABLE(1),LUIT1,LUERR)
+      CALL MOLLAB(TABLE(1),LUIT1,lupri)
       CALL READT(LUIT1,NCMOT,CMO)
       CALL MOLLB2 (TABLE(2),RTNLBL,LUIT1,LUERR)
       IF (RTNLBL(2) .NE. 'NEOSAVE ') THEN
@@ -2186,7 +2186,7 @@ C        this should never occur ...
          CALL QTRACE(LUERR)
          CALL QUIT('ERROR (SIRSTP) unexpected value of NREDL on LUIT1')
       END IF
-      CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+      CALL MOLLAB(TABLE(3),LUIT1,lupri)
       CALL READT(LUIT1,NNREDL,WRK(KREDL))
 C
 C
@@ -2659,7 +2659,7 @@ C        ... CIDIAG1 is only used if CASGUGA
             REWIND LUIT2
          END IF
 C
-         CALL MOLLAB(TABLE(2),LUIT2,LUERR)
+         CALL MOLLAB(TABLE(2),LUIT2,lupri)
          CALL READT (LUIT2,NCONF,WRK(KWRK1))
          WRITE (LUSIFC) LAB123,TABLE(2)
          CALL WRITT (LUSIFC,NC4,WRK(KWRK1))
@@ -2667,7 +2667,7 @@ C
 C
       IF (NWOPT .GT. 0 .AND. ORBHES) THEN
          REWIND LUIT2
-         CALL MOLLAB(TABLE(3),LUIT2,LUERR)
+         CALL MOLLAB(TABLE(3),LUIT2,lupri)
          CALL READT (LUIT2,NWOPT,WRK(KWRK1))
          WRITE (LUSIFC) LAB123,TABLE(3)
          CALL WRITT (LUSIFC,NW4,WRK(KWRK1))

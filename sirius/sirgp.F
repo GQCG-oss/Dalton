@@ -651,7 +651,9 @@ C
             BACKSPACE LUIT1
          ELSE
             REWIND LUIT1
-            IF (FNDLAB(LABTBL(2),LUIT1)) BACKSPACE LUIT1
+            IF (FNDLAB(LABTBL(2),LUIT1)) THEN
+               BACKSPACE LUIT1
+            END IF
          END IF
       END IF
       WRITE (LUIT1) MOLBL(1),MOLBL(2),LABEL3,LABTBL(1)

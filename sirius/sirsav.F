@@ -616,7 +616,7 @@ C
          IF (NCONF .GT. 1) THEN
             REWIND (LUIT1)
 C           search for "STARTVEC"
-            CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+            CALL MOLLAB(TABLE(3),LUIT1,lupri)
             DO 9010 I = 1,NRS
                JCVECS = KCVECS + (I-1)*NCONF
                CALL READT(LUIT1,NCONF,WRK(JCVECS))
@@ -643,7 +643,7 @@ C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CVECS,CMO,AOCC,
 C    *               INDXCI,WRK,KFREE,LFREE)
 C
          REWIND (LUIT1)
-         CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+         CALL MOLLAB(TABLE(3),LUIT1,lupri)
 C        search for "STARTVEC"
          RSTKEY = 'CNOSAVE '
          BACKSPACE LUIT1

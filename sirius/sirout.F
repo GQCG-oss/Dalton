@@ -440,7 +440,7 @@ C
      *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *         ' will try "OLDORB "'
             REWIND LUIT1
-            CALL MOLLAB(TABLE(2),LUIT1,LUW4)
+            CALL MOLLAB(TABLE(2),LUIT1,lupri)
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
        IF (CICALC .AND. DOCINO) THEN
@@ -483,7 +483,7 @@ C
      *            ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *            ' will try "OLDORB "'
                REWIND LUIT1
-               CALL MOLLAB(TABLE(2),LUIT1,LUERR)
+               CALL MOLLAB(TABLE(2),LUIT1,lupri)
             END IF
             CALL READT(LUIT1,NCMOT,WRK(KCMO))
          ELSE
@@ -608,7 +608,7 @@ C
      *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *         ' will try "OLDORB "'
             REWIND LUIT1
-            CALL MOLLAB(TABLE(2),LUIT1,LUERR)
+            CALL MOLLAB(TABLE(2),LUIT1,lupri)
             WRITE (LUPRI,'(/A/)') ' "OLDORB " orbitals punched.'
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
