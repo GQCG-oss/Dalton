@@ -649,6 +649,7 @@ C
      &    '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
         END IF
       END IF
+      IF (LNBLNK(BASDIR) .LT. 1) BASDIR = './:'
 #if defined(VAR_MPI)
 C
 C     Transfer LMWORK and BASDIR to slaves
