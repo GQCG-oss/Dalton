@@ -1403,6 +1403,7 @@ C
       LUOVER = -9046
       LUNDPF = -9047
       LUSRINT =-9048
+      LUNMPF = -9049
 C
 C     /R12INT/ (WK/UniKA/26-11-2002).
 C
