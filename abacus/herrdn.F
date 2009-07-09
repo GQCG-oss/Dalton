@@ -4288,6 +4288,21 @@ C            small molecules, otherwise just a lot of lines.
       IPCMN=0
       NATOMS = 0
       KMASS  = NCOOR + 1
+
+C
+C        MIDAS Interface, write out input coordinates for midas.sym
+C        analysis
+C
+      IF (.TRUE.) THEN 
+         LUCOOR = -1
+         CALL GPOPEN(LUCOOR,'midasifc.cartrot','NEW', 
+     &               ' ','FORMATTED',IDUMMY,.FALSE.)
+         CALL PRIGEOLU(LUCOOR,CORD)
+         CALL GPCLOSE(LUCOOR,'KEEP')
+      ENDIF 
+C
+C
+C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)

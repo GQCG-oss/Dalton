@@ -1996,7 +1996,7 @@ C
 #include <ccinftap.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
-      CHARACTER NAME*6, SPDCAR*1, LAPRPC*8
+      CHARACTER NAME*6, SPDCAR*1, LAPRPC*8, mlab1*8, mlab2*8, mlab3*8
       DIMENSION PRAPOL(3,3), PRVPOL(6), CSTRA(*), SCTRA(*), POLDD(*),
      *          POLDL(*), POLDA(*), POLVL(*), POLVV(*)
       DIMENSION WORK(LWORK)
@@ -3164,6 +3164,40 @@ c    &     (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
          TEXT = 'Total non-diagonalized EFG Tensor'
          CALL EFGPRI(ELNQC,TEXT)
       END IF
+cmbh print EFG tensor for midas here
+      do iatom=1,nucdep
+          laname=NAMDEP(iatom)//'  '
+          call stripblanks(laname)
+          call wripro(ELNQC(1,1,IATOM),"SCF/DFT   ",502,
+     *            ' XEFGCAR',' XEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(1,2,IATOM),"SCF/DFT   ",502,
+     *            ' XEFGCAR',' YEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(1,3,IATOM),"SCF/DFT   ",502,
+     *            ' XEFGCAR',' ZEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(2,1,IATOM),"SCF/DFT   ",502,
+     *            ' YEFGCAR',' XEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(2,2,IATOM),"SCF/DFT   ",502,
+     *            ' YEFGCAR',' YEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(2,3,IATOM),"SCF/DFT   ",502,
+     *            ' YEFGCAR',' ZEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(3,1,IATOM),"SCF/DFT   ",502,
+     *            ' ZEFGCAR',' XEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(3,2,IATOM),"SCF/DFT   ",502,
+     *            ' ZEFGCAR',' YEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(3,3,IATOM),"SCF/DFT   ",502,
+     *            ' ZEFGCAR',' ZEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      enddo
+
+cmbh end
 C
 C     Diagonalize each atomic EFG tensor
 C
@@ -3177,36 +3211,6 @@ C
               IJ = IJ + 1
  30         CONTINUE
  20       CONTINUE
-cmbh print EFG tensor for midas here
-          inotblank=0
-          laname='        '
-          do imbh=1,6
-             if(NAMDEP(IATOM)(imbh:imbh) .ne. ' ') then
-                inotblank=inotblank+1
-                laname(inotblank:inotblank)=
-     *          NAMDEP(IATOM)(imbh:imbh)
-             endif
-          enddo
-          call wripro(PVAL(1),"SCF/DFT   ",1,
-     *            laname,'EFG_XX  ','EFG_XX  ','EFG_XX  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(2),"SCF/DFT   ",1,
-     *            laname,'EFG_XY  ','EFG_XY  ','EFG_XY  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(3),"SCF/DFT   ",1,
-     *            laname,'EFG_YY  ','EFG_YY  ','EFG_YY  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(4),"SCF/DFT   ",1,
-     *            laname,'EFG_XZ  ','EFG_XZ  ','EFG_XZ  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(5),"SCF/DFT   ",1,
-     *            laname,'EFG_YZ  ','EFG_YZ  ','EFG_YZ  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(6),"SCF/DFT   ",1,
-     *            laname,'EFG_ZZ  ','EFG_ZZ  ','EFG_ZZ  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-
-cmbh end
           CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,WRK,IWRK)
           DIANQC(1,IATOM) = PVAL(1)
           DIANQC(2,IATOM) = PVAL(3)
@@ -3263,29 +3267,6 @@ C
      &              NAMDEP(NATOM),MASS,'Vz =     ',
      &              DIANQC(3,NATOM),DIANQC(3,NATOM)*FACT,
      &              DIANQC(3,NATOM)*FACT2
-cmbh here: Vx,Vy,Vz terms to be written to PROP file here
-c need to do something about the atom name for midas:
-c move all chars to the left and move blanks between the
-c chars.
-                    inotblank=0
-                    laname='        '
-                    do imbh=1,6
-                       if(NAMDEP(NATOM)(imbh:imbh) .ne. ' ') then
-                          inotblank=inotblank+1
-                          laname(inotblank:inotblank)=
-     *                       NAMDEP(NATOM)(imbh:imbh)
-                       endif
-                    enddo
-                    call wripro(DIANQC(1,NATOM),"SCF/DFT   ",1,
-     *                 laname,'XEFGDIA ','XEFGDIA ','XEFGDIA ',
-     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
-                    call wripro(DIANQC(2,NATOM),"SCF/DFT   ",1,
-     *                 laname,'YEFGDIA ','YEFGDIA ','YEFGDIA ',
-     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
-                    call wripro(DIANQC(3,NATOM),"SCF/DFT   ",1,
-     *                 laname,'ZEFGDIA ','ZEFGDIA ','ZEFGDIA ',
-     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
-cmbh: done!
                    END IF
                    IZ = IDAMAX(3,DIANQC(1,NATOM),1)
                    CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)

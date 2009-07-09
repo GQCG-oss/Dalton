@@ -1499,6 +1499,9 @@ C  /* Deck runopt */
       DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
       DIMENSION STPMAT(25,MXRCRD), HESOLD(MXRCRD,MXRCRD)
       DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
+C emg
+      CHARACTER LABEL1*8, STHELP*10
+C emg
 C
 C     The array geinfo contains optimization information for each
 C     iteration. The first index is the iteration, the second gives
@@ -1646,6 +1649,56 @@ C
      &     WILBMT,BMTRAN,WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
 C
       CALL MINCGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KWRK2),LWRK2)
+C
+C emg ---------------------------------------------------------------
+C emg WRIDER: Piece of code to Write Derivatives of Gradient and Hessian
+C emg on the optimization procedure (OPTIMIZE) in Cartesian non-mass
+C emg weigthed coordinates for further use in MidasCpp.
+C emg -----------------------------------------------------------------
+      IF (ITRMAX.EQ.0) THEN
+         LUHES = -1 
+         IF (NEWTON) THEN 
+            KCSTRA = KWRK2
+            KSCTRA = KCSTRA + (3*NUCDEP)**2
+            KH2    = KSCTRA + (3*NUCDEP)**2 
+            KWRK3  = KH2    + MXCOOR*MXCOOR
+            IF (KWRK3 .GT.LWORK) CALL STOPIT('RUNOPT',' ',KWRK3,LWORK)
+            CALL TRAHES(HESMOL,MXCOOR,WORK(KH2),WORK(KCSTRA),
+     &                  WORK(KSCTRA),MXCOOR,NUCDEP*3,1)
+         ENDIF 
+         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
+     &              IWOFF,WRKDLM)
+         CALL GPOPEN(LUHES,'midasifc.ederivs','UNKNOWN',' ',
+     &            'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUHES,'(I6)') 3*NUCDEP
+         WRITE(LUHES,*)
+         DO 413 I = 1, 3*NUCDEP
+            WRITE(LUHES,'(E25.16)') EGRAD(I)
+413      CONTINUE
+         IF (NEWTON) THEN 
+            WRITE(LUHES,*)
+            DO 411 J = 1, 3*NUCDEP
+               DO 412 I = 1, 3*NUCDEP
+                  WRITE(LUHES,'(E25.16)') 
+     &                  WORK(KH2+(J-1)*MXCOOR+I-1)  
+412            CONTINUE
+411         CONTINUE
+         ENDIF 
+         CALL GPCLOSE(LUHES,'KEEP')
+
+         LABEL1 = 'ALL_DONE'
+         STHELP = 'THE_END   ' 
+         CALL WRIPRO(0.0D0,STHELP,666,
+     &               LABEL1,LABEL1,LABEL1,LABEL1,
+     &               ZERO,ZERO,ZERO,1,0,0,0)
+
+         CALL GPCLOSE(LUNDPF,'KEEP')
+         CALL GPCLOSE(LUNMPF,'KEEP')
+         STOP 'Manually stop after punching the Hessian and Gradient'
+
+      ENDIF
+C
+C emg ---------------------------------------------------------------
 C
 C     Construct projection operator and use it.
 C     Then diagonalize Hessian.

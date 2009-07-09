@@ -1822,6 +1822,9 @@ C
      &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
      &          BETAVL(2), BETAVV(2), ALPHVL(2), ALPHVV(2)
+cmbh: helper strings
+      character mlab1*8,mlab2*8,mlab3*8
+cmbh end
       CHARACTER COORDI*21,COORDJ*21
       DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
       DIMENSION WORK(LWORK)
@@ -1837,6 +1840,36 @@ C
             WRITE(LUPRI,9004) 'Ex',(POLDD(1,1,JDIP,IFRVAL), JDIP=1,3)
             WRITE(LUPRI,9004) 'Ey',(POLDD(1,2,JDIP,IFRVAL), JDIP=1,3)
             WRITE(LUPRI,9004) 'Ez',(POLDD(1,3,JDIP,IFRVAL), JDIP=1,3)
+cmbh: print out polarizabilities for MidasCpp
+            mlab1='XDIPLEN'
+            mlab2='YDIPLEN'
+            mlab3='ZDIPLEN'
+            call wripro(POLDD(1,1,1,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab1,mlab1,mlab1,mlab1,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,1,2,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab1,mlab2,mlab1,mlab2,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,1,3,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab1,mlab3,mlab1,mlab3,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,2,2,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab2,mlab2,mlab2,mlab2,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,2,3,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab2,mlab3,mlab2,mlab3,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,3,3,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab3,mlab3,mlab3,mlab3,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+
+cmbh end
             IF (ABSORP) THEN
                WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
                WRITE(LUPRI,9003) 'Ex','Ey','Ez'

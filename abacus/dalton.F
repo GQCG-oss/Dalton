@@ -301,6 +301,9 @@ C         "DALTON.OUT#<slave no>" in GPOPEN
       CALL GPOPEN(LUNDPF,'DALTON.PROP','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND(LUNDPF)
+      CALL GPOPEN(LUNMPF,'midasifc.prop','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      REWIND(LUNMPF)
 C
       CALL MEMINI(LUPRI,LUERR)
 C
@@ -490,7 +493,8 @@ C
      *               LABEL1,LABEL1,LABEL1,LABEL1,
      *               ZERO,ZERO,ZERO,1,0,0,0)
          IPRLOC = MAX(IPRUSR,IPRRHF)
-         IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+C        IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+         IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
@@ -500,6 +504,7 @@ C
          CALL GPCLOSE(LUERR,'KEEP')
          CALL GPCLOSE(LUMOLDEN,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
+         CALL GPCLOSE(LUNMPF,'KEEP')
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
@@ -531,7 +536,8 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
      *                  LABEL1,LABEL1,LABEL1,LABEL1,
      *                  ZERO,ZERO,ZERO,1,0,0,0)
             IPRLOC = MAX(IPRUSR,IPRRHF)
-            IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+C           IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+            IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
@@ -542,6 +548,7 @@ C
             CALL GPCLOSE(LUERR,'KEEP')
             CALL GPCLOSE(LUMOLDEN,'KEEP')
             CALL GPCLOSE(LUNDPF,'KEEP')
+            CALL GPCLOSE(LUNMPF,'KEEP')
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
@@ -581,11 +588,13 @@ C
      *            LABEL1,LABEL1,LABEL1,LABEL1,
      *            ZERO,ZERO,ZERO,1,0,0,0)
       IPRLOC = MAX(IPRUSR,IPRRHF)
-      IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+      IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
       CALL GPCLOSE(LUERR,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUMOLDEN,'KEEP')
       CALL GPCLOSE(LUNDPF,'KEEP')
+      CALL GPCLOSE(LUNMPF,'KEEP')
       CALL GPCLOSE(LUPRI,'KEEP')
 #endif
 #if defined (VAR_PVM)

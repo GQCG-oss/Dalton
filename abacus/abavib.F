@@ -1073,6 +1073,45 @@ C     DALTON.NOR
       WRITE(LUNOR,'(E23.16)') SXFAMU*sqrt(ENORM2)
  913  CONTINUE
       CALL GPCLOSE(LUNOR,'KEEP')
+
+C
+C     We punch out structure, frequencies, and normal coordinates 
+C     for MidasCpp interface on file midasifc.coord 
+C     
+
+      LUMID  = -1
+      CALL GPOPEN(LUMID,'midasifc.coord','UNKNOWN',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+
+      WRITE(LUMID,'(I4,A)') NATOMS," au"
+      CALL PRIGEOLU(LUMID,CORD)
+C     DO ICENT=1,NUCDEP 
+C        WRITE(LUMID,'(A,3(2X,E22.16))')
+C    &         NAMEX(3*ICENT)(1:4),CORD(1,ICENT),
+C    &         CORD(2,ICENT),CORD(3,ICENT)
+C     ENDDO
+
+      WRITE(LUMID,'(A,I5)') "FREQ",MAXREP+1
+      WRITE(LUMID,'(A,A,E23.16)')
+     &    '  cm-1                    irrep   ', ' F_au_to_cm-1:',XTKAYS
+      DO 915 IMODE = 1, NUMMOD
+        IF (IREPS(IMODE) .GE. 0) THEN
+           IRPTXT = ' ' // REP(IREPS(IMODE)) // ' '
+        ELSE
+           IRPTXT = 'mixed'
+        END IF
+        WRITE(LUMID,'(E24.16,1X,A)') FREQAU(IMODE)*XTKAYS,
+     &                                  IRPTXT
+ 915  CONTINUE
+      WRITE(LUMID,'(A)') "COORD"
+      WRITE(LUMID,'(A)') "au"
+      DO 916 IMODE = 1, NUMMOD
+        WRITE(LUMID,'(3(E24.16,1X))')
+     &            (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
+        WRITE(LUMID,*)
+ 916  CONTINUE
+      CALL GPCLOSE(LUMID,'KEEP')
+
 C
 C     ****************************************************************
 C     ***** Normal coordinates in redundant internal coordinates *****

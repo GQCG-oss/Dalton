@@ -279,6 +279,65 @@ C
       RETURN
       END
 C  /* Deck prigeo */
+      SUBROUTINE PRIGEOLU(LU,COORD)
+C
+C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+      DIMENSION COORD(3,*)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
+C
+      CHARACTER*8 ATNAME 
+      LOGICAL FNONB
+      IATOM = 0
+      DO 100 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO 200 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IATOM = IATOM + 1
+               ATNAME='        '
+               FNONB = .FALSE.
+               INOTBLANK=0
+               DO I=1,6
+                  IF (NAMDEP(IATOM)(I:I).NE. ' ') THEN 
+                     INOTBLANK=INOTBLANK+1
+                     ATNAME(INOTBLANK:INOTBLANK)=
+     *                  NAMDEP(IATOM)(I:I)
+                     FNONB=.TRUE.
+                  ENDIF 
+                  IF (FNONB .AND.(NAMDEP(IATOM)(I:I).EQ. ' ')) THEN 
+                    GOTO 17 
+                  ENDIF 
+               ENDDO 
+  17           CONTINUE 
+               WRITE (LU,'(A,3(2X,F22.16))') ATNAME, 
+     *           (PT(IBTAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
+            END IF
+  200    CONTINUE
+  100 CONTINUE
+      IATOM = 0
+      WRITE(LU,*) " Atomic labels "
+      DO 300 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO 400 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IATOM = IATOM + 1
+               WRITE (LU,'(A))') NAMDEP(IATOM)
+            END IF
+  400    CONTINUE
+  300 CONTINUE
+
+      RETURN
+      END
+C  /* Deck prigeo */
       SUBROUTINE PRIGEO(COORD)
 C
 C     Jun 29 1988 tuh

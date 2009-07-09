@@ -127,6 +127,9 @@ C ***********************************************************
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41, ID3, CRT
          CHARACTER SYMM*9, TMPLN*80, BSNM*80
+         CHARACTER NAME*4
+         LOGICAL   MIDSYM
+         MIDSYM = .TRUE.
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 3
@@ -161,6 +164,25 @@ C               /hjaaj Mar 2004
             TEXT = 'Original Coordinates'
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
+C
+C        MIDAS Interface, write out input coordinates for midas.sym
+C        analysis
+C
+         IF (MIDSYM) THEN 
+            LUCOOR = -1
+            CALL GPOPEN(LUCOOR,'midasifc.cartorig','NEW',
+     &                  ' ','FORMATTED',IDUMMY,.FALSE.)
+C           CALL PRIGEOLU(LUCOOR,CORD)
+            DO ICENT=1,NUCLP
+               NAME=NAMEX(3*ICENT)(1:4)
+               WRITE(LUCOOR,'(2X,A,3(2X,E22.16))')
+     &              NAMEX(3*ICENT)(1:4),ATMARR(1,ICENT),
+     &              ATMARR(2,ICENT),ATMARR(3,ICENT)
+            ENDDO
+            CALL GPCLOSE(LUCOOR,'KEEP')
+         ENDIF 
+C
+C
          CALL SRTATM(MXCENT, ATMARR, .TRUE.)
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(NUCLP, ATMARR)

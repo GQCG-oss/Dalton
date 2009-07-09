@@ -1321,6 +1321,26 @@ C
          WRITE(LUPRI,'(//,1X,A6,A,F10.6,/)') MODEL(1:6),
      *       'polarizability for frequency: ',FRQ
          CALL OUTPUT(POL,1,3,1,3,3,3,1,LUPRI)
+cmbh: print polarizability for MidasCpp
+         call wripro(POL(1),'  '//MODEL(1:6)//'  ',2,
+     *               'X_DIPLEN','X_DIPLEN','X_DIPLEN','X_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(2),'  '//MODEL(1:6)//'  ',2,
+     *               'X_DIPLEN','Y_DIPLEN','X_DIPLEN','Y_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(3),'  '//MODEL(1:6)//'  ',2,
+     *               'X_DIPLEN','Z_DIPLEN','X_DIPLEN','Z_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(5),'  '//MODEL(1:6)//'  ',2,
+     *               'Y_DIPLEN','Y_DIPLEN','Y_DIPLEN','Y_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(6),'  '//MODEL(1:6)//'  ',2,
+     *               'Y_DIPLEN','Z_DIPLEN','Y_DIPLEN','Z_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(9),'  '//MODEL(1:6)//'  ',2,
+     *               'Z_DIPLEN','Z_DIPLEN','Z_DIPLEN','Z_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+cmbh end
 C
          CALL  TNSRAN(POL,PVAL,PAXIS,
      *                ALFSQ,BETSQ,ITST,ITST2,
@@ -2936,9 +2956,9 @@ C
       CALL OUTPUT(PAXIS,1,3,1,3,3,3,1,LUPRI)
       OSCS = PVAL(1)+PVAL(2)+PVAL(3)
 
-      CALL WRIPRO(OSCS,MODEL,-21,
+      CALL WRIPRO(OSCS,MODEL,400,
      &            "OSCI-LEN","OSCI-LEN","OSCI-LEN","OSCI-LEN",
-     &            0.0,0.0,0.0,ISYM,ISYM,1,IEX)
+     &            EIGV,EIGV,EIGV,ISYM,ISYM,1,IEX)
 
       CDIP = 'unknown'
       IF (IPAR .EQ.1) CDIP = '   X   '
@@ -6870,7 +6890,59 @@ C
      *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *   IPRMI,ISYMIN,NORD,LABEL,PROP,
      *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
+        WRITE(LUNMPF,
+     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   IPRMI,ISYMIN,NORD,LABEL,PROP,
+     *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
       ENDIF
 C
       END
+      SUBROUTINE stripblanks(tobestripped)
+#include <priunit.h>
+c
+c     mbh: transform nuclei string, e.g. 'C0   1' into
+c          'C0_1   '
+c
+      character tobestripped*8,helper*8,lastchar*1
+      integer i,j,idx
+c
+      idx=1
+      helper='        '
+      write(lupri,*)'String on input: "',tobestripped,'"'
+c
+c strip all blanks from beginning
+c
+      do 10 i=1,8
+         if(tobestripped(i:i).ne.' ') goto 15
+10    continue
+15    continue
+c
+c add to helper until we hit a blank again
+c
+      do 20 j=i,8
+         if(tobestripped(j:j).ne.' ') then
+            helper(idx:idx)=tobestripped(j:j)
+         else 
+            goto 25
+         endif
+         idx=idx+1
+20    continue
+25    continue
+      helper(idx:idx)='_'
+      lastchar='_'
+      idx=idx+1
+c
+c strip all blanks from here to next 'item'
+c
+      do 30 i=j,8
+         if(tobestripped(i:i).ne.' ') then
+            helper(idx:idx)=tobestripped(i:i)
+            lastchar=tobestripped(i:i)
+            idx=idx+1
+         endif
+30    continue
+      if(lastchar.eq.'_') helper(idx-1:idx-1)=' '
+      write(lupri,*)'String on input: "',helper,'"'
+      tobestripped=helper 
+      end
 C--------------------------------------------------------------
