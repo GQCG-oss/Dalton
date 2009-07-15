@@ -665,11 +665,11 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
+#include <inforb.h>
       PARAMETER (DP5 = 0.5D0)
       CHARACTER WORD*7, LABINT(9*MXCENT)*8
       DIMENSION DENMAT(NNBASX),
      &          EXPVAL(NCOMP), SPNDSO(*), WORK(LWORK)
-#include <inforb.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <suscpt.h>
@@ -3941,8 +3941,8 @@ C
 #include <symmet.h>
 #include <spinro.h>
 #include <orgcom.h>
-#include <ibtfun.h>
 #include <helfey.h>
+#include <ibtfun.h>
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
       CALL DZERO(HFGEL,MXCOOR)
