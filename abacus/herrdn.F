@@ -2729,6 +2729,13 @@ C      to position LUINFO correctly)
 C
           IF (UNCONT) THEN
             NRCIJ = NUCIJ
+            IF (NRCIJ .GT. KAOVEC) THEN
+               WRITE (LUPRI,'(/A,I6/A,I6)')
+     *      ' >>> GTOINP error, number of AO-blocks            ',NRCIJ,
+     *      '                   current maximum number MXAOVC =',KAOVEC
+               CALL QUIT('Too many AO-blocks for an uncontracted '//
+     *                   'basis sets')
+            END IF
             DO IJ = 1, NUCIJ
                DO JI = 1, IJ - 1
                   CPRIMU(IJ,JI) = D0

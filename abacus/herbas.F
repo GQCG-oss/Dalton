@@ -689,6 +689,13 @@ C
                IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
             END IF
          END IF
+         IF (INTORB .GT. KAOVEC) THEN
+            WRITE (LUPRI,'(/A,I6/A,I6)')
+     *       ' >>> GTOINP error, number of AO-blocks            ',NRCIJ,
+     *       '                   current maximum number MXAOVC =',KAOVEC
+            CALL QUIT('Too many AO-blocks in basis sets relative to '//
+     *           'compiled size of Dalton')
+         END IF
          RETURN
       END IF
 C
@@ -797,6 +804,13 @@ C           skip core orbitals for Huckel guess for ECP
             END IF
             IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
          END IF
+      END IF
+      IF (INTORB .GT. KAOVEC) THEN
+         WRITE (LUPRI,'(/A,I6/A,I6)')
+     *       ' >>> GTOINP error, number of AO-blocks            ',NRCIJ,
+     *       '                   current maximum number MXAOVC =',KAOVEC
+         CALL QUIT('Too many AO-blocks for an '//
+     *             'ANO basis set')
       END IF
       RETURN
       END
@@ -1056,7 +1070,7 @@ C
                   END IF
                END IF
                IF (ISPRIM.GT.KPRIM) GOTO 5010
-               IF (ISCONT.GT.KPRIM) GOTO 5020          
+               IF (ISCONT.GT.KAOVEC) GOTO 5020          
 C
 C Checking if the matrix, with the contraction-coeffecients, is segmented 
 C
@@ -1120,7 +1134,7 @@ C
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' >>> FINNQD error, number of contracted functions  ',ISCONT,
      &  '                   in basis ',BASNAM,
-     &  '                   current maximum number          ',KPRIM
+     &  '                   current maximum number          ',KAOVEC
         CALL QUIT('Too many contracted functions')
       END 
 C             
