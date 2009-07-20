@@ -409,9 +409,11 @@ chj   when they always are called in the beginning, also when RNHERM false??
 Chj   June 09: maybe READIN may still be needed for NEWGEO, keep it for
 Chj   now for safety, but REAINI should definitely NOT be called, it will
 Chj   reiinitialize variables changed by user under *READIN
-CHJ      RELCAL = .FALSE.
-CHJ      TSTINP = .FALSE.
-CHJ      CALL REAINI(JPRINT,RELCAL,TSTINP)
+         IF (SFIRST) THEN
+            RELCAL = .FALSE.
+            TSTINP = .FALSE.
+            CALL REAINI(JPRINT,RELCAL,TSTINP)
+         END IF
 C
          IPREAD = JPRINT
          HERMIT = .FALSE.
