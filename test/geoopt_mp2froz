@@ -103,7 +103,7 @@ TEST[3]=`expr	$CRIT1`
 CTRL[3]=2
 ERROR[3]="NUCLEAR REPULSION NOT CORRECT"
 
-# Symmatry
+# Symmetry
 CRIT1=`$GREP "Number of coordinates in each symmetry\: * 6 * 6 * 6 * 6 * 4 * 2 * 4 * 2" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry\: * 9 * 6 * 9 * 6 * 2 * 1 * 2 * 1" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
@@ -112,7 +112,7 @@ ERROR[4]="SYMMETRY NOT CORRECT"
 
 # MP2 frozen orbitals
 CRIT1=`$GREP "MP2 frozen orbitals per symmetry \: * 2 * 1 * 2 * 1 * 0 * 0 * 0 * 0" $log | wc -l`
-CRIT2=`$GREP "Total energy and NO\:s calculated with frozen orbitals\." $log | wc -l`
+CRIT2=`$GREP "Total energy and NO's calculated with frozen orbitals\." $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[5]=112
 ERROR[5]="MP2 FROZEN ORBITALS NOT CORRECT"
