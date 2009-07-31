@@ -705,25 +705,45 @@ C
      &             '*ABALNR'/
 Caug04-hjaaj: disabled currently inactive .NACME
 Csep08-spas: .NACME reactivated for Vib_g
+C                      1          2          3
       DATA TABLE  /'.PRINT ', '.MOLGRA', '.SELECT',
+C                      4          5          6
      &             '.DIPGRA', '.POLARI', '.MOLHES',
+C                      7          8          9
      &             '.INPTES', '.VIBANA', '.RESTAR',
+C                     10         11         12
      &             '.OPTROT', '.LINEAR', '.REPS  ',
+C                     13         14         15
      &             '.NUMHES', '.POPANA', '.OECD  ',
+C                     16         17         18
      &             '.EXCITA', '.SHIELD', '.VCD   ',
+C                     19         20         21
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
+C                     22         23         24
      &             '.NACME ', '.NOLOND', '.NOHESS',
+C                     25         26         27
      &             '.WRTINT', '.ECD   ', '.NODIFC',
+C                     28         29         30
      &             '.MOLGFA', '.SPIN-R', '.OR    ',
+C                     31         32         33
      &             '.PHASEO', '.NOMASV', '.NODARW',
+C                     34         35         36
      &             '.ALPHA ', '.VROA  ', '.OR MVE',
+C                     37         38         39
      &             '.SOPPA(', '.HELLMA', '.NOCMC ',
+C                     40         41         42
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
+C                     43         44         45
      &             '.RAMAN ', '.QUADRU', '.NQCC  ',
+C                     46         47         48
      &             '.CAVORG', '.HYPER ', '.VERDET',
+C                     49         50         51
      &             '.MCD   ', '.SOPPA ', '.EXPGRA',
+C                     52         53         54
      &             '.CTOCD ', '.D2DQ2 ', '.QPGRAD',
+C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
+C                     58         59         60
      &             '.VIB_G '/ 
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
@@ -1180,12 +1200,15 @@ C .D2DQ2
             DIPDER = .TRUE.
             QPGRAD = .TRUE.
          GOTO 100
+
  156     CONTINUE
-            THIRDM = .TRUE.
-         GOTO 100
- 157     CONTINUE
             SECNDM = .TRUE.
          GOTO 100
+
+ 157     CONTINUE
+            THIRDM = .TRUE.
+         GOTO 100
+
  158     CONTINUE
             VIB_G  = .TRUE.
             NACME  = .TRUE.
