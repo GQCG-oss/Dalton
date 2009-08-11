@@ -37,31 +37,32 @@ C*************************************************************
 C* This is the procedures that controls the reading from     *
 C* file, and calls all the other subroutines.                *
 C* It returns a bunch of variables. It returns:              *
-C*     IQM - (Highest anglar quantumnumber) + 1              *
+C*     IQM - (Highest angular quantum number) + 1            *
 C*     JCO - Redundant variable that gives how many blocks   *
-C*           the primitives and contraction coeffecients are *
+C*           the primitives and contraction coefficients are *
 C*           given in (will be set to one) (array)           *
 C*     NUC - Number of primitives for a given                *
-C*           (quantumnuber + 1)                              *
-C*     NRC - Number of coloumns with contraction-coeffecients*
-C*           for a given (quantumnumber + 1).                *
-C*     SEG - Gives whether the contraction-coeffecients are  *
-C*           segmented (for a given (quantumnumber + 1),     *
+C*           (quantum number + 1)                            *
+C*     NRC - Number of columns with contraction-coefficients *
+C*           for a given (quantum number + 1).               *
+C*     SEG - Gives whether the contraction-coefficients are  *
+C*           segmented (for a given (quantum number + 1),    *
 C*           (array).                                        *
 C*     ALPHA - Array with the primitives (for a given        *
-C*             (quantumnumber + 1)).                         *
+C*             (quantum number + 1)).                        *
 C*     CPRIMU - Matrix (3D) with the NOT normalized          *
-C*              contraction coeffecients (for a given        *
-C*              (quantumnumber + 1)).                        *
+C*              contraction coefficients (for a given        *
+C*              (quantum number + 1)).                       *
 C*     CPRIM - Like CPRIMU, but this time the contraction    *
-C*             -coeffecients are normalized.                 *
-C*     NBLOCK - For some reason is this defined as the same  *
-C*              as IQM                                       *
-C*     KAOVEC, KPRIM, Q, DSM are max (angular quantumnumber  *
+C*             -coefficients are normalized.                 *
+C*     NBLOCK - total number of blocks; here always same as  *
+C*              IQM, but in GTOINP user may divide any       *
+C*              IQM value in several blocks.                 *
+C*     KAOVEC, KPRIM, Q, DSM are max (angular quantum number *
 C*             + 1), max number of primitives, nuclear       *
 C*             charge, highest number to be accepted as zero *
 C*     QEFF is eff. nuclear charge which is .le. Q,          *
-C*             Q-QEFF will be described with ECP              *
+C*             Q-QEFF will be described with ECP             *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
@@ -82,14 +83,14 @@ C*     NEWEL - Logical variable, that is returned from       *
 C*             the subroutine finpos, gives whether the next *
 C*             line in basis-file is a new element or not.   *
 C*     SEGEJ - This gives whether the contraction            *
-C*             -coeffecients are segmented or not (for       *
+C*             -coefficients are segmented or not (for       *
 C*             (angular quantum-number + 1))                 *
 C* External procedures:                                      *
 C*     SEGORB - A procedure that checks if the contraction   *
-C*              -coeffecients (for a given (angular quantum  *
+C*              -coefficients (for a given (angular quantum  *
 C*              number + 1)) are segmented or not.           *
 C*     NRMORB - Normalizing a matrix with contraction        *
-C*              -coeffecients                                *
+C*              -coefficients                                *
 C* cbirea.h:
 C*     UNCONT - force uncontracted (hjaaj aug99+aug00)
 C*************************************************************
@@ -162,7 +163,7 @@ CHJ         BASNAM = 'HUCKEL    3 1 0 0'
 C           ... Al, Si, P, S, Cl, Ar
 CHJ-jun06   BASNAM = 'HUCKEL    3 2 0 0'
 CHJ-jun06   added 3d
-CKR-march 07 This is dangerous if you run with a minal basis. Reverted.
+CKR-march 07 This is dangerous if you run with a minimal basis. Reverted.
             BASNAM = 'HUCKEL    3 2 1 0'
          ELSE IF (INTQ .LE. 20) THEN
 C           ...  K, Ca
@@ -349,7 +350,7 @@ C
       ELSE
          CALL FINDEL(BASTMP,INTQ,LUBAS,IPRINT)
 C
-C Finds the number of primitives and columns of contraction coeffecients
+C Finds the number of primitives and columns of contraction coefficients
 C
          CALL FINPOS ( NEWEL, INTEXP, INTORB, LUBAS)
 C   
@@ -367,7 +368,7 @@ C
             CALL DZERO(CPRIMU(1,1, NBLOCK), KPRIM*KPRIM)
             CALL DZERO(CPRIM (1,1, NBLOCK), KPRIM*KPRIM)
 C
-C Reading the primitives and contraction-coeffecients from file in READNU
+C Reading the primitives and contraction-coefficients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
                IQCORE = NINT(Q-QEFF)
@@ -388,7 +389,7 @@ Chj-aug99: if (UNCONT) force uncontracted
             IF (INTEXP.GT.KPRIM) GOTO 5010
             IF (INTORB.GT.KPRIM) GOTO 5020          
 C   
-C Checking if the matrix, with the contraction-coeffecients, is segmented 
+C Checking if the matrix, with the contraction-coefficients, is segmented 
 C
             SEGEJ  = .TRUE.
             CALL SEGORB(SEGEJ,INTEXP,INTORB,CPRIMU(1,1,NBLOCK),KPRIM,
@@ -396,13 +397,23 @@ C
             NUC(NBLOCK) = INTEXP
             NRC(NBLOCK) = INTORB
             SEG(NBLOCK) = SEGEJ
+            IF (SEGEJ .AND. INTORB .GT. KAOVEC) THEN
+C           in her2drv:PAOSET, each segmented is put into its own block
+C           thus for UNCONT each primitive is in its own block and we
+C           must have at least KAOVEC blocks
+               WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
+     *      '                   current maximum number MXAOVC =',KAOVEC,
+     &      '  Increase MXAOVC; make depend; make'
+               CALL QUIT('Too many AO-blocks for segmented basis set')
+            END IF
 C
 C     For Douglas-Kroll we need to keep exponents properly sorted
 C
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
      &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
 C
-C Normalizing CPRIMU for (angular quantumnumber + 1).
+C Normalizing CPRIMU for (angular quantum number + 1).
 C
              CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
      +                   ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
@@ -449,8 +460,18 @@ C
             NUC(NBLOCK) = INTEXP
             NRC(NBLOCK) = INTORB
             SEG(NBLOCK) = SEGEJ
+            IF (SEGEJ .AND. INTORB .GT. KAOVEC) THEN
+C           in her2drv:PAOSET, each segmented is put into its own block
+C           thus for UNCONT each primitive is in its own block and we
+C           must have at least KAOVEC blocks
+               WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
+     *      '                   current maximum number MXAOVC =',KAOVEC,
+     &      '  Increase MXAOVC; make depend; make'
+               CALL QUIT('Too many AO-blocks for segmented basis set')
+         END IF
 C
-C Normalizing CPRIMU for (angular quantumnumber + 1).
+C Normalizing CPRIMU for (angular quantum number + 1).
 C
             CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
      +                  ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
@@ -489,10 +510,10 @@ C
 C
 C*************************************************************
 C* This is the subroutine that takes care of the reading of  *
-C* the primitives og the contraction coeffecients from the   *
+C* the primitives and the contraction coefficients from the  *
 C* file (for a given format). The variables that are         *
 C* transferred out are:                                      *
-C*     CPRIMU - The matrix that the contraction coeffecients *
+C*     CPRIMU - The matrix that the contraction coefficients *
 C*              are put in (not normalized).                 *
 C*     ALPHA - The matrix where the primitives are put in    *
 C*     (Both of the variables are given for a given (quantum-*
@@ -522,10 +543,10 @@ C*************************************************************
       CHARACTER STRING*88, BASNAM*(*)
       LOGICAL BLANK, POLFUN
 C
-C CONEOR is the maximum number of coloumns of contraction coeffecients on 
+C CONEOR is the maximum number of columns of contraction coefficients on 
 C the 1. line in file. If INTORB is .GT. CONEOR then the contraction
-C coeffecients will continue on the next line. CONORB is the max. number
-C of contraction coeffecients on the next lines.
+C coefficients will continue on the next line. CONORB is the max. number
+C of contraction coefficients on the next lines.
 C
       INTEGER CONEOR, CONORB
       PARAMETER(CONEOR = 6, CONORB = 7)
@@ -537,7 +558,7 @@ C
  20   CONTINUE
       IF ( J .LT. INTEXP) THEN
 C
-C Reading the primitive and contracted coeffecients
+C Reading the primitive and contracted coefficients
 C
          READ(LUBAS, '(A88)', IOSTAT = IOERR, ERR = 2000) STRING
          READ (STRING, '(A1)') SIGN
@@ -549,12 +570,12 @@ C
             CALL CHBLANK(BLANK, STRING)
             IF (.NOT. BLANK) THEN
 C
-C We have found a line with a primitive and coeffecients             
+C We have found a line with a primitive and coefficients             
 C
                J = J + 1
 C
 C CONLIN returns the number of lines we have the contraction
-C coeffecients written on.
+C coefficients written on.
 C
                JNTORB = ABS(INTORB)
                CALL CONLIN(JNTORB, NUMLIN, DSM)
@@ -562,7 +583,7 @@ C
 C                 uncontracted basis set or
 C                 forced uncontracted with .UNCONT
                   READ (STRING, '(F16.9)') ALPHA(J,NBLOCK)
-C                 skip contiuation lines for contraction coeff.
+C                 skip continuation lines for contraction coeff.
                   DO I = 2,NUMLIN
                      READ (LUBAS,*)
                   END DO
@@ -578,13 +599,13 @@ C
                      KNTORB = CONEOR
                   END IF
 C   
-C     Reading the first line with exponents and contraction- coeffecients
+C     Reading the first line with exponents and contraction- coefficients
 C
                   READ (STRING, '(F16.9, 6F12.9)')
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
 C   
-C     If there are more lines with contraction-coeffecients, 
+C     If there are more lines with contraction-coefficients, 
 C     they will be read here.
 C
                   DO 100 I = 2, NUMLIN
@@ -596,7 +617,7 @@ C
  30                  CONTINUE
 C
 C     Making the usual safety-precautions before we read the 
-C     contraction-coeffecients.
+C     contraction-coefficients.
 C
                      READ(LUBAS, '(A88)', IOSTAT = IOERR, ERR = 2000)
      +                    STRING
@@ -605,7 +626,7 @@ C
                         CALL CHBLANK(BLANK, STRING)
                         IF (.NOT. BLANK) THEN
 C   
-C     We now have a line with contraction-coeffecients.
+C     We now have a line with contraction-coefficients.
 C   
                            READ (STRING,'(F16.9,6F12.9)') 
      &                          (CPRIMU(J,M,NBLOCK),
@@ -626,6 +647,7 @@ C blank line, read the next one.
 C
                GOTO 20
             END IF       
+            CALL QUIT('REANU: this line should never be reached')
          ELSE
 C
 C Found a line with nothing sensible in it     
@@ -639,7 +661,7 @@ C
          IF ( INTORB .LE. 0 ) INTORB = INTEXP
 C
 C   
-C Read all of the primitives, and the coeffecients
+C Read all of the primitives, and the coefficients
 C If this is some kind of augmented basis set, we augment it here, kr-96
 C
 C Fix jan -01 VB: For certain elements some of the cc basis sets do 
@@ -689,15 +711,9 @@ C
                IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
             END IF
          END IF
-         IF (INTORB .GT. KAOVEC) THEN
-            WRITE (LUPRI,'(/A,I6/A,I6)')
-     *       ' >>> GTOINP error, number of AO-blocks            ',NRCIJ,
-     *       '                   current maximum number MXAOVC =',KAOVEC
-            CALL QUIT('Too many AO-blocks in basis sets relative to '//
-     *           'compiled size of Dalton')
-         END IF
-         RETURN
       END IF
+C
+      RETURN
 C
  2000 CONTINUE
       WRITE (LUPRI,'(/A,I5)') 'Error in reading from basis file.'//
@@ -709,7 +725,7 @@ C/* Deck reaano */
      +                  UNCONT,LUBAS,IQCORE)
 C
 C     IQCORE is charge of core electrons (.eq. zero if not ECP)
-C     NBLOCK = l_quatum_number + 1 (1 for s, 2 for p, etc.)
+C     NBLOCK = l_quantum_number + 1 (1 for s, 2 for p, etc.)
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -743,7 +759,7 @@ C This time we have l-shell number NBLOCK
 C
       CALL ECPLCORE(IQCORE,NBLOCK,ILOFF)
 C
-C Reading the primitive and contracted coeffecients
+C Reading the primitive and contracted coefficients
 C
 c     MAXEXP = 8
 c     NUMEXP = (INTEXP - 1)/MAXEXP
@@ -805,20 +821,13 @@ C           skip core orbitals for Huckel guess for ECP
             IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
          END IF
       END IF
-      IF (INTORB .GT. KAOVEC) THEN
-         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *       ' >>> GTOINP error, number of AO-blocks            ',NRCIJ,
-     *       '                   current maximum number MXAOVC =',KAOVEC
-         CALL QUIT('Too many AO-blocks for an '//
-     *             'ANO basis set')
-      END IF
       RETURN
       END
 C
 C*************************************************************
 C* This is a subroutine that checks whether a line is a blank*
 C* line. It returns a logical variable if it is a blank one. *
-C* The in/out-going variables are:                          *
+C* The in/out-going variables are:                           *
 C*     STRING - A character string (the string checked by the*
 C*              subroutine).                                 *
 C*     BLANK - The logical variable. It will be .TRUE. if the*
@@ -840,27 +849,27 @@ C
 C
 C*************************************************************
 C* This is a subroutine that finds out how many lines the    *
-C* contraction- coeffecients are written on.  There are 6    *
-C* cc (contraction-coeffecients) on the 1. line, and then    *
+C* contraction-coefficients are written on.  There are 6     *
+C* cc (contraction-coefficients) on the 1. line, and then    *
 C* there are seven on the rest of the lines. In out going    *
 C* variables are :                                           *
-C*      INTORB - Total number of coloumns of contraction     *
-C*               -coeffecients.                              *
-C*      NUMLIN - Returns the number of lines the contaction  *
-C*               -coeffecients are written on.               *
+C*      INTORB - Total number of columns of contraction      *
+C*               -coefficients.                              *
+C*      NUMLIN - Returns the number of lines the contraction *
+C*               -coefficients are written on.               *
 C*************************************************************
 C/* Deck conlin */
 C
       SUBROUTINE CONLIN(INTORB, NUMLIN, DSM)
 #include <implicit.h>
 C    
-C This is the parameters for the number of contraction-coeffecients
+C This is the parameters for the number of contraction-coefficients
 C on 1. and 2. line.
 C
       INTEGER CONEOR, CONORB
       PARAMETER(CONEOR = 6, CONORB = 7)
 C
-C The intrisic functions DBLE makes a souble precision reak number of an integer.
+C The intrinsic functions DBLE makes a double precision real number of an integer.
 C
       B = DBLE(CONORB)
       C = DBLE(INTORB) - DBLE(CONEOR) 
@@ -877,7 +886,7 @@ C
       END
 C********************************************************
 C* This are the subroutines that  reads  the primitives *
-C* and the contracted coeffecients from file.           *
+C* and the contracted coefficients from file.           *
 C*********************************************************    
 C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
@@ -935,7 +944,7 @@ C/* Deck finnqd */
 #include <priunit.h>
 C*********************************************************
 C* Variable declarations:                                *
-C*     BASNAM - The name of the basisfile                *
+C*     BASNAM - The name of the basis file               *
 C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
 C*********************************************************
@@ -987,9 +996,8 @@ C
                END IF
                NBLOCK = NBLOCK + 1
                IF (NBLOCK .GT. KAOVEC) THEN
-                  CALL QUIT('Too many AO blocks'//
-     &               ' for available memory; increase WRKMEM')
-            END IF
+                  CALL QUIT('Too many AO blocks; increase MXAOVC')
+               END IF
 C
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
 C
@@ -1072,7 +1080,7 @@ C
                IF (ISPRIM.GT.KPRIM) GOTO 5010
                IF (ISCONT.GT.KAOVEC) GOTO 5020          
 C
-C Checking if the matrix, with the contraction-coeffecients, is segmented 
+C Checking if the matrix, with the contraction-coefficients, is segmented 
 C
                SEGEJ  = .TRUE.
                CALL SEGORB(SEGEJ, ISPRIM, ISCONT, CPRIMU(1,1,NBLOCK), 
@@ -1081,14 +1089,14 @@ C
                NRC(NBLOCK) = ISCONT
                SEG(NBLOCK) = SEGEJ
 C
-C Normalizing CPRIMU for (angular quantumnumber + 1).
+C Normalizing CPRIMU for (angular quantum number + 1).
 C
                CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
      +                     ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
      +                     CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
                IF (NUCEL .GT. 4) THEN
 C
-C Checking if the matrix, with the contraction-coeffecients, is segmented 
+C Checking if the matrix, with the contraction-coefficients, is segmented 
 C
                   NBLOCK = NBLOCK + 1
                   SEGEJ = .TRUE.
@@ -1098,7 +1106,7 @@ C
                   NRC(NBLOCK) = IPCONT
                   SEG(NBLOCK) = SEGEJ
 C
-C Normalizing CPRIMU for (angular quantumnumber + 1).
+C Normalizing CPRIMU for (angular quantum number + 1).
 C
                   CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
      +                        ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
@@ -1140,15 +1148,15 @@ C
 C             
 C
 C*********************************************************
-C* This is the subroutine that finds out wheter it is a  *
+C* This is the subroutine that finds out whether it is a *
 C* new block with primitives and contraction-            *
-C* coeffecients, or if it is a new element. It returns   *
+C* coefficients, or if it is a new element. It returns   *
 C* three variables:                                      *
 C*          NEWEL -Logical variable that gives whether it*
 C*                 is a new element or not.              *
 C*          INEXP, INTORB - Number of primitives and     *
-C*                          coloumns of contraction      *
-C*                          coeffecients                 *
+C*                          columns of contraction       *
+C*                          coefficients                 *
 C*********************************************************
 C
 C/* Deck finpos */
@@ -1169,7 +1177,7 @@ C*********************************************************
       CHARACTER*88 STRING
       LOGICAL BLANK
 C
-C Initialising NEWEL, because one is innocent until proven guilty
+C Initializing NEWEL, because one is innocent until proven guilty
 C
       NEWEL = .FALSE.
 C
@@ -1227,7 +1235,7 @@ C
 #include "priunit.h"
 C*********************************************************
 C* Variable declarations:                                *
-C*     BASNAM - The name of the basisfile                *
+C*     BASNAM - The name of the basis file               *
 C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
 C*     EXST   - Logical variable that helps inquire if   *
@@ -1263,7 +1271,7 @@ C
       IF ( ICOLON .EQ. ISTART - 1 ) THEN
 C
 C        Find end of string
-C        (done this way, because user may have specifed
+C        (done this way, because user may have specified
 C        a directory name with one or more blanks in it,
 C        as /home/xxx/My jobs/My basdir/ )
 C
@@ -1284,7 +1292,7 @@ C
       IEND = ICOLON - 1
       IF (IEND .LT. ISTART) THEN
 C        User has started with ':',
-C        or has two consecutivec colons as '::',
+C        or has two consecutive colons as '::',
 C        we skip to next item.
          ISTART = ICOLON + 1
          GO TO 10
@@ -1300,7 +1308,7 @@ C
          STRING(LSTR:LSTR) = '/'
       END IF
       LBAS = INDEX(BASNAM,' ') - 1
-C     ... cannot use LNBLNK becuse some basis sets have additional
+C     ... cannot use LNBLNK because some basis sets have additional
 C         information in BASNAM, e.g. "ano-2 4 3 2'
       IF (LBAS .LE. 0) LBAS = LEN(BASNAM)
 C     ... take care of basis set names with no trailing blanks

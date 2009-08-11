@@ -2730,9 +2730,13 @@ C
           IF (UNCONT) THEN
             NRCIJ = NUCIJ
             IF (NRCIJ .GT. KAOVEC) THEN
-               WRITE (LUPRI,'(/A,I6/A,I6)')
-     *      ' >>> GTOINP error, number of AO-blocks            ',NRCIJ,
-     *      '                   current maximum number MXAOVC =',KAOVEC
+C           in her2drv:PAOSET, each segmented is put into its own block
+C           thus for UNCONT each primitive is in its own block and we
+C           must have at least KAOVEC blocks
+               WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *      ' >>> ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
+     *      '                   current maximum number MXAOVC =',KAOVEC,
+     &      '  Increase MXAOVC; make depend; make'
                CALL QUIT('Too many AO-blocks for an uncontracted '//
      *                   'basis sets')
             END IF
@@ -2939,7 +2943,7 @@ C                    Basis-set identifier (WK/UniKa/04-11-2002).
      &                         SEGBAS = .FALSE.
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 3)
      &                         SEGAUX = .FALSE.
-   50             CONTINUE
+   50             CONTINUE ! DO 50 KK = 1, NCONT
                   DO 60 L = 1, NUC(KBCH)
                      IPRIM = IPRIM + 1
 C*****************************************************************************
@@ -2959,13 +2963,13 @@ C*****************************************************************************
                      PRICRZ(IPRIM) = CORD(3,ICENT)
                      IPRSHL(IPRIM) = ISHELL
                      IPRIMD = IPRIMD + NCOMP*NDEG
-   60             CONTINUE
+   60             CONTINUE ! DO 60 L = 1, NUC(KBCH)
 C
-   40          CONTINUE
-   30       CONTINUE
-   20    CONTINUE
+   40          CONTINUE ! DO 40 K = 1, JCO(J,I)
+   30       CONTINUE ! DO 30 J = 1,IQM(I)
+   20    CONTINUE ! DO 20 N = 1,NONT(I)
          IBLOCK = IBLOCK + NBLCK(I)
-   10 CONTINUE
+   10 CONTINUE ! DO 10 I = 1,NONTYP
 C
       !Add exp(0) function (needed in 2- and 3-index integrals)
       !as an extra "0" class
