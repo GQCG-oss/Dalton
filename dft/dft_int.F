@@ -93,10 +93,42 @@ C
       CALL OPNQUA(NBAST,DMAT,WORK,LWORK) ! C code
       NPOINTS = 0
       CALL CONSTRUCT_IORIDX(IORIDX)
+
+!#define EXPORT_GRID
+#ifdef EXPORT_GRID
+      lunit_export = 137
+      open(lunit_export,
+     &     form   = 'formatted',
+     &     status = 'unknown',
+     &     access = 'sequential',
+     &     file   =  'grid.export')
+
+      rewind lunit_export
+#endif /* ifdef EXPORT_GRID */
+
  100  CONTINUE
          CALL REAQUA(NSHELL,NSHLBLCK,NBUFLEN,COOR,WEIGHT,NLEN) ! C code
-         IF(NLEN .LE. 0) GO TO 200
+         if (nlen .le. 0) then
+#ifdef EXPORT_GRID
+!          there are no more points
+!          write some negative integer
+!          so that DIRAC knows that it's over
+           write(lunit_export, *) -1
+#endif /* ifdef EXPORT_GRID */
+           go to 200
+         end if
          NPOINTS = NPOINTS + NLEN
+
+#ifdef EXPORT_GRID
+         write(lunit_export, *) nlen
+         do i = 1, nlen
+           write(lunit_export, '(4d20.12)') coor(1, i),
+     &                                      coor(2, i),
+     &                                      coor(3, i),
+     &                                      weight(i)
+         enddo
+#endif /* ifdef EXPORT_GRID */
+
          DO IPT = 1, NLEN, MXBLLEN
             NCURLEN=MIN(MXBLLEN,NLEN-IPT+1)
             CALL BLGETSOS(NCURLEN,GAO,COOR(1,IPT),NSHELL,NSHLBLCK,
@@ -132,6 +164,11 @@ C
          END DO
          GO TO 100
  200     CONTINUE
+
+#ifdef EXPORT_GRID
+      close(lunit_export, status = 'keep')
+#endif /* ifdef EXPORT_GRID */
+
       CALL CLSQUA !C code
 C
 C     Test on the number of electrons
