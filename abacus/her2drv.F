@@ -2578,6 +2578,7 @@ C
      &                        THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
+C           ... ADISTR true: Distributions (all gabcd for fixed a)
                IF (U21INT) THEN
                   CALL US2OUT(SOINT,NSOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,
      &                        FIRST,LAST,THRESH,NINDAB,NINDCD,
