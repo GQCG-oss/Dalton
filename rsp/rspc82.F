@@ -450,23 +450,23 @@ C
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
 C
-         KSYM1 = 0
+         K_SYM1 = 0
          DO 1300 IG = 1,KZWOPT
             K     = JWOP(1,IG)
             L     = JWOP(2,IG)
-            KSYM  = ISMO(K)
-            LSYM  = ISMO(L)
-            IF( KSYM.NE.KSYM1 ) THEN
-               KSYM1 = KSYM
-               IORBK = IORB(KSYM)
-               NASHK = NASH(KSYM)
-               NISHK = NISH(KSYM)
-               IASHK = IASH(KSYM)
-               IIORBK= IIORB(KSYM)
-               IORBL = IORB(LSYM)
-               NASHL = NASH(LSYM)
-               NISHL = NISH(LSYM)
-               IASHL = IASH(LSYM)
+            K_SYM  = ISMO(K)
+            L_SYM  = ISMO(L)
+            IF( K_SYM.NE.K_SYM1 ) THEN
+               K_SYM1 = K_SYM
+               IORBK = IORB(K_SYM)
+               NASHK = NASH(K_SYM)
+               NISHK = NISH(K_SYM)
+               IASHK = IASH(K_SYM)
+               IIORBK= IIORB(K_SYM)
+               IORBL = IORB(L_SYM)
+               NASHL = NASH(L_SYM)
+               NISHL = NISH(L_SYM)
+               IASHL = IASH(L_SYM)
             END IF
             ITYPK = IOBTYP(K)
             ITYPL = IOBTYP(L)
@@ -797,26 +797,26 @@ C
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
 C
-         KSYM1 = 0
+         K_SYM1 = 0
          DO 1300 IG = 1,KZWOPT
             K     = JWOP(1,IG)
             L     = JWOP(2,IG)
-            KSYM  = ISMO(K)
-            LSYM  = ISMO(L)
-            IF( KSYM.NE.KSYM1 ) THEN
-               KSYM1 = KSYM
-               NORBK = NORB(KSYM)
-               IORBK = IORB(KSYM)
-               NASHK = NASH(KSYM)
-               NISHK = NISH(KSYM)
-               IASHK = IASH(KSYM)
-               IIORBK= IIORB(KSYM)
-               IORBL = IORB(LSYM)
-               NASHL = NASH(LSYM)
-               NISHL = NISH(LSYM)
-               NORBL = NORB(LSYM)
-               IASHL = IASH(LSYM)
-               IIORBL= IIORB(LSYM)
+            K_SYM  = ISMO(K)
+            L_SYM  = ISMO(L)
+            IF( K_SYM.NE.K_SYM1 ) THEN
+               K_SYM1 = K_SYM
+               NORBK = NORB(K_SYM)
+               IORBK = IORB(K_SYM)
+               NASHK = NASH(K_SYM)
+               NISHK = NISH(K_SYM)
+               IASHK = IASH(K_SYM)
+               IIORBK= IIORB(K_SYM)
+               IORBL = IORB(L_SYM)
+               NASHL = NASH(L_SYM)
+               NISHL = NISH(L_SYM)
+               NORBL = NORB(L_SYM)
+               IASHL = IASH(L_SYM)
+               IIORBL= IIORB(L_SYM)
             END IF
             NK    = K - IORBK
             NL    = L - IORBL
