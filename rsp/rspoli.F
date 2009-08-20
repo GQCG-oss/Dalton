@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   Dalton, a molecular electronic structure program, Release 2.0
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -226,11 +226,13 @@ C             CALL MTRSP(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
          END IF
       END IF
       IF (NCSIM.GT.0) THEN
-         IF (DOMCSRDFT) THEN
+!
+!
+!        IF (DOMCSRDFT) THEN 
 C           ... we need to use SIRFCK and allocate two matrices,
 C               see sirius/sirtr1.F /hjaaj May 09
-            CALL QUIT('MC-srDFT of FVTD not implemented in RSPOLI yet')
-         END IF
+!           CALL QUIT('MC-srDFT of FVTD not implemented in RSPOLI yet')
+!        END IF
          NTOT = NORBT * NORBT * NCSIM
          CALL DZERO(FVTD,NTOT)
          NTOT = NORBT*NASHT*NCSIM
@@ -245,9 +247,10 @@ C IF DIRFCK (direct RPA) compute new densities
 C and Fock matrices in AO basis
 C
       IF (DIRFCK .OR. HSROHF .OR. DODFT) GO TO 1000
-      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
-         CALL QUIT('MO srDFT not implemented yet in RSPOLI')
-      END IF
+! commented by manu
+!     IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+!        CALL QUIT('MO srDFT not implemented yet in RSPOLI')
+!     END IF
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
@@ -322,7 +325,17 @@ C
       NCIW  = ICIW - NISHT
       NDIW  = IDIW - NISHT
 C
+!
       IF (NOSIM.GT.0) THEN
+#ifdef MOD_SRDFT
+! Manu b: if MC-srDFT then skip contributions to FCX and FCV, it will be done in
+! the DIRECT part of rspoli. 
+!
+         IF (DOMCSRDFT) THEN 
+         GO TO 91
+         END IF
+! Manu e 
+#endif
 C
 C CONTRIBUTIONS TO FCX AND FVX
 C
@@ -354,6 +367,11 @@ C  for the symmetrization of A(2)b
                END IF
             END IF
          END IF
+#ifdef MOD_SRDFT
+! Manu b
+91    CONTINUE   
+! Manu e
+#endif
          IF ((NASHT.GT.1).AND.(ITYPCD.EQ.3)) THEN
 C
 C
@@ -373,6 +391,15 @@ C    *                  ZYMAT,H2,H2X,H2XAC,PVX,PVCD,WRK,LWRK)
      *                     XINDX,WRK(KWRK2),LWRK2)
             END IF
          ELSE
+#ifdef MOD_SRDFT
+! Manu b: if MC-srDFT then skip contributions to FVTD, it will be done in
+! the DIRECT part of rspoli. Need to think about FCTD (contribution from V^[2c],srHxc) 
+!
+            IF (DOMCSRDFT) THEN 
+            GO TO 92
+            END IF
+! Manu e 
+#endif
             IF (ITYPCD.EQ.2 .OR. ITYPCD.EQ.3 .OR. ITYPCD.EQ.5) THEN
 C
 C CONTRIBUTIONS TO FVTD
@@ -380,6 +407,11 @@ C
                CALL FTDMU(NCSIM,ICI,IDI,FVTD,WRK(KDVT),H2)
 C              CALL FTDMU(NSIM,ICI1,IDI1,FVTD,DVT,H2)
             END IF
+#ifdef MOD_SRDFT
+! Manu b
+92          CONTINUE
+! Manu e
+#endif
             IF (ITYPCD.EQ.3) THEN
 C
 C CONTRIBUTIONS TO QATD AND QBTD
@@ -489,12 +521,24 @@ C
             CALL OUTPUT(H2(1,1),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          ENDIF
          IF (NOSIM.GT.0) THEN
+#ifdef MOD_SRDFT
+! Manu b: this will be done in the DIRECT part of rspoli
+             IF (DOMCSRDFT) THEN
+             GO TO 1091 
+             END IF 
+! Manu e
+#endif
             CALL FONEDR(NOSIM,ICI,IDI,H2,WRK(KFCOCO),WRK(KFVOCO),
      *                  FCX,FVX,ZYMAT,WRK(KDENA),WRK(KDENB),
      *                  WRK(KFREE),LFREE)
 C           CALL FONEDR(NSIM,ICI1,IDI1,H2D,FCOCO,FVOCO,
 C    *                     FCOEX,FVOEX,ZYMAT,DENA,DENB,WRK,LWRK)
 C
+#ifdef MOD_SRDFT
+! Manu b
+1091        CONTINUE 
+! Manu e 
+#endif
 C CONTRIBUTIONS TO QAX AND QBX
 C
             IF( (IOBTYP(ICI).EQ.JTACT) .AND. (IOBTYP(IDI).EQ.JTACT))
@@ -505,6 +549,13 @@ C           CALL QONEDI(NOSIM,NCIW,NDIW,ICDSYM,
 C    *               QAX,QBX,ZYMAT,H2,H2X,
 C    *               PVX,PVCD2,PVCD3,PVDC2,PVDC3,WRK,LWRK)
          END IF
+#ifdef MOD_SRDFT
+! Manu b
+         IF (DOMCSRDFT) THEN
+         GO TO 1090
+         ENDIF
+! Manu e 
+#endif
          IF (NCSIM.GT.0 .AND. .NOT.SOPPA) THEN
             CALL FTDDR(NCSIM,ICI,IDI,FVTD,WRK(KDVT),H2)
 C           CALL FTDDR(NSIM,ICI1,IDI1,FVTD,DVT,H2D)
@@ -516,6 +567,15 @@ C ALL DIRAC DISTRIBUTIONS HAVE BEEN READ IN
 C
  1095 CONTINUE
       IF (LUINTD .GT. 0) CALL GPCLOSE(LUINTD,'KEEP')
+#ifdef MOD_SRDFT
+! Manu b
+         IF (DOMCSRDFT) THEN
+         CALL MEMREL('RSPOLI.h2m+d',WRK,KFRSAV,KWRK0,KFREE,LFREE)
+         GO TO 1000 ! we now go to the direct part of rspoli in order to build
+!                     the Fock operator 
+         ENDIF
+! Manu e 
+#endif
 C
 C ADD CONTRIBUTION TO FCX AND FVX FROM ONE INDEX TRANSFORMED
 C TOTAL SYMMETRIC FOCK MATRICES
@@ -553,9 +613,10 @@ C
       CALL MEMREL('RSPOLI.h2m+d',WRK,KFRSAV,KWRK0,KFREE,LFREE)
       GO TO 2000
  1000 CONTINUE
-      IF (DOMCSRDFT) THEN
-         CALL QUIT('AO-direct MC-srDFT not implemented yet in RSPOLI')
-      END IF
+! commented by manu ...
+!     IF (DOMCSRDFT) THEN
+!        CALL QUIT('AO-direct MC-srDFT not implemented yet in RSPOLI')
+!     END IF
 C
 C end up here if DIRFCK
 C       
@@ -671,7 +732,7 @@ C     Change IFCTYP for all Fa matrices
           END IF
         END DO
       END IF  
-      IF (IPRRSP .GT. 60) THEN
+!     IF (IPRRSP .GT. 60) THEN
          WRITE(LUPRI,*) 'RSPOLI:SIRFCK NFMAT DIRFCK',NFMAT,DIRFCK
          WRITE(LUPRI,*) 'ISYMDM ',(ISYMDM(I),I=1,NFMAT)
          WRITE(LUPRI,*) 'IFCTYP ',(IFCTYP(I),I=1,NFMAT)
@@ -681,7 +742,8 @@ C     Change IFCTYP for all Fa matrices
             CALL OUTPUT(WRK(JDXCAO),1,NBAST,1,NBAST,
      &                  NBAST,NBAST,-1,LUPRI)
          END DO
-      END IF
+         write(lupri,*) 'calling sirfck in rspoli'
+!     END IF
       DFTADX = DFTADD
       DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
@@ -777,8 +839,11 @@ C         Special case of alpha density only (old code)
          ENDIF 
 C       Proceed normal way otherwise 
         IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN 
-           call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
-     &                           trplet, ksymop,wrk(kfree),lfree) 
+!          call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
+!    &                           trplet, ksymop,wrk(kfree),lfree) 
+           write(lupri,*) 'Caution !!!!!'
+           write(lupri,*) 'dft_lin_respab_b is not defined yet
+     &                     in prop-eval.c on the mc-srdft branch'
          ELSE
             call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree)
