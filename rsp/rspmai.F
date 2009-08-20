@@ -762,7 +762,9 @@ C
       IF (.NOT.SET) THEN
          SET = .TRUE.
          IF (.NOT. DIRFCK) DIRFCK = DIRCAL
-         NOITRA = DIRFCK
+         IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
+         IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
+         IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
@@ -901,7 +903,7 @@ C              .PROP2Average
          END IF
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
-     *      ' AO-DIRECT FOCK MATRIX CALCULATION.'
+     *      ' AO-DIRECT FOCK MATRIX CALCULATIONS.'
          ELSE IF (NOITRA) THEN
             WRITE(LUPRI,'(/2A,L1)')
      *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'

@@ -674,13 +674,11 @@ C       CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
 C    *              FCX,FVX,QAX,QBX, FVTD,QATD,QBTD,EVECS,
 C    *              H2,H2X,XINDX,CMO,WRK,LWRK)
       ENDIF
-C
-C *** END OF RSPLIN
+
+      CALL FLSHFO(LUPRI)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION
 C
-
-      CALL FLSHFO(LUPRI)
 C---------------------
 C CBN+JK 03.01.06
 C---------------------
@@ -691,6 +689,9 @@ C---------------------
 C---------------------
 C CBN+JK 03.01.06
 C---------------------
+C
+C *** END OF RSPLIN
+C
       RETURN
       END
 C  /* Deck rsporb */
@@ -768,10 +769,12 @@ C
       DIMENSION UDV(NASHDI,NASHDI,*), EVECS(KZYVAR,*)
       DIMENSION ZYMAT(NORBT,NORBT,*)
 C
+C  INFINP : DOMCSRDFT
 C  INFDIM : NASHDI
 C
 #include <maxorb.h>
 #include <maxash.h>
+#include <infinp.h>
 #include <infvar.h>
 #include <inforb.h>
 #include <infind.h>
@@ -976,6 +979,25 @@ C
                ENDIF
             ENDIF
  1300    CONTINUE
+C
+      IF (.NOT.ONEIND .AND. DOMCSRDFT) THEN
+C
+C     Special MCSRDFT correction, corresponding to the effective operator
+C        V^([2c],xc-SR)
+C     is saved in FCX(*,*,ICSIM) in RSPOLI.
+C
+#ifdef MOD_SRDFT
+         DO ICSIM = 1,NSIM
+           CALL SRDFTSO( 2.0D0,UDV,FCX(1,1,ICSIM),EVECS(KZCONF+1,ICSIM))
+           CALL DSCAL(N2ASHX,DM1,UDV,1)
+           CALL SRDFTSO(-2.0D0,UDV,FCX(1,1,ICSIM),
+     &                    EVECS(KZVAR+KZCONF+1,ICSIM))
+           CALL DSCAL(N2ASHX,DM1,UDV,1)
+         END DO
+#else
+         call quit('MCSRDFT not implemented in this version')
+#endif
+      END IF
 C
 C CHANGE SIGN ON ORBITAL PART OF LINEAR TRANSFORMATION E[2]*N
 C
