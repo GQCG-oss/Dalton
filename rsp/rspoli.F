@@ -853,11 +853,8 @@ C         Special case of alpha density only (old code)
          ENDIF 
 C       Proceed normal way otherwise 
         IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN 
-!          call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
-!    &                           trplet, ksymop,wrk(kfree),lfree) 
-           write(lupri,*) 'Caution !!!!!'
-           write(lupri,*) 'dft_lin_respab_b is not defined yet
-     &                     in prop-eval.c on the mc-srdft branch'
+            call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
+     &                            trplet, ksymop,wrk(kfree),lfree) 
          ELSE
             call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree)
