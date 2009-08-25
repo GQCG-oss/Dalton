@@ -2279,22 +2279,3 @@ C
       WRITE (LUPRI,'()')
       RETURN
       END
-      SUBROUTINE UPCASE(WORD)
-#include "implicit.h"
-C
-C     Routine that uppercases the word provided. Allows the input easily to
-C     be made case insensitive. F90 routine supplied by Anthony Stone and 
-C     77-ified by K.Ruud
-C
-      CHARACTER word*(*)
-      CHARACTER*26 UPPER, LOWER
-C
-      UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      LOWER = "abcdefghijklmnopqrstuvwxyz"
-      DO I = 1, LEN(WORD)
-         K = INDEX(LOWER,WORD(I:I))
-         IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
-      END DO
-C
-      RETURN
-      END

@@ -1407,4 +1407,28 @@ Clf
       END IF
       RETURN
       END
+C /* Deck reapcm */
+      SUBROUTINE REAPCM(LABNAM,WHERE,LUNIT,ARRAY,LENGTH)
+C
+C     Interface routine to read PCM potential integrals of a given symmetry
+C     K.Ruud, nov.2001
+C
+#include <implicit.h>
+#include <priunit.h>
+      CHARACTER*8 LABNAM, WHERE
+      LOGICAL FOUND, FNDLAB
+      DIMENSION ARRAY(LENGTH)
+C
+      FOUND = .FALSE.
+      IF (FNDLAB(LABNAM,LUNIT)) THEN
+         CALL READT(LUNIT,LENGTH,ARRAY)
+         FOUND = .TRUE.
+      END IF
+      IF (.NOT. FOUND) THEN
+         WRITE (LUPRI,'(/A)') ' Integral label '//LABNAM//' not'//
+     &        'found on file'
+         CALL QUIT('Integral label not found in '//WHERE)
+      END IF
+      RETURN
+      END
 C --- end of sirius/sirsolpcm.F ---

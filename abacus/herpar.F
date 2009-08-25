@@ -33,18 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck notes */
-950620-kr: Ported to MPI, based on previous efforts by Bjarne Herland at
-           Para//ab
-950531-kr: Reorganized the code so that the node programs are
-started only once for a given calculation
-(1)  Note: in old HERFCK 'IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD' was
- transferred to TWOINT, do we want to do that in CALINT for ITYPE=3 ???
-(2)  removed JSYMDM,JFCTYP,ITRIPL from /PARINT/ in aba.cdk
-===========================================================================
-#endif
+C File: herpar.F
+C
+C Some history:
+C June 1995: ported to MPI by Kenneth Ruud
+C
 C  /* Deck her_pardrv */
       SUBROUTINE HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                      WORK,LWORK,ITYPE,MAXDER,IATOM,NODV,
@@ -75,12 +68,13 @@ C
 C AOVEC : MXAOVC (for BLOCKS)
 C MXCENT: MXCOOR
 C MXORB : MXSHEL (for INFPAR)
-C INFPAR: NDEGDI,NTASK,MAXTSK
+C INFPAR: NDEGDI,NTASK
 C BLOCKS: MAXSHL
 C NUCLEI: NUCDEG
 C INFORB: NNBASX,N2BASX
 C
 #include <infpar.h>
+      PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
 #include <blocks.h>
 #include <nuclei.h>
 #include <inforb.h>
@@ -256,7 +250,7 @@ C
 C MXORB : MXSHEL (used for INFPAR)
 C GNRINF: NEWBAS
 C SIRIPC: NEWGEO
-C INFPAR: MAXTSK, NODTOT, NTASK, IPRPAR
+C INFPAR: NODTOT, NTASK, IPRPAR
 C INFORB: N2BASX
 C
 #include <gnrinf.h>
@@ -269,6 +263,7 @@ Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
+      PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
@@ -848,7 +843,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 C
-      DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)        
+      DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from PARSRT','*',103)
 C
