@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
+#ifdef OLD_LOG
 ===========================================================================
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
@@ -271,9 +271,6 @@ C
             NOSIM = 1
             KBVEC = JBOOFF
             JBOOFF= JBOOFF + KZYWOP
-! Manu b
-         write(lupri,*) 'CALLING RSPLIN in E2SYM'
-! Manu e
             CALL RSPLIN(NCSIM,NOSIM,WRK(KBVEC),WRK(KBVEC),
      *                  CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *                  XINDX,WRK(KWRK1),LWRK1)
@@ -289,10 +286,7 @@ C
      *              WRK(KS2LIN+(J-1+KZDIM)*KZYVAR),1)
          END IF
  20   CONTINUE
-!     IF (IPRRSP.GT.110) THEN
-! Manu b
-         write(lupri,*) '*****AFTER ALL THE CALLS FOR RSPLIN******'
-! Manu e
+      IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
          CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,1,
@@ -313,7 +307,7 @@ C
             CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
      *                                              2*NCTOT,1,LUPRI)
          END IF
-!     END IF
+      END IF
 C
 C CHECK IF TRIAL VECTORS ARE ORTHONORMAL
 C
@@ -1127,12 +1121,12 @@ C           ... remove CREF component of E[2] vector
             T1 = DDOT(KZCONF,WRK(KREFCO),1,EVECS(1,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,EVECS(1,ISIM),1)
          END IF
-!        IF (IPRRSP.GT.110) THEN
+         IF (IPRRSP.GT.110) THEN
             WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF E(2) TRANSFORMED ORBITAL VECTOR: Z PART'
             CALL OUTPUT(EVECS(1,ISIM),1,KZCONF,1,1,
      *                  KZCONF,1,1,LUPRI)
-!        END IF
+         END IF
 C
 C CREATE Y PART  <0,H2X,J> OF LINEAR TRANSFORMATION WITH E(2)
 C
@@ -1146,10 +1140,10 @@ C
                WRK(KUFCAC-1+IJW) = FCONE(JX,IX,ISIM)
  130        CONTINUE
  120     CONTINUE
-!        IF (IPRRSP.GT.110) THEN
+         IF (IPRRSP.GT.110) THEN
             WRITE(LUPRI,'(/A)')' ONE INDEX TRANSFORMED FCAC '
             CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
-!        END IF
+         END IF
 C
          DISTYP = 3
          CALL CISIGD(IREFSY,KSYMST,NDREF,KZCONF,WRK(KREFCO),
@@ -1161,12 +1155,12 @@ C           ... remove CREF component of E[2] vector
             T1 = DDOT(KZCONF,WRK(KREFCO),1,EVECS(1+KZVAR,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,EVECS(1+KZVAR,ISIM),1)
          END IF
-!        IF (IPRRSP.GT.110) THEN
+         IF (IPRRSP.GT.110) THEN
             WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF E(2) TRANSFORMED ORBITAL VECTOR: Y PART'
             CALL OUTPUT(EVECS(1+KZVAR,ISIM),1,KZCONF,1,1,
      *                  KZCONF,1,1,LUPRI)
-!        END IF
+         END IF
 C
  100  CONTINUE
       RETURN
@@ -1405,9 +1399,6 @@ C
 C
 C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C
-! Manu b
-            write(lupri,*) 'info: calling RSPRED from LRST'
-! Manu e
             CALL RSPRED (1,.TRUE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *                 EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *                 UDV,WRK(KECVEC),XINDX,WRK(KWRK),LWRKRE)
@@ -2478,19 +2469,19 @@ C     ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
      *               XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
 C        CALL RSPSIG(ICSYM,IHCSYM,NCDET,NHCDET,C,HC,FCAC,H2AC,IFLAG,
 C    *                  NOH2,WORK,KFREE,LFREE)
-!        IF ( IPRRSP.GT.110 ) THEN
+         IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A,A)')
      *      ' LINEAR TRANSFORMED VECTOR WITHOUT MCSCF ENERGY' ,
      *      ' PROJECTED OUT : Z COMPONENT'
             CALL OUTPUT(EVECS(1,ISIM),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
-!        END IF
+         END IF
          CALL DAXPY(KZCONF,-EACTIV,ZYCVEC(1,ISIM),1,EVECS(1,ISIM),1)
-!        IF ( IPRRSP.GT.110 ) THEN
+         IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A,A)')
      *      ' LINEAR TRANSFORMED VECTOR AFTER MCSCF ENERGY' ,
      *      ' PROJECTED OUT : ZCOMPONENT '
             CALL OUTPUT(EVECS(1,ISIM),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
-!        END IF
+         END IF
          IF (IREFSY .EQ. KSYMST) THEN
 C           ... remove CREF component of E[2] vector
             KDREF = KFREE
@@ -2499,12 +2490,12 @@ Chj         ... KZCONF as we may need CREF in determinants
             T1 = DDOT(KZCONF,WRK(KDREF),1,EVECS(1,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KDREF),1,EVECS(1,ISIM),1)
          END IF
-!        IF (IPRRSP.GT.110) THEN
+         IF (IPRRSP.GT.110) THEN
             WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF E(2) LINEAR TRANSFORMED CSF VECTOR '
             CALL OUTPUT(EVECS(1,ISIM),1,KZCONF,1,1,
      *                  KZCONF,1,1,LUPRI)
-!        END IF
+         END IF
 C        CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
 C        CALL RSPSIG(KSYMST,KSYMST,KZCONF,KZCONF,ZYCVEC(1+KZCONF,ISIM),
 C    *               EVECS(1+KZVAR,ISIM),
@@ -2599,9 +2590,6 @@ C
       DATA LAB123/'********','********','RESPONPP'/
       DATA RESTAR/'RESTART '/
 C
-! Manu b
-      write(lupri,*) 'REDE(1) beg. RSPCTL:', REDE(1)
-! Manu e
       CALL QENTER('RSPCTL')
       IF (IPRRSP .GE. 2) THEN
       IF (LINEQ) THEN
@@ -2880,7 +2868,7 @@ C
  400        CONTINUE
          END IF
 C
-!        IF (IPRRSP.GT.110) THEN
+         IF (IPRRSP.GT.110) THEN
             WRITE(LUPRI,'(/A)')' BEFORE RSPLIN'
             IF (NOSIM .GT. 0) THEN
                WRITE(LUPRI,'(/I5,A)')NOSIM,' ORBITAL TRIAL VECTORS'
@@ -2892,17 +2880,11 @@ C
                CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
      *                     KZCONF,NCSIM,1,LUPRI)
             ENDIF
-!        END IF
+         END IF
          CALL FLSHFO(LUPRI)
          CALL RSPELI(NCSIM,NOSIM,WRK(KBCVEC),WRK(KBOVEC),
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               XINDX,WRK(KWRK1),LWRK1)
-! Manu b     
-            WRITE(LUPRI,'(/I5,A)')NSIM, ' E(2) LINEAR TRANSF. VECTORS'
-            write(lupri,*) 'after calling rspeli'
-            CALL OUTPUT(WRK(KWRK1),1,KZYVAR,1,NSIM,
-     *                     KZYVAR,NSIM,1,LUPRI)
-! Manu e     
          CALL FLSHFO(LUPRI)
 C
 C        CALL RSPELI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
@@ -3011,9 +2993,6 @@ C
 C
 C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C
-! Manu b
-            write(lupri,*) 'info: calling RSPRED(1,...) from RSPCTL'
-! Manu e
             CALL RSPRED(1,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *                  EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *                  UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
@@ -3029,18 +3008,6 @@ C
 C        CALL RSPRED(,3,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 C        AND SOLVE FOR EIGENVALUES AND EIGENVECTORS
 C
-! Manu b
-            write(lupri,*) 'info: calling RSPRED(3,...) from RSPCTL'
-            WRITE(LUPRI,'(/I5,A)')NOSIM,' ORBITAL TRIAL VECTORS'
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,NOSIM,
-     *                     KZYWOP,NOSIM,1,LUPRI)
-            WRITE(LUPRI,'(/I5,A)')NCSIM,' CONFIG. TRIAL VECTORS'
-            CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
-     *                     KZCONF,NCSIM,1,LUPRI)
-            WRITE(LUPRI,'(/I5,A)')NSIM, ' E(2) LINEAR TRANSF. VECTORS'
-            CALL OUTPUT(WRK(KEVECS),1,KZYVAR,1,NSIM,
-     *                     KZYVAR,NSIM,1,LUPRI)
-! Manu e
          CALL RSPRED(ICTL,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *               EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
@@ -3393,10 +3360,7 @@ C for reduced E(2) and reduced S(2)
          KCMO2 = 1
          KLAST = KCMO2 + 2*NORBT*NORBT
          LWRK1 = LWRK + 1 - KLAST
-! Manu b : commented otherwise does not compile ...         
-!        CALL DFTMOMO(WRK(KCMO2),WRK(KLAST),LWRK1,IPRPP)
-         write(lupri,*) 'Caution !!!! DFTmomo prob.'
-! Manu e         
+         CALL DFTMOMO(WRK(KCMO2),WRK(KLAST),LWRK1,IPRPP)
       ELSE
          KLAST = 1
       END IF
@@ -3493,9 +3457,6 @@ C
 C
 C     Call RSPCTL to solve propagator eigen problem
 C
-! Manu b
-!     write(lupri,*) ''
-! Manu e
       CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *            .FALSE.,BLANK,BLANK,DUMMY,DUMMY,WRK(KREDE),WRK(KREDS),
      *            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
@@ -4257,10 +4218,6 @@ C
       KGD    = KREDGD + MAXRM*NFREQ
       KWRK1  = KGD    + KZYVAR
       LWRK1  = LWRK   - KWRK1
-! Manu b'
-         write(lupri,*) 'WRK(KREDE) beg. RSPLR: ',
-     &                   WRK(KREDE)
-! Manu e
 C
 C WORK SPACE FOR RSPEVE AND RSPRES
 C
@@ -4367,10 +4324,6 @@ C
          KEXSIM = NFREQ
          KEXCNV = NFREQ
 C
-! Manu b'
-         write(lupri,*) 'WRK(KREDE) before call RSPCTL in RSPLR: ',
-     &                   WRK(KREDE)
-! Manu e
          CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               .TRUE.,LBLLR(KSYMOP,IOP),BLANK,WRK(KGD),
      *               WRK(KREDGD),WRK(KREDE),WRK(KREDS),
@@ -4908,9 +4861,6 @@ C
             END IF
             CALL OUTPUT(WRK(KBVEC),1,KZYDIM,1,1,KZYDIM,1,1,LUPRI)
          END IF
-! Manu b
-         write(lupri,*) 'CALLING RSPLIN in RSPES2'
-! Manu e
          CALL RSPLIN(NCSIM,NOSIM,WRK(KBVEC),WRK(KBVEC),
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               XINDX,WRK(KWRK1),LWRK1)
@@ -5082,9 +5032,6 @@ C     CALL RSPRED(,2,..) SOLVE FOR EIGENVALUES AND EIGENVECTORS
 C
       ICTL = 2
       NSIM = 0
-! Manu b
-      write(lupri,*) 'info: calling RSPRED from RSPES2'
-! Manu e
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
@@ -5107,9 +5054,6 @@ C
             END IF
  600     CONTINUE
  500  CONTINUE
-! Manu b
-      write(lupri,*) 'info: calling RSPRED from RSPES2 after 500'
-! Manu e
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
@@ -5130,9 +5074,6 @@ C
             END IF
  800     CONTINUE
  700  CONTINUE
-! Manu b
-      write(lupri,*) 'info: calling RSPRED from RSPES2 after 700'
-! Manu e
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
@@ -5506,9 +5447,6 @@ C
       KZYSAV= KZYRED
       KZRED = KZDIM
       KZYRED= KZYDIM
-! Manu b
-      write(lupri,*) 'info: calling RSPRED from E2OSYM'
-! Manu e
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,WRK(KE2),WRK(KS2),
      *            WRK(KEIVAL),WRK(KEIVEC),WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)

@@ -229,9 +229,6 @@ C
             END IF
             CALL OUTPUT(WRK(KBVEC),1,KZYDIM,1,1,KZYDIM,1,1,LUPRI)
          END IF
-! Manu b         
-         write(lupri,*) 'call RSPLIN from GETNXY'
-! Manu e         
          CALL RSPLIN(NCSIM,NOSIM,WRK(KBVEC),WRK(KBVEC),
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               XINDX,WRK(KWRK1),LWRK1)
