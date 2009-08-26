@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   "Dalton, a molecular electronic structure program, Release 2.0"
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -645,14 +645,7 @@ C         is needed for the VxcTD matrices.
       KQATD  = KFVTD  + LFVTD
 C
       KQBTD  = KQATD  + NCSIM * NORBT * NASHT
-      KH2    = KQBTD  + NCSIM * NORBT * NASHT
-      IF (DIRFCK) THEN
-         KH2X   = KH2
-         KWRK1  = KH2X
-      ELSE
-         KH2X   = KH2    + NORBT * NORBT
-         KWRK1  = KH2X   + NORBT * NORBT
-      END IF
+      KWRK1  = KQBTD  + NCSIM * NORBT * NASHT
       LWRK1  = LWRK   - KWRK1
 C
 C UNPACK ORBITAL VECTORS
@@ -669,10 +662,10 @@ C
         CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,KZCONF,FC,FV,PVX,WRK(KZYMAT),
      *              WRK(KFCX),WRK(KFVX), WRK(KQAX),WRK(KQBX),
      *              WRK(KFVTD),WRK(KQATD),WRK(KQBTD),WRK(KEVECS),
-     *              WRK(KH2),WRK(KH2X),XINDX,CMO,WRK(KWRK1),LWRK1)
+     *              XINDX,CMO,WRK(KWRK1),LWRK1)
 C       CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
 C    *              FCX,FVX,QAX,QBX, FVTD,QATD,QBTD,EVECS,
-C    *              H2,H2X,XINDX,CMO,WRK,LWRK)
+C    *              XINDX,CMO,WRK,LWRK)
       ENDIF
 
       CALL FLSHFO(LUPRI)

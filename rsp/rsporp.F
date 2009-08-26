@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   "Dalton, a molecular electronic structure program, Release 2.0"
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -227,9 +227,7 @@ C
       KFVX   = KFCX   + NOSIM * NORBT * NORBT
       KQAX   = KFVX   + NOSIM * NORBT * NORBT
       KQBX   = KQAX   + NOSIM * NORBT * NASHT
-      KH2    = KQBX   + NOSIM * NORBT * NASHT
-      KH2X   = KH2    + NORBT * NORBT
-      KWRK1  = KH2X   + NORBT * NORBT
+      KWRK1  = KQBX   + NOSIM * NORBT * NASHT
       LWRK1  = LWRK   - KWRK1
       IF (LWRK1.LT.0) CALL ERRWRK('ORPLIN',KWRK1-1,LWRK)
 C
@@ -260,10 +258,10 @@ C
       CALL RSPOLI(0,NOSIM,UDV,DUMMY,0,FC,FV,PVX,WRK(KZYMAT),
      *            WRK(KFCX),WRK(KFVX), WRK(KQAX),WRK(KQBX),
      *            DUMMY,DUMMY,DUMMY,WRK(KEVECS),
-     *            WRK(KH2),WRK(KH2X),XINDX,CMO, WRK(KWRK1),LWRK1)
+     *            XINDX,CMO, WRK(KWRK1),LWRK1)
 C     CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
 C    *            FCX,FVX, QAX,QBX,
-C    *            FVTD,QATD,QBTD,EVECS, H2,H2X,XINDX,CMO,WRK,LWRK)
+C    *            FVTD,QATD,QBTD,EVECS, XINDX,CMO,WRK,LWRK)
 C
       CALL DZERO(WRK(KSVECS),KZYWOP)
       CALL RSPSLI(0,NOSIM,DUMMY,ZYOVEC,UDV,WRK(KSVECS),XINDX,
