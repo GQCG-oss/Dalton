@@ -2016,12 +2016,12 @@ C
             OVLPI = D2*DDOT(KZWOPT,BVECS(IBVEC),1,BVECS(JBVEC),1)
 C           test if Z + Y is zero
             TZPY  = T1 + OVLPI
-            IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
+            IF (IPRRSP .GE. 10) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
      *         ' ** TEST OF Z = Y OR Z = -Y:',
      *         ' (Z Y) norm squared =',T1,
      *         ' Z + Y norm squared =',TZPY
             IF (TZPY .LE. OVLMIN*T1) THEN
-               IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A,I4/A)')
+               IF (IPRRSP .GE. 10) WRITE (LUPRI,'(/A,I4/A)')
      *            ' Z = -Y in trial vector no.',IRX,
      *            ' Y component removed.'
                CALL DZERO(BVECS(JBVEC),KZWOPT)
@@ -2030,10 +2030,10 @@ C              test if Z - Y is zero;
 C              only if TZPY = 2 * T1 can Z - Y be zero,
 C              so TZPY .gt. T1 is a safe test.
                TZMY = T1 - OVLPI
-               IF (IPRRSP .GE. 20) WRITE (LUPRI,'(A,1P,D15.8)')
+               IF (IPRRSP .GE. 10) WRITE (LUPRI,'(A,1P,D15.8)')
      *            ' Z - Y norm squared =',TZMY
                IF (TZMY .LE. OVLMIN*T1) THEN
-                  IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A,I4/A)')
+                  IF (IPRRSP .GE. 10) WRITE (LUPRI,'(/A,I4/A)')
      *            ' Z = Y in trial vector no.',IRX,
      *            ' Y component removed.'
                   CALL DZERO(BVECS(JBVEC),KZWOPT)
@@ -2158,7 +2158,7 @@ C
          IF (JLDP(IRX) .NE. 0) THEN
             TT = DDOT(LBZY,BVECS(IBVEC),1,BVECS(IBVEC),1)
             IF (TT .LE. THRLDP) THEN
-               IF (IPRRSP.GT.5) WRITE (LUPRI,3250) IRX,JLDP(IRX),TT
+               IF (IPRRSP.GT.2) WRITE (LUPRI,3250) IRX,JLDP(IRX),TT
                JLDP(IRX) = 0
             ELSE IF (TT .LT. THRRND) THEN
                IF (ITURN .EQ. 1) THEN
@@ -2169,7 +2169,7 @@ C
                END IF
             END IF
             IF (JLDP(IRX) .NE. 0) THEN
-               IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A,2I6,1P,D12.5)')
+               IF (IPRRSP .GE. 8) WRITE (LUPRI,'(/A,2I6,1P,D12.5)')
      &          ' RSPORT: b-vector, root no., norm**2:',IRX,JLDP(IRX),TT
                IF (TT .LT. T1MIN) THEN
                   TT = D1 / SQRT(TT)
@@ -2283,6 +2283,11 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
 C
 C     Set NBNEW to actual number of new trial vectors
 C
+      IF (IBPREV-NBPREV .NE. NBNEW) THEN
+         WRITE(LUPRI,'(A,I5,A,I5,A)')
+     &      'RSPORT:',NBNEW - IPREV + NBPREV,' out of',
+     &       NBNEW,' new trial vectors linear dependent'
+      END IF
       NBNEW = IBPREV - NBPREV
 C
       RETURN
