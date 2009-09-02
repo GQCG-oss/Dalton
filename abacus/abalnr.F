@@ -1114,6 +1114,7 @@ C     Start calculation of vibrational g-factors.
 C     ===========================================
 C
       IF (VIB_G) THEN
+         CALL HEADER('Calculating terms for vibrational g-factor',-1)
 C
 C        Set variables and logicals
 C
@@ -1171,8 +1172,9 @@ C
                      NBR = NBR + 1
 C
                      IF (NBR .NE. ISCOOR) THEN
-                        WRITE(6,'(A)') 
-     &                       'Keld, why are NBR and ISCOOR different?'
+                        WRITE(LUPRI,'(A/A,2I8)') 
+     &                  'Keld, why are NBR and ISCOOR different?',
+     &                  'IATOM,NBR,ISCOOR',IATOM,NBR,ISCOOR
                      END IF
 C
 C                    Find right hand side for first operator 
@@ -1186,8 +1188,8 @@ C
 C
                      IF (IPRLNR.GT.3) THEN
                         WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
-                        CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,1,
-     &                              2*NVARPT,1,1,LUPRI)
+                        CALL OUTPUT(WORK(KWRKG1),1,NVARPT,1,2,
+     &                              NVARPT,2,1,LUPRI)
                      ENDIF
 C
 C                    Calculate eigenvector for first operator
@@ -1225,7 +1227,7 @@ C
                               CALL RDS2X(JSCOOR,WORK(KUDV),WORK(KXINDX),
      &                                   WORK(KWRKG1),LWRKG1)
 C
-                              IF (IPRLNR.GT.3) THEN
+                              IF (IPRLNR.GT.13) THEN
                                  WRITE (LUPRI,'(2A)') 
      &                               'GP Vector, label: ','d/dR'
                                  CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
@@ -1246,11 +1248,11 @@ C
      &                               = DDOT(2*NVARPT,WORK(KSLV),1,
      &                                      WORK(KGD1),1)
 C
-                                 IF (IPRLNR.GT.3) THEN
+                                 IF (IPRLNR.GT.13) THEN
                                     WRITE (LUPRI,'(A,I4)') 
      &                                  'Solution Vector no. ', IFRVAL
-                                    CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,
-     &                                          1,2*NVARPT,1,1,LUPRI)
+                                    CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,
+     &                                          NVARPT,2,1,LUPRI)
                                  ENDIF
 C
                                  IF (IPRLNR.GT.2) THEN
@@ -2161,9 +2163,10 @@ C
          DO IFRVAL = 1,NFRVAL
             WRITE(LUPRI,9110) FRVAL(IFRVAL)
             WRITE(LUPRI,9111)
-            WRITE(LUPRI,'(25X,A,19X,A,5X,A)') 'Coordinates','Sym','(au)'
-            WRITE(LUPRI,'(14X,A)') 
-     &          '------------------------------------------------------'
+            WRITE(LUPRI,'(16X,A,21X,A,5X,A,8X,A)')
+     &         'Coordinates','Sym','(au)','(cm-1 u)'
+            WRITE(LUPRI,'(4X,2A)') 
+     &          ('--------------------------------------',I=1,2)
             DO ISYM = 1,NSYM
                DO ISCOOR = 1,3*NATOMS
                   CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
@@ -2172,9 +2175,10 @@ C
                         CALL GENCOR(WORK(KCSTRA),NCOOR,JSCOOR,COORDJ,
      &                              JCORSY)
                         IF (JCORSY .EQ. ISYM) THEN
-                           WRITE(LUPRI,'(10X,A,A,2X,I2,F12.6)') 
+                           VAL = FOVIBG(ISCOOR,JSCOOR,ISYM,IFRVAL)
+                           WRITE(LUPRI,'(5X,2A,I3,F12.6,F14.3)') 
      &                           COORDI, COORDJ, ISYM, 
-     &                           FOVIBG(ISCOOR,JSCOOR,ISYM,IFRVAL)
+     &                           VAL,VAL*XTKAYS/XFAMU
                         END IF
                      END DO
                   END IF
@@ -2197,7 +2201,7 @@ C
  9010 FORMAT (/10X,'Velocity  G tensor for frequency ',F12.6,' au')
  9011 FORMAT (/10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
  9110 FORMAT (14X,'Vibrational g-factors for frequency ',F12.6,' au',/)
- 9111 FORMAT (14X,54(1H=))
+ 9111 FORMAT (4X,76('='))
 C
       RETURN
       END
