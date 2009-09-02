@@ -294,7 +294,7 @@ C
      &              CMAT,3,0.D0,
      &              GTRAN,3)
          IF (IPRINT .GE. 2) THEN
-            CALL HEADER('Molecular g-tensor '
+            CALL HEADER('Molecular rotational g-tensor '
      &           //'in the Eckart frame:',0)
             CALL OUTPUT(GTRAN,1,3,1,3,3,3,1,LUPRI)
          ENDIF
