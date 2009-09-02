@@ -1505,7 +1505,7 @@ cLig <<
          END IF
       END IF
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
-      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-factor'
+      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular rotational g-factor'
       IF (EXPGRD) WRITE(LUPRI,'(5X,A)') ' Orbital-exponent gradient' 
       IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
      &     ' No mass-velocity correction calculated'
