@@ -3280,7 +3280,7 @@ C
 C  /* Deck nucmgf */
       SUBROUTINE NUCMGF(GEOM,ORIGIN,LUPRI,IPRINT)
 C
-C     Calculate nuclear contribution to molecular g-factors
+C     Calculate nuclear contribution to molecular rotational g-factors
 C     K.Ruud, June-94
 C
 #include <implicit.h>
@@ -3323,7 +3323,8 @@ C
       GFANUC(IZ,IX) = GFANUC(IX,IZ)
       GFANUC(IZ,IY) = GFANUC(IY,IZ)
       IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Nuclear contribution to molecular g-factor',-1)
+         CALL HEADER(
+     &   'Nuclear contribution to molecular rotational g-factor',-1)
          CALL OUTPUT(GFANUC,1,3,1,3,3,3,1,LUPRI)
       END IF
       RETURN
@@ -3431,7 +3432,7 @@ C
       D23 = .FALSE.
 C
       IF (IPRINT .GE. 0)
-     &     CALL TITLER('ABACUS - MOLECULAR g-TENSOR','*',124)
+     &     CALL TITLER('ABACUS - MOLECULAR ROTATIONAL g-TENSOR','*',124)
       CALL DZERO(TOTMGF,9)
 C
 C     Add terms to diamagnetic molecular g factor
@@ -3474,9 +3475,8 @@ C
          AVEEL = (ELMGF(1,1) + ELMGF(2,2) + ELMGF(3,3))/D3
          WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVEEL
 C
-         CALL HEADER(
-     &   'Total molecular g-tensor * proton mass * moment of inertia',
-     &   -1)
+         CALL HEADER('Total molecular rotational g-tensor'//
+     &      ' * proton mass * moment of inertia',-1)
          CALL POLPRI(TOTMGF,'   ',2)
          AVETOT = (TOTMGF(1,1) + TOTMGF(2,2) + TOTMGF(3,3))/D3
          WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVETOT
@@ -3502,8 +3502,8 @@ C
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINEAR)
 C
-C     Transform molecular g-tensor to principal axis system, and multiply by
-C     inverse moment of inertia and proton mass
+C     Transform molecular rotational g-tensor to principal axis system,
+C     and multiply by inverse moment of inertia and proton mass
 C
       IF (IPRINT .GE. 0) THEN
          IF (NOLOND) THEN
@@ -3534,7 +3534,7 @@ C
          IF (IPRDEF .GE. 0) THEN
             WRITE (LUPRI,'(A,F16.6)') ' Moment of inertia :',
      &           D1/EIGVAL(3)
-            CALL HEADER('Molecular g-factor',1)
+            CALL HEADER('Molecular rotational g-factor',1)
             WRITE(LUPRI,'(4(A,F16.8/))')
      &           ' Isotropic g-factor          :',AVETOT,
      &           ' Nuclear part of g-factor    :',AVENUC,
@@ -3582,12 +3582,13 @@ C
          AVEDIA = (GTRAN3(1,1) + GTRAN3(2,2) + GTRAN3(3,3))/D3
          IF (IPRINT .GE. 0) THEN
          IF (D12 .AND. D23) THEN
-            WRITE (LUPRI,'(4(/,1X,A,F16.8))')
-     &           ' Molecular g-factor      :  ',AVETOT,
+            WRITE (LUPRI,'(4(/A,F16.8))')
+     &           ' Molecular rot. g-factor :  ',AVETOT,
      &           ' Nuclear contribution    :  ',AVENUC,
      &           ' Diamagnetic contribution:  ',AVEDIA,
      &           ' Electronic contribution :  ',AVEEL
-            WRITE (LUPRI,'(/,1X,A)') ' Molecular g-tensor is spherical.'
+            WRITE (LUPRI,'(/A)')
+     &           ' Molecular rotational g-tensor is spherical.'
          ELSE IF (D12 .OR. D23) THEN
             IF (D12) THEN
                PAR = GTRAN(3,3)
@@ -3597,17 +3598,18 @@ C
                PER = (GTRAN(2,2) + GTRAN(3,3))/D2
             END IF
             ANI = PAR - PER
-            CALL HEADER('Molecular g-factor',1)
-            WRITE (LUPRI,'(6(1X,A,F16.8,/))')
+            CALL HEADER('Molecular rotational g-factor',1)
+            WRITE (LUPRI,'(6(A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
      &           ' Electronic contribution  : ',AVEEL,
      &           ' Parallel component:        ',PAR,
      &           ' Perpendicular component:   ',PER,
      &           ' Anisotropy:                ',ANI
-            WRITE (LUPRI,'(1X,A)') ' Molecular g-tensor is cylindrical.'
-            CALL HEADER('Molecular g-tensor in principal axis system '//
-     &                  '(a.u.):',1)
+            WRITE (LUPRI,'(A)')
+     &           ' Molecular rotational g-tensor is cylindrical.'
+            CALL HEADER('Molecular rotational g-tensor in principal'//
+     &                  ' axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
@@ -3633,7 +3635,7 @@ C
          ELSE
             ANI1 = GTRAN(1,1) - (GTRAN(2,2) + GTRAN(3,3))/D2
             ANI2 = GTRAN(2,2) - (GTRAN(1,1) + GTRAN(3,3))/D2
-            CALL HEADER('Molecular g-tensor',1)
+            CALL HEADER('Molecular rotational g-tensor',1)
             WRITE (LUPRI,'(6(1X,A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
@@ -3641,8 +3643,8 @@ C
      &           ' Electronic contribution  : ',AVEEL,
      &           ' 1st anisotropy:            ',ANI1,
      &           ' 2nd anisotropy:            ',ANI2
-            CALL HEADER('Molecular g-tensor in principal axis system '//
-     &                  '(a.u.):',1)
+            CALL HEADER('Molecular rotational g-tensor in principal'//
+     &                  ' axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
