@@ -231,7 +231,7 @@ C x-component
                         IATNOW = NUCIND + L + LM
 
                         KPATOM = 0
-                        NOSIM = 3
+                        NOSIMI = 3
                         TOFILE = .FALSE.
                         TRIMAT = .TRUE.
                         EXP1VL = .FALSE.
@@ -239,13 +239,13 @@ C x-component
                         DIPORG(2) = CORD(2,IATNOW)
                         DIPORG(3) = CORD(3,IATNOW)
 
-                        FORQM3 = .TRUE.
-                        CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,
+                        RUNQM3 = .TRUE.
+                        CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,
      &                         WRK(KLAST),LWRK2,LABINT,INTREP,INTADR,
      &                         IATNOW,TOFILE,KPATOM,TRIMAT,DUMMY,EXP1VL,
      &                         DUMMY,IPRRSP)
 
-                        FORQM3 = .FALSE.
+                        RUNQM3 = .FALSE.
                         
                         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),
      &                           WRK(KLAST),NBAST,NORBT)
@@ -522,7 +522,7 @@ C
                CALL QM3LNO_M(WRK(KRRAOx),WRK(KTRMO),WRK(KUTR),
      &                      WRK(KUTRX),IATNOW,NOSIM,WRK(KWRK),LWRK1,I,
      &                      LM,L,WRK(JUBO),WRK(JRXYO),WRK(KUCMO),
-     &                      .FALSE.)
+     &                      .FALSE.,IPRINT)
             END IF
  520     CONTINUE
          IF (.NOT. INTDIR) CALL GPCLOSE(LUCCEF,'KEEP')
@@ -561,7 +561,7 @@ C
 C
 C---------------------------------------------------------------------
       SUBROUTINE QM3LNO_M(RRAOx,TRMO,UTR,UTRX,IATNOW,NOSIM,WRK,LWRK,
-     &                   INUM,LM,LNUM,UBO,RXYO,UCMO,TOFILE)
+     &                   INUM,LM,LNUM,UBO,RXYO,UCMO,TOFILE,IPRINT)
 C
 C  Arnfinn, Aug.-08: The master routine for QM3LNO_P
 C
@@ -608,10 +608,10 @@ C
       JRXYO = KRXYO + N2ORBX
       KLAST = JRXYO + N2ORBX
 
-
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 C
+      CALL MPIXBCAST(MXORB,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
@@ -632,6 +632,7 @@ C
       CALL MPIXBCAST(ISX,MXCORB,'INTEGER',MASTER)
       CALL MPIXBCAST(KSYMOP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(FORQM3,1,'LOGICAL',MASTER)
 
 
       DO J = NSYSBG(INUM), NSYSED(INUM)
@@ -709,8 +710,21 @@ C
 
       CALL QENTER('QM3LNO_S')
 
-
+      IPRRSP = IPRTMP
       QM3 = .TRUE.
+
+
+      CALL MPIXBCAST(MXORB,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(L,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
+
 
       KRRAOx = 1
       KTRMO  = KRRAOx + NNBASX
@@ -721,15 +735,6 @@ C
       KUCMO  = JRXYO  + N2ORBX
       KLAST1 = KUCMO  + NORBT*NBAST
 
-      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
-      CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
-      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(L,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(WRK(JUBO),N2ORBX,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
@@ -741,6 +746,7 @@ C
       CALL MPIXBCAST(ISX,MXCORB,'INTEGER',MASTER)
       CALL MPIXBCAST(KSYMOP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(FORQM3,1,'LOGICAL',MASTER)
 
       CALL DZERO(WRK(JRXYO),N2ORBX)
 
@@ -765,7 +771,7 @@ C x-component
          IATNOW = NUCIND + L + LM
 
          KPATOM = 0
-         NOSIM = 3
+         NOSIMI = 3
          TOFILE = .FALSE.
          TRIMAT = .TRUE.
          EXP1VL = .FALSE.
@@ -773,13 +779,12 @@ C x-component
          DIPORG(2) = CORD(2,IATNOW)
          DIPORG(3) = CORD(3,IATNOW)
 
-         FORQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,
+         RUNQM3 = .TRUE.
+         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,
      &              WRK(KLAST),LWRK2,LABINT,INTREP,INTADR,
      &              IATNOW,TOFILE,KPATOM,TRIMAT,DUMMY,EXP1VL,
      &              DUMMY,IPRRSP)
-
-         FORQM3 = .FALSE.
+         RUNQM3 = .FALSE.
          CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),
      &            WRK(KLAST),NBAST,NORBT)
          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
@@ -1021,7 +1026,7 @@ C x-component
                 IATNOW = NUCIND + L + LM
 
                 KPATOM = 0
-                NOSIM = 3
+                NOSIMI = 3
                 TOFILE = .FALSE.
                 TRIMAT = .TRUE.
                 EXP1VL = .FALSE.
@@ -1029,11 +1034,11 @@ C x-component
                 DIPORG(2) = CORD(2,IATNOW)
                 DIPORG(3) = CORD(3,IATNOW)
 
-                FORQM3 = .TRUE.
-                CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+                RUNQM3 = .TRUE.
+                CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,WRK(KLAST),
      &                      LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                      KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-                FORQM3 = .FALSE.
+                RUNQM3 = .FALSE.
                 CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
      &                    NBAST,NORBT)
               ELSE
@@ -1371,7 +1376,7 @@ C     ---------------------------------------------
          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
             CALL QM3QRO_M(WRK(KTRES),IATNOW,NOSIM,WRK(KWRK),LWRK1,I,
      &           ISYMT,LM,L,WRK(KUCMO),.FALSE.,ZYM1,ZYM2,ISYMV1,
-     &           ISYMV2,IPRINT)
+     &           ISYMV2)
          END IF
  520  CONTINUE
 
@@ -1419,7 +1424,7 @@ C
 C---------------------------------------------------------------------
       SUBROUTINE QM3QRO_M(TRES,IATNOW,NOSIM,WRK,LWRK,INUM,ISYMT,
      &                   LM,LNUM,UCMO,TOFILE,ZYM1,ZYM2,ISYMV1,
-     &                   ISYMV2,IPRINT)
+     &                   ISYMV2)
 C
 C  Arnfinn Aug. -08
 C  The master routine for QM3QRO_P
@@ -1471,7 +1476,7 @@ C
       KLAST = JTRES + N2ORBX
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNORBX,1,'INTEGER',MASTER)
@@ -1484,6 +1489,7 @@ C
       CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
       CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(FORQM3,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(LNUM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
@@ -1581,6 +1587,7 @@ C
       DIMENSION ISX(MXCORB), IPATOM(MXCENT)
 
       CALL QENTER('QM3QRO_S')
+      IPRRSP = IPRTMP
 
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNORBX,1,'INTEGER',MASTER)
@@ -1610,6 +1617,7 @@ C
       CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
       CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(FORQM3,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(L,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
@@ -1652,7 +1660,7 @@ C x-component
          IATNOW = NUCIND + L + LM
          
          KPATOM = 0
-         NOSIM = 3
+         NOSIMI = 3
          TOFILE = .FALSE.
          TRIMAT = .TRUE.
          EXP1VL = .FALSE.
@@ -1660,11 +1668,11 @@ C x-component
          DIPORG(2) = CORD(2,IATNOW)
          DIPORG(3) = CORD(3,IATNOW)
 
-         FORQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+         RUNQM3 = .TRUE.
+         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,WRK(KLAST),
      &           LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &           KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-         FORQM3 = .FALSE.
+         RUNQM3 = .FALSE.
          CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
      &           NBAST,NORBT)
 

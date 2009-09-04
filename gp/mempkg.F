@@ -371,7 +371,8 @@ Chj1  CALL QEXIT('MEMCHK  ')
 C
 C        error branch IF (MEMCK .NE. MEMID) THEN
 C
- 8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,2I25))')
+C        Arnfinn (/A/2A/A,3I10,2(/A,2I25)) -> (/A/2A/A,3I10,2(/A,1I25))
+ 8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,1I25))')
      *      ' MEMCHK ERROR, not a valid memget id in work(kalloc-1)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KALLOC,IALLOC =',KFIRST,KALLOC,IALLOC,

@@ -969,7 +969,7 @@ C
          IF (      INTTYP .EQ. 75 .OR. INTTYP .EQ. 66
      &        .OR. INTTYP .EQ. 67 .OR. INTTYP .EQ. 99
      &        .OR. INTTYP .EQ. 100 
-     &        .OR. ( (INTTYP .EQ. 29) .AND. FORQM3 .AND. INTDIR) ) THEN
+     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 .AND. INTDIR) ) THEN
             NATOMC = 0
 C
             DO 301 IATOMC = 1, NPOINT

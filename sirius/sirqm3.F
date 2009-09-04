@@ -97,6 +97,9 @@ C     Calculate RRa, Obar and ENSA and write these to file
 C     Calculate Ns and keep in memory (DFTNS).
 C     (Run QM3_NSP instead of QM3_NS if #nodes > 1, Arnfinn nov. -08)
       IF (NODTOT.GE.1) THEN 
+         IF (.NOT. INTDIR) THEN
+            CALL QUIT('Include .INTDIR in *QM3 when run in parallel')
+         END IF
          CALL QM3_NSP(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
       ELSE
          CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
@@ -209,7 +212,7 @@ C To here
                 IATNOW = NUCIND + L + LM
 
                 KPATOM = 0
-                NOSIM = 3
+                NOSIMI = 3
                 TOFILE = .FALSE.
                 TRIMAT = .TRUE.
                 EXP1VL = .FALSE.
@@ -217,11 +220,11 @@ C To here
                 DIPORG(2) = CORD(2,IATNOW)
                 DIPORG(3) = CORD(3,IATNOW)
 
-                FORQM3=.TRUE.
-                CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+                RUNQM3 = .TRUE.
+                CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,WRK(KLAST),
      &                      LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                      KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
-                FORQM3=.FALSE.
+                RUNQM3 = .FALSE.
 
                 IF (IPRINT.GT.15) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao_x matrix:'
@@ -429,7 +432,7 @@ C To here
                      IATNOW = NUCIND + L 
 
                      KPATOM = 0
-                     NOSIM = 1
+                     NOSIMI = 1
                      TOFILE = .FALSE.
                      TRIMAT = .TRUE.
                      EXP1VL = .FALSE.
@@ -437,11 +440,11 @@ C To here
                      DIPORG(2) = CORD(2,IATNOW)
                      DIPORG(3) = CORD(3,IATNOW)
 
-                     FORQM3=.TRUE.
-                     CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
+                     RUNQM3=.TRUE.
+                     CALL GET1IN(WRK(KMAT),'NPETES ',NOSIMI,WRK(KLAST),
      &                        LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
-                     FORQM3=.FALSE.
+                     RUNQM3=.FALSE.
                      IF (OLDTG) THEN
                         FACQ = -1.0D0*CHAOLD(IATNOW)
                      ELSE
@@ -666,7 +669,7 @@ C     The master routine
       KLAST=KDFTNS+MXQM3
       LWRK1=LWRK-KLAST+1
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
 C
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
       CALL MPIXBCAST(INTDIR,1,'LOGICAL',MASTER)
@@ -676,7 +679,6 @@ C
       CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
-      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ENSEL,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(FAC1,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
@@ -720,7 +722,7 @@ C     Collect data from all slaves
 
 C*********************************************************************
 
-      SUBROUTINE QM3_NSPS(WRK,LWRK,IPRINT)
+      SUBROUTINE QM3_NSPS(WRK,LWRK,IPRTMP)
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -753,7 +755,7 @@ C     The slave routine
       DIMENSION WRK(LWRK)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
-
+      IQM3PR = IPRTMP
       QM3 = .TRUE.
 
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
@@ -768,7 +770,6 @@ C     The slave routine
       CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
-      CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ENSEL,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(FAC1,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
@@ -793,7 +794,7 @@ C Run loop over MM nuclear charges
       IF (L .GT. 0) THEN
          IATNOW = NUCIND + L
          KPATOM = 0
-         NOSIM = 1
+         NOSIMI = 1
          TOFILE = .FALSE.
          TRIMAT = .TRUE.
          EXP1VL = .FALSE.
@@ -801,12 +802,12 @@ C Run loop over MM nuclear charges
          DIPORG(2) = CORD(2,IATNOW)
          DIPORG(3) = CORD(3,IATNOW)
 
-         FORQM3=.TRUE.
-         CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST2),
+         RUNQM3=.TRUE.
+         CALL GET1IN(WRK(KMAT),'NPETES ',NOSIMI,WRK(KLAST2),
      &               LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
-     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
 
-         FORQM3=.FALSE.
+         RUNQM3=.FALSE.
          IF (OLDTG) THEN
             FACQ = -1.0D0*CHAOLD(IATNOW)
          ELSE
@@ -965,7 +966,7 @@ C  /* Deck qm3_fmo */
                   IATNOW = NUCIND + L + LM
 
                   KPATOM = 0
-                  NOSIM = 3
+                  NOSIMI = 3
                   TOFILE = .FALSE.
                   TRIMAT = .TRUE.
                   EXP1VL = .FALSE.
@@ -973,11 +974,11 @@ C  /* Deck qm3_fmo */
                   DIPORG(2) = CORD(2,IATNOW)
                   DIPORG(3) = CORD(3,IATNOW)
 
-                  FORQM3=.TRUE.
-                  CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+                  RUNQM3=.TRUE.
+                  CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,WRK(KLAST),
      &                       LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                       KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
-                  FORQM3=.FALSE.
+                  RUNQM3=.FALSE.
 
                 ELSE
 
@@ -1062,7 +1063,7 @@ C       We use RRAOx in this case for the pot.energy integrals
                   CALL DZERO(WRK(KMAT),NNBASX)
 
                   KPATOM = 0
-                  NOSIM = 1
+                  NOSIMI = 1
                   TOFILE = .FALSE.
                   TRIMAT = .TRUE.
                   EXP1VL = .FALSE.
@@ -1070,11 +1071,11 @@ C       We use RRAOx in this case for the pot.energy integrals
                   DIPORG(2) = CORD(2,IATNOW)
                   DIPORG(3) = CORD(3,IATNOW)
 
-                  FORQM3=.TRUE.
-                  CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
+                  RUNQM3=.TRUE.
+                  CALL GET1IN(WRK(KMAT),'NPETES ',NOSIMI,WRK(KLAST),
      &                        LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
-                  FORQM3=.FALSE.
+                  RUNQM3=.FALSE.
 
                   FACQ =  -1.0D0*CHAOLD(IATNOW)
 
@@ -1611,7 +1612,7 @@ C                Calculate one-index transformed Rra.x integrals
                    CALL DZERO(WRK(KMAT),3*NNBASX)
 
                    KPATOM = 0
-                   NOSIM = 3
+                   NOSIMI = 3
                    TOFILE = .FALSE.
                    TRIMAT = .TRUE.
                    EXP1VL = .FALSE.
@@ -1619,11 +1620,11 @@ C                Calculate one-index transformed Rra.x integrals
                    DIPORG(2) = CORD(2,IATNOW)
                    DIPORG(3) = CORD(3,IATNOW)
 
-                   FORQM3=.TRUE.
-                   CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
+                   RUNQM3=.TRUE.
+                   CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIMI,WRK(KLAST),
      &                         LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                         KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
-                   FORQM3=.FALSE.
+                   RUNQM3=.FALSE.
                    CALL DZERO(WRK(KTRMO),NNORBX)
                    CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
      &                       NBAST,NORBT)

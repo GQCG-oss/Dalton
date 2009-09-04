@@ -2684,9 +2684,7 @@ C
   717             CONTINUE
   716           CONTINUE
   715         CONTINUE
-              IF (INTTYP .EQ. 29) THEN
-                NCOMS = NCOMS/LM3TMP
-              END IF
+              IF (INTTYP .EQ. 29) NCOMS = NCOMS/LM3TMP
             END IF
           END IF
         END IF
@@ -3896,8 +3894,11 @@ C  /* Deck efntyp */
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
+
+      CALL QENTER('EFNTYP')
+
       NOPTYP = 3*NATOM
-      IF (INTDIR .AND. FORQM3) NOPTYP = 3
+      IF (INTDIR .AND. FORQM3 .AND. RUNQM3) NOPTYP = 3
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
@@ -3950,6 +3951,7 @@ C     ... FORQM3
  110      CONTINUE
  60     CONTINUE
       END IF
+      CALL QEXIT('EFNTYP')
       RETURN
       END
 C  /* Deck efgtyp */

@@ -162,6 +162,8 @@ C        later to signal when integrals are for QM3 and when not).
          FORQM3 = .FALSE.
       END IF
 C
+      RUNQM3 = .FALSE.
+C
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
@@ -258,7 +260,6 @@ C
 C
       IF (RUNTWO .OR. RUNERI) FTRCTL = .TRUE.
 C     ..transformation control, old AO/MO files cannot be used any more.
-      FORQM3 = .FALSE.
 C
       CALL GETTIM(TEND,WEND)
       TIMHER = TEND - TIMHER
