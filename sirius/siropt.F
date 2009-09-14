@@ -747,7 +747,8 @@ C
          GO TO 700
       ELSE IF (ISTEP.LT.0) THEN
 C        close to convergence, no step control performed
-         IF (GNORM(3) .GT. GNRMSV) THEN
+         IF (ITMACN .GT. 1 .AND. GNORM(3) .GT. GNRMSV) THEN
+C            ... hjaaj: no test if restart (ITMACN .eq. 1)
             WRITE (LUW4,'(/A/A)')
      &         ' ERROR EXIT: gradient norm increasing in local region.',
      &         ' Probable cause: numerical round-off errors'//

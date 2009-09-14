@@ -116,6 +116,7 @@ C
 C
       LOGICAL CICALC, MOISNO, LDUMP
 C
+      CHARACTER   CONV_text*17
       CHARACTER*8 TABLE(4), RTNLBL(2), LAPRPC
       DATA TABLE/'********','OLDORB  ','NEWORB  ','STARTVEC'/
 C
@@ -356,6 +357,13 @@ C CBN+JK 03.01.06
 C------------------
          ESOLT = D0
       END IF
+C
+      IF (ICONV .EQ. 0) THEN
+         CONV_text = ' (NOT CONVERGED!)'
+      ELSE
+         CONV_text = '                 '
+      END IF
+C
       IF (CICALC) THEN
 C        CI calculation
          IF (DOCINO) THEN
@@ -365,16 +373,19 @@ C        CI calculation
          END IF
       ELSE IF (FLAG(2) .AND. MCTYPE .GT. 0) THEN
 C        MCSCF calculation
-         WRITE (LUW4,5020) ISTATE,EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+         WRITE (LUW4,5020) ISTATE,EMCSCF,CONV_text,
+     &      POTNUC,(EMCSCF-POTNUC-ESOLT)
          IF (FLAG(16) .OR. PCM) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (.NOT.DODFT) THEN
 C        ... DIIS-HF or QC-HF optimization
-             WRITE (LUW4,5021) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+             WRITE (LUW4,5021) EMCSCF,CONV_text,
+     &          POTNUC,(EMCSCF-POTNUC-ESOLT)
          ELSE
 C        ... DIIS-DFT or QC-DFT optimization
-             WRITE (LUW4,5022) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+             WRITE (LUW4,5022) EMCSCF,CONV_text,
+     &          POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (DOCCSD .AND. .NOT.(QM3)) LDUMP = .FALSE.
          IF (LDUMP) THEN
@@ -394,13 +405,13 @@ C        ... DIIS-DFT or QC-DFT optimization
  5010 FORMAT(/T6,'This was a CI-NO calculation.')
  5012 FORMAT(/T6,'This was a CI calculation.')
  5020 FORMAT( T6,'State number:',T31,I5,
-     *      //T6,'Final MCSCF energy:',T31,F20.12,
+     *      //T6,'Final MCSCF energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
- 5021 FORMAT(/T6,'Final HF energy:',T31,F20.12,
+ 5021 FORMAT(/T6,'Final HF energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
- 5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,
+ 5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
  5025 FORMAT( T6,'Solvation  energy:',T31,F20.12)
