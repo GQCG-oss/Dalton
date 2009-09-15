@@ -32,6 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
       SUBROUTINE DFTMOMO(CMO2,WORK,LFREE,IPRINT)
+C
+C     June 2008; PBHT MO overlap diagnostic
+C     Reference:
+C       Excitation energies in density functional theory: An evaluation
+C       and a diagnostic test
+C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
+C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
+C
 #include <implicit.h>
 #include <dummy.h>
 #include <inforb.h>
@@ -44,7 +52,7 @@ C
       KCMO2 = KCMOS + N2BASX
       KLAST = KCMO2 + 2*N2ORBX 
       LWRK  = LFREE - KLAST +1
-      IF(KLAST.GT.LFREE) CALL QUIT('NOMEM IN DFTMOMO')
+      IF(KLAST.GT.LFREE) CALL QUIT('Insufficient memory in DFTMOMO')
       CALL DZERO(WORK(KCMO2),2*N2ORBX)
       CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
       CALL DFTGMO(WORK(KCMOS),IPRINT)
@@ -59,8 +67,8 @@ C
      &     ' Electrons in DFTMOMO:', ELE
       CALL DCOPY(2*N2ORBX,WORK(KCMO2),1,CMO2,1)
 C
-      DO I = 1, NORBT
       DO J = 1, NORBT 
+      DO I = 1, NORBT
          IF(I.NE.J)CMO2(I,J,2)=CMO2(I,J,2)/SQRT(CMO2(I,I,2)*CMO2(J,J,2))
       END DO
       END DO
@@ -70,9 +78,9 @@ C
 C
       IF (IPRINT.GT.3) THEN
          CALL HEADER('Matrix < abs(phi_p) abs(phi_q) >',-1)
-         CALL OUTPUT(CMO2,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+         CALL OUTPUT(CMO2,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
          CALL HEADER('Matrix < phi_p^2 phi_q^2 >',-1)
-         CALL OUTPUT(CMO2(1,1,2),1, NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+         CALL OUTPUT(CMO2(1,1,2),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
       END IF
 C
       RETURN
