@@ -66,8 +66,8 @@ cat > energy_restart__1.dal <<'%EOF%'
 .CAS SPACE
  4 2 2 0
 *OPTIMIZATION
-.THRESH
-2.0D-3
+.MAX MACRO
+ 3
 **END OF DALTON INPUT
 %EOF%
 
@@ -143,7 +143,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.147613....." $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.147613.*NOT CONVERGED" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
@@ -159,7 +159,7 @@ done
 
 if [ $PASSED -eq 1 ]
 then
-  echo TEST ENDED PROPERLY
+  echo TEST ENDED AS EXPECTED
   exit 0
 else
   echo THERE IS A PROBLEM
