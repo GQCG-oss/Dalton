@@ -3358,7 +3358,7 @@ C for reduced E(2) and reduced S(2)
       END IF
       IF (DOMO2) THEN
          KCMO2 = 1
-         KLAST = KCMO2 + 2*NORBT*NORBT
+         KLAST = KCMO2 + 2*N2ORBX
          LWRK1 = LWRK + 1 - KLAST
          CALL DFTMOMO(WRK(KCMO2),WRK(KLAST),LWRK1,IPRPP)
       ELSE
@@ -6053,7 +6053,14 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
 C  /* Deck RSPPMO */
       SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
 C
-C     based on RSPPRO tuh
+C     June 2008; PBHT MO overlap diagnostic
+C     Reference: 
+C       Excitation energies in density functional theory: An evaluation
+C       and a diagnostic test
+C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
+C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
+C
+C     (subroutine based on RSPPRO tuh)
 C
 #include <implicit.h>
       PARAMETER(PTHRS = 1.D-08)
@@ -6067,6 +6074,9 @@ C
 #include <infvar.h>
  
       CALL HEADER('PBHT MO Overlap Diagnostic',-1)
+      WRITE(LUPRI,'(A/A/)')
+     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
+     &  '             J Chem Phys 128, 044118 (2008)'
       IF (NWOPT.GT.0) THEN 
 C        WRITE (LUPRI,1010) JWOPSY
 C        WRITE (LUPRI, '(2X,2A,/)')  '            I    A       ',

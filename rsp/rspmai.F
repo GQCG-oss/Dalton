@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -322,14 +322,14 @@ C
          CALL TITLER('MC-srDFT response calculation','*',103)
       ELSE IF (DOHFSRDFT) THEN
          CALL TITLER('HF-srDFT response calculation','*',103)
-      ELSE IF (DODFT .AND. NASHT.EQ.0) THEN
+      ELSE IF (DODFT .AND. NASHT.GT.0) THEN
          CALL TITLER('High-spin DFT response calculation','*',103)
       ELSE IF (DODFT) THEN
          CALL TITLER('DFT response calculation (TD-DFT)','*',103)
       ELSE IF (HSROHF) THEN
          CALL TITLER('High-spin ROHF response calculation','*',103)
       ELSE IF (TDHF) THEN
-         CALL TITLER('RHF response calculation','*',103)
+         CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
       ELSE IF (SOPPA) THEN
@@ -3826,7 +3826,7 @@ C      subroutine has been called before RSPMC).
 C
 C     Find out if TDHF or not :
 C
-      TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR.HSROHF)
+      TDHF = NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR. HSROHF
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if

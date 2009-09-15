@@ -147,10 +147,6 @@ C        exclude virt-virt contributions to B(2) matrix
 C        for .OPTORB iterations from ORPCTL
          IF (NOSIM .GT. 0 .AND. KZCONF .GT. 0) NEEDMU(6) = 1
       ENDIF
-      IF (ROKS.AND..NOT.TDHF) THEN
-         CALL QUIT('RSPOLI: ROKS not implemented for '
-     &        //   'MO-integral method')
-      END IF
 
       DOFXC  = NISHT .GT. 0 .OR. DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
       DOFXV  = NASHT .GT. 0
@@ -257,7 +253,9 @@ C
 C If DIRFCK compute Fock matrices in AO basis
 C If also single determinant, then nothing to do in MO part
 C
-      IF (DIRFCK .AND. (TDHF .OR. ROKS)) GO TO 1000
+      IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
+      IF (DODFT) GO TO 1000
+C     ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
