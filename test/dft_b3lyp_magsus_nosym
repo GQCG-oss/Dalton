@@ -6,7 +6,7 @@ info='
    Molecule:         HOF
    Wave Function:    DFT (B3LYP) / 6-31G** 
    Test Purpose:     Test magnetizability and molecular
-                     g-factor calculation 
+                     rotational g-factor calculation 
 '
 
 molecule='BASIS
