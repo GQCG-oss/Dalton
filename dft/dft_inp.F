@@ -134,7 +134,7 @@ c     >.FINE  < grid parameters.
 c     >.ULTRAF< grid parameters.
  14   CONTINUE
       RADINT = 2D-15
-      ANGINT = 65
+      ANGINT = 64
       GO TO 100 
 c     >.GRID1 < grid parameters.
  15   CONTINUE
@@ -167,6 +167,14 @@ c     >.GRID5 < grid parameters.
       ANGINT = 47
       GO TO 100 
  300  CONTINUE
+
+      if (angint .gt. 64) then
+!radovan:
+!       angint > 64 not implemented
+!       higher angint defaults to the poorest angular grid!
+!       so better quit here in this case
+        call quit('angint > 64 not implemented')
+      end if
 
       CALL HEADER('Settings for DFT calculation:',0)
 c     code goes here
