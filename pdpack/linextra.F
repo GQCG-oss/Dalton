@@ -306,6 +306,7 @@ C  3-Nov-1997 Hans Joergen Aa. Jensen
 C
 C Purpose: extract symmetric part of general matrix AGE
 C          to symmetric matrix ASI.
+C          Can be used in-place ( CALL DGETSI(N,A,A) )
 C
 #include <implicit.h>
       DIMENSION AGE(N,*), ASI(N,*)
