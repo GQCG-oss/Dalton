@@ -65,6 +65,11 @@ cat > energy_symm.dal <<'%EOF%'
  8
 .CAS SPACE
  4 2 2 0
+*PRINT LEVELS
+.PRINTF
+ 1 0
+ 51
+# p6flag(51) is code for checking that reduced matrix redH is symmetric
 *END OF INPUT
 %EOF%
 #######################################################################
