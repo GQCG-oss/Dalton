@@ -304,9 +304,19 @@ C
 #include <ecpinf.h>
 #include <qm3.h>
 #include <r12int.h>
-CKR TMP
-#include "maxorb.h"
+C
+      LOGICAL FIRST_CALL
+      SAVE    FIRST_CALL
+      DATA    FIRST_CALL/.TRUE./
+#ifdef VAR_DEBUG
 #include "infpar.h"
+
+      write(0,*) 'info, REAINI called by node ',mynum
+      write(0,*) 'info, REAINI    FIRST_CALL  ',FIRST_CALL
+#endif
+C
+      IF (.NOT. FIRST_CALL) GO TO 9999
+C     ... make sure variables are not reinitialized, maybe after reading input
 C
 C     ccom.h:
 C
@@ -328,14 +338,14 @@ C     ... parameter MAXPRD is in cbirea.h
       ATOMBA = .FALSE.
 !     ATOMDF = .FALSE. ! done each time MOLECULE.INP is opened
       OLDNRM = .FALSE.
-      WRTLIN  = .FALSE.
+      WRTLIN = .FALSE.
       TOL_SYMADD = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
 C
 C     Initialize effective core potential parameters (ecpinf.h)
 C
-      ECP = .FALSE.
+      ECP    = .FALSE.
       NTYECP = 0
 C
 C     Initialize ISUBSI , NSISY from qm3.h
@@ -348,6 +358,9 @@ C
 C     Initialize LMULBS from r12int.h (done here because used in READIN)
 C
       LMULBS = .FALSE.
+C
+      FIRST_CALL = .FALSE.
+ 9999 CONTINUE
       RETURN
       END
 C  /* Deck readin */
@@ -6667,14 +6680,15 @@ C
 #include <r12int.h>
       CHARACTER*80 A,BASNAM
       LOGICAL NEXTMB
-      DO 20 I=1,80
-       BASNAM(I:I) = ' '
-       DO 20 J=1,MXMULB
-        MULNAM(J)(I:I) = ' '
-   20  CONTINUE
+
+      BASNAM = ' '
+      DO J=1,MXMULB
+        MULNAM(J) = ' '
+      END DO
+
       N = 0
       NEXTMB = .FALSE.
-      DO 10 I=1,80
+      DO I=1,80
        IF (A(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
         NEXTMB = .TRUE.
         K = I
@@ -6686,13 +6700,20 @@ C
         MULNAM(N)(1:I-K) = A(K:L)
         IF (N .EQ. 1) BASNAM(1:I-K) = A(K:L)
         IF (IPREAD .GT. 1) THEN
-          WRITE (LUPRI,'(/A)') ' Basis set "'//
-     &    MULNAM(N)(1:I-K)//'" from the basis set library will be used.'
+          WRITE (LUPRI,'(/A,I2,A)') ' Basis set',N,' is  "'//
+     &    MULNAM(N)(1:I-K)//'" from the basis set library.'
         END IF
        END IF
-   10 CONTINUE
-      LMULBS = LMULBS .OR. (N .GT. 1)
+      END DO
       NMULBS = N
+
+      IF (.NOT. LMULBS .AND. N.GT.1) THEN
+         WRITE (LUPRI,'(/A/5X,A/A)')
+     &      ' INFO: basis set line contains more than one basis set:',
+     &      A(1:L),
+     &      ' INFO: ".R12AUX" activated automatically.'
+         LMULBS = .TRUE.
+      END IF
       RETURN
       END
       SUBROUTINE LINE4(LINE,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
