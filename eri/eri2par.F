@@ -73,15 +73,6 @@ C
       ELSE
          IPRNOD = 0
       END IF
-C                                                                                                     
-C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
-C     initialize it properly                                                                        
-C                                                                                                     
-      IF (FIRST) THEN
-          RELCAL = .FALSE.
-          TSTINP= .FALSE.
-         CALL REAINI(0,RELCAL,TSTINP)
-      END IF
 C
 C     Tell nodes whether this is an ERI or HERMIT run. Send IPRNOD (PVM: NCODE)
 C
@@ -1335,6 +1326,15 @@ C
 C     Set hermit
 C
       IF (NEWGEO) RDINPC = .FALSE.
+C                                                                                                     
+C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
+C     initialize it properly                                                                        
+C                                                                                                     
+      IF (FIRST) THEN
+          RELCAL = .FALSE.
+          TSTINP= .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+      END IF
 C
       CALL SETHER(0,NEWGEO,WORK,LWORK)
 C

@@ -1279,6 +1279,15 @@ C
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
+C                                                                                                     
+C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
+C     initialize it properly                                                                        
+C                                                                                                     
+      IF (FIRST) THEN
+          RELCAL = .FALSE.
+          TSTINP= .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+      END IF
 C
       CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
