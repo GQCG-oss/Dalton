@@ -304,6 +304,9 @@ C
 #include <ecpinf.h>
 #include <qm3.h>
 #include <r12int.h>
+CKR TMP
+#include "maxorb.h"
+#include "infpar.h"
 C
 C     ccom.h:
 C
@@ -7149,7 +7152,7 @@ C
       END IF
 c
       IF (ATOMBA) THEN
-         WRITE (LINE(ISTART:),'(A6,A25)') 'Basis='//BASNAM(1:25)
+         WRITE (LINE(ISTART:),'(A6,A25)') 'Basis=',BASNAM(1:25)
          ISTART = ISTART + 31
       END IF
 C
