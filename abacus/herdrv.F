@@ -3649,7 +3649,7 @@ C/* Deck herini */
 C
 C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
 C
-      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA .AND. .NOT. DIRCAL) THEN
+      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
          NEWTRA = .TRUE.
          WRITE(LUPRI,'(/4X,A)') 'INFORMATION: Switched to "new" '//
      &     'integral transformation (from 1988 ;-) )',
