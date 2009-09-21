@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -2506,12 +2506,7 @@ C           NUC - number of uncontracted shells in AO-block
 C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
-            IF (J. EQ. 1) THEN
-               READ (MLINE(NMLINE),'(BN,A1,I4,I5)')
-     &              FRMT,NUCIJ,NRCIJ
-            ELSE
-               READ (MLINE(NMLINE),'(BN,A1,I4,1I5)') FRMT,NUCIJ,NRCIJ
-            END IF
+            READ (MLINE(NMLINE),'(BN,A1,I4,I5)') FRMT,NUCIJ,NRCIJ
             IF (IPREAD .GT. 3) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
 Chj-aug99:     if (uncont) force uncontracted in ACPORB
