@@ -1,0 +1,47 @@
+#!/bin/csh -f
+# cmprm or cmprm.csh  900119-hjaaj -- based on idea by tuh
+# revision 920220-hjaaj: check that $cmpdir is not same as `pwd`
+# 920831-hjaaj: -v option; 930225-hjaaj: n_rm (count # removed files)
+#
+set nargv=$#argv
+if ( $nargv == 0) then
+   echo "Usage: cmprm [-v] [-d directory] file1 [file2 [...[filen]]]"
+   exit
+endif
+set rmlog=off
+set cmpdir=for
+if ( x$1 == "x-v" ) then
+   set rmlog=on
+   shift
+endif
+if ( x$1 == "x-d" ) then
+   if ( $nargv <= 2) then
+      echo "Usage: cmprm [-d directory] file1 [file2 [...[filen]]]"
+      exit
+   endif
+   set cmpdir=$2
+   shift; shift
+endif
+if ( ! -d $cmpdir ) then
+   echo "cmprm: compare directory $cmpdir does not exist"
+   exit 1
+endif
+set thisdir=`pwd`
+cd $cmpdir
+if ( "`pwd`" == $thisdir ) then
+   echo "cmprm: compare directory cannot be current working directory"
+   exit 2
+endif
+cd $thisdir
+@ n_fi = 0
+@ n_rm = 0
+foreach i ($*)
+   @ n_fi++
+   cmp -s "$i" "$cmpdir/$i"
+   if (! $status) then
+      @ n_rm++
+      if ($rmlog == 'on') echo $n_rm : rm "$i"
+      rm "$i"
+   endif
+end
+echo "cmprm: $n_rm files removed out of the $n_fi files compared."
