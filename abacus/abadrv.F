@@ -681,6 +681,7 @@ C
 #include <cbiwlk.h>
 #include <dftcom.h>
 #include <cbilnr.h>
+#include <qmmm.h>
 C
 C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
@@ -1404,6 +1405,9 @@ C
          MASSVE = .FALSE.
          DARWIN = .FALSE.
       END IF
+
+      IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
+
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
       WRITE (LUPRI,'(A,I5/)') ' Default print level:    ',IPRDEF

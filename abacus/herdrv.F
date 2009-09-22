@@ -282,6 +282,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <qm3.h>
+#include <qmmm.h>
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
@@ -1546,6 +1547,8 @@ C
       CALL SRTINP(WORD)
  1000 CONTINUE
 C
+      IF (QMMM) CALL READMM(WORK,LWORK)
+
       CALL SETDCH
       CALL GPCLOSE(LUCMD,'KEEP')
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS

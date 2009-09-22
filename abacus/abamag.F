@@ -506,6 +506,7 @@ C
 #include <onecom.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <qmmm.h>
 cDM added to pass vectors to MAGPCMSEC
 #include <pcmdef.h>
 #include <pcm.h>
@@ -586,6 +587,19 @@ C
             KLAST  = KSLEXP + NCOMP
             LWRK   = LWORK - KLAST + 1
             CALL QM3B2(WORK(KSLEXP),DENMAT,WORK(KLAST),LWRK)
+            IF (IPRINT .GT. 5) THEN
+               CALL AROUND('Second-order QM/MM contribution')
+               CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
+            END IF
+            CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+         END IF
+C
+         IF (QMMM .AND. (WORD .EQ. 'DIASUS')) THEN
+            NCOMP  = 6
+            KSLEXP = 1
+            KLAST  = KSLEXP + NCOMP
+            LWRK   = LWORK - KLAST + 1
+            CALL QMMMB2(WORK(KSLEXP),DENMAT,WORK(KLAST),LWRK,IPRINT)
             IF (IPRINT .GT. 5) THEN
                CALL AROUND('Second-order QM/MM contribution')
                CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)

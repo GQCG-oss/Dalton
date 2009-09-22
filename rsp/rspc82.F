@@ -593,13 +593,7 @@ C
 #include <inftap.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
-C-----------------------
-C CBN+JK 03.01.06
-C-----------------------
 #include <gnrinf.h>
-C-----------------------
-C CBN+JK 03.01.06
-C-----------------------
 C
 C
 C ALLOCATE WORK SPACE
@@ -672,16 +666,10 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION
 C
-C---------------------
-C CBN+JK 03.01.06
-C---------------------
-      IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
-C---------------------
-C CBN+JK 03.01.06
-C---------------------
 C
 C *** END OF RSPLIN
 C

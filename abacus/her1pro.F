@@ -3894,11 +3894,13 @@ C  /* Deck efntyp */
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
+#include <gnrinf.h>
 
       CALL QENTER('EFNTYP')
 
       NOPTYP = 3*NATOM
       IF (INTDIR .AND. FORQM3 .AND. RUNQM3) NOPTYP = 3
+      IF (QMMM .AND. RUNQM3) NOPTYP = 3
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
@@ -3971,8 +3973,10 @@ C  /* Deck efgtyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
+#include <gnrinf.h>
 C
       NOPTYP = 6*NATOM
+      IF (QMMM .AND. RUNQM3) NOPTYP = 6
       CALL NTYPTS(NOPTYP)
       CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
 C

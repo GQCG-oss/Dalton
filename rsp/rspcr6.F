@@ -188,6 +188,7 @@ C
 #include <infinp.h>
 #include <infpri.h>
 #include <dftcom.h>
+#include <gnrinf.h>
 C
       DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -256,6 +257,43 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
+      IF (QMMM) THEN
+         IF (TDHF) THEN
+             CALL QMMMCRO(VECB, VECC, VECD,
+     *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVB,KZYVC,KZYVD,
+     *                 ISYMA,ISYMB,ISYMC,ISYMD,CMO,MJWOP)
+            CALL QMMMCRO(VECB, VECD, VECC,
+     *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMD),WRK(KZYMC),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVB,KZYVD,KZYVC,
+     *                 ISYMA,ISYMB,ISYMD,ISYMC,CMO,MJWOP)
+            CALL QMMMCRO(VECC, VECB, VECD,
+     *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),WRK(KZYMD),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVC,KZYVB,KZYVD,
+     *                 ISYMA,ISYMC,ISYMB,ISYMD,CMO,MJWOP)
+            CALL QMMMCRO(VECC, VECD, VECB,
+     *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMD),WRK(KZYMB),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVC,KZYVD,KZYVB,
+     *                 ISYMA,ISYMC,ISYMD,ISYMB,CMO,MJWOP)
+            CALL QMMMCRO(VECD, VECC, VECB,
+     *                 ETRS,XINDX,WRK(KZYMD),WRK(KZYMC),WRK(KZYMB),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVD,KZYVC,KZYVB,
+     *                 ISYMA,ISYMD,ISYMC,ISYMB,CMO,MJWOP)
+            CALL QMMMCRO(VECD, VECB, VECC,
+     *                 ETRS,XINDX,WRK(KZYMD),WRK(KZYMB),WRK(KZYMC),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVD,KZYVB,KZYVC,
+     *                 ISYMA,ISYMD,ISYMB,ISYMC,CMO,MJWOP)
+         ELSE
+            CALL QUIT('CR-QM/MM only implemented for TDHF/TDDFT')
+         END IF
+      END IF
+
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          VAL = DDOT(KZYVA,VECA,1,ETRS,1)

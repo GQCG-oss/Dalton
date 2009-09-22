@@ -858,6 +858,7 @@ C
 #include <huckel.h>
 #include <symmet.h>
 #include <qm3.h>
+#include <gnrinf.h>
 #include <elweak.h>
 C
 #include <ibtfun.h>
@@ -969,7 +970,9 @@ C
          IF (      INTTYP .EQ. 75 .OR. INTTYP .EQ. 66
      &        .OR. INTTYP .EQ. 67 .OR. INTTYP .EQ. 99
      &        .OR. INTTYP .EQ. 100 
-     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 .AND. INTDIR) ) THEN
+     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 .AND. INTDIR) 
+     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 .AND. QMMM) 
+     &        .OR. ( (INTTYP .EQ. 30) .AND. RUNQM3 .AND. QMMM) ) THEN
             NATOMC = 0
 C
             DO 301 IATOMC = 1, NPOINT

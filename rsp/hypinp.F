@@ -523,13 +523,11 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
-         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
+
+         IF (QM3 .OR. QMMM) THEN
+          WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
      *      ' Second harmonic generation                     : SHG='
@@ -946,13 +944,11 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
-         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
+
+         IF (QM3 .OR. QMMM) THEN
+          WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')
      *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='

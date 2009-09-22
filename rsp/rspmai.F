@@ -1142,13 +1142,7 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 #include "channel.h"
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
 #include <gnrinf.h>
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ','.DIPVEL',
      *            '.DIPVLX', '.DIPVLY', '.DIPVLZ', '.DIPMAG','.DIPMGX',
@@ -1529,13 +1523,11 @@ C ------------------
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
-         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
+
+         IF (QM3 .OR. QMMM) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF
+
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
@@ -2054,13 +2046,11 @@ C     ---------------------------------------------
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
-         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
+
+         IF (QM3 .OR. QMMM) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF 
+
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
      &         ' Restricted channel RPA,   excitations from orbs:',
@@ -4028,9 +4018,6 @@ C
         ENDDO
       END IF
 C
-C----------------------
-C CBN+JK 03.01.06
-C----------------------
       IF (QM3) THEN
         IF (OLDTG .OR. (.NOT. LOSPC)) THEN
           CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
@@ -4040,9 +4027,6 @@ C----------------------
  21       CONTINUE
         END IF
       END IF
-C----------------------
-C CBN+JK 03.01.06
-C----------------------
 
       IF (SOPPA) THEN
 C
@@ -4424,14 +4408,7 @@ C
 #include <infinp.h>
 #include <inftap.h>
 #include <esg.h>
-C
-C------------------
-C CBN+JK 03.01.06
-C------------------
 #include <gnrinf.h>
-C------------------
-C CBN+JK 03.01.06
-C------------------
       DATA TABLE /'.ROOTS', '.THCPP ', '.MAX IT', '.MAXITO', '.THCLR ',
      *            '.RESTPP','.PRINT ', '.STATE '/
 C
@@ -4547,13 +4524,10 @@ C
      *      ,EPSOL
          END IF
 C
-C------------------
-C CBN+JK, 03.01.06
-C------------------
-         IF (QM3) WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-C------------------
-C CBN+JK, 03.01.06
-C------------------
+         IF (QM3 .OR. QMMM) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF
+
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='
      *       ,IPRPP

@@ -1140,7 +1140,7 @@ C
 CSONIA
 #include <grdccpt.h>
 #include <infpar.h>
-      PARAMETER (NDIR = 8, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 9, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1153,7 +1153,7 @@ Clf
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
      &             '*OPTIMI', '*NMDDRV', '*READIN',
-     &             '*PCM   ', '*QM3   '/
+     &             '*PCM   ', '*QM3   ', '*QMMM  '/
       DATA TABLE  /'.PRINT ', '.ITERAT', '.PRIERR',
      &             '.INTEGR', '.WAVE F', '.PROPER',
      &             '.INPTES', '.PARALL', '.DIRECT',
@@ -1547,7 +1547,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*READIN', '*PCM   ', '*QM3   '
+C              '*READIN', '*PCM   ', '*QM3   ', '*QMMM  '
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
@@ -1561,7 +1561,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8), I
+               GOTO (1,2,3,4,5,6,7,8,9), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1626,6 +1626,10 @@ C     "*QM3   " input
     8 CONTINUE
         CALL QM3INP(WORD)
       GO TO 200
+    9 CONTINUE
+        CALL QMMMIN(WORD)
+      GO TO 200
+
 C     "*END OF" or "**something"
     1 CONTINUE
 C

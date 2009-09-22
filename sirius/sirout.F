@@ -101,13 +101,8 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <gnrinf.h>
-C----------------
-C CBN+JK 03.01.06
-C----------------
 #include <qm3.h>
-C----------------
-C CBN+JK 03.01.06
-C----------------
+#include <qmmm.h>
 C
 C
 C EXTERNAL FUNCTIONS
@@ -342,19 +337,17 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-C------------------
-C CBN+JK 03.01.06
-C------------------
+
       ELSE IF (QM3) THEN
          WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
          WRITE(LUW4,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
          WRITE(LUW4,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
          WRITE(LUW4,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUW4,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
+      ELSE IF (QMMM) THEN
+         WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
+         WRITE(LUW4,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
       ELSE
-C------------------
-C CBN+JK 03.01.06
-C------------------
          ESOLT = D0
       END IF
 C
@@ -388,6 +381,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      &          POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (DOCCSD .AND. .NOT.(QM3)) LDUMP = .FALSE.
+         IF (DOCCSD .AND. .NOT.(QMMM)) LDUMP = .FALSE.
          IF (LDUMP) THEN
             LAPRPC = 'ENERGY  '
             CALL WRIPRO(EMCSCF,"SCF/DFT   ",0,

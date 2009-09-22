@@ -715,11 +715,17 @@ C
 C
       PARAMETER( D0=0.0D0 )
       CHARACTER*1 DIPOP
-      DIMENSION GAMMA(3,3,3,3), DIPOP(3)
+      CHARACTER*8 DIQMMM
+      DIMENSION GAMMA(3,3,3,3), DIPOP(3), DIQMMM(3)
 C
       DIPOP(1) = 'X'
       DIPOP(2) = 'Y'
       DIPOP(3) = 'Z'
+
+      DIQMMM(1) = 'X       '
+      DIQMMM(2) = 'Y       '
+      DIQMMM(3) = 'Z       '
+
 C
       CALL HEADER(' Summary of gamma values for a set of frequencies',0)
       WRITE(LUPRI,'(3(A,F10.6,/))') '@ B-freq:',FREQB,
@@ -737,6 +743,12 @@ C
             WRITE(LUPRI,'(A,8(A1),F16.4)') 
      *           '@ gamma(',DIPOP(I),';',DIPOP(I),',',DIPOP(J),
      *           ',',DIPOP(J),')',GAMMA(I,I,J,J)
+
+            CALL WRIPRO(GAMMA(I,I,J,J),"CR-SCF/DFT",4,
+     *                  DIQMMM(I),DIQMMM(I),
+     *                  DIQMMM(J),DIQMMM(J),
+     *                  FREQB,FREQC,FREQD,
+     *                  1,0,0,0)
          END IF
          IF (I.NE.J) THEN
             IF (GAMMA(I,J,J,I) .EQ. D0) THEN
@@ -745,6 +757,12 @@ C
                WRITE(LUPRI,'(A,8(A1),F16.4)') 
      *              '@ gamma(',DIPOP(I),';',DIPOP(J),',',DIPOP(J),
      *           ',',DIPOP(I),')',GAMMA(I,J,J,I)
+            CALL WRIPRO(GAMMA(I,J,J,I),"CR-SCF/DFT",4,
+     *                  DIQMMM(I),DIQMMM(J),
+     *                  DIQMMM(J),DIQMMM(I),
+     *                  FREQB,FREQC,FREQD,
+     *                  1,0,0,0)
+
             END IF
             IF (GAMMA(I,J,I,J) .EQ. D0) THEN
                IZERO = IZERO + 1
@@ -752,6 +770,11 @@ C
                WRITE(LUPRI,'(A,8(A1),F16.4)') 
      *              '@ gamma(',DIPOP(I),';',DIPOP(J),',',DIPOP(I),
      *           ',',DIPOP(J),')',GAMMA(I,J,I,J)
+            CALL WRIPRO(GAMMA(I,J,I,J),"CR-SCF/DFT",4,
+     *                  DIQMMM(I),DIQMMM(J),
+     *                  DIQMMM(I),DIQMMM(J),
+     *                  FREQB,FREQC,FREQD,
+     *                  1,0,0,0)
             END IF
          END IF
          GAMAVE=GAMAVE + 
