@@ -33,8 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C-----------------------------------------------------------------------
 C  /* Deck qm3lno */
-      SUBROUTINE QM3LNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,EVECS,
-     &               WRK,LWRK)
+      SUBROUTINE QM3LNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,DVTR,
+     &                  EVECS,WRK,LWRK)
 C
 C  CBN+JK, Nov. 05
 C
@@ -62,17 +62,13 @@ C
 
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
-      DIMENSION UDVTR(*)
+      DIMENSION UDVTR(*), DVTR(*)
       DIMENSION WRK(*), DV(*), CREF(*)
       LOGICAL LOPEN 
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-
-      IF (NASHT .GT. 0) THEN
-         CALL QUIT('QM3 only implemented for clsoed shell')
-      ENDIF
 
       LOPEN = .FALSE.
 
@@ -94,11 +90,12 @@ C
       ELSE
         KRRAOx  = KRXYO   + NOSIM*N2ORBX
       ENDIF
-      KTRMO   = KRRAOx  + NNBASX
+      KURXAC  = KRRAOx  + NNBASX
+      KTRMO   = KURXAC  + N2ASHX
       KUTR    = KTRMO   + NNORBX
       KUTRX   = KUTR    + N2ORBX
       KWRK    = KUTRX   + N2ORBX
-      LWRK1   = LWRK    - KWRK      
+      LWRK1   = LWRK    - KWRK
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3LNO',-KWRK,LWRK)
 
@@ -110,6 +107,7 @@ C
       CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
       CALL DZERO(WRK(KRRAOx),NNBASX)
+      CALL DZERO(WRK(KURXAC),N2ASHX)
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
       CALL DZERO(WRK(KUTRX),N2ORBX)
@@ -184,14 +182,13 @@ C--------------------------------------------------------
          ELSE
            CALL DAXPY(N2ORBX,FAC,WRK(KUTGX),1,WRK(JRXYO),1)
          ENDIF
- 
-C        Since only hf/dft closed shell no contribution can arrise from 
+
+C        if hf/dft closed shell no contribution can arrise from
 C        the one-index transformed electric field if triplet.
-C        Also, if LGSPOL neglect the time-dependece of the expectation value 
-C        contained in the interaction operator, i.e. keep the ground state polarization only. 
-C        
-  
-         IF (TRPLET. OR. LGSPOL) GOTO 300
+C        Also, if LGSPOL neglect the time-dependece of the expectation value
+C        contained in the interaction operator, i.e. keep the ground state polarization only.
+C
+         IF ( ((NASHT.EQ.0) .AND. (TRPLET)) .OR. (LGSPOL) ) GOTO 300
 
 C-------------------------------------------------------
 C 2. Construct -alpha \sum_a <0|Q_a|0>Rra
@@ -223,6 +220,7 @@ C x-component
                      CALL DZERO(WRK(KTRMO),NNORBX)
                      CALL DZERO(WRK(KUTR),N2ORBX)
                      CALL DZERO(WRK(KUTRX),N2ORBX)
+                     CALL DZERO(WRK(KURXAC),N2ASHX)
 
                      IF (INTDIR) THEN
                         KMAT = KWRK
@@ -245,27 +243,59 @@ C x-component
      &                         IATNOW,TOFILE,KPATOM,TRIMAT,DUMMY,EXP1VL,
      &                         DUMMY,IPRRSP)
                         RUNQM3 = .FALSE.
-                        
+
+                        IF (QMDAMP) THEN
+                          DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &                           (DIPORG(2)-QMCOM(2))**2 +
+     &                           (DIPORG(3)-QMCOM(3))**2
+                          DIST = SQRT(DIST)
+                          DFACT = (1-exp(-ADAMP*DIST))**3
+                          CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+                        ENDIF
+
                         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),
      &                           WRK(KLAST),NBAST,NORBT)
                         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                         CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                        FACx = FAC * QM3QLM(WRK(KUTRX))
-                        CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+                        IF (NASHT .GT. 0) CALL GETACQ(WRK(KUTRX),
+     &                                                WRK(KURXAC))
+                        IF (TRPLET) THEN
+                          FACx = FAC*SLVTLM(UDVTR,WRK(KURXAC),
+     &                                      WRK(KUTRX),TAC)
+                          CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,
+     &                               WRK(JRXYOT),1)
+                        ELSE
+                          FACx = FAC*SLVQLM(UDV,WRK(KURXAC),
+     &                                      WRK(KUTRX),TAC)
+                          CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,
+     &                               WRK(JRXYO),1)
+                        ENDIF
                      ELSE
                         CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
                         CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),
      &                       WRK(KWRK),NBAST,NORBT)
                         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                         CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                        FACx = FAC * QM3QLM(WRK(KUTRX))
-                        CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+                        IF (NASHT .GT. 0) CALL GETACQ(WRK(KUTRX),
+     &                                                WRK(KURXAC))
+                        IF (TRPLET) THEN
+                         FACx = FAC*SLVTLM(UDVTR,WRK(KURXAC),
+     &                                     WRK(KUTRX),TAC)
+                         CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,
+     &                              WRK(JRXYOT),1)
+                        ELSE
+                         FACx = FAC*SLVQLM(UDV,WRK(KURXAC),
+     &                                     WRK(KUTRX),TAC)
+                         CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,
+     &                              WRK(JRXYO),1)
+                        ENDIF
                      ENDIF
 C y-component
                      CALL DZERO(WRK(KRRAOx),NNBASX)
                      CALL DZERO(WRK(KTRMO),NNORBX)
                      CALL DZERO(WRK(KUTR),N2ORBX)
                      CALL DZERO(WRK(KUTRX),N2ORBX)
+                     CALL DZERO(WRK(KURXAC),N2ASHX)
 
                      IF (INTDIR) THEN
                         CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),
@@ -277,13 +307,23 @@ C y-component
                      ENDIF
                      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                      CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                     FACy = FAC * QM3QLM(WRK(KUTRX))
-                     CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
+                     IF (NASHT .GT. 0) CALL GETACQ(WRK(KUTRX),
+     &                                             WRK(KURXAC))
+                     IF (TRPLET) THEN
+                      FACy = FAC*SLVTLM(UDVTR,WRK(KURXAC),
+     &                                  WRK(KUTRX),TAC)
+                      CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYOT),1)
+                     ELSE
+                      FACy = FAC*SLVQLM(UDV,WRK(KURXAC),WRK(KUTRX),TAC)
+                      CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
+                     ENDIF
+
 C z-component
                      CALL DZERO(WRK(KRRAOx),NNBASX)
                      CALL DZERO(WRK(KTRMO),NNORBX)
                      CALL DZERO(WRK(KUTR),N2ORBX)
                      CALL DZERO(WRK(KUTRX),N2ORBX)
+                     CALL DZERO(WRK(KURXAC),N2ASHX)
                      
                      IF (INTDIR) THEN
                         CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),
@@ -295,8 +335,17 @@ C z-component
                      ENDIF
                      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
                      CALL ONEXH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX))
-                     FACz = FAC * QM3QLM(WRK(KUTRX))
-                     CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
+                     IF (NASHT .GT. 0) CALL GETACQ(WRK(KUTRX),
+     &                                             WRK(KURXAC))
+                     IF (TRPLET) THEN
+                       FACz = FAC*SLVTLM(UDVTR,WRK(KURXAC),
+     &                                   WRK(KUTRX),TAC)
+                       CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYOT),1)
+                     ELSE
+                       FACz = FAC*SLVQLM(UDV,WRK(KURXAC),WRK(KUTRX),TAC)
+                      CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
+                     ENDIF
+
  522              CONTINUE
  521           CONTINUE
             END IF
@@ -318,6 +367,7 @@ C--------------------------------------------
 
 
       IF (TRPLET) THEN
+         CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,EVECS(1,1),WRK(KRXYO))
          CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYOT))
       ELSE
          CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYO))
@@ -877,8 +927,8 @@ C
       END IF
 
       LOPEN = .FALSE.
-  
-      IF (TRPLET) CALL QUIT('TRIPLET NOT IMPLEMENTED FOR QR-QM/MM YET')
+
+      IF (NASHT.GE.1) CALL QUIT('ONLY CLOSED SHELL FOR QR-QM/MM')
 
       KCREF   = 1
       KTRES   = KCREF   + NCREF
@@ -1038,6 +1088,16 @@ C x-component
      &                      LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                      KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
                 RUNQM3 = .FALSE.
+
+                IF (QMDAMP) THEN
+                  DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &                   (DIPORG(2)-QMCOM(2))**2 +
+     &                   (DIPORG(3)-QMCOM(3))**2
+                  DIST = SQRT(DIST)
+                  DFACT = (1-exp(-ADAMP*DIST))**3
+                  CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+                ENDIF
+
                 CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
      &                    NBAST,NORBT)
               ELSE
@@ -1047,7 +1107,7 @@ C x-component
               ENDIF 
 
               CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-C
+
               IF (ISYMT.EQ.ISYMV1) THEN
                  CALL DZERO(WRK(KTLMA),N2ORBX)
 
