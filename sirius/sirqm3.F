@@ -2386,11 +2386,6 @@ C           we use KNS to collect the energy terms
           CALL DSCAL(NNBASX,D2*MUL2MM(5,I),WRK(KMAT+4*NNBASX),1)
           CALL DSCAL(NNBASX,MUL2MM(6,I),WRK(KMAT+5*NNBASX),1)
 
-C         Acc. to the manual, the integrals contain a factor of 1/3. We don't need this. The Taylor 
-C         expansion contains a factor of 1/2. Thereby, scale all by 3*1/2=3/2.
-
-C         Hmmm, the ints. do not include a factor of 1/3 so scale by 0.5
-
           FACS = 0.5D0
           CALL DSCAL(6*NNBASX,FACS,WRK(KMAT),1)
 C
@@ -2519,7 +2514,7 @@ C           we use KNS to collect the energy terms
             IF (LOCDEB) THEN
               WRITE(LUPRI,*) 'Skipping octupole ', I
             ENDIF
-            GOTO 300
+            GOTO 410
           ENDIF
 
           CALL DZERO(WRK(KMAT1),6*NNBASX)
@@ -2692,7 +2687,7 @@ C         Include 1/6 from the Taylor expansion
           CALL DSCAL(6*NNBASX,D6I,WRK(KMAT3),1)
 C
 C         The integrals contains a factor of -1 since they are obtained as derivative if 
-C         the fiekld gradient and these contains a factor of -1. Therefore no -1 in the daxpy.
+C         the field gradient and these contains a factor of -1. Therefore no -1 in the daxpy.
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,WRK(KTAO),1)           ! xxx 
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,WRK(KTAO),1)           ! xxy
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,WRK(KTAO),1)           ! xxz
