@@ -672,7 +672,8 @@ C        Read basis set BASNAM (WK/UniKA/04-11-2002).
          BASNAM = ' '
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
-      IF (LMULBS) CALL STCMOM
+C     Sep 09/hjaaj: moved to HERINI
+C     IF (LMULBS) CALL SET_CARMOM_2
 C*****************************************************************************
 C     Card 2-3: Title cards
 C*****************************************************************************
@@ -6655,8 +6656,8 @@ C
       CALL QEXIT('ISOMAS')
       RETURN
       END
-C  /* Deck stcmom */
-      SUBROUTINE STCMOM
+C  /* Deck set_carmom_2 */
+      SUBROUTINE SET_CARMOM_2
 C
 C     Enforce computation of Cartesian second moments.
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).

@@ -487,7 +487,8 @@ C
             GO TO 100
   113    CONTINUE
             CARMOM = .TRUE.
-            READ (LUCMD,*) IORCAR
+            READ (LUCMD,*) IORCAR_input
+            IORCAR = MAX(IORCAR,IORCAR_input)
             ONEPRP = .TRUE.
             GO TO 100
   114    CONTINUE
@@ -3870,7 +3871,10 @@ C
       BGWEIL = .FALSE.
       PVIOLA = .FALSE.
 C
-      IF (LMULBS) CALL STCMOM
+C     For .R12AUX the cartesian moments CMxxxxxx up to order two
+C     are needed.
+      IF (LMULBS) CALL SET_CARMOM_2
+C
       RETURN
       END
 C/* Deck amfiin */
