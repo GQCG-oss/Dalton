@@ -3870,6 +3870,7 @@ C
       BGWEIL = .FALSE.
       PVIOLA = .FALSE.
 C
+      IF (LMULBS) CALL STCMOM
       RETURN
       END
 C/* Deck amfiin */
