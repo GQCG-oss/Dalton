@@ -321,7 +321,8 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               WRK(KFREE),LFREE)
          ELSE
             CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
-     &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
+     &               WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
          END IF
       ELSE IF (QMMM) THEN
