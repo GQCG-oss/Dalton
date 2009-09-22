@@ -1210,7 +1210,7 @@ C
 #include <maxorb.h>
 #include <mtags.h>
 C
-      LOGICAL FIRST
+      LOGICAL FIRST, TSTINP
       DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
      &          JORBSH(*), KORBSH(*), ISYMDM(*), IFCTYP(*),
      &          WORK(LWORK)
@@ -1219,7 +1219,7 @@ C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN)
+C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN), RELCAL
 C SIRIPC : NEWGEO
 C MOLINP : NMLINE
 C MOLINC : MLINE()
@@ -1334,7 +1334,7 @@ C     initialize it properly
 C                                                                                                     
       IF (FIRST) THEN
           RELCAL = .FALSE.
-          TSTINP= .FALSE.
+          TSTINP = .FALSE.
          CALL REAINI(0,RELCAL,TSTINP)
       END IF
 C
