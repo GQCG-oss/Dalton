@@ -44,7 +44,7 @@ set_parallel_def() {
     fi
 }
 
-# Read of yes/no answer, the output in standarized to 'y' or 'n'. /hjaaj
+# Read of yes/no answer, the output in standardized to 'y' or 'n'. /hjaaj
 get_yes_or_no() {
     if test "$do_quick_config" = y; then
         answer="$2"
@@ -53,8 +53,12 @@ get_yes_or_no() {
     fi
     while [ "$answer" != "y" -a "$answer" != "n" ]
     do
-      $ECHO "$1 [y/n] \c"
+        if [ "$2" = "y" ]; then $ECHO "$1 [Y/n] \c"
+      elif [ "$2" = "n" ]; then $ECHO "$1 [y/N] \c"
+      else  $ECHO "$1 [y/n] \c"; fi
+      
       read answer
+      if [ "$answer" = "" ]; then answer="$2"; fi
 #     standardize answer
       case $answer in
 	y* | Y*) answer="y" ;;
@@ -129,8 +133,8 @@ if [ -z "$1" ]; then
 		ARCH="-linux"
 	    fi ;;
 	OSF1 ) ARCH="-dec-alpha";;
- 	HP-UX ) ARCH="-hp";;
- 	SunOS ) ARCH="-sun";;
+	HP-UX ) ARCH="-hp";;
+	SunOS ) ARCH="-sun";;
         Darwin ) ARCH="-darwin";;
     * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit 1;;
@@ -345,11 +349,11 @@ if [ "$answer" = "y" ]; then
 #
         if [ $parlib = 'yes' ]; then
             parlib=
-    	    tmplib='libmpi.a libmpi.so'
+	    tmplib='libmpi.a libmpi.so'
 	    incfile='mpif.h'
 	    for testdir in $pardir; do
 	        for testlib in $tmplib; do
-       	            if [ -f $testdir/$testlib ]; then
+	            if [ -f $testdir/$testlib ]; then
 	                parlib='-lmpi'
 		        parlibp=-L$testdir
 		        break
@@ -397,11 +401,11 @@ for comp in $complist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if [ -f $ac_dir/$ac_word ]; then
-  	  get_yes_or_no "Compiler $ac_word found, use this compiler?" y
-          if [ $answer = 'y' ]; then
-	    ac_cv_prog_F77=$ac_word
+	  get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
+	  if [ $answer = 'y' ]; then
+	    ac_cv_prog_F77=$ac_dir/$ac_word
+	    break
           fi
-     	  break
         fi  
     done
     IFS="$ac_save_ifs"
@@ -409,11 +413,11 @@ for comp in $complist; do
     F77="$ac_cv_prog_F77"
     if [ -n "$F77" ]; then
 	$ECHO "\n-->Compiler $F77 found and accepted."
-        break
+	break
     fi
 done
 if [ -z "$F77" ]; then
-    $ECHO "\n   No compiler found and accepted on this computer"
+    $ECHO "\n   No Fortran compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a Fortran compiler"
     exit 1
 fi
@@ -446,11 +450,11 @@ for comp in $ccmplist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if [ -f $ac_dir/$ac_word ]; then
-  	  get_yes_or_no "Compiler $ac_word found, use this compiler?" y
+	  get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
-	    ac_cv_prog_C=$ac_word
+	    ac_cv_prog_C=$ac_dir/$ac_word
+	    break
           fi
-          break
 	fi  
     done
     IFS="$ac_save_ifs"
@@ -501,6 +505,14 @@ $ECHO "\nTesting existence of libraries in this order:"
 $ECHO   " $liblist"
 $ECHO   "Directory search list for libraries:"
 $ECHO   " $dirlist \n"
+get_yes_or_no "Do you want to replace this with your own directory search list ?" n
+if [ $answer = 'y' ]; then
+   $ECHO   "OK, please enter it : \c"
+   read dirlist
+   $ECHO   "Revised directory search list for libraries:"
+   $ECHO   " $dirlist \n"
+fi
+
 if [ -n "$liblist" ]; then
 for testlib in $liblist; do
    for testdir in $dirlist; do
@@ -514,11 +526,11 @@ for testlib in $liblist; do
 	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o";;
 	    libessl.a) LIB='-lessl'
-      	               blas3="true" # - but not complete...
+	               blas3="true" # - but not complete...
 		       # double-check dlapack.
                        pdpackextras="$pdpackextras gp_zlapack.o gp_zblas.o  gp_dlapack.o";;
 	    libesslp2.a) LIB='-lesslp2'
-      	               blas3="true";;
+	               blas3="true";;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath'
 	                          blas3='true';;
             libmkl_p3.a) LIB="-lmkl_p3 -lguide -lpthread -static"
@@ -635,9 +647,9 @@ if [ "$answer" = "y" ]; then
     do
        $ECHO 'How many millions of *8 words to use for storing 2-el.integrals? \c'
        read incoresiz
-       incoresiz=`expr $incoresiz \* 1000000`
 #      check that user hasn't just hit return (giving an empty string)
        if [ "$incoresiz" = "" ]; then incoresiz=0; fi
+       incoresiz=`expr $incoresiz \* 1000000`
     done
     $ECHO '\n-->Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
     
@@ -662,9 +674,9 @@ do
     else 
        read memsiz
     fi
-    memsiz=`expr $memsiz \* 1000000`
 #   check that user hasn't just hit return (giving an empty string)
     if [ "$memsiz" = "" ]; then memsiz=0; fi
+    memsiz=`expr $memsiz \* 1000000`
 done
 $ECHO '\n-->Program will be installed with a default work memory of '$memsiz' words'
 
@@ -915,7 +927,7 @@ case "$WHICH" in
                      64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
                          LIB="$LIB +U77 +DA2.0W"
                          copt='+DA2.0W +O3 +Onolimit +Ofastaccess'
-             		 cpp=${cpp}" -DVAR_INT64";;
+	 		 cpp=${cpp}" -DVAR_INT64";;
                      *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
                          LIB="-lV7 +U77 $LIB"
                          copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
@@ -933,8 +945,8 @@ case "$WHICH" in
           cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
 	  if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
- 	      set_def $mesp
- 	  fi
+	      set_def $mesp
+	  fi
 #         opt='-fast -assume no2underscores -check nopower'
 #         hjaaj Oct 04: note that HAVE_GCPP is now used to tell c-routines
 #         that the fort fortran compiler can make 2 underscores
