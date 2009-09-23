@@ -97,16 +97,16 @@ CTRL[2]=4
 ERROR[2]="THE TOTAL MOLECULAR GRADIENT AT THE START GEOMETRY IS NOT CORRECT"
 
 # final geometry:
-CRIT1=`$GREP "N * 1 * 1\.181390862. * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.10542905.." $log | wc -l`
-CRIT2=`$GREP "N * 2 * \-1\.181390862. * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.10542905.." $log | wc -l`
-CRIT3=`$GREP "H * 1 * 1\.9125271(29.|30.) * (\-0|\-| |0)\.0000000000 * 1\.73221075.." $log | wc -l`
-CRIT4=`$GREP "H * 2 * \-1\.9125271(29.|30.) * (\-0|\-| |0)\.0000000000 * 1\.73221075.." $log | wc -l`
+CRIT1=`$GREP "N * 1 * 1\.1813598... * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.105433...." $log | wc -l`
+CRIT2=`$GREP "N * 2 * \-1\.1813598... * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.105433...." $log | wc -l`
+CRIT3=`$GREP "H * 1 * 1\.912616.... * (\-0|\-| |0)\.0000000000 * 1\.732215...." $log | wc -l`
+CRIT4=`$GREP "H * 2 * \-1\.912616.... * (\-0|\-| |0)\.0000000000 * 1\.732215...." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[3]=16
 ERROR[3]="THE FINAL GEOMETRY IS NOT CORRECT"
 
 # summary of the geometry optimization:
-CRIT1=`$GREP "Geometry converged in * 6 *iterations!" $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 5 *iterations!" $log | wc -l`
 CRIT2=`$GREP "Energy at final geometry is * : * \-110\.351402 a.u." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2` 
 CTRL[4]=2
