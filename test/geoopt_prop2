@@ -180,44 +180,44 @@ CTRL[10]=3
 ERROR[10]="SECOND ITERATION NOT CORRECT"
 
 # Final geometry:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087958...[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.422569...[0-9] * (0| )\.979730...[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.422569...[0-9] * (0| )\.979730...[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087918...[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.422524...[0-9] * (0| )\.979710...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.422524...[0-9] * (0| )\.979710...[0-9]" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
 
 # Final SCF energy:
-CRIT1=`$GREP "Total energy * \-76\.053423553[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-2069\.5188700[0-9] eV" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-76\.0534235(4|5).[0-9] au \(Hartrees\)" $log | wc -l`
+CRIT2=`$GREP "\-2069\.5188699[0-9] eV" $log | wc -l`
 CRIT3=`$GREP "\-199678\.234[0-9] kJ\/mol" $log | wc -l`
 TEST[12]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
 # Gamma values:
-CRIT1=`$GREP "\@ gamma\(X\;X\,X\,X\) * 1255\.44.[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ gamma\(X\;X\,Y\,Y\) * 37\.387[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ gamma\(X\;Y\,Y\,X\) * 37\.387[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ gamma\(X\;Y\,X\,Y\) * 37\.387[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ gamma\(X\;X\,Z\,Z\) * 162\.52.[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ gamma\(X\;Z\,Z\,X\) * 162\.52.[0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ gamma\(X\;Z\,X\,Z\) * 162\.52.[0-9]" $log | wc -l`
-CRIT8=`$GREP "\@ gamma\(Y\;Y\,X\,X\) * \-21\.513[0-9]" $log | wc -l`
-CRIT9=`$GREP "\@ gamma\(Y\;X\,X\,Y\) * \-21\.513[0-9]" $log | wc -l`
-CRIT10=`$GREP "\@ gamma\(Y\;X\,Y\,X\) * \-21\.513[0-9]" $log | wc -l`
-CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 402\.62.[0-9]" $log | wc -l`
-CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 351\.66.[0-9]" $log | wc -l`
-CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 351\.66.[0-9]" $log | wc -l`
-CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 351\.66.[0-9]" $log | wc -l`
-CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) * 100\.936[0-9]" $log | wc -l`
-CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) * 100\.936[0-9]" $log | wc -l`
-CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) * 100\.936[0-9]" $log | wc -l`
-CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 396\.63.[0-9]" $log | wc -l`
-CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 396\.63.[0-9]" $log | wc -l`
-CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 396\.63.[0-9]" $log | wc -l`
-CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 407\.50.[0-9]" $log | wc -l`
-CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 618\.64...[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ gamma\(X\;X\,X\,X\) * 1255\.38.[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ gamma\(X\;X\,Y\,Y\) * 37\.388[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@ gamma\(X\;Y\,Y\,X\) * 37\.388[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@ gamma\(X\;Y\,X\,Y\) * 37\.388[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ gamma\(X\;X\,Z\,Z\) * 162\.53.[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ gamma\(X\;Z\,Z\,X\) * 162\.53.[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ gamma\(X\;Z\,X\,Z\) * 162\.53.[0-9]" $log | wc -l`
+CRIT8=`$GREP "\@ gamma\(Y\;Y\,X\,X\) * \-21\.507[0-9]" $log | wc -l`
+CRIT9=`$GREP "\@ gamma\(Y\;X\,X\,Y\) * \-21\.507[0-9]" $log | wc -l`
+CRIT10=`$GREP "\@ gamma\(Y\;X\,Y\,X\) * \-21\.507[0-9]" $log | wc -l`
+CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 402\.53.[0-9]" $log | wc -l`
+CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 351\.60.[0-9]" $log | wc -l`
+CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 351\.60.[0-9]" $log | wc -l`
+CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 351\.60.[0-9]" $log | wc -l`
+CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) * 100\.94.[0-9]" $log | wc -l`
+CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) * 100\.94.[0-9]" $log | wc -l`
+CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) * 100\.94.[0-9]" $log | wc -l`
+CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 396\.57.[0-9]" $log | wc -l`
+CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 396\.57.[0-9]" $log | wc -l`
+CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 396\.57.[0-9]" $log | wc -l`
+CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 407\.46.[0-9]" $log | wc -l`
+CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 618\.58...[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
@@ -226,7 +226,7 @@ CTRL[13]=22
 ERROR[13]="GAMMA VALUES NOT CORRECT"
 
 # Geometry optimization:
-CRIT1=`$GREP "Geometry converged in * 4( |  )iterations\!" $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 3( |  )iterations\!" $log | wc -l`
 CRIT2=`$GREP "Energy at final geometry is * \: * \-76\.053424 a\.u\." $log | wc -l`
 CRIT3=`$GREP "Energy change during optimization \: * (\-0|\-)\.001964 a\.u\." $log | wc -l`
 TEST[14]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
