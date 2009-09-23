@@ -406,6 +406,12 @@ C        ... DIIS-DFT or QC-DFT optimization
          WRITE (LUW4,5030) GRDNRM
       END IF
 
+      IF (QMMM .AND. MMPROP) THEN
+        WRITE (LUW4,*)  
+        WRITE (LUW4,*)
+        CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
+      ENDIF 
+
  5000 FORMAT(//T21,'>>> FINAL RESULTS FROM SIRIUS <<<',
      *       //T6,'Spin multiplicity:',T31,I5,
      *        /T6,'Spatial symmetry:',T31,I5,
