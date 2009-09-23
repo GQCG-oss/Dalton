@@ -4526,7 +4526,7 @@ C
 
         CALL MM_OPTROT(WRK(KINVAMT),WRK(KPOLCORD),IPRINT)
       ELSE 
-        WRITE(LUPRI) 'MM properties skipped since MMITER' 
+        WRITE(LUPRI,*) 'MM properties skipped since MMITER' 
       ENDIF
 
       WRITE(LUPRI,*) ' ---------------------------------------' 
@@ -5366,8 +5366,10 @@ C JK
 
       LOCDEB = .FALSE.
 
-      IF (IOPT .EQ. 1) THRESL = THMMIT
-      IF (IOPT .EQ. 2) THRESL = SQRT(THMMIT)/10.0D0
+c      IF (IOPT .EQ. 1) THRESL = THMMIT
+c      IF (IOPT .EQ. 2) THRESL = SQRT(THMMIT)/10.0D0
+
+      THRESL = THMMIT
 
       IF (FIRST) NMMAC = 0
 
@@ -5624,9 +5626,11 @@ C       i.e. not only the diagonal part
 
       LM = LM - 1
       IF (DIPCON) THEN
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) 'Done with induced dipoles in ',LM,' iterations'
-        WRITE(LUPRI,*)
+        IF (IPRINT .GT. 1) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Done with induced dipoles in ',LM,' iterations'
+         WRITE(LUPRI,*)
+        ENDIF 
       ELSE
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) 'WARNING: Induced dipoles NOT converged'
@@ -5634,7 +5638,9 @@ C       i.e. not only the diagonal part
       ENDIF
 
       NMMAC = NMMAC + LM
-      WRITE(LUPRI,*) 'Acc. iterations:', NMMAC
+      IF (IPRINT .GT. 1) THEN
+        WRITE(LUPRI,*) 'Acc. iterations:', NMMAC
+      ENDIF
 
       IF (FIRST) THEN
          FIRST = .FALSE.
