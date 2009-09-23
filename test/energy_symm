@@ -86,9 +86,9 @@ cat >>energy_symm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -i -a"
 else
-   GREP="egrep"
+   GREP="egrep -i"
 fi
 
 # Reading from basis set library:
@@ -122,7 +122,7 @@ ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 # Wave function:
 CRIT1=`$GREP "Number of closed shell electrons * 2" $log | wc -l`
 CRIT2=`$GREP "Number of electrons in active shells * 8" $log | wc -l`
-CRIT3=`$GREP "Number of active orbitals * 8" $log | wc -l`
+CRIT3=`$GREP " active orbitals * 8" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
 CRIT5=`$GREP "Spin multiplicity * 1" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
@@ -133,11 +133,11 @@ CTRL[4]=7
 ERROR[4]="INCORRECT WAVE FUNCTION"
 
 # Symmetry:
-CRIT1=`$GREP "Number of coordinates in each symmetry: * 3 * 2 * 3 * 1" $log | wc -l`
-CRIT2=`$GREP "Number of orbitals in each symmetry: * 11 * 4 * 7 * 2" $log | wc -l`
-CRIT3=`$GREP "Inactive orbitals * 1 * 0 * 0 * 0" $log | wc -l`
-CRIT4=`$GREP "Active orbitals * 4 * 2 * 2 * 0" $log | wc -l`
-CRIT5=`$GREP "Occupied SCF orbitals * 3 * 1 * 1 * 0" $log | wc -l`
+CRIT1=`$GREP "Number of coordinates in each symmetry: .* 3 * 2 * 3 * 1" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry: .* 11 * 4 * 7 * 2" $log | wc -l`
+CRIT3=`$GREP "Inactive orbitals .* 1 * 0 * 0 * 0" $log | wc -l`
+CRIT4=`$GREP "Active orbitals .* 4 * 2 * 2 * 0" $log | wc -l`
+CRIT5=`$GREP "Occupied SCF orbitals .* 3 * 1 * 1 * 0" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[5]=5
 ERROR[5]="SYMMETRY IS NOT CORRECT"

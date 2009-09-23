@@ -46,11 +46,11 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #######################################################################
 cat > geoopt_dckerr.dal <<'%EOF%'
 **DALTON INPUT
-.OPTIMIZE
+.RUN WAVEFUNCTION
 **WAVE FUNCTIONS
 .HF
 .MP2
-.MCSCF
+.CI
 .NSYM
  4
 *SCF INPUT
@@ -75,6 +75,12 @@ cat > geoopt_dckerr.dal <<'%EOF%'
  1 1 0 0
 .RAS3 ELECTRONS
  0 2
+*PRINT
+.PRINTL
+ 92 92
+.PRINTF
+ 0 1
+ 51
 **RESPONSE
 *CUBIC
 .DC-KER
