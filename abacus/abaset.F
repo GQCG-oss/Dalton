@@ -515,6 +515,7 @@ C          (FLAG(34) false tells that mo integrals needed)
 C          (FLAG(14) true tells that old mo integral file exists)
 C          Set ITRLVL to minimum transformation level required.
 C
+      AO2INTFILE_LABEL = 'AOTWOINT'
       THRP = 1.D-15
       THRQ = 1.D-15
 C

@@ -35,11 +35,6 @@ C
 C
 #ifdef OLD_REV_OLG
 !===========================================================================
-!Revision 1.3  2000/05/24 12:55:16  hjj
-!inserted two missing priunit.h (ftnchek)
-!
-!Revision 1.2  2000/05/02 13:11:45  hjj
-!changed checks for GPOPEN from LU* .EQ. 0 to LU* .LE. 0
 !
 !---
 !971201-hjaaj: TRACTL: make check for transformation already there
@@ -57,9 +52,7 @@ C
 !MAERKE 900111: reconsider in SIROPI (allow flag(14) also when flag(34?)
 !-------- Revision n05 ends here ---------
 !940517-hjaaj
-!TRACTL: removed obsolete calculation of NRINTM
 !SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
-!--*-- : added HPUX and IRIX define labels (same code as AIX)
 !SIROPI: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
 !        true, irrespective of FLAG(34); fixed ICASE print error on Cray
 !        by extending IF (OPINTM) THEN to after ICASE print
@@ -95,11 +88,7 @@ C
 !   of record (a small test program showed that reading more than one
 !   variable read the label in the next record and so on; however, after
 !   the reading the pointer was at the beginning of next record!)
-!900912-hjaaj
-! TRACTL: call flshfo(lupri) before return
 !900801-hjaaj
-! Removed FASTIO file openings (FASTIO was never implemented).
-! Define AIX for file openings.
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
@@ -127,23 +116,15 @@ C
 !   MP2] to cases when LUINTM is opened.
 !900108-hjaaj
 ! NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
-!891213-hjaaj
-! inserted *CALL MAXASH in all decks with INFIND
-! inserted *CALL MXCORB in all decks with INFIND or INFINP
 !891208-hjaaj
 ! SORTA,TRACD,TRAAB: print threshold for discarding integrals
 ! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
 !         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
-!891127-hjaaj
-! %s/ICDTYP/ITYPCD/
 !891117-hjaaj
 ! TRAUTH added
 !891116-hjaaj
 ! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
 !   corrupted. Release buffer allocation when no more buffers.
-!891107-hjaaj
-! SIRTRA.U extracted from sir.l02.su
-! NXTH2*,NX2H2* appended
 !890710-hjaaj
 ! Write label 'END INTM' at end of LUINTM in TRAAB
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
@@ -152,7 +133,6 @@ C
 !890615-hjaaj
 ! disabled FIRST=.FALSE. in TRACTL so it can be used in combination runs.
 !890220-hjaaj
-! sortb -- fejl for ITRLVL = 10; indfoert MAXD
 ! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
 #endif
@@ -409,10 +389,10 @@ C
       LBUF   = IDABUF + LDABUF + 2
       NDAREC = (2 * LPQRS - NMBASX)/ LDABUF + 1
 C
-C...  OPEN AO INTEGRAL FILE "AOTWOINT"
+C...  OPEN AO INTEGRAL FILE AO2INTFILE_LABEL, typically = "AOTWOINT"
 C
-      CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
+      CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,'OLD',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) NSYMAO, (NAOS(I),I=1,8),LBUFAO,NIBUFAO,NBITSAO
 C
