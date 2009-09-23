@@ -122,21 +122,21 @@ CTRL[4]=3
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
 
 # Relativistic corrections:
-CRIT1=`$GREP "Darwin correction\: * (0| )\.197451423[0-9] au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.248963761[0-9] au" $log | wc -l`
-CRIT3=`$GREP "Total relativistic correction\: * (\-0|\-)\.051512338[0-9] au \((0| )\.0677\%\)" $log | wc -l`
-CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.102971857[0-9] au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\: * (0| )\.19745142.[0-9] au" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.24896375.[0-9] au" $log | wc -l`
+CRIT3=`$GREP "Total relativistic correction\: * (\-0|\-)\.05151233.[0-9] au \((0| )\.0677\%\)" $log | wc -l`
+CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.10297185.[0-9] au" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[5]=4
 ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # Gradient, 1st iteration:
-CRIT1=`$GREP "O * z * (\-0|\-)\.041024(8|9)..[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.04951133.[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.041024(8|9)..[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.041024(8|9)..[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.02475566.[0-9] * (0| )\.0205124(4|5).[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.02475566.[0-9] * (0| )\.0205124(4|5).[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * z * (\-0|\-)\.041025...[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * y * (0| )\.0495115..[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * z * (0| )\.041025...[0-9]" $log | wc -l`
+CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.041025...[0-9]" $log | wc -l`
+CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
+CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[6]=6
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
@@ -157,16 +157,16 @@ CTRL[7]=10
 ERROR[7]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
-CRIT1=`$GREP "(0| )\.887038 * 2\.254625 * 7\.520620" $log | wc -l`
-CRIT2=`$GREP "z * (0| )\.8870379[0-9] * 2\.254625(2|3)[0-9] * 7\.520620[2-3][0-9]" $log | wc -l`
+CRIT1=`$GREP "(0| )\.88703. * 2\.25462. * 7\.52062." $log | wc -l`
+CRIT2=`$GREP "z * (0| )\.887038.[0-9] * 2\.254627.[0-9] * 7\.520629.[0-9]" $log | wc -l`
 TEST[8]=`expr $CRIT1  \+ $CRIT2`
 CTRL[8]=2
 ERROR[8]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O *     (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.086310(7|8)..[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.416587(5|6)..[0-9] * (0| )\.9789070..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.416587(5|6)..[0-9] * (0| )\.9789070..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O *     (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.086309...[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.416588...[0-9] * (0| )\.9789063..[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.416588...[0-9] * (0| )\.9789063..[0-9]" $log | wc -l`
 TEST[9]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="INITIAL STEP NOT CORRECT"
@@ -180,9 +180,9 @@ CTRL[10]=3
 ERROR[10]="SECOND ITERATION NOT CORRECT"
 
 # Final geometry:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087959274[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.422568919[0-9] * (0| )\.979731277[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.422568919[0-9] * (0| )\.979731277[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087958...[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.422569...[0-9] * (0| )\.979730...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.422569...[0-9] * (0| )\.979730...[0-9]" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
@@ -196,28 +196,28 @@ CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
 # Gamma values:
-CRIT1=`$GREP "\@ gamma\(X\;X\,X\,X\) * 1255\.443[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ gamma\(X\;X\,X\,X\) * 1255\.44.[0-9]" $log | wc -l`
 CRIT2=`$GREP "\@ gamma\(X\;X\,Y\,Y\) * 37\.387[0-9]" $log | wc -l`
 CRIT3=`$GREP "\@ gamma\(X\;Y\,Y\,X\) * 37\.387[0-9]" $log | wc -l`
 CRIT4=`$GREP "\@ gamma\(X\;Y\,X\,Y\) * 37\.387[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ gamma\(X\;X\,Z\,Z\) * 162\.527[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ gamma\(X\;Z\,Z\,X\) * 162\.527[0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ gamma\(X\;Z\,X\,Z\) * 162\.527[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ gamma\(X\;X\,Z\,Z\) * 162\.52.[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ gamma\(X\;Z\,Z\,X\) * 162\.52.[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ gamma\(X\;Z\,X\,Z\) * 162\.52.[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ gamma\(Y\;Y\,X\,X\) * \-21\.513[0-9]" $log | wc -l`
 CRIT9=`$GREP "\@ gamma\(Y\;X\,X\,Y\) * \-21\.513[0-9]" $log | wc -l`
 CRIT10=`$GREP "\@ gamma\(Y\;X\,Y\,X\) * \-21\.513[0-9]" $log | wc -l`
-CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 402\.629[0-9]" $log | wc -l`
-CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 351\.666[0-9]" $log | wc -l`
-CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 351\.666[0-9]" $log | wc -l`
-CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 351\.666[0-9]" $log | wc -l`
+CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 402\.62.[0-9]" $log | wc -l`
+CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 351\.66.[0-9]" $log | wc -l`
+CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 351\.66.[0-9]" $log | wc -l`
+CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 351\.66.[0-9]" $log | wc -l`
 CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) * 100\.936[0-9]" $log | wc -l`
 CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) * 100\.936[0-9]" $log | wc -l`
 CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) * 100\.936[0-9]" $log | wc -l`
-CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 396\.638[0-9]" $log | wc -l`
-CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 396\.638[0-9]" $log | wc -l`
-CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 396\.638[0-9]" $log | wc -l`
-CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 407\.506[0-9]" $log | wc -l`
-CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 618\.64439[0-9]" $log | wc -l`
+CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 396\.63.[0-9]" $log | wc -l`
+CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 396\.63.[0-9]" $log | wc -l`
+CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 396\.63.[0-9]" $log | wc -l`
+CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 407\.50.[0-9]" $log | wc -l`
+CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 618\.64...[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
