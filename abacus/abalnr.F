@@ -431,6 +431,7 @@ C  /* Deck lnraba */
       PARAMETER (DP5=0.5D0)
       PARAMETER (LOCDBG = 3)
 C
+#include <orgcom.h>
 #include <cbiexc.h>
 #include <inflin.h>
 #include <infvar.h>
@@ -588,10 +589,19 @@ Clf
       IF (ROAA) THEN
          NCOMP  = 0
          NPATOM = 0
+         DIPTMX = DIPORG(1)
+         DIPTMY = DIPORG(2)
+         DIPTMZ = DIPORG(3)
+         DIPORG(1) = 0.0D0
+         DIPORG(2) = 0.0D0
+         DIPORG(3) = 0.0D0
          CALL GET1IN(DUMMY,'THETA  ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
      &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
      &            IPRINT)
+         DIPORG(1) = DIPTMX
+         DIPORG(2) = DIPTMY
+         DIPORG(3) = DIPTMZ
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
