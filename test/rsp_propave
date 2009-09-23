@@ -139,7 +139,7 @@ CTRL[6]=9
 ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Average second hyperpolarizability
-CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 13922\.(4|5)..[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 13922\.6..[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1`
 CTRL[7]=1
 ERROR[7]="AVERAGE SECOND HYPERPOLARIZABILITY NOT CORRECT"
