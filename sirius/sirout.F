@@ -346,14 +346,14 @@ csonia 04/10/95
         WRITE(LUW4,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
       ELSE IF (QMMM) THEN
         WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Charge contribution:    ', ECHART
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Dipole contribution:    ', EDIPT 
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Quadrupole contribution:', EQUADT
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Octuple contribution:   ', EOCTUP
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Electronic Pol. energy: ', EDELD 
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Nuclear pol. energy:    ', EDNUC
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Mulipole Pol. energy:   ', EDMULT
-        WRITE(LUW4,'(8X,A24,F20.12)') 'Total QM/MM energy:     ', ESOLT
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Charge contribution:    ', ECHART
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Dipole contribution:    ', EDIPT 
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Quadrupole contribution:', EQUADT
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Octuple contribution:   ', EOCTUP
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Electronic Pol. energy: ', EDELD 
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ', EDNUC
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Mulipole Pol. energy:   ', EDMULT
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Total QM/MM energy:     ', ESOLT
       ELSE
         ESOLT = D0
       END IF
