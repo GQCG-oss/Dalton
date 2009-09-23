@@ -123,18 +123,18 @@ ERROR[4]="INITIAL ENERGY NOT CORRECT"
 # Initial gradient
 CRIT1=`$GREP "C * .*0*\.0098270[6-7].[0-9]" $log | wc -l`
 CRIT2=`$GREP "C * .*0*\.00000004[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "H * .*0*\.0051666[3-4].[0-9]" $log | wc -l`
-CRIT4=`$GREP "H * .*0*\.0101380[1-2].[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * .*0*\.0103332[6-8].[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * .*0*\.0101380[5-6].[0-9]" $log | wc -l`
-CRIT7=`$GREP "H * .*0*\.017559[5-6]..[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * .*0*\.0051665..[0-9]" $log | wc -l`
+CRIT4=`$GREP "H * .*0*\.0101379..[0-9]" $log | wc -l`
+CRIT5=`$GREP "H * .*0*\.0103331..[0-9]" $log | wc -l`
+CRIT6=`$GREP "H * .*0*\.0101380..[0-9]" $log | wc -l`
+CRIT7=`$GREP "H * .*0*\.0175594..[0-9]" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[5]=7
 ERROR[5]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial step
-TEST[6]=`$GREP "Norm of step .* 0\.165395" $log | wc -l`
+TEST[6]=`$GREP "Norm of step .* 0\.16539(4|5)" $log | wc -l`
 CTRL[6]=1
 ERROR[6]="INITIAL STEP NOT CORRECT"
 
@@ -159,7 +159,7 @@ ERROR[8]="THIRD ITERATION NOT CORRECT"
 # geo 5  Final HF energy:   -78.306179650658 change 6.D-8
 # geo 5  Nuclear repulsion:  42.274202197306 change 2.d-4, NB! much more sensitive!
 
-TEST[9]=`$GREP "Nuclear repulsion\: * 42\.27420" $log | wc -l`
+TEST[9]=`$GREP "Nuclear repulsion\: * 42\.27417" $log | wc -l`
 CTRL[9]=1
 ERROR[9]="FINAL GEOMETRY NOT CORRECT"
 
