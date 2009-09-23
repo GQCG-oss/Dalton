@@ -405,8 +405,8 @@ C
 C     
 C     Calculate PCM solvent energy contributions 
 C
-        PCMNE = D0
-	DO ITS = 1, NTSIRR
+      PCMNE = D0
+      DO ITS = 1, NTSIRR
         DO JATOM = 1, NUCDEP
           R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
      *         YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
@@ -415,9 +415,9 @@ C
         ENDDO
       ENDDO
       ESOLT = - DP5 * TJEN + DP5 * PCMNE + PCMNN
-      IF (IPRPCM .GE. 6) THEN
+      IF (IPRPCM .GE. 2) THEN
          WRITE(LUPRI,*) 'ESOLT, TJEN, PCMNE, PCMNN'
-         WRITE(LUPRI,'(3f20.15)') TJEN, PCMNE, PCMNN
+         WRITE(LUPRI,'(4f20.15)') ESOLT, TJEN, PCMNE, PCMNN
       END IF
 C
 C     We have used "effective" nuclear charges in non-equilibrium
@@ -656,6 +656,16 @@ C
       CALL J1INT(QSE,EXP1VL,WRK(KJENAO),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LWRK1)
 
+C     Electrostatic contributions:
+C     PCMNN = interaction nuclei - polarization nuclear charges
+C             PCMNN = sum_i [Vnuc(i) * QSN(i)]
+C     PCMEN = interaction solute electrons - polarization nuclear charges
+C             PCMEN = sum_i [Vel(i) * QSN(i)]
+C     PCMNE = interaction solute nuclei - polarization electronic charges
+C             PCMNE = sum_i [Vnuc(i) * QSE(i)]
+C     PCMEE = interaction solute electrons - polarization electronic charges
+C             PCMEE = sum_i [Vel(i) * QSE(i)]
+C
       IF(.NOT.MOBAS) THEN
          PCMEE = D0
          PCMNE = D0
@@ -670,13 +680,14 @@ C
          
          ESOLT = DP5 * (PCMEE + PCMEN + PCMNE + PCMNN)
 C     
-C     lf Nuclear energy divided by two for backward compatibility
+C        Nuclear energy divided by two for backward compatibility /lf
 C     
          PCMNN = PCMNN / 2.0D0 
 C
+c        IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
          IF (.true.) WRITE(LUPRI,'(A,5F12.5)')
-     &        'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
-     &        PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
+     &   'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
+     &            PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
       END IF
 C     
 C     Symmetry pack TAO using WRK(KJAO)
@@ -997,7 +1008,7 @@ C  Purpose:  Calculate MCSCF Hessian contribution from a
 C            surrounding medium to an orbital trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-C  NSVEC          may be NVAR or NWOPT, dependent on LINTRN
+C  NSVEC     may be NVAR or NWOPT, dependent on LINTRN
 C
 #include <implicit.h>
 #include <priunit.h>
