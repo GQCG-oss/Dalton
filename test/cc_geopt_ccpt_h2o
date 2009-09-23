@@ -125,10 +125,10 @@ CTRL[2]=16
 ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
 #
 # Final summary:
-CRIT1=`$GREP " H * 1 * ( |0)\.0000000000 *  1\.41819045.. * ( |0)\.99959822.." $log | wc -l`
-CRIT2=`$GREP " H * 2 * ( |0)\.0000000000 * -1\.41819045.. * ( |0)\.99959822.." $log | wc -l`
-CRIT3=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.15063145.." $log | wc -l`
-CRIT4=`$GREP "Geometry converged in * 6 *iterations" $log | wc -l`
+CRIT1=`$GREP " H * 1 * ( |0)\.0000000000 *  1\.41821331.. * ( |0)\.9996215..." $log | wc -l`
+CRIT2=`$GREP " H * 2 * ( |0)\.0000000000 * -1\.41821331.. * ( |0)\.9996215..." $log | wc -l`
+CRIT3=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.1506780..." $log | wc -l`
+CRIT4=`$GREP "Geometry converged in * 5 *iterations" $log | wc -l`
 CRIT5=`$GREP "Energy at final geometry is * : * -76\.241305 " $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=14
