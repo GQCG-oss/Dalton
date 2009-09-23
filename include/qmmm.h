@@ -10,16 +10,19 @@ C
       INTEGER MMCENT,NMULT,IPOLTP,NEXLST,EXLIST,
      *        ZEROAL,NNZAL,IDAMP,NQMNUC,MXMMIT,
      *        MXMMDI,NMMAC,IQMMMC,
-     *        NELEME,ELEME
+     *        NELEME,ELEME,IPQMMM
 C
 #if defined (SYS_CRAY)
       REAL MMCORD, MUL0MM, MUL1MM, MUL2MM, MUL3MM, 
      *     POLMM, POLIMM, THRMM, QMPOL, THMMIT, RQMMMC, 
-     *     RCUTMM,DELFLD
+     *     RCUTMM,DELFLD,ECHART,EDIPT,EQUADT,EOCTUP,
+     *     EDELD,EDNUC,EDMULT
 #else
       DOUBLE PRECISION MMCORD, MUL0MM, MUL1MM, MUL2MM, MUL3MM,
      *                 POLMM, POLIMM, THRMM, QMPOL, THMMIT,
-     *                 RQMMMC, RCUTMM,DELFLD
+     *                 RQMMMC, RCUTMM,DELFLD,
+     *                 ECHART,EDIPT,EQUADT,EOCTUP,
+     *                 EDELD,EDNUC,EDMULT
 #endif
       PARAMETER ( THRMM = 1.0D-10 )
 
@@ -28,7 +31,8 @@ C
      *                MUL3MM(10,MXMMCT),
      *                POLMM(6,MXMMCT), POLIMM(MXMMCT), 
      *                QMPOL(MXCENT) , THMMIT, RQMMMC, RCUTMM,
-     *                DELFLD
+     *                DELFLD,ECHART,EDIPT,EQUADT,EOCTUP,
+     *                EDELD,EDNUC,EDMULT
 
       COMMON /LOQMMM/ SPLDIP,CONMAT,FIXDIP,MMDAMP,MMPROP,
      *                SPLNMR,MMMAT,MMITER,MMDIIS,LCLOSE,
@@ -37,6 +41,6 @@ C
       COMMON /INQMMM/ MMCENT,NMULT,IPOLTP,NEXLST,
      *                EXLIST(MXEXCL,MXMMCT),ZEROAL(MXMMCT),
      *                NNZAL,IDAMP,NQMNUC,MXMMIT,MXMMDI,
-     *                NMMAC,IQMMMC,NELEME,ELEME(MXMMCT)
+     *                NMMAC,IQMMMC,NELEME,ELEME(MXMMCT),IPQMMM
 
 C --- end of qmmm.h ---

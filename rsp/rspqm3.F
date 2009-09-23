@@ -2001,7 +2001,7 @@ C     Read the relay matrix from file
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
           WRITE(LUPRI,*) ' The Relay matrix is read from file'
           CALL OUTPUT(WRK(KINVAMT),1,N,1,N,N,N,1,LUPRI)
         ENDIF
@@ -2188,7 +2188,7 @@ C          z-component of (induced) electric field
          NDIM = 3*NNZAL
          NTOTI = MAX(NDIM,1)
 
-         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
            WRITE(LUPRI,*) 'Transformed electric fields'
            CALL OUTPUT(WRK(KEFIELD),1,NDIM,1,1,NDIM,1,1,LUPRI)
            WRITE(LUPRI,*)
@@ -2202,10 +2202,10 @@ C        Calculate the induced dipoles corresponding to this field
          ELSE IF (MMITER) THEN
            IOPT = 2 ! Do not read from file any previuos induced moments
            CALL F2QMMM(WRK(KEFIELD),NNZAL,WRK(KINDMOM),WRK(KLAST),LWRK2,
-     *                 IOPT,IPRRSP)
+     *                 IOPT,IPQMMM)
          ENDIF
 
-         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
            WRITE(LUPRI,*) 'Transformed induced dipole moments' 
            CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)
            WRITE(LUPRI,*)
@@ -2506,7 +2506,7 @@ C       Read the relay matrix from file
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
           WRITE(LUPRI,*) ' The Relay matrix is read from file'
           CALL OUTPUT(WRK(KINVAMT),1,N,1,N,N,N,1,LUPRI)
         ENDIF
@@ -2699,13 +2699,13 @@ C     (transformed) fields 1 and 2
       NDIM = 3*NNZAL
       NTOTI = MAX(NDIM,1)
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Induced field 1'
         CALL OUTPUT(WRK(KEF1),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Induced field 2'
         CALL OUTPUT(WRK(KEF2),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
@@ -2717,10 +2717,10 @@ C     (transformed) fields 1 and 2
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF1),NNZAL,WRK(KIND1),WRK(KLAST),LWRK2,
-     *              IOPT,IPRRSP)
+     *              IOPT,IPQMMM)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Transformed induced dipole moments field 1'
         CALL OUTPUT(WRK(KIND1),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
@@ -2732,10 +2732,10 @@ C     (transformed) fields 1 and 2
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF2),NNZAL,WRK(KIND2),WRK(KLAST),LWRK2,
-     *              IOPT,IPRRSP)
+     *              IOPT,IPQMMM)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Transformed induced dipole moments field 2'
         CALL OUTPUT(WRK(KIND2),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
@@ -3056,7 +3056,7 @@ C       Read the relay matrix from file
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
           WRITE(LUPRI,*) ' The Relay matrix is read from file'
           CALL OUTPUT(WRK(KINVAMT),1,N,1,N,N,N,1,LUPRI)
         ENDIF
@@ -3312,19 +3312,19 @@ C     iteratively.
       NDIM = 3*NNZAL
       NTOTI = MAX(NDIM,1)
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Induced field 1'
         CALL OUTPUT(WRK(KEF1),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Induced field 2'
         CALL OUTPUT(WRK(KEF2),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Induced field 3'
         CALL OUTPUT(WRK(KEF3),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
@@ -3336,10 +3336,10 @@ C     iteratively.
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF1),NNZAL,WRK(KIND1),WRK(KLAST),LWRK2,
-     *              IOPT,IPRRSP)
+     *              IOPT,IPQMMM)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Transformed induced dipole moments field 1'
         CALL OUTPUT(WRK(KIND1),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
@@ -3351,10 +3351,10 @@ C     iteratively.
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF2),NNZAL,WRK(KIND2),WRK(KLAST),LWRK2,
-     *              IOPT,IPRRSP)
+     *              IOPT,IPQMMM)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Transformed induced dipole moments field 2'
         CALL OUTPUT(WRK(KIND2),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)
@@ -3366,10 +3366,10 @@ C     iteratively.
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF3),NNZAL,WRK(KIND3),WRK(KLAST),LWRK2,
-     *              IOPT,IPRRSP)
+     *              IOPT,IPQMMM)
       ENDIF
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
         WRITE(LUPRI,*) 'Transformed induced dipole moments field 3'
         CALL OUTPUT(WRK(KIND3),1,NDIM,1,1,NDIM,1,1,LUPRI)
         WRITE(LUPRI,*)

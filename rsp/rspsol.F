@@ -137,6 +137,8 @@ C
 C---------------------
 #include <gnrinf.h>
 #include <infpar.h>
+#include <mxcent.h>
+#include <qmmm.h>
 C gnrinf.h for QM3 by CBN+JK 03.01.06
 C---------------------
 C
@@ -326,13 +328,13 @@ C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
      &               WRK(KFREE),LFREE)
          END IF
       ELSE IF (QMMM) THEN
-         CALL TIMER('START ',TIMSTR,TIMEND)
+         IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-         CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
+         IF (IPQMMM .GT. 1) CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'

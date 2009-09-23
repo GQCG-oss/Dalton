@@ -327,6 +327,8 @@ C
 #include <r12int.h>
 #include <qm3.h>
 #include "incore.h"
+#include <mxcent.h>
+#include <qmmm.h>
 C------------------------
 C
       PARAMETER (THDDEF = 1.0D-5)
@@ -675,15 +677,15 @@ C
          END IF
 
          IF (QMMM) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
+            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL DZERO(WRK(KFCSOL),NNBAST)
             CALL QMMMFCK(DAOSAV(1,1),DAOSAV(1,2),
      &                  WRK(KFCSOL),ESOLT,
-     &                  WRK(KFREE),LFREE,IPRDIS)
+     &                  WRK(KFREE),LFREE,IPQMMM)
             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DISCTL.QMMMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-            CALL TIMER('QMMM  ',TIMSTR,TIMEND)
+            IF (IPQMMM .GT. 1) CALL TIMER('QMMM  ',TIMSTR,TIMEND)
          ENDIF
 
          IF (FLAG(16)) THEN

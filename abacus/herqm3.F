@@ -4377,22 +4377,21 @@ C
      *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
      *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
      *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
-     *            '.ZEROOC', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
+     *            '.ZEROOC', '.PRINT ', '.XXXXXX', '.XXXXXX'/
 
-C
+ 
       CALL QENTER('QMMMIN')
-C
+ 
 C     Initializing QMMM keywords
-C
+ 
       QMMM     = .FALSE.   ! Do a NewType QMMM calculation
-      SPLDIP   = .FALSE.   ! Split ind. dips. into components
-      FIXDIP   = .FALSE.   ! Do not calc. ind. dipoles read from file
+      SPLDIP   = .FALSE.   ! Split ind. dips. into components from electrons, permanent MM mult. and ind. multipoles.
+      FIXDIP   = .FALSE.   ! Do not calc. ind. dipoles read from file. Only for GS.
       MMDAMP   = .FALSE.   ! Damping in relay tensor
-
       CONMAT   = .TRUE.    ! Indicates if [ALPHA^(-1) - T] matrix is to be constructed.
 C                            This is but true here and then after the
 C                            first construction this is set to false
-      MMPROP   = .FALSE.   ! Calculates properties of the MM environment
+      MMPROP   = .FALSE.   ! Calculates properties of the MM environment. 
       SPLNMR   = .FALSE.   ! Calculate London contribution to gradient
 C                            seperately from permanent and induced dipoles. For testing.
       QMDAMP   = .FALSE.   ! Include damping of electric field between QM and MM
@@ -4411,6 +4410,7 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       RCUT     = .FALSE.   ! no cut-off
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
       ZEROOC   = .FALSE.   ! Zero the octuploe moments
+      IPQMMM   = 1         ! QMMM print
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4551,6 +4551,7 @@ C           See if further input is provided for this option
           GO TO 100
 
    18     CONTINUE
+            READ(LUCMD,*) IPQMMM
           GO TO 100
 
    19     CONTINUE
