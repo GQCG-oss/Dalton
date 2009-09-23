@@ -244,7 +244,7 @@ CTRL[16]=18
 ERROR[16]="SHIELDINGS NOT CORRECT"
 
 # Vibrational frequencies:
-CRIT1=`$GREP "2 * A1 * 4142\.5. * 0*\.01887. * 29\.84. * 0*\.706" $log | wc -l`
+CRIT1=`$GREP "2 * A1 * 4142\.5. * 0*\.01887. * 25\.48. * 0*\.603" $log | wc -l`
 CRIT2=`$GREP "3 * A1 * 1726\.2. * 0*\.00786. * 85\.61. * 2\.026" $log | wc -l`
 CRIT3=`$GREP "1 * B2 * 4244\.5. * 0*\.01934. * 88\.27. * 2\.089" $log | wc -l`
 TEST[17]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
