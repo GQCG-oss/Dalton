@@ -2787,11 +2787,13 @@ C         Remember the factor of 1/6 from the Taylor expansion
 
       END IF ! (NMULT .GE. 3)
 
-      write(lupri,*)
-      write(lupri,*) 'MM-charge QM density interaction energy:',ECHART
-      write(lupri,*) 'MM-dipole QM density interaction energy:',EDIPT
-      write(lupri,*) 'MM-quadr. QM density interaction energy:',EQUADT
-      write(lupri,*) 'MM-octup. QM density interaction energy:',EOCTUP
+      IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
+        write(lupri,*)
+        write(lupri,*) 'MM-charge QM density interaction energy:',ECHART
+        write(lupri,*) 'MM-dipole QM density interaction energy:',EDIPT
+        write(lupri,*) 'MM-quadr. QM density interaction energy:',EQUADT
+        write(lupri,*) 'MM-octup. QM density interaction energy:',EOCTUP
+      ENDIF 
 
 C     5) The polarization correction to the Fock/KS operator
 
@@ -2843,9 +2845,11 @@ c       list for this center and if not touched upon leave zero
         NZERAL = LIZA - 1
         NNZAL  = MMCENT - NZERAL  ! Number of MM centers with ALPHA .NE. 0
 
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) ' Number of polarizable sites: ', NNZAL
-        WRITE(LUPRI,*)
+        IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) ' Number of polarizable sites: ', NNZAL
+          WRITE(LUPRI,*)
+        ENDIF
 
         IF (MMMAT) THEN
 
@@ -3277,15 +3281,17 @@ C         Octupole contribution
 
         ESOLT = ESOLT + EPOLT
 
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,5001) 
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,5002) EDELD
-        WRITE(LUPRI,5003) EDNUC
-        WRITE(LUPRI,5004) EDMULT
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,5005) EPOLT
-        WRITE(LUPRI,*)
+        IF (IPRINT .GT. 1) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,5001) 
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,5002) EDELD
+          WRITE(LUPRI,5003) EDNUC
+          WRITE(LUPRI,5004) EDMULT
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,5005) EPOLT
+          WRITE(LUPRI,*)
+        ENDIF
 
         IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
 
@@ -3883,11 +3889,13 @@ C     file. ELSE: read matrix from the file. CONMAT = CONstruct MATrix
 
       IF (CONMAT) THEN
 
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) ' The Relay matrix is'//
-     &                 ' explicitly constructed. '
-        WRITE(LUPRI,*) ' Dimension is: ',NDIM
-        WRITE(LUPRI,*)
+        IF (IPRINT .GT. 1) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) ' The Relay matrix is'//
+     &                   ' explicitly constructed. '
+          WRITE(LUPRI,*) ' Dimension is: ',NDIM
+          WRITE(LUPRI,*)
+        ENDIF
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE(LUPRI,*)'Matrix to be inverted: '
@@ -3936,10 +3944,12 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
 
       ELSE  ! read the inverted matrix from the file
 
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) ' The Relay matrix is'//
-     &                 ' read from the file. '
-        WRITE(LUPRI,*)
+        IF (IPRINT .GT. 5) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) ' The Relay matrix is'//
+     &                   ' read from the file. '
+          WRITE(LUPRI,*)
+        ENDIF
 
         LUQMMM = -1
         IF (LUQMMM .LT. 0) THEN
@@ -3968,11 +3978,13 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
 
       ENDIF
 
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,1051)
-      WRITE(LUPRI,1050)
-      WRITE(LUPRI,1051)
-      WRITE(LUPRI,*)
+      IF (IPRINT .GT. 1) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,1051)
+        WRITE(LUPRI,1050)
+        WRITE(LUPRI,1051)
+        WRITE(LUPRI,*)
+      ENDIF
 
       IF (LOCDEB) THEN
         WRITE(LUPRI,*) 'F-Vector'
@@ -4084,15 +4096,14 @@ C     Write the nonzero induced dipoles to files. Only if not fixdip.
 
       ENDIF
 
-c      IF (IPRINT .GE. 3) THEN
-C       Write induced moments at each MM site to the DAL.OUT file
+      IF (IPRINT .GT. 1) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,1030)
         WRITE(LUPRI,*)
         WRITE(LUPRI,1000)
         WRITE(LUPRI,1010)
         WRITE(LUPRI,1000)
-c      ENDIF 
+      ENDIF 
 
       IINIM = 1
 
@@ -4107,14 +4118,13 @@ c      ENDIF
           DIPZ = INDMOM(IINIM+2)
           IINIM = IINIM + 3
         ENDIF
-c        IF (IPRINT .GE. 3) WRITE(LUPRI,1020) I,DIPX,DIPY,DIPZ
-        WRITE(LUPRI,1020) I,DIPX,DIPY,DIPZ
+        IF (IPRINT .GT. 1) WRITE(LUPRI,1020) I,DIPX,DIPY,DIPZ
  500  CONTINUE
 
-c      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GT. 1) THEN
         WRITE(LUPRI,1000)
         WRITE(LUPRI,*)
-c      ENDIF
+      ENDIF
 
 C     Finally, write the nonzero induced dipoles to file
       IF (.NOT. FIXDIP) THEN
@@ -5253,7 +5263,7 @@ C     Convert the F-vector into induced dipole moments
       CALL F2QMMM(WRK(KELF),POLDIM,INDMOM,WRK(KEND),LWRK1,
      *            IOPT,IPRINT)
 
-C      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GT. 1) THEN
 C       Write induced moments at each MM site to the DAL.OUT file
         WRITE(LUPRI,*)
         WRITE(LUPRI,1030)
@@ -5261,7 +5271,7 @@ C       Write induced moments at each MM site to the DAL.OUT file
         WRITE(LUPRI,1000)
         WRITE(LUPRI,1010)
         WRITE(LUPRI,1000)
-C      ENDIF
+      ENDIF
 
       IINIM = 1
 
@@ -5276,14 +5286,13 @@ C      ENDIF
           DIPZ = INDMOM(IINIM+2)
           IINIM = IINIM + 3
         ENDIF
-C        IF (IPRINT .GE. 3) WRITE(LUPRI,1020) I,DIPX,DIPY,DIPZ
-        WRITE(LUPRI,1020) I,DIPX,DIPY,DIPZ
+        IF (IPRINT .GT. 1) WRITE(LUPRI,1020) I,DIPX,DIPY,DIPZ
  500  CONTINUE
 
-c      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GT. 1) THEN
         WRITE(LUPRI,1000)
         WRITE(LUPRI,*)
-c      ENDIF
+      ENDIF
 
 C     Write the nonzero induced dipoles to file
       IF (.NOT. FIXDIP) THEN
