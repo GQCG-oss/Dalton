@@ -46,7 +46,7 @@ C  /* Deck opinpu */
 #include "gnrinf.h"
 #include "cbiwlk.h"
       PARAMETER (NTABLE = 75, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
-     &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
+     &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
@@ -1073,6 +1073,11 @@ C
       IF (BAKER) THEN
          WRITE(LUPRI,'(/A/)')
      &        ' Baker''s convergence criteria will be used.'
+         IF (NATNRM) THEN
+            WRITE(LUPRI,'(/A/)')
+     &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
+            NATNRM = .FALSE.
+         END IF
       ELSE IF (NATNRM) THEN
 C
 C     Tweaked convergence criterias more suitable for large systems (linsca)
@@ -2507,7 +2512,7 @@ C
      &      .AND. (GRDTHR .LT. 5.0D-05 .OR. THRSTP .LT. 5.0D-05)) THEN
             GRDTHR = MAX(GRDTHR,5.0D-05)
             THRSTP = MAX(THRSTP,5.0D-05)
-            IF (CHGRDT) THEN
+c           IF (CHGRDT) THEN
               NINFO = NINFO + 1
               WRITE (LUPRI,'(/A)') ' INFO>>>> Due to numerical '//
      &        'integration in DFT optimization'
@@ -2516,7 +2521,7 @@ C
               WRITE (LUPRI,'(/A/,3(/20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
-            END IF
+c           END IF
          END IF
          IF (DOCCSD) THEN
 C
@@ -2539,18 +2544,26 @@ C
      &        'optimization module. Use .WALK'
          CALL QUIT('Solvent incompatible with .OPTIMIZE')
       END IF
-      IF (.NOT.NATNRM .AND. (2.0D0*THRGRD) .GT. GRDTHR
-     &     .AND. .NOT. CHGRDT) THEN
-         GRDTHR = 2.0D0*THRGRD
-         THRSTP = GRDTHR
+C
+C     ... sep09, kr+hjaaj: a test where we changed the SCF
+C     convergence threshold THRGRD from 1.0d-6 to 1.0d-5,
+C     the norm of the calculated molecular gradient changed with 1.0d-6.
+      IF (.NOT.NATNRM .AND. .NOT. CHGRDT
+     &    .AND. (1.99D0*THRGRD) .GT. GRDTHR
+     &    .AND. (1.99D0*THRSTP) .GT. GRDTHR ) THEN
+         WRITE (LUPRI,'(/A,1P,D10.2/A)') ' INFO>>>> Due to convergence '
+     &        //'threshold for the wave function of',THRGRD,
+     &        ' INFO>>>> the default thresholds for'
+     &        //' convergence of geometry optimization have been reset.'
+         WRITE (LUPRI,'(/A/,1P,3(/20X,A,D10.2))') ' Old thresholds:',
+     &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
+     &        'Energy change  ',THRERG
+         GRDTHR = MAX(GRDTHR,2.0D0*THRGRD)
+         THRSTP = MAX(THRSTP,GRDTHR)
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
          NINFO = NINFO + 1
-         WRITE (LUPRI,'(/A)') ' INFO>>>> Due to convergence '//
-     &        'thresholds for the wave function'
-         WRITE (LUPRI,'(A)') ' INFO>>>> default thresholds for'
-     &        //' convergence of geometry optimization have been reset'
-         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
+         WRITE (LUPRI,'(/A/,1P,3(/20X,A,D10.2))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
       END IF

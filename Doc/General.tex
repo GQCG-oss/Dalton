@@ -84,12 +84,11 @@ option.
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
 %do not use.
 
-\item[\Key{OPTIMIZE}] Do a geometry walk\index{geometry walk}. If no
-input is given in the
-\Sec{OPTIMIZE} input submodule, an optimization of the molecular
-geometry\index{geometry optimization} to a stationary point with no
-negative Hessian eigenvalues\index{Hessian} (a
-local minimum) will be done using the default first-order
+\item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization}.
+The default is a geometry minimization\index{geometry minimization}:
+an optimization of the molecular geometry to a stationary point with no
+negative Hessian eigenvalues
+(a local minimum) will be done using the default first-order
 methods. However, this may be changed using appropriate
 keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
 the chapter on potential energy surfaces
@@ -365,7 +364,7 @@ functions. Default is $1.0\cdot 10^{-3}$ a.u.
 \newline
 \verb|READ(LUCMD,*) THRERG|
 
-Set the convergence threshold for the energy. This is one of the three
+Set the convergence threshold for the energy (in a.u.). This is one of the three
 convergence thresholds\index{convergence!geometry, criteria} (the keywords
 \Key{GRADIE} and \Key{STEP T}
 control the other two). Default value is the maximum of $1.0\cdot
@@ -393,10 +392,11 @@ procedure.
 \newline
 \verb|READ(LUCMD,*) THRGRD|
 
-Set the convergence threshold for the gradient norm. This is one of
+Set the convergence threshold for the norm of the molecular gradient (in
+a.u.). This is one of
 the three convergence thresholds (the keywords \Key{ENERGY} and
 \Key{STEP T} control the other two). Default value is the maximum of
-$1.0\cdot 10^{-5}$ and two times the threshold for the wave function
+$1.0\cdot 10^{-4}$ and two times the threshold for the wave function
 gradient.
 
 \item[\Key{GRDINI}]
@@ -715,19 +715,19 @@ Hessian).
 \newline
 \verb|READ(LUCMD,*) THRSTP|
 
-Set the convergence\index{convergence!geometry, criteria} threshold for the step
-norm. This is one of the
-three convergence thresholds (the keywords \Key{ENERGY} and
+Set the convergence\index{convergence!geometry, criteria} threshold for
+the norm of the geometry step (in a.u.).
+This is one of the three convergence thresholds (the keywords \Key{ENERGY} and
 \Key{GRADIE} control the other two). Default value is $1.0\cdot
-10^{-5}$.
+10^{-4}$.
 
 \item[\Key{SYMTHR}]\verb| |
 \newline
 \verb|READ(LUCMD,*) THRSYM|
 
-Determines the gradient threshold for breaking of the
+Determines the gradient threshold (in a.u.) for breaking of the
 symmetry\index{symmetry!breaking}. That is, if the index of the
-Hessian\index{Hessian!index} is non-zero when the gradient norm
+molecular Hessian\index{Hessian!index of molecular} is non-zero when the gradient norm
 drops below this value, the symmetry is broken to avoid unnecessary
 iterations within the wrong symmetry. This option only applies to
 second-order\index{second-order optimization} methods and when the
