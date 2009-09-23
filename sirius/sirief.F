@@ -1,4 +1,4 @@
-C/* Comdeck iefcmmv */
+C/* Deck iefcmmv */
       SUBROUTINE IEFCMMV(DMATM1,CPAK,SI,SPAK,DI,DPAK,
      $     WORK,IPVT,CORE,LWRK)
 #include <implicit.h>
@@ -182,7 +182,7 @@ C
 C
       RETURN
       END
-C/* Comdeck icvev */
+C/* Deck icvev */
       SUBROUTINE ICVEV(DMATM1,SI,SPAK,BEMPOT,VEC,VPOT,VCAM,
      *                 NTSX,L2,SOME,WORK,LWORK)
 C
@@ -442,8 +442,10 @@ C
 C
 C     Total apparent charge before and after renormalization.
 C
-      IF(ICOMPCM.NE.0) WRITE(LUPRI,1000) SQTNOP * QNTOT, TCH, QNTOTN
-      IF(ICOMPCM.EQ.0) WRITE(LUPRI,1100) SQTNOP * QNTOT, TCH
+      IF(SOME) THEN
+         IF(ICOMPCM.NE.0) WRITE(LUPRI,1000) SQTNOP * QNTOT, TCH, QNTOTN
+         IF(ICOMPCM.EQ.0) WRITE(LUPRI,1100) SQTNOP * QNTOT, TCH
+      END IF
       RETURN
 C
  1000 FORMAT(' NUCLEAR APPARENT CHARGE',F10.5/

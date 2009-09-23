@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -135,14 +135,14 @@ C   GETDC   if true calculate DCAO
 C   GETDV   if true calculate DVAO
 C   CMO(*)  molecular orbital coefficients
 C   DV(*)   active part of one-electron density matrix
-C           (over MO's)
-C
+C           (over MOs)
 C Scratch:
 C   WRK(LFRSAV)
 C
 #include <implicit.h>
-      DIMENSION CMO(*),DV(*),DCAO(NBAST,*),DVAO(NBAST,*), WRK(*)
-      LOGICAL   GETDC, GETDV
+      DIMENSION CMO(*),DV(NNASHX,*),DCAO(NBAST,*),DVAO(NBAST,NBAST,*), 
+     &          WRK(*)
+      LOGICAL   GETDC, GETDV, L_DO_SPINDNS
 C
       PARAMETER (D2 = 2.0D0)
 C
@@ -156,6 +156,8 @@ C
 #include <inforb.h>
 #include <infvar.h>
 #include <infpri.h>
+C JT add infinp.h
+#include <infinp.h>
 C
 C
       CALL QENTER('FCKDEN')
@@ -164,6 +166,11 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
+
+C JT Aug 09 beg
+      L_DO_SPINDNS = ADDSRI .AND. ISPIN .NE. 1 .AND. MCTYPE .NE. 0
+C JT Aug 09 end
+
 C
 C     ************************************
 C     DVAO matrix
@@ -193,11 +200,50 @@ C
             CALL DGEMM('N','T',NBASJ,NBASI,NASHI,1.D0,
      &                 WRK(KDAO1),NBASJ,
      &                 CMO(JCMO),NBASI,0.D0,
-     &                 DVAO(IBAS(JSYM)+1,IBAS(ISYM)+1),NBAST)
+     &                 DVAO(IBAS(JSYM)+1,IBAS(ISYM)+1,1),NBAST) !JT
  2000    CONTINUE
       CALL MEMREL('FCKDEN',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       END IF
       END IF
+C
+C     ************************************
+C     DVSAO matrix
+C
+C JT Aug 09 beg
+C do spin density matrix
+      IF (L_DO_SPINDNS) THEN
+      IF (GETDV) THEN
+         CALL DZERO(DVAO(1,1,2),N2BASX)
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KUDV ,N2ASHX,WRK,KFREE,LFREE)
+         CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV))
+         DO 2010 ISYM = 1,NSYM
+            JSYM  = MULD2H(ISYM,JWOPSY)
+            NASHI = NASH(ISYM)
+            NASHJ = NASH(JSYM)
+         IF (NASHI .EQ. 0 .OR. NASHJ .EQ. 0) GO TO 2010
+            NORBI = NORB(ISYM)
+            NBASI = NBAS(ISYM)
+            NORBJ = NORB(JSYM)
+            NBASJ = NBAS(JSYM)
+            JCMO  = ICMO(JSYM) + 1 + NISH(JSYM)*NBASJ
+            JUDV  = KUDV + IASH(ISYM)*NASHT + IASH(JSYM)
+            CALL DGEMM('N','N',NBASJ,NASHI,NASHJ,1.D0,
+     &                 CMO(JCMO),NBASJ,
+     &                 WRK(JUDV),NASHT,0.D0,
+     &                 WRK(KDAO1),NBASJ)
+            JCMO  = ICMO(ISYM) + 1 + NISH(ISYM)*NBASI
+            CALL DGEMM('N','T',NBASJ,NBASI,NASHI,1.D0,
+     &                 WRK(KDAO1),NBASJ,
+     &                 CMO(JCMO),NBASI,0.D0,
+     &                 DVAO(IBAS(JSYM)+1,IBAS(ISYM)+1,2),NBAST)
+ 2010    CONTINUE
+      CALL MEMREL('FCKDEN',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      END IF
+      END IF
+      END IF
+C JT Aug 09 end
 C
 C
 C     ************************************
@@ -330,40 +376,68 @@ C            "Calculation of Generalized Fock Matrices from
 C            Regular and One-Index Transformed Integrals"
 C
 #include <implicit.h>
+#include <priunit.h>
       DIMENSION DV(*), CMO(*), FC(*), FV(*), WRK(*)
-      LOGICAL   ONLYFC, NOFV
+      LOGICAL   ONLYFC, NOFV, LSRHYBR, L_DO_SPINDNS
 C
 C Used from common blocks:
 C   INFORB : NASHT, NNBASX, NSYM, ...
 C   INFPRI : P6FLAG()
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
 #include <maxorb.h>
 #include <infinp.h>
+#include <inforb.h>
+#include <infpri.h>
       PARAMETER( D1 = 1.0D0 )
+#include <dftcom.h>
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
+      LSRHYBR = SRHYBR .AND. .NOT. MCTYPE.EQ.0
+C
+      L_DO_SPINDNS = ADDSRI .AND. ISPIN .NE. 1 .AND. MCTYPE .NE. 0
+      IF (L_DO_SPINDNS .AND. LSRHYBR) THEN
+         CALL QUIT('SRHYBR and non-singlet not implemented')
+      END IF
 C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
       IF (.NOT. NOFV) THEN
-C        FCAO and FVAO must be consequetive
-C        DCAO and DVAO must be consequetive
-         CALL MEMGET('REAL',KFCAO,2*N2BASX,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KDCAO,2*N2BASX,WRK,KFREE,LFREE)
+         IF (L_DO_SPINDNS) THEN
+C        FCAO, FVAO, and FSAO must be consecutive
+C        DCAO, DVAO, and DSAO must be consecutive
+            ND = 3
+            NF = 3
+         ELSE
+C        FCAO and FVAO must be consecutive
+C        DCAO and DVAO must be consecutive
+            ND = 2
+            NF = 2
+         END IF
+         IF (LSRHYBR) THEN
+C           we need an extra FSRAO and DSRAO for hybrid SRDFT-DFT
+C           in order to evaluate both SR-DFT term and DFT term
+            NF = NF + 1
+         END IF
+         CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDCAO,ND*N2BASX,WRK,KFREE,LFREE)
          KFVAO = KFCAO + N2BASX
+         KFSAO = KFVAO + N2BASX
+         KSRAO = KFCAO + (NF-1)*N2BASX
+C        ... FSRAO(1) = WRK(KSRAO) is only for LSRHYBR /hjaaj
          KDVAO = KDCAO + N2BASX
+         KDSAO = KDVAO + N2BASX
       ELSE
+         ND = 1
+         NF = 1
          CALL MEMGET('REAL',KFCAO,N2BASX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFVAO,0,WRK,KFREE,LFREE)
+         KFSAO = KFVAO
          CALL MEMGET('REAL',KDCAO,N2BASX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KDVAO,0,WRK,KFREE,LFREE)
+         KDSAO = KDVAO
       END IF
-      CALL MEMGET('WORK',KWRK,LWRK,WRK,KFREE,LFREE)
 C
 C
 C ***** Construct folded inactive and active parts of the one-electron
@@ -371,7 +445,7 @@ C       density matrix in AO-basis (DCAO and DVAO). DV is the active
 C       part of the one-electron density matrix in MO-basis.
 C
       CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
-     *            WRK(KDCAO),WRK(KDVAO),CMO,DV,WRK(KWRK),LWRK)
+     *            WRK(KDCAO),WRK(KDVAO),CMO,DV,WRK(KFREE),LFREE)
 C     CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 C
       IF (HSROHF) THEN
@@ -379,7 +453,7 @@ C
          CALL DSCAL(N2BASX,-D1,WRK(KDVAO),1)
       END IF
       CALL FCKMAO(NOFV,DV,EMCMY, WRK(KFCAO),WRK(KFVAO),
-     *            WRK(KDCAO),WRK(KDVAO),CMO,WRK(KWRK),LWRK)
+     *            WRK(KDCAO),WRK(KDVAO),CMO,WRK(KFREE),LFREE)
 C
 C ***** Transform inactive and active Fock-matrices to MO basis
 C ***** (FC and FV) using DCAO as scratch space
@@ -395,6 +469,13 @@ C
          IF (NSYM .GT. 1) CALL PKSYM1(WRK(KFVAO),WRK(KFVAO),NBAS,NSYM,2)
          CALL UTHUB(WRK(KFVAO),FV,CMO,WRK(KDCAO),NSYM,NBAS,NORB)
       END IF
+      IF (LSRHYBR) THEN
+         CALL DCOPY(N2BASX,WRK(KSRAO),1,WRK(KDCAO),1)
+         CALL DGETSP(NBAST,WRK(KDCAO),WRK(KSRAO))
+         IF (NSYM .GT. 1) CALL PKSYM1(WRK(KSRAO),WRK(KSRAO),NBAS,NSYM,2)
+         CALL UTHUB(WRK(KSRAO),FV(1+NNORBT),CMO,WRK(KDCAO),
+     &      NSYM,NBAS,NORB)
+      END IF
 C
       IF (P6FLAG(14)) THEN
         WRITE(LUPRI,1200)
@@ -403,9 +484,14 @@ C
           WRITE(LUPRI,1300)
           CALL OUTPKB(FV,NORB,NSYM,1,LUPRI)
         END IF
+        IF (LSRHYBR) THEN
+          WRITE(LUPRI,1400)
+          CALL OUTPKB(FV(1+NNORBT),NORB,NSYM,1,LUPRI)
+        END IF
       END IF
  1200 FORMAT(/' FC = Fock matrix, inactive part (MO-basis)')
  1300 FORMAT(/' FV = Fock matrix, active part (MO-basis)')
+ 1400 FORMAT(/' SRHYBR extra matrix (MO-basis)')
 C
       CALL MEMREL('FCKMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('FCKMAT')
@@ -453,10 +539,12 @@ C
 #include <infpri.h>
 #include <dfterg.h>
 C
-      DIMENSION ISYMDM(2), IFCTYP(2)
       LOGICAL NOFV
-      SAVE ISYMDM, IFCTYP
-      DATA ISYMDM/1,1/, IFCTYP/13,13/
+C
+      CALL QENTER('FCKMAO')
+C
+      P6FLAG(11) = .true. !Cdbg
+C
 C
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -465,24 +553,38 @@ C
 C ***** TWO-ELECTRON PART calculated in FCAO, FVAO
 C       (FCAO, FVAO zeroed in FCK2AO)
 C
-      CALL FCK2AO(ONLYFC,FCAO,FVAO,DCAO,DVAO,WRK,KFREE,LFREE)
+      ESRDFTY = D0
+C     ... make sure ESRDFTY is reset for CISRDFT following HFSRDFT
+C         (ESRDFTY is in common block and is calculated inside FCK2AO)
+      CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
       IF(DODFT) THEN
          IF(NASHT.NE.0) CALL QUIT('Gradient not implemented for RO-DFT')
          EXCTRO = HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
          CALL DFTKSMb(DCAO,FCAO,EDFTY,WRK(KFREE),LFREE,IPRFCK)
          EDFTY = EDFTY + EXCTRO - HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
+         IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
+     &   ' Kohn-Sham DFT xc energy      :',EDFTY
       ENDIF
+      IF (ESRDFTY .ne. D0 .and. P6FLAG(11))
+     &   WRITE (LUPRI,'(A,F25.12)')
+     &   ' srDFT energy correction      :',ESRDFTY
 C
 C     If this is a direct run, DCAO is returned in SO basis (to save
 C     memory). Thus, we need to recreate it. K.Ruud, March-98
 C
-      NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
-      IF (DIRFCK) CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
-     *                        DCAO,DVAO,CMO,DV,WRK(KFREE),LFREE)
+      IF (DIRFCK) THEN
+         NOFV  = ( (NASHT .EQ. 0) .OR. ONLYFC )
+         CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
+     &               DCAO,DVAO,CMO,DV,WRK(KFREE),LFREE)
+      END IF
       IF (HSROHF) THEN
          CALL DAXPY(N2BASX,D1,DVAO,1,DCAO,1)
          CALL DSCAL(N2BASX,-D1,DVAO,1)
       END IF
+
+C
+C JT: to do: add contribution of spin potential to the energy here ?
+C
 C
 C ***** one-electron part in WRK(KH1AO)
 C
@@ -497,21 +599,22 @@ C ***** INACTIVE ENERGY : EMCMY
 C
       IF (NISHT .GT. 0) THEN
          EMCMY = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
-         IF (P6FLAG(11)) WRITE (LUPRI,'(/A,F25.12)')
-     *   ' Inactive one-electron energy :',EMCMY
-         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1) + EDFTY
+         IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
+     &   ' Inactive one-electron energy :',EMCMY
+         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY+ESRDFTY
       ELSE
-         EMCMY = D0
+C        ESRDFTY is zero if not srDFT calculation
+         EMCMY = ESRDFTY
       END IF
-      IF (P6FLAG(11)) WRITE (LUPRI,'(/A,F25.12)')
-     *   ' Inactive total energy        :',EMCMY
+      IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
+     &   ' Inactive total energy        :',EMCMY
 C
 C ***** add one-electron contribution to FCAO
 C
 C     One-electron contribution is not added for the construction of 
 C     the exchange operator in the auxilliary basis (WK/UniKA/04-11-2002).
       IF (.NOT. (R12TRA .OR. R12ECO))
-     *     CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
+     &     CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
 C
 C     ***** Test output of Fock matrices *****
 C
@@ -533,10 +636,11 @@ C
 C
 C *** End of subroutine FCKMAO
 C
+      CALL QEXIT('FCKMAO')
       RETURN
       END
 C  /* Deck fck2ao */
-      SUBROUTINE FCK2AO(ONLYFC, FCAO,FVAO,DCAO,DVAO,WRK,KFREE,LFREE)
+      SUBROUTINE FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
 C
 C 2-Apr-1997 Hans Joergen Aa. Jensen
 C     : 2-electron part extracted from FCKMAO
@@ -555,7 +659,7 @@ C  If (onlyfc) only inactive Fock matrix FCAO is calculated.
 C
 C
 #include <implicit.h>
-      DIMENSION FCAO(*),DCAO(*), FVAO(*),DVAO(*), WRK(*)
+      DIMENSION FCAO(*),DCAO(*), WRK(*)
       LOGICAL   ONLYFC
 C
 C Used from common blocks:
@@ -572,14 +676,37 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <dftcom.h>
+#include <gnrinf.h>
+#include <priunit.h>
 C
-      DIMENSION ISYMDM(2), IFCTYP(2)
-      SAVE ISYMDM, IFCTYP
-      DATA ISYMDM/1,1/, IFCTYP/13,13/
+      DIMENSION ISYMDM(3), IFCTYP(3)    !JT Aug 09
+      LOGICAL L_DO_SPINDNS ! jT Aug 09
 C
       CALL QENTER('FCK2AO')
       KFRSAV = KFREE
 C
+C JT Aug 09 beg
+      L_DO_SPINDNS = ADDSRI .AND. ISPIN .NE. 1 .AND. MCTYPE .NE. 0
+C JT Aug 09 end
+C
+      ISYMDM(1) = 1
+      ISYMDM(2) = 1
+      IF (HFXFAC .eq. 0.0D0) THEN
+C        ... only Coulomb term
+         IFCTYP(1) = 11
+         IFCTYP(2) = 11
+      ELSE
+C        ... Coulomb and Exchange
+         IFCTYP(1) = 13
+         IFCTYP(2) = 13
+      END IF
+C
+C JT Aug 09 beg
+      IF (L_DO_SPINDNS) THEN
+         ISYMDM(3) = 1
+         IFCTYP(3) = -12
+      END IF
+C JT Aug 09 end
 C
       IF (ONLYFC) THEN
          NDMAT = 1
@@ -589,14 +716,21 @@ C
             NFMAT = 0
          END IF
          IOFFAO = 1
-      ELSE IF (NISHT .GT. 0) THEN
-         NDMAT = 2
-         NFMAT = 2
+      ELSE IF (NISHT .GT. 0 .OR. ADDSRI) THEN
+         IF (L_DO_SPINDNS) THEN !JT Aug 09
+            NDMAT = 3
+            NFMAT = 3
+         ELSE
+            NDMAT = 2
+            NFMAT = 2
+         ENDIF
          IOFFAO = 1
-      ELSE IF (NASHT.EQ.1) THEN 
-C  one-electron system
+         IF (NISHT.EQ.0) CALL DZERO(DCAO,N2BASX)
+C        ... zero DCAO for ADDSRI with NISHT.eq.0
+      ELSE IF (NASHT.EQ.1 .AND. NACTEL.EQ.1) THEN 
+C     one-electron system
          NDMAT = 2
-         IF (DFTRUN) THEN
+         IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
             NFMAT = 2
          ELSE
             NFMAT = 0
@@ -604,27 +738,31 @@ C  one-electron system
          IOFFAO = 1
       ELSE
 C        DCAO zero matrix, only FVAO contribution
+C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
          NDMAT = 2
-         NFMAT = 1
-         IOFFAO = 1+N2BASX
-C        ... off-set to FVAO,DVAO in FCAO,DCAO
+         IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
+            NFMAT  = 2
+            IOFFAO = 1
+         ELSE
+            NFMAT  = 1
+            IOFFAO = 1 + N2BASX
+C           ... off-set to FVAO,DVAO in FCAO,DCAO
+         END IF
       END IF
-      IF (DFTRUN .AND. (NASHT .EQ. 1)) THEN
+      IF (HSROHF .OR. (DODFT .AND. NASHT .EQ. 1)) THEN
 C
-C This gives the exchange part of the active Fock matrix
-C we need only the difference between Fa and Q which is negative
-C of the exchange part
+C This gives the exchange part of the active Fock matrix;
+C we need only the difference between Fa and Q which is
+C the negative of the exchange part
 C
          IFCTYP(2)=12
       END IF
-      IF (HSROHF) THEN
-         IFCTYP(2)=12
-      END IF  
-
       CALL DZERO(FCAO,NDMAT*N2BASX)
-CKR   This line read NDMAT instead of NFMAT, 150997
+C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1 .AND. (.NOT. (HSROHF .OR. DFTRUN))) THEN
+      IF (LUSUPM .NE. -1 .AND.
+     &   .NOT. (HSROHF .OR. DODFT .OR.
+     &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,
@@ -634,6 +772,7 @@ C            else construct Fock matrix from LUINTA
 C            ISYMDM(1:NFMAT) = 1 : symmetry of density matrix (DUNP)
 C            IFCTYP(1:NFMAT) = 13 : singlet, symmetric Fock matrix
 C            NFMAT is max = 2 here
+C
       END IF
       END IF
 C
@@ -1258,7 +1397,7 @@ C Output:
 C   EMCACT, energy of the CEP.
 C   G, gradient of the CEP.
 C   EMCMY, inactive energy part of EMCSCF.
-C   DV, one-electron d.m. for CREF.
+C   DV, one-electron charge (and spin if srDFT) d.m. for CREF:
 C   PV, two-electron d.m. for CREF.
 C   H2AC, the two-electron integrals over active orbitals.
 C   FC, the inactive Fock matrix.
@@ -1270,7 +1409,7 @@ C Scratch:
 C   WRK
 C
 #include <implicit.h>
-      DIMENSION CREF(*),CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(*)
+      DIMENSION CREF(*),CMO(*),DV(NNASHX,*),PV(*),FC(*),FV(*),FQ(*)
       DIMENSION FCAC(*),H2AC(*)
       DIMENSION INDXCI(*), G(*), WRK(LFREE)
 #include <iratdef.h>
@@ -1308,6 +1447,7 @@ C
 C -- local variables
 C
       LOGICAL FULODG, AVEODG
+      LOGICAL L_DO_SPINDNS !JT Aug 09
       CHARACTER*8 TABLE(3)
 C
 C -- DATA statements
@@ -1315,6 +1455,17 @@ C
       DATA TABLE/'********','ORBDIAG ','EODATA  '/
 C
       CALL QENTER('GRAD  ')
+
+C JT Aug 09 beg
+      L_DO_SPINDNS = ADDSRI .AND. ISPIN .NE. 1 .AND. MCTYPE .NE. 0
+C JT Aug 09 end
+C
+C     If spin-dependent srDFT then both charge and spin density 1-el matrices
+      IF (L_DO_SPINDNS) THEN
+         NDV = 2
+      ELSE
+         NDV = 1
+      END IF
 C
 C ******************************************************************
 C Step 0: WRK space allocation:
@@ -1329,7 +1480,7 @@ C .. 1.3 .. (GETH2,ORDIAG and ORBGRD)
       LW3    = LFREE  - KW3
 C .. 1.3.1 .. (ORBGRD)
       KUDV   = KW3
-      KLAST  = MAX(KWRKF,KUDV + N2ASHX)
+      KLAST  = MAX(KWRKF,KUDV + NDV*N2ASHX)
 C .. 1.4 .. (CIGRAD)
       KWRK4  = 1
       LWRK4  = LFREE- KWRK4
@@ -1350,29 +1501,39 @@ C
       IF (NWOPT.EQ.0) FULODG = .FALSE.
       IF (NASHT.EQ.0) GO TO 1999
       IF (NASHT .EQ. 1 .AND. NACTEL .LT. 2) THEN
-         DV(1) = NACTEL
+         DV(1,1) = NACTEL
          PV(1) = D0
+         IF (NDV.GE.2) DV(1,2) = NACTEL
       ELSE IF (HSROHF) THEN
-         CALL DZERO(DV,NNASHX)
+         CALL DZERO(DV,NDV*NNASHX)
          DO I=1,NASHT
             II=I*(I+1)/2
-            DV(II)=D1
+            DV(II,1)=D1
+            IF (NDV.GE.2) DV(II,2)=D1
          END DO
          CALL DZERO(PV,NNASHX*NNASHX)
       ELSE
          CALL MAKDM(CREF,DV,PV,INDXCI,WRK,LFREE)
 C        CALL MAKDM(CREF,DV,PV,INDXCI,WRK,LFREE)
+         IF (NDV.GE.2) THEN
+            CALL MAKDSV(CREF,DV(1,2),INDXCI,WRK,LFREE)
+         END IF
       END IF
 C
       IF (P6FLAG(15)) THEN
          WRITE (LUPRI,1100)
          CALL OUTPAK(DV,NASHT,1,LUPRI)
+         IF (NDV.GE.2) THEN
+            WRITE (LUPRI,1110)
+            CALL OUTPAK(DV(1,2),NASHT,1,LUPRI)
+         END IF
       END IF
       IF (P6FLAG(25)) THEN
          WRITE (LUPRI,1200)
          CALL OUTPUT(PV,1,NNASHX,1,NNASHX,NNASHX,NNASHX,-1,LUPRI)
       END IF
  1100 FORMAT(/' DV = One-el. density matrix, active part, MO-basis')
+ 1110 FORMAT(/' DV = One-el. spin den. mat., active part, MO-basis')
  1200 FORMAT(/' PV = Two-el. density matrix, active part, MO-basis')
 C
  1999 CONTINUE
@@ -1432,6 +1593,9 @@ C
 C        CALL GETFCI(FCAC,H2AC,WRK,LFREE)
 C
       ELSE IF (HSROHF) THEN
+         IF (ADDSRI) THEN
+            call quit('Something needs to be done for srdft and hsrohf')
+         END IF
          CALL DZERO(FQ,NORBT*NASHT)
          CALL GETAC(FV,FCAC)
          EMCACT = -ENRACT(DV,FCAC,FQ)/2
@@ -1480,7 +1644,10 @@ C
 #endif
       IF (NWOPT.EQ.0) GO TO 5999
 C     Unpack DV into UDV ( SP to SI format)
-      IF (NASHT .GT. 0) CALL DSPTSI(NASHT,DV,WRK(KUDV))
+      IF (NASHT .GT. 0) THEN
+         CALL DSPTSI(NASHT,DV,WRK(KUDV))
+         IF (NDV.GE.2) CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV+N2ASHX))
+      END IF
 C     Initialize gradient
       CALL DZERO(G(NCONF+1),NWOPH)
       CALL ORBGRD(NWOPH,WRK(KUDV),FC,FV,FQ,G(NCONF+1))
@@ -2341,6 +2508,7 @@ C Scratch:
 C   WRK
 C
 #include <implicit.h>
+#include <priunit.h>
       DIMENSION CREF(*),CMO(*),DV(*),PV(*), G(*),
      *          FC(*),FV(*),FQ(*), DIAOR(*), INDXCI(*), WRK(LFREE)
 #include <iratdef.h>
@@ -2362,7 +2530,6 @@ C   INFDIM : ?
 C   INFTAP : LUIT2,?
 C
 #include <maxorb.h>
-#include <priunit.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <inforb.h>
@@ -2379,6 +2546,10 @@ C
 C
       CALL QENTER('UPDGRD')
       CALL GETTIM (T0,W0)
+C
+      IF (ADDSRI) THEN
+         call quit('UPDGRD not implemented yet for srDFT')
+      END IF
 C
       IF (ICTL.EQ.0) THEN
          DODVPV = .TRUE.
@@ -2876,7 +3047,7 @@ C   GETDC   if true calculate DCAO
 C   GETDV   if true calculate DVAO
 C   CMO(*)  molecular orbital coefficients
 C   DV(*)   active part of one-electron density matrix
-C           (over MO's) unpacked
+C           (over MOs) unpacked
 C
 C Scratch:
 C   WRK(LFRSAV)
@@ -2953,18 +3124,17 @@ C
          IF (NISHI .GT. 0) THEN
             NBASI = NBAS(ISYM)
             JCMO  = ICMO(ISYM) + 1
-            CALL DGEMM('N','T',NBASI,NBASI,NISHI,1.D0,
+            CALL DGEMM('N','T',NBASI,NBASI,NISHI,2.D0,
      &                 CMO(JCMO),NBASI,
      &                 CMO(JCMO),NBASI,0.D0,
      &                 DCAO(IBAS(ISYM)+1,IBAS(ISYM)+1),NBAST)
          END IF
  4000    CONTINUE
 C
-C **     multiply with DC(i,i) = 2.0 factor to get final result
+C **     in DGEMM above: multiply with DC(i,i) = 2.0 factor to get final result
 C        (if transition density matrix, then DCAO must be
 C         multiplied with the <L | R> overlap outside this routine)
 C
-         CALL DSCAL(N2BASX,D2,DCAO,1)
       END IF
       END IF
 C

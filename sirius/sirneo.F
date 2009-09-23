@@ -263,9 +263,15 @@ C
       ITMIC  = 0
 C
   100 ITMIC  = ITMIC + 1
+         IF (IPRI6.ge.10) WRITE(LUPRI,'(/A,I5)')
+     &      ' ---> Micro iteration no.',ITMIC
 C
+         ITMICB = 0
   200    CONTINUE
+            ITMICB = ITMICB + 1
             NTSIM = MIN(MAXSIM,NTSIML)
+            IF (IPRI6.ge.10) WRITE(LUPRI,'(A,2I5)')
+     &      ' ---> Batch no., NTSIM',ITMICB,NTSIM
 C
 C           test against max. dimension of reduced L
 C
@@ -325,6 +331,22 @@ C           NOTE: CI BVEC's are assumed orthogonal to CREF, otherwise
 C                 LINTRN will not return correct result for
 C                 K(orb,CI) * b-vec (see comments in ORBSIG)
 C
+            IF (IPRI6 .gt. 100) THEN
+            IF (NCSIM .gt. 0) THEN
+               WRITE (LUPRI,'(/A,I3,A/A,20I3)')
+     &           'Printing',NCSIM,' configuration trial vectors:',
+     &           'IBNDX: ',(IBNDX(NREDL+ISIM),ISIM=1,NTSIM)
+               CALL OUTPUT(WRK(KBVECS),1,NCONF,1,NCSIM,
+     &              NCONF,NCSIM,-1,LUPRI)
+            END IF
+            IF (NOSIM .gt. 0) THEN
+               WRITE (LUPRI,'(/A,I3,A/A,20I3)')
+     &           'Printing',NOSIM,' orbital trial vectors:',
+     &           'IBNDX: ',(IBNDX(NREDL+ISIM),ISIM=1,NTSIM)
+               CALL OUTPUT(WRK(KBVECS+NCSIM*NCONF),1,NWOPT,1,NOSIM,
+     &              NWOPT,NOSIM,-1,LUPRI)
+            END IF
+            END IF
             TIMLIN = TIMLIN - SECOND()
             NLIN   = NLIN   + 1
             NCLIN  = NCLIN  + NCSIM
@@ -365,6 +387,13 @@ C
 C           *** Save SVECS on LUIT5
 C              (SVECS is placed at WRK(KSVECS) by LINTRN)
 C
+            IF (IPRI6 .gt. 100) THEN
+               WRITE (LUPRI,'(/A,I3,A/A,20I3)')
+     &           'Printing',NTSIM,' sigma vectors:',
+     &           'IBNDX: ',(IBNDX(NREDL+ISIM),ISIM=1,NTSIM)
+               CALL OUTPUT(WRK(KSVECS),1,NVAR,1,NTSIM,
+     &              NVAR,NTSIM,-1,LUPRI)
+            END IF
             REWIND LUIT5
             DO 600 I = 1,NREDL
                IF (NCONF.GT.1) READ (LUIT5)
@@ -411,7 +440,7 @@ C    *                G,IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
 C
          IF (P6FLAG(51)) THEN
 C           check symmetry of REDL
-            CALL REDCHK(IBNDX,WRK(KWRK1),LWRK1)
+            CALL NEORED_CHK(IBNDX,WRK(KWRK1),LWRK1)
          END IF
 C
 C        *** update BETA in UPDBET as if eigenvector was exact
@@ -456,12 +485,15 @@ C
             IF (RBETA .GE. MIN(RKVAD,(RTRUST/RTTOL))) JCONV = -1
          END IF
 C
-         ESHIFT = D0
+C        hjaaj aug 2006: changed ESHIFT from 0.0 to 0.01 to make sure
+C                        that precondition in NEONEX should not
+C                        give a factor of more than 100
+         ESHIFT = 0.01D0
 C
          CALL NEONEX(G,WRK(KEVAL),WRK(KEVEC),EACTVN,ESHIFT,
      *               CREF,CMO,DV,PV,FC,FV,
      *               IBNDX,NCSIM,NOSIM,JCONV,
-     &                WRK(KBVECS),LBVECS)
+     &               WRK(KBVECS),LBVECS)
 C        CALL NEONEX(G,EVAL,EVEC,EACTVN,ESHIFT,
 C    *               CREF,CMO,DV,PV,FC,FV,
 C    *               IBNDX,NCSIM,NOSIM,JCONV,WRK,LFREE)
@@ -497,7 +529,7 @@ C Iterations stopped because of linear dependence
 C
   900 CONTINUE
 C
-      WRITE (LUPRI,9020)  ITMAC,ITMIC
+      WRITE (LUPRI,9020) ITMAC,ITMIC
       WRITE (LUERR,9020) ITMAC,ITMIC
       GO TO 9000
  9020 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
@@ -507,7 +539,7 @@ C     Iterations stopped because maximum number of micro iterations
 C     reached
 C
   910 CONTINUE
-      WRITE (LUPRI,9030)  ITMAC,ITMIC
+      WRITE (LUPRI,9030) ITMAC,ITMIC
       WRITE (LUERR,9030) ITMAC,ITMIC
       GO TO 9000
  9030 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
@@ -524,7 +556,7 @@ C
 C
   940 CONTINUE
       BETUPD = .FALSE.
-      WRITE (LUPRI,9400)  ITMAC,ITMIC,MAXRL,NREDL
+      WRITE (LUPRI,9400) ITMAC,ITMIC,MAXRL,NREDL
       WRITE (LUERR,9400) ITMAC,ITMIC,MAXRL,NREDL
       GO TO 9000
  9400 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
@@ -648,7 +680,7 @@ C  G(NVAR), MC gradient.
 C  EVAL(NREDL), eigenvalues of reduced L matrix.
 C  EVEC(NREDL,NREDL), corresponding eigenvectors.
 C  EACTVN, active energy of CREF.
-C  ESHIFT, shift of "Davidson" denominator (usually zero)
+C  ESHIFT, shift of "Davidson" denominator
 C  CREF,CMO,DV,PV,FC,FV matrices passed on to NEXKAP
 C
 C Input and output:
@@ -898,6 +930,14 @@ C
             CALL DAXPY(NVARX,FAC,G(IGX),1,WRK(JRVCS),1)
             JRVCS = JRVCS + NVARX
   200    CONTINUE
+            IF (IPRI6 .gt. 210) THEN
+               WRITE (LUPRI,'(/A,I3,A)')
+     &           'Printing',NSIMX,' gradient part of residual vectors:'
+               WRITE (LUPRI,*) 'FAC, beta, evec(1,1)',
+     &                          fac,beta,evec(1,jroot(jsimx+1))
+               CALL OUTPUT(WRK(KRVCS),1,NVAR,1,NSIMX,
+     &              NVAR,NSIMX,-1,LUPRI)
+            END IF
 C
          DO 220 IREDL = 2,NREDL
             CITYPE = (IBNDX(IREDL) .EQ. JBCNDX)
@@ -947,6 +987,12 @@ C                 Check for later if we have any orbital trial vectors
 C                  (or NWOPT .EQ. 0), because then we should include
 C                  an orbital trial vector.
 C
+            IF (IPRI6 .gt. 210) THEN
+               WRITE (LUPRI,'(/A,I3,A)')
+     &           'Printing',NSIMX,' sigma part of residual vectors:'
+               CALL OUTPUT(WRK(KRVCS),1,NVAR,1,NSIMX,
+     &              NVAR,NSIMX,-1,LUPRI)
+            END IF
          KB = KSC
          REWIND LUIT3
          READ (LUIT3)
@@ -1116,10 +1162,20 @@ C                 assure first trial vector is an orbital vector
                      WRK((KTHKAP-1)+NOVEC) =
      *               MAX(FKAPC*QCNRM, FKAPO*QONRM)
                   END IF
+                  FACTRN = 1.0 D-3
+                  CTEST = FACTRN * QONRM
+                  DO I = JORV+1,JORV+NWOPT
+                     IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
+                  END DO
                ELSE IF (QCNRAT*QCNRM.GT.QONRM) THEN
 C                 CI trial vector, prepare for Davidson:
                   NCVEC = NCVEC + 1
                   IBNDX(IBNOFF+ISIMX) = 1
+                  FACTRN = 1.0 D-3
+                  CTEST = FACTRN * QCNRM
+                  DO I = JCRV+1,JCRV+NCONF
+                     IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
+                  END DO
                ELSE
 C                 orbital trial vector
                   NOVEC = NOVEC + 1
@@ -1128,6 +1184,11 @@ C                 orbital trial vector
                      WRK((KTHKAP-1)+NOVEC) =
      *               MAX(FKAPC*QCNRM, FKAPO*QONRM)
                   END IF
+                  FACTRN = 1.0 D-3
+                  CTEST = FACTRN * QONRM
+                  DO I = JORV+1,JORV+NWOPT
+                     IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
+                  END DO
                END IF
             END IF
             JCRV = JCRV + NVARX
@@ -1202,7 +1263,8 @@ C
 C        D = CDIAG(I) + DSHIFT = 1/2 * [ 2*(CIDIAG(I)-EACTVN) - EVAL ]
 C          = 1/2 * [ LDIAG(I) - EVAL ]
 C
-         IF (ESHIFT.NE.D0) WRITE (LUW4,9120) ESHIFT
+C        hjaaj aug 2006: new default of 0.01 for ESHIFT
+         IF (ESHIFT.NE.0.01D0) WRITE (LUW4,9120) ESHIFT
  9120    FORMAT(/' (NEONEX) Davidson level shift shifted by ESHIFT =',
      *          F20.15)
 C
@@ -1947,6 +2009,7 @@ C       &              RES,DIAG,IPRPHP,WRK,LWRK)
       END IF
       GETBVO = ( NWOPT.GT.0 .AND.
      *   (OTRIAL .OR. .NOT.GETBVC .OR. FLAG(55) .OR. .NOT.FLAG(41)) )
+      if (domcsrdft .and. NCVEC .gt. 0) GETBVO = .false.
 C     861107-hj/pj: only include Gorb/Ldiag if Hartree-Fock
 C                   or specifically requested (NEXKAP is more
 C                   efficient for getting orbital trial vec.s)
@@ -2642,8 +2705,8 @@ C
 C -- end of subroutine UPDBET
 C
       END
-C  /* Deck redchk */
-      SUBROUTINE REDCHK(IBNDX,WRK,LFREE)
+C  /* Deck neored_chk */
+      SUBROUTINE NEORED_CHK(IBNDX,WRK,LFREE)
 C
 C 8-Nov-1986 Hans Joergen Aa. Jensen
 C
@@ -2810,11 +2873,13 @@ C
   340 CONTINUE
       IF (NERROR .EQ. 0) WRITE (LUPRI,'(A)') ' None, redH is symmetric.'
 C
+      WRITE (LUPRI,'(/A,(/15I5))') ' IBNDX vector:',
+     &   (IBNDX(I), I = 1,NREDL)
       WRITE (LUPRI,'(//A)') ' Reduced Hessian (as bT*s) :'
       CALL OUTPUT(WRK(KREDH),1,NREDH,1,NREDH,NREDH,NREDH,1,LUPRI)
       WRITE (LUPRI,'(//A)') ' Reduced overlap (as bT*b) :'
       CALL OUTPUT(WRK(KREDS),1,NREDL,1,NREDL,NREDL,NREDL,1,LUPRI)
 C
-      IF (NERROR .GT. 0) CALL QUIT('ERROR detected in REDCHK.')
+      IF (NERROR .GT. 0) CALL QUIT('ERROR detected in NEORED_CHK.')
  9999 RETURN
       END

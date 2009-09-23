@@ -276,12 +276,16 @@ C
 C     *****     Dipole moments  *****
 C
       IF (DIPOLM) THEN
-         CALL DIPMOM (NNBAST,MATCMO,WRK(KCMO),WRK(KOCC),WRK(KDIPM))
+         write(lupri,'(/A)')
+     &     'INFO: dipole moment not implemented in this version'
+c        CALL DIPMOM (NNBAST,MATCMO,WRK(KCMO),WRK(KOCC),WRK(KDIPM))
       END IF
 C
 C     *****     Quadrupole moments  *****
 C
       IF (QUADRM) THEN
+         write(lupri,'(/A)')
+     &     'INFO: quadrupole moment not implemented in this version'
          CALL QUADRP (NNBAST,MATCMO,WRK(KCMO),WRK(KOCC),WRK(KQUMAT))
       END IF
  9999 CALL QEXIT('SIRPOP')
@@ -970,7 +974,7 @@ C     ... only print max -iprmul populations in each iteration
       IF (iprmul .lt. 0) then
          mnuc = min(nnuc,-iprmul)
          WRITE (LUPRI,2015) (NAME(NUC),POPNUC(NUC),NUC=1,mnuc)
- 2015    FORMAT ((' MULPOP',10(1X,A4,F6.2,';')))
+ 2015    FORMAT ((' MULPOP ',10(A4,F6.2,'; ')))
       else
          WRITE (LUPRI,1016)
          WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)

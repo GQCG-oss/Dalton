@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -77,13 +77,13 @@ C
 #include <inforb.h>
 #include <infmp2.h>
 C
-      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','       '/
+      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM'/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 CMAERKE 900918: always NEWORB in this version.
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
 C
-      WORD1  = WORD
+      WORD1 = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
@@ -131,13 +131,21 @@ C
 C *** Option 4 >TDASOP<  Diagonal 2. order 2p-2h correction in SOPPA
   104 TDAMP2 = .TRUE.
       GO TO 100
+C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
+#ifdef VAR_SRDFT
+  105 SC_SRMP2 = .TRUE.
+#else
   105 CONTINUE
+      call quit(
+     &   '.SC_SRMP2 option not included in this non-srdft version')
+#endif 
       GO TO 100
 C
  2000 CONTINUE
       IF (MP2_NO_OV) WRITE(LUPRI,'(/A)')
-     &  ' Occ-virt block of MP2 density matrix ignored'
+     &  ' ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
 C
+      RETURN
       END
 C  /* Deck mp2ctl */
       SUBROUTINE MP2CTL(WRK,LFRSAV)
@@ -292,6 +300,7 @@ C     Make load per batch even :
 C
       EMP2   = D0
       EMP2FL = D0
+C
       CALL DZERO(WRK(KDONE),N2ORBX)
       IF (MP2FRO) THEN
          CALL DCOPY(NCMOT,WRK(KCMO),1,WRK(KCMO1),1)
@@ -372,8 +381,75 @@ C
       IF (FLAG(25)) THEN
          CALL MP2IFC(WRK(KDONE),WRK(KKAPPA))
       END IF
+C
+C Manu July 07 : For the MP2-SRDFT calculation, we want to write the
+C occupation numbers of the MP2 natural orbitals including the
+C long-range corrections only (the short-range contributions are
+C calculated by MP2SRDFTDEN) for analysis purposes in case SC_SRMP2 is
+C TRUE (which means that we also want to calculate the self-consistency
+C effects). Thus we must save CMO before calling natorb for the
+C first time otherwise we use in MP2SRDFTDEN natural orbitals to
+C calculate the F operator instead of HF-SRDFT orbitals
+C (which leads to symmetry dependent results ...)
+C
+      IF (DOHFSRDFT .AND. SC_SRMP2) THEN
+         CALL MEMGET('REAL',KCMO2,NCMOT,WRK,KFREE,LFREE)
+         CALL DCOPY(NCMOT,WRK(KCMO),1,WRK(KCMO2),1)
+      END IF
+C
+      IF (DOHFSRDFT) WRITE(LUPRI,'(4(/A))')
+     &     ' *******************************************************'
+     &    ,' MP2-SRDFT natural orbitals: Short-range self-consistent'
+     &    ,' contributions are NOT taken into account.'
+     &    ,' *******************************************************'
+C     
       CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
 C
+#ifdef VAR_SRDFT
+C     ======================================================
+C     Manu June 07 : If MP2SRDFT calculation ... 
+C
+      IF (DOHFSRDFT .AND. SC_SRMP2) THEN
+        WRITE(LUPRI,'(4(/A))')
+     &     ' *****************************************************'
+     &    ,' MP2-SRDFT natural orbitals: Short-range contributions'
+     &    ,' are now taken into account self-consistently.'
+     &    ,' *****************************************************'
+C
+C        Manu July 07 : we do not want to keep the "long-range MP2 " natural
+C        orbitals. Thus CMO is reset to its original value (MO coeffs of
+C        the HF-SRDFT orbitals)   
+C
+         CALL DCOPY(NCMOT,WRK(KCMO2),1,WRK(KCMO),1)
+         CALL MEMREL('Releasing mem. used for CMO2',
+     &             WRK,KFRSAV,KCMO2,KFREE,LFREE)  
+         
+C
+C        Substract the zeroth order contribution to the density matrix
+C
+         CALL ADDZEROTH(WRK(KDONE),.FALSE.) 
+C             ADDZEROTH(DONE,DOADD) 
+C
+C        Calculate the second order SRDFT contributions to the density
+C        matrix
+C
+         CALL MP2SRDFTDEN(NFRMP2,WRK(KDONE),WRK(KCMO),
+     &                    WRK(KORBEN),WRK(KFREE),LFREE)
+C             MP2SRDFTDEN(NFROZ,DONE,CMO,ORBEN,WRK,LFRSAV)
+C
+C        Add the zeroth order contribution to the density matrix
+C
+         CALL ADDZEROTH(WRK(KDONE),.TRUE.) 
+C
+C        Get the SC_SRMP2 natural orbitals and occ. numbers
+C
+         CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
+C
+C
+      END IF
+C     END IF
+C
+#endif /*  VAR_SRDFT  */
 C     Save MP2 orbitals for MCSCF/CI if not SOPPA
 C
       IF (.NOT.FLAG(25)) THEN
@@ -412,7 +488,65 @@ C
      *    ' Hartree-Fock total energy :',EMY,
      *    ' + MP2 contribution        :',EMP2FL,
      *    ' = MP2 second order energy :',EMY+EMP2FL
+C
+C        Manu July 07 : we copy (as done previously) CMO1 in CMO2 since we need
+C        the HF-SRDFT orbitals in MP2SRDFTDEN
+C
+         IF (DOHFSRDFT .AND. SC_SRMP2) THEN
+            CALL MEMGET('REAL',KCMO2,NCMOT,WRK,KFREE,LFREE)
+            CALL DCOPY(NCMOT,WRK(KCMO1),1,WRK(KCMO2),1)
+         END IF
+C
+         IF (DOHFSRDFT) WRITE(LUPRI,'(4(/A))')
+     &     ' *******************************************************'
+     &    ,' MP2-SRDFT natural orbitals: Short-range self-consistent'
+     &    ,' contributions are NOT taken into account.'
+     &    ,' *******************************************************'
+C     
          CALL NATORB(IPRMP2,WRK(KDONEF),WRK(KCMO1),WRK(KFREE),LFREE)
+C
+C        Manu June 07 : If MP2SRDFT calculation ... 
+C
+         IF (DOHFSRDFT .AND. SC_SRMP2) THEN
+#ifndef VAR_SRDFT
+         call quit('srdft not implemented in this version')
+#else
+            WRITE(LUPRI,'(4(/A))')
+     &       ' *****************************************************'
+     &      ,' MP2-SRDFT natural orbitals: Short-range contributions'
+     &      ,' are now taken into account self-consistently.'
+     &      ,' *****************************************************'
+C
+C           Manu July 07 : we do not want to keep the "long-range MP2 " natural
+C           orbitals with frozen orbitals. Thus CMO1 is reset to its original value
+C           (MO coeffs of the HF-SRDFT orbitals)   
+C
+            CALL DCOPY(NCMOT,WRK(KCMO2),1,WRK(KCMO1),1)
+            CALL MEMREL('Releasing mem. used for CMO2',
+     &                  WRK,KFRSAV,KCMO2,KFREE,LFREE)  
+C
+C           Substract the zeroth order contribution to the density matrix
+C
+            CALL ADDZEROTH(WRK(KDONEF),.FALSE.) 
+C
+C           Calculate the second order SRDFT contributions to the density
+C           matrix
+C
+            CALL MP2SRDFTDEN(NFRRHF,WRK(KDONEF),WRK(KCMO1),
+     &                       WRK(KORBEN),WRK(KFREE),LFREE)
+C
+C           Add the zeroth order contribution to the density matrix
+C
+            CALL ADDZEROTH(WRK(KDONEF),.TRUE.) 
+C
+C           Get the natural orbitals and occ. numbers
+C
+            CALL NATORB(IPRMP2,WRK(KDONEF),WRK(KCMO1),WRK(KFREE),LFREE)
+C
+#endif
+C
+         END IF
+C
       END IF
 C     END IF (MP2FRO .AND. .NOT.FCKFRO)
 C
@@ -825,8 +959,8 @@ C
       LOGICAL   FCKFRO
 C
 C
-      PARAMETER (D0 = 0.0D0,    EMYCNV = 1.D-4,
-     &           DBIG = 1.D+12, GAPMIN = 0.1D0)
+      PARAMETER (VALCON_MAX = 1.D-4, VALCON_WARN = 1.D-6,
+     &           D0 = 0.0D0, DBIG = 1.D+12, GAPMIN = 0.1D0)
 #include <dummy.h>
 C
 C  Used from common blocks:
@@ -846,71 +980,114 @@ C
 #include <inftap.h>
 #include <infpri.h>
 C
+      IJ_FOCK(I,J) = (J-1)*NORBI + I
+C
       CALL QENTER('MP2FCK')
-      IF (IOPRHF .GT. 0) THEN
+      IF (IOPRHF .GT. 0 .OR. NASHT .GT. 0) THEN
          WRITE (LUW4,'(//A)')
      *   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
      *   ' open-shell Hartree-Fock'
          CALL QUIT('ERROR: MP2 is not implemented for open-shell RHF')
       END IF
-      CALL READMO(CMO,9,SCRA,LSCRA)
 C
       IF (IPRMP2 .GE. 3) WRITE (LUW4,'(///A//A,I5/A,8I5)')
      *   ' Check that orbitals are canonical HARTREE-FOCK orbitals',
      *   ' Number of electrons :',2*NRHFT,
      *   ' Orbital occupations :',(NRHF(I),I=1,NSYM)
 C
+      IF (LSCRA .LT. N2BASX) CALL ERRWRK('MP2FCK',-N2BASX,LSCRA)
+C
+      CALL READMO(CMO,9,SCRA,LSCRA)
+C
+C     Step 1: Construct inactive Fock matrix
 C
       EMY    = D0
-C
-C        Step 1: Construct inactive Fock matrix
-C
       CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
       IF (IPRMP2 .GE. 3) WRITE (LUW4,1730) EMY
       EMY = EMY + POTNUC
       IF (IPRMP2 .GE. 3) WRITE (LUW4,1732) EMY
 C
-C         Step 2: Check if orbitals are canonical orbitals
+C     Step 2: Check if orbitals are canonical orbitals
 C
       CALL DZERO(ORBEN,NORBT)
       FCKFRO = .FALSE.
-      VALCON =  D0
       EHOMO  = -DBIG
       ELUMO  =  DBIG
       DO 200 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
-         NFRHFI= NFRRHF(ISYM)
-         IF (NFRHFI .GT. 0) FCKFRO = .TRUE.
-         IF (NFRHFI .GT. NFRMP2(ISYM)) THEN
+         NFRRHF_I = NFRRHF(ISYM)
+         IF (NFRRHF_I  .GT. 0) FCKFRO = .TRUE.
+         IF (NFRRHF_I  .GT. NFRMP2(ISYM)) THEN
             NWARN = NWARN + 1
             WRITE (LUW4,'(3(/A,I5))')
-     *      ' ***** WARNING from MP2FCK for symmetry',ISYM,
-     *      ' Number of frozen MP2 orbitals this symmetry',NFRMP2(ISYM),
-     *      ' is reset to number of frozen RHF orbitals  ',NFRHFI
-            NFRMP2(ISYM) = NFRHFI
+     +      ' ***** WARNING from MP2FCK for symmetry',ISYM,
+     +      ' Number of frozen MP2 orbitals this symmetry',NFRMP2(ISYM),
+     +      ' is reset to number of frozen RHF orbitals  ',NFRRHF_I 
+            NFRMP2(ISYM) = NFRRHF_I 
          END IF
          NRHFI = NRHF(ISYM)
          IORBI = IORB(ISYM)
          ISSYM = IIORB(ISYM)
-         DO 300 I = NFRHFI+1,NORBI
-            IJOFF = ISSYM + IROW(I)
-            DO 400 J = NFRHFI+1,I-1
-               VALCON = VALCON + ABS(FC(IJOFF+J))
-400         CONTINUE
-            ORBEN(IORBI+I) = FC(IJOFF+I)
+         CALL DSPTGE(NORBI,FC(ISSYM+1),SCRA)
+         VALCON  = D0
+         IVALCON = 0
+         DO I = NFRRHF_I +1,NORBI
+C
+            II = IJ_FOCK(I,I)
+            ORBEN_I = SCRA(II)
+            ORBEN(IORBI+I) = ORBEN_I
             IF (I .LE. NRHFI) THEN
-               EHOMO = MAX(EHOMO,ORBEN(IORBI+I))
+               EHOMO = MAX(EHOMO,ORBEN_I)
+               ISYM_HOMO = ISYM
             ELSE
-               ELUMO = MIN(ELUMO,ORBEN(IORBI+I))
+               ELUMO = MIN(ELUMO,ORBEN_I)
+               ISYM_LUMO = ISYM
             END IF
-300      CONTINUE
-         IF (IPRMP2 .GE. 3) THEN
-            WRITE (LUW4,1740) ISYM
-            IF (NFRHFI .GT. 0) WRITE (LUW4,'(A,I3,A)')
-     *         ' Note: the first',NFRHFI,' orbitals are frozen'
+C
+C           To check if this orbital is a canonical orbital
+C           we find the 2-norm of this column of Fock matrix (w/o the diagonal element)
+            SCRA(II) = D0
+            I1 = IJ_FOCK(1,I) + NFRRHF_I
+            NORBI_MP2 = NORBI - NFRRHF_I
+            VALCONI = DNRM2(NORBI_MP2,SCRA(I1),1)
+            IF (VALCONI .GT. VALCON) THEN
+               VALCON  = VALCONI
+               IVALCON = I
+            END IF
+            SCRA(II) = ORBEN_I
+C
+         END DO
+C        ... VALCON now max euclidean 2-norm of off-diagonal elements for any row
+         IF (IPRMP2 .GE. 3 .OR. VALCON .GT. VALCON_WARN) THEN
+            WRITE (LUW4,1740) ISYM, NRHFI
+            IF (NFRRHF_I .GT. 0) WRITE (LUW4,'(A,I3,A)')
+     +        ' Note: the first',NFRRHF_I ,' orbitals are frozen in SCF'
             WRITE (LUW4,1750) (ORBEN(IORBI+I),I=1,NORBI)
+         END IF
+         IF ( VALCON .GT. VALCON_MAX ) THEN
+            WRITE(LUW4,'(/A//A,F12.8,A,I6,A,I3//A)') 'ERROR: '//
+     +  ' Molecular orbitals are NOT canonical Hartree-Fock orbitals',
+     +  ' MAX 2-norm of off-diagonal Fock matrix elements is',VALCON,
+     +  ' for MO no.',IVALCON,' in symmetry',ISYM,
+     +  ' This Fock matrix row is:'
+            CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, 1,NORBI,
+     +                  NORBI,NORBI, 1,LUW4)
+            CALL QUIT('MP2FCK: MO:S are NOT canonical HF orbitals')
+         ELSE IF ( VALCON .GT. VALCON_WARN ) THEN
+            WRITE(LUW4,'(/A//A,F12.8,A,I6,A,I3//A)') 'WARNING: '//
+     +  ' Molecular orbitals deviate from canonical Hartree-Fock'//
+     +    ' orbitals',
+     +  ' MAX 2-norm of off-diagonal Fock matrix elements is',VALCON,
+     +  ' for MO no.',IVALCON,' in symmetry',ISYM,
+     +  ' This Fock matrix row is:'
+            CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, 1,NORBI,
+     +                  NORBI,NORBI, 1,LUW4)
+         ELSE IF (IPRMP2 .GE. 2) THEN
+            WRITE(LUW4,'(/A,I3,A,1P,D10.2)') 'Symmetry',ISYM,
+     +  ' MAX 2-norm of a row of off-diagonal Fock matrix elements is',
+     +      VALCON
          END IF
 200   CONTINUE
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
@@ -925,30 +1102,19 @@ C
          I = 0
       END IF
       IF (IPRMP2 .GE. 1 .OR. I .EQ. 1) THEN
-         WRITE (LUW4,'(2(/A,F15.8)/A/A,F15.8)')
-     &      '    E(LUMO) :',ELUMO,
-     &      '  - E(HOMO) :',EHOMO,
+         WRITE (LUW4,'(2(/A,F15.8,A,I2,A)/A/A,F15.8)')
+     &      '    E(LUMO) :',ELUMO,'   (in symmetry',ISYM_LUMO,')',
+     &      '  - E(HOMO) :',EHOMO,'   (in symmetry',ISYM_HOMO,')',
      &      '  --------------------------',
      &      '    gap     :',ELUMO-EHOMO
-      END IF
-      IF ( VALCON .GT. EMYCNV ) THEN
-         WRITE(LUW4,'(/A,//A,F12.8//A)')
-     *   ' MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS',
-     *   ' ABS SUM OF OFF-DIAGONAL FOCK MATRIX ELEMENTS ARE :',VALCON,
-     *   ' The Fock matrix :'
-         CALL OUTPKB(FC,NORB,NSYM,1,LUW4)
-         CALL QTRACE(LUW4)
-         CALL QUIT("MP2FCK: MO'S ARE NOT CANONICAL HF ORBITALS")
-      ELSE IF (IPRMP2 .GE. 2) THEN
-         WRITE(LUW4,'(/A,1P,D10.2)')
-     *      ' ABS SUM of off-diagonal Fock matrix elements are :',VALCON
       END IF
       CALL QEXIT('MP2FCK')
       RETURN
 C
  1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
  1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
- 1740 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2/)
+ 1740 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2,
+     &         ', number of occupied SCF orbitals is',I5/)
  1750 FORMAT(4X,5F15.8)
 C
 C

@@ -366,12 +366,19 @@ C        CI calculation
          END IF
       ELSE IF (FLAG(2) .AND. MCTYPE .GT. 0) THEN
 C        MCSCF calculation
-         WRITE (LUW4,5020) ISTATE,EMCSCF,CONV_text,
-     &      POTNUC,(EMCSCF-POTNUC-ESOLT)
+         IF (DOMCSRDFT) THEN
+            WRITE (LUW4,5024) ISTATE,EMCSCF,CONV_text,
+     &         POTNUC,(EMCSCF-POTNUC-ESOLT)
+         ELSE
+            WRITE (LUW4,5020) ISTATE,EMCSCF,CONV_text,
+     &         POTNUC,(EMCSCF-POTNUC-ESOLT)
+         END IF
          IF (FLAG(16) .OR. PCM) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM
       ELSE IF (DORHF) THEN
-         IF (.NOT.DODFT) THEN
+         IF (DOHFSRDFT) THEN
+           WRITE (LUW4,5023) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+         ELSE IF (.NOT.DODFT) THEN
 C        ... DIIS-HF or QC-HF optimization
              WRITE (LUW4,5021) EMCSCF,CONV_text,
      &          POTNUC,(EMCSCF-POTNUC-ESOLT)
@@ -406,6 +413,13 @@ C        ... DIIS-DFT or QC-DFT optimization
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
  5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,A,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5023 FORMAT(/T6,'Final HF-SRDFT energy:',T31,F20.12,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5024 FORMAT( T6,'State number:',T31,I5,
+     *      //T6,'Final MC-SRDFT energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
  5025 FORMAT( T6,'Solvation  energy:',T31,F20.12)
