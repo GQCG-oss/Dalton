@@ -633,9 +633,9 @@ C
 #include <inftap.h>
 C
       LOGICAL FNDLAB
-      CHARACTER*8 MOLBL(3),LABTBL(2)
+      CHARACTER*8 MOLBL(3),LABTBL(3)
       DATA MOLBL /'********','        ','        '/
-      DATA LABTBL/'NEWORB  ','EODATA  '/
+      DATA LABTBL/'BASINFO ','NEWORB  ','EODATA  '/
 C
       CALL QENTER('NEWORB')
 C
@@ -647,19 +647,36 @@ C
          CALL NEWIT1
       ELSE
          REWIND LUIT1
-         IF (FNDLAB(LABTBL(1),LUIT1)) THEN
-            BACKSPACE LUIT1
-         ELSE
-            REWIND LUIT1
-            IF (FNDLAB(LABTBL(2),LUIT1)) THEN
-               BACKSPACE LUIT1
-            END IF
+         IF (.NOT.FNDLAB(LABTBL(1),LUIT1)) THEN
+C           no "BASINFO ",
+C           must be a new SIRIUS.RST file, save BASINFO on it:
+            CALL NEWIT1
+            GO TO 100
          END IF
+         REWIND LUIT1
+         IF (FNDLAB(LABTBL(2),LUIT1)) THEN
+C           found "NEWORB  ",
+C           backspace before writing new "NEWORB  " label
+            BACKSPACE LUIT1
+            GO TO 100
+         END IF
+         REWIND LUIT1
+         IF (FNDLAB(LABTBL(3),LUIT1)) THEN
+C           no "NEWORB  " but found "EODATA  ",
+C           backspace before writing "NEWORB  " label
+            BACKSPACE LUIT1
+            GO TO 100
+         END IF
+C
+C        no "NEWORB  " and no "EODATA  "
+C        is positioned at end-of-file on LUIT1 after last FNDLAB
+C        /hjaaj June 09
       END IF
-      WRITE (LUIT1) MOLBL(1),MOLBL(2),LABEL3,LABTBL(1)
+
+  100 WRITE (LUIT1) MOLBL(1),MOLBL(2),LABEL3,LABTBL(2)
 C     ...label 'NEWORB  '
       CALL WRITT(LUIT1,NCMOT4,CMO)
-      WRITE (LUIT1) MOLBL,LABTBL(2)
+      WRITE (LUIT1) MOLBL,LABTBL(3)
 C     ...label 'EODATA  '
       REWIND LUIT1
 C
