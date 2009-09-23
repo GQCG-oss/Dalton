@@ -161,6 +161,7 @@ c remco
 #include <infvar.h>
 #include <priunit.h>
 #if (defined(VAR_G77))
+!     integer*8 i_detvec, i_cvec
       dimension detvec(1),cvec(1)
 #elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
       allocatable detvec(:),cvec(:)
@@ -324,10 +325,10 @@ C. CSF's in this configuration
        WRITE(IOUT,'(/A,F15.8)')
      & ' Norm of printed CI vector .. ', CNORM
 C
-       WRITE(IOUT,'(/A/A)') ' Magnitude of CI coefficients',
-     &                      ' ============================'
-       WRITE(IOUT,'(A,1P,E10.2,A/)')
-     & '  ( Ranges are relative to norm of vector :',VNRM,' )'
+       WRITE(IOUT,'(/A/A/A,1P,E10.2,A/)')
+     &    ' Magnitude of CI coefficients',
+     &    ' ============================',
+     &    ' ( Ranges are relative to norm of vector :',VNRM,' )'
 C
        CNORM = 0.0D0
        ISUM = 0
