@@ -3293,7 +3293,7 @@ C         Octupole contribution
           WRITE(LUPRI,*)
         ENDIF
 
-        IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
+C        IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
 
  5001   FORMAT(' Polarization energy: ')
  5002   FORMAT('      Electronic contribution:   ',F15.9)
