@@ -580,7 +580,7 @@ C
          IWKTYP = 0
          ISCTYP = 0
       END IF
-      TOLST  = 1.D-5
+      TOLST  = 1.D-4
       TRUSTR = 0.5D0
       STMOM  = 1.D-4
       TRUSTI = 1.2D0
