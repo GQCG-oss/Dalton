@@ -31,38 +31,44 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-      SUBROUTINE DFTINT(DMAT,NDMAT,NGEODRV,DOLND,WRK,LWRK,CB,
+      SUBROUTINE DFTINT(DMAT,NDMAT,NGEODRV,DOLND,WORK,LWORK,CB,
      &                  CBDATA,ELECTRONS)
 #include <implicit.h>      
 #include <inforb.h>
 #include <dftcom.h>
 #include <priunit.h>
-      DIMENSION DMAT(NBAST,NBAST,NDMAT), WRK(LWRK), CBDATA(*)
+      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
 C
-      KGAO   = 1
-      KDMGAO = KGAO   + MXBLLEN*NBAST*22 
-      KFREE  = KDMGAO + MXBLLEN*NBAST
-      IF (KFREE.GT.LWRK) CALL STOPIT("DFTINT",'DFTINT',KFREE,LWRK)
-      LFREE = LWRK - KFREE + 1
+      CALL QENTER('DFTINT')
 C
-      CALL DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,WRK(KFREE),LFREE,CB,
-     &            CBDATA,ELECTRONS,WRK(KGAO),WRK(KDMGAO))
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
+      LGAO   = MXBLLEN*NBAST*22
+      LDMGAO = MXBLLEN*NBAST
+      CALL MEMGET2('REAL','   GAO',KGAO  ,LGAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL',' DMGAO',KDMGAO,LDMGAO,WORK,KFREE,LFREE)
 C
+      CALL DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
+     &            WORK(KGAO),WORK(KDMGAO),WORK,KFREE,LFREE)
+C
+      CALL QEXIT('DFTINT')
       END
-      SUBROUTINE DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,WORK,LWORK,CB,
-     &                  CBDATA,ELECTRONS,GAO,DMAGAO)
+      SUBROUTINE DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
+     &                  GAO,DMAGAO,WORK,KFREE,LFREE)
 
 C
 C     P. Salek and T. Helgaker, October 2003
 C
 #include <implicit.h>      
-#include <inforb.h>
+#include <priunit.h>
+C
 #include <maxorb.h>
+#include <inforb.h>
 #include <shells.h>
 #include <dftcom.h>
-#include <priunit.h>
 #ifdef VAR_MPI
 #include <infpar.h>
 #include <mpif.h>
@@ -71,7 +77,7 @@ C     choose reasonably large. Exceeding this limit means that boxes are
 C     too large.
       PARAMETER(NBUFLEN=99000)
 C
-      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
+      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(*), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
       DIMENSION DMAGAO(MXBLLEN,NBAST),GAO(MXBLLEN,NBAST,22)
@@ -81,7 +87,7 @@ C
       DIMENSION RHOA(MXBLLEN), GRADA(3,MXBLLEN)
       DIMENSION RHOB(MXBLLEN), GRADB(3,MXBLLEN) 
 C
-      LOGICAL DOGGA, DFT_ISGGA, CHECKELS
+      LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
       DIMENSION IORIDX(KMAX,2,8)
 C     
@@ -90,7 +96,7 @@ C
       IGEODRV = NGEODRV
       IF (DOGGA) IGEODRV = IGEODRV + 1
       CALL SETUPSOS(IGEODRV,DOLND,IDUM1,IDUM2)
-      CALL OPNQUA(NBAST,DMAT,WORK,LWORK) ! C code
+      CALL OPNQUA(NBAST,DMAT,WORK(KFREE),LFREE) ! C code
       NPOINTS = 0
       CALL CONSTRUCT_IORIDX(IORIDX)
 
@@ -132,7 +138,7 @@ C
          DO IPT = 1, NLEN, MXBLLEN
             NCURLEN=MIN(MXBLLEN,NLEN-IPT+1)
             CALL BLGETSOS(NCURLEN,GAO,COOR(1,IPT),NSHELL,NSHLBLCK,
-     &                    WORK,LWORK,NBAST,DOLND,DOGGA,DFTHRI,0)
+     &                    WORK(KFREE),LFREE,NBAST,DOLND,DOGGA,DFTHRI,0)
             CALL SHLTOORB(NSHELL,NSHLBLCK,NBLCNT,NBLOCKS,IORIDX)
             IF(DOGGA) THEN
                CALL GETRHO_BLOCKED_GGA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
@@ -175,22 +181,19 @@ C     Test on the number of electrons
 C   
 C     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       CALL  DFTINTCOLLECT(ELECTRONS)
-#ifdef VAR_MPI
-      CHECKELS = MYNUM.EQ.0
-#else
-      CHECKELS = .TRUE.
-#endif
-      ELCTRX = FLOAT(2*NISHT + NASHT)
-      ERROR  = ELECTRONS - ELCTRX
-      IF (CHECKELS.AND.ABS(ERROR) .GT. DFTELS*ELCTRX) THEN
-         WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
-     &   ' Number of electrons from numerical integration:',ELECTRONS,
-     &   ' Number of electrons from orbital occupations:  ',ELCTRX,
-     &   ' Error in the number of electrons:              ',ERROR,
-     &   ' Error larger than DFTELS (set input):          ',DFTELS,
-     &   ' Calculation aborted.'
-         CALL QUIT
+      IF (MYNUM.EQ.0) THEN
+        ELCTRX = FLOAT(2*NISHT + NASHT)
+        ERROR  = ELECTRONS - ELCTRX
+        IF (ABS(ERROR) .GT. DFTELS*ELCTRX) THEN
+          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
+     &    ' Number of electrons from numerical integration:',ELECTRONS,
+     &    ' Number of electrons from orbital occupations:  ',ELCTRX,
+     &    ' Error in the number of electrons:              ',ERROR,
+     &    ' Error larger than DFTELS (set input):          ',DFTELS,
+     &    ' Calculation aborted.'
+          CALL QUIT
      &    ('Wrong number of electrons in DFTINT. Calculation aborted.')
+        END IF
       END IF
       RETURN
       END

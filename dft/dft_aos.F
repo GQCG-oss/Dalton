@@ -52,7 +52,7 @@ C
 C
       IF (MAXREP.EQ.0) THEN
          CALL DFTAOS(GSO(KSO0),GSO(KSO1),GSO(KSO2),GSO(KSOB),GSO(KSOB1),
-     &               NCNT,COR(1),COR(2),COR(3),WORK,LWORK,NBAST,
+     &               NCNT,COR(1),COR(2),COR(3),NBAST,
      &               DOLND,DOGGA,DFTHRI,IPRINT)
       ELSE
          KGAO = 1
@@ -60,7 +60,7 @@ C
          IF (KLST.GT.LWORK) CALL STOPIT('DFTAOS','LWORK',KLST,LWORK)
          CALL DFTAOS(WORK(KSO0),WORK(KSO1),WORK(KSO2),WORK(KSOB),
      &               WORK(KSOB1),NCNT,COR(1),COR(2),COR(3),
-     &               WORK,LWORK,NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
+     &               NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
          CALL DFTSOS(WORK(KSO0),GSO,NBAST,NTYPSO,NCNT,IPRINT)
       END IF
 C
@@ -68,7 +68,7 @@ C
       END      
 C  /* Deck getaos */
       SUBROUTINE DFTAOS(GAO,GAO1,GAO2,GAB1,GAB2,NCNT,CORPX,CORPY,CORPZ,
-     &                  WORK,LWORK,NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
+     &                  NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
 C
 C     T. Helgaker sep 99
 C
@@ -83,8 +83,7 @@ C
 C   
       LOGICAL DOLND, DOGGA
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &          GAB1(NBAST,3), GAB2(NBAST,3,3),
-     &          WORK(LWORK), NCNT(NBAST)
+     &          GAB1(NBAST,3), GAB2(NBAST,3,3), NCNT(NBAST)
 C
 #include <onecom.h>
 #include <lmns.h>
@@ -160,7 +159,7 @@ C
 C
 C     Print section
 C
-      IF (IPRINT .GE. 50) THEN
+      IF (IPRINT .GT. 100) THEN
           CALL HEADER('Output from DFTAOS',-1)
           WRITE (LUPRI,'(A,3F12.6)') ' CORP ', CORPX,CORPY,CORPZ 
           IF (IPRINT .GT. 200) THEN
@@ -595,7 +594,7 @@ C
 #include <pincom.h>
 #include <symmet.h>
 #include <ibtfun.h>
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine DFTSOS',-1)
+      IF (IPRINT .GE. 100) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
 C
@@ -622,7 +621,7 @@ C
          END DO
          ISTRA = ISTRA + NORBA
       END DO
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 100) THEN
          CALL HEADER('AOs in DFTSOS',-1)
          CALL OUTPUT(GAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
          CALL HEADER('SOs in DFTSOS',-1)
