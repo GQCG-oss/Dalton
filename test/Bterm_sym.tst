@@ -57,15 +57,107 @@ END MOLINP
 
 ########## Reference Output ########################
 START REFOUT
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
 
- Default print level:        0
+         ****************************************************************
+         *********** DALTON - An electronic structure program ***********
+         ****************************************************************
 
-    Integral sections will be executed
+    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+
+    Celestino Angeli,         University of Ferrara,        Italy      
+    Keld L. Bak,              UNI-C,                        Denmark    
+    Vebjoern Bakken,          University of Oslo,           Norway     
+    Ove Christiansen,         Aarhus University,            Denmark    
+    Renzo Cimiraglia,         University of Ferrara,        Italy      
+    Sonia Coriani,            University of Trieste,        Italy      
+    Paal Dahle,               University of Oslo,           Norway     
+    Erik K. Dalskov,          UNI-C,                        Denmark    
+    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
+    Berta Fernandez,          U. of Santiago de Compostela, Spain      
+    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
+    Kasper Hald,              Aarhus University,            Denmark    
+    Asger Halkier,            Aarhus University,            Denmark    
+    Hanne Heiberg,            University of Oslo,           Norway     
+    Trygve Helgaker,          University of Oslo,           Norway     
+    Hinne Hettema,            University of Auckland,       New Zealand
+    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
+    Dan Jonsson,              KTH Stockholm,                Sweden     
+    Poul Joergensen,          Aarhus University,            Denmark    
+    Sheela Kirpekar,          SDU - Odense University,      Denmark    
+    Wim Klopper,              University of Karlsruhe,      Germany    
+    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
+    Jacob Kongsted,           Univ. of Southern Denmark,    Denmark    
+    Henrik Koch,              University of Trondheim,      Norway     
+    Andrea Ligabue,           University of Modena,         Italy      
+    Ola B. Lutnaes,           University of Oslo,           Norway     
+    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
+    Patrick Norman,           University of Linkoeping,     Sweden     
+    Jeppe Olsen,              Aarhus University,            Denmark    
+    Anders Osted,             Copenhagen University,        Denmark    
+    Martin J. Packer,         University of Sheffield,      UK         
+    Thomas B. Pedersen,       University of Lund,           Sweden     
+    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
+    Elias Rudberg,            KTH Stockholm,                Sweden     
+    Torgeir A. Ruden,         University of Oslo,           Norway     
+    Kenneth Ruud,             University of Tromsoe,        Norway     
+    Pawel Salek,              KTH Stockholm,                Sweden     
+    Alfredo Sanchez de Meras, University of Valencia,       Spain      
+    Trond Saue,               University of Strasbourg,     France     
+    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
+    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
+    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
+    Peter R. Taylor,          University of Warwick,        UK         
+    Olav Vahtras,             KTH Stockholm,                Sweden     
+    David J. Wilson,          University of Oslo,           Norway     
+    Hans Agren,               KTH Stockholm,                Sweden     
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+
+     Date and time (Linux)  : Thu Sep 24 00:48:55 2009
+     Host name              : stallo-2.local                          
+
+ * Work memory size             :    50000000 =  381.47 megabytes.
+ + memory for in-core integrals :    30000000
+
+ * Directories for basis set searches:
+   1) /home/ruud/DaltonFix/dalton/test/2009-09-23T17_22-testjob-pid-2787/perl-pid.19196__2009_9_24__0.43
+   2) /home/ruud/DaltonFix/dalton/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-    Dynamic molecular property section will be executed
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
 
      -----------------------------------
      Input for PCM solvation calculation 
@@ -79,48 +171,40 @@ START REFOUT
      IPRPCM=       0
 
      NON-EQ = F     NEQRSP =F
- POLYG 60
+ POLYG          60
 
      INPUT FOR CAVITY DEFINITION 
      ---------------------------
      ATOM         COORDINATES           RADIUS 
 
-Starting in Integral Section -
 
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: magnet                                                                  
+ 2: nuova base                                                              
+    ------------------------------------------------------------------------
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
-
-
-
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
-
-
-
-  Title Cards
-  -----------
-
-  magnet                                                                  
-  nuova base                                                              
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centres:    1
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/luca/programs/dalton/basis/aug-cc-pVDZ"
+     "/home/ruud/DaltonFix/dalton/basis/aug-cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centres:    1
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/luca/programs/dalton/basis/aug-cc-pVDZ"
+     "/home/ruud/DaltonFix/dalton/basis/aug-cc-pVDZ"
 
 
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 2
-
-
-
-                          SYMGRP:Point group information
-                          ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C2v
 
@@ -155,7 +239,7 @@ Point group: C2v
     B1  | B1   A1 
     B2  | B2   A2   A1 
     A2  | A2   B2   B1   A1 
- ********SPHERES IN SPHGEN************
+ ********SPHERES IN PCMSPHGEN************
  INDEX        X        Y         Z        R
    1    0.0000000000e+00    0.0000000000e+00   -1.2585150230e-01    1.5000000000e+00
    2    0.0000000000e+00    1.4523500000e+00    9.9867739070e-01    1.2000000000e+00
@@ -172,7 +256,7 @@ Point group: C2v
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
 
   Atoms and basis sets
@@ -241,8 +325,8 @@ Point group: C2v
  H    2:    0.972000    1.537101    0.000000
 
 
-  Max interatomic separation is    1.5371 Angstrom
-  between atoms "H    2" and "H    1".
+  Max interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
+  between atoms    3 and    2, "H    2" and "H    1".
 
 
   Bond distances (Angstrom):
@@ -353,14 +437,26 @@ Point group: C2v
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
 
 
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
 
+ Threshold for neglecting two-electron integrals:  1.00e-15
 
  Number of two-electron integrals written:       91307 ( 24.6% )
  Megabytes written:                              1.051
-
 
 
  MEMORY USED TO GENERATE CAVITY =    432042
@@ -378,18 +474,21 @@ Point group: C2v
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
-
- >>> Time used in PEDRAM is   0.10 seconds
-
-
+ 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>> Total CPU  time used in HERMIT:   0.12 seconds
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
@@ -412,20 +511,20 @@ Starting in Wave Function Section -
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Nov 13 16:07:55 2007
-     Host name              : platina                                 
+     Date and time (Linux)  : Thu Sep 24 00:48:55 2009
+     Host name              : stallo-2.local                          
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      magnet                                                                  
      nuova base                                                              
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Kohn-Sham calculation.
+     Restricted, closed shell Kohn-Sham DFT calculation.
 
 
-     Time-dependent Kohn-Sham calculation (random phase approximation).
+     Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
 
  Initial molecular orbitals are obtained according to
@@ -436,9 +535,6 @@ Starting in Wave Function Section -
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 41
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -454,21 +550,21 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
+     Abelian symmetry species          All    1    2    3    4
                                        --  --  --  --
-     Total number of orbitals          18   7  12   4
-     Number of basis functions         18   7  12   4
+     Total number of orbitals           41   18    7   12    4
+     Number of basis functions          41   18    7   12    4
 
       ** Automatic occupation of RKS orbitals **
       -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              3   1   1   0
+     Occupied SCF orbitals               5    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00e-06
+     Threshold for SCF convergence     1.00e-05
 
           -------------------------------------
           ---- POLARISABLE CONTINUUM MODEL ----
@@ -495,27 +591,40 @@ Starting in Wave Function Section -
  Radial integration threshold: 1e-13
  Angular polynomials in range [15 35]
  Atom:    1*1 points=24126 compressed from 24126 (123 radial)
- Atom:    2*2 points=23198 compressed from 23238 ( 93 radial)
- Number of grid points:    47324 Grid generation time:       0.1 s
-K-S electrons/energy :    9.99999963893958   -7.40267055255520 err:-.36e-06
+ Atom:    2*2 points=23238 compressed from 23238 ( 93 radial)
+ Number of grid points:    47364 Grid generation time:       0.0 s
+K-S electrons/energy :    9.99999963893949   -7.40267055255523 err:-.36e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.63485    26.61972    26.61963   -13.31225    -0.01000
    1  -76.0960993972     -1.000176258944e-02   3.47e+00  -7.61e+01    3  1  1  0
-K-S electrons/energy :    9.99999967099838   -7.61229073815260 err:-.33e-06
-   2  -76.3856340019     -8.037525120852e-03   8.09e-01  -2.90e-01    3  1  1  0
-K-S electrons/energy :    9.99999967941060   -7.35507633275827 err:-.32e-06
-   3  -76.3868224195     -6.961402581735e-03   7.94e-01  -1.19e-03    3  1  1  0
-K-S electrons/energy :    9.99999967108957   -7.52243666474056 err:-.33e-06
-   4  -76.4140555966     -9.834812675805e-03   1.67e-01  -2.72e-02    3  1  1  0
-K-S electrons/energy :    9.99999967340935   -7.49475472362035 err:-.33e-06
-   5  -76.4153542587     -8.895700470860e-03   8.31e-03  -1.30e-03    3  1  1  0
-K-S electrons/energy :    9.99999967334500   -7.49578246707999 err:-.33e-06
-   6  -76.4153573807     -8.935104995778e-03   7.31e-04  -3.12e-06    3  1  1  0
-K-S electrons/energy :    9.99999967333832   -7.49592125334558 err:-.33e-06
-   7  -76.4153574080     -8.936982209824e-03   3.85e-05  -2.73e-08    3  1  1  0
-K-S electrons/energy :    9.99999967333863   -7.49591458368820 err:-.33e-06
-   8  -76.4153574081     -8.936834411649e-03   1.75e-06  -1.06e-10    3  1  1  0
-K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
-   9  -76.4153574081     -8.936814278839e-03   1.59e-07  -2.35e-12    3  1  1  0
- DIIS converged in   9 iterations !
+ MULPOP O     7.91; H     2.09; 
+K-S electrons/energy :    9.99999967099829   -7.61229073815259 err:-.33e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.72603    26.66724    26.66722   -13.31225    -0.00804
+   2  -76.3856340019     -8.037525120855e-03   8.09e-01  -2.90e-01    3  1  1  0
+ MULPOP O     7.50; H     2.50; 
+K-S electrons/energy :    9.99999967941053   -7.35507633275836 err:-.32e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.64088    26.62576    26.62570   -13.31225    -0.00696
+   3  -76.3868224195     -6.961402581739e-03   7.94e-01  -1.19e-03    3  1  1  0
+ MULPOP O     7.25; H     2.75; 
+K-S electrons/energy :    9.99999967108955   -7.52243666474058 err:-.33e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.70508    26.65498    26.65493   -13.31225    -0.00983
+   4  -76.4140555966     -9.834812675809e-03   1.67e-01  -2.72e-02    3  1  1  0
+ MULPOP O     7.47; H     2.53; 
+K-S electrons/energy :    9.99999967340928   -7.49475472362035 err:-.33e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.69366    26.65021    26.65016   -13.31225    -0.00890
+   5  -76.4153542587     -8.895700470863e-03   8.31e-03  -1.30e-03    3  1  1  0
+ MULPOP O     7.43; H     2.57; 
+K-S electrons/energy :    9.99999967334486   -7.49578246708002 err:-.33e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.69394    26.65031    26.65026   -13.31225    -0.00894
+   6  -76.4153573807     -8.935104995775e-03   7.31e-04  -3.12e-06    3  1  1  0
+ MULPOP O     7.43; H     2.57; 
+K-S electrons/energy :    9.99999967333831   -7.49592125334560 err:-.33e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.69399    26.65033    26.65028   -13.31225    -0.00894
+   7  -76.4153574080     -8.936982209827e-03   3.85e-05  -2.73e-08    3  1  1  0
+ MULPOP O     7.43; H     2.57; 
+K-S electrons/energy :    9.99999967333860   -7.49591458368821 err:-.33e-06
+PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -26.69398    26.65033    26.65028   -13.31225    -0.00894
+   8  -76.4153574081     -8.936834411653e-03   1.75e-06  -1.05e-10    3  1  1  0
+ DIIS converged in   8 iterations !
 
 
  *** SCF orbital energy analysis ***
@@ -528,21 +637,21 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Sym       Kohn-Sham orbital energies
 
-  1    -19.15770739    -1.01435582    -0.39866830    -0.01408857     0.10168960
-         0.12975013     0.22734410     0.29590864
+  1    -19.15770709    -1.01435574    -0.39866817    -0.01408856     0.10168961
+         0.12975014     0.22734411     0.29590866
 
-  2     -0.32191472     0.11216629     0.32696197     0.89445356     1.18997716
-         1.84727002
+  2     -0.32191461     0.11216630     0.32696198     0.89445362     1.18997723
+         1.84727001
 
-  3     -0.52976372     0.03359655     0.16210902     0.17626516     0.45234852
-         0.53245658
+  3     -0.52976365     0.03359656     0.16210904     0.17626517     0.45234852
+         0.53245661
 
-  4      0.28746054     0.95198394     1.75179832     3.31154185
+  4      0.28746055     0.95198398     1.75179831     3.31154196
 
-    E(LUMO) :    -0.01408857 au (symmetry 1)
-  - E(HOMO) :    -0.32191472 au (symmetry 2)
+    E(LUMO) :    -0.01408856 au (symmetry 1)
+  - E(HOMO) :    -0.32191461 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.30782615 au
+    gap     :     0.30782604 au
 
  >>> Writing SIRIFC interface file <<<
 
@@ -556,109 +665,102 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
      SOLVATION MODEL: polarizable continuum model (PCM),
           dielectric constant =   24.550000
 
-     Final DFT energy:            -76.415357408100
+     Final DFT energy:            -76.415357408098                 
      Nuclear repulsion:             9.055004525638
-     Electronic energy:           -85.461425119459
+     Electronic energy:           -85.461425099324
 
-     Final gradient norm:           0.000000158934
-
- 
-     Date and time (Linux)  : Tue Nov 13 16:08:08 2007
-     Host name              : platina                                 
-
-     Molecular orbitals for symmetry species   1
-
- Orbital           1        2        3        4        5        6        7
-   1 O   :1s     1.0039  -0.0038   0.0030  -0.0051  -0.0211  -0.0263   0.0153
-   2 O   :1s     0.0196   0.8880  -0.3045  -0.2480  -0.1142  -0.4010   0.0275
-   3 O   :1s    -0.0259  -0.1459  -0.1428  -0.1635   0.2592   0.0856  -0.2787
-   4 O   :1s    -0.0101   0.0662  -0.1249  -0.5856   2.5842   2.8841  -5.1743
-   5 O   :2pz    0.0024   0.1543   0.8088  -0.1633  -0.3669  -0.0882  -0.1706
-   6 O   :2pz   -0.0041  -0.0863  -0.0713  -0.0312   0.0597   0.1777  -0.2268
-   7 O   :2pz   -0.0016   0.0136   0.0562  -0.1547   1.6590  -0.3134  -0.9895
-   8 O   :3d0    0.0000   0.0034   0.0143  -0.0024  -0.0127   0.0040  -0.0189
-   9 O   :3d2+  -0.0003  -0.0075  -0.0025  -0.0010  -0.0011  -0.0045  -0.0232
-  10 O   :3d0    0.0001  -0.0060   0.0105  -0.0031   0.0360  -0.0220   0.0433
-  11 O   :3d2+   0.0007   0.0198   0.0149  -0.0039  -0.0294  -0.0409   0.0463
-  12 H   :1s     0.0014   0.3561   0.3556   0.1015   0.0414   0.1795   0.2854
-  13 H   :1s     0.0075  -0.2059  -0.1080   0.2451  -1.0633  -0.5017   2.5005
-  14 H   :1s     0.0007  -0.0022   0.0076   0.5880  -0.5215  -0.8555   0.3987
-  15 H   :2py    0.0004  -0.0362  -0.0262   0.0164   0.0312   0.0259  -0.0035
-  16 H   :2pz    0.0004  -0.0209   0.0036   0.0093   0.0220   0.0125  -0.0292
-  17 H   :2py   -0.0027   0.0041  -0.0034  -0.0028   0.2239   0.3528   0.2182
-  18 H   :2pz   -0.0024   0.0069   0.0138   0.0031   0.0424   0.3642  -0.4154
-
- Orbital           8
-   1 O   :1s     0.0027
-   2 O   :1s    -0.0169
-   3 O   :1s    -0.0526
-   4 O   :1s     3.7689
-   5 O   :2pz    0.3064
-   6 O   :2pz    0.4950
-   7 O   :2pz    1.7842
-   8 O   :3d0   -0.0201
-   9 O   :3d2+  -0.0091
-  10 O   :3d0    0.0570
-  11 O   :3d2+   0.0433
-  12 H   :1s    -0.1345
-  13 H   :1s    -1.8763
-  14 H   :1s    -0.2776
-  15 H   :2py    0.0364
-  16 H   :2pz   -0.0111
-  17 H   :2py    0.3978
-  18 H   :2pz   -0.7071
-
-     Molecular orbitals for symmetry species   2
-
- Orbital           1        2        3        4        5        6
-   1 O   :2px    0.9200   0.3478   0.2547   0.4009  -1.3718  -0.0102
-   2 O   :2px   -0.0003   0.0854   0.4494  -0.2818   2.2500   0.7666
-   3 O   :2px    0.1036  -1.3570   1.1962   0.7867   0.1804  -0.1864
-   4 O   :3d1+   0.0137   0.0142  -0.0202  -0.0079   0.0074  -0.0639
-   5 O   :3d1+   0.0140  -0.0386   0.0186   1.0809   0.4711   0.6826
-   6 H   :2px    0.0261  -0.0079  -0.0104   0.0163   0.0077  -0.9837
-   7 H   :2px    0.0211   0.2204  -1.1551  -0.5751  -0.6413   0.1015
-
-     Molecular orbitals for symmetry species   3
-
- Orbital           1        2        3        4        5        6
-   1 O   :2py    0.7556  -0.2137  -0.4423  -0.2871   0.1884   0.5012
-   2 O   :2py   -0.1959  -0.0672   0.2408  -0.1859   0.2110   1.1617
-   3 O   :2py    0.0153  -0.4875   2.4030  -1.8182   2.3100   1.8733
-   4 O   :3d1-   0.0249  -0.0010  -0.0005   0.0211   0.0187   0.0027
-   5 O   :3d1-  -0.0461  -0.0042   0.0758  -0.0247  -0.0216  -0.0217
-   6 H   :1s     0.6088   0.0232   0.0455   0.3756   0.0238  -0.4116
-   7 H   :1s    -0.1713   0.4128  -1.5287   1.4368   0.2308  -6.6947
-   8 H   :1s     0.0018   2.4695  -2.8936   0.5781  -1.0153  -1.3952
-   9 H   :2py   -0.0214   0.0084   0.0391  -0.0134   0.0090  -0.0041
-  10 H   :2pz   -0.0322   0.0094   0.0277   0.0081  -0.0037   0.0065
-  11 H   :2py   -0.0232  -0.0485   0.4593   0.1814  -1.7886   3.1213
-  12 H   :2pz   -0.0159  -0.0661   0.4761   0.1982   1.2465   1.4527
-
-     Molecular orbitals for symmetry species   4
-
- Orbital           1        2        3        4
-   1 O   :3d2-  -0.0339   0.0015  -0.0751   1.2046
-   2 O   :3d2-   0.0636  -1.2230   0.8532  -0.7133
-   3 H   :2px   -0.0123  -0.0394  -0.9406  -0.1224
-   4 H   :2px   -1.0827   0.7806   0.1039   0.3307
-
-
-
- >>>> Total CPU  time used in SIRIUS :     12.71 seconds
- >>>> Total wall time used in SIRIUS :     13.00 seconds
+     Final gradient norm:           0.000001754066
 
  
-     Date and time (Linux)  : Tue Nov 13 16:08:08 2007
-     Host name              : platina                                 
+     Date and time (Linux)  : Thu Sep 24 00:48:59 2009
+     Host name              : stallo-2.local                          
 
-- End of Wave Function Section
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+ Orbital           1        2        3        4        5
+   1 O   :1s     1.0039  -0.0038   0.0030  -0.0051  -0.0211
+   2 O   :1s     0.0196   0.8880  -0.3045  -0.2480  -0.1142
+   3 O   :1s    -0.0259  -0.1459  -0.1428  -0.1635   0.2592
+   4 O   :1s    -0.0101   0.0662  -0.1249  -0.5856   2.5842
+   5 O   :2pz    0.0024   0.1543   0.8088  -0.1633  -0.3669
+   6 O   :2pz   -0.0041  -0.0863  -0.0713  -0.0312   0.0597
+   7 O   :2pz   -0.0016   0.0136   0.0562  -0.1547   1.6590
+   8 O   :3d0    0.0000   0.0034   0.0143  -0.0024  -0.0127
+  10 O   :3d0    0.0001  -0.0060   0.0105  -0.0031   0.0360
+  11 O   :3d2+   0.0007   0.0198   0.0149  -0.0039  -0.0294
+  12 H   :1s     0.0014   0.3561   0.3556   0.1015   0.0414
+  13 H   :1s     0.0075  -0.2059  -0.1080   0.2451  -1.0633
+  14 H   :1s     0.0007  -0.0022   0.0076   0.5880  -0.5215
+  15 H   :2py    0.0004  -0.0362  -0.0262   0.0164   0.0312
+  16 H   :2pz    0.0004  -0.0209   0.0036   0.0093   0.0220
+  17 H   :2py   -0.0027   0.0041  -0.0034  -0.0028   0.2239
+  18 H   :2pz   -0.0024   0.0069   0.0138   0.0031   0.0424
+
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+ Orbital           1        2        3
+   1 O   :2px    0.9200   0.3478   0.2547
+   2 O   :2px   -0.0003   0.0854   0.4494
+   3 O   :2px    0.1036  -1.3570   1.1962
+   4 O   :3d1+   0.0137   0.0142  -0.0202
+   5 O   :3d1+   0.0140  -0.0386   0.0186
+   6 H   :2px    0.0261  -0.0079  -0.0104
+   7 H   :2px    0.0211   0.2204  -1.1551
+
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+ Orbital           1        2        3
+   1 O   :2py    0.7556  -0.2137  -0.4423
+   2 O   :2py   -0.1959  -0.0672   0.2408
+   3 O   :2py    0.0153  -0.4875   2.4030
+   4 O   :3d1-   0.0249  -0.0010  -0.0005
+   5 O   :3d1-  -0.0461  -0.0042   0.0758
+   6 H   :1s     0.6088   0.0232   0.0455
+   7 H   :1s    -0.1713   0.4128  -1.5287
+   8 H   :1s     0.0018   2.4695  -2.8936
+   9 H   :2py   -0.0214   0.0084   0.0391
+  10 H   :2pz   -0.0322   0.0094   0.0277
+  11 H   :2py   -0.0232  -0.0485   0.4593
+  12 H   :2pz   -0.0159  -0.0661   0.4761
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+ Orbital           1        2
+   1 O   :3d2-  -0.0339   0.0015
+   2 O   :3d2-   0.0636  -1.2230
+   3 H   :2px   -0.0123  -0.0394
+   4 H   :2px   -1.0827   0.7806
 
 
 
-  This is output from RESPONSE  -  an MCSCF and SOPPA response property program
+ >>>> Total CPU  time used in SIRIUS :      3.92 seconds
+ >>>> Total wall time used in SIRIUS :      4.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Sep 24 00:48:59 2009
+     Host name              : stallo-2.local                          
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
  ------------------------------------------------------------------------------
-
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
 
 
  <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
@@ -669,12 +771,13 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  Quadratic Response single residue calculation
  ---------------------------------------------
 
+ That is, calculation of second order moments.
+
+  1 B-frequencies  0.000000e+00
 
  Spin of operator A , ISPINA=    0
  Spin of operator B , ISPINB=    0
  Spin of operator C , (Excitation energy) ISPINC=    0
-
-  1 B-frequencies  0.000000e+00
  B of Magnetic Circular Dichroism requested    : MCDCAL =T
 
  Print level                                    : IPRSMO =    2
@@ -709,9 +812,15 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
           ZANGMOM 
 
 
-   SCF energy         :      -76.415357408100363
- -- inactive part     :      -85.461425119459420
+   SCF energy         :      -76.415357408098018
+ -- inactive part     :      -85.461425099324259
  -- nuclear repulsion :        9.055004525637894
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
 
 
  Linear response excitations for quadratic response
@@ -731,10 +840,10 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.1 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.1 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.1 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*3 evaluation time:       2.5 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       1.0 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       1.0 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*3 evaluation time:       0.8 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -766,9 +875,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.0 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.0 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.0 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -800,10 +909,10 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.0 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.1 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       3.0 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*3 evaluation time:       2.5 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       1.0 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*3 evaluation time:       0.8 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -835,10 +944,10 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       2.9 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       2.9 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       2.9 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*4 evaluation time:       0.9 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -866,9 +975,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  QRLRVE -- linear response calculation for symmetry  1
  QRLRVE -- operator label : ZDIPLEN 
- QRLRVE -- frequencies :  0.260094  0.371728  0.408196  0.458800  0.394814
-                          0.468683  0.512613  0.522952  0.316502  0.427812
-                          0.443797  0.591276
+ QRLRVE -- frequencies :  0.260094  0.371727  0.408196  0.458800  0.394814
+                          0.468683  0.512613  0.522952  0.316501  0.427812
+                          0.443797  0.591275
 
 
 
@@ -876,249 +985,219 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       9.2 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.9 s
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.37173 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     -3.53553793
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -6.11 * 10 ** -1.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.37173 a.u.
+ after   12 linear transformations is     -3.53551236
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -6.11 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.40820 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      5.11860564
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  7.11 * 10 ** -2.0
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   12 linear transformations is      5.11862173
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  7.11 * 10 ** -2.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   12 linear transformations is     18.43477049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  3.00 * 10 ** -2.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.45880 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     18.43474545
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  3.00 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   12 linear transformations is      4.50456069
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -1.05 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39481 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      4.50455525
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.05 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   12 linear transformations is     27.66433151
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  7.98 * 10 ** -3.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   12 linear transformations is      2.45729548
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is  1.73 * 10 ** -2.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46868 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     27.66421221
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  7.98 * 10 ** -3.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   12 linear transformations is      6.62655242
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is  1.52 * 10 ** -2.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.51261 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      2.45732141
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   20    0    4
- DETERMINANT OF REDUCED MATRIX IS  1.73 * 10 ** -2.0
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   12 linear transformations is      9.27848109
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  1.32 * 10 ** -1.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   20    0    4
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   12 linear transformations is     12.77957934
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  8.38 * 10 ** -2.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.52295 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      6.62658113
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   20    0    4
- DETERMINANT OF REDUCED MATRIX IS  1.52 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   12 linear transformations is     -9.17991796
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    6
+ Determinant of reduced matrix is  1.68 * 10 ** -2.0
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.9 s
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   20    0    4
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      9.27846260
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.32 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.37173 a.u.
+ after   24 linear transformations is     -3.14691187
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -1.79 * 10 **  9.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   24 linear transformations is      6.04562534
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  2.72 * 10 **  8.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     12.77956200
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  8.38 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   24 linear transformations is     19.26486154
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  2.43 * 10 **  7.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     -9.17992202
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   18    0    6
- DETERMINANT OF REDUCED MATRIX IS  1.68 * 10 ** -2.0
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   24 linear transformations is      5.79830790
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -1.00 * 10 **  8.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   18    0    6
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       9.2 s
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   24 linear transformations is   -201.08418507
+ INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
+ Determinant of reduced matrix is -1.40 * 10 **  5.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.37173 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     -3.14693934
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.79 * 10 **  9.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   24 linear transformations is      5.73791618
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is  1.37 * 10 **  7.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.40820 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      6.04561014
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  2.72 * 10 **  8.0
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   24 linear transformations is      9.47743353
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is  8.50 * 10 **  6.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   24 linear transformations is      9.69218246
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  2.68 * 10 **  8.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.45880 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     19.26482577
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  2.43 * 10 **  7.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   24 linear transformations is     13.11927462
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  1.19 * 10 **  8.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39481 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      5.79831081
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.00 * 10 **  8.0
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   24 linear transformations is     14.81267388
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    6
+ Determinant of reduced matrix is  9.89 * 10 **  5.0
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.9 s
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ GP * SOLUTION vector at frequency     0.37173 a.u.
+ after   36 linear transformations is     -3.14661563
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -1.56 * 10 ** 23.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46868 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS   -201.21179309
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   45    0    3
- DETERMINANT OF REDUCED MATRIX IS -1.40 * 10 **  5.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   36 linear transformations is      6.04690199
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is  2.03 * 10 ** 22.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   45    0    3
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.51261 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      5.73792866
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   44    0    4
- DETERMINANT OF REDUCED MATRIX IS  1.37 * 10 **  7.0
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   36 linear transformations is     19.26603741
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is  1.43 * 10 ** 21.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   44    0    4
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   36 linear transformations is      5.80594707
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -7.89 * 10 ** 21.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.52295 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      9.47745212
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   44    0    4
- DETERMINANT OF REDUCED MATRIX IS  8.50 * 10 **  6.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   36 linear transformations is   -170.25487144
+ INERTIA (POS,ZER,NEG) of reduced matrix is   69    0    3
+ Determinant of reduced matrix is -9.06 * 10 ** 18.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   44    0    4
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      9.69216460
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  2.68 * 10 **  8.0
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   36 linear transformations is      5.74186450
+ INERTIA (POS,ZER,NEG) of reduced matrix is   68    0    4
+ Determinant of reduced matrix is  5.98 * 10 ** 20.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   36 linear transformations is      9.48142719
+ INERTIA (POS,ZER,NEG) of reduced matrix is   68    0    4
+ Determinant of reduced matrix is  3.47 * 10 ** 20.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     13.11925677
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.19 * 10 **  8.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   36 linear transformations is      9.69271483
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is  1.83 * 10 ** 22.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     14.81235715
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   42    0    6
- DETERMINANT OF REDUCED MATRIX IS  9.89 * 10 **  5.0
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   36 linear transformations is     13.11955629
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is  7.56 * 10 ** 21.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   42    0    6
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       9.2 s
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.37173 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     -3.14664310
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.56 * 10 ** 23.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.40820 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS      6.04688679
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   70    0    2
- DETERMINANT OF REDUCED MATRIX IS  2.03 * 10 ** 22.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   70    0    2
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.45880 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     19.26600165
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   70    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.42 * 10 ** 21.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   70    0    2
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.39481 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS      5.80595008
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.89 * 10 ** 21.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.46868 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS   -170.34974750
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   69    0    3
- DETERMINANT OF REDUCED MATRIX IS -9.05 * 10 ** 18.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   69    0    3
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.51261 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS      5.74187695
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   68    0    4
- DETERMINANT OF REDUCED MATRIX IS  5.98 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   68    0    4
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.52295 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS      9.48144575
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   68    0    4
- DETERMINANT OF REDUCED MATRIX IS  3.47 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   68    0    4
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS      9.69269697
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   70    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.83 * 10 ** 22.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   70    0    2
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     13.11953844
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   70    0    2
- DETERMINANT OF REDUCED MATRIX IS  7.56 * 10 ** 21.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   70    0    2
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     15.07398666
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   66    0    6
- DETERMINANT OF REDUCED MATRIX IS  2.45 * 10 ** 19.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   66    0    6
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   36 linear transformations is     15.07430907
+ INERTIA (POS,ZER,NEG) of reduced matrix is   66    0    6
+ Determinant of reduced matrix is  2.45 * 10 ** 19.0
 
  *** THE REQUESTED   12 SOLUTION VECTORS CONVERGED
 
@@ -1143,62 +1222,62 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.260094e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.26009):     17.0603628722    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.26009):     17.0603589390    
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.371728e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.371727e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.37173):    -3.14664310391    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.37173):    -3.14661562509    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.408196e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.40820):     6.04688678680    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.40820):     6.04690198651    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.458800e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.45880):     19.2660016471    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.45880):     19.2660374134    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.394814e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.39481):     5.80595007958    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.39481):     5.80594706568    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.468683e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.46868):    -170.349747504    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.46868):    -170.254871441    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.512613e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.51261):     5.74187694748    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.51261):     5.74186449844    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.522952e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.52295):     9.48144575349    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.52295):     9.48142719298    
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.316502e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.316501e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.31650):     37.5548916798    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.31650):     37.5548954587    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.427812e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.42781):     9.69269696855    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.42781):     9.69271482675    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.443797e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.44380):     13.1195384440    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.44380):     13.1195562918    
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.591276e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.591275e+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.59128):     15.0739866574    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.59128):     15.0743090668    
 
 
  Linear response calculations for quadratic response
@@ -1214,9 +1293,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  QRLRVE -- linear response calculation for symmetry  2
  QRLRVE -- operator label : XDIPLEN 
- QRLRVE -- frequencies :  0.397228  0.468548  0.483278  0.394814  0.468683
-                          0.512613  0.522952  0.316502  0.427812  0.443797
-                          0.591276  0.336845
+ QRLRVE -- frequencies :  0.397227  0.468547  0.483278  0.394814  0.468683
+                          0.512613  0.522952  0.316501  0.427812  0.443797
+                          0.591275  0.336845
 
 
 
@@ -1224,297 +1303,261 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       8.8 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.7 s
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39723 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     12.18015258
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.68 * 10 ** -1.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   12 linear transformations is     12.18015370
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  1.68 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46855 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     22.87364733
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   20    0    4
- DETERMINANT OF REDUCED MATRIX IS  8.97 * 10 ** -2.0
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   12 linear transformations is     22.87359688
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is  8.97 * 10 ** -2.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   20    0    4
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   12 linear transformations is     60.08590228
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is  9.34 * 10 ** -2.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.48328 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     60.08605353
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   20    0    4
- DETERMINANT OF REDUCED MATRIX IS  9.34 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   12 linear transformations is     11.62899915
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  1.94 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   20    0    4
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39481 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     11.62900063
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.94 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   12 linear transformations is     23.02764840
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is  9.06 * 10 ** -2.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   12 linear transformations is     -5.36451809
+ INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    5
+ Determinant of reduced matrix is -6.38 * 10 ** -1.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46868 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     23.02762231
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   20    0    4
- DETERMINANT OF REDUCED MATRIX IS  9.06 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   12 linear transformations is      2.32025124
+ INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    5
+ Determinant of reduced matrix is -9.82 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   20    0    4
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.51261 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     -5.36452315
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   19    0    5
- DETERMINANT OF REDUCED MATRIX IS -6.38 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.31650 a.u.
+ after   12 linear transformations is      2.91355714
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -6.84 * 10 **  0.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   19    0    5
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   12 linear transformations is     12.60474913
+ INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    3
+ Determinant of reduced matrix is -2.02 * 10 ** -1.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.52295 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      2.32026457
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   19    0    5
- DETERMINANT OF REDUCED MATRIX IS -9.82 * 10 ** -1.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   12 linear transformations is     16.72698372
+ INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    3
+ Determinant of reduced matrix is -1.64 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   19    0    5
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.31650 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      2.91354992
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -6.84 * 10 **  0.0
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   12 linear transformations is     -0.92800918
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    6
+ Determinant of reduced matrix is  9.13 * 10 **  0.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ GP * SOLUTION vector at frequency     0.33685 a.u.
+ after   12 linear transformations is      5.50725374
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -3.38 * 10 **  0.0
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.7 s
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     12.60474411
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   21    0    3
- DETERMINANT OF REDUCED MATRIX IS -2.02 * 10 ** -1.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   24 linear transformations is     12.26267463
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  8.78 * 10 ** 11.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   21    0    3
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     16.72698042
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   21    0    3
- DETERMINANT OF REDUCED MATRIX IS -1.64 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   24 linear transformations is     24.03918848
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is  3.47 * 10 ** 11.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   21    0    3
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   24 linear transformations is     64.79431529
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is  3.08 * 10 ** 11.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     -0.92803051
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   18    0    6
- DETERMINANT OF REDUCED MATRIX IS  9.13 * 10 **  0.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   24 linear transformations is     11.71762197
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  1.04 * 10 ** 12.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   18    0    6
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.33685 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS      5.50725112
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.38 * 10 **  0.0
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   24 linear transformations is     24.19538981
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is  3.50 * 10 ** 11.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       8.8 s
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   24 linear transformations is     -5.14129615
+ INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    5
+ Determinant of reduced matrix is -1.83 * 10 ** 12.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39723 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     12.26267363
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  8.78 * 10 ** 11.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   24 linear transformations is      2.55926858
+ INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    5
+ Determinant of reduced matrix is -2.59 * 10 ** 12.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46855 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     24.03924790
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   44    0    4
- DETERMINANT OF REDUCED MATRIX IS  3.47 * 10 ** 11.0
+ GP * SOLUTION vector at frequency     0.31650 a.u.
+ after   24 linear transformations is      3.12676429
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -5.21 * 10 ** 13.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   44    0    4
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   24 linear transformations is     13.06893718
+ INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
+ Determinant of reduced matrix is -9.72 * 10 ** 11.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.48328 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     64.79450313
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   44    0    4
- DETERMINANT OF REDUCED MATRIX IS  3.08 * 10 ** 11.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   24 linear transformations is     17.18477509
+ INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
+ Determinant of reduced matrix is -7.00 * 10 ** 11.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   44    0    4
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39481 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     11.71762353
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.04 * 10 ** 12.0
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   24 linear transformations is     -0.73128703
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    6
+ Determinant of reduced matrix is  1.39 * 10 ** 13.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
+ GP * SOLUTION vector at frequency     0.33685 a.u.
+ after   24 linear transformations is      5.67951091
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -2.36 * 10 ** 13.0
+ Electrons: 10.000000(-3.27e-07): LR-DFT*5 evaluation time:       1.1 s
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46868 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     24.19537155
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   44    0    4
- DETERMINANT OF REDUCED MATRIX IS  3.50 * 10 ** 11.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   29 linear transformations is     12.26268075
+ INERTIA (POS,ZER,NEG) of reduced matrix is   56    0    2
+ Determinant of reduced matrix is  1.37 * 10 ** 20.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   44    0    4
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.51261 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     -5.14130110
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   43    0    5
- DETERMINANT OF REDUCED MATRIX IS -1.83 * 10 ** 12.0
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   29 linear transformations is     24.03925885
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    4
+ Determinant of reduced matrix is  5.16 * 10 ** 19.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   43    0    5
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   29 linear transformations is     64.79455793
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    4
+ Determinant of reduced matrix is  4.53 * 10 ** 19.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.52295 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      2.55928230
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   43    0    5
- DETERMINANT OF REDUCED MATRIX IS -2.59 * 10 ** 12.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   29 linear transformations is     11.71762663
+ INERTIA (POS,ZER,NEG) of reduced matrix is   56    0    2
+ Determinant of reduced matrix is  1.63 * 10 ** 20.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   43    0    5
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.31650 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      3.12675724
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -5.21 * 10 ** 13.0
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   29 linear transformations is     24.19545929
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    4
+ Determinant of reduced matrix is  5.21 * 10 ** 19.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   29 linear transformations is     -5.14123799
+ INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    5
+ Determinant of reduced matrix is -2.64 * 10 ** 20.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     13.06893168
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   45    0    3
- DETERMINANT OF REDUCED MATRIX IS -9.72 * 10 ** 11.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   29 linear transformations is      2.55931274
+ INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    5
+ Determinant of reduced matrix is -3.69 * 10 ** 20.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   45    0    3
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     17.18477025
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   45    0    3
- DETERMINANT OF REDUCED MATRIX IS -7.00 * 10 ** 11.0
+ GP * SOLUTION vector at frequency     0.31650 a.u.
+ after   29 linear transformations is      3.12677674
+ INERTIA (POS,ZER,NEG) of reduced matrix is   57    0    1
+ Determinant of reduced matrix is -8.48 * 10 ** 21.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   45    0    3
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   29 linear transformations is     13.06895865
+ INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    3
+ Determinant of reduced matrix is -1.49 * 10 ** 20.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     -0.73130708
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   42    0    6
- DETERMINANT OF REDUCED MATRIX IS  1.39 * 10 ** 13.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   29 linear transformations is     17.18480237
+ INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    3
+ Determinant of reduced matrix is -1.06 * 10 ** 20.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   42    0    6
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.33685 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      5.67950842
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -2.36 * 10 ** 13.0
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   29 linear transformations is     -0.73119306
+ INERTIA (POS,ZER,NEG) of reduced matrix is   52    0    6
+ Determinant of reduced matrix is  1.86 * 10 ** 21.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
- Electrons: 10.000000(-3.27e-07): LR-DFT*5 evaluation time:       3.5 s
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.39723 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     12.26267975
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   56    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.37 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   56    0    2
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.46855 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     24.03931826
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   54    0    4
- DETERMINANT OF REDUCED MATRIX IS  5.16 * 10 ** 19.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   54    0    4
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.48328 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     64.79474577
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   54    0    4
- DETERMINANT OF REDUCED MATRIX IS  4.53 * 10 ** 19.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   54    0    4
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.39481 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     11.71762819
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   56    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.63 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   56    0    2
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.46868 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     24.19544103
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   54    0    4
- DETERMINANT OF REDUCED MATRIX IS  5.21 * 10 ** 19.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   54    0    4
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.51261 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     -5.14124294
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   53    0    5
- DETERMINANT OF REDUCED MATRIX IS -2.64 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   53    0    5
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.52295 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS      2.55932646
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   53    0    5
- DETERMINANT OF REDUCED MATRIX IS -3.69 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   53    0    5
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.31650 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS      3.12676969
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   57    0    1
- DETERMINANT OF REDUCED MATRIX IS -8.48 * 10 ** 21.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   57    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     13.06895316
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   55    0    3
- DETERMINANT OF REDUCED MATRIX IS -1.49 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   55    0    3
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     17.18479753
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   55    0    3
- DETERMINANT OF REDUCED MATRIX IS -1.06 * 10 ** 20.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   55    0    3
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS     -0.73121312
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   52    0    6
- DETERMINANT OF REDUCED MATRIX IS  1.86 * 10 ** 21.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   52    0    6
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.33685 AU
- AFTER   29 LINEAR TRANSFORMATIONS IS      5.67951709
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   57    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.81 * 10 ** 21.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   57    0    1
+ GP * SOLUTION vector at frequency     0.33685 a.u.
+ after   29 linear transformations is      5.67951957
+ INERTIA (POS,ZER,NEG) of reduced matrix is   57    0    1
+ Determinant of reduced matrix is -3.81 * 10 ** 21.0
 
  *** THE REQUESTED   12 SOLUTION VECTORS CONVERGED
 
@@ -1536,89 +1579,89 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.397228e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.397227e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.39723):     12.2626797506    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.39723):     12.2626807502    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.39723):    0.434462869711    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.39723):    0.434461840477    
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.468548e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.468547e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.46855):     24.0393182626    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.46855):     24.0392588451    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.46855):    -3.38537731016    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.46855):    -3.38537170660    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.483278e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.48328):     64.7947457659    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.48328):     64.7945579294    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.48328):    -10.6058746942    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.48328):    -10.6058501311    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.394814e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.39481):     11.7176281909    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.39481):     11.7176266254    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.39481):    0.212453389769    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.39481):    0.212451770075    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.468683e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.46868):     24.1954410308    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.46868):     24.1954592927    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.46868):    -3.40754255478    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.46868):    -3.40754799971    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.512613e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.51261):    -5.14124294128    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.51261):    -5.14123799032    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.51261):     3.26376318835    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.51261):     3.26376460752    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.522952e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.52295):     2.55932645817    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.52295):     2.55931274472    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.52295):     2.13930214844    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.52295):     2.13930485467    
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.316502e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.316501e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.31650):     3.12676968655    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.31650):     3.12677673557    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.31650):   -0.914041371998    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.31650):   -0.914038044129    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.427812e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.42781):     13.0689531611    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.42781):     13.0689586543    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.42781):    -1.89613572374    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.42781):    -1.89613429551    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.443797e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.44380):     17.1847975315    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.44380):     17.1848023662    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.44380):    -1.97372938107    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.44380):    -1.97372918663    
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.591276e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.591275e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.59128):   -0.731213117038    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.59128):   -0.731193064649    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.59128):     2.57407724507    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.59128):     2.57407637381    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.336845e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.33685):     5.67951708591    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.33685):     5.67951957286    
 
-@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.33685):   -0.683357159067    
+@QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.33685):   -0.683355086844    
 
 
  QRLRVE -- linear response calculation for symmetry  2
@@ -1631,9 +1674,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1647,9 +1690,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  QRLRVE: SINGLET SOLUTION   LABEL   YANGMOM     FREQUENCY   0.000000e+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; YANGMOM  >> (   0.00000):   -3.842607316866e-17
+@QRLRVE:  << XDIPLEN  ; YANGMOM  >> (   0.00000):   -9.506284648353e-16
 
-@QRLRVE:  << YANGMOM  ; YANGMOM  >> (   0.00000):    0.563437649493    
+@QRLRVE:  << YANGMOM  ; YANGMOM  >> (   0.00000):    0.563437156969    
 
 
  Linear response calculations for quadratic response
@@ -1665,9 +1708,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  QRLRVE -- linear response calculation for symmetry  3
  QRLRVE -- operator label : YDIPLEN 
- QRLRVE -- frequencies :  0.408196  0.458800  0.316502  0.427812  0.443797
-                          0.591276  0.336845  0.397228  0.468548  0.483278
-                          0.260094  0.371728
+ QRLRVE -- frequencies :  0.408196  0.458800  0.316501  0.427812  0.443797
+                          0.591275  0.336845  0.397227  0.468547  0.483278
+                          0.260094  0.371727
 
 
 
@@ -1675,201 +1718,177 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       9.1 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.8 s
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.40820 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     21.75077855
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.58 * 10 **  0.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   12 linear transformations is     21.75080902
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -1.58 * 10 **  0.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.45880 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     76.17942445
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.46 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   12 linear transformations is     76.17918855
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -1.46 * 10 ** -1.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   12 linear transformations is     30.36267916
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -1.31 * 10 **  0.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     30.36266666
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.31 * 10 **  0.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   12 linear transformations is     41.34561874
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -5.98 * 10 ** -1.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     41.34564297
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -5.98 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   12 linear transformations is     -9.65622034
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    6
+ Determinant of reduced matrix is  2.50 * 10 ** -2.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   12 linear transformations is     -2.35043901
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -4.29 * 10 ** -1.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     -9.65628491
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   18    0    6
- DETERMINANT OF REDUCED MATRIX IS  2.50 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   12 linear transformations is   1001.39927598
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is -5.09 * 10 ** -3.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   18    0    6
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39723 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS     -2.35080363
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -4.29 * 10 ** -1.0
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   12 linear transformations is    -10.81260143
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is  4.85 * 10 ** -2.0
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       2.8 s
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   24 linear transformations is     22.31204708
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -1.45 * 10 ** 10.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46855 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS   1001.51274376
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -5.09 * 10 ** -3.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   24 linear transformations is     79.48783261
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -7.97 * 10 **  8.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.48328 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS    -10.81240034
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   22    0    2
- DETERMINANT OF REDUCED MATRIX IS  4.85 * 10 ** -2.0
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   24 linear transformations is     31.08838993
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -1.00 * 10 ** 10.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   22    0    2
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       9.2 s
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   24 linear transformations is     42.44842245
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -3.90 * 10 **  9.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.40820 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     22.31201534
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.45 * 10 ** 10.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   24 linear transformations is     -7.36994794
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    6
+ Determinant of reduced matrix is  3.80 * 10 **  7.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.45880 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     79.48809314
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.96 * 10 **  8.0
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   24 linear transformations is      0.71298817
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -4.75 * 10 **  9.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   24 linear transformations is   4165.71939995
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is -6.19 * 10 **  6.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     31.08837706
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.00 * 10 ** 10.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   24 linear transformations is     -8.02560404
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is  2.17 * 10 **  8.0
+ Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       3.0 s
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     42.44844832
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.90 * 10 **  9.0
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   36 linear transformations is     22.31250655
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -1.04 * 10 ** 26.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   36 linear transformations is     79.48993608
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -4.67 * 10 ** 24.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     -7.37000604
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   42    0    6
- DETERMINANT OF REDUCED MATRIX IS  3.80 * 10 **  7.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   36 linear transformations is     31.08885372
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -6.67 * 10 ** 25.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   42    0    6
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.39723 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS      0.71269960
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -4.75 * 10 **  9.0
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   36 linear transformations is     42.44908423
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -2.44 * 10 ** 25.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   36 linear transformations is     -7.36809836
+ INERTIA (POS,ZER,NEG) of reduced matrix is   66    0    6
+ Determinant of reduced matrix is  1.10 * 10 ** 23.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.46855 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS   4167.77184955
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   47    0    1
- DETERMINANT OF REDUCED MATRIX IS -6.19 * 10 **  6.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   36 linear transformations is      0.71576050
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -3.54 * 10 ** 25.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   47    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.48328 AU
- AFTER   24 LINEAR TRANSFORMATIONS IS     -8.02540821
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   46    0    2
- DETERMINANT OF REDUCED MATRIX IS  2.17 * 10 **  8.0
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   36 linear transformations is   4175.49780614
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is -3.47 * 10 ** 22.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   46    0    2
- Electrons: 10.000000(-3.27e-07): LR-DFT*12 evaluation time:       9.1 s
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.40820 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     22.31247482
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.04 * 10 ** 26.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.45880 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     79.49019664
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -4.67 * 10 ** 24.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.42781 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     31.08884087
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -6.67 * 10 ** 25.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.44380 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     42.44911012
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -2.44 * 10 ** 25.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.59128 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     -7.36815645
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   66    0    6
- DETERMINANT OF REDUCED MATRIX IS  1.10 * 10 ** 23.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   66    0    6
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.39723 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS      0.71547196
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.54 * 10 ** 25.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.46855 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS   4177.55987306
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   71    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.47 * 10 ** 22.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   71    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.48328 AU
- AFTER   36 LINEAR TRANSFORMATIONS IS     -8.02321104
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   70    0    2
- DETERMINANT OF REDUCED MATRIX IS  1.14 * 10 ** 24.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   70    0    2
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   36 linear transformations is     -8.02340689
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is  1.14 * 10 ** 24.0
 
  *** THE REQUESTED   12 SOLUTION VECTORS CONVERGED
 
@@ -1894,86 +1913,86 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.408196e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.40820):     22.3124748226    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.40820):     22.3125065472    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.40820):   -0.340691813660    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.40820):   -0.340685548752    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.458800e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.45880):     79.4901966440    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.45880):     79.4899360843    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.45880):    -3.76741598702    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.45880):    -3.76735417522    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.316502e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.316501e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.31650):     17.4395669440    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.31650):     17.4395631136    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.31650):    0.201007405464    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.31650):    0.201009689540    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.427812e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.42781):     31.0888408655    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.42781):     31.0888537197    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.42781):   -0.120822197053    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.42781):   -0.120813070845    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.443797e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.44380):     42.4491101183    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.44380):     42.4490842270    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.44380):   -0.573390166408    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.44380):   -0.573373230039    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.591276e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.591275e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.59128):    -7.36815645251    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.59128):    -7.36809836475    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.59128):    -8.96664357652    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.59128):    -8.96664240621    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.336845e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.33685):     18.8827848023    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.33685):     18.8827776445    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.33685):    0.263552280570    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.33685):    0.263554944453    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.397228e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.397227e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.39723):    0.715471957088    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.39723):    0.715760495191    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.39723):    -2.91008738478    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.39723):    -2.91006725932    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.468548e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.468547e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.46855):     4177.55987306    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.46855):     4175.49780614    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.46855):    -473.506725952    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.46855):    -473.267733042    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.483278e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.48328):    -8.02321104166    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.48328):    -8.02340689484    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.48328):     9.57756599902    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.48328):     9.57757121008    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.260094e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.26009):     14.9197135084    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.26009):     14.9197116682    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.26009):    0.105489356354    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.26009):    0.105490842914    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.371728e+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.371727e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.37173):     23.3127093662    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.37173):     23.3126962126    
 
-@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.37173):    0.520312070564    
+@QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.37173):    0.520316337198    
 
 
  QRLRVE -- linear response calculation for symmetry  3
@@ -1986,9 +2005,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -2002,9 +2021,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  QRLRVE: SINGLET SOLUTION   LABEL   XANGMOM     FREQUENCY   0.000000e+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; XANGMOM  >> (   0.00000):   -6.245700668720e-17
+@QRLRVE:  << YDIPLEN  ; XANGMOM  >> (   0.00000):   -1.902991653147e-15
 
-@QRLRVE:  << XANGMOM  ; XANGMOM  >> (   0.00000):     2.07779613424    
+@QRLRVE:  << XANGMOM  ; XANGMOM  >> (   0.00000):     2.07779628658    
 
 
  Linear response calculations for quadratic response
@@ -2028,9 +2047,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
- Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       1.2 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.5 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 10.000000(-3.27e-07): LR-DFT*1 evaluation time:       0.4 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -2044,10 +2063,10 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  QRLRVE: SINGLET SOLUTION   LABEL   ZANGMOM     FREQUENCY   0.000000e+00
  SYMMETRY    4
 
-@QRLRVE:  << ZANGMOM  ; ZANGMOM  >> (   0.00000):     1.14494106824    
+@QRLRVE:  << ZANGMOM  ; ZANGMOM  >> (   0.00000):     1.14494117422    
  DFT-QR computed in a linearly-scaling fashion.
 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2055,16 +2074,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             1    1    0
 
- omega B, excitation energy, moment :    0.000000    0.336845   -8.381613
+ omega B, excitation energy, moment :    0.000000    0.336845   -8.381611
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             1    1    0
  Excitation energy in au,    moment :                0.336845   -0.737144
 
- B term contribution:              3.089228
+ B term contribution:              3.089226
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2072,16 +2091,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             2    1    0
 
- omega B, excitation energy, moment :    0.000000    0.397228   -7.166795
+ omega B, excitation energy, moment :    0.000000    0.397227   -7.166815
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             2    1    0
- Excitation energy in au,    moment :                0.397228   -0.067944
+ Excitation energy in au,    moment :                0.397227   -0.067943
 
  B term contribution:              0.243469
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2089,16 +2108,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             3    1    0
 
- omega B, excitation energy, moment :    0.000000    0.468548   -9.871271
+ omega B, excitation energy, moment :    0.000000    0.468547   -9.871321
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             3    1    0
- Excitation energy in au,    moment :                0.468548   -0.162247
+ Excitation energy in au,    moment :                0.468547   -0.162248
 
- B term contribution:              0.800794
+ B term contribution:              0.800800
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2106,16 +2125,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             4    1    0
 
- omega B, excitation energy, moment :    0.000000    0.483278   -6.976226
+ omega B, excitation energy, moment :    0.000000    0.483278   -6.976231
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             4    1    0
- Excitation energy in au,    moment :                0.483278   -0.457883
+ Excitation energy in au,    moment :                0.483278   -0.457884
 
- B term contribution:              1.597149
+ B term contribution:              1.597151
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2123,16 +2142,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             1    1    0
 
- omega B, excitation energy, moment :    0.000000    0.336845   -5.468479
+ omega B, excitation energy, moment :    0.000000    0.336845   -5.468477
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             1    1    0
  Excitation energy in au,    moment :                0.336845   -0.737144
 
- B term contribution:              2.015529
+ B term contribution:              2.015527
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2140,16 +2159,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             2    1    0
 
- omega B, excitation energy, moment :    0.000000    0.397228   10.999921
+ omega B, excitation energy, moment :    0.000000    0.397227   10.999831
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             2    1    0
- Excitation energy in au,    moment :                0.397228   -0.067944
+ Excitation energy in au,    moment :                0.397227   -0.067943
 
- B term contribution:             -0.373687
+ B term contribution:             -0.373683
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2157,16 +2176,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             3    1    0
 
- omega B, excitation energy, moment :    0.000000    0.468548  449.691804
+ omega B, excitation energy, moment :    0.000000    0.468547  449.465868
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             3    1    0
- Excitation energy in au,    moment :                0.468548   -0.162247
+ Excitation energy in au,    moment :                0.468547   -0.162248
 
- B term contribution:            -36.480655
+ B term contribution:            -36.462432
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2174,16 +2193,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             4    1    0
 
- omega B, excitation energy, moment :    0.000000    0.483278   -6.361957
+ omega B, excitation energy, moment :    0.000000    0.483278   -6.361964
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      ZDIPLEN     1    0
  Excited state no., symmetry, spin:             4    1    0
- Excitation energy in au,    moment :                0.483278   -0.457883
+ Excitation energy in au,    moment :                0.483278   -0.457884
 
- B term contribution:              1.456517
+ B term contribution:              1.456520
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2191,16 +2210,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             1    2    0
 
- omega B, excitation energy, moment :    0.000000    0.260094   -9.238086
+ omega B, excitation energy, moment :    0.000000    0.260094   -9.238084
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             1    2    0
  Excitation energy in au,    moment :                0.260094   -0.651687
 
- B term contribution:              3.010172
+ B term contribution:              3.010169
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2208,16 +2227,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             2    2    0
 
- omega B, excitation energy, moment :    0.000000    0.371728   -1.045784
+ omega B, excitation energy, moment :    0.000000    0.371727   -1.045782
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             2    2    0
- Excitation energy in au,    moment :                0.371728    0.002162
+ Excitation energy in au,    moment :                0.371727    0.002162
 
- B term contribution:             -0.001131
+ B term contribution:             -0.001130
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2225,16 +2244,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             3    2    0
 
- omega B, excitation energy, moment :    0.000000    0.408196    6.718618
+ omega B, excitation energy, moment :    0.000000    0.408196    6.718619
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             3    2    0
  Excitation energy in au,    moment :                0.408196    0.141087
 
- B term contribution:              0.473953
+ B term contribution:              0.473954
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2242,16 +2261,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             4    2    0
 
- omega B, excitation energy, moment :    0.000000    0.458800   20.554722
+ omega B, excitation energy, moment :    0.000000    0.458800   20.554772
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             4    2    0
- Excitation energy in au,    moment :                0.458800    0.157023
+ Excitation energy in au,    moment :                0.458800    0.157024
 
- B term contribution:              1.613785
+ B term contribution:              1.613796
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2259,7 +2278,7 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             1    2    0
 
- omega B, excitation energy, moment :    0.000000    0.260094    2.756296
+ omega B, excitation energy, moment :    0.000000    0.260094    2.756298
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
@@ -2268,7 +2287,7 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  B term contribution:             -0.898122
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2276,16 +2295,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             2    2    0
 
- omega B, excitation energy, moment :    0.000000    0.371728    1.412016
+ omega B, excitation energy, moment :    0.000000    0.371727    1.412016
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             2    2    0
- Excitation energy in au,    moment :                0.371728    0.002162
+ Excitation energy in au,    moment :                0.371727    0.002162
 
  B term contribution:              0.001526
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2293,7 +2312,7 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             3    2    0
 
- omega B, excitation energy, moment :    0.000000    0.408196   -0.155424
+ omega B, excitation energy, moment :    0.000000    0.408196   -0.155426
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
@@ -2302,7 +2321,7 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  B term contribution:             -0.010964
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2310,16 +2329,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             4    2    0
 
- omega B, excitation energy, moment :    0.000000    0.458800   -7.028364
+ omega B, excitation energy, moment :    0.000000    0.458800   -7.028351
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             4    2    0
- Excitation energy in au,    moment :                0.458800    0.157023
+ Excitation energy in au,    moment :                0.458800    0.157024
 
- B term contribution:             -0.551808
+ B term contribution:             -0.551810
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2327,16 +2346,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             1    3    0
 
- omega B, excitation energy, moment :    0.000000    0.394814   -3.141206
+ omega B, excitation energy, moment :    0.000000    0.394814   -3.141231
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             1    3    0
- Excitation energy in au,    moment :                0.394814   -0.238923
+ Excitation energy in au,    moment :                0.394814   -0.238922
 
- B term contribution:              0.375252
+ B term contribution:              0.375254
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2344,16 +2363,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             2    3    0
 
- omega B, excitation energy, moment :    0.000000    0.468683  -92.103268
+ omega B, excitation energy, moment :    0.000000    0.468683  -92.054970
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             2    3    0
  Excitation energy in au,    moment :                0.468683    0.748664
 
- B term contribution:            -34.477189
+ B term contribution:            -34.459123
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2368,9 +2387,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  Excited state no., symmetry, spin:             3    3    0
  Excitation energy in au,    moment :                0.512613   -0.203752
 
- B term contribution:             -0.661053
+ B term contribution:             -0.661051
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.7 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2378,16 +2397,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             4    3    0
 
- omega B, excitation energy, moment :    0.000000    0.522952   10.906978
+ omega B, excitation energy, moment :    0.000000    0.522952   10.906975
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             4    3    0
- Excitation energy in au,    moment :                0.522952   -0.584102
+ Excitation energy in au,    moment :                0.522952   -0.584103
 
- B term contribution:             -3.185396
+ B term contribution:             -3.185397
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2395,16 +2414,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             1    3    0
 
- omega B, excitation energy, moment :    0.000000    0.394814    1.661200
+ omega B, excitation energy, moment :    0.000000    0.394814    1.661208
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             1    3    0
- Excitation energy in au,    moment :                0.394814   -0.238923
+ Excitation energy in au,    moment :                0.394814   -0.238922
 
  B term contribution:             -0.198449
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2412,16 +2431,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             2    3    0
 
- omega B, excitation energy, moment :    0.000000    0.468683   -2.145468
+ omega B, excitation energy, moment :    0.000000    0.468683   -2.145464
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             2    3    0
  Excitation energy in au,    moment :                0.468683    0.748664
 
- B term contribution:             -0.803117
+ B term contribution:             -0.803116
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2429,16 +2448,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             3    3    0
 
- omega B, excitation energy, moment :    0.000000    0.512613   -6.314438
+ omega B, excitation energy, moment :    0.000000    0.512613   -6.314435
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             3    3    0
  Excitation energy in au,    moment :                0.512613   -0.203752
 
- B term contribution:              0.643290
+ B term contribution:              0.643288
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2446,16 +2465,16 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             4    3    0
 
- omega B, excitation energy, moment :    0.000000    0.522952   -5.720558
+ omega B, excitation energy, moment :    0.000000    0.522952   -5.720554
 
  First order moment in a.u. for
  C operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             4    3    0
- Excitation energy in au,    moment :                0.522952   -0.584102
+ Excitation energy in au,    moment :                0.522952   -0.584103
 
  B term contribution:              1.670696
  ------------------------------------------- 
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2463,9 +2482,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             1    4    0
 
- omega B, excitation energy, moment :    0.000000    0.316502    2.981123
+ omega B, excitation energy, moment :    0.000000    0.316501    2.981112
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2475,7 +2494,7 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
 
  omega B, excitation energy, moment :    0.000000    0.427812    2.398043
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2483,9 +2502,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             3    4    0
 
- omega B, excitation energy, moment :    0.000000    0.443797   -0.910133
+ omega B, excitation energy, moment :    0.000000    0.443797   -0.910141
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2493,9 +2512,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      YANGMOM     2    0
  Excited state no., symmetry, spin:             4    4    0
 
- omega B, excitation energy, moment :    0.000000    0.591276  -28.982597
+ omega B, excitation energy, moment :    0.000000    0.591275  -28.982584
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2503,9 +2522,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             1    4    0
 
- omega B, excitation energy, moment :    0.000000    0.316502    2.274185
+ omega B, excitation energy, moment :    0.000000    0.316501    2.274182
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2513,9 +2532,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             2    4    0
 
- omega B, excitation energy, moment :    0.000000    0.427812   -4.844419
+ omega B, excitation energy, moment :    0.000000    0.427812   -4.844422
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2523,9 +2542,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             3    4    0
 
- omega B, excitation energy, moment :    0.000000    0.443797   10.412326
+ omega B, excitation energy, moment :    0.000000    0.443797   10.412323
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2533,9 +2552,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      XANGMOM     3    0
  Excited state no., symmetry, spin:             4    4    0
 
- omega B, excitation energy, moment :    0.000000    0.591276   -1.273230
+ omega B, excitation energy, moment :    0.000000    0.591275   -1.273233
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2543,9 +2562,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             1    4    0
 
- omega B, excitation energy, moment :    0.000000    0.316502   -4.255232
+ omega B, excitation energy, moment :    0.000000    0.316501   -4.255227
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2553,9 +2572,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             2    4    0
 
- omega B, excitation energy, moment :    0.000000    0.427812    1.014526
+ omega B, excitation energy, moment :    0.000000    0.427812    1.014522
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.5 s
 
 
  Second order moment in a.u. for
@@ -2563,9 +2582,9 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             3    4    0
 
- omega B, excitation energy, moment :    0.000000    0.443797   -0.417545
+ omega B, excitation energy, moment :    0.000000    0.443797   -0.417551
  No MCD for this SOMOM
- Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       1.6 s
+ Electrons: 10.000000(-3.27e-07): QR-DFT/b evaluation time:       0.6 s
 
 
  Second order moment in a.u. for
@@ -2573,16 +2592,22 @@ K-S electrons/energy :    9.99999967333863   -7.49591445093094 err:-.33e-06
  B operator label,  symmetry, spin:      ZANGMOM     4    0
  Excited state no., symmetry, spin:             4    4    0
 
- omega B, excitation energy, moment :    0.000000    0.591276    7.985642
+ omega B, excitation energy, moment :    0.000000    0.591275    7.985711
  No MCD for this SOMOM
 
- >>>> Total CPU  time used in RESPONSE:  4 minutes 10 seconds
- >>>> Total wall time used in RESPONSE:  4 minutes 13 seconds
- >>>> Total CPU  time used in DALTON:  4 minutes 23 seconds
- >>>> Total wall time used in DALTON:  4 minutes 26 seconds
+ >>>> Total CPU  time used in RESPONSE:  1 minute  35 seconds
+ >>>> Total wall time used in RESPONSE:  1 minute  47 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  1 minute  39 seconds
+ >>>> Total wall time used in DALTON:  1 minute  52 seconds
 
  
-     Date and time (Linux)  : Tue Nov 13 16:12:21 2007
-     Host name              : platina                                 
+     Date and time (Linux)  : Thu Sep 24 00:50:47 2009
+     Host name              : stallo-2.local                          
 END REFOUT
 
