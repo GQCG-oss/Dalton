@@ -168,7 +168,7 @@ CRIT2=`$GREP "1.981380.* * 0*.017798" $log | wc -l`
 CRIT3=`$GREP "1.974627.* * 0*.02521[45]" $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[9]=6
+CTRL[9]=8
 ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
 
 PASSED=1
