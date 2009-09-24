@@ -3970,6 +3970,8 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
           CALL QUIT('Problem reading the Relay matrix from QMMMIM file')
         ENDIF
 
+        CALL GPCLOSE(LUQMMM,'KEEP')
+
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE(LUPRI,*) ' The Relay matrix is'//
      &                   ' read from the QMMMIM file: '
