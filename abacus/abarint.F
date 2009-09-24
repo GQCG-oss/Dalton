@@ -3764,16 +3764,16 @@ C     towards a maximum/saddle point. We then simply reverse the
 C     step direction (a bit dirty, but seems to work).
 C
          IF ((.NOT. SADDLE) .AND. (ERGPRD .GT. 0.0D0)) THEN
+            WRITE(LUPRI,'(A,F25.15)')
+     &           ' Original pred. energy change',ERGPRD
             WRITE(LUPRI,*) 'Reversing step!'
             DO 40 I = 1, IINTCR
                STPDIA(I) = -STPDIA(I)
  40         CONTINUE
             ERGPRD = DDOT(IINTCR,GRDDIA,1,STPDIA,1)
      &           + 0.5D0*DV3DOT(IINTCR,STPDIA,EVAL,STPDIA)
-            IF (IPRINT .GT. 2) THEN
-               WRITE(LUPRI,'(A,F25.15)')
-     &              ' New pred. energy change',ERGPRD
-            END IF
+            WRITE(LUPRI,'(A,F25.15)')
+     &           ' New pred. energy change',ERGPRD
          END IF
          IF (IPRINT .GE. IPRMIN) THEN
             IF (IPRINT .GE. IPRDBG) THEN

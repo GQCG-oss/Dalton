@@ -1847,7 +1847,6 @@ C     Check if preoptimization is finished
 C
       ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
          CALL ENDPRE(EXHER,EXSIR,EXABA)
-         KEEPHE = .FALSE.
 Chj aug 99: now new basis, reset hermit/abacus print
          IPRUSR = IPRUSR_orig
          IPREAD = IPREAD_orig
@@ -2108,7 +2107,6 @@ C     Check if preoptimization is finished
 C
          ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
             CALL ENDPRE(EXHER,EXSIR,EXABA)
-            KEEPHE = .FALSE.
 Chj aug 99: now new basis, reset hermit/abacus print
             IPRUSR = IPRUSR_orig
             IPREAD = IPREAD_orig
@@ -6303,10 +6301,8 @@ C
  40         CONTINUE
             ERGPRD = DDOT(NVEC,GRDDIA,1,STPDIA,1)
      &           + 0.5D0*DV3DOT(NVEC,STPDIA,EVAL,STPDIA)
-            IF (IPRINT .GT. 2) THEN
-               WRITE(LUPRI,'(A,F25.15)')
-     &              ' New pred. energy change',ERGPRD
-            END IF
+            WRITE(LUPRI,'(A,F25.15)')
+     &           ' New pred. energy change',ERGPRD
          END IF
          CALL HEADER('Step in diagonal representation',1)
          CALL OUTPUT(STPDIA,1,1,1,NVEC,1,MXRCRD,1,LUPRI)
