@@ -220,14 +220,14 @@ CTRL[12]=2
 ERROR[12]="FINAL GRADIENT NOT CORRECT"
 
 # Final Hessian
-CRIT1=`$GREP "Li * z * (0| )\.0022(4|5)." $log | wc -l`
-CRIT2=`$GREP "H * z * (\-0|\-)\.0022(4|5). * (0| )\.0022(4|5)." $log | wc -l`
-CRIT3=`$GREP "Li     x * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT4=`$GREP "H      x * (0| )\.00000. * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT5=`$GREP "Li     y * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT6=`$GREP "H      y * (0| )\.00000. * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT9=`$GREP "Li * z * (0| )\.000000 * (0| )\.000000 * (0| )\.0022(4|5)." $log | wc -l`
-CRIT12=`$GREP "H * z * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.0022(4|5). * (0| )\.000000 * (0| )\.000000 * (0| )\.0022(4|5)." $log | wc -l`
+CRIT1=`$GREP "Li * z * 0*\.0022(4|5)." $log | wc -l`
+CRIT2=`$GREP "H * z * \-0*\.0022(4|5). * 0*\.0022(4|5)." $log | wc -l`
+CRIT3=`$GREP "Li     x * \-*0*\.00000." $log | wc -l`
+CRIT4=`$GREP "H      x * \-*0*\.00000. * \-*0*\.00000." $log | wc -l`
+CRIT5=`$GREP "Li     y * \-*0*\.00000." $log | wc -l`
+CRIT6=`$GREP "H      y * \-*0*\.00000. * \-*0*\.00000." $log | wc -l`
+CRIT9=`$GREP "Li * z * 0*\.000000 * 0*\.000000 * 0*\.0022(4|5)." $log | wc -l`
+CRIT12=`$GREP "H * z * 0*\.000000 * 0*\.000000 * \-0*\.0022(4|5). * 0*\.000000 * 0*\.000000 * 0*\.0022(4|5)." $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT9 \+ $CRIT12`
 CTRL[13]=11
