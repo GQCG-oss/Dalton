@@ -179,15 +179,15 @@ CTRL[13]=1
 ERROR[13]="FIRST ENERGY WITH THIRD BASIS SET NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.0473639.[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.4196355.[0-9][0-9] * 1.0222352.[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.4196355.[0-9][0-9] * 1.0222352.[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.047461..[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.419656..[0-9][0-9] * 1.022283..[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.419656..[0-9][0-9] * 1.022283..[0-9][0-9]" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[14]=12
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 
 # Convergence
-CRIT1=`$GREP "Geometry converged in * 14( |  )iterations\!" $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 11( |  )iterations\!" $log | wc -l`
 CRIT2=`$GREP "Energy at final geometry is * \: * \-76\.05777[0-9] a\.u\." $log | wc -l`
 CRIT3=`$GREP "Energy change during optimization \: * \-1\.09390[0-9] a\.u\." $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
