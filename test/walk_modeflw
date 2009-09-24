@@ -274,6 +274,8 @@ CRIT9=`$GREP "H * z * (0| )\.012966.. * (\-0|\-)\.00016... * (0| )\.4054942." $l
 CRIT10=`$GREP "H * x * (0| )\.15760(0|1).. * (\-0|\-)\.003179.. * (0| )\.012963.." $log | wc -l`
 CRIT11=`$GREP "H * y * (\-0|\-)\.003180.. * (0| )\.15324(7|8).. * (0| )\.000168.." $log | wc -l`
 CRIT12=`$GREP "H * z * (0| )\.012966.. * (0| )\.000174.. * (0| )\.4054942." $log | wc -l`
+TEST[19]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+               $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[19]=12
 ERROR[19]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 
