@@ -403,7 +403,7 @@ for comp in $complist; do
 	if [ -f $ac_dir/$ac_word ]; then
 	  get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
 	  if [ $answer = 'y' ]; then
-	    ac_cv_prog_F77=$ac_dir/$ac_word
+	    ac_cv_prog_F77=$ac_word
 	    break
           fi
         fi  
@@ -452,7 +452,7 @@ for comp in $ccmplist; do
 	if [ -f $ac_dir/$ac_word ]; then
 	  get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
-	    ac_cv_prog_C=$ac_dir/$ac_word
+	    ac_cv_prog_C=$ac_word
 	    break
           fi
 	fi  
