@@ -140,7 +140,7 @@ if [ -z "$1" ]; then
         exit 1;;
     esac
     $ECHO "No architecture specified, attempting auto-configuration:"
-    get_yes_or_no "This appears to be a $ARCH architecture. Is this correct? " y
+    get_yes_or_no "This appears to be a $ARCH architecture. Is this correct?" y
     if [ "$answer" = "n" ]; then
         $ECHO "\nPlease configure manually from command line: 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit 1
@@ -505,7 +505,7 @@ $ECHO "\nTesting existence of libraries in this order:"
 $ECHO   " $liblist"
 $ECHO   "Directory search list for libraries:"
 $ECHO   " $dirlist \n"
-get_yes_or_no "Do you want to replace this with your own directory search list ?" n
+get_yes_or_no "Do you want to replace this with your own directory search list?" n
 if [ $answer = 'y' ]; then
    $ECHO   "OK, please enter it : \c"
    read dirlist
@@ -518,7 +518,7 @@ for testlib in $liblist; do
    for testdir in $dirlist; do
 #     echo "testing existence of $testdir/$testlib"
       if [ -f $testdir/$testlib ]; then
-	get_yes_or_no "Found $testdir/$testlib, use it ?" y
+	get_yes_or_no "Found $testdir/$testlib, use it?" y
 	if [ $answer = 'y' ]; then
           LIBDIR=$testdir
           case $testlib in
@@ -748,7 +748,7 @@ else
 fi
 
 $ECHO '\n-->Job specific directories under $SCRATCH/$USER\n-->will be used for temporary files when running DALTON\n'
-get_yes_or_no 'Use SCRATCH='$worksp' as default root scratch space in "dalton" run script? [y/n] \c' y
+get_yes_or_no 'Use SCRATCH='$worksp' as default root scratch space in "dalton" run script?' y
 
 if [ "$answer" = "n" ];  then
     $ECHO 'Please enter default root scratch directory: \c'
