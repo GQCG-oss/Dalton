@@ -1,3 +1,0 @@
-      COMMON /AOSOTR/CTRAN(MXCORB,8),ITRAN(MXCORB,8),IAOAO(MXCORB),
-     &               IPTYP(MXCORB),IPCEN(MXCORB),JTRAN(MXCORB),
-     &               JAOAO(MXCORB,2)      

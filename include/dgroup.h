@@ -1,2 +1,0 @@
-      COMMON/DGROUP/KPHASE(4,4),NZ,NFSYM,JSPINR(4,2,2),
-     &              JCSYM(0:7,2,2),JBTOF(0:7,2),JAPINT(3)

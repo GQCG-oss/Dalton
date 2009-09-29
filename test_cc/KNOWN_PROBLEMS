@@ -1,7 +1,0 @@
-------------------------------------------------------------------------
-DEC
-------------------------------------------------------------------------
-due to problems in ERI (?) the following tests don't work on 
-DEC alpha machines:
-
-alpha_deriv	dipgra_relax	dipgra_relax2	verdet_hf_direct
