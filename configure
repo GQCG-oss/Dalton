@@ -1050,7 +1050,7 @@ case "$WHICH" in
               ;;
           *)
 #            assuming gfortran
-             if [ $F77_be == "gfortran" ]; then
+             if [ $F77_be = "gfortran" ]; then
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
 	     else
