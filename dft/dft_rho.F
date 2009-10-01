@@ -323,12 +323,15 @@ c
       DIMENSION CENTER(3), RSHEL(KMAX), IBLCKS(2,NBAST)
       DIMENSION  ISSS(KMAX)
 #include <ibtfun.h>
-#if 0
+
+!#define NO_SHELL_SCREENING
+#ifdef NO_SHELL_SCREENING
       NBLCNT = 1
       IBLCKS(1,1) = 1
       IBLCKS(2,1) = KMAX
       RETURN
 #endif
+
       ISHLEN = 0
       NBLCNT = 0
       IPREV = -1111
