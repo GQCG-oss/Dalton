@@ -402,7 +402,7 @@ C
             GO TO 8000
          END IF
  7020    FORMAT(//' Sirius MP2 calculation aborted because',
-     *      ' preceeding Hartree-Fock not converged.')
+     *      ' preceding Hartree-Fock not converged.')
 C
          FLAG( 9) = .TRUE.
          FLAG( 2) = .FALSE.

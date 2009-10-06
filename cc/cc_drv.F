@@ -83,10 +83,10 @@ C              CC_MCDCAL   calculation of B terms in MCD
 C
 C     Loop over all models specified. The order is supposed
 C     to be the optimal one from a computational point of view.
-C     Energy calculations are restarted from the preceeding
+C     Energy calculations are restarted from the preceding
 C     calculation. Excitation vectors is also saved
 C     and the excitation energy calculation is restarted
-C     from preceeding model solution as well. Similar for
+C     from preceding model solution as well. Similar for
 C     response vectors in property calculations.
 C
 C     (ground state) geometry optimizations using the

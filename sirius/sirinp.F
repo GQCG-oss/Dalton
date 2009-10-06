@@ -4844,7 +4844,7 @@ C     formulation of NEVPT.
            WRITE (IWUNIT,1050)
      &     "N-electron valence state 2. order perturbation theory "//
      &     "using Ken Dyall's zeroth-order Hamiltonian"
-           WRITE (IWUNIT,1051) 'preceeded by :'
+           WRITE (IWUNIT,1051) 'preceded by :'
          ENDIF
          IF ( DOMC ) THEN
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'

@@ -78,7 +78,7 @@ C
          call quit('srdft not implemented in this version')
 #else
 C        ... do not add SR integrals to Fock matrices for CI-DFT
-C            (will be true on entry if CI-srDFT preceeded by normal RHF)
+C            (will be true on entry if CI-srDFT preceded by normal RHF)
          ADDSRI = .FALSE.
 C        ... Dont risk adding DFT contributions in later call of FCKMAT
 C            The SR-DFT terms needed in CI-DFT is handled by SRFMAT.
