@@ -416,7 +416,7 @@ C
       TRATST = .FALSE.
       RUNGDY = MOLHES .OR. DIPDER .OR. SHIELD .OR. VCD .OR. MAGSUS
      &                .OR. ECD .OR. VROA .OR. MOLGFA .OR. MCD 
-     &	              .OR. VERDET .OR. SPINRO .OR. OPTROT .OR. QPGRAD
+     &                .OR. VERDET .OR. SPINRO .OR. OPTROT .OR. QPGRAD
       IPRGDY = IPRDEF
       NODC   = .FALSE.
       NODV   = .FALSE.
