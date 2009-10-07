@@ -1,3 +1,5 @@
+C**************************************************************************************
+C  /* Deck qmmm_fck_ao_p */
       SUBROUTINE QMMM_FCK_AO_P(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
 
 #include <implicit.h>
@@ -63,8 +65,133 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
 C     1) The charge correction to the Fock/KS operator
 
       IF (NMULT .GE. 0) THEN
+         IF (NODTOT .GE. 1) THEN
+            CALL QMMM_CHARGE_M()
+         ELSE
+            CALL QMMM_CHARGE(DCAO,ESOLT,ECHART,WRK(KWRK1),LWRK1)
+         ENDIF
+      ENDIF
 
-        KMAT  = KWRK1
+C     2) The dipole correction to the Fock/KS operator
+
+      IF (NMULT .GE. 1) THEN
+         IF (NODTOT .GE. 1) THEN
+            CALL QMMM_DIPOLE_M()
+         ELSE
+            CALL QMMM_DIPOLE(DCAO,ESOLT,EDIPT,KWRK1,LWRK1)
+         ENDIF
+      ENDIF
+
+C     3) The quadrupole correction to the Fock/KS operator
+
+      IF (NMULT .GE. 2) THEN
+         IF (NODTOT .GE. 1) THEN
+            CALL QMMM_QUADPOLE_M()
+         ELSE
+            CALL QMMM_QUADPOLE(DCAO,ESOLT,EQUADT,KWRK1,LWRK1)
+         ENDIF
+      ENDIF
+
+C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
+
+      IF (NMULT .GE. 3) THEN
+         IF (NODTOT .GE. 1) THEN
+            CALL QMMM_OCTUPOLE_M()
+         ELSE
+            CALL QMMM_OCTUPOLE(DCAO,ESOLT,EOCTUP,KWRK1,LWRK1)
+         ENDIF
+      ENDIF
+
+      IF (IPRINT.GT.1) THEN
+        write(lupri,*)
+        write(lupri,*) 'MM-charge QM density interaction energy:',ECHART
+        write(lupri,*) 'MM-dipole QM density interaction energy:',EDIPT
+        write(lupri,*) 'MM-quadr. QM density interaction energy:',EQUADT
+        write(lupri,*) 'MM-octup. QM density interaction energy:',EOCTUP
+      ENDIF 
+
+C     5) The polarization correction to the Fock/KS operator
+
+      IF (IPOLTP .GT. 0) THEN
+         IF (NODTOT .GE. 1) THEN
+            CALL QMMM_POLARI_M()
+         ELSE
+            CALL QMMM_POLARI(DCAO,ESOLT,EOCTUP,KWRK1,LWRK1)
+         ENDIF
+      ENDIF
+
+C     Finally, put back the dipole origin
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
+      CALL QEXIT('QMMM_FCK_AO_P')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_charge_m */
+      SUBROUTINE QMMM_CHARGE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_CHARGE_M')
+
+
+      CALL QEXIT('QMMM_CHARGE_M')
+
+      RETURN
+      END
+
+C**************************************************************************************
+C  /* Deck qmmm_charge */
+      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,ECHART,WRK,LWRK)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_CHARGE')
+
+        KMAT  = 1
         KLAST = KMAT + NNBASX
         LWRK2 = LWRK - KLAST + 1
 
@@ -73,6 +200,7 @@ C     1) The charge correction to the Fock/KS operator
         FAC1 = 1.0D0      
         EXPNST = 0.0D0
         ECHCH = 0.0D0
+
 
         DO 100 I = 1,MMCENT 
 
@@ -156,13 +284,73 @@ C          Now the QM nuclear contribution
          WRITE(LUPRI,*)
         ENDIF
 
-      END IF ! NMULT .GE. 0
 
-C     2) The dipole correction to the Fock/KS operator
-C
-      IF (NMULT .GE. 1) THEN
+      CALL QEXIT('QMMM_CHARGE')
 
-        KMAT  = KWRK1
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_dipole_m */
+      SUBROUTINE QMMM_DIPOLE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_DIPOLE_M')
+
+
+      CALL QEXIT('QMMM_DIPOLE_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_dipole */
+      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,EDIPT,WRK,LWRK)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_DIPOLE')
+
+
+
+        KMAT  = 1
         KLAST = KMAT + 3*NNBASX
         LWRK2 = LWRK - KLAST + 1
 
@@ -323,11 +511,69 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*) 
         ENDIF
 
-      END IF ! (NMULT .GE. 1)
+      CALL QEXIT('QMMM_DIPOLE')
 
-C     3) The quadrupole correction to the Fock/KS operator
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_quadpole_m */
+      SUBROUTINE QMMM_QUADPOLE_M()
 
-      IF (NMULT .GE. 2) THEN
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_QUADPOLE_M')
+
+
+      CALL QEXIT('QMMM_QUADPOLE_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_quadpole */
+      SUBROUTINE QMMM_QUADPOLE()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_QUADPOLE')
+
 
         KMAT  = KWRK1
         KLAST = KMAT + 6*NNBASX
@@ -490,11 +736,70 @@ C         Remember the factor of 1/2 from the Taylor expansion
          WRITE(LUPRI,*) 
         ENDIF
 
-      END IF ! (NMULT .GE. 2)
 
-C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
+      CALL QEXIT('QMMM_QUADPOLE')
 
-      IF (NMULT .GE. 3) THEN
+      RETURN
+      END
+
+C**************************************************************************************
+C  /* Deck qmmm_octupole_m */
+      SUBROUTINE QMMM_OCTUPOLE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_OCTUPOLE_M')
+
+
+      CALL QEXIT('QMMM_OCTUPOLE_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_octupole */
+      SUBROUTINE QMMM_OCTUPOLE()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_OCTUPOLE')
 
         KMAT1  = KWRK1
         KMAT2  = KMAT1 + 6*NNBASX
@@ -804,19 +1109,71 @@ C         Remember the factor of 1/6 from the Taylor expansion
          WRITE(LUPRI,*) 
         ENDIF
 
-      END IF ! (NMULT .GE. 3)
 
-      IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
-        write(lupri,*)
-        write(lupri,*) 'MM-charge QM density interaction energy:',ECHART
-        write(lupri,*) 'MM-dipole QM density interaction energy:',EDIPT
-        write(lupri,*) 'MM-quadr. QM density interaction energy:',EQUADT
-        write(lupri,*) 'MM-octup. QM density interaction energy:',EOCTUP
-      ENDIF 
+      CALL QEXIT('QMMM_OCTUPOLE')
 
-C     5) The polarization correction to the Fock/KS operator
+      RETURN
+      END
 
-      IF (IPOLTP .GT. 0) THEN
+C**************************************************************************************
+C  /* Deck qmmm_polari_m */
+      SUBROUTINE QMMM_POLARI_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_POLARI_M')
+
+
+      CALL QEXIT('QMMM_POLARI_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_polari */
+      SUBROUTINE QMMM_POLARI()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_POLARI')
+
 
 C       Zero out a list of centers having zero polarizability. We don't
 C       know yet the number of zero polarizabilities so we take the
@@ -1317,16 +1674,9 @@ C        IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
  5004   FORMAT('      Multipole contribution:    ',F15.9)
  5005   FORMAT('      Total:                     ',F15.9)
 
-      ENDIF   ! Polarization part
 
-C     Finally, put back the dipole origin
 
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
-
-      CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
-      CALL QEXIT('QMMM_FCK_AO_P')
+      CALL QEXIT('QMMM_POLARI')
 
       RETURN
       END

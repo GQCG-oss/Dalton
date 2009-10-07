@@ -1882,7 +1882,8 @@ C     Get total density
 C     Modify the fock operator. Modification returned in FSOL. 
 C     QMMM contribution to the energy returned in EQMMM.
       IF (NODTOT .GE. 1) THEN
-         CALL QMMM_FCK_AO_P(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
+         CALL QMMM_FCK_AO_P(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
+     & IPRINT)
       ELSE
          CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
       ENDIF
