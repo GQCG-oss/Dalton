@@ -1848,6 +1848,8 @@ C  /* Deck qmmmfck */
 #include <maxaqn.h>
 #include <symmet.h>
 #include <orgcom.h>
+#include <infpar.h>
+
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
@@ -1879,8 +1881,11 @@ C     Get total density
 
 C     Modify the fock operator. Modification returned in FSOL. 
 C     QMMM contribution to the energy returned in EQMMM.
-      CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
-
+      IF (NODTOT .GE. 1) THEN
+         CALL QMMM_FCK_AO_P(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
+      ELSE
+         CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
+      ENDIF
       CALL QEXIT('QMMMFCK')
       RETURN
       END
