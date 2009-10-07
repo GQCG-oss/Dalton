@@ -27,16 +27,13 @@ C  /* Deck qmmm_fck_ao_p */
       DIMENSION FSOL(*)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
-      LOGICAL EXCENT,LOCDEB,LZERO
-      INTEGER NZERAL,RI,CI,CZA
-      DOUBLE PRECISION INVAMT
+      LOGICAL EXCENT
+      INTEGER NZERAL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_FCK_AO_P')
-
-      LOCDEB = .FALSE.
 
       KTAO   = 1
       KNSEL  = KTAO   + NNBASX
@@ -68,7 +65,8 @@ C     1) The charge correction to the Fock/KS operator
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_CHARGE_M()
          ELSE
-            CALL QMMM_CHARGE(DCAO,ESOLT,ECHART,WRK(KWRK1),LWRK1)
+            CALL QMMM_CHARGE(DCAO,ESOLT,ECHART,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
          ENDIF
       ENDIF
 
@@ -78,7 +76,8 @@ C     2) The dipole correction to the Fock/KS operator
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_DIPOLE_M()
          ELSE
-            CALL QMMM_DIPOLE(DCAO,ESOLT,EDIPT,KWRK1,LWRK1)
+            CALL QMMM_DIPOLE(DCAO,ESOLT,EDIPT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
          ENDIF
       ENDIF
 
@@ -88,7 +87,8 @@ C     3) The quadrupole correction to the Fock/KS operator
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_QUADPOLE_M()
          ELSE
-            CALL QMMM_QUADPOLE(DCAO,ESOLT,EQUADT,KWRK1,LWRK1)
+            CALL QMMM_QUADPOLE(DCAO,ESOLT,EQUADT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
          ENDIF
       ENDIF
 
@@ -98,7 +98,8 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_OCTUPOLE_M()
          ELSE
-            CALL QMMM_OCTUPOLE(DCAO,ESOLT,EOCTUP,KWRK1,LWRK1)
+            CALL QMMM_OCTUPOLE(DCAO,ESOLT,EOCTUP,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
          ENDIF
       ENDIF
 
@@ -116,7 +117,8 @@ C     5) The polarization correction to the Fock/KS operator
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_POLARI_M()
          ELSE
-            CALL QMMM_POLARI(DCAO,ESOLT,EOCTUP,KWRK1,LWRK1)
+            CALL QMMM_POLARI(DCAO,ESOLT,EPOLT,WRK(KTAO),
+     &                       WRK(KWRK1),LWRK1)
          ENDIF
       ENDIF
 
@@ -166,7 +168,7 @@ C  /* Deck qmmm_charge_m */
 
 C**************************************************************************************
 C  /* Deck qmmm_charge */
-      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,ECHART,WRK,LWRK)
+      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,ECHART,TAO,NSEL,NSNUC,WRK,LWRK)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -189,17 +191,24 @@ C  /* Deck qmmm_charge */
 #include <codata.h>
 
 
+      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
       CALL QENTER('QMMM_CHARGE')
 
-        KMAT  = 1
-        KLAST = KMAT + NNBASX
-        LWRK2 = LWRK - KLAST + 1
+      KMAT  = 1
+      KLAST = KMAT + NNBASX
+      LWRK2 = LWRK - KLAST + 1
 
-        IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 2',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 2',-KLAST,LWRK)
 
-        FAC1 = 1.0D0      
-        EXPNST = 0.0D0
-        ECHCH = 0.0D0
+      FAC1 = 1.0D0      
+      EXPNST = 0.0D0
+      ECHCH = 0.0D0
 
 
         DO 100 I = 1,MMCENT 
@@ -323,7 +332,7 @@ C  /* Deck qmmm_dipole_m */
       END
 C**************************************************************************************
 C  /* Deck qmmm_dipole */
-      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,EDIPT,WRK,LWRK)
+      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,EDIPT,TAO,NSEL,NSNUC,WRK,LWRK)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -345,6 +354,12 @@ C  /* Deck qmmm_dipole */
 #include <nuclei.h>
 #include <codata.h>
 
+      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_DIPOLE')
 
@@ -447,7 +462,7 @@ c          write(lupri,*) 'TEMP',TEMP
 c          write(lupri,*) 'SIJ',SIJ
 c          write(lupri,*) 'DFACT',DFACT
 
-          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+          IF (IPRINT.GT.15) THEN
             WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
             CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
@@ -497,7 +512,7 @@ C         CORD(1,J) - MMCORD(1,I)
         EDIPT = EMUL1T + ELOCT
         ESOLT = ESOLT + EDIPT
 
-        IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
+        IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Dipole-electronic Dipole-nuclear Total'
          DO 202 I = 1,MMCENT
@@ -549,7 +564,7 @@ C  /* Deck qmmm_quadpole_m */
       END
 C**************************************************************************************
 C  /* Deck qmmm_quadpole */
-      SUBROUTINE QMMM_QUADPOLE()
+      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,EQUADT,TAO,NSEL,NSNUC,WRK,LWRK)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -571,6 +586,12 @@ C  /* Deck qmmm_quadpole */
 #include <nuclei.h>
 #include <codata.h>
 
+      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_QUADPOLE')
 
@@ -627,7 +648,7 @@ C           we use KNS to collect the energy terms
      &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
           RUNQM3=.FALSE.
 
-          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+          IF (IPRINT.GT.15) THEN
             WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK_AO_P:'
             CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
@@ -722,7 +743,7 @@ C         Remember the factor of 1/2 from the Taylor expansion
         EQUADT = EMUL2T + ELOCT
         ESOLT  = ESOLT  + EQUADT
 
-        IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
+        IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Quadr.-electronic Quadr.-nuclear Total'
          DO 302 I = 1,MMCENT
@@ -776,7 +797,7 @@ C  /* Deck qmmm_octupole_m */
       END
 C**************************************************************************************
 C  /* Deck qmmm_octupole */
-      SUBROUTINE QMMM_OCTUPOLE()
+      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,EOCTUP,TAO,NSEL,NSNUC,WRK,LWRK)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -798,6 +819,13 @@ C  /* Deck qmmm_octupole */
 #include <nuclei.h>
 #include <codata.h>
 
+      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      DIMENSION WRK(LWRK)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_OCTUPOLE')
 
@@ -884,7 +912,7 @@ C  Calculate gradient of these integrals
            CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT1),1)
            CALL DZERO(WRK(KMAT2),6*NNBASX)
 
-          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+          IF (IPRINT.GT.15) THEN
             WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK_AO_P:'
             CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
 
@@ -929,7 +957,7 @@ C  Calculate gradient of these integrals
            CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT2),1)
            CALL DZERO(WRK(KMAT3),6*NNBASX)
 
-          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+          IF (IPRINT.GT.15) THEN
             WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK_AO_P:'
             CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
 
@@ -974,7 +1002,7 @@ C  Calculate gradient of these integrals
            CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT3),1)
            CALL DZERO(WRK(KMAT4),6*NNBASX)
 
-          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+          IF (IPRINT.GT.15) THEN
             WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK_AO_P:'
             CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
 
@@ -1095,7 +1123,7 @@ C         Remember the factor of 1/6 from the Taylor expansion
         EOCTUP = EMUL3T + ELOCT
         ESOLT  = ESOLT  + EOCTUP
 
-        IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
+        IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Octup.-electronic Octup.-nuclear Total'
          DO 412 I = 1,MMCENT
@@ -1149,7 +1177,7 @@ C  /* Deck qmmm_polari_m */
       END
 C**************************************************************************************
 C  /* Deck qmmm_polari */
-      SUBROUTINE QMMM_POLARI()
+      SUBROUTINE QMMM_POLARI(DCAO,ESOLT,EPOLT,TAO,WRK,LWRK)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -1171,6 +1199,14 @@ C  /* Deck qmmm_polari */
 #include <nuclei.h>
 #include <codata.h>
 
+
+      DIMENSION WRK(LWRK), TAO(NNBASX)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
+      INTEGER NZERAL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_POLARI')
 
@@ -1221,7 +1257,7 @@ c       list for this center and if not touched upon leave zero
         NZERAL = LIZA - 1
         NNZAL  = MMCENT - NZERAL  ! Number of MM centers with ALPHA .NE. 0
 
-        IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
+        IF (IPRINT.GT.1) THEN
           WRITE(LUPRI,*)
           WRITE(LUPRI,*) ' Number of polarizable sites: ', NNZAL
           WRITE(LUPRI,*)
@@ -1391,7 +1427,7 @@ C       total solvation energy
             CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
           ENDIF
 
-          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+          IF (IPRINT.GT.15) THEN
             WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
             CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
