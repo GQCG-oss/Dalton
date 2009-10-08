@@ -178,8 +178,8 @@ TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=2
 
 # First step
-CRIT1=`$GREP "Li * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.1250000..." $log | wc -l`
-CRIT2=`$GREP "H * (0| )\.0000000000 * (0| )\.0000000000 * 3\.1400000..." $log | wc -l`
+CRIT1=`$GREP "Li * 0*\.0000000000 * 0*\.0000000000 * (\-0|\-)\.12(50000|49999)" $log | wc -l`
+CRIT2=`$GREP "H  * 0*\.0000000000 * 0*\.0000000000 * 3\.1(400000|399999)" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="FIRST STEP NOT CORRECT"
