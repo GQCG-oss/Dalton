@@ -74,14 +74,12 @@ C     1) The charge correction to the Fock/KS operator
 C     2) The dipole correction to the Fock/KS operator
 
       IF (NMULT .GE. 1) THEN
-         PRINT *,'arnfinn bfr qmmmdipole esolt',ESOLT
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_DIPOLE_M()
          ELSE
             CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
-         PRINT *,'arnfinn after qmmmdipole esolt',ESOLT
       ENDIF
 
 C     3) The quadrupole correction to the Fock/KS operator
@@ -138,7 +136,7 @@ C     Finally, put back the dipole origin
       END
 C**************************************************************************************
 C  /* Deck qmmm_charge */
-      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,IPRINT)
+      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -161,7 +159,7 @@ C  /* Deck qmmm_charge */
 #include <codata.h>
 
 
-      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -184,8 +182,8 @@ C  /* Deck qmmm_charge */
         DO 100 I = 1,MMCENT 
 
            IF (ABS(MUL0MM(I)) .LE. THRMM) THEN
-             NSEL(I)  = 0.0D0
-             NSNUC(I) = 0.0D0
+             SEL(I)  = 0.0D0
+             SNUC(I) = 0.0D0
              GOTO 100
            ENDIF 
 
@@ -195,8 +193,8 @@ C  /* Deck qmmm_charge */
            DIST = SQRT(DIST2)
 
            IF (DIST .GT. RCUTMM) THEN
-             NSEL(I)  = 0.0D0
-             NSNUC(I) = 0.0D0
+             SEL(I)  = 0.0D0
+             SNUC(I) = 0.0D0
              GOTO 100
            ENDIF
 
@@ -225,9 +223,9 @@ C  /* Deck qmmm_charge */
 
            CALL DSCAL(NNBASX,MUL0MM(I),WRK(KMAT),1)
            EXPNS=DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-           NSEL(I) = EXPNS
+           SEL(I) = EXPNS
 
-           CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO,1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO(1),1)
            EXPNST=EXPNST+EXPNS
 
 C          Now the QM nuclear contribution
@@ -242,8 +240,7 @@ C          Now the QM nuclear contribution
              ECHCHL = ECHCHL + CHARGE(J)*MUL0MM(I)/DIST
   101      CONTINUE
            ECHCH = ECHCH + ECHCHL
-           NSNUC(I) = ECHCHL
-
+           SNUC(I) = ECHCHL
   100   CONTINUE
 
         ECHART = EXPNST + ECHCH
@@ -253,8 +250,8 @@ C          Now the QM nuclear contribution
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Charge-electronic Charge-nuclear Total'
          DO 102 I = 1,MMCENT
-           ELTEMP = NSEL(I) + NSNUC(I)
-           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ELTEMP
+           ELTEMP = SEL(I) + SNUC(I)
+           WRITE(LUPRI,*) I,SEL(I),SNUC(I),ELTEMP
   102    CONTINUE
 
          WRITE(LUPRI,*)
@@ -270,7 +267,7 @@ C          Now the QM nuclear contribution
       END
 C**************************************************************************************
 C  /* Deck qmmm_dipole */
-      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,IPRINT)
+      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -292,7 +289,7 @@ C  /* Deck qmmm_dipole */
 #include <nuclei.h>
 #include <codata.h>
 
-      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -321,8 +318,8 @@ C         See if the dipole moment at this site is zero
           DNORM = SQRT(DNORM2)
           IF (ABS(DNORM) .LE. THRMM) THEN
 C           we use KNS to collect the energy terms
-            NSEL(I)  = 0.0D0
-            NSNUC(I) = 0.0D0
+            SEL(I)  = 0.0D0
+            SNUC(I) = 0.0D0
             GOTO 200
           ENDIF 
 
@@ -332,8 +329,8 @@ C           we use KNS to collect the energy terms
           DIST = SQRT(DIST2)
 
           IF (DIST .GT. RCUTMM) THEN
-            NSEL(I)  = 0.0D0
-            NSNUC(I) = 0.0D0
+            SEL(I)  = 0.0D0
+            SNUC(I) = 0.0D0
             GOTO 200
           ENDIF
 
@@ -415,16 +412,16 @@ c          write(lupri,*) 'DFACT',DFACT
           CALL DSCAL(NNBASX,MUL1MM(2,I),WRK(KMAT+NNBASX),1)
           CALL DSCAL(NNBASX,MUL1MM(3,I),WRK(KMAT+2*NNBASX),1)
 
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,TAO,1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,TAO,1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,TAO(1),1)
 
           EXCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
           EYCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
           EZCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
 
-          NSEL(I) = EXCOMP + EYCOMP + EZCOMP
-          EMUL1T = EMUL1T + NSEL(I)
+          SEL(I) = EXCOMP + EYCOMP + EZCOMP
+          EMUL1T = EMUL1T + SEL(I)
 
 C         Now the QM nuclear contribution. Note that we switch the sign here by writing 
 C         CORD(1,J) - MMCORD(1,I)
@@ -442,8 +439,8 @@ C         CORD(1,J) - MMCORD(1,I)
      *             + CHARGE(J)*MUL1MM(2,I)*YDIS/DIST3 
      *             + CHARGE(J)*MUL1MM(3,I)*ZDIS/DIST3
   201     CONTINUE
-          NSNUC(I) = ELOC
-          ELOCT = ELOCT + NSNUC(I)
+          SNUC(I) = ELOC
+          ELOCT = ELOCT + SNUC(I)
 
   200   CONTINUE
 
@@ -454,8 +451,8 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Dipole-electronic Dipole-nuclear Total'
          DO 202 I = 1,MMCENT
-           ETEMP = NSEL(I) + NSNUC(I)
-           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ETEMP
+           ETEMP = SEL(I) + SNUC(I)
+           WRITE(LUPRI,*) I,SEL(I),SNUC(I),ETEMP
   202    CONTINUE
   
          WRITE(LUPRI,*)
@@ -463,7 +460,6 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*) EMUL1T, ELOCT, EMUL1T+ELOCT
          WRITE(LUPRI,*) 
         ENDIF
-        PRINT *, EMUL1T, ELOCT, EMUL1T+ELOCT
 
       CALL QEXIT('QMMM_DIPOLE')
 
@@ -471,7 +467,7 @@ C         CORD(1,J) - MMCORD(1,I)
       END
 C**************************************************************************************
 C  /* Deck qmmm_quadpole */
-      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,
+      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
      &                         IPRINT)
 
 #include <implicit.h>
@@ -494,7 +490,7 @@ C  /* Deck qmmm_quadpole */
 #include <nuclei.h>
 #include <codata.h>
 
-      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -522,8 +518,8 @@ C         See if the quadrupole moment at this site is zero
      *           + MUL2MM(4,I)**2+MUL2MM(5,I)**2+MUL2MM(6,I)**2
           DNORM = SQRT(DNORM2)
           IF (ABS(DNORM) .LE. THRMM) THEN
-            NSEL(I)  = 0.0D0
-            NSNUC(I) = 0.0D0
+            SEL(I)  = 0.0D0
+            SNUC(I) = 0.0D0
 C           we use KNS to collect the energy terms
             GOTO 300
           ENDIF
@@ -534,8 +530,8 @@ C           we use KNS to collect the energy terms
           DIST = SQRT(DIST2)
 
           IF (DIST .GT. RCUTMM) THEN
-            NSEL(I)  = 0.0D0
-            NSNUC(I) = 0.0D0
+            SEL(I)  = 0.0D0
+            SNUC(I) = 0.0D0
             GOTO 300
           ENDIF
 
@@ -587,12 +583,12 @@ C           we use KNS to collect the energy terms
           CALL DSCAL(6*NNBASX,FACS,WRK(KMAT),1)
 C
 C         The integrals contains a factor of -1. Therefore daxpy with fac1
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO,1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+NNBASX),1,TAO,1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+2*NNBASX),1,TAO,1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+3*NNBASX),1,TAO,1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,TAO,1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+NNBASX),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+2*NNBASX),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+3*NNBASX),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,TAO(1),1)
 
 C         Contract with the density to get the expectation values. 
 C         The factor of 1/2 in the Taylor expansion has been included.
@@ -608,9 +604,9 @@ C         Since the integrals contains a factor of -1 no -DDOT here.
           EMU2YZ=DDOT(NNBASX,DCAO,1,WRK(KMAT+4*NNBASX),1)
           EMU2ZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT+5*NNBASX),1)
 
-          NSEL(I) = EMU2XX+EMU2XY+EMU2XZ
+          SEL(I) = EMU2XX+EMU2XY+EMU2XZ
      *                   + EMU2YY+EMU2YZ+EMU2ZZ
-          EMUL2T = EMUL2T + NSEL(I)
+          EMUL2T = EMUL2T + SEL(I)
 
 C         Now the QM nuclear contribution
 
@@ -643,8 +639,8 @@ C
 C         Remember the factor of 1/2 from the Taylor expansion
           ELOC   = 0.5D0*ELOC
 
-          NSNUC(I) = ELOC
-          ELOCT = ELOCT + NSNUC(I)
+          SNUC(I) = ELOC
+          ELOCT = ELOCT + SNUC(I)
 
   300   CONTINUE
 
@@ -655,8 +651,8 @@ C         Remember the factor of 1/2 from the Taylor expansion
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Quadr.-electronic Quadr.-nuclear Total'
          DO 302 I = 1,MMCENT
-           ETEMP = NSEL(I) + NSNUC(I)
-           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ETEMP
+           ETEMP = SEL(I) + SNUC(I)
+           WRITE(LUPRI,*) I,SEL(I),SNUC(I),ETEMP
   302    CONTINUE
   
          WRITE(LUPRI,*)
@@ -673,7 +669,7 @@ C         Remember the factor of 1/2 from the Taylor expansion
 
 C**************************************************************************************
 C  /* Deck qmmm_octupole */
-      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,
+      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
      &                         IPRINT)
 
 #include <implicit.h>
@@ -696,7 +692,7 @@ C  /* Deck qmmm_octupole */
 #include <nuclei.h>
 #include <codata.h>
 
-      DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
+      DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -728,8 +724,8 @@ C         See if the octupole moment at this site is zero
      *           + MUL3MM(10,I)**2
           DNORM = SQRT(DNORM2)
           IF (ABS(DNORM) .LE. THRMM) THEN
-            NSEL(I)  = 0.0D0
-            NSNUC(I) = 0.0D0
+            SEL(I)  = 0.0D0
+            SNUC(I) = 0.0D0
 C           we use KNS to collect the energy terms
             GOTO 410
           ENDIF
@@ -740,8 +736,8 @@ C           we use KNS to collect the energy terms
           DIST = SQRT(DIST2)
 
           IF (DIST .GT. RCUTMM) THEN
-            NSEL(I)  = 0.0D0
-            NSNUC(I) = 0.0D0
+            SEL(I)  = 0.0D0
+            SNUC(I) = 0.0D0
             GOTO 410
           ENDIF
 
@@ -916,16 +912,16 @@ C         Include 1/6 from the Taylor expansion
 C
 C         The integrals contains a factor of -1 since they are obtained as derivative if 
 C         the field gradient and these contains a factor of -1. Therefore no -1 in the daxpy.
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,TAO,1)           ! xxx 
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,TAO,1)           ! xxy
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,TAO,1)           ! xxz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,TAO,1)    ! xyy
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,TAO,1)    ! xyz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,TAO,1)  ! xzz 
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,TAO,1)  ! yyy
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,TAO,1)  ! yyz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,TAO,1)  ! yzz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,TAO,1)  ! zzz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,TAO(1),1)           ! xxx 
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,TAO(1),1)           ! xxy
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,TAO(1),1)           ! xxz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,TAO(1),1)    ! xyy
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,TAO(1),1)    ! xyz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,TAO(1),1)  ! xzz 
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,TAO(1),1)  ! yyy
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,TAO(1),1)  ! yyz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,TAO(1),1)  ! yzz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,TAO(1),1)  ! zzz
 
 C         Contract with the density to get the expectation values. 
 C         The factor of 1/6 in the Taylor expansion has been included.
@@ -945,9 +941,9 @@ C         Since the integrals contains a factor of -1 no -DDOT here.
           E3YZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+4*NNBASX),1)
           E3ZZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+5*NNBASX),1)
 
-          NSEL(I) = E3XXX+E3XXY+E3XXZ+E3XYY+E3XYZ
+          SEL(I) = E3XXX+E3XXY+E3XXZ+E3XYY+E3XYZ
      *                   + E3XZZ+E3YYY+E3YYZ+E3YZZ+E3ZZZ
-          EMUL3T = EMUL3T + NSEL(I)
+          EMUL3T = EMUL3T + SEL(I)
 
 C         Now the QM nuclear contribution. Note that we switch the sign here by writing
 C         CORD(1,J) - MMCORD(1,I)
@@ -991,8 +987,8 @@ C
 C         Remember the factor of 1/6 from the Taylor expansion
           ELOC   = D6I*ELOC
 
-          NSNUC(I) = ELOC
-          ELOCT = ELOCT + NSNUC(I)
+          SNUC(I) = ELOC
+          ELOCT = ELOCT + SNUC(I)
 
   410   CONTINUE
 
@@ -1003,8 +999,8 @@ C         Remember the factor of 1/6 from the Taylor expansion
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Octup.-electronic Octup.-nuclear Total'
          DO 412 I = 1,MMCENT
-           ETEMP = NSEL(I) + NSNUC(I)
-           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ETEMP
+           ETEMP = SEL(I) + SNUC(I)
+           WRITE(LUPRI,*) I,SEL(I),SNUC(I),ETEMP
   412    CONTINUE
   
          WRITE(LUPRI,*)
@@ -1286,9 +1282,9 @@ C       total solvation energy
           CALL DSCAL(NNBASX,WRK(KINDMOM+IINIM+1),WRK(KMAT+NNBASX),1)
           CALL DSCAL(NNBASX,WRK(KINDMOM+IINIM+2),WRK(KMAT+2*NNBASX),1)
 
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,TAO,1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,TAO,1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,TAO(1),1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,TAO(1),1)
 
 C         Polarization contribution to the total energy 
 

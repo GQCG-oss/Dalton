@@ -1883,7 +1883,6 @@ C     Modify the fock operator. Modification returned in FSOL.
 C     QMMM contribution to the energy returned in EQMMM.
 C      IF (NODTOT .GE. 1) THEN
       IF (.TRUE.) THEN
-         PRINT *,'arnfinn before call qmmm_fck_ao_p'
          CALL QMMM_FCK_AO_P(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
      & IPRINT)
       ELSE
@@ -2100,7 +2099,6 @@ C     2) The dipole correction to the Fock/KS operator
 C
       IF (NMULT .GE. 1) THEN
 
-        PRINT *,'arnfinn bfr qmmmdipole esolt',ESOLT
         KMAT  = KWRK1
         KLAST = KMAT + 3*NNBASX
         LWRK2 = LWRK - KLAST + 1
@@ -2306,8 +2304,6 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*) EMUL1T, ELOCT, EMUL1T+ELOCT
          WRITE(LUPRI,*) 
         ENDIF
-        PRINT *,'arnfinn after qmmmdipole esolt',ESOLT
-        PRINT *, EMUL1T, ELOCT, EMUL1T+ELOCT
 
       END IF ! (NMULT .GE. 1)
 
