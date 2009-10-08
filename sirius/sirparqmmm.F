@@ -21,6 +21,7 @@ C  /* Deck qmmm_fck_ao_p */
 #include <infinp.h>
 #include <nuclei.h>
 #include <codata.h>
+#include <infpar.h>
 
 
       DIMENSION WRK(LWRK)
@@ -65,20 +66,22 @@ C     1) The charge correction to the Fock/KS operator
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_CHARGE_M()
          ELSE
-            CALL QMMM_CHARGE(DCAO,ESOLT,ECHART,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
+            CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
 C     2) The dipole correction to the Fock/KS operator
 
       IF (NMULT .GE. 1) THEN
+         PRINT *,'arnfinn bfr qmmmdipole esolt',ESOLT
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_DIPOLE_M()
          ELSE
-            CALL QMMM_DIPOLE(DCAO,ESOLT,EDIPT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
+            CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
+         PRINT *,'arnfinn after qmmmdipole esolt',ESOLT
       ENDIF
 
 C     3) The quadrupole correction to the Fock/KS operator
@@ -87,8 +90,8 @@ C     3) The quadrupole correction to the Fock/KS operator
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_QUADPOLE_M()
          ELSE
-            CALL QMMM_QUADPOLE(DCAO,ESOLT,EQUADT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
+            CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -98,8 +101,8 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
          IF (NODTOT .GE. 1) THEN
             CALL QMMM_OCTUPOLE_M()
          ELSE
-            CALL QMMM_OCTUPOLE(DCAO,ESOLT,EOCTUP,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1)
+            CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -118,7 +121,7 @@ C     5) The polarization correction to the Fock/KS operator
             CALL QMMM_POLARI_M()
          ELSE
             CALL QMMM_POLARI(DCAO,ESOLT,EPOLT,WRK(KTAO),
-     &                       WRK(KWRK1),LWRK1)
+     &                       WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -134,41 +137,8 @@ C     Finally, put back the dipole origin
       RETURN
       END
 C**************************************************************************************
-C  /* Deck qmmm_charge_m */
-      SUBROUTINE QMMM_CHARGE_M()
-
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-
-
-      CALL QENTER('QMMM_CHARGE_M')
-
-
-      CALL QEXIT('QMMM_CHARGE_M')
-
-      RETURN
-      END
-
-C**************************************************************************************
 C  /* Deck qmmm_charge */
-      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,ECHART,TAO,NSEL,NSNUC,WRK,LWRK)
+      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -214,8 +184,8 @@ C  /* Deck qmmm_charge */
         DO 100 I = 1,MMCENT 
 
            IF (ABS(MUL0MM(I)) .LE. THRMM) THEN
-             WRK(KNSEL+I-1)  = 0.0D0
-             WRK(KNSNUC+I-1) = 0.0D0
+             NSEL(I)  = 0.0D0
+             NSNUC(I) = 0.0D0
              GOTO 100
            ENDIF 
 
@@ -225,8 +195,8 @@ C  /* Deck qmmm_charge */
            DIST = SQRT(DIST2)
 
            IF (DIST .GT. RCUTMM) THEN
-             WRK(KNSEL+I-1)  = 0.0D0
-             WRK(KNSNUC+I-1) = 0.0D0
+             NSEL(I)  = 0.0D0
+             NSNUC(I) = 0.0D0
              GOTO 100
            ENDIF
 
@@ -255,9 +225,9 @@ C  /* Deck qmmm_charge */
 
            CALL DSCAL(NNBASX,MUL0MM(I),WRK(KMAT),1)
            EXPNS=DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-           WRK(KNSEL+I-1) = EXPNS
+           NSEL(I) = EXPNS
 
-           CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KTAO),1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO,1)
            EXPNST=EXPNST+EXPNS
 
 C          Now the QM nuclear contribution
@@ -272,7 +242,7 @@ C          Now the QM nuclear contribution
              ECHCHL = ECHCHL + CHARGE(J)*MUL0MM(I)/DIST
   101      CONTINUE
            ECHCH = ECHCH + ECHCHL
-           WRK(KNSNUC+I-1) = ECHCHL
+           NSNUC(I) = ECHCHL
 
   100   CONTINUE
 
@@ -283,8 +253,8 @@ C          Now the QM nuclear contribution
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Charge-electronic Charge-nuclear Total'
          DO 102 I = 1,MMCENT
-           ELTEMP = WRK(KNSEL+I-1) + WRK(KNSNUC+I-1)
-           WRITE(LUPRI,*) I,WRK(KNSEL+I-1),WRK(KNSNUC+I-1),ELTEMP
+           ELTEMP = NSEL(I) + NSNUC(I)
+           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ELTEMP
   102    CONTINUE
 
          WRITE(LUPRI,*)
@@ -299,40 +269,8 @@ C          Now the QM nuclear contribution
       RETURN
       END
 C**************************************************************************************
-C  /* Deck qmmm_dipole_m */
-      SUBROUTINE QMMM_DIPOLE_M()
-
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-
-
-      CALL QENTER('QMMM_DIPOLE_M')
-
-
-      CALL QEXIT('QMMM_DIPOLE_M')
-
-      RETURN
-      END
-C**************************************************************************************
 C  /* Deck qmmm_dipole */
-      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,EDIPT,TAO,NSEL,NSNUC,WRK,LWRK)
+      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -383,8 +321,8 @@ C         See if the dipole moment at this site is zero
           DNORM = SQRT(DNORM2)
           IF (ABS(DNORM) .LE. THRMM) THEN
 C           we use KNS to collect the energy terms
-            WRK(KNSEL+I-1)  = 0.0D0
-            WRK(KNSNUC+I-1) = 0.0D0
+            NSEL(I)  = 0.0D0
+            NSNUC(I) = 0.0D0
             GOTO 200
           ENDIF 
 
@@ -394,8 +332,8 @@ C           we use KNS to collect the energy terms
           DIST = SQRT(DIST2)
 
           IF (DIST .GT. RCUTMM) THEN
-            WRK(KNSEL+I-1)  = 0.0D0
-            WRK(KNSNUC+I-1) = 0.0D0
+            NSEL(I)  = 0.0D0
+            NSNUC(I) = 0.0D0
             GOTO 200
           ENDIF
 
@@ -477,16 +415,16 @@ c          write(lupri,*) 'DFACT',DFACT
           CALL DSCAL(NNBASX,MUL1MM(2,I),WRK(KMAT+NNBASX),1)
           CALL DSCAL(NNBASX,MUL1MM(3,I),WRK(KMAT+2*NNBASX),1)
 
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KTAO),1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,TAO,1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,TAO,1)
 
           EXCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
           EYCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
           EZCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
 
-          WRK(KNSEL+I-1) = EXCOMP + EYCOMP + EZCOMP
-          EMUL1T = EMUL1T + WRK(KNSEL+I-1)
+          NSEL(I) = EXCOMP + EYCOMP + EZCOMP
+          EMUL1T = EMUL1T + NSEL(I)
 
 C         Now the QM nuclear contribution. Note that we switch the sign here by writing 
 C         CORD(1,J) - MMCORD(1,I)
@@ -504,8 +442,8 @@ C         CORD(1,J) - MMCORD(1,I)
      *             + CHARGE(J)*MUL1MM(2,I)*YDIS/DIST3 
      *             + CHARGE(J)*MUL1MM(3,I)*ZDIS/DIST3
   201     CONTINUE
-          WRK(KNSNUC+I-1) = ELOC
-          ELOCT = ELOCT + WRK(KNSNUC+I-1)
+          NSNUC(I) = ELOC
+          ELOCT = ELOCT + NSNUC(I)
 
   200   CONTINUE
 
@@ -516,8 +454,8 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Dipole-electronic Dipole-nuclear Total'
          DO 202 I = 1,MMCENT
-           ETEMP = WRK(KNSEL+I-1) + WRK(KNSNUC+I-1)
-           WRITE(LUPRI,*) I,WRK(KNSEL+I-1),WRK(KNSNUC+I-1),ETEMP
+           ETEMP = NSEL(I) + NSNUC(I)
+           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ETEMP
   202    CONTINUE
   
          WRITE(LUPRI,*)
@@ -525,46 +463,16 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*) EMUL1T, ELOCT, EMUL1T+ELOCT
          WRITE(LUPRI,*) 
         ENDIF
+        PRINT *, EMUL1T, ELOCT, EMUL1T+ELOCT
 
       CALL QEXIT('QMMM_DIPOLE')
 
       RETURN
       END
 C**************************************************************************************
-C  /* Deck qmmm_quadpole_m */
-      SUBROUTINE QMMM_QUADPOLE_M()
-
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-
-
-      CALL QENTER('QMMM_QUADPOLE_M')
-
-
-      CALL QEXIT('QMMM_QUADPOLE_M')
-
-      RETURN
-      END
-C**************************************************************************************
 C  /* Deck qmmm_quadpole */
-      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,EQUADT,TAO,NSEL,NSNUC,WRK,LWRK)
+      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,
+     &                         IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -596,7 +504,7 @@ C  /* Deck qmmm_quadpole */
       CALL QENTER('QMMM_QUADPOLE')
 
 
-        KMAT  = KWRK1
+        KMAT  = 1
         KLAST = KMAT + 6*NNBASX
         LWRK2 = LWRK - KLAST + 1
 
@@ -614,8 +522,8 @@ C         See if the quadrupole moment at this site is zero
      *           + MUL2MM(4,I)**2+MUL2MM(5,I)**2+MUL2MM(6,I)**2
           DNORM = SQRT(DNORM2)
           IF (ABS(DNORM) .LE. THRMM) THEN
-            WRK(KNSEL+I-1)  = 0.0D0
-            WRK(KNSNUC+I-1) = 0.0D0
+            NSEL(I)  = 0.0D0
+            NSNUC(I) = 0.0D0
 C           we use KNS to collect the energy terms
             GOTO 300
           ENDIF
@@ -626,8 +534,8 @@ C           we use KNS to collect the energy terms
           DIST = SQRT(DIST2)
 
           IF (DIST .GT. RCUTMM) THEN
-            WRK(KNSEL+I-1)  = 0.0D0
-            WRK(KNSNUC+I-1) = 0.0D0
+            NSEL(I)  = 0.0D0
+            NSNUC(I) = 0.0D0
             GOTO 300
           ENDIF
 
@@ -679,12 +587,12 @@ C           we use KNS to collect the energy terms
           CALL DSCAL(6*NNBASX,FACS,WRK(KMAT),1)
 C
 C         The integrals contains a factor of -1. Therefore daxpy with fac1
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+NNBASX),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+2*NNBASX),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+3*NNBASX),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,WRK(KTAO),1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO,1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+2*NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+3*NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,TAO,1)
 
 C         Contract with the density to get the expectation values. 
 C         The factor of 1/2 in the Taylor expansion has been included.
@@ -700,9 +608,9 @@ C         Since the integrals contains a factor of -1 no -DDOT here.
           EMU2YZ=DDOT(NNBASX,DCAO,1,WRK(KMAT+4*NNBASX),1)
           EMU2ZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT+5*NNBASX),1)
 
-          WRK(KNSEL+I-1) = EMU2XX+EMU2XY+EMU2XZ
+          NSEL(I) = EMU2XX+EMU2XY+EMU2XZ
      *                   + EMU2YY+EMU2YZ+EMU2ZZ
-          EMUL2T = EMUL2T + WRK(KNSEL+I-1)
+          EMUL2T = EMUL2T + NSEL(I)
 
 C         Now the QM nuclear contribution
 
@@ -735,8 +643,8 @@ C
 C         Remember the factor of 1/2 from the Taylor expansion
           ELOC   = 0.5D0*ELOC
 
-          WRK(KNSNUC+I-1) = ELOC
-          ELOCT = ELOCT + WRK(KNSNUC+I-1)
+          NSNUC(I) = ELOC
+          ELOCT = ELOCT + NSNUC(I)
 
   300   CONTINUE
 
@@ -747,8 +655,8 @@ C         Remember the factor of 1/2 from the Taylor expansion
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Quadr.-electronic Quadr.-nuclear Total'
          DO 302 I = 1,MMCENT
-           ETEMP = WRK(KNSEL+I-1) + WRK(KNSNUC+I-1)
-           WRITE(LUPRI,*) I,WRK(KNSEL+I-1),WRK(KNSNUC+I-1),ETEMP
+           ETEMP = NSEL(I) + NSNUC(I)
+           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ETEMP
   302    CONTINUE
   
          WRITE(LUPRI,*)
@@ -764,40 +672,9 @@ C         Remember the factor of 1/2 from the Taylor expansion
       END
 
 C**************************************************************************************
-C  /* Deck qmmm_octupole_m */
-      SUBROUTINE QMMM_OCTUPOLE_M()
-
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-
-
-      CALL QENTER('QMMM_OCTUPOLE_M')
-
-
-      CALL QEXIT('QMMM_OCTUPOLE_M')
-
-      RETURN
-      END
-C**************************************************************************************
 C  /* Deck qmmm_octupole */
-      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,EOCTUP,TAO,NSEL,NSNUC,WRK,LWRK)
+      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,NSEL,NSNUC,WRK,LWRK,
+     &                         IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -820,7 +697,6 @@ C  /* Deck qmmm_octupole */
 #include <codata.h>
 
       DIMENSION WRK(LWRK), TAO(NNBASX), NSEL(MMCENT), NSNUC(MMCENT)
-      DIMENSION WRK(LWRK)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -829,7 +705,7 @@ C  /* Deck qmmm_octupole */
 
       CALL QENTER('QMMM_OCTUPOLE')
 
-        KMAT1  = KWRK1
+        KMAT1  = 1
         KMAT2  = KMAT1 + 6*NNBASX
         KMAT3  = KMAT2 + 6*NNBASX
         KMAT4  = KMAT3 + 6*NNBASX
@@ -852,8 +728,8 @@ C         See if the octupole moment at this site is zero
      *           + MUL3MM(10,I)**2
           DNORM = SQRT(DNORM2)
           IF (ABS(DNORM) .LE. THRMM) THEN
-            WRK(KNSEL+I-1)  = 0.0D0
-            WRK(KNSNUC+I-1) = 0.0D0
+            NSEL(I)  = 0.0D0
+            NSNUC(I) = 0.0D0
 C           we use KNS to collect the energy terms
             GOTO 410
           ENDIF
@@ -864,8 +740,8 @@ C           we use KNS to collect the energy terms
           DIST = SQRT(DIST2)
 
           IF (DIST .GT. RCUTMM) THEN
-            WRK(KNSEL+I-1)  = 0.0D0
-            WRK(KNSNUC+I-1) = 0.0D0
+            NSEL(I)  = 0.0D0
+            NSNUC(I) = 0.0D0
             GOTO 410
           ENDIF
 
@@ -1040,16 +916,16 @@ C         Include 1/6 from the Taylor expansion
 C
 C         The integrals contains a factor of -1 since they are obtained as derivative if 
 C         the field gradient and these contains a factor of -1. Therefore no -1 in the daxpy.
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,WRK(KTAO),1)           ! xxx 
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,WRK(KTAO),1)           ! xxy
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,WRK(KTAO),1)           ! xxz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,WRK(KTAO),1)    ! xyy
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,WRK(KTAO),1)    ! xyz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,WRK(KTAO),1)  ! xzz 
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,WRK(KTAO),1)  ! yyy
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,WRK(KTAO),1)  ! yyz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,WRK(KTAO),1)  ! yzz
-          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,WRK(KTAO),1)  ! zzz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,TAO,1)           ! xxx 
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,TAO,1)           ! xxy
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,TAO,1)           ! xxz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,TAO,1)    ! xyy
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,TAO,1)    ! xyz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,TAO,1)  ! xzz 
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,TAO,1)  ! yyy
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,TAO,1)  ! yyz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,TAO,1)  ! yzz
+          CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,TAO,1)  ! zzz
 
 C         Contract with the density to get the expectation values. 
 C         The factor of 1/6 in the Taylor expansion has been included.
@@ -1069,9 +945,9 @@ C         Since the integrals contains a factor of -1 no -DDOT here.
           E3YZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+4*NNBASX),1)
           E3ZZZ=DDOT(NNBASX,DCAO,1,WRK(KMAT1+5*NNBASX),1)
 
-          WRK(KNSEL+I-1) = E3XXX+E3XXY+E3XXZ+E3XYY+E3XYZ
+          NSEL(I) = E3XXX+E3XXY+E3XXZ+E3XYY+E3XYZ
      *                   + E3XZZ+E3YYY+E3YYZ+E3YZZ+E3ZZZ
-          EMUL3T = EMUL3T + WRK(KNSEL+I-1)
+          EMUL3T = EMUL3T + NSEL(I)
 
 C         Now the QM nuclear contribution. Note that we switch the sign here by writing
 C         CORD(1,J) - MMCORD(1,I)
@@ -1115,8 +991,8 @@ C
 C         Remember the factor of 1/6 from the Taylor expansion
           ELOC   = D6I*ELOC
 
-          WRK(KNSNUC+I-1) = ELOC
-          ELOCT = ELOCT + WRK(KNSNUC+I-1)
+          NSNUC(I) = ELOC
+          ELOCT = ELOCT + NSNUC(I)
 
   410   CONTINUE
 
@@ -1127,8 +1003,8 @@ C         Remember the factor of 1/6 from the Taylor expansion
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' Center Octup.-electronic Octup.-nuclear Total'
          DO 412 I = 1,MMCENT
-           ETEMP = WRK(KNSEL+I-1) + WRK(KNSNUC+I-1)
-           WRITE(LUPRI,*) I,WRK(KNSEL+I-1),WRK(KNSNUC+I-1),ETEMP
+           ETEMP = NSEL(I) + NSNUC(I)
+           WRITE(LUPRI,*) I,NSEL(I),NSNUC(I),ETEMP
   412    CONTINUE
   
          WRITE(LUPRI,*)
@@ -1144,40 +1020,8 @@ C         Remember the factor of 1/6 from the Taylor expansion
       END
 
 C**************************************************************************************
-C  /* Deck qmmm_polari_m */
-      SUBROUTINE QMMM_POLARI_M()
-
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-
-
-      CALL QENTER('QMMM_POLARI_M')
-
-
-      CALL QEXIT('QMMM_POLARI_M')
-
-      RETURN
-      END
-C**************************************************************************************
 C  /* Deck qmmm_polari */
-      SUBROUTINE QMMM_POLARI(DCAO,ESOLT,EPOLT,TAO,WRK,LWRK)
+      SUBROUTINE QMMM_POLARI(DCAO,ESOLT,EPOLT,TAO,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -1267,7 +1111,7 @@ c       list for this center and if not touched upon leave zero
 
 C         There is no need to construct ALPHA^(-1) and T matrices
 C         explicitly, we can directly form the [ALPHA^(-1) - T] matrix
-          KALINMT = KWRK1
+          KALINMT = 1
           KINVAMT = KALINMT + (3*NNZAL)*(3*NNZAL)   ! [ALPHA^(-1) - T] matrix
           KUMAT   = KINVAMT + (3*NNZAL)*(3*NNZAL)   ! [ALPHA^(-1) - T]^(-1) matrix
           KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL)   ! UMAT is just for testing
@@ -1306,7 +1150,7 @@ C         of atoms in previous and current run.
 
         ELSE IF (MMITER) THEN
 
-          KINDMOM = KWRK1                           ! List for induced dipoles
+          KINDMOM = 1                               ! List for induced dipoles
           KMAT    = KINDMOM + (3*NNZAL)
           KWRK2   = KMAT    + (3*NNBASX)             
           LWRK2   = LWRK    - KWRK2 + 1
@@ -1442,9 +1286,9 @@ C       total solvation energy
           CALL DSCAL(NNBASX,WRK(KINDMOM+IINIM+1),WRK(KMAT+NNBASX),1)
           CALL DSCAL(NNBASX,WRK(KINDMOM+IINIM+2),WRK(KMAT+2*NNBASX),1)
 
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KTAO),1)
-          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KTAO),1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,TAO,1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,TAO,1)
+          CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,TAO,1)
 
 C         Polarization contribution to the total energy 
 
@@ -1713,6 +1557,168 @@ C        IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
 
 
       CALL QEXIT('QMMM_POLARI')
+
+      RETURN
+      END
+C
+C**************************************************************************************
+C  /* Deck qmmm_charge_m */
+      SUBROUTINE QMMM_CHARGE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_CHARGE_M')
+
+
+      CALL QEXIT('QMMM_CHARGE_M')
+
+      RETURN
+      END
+
+C**************************************************************************************
+C  /* Deck qmmm_dipole_m */
+      SUBROUTINE QMMM_DIPOLE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_DIPOLE_M')
+
+
+      CALL QEXIT('QMMM_DIPOLE_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_quadpole_m */
+      SUBROUTINE QMMM_QUADPOLE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_QUADPOLE_M')
+
+
+      CALL QEXIT('QMMM_QUADPOLE_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_octupole_m */
+      SUBROUTINE QMMM_OCTUPOLE_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_OCTUPOLE_M')
+
+
+      CALL QEXIT('QMMM_OCTUPOLE_M')
+
+      RETURN
+      END
+C**************************************************************************************
+C  /* Deck qmmm_polari_m */
+      SUBROUTINE QMMM_POLARI_M()
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+
+
+      CALL QENTER('QMMM_POLARI_M')
+
+
+      CALL QEXIT('QMMM_POLARI_M')
 
       RETURN
       END
