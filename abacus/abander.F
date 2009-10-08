@@ -1212,12 +1212,16 @@ C
          END IF
 C
          IF (DRYRUN) THEN
-            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER //
+            WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
      &              ' calculations needed:', NUMCAL
          ELSE
-            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER //
+            WRITE (LUPRI,'(//A,I10)') '@>>> Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
          END IF
+
+         CALL TITLER('Numerical derivatives have now been calculated.',
+     &      '*',118)
+
 C
          IF (ANALZ1) THEN
             CALL PRIPRP
@@ -3852,7 +3856,7 @@ C
 C     *** Test printing. ***
 C
       IF (IPRINT .GE. 20) THEN
-         CALL HEADER('Eigen-vectors of the symmetry adapted hessian',-1)
+         CALL HEADER('Eigenvectors of the symmetry adapted hessian',-1)
          DO IC1 = 1, NCOOR
             WRITE (LUPRI,'(10X,12F9.4)') (EGNVCT(IC1,IC2),IC2=1,NCOOR)
          END DO
@@ -4049,8 +4053,8 @@ C
       END IF
 C
       DO 100 ICOL2 = 1, NCOR
-         WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
-         WRITE (LUPRI,'(A)') '      -----------------'
+         WRITE (LUPRI,'(A,I5)') '      Column number', ICOL2
+         WRITE (LUPRI,'(A)')    '      ------------------'
          INLC = 0
          DO 200 INLCMX = 1, NLCMAX
             INLC2 = 6*(INLCMX-1) + 1
@@ -5591,10 +5595,10 @@ C
       CALL HEADER('Analysis using the numerical derivatives',0)
       WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
 C
-      IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
-     &                              'efficient geometry.'
-      IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
-     &                              ' spin-spin coupling constants'
+      IF (NUMVIB) WRITE (LUPRI,'(A)')
+     &   ' - Frequency analysis and efficient geometry.'
+      IF (NSPNSP) WRITE (LUPRI,'(A)')
+     &   ' - Vibrational average of spin-spin coupling constants'
 C
       RETURN
       END
