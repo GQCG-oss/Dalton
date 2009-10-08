@@ -2659,7 +2659,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 25)
+      PARAMETER (NTABLE = 26)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -2685,6 +2685,7 @@ C
 #include <dftcom.h>
 #include <dfterg.h>
 #include <dftacb.h>
+#include <qmmm.h>
 C
       LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
@@ -2694,7 +2695,8 @@ C
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
      *            '.MAX ER','.NO BAC','.COREHO','.CORERE','.HF OCC',
-     *            '.ELECTR','.AUTOCC','.FC MVO','.SINGLY','.SHIFT '/
+     *            '.ELECTR','.AUTOCC','.FC MVO','.SINGLY','.SHIFT ',
+     *            '.MEP   '/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
 C
@@ -2721,7 +2723,7 @@ C
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
-     &                   121,122,123,124,125),II
+     &                   121,122,123,124,125,126),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2916,6 +2918,8 @@ C Shift level
 C *** Option 25 >SHIFT < Shift level
  125  READ(LUCMD,*) DEFLVL
       DEFLVL = -ABS(DEFLVL)
+      GO TO 100
+ 126  MEP = .TRUE.
       GO TO 100
 C
  2000 CONTINUE

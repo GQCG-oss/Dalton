@@ -5859,7 +5859,7 @@ C     Only scf for the moment
       KFREE  = KFRSAV
       LFREE  = LFRSAV
 
-      LOCDEB = .TRUE.
+      LOCDEB = .FALSE.
 
       LUMEP = -1
       CALL GPOPEN(LUMEP,'MEP.INP','OLD',' ',
