@@ -88,6 +88,8 @@ LONG="$LONG $LONGCC"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel"
 #
+PARQMMM="parqmmm1 parqmmm2 parqmmm3 parqmmm4 parqmmm5 parqmmm6 parqmmm7 parqmmm8"
+#
 DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_lb94 dft_qr_sym dft_qr_nosym \
@@ -320,9 +322,15 @@ while [ -n "$1" ]; do
    shift ;;
   "parallel" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 2"
    fi
    testcase="$testcase $PARALLEL"; 
+   shift ;;
+  "parqmmm" )
+   if [ "$paramlist" = "" ]; then
+     paramlist="-N 2"
+   fi
+   testcase="$testcase $PARQMMM";
    shift ;;
   "all" )
    all_perl_style=1;
