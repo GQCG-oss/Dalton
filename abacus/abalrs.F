@@ -101,6 +101,7 @@ C
     3          CONTINUE
                   READ (LUCMD,*) MAXCLC
                GO TO 100
+C              .THRESH
     4          CONTINUE
                   READ (LUCMD,*) THRCLC
                GO TO 100
@@ -139,6 +140,12 @@ C
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRCLC = THRCLC*THR_REDFAC
+      END IF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for LINRES:',0)
          IF (SKIP) THEN

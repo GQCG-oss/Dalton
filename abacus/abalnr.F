@@ -146,6 +146,7 @@ C
                      MAXITE = INPVAL
                   END IF
                GO TO 100
+C              .THRESH
     4          CONTINUE
                   READ (LUCMD,*) DTHCLN
                   ICHANG = ICHANG + 1
@@ -243,6 +244,12 @@ C
       END IF
   300 CONTINUE
 C
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         DTHCLN = DTHCLN*THR_REDFAC
+      END IF
       CALL IZERO(NOPER,8)
       DO ILABEL=1,3
          ISYM = ISYMAX(ILABEL,1) + 1

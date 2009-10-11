@@ -152,9 +152,15 @@ C                 NSYM is set to 8 since NSYM has not yet been set !!
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THREXC = THREXC*THR_REDFAC
+      END IF
 C
-C      NSYM is set to 8 since NSYM has not yet been set !!
-C      NTOT = ISUM(NSYM,NEXCIT,1)
+C     NSYM is set to 8 since NSYM has not yet been set !!
+C     NTOT = ISUM(NSYM,NEXCIT,1)
       NTOT = ISUM(8,NEXCIT,1)
 C
 CSPAS : let's try whether we cannot calculate all excitation energies

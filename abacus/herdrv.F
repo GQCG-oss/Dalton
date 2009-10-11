@@ -1836,7 +1836,7 @@ C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
  39            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFEXP')
    12          CONTINUE
 C&&& DOSRIN : Calculate short-range 2-elec. integrals needed for
-C&&&          computing the short-range Hartree term (U_sr) in MCDFT
+C&&&          computing the short-range Hartree term (U_sr) in MC-srDFT
                DOSRIN = .TRUE.
                GO TO 100
    13          CONTINUE
@@ -2012,7 +2012,13 @@ C
     4          CONTINUE
                GO TO 100
     5          CONTINUE
-                  READ (LUCMD,*) THRSUP
+                 READ (LUCMD,*) THRSUP
+                 IF (THR_REDFAC .GT. 0.0D0) THEN
+                   ICHANG = ICHANG + 1
+                   WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &           ' thresholds multiplied with general factor',THR_REDFAC
+                   THRSUP = THRSUP*THR_REDFAC
+                 END IF
                GO TO 100
     6          CONTINUE
                GO TO 100

@@ -1189,6 +1189,11 @@ C
 C
 C     Initialize /GNRINF/
 C
+      PANAS  = 0.0D0
+      THR_REDFAC = -1.0D0 ! negative number signals "not set" /hjaaj
+      ITERNR = 0
+      ITERMX = 20
+      IPRUSR = 0
       SEGBAS = .TRUE.
       SEGAUX = .TRUE.
       WALKIN = .FALSE.
@@ -1198,9 +1203,6 @@ C
       RDMLIN = .FALSE.
       TESTIN = .FALSE.
       OPTWLK = .FALSE.
-      ITERNR = 0
-      ITERMX = 20
-      IPRUSR = 0
       USRIPR = .FALSE.
       RNHERM = .FALSE.
       RUNERI = .FALSE.
@@ -1222,7 +1224,6 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       GEOALL = .FALSE.
-      PANAS  = 0.0D0
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
@@ -1321,7 +1322,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-32: 'xxxxxxx', '.DOUGLA'
+C 31-32: '.THRRED', '.DOUGLA'
 C
       IPRERR = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1441,6 +1442,7 @@ C        '.NMDDRV' and '.PARNMD'
             OPTWLK = .TRUE.
          GOTO 100
  131     CONTINUE
+            READ (LUCMD,*) THR_REDFAC
          GOTO 100
  132     CONTINUE
             DKTRAN = .TRUE.
@@ -1462,6 +1464,14 @@ C
       WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.ERR ',IPRERR
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         WRITE (LUPRI,'(A,1P,D10.2)')
+     &   '@ INFO: All thresholds are multiplied by',THR_REDFAC
+         IF (THR_REDFAC .LT. 1.D-10) THEN
+            WRITE (LUPRI,'(A)') ' FATAL INPUT ERROR: Illegal value'
+            CALL QUIT('Illegal input value for .THRRED')
+         END IF
+      END IF
       IF (PARCAL .AND. NODTOT .EQ. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(4X,A)') SEPARATOR,'INFO: '//
