@@ -44,6 +44,7 @@ C------------------------------------------------------------------------------
 #include <gnrinf.h>
 #include <dftcom.h>
 #include <dftacb.h>
+      IPRDFT = IPRUSR
       HFXFAC = D1
       HFXMU  = D0 
       HFXSET = .FALSE. !hjaaj: HFXFAC has not been set (i.e. redefined) by user

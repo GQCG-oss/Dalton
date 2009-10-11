@@ -75,109 +75,119 @@ C
 c     keyword handling section
 c           >PRINT < keyword
  1    CONTINUE
+         READ(LUCMD,*) IPRDFT
       GO TO 100  
 c     >.ELECTRONS< check keyword
  2    CONTINUE
-      READ(LUCMD,*) DFTELS
+         DFTHRS = .TRUE.
+         READ(LUCMD,*) DFTELS
       GO TO 100  
 c     >.DFTTHR< check keyword
  3    CONTINUE
-      READ (LUCMD,*) DFTHR0, DFTHRL, DFTHRI
+         DFTHRS = .TRUE.
+         READ (LUCMD,*) DFTHR0, DFTHRL, DFTHRI
       GO TO 100  
 c     >.RADINT< check keyword
  4    CONTINUE
-      READ (LUCMD,*) RADINT
+         READ (LUCMD,*) RADINT
       GO TO 100  
 c     >.ANGINT< check keyword
  5    CONTINUE
-      READ(LUCMD,*) ANGINT
+         READ(LUCMD,*) ANGINT
       GO TO 100  
 c     >.ANGMIN< check keyword
  6    CONTINUE
-      READ(LUCMD,*) ANGMIN
+         READ(LUCMD,*) ANGMIN
       GO TO 100  
 c     >.NOPRUN< check keyword
  7    CONTINUE
-      NOPRUN = .TRUE.
+         NOPRUN = .TRUE.
       GO TO 100  
 c     >.GRID T< grid type keyword
  8    CONTINUE
-      READ(LUCMD,'(A80)') LINE
-      CALL DFTGRIDINPUT(LINE)
+         READ(LUCMD,'(A80)') LINE
+         CALL DFTGRIDINPUT(LINE)
       GO TO 100  
 c     >.DFTAC < asymptotic correction keyword
  9    CONTINUE
-      DFTASC = .TRUE.
-      DFTPOT = .TRUE.
-      READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
+         DFTASC = .TRUE.
+         DFTPOT = .TRUE.
+         READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
       GO TO 100  
 c     >.CARPAR< cartesian grid parameters.
  10   CONTINUE
-      READ(LUCMD,'(A80)') LINE
-      CALL DFTCARTESIANINPUT(LINE)
+         READ(LUCMD,'(A80)') LINE
+         CALL DFTCARTESIANINPUT(LINE)
       GO TO 100 
 c     >.COARSE< grid parameters.
  11   CONTINUE
-      RADINT = 1D-11
-      ANGINT = 35
+         RADINT = 1D-11
+         ANGINT = 35
       GO TO 100 
 c     >.NORMAL< grid parameters.
  12   CONTINUE
-      RADINT = 1D-13
-      ANGINT = 35
+         RADINT = 1D-13
+         ANGINT = 35
       GO TO 100 
 c     >.FINE  < grid parameters.
  13   CONTINUE
-      RADINT = 1D-13
-      ANGINT = 42
+         RADINT = 1D-13
+         ANGINT = 42
       GO TO 100 
 c     >.ULTRAF< grid parameters.
  14   CONTINUE
-      RADINT = 2D-15
-      ANGINT = 64
+         RADINT = 2D-15
+         ANGINT = 64
       GO TO 100 
 c     >.GRID1 < grid parameters.
  15   CONTINUE
-      CALL DFTGRIDINPUT("GC2")
-      RADINT = 1D-3
-      ANGINT = 17
+         CALL DFTGRIDINPUT("GC2")
+         RADINT = 1D-3
+         ANGINT = 17
       GO TO 100 
 c     >.GRID2 < grid parameters.
  16   CONTINUE
-      CALL DFTGRIDINPUT("GC2")
-      RADINT = 1D-5
-      ANGINT = 23
+         CALL DFTGRIDINPUT("GC2")
+         RADINT = 1D-5
+         ANGINT = 23
       GO TO 100 
 c     >.GRID3 < grid parameters.
  17   CONTINUE
-      CALL DFTGRIDINPUT("GC2")
-      RADINT = 1D-6
-      ANGINT = 29
+         CALL DFTGRIDINPUT("GC2")
+         RADINT = 1D-6
+         ANGINT = 29
       GO TO 100 
 c     >.GRID4 < grid parameters.
  18   CONTINUE
-      CALL DFTGRIDINPUT("GC2")
-      RADINT = 1D-7
-      ANGINT = 35
+         CALL DFTGRIDINPUT("GC2")
+         RADINT = 1D-7
+         ANGINT = 35
       GO TO 100 
 c     >.GRID5 < grid parameters.
  19   CONTINUE
-      CALL DFTGRIDINPUT("GC2")
-      RADINT = 1D-9
-      ANGINT = 47
+         CALL DFTGRIDINPUT("GC2")
+         RADINT = 1D-9
+         ANGINT = 47
       GO TO 100 
  300  CONTINUE
-
-      if (angint .gt. 64) then
-!radovan:
-!       angint > 64 not implemented
-!       higher angint defaults to the poorest angular grid!
-!       so better quit here in this case
-        call quit('angint > 64 not implemented')
-      end if
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         RADINT = RADINT*THR_REDFAC
+         DFTHR0 = DFTHR0*THR_REDFAC
+         DFTHRL = DFTHRL*THR_REDFAC
+         DFTHRI = DFTHRI*THR_REDFAC
+         DFTELS = DFTELS*THR_REDFAC
+         DFTHRS = .TRUE.
+      END IF
 
       CALL HEADER('Settings for DFT calculation:',0)
 c     code goes here
+         IF (IPRDFT .NE. IPRUSR) THEN
+            WRITE (LUPRI,'(4X,A,I5)')
+     &        ' Redefined print level for DFT',IPRDFT
+         END IF
          IF (DFTHRS) THEN
             WRITE (LUPRI,'(4X,A,17X,3D12.2)')
      &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 
@@ -195,4 +205,14 @@ c     code goes here
          WRITE (LUPRI,'(4X,A,E10.2,I4)')
      $        ' DFT radial quadrature accuracy/ang. expansion order:',
      &        RADINT,ANGINT
+
+      if (angint .gt. 64) then
+!radovan:
+!       angint > 64 not implemented
+!       higher angint defaults to the poorest angular grid!
+!       so better quit here in this case
+        WRITE(LUPRI,*) 'FATAL ERROR: angint > 64 not implemented.'
+        call quit('FATAL ERROR: angint > 64 not implemented')
+      end if
+
       END

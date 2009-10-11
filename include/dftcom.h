@@ -9,7 +9,7 @@ C
 C     HFXSET: used in input to determine if HFXFAC has been specified by user with .HFXFAC
       REAL*8  HFXFAC, HFXATT, HFXMU,
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC
-      INTEGER ANGINT, ANGMIN, LEBMIN, IWINT
+      INTEGER IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG
 C     variables for srDFT /hjaaj
@@ -21,10 +21,12 @@ C     variables for srDFT /hjaaj
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDAS, DOSRC_LDAS
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,
-     &        ANGINT, ANGMIN, LEBMIN, IWINT,
+     &        ! integer:
+     &        IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT,
+     &        ! logical:
      &        DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG,
-     &
+     &        ! srDFT (logical):
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,
      &        DOSRC_LDA, DOSRC_GGA, DOSRMULO, DOSRGGA2, DOSRLYPT,
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,
