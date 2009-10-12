@@ -37,7 +37,7 @@ C     P. Salek and T. Helgaker October 2003
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <gnrinf.h>
+#include <infpar.h>
 #include <inforb.h>
       DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)
       EXTERNAL DFTKSMGGA,DFTKSMLDA
@@ -47,7 +47,7 @@ C
 C      
       CALL QENTER('DFTKSMb')
 C
-      IF (PARCAL) CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
+      IF (NODTOT.gt.0) CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
       DOGGA = DFT_ISGGA()
       ENERGY_DFTKSM = 0.D0
       IF(DOGGA) THEN
@@ -61,7 +61,7 @@ C
      &               DFTKSMLDA,FKSM,ELE)
 C
       END IF
-      IF (PARCAL) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
+      IF (NODTOT.gt.0) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
       DO I = 1, NBAST
          DO J = 1, I-1
             AVERAG = 0.5*(FKSM(J,I) + FKSM(I,J))
