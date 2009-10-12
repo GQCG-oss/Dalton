@@ -27,7 +27,7 @@ ESSENTIAL=""
 #
 SHORTENRGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc"
-SHORTDFT="dft_hcth120"
+SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
 geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml"
@@ -92,7 +92,7 @@ DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_lb94 dft_qr_sym dft_qr_nosym \
 dft_lda_molhes_nosym dft_b3lyp_molhes_nosym dft_b3lyp_magsus_nosym \
-dft_pbe dft_camb3lyp dft_polar dft_cr_sym"
+dft_polar dft_cr_sym"
 #
 DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
 dpt_hbr dpt_hbr_finp dpt_h2s_ff"
@@ -337,7 +337,7 @@ while [ -n "$1" ]; do
    shift ;;
   "dft" )
    perl_style_kwd="$perl_style_kwd $1";
-   testcase="$testcase $DFT"; 
+   testcase="$testcase $SHORTDFT $DFT"; 
    shift ;;
   "dpt" )
    testcase="$testcase $DPT"; 
@@ -368,6 +368,12 @@ while [ -n "$1" ]; do
    shift ;;
    "qm3" )
    testcase="$testcase $QM3"; 
+   shift ;;
+   *parallel* )  # assume parallel test if "parallel" in name
+   if [ "$paramlist" = "" ]; then
+     paramlist="-N 3"
+   fi
+   testcase="$testcase $1"; 
    shift ;;
    * )
    testcase="$testcase $1"; 
