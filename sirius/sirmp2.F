@@ -62,7 +62,7 @@ C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007, Hans Joergen Aa. Jensen
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 6)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -77,7 +77,8 @@ C
 #include <inforb.h>
 #include <infmp2.h>
 C
-      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM'/
+      DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM',
+     &            '.SRINTS'/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 CMAERKE 900918: always NEWORB in this version.
 C
@@ -92,7 +93,7 @@ C
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102,103,104,105), II
+                  GO TO (101,102,103,104,105,106), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -129,7 +130,7 @@ C *** Option 3 >NO OV <  Do not add occ-virt mp2 part to density matrix
       GO TO 100
 C
 C *** Option 4 >TDASOP<  Diagonal 2. order 2p-2h correction in SOPPA
-  104 TDAMP2 = .TRUE.
+  104 TDA_MP2 = .TRUE.
       GO TO 100
 C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
 #ifdef VAR_SRDFT
@@ -138,6 +139,15 @@ C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
   105 CONTINUE
       call quit(
      &   '.SC_SRMP2 option not included in this non-srdft version')
+#endif 
+      GO TO 100
+C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
+#ifdef VAR_SRDFT
+  106 SRINTS_SRMP2 = .TRUE.
+#else
+  106 CONTINUE
+      call quit(
+     &   '.SRINTS  option not included in this non-srdft version')
 #endif 
       GO TO 100
 C
@@ -166,19 +176,22 @@ C
       DIMENSION WRK(LFRSAV)
 C
       LOGICAL FCKFRO, MP2FRZ
+      CHARACTER AO2INTFILE_LABEL_SAVE*8
       PARAMETER ( D0 = 0.0D0 )
 C
 C Used from common blocks:
+C     EXEINF: FTRCTL
 C     INFORB: NORBT,NRHF,?
 C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
 C     INFINP: FLAG(25)
 C     INFIND: ISX, ISMO
-C     INFTRA: USEDRC
+C     INFTRA: USEDRC, AO2INTFILE_LABEL
 C
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
+#include <exeinf.h>
 #include <infopt.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -226,19 +239,36 @@ C
       CALL MP2SET(WRK(KIADR1))
       MP2FRZ = MP2FRO
 C     Disable "MP2FRO" if result not to be printed
-      IF (IPRMP2 .LE. 3) MP2FRO = .FALSE.
+      IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
       CALL FLSHFO(LUW4)
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
+      IF (SRINTS_SRMP2) IPRMP2 = MAX(0,IPRMP2)
+C     ... make sure MP2 energy with short-range integrals is printed!
+C
+C
+C     if SRINTS_SRMP2 
+C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
+C     2)  set SRINTS_SRMP2 false, go back to label 10, and redo the 
+C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
+   10 CONTINUE
+      IF (SRINTS_SRMP2) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' MP2 energy expression with short-range integrals'
+         AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
+         AO2INTFILE_LABEL = 'AOSR2INT'
+         FTRCTL = .TRUE.
+C        ... force new sort of AO integrals
+      END IF
 C
 cmjp If response calculation then make space for the correlation coefficients.
-      IF (FLAG(25)) THEN
+      IF (FLAG(25) .AND. .NOT.SRINTS_SRMP2) THEN
          CALL MEMGET('REAL',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
          CALL DZERO(WRK(KKAPPA),NPHTOT(1))
          JTRLVL = -10
          USEDRC = .TRUE.
       ELSE
          CALL MEMGET('REAL',KKAPPA,0,WRK,KFREE,LFREE)
-         IF (MP2_NO_OV) THEN
+         IF (MP2_NO_OV .OR. SRINTS_SRMP2) THEN
 C           2. order integral transformation (ir/js)
             JTRLVL = 4
          ELSE
@@ -358,7 +388,15 @@ C
             WRITE (LUPRI,'(/A)')
      *      " Total energy and NO's calculated with frozen orbitals."
          END IF
-         IF (.NOT.DODFT) THEN
+         IF (SRINTS_SRMP2) THEN
+            WRITE (LUPRI,'(//A,F25.10)')
+     *       '   MP2 contribution from short-range integrals :',EMP2
+         ELSE IF (ADDSRI) THEN
+            WRITE (LUPRI,'(/,3(/A,F25.10))')
+     *       ' Short-range Hartree-Fock total energy         :',EMY,
+     *       ' + MP2 contribution from long-range integrals  :',EMP2,
+     *       ' = short-range MP2 second order energy         :',EMY+EMP2
+         ELSE IF (.NOT.DODFT) THEN
             WRITE (LUPRI,'(/,3(/A,F25.10))')
      *       ' Hartree-Fock total energy :',EMY,
      *       ' + MP2 contribution        :',EMP2,
@@ -373,6 +411,12 @@ C
             EMCSCF = EMY + WDFTMP*EMP2
          END IF
       END IF
+C
+C
+      IF (SRINTS_SRMP2) GO TO 20
+C     ... skip to calculate energy with full integrals if
+C         calculating MP2 correlation energy with short-range integrals
+C
       ECORR = EMY + EMP2
 C
 C     Write the correlation coefficients and second order one-density to
@@ -456,6 +500,7 @@ C
          CALL NEWORB('MP2SAVE ',WRK(KCMO),.TRUE.)
       END IF
 C
+   20 CONTINUE
       IF (MP2FRO) THEN
 C     If (mp2fro) then also calculate full MP2 energy and NO occupations
 C     If iprmp2 .le. 0 then mp2fro will be false
@@ -482,14 +527,34 @@ C
      *      ' Full MP2 energy and NO occupations obtained without'//
      *      ' frozen orbitals.'
          END IF
-         WRITE (LUPRI,'(/A/3(/A,F25.10))')
+         IF (SRINTS_SRMP2) THEN
+            WRITE (LUPRI,'(//A,F25.10)')
+     *       '   MP2 contribution from short-range integrals :',EMP2FL
+C
+C           now reset to original 2-electron integral file
+            AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
+            FTRCTL = .TRUE.
+            SRINTS_SRMP2 = .FALSE.
+            GO TO 10
+C           ... and go back and calculate the MP2 contributions from
+C               long-range integrals /hjaaj Oct 09
+         ELSE IF (ADDSRI) THEN
+           WRITE (LUPRI,'(/A/3(/A,F25.10))')
      *     ' NOTE that the orbitals saved on disk are those obtained'//
      *     ' with frozen orbitals (see above).',
-     *    ' Hartree-Fock total energy :',EMY,
-     *    ' + MP2 contribution        :',EMP2FL,
-     *    ' = MP2 second order energy :',EMY+EMP2FL
+     *     ' Short-range Hartree-Fock total energy         :',EMY,
+     *     ' + MP2 contribution from long-range integrals  :',EMP2FL,
+     *     ' = short-range MP2 second order energy         :',EMY+EMP2FL
+         ELSE 
+           WRITE (LUPRI,'(/A/3(/A,F25.10))')
+     *     ' NOTE that the orbitals saved on disk are those obtained'//
+     *     ' with frozen orbitals (see above).',
+     *     ' Hartree-Fock total energy :',EMY,
+     *     ' + MP2 contribution        :',EMP2FL,
+     *     ' = MP2 second order energy :',EMY+EMP2FL
+         END IF
 C
-C        Manu July 07 : we copy (as done previously) CMO1 in CMO2 since we need
+C        Manu July 07 : we copy (as done previously) CMO1 into CMO2 since we need
 C        the HF-SRDFT orbitals in MP2SRDFTDEN
 C
          IF (DOHFSRDFT .AND. SC_SRMP2) THEN
@@ -547,8 +612,17 @@ C
 C
          END IF
 C
-      END IF
 C     END IF (MP2FRO .AND. .NOT.FCKFRO)
+      ELSE IF (SRINTS_SRMP2) THEN
+C
+C        now reset to original 2-electron integral file
+         AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
+         FTRCTL = .TRUE.
+         SRINTS_SRMP2 = .FALSE.
+         GO TO 10
+C        ... and go back and calculate the MP2 contributions from
+C            long-range integrals /hjaaj Oct 09
+      END IF
 C
       CALL GETTIM(TIMEND,DUMMY)
       TIMMP2 = TIMEND - TIMMP2
@@ -959,7 +1033,7 @@ C
       LOGICAL   FCKFRO
 C
 C
-      PARAMETER (VALCON_MAX = 1.D-4, VALCON_WARN = 1.D-6,
+      PARAMETER (VALCON_MAX = 1.D-4, VALCON_WARN = 1.D-5,
      &           D0 = 0.0D0, DBIG = 1.D+12, GAPMIN = 0.1D0)
 #include <dummy.h>
 C
@@ -983,6 +1057,7 @@ C
       IJ_FOCK(I,J) = (J-1)*NORBI + I
 C
       CALL QENTER('MP2FCK')
+
       IF (IOPRHF .GT. 0 .OR. NASHT .GT. 0) THEN
          WRITE (LUW4,'(//A)')
      *   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
@@ -999,7 +1074,7 @@ C
 C
       CALL READMO(CMO,9,SCRA,LSCRA)
 C
-C     Step 1: Construct inactive Fock matrix
+C     Step 1 : Construct inactive Fock matrix
 C
       EMY    = D0
       CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
@@ -1008,15 +1083,14 @@ C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
       EMY = EMY + POTNUC
       IF (IPRMP2 .GE. 3) WRITE (LUW4,1732) EMY
 C
-C     Step 2: Check if orbitals are canonical orbitals
+C     Step 2 : Check if converged (using that gradient is
+C              proportional to occ-unocc Fock matrix elements).
+C              Check if NFRMP2(i) .ge. NFRRHF(i).
 C
-      CALL DZERO(ORBEN,NORBT)
       FCKFRO = .FALSE.
-      EHOMO  = -DBIG
-      ELUMO  =  DBIG
-      DO 200 ISYM = 1,NSYM
+      DO 299 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
-      IF (NORBI.EQ.0) GO TO 200
+      IF (NORBI.EQ.0) GO TO 299
          NFRRHF_I = NFRRHF(ISYM)
          IF (NFRRHF_I  .GT. 0) FCKFRO = .TRUE.
          IF (NFRRHF_I  .GT. NFRMP2(ISYM)) THEN
@@ -1033,11 +1107,90 @@ C
          CALL DSPTGE(NORBI,FC(ISSYM+1),SCRA)
          VALCON  = D0
          IVALCON = 0
-         DO I = NFRRHF_I +1,NORBI
+         DO I = NFRRHF_I+1,NRHFI
 C
-            II = IJ_FOCK(I,I)
-            ORBEN_I = SCRA(II)
-            ORBEN(IORBI+I) = ORBEN_I
+C           To check if this occupied orbital is converged we find
+C           the 2-norm of the coupling to the unoccupied orbitals
+            I1 = IJ_FOCK(NRHFI+1,I)
+            NORBI_MP2 = NORBI - NRHFI
+            VALCONI = DNRM2(NORBI_MP2,SCRA(I1),1)
+            IF (VALCONI .GT. VALCON) THEN
+               VALCON  = VALCONI
+               IVALCON = I
+            END IF
+         END DO
+C        ... VALCON now max euclidean 2-norm of off-diagonal elements for any row
+         IF ( VALCON .GT. VALCON_MAX ) THEN
+            WRITE(LUW4,'(/A//A,F12.8,A,I6,A,I3//A)') 'ERROR: '//
+     +  ' Molecular orbitals are NOT optimized SCF orbitals',
+     +  ' MAX 2-norm of off-diagonal Fock matrix elements is',VALCON,
+     +  ' for MO no.',IVALCON,' in symmetry',ISYM,
+     +  ' This Fock matrix row is:'
+            CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, NRHFI+1,NORBI,
+     +                  NORBI,NORBI, 1,LUW4)
+            CALL QUIT('MP2FCK: MOs are NOT optimized SCF orbitals')
+         ELSE IF ( VALCON .GT. VALCON_WARN ) THEN
+            WRITE(LUW4,'(/A//A,F12.8,A,I6,A,I3//A)') 'WARNING: '//
+     +  ' Molecular orbitals are not fully optimized SCF orbitals',
+     +  ' MAX 2-norm of off-diagonal Fock matrix elements is',VALCON,
+     +  ' for MO no.',IVALCON,' in symmetry',ISYM,
+     +  ' This Fock matrix row is:'
+            CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, NRHFI+1,NORBI,
+     +                  NORBI,NORBI, 1,LUW4)
+         ELSE IF (IPRMP2 .GE. 4) THEN
+            WRITE(LUW4,'(/A,I3,A,1P,D10.2)') 'Symmetry',ISYM,
+     +  ' MAX 2-norm of a row of off-diagonal Fock matrix elements is',
+     +      VALCON
+         END IF
+  299 CONTINUE
+C
+C     Step 3 : Make sure orbitals are canonical orbitals
+C              (based on code from sircan.F:SIRCNO /hjaaj oct 09)
+C              Extract orbital energies.
+C
+      CALL DZERO(ORBEN,NORBT)
+      EHOMO  = -DBIG
+      ELUMO  =  DBIG
+      DO 399 ISYM = 1,NSYM
+         NORBI = NORB(ISYM)
+      IF (NORBI.EQ.0) GO TO 399
+         NFRRHF_I = NFRRHF(ISYM)
+         NRHFI = NRHF(ISYM)
+         IORBI = IORB(ISYM)
+         NBASI = NBAS(ISYM)
+         JFC   = 1 + IIORB(ISYM)
+         JCMO  = 1 + ICMO(ISYM)
+C
+C        Zero couplings between inactive-secondary blocks
+C        in Fock matrix and between frozen orbitals and all other.
+C
+         IF (NFRRHF_I .GT. 0) THEN
+C           zero off-diagonal frozen-frozen elements
+            DO I = 2,NFRRHF_I
+               JSTA = JFC + IROW(I)
+               JEND = JSTA + I - 2
+               DO J = JSTA,JEND
+                  SCRA(J) = D0
+               END DO
+            END DO
+         END IF
+         IF (NRHFI .GT. 0) THEN
+C           zero inactive-secondary block
+C           Note that any frozen orbitals are also "inactive".
+            CALL DSPZERO(NORBI,FC(JFC),1,NRHFI,NRHFI+1,NORBI)
+C           call dspzero(n,asp, nrsta,nrend, ncsta,ncend)
+         END IF
+C
+C        generate canonical orbitals
+         KBIG  = 1
+         KJBIG = KBIG + NORBI
+         CALL JACO(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,
+     *             SCRA(KBIG),SCRA(KJBIG))
+C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+C
+         DO I = 1,NORBI
+            ORBEN_I = FC(JFC-1 + IROW(I+1))
+            ORBEN(IORBI + I) = ORBEN_I
             IF (I .LE. NRHFI) THEN
                EHOMO = MAX(EHOMO,ORBEN_I)
                ISYM_HOMO = ISYM
@@ -1045,51 +1198,17 @@ C
                ELUMO = MIN(ELUMO,ORBEN_I)
                ISYM_LUMO = ISYM
             END IF
-C
-C           To check if this orbital is a canonical orbital
-C           we find the 2-norm of this column of Fock matrix (w/o the diagonal element)
-            SCRA(II) = D0
-            I1 = IJ_FOCK(1,I) + NFRRHF_I
-            NORBI_MP2 = NORBI - NFRRHF_I
-            VALCONI = DNRM2(NORBI_MP2,SCRA(I1),1)
-            IF (VALCONI .GT. VALCON) THEN
-               VALCON  = VALCONI
-               IVALCON = I
-            END IF
-            SCRA(II) = ORBEN_I
-C
          END DO
-C        ... VALCON now max euclidean 2-norm of off-diagonal elements for any row
-         IF (IPRMP2 .GE. 3 .OR. VALCON .GT. VALCON_WARN) THEN
+
+         IF (IPRMP2 .GE. 3) THEN
             WRITE (LUW4,1740) ISYM, NRHFI
             IF (NFRRHF_I .GT. 0) WRITE (LUW4,'(A,I3,A)')
      +        ' Note: the first',NFRRHF_I ,' orbitals are frozen in SCF'
             WRITE (LUW4,1750) (ORBEN(IORBI+I),I=1,NORBI)
          END IF
-         IF ( VALCON .GT. VALCON_MAX ) THEN
-            WRITE(LUW4,'(/A//A,F12.8,A,I6,A,I3//A)') 'ERROR: '//
-     +  ' Molecular orbitals are NOT canonical Hartree-Fock orbitals',
-     +  ' MAX 2-norm of off-diagonal Fock matrix elements is',VALCON,
-     +  ' for MO no.',IVALCON,' in symmetry',ISYM,
-     +  ' This Fock matrix row is:'
-            CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, 1,NORBI,
-     +                  NORBI,NORBI, 1,LUW4)
-            CALL QUIT('MP2FCK: MO:S are NOT canonical HF orbitals')
-         ELSE IF ( VALCON .GT. VALCON_WARN ) THEN
-            WRITE(LUW4,'(/A//A,F12.8,A,I6,A,I3//A)') 'WARNING: '//
-     +  ' Molecular orbitals deviate from canonical Hartree-Fock'//
-     +    ' orbitals',
-     +  ' MAX 2-norm of off-diagonal Fock matrix elements is',VALCON,
-     +  ' for MO no.',IVALCON,' in symmetry',ISYM,
-     +  ' This Fock matrix row is:'
-            CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, 1,NORBI,
-     +                  NORBI,NORBI, 1,LUW4)
-         ELSE IF (IPRMP2 .GE. 2) THEN
-            WRITE(LUW4,'(/A,I3,A,1P,D10.2)') 'Symmetry',ISYM,
-     +  ' MAX 2-norm of a row of off-diagonal Fock matrix elements is',
-     +      VALCON
-         END IF
-200   CONTINUE
+1
+  399 CONTINUE
+C
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          NWARN = NWARN + 1
          WRITE(LUW4,'(/A/A)')
@@ -1226,7 +1345,7 @@ C
          CALL MEMGET('REAL',KH2M1 ,0,WRK,KFREE,LFREE)
       END IF
       CALL DZERO(H2D,N2ORBX)
-      L_TDA_MP2 = TDAMP2 .AND. IPLOW .EQ. 1
+      L_TDA_MP2 = TDA_MP2 .AND. IPLOW .EQ. 1
       IF (L_TDA_MP2) THEN
          NEEDTP(1) = 1
          NEEDTP(6) = 1
