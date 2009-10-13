@@ -451,6 +451,12 @@ C
          GO TO 100
       END IF
   300 CONTINUE 
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRESR = THRESR*THR_REDFAC
+      END IF
 C
 C FC labels generation
 C

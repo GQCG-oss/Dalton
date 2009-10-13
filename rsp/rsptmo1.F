@@ -233,6 +233,13 @@ C
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       NATMTO = 0
       NBTMTO = 0
       NCTMTO = 0

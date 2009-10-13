@@ -1498,6 +1498,14 @@ C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
       END IF   ! for IF (NEWDEF)
 C ------------------ 
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+      END IF
+C
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
@@ -1995,6 +2003,13 @@ C     .VIRTUAL
       END IF
 C     ---------------------------------------------
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
+C
       NLRTOT = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
@@ -2412,7 +2427,15 @@ C     .C10LMO
                CALL QUIT(' ILLEGAL PROMPT IN C6INP ')
             END IF
       END IF
+C
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCC6 = THCC6*THR_REDFAC
+      END IF
+C
       NC6TOT = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
@@ -4489,6 +4512,13 @@ C
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
