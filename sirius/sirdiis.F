@@ -1082,17 +1082,21 @@ C        Transform FDAO to FD (FD saved in DCAO).
 C        Find FV and make open-shell Fock matrix
 C
          CALL UTHUB(FCAO,DCAO,CMO,WRK(KFREE),NSYM,NBAS,NORB)
-         IF (.NOT. ONLYFC) THEN
-         IF (HSFOCK) THEN
+         IF (HSFOCK .OR. ONLYFC) THEN
             IF (IPRDIS .GE. 15) THEN
+               IF (HSFOCK) THEN
                   WRITE (LUPRI,'(/A)')
      &            ' Fock matrix after FV correction'
+               ELSE
+                  WRITE (LUPRI,'(/A)')
+     &            ' Fock matrix before diagonalization'
+               END IF
                CALL OUTPKB(DCAO,NORB,NSYM,1,LUPRI)
             END IF
          ELSE   
-         DO 300 ISYM = 1,NSYM
+           DO 300 ISYM = 1,NSYM
             IF (NASH(ISYM) .EQ. 0) GO TO 300
-            IF (IPRDIS .GE. 15) THEN
+            IF (IPRDIS .GT. 15) THEN
                WRITE (LUPRI,'(/A,I3)')
      &            ' Fock matrix before FV correction, symmetry',ISYM
                CALL OUTPAK(DCAO(1+IIORB(ISYM)),NORB(ISYM),1,LUPRI)
@@ -1117,8 +1121,7 @@ C
      &            ' Fock matrix after FV correction, symmetry',ISYM
                CALL OUTPAK(DCAO(1+IIORB(ISYM)),NORB(ISYM),1,LUPRI)
             END IF
-  300    CONTINUE
-         END IF
+  300      CONTINUE
          END IF
 C
 C        If requested (by SHFTLVL .ne. 0) :
@@ -1129,7 +1132,7 @@ C        /hjaaj-Feb.2001
          IF (SHFTLVL .NE. D0) WRITE(LUPRI,'(I4,A,F10.4)') ITDIIS,
      &   '  Level shift: occupied orbital energies shifted by',SHFTLVL
 chjaaj: improve comment with something about "restricted step"
-chjaaj: and "0.5*occ(i)* " /23may hjaaj
+chjaaj: and "0.5*occ(i)* " /23may09 hjaaj
 C
 C        Diagonalize (level-shifted) FC (saved in DCAO)
 C
