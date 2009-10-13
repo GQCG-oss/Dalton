@@ -401,7 +401,7 @@ C
             WRITE (LUERR ,7020)
             GO TO 8000
          END IF
- 7020    FORMAT(//' Sirius MP2 calculation aborted because',
+ 7020    FORMAT(//'ERROR: Sirius MP2 calculation aborted because',
      *      ' preceding Hartree-Fock not converged.')
 C
          FLAG( 9) = .TRUE.
@@ -409,19 +409,6 @@ C
          FLAG( 4) = .FALSE.
          FLAG(14) = .FALSE.
 C
-C        Transform to canonical orbitals, unless we know that
-C        the orbitals already are canonical orbitals.
-         IF (.NOT.DORHF .OR. .NOT.RHFCAN) THEN
-            IPRCAN = 0
-            KFRCAN = 1
-            LFRCAN = LWORK
-            CALL MEMGET('REAL',KCREF,NCONF,WORK,KFRCAN,LFRCAN)
-            CALL MEMGET('REAL',KCMO ,NCMOT,WORK,KFRCAN,LFRCAN)
-            CALL MEMGET('REAL',KOCC ,NORBT,WORK,KFRCAN,LFRCAN)
-            CALL SIRCAN(IPRCAN,WORK(KCREF),WORK(KCMO),WORK(KOCC),
-     *                  WORK,KFRCAN,LFRCAN)
-            CALL MEMREL('SIRCTL.MP2.SIRCAN',WORK,1,1, KFRCAN,LFRCAN)
-         END IF
          FLAG(21) = .FALSE.
 C
          CALL GETTIM(TSTART,WSTART)
