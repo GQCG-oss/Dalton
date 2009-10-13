@@ -203,7 +203,7 @@ C              ... make sure the "do exchange" bit is set in IFCTYP
          END IF
          IF (PREHF) THEN
 C           this is e.g. PREHF, i.e. standard HF
-            CHIVAL = D0
+            CHIVAL = -1.0D0
          END IF
 #ifdef SIRFCK_DEBUG
          write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
@@ -214,6 +214,8 @@ C           this is e.g. PREHF, i.e. standard HF
          call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
 C
+       IF (CHIVAL .ne. D0) THEN
+C        ... No long-range integrals if CHIVAL .eq. 0
          IF (NSYM.GT.1 .AND. (DODFT.OR.DOHFSRDFT.OR.DOMCSRDFT)) THEN
 C           HERFCK destroys DMAT when called with symmetry
             KDMAT = 1
@@ -221,7 +223,7 @@ C           HERFCK destroys DMAT when called with symmetry
             LWRK  = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
             CALL DCOPY(NDCandDV*N2BASX,DMAT,1,WRK(KDMAT),1)
-            if (atomdf .AND. CHIVAL .LE. D0) then
+            if (atomdf .AND. CHIVAL .LT. D0) then
 C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
               call dens_fit(fmat,wrk(kdmat),NDCandDV,ISYMDM,IFCTYP,
      &                    IPRHER,WRK(KLAST),LWRK)
@@ -230,7 +232,7 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
      &                    IPRHER,WRK(KLAST),LWRK)
             end if
          ELSE
-            if (atomdf .AND. CHIVAL .LE. D0) then
+            if (atomdf .AND. CHIVAL .LT. D0) then
 C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
               call dens_fit(fmat,dmat,NDCandDV,ISYMDM,IFCTYP,IPRHER,
      &                      wrk,lwork)
@@ -239,6 +241,7 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
      &                      WRK,LWORK)
             end if
          END IF
+       END IF ! (CHIVAL .ne. D0)
 #ifdef SIRFCK_DEBUG
          write(lupri,*) 'SIRFCK: first FMAT'
          call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
@@ -304,7 +307,7 @@ C              We need DMAT for the "CALL SRDFT" below
                IF (KLAST.GT.LWORK)
      &         CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
                CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
-               if (atomdf .AND. CHIVAL .LE. D0) then
+               if (atomdf .AND. CHIVAL .LT. D0) then
 C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
                  call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
      &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
@@ -313,7 +316,7 @@ C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
      &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
                end if
             ELSE
-               if (atomdf .AND. CHIVAL .LE. D0) then
+               if (atomdf .AND. CHIVAL .LT. D0) then
 C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
                  call dens_fit(wrk(KFSRAO),dmat,NSR_DMAT,
      &                         ISYMDM,IFCTYP,IPRHER,wrk(KLAST),LWRK)
@@ -397,8 +400,11 @@ C              ... make sure the "do exchange" bit is set in IFCTYP
          write(lupri,*)'SIRFCK: first DMAT'
          call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
-         CALL SIRFCK2(LUINTA,'AOTWOINT',
-     &                FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP,WRK,LWORK)
+         IF (CHIVAL .ne. D0) THEN
+C        ... no long-range integrals if chival .eq. 0
+            CALL SIRFCK2(LUINTA,'AOTWOINT',
+     &                   FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP,WRK,LWORK)
+          END IF ! (CHIVAL .ne. D0)
          if (lsrhybr) then
             do i = 1,ndmat
                ifctyp(i) = ifctmp_sr(i)
@@ -661,8 +667,9 @@ C           For print, short-range Coulomb and Exchange energies
 C           EJSR = 0.5*Tr( (Jsr Dtot)
 C           EKSR = 0.5*Tr( (Ksr Dtot) * HFXFAC
 C
-C           IF (iprsrdft .GT. 0)
-            WRITE (LUPRI,'(A,F20.10)')
+C           IF (iprsrdft .GT. 0) then
+               WRITE (LUPRI,'()')
+               WRITE (LUPRI,'(A,F20.10)')
      &         '   Exsr + Ecsr                    ',EDFT,
      &         ' - 0.5 Tr(Vxcsr Dcore)            ',ECSR,
      &         ' -     Tr(Vxcsr Dval)             ',EVSR,
@@ -670,6 +677,7 @@ C           IF (iprsrdft .GT. 0)
      &         ' = ESRDFTY                        ',ESRDFTY,
      &         '   EJSR                           ',EJSR,
      &         '   EKSR                           ',EKSR
+C           END IF
          END IF ! (DOERG)
       END IF ! (ADDSRI.AND.(DOHFSRDFT.OR.DOMCSRDFT).AND.(.NOT.PREHF))
 C
