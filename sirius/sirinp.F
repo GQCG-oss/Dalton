@@ -473,9 +473,12 @@ C
 C
 C********** Default values section MP2INP *****
 C
-      TDAMP2 = .FALSE.
-      SCSMP2 = .FALSE.
-      SOSMP2 = .FALSE.
+      SCS_MP2 = .FALSE.
+      SOS_MP2 = .FALSE.
+      TDA_MP2 = .FALSE.
+      MP2_NO_OV = .FALSE.
+      SC_SRMP2 = .FALSE.
+      SRINTS_SRMP2 = .FALSE.
 C
 C
 C********** Default values section OPTINP *****
@@ -578,14 +581,6 @@ C
          LUSUPM = -9999
       END IF
 c
-C********** Default values section MP2INP *****
-C
-      SC_SRMP2 = .FALSE.
-C
-C********** Default values section MP2INP *****
-C
-      MP2_NO_OV = .FALSE.
-C
 C********** Default values section DFTINP *****
 C
       CALL DFTINI
@@ -1441,8 +1436,8 @@ C
      &      ' not compatible with open shell RHF'
         END IF
         IF (DOHFSRDFT) THEN
-C hjaaj May 2008 : THRRHF_MP2 too small for srMP2  NB NOTE BEMAERK OBS
-           THRRHF_MAX = 100.0D0*THRRHF_MP2
+C hjaaj May 2008 : THRRHF_MP2 too small for srMP2  NB NOTE BEMAERK TODO OBS
+           THRRHF_MAX = 50.0D0*THRRHF_MP2
         ELSE
            THRRHF_MAX = THRRHF_MP2
         END IF
@@ -2919,10 +2914,17 @@ C *** Option 25 >SHIFT < Shift level
  125  READ(LUCMD,*) DEFLVL
       DEFLVL = -ABS(DEFLVL)
       GO TO 100
+C     Option 26 >MEP   <
  126  MEP = .TRUE.
       GO TO 100
 C
  2000 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRRHF = THRRHF*THR_REDFAC
+      END IF
       IF (NODIIS) MXDIIS = 0
       IF (CORHOL) THEN
          IF (IOPRHF .NE. 0) THEN
@@ -3238,6 +3240,12 @@ C *** Option 33 >FOCKON< Only FOCK (no no:s ) for TRACI and output
       GO TO 100
 C
  9000 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRMC = THRMC*THR_REDFAC
+      END IF
       NROOTS = MAX(ISTATE,NROOTS)
       IF ( ISTATE .GT. MAXRTS ) THEN
          INPERR = INPERR + 1
@@ -3312,7 +3320,7 @@ C
          ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
+            GO TO 8000
          ELSE
             WRITE (LUPRI,'(/3A/2A/)')
      *         ' Keyword ',WORD,' does not begin with',
@@ -3377,6 +3385,13 @@ C                        CI diagonalization.
       READ (LUCMD,*) MXCIMA
       GO TO 100
 C
+ 8000 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRCI = THRCI*THR_REDFAC
+      END IF
       END
 C  /* Deck orbinp */
       SUBROUTINE ORBINP(WORD,INPERR,IRDMO,ALLOPT)
@@ -4082,7 +4097,7 @@ C
          ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
+            GO TO 8000
          ELSE
             WRITE (LUPRI,'(/3A/2A/)')
      *         ' Keyword ',WORD,' does not begin with',
@@ -4124,6 +4139,14 @@ C *** Option  107 >SORTED<
       NEWTRA=.TRUE.
       GO TO 100
 C
+ 8000 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRP = THRP*THR_REDFAC
+         THRQ = THRQ*THR_REDFAC
+      END IF
       END
 C  /* Deck updinp */
       SUBROUTINE UPDINP(WORD,INPERR,ALLOPT)
@@ -4779,7 +4802,7 @@ C
          ELSE
             WRITE(IWUNIT,'(/A)')
      &   ' (Wave function specification suppressed here,'//
-     &   ' see output above for initial geometry.)'
+     &   ' see output for initial geometry above.)'
             GO TO 8000
          END IF
       END IF
@@ -4831,10 +4854,10 @@ C
  1054 FORMAT(T16,A,$)
       IF (IORTO .EQ. 1) THEN
          WRITE (IWUNIT,1050) 'Orthonormalization of molecular orbitals.'
-         WRITE (IWUNIT,1100) (I,      I=1,NSYM)
-         WRITE (IWUNIT,1110) ('  --', I=1,NSYM)
-         WRITE (IWUNIT,1450) (NORB(I),I=1,NSYM)
-         WRITE (IWUNIT,1500) (NBAS(I),I=1,NSYM)
+         WRITE (IWUNIT,1100) (I,       I=1,NSYM)
+         WRITE (IWUNIT,1110) ('  ---', I=1,NSYM+1)
+         WRITE (IWUNIT,1450) (NORBT,NORB(I),I=1,NSYM)
+         WRITE (IWUNIT,1500) (NBAST,NBAS(I),I=1,NSYM)
          GO TO 8000
       ELSE IF ( DOMC .OR. DOCI ) THEN
          IF ( DONEVPT ) then
@@ -4891,7 +4914,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
          END IF
       ELSE IF ( DOMP2 ) THEN
          WRITE (IWUNIT,1050)
-     &      ' MP2, Moller-Plesset second-order calculation.'
+     &      ' MP2, Moeller-Plesset second-order calculation.'
       ELSE IF ( DOCCSD) THEN
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
       ELSE IF ( DOSCF ) THEN
@@ -4948,14 +4971,14 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IRUN = IRUN + 1
          END IF
          IF (DOMP2 .AND. IRUN .LT. NUMRUN) THEN
-            IF (SCSMP2) THEN
-               WRITE(IWUNIT,1051) 'a SCS-MP2 calculation'
-            ELSE IF (SOSMP2) THEN
-               WRITE(IWUNIT,1051) 'a SOS-MP2 calculation'
+            IF (SCS_MP2) THEN
+               WRITE(IWUNIT,1051) 'an SCS-MP2 calculation'
+            ELSE IF (SOS_MP2) THEN
+               WRITE(IWUNIT,1051) 'an SOS-MP2 calculation'
             ELSE
                WRITE(IWUNIT,1051) 'an MP2 calculation'
             END IF
-            IF (TDAMP2) WRITE(IWUNIT,1051) '   (saving for TDA-SOPPA)'
+            IF (TDA_MP2) WRITE(IWUNIT,1051) '   (saving for TDA-SOPPA)'
             IRUN = IRUN + 1
          END IF
          IF (FCVORB) THEN
@@ -5101,11 +5124,10 @@ C        ... Check for inconsistencies :
 
          IF (DOSRBCK.AND.DOMCSRDFT) 
      &      CALL QUIT(' SRBCK functional not implemented for MCSRDFT !')
-C JT 09-03-05 beg
-         IF (DOMCSRDFT .AND. CHIVAL.EQ.0.D0)  THEN
-           CALL QUIT(' MCSRDFT not allowed for CHIVAL=0')
-         ENDIF
-C JT 09-03-05 end
+!hjaaj Oct 09: allow chival=0 for tests
+!        IF (DOMCSRDFT .AND. CHIVAL.LE.0.D0)  THEN
+!          CALL QUIT(' MCSRDFT not allowed for CHIVAL=0')
+!        ENDIF
          IF (DODFT) THEN
            CALL QUIT('DFT and SRDFT not both allowed in same run')
          END IF
@@ -5115,7 +5137,7 @@ C
 C ***** Orbital specifications *****
 C
       WRITE(IWUNIT,1100) (I,       I=1,NSYM)
-      WRITE(IWUNIT,1110) ('  ---', I=1,NSYM)
+      WRITE(IWUNIT,1110) ('  ---', I=1,NSYM+1)
       IF (MCTYPE .GT. 0) THEN
          WRITE(IWUNIT,1200) NISHT,(NISH(I),I=1,NSYM)
          IF (NASHT .GT. 0) THEN
@@ -5167,18 +5189,18 @@ C
      %   ' will be performed after RHF/DFT/MCSCF'
  1100 FORMAT(/5X,'Orbital specifications',
      *       /5X,'======================',
-     *       /5X,'Abelian symmetry species',T38,'  All',8I5)
- 1110 FORMAT(T38,8(A4))
- 1200 FORMAT(5X,'Inactive orbitals',T38,9I5)
- 1300 FORMAT(5X,'Active orbitals',T38,9I5)
- 1320 FORMAT(5X,'Active orbitals in RAS1',T38,9I5)
- 1330 FORMAT(5X,'Active orbitals in RAS2',T38,9I5)
- 1340 FORMAT(5X,'Active orbitals in RAS3',T38,9I5)
- 1400 FORMAT(5X,'Secondary orbitals',T38,9I5)
- 1450 FORMAT(5X,'Total number of orbitals',T38,9I5)
- 1500 FORMAT(5X,'Number of basis functions',T38,9I5)
- 1550 FORMAT(5X,'Occupied SCF orbitals',T38,9I5)
- 1555 FORMAT(5X,'Open shell SCF orbitals',T38,9I5)
+     *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
+ 1110 FORMAT(T38,A5,' |',8A5)
+ 1200 FORMAT(5X,'Inactive orbitals',T38,I5,' |',8I5)
+ 1300 FORMAT(5X,'Active orbitals',T38,I5,' |',8I5)
+ 1320 FORMAT(5X,'Active orbitals in RAS1',T38,I5,' |',8I5)
+ 1330 FORMAT(5X,'Active orbitals in RAS2',T38,I5,' |',8I5)
+ 1340 FORMAT(5X,'Active orbitals in RAS3',T38,I5,' |',8I5)
+ 1400 FORMAT(5X,'Secondary orbitals',T38,I5,' |',8I5)
+ 1450 FORMAT(5X,'Total number of orbitals',T38,I5,' |',8I5)
+ 1500 FORMAT(5X,'Number of basis functions',T38,I5,' |',8I5)
+ 1550 FORMAT(5X,'Occupied SCF orbitals',T38,I5,' |',8I5)
+ 1555 FORMAT(5X,'Open shell SCF orbitals',T38,I5,' |',8I5)
  1560 FORMAT(/5X,'plus one open shell SCF orbital of symmetry',I4)
 C
 C ***** Optimization information *****
@@ -5194,16 +5216,16 @@ C
 C*FM  change format nb of determinants and CSFs from I8 to I12
  5000 FORMAT (/,5X,'Optimization information',
      *        /,5X,'========================',
-     *        /,5X,'Number of configurations   ',I12,
-     *        /,5X,'Number of orbital rotations',I12,
-     *        /,5X,'---------------------------------------',
-     *        /,5X,'Total number of variables  ',I12)
+     *        /,5X,'Number of configurations   ',I15,
+     *        /,5X,'Number of orbital rotations',I15,
+     *        /,5X,'------------------------------------------',
+     *        /,5X,'Total number of variables  ',I15)
  5010 FORMAT (/,5X,'Optimization information',
      *        /,5X,'========================',
-     *        /,5X,'Number of determinants     ',I12,
-     *        /,5X,'Number of orbital rotations',I12,
-     *        /,5X,'---------------------------------------',
-     *        /,5X,'Total number of variables  ',I12)
+     *        /,5X,'Number of determinants     ',I15,
+     *        /,5X,'Number of orbital rotations',I15,
+     *        /,5X,'------------------------------------------',
+     *        /,5X,'Total number of variables  ',I15)
 C
 C
 C
@@ -5284,10 +5306,10 @@ C
       IF (DOMC .AND. NFROT.GT.0) THEN
          WRITE (IWUNIT,6100) (NFRO(I),I=1,NSYM)
       END IF
- 6110 FORMAT(//,5X,'Number of frozen SCF orbitals',T38,9I5)
- 6111 FORMAT(//,5X,'Number of frozen KS orbitals',T38,9I5)
- 6120 FORMAT(//,5X,'Number of frozen MP2 orbitals',T38,9I5)
- 6100 FORMAT(//,5X,'Number of frozen MCSCF orbitals',T38,9I5)
+ 6110 FORMAT(//,5X,'Number of frozen SCF orbitals',T38,I5,' |',8I5)
+ 6111 FORMAT(//,5X,'Number of frozen KS orbitals',T38,I5,' |',8I5)
+ 6120 FORMAT(//,5X,'Number of frozen MP2 orbitals',T38,I5,' |',8I5)
+ 6100 FORMAT(//,5X,'Number of frozen MCSCF orbitals',T38,I5,' |',8I5)
 C
       NNOROT = 0
       DO 6200 I = 1,NORBT
@@ -5369,7 +5391,7 @@ C
          ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
-            RETURN
+            GO TO 8000
          ELSE
             WRITE (LUPRI,'(/3A/2A/)')
      *         ' Keyword ',WORD,' does not begin with',
@@ -5393,6 +5415,13 @@ C
   103 READ(LUCMD,*) ISTNEVCI
       GO TO 100
 C
+ 8000 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRNEVPT = THRNEVPT*THR_REDFAC
+      END IF
       END
 C  /* Deck srfuninp */
       SUBROUTINE SRFUN_INPUT(SRFTMP)
