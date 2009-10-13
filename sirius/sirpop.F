@@ -974,7 +974,7 @@ C     ... only print max -iprmul populations in each iteration
       IF (iprmul .lt. 0) then
          mnuc = min(nnuc,-iprmul)
          WRITE (LUPRI,2015) (NAME(NUC),POPNUC(NUC),NUC=1,mnuc)
- 2015    FORMAT ((' MULPOP ',10(A4,F6.2,'; ')))
+ 2015    FORMAT (('      MULPOP ',10(A4,F6.2,'; ')))
       else
          WRITE (LUPRI,1016)
          WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
