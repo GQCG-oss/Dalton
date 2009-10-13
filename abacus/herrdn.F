@@ -219,7 +219,7 @@ C ach easier to debug intgrl input.
    11          CONTINUE
                   ANGS = .TRUE.
                GO TO 100
-C  .R12AUX (moved here June 0, because LMULBS used in READIN
+C  .R12AUX (moved here June 09, because LMULBS used in READIN
 C          (renamed from .AUXBAS) /hjaaj
    12          CONTINUE
                   LMULBS = .TRUE.
