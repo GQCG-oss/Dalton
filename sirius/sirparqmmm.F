@@ -103,7 +103,8 @@ C      print *,'befor charge',esolt,wrk(knsel),dcao(1)
       IF (NMULT .GE. 0) THEN
 C         IF (NODTOT .GE. 1) THEN
          IF (.FALSE.) THEN
-            CALL QMMM_CHARGE_M()
+            CALL QMMM_CHARGE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
@@ -114,8 +115,8 @@ C      print *,'after charge',esolt,wrk(knsel),dcao(1)
 C     2) The dipole correction to the Fock/KS operator
 
       IF (NMULT .GE. 1) THEN
-         IF (NODTOT .GE. 1) THEN
-C         IF (.FALSE.) THEN
+C         IF (NODTOT .GE. 1) THEN
+         IF (.FALSE.) THEN
             CALL QMMM_DIPOLE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -145,7 +146,8 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
       IF (NMULT .GE. 3) THEN
 C         IF (NODTOT .GE. 1) THEN
          IF (.FALSE.) THEN
-            CALL QMMM_OCTUPOLE_M()
+            CALL QMMM_OCTUPOLE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
+     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
@@ -1611,40 +1613,7 @@ C      IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
 C
 C**************************************************************************************
 C  /* Deck qmmm_charge_m */
-      SUBROUTINE QMMM_CHARGE_M()
-
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-
-
-      CALL QENTER('QMMM_CHARGE_M')
-
-
-      CALL QEXIT('QMMM_CHARGE_M')
-
-      RETURN
-      END
-
-C**************************************************************************************
-C  /* Deck qmmm_dipole_m */
-      SUBROUTINE QMMM_DIPOLE_M(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
+      SUBROUTINE QMMM_CHARGE_M(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
      &                         IPRINT)
 
 #include <implicit.h>
@@ -1682,7 +1651,9 @@ C ----
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('QMMM_DIPOLE_M')
+
+      CALL QENTER('QMMM_CHARGE_M')
+
 
       KNSNUC = 1
       KTAO  = KNSNUC + MMCENT
@@ -1692,13 +1663,13 @@ C ----
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
 
-C     Wake up slaves (Rock and roll all nite)
+C     Wake up slaves
 
-      IPRTYP = 24
+      IPRTYP = 23
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
-C     Send data to slaves (Lick it up)
+C     Send data to slaves
 
 C     These will be sent before. Not necessary to resend?
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
@@ -1750,7 +1721,335 @@ C     Send end message to all slaves
         CALL MPIXSEND(LEND,1,'INTEGER',NWHO,MPTAG2)
       END DO
 
-C     Collect data from all slaves (I love it load)
+C     Collect data from all slaves
+
+      CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL MPI_REDUCE(WRK(KNSNUC),SNUC,MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      CALL DZERO(WRK(KNSEL),MMCENT)
+      CALL MPI_REDUCE(WRK(KNSEL),SEL,MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      CALL DZERO(WRK(KTAO),NNBASX)
+      CALL MPI_REDUCE(WRK(KTAO),TAO,NNBASX,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+
+      EXPNST = 0.0D0
+      ECHCH = 0.0D0
+
+
+      DO I = 1, MMCENT
+         ECHCH = ECHCH + SNUC(I)
+         EXPNST = EXPNST + SEL(I)
+      END DO
+
+      ECHART = EXPNST + ECHCH
+      ESOLT  = ECHART
+
+      IF (IPRINT.GT.5) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' Center Charge-electronic Charge-nuclear Total'
+        DO 102 I = 1,MMCENT
+          ELTEMP = SEL(I) + SNUC(I)
+          WRITE(LUPRI,*) I,SEL(I),SNUC(I),ELTEMP
+  102   CONTINUE
+
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' Total '
+        WRITE(LUPRI,*) EXPNST, ECHCH, EXPNST+ECHCH
+        WRITE(LUPRI,*)
+      ENDIF
+
+      CALL QEXIT('QMMM_CHARGE_M')
+
+      RETURN
+      END
+
+C**************************************************************************************
+C  /* Deck qmmm_charge_s */
+      SUBROUTINE QMMM_CHARGE_S(WRK,LWRK,IPRTMP)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+C ----
+#include "infpar.h"
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+#include <gnrinf.h>
+
+
+      DIMENSION WRK(LWRK)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+
+      CALL QENTER('QMMM_CHARGE_S')
+
+      FAC1   = 1.0D0
+      FACM1  = -1.0D0
+
+      QMMM = .TRUE.
+C     Receiving data from master
+
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+
+      KNSNUC = 1
+      KNSEL  = KNSNUC + MMCENT
+      KTAO   = KNSEL  + MMCENT
+      KDCAO  = KTAO   + NNBASX
+      KMAT   = KDCAO  + NNBASX
+      KLAST  = KMAT   + 3*NNBASX
+
+      LWRK1  = LWRK - KLAST + 1
+
+      CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+
+C     From old routine
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+C     Do the work
+
+      CALL DZERO(WRK(KNSEL),MMCENT)
+      CALL DZERO(WRK(KNSNUC),MMCENT)
+
+ 20   CONTINUE
+
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(I,1,'INTEGER',MASTER,MPTAG2)
+
+      IF (I.GT.0) THEN
+
+         IF (ABS(MUL0MM(I)) .LE. THRMM) THEN
+           WRK(KNSEL + I - 1)  = 0.0D0
+           WRK(KNSNUC + I - 1) = 0.0D0
+           GOTO 20
+         ENDIF 
+
+         DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
+     *           (MMCORD(2,I)-QMCOM(2))**2 +
+     *           (MMCORD(3,I)-QMCOM(3))**2
+         DIST = SQRT(DIST2)
+
+         IF (DIST .GT. RCUTMM) THEN
+           WRK(KNSEL + I - 1)  = 0.0D0
+           WRK(KNSNUC + I - 1) = 0.0D0
+           GOTO 20
+         ENDIF
+
+         CALL DZERO(WRK(KMAT),NNBASX)
+
+         KPATOM = 0
+         NOSIM = 1
+         TOFILE = .FALSE.
+         TRIMAT = .TRUE.
+         EXP1VL = .FALSE.
+         DIPORG(1) = MMCORD(1,I)
+         DIPORG(2) = MMCORD(2,I)
+         DIPORG(3) = MMCORD(3,I)
+
+       
+         RUNQM3=.TRUE.
+         CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
+     &               LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
+         RUNQM3=.FALSE.
+
+         IF (IPRTMP.GT.15) THEN
+           WRITE (LUPRI,'(/A)') 'Pot. energy matrix in QMMM_FCK_AO_P'
+           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+         ENDIF
+
+         CALL DSCAL(NNBASX,MUL0MM(I),WRK(KMAT),1)
+         EXPNS=DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
+         WRK(KNSEL + I - 1) = EXPNS
+
+         CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KTAO),1)
+
+C        Now the QM nuclear contribution
+
+         ECHCHL  = 0.0D0
+         DO 101 J = 1,NUCIND
+           XDIS   = CORD(1,J) - MMCORD(1,I) 
+           YDIS   = CORD(2,J) - MMCORD(2,I) 
+           ZDIS   = CORD(3,J) - MMCORD(3,I) 
+           DIST2  = XDIS**2+YDIS**2+ZDIS**2
+           DIST   = SQRT(DIST2) 
+           ECHCHL = ECHCHL + CHARGE(J)*MUL0MM(I)/DIST
+  101    CONTINUE
+         WRK(KNSNUC + I - 1) = ECHCHL
+         GO TO 20
+      ENDIF
+
+C     Send data to master
+      CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+      CALL QEXIT('QMMM_CHARGE_S')
+
+      RETURN
+      END
+
+
+C**************************************************************************************
+C  /* Deck qmmm_dipole_m */
+      SUBROUTINE QMMM_DIPOLE_M(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
+     &                         IPRINT)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+C ----
+#include "infpar.h"
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+
+
+      DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT), DCAO(*)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('QMMM_DIPOLE_M')
+
+      KNSNUC = 1
+      KTAO  = KNSNUC + MMCENT
+      KNSEL = KTAO + NNBASX
+      KLAST = KNSEL + MMCENT
+      LWRK2 = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
+
+C     Wake up slaves
+
+      IPRTYP = 24
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+C     Send data to slaves
+
+C     These will be sent before. Not necessary to resend?
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+C **************************************************
+
+
+      CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+
+C     From old routine
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+
+
+      CALL DZERO(TAO(1),NNBASX)
+
+C     Start parallelized loop
+      LNUM = 0
+      DO L = 1,MMCENT
+        LNUM = LNUM + 1
+        IWHO = -1
+        CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+        CALL MPIXSEND(LNUM,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+
+C     Send end message to all slaves
+
+      LEND = -1
+      DO ISLAVE = 1,NODTOT
+        IWHO = -1
+        CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+        CALL MPIXSEND(LEND,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+
+C     Collect data from all slaves
 
       CALL DZERO(WRK(KNSNUC),MMCENT)
       CALL MPI_REDUCE(WRK(KNSNUC),SNUC,MMCENT,
@@ -1844,7 +2143,7 @@ C ----
       FACM1  = -1.0D0
 
       QMMM = .TRUE.
-C     Receiving data from master (I was made for lovin' you)
+C     Receiving data from master
 
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
@@ -1968,7 +2267,7 @@ C         we use KNS to collect the energy terms
           CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
         ENDIF
 
-        IF (IPRINT.GT.15) THEN
+        IF (IPRTMP.GT.15) THEN
           WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
@@ -2014,7 +2313,7 @@ C       CORD(1,J) - MMCORD(1,I)
         GO TO 20
       ENDIF
 
-C     Send data to master (Do you love me?)
+C     Send data to master
       CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
