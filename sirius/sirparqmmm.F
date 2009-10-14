@@ -97,12 +97,12 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
 
 C     1) The charge correction to the Fock/KS operator
 
-C      print *,'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-C      print *,'esolt,wrk(knsel),dcao(1)'
-C      print *,'befor charge',esolt,wrk(knsel),dcao(1)
+      print *,'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+      print *,'esolt,wrk(knsel),dcao(1)'
+      print *,'befor charge',esolt,wrk(knsel),dcao(1)
       IF (NMULT .GE. 0) THEN
-C         IF (NODTOT .GE. 1) THEN
-         IF (.FALSE.) THEN
+         IF (NODTOT .GE. 1) THEN
+C         IF (.FALSE.) THEN
             CALL QMMM_CHARGE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -110,7 +110,8 @@ C         IF (NODTOT .GE. 1) THEN
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-C      print *,'after charge',esolt,wrk(knsel),dcao(1)
+      print *,'after charge',esolt,wrk(knsel),dcao(1)
+      print *,wrk(ktao),wrk(knsnuc),lwrk1
 
 C     2) The dipole correction to the Fock/KS operator
 
@@ -139,7 +140,6 @@ C         IF (NODTOT .GE. 1) THEN
          ENDIF
       ENDIF
 C      print *,'after quadpo',esolt,wrk(knsel),dcao(1)
-C      print *,wrk(ktao),wrk(knsel),wrk(knsnuc),lwrk1
 
 C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
 
@@ -1678,7 +1678,7 @@ C **************************************************
 
 
       CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
@@ -1745,6 +1745,8 @@ C     Collect data from all slaves
          ECHCH = ECHCH + SNUC(I)
          EXPNST = EXPNST + SEL(I)
       END DO
+
+      print *,'arnfinn snuc sel',snuc(1),sel(1)
 
       ECHART = EXPNST + ECHCH
       ESOLT  = ECHART
@@ -1825,12 +1827,12 @@ C     Receiving data from master
       KTAO   = KNSEL  + MMCENT
       KDCAO  = KTAO   + NNBASX
       KMAT   = KDCAO  + NNBASX
-      KLAST  = KMAT   + 3*NNBASX
+      KLAST  = KMAT   + NNBASX
 
       LWRK1  = LWRK - KLAST + 1
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
@@ -1923,7 +1925,7 @@ C        Now the QM nuclear contribution
          WRK(KNSNUC + I - 1) = ECHCHL
          GO TO 20
       ENDIF
-
+      print *,'arnfinn slave wrk(knsnuc)',wrk(knsnuc)
 C     Send data to master
       CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
@@ -2006,7 +2008,7 @@ C **************************************************
 
 
       CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
@@ -2158,7 +2160,7 @@ C     Receiving data from master
       LWRK1  = LWRK - KLAST + 1
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
