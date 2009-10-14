@@ -97,12 +97,9 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
 
 C     1) The charge correction to the Fock/KS operator
 
-      print *,'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-      print *,'esolt,wrk(knsel),dcao(1)'
-      print *,'befor charge',esolt,wrk(knsel),dcao(1)
       IF (NMULT .GE. 0) THEN
-         IF (NODTOT .GE. 1) THEN
-C         IF (.FALSE.) THEN
+C         IF (NODTOT .GE. 1) THEN
+         IF (.FALSE.) THEN
             CALL QMMM_CHARGE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -110,8 +107,6 @@ C         IF (.FALSE.) THEN
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-      print *,'after charge',esolt,wrk(knsel),dcao(1)
-      print *,wrk(ktao),wrk(knsnuc),lwrk1
 
 C     2) The dipole correction to the Fock/KS operator
 
@@ -1746,8 +1741,6 @@ C     Collect data from all slaves
          EXPNST = EXPNST + SEL(I)
       END DO
 
-      print *,'arnfinn snuc sel',snuc(1),sel(1)
-
       ECHART = EXPNST + ECHCH
       ESOLT  = ECHART
 
@@ -1864,7 +1857,6 @@ C     Do the work
       CALL MPIXRECV(I,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-
          IF (ABS(MUL0MM(I)) .LE. THRMM) THEN
            WRK(KNSEL + I - 1)  = 0.0D0
            WRK(KNSNUC + I - 1) = 0.0D0
@@ -1906,7 +1898,7 @@ C     Do the work
          ENDIF
 
          CALL DSCAL(NNBASX,MUL0MM(I),WRK(KMAT),1)
-         EXPNS=DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
+         EXPNS=DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT),1)
          WRK(KNSEL + I - 1) = EXPNS
 
          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KTAO),1)
@@ -1925,7 +1917,6 @@ C        Now the QM nuclear contribution
          WRK(KNSNUC + I - 1) = ECHCHL
          GO TO 20
       ENDIF
-      print *,'arnfinn slave wrk(knsnuc)',wrk(knsnuc)
 C     Send data to master
       CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
@@ -2288,9 +2279,9 @@ C         we use KNS to collect the energy terms
         CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KTAO),1)
         CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KTAO),1)
 
-        EXCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-        EYCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
-        EZCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
+        EXCOMP = -DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT),1)
+        EYCOMP = -DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+NNBASX),1)
+        EZCOMP = -DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+2*NNBASX),1)
 
         WRK(KNSEL + I - 1) = EXCOMP + EYCOMP + EZCOMP
 
