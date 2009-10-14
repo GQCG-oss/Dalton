@@ -60,7 +60,7 @@ C  /* Deck qmmm_fck_ao_p */
 
 
       DIMENSION WRK(LWRK)
-      DIMENSION FSOL(*)
+      DIMENSION FSOL(*),DCAO(*)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
       LOGICAL EXCENT
@@ -122,7 +122,8 @@ C         IF (NODTOT .GE. 1) THEN
 C     3) The quadrupole correction to the Fock/KS operator
 
       IF (NMULT .GE. 2) THEN
-         IF (NODTOT .GE. 1) THEN
+C         IF (NODTOT .GE. 1) THEN
+         IF (.FALSE.) THEN
             CALL QMMM_QUADPOLE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -170,6 +171,7 @@ C     Finally, put back the dipole origin
       DIPORG(3) = OBKPZ
 
       CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
+
       CALL QEXIT('QMMM_FCK_AO_P')
 
       RETURN
@@ -700,7 +702,6 @@ C       Remember the factor of 1/2 from the Taylor expansion
         WRITE(LUPRI,*) EMUL2T, ELOCT, EMUL2T+ELOCT
         WRITE(LUPRI,*) 
       ENDIF
-
 
       CALL QEXIT('QMMM_QUADPOLE')
 
@@ -1692,36 +1693,35 @@ C ----
 #if defined(VAR_MPI)
 #include <mpif.h>
 #endif
+#include <cbiher.h>
 
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT), DCAO(*)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_QUADPOLE_M')
 
 
-      KMAT  = 1
-      KNSNUC = KMAT + 6*NNBASX
+      KNSNUC = 1
       KTAO  = KNSNUC + MMCENT
-      KLAST = KTAO + NNBASX
+      KNSEL = KTAO + NNBASX
+      KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
 
       FAC1   = 1.0D0
       FACM1  = -1.0D0
-      EMUL2T = 0.0D0
-      ELOCT  = 0.0D0
 
 C     Wake up slaves (Rock and roll all nite)
 
       IPRTYP = 25
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
 C     Send data to slaves (Lick it up)
 
@@ -1736,17 +1736,19 @@ C **************************************************
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+
+C     From old routine
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+
       CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
-      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
-      CALL MPIXBCAST(ENSEL,1,'DOUBLE',MASTER)
-      CALL MPIXBCAST(FAC1,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
@@ -1756,7 +1758,7 @@ C **************************************************
       CALL DZERO(TAO(1),NNBASX)
 
 C     Start parallelized loop
-
+      LNUM = 0
       DO L = 1,MMCENT
         LNUM = LNUM + 1
         IWHO = -1
@@ -1779,16 +1781,20 @@ C     Collect data from all slaves (I love it load)
       CALL MPI_REDUCE(WRK(KNSNUC),SNUC,MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+      CALL DZERO(WRK(KNSEL),MMCENT)
+      CALL MPI_REDUCE(WRK(KNSEL),SEL,MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
       CALL DZERO(WRK(KTAO),NNBASX)
       CALL MPI_REDUCE(WRK(KTAO),TAO,NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(EEMUL2T,EMUL2T,1,
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
 
+      EMUL2T = 0.0D0
+      ELOCT  = 0.0D0
       DO I = 1, MMCENT
-         ELOCT = ELOCT + WRK(KNSNUC + I - 1)
+         ELOCT = ELOCT + SNUC(I)
+         EMUL2T = EMUL2T + SEL(I)
       END DO
 
       EQUADT = EMUL2T + ELOCT
@@ -1807,8 +1813,6 @@ C     Collect data from all slaves (I love it load)
         WRITE(LUPRI,*) EMUL2T, ELOCT, EMUL2T+ELOCT
         WRITE(LUPRI,*) 
       ENDIF
-
-
 
       CALL QEXIT('QMMM_QUADPOLE_M')
 
@@ -1843,6 +1847,9 @@ C ----
 #if defined(VAR_MPI)
 #include <mpif.h>
 #endif
+#include <cbiher.h>
+#include <gnrinf.h>
+
 
       DIMENSION WRK(LWRK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1851,11 +1858,13 @@ C ----
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('QMMM_QUADPOLE_S')
+      CALL QENTER('QMMM_QUAD_S')
 
       FAC1   = 1.0D0
       FACM1  = -1.0D0
 
+
+      QMMM = .TRUE.
 C     Receiving data from master (I was made for lovin' you)
 
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
@@ -1865,31 +1874,32 @@ C     Receiving data from master (I was made for lovin' you)
       KNSEL  = KNSNUC + MMCENT
       KTAO   = KNSEL  + MMCENT
       KDCAO  = KTAO   + NNBASX
-      KLAST  = KDCAO  + NNBASX
+      KMAT   = KDCAO  + NNBASX
+      KLAST  = KMAT   + 6*NNBASX
+
+      LWRK1  = LWRK - KLAST + 1
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+
 C     From old routine
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
-
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+
       CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
-      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
-      CALL MPIXBCAST(ENSEL,1,'DOUBLE',MASTER)
-      CALL MPIXBCAST(FAC1,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
-
 
 C     Do the work
 
@@ -1901,8 +1911,7 @@ C     Do the work
       CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
       CALL MPIXRECV(I,1,'INTEGER',MASTER,MPTAG2)
 
-      IF (I.GT.1) THEN
-
+      IF (I.GT.0) THEN
 C       See if the quadrupole moment at this site is zero
         DNORM2 = MUL2MM(1,I)**2+MUL2MM(2,I)**2+MUL2MM(3,I)**2
      *         + MUL2MM(4,I)**2+MUL2MM(5,I)**2+MUL2MM(6,I)**2
@@ -1938,7 +1947,7 @@ C         we use KNS to collect the energy terms
 
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
+     &              LWRK1,LABINT,INTREP,INTADR,I,TOFILE,
      &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
 
@@ -2039,14 +2048,14 @@ C     Send data to master (Do you love me?)
       CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+      CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
       CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(EMUL2T,EMUL2T,1,
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
 
-      CALL QEXIT('QMMM_QUADPOLE_S')
+      CALL QEXIT('QMMM_QUAD_S')
 
       RETURN
       END
