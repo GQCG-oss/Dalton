@@ -14,25 +14,33 @@ C
 C Most of them are written by Hans Jørgen Aa. Jensen in the late 1980's.
 C These routines may be freely used by anyone.
 C
-C 1) DNORM2
-C 2) DAPTGE, etc. for changing matrix packing
-C                 (AP: Antisymmetric Packed, SP, Symmetric Packed, etc.
-C                 (ex: DAPTGE: Antisymmetric Packed To GEneral matrix)
+C 1) DNORM2 (emulate ESSL DNORM2: do not use extended precision for intermediates)
+C 2) DAPTGE, DGETAP etc. for triangular packing and unpacking of matrices
+C            (AP: Antisymmetric Packed, SP, Symmetric Packed, etc.
+C            (ex: DAPTGE: Antisymmetric Packed To GEneral matrix)
+C            NOTE: packed part is always LOWER triangle (important for AP)
 C 3) DSUM, IDAMIN, IDMAX, IDMIN (supplement DASUM and IDAMAX)
 C 4) "iblas": ICOPY, ISWAP, ...
-C 5) DSPSOL, DGESOL, DGEINV : driver rouutines calling LINPACK
+C 5) other extra routines: DGEZERO, DSPZERO, NDXGTA
+C            (zero block of matrix; find next element .gt. a)
+C 5) DSPSOL, DSPSLI, DGESOL, DGEINV : driver routines calling LINPACK
 C
 C
 #include <single.h>
-C  /* Deck dnorm2 */
+C
+C Block 1:
+C DNORM2 (emulate ESSL DNORM2: do not use extended precision for intermediates)
+C
 #if !defined (VAR_ESSL) && !defined (VAR_DXML)
-C DXML library on DEC-ALPHA
+C DNORM2 is in ESSL library from IBM and DXML library on DEC-ALPHA
+C  /* Deck dnorm2 */
       FUNCTION DNORM2(N,DX,INCX)
 C
 C     Forms the two-norm of a vector.
 C 19-Sep-1988 -- hjaaj -- based on DNRM2 from LINPACK
 C     This version does not use extended precision for intermediates
-C     as the LINPACK version does.
+C     as the LINPACK version does.C 1) DNORM2 (emulate ESSL DNORM2: do not use extended precision for intermediates)
+
 C     Equivalent to DNORM2 in IBM's ESSL library.
 C
 C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
@@ -43,8 +51,10 @@ C
       DIMENSION DX(*)
       PARAMETER ( ZERO = 0.0D0 )
 C
-      DNORM2 = ZERO
-      IF(N.LE.0)RETURN
+      IF (N.LE.0) THEN
+         DNORM2 = ZERO
+         RETURN
+      END IF
       DTEMP  = ZERO
       IF(INCX.EQ.1)GO TO 20
 C
@@ -80,6 +90,11 @@ C
       RETURN
       END
 #endif   /* not VAR_ESSL */
+C Block 2:
+C   DAPTGE, DGETAP etc. for triangular packing and unpacking of matrices
+C           (AP: Antisymmetric Packed, SP, Symmetric Packed, etc.
+C           (ex: DAPTGE: Antisymmetric Packed To GEneral matrix)
+C           NOTE: packed part is always LOWER triangle (important for AP)
 C  /* Deck daptge */
       SUBROUTINE DAPTGE(N,AAP,AGE)
 C
@@ -140,7 +155,7 @@ C  /* Deck dgetap */
       SUBROUTINE DGETAP(N,AGE,AAP)
 C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
-C
+Cdgetap
 C Purpose: Transform from GE format to AP format, that is:
 C          extract antisymmetric part of general matrix AGE
 C          to antisymmetric, packed matrix AAP (lower
@@ -326,15 +341,15 @@ C
 C  /* Deck dgetrn */
       SUBROUTINE DGETRN(AGE,NROWA,NRDIMA)
 C
-C 3-Apr-1987 HJAaJ (DGETRS)
+C Replace AGE by AGE(transposed)
+C
+C 3-Apr-1987 HJAaJ
 C 900108-hjaaj: block with NBLK for reduced paging
 C   when virtual memory
-C new name 971103-hjaaj (old name DGETRS was same as 
+C new name 971103-hjaaj (old name DGETRS was same as
 C   a routine in LAPACK for solving linear equations;
 C   when linking with complib on SGI/IRIX the LAPACK routine
 C   was loaded instead of this one).
-C
-C Replace AGE by AGE(transposed)
 C
 #include <implicit.h>
       DIMENSION AGE(NRDIMA,*)
@@ -354,8 +369,12 @@ C
   400 CONTINUE
       RETURN
       END
+
 #if !defined (VAR_DXML)
 C  DXML library on DEC-ALPHA
+
+C Block 3:
+C DSUM, IDAMIN, IDMAX, IDMIN (supplement DASUM and IDAMAX)
 C  /* Deck dsum */
       FUNCTION DSUM(N,DA,INCA)
 C
@@ -369,8 +388,10 @@ C
       DIMENSION DA(*)
       PARAMETER ( D0 = 0.0D0 )
 C
-      DSUM  = D0
-      IF(N.LE.0)RETURN
+      IF (N.LE.0) THEN
+        DSUM  = D0
+        RETURN
+      END IF
       DTEMP = D0
       IF(INCA.EQ.1)GO TO 20
 C
@@ -417,8 +438,10 @@ C
 C
       DIMENSION DX(*)
 C
-      IDAMIN = 0
-      IF( N .LT. 1 ) RETURN
+      IF( N .LT. 1 ) THEN
+        IDAMIN = 0
+        RETURN
+      END IF
       IDAMIN = 1
       IF(N.EQ.1)RETURN
       IF(INCX.EQ.1)GO TO 20
@@ -456,8 +479,10 @@ C
 C
       DIMENSION DX(*)
 C
-      IDMAX = 0
-      IF( N .LT. 1 ) RETURN
+      IF( N .LT. 1 ) THEN
+        IDMAX = 0
+        RETURN
+      END IF
       IDMAX = 1
       IF(N.EQ.1)RETURN
       IF(INCX.EQ.1)GO TO 20
@@ -495,8 +520,11 @@ C
 C
       DIMENSION DX(*)
 C
-      IDMIN = 0
-      IF( N .LT. 1 ) RETURN
+      IF( N .LT. 1 ) THEN
+        IDMIN = 0
+        RETURN
+      END IF
+
       IDMIN = 1
       IF(N.EQ.1)RETURN
       IF(INCX.EQ.1)GO TO 20
@@ -525,7 +553,11 @@ C
       RETURN
       END
 #endif
+
+C Block 4: "iblas": ICOPY, ISCAL, ISWAP
+
 C  /* Deck iblas */
+
       SUBROUTINE ICOPY(N,IX,INCX,IY,INCY)
 C
 C     COPY integer IX TO integer IY.
@@ -595,7 +627,7 @@ C     FOR I = 0 TO N-1, SCALE IX(LX+I*INCX) WITH IA
 C     WHERE LX = 1 IF INCX .GE. 0, ELSE LX = (-INCX)*N
 C
 C     (901219 - hjaaj - based on ICOPY)
-C
+CC 5) DSPSOL, DGESOL, DGEINV : driver routines calling LINPACK
       INTEGER IX(*)
       IF(N.LE.0)RETURN
       IF(INCX.EQ.1) GOTO 20
@@ -682,109 +714,70 @@ C
    70 CONTINUE
       RETURN
       END
-C  /* Deck dtmdv */
-      SUBROUTINE  DTMDV (N,DA,INCA,DX,INCX,DB,INCB)
+
+C Block 5: other routines
+C   DGEZERO, DSPZERO, NDXGTA, DUNIT, DZERO, ISUM, IZERO
 C
-C     (TRIANGULAR MATRIX DOTTED INTO VECTOR)
-C     (06-OCT-80) (1-May-1984/HJAaJ, taken from MOLPRO by NHFB)
+
+      SUBROUTINE DGEZERO(N,AGE,NRSTA,NREND,NCSTA,NCEND)
 C
-C     THIS ROUTINE IS AN ADDITION TO THE BASIC LINEAR ALGEBRA
-C     SUBROUTINES (THE BLAS) DESIGNED TO EFFICIENTLY COMPUTE
-C     THE PRODUCT OF A LOWER-TRIANGULAR PACKED SYMMETRIC MATRIX
-C     WITH A VECTOR.  THE ALGORITHM MAKES A PURELY SEQUENTIAL
-C     TRAVERSAL OF THE SYMMETRIC MATRIX AND OF BOTH VECTORS.
-C     SPECIFICALLY, IT COMPUTES B = A*X FROM
+C     Oct. 09, Hans Joergen Aa. Jensen
 C
-C     B(K) = SUM(L=1,N) A(KL) * X(L)      (K = 1,N)
+C     Zero block AGE(NRSTA:NREND,NCSTA:NCEND)
 C
-C     WHERE THE (K,L) ELEMENT OF A(*,*) IS FOUND AT POSITION
-C     KL = (K*(K-1))/2 + L (K .GE. L).  THE VECTORS B(*) AND X(*)
-C     ARE STORED IN DB(*) AND DX(*) ACCORDING TO
-C
-C     B(K) IS AT DB(1 + (K-1)*INCB) IF INCB .GE. 0
-C          OR AT DB(1 + (K-N)*INCB) IF INCB .LT. 0
-C
-C     X(L) IS AT DX(1 + (L-1)*INCX) IF INCX .GE. 0
-C          OR AT DX(1 + (L-N)*INCX) IF INCX .LT. 0
-C
-C     A(KL) IS AT DA(1 + (KL-1)*INCA) AND INCA MUST BE NON-NEGATIVE.
-C
-      INTEGER          IB,          IBINIT,      INCA
-      INTEGER          INCB,        INCX,        IX,          IXINIT
-      INTEGER          JX,          K,           KL,          KM1
-      INTEGER          L,           M,           MOD,         MP1
-      INTEGER          N
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      REAL DA(*),       DB(*),       DX(*),       DXK
-      REAL SUM1
-#else
-      DOUBLE PRECISION DA(*),       DB(*),       DX(*),       DXK
-      DOUBLE PRECISION SUM1
-#endif
-      IF (N .LE. 0) GO TO 90
-      IF ((INCX .NE. 1) .OR. (INCA .NE. 1) .OR. (INCB .NE. 1)) GO TO 60
-C
-C     CASE FOR ALL INCREMENTS = 1
-C
-      KL = 1
-      DB(1) = DA(1)*DX(1)
-      IF (N .LE. 1) GO TO 90
-      DO 50 K = 2,N
-           SUM1 = 0.0
-           DXK = DX(K)
-           KM1 = K - 1
-           M = MOD(KM1,3)
-           IF (M .EQ. 0) GO TO 20
-           DO 10 L = 1,M
-                KL = KL + 1
-                DB(L) = DB(L) + DA(KL)*DXK
-                SUM1 = SUM1 + DA(KL)*DX(L)
-   10      CONTINUE
-           IF (KM1 .LT. 3) GO TO 40
-   20      MP1 = M + 1
-           DO 30 L = MP1,KM1,3
-                DB(L  ) = DB(L  ) + DA(KL+1)*DXK
-                DB(L+1) = DB(L+1) + DA(KL+2)*DXK
-                DB(L+2) = DB(L+2) + DA(KL+3)*DXK
-                SUM1 = SUM1 + DA(KL+1)*DX(L) + DA(KL+2)*DX(L+1) +
-     X                        DA(KL+3)*DX(L+2)
-                KL = KL + 3
-   30      CONTINUE
-   40      KL = KL + 1
-           DB(K) = SUM1 + DA(KL)*DXK
-   50 CONTINUE
-      GO TO 90
-C
-C     CASE FOR INCREMENTS .NE. 1
-C
-   60 IB = 1
-      IX = 1
-      IF (INCX .LT. 0) IX = (1-N)*INCX + 1
-      IF (INCB .LT. 0) IB = (1-N)*INCB + 1
-      IBINIT = IB
-      IXINIT = IX
-      KL = 1
-      DB(IB) = DA(KL)*DX(IX)
-      IF (N .LE. 1) GO TO 90
-      DO 80 K = 2,N
-           SUM1 = 0.0
-           IX = IX + INCX
-           DXK = DX(IX)
-           KM1 = K - 1
-           JX = IXINIT
-           IB = IBINIT
-           DO 70 L = 1,KM1
-                KL = KL + INCA
-                DB(IB) = DB(IB) + DA(KL)*DXK
-                SUM1 = SUM1 + DA(KL)*DX(JX)
-                JX = JX + INCX
-                IB = IB + INCB
-   70      CONTINUE
-           KL = KL + INCA
-           DB(IB) = SUM1 + DA(KL)*DXK
-   80 CONTINUE
-   90 RETURN
+      IMPLICIT  NONE
+      REAL*8  AGE(N,N)
+      INTEGER N, NRSTA, NREND, NCSTA, NCEND
+      INTEGER IC, IR
+
+      DO IC = NCSTA, NCEND
+         DO IR = NRSTA, NREND
+            AGE(IR,IC) = 0.0D0
+         END DO
+      END DO
+      RETURN
       END
+
+      SUBROUTINE DSPZERO(N,ASP,NRSTA,NREND,NCSTA,NCEND)
+C
+C     Oct. 09, Hans Joergen Aa. Jensen
+C
+C     Zero block ASP(NRSTA:NREND,NCSTA:NCEND),
+C     however, ASP is Symmetric Packed (triangular packed)
+C
+      IMPLICIT  NONE
+      REAL*8  ASP(*)
+      INTEGER N, NRSTA, NREND, NCSTA, NCEND
+      INTEGER IC, IR, IROFF, MCEND, ICOFF, MREND
+
+C     First the part placed in lower triangle of the full matrix
+
+     
+      IF (NCSTA .LE. NREND) THEN
+      DO IR = NRSTA, NREND
+         IROFF = (IR*IR-IR)/2
+         MCEND = MIN(NCEND, IR)
+         DO IC = NCSTA, MCEND
+            ASP(IROFF+IC) = 0.0D0
+         END DO
+      END DO
+      END IF
+
+C     and then the part placed in uppper triangle
+
+      IF (NRSTA .LE. NCEND) THEN
+      DO IC = NCSTA, NCEND
+         ICOFF = (IC*IC-IC)/2
+         MREND = MIN(NREND, IC)
+         DO IR = NRSTA, MREND
+            ASP(ICOFF+IR) = 0.0D0
+         END DO
+      END DO
+      END IF
+
+      RETURN
+      END
+
 C  /* Deck ndxgta */
       INTEGER FUNCTION NDXGTA(N,A,DX,INCX)
 C
@@ -815,6 +808,120 @@ C
       NDXGTA = NUM
       RETURN
       END
+C  /* Deck dunit */
+      SUBROUTINE DUNIT(A,N)
+C
+C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
+C  TO A UNIT MATRIX.
+C  /VER 2/ 14-Sep-1983 hjaaj
+C
+#include "implicit.h"
+      DIMENSION A(*)
+      PARAMETER (D1=1.0D00, D0=0.0D00)
+C
+      NN = N*N
+      DO 100 I = 1,NN
+         A(I) = D0
+  100 CONTINUE
+      N1 = N + 1
+      DO 200 I = 1,NN,N1
+         A(I) = D1
+  200 CONTINUE
+      RETURN
+      END
+C  /* Deck dzero */
+      SUBROUTINE DZERO(DX,LENGTH)
+#include "implicit.h"
+C
+C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
+C
+C   Subroutine DZERO sets a real array of length *LENGTH*
+C   to zero.
+C...................................................................
+      DIMENSION DX(*)
+C
+      IF (LENGTH.LE.0) RETURN
+C
+      DO I = 1,LENGTH
+         DX(I) = 0.0D00
+      END DO
+C
+      RETURN
+      END
+C  /* Deck isum */
+      FUNCTION ISUM(N,IA,INCA)
+C
+C     8-Feb-1987 hjaaj
+C     Sums elements of a integer vector.
+C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
+C     -- based on DDOT from LINPACK
+C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
+C
+      INTEGER ISUM,  IA(*), ITEMP
+      INTEGER I,INCA,JA,M,MP1,N
+C
+      IF(N.LE.0) THEN
+        ISUM  = 0
+        RETURN
+      END IF
+
+      ITEMP = 0
+      IF(INCA.EQ.1)GO TO 20
+C
+C        CODE FOR UNEQUAL INCREMENTS OR EQUAL INCREMENTS
+C          NOT EQUAL TO 1
+C
+      JA = 1
+      IF(INCA.LT.0)JA = (-N+1)*INCA + 1
+      DO 10 I = 1,N
+        ITEMP = ITEMP + IA(JA)
+        JA = JA + INCA
+   10 CONTINUE
+      ISUM = ITEMP
+      RETURN
+C
+C        CODE FOR BOTH INCREMENTS EQUAL TO 1
+C
+C
+C        CLEAN-UP LOOP
+C
+   20 M = MOD(N,5)
+      IF( M .EQ. 0 ) GO TO 40
+      DO 30 I = 1,M
+        ITEMP = ITEMP + IA(I)
+   30 CONTINUE
+      IF( N .LT. 5 ) GO TO 60
+   40 MP1 = M + 1
+      DO 50 I = MP1,N,5
+         ITEMP = ITEMP     + IA(I)     + IA(I + 1)
+     *         + IA(I + 2) + IA(I + 3) + IA(I + 4)
+   50 CONTINUE
+   60 ISUM = ITEMP
+      RETURN
+      END
+C  /* Deck izero */
+      SUBROUTINE IZERO(INTVEC,LENGTH)
+C...................................................................
+C Written 5-May-1984 by Hans Jorgen Aa. Jensen
+C
+C   Subroutine IZERO sets an integer array of length *LENGTH*
+C   to zero.
+C...................................................................
+      INTEGER LEGNTH, INTVEC(*)
+C
+      IF (LENGTH.LE.0) RETURN
+C
+      DO I=1,LENGTH
+         INTVEC(I) = 0
+      END DO
+C
+      RETURN
+      END
+
+
+C Block 6:
+C   DGEINV, DGESOL, DSPSOL, DSPSLI : driver routines calling LINPACK
+
 C  /* Deck dgeinv */
       SUBROUTINE DGEINV(N,A,AINV,IPVT,WRK,INFO)
 C
