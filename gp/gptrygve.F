@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -92,13 +92,13 @@ C
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
-            WRITE (LUPRI,'()')
+Chj         WRITE (LUPRI,'()')
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
             OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
             LOUT = 17 + LTEXT + 3
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
-            WRITE (LUPRI,'()')
+Chj         WRITE (LUPRI,'()')
             CALL FLSHFO(LUPRI)
          END IF
       END IF
