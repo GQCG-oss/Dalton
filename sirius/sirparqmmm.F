@@ -98,8 +98,8 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
 C     1) The charge correction to the Fock/KS operator
 
       IF (NMULT .GE. 0) THEN
-C         IF (NODTOT .GE. 1) THEN
-         IF (.FALSE.) THEN
+         IF (NODTOT .GE. 1) THEN
+C         IF (.FALSE.) THEN
             CALL QMMM_CHARGE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -1656,7 +1656,7 @@ C ----
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_CHARGE_M',-KLAST,LWRK)
 
 C     Wake up slaves
 
@@ -1822,7 +1822,9 @@ C     Receiving data from master
       KMAT   = KDCAO  + NNBASX
       KLAST  = KMAT   + NNBASX
 
-      LWRK1  = LWRK - KLAST + 1
+      LWRK2  = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_CHARGE_S',-KLAST,LWRK)
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
@@ -1982,7 +1984,7 @@ C ----
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_DIPOLE_M',-KLAST,LWRK)
 
 C     Wake up slaves
 
@@ -2148,7 +2150,9 @@ C     Receiving data from master
       KMAT   = KDCAO  + NNBASX
       KLAST  = KMAT   + 3*NNBASX
 
-      LWRK1  = LWRK - KLAST + 1
+      LWRK2  = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_DIPOLE_S',-KLAST,LWRK)
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
@@ -2370,7 +2374,7 @@ C ----
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_QUADPOLE_M',-KLAST,LWRK)
 
       FAC1   = 1.0D0
       FACM1  = -1.0D0
@@ -2535,7 +2539,9 @@ C     Receiving data from master (I was made for lovin' you)
       KMAT   = KDCAO  + NNBASX
       KLAST  = KMAT   + 6*NNBASX
 
-      LWRK1  = LWRK - KLAST + 1
+      LWRK2  = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_QUADPOLE_S',-KLAST,LWRK)
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
@@ -2605,7 +2611,7 @@ C         we use KNS to collect the energy terms
 
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT),'ELFGRDC',NOSIM,WRK(KLAST),
-     &              LWRK1,LABINT,INTREP,INTADR,I,TOFILE,
+     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
      &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
 
