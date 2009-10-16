@@ -413,8 +413,7 @@ C
      &                                ' ',LBUF,OLDDX)
          CALL GPCLOSE(LUDA,'DELETE')
       END IF
-      CALL GPOPEN(LUDA,'AOSRTINT.DA','NEW','DIRECT',' ',LBUF,
-     &            OLDDX)
+      CALL GPOPEN(LUDA,'AOSRTINT.DA','NEW','DIRECT',' ',LBUF,OLDDX)
 C
 C....    PREPARE LOOK-UP TABLE OF BUFFER STARTING ADDRESSES
 C
