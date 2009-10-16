@@ -77,7 +77,7 @@ C  /* Deck qmmm_fck_ao_p */
       KWRK1  = KNSNUC + MMCENT
       LWRK1  = LWRK   - KWRK1
 
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 1',-KWRK1,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P',-KWRK1,LWRK)
 
       CALL DZERO(WRK(KTAO),NNBASX)
       CALL DZERO(WRK(KNSEL),MMCENT)
@@ -99,7 +99,6 @@ C     1) The charge correction to the Fock/KS operator
 
       IF (NMULT .GE. 0) THEN
          IF (NODTOT .GE. 1) THEN
-C         IF (.FALSE.) THEN
             CALL QMMM_CHARGE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -111,8 +110,7 @@ C         IF (.FALSE.) THEN
 C     2) The dipole correction to the Fock/KS operator
 
       IF (NMULT .GE. 1) THEN
-C         IF (NODTOT .GE. 1) THEN
-         IF (.FALSE.) THEN
+         IF (NODTOT .GE. 1) THEN
             CALL QMMM_DIPOLE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -120,13 +118,11 @@ C         IF (NODTOT .GE. 1) THEN
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-C      print *,'after dipole',esolt,wrk(knsel),dcao(1)
 
 C     3) The quadrupole correction to the Fock/KS operator
 
       IF (NMULT .GE. 2) THEN
-C         IF (NODTOT .GE. 1) THEN
-         IF (.FALSE.) THEN
+         IF (NODTOT .GE. 1) THEN
             CALL QMMM_QUADPOLE_M(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -134,7 +130,6 @@ C         IF (NODTOT .GE. 1) THEN
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-C      print *,'after quadpo',esolt,wrk(knsel),dcao(1)
 
 C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
 
@@ -148,7 +143,6 @@ C         IF (NODTOT .GE. 1) THEN
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-C      print *,'after octupo',esolt,wrk(knsel),dcao(1)
 
       IF (IPRINT.GT.1) THEN
         write(lupri,*)
@@ -169,7 +163,6 @@ C         IF (NODTOT .GE. 1) THEN
      &                       WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-C      print *,'after polari',esolt,wrk(knsel),dcao(1)
 
 C     Finally, put back the dipole origin
 
@@ -178,7 +171,6 @@ C     Finally, put back the dipole origin
       DIPORG(3) = OBKPZ
 
       CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
-C      print *,'before end  ',esolt,wrk(knsel),dcao(1),fsol(1)
 
       CALL QEXIT('QMMM_FCK_AO_P')
 
@@ -557,7 +549,6 @@ C  /* Deck qmmm_quadpole */
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
 
       FAC1   = 1.0D0
-      FACM1  = -1.0D0
       EMUL2T = 0.0D0
       ELOCT  = 0.0D0
 
@@ -1672,12 +1663,13 @@ C     These will be sent before. Not necessary to resend?
 C **************************************************
 
 
-      CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TAO,NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
       CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ICMO,8,'INTEGER',MASTER)
 
 C     From old routine
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
@@ -1696,7 +1688,7 @@ C     From old routine
 
 
 
-      CALL DZERO(TAO(1),NNBASX)
+      CALL DZERO(TAO,NNBASX)
 
 C     Start parallelized loop
       LNUM = 0
@@ -1807,7 +1799,6 @@ C ----
       CALL QENTER('QMMM_CHARGE_S')
 
       FAC1   = 1.0D0
-      FACM1  = -1.0D0
 
       QMMM = .TRUE.
 C     Receiving data from master
@@ -1826,12 +1817,17 @@ C     Receiving data from master
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_CHARGE_S',-KLAST,LWRK)
 
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
 
       CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ICMO,8,'INTEGER',MASTER)
 
 C     From old routine
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
@@ -1879,7 +1875,7 @@ C     Do the work
          CALL DZERO(WRK(KMAT),NNBASX)
 
          KPATOM = 0
-         NOSIM = 1
+         NOSIM  = 1
          TOFILE = .FALSE.
          TRIMAT = .TRUE.
          EXP1VL = .FALSE.
@@ -1895,7 +1891,7 @@ C     Do the work
          RUNQM3=.FALSE.
 
          IF (IPRTMP.GT.15) THEN
-           WRITE (LUPRI,'(/A)') 'Pot. energy matrix in QMMM_FCK_AO_P'
+           WRITE (LUPRI,'(/A)') 'Pot. energy matrix in QMMM_CHARGE_S'
            CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
          ENDIF
 
@@ -1926,9 +1922,13 @@ C     Send data to master
       CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),MMCENT,
+      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
 
       CALL QEXIT('QMMM_CHARGE_S')
 
@@ -2154,6 +2154,10 @@ C     Receiving data from master
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_DIPOLE_S',-KLAST,LWRK)
 
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
@@ -2317,9 +2321,14 @@ C     Send data to master
       CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),MMCENT,
+      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
 
       CALL QEXIT('QMMM_DIPOLE_S')
 
@@ -2375,9 +2384,6 @@ C ----
       LWRK2 = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_QUADPOLE_M',-KLAST,LWRK)
-
-      FAC1   = 1.0D0
-      FACM1  = -1.0D0
 
 C     Wake up slaves (Rock and roll all nite)
 
@@ -2523,8 +2529,6 @@ C ----
       CALL QENTER('QMMM_QUAD_S')
 
       FAC1   = 1.0D0
-      FACM1  = -1.0D0
-
 
       QMMM = .TRUE.
 C     Receiving data from master (I was made for lovin' you)
@@ -2542,6 +2546,10 @@ C     Receiving data from master (I was made for lovin' you)
       LWRK2  = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_QUADPOLE_S',-KLAST,LWRK)
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
 
       CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
@@ -2715,9 +2723,14 @@ C     Send data to master (Do you love me?)
       CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),MMCENT,
+      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
 
       CALL QEXIT('QMMM_QUAD_S')
 
