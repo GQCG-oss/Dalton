@@ -180,6 +180,7 @@ C
       PARAMETER ( D0 = 0.0D0 )
 C
 C Used from common blocks:
+C     GNRINF: DOSRIN,SRINTS,CHIVAL
 C     EXEINF: FTRCTL
 C     INFORB: NORBT,NRHF,?
 C     SCBRHF: NFRRHF()
@@ -191,6 +192,7 @@ C
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <exeinf.h>
 #include <infopt.h>
 #include <inforb.h>
@@ -242,20 +244,46 @@ C     Disable "MP2FRO" if result not to be printed
       IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
       CALL FLSHFO(LUW4)
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-      IF (SRINTS_SRMP2) IPRMP2 = MAX(0,IPRMP2)
-C     ... make sure MP2 energy with short-range integrals is printed!
-C
+      IF (SRINTS_SRMP2) THEN
+         IPRMP2 = MAX(0,IPRMP2)
+C        ... make sure MP2 energy with short-range integrals is printed!
+      END IF
 C
 C     if SRINTS_SRMP2 
 C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
 C     2)  set SRINTS_SRMP2 false, go back to label 10, and redo the 
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
+      ISRINTS_LOOP = 0
    10 CONTINUE
       IF (SRINTS_SRMP2) THEN
-         WRITE(LUPRI,'(/A)')
+         ISRINTS_LOOP = ISRINTS_LOOP + 1
+         IF (ISRINTS_LOOP .EQ. 1) THEN
+            WRITE(LUPRI,'(/A)')
      &      ' MP2 energy expression with short-range integrals'
-         AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
-         AO2INTFILE_LABEL = 'AOSR2INT'
+            AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
+            AO2INTFILE_LABEL = 'AOSR2INT'
+         ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' MP2 energy expression with long-range integrals'
+            AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
+            AO2INTFILE_LABEL = 'AOTWOINT'
+         ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
+            WRITE(LUPRI,'(/A)') ' MP2 energy expression with '//
+     &      'full (short-range + long-range) integrals'
+            AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
+            AO2INTFILE_LABEL = 'AOTWOINT'
+            CHIVAL = -1.0D0
+            DOSRIN = .FALSE.
+            SRINTS = .FALSE.
+            IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
+     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+            CALL GPCLOSE(LUINTA,'DELETE')
+         ELSE
+            WRITE(LUPRI,'(/A)')
+     &      ' Finished .SRINTS MP2 calculations for srDFT, goodbye!'
+            CALL QUIT('No error, finished .SRINTS MP2 calculations')
+         END IF
+         
          FTRCTL = .TRUE.
 C        ... force new sort of AO integrals
       END IF
@@ -389,8 +417,26 @@ C
      *      " Total energy and NO's calculated with frozen orbitals."
          END IF
          IF (SRINTS_SRMP2) THEN
-            WRITE (LUPRI,'(//A,F25.10)')
-     *       '   MP2 contribution from short-range integrals :',EMP2
+            IF (ISRINTS_LOOP .EQ. 1) THEN
+               WRITE (LUPRI,'(//A,F25.10)')
+     *          '   MP2 contribution from short-range integrals :',EMP2
+               EMP2_SR = EMP2
+            ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
+               WRITE (LUPRI,'(//A,F25.10)')
+     *          '   MP2 contribution from  long-range integrals :',EMP2
+               EMP2_LR = EMP2
+            ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
+               EMP2_SRLR = EMP2 - EMP2_SR - EMP2_LR
+               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
+     &           //'       sr-lr integrals :',EMP2_SRLR
+               EMP2_SRLR = EMP2_SRLR + EMP2_SR
+               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
+     &           //' sr-sr+sr-lr integrals :',EMP2_SRLR
+               WRITE (LUPRI,'(//A,F25.10)')
+     *          '   MP2 contribution from        full integrals :',EMP2
+            ELSE
+               call quit('You should never see this output!')
+            END IF
          ELSE IF (ADDSRI) THEN
             WRITE (LUPRI,'(/,3(/A,F25.10))')
      *       ' Short-range Hartree-Fock total energy         :',EMY,
@@ -528,16 +574,33 @@ C
      *      ' frozen orbitals.'
          END IF
          IF (SRINTS_SRMP2) THEN
-            WRITE (LUPRI,'(//A,F25.10)')
-     *       '   MP2 contribution from short-range integrals :',EMP2FL
+            IF (ISRINTS_LOOP .EQ. 1) THEN
+               WRITE (LUPRI,'(//A,F25.10)')
+     *         '   MP2 contribution from short-range integrals :',EMP2FL
+               EMP2FL_SR = EMP2FL
+            ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
+               WRITE (LUPRI,'(//A,F25.10)')
+     *         '   MP2 contribution from  long-range integrals :',EMP2FL
+               EMP2FL_LR = EMP2FL
+            ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
+               EMP2FL_SRLR = EMP2FL - EMP2FL_SR - EMP2FL_LR
+               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
+     &           //'       sr-lr integrals :',EMP2FL_SRLR
+               EMP2FL_SRLR = EMP2FL_SRLR + EMP2FL_SR
+               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
+     &           //' sr-sr+sr-lr integrals :',EMP2FL_SRLR
+               WRITE (LUPRI,'(//A,F25.10)')
+     *         '   MP2 contribution from        full integrals :',EMP2FL
+            ELSE
+               call quit('You should never see this output!')
+            END IF
 C
-C           now reset to original 2-electron integral file
+C           now reset name of 2-electron integral file
             AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
             FTRCTL = .TRUE.
-            SRINTS_SRMP2 = .FALSE.
             GO TO 10
 C           ... and go back and calculate the MP2 contributions from
-C               long-range integrals /hjaaj Oct 09
+C               next class of range-separated integrals /hjaaj Oct 09
          ELSE IF (ADDSRI) THEN
            WRITE (LUPRI,'(/A/3(/A,F25.10))')
      *     ' NOTE that the orbitals saved on disk are those obtained'//
@@ -612,13 +675,13 @@ C
 C
          END IF
 C
-C     END IF (MP2FRO .AND. .NOT.FCKFRO)
+C     Here is the end of IF (MP2FRO .AND. .NOT.FCKFRO)
+C
       ELSE IF (SRINTS_SRMP2) THEN
 C
-C        now reset to original 2-electron integral file
+C         now reset name of 2-electron integral file
          AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
          FTRCTL = .TRUE.
-         SRINTS_SRMP2 = .FALSE.
          GO TO 10
 C        ... and go back and calculate the MP2 contributions from
 C            long-range integrals /hjaaj Oct 09
