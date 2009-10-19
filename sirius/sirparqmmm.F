@@ -1642,7 +1642,8 @@ C ----
 
       KNSNUC = 1
       KTAO  = KNSNUC + MMCENT
-      KNSEL = KTAO + NNBASX
+      KTAO2  = KTAO + NNBASX
+      KNSEL = KTAO2 + NNBASX
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
@@ -1661,8 +1662,6 @@ C     These will be sent before. Not necessary to resend?
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
 C **************************************************
 
-
-      CALL MPIXBCAST(TAO,NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -1684,10 +1683,6 @@ C     From old routine
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
-
-
-      CALL DZERO(TAO,NNBASX)
 
 C     Start parallelized loop
       LNUM = 0
@@ -1718,9 +1713,13 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL MPI_REDUCE(WRK(KTAO),TAO,NNBASX,
+      CALL DZERO(WRK(KTAO2),NNBASX)
+      CALL MPI_REDUCE(WRK(KTAO2),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+
+
+      CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO(1),1)
 
 
       EXPNST = 0.0D0
@@ -1820,7 +1819,6 @@ C     Receiving data from master
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-      CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -1847,6 +1845,7 @@ C     Do the work
 
       CALL DZERO(WRK(KNSEL),MMCENT)
       CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KTAO),NNBASX)
 
  20   CONTINUE
 
@@ -1979,7 +1978,8 @@ C ----
 
       KNSNUC = 1
       KTAO  = KNSNUC + MMCENT
-      KNSEL = KTAO + NNBASX
+      KTAO2  = KTAO + NNBASX
+      KNSEL = KTAO2 + NNBASX
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
@@ -1998,8 +1998,6 @@ C     These will be sent before. Not necessary to resend?
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
 C **************************************************
 
-
-      CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -2023,7 +2021,7 @@ C     From old routine
 
 
 
-      CALL DZERO(TAO(1),NNBASX)
+C      CALL DZERO(TAO(1),NNBASX)
 
 C     Start parallelized loop
       LNUM = 0
@@ -2054,10 +2052,12 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL MPI_REDUCE(WRK(KTAO),TAO,NNBASX,
+      CALL DZERO(WRK(KTAO2),NNBASX)
+      CALL MPI_REDUCE(WRK(KTAO2),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
+      CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO(1),1)
 
       EMUL1T = 0.0D0
       ELOCT  = 0.0D0
@@ -2157,7 +2157,6 @@ C     Receiving data from master
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-      CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -2183,6 +2182,7 @@ C     Do the work
 
       CALL DZERO(WRK(KNSEL),MMCENT)
       CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KTAO),NNBASX)
 
  20   CONTINUE
 
@@ -2378,7 +2378,8 @@ C ----
 
       KNSNUC = 1
       KTAO  = KNSNUC + MMCENT
-      KNSEL = KTAO + NNBASX
+      KTAO2  = KTAO + NNBASX
+      KNSEL = KTAO2 + NNBASX
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
@@ -2397,8 +2398,6 @@ C     These will be sent before. Not necessary to resend?
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
 C **************************************************
 
-
-      CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -2419,10 +2418,6 @@ C     From old routine
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
-
-
-      CALL DZERO(TAO(1),NNBASX)
 
 C     Start parallelized loop
       LNUM = 0
@@ -2453,9 +2448,12 @@ C     Collect data from all slaves (I love it load)
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL MPI_REDUCE(WRK(KTAO),TAO,NNBASX,
+      CALL DZERO(WRK(KTAO2),NNBASX)
+      CALL MPI_REDUCE(WRK(KTAO2),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+
+      CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO(1),1)
 
       EMUL2T = 0.0D0
       ELOCT  = 0.0D0
@@ -2550,7 +2548,6 @@ C     Receiving data from master (I was made for lovin' you)
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-      CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -2576,6 +2573,7 @@ C     Do the work
 
       CALL DZERO(WRK(KNSEL),MMCENT)
       CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KTAO),NNBASX)
 
  20   CONTINUE
 
@@ -2780,7 +2778,8 @@ C ----
 
       KNSNUC = 1
       KTAO  = KNSNUC + MMCENT
-      KNSEL = KTAO + NNBASX
+      KTAO2  = KTAO + NNBASX
+      KNSEL = KTAO2 + NNBASX
       KLAST = KNSEL + MMCENT
       LWRK2 = LWRK - KLAST + 1
 
@@ -2799,8 +2798,6 @@ C     These will be sent before. Not necessary to resend?
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
 C **************************************************
 
-
-      CALL MPIXBCAST(TAO(1),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -2822,10 +2819,6 @@ C     From old routine
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
-
-
-      CALL DZERO(TAO(1),NNBASX)
 
 C     Start parallelized loop
       LNUM = 0
@@ -2856,9 +2849,12 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL MPI_REDUCE(WRK(KTAO),TAO,NNBASX,
+      CALL DZERO(WRK(KTAO2),NNBASX)
+      CALL MPI_REDUCE(WRK(KTAO2),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+
+      CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO(1),1)
 
       EMUL3T = 0.0D0
       ELOCT  = 0.0D0
@@ -2958,7 +2954,6 @@ C     Receiving data from master
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-      CALL MPIXBCAST(WRK(KTAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
@@ -2985,6 +2980,7 @@ C     Do the work
 
       CALL DZERO(WRK(KNSEL),MMCENT)
       CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KTAO),NNBASX)
 
  20   CONTINUE
 
@@ -3263,7 +3259,7 @@ C       Remember the factor of 1/6 from the Taylor expansion
         ELOC   = D6I*ELOC
 
         WRK(KNSNUC + I - 1) = ELOC
-C        ELOCT = ELOCT + SNUC(I)
+
         GO TO 20
       ENDIF
 
