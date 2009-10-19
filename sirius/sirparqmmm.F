@@ -3040,7 +3040,7 @@ C       Consider first the derivative wrt. z
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT1),'ELFGRDC',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
         DIPORG(3) = ZSAVE
 
@@ -3048,7 +3048,7 @@ C       Consider first the derivative wrt. z
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT2),'ELFGRDC',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
         DIPORG(3) = ZSAVE
 
@@ -3059,7 +3059,7 @@ C       Calculate gradient of these integrals
         CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT1),1)
         CALL DZERO(WRK(KMAT2),6*NNBASX)
 
-        IF (IPRINT.GT.15) THEN
+        IF (IPRTMP.GT.15) THEN
           WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
 
@@ -3085,7 +3085,7 @@ C       Continue with the derivatives wrt. y
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT2),'ELFGRDC',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
         DIPORG(2) = YSAVE
 
@@ -3093,7 +3093,7 @@ C       Continue with the derivatives wrt. y
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT3),'ELFGRDC',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
         DIPORG(2) = YSAVE
 
@@ -3104,7 +3104,7 @@ C       Calculate gradient of these integrals
         CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT2),1)
         CALL DZERO(WRK(KMAT3),6*NNBASX)
 
-        IF (IPRINT.GT.15) THEN
+        IF (IPRTMP.GT.15) THEN
           WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
 
@@ -3130,7 +3130,7 @@ C       Continue with the derivatives wrt. x
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT3),'ELFGRDC',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
         DIPORG(1) = XSAVE
 
@@ -3138,7 +3138,7 @@ C       Continue with the derivatives wrt. x
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMAT4),'ELFGRDC',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3=.FALSE.
         DIPORG(1) = XSAVE
 
@@ -3149,7 +3149,7 @@ C       Calculate gradient of these integrals
         CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT3),1)
         CALL DZERO(WRK(KMAT4),6*NNBASX)
 
-        IF (IPRINT.GT.15) THEN
+        IF (IPRTMP.GT.15) THEN
           WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
 

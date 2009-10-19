@@ -88,7 +88,7 @@ LONG="$LONG $LONGCC"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel"
 #
-PARQMMM="parqmmm3 parqmmm4 parqmmm7 parqmmm8"
+PARQMMM="parqmmm1 parqmmm2 parqmmm3 parqmmm4 parqmmm5 parqmmm6 parqmmm7 parqmmm8"
 #
 DEBUG="qmmm_debug"
 #
