@@ -1269,7 +1269,7 @@ C
      +        ' Note: the first',NFRRHF_I ,' orbitals are frozen in SCF'
             WRITE (LUW4,1750) (ORBEN(IORBI+I),I=1,NORBI)
          END IF
-1
+C
   399 CONTINUE
 C
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
