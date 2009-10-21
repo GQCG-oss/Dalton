@@ -133,7 +133,7 @@ C *** Option 4 >TDASOP<  Diagonal 2. order 2p-2h correction in SOPPA
   104 TDA_MP2 = .TRUE.
       GO TO 100
 C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
-#ifdef VAR_SRDFT
+#ifdef MOD_SRDFT
   105 SC_SRMP2 = .TRUE.
 #else
   105 CONTINUE
@@ -142,7 +142,7 @@ C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
 #endif 
       GO TO 100
 C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
-#ifdef VAR_SRDFT
+#ifdef MOD_SRDFT
   106 SRINTS_SRMP2 = .TRUE.
 #else
   106 CONTINUE
@@ -495,7 +495,7 @@ C
 C     
       CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
 C
-#ifdef VAR_SRDFT
+#ifdef MOD_SRDFT
 C     ======================================================
 C     Manu June 07 : If MP2SRDFT calculation ... 
 C
@@ -539,7 +539,7 @@ C
       END IF
 C     END IF
 C
-#endif /*  VAR_SRDFT  */
+#endif /*  MOD_SRDFT  */
 C     Save MP2 orbitals for MCSCF/CI if not SOPPA
 C
       IF (.NOT.FLAG(25)) THEN
@@ -636,7 +636,7 @@ C
 C        Manu June 07 : If MP2SRDFT calculation ... 
 C
          IF (DOHFSRDFT .AND. SC_SRMP2) THEN
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not implemented in this version')
 #else
             WRITE(LUPRI,'(4(/A))')

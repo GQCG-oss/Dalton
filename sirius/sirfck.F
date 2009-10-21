@@ -527,7 +527,7 @@ C
 C     ***************** ADD SR-DFT contribution if MCSCF-DFT or if HF-SRDFT
 C
       IF (ADDSRI.AND.(DOHFSRDFT.OR.DOMCSRDFT).AND.(.NOT.PREHF)) THEN
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not included in this version')
 #else
          IF (LSRHYBR .AND. DO_SPINDNS) THEN
@@ -707,7 +707,7 @@ c
 c
          !...and use them to build the (fitted) Fock matrix
          CALL JAB_DENFIT_NODDY(NBAST,NBAST,DFCOEFF,FMAT(1,1))
-#endif  /* VAR_SRDFT */
+#endif  /* MOD_SRDFT */
       END IF
 C
 #if defined (VAR_OLDCODE)

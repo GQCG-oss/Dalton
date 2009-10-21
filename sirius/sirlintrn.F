@@ -586,7 +586,7 @@ C        V^([2c],xc-SR)
 C     is saved in FTV(1,NCSIM+ICSIM) in SIRTR1.
 C
       IF (DOMCSRDFT .AND. NCSIM .GT. 0) THEN
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not included in this version')
 #else
          CALL DSPTSI(NASHT,DV,WRK(KUDV))
