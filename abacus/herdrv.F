@@ -1812,7 +1812,7 @@ C&&&& in direct SCF
                   READ (LUCMD,*) ICDIFF,IEDIFF
                GO TO 100
     8          CONTINUE
-C&&&& Screening threshold in direct construction of Fock matrices
+C&&&& IFTHRS Screening threshold in direct construction of Fock matrices
                   READ (LUCMD,*) IFTHRS
                   USRSCR = .TRUE.
                GO TO 100
@@ -1839,16 +1839,18 @@ C&&& DOSRIN : Calculate short-range 2-elec. integrals needed for
 C&&&          computing the short-range Hartree term (U_sr) in MC-srDFT
                DOSRIN = .TRUE.
                GO TO 100
+C&&& KSPT2M
    13          CONTINUE
                READ (LUCMD,*,ERR=38) CHIVAL 
                CHI1ST = .TRUE.
                RUNTWO = .TRUE.
                GO TO 100
  38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
-               GO TO 100
    14          CONTINUE
+C&&&
                GO TO 100
    15          CONTINUE
+C&&&
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

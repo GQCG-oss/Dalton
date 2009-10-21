@@ -1228,7 +1228,8 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
-         WRITE(LUPRI,'(/A,I5,A)') "PARALLEL: Using", NODTOT+1, " CPUs."
+         WRITE(LUPRI,'(/A,I5,A)')
+     &      " * PARALLEL: Using", NODTOT+1, " CPUs."
       END IF
 C
 C ...............
