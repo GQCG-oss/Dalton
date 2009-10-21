@@ -491,25 +491,27 @@ C
          NFROI = NFRO(ISYM)
          NISHI = NISH(ISYM)
          NOCCI = NOCC(ISYM)
+         NASHI = NOCCI - NISHI
          IF (NFROI .GT. 0) THEN
-            DO 162 I = 2,NORBI
+C           zero off-diagonal frozen-frozen elements
+            DO I = 2,NFROI
                JSTA = JFC + IROW(I)
-               JEND = JSTA - 1 + MIN(NFROI,I-1)
-               DO 162 J = JSTA,JEND
+               JEND = JSTA + I - 2
+               DO J = JSTA,JEND
                   WRK(J) = D0
-  162       CONTINUE
+               END DO
+            END DO
          END IF
-         DO 167 I = (NISHI+1),NORBI
-            JSTA = JFC + IROW(I)
-            IF (I .LE. NOCCI) THEN
-               JEND = JSTA - 1 + NISHI
-            ELSE
-               JEND = JSTA - 1 + NOCCI
-            END IF
-            DO 164 J = JSTA,JEND
-               WRK(J) = D0
-  164       CONTINUE
-  167    CONTINUE
+         IF (NISHI .GT. 0) THEN
+C           zero inactive-(active+secondary) block
+C           Note that any frozen orbitals are also "inactive".
+            CALL DSPZERO(NORBI,WRK(JFC),1,NISHI,NISHI+1,NORBI)
+C           call dspzero(n,asp, nrsta,nrend, ncsta,ncend)
+         END IF
+         IF (NASHI .GT. 0) THEN
+C           zero active-secondary block
+            CALL DSPZERO(NORBI,WRK(JFC),NISHI+1,NOCCI,NOCCI+1,NORBI)
+         END IF
 C
 C
          CALL JACO(WRK(JFC),WRK(JCMO2),NORBI,NORBI,NBASI,
@@ -524,16 +526,15 @@ C        skip frozen orbitals
 C
          JCMO2 = JCMO2 + NFROI*NBASI
          JCMO  = 1 + ICMO(ISYM) + NFROI*NBASI
-         NISHJ = NISHI - NFROI
-         IF (NISHJ .GT. 1) THEN
+         NISHI_NF = NISHI - NFROI
+         IF (NISHI_NF .GT. 1) THEN
 C           order inactive orbitals which are not frozen
             CALL ORDRSS(WRK(JCMO2),WRK(KBIG+NFROI),
-     &                  ISSMO(IORBI+NFROI+1),NISHJ,NBASI)
-            CALL DCOPY(NISHJ*NBASI,WRK(JCMO2),1,CMO(JCMO),1)
+     &                  ISSMO(IORBI+NFROI+1),NISHI_NF,NBASI)
+            CALL DCOPY(NISHI_NF*NBASI,WRK(JCMO2),1,CMO(JCMO),1)
          END IF
-         JCMO2 = JCMO2 + NISHJ*NBASI
-         JCMO  = JCMO  + NISHJ*NBASI
-         NASHI = NOCCI - NISHI
+         JCMO2 = JCMO2 + NISHI_NF*NBASI
+         JCMO  = JCMO  + NISHI_NF*NBASI
          IF (.NOT. GETOCC .AND. .NOT. TRTOCO .AND.
      &       NASHI .GT. 1 .AND. .NOT. SUPSYM) THEN
 C           order active orbitals
