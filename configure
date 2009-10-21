@@ -99,7 +99,7 @@ lapack="false"
 MACHTYPE=`uname -s`
 if [ "$MACHTYPE" = 'Linux' -o "$MACHTYPE" = Darwin ]; then
     ECHO='echo -e'
-    if [ "$ECHO" = '-e' ]; then ECHO=echo; fi
+    if [ "`$ECHO`" = '-e' ]; then ECHO=echo; fi
     prc=`uname -m`
 else
     ECHO=echo
