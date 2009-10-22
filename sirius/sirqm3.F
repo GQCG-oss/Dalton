@@ -1883,7 +1883,7 @@ C     Modify the fock operator. Modification returned in FSOL.
 C     QMMM contribution to the energy returned in EQMMM.
 C      IF (NODTOT .GE. 1) THEN
       IF (.TRUE.) THEN
-         CALL QMMM_FCK_AO_P(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
+         CALL QMMM_FCK_AO_NEW(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
      & IPRINT)
       ELSE
          CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)

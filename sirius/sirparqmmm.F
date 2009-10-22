@@ -34,8 +34,8 @@ C
 C FILE: sirius/sirparqmmm.F
 C Magnus and Arnfinn
 C**************************************************************************************
-C  /* Deck qmmm_fck_ao_p */
-      SUBROUTINE QMMM_FCK_AO_P(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
+C  /* Deck qmmm_fck_ao_new */
+      SUBROUTINE QMMM_FCK_AO_NEW(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
 
 #include <implicit.h>
 #include <priunit.h>
@@ -63,13 +63,15 @@ C  /* Deck qmmm_fck_ao_p */
       DIMENSION FSOL(*),DCAO(*)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
-      LOGICAL EXCENT
+      LOGICAL EXCENT,LOCDEB
       INTEGER NZERAL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('QMMM_FCK_AO_P')
+      CALL QENTER('QMMM_FCK_AO_NEW')
+
+      LOCDEB = .FALSE.
 
       KTAO   = 1
       KNSEL  = KTAO   + NNBASX
@@ -77,7 +79,7 @@ C  /* Deck qmmm_fck_ao_p */
       KWRK1  = KNSNUC + MMCENT
       LWRK1  = LWRK   - KWRK1
 
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P',-KWRK1,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_NEW',-KWRK1,LWRK)
 
       CALL DZERO(WRK(KTAO),NNBASX)
       CALL DZERO(WRK(KNSEL),MMCENT)
@@ -103,7 +105,7 @@ C     1) The charge correction to the Fock/KS operator
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -115,7 +117,7 @@ C     2) The dipole correction to the Fock/KS operator
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -127,7 +129,7 @@ C     3) The quadrupole correction to the Fock/KS operator
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -139,11 +141,11 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
      &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
-      IF (IPRINT.GT.1) THEN
+      IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         write(lupri,*)
         write(lupri,*) 'MM-charge QM density interaction energy:',ECHART
         write(lupri,*) 'MM-dipole QM density interaction energy:',EDIPT
@@ -159,7 +161,7 @@ C     5) The polarization correction to the Fock/KS operator
      &                       WRK(KWRK1),LWRK1,IPRINT)
          ELSE
             CALL QMMM_POLARI(DCAO,ESOLT,EPOLT,WRK(KTAO),
-     &                       WRK(KWRK1),LWRK1,IPRINT)
+     &                       LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
 
@@ -171,13 +173,14 @@ C     Finally, put back the dipole origin
 
       CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
 
-      CALL QEXIT('QMMM_FCK_AO_P')
+      CALL QEXIT('QMMM_FCK_AO_NEW')
 
       RETURN
       END
 C**************************************************************************************
 C  /* Deck qmmm_charge */
-      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,IPRINT)
+      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+     &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -202,7 +205,7 @@ C  /* Deck qmmm_charge */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -213,7 +216,7 @@ C  /* Deck qmmm_charge */
       KLAST = KMAT + NNBASX
       LWRK2 = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 2',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_CHARGE 1',-KLAST,LWRK)
 
       FAC1 = 1.0D0      
       EXPNST = 0.0D0
@@ -236,6 +239,9 @@ C  /* Deck qmmm_charge */
          IF (DIST .GT. RCUTMM) THEN
            SEL(I)  = 0.0D0
            SNUC(I) = 0.0D0
+           IF (LOCDEB) THEN
+             WRITE(LUPRI,*) 'Skipping charge ', I
+           ENDIF 
            GOTO 100
          ENDIF
 
@@ -250,6 +256,44 @@ C  /* Deck qmmm_charge */
          DIPORG(2) = MMCORD(2,I)
          DIPORG(3) = MMCORD(3,I)
 
+         IF (LOCDEB) THEN
+C     Test for numerical int.
+           CORZSAVE  = DIPORG(3)
+           KMAT1  = KLAST
+           KMAT2  = KMAT1 + NNBASX
+           KMAT3  = KMAT2 + NNBASX
+           KLAST1 = KMAT3 + NNBASX
+           LWRK3  = LWRK - KLAST1 + 1
+
+           IF (LWRK3 .LT. 0) CALL ERRWRK('QMMM_CHARGE 2',-KLAST1,LWRK)
+
+           CALL DZERO(WRK(KMAT1),3*NNBASX)
+ 
+           DIPORG(3) = DIPORG(3) + 0.01
+           RUNQM3=.TRUE.
+           CALL GET1IN(WRK(KMAT1),'NPETES ',NOSIM,WRK(KLAST1),
+     &                   LWRK3,LABINT,INTREP,INTADR,I,TOFILE,
+     &                   KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+           DIPORG(3) = DIPORG(3) - 0.02
+           CALL GET1IN(WRK(KMAT2),'NPETES ',NOSIM,WRK(KLAST1),
+     &                   LWRK3,LABINT,INTREP,INTADR,I,TOFILE,
+     &                   KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+           DIPORG(3) = CORZSAVE
+           CALL GET1IN(WRK(KMAT3),'NPETES ',NOSIM,WRK(KLAST1),
+     &                   LWRK3,LABINT,INTREP,INTADR,I,TOFILE,
+     &                   KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+           RUNQM3=.FALSE.
+C  Gradient        
+           FM1 = -1.0D0
+           FSCAL = 1.0D0/0.02
+           CALL DAXPY(NNBASX,FM1,WRK(KMAT2),1,WRK(KMAT1),1)
+           CALL DSCAL(NNBASX,FSCAL,WRK(KMAT1),1)
+           FSCAL = -1.0D0
+           CALL DSCAL(NNBASX,FSCAL,WRK(KMAT1),1)
+           WRITE (LUPRI,'(/A)') 'E_z num matrix in QMMM_FCK_AO'
+           CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
+           DIPORG(3) = CORZSAVE
+         ENDIF
        
          RUNQM3=.TRUE.
          CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
@@ -257,7 +301,7 @@ C  /* Deck qmmm_charge */
      &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
          RUNQM3=.FALSE.
 
-         IF (IPRINT.GT.15) THEN
+         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
            WRITE (LUPRI,'(/A)') 'Pot. energy matrix in QMMM_FCK_AO_P'
            CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
          ENDIF
@@ -287,7 +331,7 @@ C        Now the QM nuclear contribution
       ECHART = EXPNST + ECHCH
       ESOLT  = ECHART
 
-      IF (IPRINT.GT.5) THEN
+      IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) ' Center Charge-electronic Charge-nuclear Total'
         DO 102 I = 1,MMCENT
@@ -308,7 +352,8 @@ C        Now the QM nuclear contribution
       END
 C**************************************************************************************
 C  /* Deck qmmm_dipole */
-      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,IPRINT)
+      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+     &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -332,7 +377,7 @@ C  /* Deck qmmm_dipole */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -345,7 +390,7 @@ C  /* Deck qmmm_dipole */
       KLAST = KMAT + 3*NNBASX
       LWRK2 = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 4',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_DIPOLE 1',-KLAST,LWRK)
 
       FAC1   = 1.0D0      
       FACM1  = -1.0D0
@@ -372,6 +417,9 @@ C         we use KNS to collect the energy terms
         IF (DIST .GT. RCUTMM) THEN
           SEL(I)  = 0.0D0
           SNUC(I) = 0.0D0
+          IF (LOCDEB) THEN
+            WRITE(LUPRI,*) 'Skipping dipole ', I
+          ENDIF
           GOTO 200
         ENDIF
 
@@ -385,6 +433,49 @@ C         we use KNS to collect the energy terms
         DIPORG(1) = MMCORD(1,I)
         DIPORG(2) = MMCORD(2,I)
         DIPORG(3) = MMCORD(3,I)
+
+        IF (LOCDEB) THEN
+C       TEST for numerical int.
+          CORZSAVE  = DIPORG(3)
+
+          KMAT1  = KLAST
+          KMAT2  = KMAT1 + 3*NNBASX
+          KMAT3  = KMAT2 + 3*NNBASX
+          KLAST1 = KMAT3 + 3*NNBASX
+          LWRK3  = LWRK - KLAST1 + 1
+
+          IF (LWRK3 .LT. 0) CALL ERRWRK('QMMM_DIPOLE 2',-KLAST1,LWRK)
+
+          CALL DZERO(WRK(KMAT1),9*NNBASX)
+          
+          DIPORG(3) = DIPORG(3) + 0.01
+          RUNQM3=.TRUE.
+          CALL GET1IN(WRK(KMAT1),'NEFIELD',NOSIM,WRK(KLAST1),
+     &                  LWRK3,LABINT,INTREP,INTADR,I,TOFILE,
+     &                  KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+          DIPORG(3) = DIPORG(3) - 0.02
+          CALL GET1IN(WRK(KMAT2),'NEFIELD',NOSIM,WRK(KLAST1),
+     &                  LWRK3,LABINT,INTREP,INTADR,I,TOFILE,
+     &                  KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+          DIPORG(3) = CORZSAVE
+          CALL GET1IN(WRK(KMAT3),'NEFIELD',NOSIM,WRK(KLAST1),
+     &                  LWRK3,LABINT,INTREP,INTADR,I,TOFILE,
+     &                  KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+          RUNQM3=.FALSE.
+C      Gradient
+          FM1 = -1.0D0
+          FSCAL = 1.0D0/0.02
+          CALL DAXPY(3*NNBASX,FM1,WRK(KMAT2),1,WRK(KMAT1),1)
+          CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT1),1)
+          FSCAL = -1.0D0
+          CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT1),1)
+          WRITE (LUPRI,'(/A)') 'E_xz num matrix in QMMM_FCK_AO'
+          CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
+          WRITE (LUPRI,'(/A)') 'E_zz num matrix in QMMM_FCK_AO'
+          CALL OUTPAK(WRK(KMAT1+2*NNBASX),NBAST,1,LUPRI)
+ 
+          DIPORG(3) = CORZSAVE
+        ENDIF
 
 
         RUNQM3=.TRUE.
@@ -431,14 +522,7 @@ C         we use KNS to collect the energy terms
           CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
         ENDIF
 
-c          write(lupri,*) 'TEMPI',TEMPI
-c          write(lupri,*) 'QMPOL(MHIT)',QMPOL(MHIT)
-c          write(lupri,*) 'MHIT',MHIT
-c          write(lupri,*) 'TEMP',TEMP
-c          write(lupri,*) 'SIJ',SIJ
-c          write(lupri,*) 'DFACT',DFACT
-
-        IF (IPRINT.GT.15) THEN
+        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
@@ -488,7 +572,7 @@ C       CORD(1,J) - MMCORD(1,I)
       EDIPT = EMUL1T + ELOCT
       ESOLT = ESOLT + EDIPT
 
-      IF (IPRINT.GT.5) THEN
+      IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) ' Center Dipole-electronic Dipole-nuclear Total'
         DO 202 I = 1,MMCENT
@@ -508,8 +592,8 @@ C       CORD(1,J) - MMCORD(1,I)
       END
 C**************************************************************************************
 C  /* Deck qmmm_quadpole */
-      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
-     &                         IPRINT)
+      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+     &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -533,7 +617,7 @@ C  /* Deck qmmm_quadpole */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -545,7 +629,7 @@ C  /* Deck qmmm_quadpole */
       KLAST = KMAT + 6*NNBASX
       LWRK2 = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 6',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_QUADPOLE 1',-KLAST,LWRK)
 
       FAC1   = 1.0D0
       EMUL2T = 0.0D0
@@ -572,6 +656,9 @@ C         we use KNS to collect the energy terms
         IF (DIST .GT. RCUTMM) THEN
           SEL(I)  = 0.0D0
           SNUC(I) = 0.0D0
+          IF (LOCDEB) THEN
+            WRITE(LUPRI,*) 'Skipping quadrupole ', I
+          ENDIF
           GOTO 300
         ENDIF
 
@@ -592,7 +679,7 @@ C         we use KNS to collect the energy terms
      &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
         RUNQM3=.FALSE.
 
-        IF (IPRINT.GT.15) THEN
+        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
@@ -687,7 +774,7 @@ C       Remember the factor of 1/2 from the Taylor expansion
       EQUADT = EMUL2T + ELOCT
       ESOLT  = ESOLT  + EQUADT
 
-      IF (IPRINT.GT.5) THEN
+      IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) ' Center Quadr.-electronic Quadr.-nuclear Total'
         DO 302 I = 1,MMCENT
@@ -708,8 +795,8 @@ C       Remember the factor of 1/2 from the Taylor expansion
 
 C**************************************************************************************
 C  /* Deck qmmm_octupole */
-      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,SEL,SNUC,WRK,LWRK,
-     &                         IPRINT)
+      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+     &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -733,7 +820,7 @@ C  /* Deck qmmm_octupole */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -747,7 +834,7 @@ C  /* Deck qmmm_octupole */
       KLAST  = KMAT4 + 6*NNBASX
       LWRK2  = LWRK  - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_P 7',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_OCTUPOLE 1',-KLAST,LWRK)
 
       FAC1   = 1.0D0
       FACM1  = -1.0D0
@@ -777,6 +864,9 @@ C         we use KNS to collect the energy terms
         IF (DIST .GT. RCUTMM) THEN
           SEL(I)  = 0.0D0
           SNUC(I) = 0.0D0
+          IF (LOCDEB) THEN
+            WRITE(LUPRI,*) 'Skipping octupole ', I
+          ENDIF
           GOTO 410
         ENDIF
 
@@ -823,7 +913,7 @@ C       Calculate gradient of these integrals
         CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT1),1)
         CALL DZERO(WRK(KMAT2),6*NNBASX)
 
-        IF (IPRINT.GT.15) THEN
+        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
 
@@ -868,7 +958,7 @@ C       Calculate gradient of these integrals
         CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT2),1)
         CALL DZERO(WRK(KMAT3),6*NNBASX)
 
-        IF (IPRINT.GT.15) THEN
+        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
 
@@ -913,7 +1003,7 @@ C       Calculate gradient of these integrals
         CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT3),1)
         CALL DZERO(WRK(KMAT4),6*NNBASX)
 
-        IF (IPRINT.GT.15) THEN
+        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
 
@@ -1034,7 +1124,7 @@ C       Remember the factor of 1/6 from the Taylor expansion
       EOCTUP = EMUL3T + ELOCT
       ESOLT  = ESOLT  + EOCTUP
 
-      IF (IPRINT.GT.5) THEN
+      IF ( (IPRINT.GT.5) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) ' Center Octup.-electronic Octup.-nuclear Total'
         DO 412 I = 1,MMCENT
@@ -1056,7 +1146,8 @@ C       Remember the factor of 1/6 from the Taylor expansion
 
 C**************************************************************************************
 C  /* Deck qmmm_polari */
-      SUBROUTINE QMMM_POLARI(DCAO,ESOLT,EPOLT,TAO,WRK,LWRK,IPRINT)
+      SUBROUTINE QMMM_POLARI(DCAO,ESOLT,EPOLT,TAO,LOCDEB,
+     &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -1080,7 +1171,7 @@ C  /* Deck qmmm_polari */
 
       DIMENSION WRK(LWRK), TAO(NNBASX)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
+      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT, LOCDEB
       INTEGER NZERAL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
@@ -1135,7 +1226,7 @@ c     list for this center and if not touched upon leave zero
       NZERAL = LIZA - 1
       NNZAL  = MMCENT - NZERAL  ! Number of MM centers with ALPHA .NE. 0
 
-      IF (IPRINT.GT.1) THEN
+      IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) ' Number of polarizable sites: ', NNZAL
         WRITE(LUPRI,*)
@@ -1156,7 +1247,7 @@ C       explicitly, we can directly form the [ALPHA^(-1) - T] matrix
         LWRK2   = LWRK    - KWRK2 + 1
 
         IF (LWRK2 .LT. 0) THEN
-          CALL ERRWRK('QMMM_POLARI',-KWRK2,LWRK)
+          CALL ERRWRK('QMMM_POLARI 1',-KWRK2,LWRK)
         ENDIF
 
         CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
@@ -1190,7 +1281,7 @@ C       of atoms in previous and current run.
         LWRK2   = LWRK    - KWRK2 + 1
 
         IF (LWRK2 .LT. 0) THEN
-          CALL ERRWRK('QMMM_FCK_AO_P pol. part 2',-KWRK2,LWRK)
+          CALL ERRWRK('QMMM_POLARI 2',-KWRK2,LWRK)
         ENDIF
 
         CALL DZERO(WRK(KINDMOM),(3*NNZAL))
@@ -1244,6 +1335,9 @@ C     total solvation energy
 
         IF (DIST .GT. RCUTMM) THEN
           IINIM = IINIM+3
+          IF (LOCDEB) THEN
+            WRITE(LUPRI,*) 'Skipping induced dipole ', I
+          ENDIF
           GOTO 500
         ENDIF
 
@@ -1305,7 +1399,7 @@ C     total solvation energy
           CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
         ENDIF
 
-        IF (IPRINT.GT.15) THEN
+        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
           WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
@@ -3791,7 +3885,7 @@ C     total solvation energy
         RUNQM3 = .TRUE.
         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
      &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
         RUNQM3 = .FALSE.
 
         IF (QMDAMP) THEN
@@ -3832,7 +3926,7 @@ C     total solvation energy
           CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
         ENDIF
 
-        IF (IPRINT.GT.15) THEN
+        IF (IPRTMP.GT.15) THEN
           WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
