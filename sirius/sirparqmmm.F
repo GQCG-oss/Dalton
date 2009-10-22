@@ -155,7 +155,6 @@ C     5) The polarization correction to the Fock/KS operator
 
       IF (IPOLTP .GT. 0) THEN
          IF (NODTOT .GE. 1) THEN
-C         IF (.FALSE.) THEN
             CALL QMMM_POLARI_M(DCAO,ESOLT,EPOLT,WRK(KTAO),
      &                       WRK(KWRK1),LWRK1,IPRINT)
          ELSE
@@ -3425,7 +3424,11 @@ C       of atoms in previous and current run.
 
       ELSE IF (MMITER) THEN
 
-        KINDMOM = 1                               ! List for induced dipoles
+        KTAO    = 1
+        KTAO2   = KTAO    + NNBASX
+        KSEND   = KTAO2   + NNBASX
+        KSEND2  = KSEND   + 6*MMCENT
+        KINDMOM = KSEND2  + 6*MMCENT          ! List for induced dipoles
         KMAT    = KINDMOM + (3*NNZAL)
         KWRK2   = KMAT    + (3*NNBASX)             
         LWRK2   = LWRK    - KWRK2 + 1
