@@ -163,7 +163,6 @@ C         IF (.FALSE.) THEN
      &                       WRK(KWRK1),LWRK1,IPRINT)
          ENDIF
       ENDIF
-      print*,'arnfinn after call polari',esolt,epolt,wrk(ktao),dcao(1)
 
 C     Finally, put back the dipole origin
 
@@ -1514,7 +1513,6 @@ C       Point-charge contribution
           ET = 0.0D0
           ET = ET + DMINV2*(EXCOMP + EYCOMP + EZCOMP)
           ED0MOM = ED0MOM + ET
-          PRINT *,'arnfinn induced ',I,WRK(KINDMOM+IINIM+0)
 
         ENDIF
 
@@ -1569,24 +1567,6 @@ C       Octupole contribution
       EPOLT  = EDELD + EDNUC + EDMULT
 
       ESOLT = ESOLT + EPOLT
-
-      II = 0
-      II = II + 1
-      print *,'II seria',II,EDELD
-      II = II + 1
-      print *,'II seria',II,EDNUC
-      II = II + 1
-      print *,'II seria',II,ED0MOM
-      II = II + 1
-      print *,'II seria',II,ED1MOM
-      II = II + 1
-      print *,'II seria',II,ED2MOM
-      II = II + 1
-      print *,'II seria',II,ED3MOM
-      II = II + 1
-      print *,'II seria',II,EDMULT
-      II = II + 1
-      print *,'II seria',II,EPOLT
 
       IF (IPRINT .GT. 1) THEN
         WRITE(LUPRI,*)
@@ -3587,10 +3567,6 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-C      DO 333 II = 1,8
-C         print *,'II mastr',II,WRK(KSEND + II - 1)
-C 333  CONTINUE
-
       DO II = 1, MMCENT
          EDELD  = EDELD  + WRK(KSEND + II - 1 + 0*MMCENT)
          EDNUC  = EDNUC  + WRK(KSEND + II - 1 + 1*MMCENT)
@@ -3604,24 +3580,6 @@ C 333  CONTINUE
       EPOLT  = EDELD + EDNUC + EDMULT
 
       ESOLT = ESOLT + EPOLT
-
-      II = 0
-      II = II + 1
-      print *,'II mastr',II,EDELD
-      II = II + 1
-      print *,'II mastr',II,EDNUC
-      II = II + 1
-      print *,'II mastr',II,ED0MOM
-      II = II + 1
-      print *,'II mastr',II,ED1MOM
-      II = II + 1
-      print *,'II mastr',II,ED2MOM
-      II = II + 1
-      print *,'II mastr',II,ED3MOM
-      II = II + 1
-      print *,'II mastr',II,EDMULT
-      II = II + 1
-      print *,'II mastr',II,EPOLT
 
       IF (IPRINT .GT. 1) THEN
         WRITE(LUPRI,*)
@@ -3791,6 +3749,8 @@ C     total solvation energy
       CALL MPIXRECV(I,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
+
+        IINIM = 3*(I-1)
 
         DNORM2 = WRK(KINDMOM+IINIM+0)**2 + 
      *           WRK(KINDMOM+IINIM+1)**2 +
@@ -4077,9 +4037,8 @@ C       Point-charge contribution
 
           ET = 0.0D0
           ET = ET + DMINV2*(EXCOMP + EYCOMP + EZCOMP)
-C          ED0MOM = ED0MOM + ET
           WRK(KSEND + I - 1 + 2*MMCENT) = ET
-          PRINT *,'arnfinn induced ',I,WRK(KINDMOM+IINIM+0)
+C          ED0MOM = ED0MOM + ET
 
         ENDIF
 
@@ -4128,15 +4087,8 @@ C          ED3MOM = ED3MOM + ET
 
         ENDIF
 
-
-        IINIM = IINIM + 3
-
         GO TO 20
       ENDIF
-
-C      DO 333 II = 1,8
-C         print *,'II slave',II,WRK(KSEND + II - 1)
-C 333  CONTINUE
 
       CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,

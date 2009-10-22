@@ -330,13 +330,13 @@ while [ -n "$1" ]; do
    shift ;;
   "parqmmm" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 2"
+     paramlist="-N 3"
    fi
    testcase="$testcase $PARQMMM";
    shift ;;
   "debug" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 2"
+     paramlist="-N 3"
    fi
    testcase="$testcase $DEBUG";
    shift ;;
