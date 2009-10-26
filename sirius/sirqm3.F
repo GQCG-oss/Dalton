@@ -1,19 +1,19 @@
 C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
+C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
+C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -30,7 +30,6 @@ C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
 C
 C      CBN+JK
 C*************************************************************************
@@ -1826,72 +1825,6 @@ C
       CALL QEXIT('QM3FCKMO')
       RETURN
       END
-*******************************************************************************
-C  /* Deck qmmmfck */
-      SUBROUTINE QMMMFCK(DCAO,DVAO,FSOL,EQMMM,WRK,LWRK,IPRINT)
-
-#include <implicit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <thrzer.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infpar.h>
-
-
-      DIMENSION DCAO(*), DVAO(*)
-      DIMENSION FSOL(*), WRK(LWRK)
-      LOGICAL HSFOCK
-
-
-      CALL QENTER('QMMMFCK')
-      KDTAO = 1
-      KTAO = KDTAO + NNBASX
-      KEND = KTAO + NNBASX
-      LWRK1 = LWRK - KEND
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMMFCK',-KEND,LWRK)
-
-      HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
-
-C     Get total density
-      IF (NASHT .EQ. 0) THEN
-            CALL PKSYM1(WRK(KDTAO),DCAO,NBAS,NSYM,-1)
-      ELSE
-            DO I = 1,NNBAST
-               IF (HSFOCK) THEN
-                  WRK(KTAO-1+I) = DCAO(I)
-               ELSE
-                  WRK(KTAO-1+I) = DCAO(I) + DVAO(I)
-               END IF
-            END DO
-            CALL PKSYM1(WRK(KDTAO),WRK(KTAO),NBAS,NSYM,-1)
-      END IF
-
-C     Modify the fock operator. Modification returned in FSOL. 
-C     QMMM contribution to the energy returned in EQMMM.
-C      IF (NODTOT .GE. 1) THEN
-      IF (.TRUE.) THEN
-         CALL QMMM_FCK_AO_NEW(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
-     & IPRINT)
-      ELSE
-         CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
-      ENDIF
-      CALL QEXIT('QMMMFCK')
-      RETURN
-      END
-
 C**************************************************************************************
 C  /* Deck qmmm_fck_ao */
       SUBROUTINE QMMM_FCK_AO(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   

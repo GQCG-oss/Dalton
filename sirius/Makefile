@@ -23,7 +23,7 @@ F_OBJS = \
 	koopro4.o         dalcip.o          dypc.o \
 	sirpcm.o          sirsolpcm.o       sirpcmder.o \
 	sirief.o          sircav.o          sirqm3.o \
-	sirparqmmm.o
+	sirqmmm.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

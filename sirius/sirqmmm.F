@@ -31,8 +31,74 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C FILE: sirius/sirparqmmm.F
+C FILE: sirius/sirqmmm.F
 C Magnus and Arnfinn
+*******************************************************************************
+C  /* Deck qmmmfck */
+      SUBROUTINE QMMMFCK(DCAO,DVAO,FSOL,EQMMM,WRK,LWRK,IPRINT)
+
+#include <implicit.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <thrzer.h>
+#include <iratdef.h>
+#include <codata.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <inforb.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infpar.h>
+
+
+      DIMENSION DCAO(*), DVAO(*)
+      DIMENSION FSOL(*), WRK(LWRK)
+      LOGICAL HSFOCK
+
+
+      CALL QENTER('QMMMFCK')
+      KDTAO = 1
+      KTAO = KDTAO + NNBASX
+      KEND = KTAO + NNBASX
+      LWRK1 = LWRK - KEND
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMMFCK',-KEND,LWRK)
+
+      HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
+
+C     Get total density
+      IF (NASHT .EQ. 0) THEN
+            CALL PKSYM1(WRK(KDTAO),DCAO,NBAS,NSYM,-1)
+      ELSE
+            DO I = 1,NNBAST
+               IF (HSFOCK) THEN
+                  WRK(KTAO-1+I) = DCAO(I)
+               ELSE
+                  WRK(KTAO-1+I) = DCAO(I) + DVAO(I)
+               END IF
+            END DO
+            CALL PKSYM1(WRK(KDTAO),WRK(KTAO),NBAS,NSYM,-1)
+      END IF
+
+C     Modify the fock operator. Modification returned in FSOL. 
+C     QMMM contribution to the energy returned in EQMMM.
+C      IF (NODTOT .GE. 1) THEN
+      IF (.TRUE.) THEN
+         CALL QMMM_FCK_AO_NEW(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
+     & IPRINT)
+      ELSE
+         CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
+      ENDIF
+      CALL QEXIT('QMMMFCK')
+      RETURN
+      END
+
 C**************************************************************************************
 C  /* Deck qmmm_fck_ao_new */
       SUBROUTINE QMMM_FCK_AO_NEW(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
