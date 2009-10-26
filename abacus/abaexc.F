@@ -44,6 +44,7 @@ C  /* Deck excinp */
 #include <inforb.h>
 #include <cbiexc.h>
 C
+#include <gnrinf.h>
 #include <abainf.h>
 #include <anrinf.h>
 #include <dorps.h>

@@ -43,6 +43,7 @@ C  /* Deck lrsinp */
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbilrs.h"
 C
+#include <gnrinf.h>
 #include <abainf.h>
 #include <anrinf.h>
 #include <dorps.h>

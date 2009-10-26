@@ -38,6 +38,7 @@ C
 #include <implicit.h>
 C
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infrsp.h>
 #include "rspprp.h"
 #include <inflr.h>

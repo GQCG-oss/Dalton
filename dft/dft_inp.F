@@ -33,6 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
       SUBROUTINE dftINP(WORD,INPERR,ALLOPT)
 #include <implicit.h>
+#include <gnrinf.h>
 #include <dftinf.h>
 #include <dftcom.h>
 #include <priunit.h>

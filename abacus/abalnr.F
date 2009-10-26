@@ -50,6 +50,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <cbiexc.h>
+#include <gnrinf.h>
 #include <cbilnr.h>
 #include <abainf.h>
 #include <anrinf.h>

@@ -48,7 +48,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-! gnrinf.h: QM3
+! gnrinf.h: QM3, THR_REDFAC
 #include <gnrinf.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
@@ -597,7 +597,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-! gnrinf.h: QM3
+! gnrinf.h: QM3, THR_REDFAC
 #include <gnrinf.h>
 C
       LOGICAL NEWDEF

@@ -53,6 +53,7 @@ C     absorption in the optical processes.
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <absorp.h>
 #include <infrsp.h>
 C

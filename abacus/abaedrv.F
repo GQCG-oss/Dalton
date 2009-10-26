@@ -58,9 +58,11 @@ C  /* Deck resinp */
 #include <cbires.h>
 C
 C     Used from common blocks:
+C       GNRINF : THR_REDFAC
 C       ANRINF : THRNR, MAXNR
 C       NUCLEI : NDCORD
 C
+#include <gnrinf.h>
 #include <abainf.h>
 #include <anrinf.h>
 #include <dorps.h>

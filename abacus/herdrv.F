@@ -1948,6 +1948,7 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
+#include <gnrinf.h>
 #include <cbiher.h>
 #include <cbihrs.h>
       SAVE SET

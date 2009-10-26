@@ -2661,6 +2661,7 @@ C
 C
 C Used from common:
 C
+C GNRINF : THR_REDFAC
 C SCBRHF : NFRRHF(8), IOPRHF, RHFCAN, MXHFMA, MXHFMI, MAXFCK, MXDIIS, THRRHF
 C INFINP : FLAG(*),DIRFCK
 C INFORB : NRHF(8)
@@ -2672,6 +2673,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 C
+#include <gnrinf.h>
 #include <scbrhf.h>
 #include <infinp.h>
 #include <inforb.h>
@@ -2963,6 +2965,7 @@ C
 C
 C Used from common:
 C
+C GNRINF : THR_REDFAC
 C INFINP : FLAG(*),ICHECK,*ROOT,ISTATE,MAX*,THR*
 C INFVAR : NWOPT, JWOP(*)
 C INFDIM : MAXPHP
@@ -2972,6 +2975,7 @@ C INFPRI : LUPRI
 C
 #include <maxorb.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <infdim.h>
@@ -3284,10 +3288,12 @@ C
 C
 C Used from common:
 C
+C GNRINF : THR_REDFAC
 C INFINP : DOCINO, FLAG(*), NROOCI, THRCI, THRPWF
 C
 #include <maxorb.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infinp.h>
 C
       DATA TABLE /'.CINO  ','.CIDENS','.CIROOT','.DISKH2','.THRESH',
@@ -4059,12 +4065,14 @@ C
 C
 C Used from common:
 C
+C GNRINF : THR_REDFAC
 C INFINP : FLAG(*)
 C INFDIM : MWORK
 C INFTRA : ITRLVL, THRP, THRQ
 C
 #include <maxorb.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infinp.h>
 #include <infdim.h>
 #include <inftra.h>
@@ -5349,12 +5357,14 @@ C
 C
 C Used from common:
 C
+C GNRINF : THR_REDFAC
 C INFORB : NSYM
 C INFMP2 : NFRMP2(*)
 C INFPRI : IPRMP2
 C
 #include <maxorb.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <inforb.h>
 #include <infpri.h>
 #include <infpt2.h>
