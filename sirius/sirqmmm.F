@@ -1809,7 +1809,7 @@ C ----
 
 C     Wake up slaves
 
-      IPRTYP = 23
+      IPRTYP = 22
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
@@ -2145,7 +2145,7 @@ C ----
 
 C     Wake up slaves
 
-      IPRTYP = 24
+      IPRTYP = 23
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
@@ -2545,7 +2545,7 @@ C ----
 
 C     Wake up slaves (Rock and roll all nite)
 
-      IPRTYP = 25
+      IPRTYP = 24
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
@@ -2945,7 +2945,7 @@ C ----
 
 C     Wake up slaves
 
-      IPRTYP = 26
+      IPRTYP = 25
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
@@ -3630,7 +3630,7 @@ C     total solvation energy
 
 C     Beginning of parallel section
 
-      IPRTYP = 22
+      IPRTYP = 21
 
 C     Wake up slaves
 
@@ -3806,7 +3806,6 @@ C ----
       DIMENSION WRK(LWRK)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
-      INTEGER NZERAL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)

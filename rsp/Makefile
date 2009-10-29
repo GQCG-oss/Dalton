@@ -61,7 +61,8 @@ F_OBJS = \
 	rspief1.o       \
 	rspief2.o       \
         rspief.o        \
-        rspqm3.o
+        rspqm3.o        \
+	rspqmmm.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

@@ -2882,6 +2882,7 @@ C
             ENDIF
          END IF
          CALL FLSHFO(LUPRI)
+
          CALL RSPELI(NCSIM,NOSIM,WRK(KBCVEC),WRK(KBOVEC),
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               XINDX,WRK(KWRK1),LWRK1)
