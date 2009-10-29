@@ -1921,6 +1921,10 @@ C  /* Deck qmmm_fck_ao */
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
+      LOGICAL FIRST
+      SAVE    FIRST
+      DATA    FIRST /.TRUE./
+
       CALL QENTER('QMMM_FCK_AO')
 
       LOCDEB = .FALSE.
@@ -1928,7 +1932,8 @@ C  /* Deck qmmm_fck_ao */
       KTAO   = 1
       KNSEL  = KTAO   + NNBASX
       KNSNUC = KNSEL  + MMCENT
-      KWRK1  = KNSNUC + MMCENT
+      KINT   = KNSNUC + MMCENT
+      KWRK1  = KINT   + NNBASX
       LWRK1  = LWRK   - KWRK1
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO 1',-KWRK1,LWRK)
@@ -1936,6 +1941,7 @@ C  /* Deck qmmm_fck_ao */
       CALL DZERO(WRK(KTAO),NNBASX)
       CALL DZERO(WRK(KNSEL),MMCENT)
       CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KINT),NNBASX)
 
 C     The different static energy contributions
       ECHART = 0.0D0
@@ -2053,6 +2059,10 @@ C  Gradient
            CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KTAO),1)
            EXPNST=EXPNST+EXPNS
 
+           IF (FIRST) THEN 
+             CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KINT),1)
+           ENDIF
+
 C          Now the QM nuclear contribution
 
            ECHCHL  = 0.0D0
@@ -2085,6 +2095,20 @@ C          Now the QM nuclear contribution
          WRITE(LUPRI,*) EXPNST, ECHCH, EXPNST+ECHCH
          WRITE(LUPRI,*)
         ENDIF
+
+        IF (FIRST) THEN
+C         Write integrals to file        
+          LUQMMM = -1
+          IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU0INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+          ENDIF
+          REWIND(LUQMMM)
+          WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+          CALL GPCLOSE(LUQMMM,'KEEP')
+          CALL DZERO(WRK(KINT),NNBASX)
+        ENDIF
+
 
       END IF ! NMULT .GE. 0
 
@@ -2253,6 +2277,12 @@ c          write(lupri,*) 'DFACT',DFACT
           CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KTAO),1)
           CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KTAO),1)
 
+          IF (FIRST) THEN
+            CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KINT),1)
+          ENDIF
+
           EXCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
           EYCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
           EZCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
@@ -2296,6 +2326,19 @@ C         CORD(1,J) - MMCORD(1,I)
          WRITE(LUPRI,*) ' Total '
          WRITE(LUPRI,*) EMUL1T, ELOCT, EMUL1T+ELOCT
          WRITE(LUPRI,*) 
+        ENDIF
+
+        IF (FIRST) THEN
+C         Write integrals to file
+          LUQMMM = -1
+          IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU1INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+          ENDIF
+          REWIND(LUQMMM)
+          WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+          CALL GPCLOSE(LUQMMM,'KEEP')
+          CALL DZERO(WRK(KINT),NNBASX)
         ENDIF
 
       END IF ! (NMULT .GE. 1)
@@ -2397,6 +2440,15 @@ C         The integrals contains a factor of -1. Therefore daxpy with fac1
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,WRK(KTAO),1)
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,WRK(KTAO),1)
 
+          IF (FIRST) THEN
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT+NNBASX),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT+2*NNBASX),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT+3*NNBASX),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,WRK(KINT),1)
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,WRK(KINT),1)
+          ENDIF
+
 C         Contract with the density to get the expectation values. 
 C         The factor of 1/2 in the Taylor expansion has been included.
 C         Also, the off-diagonal elements have been scaled by 2 in order 
@@ -2467,6 +2519,20 @@ C         Remember the factor of 1/2 from the Taylor expansion
          WRITE(LUPRI,*) EMUL2T, ELOCT, EMUL2T+ELOCT
          WRITE(LUPRI,*) 
         ENDIF
+
+        IF (FIRST) THEN
+C         Write integrals to file
+          LUQMMM = -1
+          IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU2INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+          ENDIF
+          REWIND(LUQMMM)
+          WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+          CALL GPCLOSE(LUQMMM,'KEEP')
+          CALL DZERO(WRK(KINT),NNBASX)
+        ENDIF
+
 
       END IF ! (NMULT .GE. 2)
 
@@ -2699,6 +2765,19 @@ C         the field gradient and these contains a factor of -1. Therefore no -1 
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,WRK(KTAO),1)  ! yzz
           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,WRK(KTAO),1)  ! zzz
 
+          IF (FIRST) THEN
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,WRK(KINT),1)           ! xxx
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,WRK(KINT),1)           ! xxy
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,WRK(KINT),1)           ! xxz
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,WRK(KINT),1)    ! xyy
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,WRK(KINT),1)    ! xyz
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,WRK(KINT),1)  ! xzz
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,WRK(KINT),1)  ! yyy
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,WRK(KINT),1)  ! yyz
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,WRK(KINT),1)  ! yzz
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,WRK(KINT),1)  ! zzz
+          ENDIF 
+
 C         Contract with the density to get the expectation values. 
 C         The factor of 1/6 in the Taylor expansion has been included.
 C         Also, the off-diagonal elements have been scaled by 3 and the xyz element by 6 in order 
@@ -2783,6 +2862,19 @@ C         Remember the factor of 1/6 from the Taylor expansion
          WRITE(LUPRI,*) ' Total '
          WRITE(LUPRI,*) EMUL3T, ELOCT, EMUL3T+ELOCT
          WRITE(LUPRI,*) 
+        ENDIF
+
+        IF (FIRST) THEN
+C         Write integrals to file
+          LUQMMM = -1
+          IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU3INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+          ENDIF
+          REWIND(LUQMMM)
+          WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+          CALL GPCLOSE(LUQMMM,'KEEP')
+          CALL DZERO(WRK(KINT),NNBASX)
         ENDIF
 
       END IF ! (NMULT .GE. 3)
@@ -3311,6 +3403,10 @@ C     Finally, put back the dipole origin
 
       CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
       CALL QEXIT('QMMM_FCK_AO')
+
+      IF (FIRST) THEN
+         FIRST = .FALSE.
+      END IF
 
       RETURN
       END
