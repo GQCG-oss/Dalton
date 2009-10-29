@@ -69,9 +69,6 @@ C
 #include <cbiher.h>
 #include <infdim.h>
 
-
-C     Questions (Arnfinn): udvs dimension; tac; change in KURXAC
-
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
       DIMENSION UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
       DIMENSION WRK(*), DV(*), CREF(*)
@@ -194,6 +191,12 @@ C     program.
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
+      KMAT = KWRK
+      KLAST = KMAT + 3*NNBASX
+      LWRK2 = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO',-KLAST,LWRK2)
+
       DO 200 IOSIM = 1,NOSIM
 
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX
@@ -210,7 +213,7 @@ C-------------------------------------------------------
 
          IF (NODTOT .GE. 1) THEN
             CALL QMMMLNO_M1(IOSIM,UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
-     *                      WRK(JUBO),WRK(KWRK),LWRK1)
+     *                      WRK(JUBO),WRK(KLAST),LWRK2)
          ELSE
            LRI = 1             ! group-index in vector
            DO 201 J=1,MMCENT
@@ -231,11 +234,6 @@ C-------------------------------------------------------
              ENDIF
 
 
-             KMAT = KWRK
-             KLAST = KMAT + 3*NNBASX
-             LWRK2 = LWRK - KLAST + 1
-
-             IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO',-KLAST,LWRK2)
 
              CALL DZERO(WRK(KMAT),3*NNBASX)
 
@@ -385,9 +383,15 @@ C        These could have been stored
 C        before, but we choose to do all of this integral-direct.
 
 
-         IF (.FALSE.) THEN
-C         IF (NODTOT .GE. 1) THEN
-            CALL QMMMLNO_M2()
+C         IF (.FALSE.) THEN
+         IF (NODTOT .GE. 1) THEN
+            IF (TRPLET) THEN
+               CALL QMMMLNO_M2(WRK(JRXYOT),WRK(KUCMO),WRK(KINDMOM),
+     *                      WRK(KWRK),LWRK1)
+            ELSE
+               CALL QMMMLNO_M2(WRK(JRXYO),WRK(KUCMO),WRK(KINDMOM),
+     *                      WRK(KWRK),LWRK1)
+            ENDIF
          ELSE
            LRI = 1
 
@@ -410,13 +414,6 @@ C         IF (NODTOT .GE. 1) THEN
 
              CALL DZERO(WRK(KTRMO),NNORBX)
              CALL DZERO(WRK(KUTR),N2ORBX)
-
-             KMAT = KWRK
-             KLAST = KMAT + 3*NNBASX
-             LWRK2 = LWRK - KLAST + 1
-
-             IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO',-KLAST,LWRK2)
-
              CALL DZERO(WRK(KMAT),3*NNBASX)
 
              KPATOM = 0
@@ -1821,6 +1818,9 @@ C UCMO(NORBT*NBAST)
 
       KEFIELD = 1
       KLAST   = KEFIELD + 3*NNZAL
+      LWRK2 = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_M2',-KLAST,LWRK2)
 
 C     Wake up slaves
       IPRTYP = 26
@@ -1977,7 +1977,6 @@ C     Damping
 C
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
-
       CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
 
 C     From old routine
@@ -2171,6 +2170,7 @@ C        z-component of (induced) electric field
       ENDIF
 
 C     No more integrals to calculate
+
       CALL MPI_REDUCE(WRK(KEFIELD),WRK(KEFIELD),3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
@@ -2183,7 +2183,7 @@ C     No more integrals to calculate
       END
 C-------------------------------------------------------------------------------
 C  /* Deck qmmmlno_m2 */
-      SUBROUTINE QMMMLNO_M2()
+      SUBROUTINE QMMMLNO_M2(RXYO,UCMO,XINDMOM,WRK,LWRK)
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
@@ -2207,9 +2207,103 @@ C
 #include <orgcom.h>
 #include <infinp.h>
 #include <nuclei.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+#include <infdim.h>
+
+      DIMENSION WRK(LWRK)
+      DIMENSION UCMO(*), RXYO(N2ORBX), XINDMOM(3*NNZAL)
 
       CALL QENTER('QMMMLNO_M2')
 
+      KRXYO = 1
+      KLAST = KRXYO + N2ORBX
+      LWRK2 = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_M2',-KLAST,LWRK2)
+
+C     Wake up slaves
+      IPRTYP = 27
+
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
+
+C     Send info
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NATOMS,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
+
+C     Damping
+      CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
+      IF (QMDAMP) THEN
+         CALL MPIXBCAST(IDAMP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NQMNUC,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(QMPOL,NATOMS,'DOUBLE',MASTER)
+         CALL MPIXBCAST(ADAMP,1,'DOUBLE',MASTER)
+         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
+         CALL MPIXBCAST(POLIMM,MMCENT,'DOUBLE',MASTER)
+      ENDIF
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+
+C     From old routine
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(CORD,3*NATOMS,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,NATOMS,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,NATOMS,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(NNORBX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(N2ORBX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(N2ASHX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NASHDI,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NASHT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NORBT,1,'INTEGER',MASTER)
+
+C     for slvqlm
+C      CALL MPIXBCAST(NISHT,1,'INTEGER',MASTER)
+C      CALL MPIXBCAST(NORB,1,'INTEGER',MASTER)
+C      CALL MPIXBCAST(ISX,NORB,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(UCMO,NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(XINDMOM,3*NNZAL,'DOUBLE',MASTER)
+
+C     Do the work
+      DO 20  J=1,MMCENT
+         IWHO = -1
+         IF (ZEROAL(J) .EQ. -1) GOTO 20
+         CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
+         CALL MPIXSEND(J, 1, 'INTEGER', NWHO, MPTAG2)
+ 20   CONTINUE
+
+C     Send end message to all slaves
+      LEND = -1
+      DO ISLAVE = 1, NODTOT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(LEND, 1, 'INTEGER', NWHO, MPTAG2)
+      END DO
+
+C     Collect data
+      CALL DZERO(WRK(KRXYO),N2ORBX)
+      CALL MPI_REDUCE(WRK(KRXYO),RXYO,N2ORBX,
+     &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QMMMLNO_M2')
       RETURN
@@ -2247,9 +2341,211 @@ C
 #endif
 #include <cbiher.h>
 #include <gnrinf.h>
+#include <infdim.h>
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, EXP1VL, TRIMAT
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      DIMENSION WRK(LWRK)
 
       CALL QENTER('QMMMLNO_S2')
 
+      QM3 = .TRUE.
+      
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NATOMS,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
+
+
+C     Damping
+      CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
+      IF (QMDAMP) THEN
+         CALL MPIXBCAST(IDAMP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NQMNUC,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(QMPOL,NATOMS,'DOUBLE',MASTER)
+         CALL MPIXBCAST(ADAMP,1,'DOUBLE',MASTER)
+         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
+         CALL MPIXBCAST(POLIMM,MMCENT,'DOUBLE',MASTER)
+      ENDIF
+C
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+
+C     From old routine
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(CORD,3*NATOMS,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,NATOMS,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,NATOMS,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(NNORBX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(N2ORBX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(N2ASHX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NASHDI,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NASHT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NORBT,1,'INTEGER',MASTER)
+
+C     for slvqlm:
+C      CALL MPIXBCAST(NISHT,1,'INTEGER',MASTER)
+C      CALL MPIXBCAST(NORB,1,'INTEGER',MASTER)
+C      CALL MPIXBCAST(ISX,NORB,'INTEGER',MASTER)
+
+C    
+      KINDMOM = 1
+      KUCMO   = KINDMOM + 3*NNZAL
+      KTRMO   = KUCMO   + NORBT*NBAST
+      KUTR    = KTRMO   + NNORBX
+      KMAT    = KUTR    + N2ORBX
+      JRXYO   = KMAT    + 3*NNBASX
+      KLAST   = JRXYO   + N2ORBX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_S2',-KLAST,LWRK2)
+
+      CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WRK(KINDMOM),3*NNZAL,'DOUBLE',MASTER)
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      CALL DZERO(WRK(JRXYO),N2ORBX)
+
+ 201  CONTINUE
+
+      CALL MPIXSEND(MYNUM, 1, 'INTEGER', MASTER, MPTAG1)
+      CALL MPIXRECV(J, 1, 'INTEGER', MASTER, MPTAG2)
+
+      IF (J.GT.0) THEN
+
+         LRI = 3*(J-1) + 1
+
+         DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
+     *           (MMCORD(2,J)-QMCOM(2))**2 +
+     *           (MMCORD(3,J)-QMCOM(3))**2
+         DIST = SQRT(DIST2)
+
+         IF (DIST .GT. RCUTMM) THEN
+            GOTO 201
+         ENDIF
+
+         CALL DZERO(WRK(KTRMO),NNORBX)
+         CALL DZERO(WRK(KUTR),N2ORBX)
+         CALL DZERO(WRK(KMAT),3*NNBASX)
+
+         KPATOM = 0
+         NOCOMP = 3
+         TOFILE = .FALSE.
+         TRIMAT = .TRUE.
+         EXP1VL = .FALSE.
+         DIPORG(1) = MMCORD(1,J)
+         DIPORG(2) = MMCORD(2,J)
+         DIPORG(3) = MMCORD(3,J)
+
+         RUNQM3 = .TRUE.
+         CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
+     &               LWRK2,LABINT,INTREP,INTADR,J,TOFILE,
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
+         RUNQM3 = .FALSE.
+
+         IF (QMDAMP) THEN
+            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
+               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
+            ENDIF
+            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) )THEN
+               DIST = 9.99D+99
+               MHIT = 0
+               DO 124 M=1,NUCIND
+                  DISTC = (DIPORG(1)-CORD(1,M))**2 +
+     &                    (DIPORG(2)-CORD(2,M))**2 +
+     &                    (DIPORG(3)-CORD(3,M))**2
+                  IF (DISTC .LE. DIST) THEN
+                     DIST = DISTC
+                     MHIT = M
+                  ENDIF
+ 124           CONTINUE
+            ELSE IF (IDAMP .EQ. 2) THEN
+               DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &                (DIPORG(2)-QMCOM(2))**2 +
+     &                (DIPORG(3)-QMCOM(3))**2
+            ENDIF
+            DIST = SQRT(DIST)
+
+            IF (IDAMP .EQ. 3) THEN
+               IF (IPOLTP .EQ. 2) THEN
+                  TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+               ELSE IF (IPOLTP .EQ. 1) THEN
+                  IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
+               ENDIF
+               TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
+               SIJ = 2.1304*DIST/TEMP
+               DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
+            ELSE
+               DFACT = (1-exp(-ADAMP*DIST))**3
+            ENDIF
+            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+         ENDIF
+
+C        x-component of electric field 
+         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
+     &             NBAST,NORBT)
+         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+         FACx = -WRK(KINDMOM+LRI-1+0)   
+C         IF (TRPLET) THEN 
+C            CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYOT),1)
+C         ELSE
+         CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
+C         ENDIF
+
+C        y-component of electric field
+         CALL DZERO(WRK(KTRMO),NNORBX)
+         CALL DZERO(WRK(KUTR),N2ORBX)
+
+         CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &             WRK(KLAST),NBAST,NORBT)
+         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+         FACy = -WRK(KINDMOM+LRI-1+1)
+C         IF (TRPLET) THEN
+C            CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYOT),1)
+C         ELSE
+         CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
+C         ENDIF
+
+C        z-component of (induced) electric field
+         CALL DZERO(WRK(KTRMO),NNORBX)
+         CALL DZERO(WRK(KUTR),N2ORBX)
+
+         CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
+     &             WRK(KLAST),NBAST,NORBT)
+         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+         FACz = -WRK(KINDMOM+LRI-1+2)
+C         IF (TRPLET) THEN
+C            CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYOT),1)
+C         ELSE
+         CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
+C         ENDIF
+
+         GO TO 201
+      ENDIF
+
+C     No more integrals to calculate
+      CALL MPI_REDUCE(WRK(JRXYO),WRK(JRXYO),N2ORBX,
+     &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
 
       CALL QEXIT('QMMMLNO_S2')
       RETURN
@@ -2330,6 +2626,7 @@ C
       CALL QENTER('QMMMQRO_S1')
 
 
+
       CALL QEXIT('QMMMQRO_S1')
       RETURN
       END
@@ -2405,6 +2702,11 @@ C
 #endif
 #include <cbiher.h>
 #include <gnrinf.h>
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, EXP1VL, TRIMAT
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      DIMENSION WRK(LWRK)
 
       CALL QENTER('QMMMQRO_S2')
 
