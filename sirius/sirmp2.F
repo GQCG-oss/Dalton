@@ -889,9 +889,10 @@ C
       EMP2BF = EMP2
       DO 100 IH = 1,NH
          IBH = IPHORD(IH)
-      IF ( IFROZ(IBH) .EQ. 0 ) THEN
+      IF ( IFROZ(IBH) .NE. 0 ) GO TO 100
          DO 200 IP = 1,NP
             INP = IPHORD(NH+IP)
+         IF ( IFROZ(INP) .NE. 0 ) GO TO 200
             ENMANB = ENMA - ORBEN(INP) + ORBEN(IBH)
             H2D(INP,IBH) = ( D2*H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))
      *                      / ENMANB
@@ -918,7 +919,6 @@ C
             H2M(INP,IBH) = H2M(INP,IBH)/ENMANB
             H2M(IBH,INP) = H2M(INP,IBH)
  200     CONTINUE
-      END IF
  100  CONTINUE
 cmjp Pack the correlation coefficients into COEMP2 if SOPPA follow
       IF (FLAG(25) .AND. KFRO .GE. 0) THEN
@@ -934,41 +934,46 @@ C
 C   DONE(A,M) = (A,D)*[M,D]
 C   DONE(M,N) = (N,D)*[M,D]
 C
-C TODO: if (MP2_NO_OV) then occ-virt in DONE not needed in DGEMM calls below /Apr09
+C TODO: if (MP2_NO_OV) then occ-virt in DONE not needed in DGEMM calls below /hjaaj Apr09
 C
       DO 1000 ISSYM = 1,NSYM
 
          NORBI = NORB(ISSYM)
       IF (NORBI .EQ. 0) GOTO 1000
          IOFFI = IORB(ISSYM) + 1
-         NRHFI = NRHF(ISSYM)
          NFRMPI= NFROZ(ISSYM)
+         NRHFI = MAX(NRHF(ISSYM), NFRMPI)
+C        ... This special code makes it possible to exclude low-lying
+C            virtual MO's in the MP2 energy /hjaaj Oct 09
          NVIRI = NORBI - NRHFI
 
          JSYM  = MULD2H(ISYMAM,ISSYM)
          NORBJ = NORB(JSYM)
       IF (NORBJ .EQ. 0) GOTO 1000
          IOFFJ = IORB(JSYM) + 1
-         NRHFJ = NRHF(JSYM)
          NFRMPJ= NFROZ(JSYM)
+         NRHFJ = MAX(NRHF(JSYM),NFRMPJ)
+C        ... See comment above for NRHFI
          NVIRJ = NORBJ - NRHFJ
 C
 C   DONE(A,B) = (A,Q)*[Q,B]
 C   DONE(M,B) = (M,Q)*[Q,B]
 C        I,I     I,J   J,I
 C
-         CALL DGEMM('N','N',NORBI-NFRMPI,NRHFI-NFRMPI,NVIRJ,1.D0,
-     &              H2M(IOFFI+NFRMPI,IOFFJ+NRHFJ),NORBT,
-     &              H2D(IOFFJ+NRHFJ,IOFFI+NFRMPI),NORBT,1.D0,
+         IF (NRHFI .GT. NFRMPI)
+     &   CALL DGEMM('N','N',NORBI-NFRMPI,NRHFI-NFRMPI,NVIRJ,1.D0,
+     &              H2M(IOFFI+NFRMPI,IOFFJ+NRHFJ),  NORBT,
+     &              H2D(IOFFJ+NRHFJ,IOFFI+NFRMPI),  NORBT,1.D0,
      &              DONE(IOFFI+NFRMPI,IOFFI+NFRMPI),NORBT)
 C
 C   DONE(A,M) = (A,D)*[M,D]
 C   DONE(M,N) = (N,D)*[M,D]
 C        I,I     I,J   I,J
 C
-         CALL DGEMM('N','T',NORBI-NFRMPI,NVIRI,NRHFJ-NFRMPJ,1.D0,
+         IF (NRHFJ .GT. NFRMPJ)
+     &   CALL DGEMM('N','T',NORBI-NFRMPI,NVIRI,NRHFJ-NFRMPJ,1.D0,
      &              H2M(IOFFI+NFRMPI,IOFFJ+NFRMPJ),NORBT,
-     &              H2D(IOFFI+NRHFI,IOFFJ+NFRMPJ),NORBT,1.D0,
+     &              H2D(IOFFI+NRHFI,IOFFJ+NFRMPJ), NORBT,1.D0,
      &              DONE(IOFFI+NFRMPI,IOFFI+NRHFI),NORBT)
  1000 CONTINUE
       IF (IPRMP2 .GE. 30) THEN
@@ -1163,6 +1168,13 @@ C
      +      ' Number of frozen MP2 orbitals this symmetry',NFRMP2(ISYM),
      +      ' is reset to number of frozen RHF orbitals  ',NFRRHF_I 
             NFRMP2(ISYM) = NFRRHF_I 
+         ELSE IF (NFRMP2(ISYM) .GT. NRHF(ISYM)) THEN
+            WRITE (LUW4,'(3(/A,I5),/A/A)')
+     +      ' INFO from MP2FCK for symmetry',ISYM,
+     +      ' INFO Number of frozen MP2 orbitals         ',NFRMP2(ISYM),
+     +      ' INFO is greater than number of RHF orbitals',NRHF(ISYM),
+     +      ' INFO The thus frozen virtual orbitals are excluded.',
+     +      ' INFO We hope you know what you are doing!!!'
          END IF
          NRHFI = NRHF(ISYM)
          IORBI = IORB(ISYM)
@@ -1255,11 +1267,15 @@ C
             ORBEN_I = FC(JFC-1 + IROW(I+1))
             ORBEN(IORBI + I) = ORBEN_I
             IF (I .LE. NRHFI) THEN
-               EHOMO = MAX(EHOMO,ORBEN_I)
-               ISYM_HOMO = ISYM
+               IF (EHOMO .LT. ORBEN_I) THEN
+                  EHOMO = ORBEN_I
+                  ISYM_HOMO = ISYM
+               END IF
             ELSE
-               ELUMO = MIN(ELUMO,ORBEN_I)
-               ISYM_LUMO = ISYM
+               IF (ELUMO .GT. ORBEN_I) THEN
+                  ELUMO = ORBEN_I
+                  ISYM_LUMO = ISYM
+               END IF
             END IF
          END DO
 
@@ -1729,6 +1745,11 @@ C
             IP  = IP  + 1
             IPHORD(NH+IP) = IPH
             INDXPH(IPH)   = -IP
+            IF (NRHFI+I .LE. NFRMPI) THEN
+C           ... code for freezing low-lying virtuals /hjaaj Oct 09
+               IMP2        = IMP2 + 1
+               IFRMP2(IPH) = 1
+            END IF
   200    CONTINUE
   300 CONTINUE
 C
