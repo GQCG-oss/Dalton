@@ -4354,6 +4354,11 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QMMM CALCULATIONS 
 C
+C Oct. 2009: AHS and JMO
+C   Added a restart option which requires the relay matrix to be present
+C   in the file QMMMIM. Currently the restart option only supports the
+C   calculation of the relay matrix.
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <gnrinf.h>
@@ -4377,7 +4382,7 @@ C
      *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
      *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
      *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
-     *            '.ZEROOC', '.PRINT ', '.XXXXXX', '.XXXXXX'/
+     *            '.ZEROOC', '.PRINT ', '.MMREST', '.XXXXXX'/
 
  
       CALL QENTER('QMMMIN')
@@ -4398,9 +4403,9 @@ C                            seperately from permanent and induced dipoles. For 
       LGSPOL   = .FALSE.   ! Skip the response part related to Efield
 C      SELPOL   = .FALSE.   ! Skip selected systems response related to the electric field. Response
       MMMAT    = .TRUE.    ! Default is matrix inversion (keyword MATINV)
-      MMITER   = .FALSE.   ! Locical for iterative determination of ind. dipoles (keyword ITER)
+      MMITER   = .FALSE.   ! Logical for iterative determination of ind. dipoles (keyword ITER)
       MXMMIT   = 100       ! Max. iterations in Jacobi MM induced dipoles solver. 
-      THMMIT   = 1.0D-10   ! Thresshold in Jacobi/DIIS MM induced dipoles solver (for norm error vector in the induced dipoles))
+      THMMIT   = 1.0D-10   ! Threshold in Jacobi/DIIS MM induced dipoles solver (for norm error vector in the induced dipoles))
       MMDIIS   = .FALSE.   ! Use DIIS solver for induced dipoles
       MXMMDI   = 5         ! Maximum vectors to be used in MMDIIS
       LCLOSE   = .FALSE.   ! Logical for investigating close QM-MM distances
@@ -4409,8 +4414,10 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       RCUTMM   = 1000.0D0   ! Cut-off for QM-MM and MM-MM interactions
       RCUT     = .FALSE.   ! no cut-off
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
-      ZEROOC   = .FALSE.   ! Zero the octuploe moments
+      ZEROOC   = .FALSE.   ! Zero the octupole moments
       IPQMMM   = 1         ! QMMM print
+      MMREST   = .FALSE.   ! Oct. 2009: AHS and JMO
+                           !   Restart QM/MM calculation (only useful for reusing relay matrix atm.)
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4555,6 +4562,28 @@ C           See if further input is provided for this option
           GO TO 100
 
    19     CONTINUE
+C Oct. 2009: AHS and JMO
+C   Checks if QMMMIM file is present and makes sure it isn't
+C   recalculated. Quits if QMMMIM is not available.
+            MMREST = .TRUE.
+            IF (MMMAT) THEN ! only go in if matrix inversion method is used
+              INQUIRE(FILE='QMMMIM',EXIST=CONMAT)
+              IF (CONMAT) THEN
+                CONMAT = .FALSE.
+              ELSE
+                WRITE (LUPRI,'(A)')
+                WRITE (LUPRI,'(A)') 'File containing the relay matrix'//
+     &                              ' not found!'
+                WRITE (LUPRI,'(A)')
+                WRITE (LUPRI,'(A)') 'Remember to copy it to the'//
+     &                              ' scratch directory either'//
+     &                              ' manually or with the'
+                WRITE (LUPRI,'(A)') 'dalton script using the "-qmmm"'//
+     &                              ' option.'
+                WRITE (LUPRI,'(A)')
+                CALL QUIT('ERROR: QMMMIM file not found')
+              ENDIF
+            ENDIF
           GO TO 100
 
    20     CONTINUE
@@ -4604,6 +4633,8 @@ C
      *         '| ','LCLOSE',' | ',LCLOSE,' |'
         IF (RCUT) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','RCUT',' | ',RCUT,' |'
+        IF (MMREST) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMREST',' | ',MMREST,' |'
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
         WRITE(LUPRI,*)
       END IF
