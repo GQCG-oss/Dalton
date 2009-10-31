@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > qmmm_debug.info <<'%EOF%'
-   qmmm_debug
+cat > qmmm_debug1.info <<'%EOF%'
+   qmmm_debug1
    -----------
    Molecule:         CH2O(QM)/2 waters(MM)
    Wave Function:    HF / cc-pVDZ  
@@ -27,7 +27,7 @@ cat > qmmm_debug.info <<'%EOF%'
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > qmmm_debug.mol <<'%EOF%'
+cat > qmmm_debug1.mol <<'%EOF%'
 ATOMBASIS
 CH2O PLUS 2 WATERS
 ------------------------
@@ -43,7 +43,7 @@ H           -2.508043   -1.382001     .040282
 #######################################################################
 #  QM/MM INTERACTION INPUT
 #######################################################################
-cat > qmmm_debug.pot <<'%EOF%'
+cat > qmmm_debug1.pot <<'%EOF%'
 AU
 10 3 2 1
 1       -6.2900497831       -0.1950764279       -0.0007861261       -0.7423294438        0.0303539300        0.3280749969        0.0000894127       -3.9516312016       -0.0561791973        0.0008348984       -4.5778807726        0.0000430036       -5.0206878337       -0.0150265431       -0.0987395310       -0.0000662324        0.0267925411       -0.0002404801        0.0219905017        0.0316173819       -0.0000537894        0.2063402594        0.0001754735        1.5931619660        0.0800886126       -0.0012113893        2.5255643422        0.0013486011        3.3670040387
@@ -61,20 +61,27 @@ AU
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > qmmm_debug.dal <<'%EOF%'
+cat > qmmm_debug1.dal <<'%EOF%'
 **DALTON
-.RUN WAVEFUNCTION
+.RUN PROPERTIES
 *QMMM
 .QMMM
+.MMITER
+.MMDIIS
+ 5
 .PRINT
  1 
 .MMPROP
 **WAVE FUNCTIONS
-.DFT
-B3LYP
-*SCF INPUT
-.THRESHOLD
- 1.0D-10
+.HF
+**PROPERTIES
+.EXCITA
+*EXCITA
+.NEXCIT
+ 2
+.DIPSTR
+.THRESH
+ 1.0D-7
 **END OF
 %EOF%
 #
@@ -82,8 +89,8 @@ B3LYP
 #  CHECK SCRIPT
 #######################################################################
 #
-echo $CHECK_SHELL >qmmm_debug.check
-cat >>qmmm_debug.check <<'%EOF%'
+echo $CHECK_SHELL >qmmm_debug1.check
+cat >>qmmm_debug1.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -97,15 +104,15 @@ fi
 #
 CRIT1=`$GREP "Anisotropic polarization" $log | wc -l`
 CRIT2=`$GREP "QM/MM calculation converged" $log | wc -l`
-CRIT3=`$GREP "Charge contribution: * ( \-|\-0)\.018037" $log | wc -l`
-CRIT4=`$GREP "Dipole contribution: * ( \-|\-0)\.017972" $log | wc -l`
-CRIT5=`$GREP "Quadrupole contribution: * ( \-|\-0)\.0096207" $log | wc -l`
-CRIT6=`$GREP "Octuple contribution: * ( \-|\-0)\.0167136" $log | wc -l`
-CRIT7=`$GREP "Electronic Pol. energy: * ( |0)\.125966" $log | wc -l`
-CRIT8=`$GREP "Nuclear pol. energy: * ( \-|\-0)\.150142" $log | wc -l`
-CRIT9=`$GREP "Multipole Pol. energy: * ( |0)\.000098298" $log | wc -l`
-CRIT10=`$GREP "Total QM/MM energy: * ( \-|\-0)\.08642248" $log | wc -l`
-CRIT11=`$GREP "Final DFT energy: * \-112\.9644825" $log | wc -l`
+CRIT3=`$GREP "Charge contribution: * ( \-|\-0)\.023650685" $log | wc -l`
+CRIT4=`$GREP "Dipole contribution: * ( \-|\-0)\.0158848355" $log | wc -l`
+CRIT5=`$GREP "Quadrupole contribution: * ( \-|\-0)\.0116817110" $log | wc -l`
+CRIT6=`$GREP "Octuple contribution: * ( \-|\-0)\.0194945874" $log | wc -l`
+CRIT7=`$GREP "Electronic Pol. energy: * ( |0)\.0866091125" $log | wc -l`
+CRIT8=`$GREP "Nuclear pol. energy: * ( \-|\-0)\.110635041" $log | wc -l`
+CRIT9=`$GREP "Multipole Pol. energy: * ( |0)\.0001481426" $log | wc -l`
+CRIT10=`$GREP "Total QM/MM energy: * ( \-|\-0)\.094589605" $log | wc -l`
+CRIT11=`$GREP "Final DFT energy: * \-112\.432515780" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 `
 CTRL[1]=11
 ERROR[1]="GENERAL QMMM or QMMM ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -113,24 +120,24 @@ ERROR[1]="GENERAL QMMM or QMMM ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Test of QMMM dipole moment
 #
-#CRIT1=`$GREP "x * ( |0)\.91580" $log | wc -l`
-#CRIT2=`$GREP "y * \-1\.62295" $log | wc -l`
-#CRIT3=`$GREP "z * ( \-|\-0)\.00007" $log | wc -l`
-#TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-#CTRL[2]=3
-#ERROR[2]="QMMM DIPOLE MOMENT NOT CORRECT"
+CRIT1=`$GREP "x * ( \-|\-0)\.048674" $log | wc -l`
+CRIT2=`$GREP "y * \-1\.054558" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.030318" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[2]=3
+ERROR[2]="QMMM DIPOLE MOMENT NOT CORRECT"
 
 
 #
 # Test of QMMM excitation energies
 #
-#CRIT1=`$GREP "1        1  *  ( |0)\.1843" $log | wc -l`
-#TEST[3]=`expr $CRIT1 `
-#CTRL[3]=2
-#ERROR[3]="QMMM EXCITATION ENERGIES NOT CORRECT"
+CRIT1=`$GREP "1        1  *  ( |0)\.250" $log | wc -l`
+TEST[3]=`expr $CRIT1 `
+CTRL[3]=2
+ERROR[3]="QMMM EXCITATION ENERGIES NOT CORRECT"
 
 PASSED=1 
-for i in 1
+for i in 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -147,5 +154,5 @@ else
   exit 1
 fi                
 %EOF%
-chmod +x qmmm_debug.check
+chmod +x qmmm_debug1.check
 #######################################################################

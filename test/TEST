@@ -90,7 +90,7 @@ PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel"
 #
 PARQMMM="parqmmm1 parqmmm2 parqmmm3 parqmmm4 parqmmm5 parqmmm6 parqmmm7 parqmmm8"
 #
-DEBUG="qmmm_debug"
+DEBUG="qmmm_debug1 qmmm_debug2"
 #
 DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
@@ -330,7 +330,7 @@ while [ -n "$1" ]; do
    shift ;;
   "parqmmm" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 2"
    fi
    testcase="$testcase $PARQMMM";
    shift ;;
