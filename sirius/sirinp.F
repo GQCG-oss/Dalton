@@ -237,6 +237,7 @@ C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,...
 C   INFORB : NSYM,?
 C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
 C   INFOPT : EPOT,?
+C   INFTAP : LUCME,?
 C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
@@ -266,13 +267,6 @@ C
 C
       DIMENSION MBAS(8)
       LOGICAL ONELOK
-C
-C -- DATA statements
-C
-      DATA INPERR/0/, NUMRUN /0/
-C
-C INPERR = number of input errors. Stop if different from zero.
-C
       CALL QENTER('SIRRDI')
 C
 C  ***** Check dimension
@@ -580,7 +574,7 @@ C
       ELSE
          LUSUPM = -9999
       END IF
-c
+C
 C********** Default values section DFTINP *****
 C
       CALL DFTINI
@@ -735,6 +729,11 @@ C
 C     Extra default: CALL SIROUT for summary
       FLAG(5) = .TRUE.
 C
+C INPERR = number of input errors. Stop if different from zero.
+C NUMRUN = number of wave functions (e.g. RHF + MP2 + MCSCF: NUMRUN=3)
+C
+      INPERR = 0
+      NUMRUN = 0
       CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) DOCINO = .FALSE.
@@ -1109,6 +1108,7 @@ C               Find out if any orbitals deleted
             REWIND LUIT1
             IF (FNDLAB('BASINFO ',LUIT1)) THEN
 C           ... 921202: old LUIT1 files do not have BASINFO
+C
                IF (INIOCC .EQ. 0 .OR. IREST .GT. 0) THEN
 C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
 C                  may restart with old orbitals, but new charge.
@@ -1523,6 +1523,12 @@ C
          IF (IREST.EQ.-1) WRITE (LUW4,3052)
          CALL FLSHFO(LUW4)
       END IF
+      IF (LUCME .GT. 0) THEN
+         CALL PRTINP(LUCME,NUMRUN,IRDMO)
+         IF (IREST.NE.0) WRITE (LUCME,3050)
+         IF (IREST.EQ.-1) WRITE (LUCME,3052)
+         CALL FLSHFO(LUCME)
+      END IF
  3050 FORMAT(/5X,'This is a restarted calculation.')
  3052 FORMAT( 5X,'(Probably from another geometry:'//
      &       ' nuclear repulsion energy has changed.)')
@@ -1677,7 +1683,6 @@ C
             ICHECK = 2
          END IF
       END IF
-
 
 C
 C *****  END OF INPUT PROCESSING *****
@@ -2094,8 +2099,8 @@ C
          DO 286 I = 1,NPDIM
             IF (IABS(NPATH(I)) .GT. NFLAG) THEN
                INPERR = INPERR + 1
-               WRITE (LUPRI,'(/A,I5)')
-     *         ' *** ERROR Sirius .FLAGS, illegal value:',NPATH
+               WRITE (LUPRI,'(/A,I10)')
+     *         ' *** ERROR Sirius .FLAGS, illegal value:',NPATH(I)
             ELSE IF (NPATH(I).LT.0) THEN
                FLAG(-NPATH(I)) = .FALSE.
             ELSE IF (NPATH(I).GT.0) THEN
@@ -2191,7 +2196,7 @@ C *** Option  9 >TITLE <  Title
          GO TO 1
       END IF
 C
-C *** Option  10 >MP2  <  Moller-Plesset PT2 calculation
+C *** Option  10 >MP2  <  Moeller-Plesset PT2 calculation
   110 CONTINUE
         DOMP2    = .TRUE.
         FLAG(9)  = .TRUE.
@@ -2840,7 +2845,7 @@ C *** Option 16 >MAX ER< Max. number of DIIS error vectors
   116 READ (LUCMD,*) MAXEVC
       GO TO 100
 C
-C *** Option 17 (not in use)
+C *** Option 17 >NO BAC< No backsteps
   117 CONTINUE
       BCKSTP = .FALSE.
       GO TO 100
@@ -2915,7 +2920,6 @@ C
       NRHFEL = 0
       INIOCC = 1
       GO TO 100
-C Shift level
 C *** Option 25 >SHIFT < Shift level
  125  READ(LUCMD,*) DEFLVL
       DEFLVL = -ABS(DEFLVL)
@@ -3656,7 +3660,7 @@ C               in the MOTECC-90 Input/Output documentation
   810 CONTINUE
       GO TO 100
 C
-C *** Option 11 
+C *** Option 11 >FROZEN<
   111 CONTINUE
       READ (LUCMD,*) (LOCFRO(I),I=1,NSYM)
       GO TO 100
@@ -3709,8 +3713,12 @@ C
          INPERR = INPERR + 1
       END IF
       GO TO 100
+C
+C *** Option 18 >R12ORB< 
   118 READ (LUCMD,*) (NRXR12(I), I=1,NSYM)
       GO TO 100
+C
+C ---
 C
  9000 CONTINUE
       IF (BOYORB .OR. PIPORB) THEN
@@ -4652,6 +4660,7 @@ C
 #include <infvar.h>
 #include <inforb.h>
 #include <infdim.h>
+#include <inftap.h>
 #include <infpri.h>
 C
 C
@@ -4814,7 +4823,7 @@ C
          ELSE
             WRITE(IWUNIT,'(/A)')
      &   ' (Wave function specification suppressed here,'//
-     &   ' see output for initial geometry above.)'
+     &   ' see output above for initial geometry.)'
             GO TO 8000
          END IF
       END IF
@@ -4912,9 +4921,7 @@ C     formulation of NEVPT.
             END IF
          ELSE IF (MCTYPE .EQ. 1) THEN
             WRITE(IWUNIT,1051)
-     *      'Type: complete active space calculation (CAS).'
-            IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
-     *      'Type: complete active space calculation (CAS).'
+     *         'Type: complete active space calculation (CAS).'
          ELSE
 C          hjaaj Aug 2005 - program validity check, should not be possible
 C          to get here unless someone modifies SIRIUS incorrectly
@@ -4922,7 +4929,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
          END IF
          IF (FLAG(23)) THEN
             WRITE(IWUNIT,1051)
-     *      '      Active-active rotations included by user.'
+     *      '      Selected active-active rotations included by user.'
          END IF
       ELSE IF ( DOMP2 ) THEN
          WRITE (IWUNIT,1050)
@@ -4945,15 +4952,11 @@ C          to get here unless someone modifies SIRIUS incorrectly
             WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
-            IF (LUCME.GT.0 .AND. NASHT.EQ.0) WRITE(LUCME,'(A/)')
-     *         'Restricted, closed shell Kohn-Sham calculation.'
          ELSE
             WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Time-dependent Hartree-Fock calculation '//
      *         '(random phase approximation).'
-            IF (LUCME.GT.0 .AND. NASHT.EQ.0) WRITE(LUCME,'(A/)')
-     *         'Restricted, closed shell Hartree-Fock calculation.'
          END IF
       ELSE
          WRITE (IWUNIT,1050) 'No wave function optimization.'
@@ -5085,8 +5088,6 @@ C
       CALL MOLCHR(ICHRG)
 C     ... get total charge
       WRITE(IWUNIT,1000) NINEL,NACTEL,ICHRG,ISPIN,NSYM,LSYM
-      IF (LUCME.GT.0)
-     *WRITE(LUCME ,1000) NINEL,NACTEL,ICHRG,ISPIN,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================',
      *       /5X,'Number of closed shell electrons',I11,
