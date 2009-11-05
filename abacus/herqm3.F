@@ -4355,9 +4355,14 @@ C
 C INPUT FROM ABACUS TO QMMM CALCULATIONS 
 C
 C Oct. 2009: AHS and JMO
-C   Added a restart option which requires the relay matrix to be present
-C   in the file QMMMIM. Currently the restart option only supports the
-C   calculation of the relay matrix.
+C   Added a restart option (.MMREST) which requires the relay matrix to be
+C   present in the file QMMMIM. Currently the restart option only supports
+C   the calculation of the relay matrix.
+C
+C Nov. 2009: JMO
+C   Added an option (.RELMAT) for constructing the relay matrix, saving it
+C   in the file QMMMIM and quit. Intended for use in subsequent restarted
+C   calculations.
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -4382,7 +4387,7 @@ C
      *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
      *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
      *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
-     *            '.ZEROOC', '.PRINT ', '.MMREST', '.XXXXXX'/
+     *            '.ZEROOC', '.PRINT ', '.MMREST', '.RELMAT'/
 
  
       CALL QENTER('QMMMIN')
@@ -4411,13 +4416,13 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       LCLOSE   = .FALSE.   ! Logical for investigating close QM-MM distances
       IQMMCC   = -1        ! Option for close QM-MM distance. 
       RQMMMC   = 2.20      ! Close distance QM-MM. Do something if actual distance is less than RQMMMC. In au. 
-      RCUTMM   = 1000.0D0   ! Cut-off for QM-MM and MM-MM interactions
-      RCUT     = .FALSE.   ! no cut-off
+      RCUTMM   = 1000.0D0  ! Cut-off for QM-MM and MM-MM interactions
+      RCUT     = .FALSE.   ! No cut-off
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
       ZEROOC   = .FALSE.   ! Zero the octupole moments
-      IPQMMM   = 1         ! QMMM print
-      MMREST   = .FALSE.   ! Oct. 2009: AHS and JMO
-                           !   Restart QM/MM calculation (only useful for reusing relay matrix atm.)
+      IPQMMM   = 1         ! QMMM print level
+      MMREST   = .FALSE.   ! Restart QM/MM calculation (only useful for reusing relay matrix atm.)
+      RELMAT   = .FALSE.   ! Construct relay matrix, save to QMMMIM and quit
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4562,11 +4567,8 @@ C           See if further input is provided for this option
           GO TO 100
 
    19     CONTINUE
-C Oct. 2009: AHS and JMO
-C   Checks if QMMMIM file is present and makes sure it isn't
-C   recalculated. Quits if QMMMIM is not available.
             MMREST = .TRUE.
-            IF (MMMAT) THEN ! only go in if matrix inversion method is used
+            IF (MMMAT) THEN
               INQUIRE(FILE='QMMMIM',EXIST=CONMAT)
               IF (CONMAT) THEN
                 CONMAT = .FALSE.
@@ -4587,6 +4589,12 @@ C   recalculated. Quits if QMMMIM is not available.
           GO TO 100
 
    20     CONTINUE
+            RELMAT = .TRUE.
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) 'Relay matrix will be constructed and saved'
+            WRITE(LUPRI,*) 'in QMMMIM.'
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) 'Skipping everything else!'
           GO TO 100
 
         ELSE IF (PROMPT .EQ. '*') THEN
@@ -4609,6 +4617,11 @@ C
      *         '| ',' WORD:',' | ','CHANGE:',' |'
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
 C
+        IF (RELMAT) THEN
+                  WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','RELMAT',' | ',RELMAT,' |'
+          GOTO 400
+        ENDIF
         IF (QMMM) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','  QMMM',' | ',QMMM,' |'
         IF (SPLDIP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
@@ -4635,7 +4648,7 @@ C
      *         '| ','RCUT',' | ',RCUT,' |'
         IF (MMREST) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','MMREST',' | ',MMREST,' |'
-        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
+  400   WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
         WRITE(LUPRI,*)
       END IF
 
@@ -5150,7 +5163,7 @@ C     Charges + dipoles + quadrupoles + isotropic polarizabiblities
         ENDIF
       ENDIF
 
-C     Charges + dipoles + quadrupoles + octupoeles + isotropic polarizabiblities
+C     Charges + dipoles + quadrupoles + octupoles + isotropic polarizabiblities
 
       IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 1) ) THEN
         LREAD = .TRUE.
