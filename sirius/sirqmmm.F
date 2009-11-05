@@ -33,8 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C FILE: sirius/sirqmmm.F
 C Oct. 2009: JMO and Arnfinn
-C Moved all routines relevant for the new QMMM code to this file and
-C added parallel QMMM routines.
+C   Moved all routines relevant for the new QMMM code to this file and
+C   added parallel QMMM routines.
 *******************************************************************************
 C  /* Deck qmmmfck */
       SUBROUTINE QMMMFCK(DCAO,DVAO,FSOL,EQMMM,WRK,LWRK,IPRINT)
@@ -91,19 +91,15 @@ C     Get total density
 C     Modify the fock operator. Modification returned in FSOL. 
 C     QMMM contribution to the energy returned in EQMMM.
 C      IF (NODTOT .GE. 1) THEN
-      IF (.TRUE.) THEN
-         CALL QMMM_FCK_AO_NEW(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,
-     & IPRINT)
-      ELSE
-         CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
-      ENDIF
+      CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
+
       CALL QEXIT('QMMMFCK')
       RETURN
       END
 
 C**************************************************************************************
-C  /* Deck qmmm_fck_ao_new */
-      SUBROUTINE QMMM_FCK_AO_NEW(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
+C  /* Deck qmmm_fck_ao */
+      SUBROUTINE QMMM_FCK_AO(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
 
 #include <implicit.h>
 #include <priunit.h>
@@ -137,7 +133,7 @@ C  /* Deck qmmm_fck_ao_new */
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('QMMM_FCK_AO_NEW')
+      CALL QENTER('QMMM_FCK_AO')
 
       LOCDEB = .FALSE.
 
@@ -147,7 +143,7 @@ C  /* Deck qmmm_fck_ao_new */
       KWRK1  = KNSNUC + MMCENT
       LWRK1  = LWRK   - KWRK1
 
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO_NEW',-KWRK1,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO',-KWRK1,LWRK)
 
       CALL DZERO(WRK(KTAO),NNBASX)
       CALL DZERO(WRK(KNSEL),MMCENT)
@@ -241,7 +237,7 @@ C     Finally, put back the dipole origin
 
       CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
 
-      CALL QEXIT('QMMM_FCK_AO_NEW')
+      CALL QEXIT('QMMM_FCK_AO')
 
       RETURN
       END
@@ -370,7 +366,7 @@ C  Gradient
          RUNQM3=.FALSE.
 
          IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-           WRITE (LUPRI,'(/A)') 'Pot. energy matrix in QMMM_FCK_AO_P'
+           WRITE (LUPRI,'(/A)') 'Pot. energy matrix in QMMM_FCK'
            CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
          ENDIF
 
@@ -591,13 +587,13 @@ C      Gradient
         ENDIF
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -748,22 +744,22 @@ C         we use KNS to collect the energy terms
         RUNQM3=.FALSE.
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xy matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xy matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xz matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xz matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -982,22 +978,22 @@ C       Calculate gradient of these integrals
         CALL DZERO(WRK(KMAT2),6*NNBASX)
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xyz matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xyz matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xzz matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xzz matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yyz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yyz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yzz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yzz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zzz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zzz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -1027,22 +1023,22 @@ C       Calculate gradient of these integrals
         CALL DZERO(WRK(KMAT3),6*NNBASX)
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xyy matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xyy matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xzy matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xzy matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yyy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yyy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yzy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yzy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zzy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zzy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -1072,22 +1068,22 @@ C       Calculate gradient of these integrals
         CALL DZERO(WRK(KMAT4),6*NNBASX)
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xyx matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xyx matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xzx matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xzx matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yyx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yyx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yzx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yzx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zzx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zzx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -1216,7 +1212,10 @@ C*******************************************************************************
 C  /* Deck qmmm_polari */
       SUBROUTINE QMMM_POLARI(DCAO,ESOLT,EPOLT,TAO,LOCDEB,
      &                       WRK,LWRK,IPRINT)
-
+C
+C Nov. 2009: JMO
+C   See comments below for info on what has been changed
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -1303,32 +1302,41 @@ c     list for this center and if not touched upon leave zero
       IF (MMMAT) THEN
 
 C       There is no need to construct ALPHA^(-1) and T matrices
-C       explicitly, we can directly form the [ALPHA^(-1) - T] matrix
-        KALINMT = 1
-        KINVAMT = KALINMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1) - T] matrix
-        KUMAT   = KINVAMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1) - T]^(-1) matrix
-        KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL) ! UMAT is just for testing
-        KMAT    = KINDMOM + (3*NNZAL) ! List for induced dipoles
-        KIPVT   = KMAT    + (3*NNBASX) ! For Rr_a integrals
-        KWRKV   = KIPVT   + (3*NNZAL) ! For matrix inv.
+C       explicitly, we can directly form the [ALPHA^(-1)-T] matrix
 C
-C Oct. 2009: AHS and JMO
-C   Increased size of work array used for matrix inversion
-        KWRK2   = KWRKV   + (64*3*NNZAL) ! For matrix inv.
-        LWRK2   = LWRK    - KWRK2 + 1
+C Nov. 2009: JMO
+C   Instead of allocating memory for both the [ALPHA^(-1)-T],
+C   [ALPHA^(-1)-T]^(-1) and UMAT matrices, it now only allocates space
+C   for one matrix in which the [ALPHA^(-1)-T] matrix is formed and
+C   subsequently overwritten with the [ALPHA^(-1)-T]^(-1) matrix.
+C
+        KINVAMT   = 1
+        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
+          KALINMT = KINVAMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T]^(-1) matrix
+          KUMAT   = KALINMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T] matrix
+          KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL) ! UMAT is for testing
+        ELSE
+          KALINMT = 0
+          KUMAT   = 0
+          KINDMOM = KINVAMT + (3*NNZAL)*(3*NNZAL) ! both matrices
+        ENDIF
+        KMAT      = KINDMOM + (3*NNZAL) ! List for induced dipoles
+        KIPVT     = KMAT    + (3*NNBASX) ! For Rr_a integrals
+        KWRKV     = KIPVT   + (3*NNZAL) ! For matrix inv.
+        KWRK2     = KWRKV   + (64*3*NNZAL) ! For matrix inv.
+        LWRK2     = LWRK    - KWRK2 + 1
 
         IF (LWRK2 .LT. 0) THEN
           CALL ERRWRK('QMMM_POLARI 1',-KWRK2,LWRK)
         ENDIF
 
-        CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
         CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
-        CALL DZERO(WRK(KUMAT),(3*NNZAL)*(3*NNZAL))
+        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
+          CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
+          CALL DZERO(WRK(KUMAT),(3*NNZAL)*(3*NNZAL))
+        ENDIF
         CALL DZERO(WRK(KINDMOM),(3*NNZAL))
         CALL DZERO(WRK(KIPVT),(3*NNZAL))
-C
-C Oct. 2009: AHS and JMO
-C   See comment above
         CALL DZERO(WRK(KWRKV),(64*3*NNZAL))
         CALL DZERO(WRK(KMAT),(3*NNBASX))
 
@@ -1474,13 +1482,13 @@ C     total solvation energy
         ENDIF
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -2434,13 +2442,13 @@ C         we use KNS to collect the energy terms
         ENDIF
 
         IF (IPRTMP.GT.15) THEN
-          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -2787,22 +2795,22 @@ C         we use KNS to collect the energy terms
         RUNQM3=.FALSE.
 
         IF (IPRTMP.GT.15) THEN
-          WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xy matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xy matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xz matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xz matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -3222,22 +3230,22 @@ C       Calculate gradient of these integrals
         CALL DZERO(WRK(KMAT2),6*NNBASX)
 
         IF (IPRTMP.GT.15) THEN
-          WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xyz matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xyz matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xzz matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xzz matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yyz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yyz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yzz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yzz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zzz_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zzz_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT1+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -3267,22 +3275,22 @@ C       Calculate gradient of these integrals
         CALL DZERO(WRK(KMAT3),6*NNBASX)
 
         IF (IPRTMP.GT.15) THEN
-          WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xyy matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xyy matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xzy matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xzy matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yyy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yyy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yzy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yzy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zzy_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zzy_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT2+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -3312,22 +3320,22 @@ C       Calculate gradient of these integrals
         CALL DZERO(WRK(KMAT4),6*NNBASX)
 
         IF (IPRTMP.GT.15) THEN
-          WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xyx matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xyx matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_xzx matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_xzx matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+2*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yyx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yyx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+3*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_yzx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_yzx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+4*NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_zzx_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_zzx_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT3+5*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -3549,35 +3557,43 @@ c     list for this center and if not touched upon leave zero
 
 C       There is no need to construct ALPHA^(-1) and T matrices
 C       explicitly, we can directly form the [ALPHA^(-1) - T] matrix
+C Nov. 2009: JMO
+C   Instead of allocating memory for both the [ALPHA^(-1)-T],
+C   [ALPHA^(-1)-T]^(-1) and UMAT matrices, it now only allocates space
+C   for one matrix in which the [ALPHA^(-1)-T] matrix is formed and
+C   subsequently overwritten with the [ALPHA^(-1)-T]^(-1) matrix.
+C
         KTAO    = 1
         KTAO2   = KTAO    + NNBASX
         KSEND   = KTAO2   + NNBASX
         KSEND2  = KSEND   + 6*MMCENT
-        KALINMT = KSEND2  + 6*MMCENT
-        KINVAMT = KALINMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1) - T] matrix
-        KUMAT   = KINVAMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1) - T]^(-1) matrix
-        KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL) ! UMAT is just for testing
-        KMAT    = KINDMOM + (3*NNZAL) ! List for induced dipoles
-        KIPVT   = KMAT    + (3*NNBASX) ! For Rr_a integrals
-        KWRKV   = KIPVT   + (3*NNZAL) ! For matrix inv.
-C
-C Oct. 2009: AHS and JMO
-C   Increased size of work array used for matrix inversion
-        KWRK2   = KWRKV   + (64*3*NNZAL) ! For matrix inv.
-        LWRK2   = LWRK    - KWRK2 + 1
+        KINVAMT = KSEND2  + 6*MMCENT
+        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
+          KALINMT = KINVAMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T]^(-1) matrix
+          KUMAT   = KALINMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T] matrix
+          KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL) ! UMAT is for testing
+        ELSE
+          KALINMT = 0
+          KUMAT   = 0
+          KINDMOM = KINVAMT + (3*NNZAL)*(3*NNZAL) ! both matrices
+        ENDIF
+        KMAT      = KINDMOM + (3*NNZAL) ! List for induced dipoles
+        KIPVT     = KMAT    + (3*NNBASX) ! For Rr_a integrals
+        KWRKV     = KIPVT   + (3*NNZAL) ! For matrix inv.
+        KWRK2     = KWRKV   + (64*3*NNZAL) ! For matrix inv.
+        LWRK2     = LWRK    - KWRK2 + 1
 
         IF (LWRK2 .LT. 0) THEN
           CALL ERRWRK('QMMM_POLARI',-KWRK2,LWRK)
         ENDIF
 
-        CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
         CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
-        CALL DZERO(WRK(KUMAT),(3*NNZAL)*(3*NNZAL))
+        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
+          CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
+          CALL DZERO(WRK(KUMAT),(3*NNZAL)*(3*NNZAL))
+        ENDIF
         CALL DZERO(WRK(KINDMOM),(3*NNZAL))
         CALL DZERO(WRK(KIPVT),(3*NNZAL))
-C
-C Oct. 2009: AHS and JMO
-C   See comment above
         CALL DZERO(WRK(KWRKV),(64*3*NNZAL))
         CALL DZERO(WRK(KMAT),(3*NNBASX))
 
@@ -4006,13 +4022,13 @@ C     total solvation energy
         ENDIF
 
         IF (IPRTMP.GT.15) THEN
-          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_x_matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_y matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
 
-          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK_AO_P:'
+          WRITE (LUPRI,'(/A)') ' E_z matrix in QMMM_FCK:'
           CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
         END IF
 
@@ -4359,7 +4375,7 @@ C
 C   ZEROAL  - a vector containing +1 for polarizable MM centers and -1
 C             for non-polarizable
 C
-C Oct. 2009 AHS and JMO:
+C Oct. 2009: JMO
 C   Changed the routines used to invert the relay matrix to more
 C   efficient ones that use the fact that the relay matrix is symmetric.
 C
@@ -4488,7 +4504,7 @@ C     form F vector due to permanent MM moments
 
             DO 310 K=1,3
               DO 311 L=1,3
-                ALINMT(LRI+K-1,LCI+L-1) = AMATSI(K,L)
+                INVAMT(LRI+K-1,LCI+L-1) = AMATSI(K,L)
  311          CONTINUE
  310        CONTINUE
 
@@ -4603,7 +4619,7 @@ C             D) octupole contribution
 
               DO 330 K=1,3
                 DO 331 L=1,3
-                  ALINMT(LRI+K-1,LCI+L-1) = 0.0D0
+                  INVAMT(LRI+K-1,LCI+L-1) = 0.0D0
  331            CONTINUE
  330          CONTINUE
 
@@ -4648,7 +4664,7 @@ C               JPC A 102 (1998) 2399
                   IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
                   ELEM = -1.0*ELEM
 
-                  ALINMT(LRI+K-1,LCI+L-1) = ELEM
+                  INVAMT(LRI+K-1,LCI+L-1) = ELEM
 
  351            CONTINUE
  350          CONTINUE
@@ -4871,33 +4887,22 @@ C     file. ELSE: read matrix from the file. CONMAT = CONstruct MATrix
           WRITE(LUPRI,*)
         ENDIF
 
-        IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+        IF ((IPRINT.GT.15) .OR. (LOCDEB)) THEN
+          DO I=1,NDIM
+            DO J=1,NDIM
+              ALINMT(I,J) = INVAMT(I,J)
+            ENDDO
+          ENDDO
           WRITE(LUPRI,*)'Matrix to be inverted: '
           CALL OUTPUT(ALINMT,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
         END IF
 
 C
-C Oct. 2009 AHS and JMO:
+C Nov. 2009: JMO
 C   The [alpha^(-1)-T] matrix is symmetric therefore the general inversion routine 
-C   is replaced with a more efficient routine designed for symmetric
-C   matrices.
+C   was replaced with a more efficient routine designed for symmetric matrices.
 C
-C The old inversion:
-C       Invert matrix
-C        CALL DGEINV(NDIM,ALINMT,INVAMT,IPVT,WRKV,INFO)
-C
-C        IF (INFO .NE. 0) THEN
-C          CALL QUIT('ERROR in matrix inversion from QM/MMpol')
-C        END IF
-
-C The new inversion:
         IF (IPRINT.GT.1) CALL TIMER('START ',TIMSTR,TIMEND)
-
-        DO I=1,NDIM
-          DO J=1,I
-            INVAMT(I,J) = ALINMT(I,J)
-          ENDDO
-        ENDDO
 
 C       Factorization of the symmetric [alpha^(-1)-T] matrix
         CALL DSYTRF('L',NDIM,INVAMT,NDIM,IPVT,WRKV,64*NDIM,INFO)
@@ -4920,7 +4925,8 @@ C       Inversion of the factorized relay matrix
      &              ' inversion of the factorized [alpha^(-1)-T]'//
      &              ' matrix.')
         ELSE IF (INFO .GT. 0) THEN
-          CALL QUIT('ERROR: [alpha^(-1)-T] matrix is singular.') ! This should never happen (see factorization above)
+C         This should never happen (see factorization above)
+          CALL QUIT('ERROR: [alpha^(-1)-T] matrix is singular.')
         END IF
 
         DO I=2,NDIM
@@ -4961,6 +4967,13 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
         REWIND(LUQMMM)
         CALL WRTIEF(INVAMT,NDIM*NDIM,'QQMMMMAT',LUQMMM)
         CALL GPCLOSE(LUQMMM,'KEEP')
+
+        IF (RELMAT) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Relay matrix saved in QMMMIM.'
+         WRITE(LUPRI,*)
+         STOP
+        ENDIF
 
         CONMAT = .FALSE.
 
