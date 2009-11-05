@@ -3568,7 +3568,7 @@ C
         KSEND   = KTAO2   + NNBASX
         KSEND2  = KSEND   + 6*MMCENT
         KINVAMT = KSEND2  + 6*MMCENT
-        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
+        IF (IPRINT.GT.15) THEN
           KALINMT = KINVAMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T]^(-1) matrix
           KUMAT   = KALINMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T] matrix
           KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL) ! UMAT is for testing
@@ -3588,7 +3588,7 @@ C
         ENDIF
 
         CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
-        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
+        IF (IPRINT.GT.15) THEN
           CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
           CALL DZERO(WRK(KUMAT),(3*NNZAL)*(3*NNZAL))
         ENDIF
