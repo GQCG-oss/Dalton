@@ -223,7 +223,7 @@ fi
 #
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
-      if [ -a $DALMPI -a -x $DALMPI ]; then
+      if [ -s $DALMPI -a -x $DALMPI ]; then
 	 if [ -n "$optlam" ] ; then
 	    lamboot -v  $WRKDIR/$optlam
 	    $MPIRUN -wd $TMPDIR -np $optn $DALMPI
