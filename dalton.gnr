@@ -218,7 +218,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
      if [ -s $WRKDIR/QMMMIM -a -r $WRKDIR/QMMMIM ]; then
        echo "Copying the relay matrix to scratch directory..."
        cp $WRKDIR/QMMMIM QMMMIM
-       if [ -s QMMMIM -a -r QMMMIM ]
+       if [ -s QMMMIM -a -r QMMMIM ] ; then
          continue
        else
          echo "Relay matrix not present in scratch directory. Continuing anyway..."
