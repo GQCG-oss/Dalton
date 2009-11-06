@@ -1878,11 +1878,14 @@ C     From old routine
       CALL MPIXBCAST(UBO,N2ORBX,'DOUBLE',MASTER)
 
 C     Do the work
+      LRI = 1
       DO 20  J=1,MMCENT
          IWHO = -1
          IF (ZEROAL(J) .EQ. -1) GOTO 20
          CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
          CALL MPIXSEND(J, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
+         LRI = LRI + 3
  20   CONTINUE
 
 C     Send end message to all slaves
@@ -1891,6 +1894,7 @@ C     Send end message to all slaves
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
          CALL MPIXSEND(LEND, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
       END DO
 
 C     Collect data
@@ -2028,9 +2032,9 @@ C
 
       CALL MPIXSEND(MYNUM, 1, 'INTEGER', MASTER, MPTAG1)
       CALL MPIXRECV(J, 1, 'INTEGER', MASTER, MPTAG2)
+      CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-         LRI = 3*(J-1) + 1
 
          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
      *           (MMCORD(2,J)-QMCOM(2))**2 +
@@ -2265,11 +2269,14 @@ C     Damping
       CALL MPIXBCAST(XINDMOM,3*NNZAL,'DOUBLE',MASTER)
 
 C     Do the work
+      LRI = 1
       DO 20  J=1,MMCENT
          IWHO = -1
          IF (ZEROAL(J) .EQ. -1) GOTO 20
          CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
          CALL MPIXSEND(J, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
+         LRI = LRI + 3
  20   CONTINUE
 
 C     Send end message to all slaves
@@ -2278,6 +2285,7 @@ C     Send end message to all slaves
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
          CALL MPIXSEND(LEND, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
       END DO
 
 C     Collect data
@@ -2398,10 +2406,9 @@ C
 
       CALL MPIXSEND(MYNUM, 1, 'INTEGER', MASTER, MPTAG1)
       CALL MPIXRECV(J, 1, 'INTEGER', MASTER, MPTAG2)
+      CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-
-         LRI = 3*(J-1) + 1
 
          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
      *           (MMCORD(2,J)-QMCOM(2))**2 +
@@ -2618,11 +2625,14 @@ C     QRO
       CALL MPIXBCAST(ZYM2,NORBT*NORBT,'DOUBLE',MASTER)
 
 C     Do the work
+      LRI = 1
       DO 20  J=1,MMCENT
          IWHO = -1
          IF (ZEROAL(J) .EQ. -1) GOTO 20
          CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
          CALL MPIXSEND(J, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
+         LRI = LRI + 3
  20   CONTINUE
 
 C     Send end message to all slaves
@@ -2631,6 +2641,7 @@ C     Send end message to all slaves
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
          CALL MPIXSEND(LEND, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
       END DO
 
 C     Collect data
@@ -2770,10 +2781,9 @@ C     QRO
 
       CALL MPIXSEND(MYNUM, 1, 'INTEGER', MASTER, MPTAG1)
       CALL MPIXRECV(J, 1, 'INTEGER', MASTER, MPTAG2)
+      CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-
-         LRI = 3*(J-1) + 1
 
          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
      *           (MMCORD(2,J)-QMCOM(2))**2 +
@@ -3050,11 +3060,14 @@ C     QRO
       CALL MPIXBCAST(ZIND2,3*NNZAL,'DOUBLE',MASTER)
 
 C     Do the work
+      LRI = 1
       DO 20  J=1,MMCENT
          IWHO = -1
          IF (ZEROAL(J) .EQ. -1) GOTO 20
          CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
          CALL MPIXSEND(J, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
+         LRI = LRI + 3
  20   CONTINUE
 
 C     Send end message to all slaves
@@ -3063,6 +3076,7 @@ C     Send end message to all slaves
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
          CALL MPIXSEND(LEND, 1, 'INTEGER', NWHO, MPTAG2)
+         CALL MPIXSEND(LRI, 1, 'INTEGER', NWHO, MPTAG2)
       END DO
 
 C     Collect data
@@ -3198,10 +3212,9 @@ C     QRO
 
       CALL MPIXSEND(MYNUM, 1, 'INTEGER', MASTER, MPTAG1)
       CALL MPIXRECV(J, 1, 'INTEGER', MASTER, MPTAG2)
+      CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-
-         LRI = 3*(J-1) + 1
 
          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
      *           (MMCORD(2,J)-QMCOM(2))**2 +

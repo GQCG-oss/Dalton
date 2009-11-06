@@ -1405,6 +1405,7 @@ C     total solvation energy
      *           WRK(KINDMOM+IINIM+1)**2 +
      *           WRK(KINDMOM+IINIM+2)**2 
         DNORM = SQRT(DNORM2)
+
         IF (ABS(DNORM) .LE. THRMM) THEN
           IINIM = IINIM+3
           GOTO 500
@@ -3500,7 +3501,6 @@ C ----
 
       CALL QENTER('QMMM_POLARI_M')
 
-
 C     Zero out a list of centers having zero polarizability. We don't
 C     know yet the number of zero polarizabilities so we take the
 C     worst case, i.e. MXMMCT, for the length of this list
@@ -3584,7 +3584,7 @@ C
         LWRK2     = LWRK    - KWRK2 + 1
 
         IF (LWRK2 .LT. 0) THEN
-          CALL ERRWRK('QMMM_POLARI',-KWRK2,LWRK)
+          CALL ERRWRK('QMMM_POLARI_S',-KWRK2,LWRK)
         ENDIF
 
         CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
@@ -3646,8 +3646,6 @@ C       of atoms in previous and current run.
 C     Compute polarization contributions to the Fock/KS matrix and
 C     total solvation energy
 
-      IINIM = 0   ! important should be zero due to the indexing used !
-
       EDELD  = 0.0D0            ! For interaction with electronic density
       EDNUC  = 0.0D0            ! For interaction with QM nuclei
       ED0MOM = 0.0D0            ! For interaction with point-charges
@@ -3656,7 +3654,6 @@ C     total solvation energy
       ED3MOM = 0.0D0            ! For interaction with octupoles
       EDMULT = 0.0D0            ! For interaction with permanent multipoles
       EPOLT  = 0.0D0            ! Total polarization energy
-
 
 C     Beginning of parallel section
 
@@ -3683,15 +3680,12 @@ C     Only for polari ->
       IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
       IF (NMULT .GE. 3) CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
 
-      CALL MPIXBCAST(IINIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(WRK(KINDMOM),3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KMAT),3*NNBASX,'DOUBLE',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
       DO II = 1,NEXLST
-         DO III = 1,MMCENT
-            CALL MPIXBCAST(EXLIST(II,III),1,'INTEGER',MASTER)
-         ENDDO
+         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
       ENDDO
 
 C     Damping
@@ -3701,14 +3695,11 @@ C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(QMPOL,MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(ADAMP,1,'DOUBLE',MASTER)
-
       CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
-
 C     <-
 
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
-
       CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
 
@@ -3727,12 +3718,16 @@ C     From old routine
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
+      IINIM = 0   ! important should be zero due to the indexing used !
+
 C     Start parallelized loop
       DO 100 L = 1,MMCENT
         IWHO = -1
         IF (ZEROAL(L) .EQ. -1) GOTO 100
         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
         CALL MPIXSEND(L,1,'INTEGER',NWHO,MPTAG2)
+        CALL MPIXSEND(IINIM,1,'INTEGER',NWHO,MPTAG2)
+        IINIM = IINIM + 3
  100  CONTINUE
 
 C     Send end message to all slaves
@@ -3742,6 +3737,7 @@ C     Send end message to all slaves
         IWHO = -1
         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
         CALL MPIXSEND(LEND,1,'INTEGER',NWHO,MPTAG2)
+        CALL MPIXSEND(IINIM,1,'INTEGER',NWHO,MPTAG2)
       END DO
 
 C     Collect data from all slaves
@@ -3864,7 +3860,7 @@ C     Receiving data from master
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-C     only for qmmm_polari ->
+C
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
@@ -3872,17 +3868,13 @@ C     only for qmmm_polari ->
       IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
       IF (NMULT .GE. 3) CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
 
-      CALL MPIXBCAST(IINIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(WRK(KINDMOM),3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KMAT),3*NNBASX,'DOUBLE',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
       DO II = 1,NEXLST
-         DO III = 1,MMCENT
-            CALL MPIXBCAST(EXLIST(II,III),1,'INTEGER',MASTER)
-         ENDDO
+         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
       ENDDO
-C      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
 
 C     Damping
       CALL MPIXBCAST(IDAMP,1,'INTEGER',MASTER)
@@ -3891,13 +3883,11 @@ C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(QMPOL,MXCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(ADAMP,1,'DOUBLE',MASTER)
-      
       CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
 C     <-
 
       CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
       CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
-
       CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
 
@@ -3939,17 +3929,16 @@ C     total solvation energy
 
       CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
       CALL MPIXRECV(I,1,'INTEGER',MASTER,MPTAG2)
+      CALL MPIXRECV(IINIM,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-
-        IINIM = 3*(I-1)
 
         DNORM2 = WRK(KINDMOM+IINIM+0)**2 + 
      *           WRK(KINDMOM+IINIM+1)**2 +
      *           WRK(KINDMOM+IINIM+2)**2 
         DNORM = SQRT(DNORM2)
+
         IF (ABS(DNORM) .LE. THRMM) THEN
-          IINIM = IINIM+3
           GOTO 20
         ENDIF
 
@@ -3959,7 +3948,6 @@ C     total solvation energy
         DIST = SQRT(DIST2)
 
         IF (DIST .GT. RCUTMM) THEN
-          IINIM = IINIM+3
           GOTO 20
         ENDIF
 
