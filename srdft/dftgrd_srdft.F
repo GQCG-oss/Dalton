@@ -358,7 +358,7 @@ C        Grid spacing....
            L = LL-1
            NBAS=NUCORB(LL,1,IATOM)+NUCORB(LL,2,IATOM)
            IF(NBAS.GT.0) THEN
-             HTMP = DISERR(RADERR,L)
+             HTMP = GRID_DISERR(RADERR,L)
              H = MIN(H,HTMP)
              IF(IPRINT.GE.3) THEN
                WRITE(LUPRI,'(3X,A1,A,F6.3)')
@@ -385,7 +385,7 @@ C...     Outer point
            IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
            IF(AL.LT.DUMMY) THEN
              AL = AL+AL
-             RHTMP = OUTERR(AL,L,RADERR)           
+             RHTMP = GRID_OUTERR(AL,L,RADERR)           
              RH=MAX(RH,RHTMP)
              IF(IPRINT.GE.3) THEN
                WRITE(LUPRI,'(3X,A1,A,F6.3)')
