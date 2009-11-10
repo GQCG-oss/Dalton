@@ -3230,8 +3230,8 @@ C
          IF (.NOT.MINOUT) THEN
             CALL PRTDER(SYMTDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
          ELSE
-            WRITE (LUPRI,'(X,A,/)') 
-     *         "Output of third derivative suppressed"
+            WRITE (LUPRI,'(A/)') 
+     *         " Output of third derivative suppressed"
          ENDIF
       ELSE
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
@@ -3392,8 +3392,8 @@ C
       IF (.NOT.MINOUT) THEN
          CALL PRFDER(SYMFDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
       ELSE
-         WRITE (LUPRI,'(X,A,/)') 
-     *         "Output of fourth derivative suppressed"
+         WRITE (LUPRI,'(A/)') 
+     *      " Output of fourth derivative suppressed"
       ENDIF
 C
 C     ************************************
@@ -6880,7 +6880,7 @@ C
 C           Read in info on property
 C
          READ(LUPRPCO,
-     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
          IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHKCCS')
@@ -7066,7 +7066,7 @@ C
      &           ' Two point formula'
          DO IPRPC = 1, NPRPC
             READ(LUPRPCO,
-     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHK1DR')
@@ -7140,7 +7140,7 @@ C
       IF (TXT(1:6).EQ.'normal') THEN
 C         IF ((NTIME.EQ.2).OR.(NTIME.EQ.1 .AND.
       
-         WRITE(LUPRI,'(X,A)') " WRITE TO MIDAS INTERFACE FILE, "
+         WRITE(LUPRI,'(A)') " WRITE TO MIDAS INTERFACE FILE, "
      &           //"DALTON.MOP "
          LMIDAS = 0
          CALL GPOPEN(LMIDAS,'DALTON.MOP','UNKNOWN',' ','FORMATTED',
@@ -7201,10 +7201,10 @@ C
          NTOT   = NDCOOR 
          NWRIT  = NDCOOR 
          THRTRM = FAC*FRQLAR*FRQLAR*THRMID
-C        WRITE(LUPRI,'(X,A,E23.16)') " FRQLAR " ,FRQLAR
-C        WRITE(LUPRI,'(X,A,E23.16)') " FAC    " ,FAC
-C        WRITE(LUPRI,'(X,A,E23.16)') " THRMID " ,THRMID
-C        WRITE(LUPRI,'(X,A,E23.16)') " THRTRM " ,THRTRM  
+C        WRITE(LUPRI,'(A,E23.16)') " FRQLAR " ,FRQLAR
+C        WRITE(LUPRI,'(A,E23.16)') " FAC    " ,FAC
+C        WRITE(LUPRI,'(A,E23.16)') " THRMID " ,THRMID
+C        WRITE(LUPRI,'(A,E23.16)') " THRTRM " ,THRTRM  
 C
 C        *** Writing cubic force field. ***
 C        Note scaling with norms and symmetry factors!

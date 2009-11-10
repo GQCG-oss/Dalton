@@ -7308,7 +7308,7 @@ C
      &           STPNRM/SQRT(1.D0*ICRTCR), STPMAX
             WRITE(LUPRI,'(A,24X,4F12.8)') ' Threshold ',
      &           GRDTHR, THGRMX, THRSTP, THSTMX
-            WRITE(LUPRI,'(A,24X,4(L,10X))') ' Converged?      ',
+            WRITE(LUPRI,'(A,14X,4(10X,L1))') ' Converged?      ',
      &           (CNVRGD(I), I = 1,4)
             WRITE(LUPRI,'(A)')' -----------------------' //
      &     '-----------------------------------------------------------'
@@ -7328,9 +7328,9 @@ C
      &           STPNRM/SQRT(1.D0*ICRTCR), STPMAX
             WRITE(LUPRI,'(A,4F12.8)') ' Threshold ',
      &           GRDTHR, THGRMX, THRSTP, THSTMX
-            WRITE(LUPRI,'(A,4(L,10X))') ' Converged?      ',
+            WRITE(LUPRI,'(A,4L12)')   ' Converged?',
      &           (CNVRGD(I), I = 1,4)
-            WRITE(LUPRI,'(A///)')
+            WRITE(LUPRI,'(A//)')
      &     ' ----------------------------------------------------------'
          END IF
 C
