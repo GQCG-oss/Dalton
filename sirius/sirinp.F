@@ -135,7 +135,6 @@ C
 #include <inftap.h>
 #include <infpri.h>
 C
-C
       CALL QENTER('SIRINP')
 C
 C *****            READ AND CHECK INPUT DATA           *****
@@ -277,6 +276,9 @@ C
 C     Skip next section if processed earlier
 C
       IF (INPPRC) THEN
+         INPERR = 0
+         NUMRUN = 1
+C        ... only highest calculation specification is done
 C
 C     Several common block are restored
 C     (MUST be called before NEWSYM reset to false)
@@ -1513,6 +1515,8 @@ C
 C
 C ***  PRINT INPUT DATA *****
 C
+      IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2) INPPRC = .FALSE.
+C     ... force output if print level increased by user
       CALL PRTINP(LUPRI,NUMRUN,IRDMO)
       IF (IREST.NE.0) WRITE (LUPRI,3050)
       IF (IREST.EQ.-1) WRITE (LUPRI,3052)
@@ -2073,7 +2077,7 @@ C
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT(' ILLEGAL KEYWORD IN SIR_GENINP ')
 C
-C *** Option 1 >CI    <  only CI calculation
+C *** Option 1 >CI    <  do a CI calculation (before MCSCF)
  101  CONTINUE
          DOCI = .TRUE.
          FLAG(4) = .TRUE.
@@ -2130,7 +2134,7 @@ C *** Option 4 >CC< We want to do a subsequent Coupled Cluster calculation
          FLAG(21) = .TRUE.
       GO TO 100
 C
-C *** Option 5 >RESTAR< restart SIRIUS, LUIT1 must be available
+C *** Option 5 >RESTAR< restart SIRIUS, SIRIUS.RESTART (LUIT1) must be available
   105 CONTINUE
         IREST = 1
       GO TO 100
