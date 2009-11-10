@@ -4665,6 +4665,36 @@ C               JPC A 102 (1998) 2399
 
  300    CONTINUE
 
+
+        LRI = LRI + 3
+
+ 200  CONTINUE
+
+      LRI = 1   ! Row index in the large matrix
+
+      DO 600 I=1,MMCENT
+
+        IF (ZEROAL(I) .EQ. -1) GOTO 600
+
+        IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
+           DO 211 J=1,3
+              AMATSI(J,J) = 1.0/POLIMM(I)
+ 211       CONTINUE
+        ENDIF
+
+        IF ((IPOLTP .EQ. 2) .AND. (CONMAT)) THEN
+          AMATS(1,1) = POLMM(1,I)
+          AMATS(1,2) = POLMM(2,I)
+          AMATS(1,3) = POLMM(3,I)
+          AMATS(2,1) = POLMM(2,I)
+          AMATS(2,2) = POLMM(4,I)
+          AMATS(2,3) = POLMM(5,I)
+          AMATS(3,1) = POLMM(3,I)
+          AMATS(3,2) = POLMM(5,I)
+          AMATS(3,3) = POLMM(6,I)
+          CALL DF_MATINV(AMATS,AMATSI,3)
+        ENDIF
+
 C       Add QM region contribution to the F vector
 
 C       A) electronic contribution
@@ -4691,7 +4721,7 @@ C       A) electronic contribution
           IF (LOCDEB) THEN
             WRITE(LUPRI,*) 'Skipping site in F vector', I
           ENDIF
-          GOTO 200
+          GOTO 600
         ENDIF
 
         RUNQM3 = .TRUE.
@@ -4849,7 +4879,7 @@ C       B) nuclear contribution
 
         LRI = LRI + 3
 
- 200  CONTINUE
+ 600  CONTINUE
 
       NDIM = 3*POLDIM
 
