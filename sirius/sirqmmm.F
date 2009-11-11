@@ -3584,7 +3584,7 @@ C
         LWRK2     = LWRK    - KWRK2 + 1
 
         IF (LWRK2 .LT. 0) THEN
-          CALL ERRWRK('QMMM_POLARI_S',-KWRK2,LWRK)
+          CALL ERRWRK('QMMM_POLARI_M',-KWRK2,LWRK)
         ENDIF
 
         CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
@@ -3798,7 +3798,7 @@ C      IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
       END
 
 C**************************************************************************************
-C  /* Deck qmmm_polari_m */
+C  /* Deck qmmm_polari_s */
       SUBROUTINE QMMM_POLARI_S(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
@@ -4444,148 +4444,113 @@ C     Allocate memory for electric field integrals and electric fields
         CALL DZERO(WRK(KIMELD),3*POLDIM)
       ENDIF
 
-      DO 100 I=1,3
-        DO 110 J=1,3
-          AMATS(I,J)  = 0.0D0
-          AMATSI(I,J) = 0.0D0
- 110    CONTINUE
- 100  CONTINUE
+      CALL MAKE_MATRIX(INVAMT,POLDIM,WRK(KEND),LWRK1)
 
       FACM1 = -1.0D0
 
-C     Construct [ALPHA^(-1) - T] matrix
-C     AND
-C     form F vector due to permanent MM moments
+C     Form F vector due to permanent MM moments
 
       LRI = 1   ! Row index in the large matrix
 
       DO 200 I=1,MMCENT
 
-        IF (ZEROAL(I) .EQ. -1) GOTO 200
+         IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-        IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
-          DO 210 J=1,3
-            AMATSI(J,J) = 1.0/POLIMM(I)
- 210      CONTINUE
-        ENDIF
+         LCI = 1                ! Column index in the large matrix
 
-        IF ((IPOLTP .EQ. 2) .AND. (CONMAT)) THEN
-          AMATS(1,1) = POLMM(1,I)
-          AMATS(1,2) = POLMM(2,I)
-          AMATS(1,3) = POLMM(3,I)
-          AMATS(2,1) = POLMM(2,I)
-          AMATS(2,2) = POLMM(4,I)
-          AMATS(2,3) = POLMM(5,I)
-          AMATS(3,1) = POLMM(3,I)
-          AMATS(3,2) = POLMM(5,I)
-          AMATS(3,3) = POLMM(6,I)
-          CALL DF_MATINV(AMATS,AMATSI,3)
-        ENDIF
+         DO 300 J=1,MMCENT
 
-        LCI = 1  ! Column index in the large matrix
-
-        DO 300 J=1,MMCENT
-
-          IF ((J .EQ. I) .AND. (CONMAT)) THEN
-
-            IF (ZEROAL(J) .EQ. -1) GOTO 300
-
-            DO 310 K=1,3
-              DO 311 L=1,3
-                INVAMT(LRI+K-1,LCI+L-1) = AMATSI(K,L)
- 311          CONTINUE
- 310        CONTINUE
-
-          ENDIF
-
-          IF (J .NE. I) THEN
-
-            DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
-     *              (MMCORD(2,I)-MMCORD(2,J))**2 +
-     *              (MMCORD(3,I)-MMCORD(3,J))**2 
-            DIST = SQRT(DIST2)
-
-            IF (DIST .GT. RCUTMM) THEN
-              LCI = LCI + 3
-              IF (LOCDEB) THEN
-                WRITE(LUPRI,*) 'Skipping element in T^2 ', I,J
-              ENDIF
-              GOTO 300
+            IF ((J .EQ. I) .AND. (CONMAT)) THEN
+               IF (ZEROAL(J) .EQ. -1) GOTO 300
             ENDIF
 
-            EXCENT = .FALSE.
+            IF (J .NE. I) THEN
+               DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
+     *                 (MMCORD(2,I)-MMCORD(2,J))**2 +
+     *                 (MMCORD(3,I)-MMCORD(3,J))**2 
+               DIST = SQRT(DIST2)
 
-            DO 321 L=1,NEXLST
-              IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
- 321        CONTINUE
+               IF (DIST .GT. RCUTMM) THEN
+                  LCI = LCI + 3
+                  IF (LOCDEB) THEN
+                     WRITE(LUPRI,*) 'Skipping element in T^2 ', I,J
+                  ENDIF
+                  GOTO 300
+               ENDIF
 
-            IF (.NOT. (EXCENT)) THEN
+               EXCENT = .FALSE.
+
+               DO 321 L=1,NEXLST
+                  IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+ 321           CONTINUE
+
+               IF (.NOT. (EXCENT)) THEN
 
 C             Form F vector here due to permanent MM moments
 
 C             A) point-charge contribution
 
-              IF ( (NMULT .GE. 0) .AND.  
-     &             (ABS(MUL0MM(J)) .GT. THRMM) ) THEN
+                  IF ( (NMULT .GE. 0) .AND.  
+     &                 (ABS(MUL0MM(J)) .GT. THRMM) ) THEN
 
-                ELFLDX = 0.0D0
-                ELFLDY = 0.0D0
-                ELFLDZ = 0.0D0
-                CALL GET_CHARGE_ELFLD(MUL0MM(J),
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_CHARGE_ELFLD(MUL0MM(J),
      &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
      &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
      &                          ELFLDX,ELFLDY,ELFLDZ)
-                WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
-                WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
-                WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
 
-              ENDIF
+                  ENDIF
 
 C             B) dipole contribution
 
-              IF (NMULT .GE. 1) THEN
+                  IF (NMULT .GE. 1) THEN
 
-                ELFLDX = 0.0D0
-                ELFLDY = 0.0D0
-                ELFLDZ = 0.0D0
-                CALL GET_DIPOLE_ELFLD(MUL1MM(1,J),MUL1MM(2,J),
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_DIPOLE_ELFLD(MUL1MM(1,J),MUL1MM(2,J),
      &                          MUL1MM(3,J),
      &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
      &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
      &                          ELFLDX,ELFLDY,ELFLDZ)
-                WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
-                WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
-                WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
 
-              ENDIF
+                  ENDIF
 
 C             C) quadrupole contribution
 
-              IF (NMULT .GE. 2) THEN
+                  IF (NMULT .GE. 2) THEN
 
-                ELFLDX = 0.0D0
-                ELFLDY = 0.0D0
-                ELFLDZ = 0.0D0
-                CALL GET_QUADRUPOLE_ELFLD(
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_QUADRUPOLE_ELFLD(
      &                          MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
      &                          MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
      &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
      &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
      &                          ELFLDX,ELFLDY,ELFLDZ)
-                WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
-                WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
-                WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
 
-              ENDIF
+                  ENDIF
 
 C             D) octupole contribution
 
-              IF (NMULT .GE. 3) THEN
+                  IF (NMULT .GE. 3) THEN
 
-                ELFLDX = 0.0D0
-                ELFLDY = 0.0D0
-                ELFLDZ = 0.0D0
-                CALL GET_OCTUPOLE_ELFLD(
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_OCTUPOLE_ELFLD(
      &                          MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
      &                          MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
      &                          MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
@@ -4593,107 +4558,21 @@ C             D) octupole contribution
      &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
      &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
      &                          ELFLDX,ELFLDY,ELFLDZ)
-                WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
-                WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
-                WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
 
-              ENDIF
-
-            ENDIF
-
-            IF ((ZEROAL(J) .EQ. -1) .OR. (.NOT. (CONMAT))) GOTO 300
-
-            IF (EXCENT) THEN
-
-              DO 330 K=1,3
-                DO 331 L=1,3
-                  INVAMT(LRI+K-1,LCI+L-1) = 0.0D0
- 331            CONTINUE
- 330          CONTINUE
-
-            ELSE
-
-              DIST2 = 0.0D0
-              DO 340 K=1,3
-                DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
- 340          CONTINUE
-              DIST  = SQRT(DIST2)
-              DIST3 = DIST**3
-              DIST5 = DIST**5
-
-              DO 350 K=1,3
-                DO 351 L=1,3
-
-C               Include damping in the exponential form
-C               JPC A 102 (1998) 2399
-
-                  IF (MMDAMP) THEN
-                    IF (IPOLTP .EQ. 1) THEN
-                      TEMPI = POLIMM(I)
-                      TEMPJ = POLIMM(J)
-                    ELSE IF (IPOLTP .EQ. 2) THEN
-                      TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
-                      TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-                    ENDIF
-                    TEMP = (TEMPI*TEMPJ)**(D6I)
-                    SCREEN = 2.1304*DIST/TEMP
-                    FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
-     &                     *EXP(-SCREEN)
-                    FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
-     &                     *EXP(-SCREEN)
-                  ELSE
-                    FEIJ = D1
-                    FTIJ = D1
                   ENDIF
 
-                  ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
-     &                          (MMCORD(L,I) - MMCORD(L,J))
-                  ELEM = ELEM/DIST5
-                  IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
-                  ELEM = -1.0*ELEM
+               ENDIF
 
-                  INVAMT(LRI+K-1,LCI+L-1) = ELEM
-
- 351            CONTINUE
- 350          CONTINUE
+               IF ((ZEROAL(J) .EQ. -1) .OR. (.NOT. (CONMAT))) GOTO 300
 
             ENDIF
 
-          ENDIF
+            LCI = LCI + 3
 
-          LCI = LCI + 3
-
- 300    CONTINUE
-
-
-        LRI = LRI + 3
-
- 200  CONTINUE
-
-      LRI = 1   ! Row index in the large matrix
-
-      DO 600 I=1,MMCENT
-
-        IF (ZEROAL(I) .EQ. -1) GOTO 600
-
-        IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
-           DO 211 J=1,3
-              AMATSI(J,J) = 1.0/POLIMM(I)
- 211       CONTINUE
-        ENDIF
-
-        IF ((IPOLTP .EQ. 2) .AND. (CONMAT)) THEN
-          AMATS(1,1) = POLMM(1,I)
-          AMATS(1,2) = POLMM(2,I)
-          AMATS(1,3) = POLMM(3,I)
-          AMATS(2,1) = POLMM(2,I)
-          AMATS(2,2) = POLMM(4,I)
-          AMATS(2,3) = POLMM(5,I)
-          AMATS(3,1) = POLMM(3,I)
-          AMATS(3,2) = POLMM(5,I)
-          AMATS(3,3) = POLMM(6,I)
-          CALL DF_MATINV(AMATS,AMATSI,3)
-        ENDIF
+ 300     CONTINUE
 
 C       Add QM region contribution to the F vector
 
@@ -4721,7 +4600,7 @@ C       A) electronic contribution
           IF (LOCDEB) THEN
             WRITE(LUPRI,*) 'Skipping site in F vector', I
           ENDIF
-          GOTO 600
+          GOTO 200
         ENDIF
 
         RUNQM3 = .TRUE.
@@ -4879,7 +4758,7 @@ C       B) nuclear contribution
 
         LRI = LRI + 3
 
- 600  CONTINUE
+ 200  CONTINUE
 
       NDIM = 3*POLDIM
 
@@ -7282,5 +7161,768 @@ C
 
       RETURN
       END
+
+C*********************************************************************************************************
+C  /* Deck make_matrix */
+      SUBROUTINE MAKE_MATRIX(INVAMT,POLDIM,WRK,LWRK)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+C
+      DIMENSION WRK(LWRK)
+      DOUBLE PRECISION AMATS,AMATSI
+      DIMENSION AMATS(3,3),AMATSI(3,3)
+      LOGICAL EXCENT
+      INTEGER POLDIM
+      DOUBLE PRECISION INVAMT
+      DIMENSION INVAMT((3*POLDIM),(3*POLDIM))
+
+      PARAMETER ( D2 = 2.0D0, D0 = 0.0D0, D1 = 1.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('MAKE_MATRIX')
+
+      DO 100 I=1,3
+        DO 110 J=1,3
+          AMATS(I,J)  = 0.0D0
+          AMATSI(I,J) = 0.0D0
+ 110    CONTINUE
+ 100  CONTINUE
+
+C     Construct [ALPHA^(-1) - T] matrix
+
+      LRI = 1   ! Row index in the large matrix
+
+      DO 200 I=1,MMCENT
+
+         IF (ZEROAL(I) .EQ. -1) GOTO 200
+
+         IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
+            DO 210 J=1,3
+               AMATSI(J,J) = 1.0/POLIMM(I)
+ 210        CONTINUE
+         ENDIF
+
+         IF ((IPOLTP .EQ. 2) .AND. (CONMAT)) THEN
+            AMATS(1,1) = POLMM(1,I)
+            AMATS(1,2) = POLMM(2,I)
+            AMATS(1,3) = POLMM(3,I)
+            AMATS(2,1) = POLMM(2,I)
+            AMATS(2,2) = POLMM(4,I)
+            AMATS(2,3) = POLMM(5,I)
+            AMATS(3,1) = POLMM(3,I)
+            AMATS(3,2) = POLMM(5,I)
+            AMATS(3,3) = POLMM(6,I)
+            CALL DF_MATINV(AMATS,AMATSI,3)
+         ENDIF
+
+         LCI = 1                ! Column index in the large matrix
+
+         DO 300 J=1,MMCENT
+
+            IF ((J .EQ. I) .AND. (CONMAT)) THEN
+
+               IF (ZEROAL(J) .EQ. -1) GOTO 300
+
+               DO 310 K=1,3
+                  DO 311 L=1,3
+                     INVAMT(LRI+K-1,LCI+L-1) = AMATSI(K,L)
+ 311              CONTINUE
+ 310           CONTINUE
+               
+            ENDIF
+
+            IF (J .NE. I) THEN
+
+               DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
+     *                 (MMCORD(2,I)-MMCORD(2,J))**2 +
+     *                 (MMCORD(3,I)-MMCORD(3,J))**2 
+               DIST = SQRT(DIST2)
+
+               IF (DIST .GT. RCUTMM) THEN
+                  LCI = LCI + 3
+                  GOTO 300
+               ENDIF
+               
+               EXCENT = .FALSE.
+               
+               DO 321 L=1,NEXLST
+                  IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+ 321           CONTINUE
+
+
+               IF ((ZEROAL(J) .EQ. -1) .OR. (.NOT. (CONMAT))) GOTO 300
+
+               IF (EXCENT) THEN
+
+                  DO 330 K=1,3
+                     DO 331 L=1,3
+                        INVAMT(LRI+K-1,LCI+L-1) = 0.0D0
+ 331                 CONTINUE
+ 330              CONTINUE
+
+               ELSE
+
+                  DIST2 = 0.0D0
+                  DO 340 K=1,3
+                     DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
+ 340              CONTINUE
+                  DIST  = SQRT(DIST2)
+                  DIST3 = DIST**3
+                  DIST5 = DIST**5
+
+                  DO 350 K=1,3
+                     DO 351 L=1,3
+
+C               Include damping in the exponential form
+C               JPC A 102 (1998) 2399
+
+                        IF (MMDAMP) THEN
+                           IF (IPOLTP .EQ. 1) THEN
+                              TEMPI = POLIMM(I)
+                              TEMPJ = POLIMM(J)
+                           ELSE IF (IPOLTP .EQ. 2) THEN
+                              TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)
+     &                                 +POLMM(6,I))
+                              TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)
+     &                                 +POLMM(6,J))
+                           ENDIF
+                           TEMP = (TEMPI*TEMPJ)**(D6I)
+                           SCREEN = 2.1304*DIST/TEMP
+                           FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
+     &                          *EXP(-SCREEN)
+                           FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
+     &                          *EXP(-SCREEN)
+                        ELSE
+                           FEIJ = D1
+                           FTIJ = D1
+                        ENDIF
+
+                        ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
+     &                          (MMCORD(L,I) - MMCORD(L,J))
+                        ELEM = ELEM/DIST5
+                        IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
+                        ELEM = -1.0*ELEM
+
+                        INVAMT(LRI+K-1,LCI+L-1) = ELEM
+
+ 351                 CONTINUE
+ 350              CONTINUE
+                  
+               ENDIF
+
+            ENDIF
+
+            LCI = LCI + 3
+
+ 300     CONTINUE
+
+
+         LRI = LRI + 3
+
+ 200  CONTINUE
+
+      CALL QEXIT('MAKE_MATRIX')
+
+      RETURN
+      END
+C
+C**************************************************************************************
+C  /* Deck qmmm_polari_m2 */
+      SUBROUTINE QMMM_POLARI_M2(DCAO,ELF,WRK,LWRK,IPRINT)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+C ----
+#include "infpar.h"
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+#include <gnrinf.h>
+
+      DIMENSION WRK(LWRK), TAO(NNBASX)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
+      INTEGER NZERAL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('QMMM_POLARI_M2')
+
+C     Beginning of parallel section
+
+      IPRTYP = 21
+
+C     Wake up slaves
+
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+C     Send data to slaves
+
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(SPLDIP,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(CONMAT,1,'LOGICAL',MASTER)
+
+      CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
+      IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 1) CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 3) CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(WRK(KMAT),3*NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
+      DO II = 1,NEXLST
+         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
+      ENDDO
+
+C     Damping
+      CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
+      IF (QMDAMP) THEN
+         CALL MPIXBCAST(IDAMP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NQMNUC,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(QMPOL,MXCENT,'DOUBLE',MASTER)
+         CALL MPIXBCAST(ADAMP,1,'DOUBLE',MASTER)
+         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
+      ENDIF
+C     <-
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
+
+C     From old routine
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+      IINIM = 0   ! important should be zero due to the indexing used !
+
+C     Start parallelized loop
+      DO 100 L = 1,MMCENT
+        IWHO = -1
+        IF (ZEROAL(L) .EQ. -1) GOTO 100
+        CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+        CALL MPIXSEND(L,1,'INTEGER',NWHO,MPTAG2)
+        CALL MPIXSEND(IINIM,1,'INTEGER',NWHO,MPTAG2)
+        IINIM = IINIM + 3
+ 100  CONTINUE
+
+C     Send end message to all slaves
+
+      LEND = -1
+      DO ISLAVE = 1,NODTOT
+        IWHO = -1
+        CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+        CALL MPIXSEND(LEND,1,'INTEGER',NWHO,MPTAG2)
+        CALL MPIXSEND(IINIM,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+
+C     Collect data from all slaves
+
+      CALL DZERO(WRK(KELF),3*POLDIM)
+      CALL MPI_REDUCE(WRK(KELF),ELF,3*POLDIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (SPLDIP) THEN 
+         CALL DZERO(WRK(KELFNU),3*POLDIM)
+         CALL MPI_REDUCE(WRK(KELFNU),ELF,3*POLDIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      ENDIF
+
+      CALL QEXIT('QMMM_POLARI_M2')
+
+      RETURN
+      END
+
+C**************************************************************************************
+C  /* Deck qmmm_polari_s2 */
+      SUBROUTINE QMMM_POLARI_S2(WRK,LWRK,IPRTMP)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <codata.h>
+C ----
+#include "infpar.h"
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+#include <gnrinf.h>
+
+      DIMENSION WRK(LWRK)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('QMMM_POLARI_S2')
+
+      QMMM = .TRUE.
+
+C     Receiving data from master
+
+
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(SPLDIP,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(CONMAT,1,'LOGICAL',MASTER)
+
+      KELFEL  = 1
+      IF (SPLDIP) THEN
+         KELFNU = KELFEL + 3*POLDIM
+         KDCAO  = KELFNU + 3*POLDIM
+      ELSE
+         KDCAO  = KELFEL + 3*POLDIM
+      ENDIF
+      KMAT    = KDCAO   + NNBASX
+      KLAST   = KMAT    + 3*NNBASX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S2',-KLAST,LWRK)
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+C
+      CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
+
+      IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 1) CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 3) CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(WRK(KMAT),3*NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
+      DO II = 1,NEXLST
+         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
+      ENDDO
+
+C     Damping
+      CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
+      IF (QMDAMP) THEN
+         CALL MPIXBCAST(IDAMP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NQMNUC,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(QMPOL,MXCENT,'DOUBLE',MASTER)
+         CALL MPIXBCAST(ADAMP,1,'DOUBLE',MASTER)
+         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
+      ENDIF
+C     <-
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
+
+C     From old routine
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+C     Do the work
+
+      CALL DZERO(WRK(KELF),3*POLDIM)
+      IF (SPLDIP) THEN
+         CALL DZERO(WRK(KELFNU),3*POLDIM)
+      ENDIF
+
+
+ 200  CONTINUE
+
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(I,1,'INTEGER',MASTER,MPTAG2)
+      CALL MPIXRECV(LRI,1,'INTEGER',MASTER,MPTAG2)
+
+      IF (I.GT.0) THEN
+
+         DO 300 J=1,MMCENT
+
+            IF ((J .EQ. I) .AND. (CONMAT)) THEN
+               IF (ZEROAL(J) .EQ. -1) GOTO 300
+            ENDIF
+
+            IF (J .NE. I) THEN
+               DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
+     *                 (MMCORD(2,I)-MMCORD(2,J))**2 +
+     *                 (MMCORD(3,I)-MMCORD(3,J))**2 
+               DIST = SQRT(DIST2)
+
+               IF (DIST .GT. RCUTMM) THEN
+                  GOTO 300
+               ENDIF
+
+               EXCENT = .FALSE.
+
+               DO 321 L=1,NEXLST
+                  IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+ 321           CONTINUE
+
+               IF (.NOT. (EXCENT)) THEN
+
+C                 Form F vector here due to permanent MM moments
+
+C                 A) point-charge contribution
+
+                  IF ( (NMULT .GE. 0) .AND.  
+     &                 (ABS(MUL0MM(J)) .GT. THRMM) ) THEN
+
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_CHARGE_ELFLD(MUL0MM(J),
+     &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     &                          ELFLDX,ELFLDY,ELFLDZ)
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+
+                  ENDIF
+
+C                 B) dipole contribution
+
+                  IF (NMULT .GE. 1) THEN
+
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_DIPOLE_ELFLD(MUL1MM(1,J),MUL1MM(2,J),
+     &                          MUL1MM(3,J),
+     &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     &                          ELFLDX,ELFLDY,ELFLDZ)
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+
+                  ENDIF
+
+C                 C) quadrupole contribution
+
+                  IF (NMULT .GE. 2) THEN
+
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_QUADRUPOLE_ELFLD(
+     &                          MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     &                          MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     &                          ELFLDX,ELFLDY,ELFLDZ)
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+
+                  ENDIF
+
+C                 D) octupole contribution
+
+                  IF (NMULT .GE. 3) THEN
+
+                     ELFLDX = 0.0D0
+                     ELFLDY = 0.0D0
+                     ELFLDZ = 0.0D0
+                     CALL GET_OCTUPOLE_ELFLD(
+     &                          MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     &                          MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     &                          MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     &                          MUL3MM(10,J),
+     &                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     &                          ELFLDX,ELFLDY,ELFLDZ)
+                     WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+                     WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+                     WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+
+                  ENDIF
+
+               ENDIF
+
+               IF ((ZEROAL(J) .EQ. -1) .OR. (.NOT. (CONMAT))) GOTO 300
+
+            ENDIF
+
+ 300     CONTINUE
+
+C        Add QM region contribution to the F vector
+
+C        A) electronic contribution
+
+         CALL DZERO(WRK(KMAT),3*NNBASX)
+
+         KPATOM = 0
+         NOSIM  = 3
+         TOFILE = .FALSE.
+         TRIMAT = .TRUE.
+         EXP1VL = .FALSE.
+
+         DIPORG(1) = MMCORD(1,I)
+         DIPORG(2) = MMCORD(2,I)
+         DIPORG(3) = MMCORD(3,I)
+
+         DIST2 = (MMCORD(1,I)-QMCOM(1))**2 + 
+     *          (MMCORD(2,I)-QMCOM(2))**2 +
+     *          (MMCORD(3,I)-QMCOM(3))**2 
+         DIST = SQRT(DIST2)
+
+         IF (DIST .GT. RCUTMM) THEN
+            GOTO 200
+         ENDIF
+
+         RUNQM3 = .TRUE.
+         CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KEND),
+     &              LWRK1,LABINT,INTREP,INTADR,I,TOFILE,
+     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)  
+         RUNQM3 = .FALSE.
+
+         IF (QMDAMP) THEN
+            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
+               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
+            ENDIF
+            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
+               DIST = 9.99D+99
+               MHIT = 0
+               DO 126 M=1,NUCIND
+                  DISTC = (DIPORG(1)-CORD(1,M))**2 +
+     &                  (DIPORG(2)-CORD(2,M))**2 +
+     &                  (DIPORG(3)-CORD(3,M))**2
+                  IF (DISTC .LE. DIST) THEN
+                     DIST = DISTC
+                     MHIT = M
+                  ENDIF
+ 126           CONTINUE
+            ELSE IF (IDAMP .EQ. 2) THEN
+               DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &               (DIPORG(2)-QMCOM(2))**2 +
+     &               (DIPORG(3)-QMCOM(3))**2
+            ENDIF
+            DIST = SQRT(DIST)
+ 
+            IF (IDAMP .EQ. 3) THEN
+               IF (IPOLTP .EQ. 2) THEN
+                  TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
+               ELSE IF (IPOLTP .EQ. 1) THEN
+                  IF (IPOLTP .EQ. 1) TEMPI = POLIMM(I)
+               ENDIF
+               TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
+               SIJ = 2.1304*DIST/TEMP
+               DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
+            ELSE  
+               DFACT = (1-exp(-ADAMP*DIST))**3
+            ENDIF
+            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+         ENDIF
+
+         IF (IPRINT.GT.15) THEN
+            WRITE (LUPRI,'(/A)') ' E_x_matrix in GET_IND_DIPOLES_2:'
+            CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+            
+            WRITE (LUPRI,'(/A)') ' E_y matrix in GET_IND_DIPOLES_2:'
+            CALL OUTPAK(WRK(KMAT+NNBASX),NBAST,1,LUPRI)
+
+            WRITE (LUPRI,'(/A)') ' E_z matrix in GET_IND_DIPOLES_2:'
+            CALL OUTPAK(WRK(KMAT+2*NNBASX),NBAST,1,LUPRI)
+         END IF
+
+         EXELCO = DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT),1)
+         EYELCO = DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+NNBASX),1)
+         EZELCO = DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+2*NNBASX),1)
+
+         IF (SPLDIP) THEN
+            WRK(KELFEL+LRI-1+0) = EXELCO
+            WRK(KELFEL+LRI-1+1) = EYELCO
+            WRK(KELFEL+LRI-1+2) = EZELCO
+         ELSE
+            WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + EXELCO
+            WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + EYELCO
+            WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + EZELCO
+         ENDIF
+
+C        B) nuclear contribution
+
+         TJKX = 0.0D0
+         TJKY = 0.0D0
+         TJKZ = 0.0D0
+
+         DO 220 J = 1,NUCIND
+            CALL GET_CHARGE_ELFLD(CHARGE(J),
+     &                          CORD(1,J),CORD(2,J),CORD(3,J),
+     &                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     &                          ELFLDX,ELFLDY,ELFLDZ)
+
+            IF (QMDAMP) THEN
+               IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
+               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
+               ENDIF
+               IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) )THEN
+                  DIQM = 9.99D+99
+                  MHIT = 0
+                  DO 127 M=1,NUCIND
+                     DIQMC = (MMCORD(1,I)-CORD(1,M))**2 +
+     &                  (MMCORD(2,I)-CORD(2,M))**2 +
+     &                  (MMCORD(3,I)-CORD(3,M))**2
+                     IF (DIQMC .LE. DIQM) THEN 
+                        DIQM = DIQMC
+                        MHIT = M
+                     ENDIF
+ 127              CONTINUE
+               ELSE IF (IDAMP .EQ. 2) THEN
+                  DIQM = (MMCORD(1,I)-QMCOM(1))**2 +
+     &               (MMCORD(2,I)-QMCOM(2))**2 +
+     &               (MMCORD(3,I)-QMCOM(3))**2
+               ENDIF
+               DIQM = SQRT(DIQM)
+
+               IF (IDAMP .EQ. 3) THEN
+                  IF (IPOLTP .EQ. 2) THEN
+                     TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
+                  ELSE IF (IPOLTP .EQ. 1) THEN
+                     IF (IPOLTP .EQ. 1) TEMPI = POLIMM(I)
+                  ENDIF
+                  TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
+                  SIJ = 2.1304*DIQM/TEMP
+                  DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
+               ELSE
+                  DFACT = (1-exp(-ADAMP*DIQM))**3
+               ENDIF
+
+               ELFLDX = ELFLDX*DFACT
+               ELFLDY = ELFLDY*DFACT
+               ELFLDZ = ELFLDZ*DFACT
+            ENDIF
+
+            IF (SPLDIP) THEN
+               WRK(KELFNU+LRI-1+0) = WRK(KELFNU+LRI-1+0) + ELFLDX
+               WRK(KELFNU+LRI-1+1) = WRK(KELFNU+LRI-1+1) + ELFLDY
+               WRK(KELFNU+LRI-1+2) = WRK(KELFNU+LRI-1+2) + ELFLDZ
+            ELSE 
+               WRK(KELF+LRI-1+0) = WRK(KELF+LRI-1+0) + ELFLDX
+               WRK(KELF+LRI-1+1) = WRK(KELF+LRI-1+1) + ELFLDY
+               WRK(KELF+LRI-1+2) = WRK(KELF+LRI-1+2) + ELFLDZ
+            ENDIF
+            TJKX = TJKX + ELFLDX
+            TJKY = TJKY + ELFLDY
+            TJKZ = TJKZ + ELFLDZ
+ 220     CONTINUE
+
+         GO TO 200
+      ENDIF
+
+      CALL MPI_REDUCE(WRK(KELF),WRK(KELF),3*POLDIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (SPLDIP) THEN
+         CALL MPI_REDUCE(WRK(KELFNU),WRK(KELFNU),3*POLDIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      ENDIF
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      CALL QEXIT('QMMM_POLARI_S2')
+
+      RETURN
+      END
+C
+C**************************************************************************************
+
+
+
+
+
+
+
+
+
+
 C**************************************************************************************
 
