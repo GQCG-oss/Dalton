@@ -243,6 +243,7 @@ C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*), SC_SRMP2
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
+C   SPINFO : MULTS; MS2
 C
 #include <gnrinf.h>
 #include <maxash.h>
@@ -261,6 +262,7 @@ C
 #include <siripc.h>
 #include <huckel.h>
 #include <cbihrs.h>
+#include <spinfo.h>
 #include <dftcom.h>
 #include <dfterg.h>
 C
@@ -339,7 +341,7 @@ C     We also want to check the geometry prediction (ICI0=6)
 C     If excited state force ALWAYS Newton-Raphson
 C     because CI vectors for lower roots needed for NEO not available
 C
-         IF (ISTATE.GT.1) FLAG(39) = .TRUE.
+         IF (ISTATE.GT.1 .AND. NMCAVER.EQ.1) FLAG(39) = .TRUE.
          IREST = 0
       ELSE
 C
@@ -427,6 +429,8 @@ C  ---> Initialize SR-DFT stuff here !
       DOHFSRDFT = .FALSE.
       ADDSRI    = .FALSE.
       SRHYBR    = .FALSE.
+      DFT_SPINDNS = .FALSE.
+      DFT_LOCALSPIN = .FALSE.
 C <---
       DORSP     = RNRESP
       ABAIPH    = RNABAC
@@ -466,6 +470,8 @@ C
       NELMX1 = 0
       NELMN3 = 0
       NELMX3 = 0
+      MULTS  = -2
+      MS2    = -2
 C
 C********** Default values section MP2INP *****
 C
@@ -508,6 +514,8 @@ C     ISTATE   always = IROOT(1), the root you want to converge to.
       LROOTS = 1
       IROOT(1) = 1
       ISTATE   = 1
+      NMCAVER  = 1
+      WEIGHT_MCAVER(1) = 1.0D0
 C
 C     Initialize to zero orbital rotations
       NWOPT = 0
@@ -862,6 +870,11 @@ C              defined for CIRSP ??? or ISTACI = NROOCI?
 C
 C     Save explicitly defined IPRSIR, IPRI4, IPRI6
 C
+      IF (IPRSIR .EQ. IPRUSR) THEN
+C        .. if user hasn't set IPRSIR with .PRINT but has set
+C           either IPRI4 or IPRI6, then use max value /hjaaj Oct09
+         IPRSIR = MAX(IPRSIR,IPRI4,IPRI6)
+      END IF
       MPRSIR = IPRSIR
       MPRI6  = IPRI6
       MPRI4  = IPRI4
@@ -2489,15 +2502,17 @@ C Used from common:
 C
 C INFORB : NASH, NISH, NSYM,...
 C INFINP : NACTEL,ISPIN,FLAG(*),MCTYP,..
+C SPINFO : MULTS, MS2
 C
 #include <maxorb.h>
 #include <priunit.h>
 #include <inforb.h>
 #include <infinp.h>
+#include <spinfo.h>
 C
       LOGICAL RAS1EL
 C
-      DATA TABLE /'.CAS SP','.INACTI','.ELECTR','xxxxxxx','.SPIN M',
+      DATA TABLE /'.CAS SP','.INACTI','.ELECTR','.MS2   ','.SPIN M',
      *            '.SYMMET','.RAS1 H','.RAS1 S','.RAS2 S','.RAS3 S',
      *            '.RAS1 E','.RAS3 E'/
 C
@@ -2570,13 +2585,19 @@ C *** Option 3 >ELECTR< Number of active electrons
   103 READ(LUCMD,*) NACTEL
       GO TO 100
 C
-C *** Option 4 >xxxxxx<
-  104 CONTINUE
+C *** Option 4 >.MS2  <
+  104 READ(LUCMD,*) MS2
+      IF (MULTS .LT. 0) MULTS = MS2 + 1
+      ISPIN = MULTS
+C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
       GO TO 100
 C
 C *** Option 5 >SPIN M<  state spin multiplicity
 C                         SPIN QUANTUM NUMBER*2+1
-  105 READ(LUCMD,*) ISPIN
+  105 READ(LUCMD,*) MULTS
+      IF (MS2 .LT. 0) MS2 = MOD(MULTS-1,2)
+      ISPIN = MULTS
+C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
       GO TO 100
 C
 C *** Option 6 >SYMMET<  Space symmetry of MCSCF wave function
@@ -2999,12 +3020,13 @@ C
      *            '.SYM CH','.THRCGR','.STATE ','.COREHO','.CORERE',
      *            '.MAX MA','.MAXABS','.MAX CI','.EXACTD','.MAX MI',
      *            '.NEO AL','.PHPRES','.NO ABS','.NR ALW','.OPTIMA',
-     *            '.ORB_TR','xXXXXXX','.SIMULT','.THRESH','.OLSEN ',
+     *            '.ORB_TR','.MCAVER','.SIMULT','.THRESH','.OLSEN ',
      *            '.TRACI ','.FOCKDI','.NOTRAC','.CI PHP','.NO ACT',
      *            '.DETERM','.NATONL','.FOCKON'/
 C
 C Internal flags
       IFNSIM = 0
+      ISTATE_SPECIFIED = 0
 C
 C     ***** PROCESS INPUT FOR OPTINP *****
 C
@@ -3106,7 +3128,15 @@ C *** Option 7 >THRCGR<  Threshold for print of CI gradient.
 C
 C *** Option 8 >STATE <  Root to converge calculation
   108 CONTINUE
+         IF ( ISTATE_SPECIFIED .NE. 0) THEN
+            WRITE (LUPRI,*) '*OPTIMI error, not both .STATE and .MCAVER'
+            CALL QUIT('OPTINP error: not both .STATE and .MCAVER')
+         END IF
+         ISTATE_SPECIFIED = 1
+C
          READ (LUCMD,*) ISTATE
+         NMCAVER = 1
+         IROOT(1) = ISTATE
 C
          IF ( ISTATE .GT. MAXRTS ) THEN
             WRITE (LUPRI,*) 'OPTINP error: .STATE input is greater than'
@@ -3193,8 +3223,52 @@ C *** Option 21 >ORB_TR<  Use orbital trial vectors as start vectors
         FLAG(80) = .TRUE.
       GO TO 100
 C
-C *** Option 22 >XXXXXX< Call SIROUT for optimization result summary
+C *** Option 22 >MCAVER< State Average MCSCF
+C               Convention: ISTATE = max root in average
+C               /hjaaj nov 2006
   122 CONTINUE
+         IF ( ISTATE_SPECIFIED .NE. 0) THEN
+            WRITE (LUPRI,*) '*OPTIMI error, not both .STATE and .MCAVER'
+            CALL QUIT('OPTINP error: not both .STATE and .MCAVER')
+         END IF
+         ISTATE_SPECIFIED = 1
+         READ (LUCMD,*) NMCAVER
+         READ (LUCMD,*) (IROOT(I),I=1,NMCAVER)
+         READ (LUCMD,*) (WEIGHT_MCAVER(I),I=1,NMCAVER)
+C
+C        Consistency checks, find ISTATE,
+C        and ensure MCAVER roots are ordered
+         ISTATE = 0
+         DO I = 1,NMCAVER
+            IF (WEIGHT_MCAVER(I) .LE. 0.0D0) THEN
+               CALL QUIT('.MCAVER error: state weight not positive!!!')
+            END IF
+            ISTATE = MAX(ISTATE,IROOT(I))
+            DO J = 1,I-1
+               IF (IROOT(I) .EQ. IROOT(J)) THEN
+                  CALL QUIT('.MCAVER error: same state duplicated')
+               ELSE IF (IROOT(I) .LT. IROOT(J)) THEN
+                  K = IROOT(I)
+                  IROOT(I) = IROOT(J)
+                  IROOT(J) = K
+                  WK = WEIGHT_MCAVER(I)
+                  WEIGHT_MCAVER(I) = WEIGHT_MCAVER(J)
+                  WEIGHT_MCAVER(J) = WK
+               END IF
+            END DO
+         END DO
+C
+         IF ( ISTATE .GT. MAXRTS ) THEN
+            WRITE (LUPRI,*) 'OPTINP error: .STATE input is greater than'
+            WRITE (LUPRI,*) 'internal maximum of',MAXRTS
+            CALL QUIT(
+     &         'OPTINP error: .STATE input exceeds internal limit')
+         END IF
+         IF (ISTATE .GT. 1) THEN
+            RATREJ = 0.40D0
+            RATMIN = 0.60D0
+            RATGOD = 0.80D0
+         END IF
       GO TO 100
 C
 C *** Option 23 >SIMULT<  # of simultaneous roots
@@ -3222,6 +3296,7 @@ C                        diagonal
       GO TO 100
 C
 C *** Option 28 >NOTRAC<
+C     Disable default transformation of CI-vectors by TRACI
   128 IMCCNO = -1
       GO TO 100
 C
@@ -3230,7 +3305,7 @@ C *** Option 29 >CI PHP<  Explicit CI Hamiltonian matrix set up
         READ (LUCMD,*) MAXPHP
       GO TO 100
 C
-C *** Option 30 > NO ACT<  No active-active rotations in RAS
+C *** Option 30 >NO ACT<  No active-active rotations in RAS
   130 CONTINUE
         FLAG(24) = .TRUE.
       GO TO 100
@@ -3272,15 +3347,19 @@ C
          NROOTS = MAXRTS
       END IF
       LROOTS = MAX(LROOTS,NROOTS)
-      IROOT(1) = ISTATE
-      J = 1
-      DO 9100 I = 1,NROOTS
-         IF (I .NE. ISTATE) THEN
+C     Fill out rest of IROOT /hjaaj nov 2006
+      J = NMCAVER
+      DO I = 1,NROOTS
+         I1 = I
+         DO K = 1,NMCAVER
+            IF (IROOT(K) .EQ. I) I1 = 0
+         END DO
+         IF (I1 .NE. 0) THEN
             J = J + 1
             IROOT(J) = I
          END IF
- 9100 CONTINUE
- 9008 FORMAT(/' Input error: .STATE value of,',I3,
+      END DO
+ 9008 FORMAT(/' Input error: .STATE/.MCAVER value of,',I3,
      *  ', is greater than internal maximum of,',I3)
  9009 FORMAT(/' OPTINP WARNING: number of simultaneous vectors,',I3,
      *  ', is greater than maximum,',I3,
@@ -5250,9 +5329,18 @@ C
          WRITE(IWUNIT,1600) MAXMAC,MAXMIC,THRMC,
      *                      LROOTS,MAXCIT,NROOTS
          IF (ISTATE .GT. 1) THEN
-            WRITE(IWUNIT,'(/5X,A,I4/5X,A)')
-     *         'This calculation converges to state no.',ISTATE,
-     *         'for the specified symmetry and spin species.'
+            IF (NMCAVER .EQ. 1) THEN
+               WRITE(IWUNIT,'(/5X,A,I4/5X,A)')
+     &         'This calculation converges to state no.',ISTATE,
+     &         'for the specified symmetry and spin species.'
+            ELSE
+               WRITE(IWUNIT,'(/5X,A,I4,A/5X,A//5X,A)')
+     &         'State-average MCSCF of',NMCAVER,' states',
+     &         'for the specified symmetry and spin species.',
+     &         '  State no.        Weight'
+               WRITE(IWUNIT,'(I13,F12.5)')
+     &         (IROOT(I),WEIGHT_MCAVER(I), I=1,NMCAVER)
+            END IF
          ELSE
             WRITE(IWUNIT,'(/5X,A/5X,A)')
      *         'This calculation converges to the lowest state',
