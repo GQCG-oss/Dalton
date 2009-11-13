@@ -1042,10 +1042,10 @@ C
          END IF
          IF (NSPMOD .LT. 0) THEN
             WRITE(LUPRI,*) 'The eigenvector corresponding to the ' //
-     &           'lowest eigenvalue is chosen'
+     &           'lowest non-zero eigenvalue is chosen'
             WRITE(LUPRI,*) 'as reaction mode (default).'
          ELSE
-            WRITE(LUPRI,*) 'Eigenvector #',NSPMOD,
+            WRITE(LUPRI,'(A,I3,A)') 'Eigenvector #',NSPMOD,
      &           ' will be used as reaction mode.'
          END IF
       END IF
@@ -2190,36 +2190,34 @@ C
      &           // 'symmetry will decrease the energy further.'
          END IF
          IF (NEWTON .AND. SADDLE .AND. (INDTOT .NE. 1)) THEN
-            WRITE(LUPRI,'(/A/A)')
-     &         ' Please note that Hessian index does not correspond',
-     &         ' to a first order saddle point (transition state).'
+            WRITE(LUPRI,'(/A,I3,/A)')
+     &         ' WARNING: Please note that the Hessian index',INDTOT,
+     &         ' does not correspond to a first order saddle point ' //
+     &           '(transition state).'
          END IF
          ENERGY = GEINFO(ITRNMR,1)
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A,F14.6,A)')
-     &          ' Energy at final geometry is       : ',ENERGY,' a.u.'
+         WRITE(LUPRI,'(/A,F14.6,A)')
+     &        ' Energy at final geometry is       : ',ENERGY,' a.u.'
          ERGDIF = ENERGY - GEINFO (0,1)
          WRITE(LUPRI,'(A,F14.6,A)')
-     &          ' Energy change during optimization : ',ERGDIF,' a.u.'
+     &        ' Energy change during optimization : ',ERGDIF,' a.u.'
          ERGDIF = ERGDIF * XKJMOL
          WRITE(LUPRI,'(A,F14.3,A)')
      &        '                                     ',ERGDIF,' kJ/mol'
-         WRITE(LUPRI,*)
          IF (DOPRE) THEN
-            WRITE(LUPRI,'(A)') ' Preoptimization was performed using'//
+            WRITE(LUPRI,'(/A)') ' Preoptimization was performed using'//
      &           ' the basis set(s):'
             DO 111 I = 1, IPRE-1
-               WRITE(LUPRI,'(A,A60)') '     ',PREBTX(I)
+               WRITE(LUPRI,'(5X,A60)') PREBTX(I)
  111        CONTINUE
-            WRITE(LUPRI,*)
          END IF
          IF (DOSPE) THEN
             ENERGY = GEINFO(ITRNMR+1,1)
-            WRITE(LUPRI,'(A,A60)') ' Using the basis ',SPBSTX
+            WRITE(LUPRI,'(/A,A60)') ' Using the basis ',SPBSTX
             WRITE(LUPRI,'(A,F14.6,A)')
      &          ' single point energy was calculated: ',ENERGY,' a.u.'
-            WRITE(LUPRI,*)
          END IF
+         WRITE(LUPRI,*)
 C
 C     Finished case 2: Exceeded maximum number of iterations.
 C
@@ -2231,13 +2229,13 @@ C     No single point energy has been calculated.
          CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
          DOSPE = TMPLOG
          WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Geometry has NOT converged!'
+         WRITE(LUPRI,*) 'WARNING: Geometry has NOT converged!'
          WRITE(LUPRI,*) 'Maximum number of iterations (', ITRMAX,
      &                                        ') has been reached and'
          WRITE(LUPRI,*) 'optimization halted. Increase number or ',
      &                                   'restart from last geometry.'
-         IF (DOSPE) WRITE(LUPRI,*) 'No single point energy has been '
-     &                          // 'calculated.'
+         IF (DOSPE) WRITE(LUPRI,*)
+     &                  'No single point energy has been calculated.'
          WRITE(LUPRI,*)
       END IF
       CALL QEXIT('RUNOPT')
@@ -5970,12 +5968,14 @@ C
          ELSE IF (ABS(GRDDIA(IMODE)) .LT. 1.0D-10) THEN
             IMODE = 1
          END IF
+         IF (IMODE .NE. 1) THEN
+            WRITE (LUPRI,'(A,I3,A)') ' INFO: Mode',IMODE,
+     &         ' is selected, because lower modes have zero gradient.'
+         END IF
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Mode ',IMODE,' will be partitioned ' //
-     &        'out and maximized.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A,I3,A)') ' Mode',IMODE,
+     &      ' will be partitioned out and maximized.'
       END IF
 C
 C     The selected mode is placed at the very end.
