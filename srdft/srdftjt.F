@@ -67,7 +67,7 @@ C*****************************************************************************
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
-      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX,DO_SPINDNS
+      LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
       DIMENSION EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),CORX(NBUF),
      &          CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
@@ -89,9 +89,7 @@ C
 #endif
 C     Initializations -------------------------------------------------------
 
-      DO_SPINDNS = ISPIN .NE. 1  !JT Aug 09
-
-!JT      WRITE(LUPRI,*) 'DO_SPINDNS=',DO_SPINDNS
+!JT      WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
 !JT      WRITE(LUPRI,*) 'DMAT(1,1)=',DMAT(1,1)
 !JT      WRITE(LUPRI,*) 'DMAT(1,3)=',DMAT(1,3)
 
@@ -191,7 +189,7 @@ C     Contribution to electron number (N_alpha + N_beta)
       DELCTRN = WGHT*RHO
 
 C     Spin density
-      IF (DO_SPINDNS) THEN
+      IF (DFT_SPINDNS) THEN
 C        DMAT(1,3) is the spin density matrix
          CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHOS,RHOS13,DMAGAOSR,
      &                   THRINT,IPRINT)
@@ -261,7 +259,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        FROMVX = .FALSE.
        CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,d1Excdrhot,
      &             d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
-       IF (DO_SPINDNS) THEN
+       IF (DFT_SPINDNS) THEN
          CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG,d1Excdrhos,
      &             d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
        ENDIF
@@ -303,7 +301,7 @@ C Termination --------------------------------------------------------------
          CALL QUIT('both DOERG and DOATR are false')
       END IF
 
-      IF (DO_SPINDNS) THEN
+      IF (DFT_SPINDNS) THEN
         NXCMAT = 2
       ELSE
         NXCMAT = 1
@@ -375,7 +373,7 @@ C*****************************************************************************
 
       double precision rhot,rhos,RHOGRD,CHIVAL
       integer NORDER
-      logical ERFEXP, DO_SPINDNS
+      logical ERFEXP
       double precision Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2
       double precision d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos
       double precision d2Exdgrddgrd,d2Exdrhodgrd
@@ -390,8 +388,6 @@ C     functionals
       external ESRC_PBEWIERF,   ESRC_PBEGWSERF
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
-
-      DO_SPINDNS = ISPIN .NE. 1  !JT Aug 09
 
 c  Exchange  ------------------------------------------------------------
 
@@ -462,8 +458,8 @@ C  Manu 01-02-2006 end
        IF(ERFEXP) THEN
         CALL QUIT('SRXLDAS not implemented for erfgau')
        ELSE
-        call ESRX_LDAERFSPIN(rhot,rhos,CHIVAL,DO_SPINDNS,Ex)
-        call DESRSPIN(ESRX_LDAERFSPIN,rhot,rhos,CHIVAL,DO_SPINDNS,
+        call ESRX_LDAERFSPIN(rhot,rhos,CHIVAL,DFT_SPINDNS,Ex)
+        call DESRSPIN(ESRX_LDAERFSPIN,rhot,rhos,CHIVAL,DFT_SPINDNS,
      >             NORDER,
      >             d1Exdrhot,d1Exdrhos,
      >             d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos)
@@ -552,8 +548,8 @@ C     Initialisations
        IF(ERFEXP) THEN
         CALL QUIT('SRCLDAS not implemented for erfgau')
        ELSE
-        call ESRC_LDAERFSPIN(rhot,rhos,CHIVAL,DO_SPINDNS,Ec)
-        call DESRSPIN(ESRC_LDAERFSPIN,rhot,rhos,CHIVAL,DO_SPINDNS,
+        call ESRC_LDAERFSPIN(rhot,rhos,CHIVAL,DFT_SPINDNS,Ec)
+        call DESRSPIN(ESRC_LDAERFSPIN,rhot,rhos,CHIVAL,DFT_SPINDNS,
      >             NORDER,
      >             d1Ecdrhot,d1Ecdrhos,
      >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)

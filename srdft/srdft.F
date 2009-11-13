@@ -319,12 +319,12 @@ C     =================================
       DOLND  = .FALSE.
 
 C     ... jkp : For gradient correction to SR-LDA we will
-C               be calling The Becke and LYP functionals.
+C               be calling Becke and LYP functionals.
       DOGGA = DOSRX_GGA.OR.DOSRC_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.
      >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
      >        DOSRC_PBETCS.OR.DOSRX_PBERI.OR.DOSRC_PBERI.OR.DOSRX_PBEGWS
      >        .OR.DOSRC_PBEGWS
-c
+C
 
       NDER  = 0
       IF (DOGRD) NDER = 1
@@ -477,6 +477,10 @@ C
 
       IF (DOGRD) THEN
          CALL QUIT('SRDFT1: DOGRD not implemented yet')
+      END IF
+
+      IF (DFT_SPINDNS) THEN
+         CALL QUIT('SRDFT1: spin density not implemented yet')
       END IF
 
 
