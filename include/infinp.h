@@ -7,12 +7,12 @@ C     - SCF specific input is in scbrhf.h
 C     - orbital specifications are in inforb.h
 C
       INTEGER         NFLAG, MAXRTS, MXFELT
-      PARAMETER (NFLAG = 80, MAXRTS = 20, MXFELT = 20)
+      PARAMETER (NFLAG = 80, MAXRTS = 100, MXFELT = 20)
 C
-      INTEGER         NFIELD, ISPIN,ISTATE,LSYM,NACTEL, MCTYPE,
+      INTEGER         NFIELD, ISPIN,NMCAVER,ISTATE,LSYM,NACTEL, MCTYPE,
      *                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,
      *                LROOTS,NROOTS,IROOT,
-     *                NOROT        ,IMOORD        ,
+     *                NOROT        ,IMOORD,
      *                IORTO,ICI0,KDEL,ICHECK,NTIT,
      *                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,
      *                ITRLVL,ITRFIN,JCHSYM,JCHORB,
@@ -24,7 +24,7 @@ C
      *                IORTO,ICI0,KDEL,ICHECK,NTIT,
      *                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,
      *                ITRLVL,ITRFIN,JCHSYM,JCHORB,
-     *                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO
+     *                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, NMCAVER
 C
       LOGICAL         FLAG,  DOSCF, DOMP2, DOCINO,DOCI,  DOMC,  DORSP,
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP,
@@ -44,13 +44,13 @@ C
       REAL*8          SPIN, POTNUC, EPSOL,EPSTAT,EPPN,RSOL,
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,
      &                EFIELD, TITMOL, CMAXMO, THROVL,
-     &                THRSSY, DEFLVL
+     &                THRSSY, DEFLVL, WEIGHT_MCAVER
 C     variables for srDFT /hjaaj
       REAL*8          THRCIDFT
       COMMON /RELINP/ SPIN, POTNUC, EPSOL,EPSTAT,EPPN,RSOL(3),
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,
      &                EFIELD(MXFELT), TITMOL(12,2), CMAXMO, THROVL,
-     &                THRSSY, DEFLVL,
+     &                THRSSY, DEFLVL, WEIGHT_MCAVER(MAXRTS),
      &
      &                THRCIDFT
 C
