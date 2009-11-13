@@ -1,0 +1,13 @@
+Hans Joergen Aa. Jensen -- 14. Nov 2009
+
+This directory is for the LUCITA module.
+
+LUCITA has been developed in DIRAC by
+  Timo Fleig and Jeppe Olsen
+and has been parallelized in DIRAC by
+  Stefan Knecht and Hans Joergen Aa. Jensen.
+
+Jeppe and I now want to make this module the
+new general CI module in DALTON.
+
+We start on the new "lucita" branch until it works.
