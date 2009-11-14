@@ -227,7 +227,7 @@ C -- local variables and constants
 C
       CHARACTER WORD*8
       LOGICAL   DELEMO, FNDLAB
-      PARAMETER (D0=0.0D0, D1=1.0D0)
+      PARAMETER (D0=0.0D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (THR_DEFAULT=1.0D-5, THRRHF_MP2=1.0D-6)
 C
 C Used from common blocks:
@@ -240,7 +240,7 @@ C   INFTAP : LUCME,?
 C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
-C   INFMP2 : NFRMP2(*), SC_SRMP2
+C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
 C   SPINFO : MULTS; MS2
@@ -475,12 +475,16 @@ C
 C
 C********** Default values section MP2INP *****
 C
-      SCS_MP2 = .FALSE.
-      SOS_MP2 = .FALSE.
-      TDA_MP2 = .FALSE.
-      MP2_NO_OV = .FALSE.
-      SC_SRMP2 = .FALSE.
-      SRINTS_SRMP2 = .FALSE.
+      MP2_LSHIFT      = D0
+      MP2_SCALEFAC(1) =  D2 ! scale factor on (ij|ab)
+      MP2_SCALEFAC(2) = -D1 ! scale factor on <ij|ab> = (ia|jb)
+      MP2_SCALED   = .FALSE.
+      MP2_SCS      = .FALSE.
+      MP2_SOS      = .FALSE.
+      MP2_TDA      = .FALSE.
+      MP2_NO_OCCVIR= .FALSE.
+      SRMP2_SELFCONSISTENT = .FALSE.
+      SRMP2_SRINTS = .FALSE.
 C
 C
 C********** Default values section OPTINP *****
@@ -873,7 +877,7 @@ C
       IF (IPRSIR .EQ. IPRUSR) THEN
 C        .. if user hasn't set IPRSIR with .PRINT but has set
 C           either IPRI4 or IPRI6, then use max value /hjaaj Oct09
-         IPRSIR = MAX(IPRSIR,IPRI4,IPRI6)
+         IPRSIR = MAX(IPRSIR,IPRI4-5,IPRI6)
       END IF
       MPRSIR = IPRSIR
       MPRI6  = IPRI6
@@ -5069,14 +5073,14 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IRUN = IRUN + 1
          END IF
          IF (DOMP2 .AND. IRUN .LT. NUMRUN) THEN
-            IF (SCS_MP2) THEN
+            IF (MP2_SCS) THEN
                WRITE(IWUNIT,1051) 'an SCS-MP2 calculation'
-            ELSE IF (SOS_MP2) THEN
+            ELSE IF (MP2_SOS) THEN
                WRITE(IWUNIT,1051) 'an SOS-MP2 calculation'
             ELSE
                WRITE(IWUNIT,1051) 'an MP2 calculation'
             END IF
-            IF (TDA_MP2) WRITE(IWUNIT,1051) '   (saving for TDA-SOPPA)'
+            IF (MP2_TDA) WRITE(IWUNIT,1051) '   (saving for TDA-SOPPA)'
             IRUN = IRUN + 1
          END IF
          IF (FCVORB) THEN
