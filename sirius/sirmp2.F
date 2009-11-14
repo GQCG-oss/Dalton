@@ -186,6 +186,8 @@ C ==========================================================================
             WRITE(LUPRI,'(A)') " M. Head-Gordon's SOS MP2 requested."
          ELSE
             WRITE(LUPRI,'(A,/A,2F14.6)') " User-scaled MP2 requested."
+            IF (P_T .EQ. D0) MP2_SOS = .TRUE.
+C           ... SOS-MP2 but not Head-Gordon's original SOS-MP2
          END IF
          WRITE(LUPRI,'(A,2F14.6)')
      &      ' Scale factors p_S and p_T:',P_S, P_T
@@ -373,7 +375,11 @@ C     DETERMINE NUMBER OF PARTICLE-HOLE DIRAC DISTRIBUTIONS WHICH CAN BE
 C     KEPT IN CORE IN ONE LOAD
 C
 C     We assume max 4*N2ORBX additional work space needed :
-      NPSTP  = (LFREE-4*N2ORBX)/(NP*NH*NH)
+      IF (MP2_SOS) THEN
+         NPSTP = NP
+      ELSE
+         NPSTP = (LFREE-4*N2ORBX)/(NP*NH*NH)
+      END IF
 C     Make load per batch even :
       IF (NPSTP .GT. 0) THEN
          NBATCH = (NP-1)/NPSTP  + 1
@@ -387,13 +393,17 @@ C     Make load per batch even :
      &      ' Number of PARTICLE-HOLE distributions ',NP*NH,
      &      ' Number of BATCHES                     ',NBATCH,
      &      ' Number of P-H distributions each BATCH',NPSTP*NH
-      IF ( NPSTP .LE. 0 ) THEN
+       IF ( NPSTP .LE. 0 ) THEN
          WRITE (LUPRI,'(/A)')
      &      ' ERROR: Insufficient work memory for one p-h distribution.'
          CALL ERRWRK('MP2CTL Dirac p-h distributions',(-NP*NH*NH),LFREE)
+       END IF
       END IF
+      IF (MP2_SOS) THEN
+         CALL MEMGET('REAL',KH2PHD,0,WRK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KH2PHD,NPSTP*NH*NH*NP,WRK,KFREE,LFREE)
       END IF
-      CALL MEMGET('REAL',KH2PHD,NPSTP*NH*NH*NP,WRK,KFREE,LFREE)
 C
       EMP2   = D0
       EMP2FL = D0
@@ -412,9 +422,10 @@ C
          IPHIGH  =  MIN(NP,IPLOW+NPSTP-1)
 C
 C        Retrieve DIRAC particle-hole integral distributions
-C        for this load
+C        for this load, if NOT SOS-MP2
 C
-         CALL MP2PHD(WRK(KH2PHD),WRK(KH2M),IPLOW,IPHIGH,WRK,KFREE,LFREE)
+         IF (.NOT. MP2_SOS)
+     &   CALL MP2PHD(WRK(KH2PHD),WRK(KH2M),IPLOW,IPHIGH,WRK,KFREE,LFREE)
 C        CALL MP2PHD(H2PHD,H2CD,IPLOW,IPHIGH,WRK,KFREE,LFREE)
 C
 C        Determine second order contributions to one electron
@@ -966,7 +977,9 @@ C
          IF ( IFROZ(INP) .NE. 0 ) GO TO 200
             ENMANB = ENMA - ORBEN(INP) + ORBEN(IBH)
 C    Routine modified to include scaled mp2 calculations
-            IF (MP2_SCALED) THEN
+            IF (MP2_SOS) THEN
+               H2D(INP,IBH) = MP2_SCALEFAC(1)*H2M(INP,IBH) / ENMANB
+            ELSE IF (MP2_SCALED) THEN
                H2D(INP,IBH) = ( MP2_SCALEFAC(1)*H2M(INP,IBH)
      *                        + MP2_SCALEFAC(2)*H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
