@@ -4420,6 +4420,7 @@ C
       ENDIF
 
 C     Allocate memory for electric field integrals and electric fields
+C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M2)
       KMAT    = 1
       KELF    = KMAT + 3*NNBASX      ! For electric field integrals
       KELFEL  = KELF + 3*POLDIM      ! For total OR (if SPLDIP) multipole electric field
@@ -7383,7 +7384,7 @@ C ----
 #include <gnrinf.h>
 
       INTEGER POLDIM
-      DIMENSION WRK(LWRK), ELF(3*POLDIM)
+      DIMENSION WRK(LWRK), ELF(*)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -7392,12 +7393,15 @@ C ----
 
       CALL QENTER('QMMM_POLARI_M2')
 
-      
       KELF  = 1
       KEND  = KELF + 3*POLDIM
+      IF (SPLDIP) THEN
+         KELFEL  = KEND
+         KELFNU  = KELFEL + 3*POLDIM
+         KEND    = KELFNU + 3*POLDIM
+      ENDIF
       LWRK1 = LWRK - KEND
       IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_DIPOLES_M2',-KEND,LWRK)
-
 
 C     Beginning of parallel section
 
@@ -7492,10 +7496,14 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-
       IF (SPLDIP) THEN 
+         CALL DZERO(WRK(KELFEL),3*POLDIM)
+         CALL MPI_REDUCE(WRK(KELFEL),ELF(3*POLDIM+1),3*POLDIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
          CALL DZERO(WRK(KELFNU),3*POLDIM)
-         CALL MPI_REDUCE(WRK(KELFNU),ELFNU,3*POLDIM,
+         CALL MPI_REDUCE(WRK(KELFNU),ELF(6*POLDIM+1),3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       ENDIF
@@ -7560,12 +7568,12 @@ C     Receiving data from master
       CALL MPIXBCAST(CONMAT,1,'LOGICAL',MASTER)
 
       KELF    = 1
-      KELFEL  = KELF + 3*POLDIM
       IF (SPLDIP) THEN
+         KELFEL = KELF   + 3*POLDIM
          KELFNU = KELFEL + 3*POLDIM
          KDCAO  = KELFNU + 3*POLDIM
       ELSE
-         KDCAO  = KELFEL + 3*POLDIM
+         KDCAO  = KELF   + 3*POLDIM
       ENDIF
       KMAT    = KDCAO   + NNBASX
       KLAST   = KMAT    + 3*NNBASX
@@ -7924,6 +7932,9 @@ C        B) nuclear contribution
      &                   IERR)
 
       IF (SPLDIP) THEN
+         CALL MPI_REDUCE(WRK(KELFEL),WRK(KELFEL),3*POLDIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
          CALL MPI_REDUCE(WRK(KELFNU),WRK(KELFNU),3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
