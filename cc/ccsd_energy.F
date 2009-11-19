@@ -535,6 +535,22 @@ C
 C
       EINI = EN2
 C
+CSPAS: 15.11.2009 adding AO-SOPPA
+C-----------------------------------------------
+C     For AO-SOPPA Write MP2 amplitudes to disk.
+C-----------------------------------------------
+C
+      IF (AOSOPPA) THEN
+C        LUTAM = -1
+         CALL GPOPEN(LUTAM,'MP2__TAM',' ',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND LUTAM
+         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
+         WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+      ENDIF
+CKeinSPASmehr
+C
 C----------------------------------------
 C     If MP2 or NOCCIT do not enter loop.
 C----------------------------------------
@@ -870,6 +886,18 @@ C
       IF (CCSTST) THEN
          CALL DZERO(WORK(KT2AM),NT2AMX)
       ENDIF
+C
+CSPAS: 15.11.09 adding AO-SOPPA
+      IF (AOSOPPA .AND. .NOT. MP2) THEN
+C        LUTAM = -1
+         CALL GPOPEN(LUTAM,'CCSD_TAM',' ',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND LUTAM
+         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
+         WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+      ENDIF
+CKeinSPASmehr
 C
 C----------------------------------
 C     save a copy on file CCR0___0

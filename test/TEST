@@ -143,6 +143,9 @@ geoopt_delintmin geoopt_delintsad geoopt_exci geoopt_exci2 geoopt_mp2froz \
 geoopt_numgrd geoopt_preopt geoopt_prop geoopt_prop2 geoopt_prop3 \
 geoopt_redintmin geoopt_redintsad geoopt_symbrk geoopt_vrml"
 #
+AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa \
+prop_exci_aosoppcc"
+#
 ALL="$SHORT $MEDIUM $LONG $DFT $NUMDER $R12 $DPT"
 #
 ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
@@ -189,6 +192,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           dpt                  -- run all DPT testcases
           numder               -- run all numerical derivatives testcases
           geoopt               -- run all OPTIMIZE testcases
+	  aosoppa              -- run all AOSOPPA testcases
           pcm                  -- run all pcm testcases
           perl                 -- run all perl-style testcases 
           all                  -- run all non-parallel testcases
@@ -365,6 +369,9 @@ while [ -n "$1" ]; do
    shift ;;
    "geoopt" )
    testcase="$testcase $GEOOPT"; 
+   shift ;;
+   "aosoppa" )
+   testcase="$testcase $AOSOPPA"; 
    shift ;;
    "qm3" )
    testcase="$testcase $QM3"; 

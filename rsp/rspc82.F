@@ -2751,6 +2751,16 @@ C
      *   ' WHICH EXCEEDS ALLOWED DIMENSION',MAXRM
          CALL QUIT('RSPRED: TOO LARGE DIMENSION OF REDUCED SPACE')
       END IF
+CSPAS:01.05.2009 bug fix for large number of  excitation energies
+      IF (KZYRED.GT.LIROW) THEN
+         WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
+     *   ' >>> ERROR IN RSPRED >>>',
+     *   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
+     *   ' NEEDED ',KZYRED,', GIVEN :',LIROW,
+     *   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
+         CALL QUIT('RSPRED: TOO SMALL DIMENSION OF IROW: RECOMPILE')
+      END IF
+CKeinSPASmehr
 C
 C Section 1: extend reduced E[2]-AND S[2]-matrices
 C            with N new b-vectors
