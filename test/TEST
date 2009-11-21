@@ -49,7 +49,7 @@ SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibav
 SHORTREST="r12_sym dpt_h2s dft_qr_sym"
 AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa \
 prop_exci_aosoppcc"
-SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST AOSOPPA"
+SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
