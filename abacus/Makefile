@@ -21,7 +21,8 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abander.o    abandsym.o   herfckcon.o  abaop2.o\
 	abasop.o     abamolden.o  eckart.o     ecp.o\
 	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o\
-	abactocd.o   abaqpg.o     abapcm.o     abaqm3.o
+	abactocd.o   abaqpg.o     abapcm.o     abaqm3.o\
+	abaqmmm.o
 
 C_OBJS = linux_mem_allo.o
 
