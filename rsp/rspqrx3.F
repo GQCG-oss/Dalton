@@ -416,7 +416,7 @@ C
 
       IF (QMMM) THEN
          IF (TDHF) THEN
-            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+C            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
             CALL QMMMQRO(VECB,VECC,
      *                   ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                   UDV,WRK(KFREE),LFREE,
@@ -427,7 +427,7 @@ C
      *                   UDV,WRK(KFREE),LFREE,
      *                   KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
      *                   ISPINA,ISPINC,ISPINB)
-            IF (IPQMMM .GT. 1) CALL TIMER('QMMMQRO',TIMSTR,TIMEND)
+C            IF (IPQMMM .GT. 1) CALL TIMER('QMMMQRO',TIMSTR,TIMEND)
          END IF
       END IF
 C
