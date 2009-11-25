@@ -541,7 +541,7 @@ C     For AO-SOPPA Write MP2 amplitudes to disk.
 C-----------------------------------------------
 C
       IF (AOSOPPA) THEN
-C        LUTAM = -1
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'MP2__TAM',' ',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUTAM
@@ -889,7 +889,7 @@ C
 C
 CSPAS: 15.11.09 adding AO-SOPPA
       IF (AOSOPPA .AND. .NOT. MP2) THEN
-C        LUTAM = -1
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'CCSD_TAM',' ',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUTAM
