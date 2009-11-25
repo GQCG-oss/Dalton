@@ -176,11 +176,12 @@ C        FLAG(53) = .FALSE.
          FLAG(52) = .FALSE.
          FLAG(53) = .FALSE.
       END IF
-      IF (FLAG(51) .OR. FLAG(52)) THEN
-         KTRLVL = 0
-      ELSE
+CHJAaJ Nov 09: KTRLVL=0 does not work in TR1H2M in current Dalton
+CHJ   IF (FLAG(51) .OR. FLAG(52)) THEN
+CHJ      KTRLVL = 0
+CHJ   ELSE
          KTRLVL = ITRLVL
-      END IF
+CHJ   END IF
 #if defined (VAR_NOITRABS)
 C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
 C               IF KTRLVL = 0 !
