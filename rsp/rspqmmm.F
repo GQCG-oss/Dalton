@@ -233,8 +233,6 @@ C-------------------------------------------------------
                GOTO 201
              ENDIF
 
-
-
              CALL DZERO(WRK(KMAT),3*NNBASX)
 
              KPATOM = 0
@@ -1247,10 +1245,16 @@ C     Backup the dipole origin
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
+      KMAT = KWRK
+      KLAST = KMAT + 3*NNBASX
+      LWRK2 = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO',-KLAST,LWRK2)
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
-     &                   WRK(KWRK),LWRK1)
+     &                   WRK(KLAST),LWRK2)
       ELSE
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
@@ -1270,11 +1274,6 @@ C     Backup the dipole origin
             GOTO 100
           ENDIF
 
-          KMAT = KWRK
-          KLAST = KMAT + 3*NNBASX
-          LWRK2 = LWRK - KLAST + 1
-
-          IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO',-KLAST,LWRK2)
 
           CALL DZERO(WRK(KMAT),3*NNBASX)
 
@@ -1487,8 +1486,9 @@ C         z-component
 
   100   CONTINUE
       ENDIF
+
 C     Calculate the induced dipoles corresponding to the 
-C     (transformed) fields 1, 2 and 3 either by matrix ibversion or 
+C     (transformed) fields 1, 2 and 3 either by matrix inversion or 
 C     iteratively.
 
       NDIM = 3*NNZAL
@@ -1565,7 +1565,7 @@ C     before, but we choose to do all of this integral-direct.
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M2(WRK(KIND1),WRK(KIND2),WRK(KIND3),WRK(KUCMO),
      &        WRK(KTRES),ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
-     &        WRK(KWRK),LWRK1)
+     &        WRK(KLAST),LWRK2)
       ELSE
         LRI = 1                ! group-index in vector
         DO 101 J = 1,MMCENT 
@@ -1584,12 +1584,6 @@ C     before, but we choose to do all of this integral-direct.
             ENDIF
             GOTO 101
           ENDIF
-
-          KMAT = KWRK
-          KLAST = KMAT + 3*NNBASX
-          LWRK2 = LWRK - KLAST + 1
-
-          IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO',-KLAST,LWRK2)
 
           CALL DZERO(WRK(KMAT),3*NNBASX)
 
@@ -1770,7 +1764,7 @@ C
 
       CALL RSP1GR(NSIM,KZYVR,IDUM,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,
      *            WRK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,WRK(KTRES),
-     *            XINDX,MJWOP,WRK(KWRK),LWRK1,LORB,LCON,LREF)
+     *            XINDX,MJWOP,WRK(KLAST),LWRK2,LORB,LCON,LREF)
 
       IF (IPQMMM .GT. 1) CALL TIMER('QMMMCRO',TIMSTR,TIMEND)
 
