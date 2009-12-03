@@ -130,7 +130,7 @@ cat > ccmm_beta.dal <<'%EOF%'
 .MAX IT
  90
 .MXLRV
- 180
+ 680
 *CCSLV
 .CCMM
 .ETOLSL
