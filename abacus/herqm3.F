@@ -4537,7 +4537,7 @@ C           See if further input is provided for this option
             ELSE IF (UNITS .EQ. 'AU') THEN
               RCUTMM = RCUTMM
             ELSE
-              CALL QUIT('Unknown units for LCLOSE specification')
+              CALL QUIT('Unknown units for RCUTMM specification')
             ENDIF
             RCUT = .TRUE.
           GO TO 100
