@@ -619,8 +619,8 @@ C-----------------------------------------------------
             CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
             CALL MPIXSEND(LM, 1, 'INTEGER', NWHO, MPTAG2)
             CALL MPIXSEND(FAC, 1, 'DOUBLE', NWHO, MPTAG2)
-         END DO
-      END DO
+         ENDDO
+      ENDDO
 
 C     Send end message to all slaves
 

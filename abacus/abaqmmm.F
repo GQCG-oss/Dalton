@@ -55,6 +55,7 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include <qm3.h>
 #include <qmmm.h>
 #include <inforb.h>
+#include <infpar.h>
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL,LOCDEB
@@ -89,6 +90,10 @@ C     We don't have these integrals yet !
 C     1. Construct the charge contribution for all MM centers
 
       IF (NMULT .GE. 0) THEN
+
+        IF (NODTOT.GE.1)THEN
+          CALL QMMMFIRST_M1(VEC2,IPRINT,INTPRI,WORK,LWORK)
+        ELSE
 
         KMAT = 1
         KLAST = KMAT + 3*N2BASX
@@ -137,6 +142,7 @@ C     1. Construct the charge contribution for all MM centers
 
   100   CONTINUE
 
+        ENDIF ! (NODTOT.GE.1) ... ELSE 
       ENDIF !( NMULT .GE. 0)
 
 C     2. Construct the permanent dipole contribution for all MM centers
@@ -231,7 +237,6 @@ C     2. Construct the permanent dipole contribution for all MM centers
   200   CONTINUE
 
       ENDIF !( NMULT .GE. 1)
-
 
 C     3. Construct the induced dipole contribution for all MM centers
 C        NOTE: This could be done more effectively by adding the
@@ -410,6 +415,7 @@ C         See if the total dipole moment at this site is zero
           CALL GET1IN(WORK(KMAT),'EFIELB1',NOSIM,WORK(KLAST),
      &                LWRK,LABINT,INTREP,INTADR,I,TOFILE,
      &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,INTPRI)
+
           IF ( (INTPRI .GE. 15) .OR. (LOCDEB) ) THEN
              WRITE (LUPRI,'(/A)') ' Efield_ao Ex Bx matrix:'
              CALL OUTPUT(WORK(KMAT),1,NBAST,1,NBAST,
@@ -824,3 +830,225 @@ C
       RETURN
       END
 C****************************************************************************
+C     Parallel section, AHS
+C****************************************************************************
+C/* deck qmmmfirst_m1 */
+      SUBROUTINE QMMMFIRST_M1(VEC2,IPRINT,INTPRI,WORK,LWORK)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <orgcom.h>
+#include <nuclei.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <inforb.h>
+C#include <infind.h>
+#include <magone.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+
+      DIMENSION WORK(*),VEC2(*)
+
+      CALL QENTER('QMMMFIRST_M1')
+
+      KVEC2 = 1
+      JVEC2 = KVEC2 + 3*N2BASX
+      KLAST = JVEC2 + 3*N2BASX
+
+      IPRTYP = 34
+
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(MXMMDI,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(ICMO,8,'INTEGER',MASTER)
+      CALL MPIXBCAST(FORQM3,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMMAT,1,'LOGICAL',MASTER)
+
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+C      CALL MPIXBCAST(ISX,MXCORB,'INTEGER',MASTER)
+      CALL MPIXBCAST(KSYMOP,1,'INTEGER',MASTER)
+
+      DO I = 1,MMCENT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(I,1,'INTEGER',NWHO,MPTAG2)
+      ENDDO
+
+C     Send end message to all slaves
+      LEND = -1
+      DO ISLAVE = 1, NODTOT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(LEND, 1, 'INTEGER', NWHO, MPTAG2)
+      END DO
+
+C     Collect data from all slaves
+      CALL DZERO(WORK(KVEC2),3*N2BASX)
+      CALL DZERO(WORK(JVEC2),3*N2BASX)
+
+      CALL MPI_REDUCE(WORK(KVEC2),WORK(JVEC2),3*N2BASX,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+      FAC = 1.0D0
+      CALL DAXPY(3*N2BASX,FAC,WORK(JVEC2),1,VEC2,1)
+
+
+      CALL QEXIT('QMMMFIRST_M1')
+      RETURN
+      END
+C****************************************************************************
+C/* deck qmmmfirst_s1 */
+      SUBROUTINE QMMMFIRST_S1(WORK,LWORK,IPRINT)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <orgcom.h>
+#include <nuclei.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <inforb.h>
+C#include <infind.h>
+#include <gnrinf.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+
+      DIMENSION WORK(LWORK)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('QMMMFIRST_S1')
+
+      QMMM = .TRUE.
+
+      CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(MXMMDI,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(ICMO,8,'INTEGER',MASTER)
+      CALL MPIXBCAST(FORQM3,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMMAT,1,'LOGICAL',MASTER)
+
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
+
+C      CALL MPIXBCAST(ISX,MXCORB,'INTEGER',MASTER)
+      CALL MPIXBCAST(KSYMOP,1,'INTEGER',MASTER)
+
+      KVEC2 = 1
+      KMAT  = KVEC2 + 3*N2BASX
+      KLAST = KMAT  + 3*N2BASX
+      LWRK =  LWORK - KLAST + 1
+
+      IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_S1',-KLAST,LWORK)
+
+      CALL DZERO(WORK(KVEC2),3*N2BASX)
+
+ 100  CONTINUE
+
+      CALL MPIXSEND(MYNUM, 1, 'INTEGER', MASTER, MPTAG1)
+      CALL MPIXRECV(I, 1, 'INTEGER', MASTER, MPTAG2)
+
+      IF (I .GE. 1) THEN
+
+         IF (ABS(MUL0MM(I)) .LE. THRMM) GOTO 100
+
+         KPATOM = 0
+         NOSIM = 3
+         TOFILE = .FALSE.
+         TRIMAT = .FALSE.
+         EXP1VL = .FALSE.
+         DIPORG(1) = MMCORD(1,I)
+         DIPORG(2) = MMCORD(2,I)
+         DIPORG(3) = MMCORD(3,I)
+
+         CALL DZERO(WORK(KMAT),3*NNBASX)
+C         CALL DZERO(WORK(KMAT),3*N2BASX)
+
+         CALL GET1IN(WORK(KMAT),'PCMBSOL',NOSIM,WORK(KLAST),
+     &                 LWRK,LABINT,INTREP,INTADR,I,TOFILE,
+     &                 KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
+
+         IF (IPRINT .GE. 12) THEN
+            WRITE (LUPRI,'(/A,I3,A)')
+     *             ' N(',I,')_ao matrix (Bx): '
+            CALL OUTPUT(WORK(KMAT),1,NBAST,1,NBAST,
+     &                    NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(/A,I3,A)')
+     *             ' N(',I,')_ao matrix (By): '
+            CALL OUTPUT(WORK(KMAT+N2BASX),1,NBAST,1,NBAST,
+     &                    NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(/A,I3,A)')
+     *             ' N(',I,')_ao matrix (Bz): '
+            CALL OUTPUT(WORK(KMAT+2*N2BASX),1,NBAST,1,NBAST,
+     &                    NBAST,NBAST,1,LUPRI)
+         END IF
+
+         FAC1 = -1.0D0*MUL0MM(I)
+         CALL DAXPY(3*N2BASX,FAC1,WORK(KMAT),1,WORK(KVEC2),1)
+         GO TO 100
+      ENDIF
+
+      CALL MPI_REDUCE(WORK(KVEC2),WORK(KVEC2),3*N2BASX,
+     &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
+
+      CALL QEXIT('QMMMFIRST_S1')
+      RETURN
+      END
