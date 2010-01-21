@@ -539,8 +539,7 @@ C
       KTJ2    = KJAO    + NNBASX
       KPOTMM  = KTJ2    + NTS
       KPOTQMM = KPOTMM  + NTS
-      KPOTPMM = KPOTQMM + NTS
-      KPTQMN  = KPOTPMM + NTS
+      KPTQMN  = KPOTQMM + NTS
       KQMAT   = KPTQMN  + NTS
       KWRK1   = KQMAT   + NTS * NTSIRR
       LWRK1   = LFREE   - KWRK1
@@ -561,17 +560,16 @@ C     Seperated the potential made of the charge and dipole of MM molecules
 C     false true false makes potential from charge
 C     false false true makes potential from dipole
 C     false true true makes the potential from both charge and dipole
-C         CALL COMP_NUC_POT_CAV(WRK(KPOTQMM), .FALSE., .TRUE.,.FALSE.)
-C         CALL COMP_NUC_POT_CAV(WRK(KPOTDMM), .FALSE., .FALSE.,.TRUE.)
-C         CALL DZERO(WRK(KPOTMM),NTS)
-C         DO I = 1,NTS
-C            WRK(KPOTMM+I-1) = WRK(KPOTQMM+I-1) + WRK(KPOTPMM+I-1)
-C         ENDDO
          CALL DZERO(WRK(KPOTMM), NTS)
+         CALL DZERO(WRK(KPOTQMM),NTS)
          CALL DZERO(QSMM,MXTS)
-         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.,.TRUE.)
+C     KPOTMM is the potential from MM charges, while kpotmm2 is the
+C     potential both from mm charges and induced dipoles.
+C     The kpotqmm is only used 
+         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.,.FALSE.)
+         CALL COMP_NUC_POT_CAV(WRK(KPOTQMM),.FALSE., .TRUE.,.TRUE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
-         CALL V2Q(WRK(KQMAT), WRK(KPOTMM), QSMM, QTMM, .FALSE.)
+         CALL V2Q(WRK(KQMAT), WRK(KPOTQMM), QSMM, QTMM, .FALSE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
       ELSE
          CALL DZERO(WRK(KPOTMM), NTS)
