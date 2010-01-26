@@ -715,7 +715,7 @@ C        London orbital contribution. See the LCOMB option below.
 
         IF (NODTOT .GE. 1) THEN
            CALL QMMMB2_M3(WORK(KINDMOM),EXPVAL,IPRINT,DENMAT,
-     &                    WORK(1),LWORK)
+     &                    WORK(KLAST),LWRK)
         ELSE
 
         IL = 0 ! Counter for induced dipole moments
@@ -812,7 +812,7 @@ C         dipole contribution for all MM centers
 
         IF (NODTOT .GE. 1) THEN
            CALL QMMMB2_M4(WORK(KTOTMOM),EXPVAL,IPRINT,DENMAT,
-     &                    WORK(1),LWORK)
+     &                    WORK(KLAST),LWRK)
         ELSE
 
 Cahs        IL = 0 ! Counter for dipole moments
@@ -2457,7 +2457,7 @@ C     Collect data from all slaves
       END
 C****************************************************************************
 C/* deck qmmmb2_s3 */
-      SUBROUTINE QMMMB2_S3(WORK,LWORK,INTPRI)
+      SUBROUTINE QMMMB2_S3(WORK,LWORK,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
