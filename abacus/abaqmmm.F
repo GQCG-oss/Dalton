@@ -1988,7 +1988,7 @@ C     Collect data from all slaves
       CALL DZERO(WORK(KEXPVAL),6)
       CALL DZERO(WORK(JEXPVAL),6)
 
-      CALL MPI_REDUCE(WORK(KEXPVAL),WORK(JEXPVAL),3*N2BASX,
+      CALL MPI_REDUCE(WORK(KEXPVAL),WORK(JEXPVAL),6,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
