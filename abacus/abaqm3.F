@@ -1264,10 +1264,8 @@ C         dipole contribution for all MM centers
           IL=IL+3
   400   CONTINUE
 
-        IL = 0 ! Counter for dipole moments
-
         DO 500 I = 1,MMCENT
-
+           IL = 3*(I - 1)
 C         See if the total dipole moment at this site is zero
           DNORM2 = WORK(KTOTMOM+IL+0)*WORK(KTOTMOM+IL+0)
      &           + WORK(KTOTMOM+IL+1)*WORK(KTOTMOM+IL+1)
@@ -1340,8 +1338,6 @@ C         See if the total dipole moment at this site is zero
      &               VEC2(1+N2BASX),1)
           CALL DAXPY(N2BASX,FACZ,WORK(KMAT+8*N2BASX),1,
      &               VEC2(1+2*N2BASX),1)
-
-          IL = IL+3
 
   500   CONTINUE
 
@@ -1644,10 +1640,8 @@ C         dipole contribution for all MM centers
           IL=IL+3
   400   CONTINUE
 
-        IL = 0 ! Counter for dipole moments
-
         DO 500 I = 1,MMCENT
-
+          IL = 3*(I - 1)
 C         See if the total dipole moment at this site is zero
           DNORM2 = WORK(KTOTMOM+IL+0)*WORK(KTOTMOM+IL+0)
      &           + WORK(KTOTMOM+IL+1)*WORK(KTOTMOM+IL+1)
@@ -1687,8 +1681,6 @@ C         See if the total dipole moment at this site is zero
              EXPVAL(I2) = EXPVAL(I2) + WORK(KTMP+I2-1)*FACX +
      &                    WORK(KTMP+I2+5)*FACY + WORK(KTMP+I2+11)*FACZ
           END DO
-
-          IL = IL+3
 
   500   CONTINUE
 
