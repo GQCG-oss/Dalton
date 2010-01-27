@@ -363,7 +363,15 @@ c     /XYZPOW/
      &               0, MPI_COMM_WORLD,ie)
 c     /DFTCOM/
       CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-c
+
+!     sync thresholds
+      call mpi_bcast(dfthr0, 1, mpi_double_precision, 
+     &                       0, mpi_comm_world, ie)
+      call mpi_bcast(dfthrl, 1, mpi_double_precision, 
+     &                       0, mpi_comm_world, ie)
+      call mpi_bcast(dfthri, 1, mpi_double_precision, 
+     &                       0, mpi_comm_world, ie)
+
 c     sync functionals, too.
       CALL DFTFUNCSYNC(MYNUM,NODTOT)
 c      
