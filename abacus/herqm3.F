@@ -3032,9 +3032,8 @@ C
               NUM = NUM + 1
               DO 400 L=1,3
                 OBAR(L,NUM) = 2*ENUC(L,NUM)+ESITE(L,NUM)+
-     &                      EIND(L,NUM) + FFJ(L)
+     &                      EFPCM(L,NUM)+EIND(L,NUM) + FFJ(L)
                 ENSA(L,NUM) = OBAR(L,NUM) + ESITE(L,NUM)+ FFJ(L) 
-     &                      + EFPCM(L,NUM)
   400         CONTINUE
               WRITE(LUEOBAR,'(I5,3E25.15)') NUM,
      *              OBAR(1,NUM),OBAR(2,NUM),OBAR(3,NUM)
@@ -3085,11 +3084,11 @@ C
       DOTPR = D0
       OTILDE = D0
 
-Cahs      DO 19 I = 1, MXQM3
-Cahs         DO 20 J = 1, 3
-Cahs            EFPCM(J,I) = D0
-Cahs   20    CONTINUE
-Cahs   19 CONTINUE
+      DO 19 I = 1, MXQM3
+         DO 20 J = 1, 3
+            EFPCM(J,I) = D0
+   20    CONTINUE
+   19 CONTINUE
 
 C
 C     See if external fields are to be added
@@ -3108,7 +3107,7 @@ C
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
 C
-Cahs      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
 
 C     we always just include the field from potential pcm. if not
 C     present this will just be zero
@@ -3123,7 +3122,7 @@ C
               NUM = NUM + 1
               DO 400 L=1,3
                 RHS(L,NUM) = ENUC(L,NUM)+ESITE(L,NUM)+
-     &                       EIND(L,NUM)+FFJ(L)
+     &                       EFPCM(L,NUM)+EIND(L,NUM)+FFJ(L)
                 DOTPR = DOTPR + ENUC(L,NUM)*RHS(L,NUM) 
   400         CONTINUE
               OTILDE = OTILDE -0.5*ALPIMM(I,K)*DOTPR
