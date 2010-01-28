@@ -1879,12 +1879,14 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
          END IF
 
          IF (QMMM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
             KTMAT = KWRK
             MWRK  = KTMAT + 3*N2BASX
             IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','QM3-1',MWRK,LWRK)
             LLEFT = LWRK - MWRK + 1
             CALL QMMMFIRST(WORK(KTMAT),IPRINT,INTPRI,WORK(MWRK),LLEFT)
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
+            IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
          END IF
 
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)

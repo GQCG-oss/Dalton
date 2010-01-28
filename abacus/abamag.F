@@ -595,6 +595,7 @@ C
          END IF
 C
          IF (QMMM .AND. (WORD .EQ. 'DIASUS')) THEN
+            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
             NCOMP  = 6
             KSLEXP = 1
             KLAST  = KSLEXP + NCOMP
@@ -605,6 +606,7 @@ C
                CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
             END IF
             CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+            IF (IPQMMM .GT. 1) CALL TIMER('QMMMB2',TIMSTR,TIMEND)
          END IF
 C
          IF ((SOLVNT.OR.PCM) .AND. (WORD .EQ. 'DIASUS')) THEN

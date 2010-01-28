@@ -271,7 +271,7 @@ C        London orbital contribution. See the LCOMB option below.
 
         CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDMOM))
 
-        IF (NODTOT .GE. 1) THEN
+        IF (NODTOT.GE.1) THEN
            CALL QMMMFIRST_M3(WORK(KINDMOM),VEC2,
      &          IPRINT,INTPRI,WORK(KLAST),LWRK)
         ELSE
@@ -2451,7 +2451,6 @@ C     Collect data from all slaves
       FAC = 1.0D0
       CALL DAXPY(6,FAC,WORK(JEXPVAL),1,EXPVAL,1)
 
-
       CALL QEXIT('QMMMB2_M3')
       RETURN
       END
@@ -2540,7 +2539,6 @@ C
       CALL MPIXRECV(IL, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (I .GE. 1) THEN
-
           CALL DZERO(WORK(KTMP),18)
 
           KPATOM = 0

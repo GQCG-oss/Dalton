@@ -91,7 +91,9 @@ C     Get total density
 C     Modify the fock operator. Modification returned in FSOL. 
 C     QMMM contribution to the energy returned in EQMMM.
 C      IF (NODTOT .GE. 1) THEN
+      CALL TIMER('START ',TIMSTR,TIMEND)
       CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
+      CALL TIMER('QMMM_FCK_AO',TIMSTR,TIMEND)
 
       CALL QEXIT('QMMMFCK')
       RETURN
@@ -163,31 +165,39 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
 
 C     1) The charge correction to the Fock/KS operator
 
+      CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 0) THEN
          CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
+      CALL TIMER('QMMM_CHARGE',TIMSTR,TIMEND)
 
 C     2) The dipole correction to the Fock/KS operator
 
+      CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 1) THEN
          CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
+      CALL TIMER('QMMM_DIPOLE',TIMSTR,TIMEND)
 
 C     3) The quadrupole correction to the Fock/KS operator
 
+      CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 2) THEN
          CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
+      CALL TIMER('QMMM_QUADPOLE',TIMSTR,TIMEND)
 
 C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
 
+      CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 3) THEN
          CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
      &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
+      CALL TIMER('QMMM_OCTUPOLE',TIMSTR,TIMEND)
 
       IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         write(lupri,*)
@@ -199,10 +209,12 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
 
 C     5) The polarization correction to the Fock/KS operator
 
+      CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPOLTP .GT. 0) THEN
          CALL QMMM_POLARI(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
+      CALL TIMER('QMMM_POLARI',TIMSTR,TIMEND)
 
 C     Finally, put back the dipole origin
 
