@@ -16,13 +16,13 @@ C
       REAL MMCORD, MUL0MM, MUL1MM, MUL2MM, MUL3MM, 
      *     POLMM, POLIMM, THRMM, QMPOL, THMMIT, RQMMMC, 
      *     RCUTMM,DELFLD,ECHART,EDIPT,EQUADT,EOCTUP,
-     *     EDELD,EDNUC,EDMULT
+     *     EDELD,EDNUC,EDMULT,ENUMUL
 #else
       DOUBLE PRECISION MMCORD, MUL0MM, MUL1MM, MUL2MM, MUL3MM,
      *                 POLMM, POLIMM, THRMM, QMPOL, THMMIT,
      *                 RQMMMC, RCUTMM,DELFLD,
      *                 ECHART,EDIPT,EQUADT,EOCTUP,
-     *                 EDELD,EDNUC,EDMULT
+     *                 EDELD,EDNUC,EDMULT,ENUMUL
 #endif
       PARAMETER ( THRMM = 1.0D-10 )
 
@@ -32,7 +32,7 @@ C
      *                POLMM(6,MXMMCT), POLIMM(MXMMCT), 
      *                QMPOL(MXCENT) , THMMIT, RQMMMC, RCUTMM,
      *                DELFLD,ECHART,EDIPT,EQUADT,EOCTUP,
-     *                EDELD,EDNUC,EDMULT
+     *                EDELD,EDNUC,EDMULT,ENUMUL
 
       COMMON /LOQMMM/ SPLDIP,CONMAT,FIXDIP,MMDAMP,MMPROP,
      *                SPLNMR,MMMAT,MMITER,MMDIIS,LCLOSE,

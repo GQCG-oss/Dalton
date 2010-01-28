@@ -376,20 +376,27 @@ C
 C
 C**************************************************************
 C  /* Deck cc_qm3e */
-      SUBROUTINE CC_QM3E(EQM3T,EPOL,EEL,EELEL,EREP,AODEN,WORK,LWORK)
+      SUBROUTINE CC_QM3E(ECCMM,EPOL,EEL,EELEL,EREP,AODEN,WORK,LWORK)
 C**************************************************************
 C
 C     Purpose: Calculation of E(QM/MM). 
 C     QM3, JK+AO+OC+KMI,01
+C     Modified by KS, nov 09
+C     Purpose: Updates the induced dipoles besides calculating E(QM/MM)
 C
 C**************************************************************
 C
 #include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
 #include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxorb.h>
+#include <orgcom.h>
+#include <nuclei.h>
+#include <ccinftap.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
@@ -397,20 +404,38 @@ C
 #include <ccfield.h>
 #include <exeinf.h>
 #include <ccfdgeo.h>
-#include <qm3.h>
-#include <ccinftap.h>
 #include <thrzer.h>
+
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
+      PARAMETER (HALF = 1.0D0/2.0D0)
 C
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FNDLAB, EXCENT
       DIMENSION WORK(LWORK),AODEN(*)
-      CHARACTER MODEL*10
+      CHARACTER LABEL*8
+      INTEGER NTOTI
+
       DIMENSION CCNS(MXQM3),ALPHAMM(MXQM3),FFJ(3)
-      INTEGER   KS
+      INTEGER KS
 C
-      LOGICAL   FIRST
-      SAVE      FIRST
+      CALL QENTER('CC_QM3E')
+C this assignment is temporary
+C------------------------------------------------------------------
+C       Init parameters
+C------------------------------------------------------------------
+
+      LOCDEB=.FALSE.
+      NDIM = 3*NNZAL
+      ISYMOP = 1
 C
+C------------------------------------------------------------------
+C       Dynamical allocation for CCMM 
+C------------------------------------------------------------------
+C
+
+      IF (.NOT. NYQMMM) THEN
 C------------------------------------------------------------------
 C      Dynamical allocation. If all models are SPC (LOSPC = .TRUE.)
 C      the electric field from the electrons are not needed. Then 
@@ -418,37 +443,37 @@ C      only space for Ns in AO basis is allocated.
 C------------------------------------------------------------------
 C
 
-      IF ( .NOT. (LOSPC) ) THEN
+         IF ( .NOT. (LOSPC) ) THEN
 C
-        KRAAOx  = 1
-        KRAAOy = KRAAOx + N2BST(ISYMOP)
-        KRAAOz = KRAAOy + N2BST(ISYMOP)
-        KOMMSx = KRAAOz + N2BST(ISYMOP)
-        KOMMSy = KOMMSx + NCOMS
-        KOMMSz = KOMMSy + NCOMS
-        KNSAO =  KOMMSz + NCOMS
-        KRAx = KNSAO + N2BST(ISYMOP)
-        KRAy = KRAx + NCOMS
-        KRAz = KRAy + NCOMS
-        KWRK1 = KRAz + NCOMS
-        LWRK1 = LWORK - KWRK1
+            KRAAOx  = 1
+            KRAAOy = KRAAOx + N2BST(ISYMOP)
+            KRAAOz = KRAAOy + N2BST(ISYMOP)
+            KOMMSx = KRAAOz + N2BST(ISYMOP)
+            KOMMSy = KOMMSx + NCOMS
+            KOMMSz = KOMMSy + NCOMS
+            KNSAO =  KOMMSz + NCOMS
+            KRAx = KNSAO + N2BST(ISYMOP)
+            KRAy = KRAx + NCOMS
+            KRAz = KRAy + NCOMS
+            KWRK1 = KRAz + NCOMS
+            LWRK1 = LWORK - KWRK1
 C
-        CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMOP))
-        CALL DZERO(WORK(KOMMSx),3*NCOMS)
-        CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
-        CALL DZERO(WORK(KRAx),3*NCOMS)
+            CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMOP))
+            CALL DZERO(WORK(KOMMSx),3*NCOMS)
+            CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
+            CALL DZERO(WORK(KRAx),3*NCOMS)
 C
-      ELSE
+         ELSE
 C
-        KNSAO = 1
-        KWRK1 = KNSAO + N2BST(ISYMOP)
-        LWRK1 = LWORK - KWRK1
+            KNSAO = 1
+            KWRK1 = KNSAO + N2BST(ISYMOP)
+            LWRK1 = LWORK - KWRK1
 C
-       CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
+            CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
 C
-      END IF
+         END IF
 C
-      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3RAINT')
+         IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3RAINT')
 C 
 C----------------------------
 C     Read Rr(a) in AO basis:
@@ -456,29 +481,29 @@ C----------------------------
 C
 C     First we see if any static fields are to be added
 C
-        FFJ(1) = 0.0D0
-        FFJ(2) = 0.0D0
-        FFJ(3) = 0.0D0
+         FFJ(1) = 0.0D0
+         FFJ(2) = 0.0D0
+         FFJ(3) = 0.0D0
 C
-      IF (RELMOM) THEN
-        DO 330 IF =1, NFIELD
-          IF (LFIELD(IF) .EQ. 'XDIPLEN') FFJ(1) = FFJ(1) + EFIELD(IF)
-          IF (LFIELD(IF) .EQ. 'YDIPLEN') FFJ(2) = FFJ(2) + EFIELD(IF)
-          IF (LFIELD(IF) .EQ. 'ZDIPLEN') FFJ(3) = FFJ(3) + EFIELD(IF)
-  330   CONTINUE
-      END IF
+         IF (RELMOM) THEN
+            DO 330 IF =1, NFIELD
+               IF (LFIELD(IF).EQ. 'XDIPLEN') FFJ(1)=FFJ(1)+EFIELD(IF)
+               IF (LFIELD(IF).EQ. 'YDIPLEN') FFJ(2)=FFJ(2)+EFIELD(IF)
+               IF (LFIELD(IF).EQ. 'ZDIPLEN') FFJ(3)=FFJ(3)+EFIELD(IF)
+  330       CONTINUE
+         END IF
 C
-      IF (.NOT. LOSPC) THEN
-        CALL CC_QM3RAINT(WORK(KRAAOx),WORK(KRAAOy),WORK(KRAAOz),
+         IF (.NOT. LOSPC) THEN
+            CALL CC_QM3RAINT(WORK(KRAAOx),WORK(KRAAOy),WORK(KRAAOz),
      &                   AODEN,WORK(KRAx),WORK(KRAy),WORK(KRAz),
      &                   WORK(KWRK1),LWRK1,ISYMOP)
-      END IF
+         END IF
 C
 C------------------------------
 C        Read N(s) in AO basis:
 C------------------------------
 C
-      CALL CC_QM3NSINT(WORK(KNSAO),AODEN,CCNS,
+         CALL CC_QM3NSINT(WORK(KNSAO),AODEN,CCNS,
      &                 WORK(KWRK1),LWRK1,ISYMOP)
 C
 C-------------------------------------
@@ -486,126 +511,587 @@ C     Add up the energy contributions:
 C     1) Epol:
 C-------------------------------------
 C 
-      EQM3T = ZERO
+         ECCMM = ZERO
 C
-      IF (.NOT. LOSPC) THEN
-        CALL CC_GET31('OBARFILE',NCOMS,
-     *                 WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz)) 
+         IF (.NOT. LOSPC) THEN
+            CALL CC_GET31('OBARFILE',NCOMS,
+     *                     WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz)) 
 C
-        IF (IQM3PR .GT. 10) THEN
-          DO 777 I=1,NCOMS
-            WRITE(LUPRI,*)'WORK(KOMMSx) =',WORK(KOMMSx + I - 1)
-            WRITE(LUPRI,*)'WORK(KOMMSy) =',WORK(KOMMSy + I - 1)
-            WRITE(LUPRI,*)'WORK(KOMMSz) =',WORK(KOMMSz + I - 1)
-  777     CONTINUE
-        END IF
+            KS = 0
+
+            DO 110 I = 1, ISYTP
+               IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+                  DO 120 J = NSYSBG(I), NSYSED(I)
+                     DO 121 K = 1, NUALIS(I)
+                        KS = KS+1
+                        RAT = ZERO
+                        RAT =  0.5D0 * ALPIMM(I,K)*WORK(KRAx+KS-1) *
+     &                  (WORK(KRAx + KS -1) + WORK(KOMMSx + KS - 1))
+     &                  + 0.5D0 * ALPIMM(I,K) * WORK(KRAy + KS -1) *
+     &                  (WORK(KRAy + KS -1) + WORK(KOMMSy + KS - 1))
+     &                  + 0.5D0 * ALPIMM(I,K) * WORK(KRAz + KS -1) *
+     &                  (WORK(KRAz + KS -1) + WORK(KOMMSz + KS - 1))
+                        ECCMM = ECCMM - RAT
+  121                CONTINUE 
+  120             CONTINUE
+               END IF
+  110       CONTINUE
 C
-        KS = 0
+            TEMP1 = ECCMM
+            CALL QM3_OTILDE(OTILDE,FFJ)
+         ELSE
+            OTILDE = 0.0D0
+            TEMP1 = 0.0D0
+         END IF
 C
-        DO 110 I = 1, ISYTP
-          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
-            DO 120 J = NSYSBG(I), NSYSED(I)
-              DO 121 K = 1, NUALIS(I)
-                KS = KS+1
-                RAT = ZERO
-                RAT =  0.5D0 * ALPIMM(I,K) * WORK(KRAx + KS -1) *
-     &                (WORK(KRAx + KS -1) + WORK(KOMMSx + KS - 1))
-     &              + 0.5D0 * ALPIMM(I,K) * WORK(KRAy + KS -1) *
-     &                (WORK(KRAy + KS -1) + WORK(KOMMSy + KS - 1))
-     &              + 0.5D0 * ALPIMM(I,K) * WORK(KRAz + KS -1) *
-     &                (WORK(KRAz + KS -1) + WORK(KOMMSz + KS - 1))
-                EQM3T = EQM3T - RAT
-  121         CONTINUE 
-  120       CONTINUE
-          END IF
-  110   CONTINUE
-C
-        TEMP1 = EQM3T
-        CALL QM3_OTILDE(OTILDE,FFJ)
-      ELSE
-        OTILDE = 0.0D0
-        TEMP1 = 0.0D0
-      END IF
-C
-      EQM3T = EQM3T + OTILDE
-      EPOL = EQM3T
+         ECCMM = ECCMM + OTILDE
+         EPOL = ECCMM
 C
 C--------
 C 2) Eel:
 C--------
 C
-      ETEMP = 0.0D0
-      L = 0
+         ETEMP = 0.0D0
+         L = 0
 C
-      DO 130 I = 1, ISYTP
-        IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
-          DO 140 J = NSYSBG(I), NSYSED(I) 
-            DO 150 K = 1, NSISY(I)
-              L = L + 1
-              ETEMP = ETEMP - CCNS(L) 
-  150       CONTINUE  
-  140     CONTINUE
-        END IF
-  130 CONTINUE
+         DO 130 I = 1, ISYTP
+            IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+               DO 140 J = NSYSBG(I), NSYSED(I) 
+                  DO 150 K = 1, NSISY(I)
+                     L = L + 1
+                     ETEMP = ETEMP - CCNS(L) 
+  150             CONTINUE  
+  140          CONTINUE
+            END IF
+  130    CONTINUE
 C
-      EELEL = ETEMP
+         EELEL = ETEMP
+
+         ECCMM = ECCMM + ENUQM3 + EELEL
 C
-      EQM3T = EQM3T + ENUQM3 + EELEL
-C
-      EEL = ENUQM3 + EELEL
+         EEL = ENUQM3 + EELEL
 C
 C-------------
-C 3) E(QM/MM):
+C 3) E(VDW):
 C-------------
 C
-      EQM3T = EQM3T + ECLVDW
+         ECCMM = ECCMM + ECLVDW
 C
 C-----------------------------------------------
 C 4) E_repulsion
 C
-      CALL CCMM_REP2(EREP,AODEN,WORK(KWRK1),LWRK1)
-      EQM3T = EQM3T + EREP
+         CALL CCMM_REP2(EREP,AODEN,WORK(KWRK1),LWRK1)
+         ECCMM = ECCMM + EREP
 C
 C-----------------------------------------------
 C   Testing the energy contributions one by one:
 C-----------------------------------------------
 C
-      IF (IQM3PR .GT. 5) THEN
-        WRITE(LUPRI,'(//,A)')
-        WRITE(LUPRI,'(/A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(1X,A)')
-     *       '|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
-     *      //'The different energy contributions outlined'
-     *      //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|'
-        WRITE(LUPRI,'(A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(1X,A)')
-     *       '| Evdw                | E-nuclear           |'
-     *      //' -Sum_s <N_s>        |'
-     *      //'| -alpha*Sum_a[<Rra> | O-tilde             |'
-        WRITE(LUPRI,'(1X,A)')
-     *       '| contribution        | contribution        |'
-     *      //'                     |'
-     *      //'*{<Rra>+OmmS}]       | contribution        |'
-        WRITE(LUPRI,'(A)')
-     *       ' +-------------------------------------'
-     *      //'--------------------------------------'
-     *      //'----------------------------------+'
-        WRITE(LUPRI,'(1X,A,F20.16,A,F20.16,A,F20.16,A,
-     &                F20.16,A,F20.16,A)')
-     *       '|',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
-     *      OTILDE,' |'
-        WRITE(LUPRI,'(A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(//,A)')
+         IF (IQM3PR .GT. 5) THEN
+            WRITE(LUPRI,'(//,A)')
+            WRITE(LUPRI,'(/A)')
+     *     ' +====================================='
+     *     //'======================================'
+     *     //'==================================+'
+            WRITE(LUPRI,'(1X,A)')
+     *    '|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
+     *     //'The different energy contributions outlined'
+     *     //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|'
+            WRITE(LUPRI,'(A)')
+     *    ' +====================================='
+     *     //'======================================'
+     *     //'==================================+'
+            WRITE(LUPRI,'(1X,A)')
+     *    '| Evdw                | E-nuclear           |'
+     *     //' -Sum_s <N_s>        |'
+     *     //'| -alpha*Sum_a[<Rra> | O-tilde             |'
+            WRITE(LUPRI,'(1X,A)')
+     *    '| contribution        | contribution        |'
+     *     //'                     |'
+     *     //'*{<Rra>+OmmS}]       | contribution        |'
+            WRITE(LUPRI,'(A)')
+     *    ' +-------------------------------------'
+     *     //'--------------------------------------'
+     *     //'----------------------------------+'
+            WRITE(LUPRI,'(1X,A,F20.16,A,F20.16,A,F20.16,A,
+     &             F20.16,A,F20.16,A)')
+     *    '|',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
+     *   OTILDE,' |'
+            WRITE(LUPRI,'(A)')
+     *    ' +====================================='
+     *     //'======================================'
+     *     //'==================================+'
+            WRITE(LUPRI,'(//,A)')
+         END IF
+      
+      ELSE IF (NYQMMM) THEN
+
+         KRAAO  = 1
+         KQMELF = KRAAO +3*NNBASX
+         KELF = KQMELF + NDIM
+         KRAAOx = KELF + NDIM
+         KRAAOy = KRAAOx + N2BST(ISYMOP)
+         KRAAOz = KRAAOy + N2BST(ISYMOP)
+         KINDIP = KRAAOz + N2BST(ISYMOP)
+         KRELAY = KINDIP + NDIM
+         KMULTI = KRELAY + NDIM*NDIM
+         KNSAO = KMULTI + NNBASX
+         KINT = KNSAO + NNBASX
+         KWRK1 = KINT + N2BST(ISYMOP)
+         LWRK1 = LWORK - KWRK1
+C
+         CALL DZERO(WORK(KRAAO),3*NNBASX)
+         CALL DZERO(WORK(KQMELF),NDIM)
+         CALL DZERO(WORK(KELF),NDIM)
+         CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMOP))
+         CALL DZERO(WORK(KINDIP),NDIM)
+         CALL DZERO(WORK(KRELAY),NDIM*NDIM)
+C
+C
+         IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3E')
+C 
+C sne implement for finite field? 
+C     First we see if any static fields are to be added
+C
+C        FFJ(1) = 0.0D0
+C        FFJ(2) = 0.0D0
+C        FFJ(3) = 0.0D0
+C
+C sne 
+C      IF (RELMOM) THEN
+C        DO 330 IF =1, NFIELD
+C          IF (LFIELD(IF) .EQ. 'XDIPLEN') FFJ(1) = FFJ(1) + EFIELD(IF)
+C          IF (LFIELD(IF) .EQ. 'YDIPLEN') FFJ(2) = FFJ(2) + EFIELD(IF)
+C          IF (LFIELD(IF) .EQ. 'ZDIPLEN') FFJ(3) = FFJ(3) + EFIELD(IF)
+C  330   CONTINUE
+C      END IF
+C
+C First we find the field due to the distributed multipoles
+         IF (IPOLTP .GT. 0) THEN
+            LRI = 0 ! Row-index in large matrix
+
+            DO 100 I = 1,MMCENT
+
+               IF(ZEROAL(I).EQ. -1) THEN
+                  GOTO 100
+               END IF
+ 
+               LCI = 0 ! Column index in the large matrix
+
+               DO 200 J=1,MMCENT
+
+                  IF (J .NE. I) THEN     
+                     DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
+     &                      (MMCORD(2,I)-MMCORD(2,J))**2 +
+     &                      (MMCORD(3,I)-MMCORD(3,J))**2
+                     DIST = SQRT(DIST2)
+
+                     IF(DIST .GT. RCUTMM) THEN
+                        LCI = LCI +3
+                        IF (LOCDEB) THEN
+                           WRITE(LUPRI,*) 'Skipping element 
+     &                                     in T2 CC', I,J
+                        ENDIF
+                        GOTO 200
+                     ENDIF
+               
+                     EXCENT=.FALSE.
+               
+                     DO 250 L=1,NEXLST
+                        IF(EXLIST(L,I).EQ.EXLIST(1,J)) EXCENT=.TRUE.
+ 250                 CONTINUE
+
+C Form F vector due to the permament moments
+
+C              A) The point-charge contribution
+                     IF (.NOT. (EXCENT) ) THEN
+                        IF((ABS(MUL0MM(J)) .GT. THRMM) 
+     &                             .AND. (NMULT.GE.0) ) THEN
+        
+                           ELFLDX = 0.0D0 
+                           ELFLDY = 0.0D0
+                           ELFLDZ = 0.0D0 
+
+                           CALL GET_CHARGE_ELFLD(MUL0MM(J),
+     *                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     *                          ELFLDX,ELFLDY,ELFLDZ)
+                           WORK(KELF+LRI+0) = WORK(KELF+LRI+0)+ELFLDX
+                           WORK(KELF+LRI+1) = WORK(KELF+LRI+1)+ELFLDY
+                           WORK(KELF+LRI+2) = WORK(KELF+LRI+2)+ELFLDZ
+
+                        ENDIF
+            
+C              B) The dipole contribution
+                        IF (NMULT .GE. 1) THEN
+                           ELFLDX = 0.0D0
+                           ELFLDY = 0.0D0
+                           ELFLDZ = 0.0D0
+                           CALL GET_DIPOLE_ELFLD(MUL1MM(1,J),
+     *                              MUL1MM(2,J),MUL1MM(3,J),
+     *                              MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                              MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     *                              ELFLDX,ELFLDY,ELFLDZ)
+                           WORK(KELF+LRI+0) = WORK(KELF+LRI+0)+ELFLDX
+                           WORK(KELF+LRI+1) = WORK(KELF+LRI+1)+ELFLDY
+                           WORK(KELF+LRI+2) = WORK(KELF+LRI+2)+ELFLDZ
+                        ENDIF
+
+C              C) The quadrupole contribution
+                        IF (NMULT .GE. 2) THEN
+                           ELFLDX = 0.0D0
+                           ELFLDY = 0.0D0
+                           ELFLDZ = 0.0D0
+                           CALL GET_QUADRUPOLE_ELFLD(
+     *                             MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                             MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                             MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                             MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     *                             ELFLDX,ELFLDY,ELFLDZ)
+                           WORK(KELF+LRI+0) = WORK(KELF+LRI+0)+ELFLDX
+                           WORK(KELF+LRI+1) = WORK(KELF+LRI+1)+ELFLDY
+                           WORK(KELF+LRI+2) = WORK(KELF+LRI+2)+ELFLDZ
+                        ENDIF 
+            
+C              D) The octopole contribution
+                        IF (NMULT .GE. 3) THEN
+                           ELFLDX = 0.0D0
+                           ELFLDY = 0.0D0
+                           ELFLDZ = 0.0D0
+                           CALL GET_OCTUPOLE_ELFLD(
+     *                          MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                          MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                          MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                          MUL3MM(10,J),
+     *                          MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                          MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     *                          ELFLDX,ELFLDY,ELFLDZ)
+                           WORK(KELF+LRI+0) = WORK(KELF+LRI+0)+ELFLDX
+                           WORK(KELF+LRI+1) = WORK(KELF+LRI+1)+ELFLDY
+                           WORK(KELF+LRI+2) = WORK(KELF+LRI+2)+ELFLDZ
+                        ENDIF
+                     ENDIF
+     
+                     IF (ZEROAL(J) .EQ. -1) GOTO 200
+
+                     LCI = LCI + 3
+                  END IF
+ 200           CONTINUE
+
+C Then we calculate the field due to the QM electrons
+               KPATOM = 0
+               NOSIM  = 3
+               TOFILE = .FALSE.
+               TRIMAT = .TRUE.
+               EXP1VL = .FALSE. 
+      
+               DIPORG(1) = MMCORD(1,I)
+               DIPORG(2) = MMCORD(2,I)
+               DIPORG(3) = MMCORD(3,I) 
+
+               DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
+     *               (MMCORD(2,I)-QMCOM(2))**2 + 
+     *               (MMCORD(3,I)-QMCOM(3))**2
+               DIST = SQRT(DIST2)
+               IF (DIST .GT. RCUTMM) THEN
+                  LRI = LRI + 3
+                  IF (LOCDEB) THEN
+                     WRITE(LUPRI,*) 'Skipping site in F vector ', I
+                  ENDIF
+                  GOTO 100
+               ENDIF
+
+               CALL DZERO(WORK(KRAAO),3*NNBASX)
+               RUNQM3 = .TRUE.
+               CALL GET1IN(WORK(KRAAO),'NEFIELD',NOSIM,WORK(KWRK1),
+     *                  LWRK1,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,
+     *                  TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+               RUNQM3 = .FALSE.
+
+               IF ( (IPQMMM.GT.15) .OR. (LOCDEB) ) THEN
+                  WRITE(LUPRI,'(/A)') 'Packed E_x matrix in CC_QM3E:'
+                  CALL OUTPAK(WORK(KRAAO),NBAST,1,LUPRI)
+
+                  WRITE(LUPRI,'(/A)') 'Packed E_y matrix in CC_QM3E:'
+                  CALL OUTPAK(WORK(KRAAO+NNBASX),NBAST,1,LUPRI)
+
+                  WRITE(LUPRI,'(/A)') 'Packed  E_z matrix in CC_QM3E:'
+                  CALL OUTPAK(WORK(KRAAO+2*NNBASX),NBAST,1,LUPRI)
+               ENDIF
+
+C Unpack the integrals
+               CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMOP))
+               LABEL = 'GIVE INT'
+               CALL CCMMINT(LABEL,LUQMMM,WORK(KRAAOx),WORK(KRAAO),
+     *                     IRREP,ISYM,IERR,WORK(KWRK1),LWRK1)
+               CALL CCMMINT(LABEL,LUQMMM,WORK(KRAAOy),
+     *                      WORK(KRAAO+NNBASX),IRREP,ISYM,IERR,
+     *                      WORK(KWRK1),LWRK1)
+               CALL CCMMINT(LABEL,LUQMMM,WORK(KRAAOz),
+     *                      WORK(KRAAO+2*NNBASX),IRREP,ISYM,IERR,
+     *                      WORK(KWRK1),LWRK1)
+C Dot with the AO density
+
+               EXELCO = DDOT(N2BST(ISYMOP),AODEN,1,WORK(KRAAOx),1)
+               EYELCO = DDOT(N2BST(ISYMOP),AODEN,1,WORK(KRAAOy),1)
+               EZELCO = DDOT(N2BST(ISYMOP),AODEN,1,WORK(KRAAOz),1)
+
+               IF (LOCDEB) THEN
+                  WRITE(LUPRI,*) 'QM,el field: CC',EXELCO,EYELCO,EZELCO
+               END IF
+ 
+               WORK(KQMELF+LRI+0) = WORK(KQMELF+LRI+0)+EXELCO
+               WORK(KQMELF+LRI+1) = WORK(KQMELF+LRI+1)+EYELCO
+               WORK(KQMELF+LRI+2) = WORK(KQMELF+LRI+2)+EZELCO
+C Add to the electric field from the multipoles 
+               WORK(KELF+LRI+0) = WORK(KELF+LRI+0) + WORK(KQMELF+LRI+0)
+               WORK(KELF+LRI+1) = WORK(KELF+LRI+1) + WORK(KQMELF+LRI+1)
+               WORK(KELF+LRI+2) = WORK(KELF+LRI+2) + WORK(KQMELF+LRI+2)
+
+C Now the field from the QM nuclei
+
+               TJKX = 0.0D0
+               TJKY = 0.0D0
+               TJKZ = 0.0D0
+
+               DO 145 J=1,NUCIND ! Dalton keyword for nr of QM nuclei
+                  CALL GET_CHARGE_ELFLD(CHARGE(J),
+     *                   CORD(1,J),CORD(2,J),CORD(3,J),
+     *                   MMCORD(1,I),MMCORD(2,I),MMCORD(3,I),
+     *                   ELFLDX,ELFLDY,ELFLDZ)
+
+                  WORK(KELF+LRI+0)=WORK(KELF+LRI+0)+ELFLDX
+                  WORK(KELF+LRI+1)=WORK(KELF+LRI+1)+ELFLDY
+                  WORK(KELF+LRI+2)=WORK(KELF+LRI+2)+ELFLDZ
+            
+                  TJKX = TJKX + ELFLDX
+                  TJKY = TJKY + ELFLDY
+                  TJKZ = TJKZ + ELFLDZ
+ 145           CONTINUE
+
+               IF (LOCDEB) THEN
+                  WRITE(LUPRI,*) 'Nuclear field: CC ', TJKX,TJKY,TJKZ
+               ENDIF
+               LRI = LRI + 3
+
+ 100        CONTINUE
+
+C     Read the relay matric from file and construct the induced moments
+
+
+            LUQMMM = -1
+            IF(LUQMMM .LT. 0) THEN
+               CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+     &                       'UNFORMATTED',IDUMMY,.FALSE.)
+            ENDIF
+            REWIND(LUQMMM)
+      
+            IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+               WRITE(LUPRI,*) 'reading relay of length: ', NDIM*NDIM
+               CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
+            ELSE
+               CALL QUIT('Problem reading the relay 
+     &                    matrix from QMMMIM file')
+            ENDIF
+
+            CALL GPCLOSE(LUQMMM,'KEEP')
+
+            IF (IPQMMM .GE. 5) THEN
+               WRITE(LUPRI,*) 'The relay matrix is read from file'
+               CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            ENDIF
+
+            IF (IPRINT .GT. 1) THEN
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,1051)
+               WRITE(LUPRI,1050)
+               WRITE(LUPRI,1051)
+               WRITE(LUPRI,*)
+            ENDIF
+
+            IF(LOCDEB) THEN
+               WRITE(LUPRI,*) 'F vector: '
+                DO I=1,NDIM
+                   WRITE(LUPRI,*) WORK(KELF+I-1)
+                END DO
+            ENDIF
+
+C calculate the corresponding induced moments
+            NTOTI = MAX(NDIM,1)
+            CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
+     *                 WORK(KELF),1,ZERO,WORK(KINDIP),1)
+ 
+            IF (IPQMMM .GT. 1) THEN
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,1030)
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,1000)
+               WRITE(LUPRI,1010)
+               WRITE(LUPRI,1000)
+            ENDIF
+
+            IINIM = 0
+
+            DO I=1,MMCENT
+               IF (ZEROAL(I) .EQ. -1) THEN
+                  DIPX = 0.0D0
+                  DIPY = 0.0D0
+                  DIPZ = 0.0D0
+               ELSE
+                  DIPX = WORK(KINDIP + IINIM )
+                  DIPY = WORK(KINDIP + IINIM +1)
+                  DIPZ = WORK(KINDIP + IINIM +2)
+                  IINIM = IINIM +3
+               ENDIF
+               IF (IPQMMM .GT. 1) THEN
+                  WRITE(LUPRI,1020) I, DIPX, DIPY, DIPZ
+               END IF
+            END DO
+
+            IF(IPRINT .GT. 1) THEN
+               WRITE(LUPRI,1000)
+               WRITE(LUPRI,*)
+            ENDIF
+
+C Finally write the updated induced moments to file 
+            CALL PUT_TO_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
+
+         END IF
+C Finally construct the effective Tg operator and subsequently calculate
+C the polarization energy 
+C-------------------------------------
+C     Add up the energy contributions:
+C     1) Epol:
+C-------------------------------------
+         ECCMM = ZERO
+         EPOL = ZERO
+         ETEMP = ZERO
+
+C calculate the polarization energy as -1/2 sum_a mu_a^ind*F^sta
+         ETEMP = DDOT(NDIM,WORK(KINDIP),1,WORK(KELF),1)
+      
+C Remember the factor of -1/2
+         EPOL = -HALF*ETEMP
+
+C Now add the electrostatic energy contribution
+C we do this by getting the multipole integrals from file
+C and taking the expectation value. The integrals are at our disposal
+C from the preceeding HF/MM calculation handled by sirius
+
+
+C--------
+C 2) Eel:
+C--------
+C
+C the charge correction
+         LABEL = 'GIVE INT'
+         CALL DZERO(WORK(KNSAO),NNBASX)
+         CALL DZERO(WORK(KMULTI),NNBASX)
+         IF (NMULT .GE. 0) THEN
+
+            LUQMMM = -1
+            CALL GPOPEN(LUQMMM,'MU0INT','OLD',' ',
+     &           'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND(LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KMULTI))
+
+C sne: Minus carried in the integrals cf sirqm3
+            CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,WORK(KNSAO),1)
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+     
+
+C the dipole correction
+
+         IF (NMULT .GE. 1) THEN
+            CALL DZERO(WORK(KMULTI),NNBASX)
+            CALL GPOPEN(LUQMMM,'MU1INT','OLD',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND(LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KMULTI))
+
+C sne: Minus correct in daxpy cf sirqm3
+            CALL DAXPY(NNBASX,-ONE,WORK(KMULTI),1,WORK(KNSAO),1)
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+
+C the quadrupole correction
+
+         IF (NMULT .GE. 2) THEN
+            CALL DZERO(WORK(KMULTI),NNBASX)
+            CALL GPOPEN(LUQMMM,'MU2INT','OLD',' ',
+     &                  'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND(LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KMULTI))
+
+C sne: Minus carried in the integrals cf sirqm3
+            CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,WORK(KNSAO),1)
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+      
+C the octopole correction
+         IF (NMULT .GE. 3) THEN
+            CALL DZERO(WORK(KMULTI),NNBASX)
+            CALL GPOPEN(LUQMMM,'MU3INT','OLD',' ',
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND(LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KMULTI))
+
+C sne: Minus carried in the integrals cf sirqm3
+            CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,WORK(KNSAO),1)
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+
+C Unpack the multipole integrals and dot with the density to
+C obtain the expectation value
+
+         LABEL = 'GIVE INT'
+         CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
+     *               IRREP,ISYM,IERR,WORK(KWRK1),LWRK1)
+ 
+         EEL = DDOT(N2BST(ISYMOP),WORK(KINT),1,AODEN,1)
+
+C Finally we add the energy between QM nuclei and MM multipoles. This 
+C was found in the previous SCF/MM calculation and is readily available 
+C in the COMMON block. 
+         EEL = EEL + ENUMUL
+
+         ECCMM = EPOL + EEL
+         IF (LOCDEB .OR. IPQMMM .GT. 4) THEN
+            WRITE(LUPRI,*) 'EEL: ', EEL
+            WRITE(LUPRI,*) 'EPOL: ', EPOL
+            WRITE(LUPRI,*) 'ECCMM: ', ECCMM
+            WRITE(LUPRI,*) 'The nuclear contribution: ', ENUMUL
+         END IF
+C
+C
+C-------------
+C 3) Edisp
+C-------------
+C
+C sne - New qmmm not implemented for dispersion yet
+C      ECCMM = ECCMM + ECLVDW
+C
+C-----------------------------------------------
+C sne New qmmm not implemented for explicit repulsion yet
+C 4) E_repulsion
+C
+C      CALL CCMM_REP2(EREP,AODEN,WORK(KWRK1),LWRK1)
+C      ECCMM = ECCMM + EREP
+C
+C-----------------------------------------------
+C   Writing out the final energy contributions one by one:
+C-----------------------------------------------
+C
+ 1050 FORMAT('  Induced dipole moments   ')
+ 1051 FORMAT(2X,'=',22('-'),'=',2X)
+ 1000 FORMAT(1X,51('='))
+ 1020 FORMAT(1X,I6,3(4X,F10.6))
+ 1010 FORMAT(' | Site |     X     |     Y     |     Z     |')
+ 1030 FORMAT(' Total induced dipole moments: ')
+
       END IF
+      CALL QEXIT('CC_QM3E')
 C
       END
 C
@@ -4009,4 +4495,1120 @@ C
 C
       END
 C***********************************************************************
+C  /* Deck ccmm_tgt */
+      SUBROUTINE CCMM_TGT(FOCK,WORK,LWORK)
+C**************************************************************
+C
+C     Purpose: Update t parameters
+C     In the new QMMM implementation it replaces CCMM_RHSTG
+C
+C     sneskov oct 09
+C**************************************************************
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <ccsdinp.h>
+#include <ccfield.h>
+#include <exeinf.h>
+#include <ccfdgeo.h>
+#include <qm3.h>
+#include <ccinftap.h>
+#include <nuclei.h>
+#include <orgcom.h>
+C
+      PARAMETER (ZERO = 0.0D0, MONE=-1.0D0 ,ONE = 1.0D0,
+     &             IZERO = 0 , TWO = 2.0D0)
+      DIMENSION WORK(LWORK),FOCK(*)
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB
+C
+      CHARACTER*8 LABEL
+C
+C
+C-------------------------
+C       Init parameters
+C-------------------------
+      NDIM=3*NNZAL
+C--------------------------
+C       Dynamical allocation
+C--------------------------
+C
+      KTAO  =  1 
+      KRAAO = KTAO   + NNBASX
+      KINDIP = KRAAO + 3*NNBASX
+      KNSAO = KINDIP + NDIM
+      KINT = KNSAO + NNBASX
+      KWRK1 = KINT + N2BST(ISYMOP)
+      LWRK1   = LWORK   - KWRK1
 
+      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CCMM_TGT' )
+        
+      CALL DZERO(WORK(KTAO),NNBASX)
+      CALL DZERO(WORK(KRAAO),3*NNBASX)
+      CALL DZERO(WORK(KINDIP),NDIM)
+      CALL DZERO(WORK(KNSAO),NNBASX)
+      CALL DZERO(WORK(KINT),N2BST(ISYMOP))
+C
+C Backup dipole origin
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+C
+C     First we construct the polarization contribution to Tg.
+C
+C     The first time we enter this routine we read the converged 
+C     induced dipoles from the preceeding HF/MM calculation.
+C     In later iterations we read the induced dipoles written in 
+C     CC_QM3E
+      
+     
+      IF (IPOLTP .GT. 0) THEN 
+         WRITE(LUPRI,*) 'Reading the induced dipoles from file.'
+      
+         CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
+C
+C-------------------
+C     Print section:
+C-------------------
+C
+      
+         IF (IPQMMM .GT. 10) THEN
+            WRITE(LUPRI,'(//,A)')
+     *        ' +============================================'
+     *       //'==============+'
+           WRITE(LUPRI,'(A)')
+     *        ' | MMcent | <mu^ind>_x  | <mu^ind>_y      |'
+     *       //' <mu^ind>_z      |'
+           WRITE(LUPRI,'(1X,A)')
+     *        '+============================================'
+     *       //'==============+'
+C
+           LRI = 0
+C
+           DO 100 I = 1, MMCENT
+
+              IF (ZEROAL(I) .EQ. -1) GOTO 100
+C
+C
+              WRITE(LUPRI,'(1X,A,I3,A,F16.10,A,
+     &                         F16.10,A,F16.10,A)')
+     *           '| ', I,'|', WORK(KINDIP + LRI+0 ),' |',
+     *              WORK(KINDIP + LRI+1 ),' |', 
+     *              WORK(KINDIP + LRI+2 ),' |'
+                    WRITE(LUPRI,'(1X,A)')
+     *           '+---------------------------------------------'
+     *           //'-------------+'
+              LRI = LRI + 3
+ 100       CONTINUE 
+           WRITE(LUPRI,'(//,A)')
+         END IF
+C
+C
+C---------------------------------------
+C Calculate Rr(s) in ao basis and add to tao:
+C Note we are doing everything integral-direct to avoid
+C a possible storage-problem when working with large systems.
+C---------------------------------------
+C
+C
+         LRI = 0
+C
+         DO 200 I = 1, MMCENT
+
+            IF (ZEROAL(I) .EQ. -1) GOTO 200
+
+            DIPORG(1) = MMCORD(1,I)
+            DIPORG(2) = MMCORD(2,I)
+            DIPORG(3) = MMCORD(3,I)
+ 
+            DIST2 = (MMCORD(1,I)-QMCOM(1))**2 + 
+     &            (MMCORD(2,I)-QMCOM(2))**2 + 
+     &            (MMCORD(3,I)-QMCOM(3))**2  
+            DIST = SQRT(DIST2)
+
+            IF (DIST .GT. RCUTMM) THEN
+               LRI = LRI+3
+               IF (LOCDEB) THEN
+                  WRITE(LUPRI,*) 'Skipping site in mu^ind vector 
+     &                        in CCMM_TGT', I
+               ENDIF
+               GOTO 200
+            ENDIF
+      
+            KPATOM = 0
+            NOCOMP = 3
+            TOFILE = .FALSE.
+            TRIMAT = .TRUE.
+            EXP1VL = .FALSE.   
+
+            RUNQM3 = .TRUE.
+            CALL DZERO(WORK(KRAAO),3*NNBASX)
+            CALL GET1IN(WORK(KRAAO),'NEFIELD',NOCOMP,WORK(KWRK1),
+     *              LWRK1,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,
+     *              TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+            RUNQM3 = .FALSE.
+
+            FACx =  - (WORK(KINDIP + LRI +0 ))  
+            FACy =  - (WORK(KINDIP + LRI +1 ))  
+            FACz =  - (WORK(KINDIP + LRI +2 ))  
+C
+            CALL DAXPY(NNBASX,FACx,WORK(KRAAO),
+     *                      1,WORK(KTAO),1)
+C
+            CALL DAXPY(NNBASX,FACy,WORK(KRAAO+NNBASX),
+     *                        1,WORK(KTAO),1)
+C 
+            CALL DAXPY(NNBASX,FACz,WORK(KRAAO+2*NNBASX),
+     *                     1,WORK(KTAO),1)
+
+            LRI = LRI + 3
+ 200     CONTINUE
+C
+         IF (IPQMMM.GT.14) THEN
+            WRITE (LUPRI,*) ' NORM of TAO matrix after pol. contr.: ',
+     *      DDOT(NNBASX,WORK(KTAO),1,WORK(KTAO),1)
+            WRITE (LUPRI,'(/A)') ' TAO matrix: '
+            CALL OUTPAK(WORK(KTAO),NBAST,1,LUPRI)
+         ENDIF
+      END IF
+C
+C--------------------------------------
+C     Now the electrostatic contribution to Tg. 
+C     We get the multipole integrals from the HF/MM
+C     calculation available from file.
+C--------------------------------------
+C
+C We do all the corrections simultaneosly. We will analyze
+C the HF/MM results if we want to consider each multipole contribution
+C separately.
+
+C 1) The charge contribution
+C
+C
+      IF (NMULT .GE. 0) THEN
+C
+         LUQMMM = -1
+         CALL GPOPEN(LUQMMM,'MU0INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND (LUQMMM)
+         CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         CALL OUTPAK(WORK(KNSAO),NBAST,1,LUPRI)
+
+C sne the minus is in the integrals so add to t
+         CALL DAXPY(NNBASX,ONE,WORK(KNSAO),
+     *                   1,WORK(KTAO),1)
+
+      END IF
+C 2) The dipole contribution
+      IF (NMULT .GE. 1) THEN
+         CALL DZERO(WORK(KNSAO),NNBASX)
+         CALL GPOPEN(LUQMMM,'MU1INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND (LUQMMM)
+         CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+
+C sne: Keep minus in daxpy cf sirm3
+         CALL DAXPY(NNBASX,-ONE,WORK(KNSAO),
+     *                   1,WORK(KTAO),1)
+
+         CALL GPCLOSE(LUQMMM,'KEEP')
+      END IF
+C 3) The quadrupole contribution
+      IF (NMULT .GE. 2) THEN
+         CALL DZERO(WORK(KNSAO),NNBASX)
+         CALL GPOPEN(LUQMMM,'MU2INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND (LUQMMM)
+         CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+
+C Sne: the minus is carried in the integrals 
+         CALL DAXPY(NNBASX,ONE,WORK(KNSAO),
+     *                   1,WORK(KTAO),1)
+
+         CALL GPCLOSE(LUQMMM,'KEEP')
+      END IF
+C 4) The octopole contribution
+      IF (NMULT .GE. 3) THEN
+         CALL DZERO(WORK(KNSAO),NNBASX)
+         CALL GPOPEN(LUQMMM,'MU3INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND (LUQMMM)
+         CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+
+C sne: the minus is carried in the integrals
+         CALL DAXPY(NNBASX,ONE,WORK(KNSAO),
+     *                   1,WORK(KTAO),1)
+
+         CALL GPCLOSE(LUQMMM,'KEEP')
+      END IF
+C
+C--------------------------------------------------
+C     Add total contribution to effective AO fock matrix:
+C--------------------------------------------------
+C
+      IF (IPQMMM .GT. 14) THEN
+        WRITE(LUPRI,*) 'NORM of TAO matrix after electrostatic cont: ',
+     *  DDOT(NNBASX,WORK(KTAO),1,WORK(KTAO),1)
+        WRITE (LUPRI,*) ' TAO matrix: '
+        CALL OUTPAK(WORK(KTAO),NBAST,1,LUPRI)
+      ENDIF
+C
+C
+C--------------------------
+C     Dynamical allocation:
+C--------------------------
+
+
+      LABEL= 'GIVE INT'
+      WRITE(LUPRI,*) 'Print IRREP, ISYM, IERR', IRREP, ISYM, IERR
+      CALL CCMMINT(LABEL,-1,WORK(KINT),WORK(KTAO),
+     &             IRREP,ISYM,IERR,WORK(KWRK1),LWRK1)
+C
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'CCMM cont. to AO matrix' )
+         CALL OUTPUT(WORK(KINT),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+C
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'Usual Fock AO matrix' )
+         CALL CC_PRFCKAO(FOCK,ISYMOP)
+      ENDIF
+C
+      CALL DAXPY(N2BST(ISYMOP),ONE,WORK(KINT),1,FOCK,1)
+C
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'Modified Fock AO matrix when leaving TGT')
+         CALL CC_PRFCKAO(FOCK,ISYMOP)
+      ENDIF
+C
+C Restore dipole origin
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      END
+C
+C***********************************************************************
+C
+C  /* Deck ccmm_tgtbar */
+      SUBROUTINE CCMM_TGTBAR(RHO1,RHO2,CTR1,CTR2,MODEL,
+     *                          ISYMTR,LR,WORK,LWORK)
+C
+C-----------------------------------------------------------------------------
+C
+C   Construct effective operators from contracted densities
+C   Find the polarization part of Tg by applying the relay matrix
+C
+C   IF (LR.EQ.'R').OR.(LR.EQ.'F') then the following effective 
+C   operator is constructed 
+C   T^gC = - Sum_a alpha_a*(tr(Rr_a*D^C)Rr_a)
+C   Note we denote this operator G^C in the general notation
+C
+C   IF (LR.EQ.'L').OR.(LR.EQ.'P') then the following effective operator 
+C   is constructed
+C   ^BT^g = - Sum_a * alpha_a Sum_sigma (tr(Rr_a*D^B)Rr_a)
+C   Note we also denote this operator G^B in the general notation
+C
+C   Finally, if LR.EQ.0 then construct
+C
+C   Kristian Sneskov, oct 09 - alternative to CCMM_LTRB routine chosen
+C-----------------------------------------------------------------------------
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <ccsdinp.h>
+#include <ccfield.h>
+#include <exeinf.h>
+#include <ccfdgeo.h>
+#include <ccslvinf.h>
+#include <qm3.h>
+#include <ccinftap.h>
+#include <nuclei.h>
+#include <orgcom.h>
+
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
+      PARAMETER (HALF = 0.5D0)
+      INTEGER NDIM, NTOTI 
+C
+      DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),CTR2(*)
+      DIMENSION ALPHAMM(MXQM3)
+C
+      CHARACTER MODEL*10 
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB, FNDLAB
+C
+      CHARACTER*8 LABEL,LR*(1), LIST*(2)
+C
+C
+      IF (IPQMMM.GT.10) THEN
+        WRITE(LUPRI,*)'CCMM_TGTBAR : ISYMTR:', ISYMTR,
+     &               ' and LR: ', LR
+      ENDIF
+C
+C
+C---------------------
+C     Init parameters.
+C---------------------
+C
+      NTAMP1  = NT1AM(ISYMTR)
+      NTAMP2  = NT2AM(ISYMTR)
+      NTAMP   = NTAMP1 + NTAMP2
+      NDIM = 3*NNZAL
+C
+      IF (CCS.OR.CC2)  CALL QUIT('CCMM_TGTBAR: Not implemented for CCS
+     &                       or CC2')
+C
+      IF (DISCEX) CALL QUIT('CCMM_TGTBAR: Not implemented for DISCEX')
+C
+C------------------------------------
+C     Dynamical allocation for CCMM :
+C------------------------------------
+C
+      KRAAO  = 1
+      KRAAOx = KRAAO + 3*NNBASX
+      KRAAOy = KRAAOx + N2BST(ISYMTR)
+      KRAAOz = KRAAOy + N2BST(ISYMTR)
+      KWRK1  = KRAAOz + N2BST(ISYMTR)
+      LWRK1  = LWORK   - KWRK1
+C
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Insuff. work in CCMM_TGTBAR, 1')
+      END IF
+CC
+      KDENS = KWRK1
+      KWRK2 = KDENS + N2BST(ISYMTR)
+      LWRK2 = LWORK - KWRK2
+      IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CCMM_TGTBAR, 2')
+C
+      KETA = KWRK2
+      KWRK3 = KETA + NTAMP
+      LWRK3 = LWORK - KWRK3
+      IF (LWRK3 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK3
+         CALL QUIT( 'Too little work in CCMM_TGTBAR, 2')
+      END IF
+
+      KTG = KWRK3 
+      KWRK4 = KTG + N2BST(ISYMTR)
+      LWRK4 = LWORK - KWRK4
+      IF (LWRK4.LT.0) CALL QUIT( 'Too little work in CCMM_TGTBAR, 4')
+
+      KRELAY = KWRK4
+      KEFIEL = KRELAY + NDIM*NDIM
+      KINDIP = KEFIEL + NDIM
+      KNSAO = KINDIP + NDIM
+      KWRK5 = KNSAO + NNBASX
+      LWRK5 = LWORK - KWRK5
+      IF (LWRK5.LT.0) CALL QUIT('Too little work in CCMM_TGTBAR, 5')
+
+C Initialize the working matrices
+      CALL DZERO(WORK(KRAAO),3*NNBASX)
+      CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMTR))
+      CALL DZERO(WORK(KDENS),N2BST(ISYMTR))
+      CALL DZERO(WORK(KETA),NTAMP) 
+      CALL DZERO(WORK(KTG),N2BST(ISYMTR))
+      CALL DZERO(WORK(KRELAY),NDIM*NDIM)
+      CALL DZERO(WORK(KEFIEL),NDIM)
+C
+C
+      IF ( IPQMMM .GT. 10 .OR. DEBUG) THEN
+        RHO1N = DDOT(NT1AM(ISYMTR),RHO1,1,RHO1,1)
+        RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
+        WRITE(LUPRI,*) ' Norm of RHO1 in CCMM_LTGB on input:', RHO1N
+        WRITE(LUPRI,*) ' Norm of RHO2 in CCMM_LTGB on input:', RHO2N
+        RHO1N = DDOT(NT1AM(ISYMTR),CTR1,1,CTR1,1)
+        RHO2N = DDOT(NT2AM(ISYMTR),CTR2,1,CTR2,1)
+        WRITE(LUPRI,*) ' Norm af C1AM in CCMM_LTGB on input:', RHO1N
+        WRITE(LUPRI,*) ' Norm af C2AM in CCMM_LTGB on input:', RHO2N
+      ENDIF
+C Backup dipole origin
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      IF (LR.NE.'0' .AND. IPOLTP .GT. 0) THEN
+C----------------------------
+C     Read the relay matrix from file
+C----------------------------
+
+         LUQMMM = -1
+         CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+     &              'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND(LUQMMM)
+
+         IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+            CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
+         ELSE
+            CALL QUIT('Problem reading the relay matrix from the
+     &                 QMMMIM file')
+         END IF
+   
+         CALL GPCLOSE(LUQMMM,'KEEP')
+
+         IF (IPQMMM .GE. 5) THEN
+            WRITE(LUPRI,*) 'The relay matrix is read from file'
+            CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+         END IF
+
+C----------------------------
+C     Construct auxiliary densities
+C----------------------------
+         CALL CCMM_D1AO(WORK(KDENS),CTR1,CTR2,MODEL,LR,
+     *                 WORK(KWRK5),LWRK5)
+C Calculate corresponding induced dipoles 
+C        IF LR.EQ.0 THEN LOAD DIPOLES INSTEAD
+C
+C
+         LRI=0
+C
+         DO 200 I = 1,MMCENT
+
+            IF(ZEROAL(I) .EQ. -1) GOTO 200
+
+            DIPORG(1) = MMCORD(1,I)
+            DIPORG(2) = MMCORD(2,I)    
+            DIPORG(3) = MMCORD(3,I)
+
+            DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
+     *          (MMCORD(2,I)-QMCOM(2))**2 +
+     *          (MMCORD(3,I)-QMCOM(3))**2
+            DIST = SQRT(DIST2)
+
+            IF (DIST .GT. RCUTMM) THEN
+                LRI = LRI +1
+               IF (LOCDEB) THEN 
+                  WRITE(LUPRI,*) 'Skipping site in mu^ind vector
+     &                              in CCMM_TGTBAR', I
+               ENDIF
+               GOTO 200
+            ENDIF
+            
+            KPATOM = 0
+            NOCOMP = 3
+            TOFILE = .FALSE.
+            TRIMAT = .TRUE.
+            EXP1VL = .FALSE.
+C----------------------------
+C     Calculate Rra directly in AO basis:
+C----------------------------
+            RUNQM3 = .TRUE.
+            CALL GET1IN(WORK(KRAAO),'NEFIELD',NOCOMP,WORK(KWRK5),
+     *              LWRK5,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,
+     *              TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+            RUNQM3 = .FALSE.
+
+            LABEL = 'GIVE INT'
+
+            CALL CCMMINT(LABEL,LUQMMM,WORK(KRAAOx),WORK(KRAAO),
+     &             IRREP, ISYM,IERR,WORK(KWRK5),LWRK5)
+            CALL CCMMINT(LABEL,LUQMMM,WORK(KRAAOy),WORK(KRAAO+NNBASX),
+     &             IRREP, ISYM,IERR,WORK(KWRK5),LWRK5)
+            CALL CCMMINT(LABEL,LUQMMM,WORK(KRAAOz),WORK(KRAAO+2*NNBASX),
+     &             IRREP, ISYM,IERR,WORK(KWRK5),LWRK5)
+C
+C 
+C Do the trace operation of the product matrices
+C
+            PRODx = DDOT(N2BST(ISYMTR),WORK(KRAAOx),1,WORK(KDENS),1)
+            PRODy = DDOT(N2BST(ISYMTR),WORK(KRAAOy),1,WORK(KDENS),1)
+            PRODz = DDOT(N2BST(ISYMTR),WORK(KRAAOz),1,WORK(KDENS),1)
+
+            WORK(KEFIEL + LRI + 0) = PRODx
+            WORK(KEFIEL + LRI + 1) = PRODy
+            WORK(KEFIEL + LRI + 2) = PRODz 
+
+ 200     CONTINUE
+
+
+         IF (IPQMMM .GE. 5) THEN
+            WRITE(LUPRI,*) 'Transformed electric fields'
+            CALL OUTPUT(WORK(KEFIEL),1,NDIM,1,1,NDIM,1,1,LUPRI)
+            WRITE(LUPRI,*)
+         END IF
+
+C Note that we don't add the fields from the QM nuclei and the multipoles
+C since we are only interested in the dipoles from the auxiliary densities.
+
+C Now calculate the corresponding induced dipoles
+         NTOTI = MAX(NDIM,1)
+
+         CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
+     &            WORK(KEFIEL),1,ZERO,WORK(KINDIP),1)
+        
+         IF (IPQMMM .GE. 5) THEN
+            WRITE(LUPRI,*) 'Transformed induced dipole moments'
+            CALL OUTPUT(WORK(KINDIP),1,NDIM,1,1,NDIM,1,1,LUPRI)
+            WRITE(LUPRI,*)
+         END IF
+
+      ELSE IF ( LR .EQ. '0' .AND. IPOLTP .GT. 0) THEN
+         CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
+C-------------------
+C     Print section:
+C-------------------
+C
+         IF (IPQMMM .GT. 10) THEN
+            WRITE(LUPRI,'(//,A)')
+     *        ' +============================================'
+     *      //'==============+'
+            WRITE(LUPRI,'(A)')
+     *        ' | MMcent | <mu^ind>_x         | <mu^ind>_y         |'
+     *      //' <mu^ind>_z         |'
+            WRITE(LUPRI,'(1X,A)')
+     *        '+============================================'
+     *      //'==============+'
+C
+            LRI = 0
+C
+            DO 250 I = 1, MMCENT
+
+               IF (ZEROAL(I) .EQ. -1) GOTO 250
+C
+C
+               WRITE(LUPRI,'(1X,A,I3,A,F16.10,A,
+     &                         F16.10,A,F16.10,A)')
+     *           '| ', I,'|', WORK(KINDIP + LRI ),' |',
+     *           WORK(KINDIP + LRI +1 ),' |', 
+     *           WORK(KINDIP + LRI +2),' |'
+               WRITE(LUPRI,'(1X,A)')
+     *           '+---------------------------------------------'
+     *           //'-------------+'
+               LRI = LRI + 3
+ 250        CONTINUE 
+            WRITE(LUPRI,'(//,A)')
+         END IF
+      END IF
+     
+
+C To complete the contruction of the Tg operator we need to
+C construct the E integrals again - note that  if
+C LR==0 so it is actually the first time here. 
+C Anyway, we deliberately do this integral-direct
+C since we want to avoid a possible storage bottleneck for large systems.
+
+
+      IF ((LR .EQ. '0' .AND. IPOLTP .GT. 0) .OR. LR.NE.'0') THEN
+         LRI = 0
+
+         DO 300 I=1,MMCENT
+
+            IF (ZEROAL(I) .EQ. -1) GOTO 300
+         
+            DIPORG(1) = MMCORD(1,I)
+            DIPORG(2) = MMCORD(2,I)
+            DIPORG(3) = MMCORD(3,I)
+
+            DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
+     *              (MMCORD(2,I)-QMCOM(2))**2 +
+     *              (MMCORD(3,I)-QMCOM(3))**2
+            DIST  = SQRT(DIST2)
+
+            IF (DIST .GT. RCUTMM) THEN
+               LRI = LRI+3
+               IF (LOCDEB) THEN
+                  WRITE(LUPRI,*) 'Skipping site in mu^ind vector
+     &                           in CCMM_TGTBAR 2', I
+               END IF
+               GOTO 300
+            END IF
+
+            CALL DZERO(WORK(KRAAO),3*NNBASX)
+            CALL DZERO(WORK(KNSAO),NNBASX)
+
+            KPATOM = 0
+            NOCOMP = 3
+            TOFILE = .FALSE.
+            TRIMAT = .TRUE.
+            EXP1VL = .FALSE.
+
+            RUNQM3 = .TRUE.
+            CALL GET1IN(WORK(KRAAO),'NEFIELD',NOCOMP,WORK(KWRK5),
+     &               LWRK5,LABINT,INTREP,INTADR,I,TOFILE,
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+            RUNQM3 = .FALSE.
+       
+            FACx = -WORK(KINDIP + LRI + 0)
+ 
+            FACy = -WORK(KINDIP + LRI + 1)
+
+            FACz = -WORK(KINDIP + LRI + 2)
+        
+             
+            CALL DAXPY(NNBASX,FACx,WORK(KRAAO),
+     *               1,WORK(KNSAO),1)
+
+            CALL DAXPY(NNBASX,FACy,WORK(KRAAO+NNBASX),
+     *               1,WORK(KNSAO),1)
+
+            CALL DAXPY(NNBASX,FACz,WORK(KRAAO+2*NNBASX),
+     *               1,WORK(KNSAO),1)
+
+            LRI = LRI + 3
+ 300     CONTINUE
+
+C   sne: This workspace allocation should be temporary. There
+C   must be tons of room earlier in WORK.
+         KINT = KWRK5
+         KWRK6 = KINT + N2BST(ISYMTR)
+         LWRK6 = LWORK - KWRK6
+         IF (LWRK6.LT.0) CALL QUIT( 'Too little work in CCMM_TGTBAR' )
+         LABEL = 'GIVE INT'
+         CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+
+         CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
+     &           IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
+
+         CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),1,WORK(KTG),1)
+
+      END IF
+C Now the electrostatic contribution. This was once called OLDTG
+C--------------------------------------
+C     Now the electrostatic contribution to Tg. 
+C     We get the multipole integrals from the HF/MM
+C     calculation available from file.
+C     We do all the corrections simultaneosly. We will analyze
+C     the HF/MM results if we want to consider each multipole contribution
+C     separately.
+
+C 1) The charge contribution
+C
+C--------------------------
+C     Dynamical allocation:
+C--------------------------
+C
+      IF ( LR .EQ. '0') THEN
+         IF (NMULT .GE. 0) THEN
+
+C
+            LABEL = 'GIVE INT'
+            CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+            CALL DZERO(WORK(KNSAO),NNBASX)
+
+            LUQMMM = -1
+            CALL GPOPEN(LUQMMM,'MU0INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND (LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+     
+            CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
+     &             IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
+
+C sne: Minus should already be carried in the integrals cf sirqm3
+            CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
+     *                   1,WORK(KTG),1)
+
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+C 2) The dipole contribution
+         IF (NMULT .GE. 1) THEN
+
+            CALL DZERO(WORK(KNSAO),NNBASX)
+            CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+
+            CALL GPOPEN(LUQMMM,'MU1INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND (LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+            CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
+     &             IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
+
+C sne: Minus should be correct in dipole case cf sirqm3
+            CALL DAXPY(N2BST(ISYMTR),-ONE,WORK(KINT),
+     *                   1,WORK(KTG),1)
+C
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+
+C 3) The quadrupole contribution
+         IF (NMULT .GE. 2) THEN 
+            CALL DZERO(WORK(KNSAO),NNBASX)
+            CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+
+            CALL GPOPEN(LUQMMM,'MU2INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND (LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+
+C sne: Minus should already be carried in the integrals cf sirqm3
+            CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
+     *                   1,WORK(KTG),1)
+
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+
+C 4) The octopole contribution
+
+         IF (NMULT .GE. 3) THEN
+            CALL DZERO(WORK(KNSAO),NNBASX)
+            CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+
+            CALL GPOPEN(LUQMMM,'MU3INT','OLD',' ',
+     &            'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND (LUQMMM)
+            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+
+C sne: Minus should already be carried in the integrals cf sirqm3
+            CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
+     *                   1,WORK(KTG),1)
+
+            CALL GPCLOSE(LUQMMM,'KEEP')
+         END IF
+      END IF
+   
+
+
+C---------------------------------------------------------------------
+C             (LR.EQ.'L').OR.(LR.EQ.'F')                Calculate eta^Geff 
+C             (LR.EQ.'R').OR.(LR.EQ.'P').OR.(LR.EQ.'0') Calculate xi^Geff
+C---------------------------------------------------------------------
+C
+      KETA1 = KETA
+      KETA2 = KETA1 + NTAMP1
+C      
+
+      IF ( (LR.EQ.'L') .OR. (LR.EQ.'F') ) THEN
+         LABEL = 'GIVE INT'
+         LIST  = 'L0'
+         IDLINO = 1
+C
+         CALL CC_ETAC(ISYMTR,LABEL,WORK(KETA),
+     *             LIST,IDLINO,0,WORK(KTG),WORK(KWRK6),LWRK6)
+C
+C if LR=0 also do the XKSI transformation of KTG
+      ELSE IF ( (LR.EQ.'R') .OR. (LR.EQ.'P') .OR. (LR.EQ.'0')) THEN 
+         LABEL = 'GIVE INT'
+C
+         CALL CC_XKSI(WORK(KETA),LABEL,ISYMTR,0,WORK(KTG),
+     *                 WORK(KWRK6),LWRK6) 
+C
+         IF (LR .EQ. 'R') THEN
+            CALL CCLR_DIASCL(WORK(KETA2),TWO,ISYMTR)
+         END IF
+      END IF
+C
+
+      IF(DEBUG .OR. IPQMMM .GT. 14) THEN
+         TAL1= DDOT(NT1AM(ISYMTR),WORK(KETA1),1,WORK(KETA1),1)
+         TAL2= DDOT(NT2AM(ISYMTR),WORK(KETA2),1,WORK(KETA2),1)
+         WRITE(LUPRI,*) 'Printing TGTBAR contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
+
+         CALL DAXPY(NT1AM(ISYMTR),ONE,WORK(KETA1),1,RHO1,1)
+         CALL DAXPY(NT2AM(ISYMTR),ONE,WORK(KETA2),1,RHO2,1)
+C
+      IF (DEBUG .OR. IPQMMM .GT. 14) THEN
+         TAL1= DDOT(NT1AM(ISYMTR),RHO1,1,RHO1,1)
+         TAL2= DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*) 'Printing RHO:
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
+C Restore dipole origin
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+C
+         
+      END
+C
+C***********************************************************************
+C  /* Deck ccmm_d1ao */
+      SUBROUTINE CCMM_D1AO(AODEN,CTR1,CTR2,MODEL,LR,
+     *                    WORK,LWORK)
+C
+C     Kristian Sneskov July 2009 inspired by CCX_D1AO
+C
+C     Purpose: To calculate contributions to the one electron 
+C              auxiliary density matrix appearing in TINE CCMM_LTRB 
+C              and return it backtransformed to AO-basis in AODEN.
+C
+C     IF(LR=R.OR.LR=F) -> Calc D^C
+C     IF(LR=L.OR.LR=P) -> Calc D^B
+C     Current models: CCS, CC2 and CCSD    
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <iratdef.h>
+#include <ccorb.h>
+#include <infind.h>
+#include <blocks.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+#include <ccexci.h>
+#include <ccsdio.h>
+#include <distcl.h>
+#include <cbieri.h>
+#include <eribuf.h>
+#include <cclr.h>
+C
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      DIMENSION AODEN(*), WORK(LWORK), CTR1(*), CTR2(*)
+
+      CHARACTER MODEL*10,MODDUM*10
+      CHARACTER LR*1
+C
+      CALL QENTER('CCMM_D1AO')
+C
+C---------------------------------------------
+C     Find symmetry of left and right vectors. 
+C---------------------------------------------
+C
+      ISYML = ILSTSYM('L0',1) ! Symmetry of multipliers and b-trial
+      ISYMR = ILSTSYM('R0',1) ! symmetry of (t2)amplitudes
+      IF (ISYMR .NE. ISYML) 
+     &     CALL QUIT('CCMM_D1AO: Density not total sym.')
+C
+C-----------------------------------
+C     Initial work space allocation.
+C-----------------------------------
+C
+      KONEAI = 1
+      KONEAB = KONEAI + NT1AMX
+      KONEIJ = KONEAB + NMATAB(1)
+      KONEIA = KONEIJ + NMATIJ(1)
+      KL1AM  = KONEIA + NT1AMX
+      KL2AM  = KL1AM  + NT1AM(ISYML) ! stores t2 when D^B and tbar2 when D^C
+      KT1AM  = KL2AM  + NT2SQ(ISYML)
+      KR2AM  = KT1AM  + NT1AM(ISYMR)
+      KEND0  = KR2AM  + NT2AM(ISYMTR)
+C
+      KR2AMT = KEND0
+      KEND1  = KR2AMT  + NT2AM(ISYMTR)
+      LWRK1  = LWORK  - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         CALL QUIT('CCMM_D1AO: Not enough memory')
+      ENDIF
+C
+C--------------------------------------------
+C     Initialize one electron density arrays.
+C--------------------------------------------
+C
+      CALL DZERO(WORK(KONEAB),NMATAB(1))
+      CALL DZERO(WORK(KONEIJ),NMATIJ(1))
+      CALL DZERO(WORK(KONEAI),NT1AMX)
+      CALL DZERO(WORK(KONEIA),NT1AMX)
+C--------------------------------------------
+C     Initialize working arrays.
+C     NOTE if D^B -> KL1AM is just a dummy array
+C--------------------------------------------
+      CALL DZERO(WORK(KL1AM),NT1AM(ISYML))
+      CALL DZERO(WORK(KL2AM),NT2SQ(ISYML))
+      CALL DZERO(WORK(KT1AM),NT1AM(ISYMR))
+      CALL DZERO(WORK(KR2AM),NT2AM(ISYMTR))
+      CALL DZERO(WORK(KR2AMT),NT2AM(ISYMTR))
+C
+C----------------------
+C     Read left vector.
+C----------------------
+C
+C
+      IF((LR.EQ.'R').OR.(LR.EQ.'F')) THEN
+         IOPT = 3
+         CALL CC_RDRSP('L0',1,ISYML,IOPT,MODDUM,
+     *             WORK(KL1AM),WORK(KR2AMT))
+C Read in t1 amplitudes
+         IOPT = 1
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+C     Copy CTR2 to R2AM since we will scale diagonal
+         CALL DCOPY(NT2AM(ISYMR),CTR2,1,WORK(KR2AM),1) 
+
+      IF (ISYMR.EQ.1) CALL CCLR_DIASCL(WORK(KR2AM),TWO,ISYMR)
+         IF (DEBUG) THEN
+            TAL1 = DDOT(NT1AMX,WORK(KL1AM),1,WORK(KL1AM),1)
+            TAL2 = DDOT(NT2AMX,WORK(KR2AMT),1,WORK(KR2AMT),1)
+            WRITE(LUPRI,*) 'CCMM_TGDEN: Norm of L1: ', TAL1, 
+     &                     'Norm of L2: ', TAL2
+         END IF
+      ELSE IF ( (LR .EQ. 'L') .OR. (LR .EQ. 'P') ) THEN
+         CALL DCOPY(NT2AM(ISYMTR),CTR2,1,WORK(KR2AMT),1)
+         IOPT = 3
+         CALL CC_RDRSP('R0',1,ISYMR,IOPT,MODDUM,
+     *              WORK(KT1AM),WORK(KR2AM)) 
+         IF (DEBUG) THEN
+            TAL1 = DDOT(NT1AMX,WORK(KT1AM),1,WORK(KT1AM),1)
+            TAL2 = DDOT(NT2AMX,WORK(KR2AM),1,WORK(KR2AM),1)
+            WRITE(LUPRI,*) 'CCMM_TGDEN: Norm of T1: ', TAL1, 
+     &                     'Norm of T2: ', TAL2
+         END IF
+      END IF
+C
+C----------------------
+C     Square up tbar_2 multipliers or b_2 elements
+C----------------------
+C
+      CALL CC_T2SQ(WORK(KR2AMT),WORK(KL2AM),ISYML)
+C
+C---------------------------------------
+C     Set up 2C-E of cluster amplitudes.
+C---------------------------------------
+C
+C Note that diascl amplitudes are expected 
+      IF (.NOT. MP2) THEN
+         CALL DCOPY(NT2AM(ISYMR),WORK(KR2AM),1,WORK(KR2AMT),1) 
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KR2AMT),1.0D0,ISYMR,IOPTTCME)
+      ENDIF
+C
+C-------------------------------
+C     Work space allocation one.
+C     Note that D(ia) is stored transposed
+C-------------------------------
+C
+      KXMAT  = KEND1
+      KYMAT  = KXMAT  + NMATIJ(1)
+      KEND2  = KYMAT  + NMATAB(1)
+      LWRK2  = LWORK  - KEND1
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         CALL QUIT('Insufficient memory for 2. alloc. in CCMM_D1AO')
+      ENDIF
+      CALL DZERO(WORK(KXMAT),NMATIJ(1))
+      CALL DZERO(WORK(KYMAT),NMATAB(1))
+C
+C-----------------------------------------------------------
+C     Calculate X-intermediate of L2AM- and R2AM-amplitudes.
+C-----------------------------------------------------------
+C Note that KL2AM must be squared when input in these routines
+C
+      CALL CC_XI(WORK(KXMAT),WORK(KL2AM),ISYML,WORK(KR2AM),ISYMR,
+     *           WORK(KEND2),LWRK2) 
+C
+C-----------------------------------------------------------
+C     Calculate Y-intermediate of L2AM- and R2AM-amplitudes.
+C-----------------------------------------------------------
+C
+      CALL CC_YI(WORK(KYMAT),WORK(KL2AM),ISYML,WORK(KR2AM),ISYMR,
+     *           WORK(KEND2),LWRK2) 
+C
+C--------------------------------------------------------------
+C     Construct <L2|[Emn,R2]|HF> contribution to DXaa and DXii.
+C--------------------------------------------------------------
+C
+      CALL DCOPY(NMATAB(1),WORK(KYMAT),1,WORK(KONEAB),1)
+      CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND2),LWRK2,1)
+      CALL DAXPY(NMATIJ(1),-ONE,WORK(KXMAT),1,WORK(KONEIJ),1)
+C
+      IF ( (LR .EQ. 'R') .OR. (LR .EQ. 'F') ) THEN
+C
+C--------------------------------------------------------------
+C     Construct <HF|[Emn,R1]|HF> contribution.
+C--------------------------------------------------------------
+C
+         CALL DAXPY(NT1AMX,TWO,CTR1,1,WORK(KONEIA),1)
+C
+C
+C--------------------------------------------------------------
+C     Construct <L1|[Emn,R1]|HF> contribution to DXaa and DXii.
+C--------------------------------------------------------------
+         CALL CC_DXIJ(WORK(KONEIJ),WORK(KL1AM),ISYML,CTR1,ISYMR)
+         CALL CC_DXAB(WORK(KONEAB),WORK(KL1AM),ISYML,CTR1,ISYMR)
+C
+C--------------------------------------------------------------
+C     Construct <L1|[Eia,R2]|HF> contribution to DXia
+C--------------------------------------------------------------
+C
+         CALL CC_DXIA12(WORK(KONEIA),WORK(KL1AM),ISYML,
+     *         WORK(KR2AMT),ISYMR)
+C
+C----------------------------------------------------------
+C     Construct <L2|[[Eia,R1],T2]|HF> contribution to DXia.
+C----------------------------------------------------------
+         KT2AM  = KEND0
+         KEND3  = KT2AM  + NT2AM(ISYMOP) 
+         LWRK3  = LWORK  - KEND3 
+C
+         IF (LWRK3 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for 3. alloc. in CCMM_D1AO')
+         ENDIF
+         CALL CC_DXIA21(WORK(KONEIA),WORK(KL2AM),ISYML,
+     *               CTR1,ISYMR,WORK(KT2AM),ISYMR,
+     *               WORK(KEND3),LWRK3)
+
+      ELSE IF ((LR .EQ. 'L') .OR. (LR .EQ. 'P')) THEN
+C
+C----------------------------------------------------------
+C     Construct <B1|[Eai|HF> contribution to DXai.
+C----------------------------------------------------------
+         CALL DAXPY(NT1AMX,ONE,CTR1,1,WORK(KONEAI),1)
+
+C--------------------------------------------------------------
+C     Construct <B1|[Eia,T2]|HF> contribution to DXia
+C--------------------------------------------------------------
+         CALL CC_DXIA12(WORK(KONEIA),CTR1,ISYMTR,WORK(KR2AMT),ISYMR)
+      END IF 
+C
+C--------------------------
+C     Write out test norms.
+C--------------------------
+C
+      IF (DEBUG) THEN
+         XIJ = DDOT(NMATIJ(1),WORK(KONEIJ),1,WORK(KONEIJ),1)
+         XAB = DDOT(NMATAB(1),WORK(KONEAB),1,WORK(KONEAB),1)
+         XAI = DDOT(NT1AMX,WORK(KONEAI),1,WORK(KONEAI),1)
+         XIA = DDOT(NT1AMX,WORK(KONEIA),1,WORK(KONEIA),1)
+         WRITE(LUPRI,*) 'Norms: DXIJ',XIJ
+         WRITE(LUPRI,*) 'Norms: DXAB',XAB
+         WRITE(LUPRI,*) 'Norms: DXAI',XAI
+         WRITE(LUPRI,*) 'Norms: DXIA',XIA
+      ENDIF
+C
+C----------------------------------
+C     Calculate the lambda matrices.
+C----------------------------------
+C
+      KLAMDP = KEND0
+      KLAMDH = KLAMDP + NLAMDT
+      KEND4  = KLAMDH + NLAMDT
+      LWRK4  = LWORK  - KEND4 
+      IF (LWRK4 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         CALL QUIT('Insufficient memory for 4. alloc. in CCMM_D1AO')
+      ENDIF
+      CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),WORK(KEND4),
+     *            LWRK4)
+C
+C--------------------------------------------------------
+C     Add the one electron density in the AO-basis.
+C--------------------------------------------------------
+CC
+      ISDEN = 1
+      CALL CC_DENAO(AODEN,ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *              WORK(KLAMDH),1,WORK(KEND4),LWRK4)
+C
+      CALL QEXIT('CCMM_D1AO')
+C
+   1  FORMAT(1x,A35,1X,E20.10)
+      RETURN
+      END
+C

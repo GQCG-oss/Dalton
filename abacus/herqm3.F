@@ -54,6 +54,7 @@ C
 #include <maxaqn.h>
 #include <mxsymm.h>
 #include <qm3.h>
+!#include <qmmm.h>
 C
       PARAMETER ( NTABLE = 18, D1 = 1.0D0)
       LOGICAL NEWDEF
@@ -135,6 +136,7 @@ C
 C
     1     CONTINUE
             QM3 = .TRUE.
+            NYQMMM=.FALSE.
           GO TO 100
 C
     2     CONTINUE
@@ -4446,6 +4448,7 @@ C
 C
     1     CONTINUE
             QMMM = .TRUE.
+            NYQMMM = .TRUE.
           GO TO 100
 C
     2     CONTINUE

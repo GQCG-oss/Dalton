@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -2075,6 +2075,9 @@ C          Now the QM nuclear contribution
              ECHCHL = ECHCHL + CHARGE(J)*MUL0MM(I)/DIST
   101      CONTINUE
            ECHCH = ECHCH + ECHCHL
+C Transfering the QM nuclei - MM multipole energy contribution
+C to the CC part of the code. We start with the charge contribution
+           ENUMUL = ECHCH
            WRK(KNSNUC+I-1) = ECHCHL
 
   100   CONTINUE
@@ -2308,6 +2311,8 @@ C         CORD(1,J) - MMCORD(1,I)
   201     CONTINUE
           WRK(KNSNUC+I-1) = ELOC
           ELOCT = ELOCT + WRK(KNSNUC+I-1)
+C Add up QM nuclei - multipole energy contributions to be used in CC
+          ENUMUL = ENUMUL + ELOCT
 
   200   CONTINUE
 
@@ -2500,6 +2505,8 @@ C         Remember the factor of 1/2 from the Taylor expansion
 
           WRK(KNSNUC+I-1) = ELOC
           ELOCT = ELOCT + WRK(KNSNUC+I-1)
+C Add up QM nuclei - multipole energy contributions to be used in CC
+          ENUMUL = ENUMUL + ELOCT
 
   300   CONTINUE
 
@@ -2844,6 +2851,8 @@ C         Remember the factor of 1/6 from the Taylor expansion
 
           WRK(KNSNUC+I-1) = ELOC
           ELOCT = ELOCT + WRK(KNSNUC+I-1)
+C Add up QM nuclei - multipole energy contributions to be used in CC
+          ENUMUL = ENUMUL + ELOCT
 
   410   CONTINUE
 

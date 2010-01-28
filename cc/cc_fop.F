@@ -103,6 +103,7 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include <qm3.h>
+!#include <qmmm.h>
 #include <ccqrinf.h>
 C
       LOGICAL CCMMCONV,DIELCONV,CCDC
@@ -880,8 +881,13 @@ C
               IF (.NOT.CCS) CALL DZERO(WORK(KRHO2),NT2AMX)
               LR = '0'
               DTIME = SECOND()
-              CALL CCMM_LTRB(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2,
+              IF (.NOT. NYQMMM) THEN            
+                 CALL CCMM_LTRB(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2,
      *                       ISYMOP,LR,WORK(KWRK4),LWRK4)
+              ELSE IF (NYQMMM) THEN
+                 CALL CCMM_TGTBAR(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2, 
+     *                           MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
+              END IF
               IF (IPRINT .GT. 5) THEN
                 WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_FOP):',
      *                         SECOND() - DTIME

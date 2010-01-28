@@ -6,7 +6,7 @@ C --- FILE: qm3.h ---
       LOGICAL LONEPAR, LTWOPAR, LEPSADD, LSIGADD
       LOGICAL SKIPNC, VDWSKP, MYITE, MYMAT, EXPON
       LOGICAL PRFQM3, INTDIR, FORQM3, REDCNT, LGSPOL, RUNQM3
-      LOGICAL QMDAMP
+      LOGICAL QMDAMP, NYQMMM
 C 
 C ---------------------------------------------------------
 C In the present implementation the MXQM3 parameter follows 
@@ -58,7 +58,7 @@ C
      *                PEDIP1,ENSQM3,EPOQM3,QMCOM(3),ADAMP
 
       COMMON /LOGQM3/ RDFILE,DISMOD,QM3LO1,QM3LO2,CCMM,FIXMOM,
-     *                OLDTG,LONUPO,LOELFD,LOSPC,LOEC3,
+     *                OLDTG,LONUPO,LOELFD,LOSPC,LOEC3,NYQMMM,
      *                SHAWFC,LOSHAW,REPTST,RELMOM,SLOTH,
      *                LONEPAR,LTWOPAR,LEPSADD,LSIGADD,LOCLAS,
      *                SKIPNC,VDWSKP,MYITE,MYMAT,EXPON,PRFQM3,

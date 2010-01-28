@@ -457,6 +457,7 @@ c /* deck cc_xieta1 */
 #include <dummy.h>
 #include <ccsections.h>
 #include <qm3.h>
+!#include <qmmm.h>
 #include <ccnoddy.h>
 #include <cch2d.h>
 #include <ccrc1rsp.h>
@@ -965,7 +966,11 @@ C
          CALL CCSL_RHSTG(WORK(KONEH0),WORK(KEND0),LWRK0)
       ENDIF
       IF (CCMM) THEN
-         CALL CCMM_RHSTG(WORK(KONEH0),WORK(KEND0),LWRK0)
+         IF (.NOT. NYQMMM) THEN
+            CALL CCMM_RHSTG(WORK(KONEH0),WORK(KEND0),LWRK0)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_TGT(WORK(KONEH0),WORK(KEND0),LWRK0)
+         END IF
       ENDIF
 C
 C---------------------------------------------
