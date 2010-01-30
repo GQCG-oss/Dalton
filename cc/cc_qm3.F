@@ -2218,6 +2218,12 @@ C
   801         CONTINUE
             END IF
   800     CONTINUE
+        IF ( DEBUG .OR.(IQM3PR .GT. 10)) THEN
+          RHO1N = DDOT(NT1AM(ISYMTR),WORK(KXI1),1,WORK(KXI1),1)
+          RHO2N = DDOT(NT2AM(ISYMTR),WORK(KXI2),1,WORK(KXI2),1)
+          WRITE(LUPRI,*) ' Norm af elstat contribution to LHTR1:', RHO1N
+          WRITE(LUPRI,*) ' Norm af elstat contribution to LHTR2:', RHO2N
+        END IF
 C
           CALL GPCLOSE(LUCCPO,'KEEP')
 C
@@ -4933,12 +4939,12 @@ C
       IF ( IPQMMM .GT. 10 .OR. DEBUG) THEN
         RHO1N = DDOT(NT1AM(ISYMTR),RHO1,1,RHO1,1)
         RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
-        WRITE(LUPRI,*) ' Norm of RHO1 in CCMM_LTGB on input:', RHO1N
-        WRITE(LUPRI,*) ' Norm of RHO2 in CCMM_LTGB on input:', RHO2N
+        WRITE(LUPRI,*) ' Norm of RHO1 in CCMM_TGTBAR on input:', RHO1N
+        WRITE(LUPRI,*) ' Norm of RHO2 in CCMM_TGTBAR on input:', RHO2N
         RHO1N = DDOT(NT1AM(ISYMTR),CTR1,1,CTR1,1)
         RHO2N = DDOT(NT2AM(ISYMTR),CTR2,1,CTR2,1)
-        WRITE(LUPRI,*) ' Norm af C1AM in CCMM_LTGB on input:', RHO1N
-        WRITE(LUPRI,*) ' Norm af C2AM in CCMM_LTGB on input:', RHO2N
+        WRITE(LUPRI,*) ' Norm af C1AM in CCMM_TGTBAR on input:', RHO1N
+        WRITE(LUPRI,*) ' Norm af C2AM in CCMM_TGTBAR on input:', RHO2N
       ENDIF
 C Backup dipole origin
       OBKPX = DIPORG(1)
@@ -5167,19 +5173,19 @@ C since we want to avoid a possible storage bottleneck for large systems.
 
 C   sne: This workspace allocation should be temporary. There
 C   must be tons of room earlier in WORK.
-         KINT = KWRK5
-         KWRK6 = KINT + N2BST(ISYMTR)
-         LWRK6 = LWORK - KWRK6
-         IF (LWRK6.LT.0) CALL QUIT( 'Too little work in CCMM_TGTBAR' )
-         LABEL = 'GIVE INT'
-         CALL DZERO(WORK(KINT),N2BST(ISYMTR))
-
-         CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
-     &           IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
-
-         CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),1,WORK(KTG),1)
 
       END IF
+      KINT = KWRK5
+      KWRK6 = KINT + N2BST(ISYMTR)
+      LWRK6 = LWORK - KWRK6
+      IF (LWRK6.LT.0) CALL QUIT( 'Too little work in CCMM_TGTBAR' )
+      LABEL = 'GIVE INT'
+      CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+
+      CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
+     &           IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
+
+      CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),1,WORK(KTG),1)
 C Now the electrostatic contribution. This was once called OLDTG
 C--------------------------------------
 C     Now the electrostatic contribution to Tg. 
@@ -5195,62 +5201,51 @@ C--------------------------
 C     Dynamical allocation:
 C--------------------------
 C
+      CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+      CALL DZERO(WORK(KNSAO),NNBASX)
       IF ( LR .EQ. '0') THEN
          IF (NMULT .GE. 0) THEN
 
 C
-            LABEL = 'GIVE INT'
-            CALL DZERO(WORK(KINT),N2BST(ISYMTR))
-            CALL DZERO(WORK(KNSAO),NNBASX)
-
             LUQMMM = -1
             CALL GPOPEN(LUQMMM,'MU0INT','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
             REWIND (LUQMMM)
             CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
      
-            CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
-     &             IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
-
-C sne: Minus should already be carried in the integrals cf sirqm3
-            CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
-     *                   1,WORK(KTG),1)
-
             CALL GPCLOSE(LUQMMM,'KEEP')
          END IF
 C 2) The dipole contribution
          IF (NMULT .GE. 1) THEN
 
-            CALL DZERO(WORK(KNSAO),NNBASX)
             CALL DZERO(WORK(KINT),N2BST(ISYMTR))
 
             CALL GPOPEN(LUQMMM,'MU1INT','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
             REWIND (LUQMMM)
-            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
-            CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
-     &             IRREP, ISYM,IERR,WORK(KWRK6),LWRK6)
+C Temporarily store the stored integrals in KINT. Note that length
+C of KINT is actually N2BST as we will soon unpack KNSAO->KINT
+            CALL READT(LUQMMM,NNBASX,WORK(KINT))
 
 C sne: Minus should be correct in dipole case cf sirqm3
-            CALL DAXPY(N2BST(ISYMTR),-ONE,WORK(KINT),
-     *                   1,WORK(KTG),1)
+            CALL DAXPY(NNBASX,-ONE,WORK(KINT),
+     *                   1,WORK(KNSAO),1)
 C
             CALL GPCLOSE(LUQMMM,'KEEP')
          END IF
 
 C 3) The quadrupole contribution
          IF (NMULT .GE. 2) THEN 
-            CALL DZERO(WORK(KNSAO),NNBASX)
             CALL DZERO(WORK(KINT),N2BST(ISYMTR))
 
             CALL GPOPEN(LUQMMM,'MU2INT','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
             REWIND (LUQMMM)
-            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+            CALL READT(LUQMMM,NNBASX,WORK(KINT))
 
 C sne: Minus should already be carried in the integrals cf sirqm3
-            CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
-     *                   1,WORK(KTG),1)
+            CALL DAXPY(NNBASX,ONE,WORK(KINT),
+     *                   1,WORK(KNSAO),1)
 
             CALL GPCLOSE(LUQMMM,'KEEP')
          END IF
@@ -5258,22 +5253,28 @@ C sne: Minus should already be carried in the integrals cf sirqm3
 C 4) The octopole contribution
 
          IF (NMULT .GE. 3) THEN
-            CALL DZERO(WORK(KNSAO),NNBASX)
             CALL DZERO(WORK(KINT),N2BST(ISYMTR))
 
             CALL GPOPEN(LUQMMM,'MU3INT','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
             REWIND (LUQMMM)
-            CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+            CALL READT(LUQMMM,NNBASX,WORK(KINT))
 
 C sne: Minus should already be carried in the integrals cf sirqm3
-            CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
-     *                   1,WORK(KTG),1)
+            CALL DAXPY(NNBASX,ONE,WORK(KINT),
+     *                   1,WORK(KNSAO),1)
 
             CALL GPCLOSE(LUQMMM,'KEEP')
          END IF
       END IF
    
+C Unpack KNSAO->KINT and add to TG
+      CALL DZERO(WORK(KINT),N2BST(ISYMTR))
+      LABEL = 'GIVE INT'
+      CALL CCMMINT(LABEL,LUQMMM,WORK(KINT),WORK(KNSAO),
+     &                  IRREP,ISYM,IERR,WORK(KWRK6),LWRK6)
+      CALL DAXPY(N2BST(ISYMTR),ONE,WORK(KINT),
+     *                   1,WORK(KTG),1)
 
 
 C---------------------------------------------------------------------
