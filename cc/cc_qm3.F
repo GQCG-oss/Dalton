@@ -379,10 +379,17 @@ C  /* Deck cc_qm3e */
       SUBROUTINE CC_QM3E(ECCMM,EPOL,EEL,EELEL,EREP,AODEN,WORK,LWORK)
 C**************************************************************
 C
-C     Purpose: Calculation of E(QM/MM). 
-C     QM3, JK+AO+OC+KMI,01
-C     Modified by KS, nov 09
+C     QM3: JK+AO+OC+KMI,01
+C     Purpose: Only calculation of E(QM/MM)
+C     QMMM: sneskov, 09
 C     Purpose: Updates the induced dipoles besides calculating E(QM/MM)
+C
+C     In new QMMM implementation the strategy is as follows
+C     1) Calculate F^sta=F^el+F^mul+F^nuc
+C     2) Calculate induced dipole by transforming with relay matrix
+C     3) Put induced moments to file
+C     4) Calculate Epol=-1/2sum_a\mu^ind_aF^sta_a
+C     5) Calculate Eel=-sum_s<N_s>
 C
 C**************************************************************
 C
@@ -4508,6 +4515,13 @@ C
 C     Purpose: Update t parameters
 C     In the new QMMM implementation it replaces CCMM_RHSTG
 C
+C     The general strategy of the routine is the following:
+C     1) Get induced dipoles from file (preceeding HF/MM calc)
+C     2) Construct effective operator G=-sum_a\mu^ind_aF^el_a
+C     3) Get G^elec from file (multipole integrals calculated in 
+C     preceeding HF/MM calc)
+C     4) Add effective operator G to FOCK
+C
 C     sneskov oct 09
 C**************************************************************
 C
@@ -4708,7 +4722,10 @@ C
          REWIND (LUQMMM)
          CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
          CALL GPCLOSE(LUQMMM,'KEEP')
-         CALL OUTPAK(WORK(KNSAO),NBAST,1,LUPRI)
+         IF (IPQMMM .GT. 14) THEN
+            WRITE(LUPRI,*) 'TGT: Print the stored charge integrals:'
+            CALL OUTPAK(WORK(KNSAO),NBAST,1,LUPRI)
+         END IF
 
 C sne the minus is in the integrals so add to t
          CALL DAXPY(NNBASX,ONE,WORK(KNSAO),
@@ -4722,12 +4739,16 @@ C 2) The dipole contribution
      &            'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND (LUQMMM)
          CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         IF (IPQMMM .GT. 14) THEN
+            WRITE(LUPRI,*) 'TGT: Print the stored dipole integrals:'
+            CALL OUTPAK(WORK(KNSAO),NBAST,1,LUPRI)
+         END IF
 
 C sne: Keep minus in daxpy cf sirm3
          CALL DAXPY(NNBASX,-ONE,WORK(KNSAO),
      *                   1,WORK(KTAO),1)
 
-         CALL GPCLOSE(LUQMMM,'KEEP')
       END IF
 C 3) The quadrupole contribution
       IF (NMULT .GE. 2) THEN
@@ -4736,12 +4757,17 @@ C 3) The quadrupole contribution
      &            'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND (LUQMMM)
          CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         IF (IPQMMM .GT. 14) THEN
+            WRITE(LUPRI,*) 'TGT: Print the stored 
+     &                            quadrupole integrals:'
+            CALL OUTPAK(WORK(KNSAO),NBAST,1,LUPRI)
+         END IF
 
 C Sne: the minus is carried in the integrals 
          CALL DAXPY(NNBASX,ONE,WORK(KNSAO),
      *                   1,WORK(KTAO),1)
 
-         CALL GPCLOSE(LUQMMM,'KEEP')
       END IF
 C 4) The octopole contribution
       IF (NMULT .GE. 3) THEN
@@ -4750,12 +4776,17 @@ C 4) The octopole contribution
      &            'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND (LUQMMM)
          CALL READT(LUQMMM,NNBASX,WORK(KNSAO))
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         IF (IPQMMM .GT. 14) THEN
+            WRITE(LUPRI,*) 'TGT: Print the stored 
+     &                            octupole integrals:'
+            CALL OUTPAK(WORK(KNSAO),NBAST,1,LUPRI)
+         END IF
 
 C sne: the minus is carried in the integrals
          CALL DAXPY(NNBASX,ONE,WORK(KNSAO),
      *                   1,WORK(KTAO),1)
 
-         CALL GPCLOSE(LUQMMM,'KEEP')
       END IF
 C
 C--------------------------------------------------
@@ -4776,7 +4807,6 @@ C--------------------------
 
 
       LABEL= 'GIVE INT'
-      WRITE(LUPRI,*) 'Print IRREP, ISYM, IERR', IRREP, ISYM, IERR
       CALL CCMMINT(LABEL,-1,WORK(KINT),WORK(KTAO),
      &             IRREP,ISYM,IERR,WORK(KWRK1),LWRK1)
 C
@@ -4813,21 +4843,22 @@ C
 C-----------------------------------------------------------------------------
 C
 C   Construct effective operators from contracted densities
-C   Find the polarization part of Tg by applying the relay matrix
+C   Find the polarization part of G by applying the relay matrix
+C   In the new QMMM implementation it replaces CCMM_RHSTG
 C
-C   IF (LR.EQ.'R').OR.(LR.EQ.'F') then the following effective 
-C   operator is constructed 
-C   T^gC = - Sum_a alpha_a*(tr(Rr_a*D^C)Rr_a)
-C   Note we denote this operator G^C in the general notation
+C   IF (LR EQ '0')
+C   1a) Get induced dipoles from file (calc in preceeding HF/MM calc)
+C   ELSE IF (LR .NE. '0')
+C   1b) Construct auxiliary densities and create auxiliary induced
+C   dipoles by transforming with the relay matrix.
+C   THEN 
+C   2) Create effective G=-sum_a\mu^ind_aF^el_a
+C   3) Add electrostatic contribution (multipole integrals) from
+C   preceeding HF/MM calc.
+C   4) Do xi/eta-transformation depending on LR
+C   5) Add to rho vector
 C
-C   IF (LR.EQ.'L').OR.(LR.EQ.'P') then the following effective operator 
-C   is constructed
-C   ^BT^g = - Sum_a * alpha_a Sum_sigma (tr(Rr_a*D^B)Rr_a)
-C   Note we also denote this operator G^B in the general notation
-C
-C   Finally, if LR.EQ.0 then construct
-C
-C   Kristian Sneskov, oct 09 - alternative to CCMM_LTRB routine chosen
+C   Sneskov, oct 09 
 C-----------------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -4855,7 +4886,6 @@ C
       INTEGER NDIM, NTOTI 
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),CTR2(*)
-      DIMENSION ALPHAMM(MXQM3)
 C
       CHARACTER MODEL*10 
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -4934,6 +4964,7 @@ C Initialize the working matrices
       CALL DZERO(WORK(KTG),N2BST(ISYMTR))
       CALL DZERO(WORK(KRELAY),NDIM*NDIM)
       CALL DZERO(WORK(KEFIEL),NDIM)
+      CALL DZERO(WORK(KNSAO),NNBASX)
 C
 C
       IF ( IPQMMM .GT. 10 .OR. DEBUG) THEN
@@ -5112,7 +5143,7 @@ C Anyway, we deliberately do this integral-direct
 C since we want to avoid a possible storage bottleneck for large systems.
 
 
-      IF ((LR .EQ. '0' .AND. IPOLTP .GT. 0) .OR. LR.NE.'0') THEN
+      IF ( IPOLTP .GT. 0) THEN
          LRI = 0
 
          DO 300 I=1,MMCENT
@@ -5341,7 +5372,7 @@ C
 C     Kristian Sneskov July 2009 inspired by CCX_D1AO
 C
 C     Purpose: To calculate contributions to the one electron 
-C              auxiliary density matrix appearing in TINE CCMM_LTRB 
+C              auxiliary density matrix appearing in TINE CCMM_TGTBAR 
 C              and return it backtransformed to AO-basis in AODEN.
 C
 C     IF(LR=R.OR.LR=F) -> Calc D^C
