@@ -566,6 +566,7 @@ C     false true true makes the potential from both charge and dipole
 C     KPOTMM is the potential from MM charges, while kpotmm2 is the
 C     potential both from mm charges and induced dipoles.
 C     The kpotqmm is only used 
+C Test line...
          CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.,.FALSE.)
          CALL COMP_NUC_POT_CAV(WRK(KPOTQMM),.FALSE., .TRUE.,.TRUE.)
 Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
