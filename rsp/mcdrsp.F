@@ -121,7 +121,6 @@
      *       KLIDEN,KUSE,KMAXVE,LBINTM,NORBT,NASHT,KZYVAR,LWRK
          WRITE(LUPRI,*)' LACIMX',LACIMX
       END IF
-!      IF (IPRRSP.GE.10) WRITE(LUPRI,'(/A,I8)')
       IF (IPRRSP.GE.10) WRITE(LUPRI,'(/A,I8)')
      *     ' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS:',MAXSIM
 !
@@ -201,6 +200,7 @@
       IF (LINEQ) THEN
          WRITE(LUPRI,*)'Entering LRSTMCD, MAXSIM=',MAXSIM
          !we start with 4 trial vectors: Xf, Xf+, GDp, GDp+
+         !WRITE(LUPRI,*)'Entering LRSTMCD, EIVAL=',EIVAL
          CALL LRSTMCD(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
      &             REDGD,REDS,REDE,
      &             CMO,PV,FC,FV,
@@ -263,7 +263,7 @@
          end if !disabling of lineq=false
       ENDIF
 !
-      IF (IPRRSP.GT.10) WRITE(LUPRI,*)'AFTER START ROUTINE BINMEM',BINMEM
+      IF(IPRRSP.GT.10) WRITE(LUPRI,*)'AFTER START ROUTINE BINMEM',BINMEM
 
       JEXSIM = KEXSTV 
       write(lupri,*)'SONIA RSPCTLMCD JEXSIM, KEXSTV', JEXSIM, KEXSTV
@@ -353,12 +353,10 @@ C
      *                     KZCONF,NCSIM,1,LUPRI)
             ENDIF
          END IF
-         write(lupri,*)'entro qui?'
          CALL FLSHFO(LUPRI)
          CALL RSPELI(NCSIM,NOSIM,WRK(KBCVEC),WRK(KBOVEC),
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               XINDX,WRK(KWRK1),LWRK1)
-         write(lupri,*)'esco qui?'
          CALL FLSHFO(LUPRI)
 
          KEVECS = KWRK1
@@ -466,9 +464,12 @@ C
 !
 !           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
 !
+            !iprsav=iprrsp
+            !iprrsp = 25
             CALL RSPRED(1,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *                  EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *                  UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
+            !iprrsp = iprsav
 !           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
 !    *                 EIVAL,EIVEC,BCVEC,BOVEC,UDV,EVECS,
 !    *                 XINDX,WRK,LWRK)
@@ -485,11 +486,14 @@ C
 !
          write(lupri,*)'RSPCTLMCD: at call REDMCD, KZYRED=', KZYRED
          CALL FLSHFO(LUPRI)
+         !iprsav=iprrsp
+         !iprrsp = 25
          CALL RSPREDMCD(ICTL,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *               EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
      *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
+         !iprrsp = iprsav
 
-         write(lupri,*)'RSPCTLMCD: at exit REDMCD, KZYRED=', KZYRED
+         !write(lupri,*)'RSPCTLMCD: at exit REDMCD, KZYRED=', KZYRED
          CALL FLSHFO(LUPRI)
 
 C        CALCULATE TRANSITION MOMENT
@@ -647,7 +651,7 @@ C
       ISTEO  = KEOVEC
       !call dcopy(KZYVAR,Xf,1,wrk(ISTBO),1)
       call dcopy(KZYWOP,Xf,1,wrk(ISTBO),1)
-      if (iprint.gt.100) then
+      if (iprrsp.ge.10) then
          write(lupri,*)'LRSTMCD: Xf in input'
          call rsppro(Xf,KZVAR,-LUPRI)
          write(lupri,*)'LRSTMCD: istbo copied'
@@ -1243,50 +1247,48 @@ C
 !  S      =   (           ) where S  =  (                )
 !              ( C2   C1 )               ( OVLPI     1  )
 !
-!         IF ((JLDP(IRX) .NE. 0).AND.(IBTYPI.EQ.JBONDX)) THEN
-!            JBVEC = IBVEC + LBZ
-!            JTURN = 0
-! 2350       JTURN = JTURN + 1
-!            OVLPI = D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
-!            IF (IPRRSP .GE. 0) THEN
-!               X1 = DNORM2(LBZY,BVECS(IBVEC),1)
-!               WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
-!     *         ' RSPORT, norm and <ZY/YZ> overlap before S-1/2',X1,OVLPI
-!            call flshfo(lupri)
-!            END IF
-!            X2 = ABS(OVLPI)
-!            IF (ABS(D1-X2) .LT. OVLMIN) THEN
-!               !IF (IPRRSP.GT.5) WRITE (LUPRI,3260) IRX,JLDP(IRX),OVLPI
-!               IF (IPRRSP.GT.0) WRITE (LUPRI,3260) IRX,JLDP(IRX),OVLPI
-!               call flshfo(lupri)
-!               JLDP(IRX) = 0
-!               GO TO 2390
-!            END IF
-!            X1 = D1+OVLPI
-!            X2 = D1-OVLPI
-!            IF (ABS(X1 - X2) .GT. THRLDP) THEN
-!               X1 = DP5 / SQRT(X1)
-!               X2 = DP5 / SQRT(X2)
-!               C1 = X1 + X2
-!               C2 = X1 - X2
-!               CALL DCOPY(LBZY,BVECS(IBVEC),1,OLDVEC,1)
-!               CALL DSCAL(LBZY,C1,BVECS(IBVEC),1)
-!               CALL DAXPY(LBZ,C2,OLDVEC,1,BVECS(JBVEC),1)
-!               CALL DAXPY(LBZ,C2,OLDVEC(1+LBZ),1,BVECS(IBVEC),1)
-!            IF (JTURN .EQ. 1) GO TO 2350
+         IF ((JLDP(IRX) .NE. 0).AND.(IBTYPI.EQ.JBONDX)) THEN
+            JBVEC = IBVEC + LBZ
+            JTURN = 0
+ 2350       JTURN = JTURN + 1
+            OVLPI = D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
+            IF (IPRRSP .GE. 0) THEN
+               X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+               WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
+     *         ' RSPNOR, norm and <ZY/YZ> overlap before S-1/2',X1,OVLPI
+            call flshfo(lupri)
+            END IF
+            X2 = ABS(OVLPI)
+            IF (ABS(D1-X2) .LT. OVLMIN) THEN
+               IF (IPRRSP.GT.0) WRITE (LUPRI,3260) IRX,JLDP(IRX),OVLPI
+               call flshfo(lupri)
+               JLDP(IRX) = 0
+               GO TO 2390
+            END IF
+            X1 = D1+OVLPI
+            X2 = D1-OVLPI
+            IF (ABS(X1 - X2) .GT. THRLDP) THEN
+               X1 = DP5 / SQRT(X1)
+               X2 = DP5 / SQRT(X2)
+               C1 = X1 + X2
+               C2 = X1 - X2
+               !CALL DCOPY(LBZY,BVECS(IBVEC),1,OLDVEC,1)
+               !CALL DSCAL(LBZY,C1,BVECS(IBVEC),1)
+               !CALL DAXPY(LBZ,C2,OLDVEC,1,BVECS(JBVEC),1)
+               !CALL DAXPY(LBZ,C2,OLDVEC(1+LBZ),1,BVECS(IBVEC),1)
+            IF (JTURN .EQ. 1) GO TO 2350
 !           ...930712-hjaaj: an output with LBZY only = 480 showed
 !              that OVLPI ca. 1.0D-14 after first S-1/2;
 !              but ca. 1.0D-16 after second S-1/2
-!               !IF (IPRRSP .GE. 22) THEN
-!               IF (IPRRSP .GE. 0) THEN
-!                  X1 = DNORM2(LBZY,BVECS(IBVEC),1)
-!                  OVLPI= D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
-!                  WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
-!     *            ' RSPORT, norm and <ZY/YZ> overlap after  S-1/2',
-!     *            X1,OVLPI
-!               END IF
-!            END IF
-!         END IF
+               IF (IPRRSP .GE. 0) THEN
+                  X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+                  OVLPI= D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
+                  WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
+     *            ' RSPNOR, norm and <ZY/YZ> overlap after  S-1/2',
+     *            X1,OVLPI
+               END IF
+            END IF
+         END IF
 C
 C
  2390    IBVEC = IBVEC + LBZY
@@ -1303,9 +1305,9 @@ C     ^-------------------------------
  3255 FORMAT(/' (RSPNOR) b-vector no.',I3,' corresponding to root ',
      *        'no.',I3,' is removed',/,14X,'because of small',
      *        'norm**2 in 2. Gram-Schmidt orthonormalization:',1P,D12.5)
-! 3260 FORMAT(/' (RSPNOR) b-vector no.',I3,' corresponding to ',
-!     *        'root no.',I3,' is removed',/,14X,'because of lin.dep.,',
-!     *        '<Z Y|Y Z> overlap =',1P,D14.6)
+ 3260 FORMAT(/' (RSPNOR) b-vector no.',I3,' corresponding to ',
+     *        'root no.',I3,' is removed',/,14X,'because of lin.dep.,',
+     *        '<Z Y|Y Z> overlap =',1P,D14.6)
 C
 C Save new vector together with old ones on LU3
 C
@@ -1568,6 +1570,7 @@ C
                      !<s2b1|b3>
                      tt = DDOT(LBZY,S2Xf,1,BVECS(IBVEC),1)
                      CALL DAXPY(LBZY,-TT,Xf,1,BVECS(IBVEC),1)
+                     !CALL DAXPY(LBZY,-TT,Xf,1,BVECS(IBVEC),1)
                      !test: compute S[2]b and ddot with Xf
 !                     CALL RSPSLI(NCSIM,NOSIM,BCVEC,BOVEC,
 !     *                    UDV,EVECS,XINDX,WRK,LWRK)
@@ -1583,6 +1586,7 @@ C
                      !tt3= DDOT(LBZY,wrk(ks2bmf),1,BVECS(IBVEC),1)
                      !write(lupri,*)'tt1, tt2, tt1+tt2, tt3', 
 !     &                              tt1,tt2,tt1+tt2,tt3
+                     !changed to +
                      CALL DAXPY(LBZ,-TT1,Xf(1+LBZ),1,BVECS(IBVEC),1)
                      CALL DAXPY(LBZ,-TT2,Xf(1),1,BVECS(IBVEC+LBZ),1)
                   else
@@ -2851,7 +2855,7 @@ C
             EIVEC(1,IGD) = 0.0d0
             CALL DCOPY(length,REDGD((IGD-1)*KZYRED+2),1,
      *                  EIVEC(2,IGD),1)
-         IF (IPRRSP.GE.10) THEN
+         IF (IPRRSP.GE.0) THEN
             WRITE(LUPRI,*)' AFREQ,KZYRED,length,IGD',AFREQ,KZYRED,
      &                      length,IGD
          ENDIF
@@ -2887,7 +2891,7 @@ C
      *         ' *** INFO, negative eigenvalues in reduced matrix.'
             IF (IPRRSP.GE.10.OR.(.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
                !POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
-               POL=DDOT(length,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+2),1)
+               POL=DDOT(length,EIVEC(2,IGD),1,REDGD((IGD-1)*KZYRED+2),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
  1800       FORMAT(/' GP * SOLUTION vector at frequency',F12.5,' a.u.',
