@@ -273,7 +273,7 @@ CRIT7=`$GREP "H * (0| )\.71043....[0-9] * \-1\.7573[0-1]....[0-9] * \-2\.2087[3-
 CRIT8=`$GREP "H * 1\.0984[7-8]....[0-9] * 1\.53365....[0-9] * \-2\.2116[4-5]....[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
-CTRL[10]=32
+CTRL[10]=20
 ERROR[10]="FINAL GEOMETRY NOT CORRECT"
 
 # Geometry converged
@@ -287,8 +287,8 @@ ERROR[11]="GEOMETRY OPTIMIZATION NOT CONVERGED CORRECTLY"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} : ${TEST[i]} .lt. ${CTRL[i]} ; "
      PASSED=0
    fi
 done
