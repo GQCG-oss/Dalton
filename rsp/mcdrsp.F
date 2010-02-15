@@ -490,7 +490,7 @@ C
          !iprrsp = 25
          CALL RSPREDMCD(ICTL,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *               EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
-     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
+     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2,Xf,S2Xf)
          !iprrsp = iprsav
 
          !write(lupri,*)'RSPCTLMCD: at exit REDMCD, KZYRED=', KZYRED
@@ -1368,8 +1368,7 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
 C--
 !  /* Deck rsportmcd */
       SUBROUTINE RSPORTmcd(BVECS,NBNEW,NBPREV,
-     &                   IBTYP,THRLDP,OLDVEC,Xf,S2Xf,LU3,
-     &                   WRK,LWRK)
+     &                   IBTYP,THRLDP,OLDVEC,Xf,S2Xf,LU3)
 !
 ! Written Nov 2009 by sonia, based on RSPORT by Hans Jorgen Aa. Jensen
 ! Purpose:
@@ -1403,7 +1402,6 @@ C--
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION BVECS(*), IBTYP(*), OLDVEC(*), Xf(*), S2Xf(*)
-      DIMENSION WRK(LWRK)
 C
 #include <ibndxdef.h>
 C
@@ -1570,30 +1568,16 @@ C
                      !<s2b1|b3>
                      tt = DDOT(LBZY,S2Xf,1,BVECS(IBVEC),1)
                      CALL DAXPY(LBZY,-TT,Xf,1,BVECS(IBVEC),1)
-                     !CALL DAXPY(LBZY,-TT,Xf,1,BVECS(IBVEC),1)
-                     !test: compute S[2]b and ddot with Xf
-!                     CALL RSPSLI(NCSIM,NOSIM,BCVEC,BOVEC,
-!     *                    UDV,EVECS,XINDX,WRK,LWRK)
-                     !ks2bmf = 1
-                     !kbmf   = ks2bmf + LBZY
-                     !kend   = kbmf + LBZY
-                     !CALL DCOPY(LBZ,S2Xf(1+LBZ),1,wrk(ks2bmf),1)
-                     !CALL DCOPY(LBZ,S2Xf(1),1,wrk(ks2bmf+lbz),1)
-                     !CALL DCOPY(LBZ,BVECS(IBVEC+LBZ),1,wrk(kbmf),1)
-                     !CALL DCOPY(LBZ,BVECS(IBVEC),1,wrk(kbmf+lbz),1)
+                     JBVEC = IBVEC + LBZ
                      tt1= DDOT(LBZ,S2Xf(1+LBZ),1,BVECS(IBVEC),1)
-                     tt2= DDOT(LBZ,S2Xf(1),1,BVECS(IBVEC+LBZ),1)
-                     !tt3= DDOT(LBZY,wrk(ks2bmf),1,BVECS(IBVEC),1)
-                     !write(lupri,*)'tt1, tt2, tt1+tt2, tt3', 
-!     &                              tt1,tt2,tt1+tt2,tt3
-                     !changed to +
+     &                  + DDOT(LBZ,S2Xf(1),1,BVECS(JBVEC),1)
                      CALL DAXPY(LBZ,-TT1,Xf(1+LBZ),1,BVECS(IBVEC),1)
-                     CALL DAXPY(LBZ,-TT2,Xf(1),1,BVECS(IBVEC+LBZ),1)
+                     CALL DAXPY(LBZ,-TT1,Xf(1),1,BVECS(JBVEC),1)
                   else
-!                 Orthogonalize to (Z Y)_old
+!                   Orthogonalize to (Z Y)_old
                     TT = -DDOT(LBZY,   OLDVEC,1,BVECS(IBVEC),1)
                     CALL DAXPY(LBZY,TT,OLDVEC,1,BVECS(IBVEC),1)
-!                 Orthogonalize to (Y Z)_old
+!                   Orthogonalize to (Y Z)_old
                     IF ( IBTYPK .EQ. JBONDX ) THEN
                        JBVEC = IBVEC + LBZ
                        TT = -DDOT(LBZ,   OLDVEC,       1,BVECS(JBVEC),1)
@@ -1692,7 +1676,6 @@ C
             END IF
             X2 = ABS(OVLPI)
             IF (ABS(D1-X2) .LT. OVLMIN) THEN
-               !IF (IPRRSP.GT.5) WRITE (LUPRI,3260) IRX,JLDP(IRX),OVLPI
                IF (IPRRSP.GT.10) WRITE (LUPRI,3260) IRX,JLDP(IRX),OVLPI
                call flshfo(lupri)
                JLDP(IRX) = 0
@@ -2624,7 +2607,7 @@ C
          END IF
  4010 CONTINUE
       !sonia
-      IF ( IPRRSP .GT. 0 ) THEN
+      IF ( IPRRSP .GT. 10 ) THEN
          WRITE(LUPRI,' (/A)')
      *   ' INDEX VECTOR FOR E(2) TRANSFORMED TRIAL VECTORS'
          WRITE(LUPRI,*) ( IVENU(INUM),INUM=1,N )
@@ -2818,7 +2801,7 @@ C *********************************************************
 C Section 2: find eigenvalues and -vectors of reduced L-matrix
 C
  1000 CONTINUE
-      IF (IPRRSP .GE. 10) THEN
+      IF (IPRRSP .GE. 0) THEN
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED HESSIAN MATRIX:'
          CALL OUTPAK(REDE,KZYRED,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED METRIC MATRIX:'
@@ -2841,21 +2824,16 @@ C
                   if ((I.ne.1).and.(j.ne.1)) then
                      IJ2=IJ2+1
                      BCVEC(IJ2) = REDE(IJ) - AFREQ*REDS(IJ)
-                     !write(lupri,*)'IJ2=',IJ2,' BCVEC(IJ2)=',BCVEC(IJ2)
                   end if
-          !write(lupri,*)'IJ=', IJ, 'REDE(IJ) =', REDE(IJ)-AFREQ*REDS(IJ)
    75          CONTINUE
    70       CONTINUE
-            !extract corresponding RHS 
-!            CALL DCOPY(KZYRED,REDGD((IGD-1)*KZYRED+1),1,
-!     *                  EIVEC(1,IGD),1)
             length = KZYRED - 1
             !Sonia: set first element  to zero to make sure b_1=Xf does
             !not contribute when we go from red space to full space
             EIVEC(1,IGD) = 0.0d0
             CALL DCOPY(length,REDGD((IGD-1)*KZYRED+2),1,
      *                  EIVEC(2,IGD),1)
-         IF (IPRRSP.GE.0) THEN
+         IF (IPRRSP.GE.10) THEN
             WRITE(LUPRI,*)' AFREQ,KZYRED,length,IGD',AFREQ,KZYRED,
      &                      length,IGD
          ENDIF
@@ -2891,6 +2869,7 @@ C
      *         ' *** INFO, negative eigenvalues in reduced matrix.'
             IF (IPRRSP.GE.10.OR.(.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
                !POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
+               !Sonia: changed for 2n-1 case
                POL=DDOT(length,EIVEC(2,IGD),1,REDGD((IGD-1)*KZYRED+2),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
