@@ -148,6 +148,7 @@ C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
       call quit(
      &   '.SRINTS  option not included in this non-srdft version')
 #endif 
+      GO TO 100
 C *** Option 7 >SCSMP2< Grimme's spin-component scaled MP2
 C                       p_S = 1.2, p_T = 1/3
   107 MP2_SCS = .TRUE.
