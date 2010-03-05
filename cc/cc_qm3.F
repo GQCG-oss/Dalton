@@ -322,10 +322,10 @@ C
      *  ' inner iterations'
 C
         WRITE(LURES,'(12X,A4,A,F20.10)')
-     *  MODELPRI,' Total energy:           ',ECMCU
+     *  MODELPRI,' Total  energy:             ',ECMCU
 C
         WRITE(LURES,'(12X,A4,A,F20.10,/)')
-     *  MODELPRI,' E(QM/MM):       ',ECMCON
+     *  MODELPRI,' E(QM/MM)     :             ',ECMCON
 C
         ECCGRS1 = ECMCU    
         LABEL = MODELPRI//'/MM '
@@ -386,7 +386,8 @@ C     Purpose: Updates the induced dipoles besides calculating E(QM/MM)
 C
 C     In new QMMM implementation the strategy is as follows
 C     1) Calculate F^sta=F^el+F^mul+F^nuc
-C     2) Calculate induced dipole by transforming with relay matrix
+C     2) Calculate induced dipole by transforming with relay 
+C     matrix(MMMAT) or by iterative means (MMITER)
 C     3) Put induced moments to file
 C     4) Calculate Epol=-1/2sum_a\mu^ind_aF^sta_a
 C     5) Calculate Eel=-sum_s<N_s>
@@ -885,80 +886,87 @@ C Now the field from the QM nuclei
 
 C     Read the relay matric from file and construct the induced moments
 
-
-            LUQMMM = -1
-            IF(LUQMMM .LT. 0) THEN
-               CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+            IF (MMMAT) THEN
+               LUQMMM = -1
+               IF(LUQMMM .LT. 0) THEN
+                  CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
      &                       'UNFORMATTED',IDUMMY,.FALSE.)
-            ENDIF
-            REWIND(LUQMMM)
+               ENDIF
+               REWIND(LUQMMM)
       
-            IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-               WRITE(LUPRI,*) 'reading relay of length: ', NDIM*NDIM
-               CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
-            ELSE
-               CALL QUIT('Problem reading the relay 
+               IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+                  CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
+               ELSE
+                  CALL QUIT('Problem reading the relay 
      &                    matrix from QMMMIM file')
-            ENDIF
+               ENDIF
 
-            CALL GPCLOSE(LUQMMM,'KEEP')
+               CALL GPCLOSE(LUQMMM,'KEEP')
 
-            IF (IPQMMM .GE. 5) THEN
-               WRITE(LUPRI,*) 'The relay matrix is read from file'
-               CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
-            ENDIF
+               IF (IPQMMM .GE. 5) THEN
+                  WRITE(LUPRI,*) 'The relay matrix is read from file'
+                  CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,
+     *                        NDIM,1,LUPRI)
+               ENDIF
 
-            IF (IPRINT .GT. 1) THEN
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,1051)
-               WRITE(LUPRI,1050)
-               WRITE(LUPRI,1051)
-               WRITE(LUPRI,*)
-            ENDIF
+               IF (IPRINT .GT. 1) THEN
+                  WRITE(LUPRI,*)
+                  WRITE(LUPRI,1051)
+                  WRITE(LUPRI,1050)
+                  WRITE(LUPRI,1051)
+                  WRITE(LUPRI,*)
+               ENDIF
 
-            IF(LOCDEB) THEN
-               WRITE(LUPRI,*) 'F vector: '
-                DO I=1,NDIM
-                   WRITE(LUPRI,*) WORK(KELF+I-1)
-                END DO
-            ENDIF
+               IF(LOCDEB) THEN
+                  WRITE(LUPRI,*) 'F vector: '
+                  DO I=1,NDIM
+                     WRITE(LUPRI,*) WORK(KELF+I-1)
+                  END DO
+               ENDIF
 
 C calculate the corresponding induced moments
-            NTOTI = MAX(NDIM,1)
-            CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
+               NTOTI = MAX(NDIM,1)
+               CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
      *                 WORK(KELF),1,ZERO,WORK(KINDIP),1)
  
-            IF (IPQMMM .GT. 1) THEN
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,1030)
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,1000)
-               WRITE(LUPRI,1010)
-               WRITE(LUPRI,1000)
-            ENDIF
+            ELSE IF (MMITER) THEN
+C convert the F vector into induced moments in an iterative fashion               
+               IOPT=1
+               CALL F2QMMM(WORK(KELF),NNZAL,WORK(KINDIP),WORK(KWRK1),
+     *                    LWRK1,IOPT,IPQMMM)
 
-            IINIM = 0
-
-            DO I=1,MMCENT
-               IF (ZEROAL(I) .EQ. -1) THEN
-                  DIPX = 0.0D0
-                  DIPY = 0.0D0
-                  DIPZ = 0.0D0
-               ELSE
-                  DIPX = WORK(KINDIP + IINIM )
-                  DIPY = WORK(KINDIP + IINIM +1)
-                  DIPZ = WORK(KINDIP + IINIM +2)
-                  IINIM = IINIM +3
-               ENDIF
                IF (IPQMMM .GT. 1) THEN
-                  WRITE(LUPRI,1020) I, DIPX, DIPY, DIPZ
-               END IF
-            END DO
+                  WRITE(LUPRI,*)
+                  WRITE(LUPRI,1030)
+                  WRITE(LUPRI,*)
+                  WRITE(LUPRI,1000)
+                  WRITE(LUPRI,1010)
+                  WRITE(LUPRI,1000)
+               ENDIF
 
-            IF(IPRINT .GT. 1) THEN
-               WRITE(LUPRI,1000)
-               WRITE(LUPRI,*)
-            ENDIF
+               IINIM = 0
+
+               DO I=1,MMCENT
+                  IF (ZEROAL(I) .EQ. -1) THEN
+                     DIPX = 0.0D0
+                     DIPY = 0.0D0
+                     DIPZ = 0.0D0
+                  ELSE
+                     DIPX = WORK(KINDIP + IINIM )
+                     DIPY = WORK(KINDIP + IINIM +1)
+                     DIPZ = WORK(KINDIP + IINIM +2)
+                     IINIM = IINIM +3
+                  ENDIF
+                  IF (IPQMMM .GT. 1) THEN
+                     WRITE(LUPRI,1020) I, DIPX, DIPY, DIPZ
+                  END IF
+               END DO
+
+               IF(IPRINT .GT. 1) THEN
+                  WRITE(LUPRI,1000)
+                  WRITE(LUPRI,*)
+               ENDIF
+            END IF
 
 C Finally write the updated induced moments to file 
             CALL PUT_TO_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
@@ -4591,8 +4599,7 @@ C     In later iterations we read the induced dipoles written in
 C     CC_QM3E
       
      
-      IF (IPOLTP .GT. 0) THEN 
-         WRITE(LUPRI,*) 'Reading the induced dipoles from file.'
+      IF (IPOLTP .GT. 0 .AND. NNZAL.NE.0) THEN 
       
          CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
 C
@@ -4850,7 +4857,8 @@ C   IF (LR EQ '0')
 C   1a) Get induced dipoles from file (calc in preceeding HF/MM calc)
 C   ELSE IF (LR .NE. '0')
 C   1b) Construct auxiliary densities and create auxiliary induced
-C   dipoles by transforming with the relay matrix.
+C   dipoles by transforming with the relay matrix(MMMAT) or by iterative
+C   means (MMITER).
 C   THEN 
 C   2) Create effective G=-sum_a\mu^ind_aF^el_a
 C   3) Add electrostatic contribution (multipole integrals) from
@@ -4983,28 +4991,6 @@ C Backup dipole origin
       OBKPZ = DIPORG(3)
 
       IF (LR.NE.'0' .AND. IPOLTP .GT. 0) THEN
-C----------------------------
-C     Read the relay matrix from file
-C----------------------------
-
-         LUQMMM = -1
-         CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
-     &              'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LUQMMM)
-
-         IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-            CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
-         ELSE
-            CALL QUIT('Problem reading the relay matrix from the
-     &                 QMMMIM file')
-         END IF
-   
-         CALL GPCLOSE(LUQMMM,'KEEP')
-
-         IF (IPQMMM .GE. 5) THEN
-            WRITE(LUPRI,*) 'The relay matrix is read from file'
-            CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
-         END IF
 
 C----------------------------
 C     Construct auxiliary densities
@@ -5086,18 +5072,47 @@ C Note that we don't add the fields from the QM nuclei and the multipoles
 C since we are only interested in the dipoles from the auxiliary densities.
 
 C Now calculate the corresponding induced dipoles
-         NTOTI = MAX(NDIM,1)
+         IF (MMMAT) THEN
+C Read the relay matrix from file
 
-         CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
-     &            WORK(KEFIEL),1,ZERO,WORK(KINDIP),1)
-        
+            LUQMMM = -1
+            CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+     &              'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND(LUQMMM)
+
+            IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+               CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
+            ELSE
+               CALL QUIT('Problem reading the relay matrix from the
+     &                 QMMMIM file')
+            END IF
+   
+            CALL GPCLOSE(LUQMMM,'KEEP')
+ 
+            IF (IPQMMM .GE. 5) THEN
+               WRITE(LUPRI,*) 'The relay matrix is read from file'
+               CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            END IF
+
+            NTOTI = MAX(NDIM,1)
+
+            CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
+     &               WORK(KEFIEL),1,ZERO,WORK(KINDIP),1)
+         ELSE IF (MMITER) THEN
+C Determine the induced moments in an iterative fashion
+            IOPT=1
+            CALL F2QMMM(WORK(KEFIEL),NNZAL,WORK(KINDIP),WORK(KWRK5),
+     *                LWRK5,IOPT,IPQMMM)
+         END IF
+
          IF (IPQMMM .GE. 5) THEN
             WRITE(LUPRI,*) 'Transformed induced dipole moments'
             CALL OUTPUT(WORK(KINDIP),1,NDIM,1,1,NDIM,1,1,LUPRI)
             WRITE(LUPRI,*)
          END IF
 
-      ELSE IF ( LR .EQ. '0' .AND. IPOLTP .GT. 0) THEN
+      ELSE IF ( (LR .EQ. '0' .AND. IPOLTP .GT. 0) 
+     &                       .AND. NNZAL .NE. 0) THEN
          CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
 C-------------------
 C     Print section:
