@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -859,7 +859,7 @@ CTODO        END IF
            !IBOFF = IFREQ - 1
 !          CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
 !     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-          CALL RSPEVE(WRK(KIBTYP),WRK(freque),WRK(KEIVEC),
+          CALL RSPEVE(WRK(KIBTYP),WRK(kfreque),WRK(KEIVEC),
      &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
           write(lupri,*)'Exit RSPEVE PRJ iboff,ifreq', iboff, ifreq
           call flshfo(lupri)
