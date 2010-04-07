@@ -287,6 +287,7 @@ C
 C
       DOUBLE PRECISION TD2LRNORMF, GOPNORMF0, GOPNORMF1, GOPNORMF  
       DOUBLE PRECISION AF2DLRNORMF, D2LRNORMF1, DONENORMF, DONENORMF1 
+      DOUBLE PRECISION RFMOTOTNORMF, SCOVERLR
 C
 #include <inforb.h>
 #include <dummy.h>
@@ -327,6 +328,8 @@ C
       D2LRNORMF1 = D0
       DONENORMF = D0
       DONENORMF1 = D0
+      RFMOTOTNORMF = D0
+      SCOVERLR = D0 
 C
 C     Allocation of memory   
 C
@@ -335,6 +338,12 @@ C
       CALL MEMGET('REAL',KFAO,N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KRFMO,NRFMO,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KEXCMAT,N2BASX,WRK,KFREE,LFREE)
+C
+C     self-consistency contributions will be separated from D2lr for
+C     analysis purposes ...
+      CALL MEMGET('REAL',KRFMOTOT,NRFMO,WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KRFMOTOT),NRFMO) ! initialization to zero 
+C
 C          
 C     For analysis purposes: get the Frobenius norm of D^{(2),lr} ...
 C
@@ -368,11 +377,19 @@ C
          AF2DLRNORMF = D2 * DDOT(NRFMO,WRK(KRFMO),1,WRK(KRFMO),1)    
          AF2DLRNORMF = SQRT(AF2DLRNORMF)
 C 
-C     ... add DONE 
+C     ... add to DONE 
 C 
          CALL ADDVH(DONE,WRK(KRFMO),NFROZ) 
 C             ADDVH(DONE,RFMO,NFROZ) 
 C     
+C        For analysis purposes: sc contribution a * F (D2lr) added to
+C        WRK(KRFMOTOT)    
+C
+         CALL DAXPY(NRFMO,D1,WRK(KRFMO),1,WRK(KRFMOTOT),1)
+         write(lupri,*) 'print WRK(KRFMOTOT) after 1st addvh'
+         CALL OUTPUT(WRK(KRFMOTOT),1,NRFMO,1,1,NRFMO,1,1,LUPRI)
+C
+C
       ELSE 
 C     
 C        print *, 'we are in GNEUMANN and FACTOR equals 0'
@@ -396,7 +413,6 @@ C
      &               WRK(KDHFAO),WRK(KEXCMAT),NFROZ,WRK(KRFMO),CMO,
      &               ORBEN,WRK(KFREE),LFREE,NRFMO)
 C 
-C     
 C     Check convergence 
 C     
       THRDEN = 1.D-8 ! convergence threshold for the density matrix 
@@ -463,6 +479,14 @@ C        CALL OUTPUT(DONE,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 C Manu debug e
          CALL ADDVH(DONE,WRK(KRFMO),NFROZ) 
 C             ADDVH(DONE,RFMO,NFROZ) 
+C
+C     We accumulate self-consistency contributions in WRK(KRFMOTOT) for
+C     analysis purposes
+C
+         CALL DAXPY(NRFMO,D1,WRK(KRFMO),1,WRK(KRFMOTOT),1)
+         write(lupri,*) 'print WRK(KRFMOTOT) after 2nd addvh'
+         CALL OUTPUT(WRK(KRFMOTOT),1,NRFMO,1,1,NRFMO,1,1,LUPRI)
+C     
 C
 C Manu debug b
 C        WRITE(LUPRI,*) 'print DONE after addvh' 
@@ -537,6 +561,34 @@ C
          WRITE(LUPRI,*) '***********************************' 
          WRITE(LUPRI,*) '***********************************' 
 C
+C        Compute the Frobenius norm of the self-consistency contribution
+C
+         RFMOTOTNORMF = D2 * 
+     &                  DDOT(NRFMO,WRK(KRFMOTOT),1,WRK(KRFMOTOT),1) 
+         RFMOTOTNORMF = DSQRT(RFMOTOTNORMF)
+C
+C        ... and its ratio with the Frobenius norm of the purely
+C        long-range contribution  
+C
+         IF (D2LRNORMF1.GT.(1.D-7)) THEN
+            SCOVERLR = (RFMOTOTNORMF/D2LRNORMF1) 
+         END IF
+C
+         WRITE(LUPRI,'(/A)') '***********************************' 
+         WRITE(LUPRI,*) '***********************************' 
+         WRITE(LUPRI,*) 'Frobenius norm of the self-consistent'
+         WRITE(LUPRI,*) 'contribution to the MP2-srDFT density matrix'
+         WRITE(LUPRI,'(A16,F14.12)') ' ||D2-D2lr||_F= ', RFMOTOTNORMF 
+         WRITE(LUPRI,'(A16,F14.12)') ' ||D2lr||_F= ', D2LRNORMF1 
+C
+         IF (D2LRNORMF1.GT.(1.D-7)) THEN
+            WRITE(LUPRI,'(A26,F14.12)') ' ||D2-D2lr||_F/||D2lr||_F='
+     &                                  , SCOVERLR 
+         END IF
+         WRITE(LUPRI,'(/A)') '***********************************' 
+         WRITE(LUPRI,*) '***********************************' 
+C
+C
 C        write(LUPRI,*) 'print the converged DONE '
 C        call OUTPUT(DONE,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 C
@@ -546,7 +598,8 @@ C
 C
 C     Free the memory and return
 C
- 4000 CALL MEMREL('Releasing mem. used for DHFAO,DAO,FAO,RFMO,EXCMAT',
+ 4000 CALL MEMREL('Releasing mem. used for DHFAO,DAO,FAO,RFMO,EXCMAT
+     &             and RFMOTOT',
      &             WRK,KFRSAV,KDHFAO,KFREE,LFREE)  
 C
       RETURN
