@@ -386,8 +386,8 @@ C        For analysis purposes: sc contribution a * F (D2lr) added to
 C        WRK(KRFMOTOT)    
 C
          CALL DAXPY(NRFMO,D1,WRK(KRFMO),1,WRK(KRFMOTOT),1)
-         write(lupri,*) 'print WRK(KRFMOTOT) after 1st addvh'
-         CALL OUTPUT(WRK(KRFMOTOT),1,NRFMO,1,1,NRFMO,1,1,LUPRI)
+C        write(lupri,*) 'print WRK(KRFMOTOT) after 1st addvh'
+C        CALL OUTPUT(WRK(KRFMOTOT),1,NRFMO,1,1,NRFMO,1,1,LUPRI)
 C
 C
       ELSE 
@@ -484,8 +484,8 @@ C     We accumulate self-consistency contributions in WRK(KRFMOTOT) for
 C     analysis purposes
 C
          CALL DAXPY(NRFMO,D1,WRK(KRFMO),1,WRK(KRFMOTOT),1)
-         write(lupri,*) 'print WRK(KRFMOTOT) after 2nd addvh'
-         CALL OUTPUT(WRK(KRFMOTOT),1,NRFMO,1,1,NRFMO,1,1,LUPRI)
+C        write(lupri,*) 'print WRK(KRFMOTOT) after 2nd addvh'
+C        CALL OUTPUT(WRK(KRFMOTOT),1,NRFMO,1,1,NRFMO,1,1,LUPRI)
 C     
 C
 C Manu debug b
