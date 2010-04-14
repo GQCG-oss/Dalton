@@ -4449,6 +4449,7 @@ C
     1     CONTINUE
             QMMM = .TRUE.
             NYQMMM = .TRUE.
+            LGFILE = .FALSE. !sne assignment. 
           GO TO 100
 C
     2     CONTINUE
