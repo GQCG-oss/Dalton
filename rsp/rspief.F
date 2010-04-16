@@ -423,7 +423,7 @@ C     Core allocation
 C
       KINTRP = 1
       KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
-      KVTEK  = KINTAD + (3*MXCOOR + 1)/IRAT
+      KVTEX  = KINTAD + (3*MXCOOR + 1)/IRAT
       KQTEX  = KVTEX + NTS*NOSIM
       KUBO   = KQTEX + NTS*NOSIM
       KW10   = KUBO  + NOSIM*N2ORBX
