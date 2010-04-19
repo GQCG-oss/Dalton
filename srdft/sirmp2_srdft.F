@@ -287,7 +287,7 @@ C
 C
       DOUBLE PRECISION TD2LRNORMF, GOPNORMF0, GOPNORMF1, GOPNORMF  
       DOUBLE PRECISION AF2DLRNORMF, D2LRNORMF1, DONENORMF, DONENORMF1 
-      DOUBLE PRECISION RFMOTOTNORMF, SCOVERLR
+      DOUBLE PRECISION RFMOTOTNORMF, SUPRFMOTOT, SCOVERLR
 C
 #include <inforb.h>
 #include <dummy.h>
@@ -324,6 +324,7 @@ C     Initialize ...
 C
       ITERDEN = 0
       SUPRFMO = D0
+      SUPRFMOTOT = D0
       AF2DLRNORMF = D0
       D2LRNORMF1 = D0
       DONENORMF = D0
@@ -352,7 +353,7 @@ C
 C     ... and largest matrix element of D^{(2),lr} 
 C
       IMAXDONE = IDAMAX(NORBT*NORBT,DONE,1)
-      SUPDONE  = DONE(IMAXDONE) 
+      SUPDONE  = ABS(DONE(IMAXDONE)) 
 C 
 C     write (lupri,*) 'foperator in gneumann',
 C    & done(1,1),kdao,kfao,kdhfao,kexcmat,krfmo,kfree,lfree,nrfmo
@@ -557,7 +558,7 @@ C
          WRITE(LUPRI,'(A25,F14.12)') ' | D2NORMF-D2LRNORMF | = ', 
      &                                   DONENORMF1  
          WRITE(LUPRI,'(A13,F14.12)') ' D2LRNORMF = ', D2LRNORMF1   
-         WRITE(LUPRI,'(A11,F14.12)') ' SUPD2LR = ', SUPDONE   
+         WRITE(LUPRI,'(A11,F15.12)') ' SUPD2LR = ', SUPDONE   
          WRITE(LUPRI,*) '***********************************' 
          WRITE(LUPRI,*) '***********************************' 
 C
@@ -574,15 +575,23 @@ C
             SCOVERLR = (RFMOTOTNORMF/D2LRNORMF1) 
          END IF
 C
+C        Compute the infinite norm of the self-consistency contribution
+C
+         IMAXRFMOTOT=IDAMAX(NRFMO,WRK(KRFMOTOT),1)
+         SUPRFMOTOT=ABS(WRK(KRFMOTOT-1+IMAXRFMOTOT))
+
+C
          WRITE(LUPRI,'(/A)') '***********************************' 
          WRITE(LUPRI,*) '***********************************' 
-         WRITE(LUPRI,*) 'Frobenius norm of the self-consistent'
+         WRITE(LUPRI,*) 'Frobenius/infinite norm of the self-consistent'
          WRITE(LUPRI,*) 'contribution to the MP2-srDFT density matrix'
-         WRITE(LUPRI,'(A16,F14.12)') ' ||D2-D2lr||_F= ', RFMOTOTNORMF 
-         WRITE(LUPRI,'(A16,F14.12)') ' ||D2lr||_F= ', D2LRNORMF1 
+         WRITE(LUPRI,'(A26,F15.12)') ' ||D2-D2lr||_F= ', RFMOTOTNORMF 
+         WRITE(LUPRI,'(A26,F15.12)') ' ||D2lr||_F= ', D2LRNORMF1 
+         WRITE(LUPRI,'(A26,F15.12)') ' ||D2-D2lr||_infty= ', SUPRFMOTOT 
+         WRITE(LUPRI,'(A26,F15.12)') ' ||D2lr||_infty= ', SUPDONE 
 C
          IF (D2LRNORMF1.GT.(1.D-7)) THEN
-            WRITE(LUPRI,'(A26,F14.12)') ' ||D2-D2lr||_F/||D2lr||_F='
+            WRITE(LUPRI,'(A26,F15.12)') ' ||D2-D2lr||_F/||D2lr||_F='
      &                                  , SCOVERLR 
          END IF
          WRITE(LUPRI,'(/A)') '***********************************' 
