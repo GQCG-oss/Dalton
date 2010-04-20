@@ -672,7 +672,7 @@ C
             KTSSIM = (IOSIM-1) * NTS
             KTSSYMOP = (KSYMOP-1) * NTSIRR
             CALL DCOPY(NTSIRR,WRK(KQTEX + KTSSIM + KTSSYMOP),1,
-     &                 WRK(KQTEX + KTSSIM))
+     &                 WRK(KQTEX + KTSSIM),1)
             CALL DZERO(WRK(KQTEX + KTSSIM + KTSSYMOP), NTSIRR)
          END DO
       END IF
@@ -704,7 +704,7 @@ C
          END DO
       END IF
 C
-Clara add the case of KZCONF.GT.0 
+Clara add the case of KZCONF.GT.0
       IF ((.NOT.TDHF).AND.(KZCONF.GT.0)) THEN
 C
 C        ... CSF part of sigma vectors
