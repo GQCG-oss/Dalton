@@ -1138,6 +1138,10 @@ C
      &                  ISYMOP,NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,
      &                  MULTB,NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DENMAT,
      &                  EXP1EL)
+            ELSE IF (INTTYP .EQ. 29) THEN
+               CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,
+     &                    ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT,MULTA,MULTB,
+     &                    EXPVAL,DENMAT,EXP1EL)
             ELSE IF (INTTYP .EQ. 75) THEN
                CALL TESTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
      &                     ISYMOP,1,NOPTYP,ANTI,EXP1EL,DENMAT,MULTA,
@@ -1202,8 +1206,9 @@ cLig <> added the call to NSSTRA for INTTYP = 82
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,MULTB,
      &                  NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DUMMY,EXP1EL)
          ELSE IF (INTTYP .EQ. 29) THEN
-            CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+            CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,
+     &                 ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT,MULTA,MULTB,
+     &                 EXPVAL,DENMAT,EXP1EL)
          ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
             CALL EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,EXP1EL,DUMMY,MULTA,
@@ -7220,7 +7225,8 @@ C
       END
 C  /* Deck eftra */
       SUBROUTINE EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,IPRINT,MULTA,MULTB,EXPVAL,
+     &                  DMAT,EXP1EL)
 C
 C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
@@ -7230,9 +7236,10 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-      LOGICAL FULMAT, ANTI
+      LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
+      DIMENSION EXPVAL(*), DMAT(*)
 #include <onecom.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -7250,7 +7257,10 @@ C
                   FACSYM = - FACTOR*PT(IBTAND(ISYMCR,ISYMC))
      &                             *PT(IBTAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) +ICOOR
-                  IF (IREPC .EQ. 0) THEN
+                  IF (EXP1EL .AND. (IREPC .EQ. 0)) THEN
+                     CALL SYM1EV(SHLINT(1,ITYP),DMAT,EXPVAL(ISCOOR),
+     &                           FACSYM,MULTA,MULTB,IPRINT)
+                  ELSE IF (IREPC .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ITYP),SOINT(1,ISCOOR),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
