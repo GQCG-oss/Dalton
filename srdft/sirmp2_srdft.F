@@ -331,6 +331,7 @@ C
       DONENORMF1 = D0
       RFMOTOTNORMF = D0
       SCOVERLR = D0 
+      SCOVERLRINFTY = D0 
 C
 C     Allocation of memory   
 C
@@ -575,11 +576,17 @@ C
             SCOVERLR = (RFMOTOTNORMF/D2LRNORMF1) 
          END IF
 C
-C        Compute the infinite norm of the self-consistency contribution
+C        Compute the maximum norm of the self-consistency contribution
 C
          IMAXRFMOTOT=IDAMAX(NRFMO,WRK(KRFMOTOT),1)
          SUPRFMOTOT=ABS(WRK(KRFMOTOT-1+IMAXRFMOTOT))
 
+C        ... and its ratio with the maximum norm of the purely
+C        long-range contribution  
+C
+         IF (SUPDONE.GT.(1.D-7)) THEN
+            SCOVERLRINFTY = (SUPRFMOTOT/SUPDONE) 
+         END IF
 C
          WRITE(LUPRI,'(/A)') '***********************************' 
          WRITE(LUPRI,*) '***********************************' 
@@ -591,8 +598,13 @@ C
          WRITE(LUPRI,'(A26,F15.12)') ' ||D2lr||_infty= ', SUPDONE 
 C
          IF (D2LRNORMF1.GT.(1.D-7)) THEN
-            WRITE(LUPRI,'(A26,F15.12)') ' ||D2-D2lr||_F/||D2lr||_F='
+            WRITE(LUPRI,'(A26,F7.4)') ' ||D2-D2lr||_F/||D2lr||_F='
      &                                  , SCOVERLR 
+         END IF
+         IF (SUPDONE.GT.(1.D-7)) THEN
+            WRITE(LUPRI,'(A34,F7.4)') 
+     &      '||D2-D2lr||_infty/||D2lr||_infty='
+     &                                  , SCOVERLRINFTY 
          END IF
          WRITE(LUPRI,'(/A)') '***********************************' 
          WRITE(LUPRI,*) '***********************************' 
