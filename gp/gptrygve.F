@@ -877,20 +877,20 @@ C
                FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'
             ELSE
-               FILELN = 13
-               FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
+               FILELN = 14
+               FILENM(1:14) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'//
-     &                        '#'//CHRNOS(MYNUM/100)//
+     &                        '.n'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
             END IF
          ELSE
             IF (MYNUM .GT. 0) THEN
-             IF (FILENM(FILELN-3:FILELN-3) .NE. '#') THEN
-               FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
+             IF (FILENM(FILELN-4:FILELN-3) .NE. '.n') THEN
+               FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-               FILELN = FILELN + 4
+               FILELN = FILELN + 5
              END IF
             END IF
          END IF
@@ -906,16 +906,16 @@ C
             IF (FILELN .LE. 0) GOTO 9005
 C
             IF (MYNUM .GT. 0 .AND. .NOT. OLDDX) THEN
-             IF (INDEX(FILENM,'#') .NE. FILELN-3 .AND.
+             IF (INDEX(FILENM,'.n') .NE. FILELN-4 .AND.
      &           INDEX(FILENM,'NUMCAL') .EQ. 0) THEN
 C
 C     The last test will not be necessary anymore when we get
 C     locking RMA operations in MPI2
 C
-               FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
+               FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-               FILELN = FILELN + 4
+               FILELN = FILELN + 5
              END IF
             END IF
 C
@@ -935,20 +935,20 @@ C
                   FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
      &                     CHRNOS(MOD(LUNIT,10))
                ELSE
-                  FILELN = 10
+                  FILELN = 11
                   FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
      &                      CHRNOS(MOD(LUNIT,10))//
-     &                      '#'//CHRNOS(MYNUM/100)//
+     &                      '.n'//CHRNOS(MYNUM/100)//
      &                      CHRNOS(MOD(MYNUM,100)/10)//
      &                      CHRNOS(MOD(MOD(MYNUM,100),10))
                END IF
             ELSE
                IF (MYNUM .GT. 0) THEN
-                IF (INDEX(FILENM,'#') .NE. FILELN-3) THEN
-                  FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
+                IF (INDEX(FILENM,'.n') .NE. FILELN-4) THEN
+                  FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
      &                                     CHRNOS(MOD(MYNUM,100)/10)//
      &                                 CHRNOS(MOD(MOD(MYNUM,100),10))
-                  FILELN = FILELN + 4
+                  FILELN = FILELN + 5
                 END IF
                END IF
             END IF
