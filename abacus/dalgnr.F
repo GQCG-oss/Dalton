@@ -765,6 +765,7 @@ C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C
                CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
+               REWIND (LUMOL)
                DO 230 IMLINE = 1,NMLINE
                   WRITE (LUMOL,'(A)') MLINE(IMLINE)
  230           CONTINUE
