@@ -477,6 +477,7 @@ C MAXAQN : *      (for SYMMET)
 C SIRIPC : NEWGEO (PVM: BASDIR, LENBAS)
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
+C CBIREA : UNCONT
 C DORPS  : DOREPS(), DOCOOR()
 C ABAINF : DOSYM()
 C SYMMET : MAXREP
@@ -489,6 +490,7 @@ C
 #include <siripc.h>
 #include <inforb.h>
 #include <molinp.h>
+#include <cbirea.h>
 #include <dorps.h>
 #include <abainf.h>
 #include <symmet.h>
@@ -607,6 +609,8 @@ C  /molinc/
 #else
          CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
 #endif
+C  /cbirea/
+         CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C  /infpar/
@@ -1046,6 +1050,11 @@ C     Arnfinn, nov -08: Added because of LINE4 and LINE4W
 C
       DIMENSION WORK(*), ISYMDM(*), IFCTYP(*), JSTRSH(*), NPRIMS(*),
      &          NCONTS(*), IORBSH(*), JORBSH(*), KORBSH(*)
+C
+      LOGICAL FIRST_TIME_CALLED
+      DATA FIRST_TIME_CALLED /.TRUE./
+      SAVE FIRST_TIME_CALLED
+C
 #include <infpar.h>
 C
 C Used from common blocks:
@@ -1057,6 +1066,7 @@ C GNRINF : NEWBAS, (PVM: BASDIR, LENBAS)
 C SIRIPC : NEWGEO
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
+C CBIREA : UNCONT
 C DORPS  : DOREPS(), DOCOOR()
 C ABAINF : DOSYM()
 C SYMMET : MAXREP
@@ -1069,6 +1079,7 @@ C
 #include <siripc.h>
 #include <inforb.h>
 #include <molinp.h>
+#include <cbirea.h>
 #include <dorps.h>
 #include <abainf.h>
 #include <symmet.h>
@@ -1094,6 +1105,16 @@ C
       CALL QENTER('HER_RVINIT')
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVINIT','*',103)
+C
+C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
+C     initialize it properly                                                                        
+C                                                                                                     
+      IF (FIRST_TIME_CALLED) THEN
+         RELCAL = .FALSE.
+         TSTINP = .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+         FIRST_TIME_CALLED = .FALSE.
+      END IF
 C
 C-----------------------------------------
 C     Receive initializations from master.
@@ -1153,6 +1174,8 @@ C  /molinc/
 #else
             CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
 #endif
+C  /cbirea/
+            CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
             CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C  /infpar/
@@ -1281,15 +1304,7 @@ C
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C                                                                                                     
-C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
-C     initialize it properly                                                                        
-C                                                                                                     
-      IF (FIRST) THEN
-          RELCAL = .FALSE.
-          TSTINP= .FALSE.
-         CALL REAINI(0,RELCAL,TSTINP)
-      END IF
+C
 C
       CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
