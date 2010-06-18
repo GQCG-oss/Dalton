@@ -1036,7 +1036,6 @@ C***********************************************************************
 #include "cbisol.h"
 #include "aosotr.h"
 #include <ecpinf.h>
-#include "gencon.h"
 #include "qm3.h"
 C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
@@ -1050,7 +1049,9 @@ C
       IBLOCK(1:KSETS) = 1
       CALL IZERO(IQM,KATOM*KSETS)
       CNTBAS = .FALSE.
+#ifdef PRG_DIRAC
       BSET_is_GENCON(-mxbsets:mxbsets) = .FALSE.
+#endif
 
 C
 Clf initialize KSPH for PCM input
@@ -1315,8 +1316,6 @@ C
      &               .OR. (ATOMDF .AND. J .EQ. 3 )) 
      &               .AND. .NOT. DIRAC) THEN
               IF (J.EQ.ISETHUCKEL) THEN
-                 BASNAM = 'HUCKEL'
-C                ... tell BASLIB that this is for Huckel
 C
 C                However, make pseudo-label 'pointcharge' for all cases
 C                where we should not add Huckel basis (to avoid calling BASLIB below)
@@ -1327,6 +1326,9 @@ C                ... avoid floating orbitals
 C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
                  IF (BASNAM(1:2) .EQ. 'MM') BASNAM = 'pointcharge'
 C                ... avoid MM atoms
+
+                 IF (BASNAM(1:11) .NE. 'pointcharge') BASNAM = 'HUCKEL'
+C                ... tell BASLIB that this is for Huckel
               ELSE IF (BASIS) THEN
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
@@ -1965,7 +1967,6 @@ C
 #include "primit.h"
 #include "huckel.h"
 #include "aosotr.h"
-#include "gencon.h"
 
 #include <veclen.h>
 
