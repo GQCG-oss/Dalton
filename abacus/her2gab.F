@@ -2007,3 +2007,4 @@ C
       WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
         CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END
+C -- end of her2gab.F --

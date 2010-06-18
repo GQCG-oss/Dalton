@@ -57,6 +57,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include <abainf.h>
+#include "inforb.h"
 #include <infrsp.h>
 #include <soppinf.h>
 C

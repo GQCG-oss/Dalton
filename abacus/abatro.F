@@ -348,6 +348,7 @@ C
 C     DCORD & DCORGD
 C
       DO 100 I = 1, 2
+C        ... I = 1 geometric pertubations, I = 2 magnetic perturbations
          DOPERT(0,I) = .FALSE.
          DO 110 JATOM = 1, NUCIND
             DO 120 ICOOR = 1, 3

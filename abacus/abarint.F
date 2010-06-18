@@ -64,7 +64,7 @@ C
       IF (REDRED) THEN
          CALL RREDUN
          IF (IPRINT .GE. IPRMIN) WRITE(LUPRI,'(/A,I6)')
-     &        ' Number of internal coordinates after removals :',ICRD
+     &        ' Number of internal coordinates after removals :',IINTCR
       END IF
 C
 C     Then we construct Wilsons B matrix
@@ -1155,8 +1155,8 @@ C
 #include "pi.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
-      NDIHD = 0
       IBEFOR = IINTCR
+      NDIHD = 0
       DO 10 I = 1, IINTCR
          IF (INTCRD(I,1) .GE. 20) NDIHD = NDIHD + 1
  10   CONTINUE
@@ -1165,6 +1165,7 @@ C     The number of dihedral angles should be larger than 10 and
 C     comprise more than 1/3 of the total number of coordinates.
 C
       IF ((NDIHD .LT. 10) .OR. (NDIHD .LT. IINTCR/3)) RETURN
+C
       IFIRST = IINTCR - NDIHD + 1
       IC = IFIRST
 C
@@ -1211,7 +1212,7 @@ C
             GOTO 35
          END IF
       END IF
-      NDIHD = NDIHD - (IBEFOR-IINTCR)
+      NDIHD = IINTCR - IFIRST + 1
       IF ((NDIHD .GT. 10) .AND. (NDIHD .GT. IINTCR/5)) THEN
          IC = IINTCR - NDIHD + 1
          GOTO 20
@@ -3547,6 +3548,20 @@ C
       END IF
 
       CALL DUNIT(DIdent,NCRDHS)
+
+#ifdef VAR_DEBUG
+! March 2010 - debugging gfortran problem with segmentation error in
+! dsygv /hjaaj
+      write (lupri,*) 'ncrdhs,lwrk',ncrdhs,lwrk
+      write (lupri,*) 'TMPHES'
+      call output(tmphes,1,ncrdhs,1,ncrdhs,ncrdhs,ncrdhs,-1,lupri)
+      write (lupri,*) 'DIDENT'
+      call output(dident,1,ncrdhs,1,ncrdhs,ncrdhs,ncrdhs,-1,lupri)
+      write (lupri,*) 'eval'
+      call output(eval,1,1,1,ncrdhs,1,ncrdhs,-1,lupri)
+      call flshfo(lupri)
+#endif
+      
       CALL DSYGV(1,'V','U',NCRDHS,TMPHES,NCRDHS,DIdent,NCRDHS,EVAL,
      &          WRK,LWRK,INFO)
       INDTOT = 0
@@ -4619,7 +4634,7 @@ C
       DO 50 J = 1, NONTYP
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,BSNM,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,KSPH)
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -4673,8 +4688,8 @@ C
  70      CONTINUE
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
-            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
-     &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
+            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
           ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF
@@ -4683,7 +4698,7 @@ C
 C
 C     Write updated geometry to files.
 C
-      CALL PNCMOL
+      CALL PNCMOL(ITRNMR,IPRINT)
 C
 C     To mark that symmetry was broken, the index of the hessian is
 C     given a negative sign. This is interpreted in PRIINF.

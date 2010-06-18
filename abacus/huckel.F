@@ -72,7 +72,7 @@ C
       CALL MEMGET('REAL',KEIGVL,NHUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVS,NHUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KOVERL,NBASMA*NBASMA,WORK,KFREE,LFREE)
-      CALL HUCDR1(WORK(KFREE),LFREE,WORK(KTOTOV),NELMNT,NROW,
+      CALL HUCDRV_1(WORK(KFREE),LFREE,WORK(KTOTOV),NELMNT,NROW,
      &            WORK(KHUCMT),WORK(KHUCOV),NHUCMX,WORK(KEIGVC),
      &            WORK(KTRANM),WORK(KEIGVL),WORK(KEIGVS),WORK(KOVERL),
      &            CMO)
@@ -80,8 +80,8 @@ C
       CALL QEXIT('HUCDRV')
       RETURN
       END
-C   /* Deck hucdr1 */
-      SUBROUTINE HUCDR1(WORK,LWORK,TOTOVL,NELMNT,NROW,
+C   /* Deck HUCDRV_1 */
+      SUBROUTINE HUCDRV_1(WORK,LWORK,TOTOVL,NELMNT,NROW,
      &                  HUCMAT,HUCOVL,NHUCMX,
      &                  EIGVEC,TRANMT,EIGVAL,EIGVLS,OVERLP,CMO)
 C
@@ -135,15 +135,15 @@ C
          REWIND LUPROP
          IF (FNDLB2('HUCKOVLP',RTNLBL,LUPROP)) THEN
             CALL READT(LUPROP,NELMNT,TOTOVL)
-            IF (P6FLAG(6)) THEN
+            IF (P6FLAG(6) .OR. IPRRHF .GE. 10) THEN
                CALL HEADER(
-     &         'HUCDR1: HUCKOVLP matrix read from AOPROPER',-1)
+     &         'HUCDRV_1: HUCKOVLP matrix read from AOPROPER',-1)
                CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
             END IF
          ELSE
-            WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: "HUCKOVLP"'//
+            WRITE (LUPRI,'(//3A)') ' >>> HUCDRV_1 error: "HUCKOVLP"'//
      *         ' matrix not found on AOPROPER.'
-            CALL QUIT('HUCDR1 error: HUCKOVLP not found on AOPROPER')
+            CALL QUIT('HUCDRV_1 error: HUCKOVLP not found on AOPROPER')
          END IF
 C
 C     ... extract EWMO overlap matrix from TOTOVL:
@@ -189,13 +189,14 @@ C
          CALL READT(LUPROP,NELMNT,TOTOVL)
          IF (P6FLAG(6)) THEN
             CALL HEADER(
-     &      'HUCDR1: Huckel matrix read from AOPROPER',-1)
+     &      'HUCDRV_1: Huckel matrix read from AOPROPER',-1)
             CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: "HUCKEL  "'//
-     *      ' matrix not found on AOPROPER.'
-         CALL QUIT('HUCDR1 error: HUCKEL overlap not found on AOPROPER')
+         WRITE (LUPRI,'(//3A)') ' >>> HUCDRV_1 error: "HUCKEL  "'//
+     &      ' matrix not found on AOPROPER.'
+         CALL QUIT('HUCDRV_1 error:'//
+     &      ' HUCKEL overlap not found on AOPROPER')
       END IF
       CALL GPCLOSE(LUPROP,'KEEP')
 C
@@ -215,7 +216,7 @@ C
 C
       DO 100 ISYM = 1, NSYM
          NHUCAOI = NHUCAO(ISYM)
-         IF (NHUCAOI .EQ. 0) GO TO 100
+       IF (NHUCAOI .EQ. 0) GO TO 100
          NBASI  = NBAS(ISYM)
          IBASTO = IBAS(ISYM) + NHUCT
          IHUCI  = IBASTO + NBASI
@@ -297,10 +298,10 @@ C        ... call EISPACK routine RSG
      &              WORK(KHMAT),NHUCAOI)
 C        HMAT = SWS , SMAT = S
          IF (P6FLAG(6) .OR. IPRRHF.GE.4) THEN
-            WRITE (LUPRI,*) 'EWMO Hamiltonian matrix SWS'
+            WRITE (LUPRI,'(/A)') 'EWMO Hamiltonian matrix SWS'
             CALL OUTPUT(WORK(KHMAT),1,NHUCAOI,1,NHUCAOI,
      &                  NHUCAOI,NHUCAOI,1,LUPRI)
-            WRITE (LUPRI,*) 'EWMO overlap matrix S'
+            WRITE (LUPRI,'(/A)') 'EWMO overlap matrix S'
             CALL OUTPUT(WORK(KSMAT),1,NHUCAOI,1,NHUCAOI,
      &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
@@ -316,7 +317,7 @@ C           Save orbital symmetry in EIGVLS
             DO I = 1, NHUCAOI
                EIGVLS(NHUCT + I) = ISYM
             END DO
-        ELSE
+        ELSE ! not EWMO
 C
 C       EHT: Diagonalize Huckel matrix (Note: KLAST is not a misprint)
 C
@@ -381,6 +382,8 @@ C     big MO coefficients.
 C     Revised algorithm: (CMO_{Nn})^{T}*(S_{NO}*CMO_{OO})
 C     where N,n is new basis NBASI,NORBI; O is old basis (Huckel basis);
 C     and CMO_(OO) contains the Huckel molecular orbitals in Huckel basis.
+C
+C     ( Recall that CMO^{T} = CMO^{-1} * S^{-1} )
 
          KSCRA1 = KWRK
          KSCRA2 = KSCRA1 + NBASI*NHUCAOI
@@ -404,35 +407,21 @@ C           (e.g. a 3d on Aluminium, not included in basis sets w/o pol)
          END DO
          IF (MHUCAOI .GT. NORBI) MHUCAOI = NORBI
 C        ... hjaaj sep 07: decrease if huckel basis bigger than user basis,
-C            e.g. if user is calculating with S without d-orbitals.
+C            e.g. if user is calculating with S-atom without d-orbitals.
          IF (NHUCAOI .NE. MHUCAOI) THEN
             WRITE(LUPRI,'(/A,I2,A,I3,A,I3)')
      &      'HUCDRV: reduced number of huckel orbitals in sym',ISYM,
      &      ' from',NHUCAOI,' to',MHUCAOI
             NHUCAOI = MHUCAOI
          END IF
-C        3) DO (CMO_{Nn})^{T}* (work(kscra2)) part
+C        3) Do (CMO_{Nn})^{T}* (work(kscra2)) part
          CALL DGEMM('T','N',NORBI,NHUCAOI,NBASI,1.D0,
      &              CMO(ICSYM),NBASI, WORK(KSCRA2),NBASI,0.D0,
      &              WORK(KSCRA1),NORBI)
          CALL DGEMM('N','N',NBASI,NHUCAOI,NORBI,1.D0,
      &              WORK(KCMO1-1+ICSYM),NBASI, WORK(KSCRA1),NORBI,0.D0,
      &              CMO(ICSYM),NBASI)
- 100  CONTINUE 
-      IF (P6FLAG(6)) THEN
-         WRITE (LUPRI,'(/A)')
-     &   ' Huckel guess MOs before Gram-Schmidt orthogonalization:'
-         CALL PRORB(CMO,.FALSE.,LUPRI)
-      END IF
-C
-C     We do our own Gram-Schmidt Orthogonalization of the trial vectors
-C
-      CALL HUCORT(CMO,WORK(KCMO1),TOTOVL,WORK(KWRK),LWRK)
-      IF (P6FLAG(6)) THEN
-         WRITE (LUPRI,'(/A)')
-     &   ' Huckel guess MOs after Gram-Schmidt orthogonalization:'
-         CALL PRORB(CMO,.FALSE.,LUPRI)
-      END IF
+ 100  CONTINUE   ! DO 100 ISYM = 1, NSYM
 C
 C     Determine Hartree-Fock occupation if requested
 C
@@ -453,6 +442,20 @@ C
             NASH(IOPRHF) = 1
             NOCC(IOPRHF) = NOCC(IOPRHF) + 1
          END IF
+      END IF
+C
+C     We do our own Gram-Schmidt Orthogonalization of the trial vectors
+C
+      IF (P6FLAG(6)) THEN
+         WRITE (LUPRI,'(/A)')
+     &   ' Huckel guess MOs before Gram-Schmidt orthogonalization:'
+         CALL PRORB(CMO,.FALSE.,LUPRI)
+      END IF
+      CALL HUCORT(CMO,WORK(KCMO1),TOTOVL,WORK(KWRK),LWRK)
+      IF (P6FLAG(6)) THEN
+         WRITE (LUPRI,'(/A)')
+     &   ' Huckel guess MOs after Gram-Schmidt orthogonalization:'
+         CALL PRORB(CMO,.FALSE.,LUPRI)
       END IF
 C
 C     We are done
@@ -967,9 +970,17 @@ C
          NBASI = NBAS(ISYM)
          NHUCI = NHUCAO(ISYM)
          IF (NORBI .EQ. 0) GO TO 101
-         NHUCI = MIN(NHUCI,NORBI)
+         IF (NHUCI .GT. NORBI) THEN
+            NOCCI = NOCC(ISYM)
+            IF (NOCCI .EQ. 0) NOCCI = NORBI
+            NHUCI = MIN( NHUCI, NOCCI )
+         END IF
 C        ... hjaaj Sep07: take care of calculations with minimum basis set
 C                         smaller than Huckel, e.g. S atoms without d-orbitals
+C            hjaaj Jun10: only project on the occupied orbitals in this
+C                         case (because we have seen a problem when
+C                         running an STO-3G calculation with lower symmetry
+C                         than the real symmetry)
 C
 C     We orthogonalize the projected Huckel eigenvectors first
 C

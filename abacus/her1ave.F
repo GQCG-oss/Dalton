@@ -37,20 +37,26 @@ C
 C     tuh 1984
 C     modified for symmetry Jul 5 1988 tuh
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
-      LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
-      DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB), NCENTC(*),
+      LOGICAL   SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
+      DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,*), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*), HESSNA(MXCOOR,MXCOOR)
-#include <onecom.h>
-#include <ader.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <energy.h>
-#include <ibtfun.h>
+C
+#include "onecom.h"
+#include "ader.h"
+#include "symmet.h"
+#include "dorps.h"
+#ifdef PRG_DIRAC
+#include "dcbgrd.h"
+#else
+#include "energy.h"
+#endif
+#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -77,7 +83,7 @@ C
             DA00YZ = D0
             DA00ZZ = D0
             DO 300 ICOMP = 1, KHKTAB
-               DENS = DSHELL(ICOMP)
+               DENS = DSHELL(ICOMP,1)
                DA0000 = DA0000 + DENS*ADER(ICOMP,IATOM,IA0000)
                DA000X = DA000X + DENS*ADER(ICOMP,IATOM,IA000X)
                DA000Y = DA000Y + DENS*ADER(ICOMP,IATOM,IA000Y)
@@ -505,21 +511,27 @@ C
 C     tuh 1984
 C     modified for symmetry tuh Jul 5 1988
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      &        DOCX, DOCY, DOCZ
-      DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB), NCENTC(*),
+      DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,*), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*), HESSNA(MXCOOR,MXCOOR)
-#include <onecom.h>
-#include <ader.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <energy.h>
-#include <ibtfun.h>
+C
+#include "onecom.h"
+#include "ader.h"
+#include "symmet.h"
+#include "dorps.h"
+#ifdef PRG_DIRAC
+#include "dcbgrd.h"
+#else
+#include "energy.h"
+#endif
+#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -576,7 +588,7 @@ C
             DA0Z0Z = D0
          END IF
          DO 300 ICOMP = 1, KHKTAB
-            DENS = DSHELL(ICOMP)
+            DENS = DSHELL(ICOMP,1)
             DA0000 = DA0000 + DENS*ADER(ICOMP,IATOM,IA0000)
             DA0X00 = DA0X00 + DENS*ADER(ICOMP,IATOM,IA0X00)
             DA0Y00 = DA0Y00 + DENS*ADER(ICOMP,IATOM,IA0Y00)
@@ -1055,27 +1067,25 @@ C
       RETURN
       END
 C  /* Deck avedip */
-      SUBROUTINE AVEDIP(SINT0,DINT1,ISYMOP,DIFDIP,DSHELL,MAXCMP)
+      SUBROUTINE AVEDIP(SINT0,DINT1,ISYMOP,DSHELL,MAXCMP)
 C
 C     tuh 1985
 C     symmetry 081288 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
-      LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
-#include <onecom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <dipole.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "dipole.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
-      IF (DIFDIP) THEN
          NAX = 3*NCENTA - 2
          NAY = 3*NCENTA - 1
          NAZ = 3*NCENTA
@@ -1192,7 +1202,6 @@ C
             END IF
   500       CONTINUE
          END IF
-      END IF
       RETURN
       END
 C  /* Deck aveexp */
@@ -1230,7 +1239,7 @@ C
       RETURN
       END
 C  /* Deck aveqdp */
-      SUBROUTINE AVEQDP(SINT1,QINT1,ISYMOP,DIFQDP,DSHELL,MAXCMP)
+      SUBROUTINE AVEQDP(SINT1,QINT1,ISYMOP,DSHELL,MAXCMP)
 C
 C     K.Ruud, spring 2003
 C
@@ -1240,7 +1249,6 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00 D00, D2 = 2.0D0)
-      LOGICAL DIFQDP
       DIMENSION DSHELL(KHKTAB), SINT1(KCKTAB,3), QINT1(KCKTAB,3,6)
 #include <onecom.h>
 #include <symmet.h>
@@ -1250,7 +1258,6 @@ C
 C
 #include <ibtfun.h>
 C
-      IF (DIFQDP) THEN
          NAX = 3*NCENTA - 2
          NAY = 3*NCENTA - 1
          NAZ = 3*NCENTA
@@ -1495,7 +1502,6 @@ C
             END IF
   500       CONTINUE
          END IF
-      END IF
       RETURN
       END
 C  /* Deck avepcm */
