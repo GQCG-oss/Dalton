@@ -1011,7 +1011,7 @@ C     1. Construct the charge contribution for all MM centers
      &                    NBAST,NBAST,1,LUPRI)
            END IF
 
-           FAC1 = -1.0D0*MUL0MM(I)
+           FAC1 = -MUL0MM(I)
            CALL DAXPY(3*N2BASX,FAC1,WORK(KMAT),1,VEC2,1)
 
   100   CONTINUE
@@ -1450,11 +1450,11 @@ C     1. Construct the charge contribution for all MM centers
 
           IF (IPRINT .GE. 4) THEN
              WRITE (LUPRI,'(/A,I3,A)')
-     *       ' N(',L,') QMMM correction matrix '
+     *       ' N(',I,') QMMM correction matrix '
              CALL OUTPAK(WORK(KTMP),3,1,LUPRI)
           END IF
 
-          FAC1 = -1.0D0*MUL0MM(I)
+          FAC1 = -MUL0MM(I)
           CALL DAXPY(6,FAC1,WORK(KTMP),1,EXPVAL,1)
 
   100   CONTINUE

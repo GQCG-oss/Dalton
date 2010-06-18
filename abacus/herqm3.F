@@ -1674,13 +1674,14 @@ C it and we have to return to this issue later on. IMPORTANT if the
 C code has to be a part of the released DALTON code!!A
 C---------------------------------------------------------------------
 C
-      IF (NSISY(0) .GT. MXNEW) THEN
+      IF (NSISY(0) .GT. MXCENT_QM) THEN
         WRITE(LUPRI,'(/A,I5/A,I5/A)')
-     &    ' Maximum number of QM atoms allowed is MXNEW =',MXNEW,
-     &    ' You have specified in input                  ',NSISY(0),
-     &    ' To run this calculation you must'//
-     &    ' turn up the MXNEW number in the "include/mxcent.h" file.' 
-        CALL QUIT('The max. number of QM atoms allowed is exceeded.')
+     & ' Maximum number of QM atoms allowed is MXCENT_QM =',MXCENT_QM,
+     & ' You have specified in input                      ',NSISY(0),
+     & ' To run this calculation you must'//
+     & ' increase the MXCENT_QM number in the "include/mxcent.h" file.'
+        CALL QUIT(
+     & 'The max. number of QM atoms allowed in mxcent.h is exceeded.')
       END IF
 C
       END
@@ -4172,7 +4173,7 @@ C
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
-      DIMENSION  RFQM(3,MXNEW)
+      DIMENSION  RFQM(3,MXCENT_QM)
       CHARACTER  LAPRPC*8
 C
 #if defined (SYS_CRAY)
@@ -4183,7 +4184,7 @@ C
 
       IF (.NOT. PRFQM3) RETURN
 
-      DO 11 I=1,MXNEW
+      DO 11 I=1,MXCENT_QM
         RFQM(1,I)=D0
         RFQM(2,I)=D0
         RFQM(3,I)=D0
