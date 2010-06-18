@@ -1115,22 +1115,22 @@ C
 C     Note: if FOUND true, it must not be updated.
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     Global array
       DIMENSION A(NA,*)
       CHARACTER KEY*(*)
       LOGICAL   FOUND, RDBUF
 C
 C Used from common blocks:
-C   INFINP : TITMOL(12,2), POTNUC, CENT(*), TYPE(*)
+C   INFINP : TITMOL(2), POTNUC, CENT(*), TYPE(*)
 C   INFORB : NBAS(8), NSYM, NBAST, NNBAST
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "r12int.h"
 C     Local arrays
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
@@ -1172,8 +1172,8 @@ C        ... file is opened automatically first time RDONEL is called.
          CALL GPCLOSE(LUONEL,'KEEP')
       ELSE IF(KEY.EQ.'MLCLINFO') THEN
          REWIND LUONEL
-         READ (LUONEL) ((TITMOL(I,J),I=1,12),J=1,2),
-     *                 NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
+         READ (LUONEL) TITMOL
+         READ (LUONEL) NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
          NBAST  = 0
          NNBAST = 0
          DO 110 I = 1,NSYM

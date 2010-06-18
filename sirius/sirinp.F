@@ -4946,8 +4946,8 @@ C
       END IF
   500 FORMAT(/' Title     :',T14,A60)
   600 FORMAT(T14,A60)
-      WRITE (IWUNIT,700) ((TITMOL(I,J),I=1,12), J=1,2)
-  700 FORMAT(/' Title lines from ".mol" input file:'/T6,12A6/T6,12A6)
+      WRITE (IWUNIT,700) (TITMOL(J), J=1,2)
+  700 FORMAT(/' Title lines from ".mol" input file:'/T6,A72/T6,A72)
 C
       WRITE(IWUNIT,1700) LUPRI,IPRI6,LUW4,IPRI4
  1700 FORMAT(/' Print level on unit LUPRI =',I4,' is',I4,
@@ -5057,18 +5057,18 @@ C          to get here unless someone modifies SIRIUS incorrectly
          IF (DONEVPT) IRUN = 2
          IF (DOSCF) THEN
             IF (HSROHF) THEN
-               WRITE(IWUNIT,1054) 'Restricted, high spin open shell'
+               WRITE(IWUNIT,1054) 'an restricted, high spin open shell'
             ELSE IF (IOPRHF .EQ. 0) THEN
-               WRITE(IWUNIT,1054) 'Restricted, closed shell'
+               WRITE(IWUNIT,1054) 'an restricted, closed shell'
             ELSE
-               WRITE(IWUNIT,1054) 'Restricted, one open shell'
+               WRITE(IWUNIT,1054) 'an restricted, one open shell'
             END IF
             IF (DOHFSRDFT) THEN
-               WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation.'
+               WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation'
             ELSE IF (DODFT) THEN
-               WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
+               WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation'
             ELSE
-               WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+               WRITE (IWUNIT,1053) ' Hartree-Fock calculation'
             END IF
             IRUN = IRUN + 1
          END IF
@@ -5092,9 +5092,9 @@ C          to get here unless someone modifies SIRIUS incorrectly
          END IF
          IF (DOCI .AND. IRUN .LT. NUMRUN) THEN
             IF (DOCINO) THEN
-               WRITE(IWUNIT,1051) 'a CI-NO calculation '
+               WRITE(IWUNIT,1051) 'a CI-NO calculation'
             ELSE
-               WRITE(IWUNIT,1051) 'a CI calculation '
+               WRITE(IWUNIT,1051) 'a CI calculation'
             END IF
             IRUN = IRUN + 1
          END IF
