@@ -648,9 +648,13 @@ C *** ORBITAL OUTPUT
       IF (LUINF .GT.0) CALL GPCLOSE(LUINF,'DELETE')
 C
 C ***************************************************
-C        *** NEVPT ***
+C     *** NEVPT ***
 C
       IF (DONEVPT) THEN
+       IF (ICONV .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' WARNING: NEVPT2 skipped because MCSCF not converged.'
+       ELSE
          JRDMO = 9
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
@@ -666,7 +670,8 @@ C            transformation  /hjaaj June 09
             CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
          END IF
          CALL KOOPRO4(WORK,LWORK)
-      ENDIF
+       END IF
+      END IF
 C
 C *** POPULATION ANALYSIS AND PROPERTIES
 C
