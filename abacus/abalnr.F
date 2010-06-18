@@ -210,7 +210,6 @@ C              .THRESH
                   IF (NFREQ_BATCH.GT.MXFR) THEN
                      NFREQ_BATCH = MXFR
                   END IF
-               GOTO 100
                GO TO 100
    12             CONTINUE
                   READ (LUCMD,*) IPRLNR
@@ -340,9 +339,9 @@ C
      & '                 STARTFREQ ENDFREQ STEPSIZE',
      & '          This input will be ignored. Calculation continues.'
                   ABS_INTERVAL = .FALSE.
-                  FREQ_INTERVAL(1)=D0
-                  FREQ_INTERVAL(2)=D0
-                  FREQ_INTERVAL(3)=D1
+                  FREQ_INTERVAL(1)=0.0D0
+                  FREQ_INTERVAL(2)=0.0D0
+                  FREQ_INTERVAL(3)=1.0D0
                END IF
             ELSE IF (ABS_INTERVAL) THEN
                ABS_INTERVAL = .FALSE.
@@ -2138,7 +2137,7 @@ C ****************** FREQ is in Hartree = 2Pi*freq
 C
 #include <implicit.h>
 #include <codata.h>
-      PARAMETER ( D180 = 18.0D1)
+      PARAMETER ( D180 = 180.D0)
 C
       CROSSK = (FRVAL-FREQ)**3*FRVAL/FREQ/D180/CVEL**3
       RETURN
