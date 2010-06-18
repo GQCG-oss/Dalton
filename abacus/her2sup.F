@@ -363,7 +363,6 @@ C  /* Deck suprdi */
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      DIMENSION TITLE(24)
 #include <inftap.h>
       CHARACTER*8 LAB123(3), OLDLBL, NEWLBL
       DATA LAB123 /'********','        ','        '/
@@ -373,7 +372,8 @@ C
      &CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUONEL
-      READ(LUONEL) TITLE,NSYM,(NBAS(I),I = 1,NSYM),POTNUC
+      READ(LUONEL)
+      READ(LUONEL) NSYM,(NBAS(I),I = 1,NSYM),POTNUC
       CALL GPCLOSE(LUONEL,'KEEP')
       NBAST = 0
       DO 10 I = 1,NSYM
