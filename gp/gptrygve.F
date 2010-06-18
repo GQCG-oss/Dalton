@@ -30,7 +30,20 @@ C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C 
 C
+C FILE    : gptrygve.F
+C
+! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
+! If one set then set the other:
+#ifdef INT_STAR8
+#define VAR_INT64
+#else
+#ifdef VAR_INT64
+*define INT_STAR8
+#endif
+#endif
+!
 #include <single.h>
 C
 #ifdef REV_LOG
@@ -62,7 +75,7 @@ c===========================================================================
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
 C
       LHEAD = LNBLNK(HEAD)
       IF (IN .GE. 0) THEN
@@ -77,9 +90,9 @@ C
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
-#include <implicit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER TEXT*(*), OUT_TEXT*50
-#include <priunit.h>
 C
       IF (TEXT(1:6) .EQ. 'START ') THEN
          CALL GETTIM(TIMSTR,DUMMY)
@@ -92,13 +105,11 @@ C
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
-Chj         WRITE (LUPRI,'()')
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
             OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
             LOUT = 17 + LTEXT + 3
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
-Chj         WRITE (LUPRI,'()')
             CALL FLSHFO(LUPRI)
          END IF
       END IF
@@ -106,10 +117,10 @@ Chj         WRITE (LUPRI,'()')
       END
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
-#include <implicit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER TEXT*6
       PARAMETER (HUN = 100.0D00)
-#include <priunit.h>
       SAVE TREST
       DATA TREST /0.0D0/
       IF (TEXT .EQ. 'REST  ') THEN
@@ -133,8 +144,8 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
+#include "priunit.h"
       CHARACTER HEAD*(*), A*(*)
-#include <priunit.h>
 C
       LHEAD  = LNBLNK(HEAD)
       LENGTH = LHEAD
@@ -177,7 +188,7 @@ C
 C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
       LHEAD  = LNBLNK(HEAD)
       LNG    = LHEAD + 2
       IND = MAX(1,(80 - LNG)/2 + 1)
@@ -192,8 +203,8 @@ Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       END
 C  /* Deck stopit */
       SUBROUTINE STOPIT(SUB,PLACE,INT1,INT2)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
@@ -214,7 +225,7 @@ C  /* Deck stopit */
       END
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
@@ -452,15 +463,15 @@ C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
 C For direct access read
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <2gbdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "2gbdef.h"
+#include "dummy.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
 #if defined (VAR_SPLITFILES)
@@ -538,15 +549,15 @@ C  /* Deck writdx */
 C
 C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "2gbdef.h"
+#include "priunit.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
@@ -627,43 +638,45 @@ C                 31-Jul-1996 hjaaj (new NIBUF parameter)
 C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IINDPK(*), IINDX4(4,*)
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
 C
       IF (NIBUF .EQ. 1) THEN
-      IF (NBITS .EQ. 8) THEN
-         DO 100 I = 1,N
+        IF (NBITS .EQ. 8) THEN
+          DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
-  100    CONTINUE
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      ELSE IF (NBITS .EQ. 16) THEN
-         DO 200 I = 1,N
+          END DO
+        ELSE IF (NBITS .EQ. 16) THEN
+#ifdef INT_STAR8
+          DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
-  200    CONTINUE
+          END DO
+#else
+          CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
 #endif
+        ELSE
+          CALL QUIT('AOLAB4 error; NBITS neither 8 nor 16')
+        END IF
       ELSE
-         CALL QUIT('AOLAB4 error')
-      END IF
-      ELSE
-         DO 300 I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-            LABEL = IINDPK(NMAX+I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
-  300    CONTINUE
+        DO I = 1,N
+          LABEL = IINDPK(I)
+          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+          LABEL = IINDPK(NMAX+I)
+          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+        END DO
       END IF
 C
       RETURN
@@ -1328,21 +1341,37 @@ C
       END
 C /* Deck UPCASE */
       SUBROUTINE UPCASE(WORD)
-#include "implicit.h"
 C
 C     Routine that uppercases the word provided. Allows the input easily to
 C     be made case insensitive. F90 routine supplied by Anthony Stone and 
 C     77-ified by K.Ruud
 C
+#include "implicit.h"
       CHARACTER word*(*)
       CHARACTER*26 UPPER, LOWER
 C
       UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       LOWER = "abcdefghijklmnopqrstuvwxyz"
-      DO I = 1, LEN(WORD)
+C
+C     Remove in-line comment /hjaaj March 2010
+      K1 = INDEX(WORD,'!')
+      K2 = INDEX(WORD,'#')
+      K3 = INDEX(WORD,'*')
+      K  = MIN(K1, K2, K3)
+      IF (K .EQ. 1) GO TO 9000
+C        ......... then whole line is a comment line, we skip it
+      LEN_WORD = LNBLNK(WORD)
+      IF (K .GT. 0) THEN
+         WORD(K:LEN_WORD) = ' '
+         LEN_WORD = LNBLNK(WORD)
+      END IF
+C
+      DO I = 1, LEN_WORD
          K = INDEX(LOWER,WORD(I:I))
          IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
       END DO
 C
+ 9000 CONTINUE
       RETURN
       END
+! -- end of gptrygve.F --
