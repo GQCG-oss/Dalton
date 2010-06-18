@@ -33,8 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
+C FILE: abaopt.F
+C
 C 950915-vebjornb: New module taking care of optimizations.
 C                  It uses both the old cbiwlk.h and the new optinf.h
+C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
 #include "implicit.h"
@@ -1858,7 +1861,7 @@ C
  10   CONTINUE
       IF ((ITRNMR .LT. ITRMAX) .AND. (.NOT. GECONV)) THEN
 #ifdef VAR_LINSCA
-CANDREAS: reset the SAVEAOPT parameter. there might be a better place to do this, but where?
+CANDREAS: reset the SAVEAOPT parameter. There might be a better place to do this, but where?
          CALL DASINI
 CANDREAS END.
 #endif
@@ -2418,7 +2421,7 @@ C
             WRITE(LUPRI,*) '#) Hessian initialized to unity.'
          END IF
       END IF
-      CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,WORK,LWORK)
+      CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
       RETURN
       END
 
@@ -6479,7 +6482,7 @@ C
 C
 C     Write updated files.
 C
-         CALL PNCMOL
+         CALL PNCMOL(ITRNMR,IPRINT)
 C
 C     Memory trap has to be reinitialized.
 C
@@ -6863,7 +6866,7 @@ C
          CALL UPCASE(MLINE(I))
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,BSNM,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,KSPH)
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -6917,8 +6920,8 @@ C
  70      CONTINUE
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
-            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
-     &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
+            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
          ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF
@@ -6927,7 +6930,7 @@ C
 C
 C     Write updated geometry to files.
 C
-      CALL PNCMOL
+      CALL PNCMOL(ITRNMR,IPRINT)
 C
 C     To mark that symmetry was broken, the index of the hessian is
 C     given a negative sign. This is interpreted in PRIINF.
@@ -7027,7 +7030,7 @@ C
          MLINE(2) = PREBTX(1)
          PREBTX(1) = TMPLIN
          ITRNMR = ITRNMR - 1
-         CALL PNCMOL
+         CALL PNCMOL(ITRNMR,IPRINT)
          ITRNMR = ITRNMR + 1
       ELSE
          DOPRE = .FALSE.
@@ -7112,7 +7115,7 @@ C
          MLINE(NMLAU) = TMPLIN
          NWSYMM = .TRUE.
       END IF
-      CALL PNCMOL
+      CALL PNCMOL(ITRNMR,IPRINT)
       IPRE = IPRE + 1
       GECONV = .FALSE.
       EXHER  = .FALSE.
@@ -7411,7 +7414,7 @@ C
 C     New input files are written with desired basis. Iteration number
 C     has to be decreased first in order to write to the correct filename.
 C
-      CALL PNCMOL
+      CALL PNCMOL(ITRNMR,IPRINT)
 C
 C     Initialization of new memory trap for programs.
 C
@@ -7654,39 +7657,50 @@ C
       END
  
 C  /* Deck pncmol */
-      SUBROUTINE PNCMOL
+      SUBROUTINE PNCMOL(ITER_GEO, IPRINT)
 C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "priunit.h"
+#include "mxcent.h"
 #include "inftap.h"
-#include "nuclei.h"
 #include "molinp.h"
-#include "optinf.h"
-#include "gnrinf.h"
-      CHARACTER*12 FILENM
 C
+      CHARACTER*12 FILENM
+      PARAMETER(IPRINT_LIM = 2) !hjaaj DEBUG; set IPRINT_LIM to e.g. -1
+C
+      IF (IPRINT .GT. IPRINT_LIM .OR. NMLINE .LE. 0) THEN
+         CALL HEADER('New MOLECULE.INP punched',-1) 
+         WRITE(LUPRI,'(A,I5/)') 'Number of lines, NMLINE =',NMLINE
+         IF (NMLINE .LE. 0)
+     &      CALL QUIT('Fatal error in PNCMOL, NMLINE .le. 0')
+      END IF
       CALL GPOPEN(LUMOL,'MOLECULE.INP','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND (LUMOL)
-      DO 200 IMLINE = 1,NMLINE
+      DO IMLINE = 1,NMLINE
          WRITE(LUMOL,'(A)') MLINE(IMLINE)
- 200  CONTINUE
+         IF (IPRINT .GT. IPRINT_LIM)
+     &      WRITE (LUPRI,'(I4,2A)') IMLINE,' >',MLINE(IMLINE)
+      END DO
       CALL GPCLOSE(LUMOL,'KEEP')
-      FILENM = 'XXXX_mol.inp'
-      WRITE(FILENM(1:4),'(I4)') (ITRNMR + 1)
-      IF (ITRNMR .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
-      IF (ITRNMR .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
-      IF (ITRNMR .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
-      CALL GPOPEN(LUMOL,FILENM,'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
-      DO 300 IMLINE = 1,NMLINE
-         WRITE(LUMOL,'(A)') MLINE(IMLINE)
- 300  CONTINUE
-      CALL GPCLOSE(LUMOL,'KEEP')
+C
+      IF (ITER_GEO .GE. 0) THEN
+         FILENM = 'XXXX_mol.inp'
+         WRITE(FILENM(1:4),'(I4)') (ITER_GEO + 1)
+         IF (ITER_GEO .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
+         IF (ITER_GEO .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
+         IF (ITER_GEO .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
+         CALL GPOPEN(LUMOL,FILENM,'UNKNOWN',' ','FORMATTED',
+     &      IDUMMY,.FALSE.)
+         DO IMLINE = 1,NMLINE
+            WRITE(LUMOL,'(A)') MLINE(IMLINE)
+         END DO
+         CALL GPCLOSE(LUMOL,'KEEP')
+      END IF
       RETURN
       END
 
@@ -7832,10 +7846,12 @@ C
  150     CONTINUE
       END IF
       IF (REDINT .OR. DELINT) THEN
+
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
          CALL HX2HQ(MXRCRD,MX2CRD,ATMARR,TMPMT1,TMPMT2,TMPMT3,
      &        TMPMT4,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &        WORK,LWORK)
+
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
       RETURN

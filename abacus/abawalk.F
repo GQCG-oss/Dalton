@@ -3038,8 +3038,7 @@ C
          CALL AROUND('Final geometry')
          CALL HEADER('Cartesian coordinates (au)',-1)
          CALL PRIGEO(CORD)
-         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
       ELSE
          IF (OLDREA) THEN
             WRITE(LUPRI,'(/,A,F12.6)')
@@ -3064,15 +3063,12 @@ C
          CALL AROUND('Change in geometry')
          CALL HEADER('Cartesian displacements (au)',-1)
          CALL PRIGEO(STPCAR)
-         CALL GEOANA(CORD,.FALSE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
-         CALL GEOANA(COOR,.TRUE.,.TRUE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         CALL GEOANA(CORD,.FALSE.,.FALSE.,NBONDS,-1,WORK,LWORK)
+         CALL GEOANA(COOR,.TRUE. ,.TRUE. ,NBONDS,-1,WORK,LWORK)
          CALL AROUND('Geometry after step')
          CALL HEADER('Cartesian coordinates (au)',-1)
          CALL PRIGEO(COOR)
-         CALL GEOANA(COOR,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         CALL GEOANA(COOR,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
       END IF
 C
       RETURN
