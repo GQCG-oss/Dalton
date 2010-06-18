@@ -45,6 +45,7 @@ c    (for generating AOSUPINT file from existing AOTWOINT)
 c===========================================================================
 #endif
 C  /* Deck herctl */
+#ifndef PRG_DIRAC
       SUBROUTINE HERCTL(WORK,LWORK)
 C
 C     The code for calculation of one- and two-electron integrals
@@ -269,23 +270,21 @@ C
       CALL QEXIT('HERCTL')
       RETURN
       END
+#endif
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
-C     tuh, extensively extended by others 
+C     Trygve Helgaker, extensively extended by others 
 C
 C <<< General Input for HERMIT >>>
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <efield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
       PARAMETER (NDIR = 9, NTABLE = 140)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
@@ -293,19 +292,31 @@ C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
      &          WORD1*7
       DIMENSION WORK(LWORK)
 C
-#include <gnrinf.h>
-#include <cbiher.h>
-#include <cbihr1.h>
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#include "hrunit.h"
+#include "cbieri.h"
+#else
+#include "dummy.h"
+#include "gnrinf.h"
 #include <cbihrs.h>
-#include <cbisol.h>
-#include <nuclei.h>
-#include <orgcom.h>
-#include <huckel.h>
-#include <drw2el.h>
-#include <ccom.h>
-#include <inftra.h>
 #include <inftap.h>
 #include <infinp.h>
+#include <inftra.h>
+#endif
+C
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "nuclei.h"
+#include "ccom.h"
+#include "orgcom.h"
+
+#include <efield.h>
+#include <cbisol.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <huckel.h>
+#include <drw2el.h>
 #include <cbisor.h>
 #include <elweak.h>
 #include <r12int.h>
@@ -357,8 +368,10 @@ C
       CALL QENTER('HERINP')
       IPRDEF = IPRUSR + 1
       IF (HRINPC) THEN
+#ifndef PRG_DIRAC
          CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
+#endif
          GOTO 1000
       END IF
       HRINPC = .TRUE.
@@ -384,8 +397,10 @@ C
 C
 C     **** Find Hermit input *****
 C
+#ifndef PRG_DIRAC
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
+#endif
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
@@ -474,7 +489,12 @@ C
             ONEPRP = .TRUE.
             GO TO 100
   110    CONTINUE
-            READ (LUCMD, *) (ORIGIN(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error in reading (ORIGIN(I),I=1,3)!'
+              WRITE(LUPRI,*) '(ORIGIN(I),I=1,3):', (ORIGIN(I),I=1,3)
+              CALL QUIT('Error in reading (ORIGIN(I),I=1,3)!')
+            ENDIF
             GO TO 100
   111    CONTINUE
             SECMOM = .TRUE.
@@ -759,10 +779,20 @@ C
             SUPMAT = .FALSE.
             GO TO 100
   170    CONTINUE
-            READ (LUCMD, *) (GAGORG(I),I=1,3)
+            READ (LUCMD, *, IOSTAT=IOS) (GAGORG(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error in reading (GAGORG(I),I=1,3)!'
+              WRITE(LUPRI,*) '(GAGORG(I),I=1,3):', (GAGORG(I),I=1,3)
+              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+            ENDIF
             GO TO 100
   171    CONTINUE
-            READ (LUCMD, *) (DIPORG(I),I=1,3)
+            READ (LUCMD, *, IOSTAT=IOS) (DIPORG(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error in reading (DIPORG(I),I=1,3)!'
+              WRITE(LUPRI,*) '(DIPORG(I),I=1,3):', (DIPORG(I),I=1,3)
+              CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
+            ENDIF
             GO TO 100
   172    CONTINUE
 c ach
@@ -786,7 +816,10 @@ c ach
             GO TO 100
   177    CONTINUE
 C&&& Nuclear model
-            READ (LUCMD, *) INUC
+            READ (LUCMD, *,IOSTAT=IOS) INUC
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading nuclear model INUC  !')
+            ENDIF
             IF    (INUC.EQ.1) THEN
               GAUNUC = .FALSE.
             ELSEIF(INUC.EQ.2) THEN
@@ -1132,6 +1165,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
   299 CONTINUE
+
       IF (.NOT. BGWEIL) BGWEIN = WEINBG 
 cLig <>
       NMRISS = FERMI .OR. PSO .OR. SPIDIP .OR. DSO .OR. SDFC 
@@ -1334,7 +1368,7 @@ cLig <<
          IF (HDOBRT) WRITE (LUPRI,'(10X,A)')
      &        '- Test of ket-diff. hdo-integrals with respect to B'
          IF (SQHDOL) WRITE (LUPRI,'(10X,A)')
-     &      '- Bra differentiated half-derivative overlap matrix'
+     &        '- Bra differentiated half-derivative overlap matrix'
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &      '- Ket differentiated half-derivative overlap matrix'
          IF (SQHD2O) WRITE (LUPRI,'(10X,A)')
@@ -1440,15 +1474,13 @@ cLig <<
      &      ' All one-electron property integrals are printed.'
          IF (S1ELE) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     &        'Type A'
+     &        ' Type A'
          IF (S1ELB) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     &        'Type B'
-         IF (ONEELD) THEN
-            WRITE (LUPRI,'(10X,A)')
-     &       '- first electric derivatives of one-electron'
-            WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
-         ENDIF
+     &        ' Type B'
+         IF (ONEELD) WRITE (LUPRI,'(10X,A)')
+     &       '- first electric derivatives of one-electron'//
+     &       ' Hamiltonian integrals'
          IF (PVIOLA) WRITE (LUPRI,'(10X,A)')
      &       '- parity violation electroweak interaction'
 cLig >> added message to display for RPSO and RAGNMO optiion
@@ -1458,11 +1490,13 @@ cLig >> added message to display for RPSO and RAGNMO optiion
      &      '  analytical way'
 cLig <<
       END IF
+
       WRITE (LUPRI,'(4(/A,3F20.12))')
-     &    ' Center of mass :', (CMXYZ(I),I=1,3),
-     &    ' Operator center:', (ORIGIN(I),I=1,3),
-     &    ' Gauge origin   :', (GAGORG(I),I=1,3),
-     &    ' Dipole origin  :', (DIPORG(I),I=1,3)
+     &    ' Center of mass  (bohr):', (CMXYZ(I),I=1,3),
+     &    ' Operator center (bohr):', (ORIGIN(I),I=1,3),
+     &    ' Gauge origin    (bohr):', (GAGORG(I),I=1,3),
+     &    ' Dipole origin   (bohr):', (DIPORG(I),I=1,3)
+
       IF (EXPIKR) WRITE (LUPRI,'(/A,3F20.15)')
      &    ' Wave numbers for exp(ikr):', (EXPKR(I),I=1,3)
       IF (SOTEST) WRITE (LUPRI,'(/A)')
@@ -1470,11 +1504,9 @@ cLig <<
       IF (.NOT.HAMILT) WRITE (LUPRI,'(/A)')
      *    ' Ordinary (field-free non-relativistic) Hamiltonian '/
      *     /'integrals not calculated.'
-      IF (MGMO2T) THEN
-         WRITE (LUPRI,'(/A,D12.6)')
+      IF (MGMO2T) WRITE (LUPRI,'(/A,D12.6)')
      &    ' Threshold for testing two-electron part of magnetic moment:'
      &    ,PRTHRS
-      END IF
       IF (NMRISS) THEN
          IF (ALLATM) THEN
             WRITE (LUPRI,'(/2A)')
@@ -1696,18 +1728,22 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER (NTABLE = 15)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <cbiher.h>
-#include <cbihr2.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "cbihr2.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
@@ -1863,14 +1899,13 @@ C&&&
       END IF
   300 CONTINUE
       ICEDIF = ICDIFF + 2*IEDIFF
-      IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
+C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
       IF (NEWDEF) THEN
-         CALL HEADER('Changes of defaults for HR2INP:',1)
+         CALL HEADER('Set-up from HR2INP:',1)
          IF (.NOT.(RUNTWO.OR.DIRCAL)) THEN
             WRITE (LUPRI,'(A)') ' No two-electron integrals calculated.'
          ELSE
-            IF (IPRTWO .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
-     &         ' Print level in TWOINT:',IPRTWO
+            WRITE (LUPRI,'(A,I5)') ' Print level in TWOINT:',IPRTWO
             IF (IPRSUM .GT. 0) THEN
                  WRITE (LUPRI,'(A,4I3)')
      &                ' Extra output for the following shells:',
@@ -1902,35 +1937,36 @@ C&&&
             END IF
             IF (DIRCAL) THEN
               IF(SOFOCK) THEN
-                WRITE(LUPRI,'(/1X,A)')
-     &            '* Direct calculation of Fock matrices in SO-basis.' 
+                WRITE(LUPRI,'(A)')
+     &            ' * Direct calculation of Fock matrices in SO-basis.' 
               ELSE 
-                WRITE(LUPRI,'(/1X,A)')
-     &            '* Direct calculation of Fock matrices in AO-basis.' 
+                WRITE(LUPRI,'(A)')
+     &            ' * Direct calculation of Fock matrices in AO-basis.' 
               ENDIF
+
               IF (USRSCR) THEN
                 FCKTHR = -IFTHRS
                 FCKTHR = 10.0D0**FCKTHR
-                WRITE(LUPRI,'(1X,A,A,1P,E8.2)') 
-     &            '* Screening threshold in direct Fock ',
+                WRITE(LUPRI,'(2A,1P,D8.2)') 
+     &            ' * Screening threshold in direct Fock ',
      &            'matrix construction: ',FCKTHR
                 IF(IFTHRS.GE.16) WRITE(LUPRI,'(4X,A)') 
      &             '---> WARNING : Screening turned off !'
               ELSE
-                WRITE(LUPRI,'(1X,A)')
-     &        '* Program controlled screening thresholds used for this.'
+                WRITE(LUPRI,'(A)')
+     &    ' * Program controlled screening thresholds used for this.'
               END IF
-              IF(ICDIFF.EQ.1) WRITE(LUPRI,'(1X,A)')
-     &    '* Separate density screening of Coulomb integral batches'
-              IF(IEDIFF.EQ.1) WRITE(LUPRI,'(1X,A)')
-     &    '* Separate density screening of exchange integral batches'
+              IF(ICDIFF.EQ.1) WRITE(LUPRI,'(A)')
+     &    ' * Separate density screening of Coulomb integral batches'
+              IF(IEDIFF.EQ.1) WRITE(LUPRI,'(A)')
+     &    ' * Separate density screening of exchange integral batches'
             ENDIF
-            IF(RELCAL) THEN
-              WRITE(LUPRI,'(1X,A,2(/3X,A,E9.3))')
-     +           '* Threshold factors for integrals:',
+            IF (RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN
+              WRITE(LUPRI,'(A,2(/3X,A,1P,D9.3))')
+     +           ' * Threshold factors for omitting integrals:',
      +           'SL-integrals: ',THRFAC(1),
      +           'SS-integrals: ',THRFAC(2)
-            ENDIF
+            END IF
          END IF
  400  FORMAT(/' DFT-hybrid : Using a Erf type two-elec. operator')
  410  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
@@ -1938,11 +1974,15 @@ C&&&
  199  CALL QEXIT('HR2INP')
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+C
+C     Input for FRMSUP routine (FoRM SUPermatrix 2-el integrals)
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -2015,13 +2055,13 @@ C
     4          CONTINUE
                GO TO 100
     5          CONTINUE
-                 READ (LUCMD,*) THRSUP
-                 IF (THR_REDFAC .GT. 0.0D0) THEN
-                   ICHANG = ICHANG + 1
-                   WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+                  READ (LUCMD,*) THRSUP
+                  IF (THR_REDFAC .GT. 0.0D0) THEN
+                    ICHANG = ICHANG + 1
+                    WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &           ' thresholds multiplied with general factor',THR_REDFAC
                    THRSUP = THRSUP*THR_REDFAC
-                 END IF
+                  END IF
                GO TO 100
     6          CONTINUE
                GO TO 100
@@ -2080,11 +2120,11 @@ C
 #include <orgcom.h>
 #include <nuclei.h>
 #include <huckel.h>
-#include <ccom.h>
 #include "inftap.h"
 #include <efield.h>
 #include <r12int.h>
 #include <drw2el.h>
+#include "qm3.h"
 #include <pcmlog.h>
 C
       DIMENSION   RLMORI(3)
@@ -3473,20 +3513,21 @@ C  INFTAP: LUINTA, LUSRINT
 #include "cbihr2.h"
 #include "inftap.h"
 C
-      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, RUNTWO_SAV, DOSRIN_SAV
+      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, RUNTWO_SAV !, DOSRIN_SAV
 C
       CALL GPINQ('AOTWOINT','EXIST',AOEXIST)
       IF (.NOT. AOEXIST) THEN
          RUNONE_SAV = RUNONE
          RUNTWO_SAV = RUNTWO
-         DOSRIN_SAV = DOSRIN
+!        DOSRIN_SAV = DOSRIN
          DIRCAL_SAV = DIRCAL
          RUNONE = .FALSE.
          RUNTWO = .TRUE.
-         DOSRIN = DOSRIN .AND. .NOT.DIRCAL
+!        DOSRIN = DOSRIN .AND. .NOT.DIRCAL
          DIRCAL = .FALSE.
 C       ... hjaaj: AOSR2INT is only needed if not DIRCAL (not direct)
-C       /Jun 09
+C       /Jun 09 -- not true any more - hjaaj April 2010 (parallel
+C       activates DIRCAL !!!)
 C        Open LUINTA/LUSRINT for new integrals
          WRITE (LUPRI,'(/A)') '---> (Re)generating AOTWOINT'
          CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -3498,22 +3539,23 @@ C        Open LUINTA/LUSRINT for new integrals
          CALL HERINT(WORK,LWORK)
          RUNONE = RUNONE_SAV
          RUNTWO = RUNTWO_SAV
-         DOSRIN = DOSRIN_SAV
+!        DOSRIN = DOSRIN_SAV
          DIRCAL = DIRCAL_SAV
       END IF
 
       RETURN
       END
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <dorps.h>
+#include "symmet.h"
+#include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP
          DOREPS(IREP) = .TRUE.
@@ -3645,11 +3687,13 @@ C
 C/* Deck herini */
       SUBROUTINE HERINI
 #include <implicit.h>
+#include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <nuclei.h>
 #include <gnrinf.h>
 #include <inftra.h>
+#include "cbirea.h"
 #include <cbisol.h>
 #include <cbisor.h>
 #include <cbiher.h>      
@@ -3664,27 +3708,27 @@ C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
 C
       IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
          NEWTRA = .TRUE.
-         WRITE(LUPRI,'(/4X,A)') 'INFORMATION: Switched to "new" '//
-     &     'integral transformation (from 1988 ;-) )',
-     &     'because more than 255 basis functions.'
+         WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
+     &     /'integral transformation (from 1988 ;-) )',
+     &      'because more than 255 basis functions.'
       END IF
 C
 C
 C     Initialize /CBIHER/
 C
 CTSAUE
-      RNINTS = NEWTRA
+      RNINTS = NEWTRA .AND. .NOT. DIRCAL
       IF(RELCAL) THEN
         HAMILT = .FALSE.
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
-        DIRAC  = .TRUE.
+        DIRAC_HER = .TRUE.
         SUPMAT = .FALSE.
       ELSE
         HAMILT = .TRUE.
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
-        DIRAC  = .FALSE.
+        DIRAC_HER = .FALSE.
 C#ifdef VAR_INT64
 C        SUPMAT = .FALSE.
 C#else
@@ -3847,7 +3891,7 @@ C     Initialize R12 logical variables R12CAL (WK/UniKA/04-11-2002).
       LOOPDP = .FALSE.
       VCLTHR =  0D0
       SVDTHR =  1D-12
-      DO I=1,8
+      DO I = 1,8
         NRXR12(I) = 0
         LOCFRO(I) = 0
       END DO
@@ -3908,7 +3952,7 @@ C
 C
 C     Open Mean-field input file generate in READIN
 C
-      LUTMP2 = -1
+      LUTMP2   = -1
       LUMNFPRP = -1
       CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
@@ -3924,7 +3968,7 @@ C     We loop over symmetry-independent center
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
-         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM),
+         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,GNUEXP(IATOM),
      &             WORK,LWORK)
       END DO
 C
@@ -4047,7 +4091,6 @@ C
       GENCON = .TRUE.
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
-      OLDNRM = .FALSE.
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
@@ -4268,13 +4311,13 @@ C
       END DO
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Diagonal E1 matrix',-1)
-         CALL OUTPUT(E1DIAG,1,NBAST,1,1,NBAST,1,1,LUPRI)
+         CALL OUTPUT(E1DIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
          CALL HEADER('Diagonal A1 matrix',-1)
-         CALL OUTPUT(A1DIAG,1,NBAST,1,1,NBAST,1,1,LUPRI)
+         CALL OUTPUT(A1DIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
          CALL HEADER('Diagonal Ek matrix',-1)
-         CALL OUTPUT(EKDIAG,1,NBAST,1,1,NBAST,1,1,LUPRI)
+         CALL OUTPUT(EKDIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
          CALL HEADER('Diagonal D1 matrix',-1)
-         CALL OUTPUT(D1DIAG,1,NBAST,1,1,NBAST,1,1,LUPRI)
+         CALL OUTPUT(D1DIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
       END IF
 C
 C
@@ -4481,8 +4524,8 @@ C
      &           SQMAT2,NBAST,0.D0,
      &           WEWMAT,NBAST)
       IF (IPRINT .GT. 6) THEN
-         CALL AROUND('1.transformation of W-matrix')
-         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND('1. transformation of W-matrix')
+         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 C
       IJ = 1
@@ -4502,8 +4545,8 @@ C
      &           SQMAT2,NBAST,1.D0,
      &           WEWMAT,NBAST)
       IF (IPRINT .GT. 6) THEN
-         CALL AROUND('2.transformation of W-matrix')
-         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND('2. transformation of W-matrix')
+         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 C
 C     Make 1/2 EW*W + 1/2 W*WE
@@ -4514,8 +4557,8 @@ C
          END DO
       END DO
       IF (IPRINT .GT. 6) THEN
-         CALL AROUND('3.transformation of W-matrix')
-         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND('3. transformation of W-matrix')
+         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 C
 C     Start constructing WEW
@@ -4663,7 +4706,7 @@ C
       IF (IPRINT .GT. 6) THEN
          CALL HEADER('Contraction matrix read from '//
      &               'LUCNMT in PRI2CN',-1)
-         CALL OUTPUT(CONTC,1,NPRIM,1,NBAST,NPRIM,NBAST,1,LUPRI)
+         CALL OUTPUT(CONTC,1,NPRIM,1,NBAST,NPRIM,NBAST,-1,LUPRI)
       END IF
       CALL DGEMM('T','N',NBAST,NPRIM,NPRIM,1.0D0,CONTC,NPRIM,
      &           AOINT,NPRIM,0.0D0,WORK,NBAST)
@@ -4997,3 +5040,4 @@ C
        call quit('This STG fit is not possible. Sorry.')
       end if
       end
+C -- end of herdrv.F --
