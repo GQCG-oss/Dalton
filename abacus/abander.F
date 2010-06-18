@@ -2163,9 +2163,9 @@ C
                   IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
                   CALL UPCASE(MLINE(NCLINE(ICENT1)-1))
                   CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
-     &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
+     &                 IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,KSPH)
                   CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
-     &                        ATOMBA,BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,KSPH)
                ELSE
                   WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
                END IF
@@ -2186,10 +2186,10 @@ C
  1100    CONTINUE
          IF (NEWINP) THEN
             CALL UPCASE(MLINE(NCLINE(KCENT1)-1))
-            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,IQM1,
-     &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
-            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,ATOMBA,
-     &                  BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
+            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
+     &           IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,
+     &           BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,KSPH)
             BASIS  = .FALSE.
             ATOMBA = .FALSE.
          ELSE
@@ -6409,7 +6409,7 @@ C
 C     *** Backing up symmetry. ***
 C
       CALL ICOPY(64    ,IXVAL      ,1,IXVALB,1)
-      CALL ICOPY(8     ,ISOP       ,1,ISOPB ,1)
+      CALL ICOPY(8     ,JSOP       ,1,JSOPB ,1)
       CALL ICOPY(8     ,NRHFFR     ,1,NRHFRB,1)
       MAXRPB = MAXREP
 C
@@ -6523,9 +6523,9 @@ C
                SAMIRP = .TRUE.
                DO 300 ISYOP2 = 0, MAXREP
                DO 300 ISYOP1 = 0, MAXRPB
-                  IF (SYMOP(ISOP(ISYOP2)).EQ.SYMOP(ISOPB(ISYOP1))) THEN
-                     IF (IXVALB(ISOPB(ISYOP1),IRPOLD)  .NE.
-     &                    IXVAL (ISOP (ISYOP2),IREP )) SAMIRP = .FALSE.
+                  IF (SYMOP(JSOP(ISYOP2)).EQ.SYMOP(JSOPB(ISYOP1))) THEN
+                     IF (IXVALB(JSOPB(ISYOP1),IRPOLD)  .NE.
+     &                    IXVAL(JSOP (ISYOP2),IREP )) SAMIRP = .FALSE.
                   END IF
  300           CONTINUE
                IF (SAMIRP) THEN
