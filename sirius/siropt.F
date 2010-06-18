@@ -101,9 +101,10 @@ C  INFOPT: EMCSCF,...
 C  INFDIM: LCINDX,MAXRL,?
 C  INFTAP: LUIT1,?
 C  CBIHR2: IFTHRS,USRSCR
+C  CBIREA: LMULBS
+C  R12INT: R12CAL
 C
 #include <maxorb.h>
-#include <r12int.h>
 #include <priunit.h>
 #include <infinp.h>
 #include <pcmlog.h>
@@ -116,6 +117,8 @@ C
 #include <itinfo.h>
 #include <gnrinf.h>
 #include <cbihr2.h>
+#include <cbirea.h>
+#include <r12int.h>
 C------------------------
 #include <dfterg.h>
 C ---
@@ -892,7 +895,7 @@ C     Check if local region where absorption normally is
 C     switched off (unless FLAG(54) has been set in input)
 C
       IF (ABSORP .AND. .NOT.FLAG(54)) THEN
-         LOCAL = (STPLEN .LT. STPABS*RTRUST)
+         LOCAL = (STPLEN .LT. STPABS*RTRUST) .AND. ITBCK .EQ. 0
          IF (LOCAL) ITABS = -1
 C        ... no absorption next iteration
          LOCAL = (LOCAL .AND. STPC .LT. D2*STPO)
@@ -2003,7 +2006,7 @@ C  INFORB: NCMOT
 C  INFVAR: NWOPT
 C  INFOPT: NREDL,EMCSCF,EMCOLD,DEPRED,BETA,GAMMA,SHFLVL,
 C          STPLEN,STPMAX,STPINC,STPRED,
-C          RTRUST,RTTOL,RATMIN,RATGOD,RATREJ,REJWMI,REJWMA
+C          RTRUST,RTTOL,RATMIN,RATGOD,RATREJ,REJWMI,REJWMA, GRDNRM
 C  ITINFO: DINFO(*)
 C  INFTAP: LUIT1
 C  INFPRI: P4FLAG(*),P6FLAG(*)
@@ -2046,7 +2049,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.ABS(THDE*EMCSCF) ) THEN
+      IF ( ABS(DEPRED).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
@@ -2436,6 +2439,8 @@ C   INFTAP : LUSIFC
 C   INFDIM : NASHDI,NASHMA,NORBMA
 C   INFPRI : ?
 C CBGETDIS : IADH2
+C   CBIREA : LMULBS
+C   R12INT : R12CAL
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -2453,13 +2458,11 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <cbgetdis.h>
+#include <cbirea.h>
 #include <r12int.h>
 C----------------
-C CBN+JK 03.01.06
-C----------------
+C CBN+JK 03.01.06 gnrinf.h included
 #include <gnrinf.h>
-C----------------
-C CBN+JK 03.01.06
 C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE

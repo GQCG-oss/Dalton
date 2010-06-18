@@ -51,6 +51,7 @@ C
 #include <infpri.h>
 #include <scbrhf.h>
 #include <gnrinf.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include "incore.h"
       LOGICAL DELEMO, FOUND, LDUMMY, TEMP_DIRFCK

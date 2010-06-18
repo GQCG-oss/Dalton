@@ -491,10 +491,13 @@ C Used from common blocks:
 C   INFORB : NNBAST,...
 C   INFDIM : NNBASM, NBASMA
 C   INFPRI : LUW4
+C   CBIREA : LMULBS
+C   R12INT : LAUXBS
 C
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
       CALL QENTER('DELMO ')
@@ -1441,12 +1444,14 @@ C Used from common blocks:
 C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
+C   CBIREA : LMULBS
 C
 #include <maxorb.h>
 #include <maxash.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
 C *** FORMAT statements

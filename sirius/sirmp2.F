@@ -1225,10 +1225,10 @@ C
          CALL QUIT('ERROR: MP2 is not implemented for open-shell RHF')
       END IF
 C
-      IF (IPRMP2 .GE. 3) WRITE (LUPRI,'(///A//A,I5/A,8I5)')
+      IF (IPRMP2 .GE. 3) WRITE (LUPRI,'(/A//A,I5/A,8I5)')
      *   ' Check that orbitals are canonical HARTREE-FOCK orbitals',
-     *   ' Number of electrons :',2*NRHFT,
-     *   ' Orbital occupations :',(NRHF(I),I=1,NSYM)
+     *   '    Number of electrons :',2*NRHFT,
+     *   '    Orbital occupations :',(NRHF(I),I=1,NSYM)
 C
       IF (LSCRA .LT. N2BASX) CALL ERRWRK('MP2FCK',-N2BASX,LSCRA)
 C
@@ -1401,9 +1401,9 @@ C
       CALL QEXIT('MP2FCK')
       RETURN
 C
- 1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
- 1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
- 1740 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2,
+ 1730 FORMAT(/' Hartree-Fock electronic energy:',F25.12)
+ 1732 FORMAT( ' Hartree-Fock total      energy:',F25.12)
+ 1740 FORMAT(/' Hartree-Fock orbital energies, symmetry',I2,
      &         ', number of occupied SCF orbitals is',I5/)
  1750 FORMAT(4X,5F15.8)
 C
@@ -1411,13 +1411,13 @@ C
 C *** end of subroutine MP2FCK
 C
       END
-C  /* Deck mp2ifc */
+C  /* Deck MP2IFC */
         SUBROUTINE MP2IFC(DONE,COEMP2)
 C
 C This routine prepares the SOPPA interface for RESPONSE storing
 C the correlation coefficients and the second order one-density
 C matrix on the end of the LUSIFC file.
-C MJP 181093
+C    MJP 181093
 C
 #include <implicit.h>
 #include <priunit.h>

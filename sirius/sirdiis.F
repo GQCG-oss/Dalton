@@ -310,9 +310,13 @@ C  INFOPT : EPOT,EMCSCF,EMY,EACTIV,GRDNRM
 C  SCBRHF : THRRHF,MXDIIS, ?
 C  INFVAR : NWOPH
 C  SCBRHF : IOPRHF,AUTOCC
+C  CBIREA : LMULBS
+C  R12INT : R12CAL
 C
 #include <maxorb.h>
 #include <priunit.h>
+#include <mxcent.h>
+
 #include <molde.h>
 #include <infinp.h>
 #include <pcmlog.h>
@@ -324,10 +328,10 @@ C
 #include <infpri.h>
 #include <gnrinf.h>
 #include <dfterg.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <qm3.h>
 #include "incore.h"
-#include <mxcent.h>
 #include <qmmm.h>
 C------------------------
 C
