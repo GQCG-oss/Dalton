@@ -31,17 +31,23 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
-     &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT,EXPVAL,
-     &                  EXP1EL,DENMAT)
-#include <implicit.h>
-#include <priunit.h>
+     &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT,
+     &                  EXPVAL,EXP1EL,DENMAT)
 C
-      LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2),EXP1EL
+C   (I)  DOINT(2,2)     : which integral classes to do
+C   (O)  EXPVAL(NOPTYP) : expectation values for each operator component
+C   (I)  logical EXP1EL : calculate EXPVAL, using DENMAT
+C   (I)  DENMAT(:)      : one-electron density matrix
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2), EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), INTREP(NOPTYP),
      &          WORK(LWORK), INTADR(*), EXPVAL(NOPTYP), DENMAT(*)
@@ -90,13 +96,13 @@ C  /* Deck pr1dr1 */
      &                  INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,DOATOM,
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
      &                  DOINT,EXPVAL,EXP1EL,DENMAT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <pi.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "pi.h"
+#include "maxaqn.h"
       PARAMETER (D1 = 1.00 D00, D4 = 4.D0,D8 = 8.D0,DMTRA = .75D0)
 C
       LOGICAL ANTI, DOATOM(*), HER, TRIANG, SQUARE, DONUC1, DOMOM1,
@@ -108,21 +114,29 @@ C
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*),
      &          EXPVAL(NOPTYP), DENMAT(NELMNT)
 C
-#include <onecom.h>
-#include <orgcom.h>
-#include <lmns.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <symind.h>
-#include <huckel.h>
+#include "onecom.h"
+#include "orgcom.h"
+#include "lmns.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "symind.h"
+#include "huckel.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF(THRS.EQ.0.D0) THRS = 1.D-15
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
+C
+C   JMAXD   max j in (d/dx)**j
+C   JMAXM : max j in ( x  )**j
+C   DONUC1: true  - do < (d/dx)**j A | ... | B>
+C           false - do <           A | ... | (d/dx)**j B>
+C   DOMOM1: true  - do < ( x  )**j A | ... | B>
+C           false - do <           A | ... | ( x  )**j B>
+C   (comment added Nov. 2002 / HJAaJ)
 C
       IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45) THEN
          JMAXD  = 0
@@ -344,6 +358,7 @@ C
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
+C     type 45 already defined
       ELSE IF (INTTYP .EQ.46) THEN
          JMAXD  = 0
          JMAXM  = 1 + IORDER
@@ -369,32 +384,32 @@ C
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSEIF (INTTYP .EQ.51) THEN
+      ELSE IF (INTTYP .EQ.51) THEN
          JMAXD  = 2
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
-      ELSEIF (INTTYP .EQ.52) THEN
+      ELSE IF (INTTYP .EQ.52) THEN
          JMAXD  = 1
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
-      ELSEIF (INTTYP .EQ.53) THEN
+      ELSE IF (INTTYP .EQ.53) THEN
          JMAXD  = 1
          JMAXM  = 2
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
-      ELSEIF (INTTYP .EQ.54) THEN
+      ELSE IF (INTTYP .EQ. 54) THEN
          JMAXD  = 1
          JMAXM  = 3
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
-      ELSEIF (INTTYP .EQ.55) THEN
+      ELSE IF (INTTYP .EQ.55) THEN
          JMAXD  = 1
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSEIF (INTTYP .EQ.56) THEN
+      ELSE IF (INTTYP .EQ.56) THEN
          JMAXD = 0
          JMAXM = 3
          DONUC1 = .FALSE.
@@ -571,6 +586,8 @@ cLig <<
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
+      ELSE
+         CALL QUIT('PR1DR1: Unknown INTTYP')
       END IF
 C
       IF (IPRINT .GT. 5) THEN
@@ -580,7 +597,7 @@ C
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
          WRITE (LUPRI,'(A,L5)') ' ANTI   ', ANTI
          WRITE (LUPRI,'(A,L5)') ' SQUARE ', SQUARE
-         WRITE (LUPRI,'(A,(10I9))')    ' INTREP ',(INTREP(I),I=1,NOPTYP)
+         WRITE (LUPRI,'(A,(10I5))') ' INTREP ', (INTREP(I),I=1,NOPTYP)
          WRITE (LUPRI,'(A,(10(1X,A)))')' LABINT ',(LABINT(I),I=1,NOPTYP)
          WRITE (LUPRI,'(A,3F20.10)') ' ORIGIN ', (ORIGIN(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' GAUGE  ', (GAGORG(I),I=1,3)
@@ -787,19 +804,20 @@ C  /* Deck pr1sop */
      &                  SQUARE,IPRINT,JMAXD,JMAXM,ISHELA,ISHELB,IORBA,
      &                  IORBB,KAB,CORBX0,CORBY0,CORBZ0,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,EXP1EL,IDENB0)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+!
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
       LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DONUC1, DOMOM1,
      &        EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*),
      &          DENMAT(NELMNT), EXPVAL(NOPTYP)
-#include <onecom.h>
+#include "onecom.h"
 C
       INATM = NUCDEP
       IF (FORQM3 .AND. (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29
@@ -812,7 +830,8 @@ C
       KCORCX = KFACTR + INATM
       KCORCY = KCORCX + INATM
       KCORCZ = KCORCY + INATM
-      KLAST  = KCORCZ + INATM
+      KGEXP  = KCORCZ + INATM
+      KLAST  = KGEXP  + INATM
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1SOP',' ',KLAST,LWORK)
       LWRK = LWORK - KLAST + 1
       CALL PR1SO1(SOINT,WORK(KSHINT),DENMAT,EXPVAL,WORK(KLAST),LWRK,
@@ -821,8 +840,8 @@ C
      &            NSHINT,SQUARE,IPRINT,WORK(KFACTR),JMAXD,JMAXM,ISHELA,
      &            ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &            WORK(KCORCX),WORK(KCORCY),WORK(KCORCZ),WORK(KCENTC),
-     &            WORK(KSYMC),TOLOG,TOLS,DONUC1,DOMOM1,MULTA,MULTB,
-     &            WORK(KNCNTC),EXP1EL,IDENB0)
+     &            WORK(KSYMC),WORK(KGEXP),TOLOG,TOLS,DONUC1,DOMOM1,
+     &            MULTA,MULTB,WORK(KNCNTC),EXP1EL,IDENB0)
       RETURN
       END
 C  /* Deck pr1so1 */
@@ -831,37 +850,37 @@ C  /* Deck pr1so1 */
      &                  IORDER,DOATOM,WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,
      &                  NSHINT,SQUARE,IPRINT,FACINT,JMAXD,JMAXM,ISHELA,
      &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
-     &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,TOLOG,TOLS,
+     &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,NCENTC,EXP1EL,IDENB0)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-      LOGICAL FULMAT, ANTI, DOATOM(*), TRIANG, SQUARE, DONUC1,
-     &        MULCHA, DOMOM1, HUCORB, EXP1EL
+      LOGICAL   FULMAT, ANTI, DOATOM(*), TRIANG, SQUARE, DONUC1,
+     &          MULCHA, DOMOM1, HUCORB, EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), SHLINT(KCKTAB,NSHINT),
      &          WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), FACINT(*),
      &          CORCX(*), CORCY(*), CORCZ(*), NCENTC(*),
-     &          INTADR(*), JSYMC(*), JCENTC(*), DENMAT(NELMNT),
-     &          EXPVAL(NOPTYP)
+     &          INTADR(*), JSYMC(*), JCENTC(*), GEXP(*),
+     &          DENMAT(NELMNT),EXPVAL(NOPTYP)
 C
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+      PARAMETER (D0 = 0.0D0)
 C
-#include <onecom.h>
-#include <orgcom.h>
-#include <shells.h>
-#include <huckel.h>
-#include <symmet.h>
-#include <qm3.h>
-#include <gnrinf.h>
-#include <elweak.h>
+#include "nuclei.h"
+#include "onecom.h"
+#include "orgcom.h"
+#include "shells.h"
+#include "huckel.h"
+#include "symmet.h"
+#include "qm3.h"
+#include "gnrinf.h"
+#include "elweak.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 C
@@ -908,7 +927,9 @@ cLig <> added JMAX adjustment  for INTTYP = 82
      &                    .OR. (INTTYP .EQ. 96)
      &                    .OR. (INTTYP .EQ. 97)
      &                    .OR. (INTTYP .EQ. 99)
-     &                    .OR. (INTTYP .EQ. 100)) THEN
+     &                    .OR. (INTTYP .EQ. 100)
+     &   ) THEN
+
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
@@ -1032,6 +1053,7 @@ C
                      CORCX(NATOMC)  = XYZ(1,ISYMOP)*CORCX0
                      CORCY(NATOMC)  = XYZ(2,ISYMOP)*CORCY0
                      CORCZ(NATOMC)  = XYZ(3,ISYMOP)*CORCZ0
+                     GEXP(NATOMC)   = GNUEXP(IATOMC)
                      FACINT(NATOMC) = FACTOR
                      NCENTC(NATOMC) = NUCNUM(IATOMC,ISYMOP+1)
                   END IF
@@ -1075,7 +1097,7 @@ C        Huckel / EWMO information matrix
 C        ...  INTTYP .eq. -1 signals HUCKEL integrals
 C
          IF (INTTYP .EQ. -1) THEN
-            SCAL = 1.0D0
+            SCAL   = 1.0D0
             HUCFAC = 1.0D0
             IF (.NOT. EWMO) THEN
 C     Scale overlap integrals for the Huckel matrix part
@@ -1097,7 +1119,7 @@ C
 C                 ... no intercenter terms in Hamiltonian matrix in EWMO
                   HUCFAC = D0
                ELSE
-                  HUCFAC = DP5*HUCCNT*(HUCEXC(IHUCA) + HUCEXC(IHUCB))
+                  HUCFAC = 0.50D0*HUCCNT*(HUCEXC(IHUCA) + HUCEXC(IHUCB))
                END IF
             END IF
             HUCFAC = HUCFAC/SQRT(SCAL)
@@ -1112,7 +1134,7 @@ C
      &               NOPTYP,NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,
      &               NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,
      &               JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
-     &               TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
+     &               GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
 C
 C        ****************************************
 C        ***** Transform to spherical basis *****
@@ -1140,8 +1162,8 @@ C
      &                  EXP1EL)
             ELSE IF (INTTYP .EQ. 29) THEN
                CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,
-     &                    ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT,MULTA,MULTB,
-     &                    EXPVAL,DENMAT,EXP1EL)
+     &                    ISYMOP,NELMNT,NOPTYP,ANTI,INTADR,IPRINT,
+     &                    MULTA,MULTB,EXPVAL,DENMAT,EXP1EL)
             ELSE IF (INTTYP .EQ. 75) THEN
                CALL TESTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
      &                     ISYMOP,1,NOPTYP,ANTI,EXP1EL,DENMAT,MULTA,
@@ -1207,18 +1229,18 @@ cLig <> added the call to NSSTRA for INTTYP = 82
      &                  NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DUMMY,EXP1EL)
          ELSE IF (INTTYP .EQ. 29) THEN
             CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,
-     &                 ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT,MULTA,MULTB,
-     &                 EXPVAL,DENMAT,EXP1EL)
+     &                 ISYMOP,NELMNT,NOPTYP,ANTI,INTADR,IPRINT,
+     &                 MULTA,MULTB,EXPVAL,DENMAT,EXP1EL)
          ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
             CALL EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,INTADR,EXP1EL,DUMMY,MULTA,
-     &                  MULTB,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,INTADR,EXP1EL,DUMMY,
+     &                  MULTA,MULTB,IPRINT)
          ELSE IF (INTTYP .EQ. 34) THEN
             CALL HDBTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 52) THEN
             CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
@@ -1272,16 +1294,17 @@ C  /* Deck pr1prm */
      &                  NOPTYP,NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,
      &                  NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,
      &                  JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
-     &                  TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
-#include <implicit.h>
-#include <priunit.h>
+     &                  GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,
+     &                  NCENTC,NSHINT)
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAL DOATOM(*), TRIANG, DONUC1, DOMOM1, HUCORB
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION WORK(LWORK), FACINT(NATOMC), CORCX(NATOMC),
-     &          CORCY(NATOMC), CORCZ(NATOMC), SHLINT(KCKTAB,*),
+     &          CORCY(NATOMC), CORCZ(NATOMC), SHLINT(KCKTAB,*), GEXP(*),
      &          NCENTC(*)
-#include <onecom.h>
+#include "onecom.h"
 C
       CALL QENTER('PR1PRM')
       JMAXA  = NHKTA - 1
@@ -1306,7 +1329,7 @@ C
      &               WORK(KAHGTF),SHLINT,WORK(KFREE),LFREE,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
-     &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC,
+     &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
      &               NCENTC,NSHINT)
       ELSE
          CALL PR1PRD(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -1325,32 +1348,33 @@ C  /* Deck pr1pra */
      &                  WORK,LWORK,LABINT,INTTYP,NOPTYP,
      &                  NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
-     &                  DIFABZ,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pi.h>
+     &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pi.h"
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3,
      &           D2INV = 0.50D0)
 C
-      LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI, HUCORB
+      LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI, HUCORB, ONCN
       LOGICAL KINODC
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION WORK(LWORK), TEMP(3),
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
-     &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
+     &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*), GEXP(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          NCENTC(*)
+#include "huckel.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "elweak.h"
 C
-#include <onecom.h>
-#include <orgcom.h>
-#include <huckel.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <elweak.h>
+#include "onecom.h"
+#include "orgcom.h"
 C
+C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
 cLig <> set DIFODC true also for INTTYP = 81 and 82
       DIFODC = (INTTYP.EQ. 3) .OR. (INTTYP.EQ. 5) .OR. (INTTYP.EQ.10)
      &    .OR. (INTTYP.EQ.14) .OR. (INTTYP.EQ.17) .OR. (INTTYP.EQ.18)
@@ -1420,7 +1444,7 @@ C     Choose origin for expansions coefficients:
 C     1) A certain nuclei
 C     2) Dipole origin
 C     3) Gauge origin
-C     4) Operator center ("molecular" origin)
+C     4) Cavity center ("molecular" origin)
 C     5) Center P of overlap distribution
 C
          IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
@@ -1428,9 +1452,9 @@ C
             TEMP(1) = CORBX
             TEMP(2) = CORBY
             TEMP(3) = CORBZ
-         ELSE IF ((INTTYP .EQ. 2) .OR. (INTTYP .EQ. 4) .OR.
-     &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
-     &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
+         ELSE IF ((INTTYP .EQ. 2)  .OR. (INTTYP .EQ. 4)  .OR.
+     &            (INTTYP .EQ. 6)  .OR. (INTTYP .EQ. 7)  .OR.
+     &            (INTTYP .EQ. 8)  .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 53) .OR.
      &            (INTTYP .EQ. 54) .OR. (INTTYP .EQ. 83) .OR.
@@ -1456,8 +1480,13 @@ cLig <> put the origin in GAGORG also for INTTYP = 81 and 82
 C
 C     We want to place the origin at the nucleus investigated
 C
+            KR_SET = 0
             DO 37 KR = 1, NUCIND
                IF (DOATOM(KR)) THEN
+                  IF (KR_SET .NE. 0) THEN
+                    CALL QUIT('More than one DOATOM true for INTTYP 48')
+                  END IF
+                  KR_SET = KR
                   TEMP(1) = CORD(1,KR)
                   TEMP(2) = CORD(2,KR)
                   TEMP(3) = CORD(3,KR)
@@ -1530,7 +1559,8 @@ cLig <> added the call to DZERO also for INTTYP = 82
      &                       .OR. (INTTYP .EQ. 94)
      &                       .OR. (INTTYP .EQ. 97)
      &                       .OR. (INTTYP .EQ. 99)
-     &                       .OR. (INTTYP .EQ. 100)) THEN
+     &                       .OR. (INTTYP .EQ. 100)
+     &    ) THEN
                CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             IF (ADDNAI) THEN
                CALL DZERO(AHGTF,NAHGTF)
@@ -1554,6 +1584,7 @@ cLig <> added the call to DZERO also for INTTYP = 82
                   CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ,
      &                        FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
+
                IF (ADDNAI) THEN
                   CALL DAXPY(NAHGTF,D1,AHGTF(IADR),1,AHGTF(1),1)
                ELSE
@@ -1947,7 +1978,7 @@ C
 C        First electric deriv. of 1-electron Ham. integrals
 C        --------------------------------------------------
 C
-         ELSEIF (INTTYP .EQ. 51) THEN
+         ELSE IF (INTTYP .EQ. 51) THEN
             CALL H1EINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT,AHGTF,NATOMC)
 C
@@ -2216,13 +2247,13 @@ C  /* Deck pr1prd */
      &                  DOATOM,WEIGHT,ABSCIS,TRIANG,IPRINT,TOLS,TOLOG,
      &                  NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
      &                  DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3)
 C
       LOGICAL DOATOM(*), TRIANG, SAMECD, DONUC1, DOMOM1
@@ -2233,12 +2264,12 @@ C
       DIMENSION FACINT(NATOMC),
      &          CORCX(NATOMC), CORCY(NATOMC), CORCZ(NATOMC)
 C
-#include <onecom.h>
-#include <orgcom.h>
-#include <primit.h>
-#include <symmet.h>
+#include "onecom.h"
+#include "orgcom.h"
+#include "primit.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
 C
       DO 100 IPRIMA = 1,NUCA
@@ -2399,13 +2430,13 @@ C     Spatial one-electron spin-orbit integrals
 C
 C     tuh 23 Nov 1989
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2458,13 +2489,13 @@ C
 C     tuh 1989
 C     revised Jan 2005 hjaaj for NOPTYP=2 for HUCKEL
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,2)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       LOGICAL DOHUCMAT
 C
       DOHUCMAT = INTTYP .LT. 0
@@ -2496,13 +2527,13 @@ C  /* Deck dplint */
 C
 C     tuh 1989
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       POX = CORPX - ORIGIN(1)
       POY = CORPY - ORIGIN(2)
       POZ = CORPZ - ORIGIN(3)
@@ -2541,14 +2572,14 @@ C     DPT correction to dipole integrals (same as PXPINT)
 C
 C     (WK/UniKA/10-03-2004)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D25 = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       POX = CORPX - ORIGIN(1)
       POY = CORPY - ORIGIN(2)
       POZ = CORPZ - ORIGIN(3)
@@ -2592,14 +2623,14 @@ C     DPT correction to dipole integrals (same as PRPINT)
 C
 C     (WK/UniKA/09-03-2004)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D25 = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       POX = CORPX - ORIGIN(1)
       POY = CORPY - ORIGIN(2)
       POZ = CORPZ - ORIGIN(3)
@@ -2643,14 +2674,14 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (DP5 = 0.5 D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2680,16 +2711,16 @@ C
 C  /* Deck mvlint */
       SUBROUTINE MVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C     Sheela Kirpekar  jan. 93 (based on KININT)
+C     shki. jan. 93 (based on KININT by K. Ruud, which is based on CINT0)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
-#include <onecom.h>
-#include <lmns.h>
-#include <codata.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "codata.h"
       PARAMETER (ALPMVL = ALPHA2*0.125D0, ALPMV2 = ALPHA2*0.25D0)
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -2727,14 +2758,14 @@ C  /* Deck hdbint */
 C
 C     K.Ruud, Aug. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2785,13 +2816,13 @@ C  /* Deck dpgint */
 C
 C     K.Ruud, July-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2834,13 +2865,13 @@ C  /* Deck dphint */
 C
 C     K.Ruud, July-07
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2854,8 +2885,6 @@ C
          SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
          SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
          SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
-         INT = INT + 1
-C
          SX1 = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
          SY1 = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
          SZ1 = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
@@ -2871,6 +2900,8 @@ C
          EX3 = SHGTF*ODC(LVALA,LVALB,0,2,1,1)
          EY3 = SHGTF*ODC(MVALA,MVALB,0,2,1,2)
          EZ3 = SHGTF*ODC(NVALA,NVALB,0,2,1,3)
+C
+         INT = INT + 1
 C
          SHLINT(INT, 1) = SHLINT(INT, 1) - EX3*SY0*SZ0
          SHLINT(INT, 2) = SHLINT(INT, 2) - DX2*SY1*SZ0
@@ -2961,13 +2992,13 @@ C  /* Deck ocgint */
 C
 C     K.Ruud, November-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,30)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3043,14 +3074,14 @@ C  /* Deck sm1int */
 C
 C     Kenneth Ruud's first subroutine. Modified Dec. 1991, KR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D2I = 0.5D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3086,14 +3117,14 @@ C  /* Deck sm2int */
 C
 C     K. Ruud, Oct. 1991
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3147,16 +3178,16 @@ C
 C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <efield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2)
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <orgcom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "orgcom.h"
+#include "lmns.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -3221,16 +3252,16 @@ C  /* Deck cm2int */
 C
 C     K. Ruud, Aug.-93
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <efield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <orgcom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "orgcom.h"
+#include "lmns.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -3329,17 +3360,17 @@ C
 C     K. Ruud, February.-02.
 C     Based on CM1INT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <efield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
      &           D1 = 1.0D0)
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <orgcom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "orgcom.h"
+#include "lmns.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -3448,13 +3479,13 @@ C  /* Deck am1int */
 C
 C     K.Ruud, Oct 1991, Modified Dec. 1991, KR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3489,13 +3520,13 @@ C  /* Deck am1int */
 C
 C     K.Ruud, Pisa July 2007
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3542,14 +3573,14 @@ C Diff.z direction on center 2
 C
 C     K.Ruud and J.Vaara, Sep.01, based on AM1INT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (DP25 = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3599,14 +3630,16 @@ C  /* Deck mm1int */
 C
 C     K.Ruud, Feb. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+C     INTTYP to decide whether to calculate only the potential contribution
+C     or also the kinetic inergy contribution
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3690,13 +3723,13 @@ C  /* Deck pvpint */
 C
 C     K.Ruud, September 2000
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3757,14 +3790,14 @@ C  /* Deck dsusan */
 C
 C     K.Ruud, Feb. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), ORIGIN(3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       PBX = CORBX - CORPX
       PBY = CORBY - CORPY
@@ -3847,14 +3880,14 @@ C  /* Deck mqdpin */
 C
 C     K.Ruud, Feb. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D3INV = 1.0D0/3.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3901,15 +3934,16 @@ C  /* Deck dsuslh */
 C
 C     K.Ruud, Feb. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), AHGTF(*)
-      INTEGER INTTYP
-#include <onecom.h>
-#include <lmns.h>
+      INTEGER   INTTYP
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3922,6 +3956,10 @@ C
 C
          INT = INT + 1
 C
+C  .... when wished, calculate the kinetic energy contribution
+C       Skip the Kinetic contribution if PCM type integral 67
+       IF (INTTYP .NE. 67) THEN
+
          SX0  = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
          SY0  = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
          SZ0  = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
@@ -3949,8 +3987,6 @@ C
 C
 C       Kinetic energy contribution
 C
-C     Skip the Kinetic contribution if PCM type integral 67
-         IF (INTTYP .NE. 67) THEN
          SHLINT(INT,1) = SHLINT(INT,1) + (D2*DIFABY*DIFABZ*YZ
      &                                 -  DIFABY*DIFABY*ZZ
      &                                 -  DIFABZ*DIFABZ*YY)*D8INV
@@ -3976,6 +4012,7 @@ C     Skip the Kinetic contribution if PCM type integral 67
 C
 C     Nuclear attraction contribution
 C
+
          MAXT = LVALA + LVALB
          MAXU = MVALA + MVALB
          MAXV = NVALA + NVALB
@@ -4051,14 +4088,14 @@ C     Diamagnetic one-electron spin-orbit integrals
 C
 C     K. Ruud, June 1997
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4119,14 +4156,14 @@ C     Nuclear shielding tensor integrals without London orbital contribution
 C
 C     K. Ruud, March 1992
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4200,14 +4237,14 @@ C     integrals with common gauge origin
 C
 C     K. Ruud, Sep.2001
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP75 = 0.75D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4313,14 +4350,14 @@ C     Magnetic-field corrections to spin-orbit integrals
 C
 C     K. Ruud, January 1998
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4381,14 +4418,14 @@ C     London orbital contribution to nuclear shielding integrals
 C
 C     K. Ruud, March 1992
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4491,13 +4528,13 @@ C         POTINT = sum(iatom=1,natomc) NPEINT(iatom)
 C
 C     K.Ruud, July 1992
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4544,13 +4581,13 @@ C     (use NPEINT for potential energy from each individual energy)
 C
 C     K.Ruud, September 2000
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4593,20 +4630,20 @@ C     Electric field gradient integrals
 C
 C     K.Ruud, June 1992
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3,
      &           THRESH = 1.0D-10)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <nuclei.h>
-#include <symmet.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "onecom.h"
+#include "lmns.h"
+#include "ibtfun.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4679,13 +4716,13 @@ C     Nuclear electric field integrals
 C
 C     K.Ruud, March 1992
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4739,14 +4776,14 @@ C     point (e.g. in a MM system) in space.
 C
 C     K.Ruud, Copenhagen January 2006
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4817,14 +4854,14 @@ C     calculated at a point (e.g. in a MM system) in space.
 C
 C     K.Ruud, Copenhagen January 2006
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP25 = 0.25D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4953,14 +4990,14 @@ C  /* Deck qdpint */
 C
 C     tuh 1989
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D1P5 = 1.5D0, D4 = 4.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5023,13 +5060,13 @@ C  /* Deck thmint */
 C
 C     K.Ruud, Nov-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,10)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5074,13 +5111,13 @@ C  /* Deck momint */
 C
 C     tuh 1989
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2)
-#include <onecom.h>
+#include "onecom.h"
 C
       KHMULT = 1
       KDX    = KHMULT + 3*((IORDER + 1)**2)
@@ -5104,9 +5141,9 @@ C  /* Deck momin1 */
 C
 C     tuh 1989
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2),
@@ -5115,10 +5152,10 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
 C     Hermitian integrals
 C     -------------------
@@ -5196,13 +5233,13 @@ C  /* Deck dpvint */
 C
 C     tuh Jan. 17 1990
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5233,14 +5270,14 @@ C
 C     H.J.Aa.Jensen, Oct. 2004. Based on KININT and DPVINT.
 C     For use with SQH2DO.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (DP5 = 0.5 D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5273,14 +5310,14 @@ C  /* Deck rstint */
 C
 C     K.Ruud, October-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5318,24 +5355,24 @@ C  /* Deck frmint */
 C
 C     tuh Feb 91
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <gfac.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "gfac.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
       PARAMETER (DFAC = D4*GFAC*PI/D3)
       LOGICAL DOATOM(*)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
-#include <onecom.h>
-#include <lmns.h>
-#include <symmet.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5381,25 +5418,25 @@ C
 C
 C     K.Ruud, sep 2001
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <gfac.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "gfac.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
       PARAMETER (D1 = 1.0D0, DFAC = D2*GFAC*PI/D3)
       LOGICAL DOATOM(*)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
-#include <onecom.h>
-#include <lmns.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "symmet.h"
+#include "nuclei.h"
 C
-#include <sdpre.h>
-#include <ibtfun.h>
+#include "sdpre.h"
+#include "ibtfun.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5510,24 +5547,26 @@ C
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
 C
-C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
+C 930309-Sheela Kirpekar: added MVLINT and DWNINT
+C        (DWNINT based on FRMINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)
       DIMENSION SHLINT(KCKTAB)
-#include <onecom.h>
-#include <lmns.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "symmet.h"
+#include "nuclei.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       DFAC = SAAB*DWNFAC
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -5570,13 +5609,13 @@ C     Paramagnetic spin-orbit integrals
 C
 C     tuh 8 Feb 1991
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5637,14 +5676,14 @@ C     Kinetic energy correction to paramagnetic spin-orbit integrals
 C
 C     K.Ruud, Sep.2001, based on PSOINT
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5738,14 +5777,14 @@ C     Orbital Zeeman correction to PSO integrals
 C
 C     K. Ruud and P. Manninen, February 2004
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5858,17 +5897,17 @@ C
 C     K.Ruud, May 1998
 C     Rewritten for symmetry tuh 00
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0)
       INTEGER XA, YA, ZA, XB, YB, ZB, XC, YC, ZC
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP,3), AHGTF(*), NCENTC(*)
-#include <onecom.h>
-#include <nuclei.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "nuclei.h"
+#include "lmns.h"
 C
       XA = 3*(ICENTA - 1) + 1
       YA = 3*(ICENTA - 1) + 2
@@ -5977,19 +6016,20 @@ C  /* Deck nsttra */
       SUBROUTINE NSTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,MULTB,
      &                  NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DMAT,EXP1EL)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+C
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
       DIMENSION EXPVAL(*), DMAT(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -6016,11 +6056,11 @@ cLig <<
                         IF (IREPCD .EQ. 0) CALL SYM1EV(SHLINT(1,ITYP),
      &                                    DMAT,EXPVAL(IADR),FACSYM,
      &                                    MULTA,MULTB,IPRINT)
-cLig <> added the call to SYMSQR for INTTYP = 82
                      ELSE IF (INTTYP .EQ. 26 .OR. INTTYP .EQ. 27
-     &                    .OR. INTTYP .EQ. 74
-     &                    .OR. INTTYP .EQ. 82 .OR. INTTYP .EQ. 93
-     &                    .OR. INTTYP .EQ. 97) THEN
+     &                   .OR. INTTYP .EQ. 74
+     &                   .OR. INTTYP .EQ. 82 .OR. INTTYP .EQ. 93
+     &                   .OR. INTTYP .EQ. 97) THEN
+cLig <> added the call to SYMSQR for INTTYP = 82
                         CALL SYMSQR(SHLINT(1,ITYP),SOINT(1,IADR),IREPCD,
      &                              ISYMOP,IORBA,IORBB,FACSYM,NBAST,
      &                              IPRINT)
@@ -6045,18 +6085,18 @@ C  /* Deck psotra */
       SUBROUTINE PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -6095,17 +6135,17 @@ C  /* Deck psotra */
 C  /* Deck hdbtra */
       SUBROUTINE HDBTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTADR,IPRINT)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       ICOMP = 0
       DO 100 X = 1, 3
          DO 200 B = 1, 3
@@ -6127,19 +6167,19 @@ C  /* Deck hdbtra */
 C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6204,21 +6244,21 @@ C    &                          *PT(IBTAND(IREP,ISYMOP))
 C  /* Deck dphtra */
       SUBROUTINE DPHTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X, Y
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <nuclei.h>
+#include "onecom.h"
+#include "nuclei.h"
 ! nuclei.h needed for NUCDEP
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6299,19 +6339,19 @@ Ckr                        IREPO = IBTXOR(IREPN,IREPC)
 C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3
@@ -6368,19 +6408,19 @@ ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
 C  /* Deck ocgtra */
       SUBROUTINE OCGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X, C, D
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,60), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3
@@ -6436,15 +6476,15 @@ C  /* Deck ocgtra */
 C  /* Deck hdotra */
       SUBROUTINE HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ANTI = .FALSE.
       DO 100 IREPO = 0, MAXREP
@@ -6470,15 +6510,15 @@ C  /* Deck symsqr */
       SUBROUTINE SYMSQR(AO,SO,IREPO,ISYMOP,IORBA,IORBB,FACTOR,NBAST,
      &                  IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       DO 100 IREPA = 0, MAXREP
          IREPB = IBTXOR(IREPO,IREPA)
          DO 200 NA = 1, KHKTA
@@ -6502,17 +6542,17 @@ C  /* Deck s1htra */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       FULMAT = .TRUE.
 C
@@ -6563,19 +6603,19 @@ C
 C  /* Deck amdtra */
       SUBROUTINE AMDTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6645,17 +6685,17 @@ C     &                  NBAST,IPRINT)
 CC
 CC     K.Ruud, spring 2007
 CC
-C#include <implicit.h>
-C#include <priunit.h>
-C#include <dummy.h>
-C#include <maxaqn.h>
-C#include <mxcent.h>
-C#include <maxorb.h>
+C#include "implicit.h"
+C#include "priunit.h"
+C#include "dummy.h"
+C#include "maxaqn.h"
+C#include "mxcent.h"
+C#include "maxorb.h"
 C      LOGICAL FULMAT
 C      DIMENSION SHLINT(KCKTAB,9), SOINT(NELMNT,NOPTYP)
-C#include <onecom.h>
-C#include <symmet.h>
-C#include <ibtfun.h>
+C#include "onecom.h"
+C#include "symmet.h"
+C#include "ibtfun.h"
 CC
 C      FULMAT = .TRUE.
 CC
@@ -6710,19 +6750,19 @@ C  /* Deck h1dtra */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NCENTC(NATOMC),INTADR(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       FULMAT = .TRUE.
 C
@@ -6798,20 +6838,20 @@ C  /* Deck sdint */
      &                 NOPTYP,NATOMC,INTTYP,SAAB,EXPP,CORCX,CORCY,CORCZ,
      &                 CORPX,CORPY,CORPZ)
 C
-C     tuh Feb 09 91 (g_e factor 930726-hjaaj)
+C     tuh Feb 09 91 (use g_e factor 930726-hjaaj)
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <gfac.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "gfac.h"
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
       PARAMETER (DFAC11 = D2*GFAC*PI/D3, DFAC13 = D2*GFAC*PI)
       PARAMETER (DFACSD = GFAC / D2)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -6906,19 +6946,19 @@ C
 C
 C     K.Ruud, sep.2001
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <gfac.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "gfac.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0, D3 = 3.0D0)
       PARAMETER (DFAC11 = GFAC*PI/D3)
       PARAMETER (DFACSD = GFAC / D4)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
-#include <onecom.h>
-#include <lmns.h>
-#include <sdpre.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "sdpre.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7072,18 +7112,18 @@ C  /* Deck sdtra */
       SUBROUTINE SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
      &                 INTADR,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), FACINT(NATOMC), JSYMC(NATOMC),
      &          JCENTC(NATOMC)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -7108,10 +7148,10 @@ C  /* Deck sdtra */
      &                           ISYMOP,IORBA,IORBB,FACSYM,NBAST,IPRINT)
                      ELSE
                         IF (IREPCD .EQ. 0) THEN
-                           CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),
-     &                               ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
-     &                               KHKTB,FACSYM,LDIAG,FULMAT,DUM,IDUM,
-     &                               IPRINT)
+                         CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),
+     &                              ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
+     &                              KHKTB,FACSYM,LDIAG,FULMAT,DUM,IDUM,
+     &                              IPRINT)
                         ELSE
                          CALL SYM1N(SHLINT(1,ITYP),SOINT(1,IADR),IREPCD,
      &                              ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -7128,23 +7168,23 @@ C  /* Deck sdtra */
       END
 C  /* Deck npetra */
       SUBROUTINE NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
 C
 C     K.Ruud, July 92
 C     Symmetry finally introduced Aug-01, kr
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
-#include <onecom.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ITYP = 0
       DO IREPC = 0, MAXREP
@@ -7176,19 +7216,19 @@ C  /* Deck testra */
 C
 C     K.Ruud, June 2001
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "symmet.h"
       LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
       DIMENSION DMAT(*)
-#include <krcom.h>
-#include <onecom.h>
-#include <ibtfun.h>
+#include "krcom.h"
+#include "onecom.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       ITYP = 0
       DO IREPC = 0, MAXREP
@@ -7224,26 +7264,27 @@ C
       RETURN
       END
 C  /* Deck eftra */
-      SUBROUTINE EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT,MULTA,MULTB,EXPVAL,
-     &                  DMAT,EXP1EL)
+      SUBROUTINE EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,
+     &                  ISYMOP,NELMNT,NOPTYP,ANTI,INTADR,IPRINT,
+     &                  MULTA,MULTB,EXPVAL,DMAT,EXP1EL)
 C
 C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
-     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
+     &          INTADR(*)
       DIMENSION EXPVAL(*), DMAT(*)
-#include <onecom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -7278,22 +7319,22 @@ C
       END
 C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IFGTBL,EXP1EL,DMAT,MULTA,
-     &                  MULTB,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
+     &                  NELMNT,NOPTYP,ANTI,IFGTBL,EXP1EL,DMAT,
+     &                  MULTA,MULTB,IPRINT)
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
       LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,6,0:MAXREP)
       DIMENSION DMAT(*)
-#include <onecom.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "ibtfun.h"
 C
       FULMAT = .TRUE.
       ITYP = 0
@@ -7336,19 +7377,18 @@ C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,EXP1EL,
      &                  DMAT,MULTA,MULTB,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-      LOGICAL FULMAT, ANTI, DOATOM(*), SAMECD, TRIANG, TRICR,
-     &        EXP1EL
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+      LOGICAL FULMAT, ANTI, DOATOM(*), SAMECD, TRIANG, TRICR, EXP1EL
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), DMAT(*)
-#include <onecom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       FULMAT = .TRUE.
 C
       DO 100 IREPO = 0, MAXREP
@@ -7455,12 +7495,12 @@ C  /* Deck dsoodc */
 C
 C     TUH Feb 19 1991
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
+#include "sdpre.h"
       EXPPIH = EXPPI/D2
       DO 100 IA = 0, JMAXA
          DO 200 IB = 0, JMAXB
@@ -7553,15 +7593,15 @@ C  /* Deck dsoint */
 C
 C     tuh & ov Feb 09 91
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
-#include <onecom.h>
-#include <nuclei.h>
-#include <lmns.h>
-#include <sdpre.h>
+#include "onecom.h"
+#include "nuclei.h"
+#include "lmns.h"
+#include "sdpre.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7634,15 +7674,15 @@ C                    SHLINT(INT,I0+9) = SHLINT(INT,I0+9)-FZ*AHGTF(IADRV)
 C
 C     K.Ruud, Sep. 2001. Based on DSOINT
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
-#include <onecom.h>
-#include <nuclei.h>
-#include <lmns.h>
-#include <sdpre.h>
+#include "onecom.h"
+#include "nuclei.h"
+#include "lmns.h"
+#include "sdpre.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7722,16 +7762,16 @@ C  Purpose:
 C          Symmetry unpack the matrix AINT into WORK
 C
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)
 C
-#include <symmet.h>
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialize work array.
 C
@@ -7798,15 +7838,15 @@ C                 for GOS : generalized oscillator strengths
 C     hjaaj 1995 -- modified to cos(kr)/k and sin(kr)/k
 C                   (if k .ne. 0)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), ORIGIN(3)
       INTEGER T, U, V
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       DKX = ORIGIN(1)
       DKY = ORIGIN(2)
       DKZ = ORIGIN(3)
@@ -7923,13 +7963,13 @@ C  /* Deck sl1int */
 C
 C     K.Ruud, 1994
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3*(IORDER+1)*(IORDER+2)/2)
-#include <onecom.h>
+#include "onecom.h"
 C
       KDX    = 1
       KDY    = KDX    + IORDER + 1
@@ -7956,9 +7996,9 @@ C  /* Deck sl1in1 */
 C
 C     K.Ruud-94
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3*(IORDER+1)*(IORDER+2)/2),
@@ -7967,12 +8007,12 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include <onecom.h>
-#include <lmns.h>
-#include <orgcom.h>
-#include <mgsolt.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "orgcom.h"
+#include "mgsolt.h"
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)
@@ -8010,7 +8050,7 @@ C
          INT = INT + 1
          CALL LMNVAL(IORDER+1,(IORDER + 1)*(IORDER + 2)/2,LO,MO,NO)
          DO 600 I = 1, (IORDER + 1)*(IORDER + 2)/2
-            IF (DOALL) THEN
+            IF (DOALL_MGSOLT) THEN
                IX = 3*(I - 1) + 1
                IY = 3*(I - 1) + 2
                IZ = 3*(I - 1) + 3
@@ -8019,15 +8059,15 @@ C
                IY = I
                IZ = I
             END IF
-            IF (DOALL .OR. ICOMP .EQ. 1)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 1)
      &           SHLINT(INT,IX) = SHLINT(INT,IX) - DP5*DX(LO(I))
      &                           *(DIFABY*DY(MO(I))*DZ1(NO(I)) -
      &                            DIFABZ*DZ(NO(I))*DY1(MO(I)))
-            IF (DOALL .OR. ICOMP .EQ. 2)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 2)
      &           SHLINT(INT,IY) = SHLINT(INT,IY) - DP5*DY(MO(I))
      &                           *(DIFABZ*DZ(NO(I))*DX1(LO(I)) -
      &                             DIFABX*DX(LO(I))*DZ1(NO(I)))
-            IF (DOALL .OR. ICOMP .EQ. 3)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 3)
      &           SHLINT(INT,IZ) = SHLINT(INT,IZ) - DP5*DZ(NO(I))
      &                           *(DIFABX*DX(LO(I))*DY1(MO(I)) -
      &                            DIFABY*DY(MO(I))*DX1(LO(I)))
@@ -8042,13 +8082,13 @@ C  /* Deck sl2int */
 C
 C     K.Ruud, 1994
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6*(IORDER+1)*(IORDER+2)/2)
-#include <onecom.h>
+#include "onecom.h"
 C
       KDX    = 1
       KDY    = KDX    + IORDER + 1
@@ -8079,9 +8119,9 @@ C  /* Deck sl2in1 */
 C
 C     K.Ruud-94
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D2=2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6*(IORDER+1)*(IORDER+2)/2),
@@ -8091,12 +8131,12 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include <onecom.h>
-#include <lmns.h>
-#include <orgcom.h>
-#include <mgsolt.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "orgcom.h"
+#include "mgsolt.h"
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)
@@ -8142,7 +8182,7 @@ C
          INT = INT + 1
          CALL LMNVAL(IORDER+1,(IORDER + 1)*(IORDER + 2)/2,LO,MO,NO)
          DO 600 I = 1, (IORDER + 1)*(IORDER + 2)/2
-            IF (DOALL) THEN
+            IF (DOALL_MGSOLT) THEN
                IXX = 6*(I - 1) + 1
                IXY = 6*(I - 1) + 2
                IXZ = 6*(I - 1) + 3
@@ -8166,35 +8206,35 @@ C
             SX2 = DX2(LO(I))
             SY2 = DY2(MO(I))
             SZ2 = DZ2(NO(I))
-            IF (DOALL .OR. ICOMP .EQ. 1)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 1)
      &         SHLINT(INT,IXX) = SHLINT(INT,IXX)
      &                         - (D2*DIFABZ*DIFABY*SY1*SZ1*SX0
      &                         - DIFABZ*DIFABZ*SY2*SX0*SZ0
      &                         - DIFABY*DIFABY*SZ2*SX0*SY0)*DP25
-            IF (DOALL .OR. ICOMP .EQ. 2)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 2)
      &         SHLINT(INT,IXY) = SHLINT(INT,IXY)
      &                         - (DIFABZ*DIFABZ*SX1*SY1*SZ0
      &                         - DIFABY*DIFABZ*SZ1*SX1*SY0
      &                         - DIFABZ*DIFABX*SY1*SZ1*SX0
      &                         + DIFABY*DIFABX*SZ2*SX0*SY0)*DP25
-            IF (DOALL .OR. ICOMP .EQ. 3)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 3)
      &         SHLINT(INT,IXZ) = SHLINT(INT,IXZ)
      &                         - (DIFABY*DIFABY*SX1*SZ1*SY0
      &                         - DIFABX*DIFABY*SY1*SZ1*SX0
      &                         + DIFABZ*DIFABX*SY2*SX0*SZ0
      &                         - DIFABY*DIFABZ*SY1*SX1*SZ0)*DP25
-            IF (DOALL .OR. ICOMP .EQ. 4)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 4)
      &         SHLINT(INT,IYY) = SHLINT(INT,IYY)
      &                         - (D2*DIFABZ*DIFABX*SX1*SZ1*SY0
      &                         - DIFABZ*DIFABZ*SX2*SY0*SZ0
      &                         - DIFABX*DIFABX*SZ2*SX0*SY0)*DP25
-            IF (DOALL .OR. ICOMP .EQ. 5)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 5)
      &         SHLINT(INT,IYZ) = SHLINT(INT,IYZ)
      &                         - (DIFABZ*DIFABY*SX2*SY0*SZ0
      &                         - DIFABZ*DIFABX*SX1*SY1*SZ0
      &                         - DIFABY*DIFABX*SX1*SZ1*SY0
      &                         + DIFABX*DIFABX*SY1*SZ1*SX0)*DP25
-            IF (DOALL .OR. ICOMP .EQ. 6)
+            IF (DOALL_MGSOLT .OR. ICOMP_MGSOLT .EQ. 6)
      &         SHLINT(INT,IZZ) = SHLINT(INT,IZZ)
      &                         - (D2*DIFABX*DIFABY*SX1*SY1*SZ0
      &                         - DIFABY*DIFABY*SX2*SY0*SZ0
@@ -8207,15 +8247,15 @@ C
 C  /* Deck se1int */
       SUBROUTINE SE1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C	H. Heiberg, -95
+C     H. Heiberg, -95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
 C
       DO 100 ICOMPA = 1,KCKTA
@@ -8253,13 +8293,13 @@ C  /* Deck se1inb */
 C
 C	H. Heiberg, -95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       PARAMETER (D4I = 0.25D0)
 C
       EXPAIQ = D4I / (EXPA * EXPA)
@@ -8301,14 +8341,14 @@ C  /* Deck h1eint */
       SUBROUTINE H1EINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT,AHGTF,NATOMC)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
 C
       DO 100 ICOMPA = 1,KCKTA
@@ -8355,14 +8395,14 @@ C ach
 C     a. chr. hennum's  1. subroutine.
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D25=0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -8426,14 +8466,14 @@ C
 C
 C     a. chr. hennum's  2. subroutine.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D25=0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6),AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 C
       MAXADD = 2
       INT = 0
@@ -8542,14 +8582,14 @@ C
 C     a. chr. hennum's  3. subroutine.
 C     Anti-symmetric
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D25=0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6),AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 C
       MAXADD = 2
       INT = 0
@@ -8645,14 +8685,14 @@ C     DPT (x/r^3 d/dx) (square)
 C
 C     ACh 2.3.98
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "priunit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -8737,14 +8777,14 @@ C     A. Bakasov, T.-K. Ha, and M. Quack, J. Chem. Phys. 109, 7263 (1998).
 C
 C     Wim Klopper, Utrecht University, October 18, 1999
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1D0, D2 = 2.D0, D16 = 16D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       FFA = - D1 / (D16 * DATAN(D1))
       INT = 1
       DO 100 ICOMPA = 1,KCKTA
@@ -8812,19 +8852,19 @@ C     magnetizability in an analytical way
 C
 C     A.Ligabue Nov. 1999
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
-      DO 100 ICOMPA = 1,KCKTA
+      DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)
          NVALA = NVALUA(ICOMPA)
-      DO 100 ICOMPB = 1,KCKTB
+      DO 100 ICOMPB = 1, KCKTB
          LVALB = LVALUB(ICOMPB)
          MVALB = MVALUB(ICOMPB)
          NVALB = NVALUB(ICOMPB)
@@ -8871,13 +8911,13 @@ C     determination of the nuclear shieldings in an analytical way
 C
 C     A. Ligabue, Nov. 1999
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
