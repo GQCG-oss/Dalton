@@ -74,6 +74,7 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <ccnoddy.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <ccr12int.h>
 #include <qm3.h>

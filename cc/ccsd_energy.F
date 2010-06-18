@@ -65,6 +65,7 @@ C
 #include <ccslvinf.h>
 #include <gnrinf.h>
 #include <ccfdgeo.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <ccr12int.h>
 !Sonia

@@ -120,6 +120,7 @@ C
 #include <ccfop.h>
 #include <ccfro.h>
 #include <eribuf.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <grdccpt.h>
 #include <ccfield.h>
