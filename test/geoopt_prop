@@ -129,9 +129,9 @@ CTRL[5]=4
 ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # Gradient, 1st iteration:
-CRIT1=`$GREP "O * z * (\-0|\-)\.041025...[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.049511...[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.041025...[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * z *  \-0*\.041025" $log | wc -l`
+CRIT2=`$GREP "H * y * (0| )\.049511" $log | wc -l`
+CRIT3=`$GREP "H * z * (0| )\.041025" $log | wc -l`
 CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.041025...[0-9]" $log | wc -l`
 CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
 CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
@@ -262,7 +262,7 @@ ERROR[18]="GEOMETRY OPTIMIZATION FAILED"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

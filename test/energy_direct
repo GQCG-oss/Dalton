@@ -51,7 +51,7 @@ cat > energy_direct.dal <<'%EOF%'
 .DiRECT
 **WAVE FUNCTIONS
 .HF
-*end of input
+**end of input
 %EOF%
 #######################################################################
 
