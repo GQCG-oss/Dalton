@@ -614,8 +614,8 @@ CKeinSPASmehr
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
      &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
      &            WORK(KSLEN),WORK(KSVEL),WORK(KLAST),LWRK3)
-      IF (IPRDEF .GE. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &                               IDUMMY,WORK(KLAST),LWRK3)
+      IF (IPRDEF .GE. 0)
+     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK(KLAST),LWRK3)
       CALL FLSHFO(LUPRI)
 C
 C     *************************
