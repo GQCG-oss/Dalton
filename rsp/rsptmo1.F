@@ -102,10 +102,10 @@ C
                   IF (NCTMFR.LE.MCTMFR) THEN
                      READ (LUCMD,*) (CTMFR(J),J=1,NCTMFR)
                   ELSE
-                     WRITE (LUPRI,'(3(/,A,I5),/)')
-     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NCTMFR,
-     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MCTMFR,
-     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MCTMFR
+                     WRITE (LUPRI,'(3(/A,I5),/)')
+     *        'WARNING! NUMBER OF C-FREQUENCIES SPECIFIED  :',NCTMFR,
+     *        'WARNING! IS GREATER THAN THE ALLOWED NUMBER :',MCTMFR,
+     *        'WARNING! THE NUMBER IS RESET TO THE MAXIMUM :',MCTMFR
                      READ (LUCMD,*) (CTMFR(J),J=1,MCTMFR),
      *                              (FFFF,J=MCTMFR+1,NCTMFR)
                      NCTMFR = MCTMFR
@@ -120,10 +120,10 @@ C
                   IF (NBTMFR.LE.MBTMFR) THEN
                      READ (LUCMD,*) (BTMFR(J),J=1,NBTMFR)
                   ELSE
-                     WRITE (LUPRI,'(3(/,A,I5),/)')
-     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBTMFR,
-     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBTMFR,
-     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBTMFR
+                     WRITE (LUPRI,'(3(/A,I5),/)')
+     *        'WARNING! NUMBER OF B-FREQUENCIES SPECIFIED  :',NBTMFR,
+     *        'WARNING! IS GREATER THAN THE ALLOWED NUMBER :',MBTMFR,
+     *        'WARNING! THE NUMBER IS RESET TO THE MAXIMUM :',MBTMFR
                      READ (LUCMD,*) (BTMFR(J),J=1,MBTMFR),
      *                              (FFFF,J=MBTMFR+1,NBTMFR)
                      NBTMFR = MBTMFR
@@ -197,9 +197,9 @@ C
                      READ (LUCMD,*) (BTMFR(J),J=1,NBTMFR)
                   ELSE
                      WRITE (LUPRI,'(3(/,A,I5),/)')
-     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBTMFR,
-     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBTMFR,
-     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBTMFR
+     *          'WARNING! NUMBER OF B-FREQUENCIES SPECIFIED  :',NBTMFR,
+     *          'WARNING! IS GREATER THAN THE ALLOWED NUMBER :',MBTMFR,
+     *          'WARNING! THE NUMBER IS RESET TO THE MAXIMUM :',MBTMFR
                      READ (LUCMD,*) (BTMFR(J),J=1,MBTMFR),
      *                              (FFFF,J=MBTMFR+1,NBTMFR)
                      NBTMFR = MBTMFR
@@ -251,11 +251,11 @@ C
             IF (CTMOP(I)) NCTMTO = NCTMTO + 1
  500     CONTINUE
          IF (NATMTO .EQ. 0) WRITE (LUPRI,'(/A)')
-     *      ' *CRTMO input ignored because no A operators requested.'
+     * 'WARNING! *CRTMO input ignored because no A operators requested.'
          IF (NBTMTO .EQ. 0) WRITE (LUPRI,'(/A)')
-     *      ' *CRTMO input ignored because no B operators requested.'
+     * 'WARNING! *CRTMO input ignored because no B operators requested.'
          IF (NCTMTO .EQ. 0) WRITE (LUPRI,'(/A)')
-     *      ' *CRTMO input ignored because no C operators requested.'
+     * 'WARNING! *CRTMO input ignored because no C operators requested.'
       END IF
 C
 C If three-photon calculation then we assume that the frequencies of the 
