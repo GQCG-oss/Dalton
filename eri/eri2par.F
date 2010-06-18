@@ -538,8 +538,8 @@ C--------------------------
 C     Make the index array.
 C--------------------------
 C
-      CALL INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,NTASK,NBATCH,
-     &            NPOS,IPRINT)
+      CALL HER_INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,
+     &            NTASK,NBATCH,NPOS,IPRINT)
 C
 Cef begin
 C  10.mai    INITX = .TRUE.

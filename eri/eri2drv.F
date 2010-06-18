@@ -193,7 +193,7 @@ C
                   COMPRS = .FALSE. 
                GO TO 100
    34          CONTINUE
-                  GENCON = .TRUE. 
+                  GENCON_ERI = .TRUE. 
                GO TO 100
    35          CONTINUE
                   NCLERI = .TRUE. 
@@ -265,7 +265,7 @@ C
      &           IPROD1, IPROD2
             IF (.NOT.COMPRS) WRITE (LUPRI,'(A)')
      &         ' No integral screening before write.'
-            IF (GENCON) WRITE (LUPRI,'(A)')
+            IF (GENCON_ERI) WRITE (LUPRI,'(A)')
      &         ' All contractions treated as general.' 
             IF (NCLERI) WRITE (LUPRI,'(A)')
      &         ' Only nonclassical integrals are calculated.' 
@@ -364,7 +364,7 @@ C
       DO I = 1, 4
          NSELCT(I) = 0
       END DO
-      GENCON = .FALSE.
+      GENCON_ERI = .FALSE.
       NCLERI = .FALSE.
 
       RETURN
@@ -1028,10 +1028,10 @@ C
             SPHRAB = SPHRA .OR. SPHRB
             SPHRCD = SPHRC .OR. SPHRD
 C
-            GCONA  = GENCON .OR. NCTFA .GT. 1 
-            GCONB  = GENCON .OR. NCTFB .GT. 1 
-            GCONC  = GENCON .OR. NCTFC .GT. 1 
-            GCOND  = GENCON .OR. NCTFD .GT. 1 
+            GCONA  = GENCON_ERI .OR. NCTFA .GT. 1 
+            GCONB  = GENCON_ERI .OR. NCTFB .GT. 1 
+            GCONC  = GENCON_ERI .OR. NCTFC .GT. 1 
+            GCOND  = GENCON_ERI .OR. NCTFD .GT. 1 
 C
             GCONAB = GCONA .OR. GCONB
             GCONCD = GCONC .OR. GCOND
