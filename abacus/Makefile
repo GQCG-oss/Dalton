@@ -15,7 +15,7 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	her2el2.o    her2fck.o    her2her.o    her2odc.o\
 	her2out.o    her2sup.o    her2sym.o    herbas.o\
 	herdirect.o  herdrv.o     hergam.o     hergeo.o\
-	hergp.o      herrdn.o     hersol.o     huckel.o\
+	hergp.o      hergroup.o   herrdn.o     hersol.o     huckel.o\
 	her2gab.o    hersym.o     hertst.o     herqm3.o\
 	abaopt.o     abavrml.o    abaqr.o      abarint.o\
 	abander.o    abandsym.o   herfckcon.o  abaop2.o\
