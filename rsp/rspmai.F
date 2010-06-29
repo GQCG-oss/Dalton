@@ -158,7 +158,8 @@ C
          CALL SETSOPPA
       END IF
 C
-C     set *ACT* variables in INFRSP
+C     set *ACT* variables in INFRSP (different settings for SOPPA and
+C     MCSCF/DFT)
 C
       CALL RSPACT
 C
@@ -360,7 +361,7 @@ C
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')
      &           ' ***** ONE BODY DENSITY MATRIX from SIRIFC file'
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
          ISPIN1 = 0
          ISPIN2 = 0
@@ -383,7 +384,7 @@ C
          END IF
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
       ELSE IF (DORESP .AND. TDHF .AND. NASHT .EQ. 1) THEN
          WRK(KUDV) = D1
@@ -3514,12 +3515,14 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      DIMENSION UDV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION UDV(NASHT,*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "priunit.h"
 #include "infinp.h"
+#include "infind.h"
 #include "infpri.h"
 #include "infdim.h"
 #include "infvar.h"
@@ -3538,7 +3541,7 @@ C
       DATA OPLBL/'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
      *           'EXOPSYM5','EXOPSYM6','EXOPSYM7','EXOPSYM8'/
 C
-      PARAMETER ( D1 = 1.0D0 )
+      PARAMETER ( D1 = 1.0D0, THR_PRUNE = 1.0D-4 )
 C
       CALL QENTER('RSPVAR')
 C
@@ -3561,7 +3564,64 @@ C
             READ (LUINDX) NWOPT,NWOP,NWOPH
             CALL READI(LUINDX,(2*NWOPT),JWOP)
             CALL GPCLOSE(LUINDX,'KEEP')
+C
+C           Prune some classes of redundant orbital rotations from
+C           the orbital rotation vector JWOP:
+C              UDV(u,u) = 2
+C              UDV(v,v) = 0
+C              UDV(u,u) = UDV(v,v) [only possible for RAS]
+C           Threshold for redundancy test: THR_PRUNE
+C           / hjaaj June 2010
+            MWOPT = 0
+            DO IWOPT = 1,NWOPT
+               K = JWOP(1,IWOPT)
+               L = JWOP(2,IWOPT)
+               ITYPK = IOBTYP(K)
+               ITYPL = IOBTYP(L)
+               IF (ITYPK .EQ. JTINAC) THEN
+                  IF (ITYPL .EQ. JTACT) THEN
+                  ! inact-act rotation
+                     NWL = ISW(L) - NISHT
+                     IF ( (2.0D0-UDV(NWL,NWL)) .GT. THR_PRUNE) THEN
+                        MWOPT =  MWOPT + 1
+                     ELSE IF (IPRRSP .GE. 2) THEN
+                        WRITE (LUPRI,*)
+     &                  'INFO: Inact-act orbital rotation',K,L,' pruned'
+                     END IF
+                  END IF
+               ELSE IF (ITYPL .EQ. JTACT) THEN
+               ! act-act rotation (i.e. RAS case)
+                  NWK = ISW(K) - NISHT
+                  NWL = ISW(L) - NISHT
+                  IF (ABS(UDV(NWK,NWK)-UDV(NWL,NWL)) .GT. THR_PRUNE)
+     &            THEN
+                     MWOPT =  MWOPT + 1
+                  ELSE IF (IPRRSP .GE. 2) THEN
+                     WRITE (LUPRI,*)
+     &               'INFO: Act-act orbital rotation',K,L,' pruned'
+                  END IF
+               ELSE
+               ! act-sec rotation
+                  NWK = ISW(K) - NISHT
+                  IF (UDV(NWK,NWK) .GT. THR_PRUNE) THEN
+                     MWOPT =  MWOPT + 1
+                  ELSE IF (IPRRSP .GE. 2) THEN
+                     WRITE (LUPRI,*)
+     &               'INFO: Act-sec orbital rotation',K,L,' pruned'
+                  END IF
+               END IF
+               IF (MWOPT .NE. IWOPT) THEN
+                  JWOP(1,MWOPT) = JWOP(1,IWOPT)
+                  JWOP(2,MWOPT) = JWOP(2,IWOPT)
+               END IF
+            END DO
          END IF
+         IF (MWOPT .NE. NWOPT) THEN
+            WRITE (LUPRI,*) 'INFO:',NWOPT-MWOPT,
+     &      ' redundant orbital rotations pruned.'
+            NWOPT = MWOPT
+         END IF
+C
          KZWOPT = NWOPT
          KZYWOP = 2*KZWOPT
          IF (CHANNEL_CALC) CALL CHANNEL_VAR()         
@@ -3686,7 +3746,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
-               CALL OUTPUT(WRK(KECDIA),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
+               CALL OUTPUT(WRK(KECDIA),1,KZCONF,1,1,KZCONF,1,-1,LUPRI)
             END IF
          END IF
 C
@@ -3700,15 +3760,15 @@ C
              IF (IPRRSP.GT.100) THEN
                IF (NASHT.GT.0) THEN
                   WRITE(LUPRI,'(/A)')
-     *            ' ONE ELECTRON ACTIVE DENSITY MATRIX  UNPACKED'
-                  CALL OUTPUT(UDV,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+     *            ' ONE ELECTRON ACTIVE DENSITY MATRIX - UNPACKED'
+                  CALL OUTPUT(UDV,1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
                   WRITE(LUPRI,'(/A)') ' FOCK VALENCE MATRIX'
-                  CALL OUTPKB(FV,NORB,NSYM,1,LUPRI)
+                  CALL OUTPKB(FV,NORB,NSYM,-1,LUPRI)
                END IF
                WRITE(LUPRI,'(/A)') ' FOCK CORE MATRIX'
-               CALL OUTPKB(FC,  NORB,NSYM,1,LUPRI)
+               CALL OUTPKB(FC,  NORB,NSYM,-1,LUPRI)
                WRITE(LUPRI,'(/A)') ' TOTAL FOCK  MATRIX'
-               CALL OUTPTB(FOCK,NORB,NSYM,1,LUPRI)
+               CALL OUTPTB(FOCK,NORB,NSYM,-1,LUPRI)
              END IF
 C
             CALL ORBDIA(FOCK,FC,FV,UDV,WRK(KEODIA),WRK(KSODIA))
@@ -3732,7 +3792,7 @@ C
      *            ' MATRIX USED)'
                   CALL PRWOP(WRK(KEODIA),LUPRI)
                   IF (IPRRSP .GT. 120)
-     *              CALL OUTPUT(WRK(KEODIA),1,NWOPT,1,1,NWOPT,1,1,LUPRI)
+     *             CALL OUTPUT(WRK(KEODIA),1,NWOPT,1,1,NWOPT,1,-1,LUPRI)
                END IF
             END IF
          END IF
@@ -3750,7 +3810,7 @@ C
          IF (IPRRSP.GT.100) THEN
             IF (KZWOPT.GT.0) THEN
                WRITE(LUPRI,'(/A)') ' DIAGONAL ORBITAL PART OF S[2]'
-               CALL OUTPUT(WRK(KSODIA),1,NWOPT,1,1,NWOPT,1,1,LUPRI)
+               CALL OUTPUT(WRK(KSODIA),1,NWOPT,1,1,NWOPT,1,-1,LUPRI)
             END IF
          END IF
 C
@@ -4021,7 +4081,7 @@ C
          CALL GETREF(WRK,NCONRF)
          WRITE(LUPRI,'(/A)')
      &        ' **** RSPMC **** REFERENCE CONFIGURATION'
-         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
+         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,-1,LUPRI)
       END IF
 C
 C     If a solvent-response calculation:
@@ -4072,7 +4132,7 @@ C
             ELSE
               WRITE(LUPRI,'(/A)')' RSPMC : MP2 correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,1,LUPRI)
+            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,-1,LUPRI)
          END IF
 C
          IF (TRPFLG) CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK)
@@ -4085,7 +4145,7 @@ C
                WRITE(LUPRI,'(/A)')
      &      ' RSPMC : MP2 singlet and triplet correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,1,LUPRI)
+            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,-1,LUPRI)
          END IF
 C
          CALL READT (LUSIFC,NACTT*NACTT,UDV)
@@ -4096,7 +4156,7 @@ C
             ELSE
                WRITE(LUPRI,'(/A)')' RSPMC : MP2 second order density'
             END IF
-            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,1,LUPRI)
+            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,-1,LUPRI)
          END IF
 C
 C        UDV contains the MP2 one-density. Remove the diagonal
@@ -4110,7 +4170,7 @@ C
             WRITE(LUPRI,'(/A,I5,A)')' MO. COEFFICIENTS FOR SYMMETRY',
      &                                ISYM
             CALL OUTPUT(CMO(ICMO(ISYM)+1),1,NBAS(ISYM),1,NORB(ISYM),
-     $                  NBAS(ISYM),NORB(ISYM),1,LUPRI)
+     $                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
  60      CONTINUE
       END IF
 C
