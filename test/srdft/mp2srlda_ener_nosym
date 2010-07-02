@@ -54,6 +54,7 @@ SRXLDA SRCLDA
 
 
 
+
 #######################################################################
 
 #######################################################################
@@ -61,8 +62,7 @@ SRXLDA SRCLDA
 #######################################################################
 
 test='
-check_mp2srdft_energy MP2 -28.9305930897 5e-9
-'                    
+check_mp2srdft_energy MP2 -28.9305930897 5e-7'                    
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
