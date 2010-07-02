@@ -67,7 +67,7 @@ SRXLDA SRCLDA
 '
 
 test='
-check_scf_energy MC-SRDFT -108.111963586223 5e-9
+check_scf_energy MC-SRDFT -108.111963586223 5e-7
 '                    
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
