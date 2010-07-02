@@ -61,7 +61,7 @@ SRXPBEHSE SRCPBERI
 #######################################################################
 
 test='
-check_mp2srdft_energy MP2 -29.2463999942 5e-8
+check_mp2srdft_energy MP2 -29.2463999942 5e-7
 '                    
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
