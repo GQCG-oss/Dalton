@@ -1788,16 +1788,17 @@ C
       RETURN
       END
 C  /* Deck srdftso */
-      SUBROUTINE SRDFTSO(DCVAL,UDV,FTC_SR,SOVEC)
+      SUBROUTINE SRDFTSO(DCVAL,UDV,FTC_SR,EOVEC)
 C
 C  Copyright Dec-2003 Hans Joergen Aa. Jensen
 C  for MCSRDFT (based on SOLGO code).
 C
 C  Purpose: Add FTC_SR orbital sigma vector contribution
-C           to SOVEC.
+C           to EOVEC.
 C
 #include <implicit.h>
-      DIMENSION UDV(NASHT,*), FTC_SR(NORBT,*), SOVEC(*)
+#include "priunit.h"
+      DIMENSION UDV(NASHT,*), FTC_SR(NORBT,*), EOVEC(*)
 C
 C  Used from common blocks:
 C    INFORB: NISHT,NASHT
@@ -1825,7 +1826,7 @@ C         = 2 <0|B> = 0 for transition density matrix
          ITYPL = IOBTYP(L)
          IF (ITYPK .EQ. JTINAC) THEN
 C           first index inactive
-            SOVEC(IG) = SOVEC(IG) + DCFAC * FTC_SR(K,L)
+            EOVEC(IG) = EOVEC(IG) + DCFAC * FTC_SR(K,L)
          ELSE
 C           first index active
             NK   = ICH(K)
@@ -1835,7 +1836,7 @@ C           first index active
                IX = ISX(NISHT + NX)
                TEMP = TEMP + DVKX*FTC_SR(IX,L)
   100       CONTINUE
-            SOVEC(IG) = SOVEC(IG) + D2 * TEMP
+            EOVEC(IG) = EOVEC(IG) + D2 * TEMP
          END IF
          IF (ITYPL .EQ. JTACT) THEN
 C           second index active
@@ -1846,11 +1847,141 @@ C           second index active
                IX = ISX(NISHT + NX)
                TEMP = TEMP + DVLX*FTC_SR(IX,K)
   200       CONTINUE
-            SOVEC(IG) = SOVEC(IG) - D2 * TEMP
+            EOVEC(IG) = EOVEC(IG) - D2 * TEMP
          END IF
   300 CONTINUE
 C
       CALL QEXIT('SRDFTSO ')
       RETURN
 C     end of srdftso.
+      END
+C  /* Deck rsp_srdftso */
+      SUBROUTINE RSP_SRDFTSO(ONEIND,SNGDN,UDV,FTC_SR,EVEC)
+C
+C  Copyright June 2010 Hans Joergen Aa. Jensen
+C
+C  for MCSRDFT response
+C  (based on SRDFTSO and SLVSOR(rspsol.F) code).
+C
+C  Purpose: Add FTC_SR orbital sigma vector contribution
+C           to EVEC.
+C
+C        <0| [q_KL, V^([2c],xc-SR) ] |0>  
+C
+C
+C  SNGDN  : true for singlet density, false for triplet density
+C  UDV    : density matrix of reference state
+C
+#include <implicit.h>
+#include <priunit.h>
+      LOGICAL ONEIND,SNGDN
+      DIMENSION UDV(NASHDI,*), FTC_SR(NORBT,*), EVEC(*)
+C
+C  Used from common blocks:
+C    INFORB: NISHT,NASHT
+C    INFVAR: NWOPH,JWOP(2,*)
+C    INFIND: IROW(*),IOBTYP(*),ISX(*)
+C
+#include <maxash.h>
+#include <maxorb.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <infind.h>
+#include <infdim.h>
+#include <dftcom.h>
+#include <infrsp.h>
+#include <wrkrsp.h>
+C
+      PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
+C
+      CALL QENTER('RSP_SRDFTSO ')
+C
+C
+      write (lupri,*) 'rsp_srdftso: ONEIND, SINGDN ',oneind,sngdn
+      write (lupri,*) 'rsp_srdftso: input UDV:'
+      call output(udv,1,nasht,1,nasht,nasht,nasht,-1,lupri)
+      write (lupri,*) 'rsp_srdftso: input FTC_SR:'
+      call output(ftc_sr,1,norbt,1,norbt,norbt,norbt,-1,lupri)
+      write (lupri,*) 'rsp_srdftso: input EVEC:'
+      call output(evec,1,kzvar,1,2,kzvar,1,1,lupri)
+C
+      KYCONF = KZCONF + KZVAR
+C
+C     Distribute srDFT Fock-type matrix contribution to orbital
+C     part of EVECS
+C
+      DO 300 IG = 1,KZWOPT
+         K     = JWOP(1,IG)
+         L     = JWOP(2,IG)
+         KSYM  = ISMO(K)
+         LSYM  = ISMO(L)
+         IF ( KSYM.NE.KSYM1 ) THEN
+             KSYM1 = KSYM
+             IORBK = IORB(KSYM)
+             NASHK = NASH(KSYM)
+             NISHK = NISH(KSYM)
+             IASHK = IASH(KSYM)
+             IIORBK= IIORB(KSYM)
+             IORBL = IORB(LSYM)
+             NASHL = NASH(LSYM)
+             NISHL = NISH(LSYM)
+             IASHL = IASH(LSYM)
+          END IF
+         ITYPK = IOBTYP(K)
+         ITYPL = IOBTYP(L)
+         IF (ITYPK .EQ. JTINAC) THEN
+C           first index inactive
+            IF (SNGDN) THEN
+               EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + D2*FTC_SR(L,K)
+               EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - D2*FTC_SR(K,L)
+C#######
+C              EVEC(KZCONF+IG) = EVEC(KZCONF+IG) - D2*FTC_SR(L,K)
+C              EVEC(KYCONF+IG) = EVEC(KYCONF+IG) + D2*FTC_SR(K,L)
+C#######
+            END IF
+         ELSE
+C           first index active
+            NK   = ICH(K)
+            TEMPZ = D0
+            TEMPY = D0
+            DO NX = 1,NASHK
+               DVKX = UDV(NK,IASHK+NX)
+               DVXK = UDV(IASHK+NX,NK)
+               IX = (IORBK+NISHK)+NX
+               TEMPZ = TEMPZ + DVKX*FTC_SR(L,IX)
+               TEMPY = TEMPY + DVXK*FTC_SR(IX,L)
+            END DO
+            EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + TEMPZ
+            EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - TEMPY
+C#######
+C           EVEC(KZCONF+IG) = EVEC(KZCONF+IG) - TEMPZ
+C           EVEC(KYCONF+IG) = EVEC(KYCONF+IG) + TEMPY
+C#######
+         END IF
+         IF (ITYPL .EQ. JTACT) THEN
+C           second index active
+            NL   = ICH(L)
+            TEMPZ = D0
+            TEMPY = D0
+            DO NX = 1,NASHL
+               DVLX = UDV(NL,IASHL+NX)
+               DVXL = UDV(IASHL+NX,NL)
+               IX = (IORBL+NISHL)+NX
+               TEMPZ = TEMPZ + DVXL*FTC_SR(IX,K)
+               TEMPY = TEMPY + DVLX*FTC_SR(K,IX)
+            END DO
+            EVEC(KZCONF+IG) = EVEC(KZCONF+IG) - TEMPZ
+            EVEC(KYCONF+IG) = EVEC(KYCONF+IG) + TEMPY
+C#######
+C           EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + TEMPZ
+C           EVEC(KYCONF+IG) = EVEC(KYCONF+IG) - TEMPY
+C#######
+         END IF
+  300 CONTINUE
+C
+      write (lupri,*) 'rsp_srdftso: output EVEC:'
+      call output(evec,1,kzvar,1,2,kzvar,1,1,lupri)
+      CALL QEXIT('RSP_SRDFTSO ')
+      RETURN
+C     end of rsp_srdftso.
       END
