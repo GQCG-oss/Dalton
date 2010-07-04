@@ -398,22 +398,22 @@ C    ZYM(U,X)*DV(T,X)-ZYM(X,T)*DV(X,U)
 C        L       K          K       L
 C        K       L          L       K
 C
-C    ACTIVE-SECUNDARY        (T,A)
+C    ACTIVE-SECONDARY        (T,A)
 C                             K,L
 C    ZYM(A,X)*DV(T,X)
 C        L       K
 C
-C    SECUNDARY-ACTIVE        (A,U)
+C    SECONDARY-ACTIVE        (A,U)
 C                             L,K
 C    -ZYM(X,A)*DV(X,U)
 C           L       K
 C
-C    INACTIVE-SECUNDARY      (I,A)
+C    INACTIVE-SECONDARY      (I,A)
 C                             K,L
 C    2*ZYM(A,I)
 C          L,K
 C
-C    SECUNDARY-INACTIVE      (A,J)
+C    SECONDARY-INACTIVE      (A,J)
 C                             L,K
 C    -2*ZYM(J,A)
 C           K,L
@@ -719,22 +719,22 @@ C    FCX(U,X)*DV(T,X)-FCX(X,T)*DV(X,U)+QBX(U,T)-QAX(T,U)
 C        L       K          K       L      L,K      K,L
 C        K       L          L       K      K,L      L,K
 C
-C    ACTIVE-SECUNDARY        (T,A)
+C    ACTIVE-SECONDARY        (T,A)
 C                             K,L
 C    FCX(A,X)*DV(T,X)+QBX(A,T)
 C        L       K        L,K
 C
-C    SECUNDARY-ACTIVE        (A,U)
+C    SECONDARY-ACTIVE        (A,U)
 C                             L,K
 C    -FCX(X,A)*DV(X,U)-QAX(A,U)
 C           L       K      L,K
 C
-C    INACTIVE-SECUNDARY      (I,A)
+C    INACTIVE-SECONDARY      (I,A)
 C                             K,L
 C    2*FCX(A,I)+2FVX(A,I)
 C          L,K       L,K
 C
-C    SECUNDARY-INACTIVE      (A,J)
+C    SECONDARY-INACTIVE      (A,J)
 C                             L,K
 C    -2*FCX(J,A)-2*FVX(J,A)
 C           K,L        K,L
@@ -960,25 +960,6 @@ C
                ENDIF
             ENDIF
  1300    CONTINUE
-C
-      IF (.NOT.ONEIND .AND. DOMCSRDFT) THEN
-C
-C     Special MCSRDFT correction, corresponding to the effective operator
-C        V^([2c],xc-SR)
-C     is saved in FCX(*,*,ICSIM) in RSPOLI.
-C
-#ifdef MOD_SRDFT
-         DO ICSIM = 1,NSIM
-           CALL SRDFTSO( 2.0D0,UDV,FCX(1,1,ICSIM),EVECS(KZCONF+1,ICSIM))
-           CALL DSCAL(N2ASHX,DM1,UDV,1)
-           CALL SRDFTSO(-2.0D0,UDV,FCX(1,1,ICSIM),
-     &                    EVECS(KZVAR+KZCONF+1,ICSIM))
-           CALL DSCAL(N2ASHX,DM1,UDV,1)
-         END DO
-#else
-         call quit('MCSRDFT not implemented in this version')
-#endif
-      END IF
 C
 C CHANGE SIGN ON ORBITAL PART OF LINEAR TRANSFORMATION E[2]*N
 C

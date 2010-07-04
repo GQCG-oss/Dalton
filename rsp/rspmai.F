@@ -3554,7 +3554,7 @@ C
          KZWOPT = 0
          KZYWOP = 0
       ELSE
-         IF ( KSYMOP .NE. JWOPSY ) THEN
+!        IF ( KSYMOP .NE. JWOPSY ) THEN
             JWOPSY = KSYMOP
             LUINDX = -1
             CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
@@ -3578,16 +3578,19 @@ C           / hjaaj June 2010
                L = JWOP(2,IWOPT)
                ITYPK = IOBTYP(K)
                ITYPL = IOBTYP(L)
+               KL_is_OK = 0
                IF (ITYPK .EQ. JTINAC) THEN
                   IF (ITYPL .EQ. JTACT) THEN
                   ! inact-act rotation
                      NWL = ISW(L) - NISHT
                      IF ( (2.0D0-UDV(NWL,NWL)) .GT. THR_PRUNE) THEN
-                        MWOPT =  MWOPT + 1
+                        KL_is_OK = 1
                      ELSE IF (IPRRSP .GE. 2) THEN
                         WRITE (LUPRI,*)
      &                  'INFO: Inact-act orbital rotation',K,L,' pruned'
                      END IF
+                  ELSE
+                     KL_is_OK = 1
                   END IF
                ELSE IF (ITYPL .EQ. JTACT) THEN
                ! act-act rotation (i.e. RAS case)
@@ -3595,35 +3598,39 @@ C           / hjaaj June 2010
                   NWL = ISW(L) - NISHT
                   IF (ABS(UDV(NWK,NWK)-UDV(NWL,NWL)) .GT. THR_PRUNE)
      &            THEN
-                     MWOPT =  MWOPT + 1
+                     KL_is_OK = 1
                   ELSE IF (IPRRSP .GE. 2) THEN
                      WRITE (LUPRI,*)
-     &               'INFO: Act-act orbital rotation',K,L,' pruned'
+     &               'INFO:   Act-act orbital rotation',K,L,' pruned'
                   END IF
                ELSE
                ! act-sec rotation
                   NWK = ISW(K) - NISHT
                   IF (UDV(NWK,NWK) .GT. THR_PRUNE) THEN
-                     MWOPT =  MWOPT + 1
+                     KL_is_OK = 1
                   ELSE IF (IPRRSP .GE. 2) THEN
                      WRITE (LUPRI,*)
-     &               'INFO: Act-sec orbital rotation',K,L,' pruned'
+     &               'INFO:   Act-sec orbital rotation',K,L,' pruned'
                   END IF
                END IF
-               IF (MWOPT .NE. IWOPT) THEN
-                  JWOP(1,MWOPT) = JWOP(1,IWOPT)
-                  JWOP(2,MWOPT) = JWOP(2,IWOPT)
+               IF (KL_is_OK .EQ. 1) THEN
+                  MWOPT = MWOPT + 1
+                  JWOP(1,MWOPT) = K
+                  JWOP(2,MWOPT) = L
                END IF
             END DO
-         END IF
-         IF (MWOPT .NE. NWOPT) THEN
-            WRITE (LUPRI,*) 'INFO:',NWOPT-MWOPT,
-     &      ' redundant orbital rotations pruned.'
-            NWOPT = MWOPT
-         END IF
+            IF (MWOPT .NE. NWOPT) THEN
+               WRITE (LUPRI,*) 'INFO:',NWOPT-MWOPT,
+     &         ' redundant orbital rotations pruned.'
+               NWOPT = MWOPT
+            END IF
+!        END IF
 C
          KZWOPT = NWOPT
          KZYWOP = 2*KZWOPT
+         NWOPH  = NWOPT ! do not include redundant act-act rotations
+                        ! in response, even when we call SIRIUS routines
+                        ! /hjaaj June 2010
          IF (CHANNEL_CALC) CALL CHANNEL_VAR()         
          IF (CHANNEL_VCALC) CALL CHANNEL_VIR()
       END IF

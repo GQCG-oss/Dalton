@@ -106,6 +106,9 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
+C Manu debug
+C     IPRRSP=201
+C Manu debug
 #include <ibndxdef.h>
 C
       WRITE (LUPRI,'(//A/)') ' Test output requested with .ABSYM'
@@ -820,13 +823,13 @@ C
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
      &           ' ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
-     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
      *           ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
-     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
