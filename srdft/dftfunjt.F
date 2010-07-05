@@ -2749,9 +2749,11 @@ C*****************************************************************************
       parameter(pisqrt = 1.772453850905516d0)
       parameter(ckf = 3.093667726280136d0)
       parameter(f13 = 0.333333333333333d0)
-
 C     Spin-unpolarized case
-      if (dospin) then
+CFRAN FROM THE svn DIFF
+      if (.not.dospin) then
+C      if (dospin) then
+CFRAN END
 
 C       Density and kF
         rho = rhot
@@ -2787,7 +2789,9 @@ C     Spin-polarized case
 
 C       Density and kF for spin alpha
         rhoa=max(0.5d0*(rhot+rhos),0d0)
-        rhoa=2.d0*rhoa ! spin-scaling
+CFRAN JUST A TEST
+C        rhoa=2.d0*rhoa ! spin-scaling
+CFRAN END
         akf = ckf*(rhoa**f13)
         a = mu/(2.d0*akf)
         a2 = a*a
@@ -2817,7 +2821,9 @@ C       Limit for large a
 
 C       Density and kF for spin beta
         rhob = max(0.5d0*(rhot-rhos),0d0)
-        rhob = 2.d0*rhob ! spin-scaling
+CFRAN JUST A TEST
+C        rhob = 2.d0*rhob ! spin-scaling
+C
         akf = ckf*(rhob**f13)
         a = mu/(2.d0*akf)
         a2 = a*a
@@ -2845,7 +2851,10 @@ C       Limit for large a
         end if
 
 C       spin scaling
-        e = 0.5d0 * (ea + eb)
+CFRAN JUST A TEST
+        e = (ea + eb)
+C       e = 0.5d0 * (ea + eb)
+CFRAN END
 
       endif
 
@@ -2886,7 +2895,10 @@ C*****************************************************************************
       parameter(rsfac = 0.620350490899400d0)
 
 C     Spin-unpolarized case
-      if (dospin) then
+CFRAN FROM THE svn DIFF
+      if (.not.dospin) then
+C      if (dospin) then
+CFRAN END
 
         rs = rsfac/(rhot**f13)
 
@@ -2921,12 +2933,13 @@ ccc gives the correlation energy of the LR gas
 ccc  => eclr
       implicit none
       double precision rs,z,mu,eclr,ec,ecd,ecz
-      double precision pi,alpha,cf,phi
+      double precision alpha,cf,phi
       double precision g0f,dpol,d2anti,d3anti,Qrpa
       double precision coe2,coe3,coe4,coe5
       double precision a1,a2,a3,a4,b0
       double precision q1a,q2a,q3a,t1a,t2a,t3a,adib
-      pi=dacos(-1.d0)
+#include <pi.h>
+!     pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
@@ -2992,7 +3005,7 @@ ccc  => vclrup (spin-up electrons), vclrdown (spin-down electrons)
       implicit none
       double precision rs,z,mu,eclr,eclrrs,eclrz,vclrup,vclrdown
       double precision ec,ecd,ecz
-      double precision pi,alpha,cf,phi
+      double precision alpha,cf,phi
       double precision g0f,dpol,d2anti,d3anti,Qrpa
       double precision g0d,dpold,d2antid,d3antid,Qrpad,x
       double precision coe2,coe3,coe4,coe5
@@ -3002,7 +3015,8 @@ ccc  => vclrup (spin-up electrons), vclrdown (spin-down electrons)
      $     b0rs,a1z,a2z,a3z,a4z,a5z,b0z
       double precision q1a,q2a,q3a,t1a,t2a,t3a,adib
 
-      pi=dacos(-1.d0)
+#include <pi.h>
+!     pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
@@ -3184,8 +3198,9 @@ C*****************************************************************************
       double precision function dpol(rs)
 C*****************************************************************************
       implicit none
-      double precision cf,pi,rs,p2p,p3p
-      pi=dacos(-1.d0)
+      double precision cf,rs,p2p,p3p
+#include <pi.h>
+!     pi=dacos(-1.d0)
       cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
       p2p    = 0.04d0
       p3p    = 0.4319d0
@@ -3196,8 +3211,9 @@ C*****************************************************************************
 
       double precision function dpold(rs)
       implicit none
-      double precision cf,pi,rs,p2p,p3p
-      pi=dacos(-1.d0)
+      double precision cf,rs,p2p,p3p
+#include <pi.h>
+!     pi=dacos(-1.d0)
       cf=(9.d0*pi/4.d0)**(1.d0/3.d0)
       p2p    = 0.04d0
       p3p    = 0.4319d0
@@ -3215,8 +3231,9 @@ C*****************************************************************************
       double precision function Qrpa(x)
 C*****************************************************************************
       implicit none
-      double precision pi,a2,b2,c2,d2,x,Acoul
-      pi=dacos(-1.d0)
+      double precision a2,b2,c2,d2,x,Acoul
+#include <pi.h>
+!     pi=dacos(-1.d0)
       Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
       a2              = 5.84605d0
       c2              = 3.91744d0
@@ -3230,8 +3247,9 @@ C*****************************************************************************
       double precision function Qrpad(x)
 C*****************************************************************************
       implicit none
-      double precision pi,a2,b2,c2,d2,x,Acoul
-      pi=dacos(-1.d0)
+      double precision a2,b2,c2,d2,x,Acoul
+#include <pi.h>
+!     pi=dacos(-1.d0)
       Acoul=2.d0*(log(2.d0)-1.d0)/pi**2
       a2              = 5.84605d0
       c2              = 3.91744d0
@@ -3255,9 +3273,10 @@ c x -> rs; y -> zeta
 ccc ecd is d/drs ec
 ccc ecz is d/dz ec
       implicit none
-      double precision pi,f02,ff,x,y,ec,ecd,ec0,ec0d,ec1,ec1d,
+      double precision f02,ff,x,y,ec,ecd,ec0,ec0d,ec1,ec1d,
      $     aaa,G,Gd,alfac,alfacd,ecz
-      pi=dacos(-1.d0)
+#include <pi.h>
+!     pi=dacos(-1.d0)
 
       f02=4.d0/(9.d0*(2.d0**(1.d0/3.d0)-1.d0))
 
@@ -3267,20 +3286,20 @@ ccc ecz is d/dz ec
       aaa=(1.d0-log(2.d0))/pi**2
       call  GPW(x,aaa,0.21370d0,7.5957d0,3.5876d0,
      $     1.6382d0,0.49294d0,G,Gd)
-      ec0=G
+      ec0 =G
       ec0d=Gd
 
-      aaa=aaa/2.d0
+      aaa=aaa*0.5d0
       call GPW(x,aaa,0.20548d0,14.1189d0,6.1977d0,
      $     3.3662d0,0.62517d0,G,Gd)
-      ec1=G
+      ec1 =G
       ec1d=Gd
       call GPW(x,0.016887d0,0.11125d0,10.357d0,3.6231d0,
      $     0.88026d0,0.49671d0,G,Gd)
-      alfac=-G
+      alfac =-G
       alfacd=-Gd
 
-      ec=ec0+alfac*ff/f02*(1.d0-y**4)+(ec1-ec0)*ff*y**4
+      ec =ec0 +alfac*ff/f02*(1.d0-y**4)+(ec1-ec0)*ff*y**4
       ecd=ec0d+alfacd*ff/f02*(1.d0-y**4)+(ec1d-ec0d)*
      $     ff*y**4
       ecz=alfac*(-4.d0*y**3)*ff/f02+alfac*(1.d0-y**4)/f02*

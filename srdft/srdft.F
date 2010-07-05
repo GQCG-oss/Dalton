@@ -82,9 +82,17 @@ C Cut string SRFTMP
        call  CUTFLD (SRFTMP,' ',maxfld,fields,lenfld,Nfld) !JT
        SRXFUN = fields(1)
        SRCFUN = fields(2)
+       SRLOCALSPIN = fields(3)
+       IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
+          DFT_LOCALSPIN = .TRUE.
+          DFT_SPINDNS   = .TRUE.
+          write (lupri,*) 'DFT_LOCALSPIN activated!'
+       ELSE
+          DFT_LOCALSPIN = .FALSE.
+       END IF
 
 c      write (lupri, *) 'DOSRX_PBERI=',DOSRX_PBERI         ! Manu debug
-c      write (lupri, *) 'SRXFUN,SRCFUN=',SRXFUN,SRCFUN   ! Manu debug
+C      write (lupri, *) 'SRXFUN,SRCFUN,SRDENS=',SRXFUN,SRCFUN,SRDENS   ! Manu debug
 
 C     Remove trailing blanks
 ! 5    IF (SRFTMP(1:1).EQ.' ') THEN
@@ -170,6 +178,7 @@ C
   15  CONTINUE
 
 C      print *,'DOSRX_PBERI = ',DOSRX_PBERI  ! Manu
+      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)') 
@@ -226,7 +235,8 @@ C     Short-range correlation PBE TCS J functional
 C     Rational interpolation
  212  DOSRC_PBERI = .TRUE.
       ISJT    = .TRUE.
-      IF (Nfld .ge. 3) THEN
+CFRAN      IF (Nfld .ge. 3) THEN
+      IF (Nfld .ge. 3 .AND. .NOT.DFT_LOCALSPIN) THEN
          read (fields(3),*) MU_0
          mu_0_m4 = mu_0 ** (-4)
          mu_0_m6 = mu_0 ** (-6)
@@ -254,6 +264,9 @@ C Short-range correlation PBE function of GWS (JT 18-08-09)
 C
   20  CONTINUE
 C
+CFRAN DEBUG
+      print *,'SRCFUN=',SRCFUN   ! Manu debug
+CFRAN END
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)') 
      > '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
@@ -277,6 +290,9 @@ C        then set HF exchange factor to zero.
          HFXFAC = 0.0D0
          HFXSET = .TRUE.
       END IF
+CFRAN DEBUG
+      print *,'I exit SRDFT_INPUT routine!'
+CFRAN END
       CALL QEXIT('SRFUN_INPUT')
       RETURN
       END
@@ -372,12 +388,16 @@ C     =============================
       KGSO   = KW    + NBUF
       KCNT   = KGSO  + NTYPSO*NBAST
       KDGASR = KCNT  + NBAST
-      IF (SRHYBR.AND. .NOT.DOHFSRDFT) THEN
-         KDGAT = KDGASR + NBAST
+      IF (DFT_SPINDNS) THEN
+         KDGAT = KDGASR + 2*NBAST
       ELSE
-         KDGAT = KDGASR
+         KDGAT = KDGASR + NBAST
       END IF
-      KWRK  = KDGAT  + NBAST
+      IF (SRHYBR.AND. .NOT.DOHFSRDFT) THEN
+         KWRK  = KDGAT  + NBAST
+      ELSE
+         KWRK  = KDGAT
+      END IF
       LWRK  = LWORK + 1 - KWRK 
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
 #ifdef SRDFT_DEBUG
@@ -403,13 +423,13 @@ C     =============================
 
 C JT 15-02-05 beg
       IF(ISJT) THEN
-      CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
+        CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
-     &            WORK(KDGASR),WORK(KDGAT),DOGGA,DOERG,DOGRD,DOATR,
+     &            WORK(KDGASR),DOGGA,DOERG,DOGRD,DOATR,
      &            WORK(KWRK),LWRK,IPRINT)
 C JT 15-02-05 end
       ELSE  !JT 15-02-05
-      CALL SRDFT1(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
+        CALL SRDFT1(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
      &            WORK(KDGASR),WORK(KDGAT),DOGGA,DOERG,DOGRD,DOATR,
      &            WORK(KWRK),LWRK,IPRINT)
@@ -466,9 +486,11 @@ C
 #include <chrnos.h>
 #include <sdpre.h>
 C
-!      WRITE(LUPRI,*) 'SRDFT1: entering, ND_SIM=',ND_SIM  !JT
-!      WRITE(LUPRI,*) 'SRDFT1: DOGGA=',DOGGA   !JT
-!      WRITE(LUPRI,*) 'SRDFT1: ERFEXP=',ERFEXP !JT
+CFRAN DEBUG
+      WRITE(LUPRI,*) 'SRDFT1: entering, ND_SIM=',ND_SIM  !JT
+      WRITE(LUPRI,*) 'SRDFT1: DOGGA=',DOGGA   !JT
+      WRITE(LUPRI,*) 'SRDFT1: ERFEXP=',ERFEXP !JT
+CFRAN
 
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
@@ -1656,7 +1678,7 @@ C
 #include <implicit.h>
       DIMENSION FMAT(*), CMO(*), DVREF(*), WRK(*)
       DIMENSION ISYMDM(2), IFCTYP(2)
-      LOGICAL   LSRHYBR
+      LOGICAL   LSRHYBR, DFT_SPINDNS_SAVE
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
       SAVE ISYMDM, IFCTYP
       DATA ISYMDM/1,1/, IFCTYP/999,999/
@@ -1675,6 +1697,8 @@ C
 C
       CALL QENTER('SRFMAT')
 C
+      DFT_SPINDNS_SAVE = DFT_SPINDNS
+      DFT_SPINDNS = .FALSE.
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -1784,6 +1808,7 @@ C
  1200 FORMAT(/' Short-range Fock matrix (MO-basis)')
 C
       CALL MEMREL('SRFMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      DFT_SPINDNS = DFT_SPINDNS_SAVE
       CALL QEXIT('SRFMAT')
       RETURN
       END

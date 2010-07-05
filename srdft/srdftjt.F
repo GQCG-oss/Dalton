@@ -37,7 +37,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
-     &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DMAGAOT,DOGGA,
+     &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DOGGA,
      &                  DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
@@ -69,14 +69,26 @@ C*****************************************************************************
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
-      DIMENSION EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),CORX(NBUF),
-     &          CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),GSO(NBAST*NTYPSO),
-     &          NCNT(NBAST),DMAGAOSR(NBAST),DMAGAOT(NBAST),WORK(LWORK),
-     &          RHG(3),COR(3)
+      DIMENSION EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),
+     &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
+     &          GSO(NBAST*NTYPSO),NCNT(NBAST),
+     &          DMAGAOSR(NBAST,2),
+     &          COR(3),WORK(LWORK)
+C
+      DIMENSION RHO(4), RHG(3,4)
+C     ... RHO(1) = RHOT  = rho_a + rho_b
+C     ... RHO(2) = RHOS  = rho_a - rho_b
+C     ... RHO(3) = RHO2A = 2 rho_a
+C     ... RHO(4) = RHO2B = 2 rho_b
+C     ... RHG(1:3,1) = RHGT(1:3)  = grad ( rho_a + rho_b ) = grad ( rho_t )
+C     ... RHG(1:3,2) = RHGS(1:3)  = grad ( rho_a - rho_b ) = grad ( rho_s )
+C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
+C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
       CHARACTER*16 QUADNAME
 #include <sdpre.h>
 
+#define SRDFT_DEBUG
 #ifdef SRDFT_DEBUG
 !     Debug
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
@@ -85,13 +97,17 @@ C*****************************************************************************
       WRITE(LUPRI,*) 'SRDFT1JT: LUPRI  =',LUPRI, IPRINT
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
       WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI, DOERG
+      WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
+      WRITE(LUPRI,*) 'D_TOT_AO matrix:'
+      call output(DMAT(1,1),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!     IF (DFT_SPINDNS) THEN
+      WRITE(LUPRI,*) 'D_SPIN_AO matrix:'
+      call output(DMAT(1,3),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!     END IF
 C
 #endif
 C     Initializations -------------------------------------------------------
 
-!JT      WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
-!JT      WRITE(LUPRI,*) 'DMAT(1,1)=',DMAT(1,1)
-!JT      WRITE(LUPRI,*) 'DMAT(1,3)=',DMAT(1,3)
 
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
@@ -181,40 +197,57 @@ C     Get AOs
      &            THRINT,IPRINT)
 
 C     Density
-      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO,RHO13,DMAGAOSR,
+      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),RHOT13,DMAGAOSR(1,1),
      &                THRINT,IPRINT)
-      CALL DCOPY(NBAST,DMAGAOSR,1,DMAGAOT,1)
 
 C     Contribution to electron number (N_alpha + N_beta)
-      DELCTRN = WGHT*RHO
-
-C     Spin density
-      IF (DFT_SPINDNS) THEN
-C        DMAT(1,3) is the spin density matrix
-         CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHOS,RHOS13,DMAGAOSR,
-     &                   THRINT,IPRINT)
-         
-C        Contribution to spin density (N_alpha - N_beta)
-         SPINDEN = SPINDEN + WGHT*RHOS
-      ELSE
-         RHOS = 0.0D0
-      END IF
+      DELCTRN = WGHT*RHO(1)
 
 C     Screening
 !      print *,'DELCTRN=',DELCTRN
 !      print *,'THRELCTRN=',THRELCTRN
-      IF (ABS(DELCTRN).LE.THRELCTRN .OR. RHO.LE.THRESRHO) THEN
+      IF (ABS(DELCTRN).LE.THRELCTRN .OR. RHO(1).LE.THRESRHO) THEN
          NSKIP1 = NSKIP1 + 1
          ELCTRSKIP = ELCTRSKIP + DELCTRN
          THRELCTRN = (THRELCTOT-ELCTRSKIP)/100
-       ELSE
+         GO TO 300
+C        ... skip this point, go to next grid point
+      END IF
+
+C     Spin density
+      IF (DFT_SPINDNS) THEN
+C        DMAT(1,3) is the spin density matrix
+         
+         CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),RHOS13,
+     &                   DMAGAOSR(1,2),THRINT,IPRINT)
+         
+C        Contribution to spin density (N_alpha - N_beta)
+         SPINDEN = SPINDEN + WGHT*RHO(2)
+      ELSE
+         RHO(2) = 0.0D0
+      END IF
 
 C     Gradient of density
       IF (DOGGA) THEN
-        CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR,1,D0,RHG,1)
-        RHOGRD = SQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
+C
+        CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR(1,1),
+     &     1,D0,RHG(1,1),1)
+C
+        IF (DFT_SPINDNS) THEN
+           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR,
+     &        1,D0,RHG(1,2),1)
+        ELSE
+           RHG(1,2) = 0.0D0 ! RHGS is zero
+           RHG(2,2) = 0.0D0
+           RHG(3,2) = 0.0D0
+        ENDIF
+        DO I = 1,3
+           RHG(I,3) = RHG(I,1) + RHG(I,2) ! RHG2A
+           RHG(I,4) = RHG(I,1) - RHG(I,2) ! RHG2B
+        END DO
       ENDIF
-
+C
+CFRAN I DO THE HESSIAN LATER!!
 C     Hessian of density (for second-order optimization)
       IF (DOATR) THEN
        CALL DFTRHH(DMAT,DMAGAOSR,GSO(KSO0),GSO(KSO1),
@@ -227,9 +260,11 @@ C     Number of electrons
 
       IF (DOERG) THEN
 
+C
 C     Exchange and correlation energies and derivatives
       NORDER = 1  ! first-order derivatives
-      CALL SRDFTEXCJT(RHO,RHOS,RHOGRD,CHIVAL,NORDER,ERFEXP,
+C
+      CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >           Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2,
      >           d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos,
      >           d2Exdgrddgrd,d2Exdrhodgrd,
@@ -272,13 +307,13 @@ C      Hessian transformation for second-order terms
 C        matrix 1 is DTAO
 C        matrix 2 is DXTAO
          JDXAO = 2
+         rhogrdt = sqrt( rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2 )
          CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),CHIVAL,
-     &                 ERFEXP,RHO,RHOS,
-     &                 RHOGRD,RHOLAP,RHOGHG,RHG,DMAGAOT,DOGGA)
+     &                 ERFEXP,RHO(1),RHO(2),
+     &                 RHOGRDT,RHOLAP,RHOGHG,RHG,DMAGAOSR(1,1),DOGGA)
        ENDIF
 
-       ENDIF  !ABS(DELCTRN).LE.THRELCTRN
 C
   300  CONTINUE
 C End of loop over points ------------------------------------------------
@@ -318,7 +353,7 @@ C Termination --------------------------------------------------------------
       END DO
 
 C     Print section
-!     IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GE. 2) THEN
       IF (DOERG) THEN
          ELCTOT = ELCTRN + ELCTRSKIP
          WRITE (LUPRI,'(4(/1X,A,F18.10))')
@@ -333,20 +368,26 @@ C     Print section
      &'Correlation energy                                  :',EcInt
          WRITE (LUPRI,'(1X,A,F18.10)')
      &'DFT exchange-correlation energy                     :',EDFTY
+      END IF 
 
-         IF (IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(//A//)') ' <<< Kohn-Sham matrix >>>'
-            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         END IF
-
+      IF (IPRINT.GE.5) THEN
+            WRITE(LUPRI,'(//A/)') ' <<< Kohn-Sham matrix >>>'
+            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+            IF (DFT_SPINDNS) THEN
+               WRITE(LUPRI,'(//A/)')
+     &         ' <<< Kohn-Sham matrix from spin-density>>>'
+               CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
+     &         -1,LUPRI)
+            END IF
       END IF
-!     END IF  ! IPRINT .GE. 3
+
+      END IF  ! IPRINT .GE. 2
 
       RETURN 
       END
 
 C****************************************************************************
-      SUBROUTINE SRDFTEXCJT(rhot,rhos,RHOGRD,CHIVAL,NORDER,ERFEXP,
+      SUBROUTINE SRDFTEXCJT(RHO,RHG, CHIVAL,NORDER,ERFEXP,
      >           Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2,
      >           d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos,
      >           d2Exdgrddgrd,d2Exdrhodgrd,
@@ -371,7 +412,8 @@ C*****************************************************************************
 #include <dftinf.h>
 #include <dftcom.h>
 
-      double precision rhot,rhos,RHOGRD,CHIVAL
+      double precision rho(4),rhg(3,4),CHIVAL ! input
+      double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
       integer NORDER
       logical ERFEXP
       double precision Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2
@@ -380,7 +422,13 @@ C*****************************************************************************
       double precision Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2
       double precision d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos
       double precision d2Ecdgrddgrd,d2Ecdrhodgrd
-
+C The new terms
+      double precision Exa,Exb d1Exdrhoa,d1Exdrhob,d1Exdgrda
+      double precision d1Exdgrdb,d1Exdgrda2a,d1Exdgrda2b
+      double precision d2Exdrhoadrhoa,d2Exdrhobdrhob,d2Exdrhoadgrda
+      double precision d2Exdrhobdgrdb
+      save icall
+      data icall/0/
 C     functionals
       external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
@@ -390,6 +438,22 @@ C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
 
 c  Exchange  ------------------------------------------------------------
+
+      icall = icall + 1
+      IF (ERFEXP) THEN
+         write (lupri,*)
+     &   'WARNING srdftexcjt: erfexp true in call no. ',icall
+         erfexp = .false.
+!        CALL QUIT('erfgau not implemented in SRDFTEXCJT')
+      END IF
+
+      IF (DFT_SPINDNS) THEN
+         do i = 1,4
+            rhogrd(i) = sqrt(rhg(1,i)**2 + rhg(2,i)**2 + rhg(3,i)**2)
+         end do
+      ELSE
+         rhogrd(1) = sqrt(rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2)
+      END IF
 
 !     Initialisation
       Ex     = 0.d0
@@ -402,68 +466,97 @@ c  Exchange  ------------------------------------------------------------
       d2Exdrhosdrhos = 0.d0
       d2Exdgrddgrd = 0.d0
       d2Exdrhodgrd = 0.d0
+CFRAN Extra terms initialized!
+      Exa = 0.d0
+      Exb = 0.d0
+      d1Exdrhoa  = 0.d0
+      d1Exdrhob  = 0.d0
+      d1Exdgrda = 0.d0
+      d1Exdgrdb = 0.d0
+      d1Exdgrda2a  = 0.d0
+      d1Exdgrda2b  = 0.d0
+      d2Exdrhoadrhoa = 0.d0
+      d2Exdrhobdrhob = 0.d0
+      d2Exdrhoadgrda = 0.d0
+      d2Exdrhobdgrdb = 0.d0
+CFRAN END
 
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRXPBEHSE not implemented for erfgau')
-       ELSE
-        call ESRX_PBEHSEERF(rhot,RHOGRD,CHIVAL,Ex)
-        call DESR(ESRX_PBEHSEERF,rhot,RHOGRD,CHIVAL,NORDER,
+        IF(.not. DFT_SPINDNS) THEN     
+           call ESRX_PBEHSEERF(rho,RHOGRD,CHIVAL,Ex)
+           call DESR(ESRX_PBEHSEERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Exdrhot,d1Exdgrd,d1Exdgrda2,
      >             d2Exdrhotdrhot,d2Exdgrddgrd,d2Exdrhodgrd)
-       ENDIF
-      ENDIF
+        ELSE
+! It should be divided by half but since we have to multiply 
+! later by 2 ...   
+           call ESRX_PBEHSEERF(rho(3),RHOGRD(3),CHIVAL,Exa)
+!          call ESRX_PBEHSEERF(rhoa2,RHOGRDA2,CHIVAL,Exa)
+           call ESRX_PBEHSEERF(rho(4),RHOGRD(4),CHIVAL,Exa)
+!          call ESRX_PBEHSEERF(rhob2,RHOGRDB2,CHIVAL,Exb)
+           call DESR(ESRX_PBEHSEERF,rho(3),RHOGRD(3),CHIVAL,NORDER,
+     >             d1Exdrhoa,d1Exdgrda,d1Exdgrda2a,
+     >             d2Exdrhoadrhoa,d2Exdgrdadgrda,d2Exdrhoadgrda)
+           call DESR(ESRX_PBEHSEERF,rho(4),RHOGRD(4),CHIVAL,NORDER,
+     >             d1Exdrhob,d1Exdgrdb,d1Exdgrda2b,
+     >             d2Exdrhorbdrhob,d2Exdgrdbdgrdb,d2Exdrhobdgrdb)
+C
+CFRAN Get TOTAL first and second derivatives TODO
+C
+           d1Exdrhot      = 0.5d0*(d1Exdrhoa+ d1Exdrhob)
+           d1Exdgrd       = 0.5d0*(d1Exdgrda+ d1Exdgrdb)
+           d1Exdgrda2     = 0.5d0*(d1Exdgrda2a    + d1Exdgrda2b)
+           d2Exdrhotdrhot = 0.5d0*(d2Exdrhoadrhoa + d2Exdrhorbdrhob)
+           d2Exdgrddgrd   = 0.5d0*(d2Exdgrdadgrda + d2Exdgrdbdgrdb)
+           d2Exdrhodgrd   = 0.5d0*(d2Exdrhoadgrda + d2Exdrhobdgrdb)
+C
+CFRAN Get SPIN dependent first and second derivatives (???) TODO
+C
+           d1Exdrhos      = 0.5d0*(d1Exdrhoa      - d1Exdrhob)
+           d2Exdrhosdrhos = 0.5d0*(d2Exdrhoadrhoa - d2Exdrhorbdrhob)
+C
+CFRAN The exchange energy...
+C
+           Exa = 0.5d0*Exa
+           Exb = 0.5d0*Exb
+           Ex = Exa + Exb 
+        ENDIF
+      ENDIF !  (DOSRX_PBEHSE)
 
 !     short-range exchange PBE of TCS
       IF(DOSRX_PBETCS) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRXPBETCS not implemented for erfgau')
-       ELSE
-        call ESRX_PBETCSERF(rhot,RHOGRD,CHIVAL,Ex)
-        call DESR(ESRX_PBETCSERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRX_PBETCSERF(rho,RHOGRD,CHIVAL,Ex)
+        call DESR(ESRX_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Exdrhot,d1Exdgrd,d1Exdgrda2,
      >             d2Exdrhotdrhot,d2Exdgrddgrd,d2Exdrhodgrd)
-       ENDIF
       ENDIF
 
 !     short-range exchange PBE of GWS ! JT 11-08-09
       IF(DOSRX_PBEGWS) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRXPBEGWS not implemented for erfgau')
-       ELSE
-        call ESRX_PBEGWSERF(rhot,RHOGRD,CHIVAL,Ex)
-        call DESR(ESRX_PBEGWSERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRX_PBEGWSERF(rho,RHOGRD,CHIVAL,Ex)
+        call DESR(ESRX_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Exdrhot,d1Exdgrd,d1Exdgrda2,
      >             d2Exdrhotdrhot,d2Exdgrddgrd,d2Exdrhodgrd)
-       ENDIF
       ENDIF
 
 C  Manu 01-02-2006 begin
 !     short-range exchange RI
       IF(DOSRX_PBERI) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRXRI not implemented for erfgau')
-       ELSE
-        call ESRX_PBERIERF(rhot,RHOGRD,CHIVAL,Ex)
-        call DESR(ESRX_PBERIERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRX_PBERIERF(rho,RHOGRD,CHIVAL,Ex)
+        call DESR(ESRX_PBERIERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Exdrhot,d1Exdgrd,d1Exdgrda2,
      >             d2Exdrhotdrhot,d2Exdgrddgrd,d2Exdrhodgrd)
-       ENDIF
       ENDIF
 C  Manu 01-02-2006 end
 
 !     short-range spin-dependent exchange LDA ! JT 11-08-09
       IF(DOSRX_LDAS) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRXLDAS not implemented for erfgau')
-       ELSE
-        call ESRX_LDAERFSPIN(rhot,rhos,CHIVAL,DFT_SPINDNS,Ex)
-        call DESRSPIN(ESRX_LDAERFSPIN,rhot,rhos,CHIVAL,DFT_SPINDNS,
-     >             NORDER,
+        call ESRX_LDAERFSPIN(rho(1),rho(2),CHIVAL,DFT_SPINDNS,Ex)
+        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),
+     >             CHIVAL,DFT_SPINDNS,NORDER,
      >             d1Exdrhot,d1Exdrhos,
      >             d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos)
-       ENDIF
       ENDIF
  
 C  Correlation  ----------------------------------------------------------
@@ -482,78 +575,54 @@ C     Initialisations
 
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRCPBETCS not implemented for erfgau')
-       ELSE
 !        call VSRCPBEERF(ec,d1ecdrho,d1ecdgrd,d1ecdgrda2,d2ecdrhodrho,
 !     >                  d2ecdgrddgrd,d2ecdrhodgrd,rho,rhogrd,chival,
 !     >                  norder)
-        call ESRC_PBETCSERF(rhot,RHOGRD,CHIVAL,Ec)
-        call DESR(ESRC_PBETCSERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRC_PBETCSERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_PBETCSERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
-       ENDIF
       ENDIF
 
 !     short-range correlation PBE of TCSJ
       IF(DOSRC_PBETCSJ) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRCPBETCSJ not implemented for erfgau')
-       ELSE
-        call ESRC_PBETCSJERF(rhot,RHOGRD,CHIVAL,Ec)
-        call DESR(ESRC_PBETCSJERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRC_PBETCSJERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_PBETCSJERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
-       ENDIF
       ENDIF
 
 !     short-range correlation PBE of GWS
       IF(DOSRC_PBEGWS) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRCPBEGWS not implemented for erfgau')
-       ELSE
-        call ESRC_PBEGWSERF(rhot,RHOGRD,CHIVAL,Ec)
-        call DESR(ESRC_PBEGWSERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRC_PBEGWSERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
-       ENDIF
       ENDIF
 
 !     rational interpolation
       IF(DOSRC_PBERI) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRCRI not implemented for erfgau')
-       ELSE
-        call ESRC_PBERIERF(rhot,RHOGRD,CHIVAL,Ec)
-        call DESR(ESRC_PBERIERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRC_PBERIERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_PBERIERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
-       ENDIF
       ENDIF
 
 !     weighted interpolation
       IF(DOSRC_PBEWI) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRCWI not implemented for erfgau')
-       ELSE
-        call ESRC_PBEWIERF(rhot,RHOGRD,CHIVAL,Ec)
-        call DESR(ESRC_PBEWIERF,rhot,RHOGRD,CHIVAL,NORDER,
+        call ESRC_PBEWIERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_PBEWIERF,rho,RHOGRD,CHIVAL,NORDER,
      >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
-       ENDIF
       ENDIF
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
       IF(DOSRC_LDAS) THEN
-       IF(ERFEXP) THEN
-        CALL QUIT('SRCLDAS not implemented for erfgau')
-       ELSE
-        call ESRC_LDAERFSPIN(rhot,rhos,CHIVAL,DFT_SPINDNS,Ec)
-        call DESRSPIN(ESRC_LDAERFSPIN,rhot,rhos,CHIVAL,DFT_SPINDNS,
-     >             NORDER,
+        call ESRC_LDAERFSPIN(rho(1),rho(2),CHIVAL,DFT_SPINDNS,Ec)
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
+     >             CHIVAL,DFT_SPINDNS,NORDER,
      >             d1Ecdrhot,d1Ecdrhos,
      >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
-       ENDIF
       ENDIF
 
       RETURN
@@ -561,7 +630,7 @@ C     Initialisations
 
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTRMAT,EXCMAT,WGHTX,WGHTC,GAO,GAO1,
-     &                    CHIVAL,ERFEXP,RHO,RHOS,RHOGRD,RHOLAP,RHOGHG,
+     &                    CHIVAL,ERFEXP,RHOT,RHOS,RHOGRD,RHOLAP,RHOGHG,
      &                    RHG,DTGAO,DOGGA)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
@@ -615,7 +684,8 @@ C
 C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! first-order and second-order derivatives
-      CALL SRDFTEXCJT(RHO,RHOS,RHOGRD,CHIVAL,NORDER,ERFEXP,
+CFRAN RHOSGRD ADDED!
+      CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >           Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2,
      >           d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos,
      >           d2Exdgrddgrd,d2Exdrhodgrd,

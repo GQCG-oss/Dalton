@@ -103,7 +103,7 @@ C
 #include <pi.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           D6 = 6.0D0)
-      PARAMETER (CV = D1/D2) 
+      PARAMETER (CV = 0.5D0) 
 c      PARAMETER (DCRS = (D3/(D4*PI))**(D1/D6))
 C    &           AI   = 0.0621814D0,
 C    &           BI   = 13.0720D0,

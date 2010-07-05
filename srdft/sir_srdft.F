@@ -61,3 +61,152 @@ C
       CALL QEXIT ('SRDFT_DENS')
       RETURN
       END
+C
+      SUBROUTINE FCK_MAKE_FCEFF_LOCALSPIN(FC,FS,DV,WRK,LWRK)
+C
+C     Feb 2010 Hans Joergen Aa. Jensen
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <inforb.h>
+C
+      DIMENSION FC(*), FS(*), DV(*), WRK(LWRK)
+C
+      KFRSAV= 1
+      KFREE = KFRSAV
+      LFREE = LWRK
+      CALL MEMGET('REAL',KUFC,N2ORBX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KUFS,N2ORBX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KUDV,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP,N2ORBX,WRK,KFREE,LFREE)
+C
+      IF (NSYM.GT.1) THEN
+         CALL PKSYM1(WRK(KTMP),FS,NORB,NSYM,-1)
+         CALL DSPTGE(NBAST,WRK(KTMP),WRK(KUFS))
+      ELSE
+         CALL DSPTGE(NBAST,FS,WRK(KUFS))
+      END IF
+      CALL DSPTGE(NASHT,DV,WRK(KUDV))
+      write (lupri,*) ' FS packed'
+      call outpkb(fs,norb,nsym,-1,lupri)
+      write (lupri,*) ' FS unpacked'
+      call output(wrk(kufs),1,norbt,1,norbt,norbt,norbt,-1,lupri)
+      write (lupri,*) ' DV packed'
+      call outpAK(DV,NASHT,-1,lupri)
+      write (lupri,*) ' DS packed'
+      call outpAK(DV(1+NNASHX),NASHT,-1,lupri)
+      write (lupri,*) ' DV unpacked'
+      call output(wrk(kudv),1,nasht,1,nasht,nasht,nasht,-1,lupri)
+C
+C     calculate sum_r ( Dtot(p,r) FS(r,q) ) into tmp(p,q)
+C     and add tmp with tmp(transposed)
+      CALL FCK_MAKE_DxFS(WRK(KUFS),WRK(KUDV),WRK(KTMP))
+      write (lupri,*) ' - D FS - FS D unpacked'
+      call output(wrk(ktmp),1,norbt,1,norbt,norbt,norbt,-1,lupri)
+      CALL DAXPY(N2ORBX,2.0D0,WRK(KUFS),1,WRK(KTMP),1)
+      write (lupri,*) ' 2 FS - D FS - FS D unpacked'
+      call output(wrk(ktmp),1,norbt,1,norbt,norbt,norbt,-1,lupri)
+      CALL FCK_ESRDFTY_LOCALSPIN(WRK(KTMP),WRK(KUDV))
+C     pack the correction matrix
+      CALL DGETSP(NORBT,WRK(KTMP),WRK(KUFS))
+      IF (NSYM.GT.1) CALL PKSYM1(WRK(KUFS),WRK(KUFS),NORB,NSYM,2)
+      write (lupri,*) ' 2 FS - D FS - FS D packed'
+      call outpkb(wrk(kufs),norb,nsym,-1,lupri)
+C     Add the effective FS (spin-density Fock matrix) contribution
+C     to the FC matrix for the effective DFT_LOCALSPIN FC matrix.
+      CALL DAXPY(NNORBT,1.0D0,WRK(KUFS),1,FC,1)
+      CALL MEMREL('FCK_MAKE_FCEFF_LOCALSPIN',WRK,KFRSAV,KFRSAV,
+     &            KFREE,LFREE)
+C      CALL MEMREL('FCK_..._LOCALSPIN',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C
+      SUBROUTINE FCK_MAKE_DxFS(UFS,UDV,TMP)
+C     Feb 2010 hjaaj
+C     Utility routine called by FCK_MAKE_FCEFF_LOCALSPIN
+C     to calculate sum_r ( Dtot(p,r) FS(r,q) ) into tmp(p,q)
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <inforb.h>
+      dimension UFS(norbt,norbt), udv(nasht,nasht), tmp(norbt,norbt)
+C
+      call dzero(tmp,n2orbx)
+      do isym = 1,nsym
+         iorbi = iorb(isym)
+         iashi = iash(isym)
+         do iq = iorbi+1,iorbi+norb(isym)
+            do ir = iorbi+1,iorbi+nish(isym)
+               TMP(IR,IQ) = -2.0D0*UFS(IR,IQ)
+            end do ! ir
+            iash_off = iorbi + nish(isym)
+            do irx = iashi+1,iashi+nash(isym)
+               FSRQ = UFS(iash_off+irx,iq)
+               do ipx = iashi+1,iashi+nash(isym)
+                  TMP(iash_off+ipx,IQ) = TMP(iash_off+ipx,IQ)
+     &               - UDV(ipx,irx) * FSRQ
+               end do ! ipx
+            end do ! irx
+         end do ! iq
+      end do ! isym
+C calculate TMP + TMP(transposed)
+      do iq = 1,norbt
+         do ip = 1,iq
+            X = TMP(IP,IQ) + TMP(IQ,IP)
+            TMP(IP,IQ) = X
+            TMP(IQ,IP) = X
+         end do
+      end do
+      RETURN
+      END
+      SUBROUTINE FCK_ESRDFTY_LOCALSPIN(UFC_LS,UDV)
+C     Feb 2010 hjaaj
+C     Utility routine called by FCK_MAKE_FCEFF_LOCALSPIN
+C     to calculate contribution to ESRDFTY from
+C     local spin contribution to EVSR:
+C           EVSR = -Tr(Vxcsr Dv)
+C     The "regular" contributions are calculated in SIRFCK,
+C     but the local spin part was not calculated yet then.
+C
+C     OBS! No local spin correction to this term
+C           ECSR = -0.5*Tr(Vxcsr Dc)
+C     because the local spin FC matrix wasn't added to Vxcsr when
+C     EMCMY was calculated in FCKMAO.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <maxash.h>
+C
+#include <inforb.h>
+#include <infind.h>
+#include <dfterg.h>
+      dimension UFC_LS(norbt,norbt), udv(nasht,nasht)
+!     write (lupri,*) 'UFC_LS matrix, MO basis'
+!     call output(ufc_ls,1,norbt,1,norbt,norbt,norbt,1,lupri)
+!     write (lupri,*) 'UDV matrix, MO basis'
+!     call output(udv,1,nasht,1,nasht,nasht,nasht,1,lupri)
+!     write (lupri,*) 'ICH array'
+!     write (lupri,'(10I5)') (ich(j),j=1,norbt)
+
+      EVSR_LS = 0.0D0
+      DO j = 1,norbt
+         ichj = ich(j)
+         if (ichj .gt. 0) then
+            do i = 1,j-1
+               if (ich(i) .gt. 0) then
+                  EVSR_LS = EVSR_LS - 2.0D0*UDV(ich(i),ichj)*UFC_LS(i,j)
+               end if
+            end do
+            EVSR_LS = EVSR_LS - UDV(ichj,ichj)*UFC_LS(j,j)
+         end if
+      end do
+      ESRDFTY = ESRDFTY + EVSR_LS
+      WRITE (LUPRI,'(/A)') '* Local spin corrections:'
+      WRITE (LUPRI,'(A,F20.10)')
+     &         ' -     Tr(Vxcsr_ls Dval)          ',EVSR_LS,
+     &         '   ESRDFTY revised                ',ESRDFTY
+
+      return
+      end
