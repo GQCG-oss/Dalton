@@ -36,7 +36,7 @@ C     variables for srDFT /hjaaj
 C
       CHARACTER*6  DFTTYP
 C     variables for srDFT
-      CHARACTER*10 SRXFUN, SRCFUN
+      CHARACTER*10 SRXFUN, SRCFUN, SRLOCALSPIN
       COMMON /DFTCHR/ DFTTYP,
-     &                SRXFUN, SRCFUN
+     &                SRXFUN, SRCFUN, SRLOCALSPIN
 C -- end of dftcom.h --
