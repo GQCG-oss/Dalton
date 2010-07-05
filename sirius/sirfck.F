@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#undef SIRFCK_DEBUG
+#define SIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -73,7 +73,8 @@ C
 C     DIRECT = .TRUE.   Direct calculation using hermit.
 C              .FALSE.  Read integrals from AOTWOINT.
 #include <implicit.h>
-      LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR, DO_SPINDNS
+      LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR
+      LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT), MBAS(8)
       DIMENSION WRK(*), IFCTMP_SR(3)
@@ -117,6 +118,9 @@ C     iprsrdft = iprfck
       write(lupri,*)'SIRFCK: entering'
       write(lupri,*)'SIRFCK: NDMAT=', NDMAT
       write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
+      WRITE(LUPRI,*) 'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
+     & DO_SPINDNS,DFT_SPINDNS
+      WRITE(LUPRI,*) 'NDMAT = ', NDMAT
 #endif
       IF (NDMAT.EQ.0) GO TO 9999
 C
@@ -154,6 +158,11 @@ C        DC or DXC (closed shell SCF) / Dtot
          NSR_DMAT = NDMAT
          NDCandDV = NDMAT
       ELSE
+#ifdef SIRFCK_DEBUG
+CFRAN 17/02/2010
+      WRITE(LUPRI,*) 'I do DC(and DV) or DXC(and DXV) '
+CFRAN 17/02/2010 END
+#endif
 C        DC, DV or DXC, DXV
          NSR_DMAT = NDMAT / 2
          NDCandDV = NDMAT
@@ -171,6 +180,12 @@ C        a Multiconfigurational SR-DFT calculation.
      &                  (.NOT.DOHFSRDFT).AND.(MCTYPE.EQ.0)
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT .AND. .NOT.PREHF
 C
+#ifdef SIRFCK_DEBUG
+CFRAN 17/02/2010
+      WRITE(LUPRI,*) 'PREHF = ', PREHF
+      WRITE(LUPRI,*) 'LSRHYBR = ', LSRHYBR
+CFRAN 17/02/2010 END
+#endif
       HFXFACSAVE = HFXFAC
       CHIVALSAVE = CHIVAL
 C
@@ -210,8 +225,8 @@ C           this is e.g. PREHF, i.e. standard HF
          write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
          write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
          write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
-         write(lupri,*) 'SIRFCK: first DMAT'
-         call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!        write(lupri,*) 'SIRFCK: first DMAT'
+!        call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
 C
        IF (CHIVAL .ne. D0) THEN
@@ -243,8 +258,8 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
          END IF
        END IF ! (CHIVAL .ne. D0)
 #ifdef SIRFCK_DEBUG
-         write(lupri,*) 'SIRFCK: first FMAT'
-         call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!        write(lupri,*) 'SIRFCK: first FMAT'
+!        call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
          HFXFAC = HFXFACSAVE
          CHIVAL = CHIVALSAVE
@@ -295,8 +310,8 @@ C              remove any "do exchange" bits
             write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
             write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
             write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
-            write(lupri,*) 'SIRFCK: first DMAT'
-            call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!           write(lupri,*) 'SIRFCK: first DMAT'
+!           call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
             IF (NSYM.GT.1) THEN
 C              HERFCK destroys DMAT when called with symmetry
@@ -397,8 +412,8 @@ C              ... make sure the "do exchange" bit is set in IFCTYP
          write(lupri,*)'SIRFCK: calling SIRFCK2 "AOTWOINT" with'
          write(lupri,*)'SIRFCK: NDMAT=',NDMAT
          write(lupri,*)'SIRFCK: IFCTYP=',(IFCTYP(I),I=1,NDMAT)
-         write(lupri,*)'SIRFCK: first DMAT'
-         call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!        write(lupri,*)'SIRFCK: first DMAT'
+!        call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
          IF (CHIVAL .ne. D0) THEN
 C        ... no long-range integrals if chival .eq. 0
@@ -453,8 +468,8 @@ C              remove any "do exchange" bits
             write(lupri,*)'SIRFCK: calling SIRFCK2 "AOSR2INT" with'
             write(lupri,*)'SIRFCK: NSR_DMAT,NDMAT=',NSR_DMAT,NDMAT
             write(lupri,*)'SIRFCK: IFCTYP=',(IFCTYP(I),I=1,NDMAT)
-            write(lupri,*)'SIRFCK: first DMAT'
-            call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!           write(lupri,*)'SIRFCK: first DMAT'
+!           call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
             CALL DZERO(WRK(KFSRAO),NSR_DMAT*N2BASX)
             CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
@@ -622,13 +637,16 @@ C           ... get total DMAT = DC + DV if NASHT .gt. 0
           END IF
 C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #ifdef SIRFCK_DEBUG
-          WRITE(LUPRI,*) 'SIRFCK: calling SRDFT'  !JT
-          WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
-          call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
+          WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
+!         WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
+!         call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
 #endif
           CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
+          DFT_SPINDNS_SAVE = DFT_SPINDNS
+          DFT_SPINDNS = DO_SPINDNS
           CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,
      &              DOERG,.FALSE.,DOATR,WRK(KLAST),LWRK,IPRSRDFT)
+          DFT_SPINDNS = DFT_SPINDNS_SAVE
 C         IF (DOATR)
 C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
 C           ... for MCSRDFT csf sigma-vectors : - 2 ESRLTR cref(i)

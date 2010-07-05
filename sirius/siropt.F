@@ -85,7 +85,7 @@ C
       DIMENSION WRK(LFREE)
 C
 #include <thrldp.h>
-      PARAMETER (MAXBCK = 5)
+      PARAMETER (MAXBCK = 15)
       PARAMETER (FAKABS = 0.40D0, STPABS = 0.20D0)
       PARAMETER (STPLCL = 0.15D0, SHFLCL = 1.D-3)
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.0D0)
@@ -121,6 +121,7 @@ C
 #include <r12int.h>
 C------------------------
 #include <dfterg.h>
+#include <dftcom.h>
 C ---
 C
 C *** local:
@@ -218,12 +219,24 @@ C.. 1.1.1 .. (GETCIX, TRACTL, READMO)
       KWRK10 = KCMO   + NCMOT
       LWRK10 = LFREE  + 1 - KWRK10
 C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
+      IF (DFT_SPINDNS) THEN
+         NDV = 2
+      ELSE
+         NDV = 1
+      END IF
       KGTOT  = KWRK10
       KDV    = KGTOT  + NVARH
-      KPV    = KDV    + NNASHX
+      KPV    = KDV    + NDV*NNASHX
       KFC    = KPV    + NNASHX*NNASHX
       KFV    = KFC    + NNORBT
-      KSRHYB = KFV    + NNORBT
+!HJJ - FRAN KFS added for the SR_DFT Spin Dens. contribution
+      KFS    = KFV    + NNORBT
+      IF (DFT_SPINDNS) THEN
+         KSRHYB = KFS + NNORBT
+      ELSE
+         KSRHYB = KFS
+      END IF
+!HJJ - FRAN END
       IF (SRHYBR .AND. MCTYPE.NE.0) THEN
          KFQ = KSRHYB + NNORBT
       ELSE
@@ -558,7 +571,7 @@ C
       ENDIF
       IF (P4FLAG(2)) THEN
          WRITE (LUW4,1015) POTNUC,EMYTMP,EACTIV
-         IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1017) ESRDFTY
+         IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1018) ESRDFTY
       END IF
 chj   IF (P6FLAG(1)) THEN
          IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
@@ -1449,6 +1462,7 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <gnrinf.h>
+#include <dftcom.h>
 C
 C *** Externals:
 C
@@ -1457,6 +1471,7 @@ C
 C *** Local variables:
 C
       LOGICAL     HFCALC,    RSTFLG(4), TRCNO,     LSAV15
+      LOGICAL     DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       CHARACTER*8 TABLE(8),  LBLINF(2), LBLDAT(2), STAR8
       CHARACTER*6 CNOLBL
 C
@@ -1654,6 +1669,10 @@ C
          IF (DOMCSRDFT) THEN
             ADDSRI    = .FALSE.
             DOCISRDFT = .TRUE.
+            DFT_SPINDNS_SAVE = DFT_SPINDNS
+            DFT_SPINDNS = .FALSE.
+            DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+            DFT_LOCALSPIN = .FALSE.
          END IF
          CALL CICTL(1,LROOTS,MAXCIT,THRCIX,WRK(KCMO),INDXCI,
      *              WRK(KECI),ICONV,WRK(KICROO),WRK(KW22),LW22)
@@ -1662,6 +1681,8 @@ C    *              ECI,ICONV,ICROOT,WRK,LFREE)
          IF (DOMCSRDFT) THEN
             ADDSRI    = .TRUE.
             DOCISRDFT = .FALSE.
+            DFT_SPINDNS = DFT_SPINDNS_SAVE
+            DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
          END IF
          FLAG(15) = LSAV15
          ISTACI   = ISTASV

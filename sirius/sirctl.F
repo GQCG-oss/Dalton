@@ -91,8 +91,11 @@ C
 #include <pcmdef.h>
 #include <pcm.h>
 #include <pcmlog.h>
+! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
+#include <dftcom.h>
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
+      LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
 C
 #include <sirbkd.h>
@@ -395,6 +398,10 @@ C ***************************************************
 C        *** MP2 ***
 C
       IF (DOMP2) THEN
+         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS = .FALSE.
+         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
@@ -423,6 +430,8 @@ C
          IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+         DFT_SPINDNS = DFT_SPINDNS_SAVE
+         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
       END IF
 C
 C ***************************************************

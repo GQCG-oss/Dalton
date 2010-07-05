@@ -248,10 +248,13 @@ C
             WRITE (LUPRI,4020) ICSIM,NCSIM
             CALL OUTPUT(FTV(1,ICSIM),1,NORBT,1,NORBT,
      &                  NORBT,NORBT,1,LUPRI)
+            write(lupri,*) 'hjaaj: domcsrdft =',domcsrdft
+            call flshfo(lupri)
             IF (DOMCSRDFT) THEN
                WRITE (LUPRI,4021) ICSIM,NCSIM
                CALL OUTPUT(FTV(1,NCSIM+ICSIM),1,NORBT,1,NORBT,
      &                  NORBT,NORBT,1,LUPRI)
+            call flshfo(lupri)
             END IF
          END IF
          IF (P6FLAG(33) .OR. IPRLIN.GE.21) THEN
@@ -260,8 +263,8 @@ C
      &                     1,LUPRI)
          END IF
  1100 CONTINUE
- 4020 FORMAT (/' FTV matrix (no.',I3,' of',I3,')')
- 4021 FORMAT (/' FTC matrix for MC SRDFT (no.',I3,' of',I3,')')
+ 4020 FORMAT(/' FTV matrix (no.',I3,' of',I3,')')
+ 4021 FORMAT(/' FTC matrix for MC SRDFT (no.',I3,' of',I3,')')
  3010 FORMAT(/' FTQ contribution to transition Fock matrix (no.',
      *  I3,' of',I3,')')
 C
@@ -1102,7 +1105,7 @@ C
             WRITE (LUPRI,5020) IOSIM,NOSIM
             CALL OUTPUT(FXC(1,IOSIM),1,NORBT,1,NORBT,
      &                  NORBT,NORBT,1,LUPRI)
-            IF (NASHT.GT.0) THEN
+            IF (NASHT .GT. 0) THEN
                WRITE (LUPRI,5030) IOSIM,NOSIM
                CALL OUTPUT(FXV(1,IOSIM),1,NORBT,1,NORBT,
      &                     NORBT,NORBT,1,LUPRI)

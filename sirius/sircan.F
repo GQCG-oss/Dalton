@@ -264,6 +264,7 @@ C
 C
 C -- local variables and constants
 C
+      LOGICAL   DFT_SPINDNS_SAVE
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
       PARAMETER ( THRCAN = 1.0D-10 )
 C
@@ -292,6 +293,8 @@ C
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
 C
       CALL QENTER('SIRCNO')
+      DFT_SPINDNS_SAVE = DFT_SPINDNS
+      DFT_SPINDNS = .FALSE.  ! no spin densities needed for canonical orbitals
       IF (IPRCNO .GE. 2) CALL GETTIM (T0,W0)
       IF (IPRCNO .GE. 1) THEN
          WRITE (LUPRI,'(/2A/)')
@@ -741,6 +744,7 @@ C        ... redo JWOP in case ISSMO should have changed in ORDRSS /hjaaj aug 04
          CALL GETTIM (TEND,WEND)
          WRITE (LUPRI,'(/A,F9.2)') ' CPU time used in SIRCNO :',TEND-T0
       END IF
+      DFT_SPINDNS = DFT_SPINDNS_SAVE
       CALL QEXIT('SIRCNO')
       RETURN
 C

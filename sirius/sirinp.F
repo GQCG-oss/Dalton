@@ -5215,6 +5215,8 @@ C        ... Check for inconsistencies :
      &        'This is a lrWFT-srDFT calculation using the ',
      &        SRXFUN,' short range exchange functional',
      &        SRCFUN,' short range correlation functional'
+         IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(7X,2A/)')
+     &        SRLOCALSPIN, ' local spin model'
 
          IF (IWINT.NE.0) WRITE(IWUNIT,'(5X,A,F10.6/)')
      &        'Weighted short range interpolation, COPFAC = ',COPFAC

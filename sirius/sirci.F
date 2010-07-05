@@ -75,7 +75,7 @@ C
       ADDSRI_SAVE = ADDSRI
       IF (DOCISRDFT) THEN
 #ifndef MOD_SRDFT
-         call quit('srdft not implemented in this version')
+         call quit('CI-srdft not implemented in this version')
 #else
 C        ... do not add SR integrals to Fock matrices for CI-DFT
 C            (will be true on entry if CI-srDFT preceded by normal RHF)
