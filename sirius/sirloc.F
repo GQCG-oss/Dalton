@@ -160,7 +160,7 @@ C *** Tranform AO fock matrix in local MO fock matrix
  
          CALL FCKDEN(.TRUE.,.FALSE.,WORK(KDCAO),WORK(KDVAO),
      *                                 WORK(KCMO),DUMMY,WORK(KWRK),LWRK)
-         CALL FCKMAO(.TRUE.,DUMMY,EMCMY,WORK(KFCAO),WORK(KFVAO),
+         CALL FCKMAO(.TRUE.,EMCMY,WORK(KFCAO),WORK(KFVAO),
      *               WORK(KDCAO),WORK(KDVAO),WORK(KCMO),WORK(KWRK),LWRK)
          CALL DCOPY(N2BASX,WORK(KFCAO),1,WORK(KDCAO),1)
          CALL DGETSP(NBAST,WORK(KDCAO),WORK(KFCAO))

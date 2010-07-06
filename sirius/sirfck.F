@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#define SIRFCK_DEBUG
+!!  #define SIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -112,16 +112,7 @@ C
 #include <memint.h>
       CALL QENTER('SIRFCK')
 C
-C     iprsrdft = iprfck
-      iprsrdft = 1  ! development code, always print
-#ifdef SIRFCK_DEBUG
-      write(lupri,*)'SIRFCK: entering'
-      write(lupri,*)'SIRFCK: NDMAT=', NDMAT
-      write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
-      WRITE(LUPRI,*) 'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
-     & DO_SPINDNS,DFT_SPINDNS
-      WRITE(LUPRI,*) 'NDMAT = ', NDMAT
-#endif
+      iprsrdft = iprfck
       IF (NDMAT.EQ.0) GO TO 9999
 C
 C     Find out if we have spin-density terms
@@ -133,6 +124,16 @@ C
       IF (DO_SPINDNS .AND. .NOT.ADDSRI) THEN
          CALL QUIT('SIRFCK can only do spin dens. for srDFT')
       END IF
+C
+#ifdef SIRFCK_DEBUG
+      iprsrdft = max(1,iprsrdft)  ! development code, always print
+      write(lupri,*)'SIRFCK: entering'
+      write(lupri,*)'SIRFCK: NDMAT=', NDMAT
+      write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
+      write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
+     & DO_SPINDNS,DFT_SPINDNS
+      WRITE(LUPRI,*) 'NDMAT = ', NDMAT
+#endif
 C
       IF (DO_SPINDNS) THEN
 C        DC, DV, DS or DXC, DXV, DXS
@@ -161,7 +162,6 @@ C        DC or DXC (closed shell SCF) / Dtot
 #ifdef SIRFCK_DEBUG
 CFRAN 17/02/2010
       WRITE(LUPRI,*) 'I do DC(and DV) or DXC(and DXV) '
-CFRAN 17/02/2010 END
 #endif
 C        DC, DV or DXC, DXV
          NSR_DMAT = NDMAT / 2

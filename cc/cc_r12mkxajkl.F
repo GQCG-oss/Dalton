@@ -2344,7 +2344,7 @@ c
 
       LUSUPM = -1
       call dzero(work(kfcao),n2basx)
-      call fckmao(.TRUE.,dummy,emcmy,work(kfcao),work(kfvao),
+      call fckmao(.TRUE.,emcmy,work(kfcao),work(kfvao),
      *     dens,work(kdvao),cmo(1+noffset),
      &     work(kend1),lwrk1)
       

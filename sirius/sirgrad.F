@@ -583,7 +583,7 @@ C
 C
       CALL QENTER('FCKMAO')
 C
-      P6FLAG(11) = .true. !Cdbg
+      P6FLAG(11) = .true. !Cdbg DEBUG
 C
 C
       KFRSAV = 1
@@ -612,14 +612,14 @@ C
 C     If this is a direct run, DCAO is returned in SO basis (to save
 C     memory). Thus, we need to recreate it. K.Ruud, March-98
 C
-! hjaaj obsolete, because DCAO is now never destroyed in SIRFCK
-! (instead a copy is made and destroyed) /hjaaj Feb 2010
+! hjaaj obsolete for srDFT, because DCAO is now never destroyed in SIRFCK
+! if srDFT (instead a copy is made which is destroyed) /hjaaj Feb 2010
 ! have removed DV
-!     IF (DIRFCK) THEN
-!        NOFV  = ( (NASHT .EQ. 0) .OR. ONLYFC )
-!        CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
-!    &               DCAO,DVAO,CMO,DV,WRK(KFREE),LFREE)
-!     END IF
+      IF (DIRFCK .AND. .NOT.(DOHFSRDFT .OR. DOMCSRDFT)) THEN
+         NOFV  = ( (NASHT .EQ. 0) .OR. ONLYFC )
+         CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
+     &               DCAO,DVAO,CMO,DV,WRK(KFREE),LFREE)
+      END IF
       IF (HSROHF) THEN
          CALL DAXPY(N2BASX,D1,DVAO,1,DCAO,1)
          CALL DSCAL(N2BASX,-D1,DVAO,1)

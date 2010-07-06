@@ -186,7 +186,7 @@ C
             MBSMAX = 6
          END IF
       END IF
-      CALL FCKMAO(.TRUE.,DUMMY,EMCMY,WORK(KFCAO),WORK(KFVAO),
+      CALL FCKMAO(.TRUE.,EMCMY,WORK(KFCAO),WORK(KFVAO),
      *     WORK(KDCAO),WORK(KDVAO),WORK(KCMO),WORK(KWRK),LWRK)
 
       WRITE(LUPRI,'(/A,I1,A)') ' Computation of exchange matrix'//
