@@ -79,10 +79,20 @@ C
       mu_0   = -1.0D0
 C
 C Cut string SRFTMP 
-       call  CUTFLD (SRFTMP,' ',maxfld,fields,lenfld,Nfld) !JT
+       call  CUTFLD (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
+       IF (NFld .LE. 1) THEN
+          WRITE (LUPRI,'(//A/2A)') 'FATAL INPUT ERROR, '//
+     &     'invalid specification of short range functionals.',
+     &     ' Input line: ',SRFTMP
+          CALL QUIT('Invalid specification of short range functionals')
+       END IF
        SRXFUN = fields(1)
        SRCFUN = fields(2)
-       SRLOCALSPIN = fields(3)
+       IF (NFld .GE. 3) THEN
+          SRLOCALSPIN = fields(3)
+       ELSE
+          SRLOCALSPIN = ' '
+       END IF
        IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
           DFT_LOCALSPIN = .TRUE.
           DFT_SPINDNS   = .TRUE.
@@ -1413,7 +1423,7 @@ C
          IF (.NOT.DOSRMULO) THEN
 c
             IF (LSRLDA) THEN
-c        ...  Dont do SRLDA if SRDFTLTR is called with LSRLDA false
+c        ...  Do not do SRLDA if SRDFTLTR is called with LSRLDA false
 c             (regular Kohm-Sham part with total density for SRHYBR).
               CALL VXSRLDA(XKSR,RHO,RHO13,CHIVAL,2,ERFEXP)
             END IF
@@ -1483,7 +1493,7 @@ c          ... Special case for SRDFT in DFT embedding.
               FRZBCK = 0D0
               FZZBCK = 0D0
             ENDIF
-         ENDIF
+         ENDIF  ! IF (.NOT.DOSRMULO) THEN
 C
 C        ********************************
 C        ** Calculate correlation part **
@@ -1602,6 +1612,8 @@ C        ** Linear transformation **
 C        ***************************
 C
          IF (.NOT.SRHYBR .OR. DOHFSRDFT) THEN
+!        i.e. for normal MCSRDFT (with SRHYBR .false.) and always for
+!        HFSRDFT
             IF (DOGGA) THEN
                BR = B3(1)*RX + B3(2)*RY + B3(3)*RZ
                FAC0 = FRR*B0 + FRZ*BR
@@ -1661,8 +1673,9 @@ C
                   END IF
                END DO
             END IF
-         END IF
-      END IF
+         END IF   ! IF (.NOT.SRHYBR .OR. DOHFSRDFT) THEN
+!        i.e. for normal MCSRDFT (with SRHYBR .false.) and always for
+      END IF   ! IF (BMAX.GT.DFTHRL) THEN 
 c
       RETURN
       END

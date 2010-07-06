@@ -100,10 +100,10 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
       WRITE(LUPRI,*) 'D_TOT_AO matrix:'
       call output(DMAT(1,1),1,nbast,1,nbast,nbast,nbast,-1,lupri)
-!     IF (DFT_SPINDNS) THEN
-      WRITE(LUPRI,*) 'D_SPIN_AO matrix:'
-      call output(DMAT(1,3),1,nbast,1,nbast,nbast,nbast,-1,lupri)
-!     END IF
+      IF (DFT_SPINDNS) THEN
+         WRITE(LUPRI,*) 'D_SPIN_AO matrix:'
+         call output(DMAT(1,3),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+      END IF
 C
 #endif
 C     Initializations -------------------------------------------------------
@@ -234,7 +234,7 @@ C
      &     1,D0,RHG(1,1),1)
 C
         IF (DFT_SPINDNS) THEN
-           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR,
+           CALL DGEMV('T',NBAST,3,D2,GSO(KSO1),NBAST,DMAGAOSR(1,2),
      &        1,D0,RHG(1,2),1)
         ELSE
            RHG(1,2) = 0.0D0 ! RHGS is zero
@@ -247,11 +247,13 @@ C
         END DO
       ENDIF
 C
-CFRAN I DO THE HESSIAN LATER!!
 C     Hessian of density (for second-order optimization)
       IF (DOATR) THEN
-       CALL DFTRHH(DMAT,DMAGAOSR,GSO(KSO0),GSO(KSO1),
-     >            GSO(KSO2),RHG,RHOLAP,RHOGHG)
+!       CALL DFTRHH(DMAT,DMAGAOSR,GSO(KSO0),GSO(KSO1),
+!    >              GSO(KSO2),RHG,RHOLAP,RHOGHG)
+!       hjaaj July 2010: RHOLAP and RHOGHG not used in JT routines
+        RHOLAP = 1.0D200
+        RHOGHG = 1.0D200
       ENDIF
 
 C     Number of electrons
@@ -292,11 +294,13 @@ C      Sum of exchange and correlation
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        FROMVX = .FALSE.
-       CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,d1Excdrhot,
-     &             d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
+       CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+     &             d1Excdrhot,d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
        IF (DFT_SPINDNS) THEN
-         CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG,d1Excdrhos,
-     &             d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
+         if (dogga)
+     & call quit('DOGGA not yet for DFT_SPINDNS in DFTKSM call')
+         CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
+     &             d1Excdrhos,d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
        ENDIF
 
 C
@@ -636,7 +640,7 @@ C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
 C
-C     Based on the routine SRDFTLT of J. K. Pedersen
+C     Based on the routine SRDFTLTR of J. K. Pedersen
 C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
@@ -697,10 +701,10 @@ CFRAN RHOSGRD ADDED!
 C Total contribution -------------------------------------------------------
 
          ZNV = D1/RHOGRD
-         FZ0 = ZNV*(WGHTX*d1Exdgrd + WGHTC*d1Ecdgrd)
+         FZ0 = ZNV*(WGHTX*d1Exdgrd  + WGHTC*d1Ecdgrd)
          FRR = WGHTX*d2Exdrhotdrhot + WGHTC*d2Ecdrhotdrhot
-         FRZ = WGHTX*d2Exdrhodgrd + WGHTC*d2Ecdrhodgrd
-         FZZ = WGHTX*d2Exdgrddgrd + WGHTC*d2Ecdgrddgrd
+         FRZ = WGHTX*d2Exdrhodgrd   + WGHTC*d2Ecdrhodgrd
+         FZZ = WGHTX*d2Exdgrddgrd   + WGHTC*d2Ecdgrddgrd
 C
          RX = ZNV*RHG(1)
          RY = ZNV*RHG(2)
@@ -708,7 +712,11 @@ C
 
 C Linear transformation -----------------------------------------------------
 
-         IF (DOHFSRDFT) THEN
+!        IF (DOHFSRDFT) THEN   !hjaaj July 2010: this was a
+!        misunderstanding of the code in SRDFTLTR which had  IF
+!        (.NOT.SRHYBR .OR. DHFSRDFT) ; for normal MC-srDFT SRHYBR would
+!        have been false, but in this code this part was skipped until
+!        now if DOMCSRDFT
             IF (DOGGA) THEN
                BR = B3(1)*RX + B3(2)*RY + B3(3)*RZ
                FAC0 = FRR*B0 + FRZ*BR
@@ -768,8 +776,8 @@ C Linear transformation -----------------------------------------------------
                   END IF
                END DO
             END IF
-         END IF
-      END IF
+!        END IF   ! IF (DOHFSRDFT) THEN
+      END IF   ! IF (BMAX.GT.DFTHRL) THEN 
 c
       RETURN
       END

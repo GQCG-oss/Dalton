@@ -2750,11 +2750,7 @@ C*****************************************************************************
       parameter(ckf = 3.093667726280136d0)
       parameter(f13 = 0.333333333333333d0)
 C     Spin-unpolarized case
-CFRAN FROM THE svn DIFF
       if (.not.dospin) then
-C      if (dospin) then
-CFRAN END
-
 C       Density and kF
         rho = rhot
         akf = ckf*(rho**f13)
@@ -2788,10 +2784,9 @@ C     Spin-polarized case
       else
 
 C       Density and kF for spin alpha
-        rhoa=max(0.5d0*(rhot+rhos),0d0)
-CFRAN JUST A TEST
-C        rhoa=2.d0*rhoa ! spin-scaling
-CFRAN END
+!       rhoa=max(0.5d0*(rhot+rhos),0d0)
+!       rhoa=2.d0*rhoa ! spin-scaling
+        rhoa=max((rhot+rhos),0d0) ! rhoa is twice real rho_a
         akf = ckf*(rhoa**f13)
         a = mu/(2.d0*akf)
         a2 = a*a
@@ -2820,10 +2815,9 @@ C       Limit for large a
 
 
 C       Density and kF for spin beta
-        rhob = max(0.5d0*(rhot-rhos),0d0)
-CFRAN JUST A TEST
-C        rhob = 2.d0*rhob ! spin-scaling
-C
+!       rhob = max(0.5d0*(rhot-rhos),0d0)
+!       rhob = 2.d0*rhob ! spin-scaling
+        rhob=max((rhot+rhos),0d0) ! rhob is twice real rho_b
         akf = ckf*(rhob**f13)
         a = mu/(2.d0*akf)
         a2 = a*a
@@ -2850,11 +2844,8 @@ C       Limit for large a
           eb = 0.d0
         end if
 
-C       spin scaling
-CFRAN JUST A TEST
-        e = (ea + eb)
-C       e = 0.5d0 * (ea + eb)
-CFRAN END
+C       divide by two because of spin scaling
+        e = 0.5d0 * (ea + eb)
 
       endif
 
@@ -2895,10 +2886,7 @@ C*****************************************************************************
       parameter(rsfac = 0.620350490899400d0)
 
 C     Spin-unpolarized case
-CFRAN FROM THE svn DIFF
       if (.not.dospin) then
-C      if (dospin) then
-CFRAN END
 
         rs = rsfac/(rhot**f13)
 
