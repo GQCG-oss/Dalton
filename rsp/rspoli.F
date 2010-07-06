@@ -1072,6 +1072,7 @@ C            it is NOT used when normal MCSCF)
             CALL RSPORB(.FALSE.,NCSIM,FC,FVTD(1,1,NCSIM+1),FVTD,
      *                  QATD,QBTD,WRK(KDTV),EVECS,DUMMY)
          END IF
+#ifdef MOD_SRDFT
          IF (DOMCSRDFT) THEN
 C           ... special MCSRDFT contribution to csf sigma-vectors,
 C               stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the 
@@ -1128,6 +1129,7 @@ C
                JEVECS = JEVECS + KZYVAR
             END DO ! ICSIM = 1,NCSIM
          END IF ! DOMCSRDFT
+#endif
       END IF ! NCSIM .gt. 0
       CALL MEMREL('RSPOLI.bottom',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
