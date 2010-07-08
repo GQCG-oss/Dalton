@@ -34,6 +34,7 @@ C
 #include <single.h>
 
 #undef SRDFT_DEBUG
+!  #define SRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
@@ -69,7 +70,7 @@ C*****************************************************************************
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
-      DIMENSION EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),
+      DIMENSION EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*), 
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
      &          DMAGAOSR(NBAST,2),
@@ -88,7 +89,6 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       CHARACTER*16 QUADNAME
 #include <sdpre.h>
 
-#define SRDFT_DEBUG
 #ifdef SRDFT_DEBUG
 !     Debug
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
@@ -100,6 +100,10 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
       WRITE(LUPRI,*) 'D_TOT_AO matrix:'
       call output(DMAT(1,1),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+      IF (DOATR) THEN
+         WRITE(LUPRI,*) 'DX_TOT_AO matrix:'
+         call output(DMAT(1,2),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+      END IF
       IF (DFT_SPINDNS) THEN
          WRITE(LUPRI,*) 'D_SPIN_AO matrix:'
          call output(DMAT(1,3),1,nbast,1,nbast,nbast,nbast,-1,lupri)
@@ -197,8 +201,8 @@ C     Get AOs
      &            THRINT,IPRINT)
 
 C     Density
-      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),RHOT13,DMAGAOSR(1,1),
-     &                THRINT,IPRINT)
+      CALL GETRHO_OLD(DMAT(1,1),GSO(KSO0),RHO(1),RHOT13,
+     &       DMAGAOSR(1,1),THRINT,IPRINT)
 
 C     Contribution to electron number (N_alpha + N_beta)
       DELCTRN = WGHT*RHO(1)
@@ -206,7 +210,8 @@ C     Contribution to electron number (N_alpha + N_beta)
 C     Screening
 !      print *,'DELCTRN=',DELCTRN
 !      print *,'THRELCTRN=',THRELCTRN
-      IF (ABS(DELCTRN).LE.THRELCTRN .OR. RHO(1).LE.THRESRHO) THEN
+      IF (ABS(DELCTRN).LE.THRELCTRN .OR. 
+     &          RHO(1).LE.THRESRHO) THEN
          NSKIP1 = NSKIP1 + 1
          ELCTRSKIP = ELCTRSKIP + DELCTRN
          THRELCTRN = (THRELCTOT-ELCTRSKIP)/100
@@ -217,14 +222,13 @@ C        ... skip this point, go to next grid point
 C     Spin density
       IF (DFT_SPINDNS) THEN
 C        DMAT(1,3) is the spin density matrix
-         
          CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),RHOS13,
      &                   DMAGAOSR(1,2),THRINT,IPRINT)
          
 C        Contribution to spin density (N_alpha - N_beta)
          SPINDEN = SPINDEN + WGHT*RHO(2)
       ELSE
-         RHO(2) = 0.0D0
+        RHO(2) = 0.0D0
       END IF
 
 C     Gradient of density
@@ -247,14 +251,6 @@ C
         END DO
       ENDIF
 C
-C     Hessian of density (for second-order optimization)
-      IF (DOATR) THEN
-!       CALL DFTRHH(DMAT,DMAGAOSR,GSO(KSO0),GSO(KSO1),
-!    >              GSO(KSO2),RHG,RHOLAP,RHOGHG)
-!       hjaaj July 2010: RHOLAP and RHOGHG not used in JT routines
-        RHOLAP = 1.0D200
-        RHOGHG = 1.0D200
-      ENDIF
 
 C     Number of electrons
       ELCTRN = ELCTRN + DELCTRN
@@ -310,12 +306,11 @@ C      Hessian transformation for second-order terms
        IF (DOATR) THEN
 C        matrix 1 is DTAO
 C        matrix 2 is DXTAO
-         JDXAO = 2
-         rhogrdt = sqrt( rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2 )
-         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXAO),EXCMAT,
-     &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),CHIVAL,
-     &                 ERFEXP,RHO(1),RHO(2),
-     &                 RHOGRDT,RHOLAP,RHOGHG,RHG,DMAGAOSR(1,1),DOGGA)
+         JDTXAO = 2
+         JDSXAO = 4
+         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDTXAO),DMAT(1,JDSXAO),EXCMAT,
+     &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
+     &                 CHIVAL,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA)
        ENDIF
 
 C
@@ -373,6 +368,10 @@ C     Print section
          WRITE (LUPRI,'(1X,A,F18.10)')
      &'DFT exchange-correlation energy                     :',EDFTY
       END IF 
+
+      IF (DOATR) THEN
+         WRITE(LUPRI,'(/A)') ' srDFT linear transformation finished'
+      END IF
 
       IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(//A/)') ' <<< Kohn-Sham matrix >>>'
@@ -633,9 +632,9 @@ C     Initialisations
       END
 
 C**************************************************************************
-      SUBROUTINE SRDFTLTRJT(KSYMOP,DTRMAT,EXCMAT,WGHTX,WGHTC,GAO,GAO1,
-     &                    CHIVAL,ERFEXP,RHOT,RHOS,RHOGRD,RHOLAP,RHOGHG,
-     &                    RHG,DTGAO,DOGGA)
+      SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
+     &                      WGHTX,WGHTC,GAO,GAO1,
+     &                      CHIVAL,ERFEXP,RHO,RHG, DGAO,DOGGA)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -660,27 +659,42 @@ C***************************************************************************
      >           D13=1.0D0/3.0D0)
       LOGICAL DOGGA,ERFEXP
 
-      DIMENSION DTRMAT(NBAST,NBAST),GAO(NBAST),GAO1(NBAST,3),
-     &          EXCMAT(NBAST,NBAST),DTGAO(NBAST),RHG(3),
-     &          DTGTAO(NBAST),B3(3)
+      DIMENSION RHO(4), RHG(3,4)
+      double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
+      DIMENSION DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
+      DIMENSION GAO(NBAST),GAO1(NBAST,3),
+     &          EXCMAT(NBAST,NBAST,2),DGAO(NBAST,2),B0(2), B3(3,2)
 C
 
-      CALL DGEMV('N',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
-      B0 = DDOT(NBAST,DTGAO,1,GAO,1)
-
-      IF (DOGGA) THEN
-C        B3 = GAO1'*DTGAO
-         CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D0,B3,1)
-C        DTGAO= DTRMAT'*GAO
-         CALL DGEMV('T',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
-C        B3 = B3 + GAO1'*DTGAO
-         CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
-         BMAX = MAX(DABS(B0),DABS(B3(1)),DABS(B3(2)),DABS(B3(3)))
+      CALL DGEMV('N',NBAST,NBAST,D1,DTXMAT,NBAST,GAO,1,D0,DGAO(1,1),1)
+      IF (DFT_SPINDNS) THEN
+        N_MAT = 2
+        CALL DGEMV('N',NBAST,NBAST,D1,DSXMAT,NBAST,GAO,1,D0,DGAO(1,2),1)
       ELSE
-!        check this case
-         BMAX = DABS(B0)
-         CALL DZERO(B3,3)
+        N_MAT = 1
       END IF
+C
+      BMAX = 0.0D0
+      DO I_MAT = 1, N_MAT ! 1->total, 2->spin
+         B0(I_MAT) = DDOT(NBAST,DGAO(1,I_MAT),1,GAO,1)
+         BMAX = MAX( BMAX,ABS(B0(I_MAT)) )
+         IF (DOGGA) THEN
+            IF (DFT_SPINDNS) CALL QUIT('SRDFTLTRJT not implemented') ! see HJAAJ note below
+            rhogrd(I_MAT) =
+     &       sqrt( rhg(1,I_MAT)**2 + rhg(2,I_MAT)**2 + rhg(3,I_MAT)**2 )
+C           B3 = GAO1'*DGAO(1)
+            CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,
+     &         DGAO(1,I_MAT),1,D0,B3(1,I_MAT),1)
+C           DGAO= DTXMAT'*GAO  !!! HJAAJ: is this necessary ? We have D*XMAT symmetrized!
+            CALL DGEMV('T',NBAST,NBAST,D1,DTXMAT,NBAST,
+     &         GAO,1,D0,DGAO(1,I_MAT),1)
+C           B3 = B3 + GAO1'*DGAO
+            CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,
+     &         DGAO(1,I_MAT),1,D1,B3(1,I_MAT),1)
+            BMAX = MAX(BMAX,
+     &       ABS(B3(1,I_MAT)),ABS(B3(2,I_MAT)),ABS(B3(3,I_MAT)))
+         END IF
+      END DO
 C
       IF (BMAX.GT.DFTHRL) THEN 
 C
@@ -700,15 +714,24 @@ CFRAN RHOSGRD ADDED!
 
 C Total contribution -------------------------------------------------------
 
-         ZNV = D1/RHOGRD
-         FZ0 = ZNV*(WGHTX*d1Exdgrd  + WGHTC*d1Ecdgrd)
          FRR = WGHTX*d2Exdrhotdrhot + WGHTC*d2Ecdrhotdrhot
+      IF (DFT_SPINDNS) THEN
+         FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
+         FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
+      END IF
+      IF (DOGGA) THEN
+         ZNV = D1/RHOGRD(1)
+         FZ0 = ZNV*(WGHTX*d1Exdgrd  + WGHTC*d1Ecdgrd)
          FRZ = WGHTX*d2Exdrhodgrd   + WGHTC*d2Ecdrhodgrd
          FZZ = WGHTX*d2Exdgrddgrd   + WGHTC*d2Ecdgrddgrd
 C
-         RX = ZNV*RHG(1)
-         RY = ZNV*RHG(2)
-         RZ = ZNV*RHG(3)
+         RX = ZNV*RHG(1,1)
+         RY = ZNV*RHG(2,1)
+         RZ = ZNV*RHG(3,1)
+         IF (DFT_SPINDNS) THEN
+            call quit('Spin dens. GGA not implemented yet SRDFTLTRJT')
+         END IF
+      END IF
 
 C Linear transformation -----------------------------------------------------
 
@@ -718,11 +741,16 @@ C Linear transformation -----------------------------------------------------
 !        have been false, but in this code this part was skipped until
 !        now if DOMCSRDFT
             IF (DOGGA) THEN
-               BR = B3(1)*RX + B3(2)*RY + B3(3)*RZ
-               FAC0 = FRR*B0 + FRZ*BR
-               FACR = FRZ*B0 + FZZ*BR
+               BR = B3(1,1)*RX + B3(2,1)*RY + B3(3,1)*RZ
+               FAC0R = FRR*B0(1) + FRZ*BR
+               FACR = FRZ*B0(1) + FZZ*BR
             ELSE
-               FAC0 = FRR*B0
+               IF (DFT_SPINDNS) THEN
+                  FAC0R = FRR*B0(1) + FRS*B0(2)
+                  FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
+               ELSE
+                  FAC0R = FRR*B0(1)
+               END IF
             END IF
             IF (NSYM.EQ.1) THEN
                DO I = 1, NBAST
@@ -733,14 +761,18 @@ C Linear transformation -----------------------------------------------------
                      GZ = GAO1(I,3)
                   END IF
                   DO J = 1, I 
-                     EXCMAT(J,I) = EXCMAT(J,I)+FAC0*G0*GAO(J)
+                     EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                     IF (DFT_SPINDNS) THEN
+                        EXCMAT(J,I,2) = EXCMAT(J,I,2)+FAC0S*G0*GAO(J)
+                     END IF
                      IF (DOGGA) THEN
                         AX = GX*GAO(J) + G0*GAO1(J,1)
                         AY = GY*GAO(J) + G0*GAO1(J,2)
                         AZ = GZ*GAO(J) + G0*GAO1(J,3)
                         AR = AX*RX + AY*RY + AZ*RZ
-                        AB = AX*B3(1) + AY*B3(2) + AZ*B3(3) - AR*BR
-                        EXCMAT(J,I) = EXCMAT(J,I)+FACR*AR+FZ0*AB
+                        AB = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+     &                     - AR*BR
+                        EXCMAT(J,I,1) = EXCMAT(J,I,1)+FACR*AR+FZ0*AB
                      END IF
                   END DO
                END DO
@@ -760,16 +792,20 @@ C Linear transformation -----------------------------------------------------
                            GZ = GAO1(I,3)
                         END IF
                         DO J = JSTR, MIN(I,JEND) 
-                           EXCMAT(J,I) = EXCMAT(J,I) + FAC0*G0*GAO(J)
+                           EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
+                           IF (DFT_SPINDNS) THEN
+                              EXCMAT(J,I,2) = EXCMAT(J,I,2)
+     &                                      + FAC0S*G0*GAO(J)
+                           END IF
                            IF (DOGGA) THEN
                               AX = GX*GAO(J) + G0*GAO1(J,1)
                               AY = GY*GAO(J) + G0*GAO1(J,2)
                               AZ = GZ*GAO(J) + G0*GAO1(J,3)
                               AR = AX*RX + AY*RY + AZ*RZ
-                              AB = AX*B3(1) + AY*B3(2) + AZ*B3(3) -
-     &                             AR*BR
-                              EXCMAT(J,I) = EXCMAT(J,I)
-     &                                     + FACR*AR + FZ0*AB
+                              AB = AX*B3(1,1) + AY*B3(2,1) + AZ*B3(3,1)
+     &                           - AR*BR
+                              EXCMAT(J,I,1) = EXCMAT(J,I,1)
+     &                                      + FACR*AR + FZ0*AB
                            END IF
                         END DO
                      END DO
