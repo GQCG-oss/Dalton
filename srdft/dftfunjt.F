@@ -2817,7 +2817,8 @@ C       Limit for large a
 C       Density and kF for spin beta
 !       rhob = max(0.5d0*(rhot-rhos),0d0)
 !       rhob = 2.d0*rhob ! spin-scaling
-        rhob=max((rhot+rhos),0d0) ! rhob is twice real rho_b
+        rhob=max((rhot-rhos),0d0) ! rhob is twice real rho_b
+C
         akf = ckf*(rhob**f13)
         a = mu/(2.d0*akf)
         a2 = a*a
