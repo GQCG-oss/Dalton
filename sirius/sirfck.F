@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-!!  #define SIRFCK_DEBUG
+!  #define SIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -121,7 +121,7 @@ C
       DO I = 1,NDMAT
          IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
       END DO
-      IF (DO_SPINDNS .AND. .NOT.ADDSRI) THEN
+      IF (DO_SPINDNS .AND. .NOT. ADDSRI) THEN
          CALL QUIT('SIRFCK can only do spin dens. for srDFT')
       END IF
 C
@@ -132,7 +132,6 @@ C
       write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
       write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
      & DO_SPINDNS,DFT_SPINDNS
-      WRITE(LUPRI,*) 'NDMAT = ', NDMAT
 #endif
 C
       IF (DO_SPINDNS) THEN
@@ -141,10 +140,10 @@ C        DC, DV, DS or DXC, DXV, DXS
          NDCandDV = NSR_DMAT * 2
          IF (NSR_DMAT*3 .ne. NDMAT) THEN
 C        ... check if programming was OK
-            write(lupri,*)'Inconsistency, NSR_DMAT*3 ne NDMAT'
+            write(lupri,*)'Inconsistency(1), NSR_DMAT*3 ne NDMAT'
             write(lupri,*)'SIRFCK: NDMAT,NSR_DMAT=', NDMAT,NSR_DMAT
             write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
-            CALL QUIT('Inconsistency, NSR_DMAT*3 ne NDMAT')
+            CALL QUIT('Inconsistency(1), NSR_DMAT*3 ne NDMAT')
          END IF
          IF (NSR_DMAT .gt. 1) THEN
 C        off-sets below assume DXC1, DXC2, DXV1, DXV2
@@ -158,6 +157,19 @@ C        ... NDMAT typically .eq. 1 for CI or CI-srDFT
 C        DC or DXC (closed shell SCF) / Dtot
          NSR_DMAT = NDMAT
          NDCandDV = NDMAT
+CFRAN JUST A TEST !! DEBUG REMOVE AGAIN WHEN LOCALSPIN HESSIAN IS PROPERLY IMPLEMENTED TODO !!!!!!!!
+      ELSE IF(DFT_SPINDNS) THEN
+C        DC, DV, DS or DXC, DXV, DXS
+         NSR_DMAT = NDMAT / 3
+         NDCandDV = NSR_DMAT * 2
+         IF (NSR_DMAT*3 .ne. NDMAT) THEN
+C        ... check if programming was OK
+            write(lupri,*)'Inconsistency(1a), NSR_DMAT*3 ne NDMAT'
+            write(lupri,*)'SIRFCK: NDMAT,NSR_DMAT=', NDMAT,NSR_DMAT
+            write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
+            CALL QUIT('Inconsistency(1a), NSR_DMAT*3 ne NDMAT')
+         END IF
+CFRAN JUST A TEST END
       ELSE
 #ifdef SIRFCK_DEBUG
 CFRAN 17/02/2010
@@ -167,10 +179,11 @@ C        DC, DV or DXC, DXV
          NSR_DMAT = NDMAT / 2
          NDCandDV = NDMAT
          IF (NSR_DMAT*2 .ne. NDMAT) THEN
-            write(lupri,*)'Inconsistency, NSR_DMAT*2 ne NDMAT'
+            write(lupri,*)'Inconsistency(2), NSR_DMAT*2 ne NDMAT'
+CFRAN JUST TO UNDERSTAND END
             write(lupri,*)'SIRFCK: NDMAT,NSR_DMAT=', NDMAT,NSR_DMAT
             write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
-            CALL QUIT('Inconsistency, NSR_DMAT*2 ne NDMAT')
+            CALL QUIT('Inconsistency(2), NSR_DMAT*2 ne NDMAT')
          END IF
       END IF
 
@@ -310,8 +323,10 @@ C              remove any "do exchange" bits
             write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
             write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
             write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
-!           write(lupri,*) 'SIRFCK: first DMAT'
-!           call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         do i = 1,ndmat+1
+            write(lupri,*) 'SIRFCK: DMAT no.',i,' out of',ndmat
+            call output(DMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         end do
 #endif
             IF (NSYM.GT.1) THEN
 C              HERFCK destroys DMAT when called with symmetry
@@ -545,6 +560,12 @@ C
 #ifndef MOD_SRDFT
          call quit('srdft not included in this version')
 #else
+#ifdef SIRFCK_DEBUG
+         do i = 1,ndmat+1
+            write(lupri,*) 'SIRFCK srdft: DMAT no.',i,' out of',ndmat+1
+            call output(DMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         end do
+#endif
          IF (LSRHYBR .AND. DO_SPINDNS) THEN
             call quit('hybrid srDFT only for singlet MC-srDFT')
          END IF
@@ -640,10 +661,12 @@ C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
           WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
 !         WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
 !         call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
+          WRITE(LUPRI,*) 'SIRFCK: DFT_SPINDNS = ', DFT_SPINDNS, 
+     &                   'BEFORE SRDFT'
 #endif
           CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
           DFT_SPINDNS_SAVE = DFT_SPINDNS
-          DFT_SPINDNS = DO_SPINDNS
+          DFT_SPINDNS = DO_SPINDNS 
           CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,
      &              DOERG,.FALSE.,DOATR,WRK(KLAST),LWRK,IPRSRDFT)
           DFT_SPINDNS = DFT_SPINDNS_SAVE

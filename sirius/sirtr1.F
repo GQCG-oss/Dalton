@@ -549,12 +549,14 @@ C   INFINP : DIRFCK
 C   INFORB : NNORBX, N2ORBX, N2BASX, NISHT,NASHT, ...
 C   INFVAR : JWOPSY
 C   INFPRI : LUERR
+C   DFTCOM : DFT_SPINDNS
 C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
 C
       CALL QENTER('TR1FCK')
@@ -570,13 +572,17 @@ C
 C     ... for FXCAO
       IF (NASHT .GT. 0) NDMAT = NDMAT + MOSIM
 C     ... for FXVAO
-      IF (MCSIM .GT. 0) NDMAT = NDMAT + MCSIM
+      IF (DFT_SPINDNS)  NDMAT = NDMAT + MOSIM
+C     ... for FXSAO
+                        NDMAT = NDMAT + MCSIM
 C     ... for FTVAO (note that NCSIM .eq. 0 if NASHT .eq. 0)
 C     ... the IF test is necessary: NCSIM may be .lt. 0 to signal
 C         only SOVECS wanted
-      IF (MCSIM .GT. 0 .AND. DOMCSRDFT) NDMAT = NDMAT + MCSIM
+      IF (DOMCSRDFT)    NDMAT = NDMAT + MCSIM
 C     ... for MCSRDFT we also need "FTCAO" with sr-dft contribution
 C         from transition density matrix DTV
+      IF (DFT_SPINDNS)  NDMAT = NDMAT + MCSIM
+C     ... for FTSAO
       LDFAO  = 2*NDMAT*N2BASX
       IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
 C     ... allocate for DTOTAO and DXTOTAO for DFTADD calls in SIRFCK
@@ -606,7 +612,12 @@ C            but we need it for SRDFT to handle the DFT part
          KDXVAO = KDXCAO
       END IF
       IF (NASHT .GT. 0) THEN
-         KDTCAO = KDXVAO + MOSIM*N2BASX
+         KDXSAO = KDXVAO + MOSIM*N2BASX
+         IF (DFT_SPINDNS) THEN
+            KDTCAO = KDXSAO + MOSIM*N2BASX
+         ELSE
+            KDTCAO = KDXSAO
+         END IF
          IF (DOMCSRDFT) THEN
             KDTVAO = KDTCAO + MCSIM*N2BASX
             CALL DZERO(WRK(KDTCAO),MCSIM*N2BASX)
@@ -615,11 +626,18 @@ C           but we need it for MCSRDFT to handle the DFT part
          ELSE
             KDTVAO = KDTCAO
          END IF
-         KDAO = KDTVAO + MCSIM*N2BASX
+         KDTSAO = KDTVAO + MCSIM*N2BASX
+         IF (DFT_SPINDNS) THEN
+            KDAO   = KDTSAO + MCSIM*N2BASX
+         ELSE
+            KDAO   = KDTSAO
+         END IF
          KFXCAO = KDAO + LDAO
       ELSE
+         KDXSAO = KDXVAO
          KDTCAO = KDXVAO
          KDTVAO = KDTCAO
+         KDTSAO = KDTCAO
          KDAO   = KDTVAO
          KFXCAO = KDAO + LDAO
       END IF
@@ -629,17 +647,29 @@ C           but we need it for MCSRDFT to handle the DFT part
          KFXVAO = KFXCAO
       END IF
       IF (NASHT .GT. 0) THEN
-         KFTVAO = KFXVAO + MOSIM*N2BASX
+         KFXSAO = KFXVAO + MOSIM*N2BASX
+         IF (DFT_SPINDNS) THEN
+            KFTVAO = KFXSAO + MOSIM*N2BASX
+         ELSE
+            KFTVAO = KFXSAO
+         END IF
          KFTCAO = KFTVAO + MCSIM*N2BASX
          IF (DOMCSRDFT) THEN
-            KFSCR  = KFTCAO + MCSIM*N2BASX
+            KFTSAO = KFTCAO + MCSIM*N2BASX
          ELSE
-            KFSCR  = KFTCAO
+            KFTSAO = KFTCAO
+         END IF
+         IF (DFT_SPINDNS) THEN
+            KFSCR  = KFTSAO + MCSIM*N2BASX
+         ELSE
+            KFSCR  = KFTSAO
          END IF
       ELSE
+         KFXSAO = KFXVAO
          KFTVAO = KFXVAO
          KFTCAO = KFTVAO
-         KFSCR  = KFTCAO
+         KFTSAO = KFTVAO
+         KFSCR  = KFTVAO
       END IF
       CALL MEMGET('INTE',KSYMDM,NDMAT,WRK,KFREE,LFREE)
       CALL MEMGET('INTE',KFCTYP,NDMAT,WRK,KFREE,LFREE)
@@ -733,6 +763,7 @@ C   INFVAR : JWOPSY
 C   INFLIN : IPRLIN
 C   INFDIM : NBASMA,?
 C   INFTAP : LUSUPM
+C   DFTCOM : DFT_SPINDNS, ?
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -828,18 +859,24 @@ C             DXCAO, DXVAO, DTCAO, DTVAO are assumed to be contiguous
 C
 C ***** count and initialize atomic Fock matrices
 C
-      NDMAT  = 0
-      IF (NISHT .GT. 0 .OR. ADDSRI) NDMAT = NDMAT + NOSIM
+      MOSIM = MAX(0,NOSIM)
+      MCSIM = MAX(0,NCSIM)
+      NDMAT = 0
+      IF (NISHT .GT. 0 .OR. ADDSRI) NDMAT = NDMAT + MOSIM
 C     ... for FXCAO
-      IF (NASHT .GT. 0) NDMAT = NDMAT + NOSIM
+      IF (NASHT .GT. 0) NDMAT = NDMAT + MOSIM
 C     ... for FXVAO
-      IF (NCSIM .GT. 0) NDMAT = NDMAT + NCSIM
-C     ... for FTVAO (note that NCSIM .eq. 0 if NASHT .eq. 0)
-C     ... the IF test is necessary: NCSIM may be .lt. 0 to signal
+      IF (DFT_SPINDNS ) NDMAT = NDMAT + MOSIM
+C     ... for FXSAO
+                        NDMAT = NDMAT + MCSIM
+C     ... for FTVAO (note that MCSIM .eq. 0 if NASHT .eq. 0)
+C     ... the MCSIM is necessary: NCSIM may be .lt. 0 to signal
 C         only SOVECS wanted
-      IF (NCSIM .GT. 0 .AND. DOMCSRDFT) NDMAT = NDMAT + NCSIM
+      IF (DOMCSRDFT   ) NDMAT = NDMAT + MCSIM
 C     ... for MCSRDFT we also need "FTCAO" with sr-dft contribution
 C         from transition density matrix DTV
+      IF (DFT_SPINDNS ) NDMAT = NDMAT + MCSIM
+C     ... for FTSAO
 C
 C
 C ***** TWO-ELECTRON PART (all one-electron contributions
@@ -866,7 +903,10 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
          DFTADX = DFTADD
          DFTADD = .FALSE.
 C        ... Note : (DODFT.AND.NOT.DFTADD) now tricks 2'nd order 
-C                   DFT contributions in SIRFCK /mc-srdft work
+C          F        DFT contributions in SIRFCK /mc-srdft work
+CFRAN DEBUG
+         WRITE(LUPRI,*) 'SIRTR1: CHIAMO SIRFCK! NDMAT = ', NDMAT
+CFRAN DEBUG END
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      *               AODRCT,WRK(KFREE),LFREE)
          DFTADD = DFTADX

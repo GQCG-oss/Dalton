@@ -95,9 +95,7 @@ C
 #include <cbgetdis.h>
 
 #ifdef SIRGRAD_DEBUG
-CFRAN  DEBUG
 #include <priunit.h>
-CFRAN 
 #endif
 C
       CALL QENTER('CIGRAD')
@@ -475,14 +473,10 @@ C
          IF (NSYM .GT. 1) CALL PKSYM1(WRK(KFVAO),WRK(KFVAO),NBAS,NSYM,2)
          CALL UTHUB(WRK(KFVAO),FV,CMO,WRK(KDCAO),NSYM,NBAS,NORB)
          IF (DFT_SPINDNS) THEN
-            write(lupri,*) 'hjaaj: debug FSAO unpacked'
-            call output(wrk(kfsao),1,nbast,1,nbast,nbast,nbast,-1,lupri)
             CALL DCOPY(N2BASX,WRK(KFSAO),1,WRK(KDCAO),1)
             CALL DGETSP(NBAST,WRK(KDCAO),WRK(KFSAO))
             IF (NSYM .GT. 1)
      &         CALL PKSYM1(WRK(KFSAO),WRK(KFSAO),NBAS,NSYM,2)
-            write(lupri,*) 'hjaaj: debug FSAO packed'
-            call outpkb(wrk(kfsao),nbas,nsym,-1,lupri)
             CALL UTHUB(WRK(KFSAO),FV(1,2),CMO,WRK(KDCAO),NSYM,NBAS,NORB)
          END IF
       END IF
