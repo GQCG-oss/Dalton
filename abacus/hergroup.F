@@ -1042,27 +1042,23 @@ C
      &     ('La','|',REP(JSPINR(1,1,I)),
      &            '(',JQBAS(JSPINR(1,1,I),1),')',
      &               REP(JSPINR(2,1,I)),
-     &            '(',JQBAS(JSPINR(2,1,I),1),')',
-     &            '|',I=1,NFSYM)
+     &            '(',JQBAS(JSPINR(2,1,I),1),')','|',I=1,NFSYM)
         WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
      &     ('Sa','|',REP(JSPINR(1,2,I)),
      &            '(',JQBAS(JSPINR(1,2,I),2),')',
      &               REP(JSPINR(2,2,I)),
-     &            '(',JQBAS(JSPINR(2,2,I),2),')',
-     &           '|',I=1,NFSYM)
+     &            '(',JQBAS(JSPINR(2,2,I),2),')','|',I=1,NFSYM)
         WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
 C        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3),2X,A1,10X))')
      &     ('Lb','|',REP(JSPINR(3,1,I)),
      &            '(',JQBAS(JSPINR(3,1,I),1),')',
      &               REP(JSPINR(4,1,I)),
-     &            '(',JQBAS(JSPINR(4,1,I),1),')',
-     &           '|',I=1,NFSYM)
+     &            '(',JQBAS(JSPINR(4,1,I),1),')','|',I=1,NFSYM)
         WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
      &   ('Sb','|',REP(JSPINR(3,2,I)),
      &            '(',JQBAS(JSPINR(3,2,I),2),')',
      &             REP(JSPINR(4,2,I)),
-     &            '(',JQBAS(JSPINR(4,2,I),2),')',
-     &         '|',I=1,NFSYM)
+     &            '(',JQBAS(JSPINR(4,2,I),2),')','|',I=1,NFSYM)
         CALL HEADER('Quaternion symmetries',-1)
         WRITE(LUPRI,'(4X,A3,2X,A4)') 'Rep','T(+)'
         CALL PRSYMB(LUPRI,'-',29,4)
