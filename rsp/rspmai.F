@@ -1665,24 +1665,35 @@ C
 C--------------------
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
-      PARAMETER ( NTABLE = 47 )
+      PARAMETER ( NTABLE = 48 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND
       INTEGER NUMBER_ORBS(8)
 C
+!                    1          2          3          4
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
-     *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
-     *            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
-     *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
-     *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
-     *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.MAX IT', '.THCLR ', '.MAXITO',
-     *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
-     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
-     *            '.FERMI ', '.SPIN-D',
-     *            '.DIPLF ', '.DIPLFX', '.DIPLFY', '.DIPLFZ',
-     *            '.CHANNE', '.VIRTUA'/
+!                    5          6          7          8
+     &            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
+!                    9         10         11         12
+     &            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
+!                   13         14         15         16
+     &            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
+!                   17         18         19         20
+     &            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
+!                   21         22         23         24
+     &            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
+!                   25         26         27         28
+     &            '.MAX IT', '.THCLR ', '.MAXITO', '.PRINT ', 
+!                   29         30         31         32
+     &            '.FREQUE', '.ABOCHK', '.ISTOCK', '.MAXOCK', 
+!                   33         34         35         36
+     &            '.SOPRSY', '.RESTLR', '.DIROIT', '.TRIPLE', 
+!                   37         38         39         40
+     &            '.PV PSO', '.PV SO ', '.PV SO2', '.FERMI ', 
+!                   41         42         43         44
+     &            '.SPIN-D', '.DIPLF ', '.DIPLFX', '.DIPLFY', 
+!                   45         46         47         48
+     &            '.DIPLFZ', '.CHANNE', '.VIRTUA', '.xxxxxx'/
 C
 C
 C
@@ -1704,7 +1715,7 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41,
-     *                      42,43,44,45,46,47),I
+     *                      42,43,44,45,46,47,48),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1995,6 +2006,11 @@ C     .VIRTUAL
                CHANNEL_VCALC = .TRUE.
                READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
                GO TO 100
+
+ 48            continue
+!                do nothing
+                 go to 100
+
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
