@@ -327,40 +327,75 @@ cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',
      &             '*QM3INP'/
+!                    101        102        103        104
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
+!                    105        106        107        108
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
+!                    109        110        111        112
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
+!                    113        114        115        116
      &             '.CARMOM', '.SPHMOM', '.FC    ', '.PSO   ',
+!                    117        118        119        120
      &             '.SD    ', '.DSO   ', '.POINTS', '.SELECT',
+!                    121        122        123        124
      &             '.QUASUM', '.SD+FC ', '.PROPRI', '.HDO   ',
+!                    125        126        127        128
      &             '.S1MAG ', '.S2MAG ', '.ANGMOM', '.ANGLON',
+!                    129        130        131        132
      &             '.LONMOM', '.MAGMOM', '.S1MAGT', '.MGMOMT',
+!                    133        134        135        136
      &             '.KINENE', '.S2MAGT', '.DSUSNL', '.DSUSLL',
+!                    137        138        139        140
      &             '.DSUSLH', '.DIASUS', '.DSUTST', '.NSTNOL',
+!                    141        142        143        144
      &             '.NSTLON', '.NST   ', '.NSNLTS', '.NSLTST',
+!                    145        146        147        148
      &             '.NELFLD', '.NSTTST', '.EFGCAR', '.EFGSPH',
+!                    149        150        151        152
      &             '.S1MAGL', '.S1MAGR', '.HDOBR ', '.S1MLT ',
+!                    153        154        155        156
      &             '.HDOBRT', '.S1MRT ', '.NUCPOT', '.NPOTST',
+!                    157        158        159        160
      &             '.MGMO2T', '.MGMTHR', '.HBDO  ', '.SUSCGO',
+!                    161        162        163        164
      &             '.NSTCGO', '.EXPIKR', '.MASSVE', '.DARWIN',
+!                    165        166        167        168
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
+!                    169        170        171        172
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.NO2SO ',
+!                    173        174        175        176
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
+!                    177        178        179        180
      &             '.NUCMOD', '.SORT I', '.DIPGRA', '.QUAGRA',
+!                    181        182        183        184
      &             '.OCTGRA', '.ROTSTR', '.THIRDM', '.SOFIEL',
+!                    185        186        187        188
      &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA', 
+!                    189        190        191        192
      &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
+!                    193        194        195        196
      &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
+!                    197        198        199        200
      &             '.FINDPT', '.FNPROP', '.PVP   ', '.1ELPOT',
+!                    201        202        203        204
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12GTG',
+!                    205        206        207        208
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
+!                    209        210        211        212
      &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  ',
+!                    213        214        215        216
      &             '.DPTPXP', '.NOPICH', '.OZ-KE ', '.PSO-KE', 
+!                    217        218        219        220
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
+!                    221        222        223        224
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
+!                    225        226        227        228
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
+!                    229        230        231        232
      &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP',
+!                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
+!                    237        238        239        240
      &             'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
