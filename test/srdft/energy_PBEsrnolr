@@ -52,7 +52,7 @@ cat > energy_PBEsrnolr.dal <<'%EOF%'
 *TWOINT
 .DOSRINTEGRALS
 .ERF
- 0.0
+ 0.4
 **WAVE FUNCTIONS
 .HFSRDFT
 .SRFUN
