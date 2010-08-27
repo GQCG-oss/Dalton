@@ -129,9 +129,9 @@ CTRL[5]=4
 ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # Gradient, 1st iteration:
-CRIT1=`$GREP "O * z *  \-0*\.041025" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.049511" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.041025" $log | wc -l`
+CRIT1=`$GREP "O * z *  \-0*\.04102" $log | wc -l`
+CRIT2=`$GREP "H * y * (0| )\.04951" $log | wc -l`
+CRIT3=`$GREP "H * z * (0| )\.04102" $log | wc -l`
 CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.041025...[0-9]" $log | wc -l`
 CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
 CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
@@ -140,16 +140,15 @@ CTRL[6]=6
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Dipole moment, 1st iteration:
-CRIT1=`$GREP "(0| )\.887039 * 2\.254628 * 7\.52062." $log | wc -l`
-CRIT2=`$GREP "z * (0| )\.88703(8|9).. * 2\.254627.[0-9] * 7\.520629.[0-9]" $log | wc -l`
-TEST[7]=`expr $CRIT1  \+ $CRIT2`
-CTRL[7]=2
+CRIT1=`$GREP "0*\.88703. * 2\.25462. * 7\.5206" $log | wc -l`
+TEST[7]=`expr $CRIT1
+CTRL[7]=1
 ERROR[7]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.1036666..[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.4181938..[0-9] * (0| )\.987584...[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.4181938..[0-9] * (0| )\.987584...[0-9]" $log | wc -l`
+CRIT1=`$GREP "O *     0*\.0000000000 *  0*\.0000000000 * \-0*\.10366" $log | wc -l`
+CRIT2=`$GREP "H * 1 * 0*\.0000000000 *   1\.41819..... *   0*\.98758" $log | wc -l`
+CRIT3=`$GREP "H * 2 * 0*\.0000000000 * \-1\.41819..... *   0*\.98758" $log | wc -l`
 TEST[8]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="INITIAL STEP NOT CORRECT"
@@ -164,8 +163,8 @@ ERROR[9]="SECOND ITERATION NOT CORRECT"
 
 # 3rd iteration:
 CRIT1=`$GREP "Energy at this geometry is * \: * \-76\.053412" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00207[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.01027[0-9]" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * *\.00207" $log | wc -l`
+CRIT3=`$GREP "Norm of step *     \: * *\.0102" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=3
 ERROR[10]="THIRD ITERATION NOT CORRECT"

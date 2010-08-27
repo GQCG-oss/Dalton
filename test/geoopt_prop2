@@ -131,14 +131,11 @@ CTRL[5]=4
 ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # Gradient, 1st iteration:
-CRIT1=`$GREP "O * z * (\-0|\-)\.041025...[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.0495115..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.041025...[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.041025...[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.0247557..[0-9] * (0| )\.0205127..[0-9]" $log | wc -l`
-TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[6]=6
+CRIT1=`$GREP "O * z * \-0*\.04102" $log | wc -l`
+CRIT2=`$GREP "H * y *   0*\.04951" $log | wc -l`
+CRIT3=`$GREP "H * z *   0*\.04102" $log | wc -l`
+TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3
+CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Hessian, 1st iteration:
@@ -157,16 +154,15 @@ CTRL[7]=10
 ERROR[7]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
-CRIT1=`$GREP "(0| )\.88703. * 2\.25462. * 7\.52062." $log | wc -l`
-CRIT2=`$GREP "z * (0| )\.887038.[0-9] * 2\.254627.[0-9] * 7\.520629.[0-9]" $log | wc -l`
-TEST[8]=`expr $CRIT1  \+ $CRIT2`
-CTRL[8]=2
+CRIT1=`$GREP "0*\.88703. * 2\.25462. * 7\.5206" $log | wc -l`
+TEST[8]=`expr $CRIT1
+CTRL[8]=1
 ERROR[8]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O *     (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.086309...[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.416588...[0-9] * (0| )\.9789063..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.416588...[0-9] * (0| )\.9789063..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O *     (0| )\.0000000000 *  0*\.0000000000 * \-0*\.0863" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 *   1\.41658..... *   0*\.97890" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.41658..... *   0*\.97890" $log | wc -l`
 TEST[9]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="INITIAL STEP NOT CORRECT"
