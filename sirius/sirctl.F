@@ -398,6 +398,10 @@ C ***************************************************
 C        *** MP2 ***
 C
       IF (DOMP2) THEN
+         IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
+     &      'implemented in MP2 module and is ignored.'
+         END IF
          DFT_SPINDNS_SAVE = DFT_SPINDNS
          DFT_SPINDNS = .FALSE.
          DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
@@ -518,6 +522,14 @@ C ***************************************************
 C        *** CI ***
 C
       IF (DOCI .OR. DOCINO) THEN
+         IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
+     &      'implemented in CI module and is ignored.'
+         END IF
+         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS = .FALSE.
+         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          DOHFSRDFT = .FALSE.
 C        ... no more HFSRDFT
@@ -566,6 +578,8 @@ C              ... orbital super symmetries may have been reordered
      &         'SIRCTL CINO error: inconsistency in sup.sym. averaging')
             END IF
          END IF
+         DFT_SPINDNS = DFT_SPINDNS_SAVE
+         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
       END IF
 C
 C ***************************************************

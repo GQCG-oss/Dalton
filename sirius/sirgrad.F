@@ -46,18 +46,9 @@ bugfix in updgrd, ci diagonal was not calculated because LUIT2 .lt. 0
 has until today meant do not calculate CI diagonal. Now LUIT2 is temp.
 set to zero to tell CIDIAG not to save diagonal on file.
 
-Revision 1.5  2000/05/01 13:18:27  hjj
-removed obsolete KAVER tests.
-
 Revision 1.4  2000/05/01 10:49:20  hjj
 If FULODG then call MAKE_KLWOP to get KLWOP for full orbital diagonal.
 (KLWOP is not in infvar.h any more)
-
-revision 1.3 2000/04/14 07:06:13 hjj
-modified LUSUPM test to LUSUPM .ne. -1 for GPOPEN compatibility
-----------------------------
-revision 1.2 2000/04/13 14:06:18 hjj
-corrected LUSUPM test for new GPOPEN code
 ===========================================================================
 #endif
 C  /* Deck cigrad */
@@ -170,8 +161,6 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-
-
 C
 C     ************************************
 C     DVAO matrix
@@ -203,17 +192,16 @@ C
      &                 CMO(JCMO),NBASI,0.D0,
      &                 DVAO(IBAS(JSYM)+1,IBAS(ISYM)+1,1),NBAST) !JT
  2000    CONTINUE
-      CALL MEMREL('FCKDEN',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('FCKDEN DVAO',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       END IF
-      END IF
+      END IF  ! IF (GETDV) THEN
 C
 C     ************************************
 C     DVSAO matrix
 C
 C JT Aug 09 beg
 C do spin density matrix
-      IF (DFT_SPINDNS) THEN
-      IF (GETDV) THEN
+      IF (GETDV .AND. DFT_SPINDNS) THEN
          CALL DZERO(DVAO(1,1,2),N2BASX)
       IF (NASHT .GT. 0) THEN
          CALL MEMGET('REAL',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
@@ -240,10 +228,9 @@ C do spin density matrix
      &                 CMO(JCMO),NBASI,0.D0,
      &                 DVAO(IBAS(JSYM)+1,IBAS(ISYM)+1,2),NBAST)
  2010    CONTINUE
-      CALL MEMREL('FCKDEN',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
-      END IF
-      END IF
-      END IF
+         CALL MEMREL('FCKDEN DSAO',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      END IF  ! IF (NASHT .GT. 0) THEN
+      END IF  ! IF (GETDV .AND. DFT_SPINDNS) THEN
 C JT Aug 09 end
 C
 C
@@ -275,17 +262,21 @@ C
 C
 C
 C
-C
       IF (P6FLAG(18)) THEN
         IF (GETDC) THEN
           WRITE(LUPRI,'(/A)')
-     &       ' DCAO = Density matrix, inactive part (AO-basis)'
+     &    ' FCKDEN: DCAO = Density matrix, inactive part (AO-basis)'
           CALL OUTPUT(DCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         END IF
         IF (GETDV) THEN
           WRITE(LUPRI,'(/A)')
-     &       ' DVAO = Density matrix,   active part (AO-basis)'
+     &    ' FCKDEN: DVAO = Density matrix,   active part (AO-basis)'
           CALL OUTPUT(DVAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        IF (DFT_SPINDNS) THEN
+          WRITE(LUPRI,'(/A)')
+     &    ' FCKDEN: DSAO = Spin density matrix, active part (AO-basis)'
+          CALL OUTPUT(DVAO(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        END IF
         END IF
       END IF
 C
@@ -456,8 +447,8 @@ C
          CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
          CALL DSCAL(N2BASX,-D1,WRK(KDVAO),1)
       END IF
-      CALL FCKMAO(NOFV,EMCMY, WRK(KFCAO),WRK(KFVAO),
-     *            WRK(KDCAO),WRK(KDVAO),CMO,WRK(KFREE),LFREE)
+      CALL FCKMAO(NOFV,EMCMY,WRK(KFCAO),WRK(KFVAO),
+     *            WRK(KDCAO),WRK(KDVAO),DV,CMO,WRK(KFREE),LFREE)
 C
 C ***** Transform inactive and active Fock-matrices to MO basis
 C ***** (FC and FV) using DCAO as scratch space
@@ -533,7 +524,7 @@ C
       END
 C  /* Deck fckmao */
       SUBROUTINE FCKMAO(ONLYFC,EMCMY,
-     *                  FCAO,FVAO,DCAO,DVAO,CMO,WRK,LFRSAV)
+     *                  FCAO,FVAO,DCAO,DVAO,DV,CMO,WRK,LFRSAV)
 C
 C Written 6-Nov-1983 Hans Jorgen Aa. Jensen
 C Last revision 18-May-1993 hjaaj (moved AO to MO transf. outside)
@@ -553,7 +544,7 @@ C  If (onlyfc) only inactive Fock matrix FCAO is calculated.
 C
 C
 #include <implicit.h>
-      DIMENSION FCAO(*),DCAO(*), FVAO(*),DVAO(*),CMO(*)
+      DIMENSION FCAO(*),DCAO(*), FVAO(*),DVAO(*),DV(*),CMO(*)
       DIMENSION WRK(LFRSAV)
       LOGICAL   ONLYFC
 C
@@ -608,7 +599,7 @@ C     memory). Thus, we need to recreate it. K.Ruud, March-98
 C
 ! hjaaj obsolete for srDFT, because DCAO is now never destroyed in SIRFCK
 ! if srDFT (instead a copy is made which is destroyed) /hjaaj Feb 2010
-! have removed DV
+! NB! DV cannot be removed, needed for HSROHF and for direct MCSCF
       IF (DIRFCK .AND. .NOT.(DOHFSRDFT .OR. DOMCSRDFT)) THEN
          NOFV  = ( (NASHT .EQ. 0) .OR. ONLYFC )
          CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
@@ -1565,26 +1556,25 @@ C        CALL MAKDM(CREF,DV,PV,INDXCI,WRK,LFREE)
 C
 #ifdef SIRGRAD_DEBUG
 CFRAN 17/02/2010
-      ! SET P6FLAG(15) = .TRUE.
-      WRITE(LUPRI,*) ' I SET P6FLAG(15) = .TRUE.!'
+      WRITE(LUPRI,*) ' I SET P6FLAG(15) = .TRUE. !'
       P6FLAG(15) = .TRUE.
 CFRAN 17/02/2010 END
 #endif
       IF (P6FLAG(15)) THEN
-         WRITE (LUPRI,1100)
+         WRITE (LUPRI,'(/A)')
+     &   ' GRAD: DV = One-el. density matrix, active part, MO-basis'
          CALL OUTPAK(DV,NASHT,1,LUPRI)
          IF (NDV.GE.2) THEN
-            WRITE (LUPRI,1110)
+            WRITE (LUPRI,'(/A)')
+     &      ' GRAD: DSV = One-el. spin den. mat., active part, MO-basis'
             CALL OUTPAK(DV(1,2),NASHT,1,LUPRI)
          END IF
       END IF
       IF (P6FLAG(25)) THEN
-         WRITE (LUPRI,1200)
+         WRITE (LUPRI,'(/A)')
+     &   ' PV = Two-el. density matrix, active part, MO-basis'
          CALL OUTPUT(PV,1,NNASHX,1,NNASHX,NNASHX,NNASHX,-1,LUPRI)
       END IF
- 1100 FORMAT(/' DV = One-el. density matrix, active part, MO-basis')
- 1110 FORMAT(/' DV = One-el. spin den. mat., active part, MO-basis')
- 1200 FORMAT(/' PV = Two-el. density matrix, active part, MO-basis')
 C
  1999 CONTINUE
       CALL GETTIM(T1,W1)
@@ -1611,20 +1601,20 @@ C
          CALL GETAC(FC,FCAC)
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
-     *         ' Active block of inactive Fock matrix FCAC'
+     &      ' Active block of inactive Fock matrix FCAC'
             CALL OUTPAK (FCAC,NASHT,1,LUPRI)
          END IF
       END IF
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          CALL GETH2(DV,PV,H2AC,FQ,WRK(KORDIA),FULODG,
-     *              WRK(KW3),LW3)
+     &              WRK(KW3),LW3)
 C        CALL GETH2(DV,PV,H2AC,FQ,ORDIAG,FULODG,WRK,LFRSAV)
          IF (P6FLAG(23) .AND. IPRI6.GT.60 .AND. FULODG) THEN
             WRITE (LUPRI,'(4(/A))')
      &         ' Non-Fock type contributions to inact-act and act-sec',
      &         ' ----------------------------------------------------',
      &         ' diagonal of orbital Hessian',
-     &         ' ---------------------------'
+     &         '----------------------------'
             CALL PRKAP (NWOPT,WRK(KORDIA),-0.1D0,LUPRI)
          END IF
 C
@@ -1707,7 +1697,7 @@ C
 C ******************************************************************
 C
 #if defined (VAR_OLDREDCHCK)
-CHJ-870208: THESE WHICH WILL BE CAUGHT WITH THIS, WE USUALLY DON'T
+CHJ-870208: THESE WHICH WILL BE CAUGHT WITH THIS, WE USUALLY DO NOT
 C           WANT TO REMOVE (MAY E.G. BE INVOLVED IN AVERAGING).
 C
 C ******************************************************************
@@ -1727,7 +1717,7 @@ C
          IREDUN = 0
          DO 5900 IG = 1,NWOPT
             IF (ABS(G(NCONF+IG)).LT.THRZER .AND.
-     *          ABS(WRK(KORDIA-1+IG)).LT.THRZER) THEN
+     &          ABS(WRK(KORDIA-1+IG)).LT.THRZER) THEN
                IREDUN = IREDUN + 1
                IF (P4FLAG(8)) THEN
                   IF (IREDUN.EQ.1) WRITE (LUW4,5911)
@@ -1737,7 +1727,7 @@ C
  5900    CONTINUE
          IF (IREDUN.EQ.0) THEN
 C           WRITE (LUW4,'(/A)')
-C    1         ' No redundant orbital variations found.'
+C    &         ' No redundant orbital variations found.'
          ELSE
             DO 135 J = 1,MXCORB
                DO 135 I = 1,MAXOCC
@@ -3194,12 +3184,12 @@ C
       IF (P6FLAG(18)) THEN
         IF (GETDC) THEN
           WRITE(LUPRI,'(/A)')
-     &       ' DCAO = Density matrix, inactive part (AO-basis)'
+     &    ' FCKDEN2: DCAO = Density matrix, inactive part (AO-basis)'
           CALL OUTPUT(DCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         END IF
         IF (GETDV) THEN
           WRITE(LUPRI,'(/A)')
-     &       ' DVAO = Density matrix,   active part (AO-basis)'
+     &    ' FCKDEN2: DVAO = Density matrix,   active part (AO-basis)'
           CALL OUTPUT(DVAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         END IF
       END IF
