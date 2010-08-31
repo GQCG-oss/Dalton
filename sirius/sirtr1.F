@@ -904,9 +904,6 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
          DFTADD = .FALSE.
 C        ... Note : (DODFT.AND.NOT.DFTADD) now tricks 2'nd order 
 C          F        DFT contributions in SIRFCK /mc-srdft work
-CFRAN DEBUG
-         WRITE(LUPRI,*) 'SIRTR1: CHIAMO SIRFCK! NDMAT = ', NDMAT
-CFRAN DEBUG END
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      *               AODRCT,WRK(KFREE),LFREE)
          DFTADD = DFTADX

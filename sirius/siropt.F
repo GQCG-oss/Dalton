@@ -1669,6 +1669,10 @@ C
          IF (DOMCSRDFT) THEN
             ADDSRI    = .FALSE.
             DOCISRDFT = .TRUE.
+            IF (DFT_SPINDNS .OR. DFT_LOCALSPIN)THEN
+               WRITE(LUPRI,'(/A)')
+     &           'INFO : spin density ignored in initial CI iterations.'
+            END IF
             DFT_SPINDNS_SAVE = DFT_SPINDNS
             DFT_SPINDNS = .FALSE.
             DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
@@ -1681,7 +1685,7 @@ C    *              ECI,ICONV,ICROOT,WRK,LFREE)
          IF (DOMCSRDFT) THEN
             ADDSRI    = .TRUE.
             DOCISRDFT = .FALSE.
-            DFT_SPINDNS = DFT_SPINDNS_SAVE
+            DFT_SPINDNS   = DFT_SPINDNS_SAVE
             DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
          END IF
          FLAG(15) = LSAV15

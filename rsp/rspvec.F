@@ -641,8 +641,8 @@ C
       !Sonia: extra allocation for projecting out redundant excitation
       !it does not work for MCSCF wfs.
       IF (KZCONF .GT. 0) then
+         IF (MCDPRJ) write(lupri,*)'SONIA: RESET MCDPRJ=false for MCSCF'
          MCDPRJ = .false.
-         write(lupri,*)'SONIA: RESET MCDPRJ=false for MCSCF'
       END IF
       if (MCDPRJ) then
         write(lupri,*)'SONIA: allocating for projection'
@@ -698,7 +698,8 @@ C
                END IF
             END IF
   410    CONTINUE
-         write(lupri,*)'SONIA: we requested NFREQ frequencies=',NFREQ
+         if (mcdprj)
+     &   write(lupri,*)'SONIA: we requested NFREQ frequencies=',NFREQ
 
          IF (NFREQ .EQ. 0) GOTO 680
 C
@@ -739,11 +740,12 @@ C
 !    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 !
          DO 580 IFREQ = 1,NFREQ,NFRQMX
-            write(lupri,*)'SONIA: NFREQ=', NFREQ, ' NBX = ', NBX
+         if (mcdprj)
+     &      write(lupri,*)'SONIA: NFREQ=', NFREQ, ' NBX = ', NBX
             NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
             IBOFF = IFREQ - 1
             CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
-     *                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
 !           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
 !
             JBVECS = KBVECS

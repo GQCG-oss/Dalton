@@ -1028,12 +1028,15 @@ C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,EVECS,ZYMAT)
       END IF   ! IF (NOSIM.GT.0) THEN
 C ------------------------------------------------------------------
       IF (NCSIM.GT.0) THEN
+         IF (DOMCSRDFT) THEN
 C           NOTE, the TDM passed to SIRFCK is really
 C               minus the TDM, thus we need to multiply
 C               the FTC matrices in FVTD(1,1,NCSIM+ICSIM) by minus 1
-C               to get the right contribution.
+C               to get the right contribution from the DFT
+C               module in srDFT.
 C
-         CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
+             CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
+         END IF
 C
          IF (IPRRSP.GT.30 .AND. .NOT.SOPPA) THEN
             DO 800 ICSIM = 1,NCSIM

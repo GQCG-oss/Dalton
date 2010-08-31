@@ -375,7 +375,7 @@ while [ -n "$1" ]; do
    "qm3" )
    testcase="$testcase $QM3"; 
    shift ;;
-   "*parallel*" )  # assume parallel test if "parallel" in name
+   *paral* )  # assume parallel test if "paral" in name
    if [ "$paramlist" = "" ]; then
      paramlist="-N 3"
    fi

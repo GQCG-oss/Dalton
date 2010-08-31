@@ -187,7 +187,7 @@ C
          END IF
       END IF
       CALL FCKMAO(.TRUE.,EMCMY,WORK(KFCAO),WORK(KFVAO),
-     *     WORK(KDCAO),WORK(KDVAO),WORK(KCMO),WORK(KWRK),LWRK)
+     *     WORK(KDCAO),WORK(KDVAO),WORK(KCMO),DV_DUMMY,WORK(KWRK),LWRK)
 
       WRITE(LUPRI,'(/A,I1,A)') ' Computation of exchange matrix'//
      *                         ' done [',MBSMAX,']'
