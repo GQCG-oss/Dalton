@@ -74,8 +74,8 @@ C
 C
       ADDSRI_SAVE = ADDSRI
       IF (DOCISRDFT) THEN
-#ifndef VAR_SRDFT
-         call quit('srdft not implemented in this version')
+#ifndef MOD_SRDFT
+         call quit('CI-srdft not implemented in this version')
 #else
 C        ... do not add SR integrals to Fock matrices for CI-DFT
 C            (will be true on entry if CI-srDFT preceded by normal RHF)
@@ -106,7 +106,7 @@ C     =================
 C
 C     CIDFT Macro-iteration control
 C
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not implemented in this version')
 #else
          CALL MEMGET('REAL',KECID,NCROOT,WORK,KFREE,LFREE)
@@ -420,7 +420,7 @@ C     CI-DFT contributions
 C     *****************************************************************
 C
       IF (DOCISRDFT) THEN
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not implemented in this version')
 #else
          KDVREF = KW2

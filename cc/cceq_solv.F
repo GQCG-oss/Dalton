@@ -2261,7 +2261,7 @@ C
 #include <leinf.h>
 #include <ccexci.h>
 #include <ccsdsym.h>
-#include <r12int.h>
+#include <cbirea.h>
 *
       DIMENSION VECT(*), WORK(*)
       CHARACTER*10 MODFIL

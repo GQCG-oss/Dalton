@@ -48,7 +48,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-! gnrinf.h: QM3
+! gnrinf.h: QM3, THR_REDFAC
 #include <gnrinf.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
@@ -405,6 +405,12 @@ C
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       NAQRTO = 0
       NBQRTO = 0
       NCQRTO = 0
@@ -591,11 +597,11 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-! gnrinf.h: QM3
+! gnrinf.h: QM3, THR_REDFAC
 #include <gnrinf.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 25)
+      PARAMETER ( NTABLE = 26)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -605,7 +611,7 @@ C
      *            '.ISPABC', '.TPCD  ', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
-     *            '.MCDBTE'/
+     *            '.MCDBTE', '.MCDPRJ'/
 C
 C READ IN  INPUT
 C
@@ -625,7 +631,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24,25), I
+     &                      17,18,19,20,21,22,23,24,25,26), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -820,6 +826,25 @@ C                 B operators
                   LABEL='ZANGMOM'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
+ 26            CONTINUE
+                  !sonia: mcd B term calculation
+                  !with projection of the redundant 
+                  !exc state vector
+                  MCDPRJ=.TRUE.
+                  MCDCAL=.TRUE.
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='XANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -830,6 +855,13 @@ C                 B operators
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+      END IF
 C
 C If two-photon calculation then we assume that the frequencies of the 
 C photons match the excitation. At this point we set the frequencies
@@ -953,6 +985,12 @@ C
             WRITE (LUPRI,'(A,L1)')
      *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='
      *      ,MCDCAL
+            !sonia new 
+            if (MCDPRJ) then
+               WRITE (LUPRI,'(A,L1)')
+     *       ' Projected B of Magnetic Circular Dichroism    : MCDPRJ='
+     *        ,MCDPRJ
+            end if
          END IF
          WRITE(LUPRI,'(/A,I5)')
      *      ' Print level                                    : IPRSMO ='

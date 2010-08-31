@@ -2498,15 +2498,15 @@ C      enddo
       NORDER(3) = 3
       IF (NOPAX.GE.3) THEN
          DO I = 1,3
-C            write(lupri,*) 'iax',i,isop(i),iax(isop(i))
+C            write(lupri,*) 'iax',i,Jsop(i),iax(Jsop(i))
             DO J = 1,3
                DIJ = 0.0D0
                IF (I.EQ.J) DIJ = 1.0D0
-               VMAT(J,IAX(ISOP(I))) = DIJ
+               VMAT(J,IAX(JSOP(I))) = DIJ
             ENDDO
          ENDDO
       ELSEIF (NOPAX.GE.1) THEN
-         JAX = IAX(ISOP(1))
+         JAX = IAX(JSOP(1))
          SCAL(1) = DABS(EIGINV(1,JAX))
          SCAL(2) = DABS(EIGINV(2,JAX))
          SCAL(3) = DABS(EIGINV(3,JAX))

@@ -147,11 +147,9 @@ C
       END DO
       DO I = 1, 6
          TITLE(I)      = TITLEB(I)
-         TITMOL(I,1)   = TITMLB(I,1)
-         TITMOL(I,2)   = TITMLB(I,2)
-         TITMOL(6+I,1) = TITMLB(6+I,1)
-         TITMOL(6+I,2) = TITMLB(6+I,2)
       END DO
+      TITMOL(1)   = TITMLB(1)
+      TITMOL(2)   = TITMLB(2)
       DO I = 1, MXFELT
          EFIELD(I) = EFILDB(I)
          LFIELD(I) = LFILDB(I)
@@ -286,10 +284,8 @@ C
       DO 130 I = 1, NFLAG
          FLAGB(I) = FLAG(I)
  130  CONTINUE
-      DO 140 I = 1, 12
-         TITMLB(I,1) = TITMOL(I,1)
-         TITMLB(I,2) = TITMOL(I,2)
- 140  CONTINUE
+      TITMLB(1) = TITMOL(1)
+      TITMLB(2) = TITMOL(2)
       DO 150 I = 1, MXFELT
          EFILDB(I) = EFIELD(I)
          LFILDB(I) = LFIELD(I)
@@ -411,7 +407,7 @@ C  /* Deck exeher */
 #include <gnrinf.h>
 #include <dftcom.h>
 #include <pcmlog.h>
-#include <ccom.h>
+#include <qm3.h>
 C
 C     Run Integral section
 C
@@ -643,6 +639,8 @@ Cef end
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 C
+      IPRINT = IPRUSR
+C
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
          IF (QM3)
@@ -761,28 +759,9 @@ C
                RDINPC = .FALSE.
                RDMLIN = .TRUE.
 C
-C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
+C     Punch MOLECULE input with updated coordinates to XXXX_mol.inp
 C
-               CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',
-     &                     IDUMMY,.FALSE.)
-               DO 230 IMLINE = 1,NMLINE
-                  WRITE (LUMOL,'(A)') MLINE(IMLINE)
- 230           CONTINUE
-               CALL GPCLOSE(LUMOL,'KEEP')
-C
-C     Punch MOLECULE input with updated coordinates to XXX_mol.inp
-C
-               FILENM = 'XXXX_mol.inp'
-               WRITE(FILENM(1:4),'(I4)') ITERNR + 1
-               IF (ITERNR .LE. 999) WRITE(FILENM(1:1),'(A1)') '0'
-               IF (ITERNR .LE.  99) WRITE(FILENM(2:2),'(A1)') '0'
-               IF (ITERNR .LE.   9) WRITE(FILENM(3:3),'(A1)') '0'
-               CALL GPOPEN(LUMOL,FILENM,' ',' ','FORMATTED',IDUMMY,
-     &                     .FALSE.)
-               DO 330 IMLINE = 1,NMLINE
-                  WRITE (LUMOL,'(A)') MLINE(IMLINE)
- 330           CONTINUE
-               CALL GPCLOSE(LUMOL,'KEEP')
+               CALL PNCMOL(ITERNR,IPRINT)
                IF (LUSIFC .GT. 0) CALL GPCLOSE(LUSIFC,'KEEP')
                GOTO 10
             ELSE
@@ -887,29 +866,9 @@ C     We may have more DOSYM under **START than under **PROPE
      &            '   Molecular gradient =', GRADML
             END IF
 C
-C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
-C
-            CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',
-     &                  IDUMMY,.FALSE.)
-            REWIND (LUMOL)
-            DO IMLINE = 1,NMLINE
-               WRITE (LUMOL,'(A)') MLINE(IMLINE)
-            END DO
-            CALL GPCLOSE(LUMOL,'KEEP')
-C
 C     Punch MOLECULE input with updated coordinates to XXXX_mol.inp
 C
-            FILENM = 'XXXX_mol.inp'
-            WRITE(FILENM(1:4),'(I4)') ITERNR + 1
-            IF (ITERNR .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
-            IF (ITERNR .LT. 99) WRITE(FILENM(2:2),'(A1)') '0'
-            IF (ITERNR .LT. 9) WRITE(FILENM(3:3),'(A1)') '0'
-            CALL GPOPEN(LUMOL,FILENM,' ',' ','FORMATTED',IDUMMY,
-     &                  .FALSE.)
-            DO IMLINE = 1,NMLINE
-               WRITE (LUMOL,'(A)') MLINE(IMLINE)
-            END DO
-            CALL GPCLOSE(LUMOL,'KEEP')
+            CALL PNCMOL(ITERNR,IPRINT)
 C
             START = .FALSE.
             ITERNR = ITERNR + 1
@@ -1112,7 +1071,7 @@ C
       RETURN
       END
 C  /* Deck gnrlin */
-      SUBROUTINE DALTON_GNRLINP(WORK,LWORK)
+      SUBROUTINE DALTON_GNRLINP
 C
 C     GENERAL input for Dalton
 C
@@ -1189,6 +1148,11 @@ C
 C
 C     Initialize /GNRINF/
 C
+      PANAS  = 0.0D0
+      THR_REDFAC = -1.0D0 ! negative number signals "not set" /hjaaj
+      ITERNR = 0
+      ITERMX = 20
+      IPRUSR = 0
       SEGBAS = .TRUE.
       SEGAUX = .TRUE.
       WALKIN = .FALSE.
@@ -1198,9 +1162,6 @@ C
       RDMLIN = .FALSE.
       TESTIN = .FALSE.
       OPTWLK = .FALSE.
-      ITERNR = 0
-      ITERMX = 20
-      IPRUSR = 0
       USRIPR = .FALSE.
       RNHERM = .FALSE.
       RUNERI = .FALSE.
@@ -1222,12 +1183,12 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       GEOALL = .FALSE.
-      PANAS  = 0.0D0
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
-         WRITE(LUPRI,'(/A,I5,A)') "PARALLEL: Using", NODTOT+1, " CPUs."
+         WRITE(LUPRI,'(/A,I5,A)')
+     &      " * PARALLEL: Using", NODTOT+1, " CPUs."
       END IF
 C
 C ...............
@@ -1277,7 +1238,8 @@ C     Initialize /HUCKEL/
 C
       DOHUCKEL = .TRUE.
       EWMO     = .TRUE.
-      HUCCNT   = 1.75D0
+!     HUCCNT   = 1.75D0
+      HUCCNT   = 0.75D0 ! hjaaj: because S is ignored ...
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
 C
@@ -1321,7 +1283,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-32: 'xxxxxxx', '.DOUGLA'
+C 31-32: '.THRRED', '.DOUGLA'
 C
       IPRERR = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1441,6 +1403,7 @@ C        '.NMDDRV' and '.PARNMD'
             OPTWLK = .TRUE.
          GOTO 100
  131     CONTINUE
+            READ (LUCMD,*) THR_REDFAC
          GOTO 100
  132     CONTINUE
             DKTRAN = .TRUE.
@@ -1462,6 +1425,14 @@ C
       WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.ERR ',IPRERR
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         WRITE (LUPRI,'(A,1P,D10.2)')
+     &   '@ INFO: All thresholds are multiplied by',THR_REDFAC
+         IF (THR_REDFAC .LT. 1.D-10) THEN
+            WRITE (LUPRI,'(A)') ' FATAL INPUT ERROR: Illegal value'
+            CALL QUIT('Illegal input value for .THRRED')
+         END IF
+      END IF
       IF (PARCAL .AND. NODTOT .EQ. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(4X,A)') SEPARATOR,'INFO: '//
@@ -1506,7 +1477,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
      &   'AO-direct calculation (in sections where implemented)'
-      CALL MOHEAD
+      IF (MOLDEN) CALL MOHEAD
       IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')

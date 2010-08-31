@@ -149,8 +149,8 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.060784218[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.310968287[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.060784218" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.31096828" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -301,7 +301,7 @@ ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

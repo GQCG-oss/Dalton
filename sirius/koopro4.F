@@ -5721,7 +5721,7 @@ C Hamiltonian.
 C
 
       IF (DOMCSRDFT) THEN
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not implemented in this version')
 #else
 
@@ -5862,7 +5862,7 @@ C Hamiltonian.
 C
 
       IF (DOMCSRDFT) THEN
-#ifndef VAR_SRDFT
+#ifndef MOD_SRDFT
          call quit('srdft not implemented in this version')
 #else
 

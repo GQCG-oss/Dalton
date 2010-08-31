@@ -1,9 +1,9 @@
-C
-C File: optinf.h
-C
-C Information for geometry optimization
-C controlled in abaopt.F, abaop2.F, and abarint.F
-C
+!
+! File: optinf.h
+!
+! Information for geometry optimization
+! controlled in abaopt.F, abaop2.F, and abarint.F
+!
       PARAMETER (MAXPRE = 10)
       CHARACTER*80    SPBSTX, PREBTX
       LOGICAL GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM, DOSPE,  DOPRE,
@@ -44,4 +44,4 @@ C
      &                SADDLE, REBILD, BOFILL, CMBMOD, HFPROP, CONFRM,
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
      &                NATNRM, NOHSWR
-C --- end of optinf.h ---
+! --- end of optinf.h ---

@@ -346,7 +346,8 @@ C
          RETURN
 #if !defined (VAR_FASTIO)
       END IF
-      READ (LUONEL) (TITLEM,I=1,24),NS,(NB(I),I=1,NS), DUMM,
+      READ (LUONEL)
+      READ (LUONEL) NS,(NB(I),I=1,NS), DUMM,
      *              KMA,(MNUC,I=1,KMA), NBRO,(JTRAN(I),I=1,NBRO),
      *              ((ITRAN(I,J),J=1,MXCGTO),I=1,NBRO),
      *              ((CTRAN(I,J),J=1,MXCGTO),I=1,NBRO),
@@ -974,7 +975,7 @@ C     ... only print max -iprmul populations in each iteration
       IF (iprmul .lt. 0) then
          mnuc = min(nnuc,-iprmul)
          WRITE (LUPRI,2015) (NAME(NUC),POPNUC(NUC),NUC=1,mnuc)
- 2015    FORMAT ((' MULPOP ',10(A4,F6.2,'; ')))
+ 2015    FORMAT (('      MULPOP ',10(A4,F6.2,'; ')))
       else
          WRITE (LUPRI,1016)
          WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)

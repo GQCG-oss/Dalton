@@ -33,12 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
-      Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
+      Subroutine amfi(IN,LUPROP,BREIT,FINITE,EXP_FIN,
      *                WRK,LFREE)            
 CBS
 CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
-CBS OLDNRM: FLAG for switching different normalisation schemes
 CBS BREIT: FLAG to switch to Breit-Pauli (Douglas-Kroll is the default)
 CBS FINITE: flag whether to use a finite nucleus or not ...
 CB  EXP_FIN: the finite nucleus exponent (if required)
@@ -145,8 +144,6 @@ cbs                         ! integrals in memory
       logical SAMEORB    ! parameter for same-orbit only 
       logical AIMP       ! parameter to delete CORE for AIMP     
       logical oneonly    ! parameter to use only oneelectron integrals    
-      logical OLDNRM     ! depending on OLDNRM, different normalisation 
-CBS                        schemes are used 
       logical FINITE
       character*4  symmetry  
 #include "datapow.h"
@@ -241,7 +238,7 @@ CBS   write(6,*) '***************************************************'
 cbs    the one-electron spin-orbit integrals   
       call gen1overR3(Lhigh)   ! generates the 1/r**3 integrals  for normalized functions 
       call contandmult(Lhigh,makemean,AIMP,oneonly,numballcart,LUPROP,
-     *ifinite,OLDNRM,WRK,LFREE) ! multiplies radial integrals with l,m-dependent
+     *ifinite,WRK,LFREE) ! multiplies radial integrals with l,m-dependent
 cbs                             factors and contraction coefficients 
 CBS   write(6,*) '***************************************************' 
 CBS   write(6,*) '*******   end of  the 1-electron-part    **********' 
@@ -1902,12 +1899,11 @@ cbs   including kinematic factors and even exponents as factors
       return
       end
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,numballcart,
-     *LUPROP,ifinite,OLDNRM,WRK,LWRK)
+     *LUPROP,ifinite,WRK,LWRK)
 #include "implicit.h"
 #include "para.h"
 #include "amfi_param.h"
 #include "ired.h"
-      logical OLDNRM 
       logical makemean,AIMP,oneonly  
       character*8 xa,ya,za
       dimension xa(4),ya(4),za(4)
@@ -1988,15 +1984,7 @@ cbs   ***********************************************************************
       mrun=0
       do Msec=-Lrun,Lrun    ! cartesian M-values  (Mfirst,Msec) with 
       do Mfirst=-Lrun,Msec  ! Mfirst <= Msec (actually '=' does never appear
-c                             as there is no L-component  in Ag
 C
-C    choose the correct normalisation 
-       If (OLDNRM) then
-       factor=normasHERMIT(Mfirst,Lrun)*normasHERMIT(Msec,Lrun)
-       else
-       factor=1d0
-       endif                                                        
-c
 cbs   determine  if L_X L_Y or L_Z 
         ipowx=ipowxyz(1,mfirst,Lrun)+ipowxyz(1,msec,Lrun)
         ipowy=ipowxyz(2,mfirst,Lrun)+ipowxyz(2,msec,Lrun)
@@ -2019,7 +2007,7 @@ cbs     calculate shift to get to the beginning of the block
 CBS                print *, 'iocax',iocax,iredired,icartsec
                 WRK(iocax+iredired+(icartsec-1))=
      *          WRK(iocax+iredired+(icartsec-1)) 
-     *          +onecartx(icartfirst,icartsec,mrun,Lrun)*factor
+     *          +onecartx(icartfirst,icartsec,mrun,Lrun)
                 enddo
 cbs             shift pointer by number of functions in IR
                 iredired=iredired+itotalperIR(iredsec)
@@ -2031,7 +2019,7 @@ cbs             shift pointer by number of functions in IR
                 do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
                 WRK(iocay+iredired+(icartsec-1))=
      *          WRK(iocay+iredired+(icartsec-1)) 
-     *          +onecarty(icartfirst,icartsec,mrun,Lrun)*factor
+     *          +onecarty(icartfirst,icartsec,mrun,Lrun)
                 enddo
 cbs             shift pointer by number of functions in IR
                 iredired=iredired+itotalperIR(iredsec)
@@ -2043,7 +2031,7 @@ cbs             shift pointer by number of functions in IR
                 do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
                 WRK(iocaz+iredired+(icartsec-1))=
      *          WRK(iocaz+iredired+(icartsec-1)) 
-     *          +onecartz(icartfirst,icartsec,mrun,Lrun)*factor
+     *          +onecartz(icartfirst,icartsec,mrun,Lrun)
                 enddo
 cbs             shift pointer by number of functions in IR
                 iredired=iredired+itotalperIR(iredsec)
@@ -2064,7 +2052,7 @@ cbs     calculate shift to get to the beginning of the block
                 do icartfirst=1,ncontrac(Lrun) !loop over functions first index
                 WRK(iocax+iredired+(icartfirst-1))=
      *          WRK(iocax+iredired+(icartfirst-1)) 
-     *         -onecartx(icartsec,icartfirst,mrun,Lrun)*factor
+     *         -onecartx(icartsec,icartfirst,mrun,Lrun)
                 enddo
 cbs             shift pointer by number of functions in IR
                 iredired=iredired+itotalperIR(iredfirst)
@@ -2076,7 +2064,7 @@ cbs             shift pointer by number of functions in IR
                 do icartfirst=1,ncontrac(Lrun) !loop over functions first index
                 WRK(iocay+iredired+(icartfirst-1))=
      *          WRK(iocay+iredired+(icartfirst-1)) 
-     *         -onecarty(icartsec,icartfirst,mrun,Lrun)*factor
+     *         -onecarty(icartsec,icartfirst,mrun,Lrun)
                 enddo
 cbs             shift pointer by number of functions in IR
                 iredired=iredired+itotalperIR(iredfirst)
@@ -2088,7 +2076,7 @@ cbs             shift pointer by number of functions in IR
                 do icartfirst=1,ncontrac(Lrun) !loop over functions first index
                 WRK(iocaz+iredired+(icartfirst-1))=
      *          WRK(iocaz+iredired+(icartfirst-1)) 
-     *         -onecartz(icartsec,icartfirst,mrun,Lrun)*factor
+     *         -onecartz(icartsec,icartfirst,mrun,Lrun)
                 enddo
                 iredired=iredired+itotalperIR(iredfirst)
                 enddo

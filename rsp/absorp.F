@@ -53,6 +53,7 @@ C     absorption in the optical processes.
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <absorp.h>
 #include <infrsp.h>
 C
@@ -260,6 +261,13 @@ C     User input of damping parameter
          GOTO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR_ABSORP = THCLR_ABSORP*THR_REDFAC
+         THCPP_ABSORP = THCPPPABSORP*THR_REDFAC
+      END IF
 C
 C     Process user input
 C

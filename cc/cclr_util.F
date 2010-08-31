@@ -2568,6 +2568,7 @@ C
 #include <cclr.h>
 #include <ccsdio.h>
 #include <aovec.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
       DIMENSION FDJACO(MAXRED,MAXRED)

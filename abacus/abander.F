@@ -1212,12 +1212,16 @@ C
          END IF
 C
          IF (DRYRUN) THEN
-            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER //
+            WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
      &              ' calculations needed:', NUMCAL
          ELSE
-            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER //
+            WRITE (LUPRI,'(//A,I10)') '@>>> Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
          END IF
+
+         CALL TITLER('Numerical derivatives have now been calculated.',
+     &      '*',118)
+
 C
          IF (ANALZ1) THEN
             CALL PRIPRP
@@ -2159,9 +2163,9 @@ C
                   IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
                   CALL UPCASE(MLINE(NCLINE(ICENT1)-1))
                   CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
-     &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
+     &                 IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,KSPH)
                   CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
-     &                        ATOMBA,BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,KSPH)
                ELSE
                   WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
                END IF
@@ -2182,10 +2186,10 @@ C
  1100    CONTINUE
          IF (NEWINP) THEN
             CALL UPCASE(MLINE(NCLINE(KCENT1)-1))
-            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,IQM1,
-     &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
-            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,ATOMBA,
-     &                  BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
+            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
+     &           IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,
+     &           BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,KSPH)
             BASIS  = .FALSE.
             ATOMBA = .FALSE.
          ELSE
@@ -3226,8 +3230,8 @@ C
          IF (.NOT.MINOUT) THEN
             CALL PRTDER(SYMTDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
          ELSE
-            WRITE (LUPRI,'(X,A,/)') 
-     *         "Output of third derivative suppressed"
+            WRITE (LUPRI,'(A/)') 
+     *         " Output of third derivative suppressed"
          ENDIF
       ELSE
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
@@ -3388,8 +3392,8 @@ C
       IF (.NOT.MINOUT) THEN
          CALL PRFDER(SYMFDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
       ELSE
-         WRITE (LUPRI,'(X,A,/)') 
-     *         "Output of fourth derivative suppressed"
+         WRITE (LUPRI,'(A/)') 
+     *      " Output of fourth derivative suppressed"
       ENDIF
 C
 C     ************************************
@@ -3852,7 +3856,7 @@ C
 C     *** Test printing. ***
 C
       IF (IPRINT .GE. 20) THEN
-         CALL HEADER('Eigen-vectors of the symmetry adapted hessian',-1)
+         CALL HEADER('Eigenvectors of the symmetry adapted hessian',-1)
          DO IC1 = 1, NCOOR
             WRITE (LUPRI,'(10X,12F9.4)') (EGNVCT(IC1,IC2),IC2=1,NCOOR)
          END DO
@@ -4049,8 +4053,8 @@ C
       END IF
 C
       DO 100 ICOL2 = 1, NCOR
-         WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
-         WRITE (LUPRI,'(A)') '      -----------------'
+         WRITE (LUPRI,'(A,I5)') '      Column number', ICOL2
+         WRITE (LUPRI,'(A)')    '      ------------------'
          INLC = 0
          DO 200 INLCMX = 1, NLCMAX
             INLC2 = 6*(INLCMX-1) + 1
@@ -5591,10 +5595,10 @@ C
       CALL HEADER('Analysis using the numerical derivatives',0)
       WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
 C
-      IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
-     &                              'efficient geometry.'
-      IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
-     &                              ' spin-spin coupling constants'
+      IF (NUMVIB) WRITE (LUPRI,'(A)')
+     &   ' - Frequency analysis and efficient geometry.'
+      IF (NSPNSP) WRITE (LUPRI,'(A)')
+     &   ' - Vibrational average of spin-spin coupling constants'
 C
       RETURN
       END
@@ -6405,7 +6409,7 @@ C
 C     *** Backing up symmetry. ***
 C
       CALL ICOPY(64    ,IXVAL      ,1,IXVALB,1)
-      CALL ICOPY(8     ,ISOP       ,1,ISOPB ,1)
+      CALL ICOPY(8     ,JSOP       ,1,JSOPB ,1)
       CALL ICOPY(8     ,NRHFFR     ,1,NRHFRB,1)
       MAXRPB = MAXREP
 C
@@ -6519,9 +6523,9 @@ C
                SAMIRP = .TRUE.
                DO 300 ISYOP2 = 0, MAXREP
                DO 300 ISYOP1 = 0, MAXRPB
-                  IF (SYMOP(ISOP(ISYOP2)).EQ.SYMOP(ISOPB(ISYOP1))) THEN
-                     IF (IXVALB(ISOPB(ISYOP1),IRPOLD)  .NE.
-     &                    IXVAL (ISOP (ISYOP2),IREP )) SAMIRP = .FALSE.
+                  IF (SYMOP(JSOP(ISYOP2)).EQ.SYMOP(JSOPB(ISYOP1))) THEN
+                     IF (IXVALB(JSOPB(ISYOP1),IRPOLD)  .NE.
+     &                    IXVAL(JSOP (ISYOP2),IREP )) SAMIRP = .FALSE.
                   END IF
  300           CONTINUE
                IF (SAMIRP) THEN
@@ -6876,7 +6880,7 @@ C
 C           Read in info on property
 C
          READ(LUPRPCO,
-     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
          IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHKCCS')
@@ -7062,7 +7066,7 @@ C
      &           ' Two point formula'
          DO IPRPC = 1, NPRPC
             READ(LUPRPCO,
-     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHK1DR')
@@ -7136,7 +7140,7 @@ C
       IF (TXT(1:6).EQ.'normal') THEN
 C         IF ((NTIME.EQ.2).OR.(NTIME.EQ.1 .AND.
       
-         WRITE(LUPRI,'(X,A)') " WRITE TO MIDAS INTERFACE FILE, "
+         WRITE(LUPRI,'(A)') " WRITE TO MIDAS INTERFACE FILE, "
      &           //"DALTON.MOP "
          LMIDAS = 0
          CALL GPOPEN(LMIDAS,'DALTON.MOP','UNKNOWN',' ','FORMATTED',
@@ -7197,10 +7201,10 @@ C
          NTOT   = NDCOOR 
          NWRIT  = NDCOOR 
          THRTRM = FAC*FRQLAR*FRQLAR*THRMID
-C        WRITE(LUPRI,'(X,A,E23.16)') " FRQLAR " ,FRQLAR
-C        WRITE(LUPRI,'(X,A,E23.16)') " FAC    " ,FAC
-C        WRITE(LUPRI,'(X,A,E23.16)') " THRMID " ,THRMID
-C        WRITE(LUPRI,'(X,A,E23.16)') " THRTRM " ,THRTRM  
+C        WRITE(LUPRI,'(A,E23.16)') " FRQLAR " ,FRQLAR
+C        WRITE(LUPRI,'(A,E23.16)') " FAC    " ,FAC
+C        WRITE(LUPRI,'(A,E23.16)') " THRMID " ,THRMID
+C        WRITE(LUPRI,'(A,E23.16)') " THRTRM " ,THRTRM  
 C
 C        *** Writing cubic force field. ***
 C        Note scaling with norms and symmetry factors!

@@ -158,7 +158,8 @@ C
          CALL SETSOPPA
       END IF
 C
-C     set *ACT* variables in INFRSP
+C     set *ACT* variables in INFRSP (different settings for SOPPA and
+C     MCSCF/DFT)
 C
       CALL RSPACT
 C
@@ -360,7 +361,7 @@ C
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')
      &           ' ***** ONE BODY DENSITY MATRIX from SIRIFC file'
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
          ISPIN1 = 0
          ISPIN2 = 0
@@ -383,7 +384,7 @@ C
          END IF
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
       ELSE IF (DORESP .AND. TDHF .AND. NASHT .EQ. 1) THEN
          WRK(KUDV) = D1
@@ -1056,7 +1057,8 @@ C     Initialization of INFHYP
       DATA REFCHK/.FALSE./
       DATA IAABB/0/
 C     Initialization of INFSMO
-      DATA SOMOM/.FALSE./ , TWOPHO/.FALSE./, MCDCAL/.FALSE./
+      DATA SOMOM/.FALSE./ , TWOPHO/.FALSE./, MCDCAL/.FALSE./,
+     &     MCDPRJ/.FALSE./
       DATA IPRSMO/2/
       DATA NBSMFR/1/ , BSMFR(1)/0.0D0/
 C     Initialization of INFESR
@@ -1498,6 +1500,14 @@ C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
       END IF   ! for IF (NEWDEF)
 C ------------------ 
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+      END IF
+C
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
@@ -1655,24 +1665,35 @@ C
 C--------------------
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
-      PARAMETER ( NTABLE = 47 )
+      PARAMETER ( NTABLE = 48 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND
       INTEGER NUMBER_ORBS(8)
 C
+!                    1          2          3          4
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
-     *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
-     *            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
-     *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
-     *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
-     *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.MAX IT', '.THCLR ', '.MAXITO',
-     *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
-     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
-     *            '.FERMI ', '.SPIN-D',
-     *            '.DIPLF ', '.DIPLFX', '.DIPLFY', '.DIPLFZ',
-     *            '.CHANNE', '.VIRTUA'/
+!                    5          6          7          8
+     &            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
+!                    9         10         11         12
+     &            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
+!                   13         14         15         16
+     &            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
+!                   17         18         19         20
+     &            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
+!                   21         22         23         24
+     &            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
+!                   25         26         27         28
+     &            '.MAX IT', '.THCLR ', '.MAXITO', '.PRINT ', 
+!                   29         30         31         32
+     &            '.FREQUE', '.ABOCHK', '.ISTOCK', '.MAXOCK', 
+!                   33         34         35         36
+     &            '.SOPRSY', '.RESTLR', '.DIROIT', '.TRIPLE', 
+!                   37         38         39         40
+     &            '.PV PSO', '.PV SO ', '.PV SO2', '.FERMI ', 
+!                   41         42         43         44
+     &            '.SPIN-D', '.DIPLF ', '.DIPLFX', '.DIPLFY', 
+!                   45         46         47         48
+     &            '.DIPLFZ', '.CHANNE', '.VIRTUA', '.xxxxxx'/
 C
 C
 C
@@ -1694,7 +1715,7 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41,
-     *                      42,43,44,45,46,47),I
+     *                      42,43,44,45,46,47,48),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1985,6 +2006,11 @@ C     .VIRTUAL
                CHANNEL_VCALC = .TRUE.
                READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
                GO TO 100
+
+ 48            continue
+!                do nothing
+                 go to 100
+
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1995,6 +2021,13 @@ C     .VIRTUAL
       END IF
 C     ---------------------------------------------
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
+C
       NLRTOT = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
@@ -2103,6 +2136,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
+#include <gnrinf.h>
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
@@ -2412,7 +2446,15 @@ C     .C10LMO
                CALL QUIT(' ILLEGAL PROMPT IN C6INP ')
             END IF
       END IF
+C
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCC6 = THCC6*THR_REDFAC
+      END IF
+C
       NC6TOT = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
@@ -3489,12 +3531,14 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      DIMENSION UDV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION UDV(NASHT,*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "priunit.h"
 #include "infinp.h"
+#include "infind.h"
 #include "infpri.h"
 #include "infdim.h"
 #include "infvar.h"
@@ -3513,7 +3557,7 @@ C
       DATA OPLBL/'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
      *           'EXOPSYM5','EXOPSYM6','EXOPSYM7','EXOPSYM8'/
 C
-      PARAMETER ( D1 = 1.0D0 )
+      PARAMETER ( D1 = 1.0D0, THR_PRUNE = 1.0D-4 )
 C
       CALL QENTER('RSPVAR')
 C
@@ -3526,7 +3570,7 @@ C
          KZWOPT = 0
          KZYWOP = 0
       ELSE
-         IF ( KSYMOP .NE. JWOPSY ) THEN
+!        IF ( KSYMOP .NE. JWOPSY ) THEN
             JWOPSY = KSYMOP
             LUINDX = -1
             CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
@@ -3536,9 +3580,73 @@ C
             READ (LUINDX) NWOPT,NWOP,NWOPH
             CALL READI(LUINDX,(2*NWOPT),JWOP)
             CALL GPCLOSE(LUINDX,'KEEP')
-         END IF
+C
+C           Prune some classes of redundant orbital rotations from
+C           the orbital rotation vector JWOP:
+C              UDV(u,u) = 2
+C              UDV(v,v) = 0
+C              UDV(u,u) = UDV(v,v) [only possible for RAS]
+C           Threshold for redundancy test: THR_PRUNE
+C           / hjaaj June 2010
+            MWOPT = 0
+            DO IWOPT = 1,NWOPT
+               K = JWOP(1,IWOPT)
+               L = JWOP(2,IWOPT)
+               ITYPK = IOBTYP(K)
+               ITYPL = IOBTYP(L)
+               KL_is_OK = 0
+               IF (ITYPK .EQ. JTINAC) THEN
+                  IF (ITYPL .EQ. JTACT) THEN
+                  ! inact-act rotation
+                     NWL = ISW(L) - NISHT
+                     IF ( (2.0D0-UDV(NWL,NWL)) .GT. THR_PRUNE) THEN
+                        KL_is_OK = 1
+                     ELSE IF (IPRRSP .GE. 2) THEN
+                        WRITE (LUPRI,*)
+     &                  'INFO: Inact-act orbital rotation',K,L,' pruned'
+                     END IF
+                  ELSE
+                     KL_is_OK = 1
+                  END IF
+               ELSE IF (ITYPL .EQ. JTACT) THEN
+               ! act-act rotation (i.e. RAS case)
+                  NWK = ISW(K) - NISHT
+                  NWL = ISW(L) - NISHT
+                  IF (ABS(UDV(NWK,NWK)-UDV(NWL,NWL)) .GT. THR_PRUNE)
+     &            THEN
+                     KL_is_OK = 1
+                  ELSE IF (IPRRSP .GE. 2) THEN
+                     WRITE (LUPRI,*)
+     &               'INFO:   Act-act orbital rotation',K,L,' pruned'
+                  END IF
+               ELSE
+               ! act-sec rotation
+                  NWK = ISW(K) - NISHT
+                  IF (UDV(NWK,NWK) .GT. THR_PRUNE) THEN
+                     KL_is_OK = 1
+                  ELSE IF (IPRRSP .GE. 2) THEN
+                     WRITE (LUPRI,*)
+     &               'INFO:   Act-sec orbital rotation',K,L,' pruned'
+                  END IF
+               END IF
+               IF (KL_is_OK .EQ. 1) THEN
+                  MWOPT = MWOPT + 1
+                  JWOP(1,MWOPT) = K
+                  JWOP(2,MWOPT) = L
+               END IF
+            END DO
+            IF (MWOPT .NE. NWOPT) THEN
+               WRITE (LUPRI,*) 'INFO:',NWOPT-MWOPT,
+     &         ' redundant orbital rotations pruned.'
+               NWOPT = MWOPT
+            END IF
+!        END IF
+C
          KZWOPT = NWOPT
          KZYWOP = 2*KZWOPT
+         NWOPH  = NWOPT ! do not include redundant act-act rotations
+                        ! in response, even when we call SIRIUS routines
+                        ! /hjaaj June 2010
          IF (CHANNEL_CALC) CALL CHANNEL_VAR()         
          IF (CHANNEL_VCALC) CALL CHANNEL_VIR()
       END IF
@@ -3661,7 +3769,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
-               CALL OUTPUT(WRK(KECDIA),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
+               CALL OUTPUT(WRK(KECDIA),1,KZCONF,1,1,KZCONF,1,-1,LUPRI)
             END IF
          END IF
 C
@@ -3675,15 +3783,15 @@ C
              IF (IPRRSP.GT.100) THEN
                IF (NASHT.GT.0) THEN
                   WRITE(LUPRI,'(/A)')
-     *            ' ONE ELECTRON ACTIVE DENSITY MATRIX  UNPACKED'
-                  CALL OUTPUT(UDV,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+     *            ' ONE ELECTRON ACTIVE DENSITY MATRIX - UNPACKED'
+                  CALL OUTPUT(UDV,1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
                   WRITE(LUPRI,'(/A)') ' FOCK VALENCE MATRIX'
-                  CALL OUTPKB(FV,NORB,NSYM,1,LUPRI)
+                  CALL OUTPKB(FV,NORB,NSYM,-1,LUPRI)
                END IF
                WRITE(LUPRI,'(/A)') ' FOCK CORE MATRIX'
-               CALL OUTPKB(FC,  NORB,NSYM,1,LUPRI)
+               CALL OUTPKB(FC,  NORB,NSYM,-1,LUPRI)
                WRITE(LUPRI,'(/A)') ' TOTAL FOCK  MATRIX'
-               CALL OUTPTB(FOCK,NORB,NSYM,1,LUPRI)
+               CALL OUTPTB(FOCK,NORB,NSYM,-1,LUPRI)
              END IF
 C
             CALL ORBDIA(FOCK,FC,FV,UDV,WRK(KEODIA),WRK(KSODIA))
@@ -3707,7 +3815,7 @@ C
      *            ' MATRIX USED)'
                   CALL PRWOP(WRK(KEODIA),LUPRI)
                   IF (IPRRSP .GT. 120)
-     *              CALL OUTPUT(WRK(KEODIA),1,NWOPT,1,1,NWOPT,1,1,LUPRI)
+     *             CALL OUTPUT(WRK(KEODIA),1,NWOPT,1,1,NWOPT,1,-1,LUPRI)
                END IF
             END IF
          END IF
@@ -3725,7 +3833,7 @@ C
          IF (IPRRSP.GT.100) THEN
             IF (KZWOPT.GT.0) THEN
                WRITE(LUPRI,'(/A)') ' DIAGONAL ORBITAL PART OF S[2]'
-               CALL OUTPUT(WRK(KSODIA),1,NWOPT,1,1,NWOPT,1,1,LUPRI)
+               CALL OUTPUT(WRK(KSODIA),1,NWOPT,1,1,NWOPT,1,-1,LUPRI)
             END IF
          END IF
 C
@@ -3996,7 +4104,7 @@ C
          CALL GETREF(WRK,NCONRF)
          WRITE(LUPRI,'(/A)')
      &        ' **** RSPMC **** REFERENCE CONFIGURATION'
-         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
+         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,-1,LUPRI)
       END IF
 C
 C     If a solvent-response calculation:
@@ -4047,7 +4155,7 @@ C
             ELSE
               WRITE(LUPRI,'(/A)')' RSPMC : MP2 correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,1,LUPRI)
+            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,-1,LUPRI)
          END IF
 C
          IF (TRPFLG) CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK)
@@ -4060,7 +4168,7 @@ C
                WRITE(LUPRI,'(/A)')
      &      ' RSPMC : MP2 singlet and triplet correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,1,LUPRI)
+            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,-1,LUPRI)
          END IF
 C
          CALL READT (LUSIFC,NACTT*NACTT,UDV)
@@ -4071,7 +4179,7 @@ C
             ELSE
                WRITE(LUPRI,'(/A)')' RSPMC : MP2 second order density'
             END IF
-            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,1,LUPRI)
+            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,-1,LUPRI)
          END IF
 C
 C        UDV contains the MP2 one-density. Remove the diagonal
@@ -4085,7 +4193,7 @@ C
             WRITE(LUPRI,'(/A,I5,A)')' MO. COEFFICIENTS FOR SYMMETRY',
      &                                ISYM
             CALL OUTPUT(CMO(ICMO(ISYM)+1),1,NBAS(ISYM),1,NORB(ISYM),
-     $                  NBAS(ISYM),NORB(ISYM),1,LUPRI)
+     $                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
  60      CONTINUE
       END IF
 C
@@ -4489,6 +4597,13 @@ C
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1

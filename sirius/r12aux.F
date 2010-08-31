@@ -51,6 +51,7 @@ C
 #include <infpri.h>
 #include <scbrhf.h>
 #include <gnrinf.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include "incore.h"
       LOGICAL DELEMO, FOUND, LDUMMY, TEMP_DIRFCK
@@ -185,8 +186,8 @@ C
             MBSMAX = 6
          END IF
       END IF
-      CALL FCKMAO(.TRUE.,DUMMY,EMCMY,WORK(KFCAO),WORK(KFVAO),
-     *     WORK(KDCAO),WORK(KDVAO),WORK(KCMO),WORK(KWRK),LWRK)
+      CALL FCKMAO(.TRUE.,EMCMY,WORK(KFCAO),WORK(KFVAO),
+     *     WORK(KDCAO),WORK(KDVAO),WORK(KCMO),DV_DUMMY,WORK(KWRK),LWRK)
 
       WRITE(LUPRI,'(/A,I1,A)') ' Computation of exchange matrix'//
      *                         ' done [',MBSMAX,']'

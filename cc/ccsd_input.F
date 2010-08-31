@@ -130,7 +130,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
-     &            '.THRVEC','.MTRIP ','.SOPPA2','.XXXXXX','.XXXXXX'/
+     &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -249,6 +249,7 @@ C
 CSPAS 22.10.2003 implementing SOPPA(CCSD)
       SIRSOP    = .FALSE.
 CKeinSPASmehr
+      AOSOPPA   = .FALSE.
 C
       CONNECTION = 'SYMMETR'
 C
@@ -816,7 +817,11 @@ C                 '.THRVEC' convergence threshold for norm of vector function
                   KEEPAOTWO = MAX(KEEPAOTWO,2)
                GO TO 1000
  109           CONTINUE
- 110           CONTINUE
+C                '.AO-SOPPA'
+                  AOSOPPA  = .TRUE.
+                  KEEPAOIN = .TRUE.
+               GO TO 1000
+ 110           CONTINUE 
                GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
@@ -981,6 +986,9 @@ C
             IF (SIRSOP .AND. CC2) WRITE (LUPRI,'(A)')
      *         ' -CC2 Amplitudes appended to Sirius interface'//
      *         ' for SOPPA(CC2)'
+            IF (AOSOPPA) WRITE (LUPRI,'(/A,A)')
+     *         ' MP2 Amplitudes written for atom integral direct',
+     *         ' SOPPA calculations'
 C
          END IF
          WRITE (LUPRI,'(A)') '  '

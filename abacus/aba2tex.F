@@ -493,7 +493,7 @@ C
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-            IF ((NASHT .GT. O) .AND. (.NOT.(HSROHF.OR.DFTADD)))
+            IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
      &         CALL QUIT(' ERROR in TWOEXP: PARCAL only'// 
      &                   ' implemented for SCF')
 C

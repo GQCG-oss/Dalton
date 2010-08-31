@@ -2603,8 +2603,7 @@ C
             CALL AROUND('Estimated effective geometry')
             CALL HEADER('Cartesian coordinates (au)',-1)
             CALL PRIGEO(POS)
-            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &                  WORK,LWORK)
+            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
          END DO
       ELSE
          CALL HEADER('Effective geometry corrections in normal '//
@@ -2672,8 +2671,7 @@ C
             END DO
          ELSE
             CALL PRIGEO(POS)
-            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &                  WORK,LWORK)
+            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
          END IF
       END IF
 C
@@ -3265,7 +3263,7 @@ C
  65   CONTINUE
       IF (KK .LE. 7) THEN
          DO 67 I = 0, MAXREP
-            IF (ISOP(I) .EQ. KK) THEN
+            IF (JSOP(I) .EQ. KK) THEN
                ICHRVC(KK) = ITMP(IND)
                IND = IND + 1
             END IF
@@ -3283,7 +3281,7 @@ C
       IF ((.NOT. FOUND) .AND. (IREP .LE. MAXREP)) THEN
          FOUND = .TRUE.
          DO 52 I = 0, MAXREP
-            IF (ICHRVC(ISOP(I)) .NE. IXVAL(ISOP(I),IREP))
+            IF (ICHRVC(JSOP(I)) .NE. IXVAL(JSOP(I),IREP))
      &           FOUND = .FALSE.
  52      CONTINUE
          IREP = IREP + 1

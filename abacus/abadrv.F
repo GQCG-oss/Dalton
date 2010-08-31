@@ -66,6 +66,9 @@ C
 #include <expopt.h>
 #include <pcmlog.h>
 #include <ccinftap.h>
+CSPAS : 6/11-2009 AO-SOPPA included
+#include <soppinf.h>
+CKeinSPASmehr
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
@@ -362,7 +365,10 @@ C
          KPOLVL = KPOLDA + 2*9*MXFR
          KPOLVV = KPOLVL + 2*9*MXFR
          KFOVIB = KPOLVV + 2*9*MXFR
-         KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C        KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
+         KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
+CKeinSPASmehr
          LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
@@ -390,16 +396,31 @@ C     ***** Electronic excitation energies *****
 C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
+CSPAS : 6/11-2009 AO-SOPPA included
+      NMODEL = 1
+      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
+CKeinSPASmehr
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
-         KTRVEL = KTRLEN + 3*NSYM*MXNEXI
-         KTQLEN = KTRVEL + 3*NSYM*MXNEXI
+CSPAS : 6/11-2009 AO-SOPPA included
+C         KTRVEL = KTRLEN + 3*NSYM*MXNEXI
+C         KTQLEN = KTRVEL + 3*NSYM*MXNEXI
+C         KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
+C         KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
+C         KTRMAG = KTRLON + 3*NSYM*MXNEXI
+C         KBSRLO = KTRMAG + 3*NSYM*MXNEXI
+C         KEXENG = KBSRLO + 3*NSYM*MXNEXI
+C         KFONAC = KEXENG + NSYM*MXNEXI
+         KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
+         KTQLEN = KTRVEL + 3*NSYM*MXNEXI*NMODEL
          KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
          KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
-         KTRMAG = KTRLON + 3*NSYM*MXNEXI
-         KBSRLO = KTRMAG + 3*NSYM*MXNEXI
-         KEXENG = KBSRLO + 3*NSYM*MXNEXI
-         KFONAC = KEXENG + NSYM*MXNEXI
+         KTRMAG = KTRLON + 3*NSYM*MXNEXI*NMODEL
+         KBSRLO = KTRMAG + 3*NSYM*MXNEXI*NMODEL
+         KEXENG = KBSRLO + 3*NSYM*MXNEXI*NMODEL
+         KSECMT = KEXENG + NSYM*MXNEXI*NMODEL
+         KFONAC = KSECMT + 3*NSYM*MXNEXI
+CKeinSPASmehr
          KFONA2 = KFONAC + 3*NUCDEP*NSYM*MXNEXI
          KRMLEN = KFONA2 + 3*NUCDEP*NSYM*MXNEXI
          KRQLEN = KRMLEN + 3*3*NSYM*MXNEXI
@@ -414,7 +435,11 @@ C
          CALL EXCITA(WORK(KTRLEN),WORK(KTRVEL),WORK(KTQLEN),
      &               WORK(KTQVEL),WORK(KTRLON),WORK(KTRMAG),
      &               WORK(KBSRLO),WORK(KEXENG),WORK(KFONAC),
-     &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
+CSPAS : 6/11-2009 AO-SOPPA included
+C     &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
+     &               WORK(KFONA2),WORK(KSECMT),
+     &               WORK(KLST2),LWRK2,PASEXC)
+CKeinSPASmehr
          IF (PASEXC) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       ELSE
@@ -426,7 +451,11 @@ C
          KTRMAG = KTRLON
          KBSRLO = KTRMAG
          KEXENG = KBSRLO
-         KFONAC = KEXENG
+CSPAS : 6/11-2009 AO-SOPPA included
+         KSECMT = KEXENG
+         KFONAC = KSECMT
+C         KFONAC = KEXENG
+CKeinSPASmehr
          KFONA2 = KFONAC
          KRMLEN = KFONA2
          KRQLEN = KRMLEN
@@ -579,11 +608,14 @@ C
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
      &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
      &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
+CSPAS : 6/11-2009 AO-SOPPA included
+     &            WORK(KSECMT),
+CKeinSPASmehr
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
      &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
      &            WORK(KSLEN),WORK(KSVEL),WORK(KLAST),LWRK3)
-      IF (IPRDEF .GE. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &                               IDUMMY,WORK(KLAST),LWRK3)
+      IF (IPRDEF .GE. 0)
+     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK(KLAST),LWRK3)
       CALL FLSHFO(LUPRI)
 C
 C     *************************
@@ -693,6 +725,9 @@ C     Aug. 97/spas+hjaaj
 #include <infsop.h>
 #include <infrsp.h>
 #include <infinp.h>
+CSPAS : 6/11-2009 AO-SOPPA included
+#include <soppinf.h>
+CKeinSPASmehr
 C
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
@@ -1391,10 +1426,31 @@ cs
      &          'with Coupled Cluster Singles and Doubles Amplitudes',
      &          '    (Ref.: S.P.A. Sauer, ',
      &          'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997))'
+CSPAS : 6/11-2009 AO-SOPPA included
+            IF (DODRCT) THEN
+               AOSOC = .TRUE.
+               WRITE(LUPRI,'(/A,/,A,A,/,5x,A)')
+     &              ' AO integral driven SOPPA(CCSD) :',
+     &              '    (Ref.: H. H. Falden, K. R. Falster-Hansen, ',
+     &              'K. L. Bak, S. Rettrup and S. P. A. Sauer,',
+     &              'J. Phys. Chem. A 113, 11995-12012 (2009))'
+            ENDIF
+CKeinSPASmehr
          ELSE 
-            WRITE(LUPRI,'(//5x,A,A,/)')
-     *          ' SOPPA :',
-     *          ' Second Order Polarization Propagator Approximation'
+CSPAS : 6/11-2009 AO-SOPPA included
+            IF (DODRCT) THEN
+               AOSOP = .TRUE.
+               WRITE(LUPRI,'(//5x,A,/,5x,A,A,/,5x,A)')
+     &              ' AO integral driven SOPPA :',
+     &              '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
+     &              ' O. Christiansen and S. P. A. Sauer',
+     &              '     J. Chem. Phys. 112, 4173-4185 (2000))'
+            ELSE
+               WRITE(LUPRI,'(//5x,A,A,/)')
+     *             ' SOPPA :',
+     *             ' Second Order Polarization Propagator Approximation'
+            END IF
+CKeinSPASmehr
          END IF
          IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA) THEN
             NOLOND = .TRUE.
@@ -1453,6 +1509,11 @@ cLig >> added what to print when the CTOCD option is set true
      &     ' CTOCD-DZ Magnetic susceptibilities'
          IF(SHIELD) WRITE(LUPRI,'(5X,A)')
      &     ' CTOCD-DZ Nuclear magnetic shieldings' 
+         WRITE (LUPRI,'(5x,A,A,/,5x,A,A)')
+     &          '    (Ref.: A. Ligabue, S. P. A. Sauer',
+     &          ' and P. Lazzeretti,',
+     &          '     J. Chem. Phys. 118, 6830 (2003)',
+     &          ' & J. Chem. Phys. 126, 154111 (2007))' 
       END IF
 cLig <<
       IF (VCD)    WRITE (LUPRI,'(5X,A)')
@@ -1463,7 +1524,7 @@ cLig <<
      &            ' Vibrational g-factors :',
      &              '    (Ref.: K. L. Bak, S. P. A. Sauer,',
      &              ' J. Oddershede and J. F. Ogilvie,',
-     &              '     Phys. Chem. Chem. Phys. 7, 1747-1758 (2005))' 
+     &              '     Phys. Chem. Chem. Phys. 7, 1747 (2005))' 
       IF (DOD2DQ2)  WRITE (LUPRI,'(5X,A)')
      &   ' < d Psi/dQ | d Psi/dQ > (Q = nuclear coordinates)'
       IF (NOLOND) WRITE (LUPRI,'(5X,A)')
@@ -1628,6 +1689,14 @@ cLig >> added the control to right CTOCD input
      &      ' the .CTOCD option only works if the .MAGNET and/or'//
      &      ' .SHIELD options are also used'
          CALL QUIT('Inconsistent input in ABAINP')
+      ENDIF
+      IF ((VIB_G).AND.
+     &    ((OPTROT .OR. VROA .OR. RAMAN .OR. ABA_ALPHA))) THEN
+         WRITE(LUPRI,'(/A,A/A,A)')
+     &      ' Unsupported input - calculation of vibrational g-factor',
+     &      ' is not tested to work',' if .RAMAN, .OPTROT, .VROA,'//
+     &      ' .OR, .OR MVE or .ALPHA options are also used'
+         CALL QUIT('Not supported input in ABAINP')
       ENDIF
 cLig <<
       IF (ABASOP) THEN
@@ -2007,6 +2076,9 @@ C  /* Deck result */
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
      &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
+CSPAS : 6/11-2009 AO-SOPPA included
+     &                  SECMAT,
+CKeinSPASmehr
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
 C
@@ -2033,6 +2105,9 @@ C
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
      &          TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
+CSPAS : 6/11-2009 AO-SOPPA included
+     &          SECMAT(*),
+CKeinSPASmehr
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
@@ -2051,6 +2126,9 @@ C
 #include <difsec.h>
 #include <expopt.h>
 #include <primit.h>
+CSPAS : 6/11-2009 AO-SOPPA included
+#include <soppinf.h>
+CKeinSPASmehr
 C
 C     Heading
 C
@@ -2384,12 +2462,26 @@ C
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
-      IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-     &                        TRMAG,TRLON,BSRLON,EXENG,
-     &                        FONAC,FONA2,RMLEN,RQLEN,
-     &                        RLEN,RMVEL,RQVEL,RVEL,
-     &                        SLEN,SVEL,WORK,LWORK)
-
+CSPAS : 6/11-2009 AO-SOPPA included
+C      IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
+C     &                        TRMAG,TRLON,BSRLON,EXENG,
+C     &                        FONAC,FONA2,RMLEN,RQLEN,
+C     &                        RLEN,RMVEL,RQVEL,RVEL,
+C     &                        SLEN,SVEL,WORK,LWORK)
+      IF (DOEXCI) THEN
+         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+            CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
+     &                     FONAC,FONA2,SECMAT,WORK,LWORK)
+         ELSE
+            CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
+     &                  TRMAG,TRLON,BSRLON,EXENG,
+     &                  FONAC,FONA2,RMLEN,RQLEN,
+     &                  RLEN,RMVEL,RQVEL,RVEL,
+     &                  SLEN,SVEL,WORK,LWORK)
+         END IF
+      END IF
+CKeinSPASmehr
+C
 C     Molecular second moments
 C
       IF (SECNDM) CALL SECRES(IPRDEF)

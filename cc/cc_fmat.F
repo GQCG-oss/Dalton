@@ -521,6 +521,7 @@ c/* Deck CC_FMATNEW */
 #include <dummy.h>
 #include <r12int.h>
 #include <qm3.h>
+!#include <qmmm.h>
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -1013,7 +1014,13 @@ C     DOUBLE PRECISION ECURRSAV
 * T^g contribution to transformation. SLV98,OC, CCMM JK
       IF (CCSLV) THEN
          IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
-         IF (CCMM) CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+         IF (CCMM) THEN
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+            END IF
+         END IF
       ENDIF
 C
       IF (LOCDBG) THEN
@@ -2164,9 +2171,17 @@ C
            IF (.NOT. CCMM) CALL CCSL_LTRB(WORK(KTHETA1),WORK(KTHETA2),
      *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
      *                    WORK(KEND3),LWRK3)
-           IF (CCMM) CALL CCMM_LTRB(WORK(KTHETA1),WORK(KTHETA2),
+           IF (CCMM) THEN
+              IF (.NOT. NYQMMM) THEN
+                 CALL CCMM_LTRB(WORK(KTHETA1),WORK(KTHETA2),
      *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
      *                    WORK(KEND3),LWRK3)
+              ELSE IF (NYQMMM) THEN
+                 CALL CCMM_TGTBAR(WORK(KTHETA1),WORK(KTHETA2),
+     *                         WORK(KT1AMPA),WORK(KT2AMPA),MODEL,ISYAMP,
+     *                         'F',WORK(KEND3),LWRK3)
+              END IF
+           END IF
          ELSE IF (LISTL(1:2).NE.'L0') THEN
            IF (.NOT. CCMM) CALL CCSL_PBTR(WORK(KTHETA1),WORK(KTHETA2),
      *                                    ISYRES,
@@ -3840,6 +3855,7 @@ c/* Deck CCFMAT2 */
 #include <ccfield.h>
 #include <ccslvinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -3967,7 +3983,11 @@ C
          ENDIF
 C
          IF (CCMM) THEN
-            CALL CCMM_RHSTG(WORK(KONEH),WORK(KEND0),LWRK0)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KONEH),WORK(KEND0),LWRK0)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KONEH),WORK(KEND0),LWRK0)
+            END IF
          ENDIF
 C-----------------------------------------------------------------
 
@@ -4008,7 +4028,11 @@ C
          ENDIF
 C
          IF (CCMM) THEN
-            CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND0),LWRK0)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND0),LWRK0)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KFIELD),WORK(KEND0),LWRK0)
+            END IF
          ENDIF
 C------------------------------------------------------------------------------
 C

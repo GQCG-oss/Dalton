@@ -162,7 +162,7 @@ ERROR[8]="OTHER PARTS OF DALTON SHOULD NOT BE RUN"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi

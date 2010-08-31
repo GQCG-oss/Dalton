@@ -57,7 +57,6 @@ C  /* Deck qmmmfck */
 #include <maxaqn.h>
 #include <symmet.h>
 #include <orgcom.h>
-#include <infpar.h>
 
 
       DIMENSION DCAO(*), DVAO(*)
@@ -90,7 +89,6 @@ C     Get total density
 
 C     Modify the fock operator. Modification returned in FSOL. 
 C     QMMM contribution to the energy returned in EQMMM.
-C      IF (NODTOT .GE. 1) THEN
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
       CALL TIMER('QMMM_FCK_AO',TIMSTR,TIMEND)
@@ -135,6 +133,10 @@ C  /* Deck qmmm_fck_ao */
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
+      LOGICAL FIRST
+      SAVE    FIRST
+      DATA    FIRST /.TRUE./
+
       CALL QENTER('QMMM_FCK_AO')
 
       LOCDEB = .FALSE.
@@ -142,7 +144,8 @@ C  /* Deck qmmm_fck_ao */
       KTAO   = 1
       KNSEL  = KTAO   + NNBASX
       KNSNUC = KNSEL  + MMCENT
-      KWRK1  = KNSNUC + MMCENT
+      KINT   = KNSNUC + MMCENT
+      KWRK1  = KINT   + NNBASX
       LWRK1  = LWRK   - KWRK1
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_FCK_AO',-KWRK1,LWRK)
@@ -150,6 +153,7 @@ C  /* Deck qmmm_fck_ao */
       CALL DZERO(WRK(KTAO),NNBASX)
       CALL DZERO(WRK(KNSEL),MMCENT)
       CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KINT),NNBASX)
 
 C     The different static energy contributions
       ECHART = 0.0D0
@@ -168,7 +172,8 @@ C     1) The charge correction to the Fock/KS operator
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 0) THEN
          CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,FIRST,
+     &                       WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
       CALL TIMER('QMMM_CHARGE',TIMSTR,TIMEND)
 
@@ -177,7 +182,8 @@ C     2) The dipole correction to the Fock/KS operator
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 1) THEN
          CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,FIRST,
+     &                       WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
       CALL TIMER('QMMM_DIPOLE',TIMSTR,TIMEND)
 
@@ -186,7 +192,8 @@ C     3) The quadrupole correction to the Fock/KS operator
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 2) THEN
          CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,FIRST,
+     &                       WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
       CALL TIMER('QMMM_QUADPOLE',TIMSTR,TIMEND)
 
@@ -195,7 +202,8 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMULT .GE. 3) THEN
          CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
+     &                       WRK(KNSNUC),LOCDEB,FIRST,
+     &                       WRK(KWRK1),LWRK1,IPRINT)
       ENDIF
       CALL TIMER('QMMM_OCTUPOLE',TIMSTR,TIMEND)
 
@@ -223,14 +231,17 @@ C     Finally, put back the dipole origin
       DIPORG(3) = OBKPZ
 
       CALL PKSYM1(WRK(KTAO),FSOL,NBAS,NSYM,+1)
-
       CALL QEXIT('QMMM_FCK_AO')
+
+      IF (FIRST) THEN
+         FIRST = .FALSE.
+      END IF
 
       RETURN
       END
 C**************************************************************************************
 C  /* Deck qmmm_charge */
-      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+      SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
@@ -256,7 +267,7 @@ C  /* Deck qmmm_charge */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -265,7 +276,8 @@ C  /* Deck qmmm_charge */
 
       KMAT  = 1
       KTAO  = KMAT + NNBASX
-      KLAST = KTAO + NNBASX
+      KINT  = KTAO + NNBASX
+      KLAST = KINT + NNBASX
       LWRK2 = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_CHARGE 1',-KLAST,LWRK)
@@ -282,6 +294,7 @@ C     Parallel loop
      &                      SNUC,WRK(KLAST),LWRK2,IPRINT)
       ELSE
 C
+      CALL DZERO(WRK(KINT),NNBASX)
       DO 100 I = 1,MMCENT 
 
          IF (ABS(MUL0MM(I)) .LE. THRMM) THEN
@@ -372,6 +385,10 @@ C  Gradient
          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,TAO(1),1)
          EXPNST=EXPNST+EXPNS
 
+         IF (FIRST) THEN 
+            CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KINT),1)
+         ENDIF
+
 C        Now the QM nuclear contribution
 
          ECHCHL  = 0.0D0
@@ -384,8 +401,24 @@ C        Now the QM nuclear contribution
            ECHCHL = ECHCHL + CHARGE(J)*MUL0MM(I)/DIST
   101    CONTINUE
          ECHCH = ECHCH + ECHCHL
+C Transfering the QM nuclei - MM multipole energy contribution
+C to the CC part of the code. We start with the charge contribution
+         ENUMUL = ECHCH
          SNUC(I) = ECHCHL
   100 CONTINUE
+
+      IF (FIRST) THEN
+C     Write integrals to file        
+         LUQMMM = -1
+         IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU0INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+         ENDIF
+         REWIND(LUQMMM)
+         WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         CALL DZERO(WRK(KINT),NNBASX)
+      ENDIF
 
       ENDIF ! IF(NODTOT.GE.1) ... ELSE
 
@@ -408,14 +441,13 @@ C        Now the QM nuclear contribution
         WRITE(LUPRI,*)
       ENDIF
 
-
       CALL QEXIT('QMMM_CHARGE')
 
       RETURN
       END
 C**************************************************************************************
 C  /* Deck qmmm_dipole */
-      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+      SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
@@ -441,7 +473,7 @@ C  /* Deck qmmm_dipole */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -449,8 +481,9 @@ C  /* Deck qmmm_dipole */
       CALL QENTER('QMMM_DIPOLE')
 
       KMAT  = 1
-      KTAO = KMAT + 3*NNBASX
-      KLAST = KTAO + NNBASX
+      KTAO  = KMAT + 3*NNBASX
+      KINT  = KTAO + NNBASX
+      KLAST = KINT + NNBASX
       LWRK2 = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_DIPOLE 1',-KLAST,LWRK)
@@ -466,6 +499,8 @@ C  /* Deck qmmm_dipole */
          CALL QMMM_DIPOLE_M(DCAO,EMUL1T,ELOCT,WRK(KTAO),SEL,
      &                       SNUC,WRK(KLAST),LWRK2,IPRINT)
       ELSE
+
+      CALL DZERO(WRK(KINT),NNBASX)
 
       DO 200 I = 1,MMCENT 
 
@@ -611,6 +646,12 @@ C      Gradient
         CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KTAO),1)
         CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KTAO),1)
 
+        IF (FIRST) THEN
+           CALL DAXPY(NNBASX,FACM1,WRK(KMAT),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FACM1,WRK(KMAT+NNBASX),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FACM1,WRK(KMAT+2*NNBASX),1,WRK(KINT),1)
+        ENDIF
+
         EXCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
         EYCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
         EZCOMP = -DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
@@ -636,8 +677,23 @@ C       CORD(1,J) - MMCORD(1,I)
   201   CONTINUE
         SNUC(I) = ELOC
         ELOCT = ELOCT + SNUC(I)
+C Add up QM nuclei - multipole energy contributions to be used in CC
+        ENUMUL = ENUMUL + ELOCT
 
   200 CONTINUE
+
+      IF (FIRST) THEN
+C     Write integrals to file
+         LUQMMM = -1
+         IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU1INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+         ENDIF
+         REWIND(LUQMMM)
+         WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         CALL DZERO(WRK(KINT),NNBASX)
+      ENDIF
 
       ENDIF ! IF (NODTOT .GE. 1) ... ELSE
 
@@ -666,7 +722,7 @@ C       CORD(1,J) - MMCORD(1,I)
       END
 C**************************************************************************************
 C  /* Deck qmmm_quadpole */
-      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+      SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
@@ -692,7 +748,7 @@ C  /* Deck qmmm_quadpole */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -702,7 +758,8 @@ C  /* Deck qmmm_quadpole */
 
       KMAT  = 1
       KTAO  = KMAT + 6*NNBASX
-      KLAST = KTAO + NNBASX
+      KINT  = KTAO + NNBASX
+      KLAST = KINT + NNBASX
       LWRK2 = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_QUADPOLE 1',-KLAST,LWRK)
@@ -718,6 +775,7 @@ C  /* Deck qmmm_quadpole */
      &                       SNUC,WRK(KLAST),LWRK2,IPRINT)
       ELSE
 
+      CALL DZERO(WRK(KINT),NNBASX)
       DO 300 I = 1,MMCENT
 
 C       See if the quadrupole moment at this site is zero
@@ -800,6 +858,15 @@ C       The integrals contains a factor of -1. Therefore daxpy with fac1
         CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,WRK(KTAO),1)
         CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,WRK(KTAO),1)
 
+        IF (FIRST) THEN
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+NNBASX),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+2*NNBASX),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+3*NNBASX),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+4*NNBASX),1,WRK(KINT),1)
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT+5*NNBASX),1,WRK(KINT),1)
+        ENDIF
+
 C       Contract with the density to get the expectation values. 
 C       The factor of 1/2 in the Taylor expansion has been included.
 C       Also, the off-diagonal elements have been scaled by 2 in order 
@@ -851,8 +918,23 @@ C       Remember the factor of 1/2 from the Taylor expansion
 
         SNUC(I) = ELOC
         ELOCT = ELOCT + SNUC(I)
+C Add up QM nuclei - multipole energy contributions to be used in CC
+        ENUMUL = ENUMUL + ELOCT
 
   300 CONTINUE
+
+      IF (FIRST) THEN
+C     Write integrals to file
+         LUQMMM = -1
+         IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU2INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+         ENDIF
+         REWIND(LUQMMM)
+         WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         CALL DZERO(WRK(KINT),NNBASX)
+      ENDIF
 
       ENDIF ! IF (NODTOT .GE. 1) ... ELSE
 
@@ -882,7 +964,7 @@ C       Remember the factor of 1/2 from the Taylor expansion
 
 C**************************************************************************************
 C  /* Deck qmmm_octupole */
-      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,
+      SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,SEL,SNUC,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
 #include <implicit.h>
@@ -908,7 +990,7 @@ C  /* Deck qmmm_octupole */
 
       DIMENSION WRK(LWRK), TAO(NNBASX), SEL(MMCENT), SNUC(MMCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
+      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -920,7 +1002,8 @@ C  /* Deck qmmm_octupole */
       KMAT3  = KMAT2 + 6*NNBASX
       KMAT4  = KMAT3 + 6*NNBASX
       KTAO   = KMAT4 + 6*NNBASX
-      KLAST  = KTAO  + NNBASX
+      KINT   = KTAO  + NNBASX
+      KLAST  = KINT  + NNBASX
       LWRK2  = LWRK  - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_OCTUPOLE 1',-KLAST,LWRK)
@@ -937,6 +1020,7 @@ C  /* Deck qmmm_octupole */
      &                       SNUC,WRK(KLAST),LWRK2,IPRINT)
       ELSE
 
+      CALL DZERO(WRK(KINT),NNBASX)
       DO 410 I = 1,MMCENT
 
 C       See if the octupole moment at this site is zero
@@ -1148,6 +1232,18 @@ C       the field gradient and these contains a factor of -1. Therefore no -1 in
         CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,WRK(KTAO),1) ! yzz
         CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,WRK(KTAO),1) ! zzz
 
+        IF (FIRST) THEN
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT3),1,WRK(KINT),1) ! xxx
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT2),1,WRK(KINT),1) ! xxy
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1),1,WRK(KINT),1) ! xxz
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+NNBASX),1,WRK(KINT),1) ! xyy
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+NNBASX),1,WRK(KINT),1) ! xyz
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+2*NNBASX),1,WRK(KINT),1) ! xzz
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT2+3*NNBASX),1,WRK(KINT),1) ! yyy
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+3*NNBASX),1,WRK(KINT),1) ! yyz
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+4*NNBASX),1,WRK(KINT),1) ! yzz
+           CALL DAXPY(NNBASX,FAC1,WRK(KMAT1+5*NNBASX),1,WRK(KINT),1) ! zzz
+        ENDIF 
 C       Contract with the density to get the expectation values. 
 C       The factor of 1/6 in the Taylor expansion has been included.
 C       Also, the off-diagonal elements have been scaled by 3 and the xyz element by 6 in order 
@@ -1214,8 +1310,23 @@ C       Remember the factor of 1/6 from the Taylor expansion
 
         SNUC(I) = ELOC
         ELOCT = ELOCT + SNUC(I)
+C Add up QM nuclei - multipole energy contributions to be used in CC
+        ENUMUL = ENUMUL + ELOCT
 
   410 CONTINUE
+
+      IF (FIRST) THEN
+C     Write integrals to file
+         LUQMMM = -1
+         IF (LUQMMM .LT. 0) THEN
+            CALL GPOPEN(LUQMMM,'MU3INT','UNKNOWN','','',
+     &                  IDUMMY,.FALSE.)
+         ENDIF
+         REWIND(LUQMMM)
+         WRITE (LUQMMM) (WRK(KINT+J-1), J=1,NNBASX)
+         CALL GPCLOSE(LUQMMM,'KEEP')
+         CALL DZERO(WRK(KINT),NNBASX)
+      ENDIF
 
       ENDIF ! IF (NODTOT .GE. 1) ... ELSE
 
@@ -1237,7 +1348,6 @@ C       Remember the factor of 1/6 from the Taylor expansion
         WRITE(LUPRI,*) EMUL3T, ELOCT, EMUL3T+ELOCT
         WRITE(LUPRI,*) 
       ENDIF
-
 
       CALL QEXIT('QMMM_OCTUPOLE')
 

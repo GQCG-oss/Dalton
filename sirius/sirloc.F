@@ -159,13 +159,14 @@ C *** Memory allocation
 C *** Tranform AO fock matrix in local MO fock matrix
  
          CALL FCKDEN(.TRUE.,.FALSE.,WORK(KDCAO),WORK(KDVAO),
-     *                                 WORK(KCMO),DUMMY,WORK(KWRK),LWRK)
-         CALL FCKMAO(.TRUE.,DUMMY,EMCMY,WORK(KFCAO),WORK(KFVAO),
-     *               WORK(KDCAO),WORK(KDVAO),WORK(KCMO),WORK(KWRK),LWRK)
+     &                                 WORK(KCMO),DUMMY,WORK(KWRK),LWRK)
+         CALL FCKMAO(.TRUE.,EMCMY,WORK(KFCAO),WORK(KFVAO),
+     &               WORK(KDCAO),WORK(KDVAO),DV_DUMMY,WORK(KCMO),
+     &               WORK(KWRK),LWRK)
          CALL DCOPY(N2BASX,WORK(KFCAO),1,WORK(KDCAO),1)
          CALL DGETSP(NBAST,WORK(KDCAO),WORK(KFCAO))
-         CALL UTHU(WORK(KFCAO),WORK(KFCMO),WORK(KCMO),WORK(KDCAO),
-     *                                                       NBA,NB1)
+         CALL UTHU(WORK(KFCAO),WORK(KFCMO),WORK(KCMO),
+     &             WORK(KDCAO),NBA,NB1)
 C ccms diag pao
 C         NTFMO = NOBL*(NOBL+1)/2
 C         NB1T  = NB1 * (NB1+1)/2 

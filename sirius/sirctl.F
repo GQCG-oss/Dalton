@@ -91,8 +91,11 @@ C
 #include <pcmdef.h>
 #include <pcm.h>
 #include <pcmlog.h>
+! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
+#include <dftcom.h>
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
+      LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
 C
 #include <sirbkd.h>
@@ -395,13 +398,21 @@ C ***************************************************
 C        *** MP2 ***
 C
       IF (DOMP2) THEN
+         IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
+     &      'implemented in MP2 module and is ignored.'
+         END IF
+         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS = .FALSE.
+         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
             WRITE (LUERR ,7020)
             GO TO 8000
          END IF
- 7020    FORMAT(//' Sirius MP2 calculation aborted because',
+ 7020    FORMAT(//'ERROR: Sirius MP2 calculation aborted because',
      *      ' preceding Hartree-Fock not converged.')
 C
          FLAG( 9) = .TRUE.
@@ -409,19 +420,6 @@ C
          FLAG( 4) = .FALSE.
          FLAG(14) = .FALSE.
 C
-C        Transform to canonical orbitals, unless we know that
-C        the orbitals already are canonical orbitals.
-         IF (.NOT.DORHF .OR. .NOT.RHFCAN) THEN
-            IPRCAN = 0
-            KFRCAN = 1
-            LFRCAN = LWORK
-            CALL MEMGET('REAL',KCREF,NCONF,WORK,KFRCAN,LFRCAN)
-            CALL MEMGET('REAL',KCMO ,NCMOT,WORK,KFRCAN,LFRCAN)
-            CALL MEMGET('REAL',KOCC ,NORBT,WORK,KFRCAN,LFRCAN)
-            CALL SIRCAN(IPRCAN,WORK(KCREF),WORK(KCMO),WORK(KOCC),
-     *                  WORK,KFRCAN,LFRCAN)
-            CALL MEMREL('SIRCTL.MP2.SIRCAN',WORK,1,1, KFRCAN,LFRCAN)
-         END IF
          FLAG(21) = .FALSE.
 C
          CALL GETTIM(TSTART,WSTART)
@@ -436,6 +434,8 @@ C
          IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+         DFT_SPINDNS = DFT_SPINDNS_SAVE
+         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
       END IF
 C
 C ***************************************************
@@ -522,6 +522,14 @@ C ***************************************************
 C        *** CI ***
 C
       IF (DOCI .OR. DOCINO) THEN
+         IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
+     &      'implemented in CI module and is ignored.'
+         END IF
+         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS = .FALSE.
+         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          DOHFSRDFT = .FALSE.
 C        ... no more HFSRDFT
@@ -570,6 +578,8 @@ C              ... orbital super symmetries may have been reordered
      &         'SIRCTL CINO error: inconsistency in sup.sym. averaging')
             END IF
          END IF
+         DFT_SPINDNS = DFT_SPINDNS_SAVE
+         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
       END IF
 C
 C ***************************************************
@@ -661,9 +671,13 @@ C *** ORBITAL OUTPUT
       IF (LUINF .GT.0) CALL GPCLOSE(LUINF,'DELETE')
 C
 C ***************************************************
-C        *** NEVPT ***
+C     *** NEVPT ***
 C
       IF (DONEVPT) THEN
+       IF (ICONV .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' WARNING: NEVPT2 skipped because MCSCF not converged.'
+       ELSE
          JRDMO = 9
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
@@ -679,7 +693,8 @@ C            transformation  /hjaaj June 09
             CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
          END IF
          CALL KOOPRO4(WORK,LWORK)
-      ENDIF
+       END IF
+      END IF
 C
 C *** POPULATION ANALYSIS AND PROPERTIES
 C

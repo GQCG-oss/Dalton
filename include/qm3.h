@@ -1,16 +1,16 @@
 C --- FILE: qm3.h ---
       LOGICAL QM3LO1, QM3LO2, LOCLAS 
-      LOGICAL CCMM, FIXMOM, OLDTG
+      LOGICAL CCMM, FIXMOM, OLDTG, ONLYOV
       LOGICAL LONUPO, LOELFD, LOSPC, LOEC3
       LOGICAL LOSHAW,REPTST,RELMOM,SLOTH
       LOGICAL LONEPAR, LTWOPAR, LEPSADD, LSIGADD
       LOGICAL SKIPNC, VDWSKP, MYITE, MYMAT, EXPON
       LOGICAL PRFQM3, INTDIR, FORQM3, REDCNT, LGSPOL, RUNQM3
-      LOGICAL QMDAMP
+      LOGICAL QMDAMP, NYQMMM
 C 
 C ---------------------------------------------------------
 C In the present implementation the MXQM3 parameter follows 
-C the MXCENT parameter in the mxcent.h include file. This is
+C the MXCENT_QM parameter in the mxcent.h include file. This is
 C crucial for this implementation to work properly!!
 C ---------------------------------------------------------
 C 
@@ -21,7 +21,7 @@ C
       INTEGER ISIGEPS, NSIGEPS
 C
       PARAMETER(NMMBA1 = 5000)
-      PARAMETER(MXQM3  = 120)
+      PARAMETER(MXQM3  = 120) ! should be equal to MXCENT_QM in include/mxcent.h
       PARAMETER(MXTYPE = 20)
 C
       CHARACTER MDLWRD*7
@@ -58,7 +58,7 @@ C
      *                PEDIP1,ENSQM3,EPOQM3,QMCOM(3),ADAMP
 
       COMMON /LOGQM3/ RDFILE,DISMOD,QM3LO1,QM3LO2,CCMM,FIXMOM,
-     *                OLDTG,LONUPO,LOELFD,LOSPC,LOEC3,
+     *                OLDTG,ONLYOV,LONUPO,LOELFD,LOSPC,LOEC3,NYQMMM,
      *                SHAWFC,LOSHAW,REPTST,RELMOM,SLOTH,
      *                LONEPAR,LTWOPAR,LEPSADD,LSIGADD,LOCLAS,
      *                SKIPNC,VDWSKP,MYITE,MYMAT,EXPON,PRFQM3,

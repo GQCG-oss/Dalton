@@ -47,7 +47,6 @@ C  /* Deck her_pardrv */
 
 C
 #include <implicit.h>
-#include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
@@ -242,8 +241,8 @@ C       all matrices in one batch.
 C
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
 C Used from common blocks
 C 
@@ -253,16 +252,16 @@ C SIRIPC: NEWGEO
 C INFPAR: NODTOT, NTASK, IPRPAR
 C INFORB: N2BASX
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "inforb.h"
+#include "infpar.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
-      LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
+      LOGICAL   FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
@@ -288,7 +287,7 @@ C--------------------------
 C     Make the index array.
 C--------------------------
 C
-      CALL INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
+      CALL HER_INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
      &            NPOS,IPRINT)
 C
 Cef begin
@@ -308,7 +307,7 @@ C   INDEX may need to be reinitialized after CALL HER_SDINIT.
 C---------------------------------------------------------------
 C
       IF (AOSAVE .AND. (.NOT. INITX)) THEN
-         CALL INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
+         CALL HER_INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
      &        NPOS,IPRINT)
 C 10.mai         INITX = .TRUE.
       END IF
@@ -342,15 +341,15 @@ C
       CALL QEXIT('HER_PARDR1')
       RETURN
       END
-C  /* Deck indeks */
-      SUBROUTINE INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
-     &                  NPOS,IPRINT)
+C  /* Deck her_indeks */
+      SUBROUTINE HER_INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,
+     &                  NTASK,NBATCH,NPOS,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 Cef begin
-#include <maxorb.h>
-#include <incore.h>
+#include "maxorb.h"
+#include "incore.h"
 Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
@@ -358,7 +357,7 @@ C
       DIMENSION INDEX(3,NINDEX), NPOS(0:MTOTTK+1)
       LOGICAL TIMING
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from INDEKS','*',103)
+      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_INDEKS','*',103)
 C
 C     This subroutine determines in which order integrals will be calculated.
 C
@@ -454,12 +453,12 @@ C  /* Deck her_sdinit */
      &                      FIRST,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST
       DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
@@ -477,6 +476,7 @@ C MAXAQN : *      (for SYMMET)
 C SIRIPC : NEWGEO (PVM: BASDIR, LENBAS)
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
+C CBIREA : UNCONT
 C DORPS  : DOREPS(), DOCOOR()
 C ABAINF : DOSYM()
 C SYMMET : MAXREP
@@ -485,19 +485,20 @@ C INFPAR : *
 C HRUNIT : *
 C PARINT : *
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <inforb.h>
-#include <molinp.h>
-#include <dorps.h>
-#include <abainf.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <dftcom.h>
-#include <parint.h>
-#include <blocks.h>
-#include <r12int.h>
+#include "gnrinf.h"
+#include "inftap.h"
+#include "siripc.h"
+#include "inforb.h"
+#include "molinp.h"
+#include "cbirea.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "parint.h"
+#include "blocks.h"
+#include "r12int.h"
 C
 #if defined (SYS_T3e)
 C
@@ -534,7 +535,9 @@ C
          CALL QUIT('Specified ITYPE not defined in HER_SDINIT.')
       END IF
 C
+C----------------------------
 C     Set common-block PARINT
+C----------------------------
 C
       JATOM  = IATOM
       JLUDAS = LUDASP
@@ -552,6 +555,7 @@ CTROND      J2TYP  = I2TYP
       J2TYP  = 0
       JCEDIF = ICEDIF
       JFTHRS = IFTHRS
+C     logicals
       JNODV  = NODV 
       JNOPV  = NOPV 
       JNOCNT = NOCONT
@@ -607,6 +611,8 @@ C  /molinc/
 #else
          CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
 #endif
+C  /cbirea/
+         CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C  /infpar/
@@ -698,11 +704,11 @@ C  /* Deck her_rvres */
      &                     NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,ITYPE,
      &                     IPRINT,DINTSKP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION FMAT(*), TMPMAT(NTMPMT), TIMES(MTOTTK),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK),DSKPBF(8),
@@ -717,10 +723,10 @@ C SUSCPT : SUS2EL
 C INFORB : NNBASX,N2BASX
 C INFPAR : TIMING, ???
 C
-#include <energy.h>
-#include <suscpt.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "energy.h"
+#include "suscpt.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       CALL QENTER('HER_RVRES')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVRES','*',103)
@@ -746,10 +752,14 @@ C
          CALL DZERO(FMAT,NTMPMT)
       END IF
 C
-      ICOUNT =  0
+C---------------------------
+C     Start loop over nodes.
+C---------------------------
+C
+      ICOUNT = 0
+      DO 100 I = 1,NODTOT
 C
 #if defined (VAR_MPI)
-      DO 100 I = 1,NODTOT
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG7)
          IF (ITYPE .EQ. 2) THEN
@@ -786,10 +796,8 @@ C
          END IF
 C
          ICOUNT = ICOUNT + ITASKS
-  100 CONTINUE
 #endif
 #if defined (VAR_PVM)
-      DO 100 I = 1,NODTOT
          CALL PVMXRECV(-1,MTAG7)
          CALL PVMXUNPACK(TMPMAT,NTMPMT,'DOUBLE')
 C
@@ -823,8 +831,8 @@ C
          END IF
 C
          ICOUNT = ICOUNT + ITASKS
- 100  CONTINUE
 #endif
+  100 CONTINUE
 C
       IF (ICOUNT .NE. MTOTTK) THEN
         WRITE(LUPRI,'(/5X,A)') 'Error in parallel calculation!'
@@ -832,7 +840,7 @@ C
      &       MTOTTK
         WRITE(LUPRI,'(5X,A,I5)') 'Number of tasks    calculated : ',
      &       ICOUNT
-c        CALL QUIT('Inconsistence in RVRES -> MTOTTK .NE. ICOUNT')
+c        CALL QUIT('Inconsistence in HER_RVRES -> MTOTTK .NE. ICOUNT')
       ENDIF
 C
       CALL QEXIT('HER_RVRES')
@@ -841,8 +849,8 @@ C
 C  /* Deck parsrt */
       SUBROUTINE PARSRT(MTOTTK,NPOS,SORTED,TIMES,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)
 C
@@ -917,13 +925,12 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
@@ -939,13 +946,13 @@ C SUSCPT : SUS2EL
 C INFORB : N2BASX
 C INFPAR : SLAVE
 C
-#include <energy.h>
-#include <suscpt.h>
-#include <inforb.h>
-#include <infpar.h>
-#include <gnrinf.h>
+#include "energy.h"
+#include "suscpt.h"
+#include "inforb.h"
+#include "infpar.h"
+#include "gnrinf.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('HER_NODSTR')
 C
@@ -992,8 +999,9 @@ C
          CALL DZERO(SUS2EL,9)
       END IF
 C
-C     Calculate the integrals
-C     =======================
+C     ***********************************
+C     ***** Calculate the integrals *****
+C     ***********************************
 C
       GMAT   = 0
       INDXAB = 0
@@ -1005,12 +1013,12 @@ C
       IPRNTD = 0
       ISHLA  = 0
 C
-      CALL TWOINT(WORK(KFREE),LFREE,WORK(KHESEE),WORK(KFMAT),
-     &     WORK(KDMAT),NDMAT,
-     &     ISYMDM,IFCTYP,GMAT,INDXAB,NUMDIS,MAXDIS,ITYPE,MAXDIF,
-     &     IATOM,NODV,NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,
-     &     IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,WORK(KJSTRS),
-     &     WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+      CALL TWOINT(WORK(KFREE),LFREE,
+     &     WORK(KHESEE),WORK(KFMAT),WORK(KDMAT),NDMAT,
+     &     ISYMDM,IFCTYP,GMAT,INDXAB,NUMDIS,MAXDIS,ITYPE,
+     &     MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,IPRINT,
+     &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
+     &     WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
      &     WORK(KDMRSO),DINTSKP,RELCAL)
       CALL MEMREL('HER_NODSTR',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1019,25 +1027,24 @@ C     Send overall timings if requested.
 C
       IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
 C
-      CALL QEXIT('HER_NODSTR')
 C
+      CALL QEXIT('HER_NODSTR')
       RETURN
       END
 C  /* Deck her_rvinit */
       SUBROUTINE HER_RVINIT(WORK,KFREE,LFREE,
-     &                      NDMAT,ISYMDM,IFCTYP,ITYPE,
-     &                      IATOM,MAXDIF,NODV,NOPV,NOCONT,
-     &                      RETUR,TKTIME,JSTRSH,NPRIMS,NCONTS,IORBSH,
-     &                      JORBSH,KORBSH,IPRINT,I2TYP,ICEDIF,IFTHRS,
-     &                      N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,
-     &                      KDMRSO)
+     &     NDMAT,ISYMDM,IFCTYP,ITYPE,
+     &     IATOM,MAXDIF,NODV,NOPV,NOCONT,
+     &     RETUR,TKTIME,JSTRSH,NPRIMS,NCONTS,IORBSH,
+     &     JORBSH,KORBSH,IPRINT,I2TYP,ICEDIF,IFTHRS,
+     &     N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,KDMRSO)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mtags.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST
       LOGICAL AUTOSY,NOSYM,DOCART,DOOWN
@@ -1045,7 +1052,12 @@ C
 C
       DIMENSION WORK(*), ISYMDM(*), IFCTYP(*), JSTRSH(*), NPRIMS(*),
      &          NCONTS(*), IORBSH(*), JORBSH(*), KORBSH(*)
-#include <infpar.h>
+C
+      LOGICAL FIRST_TIME_CALLED
+      DATA FIRST_TIME_CALLED /.TRUE./
+      SAVE FIRST_TIME_CALLED
+C
+#include "infpar.h"
 C
 C Used from common blocks:
 C
@@ -1056,6 +1068,7 @@ C GNRINF : NEWBAS, (PVM: BASDIR, LENBAS)
 C SIRIPC : NEWGEO
 C INFORB : N2BASX
 C MOLINP : NMLINE, MLINE()
+C CBIREA : UNCONT
 C DORPS  : DOREPS(), DOCOOR()
 C ABAINF : DOSYM()
 C SYMMET : MAXREP
@@ -1064,18 +1077,19 @@ C INFPAR : *
 C HRUNIT : *
 C PARINT : *
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <inforb.h>
-#include <molinp.h>
-#include <dorps.h>
-#include <abainf.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <inftap.h>
-#include <parint.h>
-#include <r12int.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "molinp.h"
+#include "cbirea.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "parint.h"
+#include "r12int.h"
 C
 #if defined (SYS_T3E)
 C
@@ -1085,14 +1099,24 @@ C
       DIMENSION ITMP(4000)
       EQUIVALENCE (ITMP,MLINE)
 #endif
-#include <cbisol.h>
+#include "cbisol.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 C
       CALL QENTER('HER_RVINIT')
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVINIT','*',103)
+C
+C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
+C     initialize it properly                                                                        
+C                                                                                                     
+      IF (FIRST_TIME_CALLED) THEN
+         RELCAL = .FALSE.
+         TSTINP = .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+         FIRST_TIME_CALLED = .FALSE.
+      END IF
 C
 C-----------------------------------------
 C     Receive initializations from master.
@@ -1152,6 +1176,8 @@ C  /molinc/
 #else
             CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
 #endif
+C  /cbirea/
+            CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
             CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C  /infpar/
@@ -1279,15 +1305,7 @@ C
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C                                                                                                     
-C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
-C     initialize it properly                                                                        
-C                                                                                                     
-      IF (FIRST) THEN
-          RELCAL = .FALSE.
-          TSTINP= .FALSE.
-         CALL REAINI(0,RELCAL,TSTINP)
-      END IF
+C
 C
       CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
@@ -1504,7 +1522,6 @@ C     ***********************************
 C     ***** Send request for a task *****
 C     ***********************************
 C
-C      
       ICOUNT = 0
       CALL IZERO(IWHICH,MTOTTK)
       CALL DZERO(TSKCPU,MTOTTK)
@@ -1771,8 +1788,8 @@ C
      &                 MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,
      &                 FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                 ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
-     &                 ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
-     &                 DMRSO,IREPDM)
+     &                 ICEDIF,IFTHRS,DINTSKP,
+     &                 GABRAO,DMRAO,DMRSO,IREPDM)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.

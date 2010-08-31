@@ -85,7 +85,7 @@ C
       DIMENSION WRK(LFREE)
 C
 #include <thrldp.h>
-      PARAMETER (MAXBCK = 5)
+      PARAMETER (MAXBCK = 15)
       PARAMETER (FAKABS = 0.40D0, STPABS = 0.20D0)
       PARAMETER (STPLCL = 0.15D0, SHFLCL = 1.D-3)
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.0D0)
@@ -101,9 +101,10 @@ C  INFOPT: EMCSCF,...
 C  INFDIM: LCINDX,MAXRL,?
 C  INFTAP: LUIT1,?
 C  CBIHR2: IFTHRS,USRSCR
+C  CBIREA: LMULBS
+C  R12INT: R12CAL
 C
 #include <maxorb.h>
-#include <r12int.h>
 #include <priunit.h>
 #include <infinp.h>
 #include <pcmlog.h>
@@ -116,8 +117,11 @@ C
 #include <itinfo.h>
 #include <gnrinf.h>
 #include <cbihr2.h>
+#include <cbirea.h>
+#include <r12int.h>
 C------------------------
 #include <dfterg.h>
+#include <dftcom.h>
 C ---
 C
 C *** local:
@@ -176,11 +180,12 @@ C        FLAG(53) = .FALSE.
          FLAG(52) = .FALSE.
          FLAG(53) = .FALSE.
       END IF
-      IF (FLAG(51) .OR. FLAG(52)) THEN
-         KTRLVL = 0
-      ELSE
+CHJAaJ Nov 09: KTRLVL=0 does not work in TR1H2M in current Dalton
+CHJ   IF (FLAG(51) .OR. FLAG(52)) THEN
+CHJ      KTRLVL = 0
+CHJ   ELSE
          KTRLVL = ITRLVL
-      END IF
+CHJ   END IF
 #if defined (VAR_NOITRABS)
 C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
 C               IF KTRLVL = 0 !
@@ -214,12 +219,24 @@ C.. 1.1.1 .. (GETCIX, TRACTL, READMO)
       KWRK10 = KCMO   + NCMOT
       LWRK10 = LFREE  + 1 - KWRK10
 C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
+      IF (DFT_SPINDNS) THEN
+         NDV = 2
+      ELSE
+         NDV = 1
+      END IF
       KGTOT  = KWRK10
       KDV    = KGTOT  + NVARH
-      KPV    = KDV    + NNASHX
+      KPV    = KDV    + NDV*NNASHX
       KFC    = KPV    + NNASHX*NNASHX
       KFV    = KFC    + NNORBT
-      KSRHYB = KFV    + NNORBT
+!HJJ - FRAN KFS added for the SR_DFT Spin Dens. contribution
+      KFS    = KFV    + NNORBT
+      IF (DFT_SPINDNS) THEN
+         KSRHYB = KFS + NNORBT
+      ELSE
+         KSRHYB = KFS
+      END IF
+!HJJ - FRAN END
       IF (SRHYBR .AND. MCTYPE.NE.0) THEN
          KFQ = KSRHYB + NNORBT
       ELSE
@@ -554,7 +571,7 @@ C
       ENDIF
       IF (P4FLAG(2)) THEN
          WRITE (LUW4,1015) POTNUC,EMYTMP,EACTIV
-         IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1017) ESRDFTY
+         IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1018) ESRDFTY
       END IF
 chj   IF (P6FLAG(1)) THEN
          IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
@@ -891,7 +908,7 @@ C     Check if local region where absorption normally is
 C     switched off (unless FLAG(54) has been set in input)
 C
       IF (ABSORP .AND. .NOT.FLAG(54)) THEN
-         LOCAL = (STPLEN .LT. STPABS*RTRUST)
+         LOCAL = (STPLEN .LT. STPABS*RTRUST) .AND. ITBCK .EQ. 0
          IF (LOCAL) ITABS = -1
 C        ... no absorption next iteration
          LOCAL = (LOCAL .AND. STPC .LT. D2*STPO)
@@ -1445,6 +1462,7 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <gnrinf.h>
+#include <dftcom.h>
 C
 C *** Externals:
 C
@@ -1453,6 +1471,7 @@ C
 C *** Local variables:
 C
       LOGICAL     HFCALC,    RSTFLG(4), TRCNO,     LSAV15
+      LOGICAL     DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       CHARACTER*8 TABLE(8),  LBLINF(2), LBLDAT(2), STAR8
       CHARACTER*6 CNOLBL
 C
@@ -1650,6 +1669,14 @@ C
          IF (DOMCSRDFT) THEN
             ADDSRI    = .FALSE.
             DOCISRDFT = .TRUE.
+            IF (DFT_SPINDNS .OR. DFT_LOCALSPIN)THEN
+               WRITE(LUPRI,'(/A)')
+     &           'INFO : spin density ignored in initial CI iterations.'
+            END IF
+            DFT_SPINDNS_SAVE = DFT_SPINDNS
+            DFT_SPINDNS = .FALSE.
+            DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+            DFT_LOCALSPIN = .FALSE.
          END IF
          CALL CICTL(1,LROOTS,MAXCIT,THRCIX,WRK(KCMO),INDXCI,
      *              WRK(KECI),ICONV,WRK(KICROO),WRK(KW22),LW22)
@@ -1658,6 +1685,8 @@ C    *              ECI,ICONV,ICROOT,WRK,LFREE)
          IF (DOMCSRDFT) THEN
             ADDSRI    = .TRUE.
             DOCISRDFT = .FALSE.
+            DFT_SPINDNS   = DFT_SPINDNS_SAVE
+            DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
          END IF
          FLAG(15) = LSAV15
          ISTACI   = ISTASV
@@ -2002,7 +2031,7 @@ C  INFORB: NCMOT
 C  INFVAR: NWOPT
 C  INFOPT: NREDL,EMCSCF,EMCOLD,DEPRED,BETA,GAMMA,SHFLVL,
 C          STPLEN,STPMAX,STPINC,STPRED,
-C          RTRUST,RTTOL,RATMIN,RATGOD,RATREJ,REJWMI,REJWMA
+C          RTRUST,RTTOL,RATMIN,RATGOD,RATREJ,REJWMI,REJWMA, GRDNRM
 C  ITINFO: DINFO(*)
 C  INFTAP: LUIT1
 C  INFPRI: P4FLAG(*),P6FLAG(*)
@@ -2045,7 +2074,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.ABS(THDE*EMCSCF) ) THEN
+      IF ( ABS(DEPRED).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
@@ -2435,6 +2464,8 @@ C   INFTAP : LUSIFC
 C   INFDIM : NASHDI,NASHMA,NORBMA
 C   INFPRI : ?
 C CBGETDIS : IADH2
+C   CBIREA : LMULBS
+C   R12INT : R12CAL
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -2452,13 +2483,11 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <cbgetdis.h>
+#include <cbirea.h>
 #include <r12int.h>
 C----------------
-C CBN+JK 03.01.06
-C----------------
+C CBN+JK 03.01.06 gnrinf.h included
 #include <gnrinf.h>
-C----------------
-C CBN+JK 03.01.06
 C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE

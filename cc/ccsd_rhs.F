@@ -74,9 +74,11 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <ccnoddy.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <ccr12int.h>
 #include <qm3.h>
+!#include <qmmm.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
@@ -482,7 +484,11 @@ C CCMM02,JA+AO
 C-------------------------------------
 C
       IF (CCMM) THEN
-         CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+         IF (.NOT. NYQMMM) THEN
+            CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+         END IF
       ENDIF
 C
       IF (IPRINT .GT.15) THEN
@@ -1251,7 +1257,11 @@ C CCMM02,JA+AO
 C-------------------------------------
 C
         IF (CCMM) THEN
-           CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+           IF (.NOT. NYQMMM) THEN
+              CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+           ELSE IF (NYQMMM) THEN
+              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
+           END IF
         ENDIF
 C
 C----------------------------------
@@ -8422,6 +8432,7 @@ C
 #include <leinf.h>
 #include <ccsections.h>
 #include <qm3.h>
+!#include <qmmm.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -8563,7 +8574,11 @@ C CCMM02,JA+AO
 C-------------------------------------
 C
          IF (CCMM) THEN
-            CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+            END IF
          ENDIF
 C
 C-------------------------------------

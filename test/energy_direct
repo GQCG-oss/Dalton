@@ -51,7 +51,7 @@ cat > energy_direct.dal <<'%EOF%'
 .DiRECT
 **WAVE FUNCTIONS
 .HF
-*end of input
+**end of input
 %EOF%
 #######################################################################
 
@@ -107,7 +107,7 @@ ERROR[4]="SCF ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

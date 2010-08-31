@@ -3102,7 +3102,7 @@ C
  10   CONTINUE
 
       IF ( (QM3) .AND. (.NOT. (SKIPNC)) ) THEN
-        CALL QM3QCC1(LUPRI,IASGER)
+        CALL QM3QCC1(LUPRI,IPRINT)
         IF ( .NOT. (LOSPC) ) CALL QM3QCC2(LUPRI,IPRINT)
       END IF
 
@@ -3797,16 +3797,16 @@ C
                   AVENUC = SPRNUC(1,1,IATOM)*FACTOT/D2
                   AVEPAR = PARMAT(1,1,IATOM)*FACTOT
                   AVEDIA = DIAMAT(1,1,IATOM)*FACTOT
-                  CALL DZERO(GTRANT(1,1,IATOM),9)
-                  GTRANT(1,1,IATOM) = AVETOT
                ELSE
                   AVETOT = TOTSPR(2,2,IATOM)*FACTOT
                   AVENUC = SPRNUC(2,2,IATOM)*FACTOT/D2
                   AVEPAR = PARMAT(2,2,IATOM)*FACTOT
                   AVEDIA = DIAMAT(2,2,IATOM)*FACTOT
-                  CALL DZERO(GTRANT(1,1,IATOM),9)
-                  GTRANT(1,1,IATOM) = AVETOT
                END IF
+               CALL DZERO(GTRANT(1,1,IATOM),9)
+               GTRANT(1,1,IATOM) = AVETOT
+               GTRANT(2,2,IATOM) = AVETOT
+               GTRANT(3,3,IATOM) = AVETOT
                IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &              ' Total spin-rotation constant       :',AVETOT,
      &              ' Nuclear part of spin-rotation      :',AVENUC,

@@ -82,6 +82,7 @@ C
 #include <eribuf.h>
 #include <ccslvinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 #include <ccnoddy.h>
 #include <r12int.h>
 #include <ccr12int.h>
@@ -479,7 +480,11 @@ C
       ENDIF
 C
       IF (CCMM) THEN
-         CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+         IF (.NOT.NYQMMM) THEN
+            CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+         END IF
       ENDIF
 C====================================================
 C     Start the loop over distributions of integrals.
@@ -2570,8 +2575,13 @@ C
          CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      *                IVEC+IV-1,C2AM)
          LR = 'R'
-         CALL CCMM_LTRB(RHO1(1,IV),RHO2,C1AM(1,IV),
+         IF (.NOT. NYQMMM) THEN
+            CALL CCMM_LTRB(RHO1(1,IV),RHO2,C1AM(1,IV),
      *                  C2AM,ISYMTR,LR,WORK(KEND1),LWRK1)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,C1AM(1,IV),C2AM,
+     *                     MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
+         END IF
       ENDIF
 C---------------------------------------------------------
 C        And finally scale diagonal (if not triples cont.)

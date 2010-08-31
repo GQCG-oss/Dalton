@@ -653,6 +653,11 @@ C
 C        Get DtotAO, allocation for DXtotAO in SIRFCK.SRDFT can here be
 C        used temporarily for DVAO if NASHT.gt.0
 C
+         IF (IPRRSP .GT. 50) THEN
+            WRITE(LUPRI,*) 'SRDFT: total density matrix AO basis DTOTAO'
+            CALL OUTPUT(WRK(KDTOTAO),1,NBAST,1,NBAST,
+     &         NBAST,NBAST,-1,LUPRI)
+         END IF
       END IF
 #endif
 
@@ -670,7 +675,7 @@ C     Transform any transition DMs to the AO basis
       END IF
 C
 C Construct NOSIM Inactive and Active density matrices according to eq.27
-C CP, 119, 227 (1988).
+C in Chem Phys 119, 227 (1988).
 C
 C They should be consecutive in core. We transpose the inactive
 C and active D-matrices and multiply the inactive D-matrix by 2.0
@@ -785,7 +790,7 @@ C     Change IFCTYP for all Fa matrices
       END IF
       IF (DOFTC.and.NCSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFTCAO)='
-       CALL OUTPUT(WRK(KFXVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+       CALL OUTPUT(WRK(KFTCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
       IF (NCSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFTVAO)='
@@ -900,72 +905,93 @@ C           CALL AOTOMO(XAO,XMO,CMO,XSYM,WRK,LWRK)
 C
 C From here the code is as before DIRFCK
 C
-C add DFT contribution 
+      IF (NOSIM .GT. 0) THEN
 C
-      IF (DODFT .AND. (NOSIM .GT.0)) THEN
-C         Special case of alpha density only (old code)  
-         IF((NISHT.EQ.0) .AND. (NASHT.GT.0)) THEN
-            DO IOSIM = 1, NOSIM
+C     1) add DFT contributions
+C
+         IF (DODFT) THEN
+#ifdef DEBUG_RSPOLI
+           write(lupri,*) 'DODFT: before call dft_lin_resp*'
+           IF (DOFXC) THEN
+             write(lupri,*) 'FCX before dft_lin_resp*='
+             CALL OUTPUT(FCX,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+           END IF
+           IF (DOFXV) THEN
+             write(lupri,*) 'FCV before dft_lin_resp*='
+             CALL OUTPUT(FCV,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+           END IF
+#endif
+C          Special case of alpha density only (old code)  
+           IF((NISHT.EQ.0) .AND. (NASHT.GT.0)) THEN
+             DO IOSIM = 1, NOSIM
                call dft_lin_respab(fcx(1,1,iosim),fvx(1,1,iosim),
      &              cmo,zymat(1,iosim),trplet,ksymop,wrk(kfree),
      &              lfree)
-            END DO
-         ENDIF 
-C       Proceed normal way otherwise 
-        IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN 
-           call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
+             END DO
+           ENDIF 
+C          Proceed normal way otherwise 
+           IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN 
+             call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                           trplet, ksymop,wrk(kfree),lfree) 
-         ELSE
-            call dft_lin_respf(NOSIM,fcx,cmo,zymat,
+           ELSE
+             call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree)
-         ENDIF
-      END IF
+           ENDIF
+#ifdef DEBUG_RSPOLI
+           write(lupri,*) 'DODFT: after call dft_lin_resp*'
+           IF (DOFXC.AND.NOSIM.gt.0) THEN
+             write(lupri,*) 'FCX after dft_lin_resp*='
+             CALL OUTPUT(FCX,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+           END IF
+           IF (DOFXV.and.NOSIM.gt.0) THEN
+             write(lupri,*) 'FCV after dft_lin_resp*='
+             CALL OUTPUT(FCV,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+           END IF
+#endif
+         END IF  ! IF (DODFT) THEN
 C
-C ADD CONTRIBUTION FROM THE A(0)S(2) TERM IF HRPA
+C        ADD CONTRIBUTION FROM THE A(0)S(2) TERM IF HRPA
 C
-      IF (SOPPA .AND. NOSIM .GT. 0) THEN
-         CALL A0S2(FCX,FC,UDV,ZYMAT,WRK(KTZYMT),WRK(KH2X),WRK(KH2XP),
+         IF (SOPPA) THEN
+           CALL A0S2(FCX,FC,UDV,ZYMAT,WRK(KTZYMT),WRK(KH2X),WRK(KH2XP),
      *             WRK(KCOEUN),NOSIM, WRK,LWRK)
 C
 C  Cancel out the nonsymmetric parts of A(2) matrix. Use the explicitly
 C  constructed A(2) matrix in XINDX.
 C
-         IF (.NOT. A2EXIST) THEN
-            CALL DSCAL(N2ORBX,DP5,XINDX(KAB2),1)
-            IF (IPRRSP .GT. 40) THEN
-               WRITE(LUPRI,'(/A)')
+           IF (.NOT. A2EXIST) THEN
+             CALL DSCAL(N2ORBX,DP5,XINDX(KAB2),1)
+             IF (IPRRSP .GT. 40) THEN
+                  WRITE(LUPRI,'(/A)')
      &      ' SOPPA A(2)(ai,bj) packed as .5*A(2)(i,j) and .5*A(2)(a,b)'
-               CALL OUTPUT(XINDX, 1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-            END IF
-            A2EXIST = .TRUE.
+                  CALL OUTPUT(XINDX,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+             END IF
+             A2EXIST = .TRUE.
+           END IF
+           CALL HRPAHM(FCX,XINDX(KAB2),ZYMAT,NOSIM)
          END IF
-         CALL HRPAHM(FCX,XINDX(KAB2),ZYMAT,NOSIM)
-      ENDIF
 C
 C ADD CONTRIBUTION TO FCX AND FVX FROM ONE-INDEX TRANSFORMED
 C TOTAL SYMMETRIC FOCK MATRICES
 C
-      IF (NOSIM. GT. 0) THEN
          CALL FCKOIN(NOSIM,FC,FV,ZYMAT,FCX,FVX)
 C
-      END IF
 C
-      IF ( ( NOSIM.GT.0) .AND. (KZCONF .GT. 0) .AND. .NOT.SOPPA) THEN
+         IF ( (KZCONF .GT. 0) .AND. .NOT.SOPPA) THEN
 C
 C HALF TRANSFORMED INTEGRALS ARE NOW IN H2XAC AND CONFIGURATION
 C PART OF LINEAR TRANSFORMATION CAN BE CARRIED OUT FOR EACH ORBITAL
 C TRIAL VECTOR
 C
-         CALL H2XSIG(NOSIM,FCX,ZYMAT,WRK(KH2XAC),
-     *               EVECS(1+NCSIM*KZYVAR),
-     *               XINDX,WRK(KFREE),LFREE)
+            CALL H2XSIG(NOSIM,FCX,ZYMAT,WRK(KH2XAC),
+     *                  EVECS(1+NCSIM*KZYVAR),
+     *                  XINDX,WRK(KFREE),LFREE)
 C
-      END IF
+         END IF
 C
 C
 C DISTRIBUTE FOCK AND Q MATRICES IN LINEAR TRANSFORMED VECTORS
 C
-      IF (NOSIM.GT.0) THEN
          IF ((IPRRSP.GT.30).AND.(NASHT.GT.1)) THEN
             DO 700 IOSIM = 1,NOSIM
                WRITE(LUPRI,'(/A,I5,A)') ' QAX FOR ',IOSIM,
@@ -992,11 +1018,26 @@ C
                END IF
  1012       CONTINUE
          END IF
+#ifdef DEBUG_RSPOLI
+         write(lupri,*) 'I call RSPORB with ONEIND true'  
+#endif
          CALL RSPORB(.TRUE.,NOSIM,FC,FCX,FVX,QAX,QBX,UDV,
      *               EVECS(NCSIM*KZYVAR+1),ZYMAT)
 C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,EVECS,ZYMAT)
-      END IF
+
+      END IF   ! IF (NOSIM.GT.0) THEN
+C ------------------------------------------------------------------
       IF (NCSIM.GT.0) THEN
+         IF (DOMCSRDFT) THEN
+C           NOTE, the TDM passed to SIRFCK is really
+C               minus the TDM, thus we need to multiply
+C               the FTC matrices in FVTD(1,1,NCSIM+ICSIM) by minus 1
+C               to get the right contribution from the DFT
+C               module in srDFT.
+C
+             CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
+         END IF
+C
          IF (IPRRSP.GT.30 .AND. .NOT.SOPPA) THEN
             DO 800 ICSIM = 1,NCSIM
                WRITE(LUPRI,'(/A,I5,A)') ' QATD FOR ',ICSIM,
@@ -1034,6 +1075,7 @@ C            it is NOT used when normal MCSCF)
             CALL RSPORB(.FALSE.,NCSIM,FC,FVTD(1,1,NCSIM+1),FVTD,
      *                  QATD,QBTD,WRK(KDTV),EVECS,DUMMY)
          END IF
+#ifdef MOD_SRDFT
          IF (DOMCSRDFT) THEN
 C           ... special MCSRDFT contribution to csf sigma-vectors,
 C               stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the 
@@ -1060,6 +1102,7 @@ C
                JSPIN2 = 0
 C
 C     Z part of linear transformation (operator: V[2c])
+C     (The Y part configuration contribution is zero)
 C
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      &                  EVECS(JEVECS),WRK(KSRW),DUMMY,
@@ -1074,36 +1117,22 @@ C
      *              'CONF TRIAL VECTOR'
                     WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT',
      &              ', factor = ',-FAC
-                    CALL OUTPUT(EVECS(JEVECS),1,KZCONF,1,1,KZCONF,1,
-     *                                                      1,LUPRI)
+                    CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
+     *                                        KZVAR,2,1,LUPRI)
                   END IF
                END IF
-               JEVECS = JEVECS + KZVAR
 C
-C     Y part of linear transformation (operator: -V[2c] transposed)
+C     Special MCSRDFT correction, corresponding to the effective operator
+C        V^([2c],xc-SR)
+C     is saved in FVTD(*,*,NCSIM+ICSIM) in RSPOLI.
 C
-               CALL DGETRN(WRK(KSRW),NASHT,NASHT)
-               CALL DSCAL(N2ASHX,DM1,WRK(KSRW),1)
-               CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
-     &                  EVECS(JEVECS),WRK(KSRW),DUMMY,
-     &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
-     &                  WRK(KFREE),LFREE)
-               IF (IREFSY .EQ. KSYMST) THEN
-                  FAC = DDOT(KZCONF,EVECS(JEVECS),1,WRK(KCREF),1)
-                  CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JEVECS),1)
-                  IF (IPRRSP.GT.101) THEN
-                    WRITE(LUPRI,*)
-     *              ' srDFT Y CONF  PART OF LINEAR TRANSFORMED ',
-     *              'CONF TRIAL VECTOR'
-                    WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT',
-     &              ', factor = ',-FAC
-                    CALL OUTPUT(EVECS(JEVECS),1,KZCONF,1,1,KZCONF,1,
-     *                                                      1,LUPRI)
-                  END IF
-               END IF
-               JEVECS = JEVECS + KZVAR
+               CALL RSP_SRDFTSO( .FALSE.,.TRUE.,UDV,
+     &             FVTD(1,1,NCSIM+ICSIM),EVECS(JEVECS))
+C
+               JEVECS = JEVECS + KZYVAR
             END DO ! ICSIM = 1,NCSIM
          END IF ! DOMCSRDFT
+#endif
       END IF ! NCSIM .gt. 0
       CALL MEMREL('RSPOLI.bottom',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
 C

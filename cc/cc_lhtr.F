@@ -92,6 +92,7 @@ C
 #include <eribuf.h>
 #include <ccslvinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 #include <ccnoddy.h>
 #include <r12int.h>
 #include <ccr12int.h>
@@ -1258,7 +1259,11 @@ C-------------------------------------
 C
         IF (CCMM) THEN
            DTIME = SECOND()
-           CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+           IF (.NOT. NYQMMM) THEN
+              CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+           ELSE IF (NYQMMM) THEN
+              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
+           END IF
 c          TIMMLT = TIMMLT + SECOND() - DTIME
            IF (IPRINT .GT. 5) THEN
              WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_LHTR) 1',
@@ -1937,8 +1942,13 @@ C
      *                IVEC+IV-1,CTR2)
          LR = 'L'
          DTIME = SECOND()
-         CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
+         IF (.NOT. NYQMMM) THEN
+            CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
      *                  ISYMTR,LR,WORK(KEND1),LWRK1)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,MODEL,
+     *                      ISYMTR,LR,WORK(KEND),LWRK1)
+         END IF
 c        TIMMLT = TIMMLT + SECOND() - DTIME
          IF (IPRINT .GT. 5) THEN
             WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_LHTR) 1',
