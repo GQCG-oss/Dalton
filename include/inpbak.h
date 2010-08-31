@@ -1,8 +1,8 @@
-C
-C     The following COMDECKS are used for backup of sirius variables
-C
-C     /INPBAK/ is a copy of /INFINP/
-C
+! File:  inpbak.h
+!
+!     The following common blocks are used for backup of
+!     sirius variables in infinp.h
+!
       COMMON /INTBAK/ ISPINB,ISTATB,LSYMB,NACTLB, MCTYPB,
      &                LSLMXB,NLMSLB,NLMN1B,NLMX1B,NLMN3B,NLMX3B,
      &                LROTSB,NROTSB,IROOTB(MAXRTS),
@@ -10,7 +10,8 @@ C
      &                IORTOB,ICI0B ,KDELB ,ICHCKB,NTITB,
      &                MXMACB,MXMICB,MAXJTB,MXCITB,MXUITB,MXAPMB,
      &                MXABSB,ITRLVB,ITRFNB,JCHSMB,JCHRBB,
-     &                NROCIB,ISTCIB,NFILDB,MXCMAB,ICCNOB,IMCNOB
+     &                NROCIB,ISTCIB,NFILDB,MXCMAB,ICCNOB,IMCNOB,
+     &                NMCAVB
       LOGICAL  FLAGB(NFLAG), DORHFB,DOMP2B,DOCNOB,DOCIB, DOMCB,
      &         DORSPB,FCVRBB,LNROTB,LMORDB,DRFCKB,CORHLB,CRRLXB,
      &         RSPHPB,JOLSNB,ABIPHB,INRSIB,INRSFB,SUPSMB,PRSIRB,
@@ -21,10 +22,12 @@ C
      &         PCMB
       COMMON /RELBAK/  SPINB,POTNCB,EPSOLB,EPSTTB,RSOLB(3),
      &                TRGRDB,TRPWFB,TRCIB,TRMCB,TRCGRB,
-     &                EFILDB(MXFELT), TITMLB(12,2), CMXMOB, TROVLB,
+     &                EFILDB(MXFELT), CMXMOB, TROVLB,
      &                TRSSYB
-      CHARACTER*60 TITLEB
+      CHARACTER*60 TITLEB(6)
+      CHARACTER*72 TITMLB(2)
       CHARACTER*4  CENTB,   TYPEB
       CHARACTER*8  LFILDB
-      COMMON /CHRBAK/ TITLEB(6), CENTB(MXCORB), TYPEB(MXCORB),
-     &                LFILDB(MXFELT)
+      COMMON /CHRBAK/ TITLEB, TITMLB,
+     &                CENTB(MXCORB), TYPEB(MXCORB), LFILDB(MXFELT)
+! -- end of inpbak.h --

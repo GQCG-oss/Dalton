@@ -52,6 +52,7 @@ C  /* Deck odbchs */
 #include <iratdef.h>
 #include <odbtch.h>
 #include <odclss.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
       CALL QENTER('ODBCHS')
@@ -577,7 +578,7 @@ C
       ICMATA = KCMTBT(A)
       ICMATB = KCMTBT(B)
 C
-      GCNT   =  GENCON .OR. NCTFAB .GT. 1
+      GCNT   =  GENCON_ERI .OR. NCTFAB .GT. 1
 C
       NCNTAB = 2
       IF (NCNTBT(A) .EQ. NCNTBT(B) .AND. MLTPR.EQ.1) NCNTAB = 1

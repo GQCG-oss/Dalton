@@ -105,13 +105,18 @@ C     ALLOCATE WORK SPACE FOR RSPOLI
 C        NCSIM  = 1, NOSIM = 0
 C
          KFVTD  = KTOT
-         KQATD  = KFVTD  + NORBT * NORBT
+         LFVTD  = N2ORBX
+         IF (DOMCSRDFT) LFVTD = 2*LFVTD
+C     ... Extra allocation for "FCTD" in MCSCF-SRDFT,
+C         is needed for the VxcTD matrix.
+         KQATD  = KFVTD  + LFVTD
          KQBTD  = KQATD  + NORBT * NASHT
-         KH2    = KQBTD  + NORBT * NASHT
-         KH2X   = KH2    + NORBT * NORBT
-         KWRK1  = KH2X   + NORBT * NORBT
+         KWRK1  = KQBTD  + NORBT * NASHT
          LWRK1  = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('LAGRAN',KWRK1-1,LWRK)
+         IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+            CALL QUIT('LAGRANGE is not implemented yet for srDFT')
+         END IF
          IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
             CALL DAXPY(NNORBT,D1,FC,1,FV,1)
             CALL DSCAL(NNORBT,DM1,FV,1)
@@ -119,10 +124,10 @@ C
          CALL RSPOLI(1,0,UDV,WRK(KCREF),NDREF,FC,FV,PV,DUMMY,
      *            DUMMY,DUMMY, DUMMY,DUMMY,WRK(KFVTD),
      *            WRK(KQATD),WRK(KQBTD),WRK(KGP),
-     *            WRK(KH2),WRK(KH2X),XINDX,CMO,WRK(KWRK1),LWRK1)
+     *            XINDX,CMO,WRK(KWRK1),LWRK1)
 C        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
 C    *            FCONE,FVONE,QAONE,QBONE,FVTD,QATD,QBTD,EVECS,
-C    *            H2,H2X,XINDX,CMO,WRK,LWRK)
+C    *            XINDX,CMO,WRK,LWRK)
          IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
             CALL DAXPY(NNORBT,D1,FC,1,FV,1)
             CALL DSCAL(NNORBT,DM1,FV,1)
@@ -338,6 +343,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
+#include <gnrinf.h>
 #include "infrsp.h"
 #include "rspprp.h"
 #include "inflr.h"
@@ -446,6 +452,12 @@ C
          GO TO 100
       END IF
   300 CONTINUE 
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRESR = THRESR*THR_REDFAC
+      END IF
 C
 C FC labels generation
 C

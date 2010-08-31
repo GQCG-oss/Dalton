@@ -66,9 +66,9 @@ cat > energy_restart__1.dal <<'%EOF%'
 .CAS SPACE
  4 2 2 0
 *OPTIMIZATION
-.THRESH
-2.0D-3
-*END OF INPUT
+.MAX MACRO
+ 3
+**END OF DALTON INPUT
 %EOF%
 
 cat > energy_restart__2.dal <<'%EOF%'
@@ -88,7 +88,7 @@ cat > energy_restart__2.dal <<'%EOF%'
  8
 .CAS SPACE
  4 2 2 0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -143,7 +143,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.147613....." $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.147613.*NOT CONVERGED" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
@@ -151,15 +151,15 @@ ERROR[4]="MCSCF ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done
 
 if [ $PASSED -eq 1 ]
 then
-  echo TEST ENDED PROPERLY
+  echo TEST ENDED AS EXPECTED
   exit 0
 else
   echo THERE IS A PROBLEM
@@ -240,8 +240,8 @@ ERROR[6]="FINAL OCCUPANCY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi
 done

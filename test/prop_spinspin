@@ -166,9 +166,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.06188340[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.34839871[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-76\.1937039537[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.06188340" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.3483987" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-76\.19370395" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -244,8 +244,8 @@ ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

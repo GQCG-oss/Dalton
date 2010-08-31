@@ -209,7 +209,9 @@ C               are added in TR1H2M
          CALL DZERO(FXV,NOSIM*N2ORBX)
          CALL DZERO(FXQ,(NOSIM*NASHT*NORBT))
          CALL DZERO(H2XAC,(MOSIM*NNASHX*NNASHX))
-         CALL DZERO(FTV,NCSIM*N2ORBX)
+         LFTV = NCSIM*N2ORBX
+         IF (DOMCSRDFT) LFTV = 2*LFTV
+         CALL DZERO(FTV,LFTV)
          CALL DZERO(FTQ,(NCSIM*NASHT*NORBT))
       END IF
 C
@@ -246,6 +248,14 @@ C
             WRITE (LUPRI,4020) ICSIM,NCSIM
             CALL OUTPUT(FTV(1,ICSIM),1,NORBT,1,NORBT,
      &                  NORBT,NORBT,1,LUPRI)
+            write(lupri,*) 'hjaaj: domcsrdft =',domcsrdft
+            call flshfo(lupri)
+            IF (DOMCSRDFT) THEN
+               WRITE (LUPRI,4021) ICSIM,NCSIM
+               CALL OUTPUT(FTV(1,NCSIM+ICSIM),1,NORBT,1,NORBT,
+     &                  NORBT,NORBT,1,LUPRI)
+            call flshfo(lupri)
+            END IF
          END IF
          IF (P6FLAG(33) .OR. IPRLIN.GE.21) THEN
             WRITE (LUPRI,3010) ICSIM,NCSIM
@@ -253,7 +263,8 @@ C
      &                     1,LUPRI)
          END IF
  1100 CONTINUE
- 4020 FORMAT (/' FTV matrix (no.',I3,' of',I3,')')
+ 4020 FORMAT(/' FTV matrix (no.',I3,' of',I3,')')
+ 4021 FORMAT(/' FTC matrix for MC SRDFT (no.',I3,' of',I3,')')
  3010 FORMAT(/' FTQ contribution to transition Fock matrix (no.',
      *  I3,' of',I3,')')
 C
@@ -538,12 +549,14 @@ C   INFINP : DIRFCK
 C   INFORB : NNORBX, N2ORBX, N2BASX, NISHT,NASHT, ...
 C   INFVAR : JWOPSY
 C   INFPRI : LUERR
+C   DFTCOM : DFT_SPINDNS
 C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
 C
       CALL QENTER('TR1FCK')
@@ -555,45 +568,125 @@ C
       MCSIM  = MAX(0,NCSIM)
       MOSIM  = MAX(0,NOSIM)
       NDMAT  = 0
-      IF (NISHT .GT. 0) NDMAT = NDMAT + MOSIM
+      IF (NISHT .GT. 0 .OR. ADDSRI) NDMAT = NDMAT + MOSIM
 C     ... for FXCAO
       IF (NASHT .GT. 0) NDMAT = NDMAT + MOSIM
 C     ... for FXVAO
-      IF (MCSIM .GT. 0) NDMAT = NDMAT + MCSIM
+      IF (DFT_SPINDNS)  NDMAT = NDMAT + MOSIM
+C     ... for FXSAO
+                        NDMAT = NDMAT + MCSIM
 C     ... for FTVAO (note that NCSIM .eq. 0 if NASHT .eq. 0)
 C     ... the IF test is necessary: NCSIM may be .lt. 0 to signal
 C         only SOVECS wanted
+      IF (DOMCSRDFT)    NDMAT = NDMAT + MCSIM
+C     ... for MCSRDFT we also need "FTCAO" with sr-dft contribution
+C         from transition density matrix DTV
+      IF (DFT_SPINDNS)  NDMAT = NDMAT + MCSIM
+C     ... for FTSAO
       LDFAO  = 2*NDMAT*N2BASX
+      IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
+C     ... allocate for DTOTAO and DXTOTAO for DFTADD calls in SIRFCK
+         LDAO  = 2*N2BASX
+         LSRAO = 0
+         IF (SRHYBR .AND. .NOT.DOHFSRDFT) THEN
+            LDAO = LDAO + 2*N2BASX
+            LSRAO = N2BASX
+         END IF
+C        ... if SRHYBR we also need space for DVAO and DXVAO in SIRFCK
+C            and SRHYBR extra valence Fock type matrix
+         LDFAO = LDFAO + LDAO + LSRAO
+      ELSE
+         LDAO = 0
+         LSRAO = 0
+      END IF
       CALL MEMGET('REAL',KDFAO,LDFAO,WRK,KFREE,LFREE)
 C   Note: DXCAO, DXVAO, DTVAO must be contiguous.
 C   Note: FXCAO, FXVAO, FTVAO must be contiguous.
       KDXCAO = KDFAO
-      IF (NISHT .GT. 0) THEN
+      IF (NISHT .GT. 0 .OR. ADDSRI) THEN
          KDXVAO = KDXCAO + MOSIM*N2BASX
+         IF (NISHT.EQ.0) CALL DZERO(WRK(KDXCAO),MOSIM*N2BASX)
+C        ... because DXCAO not calculated in TR1DEN when NISHT.eq.0
+C            but we need it for SRDFT to handle the DFT part
       ELSE
          KDXVAO = KDXCAO
       END IF
       IF (NASHT .GT. 0) THEN
-         KDTVAO = KDXVAO + MOSIM*N2BASX
-         KFXCAO = KDTVAO + MCSIM*N2BASX
+         KDXSAO = KDXVAO + MOSIM*N2BASX
+         IF (DFT_SPINDNS) THEN
+            KDTCAO = KDXSAO + MOSIM*N2BASX
+         ELSE
+            KDTCAO = KDXSAO
+         END IF
+         IF (DOMCSRDFT) THEN
+            KDTVAO = KDTCAO + MCSIM*N2BASX
+            CALL DZERO(WRK(KDTCAO),MCSIM*N2BASX)
+C           because DTCAO never calculated (we know always zero matrix)
+C           but we need it for MCSRDFT to handle the DFT part
+         ELSE
+            KDTVAO = KDTCAO
+         END IF
+         KDTSAO = KDTVAO + MCSIM*N2BASX
+         IF (DFT_SPINDNS) THEN
+            KDAO   = KDTSAO + MCSIM*N2BASX
+         ELSE
+            KDAO   = KDTSAO
+         END IF
+         KFXCAO = KDAO + LDAO
       ELSE
-         KDTVAO = KDXVAO
-         KFXCAO = KDTVAO
+         KDXSAO = KDXVAO
+         KDTCAO = KDXVAO
+         KDTVAO = KDTCAO
+         KDTSAO = KDTCAO
+         KDAO   = KDTVAO
+         KFXCAO = KDAO + LDAO
       END IF
-      IF (NISHT .GT. 0) THEN
+      IF (NISHT .GT. 0 .OR. ADDSRI) THEN
          KFXVAO = KFXCAO + MOSIM*N2BASX
       ELSE
          KFXVAO = KFXCAO
       END IF
       IF (NASHT .GT. 0) THEN
-         KFTVAO = KFXVAO + MOSIM*N2BASX
-         KFSCR  = KFTVAO + MCSIM*N2BASX
+         KFXSAO = KFXVAO + MOSIM*N2BASX
+         IF (DFT_SPINDNS) THEN
+            KFTVAO = KFXSAO + MOSIM*N2BASX
+         ELSE
+            KFTVAO = KFXSAO
+         END IF
+         KFTCAO = KFTVAO + MCSIM*N2BASX
+         IF (DOMCSRDFT) THEN
+            KFTSAO = KFTCAO + MCSIM*N2BASX
+         ELSE
+            KFTSAO = KFTCAO
+         END IF
+         IF (DFT_SPINDNS) THEN
+            KFSCR  = KFTSAO + MCSIM*N2BASX
+         ELSE
+            KFSCR  = KFTSAO
+         END IF
       ELSE
+         KFXSAO = KFXVAO
          KFTVAO = KFXVAO
+         KFTCAO = KFTVAO
+         KFTSAO = KFTVAO
          KFSCR  = KFTVAO
       END IF
       CALL MEMGET('INTE',KSYMDM,NDMAT,WRK,KFREE,LFREE)
       CALL MEMGET('INTE',KFCTYP,NDMAT,WRK,KFREE,LFREE)
+C
+C     If this is DFT (i.e. LDAO .gt. 0) then we must
+C     get DTOTAO = DCAO + DVAO in WRK(KDAO) for SIRFCK
+C     DFT call with DOATR .true. /Nov 2003
+C
+      IF (LDAO .GT. 0) THEN
+         CALL FCKDEN(.TRUE.,(NASHT.GT.0),WRK(KDAO),
+     *               WRK(KDAO+N2BASX),CMO,DV,WRK(KFREE),LFREE)
+C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
+         IF (NASHT .GT. 0) THEN
+C           make DTOTAO in WRK(KDAO)
+            CALL DAXPY(N2BASX,1.0D0,WRK(KDAO+N2BASX),1,WRK(KDAO),1)
+         END IF
+      END IF
 C
       CALL TR1FCY(DIRFCK,NCSIM,NOSIM,FXC,FXV,FTV,
      *            UBO,CMO,DV,DTV,WRK(KSYMDM),WRK(KFCTYP),
@@ -644,8 +737,10 @@ C
 C Scratch:
 C  WRK();
 C
-C       Note: FXCAO, FXVAO, FTVAO are assumed to be contiguous
-C             DXCAO, DXVAO, DTVAO are assumed to be contiguous
+C       Note: FXCAO, FXVAO, FTCAO, FTVAO are assumed to be contiguous
+C             DXCAO, DXVAO, DTCAO, DTVAO are assumed to be contiguous
+C       ( DTCAO is zero matrix, but space is needed for MC SR-DFT
+C         effective one-electron matrix for transition DTV )
 C
 C
 C
@@ -668,19 +763,20 @@ C   INFVAR : JWOPSY
 C   INFLIN : IPRLIN
 C   INFDIM : NBASMA,?
 C   INFTAP : LUSUPM
+C   DFTCOM : DFT_SPINDNS, ?
 C
 #include <maxash.h>
 #include <maxorb.h>
 #include <priunit.h>
 #include <inforb.h>
 #include <infind.h>
+#include <infinp.h>
 #include <infvar.h>
 #include <inflin.h>
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
 #include <dftcom.h>
-#include <infinp.h>
 #include <abainf.h>
 C
 #if defined (VAR_DEBUG)
@@ -709,7 +805,7 @@ C
            CALL DSCAL(N2BASX,-D1,DXVAO(1,NOSIM),1)
         END IF
         IF (P6FLAG(24) .OR. IPRLIN .GE. 24) THEN
-          IF (NISHT.GT.0) THEN
+          IF (NISHT.GT.0 .OR. ADDSRI) THEN
             WRITE (LUPRI,2010) IOSIM,NOSIM
 CTODO       CALL PRINRM(DXCAO(1,IOSIM),N2BASX,LUPRI)
             CALL OUTPUT(DXCAO(1,IOSIM),1,NBAST,1,NBAST,NBAST,NBAST,
@@ -758,20 +854,29 @@ C
 C
 C *************************************
 C
-C       Note: FXCAO, FXVAO, FTVAO are assumed to be contiguous
-C             DXCAO, DXVAO, DTVAO are assumed to be contiguous
+C       Note: FXCAO, FXVAO, FTCAO, FTVAO are assumed to be contiguous
+C             DXCAO, DXVAO, DTCAO, DTVAO are assumed to be contiguous
 C
 C ***** count and initialize atomic Fock matrices
 C
-      NDMAT  = 0
-      IF (NISHT .GT. 0) NDMAT = NDMAT + NOSIM
+      MOSIM = MAX(0,NOSIM)
+      MCSIM = MAX(0,NCSIM)
+      NDMAT = 0
+      IF (NISHT .GT. 0 .OR. ADDSRI) NDMAT = NDMAT + MOSIM
 C     ... for FXCAO
-      IF (NASHT .GT. 0) NDMAT = NDMAT + NOSIM
+      IF (NASHT .GT. 0) NDMAT = NDMAT + MOSIM
 C     ... for FXVAO
-      IF (NCSIM .GT. 0) NDMAT = NDMAT + NCSIM
-C     ... for FTVAO (note that NCSIM .eq. 0 if NASHT .eq. 0)
-C     ... the IF test is necessary: NCSIM may be .lt. 0 to signal
+      IF (DFT_SPINDNS ) NDMAT = NDMAT + MOSIM
+C     ... for FXSAO
+                        NDMAT = NDMAT + MCSIM
+C     ... for FTVAO (note that MCSIM .eq. 0 if NASHT .eq. 0)
+C     ... the MCSIM is necessary: NCSIM may be .lt. 0 to signal
 C         only SOVECS wanted
+      IF (DOMCSRDFT   ) NDMAT = NDMAT + MCSIM
+C     ... for MCSRDFT we also need "FTCAO" with sr-dft contribution
+C         from transition density matrix DTV
+      IF (DFT_SPINDNS ) NDMAT = NDMAT + MCSIM
+C     ... for FTSAO
 C
 C
 C ***** TWO-ELECTRON PART (all one-electron contributions
@@ -780,7 +885,9 @@ C ***** of the inactive Fock matrix above).
 C
       IF (NDMAT .GT. 0) THEN
          CALL DZERO(FXCAO,NDMAT*N2BASX)
-      IF (LUSUPM .NE. -1 .AND. .NOT.DODFT) THEN
+      IF (LUSUPM .NE. -1 .AND.
+     &   .NOT. (HSROHF .OR. DFTRUN .OR. DOCISRDFT .OR. DOHFSRDFT .OR.
+     &    DOMCSRDFT)) THEN
          CALL RDSUPM(NDMAT,FXCAO,DXCAO,WRK(KFREE),LFREE)
 C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
       ELSE
@@ -795,6 +902,11 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
          END IF
          DFTADX = DFTADD
          DFTADD = .FALSE.
+C        ... Note : (DODFT.AND.NOT.DFTADD) now tricks 2'nd order 
+C          F        DFT contributions in SIRFCK /mc-srdft work
+CFRAN DEBUG
+         WRITE(LUPRI,*) 'SIRTR1: CHIAMO SIRFCK! NDMAT = ', NDMAT
+CFRAN DEBUG END
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      *               AODRCT,WRK(KFREE),LFREE)
          DFTADD = DFTADX
@@ -805,6 +917,7 @@ C        ... if (AODRCT) construct Fock matrix directly
 C            else construct Fock matrix from LUINTA
 C            ISYMDM : symmetry of density matrix (DUNP)
 C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
+         DFTADD = DFTADX
       END IF
       END IF
 #ifdef FOR_THE_FUTURE
@@ -812,7 +925,7 @@ C
 C add DFT contribution in AO BASIS
 C
       call quit(' sss ')
-      IF (DODFT) THEN
+      IF (DFTADD) THEN
          IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
 c           TODO         DFTIMG = .FALSE.
 C           DXCAO contains effective
@@ -825,13 +938,23 @@ c-rsp&                    KSYMOP,WRK(KWRK0),LFREE)
 C
 C
       IF (P6FLAG(24) .OR. IPRLIN.GE.24) THEN
+        IF (DOMCSRDFT) THEN
+           ICOFF = NCSIM
+        ELSE
+           ICOFF = 0
+        END IF
         DO 210 ICSIM = 1,NCSIM
+          IF (DOMCSRDFT) THEN
+             WRITE (LUPRI,3031) ICSIM,NCSIM
+             CALL OUTPUT(FTVAO(1,ICSIM),1,NBAST,1,NBAST,
+     &                   NBAST,NBAST,-1,LUPRI)
+          END IF
           WRITE (LUPRI,3030) ICSIM,NCSIM
-          CALL OUTPUT(FTVAO(1,ICSIM),1,NBAST,1,NBAST,
+          CALL OUTPUT(FTVAO(1,ICOFF+ICSIM),1,NBAST,1,NBAST,
      &                NBAST,NBAST,-1,LUPRI)
   210   CONTINUE
         DO 215 IOSIM = 1,NOSIM
-          IF (NISHT.GT.0) THEN
+          IF (NISHT.GT.0 .OR. ADDSRI) THEN
             WRITE (LUPRI,3010) IOSIM,NOSIM
             CALL OUTPUT(FXCAO(1,IOSIM),1,NBAST,1,NBAST,
      &                  NBAST,NBAST,-1,LUPRI)
@@ -847,13 +970,33 @@ C
  3010 FORMAT (/' FXCAO matrix (no.',I3,' of',I3,')')
  3020 FORMAT (/' FXVAO matrix (no.',I3,' of',I3,')')
  3030 FORMAT (/' FTVAO matrix (no.',I3,' of',I3,')')
+ 3031 FORMAT (/' FTCAO matrix for MC SR-DFT (no.',I3,' of',I3,')')
 C
 C
 C *** Calculate the active Fock matrix FTV based on the transition
 C     density matrix DTV :
 C     Transform FTVAO to MO basis to form FTV
 C
-      DO 4900 ICSIM = 1,NCSIM
+      IF (DOMCSRDFT) THEN
+C        ... we have both "FTCAO" and FTVAO
+         MCSIM = 2*NCSIM
+      ELSE
+C        ... we have only FTVAO
+         MCSIM = NCSIM
+      END IF
+      DO 4900 ICSIM = 1,MCSIM
+         IF (DOMCSRDFT) THEN
+C           .. we swap order from "FTCAO", FTVAO
+C              to FTV, "FTC" in order that general sirius
+C              routines can work as before
+            IF (ICSIM .GT. NCSIM) THEN
+               JCSIM = ICSIM - NCSIM
+            ELSE
+               JCSIM = ICSIM + NCSIM
+            END IF
+         ELSE
+            JCSIM = ICSIM
+         END IF
          DO 4300 ISYM=1,NSYM
             JSYM = MULD2H(ISYM,JWOPSY)
             NORBI=NORB(ISYM)
@@ -862,7 +1005,7 @@ C
 C
             CALL AUTPV(ISYM,JSYM,CMO(ICMO(ISYM)+1),CMO(ICMO(JSYM)+1),
      &                 FTVAO(1,ICSIM),NBAS,NBAST,
-     &                 FTV(1,ICSIM),NORB,NORBT, WRK(KFREE),LFREE)
+     &                 FTV(1,JCSIM),NORB,NORBT, WRK(KFREE),LFREE)
 C           CALL AUTPV(ISYM,JSYM,U,V,PRPAO,NBAS,NBAST,PRPMO,NORB,NORBT,
 C    &                 WRK,LWRK)
 C
@@ -884,7 +1027,7 @@ C
             NORBI  = NORB(ISYM)
             NORBJ  = NORB(JSYM)
         IF (NORBI.EQ.0 .OR. NORBJ.EQ.0) GO TO 300
-            IF (NISHT .GT. 0) THEN
+            IF (NISHT .GT. 0 .OR. ADDSRI) THEN
                CALL AUTPV(ISYM,JSYM,CMO(ICMO(ISYM)+1),CMO(ICMO(JSYM)+1),
      &                    FXCAO(1,IOSIM),NBAS,NBAST,
      &                    FXC(1,IOSIM),NORB,NORBT,
@@ -912,6 +1055,24 @@ c        TODO         DFTIMG = .FALSE.
 c         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
 c                     JWOPSY,WRK(KFREE),LFREE)
       END IF      
+#endif
+       IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+C hjaaj TODO
+          WRITE(LUPRI,*) 'WARNING> SRHYBR_XV matrix missing!'
+       END IF
+#ifdef FOR_THE_PAST
+C ... we have moved this to SIRFCK 26.nov.2003 jkp+hjaaj
+C
+C     add DFT contribution in MO BASIS
+C
+      IF (DFTADD) THEN
+         DFTIMG = .FALSE.
+         ksymop = jwopsy
+         CALL DFTATR(FXC(1,IOSIM),CMO,DV,UBO(1,IOSIM),.false.,
+     &               JWOPSY,WRK(KFREE),LFREE)
+c-rsp    CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+c-rsp&               KSYMOP,WRK(KWRK0),LFREE)
+      END IF
 #endif
  5900 CONTINUE
 C
@@ -984,7 +1145,7 @@ C
             WRITE (LUPRI,5020) IOSIM,NOSIM
             CALL OUTPUT(FXC(1,IOSIM),1,NORBT,1,NORBT,
      &                  NORBT,NORBT,1,LUPRI)
-            IF (NASHT.GT.0) THEN
+            IF (NASHT .GT. 0) THEN
                WRITE (LUPRI,5030) IOSIM,NOSIM
                CALL OUTPUT(FXV(1,IOSIM),1,NORBT,1,NORBT,
      &                     NORBT,NORBT,1,LUPRI)

@@ -491,10 +491,13 @@ C Used from common blocks:
 C   INFORB : NNBAST,...
 C   INFDIM : NNBASM, NBASMA
 C   INFPRI : LUW4
+C   CBIREA : LMULBS
+C   R12INT : LAUXBS
 C
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
       CALL QENTER('DELMO ')
@@ -1349,25 +1352,26 @@ C
      &   ' Number of occupied orbitals in each symmetry: ',
      &   (MRHF(I),I=1,NSYM)
 C
-      KFC  = 1
-      KWRK = KFC  + NNORBT
+      KFC_MVO  = 1
+      KWRK = KFC_MVO  + NNORBT
       LNEED= KWRK + 2*NBAST
       LWRK = LFREE - KWRK
       IF (LNEED .GT. LFREE) CALL ERRWRK('FCVIRT',LNEED,LFREE)
 C
-C ***** retrieve atomic ONE ELECTRON HAMILTONIAN matrix
+C ***** Calculate a Fock matrix "FC_MVO" based on NMVO(*) occupied orbitals
+C       instead fo NISH(*).
 C
       CALL ICOPY(8,NISH,1,MISH,1)
       CALL ICOPY(8,NMVO,1,NISH,1)
       MISHT = NISHT
       NISHT = NMVOT
-      CALL FCKMAT(.TRUE.,DUMMY,CMO,EMCMY,WRK(KFC),DUMMY,
+      CALL FCKMAT(.TRUE.,DUMMY,CMO,EMCMY,WRK(KFC_MVO),DUMMY,
      &             WRK(KWRK),LWRK)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFRSAV)
       CALL ICOPY(8,MISH,1,NISH,1)
       NISHT = MISHT
 C
-C ***** ZERO ALL ELEMENTS IN FC MATRIX EXCEPT VIRTUAL HARTREE-FOCK BLOCK
+C ***** Zero all elements in FC_MVO matrix except virtual Hartree-Fock block
 C
       DO 200 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
@@ -1375,7 +1379,7 @@ C
          IORBI = IORB(ISYM)
          NBASI = NBAS(ISYM)
          NOCCI = MRHF(ISYM)
-         JXFC  = KFC + IIORB(ISYM)
+         JXFC  = KFC_MVO + IIORB(ISYM)
          JCMO =  1 + ICMO(ISYM)
 C
 C
@@ -1418,3 +1422,198 @@ C
       CALL QEXIT('FCVIRT')
       RETURN
       END
+C  /* Deck prorb */
+      SUBROUTINE PRORB(CMO,PROCC,IOUT)
+C
+C Written 11-Dec-1983 by ha/hjaaj
+C Revised  8-Jul-1992 hjaaj
+C
+C Purpose:
+C  Print molecular orbital coefficients on unit IOUT.
+C
+C Input:
+C  CMO, MO orbital coefficients (symmetry blocked)
+C  PROCC, print only occupied orbitals
+C  IOUT, output file unit
+C
+#include <implicit.h>
+      DIMENSION CMO(*)
+      LOGICAL   PROCC
+C
+C Used from common blocks:
+C   INFINP : CENT,TYPE,SUPSYM,?
+C   INFORB : NSYM,...
+C   INFIND : ISSMO(),
+C   CBIREA : LMULBS
+C
+#include <maxorb.h>
+#include <maxash.h>
+#include <infinp.h>
+#include <inforb.h>
+#include <infind.h>
+#include <cbirea.h>
+#include <r12int.h>
+C
+C *** FORMAT statements
+C
+ 2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
+     &       /' ------------------------------------------')
+ 2600 FORMAT(/' Orbital   ',7I9)
+ 2620 FORMAT( ' Sup.sym.  ',7I9)
+ 2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
+C
+C *** Print molecular orbitals
+C
+      IF (PROCC) THEN
+         THRPRI = 1.0D-2
+         WRITE(IOUT,'(/A,F6.4,A)')
+     &   ' (Only coefficients >',THRPRI,' are printed.)'
+      ELSE
+         THRPRI = 1.0D-4
+      END IF
+C
+      ISTBAS = 0
+      DO 400 ISYM = 1,NSYM
+         NBASI = NBAS(ISYM)
+         MBASI = NBAS(ISYM)
+         IF (LMULBS) MBASI = MBAS1(ISYM)
+C
+         IF (PROCC) THEN
+            IF (NBAST .LE. 25) THEN
+C           print all occupied and 2 lowest unoccupied this symmetry
+               IEND = 0
+            ELSE
+C           print 5 highest occupied and 2 lowest unoccupied this symmetry
+C           (output becomes too big otherwise ... /hjaaj Dec08)
+               IEND  = MAX(0,NOCC(ISYM)-5)
+            END IF
+            NENDI = NOCC(ISYM)
+     &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
+         ELSE
+            IEND  = 0
+            NENDI = NORB(ISYM)
+         END IF
+      IF (NENDI.EQ.0) GO TO 300
+         WRITE(IOUT,2400) ISYM
+C
+         ICMOI = ICMO(ISYM)
+         ISTORB = IORB(ISYM)
+  100       IST =IEND+1
+            ISTMO=IEND*NBASI+ICMOI
+            IEND=IEND+7
+            IF(IEND.GT.NENDI) IEND=NENDI
+            IEMO=NBASI*(IEND-1)+ICMOI
+            WRITE(IOUT,2600) (I,I=IST,IEND)
+            IF (SUPSYM) WRITE(IOUT,2620) (ISSMO(ISTORB+I),I=IST,IEND)
+            DO 200 I=1,MBASI
+               JSMO=ISTMO+I
+               JEMO=IEMO+I
+               JJ = 0
+               DO J=JSMO,JEMO,NBASI
+                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
+               END DO
+               IF (JJ .EQ. 1) WRITE(IOUT,2800) I,CENT(I+ISTBAS),
+     *            TYPE(I+ISTBAS),(CMO(J),J=JSMO,JEMO,NBASI)
+  200       CONTINUE
+         IF (IEND.NE.NENDI) GO TO 100
+C
+  300 CONTINUE
+        ISTBAS = ISTBAS + NBASI
+  400 CONTINUE
+C
+C *** End of subroutine PRORB
+C
+      RETURN
+      END
+C  /* Deck punmo */
+        SUBROUTINE PUNMO(IPCTL,CMO,OCC)
+C
+C 25-May-1985 hjaaj
+C l.r. 910715-hjaaj (added formats 7010-7050)
+C
+C Purpose:
+C   punch mo coefficients and, conditionally, occupation numbers
+C   to LUPNCH
+C
+C Control:
+C   IPCTL .eq. 1: also punch occupation numbers
+C   else        : do not punch occupation numbers
+C
+#include <implicit.h>
+#include <dummy.h>
+      DIMENSION CMO(*),OCC(*)
+      PARAMETER (D0 = 0.0D0)
+C
+C Used from common blocks:
+C   INFORB : NSYM,NORB(*),NBAS(*)
+C
+#include <inforb.h>
+C
+      CHARACTER*8 LBLDAT(2)
+C
+      CALL QENTER('PUNMO')
+      CALL GETDAT(LBLDAT(1),LBLDAT(2))
+      LUPNCH = -1
+      CALL GPOPEN(LUPNCH,'DALTON.MOPUN','UNKNOWN',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      REWIND LUPNCH
+      IF (IPCTL.EQ.1) THEN
+         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
+     *      '**NATORB   ( punched by SIRIUS ',LBLDAT,' )'
+      ELSE
+         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
+     *      '**MOLORB   ( punched by SIRIUS ',LBLDAT,' )'
+      END IF
+C
+      IEND =0
+      DO 700 ISYM=1,NSYM
+         NORBI=NORB(ISYM)
+      IF (NORBI.EQ.0) GO TO 700
+         NBASI=NBAS(ISYM)
+         DO 705 NI=1,NORBI
+            IST=IEND+1
+            IEND=IEND+NBASI
+            IMOMXV = IDAMAX(NBASI,CMO(IST),1)
+            CMOMXV = ABS(CMO(IST-1+IMOMXV))
+            IF (CMOMXV .LT. 1.0D2) THEN
+               WRITE (LUPNCH,7000) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D3) THEN
+               WRITE (LUPNCH,7010) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D4) THEN
+               WRITE (LUPNCH,7020) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D5) THEN
+               WRITE (LUPNCH,7030) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D6) THEN
+               WRITE (LUPNCH,7040) (CMO(NP),NP=IST,IEND)
+            ELSE
+               WRITE (LUPNCH,7050) (CMO(NP),NP=IST,IEND)
+            END IF
+  705    CONTINUE
+         NDELI = NBASI-NORBI
+      IF (NDELI.EQ.0) GO TO 700
+         DO 706 NI=1,NDELI
+            WRITE (LUPNCH,7000) (D0,NP=1,NBASI)
+  706    CONTINUE
+  700 CONTINUE
+      CALL GPCLOSE(LUPNCH,'KEEP')
+C
+      IF (IPCTL.EQ.1) THEN
+         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
+     *   '**NATOCC   ( punched by SIRIUS ',LBLDAT,' )'
+         WRITE(LUPNCH,7000) (OCC(NP),NP=1,NORBT)
+      END IF
+C
+      CALL QEXIT('PUNMO')
+      RETURN
+C
+ 7000 FORMAT(4F18.14)
+ 7010 FORMAT(4F18.13)
+ 7020 FORMAT(4F18.12)
+ 7030 FORMAT(4F18.11)
+ 7040 FORMAT(4F18.10)
+ 7050 FORMAT(4G18.11)
+C
+C end of PUNMO
+C
+      END
+C --- end of sirius/sircmo.F ---

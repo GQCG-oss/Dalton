@@ -106,9 +106,10 @@ H   1    0
 cat > cc2_r12_aux_ch4_cbs2a.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
@@ -214,8 +215,8 @@ ERROR[4]="CC2-R12 Sym. B EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

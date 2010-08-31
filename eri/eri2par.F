@@ -53,13 +53,15 @@ C
 C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
-C INFPAR : MASTER, NODTOT, IPRPAR, MAXTSK, NCODE, DEBUG
+C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DEBUG
 C GNRINF : BASDIR, LENBAS
 C
 #include <infpar.h>
 #include <gnrinf.h>
       DATA TOTWAL /0./
       SAVE TOTWAL
+C
+      CALL QENTER('PARDRV')
 C
       IPRINT = MAX(IPRINT,IPRPAR)
 C
@@ -131,6 +133,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('PARDRV')
       RETURN
       END
 C  /* Deck rvtim */
@@ -245,6 +248,8 @@ C
       SAVE FIRST
       DATA FIRST/.TRUE./
 C
+      CALL QENTER('ERI_PARDRV')
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_PARDRV','*',103)
 C
 C     Consistancy check
@@ -304,6 +309,7 @@ C
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+      CALL QEXIT('ERI_PARDRV')
       RETURN
       END
 C  /* Deck eri_conchk */
@@ -414,6 +420,7 @@ C   /cbieri/ logicals
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
@@ -531,8 +538,8 @@ C--------------------------
 C     Make the index array.
 C--------------------------
 C
-      CALL INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,NTASK,NBATCH,
-     &            NPOS,IPRINT)
+      CALL HER_INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,
+     &            NTASK,NBATCH,NPOS,IPRINT)
 C
 Cef begin
 C  10.mai    INITX = .TRUE.
@@ -962,6 +969,8 @@ C infpar.h: MASTER,MYNUM
 #include <infpar.h>
       DIMENSION WORK(MWORK)
 C
+      CALL QENTER('NODEDRIVER')
+C
 C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
@@ -1017,6 +1026,7 @@ C
          GO TO 100
       END IF
 C
+      CALL QEXIT('NODEDRIVER')
       RETURN
       END
 #endif
@@ -1130,6 +1140,8 @@ C
 C
 #include <memint.h>
 C
+      CALL QENTER('ERI_NODSTR')
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODSTR','*',103)
 C
 C     Start timing
@@ -1185,6 +1197,7 @@ C     Send overall timings if requested.
 C
       IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
 C
+      CALL QEXIT('ERI_NODSTR')
       RETURN
       END
 C  /* Deck eri_rvinit */
@@ -1197,7 +1210,7 @@ C
 #include <maxorb.h>
 #include <mtags.h>
 C
-      LOGICAL FIRST
+      LOGICAL FIRST, TSTINP
       DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
      &          JORBSH(*), KORBSH(*), ISYMDM(*), IFCTYP(*),
      &          WORK(LWORK)
@@ -1206,7 +1219,7 @@ C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN)
+C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN), RELCAL
 C SIRIPC : NEWGEO
 C MOLINP : NMLINE
 C MOLINC : MLINE()
@@ -1265,6 +1278,7 @@ C   /cbieri/
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
@@ -1314,6 +1328,15 @@ C
 C     Set hermit
 C
       IF (NEWGEO) RDINPC = .FALSE.
+C                                                                                                     
+C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
+C     initialize it properly                                                                        
+C                                                                                                     
+      IF (FIRST) THEN
+          RELCAL = .FALSE.
+          TSTINP = .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+      END IF
 C
       CALL SETHER(0,NEWGEO,WORK,LWORK)
 C
@@ -1423,6 +1446,8 @@ C
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
      &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
 #include <ibtfun.h>
+C
+      CALL QENTER('ERI_NODDRV')
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODDRV','*',103)
 C
@@ -1813,6 +1838,7 @@ C
 C
       IPRINT = IPRKEP
 C
+      CALL QEXIT('ERI_NODDRV')
       RETURN
       END
 C  /* Deck eri_sdcls */

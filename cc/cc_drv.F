@@ -83,10 +83,10 @@ C              CC_MCDCAL   calculation of B terms in MCD
 C
 C     Loop over all models specified. The order is supposed
 C     to be the optimal one from a computational point of view.
-C     Energy calculations are restarted from the preceeding
+C     Energy calculations are restarted from the preceding
 C     calculation. Excitation vectors is also saved
 C     and the excitation energy calculation is restarted
-C     from preceeding model solution as well. Similar for
+C     from preceding model solution as well. Similar for
 C     response vectors in property calculations.
 C
 C     (ground state) geometry optimizations using the
@@ -120,6 +120,7 @@ C
 #include <ccfop.h>
 #include <ccfro.h>
 #include <eribuf.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <grdccpt.h>
 #include <ccfield.h>
@@ -1174,7 +1175,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER*80  STR
       CHARACTER STHELP*10
-      CHARACTER LABEL1*8
+      CHARACTER LABEL*10, LABEL1*8
       
 #include <codata.h>
 #include <ccorb.h>
@@ -1693,7 +1694,7 @@ C
        IF (NORD.EQ.1) WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A3,F20.12)')
      *  '#',I,ISYMIN,' <',LABX,'> = ',PROP
        IF (NORD.EQ.-11)
-     *   WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,I1,X,I1,I3,F9.6,A,F20.12)')
+     *   WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,I1,I2,I3,F9.6,A,F20.12)')
      *  '#',I,ISYMIN,' <',LABX,'>(',ISYEX,ISPEX,IEX,FRQY,') = ',PROP
        IF (NORD.EQ.2) WRITE(LUPRI,
      * '(1X,A,I3,I2,A,A8,A1,A8,A3,F9.6,A,F20.12)')

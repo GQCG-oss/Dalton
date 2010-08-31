@@ -178,8 +178,8 @@ TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=2
 
 # First step
-CRIT1=`$GREP "Li * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.1250000..." $log | wc -l`
-CRIT2=`$GREP "H * (0| )\.0000000000 * (0| )\.0000000000 * 3\.1400000..." $log | wc -l`
+CRIT1=`$GREP "Li * 0*\.0000000000 * 0*\.0000000000 * (\-0|\-)\.12(50000|49999)" $log | wc -l`
+CRIT2=`$GREP "H  * 0*\.0000000000 * 0*\.0000000000 * 3\.1(400000|399999)" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="FIRST STEP NOT CORRECT"
@@ -213,48 +213,48 @@ CTRL[11]=2
 ERROR[11]="FINAL ITERATION NOT CORRECT"
 
 # Final gradient
-CRIT1=`$GREP "Li * z * (0| )\.000004471." $log | wc -l`
-CRIT2=`$GREP "H * z * (\-0|\-)\.000004471." $log | wc -l`
+CRIT1=`$GREP "Li * z * (-0|-)\.000000017." $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.000000017." $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="FINAL GRADIENT NOT CORRECT"
 
 # Final Hessian
-CRIT1=`$GREP "Li * z * (0| )\.00225." $log | wc -l`
-CRIT2=`$GREP "H * z * (\-0|\-)\.00225. * (0| )\.00225." $log | wc -l`
-CRIT3=`$GREP "Li * x * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT4=`$GREP "H * x * (0| )\.00000. * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT5=`$GREP "Li * y * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT6=`$GREP "H * y * (0| )\.00000. * (\-0|\-|0| )\.00000." $log | wc -l`
-CRIT9=`$GREP "Li * z * (0| )\.000000 * (0| )\.000000 * (0| )\.00225." $log | wc -l`
-CRIT12=`$GREP "H * z * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.00225. * (0| )\.000000 * (0| )\.000000 * (0| )\.00225." $log | wc -l`
+CRIT1=`$GREP "Li * z * 0*\.0022(4|5)." $log | wc -l`
+CRIT2=`$GREP "H * z * \-0*\.0022(4|5). * 0*\.0022(4|5)." $log | wc -l`
+CRIT3=`$GREP "Li     x * \-*0*\.00000." $log | wc -l`
+CRIT4=`$GREP "H      x * \-*0*\.00000. * \-*0*\.00000." $log | wc -l`
+CRIT5=`$GREP "Li     y * \-*0*\.00000." $log | wc -l`
+CRIT6=`$GREP "H      y * \-*0*\.00000. * \-*0*\.00000." $log | wc -l`
+CRIT9=`$GREP "Li * z * 0*\.000000 * 0*\.000000 * 0*\.0022(4|5)." $log | wc -l`
+CRIT12=`$GREP "H * z * 0*\.000000 * 0*\.000000 * \-0*\.0022(4|5). * 0*\.000000 * 0*\.000000 * 0*\.0022(4|5)." $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT9 \+ $CRIT12`
 CTRL[13]=11
 ERROR[13]="FINAL HESSIAN NOT CORRECT"
 
 # Frequency
-CRIT1=`$GREP "1 * A1 * 259\.7[3-4] * (0| )\.00118. * 865\..* * 20\.4" $log | wc -l`
+CRIT1=`$GREP "1 * A1 * 259\.7. * (0| )\.00118. * 867\..* * 20\.5" $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="VIBRATIONAL FREQUENCY or IR INTENSITY NOT CORRECT"
 
 # Partition function
-CRIT1=`$GREP  "50\.00 * 1\.0289(D|E)\+04 * 13\.01 * 1\.0006 * 1\.339062(D|E)\+05" $log | wc -l`
-CRIT2=`$GREP "100\.00 * 5\.8202(D|E)\+04 * 25\.67 * 1\.0244 * 1\.530721(D|E)\+06" $log | wc -l`
-CRIT3=`$GREP "200\.00 * 3\.2924(D|E)\+05 * 51\.01 * 1\.1825 * 1\.986006(D|E)\+07" $log | wc -l`
-CRIT4=`$GREP "273\.15 * 7\.1769(D|E)\+05 * 69\.54 * 1\.3416 * 6\.695859(D|E)\+07" $log | wc -l`
-CRIT5=`$GREP "298\.15 * 8\.9335(D|E)\+05 * 75\.88 * 1\.3997 * 9\.487764(D|E)\+07" $log | wc -l`
-CRIT6=`$GREP "300\.00 * 9\.0728(D|E)\+05 * 76\.35 * 1\.4040 * 9\.725309(D|E)\+07" $log | wc -l`
-CRIT7=`$GREP "400\.00 * 1\.8625(D|E)\+06 * 101\.68 * 1\.6471 * 3\.119410(D|E)\+08" $log | wc -l`
-CRIT8=`$GREP "500\.00 * 3\.2536(D|E)\+06 * 127\.02 * 1\.8997 * 7\.851048(D|E)\+08" $log | wc -l`
-CRIT9=`$GREP "600\.00 * 5\.1323(D|E)\+06 * 152\.36 * 2\.1572 * 1\.686819(D|E)\+09" $log | wc -l`
-CRIT10=`$GREP "700\.00 * 7\.5454(D|E)\+06 * 177\.70 * 2\.4175 * 3\.241338(D|E)\+09" $log | wc -l`
-CRIT11=`$GREP "800\.00 * 1\.0536(D|E)\+07 * 203\.03 * 2\.6796 * 5\.731910(D|E)\+09" $log | wc -l`
-CRIT12=`$GREP "900\.00 * 1\.4143(D|E)\+07 * 228\.37 * 2\.9429 * 9\.505218(D|E)\+09" $log | wc -l`
-CRIT13=`$GREP "1000\.00 * 1\.8405(D|E)\+07 * 253\.71 * 3\.2071 * 1\.497553(D|E)\+10" $log | wc -l`
-CRIT14=`$GREP "1500\.00 * 5\.0718(D|E)\+07 * 380\.40 * 4\.5348 * 8\.748937(D|E)\+10" $log | wc -l`
-CRIT15=`$GREP "2000\.00 * 1\.0411(D|E)\+08 * 507\.0. * 5\.8676 * 3\.097783(D|E)\+11" $log | wc -l`
+CRIT1=`$GREP  "50\.00 * 1\.0289(D|E)\+04 * 13\.02 * 1\.0006 * 1\.340...(D|E)\+05" $log | wc -l`
+CRIT2=`$GREP "100\.00 * 5\.8202(D|E)\+04 * 25\.69 * 1\.0244 * 1\.531...(D|E)\+06" $log | wc -l`
+CRIT3=`$GREP "200\.00 * 3\.2924(D|E)\+05 * 51\.05 * 1\.182. * 1\.98....(D|E)\+07" $log | wc -l`
+CRIT4=`$GREP "273\.15 * 7\.1769(D|E)\+05 * 69\.60 * 1\.341. * 6\.70....(D|E)\+07" $log | wc -l`
+CRIT5=`$GREP "298\.15 * 8\.9335(D|E)\+05 * 75\.94 * 1\.399. * 9\.49....(D|E)\+07" $log | wc -l`
+CRIT6=`$GREP "300\.00 * 9\.0728(D|E)\+05 * 76\.41 * 1\.40.. * 9\.73....(D|E)\+07" $log | wc -l`
+CRIT7=`$GREP "400\.00 * 1\.8625(D|E)\+06 * 101\.77 * 1\.647. * 3\.12....(D|E)\+08" $log | wc -l`
+CRIT8=`$GREP "500\.00 * 3\.2536(D|E)\+06 * 127\.12 * 1\.899. * 7\.85....(D|E)\+08" $log | wc -l`
+CRIT9=`$GREP "600\.00 * 5\.1323(D|E)\+06 * 152\.48 * 2\.157. * 1\.688...(D|E)\+09" $log | wc -l`
+CRIT10=`$GREP "700\.00 * 7\.5454(D|E)\+06 * 177\.84 * 2\.417. * 3\.244...(D|E)\+09" $log | wc -l`
+CRIT11=`$GREP "800\.00 * 1\.0536(D|E)\+07 * 203\.20 * 2\.679. * 5\.736...(D|E)\+09" $log | wc -l`
+CRIT12=`$GREP "900\.00 * 1\.4143(D|E)\+07 * 228\.55 * 2\.943. * 9\.51....(D|E)\+09" $log | wc -l`
+CRIT13=`$GREP "1000\.00 * 1\.8405(D|E)\+07 * 253\.91 * 3\.20.. * 1\.498...(D|E)\+10" $log | wc -l`
+CRIT14=`$GREP "1500\.00 * 5\.0718(D|E)\+07 * 380\.70 * 4\.535. * 8\.756...(D|E)\+10" $log | wc -l`
+CRIT15=`$GREP "2000\.00 * 1\.0411(D|E)\+08 * 507\.4. * 5\.867. * 3\.100...(D|E)\+11" $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15`
@@ -262,7 +262,7 @@ CTRL[15]=15
 ERROR[15]="MOLECULAR PARTITION FUNCTION NOT CORRECT"
 
 # Optimization
-CRIT1=`$GREP "Geometry converged in * 11( |  )iterations\!" $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 12( |  )iterations\!" $log | wc -l`
 CRIT2=`$GREP "Energy at final geometry is * \: * \-7\.902356 a\.u\." $log | wc -l`
 CRIT3=`$GREP "Energy change during optimization \: * (\-0|\-)\.013896 a\.u\." $log | wc -l`
 TEST[16]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -272,8 +272,10 @@ ERROR[16]="GEOMETRY OPTIMIZATION NOT CONVERGED CORRECTLY"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+# hjaaj aug 08: -lt test instead of -ne
+# -> better when testing e.g. Hessian in geometry optimization.
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi
 done

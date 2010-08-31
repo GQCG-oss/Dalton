@@ -92,14 +92,7 @@ cat > hfmm_1.pot <<'%EOF%'
 cat > hfmm_1.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.NOSUP
-.PRINT
- 2
-*QM3INP
+*QM3
 .QM3
 .PRINT
  1
@@ -107,6 +100,13 @@ cat > hfmm_1.dal <<'%EOF%'
  1.0D-12
 .MAXDIP
  180
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.NOSUP
+.PRINT
+ 2
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
@@ -168,7 +168,7 @@ ERROR[3]="HF/MM EXCITATION ENERGIES NOT CORRECT"
 PASSED=1 
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo ${ERROR[i]}
      PASSED=0
    fi

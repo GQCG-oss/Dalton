@@ -313,8 +313,8 @@ C     *******************************************************
 #include <maxorb.h>
 C
       PARAMETER (D0 = 0.0D0)
-#include <inforb.h>
 #include <gnrinf.h>
+#include <inforb.h>
 #include <dftcom.h>
 #include <ecpinf.h>
 #include <ccsdinp.h>
@@ -330,7 +330,7 @@ C
       DMP2       = WAVTP('MP2')
       DPCM       = WAVTP('PCM')
       DOROHF     = WAVTP('ROHF')
-#ifdef MC_SRDFT
+#ifdef MOD_SRDFT
       DOHFSRDFT  = WAVTP('HFSRDFT')
       DOCISRDFT  = WAVTP('CISRDFT')
       DOMCSRDFT  = WAVTP('MCSRDFT')
@@ -344,7 +344,7 @@ C
      &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
@@ -385,7 +385,7 @@ C
          WAVTP = HSROHF
       ELSE IF (STRING .EQ. 'PCM') THEN
          WAVTP = PCM
-#ifdef MC_SRDFT
+#ifdef MOD_SRDFT
       ELSE IF (STRING.EQ.'HFSRDFT') THEN
          WAVTP = DOHFSRDFT
       ELSE IF (STRING.EQ.'CISRDFT') THEN
@@ -506,7 +506,6 @@ C 100  CONTINUE
 C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
-      ADSTBK = DOHUCKEL.AND.((NMORDR.GT.1).OR.(NMRDRP.GT.0))
 C
       NDERIV = 0
       NDIME  = 1
@@ -607,12 +606,12 @@ chj      KDCOEF = KDPMTX +   IFRSTD*NMORDR*LDPMTX
          KNIDPC = KTEST
       END IF
 C
-C     *** Space for backup av MOLECULE.INP ***
+C     *** Space for backup of MOLECULE.INP ***
 C
       KMBKLN = KLAST
       KLAST  = KMBKLN + 80*NMLINE
 C
-C     *** Space for backup av isotopes if abacus is run. ***
+C     *** Space for backup of isotopes if abacus is run. ***
 C
       IF (NAORDR.GT.0) THEN
          KISOTP = KLAST
@@ -633,7 +632,7 @@ C
       LWRK1 = LWORK - (KLAST - IWOFF) + 1
 C
       IWSAV = IWOFF
-Chjaaj-Oct07: KTEST a simple device to check if arrays which
+Chjaaj-Oct07: KTEST is a simple device to check if arrays which
 C     supposedly not are used, are used anyway.
       WORK(KTEST) = -999.9D0
       CALL NUMDR1(WORK(KDERIV),WORK(KFUVAL),WORK(KCOOR),WORK(KCSTAR),
@@ -933,8 +932,8 @@ C
 C     *** Printing the derivatives ***
 C
       IF (MYNUM.EQ.0) THEN
-         PRTEXT(1:9) = 'symmetric'
-         LTEXT  = 9
+         LTEXT  = 8
+         PRTEXT(1:8) = 'symmetry'
          IF (NRMCRD) THEN
             NPRRDR = 2
          ELSE
@@ -1167,9 +1166,9 @@ C
          END IF
 C
          IF (MYNUM.EQ.0) THEN
+            LTEXT  = 6
             PRTEXT(1:6) = 'normal'
 C
-            LTEXT  = 6
             NPRRDR = NAORDR + NMORDR
             NDIMT  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)/6
             NDIMF  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NCOOR+3)/24
@@ -1213,12 +1212,16 @@ C
          END IF
 C
          IF (DRYRUN) THEN
-            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER //
+            WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
      &              ' calculations needed:', NUMCAL
          ELSE
-            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER //
+            WRITE (LUPRI,'(//A,I10)') '@>>> Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
          END IF
+
+         CALL TITLER('Numerical derivatives have now been calculated.',
+     &      '*',118)
+
 C
          IF (ANALZ1) THEN
             CALL PRIPRP
@@ -1865,15 +1868,12 @@ c#endif
 C
 C           *** Header print ***
 C
-            CALL HEADER('Component calulated',0)
-            WRITE (LUPRI,'(A)') '                       '
+            CALL HEADER('Next numerical derivative component',0)
             IF (IDIME.NE.1) THEN
                WRITE (LUPRI,'(12I5)')  (INDSTP(I),I=1,IRSRDR+1)
             ELSE
                WRITE (LUPRI,'(5X,A)') 'Starting geometry.'
             END IF
-            WRITE (LUPRI,'(A)') '                       '
-            WRITE (LUPRI,'(A)') '                       '
 C
             IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.(RESTRT.AND.RSTDON
      &           .AND.((IDIME.GT.IDIMAX).OR.(IDIME.LT.IDIMIN))))) THEN
@@ -1891,9 +1891,9 @@ C
                CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
      &                     MBKLIN,NMBKLN,LASTE)
 C
-C              *** Reset nescesary variables ***
+C              *** Reset necessary variables ***
 C
-               CALL NUMRES(EXHER,EXSIR,EXABA)
+               CALL NDER_RESET(EXHER,EXSIR,EXABA)
 cdj
                EXESG = FNDKEY('*ESG   ')
 C     
@@ -2085,8 +2085,6 @@ C
                MLINE(NMLAU)(10:20) = '           '
             END IF
          ELSE
-            DOCART = .FALSE.
-            DOOWN = .FALSE.
             CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,
      &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .TRUE.
@@ -2165,9 +2163,9 @@ C
                   IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
                   CALL UPCASE(MLINE(NCLINE(ICENT1)-1))
                   CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
-     &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
+     &                 IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,KSPH)
                   CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
-     &                        ATOMBA,BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,KSPH)
                ELSE
                   WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
                END IF
@@ -2188,10 +2186,10 @@ C
  1100    CONTINUE
          IF (NEWINP) THEN
             CALL UPCASE(MLINE(NCLINE(KCENT1)-1))
-            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,IQM1,
-     &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
-            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,ATOMBA,
-     &                  BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
+            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
+     &           IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,
+     &           BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,KSPH)
             BASIS  = .FALSE.
             ATOMBA = .FALSE.
          ELSE
@@ -2256,7 +2254,7 @@ C
       END
 C
 C  /* Deck numres */
-      SUBROUTINE NUMRES(EXHER,EXSIR,EXABA)
+      SUBROUTINE NDER_RESET(EXHER,EXSIR,EXABA)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2286,22 +2284,15 @@ C
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
 C
-C     *** Reseting aba ***
+C     *** unset ABA variable to false ***
 C
       CALL ABUSET
-C
-C     *** NOADSY -> If no automatic symmetry detection is requested ***
-C     ***           we need to use Huckel start-guess first time.   ***
-C
-c      IF (ADSTBK) THEN
-         DOHUCKEL = .TRUE.
-c         NOADSY = .FALSE.
-c      END IF
 C
 C     *** If there are possibilities for  new symmetry. ***
 C
       IF (((NMORDR+NAORDR).GT.1).OR.(NPRPDR)) THEN
          NEWSYM = .TRUE.
+         DOHUCKEL = .TRUE.
       END IF
 C
 C     *** For higher order derivatives. ****
@@ -3239,8 +3230,8 @@ C
          IF (.NOT.MINOUT) THEN
             CALL PRTDER(SYMTDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
          ELSE
-            WRITE (LUPRI,'(X,A,/)') 
-     *         "Output of third derivative suppressed"
+            WRITE (LUPRI,'(A/)') 
+     *         " Output of third derivative suppressed"
          ENDIF
       ELSE
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
@@ -3267,7 +3258,7 @@ C     *** Transformation to cartesian  ***
 C     ***  coordinstes, and printing.  ***
 C     ************************************
 C
-      IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:LTXT).NE.'normal')) THEN
+      IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
          LTXT = 9
          TEXT(1:9) = 'cartesian'
 C
@@ -3401,8 +3392,8 @@ C
       IF (.NOT.MINOUT) THEN
          CALL PRFDER(SYMFDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
       ELSE
-         WRITE (LUPRI,'(X,A,/)') 
-     *         "Output of fourth derivative suppressed"
+         WRITE (LUPRI,'(A/)') 
+     *      " Output of fourth derivative suppressed"
       ENDIF
 C
 C     ************************************
@@ -3410,7 +3401,7 @@ C     *** Transformation to cartesian  ***
 C     ***  coordinstes, and printing.  ***
 C     ************************************
 C
-      IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:LTXT).NE.'normal')) THEN
+      IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
 C
 C        *** Coordinate transformation. ***
 C
@@ -3420,7 +3411,7 @@ C
 C        *** Printing in cartesian coordinates. ***
 C
          IF (.NOT.MINOUT) 
-     &      CALL PRFDER(FDER,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
+     &      CALL PRFDER(FDER,NCOOR,NUMCOR,'cartesian',9,IPRINT)
       ELSE
          CALL DCOPY(NCOOR**4,SYMFDR,1,FDER,1)
       END IF
@@ -3865,7 +3856,7 @@ C
 C     *** Test printing. ***
 C
       IF (IPRINT .GE. 20) THEN
-         CALL HEADER('Eigen-vectors of the symmetry adapted hessian',-1)
+         CALL HEADER('Eigenvectors of the symmetry adapted hessian',-1)
          DO IC1 = 1, NCOOR
             WRITE (LUPRI,'(10X,12F9.4)') (EGNVCT(IC1,IC2),IC2=1,NCOOR)
          END DO
@@ -4062,8 +4053,8 @@ C
       END IF
 C
       DO 100 ICOL2 = 1, NCOR
-         WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
-         WRITE (LUPRI,'(A)') '      -----------------'
+         WRITE (LUPRI,'(A,I5)') '      Column number', ICOL2
+         WRITE (LUPRI,'(A)')    '      ------------------'
          INLC = 0
          DO 200 INLCMX = 1, NLCMAX
             INLC2 = 6*(INLCMX-1) + 1
@@ -4105,8 +4096,7 @@ C
 C
       DO 100 ICOL3 = 1, NCOR
          WRITE (LUPRI,'(A,I4)') '      The fourth dimension', ICOL3
-         WRITE (LUPRI,'(A)') '      ------------------------'
-         WRITE (LUPRI,'(A)') '                                  '
+         WRITE (LUPRI,'(A/)') '      ------------------------'
          DO 200 ICOL2 = 1, NCOR
             WRITE (LUPRI,'(A,I4)') '        The third Dimension', ICOL2
             INLC = 0
@@ -4257,7 +4247,7 @@ C
          KSYMTD = KTDER  + NCOOR**3
          KLAST  = KSYMTD + NCOOR**3
          CALL HEADER('Numerical third derivative of energy in ' //
-     &                TEXT(1:LTXT) // 'coordinates',-1)
+     &                TEXT(1:LTXT) // ' coordinates',-1)
          CALL PRITDR(TDER,SYMCOR,TTMPDR,WORK(KSYMTD),NDIMT,NDCOOR,LTXT,
      &               IPRINT,PRWHLE,TEXT)
       END IF
@@ -4271,7 +4261,7 @@ C
          KCSTRA = KSCTRA + NCOOR**2
          KLAST  = KCSTRA + NCOOR**2
          CALL HEADER('Numerical fourth derivative of energy in ' //
-     &                TEXT(1:LTXT) // 'coordinates',-1)
+     &                TEXT(1:LTXT) // ' coordinates',-1)
          CALL PRIFDR(FDER,SYMCOR,FTMPDR,WORK(KSYMFD),NDIMF,NDCOOR,LTXT,
      &               IPRINT,TEXT)
       END IF
@@ -4323,7 +4313,7 @@ C
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
 C
-      CALL HEADER('Gradient in ' // TEXT(1:LTXT) // 'coordinates',-1)
+      CALL HEADER('Gradient in ' // TEXT(1:LTXT) // ' coordinates',-1)
 C
       DO 100 ICOOR = 1, NDCOOR
          IF (ICRIRP(ICOOR,1).EQ.1) THEN
@@ -4488,7 +4478,7 @@ C
                   END DO
                ELSE
 C
-C              *** Printing nescecary pre-hessian information. ***
+C              *** Printing necessary pre-hessian information. ***
                   WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
                   WRITE(LUHES,*) NCOOR
                   WRITE(LUHES,'(A)') '                                '
@@ -5233,7 +5223,7 @@ C        *** Open hessian file. ***
          CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
 C
-C        *** Printing nescecary pre-hessian information. ***
+C        *** Printing necessary pre-hessian information. ***
          WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
          WRITE(LUHES,*) NCOOR
          WRITE(LUHES,'(A)') '                                   '
@@ -5605,10 +5595,10 @@ C
       CALL HEADER('Analysis using the numerical derivatives',0)
       WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
 C
-      IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
-     &                              'efficient geometry.'
-      IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
-     &                              ' spin-spin coupling constants'
+      IF (NUMVIB) WRITE (LUPRI,'(A)')
+     &   ' - Frequency analysis and efficient geometry.'
+      IF (NSPNSP) WRITE (LUPRI,'(A)')
+     &   ' - Vibrational average of spin-spin coupling constants'
 C
       RETURN
       END
@@ -5745,7 +5735,7 @@ C
       END IF
 C
 C     ***********************************************
-C     *** Write nescesary results to file for the ***
+C     *** Write necessary results to file for the ***
 C     *** for the vibrational analysis.           ***
 C     ***********************************************
 C
@@ -6419,7 +6409,7 @@ C
 C     *** Backing up symmetry. ***
 C
       CALL ICOPY(64    ,IXVAL      ,1,IXVALB,1)
-      CALL ICOPY(8     ,ISOP       ,1,ISOPB ,1)
+      CALL ICOPY(8     ,JSOP       ,1,JSOPB ,1)
       CALL ICOPY(8     ,NRHFFR     ,1,NRHFRB,1)
       MAXRPB = MAXREP
 C
@@ -6533,9 +6523,9 @@ C
                SAMIRP = .TRUE.
                DO 300 ISYOP2 = 0, MAXREP
                DO 300 ISYOP1 = 0, MAXRPB
-                  IF (SYMOP(ISOP(ISYOP2)).EQ.SYMOP(ISOPB(ISYOP1))) THEN
-                     IF (IXVALB(ISOPB(ISYOP1),IRPOLD)  .NE.
-     &                    IXVAL (ISOP (ISYOP2),IREP )) SAMIRP = .FALSE.
+                  IF (SYMOP(JSOP(ISYOP2)).EQ.SYMOP(JSOPB(ISYOP1))) THEN
+                     IF (IXVALB(JSOPB(ISYOP1),IRPOLD)  .NE.
+     &                    IXVAL(JSOP (ISYOP2),IREP )) SAMIRP = .FALSE.
                   END IF
  300           CONTINUE
                IF (SAMIRP) THEN
@@ -6596,7 +6586,7 @@ C     /* Deck wrispc */
       SUBROUTINE WRISPC(FREQ,RNNORM,QUBIC,QUARTC,TXT,NCOOR,NDCOOR,NTIME,
      &                  IPRINT)
 **************************************************************
-*** Writes nescesary information to DALTON.SPC in order to ***
+*** Writes necessary information to DALTON.SPC in order to ***
 *** run the dal2spectro.pl script.                         ***
 **************************************************************
 #include <implicit.h>
@@ -6890,7 +6880,7 @@ C
 C           Read in info on property
 C
          READ(LUPRPCO,
-     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
          IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHKCCS')
@@ -7076,7 +7066,7 @@ C
      &           ' Two point formula'
          DO IPRPC = 1, NPRPC
             READ(LUPRPCO,
-     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHK1DR')
@@ -7125,7 +7115,7 @@ C     /* Deck wrimop */
       SUBROUTINE WRIMOP(FREQ,RNNORM,QUBIC,QUARTC,TXT,NCOOR,NDCOOR,NTIME,
      &                  IPRINT)
 **************************************************************
-*** Writes nescesary information to DALTON.MOP :           ***
+*** Writes necessary information to DALTON.MOP :           ***
 *** An operator file to be read in by MidasCpp             ***
 *** Ove Christiansen based on Torgeirs WRISPC 
 *** At this stage it makes only sense with norm. coord. 
@@ -7150,7 +7140,7 @@ C
       IF (TXT(1:6).EQ.'normal') THEN
 C         IF ((NTIME.EQ.2).OR.(NTIME.EQ.1 .AND.
       
-         WRITE(LUPRI,'(X,A)') " WRITE TO MIDAS INTERFACE FILE, "
+         WRITE(LUPRI,'(A)') " WRITE TO MIDAS INTERFACE FILE, "
      &           //"DALTON.MOP "
          LMIDAS = 0
          CALL GPOPEN(LMIDAS,'DALTON.MOP','UNKNOWN',' ','FORMATTED',
@@ -7211,10 +7201,10 @@ C
          NTOT   = NDCOOR 
          NWRIT  = NDCOOR 
          THRTRM = FAC*FRQLAR*FRQLAR*THRMID
-C        WRITE(LUPRI,'(X,A,E23.16)') " FRQLAR " ,FRQLAR
-C        WRITE(LUPRI,'(X,A,E23.16)') " FAC    " ,FAC
-C        WRITE(LUPRI,'(X,A,E23.16)') " THRMID " ,THRMID
-C        WRITE(LUPRI,'(X,A,E23.16)') " THRTRM " ,THRTRM  
+C        WRITE(LUPRI,'(A,E23.16)') " FRQLAR " ,FRQLAR
+C        WRITE(LUPRI,'(A,E23.16)') " FAC    " ,FAC
+C        WRITE(LUPRI,'(A,E23.16)') " THRMID " ,THRMID
+C        WRITE(LUPRI,'(A,E23.16)') " THRTRM " ,THRTRM  
 C
 C        *** Writing cubic force field. ***
 C        Note scaling with norms and symmetry factors!

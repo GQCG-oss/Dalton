@@ -120,8 +120,8 @@ CTRL[3]=10
 ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.2306668(2|3).[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.2306668" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -171,8 +171,8 @@ ERROR[9]="STATE 4 NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

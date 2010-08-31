@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -32,6 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C 
 C
+C FILE    : hergp.F
 #include "single.h"
 C
 C  /* Deck zergrd */
@@ -278,6 +279,65 @@ C
      &           CHESS,NDIMC)
       RETURN
       END
+C  /* Deck prigeolu */
+      SUBROUTINE PRIGEOLU(LU,COORD)
+C
+C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+      DIMENSION COORD(3,*)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
+C
+      CHARACTER*8 ATNAME 
+      LOGICAL FNONB
+      IATOM = 0
+      DO 100 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO 200 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IATOM = IATOM + 1
+               ATNAME='        '
+               FNONB = .FALSE.
+               INOTBLANK=0
+               DO I=1,6
+                  IF (NAMDEP(IATOM)(I:I).NE. ' ') THEN 
+                     INOTBLANK=INOTBLANK+1
+                     ATNAME(INOTBLANK:INOTBLANK)=
+     *                  NAMDEP(IATOM)(I:I)
+                     FNONB=.TRUE.
+                  ENDIF 
+                  IF (FNONB .AND.(NAMDEP(IATOM)(I:I).EQ. ' ')) THEN 
+                    GOTO 17 
+                  ENDIF 
+               ENDDO 
+  17           CONTINUE 
+               WRITE (LU,'(A,3(2X,F22.16))') ATNAME, 
+     *           (PT(IBTAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
+            END IF
+  200    CONTINUE
+  100 CONTINUE
+      IATOM = 0
+      WRITE(LU,*) " Atomic labels "
+      DO 300 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO 400 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IATOM = IATOM + 1
+               WRITE (LU,'(A))') NAMDEP(IATOM)
+            END IF
+  400    CONTINUE
+  300 CONTINUE
+
+      RETURN
+      END
 C  /* Deck prigeo */
       SUBROUTINE PRIGEO(COORD)
 C
@@ -398,6 +458,8 @@ C     Extended to Z=109 1997/06/20 Joern Thyssen
 C     Corrected Z=55-109 for correct units 
 C                        1999/04/23 W.A. de Jong
 C     Extended to Z=118 1997/05/28 Trond Saue
+C     Corrected elements 108 and 109, data from 
+C       Handbook of Chemistry and Physics, 83rd Edition, Thierfelder and R. Bast
 C     Updated magnetic and quadrupole moments
 C                        2003/03/06 Joost van Stralen
 C     Proton mass and electron charge:
@@ -910,7 +972,7 @@ C     Cd:
 C
      &113.903361D0, 28.730000D0,   .000000D0,   .000000D0,   .000000D0,
      &111.902761D0, 24.130000D0,   .000000D0,   .000000D0,   .000000D0,
-     &110.904182D0, 12.800000D0,   .500000D0,  -.594886D0,   .000000D0,
+     &110.904182D0, 12.800000D0,   .500000D0,  -.594886D0,  -.850000D0,
      &109.903007D0, 12.490000D0,   .000000D0,   .000000D0,   .000000D0,
      &112.904401D0, 12.220000D0,   .500000D0,  -.622301D0,   .000000D0,
      &115.904758D0,  7.490000D0,   .000000D0,   .000000D0,   .000000D0,
@@ -1210,8 +1272,8 @@ C     Hg:
 C
      &201.970617D0, 29.860000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &199.968300D0, 23.100000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &198.968254D0, 16.870000D0,   0.500000D0, 0.50588549D0, 0.000000D0,
-     &200.970277D0, 13.180000D0,   1.500000D0,-0.5602257D0,  0.386000D0,
+     &198.968254D0, 16.870000D0,   0.500000D0, 0.50588549D0, 0.850000D0,
+     &200.970277D0, 13.180000D0,   1.500000D0,-0.5602257D0,  0.385000D0,
      &197.966743D0,  9.970000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &203.973467D0,  6.870000D0,   0.000000D0, 0.000000D0,   0.000000D0/
 C
@@ -1472,18 +1534,18 @@ C
 C
 C     Hs(108):
 C
-     &263.128700D0,264.128400D0,265.1301600D0,267.13180D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &269.134100D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &263.128700D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &264.128400D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &265.130000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &267.137100D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
 C
 C     Mt(109):
 C
-     &266.137640D0,268.138800D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &267.138000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &266.137900D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &268.138800D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
@@ -1933,6 +1995,14 @@ C
 C
 #include "cbisol.h"
 #include "nuclei.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
+#include "qm3.h"
+#include "qmmm.h"
+
 C
       IF (IPRINT .GE. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0
@@ -1964,8 +2034,15 @@ C
         WRITE (LUPRI,'(/A,3F12.6)')
      &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
       END IF
+      IF (QM3. OR. QMMM) THEN
+        QMCOM(1) = ORIGIN(1)
+        QMCOM(2) = ORIGIN(2)
+        QMCOM(3) = ORIGIN(3)
+      ENDIF
+
       RETURN
       END
+C
       LOGICAL FUNCTION FNDKEY(KEYWRD_INP)
 C
 C     Search DALTON.INP for general key-word KEYWRD
@@ -2218,24 +2295,5 @@ C
      &        'E'//CHRXYZ(-IX),(PRIVAL(K),K=1,J)
       END DO
       WRITE (LUPRI,'()')
-      RETURN
-      END
-      SUBROUTINE UPCASE(WORD)
-#include "implicit.h"
-C
-C     Routine that uppercases the word provided. Allows the input easily to
-C     be made case insensitive. F90 routine supplied by Anthony Stone and 
-C     77-ified by K.Ruud
-C
-      CHARACTER word*(*)
-      CHARACTER*26 UPPER, LOWER
-C
-      UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      LOWER = "abcdefghijklmnopqrstuvwxyz"
-      DO I = 1, LEN(WORD)
-         K = INDEX(LOWER,WORD(I:I))
-         IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
-      END DO
-C
       RETURN
       END

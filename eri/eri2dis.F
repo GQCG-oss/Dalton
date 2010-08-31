@@ -451,6 +451,7 @@ C  /* Deck pickao */
 #include <maxorb.h>
 #include <aovec.h>
 #include <mxcent.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <shells.h>
 #include <erisel.h>

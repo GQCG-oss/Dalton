@@ -223,7 +223,7 @@ fi
 #
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
-      if [ -a $DALMPI -a -x $DALMPI ]; then
+      if [ -s $DALMPI -a -x $DALMPI ]; then
 	 if [ -n "$optlam" ] ; then
 	    lamboot -v  $WRKDIR/$optlam
 	    $MPIRUN -wd $TMPDIR -np $optn $DALMPI
@@ -267,7 +267,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
+filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then

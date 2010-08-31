@@ -63,8 +63,9 @@ C
 #include <inftap.h>
 #include <cclr.h>
 #include <ccslvinf.h>
-#include <qm3.h>
+#include <gnrinf.h>
 #include <ccfdgeo.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <ccr12int.h>
 !Sonia
@@ -535,6 +536,22 @@ C
 C
       EINI = EN2
 C
+CSPAS: 15.11.2009 adding AO-SOPPA
+C-----------------------------------------------
+C     For AO-SOPPA Write MP2 amplitudes to disk.
+C-----------------------------------------------
+C
+      IF (AOSOPPA) THEN
+         LUTAM = -1
+         CALL GPOPEN(LUTAM,'MP2__TAM',' ',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND LUTAM
+         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
+         WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+      ENDIF
+CKeinSPASmehr
+C
 C----------------------------------------
 C     If MP2 or NOCCIT do not enter loop.
 C----------------------------------------
@@ -871,6 +888,18 @@ C
          CALL DZERO(WORK(KT2AM),NT2AMX)
       ENDIF
 C
+CSPAS: 15.11.09 adding AO-SOPPA
+      IF (AOSOPPA .AND. .NOT. MP2) THEN
+         LUTAM = -1
+         CALL GPOPEN(LUTAM,'CCSD_TAM',' ',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND LUTAM
+         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
+         WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+      ENDIF
+CKeinSPASmehr
+C
 C----------------------------------
 C     save a copy on file CCR0___0
 C----------------------------------
@@ -1034,10 +1063,9 @@ C
       WRITE(LUPRI,'(//)')
       CALL AROUND
      * ('Final results from the Coupled Cluster energy program')
-      WRITE(LUPRI,'(/)')
-      WRITE(LUPRI,'(12X,A,A,A,F32.10,/)') 'Total ',ETY0,' energy: ',ESCF
-      WRITE(LURES,'(/)')
-      WRITE(LURES,'(12X,A,A,A,F32.10)') 'Total ',ETY0,' energy: ',ESCF
+      WRITE(LUPRI,'(//12X,A,A,A,F32.10,/)')
+     &   'Total ',ETY0,' energy: ',ESCF
+      WRITE(LURES,'(//12X,A,A,A,F32.10)') 'Total ',ETY0,' energy: ',ESCF
       CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
       WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') 'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI

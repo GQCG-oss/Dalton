@@ -53,6 +53,7 @@ C     absorption in the optical processes.
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <absorp.h>
 #include <infrsp.h>
 C
@@ -260,6 +261,13 @@ C     User input of damping parameter
          GOTO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR_ABSORP = THCLR_ABSORP*THR_REDFAC
+         THCPP_ABSORP = THCPPPABSORP*THR_REDFAC
+      END IF
 C
 C     Process user input
 C
@@ -546,6 +554,8 @@ C
       IF (ABS_BETA .OR. ABS_MCD .OR. ABS_ANALYZE) THEN
          CALL SETZY(MJWOP)
       END IF
+C
+      IF (NEXCITED_STATES.EQ.0) RETURN
 C
       KZRED  = 0
       KZYRED = 0
@@ -1362,7 +1372,7 @@ C
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,/,1X,A,F8.4,A)') 
      &           '>>>>> Solving imaginary equation for frequency:',
      &           FREQ_ABS(IFREQ),' <<<<<<'
-            THCRSP = 0.1D0*THCLR_ABSORP*DNORM_NT/DNORM_NI/DSQRT2
+            THCRSP = 0.5D0*THCLR_ABSORP*DNORM_NT/DNORM_NI/DSQRT2
             CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &           .TRUE.,BLANK,BLANK,WRK(KGD2),REDGD,REDE,REDS,
      &           IBTYP,FREQ_ABS(IFREQ),RESIDUAL,REDVEC,XINDX,
@@ -1596,7 +1606,8 @@ C
      &        REDVEC,FC,FV,CMO,UDV,PV,XINDX,IBATCH,RESLRF,
      &        WRK(KFREE),LFREE)
          CALL REDSPACE(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
-     &        REDE,REDS,REDVEC,IBTYP,WRK(KFREE),LFREE)
+     &        REDE,REDS,REDVEC,IBTYP,
+     &        FC,FV,CMO,UDV,PV,XINDX,WRK(KFREE),LFREE)
       END IF
 C
       ITER = 0
@@ -1805,7 +1816,7 @@ C
       RETURN
       END
       SUBROUTINE REDSPACE(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
-     &     REDE,REDS,REDVEC,IBTYP,WRK,LWRK)
+     &     REDE,REDS,REDVEC,IBTYP,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
 #include <implicit.h>
 #include <priunit.h>
 #include <infrsp.h>
@@ -1819,6 +1830,7 @@ C
       DIMENSION REDVEC(2*MAXRM,MXFREQ),IBTYP(MAXRM),
      &     REDE(MAXRM*MAXRM),REDS(MAXRM*MAXRM),
      &     FREQ_ABS(MXFREQ),WRK(LWRK)
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*)
 C
       IF (IPRABS.GE.2) WRITE(LUPRI,'(2(/A))')
      &     ' INFO: lowering dimension of reduced space'
@@ -1854,14 +1866,14 @@ C
      &     IBTYP,REDVEC,WRK(KFREE),LFREE)
 C
 C     Read response and sigma vectors from temporary files and perform
-C     Gram-Schmidt orthogonalization of the respective real and
+C     modified Gram-Schmidt orthogonalization of the respective real and
 C     imaginary parts of the response vectors (these then form the new
 C     set of trial vectors which are written to LURSP3). The
 C     corresponding sigma vectors are contructed and written to LURSP5.
 C     We keep NBOLD of the old trial vectors in order to avoid linear
 C     dependence.
 C
-      NBOLD = 2
+      NBOLD = 0
       NLINDEP = 0
       IFREQ=0
       READFLAG = .TRUE.
@@ -1879,6 +1891,16 @@ C
             CALL DCOPY(KZYVAR,WRK(KB),1,WRK(KBVEC),1)
             CALL DCOPY(KZYVAR,WRK(KS),1,WRK(KSVEC),1)
             READFLAG = .FALSE.
+C
+            IF (IPRABS.GE.2) THEN
+               CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &              WRK(KFREE),LFREE)
+               VAL1 = DDOT(KZYVAR,WRK(KFREE),1,WRK(KB),1)
+               VAL2 = DDOT(KZYVAR,WRK(KFREE),1,WRK(KB+KZYVAR),1)
+               WRITE(LUPRI,'(2A,F10.6,2F16.10)') 
+     &              ' Value of linear response for ',
+     &              LABEL,FREQ_ABS(IFREQ),VAL1,VAL2
+            END IF
 C
             IF (IPRABS.GE.10) THEN
                WRITE(LUPRI,'(/A,A10,A,I4,/A,F12.8,A,I4)') 
@@ -1904,13 +1926,18 @@ C
             READFLAG = .TRUE.
          END IF
 C
+C     First KZYVAR elements of the space for complex response vectors
+C     are now available as scratch.
+C
+         KBTMP=KB
+         KSTMP=KS
+C
          KRSP3 = 0
          KRSP5 = 0
          CALL REWSPL(LURSP3)
          CALL REWSPL(LURSP5)
+C     
          DO J=1,I-1-NLINDEP
-            KBTMP=KB
-            KSTMP=KS
 #if defined (VAR_SPLITFILES)
             CALL READST(LURSP3,KZYVAR,WRK(KBTMP),KRSP3,.TRUE.)
             CALL READST(LURSP5,KZYVAR,WRK(KSTMP),KRSP5,.TRUE.)
@@ -1918,18 +1945,24 @@ C
             CALL READT(LURSP3,KZYVAR,WRK(KBTMP))
             CALL READT(LURSP5,KZYVAR,WRK(KSTMP))
 #endif
-C
-            FAC = DDOT(KZYVAR,WRK(KBVEC),1,WRK(KBTMP),1)
+C     Orthogonalize against trial vectors (Z,Y)
+            FAC = DDOT(KZYVAR,WRK(KBTMP),1,WRK(KBVEC),1)
             CALL DAXPY(KZYVAR,-FAC,WRK(KBTMP),1,WRK(KBVEC),1)
             CALL DAXPY(KZYVAR,-FAC,WRK(KSTMP),1,WRK(KSVEC),1)
-C
+C     Orthogonalize against trial vectors (Y,Z)
+            FAC = DDOT(KZVAR,WRK(KBTMP+KZVAR),1,WRK(KBVEC),1) +
+     &            DDOT(KZVAR,WRK(KBTMP),1,WRK(KBVEC+KZVAR),1)
+            CALL DAXPY(KZVAR,-FAC,WRK(KBTMP+KZVAR),1,WRK(KBVEC),1)
+            CALL DAXPY(KZVAR,-FAC,WRK(KBTMP),1,WRK(KBVEC+KZVAR),1)
+            CALL DAXPY(KZVAR,-FAC,WRK(KSTMP+KZVAR),1,WRK(KSVEC),1)
+            CALL DAXPY(KZVAR,-FAC,WRK(KSTMP),1,WRK(KSVEC+KZVAR),1)
          END DO
 C
 C     Check linear dependence.
 C
          BNORM = DNORM2(KZYVAR,WRK(KBVEC),1)
          IF (BNORM.LT.1.0D-6) THEN
-            IF (IPRABS.GE.2) WRITE(LUPRI,'(A)') 
+            IF (IPRABS.GE.0) WRITE(LUPRI,'(A)') 
      &           ' INFO: vector not used as trial vector'//
      &           ' due to linear dependence'
             NLINDEP = NLINDEP + 1
@@ -1937,6 +1970,19 @@ C
             FAC = 1.0D0/BNORM
             CALL DSCAL(KZYVAR,FAC,WRK(KBVEC),1)
             CALL DSCAL(KZYVAR,FAC,WRK(KSVEC),1)
+C     Orthogonalize trial vector (Z,Y) against (Y,Z) using
+C     symemtric orthogonalization to keep paired structure
+            OVLP=2.0D0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KBVEC+KZVAR),1)
+            C1=0.5D0*(1/SQRT(1+OVLP) + 1/SQRT(1-OVLP))
+            C2=0.5D0*(1/SQRT(1+OVLP) - 1/SQRT(1-OVLP))
+            CALL DCOPY(KZYVAR,WRK(KBVEC),1,WRK(KBTMP),1)
+            CALL DCOPY(KZYVAR,WRK(KSVEC),1,WRK(KSTMP),1)
+            CALL DSCAL(KZYVAR,C1,WRK(KBVEC),1)
+            CALL DSCAL(KZYVAR,C1,WRK(KSVEC),1)
+            CALL DAXPY(KZVAR,C2,WRK(KBTMP),1,WRK(KBVEC+KZVAR),1)
+            CALL DAXPY(KZVAR,C2,WRK(KBTMP+KZVAR),1,WRK(KBVEC),1)
+            CALL DAXPY(KZVAR,C2,WRK(KSTMP),1,WRK(KSVEC+KZVAR),1)
+            CALL DAXPY(KZVAR,C2,WRK(KSTMP+KZVAR),1,WRK(KSVEC),1)
 C
 #if defined (VAR_SPLITFILES)
             CALL WRITST(LURSP3,KZYVAR,WRK(KBVEC),KRSP3)
@@ -1945,15 +1991,15 @@ C
             CALL WRITT(LURSP3,KZYVAR,WRK(KBVEC))
             CALL WRITT(LURSP5,KZYVAR,WRK(KSVEC))
 #endif
-            IF (IPRABS.GE.2) THEN
+            IF (IPRABS.GE.10) THEN
                WRITE(LUPRI,'(/A,I4,A,I2)') 
      &              ' INFO: Normalized trial vector',I,
      &              ' is written to file LURSP3=',LURSP3
-               IF (IPRABS.GE.20) THEN
+               IF (IPRABS.GE.0) THEN
                   CALL PRSYMB(LUPRI,'=',72,1)
                   WRITE(LUPRI,'(4X,2A15)') 'Z','Y'
-                  CALL OUTPUT(WRK(KBVEC),1,KZYVAR/2,1,2,
-     &                 KZYVAR/2,2,1,LUPRI)
+                  CALL OUTPUT(WRK(KBVEC),1,KZVAR,1,2,
+     &                 KZVAR,2,1,LUPRI)
                   CALL FLSHFO(LUPRI)
                END IF
             END IF
@@ -1978,38 +2024,36 @@ C
          DO IDUM=1,I
             CALL READT(LURSP3,KZYVAR,WRK(KBVEC))
          END DO            
+         REWIND(LURSP3)
          REWIND(LURSP5)
          DO J=1,I
-            REWIND(LURSP3)
-            DO IDUM=1,J
-               CALL READT(LURSP3,KZYVAR,WRK(KSVEC))
-            END DO            
-            CALL READT(LURSP5,KZYVAR,WRK(KSNR))
+            CALL READT(LURSP3,KZYVAR,WRK(KB))
+            CALL READT(LURSP5,KZYVAR,WRK(KS))
             ICOL=2*J-1
             REDE(JOFF1+ICOL) = 
-     &           DDOT(KZYVAR,WRK(KBVEC),1,WRK(KSNR),1)
+     &           DDOT(KZYVAR,WRK(KBVEC),1,WRK(KS),1)
             IF (I.NE.J) REDE(JOFF1+ICOL+1) = 
-     &              DDOT(KZVAR,WRK(KBVEC),1,WRK(KSNR+KZVAR),1) +
-     &              DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSNR),1)
+     &              DDOT(KZVAR,WRK(KBVEC),1,WRK(KS+KZVAR),1) +
+     &              DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KS),1)
             REDE(JOFF2+ICOL) = 
-     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSNR),1) +
-     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSNR+KZVAR),1)
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KS),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KS+KZVAR),1)
             REDE(JOFF2+ICOL+1) = 
-     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSNR+KZVAR),1) +
-     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSNR),1)
-            CALL DSCAL(KZVAR,-1.0D0,WRK(KSVEC+KZVAR),1)
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KS+KZVAR),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KS),1)
+            CALL DSCAL(KZVAR,-1.0D0,WRK(KB+KZVAR),1)
             REDS(JOFF1+ICOL) = 
-     &           DDOT(KZYVAR,WRK(KBVEC),1,WRK(KSVEC),1)
+     &           DDOT(KZYVAR,WRK(KBVEC),1,WRK(KB),1)
             REDS(JOFF2+ICOL) = 
-     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSVEC),1) +
-     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC+KZVAR),1)
-            CALL DSCAL(KZYVAR,-1.0D0,WRK(KSVEC),1)
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KB),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KB+KZVAR),1)
+            CALL DSCAL(KZYVAR,-1.0D0,WRK(KB),1)
             IF (I.NE.J) REDS(JOFF1+ICOL+1) = 
-     &              DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC+KZVAR),1) +
-     &              DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSVEC),1)
+     &              DDOT(KZVAR,WRK(KBVEC),1,WRK(KB+KZVAR),1) +
+     &              DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KB),1)
             REDS(JOFF2+ICOL+1) = 
-     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KSVEC+KZVAR),1) +
-     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC),1)
+     &           DDOT(KZVAR,WRK(KBVEC+KZVAR),1,WRK(KB+KZVAR),1) +
+     &           DDOT(KZVAR,WRK(KBVEC),1,WRK(KB),1)
          END DO
       END DO
       CALL DSCAL(KZYRED*(KZYRED+1)/2,2.0D0,REDS,1)

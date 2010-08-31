@@ -228,15 +228,16 @@ model in the list.
 \section{R12 methods}
 
 \noindent At present available at the MP2 level. The input for
-an MP2-R12/A calculation is as follows (the key \Key{AUXBAS} is used only if
+an MP2-R12/A calculation is as follows (the key \Key{R12AUX} is used only if
 an auxiliary basis is employed):
 \begin{verbatim}
 **DALTON INPUT
 .DIRECT
 .RUN WAVE FUNCTIONS
+*READIN
+.R12AUX
 **INTEGRAL
 .R12
-.AUXBAS
 **WAVE FUNCTIONS
 .CC
 *CC INPUT

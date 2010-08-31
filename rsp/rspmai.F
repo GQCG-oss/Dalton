@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -128,10 +128,10 @@ C
 C
       TIMRSP = SECOND()
       CALL GETTIM(CSTR,WSTR)
-      WRITE (LUPRI,'(//A)')
-     *   '  This is output from RESPONSE  -  '//
-     *   'an MCSCF and SOPPA response property program'
-      WRITE (LUPRI,'(1X,78A1/)') ('-',I=1,78)
+      WRITE (LUPRI,'(/1X,78A1/A/1X,78A1)') ('-',I=1,78),
+     &   '  RESPONSE  -  '//
+     &   'an MCSCF, MC-srDFT, DFT, and SOPPA response property program',
+     &   ('-',I=1,78)
 C
 C     *************************
 C     ***** INPUT SECTION *****
@@ -158,7 +158,8 @@ C
          CALL SETSOPPA
       END IF
 C
-C     set *ACT* variables in INFRSP
+C     set *ACT* variables in INFRSP (different settings for SOPPA and
+C     MCSCF/DFT)
 C
       CALL RSPACT
 C
@@ -317,6 +318,29 @@ C
      *           WRK(KWRK1),LWRK1)
 C     CALL RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,WRK,LWRK)
 C
+C
+      IF (DOMCSRDFT) THEN
+         CALL TITLER('MC-srDFT response calculation','*',103)
+      ELSE IF (DOHFSRDFT) THEN
+         CALL TITLER('HF-srDFT response calculation','*',103)
+      ELSE IF (DODFT .AND. NASHT.GT.0) THEN
+         CALL TITLER('High-spin DFT response calculation','*',103)
+      ELSE IF (DODFT) THEN
+         CALL TITLER('DFT response calculation (TD-DFT)','*',103)
+      ELSE IF (HSROHF) THEN
+         CALL TITLER('High-spin ROHF response calculation','*',103)
+      ELSE IF (TDHF) THEN
+         CALL TITLER('RHF response calculation (TDHF)','*',103)
+      ELSE IF (CCPPA) THEN
+         CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+      ELSE IF (SOPPA) THEN
+         CALL TITLER('SOPPA response calculation','*',103)
+      ELSE
+         CALL TITLER('MCSCF response calculation','*',103)
+      END IF
+C
+C
+C
       IF ( .NOT.TDHF ) THEN
          CALL GETCIX(WRK(KINDX),IREFSY,IREFSY,WRK(KFREE),LFREE,0)
       END IF
@@ -337,7 +361,7 @@ C
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')
      &           ' ***** ONE BODY DENSITY MATRIX from SIRIFC file'
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
          ISPIN1 = 0
          ISPIN2 = 0
@@ -360,7 +384,7 @@ C
          END IF
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
       ELSE IF (DORESP .AND. TDHF .AND. NASHT .EQ. 1) THEN
          WRK(KUDV) = D1
@@ -739,7 +763,9 @@ C
       IF (.NOT.SET) THEN
          SET = .TRUE.
          IF (.NOT. DIRFCK) DIRFCK = DIRCAL
-         NOITRA = DIRFCK
+         IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
+         IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
+         IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
@@ -878,7 +904,7 @@ C              .PROP2Average
          END IF
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
-     *      ' AO-DIRECT FOCK MATRIX CALCULATION.'
+     *      ' AO-DIRECT FOCK MATRIX CALCULATIONS.'
          ELSE IF (NOITRA) THEN
             WRITE(LUPRI,'(/2A,L1)')
      *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'
@@ -970,6 +996,7 @@ C
 #include "elweak.h"
 #include "absorp.h"
 #include "esg.h"
+#include "channel.h"
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -1030,10 +1057,11 @@ C     Initialization of INFHYP
       DATA REFCHK/.FALSE./
       DATA IAABB/0/
 C     Initialization of INFSMO
-      DATA SOMOM/.FALSE./
-      DATA MCDCAL/.FALSE./
+      DATA SOMOM/.FALSE./ , TWOPHO/.FALSE./, MCDCAL/.FALSE./,
+     &     MCDPRJ/.FALSE./
       DATA IPRSMO/2/
       DATA NBSMFR/1/ , BSMFR(1)/0.0D0/
+C     Initialization of INFESR
       DATA IPRESR/2/ , MAXESR/60/ ,THCESR/1.0D-5/ ,ESRCAL/.FALSE./
 C     Initialization of INFSPI
       DATA ISPINA/0/,ISPINB/0/,ISPINC/0/,ISPIND/0/
@@ -1072,6 +1100,9 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
+C  Initializing CHANNEL
+      DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
+      DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
 C  Initializing ESG
       DATA ESG/.FALSE./
       DATA IESG/1/
@@ -1091,9 +1122,10 @@ C
 #include "mxcent.h"
 #include "pcmdef.h"
       LOGICAL NEWDEF, ISLINR
-      PARAMETER ( NTABLE = 51 )
+      PARAMETER ( NTABLE = 53 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
+      INTEGER NUMBER_ORBS(8)
 C
 #include "priunit.h"
 #include "inforb.h"
@@ -1111,13 +1143,8 @@ C
 #include "inftap.h"
 #include "pcm.h"
 #include "pcmlog.h"
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
-#include <qm3.h>
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
+#include "channel.h"
+#include <gnrinf.h>
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ','.DIPVEL',
      *            '.DIPVLX', '.DIPVLY', '.DIPVLZ', '.DIPMAG','.DIPMGX',
@@ -1129,7 +1156,7 @@ C
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.ECD   ',
      *            '.X2TEST', '.A2TEST', '.SINGLE', '.DOUBLE','.THCLR ',
      *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART','.OECD  ',
-     *            '.ESA   '/
+     *            '.ESA   ', '.CHANNE', '.VIRTUA'/
       INTEGER IXARR(MAXLPP)
 C
 C READ IN  INPUT
@@ -1156,7 +1183,8 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,
-     *                      40,41,42,43,44,45,46,47,48,49,50,51), I
+     *                      40,41,42,43,44,45,46,47,48,49,50,51,
+     *                      52,53), I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -1431,6 +1459,37 @@ C     subsequent line.
                   NPPTOT = NPPTOT + NPPCNV(J)
                END DO
                GO TO 100
+C .CHANNEL - restrict to excitations from particular orbitals
+ 52            CONTINUE
+               CHANNEL_CALC = .TRUE.
+               CHANNEL_NORB = 0
+               READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
+               DO I=1,NSYM
+                  CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
+               END DO
+               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for CHANNEL calculation: ' //
+     &               'increase CHANNEL_MAX and recompile')
+               IOFF=0
+               DO ISYM=1,NSYM
+                  IF (NUMBER_ORBS(ISYM).GT.0) THEN 
+                     READ(LUCMD,*) (CHANNEL_ORB(I+IOFF),
+     &                  I=1,NUMBER_ORBS(ISYM))
+                     DO I=1,NUMBER_ORBS(ISYM)
+                        CHANNEL_ORB(I+IOFF) =
+     &                  CHANNEL_ORB(I+IOFF) + IORB(ISYM)
+                     END DO
+                     IOFF = IOFF + NUMBER_ORBS(ISYM)
+                  ELSE
+                     READ(LUCMD,*)
+                  END IF 
+               END DO
+               GOTO 100
+C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
+ 53            CONTINUE
+               CHANNEL_VCALC = .TRUE.
+               READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1438,8 +1497,17 @@ C     subsequent line.
      *            '" NOT RECOGNIZED IN PPINP.'
                CALL QUIT(' ILLEGAL PROMPT IN PPINP ')
             END IF
-      END IF
+      END IF   ! for IF (NEWDEF)
+C ------------------ 
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+      END IF
+C
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
@@ -1452,33 +1520,24 @@ C     subsequent line.
             CALL HEADER(' Linear Response single residue calculation',0)
          END IF
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Equilibrium solvent model requested            : SOLVNT ='
-     *      ,FLAG(16)
-            WRITE(LUPRI,'(A,F8.4)')
+            WRITE(LUPRI,'(A/A,F8.4)')
+     *      ' Equilibrium continuum solvent model requested.',
      *      ' Dielectric constant                            : EPSOL  ='
      *      ,EPSOL
          END IF
          IF (FLAG(16) .AND. INERSI) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Non-equilibrium solvent model requested        : INERSI ='
-     *      ,INERSI
-            WRITE(LUPRI,'(A,F8.4)')
+            WRITE(LUPRI,'(A,2(/A,F8.4))')
+     *      ' Non-equilibrium continuum solvent model requested.',
      *      ' Static dielectric constant                     : EPSTAT ='
-     *      ,EPSTAT
-            WRITE(LUPRI,'(A,F8.4)')
+     *      ,EPSTAT,
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
-         IF (QM3) THEN
-           WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
+
+         IF (QM3 .OR. QMMM) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF
+
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
@@ -1503,6 +1562,17 @@ C-------------------
      *      ' Excited state absorption calculattion requested: DOESA  ='
      *      ,DOESA
          END IF
+         IF (CHANNEL_CALC) THEN
+            WRITE(LUPRI,'(/A,15(/,10I5))')
+     &         ' Restricted channel RPA,   excitations from orbs:',
+     &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
+         END IF
+         IF (CHANNEL_VCALC) THEN 
+          DO I=1,NSYM
+             WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
+     &           CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
+          ENDDO 
+         ENDIF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
      *       ,IPRPP
@@ -1510,7 +1580,7 @@ C-------------------
      *      ' Maximum number of iterations for eigenval.eqs. : MAXITP ='
      *       ,MAXITP
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence of eigenval.eqs.     : THCPP  ='
+     *      ' Threshold for convergence of eigenvalue eqs.   : THCPP  ='
      *      ,THCPP
          IF (EXMOM) THEN
             WRITE(LUPRI,'(A,I4)')
@@ -1576,6 +1646,7 @@ C
 #include "mxcent.h"
 #include "pcmdef.h"
 #include "infrsp.h"
+#include "inforb.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
 #include "inflr.h"
@@ -1590,31 +1661,39 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
-#include <qm3.h>
-C--------------------
-C CBN+JK 03.01.06
+#include "channel.h"
 C--------------------
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
-      PARAMETER ( NTABLE = 45 )
+      PARAMETER ( NTABLE = 48 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND
+      INTEGER NUMBER_ORBS(8)
 C
+!                    1          2          3          4
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
-     *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
-     *            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
-     *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
-     *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
-     *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.MAX IT', '.THCLR ', '.MAXITO',
-     *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
-     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
-     *            '.FERMI ', '.SPIN-D',
-     *            '.DIPLF ', '.DIPLFX', '.DIPLFY', '.DIPLFZ'/
+!                    5          6          7          8
+     &            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
+!                    9         10         11         12
+     &            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
+!                   13         14         15         16
+     &            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
+!                   17         18         19         20
+     &            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
+!                   21         22         23         24
+     &            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
+!                   25         26         27         28
+     &            '.MAX IT', '.THCLR ', '.MAXITO', '.PRINT ', 
+!                   29         30         31         32
+     &            '.FREQUE', '.ABOCHK', '.ISTOCK', '.MAXOCK', 
+!                   33         34         35         36
+     &            '.SOPRSY', '.RESTLR', '.DIROIT', '.TRIPLE', 
+!                   37         38         39         40
+     &            '.PV PSO', '.PV SO ', '.PV SO2', '.FERMI ', 
+!                   41         42         43         44
+     &            '.SPIN-D', '.DIPLF ', '.DIPLFX', '.DIPLFY', 
+!                   45         46         47         48
+     &            '.DIPLFZ', '.CHANNE', '.VIRTUA', '.xxxxxx'/
 C
 C
 C
@@ -1636,7 +1715,7 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41,
-     *                      42,43,44,45),I
+     *                      42,43,44,45,46,47,48),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1895,6 +1974,43 @@ C
                   LLROP( INDPRP('ZDIPLOC ')) = .TRUE.
                GO TO 100
 C
+C .CHANNEL
+ 46            CONTINUE
+               CHANNEL_CALC = .TRUE.
+               CHANNEL_NORB = 0
+               READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
+               DO I=1,NSYM
+                  CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
+               END DO
+               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for CHANNEL calculation: ' //
+     &               'increase CHANNEL_MAX and recompile'
+     &     )
+               IOFF=0
+               DO ISYM=1,NSYM
+                  IF (NUMBER_ORBS(ISYM).GT.0) THEN 
+                     READ(LUCMD,*) 
+     &                    (CHANNEL_ORB(I+IOFF), I=1,NUMBER_ORBS(ISYM))
+                     DO I=1,NUMBER_ORBS(ISYM)
+                        CHANNEL_ORB(I+IOFF) = 
+     &                       CHANNEL_ORB(I+IOFF) + IORB(ISYM)
+                     END DO
+                     IOFF = IOFF + NUMBER_ORBS(ISYM)
+                  ELSE
+                     READ(LUCMD,*)
+                  END IF
+               END DO
+               GO TO 100
+C     .VIRTUAL
+ 47            CONTINUE
+               CHANNEL_VCALC = .TRUE.
+               READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
+               GO TO 100
+
+ 48            continue
+!                do nothing
+                 go to 100
+
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1903,7 +2019,15 @@ C
                CALL QUIT(' ILLEGAL PROMPT IN LRINP ')
             END IF
       END IF
+C     ---------------------------------------------
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
+C
       NLRTOT = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
@@ -1955,15 +2079,22 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
-         IF (QM3) THEN
-           WRITE(LUPRI,*) 'QM/MM response calculation'
+
+         IF (QM3 .OR. QMMM) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF 
+
+         IF (CHANNEL_CALC) THEN
+            WRITE(LUPRI,'(/A,10(/,10I5))')
+     &         ' Restricted channel RPA,   excitations from orbs:',
+     &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
          END IF
-C--------------------
-C CBN+JK 03.01.06
-C--------------------
+         IF (CHANNEL_VCALC) THEN
+            DO I=1,NSYM
+              WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
+     &              CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
+         ENDDO
+      ENDIF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRLR  ='
      *       ,IPRLR
@@ -2005,6 +2136,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
+#include <gnrinf.h>
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
@@ -2314,7 +2446,15 @@ C     .C10LMO
                CALL QUIT(' ILLEGAL PROMPT IN C6INP ')
             END IF
       END IF
+C
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCC6 = THCC6*THR_REDFAC
+      END IF
+C
       NC6TOT = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
@@ -3391,12 +3531,14 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      DIMENSION UDV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION UDV(NASHT,*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "priunit.h"
 #include "infinp.h"
+#include "infind.h"
 #include "infpri.h"
 #include "infdim.h"
 #include "infvar.h"
@@ -3409,12 +3551,13 @@ C
 #include "infpp.h"
 #include "inflr.h"
 #include "infsop.h"
+#include "channel.h"
 C
       CHARACTER*8 OPLBL(8)
       DATA OPLBL/'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
      *           'EXOPSYM5','EXOPSYM6','EXOPSYM7','EXOPSYM8'/
 C
-      PARAMETER ( D1 = 1.0D0 )
+      PARAMETER ( D1 = 1.0D0, THR_PRUNE = 1.0D-4 )
 C
       CALL QENTER('RSPVAR')
 C
@@ -3427,7 +3570,7 @@ C
          KZWOPT = 0
          KZYWOP = 0
       ELSE
-         IF ( KSYMOP .NE. JWOPSY ) THEN
+!        IF ( KSYMOP .NE. JWOPSY ) THEN
             JWOPSY = KSYMOP
             LUINDX = -1
             CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
@@ -3437,9 +3580,75 @@ C
             READ (LUINDX) NWOPT,NWOP,NWOPH
             CALL READI(LUINDX,(2*NWOPT),JWOP)
             CALL GPCLOSE(LUINDX,'KEEP')
-         END IF
+C
+C           Prune some classes of redundant orbital rotations from
+C           the orbital rotation vector JWOP:
+C              UDV(u,u) = 2
+C              UDV(v,v) = 0
+C              UDV(u,u) = UDV(v,v) [only possible for RAS]
+C           Threshold for redundancy test: THR_PRUNE
+C           / hjaaj June 2010
+            MWOPT = 0
+            DO IWOPT = 1,NWOPT
+               K = JWOP(1,IWOPT)
+               L = JWOP(2,IWOPT)
+               ITYPK = IOBTYP(K)
+               ITYPL = IOBTYP(L)
+               KL_is_OK = 0
+               IF (ITYPK .EQ. JTINAC) THEN
+                  IF (ITYPL .EQ. JTACT) THEN
+                  ! inact-act rotation
+                     NWL = ISW(L) - NISHT
+                     IF ( (2.0D0-UDV(NWL,NWL)) .GT. THR_PRUNE) THEN
+                        KL_is_OK = 1
+                     ELSE IF (IPRRSP .GE. 2) THEN
+                        WRITE (LUPRI,*)
+     &                  'INFO: Inact-act orbital rotation',K,L,' pruned'
+                     END IF
+                  ELSE
+                     KL_is_OK = 1
+                  END IF
+               ELSE IF (ITYPL .EQ. JTACT) THEN
+               ! act-act rotation (i.e. RAS case)
+                  NWK = ISW(K) - NISHT
+                  NWL = ISW(L) - NISHT
+                  IF (ABS(UDV(NWK,NWK)-UDV(NWL,NWL)) .GT. THR_PRUNE)
+     &            THEN
+                     KL_is_OK = 1
+                  ELSE IF (IPRRSP .GE. 2) THEN
+                     WRITE (LUPRI,*)
+     &               'INFO:   Act-act orbital rotation',K,L,' pruned'
+                  END IF
+               ELSE
+               ! act-sec rotation
+                  NWK = ISW(K) - NISHT
+                  IF (UDV(NWK,NWK) .GT. THR_PRUNE) THEN
+                     KL_is_OK = 1
+                  ELSE IF (IPRRSP .GE. 2) THEN
+                     WRITE (LUPRI,*)
+     &               'INFO:   Act-sec orbital rotation',K,L,' pruned'
+                  END IF
+               END IF
+               IF (KL_is_OK .EQ. 1) THEN
+                  MWOPT = MWOPT + 1
+                  JWOP(1,MWOPT) = K
+                  JWOP(2,MWOPT) = L
+               END IF
+            END DO
+            IF (MWOPT .NE. NWOPT) THEN
+               WRITE (LUPRI,*) 'INFO:',NWOPT-MWOPT,
+     &         ' redundant orbital rotations pruned.'
+               NWOPT = MWOPT
+            END IF
+!        END IF
+C
          KZWOPT = NWOPT
          KZYWOP = 2*KZWOPT
+         NWOPH  = NWOPT ! do not include redundant act-act rotations
+                        ! in response, even when we call SIRIUS routines
+                        ! /hjaaj June 2010
+         IF (CHANNEL_CALC) CALL CHANNEL_VAR()         
+         IF (CHANNEL_VCALC) CALL CHANNEL_VIR()
       END IF
 C
 C READ IN CONFIGURATION SPACE VARIABLES
@@ -3560,7 +3769,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
-               CALL OUTPUT(WRK(KECDIA),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
+               CALL OUTPUT(WRK(KECDIA),1,KZCONF,1,1,KZCONF,1,-1,LUPRI)
             END IF
          END IF
 C
@@ -3574,15 +3783,15 @@ C
              IF (IPRRSP.GT.100) THEN
                IF (NASHT.GT.0) THEN
                   WRITE(LUPRI,'(/A)')
-     *            ' ONE ELECTRON ACTIVE DENSITY MATRIX  UNPACKED'
-                  CALL OUTPUT(UDV,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+     *            ' ONE ELECTRON ACTIVE DENSITY MATRIX - UNPACKED'
+                  CALL OUTPUT(UDV,1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
                   WRITE(LUPRI,'(/A)') ' FOCK VALENCE MATRIX'
-                  CALL OUTPKB(FV,NORB,NSYM,1,LUPRI)
+                  CALL OUTPKB(FV,NORB,NSYM,-1,LUPRI)
                END IF
                WRITE(LUPRI,'(/A)') ' FOCK CORE MATRIX'
-               CALL OUTPKB(FC,  NORB,NSYM,1,LUPRI)
+               CALL OUTPKB(FC,  NORB,NSYM,-1,LUPRI)
                WRITE(LUPRI,'(/A)') ' TOTAL FOCK  MATRIX'
-               CALL OUTPTB(FOCK,NORB,NSYM,1,LUPRI)
+               CALL OUTPTB(FOCK,NORB,NSYM,-1,LUPRI)
              END IF
 C
             CALL ORBDIA(FOCK,FC,FV,UDV,WRK(KEODIA),WRK(KSODIA))
@@ -3606,7 +3815,7 @@ C
      *            ' MATRIX USED)'
                   CALL PRWOP(WRK(KEODIA),LUPRI)
                   IF (IPRRSP .GT. 120)
-     *              CALL OUTPUT(WRK(KEODIA),1,NWOPT,1,1,NWOPT,1,1,LUPRI)
+     *             CALL OUTPUT(WRK(KEODIA),1,NWOPT,1,1,NWOPT,1,-1,LUPRI)
                END IF
             END IF
          END IF
@@ -3624,7 +3833,7 @@ C
          IF (IPRRSP.GT.100) THEN
             IF (KZWOPT.GT.0) THEN
                WRITE(LUPRI,'(/A)') ' DIAGONAL ORBITAL PART OF S[2]'
-               CALL OUTPUT(WRK(KSODIA),1,NWOPT,1,1,NWOPT,1,1,LUPRI)
+               CALL OUTPUT(WRK(KSODIA),1,NWOPT,1,1,NWOPT,1,-1,LUPRI)
             END IF
          END IF
 C
@@ -3700,6 +3909,7 @@ C
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
+#include <gnrinf.h>
 #include <qm3.h>
 C--------------------
 C CBN+JK 03.01.06
@@ -3714,7 +3924,7 @@ C      subroutine has been called before RSPMC).
 C
 C     Find out if TDHF or not :
 C
-      TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR.HSROHF)
+      TDHF = NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR. HSROHF
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
@@ -3894,7 +4104,7 @@ C
          CALL GETREF(WRK,NCONRF)
          WRITE(LUPRI,'(/A)')
      &        ' **** RSPMC **** REFERENCE CONFIGURATION'
-         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
+         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,-1,LUPRI)
       END IF
 C
 C     If a solvent-response calculation:
@@ -3944,7 +4154,7 @@ C
             ELSE
               WRITE(LUPRI,'(/A)')' RSPMC : MP2 correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,1,LUPRI)
+            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,-1,LUPRI)
          END IF
 C
          IF (TRPFLG) CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK)
@@ -3957,7 +4167,7 @@ C
                WRITE(LUPRI,'(/A)')
      &      ' RSPMC : MP2 singlet and triplet correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,1,LUPRI)
+            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,-1,LUPRI)
          END IF
 C
          CALL READT (LUSIFC,NACTT*NACTT,UDV)
@@ -3968,7 +4178,7 @@ C
             ELSE
                WRITE(LUPRI,'(/A)')' RSPMC : MP2 second order density'
             END IF
-            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,1,LUPRI)
+            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,-1,LUPRI)
          END IF
 C
 C        UDV contains the MP2 one-density. Remove the diagonal
@@ -3982,7 +4192,7 @@ C
             WRITE(LUPRI,'(/A,I5,A)')' MO. COEFFICIENTS FOR SYMMETRY',
      &                                ISYM
             CALL OUTPUT(CMO(ICMO(ISYM)+1),1,NBAS(ISYM),1,NORB(ISYM),
-     $                  NBAS(ISYM),NORB(ISYM),1,LUPRI)
+     $                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
  60      CONTINUE
       END IF
 C
@@ -4182,7 +4392,7 @@ C
       CALL PPINP(WORD)
       RETURN
 C
- 2100 CALL QUIT('**END OF not found in DALTON input')
+ 2100 CALL QUIT('**QUADRA not found in DALTON input')
 C
       RETURN
       END
@@ -4305,14 +4515,7 @@ C
 #include <infinp.h>
 #include <inftap.h>
 #include <esg.h>
-C
-C------------------
-C CBN+JK 03.01.06
-C------------------
-#include <qm3.h>
-C------------------
-C CBN+JK 03.01.06
-C------------------
+#include <gnrinf.h>
       DATA TABLE /'.ROOTS', '.THCPP ', '.MAX IT', '.MAXITO', '.THCLR ',
      *            '.RESTPP','.PRINT ', '.STATE '/
 C
@@ -4393,6 +4596,13 @@ C
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
@@ -4428,15 +4638,10 @@ C
      *      ,EPSOL
          END IF
 C
-C------------------
-C CBN+JK, 03.01.06
-C------------------
-         IF (QM3) THEN
-           WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
-C------------------
-C CBN+JK, 03.01.06
-C------------------
+         IF (QM3 .OR. QMMM) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF
+
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='
      *       ,IPRPP

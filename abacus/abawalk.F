@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -580,7 +580,7 @@ C
          IWKTYP = 0
          ISCTYP = 0
       END IF
-      TOLST  = 1.D-5
+      TOLST  = 1.D-4
       TRUSTR = 0.5D0
       STMOM  = 1.D-4
       TRUSTI = 1.2D0
@@ -2132,9 +2132,10 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D10 = 10.00D00, D100 = 100.00D00)
+      PARAMETER (D1000 = 1000.00D0, D10000 = 10000.00D00)
+      PARAMETER (D100000 = 100000.00D0, D1000000 = 1000000.00D00)
 C
       CHARACTER NAME*4, TMPTXT*11
-      LOGICAL VBIG, BIG
       DIMENSION COONEW(3,*)
 C
 C Used from common blocks:
@@ -2217,12 +2218,6 @@ C
          CRX = COONEW(1,N) - CCAVX
          CRY = COONEW(2,N) - CCAVY
          CRZ = COONEW(3,N) - CCAVZ
-         VBIG = (ABS(CRX) .GE. D100 .OR.
-     *           ABS(CRY) .GE. D100 .OR.
-     *           ABS(CRZ) .GE. D100)
-         BIG  = (ABS(CRX) .GE. D10 .OR.
-     *           ABS(CRY) .GE. D10 .OR.
-     *           ABS(CRZ) .GE. D10)
          NC = NCLINE(N)
          IF (NC .NE. 0) THEN
             READ  (MLINE(NC),9100) NAME
@@ -2232,22 +2227,35 @@ C
             ELSE
                TMPTXT = '           '
             END IF
-            IF (VBIG) THEN
-               WRITE (MLINE(NC),9200) NAME,CRX,CRY,CRZ,TMPTXT
-            ELSE IF (BIG) THEN
-               WRITE (MLINE(NC),9250) NAME,CRX,CRY,CRZ,TMPTXT
+            CRDLRG = MAX(MAX(ABS(CRX),ABS(CRY)),ABS(CRZ))
+            IF (CRDLRG .LT. D10) THEN
+               WRITE (MLINE(NC),9060) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE IF (CRDLRG .LT. D100) THEN
+               WRITE (MLINE(NC),9050) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE IF (CRDLRG .LT. D1000) THEN
+               WRITE (MLINE(NC),9040) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE IF (CRDLRG .LT. D10000) THEN
+               WRITE (MLINE(NC),9030) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE IF (CRDLRG .LT. D100000) THEN
+               WRITE (MLINE(NC),9020) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE IF (CRDLRG .LT. D1000000) THEN
+               WRITE (MLINE(NC),9010) NAME,CRX,CRY,CRZ,TMPTXT
             ELSE
-               WRITE (MLINE(NC),9300) NAME,CRX,CRY,CRZ,TMPTXT
+               WRITE (MLINE(NC),9000) NAME,CRX,CRY,CRZ,TMPTXT
             END IF
          END IF
          COONEW(1,N) = CRX
          COONEW(2,N) = CRY
          COONEW(3,N) = CRZ
   100 CONTINUE
+ 9000 FORMAT (A4,3F20.10,1X,A11)
+ 9010 FORMAT (A4,3F20.11,1X,A11)
+ 9020 FORMAT (A4,3F20.12,1X,A11)
+ 9030 FORMAT (A4,3F20.13,1X,A11)
+ 9040 FORMAT (A4,3F20.14,1X,A11)
+ 9050 FORMAT (A4,3F20.15,1X,A11)
+ 9060 FORMAT (A4,3F20.16,1X,A11)
  9100 FORMAT (A4)
- 9200 FORMAT (A4,3F20.10,1X,A11)
- 9250 FORMAT (A4,3F20.15,1X,A11)
- 9300 FORMAT (A4,3F20.16,1X,A11)
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
@@ -3030,8 +3038,7 @@ C
          CALL AROUND('Final geometry')
          CALL HEADER('Cartesian coordinates (au)',-1)
          CALL PRIGEO(CORD)
-         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
       ELSE
          IF (OLDREA) THEN
             WRITE(LUPRI,'(/,A,F12.6)')
@@ -3056,15 +3063,12 @@ C
          CALL AROUND('Change in geometry')
          CALL HEADER('Cartesian displacements (au)',-1)
          CALL PRIGEO(STPCAR)
-         CALL GEOANA(CORD,.FALSE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
-         CALL GEOANA(COOR,.TRUE.,.TRUE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         CALL GEOANA(CORD,.FALSE.,.FALSE.,NBONDS,-1,WORK,LWORK)
+         CALL GEOANA(COOR,.TRUE. ,.TRUE. ,NBONDS,-1,WORK,LWORK)
          CALL AROUND('Geometry after step')
          CALL HEADER('Cartesian coordinates (au)',-1)
          CALL PRIGEO(COOR)
-         CALL GEOANA(COOR,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         CALL GEOANA(COOR,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
       END IF
 C
       RETURN
@@ -3878,9 +3882,9 @@ C
                   SUSTOT(I,J) = SUSREL(I,J) + SUSDIA(I,J)
      &                        + SUS2EL(I,J) + SUSFS (I,J)
      &                        + SUSFSY(I,J)
-        IF (DFTRUN) THEN
-          SUSTOT(I,J) = SUSTOT(I,J) + SUSDFT(I,J)
-        ENDIF
+                 IF (DFTRUN) THEN
+                  SUSTOT(I,J) = SUSTOT(I,J) + SUSDFT(I,J)
+                 ENDIF
                END IF
             END DO
          END DO

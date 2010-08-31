@@ -48,9 +48,10 @@ N        0.0000000000000     0.0000000000000     1.0371572000000       *
 cat > ccsdr12_n2_sym_exc.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -189,8 +190,8 @@ ERROR[13]="CCSD(R12)/B EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2 12
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

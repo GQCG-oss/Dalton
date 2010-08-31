@@ -50,9 +50,10 @@ N        0.0000000000000     0.0000000000000     1.0371572000000       *
 cat > ccsdr12_n2_gamma2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 .DIPLEN
 **WAVE FUNCTIONS
 .CC
@@ -242,8 +243,8 @@ ERROR[3]="CCSD(R12) SECOND HYPERPOLARIZABILITY  NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

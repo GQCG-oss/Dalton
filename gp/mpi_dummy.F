@@ -40,6 +40,11 @@ C
 C
 #define LUPRI_MPI 0
 C
+C HJAaJ: these dummy MPI routines MUST return the necessary information
+C        for sequential runs - they are only called for sequential dalton.x
+C        linked with files where VAR_MPI was defined.
+C        They must return MYNUM = 0 and NODTOT = 1. /061003
+C
       SUBROUTINE MPI_INIT(IERR)
          IERR = 0
 #ifdef MPI_DEBUG
@@ -49,7 +54,8 @@ C
 #endif
       RETURN
       END
-      SUBROUTINE MPI_COMM_RANK(I1,I2,IERR)
+      SUBROUTINE MPI_COMM_RANK(I1,MYNUM,IERR)
+         MYNUM = 0
          IERR = 0
 #ifdef MPI_DEBUG
          WRITE (LUPRI_MPI,*)
@@ -58,7 +64,8 @@ C
 #endif
       RETURN
       END
-      SUBROUTINE MPI_COMM_SIZE(I1,I2,IERR)
+      SUBROUTINE MPI_COMM_SIZE(I1,NODTOT,IERR)
+         NODTOT = 1
          IERR = 0
 #ifdef MPI_DEBUG
          WRITE (LUPRI_MPI,*)

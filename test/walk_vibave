@@ -268,9 +268,9 @@ CTRL[15]=1
 ERROR[15]="ENERGY AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Gradient at effective geometry
-CRIT1=`$GREP "1 * 0*\.006665(49|50) * 0*\.00000019 * 0*\.00000000 * -0*\.00222180 * 0*\.00488238" $log | wc -l`
+CRIT1=`$GREP "1 * 0*\.006665(49|50) * 0*\.00000019 * -*0*\.00000000 * -0*\.00222180 * 0*\.00488238" $log | wc -l`
 CRIT2=`$GREP "1 * 0*\.00845655 * -0*\.00222180 * 0*\.00488238 * -0*\.00845655 * -0*\.00222189" $log | wc -l`
-CRIT3=`$GREP "1 * -0*\.00976494 * 0*\.00000000" $log | wc -l`
+CRIT3=`$GREP "1 * -0*\.00976494 * -*0*\.00000000" $log | wc -l`
 TEST[16]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[16]=3
 ERROR[16]="GRADIENT AT EFFECTIVE GEOMETRY NOT CORRECT"
@@ -536,8 +536,8 @@ PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 16 17 18 19 20 21 22 24 25 \
          26 27 28 29 30 31 32 33 34 35 36 37 38 39 40
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

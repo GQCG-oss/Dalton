@@ -493,7 +493,7 @@ END{exit( (foundt && foundd && foundp) ? 0 : 1) }
 }
 
 # check_g_tensors:
-# check g-tensors, total, nuclear and electronic
+# check rotational g-tensors, total, nuclear and electronic
 # contributions.
 # $1 - threshold
 # $2 - total tensor
@@ -501,12 +501,12 @@ END{exit( (foundt && foundd && foundp) ? 0 : 1) }
 # $4 - electronic contribution to the tensor
 check_g_tensors() {
 if [ "$4" = "" ]; then
-    echo "not enough parameters to check_mag_tensors."; return 1
+    echo "not enough parameters to check_g_tensors."; return 1
 fi
 
 $AWK -v "tol=$1" -v "t=`echo $2`" -v "nu=`echo $3`" -v "el=`echo $4`" '
 function e(v,r){return(v>r||v<-r)}
-/Molecular g-tensor in principal axis system/ {
+/Molecular rotational g-tensor in principal axis system/ {
 split(t,a); for(i=0;i<3;i++)getline;
 if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
 getline;

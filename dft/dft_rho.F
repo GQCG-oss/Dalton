@@ -323,17 +323,20 @@ c
       DIMENSION CENTER(3), RSHEL(KMAX), IBLCKS(2,NBAST)
       DIMENSION  ISSS(KMAX)
 #include <ibtfun.h>
-#if 0
+
+!#define NO_SHELL_SCREENING
+#ifdef NO_SHELL_SCREENING
       NBLCNT = 1
       IBLCKS(1,1) = 1
       IBLCKS(2,1) = KMAX
       RETURN
 #endif
+
       ISHLEN = 0
       NBLCNT = 0
       IPREV = -1111
       CELLDG = CELLSZ*0.5D0*SQRT(3D0)
-      DO 10 ISHELA=1,KMAX
+      DO ISHELA=1,KMAX
          ICENT = NCENT(ISHELA)
          MULCNT = ISTBNU(ICENT)
 c        
@@ -372,7 +375,8 @@ c     &        SQRT(RSHEL2(ISHELA))
 c         print "('shell',2I3,' at ',3F6.2,' rad. ',F6.2,' rejected')",
 c     &        ISHELA,ICENT,CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT),
 c     &        RSHEL(ISHELA)
- 10   END DO
+ 10   CONTINUE
+      END DO   ! ISHELA=1,KMAX
 c      print "('cell at:',3F15.5,' blocks:',I3)", CENTER,NBLCNT
 c      print "(8('[',2I3,']'))", ((IBLCKS(I,J),I=1,2),J=1,NBLCNT)
       END

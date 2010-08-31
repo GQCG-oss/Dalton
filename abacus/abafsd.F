@@ -1740,17 +1740,14 @@ C
       CHARACTER*4 KEY
       CHARACTER*7 KEY2
 #include <inforb.h>
+#include "gnrinf.h"
 #include <abainf.h>
 #include <cbisol.h>
 #include <infinp.h>
 #include <pcmlog.h>
-#include "qm3.h"
+#include <qmmm.h>
 #include <efield.h>
 #include <infpar.h>
-#include <mtags.h>
-#if defined (VAR_MPI)
-#include <mpif.h>
-#endif
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
       IF (IPRINT .GT. 5) CALL TITLER('Output from ONEDRL','*',103)
@@ -1880,6 +1877,16 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             ENDIF
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
          END IF
+
+         IF (QMMM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            KTMAT = KWRK
+            MWRK  = KTMAT + 3*N2BASX
+            IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','QMMM-1',MWRK,LWRK)
+            LLEFT = LWRK - MWRK + 1
+            CALL QMMMFIRST(WORK(KTMAT),IPRINT,INTPRI,WORK(MWRK),LLEFT)
+            CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
+         END IF
+
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
          IF (DERY) CALL DCOPY(N2BASX,WORK(KMATS+  N2BASX),1,OMATY,1)
          IF (DERZ) CALL DCOPY(N2BASX,WORK(KMATS+2*N2BASX),1,OMATZ,1)

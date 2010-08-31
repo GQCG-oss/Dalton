@@ -28,22 +28,7 @@ typedef int integer;
 
 #include "functionals.h"
 
-/* Match Fortran name mangling. If the Fortran compiler does not
- * mangle names, define FUNDERSCORE=0 in CFLAGS.  g77 and compaq fort
- * (cryptically referred to with HAVE_GCPP below) for linux-alpha both
- * insert a second underscore if routine name contains at least one
- * underscore /hjaaj Oct04 */
-#if defined(NO_UNDERSCORE) || (defined(FUNDERSCORE) &&FUNDERSCORE == 0)
-#define FSYM(a) a
-#define FSYM2(a) a
-#else
-#define FSYM(a) a ## _
-#if (defined(FUNDERSCORE) && FUNDERSCORE == 2)
-#define FSYM2(a) a ## __
-#else
-#define FSYM2(a) a ## _
-#endif
-#endif
+#include "FSYMdef.h"
 
 #if defined(VAR_PGF77)
 #define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
@@ -75,7 +60,7 @@ struct DftDensity_ {
 
 /* FirstDrv: matrix of first order derivatives with respect to two
  * parameters: density rho and SQUARE of the gradient of density grho.
- * zeta_i = |\nabla\rho_i|%G￿%@
+ * zeta_i = |\nabla\rho_i|
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
 
@@ -92,14 +77,14 @@ typedef struct {
 typedef struct {
     real fR; /* d/drho  F */
     real fZ; /* d/dzeta F */
-    real fRR; /* d/drho%G￿%@ F */
+    real fRR; /* d/drho^2 F */
     real fRZ; /* d/(drho dzeta) F */
-    real fZZ; /* d/dzeta%G￿%@ F */
+    real fZZ; /* d/dzeta^2 F */
     /* additional derivatives required by  */
     /* general linear response scheme     */
     real fRG; /* d/(drho dgamma) F */
     real fZG; /* d/(dzeta dgamma) F */
-    real fGG; /* d/dzgamma%G￿%@ F */
+    real fGG; /* d/dzgamma^2 F */
     real fG;  /* d/dgamma F */
 } SecondDrv;
 
@@ -110,17 +95,17 @@ typedef struct {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
     real fG;   /* d/dgamma F */
-    real fRR[2];  /* d/drho%G￿%@ F */
+    real fRR[2];  /* d/drho^2 F */
     real fRZ[2];  /* d/(drho dzeta) F */
-    real fZZ[2];  /* d/dzeta%G￿%@ F */
+    real fZZ[2];  /* d/dzeta^2 F */
     real fRG[2];  /* d/(drho dgamma) F */
-    real fRRR[2]; /* d/drho%G￿%@ F */
-    real fRRZ[2][2]; /* d/(drho%G￿%@ dzeta) F */
+    real fRRR[2]; /* d/drho^2 F */
+    real fRRZ[2][2]; /* d/(drho^2 dzeta) F */
     /* two forms of fRRG needed as the formulae is non symmetric */
-    real fRRG[2];     /* d/(drho? dgamma) F */
-    real fRRGX[2][2]; /* d/(drho? dgamma) F */
-    real fRZZ[2][2]; /* d/(drho dzeta%G￿%@) F */
-    real fZZZ[2]; /* d/dzeta%G￿%@ F */
+    real fRRG[2];     /* d/(drho^2 dgamma) F */
+    real fRRGX[2][2]; /* d/(drho^2 dgamma) F */
+    real fRZZ[2][2]; /* d/(drho dzeta^2 F */
+    real fZZZ[2]; /* d/dzeta^3 F */
 } ThirdDrv;
 
 
@@ -128,13 +113,13 @@ typedef struct {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
 
-    real fRR;  /* d/drho%G￿%@ F */
+    real fRR;  /* d/drho^2 F */
     real fRZ;  /* d/(drho dzeta) F */
-    real fZZ;  /* d/dzeta%G￿%@ F */
+    real fZZ;  /* d/dzeta^2 F */
 
-    real fRRR; /* d/drho%G￿%@ F */
-    real fRRZ; /* d/(drho%G￿%@ dzeta) F */
-    real fRZZ; /* d/(drho dzeta%G￿%@) F */
+    real fRRR; /* d/drho^3 F */
+    real fRRZ; /* d/(drho^2 dzeta) F */
+    real fRZZ; /* d/(drho dzeta^2 F */
     real fZZZ;
 
     real fRRRR;

@@ -1141,7 +1141,7 @@ log=$1
 GREP=egrep
 
 # ?
-CRIT1=`$GREP "Final MCSCF energy\: * \-149\.649025434184" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-149\.64902543418" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT"
@@ -1158,8 +1158,8 @@ str="1 2"
 PASSED=1
 for i in $str
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -195,7 +195,7 @@ C
      &          GSO(NBAST*NTYPSO), EXCMAT(NBAST,NBAST,NXCMAT), 
      &          NCNT(NBAST), DST(NATOMS), C0(NORBT), C1(NORBT,3), 
      &          C2(NORBT),DMAGAO(NBAST), HES(NOCCT,NVIRT,NOCCT,NVIRT), 
-     &          RHG(3), WORK(LWORK), VX(DERVS1)
+     &          RHG(3), WORK(LWORK), VX(DERVS1), COR(3)
 C
 #include <sdpre.h>
 C
@@ -235,7 +235,7 @@ C
       READ(LUQUAD) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
-         CALL REAQUA(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
+         CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
          DO 300 IPNT = 1, NPOINT
             IF (IPRINT .GT. 100) THEN
                WRITE (LUPRI,'(2X,I6,4F12.6)') 
@@ -252,8 +252,11 @@ C           AOs
 C           ===
 C
             THRINT = DFTHRI/WGHT
-            CALL GETSOS(GSO,NCNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &                  WORK,LWORK,NBAST,DOLND,DOGGA,THRINT,IPRINT)
+            COR(1) = CORX(IPNT)
+            COR(2) = CORY(IPNT)
+            COR(3) = CORZ(IPNT)
+            CALL GETSOS(GSO,NCNT,COR,WORK,LWORK,
+     &                  NBAST,DOLND,DOGGA,THRINT,IPRINT)
 C
 C           Density
 C           =======
@@ -331,7 +334,8 @@ C              London contributions to Kohn-Sham matrix
 C              ========================================
 C
                IF (DOLND) THEN
-                  CALL DFTMAG(EXCMAT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
+                  CALL DFTMAG(EXCMAT,
+     &                        CORX(IPNT),CORY(IPNT),CORZ(IPNT),
      &                        GSO(KSO0),GSO(KSO1),GSO(KSOB),GSO(KSOB1),
      &                        VX(FR0),VX(FZ0),RHG,DOGGA,
      &                        FROMVX)
@@ -1023,10 +1027,10 @@ C
   100 CONTINUE
       READ(LUQUAD) NPOINT
       IF (NPOINT.GT.0) THEN
-         CALL REAQUA(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
+         CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
          DO 300 IPNT = 1, NPOINT
             CALL DFTAOS(GAO,GAO1,NCNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &                  WORK,LWORK,NBAST,DOLND,IPRINT)
+     &                  NBAST,DOLND,IPRINT)
             DO 400 I = 1, NBAST
             DO 400 J = 1, NBAST
                ELCTRN = ELCTRN + WEIGHT(IPNT)*DMAT(I,J)*GAO(I)*GAO(J)

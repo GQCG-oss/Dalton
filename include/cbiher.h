@@ -8,7 +8,7 @@ C
       LOGICAL SKIP,   TSTINP,
      &        HAMILT, SUPMAT, SPNORB, DAR2EL, ORBORB,
      &        ONEPRP, PROPRI, ALLATM, TRIANG, NOTWO,  NO2SO,  SOTEST,
-     &        DIRAC 
+     &        DIRAC_HER
 C     Selection of specific (property) integrals:
       LOGICAL KINENE, NUCPOT,
      &        DIPLEN, DIPVEL, QUADRU, THETA,  SECMOM, THRMOM,
@@ -33,7 +33,7 @@ C
      &        SKIP,   TSTINP,
      &        HAMILT, SUPMAT, SPNORB, DAR2EL, ORBORB,
      &        ONEPRP, PROPRI, ALLATM, TRIANG, NOTWO,  NO2SO,  SOTEST,
-     &        DIRAC,
+     &        DIRAC_HER,
      &        KINENE, NUCPOT,
      &        DIPLEN, DIPVEL, QUADRU, THETA,  SECMOM, THRMOM,
      &        CARMOM, SPHMOM,

@@ -497,6 +497,7 @@ C
       DIMENSION SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
      &          FOCMAT(NNBASX), EXPVAL(NCOMP), FMOVL(6),WORK(LWORK)
+#include <gnrinf.h>
 #include <abainf.h>
 #include <efield.h>
 #include <cbisol.h>
@@ -505,7 +506,7 @@ C
 #include <onecom.h>
 #include <nuclei.h>
 #include <symmet.h>
-#include <qm3.h>
+#include <qmmm.h>
 cDM added to pass vectors to MAGPCMSEC
 #include <pcmdef.h>
 #include <pcm.h>
@@ -593,6 +594,19 @@ C
             CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
          END IF
 C
+         IF (QMMM .AND. (WORD .EQ. 'DIASUS')) THEN
+            NCOMP  = 6
+            KSLEXP = 1
+            KLAST  = KSLEXP + NCOMP
+            LWRK   = LWORK - KLAST + 1
+            CALL QMMMB2(WORK(KSLEXP),DENMAT,WORK(KLAST),LWRK,IPRINT)
+            IF (IPRINT .GT. 5) THEN
+               CALL AROUND('Second-order QM/MM contribution')
+               CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
+            END IF
+            CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+         END IF
+C
          IF ((SOLVNT.OR.PCM) .AND. (WORD .EQ. 'DIASUS')) THEN
             NCOMP  = 6
             IF (SOLVNT) THEN
@@ -665,11 +679,11 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
+#include <inforb.h>
       PARAMETER (DP5 = 0.5D0)
       CHARACTER WORD*7, LABINT(9*MXCENT)*8
       DIMENSION DENMAT(NNBASX),
      &          EXPVAL(NCOMP), SPNDSO(*), WORK(LWORK)
-#include <inforb.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <suscpt.h>
@@ -2188,6 +2202,9 @@ cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*8, SGN*3, LAPRPC*8, LANAME*8
+cmbh
+      character lbname*8,midasname*8
+cmbh end
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
@@ -2323,42 +2340,54 @@ csonia 04/10/95
       END IF
 csonia 04/10/95
 C << JK write shielding tensor to DALTON.PROP
-      LAPRPC = 'SH TENSO'
-      LANAME = NAME//'xx'
+cmbh change output slightly
+      LAPRPC = '_COMP  '
+      midasname=NAME//'  '
+      call stripblanks(midasname)
+      LANAME = 'X'//LAPRPC
+      LBNAME = 'X'//LAPRPC
       CALL WRIPRO(TMAT(1,1),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'xy'
+      LANAME = 'X'//LAPRPC
+      LBNAME = 'Y'//LAPRPC
       CALL WRIPRO(TMAT(2,1),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'xz'
+      LANAME = 'X'//LAPRPC
+      LBNAME = 'Z'//LAPRPC
       CALL WRIPRO(TMAT(3,1),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'yx'
+      LANAME = 'Y'//LAPRPC
+      LBNAME = 'X'//LAPRPC
       CALL WRIPRO(TMAT(1,2),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'yy'
+      LANAME = 'Y'//LAPRPC
+      LBNAME = 'Y'//LAPRPC
       CALL WRIPRO(TMAT(2,2),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'yz'
+      LANAME = 'Y'//LAPRPC
+      LBNAME = 'Z'//LAPRPC
       CALL WRIPRO(TMAT(3,2),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'zx'
+      LANAME = 'Z'//LAPRPC
+      LBNAME = 'X'//LAPRPC
       CALL WRIPRO(TMAT(1,3),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'zy'
+      LANAME = 'Z'//LAPRPC
+      LBNAME = 'Y'//LAPRPC
       CALL WRIPRO(TMAT(2,3),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = NAME//'zz'
+      LANAME = 'Z'//LAPRPC
+      LBNAME = 'Z'//LAPRPC
       CALL WRIPRO(TMAT(3,3),"SCF/DFT   ",402,
-     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
 C << JK
       WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
@@ -3014,13 +3043,14 @@ C     Nuclear contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 #include <nuclei.h>
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
 #include <symmet.h>
+#include <qm3.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C
@@ -3070,7 +3100,7 @@ C
  10   CONTINUE
 
       IF ( (QM3) .AND. (.NOT. (SKIPNC)) ) THEN
-        CALL QM3QCC1(LUPRI,IASGER)
+        CALL QM3QCC1(LUPRI,IPRINT)
         IF ( .NOT. (LOSPC) ) CALL QM3QCC2(LUPRI,IPRINT)
       END IF
 
@@ -3089,7 +3119,6 @@ C     K.Ruud, nov.-94
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
@@ -3265,7 +3294,7 @@ C
 C  /* Deck nucmgf */
       SUBROUTINE NUCMGF(GEOM,ORIGIN,LUPRI,IPRINT)
 C
-C     Calculate nuclear contribution to molecular g-factors
+C     Calculate nuclear contribution to molecular rotational g-factors
 C     K.Ruud, June-94
 C
 #include <implicit.h>
@@ -3308,7 +3337,8 @@ C
       GFANUC(IZ,IX) = GFANUC(IX,IZ)
       GFANUC(IZ,IY) = GFANUC(IY,IZ)
       IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Nuclear contribution to molecular g-factor',-1)
+         CALL HEADER(
+     &   'Nuclear contribution to molecular rotational g-factor',-1)
          CALL OUTPUT(GFANUC,1,3,1,3,3,3,1,LUPRI)
       END IF
       RETURN
@@ -3416,7 +3446,7 @@ C
       D23 = .FALSE.
 C
       IF (IPRINT .GE. 0)
-     &     CALL TITLER('ABACUS - MOLECULAR g-TENSOR','*',124)
+     &     CALL TITLER('ABACUS - MOLECULAR ROTATIONAL g-TENSOR','*',124)
       CALL DZERO(TOTMGF,9)
 C
 C     Add terms to diamagnetic molecular g factor
@@ -3459,9 +3489,8 @@ C
          AVEEL = (ELMGF(1,1) + ELMGF(2,2) + ELMGF(3,3))/D3
          WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVEEL
 C
-         CALL HEADER(
-     &   'Total molecular g-tensor * proton mass * moment of inertia',
-     &   -1)
+         CALL HEADER('Total molecular rotational g-tensor'//
+     &      ' * proton mass * moment of inertia',-1)
          CALL POLPRI(TOTMGF,'   ',2)
          AVETOT = (TOTMGF(1,1) + TOTMGF(2,2) + TOTMGF(3,3))/D3
          WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVETOT
@@ -3487,8 +3516,8 @@ C
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINEAR)
 C
-C     Transform molecular g-tensor to principal axis system, and multiply by
-C     inverse moment of inertia and proton mass
+C     Transform molecular rotational g-tensor to principal axis system,
+C     and multiply by inverse moment of inertia and proton mass
 C
       IF (IPRINT .GE. 0) THEN
          IF (NOLOND) THEN
@@ -3506,20 +3535,20 @@ C
             AVEDIA = GFACDI(1,1)*PMASS*EIGVAL(3)
             AVEEL  = ELMGF (1,1)*PMASS*EIGVAL(3)
             AVENUC = GFANUC(1,1)*PMASS*EIGVAL(3)
-            CALL DZERO(GTRAN,9)
-            GTRAN(1,1) = AVETOT
          ELSE
             AVETOT = TOTMGF(2,2)*PMASS*EIGVAL(3)
             AVEDIA = GFACDI(2,2)*PMASS*EIGVAL(3)
             AVEEL  = ELMGF (2,2)*PMASS*EIGVAL(3)
             AVENUC = GFANUC(2,2)*PMASS*EIGVAL(3)
-            CALL DZERO(GTRAN,9)
-            GTRAN(1,1) = AVETOT
          END IF
+         CALL DZERO(GTRAN,9)
+         GTRAN(1,1) = TOTMGF(1,1)*PMASS*EIGVAL(3)
+         GTRAN(2,2) = TOTMGF(2,2)*PMASS*EIGVAL(3)
+         GTRAN(3,3) = TOTMGF(3,3)*PMASS*EIGVAL(3)
          IF (IPRDEF .GE. 0) THEN
             WRITE (LUPRI,'(A,F16.6)') ' Moment of inertia :',
      &           D1/EIGVAL(3)
-            CALL HEADER('Molecular g-factor',1)
+            CALL HEADER('Molecular rotational g-factor',1)
             WRITE(LUPRI,'(4(A,F16.8/))')
      &           ' Isotropic g-factor          :',AVETOT,
      &           ' Nuclear part of g-factor    :',AVENUC,
@@ -3567,12 +3596,13 @@ C
          AVEDIA = (GTRAN3(1,1) + GTRAN3(2,2) + GTRAN3(3,3))/D3
          IF (IPRINT .GE. 0) THEN
          IF (D12 .AND. D23) THEN
-            WRITE (LUPRI,'(4(/,1X,A,F16.8))')
-     &           ' Molecular g-factor      :  ',AVETOT,
+            WRITE (LUPRI,'(4(/A,F16.8))')
+     &           ' Molecular rot. g-factor :  ',AVETOT,
      &           ' Nuclear contribution    :  ',AVENUC,
      &           ' Diamagnetic contribution:  ',AVEDIA,
      &           ' Electronic contribution :  ',AVEEL
-            WRITE (LUPRI,'(/,1X,A)') ' Molecular g-tensor is spherical.'
+            WRITE (LUPRI,'(/A)')
+     &           ' Molecular rotational g-tensor is spherical.'
          ELSE IF (D12 .OR. D23) THEN
             IF (D12) THEN
                PAR = GTRAN(3,3)
@@ -3582,17 +3612,18 @@ C
                PER = (GTRAN(2,2) + GTRAN(3,3))/D2
             END IF
             ANI = PAR - PER
-            CALL HEADER('Molecular g-factor',1)
-            WRITE (LUPRI,'(6(1X,A,F16.8,/))')
+            CALL HEADER('Molecular rotational g-factor',1)
+            WRITE (LUPRI,'(6(A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
      &           ' Electronic contribution  : ',AVEEL,
      &           ' Parallel component:        ',PAR,
      &           ' Perpendicular component:   ',PER,
      &           ' Anisotropy:                ',ANI
-            WRITE (LUPRI,'(1X,A)') ' Molecular g-tensor is cylindrical.'
-            CALL HEADER('Molecular g-tensor in principal axis system '//
-     &                  '(a.u.):',1)
+            WRITE (LUPRI,'(A)')
+     &           ' Molecular rotational g-tensor is cylindrical.'
+            CALL HEADER('Molecular rotational g-tensor in principal'//
+     &                  ' axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
@@ -3618,7 +3649,7 @@ C
          ELSE
             ANI1 = GTRAN(1,1) - (GTRAN(2,2) + GTRAN(3,3))/D2
             ANI2 = GTRAN(2,2) - (GTRAN(1,1) + GTRAN(3,3))/D2
-            CALL HEADER('Molecular g-tensor',1)
+            CALL HEADER('Molecular rotational g-tensor',1)
             WRITE (LUPRI,'(6(1X,A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
@@ -3626,8 +3657,8 @@ C
      &           ' Electronic contribution  : ',AVEEL,
      &           ' 1st anisotropy:            ',ANI1,
      &           ' 2nd anisotropy:            ',ANI2
-            CALL HEADER('Molecular g-tensor in principal axis system '//
-     &                  '(a.u.):',1)
+            CALL HEADER('Molecular rotational g-tensor in principal'//
+     &                  ' axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
@@ -3764,16 +3795,16 @@ C
                   AVENUC = SPRNUC(1,1,IATOM)*FACTOT/D2
                   AVEPAR = PARMAT(1,1,IATOM)*FACTOT
                   AVEDIA = DIAMAT(1,1,IATOM)*FACTOT
-                  CALL DZERO(GTRANT(1,1,IATOM),9)
-                  GTRANT(1,1,IATOM) = AVETOT
                ELSE
                   AVETOT = TOTSPR(2,2,IATOM)*FACTOT
                   AVENUC = SPRNUC(2,2,IATOM)*FACTOT/D2
                   AVEPAR = PARMAT(2,2,IATOM)*FACTOT
                   AVEDIA = DIAMAT(2,2,IATOM)*FACTOT
-                  CALL DZERO(GTRANT(1,1,IATOM),9)
-                  GTRANT(1,1,IATOM) = AVETOT
                END IF
+               CALL DZERO(GTRANT(1,1,IATOM),9)
+               GTRANT(1,1,IATOM) = AVETOT
+               GTRANT(2,2,IATOM) = AVETOT
+               GTRANT(3,3,IATOM) = AVETOT
                IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &              ' Total spin-rotation constant       :',AVETOT,
      &              ' Nuclear part of spin-rotation      :',AVENUC,
@@ -3855,7 +3886,6 @@ C     Collect and arrange electronic contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nqcc.h>
@@ -3927,8 +3957,8 @@ C
 #include <symmet.h>
 #include <spinro.h>
 #include <orgcom.h>
-#include <ibtfun.h>
 #include <helfey.h>
+#include <ibtfun.h>
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
       CALL DZERO(HFGEL,MXCOOR)

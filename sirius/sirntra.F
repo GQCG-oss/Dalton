@@ -118,7 +118,8 @@ C     (Re)calculate AO integrals, if necessary
 C     /hjaaj 11-jan-2007
 C
       CALL GPINQ('AOORDINT','EXIST',AOEXIST)
-      CALL GPINQ('MOTWOINT','EXIST',MOEXIST)
+      CALL GPINQ(FNINTM,'EXIST',MOEXIST)
+C                default is FNINTM = 'MOTWOINT'
       IF (.NOT.(AOEXIST .AND. MOEXIST)) THEN
 C        ... we must (re)generate AOORDINT
 C            but first we must test for AOTWOINT
@@ -301,7 +302,7 @@ C
         IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
       END IF
 C
-      IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+      IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,FNINTM)
       RETURN
       END
 C  /* Deck n_nxth2m */

@@ -1,4 +1,4 @@
-C/* Comdeck iefcmmv */
+C/* Deck iefcmmv */
       SUBROUTINE IEFCMMV(DMATM1,CPAK,SI,SPAK,DI,DPAK,
      $     WORK,IPVT,CORE,LWRK)
 #include <implicit.h>
@@ -182,7 +182,7 @@ C
 C
       RETURN
       END
-C/* Comdeck icvev */
+C/* Deck icvev */
       SUBROUTINE ICVEV(DMATM1,SI,SPAK,BEMPOT,VEC,VPOT,VCAM,
      *                 NTSX,L2,SOME,WORK,LWORK)
 C
@@ -199,6 +199,7 @@ C
 #include <pcmnuclei.h>
 #include <pcm.h>
 #include <qm3.h>
+#include <gnrinf.h>
 #include <pcmlog.h>
 #include <orgcom.h>
 #include <maxorb.h>
@@ -364,6 +365,10 @@ C
       ENDDO
 C
       DO ITS = 1, NTSIRR
+C
+C For some bizarre reason VPOT is computed with the wrong sign!!
+C
+         POTCAVNUC(ITS) = -(MAXREP+1)*VPOT(ITS)
          QSN(ITS) = QSN(ITS) * AS(ITS)
          QNTOT = QNTOT + QSN(ITS)
          QNUC2 = QNUC2 + VCAM(ITS)*AS(ITS)
@@ -416,7 +421,6 @@ C
          IF(ICOMPCM.NE.0) WRITE(LUPRI,1000) SQTNOP * QNTOT, TCH, QNTOTN
          IF(ICOMPCM.EQ.0) WRITE(LUPRI,1100) SQTNOP * QNTOT, TCH
       END IF
-Chj   write(lupri,*) 'this is icompcm in icvev',icompcm
       RETURN
 C
  1000 FORMAT(' NUCLEAR APPARENT CHARGE',F10.5/
@@ -446,7 +450,7 @@ C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,'OLD',' ',
      &                               'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSIFC)
-      CALL MOLLAB('PCMINFO ',LUSIFC,LUERR)
+      CALL MOLLAB('PCMINFO ',LUSIFC,lupri)
       READ (LUSIFC) MTS
       IF (MTS .NE. NTS) THEN
          WRITE (LUPRI,'(/A)') 
@@ -912,6 +916,7 @@ C
 #include <pcmdef.h>
 #include <pcm.h>
 #include <qm3.h>
+#include <gnrinf.h>
 #include <ibtfun.h>
 
       DIMENSION POTEN(*)
@@ -986,6 +991,7 @@ C
 #include <pcmdef.h>
 #include <pcm.h>
 #include <qm3.h>
+#include <gnrinf.h>
 #include <ibtfun.h>
 
       DIMENSION POTEN(*),CMMCOR(3,*),CMMDIP(3,*)

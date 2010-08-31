@@ -171,7 +171,7 @@ C
       IF (M .NE. 0) FACNRM = SQRT(D2*FACULT(L+MABS)*FACULT(L-MABS))/
      &                       (FACULT(L)*(D2**MABS))
       FACNRM = FACNRM*DM1**((NEFG-MOD(NEFG,2))/2)*D2**(-NEFG)
-      IF (SPHNRM) FACNRM = FACNRM/SQRT(FACUL2(2*L-1))
+      FACNRM = FACNRM/SQRT(FACUL2(2*L-1))
       NDER = NIJK + NEFG 
       IOFF = NSPHER(L,I+E,J+F,K+G)
       DO 100 EE = 0, E

@@ -92,14 +92,7 @@ cat > dftmm_2.pot <<'%EOF%'
 cat > dftmm_2.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.NOSUP
-.PRINT
- 2
-*QM3INP
+*QM3
 .PRINT
  1
 .QM3
@@ -108,11 +101,17 @@ cat > dftmm_2.dal <<'%EOF%'
 .MAXDIP
  180
 .OLDTG
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.NOSUP
+.PRINT
+ 2
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-12
 **PROPERTIES
@@ -173,8 +172,8 @@ ERROR[3]="DFT/MM EXCITATION ENERGIES NOT CORRECT"
 PASSED=1 
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

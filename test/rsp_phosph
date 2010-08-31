@@ -131,7 +131,7 @@ ERROR[4]="ENERGIES NOT CORRECT"
 
 # Response setup
 CRIT1=`$GREP "Quadratic Response single residue calculation" $log | wc -l`
-CRIT2=`$GREP "Phosporescence calculation requested with full spin\-orbit operator\." $log | wc -l`
+CRIT2=`$GREP "Phosphorescence calculation requested with full spin\-orbit operator\." $log | wc -l`
 CRIT3=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT4=`$GREP "Spin of operator B \, ISPINB\= * 1" $log | wc -l`
 CRIT5=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 1" $log | wc -l`
@@ -171,8 +171,8 @@ ERROR[7]="PHOSPHORESCENCE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

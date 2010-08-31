@@ -1836,6 +1836,7 @@ c=====================================================================*
 #include <ccn2rsp.h>
 #include <ccslvinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 
       PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
       DIMENSION GD(*),WORK(LWORK)
@@ -1894,8 +1895,15 @@ C
        LR = 'P'
        IF (.NOT. CCMM) CALL CCSL_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
      *                 WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
-       IF (CCMM) CALL CCMM_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
-     *                WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
+       IF (CCMM) THEN
+          IF (.NOT. NYQMMM) THEN 
+             CALL CCMM_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
+     *                   WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
+          ELSE IF (NYQMMM) THEN
+             CALL CCMM_TGTBAR(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
+     *                       MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+          END IF
+       END IF
 C
 C
       END

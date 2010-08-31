@@ -51,9 +51,10 @@ H      1.276731000000000   1.276731000000000   1.276731000000000       *
 cat > cc2_r12_aux_ch4_sym_pol.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 .DIPLEN
 **WAVE FUNCTIONS
 .CC
@@ -139,7 +140,7 @@ CTRL[4]=4
 ERROR[4]="CC2-R12/A FIRST HYPERPOLARIZABILITY NOT CORRECT"
 CRIT51=`$GREP "gamma_\|\| *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0)\.0000 *\-751\.93936" $log | wc -l`
 CRIT52=`$GREP "gamma_\|_ *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0)\.0000 *\-250\.64645" $log | wc -l`
-CRIT53=`$GREP "gamma_ms *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0|\-0|\-)\.0000 *( |0)\.0000000" $log | wc -l`
+CRIT53=`$GREP "gamma_ms *\-*0*\.0000 *\-*0*\.0000 *\-*0*\.0000 *\-*0*\.0000 *\-*0*\.0000000" $log | wc -l`
 TEST[5]=`expr $CRIT51 + $CRIT52 + $CRIT53`
 CTRL[5]=3
 ERROR[5]="CC2-R12/A SECOND HYPERPOLARIZABILITY NOT CORRECT"
@@ -147,8 +148,8 @@ ERROR[5]="CC2-R12/A SECOND HYPERPOLARIZABILITY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

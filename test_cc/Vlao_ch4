@@ -15,7 +15,7 @@ cat > Vlao_ch4.info <<%EOF%
 #######################################################################
 cat > Vlao_ch4.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 CH4, LAO-Verdet tests 
 (revised geometry)
     2    2 XY YZ   1

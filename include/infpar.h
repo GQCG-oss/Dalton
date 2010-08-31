@@ -13,7 +13,6 @@
 #if defined(__CVERSION__)
 #define MAXNOD 200
 #define MAXCL2 10000
-#define MAXTSK (MXSHEL*(MXSHEL+1)/2)
 #define NPARI  ((MAXNOD + 1) + 6)
 extern struct common_infpar {
 #if defined (VAR_INT64)
@@ -39,7 +38,7 @@ C     THUS: NPARI is length from NODTOT,...,PARIO
 C
       INTEGER MAXNOD, MAXCL2
       PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
-      PARAMETER (MAXTSK=MXSHEL*(MXSHEL+1)/2, NPARI = (MAXNOD + 1) + 6)
+      PARAMETER (NPARI = (MAXNOD + 1) + 6)
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
       LOGICAL PARHER, PARIO, DEBUG,     TIMING, SLAVE
@@ -48,14 +47,23 @@ C
      &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
      &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, DEBUG, PARIO        &
      &       ,TIMING, SLAVE , NODNAM, MYNAME
+#ifdef PRG_DIRAC
+      EQUIVALENCE (NODTOT, NUMNOD)
+!     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
+!         This equivalence is important such that both e.g. abacus routines using NODTOT
+!         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
+#endif
 
 #if defined (VAR_INT64)
 !     integer array ISTAT contains MPI_SOURCE information.
 !     Proper use of ISTAT on 64-bit machines in 
 !     combination with VAR_INT64 requires explicit declaration 
-!     as INTEGER*4 /March-2007 sk 
+!     as INTEGER*4 /March-2007 sk - This is only true for 
+!     32-bit MPI libraries.
+!     64-bit MPI libraries require INTEGER ISTAT (which will then be INTEGER*8)
+!
       INTEGER*4 ISTAT
 #endif
 
-C -- end of infpar.h --
+! -- end of infpar.h --
 #endif

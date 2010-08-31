@@ -145,7 +145,9 @@ CTRL[5]=4
 ERROR[5]="CALCULATION OF VIBRATIONAL G-FACTOR NOT SET UP CORRECTLY"
 
 # Vibrational g-factor
-CRIT1=`$GREP "Vibrational g\-factor\: * H * z\[ * 3 * \- * 6\]\/2 * 1\.337165" $log | wc -l`
+CRIT1=`$GREP "Vibrational g\-factor\: * H * z\[ * 3 * \- * 6\]\/2 * 1\.337[12]" $log | wc -l`
+# Vibrational g-factor: H   z[ 3 - 6]/2     1.337202 ! no d-states included /hjaaj
+# Vibrational g-factor: H   z[ 3 - 6]/2     1.337165 ! with 2 d-states included /hjaaj
 CRIT2=`$GREP "Vibrational g\-factor\: * H * x\[ * 1 * \+ * 4\]\/2 * (0| )\.413557" $log | wc -l`
 CRIT3=`$GREP "Vibrational g\-factor\: * H * y\[ * 2 * \+ * 5\]\/2 * (0| )\.413557" $log | wc -l`
 CRIT4=`$GREP "Vibrational g\-factor\: * H * z\[ * 3 * \+ * 6\]\/2 * 1\.438462" $log | wc -l`
@@ -159,10 +161,9 @@ ERROR[6]="VIBRATIONAL G-FACTOR NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${TEST[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      echo ${ECHO[i]}
-     echo ${ERROR[i]}
      PASSED=0
    fi
 done

@@ -92,12 +92,7 @@ cat > dftmm_9.pot <<'%EOF%'
 cat > dftmm_9.dal <<'%EOF%'
 **DALTON
 .RUN RESPONSE
-**INTEGRALS
-.DIPLEN
-.NOSUP
-.PRINT
- 2
-*QM3INP
+*QM3
 .PRINT
  1
 .QM3
@@ -106,11 +101,15 @@ cat > dftmm_9.dal <<'%EOF%'
 .MAXDIP
  180
 .INTDIR
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NOSUP
+.PRINT
+ 2
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-12
 **RESPONSE
@@ -176,8 +175,8 @@ ERROR[1]="DFT/MM FIRST HYPERPOLARIZABILITY NOT CORRECT"
 PASSED=1 
 for i in 1 
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

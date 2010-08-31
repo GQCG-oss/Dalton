@@ -131,7 +131,7 @@ C           ... use determinant expansion
 C        CALL ANACIN(CIVEC,ICSYM,THRES,MAXTRM,XNDXCI,SYMPRO,IOUT,INCSFB)
       ELSE
          WRITE(IOUT,50)C(1)
-   50    FORMAT(/6X,'Configuration 1 out of 1, coefficient',F10.6)
+   50    FORMAT(/'  Configuration no. 1 out of 1, coefficient',F10.6)
       END IF
 C
       RETURN
@@ -161,6 +161,7 @@ c remco
 #include <infvar.h>
 #include <priunit.h>
 #if (defined(VAR_G77))
+!     integer*8 i_detvec, i_cvec
       dimension detvec(1),cvec(1)
 #elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
       allocatable detvec(:),cvec(:)
@@ -234,6 +235,15 @@ C  /* Deck anacsf */
 C
 C Analyze CI vector in CSF basis
 C
+! hjaaj Nov 07: TODO, make output something like:
+! (is configuration number not irrelevant?)
+!
+!   Symmetry      1---------- 2-------
+!   Orbital       1   2   3   4   5   6
+! -0.06584956     2   2       2                   <- spin coupling
+! -0.06242366     2       2       2
+! -0.07355010     2   2   1  -1   1  -1
+C
 #include <implicit.h>
 #include <mxpdim.h>
 #include <strnum.h>
@@ -260,9 +270,9 @@ C
       END IF
       IF(XMIN .LT. THRES  ) XMIN =  THRES
 C
-      WRITE(IOUT,'(//A,1P,E10.4,A,E10.4/A)')
-     &'  Printout of coefficients in interval',XMIN,' to',XMAX,
-     &'  ============================================================='
+      WRITE(IOUT,'(/A,1P,E12.4,A,E12.4/A)')
+     &' Printout of coefficients in interval',XMIN,' to',XMAX,
+     &' ==============================================================='
 C. Loop over configurations and CSF's for given configuration
       ICNF = 0
       ICSF = 0
@@ -294,11 +304,11 @@ C. CSF's in this configuration
               IF( ITRM .LE. MAXTRM ) THEN
                 CNORM = CNORM + CIVEC(ICSF) ** 2
                 WRITE(IOUT,'(/A,I10,A,F16.8,1P,E18.8)')
-     &           ' Coefficient of CSF no.',ICSF,' is',
+     &           '  Coefficient of CSF no.',ICSF,' is',
      &           CIVEC(ICSF),CIVEC(ICSF)
-                WRITE(IOUT,'(A,40I4)') ' Orbital       ',
+                WRITE(IOUT,'(A,40I4)') '  Orbital       ',
      &           (ILTSOB(ICONF(ICNBS-1+II)),II = 1,ICL+IOPEN)
-                WRITE(IOUT,'(A,40I4)') ' Spin coupling ',
+                WRITE(IOUT,'(A,40I4)') '  Spin coupling ',
      &           ( 2, II = 1, ICL),
      &           ((2*IPROCS(IPBAS+(IICSF-1)*IOPEN-1+II)-1),II=1,IOPEN)
               ELSE
@@ -312,13 +322,13 @@ C. CSF's in this configuration
       IF(NOPRT.NE.0) WRITE(IOUT,'(A,I10)')
      & ' Number of coefficients not printed', NOPRT
       IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
-       WRITE(IOUT,'(//A,F15.8)')
+       WRITE(IOUT,'(/A,F15.8)')
      & ' Norm of printed CI vector .. ', CNORM
 C
-       WRITE(IOUT,'(/A/A)') '  Magnitude of CI coefficients',
-     &                      '  ============================'
-       WRITE(IOUT,'(A,1P,E10.2,A/)')
-     & '  ( Ranges are relative to norm of vector :',VNRM,' )'
+       WRITE(IOUT,'(/A/A/A,1P,E10.2,A/)')
+     &    ' Magnitude of CI coefficients',
+     &    ' ============================',
+     &    ' ( Ranges are relative to norm of vector :',VNRM,' )'
 C
        CNORM = 0.0D0
        ISUM = 0
@@ -339,7 +349,7 @@ C
          CNORM = CNORM + CLNORM
 C
          IF (INRANG .GT. 0)
-     &     WRITE(IOUT,'(A,I2,A,I2,3X,I7,3X,E15.8,3X,E15.8)')
+     &     WRITE(IOUT,'(A,I2,A,I2,I10,E18.8,F18.10)')
      &     '  10-',IPOT+1,' to 10-',IPOT,INRANG,CLNORM,CNORM
 C
          ISUM = ISUM + INRANG

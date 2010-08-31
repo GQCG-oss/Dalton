@@ -424,7 +424,10 @@ C     NUMBER OF BLOCKS PER PASS
       NBP=(NBATCH+NSTEP-1)/NSTEP
 C     BATCH SIZE
       LBATCH=MIN( LBMAX, LSORT/NBP )
-      LINT  =MIN( LPQRS, (LBATCH-2)/2 )
+      LINT = (LBATCH-2)/2
+      IF (LPQRS .LT. LINT) LINT = LPQRS
+C     ... done this way instead of MIN(LINT,LPQRS)
+C         because LPQRS int*8, while LINT may be int*4.
       LBATCH=2*LINT+2
       LBATC2=IRAT*LBATCH
       WRITE(LUPRI,1200) NBATCH,LBATCH,LSORTX,NSTEP

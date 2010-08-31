@@ -92,14 +92,7 @@ cat > dftmm_6.pot <<'%EOF%'
 cat > dftmm_6.dal <<'%EOF%'
 **DALTON
 .RUN RESPONSE
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.NOSUP
-.PRINT
- 2
-*QM3INP
+*QM3
 .PRINT
  1
 .QM3
@@ -107,11 +100,17 @@ cat > dftmm_6.dal <<'%EOF%'
  1.0D-12
 .MAXDIP
  180
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.NOSUP
+.PRINT
+ 2
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-12
 **RESPONSE
@@ -150,8 +149,8 @@ ERROR[1]="DFT/MM TPA NOT CORRECT"
 PASSED=1 
 for i in 1 
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

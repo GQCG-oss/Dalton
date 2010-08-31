@@ -15,7 +15,7 @@ cat > Vlaodirect_co.info <<%EOF%
 #######################################################################
 cat > Vlaodirect_co.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 DIRECT LAO Verdet constant at 2 different gauge origins
 Two step test.
     2    2  X  Y  Z   1.00D-15

@@ -609,7 +609,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
     MPI_Bcast(&iprtyp,1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&iprint,1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&id,    1, MPI_INT, 0, MPI_COMM_WORLD);
-    FSYM(dftintbcast)();
+    void FSYM(dftintbcast)();
 }
 
 /* dft_cslave:
@@ -627,7 +627,7 @@ FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
     else {
         int id;
         MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-        FSYM(dftintbcast)();
+        void FSYM(dftintbcast)();
         (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
     }
 }

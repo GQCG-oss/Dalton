@@ -203,16 +203,17 @@ cat > cc2_r12_aux_bh.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
 .NOSUPSYM
 .MOSTART
  H1DIAG
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0D-10
 *CC INPUT
@@ -309,8 +310,8 @@ ERROR[5]="CC2-R12/A 4A1 EXCITATION ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

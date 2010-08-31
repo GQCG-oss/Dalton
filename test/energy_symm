@@ -21,7 +21,7 @@ cat > energy_symm.info <<'%EOF%'
    energy_symm
    -----------
    Molecule:         H2O
-   Wave Functions:   RHF, MP2, and MCSCF (CAS) / cc-pVDZ
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
    Test Purpose:     Check energy calculation with symmetry
 %EOF%
 
@@ -54,6 +54,8 @@ cat > energy_symm.dal <<'%EOF%'
 *SCF INPUT
 .DOUBLY OCCUPIED
  3 1 1 0
+*MP2 INPUT
+.SOSMP2
 *CONFIGURATION INPUT
 .SYMMETRY
  1
@@ -65,6 +67,11 @@ cat > energy_symm.dal <<'%EOF%'
  8
 .CAS SPACE
  4 2 2 0
+*PRINT LEVELS
+.PRINTF
+ 1 0
+ 51
+# p6flag(51) is code for checking that reduced matrix redH is symmetric
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -81,9 +88,9 @@ cat >>energy_symm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -i -a"
 else
-   GREP="egrep"
+   GREP="egrep -i"
 fi
 
 # Reading from basis set library:
@@ -117,7 +124,7 @@ ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 # Wave function:
 CRIT1=`$GREP "Number of closed shell electrons * 2" $log | wc -l`
 CRIT2=`$GREP "Number of electrons in active shells * 8" $log | wc -l`
-CRIT3=`$GREP "Number of active orbitals * 8" $log | wc -l`
+CRIT3=`$GREP " active orbitals * 8" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
 CRIT5=`$GREP "Spin multiplicity * 1" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
@@ -128,49 +135,50 @@ CTRL[4]=7
 ERROR[4]="INCORRECT WAVE FUNCTION"
 
 # Symmetry:
-CRIT1=`$GREP "Number of coordinates in each symmetry: * 3 * 2 * 3 * 1" $log | wc -l`
-CRIT2=`$GREP "Number of orbitals in each symmetry: * 11 * 4 * 7 * 2" $log | wc -l`
-CRIT3=`$GREP "Inactive orbitals * 1 * 0 * 0 * 0" $log | wc -l`
-CRIT4=`$GREP "Active orbitals * 4 * 2 * 2 * 0" $log | wc -l`
-CRIT5=`$GREP "Occupied SCF orbitals * 3 * 1 * 1 * 0" $log | wc -l`
+CRIT1=`$GREP "Number of coordinates in each symmetry: .* 3 * 2 * 3 * 1" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry: .* 11 * 4 * 7 * 2" $log | wc -l`
+CRIT3=`$GREP "Inactive orbitals .* 1 * 0 * 0 * 0" $log | wc -l`
+CRIT4=`$GREP "Active orbitals .* 4 * 2 * 2 * 0" $log | wc -l`
+CRIT5=`$GREP "Occupied SCF orbitals .* 3 * 1 * 1 * 0" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[5]=5
 ERROR[5]="SYMMETRY IS NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total energy : * \-76\.025681483[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree-Fock total energy : * \-76\.025681483" $log | wc -l`
 TEST[6]=`expr $CRIT1`
 CTRL[6]=1
 ERROR[6]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
 # hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
-CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l`
+CRIT1=` $GREP "MP2 second order energy : * \-76\.2249784" $log | wc -l` # SOS-MP2 energy
+#CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l` # normal MP2 energy
 
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1
 ERROR[7]="MP2 ENERGY NOT CORRECT"
 
 # MCSCF energy:
-CRIT1=`$GREP "Final MCSCF energy: * \-76\.1476141590[1-2][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy: * \-76\.1476141590" $log | wc -l`
 TEST[8]=`expr $CRIT1`
 CTRL[8]=1
 ERROR[8]="MCSCF ENERGY NOT CORRECT"
 
 # Occupancy of orbitals:
-CRIT1=`$GREP "2.00000000[0-9] * 1.98908074[0-9] * 1.97643675[0-9] * (0| ).02420935[0-9] * (0| ).01125111[0-9]" $log | wc -l`
-CRIT2=`$GREP "1.98138083[0-9] * (0| ).01779858[0-9]" $log | wc -l`
-CRIT3=`$GREP "1.97462771[0-9] * (0| ).02521490[0-9]" $log | wc -l`
+CRIT1=`$GREP "2.000000000 * 1.989080.* * 1.976436.* * 0*.024209.* * 0*.011251" $log | wc -l`
+CRIT2=`$GREP "1.981380.* * 0*.017798" $log | wc -l`
+CRIT3=`$GREP "1.974627.* * 0*.02521[45]" $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[9]=6
+CTRL[9]=6  # 1 + 2 + 2 + 1
 ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

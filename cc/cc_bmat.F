@@ -201,6 +201,7 @@ c/* Deck CC_BMAT */
 #include "ccsections.h"
 #include "ccslvinf.h"
 #include "qm3.h"
+!#include "qmmm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -690,7 +691,13 @@ C------------------------------------------------------------------------
 C
       IF (CCSLV) THEN
          IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
-         IF (CCMM) CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+         IF (CCMM) THEN
+            IF (.NOT. NYQMMM) THEN
+            CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+            END IF
+         ENDIF
       ENDIF
 C
 C------------------------------------------------------------------------
@@ -2381,13 +2388,14 @@ c
 
       TIMIO  = TIMIO + SECOND() - DTIME
       TIMALL = SECOND() - TIMALL
-      CONVRT = 100.0D0/TIMALL
 
       IF (IPRINT.GE.0) THEN
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          WRITE (LUPRI,'(1X,A,I4,A,F10.2,A)') 
      &     '| total time for',NBTRAN,' B transforms.:',TIMALL,' secs.|'
+      IF (TIMALL .GE. 1.0D0) THEN
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
+         CONVRT = 100.0D0/TIMALL
          WRITE (LUPRI,'(1X,"|  % of time used in ",A,":",
      &        F10.2,"      |")')
      &      'start up org.', TIMPRE*CONVRT,
@@ -2403,6 +2411,7 @@ c
      &      'C term       ', TIMC*CONVRT,
      &      'D term       ', TIMD*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
+      END IF
 
          WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
       END IF
@@ -2449,6 +2458,7 @@ c/* Deck CCBMAT2 */
 #include <ccsections.h>
 #include <ccslvinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 
 
 * local parameters:
@@ -2642,7 +2652,13 @@ C------------------------------------------------------------------------
 C
       IF (CCSLV) THEN
          IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
-         IF (CCMM) CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
+         IF (CCMM) THEN
+             IF (.NOT. NYQMMM) THEN
+            CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
+             ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KONEHR),WORK(KEND1),LWRK1)
+             END IF
+         END IF
       ENDIF
 C
 C------------------------------------------------------------------------
@@ -2795,7 +2811,13 @@ C----------------------------------------------------------------------
 C
          IF (CCSLV) THEN
            IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
-           IF (CCMM) CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
+           IF (CCMM) THEN
+               IF(.NOT. NYQMMM) THEN
+              CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
+               ELSE IF (NYQMMM) THEN
+                 CALL CCMM_TGT(WORK(KPERT),WORK(KEND1),LWRK1)
+               END IF  
+           END IF
          ENDIF
 C
 C------------------------------------------------------------------------

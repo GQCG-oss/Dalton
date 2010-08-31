@@ -246,13 +246,19 @@ C     *************************************
 C     ***** Last call to empty buffer *****
 C     *************************************
 C
-      IF (LAST) CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,
-     &                      IPRINT)
+      IF (LAST) THEN
+         WRITE (LUPRI,'(A,1P,D10.2)') ' Threshold for neglecting '//
+     &      'two-electron integrals:',THRESH
+         CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,IPRINT)
+      END IF
       RETURN
       END
 C  /* Deck un2wrt */
       SUBROUTINE UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
+C
+C     Write undifferentiated 2-electron integrals to disk file AOTWOINT
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -386,7 +392,13 @@ C
 C        Statistics
 C
          IF (INDA .EQ. 0) THEN
-            N2WRIT = LBUF*NBUF + ICOUNT
+C           N2WRIT = LBUF*NBUF + ICOUNT
+C           hjaaj: do all intermediates with integer*8 N2WRIT
+C                  to avoid integer*4 overflows for big basis sets
+            N2WRIT = LBUF
+            N2WRIT = N2WRIT*NBUF
+            N2WRIT = N2WRIT + ICOUNT
+C
             IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
                NBUF = NBUF + 2
             ELSE
@@ -403,7 +415,7 @@ Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
             FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
             PERCNT = N2WRIT
             PERCNT = 100.0D0*PERCNT / FNALL
-            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3//)')
+            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3/)')
      &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'% )',
      &         ' Megabytes written:                       ',FBYTES
@@ -1258,6 +1270,7 @@ C  /* Deck ds2ou1 */
      &                  NDIST,IORBSH,IPRINT)
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
+C     Used when "ADISTR" distributions (all gabcd for fixed a)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1503,16 +1516,16 @@ C
             NWRIT = NWRIT + NCOUNT(IDIST)
             CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
      &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
-C            CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
-C     &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
+C           CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
+C     &                 NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
 C        HJAaJ Sep08: calculation of PERCNT rewritten, to avoid integer*4 overflows
 C        NALL   = NDIST*(NBASIS + 1)*(NBASIS**2)/2
          FNBASIS= NBASIS
          FNALL  = NDIST*(FNBASIS+1.0D0)*FNBASIS*FNBASIS*0.5D0
-         PERCNT = N2WRIT
+         PERCNT = NWRIT
          PERCNT = 100.0D0*PERCNT / FNALL
-         IF (IPRINT.GT.0) WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
+         IF (IPRINT.GE.0) WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
      &         ' Number of two-electron spin-orbit integrals written:',
      &         NWRIT,' (',PERCNT,'%)'
       END IF
@@ -1608,7 +1621,13 @@ C
 C        Statistics
 C
          IF (INDA .EQ. 0) THEN
-            N2WRIT = LBUF*NBUFX(0) + ICOUNT
+C           N2WRIT = LBUF*NBUFX(0) + ICOUNT
+C           hjaaj: do all intermediates with integer*8 N2WRIT
+C                  to avoid integer*4 overflows
+            N2WRIT = LBUF
+            N2WRIT = N2WRIT*NBUFX(0)
+            N2WRIT = N2WRIT + ICOUNT
+C
             IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
                NBUFX(0) = NBUFX(0) + 2
             ELSE
@@ -1634,17 +1653,14 @@ C  /* Deck sr2out */
       SUBROUTINE SR2OUT(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT)
 C
-C     Write out blocks of symmetry integrals, eliminating duplicates
-C
-C                                          880412   PRT
-C
-C     Some low-brain work has been done by TUH
-C
-C     Rewritten to allow for triangular looping and to eliminate
-C     all duplicates by testing  880601 TUH
-C
 C     Adjusted for writing to LUSRINT for short-range 2-elektron
 C     integrals (MCDFT)   Feb. 2003 JKP
+C
+C     Based on UN2OUT
+C        Write out blocks of symmetry integrals, eliminating duplicates
+C                                   880412   PRT
+C        Rewritten to allow for triangular looping and to eliminate
+C        all duplicates by testing  880601 TUH
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1846,13 +1862,20 @@ C     *************************************
 C     ***** Last call to empty buffer *****
 C     *************************************
 C
-      IF (LAST) CALL SR2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,
-     &                      IPRINT)
+      IF (LAST) THEN
+         WRITE (LUPRI,'(A,1P,D10.2)') ' Threshold for neglecting '//
+     &      'two-electron short-range integrals:',THRESH
+         CALL SR2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,IPRINT)
+      END IF
       RETURN
       END
-C  /* Deck un2wrt */
+C  /* Deck sr2wrt */
       SUBROUTINE SR2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
+C
+C     Write short-range integrals to disk file SRTWOINT
+C     (based on UN2WRT)
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -1875,6 +1898,7 @@ C  /* Deck un2wrt */
 #include <ibtfun.h>
 C
       IF (ITYPE .EQ. -1) THEN
+C        ... First call
          CALL REWSPL(LUSRINT)
          CALL NEWLAB('BASINFO ',LUSRINT,LUPRI)
          WRITE (LUSRINT) MAXREP+1,(NAOS(I),I=1,8),LBUF,NIBUF,NBITS
@@ -1884,6 +1908,7 @@ C
          NBUF = 0
          JBUF = 608
       ELSE IF (ITYPE .EQ. 0) THEN
+C        ... between first and last call
 #if defined (VAR_SPLITFILES)
 C
          IF ((JBUF + LBUF*(IRAT + NIBUF) + 1) .GT. I2GB) THEN
@@ -1952,6 +1977,7 @@ C
          END IF
          ICOUNT = 0
       ELSE
+C        ... ITYPE .gt. 0: last call
          IF (INDA .NE. 0) THEN
             WRITE (LUSRINT) -INDA
             WRITE (LUSRINT) BUF,IBUF,ICOUNT
@@ -1986,7 +2012,13 @@ C
 C        Statistics
 C
          IF (INDA .EQ. 0) THEN
-            N2WRIT = LBUF*NBUF + ICOUNT
+C           N2WRIT = LBUF*NBUF + ICOUNT
+C           hjaaj: do all intermediates with integer*8 N2WRIT
+C                  to avoid integer*4 overflows for big basis sets
+            N2WRIT = LBUF
+            N2WRIT = N2WRIT*NBUF
+            N2WRIT = N2WRIT + ICOUNT
+C
             IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
                NBUF = NBUF + 2
             ELSE
@@ -2001,7 +2033,7 @@ C
             FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
             PERCNT = N2WRIT
             PERCNT = 100.0D0* PERCNT / FNALL
-            WRITE (LUPRI,'(/A,I12,A,F5.1,A/A,F12.3//)')
+            WRITE (LUPRI,'(/A,I12,A,F5.1,A/A,F12.3/)')
      &         ' Number of two-electron short-range integrals written:',
      &         N2WRIT,' (',PERCNT,'% )',
      &         ' Megabytes written:                       ',FBYTES

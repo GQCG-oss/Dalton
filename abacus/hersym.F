@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -31,16 +31,12 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C FILE    : hersym.F
 #include <single.h>
 C
-#ifdef UNDEF
+#ifdef OLD_LOG 
 ===========================================================================
-/* Comdeck log */
-071017-hjaaj: some bugs fixed and cleaned up
 951116-hjaaj: subroutine sort renamed to SRTATM (sort is very generic)
-950618-kenneth
-Some modification in the routine TRNMOL, in order to make it easier to
-understand for the compiler
 950522-kenneth
 Added solvent in FNDSYM, as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
@@ -50,7 +46,8 @@ SYMADD: Completely new module to determine molecular symmetry, find the
 ===========================================================================
 #endif
 C  /* Deck symadd */
-      SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
+      SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
+     &                  CLASS,TOLLRN_INPUT,IPRSYM_INPUT)
 C*****************************************************************************
 C
 C     This module determines molecular symmetry automatically
@@ -59,18 +56,29 @@ C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
 #include <implicit.h>
+#include <priunit.h>
 #include <mxcent.h>
 #include <mxsymm.h>
-#include <priunit.h>
 #include <optinf.h>
       DIMENSION WORK(LWORK), NONT(KATOM)
-      CHARACTER*1 KASYM(3,3), CLASS*15
-      IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
+      CHARACTER KASYM(3,3)*1, CLASS*15
+
+      CALL QENTER('SYMADD')
+
+C     Set control variables in "mxsymm.h"
+      IF (TOLLRN_INPUT .LE. 0.0D0) THEN
+         TOLLRN = 5.0D-6
+      ELSE
+         TOLLRN = TOLLRN_INPUT
+      END IF
       ZERTOL = 1.0D-12
       MAXAXS = 100
       MAXMIR = 25
+      IPRSYM = IPRSYM_INPUT
+
       CALL HEADER('SYMADD: Requested addition of symmetry',-1)
-      WRITE(LUPRI,'(A,1P,G9.2)') ' Symmetry threshold: ', TOLLRN
+      WRITE(LUPRI,'(A,1P,G9.2)') ' Symmetry test threshold: ', TOLLRN
+
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWORK
@@ -85,12 +93,13 @@ C*****************************************************************************
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
      &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK,KFREE,LFREE)
       CALL MEMREL('SYMADD',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('SYMADD')
       RETURN
       END
 C  /* Deck fndsym */
-      SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
-     &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
-     &                         CLASS,VRML,WORK,KFREE,LFREE)
+      SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,
+     &            TMPARR,TMP2AR,NONTYP,NSYMOP,NONT,
+     &            KATOM,KASYM,LENTMP,CLASS,VRML_SYM,WORK,KFREE,LFREE)
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxsymm.h>
@@ -103,6 +112,9 @@ C  /* Deck fndsym */
 #include <cbihr1.h>
 #include <molinp.h>
 #include <numder.h>
+
+! infpar.h: MASTER, MYNUM
+#include "infpar.h"
 C ***********************************************************
 C *   ATMARR - Atomic coordinates
 C *   CLASS  - Full point group
@@ -115,21 +127,25 @@ C ***********************************************************
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(*)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM), JCO(MXAQN)
-         LOGICAL VRML, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
+         LOGICAL VRML_SYM, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41, ID3, CRT
          CHARACTER SYMM*9, TMPLN*80, BSNM*80
+         CHARACTER NAME*4
+         LOGICAL   MIDSYM
+         MIDSYM = .TRUE.
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 3
 C
-C     Just to make sure, we zero temporary arrays
+C     Just to make sure, we zero all temporary arrays
 C
          CALL DZERO(ATMARR,6*(MXCENT + 1))
          CALL DZERO(DRTAXS,6*(MAXAXS + 1))
          CALL DZERO(DIRAXS,6*(MAXAXS + 1))
          CALL DZERO(DMRPLN,6*(MAXMIR + 1))
          CALL DZERO(TMPARR,7*(LENTMP + 1))
+         CALL DZERO(TMP2AR,6*(MXCENT + 1))
 C        IF (SOLVNT .OR. DORLM) THEN
 C          NUCLP = NUCIND - 1
 C        ELSE
@@ -149,27 +165,49 @@ C               /hjaaj Mar 2004
             ATMARR(6,I) = ISOTOP(I)
  100     CONTINUE
          ATMARR(1,0) = NUCLP
-         IF (IPREAD .GE. IPRTHR) THEN
+         IF (IPRSYM .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates'
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
+C
+C        MIDAS Interface, write out input coordinates for midas.sym
+C        analysis
+C
+         IF (MIDSYM) THEN 
+            LUCOOR = -1
+            CALL GPOPEN(LUCOOR,'midasifc.cartorig','NEW',
+     &                  ' ','FORMATTED',IDUMMY,.FALSE.)
+C           CALL PRIGEOLU(LUCOOR,CORD)
+            DO ICENT=1,NUCLP
+               NAME=NAMEX(3*ICENT)(1:4)
+               WRITE(LUCOOR,'(2X,A,3(2X,E22.16))')
+     &              NAMEX(3*ICENT)(1:4),ATMARR(1,ICENT),
+     &              ATMARR(2,ICENT),ATMARR(3,ICENT)
+            ENDDO
+            CALL GPCLOSE(LUCOOR,'KEEP')
+         ENDIF 
+C
+C
          CALL SRTATM(MXCENT, ATMARR, .TRUE.)
          IF (.NOT. NOMOVE) THEN
+C        Place molecular center of mass at the origin
             CALL CNTRML(NUCLP, ATMARR)
          END IF
+C        Determine molecular point group
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
-     &                               TMPARR, CLASS)
-         WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
+     &                       TMPARR, CLASS)
 C ::: If requested, a VRML representation of :::
 C ::: the symmetry elements is constructed.  :::
-         IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
-     &                         DMRPLN,MAXMIR,WORK(KFREE),LFREE)
+         IF (VRML_SYM) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
+     &                          DMRPLN,MAXMIR,WORK(KFREE),LFREE)
 C
+         IF( MYNUM .eq. MASTER ) 
+     &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
          IF (.NOT. NOMOVE) THEN
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
          END IF
-         IF (IPREAD .GE. IPRTHR) THEN
+         IF (IPRSYM .GE. IPRTHR) THEN
             IF (.NOT. NOMOVE) THEN
               TEXT = 'Centered and Rotated Coordinates'
               CALL PRNARR(TEXT , MXCENT, ATMARR)
@@ -178,7 +216,7 @@ C
      &  '   System could not be centered or rotated due to finite field'
              END IF
          END IF
-         IF (IPREAD .GE. IPRTHR) THEN
+         IF (IPRSYM .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/A)') ' No rotational axes were found.'
             ELSE
@@ -203,7 +241,7 @@ C
             END IF
          END IF
          CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM)
-         IF (IPREAD .GE. MIN(3,IPRTHR/2)) THEN
+         IF (IPRSYM .GE. MIN(3,IPRTHR/2)) THEN
             TEXT = 'Symmetry Independent Centres'
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
@@ -223,8 +261,6 @@ C ::: If there's any Angstrom mark, it's removed.    :::
             WRITE(TMPLN(10:10), '(I1)') NSYMOP
             WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            DOCART = .FALSE.
-            DOOWN = .FALSE.
             CALL LINE4(TMPLN,NONTYP,NSMOP2,CRT,KCHARG,THRS,ADDSYM,KASYM,
      &                 ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
@@ -307,6 +343,7 @@ C ::: We update the coordinates of the input file :::
                WRITE(TMPLN(5:65),'(3F20.15,1X)')
      &            CORD(1,I),CORD(2,I),CORD(3,I)
             END IF
+C
             QMASS = DISOTP(IZATOM(I),ISOTOP(I),'MASS')
             IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                            'Isotope=', NINT(QMASS)
@@ -322,10 +359,10 @@ C ::: Finally the number of atoms are updated. :::
             IF (INDEX(TMPLN,'CHA') .EQ. 0) THEN
                WRITE(TMPLN(12:15),'(I4)') NONT(K)
             ELSE
-               CALL LINE5(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,BASIS,
-     &                    ATOMBA,BSNM,KSPH)
-               CALL LINE5W(TMPLN,Q,NONT(K),MBSI,ATOMBA,BASIS,BSNM,
-     &                     IQM,JCO,MXAQN,KSPH)
+               CALL LINE5(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,
+     &                    BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+               CALL LINE5W(TMPLN,Q,NONT(K),MBSI,BASIS,ATOMBA,LMULBS,
+     &                    BSNM,IQM,JCO,MXAQN,KSPH)
             END IF
             MLINE(NC) = TMPLN
  510        CONTINUE
@@ -383,9 +420,9 @@ C ::                                                 ::
 C ::       Finds the angle between two vectors       ::
 C ::                                                 ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <pi.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "pi.h"
+#include "mxsymm.h"
          DIMENSION V1(3), V2(3)
          TEMP = (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))*
      &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
@@ -413,59 +450,62 @@ C ::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <priunit.h>
 #include <mxsymm.h>
-         DIMENSION ARR(6,0:MXM), VEC(3)
-         IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
-         IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
-         IF (ABS(VEC(3)) .LT. TOLLRN) VEC(3) = 0.0D0
-         VCNORM = SQRT(VEC(1)*VEC(1)+VEC(2)*VEC(2)+VEC(3)*VEC(3))
-         IF (VCNORM .LT. TOLLRN) RETURN
-         VEC(1) = VEC(1)/VCNORM
-         VEC(2) = VEC(2)/VCNORM
-         VEC(3) = VEC(3)/VCNORM
-         N = NINT(ARR(1,0))
-         DO I = 1, N
-            J = 0
-            IF (ABS(ARR(1,I) - VEC(1)) .LT. TOLLRN) J = J + 1
-            IF (ABS(ARR(2,I) - VEC(2)) .LT. TOLLRN) J = J + 1
-            IF (ABS(ARR(3,I) - VEC(3)) .LT. TOLLRN) J = J + 1
-            IF (J .EQ. 3) THEN
+      DIMENSION ARR(6,0:MXM), VEC(3)
+      IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
+      IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
+      IF (ABS(VEC(3)) .LT. TOLLRN) VEC(3) = 0.0D0
+      VCNORM = SQRT(VEC(1)*VEC(1)+VEC(2)*VEC(2)+VEC(3)*VEC(3))
+      IF (VCNORM .LT. TOLLRN) RETURN
+      VEC(1) = VEC(1)/VCNORM
+      VEC(2) = VEC(2)/VCNORM
+      VEC(3) = VEC(3)/VCNORM
+      N = NINT(ARR(1,0))
+C
 Chjaaj Sep08: remove duplicates already here, to include as many axes
 Chjaaj        as possible before N .ge. MXM.
-Cdbg           WRITE(LUPRI,*) 'FIND_AXIS info   : duplicate axis',I,N+1
-               RETURN
-            END IF
-         END DO
-         IF (N .GE. MXM) THEN
-Cdbg        WRITE(LUPRI,*) 'FIND_AXIS warning: axis not added',N+1,MXM
-Cdbg        WRITE(LUPRI,*) 'FIND_AXIS warning: the axis',
-Cdbg &VEC(1),VEC(2),VEC(3)
+      DO I = 1, N
+         J = 0
+         IF (ABS(ARR(1,I) - VEC(1)) .LT. TOLLRN) J = J + 1
+         IF (ABS(ARR(2,I) - VEC(2)) .LT. TOLLRN) J = J + 1
+         IF (ABS(ARR(3,I) - VEC(3)) .LT. TOLLRN) J = J + 1
+         IF (J .EQ. 3) THEN
+Cdbg        WRITE(LUPRI,*) 'ADD2AR info   : duplicate axis',I,N+1
             RETURN
-         ELSE
-Cdbg        WRITE(LUPRI,*) 'FIND_AXIS info   : axis added',N+1,MXM
-Cdbg        WRITE(LUPRI,*) 'FIND_AXIS info   : the axis',
-Cdbg &VEC(1),VEC(2),VEC(3)
          END IF
-         I = 1
+      END DO
+C
+      IF (N .GE. MXM) THEN
+Cdbg     WRITE(LUPRI,*) 'ADD2AR warning: axis not added',N+1,MXM
+Cdbg     WRITE(LUPRI,*) 'ADD2AR warning: the axis',
+Cdbg &      VEC(1),VEC(2),VEC(3)
+         RETURN
+      ELSE
+Cdbg     WRITE(LUPRI,*) 'ADD2AR info   : axis added',N+1,MXM
+Cdbg     WRITE(LUPRI,*) 'ADD2AR info   : the axis',
+Cdbg &      VEC(1),VEC(2),VEC(3)
+      END IF
 C ::: The vector is placed in its correct position in the array, :::
 C ::: so no sorting is necessary.                                :::
- 100     CONTINUE
+      I = 1
+ 100  CONTINUE
          IF ((NINT(ARR(4,I)) .GT. IORDER) .AND. (I .LE. N)) THEN
             I = I + 1
             GOTO 100
          END IF
-         DO 200 J = N, I, -1
-            ARR(1,J+1) = ARR(1,J)
-            ARR(2,J+1) = ARR(2,J)
-            ARR(3,J+1) = ARR(3,J)
-            ARR(4,J+1) = ARR(4,J)
-            ARR(5,J+1) = ARR(5,J)
- 200     CONTINUE
-         ARR(1,I) = VEC(1)
-         ARR(2,I) = VEC(2)
-         ARR(3,I) = VEC(3)
-         ARR(4,I) = IORDER
-         ARR(1,0) = N + 1
-         RETURN
+      DO J = N, I, -1
+         ARR(1,J+1) = ARR(1,J)
+         ARR(2,J+1) = ARR(2,J)
+         ARR(3,J+1) = ARR(3,J)
+         ARR(4,J+1) = ARR(4,J)
+         ARR(5,J+1) = ARR(5,J)
+      END DO
+      ARR(1,I) = VEC(1)
+      ARR(2,I) = VEC(2)
+      ARR(3,I) = VEC(3)
+      ARR(4,I) = IORDER
+      ARR(1,0) = N + 1
+C
+      RETURN
       END
 C  /* Deck dldpax */
       SUBROUTINE DLDPAX(MXM, AXARR)
@@ -474,9 +514,9 @@ C ::                                                             ::
 C ::       Deletes all duplicate axes (parallel) in array        ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxsymm.h"
          DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
          N = NINT(AXARR(1,0))
          I = 1
@@ -566,12 +606,12 @@ C  /* Deck srtatm */
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                                      ::
 C ::       Sorts atoms after atom number and distance from origo.         ::
-C ::       Rotational axes are sorted after order, the norm doesn't       ::
+C ::       Rotational axes are sorted after order, the norm does not      ::
 C ::       matter for these (USENRM turns on and off the norm criteria).  ::
 C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ARR(6,0:IUPPER)
          LOGICAL USENRM, SORTED
 C
@@ -631,7 +671,7 @@ C ::       Sorts atoms after original order. The method used       ::
 C ::       is bubble sorting.                                      ::
 C ::                                                               ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ARR(6,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL SORTED
@@ -653,7 +693,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                      TEMP = ARR(K,J)
                      ARR(K,J) = ARR(K,J+1)
                      ARR(K,J+1) = TEMP
- 300                 CONTINUE
+ 300              CONTINUE
                   SORTED = .FALSE.
                END IF
  200        CONTINUE
@@ -697,10 +737,13 @@ C          in the centering of the molecule.
             SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
          END IF
  100     CONTINUE
+         SUM(1) = SUM(1)/TOTMAS
+         SUM(2) = SUM(2)/TOTMAS
+         SUM(3) = SUM(3)/TOTMAS
          DO 200 I=1,N
-            ATMARR(1,I) = ATMARR(1,I) - (SUM(1)/TOTMAS)
-            ATMARR(2,I) = ATMARR(2,I) - (SUM(2)/TOTMAS)
-            ATMARR(3,I) = ATMARR(3,I) - (SUM(3)/TOTMAS)
+            ATMARR(1,I) = ATMARR(1,I) - SUM(1)
+            ATMARR(2,I) = ATMARR(2,I) - SUM(2)
+            ATMARR(3,I) = ATMARR(3,I) - SUM(3)
  200     CONTINUE
 Cdbg     write (lupri,*) 'CNTRML: transformed coord.s'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
@@ -715,8 +758,8 @@ C ::       Rotate molecule in space Deg degrees around       ::
 C ::           an arbitrary axis defined by AxVec            ::
 C ::                                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), AXVEC(3), V1(3),V2(3),V3(3),V4(3)
          AXNRM=SQRT(AXVEC(1)*AXVEC(1) + AXVEC(2)*AXVEC(2) +
      &                                  AXVEC(3)*AXVEC(3))
@@ -943,8 +986,8 @@ C ::                                              ::
 C ::       Checks if the molecule is linear       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          N = NINT(ATMARR(1,0))
          LINMOL = .TRUE.
@@ -979,8 +1022,8 @@ C ::                                              ::
 C ::       Checks if the molecule is planar       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          LOGICAL LINMOL
          N = NINT(ATMARR(1,0))
@@ -1039,9 +1082,9 @@ C ::                                                              ::
 C ::       Checks if the molecule has a center of inversion       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "mxcent.h"
          DIMENSION ATMARR(6,0:MXM), V1(3)
          DIMENSION IUSED(MXCENT)
          N = NINT(ATMARR(1,0))
@@ -1111,9 +1154,9 @@ C             that as many atoms as possible are placed in the x-z plane.
 C             (After z-axis has been chosen as one of the axes of highest
 C              order)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), VEC(3)
          DIMENSION VROT(3), V1(3), IUSED(MXCENT)
          N = NINT(ORGARR(1,0))
@@ -1191,15 +1234,15 @@ C  /* Deck rotaxs */
       LOGICAL FUNCTION ROTAXS(MXM,ORGARR,ATMARR,IORDER,ROTVEC,PROPER)
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                                   ::
-C ::       Checks if the mol. has rotational axis of order IORDER       ::
+C ::       Checks if the mol. has rotational axis of order IORDER      ::
 C ::                     around the given vector                       ::
 C ::                                                                   ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-#include <pi.h>
-#include <mxsymm.h>
-#include <mxcent.h>
 #include <priunit.h>
+#include <pi.h>
+#include <mxcent.h>
+#include <mxsymm.h>
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), ROTVEC(3)
          LOGICAL PROPER,EQL
          DIMENSION VROT(3), V1(3), V2(3)
@@ -1318,27 +1361,30 @@ C ::: Finally, we check that all atoms have been rotated into another atom. :::
          RETURN
       END
 C  /* Deck findax */
-      SUBROUTINE FINDAX(MXM, ATMARR, DRTAXS, TMPARR, PROP)
+      SUBROUTINE FINDAX(MXM, ATMARR, DRTAXS, TMPARR, PROPER)
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                       ::
 C ::       Finds all rotational axes in the molecule.      ::
-C ::       PROP determines if we are looking for           ::
+C ::       PROPER determines if we are looking for         ::
 C ::       proper or improper rotations.                   ::
 C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxsymm.h"
+#include "mxcent.h"
          DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
          DIMENSION TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
          DIMENSION ICNT(2), IUSED(2*MXCENT)
-         LOGICAL ROTAXS, PROP
+         LOGICAL ROTAXS, PROPER
          DRTAXS(1,0) = 0.0D0
          N = NINT(ATMARR(1,0))
-         MINORD = 2
-         IF (.NOT. PROP) MINORD = 1
+         IF (PROPER) THEN
+            MINORD = 2
+         ELSE
+            MINORD = 1
+         END IF
          VSTORE(1) = 0.0D0
          VSTORE(2) = 0.0D0
          VSTORE(3) = 0.0D0
@@ -1410,7 +1456,8 @@ C ::: the normal vector of this plane as a possible rotational axis. :::
                         IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
      &                                       .GT. TOLLRN*TOLLRN) THEN
                           DO L=IORD,MINORD,-1
-                           IF (ROTAXS(MXM,ATMARR,TMPARR,L,V3,PROP)) THEN
+                           IF (ROTAXS(MXM,ATMARR,TMPARR,L,V3,PROPER))
+     &                        THEN
                               CALL ADD2AR(MAXAXS, DRTAXS, L, V3)
                               CALL DLDPAX(MAXAXS, DRTAXS)
                            END IF
@@ -1424,7 +1471,7 @@ C            not on the axis.
                      IF ( (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))
      &                       .GT. TOLLRN) THEN
                        DO L = IORD - 1, MINORD, -1
-                        IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROP)) THEN
+                        IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROPER)) THEN
                            CALL ADD2AR(MAXAXS, DRTAXS, L, V1)
                            CALL DLDPAX(MAXAXS, DRTAXS)
                         END IF
@@ -1453,16 +1500,16 @@ C                          DO WHILE (ICNT(K) .LE. IORD)
                                  V2(1) = V2(1) + ATMARR(1,M)
                                  V2(2) = V2(2) + ATMARR(2,M)
                                  V2(3) = V2(3) + ATMARR(3,M)
-                              END DO
+                              END DO ! L = 1,K
 C ::: We check for all possible orders of rotation from Ord/2 and down :::
                               IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
      &                                       .GT. TOLLRN*TOLLRN) THEN
                                DO M = IORD/2, MINORD, -1
-                                 IF(ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROP))
-     &                             THEN
-                                   CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
-                                   CALL DLDPAX(MAXAXS, DRTAXS)
-                                 END IF
+                               IF(ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROPER))
+     &                            THEN
+                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
+                                  CALL DLDPAX(MAXAXS, DRTAXS)
+                               END IF
                                END DO
                               END IF
                               ICNT(1) = ICNT(1) + 1
@@ -1500,7 +1547,7 @@ C ::: products between themselves.                                      :::
                            IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
      &                         .GT. TOLLRN*TOLLRN) THEN
                              DO M = IORD/2, MINORD, -1
-                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROP))
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROPER))
      &                           THEN
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
@@ -1536,12 +1583,12 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                              IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
      &                                     .LT. ZERTOL) V3(1) = 1.0D0
                              DO M = MXORDR, 2, -1
-                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROP))
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROPER))
      &                           THEN
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
                               END IF
-                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROP))
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROPER))
      &                           THEN
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
@@ -1572,13 +1619,15 @@ C ::: Then we move on to the linear case :::
                      V1(2) = ATMARR(2,I)
                      V1(3) = ATMARR(3,I)
 C ::: We check for an axis of infinite (more precisely 99.) order. :::
-                     IF (ROTAXS(MXM, ATMARR, TMPARR, 99, V1, PROP)) THEN
+                     IF (ROTAXS(MXM, ATMARR, TMPARR, 99, V1, PROPER))
+     &                  THEN
                         CALL ADD2AR(MAXAXS, DRTAXS, 99, V1)
                         CALL DLDPAX(MAXAXS, DRTAXS)
 C ::: Otherwise we look for all other possible orders along the line. :::
                      ELSE
                         DO L = 2, 8
-                           IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROP))THEN
+                           IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROPER))
+     &                        THEN
                               CALL ADD2AR(MAXAXS, DRTAXS, L, V1)
                               CALL DLDPAX(MAXAXS, DRTAXS)
                            END IF
@@ -1598,7 +1647,7 @@ C ::: plane. If they do, a C2 axis perp. to the plane is tested.  :::
                            V3(3) =  V1(1)*VSTORE(2) - VSTORE(1)*V1(2)
                            IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
      &                                        .GT. TOLLRN*TOLLRN) THEN
-                              IF (ROTAXS(MXM,ATMARR,TMPARR,2,V3,PROP))
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,2,V3,PROPER))
      &                           THEN
                                  CALL ADD2AR(MAXAXS, DRTAXS, 2, V3)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
@@ -1609,7 +1658,8 @@ C ::: plane. If they do, a C2 axis perp. to the plane is tested.  :::
                   END IF
 C ::: The easiest case is when the atoms define the only possible axis. :::
                ELSE
-                  IF (ROTAXS(MXM, ATMARR, TMPARR, IORD, V1, PROP)) THEN
+                  IF (ROTAXS(MXM, ATMARR, TMPARR, IORD, V1, PROPER))
+     &               THEN
                      CALL ADD2AR(MAXAXS, DRTAXS, IORD, V1)
                      CALL DLDPAX(MAXAXS, DRTAXS)
                   END IF
@@ -1629,8 +1679,8 @@ C ::                                                                ::
 C ::       Finds all improper rotational axes in the molecule       ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), AXIMAR(6,0:MAXAXS)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3)
@@ -1678,18 +1728,18 @@ C ::                                                     ::
 C ::       Finds all mirror planes in the molecule       ::
 C ::                                                     ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), DMRARR(6,0:MAXMIR)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
-         LOGICAL MIRMOL, PLNMOL, LINMOL
+         LOGICAL   MIRMOL, PLNMOL, LINMOL
          DMRARR(1,0) = 0.0D0
          N = NINT(ATMARR(1,0))
          VSTORE(1) = 0.0D0
          VSTORE(2) = 0.0D0
          VSTORE(3) = 0.0D0
-C ::: First we check all planes perpendicular to one atompos. :::
+C ::: First we check all planes perpendicular to one atom pos. :::
          DO 100 I = 1, N
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
@@ -1834,15 +1884,15 @@ C            roundoff errrors when DMRARR(4,I) = 0.0D0)
       END
 C  /* Deck fndgrp */
       SUBROUTINE FNDGRP(MXM, ATMARR, DRTAXS, DIRAXS, DMRPLN,
-     &                       TMPARR, CLASS)
+     &                  TMPARR, CLASS)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                              ::
 C ::       Determines which point group molecule belongs to       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "priunit.h"
          DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:MXM)
@@ -1852,6 +1902,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
  111     FORMAT(I1)
  222     FORMAT(I2)
 C
+C ::: Find proper rotation axes
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
@@ -2001,7 +2052,7 @@ C ::                                                    ::
 C ::       Test pair of atoms for given operation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ARR(7, 0:MXM), TARR(6, 0:MXM)
          DIMENSION TMPARR(6, 0:2), VEC(3)
          LOGICAL GENELM, MIRMOL, ROTAXS, INVMOL
@@ -2040,17 +2091,17 @@ C ::                                             ::
 C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
+#include "molinp.h"
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*9
          LOGICAL MIRMOL, ROTAXS, INVMOL, NECESS, GENELM
          N = NINT(ATMARR(1,0))
-         EXTARR(1,0) = 1.0D0*N
+         EXTARR(1,0) = N
          DO 100 I = 1, N
             DO 110 J = 1, 6
                EXTARR(J,I) = ATMARR(J,I)
@@ -2092,8 +2143,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
          NROT = 0
          DO 290 I = 1, 3
             V1(I) = 1.0D0
-            IF((IELMNT.LT.3).AND.
-     &         (ROTAXS(MXM,ATMARR,TMPARR,2,V1,.TRUE.))) THEN
+            IF( (IELMNT.LT.3) .AND.
+     &          ROTAXS(MXM,ATMARR,TMPARR,2,V1,.TRUE.) ) THEN
                SYMELM(IELMNT*3+1:IELMNT*3+2) = STRING(2+2*I:3+2*I)
                IELMNT = IELMNT + 1
                NROT = NROT + 1
@@ -2209,20 +2260,20 @@ C       *** are degenerate with respect to some rotations, and not  ***
 C       *** degenerate with respect to others.                      ***
 C       ***************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
         PARAMETER (THRS = 1.0D-10)
         LOGICAL ONAXS, HAVAXS
         CHARACTER*(*) SYMELM
-        CHARACTER*2 ROTAXS
+        CHARACTER*2 ROTAXIS
 C
         DIMENSION ATMARR(6, 0:MXM), IATAXS(3), ONAXS(3), HAVAXS(3),
-     &            ROTAXS(3)
+     &            ROTAXIS(3)
 C
-        ROTAXS(1) = 'YZ'
-        ROTAXS(2) = 'XZ'
-        ROTAXS(3) = 'XY'
+        ROTAXIS(1) = 'YZ'
+        ROTAXIS(2) = 'XZ'
+        ROTAXIS(3) = 'XY'
 C
         DO I = 1, 3
            ONAXS (I) = .FALSE.
@@ -2283,7 +2334,7 @@ C
            IEL = 0
            DO IAXS = 3, 1, -1
               IF (ONAXS(IAXS)) THEN
-                 SYMELM(IEL*3+1:IEL*3+2) = ROTAXS(IAXS)
+                 SYMELM(IEL*3+1:IEL*3+2) = ROTAXIS(IAXS)
                  HAVAXS(IAXS) = .TRUE.
                  IEL = IEL + 1
               END IF
@@ -2293,7 +2344,7 @@ C          *** If necessary the second axis is arbitrarily chosen ***
 C
            DO IAXS = 3, 1, -1 
               IF ((IEL.LT.2) .AND. (.NOT.HAVAXS(IAXS))) THEN
-                 SYMELM(IEL*3+1:IEL*3+2) = ROTAXS(IAXS)
+                 SYMELM(IEL*3+1:IEL*3+2) = ROTAXIS(IAXS)
                  HAVAXS(IAXS) = .TRUE.
                  IEL = IEL + 1
               END IF

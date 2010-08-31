@@ -49,9 +49,10 @@ cat > cc2_r12_aux_ne_gamma2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 .DIPLEN
 .SECMOM
 **WAVE FUNCTION
@@ -305,8 +306,8 @@ ERROR[4]="CC2-R12/A SECOND HYPERPOLARIZABILITY  NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

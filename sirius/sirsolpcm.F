@@ -405,8 +405,8 @@ C
 C     
 C     Calculate PCM solvent energy contributions 
 C
-        PCMNE = D0
-	DO ITS = 1, NTSIRR
+      PCMNE = D0
+      DO ITS = 1, NTSIRR
         DO JATOM = 1, NUCDEP
           R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
      *         YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
@@ -415,9 +415,9 @@ C
         ENDDO
       ENDDO
       ESOLT = - DP5 * TJEN + DP5 * PCMNE + PCMNN
-      IF (IPRPCM .GE. 6) THEN
+      IF (IPRPCM .GE. 2) THEN
          WRITE(LUPRI,*) 'ESOLT, TJEN, PCMNE, PCMNN'
-         WRITE(LUPRI,'(3f20.15)') TJEN, PCMNE, PCMNN
+         WRITE(LUPRI,'(4f20.15)') ESOLT, TJEN, PCMNE, PCMNN
       END IF
 C
 C     We have used "effective" nuclear charges in non-equilibrium
@@ -501,6 +501,7 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include <qm3.h>
+#include <gnrinf.h>
 C
 #include <orgcom.h>
 #include <dftcom.h>
@@ -539,8 +540,7 @@ C
       KTJ2    = KJAO    + NNBASX
       KPOTMM  = KTJ2    + NTS
       KPOTQMM = KPOTMM  + NTS
-      KPTQMN  = KPOTQMM + NTS
-      KQMAT   = KPTQMN  + NTS
+      KQMAT   = KPOTQMM + NTS
       KWRK1   = KQMAT   + NTS * NTSIRR
       LWRK1   = LFREE   - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMFCK',-KWRK1,LFREE)
@@ -548,11 +548,11 @@ C
       ESOLT = D0
       QET   = D0
 C
-      CALL DZERO(WRK(KTJ2),NTS)
+      CALL DZERO(POTCAVELE, NTS)
       CALL DZERO(WRK(KXAO),NNBASX)
       CALL DZERO(WRK(KJENAO),NNBASX)
 
-      CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.,.FALSE.)
+Cahs       CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.,.FALSE.)
 
       IF(MMPCM .AND. QM3) THEN
 C     Arnfinn ->
@@ -620,9 +620,10 @@ C
          PCMEN_op = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
-         CALL J1INT(WRK(KTJ2),EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
+         CALL J1INT(POTCAVELE,EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
-         CALL V2Q(WRK(KQMAT),WRK(KTJ2),QSE,QET,.FALSE.)
+C         CALL V2Q(WRK(KQMAT),WRK(KTJ2),QSE,QET,.FALSE.)
+         CALL V2Q(WRK(KWRK1),POTCAVELE,QSE,QET,.FALSE.)
          IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
             CALL DAXPY(NNBASX,1.0D0,DVAO,1,WRK(KWRK1),1)
@@ -686,15 +687,22 @@ C
  1100 FORMAT(' Electronic apparent charge',F10.5,' Theoretical ',
      &   F10.5,' *** Not renormalized ***')
 C
+C
+C Adding the 2el term (X) to the PCM Fock operator
+C
       EXP1VL = .FALSE.
       TOFILE = .FALSE.
       CALL J1INT(QSE,EXP1VL,WRK(KXAO),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LWRK1)
-C
-C    PCMNE = interaction solute nuclei - polarization electronic charges
+
+C     Electrostatic contributions:
+C     PCMNN = interaction nuclei - polarization nuclear charges
+C             PCMNN = sum_i [Vnuc(i) * QSN(i)]
+C     PCMEN = interaction solute electrons - polarization nuclear charges
+C             PCMEN = sum_i [Vel(i) * QSN(i)]
+C     PCMNE = interaction solute nuclei - polarization electronic charges
 C             PCMNE = sum_i [Vnuc(i) * QSE(i)]
-C
-C    PCMEE = interaction solute electrons - polarization electronic charges
+C     PCMEE = interaction solute electrons - polarization electronic charges
 C             PCMEE = sum_i [Vel(i) * QSE(i)]
 C
       PCMEE = D0
@@ -717,16 +725,19 @@ Clf            VCHECK = VCHECK + PCMCHG(JATOM) / R
 Clf         ENDDO
 Clf         print *, VCHECK, WRK(KPTQMN+ITS-1), WRK(KPOTMM+ITS-1)
          PCMMM = PCMMM + NSYM * QSMM(ITS) * WRK(KPOTMM + ITS -1)
-         PCMNN = PCMNN + NSYM * QSN(ITS)  * WRK(KPTQMN + ITS -1)
-         PCMEE = PCMEE + QSE(ITS)  * WRK(KTJ2   + ITS -1)
+         PCMNN = PCMNN + QSN(ITS)  * POTCAVNUC(ITS)
+C         PCMNN = PCMNN + NSYM * QSN(ITS)  * POTCAVNUC(ITS)
+         PCMEE = PCMEE + QSE(ITS)  * POTCAVELE(ITS)
 
-         PCMEN = PCMEN + QSN(ITS) * WRK(KTJ2+ITS-1)
-         PCMNE = PCMNE + NSYM * QSE(ITS) * WRK(KPTQMN+ITS-1)
+         PCMEN = PCMEN + QSN(ITS) * POTCAVELE(ITS)
+         PCMNE = PCMNE + QSE(ITS) * POTCAVNUC(ITS)
+C         PCMNE = PCMNE + NSYM * QSE(ITS) * POTCAVNUC(ITS)
 
-         PCMEM = PCMEM + NSYM * QSMM(ITS) * WRK(KTJ2+ITS-1)
+         PCMEM = PCMEM + NSYM * QSMM(ITS) * POTCAVELE(ITS)
          PCMME = PCMME + NSYM * QSE(ITS)  * WRK(KPOTMM + ITS -1)
 
-         PCMMN = PCMMN + NSYM * QSMM(ITS) * WRK(KPTQMN + ITS -1)
+         PCMMN = PCMMN + QSMM(ITS) * POTCAVNUC(ITS)
+C         PCMMN = PCMMN + NSYM * QSMM(ITS) * POTCAVNUC(ITS)
          PCMNM = PCMNM + NSYM * QSN(ITS)  * WRK(KPOTMM + ITS -1)
 
       ENDDO
@@ -743,6 +754,10 @@ C     PCMMM =     interaction mm chg - polarization mm chg
          ESOLT = DP5 * (PCMEN + PCMNE + PCMEE + PCMNN) + 
      *           DP5 * (PCMMM + PCMMN + PCMNM) +
      *           DP5 * (PCMEM + PCMME)
+C
+C        Nuclear energy divided by two for backward compatibility /lf
+C     
+         PCMNN = PCMNN / 2.0D0 
 C
 C         IF (IPRINT .GT. 2) THEN 
          IF (.true.) THEN 
@@ -1086,7 +1101,7 @@ C  Purpose:  Calculate MCSCF Hessian contribution from a
 C            surrounding medium to an orbital trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-C  NSVEC          may be NVAR or NWOPT, dependent on LINTRN
+C  NSVEC     may be NVAR or NWOPT, dependent on LINTRN
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1493,6 +1508,30 @@ Clf
      &        UELOR,VTOTQS,FACSLO
          WRITE(LUPRI,*) 'ESOLT WITH NONEQ CONTRIB:',
      &        ESOLT, QSSLW, PORT 
+      END IF
+      RETURN
+      END
+C /* Deck reapcm */
+      SUBROUTINE REAPCM(LABNAM,WHERE,LUNIT,ARRAY,LENGTH)
+C
+C     Interface routine to read PCM potential integrals of a given symmetry
+C     K.Ruud, nov.2001
+C
+#include <implicit.h>
+#include <priunit.h>
+      CHARACTER*8 LABNAM, WHERE
+      LOGICAL FOUND, FNDLAB
+      DIMENSION ARRAY(LENGTH)
+C
+      FOUND = .FALSE.
+      IF (FNDLAB(LABNAM,LUNIT)) THEN
+         CALL READT(LUNIT,LENGTH,ARRAY)
+         FOUND = .TRUE.
+      END IF
+      IF (.NOT. FOUND) THEN
+         WRITE (LUPRI,'(/A)') ' Integral label '//LABNAM//' not'//
+     &        'found on file'
+         CALL QUIT('Integral label not found in '//WHERE)
       END IF
       RETURN
       END

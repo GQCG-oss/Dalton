@@ -40,7 +40,7 @@ C
 C Initialize /QALGEBRA/
 C
 #include <implicit.h>
-#include <dcbqal.h>
+#include <qalgebra.h>
 C
       DATA IQMULT / 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2, 4, 3, 2, 1,
      &              2, 1, 4, 3, 1, 2, 3, 4, 4, 3, 2, 1, 3, 4, 1, 2,
@@ -86,7 +86,7 @@ C     Last revision: June 27 1996 - tsaue
 C
 C*****************************************************************************
 #include <implicit.h>
-#include <dcbqal.h>
+#include <qalgebra.h>
 C
       LOGICAL LBUF(4)
       DIMENSION IQPA(NZA),IQPB(NZB),IQPC(*)
@@ -160,7 +160,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dcbqal.h>
+#include <qalgebra.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 C     Global variables
@@ -824,7 +824,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <dcbqal.h>
+#include <qalgebra.h>
       PARAMETER(D1 = 1.0D0)
 C
       CHARACTER FA*1, TA*1
@@ -2364,7 +2364,7 @@ C     totally symmetric operations
 C     KSOP is a pointer to those....
 C
       DO I = 0,MAXREP
-      II = ISOP(I)
+      II = JSOP(I)
       IF(IXVAL(IRREP,II).EQ.1) THEN
         NELM = NELM + 1
         KSOP(NELM) = II

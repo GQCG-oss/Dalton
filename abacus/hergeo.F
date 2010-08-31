@@ -38,14 +38,14 @@ C  /* Deck anainp */
 C
 C  5-Jul-1985 Hans Jorgen Aa. Jensen
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       PARAMETER (MAXANG = 20)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
+#include "abainf.h"
       LOGICAL SKIP
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
@@ -156,7 +156,7 @@ C  /* Deck anaini */
 C
 C     Initialize /CBIANA/
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (MAXANG = 20)
       LOGICAL SKIP
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
@@ -168,75 +168,80 @@ C
       RETURN
       END
 C  /* Deck geoana */
-      SUBROUTINE GEOANA(COORD,PRINT,DIF,NBONDS,PUNCH,LUIP,WORK,LWORK)
+      SUBROUTINE GEOANA(COORD,PRINT,DIF,NBONDS,LUPUNCH,WORK,LWORK)
 C
 C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-      LOGICAL PRINT, DIF, PUNCH
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      LOGICAL PRINT, DIF
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
+#include "nuclei.h"
 C
       CALL QENTER('GEOANA')
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('REAL',KVEC,3*NUCDEP*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KBOND ,NUCDEP*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KCHRG ,NUCDEP,       WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',IPAIR,2*NUCDEP*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVEC ,3*NUCDEP*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KBOND  ,NUCDEP*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KCHRG  ,NUCDEP,       WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KPAIR,2*NUCDEP*NUCDEP,WORK,KFREE,LFREE)
 C
-      CALL GEOAN1(COORD,PRINT,DIF,NBONDS,PUNCH,LUIP,WORK(KVEC),
-     &            WORK(KBOND),WORK(KCHRG),WORK(IPAIR))
+      CALL GEOANA_1(COORD,PRINT,DIF,NBONDS,LUPUNCH,WORK(KVEC),
+     &            WORK(KBOND),WORK(KCHRG),WORK(KPAIR))
 C
       CALL MEMREL('GEOANA',WORK,1,1,KFREE,LFREE)
       CALL QEXIT('GEOANA')
       RETURN
       END
-C  /* Deck geoan1 */
-      SUBROUTINE GEOAN1(COORD,PRINT,DIF,NBONDS,PUNCH,LUIP,VEC,
+C  /* Deck GEOANA_1 */
+      SUBROUTINE GEOANA_1(COORD,PRINT,DIF,NBONDS,LUPUNCH,VEC,
      &                  BONDED,ICHARG,IPAIRS)
 C
 C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
-C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
+C     LUPUN .gt. 0: punching atom bonds for Gamess graphic output, K.Ruud-95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 #include <codata.h>
-#include <facang.h>
+#include "facang.h"
       PARAMETER (MAXANG = 20)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      LOGICAL SKIP, DIF, PRINT, PUNCH
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
+      LOGICAL   SKIP, DIF, PRINT
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include <gnrinf.h>
-#include <inftap.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <symmet.h>
+#endif
+#include "nuclei.h"
+#include "symmet.h"
+#include "qm3.h"
 C
-      DIMENSION COORD(3,*),
-     *          DIST(MXCENT*(MXCENT+1)/2),
-     *          ANGLE(MAXANG), DIHED(MAXANG), ICHARG(NUCDEP)
-      DIMENSION VEC(3,NUCDEP,NUCDEP),
-     &          IPAIRS(2,NUCDEP*NUCDEP)
+      DIMENSION COORD(3,*), DIST(MXCENT*(MXCENT+1)/2),
+     &          ANGLE(MAXANG), DIHED(MAXANG), ICHARG(NUCDEP)
+      DIMENSION VEC(3,NUCDEP,NUCDEP), IPAIRS(2,NUCDEP*NUCDEP)
       LOGICAL   BONDED(NUCDEP,NUCDEP)
       CHARACTER*6 NUCNAM(4)
       SAVE DIST, ANGLE, DIHED
+C     statement function:
       ARCCOS(ARG) = FACANG*ACOS(ARG)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
+#ifndef PRG_DIRAC
       IF (REDCNT) RETURN
-      
+!     ... REDCNT is a QM3 variable
+#endif
+
       NBONDS = 0
       IF (NUCDEP .EQ. 1) RETURN
 C
@@ -287,6 +292,7 @@ C
 C     Set up distance matrix in Angstrom
 C
       DISTMX   = D0
+      ABSDISTMX= D0
       IDISTMX  = 0
       JDISTMX  = 0
       ADISTMX  = D0
@@ -301,8 +307,9 @@ C
             DISTAN = SQRT(DISTAN)
             IF (DIF) DISTAN = DISTAN - DIST(IJ)
             DIST(IJ)   = DISTAN
-            IF (ABS(DISTAN) .GT. DISTMX) THEN
-               DISTMX  = ABS(DISTAN)
+            IF (ABS(DISTAN) .GT. ABSDISTMX) THEN
+               DISTMX  = DISTAN
+               ABSDISTMX = ABS(DISTMX)
                IDISTMX = I
                JDISTMX = J
                IF (I .LE. N_QMATOMS) THEN
@@ -361,15 +368,15 @@ C
       END IF
 C
       IF (PRINT .AND. .NOT. DIF) THEN
-C     ... only QM atoms, not MM atoms
 
         IJ = 0
         DO 10 J= 1,N_QMATOMS
+C     ... only QM atoms, not MM atoms
           RADJ = RADIUS(ICHARG(J))
           IF (RADJ .LT. 0.0D0 .AND. ICHARG(J) .GT. 0) THEN
 C             do not print if cavity center or floating orbital /hjaaj
               WRITE(LUPRI,*)
-     &        'RADIUS FOR ATOM WITH ATOMIC NUMBER ',
+     &        'INFO: RADIUS FOR ATOM WITH ATOMIC NUMBER ',
      &        ICHARG(J),' IS UNAVAILABLE, USING 2.0 AA'
             RADJ = 2.0D0
           END IF
@@ -393,15 +400,16 @@ C             not bonded if cavity center or floating orbital /hjaaj
               BONDED(I,J) = .FALSE.
               BONDED(J,I) = .FALSE.
             END IF
- 20       CONTINUE
+  20     CONTINUE
           IJ = IJ + 1
-          BONDED(J,J) = .FALSE.
- 10     CONTINUE
-        IF (.NOT. QM3) THEN
+         BONDED(J,J) = .FALSE.
+  10  CONTINUE
+C
+      IF (.NOT. QM3) THEN
           CALL HEADER('Bond distances (Angstrom):',1)
           WRITE (LUPRI,'(18X,A/18X,A)')
-     $          'atom 1     atom 2       distance',
-     $          '------     ------       --------'
+     &          'atom 1     atom 2       distance',
+     &          '------     ------       --------'
           IJ = 0
           DO I = 1, N_QMATOMS
             DO J = 1, I-1
@@ -410,7 +418,7 @@ C             not bonded if cavity center or floating orbital /hjaaj
                 NUCNAM(1) = NAMDEP(I)
                 NUCNAM(2) = NAMDEP(J)
                 WRITE(LUPRI,'(A,2X,A6,5X,A6,F15.6)')
-     $               '  bond distance:',
+     &               '  bond distance:',
      &               NUCNAM(1), NUCNAM(2), DIST(IJ)
               END IF
             END DO
@@ -432,10 +440,9 @@ C
                     NUCNAM(1) = NAMDEP(J)
                     NUCNAM(2) = NAMDEP(I)
                     NUCNAM(3) = NAMDEP(K)
-                    ANG = VECANG(VEC(1,I,J),VEC(1,I,K))
+                    ANG = FACANG*VECANG(VEC(1,I,J),VEC(1,I,K))
                     WRITE(LUPRI,'(A,5X,A6,5X,A6,5X,A6,F14.3)')
-     *                    '  bond angle:',NUCNAM(1),NUCNAM(2),
-     *                    NUCNAM(3),FACANG*ANG
+     &                 '  bond angle:',NUCNAM(1),NUCNAM(2),NUCNAM(3),ANG
                   END IF
  60             CONTINUE
  50           CONTINUE
@@ -445,14 +452,14 @@ C
         END IF
       END IF
 C
-C     Punch bonding information in Gamess output format
+C     Punch bonding information in Gamess output format on unit LUPUNCH
 C
-      IF (PUNCH) THEN
+      IF (LUPUNCH .GT. 0) THEN
          IF(NBONDS.LE.6) THEN
-            WRITE(LUIP,8010) (IPAIRS(1,I),IPAIRS(2,I),I=1,NBONDS)
+            WRITE(LUPUNCH,8010) (IPAIRS(1,I),IPAIRS(2,I),I=1,NBONDS)
          ELSE
-            WRITE(LUIP,8020) (IPAIRS(1,I),IPAIRS(2,I),I=1,6)
-            WRITE(LUIP,8030) (IPAIRS(1,I),IPAIRS(2,I),I=7,NBONDS)
+            WRITE(LUPUNCH,8020) (IPAIRS(1,I),IPAIRS(2,I),I=1,6)
+            WRITE(LUPUNCH,8030) (IPAIRS(1,I),IPAIRS(2,I),I=7,NBONDS)
          END IF
       END IF
 C         
@@ -558,8 +565,8 @@ C (based on OUTPAK by Nelson H.F. Beebe)
 C
 C Print bond distance matrix (or other matrix over atoms)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (KCOL=6)
       CHARACTER*6 NAMDEP(*)
       DIMENSION DISMAT(*)
@@ -588,7 +595,6 @@ C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include <implicit.h>
 #include <priunit.h>
-#include <qm3.h>
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable
 C     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,
@@ -634,8 +640,8 @@ C
       END
 C  /* Deck vdwrad */
       FUNCTION VDWRAD(NCHARGE)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     Based on van der Waals radii in Angstrom.
 C     Returns -1 where data is inavailable
       DIMENSION RAD(100)

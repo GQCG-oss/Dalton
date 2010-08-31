@@ -149,8 +149,8 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.060784218[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.310968287[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.060784218" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.31096828" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -199,7 +199,7 @@ TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
-# Molecular g-factor
+# Molecular rotational g-factor
 CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.7223106[0-9]" $log | wc -l`
 CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.9745334[0-9]" $log | wc -l`
 CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.00000000" $log | wc -l`
@@ -208,15 +208,15 @@ CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.0176559[0-9]" $log | wc -l`
 CRIT6=`$GREP "2nd anisotropy\: * (0| )\.0656164[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[10]=6
-ERROR[10]="MOLECULAR G-TENSOR NOT CORRECT"
+ERROR[10]="MOLECULAR ROT G-TENSOR NOT CORRECT"
 
-# Molecular g-factor in principal axis system
+# Molecular rotational g-factor in principal axis system
 CRIT1=`$GREP "A * (0| )\.7105399[0-9] * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000" $log | wc -l`
 CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.7660549[0-9] * (\-0| \-| 0|  )\.00000000" $log | wc -l`
 CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000 * (0| )\.69033(69|70)[0-9]" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
-ERROR[11]="MOLECULAR G-TENSOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
+ERROR[11]="MOLECULAR ROT G-TENSOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
 CRIT1=`$GREP "O * y * 355\.2183(4|5)..[0-9]" $log | wc -l`
@@ -301,8 +301,8 @@ ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

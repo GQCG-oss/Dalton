@@ -178,6 +178,7 @@ C     Calculate MP2-R12 contributions for frozen core gradients
 #include <ccsdsym.h>
 #include <ccorb.h>
 #include <dummy.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <priunit.h>
 #include <ccfro.h>

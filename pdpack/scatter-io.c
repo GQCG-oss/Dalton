@@ -56,7 +56,7 @@ C
 
 #if defined(SYS_DEC)
 /* DEC C V5.9-005 on Digital UNIX V4.0 (Rev. 1229) has no fseeko,
- * fall back to old inteface. */
+ * fall back to old interface. */
 #define fseeko fseek
 #endif
 

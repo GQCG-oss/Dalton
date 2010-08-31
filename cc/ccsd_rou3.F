@@ -4984,7 +4984,7 @@ C
 C
       RETURN
       END
-C  /* Deck cc_pram */
+C  /* Deck cc_pram3 */
       SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5027,11 +5027,17 @@ C
 C
       CNOSQ  = C1NOSQ + C2PNOSQ + C2MNOSQ
 C
-      PT1 = (C1NOSQ /CNOSQ)*100.0D0
-      PTP = (C2PNOSQ/CNOSQ)*100.0D0
-      PTM = (C2MNOSQ/CNOSQ)*100.0D0
+      IF (CNOSQ .EQ. 0.0D0) THEN
+         PT1 = 0.0D0
+         PTP = 0.0D0
+         PTM = 0.0D0
+      ELSE
+         PT1 = (C1NOSQ /CNOSQ)*100.0D0
+         PTP = (C2PNOSQ/CNOSQ)*100.0D0
+         PTM = (C2MNOSQ/CNOSQ)*100.0D0
+      END IF
 C
-      IF (.NOT. CCS) THEN
+      IF (.NOT. CCS .AND. CNOSQ .NE. 0.0D0) THEN
         WRITE(LUPRI,'(//5X,A)')
      *     'CC_PRAM:Overall Contribution of the Different Components'
         WRITE(LUPRI,'(5X,A//)')

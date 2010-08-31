@@ -15,7 +15,7 @@ cat > Vlaodirect_ch4.info <<%EOF%
 #######################################################################
 cat > Vlaodirect_ch4.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 CH4, LAO-Verdet tests, DIRECT 
 (revised geometry)
     2    2 XY YZ   1

@@ -202,9 +202,10 @@ cat > benchmark_her_r12xxl.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -252,8 +253,8 @@ ERROR[1]="MP2-R12/A ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

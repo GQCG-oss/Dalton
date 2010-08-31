@@ -56,9 +56,9 @@ c----------------------------------------------------------------------
       if (locdbg) then
         write(lupri,*) 'Entered CC_R12WHTF'
         write(lupri,*) 'lauxbeta,r12int = ',lauxbeta,r12int
-        write(lupri,'(A,I2,X,A)') 'LUNITR12, FILER12: ',lunitr12,filer12
-        write(lupri,'(A,I2,X,A)') 'LUNITR12_2, FILER12_2: ',lunitr12_2,
-     &                           filer12_2
+        write(lupri,'(A,I5,2X,A)')
+     &    ' LUNITR12,   FILER12  :',lunitr12,filer12,
+     &    ' LUNITR12_2, FILER12_2:',lunitr12_2,filer12_2
         write(lupri,*) 'V12INT = ',V12INT
       end if
 

@@ -53,7 +53,7 @@ C     Grid spacing to H and inner grid point to AH
          L = LL-1
          NBAS=NUCORB(LL,1)+NUCORB(LL,2)
          IF(NBAS.GT.0) THEN
-            HTMP = DISERR(RADERR,L)
+            HTMP = GRID_DISERR(RADERR,L)
             H = MIN(H,HTMP)
             IF(IPRINT.GE.3) THEN
                WRITE(LUPRI,'(3X,A1,A,F6.3)')
@@ -83,7 +83,7 @@ C...  Outer point
          IF(NUCORB(LL,2).GT.0) AL=MIN(AL,AA(2,LL,2))
          IF(AL.LT.DUMMY) THEN
             AL = AL+AL
-            RHTMP = OUTERR(AL,L,RADERR)           
+            RHTMP = GRID_OUTERR(AL,L,RADERR)           
             RH=MAX(RH,RHTMP)
             IF(IPRINT.GE.3) THEN
                WRITE(LUPRI,'(3X,A1,A,F6.3)')
@@ -106,7 +106,7 @@ C...  Outer point
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-      FUNCTION DISERR(RD,L)
+      FUNCTION GRID_DISERR(RD,L)
 C                                                                      C
 C     Provide grid spacing h for given angular momentum L              C
 C     and discretization error RD                                      C
@@ -125,8 +125,9 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "priunit.h"
       PARAMETER(ACC=1.0D-5)
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
+      PARAMETER(DP5=0.5D0, D2=2.0D0)
       PARAMETER (PI = 3.14159 26535 89793 D00)
       PARAMETER(MXIT=20)
       DIMENSION CF(4,0:4)
@@ -138,42 +139,48 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Initialization
 C
-      FAC  = SQRT(D2)*D2*D2
+chj start
+c     FAC  = SQRT(D2)*D2*D2
       IFAC = 1
       DO I = 1,L
-        FAC   = FAC*D2
+c       FAC   = FAC*D2
         IFAC  = IFAC*(2*I+1)
       ENDDO
-      FAC = FAC/IFAC
+c     FAC = FAC/IFAC
+      FAC = IFAC
+      FAC = SQRT(D2) * D2**(L+2) / IFAC
+chj end
       LM = MIN(L,4)
       RDLOG = LOG(RD)
-      DISERR = POLVAL(3,CF(1,LM),RDLOG)
-      HTLOG = LOG(DISERR)
+      GRID_DISERR = POLVAL(3,CF(1,LM),RDLOG)
+      HTLOG = LOG(GRID_DISERR)
 C     Newton-Raphson search
       DO IT = 1,MXIT
-        PIH  = PI/DISERR
+        PIH  = PI/GRID_DISERR
         PIHL = PIH
-        PIEX = PI*PIH/D2
+        PIEX = PI*PIH*DP5
         DO I = 1,L
           PIHL = PIHL*PIH
         ENDDO
         U0   = FAC*PIHL*EXP(-PIEX)
-        U1   = U0*((PIEX/DISERR)-(L+1)/PIH)
+        U1   = U0*((PIEX/GRID_DISERR)-(L+1)/PIH)
         F0   = LOG(U0)-RDLOG
-        F1   = DISERR*U1/U0
+        F1   = GRID_DISERR*U1/U0
         DX = F0/F1
         HTLOG = HTLOG - DX
-        DISERR = EXP(HTLOG)
-        IF(ABS(DX).LT.ACC) RETURN
+        GRID_DISERR = EXP(HTLOG)
+        IF (ABS(DX).LT.ACC) RETURN
       ENDDO
-      STOP 'Error in DISERR'
 
-      RETURN
+      WRITE (LUPRI,*) "Error in GRID_DISERR in dft_grid.F"
+      WRITE (LUPRI,*) "RD, L =", RD,L
+      CALL QUIT('Error in GRID_DISERR in dft_grid.F')
+
       END
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-      FUNCTION OUTERR(AL,L,RD)
+      FUNCTION GRID_OUTERR(AL,L,RD)
 C                                                                      C
 C     Provide outer grid point for given angular momentum L            C
 C     outer exponent AL and discretization error RD                    C
@@ -190,6 +197,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "priunit.h"
       PARAMETER(ACC=1.0D-6)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
       PARAMETER (PI = 3.14159 26535 89793 D00)
@@ -215,11 +223,14 @@ C     Newton-Raphson search
         DX = F0HLN/F1HLN
         U = U - DX
         IF(ABS(DX).LT.ACC) THEN
-          OUTERR = SQRT(U/AL)
+          GRID_OUTERR = SQRT(U/AL)
           RETURN
         ENDIF
       ENDDO
-      STOP 'Error in OUTERR'
+
+      WRITE (LUPRI,*) "Error in GRID_OUTERR in dft_grid.F"
+      WRITE (LUPRI,*) "RD, AL, L =", RD,AL,L
+      CALL QUIT('Error in GRID_OUTERR in dft_grid.F')
 
       RETURN
       END

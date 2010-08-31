@@ -116,7 +116,7 @@ C
 C     Read CI - diagonal from LUIT2
 C
       REWIND LUIT2
-      CALL MOLLAB(TABLE(2),LUIT2,LUERR)
+      CALL MOLLAB(TABLE(2),LUIT2,lupri)
       CALL READT (LUIT2,NCONF,VEC(1,JCIDIA))
 C
 C     Read CI - vectors from LUIT1
@@ -131,7 +131,7 @@ C
          WRTEMP = .FALSE.
       END IF
       REWIND LUIT1
-      CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+      CALL MOLLAB(TABLE(3),LUIT1,lupri)
       DO 50 I = 1,MCVEC
          CALL READT (LUIT1,NCONF,VEC(1,I))
          IF (WRTEMP) CALL WRITT (LUTEMP,NCONF,VEC(1,I))
@@ -176,7 +176,7 @@ C
 C  Check vectors and write the correct ones out on LUIT1
 C
       REWIND LUIT1
-      CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+      CALL MOLLAB(TABLE(3),LUIT1,lupri)
       LROOTX = 0
       IREMOV = 0
       JSTATE = ISTATE

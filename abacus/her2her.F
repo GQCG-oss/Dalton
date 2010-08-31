@@ -354,7 +354,7 @@ C
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
-                  EXPPQI = D1/(EXPP + EXPQ)
+                  EXPPQI = D1/EXPPQ 
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   ALPHA  = EXPP*EXPQ*EXPPQI
                   BETA   = HFXMU**2/(ALPHA + HFXMU**2)

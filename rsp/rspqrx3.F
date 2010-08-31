@@ -36,7 +36,7 @@ c#define DFTQRC dftqrcf
 #include <single.h>
 C
 #ifdef REVLOG
-C===========================================================================
+C=========================================================================
 CRevision 1.2  2000/05/24 19:06:44  hjj
 Cnew getref calls with appropriate NDREF instead of NCREF
 C(fixing error for triplet with CSF)
@@ -269,20 +269,8 @@ C
 #include <infhyp.h>
 #include <esg.h>
 #include <absorp.h>
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
-#include <qm3.h>
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
-C
+#include <gnrinf.h>
 #include <infpar.h>
-#include <mtags.h>
-#if defined (VAR_MPI)
-#include <mpif.h>
-#endif
-
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -296,6 +284,9 @@ C
 C     Initialise variables and layout some workspace
 C
       CALL QENTER('E3INIT')
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('srDFT not implemented in E3INIT')
+      END IF
       KFREE = 1
       LFREE = LWRK
       CALL MEMGET('REAL',KZYMB,NORBT*NORBT,WRK,KFREE,LFREE)
@@ -399,10 +390,6 @@ C
          END IF
       END IF
 
-C---------------------------------------------------------
-C CBN+JK 03.01.06
-C Arnfinn Nov. -08, call qm3qro_p if parallel and #nodes>1
-C---------------------------------------------------------
       IF (QM3) THEN
          IF (TDHF) THEN
             IF (NODTOT.GE.1) THEN
@@ -426,10 +413,21 @@ C---------------------------------------------------------
             ENDIF
          END IF
       END IF
-C-------------------
-C CBN+JK 03.01.06
-C-------------------
-C
+
+      IF (QMMM) THEN
+         IF (TDHF) THEN
+            CALL QMMMQRO(VECB,VECC,
+     *                   ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
+     *                   UDV,WRK(KFREE),LFREE,
+     *                   KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP,
+     *                   ISPINA,ISPINB,ISPINC)
+            CALL QMMMQRO(VECC,VECB,
+     *                   ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),
+     *                   UDV,WRK(KFREE),LFREE,
+     *                   KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
+     *                   ISPINA,ISPINC,ISPINB)
+         END IF
+      END IF
 C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
@@ -1194,6 +1192,10 @@ C
       LOGICAL LCON, LORB, LREFST, HSORUN, DFTSAV, ADDFOCK
 C
       CALL QENTER('RSP2GR')
+C
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('srDFT not implemented in RSP2GR')
+      END IF
 C
       CALL DZERO(FA,NORBT*NORBT)
       IF (NASHT .GT. 0) THEN

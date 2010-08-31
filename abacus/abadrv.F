@@ -66,6 +66,9 @@ C
 #include <expopt.h>
 #include <pcmlog.h>
 #include <ccinftap.h>
+CSPAS : 6/11-2009 AO-SOPPA included
+#include <soppinf.h>
+CKeinSPASmehr
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
@@ -362,7 +365,10 @@ C
          KPOLVL = KPOLDA + 2*9*MXFR
          KPOLVV = KPOLVL + 2*9*MXFR
          KFOVIB = KPOLVV + 2*9*MXFR
-         KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C        KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
+         KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
+CKeinSPASmehr
          LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
@@ -390,16 +396,31 @@ C     ***** Electronic excitation energies *****
 C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
+CSPAS : 6/11-2009 AO-SOPPA included
+      NMODEL = 1
+      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
+CKeinSPASmehr
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
-         KTRVEL = KTRLEN + 3*NSYM*MXNEXI
-         KTQLEN = KTRVEL + 3*NSYM*MXNEXI
+CSPAS : 6/11-2009 AO-SOPPA included
+C         KTRVEL = KTRLEN + 3*NSYM*MXNEXI
+C         KTQLEN = KTRVEL + 3*NSYM*MXNEXI
+C         KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
+C         KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
+C         KTRMAG = KTRLON + 3*NSYM*MXNEXI
+C         KBSRLO = KTRMAG + 3*NSYM*MXNEXI
+C         KEXENG = KBSRLO + 3*NSYM*MXNEXI
+C         KFONAC = KEXENG + NSYM*MXNEXI
+         KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
+         KTQLEN = KTRVEL + 3*NSYM*MXNEXI*NMODEL
          KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
          KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
-         KTRMAG = KTRLON + 3*NSYM*MXNEXI
-         KBSRLO = KTRMAG + 3*NSYM*MXNEXI
-         KEXENG = KBSRLO + 3*NSYM*MXNEXI
-         KFONAC = KEXENG + NSYM*MXNEXI
+         KTRMAG = KTRLON + 3*NSYM*MXNEXI*NMODEL
+         KBSRLO = KTRMAG + 3*NSYM*MXNEXI*NMODEL
+         KEXENG = KBSRLO + 3*NSYM*MXNEXI*NMODEL
+         KSECMT = KEXENG + NSYM*MXNEXI*NMODEL
+         KFONAC = KSECMT + 3*NSYM*MXNEXI
+CKeinSPASmehr
          KFONA2 = KFONAC + 3*NUCDEP*NSYM*MXNEXI
          KRMLEN = KFONA2 + 3*NUCDEP*NSYM*MXNEXI
          KRQLEN = KRMLEN + 3*3*NSYM*MXNEXI
@@ -414,7 +435,11 @@ C
          CALL EXCITA(WORK(KTRLEN),WORK(KTRVEL),WORK(KTQLEN),
      &               WORK(KTQVEL),WORK(KTRLON),WORK(KTRMAG),
      &               WORK(KBSRLO),WORK(KEXENG),WORK(KFONAC),
-     &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
+CSPAS : 6/11-2009 AO-SOPPA included
+C     &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
+     &               WORK(KFONA2),WORK(KSECMT),
+     &               WORK(KLST2),LWRK2,PASEXC)
+CKeinSPASmehr
          IF (PASEXC) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       ELSE
@@ -426,7 +451,11 @@ C
          KTRMAG = KTRLON
          KBSRLO = KTRMAG
          KEXENG = KBSRLO
-         KFONAC = KEXENG
+CSPAS : 6/11-2009 AO-SOPPA included
+         KSECMT = KEXENG
+         KFONAC = KSECMT
+C         KFONAC = KEXENG
+CKeinSPASmehr
          KFONA2 = KFONAC
          KRMLEN = KFONA2
          KRQLEN = KRMLEN
@@ -579,11 +608,14 @@ C
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
      &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
      &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
+CSPAS : 6/11-2009 AO-SOPPA included
+     &            WORK(KSECMT),
+CKeinSPASmehr
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
      &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
      &            WORK(KSLEN),WORK(KSVEL),WORK(KLAST),LWRK3)
-      IF (IPRDEF .GE. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &                               IDUMMY,WORK(KLAST),LWRK3)
+      IF (IPRDEF .GE. 0)
+     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK(KLAST),LWRK3)
       CALL FLSHFO(LUPRI)
 C
 C     *************************
@@ -681,6 +713,7 @@ C
 #include <cbiwlk.h>
 #include <dftcom.h>
 #include <cbilnr.h>
+#include <qmmm.h>
 C
 C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
@@ -692,38 +725,61 @@ C     Aug. 97/spas+hjaaj
 #include <infsop.h>
 #include <infrsp.h>
 #include <infinp.h>
+CSPAS : 6/11-2009 AO-SOPPA included
+#include <soppinf.h>
+CKeinSPASmehr
 C
-      DATA TABDIR /'*END OF', '*READIN', '*NUCREP',
+      DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
      &             '*EXCITA', '*REORT ', '*RESPON',
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
-     &             '*FLOAT ', '*QM3INP', '*QPGCTL',
-     &             '*XXXXXX', '*XXXXXX', '*SOPPA ',
+     &             '*FLOAT ', 'xxxxxxx', '*QPGCTL',
+     &             'xXXXXXX', 'xXXXXXX', '*SOPPA ',
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
 Caug04-hjaaj: disabled currently inactive .NACME
 Csep08-spas: .NACME reactivated for Vib_g
+C                      1          2          3
       DATA TABLE  /'.PRINT ', '.MOLGRA', '.SELECT',
+C                      4          5          6
      &             '.DIPGRA', '.POLARI', '.MOLHES',
+C                      7          8          9
      &             '.INPTES', '.VIBANA', '.RESTAR',
+C                     10         11         12
      &             '.OPTROT', '.LINEAR', '.REPS  ',
+C                     13         14         15
      &             '.NUMHES', '.POPANA', '.OECD  ',
+C                     16         17         18
      &             '.EXCITA', '.SHIELD', '.VCD   ',
+C                     19         20         21
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
+C                     22         23         24
      &             '.NACME ', '.NOLOND', '.NOHESS',
+C                     25         26         27
      &             '.WRTINT', '.ECD   ', '.NODIFC',
+C                     28         29         30
      &             '.MOLGFA', '.SPIN-R', '.OR    ',
+C                     31         32         33
      &             '.PHASEO', '.NOMASV', '.NODARW',
+C                     34         35         36
      &             '.ALPHA ', '.VROA  ', '.OR MVE',
+C                     37         38         39
      &             '.SOPPA(', '.HELLMA', '.NOCMC ',
+C                     40         41         42
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
+C                     43         44         45
      &             '.RAMAN ', '.QUADRU', '.NQCC  ',
+C                     46         47         48
      &             '.CAVORG', '.HYPER ', '.VERDET',
+C                     49         50         51
      &             '.MCD   ', '.SOPPA ', '.EXPGRA',
+C                     52         53         54
      &             '.CTOCD ', '.D2DQ2 ', '.QPGRAD',
+C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
+C                     58         59         60
      &             '.VIB_G '/ 
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
@@ -1180,12 +1236,15 @@ C .D2DQ2
             DIPDER = .TRUE.
             QPGRAD = .TRUE.
          GOTO 100
+
  156     CONTINUE
-            THIRDM = .TRUE.
-         GOTO 100
- 157     CONTINUE
             SECNDM = .TRUE.
          GOTO 100
+
+ 157     CONTINUE
+            THIRDM = .TRUE.
+         GOTO 100
+
  158     CONTINUE
             VIB_G  = .TRUE.
             NACME  = .TRUE.
@@ -1367,10 +1426,31 @@ cs
      &          'with Coupled Cluster Singles and Doubles Amplitudes',
      &          '    (Ref.: S.P.A. Sauer, ',
      &          'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997))'
+CSPAS : 6/11-2009 AO-SOPPA included
+            IF (DODRCT) THEN
+               AOSOC = .TRUE.
+               WRITE(LUPRI,'(/A,/,A,A,/,5x,A)')
+     &              ' AO integral driven SOPPA(CCSD) :',
+     &              '    (Ref.: H. H. Falden, K. R. Falster-Hansen, ',
+     &              'K. L. Bak, S. Rettrup and S. P. A. Sauer,',
+     &              'J. Phys. Chem. A 113, 11995-12012 (2009))'
+            ENDIF
+CKeinSPASmehr
          ELSE 
-            WRITE(LUPRI,'(//5x,A,A,/)')
-     *          ' SOPPA :',
-     *          ' Second Order Polarization Propagator Approximation'
+CSPAS : 6/11-2009 AO-SOPPA included
+            IF (DODRCT) THEN
+               AOSOP = .TRUE.
+               WRITE(LUPRI,'(//5x,A,/,5x,A,A,/,5x,A)')
+     &              ' AO integral driven SOPPA :',
+     &              '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
+     &              ' O. Christiansen and S. P. A. Sauer',
+     &              '     J. Chem. Phys. 112, 4173-4185 (2000))'
+            ELSE
+               WRITE(LUPRI,'(//5x,A,A,/)')
+     *             ' SOPPA :',
+     *             ' Second Order Polarization Propagator Approximation'
+            END IF
+CKeinSPASmehr
          END IF
          IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA) THEN
             NOLOND = .TRUE.
@@ -1381,6 +1461,9 @@ C
          MASSVE = .FALSE.
          DARWIN = .FALSE.
       END IF
+
+      IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
+
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
       WRITE (LUPRI,'(A,I5/)') ' Default print level:    ',IPRDEF
@@ -1426,6 +1509,11 @@ cLig >> added what to print when the CTOCD option is set true
      &     ' CTOCD-DZ Magnetic susceptibilities'
          IF(SHIELD) WRITE(LUPRI,'(5X,A)')
      &     ' CTOCD-DZ Nuclear magnetic shieldings' 
+         WRITE (LUPRI,'(5x,A,A,/,5x,A,A)')
+     &          '    (Ref.: A. Ligabue, S. P. A. Sauer',
+     &          ' and P. Lazzeretti,',
+     &          '     J. Chem. Phys. 118, 6830 (2003)',
+     &          ' & J. Chem. Phys. 126, 154111 (2007))' 
       END IF
 cLig <<
       IF (VCD)    WRITE (LUPRI,'(5X,A)')
@@ -1436,7 +1524,7 @@ cLig <<
      &            ' Vibrational g-factors :',
      &              '    (Ref.: K. L. Bak, S. P. A. Sauer,',
      &              ' J. Oddershede and J. F. Ogilvie,',
-     &              '     Phys. Chem. Chem. Phys. 7, 1747-1758 (2005))' 
+     &              '     Phys. Chem. Chem. Phys. 7, 1747 (2005))' 
       IF (DOD2DQ2)  WRITE (LUPRI,'(5X,A)')
      &   ' < d Psi/dQ | d Psi/dQ > (Q = nuclear coordinates)'
       IF (NOLOND) WRITE (LUPRI,'(5X,A)')
@@ -1482,7 +1570,7 @@ cLig <<
          END IF
       END IF
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
-      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-factor'
+      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular rotational g-factor'
       IF (EXPGRD) WRITE(LUPRI,'(5X,A)') ' Orbital-exponent gradient' 
       IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
      &     ' No mass-velocity correction calculated'
@@ -1592,7 +1680,7 @@ cLig <<
          WRITE (LUPRI,'(/A/A)')
      &      ' >>>>> WARNING - RHF calculations of spin-spin coupling'//
      &      ' constants are likely to give', 
-     &      ' >>>>>>WARNING - qualitatively incorrect results !!!'
+     &      ' >>>>> WARNING - qualitatively incorrect results !!!'
       END IF
 cLig >> added the control to right CTOCD input
       IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
@@ -1601,6 +1689,14 @@ cLig >> added the control to right CTOCD input
      &      ' the .CTOCD option only works if the .MAGNET and/or'//
      &      ' .SHIELD options are also used'
          CALL QUIT('Inconsistent input in ABAINP')
+      ENDIF
+      IF ((VIB_G).AND.
+     &    ((OPTROT .OR. VROA .OR. RAMAN .OR. ABA_ALPHA))) THEN
+         WRITE(LUPRI,'(/A,A/A,A)')
+     &      ' Unsupported input - calculation of vibrational g-factor',
+     &      ' is not tested to work',' if .RAMAN, .OPTROT, .VROA,'//
+     &      ' .OR, .OR MVE or .ALPHA options are also used'
+         CALL QUIT('Not supported input in ABAINP')
       ENDIF
 cLig <<
       IF (ABASOP) THEN
@@ -1746,7 +1842,7 @@ cs
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in ABAINP, error in prompt.')
       END IF
-    2   CALL REAINP(WORD,IPRDEF,RELCAL,TSTINP)
+    2   CONTINUE
       GO TO 200
     3   CALL NUCINP(WORD)
       GO TO 200
@@ -1777,7 +1873,6 @@ cs
    16   CALL FLTINP(WORD)
       GO TO 200
    17   CONTINUE
-        CALL QM3INP(WORD)
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
@@ -1824,7 +1919,11 @@ C     integral transformation in TRACTL (IPRTRA also specifies print
 C     level in DERTRA) can be specified in RHSINP and are here trans-
 C     ferred from /CBIRHS/ to Sirius common blocks.
 C
-      CALL READIN(WORK,LWORK,.FALSE.)
+Chj   CALL READIN(WORK,LWORK,.FALSE.)
+Chj   this call had survived from when ABACUS was a separate program.
+Chj   I have now made sure that READIN always is called in the beginning,
+Chj   also if RNHERM is false. /April 2009 hjaaj
+
       CALL SETSIR(WORK,LWORK)
 C
 C     If SOPPA calculation, then
@@ -1872,13 +1971,23 @@ C        ... FCKDDR cannot be used in this calculation
       END IF
 C
       IF ((VROA .OR. RAMAN) .AND. MAXREP .GT. 0) THEN
-         WRITE (LUPRI,'(2X,A,I5,/,A,/,A)')
+         WRITE (LUPRI,'(2X,A,I5/A/A)')
      &   ' Number of symmetries:',MAXREP + 1,
      &   ' Vibrational Raman calculations can only be run without '//
      &   'symmetry.',' Calculation aborted.'
          CALL QUIT('ERROR: Inconsistent input (Raman with symmetry)')
       END IF
 C
+      IF (DKTRAN .AND. MOLGRD) THEN
+         WRITE(LUPRI,'(/A)') 'ERROR: molecular gradient not implemented'
+     &   //' for Douglas-Kroll-Hess Hamiltonian'
+         CALL QUIT('ERROR: mol. grad. not implemented for DKH(2)')
+      END IF
+      IF (DKTRAN .AND. .NOT.NOLOND) THEN
+         WRITE(LUPRI,'(/A)') 'ERROR: London orbitals not implemented'
+     &   //' for Douglas-Kroll-Hess Hamiltonian'
+         CALL QUIT('ERROR: London orbitals not implemented for DKH(2)')
+      END IF
 C
 C     LUSUPM = -1 means AOSUPMAT not used.
 C     AOSUPMAT is only used for non-direct calculations when
@@ -1967,6 +2076,9 @@ C  /* Deck result */
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
      &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
+CSPAS : 6/11-2009 AO-SOPPA included
+     &                  SECMAT,
+CKeinSPASmehr
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
 C
@@ -1983,7 +2095,7 @@ C
 #include <ccinftap.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
-      CHARACTER NAME*6, SPDCAR*1, LAPRPC*8
+      CHARACTER NAME*6, SPDCAR*1, LAPRPC*8, mlab1*8, mlab2*8, mlab3*8
       DIMENSION PRAPOL(3,3), PRVPOL(6), CSTRA(*), SCTRA(*), POLDD(*),
      *          POLDL(*), POLDA(*), POLVL(*), POLVV(*)
       DIMENSION WORK(LWORK)
@@ -1993,6 +2105,9 @@ C
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
      &          TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
+CSPAS : 6/11-2009 AO-SOPPA included
+     &          SECMAT(*),
+CKeinSPASmehr
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
@@ -2011,11 +2126,13 @@ C
 #include <difsec.h>
 #include <expopt.h>
 #include <primit.h>
+CSPAS : 6/11-2009 AO-SOPPA included
+#include <soppinf.h>
+CKeinSPASmehr
 C
 C     Heading
 C
-      IF (IPRDEF .GE. 0) 
-     &     CALL TITLER('FINAL RESULTS FROM ABACUS','*',124)
+      CALL TITLER('FINAL RESULTS from ABACUS','*',124)
 C
 C     Time and date
 C
@@ -2025,7 +2142,6 @@ C
      *      ' please check the output above !'
          NWNABA = 0
       END IF
-      WRITE (LUPRI,'()')
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',' ',
      &                               IDUMMY,.FALSE.)
@@ -2261,10 +2377,10 @@ C
             CALL HEADER('Dipole moment components',-1)
             CALL DP0PRI(DIP0)
 
-            write(lupri,*) 'Dipole moment with more digits'
-            write(lupri,'(F17.15)') DIP0(1)
-            write(lupri,'(F17.15)') DIP0(2)
-            write(lupri,'(F17.15)') DIP0(3)
+Cahs            write(lupri,*) 'Dipole moment with more digits'
+Cahs            write(lupri,'(F17.15)') DIP0(1)
+Cahs            write(lupri,'(F17.15)') DIP0(2)
+Cahs            write(lupri,'(F17.15)') DIP0(3)
 
 C
          WRITE (LUPRI,'(2X,A,2X,A,F9.5,A)') ' Units:',
@@ -2352,12 +2468,26 @@ C
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
-      IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-     &                        TRMAG,TRLON,BSRLON,EXENG,
-     &                        FONAC,FONA2,RMLEN,RQLEN,
-     &                        RLEN,RMVEL,RQVEL,RVEL,
-     &                        SLEN,SVEL,WORK,LWORK)
-
+CSPAS : 6/11-2009 AO-SOPPA included
+C      IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
+C     &                        TRMAG,TRLON,BSRLON,EXENG,
+C     &                        FONAC,FONA2,RMLEN,RQLEN,
+C     &                        RLEN,RMVEL,RQVEL,RVEL,
+C     &                        SLEN,SVEL,WORK,LWORK)
+      IF (DOEXCI) THEN
+         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+            CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
+     &                     FONAC,FONA2,SECMAT,WORK,LWORK)
+         ELSE
+            CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
+     &                  TRMAG,TRLON,BSRLON,EXENG,
+     &                  FONAC,FONA2,RMLEN,RQLEN,
+     &                  RLEN,RMVEL,RQVEL,RVEL,
+     &                  SLEN,SVEL,WORK,LWORK)
+         END IF
+      END IF
+CKeinSPASmehr
+C
 C     Molecular second moments
 C
       IF (SECNDM) CALL SECRES(IPRDEF)
@@ -2572,12 +2702,12 @@ C     &              ((SPSDFC(I,J), I=1,NCOR), J=1,NCOR)
 C
   900 CONTINUE
       NWNABA = NWNABA + 1
-      WRITE (LUPRI,'(//A,/A,/)')
+      WRITE (LUPRI,'(//A/A/)')
      *   ' WARNING: No restart file found.',
-     *   '          Calculation proceeds without restart.'
+     *   ' WARNING: Calculation proceeds without restart.'
       RETURN
       END
-C  /* Deck writrs */
+C  /* Deck abawritrs */
       SUBROUTINE ABAWRITRS
 C
 C     Write ABACUS restart information
@@ -2701,7 +2831,7 @@ C  /* Deck timsta */
       CALL TIMPRI('REST  ',TIMWLK,TIMALL)
       WRITE (LUPRI,'()')
       CALL TIMPRI('TOTAL ',TIMALL,TIMALL)
-      WRITE (LUPRI,'(//)')
+      WRITE (LUPRI,'(/)')
       RETURN
       END
 C  /* Deck abadrc */
@@ -2862,7 +2992,7 @@ C  /* Deck susres */
       CHARACTER*6 ABC(3)
       CHARACTER*8 LAPRPC
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
-      CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
+      CALL TITLER('ABACUS - Magnetizabilities','*',124)
 cLig <> added the .NOT. CTOCD
       IF ((.NOT.NOLOND).AND.(.NOT.CTOCD)) THEN
 C
@@ -3112,7 +3242,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <codata.h>
@@ -3128,6 +3257,7 @@ cmbh string variable
 cmbh end
 #include <nuclei.h>
 #include <symmet.h>
+#include <qm3.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C
@@ -3144,8 +3274,10 @@ C
 C     Add nuclear and electronic contribution. Keep in electronic part
 C
       DO 70 I = 1, NUCDEP
-        IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
-     &     (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
+c       IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
+c    &     (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+        IF ( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 60 J = 1, 3
             DO 50 K = 1, 3
                ELNQC(J,K,I) = ELNQC(J,K,I) + UCNNQC(J,K,I)
@@ -3157,12 +3289,45 @@ C
          TEXT = 'Total non-diagonalized EFG Tensor'
          CALL EFGPRI(ELNQC,TEXT)
       END IF
+cmbh print EFG tensor for midas here
+      do iatom=1,nucdep
+          laname=NAMDEP(iatom)//'  '
+          call stripblanks(laname)
+          call wripro(ELNQC(1,1,IATOM),"SCF/DFT   ",502,
+     *            ' XEFGCAR',' XEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(1,2,IATOM),"SCF/DFT   ",502,
+     *            ' XEFGCAR',' YEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(1,3,IATOM),"SCF/DFT   ",502,
+     *            ' XEFGCAR',' ZEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(2,1,IATOM),"SCF/DFT   ",502,
+     *            ' YEFGCAR',' XEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(2,2,IATOM),"SCF/DFT   ",502,
+     *            ' YEFGCAR',' YEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(2,3,IATOM),"SCF/DFT   ",502,
+     *            ' YEFGCAR',' ZEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(3,1,IATOM),"SCF/DFT   ",502,
+     *            ' ZEFGCAR',' XEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(3,2,IATOM),"SCF/DFT   ",502,
+     *            ' ZEFGCAR',' YEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+          call wripro(ELNQC(3,3,IATOM),"SCF/DFT   ",502,
+     *            ' ZEFGCAR',' ZEFGCAR',laname,laname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      enddo
+
+cmbh end
 C
 C     Diagonalize each atomic EFG tensor
 C
       DO 10 IATOM = 1, NUCDEP
-        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &     (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+        IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           CALL DUNIT(AXIS(1,1,IATOM),3)
           IJ = 1
           DO 20 I = 1, 3
@@ -3171,36 +3336,6 @@ C
               IJ = IJ + 1
  30         CONTINUE
  20       CONTINUE
-cmbh print EFG tensor for midas here
-          inotblank=0
-          laname='        '
-          do imbh=1,6
-             if(NAMDEP(IATOM)(imbh:imbh) .ne. ' ') then
-                inotblank=inotblank+1
-                laname(inotblank:inotblank)=
-     *          NAMDEP(IATOM)(imbh:imbh)
-             endif
-          enddo
-          call wripro(PVAL(1),"SCF/DFT   ",1,
-     *            laname,'EFG_XX  ','EFG_XX  ','EFG_XX  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(2),"SCF/DFT   ",1,
-     *            laname,'EFG_XY  ','EFG_XY  ','EFG_XY  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(3),"SCF/DFT   ",1,
-     *            laname,'EFG_YY  ','EFG_YY  ','EFG_YY  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(4),"SCF/DFT   ",1,
-     *            laname,'EFG_XZ  ','EFG_XZ  ','EFG_XZ  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(5),"SCF/DFT   ",1,
-     *            laname,'EFG_YZ  ','EFG_YZ  ','EFG_YZ  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-          call wripro(PVAL(6),"SCF/DFT   ",1,
-     *            laname,'EFG_ZZ  ','EFG_ZZ  ','EFG_ZZ  ',
-     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-
-cmbh end
           CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,WRK,IWRK)
           DIANQC(1,IATOM) = PVAL(1)
           DIANQC(2,IATOM) = PVAL(3)
@@ -3216,8 +3351,7 @@ C     Calculate the nuclear quadrupole moments
 C
       NATOM = 0
       DO 100 IATOM = 1, NUCIND
-        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+        IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 110 ISYM = 0, MAXOPR
             IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
               NATOM = NATOM + 1
@@ -3258,29 +3392,6 @@ C
      &              NAMDEP(NATOM),MASS,'Vz =     ',
      &              DIANQC(3,NATOM),DIANQC(3,NATOM)*FACT,
      &              DIANQC(3,NATOM)*FACT2
-cmbh here: Vx,Vy,Vz terms to be written to PROP file here
-c need to do something about the atom name for midas:
-c move all chars to the left and move blanks between the
-c chars.
-                    inotblank=0
-                    laname='        '
-                    do imbh=1,6
-                       if(NAMDEP(NATOM)(imbh:imbh) .ne. ' ') then
-                          inotblank=inotblank+1
-                          laname(inotblank:inotblank)=
-     *                       NAMDEP(NATOM)(imbh:imbh)
-                       endif
-                    enddo
-                    call wripro(DIANQC(1,NATOM),"SCF/DFT   ",1,
-     *                 laname,'XEFGDIA ','XEFGDIA ','XEFGDIA ',
-     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
-                    call wripro(DIANQC(2,NATOM),"SCF/DFT   ",1,
-     *                 laname,'YEFGDIA ','YEFGDIA ','YEFGDIA ',
-     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
-                    call wripro(DIANQC(3,NATOM),"SCF/DFT   ",1,
-     *                 laname,'ZEFGDIA ','ZEFGDIA ','ZEFGDIA ',
-     *                 0.0D0,0.0D0,0.0D0,1,0,0,0)
-cmbh: done!
                    END IF
                    IZ = IDAMAX(3,DIANQC(1,NATOM),1)
                    CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)
@@ -3324,8 +3435,8 @@ C  /* Deck efgpri */
 C
       NATOM = 1
       DO 10 I = 1, NUCIND
-        IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
-     &    (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
+        IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 20 J = 0, MAXOPR
             IF (IBTAND(ISTBNU(I),J) .EQ. 0) THEN
               WRITE (LUPRI,'(/A,3X,A)') TEXT,NAMDEP(NATOM)
@@ -3341,13 +3452,9 @@ C  /* Deck iniall */
       SUBROUTINE ABAINIALL
 C
 #include <implicit.h>
-      LOGICAL RELCAL
 #include <mxcent.h>
 #include <abainf.h>
 C
-      RELCAL = .FALSE.
-      TSTINP = .FALSE.
-      CALL REAINI(IPRDEF,RELCAL,TSTINP)
       CALL NUCINI
       CALL ONEINI
       CALL TWOINI

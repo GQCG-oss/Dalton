@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   Dalton, a molecular electronic structure program, Release 2.0
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
+#ifdef OLD_LOG
 ===========================================================================
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
@@ -106,6 +106,9 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
+C Manu debug
+C     IPRRSP=201
+C Manu debug
 #include <ibndxdef.h>
 C
       WRITE (LUPRI,'(//A/)') ' Test output requested with .ABSYM'
@@ -798,7 +801,7 @@ C WRITTEN 13 FEB 1986
 C revised 941117-hjaaj
 C
 C PURPOSE:
-C    ADD CONTRIBUTION TO ONE INDEX TRANSFORMED FOCK MATRICES WHICH
+C    ADD CONTRIBUTION TO ONE-INDEX TRANSFORMED FOCK MATRICES WHICH
 C    ORIGINATE FROM TRANSFORMING THE FOCK MATRICES
 C
 #include <implicit.h>
@@ -819,14 +822,14 @@ C
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
-     &           ' ONE INDEX TRANSFORMED FOCK CORE MATRIX',
-     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     &           ' ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
+     *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *           ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX',
-     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     *           ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
+     *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
@@ -888,13 +891,13 @@ C
 C
       IF (IPRRSP.GT.90) THEN
          DO 2000 ISIM = 1,NSIM
-            WRITE(LUPRI,*) ISIM,' ONE INDEX TRANSFORMED FOCK CORE '//
+            WRITE(LUPRI,*) ISIM,' ONE-INDEX TRANSFORMED FOCK CORE '//
      &                          'MATRIX'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                  ,1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *                   ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX'
+     *                   ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
@@ -1630,7 +1633,7 @@ C           CALL DCOPY(NTOT,WRK(KBCVEC),1,WRK(1),1)
 C
       IF (KEXSTV .LE. 0) THEN
          IF (IPRRSP.GE.3) WRITE (LUPRI,'(//A,I5)')
-     *     ' LRST, START VECTOR IS NOT LINEAR INDEPENDENT.'
+     *     ' LRST, START VECTOR IS NOT LINEAR INDEPENDENT.',KEXSTV
          IF (KZRED.LE.0) THEN
             CALL QUIT(' LRST, START VECTORS NOT LINEAR INDEPENDENT.')
          END IF
@@ -2420,7 +2423,7 @@ C     |0(R)> = -SUM(N) S(N) *|N>
 C     |0(L)> =  SUM(N) S'(N)*|N>
 C
 C MODIFIED 5-5-1988 : ASSUME |0(L)> = 0 i.e. S' = 0 AND
-C                     NOT STORED
+C                     NOT STORED'
 #include <implicit.h>
 C
       DIMENSION ZYCVEC(KZCONF,*),FCAC(*),H2AC(*)
@@ -3319,6 +3322,7 @@ C
 #include <esg.h>
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
+!     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
       DOMO2 = DODFT
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
@@ -3359,7 +3363,7 @@ C for reduced E(2) and reduced S(2)
       END IF
       IF (DOMO2) THEN
          KCMO2 = 1
-         KLAST = KCMO2 + 2*NORBT*NORBT
+         KLAST = KCMO2 + 2*N2ORBX
          LWRK1 = LWRK + 1 - KLAST
          CALL DFTMOMO(WRK(KCMO2),WRK(KLAST),LWRK1,IPRPP)
       ELSE
@@ -6054,7 +6058,14 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
 C  /* Deck RSPPMO */
       SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
 C
-C     based on RSPPRO tuh
+C     June 2008; PBHT MO overlap diagnostic
+C     Reference: 
+C       Excitation energies in density functional theory: An evaluation
+C       and a diagnostic test
+C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
+C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
+C
+C     (subroutine based on RSPPRO tuh)
 C
 #include <implicit.h>
       PARAMETER(PTHRS = 1.D-08)
@@ -6068,6 +6079,9 @@ C
 #include <infvar.h>
  
       CALL HEADER('PBHT MO Overlap Diagnostic',-1)
+      WRITE(LUPRI,'(A/A/)')
+     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
+     &  '             J Chem Phys 128, 044118 (2008)'
       IF (NWOPT.GT.0) THEN 
 C        WRITE (LUPRI,1010) JWOPSY
 C        WRITE (LUPRI, '(2X,2A,/)')  '            I    A       ',

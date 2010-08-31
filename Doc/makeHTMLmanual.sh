@@ -1,9 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Declare variables
 #
 HTMLDIR="HTMLmanual"
 export HTMLDIR
+if [ -d "$HTMLDIR" ]; then
+   echo "directory $HTMLDIR exists"
+else
+   echo "directory $HTMLDIR does not exist - creating it ..."
+   mkdir $HTMLDIR
+fi
 #
 # Run latex2html
 #

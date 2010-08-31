@@ -55,10 +55,10 @@ C
 C Used from common blocks:
 C  ?
 C
-#include <dftcom.h>
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
+#include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
 #include <infdim.h>
@@ -74,11 +74,9 @@ C
  
       DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT)
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
-      DIMENSION H2(NORBT,NORBT)
-      DIMENSION H2X (NORBT,NORBT)
+      DIMENSION H2(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION H2AX(N2ASHX*N2ASHX,*)
-      DIMENSION DEN1(NASHDI,NASHDI)
-      DIMENSION DEN2(*)
+      DIMENSION DEN1(NASHDI,NASHDI), DEN2(*)
       DIMENSION PVDEN(NASHDI,NASHDI)
       DIMENSION ZYMAT1(NORBT,NORBT),ZYMAT2(NORBT,NORBT)
       DIMENSION ZYMAT3(NORBT,NORBT)
@@ -92,6 +90,9 @@ C     Put up the structure for reading the (transformed) integrals:
 C     IEND < 0 flags the completeness of the distributions
 C
       CALL QENTER('RSPFXD')
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('srDFT not implemented yet in RSPFXD')
+      END IF
       KWRK = KFREE
       LWRK = LFREE
       ID1 = 1
@@ -756,7 +757,7 @@ C        F(C,q) = F(C,q) - (D q|C D)
 C
 #include <implicit.h>
 C
-      PARAMETER ( D2= 2.0D0, DM1 = -1.0D0 )
+      PARAMETER ( D0 = 0.0D0, D2= 2.0D0, DM1 = -1.0D0 )
 C
 #include <dftcom.h>
 #include <maxorb.h>
@@ -832,7 +833,7 @@ C
 C        F(p,q) = F(p,q) -  (pj|jq)
 C        F(p,D) = F(p,D) -  (pC|CD)
 C
-      IF (ICTYP.EQ.JTINAC) THEN
+      IF (ICTYP.EQ.JTINAC .AND. HFXFAC.NE.D0) THEN
          IPSYM  = MULD2H(IDSYM,INTSYM)
          IF (IDTYP.EQ.JTSEC) THEN
             NORBP = NOCC(IPSYM)
@@ -855,7 +856,7 @@ C
 C        F(p,q) = F(p,q) - (j q|p j)
 C        F(C,q) = F(C,q) - (D q|C D)
 C
-      IF (IDTYP.EQ.JTINAC) THEN
+      IF (IDTYP.EQ.JTINAC .AND. HFXFAC.NE.D0) THEN
          IQSYM   = MULD2H(ICSYM,INTSYM)
          IF (ICTYP.EQ.JTSEC) THEN
             NORBQ  =  NOCC(IQSYM)
@@ -1067,6 +1068,7 @@ C
 C
 C Case 3)
 C
+      IF (HFXFAC.NE.D0) THEN
       IF (ICTYP.EQ.JTINAC) THEN
 C
 C Case 3a)
@@ -1160,6 +1162,7 @@ C
          END IF
         END IF
       END IF
+      END IF ! if (hfxfac.ne.0.0d0)
       CALL QEXIT('FIXAD2')
       RETURN
       END
@@ -1424,7 +1427,6 @@ C
 #include <inforb.h>
 #include <infpri.h>
 #include <infspi.h>
-#include <dftcom.h>
 C
       DIMENSION FA(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)

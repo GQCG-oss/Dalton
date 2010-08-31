@@ -81,17 +81,7 @@ typedef int INTEGER;
 #endif
 
 /* Mark Fortran-callable API with FSYM */
-#if defined(NO_UNDERSCORE) || (defined(FUNDERSCORE) &&FUNDERSCORE == 0)
-#define FSYM(a) a
-#define FSYM2(a) a
-#else
-#define FSYM(a) a ## _
-#if (defined(FUNDERSCORE) && FUNDERSCORE == 2)
-#define FSYM2(a) a ## __
-#else
-#define FSYM2(a) a ## _
-#endif
-#endif
+#include "FSYMdef.h"
 
 /* For propertiary machines, which have no lseek64() because their
    developers though that 64-bit lseek should be good enough for

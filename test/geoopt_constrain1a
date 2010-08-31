@@ -95,14 +95,14 @@ CTRL[2]=2
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # Geometry
-CRIT1=`$GREP "1 * 6\.00000000  * (\-0|\-|0| )\.00000000 * (\-0|\-|0| )\.00000000 * (0| )\.92859362" $log | wc -l`
-CRIT2=`$GREP "2 * 6\.00000000 * (\-0|\-|0| )\.00000000 * (\-0|\-|0| )\.00000000 * (\-0| \-)\.92859362" $log | wc -l`
-CRIT3=`$GREP "3 * 1\.00000000 * (\-0|\-|0| )\.00000000 * \-1\.02706529 * 1\.29360255" $log | wc -l`
-CRIT4=`$GREP "4 * 1\.00000000 * (\-0|\-|0| )\.00000000 * 1\.02706529 * \-1\.29360255" $log | wc -l`
-CRIT5=`$GREP "5 * 1\.00000000 * (0| )\.88946467 * (0| )\.51353266 * 1\.29360255" $log | wc -l`
-CRIT6=`$GREP "6 * 1\.00000000 * (\-0| \-)\.88946467 * (0| )\.51353266 * 1\.29360255" $log | wc -l`
-CRIT7=`$GREP "7 * 1\.00000000 * (0| )\.88946467 * (\-0| \-)\.51353266 * \-1\.29360255" $log | wc -l`
-CRIT8=`$GREP "8 * 1\.00000000 * (\-0| \-)\.88946467 * (\-0| \-)\.51353266 * \-1\.29360255" $log | wc -l`
+CRIT1=`$GREP ". * 6\.00000000  * (\-0|\-|0| )\.00000000 * (\-0|\-|0| )\.00000000 * (0| )\.9285936." $log | wc -l`
+CRIT2=`$GREP ". * 6\.00000000 * (\-0|\-|0| )\.00000000 * (\-0|\-|0| )\.00000000 * (\-0| \-)\.9285936." $log | wc -l`
+CRIT3=`$GREP ". * 1\.00000000 * (\-0|\-|0| )\.00000000 * \-1\.027065.. * 1\.2936025." $log | wc -l`
+CRIT4=`$GREP ". * 1\.00000000 * (\-0|\-|0| )\.00000000 * 1\.027065.. * \-1\.2936025." $log | wc -l`
+CRIT5=`$GREP ". * 1\.00000000 * (0| )\.8894646. * (0| )\.5135326. * 1\.2936025." $log | wc -l`
+CRIT6=`$GREP ". * 1\.00000000 * (\-0| \-)\.8894646. * (0| )\.5135326. * 1\.2936025." $log | wc -l`
+CRIT7=`$GREP ". * 1\.00000000 * (0| )\.8894646. * (\-0| \-)\.5135326. * \-1\.2936025." $log | wc -l`
+CRIT8=`$GREP ". * 1\.00000000 * (\-0| \-)\.8894646. * (\-0| \-)\.5135326. * \-1\.2936025." $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[3]=8
@@ -110,47 +110,39 @@ ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Bonds
 CRIT1=`$GREP "1 * Regular bond * 1 * 2 * 1\.85719 Ang\." $log | wc -l`
-CRIT2=`$GREP "2 * Regular bond * 1 * 3 * 1\.09000 Ang\." $log | wc -l`
-CRIT3=`$GREP "3 * Regular bond * 1 * 5 * 1\.09000 Ang\." $log | wc -l`
-CRIT4=`$GREP "4 * Regular bond * 1 * 6 * 1\.09000 Ang\." $log | wc -l`
-CRIT5=`$GREP "5 * Regular bond * 2 * 4 * 1\.09000 Ang\." $log | wc -l`
-CRIT6=`$GREP "6 * Regular bond * 2 * 7 * 1\.09000 Ang\." $log | wc -l`
-CRIT7=`$GREP "7 * Regular bond * 2 * 8 * 1\.09000 Ang\." $log | wc -l`
+CRIT2=`$GREP "2 * Regular bond * 1 * . * 1\.09000 Ang\." $log | wc -l`
+CRIT3=`$GREP "3 * Regular bond * 1 * . * 1\.09000 Ang\." $log | wc -l`
+CRIT4=`$GREP "4 * Regular bond * 1 * . * 1\.09000 Ang\." $log | wc -l`
+CRIT5=`$GREP "5 * Regular bond * 2 * . * 1\.09000 Ang\." $log | wc -l`
+CRIT6=`$GREP "6 * Regular bond * 2 * . * 1\.09000 Ang\." $log | wc -l`
+CRIT7=`$GREP "7 * Regular bond * 2 * . * 1\.09000 Ang\." $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[4]=7
 ERROR[4]="BONDS NOT DETERMINED CORRECTLY"
 
 # Angles
-CRIT1=`$GREP "20 * Regular angle * 2 * 1 * 3 * 109\.565 deg\." $log | wc -l`
-CRIT2=`$GREP "21 * Regular angle * 2 * 1 * 5 * 109\.565 deg\." $log | wc -l`
-CRIT3=`$GREP "22 * Regular angle * 2 * 1 * 6 * 109\.565 deg\." $log | wc -l`
-CRIT4=`$GREP "23 * Regular angle * 3 * 1 * 5 * 109\.378 deg\." $log | wc -l`
-CRIT5=`$GREP "24 * Regular angle * 3 * 1 * 6 * 109\.378 deg\." $log | wc -l`
-CRIT6=`$GREP "25 * Regular angle * 5 * 1 * 6 * 109\.378 deg\." $log | wc -l`
-CRIT7=`$GREP "26 * Regular angle * 1 * 2 * 4 * 109\.565 deg\." $log | wc -l`
-CRIT8=`$GREP "27 * Regular angle * 1 * 2 * 7 * 109\.565 deg\." $log | wc -l`
-CRIT9=`$GREP "28 * Regular angle * 1 * 2 * 8 * 109\.565 deg\." $log | wc -l`
-CRIT10=`$GREP "29 * Regular angle * 4 * 2 * 7 * 109\.378 deg\." $log | wc -l`
-CRIT11=`$GREP "30 * Regular angle * 4 * 2 * 8 * 109\.378 deg\." $log | wc -l`
-CRIT12=`$GREP "31 * Regular angle * 7 * 2 * 8 * 109\.378 deg\." $log | wc -l`
+CRIT1=`$GREP "20 * Regular angle * 2 * 1 * . * 109\.565 deg\." $log | wc -l`
+CRIT2=`$GREP "21 * Regular angle * 2 * 1 * . * 109\.565 deg\." $log | wc -l`
+CRIT3=`$GREP "22 * Regular angle * 2 * 1 * . * 109\.565 deg\." $log | wc -l`
+CRIT4=`$GREP "23 * Regular angle * . * 1 * . * 109\.378 deg\." $log | wc -l`
+CRIT5=`$GREP "24 * Regular angle * . * 1 * . * 109\.378 deg\." $log | wc -l`
+CRIT6=`$GREP "25 * Regular angle * . * 1 * . * 109\.378 deg\." $log | wc -l`
+CRIT7=`$GREP "26 * Regular angle * 1 * 2 * . * 109\.565 deg\." $log | wc -l`
+CRIT8=`$GREP "27 * Regular angle * 1 * 2 * . * 109\.565 deg\." $log | wc -l`
+CRIT9=`$GREP "28 * Regular angle * 1 * 2 * . * 109\.565 deg\." $log | wc -l`
+CRIT10=`$GREP "29 * Regular angle * . * 2 * . * 109\.378 deg\." $log | wc -l`
+CRIT11=`$GREP "30 * Regular angle * . * 2 * . * 109\.378 deg\." $log | wc -l`
+CRIT12=`$GREP "31 * Regular angle * . * 2 * . * 109\.378 deg\." $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[5]=12
 ERROR[5]="ANGLES NOT DETERMINED CORRECTLY"
 
 # Dihedral angles
-CRIT1=`$GREP "32 * Dihedral angle * 3 * 1 * 2 * 4 * (\-| )180\.000 deg\." $log | wc -l`
-CRIT2=`$GREP "33 * Dihedral angle * 3 * 1 * 2 * 7 * (\-| )60\.000 deg\." $log | wc -l`
-CRIT3=`$GREP "34 * Dihedral angle * 3 * 1 * 2 * 8 * (\-| )60\.000 deg\." $log | wc -l`
-CRIT4=`$GREP "35 * Dihedral angle * 4 * 2 * 1 * 5 * (\-| )60\.000 deg\." $log | wc -l`
-CRIT5=`$GREP "36 * Dihedral angle * 4 * 2 * 1 * 6 * (\-| )60\.000 deg\." $log | wc -l`
-CRIT6=`$GREP "37 * Dihedral angle * 5 * 1 * 2 * 7 * (\-| )60\.000 deg\." $log | wc -l`
-CRIT7=`$GREP "38 * Dihedral angle * 5 * 1 * 2 * 8 * (\-| )180\.000 deg\." $log | wc -l`
-CRIT8=`$GREP "39 * Dihedral angle * 6 * 1 * 2 * 7 * (\-| )180\.000 deg\." $log | wc -l`
-CRIT9=`$GREP "40 * Dihedral angle * 6 * 1 * 2 * 8 * (\-| )60\.000 deg\." $log | wc -l`
-TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CRIT1=`$GREP ".. * Dihedral angle * . * . * . * . * (\-| )60\.000 deg\." $log | wc -l`
+CRIT2=`$GREP ".. * Dihedral angle * . * . * . * . * (\-| )180\.000 deg\." $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=9
 ERROR[6]="DIHEDRAL ANGLES NOT DETERMINED CORRECTLY"
 
@@ -170,8 +162,8 @@ ERROR[8]="OTHER PARTS OF DALTON SHOULD NOT BE RUN"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi
 done

@@ -557,17 +557,18 @@ C        ----------------------------------------------
      &                      DUMMY,WORK(KV+NT1AM(ISYM)+NT2AM(ISYM)))
             END IF
             ! check if readin of vector was succesfull - else calc. new.
+            LEN_LIST = LEN(LIST)
             IF (IOPT .EQ. 33) THEN
                NEWSTR = .TRUE.
-               WRITE(LUPRI,'(1X,A,I3,3A,I3,A)') 'Vector nr.',ILSTNR,
-     &         ' of type ',LIST(1:3),' and symmetry',ISYM,
+               WRITE(LUPRI,'(A,I3,3A,I3,A)') ' Vector nr.',ILSTNR,
+     &         ' of type ',LIST(1:LEN_LIST),' and symmetry',ISYM,
      &         ' was not found on file.'
             ELSE
                NEWSTR = .FALSE.
-               WRITE(LUPRI,'(1X,A,I3,A,I3,A)') 'Vector nr.',ILSTNR,
+               WRITE(LUPRI,'(A,I3,A,I3,A)') ' Vector nr.',ILSTNR,
      &         ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
-               WRITE(LUPRI,'(1X,A,A13,A)') 'Start vector is a ',
-     &         MODEL//LIST(1:3),' vector'
+               WRITE(LUPRI,'(4A)') ' Start vector is a ',
+     &         MODEL,LIST(1:LEN_LIST),' vector'
             ENDIF
          ENDIF
 C
@@ -2260,7 +2261,7 @@ C
 #include <leinf.h>
 #include <ccexci.h>
 #include <ccsdsym.h>
-#include <r12int.h>
+#include <cbirea.h>
 *
       DIMENSION VECT(*), WORK(*)
       CHARACTER*10 MODFIL

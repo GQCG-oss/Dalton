@@ -113,9 +113,10 @@ cat > ccsdr12pt_ne.dal <<'%EOF%'
 
 **DALTON INPUT
 .RUN WAVE FUNCTION
+*READIN
+.R12AUX
 **INTEGRALS
 .R12
-.AUXBAS
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
@@ -205,8 +206,8 @@ ERROR[6]="CCSD(R12)(T) ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

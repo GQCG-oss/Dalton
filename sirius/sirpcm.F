@@ -691,6 +691,7 @@ C
 #include <pcm.h>
 #include <pcmlog.h>
 #include <qm3.h>
+#include <gnrinf.h>
 C
 C     This routine computes J matrix  (interaction between induced
 C     nuclear charges and electronic potential due to the solute):
@@ -1430,6 +1431,7 @@ C
 #include <codata.h>
 #include <symmet.h>
 #include <qm3.h>
+#include <gnrinf.h>
       PARAMETER (LASTAR=99)
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)

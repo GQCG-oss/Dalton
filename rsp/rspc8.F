@@ -281,12 +281,6 @@ C OUTPUT EIVAL(KZRED) AND XMOM(KZRED,NOP)
 C
 #include <implicit.h>
 C
-      LOGICAL IDONE
-      DIMENSION XMOM(MAXRM,*)
-      DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*),XINDX(*),WRK(LWRK)
-      DIMENSION EIVAL(*),EIVEC(*),GP(KZYVAR,*)
-      DIMENSION OLDAL(*)
-C
 #include <priunit.h>
 #include <inforb.h>
 #include <infdim.h>
@@ -295,6 +289,12 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+C
+      LOGICAL IDONE
+      DIMENSION XMOM(MAXRM,*)
+      DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*),XINDX(*),WRK(LWRK)
+      DIMENSION EIVAL(*),EIVEC(*),GP(KZYVAR,*)
+      DIMENSION OLDAL(*)
 C
       PARAMETER ( ZERO = 0.0D0 ,  D1 = 1.0D0 ,
      *D2 = 2.0D0 , D3 = 3.0D0, D10= 10.0D0, DUMMY = 1.0D20 )

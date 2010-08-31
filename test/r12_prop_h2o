@@ -57,7 +57,7 @@ cat > r12_prop_h2o.dal <<'%EOF%'
 *END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
 *ORBITAL INPUT
@@ -123,8 +123,8 @@ ERROR[3]="ELECTRONIC DIPOLEMOMENT(APPROXIMATION B) NOT CORRECT"
 PASSED=1
 for i in 1 2 3 
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

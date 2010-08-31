@@ -161,7 +161,7 @@ CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) * 12\.220" $log | wc -l`
 CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 124\.657" $log | wc -l`
 CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 124\.657" $log | wc -l`
 CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 124\.657" $log | wc -l`
-CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) *  97\.914" $log | wc -l`
+CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) *  97\.91(3|4)" $log | wc -l`
 CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 116\.609" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
@@ -173,8 +173,8 @@ ERROR[7]="SECOND HYPERPOLARIZABILITY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -2640,6 +2640,7 @@ C
 #include <ccsdinp.h>
 #include <ccsections.h>
 #include <qm3.h>
+!#include <qmmm.h>
 #include <ccfield.h>
 #include <leinf.h>
 C
@@ -2692,7 +2693,11 @@ C-------------------------------------
 C
          IF (CCMM) THEN
             DTIME = SECOND()
-            CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
      *                       SECOND() - DTIME
@@ -2755,6 +2760,7 @@ C
 #include <ccfield.h>
 #include <leinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_LCC2FF')
@@ -2800,7 +2806,11 @@ C-------------------------------------
 C
          IF (CCMM) THEN
             DTIME = SECOND()
-            CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
      *                       SECOND() - DTIME
@@ -2847,6 +2857,7 @@ C
 #include <ccfield.h>
 #include <leinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 C
       LOGICAL ETRAN,FCKCON
 C
@@ -2901,7 +2912,11 @@ C-------------------------------------
 C
       IF (CCMM) THEN
          DTIME = SECOND()
-         CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         IF (.NOT. NYQMMM ) THEN
+            CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         END IF
          IF (IPRINT .GT. 5) THEN
            WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_FCC2FF) 1',
      *                    SECOND() - DTIME

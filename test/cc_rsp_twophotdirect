@@ -162,13 +162,13 @@ CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
 CRIT2=`$GREP "This is a direct atomic orbital integral based" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2`
 CTRL[6]=2
-ERROR[6]="OPTION FOR AO DIRECT CALCULATION WORKS NOT CORRECT"
+ERROR[6]="OPTION FOR AO DIRECT CALCULATION DOES NOT WORK CORRECTLY"
 
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

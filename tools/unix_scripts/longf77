@@ -1,0 +1,35 @@
+#!/bin/csh -f
+# long -- 900428/950104/950316/961121 -- Hans Joergen Aa. Jensen
+# print lines longer than 72 char. (default)
+#   -c : also print comment lines beginning with 'c|C|*|#|!'
+#   -l n : print lines longer than n char.
+#
+if ($#argv == 0) then
+   echo "Usage: long [-c] [-l max_line_length] file1 [...[filen]]"
+   exit
+endif
+set MAXLL=72
+set ptxt1='All lines except Fortran comment lines'
+# awktxt2 was needed in order to keep " quotes and $0 for the awk strings.
+set awktxt1='&& substr($0,1,1) !~ /c|C|\*|\#|\!/'
+set awktxt2='{{print NR " > " $0} {print NR " > length of line : " length }} }'
+while ($#argv > 0)
+   switch ($1)
+   case -c:
+      shift; set awktxt1=' '; set ptxt1='All lines'
+      breaksw
+   case -L:
+   case -l:
+      shift; set MAXLL=$1; shift
+      breaksw
+   default:
+      set ff=$1 ; shift
+      if (-r $ff) then
+         echo "-- $ptxt1 in $ff longer than $MAXLL char -- "
+         sed -e 's/\!.*//' -e 's/ *$//' $ff | awk "{if ( length>$MAXLL $awktxt1) $awktxt2"
+      else
+         echo "$ff is not a readable file"
+      endif
+      breaksw
+   endsw
+end

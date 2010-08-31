@@ -54,8 +54,9 @@ C
 #include <maxaqn.h>
 #include <mxsymm.h>
 #include <qm3.h>
+!#include <qmmm.h>
 C
-      PARAMETER ( NTABLE = 19, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 20, D1 = 1.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -67,7 +68,7 @@ C
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
      *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPIN',
      *            '.PRFQM3', '.INTDIR', '.REDCNT', '.LGSPOL',
-     *            '.MMPCM ', '.MXITMP', '.THRSMP'/
+     *            '.MMPCM ', '.MXITMP', '.THRSMP', '.QMDAMP'/
 C
       CALL QENTER('QM3INP')
 C
@@ -95,6 +96,8 @@ C
       MMPCM   = .FALSE.
       MXITMP  = 20
       THRSMP  = 1.0D-05
+      LGSPOL  = .FALSE.
+      QMDAMP  = .FALSE.
 C
 C
 C     CRUCIAL TEST : MXCENT has to be equal to MXQM3
@@ -103,7 +106,7 @@ C
         CALL QUIT('MXCENT has to be equal to MXQM3')
       END IF
 C
-      NEWDEF = (WORD .EQ. '*QM3INP')
+      NEWDEF = (WORD .EQ. '*QM3   ')
       ICHANG = 0
 C
       IF (NEWDEF) THEN
@@ -121,7 +124,8 @@ C
           ICHANG = ICHANG + 1
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), I
+              GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     *               11,12,13,14,15,16,17,18,19,20), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -129,13 +133,14 @@ C
             GO TO 100
           END IF
 C
-          WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *                             '" not recognized for *QM3INP.'
+          WRITE (LUPRI,'(/3A/)') ' Keyword "',WORD,
+     *                           '" not recognized for *QM3'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal keyword in REAINP.')
+          CALL QUIT('Illegal keyword for *QM3')
 C
     1     CONTINUE
             QM3 = .TRUE.
+            NYQMMM=.FALSE.
           GO TO 100
 C
     2     CONTINUE
@@ -284,24 +289,29 @@ C
    19     CONTINUE
             READ(LUCMD,*) THDISC 
           GO TO 100
+
+   20   CONTINUE
+            QMDAMP = .TRUE.
+            READ(LUCMD,*) ADAMP
+          GO TO 100
 C
         ELSE IF (PROMPT .EQ. '*') THEN
           GO TO 300
         ELSE
           WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
-     *                             '" not recognized for *QM3INP.'
+     *                             '" not recognized for *QM3'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-          CALL QUIT('Illegal prompt for *QM3INP.')
+          CALL QUIT('Illegal prompt for *QM3')
         END IF
       END IF
 C
   300 CONTINUE
 C
       IF (ICHANG .GT. 0) THEN
-        CALL HEADER('Changes of defaults for *QM3INP:',0)
+        CALL HEADER('Changes of defaults for *QM3   :',0)
 C
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
-        WRITE (LUPRI,'(1X,A2,A6,A3,A7,A2)')
+        WRITE(LUPRI,'(1X,A2,A6,A3,A7,A2)')
      *         '| ',' WORD:',' | ','CHANGE:',' |'
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
 C
@@ -341,6 +351,7 @@ C
      *           '| ','SIGMLT',' | ',(.NOT.LSIGADD),' |'
           END IF
         END IF
+        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 C
         WRITE(LUPRI,*) ' Settings for determination of induced dipoles:'
         IF (MYITE) THEN
@@ -349,7 +360,7 @@ C
           WRITE(LUPRI,*) ' Matrix inversion is used'
         END IF
         IF (EXPON) THEN
-          WRITE(LUPRI,*) ' Exponential Dampiing is active'
+          WRITE(LUPRI,*) ' Exponential Damping is active'
         END IF
         IF (MMPCM) THEN
           WRITE(LUPRI,*) ' MM/PCM interface active'
@@ -357,16 +368,55 @@ C
 
         
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
+
+        IF (QMDAMP .AND. (.NOT. INTDIR)) THEN
+          CALL QUIT('QM damping only implemented for .INTDIR option')
+        ENDIF
 C
       END IF
 C
       CALL QEXIT('QM3INP')
       RETURN
       END
+C------------------------------------------------------------------------
+      SUBROUTINE QM3_SETUP()
+C
+C     April 2009, hjaaj
+C
+C     Moved setup of MM info to this new subroutine.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <qm3.h>
+C
+C     ***************************************************************
+C     Calculating the classical interaction terms from the given
+C     geometry and interaction terms:
+C     ***************************************************************
+C
+      CALL MMFLDS()
+      CALL ELNUC(ENUQM3)
+C
+      IF ( OLDTG ) THEN
+        DO I= 1, ISYTP
+          DO J = NSYSBG(I), NSYSED(I)
+            DO K = 1, NCTOT
+              IF (ISUBSY(K) .EQ. J) THEN
+                CHAOLD(K) = CHARGE(K)
+                CHARGE(K) = 0.0D0
+              END IF
+            END DO
+          END DO
+        END DO
+      END IF
+      RETURN
+      END
 C
 C------------------------------------------------------------------------
 C  /* Deck rdpot */
-      SUBROUTINE RDPOT()
+      SUBROUTINE QM3_RDPOT()
 C------------------------------------------------------------------------
 C
 C <<< General Input for MM potentials>>>
@@ -404,7 +454,7 @@ C
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
-      CALL QENTER('RDPOT')
+      CALL QENTER('QM3_RDPOT')
 C
 C     Initialization
 C    
@@ -434,7 +484,7 @@ C
 C
   909 CONTINUE   
 C
-      CALL TITLER('Output from RDPOT input processing','*',118)
+      CALL TITLER('Output from MM potential input processing','*',115)
 C
 C     **** Find potential input *****
 C
@@ -459,7 +509,7 @@ C
   910 CONTINUE
 C
       NWARN = NWARN + 1
-      WRITE (LUPRI,*) 'WARNING RDPOT: error reading potential input' 
+      WRITE (LUPRI,*) 'WARNING QM3_RDPOT: error reading potential input'
 C
   930 CONTINUE
 C
@@ -469,17 +519,17 @@ C
       IF (WORD .EQ. '.NUMMTP') THEN
         READ (LUPOT,'(I5)',ERR=940) ISYTP
       ELSE
-        CALL QUIT('Illegal keyword in POTENTIAL.INP.
-     &  (**SYSTP has to be followed by .NUMMTP)') 
+        CALL QUIT('Illegal keyword in POTENTIAL.INP. '//
+     &            '(**SYSTP has to be followed by .NUMMTP)') 
       END IF
 C
       GOTO 100
 C
   940 CONTINUE
 C
-      WRITE (LUPRI,*) 'WARNING RDPOT: error reading
-     &                 number of system types'
-      CALL QUIT('Wrong input for number of system types.')
+      WRITE (LUPRI,*) 'WARNING QM3_RDPOT: error reading '//
+     &                'number of system types'
+      CALL QUIT('QM3_RDPOT: Wrong input for number of system types.')
 C
 C     ***** Process input for COMMON  /QM3SYS/  *****
 C
@@ -519,8 +569,8 @@ C
             GO TO 100
           END IF
 C
-          WRITE (LUPRI,'(/,3A,/)')
-     *      ' Keyword ',WORD,' not recognized in RDPOT(1).'
+          WRITE (LUPRI,'(/3A/)') ' Keyword ',WORD,
+     &     ' in POTENTIAL.INP is not recognized in QM3_RDPOT.'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
           CALL QUIT('Illegal keyword in POTENTIAL.INP 1.')
 C
@@ -615,7 +665,7 @@ C
 C
   108     CONTINUE
             IF (.NOT. LONEPAR) THEN
-              CALL QUIT('Atomic vdW-par. not specified in *QM3INP')
+              CALL QUIT('Atomic vdW-par. not specified in *QM3')
             END IF
             LOTEST(J) = .TRUE.
             READ(LUPOT,*) ISIGEPS(J)
@@ -693,9 +743,9 @@ C
 C
         IF (NUALIS(J) .GT. 1) THEN
           IF ((MDLWRD(J) .EQ. 'SPC_E02') .OR.
-     &      (MDLWRD(J) .EQ. 'SPC_EC2') .OR.
-     &      (MDLWRD(J) .EQ. 'SPC_EC4') .OR.
-     &      (MDLWRD(J) .EQ. 'SPC    ')) THEN
+     &        (MDLWRD(J) .EQ. 'SPC_EC2') .OR.
+     &        (MDLWRD(J) .EQ. 'SPC_EC4') .OR.
+     &        (MDLWRD(J) .EQ. 'SPC    ')) THEN
             CALL QUIT('No distributed alpha allowed for this model.')
           END IF
         END IF
@@ -789,12 +839,12 @@ C
 C Initialization of Two-body interaction parameters:
 C
       LUVDWSE = -1
-      DO 1400 IBG = 0,MXTYPE
-        DO 1410 JBG = 0,MXTYPE
+      DO JBG = 0,MXTYPE
+        DO IBG = 0,MXTYPE
           QM3LJA(IBG,JBG) = D0
           QM3LJB(IBG,JBG) = D0
- 1410   CONTINUE
- 1400 CONTINUE
+        END DO
+      END DO
 C
       READ (LUPOT,'(A7)') WORD
 C
@@ -808,7 +858,7 @@ C
      &         (LONEPAR)) THEN
         GOTO 666
       ELSE
-        CALL QUIT('**TWOIA NOT FOUND in POTENTIAL.INP')
+        CALL QUIT('**TWOIA not found in POTENTIAL.INP')
       END IF
 C
   911 CONTINUE
@@ -838,7 +888,7 @@ C
         END IF
 C
         WRITE (LUPRI,'(/,3A,/)')
-     *         ' Keyword ',WORD,' not recognized in RDPOT(2).'
+     *         ' Keyword ',WORD,' not recognized in QM3_RDPOT(2).'
         CALL PRTAB(NTAB1,TABLE1,WORD1//' input keywords',LUPRI)
         CALL QUIT('Illegal keyword in POTENTIAL.INP 3.')
 C
@@ -1303,7 +1353,7 @@ C
         WRITE(LUPRI,*)'**** Shadow wavefunction calculation ****'
         WRITE(LUPRI,*)'-----------------------------------------'
       END IF
-      CALL QEXIT('RDPOT')
+      CALL QEXIT('QM3_RDPOT')
       RETURN
       END
 C
@@ -1399,8 +1449,8 @@ C
 C
       DO 44 L = 0, ISYTP
         IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
-          IF ( (.NOT. (DISMOD(L))) .AND. 
-     &      (.NOT. (RDFILE(L))) ) THEN
+          IF ( (.NOT. DISMOD(L)) .AND. 
+     &         (.NOT. RDFILE(L)) ) THEN
             DO 45 M = NSYSBG(L), NSYSED(L)
 C
               TOTALM = D0
@@ -1643,13 +1693,14 @@ C it and we have to return to this issue later on. IMPORTANT if the
 C code has to be a part of the released DALTON code!!A
 C---------------------------------------------------------------------
 C
-      IF (NSISY(0) .GT. MXNEW) THEN
+      IF (NSISY(0) .GT. MXCENT_QM) THEN
         WRITE(LUPRI,'(/A,I5/A,I5/A)')
-     &    ' Maximum number of QM atoms allowed is MXNEW =',MXNEW,
-     &    ' You have specified in input                  ',NSISY(0),
-     &    ' To run this calculation you must'//
-     &    ' turn up the MXNEW number in the "include/mxcent.h" file.' 
-        CALL QUIT('The max. number of QM atoms allowed is exceeded.')
+     & ' Maximum number of QM atoms allowed is MXCENT_QM =',MXCENT_QM,
+     & ' You have specified in input                      ',NSISY(0),
+     & ' To run this calculation you must'//
+     & ' increase the MXCENT_QM number in the "include/mxcent.h" file.'
+        CALL QUIT(
+     & 'The max. number of QM atoms allowed in mxcent.h is exceeded.')
       END IF
 C
       END
@@ -1741,14 +1792,24 @@ C
                             DIST = SQRT(DIST)
                             DISM1 = 1/DIST
                             DISM3 = DISM1**3
+
+                            IF (QMDAMP) THEN
+                              DIQM = (CORD(1,J)-QMCOM(1))**2 +
+     &                               (CORD(2,J)-QMCOM(2))**2 +
+     &                               (CORD(3,J)-QMCOM(3))**2
+                              DIQM = SQRT(DIQM)
+                              DFACT = (1-exp(-ADAMP*DIQM))**3
+                            ELSE
+                              DFACT = 1.0D0
+                            ENDIF
 C
-                            DO 17 M = 1, 3
-                              ENUC(M,NU) = ENUC(M,NU) + 
-     &                        CHARGE(L)*(CORD(M,J)-CORD(M,L))*DISM3
-                              EQMCLF(M,NU) = EQMCLF(M,NU) +
-     &                        QM3CHG(ISUBSY(L),ISUBSI(L))*
-     &                        (CORD(M,J)-CORD(M,L))*DISM3
-  17                        CONTINUE
+                           DO 17 M = 1, 3
+                            ENUC(M,NU) = ENUC(M,NU) + 
+     &                      DFACT*CHARGE(L)*(CORD(M,J)-CORD(M,L))*DISM3
+                            EQMCLF(M,NU) = EQMCLF(M,NU) +
+     &                      QM3CHG(ISUBSY(L),ISUBSI(L))*
+     &                      (CORD(M,J)-CORD(M,L))*DISM3
+  17                       CONTINUE
 C
                           ELSE IF ( (ISUBSY(L) .GT. 0)
      &                      .AND. (ISUBSI(L) .LE. NSISY(K)) ) THEN 
@@ -1904,11 +1965,11 @@ C
                                   KURT = KURT + 1
 C
                                   IF (J .NE. M)  THEN
-                                    DIST2 =((CORD(1,K)-CORD(1,N))**2 +
-     *                                     (CORD(2,K)-CORD(2,N))**2 +
-     *                                     (CORD(3,K)-CORD(3,N))**2)
+                                    DIST2 =(CORD(1,K)-CORD(1,N))**2
+     *                                    +(CORD(2,K)-CORD(2,N))**2
+     *                                    +(CORD(3,K)-CORD(3,N))**2
 C
-                                    DIST = SQRT(DIST2)
+                                    DIST  = SQRT(DIST2)
                                     DIST3 = DIST2*DIST
                                     DIST4 = DIST2**2
                                     DIST5 = DIST4*DIST
@@ -1964,11 +2025,11 @@ C
 C
                                   IF (J .NE. M) THEN
 C
-                                    DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+                                    DIST2 =(CORD(1,K)-CORD(1,N))**2 +
      *                                     (CORD(2,K)-CORD(2,N))**2 +
-     *                                     (CORD(3,K)-CORD(3,N))**2)
+     *                                     (CORD(3,K)-CORD(3,N))**2
 C
-                                    DIST = SQRT(DIST2)
+                                    DIST  = SQRT(DIST2)
                                     DIST3 = DIST2*DIST
                                     DIST4 = DIST2**2
                                     DIST5 = DIST4*DIST
@@ -2712,7 +2773,7 @@ C
 C    
 C*******************************************************
 C  /* Deck elnuc */
-	      SUBROUTINE ELNUC(ENUCLE)
+      SUBROUTINE ELNUC(ENUCLE)
 C*******************************************************
 C
 C     Calculate the nuclear part of the electrostatic
@@ -2881,7 +2942,7 @@ C
       ENDIF
 C
       IF (LOCLAS) THEN
-        CALL QUIT('Exit dalton forced by keyword CLONLY in QM3INP')
+        CALL QUIT('Exit dalton forced by keyword CLONLY for *QM3')
       END IF
 C
       END
@@ -3679,8 +3740,9 @@ C
       ELSE IF (NAMN(J)(1:2) .EQ. 'XX') THEN
         TMPMAS = D0
       ELSE
-        WRITE(LUPRI,*) 'Check atom no.',J,' in input file.'
-        CALL QUIT('This atom not recognized.')
+        WRITE(LUPRI,*)
+     &    'MASFIND: Check atom no.',J,' in input file: ',NAMN(J)
+        CALL QUIT('MASFIND: This atom not recognized.')
       END IF
 C
       END
@@ -3891,8 +3953,7 @@ C
 C
       END
 C*******************************************************
-C  /* Deck elnuc */
-              SUBROUTINE EQMNTEST()
+      SUBROUTINE EQMNTEST()
 C*******************************************************
 C
 C     Calculate the QM nuclear part of the electric field
@@ -4175,7 +4236,6 @@ C
       DIPCON = .TRUE.
       END
 C*********************************************************************
-C  /* Deck  */
       SUBROUTINE RFQMMM()
 C
 C     Calculate the reaction field (RF) at the QM nuclei 
@@ -4188,7 +4248,7 @@ C
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
-      DIMENSION  RFQM(3,MXNEW)
+      DIMENSION  RFQM(3,MXCENT_QM)
       CHARACTER  LAPRPC*8
 C
 #if defined (SYS_CRAY)
@@ -4199,7 +4259,7 @@ C
 
       IF (.NOT. PRFQM3) RETURN
 
-      DO 11 I=1,MXNEW
+      DO 11 I=1,MXCENT_QM
         RFQM(1,I)=D0
         RFQM(2,I)=D0
         RFQM(3,I)=D0
@@ -4260,12 +4320,10 @@ C     now, find a QM nuclei and do the RF due to the charges
       DO 22 JK=1,NU
         WRITE(LUPRI,*) CORD(1,JK),CORD(2,JK),CORD(3,JK)
   22  CONTINUE
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) 'The reaction field due to the charges:'
+      WRITE(LUPRI,'(/A)') ' The reaction field due to the charges:'
       DO 23 JK=1,NU
         WRITE(LUPRI,*) RFQM(1,JK),RFQM(2,JK),RFQM(3,JK)
   23  CONTINUE
-      WRITE(LUPRI,*)
 
 C     Finally, we set the charges to zero if OLDTG
  
@@ -4346,16 +4404,14 @@ C
         CALL QUIT('Something is wrong w. the no. of nuclei in RFQMMM')
       ENDIF
 
-      WRITE(LUPRI,*) 'The QM coordinates:'
+      WRITE(LUPRI,'(/A)') ' The QM coordinates:'
       DO 24 JK=1,NATOM
         WRITE(LUPRI,*) CORD(1,JK),CORD(2,JK),CORD(3,JK)
   24  CONTINUE
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) 'The total reaction field:'
+      WRITE(LUPRI,'(/A)') ' The total reaction field:'
       DO 25 JK=1,NATOM
         WRITE(LUPRI,*) RFQM(1,JK),RFQM(2,JK),RFQM(3,JK)
   25  CONTINUE
-      WRITE(LUPRI,*)
 
       DO 26 JK=1,NATOM
         DO IPRPC = 1,3
@@ -4552,6 +4608,1404 @@ C
       CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
       CALL GIVEMY(MYIND)
 C
+      END
+C-------------------------------------------------------------------------
+C  /* Deck qmmmin */
+      SUBROUTINE QMMMIN(WORD)
+C-------------------------------------------------------------------------
+C
+C INPUT FROM ABACUS TO QMMM CALCULATIONS 
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <gnrinf.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxsymm.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <codata.h>
+C
+      PARAMETER ( NTABLE = 20, D1 = 1.0D0)
+      LOGICAL NEWDEF,RCUT
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER TSTCHA*1,WORD2*6,WORD3*6
+      CHARACTER*80 INLINE
+      CHARACTER*2 UNITS
+#include <cbirea.h>
+#include <ccom.h>
+C
+      DATA TABLE /'.QMMM  ', '.SPLDIP', '.FIXDIP', '.MMDAMP',
+     *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
+     *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
+     *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
+     *            '.ZEROOC', '.PRINT ', '.XXXXXX', '.XXXXXX'/
+
+ 
+      CALL QENTER('QMMMIN')
+ 
+C     Initializing QMMM keywords
+ 
+      QMMM     = .FALSE.   ! Do a NewType QMMM calculation
+      SPLDIP   = .FALSE.   ! Split ind. dips. into components from electrons, permanent MM mult. and ind. multipoles.
+      FIXDIP   = .FALSE.   ! Do not calc. ind. dipoles read from file. Only for GS.
+      MMDAMP   = .FALSE.   ! Damping in relay tensor
+      CONMAT   = .TRUE.    ! Indicates if [ALPHA^(-1) - T] matrix is to be constructed.
+C                            This is but true here and then after the
+C                            first construction this is set to false
+      MMPROP   = .FALSE.   ! Calculates properties of the MM environment. 
+      SPLNMR   = .FALSE.   ! Calculate London contribution to gradient
+C                            seperately from permanent and induced dipoles. For testing.
+      QMDAMP   = .FALSE.   ! Include damping of electric field between QM and MM
+      LGSPOL   = .FALSE.   ! Skip the response part related to Efield
+C      SELPOL   = .FALSE.   ! Skip selected systems response related to the electric field. Response
+      MMMAT    = .TRUE.    ! Default is matrix inversion (keyword MATINV)
+      MMITER   = .FALSE.   ! Locical for iterative determination of ind. dipoles (keyword ITER)
+      MXMMIT   = 100       ! Max. iterations in Jacobi MM induced dipoles solver. 
+      THMMIT   = 1.0D-10   ! Thresshold in Jacobi/DIIS MM induced dipoles solver (for norm error vector in the induced dipoles))
+      MMDIIS   = .FALSE.   ! Use DIIS solver for induced dipoles
+      MXMMDI   = 5         ! Maximum vectors to be used in MMDIIS
+      LCLOSE   = .FALSE.   ! Logical for investigating close QM-MM distances
+      IQMMCC   = -1        ! Option for close QM-MM distance. 
+      RQMMMC   = 2.20      ! Close distance QM-MM. Do something if actual distance is less than RQMMMC. In au. 
+      RCUTMM   = 1000.0D0   ! Cut-off for QM-MM and MM-MM interactions
+      RCUT     = .FALSE.   ! no cut-off
+      DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
+      ZEROOC   = .FALSE.   ! Zero the octuploe moments
+      IPQMMM   = 1         ! QMMM print
+
+      NEWDEF = (WORD .EQ. '*QMMM  ')
+      ICHANG = 0
+C
+      IF (NEWDEF) THEN
+        WORD1 = WORD
+C
+  100   CONTINUE
+C
+        READ (LUCMD, '(A7)') WORD
+        CALL UPCASE(WORD)
+        PROMPT = WORD(1:1)
+C
+        IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+          GO TO 100
+        ELSE IF (PROMPT .EQ. '.') THEN
+          ICHANG = ICHANG + 1
+          DO 200 I = 1, NTABLE
+            IF (TABLE(I) .EQ. WORD) THEN
+              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
+     &               19,20), I
+            END IF
+  200     CONTINUE
+          IF (WORD .EQ. '.OPTION') THEN
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            GO TO 100
+          END IF
+C
+          WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *                             '" not recognized for *QMMM  .'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in REAINP.')
+C
+    1     CONTINUE
+            QMMM = .TRUE.
+            NYQMMM = .TRUE.
+            LGFILE = .FALSE. !sne assignment. 
+          GO TO 100
+C
+    2     CONTINUE
+            SPLDIP = .TRUE.
+          GO TO 100
+C
+    3     CONTINUE
+            FIXDIP = .TRUE.
+          GO TO 100
+C
+    4     CONTINUE
+            MMDAMP = .TRUE.
+          GO TO 100
+C
+    5     CONTINUE
+            MMPROP = .TRUE.
+          GO TO 100
+C
+    6     CONTINUE
+            SPLNMR = .TRUE.
+          GO TO 100
+C
+    7     CONTINUE
+c            SELPOL = .TRUE.
+c            READ(LUCMD,*) 
+          GO TO 100
+C
+    8     CONTINUE
+            QMDAMP = .TRUE.
+            READ(LUCMD,*) IDAMP
+            IF (IDAMP .EQ. 3) THEN
+              READ(LUCMD,*) NQMNUC
+              DO 999 J = 1,NQMNUC
+                READ(LUCMD,*) QMPOL(J)
+  999         CONTINUE
+            ELSE 
+              READ(LUCMD,*) ADAMP
+            ENDIF
+          GO TO 100
+
+    9     CONTINUE
+            LGSPOL = .TRUE.
+          GO TO 100
+
+   10     CONTINUE
+            MMMAT = .TRUE.
+            MMITER = .FALSE.
+          GO TO 100
+
+   11     CONTINUE
+            MMMAT = .FALSE.
+            MMITER = .TRUE.
+          GO TO 100
+
+   12     CONTINUE
+            READ(LUCMD,*) MXMMIT, THMMIT
+          GO TO 100
+
+   13     CONTINUE
+            MMDIIS = .TRUE.
+            READ(LUCMD,*) MXMMDI
+          GO TO 100
+
+   14     CONTINUE
+            LCLOSE = .TRUE.
+C           See if further input is provided for this option        
+            READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
+            BACKSPACE(LUCMD)
+            IF (WORD(1:1).NE.'.' .AND. WORD(1:1).NE.'*'
+     &                           .AND. WORD(1:1).NE.'!' ) THEN
+              READ (LUCMD,*) RQMMMC, UNITS, IQMMMC
+              CALL UPCASE(UNITS)
+              IF (UNITS .EQ. 'AA') THEN
+                RQMMMC = RQMMMC/XTANG
+              ELSE IF (UNITS .EQ. 'AU') THEN
+                RQMMMC = RQMMMC
+              ELSE
+                CALL QUIT('Unknown units for LCLOSE specification')
+              ENDIF
+            END IF
+          GO TO 100
+
+   15     CONTINUE
+            READ(LUCMD,*) RCUTMM, UNITS 
+            CALL UPCASE(UNITS)
+            IF (UNITS .EQ. 'AA') THEN
+              RCUTMM = RCUTMM/XTANG
+            ELSE IF (UNITS .EQ. 'AU') THEN
+              RCUTMM = RCUTMM
+            ELSE
+              CALL QUIT('Unknown units for RCUTMM specification')
+            ENDIF
+            RCUT = .TRUE.
+          GO TO 100
+
+   16     CONTINUE
+            READ(LUCMD,*) DELFLD
+          GO TO 100
+
+   17     CONTINUE
+            ZEROOC = .TRUE.
+          GO TO 100
+
+   18     CONTINUE
+            READ(LUCMD,*) IPQMMM
+          GO TO 100
+
+   19     CONTINUE
+          GO TO 100
+
+   20     CONTINUE
+          GO TO 100
+
+        ELSE IF (PROMPT .EQ. '*') THEN
+          GO TO 300
+        ELSE
+          WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
+     *                             '" not recognized for *QMMM  .'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal prompt for *QMMM  .')
+        END IF
+      END IF
+C
+  300 CONTINUE
+C
+      IF (ICHANG .GT. 0) THEN
+        CALL HEADER('Changes of defaults for *QMMM  :',0)
+C
+        WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        WRITE (LUPRI,'(1X,A2,A6,A3,A7,A2)')
+     *         '| ',' WORD:',' | ','CHANGE:',' |'
+        WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+C
+        IF (QMMM) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','  QMMM',' | ',QMMM,' |'
+        IF (SPLDIP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','SPLDIP',' | ',SPLDIP,' |'
+        IF (FIXDIP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','FIXDIP',' | ',FIXDIP,' |'
+        IF (MMDAMP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMDAMP',' | ',MMDAMP,' |'
+        IF (MMPROP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMPROP',' | ',MMPROP,' |'
+        IF (SPLNMR) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','SPLNMR',' | ',SPLNMR,' |'
+        IF (QMDAMP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','QMDAMP',' | ',QMDAMP,' |'
+        IF (LGSPOL) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','LGSPOL',' | ',LGSPOL,' |'
+        IF (MMITER) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMITER',' | ',MMITER,' |'
+        IF (MMDIIS) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMDIIS',' | ',MMDIIS,' |'
+        IF (LCLOSE) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','LCLOSE',' | ',LCLOSE,' |'
+        IF (RCUT) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','RCUT',' | ',RCUT,' |'
+        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
+        WRITE(LUPRI,*)
+      END IF
+
+      IF (MMITER) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'Induced MM dipoles are solved iteratively'
+        WRITE(LUPRI,*) 'Max. number of iterations: ',MXMMIT
+        WRITE(LUPRI,*) 'Thresshold: ',THMMIT
+        IF (MMDIIS) THEN
+          WRITE(LUPRI,*) 'DIIS is invoked for induced dipoles'
+          WRITE(LUPRI,*) 'Maximum number of DIIS vectors: ',MXMMDI
+        ENDIF
+        WRITE(LUPRI,*)
+      ENDIF
+
+      IF (LCLOSE) THEN
+        WRITE(LUPRI,*) 'Close QM-MM distance threshold (au) ', RQMMMC
+        IF (IQMMMC .GT. 0) THEN
+          WRITE(LUPRI,*) 'Close QM-MM distance criteria: ', IQMMMC
+        ENDIF
+      ENDIF
+
+      IF ( (SPLDIP) .AND. (.NOT. MMMAT) ) THEN
+        WRITE(LUPRI,*) 'Split only allowed if matrix inversion'
+        CALL QUIT('Error in QMMM input')
+      ENDIF
+
+      IF (DELFLD .NE. 0.01) THEN
+        WRITE(LUPRI,*) 'Step-length in calc. of Field-Hessian integrals'
+        WRITE(LUPRI,*) DELFLD
+      ENDIF
+
+      IF (ZEROOC) THEN
+        WRITE(LUPRI,*) 'Octupoles are reset to zero'
+      ENDIF 
+
+      CALL QEXIT('QMMMIN')
+      RETURN
+      END
+C******************************************************************************
+C  /* Deck readmm */
+      SUBROUTINE READMM(WORK,LWORK)
+C------------------------------------------------------------------------
+C
+C <<< General Input for QMMM electrostatic potentials>>>
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <abainf.h>
+#include <inftap.h>
+#include <nuclei.h>
+#include <qmmm.h>
+#include <codata.h>
+C
+      CHARACTER*180 KWord
+      CHARACTER*2 UNITS
+      CHARACTER*25 POLWRD
+      DIMENSION WORK(LWORK)
+      LOGICAL LFIND,LHIT,LREAD
+
+      CALL QENTER('READMM')
+
+      LREAD = .FALSE.
+
+C     First we zero everything
+      DO 099 J = 1,MMCENT
+        MMCORD(1,J) = 0.0D0
+        MMCORD(2,J) = 0.0D0
+        MMCORD(3,J) = 0.0D0
+        MUL0MM(J)   = 0.0D0
+        MUL1MM(1,J) = 0.0D0
+        MUL1MM(2,J) = 0.0D0
+        MUL1MM(3,J) = 0.0D0
+        MUL2MM(1,J) = 0.0D0
+        MUL2MM(2,J) = 0.0D0
+        MUL2MM(3,J) = 0.0D0
+        MUL2MM(4,J) = 0.0D0
+        MUL2MM(5,J) = 0.0D0
+        MUL2MM(6,J) = 0.0D0
+        MUL3MM(1,J) = 0.0D0
+        MUL3MM(2,J) = 0.0D0
+        MUL3MM(3,J) = 0.0D0
+        MUL3MM(4,J) = 0.0D0
+        MUL3MM(5,J) = 0.0D0
+        MUL3MM(6,J) = 0.0D0
+        MUL3MM(7,J) = 0.0D0
+        MUL3MM(8,J) = 0.0D0
+        MUL3MM(9,J) = 0.0D0
+        MUL3MM(10,J) = 0.0D0
+        POLMM(1,J)  = 0.0D0
+        POLMM(2,J)  = 0.0D0
+        POLMM(3,J)  = 0.0D0
+        POLMM(4,J)  = 0.0D0
+        POLMM(5,J)  = 0.0D0
+        POLMM(6,J)  = 0.0D0
+        POLIMM(J)   = 0.0D0
+        LMMNUL(J)   = .FALSE.
+  099 CONTINUE
+
+      LUQMMM=-1
+      CALL GPOPEN(LUQMMM,'POTENTIAL.INP','OLD',' ',
+     &            'FORMATTED',IDUMMY,.FALSE.)
+      REWIND(LUQMMM)
+      READ(LUQMMM,*) UNITS
+
+      CALL UPCASE(UNITS)
+
+      IF (UNITS .EQ. 'AA') THEN
+        SCAL = XTANG
+      ELSE IF (UNITS .EQ. 'AU') THEN
+        SCAL = 1.0D0
+      ELSE
+         CALL QUIT('Unknown units in POTENTIAL.INP')
+      ENDIF
+
+      Read(LUQMMM,'(A180)') KWord 
+      KWord(168:180)='-2 -2 -2 -2'
+      Read(KWord,*)MMCENT,NMULT,IPOLTP,NEXLST,NELEME
+
+      IF (MMCENT .GT. MXMMCT) THEN 
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'MXMMCT:', MXMMCT
+        WRITE(LUPRI,*) 'No. of centers read from qmmm.inp:', MMCENT
+        CALL QUIT('Increase MXMMCT')
+      ENDIF
+
+      IF (NEXLST .GT. MXEXCL) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'MXEXCL:', MXEXCL
+        WRITE(LUPRI,*) 'Length of excl. list from qmmm.inp:', NEXLST
+        CALL QUIT('Increase NEXLST')
+      ENDIF
+
+C     default setting: 
+C     - order of multipoles = 0 (charges)    
+C     - polarization: No
+C     - length of excluded list = 0
+
+      IF (NMULT .EQ. -2) NMULT = 0
+      IF (IPOLTP .EQ. -2) IPOLTP = 0
+      IF (NEXLST .EQ. -2) NEXLST = 0
+      IF (NELEME .EQ. -2) NELEME = 0
+
+      IF (IPOLTP .EQ. 0) POLWRD = ' No polarization         '
+      IF (IPOLTP .EQ. 1) POLWRD = ' Isotropic polarization  '
+      IF (IPOLTP .EQ. 2) POLWRD = ' Anisotropic polarization'
+
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*) ' *********************************** '
+      WRITE(LUPRI,*) ' QMMM electrostatic potential: '
+      WRITE(LUPRI,*) ' Multipole order               ', NMULT
+      WRITE(LUPRI,*) POLWRD
+      WRITE(LUPRI,*) ' *********************************** '
+
+      IF (NMULT. GT. 3) THEN
+        CALL QUIT('Multipole order only impl. for 0,1,2')
+      ENDIF
+
+      IF ((IPOLTP. NE. 0) .AND. (IPOLTP. NE. 1)
+     *                    .AND. (IPOLTP. NE. 2)) THEN
+        CALL QUIT('Polarizability order only impl. for 0,1,2')
+      ENDIF
+
+C     Only charges ...  No polarizabilities 
+
+      IF ( (NMULT .EQ. 0) .AND. (IPOLTP .EQ. 0) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 100 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  100     CONTINUE
+        ELSE
+          DO 300 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  300     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles ...  No polarizabilities   
+
+      IF ( (NMULT .EQ. 1) .AND. (IPOLTP .EQ. 0) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN 
+          DO 101 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  101     CONTINUE
+        ELSE
+          DO 301 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  301     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles + quadrupoles ...  No polarizabilities   
+
+      IF ( (NMULT .EQ. 2) .AND. (IPOLTP .EQ. 0) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 102 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  102     CONTINUE
+        ELSE
+          DO 302 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  302     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles + quadrupoles + octupoles...  No polarizabilities
+
+      IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 0) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 112 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                     MUL3MM(10,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  112     CONTINUE
+        ELSE
+          DO 312 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                     MUL3MM(10,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  312     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Only charges + anisotropic polarizabiblities 
+
+      IF ( (NMULT .EQ. 0) .AND. (IPOLTP .EQ. 2) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 103 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  103     CONTINUE
+       ELSE
+          DO 303 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  303     CONTINUE
+       ENDIF
+      ENDIF
+
+C     Charges + dipoles  + anisotropic polarizabiblities   
+
+      IF ( (NMULT .EQ. 1) .AND. (IPOLTP .EQ. 2) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 104 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  104     CONTINUE
+        ELSE
+          DO 304 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  304     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles + quadrupoles + anisotropic polarizabiblities  
+
+      IF ( (NMULT .EQ. 2) .AND. (IPOLTP .EQ. 2) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 105 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  105     CONTINUE
+        ELSE
+          DO 305 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  305     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles + quadrupoles + octupoles + anisotropic polarizabiblities
+
+      IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 2) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 115 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                     MUL3MM(10,J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  115     CONTINUE
+        ELSE
+          DO 315 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                     MUL3MM(10,J),
+     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  315     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Only charges + isotropic polarizabiblities 
+
+      IF ( (NMULT .EQ. 0) .AND. (IPOLTP .EQ. 1) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 106 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  106     CONTINUE
+        ELSE
+          DO 306 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  306     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles  + isotropic polarizabiblities   
+
+      IF ( (NMULT .EQ. 1) .AND. (IPOLTP .EQ. 1) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 107 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  107     CONTINUE
+        ELSE
+          DO 307 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  307     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles + quadrupoles + isotropic polarizabiblities  
+
+      IF ( (NMULT .EQ. 2) .AND. (IPOLTP .EQ. 1) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 108 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST), 
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  108     CONTINUE
+        ELSE
+          DO 308 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  308     CONTINUE
+        ENDIF
+      ENDIF
+
+C     Charges + dipoles + quadrupoles + octupoeles + isotropic polarizabiblities
+
+      IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 1) ) THEN
+        LREAD = .TRUE.
+        IF (NELEME .EQ. 0) THEN
+          DO 118 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                     MUL3MM(10,J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  118     CONTINUE
+        ELSE
+          DO 318 J = 1,MMCENT
+            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
+     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
+     *                     MUL0MM(J),
+     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
+     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
+     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                     MUL3MM(10,J),
+     *                     POLIMM(J)
+            MMCORD(1,J) = MMCORD(1,J)/SCAL
+            MMCORD(2,J) = MMCORD(2,J)/SCAL
+            MMCORD(3,J) = MMCORD(3,J)/SCAL
+  318     CONTINUE
+        ENDIF
+      ENDIF
+
+      CALL GPCLOSE(LUQMMM,'KEEP')
+
+      IF (.NOT. LREAD) THEN
+        CALL QUIT('No read option for this potential')
+      ENDIF
+
+      IF (ZEROOC) THEN
+        DO 320 J = 1,MMCENT
+          DO 321 I=1,10
+            MUL3MM(I,J) = 0.0D0
+ 321      CONTINUE
+ 320    CONTINUE 
+      ENDIF
+
+      IOPTMM = 1 
+      CALL OUTMM(IOPTMM)
+
+C     Define MM bonds
+      NMAX = 0
+      IF (NELEME .NE. 0) THEN
+
+        DO 10 J= 1,MMCENT
+          IF (ELEME(J) .EQ. 0) GOTO 10
+          NBONDS = 0
+          RADJ = RADIUS(ELEME(J))
+          IF (RADJ .LT. 0.0D0 .AND. ELEME(J) .GT. 0) THEN
+              WRITE(LUPRI,*)
+     &        'RADIUS FOR MM ATOM WITH ATOMIC NUMBER ',
+     &        ELEME(J),' IS UNAVAILABLE, USING 2.0 AA'
+              RADJ = 2.0D0
+          END IF
+          DO 20 I= 1,MMCENT
+            IF (ELEME(I) .EQ. 0) GOTO 20
+            RADI = RADIUS(ELEME(I))
+            IF (RADI .LT. 0.0D0 .AND. ELEME(I) .GT. 0) THEN
+              RADI = 2.0D0
+            END IF
+            IF (I .NE. J) THEN
+              DIST2 = (MMCORD(1,J)-MMCORD(1,I))**2 + 
+     &                (MMCORD(2,J)-MMCORD(2,I))**2 +
+     &                (MMCORD(3,J)-MMCORD(3,I))**2            
+              DIST = SQRT(DIST2)*XTANG
+              IF (DIST .LT. (1.2D0 * (RADI + RADJ))) THEN
+                NBONDS = NBONDS + 1
+              END IF
+            ENDIF
+ 20       CONTINUE
+          IF (NBONDS .GT. NMAX) NMAX = NBONDS
+ 10     CONTINUE
+
+        KSTART   = 1
+        KEND     = KSTART + (NMAX+1)*MMCENT
+        LWORK0   = LWORK  - KEND
+        IF (LWORK0 .LT. 0) CALL ERRWRK('READMM',-KEND,LWORK)
+        CALL DZERO(WORK(KSTART),NMAX*MMCENT)
+
+        DO 30 J= 1,MMCENT
+          IF (ELEME(J) .EQ. 0) GOTO 30
+          RADJ = RADIUS(ELEME(J))
+          IF (RADJ .LT. 0.0D0 .AND. ELEME(J) .GT. 0) THEN
+              WRITE(LUPRI,*)
+     &        'RADIUS FOR MM ATOM WITH ATOMIC NUMBER ',
+     &        ELEME(J),' IS UNAVAILABLE, USING 2.0 AA'
+              RADJ = 2.0D0
+          END IF
+
+          IOFF = (J-1)*(NMAX+1)
+          WORK(KSTART+IOFF) = J
+
+          LM = 0
+          DO 40 I= 1,MMCENT
+            IF (ELEME(I) .EQ. 0) GOTO 40
+            RADI = RADIUS(ELEME(I))
+            IF (RADI .LT. 0.0D0 .AND. ELEME(I) .GT. 0) THEN
+              RADI = 2.0D0
+            END IF
+            IF (I .NE. J) THEN
+              DIST2 = (MMCORD(1,J)-MMCORD(1,I))**2 +
+     &                (MMCORD(2,J)-MMCORD(2,I))**2 +
+     &                (MMCORD(3,J)-MMCORD(3,I))**2
+              DIST = SQRT(DIST2)*XTANG
+              IF (DIST .LT. (1.2D0 * (RADI + RADJ))) THEN
+                LM = LM+1
+                WORK(KSTART+IOFF+LM) = I
+              END IF
+            ENDIF
+ 40       CONTINUE
+ 30     CONTINUE
+
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) '*** MM Topology ***'
+        DO 50 I= 1,MMCENT
+          WRITE(LUPRI,*) 
+     *   (INT(WORK(KSTART+(I-1)*(NMAX+1)+(J-1))),J=1,NMAX+1)
+ 50     CONTINUE
+ 
+      ENDIF !(NELEME .NE. 0)
+
+
+C     Do some testing on the QM to MM distances
+
+      IF (LCLOSE .AND. (IQMMMC .EQ. 1)) THEN ! Simple case: put MM elec. parameters to zero
+
+        WRITE(LUPRI,*)
+        TEMPQ = 0.0D0
+        DO 206 I = 1,NUCIND
+          TEMPQ1 = 0.0D0
+          DO 207 J = 1,MMCENT
+            DIST2 = (CORD(1,I)-MMCORD(1,J))**2 +
+     *              (CORD(2,I)-MMCORD(2,J))**2 +
+     *              (CORD(3,I)-MMCORD(3,J))**2
+            DIST = SQRT(DIST2)
+            IF (DIST .LE. RQMMMC) THEN
+              WRITE(LUPRI,*) 'QM-MM distance for pair',I,' ',J,' ',DIST,
+     *                     ' is small'
+              IF (NMULT .GE. 0) THEN
+                TEMPQ = TEMPQ + MUL0MM(J)
+                MUL0MM(J) = 0.0D0
+                LMMNUL(J) = .TRUE.
+              ENDIF
+              IF (NMULT .GE. 1) THEN
+                MUL1MM(1,J) = 0.0D0
+                MUL1MM(2,J) = 0.0D0
+                MUL1MM(3,J) = 0.0D0
+                LMMNUL(J) = .TRUE.
+              ENDIF
+              IF (NMULT .GE. 2) THEN
+                MUL2MM(1,J) = 0.0D0
+                MUL2MM(2,J) = 0.0D0
+                MUL2MM(3,J) = 0.0D0
+                MUL2MM(4,J) = 0.0D0
+                MUL2MM(5,J) = 0.0D0
+                MUL2MM(6,J) = 0.0D0
+                LMMNUL(J) = .TRUE.
+              ENDIF
+              IF (NMULT .GE. 3) THEN
+                MUL3MM(1,J) = 0.0D0
+                MUL3MM(2,J) = 0.0D0
+                MUL3MM(3,J) = 0.0D0
+                MUL3MM(4,J) = 0.0D0
+                MUL3MM(5,J) = 0.0D0
+                MUL3MM(6,J) = 0.0D0
+                MUL3MM(7,J) = 0.0D0
+                MUL3MM(8,J) = 0.0D0
+                MUL3MM(9,J) = 0.0D0
+                MUL3MM(10,J) = 0.0D0
+                LMMNUL(J) = .TRUE.
+              ENDIF
+              IF (IPOLTP .EQ. 1) THEN
+                POLIMM(J) = 0.0D0
+                LMMNUL(J) = .TRUE.
+              ELSE IF (IPOLTP .EQ. 2) THEN
+                POLMM(1,J) = 0.0D0
+                POLMM(2,J) = 0.0D0
+                POLMM(3,J) = 0.0D0
+                POLMM(4,J) = 0.0D0
+                POLMM(5,J) = 0.0D0
+                POLMM(6,J) = 0.0D0
+                LMMNUL(J) = .TRUE.
+              ENDIF
+            ENDIF
+  207     CONTINUE
+  206   CONTINUE
+
+      ENDIF
+
+      IF (LCLOSE .AND. (IQMMMC .EQ. 2)) THEN !Move MM props to nearest other MM site
+
+        TEMPQ = 0.0D0
+
+        KIQM   = 1
+        KIMM   = KIQM   + MXMMCT ! we use here just MXMMCT for the length of these temp. arrays
+        KEND   = KIMM   + MXMMCT
+        LWORK1 = LWORK  - KEND
+
+        IF (LWORK1 .LT. 0) CALL ERRWRK('READMM',-KEND,LWORK)
+
+        CALL DZERO(WORK(KIQM),MXMMCT)
+        CALL DZERO(WORK(KIMM),MXMMCT)
+
+C       First find the QM-MM close centers and save those
+        LM=0
+        DO 208 I = 1,NUCIND
+          DO 209 J = 1,MMCENT
+            DIST2 = (CORD(1,I)-MMCORD(1,J))**2 +
+     *              (CORD(2,I)-MMCORD(2,J))**2 +
+     *              (CORD(3,I)-MMCORD(3,J))**2
+            DIST = SQRT(DIST2)
+            IF (DIST .LE. RQMMMC) THEN
+              WRITE(LUPRI,*)
+              WRITE(LUPRI,*) 'QM-MM distance for pair',I,' ',J,' ',DIST,
+     *                     ' is small'
+              WORK(KIQM+LM) = I
+              WORK(KIMM+LM) = J
+              LM=LM+1  ! actual length of KIMM/KIQM are now LM
+              IF (LM.GT.MXMMCT) THEN
+                CALL QUIT('MXMMCT too small for LCLOSE')
+              ENDIF 
+            ENDIF
+  209     CONTINUE
+  208   CONTINUE
+
+        DO 210 I=1,LM
+          IQM = WORK(KIQM+I-1)
+          IMM = WORK(KIMM+I-1)
+          XT  = MMCORD(1,IMM) 
+          YT  = MMCORD(2,IMM)
+          ZT  = MMCORD(3,IMM)
+
+          DITEMP = DUMMY
+          DO 211 J=1,MMCENT ! find nearest MM center NOT on the KIMM list
+            IF (J.NE.IMM) THEN
+              LFIND = .FALSE.
+              DO 212 K=1,LM
+                IF (J.EQ.WORK(KIMM+K-1)) LFIND = .TRUE.
+C               In case we have provided atomic numbers for the MM sites move the MM properties to only 
+C               nuclear sites         
+                IF (NELEME .NE. 0) THEN
+                  IF (ELEME(J) .EQ. 0) LFIND = .TRUE.
+                ENDIF
+ 212          CONTINUE
+              IF (.NOT. LFIND) THEN
+                DIMM2 = (MMCORD(1,J)-XT)**2 +
+     *                  (MMCORD(2,J)-YT)**2 +
+     *                  (MMCORD(3,J)-ZT)**2  
+                DIMM  = SQRT(DIMM2)
+                IF (DIMM .LT. DITEMP) THEN
+                  DITEMP = DIMM
+                  JSAVE = J
+                ENDIF
+              ENDIF
+            ENDIF
+  211     CONTINUE
+
+C         now move MM properties from MM site IMM to site JSAVE. put lmmnul = true
+C         for the affecte sites.
+          IF (NMULT .GE. 0) THEN
+            MUL0MM(JSAVE) = MUL0MM(JSAVE) + MUL0MM(IMM)
+            MUL0MM(IMM)   = 0.0D0
+            LMMNUL(JSAVE) = .TRUE.
+            LMMNUL(IMM)   = .TRUE.
+          ENDIF
+          IF (NMULT .GE. 1) THEN
+            MUL1MM(1,JSAVE) = MUL1MM(1,JSAVE) + MUL1MM(1,IMM)
+            MUL1MM(2,JSAVE) = MUL1MM(2,JSAVE) + MUL1MM(2,IMM)
+            MUL1MM(3,JSAVE) = MUL1MM(3,JSAVE) + MUL1MM(3,IMM)
+            MUL1MM(1,IMM)   = 0.0D0
+            MUL1MM(2,IMM)   = 0.0D0
+            MUL1MM(3,IMM)   = 0.0D0
+            LMMNUL(JSAVE)   = .TRUE.
+            LMMNUL(IMM)     = .TRUE.
+          ENDIF
+          IF (NMULT .GE. 2) THEN
+            MUL2MM(1,JSAVE) = MUL2MM(1,JSAVE) + MUL2MM(1,IMM)
+            MUL2MM(2,JSAVE) = MUL2MM(2,JSAVE) + MUL2MM(2,IMM)
+            MUL2MM(3,JSAVE) = MUL2MM(3,JSAVE) + MUL2MM(3,IMM)
+            MUL2MM(4,JSAVE) = MUL2MM(4,JSAVE) + MUL2MM(4,IMM)
+            MUL2MM(5,JSAVE) = MUL2MM(5,JSAVE) + MUL2MM(5,IMM)
+            MUL2MM(6,JSAVE) = MUL2MM(6,JSAVE) + MUL2MM(6,IMM)
+            MUL2MM(1,IMM)   = 0.0D0
+            MUL2MM(2,IMM)   = 0.0D0
+            MUL2MM(3,IMM)   = 0.0D0
+            MUL2MM(4,IMM)   = 0.0D0
+            MUL2MM(5,IMM)   = 0.0D0
+            MUL2MM(6,IMM)   = 0.0D0
+            LMMNUL(JSAVE)   = .TRUE.
+            LMMNUL(IMM)     = .TRUE.
+          ENDIF
+          IF (NMULT .GE. 3) THEN
+            MUL3MM(1,JSAVE) = MUL3MM(1,JSAVE) + MUL3MM(1,IMM)
+            MUL3MM(2,JSAVE) = MUL3MM(2,JSAVE) + MUL3MM(2,IMM)
+            MUL3MM(3,JSAVE) = MUL3MM(3,JSAVE) + MUL3MM(3,IMM)
+            MUL3MM(4,JSAVE) = MUL3MM(4,JSAVE) + MUL3MM(4,IMM)
+            MUL3MM(5,JSAVE) = MUL3MM(5,JSAVE) + MUL3MM(5,IMM)
+            MUL3MM(6,JSAVE) = MUL3MM(6,JSAVE) + MUL3MM(6,IMM)
+            MUL3MM(7,JSAVE) = MUL3MM(7,JSAVE) + MUL3MM(7,IMM)
+            MUL3MM(8,JSAVE) = MUL3MM(8,JSAVE) + MUL3MM(8,IMM)
+            MUL3MM(9,JSAVE) = MUL3MM(9,JSAVE) + MUL3MM(9,IMM)
+            MUL3MM(10,JSAVE) = MUL3MM(10,JSAVE) + MUL3MM(10,IMM)
+            MUL3MM(1,IMM)   = 0.0D0
+            MUL3MM(2,IMM)   = 0.0D0
+            MUL3MM(3,IMM)   = 0.0D0
+            MUL3MM(4,IMM)   = 0.0D0
+            MUL3MM(5,IMM)   = 0.0D0
+            MUL3MM(6,IMM)   = 0.0D0
+            MUL3MM(7,IMM)   = 0.0D0
+            MUL3MM(8,IMM)   = 0.0D0
+            MUL3MM(9,IMM)   = 0.0D0
+            MUL3MM(10,IMM)   = 0.0D0
+            LMMNUL(JSAVE)   = .TRUE.
+            LMMNUL(IMM)     = .TRUE.
+          ENDIF
+          IF (IPOLTP .EQ. 1) THEN
+            POLIMM(JSAVE) = POLIMM(JSAVE) + POLIMM(IMM)
+            POLIMM(IMM)   = 0.0D0
+            LMMNUL(JSAVE) = .TRUE.
+            LMMNUL(IMM)   = .TRUE.
+          ELSE IF (IPOLTP .EQ. 2) THEN
+            POLMM(1,JSAVE) = POLMM(1,JSAVE) + POLMM(1,IMM)
+            POLMM(2,JSAVE) = POLMM(2,JSAVE) + POLMM(2,IMM)
+            POLMM(3,JSAVE) = POLMM(3,JSAVE) + POLMM(3,IMM)
+            POLMM(4,JSAVE) = POLMM(4,JSAVE) + POLMM(4,IMM)
+            POLMM(5,JSAVE) = POLMM(5,JSAVE) + POLMM(5,IMM)
+            POLMM(6,JSAVE) = POLMM(6,JSAVE) + POLMM(6,IMM)
+            POLMM(1,IMM)   = 0.0D0
+            POLMM(2,IMM)   = 0.0D0
+            POLMM(3,IMM)   = 0.0D0
+            POLMM(4,IMM)   = 0.0D0
+            POLMM(5,IMM)   = 0.0D0
+            POLMM(6,IMM)   = 0.0D0
+            LMMNUL(JSAVE)  = .TRUE.
+            LMMNUL(IMM)    = .TRUE.
+          ENDIF
+  210   CONTINUE
+
+      ENDIF
+
+      IF (LCLOSE) THEN
+
+        IOPTMM = 2
+        CALL OUTMM(IOPTMM)
+
+        IF (IQMMMC .EQ. 1) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) 'WARNING: Removed ',TEMPQ,' charge from MM'
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) 'WARNING: No charge renormalization'
+        ENDIF
+
+C       print now the closest QM-MM distance for MM sites with non-zero parameters
+
+        DIMIN = DUMMY
+        ISAVE = -1000
+        JSAVE = -1000
+        DO 213 I = 1,NUCIND
+          DO 214 J = 1,MMCENT
+            DIST2 = (CORD(1,I)-MMCORD(1,J))**2 +
+     *              (CORD(2,I)-MMCORD(2,J))**2 +
+     *              (CORD(3,I)-MMCORD(3,J))**2
+            DIST = SQRT(DIST2)
+
+            LHIT = .FALSE.
+            IF (NMULT .GE. 0) THEN
+              TEMP = MUL0MM(J)*MUL0MM(J)
+              IF (TEMP .GT. THRMM) LHIT = .TRUE.
+            ENDIF
+            IF (NMULT .GE. 1) THEN
+              TEMP = MUL1MM(1,J)*MUL1MM(1,J) + 
+     *               MUL1MM(2,J)*MUL1MM(2,J) + 
+     *               MUL1MM(3,J)*MUL1MM(3,J)
+              IF (TEMP .GT. THRMM) LHIT = .TRUE.
+            ENDIF
+            IF (NMULT .GE. 2) THEN
+                TEMP = MUL2MM(1,J)*MUL2MM(1,J) +
+     *                 MUL2MM(2,J)*MUL2MM(2,J) +
+     *                 MUL2MM(3,J)*MUL2MM(3,J) +
+     *                 MUL2MM(4,J)*MUL2MM(4,J) +
+     *                 MUL2MM(5,J)*MUL2MM(5,J) +
+     *                 MUL2MM(6,J)*MUL2MM(6,J) 
+                IF (TEMP .GT. THRMM) LHIT = .TRUE.
+            ENDIF
+            IF (NMULT .GE. 3) THEN
+                TEMP = MUL3MM(1,J)*MUL3MM(1,J) +
+     *                 MUL3MM(2,J)*MUL3MM(2,J) +
+     *                 MUL3MM(3,J)*MUL3MM(3,J) +
+     *                 MUL3MM(4,J)*MUL3MM(4,J) +
+     *                 MUL3MM(5,J)*MUL3MM(5,J) +
+     *                 MUL3MM(6,J)*MUL3MM(6,J) +
+     *                 MUL3MM(7,J)*MUL3MM(7,J) +
+     *                 MUL3MM(8,J)*MUL3MM(8,J) +
+     *                 MUL3MM(9,J)*MUL3MM(9,J) +
+     *                 MUL3MM(10,J)*MUL3MM(10,J)
+                IF (TEMP .GT. THRMM) LHIT = .TRUE.
+            ENDIF
+            IF (IPOLTP .EQ. 1) THEN
+              TEMP = POLIMM(J)*POLIMM(J)
+              IF (TEMP .GT. THRMM) LHIT = .TRUE.
+            ELSE IF (IPOLTP .EQ. 2) THEN
+              TEMP = POLMM(1,J)*POLMM(1,J) +
+     *               POLMM(2,J)*POLMM(2,J) +
+     *               POLMM(3,J)*POLMM(3,J) +
+     *               POLMM(4,J)*POLMM(4,J) +
+     *               POLMM(5,J)*POLMM(5,J) +
+     *               POLMM(6,J)*POLMM(6,J) 
+              IF (TEMP .GT. THRMM) LHIT = .TRUE. 
+            ENDIF
+
+            IF (LHIT) THEN
+              IF (DIST .LT. DIMIN) THEN
+                DIMIN = DIST
+                ISAVE = I
+                JSAVE = J
+              ENDIF
+            ENDIF 
+
+  214     CONTINUE
+  213   CONTINUE
+
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*) 'Closest QM-MM distance is now ', DIMIN, ' au',
+     *               ' for QM-MM pair ', ISAVE, JSAVE
+
+      ENDIF ! if lclose
+
+c      DO 215 I = 1,MMCENT
+c        DO 216 J = I,MMCENT
+c          IF (I.NE.J) THEN
+c            DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
+c     *              (MMCORD(2,I)-MMCORD(2,J))**2 +
+c     *              (MMCORD(3,I)-MMCORD(3,J))**2
+c            DIST = SQRT(DIST2) 
+c            IF ( (DIST .LE. 3.40) .AND. (DIST .GT. 1.88) ) THEN
+c              WRITE(LUPRI,*) 'I,J,DIST ',I,J,DIST
+c            ENDIF
+c          ENDIF
+c  216   CONTINUE
+c  215 CONTINUE
+
+
+
+4000    FORMAT(I4,3(2X,F12.6))
+4001    FORMAT(I4,2X,F12.6)
+4002    FORMAT(I4,6(2X,F12.6))
+
+      CALL QEXIT('READMM')
+      END
+C*************************************************************************************
+C  /* Deck outmm */
+      SUBROUTINE OUTMM(IOPT)
+C------------------------------------------------------------------------
+C     IF IOPT = 1 all information is printed
+C     otherwise only the sites changed are printed
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <abainf.h>
+#include <inftap.h>
+#include <nuclei.h>
+#include <qmmm.h>
+#include <codata.h>
+C
+      INTEGER IOPT
+
+      CALL QENTER('OUTMM')
+
+C     Output information
+
+      IF (IOPT .EQ. 1) THEN
+        WRITE(LUPRI,*) 
+        WRITE(LUPRI,*) ' ---------------- '
+        WRITE(LUPRI,*) ' QMMM information '
+        WRITE(LUPRI,*) ' ---------------- '
+      ELSE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'WARNING: The following sites have been changed'
+      ENDIF
+
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*) ' MM coordinates in au '
+      WRITE(LUPRI,*) ' -------------------- '
+
+      IF (NELEME .EQ. 0) THEN
+        DO 199 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4000) J,MMCORD(1,J),MMCORD(2,J),MMCORD(3,J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4000) J,MMCORD(1,J),MMCORD(2,J),MMCORD(3,J)
+          ENDIF
+  199   CONTINUE
+      ELSE
+        DO 200 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,3999) J,ELEME(J),MMCORD(1,J),MMCORD(2,J),
+     *                        MMCORD(3,J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,3999) J,ELEME(J),MMCORD(1,J),MMCORD(2,J),
+     *                          MMCORD(3,J)
+          ENDIF
+  200   CONTINUE
+      ENDIF
+
+      IF (NMULT .GE. 0) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' MM charges '
+        WRITE(LUPRI,*) ' ---------- '
+        DO 201 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4001) J, MUL0MM(J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4001) J, MUL0MM(J)
+          ENDIF
+  201   CONTINUE
+      ENDIF
+
+      IF (NMULT .GE. 1) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' MM dipoles (x,y,z) '
+        WRITE(LUPRI,*) ' ------------------ '
+        DO 202 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4000) J,MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4000) J,MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J)
+          ENDIF 
+  202   CONTINUE
+      ENDIF
+
+      IF (NMULT .GE. 2) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' MM quadrupoles (xx,xy,xz,yy,yz,zz) '
+        WRITE(LUPRI,*) ' ---------------------------------- '
+        DO 203 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4002) J,MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                          MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4002) J,MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
+     *                            MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J)
+          ENDIF
+  203   CONTINUE  
+      ENDIF
+
+      IF (NMULT .GE. 3) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,4004) ' MM octupoles (xxx,xxy,xxz,xyy,xyz,xzz,yyy,yy
+     *z,yyz,yzz,zzz) '
+        WRITE(LUPRI,*) ' -----------------------------------------------
+     *-------------------------------'
+        DO 225 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4003) J,MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                          MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                          MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                          MUL3MM(10,J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4003) J,MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
+     *                            MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
+     *                            MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
+     *                            MUL3MM(10,J)
+          ENDIF
+  225   CONTINUE
+      ENDIF
+
+
+      IF (IPOLTP .EQ. 1) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' MM isotropic polarizabilities in au '
+        WRITE(LUPRI,*) ' ----------------------------------- '
+        DO 204 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4001) J, POLIMM(J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4001) J, POLIMM(J)
+          ENDIF 
+  204   CONTINUE
+      ENDIF
+
+      IF (IPOLTP .EQ. 2) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) ' MM polarizabilities in au (xx,xy,xz,yy,yz,zz) '
+        WRITE(LUPRI,*) ' --------------------------------------------- '
+        DO 205 J = 1,MMCENT
+          IF (IOPT .EQ. 1) THEN
+            WRITE(LUPRI,4002) J,POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                          POLMM(4,J),POLMM(5,J),POLMM(6,J)
+          ELSE IF (LMMNUL(J)) THEN
+              WRITE(LUPRI,4002) J,POLMM(1,J),POLMM(2,J),POLMM(3,J),
+     *                            POLMM(4,J),POLMM(5,J),POLMM(6,J)
+          ENDIF
+  205   CONTINUE
+      ENDIF
+
+3999    FORMAT(I4,I4,3(2X,F12.6))
+4000    FORMAT(I4,3(2X,F12.6))
+4001    FORMAT(I4,2X,F12.6)
+4002    FORMAT(I4,6(2X,F12.6))
+4003    FORMAT(I4,10(2X,F12.6))
+4004    FORMAT(A80)
+
+      CALL QEXIT('OUTMM')
       END
 C**** end of herqm3.F *****************************************************************
 

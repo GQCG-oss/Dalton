@@ -109,7 +109,7 @@ ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
 #SCF, MP2, CCSD and CCSD(T) energies of 1 iteration:
-CRIT1=`$GREP "Final * HF energy: * -100\.0193187076" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy: * -100\.019318707(6|7)" $log | wc -l`
 CRIT2=`$GREP "Total RSTAR energy: * -100\.2261213102" $log | wc -l`
 CRIT3=`$GREP "Total CCSD  energy: * -100\.2262306180" $log | wc -l`
 CRIT4=`$GREP "Total energy CCSD\(T\): * -100\.2281559084" $log | wc -l`
@@ -120,13 +120,13 @@ CRIT8=`$GREP "Norm of gradient * : * ( |0)\.000943" $log | wc -l`
 CRIT9=`$GREP "Norm of step * : * ( |0)\.001055" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[2]=17
+CTRL[2]=22
 ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
 #
 # Final summary:
-CRIT1=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.6483031799" $log | wc -l`
-CRIT2=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.0900135199" $log | wc -l` 
-CRIT3=`$GREP "Geometry converged in * 4 * iterations" $log | wc -l`
+CRIT1=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.64829750.." $log | wc -l`
+CRIT2=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.09000784.." $log | wc -l` 
+CRIT3=`$GREP "Geometry converged in * 3 * iterations" $log | wc -l`
 CRIT4=`$GREP "Energy at final geometry is * : *  -100\.228156" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[3]=10
@@ -136,8 +136,8 @@ ERROR[3]="FINAL SUMMARY IS NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

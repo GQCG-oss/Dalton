@@ -159,7 +159,7 @@ C
 C     We will need rotational g tensors and spin-rotation constants in 
 C     space-fixed xyz axis system
 C
-      IF (MOLGFA) THEN
+      IF (MOLGFA .AND. .NOT. LINEAR) THEN
          CALL DGEMM('N','N',3,3,3,1.D0,
      &              CMAT,3,
      &              GTRAN,3,0.D0,
@@ -294,7 +294,7 @@ C
      &              CMAT,3,0.D0,
      &              GTRAN,3)
          IF (IPRINT .GE. 2) THEN
-            CALL HEADER('Molecular g-tensor '
+            CALL HEADER('Molecular rotational g-tensor '
      &           //'in the Eckart frame:',0)
             CALL OUTPUT(GTRAN,1,3,1,3,3,3,1,LUPRI)
          ENDIF

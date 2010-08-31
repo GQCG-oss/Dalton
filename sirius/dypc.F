@@ -129,10 +129,9 @@ C
 #endif
 c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
-      write(lupri,*)
-      write(lupri,*) 'STARTING THE PERTURBATION SUMMATION'
-      write(lupri,*)
-      write(lupri,*)
+      CALL QENTER('DYPC')
+
+      write(lupri,'(/A//)') ' STARTING THE PERTURBATION SUMMATION'
  
       nwall=0
       ntotdet=0
@@ -772,17 +771,15 @@ c      WRITE (lupri,1105) ESCF
       E2SC(1)=E2SC(1)+E(1)
       E2PC(1)=E2PC(1)+E(1)
       WRITE (lupri,1100) 1,E(1),E2SC(1),E2PC(1)
-      WRITE (lupri,'(//)')
-      WRITE (lupri,'(/)')
-      write (lupri,'(a,f8.2,a)')' Total elapsed time in dypc',
+      write (lupri,'(///a,f8.2,a/)')' Total elapsed time in dypc',
      *  tpp-t,' sec.'
-      write (lupri,*)
  1060 FORMAT (5X,'TOTAL ENERGY CONTRIBUTIONS')
  1070 FORMAT (' STATE',3X,'DIAGONALISATION        PERTURBATION SC-D',
      * '        PERTURBATION PC-D')
  1100 FORMAT (1x,I4,F17.8,3F24.8)
 c 1105 FORMAT (' REFERENCE: ',F16.8,//)
  2000 FORMAT (5X,32('*'))
+      CALL QEXIT('DYPC')
       return
       END
 c----------------------------------------------------------------------
@@ -790,7 +787,8 @@ c----------------------------------------------------------------------
       subroutine rdd2(lun31,da,nact)
 #include <implicit.h>      
       DIMENSION da(nact,nact)
-      read(lun31)((da(i,j),i=1,nact),j=1,nact)
+!     read(lun31)((da(i,j),i=1,nact),j=1,nact)
+      read(lun31) da
       return
       end
       subroutine rdd4(lun31,daat,i,j,nact)
@@ -869,6 +867,7 @@ cele      allocate(tint(ncore,ncore,nvirt))
 #if !defined(VAR_G77)
       allocate(tint(nvirt,nvirt))
 #endif
+      call dzero(tint,nvirt*nvirt)
 cele  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
   900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -1172,6 +1171,8 @@ c------ two-electron part with Dirac distr (ii,ij|**)
       allocate(tintar(nact,nvirt))
       allocate(tintra(nvirt,nact))
 #endif
+      call dzero(tintar,nact*nvirt)
+      call dzero(tintra,nact*nvirt)
   900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ii=id2n(icd)
@@ -1464,12 +1465,14 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(4)=1
+      L_tint=nvirt*ncore*nvirt*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,ncore*nvirt*nact*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,ncore,nvirt,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -2009,12 +2012,14 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(2)=1
+      L_tint = nact*ncore*nact*ncore
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,ncore*nact*nvirt*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nact,ncore,nact,ncore))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -2427,12 +2432,14 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       LFREE=LWRK
       IDIST = 0
       needtp(5)=1
+      L_tint = nvirt*nact*nvirt*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,nact*nact*nvirt*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nvirt,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -3053,12 +3060,14 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       LFREE=LWRK
       IDIST = 0
       needtp(5)=1
+      L_tinta = nvirt*nact*ncore*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,nvirt*nact*ncore*nact*8)
+      call nwadd(nwall,L_tinta*8)
       allocate(tinta(nvirt,nact,ncore,nact))
 #endif
+      CALL DZERO(tinta,L_tinta)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -3090,10 +3099,12 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(4)=1
+      L_tintc = nvirt*ncore*nact*nact
 #if !defined(VAR_G77)
-      call nwadd(nwall,nvirt*nact*ncore*nact*8)
+      call nwadd(nwall,L_tintc*8)
       allocate(tintc(nvirt,ncore,nact,nact))
 #endif
+      call dzero(tintc,L_tintc)
   910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1010
       ic=id2n(icd)
@@ -3207,7 +3218,7 @@ c
          dn=0.d0
       endif
       if(dn.gt.0.d0)then
-         epsimk=dkoo/dn                     
+         epsimk=dkoo/dn
          den=fmpb(ii)-fmpb(ir)-epsimk
          co=dn/den
          con=co/den
@@ -3776,12 +3787,14 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(2)=1
+      L_tint = ncore*nact*nact*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,ncore*nact*nact*nact*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(ncore,nact,nact,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -4099,12 +4112,14 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       LFREE=LWRK
       IDIST = 0
       needtp(5)=1
+      L_tint = nvirt*nact*nact*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,nvirt*nact*nact*nact*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nact,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)

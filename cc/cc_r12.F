@@ -3491,6 +3491,7 @@ C
 #include <ccsdio.h>
 #include <cclr.h>
 #include <ccfdgeo.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <ccr12int.h>
       PARAMETER (D0 = 0D0)

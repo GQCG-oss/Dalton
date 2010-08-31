@@ -55,7 +55,7 @@ cat > cc2dc_resp.dal <<%EOF%
 *END OF HERMIT
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-11
 *CC INP
@@ -126,8 +126,8 @@ ERROR[3]="STATIC POLARIZABILITY NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

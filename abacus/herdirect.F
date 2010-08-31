@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -399,12 +399,16 @@ C
       SAVE    SFIRST
       DATA    SFIRST /.TRUE./
 C
+      CALL QENTER('SETHER')
+C
 C     Initialize /CBIREA/ and call readin
 C
       IF (SFIRST .OR. NEWGEO) THEN
-         RELCAL = .FALSE.
-         TSTINP = .FALSE.
-         CALL REAINI(JPRINT,RELCAL,TSTINP)
+chj   May 09: should we really call READIN here now,
+chj   when they always are called in the beginning, also when RNHERM false??
+Chj   June 09: maybe READIN may still be needed for NEWGEO, keep it for
+Chj   now for safety, but REAINI should definitely NOT be called, it will
+Chj   reiinitialize variables changed by user under *READIN
 C
          IPREAD = JPRINT
          HERMIT = .FALSE.
@@ -432,6 +436,7 @@ C
          END IF
          SFIRST = .FALSE.
       END IF
+      CALL QEXIT('SETHER')
       RETURN
       END
 C  /* Deck herfck */
@@ -476,7 +481,7 @@ C
 C
       CALL QENTER('HERFCK')
 C
-C     The new ERI routines haven't been parallelized yet.
+C     The new ERI routines have not been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
 C     USEERI is a temporary flag to check if we actually can in the present 
 C     passage.

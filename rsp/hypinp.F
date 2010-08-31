@@ -48,7 +48,8 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-#include <qm3.h>
+! gnrinf.h: QM3, THR_REDFAC
+#include <gnrinf.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
       PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -404,6 +405,12 @@ C
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       NAQRTO = 0
       NBQRTO = 0
       NCQRTO = 0
@@ -522,15 +529,11 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
-         IF (QM3) THEN
+
+         IF (QM3 .OR. QMMM) THEN
           WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
+
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
      *      ' Second harmonic generation                     : SHG='
@@ -594,10 +597,11 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
-#include <qm3.h>
+! gnrinf.h: QM3, THR_REDFAC
+#include <gnrinf.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 25)
+      PARAMETER ( NTABLE = 26)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -607,7 +611,7 @@ C
      *            '.ISPABC', '.TPCD  ', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
-     *            '.MCDBTE'/
+     *            '.MCDBTE', '.MCDPRJ'/
 C
 C READ IN  INPUT
 C
@@ -627,7 +631,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24,25), I
+     &                      17,18,19,20,21,22,23,24,25,26), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -648,7 +652,7 @@ C
                      READ (LUCMD,*) (BSMFR(J),J=1,NBSMFR)
                   ELSE
                      WRITE (LUPRI,'(3(/,A,I5),/)')
-     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBSMFR,
+     *               ' NUMBER OF B FREQUENCIES SPECIFIED  :',NBSMFR,
      *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBSMFR,
      *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBSMFR
                      READ (LUCMD,*) (BSMFR(J),J=1,MBSMFR),
@@ -822,6 +826,25 @@ C                 B operators
                   LABEL='ZANGMOM'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
+ 26            CONTINUE
+                  !sonia: mcd B term calculation
+                  !with projection of the redundant 
+                  !exc state vector
+                  MCDPRJ=.TRUE.
+                  MCDCAL=.TRUE.
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='XANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -832,22 +855,29 @@ C                 B operators
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+      END IF
 C
 C If two-photon calculation then we assume that the frequencies of the 
 C photons match the excitation. At this point we set the frequencies
 C to dummy values, later they become half of the excitation energies.
 C
       IF (TWOPHO) THEN
-         NBSMFR = ISUM(NSYM,NSMCNV,1)
-         IF (NBSMFR .EQ. 0) THEN
+         NSMCNV_TOT = ISUM(NSYM,NSMCNV,1)
+         IF (NSMCNV_TOT .EQ. 0) THEN
             WRITE (LUPRI,'(/2A)')
-     *      ' Input ignored because no excited states specified.',
-     *      ' Use the .ROOTS keyword.'
-            WRITE(LUPRI,'(/A)') ' <<<<<<< End of DALTON >>>>>>>'
-            CALL QUIT('***** End of DALTON *****')
+     * ' Two-photon input ignored because no excited states specified.',
+     * ' Use the .ROOTS keyword.'
+            CALL QUIT('***** Input error for two-photon *****')
          END IF
+         NBSMFR = NSMCNV_TOT
          DO J=1,NBSMFR
-            BSMFR(J)=1.0D0
+            BSMFR(J)=-1.0D0
          END DO
       END IF
 C
@@ -872,13 +902,15 @@ C
      &      ' - no B frequencies requested, NBSMFR =',NBSMFR
       ELSE IF (SOMOM) THEN
          CALL HEADER('Quadratic Response single residue calculation',0)
+         WRITE(LUPRI,'(A)')
+     &   ' That is, calculation of second order moments.'
          IF (PHOSPH) THEN
-           WRITE(LUPRI,'(/A)') ' Phosporescence calculation requested'//
-     &       ' with full spin-orbit operator.'
+           WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
+     &     //' with full spin-orbit operator.'
          END IF
          IF (MNFPHO) THEN
-           WRITE(LUPRI,'(/A)') ' Phosporescence calculation requested'//
-     &       ' with atomic mean-field spin-orbit operator (AMFI).'
+           WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
+     &     //' with atomic mean-field spin-orbit operator (AMFI).'
          END IF
          IF (PHOSPH .OR. MNFPHO) THEN
             IF (JSPABC .GT. 0 .AND. ISPINA .NE. 0 .AND.
@@ -887,7 +919,7 @@ C
                WRITE (LUPRI,'(/A/A,3I4/A)')
      &         ' WARNING : inconsistent phosphorescence input as',
      &         ' .ISPABC has been specified with',ISPINA,ISPINB,ISPINC,
-     &         ' .ISPABC has been reset to         0   1   1'
+     &         ' .ISPABC is reset to               0   1   1'
             END IF
             ISPINA = 0
             ISPINB = 1
@@ -910,9 +942,12 @@ C
             END IF
          END IF
          IF (TWOPHO) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Two-photon transition process computed         : TWOPHO ='
-     *      ,TWOPHO
+            WRITE(LUPRI,'(/A/A)')
+     &      ' Two-photon transition processes computed (.TWO-PHOTON).',
+     &      ' Both photon frequencies are half the excitation energy.'
+         ELSE
+            WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
+     *      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
          END IF
          WRITE (LUPRI,'(/A,I5)') ' Spin of operator A , ISPINA=',ISPINA
          WRITE (LUPRI,'( A,I5)') ' Spin of operator B , ISPINB=',ISPINB
@@ -922,8 +957,6 @@ C
             TRPLET = .TRUE.
             TRPFLG = .TRUE.
          END IF
-         WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
-     *      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A,L2,/)')
      *      ' Equilibrium solvent model requested            : SOLVNT ='
@@ -943,19 +976,21 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
-         IF (QM3) THEN
+
+         IF (QM3 .OR. QMMM) THEN
           WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
-C-----------------
-C CBN+JK 03.01.06
-C-----------------
+
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')
      *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='
      *      ,MCDCAL
+            !sonia new 
+            if (MCDPRJ) then
+               WRITE (LUPRI,'(A,L1)')
+     *       ' Projected B of Magnetic Circular Dichroism    : MCDPRJ='
+     *        ,MCDPRJ
+            end if
          END IF
          WRITE(LUPRI,'(/A,I5)')
      *      ' Print level                                    : IPRSMO ='
@@ -1181,8 +1216,9 @@ C
 #include <infpri.h>
 #include <infspi.h>
 C
-C If two-photon calculation is specified we only compute a restricted 
-C number of response vectors.
+C If two-photon calculation and .BFREQ is not specified
+C we only compute a restricted number of response vectors
+C corresponding to BFREQ=CFREQ=EXCITA/2.
 C
       IF (TWOPHO) THEN
          NBSMFR = 0

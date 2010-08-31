@@ -295,7 +295,7 @@ C
      &                               'UNFORMATTED',IDUMMY,.FALSE.)
       IF (FIRST) THEN
          REWIND LUSIFC
-         CALL MOLLAB('SOLVINFO',LUSIFC,LUERR)
+         CALL MOLLAB('SOLVINFO',LUSIFC,lupri)
 C        WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,RSOL,RSOL,LSOLMX
 C        WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C        CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1)))
@@ -346,7 +346,7 @@ C        WRITE (LUSIFC) NSYM, NBAS
 C
 C     Read TLMSI from LUSIFC
       REWIND LUSIFC
-      CALL MOLLAB('SOLVINFO',LUSIFC,LUERR)
+      CALL MOLLAB('SOLVINFO',LUSIFC,lupri)
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
@@ -655,7 +655,7 @@ C     Read and check dimension information (if first read) and
 C     nuclear contributions to ERLM (always).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       IF (FIRST) THEN
          READ (LUSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LSOLMX) THEN
@@ -1046,7 +1046,7 @@ C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       IF (FIRST) THEN
          READ (LUSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LSOLMX) THEN
@@ -1354,7 +1354,7 @@ C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       READ (LUSOL)
       CALL READT(LUSOL,NLMSOL,WRK(KTNLM))
 C
@@ -1628,7 +1628,7 @@ C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       READ (LUSOL)
       CALL READT(LUSOL,NLMSOL,WRK(KTNLM))
 C

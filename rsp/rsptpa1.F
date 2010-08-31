@@ -38,6 +38,7 @@ C
 #include <implicit.h>
 C
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infrsp.h>
 #include <inforb.h>
 #include <rspprp.h>
@@ -181,6 +182,13 @@ C
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCPP = THCPP*THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       NATPTO = 0
       NBTPTO = 0
       NCTPTO = 0

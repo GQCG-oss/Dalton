@@ -207,6 +207,7 @@ C     Equations
 #include <ccsdsym.h>
 #include <ccorb.h>
 #include <dummy.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <priunit.h>
 #include <ccfro.h>
@@ -2343,7 +2344,7 @@ c
 
       LUSUPM = -1
       call dzero(work(kfcao),n2basx)
-      call fckmao(.TRUE.,dummy,emcmy,work(kfcao),work(kfvao),
+      call fckmao(.TRUE.,emcmy,work(kfcao),work(kfvao),
      *     dens,work(kdvao),cmo(1+noffset),
      &     work(kend1),lwrk1)
       
