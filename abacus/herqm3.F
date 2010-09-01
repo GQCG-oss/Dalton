@@ -4357,6 +4357,16 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QMMM CALCULATIONS 
 C
+C Oct. 2009: AHS and JMO
+C   Added a restart option (.MMREST) which requires the relay matrix to be
+C   present in the file QMMMIM. Currently the restart option only supports
+C   the calculation of the relay matrix.
+C
+C Nov. 2009: JMO
+C   Added an option (.RELMAT) for constructing the relay matrix, saving it
+C   in the file QMMMIM and quit. Intended for use in subsequent restarted
+C   calculations.
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <gnrinf.h>
@@ -4380,7 +4390,7 @@ C
      *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
      *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
      *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
-     *            '.ZEROOC', '.PRINT ', '.XXXXXX', '.XXXXXX'/
+     *            '.ZEROOC', '.PRINT ', '.MMREST', '.RELMAT'/
 
  
       CALL QENTER('QMMMIN')
@@ -4401,19 +4411,21 @@ C                            seperately from permanent and induced dipoles. For 
       LGSPOL   = .FALSE.   ! Skip the response part related to Efield
 C      SELPOL   = .FALSE.   ! Skip selected systems response related to the electric field. Response
       MMMAT    = .TRUE.    ! Default is matrix inversion (keyword MATINV)
-      MMITER   = .FALSE.   ! Locical for iterative determination of ind. dipoles (keyword ITER)
+      MMITER   = .FALSE.   ! Logical for iterative determination of ind. dipoles (keyword ITER)
       MXMMIT   = 100       ! Max. iterations in Jacobi MM induced dipoles solver. 
-      THMMIT   = 1.0D-10   ! Thresshold in Jacobi/DIIS MM induced dipoles solver (for norm error vector in the induced dipoles))
+      THMMIT   = 1.0D-10   ! Threshold in Jacobi/DIIS MM induced dipoles solver (for norm error vector in the induced dipoles))
       MMDIIS   = .FALSE.   ! Use DIIS solver for induced dipoles
       MXMMDI   = 5         ! Maximum vectors to be used in MMDIIS
       LCLOSE   = .FALSE.   ! Logical for investigating close QM-MM distances
       IQMMCC   = -1        ! Option for close QM-MM distance. 
       RQMMMC   = 2.20      ! Close distance QM-MM. Do something if actual distance is less than RQMMMC. In au. 
-      RCUTMM   = 1000.0D0   ! Cut-off for QM-MM and MM-MM interactions
-      RCUT     = .FALSE.   ! no cut-off
+      RCUTMM   = 1000.0D0  ! Cut-off for QM-MM and MM-MM interactions
+      RCUT     = .FALSE.   ! No cut-off
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
-      ZEROOC   = .FALSE.   ! Zero the octuploe moments
-      IPQMMM   = 1         ! QMMM print
+      ZEROOC   = .FALSE.   ! Zero the octupole moments
+      IPQMMM   = 1         ! QMMM print level
+      MMREST   = .FALSE.   ! Restart QM/MM calculation (only useful for reusing relay matrix atm.)
+      RELMAT   = .FALSE.   ! Construct relay matrix, save to QMMMIM and quit
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4560,9 +4572,34 @@ C           See if further input is provided for this option
           GO TO 100
 
    19     CONTINUE
+            MMREST = .TRUE.
+            IF (MMMAT) THEN
+              INQUIRE(FILE='QMMMIM',EXIST=CONMAT)
+              IF (CONMAT) THEN
+                CONMAT = .FALSE.
+              ELSE
+                WRITE (LUPRI,'(A)')
+                WRITE (LUPRI,'(A)') 'File containing the relay matrix'//
+     &                              ' not found!'
+                WRITE (LUPRI,'(A)')
+                WRITE (LUPRI,'(A)') 'Remember to copy it to the'//
+     &                              ' scratch directory either'//
+     &                              ' manually or with the'
+                WRITE (LUPRI,'(A)') 'dalton script using the "-qmmm"'//
+     &                              ' option.'
+                WRITE (LUPRI,'(A)')
+                CALL QUIT('ERROR: QMMMIM file not found')
+              ENDIF
+            ENDIF
           GO TO 100
 
    20     CONTINUE
+            RELMAT = .TRUE.
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) 'Relay matrix will be constructed and saved'
+            WRITE(LUPRI,*) 'in QMMMIM.'
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) 'Skipping everything else!'
           GO TO 100
 
         ELSE IF (PROMPT .EQ. '*') THEN
@@ -4585,6 +4622,11 @@ C
      *         '| ',' WORD:',' | ','CHANGE:',' |'
         WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
 C
+        IF (RELMAT) THEN
+                  WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','RELMAT',' | ',RELMAT,' |'
+          GOTO 400
+        ENDIF
         IF (QMMM) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','  QMMM',' | ',QMMM,' |'
         IF (SPLDIP) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
@@ -4609,7 +4651,9 @@ C
      *         '| ','LCLOSE',' | ',LCLOSE,' |'
         IF (RCUT) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','RCUT',' | ',RCUT,' |'
-        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
+        IF (MMREST) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMREST',' | ',MMREST,' |'
+  400   WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
         WRITE(LUPRI,*)
       END IF
 
@@ -5124,7 +5168,7 @@ C     Charges + dipoles + quadrupoles + isotropic polarizabiblities
         ENDIF
       ENDIF
 
-C     Charges + dipoles + quadrupoles + octupoeles + isotropic polarizabiblities
+C     Charges + dipoles + quadrupoles + octupoles + isotropic polarizabiblities
 
       IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 1) ) THEN
         LREAD = .TRUE.

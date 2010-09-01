@@ -1047,7 +1047,6 @@ C
 #include "mtags.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST
-C     Arnfinn, nov -08: Added because of LINE4 and LINE4W
       LOGICAL AUTOSY,NOSYM,DOCART,DOOWN
       CHARACTER*1 KASYM(3,3),ID3
 C
@@ -1239,7 +1238,6 @@ C  /parint/
       CALL PVMXUNPACK(JNODV,NINTL,'LOGICAL')
 #endif
 C
-C     Arnfinn ->
 C     In case of QM3 calculation, update number of atom types
 C     in "line 4" in the molecule file
 C     (only # of QM atom types, not # of MM atom types)
