@@ -154,6 +154,7 @@ C
 C
 C
       CALL QENTER('RSPSLV')
+
       IF (SOPPA) THEN
          WRITE (LUPRI,*)
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
@@ -313,7 +314,6 @@ C
       IF (QM3 .AND. (.NOT. MMPCM)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
-C     call qm3lno_p if parallel and #nodes>1, Arnfinn Nov. -08
          IF (NODTOT .GE. 1) THEN
             CALL QM3LNO_P(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),

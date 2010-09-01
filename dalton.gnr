@@ -44,6 +44,11 @@ usage (){
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
           echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
           echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
+# Oct. 09: AHS and JMO
+#   added qmmm option to be used with QM/MM calculations
+          echo ' -qmmm opt if opt=save then copy relay matrix from TMPDIR to WRKDIR'
+          echo '           else if opt=copy then copy relay matrix from WRKDIR to TMPDIR'
+          echo '           else if opt=both then do both. Only valid for QM/MM calculations.'
 	  echo
 	 }
 #
@@ -85,6 +90,9 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
+# Oct. 09: AHS and JMO
+#   added qmmm option to be used with QM/MM calculations
+      -qmmm ) optqmmm=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
@@ -204,6 +212,19 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
         ierr=1
      fi
    fi
+# Oct. 09: AHS and JMO
+#   Copying the relay matrix to scratch directory to be used when restarting QM/MM calculations
+   if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
+     if [ -s $WRKDIR/QMMMIM -a -r $WRKDIR/QMMMIM ]; then
+       echo "Copying the relay matrix to scratch directory..."
+       cp $WRKDIR/QMMMIM QMMMIM
+       if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
+         echo "Relay matrix not present in scratch directory. Continuing anyway..."
+       fi
+     else
+       echo "Cannot copy relay matrix because it does not exist or is not readable"
+     fi
+   fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
          echo "The '-f' option is active, now unpacking $optf.tar.gz into:"
@@ -267,7 +288,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
+filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then
@@ -288,6 +309,17 @@ if [ -s $outnam.tar.gz ] ; then
    echo "$outnam.tar.gz has been copied to $WRKDIR"
 else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
+fi
+
+# Oct. 09: AHS and JMO
+#   Saving the relay matrix to so it can be used in subsequent restarted QM/MM calculations
+if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
+  if [ -s QMMMIM -a -r QMMMIM ]; then
+    echo "Saving the relay matrix in $WRKDIR/QMMMIM"
+    cp QMMMIM $WRKDIR/QMMMIM
+  else
+    echo "Could not save the relay matrix because it does not exist or is not readable"
+  fi
 fi
 
 if [ $opto -eq 1 ] ; then

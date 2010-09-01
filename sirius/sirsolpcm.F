@@ -715,6 +715,9 @@ C
       PCMEM = D0
       PCMNN = D0
 
+      PRINT *,'NSYM',NSYM
+      PRINT *,'QSE',QSE(1),QSE(2),QSE(3)
+      PRINT *,'potcav',WRK(KPTQMN),WRK(KPTQMN+1),WRK(KPTQMN+2)
       DO ITS = 1, NTSIRR
 Clf         VCHECK = ZERO 
 Clf         DO JATOM = 1, NUCDEP
