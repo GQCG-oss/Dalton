@@ -412,8 +412,9 @@ C x-component
                               FACx = FAC*SLVQLM(UDV,WRK(KURXAC),
      &                                      WRK(KUTRX),TAC)
                            ENDIF
-C                           FACx = FAC * QM3QLM(WRK(KUTRX))
-                           WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1) = FACx
+                           IF (MMPCM) THEN 
+                             WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1) = FACx
+                           ENDIF
                         ELSE 
                            FACx = WRK(KXEDIP+(IOSIM-1)*NCOMS+LM-1)
                         ENDIF
@@ -494,7 +495,9 @@ C y-component
                            FACy = FAC*SLVQLM(UDV,WRK(KURXAC),
      &                                  WRK(KUTRX),TAC)
                         ENDIF
-                        WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1) = FACy
+                        IF (MMPCM) THEN
+                          WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1) = FACy
+                        ENDIF
                      ELSE
                         FACy = WRK(KYEDIP+(IOSIM-1)*NCOMS+LM-1)
                      ENDIF
@@ -551,7 +554,9 @@ C z-component
                            FACz = FAC*SLVQLM(UDV,WRK(KURXAC),
      &                                   WRK(KUTRX),TAC)
                         ENDIF
-                        WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1) = FACz
+                        IF (MMPCM) THEN
+                          WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1) = FACz
+                        ENDIF
                      ELSE
                         FACz = WRK(KZEDIP+(IOSIM-1)*NCOMS+LM-1)
                      ENDIF 
