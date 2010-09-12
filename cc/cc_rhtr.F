@@ -483,7 +483,8 @@ C
          IF (.NOT.NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+            CALL CCMM_ADDG(WORK(KFOCK),WORK(KEND1),LWRK1)
+C            CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
          END IF
       ENDIF
 C====================================================
@@ -2579,8 +2580,10 @@ C
             CALL CCMM_LTRB(RHO1(1,IV),RHO2,C1AM(1,IV),
      *                  C2AM,ISYMTR,LR,WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,C1AM(1,IV),C2AM,
+            CALL CCMM_TRANSFORMER(RHO1(1,IV),RHO2,C1AM(1,IV),C2AM,
      *                     MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
+C            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,C1AM(1,IV),C2AM,
+C     *                     MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
          END IF
       ENDIF
 C---------------------------------------------------------

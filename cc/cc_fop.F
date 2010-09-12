@@ -843,6 +843,7 @@ C---------------------------------------------------
 C
 C---------------------------------------------------
 C CCMM02,JK+AO qm/mm part 1 start
+C NYQMMM10, KS
 C---------------------------------------------------
 C
       IF (CCMM) THEN
@@ -885,8 +886,10 @@ C
                  CALL CCMM_LTRB(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2,
      *                       ISYMOP,LR,WORK(KWRK4),LWRK4)
               ELSE IF (NYQMMM) THEN
-                 CALL CCMM_TGTBAR(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2, 
-     *                           MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
+                 CALL CCMM_TRANSFORMER(WORK(KRHO1),WORK(KRHO2),DUM1,
+     *                DUM2,MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
+C                 CALL CCMM_TGTBAR(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2, 
+C     *                           MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
               END IF
               IF (IPRINT .GT. 5) THEN
                 WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_FOP):',
@@ -939,6 +942,7 @@ C
 C
 C---------------------------------------------------
 C CCMM02,JA+AO qm/mm part 1 end
+C NYQMMM10, KS
 C---------------------------------------------------
 
       CALL FLSHFO(LUPRI)

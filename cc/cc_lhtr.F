@@ -1262,7 +1262,8 @@ C
            IF (.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
            ELSE IF (NYQMMM) THEN
-              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
+              CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND2),LWRK2)
+C              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
            END IF
 c          TIMMLT = TIMMLT + SECOND() - DTIME
            IF (IPRINT .GT. 5) THEN
@@ -1946,8 +1947,10 @@ C
             CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
      *                  ISYMTR,LR,WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,MODEL,
-     *                      ISYMTR,LR,WORK(KEND),LWRK1)
+             CALL CCMM_TRANSFORMER(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
+     *                            MODEL,ISYMTR,LR,WORK(KEND),LWRK1)
+C            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,MODEL,
+C     *                      ISYMTR,LR,WORK(KEND),LWRK1)
          END IF
 c        TIMMLT = TIMMLT + SECOND() - DTIME
          IF (IPRINT .GT. 5) THEN

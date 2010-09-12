@@ -1900,8 +1900,10 @@ C
              CALL CCMM_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
      *                   WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
           ELSE IF (NYQMMM) THEN
-             CALL CCMM_TGTBAR(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
-     *                       MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+             CALL CCMM_TRANSFORMER(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
+     *                     WORK(K2),MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+C             CALL CCMM_TGTBAR(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
+C     *                       MODEL,ISY,LR,WORK(KWRK1),LWRK1)
           END IF
        END IF
 C

@@ -291,6 +291,7 @@ c/* Deck CC_GMAT */
       INTEGER IGTRAN(4,NGTRAN)
       INTEGER IGDOTS(MXVEC,NGTRAN)
 
+      CHARACTER*(1) RSPTYP
       CHARACTER*(8) FNTOC
       CHARACTER*(7) FN3FOP2X
       CHARACTER*(6) FNCKJD, FN3VI, FN3FOPX
@@ -1655,12 +1656,24 @@ C
      *                    LISTC,IDLSTC,ISYMTC,
      *                    MODEL,WORK(KEND2),LEND2)
 C
-          IF (CCMM) CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
-     *              WORK(KDELTA2),ISYRES,
-     *              LISTA,IDLSTA,ISYCTR,
-     *              LISTB,IDLSTB,ISYMTB,
-     *              LISTC,IDLSTC,ISYMTC,
-     *              MODEL,WORK(KEND2),LEND2)
+          IF (CCMM) THEN
+            IF (.NOT. NYQMMM) THEN
+              CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
+     *                   WORK(KDELTA2),ISYRES,
+     *                   LISTA,IDLSTA,ISYCTR,
+     *                   LISTB,IDLSTB,ISYMTB,
+     *                   LISTC,IDLSTC,ISYMTC,
+     *                   MODEL,WORK(KEND2),LEND2)
+C 
+            ELSE IF (NYQMMM) THEN
+              RSPTYP='G'
+              CALL CCMM_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
+     *                   WORK(KDELTA2),ISYRES,
+     *                   LISTB,IDLSTB,ISYMTB,
+     *                   LISTC,IDLSTC,ISYMTC,
+     *                   MODEL,RSPTYP,WORK(KEND2),LEND2)
+            END IF
+          END IF
         END IF
 
 *=====================================================================*

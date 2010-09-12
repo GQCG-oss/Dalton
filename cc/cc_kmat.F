@@ -184,7 +184,7 @@ c/* Deck CC_BMAT */
       PARAMETER (MSGDBG='[debug] CC_KMAT> ')
 
       LOGICAL LOCDBG, LSAME
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG = .TRUE.)
 
       INTEGER KDUM
       PARAMETER( KDUM = +99 999 999 ) ! dummy address for work space
@@ -211,11 +211,13 @@ c/* Deck CC_BMAT */
       DOUBLE PRECISION DUM, XNORM, DUMMY
       DOUBLE PRECISION BCONS(MXVEC,NBTRAN)
       DOUBLE PRECISION FACTSLV
+      DOUBLE PRECISION TAL1, TAL2, RHO1N, RHO2N
 #endif 
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0)
 
       CHARACTER*(10) MODEL, MODELW, CDUMMY
       CHARACTER*8 LABEL
+      CHARACTER RSPTYP*(1)
       INTEGER NBATCH
 
 
@@ -395,124 +397,162 @@ C
          CALL FLSHFO(LUPRI)
         END IF
 C
-        KTGB  = KEND1 
-        KEND2 = KTGB + N2BST(ISYMB)
-        LWRK2 = LWORK   - KEND2 
-        IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 1')
+C 
+        IF (NYQMMM) THEN
+          
+          RSPTYP='K'
+          CALL CCMM_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,
+     *                         LISTB,IDLSTB,ISYMB,
+     *                         LISTA,IDLSTA,ISYMA,
+     *                         MODELW,RSPTYP,WORK(KEND1),LWRK1)
+
+        ELSE IF (.NOT. NYQMMM) THEN
+          KTGB  = KEND1 
+          KEND2 = KTGB + N2BST(ISYMB)
+          LWRK2 = LWORK   - KEND2 
+          IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 1')
 C
-        CALL DZERO(WORK(KTGB),N2BST(ISYMB))
+          CALL DZERO(WORK(KTGB),N2BST(ISYMB))
 C
 C------------------------------------------------
 C       Trial vector (B left) one excitation part
 C------------------------------------------------
 C
-        KT1AMPB = KEND2
-        KEND3   = KT1AMPB +  NT1AM(ISYMB)
-        LWRK3   = LWORK -  KEND3 
-        IF (LWRK3 .LT. 0) THEN
-          CALL QUIT('Insuff. work in CC_KMAT 2')
-        END IF
-        CALL DZERO(WORK(KT1AMPB),NT1AM(ISYMB))
+          KT1AMPB = KEND2
+          KEND3   = KT1AMPB +  NT1AM(ISYMB)
+          LWRK3   = LWORK -  KEND3 
+          IF (LWRK3 .LT. 0) THEN
+            CALL QUIT('Insuff. work in CC_KMAT 2')
+          END IF
+          CALL DZERO(WORK(KT1AMPB),NT1AM(ISYMB))
 C
-        IOPT = 1
-        CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
+          IOPT = 1
+          CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
      *                WORK(KT1AMPB),WORK(KDUM))
 C
-        IF (.NOT. CCMM ) CALL CCSL_TGB(WORK(KT1AMPB),ISYMB,
+          IF (.NOT. CCMM ) CALL CCSL_TGB(WORK(KT1AMPB),ISYMB,
      *                                 LISTB,IDLSTB,WORK(KTGB),
      *                                 'XI',MODEL,
      *                                 WORK(KEND3),LWRK3)
     
 C
-        IF (CCMM) CALL CCMM_TGB(WORK(KT1AMPB),ISYMB,
+          IF (CCMM) CALL CCMM_TGB(WORK(KT1AMPB),ISYMB,
      *                          LISTB,IDLSTB,WORK(KTGB),
      *                         'XI',MODEL,
      *                          WORK(KEND3),LWRK3)
 
-        NAMPF   = NT1AM(ISYMAB) + NT2AM(ISYMAB)
+          NAMPF   = NT1AM(ISYMAB) + NT2AM(ISYMAB)
 C
-        KETA    = KEND2
-        KEND3   = KETA + NAMPF
-        LWRK3   = LWORK   - KEND3 
-        IF (LWRK3.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 3')
-        CALL DZERO(WORK(KETA),NAMPF)
+          KETA    = KEND2
+          KEND3   = KETA + NAMPF
+          LWRK3   = LWORK   - KEND3 
+          IF (LWRK3.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 3')
+          CALL DZERO(WORK(KETA),NAMPF)
 C
-        LABEL = 'GIVE INT'
-        CALL CC_ETAC(ISYMB,LABEL,WORK(KETA),
+          IF ( LOCDBG ) THEN
+            TAL1= DDOT(N2BST(ISYMAB),WORK(KTGB),1,WORK(KTGB),1)
+            WRITE(LUPRI,*) 'Printing norm2 TGCMO in KMAT: ', TAL1
+          END IF
+
+          LABEL = 'GIVE INT'
+          CALL CC_ETAC(ISYMB,LABEL,WORK(KETA),
      *                 LISTA,IDLSTA,0,WORK(KTGB),WORK(KEND3),LWRK3)
+
 C
-        KETA1   = KETA
-        KETA2   = KETA + NT1AM(ISYMAB)
+          KETA1   = KETA
+          KETA2   = KETA + NT1AM(ISYMAB)
+
+          IF (LOCDBG) THEN
+            TAL1= DDOT(NT1AM(ISYMAB),WORK(KETA1),1,WORK(KETA1),1)
+            TAL2= DDOT(NT2AM(ISYMAB),WORK(KETA2),1,
+     *              WORK(KETA2),1)
+            WRITE(LUPRI,*) 'Printing first contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+          END IF
+C  
+          LSAME  =  (LISTA.EQ.LISTB  .AND. IDLSTA.EQ.IDLSTB)
+          IF (LSAME) THEN
+            FACTSLV = TWO
+          ELSE
+            FACTSLV = ONE
+          END IF
 C
-        LSAME  =  (LISTA.EQ.LISTB  .AND. IDLSTA.EQ.IDLSTB)
-        IF (LSAME) THEN
-          FACTSLV = TWO
-        ELSE
-          FACTSLV = ONE
-        END IF
-C
-        CALL DAXPY(NT1AM(ISYMAB),FACTSLV,WORK(KETA1),1,WORK(KTHETA1),1)
-        CALL DAXPY(NT2AM(ISYMAB),FACTSLV,WORK(KETA2),1,WORK(KTHETA2),1)
+          CALL DAXPY(NT1AM(ISYMAB),FACTSLV,WORK(KETA1),1,
+     *               WORK(KTHETA1),1)
+          CALL DAXPY(NT2AM(ISYMAB),FACTSLV,WORK(KETA2),1,
+     *               WORK(KTHETA2),1)
 C
 C------------------------------------------------------------------
 C
-        IF (.NOT. (LSAME)) THEN
+          IF (.NOT. (LSAME)) THEN
 C
-          KTGA  = KEND1
-          KEND2 = KTGA + N2BST(ISYMA)
-          LWRK2 = LWORK   - KEND2
-          IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 4')
-          CALL DZERO(WORK(KTGA),N2BST(ISYMA))
+            KTGA  = KEND1
+            KEND2 = KTGA + N2BST(ISYMA)
+            LWRK2 = LWORK   - KEND2
+            IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 4')
+            CALL DZERO(WORK(KTGA),N2BST(ISYMA))
 C
 C------------------------------------------------
 C         Trial vector (A left) one excitation part
 C------------------------------------------------
 C
-          KT1AMPA = KEND2
-          KEND3   = KT1AMPA +  NT1AM(ISYMA)
-          LWRK3   = LWORK -  KEND3
-          IF (LWRK3 .LT. 0) THEN
-            CALL QUIT('Insuff. work in CC_KMAT 5')
-          END IF
-          CALL DZERO(WORK(KT1AMPA),NT1AM(ISYMA))
+            KT1AMPA = KEND2
+            KEND3   = KT1AMPA +  NT1AM(ISYMA)
+            LWRK3   = LWORK -  KEND3
+            IF (LWRK3 .LT. 0) THEN
+              CALL QUIT('Insuff. work in CC_KMAT 5')
+            END IF
+            CALL DZERO(WORK(KT1AMPA),NT1AM(ISYMA))
 C
-          IOPT = 1
-          CALL CC_RDRSP(LISTA,IDLSTA,ISYMA,IOPT,MODEL,
+            IOPT = 1
+            CALL CC_RDRSP(LISTA,IDLSTA,ISYMA,IOPT,MODEL,
      *                  WORK(KT1AMPA),WORK(KDUM))
 C
-          IF (.NOT. CCMM) CALL CCSL_TGB(WORK(KT1AMPA),ISYMA,LISTA,
+            IF (.NOT. CCMM) CALL CCSL_TGB(WORK(KT1AMPA),ISYMA,LISTA,
      *                    IDLSTA,WORK(KTGA),'XI',
      *                    MODEL,WORK(KEND3),LWRK3)
 C
-          IF (CCMM) CALL CCMM_TGB(WORK(KT1AMPA),ISYMA,LISTA,
+            IF (CCMM) CALL CCMM_TGB(WORK(KT1AMPA),ISYMA,LISTA,
      *                   IDLSTA,WORK(KTGA),'XI',
      *                   MODEL,WORK(KEND3),LWRK3)
 C
-          NAMPF   = NT1AM(ISYMAB) + NT2AM(ISYMAB)
+            NAMPF   = NT1AM(ISYMAB) + NT2AM(ISYMAB)
 C
-          KETA    = KEND2
-          KEND3   = KETA + NAMPF
-          LWRK3   = LWORK   - KEND3
-          IF (LWRK3.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 6')
-          CALL DZERO(WORK(KETA),NAMPF)
+            KETA    = KEND2
+            KEND3   = KETA + NAMPF
+            LWRK3   = LWORK   - KEND3
+            IF (LWRK3.LT.0) CALL QUIT( 'Too little work in CC_KMAT, 6')
+            CALL DZERO(WORK(KETA),NAMPF)
 C
-          LABEL = 'GIVE INT'
-          CALL CC_ETAC(ISYMA,LABEL,WORK(KETA),
+            LABEL = 'GIVE INT'
+            CALL CC_ETAC(ISYMA,LABEL,WORK(KETA),
      *                   LISTB,IDLSTB,0,WORK(KTGA),WORK(KEND3),LWRK3)
 C
-          KETA1   = KETA
-          KETA2   = KETA + NT1AM(ISYMAB)
+            KETA1   = KETA
+            KETA2   = KETA + NT1AM(ISYMAB)
+
+            IF (LOCDBG) THEN
+              TAL1= DDOT(NT1AM(ISYMAB),WORK(KETA1),1,WORK(KETA1),1)
+              TAL2= DDOT(NT2AM(ISYMAB),WORK(KETA2),1,
+     *              WORK(KETA2),1)
+              WRITE(LUPRI,*) 'Printing second contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+            END IF
 C
-          CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KETA1),1,WORK(KTHETA1),1)
-          CALL DAXPY(NT2AM(ISYMAB),ONE,WORK(KETA2),1,WORK(KTHETA2),1)
+            CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KETA1),1,WORK(KTHETA1),1)
+            CALL DAXPY(NT2AM(ISYMAB),ONE,WORK(KETA2),1,WORK(KTHETA2),1)
 C
-        END IF
+          END IF
+
+        END IF ! NYQMMM
 
 *---------------------------------------------------------------------*
 * write result vector to output:
 *---------------------------------------------------------------------*
 
-      IF (IOPTRES .EQ. 0  .OR. IOPTRES .EQ. 1) THEN
+        IF (IOPTRES .EQ. 0  .OR. IOPTRES .EQ. 1) THEN
 
 *       write to a common direct access file, 
 *       store start address in IBTRAN(3,ITRAN)

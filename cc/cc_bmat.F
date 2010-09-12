@@ -231,6 +231,7 @@ c/* Deck CC_BMAT */
      &           FNAIBJ='CCB_AIBJ', RFIL  ='CCCR_RIM')
 
 
+      CHARACTER*(1) RSPTYP
       CHARACTER*(*) LISTA, LISTB, FILBMA
       LOGICAL DO_O2
       INTEGER IOPTRES
@@ -695,7 +696,8 @@ C
             IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+               CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+C               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
             END IF
          ENDIF
       ENDIF
@@ -1997,10 +1999,20 @@ C     initialize R12 part of result:
      *                                LISTB,IDLSTB,ISYMB,
      *                                MODEL,WORK(KEND2),LWRK2)
 C
-        IF (CCMM) CALL CCMM_BTR(WORK(KTHETA1),WORK(KTHETA2),
+        IF (CCMM) THEN
+          IF (.NOT. NYQMMM) THEN
+            CALL CCMM_BTR(WORK(KTHETA1),WORK(KTHETA2),
      *                          ISYMAB,LISTA,IDLSTA,ISYMA,
      *                          LISTB,IDLSTB,ISYMB,
      *                          MODEL,WORK(KEND2),LWRK2)
+          ELSE IF (NYQMMM) THEN
+            RSPTYP='B'
+            CALL CCMM_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,
+     *                          LISTA,IDLSTA,ISYMA,
+     *                          LISTB,IDLSTB,ISYMB,
+     *                          MODEL,RSPTYP,WORK(KEND2),LWRK2)
+          END IF
+        END IF
       END IF
 *---------------------------------------------------------------------*
 * if DO_O2 flag is set include A{x} t^y + A{y} t^x contribution
@@ -2656,7 +2668,8 @@ C
              IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
              ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KONEHR),WORK(KEND1),LWRK1)
+               CALL CCMM_ADDG(WORK(KONEHR),WORK(KEND1),LWRK1)
+C               CALL CCMM_TGT(WORK(KONEHR),WORK(KEND1),LWRK1)
              END IF
          END IF
       ENDIF
@@ -2815,7 +2828,8 @@ C
                IF(.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
                ELSE IF (NYQMMM) THEN
-                 CALL CCMM_TGT(WORK(KPERT),WORK(KEND1),LWRK1)
+                 CALL CCMM_ADDG(WORK(KPERT),WORK(KEND1),LWRK1)
+C                 CALL CCMM_TGT(WORK(KPERT),WORK(KEND1),LWRK1)
                END IF  
            END IF
          ENDIF
