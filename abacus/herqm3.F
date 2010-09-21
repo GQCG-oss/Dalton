@@ -4377,7 +4377,7 @@ C
 #include <qmmm.h>
 #include <codata.h>
 C
-      PARAMETER ( NTABLE = 20, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 24, D1 = 1.0D0)
       LOGICAL NEWDEF,RCUT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -4386,12 +4386,18 @@ C
 #include <cbirea.h>
 #include <ccom.h>
 C
+!                  1          2          3          4
       DATA TABLE /'.QMMM  ', '.SPLDIP', '.FIXDIP', '.MMDAMP',
+!                  5          6          7          8
      *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
+!                  9          10         11         12
      *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
+!                  13         14         15         16
      *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
-     *            '.ZEROOC', '.PRINT ', '.MMREST', '.RELMAT'/
-
+!                  17         18         19         20
+     *            '.ISOPOL', '.PRINT ', '.MMREST', '.RELMAT',
+!                  21         22         23         24
+     *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL '/
  
       CALL QENTER('QMMMIN')
  
@@ -4422,7 +4428,11 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       RCUTMM   = 1000.0D0  ! Cut-off for QM-MM and MM-MM interactions
       RCUT     = .FALSE.   ! No cut-off
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
+      ZERODI   = .FALSE.   ! Zero the dipole moments
+      ZEROQU   = .FALSE.   ! Zero the quadrupole moments
       ZEROOC   = .FALSE.   ! Zero the octupole moments
+      ISOPOL   = .FALSE.   ! Make anisotropic polarizabilities isotropic
+      NOPOL    = .FALSE.   ! Zero the static polarizabilities
       IPQMMM   = 1         ! QMMM print level
       MMREST   = .FALSE.   ! Restart QM/MM calculation (only useful for reusing relay matrix atm.)
       RELMAT   = .FALSE.   ! Construct relay matrix, save to QMMMIM and quit
@@ -4446,7 +4456,7 @@ C
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &               19,20), I
+     &               19,20,21,22,23,24), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -4564,7 +4574,7 @@ C           See if further input is provided for this option
           GO TO 100
 
    17     CONTINUE
-            ZEROOC = .TRUE.
+            ISOPOL = .TRUE.
           GO TO 100
 
    18     CONTINUE
@@ -4600,6 +4610,22 @@ C           See if further input is provided for this option
             WRITE(LUPRI,*) 'in QMMMIM.'
             WRITE(LUPRI,*)
             WRITE(LUPRI,*) 'Skipping everything else!'
+          GO TO 100
+
+   21     CONTINUE
+            ZERODI = .TRUE.
+          GO TO 100
+
+   22     CONTINUE
+            ZEROQU = .TRUE.
+          GO TO 100
+
+   23     CONTINUE
+            ZEROOC = .TRUE.
+          GO TO 100
+
+   24     CONTINUE
+            NOPOL = .TRUE.
           GO TO 100
 
         ELSE IF (PROMPT .EQ. '*') THEN
@@ -4686,8 +4712,24 @@ C
         WRITE(LUPRI,*) DELFLD
       ENDIF
 
+      IF (ZERODI) THEN
+        WRITE(LUPRI,*) 'Dipoles are reset to zero'
+      ENDIF 
+
+      IF (ZEROQU) THEN
+        WRITE(LUPRI,*) 'Quadrupoles are reset to zero'
+      ENDIF 
+
       IF (ZEROOC) THEN
         WRITE(LUPRI,*) 'Octupoles are reset to zero'
+      ENDIF 
+
+      IF (ISOPOL) THEN
+        WRITE(LUPRI,*) 'Anisotropic polarizabilites are made isotropic'
+      ENDIF 
+
+      IF (NOPOL) THEN
+        WRITE(LUPRI,*) 'Static polarizabilites are reset to zero'
       ENDIF 
 
       CALL QEXIT('QMMMIN')
@@ -4799,6 +4841,7 @@ C     - length of excluded list = 0
       IF (NEXLST .EQ. -2) NEXLST = 0
       IF (NELEME .EQ. -2) NELEME = 0
 
+      IF (NOPOL) IPOLTP = 0
       IF (IPOLTP .EQ. 0) POLWRD = ' No polarization         '
       IF (IPOLTP .EQ. 1) POLWRD = ' Isotropic polarization  '
       IF (IPOLTP .EQ. 2) POLWRD = ' Anisotropic polarization'
@@ -5215,12 +5258,37 @@ C     Charges + dipoles + quadrupoles + octupoles + isotropic polarizabiblities
         CALL QUIT('No read option for this potential')
       ENDIF
 
+C     Remove dipoles
+      IF (ZERODI) THEN
+         DO 320 J = 1,MMCENT
+            DO 321 I=1,3
+               MUL1MM(I,J) = 0.0D0
+ 321        CONTINUE
+ 320     CONTINUE 
+      ENDIF
+C     Remove quadrupoles
+      IF (ZEROQU) THEN
+         DO 322 J = 1,MMCENT
+            DO 323 I=1,6
+               MUL2MM(I,J) = 0.0D0
+ 323        CONTINUE
+ 322     CONTINUE 
+      ENDIF
+C     Remove octupoles
       IF (ZEROOC) THEN
-        DO 320 J = 1,MMCENT
-          DO 321 I=1,10
-            MUL3MM(I,J) = 0.0D0
- 321      CONTINUE
- 320    CONTINUE 
+         DO 324 J = 1,MMCENT
+            DO 325 I=1,10
+               MUL3MM(I,J) = 0.0D0
+ 325        CONTINUE
+ 324     CONTINUE 
+      ENDIF
+C     Make anisotropic polarizabilities isotropic
+      IF (ISOPOL .AND. (IPOLTP .EQ. 2)) THEN
+         IPOLTP = 1
+         DO 326 J = 1,MMCENT
+            POLIMM(J) = POLMM(1,J)+POLMM(4,J)+POLMM(6,J)
+            POLIMM(J) = POLIMM(J)/3.0D0
+ 326     CONTINUE 
       ENDIF
 
       IOPTMM = 1 
