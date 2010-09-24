@@ -4614,10 +4614,13 @@ C           See if further input is provided for this option
 
    21     CONTINUE
             ZERODI = .TRUE.
+            ZEROQU = .TRUE.
+            ZEROOC = .TRUE.
           GO TO 100
 
    22     CONTINUE
             ZEROQU = .TRUE.
+            ZEROOC = .TRUE.
           GO TO 100
 
    23     CONTINUE
@@ -5258,37 +5261,40 @@ C     Charges + dipoles + quadrupoles + octupoles + isotropic polarizabiblities
         CALL QUIT('No read option for this potential')
       ENDIF
 
-C     Remove dipoles
-      IF (ZERODI) THEN
-         DO 320 J = 1,MMCENT
-            DO 321 I=1,3
-               MUL1MM(I,J) = 0.0D0
- 321        CONTINUE
- 320     CONTINUE 
-      ENDIF
-C     Remove quadrupoles
-      IF (ZEROQU) THEN
-         DO 322 J = 1,MMCENT
-            DO 323 I=1,6
-               MUL2MM(I,J) = 0.0D0
- 323        CONTINUE
- 322     CONTINUE 
-      ENDIF
 C     Remove octupoles
-      IF (ZEROOC) THEN
+      IF ( (ZEROOC) .AND. (NMULT .GE. 3) ) THEN
          DO 324 J = 1,MMCENT
             DO 325 I=1,10
                MUL3MM(I,J) = 0.0D0
  325        CONTINUE
  324     CONTINUE 
+         NMULT = 2
+      ENDIF
+C     Remove quadrupoles
+      IF ( (ZEROQU) .AND. (NMULT .GE. 2) ) THEN
+         DO 322 J = 1,MMCENT
+            DO 323 I=1,6
+               MUL2MM(I,J) = 0.0D0
+ 323        CONTINUE
+ 322     CONTINUE 
+         NMULT = 1
+      ENDIF
+C     Remove dipoles
+      IF ( (ZERODI) .AND. (NMULT .GE. 1) ) THEN
+         DO 320 J = 1,MMCENT
+            DO 321 I=1,3
+               MUL1MM(I,J) = 0.0D0
+ 321        CONTINUE
+ 320     CONTINUE 
+         NMULT = 0
       ENDIF
 C     Make anisotropic polarizabilities isotropic
       IF (ISOPOL .AND. (IPOLTP .EQ. 2)) THEN
-         IPOLTP = 1
          DO 326 J = 1,MMCENT
             POLIMM(J) = POLMM(1,J)+POLMM(4,J)+POLMM(6,J)
             POLIMM(J) = POLIMM(J)/3.0D0
  326     CONTINUE 
+         IPOLTP = 1
       ENDIF
 
       IOPTMM = 1 
