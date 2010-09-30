@@ -333,6 +333,7 @@ C
 #include <qm3.h>
 #include "incore.h"
 #include <qmmm.h>
+#include <infpar.h>
 C------------------------
 C
       PARAMETER (THDDEF = 1.0D-5)
@@ -507,6 +508,8 @@ Chj      ... if (GEOWLK) then
          EMCGEO = EMCOLD
          DEPGEO = DEPRED
       END IF
+C ahs parallel QMMM initialization (send QMMM data to nodes)
+      IF (QMMM .AND. NODTOT .GE. 1) CALL PARQMMM_INIT()
   100 CONTINUE
          ITDIIS = ITDIIS + 1
          JTDIIS = JTDIIS + 1
