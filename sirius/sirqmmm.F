@@ -167,45 +167,44 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
+      IF (NODTOT.GE.1) THEN
+         CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,
+     &                  WRK(KWRK1),LWRK1,IPRINT)
+
+      ELSE
 C     1) The charge correction to the Fock/KS operator
 
       CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (NMULT .GE. 0) THEN
-         CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,FIRST,
-     &                       WRK(KWRK1),LWRK1,IPRINT)
-      ENDIF
+      IF (NMULT .GE. 0) CALL QMMM_CHARGE(DCAO,ESOLT,
+     &                       WRK(KTAO),WRK(KNSEL),WRK(KNSNUC),
+     &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       CALL TIMER('QMMM_CHARGE',TIMSTR,TIMEND)
 
 C     2) The dipole correction to the Fock/KS operator
 
       CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (NMULT .GE. 1) THEN
-         CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,FIRST,
-     &                       WRK(KWRK1),LWRK1,IPRINT)
-      ENDIF
+      IF (NMULT .GE. 1) CALL QMMM_DIPOLE(DCAO,ESOLT,
+     &                       WRK(KTAO),WRK(KNSEL),WRK(KNSNUC),
+     &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       CALL TIMER('QMMM_DIPOLE',TIMSTR,TIMEND)
 
 C     3) The quadrupole correction to the Fock/KS operator
 
       CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (NMULT .GE. 2) THEN
-         CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,FIRST,
-     &                       WRK(KWRK1),LWRK1,IPRINT)
-      ENDIF
+      IF (NMULT .GE. 2) CALL QMMM_QUADPOLE(DCAO,ESOLT,
+     &                       WRK(KTAO),WRK(KNSEL),WRK(KNSNUC),
+     &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       CALL TIMER('QMMM_QUADPOLE',TIMSTR,TIMEND)
 
 C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
 
       CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (NMULT .GE. 3) THEN
-         CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),WRK(KNSEL),
-     &                       WRK(KNSNUC),LOCDEB,FIRST,
-     &                       WRK(KWRK1),LWRK1,IPRINT)
-      ENDIF
+      IF (NMULT .GE. 3) CALL QMMM_OCTUPOLE(DCAO,ESOLT,
+     &                       WRK(KTAO),WRK(KNSEL),WRK(KNSNUC),
+     &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       CALL TIMER('QMMM_OCTUPOLE',TIMSTR,TIMEND)
+      
+      ENDIF ! nodtot .ge. 1
 
       IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         write(lupri,*)
@@ -218,10 +217,8 @@ C     4) The octupole correction to the Fock/KS operator. We do the integrals nu
 C     5) The polarization correction to the Fock/KS operator
 
       CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (IPOLTP .GT. 0) THEN
-         CALL QMMM_POLARI(DCAO,ESOLT,WRK(KTAO),
+      IF (IPOLTP .GT. 0) CALL QMMM_POLARI(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
-      ENDIF
       CALL TIMER('QMMM_POLARI',TIMSTR,TIMEND)
 
 C     Finally, put back the dipole origin
@@ -3234,8 +3231,10 @@ C     Allocate memory for electric field integrals and electric fields
 C     1. Form F vector due to permanent MM moments
 
       IF (NODTOT .GE. 1) THEN
+      print *,'arnfinn getinddipoles_2 1'
          CALL QMMM_POLARI_M2(DCAO,WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
+      print *,'arnfinn getinddipoles_2 2'
       ELSE
 
       LRI = 1   
@@ -4563,13 +4562,10 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO(1),1)
-
 
       EXPNST = 0.0D0
       ECHCH = 0.0D0
-
 
       DO I = 1, MMCENT
          ECHCH = ECHCH + SNUC(I)
@@ -4630,7 +4626,6 @@ C ----
 C     Receiving data from master
 
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
 
       KNSNUC = 1
       KNSEL  = KNSNUC + MMCENT
@@ -5982,9 +5977,7 @@ C     Send data to slaves
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      DO II = 1,NEXLST
-         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
-      ENDDO
+      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
 
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
@@ -6093,21 +6086,6 @@ C ----
 
 C     Receiving data from master
 
-C      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
-C      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
-C      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(CORD,3*MXCENT,'DOUBLE',MASTER)
-C      CALL MPIXBCAST(CHARGE,MXCENT,'DOUBLE',MASTER)
-C      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
-C      CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
       CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(SPLDIP,1,'LOGICAL',MASTER)
@@ -6134,9 +6112,7 @@ C
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      DO II = 1,NEXLST
-         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
-      ENDDO
+      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
 
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
@@ -6526,9 +6502,7 @@ C     Send data to slaves
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      DO II = 1,NEXLST
-         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
-      ENDDO
+      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
 
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
@@ -6643,9 +6617,6 @@ C     Receiving data from master
 C
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      DO II = 1,NEXLST
-         CALL MPIXBCAST(EXLIST(II,1:MMCENT),MMCENT,'INTEGER',MASTER)
-      ENDDO
       CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
 
 C     Damping
@@ -7550,6 +7521,169 @@ C          ED3MOM = ED3MOM + ET
 
       RETURN
       END
+C  /* Deck parqmmm_m */
+      SUBROUTINE PARQMMM_M(DCAO,TAO,ESOLT,WRK,LWRK,
+     &                         IPRINT)
+
+#include <implicit.h>
+!  mxcoor in nuclei.h
+#include <mxcent.h>
+!  nnbasx, icmo, nbast, 
+#include <inforb.h>
+!  nctot, cord, charge, nucind, nucdep
+#include <nuclei.h>
+! luprop
+#include <inftap.h>
+! npatom, ipatom
+#include <cbiher.h>
+! qmcom, isytp, qmdamp
+#include <qm3.h>
+! mmcent, mul0mm, mul1mm etc, rcutmm, delfld, nmult, nexlst, exlist
+! nnzal (updates), spldip, zeroal (updates?), idamp, ipoltp, 
+! From potfile: mmcent, nmult, ipoltp, nexlst, neleme
+!               exlist
+#include <qmmm.h>
+C ----
+#include "infpar.h"
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+C#include <cbiher.h>
+
+
+      DIMENSION WRK(LWRK), TAO(NNBASX)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT), DCAO(*)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('PARQMMM_M')
+
+      KNSNUC1  = 1
+      KNSNUC2  = KNSNUC1 + MMCENT
+      KNSEL1   = KNSNUC2 + MMCENT
+      KNSEL2   = KNSEL1  + MMCENT
+      KTAO1    = KNSEL2  + MMCENT
+      KTAO2    = KTAO1   + NNBASX
+      KLAST    = KTAO2   + NNBASX
+      LWRK2 = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('PARQMMM_M',-KLAST,LWRK)
+
+      CALL DZERO(WRK(KNSNUC1),MMCENT)
+      CALL DZERO(WRK(KNSNUC2),MMCENT)
+      CALL DZERO(WRK(KNSEL1),MMCENT)
+      CALL DZERO(WRK(KNSEL2),MMCENT)
+      CALL DZERO(WRK(KTAO1),NNBASX)
+      CALL DZERO(WRK(KTAO2),NNBASX)
+      ECHARTEMP  = 0.0D0
+      EDIPTEMP   = 0.0D0
+      EQUADTEMP  = 0.0D0
+      EOCTUPTEMP = 0.0D0
+
+C     Wake up slaves
+
+      IPRTYP = 42
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+C     Send data to slaves
+
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
+      IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 1) CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 3) THEN
+         CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
+         CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
+      ENDIF
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ICMO,8,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+
+C     Logicals
+      CALL MPIXBCAST(MMITER,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMDIIS,1,'LOGICAL',MASTER)
+
+C     Start parallelized loop
+      LNUM = 0
+      DO L = 1,MMCENT
+        LNUM = LNUM + 1
+        IWHO = -1
+        CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+        CALL MPIXSEND(LNUM,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+
+C     Send end message to all slaves
+
+      LEND = -1
+      DO ISLAVE = 1,NODTOT
+        IWHO = -1
+        CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+        CALL MPIXSEND(LEND,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+
+C     Collect data from all slaves
+
+      CALL MPI_REDUCE(WRK(KNSNUC2),WRK(KNSNUC1),MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      CALL MPI_REDUCE(WRK(KNSEL2),WRK(KNSEL1),MMCENT,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      CALL MPI_REDUCE(WRK(KTAO2),WRK(KTAO1),NNBASX,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+      IF (NMULT .GE. 0) CALL MPI_REDUCE(ECHARTEMP,ECHART,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (NMULT .GE. 1) CALL MPI_REDUCE(EDIPTEMP,EDIPT,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (NMULT .GE. 2) CALL MPI_REDUCE(EQUADTEMP,EQUADT,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (NMULT .GE. 3) CALL MPI_REDUCE(EOCTUPTEMP,EOCTUP,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+      CALL DAXPY(NNBASX,1.0D0,WRK(KTAO1),1,TAO(1),1)
+      
+      ECHCH  = 0.0D0
+      EXPNST = 0.0D0
+
+      DO I = 1, MMCENT
+         ECHCH  = ECHCH  + WRK(KNSNUC1 + I - 1)
+         EXPNST = EXPNST + WRK(KNSEL1  + I - 1)
+      END DO
+
+
+
+      ESOLT = ECHART + EDIPT + EQUADT + EOCTUP
+
+      CALL QEXIT('PARQMMM_M')
+
+      RETURN
+      END
+
 C**************************************************************************************
 C  /* Deck parqmmm_s */
       SUBROUTINE PARQMMM_S(WRK,LWRK,IPRTMP)
@@ -7572,6 +7706,97 @@ C  /* Deck parqmmm_s */
 ! From potfile: mmcent, nmult, ipoltp, nexlst, neleme
 !               exlist
 #include <qmmm.h>
+#include "infpar.h"
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+! qmmm
+#include <gnrinf.h>
+! diporg
+#include <orgcom.h>
+
+
+      DIMENSION WRK(LWRK)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+
+      CALL QENTER('PARQMMM_S')
+
+      FAC1   =  1.0D0
+      FACM1  = -1.0D0
+
+      QMMM = .TRUE.
+C     Receiving data from master
+
+      CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
+      IF (NMULT .GE. 0) CALL MPIXBCAST(MUL0MM,MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 1) CALL MPIXBCAST(MUL1MM,3*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 2) CALL MPIXBCAST(MUL2MM,6*MMCENT,'DOUBLE',MASTER)
+      IF (NMULT .GE. 3) THEN
+         CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
+         CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
+      ENDIF
+
+      KNSNUC = 1
+      KNSEL  = KNSNUC + MMCENT
+      KTAO   = KNSEL  + MMCENT
+      KDCAO  = KTAO   + NNBASX
+      KMAT   = KDCAO  + NNBASX
+      IF (NMULT .GE. 3) THEN
+         KMAT1 = KMAT  + 6*NNBASX
+         KMAT2 = KMAT1 + 6*NNBASX
+         KMAT3 = KMAT2 + 6*NNBASX
+         KMAT4 = KMAT3 + 6*NNBASX
+         KLAST = KMAT4 + 6*NNBASX
+      ELSE
+         KLAST = KMAT   + 6*NNBASX
+      ENDIF
+
+      LWRK2  = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('PARQMMM_S',-KLAST,LWRK)
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      CALL MPIXBCAST(MMCORD,3*MMCENT,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QMCOM,3,'DOUBLE',MASTER)
+      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ICMO,8,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYTP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NCTOT,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+
+      CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+
+C     Logicals
+      CALL MPIXBCAST(MMITER,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMDIIS,1,'LOGICAL',MASTER)
+
+C     Do the work
+
+      CALL DZERO(WRK(KNSEL),MMCENT)
+      CALL DZERO(WRK(KNSNUC),MMCENT)
+      CALL DZERO(WRK(KTAO),NNBASX)
+
+      ECHART = 0.0D0
+      EDIPT  = 0.0D0
+      EQUADT = 0.0D0
+      EOCTUP = 0.0D0
 
  1    CONTINUE
 
@@ -7580,10 +7805,10 @@ C  /* Deck parqmmm_s */
 
       IF (I.GT.0) THEN
 
-C     First the charge contribution
+C------------------------------------------------- 
+C        Charge contributions:
+C------------------------------------------------- 
          IF (ABS(MUL0MM(I)) .LE. THRMM) THEN
-           WRK(KNSEL + I - 1)  = 0.0D0
-           WRK(KNSNUC + I - 1) = 0.0D0
            GOTO 2
          ENDIF 
 
@@ -7593,9 +7818,7 @@ C     First the charge contribution
          DIST = SQRT(DIST2)
 
          IF (DIST .GT. RCUTMM) THEN
-           WRK(KNSEL + I - 1)  = 0.0D0
-           WRK(KNSNUC + I - 1) = 0.0D0
-           GOTO 2
+           GOTO 1
          ENDIF
 
          CALL DZERO(WRK(KMAT),NNBASX)
@@ -7609,7 +7832,6 @@ C     First the charge contribution
          DIPORG(2) = MMCORD(2,I)
          DIPORG(3) = MMCORD(3,I)
 
-       
          RUNQM3=.TRUE.
          CALL GET1IN(WRK(KMAT),'NPETES ',NOSIM,WRK(KLAST),
      &               LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
@@ -7623,7 +7845,7 @@ C     First the charge contribution
 
          CALL DSCAL(NNBASX,MUL0MM(I),WRK(KMAT),1)
          EXPNS=DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT),1)
-         WRK(KNSEL + I - 1) = EXPNS
+         WRK(KNSEL + I - 1) = WRK(KNSEL + I - 1) + EXPNS
 
          CALL DAXPY(NNBASX,FAC1,WRK(KMAT),1,WRK(KTAO),1)
 
@@ -7638,31 +7860,21 @@ C        Now the QM nuclear contribution
            DIST   = SQRT(DIST2) 
            ECHCHL = ECHCHL + CHARGE(J)*MUL0MM(I)/DIST
   101    CONTINUE
-         WRK(KNSNUC + I - 1) = ECHCHL
-
+         WRK(KNSNUC + I - 1) = WRK(KNSNUC + I - 1) + ECHCHL
+         ECHART = ECHART + ECHCHL + EXPNS
  2       CONTINUE
+
+C------------------------------------------------- 
+C        Dipole contributions:
+C------------------------------------------------- 
          IF (NMULT .LT. 1) GOTO 1
 
 C        See if the dipole moment at this site is zero
          DNORM2 = MUL1MM(1,I)**2+MUL1MM(2,I)**2+MUL1MM(3,I)**2     
          DNORM = SQRT(DNORM2)
          IF (ABS(DNORM) .LE. THRMM) THEN
-C         we use KNS to collect the energy terms
-            WRK(KNSEL + I - 1)  = 0.0D0
-            WRK(KNSNUC + I - 1) = 0.0D0
             GOTO 3
          ENDIF 
-
-         DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
-     *           (MMCORD(2,I)-QMCOM(2))**2 +
-     *           (MMCORD(3,I)-QMCOM(3))**2
-         DIST = SQRT(DIST2)
-
-         IF (DIST .GT. RCUTMM) THEN
-            WRK(KNSEL + I - 1)  = 0.0D0
-            WRK(KNSNUC + I - 1) = 0.0D0
-            GOTO 3
-         ENDIF
 
          CALL DZERO(WRK(KMAT),3*NNBASX)
 
@@ -7674,7 +7886,6 @@ C         we use KNS to collect the energy terms
          DIPORG(1) = MMCORD(1,I)
          DIPORG(2) = MMCORD(2,I)
          DIPORG(3) = MMCORD(3,I)
-
 
          RUNQM3=.TRUE.
          CALL GET1IN(WRK(KMAT),'NEFIELD',NOSIM,WRK(KLAST),
@@ -7743,7 +7954,8 @@ C         we use KNS to collect the energy terms
          EYCOMP = -DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+NNBASX),1)
          EZCOMP = -DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+2*NNBASX),1)
 
-         WRK(KNSEL + I - 1) = EXCOMP + EYCOMP + EZCOMP
+         EQTOT  = EXCOMP + EYCOMP + EZCOMP
+         WRK(KNSEL + I - 1) = WRK(KNSEL + I - 1) + EQTOT
 
 C       Now the QM nuclear contribution. Note that we switch the sign here by writing 
 C       CORD(1,J) - MMCORD(1,I)
@@ -7761,31 +7973,25 @@ C       CORD(1,J) - MMCORD(1,I)
      *           + CHARGE(J)*MUL1MM(2,I)*YDIS/DIST3 
      *           + CHARGE(J)*MUL1MM(3,I)*ZDIS/DIST3
  201     CONTINUE
-         WRK(KNSNUC + I - 1) = ELOC
+         WRK(KNSNUC + I - 1) = WRK(KNSNUC + I - 1) + ELOC
+         EDIPT = EDIPT + ELOC + EQTOT
 
  3       CONTINUE
-         IF (NMULT .LT. 2) GOTO 1
 
+C------------------------------------------------- 
+C        Quadrupole contributions:
+C------------------------------------------------- 
+
+         IF (NMULT .LT. 2) GOTO 1
 
 C       See if the quadrupole moment at this site is zero
          DNORM2 = MUL2MM(1,I)**2+MUL2MM(2,I)**2+MUL2MM(3,I)**2
      *         + MUL2MM(4,I)**2+MUL2MM(5,I)**2+MUL2MM(6,I)**2
          DNORM = SQRT(DNORM2)
          IF (ABS(DNORM) .LE. THRMM) THEN
-            WRK(KNSEL + I - 1)  = 0.0D0
-            WRK(KNSNUC + I - 1) = 0.0D0
+C            WRK(KNSEL + I - 1)  = 0.0D0
+C            WRK(KNSNUC + I - 1) = 0.0D0
 C         we use KNS to collect the energy terms
-            GOTO 4
-         ENDIF
-
-         DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
-     *          (MMCORD(2,I)-QMCOM(2))**2 +
-     *          (MMCORD(3,I)-QMCOM(3))**2
-         DIST = SQRT(DIST2)
-
-         IF (DIST .GT. RCUTMM) THEN
-            WRK(KNSEL + I - 1)  = 0.0D0
-            WRK(KNSNUC + I - 1) = 0.0D0
             GOTO 4
          ENDIF
 
@@ -7858,9 +8064,8 @@ C       Since the integrals contains a factor of -1 no -DDOT here.
          EMU2YZ=DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+4*NNBASX),1)
          EMU2ZZ=DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT+5*NNBASX),1)
 
-         WRK(KNSEL + I - 1) = EMU2XX+EMU2XY+EMU2XZ
-     *                 + EMU2YY+EMU2YZ+EMU2ZZ
-         EMUL2T = EMUL2T + WRK(KNSEL + I - 1)
+         EQTOT = EMU2XX + EMU2XY + EMU2XZ + EMU2YY + EMU2YZ + EMU2ZZ
+         WRK(KNSEL + I - 1) = WRK(KNSEL + I - 1) + EQTOT
 
 C       Now the QM nuclear contribution
 
@@ -7893,11 +8098,16 @@ C
 C       Remember the factor of 1/2 from the Taylor expansion
          ELOC   = 0.5D0*ELOC
 
-         WRK(KNSNUC + I - 1) = ELOC
+         WRK(KNSNUC + I - 1) = WRK(KNSNUC + I - 1) + ELOC
+         EQUADT = EQUADT + ELOC + EQTOT
 
  4       CONTINUE
-         IF (NMULT .LT. 3) GOTO 1
 
+C------------------------------------------------- 
+C        Octupole contributions:
+C------------------------------------------------- 
+
+         IF (NMULT .LT. 3) GOTO 1
 
 C       See if the octupole moment at this site is zero
         DNORM2 = MUL3MM(1,I)**2+MUL3MM(2,I)**2+MUL3MM(3,I)**2
@@ -7906,20 +8116,9 @@ C       See if the octupole moment at this site is zero
      *         + MUL3MM(10,I)**2
         DNORM = SQRT(DNORM2)
         IF (ABS(DNORM) .LE. THRMM) THEN
-          WRK(KNSEL + I - 1)  = 0.0D0
-          WRK(KNSNUC + I - 1) = 0.0D0
+C          WRK(KNSEL + I - 1)  = 0.0D0
+C          WRK(KNSNUC + I - 1) = 0.0D0
 C         we use KNS to collect the energy terms
-          GOTO 1
-        ENDIF
-
-        DIST2 = (MMCORD(1,I)-QMCOM(1))**2 +
-     *          (MMCORD(2,I)-QMCOM(2))**2 +
-     *          (MMCORD(3,I)-QMCOM(3))**2
-        DIST = SQRT(DIST2)
-
-        IF (DIST .GT. RCUTMM) THEN
-          WRK(KNSEL + I - 1)  = 0.0D0
-          WRK(KNSNUC + I - 1) = 0.0D0
           GOTO 1
         ENDIF
 
@@ -8123,9 +8322,9 @@ C       Since the integrals contains a factor of -1 no -DDOT here.
         E3YZZ=DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT1+4*NNBASX),1)
         E3ZZZ=DDOT(NNBASX,WRK(KDCAO),1,WRK(KMAT1+5*NNBASX),1)
 
-        WRK(KNSEL + I - 1) = E3XXX+E3XXY+E3XXZ+E3XYY+E3XYZ
-     *         + E3XZZ+E3YYY+E3YYZ+E3YZZ+E3ZZZ
-C        EMUL3T = EMUL3T + WRK(KNSEL + I - 1)
+        EQTOT = E3XXX + E3XXY + E3XXZ + E3XYY + E3XYZ + E3XZZ
+     *        + E3YYY + E3YYZ + E3YZZ + E3ZZZ
+        WRK(KNSEL + I - 1) = WRK(KNSEL + I - 1) + EQTOT
 
 C       Now the QM nuclear contribution. Note that we switch the sign here by writing
 C       CORD(1,J) - MMCORD(1,I)
@@ -8169,26 +8368,41 @@ C
 C       Remember the factor of 1/6 from the Taylor expansion
         ELOC   = D6I*ELOC
 
-        WRK(KNSNUC + I - 1) = ELOC
+        WRK(KNSNUC + I - 1) = WRK(KNSNUC + I - 1) + ELOC
+        EOCTUP = EOCTUP + ELOC + EQTOT
 
         GO TO 1
       ENDIF
 
-      KTAO  = KMAT + (NMULT+1)*NNBASX
-      NUMBER = (NMULT+1)*MMCENT
-      NUM2   = (NMULT+1)*NNBASX
-
 C     Send data to master
-      CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),NUMBER,
+      CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),NUMBER,
+      CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),(NMULT+1)*NUM2,
+      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
+      IF (NMULT .GE. 0) CALL MPI_REDUCE(ECHART,ECHART,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (NMULT .GE. 1) CALL MPI_REDUCE(EDIPT,EDIPT,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (NMULT .GE. 2) CALL MPI_REDUCE(EQUADT,EQUADT,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      IF (NMULT .GE. 3) CALL MPI_REDUCE(EOCTUP,EOCTUP,1, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+      DIPORG(1) = OBKPX 
+      DIPORG(2) = OBKPY 
+      DIPORG(3) = OBKPZ 
+
+      CALL QEXIT('PARQMMM_S')
       RETURN
       END
 C**************************************************************************************
