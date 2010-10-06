@@ -91,14 +91,14 @@ LONG="$LONG $LONGCC"
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
 dft_parallell_properties"
 #
-PARQMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
+QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
 PARQM3="par_hfmm_1 par_dftmm_1 par_dftmm_3 par_dftmm_4 par_dftmm_5 \
 par_dftmm_6 par_dftmm_7 dftmm_8 dftmm_9"
 #
 DEBUG="qmmm_debug1 qmmm_debug2"
 #
-LONGPAR="$PARALLEL $PARQMMM $PARQM3 $DEBUG"
+LONGPAR="$PARALLEL $QMMM $PARQM3 $DEBUG"
 #
 DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
@@ -341,7 +341,7 @@ while [ -n "$1" ]; do
    if [ "$paramlist" = "" ]; then
      paramlist="-N 3"
    fi
-   testcase="$testcase $PARQMMM";
+   testcase="$testcase $QMMM";
    shift ;;
   "parqm3" )
    if [ "$paramlist" = "" ]; then
@@ -354,6 +354,9 @@ while [ -n "$1" ]; do
      paramlist="-N 3"
    fi
    testcase="$testcase $DEBUG";
+   shift ;;
+  "qmmm" )
+   testcase="$testcase $QMMM";
    shift ;;
   "longpar" )
    if [ "$paramlist" = "" ]; then
