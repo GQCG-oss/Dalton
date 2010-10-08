@@ -239,16 +239,11 @@ C  /* Deck qmmm_charge */
 #include <infpar.h>
 
       DIMENSION WRK(LWRK), TAO(NNBASX)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      LOGICAL LOCDEB, FIRST
 
       CALL QENTER('QMMM_CHARGE')
 
-      KMAT   = 1
-      KTAO   = KMAT   + NNBASX
+      KTAO   = 1
       KNSEL  = KTAO   + NNBASX
       KNSNUC = KNSEL  + MMCENT
       KLAST  = KNSNUC + MMCENT
@@ -261,8 +256,6 @@ C  /* Deck qmmm_charge */
       ECHCH  = 0.0D0
 
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL DZERO(WRK(KNSEL),MMCENT)
-      CALL DZERO(WRK(KNSNUC),MMCENT)
 
       DO 100 I = 1,MMCENT 
 
@@ -301,7 +294,6 @@ C     Write integrals to file
          REWIND(LUQMMM)
          WRITE (LUQMMM) (WRK(KTAO+J-1), J=1,NNBASX)
          CALL GPCLOSE(LUQMMM,'KEEP')
-         CALL DZERO(WRK(KTAO),NNBASX)
       ENDIF
 
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
@@ -354,16 +346,11 @@ C  /* Deck qmmm_dipole */
 #include <infpar.h>
 
       DIMENSION WRK(LWRK), TAO(NNBASX)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      LOGICAL LOCDEB, FIRST
 
       CALL QENTER('QMMM_DIPOLE')
 
-      KMAT   = 1
-      KTAO   = KMAT + 3*NNBASX
+      KTAO   = 1
       KNSEL  = KTAO + NNBASX
       KNSNUC = KNSEL + MMCENT
       KLAST  = KNSNUC + MMCENT
@@ -377,8 +364,6 @@ C  /* Deck qmmm_dipole */
       ELOCT  = 0.0D0
 
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL DZERO(WRK(KNSEL),MMCENT)
-      CALL DZERO(WRK(KNSNUC),MMCENT)
 
       DO 200 I = 1,MMCENT 
 
@@ -388,6 +373,8 @@ C  /* Deck qmmm_dipole */
          DIST = SQRT(DIST2)
 
          IF (DIST .GT. RCUTMM) THEN
+            WRK(KNSEL + I - 1)  = 0.0D0
+            WRK(KNSNUC + I - 1) = 0.0D0
             IF (LOCDEB) THEN
                WRITE(LUPRI,*) 'Skipping dipole ', I
             ENDIF
@@ -413,7 +400,6 @@ C     Write integrals to file
          REWIND(LUQMMM)
          WRITE (LUQMMM) (WRK(KTAO+J-1), J=1,NNBASX)
          CALL GPCLOSE(LUQMMM,'KEEP')
-C         CALL DZERO(WRK(KTAO),NNBASX)
       ENDIF
 
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
@@ -466,17 +452,11 @@ C  /* Deck qmmm_quadpole */
 #include <infpar.h>
 
       DIMENSION WRK(LWRK), TAO(NNBASX)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      LOGICAL LOCDEB, FIRST
 
       CALL QENTER('QMMM_QUADPOLE')
 
-
-      KMAT   = 1
-      KTAO   = KMAT   + 6*NNBASX
+      KTAO   = 1
       KNSEL  = KTAO   + NNBASX
       KNSNUC = KNSEL  + MMCENT
       KLAST  = KNSNUC + MMCENT
@@ -489,8 +469,6 @@ C  /* Deck qmmm_quadpole */
       ELOCT  = 0.0D0
 
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL DZERO(WRK(KNSEL),MMCENT)
-      CALL DZERO(WRK(KNSNUC),MMCENT)
 
       DO 300 I = 1,MMCENT
 
@@ -500,6 +478,8 @@ C  /* Deck qmmm_quadpole */
         DIST = SQRT(DIST2)
 
         IF (DIST .GT. RCUTMM) THEN
+           WRK(KNSEL + I - 1)  = 0.0D0
+           WRK(KNSNUC + I - 1) = 0.0D0
            IF (LOCDEB) THEN
               WRITE(LUPRI,*) 'Skipping quadrupole ', I
            ENDIF
@@ -525,7 +505,6 @@ C     Write integrals to file
          REWIND(LUQMMM)
          WRITE (LUQMMM) (WRK(KTAO+J-1), J=1,NNBASX)
          CALL GPCLOSE(LUQMMM,'KEEP')
-         CALL DZERO(WRK(KTAO),NNBASX)
       ENDIF
 
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
@@ -579,11 +558,7 @@ C  /* Deck qmmm_octupole */
 #include <infpar.h>
 
       DIMENSION WRK(LWRK), TAO(NNBASX)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FIRST
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      LOGICAL LOCDEB, FIRST
 
       CALL QENTER('QMMM_OCTUPOLE')
 
@@ -601,8 +576,6 @@ C  /* Deck qmmm_octupole */
       ELOCT  = 0.0D0
 
       CALL DZERO(WRK(KTAO),NNBASX)
-      CALL DZERO(WRK(KNSEL),MMCENT)
-      CALL DZERO(WRK(KNSNUC),MMCENT)
 
       DO 410 I = 1,MMCENT
 
@@ -639,7 +612,6 @@ C     Write integrals to file
          REWIND(LUQMMM)
          WRITE (LUQMMM) (WRK(KTAO+J-1), J=1,NNBASX)
          CALL GPCLOSE(LUQMMM,'KEEP')
-         CALL DZERO(WRK(KTAO),NNBASX)
       ENDIF
 
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
