@@ -271,16 +271,12 @@ C        before, but we choose to do all of this integral-direct.
          ELSE
             LRI = 1
             DO 202 J=1,MMCENT
-
                IF (ZEROAL(J) .EQ. -1) GOTO 202
-               
                CALL MMLNO_ITER2(J,WRK(KINDMOM+LRI-1),
      *                        WRK(KINDMOM+LRI),WRK(KINDMOM+LRI+1),
      *                        WRK(KUCMO),WRK(LRXYO),
      *                        WRK(KWRK),LWRK1,IPRRSP)
-
                LRI = LRI + 3
-
  202        CONTINUE 
          ENDIF
  200  CONTINUE
@@ -475,173 +471,16 @@ C     Backup the dipole origin
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO',-KLAST,LWRK2)
 
       IF (NODTOT .GE. 1) THEN
-         CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),WRK(KUCMO),
+         CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK(KLAST),LWRK2)
       ELSE
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
-
           IF (ZEROAL(J) .EQ. -1) GOTO 100
-
-          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *            (MMCORD(2,J)-QMCOM(2))**2 +
-     *            (MMCORD(3,J)-QMCOM(3))**2
-          DIST = SQRT(DIST2)
-
-          IF (DIST .GT. RCUTMM) THEN
-            LRI = LRI + 3
-            IF (LOCDEB) THEN
-              WRITE(LUPRI,*) 'Skipping site in F vector rsp 3', J
-            ENDIF
-            GOTO 100
-          ENDIF
-
-C         x-component
-          F1=ZERO
-          F2=ZERO
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-          CALL DZERO(WRK(KMAT),3*NNBASX)
-
-          KPATOM = 0
-          NOCOMP = 3
-          TOFILE = .FALSE.
-          TRIMAT = .TRUE.
-          EXP1VL = .FALSE.
-          DIPORG(1) = MMCORD(1,J)
-          DIPORG(2) = MMCORD(2,J)
-          DIPORG(3) = MMCORD(3,J)
-
-          RUNQM3 = .TRUE.
-          CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
-     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-          RUNQM3 = .FALSE.
-
-          IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-              CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
-              DIST = 9.99D+99
-              MHIT = 0
-              DO 125 M=1,NUCIND
-                DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                  (DIPORG(2)-CORD(2,M))**2 +
-     &                  (DIPORG(3)-CORD(3,M))**2
-                IF (DISTC .LE. DIST) THEN
-                  DIST = DISTC
-                  MHIT = M
-                ENDIF
-  125         CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-              DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &               (DIPORG(2)-QMCOM(2))**2 +
-     &               (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-              IF (IPOLTP .EQ. 2) THEN
-                TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-              ELSE IF (IPOLTP .EQ. 1) THEN
-                IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-              ENDIF
-              TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-              SIJ = 2.1304*DIST/TEMP
-              DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-              DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-          ENDIF
-
-          CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-C
-          IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
-            WRK(KEF1+LRI-1+0) = F1
-          ELSE
-            WRK(KEF1+LRI-1+0) = ZERO
-          ENDIF 
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
-            WRK(KEF2+LRI-1+0) = F2
-          ELSE
-            WRK(KEF2+LRI-1+0) = ZERO
-          ENDIF
-
-C         y-component
-          F1=ZERO
-          F2=ZERO
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-          CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &              WRK(KLAST),NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QM3MMRO')
-            WRK(KEF1+LRI-1+1) = F1
-          ELSE
-            WRK(KEF1+LRI-1+1) = ZERO
-          ENDIF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
-            WRK(KEF2+LRI-1+1) = F2
-          ELSE
-            WRK(KEF2+LRI-1+1) = ZERO
-          ENDIF
-
-C         z-component
-          F1=ZERO
-          F2=ZERO
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-          CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &              WRK(KLAST),NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
-            WRK(KEF1+LRI-1+2) = F1
-          ELSE
-            WRK(KEF1+LRI-1+2) = ZERO
-          ENDIF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
-            WRK(KEF2+LRI-1+2) = F2
-          ELSE
-            WRK(KEF2+LRI-1+2) = ZERO
-          ENDIF
-
+          CALL MMQRO_ITER1(J,WRK(KEF1+LRI-1),WRK(KEF2+LRI-1),UDV,
+     *                     WRK(KUCMO),ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,
+     *                     WRK(KLAST),LWRK2,IPRRSP)
           LRI = LRI + 3
-
   100   CONTINUE
       ENDIF
 
@@ -700,132 +539,19 @@ C     before, but we choose to do all of this integral-direct.
 
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M2(WRK(KIND1),WRK(KIND2),WRK(KUCMO),
-     &        WRK(KTRES),ISYMT,ISYMV2,ZYM2,WRK(KLAST),LWRK2)
+     *                   WRK(KTRES),ISYMT,ISYMV2,ZYM2,
+     *                   WRK(KLAST),LWRK2)
       ELSE
         LRI = 1                ! group-index in vector
         DO 101 J = 1,MMCENT 
-
-          IF (ZEROAL(J) .EQ. -1) GOTO 101
-
-          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *            (MMCORD(2,J)-QMCOM(2))**2 +
-     *            (MMCORD(3,J)-QMCOM(3))**2
-          DIST = SQRT(DIST2)
-
-          IF (DIST .GT. RCUTMM) THEN
-            LRI = LRI + 3
-            IF (LOCDEB) THEN
-              WRITE(LUPRI,*) 'Skipping site in F vector rsp 4', J
-            ENDIF
-            GOTO 101
-          ENDIF
-
-C         x-component
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-          CALL DZERO(WRK(KMAT),3*NNBASX)
-
-          KPATOM = 0
-          NOCOMP = 3
-          TOFILE = .FALSE.
-          TRIMAT = .TRUE.
-          EXP1VL = .FALSE.
-          DIPORG(1) = MMCORD(1,J)
-          DIPORG(2) = MMCORD(2,J)
-          DIPORG(3) = MMCORD(3,J)
-
-          RUNQM3 = .TRUE.
-          CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
-     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-          RUNQM3 = .FALSE.
-
-          IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-              CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) )THEN
-              DIST = 9.99D+99
-              MHIT = 0
-              DO 126 M=1,NUCIND
-                DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                  (DIPORG(2)-CORD(2,M))**2 +
-     &                  (DIPORG(3)-CORD(3,M))**2
-                IF (DISTC .LE. DIST) THEN
-                  DIST = DISTC
-                  MHIT = M
-                ENDIF
-  126         CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-              DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &               (DIPORG(2)-QMCOM(2))**2 +
-     &               (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-              IF (IPOLTP .EQ. 2) THEN
-                TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-              ELSE IF (IPOLTP .EQ. 1) THEN
-                IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-              ENDIF
-              TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-              SIJ = 2.1304*DIST/TEMP
-              DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-              DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-          ENDIF
-
-          CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-C
-          F1 = -WRK(KIND1+LRI-1+0) 
-          CALL DZERO(WRK(KTLMA),N2ORBX)
-          CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
-          CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)
-
-          F2 = -0.50D0*WRK(KIND2+LRI-1+0)
-          CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,WRK(KTRES),1)
-
-C         y-component
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-          CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &              WRK(KLAST),NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          F1 = -WRK(KIND1+LRI-1+1)
-          CALL DZERO(WRK(KTLMA),N2ORBX)
-          CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
-          CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)
-
-          F2 = -0.50D0*WRK(KIND2+LRI-1+1)
-          CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,WRK(KTRES),1)
-
-C         z-component
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-          CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &              WRK(KLAST),NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          F1 = -WRK(KIND1+LRI-1+2)
-          CALL DZERO(WRK(KTLMA),N2ORBX)
-          CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
-          CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)   
-
-          F2 = -0.50D0*WRK(KIND2+LRI-1+2)
-          CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,WRK(KTRES),1)
-
-          LRI = LRI + 3
-
-  101   CONTINUE
+           IF (ZEROAL(J) .EQ. -1) GOTO 101
+           CALL MMQRO_ITER2(J,WRK(KIND1+LRI-1),WRK(KIND2+LRI-1),
+     *                   WRK(KTRES),WRK(KUCMO),ISYMT,ISYMV2,ZYM2,
+     *                   WRK(KLAST),LWRK2,IPRRSP)
+           LRI = LRI + 3
+ 101    CONTINUE
       ENDIF
+
 C     Put back the dipole origin
 
       DIPORG(1) = OBKPX
@@ -1027,239 +753,19 @@ C     Backup the dipole origin
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO',-KLAST,LWRK2)
 
       IF (NODTOT .GE. 1) THEN
-         CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),WRK(KUCMO),
+         CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
      &                   WRK(KLAST),LWRK2)
       ELSE
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
-
-          IF (ZEROAL(J) .EQ. -1) GOTO 100
-
-          DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *            (MMCORD(2,J)-QMCOM(2))**2 +
-     *            (MMCORD(3,J)-QMCOM(3))**2
-          DIST = SQRT(DIST2)
-
-          IF (DIST .GT. RCUTMM) THEN
-            LRI = LRI + 3
-            IF (LOCDEB) THEN
-              WRITE(LUPRI,*) 'Skipping site in F vector rsp 5', J
-            ENDIF
-            GOTO 100
-          ENDIF
-
-
-          CALL DZERO(WRK(KMAT),3*NNBASX)
-
-          KPATOM = 0
-          NOCOMP = 3
-          TOFILE = .FALSE.
-          TRIMAT = .TRUE.
-          EXP1VL = .FALSE.
-          DIPORG(1) = MMCORD(1,J)
-          DIPORG(2) = MMCORD(2,J)
-          DIPORG(3) = MMCORD(3,J)
-
-C         Get 1-electron integrals
-
-          RUNQM3 = .TRUE.
-          CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
-     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-          RUNQM3 = .FALSE.
-
-          IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-              CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
-              DIST = 9.99D+99
-              MHIT = 0
-              DO 123 M=1,NUCIND
-                DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                  (DIPORG(2)-CORD(2,M))**2 +
-     &                  (DIPORG(3)-CORD(3,M))**2
-                IF (DISTC .LE. DIST) THEN
-                  DIST = DISTC
-                  MHIT = M
-                ENDIF
-  123         CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-              DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &               (DIPORG(2)-QMCOM(2))**2 +
-     &               (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-              IF (IPOLTP .EQ. 2) THEN
-                TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-              ELSE IF (IPOLTP .EQ. 1) THEN
-                IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-              ENDIF
-              TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-              SIJ = 2.1304*DIST/TEMP
-              DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-              DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-          ENDIF
-
-C         x-component
-          F1=ZERO
-          F2=ZERO
-          F3=ZERO
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-C 
-          CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-
-C         Unpack
-
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-
-C           1-index transformation
-
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-
-C           Evaluate expectation value
-
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
-            WRK(KEF1+LRI-1+0) = F1
-          ELSE
-            WRK(KEF1+LRI-1+0) = ZERO
-          ENDIF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
-            WRK(KEF2+LRI-1+0) = F2
-          ELSE
-            WRK(KEF2+LRI-1+0) = ZERO
-          END IF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
-     &                 MULD2H(ISYMT,ISYMV1))
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV3,ZYM3,WRK(KTLMB),WRK(KTLMA),ISYMV3)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
-            WRK(KEF3+LRI-1+0) = F3
-          ELSE
-            WRK(KEF3+LRI-1+0) = ZERO
-          END IF
-
-C         y-component
-          F1=ZERO
-          F2=ZERO
-          F3=ZERO
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-C         AO to MO transformation
-
-          CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-
-C         Unpack from tri to full
-
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
-            WRK(KEF1+LRI-1+1) = F1
-          ELSE
-             WRK(KEF1+LRI-1+1) = ZERO
-          ENDIF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
-            WRK(KEF2+LRI-1+1) = F2
-          ELSE
-            WRK(KEF2+LRI-1+1) = ZERO
-          END IF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
-     &                 MULD2H(ISYMT,ISYMV1))
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV3,ZYM3,WRK(KTLMB),WRK(KTLMA),ISYMV3)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
-            WRK(KEF3+LRI-1+1) = F3
-          ELSE
-            WRK(KEF3+LRI-1+1) = ZERO
-          END IF
-
-C         z-component
-          F1=ZERO
-          F2=ZERO
-          F3=ZERO
-          CALL DZERO(WRK(KTRMO),NNORBX)
-          CALL DZERO(WRK(KUTR),N2ORBX)
-
-          CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-          CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-          IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
-            WRK(KEF1+LRI-1+2) = F1
-          ELSE
-            WRK(KEF1+LRI-1+2) = ZERO
-          ENDIF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
-            WRK(KEF2+LRI-1+2) = F2
-          ELSE
-            WRK(KEF2+LRI-1+2) = ZERO
-          END IF
-
-          IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
-     &                 MULD2H(ISYMT,ISYMV1))
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV3,ZYM3,WRK(KTLMB),WRK(KTLMA),ISYMV3)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
-            WRK(KEF3+LRI-1+2) = F3
-          ELSE
-            WRK(KEF3+LRI-1+2) = ZERO
-          END IF
-
-          LRI = LRI + 3
-
-  100   CONTINUE
+           IF (ZEROAL(J) .EQ. -1) GOTO 100
+           CALL MMCRO_ITER1(J,WRK(KEF1+LRI-1),WRK(KEF2+LRI-1),
+     *                   WRK(KEF3+LRI-1),UDV,WRK(KUCMO),
+     *                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
+     *                   WRK(KLAST),LWRK2,IPRRSP)
+           LRI = LRI + 3
+ 100    CONTINUE
       ENDIF
 
 C     Calculate the induced dipoles corresponding to the 
@@ -1594,16 +1100,6 @@ C  /* Deck mmlno_iter1 */
       EEY = 0.0D0
       EEZ = 0.0D0
 
-      KMAT    = 1
-      KURXAC  = KMAT  + 3*NNBASX
-      KTRMO   = KURXAC  + N2ASHX
-      KUTR    = KTRMO   + NNORBX
-      KUTRX   = KUTR    + N2ORBX
-      KLAST   = KUTRX   + N2ORBX
-
-      LWRK2 = LWRK - KLAST + 1
-      IF (LWRK2 .LT. 0) CALL ERRWRK('MMLNO_ITER1',-KLAST,LWRK2)
-
       DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
      *        (MMCORD(2,J)-QMCOM(2))**2 +
      *        (MMCORD(3,J)-QMCOM(3))**2
@@ -1613,6 +1109,20 @@ C  /* Deck mmlno_iter1 */
          CALL QEXIT('MMLNO_ITER1')
          RETURN
       ENDIF
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      KMAT    = 1
+      KURXAC  = KMAT  + 3*NNBASX
+      KTRMO   = KURXAC  + N2ASHX
+      KUTR    = KTRMO   + NNORBX
+      KUTRX   = KUTR    + N2ORBX
+      KLAST   = KUTRX   + N2ORBX
+
+      LWRK2 = LWRK - KLAST + 1
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMLNO_ITER1',-KLAST,LWRK2)
 
       CALL DZERO(WRK(KMAT),3*NNBASX)
       
@@ -1721,6 +1231,10 @@ C     z-component of (induced) electric field
          EEZ = SLVQLM(UDV,WRK(KURXAC),WRK(KUTRX),TAC)
       ENDIF
 
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
       CALL QEXIT('MMLNO_ITER1')
       RETURN
       END
@@ -1769,14 +1283,6 @@ C  /* Deck mmlno_iter2 */
 
       CALL QENTER('MMLNO_ITER2')
 
-      KTRMO   = 1
-      KUTR    = KTRMO   + NNORBX
-      KMAT    = KUTR    + N2ORBX
-      KLAST   = KMAT    + 3*NNBASX
-      LWRK2   = LWRK - KLAST + 1
-
-      IF (LWRK2 .LT. 0) CALL ERRWRK('MMLNO_ITER2',-KLAST,LWRK2)
-
       DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
      *        (MMCORD(2,J)-QMCOM(2))**2 +
      *        (MMCORD(3,J)-QMCOM(3))**2
@@ -1786,6 +1292,18 @@ C  /* Deck mmlno_iter2 */
          CALL QEXIT('MMLNO_ITER2')
          RETURN
       ENDIF
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      KTRMO   = 1
+      KUTR    = KTRMO   + NNORBX
+      KMAT    = KUTR    + N2ORBX
+      KLAST   = KMAT    + 3*NNBASX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMLNO_ITER2',-KLAST,LWRK2)
 
       CALL DZERO(WRK(KMAT),3*NNBASX)
 
@@ -1872,10 +1390,768 @@ C     z-component of (induced) electric field
       FACz = -ZIND
       CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,RXYO,1)
 
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
       CALL QEXIT('MMLNO_ITER2')
       RETURN
       END
+C-------------------------------------------------------------------------------
+C  /* Deck mmqro_iter1 */
+      SUBROUTINE MMQRO_ITER1(J,EF1,EF2,UDV,UCMO,ISYMT,ISYMV1,ISYMV2,
+     &                       ZYM1,ZYM2,WRK,LWRK,IPRTMP)
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <inflin.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <infrsp.h>
+#include <maxash.h>
+#include <infind.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <wrkrsp.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+#include <infdim.h>
 
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
+
+      DIMENSION WRK(LWRK), EF1(3), EF2(3)
+      DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*)
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('MMQRO_ITER1')
+
+      DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
+     *        (MMCORD(2,J)-QMCOM(2))**2 +
+     *        (MMCORD(3,J)-QMCOM(3))**2
+      DIST = SQRT(DIST2)
+
+      IF (DIST .GT. RCUTMM) THEN
+         CALL QEXIT('MMQRO_ITER1')
+         RETURN
+      ENDIF
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      KTRMO   = 1
+      KUTR    = KTRMO   + NNORBX
+      KMAT    = KUTR    + N2ORBX
+      KTLMA   = KMAT    + 3*NNBASX
+      KTLMB   = KTLMA   + N2ORBX
+      KLAST   = KTLMB   + N2ORBX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMQRO_ITER1',-KLAST,LWRK2)
+
+      CALL DZERO(WRK(KMAT),3*NNBASX)
+
+      KPATOM = 0
+      NOCOMP = 3
+      TOFILE = .FALSE.
+      TRIMAT = .TRUE.
+      EXP1VL = .FALSE.
+      DIPORG(1) = MMCORD(1,J)
+      DIPORG(2) = MMCORD(2,J)
+      DIPORG(3) = MMCORD(3,J)
+
+      RUNQM3 = .TRUE.
+      CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
+     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
+      RUNQM3 = .FALSE.
+
+      IF (QMDAMP) THEN
+         IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
+            CALL QUIT('ERROR in no. of assigned QM polarizabilities')
+         ENDIF
+         IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
+            DIST = 9.99D+99
+            MHIT = 0
+            DO 125 M=1,NUCIND
+               DISTC = (DIPORG(1)-CORD(1,M))**2 +
+     &              (DIPORG(2)-CORD(2,M))**2 +
+     &              (DIPORG(3)-CORD(3,M))**2
+               IF (DISTC .LE. DIST) THEN
+                  DIST = DISTC
+                  MHIT = M
+               ENDIF
+ 125        CONTINUE
+         ELSE IF (IDAMP .EQ. 2) THEN
+            DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &           (DIPORG(2)-QMCOM(2))**2 +
+     &           (DIPORG(3)-QMCOM(3))**2
+         ENDIF
+         DIST = SQRT(DIST)
+         
+         IF (IDAMP .EQ. 3) THEN
+            IF (IPOLTP .EQ. 2) THEN
+               TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+            ELSE IF (IPOLTP .EQ. 1) THEN
+               IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
+            ENDIF
+            TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
+            SIJ = 2.1304*DIST/TEMP
+            DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
+         ELSE
+            DFACT = (1-exp(-ADAMP*DIST))**3
+         ENDIF
+         CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+      ENDIF
+
+C     x-component
+      F1=ZERO
+      F2=ZERO
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+
+      CALL UTHU(WRK(KMAT),WRK(KTRMO),UCMO,WRK(KLAST),
+     &              NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+C
+      IF (ISYMT.EQ.ISYMV1) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
+         EF1(1) = F1
+      ELSE
+         EF1(1) = ZERO
+      ENDIF 
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
+         CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
+         EF2(1) = F2
+      ELSE
+         EF2(1) = ZERO
+      ENDIF
+
+C     y-component
+      F1=ZERO
+      F2=ZERO
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+      
+      CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),UCMO,
+     &              WRK(KLAST),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      IF (ISYMT.EQ.ISYMV1) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QM3MMRO')
+         EF1(2) = F1
+      ELSE
+         EF1(2) = ZERO
+      ENDIF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
+         CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
+         EF2(2) = F2
+      ELSE
+         EF2(2) = ZERO
+      ENDIF
+
+C         z-component
+      F1=ZERO
+      F2=ZERO
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+
+      CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),UCMO,
+     &     WRK(KLAST),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      IF (ISYMT.EQ.ISYMV1) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
+         EF1(3) = F1
+      ELSE
+         EF1(3) = ZERO
+      ENDIF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
+         CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
+         EF2(3) = F2
+      ELSE
+         EF2(3) = ZERO
+      ENDIF
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      CALL QEXIT('MMQRO_ITER1')
+      RETURN
+      END
+C-------------------------------------------------------------------------------
+C  /* Deck mmqro_iter2 */
+      SUBROUTINE MMQRO_ITER2(J,EIND1,EIND2,TRES,UCMO,
+     &                      ISYMT,ISYMV2,ZYM2,WRK,LWRK,IPRTMP)
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <inflin.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <infrsp.h>
+#include <maxash.h>
+#include <infind.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <wrkrsp.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
+
+      DIMENSION WRK(LWRK), EIND1(3), EIND2(3)
+      DIMENSION UCMO(*),ZYM2(*),TRES(*)
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('MMQRO_ITER2')
+
+      DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
+     *        (MMCORD(2,J)-QMCOM(2))**2 +
+     *        (MMCORD(3,J)-QMCOM(3))**2
+      DIST = SQRT(DIST2)
+
+      IF (DIST .GT. RCUTMM) THEN
+         CALL QEXIT('MMQRO_ITER2')
+         RETURN
+      ENDIF
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      KTRMO   = 1
+      KUTR    = KTRMO   + NNORBX
+      KMAT    = KUTR    + N2ORBX
+      KTLMA   = KMAT    + 3*NNBASX
+      KLAST   = KTLMA   + N2ORBX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMQRO_ITER2',-KLAST,LWRK2)
+
+      CALL DZERO(WRK(KMAT),3*NNBASX)
+
+      KPATOM = 0
+      NOCOMP = 3
+      TOFILE = .FALSE.
+      TRIMAT = .TRUE.
+      EXP1VL = .FALSE.
+      DIPORG(1) = MMCORD(1,J)
+      DIPORG(2) = MMCORD(2,J)
+      DIPORG(3) = MMCORD(3,J)
+
+      RUNQM3 = .TRUE.
+      CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
+     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
+      RUNQM3 = .FALSE.
+
+      IF (QMDAMP) THEN
+         IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
+            CALL QUIT('ERROR in no. of assigned QM polarizabilities')
+         ENDIF
+         IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) )THEN
+            DIST = 9.99D+99
+            MHIT = 0
+            DO 126 M=1,NUCIND
+               DISTC = (DIPORG(1)-CORD(1,M))**2 +
+     &                  (DIPORG(2)-CORD(2,M))**2 +
+     &                  (DIPORG(3)-CORD(3,M))**2
+               IF (DISTC .LE. DIST) THEN
+                  DIST = DISTC
+                  MHIT = M
+               ENDIF
+ 126        CONTINUE
+         ELSE IF (IDAMP .EQ. 2) THEN
+            DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &               (DIPORG(2)-QMCOM(2))**2 +
+     &               (DIPORG(3)-QMCOM(3))**2
+         ENDIF
+         DIST = SQRT(DIST)
+            
+         IF (IDAMP .EQ. 3) THEN
+            IF (IPOLTP .EQ. 2) THEN
+               TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+            ELSE IF (IPOLTP .EQ. 1) THEN
+               IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
+            ENDIF
+            TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
+            SIJ = 2.1304*DIST/TEMP
+            DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
+         ELSE
+            DFACT = (1-exp(-ADAMP*DIST))**3
+         ENDIF
+         CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+      ENDIF
+
+C     x-component
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+
+      CALL UTHU(WRK(KMAT),WRK(KTRMO),UCMO,WRK(KLAST),
+     &              NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+C
+      F1 = -EIND1(1)
+      CALL DZERO(WRK(KTLMA),N2ORBX)
+      CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
+      CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,TRES,1)
+
+      F2 = -0.50D0*EIND2(1)
+      CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,TRES,1)
+
+C     y-component
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+
+      CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),UCMO,
+     &          WRK(KLAST),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      F1 = -EIND1(2)
+      CALL DZERO(WRK(KTLMA),N2ORBX)
+      CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
+      CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,TRES,1)
+
+      F2 = -0.50D0*EIND2(2)
+      CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,TRES,1)
+
+C     z-component
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+
+      CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),UCMO,
+     &              WRK(KLAST),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      F1 = -EIND1(3)
+      CALL DZERO(WRK(KTLMA),N2ORBX)
+      CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
+      CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,TRES,1)   
+
+      F2 = -0.50D0*EIND2(3)
+      CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,TRES,1)
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      CALL QEXIT('MMQRO_ITER2')
+      RETURN
+      END
+C-------------------------------------------------------------------------------
+C  /* Deck mmcro_iter1 */
+      SUBROUTINE MMCRO_ITER1(J,EF1,EF2,EF3,UDV,UCMO,
+     &                       ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
+     &                       WRK,LWRK,IPRTMP)
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <inflin.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <infrsp.h>
+#include <maxash.h>
+#include <infind.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <wrkrsp.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+#include <infdim.h>
+
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
+
+      DIMENSION WRK(LWRK), EF1(3), EF2(3), EF3(3)
+      DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*)
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('MMCRO_ITER1')
+
+      DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
+     *        (MMCORD(2,J)-QMCOM(2))**2 +
+     *        (MMCORD(3,J)-QMCOM(3))**2
+      DIST = SQRT(DIST2)
+
+      IF (DIST .GT. RCUTMM) THEN
+         CALL QEXIT('MMCRO_ITER1')
+         RETURN
+      ENDIF
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      KTRMO   = 1
+      KUTR    = KTRMO   + NNORBX
+      KMAT    = KUTR    + N2ORBX
+      KTLMA   = KMAT    + 3*NNBASX
+      KTLMB   = KTLMA   + N2ORBX
+      KLAST   = KTLMB   + N2ORBX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMCRO_ITER1',-KLAST,LWRK2)
+
+      CALL DZERO(WRK(KMAT),3*NNBASX)
+
+      KPATOM = 0
+      NOCOMP = 3
+      TOFILE = .FALSE.
+      TRIMAT = .TRUE.
+      EXP1VL = .FALSE.
+      DIPORG(1) = MMCORD(1,J)
+      DIPORG(2) = MMCORD(2,J)
+      DIPORG(3) = MMCORD(3,J)
+
+C     Get 1-electron integrals
+
+      RUNQM3 = .TRUE.
+      CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
+     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
+     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
+      RUNQM3 = .FALSE.
+
+      IF (QMDAMP) THEN
+         IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
+            CALL QUIT('ERROR in no. of assigned QM polarizabilities')
+         ENDIF
+         IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
+            DIST = 9.99D+99
+            MHIT = 0
+            DO 123 M=1,NUCIND
+               DISTC = (DIPORG(1)-CORD(1,M))**2 +
+     &                 (DIPORG(2)-CORD(2,M))**2 +
+     &                 (DIPORG(3)-CORD(3,M))**2
+               IF (DISTC .LE. DIST) THEN
+                  DIST = DISTC
+                  MHIT = M
+               ENDIF
+ 123        CONTINUE
+         ELSE IF (IDAMP .EQ. 2) THEN
+            DIST = (DIPORG(1)-QMCOM(1))**2 +
+     &             (DIPORG(2)-QMCOM(2))**2 +
+     &             (DIPORG(3)-QMCOM(3))**2
+         ENDIF
+         DIST = SQRT(DIST)
+
+         IF (IDAMP .EQ. 3) THEN
+            IF (IPOLTP .EQ. 2) THEN
+               TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+            ELSE IF (IPOLTP .EQ. 1) THEN
+               IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
+            ENDIF
+            TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
+            SIJ = 2.1304*DIST/TEMP
+            DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
+         ELSE
+            DFACT = (1-exp(-ADAMP*DIST))**3
+         ENDIF
+         CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
+      ENDIF
+
+C     x-component
+      F1=ZERO
+      F2=ZERO
+      F3=ZERO
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+C 
+      CALL UTHU(WRK(KMAT),WRK(KTRMO),UCMO,WRK(KLAST),
+     &          NBAST,NORBT)
+
+C     Unpack
+
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      IF (ISYMT.EQ.ISYMV1) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+
+C     1-index transformation
+
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+
+C     Evaluate expectation value
+
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
+         EF1(1) = F1
+      ELSE
+         EF1(1) = ZERO
+      ENDIF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
+         CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
+         EF2(1) = F2
+      ELSE
+         EF2(1) = ZERO
+      END IF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
+     &              MULD2H(ISYMT,ISYMV1))
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV3,ZYM3,WRK(KTLMB),WRK(KTLMA),ISYMV3)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
+         EF3(1) = F3
+      ELSE
+         EF3(1) = ZERO
+      END IF
+
+C     y-component
+      F1=ZERO
+      F2=ZERO
+      F3=ZERO
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+      
+C     AO to MO transformation
+
+      CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),UCMO,WRK(KLAST),
+     &          NBAST,NORBT)
+
+C     Unpack from tri to full
+
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      IF (ISYMT.EQ.ISYMV1) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
+         EF1(2) = F1
+      ELSE
+         EF1(2) = ZERO
+      ENDIF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
+         CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
+         EF2(2) = F2
+      ELSE
+         EF2(2) = ZERO
+      END IF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
+     &              MULD2H(ISYMT,ISYMV1))
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV3,ZYM3,WRK(KTLMB),WRK(KTLMA),ISYMV3)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
+         EF3(2) = F3
+      ELSE
+         EF3(2) = ZERO
+      END IF
+
+C     z-component
+      F1=ZERO
+      F2=ZERO
+      F3=ZERO
+      CALL DZERO(WRK(KTRMO),NNORBX)
+      CALL DZERO(WRK(KUTR),N2ORBX)
+
+      CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),UCMO,WRK(KLAST),
+     &              NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
+
+      IF (ISYMT.EQ.ISYMV1) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
+         EF1(3) = F1
+      ELSE
+         EF1(3) = ZERO
+      ENDIF
+
+      IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
+         CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
+         EF2(3) = F2
+      ELSE
+         EF2(3) = ZERO
+      END IF
+      
+      IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL DZERO(WRK(KTLMB),N2ORBX)
+         CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
+         CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
+     &              MULD2H(ISYMT,ISYMV1))
+         CALL DZERO(WRK(KTLMA),N2ORBX)
+         CALL OITH1(ISYMV3,ZYM3,WRK(KTLMB),WRK(KTLMA),ISYMV3)
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
+         EF3(3) = F3
+      ELSE
+         EF3(3) = ZERO
+      END IF
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      CALL QEXIT('MMCRO_ITER1')
+      RETURN
+      END
+C-------------------------------------------------------------------------------
+C  /* Deck mmcro_iter2 */
+      SUBROUTINE MMCRO_ITER2(J,EIND1,EIND2,TRES,UCMO,
+     &                      ISYMT,ISYMV2,ZYM2,WRK,LWRK,IPRTMP)
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <inflin.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <infrsp.h>
+#include <maxash.h>
+#include <infind.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <qmmm.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <wrkrsp.h>
+#include <orgcom.h>
+#include <infinp.h>
+#include <nuclei.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+#include <cbiher.h>
+
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
+
+      DIMENSION WRK(LWRK), EIND1(3), EIND2(3)
+      DIMENSION UCMO(*),ZYM2(*),TRES(*)
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE, TRIMAT, EXP1VL
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('MMCRO_ITER2')
+
+      DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
+     *        (MMCORD(2,J)-QMCOM(2))**2 +
+     *        (MMCORD(3,J)-QMCOM(3))**2
+      DIST = SQRT(DIST2)
+
+      IF (DIST .GT. RCUTMM) THEN
+         CALL QEXIT('MMCRO_ITER2')
+         RETURN
+      ENDIF
+
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
+      KTRMO   = 1
+      KUTR    = KTRMO   + NNORBX
+      KMAT    = KUTR    + N2ORBX
+      KTLMA   = KMAT    + 3*NNBASX
+      KLAST   = KTLMA   + N2ORBX
+      LWRK2   = LWRK - KLAST + 1
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMCRO_ITER2',-KLAST,LWRK2)
+
+
+
+
+
+
+
+
+
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
+
+      CALL QEXIT('MMCRO_ITER2')
+      RETURN
+      END
 C ************************************************
 C Parallel QM/MM response routines (AHS 09-10)
 C ************************************************
@@ -2041,10 +2317,6 @@ C     Damping
 
       CALL MPIXBCAST(NASHDI,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ISX,NORB,'INTEGER',MASTER)
-
-      OBKPX = DIPORG(1)
-      OBKPY = DIPORG(2)
-      OBKPZ = DIPORG(3)
 C    
       KUCMO  = 1
       JUBO   = KUCMO + NORBT*NBAST
@@ -2059,29 +2331,17 @@ C
       ELSE
          NFACTOR = NASHDI*NASHDI
       ENDIF
-      KWRK = KUDV + FACTOR
-
-      CALL MPIXBCAST(WRK(KUDV),NFACTOR,'DOUBLE',MASTER)      
-
-C         KUDVTR  = KEFIELD + 3*NNZAL
-C         KWRK    = KUDVTR  + N2ASHX
-C         CALL MPIXBCAST(WRK(KUDVTR),N2ASHX,'DOUBLE',MASTER)
-C      ELSE
-C         KUDV    = KEFIELD + 3*NNZAL 
-C         KWRK    = KUDV    + NASHDI*NASHDI
-C         CALL MPIXBCAST(WRK(KUDV),NASHDI*NASHDI,'DOUBLE',MASTER)
-C      ENDIF
-
-      CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
-      CALL MPIXBCAST(WRK(JUBO),N2ORBX,'DOUBLE',MASTER)
-
-      CALL DZERO(WRK(KEFIELD),3*NNZAL)
-
-      KMAT = KWRK
+      KMAT = KUDV + NFACTOR
       KLAST = KMAT + 3*NNBASX
       LWRK2 = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_S1',-KLAST,LWRK2)
+
+      CALL MPIXBCAST(WRK(KUDV),NFACTOR,'DOUBLE',MASTER)      
+      CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WRK(JUBO),N2ORBX,'DOUBLE',MASTER)
+
+      CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
  201  CONTINUE
 
@@ -2102,10 +2362,6 @@ C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(KEFIELD),WRK(KEFIELD),3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
-
       CALL QEXIT('QMMMLNO_S1')
       RETURN
       END
@@ -2248,10 +2504,6 @@ C
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KINDMOM),3*NNZAL,'DOUBLE',MASTER)
 
-      OBKPX = DIPORG(1)
-      OBKPY = DIPORG(2)
-      OBKPZ = DIPORG(3)
-
       CALL DZERO(WRK(JRXYO),N2ORBX)
 
  201  CONTINUE
@@ -2265,120 +2517,19 @@ C
      *                    WRK(KINDMOM+LRI),WRK(KINDMOM+LRI+1),
      *                    WRK(KUCMO),WRK(JRXYO),
      *                    WRK(KLAST),LWRK2,IPRTMP)
-
          GOTO 201
-
-
-         DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *           (MMCORD(2,J)-QMCOM(2))**2 +
-     *           (MMCORD(3,J)-QMCOM(3))**2
-         DIST = SQRT(DIST2)
-
-         IF (DIST .GT. RCUTMM) THEN
-            GOTO 201
-         ENDIF
-
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-         CALL DZERO(WRK(KMAT),3*NNBASX)
-
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         DIPORG(1) = MMCORD(1,J)
-         DIPORG(2) = MMCORD(2,J)
-         DIPORG(3) = MMCORD(3,J)
-
-         RUNQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &               LWRK2,LABINT,INTREP,INTADR,J,TOFILE,
-     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-         RUNQM3 = .FALSE.
-
-         IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) )THEN
-               DIST = 9.99D+99
-               MHIT = 0
-               DO 124 M=1,NUCIND
-                  DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                    (DIPORG(2)-CORD(2,M))**2 +
-     &                    (DIPORG(3)-CORD(3,M))**2
-                  IF (DISTC .LE. DIST) THEN
-                     DIST = DISTC
-                     MHIT = M
-                  ENDIF
- 124           CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-               DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &                (DIPORG(2)-QMCOM(2))**2 +
-     &                (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-               IF (IPOLTP .EQ. 2) THEN
-                  TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-               ELSE IF (IPOLTP .EQ. 1) THEN
-                  IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-               ENDIF
-               TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-               SIJ = 2.1304*DIST/TEMP
-               DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-               DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-         ENDIF
-
-C        x-component of electric field 
-         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &             NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-         FACx = -WRK(KINDMOM+LRI-1+0)   
-         CALL DAXPY(N2ORBX,FACx,WRK(KUTR),1,WRK(JRXYO),1)
-
-C        y-component of electric field
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &             WRK(KLAST),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-         FACy = -WRK(KINDMOM+LRI-1+1)
-         CALL DAXPY(N2ORBX,FACy,WRK(KUTR),1,WRK(JRXYO),1)
-
-C        z-component of (induced) electric field
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &             WRK(KLAST),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-         FACz = -WRK(KINDMOM+LRI-1+2)
-         CALL DAXPY(N2ORBX,FACz,WRK(KUTR),1,WRK(JRXYO),1)
-
-         GO TO 201
       ENDIF
 
 C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(JRXYO),WRK(JRXYO),N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
-
       CALL QEXIT('QMMMLNO_S2')
       RETURN
       END
 C-------------------------------------------------------------------------------
 C  /* Deck qmmmqro_m1 */
-      SUBROUTINE QMMMQRO_M1(EF1,EF2,UCMO,
+      SUBROUTINE QMMMQRO_M1(EF1,EF2,UDV,UCMO,
      &                      ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK,LWRK)
 C
 C  JK, Nov.08
@@ -2409,9 +2560,10 @@ C
 #include <mpif.h>
 #endif
 #include <cbiher.h>
+#include <infdim.h>
 
       DIMENSION WRK(LWRK)
-      DIMENSION UCMO(*),ZYM1(*),ZYM2(*),EF1(*),EF2(*)
+      DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*),EF1(*),EF2(*)
 
       CALL QENTER('QMMMQRO_M1')
 
@@ -2442,6 +2594,7 @@ C     Damping
       ENDIF
 
       CALL MPIXBCAST(UCMO,NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(UDV,NASHDI*NASHDI,'DOUBLE',MASTER)
 
 C     QRO
       CALL MPIXBCAST(ISYMT,1,'INTEGER',MASTER)
@@ -2541,7 +2694,8 @@ C     Damping
       ENDIF
 C
 C
-      KUCMO   = 1
+      KUDV    = 1
+      KUCMO   = KUDV    + NASHDI*NASHDI
       KTRMO   = KUCMO   + NORBT*NBAST
       KUTR    = KTRMO   + NNORBX
       KMAT    = KUTR    + N2ORBX
@@ -2557,6 +2711,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO_S1',-KLAST,LWRK2)
 
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WRK(KUDV),NASHDI*NASHDI,'DOUBLE',MASTER)
 
 C     QRO
       CALL MPIXBCAST(ISYMT,1,'INTEGER',MASTER)
@@ -2564,10 +2719,6 @@ C     QRO
       CALL MPIXBCAST(ISYMV2,1,'INTEGER',MASTER)
       CALL MPIXBCAST(WRK(KZYM1),NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KZYM2),NORBT*NORBT,'DOUBLE',MASTER)
-
-      OBKPX = DIPORG(1)
-      OBKPY = DIPORG(2)
-      OBKPZ = DIPORG(3)
 
       CALL DZERO(WRK(KEF1),3*NNZAL)
       CALL DZERO(WRK(KEF2),3*NNZAL)
@@ -2579,160 +2730,10 @@ C     QRO
       CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-
-         DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *           (MMCORD(2,J)-QMCOM(2))**2 +
-     *           (MMCORD(3,J)-QMCOM(3))**2
-         DIST = SQRT(DIST2)
-
-         IF (DIST .GT. RCUTMM) THEN
-            GOTO 100
-         ENDIF
-
-C        x-component
-         F1=ZERO
-         F2=ZERO
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-         CALL DZERO(WRK(KMAT),3*NNBASX)
-
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         DIPORG(1) = MMCORD(1,J)
-         DIPORG(2) = MMCORD(2,J)
-         DIPORG(3) = MMCORD(3,J)
-
-         RUNQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &                LWRK2,LABINT,INTREP,INTADR,J,TOFILE,
-     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-         RUNQM3 = .FALSE.
-
-         IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
-               DIST = 9.99D+99
-               MHIT = 0
-               DO 125 M=1,NUCIND
-                  DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                    (DIPORG(2)-CORD(2,M))**2 +
-     &                    (DIPORG(3)-CORD(3,M))**2
-                  IF (DISTC .LE. DIST) THEN
-                     DIST = DISTC
-                     MHIT = M
-                  ENDIF
- 125           CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-               DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &                (DIPORG(2)-QMCOM(2))**2 +
-     &                (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-               IF (IPOLTP .EQ. 2) THEN
-                  TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-               ELSE IF (IPOLTP .EQ. 1) THEN
-                  IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-               ENDIF
-               TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-               SIJ = 2.1304*DIST/TEMP
-               DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-               DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-         ENDIF
-
-         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &             NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-C
-         IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
-            WRK(KEF1+LRI-1+0) = F1
-         ELSE
-            WRK(KEF1+LRI-1+0) = ZERO
-         ENDIF 
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
-            WRK(KEF2+LRI-1+0) = F2
-         ELSE
-            WRK(KEF2+LRI-1+0) = ZERO
-         ENDIF
-
-C        y-component
-         F1=ZERO
-         F2=ZERO
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &             WRK(KLAST),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-         IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QM3MMRO')
-            WRK(KEF1+LRI-1+1) = F1
-         ELSE
-            WRK(KEF1+LRI-1+1) = ZERO
-         ENDIF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
-            WRK(KEF2+LRI-1+1) = F2
-         ELSE
-            WRK(KEF2+LRI-1+1) = ZERO
-         ENDIF
-
-C        z-component
-         F1=ZERO
-         F2=ZERO
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &             WRK(KLAST),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-         IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
-            WRK(KEF1+LRI-1+2) = F1
-         ELSE
-            WRK(KEF1+LRI-1+2) = ZERO
-         ENDIF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMQRO')
-            WRK(KEF2+LRI-1+2) = F2
-         ELSE
-            WRK(KEF2+LRI-1+2) = ZERO
-         ENDIF
-         GO TO 100
+         CALL MMQRO_ITER1(J,WRK(KEF1+LRI-1),WRK(KEF2+LRI-1),WRK(KUDV),
+     *              WRK(KUCMO),ISYMT,ISYMV1,ISYMV2,WRK(KZYM1),
+     *              WRK(KZYM2),WRK(KLAST),LWRK2,IPRTMP)
+         GOTO 100
       ENDIF
 
 C     No more integrals to calculate
@@ -2741,10 +2742,6 @@ C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(KEF2),WRK(KEF2),3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
-
       CALL QEXIT('QMMMQRO_S1')
       RETURN
       END
@@ -2907,10 +2904,6 @@ C     QRO
       CALL MPIXBCAST(WRK(KIND1),3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KIND2),3*NNZAL,'DOUBLE',MASTER)
 
-      OBKPX = DIPORG(1)
-      OBKPY = DIPORG(2)
-      OBKPZ = DIPORG(3)
-
       CALL DZERO(WRK(KTRES),N2ORBX)
 
 
@@ -2921,135 +2914,22 @@ C     QRO
       CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-
-         DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *           (MMCORD(2,J)-QMCOM(2))**2 +
-     *           (MMCORD(3,J)-QMCOM(3))**2
-         DIST = SQRT(DIST2)
-
-         IF (DIST .GT. RCUTMM) THEN
-            GOTO 100
-         ENDIF
-
-C        x-component
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-         CALL DZERO(WRK(KMAT),3*NNBASX)
-
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         DIPORG(1) = MMCORD(1,J)
-         DIPORG(2) = MMCORD(2,J)
-         DIPORG(3) = MMCORD(3,J)
-
-         RUNQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
-     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
-         RUNQM3 = .FALSE.
-
-         IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) )THEN
-               DIST = 9.99D+99
-               MHIT = 0
-               DO 126 M=1,NUCIND
-                  DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                 (DIPORG(2)-CORD(2,M))**2 +
-     &                 (DIPORG(3)-CORD(3,M))**2
-                  IF (DISTC .LE. DIST) THEN
-                     DIST = DISTC
-                     MHIT = M
-                  ENDIF
- 126           CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-               DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &               (DIPORG(2)-QMCOM(2))**2 +
-     &               (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-               IF (IPOLTP .EQ. 2) THEN
-                  TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-               ELSE IF (IPOLTP .EQ. 1) THEN
-                  IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-               ENDIF
-               TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-               SIJ = 2.1304*DIST/TEMP
-               DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-               DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-         ENDIF
-
-         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-C
-         F1 = -WRK(KIND1+LRI-1+0) 
-         CALL DZERO(WRK(KTLMA),N2ORBX)
-         CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KUTR),WRK(KTLMA),ISYMT)
-         CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)
-
-         F2 = -0.50D0*WRK(KIND2+LRI-1+0)
-         CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,WRK(KTRES),1)
-
-C        y-component
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &              WRK(KLAST),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-         F1 = -WRK(KIND1+LRI-1+1)
-         CALL DZERO(WRK(KTLMA),N2ORBX)
-         CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KUTR),WRK(KTLMA),ISYMT)
-         CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)
-
-         F2 = -0.50D0*WRK(KIND2+LRI-1+1)
-         CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,WRK(KTRES),1)
-
-C        z-component
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),
-     &              WRK(KLAST),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-         F1 = -WRK(KIND1+LRI-1+2)
-         CALL DZERO(WRK(KTLMA),N2ORBX)
-         CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KUTR),WRK(KTLMA),ISYMT)
-         CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,WRK(KTRES),1)   
-
-         F2 = -0.50D0*WRK(KIND2+LRI-1+2)
-         CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,WRK(KTRES),1)
-
-         GO TO 100
+         CALL MMQRO_ITER2(J,WRK(KIND1+LRI-1),WRK(KIND2+LRI-1),
+     &                   WRK(KTRES),WRK(KUCMO),ISYMT,ISYMV2,WRK(KZYM2),
+     &                   WRK(KLAST),LWRK2,IPRTMP)
+         GOTO 100
       ENDIF
 
 C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
-
       CALL QEXIT('QMMMQRO_S2')
       RETURN
       END
 C-------------------------------------------------------------------------------
 C  /* Deck qmmmcro_m1 */
-      SUBROUTINE QMMMCRO_M1(EF1,EF2,EF3,UCMO,
+      SUBROUTINE QMMMCRO_M1(EF1,EF2,EF3,UDV,UCMO,
      &                      ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
      &                      WRK,LWRK)
 C
@@ -3081,9 +2961,11 @@ C
 #include <mpif.h>
 #endif
 #include <cbiher.h>
+#include <infdim.h>
 
       DIMENSION WRK(LWRK)
-      DIMENSION UCMO(*),ZYM1(*),ZYM2(*),ZYM3(*),EF1(*),EF2(*),EF3(*)
+      DIMENSION UCMO(*),UDV(NASHDI,NASHDI)
+      DIMENSION ZYM1(*),ZYM2(*),ZYM3(*),EF1(*),EF2(*),EF3(*)
 
       CALL QENTER('QMMMCRO_M1')
 
@@ -3148,6 +3030,7 @@ C     Damping
       CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
 
       CALL MPIXBCAST(UCMO,NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(UDV,NASHDI*NASHDI,'DOUBLE',MASTER)
 
 C     CRO
       CALL MPIXBCAST(ISYMT,1,'INTEGER',MASTER)
@@ -3284,7 +3167,8 @@ C
       CALL MPIXBCAST(IPATOM,NATOMS,'INTEGER',MASTER)
       CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
 C
-      KUCMO   = 1
+      KUDV    = 1
+      KUCMO   = KUDV    + NASHDI*NASHDI
       KTRMO   = KUCMO   + NORBT*NBAST
       KUTR    = KTRMO   + NNORBX
       KMAT    = KUTR    + N2ORBX
@@ -3302,6 +3186,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO_S1',-KLAST,LWRK2)
 
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WRK(KUDV),NASHDI*NASHDI,'DOUBLE',MASTER)
 
 C     CRO
       CALL MPIXBCAST(ISYMT,1,'INTEGER',MASTER)
@@ -3327,224 +3212,12 @@ C     CRO
       CALL MPIXRECV(LRI, 1, 'INTEGER', MASTER, MPTAG2)
 
       IF (J.GT.0) THEN
-
-         DIST2 = (MMCORD(1,J)-QMCOM(1))**2 +
-     *           (MMCORD(2,J)-QMCOM(2))**2 +
-     *           (MMCORD(3,J)-QMCOM(3))**2
-         DIST = SQRT(DIST2)
-
-         IF (DIST .GT. RCUTMM) THEN
-            GOTO 100
-         ENDIF
-
-         CALL DZERO(WRK(KMAT),3*NNBASX)
-
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         DIPORG(1) = MMCORD(1,J)
-         DIPORG(2) = MMCORD(2,J)
-         DIPORG(3) = MMCORD(3,J)
-
-C        Get 1-electron integrals
-
-         RUNQM3 = .TRUE.
-         CALL GET1IN(WRK(KMAT),'NEFIELD',NOCOMP,WRK(KLAST),
-     &                LWRK2,LABINT,INTREP,INTADR,IATNOW,TOFILE,
-     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
-         RUNQM3 = .FALSE.
-
-         IF (QMDAMP) THEN
-            IF ( (IDAMP .EQ. 3) .AND. (NQMNUC .NE. NUCIND) ) THEN
-               CALL QUIT('ERROR in no. of assigned QM polarizabilities')
-            ENDIF
-            IF ( (IDAMP .EQ. 1) .OR. (IDAMP .EQ. 3) ) THEN
-               DIST = 9.99D+99
-               MHIT = 0
-               DO 123 M=1,NUCIND
-                  DISTC = (DIPORG(1)-CORD(1,M))**2 +
-     &                  (DIPORG(2)-CORD(2,M))**2 +
-     &                  (DIPORG(3)-CORD(3,M))**2
-                  IF (DISTC .LE. DIST) THEN
-                     DIST = DISTC
-                     MHIT = M
-                  ENDIF
- 123           CONTINUE
-            ELSE IF (IDAMP .EQ. 2) THEN
-               DIST = (DIPORG(1)-QMCOM(1))**2 +
-     &                (DIPORG(2)-QMCOM(2))**2 +
-     &                (DIPORG(3)-QMCOM(3))**2
-            ENDIF
-            DIST = SQRT(DIST)
-
-            IF (IDAMP .EQ. 3) THEN
-               IF (IPOLTP .EQ. 2) THEN
-                  TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-               ELSE IF (IPOLTP .EQ. 1) THEN
-                  IF (IPOLTP .EQ. 1) TEMPI = POLIMM(J)
-               ENDIF
-               TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-               SIJ = 2.1304*DIST/TEMP
-               DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
-            ELSE
-               DFACT = (1-exp(-ADAMP*DIST))**3
-            ENDIF
-            CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
-         ENDIF
-
-C        x-component
-         F1=ZERO
-         F2=ZERO
-         F3=ZERO
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-C 
-         CALL UTHU(WRK(KMAT),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-
-C        Unpack
-
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-         IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-
-C           1-index transformation
-
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-
-C           Evaluate expectation value
-
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
-            WRK(KEF1+LRI-1+0) = F1
-         ELSE
-            WRK(KEF1+LRI-1+0) = ZERO
-         ENDIF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
-            WRK(KEF2+LRI-1+0) = F2
-         ELSE
-            WRK(KEF2+LRI-1+0) = ZERO
-         END IF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),
-     &                 MULD2H(ISYMT,ISYMV1))
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV3,WRK(KZYM3),WRK(KTLMB),WRK(KTLMA),ISYMV3)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
-            WRK(KEF3+LRI-1+0) = F3
-         ELSE
-            WRK(KEF3+LRI-1+0) = ZERO
-         END IF
-
-C         y-component
-         F1=ZERO
-         F2=ZERO
-         F3=ZERO
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-C         AO to MO transformation
-
-         CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-
-C         Unpack from tri to full
-
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-          
-         IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
-            WRK(KEF1+LRI-1+1) = F1
-         ELSE
-            WRK(KEF1+LRI-1+1) = ZERO
-         ENDIF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
-            WRK(KEF2+LRI-1+1) = F2
-         ELSE
-            WRK(KEF2+LRI-1+1) = ZERO
-         END IF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),
-     &                 MULD2H(ISYMT,ISYMV1))
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV3,WRK(KZYM3),WRK(KTLMB),WRK(KTLMA),ISYMV3)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
-            WRK(KEF3+LRI-1+1) = F3
-         ELSE
-            WRK(KEF3+LRI-1+1) = ZERO
-         END IF
-
-C         z-component
-         F1=ZERO
-         F2=ZERO
-         F3=ZERO
-         CALL DZERO(WRK(KTRMO),NNORBX)
-         CALL DZERO(WRK(KUTR),N2ORBX)
-
-         CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),WRK(KUCMO),WRK(KLAST),
-     &              NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-
-         IF (ISYMT.EQ.ISYMV1) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMCRO')
-            WRK(KEF1+LRI-1+2) = F1
-         ELSE
-            WRK(KEF1+LRI-1+2) = ZERO
-         ENDIF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYMV2)
-            CALL MELONE(WRK(KTLMB),1,UDV,ONE,F2,200,'QMMMCRO')
-            WRK(KEF2+LRI-1+2) = F2
-         ELSE
-            WRK(KEF2+LRI-1+2) = ZERO
-         END IF
-
-         IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL DZERO(WRK(KTLMB),N2ORBX)
-            CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KUTR),WRK(KTLMA),ISYMT)
-            CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),
-     &                 MULD2H(ISYMT,ISYMV1))
-            CALL DZERO(WRK(KTLMA),N2ORBX)
-            CALL OITH1(ISYMV3,WRK(KZYM3),WRK(KTLMB),WRK(KTLMA),ISYMV3)
-            CALL MELONE(WRK(KTLMA),1,UDV,ONE,F3,200,'QMMMCRO')
-            WRK(KEF3+LRI-1+2) = F3
-         ELSE
-            WRK(KEF3+LRI-1+2) = ZERO
-         END IF
-
-         GO TO 100
+         CALL MMCRO_ITER1(J,WRK(KEF1+LRI-1),WRK(KEF2+LRI-1),
+     *                   WRK(KEF3+LRI-1),WRK(KUDV),WRK(KUCMO),
+     *                   ISYMT,ISYMV1,ISYMV2,ISYMV3,
+     *                   WRK(KZYM1),WRK(KZYM2),WRK(KZYM3),
+     *                   WRK(KLAST),LWRK2,IPRTMP)
+         GOTO 100
       ENDIF
 
 C     No more integrals to calculate
