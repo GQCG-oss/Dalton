@@ -1389,6 +1389,17 @@ C               of initial occupation guess
       IF (NSYM .EQ. 1) AUTOCC = .FALSE.
 C     ... occupation cannot change if only one symmetry
 C
+C     Check for input errors of initial occupation
+C
+      NERROR = 0
+      DO ISYM = 1,NSYM
+         IF (NRHF(ISYM) .GT. NORB(ISYM)) NERROR = NERROR + 1
+      END DO
+      INPERR = INPERR + NERROR
+      IF (NERROR .GT. 0) THEN
+         WRITE(LUPRI,'(/A)') 'INPUT ERROR - RHF occupation too big'
+      END IF
+C
 C       
 C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .eq. 0),
 C     we need to retransfer SCF occupation to MCSCF parameters as
@@ -5211,16 +5222,16 @@ C
       IF (DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT) THEN
 C        ... Check for inconsistencies :
 
-         WRITE (IWUNIT,'(/5X,A/,2(7X,2A/))')
+         WRITE (IWUNIT,'(/5X,A,2(/7X,2A))')
      &        'This is a lrWFT-srDFT calculation using the ',
      &        SRXFUN,' short range exchange functional',
      &        SRCFUN,' short range correlation functional'
-         IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(7X,2A/)')
+         IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(7X,2A)')
      &        SRLOCALSPIN, ' local spin model'
 
-         IF (IWINT.NE.0) WRITE(IWUNIT,'(5X,A,F10.6/)')
+         IF (IWINT.NE.0) WRITE(IWUNIT,'(/5X,A,F10.6)')
      &        'Weighted short range interpolation, COPFAC = ',COPFAC
-         WRITE (IWUNIT,'(5X,A,2F12.6)')
+         WRITE (IWUNIT,'(/5X,A,2F12.6)')
      &        'sr-DFT and exact sr-HF exchange weights:',
      &         (1.0D0-HFXFAC),HFXFAC
 
@@ -5277,10 +5288,10 @@ C
      &       ' ** Automatic occupation of RHF orbitals **'
            END IF
          END IF
-         WRITE(IWUNIT,'(5X,2A/5X,A/)')
+         WRITE(IWUNIT,'(/5X,2A/5X,A)')
      &       ' -- Initial occupation of symmetries is determined from ',
      &       TXTOCC(INIOCC),
-     &       ' -- Initial occupation of symmetries is : --'
+     &       ' -- Initial occupation of symmetries is :'
          WRITE(IWUNIT,1550) NRHFT,(NRHF(I),I=1,NSYM)
          IF (HSROHF) WRITE (IWUNIT,1555) NASHT,(NASH(I),I=1,NSYM)
          IF (IOPRHF .NE. 0) WRITE (IWUNIT,1560) IOPRHF
