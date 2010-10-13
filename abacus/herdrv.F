@@ -102,7 +102,6 @@ C
 #include <cbihr1.h>
 #include <cbihr2.h>
 #include <cbihrs.h>
-#include <cbisor.h>
 #include <cbieri.h>
 #include <gnrinf.h>
 #include <exeinf.h>
@@ -111,6 +110,10 @@ C
 #include <r12int.h>
 #include <nuclei.h>
 #include <pcmlog.h>
+C
+C inftra : USE_INTSORT
+C
+#include "inftra.h"
 C
       LOGICAL SET, FEXIST
 C
@@ -169,7 +172,7 @@ C
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
 C        Delete old MO integrals and AOSUP integrals
-         IF (RNINTS) THEN
+         IF (USE_INTSORT) THEN
             IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
                                CALL DARMOV(LUORDA)
             IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
@@ -234,7 +237,7 @@ C     **********************************
 C
 C     Integrals on AOORDINT
 C
-      IF (RNINTS) THEN
+      IF (USE_INTSORT) THEN
          CALL GPINQ('AOTWOINT','EXIST',FEXIST)
          IF (FEXIST) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
@@ -297,6 +300,9 @@ C
 #include "hrunit.h"
 #include "cbieri.h"
 #else
+C
+C inftra : USE_INTSORT
+C
 #include "dummy.h"
 #include "gnrinf.h"
 #include <cbihrs.h>
@@ -317,7 +323,6 @@ C
 #include <qmmm.h>
 #include <huckel.h>
 #include <drw2el.h>
-#include <cbisor.h>
 #include <elweak.h>
 #include <r12int.h>
 #include <codata.h>
@@ -396,7 +401,7 @@ cLig <> added RANGMO and RPSO
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
+     &             '.NEWTRA', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
@@ -865,9 +870,10 @@ C&&& Nuclear model
               CALL QUIT('*** ERROR *** HERINP: Unknown nuclear model')
             ENDIF
             GO TO 100
+!      .SORT Integrals
   178    CONTINUE
             SUPMAT = .FALSE.
-            RNINTS = .TRUE.
+            USE_INTSORT = .TRUE.
             NEWTRA = .TRUE.
             GO TO 100
   179    CONTINUE
@@ -1186,7 +1192,11 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             DIPANH = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
+!        .NEWTRA ("new transformation" from 1988 (!)
+!        this option without calling SORTAO
   237    CONTINUE
+            NEWTRA = .TRUE.
+            GO TO 100
   238    CONTINUE
   239    CONTINUE
   240    CONTINUE
@@ -3601,7 +3611,11 @@ C  /* Deck srtinp */
       SUBROUTINE SRTINP(WORD)
 #include <implicit.h>
 #include <priunit.h>
+C
+C inftra : USE_INTSORT
+C
 #include <cbisor.h>
+#include <inftra.h>
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -3701,7 +3715,7 @@ C
       END IF
   300 CONTINUE
       IF (ICHANG .EQ. 0) RETURN
-      IF (RNINTS. AND. NEWDEF) THEN
+      IF (USE_INTSORT. AND. NEWDEF) THEN
          CALL HEADER('Changes of defaults for SORTAO:',1)
          IF (THRQ2 .NE. 1.0D-15) WRITE (LUPRI,'(A,D12.2)')
      &        ' Threshold for sorted integrals:', THRQ2
@@ -3730,7 +3744,6 @@ C/* Deck herini */
 #include <inftra.h>
 #include "cbirea.h"
 #include <cbisol.h>
-#include <cbisor.h>
 #include <cbiher.h>      
 #include <drw2el.h>
 #include <orgcom.h>
@@ -3751,24 +3764,19 @@ C
 C
 C     Initialize /CBIHER/
 C
-CTSAUE
-      RNINTS = NEWTRA .AND. .NOT. DIRCAL
       IF(RELCAL) THEN
         HAMILT = .FALSE.
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
         DIRAC_HER = .TRUE.
         SUPMAT = .FALSE.
+        USE_INTSORT = .FALSE.
       ELSE
         HAMILT = .TRUE.
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
         DIRAC_HER = .FALSE.
-C#ifdef VAR_INT64
-C        SUPMAT = .FALSE.
-C#else
-        SUPMAT = .NOT. DIRCAL .AND. .NOT. RNINTS
-C#endif
+        SUPMAT = .NOT. DIRCAL .AND. .NOT. USE_INTSORT
       ENDIF
       SKIP   = .FALSE.
       TSTINP = .FALSE.
