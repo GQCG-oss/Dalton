@@ -5417,16 +5417,16 @@ C
       NFRMT = ISUM(NSYM,NFRMP2,1)
       IF (DOSCF .AND. NFRHT .GT. 0) THEN
          IF (.NOT.DODFT) THEN
-            WRITE (IWUNIT,6110) (NFRRHF(I),I=1,NSYM)
+            WRITE (IWUNIT,6110) NFRHT,(NFRRHF(I),I=1,NSYM)
          ELSE
-            WRITE (IWUNIT,6111) (NFRRHF(I),I=1,NSYM)
+            WRITE (IWUNIT,6111) NFRHT,(NFRRHF(I),I=1,NSYM)
          END IF
       END IF
       IF (DOMP2 .AND. NFRMT .GT. 0) THEN
-         WRITE (IWUNIT,6120) (NFRMP2(I),I=1,NSYM)
+         WRITE (IWUNIT,6120) NFRMT,(NFRMP2(I),I=1,NSYM)
       END IF
       IF (DOMC .AND. NFROT.GT.0) THEN
-         WRITE (IWUNIT,6100) (NFRO(I),I=1,NSYM)
+         WRITE (IWUNIT,6100) NFROT,(NFRO(I),I=1,NSYM)
       END IF
  6110 FORMAT(//,5X,'Number of frozen SCF orbitals',T38,I5,' |',8I5)
  6111 FORMAT(//,5X,'Number of frozen KS orbitals',T38,I5,' |',8I5)
