@@ -744,6 +744,7 @@ C
 #include "qrinf.h"
 #include "infave.h"
 #include "inftap.h"
+#include "inforb.h"
 C
       LOGICAL NEWDEF, SET
       PARAMETER ( NTABLE = 21 )
