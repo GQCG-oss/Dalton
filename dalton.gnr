@@ -220,6 +220,8 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
        cp $WRKDIR/$relay QMMMIM
        if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
          echo "Relay matrix not present in scratch directory. Continuing anyway..."
+       else
+         echo "Done" 
        fi
      else
        echo "Cannot copy relay matrix because it does not exist or is not readable"
