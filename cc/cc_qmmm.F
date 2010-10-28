@@ -1712,7 +1712,6 @@ C
 
       CALL QENTER('CCMM_FMUL')
 
-      print *,'arnfinn ccmm_fmul',sitei,exlist(1,sitei)
       DO 200 SITEJ=1,MMCENT
 
         IF (SITEJ .NE. SITEI) THEN     

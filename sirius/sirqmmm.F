@@ -786,7 +786,6 @@ C       of atoms in previous and current run.
           WRITE(LUPRI,*) 'Ind. dips. from a prev. calc. read from file'
           CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WRK(KINDMOM))
         ENDIF
-        print *,'arnfinn indmom',WRK(KINDMOM),WRK(KINDMOM+1)
       ELSE IF (MMITER) THEN
 
         KINDMOM = 1                               ! List for induced dipoles
@@ -833,6 +832,7 @@ C     total solvation energy
       CALL DZERO(WRK(KTAO),NNBASX)
 
       IF (NODTOT .GE. 1) THEN
+C      IF (.FALSE.) THEN
          CALL QMMM_POLARI_M3(DCAO,WRK(KTAO),WRK(KINDMOM),
      &                       WRK(KWRK2),LWRK2,IPRINT)
       ELSE
@@ -1080,7 +1080,6 @@ C     Form F vector due to permanent MM moments
  200     CONTINUE
 
       ENDIF ! IF(NODTOT.eq.0)
-      print *,'arnfinn kelf ', wrk(kelf)
 
       NDIM = 3*POLDIM
 
@@ -3448,9 +3447,9 @@ C               JPC A 102 (1998) 2399
 
       RETURN
       END
-C**************************************************************************************
-C 'Inside loops' routines (they can be used by both parallel and sequential code)
-C**************************************************************************************
+C*******************************************************************************
+C 'Inside loops' routines (can be used both by parallel and sequential code)
+C******************************************************************************
 C  /* Deck charge_iter */
       SUBROUTINE CHARGE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
@@ -3771,7 +3770,7 @@ C     by writing CORD(1,J) - MMCORD(1,I)
       RETURN
       END
 
-C**************************************************************************************
+C***************************************************************
 C  /* Deck quadpole_iter */
       SUBROUTINE QUADPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
@@ -4302,7 +4301,10 @@ C     Send data to slaves
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
+      DO N=1, NEXLST
+         CALL MPIXBCAST(EXLIST(N,1:MMCENT),MMCENT,'INTEGER',MASTER)
+      ENDDO
+C      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
 
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
@@ -4438,8 +4440,9 @@ C
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
-
+      DO N=1, NEXLST
+         CALL MPIXBCAST(EXLIST(N,1:MMCENT),MMCENT,'INTEGER',MASTER)
+      ENDDO
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
       IF (QMDAMP) THEN
@@ -5378,6 +5381,9 @@ C     Collect data from all slaves
 
       EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
 
+      print *,'arnfinn a',edeld,ednuc,edmult
+      print *,'arnfinn b',ed0mom,ed1mom,ed2mom,ed3mom
+
       CALL QEXIT('QMMM_POLARI_M3')
 
       RETURN
@@ -5499,6 +5505,7 @@ C     total solvation energy
          ED3MOM = ED3MOM + WRK(KEDALL + 5)
          GOTO 20
       ENDIF
+
 
       CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
@@ -5905,7 +5912,9 @@ C  /* Deck mmpolari_iter3 */
 
       LSKIP = .FALSE. 
 
+      print *,'arnfinn bfr ccmm_epsao',i,wrk(kmat)
       CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KLAST),LWRK2)
+      print *,'arnfinn aft ccmm_epsao',i,wrk(kmat)
 
       IF (LSKIP) THEN
          CALL QEXIT('MMPOLARI_ITER3')
@@ -6186,10 +6195,8 @@ C  /* Deck mmpolari_iter1 */
       KEND  = KMAT + 3*NNBASX
       LWRK1 = LWRK - KEND + 1
 
-      print *,'bfr ccmul',i,lri,elf(1)
 C     Calculate field due to MM multipoles
       CALL CCMM_FMUL(ELF,LRI,I)
-      print *,'aft ccmul',i,lri,elf(1)
 
 C     Add QM region contribution to the F vector
 

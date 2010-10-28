@@ -177,8 +177,8 @@ C     Read the relay matrix from file
 
 C     In contrast to the old code, the zero-order contribution, i.e.
 C     - sum_a mu_ind_a t_a_pq has been included since we in 
-C     sirirus do not subratct this from the fock/ks-operator. We here only 
-C     ned to calculate the explicit electronic contribution, i.e.
+C     sirius do not subtract this from the fock/ks-operator. We here only 
+C     need to calculate the explicit electronic contribution, i.e.
 C     - sum_a mu_ind_a[delta rho] t_q_pa, where delta rho is the first order
 C     response/change in the density due to the applied perturbation. 
 C
