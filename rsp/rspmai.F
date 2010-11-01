@@ -3578,7 +3578,7 @@ C
      &                  IDUMMY,.FALSE.)
             REWIND LUINDX
             CALL MOLLAB(OPLBL(KSYMOP),LUINDX,LUPRI)
-            READ (LUINDX) NWOPT,NWOP,NWOPH
+            READ (LUINDX) NWOPT,NWOPH
             CALL READI(LUINDX,(2*NWOPT),JWOP)
             CALL GPCLOSE(LUINDX,'KEEP')
 C
