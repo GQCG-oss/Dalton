@@ -90,10 +90,6 @@ C
 !-- OPTINP: space before LEVEL n
 !-- OPTINP: .COREHOLE keyword + .CORERELAX keyword
 !-- SIRRDI: CORHOL and CORRLX implemented, no check if calc. ok yet!
-!changes from 17/9 1990 (ha)
-!-- *CI INP to *CI CALC
-!-- *MP2 CALC
-!-- MP2INP routine included
 !===========================================================================
 #endif
 C  /* Deck sirinp */
@@ -417,11 +413,10 @@ C
   670 CONTINUE
 C
       DOSCF     = .FALSE.
+      DODFT     = .FALSE.
       DOMP2     = .FALSE.
-      DOCINO    = .FALSE.
       DOCI      = .FALSE.
       DOMC      = .FALSE.
-      DODFT     = .FALSE.
       DONEVPT   = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
@@ -432,6 +427,9 @@ C  ---> Initialize SR-DFT stuff here !
       DFT_SPINDNS = .FALSE.
       DFT_LOCALSPIN = .FALSE.
 C <---
+      DOCINO    = .FALSE.
+      DOFCI     = .FALSE. ! Do Full CI
+      DOCISD    = .FALSE. ! DO CISD
       DORSP     = RNRESP
       ABAIPH    = RNABAC
       ADDMP2    = .FALSE.
@@ -565,12 +563,12 @@ C
       BCKSTP = .TRUE.
       CALL IZERO(NROHF,8)
 C 960625-hjaaj: NISHT and NACTEL used in MOLCHR in
-C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
+C               ICHARG = ICHRGNU - (2*NISHT+NACTEL)
       NISHT  = 0
       NACTEL = 0
-      CALL MOLCHR(ICHRG)
+      CALL MOLCHR(ICHARG)
       NACTEL = -1
-      NRHFEL = ICHRG - KCHARG
+      NRHFEL = ICHARG - KCHARG
       INIOCC = -1
       IF (NRHFEL .GT. 0) THEN
          AUTOCC = .TRUE.
@@ -750,8 +748,12 @@ C
       NUMRUN = 0
       CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
       IF (.NOT.DOSCF) MAXFCK = 0
-      IF (.NOT.DOCI ) DOCINO = .FALSE.
-C     .. ignore .CINO if no CI calculation
+      IF (.NOT.DOCI ) THEN
+         DOCINO = .FALSE.
+         DOFCI  = .FALSE.
+         DOCISD = .FALSE.
+      END IF
+C     .. ignore .CINO etc. if no CI calculation
       IF (.NOT.DOMC .AND. .NOT.DOCI) MCTYPE = 0
 C     ... ignore any *CONFIGURATION input
 C         if neither DOMC nor DOCI /hjaaj aug 2005
@@ -865,10 +867,10 @@ C              defined for CIRSP ??? or ISTACI = NROOCI?
          IF (DOCINO) ISTACI = MAX(1,ISTATE)
       IF (ISTACI .GT. 0) THEN
          NWARN  = NWARN + 1
-         WRITE (LUW4,'(2(/5X,A),/A,I3)')
-     &  'WARNING, reference state is required for CI response and CINO',
-     &  '         ".STATE" was not specified for "*CI INPUT"',
-     &  '         reference state is set to be state no.',ISTACI
+         WRITE (LUPRI,'(2(/5X,A),/5X,A,I3)')
+     & 'WARNING  Reference state is required for CI response and CI-NO',
+     & 'WARNING  ".STATE" was not specified for "*CI INPUT",',
+     & 'WARNING  the reference state is set to be state no.',ISTACI
       END IF
       END IF
 C
@@ -1501,6 +1503,60 @@ C
          IF (THQKVA .LE. D0) THQKVA = 8.0D0
       ELSE IF (DOCI) THEN
          THRGRD = THRCI
+         IF (NASHT .GT. 0) THEN
+            IF (DOCCSD) THEN
+               INPERR = INPERR + 1
+               WRITE(LUPRI,'(/A)')
+     &         'INPUT ERROR: both .CISD   and active spaces specifed.'
+            END IF
+            IF (DOFCI ) THEN
+               INPERR = INPERR + 1
+               WRITE(LUPRI,'(/A)')
+     &         'INPUT ERROR: both .FULLCI and active spaces specifed.'
+            END IF
+         ELSE IF (DOCISD) THEN
+            ! MCTYPE = 2 ! RAS (set in CI INPUT)
+            NISHT = 0
+            NAS1T = 0
+            DO I = 1,NSYM
+               NISH(I) = NFRO(I)
+               NAS1(I) = NRHF(I) - NISH(I)
+               NAS2(I) = 0
+               NAS3(I) = NORB(I) - NAS1(I)
+               NASH(I) = NAS1(I) + NAS3(I)
+               NISHT   = NISHT   + NISH(I)
+               NAS1T   = NAS1T   + NAS1(I)
+            END DO
+            NELMN1 = 2*NAS1T - 2
+            NELMX1 = 2*NAS1T
+            NELMN3 = 0
+            NELMX3 = 2
+            NACTEL = ICHARG - KCHARG - 2*NISHT
+            IF (MS2 .LT. 0) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
+            IF (MULTS .LT. 0) MULTS = MS2 + 1
+            ISPIN = MULTS
+            IF (LSYM .LT. 0) LSYM = 1
+         ELSE IF (DOFCI) THEN
+            ! MCTYPE = 1 ! CAS (set in CI INPUT)
+            NISHT = 0
+            DO I = 1,NSYM
+               NISH(I) = NFRO(I)
+               NAS1(I) = 0
+               NAS2(I) = NORB(I) - NISH(I)
+               NAS3(I) = 0
+               NASH(I) = NAS2(I)
+               NISHT   = NISHT   + NISH(I)
+            END DO
+            NELMN1 = 0
+            NELMX1 = 0
+            NELMN3 = 0
+            NELMX3 = 0
+            NACTEL = ICHARG - KCHARG - 2*NISHT
+            IF (MS2 .LT. 0) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
+            IF (MULTS .LT. 0) MULTS = MS2 + 1
+            ISPIN = MULTS
+            IF (LSYM .LT. 0) LSYM = 1
+         END IF
       ELSE IF (DOSCF) THEN
          THRGRD = THRRHF
          IF (THQKVA .LE. D0) THQKVA = 0.8D0
@@ -1578,11 +1634,11 @@ C
       END IF
       IF(NRHFT .LT.0 .OR.NRHFT .GT.MAXOCC) CALL ERRINP( 9,INPERR)
       IF(NASHT .LT.0 .OR.NASHT .GT.MAXASH) CALL ERRINP(10,INPERR)
-      IF(DOSCF .AND. AUTOCC .AND. MCTYPE .GT. 0 .AND. NSYM .GT. 1) THEN
-         INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') 'ERROR: HF occupation must be specified'//
-     *         ' when SCF followed by CI or MCSCF'
-      END IF
+!     IF(DOSCF .AND. AUTOCC .AND. MCTYPE .GT. 0 .AND. NSYM .GT. 1) THEN
+!        INPERR = INPERR + 1
+!        WRITE (LUPRI,'(/A)') 'ERROR: HF occupation must be specified'//
+!    *         ' when SCF followed by CI or MCSCF'
+!     END IF
       IF(NOCCT .LT.1 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
          WRITE(LUPRI,'(/A,I5/A,I5)') 'ERROR: Number of occ. orbitals :',
@@ -3388,14 +3444,14 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 11)
+      PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
 C
 C GNRINF : THR_REDFAC
-C INFINP : DOCINO, FLAG(*), NROOCI, THRCI, THRPWF
+C INFINP : DOCINO, DOFCI, DOCISD,FLAG(*), NROOCI, THRCI, THRPWF
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -3403,8 +3459,8 @@ C
 #include <infinp.h>
 C
       DATA TABLE /'.CINO  ','.CIDENS','.CIROOT','.DISKH2','.THRESH',
-     *            '.THRPWF','.WEIGHT','.ZEROEL','.STATE ','XXXXXXX',
-     *            '.MAX IT'/
+     *            '.THRPWF','.WEIGHT','.ZEROEL','.STATE ','.FULLCI',
+     *            '.CISD  ','.MAX IT'/
 C
 C     ***** PROCESS INPUT FOR CICINP *****
 C
@@ -3418,7 +3474,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111) II
+     *                   111,112) II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3444,8 +3500,8 @@ C
 C *** Option 1 >CINO  < Calculate CI natural orbitals.
   101 CONTINUE
       DOCINO   = .TRUE.
-      FLAG(68) = .TRUE.
       FLAG(67) = .TRUE.
+      FLAG(68) = .TRUE.
       GO TO 100
 C
 C *** Option 2 >CIDENS<  Calculate density matrices
@@ -3487,13 +3543,20 @@ C *** Option 9 >STATE <  Converge root number ISTATE to threshold
       READ (LUCMD,*) ISTACI
       NROOCI = MAX(NROOCI,ISTACI)
       GO TO 100
-C *** Option 10 >XXXXXX<
+C *** Option 10 >FULLCI<
   110 CONTINUE
+      DOFCI  = .TRUE.
+      MCTYPE = 1 ! CAS
+      GO TO 100
+C *** Option 11 >CISD  <
+  111 CONTINUE
+      DOCISD = .TRUE.
+      MCTYPE = 2 ! RAS
       GO TO 100
 C
-C *** Option 11 >MAX IT< Maximum number of iterations in
+C *** Option 12 >MAX IT< Maximum number of iterations in
 C                        CI diagonalization.
-  111 CONTINUE
+  112 CONTINUE
       READ (LUCMD,*) MXCIMA
       GO TO 100
 C
@@ -3504,6 +3567,12 @@ C
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRCI = THRCI*THR_REDFAC
       END IF
+      IF (DOFCI .AND. DOCISD) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,'(/A)')
+     &      'INPUT ERROR, both .CISD and .FULLCI specified'
+      END IF
+      RETURN
       END
 C  /* Deck orbinp */
       SUBROUTINE ORBINP(WORD,INPERR,IRDMO,ALLOPT)
@@ -5005,6 +5074,14 @@ C     formulation of NEVPT.
                IF ( DORSP ) WRITE (IWUNIT,1050)
      *            'CI response calculation.'
             END IF
+            IF (DOFCI) THEN
+               WRITE (IWUNIT,1050) 'CI type: Full CI.'
+            ELSE IF (DOCISD) THEN
+               WRITE (IWUNIT,1050) 'CI type: CISD.'
+            ELSE
+               WRITE (IWUNIT,1050)
+     &           'CI type: user specified active spaces.'
+            END IF
          END IF
          IF (MCTYPE .EQ. 2) THEN
             IF (CORRLX) THEN
@@ -5183,9 +5260,9 @@ C
 C ***** Wave function specifications
 C
       NINEL = 2*NISHT
-      CALL MOLCHR(ICHRG)
+      CALL MOLCHR(ICHARG)
 C     ... get total charge
-      WRITE(IWUNIT,1000) NINEL,NACTEL,ICHRG,ISPIN,NSYM,LSYM
+      WRITE(IWUNIT,1000) NINEL,NACTEL,ICHARG,ISPIN,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================',
      *       /5X,'Number of closed shell electrons',I11,

@@ -1441,7 +1441,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : LSYM,SUPSYM,?
-C   INFVAR : MAXOCC,NCONF,NWOPT,NVAR,JWOP(2,*),NWOP(8)
+C   INFVAR : MAXOCC,NCONF,NWOPT,NVAR,JWOP(2,*)
 C   INFDIM : ?
 C   INFOPT : GNORM(3),?
 C   -- GNORM, norm of the CI, the orbital, and the total gradient.
@@ -1746,7 +1746,6 @@ C    &         ' No redundant orbital variations found.'
                   WRK(KORDIA-1+IGNEW) = WRK(KORDIA-1+IG)
                ELSE
                   ISK = ISMO(JWOP(1,IG))
-                  NWOP(ISK) = NWOP(ISK)-1
                END IF
  5910       CONTINUE
             WRITE (LUW4,5941) IREDUN,NWOPT,IGNEW
@@ -1925,7 +1924,7 @@ C
       DIMENSION FC(*), FV(*), FQ(NORBT,*)
 C
 C Used from common blocks:
-C   INFVAR : NWOPT,NWOPH,NWOP(8),JWOP(2,*)
+C   INFVAR : NWOPT,NWOPH,JWOP(2,*)
 C   INFIND : IROW(*),?
 C
 #include <maxash.h>
@@ -2562,7 +2561,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : FLAG(*),LSYM,?
-C   INFVAR : NCONF,NWOPT,NVAR,JWOP(2,*),NWOP(8)
+C   INFVAR : NCONF,NWOPT,NVAR,JWOP(2,*)
 C   INFTIM : NCALLS,TIMCPU,TIMWAL;   IDTIM above is index for these
 C   INFOPT : GNORM(3),?
 C   -- GNORM, norm of the CI, the orbital, and the total gradient.
@@ -3204,33 +3203,47 @@ C
 C  /* Deck Make_ds_localspin */
       SUBROUTINE MAKE_DS_LOCALSPIN(DT,DS,WORK,LWORK)
 C
-C FRAN & HJJ - Feb 2010
+C FRAN & HJJ - Feb 2010 / Oct 2010
 C
 C PURPOSE:
-C  Do the Spin-Density as DS = (2-DT)*DT
+C  Do the Spin-Density as DS = f(DT) * DT
+C     model 1: f(DT) = (2-DT)*DT
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "inforb.h"
 #include "infpri.h"
-#include "priunit.h"
       DIMENSION DT(NASHT,NASHT),DS(NASHT,NASHT), WORK(LWORK)
 C
+!     IF (P6FLAG(15)) THEN
+         WRITE(LUPRI,'(/A)') 'DV from MAKE_DS_LOCALSPIN'
          CALL OUTPAK(DT,NASHT,1,LUPRI)
+!     END IF
+
+!     IF (model 1) then   ! only model implemented so far
          KUDT = 1
          KUDS = KUDT + N2ASHX
+         KUDI = KUDS + N2ASHX ! intermediate matrix
          CALL DSPTGE(NASHT,DT,WORK(KUDT))
-         CALL DCOPY(N2ASHX,WORK(KUDT),1,WORK(KUDS),1)
+!>       step 1 : D_S = D_I = D_T D_T
+         CALL DGEMM('N','N',NASHT,NASHT,NASHT,1.0D0,
+     &      WORK(KUDT),NASHT,
+     &      WORK(KUDT),NASHT, 0.0D0,
+     &      WORK(KUDI),NASHT)
+         CALL DCOPY(N2ASHX,WORK(KUDI),1,WORK(KUDS),1)
+!>       step 2 : D_S = - D_T D_I + 2 D_S = (2-D_T) D_T D_T
          CALL DGEMM('N','N',NASHT,NASHT,NASHT,-1.0D0,
      &      WORK(KUDT),NASHT,
-     &      WORK(KUDT),NASHT, 2.0D0,
+     &      WORK(KUDI),NASHT, 2.0D0,
      &      WORK(KUDS),NASHT)
          CALL DGETSP(NASHT,WORK(KUDS),DS)
+!     END IF ! models
 C
-C      IF (P6FLAG(15)) THEN
+C     IF (P6FLAG(15)) THEN
          WRITE (LUPRI,1000)
          CALL OUTPUT(WORK(KUDS),1,NASHT,1,nasht,nasht,nasht,1,LUPRI)
-C      END IF
- 1000    FORMAT(/' Spin. den. mat.: DS = (2-Dtot)Dtot , MO-basis')
+C     END IF
+ 1000 FORMAT(/' Spin. den. mat.: DS = (2-Dtot)Dtot Dtot , MO-basis')
 C
 C END OF MAKE_DS_LOCALSPIN
 C
