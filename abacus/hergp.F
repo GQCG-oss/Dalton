@@ -1935,6 +1935,7 @@ C     Determine center of mass from information in common blocks
 C     K.Ruud, June-94
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1971,6 +1972,12 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
+C
+      IF (JATOM .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' ERROR: No real atoms, cannot proceed'
+         CALL QUIT('No real atoms, cannot proceed !')
+      END IF
 C
       CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
       TELCMAS = ICHTOT/XFAMU
