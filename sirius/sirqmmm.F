@@ -159,25 +159,28 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
+C     All the corrections to the Fock/KS operator due to the static
+C     multipoles when the calculation is done in parallel
       IF (NODTOT.GE.1) THEN
-         CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,LOCDEB,
+        CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,LOCDEB,
      &                  WRK(KWRK1),LWRK1,IPRINT)
       ELSE
 
 C     1) The charge correction to the Fock/KS operator
-         IF (NMULT .GE. 0) CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),
+        IF (NMULT .GE. 0) CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
 
 C     2) The dipole correction to the Fock/KS operator
-         IF (NMULT .GE. 1) CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),
+        IF (NMULT .GE. 1) CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
 
 C     3) The quadrupole correction to the Fock/KS operator
-         IF (NMULT .GE. 2) CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),
+        IF (NMULT .GE. 2) CALL QMMM_QUADPOLE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
 
-C     4) The octupole correction to the Fock/KS operator. We do the integrals numerically here.
-         IF (NMULT .GE. 3) CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),
+C     4) The octupole correction to the Fock/KS operator. We do the
+C     integrals numerically here.
+        IF (NMULT .GE. 3) CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       
       ENDIF ! nodtot .ge. 1
@@ -830,38 +833,35 @@ C     total solvation energy
       CALL DZERO(WRK(KTAO),NNBASX)
 
       IF (NODTOT .GE. 1) THEN
-C      IF (.FALSE.) THEN
-         CALL QMMM_POLARI_M3(DCAO,WRK(KTAO),WRK(KINDMOM),
-     &                       WRK(KWRK2),LWRK2,IPRINT)
+        CALL QMMM_POLARI_M3(DCAO,WRK(KTAO),WRK(KINDMOM),
+     &                      WRK(KWRK2),LWRK2,IPRINT)
       ELSE
 
-         KEDALL = KWRK2
-         KWRK3  = KEDALL + 6
-         LWRK3  = LWRK - KWRK3 + 1
+        KEDALL = KWRK2
+        KWRK3  = KEDALL + 6
+        LWRK3  = LWRK - KWRK3 + 1
 
-         DO 500 I=1,MMCENT
+        DO 500 I=1,MMCENT
 
-C     "if (zeroal)" has to be done before calling mmpolari_iter3 because
-C     of IINIM counting.
-            IF (ZEROAL(I) .EQ. -1) GOTO 500
+          IF (ZEROAL(I) .EQ. -1) GOTO 500
 
-            CALL MMPOLARI_ITER3(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
-     &                      DCAO,WRK(KTAO),WRK(KWRK3),LWRK3)
+          CALL MMPOLARI_ITER3(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
+     &                        DCAO,WRK(KTAO),WRK(KWRK3),LWRK3)
 
-            EDELD  = EDELD  + WRK(KEDALL)
-            EDNUC  = EDNUC  + WRK(KEDALL+1)
-            ED0MOM = ED0MOM + WRK(KEDALL+2)
-            ED1MOM = ED1MOM + WRK(KEDALL+3)
-            ED2MOM = ED2MOM + WRK(KEDALL+4)
-            ED3MOM = ED3MOM + WRK(KEDALL+5)
+          EDELD  = EDELD  + WRK(KEDALL)
+          EDNUC  = EDNUC  + WRK(KEDALL+1)
+          ED0MOM = ED0MOM + WRK(KEDALL+2)
+          ED1MOM = ED1MOM + WRK(KEDALL+3)
+          ED2MOM = ED2MOM + WRK(KEDALL+4)
+          ED3MOM = ED3MOM + WRK(KEDALL+5)
 
-            IINIM = IINIM + 3
+          IINIM = IINIM + 3
 
- 500     CONTINUE
+ 500    CONTINUE
 
-         EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
+        EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
 
-      ENDIF ! IF (NODTOT .GE. 1) ... ELSE
+      ENDIF                     ! IF (NODTOT .GE. 1) ... ELSE
 
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
 
@@ -978,7 +978,8 @@ C   Changed the routines used to invert the relay matrix to more
 C   efficient ones that use the fact that the relay matrix is symmetric.
 C Sep 2010: JMO & KS
 C   Starting sharing of DFT/MM and CC/MM field routines
-C
+C Oct 2010: AES
+C   Sharing of parallel and serial routines
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -1062,22 +1063,22 @@ C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M1! AH
 
 C     Form F vector due to permanent MM moments
       IF (NODTOT .GE. 1) THEN
-         CALL QMMM_POLARI_M1(DCAO,WRK(KELF),POLDIM,
-     &                       WRK(KEND),LWRK1,IPRINT)
+        CALL QMMM_POLARI_M1(DCAO,WRK(KELF),POLDIM,
+     &                      WRK(KEND),LWRK1,IPRINT)
       ELSE
 
-         LRI = 1                ! Row index in the large matrix
+        LRI = 1                 ! Row index in the large matrix
 
-         DO 200 I=1,MMCENT
+        DO 200 I=1,MMCENT
 
-            IF (ZEROAL(I) .EQ. -1) GOTO 200
+          IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-            CALL MMPOLARI_ITER1(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
+          CALL MMPOLARI_ITER1(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
      &                          DCAO,LOCDEB,WRK(KEND),LWRK1)
-            LRI = LRI + 3
- 200     CONTINUE
+          LRI = LRI + 3
+ 200    CONTINUE
 
-      ENDIF ! IF(NODTOT.eq.0)
+      ENDIF
 
       NDIM = 3*POLDIM
 
@@ -2234,23 +2235,23 @@ C     Allocate memory for electric field integrals and electric fields
 C     1. Form F vector due to permanent MM moments
 
       IF (NODTOT .GE. 1) THEN
-         CALL QMMM_POLARI_M2(DCAO,WRK(KELF),POLDIM,
+        CALL QMMM_POLARI_M2(DCAO,WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
       ELSE
 
-      LRI = 1   
+        LRI = 1   
 
-      DO 200 I=1,MMCENT
+        DO 200 I=1,MMCENT
 
-        IF (ZEROAL(I) .EQ. -1) GOTO 200
+          IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-        CALL MMPOLARI_ITER2(I,LRI,WRK(KELF),DCAO,LOCDEB,
-     *                       WRK(KEND),LWRK1)
-        LRI = LRI + 3
+          CALL MMPOLARI_ITER2(I,LRI,WRK(KELF),DCAO,LOCDEB,
+     *                        WRK(KEND),LWRK1)
+          LRI = LRI + 3
 
- 200  CONTINUE
+ 200    CONTINUE
 
-      ENDIF !if nodtot .ge. 1
+      ENDIF
 
       NDIM = 3*POLDIM
 
@@ -3414,7 +3415,8 @@ C               JPC A 102 (1998) 2399
       RETURN
       END
 C*******************************************************************************
-C 'Inside loops' routines (can be used both by parallel and sequential code)
+C 'Inside loops' routines (can be used both by parallel and sequential code) 
+C Arnfinn Oct. 2010
 C******************************************************************************
 C  /* Deck charge_iter */
       SUBROUTINE CHARGE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
@@ -3426,7 +3428,6 @@ C     Input:
 C       I      - MM cite I
 C       DCAO   - density matrix
 C       LOCDEB - local debugging
-C       FIRST  - First loop?
 C       
 C     Output:
 C       ENSEL  - Energy due to QM electrons 
@@ -3908,7 +3909,7 @@ C  /* Deck octupole_iter */
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
+      PARAMETER ( DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('OCTUPOLE_ITER')
@@ -4064,7 +4065,7 @@ C     Continue with the derivatives wrt. x
       RUNQM3=.FALSE.
       DIPORG(1) = XSAVE
 
-C       Calculate gradient of these integrals
+C     Calculate gradient of these integrals
 
       FSCAL = 1.0D0/(2.0D0*DELFLD)
       CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT4),1,WRK(KMAT3),1)
@@ -4303,14 +4304,6 @@ C     A) electronic contribution
          CALL QEXIT('MMPOLARI_ITER2')
          RETURN
       END IF
-
-C          IF (ZEROAL(I) .EQ. -1) THEN
-C            GOTO 200
-C          ELSE  
-C            LRI = LRI + 3
-C            GOTO 200
-C          END IF
-C        END IF
 
       EXELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
       EYELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
@@ -4617,7 +4610,10 @@ C     Octupole contribution
       END
 C
 C*****************************************************
-C Parallel routines for QM/MM SIRIUS below - Arnfinn
+C Parallel routines for QM/MM SIRIUS
+C Arnfinn, Odense/Tromso Oct. 2009 - Oct. 2010
+C As little as possible of calculations are done here;
+C Mostly calling routines shared by the serial code.
 C*****************************************************
 C  /* Deck parqmmm_m */
       SUBROUTINE PARQMMM_M(DCAO,TAO,ESOLT,LOCDEB,WRK,LWRK,
@@ -5123,11 +5119,6 @@ C ----
 #include <gnrinf.h>
 
       DIMENSION WRK(LWRK)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
       INTEGER POLDIM
 
       CALL QENTER('QMMM_POLARI_S1')
@@ -5257,11 +5248,6 @@ C ----
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_POLARI_M2')
 
@@ -5370,13 +5356,7 @@ C ----
 #include <gnrinf.h>
 
       DIMENSION WRK(LWRK)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       INTEGER POLDIM
-
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_POLARI_S2')
 
@@ -5629,11 +5609,6 @@ C ----
 #include <gnrinf.h>
 
       DIMENSION WRK(LWRK)
-      CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE, TRIMAT, EXP1VL, EXCENT
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0, D3 = 3.0D0, D6 = 6.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_POLARI_S3')
 
