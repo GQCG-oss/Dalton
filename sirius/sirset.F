@@ -608,7 +608,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : ISTATE,MCTYPE,FLAG(*),?
-C   INFVAR : MAXOCC,NWOPT,JWOPSY,JWOP(2,*),NWOP(8)
+C   INFVAR : MAXOCC,NWOPT,JWOPSY,JWOP(2,*)
 C   INFORB : NISH(8),...
 C   INFIND : ICH(*),?
 C   INFDIM : NWOPMA,?
@@ -655,7 +655,6 @@ C
          NWOPA = 0
       END IF
       IACT  = 0
-      CALL IZERO(NWOP,8)
       IF (FLAG(23) .AND. NWOPA.GT.0) THEN
          INPERR = 0
          DO 3210 I = 1,NWOPA
@@ -669,7 +668,6 @@ C
             ELSE IF (NSM(K).NE.NSM(L)) THEN
                INPERR = INPERR + 10000
             END IF
-            NWOP( NSM(K) ) = NWOP( NSM(K) ) + 1
  3210    CONTINUE
          IF (INPERR.GT.0) THEN
             WRITE (LUERR,3212) INPERR
@@ -825,7 +823,6 @@ C           *** ACTIVE-SECONDARY ELEMENTS
  1280          CONTINUE
  1270       CONTINUE
  1260       CONTINUE
-            NWOP(ISYM) = NWOP(ISYM) + NWOPX-NWOPX1
             NWOPX1 = NWOPX
             IF (NWOPX .GT. MAXWOP) GOTO 2500
  1290    CONTINUE
@@ -913,7 +910,7 @@ C               if no orbital rotations!
             END IF
             WRITE (LUINDX) LAB123,ABSLBL(LVLABS)
          END IF
-         WRITE (LUINDX) NWOPT,NWOP,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,7)
+         WRITE (LUINDX) NWOPT,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,4)
          LENGTH = MAX(IRAT*4,2*NWOPH)
          CALL WRITI  (LUINDX,LENGTH,JWOP)
          LENGTH = MAX(IRAT*4,NKLWOP)
@@ -922,15 +919,13 @@ C               if no orbital rotations!
              LVLABS = LVLABS + 1
              IF (LVLABS .LE. 3) GO TO 1292
          END IF
-C        reinitialize NWOP(*) for next operator symmetry
-         CALL IZERO(NWOP,8)
  1295 CONTINUE
 C
 C     recover operator of symmetry JWOPSY
 C
       REWIND LUINDX
       CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUPRI)
-      READ (LUINDX) NWOPT, NWOP, NWOPH, JWOPSY1, NKLWOP
+      READ (LUINDX) NWOPT, NWOPH, JWOPSY1, NKLWOP
       IF (JWOPSY1 .NE. JWOPSY) CALL QUIT(
      &   'PROGRAM ERROR: JWOPSY on LUINDX does not correspond to label')
       CALL READI  (LUINDX,(2*NWOPH),JWOP)

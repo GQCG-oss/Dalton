@@ -744,6 +744,7 @@ C
 #include "qrinf.h"
 #include "infave.h"
 #include "inftap.h"
+#include "inforb.h"
 C
       LOGICAL NEWDEF, SET
       PARAMETER ( NTABLE = 21 )
@@ -3577,7 +3578,7 @@ C
      &                  IDUMMY,.FALSE.)
             REWIND LUINDX
             CALL MOLLAB(OPLBL(KSYMOP),LUINDX,LUPRI)
-            READ (LUINDX) NWOPT,NWOP,NWOPH
+            READ (LUINDX) NWOPT,NWOPH
             CALL READI(LUINDX,(2*NWOPT),JWOP)
             CALL GPCLOSE(LUINDX,'KEEP')
 C

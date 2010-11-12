@@ -511,8 +511,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          DO 750 IVEC = 1,NBX
             IBV    = (IVEC-1)*KZYVAR + KBVECS
             NVEC   = IOFFSP + INQREX(KSYMOP,ISIM-1+IVEC)
-            !IF (IPRRSP.GT.10) THEN
-            IF (IPRRSP.GE.0) THEN
+            IF (IPRRSP.GT.10) THEN
                IF ( TRPLET ) THEN
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,1P,D14.6)')
      *            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
@@ -525,10 +524,8 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
                END IF
             END IF
-            !IF (IPRRSP.GE.3) THEN
-            IF (IPRRSP.GE.0) THEN
-               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,-LUPRI)
-               !CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+            IF (IPRRSP.GE.3) THEN
+               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
                CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                  MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                IF (IPRRSP.GT.200)
@@ -765,8 +762,7 @@ CTODO        IF (IPRRSP.GE.5) THEN
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
                END DO
 CTODO        END IF
-               !IF (IPRRSP.GT.100) THEN
-               IF (IPRRSP.GT.0) THEN
+               IF (IPRRSP.GT.100) THEN
                   WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
                   CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                END IF

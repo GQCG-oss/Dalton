@@ -46,21 +46,20 @@ C/*deck  trahso*/
 C
 C Copyright Mar 1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),WRK(KWORK)
 C
-#include <dummy.h>
+#include "dummy.h"
 #include <maxorb.h>
 C
 C Used from common blocks:
-C   INFDIM : MWORK
 C   INFTRA : IPRTRA
+C   INFTAP : LUAHSO, LUMHSO
 C   TRUNIT : LUORDA, LUMINT
 C
 #include <priunit.h>
-#include <inftap.h>
 #include <inftra.h>
-#include <infdim.h>
+#include <inftap.h>
 #include <trhso.h>
 #include <trunit.h>
 C
@@ -73,7 +72,6 @@ C
       NOEXCH = .TRUE.
       NOTUVX = .TRUE.
       MCOPT  = .FALSE.
-      MEMX   = KWORK
       IF (ITRLSO .EQ. 0) THEN
          ITRLVL = 200
       ELSE IF (ITRLSO .EQ. 1) THEN
@@ -89,10 +87,6 @@ C     Set TRINP and TRUNIT
 C     JRDAO = 2 is code for reading spin-orbit integrals
 C
       JRDAO = 2
-      MWRKSV = MWORK
-      MWORK = MIN(MWORK, KWORK)
-C     ... available memory may be less than MWORK here !!!
-      MWORK = MWRKSV
 C
 C
       IPRFIO = IPRTRA
@@ -111,7 +105,7 @@ C     save LUORDA, LUMINT (may point to normal integrals)
       LUMINTSV = LUMINT
       LUMINT   = LUMHSO
 C
-      CALL TRASET(JRDAO)
+      CALL TRASET(JRDAO,KWORK)
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
       IF (IPRTRA .GE. 2) THEN
@@ -144,7 +138,7 @@ C     restore LUORDA, LUMINT (may point to normal integrals)
       RETURN
       END
 C/*deck  traset_2*/
-      SUBROUTINE TRASET_2(LX2X3)
+      SUBROUTINE TRASET_2( LX2X3,LWORK )
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -153,7 +147,7 @@ C
 #include <implicit.h>
 C
 C Used from common blocks:
-C  INFDIM : MWORK,N2BASM
+C  INFDIM : N2BASM
 C  INFTRA : IPRTRA
 C  TRINP  : MSYM, MBAS(), INTSYM
 C  TRHSO  : KSYMSO
@@ -184,13 +178,13 @@ C
 C     980820-hjaaj: reserve NWRK*N2BASM memory for other
 C     buffers in integral transformation.
 C
-      NWRK = (MWORK/3) / N2BASM
+      NWRK = (LWORK/3) / N2BASM
 C     allocate 1/3 of memory for other buffers of size N2BASM
       NWRK = MAX(6+NORBMA,NWRK)
 C     We need at least ca. this number of buffers (as far as I can count
 C     today!) for the integral transformation to work.
 C
-      NPQ = MAX( MWORK / N2BASM - NWRK , 1 )
+      NPQ = MAX( LWORK / N2BASM - NWRK , 1 )
       NPQ = MIN( NPQ , N2BASM )
       DO 200 I = 1,LIDATA
          IDATA(I,1) = 0

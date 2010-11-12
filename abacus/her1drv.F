@@ -1507,33 +1507,6 @@ C
   100 CONTINUE
       RETURN
       END
-C /* Deck dktrf */
-      SUBROUTINE DKTRF(STDER0,NBAST,NNBAST,IPRINT)
-C
-C     Read in Douglas-Kroll and overlap integrals and transfer to standard
-C     arrays
-C
-#include <implicit.h>
-#include <priunit.h>
-      LOGICAL FNDLAB
-#include <inftap.h>
-      DIMENSION STDER0(NNBAST)
-C
-      REWIND (LUPROP)
-      IF (FNDLAB('DKPOTINT',LUPROP)) THEN
-         CALL READT(LUPROP,NNBAST,STDER0)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Douglas-Kroll matrix read from LUPROP '//
-     &                  'in DKTRF',-1)
-            CALL OUTPAK(STDER0,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll'//
-     &      ' integrals not found on LUPROP.'
-         CALL QUIT('DKTRF error: Integrals not found on LUPROP')
-      END IF
-      RETURN
-      END
 C /* Deck PCMNUC */
       SUBROUTINE PCMNUC
 C

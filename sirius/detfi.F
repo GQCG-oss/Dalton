@@ -316,11 +316,11 @@ C SOME DIMENSION OF STRINGS FOR DEFINING STATIC PARTITIONING OF
 C MEMORY
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <mxpdim.h>
 #include <maxash.h>
 #include <strnum.h>
 #include <ciinfo.h>
-#include <priunit.h>
 c.Added sept 90
 c NL1FTP : Number of electron in ras 1 for string of given type
 c NL2FTP : Number of electron in ras 2 for string of given type
@@ -346,9 +346,10 @@ COLD  MS2  = MULTS - 1
       IF (NTEST .GT. 1) WRITE(LUPRI,*) ' MS2 NAEL NBEL ', MS2,NAEL,NBEL
 C
       IF (NAEL + NBEL .NE. NEL ) THEN
-        WRITE(LUPRI,*)
-     &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
-        CALL QUIT('NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY')
+         WRITE(LUPRI,'(/A/A,2I15)')
+     &'STOP in STRDIM: No. of ELECTRONS and MULTIPLICITY INCONSISTENT',
+     &'MS2, NEL', MS2, NEL
+         CALL QUIT('NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY')
       END IF
 C
       NORB1 = IORB1L - IORB1F + 1
