@@ -46,9 +46,8 @@ usage (){
           echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
 # Oct. 09: AHS and JMO
 #   added qmmm option to be used with QM/MM calculations
-          echo ' -qmmm opt if opt=save then copy relay matrix from TMPDIR to WRKDIR'
-          echo '           else if opt=copy then copy relay matrix from WRKDIR to TMPDIR'
-          echo '           else if opt=both then do both. Only valid for QM/MM calculations.'
+          echo ' -mmsv file copy relay matrix from $TMPDIR to $WRKDIR/$file'
+          echo ' -mmcp file copy relay matrix from $WRKDIR/$file to $TMPDIR'
 	  echo
 	 }
 #
@@ -92,7 +91,8 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -w ) WRKDIR=$2; shift;;
 # Oct. 09: AHS and JMO
 #   added qmmm option to be used with QM/MM calculations
-      -qmmm ) optqmmm=$2; shift;;
+      -mmcp ) optqmmm=copy; relay=$2; shift;;
+      -mmsv ) optqmmm=save; relay=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
@@ -215,11 +215,13 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
 # Oct. 09: AHS and JMO
 #   Copying the relay matrix to scratch directory to be used when restarting QM/MM calculations
    if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
-     if [ -s $WRKDIR/QMMMIM -a -r $WRKDIR/QMMMIM ]; then
+     if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
        echo "Copying the relay matrix to scratch directory..."
-       cp $WRKDIR/QMMMIM QMMMIM
+       cp $WRKDIR/$relay QMMMIM
        if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
          echo "Relay matrix not present in scratch directory. Continuing anyway..."
+       else
+         echo "Done" 
        fi
      else
        echo "Cannot copy relay matrix because it does not exist or is not readable"
@@ -315,8 +317,8 @@ fi
 #   Saving the relay matrix to so it can be used in subsequent restarted QM/MM calculations
 if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
   if [ -s QMMMIM -a -r QMMMIM ]; then
-    echo "Saving the relay matrix in $WRKDIR/QMMMIM"
-    cp QMMMIM $WRKDIR/QMMMIM
+    echo "Saving the relay matrix in $WRKDIR/$relay"
+    cp QMMMIM $WRKDIR/$relay
   else
     echo "Could not save the relay matrix because it does not exist or is not readable"
   fi
