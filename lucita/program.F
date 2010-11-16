@@ -989,7 +989,9 @@ C
 C
 C     summon the slaves, who are waiting in the general menu routine
 C     --------------------------------------------------------------
+#ifdef VAR_MPI
       CALL LUMSTI
+#endif
 C
 C     Enter the generic LUCITA routine (master becomes 
 C     now somewhat like primus inter pares -- "first among equals")
@@ -998,7 +1000,9 @@ C     -------------------------------------------------------------
 C
 C     return the slaves to the general menu routine
 C     ---------------------------------------------
+#ifdef VAR_MPI
       CALL LUMSTE
+#endif
 C
       END
 ***********************************************************************
@@ -5612,37 +5616,22 @@ C    &  '      Core energy : ', ECORE
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
 #ifdef PRG_DIRAC
       SUBROUTINE LUMSTI
 C
-C     Call the slaves if we run in parallel
-C
-C     Adaption of the corresponding RELCCSD routine 
-C     written by Luuk Visscher, August 1997
-C     LUCITA version by Stefan Knecht, Feb. 06
-C    
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     wake-up the co-workers
+***********************************************************************
 #include "implicit.h"
 #include "parluci.h"
-#include "maxorb.h"
-#include "dcbgen.h"
 C
-C     ITASK = 5 for parallel LUCITA
+C     iprtyp = 42 for parallel LUCITA
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 5 )
+      iprtyp =  42
+      idummy = - 1
+      call mpixbcast(iprtyp,1,'INTEGER',luci_master)
+      call mpixbcast(idummy,1,'INTEGER',luci_master)
 C
-      END
-C/* Deck LUMSTE */
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
+      end
 ***********************************************************************
       SUBROUTINE LUMSTE
 C
