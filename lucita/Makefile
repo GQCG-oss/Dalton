@@ -11,7 +11,7 @@ F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
            fock.o  dalton_interface.o  io.o  \
            memory.o program.o \
            property.o  sigma.o  strings.o  transform.o  utils.o  \
-           vecmat.o  par_lucia.o  par_solver.o
+           vecmat.o  par_lucia.o  par_solver.o lucidal_input.o
 
 F90_OBJS = par_io.o
 
