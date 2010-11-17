@@ -5,7 +5,7 @@ include ../Makefile.config
 F_OBJS = gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 	qpack.o    graphic.o  vcraypack.o    gpsaue.o \
 	mpimacro.o pvmmacro.o gpdahle.o      intf7790.o \
-	gpjkp.o gpjt.o \
+	gpjkp.o gpjt.o gplucia.o gplucia_io.o gplupar.o \
 	gpsimen.o $(GP_EXTRAS)
 
 F_CPPS = $(F_OBJS:.o=.i)
