@@ -353,10 +353,10 @@ CTF
              CALL GETH1(WORK(KLINT),ISM,IGAS,ISM,JGAS)
 C?           WRITE(6,*) ' Block of 1e integrals ISM,IGAS,JGAS',
 C?   &                  ISM,IGAS,JGAS
-C?           CALL WRTMAT(WORK(KLINT),NI,NJ,NI,NJ)
+C?           CALL WRTMT_LU(WORK(KLINT),NI,NJ,NI,NJ)
 C?           WRITE(6,*) ' Block of 1e density ISM,IGAS,JGAS',
 C?   &                  ISM,IGAS,JGAS
-C?           CALL WRTMAT(WORK(KLDEN),NI,NJ,NI,NJ)
+C?           CALL WRTMT_LU(WORK(KLDEN),NI,NJ,NI,NJ)
              E1 = E1 + INPROD(WORK(KLDEN),WORK(KLINT),NI*NJ)
            END IF
 *
@@ -387,9 +387,9 @@ C?              write(6,*) ' Ism Jsm Ksm Lsm' , Ism,Jsm,Ksm,Lsm
 C?              write(6,*)
 C?   &          ' Igas Jgas Kgas Lgas' , Igas,Jgas,Kgas,Lgas
 C?              WRITE(6,*) ' Integral block'
-C?              CALL WRTMAT(WORK(KLINT),NI*NJ,NK*NL,NI*NJ,NK*NL)
+C?              CALL WRTMT_LU(WORK(KLINT),NI*NJ,NK*NL,NI*NJ,NK*NL)
 C?              WRITE(6,*) ' Density block '
-C?              CALL WRTMAT(WORK(KLDEN),NI*NJ,NK*NL,NI*NJ,NK*NL)
+C?              CALL WRTMT_LU(WORK(KLDEN),NI*NJ,NK*NL,NI*NJ,NK*NL)
                 NIJKL = NI*NJ*NK*NL
                 E2 = E2 + 0.5D0*INPROD(WORK(KLDEN),WORK(KLINT),NIJKL)
 C?              write(6,*) ' Updated 2e-energy ', E2
@@ -628,7 +628,7 @@ C?    DIMENSION SCRTEST(10000)
           LORB = NACOBS(ISYM)
           SIGN = 1.0D0
 C              TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
-          CALL TRIPAK(WORK(KMAT2-1+IOFFIN),WORK(KMAT1-1+IOFFUT),
+          CALL TRIPAK_LUCI(WORK(KMAT2-1+IOFFIN),WORK(KMAT1-1+IOFFUT),
      &                1,LORB,LORB,SIGN)
 *. multiply by minus one to get natural orbitals
 *. with largest occupations first
@@ -1420,7 +1420,7 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
         DO 200 ICI = 1, NCMBSPC
             WRITE(6,*) ' CI space ', ICI
             WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
-C           CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
+C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
   200   CONTINUE
        if (NTEST.ge.1) then
           WRITE(6,*)
@@ -1753,11 +1753,11 @@ C        ISM = (IPARI-1)*NML + MNML - 1
         END IF
 *. Pack and diagonalize
         SIGN = 1.0D0
-        CALL TRIPAK(RHO1SM(IMTOFF),SCR,1,LOB,LOB,SIGN)
+        CALL TRIPAK_LUCI(RHO1SM(IMTOFF),SCR,1,LOB,LOB,SIGN)
         ONEM = -1.0D0
 *. scale with -1 to get highest occupation numbers as first eigenvectors
         CALL SCALVE(SCR,ONEM,LOB*(LOB+1)/2)
-        CALL EIGEN(SCR,XNAT(IMTOFF),LOB,0,1)
+        CALL EIGEN_LUCI(SCR,XNAT(IMTOFF),LOB,0,1)
 *
         DO  I = 1, LOB
           OCCNUM(IOBOFF-1+I) = - SCR(I*(I+1)/2)
@@ -1794,7 +1794,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
           OCCSUM = DSUM(LOB,OCCNUM(IOBOFF),1)
           WRITE(LUWRT,9002) (OCCNUM(IOBOFF+J-1),J=1,LOB)
           WRITE(LUWRT,9003) OCCSUM
-csk       CALL WRTMAT(OCCNUM(IOBOFF),1,LOB,1,LOB)
+csk       CALL WRTMT_LU(OCCNUM(IOBOFF),1,LOB,1,LOB)
           IF (NTEST.GE.2) THEN
             WRITE(LUWRT,*)
             WRITE(LUWRT,*) ' Corresponding Eigenvectors '
@@ -1990,13 +1990,7 @@ C       END DO
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*),NELFGP(*)
 *. block types
       DIMENSION IBLTP(*)
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
-            
 *
       CALL QENTER('NGASD')
       NTEST = 000
@@ -2768,15 +2762,15 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
 *
 *. S**(-1/2)
        SIGN = 1.0D0
-       CALL TRIPAK(WORK(KLMAT5),S,2,NDIM,NDIM,SIGN)
+       CALL TRIPAK_LUCI(WORK(KLMAT5),S,2,NDIM,NDIM,SIGN)
        WRITE(6,*) ' Input S matrix '
-       CALL WRTMAT(WORK(KLMAT5),NDIM,NDIM,NDIM,NDIM)
+       CALL WRTMT_LU(WORK(KLMAT5),NDIM,NDIM,NDIM,NDIM)
 C          SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
       CALL SQRTMT(WORK(KLMAT5),NDIM,2,WORK(KLMAT2),
      &            WORK(KLMAT1),WORK(KLMAT3))
       IF(NTEST.GE.5) THEN
          WRITE(6,*) ' S-1/2 matrix '
-         CALL WRTMAT(WORK(KLMAT1),NDIM,NDIM,NDIM,NDIM)
+         CALL WRTMT_LU(WORK(KLMAT1),NDIM,NDIM,NDIM,NDIM)
       END IF
 *. Transform H0 and V to orthogonal basis
 C          TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
@@ -2793,7 +2787,7 @@ C          TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
       CALL PRSYM (V ,NDIM)
 *. Find basis where H0 is diagonal and transform
 *. Diagonalize H0, eigenvectors in MAT2
-      CALL EIGEN(H0,WORK(KLMAT2),NDIM,0,1)
+      CALL EIGEN_LUCI(H0,WORK(KLMAT2),NDIM,0,1)
       CALL COPDIA(H0,WORK(KLMAT3),NDIM,1)
 *. And put back
       ZERO = 0.0D0
@@ -2817,7 +2811,7 @@ C          TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
 *. Eigenvalues H = H0+V, eigenvectors in MAT4
       ONE = 1.0D0
       CALL VECSUM(WORK(KLMAT3),H0,V,ONE,ONE,NDIM*(NDIM+1)/2)
-      CALL EIGEN(WORK(KLMAT3),WORK(KLMAT4),NDIM,1,1)
+      CALL EIGEN_LUCI(WORK(KLMAT3),WORK(KLMAT4),NDIM,1,1)
       CALL COPDIA(WORK(KLMAT3),WORK(KLVEC1),NDIM,1)
       DO I = 1, NDIM
         WORK(KLVEC1-1+I) = WORK(KLVEC1-1+I) + ECORE
@@ -2827,15 +2821,15 @@ C          TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
       WRITE(6,*) ' Eigenvalues of H (with core-energy)in subspace '
       WRITE(6,*) ' =============================================== '
       WRITE(6,*)
-      CALL WRTMAT(WORK(KLVEC1),NDIM,1,NDIM,1)
+      CALL WRTMT_LU(WORK(KLVEC1),NDIM,1,NDIM,1)
 *
 *. Perturbation expansion in subspace
 *
 *. Expand H0 and V  to complete matrices
 C       TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
       SIGN = 1.0D0
-      CALL TRIPAK(WORK(KLMAT5),H0,2,NDIM,NDIM,SIGN)
-      CALL TRIPAK(WORK(KLMAT6),V ,2,NDIM,NDIM,SIGN)
+      CALL TRIPAK_LUCI(WORK(KLMAT5),H0,2,NDIM,NDIM,SIGN)
+      CALL TRIPAK_LUCI(WORK(KLMAT6),V ,2,NDIM,NDIM,SIGN)
 *
       MAXORD = 500
       LEN = NDIM*(1+MAXORD)
@@ -3199,8 +3193,8 @@ C           I1BATCH(NBATCH+1) = IBLOCK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE RSMXMN(MAXEL,MINEL,NORB1,NORB2,NORB3,NEL,
-     &                  MIN1,MAX1,MIN3,MAX3,NTEST)
+      SUBROUTINE RSMXMN_LUCI(MAXEL,MINEL,NORB1,NORB2,NORB3,NEL,
+     &                       MIN1,MAX1,MIN3,MAX3,NTEST)
 *
 * Construct accumulated MAX and MIN arrays for a RAS set of strings
 *

@@ -359,10 +359,10 @@ C?    WRITE(6,*) 'MXTSOB_L = ', MXTSOB_L
               IF(NTEST.GE.1000) THEN
                 WRITE(6,*)
      &          ' 1-e ints for ISM IGAS KGAS ',ISM,IGAS,KGAS
-                CALL WRTMAT(WORK(KLINT),NI,NK,NI,NK)
+                CALL WRTMT_LU(WORK(KLINT),NI,NK,NI,NK)
                 WRITE(6,*)
      &          ' 1-e densi for ISM JGAS KGAS ',ISM,JGAS,KGAS
-                CALL WRTMAT(WORK(KLDEN),NJ,NK,NJ,NK)
+                CALL WRTMT_LU(WORK(KLDEN),NJ,NK,NJ,NK)
               END IF
 *. And then a matrix multiply( they are pretty much in fashion
 *. these days )
@@ -370,14 +370,14 @@ C?    WRITE(6,*) 'MXTSOB_L = ', MXTSOB_L
      &                    NI,NJ,NI,NK,NJ,NK,ONE,ONE,2)
                IF(NTEST.GE.1000) THEN
                  WRITE(6,*) ' Updated block '
-                 CALL WRTMAT(WORK(KLFBLK),NI,NJ,NI,NJ)
+                 CALL WRTMT_LU(WORK(KLFBLK),NI,NJ,NI,NJ)
                END IF
 
             END DO
             IF(NTEST.GE.1000) THEN
               WRITE(6,*) ' One-electron contributions'
               WRITE(6,*) ' =========================='
-              CALL WRTMAT(WORK(KLFBLK),NI,NJ,NI,NJ)
+              CALL WRTMT_LU(WORK(KLFBLK),NI,NJ,NI,NJ)
             END IF
             IF(I12.EQ.2) THEN
 *. 2 : Two-electron part
@@ -426,7 +426,7 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
             IF(NTEST.GE.1000) THEN
               WRITE(6,*) ' One- + two-electron contributions'
               WRITE(6,*) ' ================================='
-              CALL WRTMAT(WORK(KLFBLK),NI,NJ,NI,NJ)
+              CALL WRTMT_LU(WORK(KLFBLK),NI,NJ,NI,NJ)
             END IF
 *. Block has been constructed , transfer to -complete-
 *. symmetry blocked Fock matrix

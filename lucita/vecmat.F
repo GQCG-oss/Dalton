@@ -1,37 +1,24 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -118,7 +105,7 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
 *
       IF(NTEST.GE.100) THEN
        WRITE(6,*) ' output from ADDBLKV '
-       CALL WRTMAT(VEC,1,MAXE,1,MAXE)
+       CALL WRTMT_LU(VEC,1,MAXE,1,MAXE)
       END IF
 *
       RETURN
@@ -218,7 +205,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       NTEST = 0
       IF(NTEST.GT.0) THEN
          WRITE(6,*) ' Updated CLSVEC '
-         CALL WRTMAT(CLSVEC,1,NOCCLS,1,NOCCLS)
+         CALL WRTMT_LU(CLSVEC,1,NOCCLS,1,NOCCLS)
       END IF
 *
       RETURN
@@ -327,8 +314,8 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
 *. and now : Let another subroutine complete the taks
 *
-      CALL REWINO(LUIN)
-      CALL REWINO(LUUT)
+      CALL REWINE(LUIN,-1)
+      CALL REWINE(LUUT,-1)
 *
 *. Print for testing initial vectors out
 *
@@ -339,12 +326,12 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
         WRITE(6,*) ' Root number ', IROOT
 *
           IF(ICISTR.EQ.1) THEN
-            CALL WRTMAT(WORK(KLBLI),1,NCOMBUT,1,NCOMBUT)
+            CALL WRTMT_LU(WORK(KLBLI),1,NCOMBUT,1,NCOMBUT)
           ELSE
             CALL WRTVCD(WORK(KLBLI),LUIN,0,-1)
           END IF
         END DO
-        CALL REWINO(LUIN)
+        CALL REWINE(LUIN,-1)
       END IF
 *
       DO IROOT = 1, NROOT
@@ -353,20 +340,20 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
           LLUIN = LUIN
         ELSE
           IF(ICISTR.EQ.1) THEN
-            CALL REWINO(LUSCR)
-            CALL FRMDSC(WORK(KLBLI),NCOMBI,-1,LUIN,IMZERO,IAMPACK)
-            CALL  TODSC(WORK(KLBLI),NCOMBI,-1,LUSCR)
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
+            CALL FRMDSC_LUCI(WORK(KLBLI),NCOMBI,-1,LUIN,IMZERO,IAMPACK)
+            CALL  TODSC_LUCI(WORK(KLBLI),NCOMBI,-1,LUSCR)
+            CALL REWINE(LUSCR,-1)
             LLUIN = LUSCR
           ELSE
 *. With the elegance of an elephant
-            CALL REWINO(LUSCR)
-            CALL REWINO(LUIN)
+            CALL REWINE(LUSCR,-1)
+            CALL REWINE(LUIN,-1)
             DO JROOT = 1, IROOT
-              CALL REWINO(LUSCR)
+              CALL REWINE(LUSCR,-1)
               CALL COPVCD(LUIN,LUSCR,WORK(KLBLI),0,-1)
             END DO
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             LLUIN = LUSCR
           END IF
         END IF
@@ -394,12 +381,12 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
       IF(ICOPY.NE.0) THEN
 *. Copy expanded vectors to LUIN
-        CALL REWINO(LUIN)
-        CALL REWINO(LUUT)
+        CALL REWINE(LUIN,-1)
+        CALL REWINE(LUUT,-1)
         DO IROOT = 1, NROOT
           IF(ICISTR.EQ.1) THEN
-            CALL FRMDSC(WORK(KLBLU),NCOMBU,-1,LUUT,IMZERO,IAMPACK)
-            CALL  TODSC(WORK(KLBLU),NCOMBU,-1,LUIN)
+            CALL FRMDSC_LUCI(WORK(KLBLU),NCOMBU,-1,LUUT,IMZERO,IAMPACK)
+            CALL  TODSC_LUCI(WORK(KLBLU),NCOMBU,-1,LUIN)
           ELSE
             CALL COPVCD(LUUT,LUIN,WORK(KLBLU),0,-1)
           END IF
@@ -409,12 +396,12 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output  vectors in EXPCIV '
 *
-        CALL REWINO(LUUT)
+        CALL REWINE(LUUT,-1)
         DO IROOT = 1, NROOT
         WRITE(6,*) ' Root number ', IROOT
 *
           IF(ICISTR.EQ.1) THEN
-            CALL WRTMAT(WORK(KLBLU),1,NCOMBUT,1,NCOMBUT)
+            CALL WRTMT_LU(WORK(KLBLU),1,NCOMBUT,1,NCOMBUT)
           ELSE
             CALL WRTVCD(WORK(KLBLU),LUUT,0,-1)
           END IF
@@ -465,9 +452,9 @@ C     WRITE(6,*) '        Number of input  parameters',NCOMBIN
 C     WRITE(6,*) '        Number of output parameters',NCOMBUT
 *
       IF(ICISTR.EQ.1) THEN
-        CALL FRMDSC(VECIN,NCOMBIN,-1,LUIN,IMZERO,IAMPACK)
+        CALL FRMDSC_LUCI(VECIN,NCOMBIN,-1,LUIN,IMZERO,IAMPACK)
 C       WRITE(6,*) ' Input vector '
-C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
+C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       END IF
 *
 *. Loop over TTS blocks of output vector
@@ -517,7 +504,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
            CALL NXTBLK(IATPIN,IBTPIN,IASMIN,NOCTPA,NOCTPB,NSMST,
      &                 IBLTPIN,IDC,NONEWIN,IABIN,ITTSS_ORD)
            IF(NONEWIN.NE.0) THEN
-             CALL REWINO(LUIN)
+             CALL REWINE(LUIN,-1)
 *. Changed for new ordering
              IATPIN = 1
              IBTPIN = 1
@@ -525,7 +512,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
              GOTO 999
            ELSE IF (NONEWIN.EQ. 0 ) THEN
              CALL IFRMDS(LENGTH,1,-1,LUIN)
-             CALL FRMDSC(VECIN,LENGTH,-1,LUIN,IMZERO,IAMPACK)
+             CALL FRMDSC_LUCI(VECIN,LENGTH,-1,LUIN,IMZERO,IAMPACK)
              IF(IATPIN.EQ.JATPIN.AND.IBTPIN.EQ.JBTPIN.AND.
      &          IASMIN.EQ.IASMUT) THEN
 *. Correct block, save it
@@ -534,7 +521,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
                     CALL ZERORC(-1,LUUT,IAMPACKED_IN)
                   ELSE
                     IF(IAMPACK.EQ.0) THEN
-                      CALL TODSC(VECIN,LENGTH,-1,LUUT)
+                      CALL TODSC_LUCI(VECIN,LENGTH,-1,LUUT)
                     ELSE
                       CALL TODSCP(VECIN,LENGTH,-1,LUUT)
                     END IF
@@ -548,7 +535,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       IF(NONEWUT.EQ.0) GOTO 1000
 *. End of loop over output blocks
       IF(ICISTR.EQ.1) THEN
-        CALL TODSC(VECUT,NCOMBUT,-1,LUUT)
+        CALL TODSC_LUCI(VECUT,NCOMBUT,-1,LUUT)
       ELSE
         CALL ITODS(-1,1,-1,LUUT)
       END IF
@@ -563,7 +550,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
         WRITE(6,*) ' ============ '
         WRITE(6,*)
         IF(ICISTR.EQ.1) THEN
-          CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
+          CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
         ELSE
           CALL WRTVCD(VECIN,LUIN,1,LBLK)
         END IF
@@ -573,7 +560,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
         WRITE(6,*) ' =============== '
         WRITE(6,*)
         IF(ICISTR.EQ.1) THEN
-          CALL WRTMAT(VECUT,1,NCOMBUT,1,NCOMBUT)
+          CALL WRTMT_LU(VECUT,1,NCOMBUT,1,NCOMBUT)
         ELSE
           CALL WRTVCD(VECUT,LUUT,1,LBLK)
         END IF
@@ -707,7 +694,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 **. Info on block structure of space
 *
 *
-      IF( ICISTR .NE. 1 ) CALL REWINO(LUC)
+      IF( ICISTR .NE. 1 ) CALL REWINE(LUC,-1)
 *. Number of terms to be printed
 C?    WRITE(6,*) ' GASANA : IPRNCIV = ', IPRNCIV
       IF (IPRNCIV.EQ.0) THEN
@@ -823,7 +810,7 @@ C     WRITE(6,*) 'C(1) = ',C(1)
       IF(THRES .LT. 0.0D0 ) THRES = ABS(THRES)
       CNORM = 0.0D0
 2001  CONTINUE
-      IF( ICISTR .GE. 2 ) CALL REWINO(LUC)
+      IF( ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
       IIDET = 0
       ILOOP = ILOOP + 1
       IF ( ILOOP  .EQ. 1 ) THEN
@@ -877,7 +864,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
-          CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(C,IDET,-1,LUC,IMZERO,IAMPACK)
 C?        WRITE(6,*) ' Number of elements readin ',IDET
           IDET = 0
         END IF
@@ -944,7 +931,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
 *
       IDET = 0
-      IF(ICISTR .GE. 2 ) CALL REWINO(LUC)
+      IF(ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
       CALL ISETVC(NCPMT,0    ,10*NOCCLS)
       CALL SETVEC(WCPMT,0.0D0,10*NOCCLS)
       DO JBLOCK = 1, NBLOCK
@@ -977,7 +964,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
-          CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(C,IDET,-1,LUC,IMZERO,IAMPACK)
           IDET = 0
         END IF
         IF(IMZERO.EQ.0) THEN
@@ -1200,7 +1187,7 @@ CM    IREW = 1
       END IF
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Reordered matrix '
-        CALL WRTMAT(AOUT,NDIM,NDIM,NDIM,NDIM)
+        CALL WRTMT_LU(AOUT,NDIM,NDIM,NDIM,NDIM)
       END IF
 *
       RETURN
@@ -1233,12 +1220,12 @@ CM    IREW = 1
       END IF
 *
       LUOUTEFF = LUCORR
-      IF(IREW.NE.0) CALL REWINO(LUOUT)
+      IF(IREW.NE.0) CALL REWINE(LUOUT,-1)
 *
       IF(N.EQ.0.AND.M.EQ.0) THEN
 *. You asked for the reference vector and that will be
         LUOUTEFF = LUREF
-        CALL REWINO(LUREF)
+        CALL REWINE(LUREF,-1)
         IVEC = 1
         IF(IREAD.NE.0 )  THEN
           CALL COPVCDP(LUREF,LUOUT,VEC,1,LBLK)
@@ -1246,7 +1233,7 @@ CM    IREW = 1
       ELSE
 *. A real correction vector
 *. Position to start of requested vector
-        CALL REWINO(LUCORR)
+        CALL REWINE(LUCORR,-1)
         IVEC = 0
         DO NP = 0, N
           IF(NP.EQ.N) THEN
@@ -1410,7 +1397,7 @@ C         END IF
         END DO
 *. and : READIN !!!
         CALL IFRMDS(LBL,1,-1,LUC)
-        CALL FRMDSC(CTTS(IOFFO),LBL,-1,LUC,IMZERO,IAMPACK)
+        CALL FRMDSC_LUCI(CTTS(IOFFO),LBL,-1,LUC,IMZERO,IAMPACK)
 C?      WRITE(6,*) ' GET_TTS, JJBLK,IOFFO LBL ', JJBLK,IOFFO,LBL
 C       IOFFO = IOFFO + LBL
         IBLK = JBLK+1
@@ -1505,7 +1492,7 @@ C    &                  NSASO,NSBSO,ISC)
         CALL IWRTMA(IBLOCKIO,8,NBLOCKIO,8,NBLOCKIO)
         WRITE(6,*) ' corresponding vector '
         NELMNTIO = IOFFP - 1
-        CALL WRTMAT(VECIO,1,NELMNTIO,1,NELMNTIO)
+        CALL WRTMT_LU(VECIO,1,NELMNTIO,1,NELMNTIO)
       END IF
 *
       RETURN
@@ -1695,8 +1682,8 @@ C
       NTEST = 0
       IF( NTEST .NE. 0 ) THEN
         WRITE(6,*) ' Input and output vectors from HPQTV '
-        CALL WRTMAT(VECIN,1,NPQ,1,NPQ)
-        CALL WRTMAT(VECUT,1,NPQ,1,NPQ)
+        CALL WRTMT_LU(VECIN,1,NPQ,1,NPQ)
+        CALL WRTMT_LU(VECUT,1,NPQ,1,NPQ)
       END IF
       RETURN
       END
@@ -1741,8 +1728,8 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       NTEST = 0
       IF( NTEST .NE. 0 ) THEN
         WRITE(6,*) ' Input and output vectors from HPQTVM'
-        CALL WRTMAT(VECIN,1,NPDM+NQDM,1,NPDM+NQDM)
-        CALL WRTMAT(VECUT,1,NPDM+NQDM,1,NPDM+NQDM)
+        CALL WRTMT_LU(VECIN,1,NPDM+NQDM,1,NPDM+NQDM)
+        CALL WRTMT_LU(VECUT,1,NPDM+NQDM,1,NPDM+NQDM)
       END IF
 *
       RETURN
@@ -1926,13 +1913,13 @@ C     KLL = KFLREE
    10 CONTINUE
       IF ( NTEST .GE. 100 ) THEN
         WRITE(6,*) ' MATRIX TO BE INVERTED '
-        CALL WRTMAT(T,NORB,NORB,NORB,NORB)
+        CALL WRTMT_LU(T,NORB,NORB,NORB,NORB)
       END IF
 *.Invert U
       CALL INVMAT(T,WORK(KLU),NORB,NORB)
       IF ( NTEST .GE. 100 ) THEN
         WRITE(6,*) ' INVERTED MATRIX '
-        CALL WRTMAT(T,NORB,NORB,NORB,NORB)
+        CALL WRTMT_LU(T,NORB,NORB,NORB,NORB)
       END IF
 *.Subtract L
       DO 20 I = 1, NORB
@@ -1942,9 +1929,9 @@ C     KLL = KFLREE
 *
       IF( NTEST .GE. 2 ) THEN
         WRITE(6,*) ' INPUT X MATRIX '
-        CALL WRTMAT(X,NORB,NORB,NORB,NORB)
+        CALL WRTMT_LU(X,NORB,NORB,NORB,NORB)
         WRITE(6,*) ' T MATRIX '
-        CALL WRTMAT(T,NORB,NORB,NORB,NORB)
+        CALL WRTMT_LU(T,NORB,NORB,NORB,NORB)
       END IF
 *
       RETURN
@@ -2009,7 +1996,7 @@ C     KLL = KFLREE
         ELSE IF(IRSM.LT.ICSM .AND. IPACK.EQ.1) THEN
 *. Upper block, neglected
         ELSE
-          CALL WRTMAT(H(IOFF),NR,NC,NR,NC)
+          CALL WRTMT_LU(H(IOFF),NR,NC,NR,NC)
           IOFF = IOFF + NR*NC
         END IF
       END DO
@@ -2162,7 +2149,7 @@ C     KLL = KFLREE
           ELSE
             KBLK = -1
           END IF
-          CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
           CALL SETVEC(SEGMNT,VALUE,LBL)
           CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
         END IF
@@ -2326,7 +2313,7 @@ C    &           LUDIA)
 *.Vector is always written in packed form
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2344,10 +2331,10 @@ C    &           LUDIA)
          DO 100 IEFF = 1, NSCAT
            VEC1(IPLAC(IEFF)) = VAL(IEFF)
   100    CONTINUE
-         CALL TODSC(VEC1,NDIM,-1,LU)
+         CALL TODSC_LUCI(VEC1,NDIM,-1,LU)
       ELSE
 *. Write the vector with the block format of file LUFORM
-        CALL REWINO(LUFORM)
+        CALL REWINE(LUFORM,-1)
         IBOT = 1
 *. Loop over records
  1000   CONTINUE
@@ -2362,17 +2349,17 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
      &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
 *.CSK
   200     CONTINUE
-CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
+CSK          IF(MYPROC.EQ.MASTER) THEN
 CSK           write(6,*)  'record to be disced '
-CSK           CALL WRTMAT(VEC1,1,LBL,1,LBL)
+CSK           CALL WRTMT_LU(VEC1,1,LBL,1,LBL)
 CSK          END IF
           IF(JPACK.EQ.1) THEN
             CALL TODSCP(VEC1,LBL,-1,LU)
           ELSE
-            CALL TODSC(VEC1,LBL,-1,LU)
+            CALL TODSC_LUCI(VEC1,LBL,-1,LU)
           END IF
 *.Skip record on LUFORM
-          CALL FRMDSC(VEC1,LBL,-1,LUFORM,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(VEC1,LBL,-1,LUFORM,IMZERO,IAMPACK)
           IBOT = IBOT + LBL
           GOTO 1000
         END IF
@@ -2463,7 +2450,7 @@ CSK          END IF
      &          '  Iasm iatp ibtp : ', IASM,IATP,IBTP
                 WRITE(6,'(A)')
      &          '  ============================'
-                CALL WRTMAT(VECTOR(IBASE),NAST,NBST,NAST,NBST)
+                CALL WRTMT_LU(VECTOR(IBASE),NAST,NBST,NAST,NBST)
                 IBASE = IBASE + NELMNT
               END IF
             END IF
@@ -2544,7 +2531,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
      &      '  Iasm iatp ibtp : ', IASM,IATP,IBTP
             WRITE(6,'(A)')
      &      '  ============================'
-            CALL WRTMAT(BLOCKS(JOFF) ,NIA,NIB,NIA,NIB)
+            CALL WRTMT_LU(BLOCKS(JOFF) ,NIA,NIB,NIA,NIB)
           END IF
         END IF
       END DO
@@ -2637,7 +2624,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
             WRITE(6,'(A)')
      &      '  ============================'
             IF(I_AM_ZERO.EQ.0) THEN
-              CALL WRTMAT(BLOCKS(IOFF) ,NIA,NIB,NIA,NIB)
+              CALL WRTMT_LU(BLOCKS(IOFF) ,NIA,NIB,NIA,NIB)
             ELSE
               WRITE(6,*) ' Vanishing block'
             END IF
@@ -2711,7 +2698,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       NTEST = 00
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' x (Dia + shift ) - 1 X(T) from XDIXT2 '
-        CALL WRTMAT(XDX,NXRDM,NXRDM,NXRDM,NXRDM)
+        CALL WRTMT_LU(XDX,NXRDM,NXRDM,NXRDM,NXRDM)
       END IF
 *
       RETURN
@@ -2773,7 +2760,7 @@ C?      write(6,*) ' ZAP_BLOCK_VEC :  LBLK = ', LBLK
               ZERO = 0.0D0
               CALL SETVEC(SEGMNT,ZERO,LBL)
             END IF
-            CALL TODSC(SEGMNT,LBL,KBLK,LUSCR)
+            CALL TODSC_LUCI(SEGMNT,LBL,KBLK,LUSCR)
           END IF
 *
 * Packed

@@ -1,37 +1,24 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -197,8 +184,8 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       DIMENSION IBLOCK(8,NBLOCK)
       DIMENSION IBLTP(*)
 *
-      CALL REWINO(LUCIN)
-      CALL REWINO(LUCOUT)
+      CALL REWINE(LUCIN,-1)
+      CALL REWINE(LUCOUT,-1)
 *
       T2 = T**2
       DO JBLOCK = 1, NBLOCK
@@ -256,7 +243,7 @@ C?      WRITE(6,*) ' NIA NIB ', NIA,NIB
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(LDET,1,-1,LUCIN)
-          CALL FRMDSC(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
         END IF
         IF(IMZERO.NE.1) THEN
 *
@@ -286,7 +273,7 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 *       ^ End of if statement for nonvanishing blocks
 *. Save result on LUCOUT
         CALL ITODS(LDET,1,-1,LUCOUT)
-        CALL TODSC(C,LDET,-1,LUCOUT)
+        CALL TODSC_LUCI(C,LDET,-1,LUCOUT)
       END DO
 *     ^ End of loop over blocks
 *. This is the end, the end of every file my friend, the end
@@ -469,7 +456,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Input integral block as X(IJ,KL)'
-        CALL WRTMAT(XINT,NI*NJ,NK*NL,NI*NJ,NK*NL)
+        CALL WRTMT_LU(XINT,NI*NJ,NK*NL,NI*NJ,NK*NL)
       END IF
 *. Transform first two indeces
       DO K = 1, NK
@@ -503,7 +490,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output integral block as X(IJ,KL)'
-        CALL WRTMAT(XINT,NI*NJ,NK*NL,NI*NJ,NK*NL)
+        CALL WRTMT_LU(XINT,NI*NJ,NK*NL,NI*NJ,NK*NL)
       END IF
 *
       RETURN
@@ -513,7 +500,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
+      SUBROUTINE TRACI_LUCI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 *
 * A rotation matrix X is defining expansion from
 * old to new orbitals
@@ -642,13 +629,13 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
 C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *
       LBLK = -1
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
 *. Make sure LUDIA corresponds to original def
       LUDIA = 20
-      CALL REWINO(LUDIA)
+      CALL REWINE(LUDIA,-1)
       DO JROOT = 1, NROOT
 *. One-electron density for root JROOT
-        CALL REWINO(LUSC1)
+        CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
         CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
         CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
@@ -662,7 +649,7 @@ C             GET_CMOMO(CMOMO)
 *. Transform CI vector : Input on LUHC, output on LUDIA (!)
         CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
 *
-        CALL TRACI(WORK(KLCMOMO),LUHC,LUDIA,ISSPC,ISSM,
+        CALL TRACI_LUCI(WORK(KLCMOMO),LUHC,LUDIA,ISSPC,ISSM,
      &             WORK(KVEC1),WORK(KVEC2))
 C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
        WRITE(6,*)
@@ -673,7 +660,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
      &                LUSC1,ICISTR)
       END DO
 *     ^ End of loop over roots
-      CALL REWINO(LUDIA)
+      CALL REWINE(LUDIA,-1)
       IF(NTEST.GE.100) THEN
         DO JROOT = 1, NROOT
           CALL WRTVCD(WORK(KVEC1),LUDIA,0,LBLK)
@@ -783,7 +770,7 @@ C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
       WRITE(6,*) ' Norm of transformed vector', CNORM
 C?    WRITE(6,*) ' Transformed vector'
 C?    CALL WRTVCD(VEC1,LUSC1,1,LBLK)
-      CALL REWINO(LUSC1)
+      CALL REWINE(LUSC1,-1)
 C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
       CALL COPVCD(LUSC1,LUCOUT,VEC1,0,LBLK)
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACID')
@@ -938,7 +925,7 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 *. Unpack block of A
 C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
        SIGN = 1.0D0
-       CALL TRIPAK(SCR(K1),AIN(IOFFP),2,L,L,SIGN)
+       CALL TRIPAK_LUCI(SCR(K1),AIN(IOFFP),2,L,L,SIGN)
 *. X(T)(IBLOCK)A(IBLOCK)
        ZERO = 0.0D0
        ONE  = 1.0D0
@@ -948,7 +935,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
        CALL MATML7(SCR(K1),SCR(K2),X(IOFFC),L,L,L,L,L,L,
      &             ZERO,ONE,0)
 *. Pack and transfer
-       CALL TRIPAK(SCR(K1),AOUT(IOFFP),1,L,L,SIGN)
+       CALL TRIPAK_LUCI(SCR(K1),AOUT(IOFFP),1,L,L,SIGN)
       END DO
 *
       NTEST = 000
@@ -1000,7 +987,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
        SIGN = 1.0D0
        IF(ISYM.EQ.1) THEN
-         CALL TRIPAK(SCR(K1),AIN(IOFFP),2,L,L,SIGN)
+         CALL TRIPAK_LUCI(SCR(K1),AIN(IOFFP),2,L,L,SIGN)
        ELSE
          CALL COPVEC(AIN(IOFFC),SCR(K1),L*L)
        END IF
@@ -1014,7 +1001,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
      &             ZERO,ONE,0)
 *. Pack and transfer
        IF(ISYM.EQ.1) THEN
-         CALL TRIPAK(SCR(K1),AOUT(IOFFP),1,L,L,SIGN)
+         CALL TRIPAK_LUCI(SCR(K1),AOUT(IOFFP),1,L,L,SIGN)
        ELSE
          CALL COPVEC(SCR(K1),AOUT(IOFFC),L*L)
        END IF
@@ -1077,7 +1064,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 *. Unpack block of A
        SIGN = 1.0D0
        IF(ISYM.EQ.1) THEN
-         CALL TRIPAK(SCR(K1),AIN(IOFFP_IN),2,LXR,LXR,SIGN)
+         CALL TRIPAK_LUCI(SCR(K1),AIN(IOFFP_IN),2,LXR,LXR,SIGN)
 C             TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
        ELSE
          CALL COPVEC(AIN(IOFFC_IN),SCR(K1),LXR*LXR)
@@ -1089,17 +1076,17 @@ C             TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
        CALL MATML7(SCR(K2),X(IOFFX),SCR(K1),LXC,LXR,LXR,LXC,LXR,LXR,
      &             ZERO,ONE,1)
 C?     WRITE(6,*) ' Half transformed matrix '
-C?     CALL WRTMAT(SCR(K2),LXC,LXR,LXC,LXR)
+C?     CALL WRTMT_LU(SCR(K2),LXC,LXR,LXC,LXR)
 
 *. X(T) (IBLOCK) A(IBLOCK) X (IBLOCK)
        CALL SETVEC(SCR(K1),ZERO,LXC*LXC)
        CALL MATML7(SCR(K1),SCR(K2),X(IOFFX),LXC,LXC,LXC,LXR,LXR,LXC,
      &             ZERO,ONE,0)
 C?     WRITE(6,*) ' Transformed matrix '
-C?     CALL WRTMAT(SCR(K1),LXC,LXC,LXC,LXC)
+C?     CALL WRTMT_LU(SCR(K1),LXC,LXC,LXC,LXC)
 *. Pack and transfer
        IF(ISYM.EQ.1) THEN
-         CALL TRIPAK(SCR(K1),AOUT(IOFFP_OUT),1,LXC,LXC,SIGN)
+         CALL TRIPAK_LUCI(SCR(K1),AOUT(IOFFP_OUT),1,LXC,LXC,SIGN)
        ELSE
          CALL COPVEC(SCR(K1),AOUT(IOFFC_OUT),LXC*LXC)
        END IF

@@ -41,7 +41,7 @@ C
       SUBROUTINE DISKUN
       IMPLICIT REAL*8           (A-H,O-Z)
 *
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -118,7 +118,7 @@ C
 *. Scratch file for master <--> slave communication
       LUSCR_MPI = 51
       LUSCR_MPIN ="SIGMA_PAR" 
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSCR_MPI,'(A9,A1,I1)') LUSCR_MPIN,'.',LUCI_MYPROC
          LUSCR_MPIL=13
@@ -146,7 +146,7 @@ C
       LUDIA = 60
 *
       LUDIA_MPIN ="CIDIA"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUDIA_MPI,'(A5,A1,I1)') LUDIA_MPIN,'.',LUCI_MYPROC
          LUDIA_MPIL=7
@@ -159,7 +159,7 @@ C
       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-*#elif defined (VAR_MPI2)
+*#elifdef VAR_MPI
       
 #else
       NLUDIA_MPI=LUDIA_MPIN
@@ -171,7 +171,7 @@ C
 *. CI vector
       LUC = 61
       LUC_MPIN ="LUCVECT"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUC_MPI,'(A7,A1,I1)') LUC_MPIN,'.',LUCI_MYPROC
          LUC_MPIL=9
@@ -193,7 +193,7 @@ C
 *. Sigma vector file
       LUHC = 62
       LUHC_MPIN ="HCFILE"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUHC_MPI,'(A6,A1,I1)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=8
@@ -221,7 +221,7 @@ C
       LUSC2_MPIN ="LUSC2"
       LUSC3 = 72
       LUSC3_MPIN ="LUSC3"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC1_MPI,'(A5,A1,I1)') LUSC1_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC2_MPI,'(A5,A1,I1)') LUSC2_MPIN,'.',LUCI_MYPROC
@@ -269,7 +269,7 @@ C
       LUSC40_MPIN ="LUSC40"
       LUSC41 = 97
       LUSC41_MPIN ="LUSC41"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC34_MPI,'(A6,A1,I1)') LUSC34_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC35_MPI,'(A6,A1,I1)') LUSC35_MPIN,'.',LUCI_MYPROC
@@ -392,10 +392,10 @@ C
       DO IREC = 1, NREC
 C?      WRITE(6,*) ' TODSCN: IREC, LREC ',IREC,LREC(IREC)
 C?      WRITE(6,*) ' Input record '
-C?      CALL WRTMAT(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
+C?      CALL WRTMT_LU(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
         IF(LREC(IREC).GE.0) THEN
           CALL ITODS(LREC(IREC),1,LBLK,LU)
-          CALL TODSC(VEC(IOFF),LREC(IREC),LBLK,LU)
+          CALL TODSC_LUCI(VEC(IOFF),LREC(IREC),LBLK,LU)
           IOFF = IOFF + LREC(IREC)
         ELSE
           CALL ITODS(-LREC(IREC),1,LBLK,LU)
@@ -424,7 +424,7 @@ C?      CALL WRTMAT(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
       DO IREC = 1, NREC
 C?      WRITE(6,*) ' TODSCN: IREC, LREC ',IREC,LREC(IREC)
 C?      WRITE(6,*) ' Input record '
-C?      CALL WRTMAT(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
+C?      CALL WRTMT_LU(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
         IF(LREC(IREC).GE.0) THEN
 *. Normal complete record
           CALL ITODS(LREC(IREC),1,LBLK,LU)

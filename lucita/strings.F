@@ -1,37 +1,24 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -103,7 +90,7 @@ C
             CALL ISTVC2(IOC(1),0,1,IEL1)
             IFRST1 = 0
            ELSE
-             CALL NXTORD(IOC,IEL1,IORB1F,IORB1L,NONEW1)
+             CALL NXTORD_LUCI(IOC,IEL1,IORB1F,IORB1L,NONEW1)
              IF(NONEW1 .EQ. 1 ) GOTO 1003
            END IF
          END IF
@@ -120,7 +107,7 @@ C
               CALL ISTVC2(IOC(IEL1+1),IORB2F-1,1,IEL2)
               IFRST2 = 0
              ELSE
-               CALL NXTORD(IOC(IEL1+1),IEL2,IORB2F,IORB2L,NONEW2)
+               CALL NXTORD_LUCI(IOC(IEL1+1),IEL2,IORB2F,IORB2L,NONEW2)
                IF(NONEW2 .EQ. 1 ) THEN
                  IF(IEL1 .NE. 0 ) GOTO 901
                  IF(IEL1 .EQ. 0 ) GOTO 1003
@@ -139,7 +126,7 @@ C
                 CALL ISTVC2(IOC(IEL1+IEL2+1),IORB3F-1,1,IEL3)
                 IFRST3 = 0
                ELSE
-                 CALL NXTORD(IOC(IEL1+IEL2+1),
+                 CALL NXTORD_LUCI(IOC(IEL1+IEL2+1),
      &           IEL3,IORB3F,IORB3L,NONEW3)
                  IF(NONEW3 .EQ. 1 ) THEN
                    IF(IEL2 .NE. 0 ) GOTO 902
@@ -710,7 +697,7 @@ C?            IF(IIORB.GT.JJORB) THEN
      &          ' Info for orbitals (iorb,jorb) ', IIORB,JJORB
                 WRITE(6,*) ' Excited strings and sign '
                 CALL IWRTMA(I1(1,IJ),1,NK,1,NK)
-                CALL WRTMAT(XI1S(1,IJ),1,NK,1,NK)
+                CALL WRTMT_LU(XI1S(1,IJ),1,NK,1,NK)
 C?            END IF
             END DO
           END DO
@@ -777,7 +764,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "gasstr.inc"
 *. Local scratch
       COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
-      COMMON/SSAVE/NELIS(4), NSTRKS(4)
+      COMMON/SSAVE_LUCI/NELIS(4), NSTRKS(4)
       COMMON/UMMAGUMMA/NSTRIA(4)
       INTEGER KELFGRP(MXPNGAS),KGRP(MXPNGAS)
       COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
@@ -1031,7 +1018,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "gasstr.inc"
 *. Local scratch
       COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
-      COMMON/SSAVE/NELIS(4), NSTRKS(4)
+      COMMON/SSAVE_LUCI/NELIS(4), NSTRKS(4)
 *
 * =======
 *. Output
@@ -1439,7 +1426,7 @@ C       IF(NGASL-1.GT.0) GOTO 1000
             WRITE(6,*) ' Info for orbital ', IORB
             WRITE(6,*) ' Excited strings and sign '
             CALL IWRTMA(  I1((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
-            CALL WRTMAT(XI1S((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
+            CALL WRTMT_LU(XI1S((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
           END DO
         END IF
       END IF
@@ -1885,7 +1872,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
             WRITE(6,*) ' Info for orbital ', IORB
             WRITE(6,*) ' Excited strings and sign '
             CALL IWRTMA(  I1((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
-            CALL WRTMAT(XI1S((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
+            CALL WRTMT_LU(XI1S((IORBR-1)*NKSTR+1),1,NKSTR,1,NKSTR)
           END DO
         END IF
       END IF
@@ -3204,7 +3191,7 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
             CALL ISTVC2(IOC(1),0,1,IEL1)
             IFRST1 = 0
            ELSE
-             CALL NXTORD(IOC,IEL1,IORB1F,IORB1L,NONEW1)
+             CALL NXTORD_LUCI(IOC,IEL1,IORB1F,IORB1L,NONEW1)
              IF(NONEW1 .EQ. 1 ) GOTO 1003
            END IF
          END IF
@@ -3221,7 +3208,7 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
               CALL ISTVC2(IOC(IEL1+1),IORB2F-1,1,IEL2)
               IFRST2 = 0
              ELSE
-               CALL NXTORD(IOC(IEL1+1),IEL2,IORB2F,IORB2L,NONEW2)
+               CALL NXTORD_LUCI(IOC(IEL1+1),IEL2,IORB2F,IORB2L,NONEW2)
                IF(NONEW2 .EQ. 1 ) THEN
                  IF(IEL1 .NE. 0 ) GOTO 901
                  IF(IEL1 .EQ. 0 ) GOTO 1003
@@ -3240,7 +3227,7 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
                 CALL ISTVC2(IOC(IEL1+IEL2+1),IORB3F-1,1,IEL3)
                 IFRST3 = 0
                ELSE
-                 CALL NXTORD(IOC(IEL1+IEL2+1),
+                 CALL NXTORD_LUCI(IOC(IEL1+IEL2+1),
      &           IEL3,IORB3F,IORB3L,NONEW3)
                  IF(NONEW3 .EQ. 1 ) THEN
                    IF(IEL2 .NE. 0 ) GOTO 902
@@ -4008,8 +3995,8 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE STRFDT(INTSPC,JSMOST,IOCOC,NSBDET,IDET,IASTR2,IBSTR2,
-     &            ICOMBI)
+      SUBROUTINE STRFDT_LUCI(INTSPC,JSMOST,IOCOC,NSBDET,IDET,IASTR2,
+     &                       IBSTR2,ICOMBI)
 *
 * A CI expansion from internal subspace INTSPC and symmetry defined
 * by JSMOST is considered. In this CI expansion, a set of NSBDET
@@ -4072,7 +4059,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * /STRINP/,/STINF/,/STRBAS/ and string information in STIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4135,7 +4122,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
         IEL = NELFGP(IGRP)
         IOCTYPX = 1
 *. Reverse lexical adresing schemes for each group of string
-        CALL WEIGHT(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
+        CALL WEIGHT_LUCI(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
      &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
      &              STIN(KFREEL),IPRNT )
 *. Number of strings per symmetry in a given group
@@ -5108,7 +5095,7 @@ C       END DO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE WEIGHT(Z,NEL,NORB1,NORB2,NORB3,
+      SUBROUTINE WEIGHT_LUCI(Z,NEL,NORB1,NORB2,NORB3,
      &                  MNRS1,MXRS1,MNRS3,MXRS3,ISCR,NTEST)
 *
 * construct vertex weights
@@ -5137,10 +5124,10 @@ C       END DO
       KW = KLFREE
       KLFREE = KW + (NEL+1)*(NORB+1)
 *.Max and min arrays for strings
-      CALL RSMXMN(ISCR(KLMAX),ISCR(KLMIN),NORB1,NORB2,NORB3,
+      CALL RSMXMN_LUCI(ISCR(KLMAX),ISCR(KLMIN),NORB1,NORB2,NORB3,
      &            NEL,MNRS1,MXRS1,MNRS3,MXRS3,NTEST)
 *. Arc weights
-      CALL GRAPW(ISCR(KW),Z,ISCR(KLMIN),ISCR(KLMAX),NORB,NEL,NTEST)
+      CALL GRAPW_LUCI(ISCR(KW),Z,ISCR(KLMIN),ISCR(KLMAX),NORB,NEL,NTEST)
 *
       RETURN
       END

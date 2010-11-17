@@ -53,7 +53,7 @@ C
 *                                                                    *
 **********************************************************************
 *
-      subroutine dalton_lucita
+      subroutine dalton_lucita_input_interface
 *
 *  Say hello:
       call hello_dalton_lucita
@@ -93,7 +93,7 @@ C
 #include "mxpdim.inc"
 #include "luci.inc"
 #include "units.inc"
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -465,7 +465,7 @@ ChjC#include "infpar.h"
 * 21: Type of parallel calculation
 *
       if (IMOKW(21).eq.0) then
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
          IODENSEPAR = 2
          IRUNPA     = 1
          IPARMODEL  = 2
@@ -476,7 +476,7 @@ ChjC#include "infpar.h"
 #endif
          IMOKW(21) = 2
       else if (IMOKW(21).eq.1) then
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
          IODENSEPAR = 2
          IRUNPA     = 1
          IPARMODEL  = 2
@@ -490,7 +490,7 @@ ChjC#include "infpar.h"
 * 22: Type of I/O model in parallel calculation
 *
       if (IMOKW(22).eq.0) then
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
          IIOMOD = 1
          YESSTATEMENT = 'Yes'
 #else
@@ -498,7 +498,7 @@ ChjC#include "infpar.h"
          YESSTATEMENT = 'No'
 #endif
       else if (IMOKW(22).eq.1) then
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
          IIOMOD = 1
          YESSTATEMENT = 'Yes'
 #else
@@ -1411,7 +1411,7 @@ C            TRAH1(NBAS,NORB,NSYM,HAO,C,HMO,IHSM,SCR)
             NELMNT_OUT = LDIM * (LDIM + 1)/2
             CALL COPVEC(H(IOFF_IN),SCR(KLSCR),NELMNT_IN)
             SIGN = 1.0D0
-            CALL TRIPAK(SCR(KLSCR),H(IOFF_OUT),1,LDIM,LDIM,SIGN)
+            CALL TRIPAK_LUCI(SCR(KLSCR),H(IOFF_OUT),1,LDIM,LDIM,SIGN)
             IOFF_IN = IOFF_IN + NELMNT_IN
             IOFF_OUT = IOFF_OUT + NELMNT_OUT
           ELSE IF(ISM.LT.JSM) THEN
@@ -1493,7 +1493,7 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *     Load the core Hamiltonian matrix                                 *
 *----------------------------------------------------------------------*
       iDisk=iToc(2)
-      Call DaFile(LuOne,2,H,RtoI*NorbTT,iDisk)
+!     Call DaFile(LuOne,2,H,RtoI*NorbTT,iDisk)
 *----------------------------------------------------------------------*
 *     Terminate procedure                                              *
 *----------------------------------------------------------------------*
@@ -1547,7 +1547,7 @@ C
         WRITE(6,*) ' One electron integrals '
         WRITE(6,*) ' ======================'
         WRITE(6,*)
-        CALL WRTMAT(H,1,NCMOT,1,NCMOT)
+        CALL WRTMT_LU(H,1,NCMOT,1,NCMOT)
       END IF
 C
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'GETH0S')
@@ -1600,13 +1600,13 @@ C
 * taken from KCC
 C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
 *. Note : WORK(KCC1) not perfect choice
-       CALL GET_SX_BLK(H,WORK(KCC1),ITP,ISM,JTP,JSM)
+!      CALL GET_SX_BLK(H,WORK(KCC1),ITP,ISM,JTP,JSM)
       END IF
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' H1 for itp ism jtp jsm ',ITP,ISM,JTP,JSM
-        CALL WRTMAT(H,NI,NJ,NI,NJ)
+        CALL WRTMT_LU(H,NI,NJ,NI,NJ)
       END IF
 *
       RETURN
@@ -2036,9 +2036,9 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
         END IF
 *. IJ_TRNSP : RSBB2BN requires blocks for e(ijkl) in the form C(ji,kl)
 *. Amplitudes fetched from KCC1, KCC2 used as scratch
-        CALL GET_DX_BLK(ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,WORK(KCC1+NSXE),
-     &                  XINT,1,IXCHNG,IKLJ,IKSM,JLSM,WORK(KCC2),
-     &                  IJ_TRNSP )
+!       CALL GET_DX_BLK(ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,WORK(KCC1+NSXE),
+!    &                  XINT,1,IXCHNG,IKLJ,IKSM,JLSM,WORK(KCC2),
+!    &                  IJ_TRNSP )
 C            GET_DX_BLK(IGAS,ISM,JGAS,JSM,KGAS,KSM,LGAS,LSM,
 C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
       END IF
@@ -2085,7 +2085,7 @@ C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
         WRITE(6,'(1H ,4(A,I2,A,I2,A))')
      &  '(',ITP,',',ISM,')','(',JTP,',',JSM,')',
      &  '(',KTP,',',KSM,')','(',LTP,',',LSM,')'
-        CALL WRTMAT(XINT,NIK,NJL,NIK,NJL)
+        CALL WRTMT_LU(XINT,NIK,NJL,NIK,NJL)
       END IF
 *
       CALL QEXIT('GETIN')
@@ -2525,8 +2525,8 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' RJ and RK from GTJK '
-        CALL WRTMAT(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
-        CALL WRTMAT(RK,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RK,NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
 *
       RETURN
@@ -2550,8 +2550,8 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' RJ and RK from GTJK '
-        CALL WRTMAT(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
-        CALL WRTMAT(RK,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RK,NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
 *
       RETURN
@@ -2621,9 +2621,9 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
+!                 Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
+!               Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
                 iijj=iijj-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -2653,9 +2653,9 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
+!                 Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
+!               Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
                 ijij=ijij-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -3083,7 +3083,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "wrkspc.inc"
 #include "clunit.inc"
 #include "parluci.h"
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
 #include "mpif.h"
 
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3138,7 +3138,7 @@ C    /\ read in master
 C
 C     Distribute the information read from MRCONEE
 C
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
       IF (LUCI_NMPROC.GT.1) THEN
         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,
      &                 LUCI_MASTER,MPI_COMM_WORLD,IERR)
@@ -3197,9 +3197,10 @@ C
 *
       NSYM = NBREPD
 *
-      call transf_dirac(IDBGRP,NSYM,NISH,NASH,NOCC,NORB,NEXT,
-     &                  NFSYM,NZ,MORB,IDUMAR,NSTR,NCORE,NDELE,
-     &                  NACTELD,WAFFCT,IRETISH,IPRT)
+      call quit('*** error in info_dirac: transfer routine missing ***')
+!     call transf_dirac(IDBGRP,NSYM,NISH,NASH,NOCC,NORB,NEXT,
+!    &                  NFSYM,NZ,MORB,IDUMAR,NSTR,NCORE,NDELE,
+!    &                  NACTELD,WAFFCT,IRETISH,IPRT)
 *
       NACRAS = NACTELD
 *
@@ -3461,7 +3462,7 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
           IDUM = 2803
           CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIRFAC')
           CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
-          CALL READMO(WORK(KLSCR),LSCR,WORK(KINT2))
+          CALL READMO_LUCI(WORK(KLSCR),LSCR,WORK(KINT2))
           CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'SIRFAC')
         END IF
 *
@@ -3470,27 +3471,15 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * ===============
 *
       else if (INTIMP.eq.6.and.NOINT.eq.0) then
+        call quit('*** error in intim: integral interface missing ***')
         if (myproc.eq.master) then
           write(6,*) 'Integrals imported from DIRAC files'
         else
           write(12,*) 'Integrals imported from DIRAC files'
         end if
-        call rdint_dirac(KINT1,KINT2,DOUGRP,IPRNT)
+!       call rdint_dirac(KINT1,KINT2,DOUGRP,IPRNT)
       END IF
 *
-C     write(6,*) ' Memory check   INTIM 2 '
-*. integrals (ij!kk) -(ik!kj)
-C       ZIJPNT(IJPNT,IJSM,IGEJ,NOBSM,IOBSM,LOBSM,ISTOB,NTOTOB)
-*... Here I am
-C     CALL ZIJPNT(WORK(KPNIJ),1,1,NSMOB,IBSO,NTOOBS,IREOST,NTOOB)
-C?    write(6,*) ' Home from ZIJPNT '
-C    IJKK(XIJKK,IGEJ,IJPNT,NIJ,IJSM,NOBSM,LOBSM,IOBSM,NTOTOB)
-C     IF(NOINT.EQ.0)
-C    &CALL IJKK(WORK(KIJKK),1,WORK(KPNIJ),1,NSMOB,NTOOBS,
-C    &          IBSO,IREOST,NTOOB)
-C     WRITE(6,*) ' Memcheck after IJKK '
-C     CALL LMEMCHK
-C?    write(6,*) ' home from IJKK '
 *. Change one-electron integrals to inactive fock matrix
       IF(NOINT.EQ.0) THEN
 C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
@@ -3529,7 +3518,7 @@ C?    WRITE(6,*) ' IDMPIN ', IDMPIN
         CALL DUMP_1EL_INFO(LU91)
       END IF
 C?    WRITE(6,*) ' INTIM : First 10 integrals in WORK(KINT2) '
-C?    CALL WRTMAT(WORK(KINT2),1,10,1,10)
+C?    CALL WRTMT_LU(WORK(KINT2),1,10,1,10)
 
 C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       RETURN
@@ -3612,7 +3601,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
                 Else
                    Nintrc = nIJKL -(Nrec-1)*Ltr2Rec
                 End if
-                Call Dafile(LuTr2,2,Xint(Ioff),RtoI*Nintrc,Idisk)
+!               Call Dafile(LuTr2,2,Xint(Ioff),RtoI*Nintrc,Idisk)
                 Ioff = Ioff + Nintrc
    50        Continue
 *
@@ -3621,7 +3610,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
                If(Ism.Eq.Ksm .And. Jsm. Eq. Lsm ) Then
                  Call Prsym(Xint(Ioffo),nIJ)
                Else
-                 Call Wrtmat(Xint(Ioffo),nIJ,nKL,nIJ,nKL)
+                 Call WRTMT_LU(Xint(Ioffo),nIJ,nKL,nIJ,nKL)
                End if
              End if
 *
@@ -3648,7 +3637,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       implicit real*8 (A-H,O-Z)
 *
 #include "units.inc"
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
 ChjC#include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3802,7 +3791,7 @@ CTF      write(*,'(1X,A6)') MACHINE
 * Write to file LUCIAIN
 *--------------------------------------------------
       LUCIAIN_MPIN = "LUCIAIN"
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUCIAIN_MPI,'(A7,A1,I1)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=9
@@ -3974,11 +3963,11 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *----------------------------------------------------------------------*
       LuTr2=LuTwo
       lTr2Rec=lBlk
-      Call DaName(luTr2,'TRAINT')
+!     Call DaName(luTr2,'TRAINT')
 *----------------------------------------------------------------------*
 *     Load the table of disk adresses                                  *
 *----------------------------------------------------------------------*
-      Call DaFile(LuTr2,2,iDAdr,mxBatch,iDisk)
+!     Call DaFile(LuTr2,2,iDAdr,mxBatch,iDisk)
 *----------------------------------------------------------------------*
 *     Generate the symmetry block to batch number translation table    *
 *----------------------------------------------------------------------*
@@ -6476,7 +6465,7 @@ c     call XFLUSH(6)
 *
 #include "mxpdim.inc"
 #include "parluci.h"
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
 #include "mpif.h"
 
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -6531,7 +6520,7 @@ C    /\ read in master
 C
 C     Distribute the information read from MRCONEE
 C
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
       IF (LUCI_NMPROC.GT.1) THEN
          CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,LUCI_MASTER,
      &                  MPI_COMM_WORLD,IERR)
@@ -6603,7 +6592,7 @@ C     /\ read in master
 C
 C     Distribute the information read from MRCONEE
 C
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
       IF (LUCI_NMPROC.GT.1) THEN
          CALL MPI_BCAST(ONEINT,MORB*MORB,MPI_DOUBLE_PRECISION,
      &                  LUCI_MASTER,MPI_COMM_WORLD,IERR)
@@ -6640,7 +6629,7 @@ C
       implicit real*8 (A-H,O-Z)
 *
 #include "parluci.h"
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
 #include "mpif.h"
 ChjC#include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -6661,7 +6650,7 @@ c     logical BREIT
      
 *
 * additionally inserted here because of the call from luciarel!
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
       LUCI_MASTER = MPARID
       LUCI_MYPROC = MYTID
 C     Add the master node
@@ -6697,7 +6686,7 @@ C
           read (LUTWO) datex,timex,nkr,
      &          (kr(i),kr(-i),i=1,nkr)
         end if
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
         if (nmproc.gt.1) then
            call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
      &                    mpi_comm_world,ierr)
@@ -6839,7 +6828,7 @@ C
         end do
       end if
 *
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
       if (LUCI_NMPROC .gt. 1)
      &   CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
 #endif
@@ -6857,7 +6846,7 @@ C
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
       END
 ***********************************************************************
-      SUBROUTINE READMO(WRK,LWRK,XIJKL)
+      SUBROUTINE READMO_LUCI(WRK,LWRK,XIJKL)
 C
 C     Written by Henrik Koch 27-Mar-1990
 C

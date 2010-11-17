@@ -32,7 +32,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
@@ -1484,7 +1484,7 @@ C**********************************************************************
       DIMENSION NPARBLOCK(*), IBLOCKL(*)
       DIMENSION IGROUPLIST(*), IPROCLIST(*)
       CHARACTER*12 WALLTID3, SECTID
-      DIMENSION RCCTOS(*)
+      INTEGER RCCTOS(*)
 C     some scratch
       INTEGER NZERO
 C
@@ -1930,6 +1930,7 @@ C
       CHARACTER*10 PLU1,PLU2,PLU3,PLU4,PLU5,PLU6,PLU7,PLU8,PLUC,PDIA
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU6BL,PLU7BL,PLU5BL
       CHARACTER*6 PLUDIA,PLUCBL
+      CHARACTER*4 FILE_INFO_GROUPSZ
       INTEGER PFILELENGTH
       INTEGER(KIND=MPI_OFFSET_KIND) IDISP
       IDISP = 0
@@ -1984,24 +1985,50 @@ C     -----------------
 C
 C     ... open
 C
+C     file info object - provide useful hints for the MPI implementation
+C
+      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+C     ... number of CPUs sharing the following MPI-I/O files
+      WRITE (FILE_INFO_GROUPSZ,'(I4)') NEWCOMM_PROC
+      CALL MPI_INFO_SET(FILE_INFO_OBJ,"nb_proc",FILE_INFO_GROUPSZ,IERR)
+C
+#ifdef VAR_PFS
+C
+C     special information on IBMs GPFS to enhance I/O performance
+C
+      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                  "true",IERR)
+#endif
+C
       CALL MPI_FILE_OPEN(MYNEW_COMM,PDIA(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,IDIA,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,IDIA,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU1(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU1,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU1,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU2(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU2,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU2,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU3(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU3,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU3,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU4(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU4,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU4,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU5(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU5,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU5,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU6(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU6,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU6,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU7(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU7,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILU7,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLUC(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILUC,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     FILE_INFO_OBJ,ILUC,IERR)
+C
+      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
 C
 C     ... set fileview
 C
@@ -2025,13 +2052,9 @@ C
      &        "native",MPI_INFO_NULL,IERR)
 C
       END
+
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SETUNITS_PAR_CLOSE
+      SUBROUTINE SETUNITS_PAR_CLOSE_1
 C
 C     OUTPUT
 C     ======
@@ -2051,7 +2074,6 @@ C
 C     ... close
 C
       CALL MPI_FILE_CLOSE(IDIA,IERR)
-      CALL MPI_FILE_CLOSE(ILU1,IERR)
       CALL MPI_FILE_CLOSE(ILU2,IERR)
       CALL MPI_FILE_CLOSE(ILU3,IERR)
       CALL MPI_FILE_CLOSE(ILU4,IERR)
@@ -2061,6 +2083,31 @@ C
       CALL MPI_FILE_CLOSE(ILUC,IERR)
 C
       END
+
+***********************************************************************
+      SUBROUTINE SETUNITS_PAR_CLOSE_2
+C
+C     OUTPUT
+C     ======
+C
+C     close files
+C     files handles stored on common block LUCIPAR are set to MPI_NULL
+C
+C     Last revision:     S. Knecht       - March  2008
+C
+************************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+C
+C     ... close
+C
+      CALL MPI_FILE_CLOSE(ILU1,IERR)
+C
+      END
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
@@ -3244,7 +3291,7 @@ C       ... well this nonzero block is at least inside this file-group
      &           MPI_STATUS_IGNORE,IERR)
 CSKT           WRITE(6,*) 'THIS IS WHAT I HAVE WRITTEN',LUCI_MYPROC
 CSKT           WRITE(6,*) 'IOFFSET',IOFFSET
-CSKT            CALL WRTMAT(SCR,1,LBL,1,LBL)
+CSKT            CALL WRTMT_LU(SCR,1,LBL,1,LBL)
             IF(IAMPACK.EQ.0) THEN
               CALL TODSC (SCR,LBL,KBLK,LUOUT)
             ELSE
@@ -3330,7 +3377,7 @@ C
           NO_ZEROING = 1
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
-C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
+C         CALL FRMDSC_LUCI(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
           IF(IMZERO.EQ.0) THEN
            NBLK_A = NBLK_A + 1
            BLK_A(IBLK) = 1.0D0
@@ -3350,7 +3397,7 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
       END IF
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Active blocks (master)'
-        CALL WRTMAT(BLK_A,1,NBLK,1,NBLK)
+        CALL WRTMT_LU(BLK_A,1,NBLK,1,NBLK)
       END IF
       END
 ***********************************************************************
@@ -3571,7 +3618,7 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           IF(IMZERO.EQ.0) THEN
             IF(IAMPACK.EQ.0) THEN
               if (MYNEW_ID.NE.0.AND.MYNEW_ID.EQ.ISENDN) then
-                CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
+                CALL TODSC_LUCI(SEGMNT,LBL,KBLK,LUOUT)
               end if
             ELSE
               CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)

@@ -194,7 +194,7 @@ C     CALL QEXIT('ABTOR')
           NROW = NI*NJ
           NCOL = NK*NL
         END IF
-        CALL WRTMAT(RHO2T,NROW,NCOL,NROW,NCOL)
+        CALL WRTMT_LU(RHO2T,NROW,NCOL,NROW,NCOL)
       END IF
 C?    WRITE(6,*) ' Enforced return in ADTOR2 '
 C?    RETURN
@@ -727,7 +727,7 @@ C?    CALL MEMCHK
       IF (IPRDEN.GE.5) THEN
         WRITE(6,*) ' One-electron density matrix '
         WRITE(6,*) ' ============================'
-        CALL WRTMAT(RHO1,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RHO1,NTOOB,NTOOB,NTOOB,NTOOB)
         IF(I12.EQ.2) THEN
           WRITE(6,*) ' Two-electron density '
           CALL PRSYM(RHO2,NACOB**2)
@@ -1086,7 +1086,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                    MXTSOB)
                           IF(NTEST.GE.500) THEN
                             write(6,*) ' Updated rho1 '
-                            call wrtmat(rho1,nacob,nacob,nacob,nacob)
+                            call WRTMT_LU(rho1,nacob,nacob,nacob,nacob)
                           END IF
 *
                      END IF
@@ -1153,7 +1153,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
         WRITE(6,*) ' ==================================='
         WRITE(6,*)
         WRITE(6,*) 'IGAS,ISM,JGAS,JSM',IGAS,ISM,JGAS,JSM
-        CALL WRTMAT(RHO1B,NI,NJ,NI,NJ)
+        CALL WRTMT_LU(RHO1B,NI,NJ,NI,NJ)
       END IF
 *
       RETURN
@@ -1208,7 +1208,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
         NIJ = NI*NJ
         NKL = NK*NL
-        CALL WRTMAT(RHO2B,NIJ,NKL,NIJ,NKL)
+        CALL WRTMT_LU(RHO2B,NIJ,NKL,NIJ,NKL)
       END IF
 *
       RETURN
@@ -1499,8 +1499,8 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
 *
                 IF(NTEST.GE.1000) THEN
                  WRITE(6,*) ' CSCR and SSCR '
-                 CALL WRTMAT(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI)
-                 CALL WRTMAT(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI)
+                 CALL WRTMT_LU(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI)
+                 CALL WRTMT_LU(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI)
                 END IF
 *
 *. And then the hard  work
@@ -1512,7 +1512,7 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
 *
                 IF(NTEST.GE.100) THEN
                   WRITE(6,*) ' Block to one-body density '
-                  CALL WRTMAT(RHO1S,IJ_DIM(1),IJ_DIM(2),
+                  CALL WRTMT_LU(RHO1S,IJ_DIM(1),IJ_DIM(2),
      &                              IJ_DIM(1),IJ_DIM(2))
                 END IF
 *. Scatter out to complete matrix
@@ -1840,9 +1840,9 @@ C?   &            NTEST = 5000
                   LDUMMY = NKBTC*NIBTC
                   IF(NTEST.GE.2000) THEN
                     WRITE(6,*) ' CSCR matrix '
-                    CALL WRTMAT(CSCR,LDUMMY,NJL,LDUMMY,NJL)
+                    CALL WRTMT_LU(CSCR,LDUMMY,NJL,LDUMMY,NJL)
                     WRITE(6,*) ' SSCR matrix '
-                    CALL WRTMAT(SSCR,LDUMMY,NIK,LDUMMY,NIK)
+                    CALL WRTMT_LU(SSCR,LDUMMY,NIK,LDUMMY,NIK)
                   END IF
 
                   IF(IFIRST.EQ.1) THEN
@@ -1860,7 +1860,7 @@ C    &                  NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
                   IFIRST = 0
                   IF(NTEST.GE.2000) THEN
                     WRITE(6,*) ' Updated X matrix'
-                    CALL WRTMAT(X,NIK,NJL,NIK,NJL)
+                    CALL WRTMT_LU(X,NIK,NJL,NIK,NJL)
                   END IF
 
 *
@@ -2089,7 +2089,7 @@ C               WRITE(6,*) ' Before call to ABTOR2'
 *. contributions to Rho2(ij,kl) has been obtained, scatter out
 C?              WRITE(6,*) ' Before call to ADTOR2'
 C?              WRITE(6,*) ' RHO2B (X) matrix '
-C?              call wrtmat(x,ni*nj,nk*nl,ni*nj,nk*nl)
+C?              call WRTMT_LU(x,ni*nj,nk*nl,ni*nj,nk*nl)
 *. Contribution to S2
                 IF(KTYP.EQ.JTYP.AND.KSM.EQ.JSM.AND.
      &            ITYP.EQ.LTYP.AND.ISM.EQ.LSM) THEN
@@ -2215,11 +2215,11 @@ C?              call prsym(rho2,NORB*NORB)
         WRITE(6,*) ' =================='
         WRITE(6,*) ' GSDNBB2 :  R block '
         WRITE(6,*) ' ==================='
-        CALL WRTMAT(CB,NJA,NJB,NJA,NJB)
+        CALL WRTMT_LU(CB,NJA,NJB,NJA,NJB)
         WRITE(6,*) ' ==================='
         WRITE(6,*) ' GSDNBB2 :  L block '
         WRITE(6,*) ' ==================='
-        CALL WRTMAT(SB,NIA,NIB,NIA,NIB)
+        CALL WRTMT_LU(SB,NIA,NIB,NIA,NIB)
 *
         WRITE(6,*)
         WRITE(6,*) ' Occupation of alpha strings in L '
@@ -2444,7 +2444,7 @@ C?        WRITE(6,*) ' Calling DENSI2 '
      &                LUSC1,LUSC2,EXPS2)
           WRITE(6,*) ' Home from DENSI2 '
 C         WRITE(6,*) ' Densities fresh from DENSI2 '
-C         CALL WRTMAT(WORK(KLDEN1),NTOOB,NTOOB,NTOOB,NTOOB)
+C         CALL WRTMT_LU(WORK(KLDEN1),NTOOB,NTOOB,NTOOB,NTOOB)
 C         IF(I12.EQ.2) THEN
 C         CALL PRSYM(WORK(KLDEN2),NTOOB**2)
 C         END IF
@@ -2469,7 +2469,7 @@ CTOBE   END IF
         WRITE(6,*)
         WRITE(6,*) ' One-body density '
         WRITE(6,*) ' ================ '
-        CALL WRTMAT(RHO1N,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RHO1N,NTOOB,NTOOB,NTOOB,NTOOB)
         IF(I12.EQ.2) THEN
           WRITE(6,*) ' Two-body density '
           WRITE(6,*) ' ================ '
@@ -2527,7 +2527,7 @@ CTOBE   END IF
         WRITE(6,*) ' REORHO1 in action '
         WRITE(6,*) ' Symmetry of blocks extracted ',IRHO1SM
         WRITE(6,*) ' Input density '
-        CALL WRTMAT(RHO1I,NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(RHO1I,NTOOB,NTOOB,NTOOB,NTOOB)
         WRITE(6,*)
         WRITE(6,*) ' extracted blocks : '
         WRITE(6,*) ' ==================='
@@ -2569,7 +2569,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' One-body density matrix with hole-commutator term '
         WRITE(6,*) ' (See manual)'
-        CALL WRTMAT(RHO1,NACOB,NACOB,NACOB,NACOB)
+        CALL WRTMT_LU(RHO1,NACOB,NACOB,NACOB,NACOB)
       END IF
 *
       RETURN

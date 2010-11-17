@@ -1,37 +1,24 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -83,7 +70,7 @@ C
         LU18 = 18
         REWIND (LU18)
         WRITE(6,*) ' H0 written to disc '
-        CALL TODSC(WORK(KFI),NINT1,-1,LU18)
+        CALL TODSC_LUCI(WORK(KFI),NINT1,-1,LU18)
       ELSE IF(IPART.EQ.3) THEN
         WRITE(6,*) ' Zero-order Hamiltonian readin '
         WRITE(6,*) ' Zero-order Hamiltonian readin '
@@ -91,7 +78,7 @@ C
         WRITE(6,*) ' Zero-order Hamiltonian readin '
         LU18 = 18
         REWIND (LU18)
-        CALL FRMDSC(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
+        CALL FRMDSC_LUCI(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
       END IF
 *
 *. And obtain modified operator in KINT1 ( No return !! )
@@ -300,7 +287,7 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
       LSCR = NTOOB ** 2
       CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'DUMPSC')
 *
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *. Number of orbital symmetries
       WRITE(LUH,*) NSMOB
 *. Number of MO's per symmetry
@@ -515,11 +502,11 @@ COLD  CALL SCALVE(WORK(KFOCK),TWO,NTOOB**2)
         END IF
 *. Pack block of Fock matrix to complete form
 C       SIGNTP = 1.0
-C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N,SIGNTP)
+C       CALL TRIPAK_LUCI(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N,SIGNTP)
 *. Already in complete form so
         CALL COPVEC(WORK(KFOCK-1+IBASE2),WORK(KLFEXP),N**2)
         WRITE(6,*) ' Outpacked block of FOCK '
-        CALL WRTMAT(WORK(KLFEXP),n,n,n,n)
+        CALL WRTMT_LU(WORK(KLFEXP),n,n,n,n)
 
 *. Solve FC = eSC with Ct S C = 1 as F'C' = e S'C'( S is one body density)
 * with F' = S-(1/2)F S(-1/2), C' = S(1/2)C
@@ -527,15 +514,15 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N,SIGNTP)
         CALL SQRTMT(WORK(KRHO1+IBASE2-1),N,2,WORK(KLSSQ),WORK(KLSSQI),
      &              WORK(KLSCR))
         write(6,*) ' S-1/2 matrix '
-        call wrtmat(work(klssqi),n,n,n,n)
+        call WRTMT_LU(work(klssqi),n,n,n,n)
 *. S(-1/2)F S(-1/2)
         CALL TRNMAT(WORK(KLFEXP),WORK(KLSSQI),WORK(KLSCR),N,N)
         write(6,*) ' Transformed matrix'
-        call wrtmat(work(KLFEXP),n,n,n,n)
+        call WRTMT_LU(work(KLFEXP),n,n,n,n)
 *. Diagonalize
         SIGNTP = 1.0
-        CALL TRIPAK(WORK(KLFEXP),WORK(KLSCR),1,N,N,SIGNTP)
-        CALL EIGEN(WORK(KLSCR),WORK(KLFP),N,0,1)
+        CALL TRIPAK_LUCI(WORK(KLFEXP),WORK(KLSCR),1,N,N,SIGNTP)
+        CALL EIGEN_LUCI(WORK(KLSCR),WORK(KLFP),N,0,1)
         WRITE(6,*)
      &  ' Eigenvalues of Extended Koopmans Equation for ISM = ',ISM
         DO 80 I = 1, N
@@ -735,7 +722,7 @@ C     WRITE(6,*)  ' LUN and LURF ',LUN,LURF
 *. following. Construct these guys and store on LU5
 *
 *
-      CALL REWINO(LU5)
+      CALL REWINE(LU5,-1)
 *
 * V !0> as first vector on LU5
 *
@@ -767,20 +754,20 @@ C?    WRITE(6,*) ' IWSM = ', IWSM
       CALL BVEC(W,IWSM,LURF,LU4,VEC1,VEC2)
       IF(IWSM.NE.1) THEN
        W00 = 0.0D0
-       CALL REWINO(LU4)
+       CALL REWINE(LU4,-1)
        CALL COPVCDP(LU4,LU5,VEC1,0,LBLK)
       ELSE
        W00 = INPRDD(VEC1,VEC2,LU4,LURF,1,LBLK)
 C?     WRITE(6,*) ' W00 = ', W00
        ONE = 1.0D0
        FACTOR = -W00
-       CALL REWINO(LU4)
-       CALL REWINO(LURF)
+       CALL REWINE(LU4,-1)
+       CALL REWINE(LURF,-1)
        CALL VECSMDP(VEC1,VEC2,ONE,FACTOR,LU4,LURF,LU5,0,LBLK)
       END IF
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' The two vectors on LU5 '
-        CALL REWINO(LU5)
+        CALL REWINE(LU5,-1)
         DO IVEC = 1, 2
            WRITE(6,*) ' Vector ', IVEC
            CALL WRTVCD(VEC1,LU5,0,LBLK)
@@ -820,7 +807,7 @@ C?     WRITE(6,*) ' W00 = ', W00
 * =========================================================================
 * 1 : construct (Vw-Vw00)!N-1,M,LW-1>,(Vw-Vw00)!N-1,M,LW+1>,(W-W00)!N,M-1,LW> ( and save on LU4)
 * =========================================================================
-          CALL REWINO(LU4)
+          CALL REWINE(LU4,-1)
 *. Components !N-1,M,LW-1>, !N-1,M,LW+1> corresponds to allowed freq.
           IF(N.GE.1.AND.(ABS(LW-1).LE.N-1)) THEN
             IMIN = 1
@@ -891,11 +878,11 @@ C           IF(V00.NE.0.0D0 .AND. N+M .NE. 1) THEN
             IF(V00.NE.0.0D0 ) THEN
               ONE = 1.0D0
               FACTOR = -V00
-              CALL REWINO(LU7)
-              CALL REWINO(LU6)
+              CALL REWINE(LU7,-1)
+              CALL REWINE(LU6,-1)
               CALL VECSMDP(VEC1,VEC2,ONE,FACTOR,LU7,LU6,LU4,0,LBLK)
             ELSE
-              CALL REWINO(LU7)
+              CALL REWINE(LU7,-1)
               CALL COPVCDP(LU7,LU4,VEC1,0,LBLK)
             END IF
           END IF
@@ -922,7 +909,7 @@ C           IF(V00.NE.0.0D0 .AND. N+M .NE. 1) THEN
 C?          RHSNORM = INPRDD(VEC1,VEC2,LU6,LU6,1,LBLK)
 C?          write(6,*) ' norm of input vector to BVEC ',RHSNORM
             I12 = 1
-            CALL REWINO(LU7)
+            CALL REWINE(LU7,-1)
             CALL BVEC(W,IWSM,LU6,LU7,VEC1,VEC2)
 C?          RHSNORM = INPRDD(VEC1,VEC2,LU7,LU7,1,LBLK)
 C?          WRITE(6,*) ' Norm of RHS after BVEC ', RHSNORM
@@ -936,12 +923,12 @@ C           IF(W00.NE.0.0D0 .AND. N+M .NE. 1) THEN
             IF(W00.NE.0.0D0 ) THEN
               ONE = 1.0D0
               FACTOR = -W00
-              CALL REWINO(LU7)
-              CALL REWINO(LU6)
+              CALL REWINE(LU7,-1)
+              CALL REWINE(LU6,-1)
               CALL VECSMDP(VEC1,VEC2,ONE,FACTOR,LU7,LU6,LU4,0,LBLK)
             ELSE
 C?            write(6,*) ' route 1 '
-              CALL REWINO(LU7)
+              CALL REWINE(LU7,-1)
               CALL COPVCDP(LU7,LU4,VEC1,0,LBLK)
             END IF
             RHSNORM = INPRDD(VEC1,VEC2,LU7,LU7,1,LBLK)
@@ -1019,8 +1006,8 @@ CW                ELSE
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
-                  CALL REWINO(LU6)
-                  CALL REWINO(LU7)
+                  CALL REWINE(LU6,-1)
+                  CALL REWINE(LU7,-1)
                   CALL VECSMDP(VEC1,VEC2,ONE,COEF,LU6,LUOUTEFF,
      &            LU7,0,LBLK)
                   CALL COPVCDP(LU7,LU6,VEC1,1,LBLK)
@@ -1074,8 +1061,8 @@ CW                ELSE
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
-                  CALL REWINO(LU6)
-                  CALL REWINO(LU7)
+                  CALL REWINE(LU6,-1)
+                  CALL REWINE(LU7,-1)
                   CALL VECSMDP(VEC1,VEC2,ONE,COEF,LU6,
      &                 LUOUTEFF,LU7,0,LBLK)
                   CALL COPVCDP(LU7,LU6,VEC1,1,LBLK)
@@ -1132,8 +1119,8 @@ CW                  COEF = 2.0D0*COEF
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
-                  CALL REWINO(LU6)
-                  CALL REWINO(LU7)
+                  CALL REWINE(LU6,-1)
+                  CALL REWINE(LU7,-1)
                   CALL VECSMDP(VEC1,VEC2,ONE,COEF,LU6,
      &                 LUOUTEFF,LU7,0,LBLK)
                   CALL COPVCDP(LU7,LU6,VEC1,1,LBLK)
@@ -1179,7 +1166,7 @@ C?        WRITE(6,*) ' Norm of RHS ', RHSNORM
             CALL WRTVCD(VEC1,LU6,1,LBLK)
           END IF
 *.save in LU1 and solve linear eq .
-          CALL REWINO(LU1)
+          CALL REWINE(LU1,-1)
           CALL COPVCDP(LU6,LU1,VEC1,1,LBLK)
 *. Should !0> be printed out in each micro
           IF(ICSM.EQ.IRFSM) THEN
@@ -1203,7 +1190,7 @@ C?        WRITE(6,*) ' LUPROJ and SHIFT', LUPROJ,SHIFT
 *. Add to our collection of correction vectors
           CALL GET_NMLW(VEC1,N,M,LW,
      &         MAXV,MAXW,LUN,LURF,0,LU7,0,LBLK,LUOUTEFF)
-          CALL REWINO(LU2)
+          CALL REWINE(LU2,-1)
           CALL COPVCDP(LU2,LUN,VEC1,0,LBLK)
 *. Test overlap with reference
           IF(ICSM.EQ.IRFSM) THEN
@@ -1213,11 +1200,11 @@ C?   &      IORD,OVLAP
           END IF
 *. Obtain the V[1]t D(n,m,lw) arrays
 *
-          CALL REWINO(LU5)
+          CALL REWINE(LU5,-1)
 *
 C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
           IF(MNSM.EQ.IVRFSM) THEN
-            CALL REWINO(LU2)
+            CALL REWINE(LU2,-1)
             VW1D(N,M,LW) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
           ELSE
             CALL SKPVCD(LU5,1,VEC1,0,LBLK)
@@ -1227,7 +1214,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
      &    write(6,*) '  VW1D(N,M,LW) =  ', VW1D(N,M,LW)
 *
           IF(MNSM.EQ.IWRFSM) THEN
-            CALL REWINO(LU2)
+            CALL REWINE(LU2,-1)
             V01D(N,M,LW) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
           ELSE
             CALL SKPVCD(LU5,1,VEC1,0,LBLK)
@@ -1331,7 +1318,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
 *. Position at start of D(LDR,LSR,LWR)
                     CALL GET_NMLW(VEC1,LDR,LSR, LWR,
      &                   MAXV,MAXW,LUN,LURF,0,LU7,0,LBLK,LUOUTEFF)
-                    CALL REWINO(LU7)
+                    CALL REWINE(LU7,-1)
                     CONT = INPRDD(VEC1,VEC2,LUOUTEFF,LU7,0,LBLK)
 *
                     IF(NTEST.GE.3) THEN
@@ -1951,18 +1938,18 @@ C               END IF
 * =========================================================================
 *
 *. Sij(i,j) = <i!j>
-      CALL REWINO(LUN)
+      CALL REWINE(LUN,-1)
       DO I = 1, N
 *. LUN is positioned at end of vector I-1, copy vector I to LUSC1
-        CALL REWINO(LUSC1)
+        CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUN,LUSC1,WORK(KLVEC1),0,LBLK)
         WRITE(6,*) ' Memcheck I '
         CALL LMEMCHK
 *
-        CALL REWINO(LUN)
+        CALL REWINE(LUN,-1)
         DO J = 1, I
           IJ = I*(I-1)/2 + j
-          CALL REWINO(LUSC1)
+          CALL REWINE(LUSC1,-1)
           WORK(KLSIJ-1+IJ) =
      &    INPRDD (WORK(KLVEC1),WORK(KLVEC2),LUSC1,LUN,0,LBLK)
         END DO
@@ -1987,7 +1974,7 @@ C               END IF
         WRITE(6,*)
         WRITE(6,*) ' The S(i) array '
         WRITE(6,*) ' ================= '
-        CALL WRTMAT(WORK(KLSI),N,1,N,1)
+        CALL WRTMT_LU(WORK(KLSI),N,1,N,1)
       END IF
         WRITE(6,*) ' Memcheck III '
         CALL LMEMCHK
@@ -2055,7 +2042,7 @@ C    &(N,LU0,LUN,ISM,ISPC,VEC1,VEC2,RHO1N,RHO2N,LUSC1,LUSC2,I12)
         END DO
 *
 C?      WRITE(6,*) ' Density correction for NORMALIZED wf '
-C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
+C?      CALL WRTMT_LU(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
       END DO
 *HER ER JEG
 *
@@ -2225,7 +2212,7 @@ C          PTWFNRM(LU0,LUN,N,VEC1,VEC2,LUSC1,LUSC2,PTNORM)
         CALL SCALVE(WORK(KLSCR4),FACTOR,LRHO1)
         WRITE(6,*) ' Renormalized Sum(k) rho1(k) '
         WRITE(6,*) ' ============================'
-        CALL WRTMAT(WORK(KLSCR4),NTOOB,NTOOB,NTOOB,NTOOB)
+        CALL WRTMT_LU(WORK(KLSCR4),NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
 *
       WRITE(6,*) ' Memtest 1 : '
@@ -2273,7 +2260,7 @@ C          ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
         CALL COPVEC(WORK(KLDEN1+(K-0)*LRHO1),WORK(KRHO1),LRHO1)
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Density in RHO1 '
-          CALL WRTMAT(WORK(KRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
+          CALL WRTMT_LU(WORK(KRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
         END IF
         CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
         CALL FOCK_MAT(WORK(KLFSCR),1)
@@ -2349,9 +2336,9 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
           WRITE(6,*) ' Symmetry blocks of F and S '
           DO I = 0, N
             WRITE(6,*) ' Fock matrix of order ',I
-            CALL WRTMAT(WORK(KLFNS+(I-0)*LSYMBLK),LORB,LORB,LORB,LORB)
+            CALL WRTMT_LU(WORK(KLFNS+(I-0)*LSYMBLK),LORB,LORB,LORB,LORB)
             WRITE(6,*) ' density matrix of order ',I
-            CALL WRTMAT(WORK(KLDNS+(I-0)*LSYMBLK),LORB,LORB,LORB,LORB)
+            CALL WRTMT_LU(WORK(KLDNS+(I-0)*LSYMBLK),LORB,LORB,LORB,LORB)
           END DO
         END IF
 *. Initialize zero order vector
@@ -2446,7 +2433,7 @@ C       END DO
 C     END DO
 *
       WRITE(6,*) ' First Transition density '
-      CALL WRTMAT(WORK(KLRHOT),NTOOB,NTOOB,NTOOB,NTOOB)
+      CALL WRTMT_LU(WORK(KLRHOT),NTOOB,NTOOB,NTOOB,NTOOB)
 *. Symmetry of transition densities - and therefore of operators
       CALL SYMCOM(3,1,IREFSM,IEXCSYM,ITRASYM)
       WRITE(6,*) ' Symmetry of transition densities',ITRASYM

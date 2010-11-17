@@ -383,9 +383,6 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         NSNLI = NS+NL
         KFREEL = KFREES
         NL = 0
-*. Flush output unit
-        LU6 = 6
-        CALL GFLUSH(LU6)
       ELSE IF(TASK(1:4).EQ.'MARK') THEN
 *. Set a mark at current free address
         NM = NM + 1
@@ -406,9 +403,6 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         NL = MARKL(NM)
         NS = MARKS(NM)
         NM = NM - 1
-*. Flush output unit
-        LU6 = 6
-        CALL GFLUSH(LU6)
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
         NSNLI = NS+ NL
       ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN

@@ -68,8 +68,7 @@ C
 #include "intform.inc"
 #include "comjep.inc"
 #include "cc_exc.inc"
-#if defined (VAR_MPI2)
-#include "maxorb.h"
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -296,7 +295,7 @@ C     --> this is the most important array! :)
 C
 CSK   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,LUCI_MYPROC
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
      &                     WORK(KRCCTOS),WORK(KBSCLFC),
      &                     NVAR,IPROCLIST)
@@ -518,13 +517,13 @@ C       construct H diagonal
      &               WORK(KBLCKPD))
         IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
           CALL REWINO(LUDIA)
-          CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
+          CALL TODSC_LUCI(WORK(KVEC1),NVAR,-1,LUDIA)
         END IF
         IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
       ELSE
          WRITE(LUWRTOUT,*) ' Diagonal not calculated '
       END IF
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C     debug printing
       NPTEST_VAR = 00
       IF( NPTEST_VAR .ge. 10 ) THEN
@@ -642,7 +641,10 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
       ELSE
         MULSPCA = 0
       END IF
-#if defined (VAR_MPI2)
+
+C     check for restart without CI --> we want to run an analysis only
+      IF( MAXIT .lt. 0) GOTO 404
+#ifdef VAR_MPI
 C
 C     copy restart vector to MPI-file format
 C
@@ -681,7 +683,7 @@ C
      &     WORK(KBLCKIF),WORK(KBLCKPD),
      &     WORK(KSCRREDSP),WORK(KSCRREDSP2),WORK(KRCCTOS),IPROCLIST,
      &     IGROUPLIST
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
      &     WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILU6LIST),
      &     WORK(KILU7LIST),WORK(KILUCLIST)
@@ -692,18 +694,23 @@ C
 CTF
 *  If TERACI has been chosen, only 1 root is determined.
 *  So change NROOTS accordingly, otherwise program crashes.
-      if (IDIAG.eq.2) then
+ 404  if (IDIAG.eq.2) then
         NROOT_SAVE = NROOT
         NROOT = 1
       end if
 C
-C     rewine C-vector file
+C     rewind C-vector file
 C
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C
-      IF( IAM_NOT_INV .eq. 0 ) GOTO 505
+C
+C     close parallel files that are not needed anymore...
+C
+      CALL SETUNITS_PAR_CLOSE_1
+C
+      IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
 C
       LBLK = -1
 C
@@ -711,23 +718,20 @@ C     copy c-vectors from nodes and master back to the master
 C
 C     NOTE: only C-vectors will be saved.
 C
-      CALL REWINO(LUC)
-      CALL REWINO(LUSC41)
+      CALL REWINE(LUC,-1)
       DO JROOT = 1, NROOT
+        CALL REWINE(LUSC41,-1)
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KBLCKPD),NUM_BLOCKS2,
      &                            WORK(KBLCKIF),
      &                            MPI_COMM_WORLD,LBLK,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
+        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
+           CALL REWINE(LUSC41,-1)
+           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
+        END IF
       END DO
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-        CALL REWINO(LUSC41)
-        CALL REWINO(LUC)
-        DO JROOT = 1, NROOT
-          CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
-        ENDDO
-        CALL REWINO(LUC)
-      END IF
+      CALL REWINE(LUC,-1)
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
@@ -737,10 +741,11 @@ C
           END DO
         END IF
       END IF
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
       NPTESTVAR = 00
 C
  505    CONTINUE
+      close(unit=LUSC41,status='DELETE')
 *
 #endif
 C
@@ -778,7 +783,7 @@ C
           WRITE(LUWRT,*)
         end if
         IF(ICISTR.EQ.1) THEN
-          CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
           CALL DCOPY(NVAR,WORK(KVEC1),1,WORK(KVEC2),1)
           IF(IDENSI.EQ.1) THEN
             KRHO2 = 1
@@ -863,7 +868,7 @@ C
            CALL REWINO(LUC)
            DO JROOT = 1, IH0ROOT
              IF(ICISTR.EQ.1) THEN
-               CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
+               CALL FRMDSC_LUCI(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
              ELSE
                CALL REWINO(LUSC1)
                CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
@@ -918,7 +923,6 @@ C     -----------------------
       close(unit=LUSC38,status='DELETE')
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
-      close(unit=LUSC41,status='DELETE')
 C
       END
 ***********************************************************************
@@ -962,13 +966,11 @@ C In the case of a parallel run, the relevant nodes will be
 C waken up and sent to sleep.
 C
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "maxorb.h"
 #include "infpar.h"
-#include "priunit.h"
 #include "parluci.h"
       DIMENSION WRK(LWRK)
 *
@@ -976,7 +978,7 @@ C
 *
       IN = LUCMD
       IW = LUPRI
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       LUCI_MASTER = MPARID
       LUCI_MYPROC = MYTID
 *     Add the master node
@@ -1028,15 +1030,13 @@ C
 * Stefan Knecht, Feb. 06 
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "maxorb.h"
 #include "infpar.h"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files.inc"
-#include "priunit.h"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
 *.File numbers
@@ -1057,7 +1057,7 @@ C
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      INTEGER*8 K8BASE
+      INTEGER*8 K_OFFSET, K8BASE_LUCITA
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1079,28 +1079,29 @@ C     Static memory, initialization and allocation
 C
 C     Compute offset from WRK to WORK
 C
-#if defined (INT_STAR8)
-      CALL COMPOFF(WRK(100),WRK(1),K8BASE)
-      call flshfo(luout)
-      if (k8base .ne. 100) then
-        write (luout,*)
-     & 'lucita/pamlu error in compoff call, kbase',kbase
-        call quit('lucita/pamlu: problem in compoff call')
-      end if
-      CALL COMPOFF(WRK,WORK,K8BASE)
-      kbase = k8base
-#else
-      k8base = 0
-      CALL COMPOFF(WRK,WORK,KBASE)
-#endif
+      CALL COMPOFF(WRK,WORK,K_OFFSET)
+      KBASE_LUCITA = K_OFFSET
+      ! HJAaJ Aug 2008:
+      ! MEMMAN in LUCITA is using default integer type
+      ! while K_OFFSET is always INTEGER*8.
+      ! Therefore we use implicit conversion to KBASE_LUCITA.
+      ! Now we test if KBASE_LUCITA is OK:
+      K8BASE_LUCITA = KBASE_LUCITA
+      IF (K8BASE_LUCITA .NE. K_OFFSET) THEN
+         WRITE (LUOUT,'(/A/A,2I20//A)')
+     &   'FATAL ERROR in LUCITA: offset is too big for i*4',
+     &   'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
+     &   '(See code in lucita/program.F)'
+         CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
+      END IF
 C
       MXPWRD = LWRK
       KADD = MXPWRD
-      CALL MEMMAN(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
+      CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
 C
-      call dirluc
+      call dalton_lucita_input_interface
 C
       WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', MXPWRD
@@ -1133,13 +1134,13 @@ C
 C     initialize number of process groups sharing a c-vector file
       NFLGRPS     = 0
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C
 C     parallel I/O mode for parallel runs / executable
 C
       IIOMOD = 1
 C
-#if defined (SYS_LOCALDISKS)
+#ifdef SYS_LOCALDISKS
       IF( IIOMOD .eq. 1 ) THEN
 C
          CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
@@ -1485,41 +1486,9 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
               CALL PTEKT(LUC,LUSC36,NPERT,IREFSM,JCMBSPC)
             END IF
           ELSE IF(CARD(1:2).EQ.'CC') THEN
-*
-* ============================
-* Coupled Cluster calculation
-* ============================
-*
-*. PH division and Passive active division is not working
-            IF(IUSE_PH.NE.0.OR.IUSE_PA.NE.0) THEN
-              WRITE(LUOUT,*) 'USE_PH, USE_PA options not allowed for CC'
-              Call Abend2(' USE_PH, USE_PA options not allowed for CC')
-            END IF
-            MAXIT = ISEQCI(JSEQ,JCMBSPC)
-*
-C     I_RESTRT_CC.EQ.1
-            IF(I_HAVE_DONE_CC.EQ.1.OR.I_RESTRT_CC.EQ.1) THEN
-             II_RESTRT_CC = 1
-            ELSE
-             II_RESTRT_CC = 0
-            END IF
-*. Transfer expanded cc wf to LUC for last CC calc
-            IF(JCMBSPC.EQ.LAST_CC_SPC.AND.JSEQ.EQ.LAST_CC_RUN) THEN
-              I_TRANS_WF = 1
-            ELSE
-              I_TRANS_WF = 0
-            END IF
-            WRITE(LUOUT,*) ' I_TRANS_WF = ', I_TRANS_WF
-            CALL LUCIA_CC(IREFSM,JCMBSPC,IPRDIA,EREF,II_RESTRT_CC,
-     &                    I_TRANS_WF)
-            I_HAVE_DONE_CC = 1
-*
-* ==========================================
-* Internal contracted CI or PT calculation
-* ==========================================
-*
+         call quit('*** error in PAMLU: CC calculation not allowed ***')
           ELSE IF(CARD(1:2).EQ.'IC') THEN
-            CALL LUCIA_ICCI(IREFSM,JCMBSPC,CARD)
+         call quit('*** error in PAMLU: PT calculation not allowed ***')
           END IF
 *         ^ End of switch between types of calculations
         END DO
@@ -1566,11 +1535,11 @@ C     I_RESTRT_CC.EQ.1
 *     eliminate scratch units:
       close(unit=LU91,status='DELETE')
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C
 C     close MPI-I/O files and free groups
 C
-      CALL SETUNITS_PAR_CLOSE
+      CALL SETUNITS_PAR_CLOSE_2
       CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
 #endif
 C
@@ -1660,8 +1629,7 @@ C
 #include "cgas.inc"
 #include "oper.inc"
 #include "machine.inc"
-#if defined (VAR_MPI2)
-#include "maxorb.h"
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1686,7 +1654,7 @@ C
 *  Open file LUCIAIN from MOLUC conversion program
 *
       IN_MPINN ="LUCIAIN"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NNIN_MPI,'(A7,A1,I1)') IN_MPINN,'.',LUCI_MYPROC
          IN_MPILL=9
@@ -4186,7 +4154,8 @@ C     END IF
 * 53 : Convergence threshold for CI
 *
       IF(ISETKW(53).EQ.0) THEN
-        THRES_E = 1.0D-10
+!       THRES_E = 1.0D-10
+        THRES_E = 1.0D-7
         ISETKW(53) = 2
       END IF
 *
@@ -5222,7 +5191,7 @@ C    &  '        Allowed number of iterations    ',MAXIT
       WRITE(LUOUT,'(1H ,A,I2)')
      &  '        Allowed Dimension of CI subspace',MXCIV
 *
-      WRITE(LUOUT,'(1H ,A,E11.5)')
+      WRITE(LUOUT,'(A,1P,E11.5)')
      &  '        Convergence threshold for energy ',THRES_E
 *. Multispace (multigrid info )
       IF(MULSPC.EQ.1) THEN
@@ -5615,8 +5584,8 @@ C    &  '      Core energy : ', ECORE
       WRITE(6,*)
 C
       END
+#ifdef VAR_MPI
 ***********************************************************************
-#ifdef PRG_DIRAC
       SUBROUTINE LUMSTI
 C
 C     wake-up the co-workers
@@ -5635,7 +5604,7 @@ C
 ***********************************************************************
       SUBROUTINE LUMSTE
 C
-C     Release the slaves if we run in parallel
+C     Release the co-workers if we run in parallel
 C
 C     Adaption of the corresponding RELCCSD routine
 C     written by Luuk Visscher, August 1997
@@ -5643,52 +5612,35 @@ C     LUCITA version by Stefan Knecht, Feb. 06
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "maxorb.h"
-#if defined (VAR_MPI2)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "dcbgen.h"
 #include "infpar.h"
 #include "parluci.h"
 C
-      IF (.NOT.PARCAL) RETURN
-C
-C     Find the slaves and release them
-
+C     Find the co-workers and release them
       NTEST = -1
-#if defined (VAR_MPI2)
-      DO I = 1,NUMNOD
+      DO I = 1,LUCI_NMPROC-1
          CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
          CALL MPI_WAIT(IREQ,ISTAT,IERR)
          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
       ENDDO
-#endif
-
-C
-C     Let the slaves sleep (if relevant for this operating system)
-C
-      CALL DIRAC_PARCTL( 0 )
-C
+ 
       END
-#endif
-#if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCINOD */
       SUBROUTINE LUCINOD(WRK,LWRK)
 *
 *     LUCITA routine (DIRAC interface) for the slaves
 *
-*     adapted version of the slave RELCCSD 
+*     adapted version of the co-workers RELCCSD 
 *     routine (DIRAC interface) written by 
 *     Luuk Visscher, August 1997.
 *     LUCITA version by Stefan Knecht, Feb. 06
 *
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
-#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5699,7 +5651,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *.File numbers
 #include "clunit.inc"
 #include "units.inc"
-#include "priunit.h"
 *.Print flags
 #include "cprnt.inc"
 #include "lucinp.inc"
@@ -5712,7 +5663,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *.Memory
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
-      DIMENSION IMOKW(NTABLE)
       CHARACTER*10 INTFCE, WORD3*7
       CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
       LOGICAL CA,LUEND
@@ -5779,8 +5729,10 @@ C
 *
 *     pointer in DIRAC.INP should now be positioned behind *LUCITA
 *
-      CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
-      CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+      print *, 
+     & '*** FIXME: INPUT READING FROM DALTON MENU FOR co-workers ***'
+!     CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
+!     CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
 *
 *     now let's call the working routine!
 *
@@ -5804,4 +5756,4 @@ C
      &               MPI_COMM_WORLD,ISTAT,IERR)
 C
       END
-#endif    /* ifdef VAR_MPI2 */
+#endif    /* ifdef VAR_MPI */

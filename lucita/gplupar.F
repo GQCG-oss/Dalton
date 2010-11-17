@@ -32,7 +32,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 ***********************************************************************
 *
 *============================================================*
@@ -227,7 +227,7 @@ C
 C
             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
      &                     JCOMM,ISTAT,IERR)
-            CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+            CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
           ELSE
             CALL ZERORC(LBL,LUOUT,0)
           END IF
@@ -388,7 +388,7 @@ C
 C
               CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
      &                       JCOMM,ISTAT,IERR)
-              CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+              CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
             ELSE
               CALL ZERORC(LBL,LUOUT,0)
             END IF
@@ -523,7 +523,7 @@ C            read block in
              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
      &                             MPI_REAL8,ISTAT,IERR)
 C
-             CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
              IOFFSET_SCRATCH = LBL
 C
@@ -561,7 +561,7 @@ C
 C
           CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
      &                  JCOMM,ISTAT,IERR)
-          CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+          CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
           IOFFSET_SCRATCH = 0
         END IF
@@ -645,7 +645,7 @@ C
 C            read block in
              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
      &                             MPI_REAL8,ISTAT,IERR)
-             CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
              IOFFSET_SCRATCH = LBL
 C
@@ -683,7 +683,7 @@ C
 C
             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
      &                    JCOMM,ISTAT,IERR)
-            CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+            CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
             IOFFSET_SCRATCH = 0
           END IF
@@ -802,7 +802,7 @@ C            read block in
              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
      &                             MPI_REAL8,ISTAT,IERR)
 C
-             CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
              IOFFSET_SCRATCH = LBL
 C
@@ -840,7 +840,7 @@ C
 C
           CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
      &                  JCOMM,ISTAT,IERR)
-          CALL TODSC(SEGMNT,LBL,-1,LUOUT)
+          CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
           IOFFSET_SCRATCH = 0
         END IF
@@ -980,10 +980,10 @@ C
            IF( CSCREEN) THEN
 C             set proper truncation factor
               THR_TRUNC  = TRUNC_FAC * RNORM_FAC
-Csk           WRITE(LUWRT,*) 'TRUNCATION FACTOR:',THR_TRUNC
+              THR_ETRUNC = 1.0D-7 * THRES_E
 Chj           14-jun-07:   disable THR_ETRUNC
-Chj           THR_ETRUNC = 1.0D-6 * THRES_E
-              THR_ETRUNC = -1.0D0
+!             THR_ETRUNC = -1.0D0
+!testprint    WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
               CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
      &                          THR_TRUNC,THR_ETRUNC)
            ELSE
@@ -2311,13 +2311,13 @@ C         broadcast the nonvanishing block
 C         some test writing, enable for debugging!        
 CSK          IF(LUCI_MYPROC.NE.IBLOCKD(IBLK)) THEN
 CSK            WRITE(6,*)'THIS IS WHAT I GOT',LUCI_MYPROC
-CSK            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSK            CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
 CSK          END IF
 C         transfer the recieved block to disk if necessary
           IF(SCALFAC_LOCAL(IBLK).NE.0.0D0) THEN 
             KBLK = -1
             CALL ITODS(LBL,1,-1,LUOUT)
-            CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
+            CALL TODSC_LUCI(SEGMNT,LBL,KBLK,LUOUT)
           END IF
 *
         ELSE 
@@ -2413,7 +2413,7 @@ C         broadcast the nonvanishing block
 C         some test writing, enable for debugging!        
 CSK          IF(LUCI_MYPROC.NE.IBLOCKD(IBLK)) THEN
 CSK            WRITE(6,*)'THIS IS WHAT I GOT',LUCI_MYPROC
-CSK            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSK            CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
 CSK          END IF
 C         transfer the recieved block to disk if necessary
           IF(SCALFAC_LOCAL(IBLK).NE.0.0D0) THEN 
@@ -2526,7 +2526,7 @@ CSK          END IF
 C         transfer the recieved block to disk if necessary
           IF( SCALFAC_GROUP(IBLK) .ne. 0.0D0 ) THEN 
 CSKT            WRITE(6,*)'THIS IS WHAT I GOT',ICOMM_ID
-CSKT            CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+CSKT            CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
 CSKT            WRITE(6,*) 'IOFFSET_OUT = ',IOFFSET_OUT
             CALL MPI_FILE_WRITE_AT(MPILUSCR,IOFFSET_OUT,SEGMNT,LBL,
      &                             MPI_REAL8,ISTAT,IERR)
@@ -2591,13 +2591,13 @@ C
 C
 CSK        WRITE(6,*) 'THIS IS WHAT I WILL WRITE on LUOUT FOR
 CSK     &  LUIN',LUIN,LUOUT,LUCI_MYPROC
-CSK        CALL WRTMAT(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK        CALL WRTMT_LU(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
         DO ISBLK = I1BATS(ISBATCH),I1BATS(ISBATCH) + LBATS(ISBATCH) -1
 C
           IOFF =  IBATS(6,ISBLK)
           ILEN  = IBATS(8,ISBLK)
           CALL ITODS(ILEN,1,-1,LUOUT)
-          CALL TODSC(SCR(IOFF),ILEN,-1,LUOUT)
+          CALL TODSC_LUCI(SCR(IOFF),ILEN,-1,LUOUT)
 CSK          write(6,*) 'my IOFF and ILEN for ISBLK',IOFF,ILEN,ISBLK,LUCI_MYPROC
 C
         END DO
@@ -2662,7 +2662,7 @@ C
 C
 CSK        WRITE(6,*) 'THIS IS WHAT I WILL WRITE on LUOUT FOR
 CSK     &  LUIN',LUIN,LUOUT,LUCI_MYPROC
-CSK        CALL WRTMAT(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK        CALL WRTMT_LU(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
         DO ISBLK = I1BATS(ISBATCH),I1BATS(ISBATCH) + LBATS(ISBATCH) -1
 C
           IOFF =  IBATS(6,ISBLK)
@@ -2750,7 +2750,7 @@ C
            write(6,*) 'IOFFSET_IN_INT_LUOUT',IOFFSET_IN_INT_LUOUT
            write(6,*) 'i should transfer this to file for batch',
      &                LUOUT,isbatch
-             CALL WRTMAT(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+             CALL WRTMT_LU(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
            END IF
         CALL WTVEC_BATCH_DRV(SCR,LBATS(ISBATCH),LEBATS(ISBATCH),
      &                       IBATS(1,I1BATS(ISBATCH)),
@@ -2835,7 +2835,7 @@ C
 CSK        write(6,*) 'IOFFSET_IN_INT_LUOUT',IOFFSET_IN_INT_LUOUT
 CSK        write(6,*) 'i should transfer this to file for batch',
 CSK     &                LUOUT,isbatch
-CSK          CALL WRTMAT(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
+CSK          CALL WRTMT_LU(SCR,1,LEBATS(ISBATCH),1,LEBATS(ISBATCH))
 CSK        END IF
 C
         NO_CHECK = 1
@@ -3262,13 +3262,16 @@ CSK      NTEST = 10
 *
       IF(INONVAN.LT.LUCI_NMPROC) THEN
         IMINNP = MIN(INONVAN,LUCI_NMPROC)
-        IF(NTEST.GT.0) THEN
-          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-            WRITE(6,*) 'subroutine DISTBLKND speaking!'
-            WRITE(6,*) 'number of active blocks lower than number of
-     & procs --> I only use',IMINNP+1,'procs'
-          END IF
-        END IF
+        write(6,'(/a,i6)') '*** error in distblknd:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         IF(LUCI_MYPROC.GE.INONVAN) GOTO 1001
       ELSE
         IMINNP = LUCI_NMPROC
@@ -3437,9 +3440,16 @@ C
       NTEMPP = IMINNP
       IF(ICOUNTABLK.LT.LUCI_NMPROC) THEN
         IMINNP = MIN(ICOUNTABLK,IMINNP)
-        WRITE(LUWRT,*) 'subroutine DISTBLKND_1 speaking!'
-        WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & CPUs --> I only use',IMINNP,'CPUs'
+        write(6,'(/a,i6)') '*** error in distblknd_1:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_1: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF(LUCI_MYPROC.GE.ICOUNTABLK) THEN
           IAM_NOT_INV =   0
@@ -3862,9 +3872,16 @@ CSK      WRITE(6,*)'MXSIZE of LUCI_MYPROC',MXSIZE,LUCI_MYPROC
       NTEMPP = IMINNP
       IF( ICOUNTABLK .lt. LUCI_NMPROC) THEN
         IMINNP = MIN( ICOUNTABLK, IMINNP )
-        WRITE(LUWRT,*) 'subroutine FIND_SBATCH_DISTR speaking!'
-        WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & CPUs --> I only use',IMINNP,'CPUs'
+        write(6,'(/a,i6)') '*** error in distblknd_2:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_2: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF( LUCI_MYPROC .ge. ICOUNTABLK ) THEN
           IAM_NOT_INV =   0
@@ -4260,8 +4277,8 @@ CSK      END IF
             KBLK = -1
           END IF
           LENGTH = LBL1
-          CALL FRMDSC(VEC1,LENGTH,KBLK,LU1,IMZERO,IAMPACK)
-          CALL FRMDSC(VEC2,LENGTH,KBLK,LU2,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(VEC1,LENGTH,KBLK,LU1,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(VEC2,LENGTH,KBLK,LU2,IMZERO,IAMPACK)
           IF( LBL1 .GT. 0 )THEN
             IF(INV .NE. 0 ) THEN
 *             nothing needs to be done here
@@ -4284,7 +4301,7 @@ CSK      END IF
           END IF
 *
           XINOUT = XINOUT + DDOT(LENGTH,VEC1,1,VEC2,1)
-          CALL TODSC(VEC1,LENGTH,KBLK,LU3)
+          CALL TODSC_LUCI(VEC1,LENGTH,KBLK,LU3)
           IOFF = IOFF + LENGTH
         END IF
 *
@@ -4381,8 +4398,8 @@ Chj   THR_ETRUNC = 1.0D-6 * THRES_E
             KBLK = -1
           END IF
           LENGTH = LBL1
-          CALL FRMDSC(VEC1,LENGTH,KBLK,LUDIA,IMZERO,IAMPACK)
-          CALL FRMDSC(VEC2,LENGTH,KBLK,LUIN,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(VEC1,LENGTH,KBLK,LUDIA,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(VEC2,LENGTH,KBLK,LUIN,IMZERO,IAMPACK)
           IF( LBL1 .GT. 0 )THEN
 CSK            IOFFMAX = idamax(LENGTH, VEC2, 1 )
 CSK            IF( ABS(VEC2(IOFFMAX)) .LT. THR_TRUNC ) THEN
@@ -4416,7 +4433,7 @@ CSK            END IF
           END IF
 *
           XINOUT = XINOUT + DDOT(LENGTH,VEC1,1,VEC2,1)
-          CALL TODSC(VEC1,LENGTH,KBLK,LUOUT)
+          CALL TODSC_LUCI(VEC1,LENGTH,KBLK,LUOUT)
           IOFF = IOFF + LENGTH
         END IF
 *
@@ -4634,31 +4651,10 @@ C?   &                         I,IGAT(I),XGAT(I)
       NTEST = MAX(IPRT,NTEST)
       IF(NTEST.GE.5) THEN
        WRITE(6,*) ' Gathered vector from GATVCD_PAR'
-       CALL WRTMAT(XGAT,1,NGAT,1,NGAT)
+       CALL WRTMT_LU(XGAT,1,NGAT,1,NGAT)
       END IF
 *
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE I_DO_RCCTOS(IBLOCKL,ICCTOS,NBLOCKS,ICOMPL)
-C
-      IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION IBLOCKL(*), ICCTOS(*)
-C
-      IONE = 1
-      DO ILOOP = 1, ICOMPL
-        DO IBLK = 1, NBLOCKS
-          IF( IBLOCKL(IBLK) .gt. 0 ) THEN
-            ICCTOS( IBLK + ( NBLOCKS * ( ILOOP -1 ) ) ) = IONE
-          END IF
-        END DO
-      END DO
-C
-      END 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
@@ -4738,8 +4734,8 @@ C?      WRITE(6,*) ' INPRODB IBLK LLBLK IOFF ',IBLK,LLBLK,IOFF
         IF(I0BLK(IBLK).EQ.0.AND.LLBLK.GT.0) THEN
           X = X + DDOT(VEC1(IOFF),VEC2(IOFF),LLBLK)
 C?        WRITE(6,*) ' Vec1 and Vec2 blocks '
-C?        CALL WRTMAT(VEC1(IOFF),1,LLBLK,1,LLBLK)
-C?        CALL WRTMAT(VEC2(IOFF),1,LLBLK,1,LLBLK)
+C?        CALL WRTMT_LU(VEC1(IOFF),1,LLBLK,1,LLBLK)
+C?        CALL WRTMT_LU(VEC2(IOFF),1,LLBLK,1,LLBLK)
 C?        write(6,*) ' Updated x', X
         END IF
         IF(LLBLK.GT.0) IOFF = IOFF + LLBLK
@@ -5830,15 +5826,15 @@ C
 C         VEC2 == VEC2 + VEC1 * FACIN1(IVEC)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK            WRITE(6,*) 'FACIN1(IVEC) = ',FACIN1(IVEC)
 CSK          END IF
           CALL DAXPY(LEBATCH(ISBATCH),FACIN1(IVEC),VEC1,1,VEC2,1)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 after DAXPY'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
   100   CONTINUE
 C       next vectors on LUIN2 ...
@@ -5859,22 +5855,22 @@ C
 C         VEC2 == VEC2 + VEC1 * FACIN2(IVEC)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY in 200'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK            WRITE(6,*) 'FACIN2(IVEC) = ',FACIN2(IVEC)
 CSK          END IF
           CALL DAXPY(LEBATCH(ISBATCH),FACIN2(IVEC),VEC1,1,VEC2,1)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 after DAXPY in 200'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C
 C
   200   CONTINUE
 CSK        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK           WRITE(6,*) 'VEC2 after 200'
-CSK           CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK           CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK        END IF
 C
 C       write VEC2 to LUOUT
@@ -5886,7 +5882,7 @@ C
      &                      LUOUT,IOFFSET_LUOUT,0)
 CCC       IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CCC         WRITE(6,*) 'This is what i have written = reset C/svector'
-CCC         CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CCC         CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CCC       END IF
 C       keep track of correct offset
         IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
@@ -6523,7 +6519,7 @@ C
 C
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK            WRITE(6,*) 'initial VEC2 on ILU7'
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C
         DO 100 IROOT = 1, NROOT
@@ -6542,7 +6538,7 @@ CCC        WRITE(6,*) 'This is my OFFSET for LUIN2',IOFFSET_IN_LUIN2
 CCC       END IF
 CCC       IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CCC         WRITE(6,*) 'VEC1 before read in from ILU1 bt',myproc,ISBATCH
-CCC         CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CCC         CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CCC       END IF
 C
           CALL RDVEC_BATCH_DRV(VEC1,LBATCH(ISBATCH),LEBATCH(ISBATCH),
@@ -6551,7 +6547,7 @@ C
 C
 CCC       IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CCC         WRITE(6,*) 'VEC1 read in as from ILU1for bt',myproc,ISBATCH
-CCC         CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CCC         CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CCC       END IF
           
           IF( IROOT .eq. 1 ) ISTRED = IROOT+(JOFF)*2*NROOT
@@ -6623,7 +6619,7 @@ CSK      call mpi_barrier(mpi_comm_world,ierr)
 CSK      call mpi_barrier(mpi_comm_world,ierr)
 CSK      IF( LUCI_MYPROC.eq.LUCI_MASTER) THEN
 CSK      WRITE(6,*) 'THIS IS WHAT I HAVE REDUCED TO (LUCI_MYPROC)',LUCI_MYPROC
-CSK      CALL WRTMAT(WORK_SP(ISTRED),1,NROOT,1,NROOT)
+CSK      CALL WRTMT_LU(WORK_SP(ISTRED),1,NROOT,1,NROOT)
 CSK      ENDIF
 CSK      call mpi_barrier(mpi_comm_world,ierr)
 CSK      call mpi_barrier(mpi_comm_world,ierr)
@@ -6684,7 +6680,7 @@ C     initialize scratch offsets
       IOFFSET_LUOUT2   = 0
 C
 CSK      WRITE(6,*) 'THIS IS WORK_SP(1+(JVEC-1)*2*NROOT) inside',myproc
-CSK      CALL WRTMAT(FACIN1,1,NINVEC1,1,NINVEC1)
+CSK      CALL WRTMT_LU(FACIN1,1,NINVEC1,1,NINVEC1)
 C 
       DO ISBATCH = 1, NBATCH
 C
@@ -6723,8 +6719,8 @@ C         VEC2 == VEC2 + VEC1 * FACIN1(IVEC)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK            WRITE(6,*) 'VEC2 before DAXPY for LUIN1',
 CSK     &                  Myproc,IVEC
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK            WRITE(6,*) 'FACIN1(IVEC) = ',FACIN1(IVEC)
 CSK          END IF
 CSK          FACSCALE = FACIN1(IVEC)
@@ -6736,8 +6732,8 @@ CSK          FACSCALE = FACIN1(IVEC)
 CSK       IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK       IF (IVEC .eq. NINVEC1 ) THEN
 CSK         WRITE(6,*) 'VEC2 after DAXPY == after first ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK         CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK         CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK       END IF
 CSK       END IF
 C
@@ -6765,8 +6761,8 @@ C
 C         VEC2 == VEC2 + VEC1 * FACIN1(IVEC)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK            WRITE(6,*) 'FACIN2(1) = ',FACIN2(1)
 CSK          END IF
           IF( IVEC .eq. 1 ) THEN 
@@ -6776,16 +6772,16 @@ CSK          END IF
           END IF
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC2 after DAXPY == after sec ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C
   200   CONTINUE
 C
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK            WRITE(6,*) 'VEC2 after DAXPY == after sec ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C       update REDFAC == REDFAC + SUM ( VEC2 * VEC2 )
         REDFAC = REDFAC + DDOT( LEBATCH(ISBATCH), VEC2, 1, VEC2, 1 )
@@ -6820,7 +6816,7 @@ C
       CALL DSCAL(NSCALING, SCALING, SCAL_ARRAY, 1 )
 C
 CSK      WRITE(LUWRTOUT,*) 'THIS IS MY SCALED WORK PART',LUCI_MYPROC
-CSK      CALL WRTMAT(SCAL_ARRAY,1,NSCALING,1,NSCALING)
+CSK      CALL WRTMT_LU(SCAL_ARRAY,1,NSCALING,1,NSCALING)
 C
 C     initialize scratch offset again
       IOFFSET_SCRATCH = 0
@@ -6862,7 +6858,7 @@ C
      &                     ( MY_VEC_IOFF * (NINVEC2) ) + IOFFSET_SCRATCH
 CSK           WRITE(6,*) 'This is my OFFSET for writing on ILU3 and what',
 CSK     &                 IOFFSET_LUOUT2
-CSK           CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK           CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 C
         CALL WTVEC_BATCH_DRV(VEC2,LBATCH(ISBATCH),LEBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
@@ -6870,7 +6866,7 @@ C
 C
 CSK           WRITE(6,*) 'This is what i have written',
 CSK     &                 myproc
-CSK           CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK           CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 C
 C       keep track of correct offset
         IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
@@ -6972,15 +6968,15 @@ C         VEC2 == VEC2 + VEC1 * FACIN1(IROOT)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY for LUIN2',
 CSK     &                  Myproc,IVEC
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
           CALL DAXPY( LEBATCH(ISBATCH), FACIN1(IROOT), VEC1, 1, VEC2, 1)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK          IF (IVEC .eq. NINVEC1 ) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 after DAXPY == after first ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 CSK          END IF
 C
@@ -7009,8 +7005,8 @@ C         VEC2 == VEC2 + VEC1 * FACIN1(IROOT)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY for LUIN3',
 CSK     &                  Myproc,IVEC
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
           IF ( KVEC .eq. 1 ) THEN
             CALL DAXPY( LEBATCH(ISBATCH),FACIN3(1), VEC1, 1, VEC2, 1)
@@ -7020,8 +7016,8 @@ CSK          END IF
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK          IF (KVEC .eq. JOFF ) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 after DAXPY == after sec ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 CSK          END IF
 C
@@ -7270,7 +7266,7 @@ C
 C
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK            WRITE(6,*) 'initial VEC2 on ILU7'
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C
 C
@@ -7294,7 +7290,7 @@ C
 C
 CCC       IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CCC         WRITE(6,*) 'VEC1 read in as from ILU1for bt',myproc,ISBATCH
-CCC         CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CCC         CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CCC       END IF
           
           IF( IROOT .eq. 1 ) ISTRED = IROOT+(JOFF)*2*NROOT
@@ -8272,7 +8268,7 @@ C     initialize scratch offsets
       IOFFSET_INT_LUOUT2   = 0
 C
 CSK      WRITE(6,*) 'THIS IS WORK_SP(1+(JVEC-1)*2*NROOT) inside',myproc
-CSK      CALL WRTMAT(FACIN1,1,NINVEC1,1,NINVEC1)
+CSK      CALL WRTMT_LU(FACIN1,1,NINVEC1,1,NINVEC1)
 C 
       DO ISBATCH = 1, NBATCH
 C
@@ -8315,8 +8311,8 @@ C         VEC2 == VEC2 + VEC1 * FACIN1(IVEC)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK            WRITE(6,*) 'VEC2 before DAXPY for LUIN1',
 CSK     &                  Myproc,IVEC
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK            WRITE(6,*) 'FACIN1(IVEC) = ',FACIN1(IVEC)
 CSK          END IF
 CSK          FACSCALE = FACIN1(IVEC)
@@ -8332,8 +8328,8 @@ CSK          FACSCALE = FACIN1(IVEC)
 CSK       IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK       IF (IVEC .eq. NINVEC1 ) THEN
 CSK         WRITE(6,*) 'VEC2 after DAXPY == after first ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK         CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK         CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK       END IF
 CSK       END IF
 C
@@ -8363,8 +8359,8 @@ C
 C         VEC2 == VEC2 + VEC1 * FACIN1(IVEC)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK            WRITE(6,*) 'FACIN2(1) = ',FACIN2(1)
 CSK          END IF
           IF( IVEC .eq. 1 ) THEN 
@@ -8378,16 +8374,16 @@ CSK          END IF
           END IF
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC2 after DAXPY == after sec ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C
   200   CONTINUE
 C
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER+1) THEN
 CSK            WRITE(6,*) 'VEC2 after DAXPY == after sec ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 C       update REDFAC == REDFAC + SUM ( VEC2 * VEC2 )
         REDFAC = REDFAC + DDOT( LEBATCH(ISBATCH), VEC2, 1, VEC2, 1 )
@@ -8430,7 +8426,7 @@ C
       CALL DSCAL(NSCALING, SCALING, SCAL_ARRAY, 1 )
 C
 CSK      WRITE(LUWRTOUT,*) 'THIS IS MY SCALED WORK PART',LUCI_MYPROC
-CSK      CALL WRTMAT(SCAL_ARRAY,1,NSCALING,1,NSCALING)
+CSK      CALL WRTMT_LU(SCAL_ARRAY,1,NSCALING,1,NSCALING)
 C
 C     initialize scratch offsets again
       NUM_BLK = 0
@@ -8480,7 +8476,7 @@ C
         IOFFSET_INT_LUOUT2 = ( NBLK_ACT * (NINVEC2) ) + NUM_BLK + 1
 CSK           WRITE(6,*) 'This is my OFFSET for writing on ILU3 and what',
 CSK     &                 IOFFSET_LUOUT2
-CSK           CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK           CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 C
         CALL WTVEC_BATCH_DRV2(VEC2,LBATCH(ISBATCH),LEBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
@@ -8489,7 +8485,7 @@ C
 C
 CSK           WRITE(6,*) 'This is what i have written',
 CSK     &                 myproc
-CSK           CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK           CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 C
 C       keep track of correct offset
         IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
@@ -8611,8 +8607,8 @@ C         VEC2 == VEC2 + VEC1 * FACIN1(IROOT)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY for LUIN2',
 CSK     &                  Myproc,IVEC
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
           CALL SCLVCSUM(FACIN1(IROOT),VEC1,VEC2,LBATCH(ISBATCH),
      &                  IBATCH(1,I1BATCH(ISBATCH)),
@@ -8620,8 +8616,8 @@ CSK          END IF
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK          IF (IVEC .eq. NINVEC1 ) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 after DAXPY == after first ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 CSK          END IF
 C
@@ -8653,8 +8649,8 @@ C         VEC2 == VEC2 + VEC1 * FACIN1(IROOT)
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 before DAXPY for LUIN3',
 CSK     &                  Myproc,IVEC
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
           IF ( KVEC .eq. 1 ) THEN
             CALL SCLVCSUM(FACIN3(1),VEC1,VEC2,LBATCH(ISBATCH),
@@ -8668,8 +8664,8 @@ CSK          END IF
 CSK          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 CSK          IF (KVEC .eq. JOFF ) THEN
 CSK            WRITE(6,*) 'VEC1 and VEC2 after DAXPY == after sec ort'
-CSK            CALL WRTMAT(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
-CSK            CALL WRTMAT(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
+CSK            CALL WRTMT_LU(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH))
 CSK          END IF
 CSK          END IF
 C
@@ -9952,4 +9948,4 @@ C
       SUBROUTINE PAR_DUMMY2
       END 
 ***********************************************************************
-#endif /* defined (VAR_MPI2) */
+#endif /* defined VAR_MPI */

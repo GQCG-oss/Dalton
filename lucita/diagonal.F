@@ -413,12 +413,12 @@ C     COMMON/OPER/I12,IPERTOP
 *
       IF( NTEST .GE. 2000 ) THEN
         WRITE(6,*) ' Diagonal one electron integrals'
-        CALL WRTMAT(H,1,NORB,1,NORB)
+        CALL WRTMT_LU(H,1,NORB,1,NORB)
         IF(I12.EQ.2) THEN
           WRITE(6,*) ' Coulomb and exchange integrals '
-          CALL WRTMAT(RJ,NORB,NORB,NTOOB,NTOOB)
+          CALL WRTMT_LU(RJ,NORB,NORB,NTOOB,NTOOB)
           WRITE(6,*)
-          CALL WRTMAT(RK,NORB,NORB,NTOOB,NTOOB)
+          CALL WRTMT_LU(RK,NORB,NORB,NTOOB,NTOOB)
         END IF
       END IF
 *
@@ -513,7 +513,7 @@ C     COMMON/OPER/I12,IPERTOP
 *
           IF(Ntest.ge.1000) THEN
              WRITE(6,*) ' Next batch of diagonal elements '
-             CALL WRTMAT(DIAG,1,IDET,1,IDET)
+             CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
           END IF
 *
       RETURN
@@ -756,7 +756,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       CALL GT1DIA(WORK(KLH1D))
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' Diagonal of 1-el ints '
-        CALL WRTMAT(WORK(KLH1D),1,NTOOB,1,NTOOB)
+        CALL WRTMT_LU(WORK(KLH1D),1,NTOOB,1,NTOOB)
       END IF
       IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1O),NINT1)
       IF(I12.EQ.2)
@@ -857,12 +857,12 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
 *
       IF(NTEST.GE.1000) THEN
         WRITE(6,*) ' Diagonal one electron integrals'
-        CALL WRTMAT(H,1,NORB,1,NORB)
+        CALL WRTMT_LU(H,1,NORB,1,NORB)
         IF(I12.EQ.2) THEN
           WRITE(6,*) ' Coulomb and exchange integrals '
-          CALL WRTMAT(RJ,NORB,NORB,NTOOB,NTOOB)
+          CALL WRTMT_LU(RJ,NORB,NORB,NTOOB,NTOOB)
           WRITE(6,*)
-          CALL WRTMAT(RK,NORB,NORB,NTOOB,NTOOB)
+          CALL WRTMT_LU(RK,NORB,NORB,NTOOB,NTOOB)
           WRITE(6,*) ' I12 and ITASK = ', I12,ITASK
         END IF
       WRITE(6,*) ' FACTOR = ',FACTOR
@@ -939,7 +939,7 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
         IF(LUIN.GT.0) THEN
           CALL IFRMDS(LDET,1,-1,LUIN)
           IDET = 0
-          CALL FRMDSC(VEC(1),LDET,-1,LUIN,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(VEC(1),LDET,-1,LUIN,IMZERO,IAMPACK)
         END IF
 *
         IF(I0CHK.EQ.1) THEN
@@ -1015,7 +1015,7 @@ C?         write(6,*) ' IDET,X,VEC(IDET) ', IDET,X,VEC(IDET)
 *
         IF(LUOUT.GT.0) THEN
           CALL ITODS(LDET,1,-1,LUOUT)
-          CALL TODSC(VEC,LDET,-1,LUOUT)
+          CALL TODSC_LUCI(VEC,LDET,-1,LUOUT)
 C?        WRITE(6,*) ' Number of elements transferred to DISC ',
 C?   &    LDET
           IDET = 0
@@ -1063,7 +1063,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * last parallel revision: March 2008
 *
       IMPLICIT REAL*8           (A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1130,7 +1130,7 @@ C     REAL * 8  INPROD
       IF(LUDIA.NE.0) CALL REWINO(LUDIA)
 *
       DO IBLK = 1, NBLOCK
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
          IF( NPARBLOCK( IBLK ) .ne. LUCI_MYPROC ) GOTO 2425
 #endif
 *
@@ -1220,16 +1220,16 @@ C     REAL * 8  INPROD
         IF(ICISTR.GE.2) THEN
           IF(NTEST.GE.100) THEN
             write(6,*) ' number of diagonal elements to disc ',IDET
-            CALL WRTMAT(DIAG,1,IDET,1,IDET)
+            CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
           END IF
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
           CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
      &                           MPI_REAL8,ISTAT,IERR)
 C         new offset
           IDIA_OFFSET = IDIA_OFFSET + IDET
 #else
           CALL ITODS(IDET,1,-1,LUDIA)
-          CALL TODSC(DIAG,IDET,-1,LUDIA)
+          CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
 #endif
           IDET = 0
         END IF
@@ -1287,7 +1287,7 @@ C         new offset
 #include "cgas.inc"
 #include "gasstr.inc"
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1426,7 +1426,7 @@ C            COPDIA(A,VEC,NDIM,IPACK)
         NDIM = IELSUM(LBLOCK,NBLOCK)
         WRITE(6,*) ' output matrix GET_DIAG_BLOC_MAT '
         WRITE(6,*) ' ==============================='
-        CALL WRTMAT(ADIAG,1,NDIM,1,NDIM)
+        CALL WRTMT_LU(ADIAG,1,NDIM,1,NDIM)
       END IF
 *
       RETURN
@@ -1488,7 +1488,7 @@ C?      WRITE(6,*)   IIOB,IOB,ISM,IOBREL
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' DIagonal one electron integrals '
-        CALL WRTMAT(H1DIA,1,NACOB,1,NACOB)
+        CALL WRTMT_LU(H1DIA,1,NACOB,1,NACOB)
       END IF
 *
       RETURN

@@ -1,37 +1,24 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -112,10 +99,9 @@ C
 
 *
 #include "units.inc"
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #endif
       
@@ -130,7 +116,7 @@ C
       LU_INTERNAL = LUSC_INT
       SCRFL ="LUSCDL"
 *
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',LUCI_MYPROC
          FLLNGTH=8
@@ -165,7 +151,6 @@ C
         write(6,*) ' INTEGER OUTPUT ', INT_X
       end if
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -614,12 +599,12 @@ C
 *
 C          TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGNTP)
       SIGNTP = 1.0
-      CALL TRIPAK(A,SCR(KLASYM),1,NDIM,NDIM,SIGNTP)
-      CALL EIGEN(SCR(KLASYM),SCR(KLAVEC),NDIM,0,1)
+      CALL TRIPAK_LUCI(A,SCR(KLASYM),1,NDIM,NDIM,SIGNTP)
+      CALL EIGEN_LUCI(SCR(KLASYM),SCR(KLAVEC),NDIM,0,1)
       CALL COPDIA(SCR(KLASYM),SCR(KLAVAL),NDIM,1)
       IF( NTEST .GE. 1 ) THEN
         WRITE(6,*) ' Eigenvalues of matrix : '
-        CALL WRTMAT(SCR(KLAVAL),NDIM,1,NDIM,1)
+        CALL WRTMT_LU(SCR(KLAVAL),NDIM,1,NDIM,1)
       END IF
 *. Check for negative eigenvalues
       DO I = 1, NDIM
@@ -651,12 +636,12 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
         WRITE(6,*) ' Info from SQRTMT '
         WRITE(6,*) ' ================='
         WRITE(6,*) ' Input matrix to SQRTMT '
-        CALL WRTMAT(A,NDIM,NDIM,NDIM,NDIM)
+        CALL WRTMT_LU(A,NDIM,NDIM,NDIM,NDIM)
         WRITE(6,*) ' Square root of matrix '
-        CALL WRTMAT(ASQRT,NDIM,NDIM,NDIM,NDIM)
+        CALL WRTMT_LU(ASQRT,NDIM,NDIM,NDIM,NDIM)
         IF(ITASK .EQ. 2 ) THEN
           WRITE(6,*) ' Inverse square root of matrix '
-          CALL WRTMAT(AMSQRT,NDIM,NDIM,NDIM,NDIM)
+          CALL WRTMT_LU(AMSQRT,NDIM,NDIM,NDIM,NDIM)
         END IF
       END IF
 *
@@ -735,7 +720,7 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
         END IF
         L = LBLOCK(IBLOCK)
         SIGNTP = 1.0
-        CALL TRIPAK(AUTPAK(IOFFU),APAK(IOFFP),IWAY,L,L,SIGNTP)
+        CALL TRIPAK_LUCI(AUTPAK(IOFFU),APAK(IOFFP),IWAY,L,L,SIGNTP)
 C            TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM
       END DO
 *
@@ -752,56 +737,6 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
         CALL APRBLM2(  APAK,LBLOCK,LBLOCK,NBLOCK,1)
       END IF
 *
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TRIPK2(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
-C
-C
-C.. REFORMATING BETWEEN LOWER TRIANGULAR PACKING
-C   AND FULL MATRIX FORM FOR A SYMMETRIC OR ANTI SYMMETRIC MATRIX
-C
-C   IWAY = 1 : FULL TO PACKED
-C              LOWER HALF OF AUTPAK IS STORED IN APAK
-C   IWAY = 2 : PACKED TO FULL FORM
-C              APAK STORED IN LOWER HALF
-C               SIGN * APAK TRANSPOSED IS STORED IN UPPPER PART
-C.. NOTE : COLUMN WISE STORAGE SCHEME IS USED FOR PACKED BLOCKS
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION AUTPAK(MATDIM,MATDIM),APAK(*)
-C
-      IF( IWAY .EQ. 1 ) THEN
-        IJ = 0
-        DO 100 J = 1,NDIM
-          DO 50  I = J , NDIM
-           APAK(IJ+I) = AUTPAK(I,J)
-   50     CONTINUE
-          IJ = IJ +NDIM-J
-  100   CONTINUE
-      END IF
-C
-      IF( IWAY .EQ. 2 ) THEN
-        IJ = 0
-        DO 200 J = 1,NDIM
-          DO 150  I = J,NDIM
-           AUTPAK(J,I) = SIGN*APAK(IJ+I)
-           AUTPAK(I,J) = APAK(IJ+I)
-  150     CONTINUE
-          IJ = IJ + NDIM-J
-  200   CONTINUE
-      END IF
-C
-      NTEST = 0
-      IF( NTEST .NE. 0 ) THEN
-        WRITE(6,*) ' AUTPAK AND APAK FROM TRIPK2 '
-        CALL WRTMAT(AUTPAK,NDIM,MATDIM,NDIM,MATDIM)
-        CALL PRSM2(APAK,NDIM)
-      END IF
-C
       RETURN
       END
 ***********************************************************************
@@ -826,8 +761,8 @@ C
  1020  FORMAT(1H0,'*** OUTPUT FROM TRANMAT')
        WRITE(6,1030)
  1030  FORMAT(1H0,'A- AND X-MATRIX')
-       CALL WRTMAT(A,NDIM,NDIM,MATDIM,MATDIM)
-       CALL WRTMAT(X,NDIM,NDIM,MATDIM,MATDIM)
+       CALL WRTMT_LU(A,NDIM,NDIM,MATDIM,MATDIM)
+       CALL WRTMT_LU(X,NDIM,NDIM,MATDIM,MATDIM)
       END IF
 C
 C A*X
@@ -844,7 +779,7 @@ C
       IF(NTEST.GE.2) THEN
        WRITE(6,1040)
  1040  FORMAT(1H0,' AX MATRIX')
-       CALL WRTMAT(SCRA,NDIM,NDIM,MATDIM,MATDIM)
+       CALL WRTMT_LU(SCRA,NDIM,NDIM,MATDIM,MATDIM)
       END IF
 C
 C X(TRANS)*(A*X)
@@ -861,7 +796,7 @@ C
       IF(NTEST.GE.2) THEN
        WRITE(6,1010)
  1010  FORMAT(1H0,' TRANSFORMED MATRIX')
-       CALL WRTMAT(A,NDIM,NDIM,MATDIM,MATDIM)
+       CALL WRTMT_LU(A,NDIM,NDIM,MATDIM,MATDIM)
       END IF
 C
       RETURN
@@ -912,16 +847,6 @@ C
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine upcase
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

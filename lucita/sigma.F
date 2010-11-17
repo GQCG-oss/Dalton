@@ -520,7 +520,7 @@ C               END IF
 *
        WRITE(6,*) ' C(ka,j,Jb) as C(kaj,Jb) '
        NKAJ = NKA*NJ
-       CALL WRTMAT(CKAJJB,NKAJ,NJB,NKAJ,NJB)
+       CALL WRTMT_LU(CKAJJB,NKAJ,NJB,NKAJ,NJB)
 *
        WRITE(6,*) ' C(Ka,Jb_pa,j,Jb_ac) as blocks C(KaJB_paj,Jb_ac)'
        DO JB_ACT_SM = 1, NSMST
@@ -538,7 +538,7 @@ C        WRITE(6,*)  ' NJB_ACT(JB_ACT_SM)', NJB_ACT(JB_ACT_SM)
 C        WRITE(6,*)  ' NJB_PAS(JB_ACT_SM)', NJB_PAS(JB_ACT_SM)
 C        WRITE(6,*)  ' NJ and NKA ', NJ,NKA
 C        WRITE(6,*) ' Offset IOFF_PA', IOFF_PA
-         CALL WRTMAT(CKAJJBPA(IOFF_PA),NROW,NCOL,NROW,NCOL)
+         CALL WRTMT_LU(CKAJJBPA(IOFF_PA),NROW,NCOL,NROW,NCOL)
        END DO
       END IF
 *
@@ -550,7 +550,7 @@ CT    CALL QEXIT('CKA_PA')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE DIHDJ(IASTR,IBSTR,NIDET,
+      SUBROUTINE DIHDJ_LUCI(IASTR,IBSTR,NIDET,
      &                 JASTR,JBSTR,NJDET,
      &                 NAEL,NBEL,
      &IWORK,LWORK,NORB,ONEBOD,HAMIL,ISYM,NINOB,ECORE,ICOMBI,PSIGN,
@@ -1042,7 +1042,7 @@ C?     write(6,*) ' XVAL ', XVAL
       IF( IPRT .GE. 10) THEN
         WRITE(6,*) '  Hamiltonian matrix '
         IF( ISYM .EQ. 0 ) THEN
-          CALL WRTMAT(HAMIL,NIDET,NJDET,NIDET,NJDET)
+          CALL WRTMT_LU(HAMIL,NIDET,NJDET,NIDET,NJDET)
         ELSE
           CALL PRSYM(HAMIL,NIDET)
         END IF
@@ -1057,7 +1057,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MV7(C,HC,LUC,LUHC
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
 #endif
@@ -1070,7 +1070,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * Works only for ICISTR .ne. 1, i.e. pure memory version
 * has been eliminated.
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1103,9 +1103,9 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 #include "glbbas.inc"
 #include "oper.inc"
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       DIMENSION LUCLIST(*),LUHCLIST(*),IBLOCKL(*),NPARBLOCK(*)
-      DIMENSION RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
+      INTEGER RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
 #endif
 C
       CALL QENTER('MV7  ')
@@ -1154,7 +1154,7 @@ C
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
 *     batches  of s vector
       ITTSS_ORD = 2
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
      &                   LBLOCK_LUCI,
@@ -1201,7 +1201,7 @@ C
         CALL RASSG3(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,
      &       WORK(KISCLFAC),WORK(KSCALLOC)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
 #endif
@@ -2112,7 +2112,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 ***********************************************************************
       SUBROUTINE RASSG3(CB,SB,NBATS,LBATS,LEBATS,I1BATS,IBATS,
      &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &                  ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                   IGROUPLIST,IPROCLIST
 #endif
@@ -2128,13 +2128,13 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 * =====
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
-      DIMENSION IPROCLIST(*), RCCTOS(*)
+      INTEGER IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
@@ -2163,7 +2163,7 @@ C     NTEST = MAX(NTEST,IPRNT)
         WRITE(6,*) ' RASSG3 : NBATS = ',NBATS
       END IF
 *
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 *
 *     make an update of list ISCLFAC_GROUP using LUCLIST...
 *
@@ -2234,7 +2234,7 @@ C
 C
 *=====================================================
 #else
-      IF(LUHC.GT.0) CALL REWINO(LUHC)
+      IF(LUHC.GT.0) CALL REWINE(LUHC,-1)
 C
 C     get scaling factor - 0.0D0 or 1.0D0
 C
@@ -2245,7 +2245,7 @@ C     loop over batches over sigma blocks
 C
       DO JBATS = 1, NBATS
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 *
 *       start various timings...
 *
@@ -2268,7 +2268,7 @@ csk     WRITE(LUWRT,*) ' ICOMPUTE is',ICOMPUTE
            GOTO 60
         ENDIF
 *
-#endif /* if def VAR_MPI2 */
+#endif /* if def VAR_MPI */
 C       zero SB
         LS = LEBATS(JBATS)
 csk     WRITE(LUWRT,*) ' LS - sbtach length =',LS
@@ -2276,7 +2276,7 @@ csk     WRITE(LUWRT,*) ' LS - sbtach length =',LS
 C
         CALL SBLOCK(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &       CB,SB,LUC,0,0,0,0,0,SSCLFAC,ISCLFAC_GROUP
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &      ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                             )
@@ -2285,10 +2285,10 @@ C       transfer S block to permanent storage
 C
  60     CONTINUE
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
         starttimer = MPI_WTIME()
         IF( ICOMPUTE .eq. 0 ) GOTO 70
-#endif /* if def VAR_MPI2 */
+#endif /* if def VAR_MPI */
 C
         NTEST = 000
         if (NTEST.ge.100) then
@@ -2306,7 +2306,7 @@ C
         DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
            IOFF = IBATS(6,ISBLK)
            LEN  = IBATS(8,ISBLK)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 *          check again if block is needed
            IF( NPARBLOCK(ISBLK) .ne. LUCI_MYPROC ) GOTO 65
 *
@@ -2342,11 +2342,11 @@ csk        WRITE(LUCIWT,*) 'offset,length',IOFF_SCR1,LEN
 C
 #else
            CALL ITODS(LEN,1,-1,LUHC)
-           CALL TODSC(SB(IOFF),LEN,-1,LUHC)
+           CALL TODSC_LUCI(SB(IOFF),LEN,-1,LUHC)
 #endif
         END DO
  70     CONTINUE
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
         IF( ICOMPUTE .ne. 0 ) THEN
             writetime = writetime + MPI_WTIME() - starttimer
             sbatchtime = sbatchtime + MPI_WTIME() - starttime
@@ -2356,10 +2356,10 @@ CSK too much information?                 WRITE(LUWRT,50000) WALLTID
             WRITE(LUCIWT,60001) WALLTID2
 CSK         WRITE(LUWRT,60000) WALLTID2, JBATABS
           END IF
-#endif /* if def VAR_MPI2 */
+#endif /* if def VAR_MPI */
       END DO
 *
-#if defined(VAR_MPI2)
+#ifdef VAR_MPI
 C
       WALLTID2 = SECTID(BLOCKTIME)
       WRITE(LUWRT,80000) WALLTID2
@@ -2653,7 +2653,7 @@ C               CALL TRPMAT(HSCR,IJ_DIM(1),IJ_DIM(2),H)
 C               CALL GETH1(H,IJ_SM(2),IJ_TP(2),IJ_SM(1),IJ_TP(1))
                 IF(NTEST.GE.1000) THEN
                   WRITE(6,*) ' RSBB1E H BLOCK '
-                  CALL WRTMAT(H,IJ_DIM(2),IJ_DIM(1),IJ_DIM(2),IJ_DIM(1))
+                CALL WRTMT_LU(H,IJ_DIM(2),IJ_DIM(1),IJ_DIM(2),IJ_DIM(1))
                 END IF
 *.Sscr(I,K,i) = CSCR(I,K,j)*h(j,i)
                 NIK = NIBTC*LKABTC
@@ -2661,14 +2661,14 @@ C               CALL GETH1(H,IJ_SM(2),IJ_TP(2),IJ_SM(1),IJ_TP(1))
                 FACTORAB = 1.0D0
                 IF(NTEST.GE.2000) THEN
                   WRITE(6,*) ' CSCR array,NIK X NJORB array '
-                  CALL WRTMAT(CSCR,NIK,IJ_DIM(2),NIK,IJ_DIM(2))
+                  CALL WRTMT_LU(CSCR,NIK,IJ_DIM(2),NIK,IJ_DIM(2))
                 END IF
                 CALL MATML7(SSCR,CSCR,H,
      &               NIK,IJ_DIM(1),NIK,IJ_DIM(2),IJ_DIM(2),IJ_DIM(1),
      &               FACTORC,FACTORAB,0)
                 IF(NTEST.GE.2000) THEN
                   WRITE(6,*) ' SSCR array,NIK X NIORB array '
-                  CALL WRTMAT(SSCR,NIK,IJ_DIM(1),NIK,IJ_DIM(1))
+                  CALL WRTMT_LU(SSCR,NIK,IJ_DIM(1),NIK,IJ_DIM(1))
                 END IF
 *.S(I,a+ K) =  S(I, a+ K) + sgn*Sscr(I,K,i)
                 DO IIORB = 1,IJ_DIM(1)
@@ -3186,11 +3186,11 @@ CT                    CALL QEXIT ('MATCG')
                     LIKB = NIBTC*NKBTC
                     IF(NTEST.GE.3000) THEN
                      WRITE(6,*) ' Integral block '
-                     CALL WRTMAT(XINT,NIKT,NJLT,NIKT,NJLT)
+                     CALL WRTMT_LU(XINT,NIKT,NJLT,NIKT,NJLT)
                     END IF
                     IF(NTEST.GE.3000) THEN
                       WRITE(6,*) ' CSCR matrix '
-                      CALL WRTMAT(CSCR,LIKB,NJLT,LIKB,NJLT)
+                      CALL WRTMT_LU(CSCR,LIKB,NJLT,LIKB,NJLT)
                     END IF
 *
 C?                  MXACIJO = MXACIJ
@@ -3211,7 +3211,7 @@ C?                  END IF
      &                          FACTORC,FACTORAB,2)
                     IF(NTEST.GE.3000) THEN
                       WRITE(6,*) ' SSCR matrix '
-                      CALL WRTMAT(SSCR,LIKB,NIKT,LIKB,NIKT)
+                      CALL WRTMT_LU(SSCR,LIKB,NIKT,LIKB,NIKT)
                     END IF
 * ============================
 * Loop over ik and scatter out
@@ -3477,11 +3477,11 @@ CT                  CALL QEXIT ('MATCG')
                     LIKB = NIBTC*NKBTC
                     IF(NTEST.GE.3000) THEN
                      WRITE(6,*) ' Integral block '
-                     CALL WRTMAT(XINT,NIK,NJL,NIK,NJL)
+                     CALL WRTMT_LU(XINT,NIK,NJL,NIK,NJL)
                     END IF
                     IF(NTEST.GE.3000) THEN
                       WRITE(6,*) ' CSCR matrix '
-                      CALL WRTMAT(CSCR,LIKB,NJL,LIKB,NJL)
+                      CALL WRTMT_LU(CSCR,LIKB,NJL,LIKB,NJL)
                     END IF
 *
 C?                  MXACIJO = MXACIJ
@@ -3502,7 +3502,7 @@ C?                  END IF
      &                          FACTORC,FACTORAB,2)
                     IF(NTEST.GE.3000) THEN
                       WRITE(6,*) ' SSCR matrix '
-                      CALL WRTMAT(SSCR,LIKB,NIK,LIKB,NIK)
+                      CALL WRTMT_LU(SSCR,LIKB,NIK,LIKB,NIK)
                     END IF
 * ============================
 * Loop over ik and scatter out
@@ -3802,10 +3802,10 @@ C         END IF
 *
           print*,'Calling SKICKJ with incomplete argument list.'
           stop
-                CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-     &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
-     &                      I4,XI4S,I2,XI2S,IKORD,
-     &                      FACS,IROUTE )
+!               CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+!    &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
+!    &                      I4,XI4S,I2,XI2S,IKORD,
+!    &                      FACS,IROUTE )
                 FACS = 1.0D0
 *
  1930         CONTINUE
@@ -4073,7 +4073,7 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
             END DO
             IF(NTEST.GE.500) THEN
               WRITE(6,*) ' Updated CJRES as C(Kaj,Jb)'
-              CALL WRTMAT(CJRES,NKASTR*NJ,NJB,NKASTR*NJ,NJB)
+              CALL WRTMT_LU(CJRES,NKASTR*NJ,NJB,NKASTR*NJ,NJB)
             END IF
 *
             MXACJ=MAX(MXACJ,NIB*LKABTC*IJ_DIM(1),NJB*LKABTC*IJ_DIM(2))
@@ -4184,16 +4184,16 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
                 IJKL_DIM = IJ_DIM(1)*IJ_DIM(2)*KL_DIM(1)*KL_DIM(2)
                 IF(INPROD(XINT,XINT,IJKL_DIM).NE.0.0D0) THEN
                 IROUTE = 3
-                CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-     &               NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
-     &               KL_DIM(1),KL_DIM(2),
-     &               NKBSTR,I4,XI4S,I2,XI2S,IKORD,
-     &               FACS,IROUTE,MXTSOB,XIJILS)
+!               CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+!    &               NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
+!    &               KL_DIM(1),KL_DIM(2),
+!    &               NKBSTR,I4,XI4S,I2,XI2S,IKORD,
+!    &               FACS,IROUTE,MXTSOB,XIJILS)
                 END IF
 *
                 IF(NTEST.GE.500) THEN
                   WRITE(6,*) ' Updated Sires as S(Kai,Ib)'
-                  CALL WRTMAT(SIRES,LKABTC*NI,NIB,LKABTC*NI,NIB)
+                  CALL WRTMT_LU(SIRES,LKABTC*NI,NIB,LKABTC*NI,NIB)
                 END IF
 *
  1930         CONTINUE
@@ -4205,7 +4205,7 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
 *
             IF(NTEST.GE.1000) THEN
               WRITE(6,*) ' S(Ka,Ib,i) as S(Ka,Ibi)'
-              CALL WRTMAT(SIRES,LKABTC,NIB*IJ_DIM(1),LKABTC,IJ_DIM(1))
+              CALL WRTMT_LU(SIRES,LKABTC,NIB*IJ_DIM(1),LKABTC,IJ_DIM(1))
             END IF
 *
             DO II = 1, IJ_DIM(1)
@@ -4668,19 +4668,19 @@ C           END IF
 *
                 IROUTE = 3
                 IF(IUSE_PA.EQ.0) THEN
-                  CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-     &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
-     &                 KL_DIM(1),KL_DIM(2),
-     &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
-     &                 FACS,IROUTE,MXTSOB,XIJILS)
+!                 CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+!    &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
+!    &                 KL_DIM(1),KL_DIM(2),
+!    &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
+!    &                 FACS,IROUTE,MXTSOB,XIJILS)
                 ELSE
-                  CALL SKICKJ(SIRESPA(ISK_OFF),CJRESPA(ICK_OFF),
-     &                 LKABTC*NJBPA_S(JBSM_AC),
-     &                 NIBAC_S(IBSM_AC),NJBAC_S(JBSM_AC),
-     &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
-     &                 KL_DIM(1),KL_DIM(2),
-     &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
-     &                 FACS,IROUTE,MXTSOB,XIJILS)
+!                 CALL SKICKJ(SIRESPA(ISK_OFF),CJRESPA(ICK_OFF),
+!    &                 LKABTC*NJBPA_S(JBSM_AC),
+!    &                 NIBAC_S(IBSM_AC),NJBAC_S(JBSM_AC),
+!    &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
+!    &                 KL_DIM(1),KL_DIM(2),
+!    &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
+!    &                 FACS,IROUTE,MXTSOB,XIJILS)
                 END IF
 *               ^ End of switch IUSE_PA
  1912         CONTINUE
@@ -4702,7 +4702,7 @@ C?              WRITE(6,*) SIGNPA
 *
             IF(NTEST.GE.1000) THEN
               WRITE(6,*) ' S(Ka,i,Ib) as S(Kai,Ibi)'
-              CALL WRTMAT(SIRES,LKABTC*IJ_DIM(1),NIB,
+              CALL WRTMT_LU(SIRES,LKABTC*IJ_DIM(1),NIB,
      &                          LKABTC*IJ_DIM(1),NIB)
             END IF
 *
@@ -4832,11 +4832,11 @@ C?              WRITE(6,*) SIGNPA
         WRITE(6,*) ' ==============================='
         WRITE(6,*) ' RSSBCB2 :  C block (transposed)'
         WRITE(6,*) ' ================================'
-        CALL WRTMAT(CB,NJB,NJA,NJB,NJA)
+        CALL WRTMT_LU(CB,NJB,NJA,NJB,NJA)
         WRITE(6,*) ' ======================================='
         WRITE(6,*) ' RSSBCB2 : Initial  S block(transposed) '
         WRITE(6,*) ' ======================================='
-        CALL WRTMAT(SB,NIA,NIB,NIA,NIB)
+        CALL WRTMT_LU(SB,NIA,NIB,NIA,NIB)
         WRITE(6,*) ' Overall scalefactor ',SCLFAC
         WRITE(6,*) ' IHAPR,JDOH2 = ', IHAPR,JDOH2
         WRITE(6,*) ' IUSE_PH,I_RES_AB = ', IUSE_PH,I_RES_AB
@@ -4905,7 +4905,7 @@ C?              WRITE(6,*) SIGNPA
         IF(NBEL.GE.0) THEN
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB before RSBB1E'
-             call wrtmat(sb,nia,nib,nia,nib)
+             call WRTMT_LU(sb,nia,nib,nia,nib)
            END IF
           IF(NTEST.GE.101)
      &    WRITE(6,*) ' I am going to call RSBB1E'
@@ -4918,7 +4918,7 @@ C?              WRITE(6,*) SIGNPA
      &                NIB,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB after RSBB1E'
-             call wrtmat(sb,nib,nia,nib,nia)
+             call WRTMT_LU(sb,nib,nia,nib,nia)
            END IF
         END IF
         IF(IDOH2.NE.0.AND.NBEL.GE.0) THEN
@@ -4935,7 +4935,7 @@ C?              WRITE(6,*) SIGNPA
      &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB after RSBB2a'
-             call wrtmat(sb,nib,nia,nib,nia)
+             call WRTMT_LU(sb,nib,nia,nib,nia)
            END IF
         END IF
         CALL TRPMT3(SB,NIA,NIB,C2)
@@ -5033,11 +5033,11 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
         END IF
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB after RSBB2B, first element '
-             call wrtmat(sb,1,1    ,nia,nib)
+             call WRTMT_LU(sb,1,1    ,nia,nib)
            END IF
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB after RSBB2b'
-             call wrtmat(sb,nib,nia,nib,nia)
+             call WRTMT_LU(sb,nib,nia,nib,nia)
            END IF
       END IF
 *
@@ -5064,11 +5064,11 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
      &              NIA,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB transposed after RSBB1, first element '
-             call wrtmat(sb,1,1    ,nia,nib)
+             call WRTMT_LU(sb,1,1    ,nia,nib)
            END IF
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB transposed  after RSBB1E'
-             call wrtmat(SB,nib,nia,nib,nia)
+             call WRTMT_LU(SB,nib,nia,nib,nia)
            END IF
 *
 * alpha double excitation
@@ -5089,11 +5089,11 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
 *
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB transposed after RSBB2A, first element '
-             call wrtmat(sb,1,1    ,nia,nib)
+             call WRTMT_LU(sb,1,1    ,nia,nib)
            END IF
         IF(NTEST.GE.500) THEN
           WRITE(6,*) ' SB after RSBB2A'
-          call wrtmat(sb,nia,nib,nia,nib)
+          call WRTMT_LU(sb,nia,nib,nia,nib)
         END IF
       END IF
 *
@@ -5143,7 +5143,7 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
         WRITE(6,*) ' ==================================='
         WRITE(6,*) ' RSSBCB : Final S block (transposed)'
         WRITE(6,*) ' ==================================='
-        CALL WRTMAT(SB,NIB,NIA,NIB,NIA)
+        CALL WRTMT_LU(SB,NIB,NIA,NIB,NIA)
       END IF
       NTESTO = NTEST
       RETURN
@@ -5156,7 +5156,7 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
       SUBROUTINE SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,
      &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
      &                  SSCLFAC,ISCLFAC_GROUP
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                  )
@@ -5179,7 +5179,7 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5244,7 +5244,7 @@ CTF   dimension SOMEH(MXTSOB*MXTSOB)
      &WRITE(6,*) ' SBLOCK : ISSPC,ICSPC ', ISSPC,ICSPC
 C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
       IF(LUCBLK.GT.0) THEN
-        CALL REWINO(LUCBLK)
+        CALL REWINE(LUCBLK,-1)
       END IF
 *
 *     info for this internal space
@@ -5483,7 +5483,7 @@ C
      &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
      &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
      &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),ISCLFAC_GROUP,SSCLFAC
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &    ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                  )
@@ -5530,7 +5530,7 @@ C
      &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
      &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
      &           I_RES_AB,IUSE_PA,CJPA,SIPA,ISCLFAC_GROUP,SSCLFAC
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
      &          ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &           )
@@ -5585,7 +5585,7 @@ C
 * sigma(iblk) = summa(jblk.le.iblk) (2-delta(iblk,jblk))/2
 *                                                 * <Iblk!H!Jblk>C(Jblk)
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5617,7 +5617,7 @@ C
 *
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION SCLFAC(*),SSCLFAC(*)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCR
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C1, IOFF_SCR_C_EXPL
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C2
@@ -5657,7 +5657,7 @@ C
       END IF
 C     copy scaling factors from restore array to working array
       CALL DCOPY(NUM_BLOCKS2,SSCLFAC,1,SCLFAC,1)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C     initialize offsets in C-vector file
       IOFFSET_SCR     = 0
       IOFF_SCR_C1     = 0
@@ -5718,7 +5718,7 @@ C       read C blocks into core
 C
         ICOFF = 1
         NJBLOCK = LCBLOCK(JCBATCH)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C
 C       C block non-zero?
 C
@@ -5743,7 +5743,7 @@ csk       WRITE(LUCIWT,*) ' active C block found',ICBLK
         DO JJCBLOCK = 1, NJBLOCK
           JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
           INTERACT = 0
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
           IF( ISCLFAC_GROUP( JBLOCK ) .gt. 0 ) THEN
 #else
           IF( SCLFAC(JBLOCK) .ne. 0.0D0 ) THEN
@@ -5806,7 +5806,7 @@ C           ^ s-block loop
 *         ^ Checking was only done for nonvanishing blocks
 *
           ISCALE = 0
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
 C         length of block
           LBL         = IBLOCKL(JBLOCK)
           IOFF_SCR_C2 = LBL
@@ -5884,7 +5884,7 @@ C                          --------------
 C
         DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
 C
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
             IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
 #else
             IF( SCLFAC( ICBLK ) .ne. 0.0D0 ) THEN
@@ -6023,7 +6023,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
                    IJOP   = -1
                 END IF
 *
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
                 xxxcomputtime = MPI_WTIME()
 #endif
 *
@@ -6047,7 +6047,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &               IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,XFAC,
      &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
      &               MXTSOB,SOMESCR,SOMEH,XIJILS)
-#if defined (VAR_MPI2)
+#ifdef VAR_MPI
                 xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
 #endif
 C
@@ -6326,5 +6326,56 @@ C1000 CONTINUE
 *. End of IROUTE branchning
 *
 C     CALL QEXIT('SKICK')
-      RETURN
+      END
+
+!**********************************************************************
+      FUNCTION I_DX_ACT(IGAS,KGAS,LGAS,JGAS)
+!**********************************************************************
+*
+* Is double excitation a+ igas a+ kgas a lgas a jgas active
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+
+*. Normal CI, extensions for perturbation etc can be inseted here
+      I_DX_ACT = 1
+*
+      NTEST = 000
+      IF(NTEST.GE.100) THEN
+        IF(I_DX_ACT.EQ.1) THEN
+          WRITE(6,*)
+     &    ' allowed excitation a+(igas) a (jgas) a+(kgas) a (lgas) for'
+     &    ,IGAS,JGAS,KGAS,LGAS
+        ELSE IF(I_DX_ACT.EQ.0) THEN
+          WRITE(6,*)
+     &    ' excluded excitation a+(igas) a (jgas) a+(kgas) a (lgas) for'
+     &    ,IGAS,JGAS,KGAS,LGAS
+        END IF
+      END IF
+      END
+
+!**********************************************************************
+      FUNCTION I_SX_ACT(IGAS,JGAS)
+!**********************************************************************
+*
+* Is single excitation a+ igas a jgas active
+*
+* Hiding cc restrictions etc
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+*. Normal CI, extensions for perturbation etc can be inseted here
+      I_SX_ACT = 1
+*
+      NTEST = 000
+      IF(NTEST.GE.100) THEN
+        IF(I_SX_ACT.EQ.1) THEN
+          WRITE(6,*)
+     &    ' allowed excitation a+ (igas) a (jgas) for igas,jgas=',
+     &    IGAS,JGAS
+        ELSE IF(I_SX_ACT.EQ.0) THEN
+          WRITE(6,*)
+     &    ' exluded excitation a+ (igas) a (jgas) for igas,jgas=',
+     &    IGAS,JGAS
+        END IF
+      END IF
       END
