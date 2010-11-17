@@ -1,6 +1,6 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCTINP(WORD,RESET,WORK,LWORK)
-C***********************************************************************
+!***********************************************************************
+      subroutine lucitainp(word,inperr,allopt)
+!***********************************************************************
 C
 C       Input section for LUCITA module
 C
@@ -15,10 +15,8 @@ C
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-      LOGICAL   SET,RESET,NEWDEF
+      LOGICAL   ALLOPT,NEWDEF
       CHARACTER WORD*7,WORD1*7,PROMPT*1,TABLE(NTABLE)*7
-C
-      DIMENSION WORK(LWORK)
 C
 C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
@@ -27,17 +25,11 @@ C
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
      &            '.PARMOD','.PIOMOD','.MAXITR','.LBLKSZ','.FILSYS',
      &            '.DISTRT','.FRCTFL','.TRUNCF','.MEMFAC','XXXXXXX'/
-      DATA SET/.FALSE./
-C
-      IF (SET) THEN
-         IF (RESET) SET = .FALSE.
-         RETURN
-      END IF
-      IF (RESET) THEN
-         SET = .FALSE.
-      ELSE
-         SET = .TRUE.
-      END IF
+
+      print *,'*** FIXME: set default values for LUCITA runs in 
+     & lucitainp or maybe better in SIRRDI before calling NEWINP. ***'
+      if(allopt) call prtab(ntable,table,word1//' input keywords',
+     &                      lupri)
 C
 C     Initialize keyword status flags driving interface.
 C     (Therefore local keywords do not have to be initialized!)
@@ -244,5 +236,4 @@ C&&& MEMFAC     : memory multiplier
             END IF
       END IF
   300 CONTINUE
-      RETURN
       END

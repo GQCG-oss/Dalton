@@ -1849,6 +1849,7 @@ C  *UPDATE
 C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
 C  *AUXILIARY INPUT
+C  *LUCITA CALCULATION     ! large-scale CI
 C  *END OF (marks end of keyword input)
 C
 C******************************************
@@ -1953,7 +1954,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 22)
+      PARAMETER (NTBMOD = 23)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO
 C
@@ -1966,7 +1967,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*AUXILL','*END OF'/
+     *            '*AUXILL','*LUCITA','*END OF'/
 C
 C
 C  ***************************************************
@@ -1985,7 +1986,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,8000), I
+     *                2900,3000,2400,3100,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2055,6 +2056,8 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  2900  CALL DFTINP(WORD,INPERR,ALLOPT)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
+       GO TO 910
+ 3100  CALL LUCITAINP(WORD,INPERR,ALLOPT)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
