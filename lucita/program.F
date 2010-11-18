@@ -972,6 +972,7 @@ C
 #endif
 #include "infpar.h"
 #include "parluci.h"
+#include "priunit.h"
       DIMENSION WRK(LWRK)
 *
 *----------------Executable code--------------------------------------
@@ -1053,32 +1054,45 @@ C
 #include "luctinp.h"
 *.Memory
 #include "wrkspc.inc"
+
+! LUCITA as MCSCF work-horse
+#include "mcscf_citask.h"
       DIMENSION WRK(LWRK)
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      INTEGER*8 K_OFFSET, K8BASE_LUCITA
-C
+      integer(8) :: k_offset, k8base_lucita
+      integer    :: kbase_lucita
+
+      CALL QENTER('PAMLU')
+
+      LUIN       = IUNIN
+      LUOUT      = IUNUT
+      LUCIWT     = LUOUT
+      LUWRT      = LUOUT
       MIN_ONE    = - 1
       NAMELENGTH =   0
-CSK   IN = IUNIN
-CSK   IW = IUNUT
-      LUIN = IUNIN
-      LUOUT = IUNUT
-      LUCIWT = LUOUT
-      LUWRT = LUOUT
-C 
-      CALL QENTER('REST ')
+
+!     for now we set it here - SK Nov 2010
+      citask_id = 'standard ci '
+
+      write(luout,'(/a)') 
+     & '   ------------------------------------------------'
+      write(luout,'(a,a12)') '   LUCITA module started with task-id = ',
+     &                           citask_id
+      write(luout,'(a/)') 
+     & '   ------------------------------------------------'
+
 C     No floating point underflow
       CALL XUFLOW
 C     Assign diskunits
-C
       CALL DISKUN
 C
 C     Static memory, initialization and allocation
 C
 C     Compute offset from WRK to WORK
 C
+      k_offset = 0
       CALL COMPOFF(WRK,WORK,K_OFFSET)
       KBASE_LUCITA = K_OFFSET
       ! HJAaJ Aug 2008:
@@ -1087,6 +1101,9 @@ C
       ! Therefore we use implicit conversion to KBASE_LUCITA.
       ! Now we test if KBASE_LUCITA is OK:
       K8BASE_LUCITA = KBASE_LUCITA
+      print *,'KBASE_LUCITA  =',KBASE_LUCITA
+      print *,'K8BASE_LUCITA =',K8BASE_LUCITA
+      print *,'K_OFFSET      =',K_OFFSET
       IF (K8BASE_LUCITA .NE. K_OFFSET) THEN
          WRITE (LUOUT,'(/A/A,2I20//A)')
      &   'FATAL ERROR in LUCITA: offset is too big for i*4',
@@ -1530,7 +1547,6 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
         CALL PR_MATML_STAT
       END IF
 *
-      CALL QEXIT('REST ')
 *
 *     eliminate scratch units:
       close(unit=LU91,status='DELETE')
@@ -1543,10 +1559,12 @@ C
       CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
 #endif
 C
-      WRITE (LUOUT,*) '                          '
-      WRITE (LUOUT,*) ' I am home from the loops '
+      WRITE(LUOUT,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
+     &  ' finished with no errors.'
 *
       CALL FLSHFO(LUOUT)
+
+      CALL QEXIT('PAMLU')
 *
       END
 ***********************************************************************

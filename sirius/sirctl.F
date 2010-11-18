@@ -696,6 +696,32 @@ C            transformation  /hjaaj June 09
        END IF
       END IF
 C
+C ***************************************************
+C     *** LUCITA ***
+C
+      IF(DOLUCI)THEN
+       IF (ICONV .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' WARNING: LUCITA skipped because MCSCF not converged.'
+       ELSE
+         JRDMO = 9
+         KCMO  = 1
+         KWRK1 = KCMO  + NCMOT
+         LWRK1 = LWORK - KWRK1
+         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         USEDRC = .TRUE.
+!        IF (NEWTRA) THEN
+!        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
+!            they are only calculated for level 5 in "NEWTRA"
+!            transformation  /hjaaj June 09
+!           CALL TRACTL(5,WORK(KCMO),WORK(KWRK1),LWRK1)
+!        ELSE
+!           CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
+!        END IF
+         CALL PAMLUCITA(WORK,LWORK)
+       END IF
+      END IF
+C
 C *** POPULATION ANALYSIS AND PROPERTIES
 C
       IF (FLAG(6) .AND. NUMRUN .GT. 0) THEN

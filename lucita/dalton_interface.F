@@ -2154,29 +2154,13 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 #include "units.inc"
 *
       if (WAFFCT.eq.'HF_SCF') then
-*  1) HF_SCF, input orbitals from MOLCAS-SCF calculation
-*       get info from SCF
-*
-C        FNCOM ='COMFILE'
-C        call rdcomfile(FNCOM,LUCOM,IPRT,CARD,ITEM)
-C        write(6,*)
-C        write(6,'(A42,A7)')
-C    & ' Orbital info from file ............... ','COMFILE'
 *
 *  1) DHFSCF wave function, closed shell
          call info_dirac(CARD,WAFFCT,NACRAS,IDBGRP,IRETISH,IPRT)
          if (IPRT.ge.1) write(6,*)
 *
       else if (WAFFCT.eq.'RASSCF') then
-*  2) RASSCF, input orbitals from MOLCAS-RASSCF calculation
-*       get info from JOBIPH
-*
-C        FNIPH = 'JOBIPH'
-C        call rdiph(FNIPH,LUIPH,NACRAS,IPRT,CARD,ITEM,IRETISH)
-C        write(6,*)
-C        write(6,'(A42,A6)')
-C    & ' Orbital info from file ............... ','JOBIPH'
-*
+
 *  2) DHFSCF wave function, open shell
          call info_dirac(CARD,WAFFCT,NACRAS,IDBGRP,IRETISH,IPRT)
          if (IPRT.ge.1) write(6,*)
@@ -2669,95 +2653,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
   100   CONTINUE
   200 CONTINUE
 *
-      RETURN
       END
-***********************************************************************
-      subroutine hello
-************************************************************************
-*                                                                      *
-*     Print the program banner, date and time of execution             *
-*                                                                      *
-*----------------------------------------------------------------------*
-*                                                                      *
-*     written by:                                                      *
-*     M.P. Fuelscher                                                   *
-*     University of Lund, Sweden, 1993                                 *
-*                                                                      *
-*----------------------------------------------------------------------*
-*                                                                      *
-*     history: none                                                    *
-*                                                                      *
-************************************************************************
-      Character*8   Fmt
-      Character*120  Line,BlLine,StLine
-*----------------------------------------------------------------------*
-*     Start and define the paper width                                 *
-*----------------------------------------------------------------------*
-      Call qEnter('Hello')
-      lPaper=132
-*----------------------------------------------------------------------*
-*     Initialize blank and header lines                                *
-*----------------------------------------------------------------------*
-      lLine=Len(Line)
-      Do i=1,lLine
-        BlLine(i:i)=' '
-        StLine(i:i)='*'
-      End Do
-      left=(lPaper-lLine)/2
-      Write(Fmt,'(A,I3.3,A)') '(',left,'X,A)'
-*----------------------------------------------------------------------*
-*     Print the program header                                         *
-*----------------------------------------------------------------------*
-      nLine=18
-      Do i=1,nLine
-        Line=BlLine
-        If ( i.eq.1 .or. i.eq.nLine )
-     &  Line=StLine
-c       If ( i.eq.3 )
-c    &  Line=_MOLCAS_VERSION_
-        If ( i.eq.4 )
-     &  Line='L U C I A'
-        If ( i.eq.6 )
-     &  Line='A direct CI program'
-        If ( i.eq.8 )
-     &  Line='author:'
-        If ( i.eq.9 )
-     &  Line='J. Olsen'
-        If ( i.eq.10 )
-     &  Line='Theoretical Chemistry, '//
-     &       'University of Aarhus (Denmark)'
-        If ( i.eq.12 )
-     &  Line='(C) copyright, all rights reserved.'
-        If ( i.eq.13 )
-     &  Line='Permission is hereby granted to use but not to '
-        If ( i.eq.14 )
-     &  Line='reproduce or distribute any part of this program'
-c       If ( i.eq.16 )
-c    &  Line='module created at : '//
-c    &       _BUILD_DATE_
-c       Call Center(Line)
-c       Write(*,Fmt) '*'//Line//'*'
-      End Do
-*----------------------------------------------------------------------*
-*     Print the date and time of execution                             *
-*----------------------------------------------------------------------*
-      Write(*,*)
-      Line=BlLine
-      Call Datimx(Line(41:41))
-      Line(1:31)='Job run on:                 at '
-      Line(13:22)=Line(41:50)
-      Line(23:27)=Line(60:64)
-      Line(32:39)=Line(52:59)
-      Line(40:lLine)=BlLine(40:lLine)
-      Call Center(Line)
-      Write(*,Fmt) ' '//Line//' '
-      Write(*,*)
-*----------------------------------------------------------------------*
-*     Normal termination                                               *
-*----------------------------------------------------------------------*
-      Call qExit('Hello')
-      Return
-      End
 ***********************************************************************
       subroutine hello_dalton_lucita
 ************************************************************************
@@ -2784,9 +2680,6 @@ c       Write(*,Fmt) '*'//Line//'*'
       Character*70  Line,BlLine,StLine
 *----------------------------------------------------------------------*
 *     Start and define the paper width                                 *
-*----------------------------------------------------------------------*
-      Call qEnter('Hello_dalton_lucita')
-*----------------------------------------------------------------------*
 *     Initialize blank and header lines                                *
 *----------------------------------------------------------------------*
       lLine=Len(Line)
@@ -2799,76 +2692,58 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
 *     Print the program header                                         *
 *----------------------------------------------------------------------*
-      Write(LUOUT,*)
-      Write(LUOUT,*)
-      nLine=35
+      nLine=30
+      write(luout,'(/1x,a)') StLine
       Do i=1,nLine
         Line=BlLine
-        If ( i.eq.1 .or. i.eq.2 .or. i.eq.nLine )
+        If ( i.eq.1 .or. i.eq.nLine )
      &  Line=StLine
-        If ( i.eq.5 )
+        If ( i.eq.3 )
      &  Line='D A L T O N - L U C I T A'
-        If ( i.eq.6 )
+        If ( i.eq.4 )
      &  Line='An interface section for LUCITA under DALTON'
-        If ( i.eq.8 )
+        If ( i.eq.6 )
      &  Line='Authors: J. Olsen, Univ. Aarhus'
-        If ( i.eq.9 )
-     &  Line='         H. J. Aa. Jensen, Univ. Southern Denmark'
-        If ( i.eq.10 )
+        If ( i.eq.7 )
+     &  Line='         H. J. Aa. Jensen, Univ. Southern Denmark '
+        If ( i.eq. 8)
+     &  Line='         S. Knecht, Univ. Southern Denmark        '
+        If ( i.eq. 9 )
      &  Line='Based on LUCITA-DIRAC interface'
-        If ( i.eq.11)
-     &  Line='    Author: Timo Fleig, Univesitaet Duesseldorf'
+        If ( i.eq.10)
+     &  Line='    Author: Timo Fleig, Univ. Duesseldorf         '
         If ( i.eq.12)
-     &  Line='                            '
-        If ( i.eq.13)
      &  Line='   Calling LUCIA version 1999'
         If ( i.eq.14)
      &  Line='     author: J. Olsen, Lund/Aarhus                '
         If ( i.eq.15)
-     &  Line='                                                  '
+     &  Line='Parallelization of LUCITA, Duesseldorf/Odense:    '
         If ( i.eq.16)
-     &  Line='     Traditional sigma vector and density modules.'
-        If ( i.eq.17)
-     &  Line='                                                  '
+     &  Line='  S. Knecht, Univ. Southern Denmark               '
         If ( i.eq.18)
-     &  Line='Citation:                                         '
-        If ( i.eq.19)
-     &  Line='  J. Olsen, P. Joergensen, J. Simons,             '
+     &  Line='     Traditional sigma vector and density modules.'
         If ( i.eq.20)
-     &  Line='          Chem. Phys. Lett. 169 (1990) 463        '
+     &  Line='Citation:                                         '
         If ( i.eq.21)
-     &  Line='  T. Fleig, L. Visscher,                          '
+     &  Line='  J. Olsen, P. Joergensen, J. Simons,             '
         If ( i.eq.22)
+     &  Line='          Chem. Phys. Lett. 169 (1990) 463        '
+        If ( i.eq.23)
+     &  Line='  T. Fleig, L. Visscher,                          '
+        If ( i.eq.24)
      &  Line='          Chem. Phys. 311 (2005) 113              '
         If ( i.eq.25)
-     &  Line='Parallelization of LUCITA, Duesseldorf/Odense:    '
+     &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
         If ( i.eq.26)
-     &  Line='  S. Knecht, Universitaet Duesseldorf'
+     &  Line='          J. Chem. Phys., 128 (2008) 014108       '
         If ( i.eq.27)
      &  Line='                                                  '
-        If ( i.eq.28)
-     &  Line='                                                  '
-        If ( i.eq.29)
-     &  Line='                                                  '
-        If ( i.eq.30)
-     &  Line='Citation:                                         '
-        If ( i.eq.31)
-     &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
-        If ( i.eq.32)
-     &  Line='          J. Chem. Phys., 128 (2008) 014108       '
-        If ( i.eq.33)
-     &  Line='                                                  '
-        If ( i.eq.34 .or. i.eq.35 )
+        If ( i.eq.28 .or. i.eq.29 )
      &  Line = StLine
         write(LUOUT,*) Line
       End Do
-      Write(LUOUT,*)
-*----------------------------------------------------------------------*
-*     Normal termination                                               *
-*----------------------------------------------------------------------*
-      Call qExit('Hello')
-      Return
-      End
+
+      end
 ***********************************************************************
       Function I2EAD(IORB,JORB,KORB,LORB)
 *
@@ -4018,9 +3893,12 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
       call zirat
 *
 *------------------------------------------------------------------*
-*  Import required information from MOLCAS or DIRAC
+*  Import required information from Dalton
 *------------------------------------------------------------------*
 *
+      print *, '*** stefan forced me to stop here in mol2luc! ***'
+      print *, '*** interface to Dalton required! ***'
+      call quit(' *** error in mol2luc: no interface to Dalton ***')
       call getmolinf(WAFFCT,IPRT,NACRAS,CARD3,ITEM,MXITEM,
      &               IRETISH,IDBGRP)
 *

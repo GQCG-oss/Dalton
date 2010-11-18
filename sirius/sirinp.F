@@ -418,6 +418,7 @@ C
       DOCI      = .FALSE.
       DOMC      = .FALSE.
       DONEVPT   = .FALSE.
+      DOLUCI    = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -2118,7 +2119,7 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','xXXXXXX','xXXXXXX','xXXXXXX','xXXXXXX',
+     *            '.KSPT2 ','.LS CI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','xXXXXXX','xXXXXXX','xXXXXXX'/
 C
@@ -2397,8 +2398,11 @@ C *** Option 21: .KSPT2
         ADDMP2   = .TRUE.
         READ (LUCMD,*) WDFTMP
       GO TO 100
-C *** Options 22-25 not used
   122 CONTINUE
+        doluci   = .true.
+        numrun = numrun + 1
+      GO TO 100
+C *** Options 23-25 not used
   123 CONTINUE
   124 CONTINUE
   125 CONTINUE

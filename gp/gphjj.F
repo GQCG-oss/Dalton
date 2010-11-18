@@ -1942,9 +1942,10 @@ C     COMPOFF - Compute off-set from WORK to WRK
 C               i.e. WRK(I) = WORK(KBASE+I)
 C
       REAL*8 WRK(*), WORK(*)
+      integer(8), intent(inout) :: kbase
+      integer(8)                :: kaddr
       KADDR = LOC(WRK) - LOC(WORK) + 1
       KBASE = KADDR / 8
-C     write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
-      RETURN
+      write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
       END
 #endif

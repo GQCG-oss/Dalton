@@ -26,12 +26,9 @@ C
      &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
      &            '.DISTRT','xxxxxxx','.TRUNCF','.MEMFAC','XXXXXXX'/
 
-      write(lupri,*) '*** FIXME: set default values for LUCITA runs in 
-     & lucitainp or maybe better in SIRRDI before calling NEWINP. ***'
-!     if(allopt) call prtab(ntable,table,word1//' input keywords',
-!    &                      lupri)
-      call prtab(ntable,table,word1//' input keywords',
+      if(allopt) call prtab(ntable,table,word//' input keywords',
      &                      lupri)
+
 !     Initialize keyword status flags driving interface.
 !     (Therefore local keywords do not have to be initialized!)
       call izero(imokw,ntable)
