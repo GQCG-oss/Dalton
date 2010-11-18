@@ -3,6 +3,7 @@
 !
 !dalton_copyright_end
 
+#ifdef VAR_MPI
 module par_mcci_io
 
 ! stefan: - this module provides all necessary functionality
@@ -11,8 +12,6 @@ module par_mcci_io
 !
 !           written by sknecht, may 2007 for DIRAC MCSCF/KR-CI/LUCITA
 !           adapted for DALTON by sknecht, november 2010.
-
-!#include "mpif.h"
   use mpi
 
   implicit none
@@ -23,18 +22,8 @@ module par_mcci_io
 
   save
 
-  real(8), parameter, private            :: mcci_d1       =  1.0D0
-  real(8), parameter, private            :: mcci_dm1      = -1.0D0
-  real(8), parameter, private            :: mcci_d0       =  0.0D0
   integer, private                       :: istat(MPI_STATUS_SIZE)
   integer, private                       :: ierr
-
-! offset variables individual to each process
-  integer(kind=MPI_OFFSET_KIND), public  :: my_vec1_ioff
-  integer(kind=MPI_OFFSET_KIND), public  :: my_vec2_ioff
-  integer                      , public  :: my_act_blk1
-  integer                      , public  :: my_act_blk2
-
 
 contains 
 
@@ -46,10 +35,13 @@ contains
                                lebatch,          &
                                i1batch,          &
                                ibatch,           &
+                               block_info,       &
                                my_ioff_luin,     &
                                my_ioff_luout,    &
                                luinlist,         &
                                luoutlist,        &
+                               cs_fullvector_off,&
+                               cs_fullactblk_off,&
                                joff)
 !******************************************************************************
 !
@@ -69,12 +61,15 @@ contains
      integer, intent(in)    :: lebatch(*)
      integer, intent(in)    :: i1batch(*)
      integer, intent(in)    :: ibatch(8,*)
+     integer, intent(in)    :: block_info(*)
      integer, intent(in)    :: luinlist(*)
      integer, intent(inout) :: luoutlist(*)
      integer, intent(in)    :: joff
-!    offset
+!    individual offsets for each process
      integer(kind=MPI_OFFSET_KIND), intent(in)  :: my_ioff_luin
      integer(kind=MPI_OFFSET_KIND), intent(in)  :: my_ioff_luout
+     integer(kind=MPI_OFFSET_KIND), intent(in)  :: cs_fullvector_off
+     integer                      , intent(in)  :: cs_fullactblk_off
 !------------------------------------------------------------------------------
      integer(kind=MPI_OFFSET_KIND)  :: ioffset_in  
      integer(kind=MPI_OFFSET_KIND)  :: ioffset_out
@@ -100,7 +95,7 @@ contains
       ioffset_int_in     = 0
       ioffset_int_out    = 0
       num_blk_cnt_act    = 0
- 
+
 !     transfer data from file "luin" batchwise to file "luout"
 !     --------------------------------------------------------
 
@@ -109,8 +104,8 @@ contains
         call dzero(xmat,lebatch(isbatch))
 
 !       set offset for data read operation
-        ioffset_in = my_ioff_luin + ( my_vec2_ioff * joff ) + my_ioffset_scratch
-        ioffset_int_in = ( my_act_blk2 * joff ) + num_blk_cnt + 1
+        ioffset_in = my_ioff_luin + (cs_fullvector_off * joff) + my_ioffset_scratch
+        ioffset_int_in = (cs_fullactblk_off * joff) + num_blk_cnt + 1
  
         num_blk_cnt_act  = 0
         ioffset_int_out  = num_blk + 1
@@ -137,6 +132,7 @@ contains
                                luoutlist,                        &
                                lbatch(isbatch),                  &
                                ibatch(1,i1batch(isbatch)),       &
+                               block_info,                       &
                                ioffset_out,                      &
                                ioffset_int_out,                  &
                                iscratch_special)                  
@@ -172,13 +168,13 @@ contains
 !                  by a nonzero length
 !
 !******************************************************************************
-     real(8), intent(out)   :: xmat(*)
+     real(8), intent(inout) :: xmat(*)
      integer, intent(in)    :: luin
      integer, intent(in)    :: luinlist(*)
      integer, intent(inout) :: luoutlist(*)
      integer, intent(in)    :: num_blocks_in_batch
      integer, intent(in)    :: batch_info(8,*)
-     integer, intent(out)   :: num_blk_cnt_act
+     integer, intent(inout) :: num_blk_cnt_act
 !    offset
      integer(kind=MPI_OFFSET_KIND), intent(inout) :: ioff_luin
      integer, intent(in)                          :: luinlist_offset
@@ -207,12 +203,12 @@ contains
             mem_off = batch_info(6,is_blk)
 
 !           read vector
-            call mpi_file_read_at(luin,               &
-                                  ioff_luin,          &
-                                  xmat(mem_off),      &
-                                  blk_len,            &
-                                  MPI_REAL8,          &
-                                  istat,              &
+            call mpi_file_read_at(luin,                    &
+                                  ioff_luin,               &
+                                  xmat(mem_off),           &
+                                  batch_info(8,is_blk),    &
+                                  MPI_REAL8,               &
+                                  istat,                   &
                                   ierr)
  
           end if ! block is non-zero on input file
@@ -231,6 +227,7 @@ contains
                                luoutlist,           &
                                num_blocks_in_batch, &
                                batch_info,          &
+                               block_info,          &
                                ioff_luout,          &
                                luoutlist_offset,    &
                                ioff_luout_special)
@@ -247,6 +244,7 @@ contains
      integer, intent(in)    :: luoutlist(*)
      integer, intent(in)    :: num_blocks_in_batch
      integer, intent(in)    :: batch_info(8,*)
+     integer, intent(in)    :: block_info(*)
 !    offset
      integer(kind=MPI_OFFSET_KIND), intent(inout) :: ioff_luout
      integer(kind=MPI_OFFSET_KIND), intent(inout) :: ioff_luout_special
@@ -261,23 +259,24 @@ contains
 
         blk_len = luoutlist(luoutlist_offset+is_blk-1)
 
-        if(blk_len > 0)then
+        if(luoutlist(luoutlist_offset+is_blk-1) > 0)then
 
 !           set memory offset
             mem_off = batch_info(6,is_blk)
 
 !           write vector
-            call mpi_file_write_at(luout,             &
-                                   ioff_luout,        &
-                                   xmat(mem_off),     &
-                                   blk_len,           &
-                                   MPI_REAL8,         &
-                                   istat,             &
+            call mpi_file_write_at(luout,                                   &
+                                   ioff_luout,                              &
+                                   xmat(mem_off),                           &
+                                   luoutlist(luoutlist_offset+is_blk-1),    &
+                                   MPI_REAL8,                               &
+                                   istat,                                   &
                                    ierr)
  
         end if ! block has non-zero length in general
 
 !       keep track of offset
+        blk_len            = block_info(luoutlist_offset+is_blk-1)
         ioff_luout         = ioff_luout         + blk_len
         ioff_luout_special = ioff_luout_special + blk_len
 
@@ -286,4 +285,7 @@ contains
    end subroutine write_batch_pario
 !******************************************************************************
 
+#else
+module dummy_mcci_pario
+#endif
 end module

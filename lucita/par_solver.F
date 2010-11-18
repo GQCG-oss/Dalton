@@ -1349,13 +1349,14 @@ csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
 csk     WRITE(LUCIWT,*) 'LU1LIST for the 1st time:'
 csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
-!       call mcci_cp_vcd_batch(ilu1,iluc,vec1,
-!    &                         nbatv,lbatv,lebatv,i1batv,
-!    &                         ibatv,my_lu1_off,my_luc_off,lu1list,
-!    &                         luclist,ivec-1)
-        CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
-     &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
-     &                      LUCLIST,IBLOCKL,IVEC-1)
+        call mcci_cp_vcd_batch(ilu1,iluc,vec1,
+     &                         nbatv,lbatv,lebatv,i1batv,
+     &                         ibatv,iblockl,my_lu1_off,my_luc_off,
+     &                         lu1list,luclist,my_vec2_ioff,my_act_blk2,
+     &                         ivec-1)
+!       CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
+!    &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
+!    &                      LUCLIST,IBLOCKL,IVEC-1)
 *
 csk     WRITE(LUCIWT,*) 'LUCLIST for the 2nd time:'
 csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
@@ -1622,13 +1623,14 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *
         CALL IZERO(LUCLIST,MY_ACT_BLK_ALL)
 *
-!       call mcci_cp_vcd_batch(ilu3,iluc,vec1,
-!    &                         nbatv,lbatv,lebatv,i1batv,
-!    &                         ibatv,my_lu3_off,my_luc_off,lu3list,
-!    &                         luclist,nvec+ivec-1-nroot)
-        CALL COPVCD_PP_CC_B(ILU3,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
-     &                      IBATV,MY_LU3_OFF,MY_LUC_OFF,LU3LIST,
-     &                      LUCLIST,IBLOCKL,NVEC+IVEC-1-NROOT)
+        call mcci_cp_vcd_batch(ilu3,iluc,vec1,
+     &                         nbatv,lbatv,lebatv,i1batv,
+     &                         ibatv,iblockl,my_lu3_off,my_luc_off,
+     &                         lu3list,luclist,my_vec2_ioff,my_act_blk2,
+     &                         nvec+ivec-1-nroot)
+!       CALL COPVCD_PP_CC_B(ILU3,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
+!    &                      IBATV,MY_LU3_OFF,MY_LUC_OFF,LU3LIST,
+!    &                      LUCLIST,IBLOCKL,NVEC+IVEC-1-NROOT)
 *
 csk     WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
 csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
