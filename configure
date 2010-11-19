@@ -1413,7 +1413,7 @@ if [ $mesp = 'pvm' ]; then
 fi
 mpirun=`which mpirun 2>/dev/null` || mpirun=mpirun
 
-cat <<EOF > $INSTALL_DIR/dalton
+cat <<EOF > $INSTALL_DIR/dalton.setup
 #!/bin/sh
 ################################################################################
 #                                                                              #
@@ -1438,7 +1438,7 @@ MPIRUN="$mpirun"
 
 INSTALL_BASDIR="$basdir"
 EOF
-cat dalton.gnr >> $INSTALL_DIR/dalton
+cat $INSTALL_DIR/dalton.setup dalton.gnr > $INSTALL_DIR/dalton
 
 chmod 755 $INSTALL_DIR/dalton
 

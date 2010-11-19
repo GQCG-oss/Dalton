@@ -29,6 +29,14 @@ OBJSAMFI = amfi/amfi.o amfi/symtra.o
 
 OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 #
+#     Dalton script
+#
+dalton: $(INSTALLDIR)/dalton
+
+$(INSTALLDIR)/dalton: ./dalton.gnr $(INSTALLDIR)/dalton.setup
+	cat $(INSTALLDIR)/dalton.setup ./dalton.gnr > $(INSTALLDIR)/dalton
+	chmod 755 $(INSTALLDIR)/dalton
+#
 #     Most common build of Dalton
 #
 dalton.x: $(MODULES)
