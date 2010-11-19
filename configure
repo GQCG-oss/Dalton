@@ -436,10 +436,12 @@ if [ ! -r F90test.x ]; then
     F90_no=" -DNO_F90"
     rm -f F90test.x F90test.o F90test.f
     F90=
+    F90mod=
 else
     F90_no=""
     rm -f F90test.x F90test.o F90test.f
     F90=$F77
+    F90mod='F90mod_has_not_been_defined_for_this_compiler_in_configure_yet'
 fi
 #
 $ECHO "\n   Checking for C compiler ..."
@@ -1002,6 +1004,7 @@ case "$WHICH" in
                  proc=''
              fi
              cpp="-DVAR_IFC $cpp"
+             F90mod='-modules ../modules'
 #            Dec-07: do not use "-ip" option for interprecedural optimization within file
 #                    gives erroneous code in eri/, at least for ifort version 9.1 /hjaaj
 #                    (-ip will problably never give big speed-up, anyway)
@@ -1020,6 +1023,7 @@ case "$WHICH" in
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
              copt="-fastsse -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
               opt="-fastsse -Munroll"; safe_opt="-fastsse"
+             F90mod='-modules ../modules'
              ;;
           g77)
               test_linux_g77="`$F77 -v 2>&1 | grep '2.96.54'`"
@@ -1056,7 +1060,7 @@ case "$WHICH" in
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
 	     else
-	       gfver=400
+	       gfver=430
                echo "$F77_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
 	     fi
              cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
@@ -1073,6 +1077,7 @@ case "$WHICH" in
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+		 F90mod=-J../modules
              ;;
           esac
 
@@ -1134,6 +1139,7 @@ case "$WHICH" in
                esac
                copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize"
+		   F90mod=-J../modules
                f90opt="$opt -I. -x f95-cpp-input"
 #               cxx_ldflags="-lstdc++"
                if [ "$mesp" != "dummy" ]; then
@@ -1210,6 +1216,7 @@ FFLAGS        = $opt
 SAFEFFLAGS    = $safe_opt
 CFLAGS        = $copt
 INCLUDES      = $inc $parinc
+MODULES       = $F90mod
 LIBS          = $LIB $ldflags
 INSTALLDIR    = $INSTALL_DIR
 PDPACK_EXTRAS = $pdpackextras
@@ -1381,16 +1388,16 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
 
 .F90.o:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
 
 .F90.i:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
 
 .F90.g:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
 
 .F90.s:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 

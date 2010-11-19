@@ -3,7 +3,7 @@
 #           hjaaj May 2008 / Nov 2010
 #
 
-all : liblucita.a depend
+all : mod depend liblucita.a
 
 include ../Makefile.config
 
@@ -13,9 +13,13 @@ F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
            property.o  sigma.o  strings.o  transform.o  utils.o  \
            vecmat.o  par_lucia.o  par_solver.o lucidal_input.o
 
-F90_OBJS = par_io.o
+# F90_MODS should contain all files with F90 modules in proper order
+#          (i.e. if b.F90 calls a module in k.F90, then the proper order is k.F90 b.F90)
+F90_MODS = par_io.F90
 
-F90_MODS = par_io.o
+F90_MOD_OBJS = $(F90_MODS:.F90=.o)
+
+F90_OBJS = 
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -24,9 +28,8 @@ pre:	$(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-liblucita.a : $(F77_OBJS) $(F90_OBJS)
+liblucita.a : $(F77_OBJS) $(F90_OBJS) $(F90_MOD_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
-
 
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a *.mod
@@ -37,14 +40,12 @@ Makefile.depend depend: ../include/*.h *.inc
 include Makefile.depend
 
 mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
+	$(MAKE) --no-print-directory $(F90_MOD_OBJS)
 
-module_files: $(F90_MODS)
-
-f77depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
+#############
+# the next may possibly be modified to automatically create the F90_MODS list ???? /SK+HJAaJ Nov 2010
+# $(MAKE) Makefile.modules  # create list of which file to compile to get the .mod files
+# $(MAKE) module_files
+#Makefile.modules: $(F90_MODS)
+#	../tools/f90dep.pl $(CPPFLAGS) -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.modules
+#############
