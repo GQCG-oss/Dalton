@@ -80,8 +80,11 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
-      use par_mcci_io
 #include <implicit.h>
+
+#ifdef VAR_MPI
+      use par_mcci_io
+#endif
 C
       DIMENSION WRK(LFREE)
 C
