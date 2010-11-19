@@ -568,7 +568,9 @@ C
 C
       CALL QENTER('FCKMAO')
 C
+#ifdef SIRGRAD_DEBUG
       P6FLAG(11) = .true. !Cdbg DEBUG
+#endif
 C
 C
       KFRSAV = 1
