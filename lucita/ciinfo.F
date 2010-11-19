@@ -301,6 +301,8 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
 *              Sept. 98    : I12 added
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLINT, KLDEN
+      ! for addressing of WORK
       REAL*8 INPROD
 *. Input
 #include "mxpdim.inc"
@@ -562,6 +564,8 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 * If no mo-ao trans is present, only, MOMO matrix is returned
 
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KMAT1, KMAT2, KMAT3, KMAT4, KMAT5, KMOAO1, KMOAO2
+      ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
@@ -861,6 +865,8 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 * Jeppe Olsen, Jan 1998
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KVEC1, KVEC2, KC2, KLCIOIO, KLCBLTP, KSVST
+      ! for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -1320,6 +1326,8 @@ C?    CALL MEMCHK
 * GAS VERSION
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLBLTP, KLCVST, KLIOIO
+      ! for addressing of WORK
 *
 * ===================
 *.Input common blocks
@@ -1335,7 +1343,6 @@ C?    CALL MEMCHK
 #include "csm.inc"
 #include "stinf.inc"
 *./CSTATE/ : IDC is used
-C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -2728,6 +2735,9 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
 *. Jeppe Olsen, July 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLMAT1, KLMAT2, KLMAT3, KLMAT4, KLMAT5, KLMAT6,
+      INTEGER*8 KLVEC1, KLVEC2, KLVEC3, KLC, KLEN
+      ! for addressing of WORK
       DIMENSION S(*),H0(*),V(*)
 *
 #include "mxpdim.inc"
@@ -3809,6 +3819,9 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * Jeppe Olsen, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KPCLBT, KPCLEBT, KPCI1BT, KPCIBT, KPCBLTP
+      INTEGER*8 KLCIOIO, KSVST
+      ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "cicisp.inc"

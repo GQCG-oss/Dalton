@@ -50,6 +50,10 @@ C
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D
+      INTEGER*8 KLASTR, KLBSTR, KLRJKA
+      INTEGER*8 KLVIOIO, KLVBLTP, KLVBLTP, KLVLEBT, KLVI1BT, KLVIBT
+      ! for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -121,7 +125,7 @@ C
 *
       IF(NTEST.GE.10)WRITE(6,*) ' I12, IPERTOP',I12,IPERTOP
 
-*. A bit of scracth
+*. A bit of scratch
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
@@ -179,7 +183,7 @@ C    &          NOCTPA,NOCTPB,IDC,WORK(KVIOOSE),WORK(KVNOOSE),NSCMBE,1)
 *. Space for partitioning of vectors
       NTTS = MXNTTS
       CALL MEMMAN(KLVLBT ,NTTS  ,'ADDL  ',1,'VLBT  ')
-      CALL MEMMAN(KLVLEBT ,NTTS  ,'ADDL  ',1,'VLEBT ')
+      CALL MEMMAN(KLVLEBT ,NTTS ,'ADDL  ',1,'VLEBT ')
       CALL MEMMAN(KLVI1BT,NTTS  ,'ADDL  ',1,'VI1BT ')
       CALL MEMMAN(KLVIBT ,8*NTTS,'ADDL  ',1,'VIBT  ')
 *
@@ -239,6 +243,9 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 *. Type of CI space is taken from CANDS
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D
+      INTEGER*8 KLSMOS, KLBLTP, KLIOIO, KLSVST, KLRJKA
+      ! for addressing of WORK
 * =====
 *.Input
 * =====
@@ -327,7 +334,7 @@ C     COMMON/OPER/I12,IPERTOP
       IF(IDC.EQ.3.OR.IDC.EQ.4)
      &CALL SIGVST(WORK(KLSVST),NSMST)
       CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLBLTP),WORK(KLSVST))
-      stop 'In DIABLK: IAIBCM_GAS call argument list wrong!'
+      CALL QUIT( 'In DIABLK: IAIBCM_GAS call argument list wrong!')
       CALL IAIBCM_GAS(MNRS1C,MXRS3C,
      &                NOCTPA,NOCTPB,
      &     WORK(KEL1(IAGP)),WORK(KEL3(IAGP)),
@@ -603,6 +610,8 @@ C     END IF
         WRITE(6,*) ' JPERT,IPART,J12,IPERTOP',JPERT,IPART,J12,IPERTOP
       END IF
 *. A bit of scracth
+  
+ MARKER : CONTINUE FROM HERE WITH INTEGER*8
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')

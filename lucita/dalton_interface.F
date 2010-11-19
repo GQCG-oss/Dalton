@@ -910,6 +910,8 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 * Jeppe Olsen, February 1998 ( from FINMO)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KMAT1, KMAT2, KMAT3, KMAT4
+      ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
@@ -1024,6 +1026,8 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *
 * Jeppe Olsen, Feb.98
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLSCR
+      ! for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -1495,6 +1499,8 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *****  Author : Unknown                                *****************
 *
       Implicit Real*8 (A-H,O-Z)
+      INTEGER*8 KLH0, KLSCR
+      ! for addressing of WORK
 *
       Parameter (LUONE = 19)
 *
@@ -3245,6 +3251,8 @@ C
 * Version : Fall 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLSCR
+      ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "crun.inc"

@@ -1,4 +1,6 @@
-*comdeck csfbas.inc $Revision: 1.1.2.1 $ 
+*comdeck csfbas.inc
 *. Offsets for CSF information
+      INTEGER*8 KDFTP,KCFTP,KDTOC,KICONF,KTPFCN,
+     &          KICTS,KSCTS,KCNFCN
       COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
      &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
