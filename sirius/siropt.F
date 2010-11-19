@@ -1534,8 +1534,8 @@ C            fix AIX xlf v.2.3 error for 'xlf -O'.
      &         'ERROR (OPTST) non-existent configuration specified')
          END IF
          IF (LROOTS.GT.1) THEN
-            WRITE (LUPRI,5020)
-            WRITE (LUERR ,5020)
+            WRITE (LUPRI,5020) ICSTRT
+            WRITE (LUERR,5020) ICSTRT
             CALL QTRACE(LUERR)
             CALL QUIT('(OPTST) ICSTRT must be pos. when LROOTS .gt. 1')
          END IF
@@ -1575,11 +1575,11 @@ C        single configuration has always natural orbitals
          GO TO 9000
       END IF
  5010 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' specified start configuration no.',I8,
-     *        ' is non-existent (last CSF is no.',I8,')')
+     *       /' specified start configuration no.',I10,
+     *        ' is non-existent (last is no.',I10,')')
  5020 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' negative CISTRT option not allowed',
-     *        ' when LROOTS is greater then one.')
+     *       /' negative CISTRT option not allowed',I10,
+     *       /' when LROOTS is greater then one.')
 C
 C
 C *** ICSTRT > 0 ***
