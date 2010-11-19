@@ -54,7 +54,8 @@ dets0.o: dets0.F
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
-Makefile.depend depend: ../include/*.h
+Makefile.depend depend: ../include/*.h *.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
+
