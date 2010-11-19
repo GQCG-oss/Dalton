@@ -523,8 +523,8 @@ for testlib in $liblist; do
           LIBDIR=$testdir
           case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;lapack=true;;
-	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
-                       pdpackextras="$pdpackextras gp_zlapack.o";;
+	    libatlas.a) LIB='-llpapack -lf77blas -latlas'; blas3='true'
+                       pdpackextras="$pdpackextras gp_zlapack.o gp_dlapack.o";;
 	    libessl.a) LIB='-lessl'
 	               blas3="true" # - but not complete...
 		       # double-check dlapack.
@@ -1393,7 +1393,7 @@ fi
 #
 # Make sure Makefile.depend files exist
 #
-for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius; do
+for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius lucita soppa; do
  touch $i/Makefile.depend
 done
 #
