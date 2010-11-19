@@ -1,6 +1,7 @@
 include ./Makefile.config
 
-# DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
+# OBS! DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
+#
 DALTON_LIBS = \
 -Labacus -labacus	\
 -Lrsp -lrsp 		\
@@ -10,14 +11,15 @@ DALTON_LIBS = \
 -Ldensfit -ldensfit	\
 -Lcc  -lcc		\
 -Ldft -ldft		\
--Lsoppa -lsoppa		\
+-Lsoppa -lsoppa	\
+-Llucita -llucita	\
 -Lgp -lgp		\
 -Lpdpack -lpdpack
 
-MODULES = MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+MODULES = MAIN_OBJ ABA_OBJ LUCITA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ
 
-SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa
+SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa lucita
 
 OBJSLAVE = abacus/herpar.o eri/eri2par.o
 
@@ -118,6 +120,9 @@ MAIN_OBJ :
 
 ABA_OBJ :
 	cd abacus && $(MAKE) all
+
+LUCITA_OBJ :
+	cd lucita && $(MAKE) all
 
 SIR_OBJ :
 	cd sirius && $(MAKE) all
