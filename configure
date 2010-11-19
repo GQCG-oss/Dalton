@@ -433,13 +433,13 @@ cat <<EOF > F90test.f
 EOF
 $F77 -o F90test.x F90test.f >/dev/null 2>&1
 if [ ! -r F90test.x ]; then
-    f90yes=" -DNO_F90"
-    rm -f F90test.x F90test.o F90test.f
-    F90=$F77
-else
-    f90yes=""
+    F90_no=" -DNO_F90"
     rm -f F90test.x F90test.o F90test.f
     F90=
+else
+    F90_no=""
+    rm -f F90test.x F90test.o F90test.f
+    F90=$F77
 fi
 #
 $ECHO "\n   Checking for C compiler ..."
@@ -798,7 +798,7 @@ case "$WHICH" in
                 fi
 	     fi
              inc='-I../include'
-             cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
+             cpp=${cpp}" -DIMPLICIT_NONE"${F90_no};;
           *)
              cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_MMWORK=$incoresiz'"
              if [ $split = 'true' ] ; then
@@ -811,7 +811,7 @@ case "$WHICH" in
              fi
 	     inc='-I../include'
              cpp=${cpp}",-DIMPLICIT_NONE"
-	     if [ "$f90yes" = " -DNO_F90" ]; then
+	     if [ "$F90_no" = " -DNO_F90" ]; then
 	        cpp=${cpp}",-DNO_F90"
 	     fi
           esac
@@ -854,7 +854,7 @@ case "$WHICH" in
                 cpp="$cpp $parop"
           fi
 	  inc='-I../include'
-	  cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+	  cpp=${cpp}" -DIMPLICIT_NONE"${F90_no}
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
@@ -863,7 +863,7 @@ case "$WHICH" in
              cpp="$cpp $parop"
           fi
           inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"${F90_no}
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
@@ -872,7 +872,7 @@ case "$WHICH" in
              cpp="$cpp -D$parop"
           fi
 	  inc='-I../include -I/opt/ctl/mpt/mpt/include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"${F90_no}
           opt="-dp -F -Oaggress,scalar3,vector3,unroll2,msgs,negmsgs"
           def='t3d.x'
           LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
@@ -885,7 +885,7 @@ case "$WHICH" in
 	  fi
           inc='-I../include'
           cpp=${cpp}" DIMPLICIT_NONE"
-	  if [ "$f90yes" = " -DNO_F90" ]; then
+	  if [ "$F90_no" = " -DNO_F90" ]; then
 	     cpp=${cpp}" DNO_F90"
 	  fi
 	  opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
@@ -896,7 +896,7 @@ case "$WHICH" in
              set_parallel_def $mesp
 	  fi
 	  inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"${F90_no}
           opt='-fast -fpe3 -warn nouncalled';;
     sun4)
           cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
@@ -942,7 +942,7 @@ case "$WHICH" in
              fi
           fi
           copt=${copt}" -AC99"
-          cpp=${cpp}${f90yes};;
+          cpp=${cpp}${F90_no};;
     linux-alpha)
           cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
 	  if [ "$mesp" != "dummy" ]; then
@@ -954,7 +954,7 @@ case "$WHICH" in
 #         that the fort fortran compiler can make 2 underscores
           opt='-fast -check nopower'
 	  inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"${F90_no}
           copt='-fast';;
     linux) 
           cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
@@ -1082,7 +1082,7 @@ case "$WHICH" in
               def='linuxparallel.x'
           fi
           inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
+          cpp=${cpp}" -DIMPLICIT_NONE"${F90_no};;
     darwin) 
           cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
@@ -1167,7 +1167,7 @@ case "$WHICH" in
              def='parallel.x'
           fi
           inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"${F90_no}
           opt="-Kfast,gs,V8PLUS,eval -fs"
           LIB="$LIB -L/usr/ucblib -lucb"
 esac
