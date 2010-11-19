@@ -1,9 +1,9 @@
 #
 # FILE    : Makefile for dalton version of lucita
-#           hjaaj May 2008
+#           hjaaj May 2008 / Nov 2010
 #
 
-all : liblucita.a
+all : liblucita.a depend
 
 include ../Makefile.config
 
@@ -15,7 +15,7 @@ F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
 
 F90_OBJS = par_io.o
 
-F90_MODS =
+F90_MODS = par_io.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -24,12 +24,17 @@ pre:	$(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-liblucita.a : $(F77_OBJS)
+liblucita.a : $(F77_OBJS) $(F90_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 
 clean : 
-	$(RM) -f *.o *~ *.mod *.lst *.i
+	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a *.mod
+
+Makefile.depend depend: ../include/*.h *.inc
+	../tools/check_depend $(INCLUDES) > Makefile.depend
+
+include Makefile.depend
 
 mod:
 	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
@@ -37,57 +42,9 @@ mod:
 
 module_files: $(F90_MODS)
 
-depend:
+f77depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
 
 f90dep: ;\
        ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
  
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
-ciinfo.o: mxpdim.inc cgas.inc orbinp.inc wrkspc.inc lucinp.inc glbbas.inc
-ciinfo.o: crun.inc strinp.inc cicisp.inc clunit.inc csm.inc cstate.inc
-ciinfo.o: stinf.inc strbas.inc cprnt.inc oper.inc gasstr.inc spinfo.inc
-ciinfo.o: multd2h.inc machine.inc SysDef.inc irat.inc
-density.o: mxpdim.inc orbinp.inc cicisp.inc strbas.inc cstate.inc strinp.inc
-density.o: stinf.inc csm.inc wrkspc.inc crun.inc cgas.inc gasstr.inc
-density.o: cprnt.inc spinfo.inc glbbas.inc lucinp.inc clunit.inc oper.inc
-density.o: multd2h.inc
-diagonal.o: mxpdim.inc orbinp.inc cicisp.inc strbas.inc cstate.inc strinp.inc
-diagonal.o: stinf.inc csm.inc wrkspc.inc cprnt.inc cgas.inc gasstr.inc
-diagonal.o: oper.inc crun.inc glbbas.inc cecore.inc lucinp.inc
-diagonalize.o: files.inc mxpdim.inc orbinp.inc cicisp.inc strbas.inc
-diagonalize.o: cstate.inc strinp.inc stinf.inc csm.inc wrkspc.inc gasstr.inc
-diagonalize.o: cgas.inc lucinp.inc cprnt.inc glbbas.inc oper.inc spinfo.inc
-diagonalize.o: csfbas.inc clunit.inc crun.inc
-fock.o: mxpdim.inc wrkspc.inc orbinp.inc glbbas.inc lucinp.inc cgas.inc
-fock.o: cicisp.inc clunit.inc csm.inc cstate.inc crun.inc strinp.inc
-fock.o: stinf.inc strbas.inc cprnt.inc oper.inc
-dalton_interface.o: clunit.inc mxpdim.inc luci.inc units.inc glbbas.inc
-dalton_interface.o: wrkspc.inc crun.inc cgas.inc lucinp.inc orbinp.inc
-dalton_interface.o: multd2h.inc SysDef.inc cc_exc.inc intform.inc csm.inc
-dalton_interface.o: orbinf_lucita.inc irat.inc machine.inc files.inc
-io.o: files.inc clunit.inc units.inc
-memory.o: mxpdim.inc wrkspc.inc lucinp.inc orbinp.inc cstate.inc csm.inc
-memory.o: crun.inc cprnt.inc glbbas.inc irat.inc
-program.o: mxpdim.inc cicisp.inc wrkspc.inc orbinp.inc clunit.inc csm.inc
-program.o: cstate.inc crun.inc strinp.inc stinf.inc strbas.inc glbbas.inc
-program.o: cprnt.inc oper.inc gasstr.inc cgas.inc lucinp.inc intform.inc
-program.o: comjep.inc cc_exc.inc files.inc units.inc machine.inc
-property.o: mxpdim.inc wrkspc.inc glbbas.inc lucinp.inc orbinp.inc oper.inc
-property.o: crun.inc multd2h.inc cprnt.inc cicisp.inc clunit.inc csm.inc
-property.o: cstate.inc strinp.inc stinf.inc strbas.inc cgas.inc
-sigma.o: mxpdim.inc gasstr.inc orbinp.inc cgas.inc crun.inc cicisp.inc
-sigma.o: strbas.inc cstate.inc strinp.inc stinf.inc csm.inc wrkspc.inc
-sigma.o: lucinp.inc cprnt.inc glbbas.inc oper.inc comjep.inc
-strings.o: mxpdim.inc orbinp.inc wrkspc.inc strinp.inc strbas.inc cgas.inc
-strings.o: gasstr.inc stinf.inc csm.inc lucinp.inc comjep.inc multd2h.inc
-strings.o: cprnt.inc cicisp.inc cstate.inc irat.inc crun.inc
-transform.o: mxpdim.inc glbbas.inc wrkspc.inc orbinp.inc lucinp.inc
-transform.o: strinp.inc cicisp.inc strbas.inc gasstr.inc crun.inc csm.inc
-transform.o: multd2h.inc clunit.inc cstate.inc oper.inc intform.inc
-utils.o: units.inc irat.inc
-vecmat.o: mxpdim.inc wrkspc.inc glbbas.inc multd2h.inc oper.inc orbinp.inc
-vecmat.o: cicisp.inc crun.inc strbas.inc stinf.inc csm.inc cgas.inc
-vecmat.o: gasstr.inc cstate.inc strinp.inc cprnt.inc clunit.inc lucinp.inc
