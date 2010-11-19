@@ -435,9 +435,11 @@ $F77 -o F90test.x F90test.f >/dev/null 2>&1
 if [ ! -r F90test.x ]; then
     f90yes=" -DNO_F90"
     rm -f F90test.x F90test.o F90test.f
+    F90=$F77
 else
     f90yes=""
     rm -f F90test.x F90test.o F90test.f
+    F90=
 fi
 #
 $ECHO "\n   Checking for C compiler ..."
@@ -1200,6 +1202,7 @@ ARCH        = $WHICH
 #
 CPPFLAGS      = $cpp
 F77           = $F77
+F90           = $F90
 CC            = $CC
 LOADER        = $F77
 RM            = rm -f
@@ -1220,7 +1223,7 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 #
-default : $def
+default : dalton $def
 EOF
 
 # Intel compiler seems to be a bit less optimized for certain routines, at
@@ -1281,7 +1284,7 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F
 $tab\$(RM) \$*.f
 
 .c.o:
-$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.F 
+$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
 
 .F.i:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
@@ -1363,7 +1366,7 @@ else cat <<EOF>> Makefile.config
 # hjaaj Oct 04: .g is a "cheat" suffix, for debugging.
 #               'make x.g' will create x.o from x.F or x.c with -g debug flag set.
 #
-.SUFFIXES : .F .c .o .i .g .s
+.SUFFIXES : .F .F90 .c .o .i .g .s
 
 .F.o:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
@@ -1376,6 +1379,18 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F
 
 .F.s:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
+
+.F90.o:
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
+
+.F90.i:
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
+
+.F90.g:
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
+
+.F90.s:
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
