@@ -1070,6 +1070,9 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * Works only for ICISTR .ne. 1, i.e. pure memory version
 * has been eliminated.
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP
+     &          KISCLFAC, KSCALLOC
+!               for addressing of WORK
 #ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
@@ -1110,7 +1113,7 @@ C
 C
       CALL QENTER('MV7  ')
       IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SBLOCK')
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'MV7   ')
 
 *
       IF(ICISTR.EQ.1) THEN
@@ -1139,6 +1142,7 @@ C
 *     arrays for additional symmetry operation
       IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
         CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
+         
         CALL SIGVST(WORK(KSVST),NSMST)
       ELSE
          KSVST = 1
@@ -1154,6 +1158,7 @@ C
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
 *     batches  of s vector
       ITTSS_ORD = 2
+      
 #ifdef VAR_MPI
       CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
@@ -1194,6 +1199,7 @@ C     0 = block is not active, > 0: block is active
 C
       CALL MEMMAN(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'KITCLL')
 *
+      
       IF(ICISTR.EQ.1) THEN
         WRITE(6,*) 'ICISTR = 1 route currently not active'
         Call Abend2('MV7 : ICISTR = 1 route currently not active')
@@ -1210,7 +1216,7 @@ C            RASSG3(CB,SB,LBATS,LEBATS,I1BATS,IBATS,
 C    &       LUC,LUHC)
       END IF
 *. Eliminate local memory
-      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SBLOCK')
+      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'MV7   ')
 *
       CALL QEXIT('MV7  ')
 *
@@ -5179,6 +5185,14 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP
+     &          KISCLFAC, KSCALLOC, KLLBT, KLLEBT, KLI1BT, KLIBT, 
+     &          KLSCLFAC, KI1, KXI1S, KI2, KI3, KXI3S, KI4, KXI4S, KC2, 
+     &          KCJRES, KSIRES, KSSCR, KCSCR, KCJPA, KSIPA, KSOMEH, 
+     &          KSOMESCR, KCONSPA, KCONSPB, KSTSTS, KSTSTD, KINSCR, 
+     &          KCIOIO, KCBLTP
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+!               for addressing of WORK
 #ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
@@ -5446,20 +5460,6 @@ C
         IDOH2 = 0
       END IF
 *
-*     prepare for perturbation calculation
-*
-      IF(IPERTOP.NE.0) THEN
-*       matrix specifying partiotioned spaces
-        CALL MEMMAN(KLH0SPC,NOCTPA*NOCTPB,'ADDL  ',2,'H0SPC ')
-        CALL H0INTSPC(IH0SPC,NPTSPC,IOCPTSPC,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &                NGAS,MXPNGAS,WORK(KLH0SPC),NELFGP)
-        IF(IH0SPC.EQ.0) THEN
-*         form of perturbation in subspace has not been defined,
-*         Use current IPART
-          IH0INSPC(1) = IPART
-        END IF
-      END IF
 *
       CALL SBLOCKS(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KC2),
      &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),

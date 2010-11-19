@@ -276,6 +276,8 @@ C?    WRITE(6,*) ' one-electron part to ECC ', ECC
 *
 * Unless I12 = 2, only one-electron part is calculated
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLINT, KLDEN, KLFBLK, IIOFF, IDOFF
+!               for addressing of WORK
 *. Input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -477,6 +479,9 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
 * Jeppe, June 98
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER*8 KLVEC1, KLVEC2, KLDEN1, KLDEN1P, KLDEN2, KLFN, KLFSCR,
+     &          KLFNS, KLDNS, KLSCR4, KLSCR5, KLSCR6
+!               for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"

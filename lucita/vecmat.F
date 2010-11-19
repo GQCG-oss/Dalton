@@ -230,6 +230,9 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 * GAS version August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLIABI, KLIABU, KLBLIN, KLBLUT, KLTTSII, KLTTSNI, 
+     &          KLTTSIU, KLTTSNU, KLBLI, KLBLU
+!               for addressing of WORK
 #include "mxpdim.inc"
 #include "cicisp.inc"
 #include "wrkspc.inc"
@@ -281,6 +284,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
 *. Number of dets etc per TTS block
 *
+
         CALL MEMMAN(KLTTSII,NSMST*NOCTPA*NOCTPB,'ADDL  ',1,'KLTTSI')
         CALL MEMMAN(KLTTSNI,NSMST*NOCTPA*NOCTPB,'ADDL  ',1,'KLTTSN')
         CALL ZOOS(ISMOST(1,ISM),WORK(KLBLIN),NSMST,WORK(KLIABI),
@@ -311,6 +315,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
       CALL MEMMAN(KLBLI,LENGTHI,'ADDL  ',2,'KLBLI ')
       CALL MEMMAN(KLBLU,LENGTHU,'ADDL  ',2,'KLBLU ')
+
 *
 *. and now : Let another subroutine complete the taks
 *
@@ -644,6 +649,8 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
 *           String occupations added, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KNCPMT, KWCPMT, KLASTR, KLBSTR, KLOCCLS
+!               for addressing of WORK
 * =====
 *.Input
 * =====

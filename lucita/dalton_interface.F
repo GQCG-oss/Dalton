@@ -3361,31 +3361,6 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       end if
       CALL LMEMCHK
 *
-C?    WRITE(6,*) ' IDMPIN ', IDMPIN
-      IF (IDMPIN.EQ.1 ) THEN
-        WRITE(6,*)
-     &   ' Integrals written formatted (E22.15) on unit 90'
-        LU90 = 90
-        REWIND LU90
-*.1 : One-electron integrals
-        WRITE(LU90,'(E22.15)')
-     &   (WORK(KINT1O-1+INT1),INT1=1,NINT1)
-*.2 : Two-electron integrals
-        WRITE(LU90,'(E22.15)')
-     &   (WORK(KINT2-1+INT2),INT2=1,NINT2)
-*.3. Core energy
-        WRITE(LU90,'(E22.15)')ECORE_ORIG
-*.4  Rewind to empty buffer
-        REWIND LU90
-*.   Symmetry info etc two LU91
-        LU91 = 91
-        CALL DUMP_1EL_INFO(LU91)
-      END IF
-C?    WRITE(6,*) ' INTIM : First 10 integrals in WORK(KINT2) '
-C?    CALL WRTMT_LU(WORK(KINT2),1,10,1,10)
-
-C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
-      RETURN
       END
 ***********************************************************************
 *

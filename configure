@@ -1376,16 +1376,16 @@ else cat <<EOF>> Makefile.config
 .SUFFIXES : .F .F90 .c .o .i .g .s
 
 .F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+$tab\$(F77) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
 .F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F77) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F > \$*.i
 
 .F.g:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
+$tab\$(F77) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
 
 .F.s:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
+$tab\$(F77) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
 
 .F90.o:
 $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 

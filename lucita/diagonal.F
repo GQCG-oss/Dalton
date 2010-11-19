@@ -51,8 +51,8 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D
-      INTEGER*8 KLASTR, KLBSTR, KLRJKA
-      INTEGER*8 KLVIOIO, KLVBLTP, KLVBLTP, KLVLEBT, KLVI1BT, KLVIBT
+      INTEGER*8 KLASTR, KLBSTR, KLRJKA, KSVST
+      INTEGER*8 KLVIOIO, KLVBLTP, KLVLBT, KLVLEBT, KLVI1BT, KLVIBT
       ! for addressing of WORK
 *
 #include "mxpdim.inc"
@@ -163,23 +163,9 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       CALL MEMMAN(KLVBLTP,NSMST,'ADDL  ',2,'VBLTP ')
 *
       CALL IAIBCM(ISPC,WORK(KLVIOIO))
-      KSVST = 0
+      KSVST = 1
       CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLVBLTP),WORK(KSVST))
 *
-C     CALL MEMMAN(KVNOOS,NOOS,'ADDL  ',1,'VNOOS ')
-C     CALL MEMMAN(KVIOOS,NOOS,'ADDL  ',1,'VIOOS ')
-*
-C     CALL MEMMAN(KVNOOSE,NOOS,'ADDL  ',1,'VNOOSE')
-C     CALL MEMMAN(KVIOOSE,NOOS,'ADDL  ',1,'VIOOSE')
-*. Combination form
-C     CALL ZOOS(ISMOST(1,ISM),WORK(KLVBLTP),NSMST,WORK(KLVIOIO),
-C    &          WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-C    &          NOCTPA,NOCTPB,IDC,WORK(KVIOOS),WORK(KVNOOS),NVCMBC,0)
-*. Sigma with expanded diagonal blocks
-C     CALL ZOOS(ISMOST(1,ISM),WORK(KLVBLTP),NSMST,WORK(KLVIOIO),
-C    &          WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-C    &          NOCTPA,NOCTPB,IDC,WORK(KVIOOSE),WORK(KVNOOSE),NSCMBE,1)
-
 *. Space for partitioning of vectors
       NTTS = MXNTTS
       CALL MEMMAN(KLVLBT ,NTTS  ,'ADDL  ',1,'VLBT  ')
@@ -187,11 +173,6 @@ C    &          NOCTPA,NOCTPB,IDC,WORK(KVIOOSE),WORK(KVNOOSE),NSCMBE,1)
       CALL MEMMAN(KLVI1BT,NTTS  ,'ADDL  ',1,'VI1BT ')
       CALL MEMMAN(KLVIBT ,8*NTTS,'ADDL  ',1,'VIBT  ')
 *
-C     CALL PART_CIV(IDC,WORK(KLVBLTP),WORK(KVNOOSE),WORK(KVNOOS),
-C    &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLVIOIO),
-C    &              ISMOST(1,ISM),
-C    &              NSBATCH,WORK(KLVLBT),WORK(KLVLEBT),
-C    &              WORK(KLVI1BT), WORK(KLVIBT),1)
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLVBLTP),WORK(KNSTSO(IATP)),
      &               WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,
@@ -215,16 +196,17 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
      &             IPRDIA,NTOOB,
      &             WORK(KLRJKA),
      &             I12,WORK(KLVIBT),NBLOCKT,JTASK,FACTOR,0,0)
-*.Flush local memory
-      CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'DIA0TR')
-      CALL QEXIT('DIA0T')
-*
+
       IF(NTEST.GE.100.AND.LUOUT.EQ.0) THEN
         WRITE(6,*)  ' output vector from DIA0TRM '
         CALL WRTTTS(VEC,WORK(KLVIBT),NBLOCKT,
      &              NSMST,NOCTPA,NOCTPB,
      &              WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),IDC)
       END IF
+*.Flush local memory
+      CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'DIA0TR')
+      CALL QEXIT('DIA0T')
+*
 *
       RETURN
       END
@@ -544,6 +526,9 @@ C     COMMON/OPER/I12,IPERTOP
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
+     &          KLBSTR, KLRJKA
+!               for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -611,7 +596,6 @@ C     END IF
       END IF
 *. A bit of scracth
   
- MARKER : CONTINUE FROM HERE WITH INTEGER*8
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
@@ -678,6 +662,9 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
+     &          KLBSTR, KLRJKA
+!               for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -746,7 +733,7 @@ C     COMMON/CECORE/ECORE,ECORE_ORIG
         write(6,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
         WRITE(6,*) ' JPERT,IPART,I12,IPERTOP',JPERT,IPART,I12,IPERTOP
       END IF
-*. A bit of scracth
+*. A bit of scratch
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
@@ -1277,6 +1264,9 @@ C         new offset
 * parallel adaption by S. Knecht - March 2008
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
+     &          KLBSTR, KLRJKA
+!               for addressing of WORK
 * =====
 *.Input
 * =====
@@ -1361,17 +1351,6 @@ C       KLSVST = 1
 C     END IF
       MAXA = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTPA,2)
       CALL MEMMAN(KLRJKA,MAXA,'ADDL  ',2,'KLRJKA')
-*
-** Info on block structure of internal state
-*
-C     IF(IDC.EQ.3.OR.IDC.EQ.4)
-C    &CALL SIGVST(WORK(KLSVST),NSMST)
-*
-C     CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLBLTP),WORK(KLSVST))
-C     CALL IAIBCM_GAS(LCMBSPC(ISPC),ICMBSPC(1,ISPC),
-C    &            IGSOCCX,NOCTPA,
-C    &            NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-C    &            NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
 *
 **. Diagonal of one-body integrals and coulomb and exchange integrals
 *

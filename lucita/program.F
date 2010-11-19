@@ -47,6 +47,16 @@ C
 * Jeppe Olsen, Winter of 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLC2B, KLCIOIO,
+     &          KLCBLTP, KLCI1BTSCR, KBSCLFC, KBLCKIF, KBLCKPD,
+     &          KSCRREDSP, KSCRREDSP2, KRCCTOS, 
+     &          KILUCLIST, KILU1LIST, KILU2LIST, KILU3LIST, KILU4LIST, 
+     &          KILU5LIST, KILU6LIST, KILU7LIST, KLBASSPC,
+     &          KLEBASC, KLCBASC, KLSPSPCL, KLBLKCLS, KLCLSL, KLCLSC, 
+     &          KLCLSE, KLCLSCT, KLCLSET, KLCLSA, KLCLSA2, KLBLKA, 
+     &          KLCLSD, KLCLSDT, KVEC1, KVEC2
+!               for addressing of WORK
+
       EXTERNAL MV7
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -76,9 +86,6 @@ C
 #endif
 #include "parluci.h"
 
-*
-C     COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
-C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *
 *. Common block for communicating with sigma
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
@@ -486,8 +493,7 @@ C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 C
-      write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(3X,/A)')
      & '=============================================================='
       WRITE(LUWRTOUT,'(3X,A)')
      & '==> allocation of two CI vectors and one resolution vector <=='
@@ -777,18 +783,6 @@ C     Reset number of roots.
 C
       if (IDIAG.eq.2) NROOT = NROOT_SAVE
 C
-C      for testing purposes : calculate energy and Fock matrix
-C
-       ITEST = 0
-       IF(ITEST.EQ.1.AND.IDENSI.EQ.2) THEN
-         WRITE(LUOUT,*) 'calling EN_FROM_DEN'
-         CALL EN_FROM_DENS(ENERGY,2)
-         WRITE(LUOUT,'(A,F24.12)')
-     &   ' Energy from EN_FROM_DEN',ENERGY
-         WRITE(LUOUT,*) ' Construct fock matrix '
-         CALL MEMMAN(KLFOO,NTOOB**2,'ADDL  ',2,'FOO   ')
-         CALL FOCK_MAT(WORK(KLFOO),2)
-       END IF
 C
 Cold   regenerate densities for reference root
 C
@@ -824,13 +818,6 @@ C
        END IF
 C      ^ END IF LUCI_MYPROC .eq. LUCI_MASTER 
 C
-       IF(IEXTKOP.EQ.1) THEN
-         WRITE(LUOUT,*) ' Control will be transferred to EXTKOP'
-         CALL EXTKOP
-       END IF
-*
-*        write(6,*)'problem here GASCI (2)', myproc
-* CI respons for the final state
 *
 *. Note : DOES RESPONS for lowest state on LUC !
 * make a copy of state of interest in general
@@ -967,6 +954,9 @@ C
 * Stefan Knecht, Feb. 06 
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 k_offset, k8base_lucita, KPROCLIST, KGROUPLIST, 
+     &          KGROUPLIST2, KPROCLENGTH, KVEC1
+!               for addressing of WORK
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -997,7 +987,6 @@ C
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      integer(8) :: k_offset, k8base_lucita
       integer    :: kbase_lucita
 
       CALL QENTER('PAMLU')
@@ -1050,7 +1039,7 @@ C
 C
       MXPWRD = LWRK
       KADD = MXPWRD
-      CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
+      CALL MEMMAN(K8BASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
 C
@@ -1084,14 +1073,21 @@ C
       CALL ISETVC(WORK(KGROUPLIST), MIN_ONE,LUCI_NMPROC)
       CALL ISETVC(WORK(KGROUPLIST2),MIN_ONE,LUCI_NMPROC)
       CALL ISETVC(WORK(KPROCLENGTH),MIN_ONE,LUCI_NMPROC)
-C     initialize number of process groups sharing a c-vector file
-      NFLGRPS     = 0
 C
 #ifdef VAR_MPI
 C
 C     parallel I/O mode for parallel runs / executable
 C
+!      call setup_communication_model(NFLGRPS,
+!     &                               IIOMOD,
+!     &                               SHARED_M,
+!     &                               IT_SHL,
+!     &                               IC_SHL,
+!     &                                
+!)
       IIOMOD = 1
+C     initialize number of process groups sharing a c-vector file
+      NFLGRPS     = 0
 C
 #ifdef SYS_LOCALDISKS
       IF( IIOMOD .eq. 1 ) THEN
@@ -1173,13 +1169,6 @@ C     Read in integrals
         CALL INTIM(IPRORB)
       ELSE
         WRITE(LUOUT,*) ' No integrals imported '
-      END IF
-C     READ in MO-AO matrix
-      IF(NOMOFL.EQ.0) THEN
-        write(LUOUT,*) 'KMOAOIN not defined. '
-        write(LUOUT,*) 'And NOMOFL = ',NOMOFL
-        Call Abend2('Quitting.')
-CTF     CALL GET_CMOAO(WORK(KMOAOIN))
       END IF
 C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS(WORK,IPRSTR)
@@ -1431,12 +1420,6 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
             END IF
             IF(IPTFOCK.NE.0) THEN
               CALL PTFOCK(LUC,LUSC36,NPERT,IREFSM,JCMBSPC)
-            END IF
-*. also perturbation expansion of EKT ??
-            IF(IPTEKT.EQ.1) THEN
-              WRITE(LUOUT,*) ' Perturbation expansion of EKT '
-              WRITE(LUOUT,*) ' ============================= '
-              CALL PTEKT(LUC,LUSC36,NPERT,IREFSM,JCMBSPC)
             END IF
           ELSE IF(CARD(1:2).EQ.'CC') THEN
          call quit('*** error in PAMLU: CC calculation not allowed ***')

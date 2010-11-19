@@ -105,6 +105,9 @@ C       TKK = 1.0D0
 * Jeppe Olsen, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLASTR, KLBSTR, KLKAOC, KLKBOC,
+     &          KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLCBLTP
+!               for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "strinp.inc"
@@ -142,6 +145,7 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       CALL MEMMAN(KLBSTR,MXNSTR*NBEL,'ADDL  ',1,'KLBSTR')
       CALL MEMMAN(KLKAOC,MXNSTR,     'ADDL  ',1,'KLKAOC')
       CALL MEMMAN(KLKBOC,MXNSTR,     'ADDL  ',1,'KLKBOC')
+      
 *. Orbital K in type ordering
       KKORB = IREOST(KORB)
       CALL T_TO_NK_VECS
@@ -296,6 +300,8 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 * Output integrals also in KINT1
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLH1, KLSCR
+!               for addressing of WORK
 *. General Input
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -317,6 +323,7 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 *. Space for 1e- integrals and two sym blocks
       LENH1 = NTOOB ** 2
       CALL MEMMAN(KLH1,LENH1,'ADDL  ',2,'LH1   ')
+      
       LENSCR = 2 * MXSOB ** 2
       CALL MEMMAN(KLSCR,LENSCR,'ADDL   ',2,'H1SCR ')
       WRITE(6,*) ' LENH1 LENSCR ', LENH1, LENSCR
@@ -348,6 +355,8 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 *. Output integrals in KINT2
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLBL1, KLBL2
+!               for addressing of WORK
 *. General input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -523,6 +532,8 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * as a matrix over NTOOB orbitals.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER*8 KLSCR, KLT, KLTB
+!               for addressing of WORK
 *
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -552,6 +563,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *. Scratch in PAMTMT
       LSCR = NTOOB**2 +NTOOB*(NTOOB+1)/2
       CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
+      
 *. Obtain T matrix used for transformation, for each symmetry separately
       DO ISM = 1, NSMOB
         IF(ISM.EQ.1) THEN
@@ -592,6 +604,9 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * Jeppe Olsen, January 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KVEC1, KVEC2, KLCMOMO, KLH1SAVE,
+     &          KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLCBLTP
+!               for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
@@ -708,8 +723,6 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 *. Scratch blocks ( two of them)
       DIMENSION VEC1(*),VEC2(*)
 *
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACID')
-*
       NTEST = 000
       LBLK = -1
       IDUM = 1
@@ -773,9 +786,7 @@ C?    CALL WRTVCD(VEC1,LUSC1,1,LBLK)
       CALL REWINE(LUSC1,-1)
 C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
       CALL COPVCD(LUSC1,LUCOUT,VEC1,0,LBLK)
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACID')
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -863,8 +874,6 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 #include "wrkspc.inc"
 #include "glbbas.inc"
 *
-      IDUM = 1
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACTL')
       CALL QENTER('TRAIN')
 *
       WRITE(6,*) ' TRACTL(Fusk) entered '
@@ -885,9 +894,7 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 *
       CALL TRA2_SIMPLE(WORK(KMOMO))
 *
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACTL')
       CALL QEXIT ('TRAIN')
-      RETURN
       END
 ***********************************************************************
 *                                                                     *

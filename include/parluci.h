@@ -47,7 +47,7 @@ C
      &                IT_SHL, IC_SHL, ICOUNTABLK_C, ISI_CALC_BL,
      &                IBI_MULT_BL,L_COMBI_S,L_COMBI_MAX,I_NZERO_LEN_S,
      &                I_NZERO_LEN_C, IFERM_SYM_T,
-     &                LU_INFO,LMEMFREE_PTR
+     &                LU_INFO
 C
 C     MPI file lists and MPI file handles
 C
@@ -74,9 +74,11 @@ C
 #endif
 !     integer*8 block
       INTEGER*8           LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL,
-     &                    LEN_T_BUFF_NZ, MY_T_LEN, MY_T_LEN_D
+     &                    LEN_T_BUFF_NZ, MY_T_LEN, MY_T_LEN_D,
+     &                    LMEMFREE_PTR
       COMMON/LUCIPAR_I8/  LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL,
-     &                    LEN_T_BUFF_NZ, MY_T_LEN, MY_T_LEN_D
+     &                    LEN_T_BUFF_NZ, MY_T_LEN, MY_T_LEN_D,
+     &                    LMEMFREE_PTR
 !     double precision block
       DOUBLE PRECISION  RNORM_FAC, TRUNC_FAC, mem_cp_time, xreadtimebi,
      &                  xcomputesi

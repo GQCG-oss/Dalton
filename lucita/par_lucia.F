@@ -1474,6 +1474,8 @@ C     OUTPUT: ISCLFAC_GROUP and updated file ILUC
 C
 C**********************************************************************
 #include "implicit.h"
+      INTEGER*8 KSCALLOC2, KSCALLOC3
+!               for addressing of WORK
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2117,6 +2119,8 @@ C
       SUBROUTINE BLOCK_DISTR_DRV(NBLOCK,IBLOCKL,NBLOCKD,IBLOCKS_FNODE,
      &                           SCALFAC,NVAR,IPROCLIST)
 #include "implicit.h"
+      INTEGER*8 KICCTOS, KCWEIGHT, KCWEIGHTF, KBLCKWT, KIBTOTW
+!               for addressing of WORK
 #include "infpar.h"
 #include "mpif.h"
 #include "parluci.h"
@@ -3087,6 +3091,8 @@ C
 *SUBVAL: VALUE OF SORTED ELEMENTS
 
       IMPLICIT REAL*8           ( A-H,O-Z)
+      INTEGER*8 KGATHERA, KGATHERB, KGATHERC, KGATHERD, KGATHERE
+!               for addressing of WORK
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

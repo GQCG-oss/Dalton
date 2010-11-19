@@ -54,8 +54,6 @@ C
 * ======
 * KFREE : First array of free space after allocation of
 *         static memory
-* /GLBBAS/,/CDIM/
-*
 *
 * =======
 * Version
@@ -233,12 +231,17 @@ CADDE
 * is tranferred to static memory
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KBASE, KFREES, KFREEL, NWORD, IMARK, IBASE, JBASE,
+     &          JBASEN, IBASE_L
+!               for addressing of WORK
       CHARACTER*6 TASK,IDENT,IIDENT,MARKC
       PARAMETER(NPAD = 1 )
       PARAMETER(MAXLVL = 1024 )
       PARAMETER(MAXMRK = 1024)
-      COMMON/CMEMO/NWORD,KFREES,KFREEL,NS,NL,NM,IBASE(MAXLVL),
-     &             LENGTH(MAXLVL),IIDENT(MAXLVL),IMARK(MAXMRK),
+      COMMON/CMEMO8/NWORD,KFREES,KFREEL,IBASE(MAXLVL),
+     &             IMARK(MAXMRK)
+      COMMON/CMEMO4/NS,NL,NM,
+     &             LENGTH(MAXLVL),IIDENT(MAXLVL),
      &             MARKL(MAXMRK),MARKS(MAXMRK),MARKC(MAXMRK)
 *. Two real*8 words, one added NPAD times before each array, another
 *. added NPAD times after each array
@@ -247,7 +250,6 @@ CADDE
 *
 #include "mxpdim.inc"
 #include "irat.inc"
-C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *. Info from matml7
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT

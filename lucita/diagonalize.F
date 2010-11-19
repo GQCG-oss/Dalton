@@ -49,6 +49,8 @@
 * PICO,MICDV4 added spring of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KSIOIO, KSBLTP, KSVST, KLXLBT, KLXLEBT, KLXI1BT, KLXIBT
+!               for addressing of WORK
 C
 #ifdef VAR_MPI
 #include "infpar.h"
@@ -85,12 +87,17 @@ C
       DIMENSION VEC1(*),VEC2(*)
 C     DIMENSION INIDET(100)
       PARAMETER( LLWRK =100000)
-      COMMON/SCR/SCR1(LLWRK),ISCR1(LLWRK)
+      integer, allocatable  :: iscr1(:)
+      real(8), allocatable  :: scr1(:)
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
       DIMENSION EROOTL(NROOTSL)
       INTEGER   RCCTOS(*)
+
+!     use dynamic instead of static allocation (+ common block)
+      allocate(iscr1(llwrk))
+      allocate(scr1(llwrk))
 C
 C     parameter used in parallel scheme /sk march 2007/
 C
@@ -203,6 +210,9 @@ C
 * 2 :                  Diagonalization
 *                 ========================
 *
+!     release scratch memory
+      deallocate(iscr1)
+
       CALL QENTER('CIEIG')
 * Inverse iteration modified Davidson with 2 vectors in core
       IF(IPRT .GE. 5 ) THEN
@@ -283,89 +293,41 @@ C
      &                   IBLKDSTND,IBLOCKI)
 #endif
 *
-       IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN
-*. Routine using two complete vectors in core
-         IOLSEN = 1
-         IPICO = 0
-         IF(MXCIIT.NE.0) THEN
-         CALL MINDV4(MV7,VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &              EROOTL     ,MXCIIT,NDIM,LU3,LUDIA,NROOTSL,
-     &              MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
-     &              SCR1(KWORK) ,IPRT,
-     &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,EIGSHF,
-     &              IOLSEN,IPICO)
-         ELSE
-*. No iterations, set energy to 0
-           DO IROOTSI = 1, NROOTSL
-             EROOTL(IROOTSI) = 0.0D0
-           END DO
-         END IF
-CJO-Start
-COLD      ELSE IF(IDIAG.EQ.1.AND.ICISTR.EQ.2) THEN
-       ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.2) THEN
-CJO-End
-*. Routine using two blocks in core
-*
-        I_USE_MICDV6 = 1
-        IF(.NOT.(MAXVEC.EQ.2.AND.NROOTSL.EQ.1)) THEN
-C?       WRITE(6,*) ' MICDV6 will be called '
+       I_USE_MICDV6 = 1
 #ifdef VAR_MPI
-          CALL MICDV6_PAR(VEC1,VEC2,SCR1(KRNRM),SCR1(KEIG),
-     &                    EROOTL,MXCIIT,NDIM,NROOTSL,
-     &                    MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
-     &                    SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &                    H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
-     &                    LUWRTOUT,IBLOCKAR,IBLKDSTND,
-     &                    SCRRED,SCRRED2,RCCTOS,
-     &                    LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
-     &                    LU6LIST,LU7LIST,LUCLIST,NBATCH,
-     &                    WORK(KLXLBT),WORK(KLXLEBT),WORK(KLXI1BT),
-     &                    WORK(KLXIBT),IPROCLIST,IGROUPLIST)
+       CALL MICDV6_PAR(VEC1,VEC2,SCR1(KRNRM),SCR1(KEIG),
+     &                 EROOTL,MXCIIT,NDIM,NROOTSL,
+     &                 MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
+     &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
+     &                 LUWRTOUT,IBLOCKAR,IBLKDSTND,
+     &                 SCRRED,SCRRED2,RCCTOS,
+     &                 LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                 LU6LIST,LU7LIST,LUCLIST,NBATCH,
+     &                 WORK(KLXLBT),WORK(KLXLEBT),WORK(KLXI1BT),
+     &                 WORK(KLXIBT),IPROCLIST,IGROUPLIST)
 
 #else
-          CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &                EROOTL,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
-     &                LUDIA,NROOTSL,
-     &                MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
-     &                SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &                H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
-C?       WRITE(6,*) ' MICDV6_PAR will be called '
+       CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
+     &             EROOTL,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
+     &             LUDIA,NROOTSL,
+     &             MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
+     &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &             H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
 #endif
-        ELSE
-*. Special version for one root 2 vectors
-C?       WRITE(6,*) ' MICDV5 will be called '
-         CALL MICDV5(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &              EROOTL     ,MXCIIT,NDIM,LU3,LU4,LU5,LUDIA,NROOTSL,
-     &              MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
-     &              SCR1(KWORK) ,IPRT,
-     &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &              THRES_E)
-        END IF
-       ELSE IF (IDIAG.EQ.2)  THEN
-*.Routine using two vector segments and three files
-         NSUB = 0
-C?       WRITE(6,*) ' ISKIPEI before call to PICO2',ISKIPEI
-         CALL PICO3(VEC1,VEC2,LU1,LU2,LU3,LU4,SCR1(KRNRM),SCR1(KEIG),
-     &        EROOTL,MXCIIT,NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,
-     &        IPRT,
-     &        NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &        THRES_E,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
-     &        IBLK_TO_CLS,NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,
-     &        CLS_A,ICLS_L,BLKS_A,CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,VEC3,
-     &        ICLS_A2,MXLNG,IBASSPC,EBASC,CBASC,NSPC,
-     &        MULSPC,IPAT,LPAT,ISPC)
 
+      ENOT = SCR1(KFIN)
+!     release scratch memory
+      deallocate(scr1)
 
-       END IF
-       ENOT = SCR1(KFIN)
-       CALL QEXIT('CIEIG')
+      CALL QEXIT('CIEIG')
+
 #ifdef VAR_MPI
 C     eliminate local memory
       IDUM = 0
       CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
 #endif
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -1794,6 +1756,7 @@ COLD  REAL * 8  INPROD
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION IPNTR(*),H0(*)
       DIMENSION WORK(*)
+!     work is h0scr in calling routine
 *
       NTESTL = 1
       NTEST = MAX(NTESTG,NTESTL)
@@ -1924,6 +1887,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       DIMENSION DIAG(*),VECIN(*),VECUT(*)
       DIMENSION IPNTR(*),H0(*)
       DIMENSION WORK(*)
+!               work is h0scr in calling routine
 *
       NTESTL = 1
       NTEST = MAX(NTESTG,NTESTL)
@@ -2006,6 +1970,8 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
 * NPRCIV : Number of parameters in preconditioner space
 *
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER*8 KIOCOC
+!               for addressing of WORK
 #include "mxpdim.inc"
 #include "strbas.inc"
 #include "cicisp.inc"
@@ -2013,32 +1979,6 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
 #include "spinfo.inc"
 #include "csfbas.inc"
 #include "wrkspc.inc"
-*. Offsets for CSF information
-C     COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
-C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
-C     COMMON/BIGGY/WORK(MXPWRD)
-C     /CICISP/IDUMMY,NICISP,IASTFI(MXPICI),IBSTFI(MXPICI),
-C    &        IACTI(MXPICI),
-C    &        MNR1IC(MXPICI),MXR1IC(MXPICI),
-C    &        MNR3IC(MXPICI),MXR3IC(MXPICI),
-C    &        IZCI,IRCI(3,7,7),NELCI(MXPICI),NAELCI(MXPICI),
-C    &        NBELCI(MXPICI),XISPSM(MXPCSM,MXPICI),
-C    &        ISMOST(MXPCSM,MXPCSM),MXSB,MXSOOB
-C     /STRBAS/KSTINF,KOCSTR(MXPSTT),KNSTSO(MXPSTT),KISTSO(MXPSTT),
-C    &              KSTSTM(MXPSTT,2),KZ(MXPSTT),
-C    &              KSTREO(MXPSTT),KSTSM(MXPSTT),KSTCL(MXPSTT),
-C    &              KEL1(MXPSTT),KEL3(MXPSTT),KACTP(MXPSTT),
-C    &              KCOBSM,KNIFSJ,KIFSJ,KIFSJO,KSTSTX
-C    &             ,KNDMAP(MXPSTT),KNUMAP(MXPSTT)
-C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT),NSTFTP(MXPSTT),
-C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
-C     COMMON/SPINFO/MULTSP,MS2P,
-C    &              MINOP,MAXOP,NTYP,NDPCNT(MXPCTP),NCPCNT(MXPCTP),
-C    &              NCNATS(MXPCTP,MXPCSM),NDTASM(MXPCSM),NCSASM(MXPCSM),
-C    &              NCNASM(MXPCSM)
-C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,
-C    &            ICISTR,NOCSF,IDIAG,NOINT
-*
       DIMENSION ONEBOD(*)
 *
       NTEST = 0
@@ -2155,6 +2095,8 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
 *
 *. Core energy : not added to matrix, added to resulting eigenvalues
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER*8 KL1, KL2, KL3, KSCR, KLIAST, KLIBST, KFREE
+!               for addressing of WORK
 *. Input
       DIMENSION ISMOST(*)
       DIMENSION ONEBOD(*),CIDIA(*)
@@ -2450,6 +2392,8 @@ C     END IF
 * Jan. 98 : SHIFT_DIA added
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLCIOIO, KLCBLTP
+!               for addressing of WORK
       REAL*8 INPROD , INPRDD
       LOGICAL CONVER
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
@@ -2861,425 +2805,6 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
       WRITE(6,*) ' Zero-order energy ', E0 + ECORE
       WRITE(6,*) ' Sum(K=0,NORD) E(K) ', ETOT
 *
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MICDV5(VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
-     &                  NVAR,LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
-     &                  APROJ,AVEC,WORK,IPRTXX,
-     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  THRES_E)
-*
-* Davidson algorithm, requires two blocks in core
-* Multi root version
-*
-*
-* Jeppe Olsen Winter of 1991
-*
-* Updated to allow general preconditioner, October 1993
-*
-* Special version for NROOT = 1, MAXVEC = 2 !!
-*
-* Input :
-* =======
-*        LU1 : Initial set of vectors
-*        VEC1,VEC2 : Two vectors,each must be dimensioned to hold
-*                    largest blocks
-*        LU3,LU4   : Scatch files
-*        LUDIA     : File containing diagonal of matrix
-*        NROOT     : Number of eigenvectors to be obtained
-*        MAXVEC    : Largest allowed number of vectors
-*                    must atleast be 2 * NROOT
-*        NINVEC    : Number of initial vectors ( atleast NROOT )
-*        NPRDIM    : Dimension of subspace with
-*                    nondiagonal preconditioning
-*                    (NPRDIM = 0 indicates no such subspace )
-*   For NPRDIM .gt. 0:
-*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
-*                    Holds preconditioner matrices
-*                    PHP,PHQ,QHQ in this order !!
-*          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
-*          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
-*          NP1,NP2,NQ : Dimension of the three subspaces
-*
-*   THRES_E   : Convergence criteria for eigenvalue
-*
-* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
-*         4 (NP1+NP2+NQ)
-*           LBLK : Defines block structure of matrices
-* On input LU1 is supposed to hold initial guesses to eigenvectors
-*
-*
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION VEC1(*),VEC2(*)
-      REAL * 8   INPROD
-      DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
-      DIMENSION APROJ(*),AVEC(*),WORK(*)
-      DIMENSION H0(*),IPNTR(1)
-      DIMENSION H0SCR(*)
-*
-* Dimensioning required of local vectors
-*     APROJ  : MAXVEC*(MAXVEC+1)/2
-*     AVEC   : MAXVEC ** 2
-*     WORK   : MAXVEC*(MAXVEC+1)/2
-*     H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
-*
-      DIMENSION FINEIG(1)
-      LOGICAL CONVER,RTCNV(10)
-      REAL*8 INPRDD
-*
-      write(6,*) ' Entering MICDV5. Testing required. '
-      write(6,*) ' Initialization of IADD missing.'
-      call quit('Stop in MICDV5')
-*
-      NTESTL = 3
-      IPRT = max(NTESTL,IPRTXX)
-*
-      IADD = 0
-*
-      WRITE(6,*) ' MICDV5, LU3 = ', LU3
-      IF(NROOT.NE.1) THEN
-        WRITE(6,*)
-     &  ' MICDV5 is wrong path, since NROOT .ne. 1, NROOT =',
-     &    NROOT
-        Call Abend1( 20 )
-      END IF
-      IF(MAXVEC.NE.2) THEN
-        WRITE(6,*)
-     &  ' MICDV5 is wrong path, since MAXVEC.ne. 2, MAXVEC=',
-     &    MAXVEC
-        Call Abend1( 20 )
-      END IF
-      IF(NINVEC.NE.1) THEN
-        WRITE(6,*) ' Several input vectors ', NINVEC
-        WRITE(6,*) ' Only the first will be used '
-      END IF
-*
-      IPICO = 0
-      IOLSTM = 1
-      IF(IPICO.NE.0) THEN
-C?      WRITE(6,*) ' Perturbative solver '
-        MAXVEC = MIN(MAXVEC,2)
-      ELSE IF(IPICO.EQ.0) THEN
-C?      WRITE(6,*) ' Variational  solver '
-      END IF
-      IF(IPRT.GT.1.AND.IOLSTM.NE.0)
-     & WRITE(6,*) ' Inverse iteration modified Davidson '
-      IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
-     & WRITE(6,*) ' Normal Davidson method '
-*
-      IF(IPRT.GE.1) THEN
-        WRITE(6,*) ' Convergence threshold for eigenvalues', THRES_E
-      END IF
-*
-      KAPROJ = 1
-      KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST = 1.0D-8
-      CONVER = .FALSE.
-      IROOT = 1
-*
-* ===================
-*.Initial iteration
-* ===================
-*
-       ITER = 1
-       CALL REWINE(LU1,-1)
-       CALL REWINE(LU2,-1)
-       IF(IPRT.GE.600) THEN
-         WRITE(6,*) ' Initial C -vector'
-         CALL WRTVCD(VEC1,LU1,1,LBLK)
-       END IF
-*
-       CALL MV7(VEC1,VEC2,LU1,LU2)
-*
-       IF(IPRT.GE.600) THEN
-         WRITE(6,*) ' Initial sigma-vector'
-         CALL WRTVCD(VEC1,LU2,1,LBLK)
-       END IF
-C?     write(6,*) ' Enforced stop after sigma'
-C?     Call Abend2( ' Enforced stop after sigma' )
-*. Projected matrix
-       APROJ(1) = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-*
-       IF( IPRT .GE.3  ) THEN
-         WRITE(6,*) ' INITIAL PROJECTED MATRIX  '
-         CALL PRSYM(APROJ,1     )
-       END IF
-*. Diagonalize initial projected matrix : Dimension one :simple
-       EIG(1,IROOT) = APROJ(1)
-       AVEC(1) = 1.0D0
-*
-       IF(IPRT .GE. 3 ) THEN
-         WRITE(6,'(A,I4)') ' Eigenvalues of initial iteration '
-         WRITE(6,'(5F18.13)')
-     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
-       END IF
-       NVEC = 1
-       ITERP = 1
-*. Add shift and print out
-C?     ONE = 1.0D0
-C?     CALL VECSMD(VEC1,VEC2,EIGSHF,ONE,LU1,LU2,LU3,1,LBLK)
-C?     WRITE(6,*) ' Sigma vector with shift '
-C?     CALL WRTVCD(VEC1,LU3,1,LBLK)
-C?     write(6,*) ' Enforced stop after shifted sigma'
-C?     Call Abend2( ' Enforced stop after shifted sigma' )
-
-
-*
-* ======================
-*. Loop over iterations
-* ======================
-*
-      DO 1000 ITER = 2, MAXIT+1
-       ITERP = ITER -1
-       IF(IPRT  .GE. 5 ) THEN
-        WRITE(6,*) ' Info from iteration .... ', ITER
-       END IF
-*
-* ===============================
-*.1 New directions to be included
-* ===============================
-*
-* 1.1 : R = H*X - EIGAPR*X
-*
-       IROOT = 1
-*
-       EIGAPR = EIG(ITER-1,IROOT)
-       FACHC = 1.0D0
-       FACC  = -EIGAPR
-       CALL VECSMD(VEC1,VEC2,FACC,FACHC,LU1,LU2,LU4,1,LBLK)
-C           VECSMD(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
-         IF ( IPRT  .GE. 600 ) THEN
-         WRITE(6,*) '  ( HX - EX ) '
-         CALL WRTVCD(VEC1,LU4,1,LBLK)
-       END IF
-*  Strange place to put convergence but ....
-       RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
-       RNRM(ITER-1,IROOT) = RNORM
-       IF(RNORM.LT. TEST ) THEN
-          CONVER = .TRUE.
-          RTCNV(IROOT) = .TRUE.
-       ELSE
-          RTCNV(IROOT) = .FALSE.
-          CONVER = .FALSE.
-       END IF
-       IF(ITER.GT.2.AND.
-     & EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT).LT.THRES_E) CONVER = .TRUE.
-       IF( ITER .EQ. MAXIT+1 .OR. CONVER ) GOTO 1001
-* =====================================================================
-*. 1.2 : Multiply with inverse Hessian approximation to get new directio
-* =====================================================================
-*. (H0-E) -1 *(HX-EX) on LU3
-       IF( .NOT. RTCNV(IROOT) ) THEN
-         IADD = IADD + 1
-         CALL REWINE(LUDIA,-1)
-         CALL REWINE(LU3,-1)
-         CALL REWINE(LU4,-1)
-         CALL H0M1TD(LU3,LUDIA,LU4,LBLK,NP1+NP2+NQ,IPNTR,
-     &               H0,-EIGAPR,H0SCR,XH0IX,
-     &               NP1,NP2,NQ,VEC1,VEC2,IPRT)
-         IF ( IPRT  .GE. 600) THEN
-           WRITE(6,*) '  (D-E)-1 *( HX - EX ) '
-           CALL WRTVCD(VEC1,LU3,1,LBLK)
-         END IF
-*
-         IF(IOLSTM .NE. 0 ) THEN
-* add Olsen correction if neccessary
-* (H0 - E )-1  * X on LU4
-           CALL REWINE(LU1,-1)
-           CALL REWINE(LU4,-1)
-           CALL REWINE(LUDIA,-1)
-*
-           CALL H0M1TD(LU4,LUDIA,LU1,LBLK,Np1+Np2+NQ,
-     &                 IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
-     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
-
-* Gamma = X(T) * (H0 - E) ** -1 * X
-           GAMMA = INPRDD(VEC1,VEC2,LU1,LU4,1,LBLK)
-* is X an eigen vector for (H0 - 1 ) - 1
-           VNORM =
-     &     SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU1,LU4,1,LBLK))
-           IF(VNORM .GT. 1.0D-7 ) THEN
-             IOLSAC = 1
-           ELSE
-             IOLSAC = 0
-           END IF
-           IF(IOLSAC .EQ. 1 ) THEN
-             IF(IPRT.GE.5) WRITE(6,*) ' Olsen Correction active '
-             DELTA = INPRDD(VEC1,VEC2,LU1,LU3,1,LBLK)
-             FACTOR = -DELTA/GAMMA
-             IF(IPRT.GE.5) WRITE(6,*) ' DELTA,GAMMA,FACTOR'
-             IF(IPRT.GE.5) WRITE(6,*)   DELTA,GAMMA,FACTOR
-             CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU4,LU5,1,LBLK)
-             CALL COPVCD(LU5,LU3,VEC1,1,LBLK)
-
-             IF(IPRT.GE.600) THEN
-               WRITE(6,*) ' Modified trial vector '
-               CALL WRTVCD(VEC1,LU3,1,LBLK)
-             END IF
-*
-            END IF
-         END IF
-*
-*. 1.3 Orthogonalize to current vector
-*
-         OVLAP  = INPRDD(VEC1,VEC2,LU1,LU3,1,LBLK)
-         ONE = 1.0D0
-         CALL VECSMD(VEC1,VEC2,-OVLAP,ONE,LU1,LU3,
-     &                LU4,1,LBLK)
-*
-         IF ( IPRT  .GE. 600 ) THEN
-           WRITE(6,*) '   Orthogonalized (D-E)-1 *( HX - EX ) '
-           CALL WRTVCD(VEC1,LU4,1,LBLK)
-         END IF
-*
-*. 1.4 Normalize vector
-*
-         SCALE = INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK)
-         FACTOR = 1.0D0/SQRT(SCALE)
-         CALL SCLVCD(LU4,LU3,FACTOR,VEC1,1,LBLK)
-         IF(IPRT.GE.600) THEN
-           WRITE(6,*) '   normalized     (D-E)-1 *( HX - EX ) '
-           CALL WRTVCD(VEC1,LU3,1,LBLK)
-         END IF
-*
-       END IF
-*
-**  2 : Optimal combination of new and old directions
-*
-*  2.1: Multiply new directions with matrix
-        CALL REWINE(LU3,-1)
-        CALL MV7(VEC1,VEC2,LU3,LU4)
-*. Augment projected matrix
-        CALL REWINE(LU1,-1)
-* <X!H! Delta>
-         APROJ(2) = INPRDD(VEC1,VEC2,LU1,LU4,1,LBLK)
-*<Delta!H!Delta>
-         APROJ(3) = INPRDD(VEC1,VEC2,LU3,LU4,1,LBLK)
-*. Diagonalize projected matrix
-      CALL COPVEC(APROJ,WORK(KAPROJ),2*(2+1)/2)
-C     write(6,*) ' work(aproj) '
-C     call prsym(work(kaproj),2)
-      CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,2,0,1)
-      IF(IPICO.NE.0) THEN
-        E0VAR = WORK(KAPROJ)
-        C0VAR = AVEC(1)
-        C1VAR = AVEC(2)
-        C1NRM = SQRT(C0VAR **2 + C1VAR **2 )
-*. overwrite with pert solution
-        AVEC(1) = 1.0D0/SQRT(1.0D0+C1NRM**2)
-        AVEC(2) = -C1NRM/SQRT(1.0D0+C1NRM**2)
-        E0PERT = AVEC(1)**2*APROJ(1)
-     &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
-     &         + AVEC(2)**2*APROJ(3)
-        WORK(KAPROJ) = E0PERT
-        WRITE(6,*) ' Var and Pert solution, energy and coefficients'
-        WRITE(6,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
-        WRITE(6,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
-      END IF
-        EIG(ITER,IROOT) = WORK(KAPROJ)
-*
-C?     WRITE(6,*) ' APROJ(2),APROJ(3)',APROJ(2),APROJ(3)
-       IF(IPRT .GE. 3 ) THEN
-         WRITE(6,'(A,I4)')
-     &   ' Eigenvalue and residual of iteration ..', ITER
-         WRITE(6,'(2F18.13)') EIG(ITER,1)+EIGSHF, RNORM
-       END IF
-*
-      IF( IPRT  .GE. 5 ) THEN
-        WRITE(6,*) ' Projected matrix and eigen pairs '
-        CALL PRSYM(APROJ,2)
-        WRITE(6,'(2X,E13.7)') EIG(ITER,1)
-        CALL WRTMT_LU(AVEC,2,1,2,1)
-      END IF
-*
-*. Reset
-*
-      CX = AVEC(1)
-      CDELTA = AVEC(2)
-*. Eigenvector
-      CALL VECSMD(VEC1,VEC2,CX,CDELTA,LU1,LU3,LU5,1,LBLK)
-      XNORM = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
-      SCALE = 1.0D0/SQRT(XNORM)
-      CALL SCLVCD(LU5,LU1,SCALE,VEC1,1,LBLK)
-*. Sigma vector
-      CXS = CX*SCALE
-      CDELTAS = CDELTA*SCALE
-      CALL VECSMD(VEC1,VEC2,CXS,CDELTAS,LU2,LU4,LU5,1,LBLK)
-      CALL COPVCD(LU5,LU2,VEC1,1,LBLK)
-*
-      APROJ(1) = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-*
-      IF(CONVER) GOTO 1001
- 1000 CONTINUE
-* ( End of loop over iterations )
- 1001 CONTINUE
-      ITER = ITERP
-*
-      IF( .NOT. CONVER ) THEN
-*        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 2 )
-     &   WRITE(6,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
-      ELSE
-*        CONVERGENCE WAS OBTAINED
-         IF (IPRT .GE. 2 )
-     &   WRITE(6,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
-        END IF
-*
-      IF ( IPRT .GT. 1 ) THEN
-        CALL REWINE(LU1,-1)
-        DO 1600 IROOT = 1, NROOT
-          WRITE(6,*)
-          WRITE(6,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(6,*)
-     &    '============================================'
-          WRITE(6,*)
-          FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(6,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
-          IF(IPRT.GE.400) THEN
-            WRITE(6,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
-            CALL WRTVCD(VEC1,LU1,0,LBLK)
-          END IF
-          WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
-          WRITE(6,1310)
- 1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
-          DO 1330 I=1,ITER
- 1330     WRITE(6,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
- 1600   CONTINUE
-      ELSE
-        DO 1601 IROOT = 1, NROOT
-           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
- 1601   CONTINUE
-      END IF
-*
-      IF(IPRT .EQ. 1 ) THEN
-        DO 1607 IROOT = 1, NROOT
-          WRITE(6,'(A,2I3,E13.6,2E10.3)')
-     &    ' >>> CI-OPT Iter Root E g-norm g-red',
-     &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
-     &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
- 1607   CONTINUE
-      END IF
-      Call Add_Info('E_CI',FINEIG,NROOT)
-C. Test  LU3
-C     WRITE(6,*) ' Test copy of LU3 in MICDV5 '
-C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
-      RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
       END
 ***********************************************************************
 *                                                                     *
@@ -5383,6 +4908,9 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLSMAT, KLVMAT, KLH0MAT, KLEN, KLSCR, KVEC1, KVEC2, 
+     &          KLCIOIO
+!               for addressing of WORK
       EXTERNAL MV7
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -5404,8 +4932,7 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
 *. And defining perturbation operator
 #include "oper.inc"
 *
-      COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
-     &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
+#include "csfbas.inc"
 *. Common block for communicating with sigma
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       COMMON/SPINFO/MULTSP,MS2P,
@@ -5737,857 +5264,6 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
      &     WORK(KLVMAT),WORK(KLSMAT),ECORE)
 *
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'PERTCT')
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE PICO3(VEC1,VEC2,LU1,LU2,LU3,LU4,RNRM,EIG,FINEIG,MAXIT,
-     &                 NBATCH,LLBATCHB,LLBATCHE,LBLOCK,IBLOCK,IPRTXX,
-     &                 NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                 THRES_ET,THRES_EC,THRES_CC,
-     &                 E_CONV,C_CONV,ICLSSEL,
-     &                 IBLK_TO_CLS,NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,
-     &                 ICLS_A,ICLS_L,IBLKS_A,CLS_DEL,CLS_DELT,ISKIPEI,
-     &                 I2BLK,VEC3,ICLS_A2,MXLNG,IBASSPC,EBASC,CBASC,
-     &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
-*
-* Davidson algorithm , requires three blocks in core
-*
-* Only three vectors in on DISC
-*
-* Lu4 should only hold a batch of coefficients
-*
-*
-*
-* Block processing version
-*
-* Jeppe Olsen Winter of 1996
-*
-* Revision of june 97, PICO2 => PICO3
-*      modifications : Dynamic construction of batches
-*                      Only relevant sigma blocks constructed
-*              Oct, 98 : Info on base spaces added
-*
-* Initial version - Only Diagonal preconditioner,
-*
-* Special version for NROOT = 1, MAXVEC = 2 !!
-*
-* Input :
-* =======
-*        LU1 : Initial  vectors
-*        VEC1,VEC2 : Two vectors,each must be dimensioned to hold
-*                    largest blocks
-*        LU2,LU3   : Scatch files
-*        MAXIT     : Largest allowed number of iterations
-*        NBATCH    : Number of batches of vector
-*        LBATCHB   : Number of blocks in each batch
-*        LBATCHE   : Number of elements  in each batch
-*        IBLOCK    : Some additional informaition about the blocking
-*                    that this routine does not care about !!!!
-*        NPRDIM    : Dimension of subspace with
-*                    nondiagonal preconditioning
-*                    (NPRDIM = 0 indicates no such subspace )
-*   For NPRDIM .gt. 0:
-*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
-*                    Holds preconditioner matrices
-*                    PHP,PHQ,QHQ in this order !!
-*          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
-*          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
-*          NP1,NP2,NQ : Dimension of the three subspaces
-*
-*   THRES_ET   : Convergence criteria for eigenvalue
-*
-*   THRES_EC   : Threshold for second order energies for individual terms
-*   THRES_CC   : Threshold for first  order wavefunction  for individual terms
-*
-*
-*
-* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
-*         4 (NP1+NP2+NQ)
-*           LBLK : Defines block structure of matrices
-* On input LU1 is supposed to hold initial guesses to eigenvectors
-*
-*
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION VEC1(*),VEC2(*)
-      REAL * 8   INPROD, INPRDD, INPRODB
-*
-      DIMENSION LLBATCHB(NBATCH),LLBATCHE(NBATCH),IBLOCK(*)
-      DIMENSION LBLOCK(*)
-*. I2BLK should atleast have length of number of
-*. blocks
-      DIMENSION I2BLK(*)
-*
-      DIMENSION RNRM(MAXIT,1),EIG(MAXIT,1),FINEIG(1)
-      DIMENSION H0(*),IPNTR(1)
-      DIMENSION H0SCR(*)
-*. Class and block information
-      DIMENSION IBLK_TO_CLS(*)
-      DIMENSION CLS_C(NCLS),CLS_E(NCLS),CLS_CT(NCLS),CLS_ET(NCLS)
-      DIMENSION CLS_DEL(*), CLS_DELT(*)
-*. Base CI spaces : CI space where a given class is introduced
-      DIMENSION IBASSPC(*),EBASC(*),CBASC(*)
-      DIMENSION IPAT(*)
-*.Initial VEC3
-      DIMENSION VEC3(*)
-      INTEGER ICLS_A(NCLS), ICLS_L(NCLS),IBLKS_A(*),ICLS_A2(NCLS),LENSUM
-*
-*     H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
-*
-      LOGICAL CONVER
-*
-      WRITE(6,*) ':::::::::::::::::::'
-      WRITE(6,*) '  Entering PICO3   '
-      WRITE(6,*) ':::::::::::::::::::'
-*
-C?    WRITE(6,*) ' Memchk at start of PICO3'
-C?    CALL MEMCHK
-
-* included for consistency
-      LENSUM = 0
-* sk
-      IPICO = 0
-      IF(IPICO.NE.0) THEN
-C?      WRITE(6,*) ' Perturbative solver '
-C       MAXVEC = MIN(MAXVEC,2)
-C       ... MAXVEC not used in this routine /hjaaj
-      ELSE IF(IPICO.EQ.0) THEN
-C?      WRITE(6,*) ' Variational  solver '
-      END IF
-*
-      WRITE(6,*) ' Number of spaces ', NSPC
-      WRITE(6,*) ' Map : Class => Base space '
-      CALL IWRTMA(IBASSPC,1,NCLS,1,NCLS)
-C?    IF(ICLSSEL.EQ.1) THEN
-C?      WRITE(6,*) ' Class selection will be performed '
-C?      WRITE(6,*) ' Number of classes ', NCLS
-C?      WRITE(6,*) ' Dimension of each class'
-C?      CALL IWRTMA(ICLS_L,1,NCLS,1,NCLS)
-C?    END IF
-*
-      IF(IMULTGR.NE.0) THEN
-        WRITE(6,*) ' Multispace method in use '
-        WRITE(6,*)
-        WRITE(6,*) ' Length of pattern ', LPAT
-        WRITE(6,*) ' Pattern : '
-        CALL IWRTMA(IPAT,1,LPAT,1,LPAT)
-        WRITE(6,*)
-        WRITE(6,*) ' Reference space ', IREFSPC
-      END IF
-*
-      IPRT = 000
-      IOLSTM = 0
-      IF(IPRT.GT.10.AND.IOLSTM.NE.0)
-     &WRITE(6,*) ' Inverse iteration modified Davidson '
-      IF(IPRT.GT.10.AND.IOLSTM.EQ.0)
-     &WRITE(6,*) ' Normal Davidson method '
-*
-C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
-      IF(IPRT.GE.20) THEN
-        WRITE(6,*) ' Convergence threshold for eigenvalues', THRES_ET
-        WRITE(6,*)
-        WRITE(6,*) ' Elements of trial vectors discarded if '
-        WRITE(6,*) ' ======================================='
-        WRITE(6,*)
-        WRITE(6,*)
-     &  '    Estimate of contribution to wavefunction is less than ',
-     &  THRES_CC
-        WRITE(6,*)
-     &  '    Estimate of contribution to Energy is less than ',
-     &  THRES_EC
-      END IF
-      WRITE(6,*)
-      IF(IPRT.GE.10)
-     &WRITE(6,*) ' Max number of batches of vector ', NBATCH
-*
-*. Total number of blocks
-      NBLOCKT = 0
-      DO IBATCH = 1, NBATCH
-        NBLOCKT = NBLOCKT + LLBATCHB(IBATCH)
-      END DO
-      IF(IPRT.GE.10)
-     &WRITE(6,*) ' Max number of blocks ', NBLOCKT
-      WRITE(6,*)
-      TEST = 1.0D-6
-      CONVER = .FALSE.
-      IROOT = 1
-      NROOT = 1
-      ZERO = 0.0D0
-*. Play around with dynamic allocation of batches ...
-      IDYNBATCH = 1
-*
-* ===================
-*.Initial iteration
-* ===================
-*
-      IF(MAXIT.EQ.0) THEN
-        WRITE(6,*) ' Max number of iterations is zero'
-        WRITE(6,*) ' I will just return from PICO3'
-        RETURN
-      END IF
-*
-      ITER = 1
-      WRITE(6,*)
-      WRITE(6,*) ' ==============================='
-      WRITE(6,*) ' Info from pico3 ........ '
-      WRITE(6,*) ' ==============================='
-      WRITE(6,*)
-*. Obtain energy of initial vector
-      IF(ISKIPEI.EQ.0) THEN
-*. active classses of initial vector
-*
-        IF(IDYNBATCH.EQ.1) THEN
-          CALL FIND_ACTIVE_CLASSES(LU1,LBLK,IBLK_TO_CLS,
-     &         ICLS_A,NCLS,VEC1)
-*. Mark active blocks and find required number of batches
-          CALL REPART_CIV(IBLOCK,NBATCHL,LLBATCHB,LLBATCHE,MXLNG,
-     &         ICLS_A,IBLK_TO_CLS,NCLS,NBLOCKT,LBLOCK)
-        ELSE
-          NBATCHL = NBATCH
-        END IF
-        IF(IPRT.GE.10) WRITE(6,*) ' Number of batches for C ', NBATCHL
-        E = 0.0D0
-        IRESTRICT = 1
-        IOFF = 1
-        DO IBATCH = 1, NBATCHL
-          LBATCHB = LLBATCHB(IBATCH)
-          LBATCHE = LLBATCHE(IBATCH)
-          IF(IPRT.GE.10)
-     &    WRITE(6,*) '  <Delta ! H ! Delta >, Batch : ',IBATCH
-          CALL SETVEC(VEC1,ZERO,LBATCHE)
-          CALL SBLOCK(LBATCHB,IBLOCK,IOFF,VEC2,VEC1,LU1,IRESTRICT,0,
-     &                0,0,0,LENSUM)
-          IF(IPRT.GE.200) THEN
-            WRITE(6,*) ' Initial batch of S, number', IBATCH
-            CALL WRTBLKN(VEC1,LBATCHB,LBLOCK(IOFF))
-          END IF
-*. Obtain corresponding C blocks
-          CALL GET_BLOCKS_FROM_DISC
-     &    (LU1,LBATCHB,IOFF,IBLOCK,NBLOCKT,VEC2,1)
-          E = E + INPROD(VEC1,VEC2,LBATCHE)
-          IF(IPRT.GE.200) THEN
-            WRITE(6,*) ' Initial batch of C, number', IBATCH
-            CALL WRTBLKN(VEC2,LBATCHB,LBLOCK(IOFF))
-          END IF
-          IOFF = IOFF + LBATCHB
-        END DO
-        IF(IRESTRICT.EQ.1) E = 2*E
-        EIG(1,IROOT) = E
-      ELSE IF(ISKIPEI.EQ.1) THEN
-        E = FINEIG(IROOT)
-        WRITE(6,*) ' Initial energy obtained from previous calc as ',
-     &             E+EIGSHF
-        EAPR = E
-        EIG(1,IROOT) = E
-      END IF
-
-*
-      IF(IPRT .GE. 3 ) THEN
-        WRITE(6,'(A,I4)') ' Eigenvalues of initial iteration '
-        WRITE(6,'(5F18.13)')
-     &  ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
-      END IF
-      ITERX = 1
-*
-* ======================
-*. Loop over iterations
-* ======================
-*
-      DO 1000 ITER = 2, MAXIT
-*. Largest allowed basespace in this iteration in multispace method
-*
-       IF(IPRT  .GE. 10 ) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ==============================='
-        WRITE(6,*) ' Info from iteration .... ', ITER
-        WRITE(6,*) ' ==============================='
-        WRITE(6,*)
-       END IF
-*
-       IF(IMULTGR.GT.0) THEN
-         IBASSPC_MX = 1-IPAT(MOD(ITER-2,LPAT)+1)+IREFSPC
-         WRITE(6,*) ' Max allowed base space ', IBASSPC_MX
-       ELSE
-         IBASSPC_MX = 0
-       END IF
-*
-       ZERO = 0.0D0
-       IF(ICLSSEL.EQ.1) THEN
-         CALL SETVEC(CLS_CT,ZERO,NCLS)
-         CALL SETVEC(CLS_ET,ZERO,NCLS)
-         CALL SETVEC(CLS_DELT,ZERO,NCLS)
-         CALL SETVEC(CLS_C ,ZERO,NCLS)
-         CALL SETVEC(CLS_E ,ZERO,NCLS)
-         CALL SETVEC(CLS_DEL,ZERO,NCLS)
-*
-         CALL SETVEC(EBASC,ZERO,NSPC)
-         CALL SETVEC(CBASC,ZERO,NSPC)
-*
-       END IF
-*. Active classes
-        IF(IDYNBATCH.EQ.1) THEN
-          CALL FIND_ACTIVE_CLASSES(LU1,LBLK,IBLK_TO_CLS,
-     &         ICLS_A,NCLS,VEC1)
-*. Mark active blocks and find required number of batches
-          CALL REPART_CIV(IBLOCK,NBATCHL,LLBATCHB,LLBATCHE,MXLNG,
-     &         ICLS_A,IBLK_TO_CLS,NCLS,NBLOCKT,LBLOCK)
-        ELSE
-          NBATCHL = NBATCH
-        END IF
-       IF(IPRT.GE.10) WRITE(6,*) ' Number of batches for C ', NBATCHL
-       EIGAPR = EIG(ITER-1,1)
-* ===============================
-*. Obtain C(T) (H0-E)**-1 C
-* ===============================
-       GAMMA = 0.0D0
-       IOFF = 1
-       CALL REWINE(LU1,-1)
-       DO IBATCH = 1, NBATCHL
-         LBATCHB = LLBATCHB(IBATCH)
-         LBATCHE = LLBATCHE(IBATCH)
-*. Retrieve Batch of C
-         NO_ZEROING = 0
-         NO_ZEROING1= 1
-         CALL FRMDSCN3(VEC1,LBATCHB,LBLK,LU1,NO_ZEROING1,I2BLK(IOFF),
-     &                 LBLOCK(IOFF))
-         CALL COPVEC(VEC1,VEC2,LBATCHE)
-*. Multiply with (H0-E)** -1
-         FACTOR = -EIGAPR
-         ITASK = 1
-         CALL  DIATERM_GAS(FACTOR,ITASK,VEC2,LBATCHB,IBLOCK,IOFF,0,
-     &         NO_ZEROING1,I2BLK(IOFF))
-         IF(NO_ZEROING1.EQ.0) THEN
-           GAMMA = GAMMA + INPROD(VEC1,VEC2,LBATCHE)
-         ELSE
-            GAMMA = GAMMA + INPRODB(VEC1,VEC2,LBATCHB,LBLOCK(IOFF),
-     &                      I2BLK(IOFF))
-         END IF
-         IOFF = IOFF + LBATCHB
-       END DO
-       IF(IPRT.GE.20)
-     & WRITE(6,*) ' Gamma  calculated ',GAMMA
-
-*
-* ===============================
-*.1 New directions to be included
-* ===============================
-*
-* 1.1 : R = (H0-E)-1 (H*C - EIGAPR*C) : Obtain in batches and save on DISC
-*
-       EIGAPR = EIG(ITER-1,1)
-       NELMNT = 0
-       NZERO = 0.0D0
-*
-       RNORM = 0.0D0
-       DELTA = 0.0D0
-       CHEDEL =0.0D0
-       DELNORM = 0.0D0
-*
-       DELTAT = 0.0D0
-       CHEDELT =0.0D0
-       DELNORMT = 0.0D0
-       ECC = 0.0D0
-*
-       CALL REWINE(LU2,-1)
-       IOFF = 1
-*. Find partitioning of sigma
-*. BLocks obttained by double excitations from classes in C
-       NEXC  = 2
-       CALL EXCCLS2(NCLS,ICLS_A,ICLS_A2,NEXC,IBASSPC_MX,IBASSPC)
-*. Partitioning of sigma vector
-        CALL REPART_CIV(IBLOCK,NBATCHL,LLBATCHB,LLBATCHE,MXLNG,
-     &         ICLS_A2,IBLK_TO_CLS,NCLS,NBLOCKT,LBLOCK)
-
-       IF(IPRT.GE.10) THEN
-         WRITE(6,*) ' Number of batches for S ', NBATCHL
-         WRITE(6,*)
-       END IF
-       DO IBATCH = 1, NBATCHL
-         LBATCHB = LLBATCHB(IBATCH)
-         LBATCHE = LLBATCHE(IBATCH)
-         NELMNT = NELMNT + LBATCHE
-         IF(IPRT.GE.10)
-     &   WRITE(6,*) '  Delta, Batch : ',IBATCH
-* Batch of HC in VEC1
-         ZERO = 0.0D0
-         CALL SETVEC(VEC1,ZERO,LBATCHE)
-         CALL SBLOCK(LBATCHB,IBLOCK,IOFF,VEC2,VEC1,LU1,0,0,
-     &                0,0,0,LENSUM)
-         IF(IPRT.GE.500) THEN
-           WRITE(6,*) ' Batch of H C '
-           CALL WRTBLKN(VEC1,LBATCHB,LBLOCK(IOFF))
-         END IF
-*. Retrieve Batch of C
-         CALL GET_BLOCKS_FROM_DISC
-     &   (LU1,LBATCHB,IOFF,IBLOCK,NBLOCKT,VEC2,1)
-         IF(IPRT.GE.500) THEN
-           WRITE(6,*) ' C batch read in '
-           CALL WRTBLKN(VEC2,LBATCHB,LBLOCK(IOFF))
-         END IF
-*. Update energy
-         ECC = ECC + INPROD(VEC1,VEC2,LBATCHE)
-* Batch of (H-E)C in VEC1
-         ONE = 1.0D0
-         FACTOR = -EIGAPR
-         CALL VECSUM(VEC1,VEC1,VEC2,ONE,FACTOR,LBATCHE)
-         IF(IPRT.GE.500) THEN
-           WRITE(6,*) ' Batch of (H - E ) C '
-           CALL WRTBLKN(VEC1,LBATCHB,LBLOCK(IOFF))
-         END IF
-*. Norm of residual
-         RNORM = RNORM + INPROD(VEC1,VEC1,LBATCHE)
-*. Batch of (H0-E)-1(H-E)C  in VEC2
-         CALL COPVEC(VEC1,VEC2,LBATCHE)
-         FACTOR = -EIGAPR
-         ITASK = 1
-         I12 = 1
-         CALL  DIATERM_GAS(FACTOR,ITASK,VEC2,LBATCHB,IBLOCK,IOFF,0,0,0)
-         DELNORMT = DELNORMT + INPROD(VEC2,VEC2,LBATCHE)
-* C(H-E)(H0-E0)-1(H-E)C
-         CHEDELT = CHEDELT + INPROD(VEC1,VEC2,LBATCHE)
-         IF(ICLSSEL.EQ.1) THEN
-*. Contributions divided into occupation classes, complete expansion
-*. Wave function correction
-           CALL CLASS_PROD3(VEC2,VEC2,IOFF,LBATCHB,IBLOCK,
-     &                      IBLK_TO_CLS,NCLS,CLS_CT)
-*. Energy correction
-           CALL CLASS_PROD3(VEC1,VEC2,IOFF,LBATCHB,IBLOCK,
-     &                      IBLK_TO_CLS,NCLS,CLS_ET)
-         END IF
-*.[(H0-E0)-1(H-E)C]_{truncated} and
-*.C(H-E) [(H0-E0)-1(H-E)C]_{truncated}
-C        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-           ZERO = 0.0D0
-           CALL SETVEC(VEC3,ZERO,LBATCHE)
-           NZERO = NZERO + LBATCHE
-           DO I = 1, LBATCHE
-             IF(ABS(VEC2(I)*VEC1(I)).GE.THRES_EC.OR.
-     &          ABS(VEC2(I)).GE.THRES_CC           ) THEN
-               CHEDEL = CHEDEL + VEC1(I)*VEC2(I)
-               DELNORM = DELNORM + VEC2(I)*VEC2(I)
-               VEC3(I)=VEC2(I)
-               NZERO = NZERO - 1
-             END IF
-           END DO
-*
-           IF(ICLSSEL.EQ.1) THEN
-*. Contributions divided into occupation classes, truncated expansion
-*. Wave function correction
-             CALL CLASS_PROD3(VEC3,VEC3,IOFF,LBATCHB,IBLOCK,
-     &                        IBLK_TO_CLS,NCLS,CLS_C)
-*. Energy correction
-             CALL CLASS_PROD3(VEC1,VEC3,IOFF,LBATCHB,IBLOCK,
-     &                        IBLK_TO_CLS,NCLS,CLS_E)
-           END IF
-C        END IF
-*. retrieve c batch from disc
-         CALL GET_BLOCKS_FROM_DISC
-     &   (LU1,LBATCHB,IOFF,IBLOCK,NBLOCKT,VEC1,1)
-* C(H0-E0)-1(H-E)C
-         DELTAT = DELTAT + INPROD(VEC1,VEC2,LBATCHE)
-         IF(ICLSSEL.EQ.1) THEN
-           CALL CLASS_PROD3(VEC1,VEC2,IOFF,LBATCHB,IBLOCK,
-     &                      IBLK_TO_CLS,NCLS,CLS_DELT)
-         END IF
-C        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-* C[(H0-E0)-1(H-E)C]{truncated}
-           DELTA = DELTA + INPROD(VEC1,VEC3,LBATCHE)
-           IF(ICLSSEL.EQ.1) THEN
-             CALL CLASS_PROD3(VEC1,VEC3,IOFF,LBATCHB,IBLOCK,
-     &                        IBLK_TO_CLS,NCLS,CLS_DEL)
-           END IF
-* Without coefficient trunc : copy CLE_DELT to CLS_DEL
-C        END IF
-*
-C        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-*. Write packed version to DISC
-*. Pack out so zero blocks are given zero entries
-           CALL TODSCNP(VEC3,LBATCHB,LBLOCK(IOFF),LBLK,LU2)
-C        ELSE
-*. Write complete batch of delta to disc
-C          CALL TODSCN(VEC2,LBATCHB,LBLOCK(IOFF),LBLK,LU2)
-C          CHEDEL = CHEDELT
-C          DELTA = DELTAT
-C          DELNORM = DELNORMT
-C        END IF
-         IF(IPRT.GE.200) THEN
-           WRITE(6,*) ' Batch of blocks of trial vector '
-           CALL WRTBLKN(VEC2,LBATCHB,LBLOCK(IOFF))
-         END IF
-         IOFF = IOFF + LBATCHB
-       END DO
-*      /\ End of loop over batches of correction vector
-C      WRITE(6,*) ' ECC = ',ECC
-       CALL ITODS(-1,1,LBLK,LU2)
-       RNRM(ITER-1,1) = SQRT(RNORM)
-*. (End of loop over batches of (H0-E)-1(H-E)C)
-*. Predicted energy
-       IF(ICLSSEL.EQ.1) THEN
-C        IF(THRES_EC.EQ.0.0D0.AND.THRES_CC.EQ.0.0D0) THEN
-*. No truncation of small terms were performed, so the energy of
-*. term truncated expansion equals energy of untruncated expansion
-C          CALL COPVEC(CLS_CT,CLS_C,NCLS)
-C          CALL COPVEC(CLS_ET,CLS_E,NCLS)
-C        END IF
-*. Energy and wave function per base space
-         CALL CLS_TO_BASE(CLS_E,EBASC,CLS_C,CBASC,NCLS,NSPC,
-     &                    IBASSPC,IPRT)
-*. decide which classes should be truncated
-         CALL CLASS_TRUNC(NCLS,ICLS_L,CLS_CT,CLS_ET,CLS_C,CLS_E,
-     &                    E_CONV,ICLS_A,N_CLS_TRN,E_CLS_TRN,W_TRN,
-     &                    IPRT)
-C?       WRITE(6,*) ' Home from class truncation'
-C?       WRITE(6,*) 'N_CLS_TRN,E_CLS_TRN',N_CLS_TRN,E_CLS_TRN
-*. Update corrections for class elimination
-         N_ACT_CLS = 0
-         CHEDEL = CHEDEL - (-1.0D0) * E_CLS_TRN
-         DO JCLS = 1, NCLS
-           IF(ICLS_A(JCLS).EQ.0) THEN
-             DELTA = DELTA-CLS_DEL(JCLS)
-           ELSE
-             N_ACT_CLS = N_ACT_CLS + 1
-           END IF
-         END DO
-
-*. And do the truncation
-*. Truncation of classes => truncation of blocks
-         IF(N_CLS_TRN.NE.0) THEN
-           CALL CLS_TO_BLK(NBLOCKT,IBLK_TO_CLS,ICLS_A,IBLKS_A)
-*. from LU2 to LU3 and back to LU2
-           CALL ZAP_BLOCK_VEC(LU2,LBLK,IBLKS_A,VEC2,LU3)
-         END IF
-       ELSE
-         N_CLS_TRN = 0
-         E_CLS_TRN = 0.0D0
-         W_CLS_TRN = 0.0D0
-       END IF
-*. Predicted energy
-       IF(GAMMA.NE.0.0D0) THEN
-         E2PREDIT = - CHEDELT + DELTAT**2/GAMMA
-         E2PREDI  = - CHEDEL  + DELTA * DELTAT /GAMMA
-       ELSE
-         E2PREDIT = - CHEDELT
-         E2PREDI  = - CHEDEL
-         IF(ICLSSEL.EQ.1) THEN
-           CALL ICOPVE(CLS_CT,CLS_C,NCLS)
-           CALL ICOPVE(CLS_ET,CLS_E,NCLS)
-         END IF
-       END IF
-*
-       WRITE(6,*)
-*.
-C?     WRITE(6,*) ' Information for untruncated expansion:'
-C?     WRITE(6,*) ' ======================================'
-C?     WRITE(6,*)
-C?   & ' CHEDELT DELTAT GAMMA ', CHEDELT,DELTAT,GAMMA
-       IF(GAMMA.NE.0.0D0) THEN
-         WRITE(6,*)
-     & ' Orthogonalization term to E2 (no trunc.)', DELTAT**2/GAMMA
-       END IF
-       WRITE(6,*)
-     & ' Predicted energy(no truncation), change and total ',
-     &              E2PREDIT,EIGAPR+E2PREDIT+EIGSHF
-       IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-C?       WRITE(6,*)
-C?       WRITE(6,*) ' Information for truncated expansion:'
-C?       WRITE(6,*) ' ======================================'
-C?       WRITE(6,*)
-C?   &   ' CHEDEL DELTA GAMMA ', CHEDEL,DELTA,GAMMA
-         WRITE(6,*)
-         IF(GAMMA.NE.0.0D0) THEN
-           WRITE(6,*)
-     &   ' Orthogonalization term to E2 (trunc.)', DELTA**2/GAMMA
-         END IF
-         WRITE(6,*)
-     &   ' Predicted energy (truncated), change and total ',
-     &                E2PREDI,EIGAPR+E2PREDI+EIGSHF
-         WRITE(6,*)
-         WRITE(6,*) ' Estimated square-norm of eliminated terms ',
-     &   DELNORMT-DELNORM
-         WRITE(6,*)
-     &   ' Estimated energy contributions of eliminated terms',
-     &   E2PREDIT-E2PREDI
-         WRITE(6,*)
-     &   ' Number of zero elements in delta (before class sel) ',
-     &    NZERO
-         WRITE(6,*)
-     &   ' Number of nonzero terms in delta (before class sel) ',
-     &    NELMNT-NZERO
-       ELSE
-       END IF
-       WRITE(6,*)
-*
-       IF(ICLSSEL.EQ.1) THEN
-C                     NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
-         IF(N_ACT_CLS .EQ. 0   ) THEN
-           IF(IMULTGR.EQ.0.OR.IBASSPC_MX.EQ.IREFSPC) THEN
-*. All classes were eliminated so we are home -and hopefully dry
-           WRITE(6,*) ' No active classes  '
-           WRITE(6,*) ' I will therefore end the diagonalization'
-           CONVER = .TRUE.
-           GOTO 1001
-           ELSE
-*. No active classes with this IBASSPC_MX, try next
-             GOTO 1000
-           END IF
-         END IF
-       END IF
-*
-* ============================================
-* 1.5 : Inverse Iteration Correction to Delta
-* ============================================
-*
-*
-* Update delta to
-* -(H0-E0)-1(H-E)|0> + delta/gamma * (H0-E0)-1 |0>
-*
-* ( was +(H0-E0)-1(H-E)|0>)
-*
-       CALL REWINE(LU3,-1)
-       CALL REWINE(LU1,-1)
-       CALL REWINE(LU2,-1)
-       IOFF = 1
-       IF(IOLSTM.EQ.1.AND.ABS(GAMMA).GT.1.0D-6) THEN
-         WRITE(6,*) ' Inverse iteration correction will be added '
-         DO IBATCH = 1, NBATCHL
-           LBATCHB = LLBATCHB(IBATCH)
-           LBATCHE = LLBATCHE(IBATCH)
-*. Retrieve Batch of C
-           NO_ZEROING = 0
-           CALL FRMDSCN3(VEC1,LBATCHB,LBLK,LU1,NO_ZEROING,I2BLK(IOFF),
-     &                   LBLOCK(IOFF))
-*. Multiply with (H0-E)** -1
-           FACTOR = -EIGAPR
-           ITASK = 1
-           CALL  DIATERM_GAS(FACTOR,ITASK,VEC1,LBATCHB,IBLOCK,IOFF,0,
-     &                       0,0)
-*. Retrieve Batch of Delta
-           NO_ZEROING = 0
-           CALL FRMDSCN3(VEC2,LBATCHB,LBLK,LU2,NO_ZEROING,I2BLK(IOFF),
-     &                   LBLOCK(IOFF))
-C          CALL GET_BLOCKS_FROM_DISC
-C    &     (LU2,LBATCHB,IOFF,IBLOCK,NBLOCKT,VEC2,1)
-*. And add
-           FAC1 = -1.0D0
-           FAC2 = DELTA/GAMMA
-           CALL VECSUM(VEC2,VEC2,VEC1,FAC1,FAC2,LBATCHE)
-*. Transfer to Disc
-C          IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-             CALL TODSCNP(VEC2,LBATCHB,LBLOCK(IOFF),LBLK,LU3)
-C          ELSE
-C            CALL TODSCN(VEC2,LBATCHB,LBLOCK(IOFF),LBLK,LU3)
-C          END IF
-           IOFF = IOFF + LBATCHB
-         END DO
-*        ^ End of loop over batches
-         CALL ITODS(-1,1,LBLK,LU3)
-*. Well, it is nice to have the correction vector on LU2 so
-         IREW = 1
-C        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-            CALL COPVCD(LU3,LU2,VEC1,IREW,LBLK)
-C        ELSE
-C           CALL COPVCD(LU3,LU2,VEC1,IREW,LBLK)
-C        END IF
-       END IF
-*
-* ===================================
-* 2 : Calculate <Delta ! H ! Delta >
-* ===================================
-*
-*. Active classes
-        IF(IDYNBATCH.EQ.1) THEN
-          CALL FIND_ACTIVE_CLASSES(LU2,LBLK,IBLK_TO_CLS,
-     &         ICLS_A,NCLS,VEC1)
-          CALL REPART_CIV(IBLOCK,NBATCHL,LLBATCHB,LLBATCHE,MXLNG,
-     &         ICLS_A,IBLK_TO_CLS,NCLS,NBLOCKT,LBLOCK)
-        ELSE
-          NBATCHL = NBATCH
-        END IF
-* Loop over batches of H !delta>
-       IOFF = 1
-       DELHDEL = 0.0D0
-       IRESTRICT = 1
-       WRITE(6,*)
-       DO IBATCH = 1, NBATCHL
-         IF(IPRT.GE.10)
-     &   WRITE(6,*) '  <Delta ! H ! Delta >, Batch : ',IBATCH
-         LBATCHB = LLBATCHB(IBATCH)
-         LBATCHE = LLBATCHE(IBATCH)
-         CALL SETVEC(VEC1,ZERO,LBATCHE)
-         CALL SBLOCK(LBATCHB,IBLOCK,IOFF,VEC2,VEC1,LU2,IRESTRICT,0,
-     &                0,0,0,LENSUM)
-*. Retrieve Batch of Delta
-         CALL GET_BLOCKS_FROM_DISC
-     &   (LU2,LBATCHB,IOFF,IBLOCK,NBLOCKT,VEC2,1)
-         IF(IPRT.GE.1000) THEN
-           WRITE(6,*) ' Blocks of delta retrieved '
-           CALL WRTBLKN(VEC2,LBATCHB,LBLOCK(IOFF))
-         END IF
-         DELHDEL = DELHDEL + INPROD(VEC1,VEC2,LBATCHE)
-         IOFF = IOFF + LBATCHB
-       END DO
-       IF(IRESTRICT.EQ.1) DELHDEL = 2.0D0*DELHDEL
-*
-* ===========================================
-* 3 : Solve 2 by 2 problem : Nonorthogonal !!
-* ===========================================)
-*
-*      Norm of delta and overlap between 0 and delta
-       S12 = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-       S22 = INPRDD(VEC1,VEC2,LU2,LU2,1,LBLK)
-       H11 = EIGAPR
-C      H11 = ECC
-       IF(IOLSTM.EQ.1.AND.ABS(GAMMA).GT.1.0D-6) THEN
-        H12 = -CHEDEL + DELTA*DELTAT/GAMMA
-       ELSE
-        H12 = CHEDEL + EIGAPR*DELTA
-       END IF
-       H22 = DELHDEL
-*
-       S11 = 1.0D0
-*
-*.( H11  H12 ) (X1)       (S11    S12 )(X1)
-* (          ) (  )   = E (           )( )
-* ( H12  H22 ) (X2)       (S12    S22 )(X2)
-*
-* The eigenvalues
-*
-        A = S11*S22 -S12 **2
-        B = 2*S12*H12-S11*H22-S22*H11
-        C = H11*H22 -H12**2
-*
-        EA = -B/(2*A) - SQRT(B**2 - 4*A*C)/(2*A)
-        EB = -B/(2*A) + SQRT(B**2 - 4*A*C)/(2*A)
-*. And the lowest eigenvalue is
-        E = MIN(EA,EB)
-*. The corresponding eigenvector
-*. Intermediate normalization
-        X1 = 1.0D0
-        X2 = -(H11-E*S11)/(H12-E*S12)
-*. Normalized
-        XNORM2 = S11*X1**2 + S22*X2**2 + 2.0*S12*X1*X2
-        XNORM = SQRT(XNORM2)
-        X1 = X1/XNORM
-        X2 = X2/XNORM
-*
-        IF(IPRT.GE.10) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' 2 X 2 Generalized eigenvalue problem, H and S '
-          WRITE(6,*)
-          WRITE(6,'(4X,E20.10)') H11
-          WRITE(6,'(4X,2E20.10)') H12,H22
-          WRITE(6,*)
-          WRITE(6,'(4X,E20.10)') S11
-          WRITE(6,'(4X,2E20.10)') S12,S22
-          WRITE(6,*)
-*
-          WRITE(6,*) ' Lowest eigenvalue (with shift)', E + EIGSHF
-          WRITE(6,*) ' Corresponding eigenvector ', X1,X2
-        END IF
-
-*. Save corresponding eigenvector on file LU1 ( first LU3, then COPY)
-* VECSMD(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
-        IREW = 1
-C       IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-          CALL VECSMDP(VEC1,VEC2,X1,X2,LU1,LU2,LU3,IREW,LBLK)
-          CALL COPVCD(LU3,LU1,VEC1,IREW,LBLK)
-C       ELSE
-C         CALL VECSMD(VEC1,VEC2,X1,X2,LU1,LU2,LU3,IREW,LBLK)
-C         CALL COPVCD(LU3,LU1,VEC1,IREW,LBLK)
-C       END IF
-        EIG(ITER,1) = E
-        ITERX = ITER
-*
-*  Print eigenvalue info:
-*
-        WRITE(6,'(A19,7X,I3,3X,1E18.13,3X,1F19.14)')
-     &     ' Iter RNORM EIG ', ITER,RNORM,EIG(ITER,1)+EIGSHF
-*
-      CALL FLSHFO(6)
-*
-*. Convergence ??
-C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
-      IF(IMULTGR.EQ.0.OR.IBASSPC_MX.EQ.IREFSPC) THEN
-        IF(ABS(EIG(ITER,1) - EIG(ITER-1,1)).LE.THRES_ET)
-     &     CONVER = .TRUE.
-      END IF
-      IF(CONVER) GOTO 1001
- 1000 CONTINUE
-* ( End of loop over iterations )
-*
- 1001 CONTINUE
-      ITER = ITERX
-*
-      IF( .NOT. CONVER ) THEN
-*        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 2 )
-     &   WRITE(6,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
-      ELSE
-*        CONVERGENCE WAS OBTAINED
-         IF (IPRT .GE. 2 )
-     &   WRITE(6,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
-        END IF
-*
-      IF ( IPRT .GT. 1 ) THEN
-        CALL REWINE(LU1,-1)
-        DO 1600 IROOT = 1, NROOT
-          WRITE(6,*)
-          WRITE(6,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(6,*)
-     &    '============================================'
-          WRITE(6,*)
-          FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(6,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
-          IF(IPRT.GE.400) THEN
-            WRITE(6,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
-            CALL WRTVCD(VEC1,LU1,0,LBLK)
-          END IF
-          WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
-          WRITE(6,1310)
- 1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
-          DO 1330 I=1,ITER-1
- 1330     WRITE(6,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
-          WRITE(6,1340) ITER,EIG(ITER,IROOT)+EIGSHF
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
- 1600   CONTINUE
-      ELSE
-        DO 1601 IROOT = 1, NROOT
-           FINEIG(IROOT) = EIG(ITER,IROOT)
- 1601   CONTINUE
-      END IF
-*
-*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
-      write(6,*)
-        write(6,*) '*************************************************'//
-     &             '*********************'
-        write(6,*) '>>> CI  Iter  Root    Energy        RESIDUAL'
-        write(6,*) '*************************************************'//
-     &             '*********************'
-      write(6,*)
-      FINEIG(1) = EIG(ITER,1)+EIGSHF
-      WRITE(6,'(9X,I3,2X,I3,3X,F15.8,2X,E10.3)')
-     &          ITER,1,FINEIG(1),RNORM
-*
-*. Clean up : IBLOCK in original form
-      IONE = 1
-      CALL ISETVC(ICLS_A,IONE,NCLS)
-      CALL REPART_CIV(IBLOCK,NBATCHL,LLBATCHB,LLBATCHE,MXLNG,
-     &     ICLS_A,IBLK_TO_CLS,NCLS,NBLOCKT,LBLOCK)
-*
-      RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
       END
 ***********************************************************************
 *                                                                     *

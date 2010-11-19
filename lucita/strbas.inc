@@ -1,5 +1,5 @@
 *comdeck strbas.inc $Revision: 1.1.2.1 $ 
-      INTEGER*8     KSTINF,KOCSTR,KNSTSO,KISTSO,
+      INTEGER*8     KSTINF,KSTINE,KOCSTR,KNSTSO,KISTSO,
      &              KSTSTM,KZ,
      &              KSTREO,KSTSM,KSTCL,
      &              KEL1,KEL3,KEL123,
@@ -9,8 +9,8 @@
      &              KSTSTMI,KSTSTMN,
      &              KNSTSGP,KISTSGP ,
      &              KZSPGP,KIOCLS,KSPGPAN,KSPGPCR
-      COMMON/STRBAS/KSTINF,KOCSTR(MXPSTT),KNSTSO(MXPSTT),KISTSO(MXPSTT),
-     &              KSTSTM(MXPSTT,2),KZ(MXPSTT),
+      COMMON/STRBAS/KSTINF,KSTINE,KOCSTR(MXPSTT),KNSTSO(MXPSTT),
+     &              KISTSO(MXPSTT),KSTSTM(MXPSTT,2),KZ(MXPSTT),
      &              KSTREO(MXPSTT),KSTSM(MXPSTT),KSTCL(MXPSTT),
      &              KEL1(MXPSTT),KEL3(MXPSTT),KEL123(MXPSTT),
      &              KACTP(MXPSTT),

@@ -1554,8 +1554,9 @@ C    &      = ISTADD(JEL,IOFADD-1+IISTR)
 *
 *./BIGGY
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLOFFI
+!               for addressing of WORK
 #include "mxpdim.inc"
-C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "strinp.inc"
@@ -1877,9 +1878,8 @@ C?      write(6,*) ' KACGRP ', KACGRP
         END IF
       END IF
 *
-csk   call memman(KLOFFI,LOFFI,'FREE',1,'LLOFFI')
 *     eliminate local memory
-      CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'DENSI ')
+      CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'ADSTN ')
 
       CALL QEXIT('ADSTN ')
       RETURN
@@ -4020,7 +4020,6 @@ C
 #include "stinf.inc"
 #include "csm.inc"
 *.
-C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *. Output
       DIMENSION IASTR2(*),IBSTR2(*)
@@ -4059,6 +4058,8 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * /STRINP/,/STINF/,/STRBAS/ and string information in STIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KFREEL
+!               for addressing of WORK
 #ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
@@ -4079,7 +4080,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "strinp.inc"
 #include "irat.inc"
 *
-C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *
       DIMENSION STIN(*)
