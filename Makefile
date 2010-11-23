@@ -117,6 +117,7 @@ depend :
 clean :
 	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done
 	$(RM) -f *~
+	$(RM) -f modules/*.mod
 #
 #	We remove the entire source code as well if we do not plan to debug
 #
