@@ -306,18 +306,18 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
           KFREES = KFREEL + KADD + 2*NPAD
         END IF
         IF ( KFREES-1 .GT. NWORD ) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' You can''t always get what you want'
-          WRITE(6,*) ' No, you can''t always get what you want'
-          WRITE(6,*) ' But if you try sometime, you may find '
-          WRITE(6,*) ' you get what you need '
-          WRITE(6,*) '                       Jagger/Richard '
+          WRITE(2,*)
+          WRITE(2,*) ' You can''t always get what you want'
+          WRITE(2,*) ' No, you can''t always get what you want'
+          WRITE(2,*) ' But if you try sometime, you may find '
+          WRITE(2,*) ' you get what you need '
+          WRITE(2,*) '                       Jagger/Richard '
 *
-          WRITE(6,*) ' MEMMAN : work array too short '
-          WRITE(6,*) ' current and required length ',NWORD,KFREES-1
+          WRITE(2,*) ' MEMMAN : work array too short '
+          WRITE(2,*) ' current and required length ',NWORD,KFREES-1
 *
-          WRITE(6,*) ' Trying to allocate : identifer,length'
-          WRITE(6,'(20X,A,I9)')IDENT,KADD
+          WRITE(2,*) ' Trying to allocate : identifer,length'
+          WRITE(2,'(20X,A,I9)')IDENT,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -327,16 +327,16 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         NL = 0
         NSNLI = NS + NL
         IF(NS.GT.MAXLVL) THEN
-          WRITE(6,*) ' Too many levels in MEMMAN '
-          WRITE(6,*) ' Increase MAXLVL from ', MAXLVL
+          WRITE(2,*) ' Too many levels in MEMMAN '
+          WRITE(2,*) ' Increase MAXLVL from ', MAXLVL
           Call Abend1(11)
         END IF
         IIDENT(NS) = IDENT
-        KFREEL = KFREES
-        IBASE(NS) = KBASE
+        KFREEL     = KFREES
+        IBASE(NS)  = KBASE
         DO 10 IPAD = 1, NPAD
-          WORK(KBASE-NPAD-1+IPAD) = PAD1
-          WORK(KFREEL-NPAD-1+IPAD) =  PAD2
+          WORK(KBASE-NPAD-1+IPAD)  = PAD1
+          WORK(KFREEL-NPAD-1+IPAD) = PAD2
    10   CONTINUE
 *
 **. Local memory
@@ -349,17 +349,17 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
           KFREEL = KFREEL + KADD + 2*NPAD
         END IF
         IF ( KFREEL-1 .GT. NWORD ) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' You can''t always get what you want'
-          WRITE(6,*) ' No, you can''t always get what you want'
-          WRITE(6,*) ' But if you try sometime, you may find '
-          WRITE(6,*) ' you get what you need '
-          WRITE(6,*) '                       Jagger/Richard '
+          WRITE(2,*)
+          WRITE(2,*) ' You can''t always get what you want'
+          WRITE(2,*) ' No, you can''t always get what you want'
+          WRITE(2,*) ' But if you try sometime, you may find '
+          WRITE(2,*) ' you get what you need '
+          WRITE(2,*) '                       Jagger/Richard '
 
-          WRITE(6,*) ' MEMMAN : work array too short '
-          WRITE(6,*) ' current and required length ',NWORD,KFREEL-1
-          WRITE(6,*) ' Trying to allocate : identifer,offset,  length'
-          WRITE(6,'(24X,A,2I9)')IDENT,KBASE,KADD
+          WRITE(2,*) ' MEMMAN : work array too short '
+          WRITE(2,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(2,*) ' Trying to allocate : identifer,offset,  length'
+          WRITE(2,'(24X,A,2I9)')IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -368,8 +368,8 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         NL =  NL + 1
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
-          WRITE(6,*) ' Too many levels in MEMMAN '
-          WRITE(6,*) ' Increase MAXLVL from ', MAXLVL
+          WRITE(2,*) ' Too many levels in MEMMAN '
+          WRITE(2,*) ' Increase MAXLVL from ', MAXLVL
           Call Abend1(11)
         END IF
         IIDENT(NS+NL) = IDENT
@@ -389,8 +389,8 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
 *. Set a mark at current free address
         NM = NM + 1
         IF(NM.GT.MAXMRK) THEN
-          WRITE(6,*) ' Too many marks  in MEMMAN '
-          WRITE(6,*) ' Increase MAXMRK from ', MAXMRK
+          WRITE(2,*) ' Too many marks  in MEMMAN '
+          WRITE(2,*) ' Increase MAXMRK from ', MAXMRK
           Call Abend1(11)
         END IF
         MARKC(NM) = IDENT
@@ -412,8 +412,8 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         KBASE = NWORD - KFREEL - 1
         NSNLI = NS+ NL
       ELSE
-          WRITE(6,*) ' MEMMAN : Unknown task parameter ',TASK
-          WRITE(6,*) ' Too confused to continue  '
+          WRITE(2,*) ' MEMMAN : Unknown task parameter ',TASK
+          WRITE(2,*) ' Too confused to continue  '
           Call Abend1(11)
       END IF
 *
@@ -435,24 +435,24 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
             IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1 .OR.
      &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
                ITSOK = 0
-               WRITE(6,*) ' Memory problem for : '
-               WRITE(6,*) '   Level (IL) ',IL
+               WRITE(2,*) ' Memory problem for : '
+               WRITE(2,*) '   Level (IL) ',IL
                IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
                IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
                IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(4X,A,I20,4X,A)')
+                WRITE(2,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
                ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(4X,A,I20,4X,A)')
+                WRITE(2,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(4X,A,I20,4X,A)')
+                WRITE(2,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                  WRITE(6,'(4X,A,I20,4X,A)')
+                  WRITE(2,'(4X,A,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                 WRITE(6,'(4X,A,I20,4X,A)')
+                 WRITE(2,'(4X,A,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       -    '
                END IF
             END IF
@@ -463,13 +463,13 @@ CSK        iprntmp = 1
  1001 CONTINUE
 *
         IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
-          WRITE(6,'(A,A,1X,A)') ' Current task : ', TASK, IDENT
-          WRITE(6,*) ' NS, NL, NSNLI',NS,NL,NSNLI
+          WRITE(2,'(A,A,1X,A)') ' Current task : ', TASK, IDENT
+          WRITE(2,*) ' NS, NL, NSNLI',NS,NL,NSNLI
           IF(ITSOK.EQ.0)
-     &    WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
-          WRITE(6,*) '  Memory map : '
-          WRITE(6,*) '  Identifier    Offset     Pad1 okay Pad2 okay '
-          WRITE(6,*) '  ========== ============  ========= ========= '
+     &    WRITE(2,*) '  Sorry to say it , but memory is CORRUPTED '
+          WRITE(2,*) '  Memory map : '
+          WRITE(2,*) '  Identifier    Offset     Pad1 okay Pad2 okay '
+          WRITE(2,*) '  ========== ============  ========= ========= '
           DO 200 IL = 1, NSNLI
             JBASE = IBASE(IL)
             IF(IL.NE.NSNLI) THEN
@@ -488,35 +488,35 @@ CSK        iprntmp = 1
 C           find local off-set to WORK for print
             IBASE_L = IBASE(IL) - IMARK(1)
             IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(4X,A,I12,4X,A)')
+               WRITE(2,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'    OKAY     OKAY '
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(4X,A,I12,4X,A)')
+               WRITE(2,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'    OKAY       -  '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(4X,A,I12,4X,A)')
+               WRITE(2,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(4X,A,I12,4X,A)')
+               WRITE(2,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(4X,A,I12,4X,A)')
+               WRITE(2,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'     -       -    '
             END IF
   200     CONTINUE
 *
 * Marks
 *
-          WRITE(6,*)
-          WRITE(6,*) '======='
-          WRITE(6,*) ' Marks '
-          WRITE(6,*) '======='
-          WRITE(6,*)
+          WRITE(2,*)
+          WRITE(2,*) '======='
+          WRITE(2,*) ' Marks '
+          WRITE(2,*) '======='
+          WRITE(2,*)
 *
-          WRITE(6,*) ' Identifier  Start of free memory '
-          WRITE(6,*) ' ================================='
+          WRITE(2,*) ' Identifier  Start of free memory '
+          WRITE(2,*) ' ================================='
           DO JMARK = 1, NM
-            WRITE(6,'(3X,A6,10X,I18)') MARKC(JMARK),IMARK(JMARK)
+            WRITE(2,'(3X,A6,10X,I18)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
         IF (ITSOK.EQ.0)
@@ -525,5 +525,5 @@ C           find local off-set to WORK for print
 *
       IF (ISTOP.NE.0)
      &   Call Abend2(' Error observed by  memory manager ')
-      RETURN
+
       END

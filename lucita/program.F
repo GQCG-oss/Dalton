@@ -953,6 +953,7 @@ C
 * Modifications wrt to a MPI implementation by 
 * Stefan Knecht, Feb. 06 
 *
+      use communication_model
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 k_offset, k8base_lucita, KPROCLIST, KGROUPLIST, 
      &          KGROUPLIST2, KPROCLENGTH, KVEC1
@@ -987,7 +988,10 @@ C
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      integer    :: kbase_lucita
+      integer               :: kbase_lucita
+      integer, allocatable  :: proclist(:)
+      integer, allocatable  :: grouplist(:)
+      integer, allocatable  :: grouplist_shared_mem(:)
 
       CALL QENTER('PAMLU')
 
@@ -1012,6 +1016,8 @@ C     No floating point underflow
       CALL XUFLOW
 C     Assign diskunits
       CALL DISKUN
+C     Ratio beteeen real and integer word length
+      CALL ZIRAT
 C
 C     Static memory, initialization and allocation
 C
@@ -1041,22 +1047,6 @@ C
       KADD = MXPWRD
       CALL MEMMAN(K8BASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
 C
-C     Call input conversion program MOLUC (subroutine now)
-C
-      call dalton_lucita_input_interface
-C
-      WRITE(LUOUT,'(10X,A,I18)')
-     &'Dimension of R*8 workspace : ', MXPWRD
-C    ======================================================
-C    1 : .Read input,insert defaults and cross check input
-C    ======================================================
-      CALL INPCTL(LUIN,LUCMOL,LUOUT)
-C
-C     check value for LCSBLK
-      IF( IMAXLBLKSZ .gt. LCSBLK) THEN
-        LCSBLK = IMAXLBLKSZ
-      END IF
-C
 C     LUCITA is used in SPINFREE calculations: no complex part
 C
       IRC_SAVE = 1
@@ -1073,6 +1063,31 @@ C
       CALL ISETVC(WORK(KGROUPLIST), MIN_ONE,LUCI_NMPROC)
       CALL ISETVC(WORK(KGROUPLIST2),MIN_ONE,LUCI_NMPROC)
       CALL ISETVC(WORK(KPROCLENGTH),MIN_ONE,LUCI_NMPROC)
+      allocate(proclist(luci_nmproc))
+      allocate(grouplist(luci_nmproc))
+      allocate(grouplist_shared_mem(luci_nmproc))
+      proclist             = -1
+      grouplist            = -1
+      grouplist_shared_mem = -1
+
+#ifdef VAR_MPI
+!     test new module
+      call setup_communication_model(nflgrps,
+     &                               iiomod,
+     &                               shared_m,
+     &                               it_shl,
+     &                               ic_shl,
+     &                               proclist,
+     &                               grouplist_shared_mem,
+     &                               luci_myproc,
+     &                               luci_nmproc,
+     &                               mpi_comm_world,
+     &                               joff)
+      call quit('*** error: stefan forced me to stop after setup ***')
+#endif
+      deallocate(grouplist_shared_mem)
+      deallocate(grouplist)
+      deallocate(proclist)
 C
 #ifdef VAR_MPI
 C
@@ -1150,8 +1165,22 @@ CSK       CALL Abend2('Sorry, I stop')
 C
 #endif
 C
-C     Ratio beteeen real and integer word length
-      CALL ZIRAT
+C     Call input conversion program MOLUC (subroutine now)
+C
+      call dalton_lucita_input_interface
+C
+      WRITE(LUOUT,'(10X,A,I18)')
+     &'Dimension of R*8 workspace : ', MXPWRD
+C    ======================================================
+C    1 : .Read input,insert defaults and cross check input
+C    ======================================================
+      CALL INPCTL(LUIN,LUCMOL,LUOUT)
+C
+C     check value for LCSBLK
+      IF( IMAXLBLKSZ .gt. LCSBLK) THEN
+        LCSBLK = IMAXLBLKSZ
+      END IF
+C
 C     From shells to orbitals
       CALL ORBINF(LUOUT,IPRORB)
 C     Number of string types

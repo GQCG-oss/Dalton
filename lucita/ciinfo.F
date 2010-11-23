@@ -4032,24 +4032,11 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
-#include "machine.inc"
 #include "SysDef.inc"
 *. Output
 #include "irat.inc"
-*. For CRAY or explicit 64 bit architecture : IRAT = 1
-*     IF(MACHINE(1:4).EQ.'CRAY'.OR.MACHINE(1:2).EQ.'64') THEN
-*       IRAT = 1
-*     ELSE
-*. For all other architectures : 2 integers per real
-*       IRAT = 2
-*     END IF
       IRAT=RtoI
 *
-C?    WRITE(6,'(A,I2)')
-C?   &'   Ratio between Integer and Real word length ', IRAT
-C?    WRITE(6,*)
-*
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
