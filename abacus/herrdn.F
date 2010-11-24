@@ -1037,6 +1037,7 @@ C***********************************************************************
 #include "aosotr.h"
 #include <ecpinf.h>
 #include "qm3.h"
+#include "infpar.h"
 C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       MBSIP     = 0
@@ -6242,7 +6243,7 @@ C     Number of different atom types
 C
 #ifdef VAR_DEBUG
 C     to test if .mol input transferred OK to slaves
-      write(0,'(I5,2A)') mynum,' LINE4: ',LINE
+      print *, mytid,' LINE4: ',LINE
 #endif
 
       IPOS = INDEX(LINE,'ATO')

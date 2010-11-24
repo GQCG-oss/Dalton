@@ -211,6 +211,19 @@ C
 C
       RETURN
       END
+
+      subroutine mpixprocname(process_name,process_name_length)
+C
+      implicit none
+#ifdef VAR_MPI
+      include 'mpif.h'
+      character*(*) process_name
+      integer process_name_length, ierr
+C
+      call mpi_get_processor_name(process_name,process_name_length,ierr)
+#endif
+      END
+
 #if defined (VAR_MPI)
 C  /* Deck mpi_myfail */
       SUBROUTINE MPI_MYFAIL(IERR)

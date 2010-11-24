@@ -130,7 +130,7 @@ contains
 !#ifdef SYS_LOCALDISKS                          
                                                
 !     find system-dependent unique process name
-      call mpi_get_processor_name(process_name,process_name_length,ierr)
+      call mpixprocname(process_name,process_name_length)
 
       allocate(scr_arr_name_length(nr_of_process_glb))
       scr_arr_name_length = 0

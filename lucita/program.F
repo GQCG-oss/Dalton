@@ -903,10 +903,10 @@ C
       IN = LUCMD
       IW = LUPRI
 #ifdef VAR_MPI
-      LUCI_MASTER = MPARID
+      LUCI_MASTER = MASTER
       LUCI_MYPROC = MYTID
 *     Add the master node
-      LUCI_NMPROC = NUMNOD + 1
+      LUCI_NMPROC = NODTOT + 1
 #else
       LUCI_MASTER = 0
       LUCI_MYPROC = 0
@@ -1652,7 +1652,7 @@ C
 *. Default number of irreps
       NIRREP = 8
 *
-      CALL ISETVC(ISETKW,0,MXPKW)
+      CALL IZERO(ISETKW,MXPKW)
  1000 CONTINUE
 *. Next potential keyword
       READ(LUCMOL,'(A)') CARD
@@ -5598,11 +5598,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCINOD */
       SUBROUTINE LUCINOD(WRK,LWRK)
 *
-*     LUCITA routine (DIRAC interface) for the slaves
+*     LUCITA routine (DALTON interface) for the co-workers
 *
-*     adapted version of the co-workers RELCCSD 
-*     routine (DIRAC interface) written by 
-*     Luuk Visscher, August 1997.
+*     adapted version of the co-workers LUCINOD in Dirac
 *     LUCITA version by Stefan Knecht, Feb. 06
 *
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5611,38 +5609,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "files.inc"
-*. Parameters for dimensioning
-#include "mxpdim.inc"
-*.File numbers
-#include "clunit.inc"
-#include "units.inc"
-*.Print flags
-#include "cprnt.inc"
-#include "lucinp.inc"
-#include "cstate.inc"
-#include "crun.inc"
-#include "cicisp.inc"
-#include "oper.inc"
-#include "cgas.inc"
-#include "luctinp.h"
-*.Memory
-#include "wrkspc.inc"
       DIMENSION WRK(LWRK)
       CHARACTER*10 INTFCE, WORD3*7
-      CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
+      CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3,
+     &          LUCIFILN*14, LUCITABASF*10
       LOGICAL CA,LUEND
+      integer outfile_node
 *
 *
 *     arrange for the MPI stuff and correct node number
 *     to the total number of running invocations.
 *
-      LUCI_MASTER = MPARID
+      LUCI_MASTER = MASTER
       LUCI_MYPROC = MYTID
-C     Add the master node, NUMNOD = number of slaves
-      LUCI_NMPROC = NUMNOD + 1
+C     Add the master node, NODTOT = number of co-workers
+      LUCI_NMPROC = NODTOT + 1
 C
-      INTFCE = 'DIRAC     '
+      INTFCE = 'DALTON    '
+      print *, 
+     & '*** co-worker',LUCI_MYPROC,'has arrived. ***'
+      outfile_node = 3
 *
 *     create a node-unique filename as output file. Important on
 *     shared file systems. Otherwise all the output gets mingled in one
@@ -5653,10 +5639,10 @@ C
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (LUCIFILN,'(A10,A1,I1)') LUCITABASF,'.',LUCI_MYPROC
          LUFIL=12
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+      ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (LUCIFILN,'(A10,A1,I2)') LUCITABASF,'.',LUCI_MYPROC
          LUFIL=13
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+      ELSE IF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (LUCIFILN,'(A10,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
          LUFIL=14
       ELSE
@@ -5668,30 +5654,34 @@ C
 *     to the corresponding output file.
 *
 *
-      OPEN(LUCMD,FILE = 'DIRAC.INP')
-      OPEN(MSLVOUT,FILE = LUCIFILN(1:LUFIL))
+!     OPEN(LUCMD,FILE = 'DIRAC.INP')
+      print *, 
+     & '*** co-worker',LUCI_MYPROC,'opens ',LUCIFILN(1:LUFIL)
+      OPEN(outfile_node,FILE = LUCIFILN(1:LUFIL))
+      print *, 
+     & '*** co-worker',LUCI_MYPROC,'has opened ',LUCIFILN(1:LUFIL)
 *
 *     ==============
 *     **** Find Lucita input *****
 *
-      REWIND (LUCMD,IOSTAT=IOS)
+!     REWIND (LUCMD,IOSTAT=IOS)
 *     ... IOSTAT to avoid program abort on some systems
 *         if reading input from a terminal
 *
 *     ... IOSTAT to avoid program abort on some systems
 *         if reading input from a terminal
-  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      IF (WORD .EQ. '*LUCITA') THEN
-         GO TO 930
-      ELSE
-         GO TO 900
-      END IF
-  910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no Lucita input found')
-  920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no Lucita input found')
-  930 CONTINUE
-      WORD3 = WORD
+! 900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+!     IF (WORD .EQ. '*LUCITA') THEN
+!        GO TO 930
+!     ELSE
+!        GO TO 900
+!     END IF
+! 910 CONTINUE
+!        CALL QUIT('End of file on LUCMD, no Lucita input found')
+! 920 CONTINUE
+!        CALL QUIT('Error reading LUCMD, no Lucita input found')
+! 930 CONTINUE
+!     WORD3 = WORD
 *
 *     pointer in DIRAC.INP should now be positioned behind *LUCITA
 *
@@ -5702,9 +5692,9 @@ C
 *
 *     now let's call the working routine!
 *
-      CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
-      CLOSE (MSLVOUT,STATUS='KEEP')
-      CLOSE (LUCMD,STATUS='KEEP')
+      CALL PAMLU(WRK,LWRK,LUCMD,outfile_node)
+      CLOSE (outfile_node,STATUS='KEEP')
+!     CLOSE (LUCMD,STATUS='KEEP')
 *
 *
 *     The slave is finished, wait for the master
