@@ -38,12 +38,28 @@ contains
                                        shared_memory_mode,             &
                                        shared_memory_lvl_ijkl,         &
                                        shared_memory_lvl_cvec,         &
+                                       group_list,                     &
                                        process_list_glb,               &
                                        process_list_shared_mem_glb,    &
                                        my_process_id_glb,              &
                                        nr_of_process_glb,              &
                                        communicator_glb,               &
-                                       joff)
+                                       my_intra_node_id,               &
+                                       my_inter_node_id,               &
+                                       my_shmem_ijkl_id,               &
+                                       my_shmem_cvec_id,               &
+                                       intra_node_size,                &
+                                       inter_node_size,                &
+                                       shmem_ijkl_size,                &
+                                       shmem_cvec_size,                &
+                                       intra_node_comm,                &
+                                       inter_node_comm,                &
+                                       shmem_ijkl_comm,                &
+                                       shmem_cvec_comm,                &
+                                       intra_node_group_id,            &                
+                                       intra_node_master,              &
+                                       shmem_master_ijkl,              &
+                                       shmem_master_cvec)
 !******************************************************************************
 !
 !    purpose:  initialize communication model for parallel CI/MCSCF runs:
@@ -64,6 +80,7 @@ contains
      integer, intent(in )   :: nr_of_process_glb
      integer, intent(in )   :: communicator_glb
      integer, intent(in )   :: my_process_id_glb
+     integer, intent(out)   :: group_list(nr_of_process_glb)
      integer, intent(out)   :: process_list_glb(nr_of_process_glb)
      integer, intent(out)   :: process_list_shared_mem_glb(nr_of_process_glb)
      integer, intent(out)   :: nr_file_groups
@@ -71,7 +88,22 @@ contains
      integer, intent(out)   :: shared_memory_lvl_ijkl
      integer, intent(out)   :: shared_memory_lvl_cvec
      logical, intent(out)   :: shared_memory_mode
-     integer, intent(out)   :: joff
+     integer, intent(out)   :: shmem_master_ijkl
+     integer, intent(out)   :: shmem_master_cvec
+     integer, intent(out)   :: intra_node_master
+     integer, intent(out)   :: intra_node_group_id
+     integer, intent(out)   :: my_intra_node_id
+     integer, intent(out)   :: my_inter_node_id
+     integer, intent(out)   :: my_shmem_ijkl_id
+     integer, intent(out)   :: my_shmem_cvec_id
+     integer, intent(out)   :: intra_node_size
+     integer, intent(out)   :: inter_node_size
+     integer, intent(out)   :: shmem_ijkl_size
+     integer, intent(out)   :: shmem_cvec_size
+     integer, intent(out)   :: intra_node_comm
+     integer, intent(out)   :: inter_node_comm
+     integer, intent(out)   :: shmem_ijkl_comm
+     integer, intent(out)   :: shmem_cvec_comm
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 
@@ -92,12 +124,34 @@ contains
                            nr_of_process_glb,         &
                            communicator_glb)
 
-      joff = -1
 !     2. setup communicators and process-id for the various communication levels
 !        a. intra-node
 !        b. inter-node
-!        c. (shared-memory)
-!     call set_communication_levels()
+!        c. shared-memory
+      call set_communication_levels(group_list,                  &
+                                    process_list_glb,            &
+                                    process_list_shared_mem_glb, &
+                                    nr_of_process_glb,           &
+                                    my_process_id_glb,           &
+                                    communicator_glb,            &
+                                    shared_memory_lvl_ijkl,      &
+                                    shared_memory_lvl_cvec,      &
+                                    my_intra_node_id,            &
+                                    my_inter_node_id,            &
+                                    my_shmem_ijkl_id,            &
+                                    my_shmem_cvec_id,            &
+                                    intra_node_master,           &
+                                    shmem_master_ijkl,           &
+                                    shmem_master_cvec,           &
+                                    intra_node_size,             &
+                                    inter_node_size,             &
+                                    shmem_ijkl_size,             &
+                                    shmem_cvec_size,             &
+                                    intra_node_comm,             &
+                                    inter_node_comm,             &
+                                    shmem_ijkl_comm,             &
+                                    shmem_cvec_comm,             &
+                                    intra_node_group_id)                      
 
   end subroutine setup_communication_model
 !*******************************************************************************
@@ -223,161 +277,173 @@ contains
   end subroutine set_file_groups
 !*******************************************************************************
 
-! subroutine set_communication_levels(IGROUPLIST,IPROCLIST,IPROCLIST_SM)
-!
-!     IMPLICIT REAL*8 (A-H,O-Z)
-!
-!include "infpar.h"
-!include "mpif.h"
-!     DIMENSION ISTAT(MPI_STATUS_SIZE)
-!include "parluci.h"
-!
-!     DIMENSION IPROCLIST(LUCI_NMPROC),IGROUPLIST(LUCI_NMPROC)
-!     DIMENSION IPROCLIST_SM(LUCI_NMPROC)
-!     INTEGER IKEY, ICOLOR, JKEY, JCOLOR, KCOLOR, KKEY
-!     INTEGER LCOLOR, LKEY
-!     ITEST = 00
-!     ITEST = 10
-!
-!     'intra-node' communicator MYNEW_COMM ( I/O communicator )
-!
-!     IKEY = LUCI_MYPROC
-!     ICOLOR = IPROCLIST(LUCI_MYPROC+1)
-!
-!     CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ICOLOR,IKEY,MYNEW_COMM,IERR)
-!
-!     collect useful information about each group,
-!     store on common block
-!
-!     NEWCOMM_PROC = 0
-!     MYNEW_ID = 0
-!     CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
-!     CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
-!
-!     T-communicator MYNEW_COMM_SM ( 1st "shared memory" communicator)
-!
-!     KKEY = LUCI_MYPROC
-!     IF( IT_SHL .eq. - 1 .or. IT_SHL .eq. - 2 )THEN
-!       KCOLOR = IPROCLIST_SM( LUCI_MYPROC + 1 )
-!     ELSE IF( IT_SHL .eq. 0 )THEN
-!       KCOLOR = IPROCLIST_SM( LUCI_MYPROC + 1 )
-!     ELSE IF( IT_SHL .eq. 1 )THEN
-!       KCOLOR = 1
-!     END IF
-!
-!     CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,KCOLOR,KKEY,
-!    &                    MYNEW_COMM_SM,IERR)
-!
-!       collect useful information about each group,
-!       store on common block
-!
-!     NEWCOMM_PROC_SM = 0
-!     MYNEW_ID_SM     = 0
-!     CALL MPI_COMM_SIZE(MYNEW_COMM_SM,NEWCOMM_PROC_SM,IERR)
-!     CALL MPI_COMM_RANK(MYNEW_COMM_SM,MYNEW_ID_SM,IERR)
-!
-!     C-communicator MYNEW_COMM_SM_C ( 2nd "shared memory" communicator)
-!
-!     LKEY = LUCI_MYPROC
-!     IF( IC_SHL .eq. - 1 )THEN
-!       LCOLOR = IPROCLIST_SM( LUCI_MYPROC + 1 )
-!     ELSE IF( IC_SHL .eq. 0 )THEN
-!       LCOLOR = IPROCLIST_SM( LUCI_MYPROC + 1 )
-!     ELSE IF( IC_SHL .eq. 1 )THEN
-!       LCOLOR = 1
-!     END IF
-!
-!     CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,LCOLOR,LKEY,
-!    &                    MYNEW_COMM_SM_C,IERR)
-!
-!       collect useful information about each group,
-!       store on common block
-!
-!     NEWCOMM_PROC_SM_C = 0
-!     MYNEW_ID_SM_C     = 0
-!     CALL MPI_COMM_SIZE(MYNEW_COMM_SM_C,NEWCOMM_PROC_SM_C,IERR)
-!     CALL MPI_COMM_RANK(MYNEW_COMM_SM_C,MYNEW_ID_SM_C,IERR)
-!
-!     set node-master (might be MASTER of all CPU's)
-!     N_MASTER_SM_C = 0
-!
-!     inter-node communicator ICOMM
-!
-!     IF( MYNEW_ID .eq. 0 ) THEN
-!       JKEY = IPROCLIST(LUCI_MYPROC+1)
-!       JCOLOR = 2
-!     ELSE
-!       JKEY = IPROCLIST(LUCI_MYPROC+1)
-!       JCOLOR = 3
-!     END IF
-!
-!     CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,ICOMM,IERR)
-!
-!     collect again ...     
-!
-!     ICOMM_ID = 0
-!     ICOMM_SIZE = 0
-!     CALL MPI_COMM_RANK(ICOMM,ICOMM_ID,IERR)
-!     CALL MPI_COMM_SIZE(ICOMM,ICOMM_SIZE,IERR)
-!
-!     set-up and store group information 
-!
-!     CALL SET_GROUP_TABLE_REL(IGROUPLIST,IPROCLIST,ICOLOR)
-!
-!     store personal group number
-!
-!     MY_GROUPN = ICOLOR
-!     IF ( ITEST .ge. 10 )THEN
-!       WRITE(LUWRT,*) ' '
-!       WRITE(LUWRT,*) ' OUTPUT FROM GROUP_CONSTRUCTOR_REL'
-!       WRITE(LUWRT,*) ' '
-!       WRITE(LUWRT,*) ' size of MYNEW_COMM     :',NEWCOMM_PROC
-!       WRITE(LUWRT,*) ' size of MYNEW_COMM_SM  :',NEWCOMM_PROC_SM
-!       WRITE(LUWRT,*) ' size of MYNEW_COMM_SM_C:',NEWCOMM_PROC_SM_C
-!       WRITE(LUWRT,*) ' size of ICOMM          :',ICOMM_SIZE
-!     END IF
-!
-!     END
-!**********************************************************************
-!                                                                     *
-! LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-!           parallelization by Stefan Knecht                          *
-!                                                                     *
-!**********************************************************************
-!     SUBROUTINE SET_GROUP_TABLE_REL(IGROUPLIST,IPROCLIST,ICOLOR)
-!
-!     IMPLICIT REAL*8 (A-H,O-Z)
-!
-!include "infpar.h"
-!include "mpif.h"
-!     DIMENSION ISTAT(MPI_STATUS_SIZE)
-!include "parluci.h"
-!
-!     INPUT
-!     DIMENSION IPROCLIST(LUCI_NMPROC)
-!     OUTPUT
-!     DIMENSION IGROUPLIST(LUCI_NMPROC)
-!
-!     INUMB = 1
-!     DO IPROC = 1, LUCI_NMPROC
-!
-!       IF( IPROCLIST(IPROC) .eq. ICOLOR ) THEN
-!         put in the process tag ( master is 0 )
-!         IGROUPLIST(INUMB) = IPROC - 1
-!         INUMB = INUMB + 1
-!       END IF
-!
-!     END DO
-!
-!     IF( INUMB-1 .gt. NEWCOMM_PROC ) THEN
-!       WRITE(LUWRT,*) 'Error in SET_GROUP_TABLE_REL: more CPUs assigned
-!    & as included in this group!'
-!       WRITE(LUWRT,*) 'assigned CPUs, group size',INUMB-1,NEWCOMM_PROC
-!       CALL Abend2('Error detected in gp/gplupar.F: 
-!    &               SET_GROUP_TABLE_REL')
-!     END IF
-!
-!     END
+  subroutine set_communication_levels(group_list,                              &
+                                      process_list_glb,                        &
+                                      process_list_shared_mem_glb,             &
+                                      nr_of_process_glb,                       &
+                                      my_process_id_glb,                       &
+                                      communicator_glb,                        &
+                                      shared_memory_lvl_ijkl,                  &
+                                      shared_memory_lvl_cvec,                  &
+                                      my_intra_node_id,                        &
+                                      my_inter_node_id,                        &
+                                      my_shmem_ijkl_id,                        &
+                                      my_shmem_cvec_id,                        &
+                                      intra_node_master,                       &
+                                      shmem_master_ijkl,                       &
+                                      shmem_master_cvec,                       &
+                                      intra_node_size,                         &
+                                      inter_node_size,                         &
+                                      shmem_ijkl_size,                         &
+                                      shmem_cvec_size,                         &
+                                      intra_node_comm,                         &
+                                      inter_node_comm,                         &
+                                      shmem_ijkl_comm,                         &
+                                      shmem_cvec_comm,                         &
+                                      intra_node_group_id)                      
+!********************************************************************************
+!     purpose: setup communicators and process-id for the various               
+!              communication levels:
+!                a. intra-node
+!                b. inter-node
+!                c. shared-memory
+!*******************************************************************************
+     integer, intent(in )   :: nr_of_process_glb
+     integer, intent(in )   :: communicator_glb
+     integer, intent(in )   :: my_process_id_glb
+     integer, intent(in )   :: process_list_glb(nr_of_process_glb)
+     integer, intent(in )   :: process_list_shared_mem_glb(nr_of_process_glb)
+     integer, intent(in )   :: shared_memory_lvl_ijkl
+     integer, intent(in )   :: shared_memory_lvl_cvec
+     integer, intent(out)   :: group_list(nr_of_process_glb)
+     integer, intent(out)   :: my_intra_node_id
+     integer, intent(out)   :: my_inter_node_id
+     integer, intent(out)   :: my_shmem_ijkl_id
+     integer, intent(out)   :: my_shmem_cvec_id
+     integer, intent(out)   :: shmem_master_ijkl
+     integer, intent(out)   :: shmem_master_cvec
+     integer, intent(out)   :: intra_node_size
+     integer, intent(out)   :: inter_node_size
+     integer, intent(out)   :: shmem_ijkl_size
+     integer, intent(out)   :: shmem_cvec_size
+     integer, intent(out)   :: intra_node_comm
+     integer, intent(out)   :: inter_node_comm
+     integer, intent(out)   :: shmem_ijkl_comm
+     integer, intent(out)   :: shmem_cvec_comm
+     integer, intent(out)   :: intra_node_group_id
+     integer, intent(out)   :: intra_node_master
+!-------------------------------------------------------------------------------
+     integer                :: key
+     integer                :: color
+     integer                :: tmp_group_counter
+     integer                :: current_proc
+!-------------------------------------------------------------------------------
+
+!     a. intra-node communicator (primarly used as I/O communicator)
+ 
+      key   = my_process_id_glb
+      color = process_list_glb(my_process_id_glb+1)
+
+      call build_new_communicator_group(communicator_glb,        &
+                                        intra_node_comm,         &
+                                        intra_node_size,         &
+                                        my_intra_node_id,        &
+                                        color,                   &
+                                        key)
+
+!     setup required information about each intra-node group:
+!       - group id
+!       - group list
+      intra_node_group_id = color
+      tmp_group_counter   = 1
+      do current_proc = 1, nr_of_process_glb
+        if(process_list_glb(current_proc) == intra_node_group_id)then
+          group_list(tmp_group_counter) = current_proc      - 1
+          tmp_group_counter             = tmp_group_counter + 1
+        end if
+      end do
+
+!     b. inter-node communicator
+
+      key   = process_list_glb(my_process_id_glb+1)
+      color = 2
+      if(my_intra_node_id /= 0) color = 3
+ 
+      call build_new_communicator_group(communicator_glb,        &
+                                        inter_node_comm,         &
+                                        inter_node_size,         &
+                                        my_inter_node_id,        &
+                                        color,                   &
+                                        key)
+
+!     c. shared memory communicator
+
+!     c.1. ijkl communicator
+ 
+      key   = my_process_id_glb
+      color = process_list_shared_mem_glb(my_process_id_glb+1)
+      if(shared_memory_lvl_ijkl == 1) color = 1
+ 
+      call build_new_communicator_group(communicator_glb,        &
+                                        shmem_ijkl_comm,         &
+                                        shmem_ijkl_size,         &
+                                        my_shmem_ijkl_id,        &
+                                        color,                   &
+                                        key)
+
+!     c.2. cvec communicator
+ 
+      key   = my_process_id_glb
+      color = process_list_shared_mem_glb(my_process_id_glb+1)
+      if(shared_memory_lvl_cvec == 1) color = 1
+ 
+      call build_new_communicator_group(communicator_glb,        &
+                                        shmem_cvec_comm,         &
+                                        shmem_cvec_size,         &
+                                        my_shmem_cvec_id,        &
+                                        color,                   &
+                                        key)
+
+!     set new sub-group master (might be master of all CPU's)
+      intra_node_master = 0
+      shmem_master_ijkl = 0
+      shmem_master_cvec = 0
+
+  end subroutine set_communication_levels
+
+!*******************************************************************************
+
+  subroutine build_new_communicator_group(old_communicator,      &
+                                          new_communicator,      &
+                                          group_size,            &
+                                          my_id_group,           &
+                                          color,                 &
+                                          key)
+!*******************************************************************************
+!     purpose: split old communicator group into new sub-groups 
+!              using key and color. 
+!              the new communicator along with the process-ids in the new group 
+!              and the group size are returned.
+!*******************************************************************************
+     integer, intent(in )   :: old_communicator
+     integer, intent(in )   :: color
+     integer, intent(in )   :: key
+     integer, intent(out)   :: group_size
+     integer, intent(out)   :: my_id_group
+     integer, intent(out)   :: new_communicator
+!-------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+
+      call mpi_comm_split(old_communicator,color,key,new_communicator,ierr)
+ 
+!     collect required information about each group:
+!       - group size
+!       - process id in the group
+      call mpi_comm_size(new_communicator, group_size,ierr)
+      call mpi_comm_rank(new_communicator,my_id_group,ierr)
+
+  end subroutine build_new_communicator_group
+  
 #else 
 module dummy_comm_model
 #endif

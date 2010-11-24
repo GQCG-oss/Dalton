@@ -987,7 +987,7 @@ C
       DIMENSION WRK(LWRK)
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
-      INTEGER NAMELENGTH, MIN_ONE
+      INTEGER NAMELENGTH
       integer               :: kbase_lucita
       integer, allocatable  :: proclist(:)
       integer, allocatable  :: grouplist(:)
@@ -999,7 +999,6 @@ C     character line and machinename
       LUOUT      = IUNUT
       LUCIWT     = LUOUT
       LUWRT      = LUOUT
-      MIN_ONE    = - 1
       NAMELENGTH =   0
 
 !     for now we set it here - SK Nov 2010
@@ -1012,18 +1011,61 @@ C     character line and machinename
       write(luout,'(a/)') 
      & '   ------------------------------------------------'
 
-C     No floating point underflow
-      CALL XUFLOW
-C     Assign diskunits
-      CALL DISKUN
-C     Ratio beteeen real and integer word length
-      CALL ZIRAT
+      allocate(proclist(luci_nmproc))
+      allocate(grouplist(luci_nmproc))
+      allocate(grouplist_shared_mem(luci_nmproc))
+
+      proclist             = -1
+      grouplist            = -1
+      grouplist_shared_mem = -1
+
+#ifdef VAR_MPI
+
+!     setup the communication model.
+!     all important variables (input parameters to module) 
+!     are stored on common block /LUPARGROUP/
+
+      call setup_communication_model(nflgrps,
+     &                               iiomod,
+     &                               shared_m,
+     &                               it_shl,
+     &                               ic_shl,
+     &                               grouplist,
+     &                               proclist,
+     &                               grouplist_shared_mem,
+     &                               luci_myproc,
+     &                               luci_nmproc,
+     &                               mpi_comm_world,
+     &                               mynew_id,
+     &                               icomm_id,
+     &                               mynew_id_sm,
+     &                               mynew_id_sm_c,
+     &                               newcomm_proc,
+     &                               icomm_size,
+     &                               newcomm_proc_sm,
+     &                               newcomm_proc_sm_c,
+     &                               mynew_comm,
+     &                               icomm,
+     &                               mynew_comm_sm,
+     &                               mynew_comm_sm_c,
+     &                               my_groupn,
+     &                               n_master,
+     &                               n_master_sm,
+     &                               n_master_sm_c)
+
+      call quit('*** error: stefan forced me to stop after setup ***')
 C
-C     Static memory, initialization and allocation
+C      open the files for parallel file I/O
+C
+       CALL SETUNITS_PAR_OPEN(MY_GROUPN)
+#endif
+
+!     free currently unused shared-memory group list
+      deallocate(grouplist_shared_mem)
+C
+C     memory on common block WORK: initialization and allocation
 C
 C     Compute offset from WRK to WORK
-C
-      k_offset = 0
       CALL COMPOFF(WRK,WORK,K_OFFSET)
       KBASE_LUCITA = K_OFFSET
       ! HJAaJ Aug 2008:
@@ -1042,131 +1084,22 @@ C
      &   '(See code in lucita/program.F)'
          CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
       END IF
-C
+ 
+!     subtract dynamically allocated memory
       MXPWRD = LWRK
-      KADD = MXPWRD
-      CALL MEMMAN(K8BASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
-C
-C     LUCITA is used in SPINFREE calculations: no complex part
-C
-      IRC_SAVE = 1
-C
-C     usage of parallel file I/O in the davidson routine needs to be 
-C     checked and set properly
-C
-      CALL MEMMAN(KPROCLIST  ,LUCI_NMPROC,'ADDS  ',1,'IHOSTL')
-      CALL MEMMAN(KGROUPLIST ,LUCI_NMPROC,'ADDS  ',1,'IHOST2')
-      CALL MEMMAN(KGROUPLIST2,LUCI_NMPROC,'ADDS  ',1,'IHOST3')
-      CALL MEMMAN(KPROCLENGTH,LUCI_NMPROC,'ADDL  ',1,'INAMEL')
-C
-      CALL ISETVC(WORK(KPROCLIST),  MIN_ONE,LUCI_NMPROC)
-      CALL ISETVC(WORK(KGROUPLIST), MIN_ONE,LUCI_NMPROC)
-      CALL ISETVC(WORK(KGROUPLIST2),MIN_ONE,LUCI_NMPROC)
-      CALL ISETVC(WORK(KPROCLENGTH),MIN_ONE,LUCI_NMPROC)
-      allocate(proclist(luci_nmproc))
-      allocate(grouplist(luci_nmproc))
-      allocate(grouplist_shared_mem(luci_nmproc))
-      proclist             = -1
-      grouplist            = -1
-      grouplist_shared_mem = -1
+      KADD   = MXPWRD - 2 * luci_nmproc
 
-#ifdef VAR_MPI
-!     test new module
-      call setup_communication_model(nflgrps,
-     &                               iiomod,
-     &                               shared_m,
-     &                               it_shl,
-     &                               ic_shl,
-     &                               proclist,
-     &                               grouplist_shared_mem,
-     &                               luci_myproc,
-     &                               luci_nmproc,
-     &                               mpi_comm_world,
-     &                               joff)
-      call quit('*** error: stefan forced me to stop after setup ***')
-#endif
-      deallocate(grouplist_shared_mem)
-      deallocate(grouplist)
-      deallocate(proclist)
+C     ratio beteeen real and integer word length
+      CALL ZIRAT
+      CALL MEMMAN(K8BASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
+ 
+C     LUCITA is used in SPINFREE calculations: no complex part
+      irc_save = 1
+
+C     Assign diskunits
+      CALL DISKUN
 C
-#ifdef VAR_MPI
-C
-C     parallel I/O mode for parallel runs / executable
-C
-!      call setup_communication_model(NFLGRPS,
-!     &                               IIOMOD,
-!     &                               SHARED_M,
-!     &                               IT_SHL,
-!     &                               IC_SHL,
-!     &                                
-!)
-      IIOMOD = 1
-C     initialize number of process groups sharing a c-vector file
-      NFLGRPS     = 0
-C
-#ifdef SYS_LOCALDISKS
-      IF( IIOMOD .eq. 1 ) THEN
-C
-         CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
-C
-         CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
-     &                            WORK(KPROCLIST),WORK(KPROCLENGTH))
-C
-         IF( NFLGRPS .eq. 1 ) THEN 
-            CALL ISETVC(WORK(KPROCLIST),1,LUCI_NMPROC)
-         END IF
-      END IF
-#else
-C     in case of a parallel filesystem, we should use it
-      IF( IIOMOD .eq. 1 ) THEN
-        NFLGRPS = 1
-        CALL ISETVC(WORK(KPROCLIST),1,LUCI_NMPROC)
-      END IF
-#endif
-C
-C     compatibilty with LUCIAREL
-C
-      SHARED_M = .FALSE.
-      IT_SHL   = - 1
-      IC_SHL   = - 1
-      CALL ISETVC(WORK(KGROUPLIST2),1,LUCI_NMPROC)
-C
-C     set-up all useful MPI stuff: communication groups, MPI-files ...
-C                                   all important variables are stored
-C                                   on common block /LUPARGROUP/
-C
-C      construct new communication groups
-       CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
-     &                            WORK(KGROUPLIST2))
-C
-       NPTESTVAR = 00
-       IF( NPTESTVAR .ge. 20 ) THEN
-          WRITE(LUWRT,*) 'this is my old and new rank ',myproc, MYNEW_ID
-          WRITE(LUWRT,*) 'this is my "shared memory" rank ', MYNEW_ID_SM
-          WRITE(LUWRT,*) 'this is my file grouplist:'
-          CALL IWRTMAMN(WORK(KGROUPLIST),
-     &       1,LUCI_NMPROC,1,LUCI_NMPROC,LUWRT)
-          WRITE(LUWRT,*) 'this is my complete proclist:'
-          CALL IWRTMAMN(WORK(KPROCLIST),
-     &       1,LUCI_NMPROC,1,LUCI_NMPROC,LUWRT)
-          WRITE(LUWRT,*) 'this is my shared memory proclist:'
-          CALL IWRTMAMN(WORK(KGROUPLIST2),
-     &       1,LUCI_NMPROC,1,LUCI_NMPROC,LUWRT)
-       END IF
-       NPTESTVAR = 0
-C
-C      open the files for parallel file I/O
-C
-       CALL SETUNITS_PAR_OPEN(MY_GROUPN)
-CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK       CALL Abend2('Sorry, I stop')
-C
-#endif
-C
-C     Call input conversion program MOLUC (subroutine now)
-C
+C     input conversion
       call dalton_lucita_input_interface
 C
       WRITE(LUOUT,'(10X,A,I18)')
@@ -1205,57 +1138,12 @@ C     Internal subspaces
       CALL LCISPC(IPRCIX)
 C     Symmetry of reference
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
-      IF(NOINT.EQ.1) THEN
-        WRITE(LUOUT,*) ' End of calculation without integrals'
-        Call Abend2(' End of calculation without integrals')
-      END IF
 C
 C     Last space where CI vectors were stored
 C
-      ISTOSPC = 0
+      ISTOSPC     = 0
+      IRESTR_ORIG = IRESTR
       IF(IRESTR.EQ.1) ISTOSPC = 1
-      IRESTR_ORIG=IRESTR
-C
-C     ======================================================
-C      Restarted Lambda calculations need special attention
-C     ======================================================
-C
-C     Restart is realized in in SECOND calculation
-C     First calculation is used to establish H0
-C     we do therefore first copy vectors on LUC to LUSC39
-C     so we can restart from this file later
-C
-      IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0) THEN
-        CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
-        WRITE(LUOUT,*) ' Restart vectors from previous run'
-        WRITE(LUOUT,*) ' will be saved on LUSC39   '
-C
-        IF(ICISTR.EQ.1) THEN
-          LBLK = XISPSM(IREFSM,1)
-        ELSE
-          LBLK = -1
-        END IF
-C
-        IF(ICISTR.EQ.1) THEN
-          LBLOCK = XISPSM(IREFSM,1)
-        ELSE IF (ICISTR.EQ.2) THEN
-          LBLOCK = MXSB
-        ELSE IF (ICISTR.EQ.3) THEN
-          LBLOCK = MXSOOB
-        END IF
-        CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-C
-        CALL REWINO(LUC)
-        CALL REWINO(LUSC39)
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER)THEN
-          DO JROOT = 1, NROOT
-            CALL COPVCD(LUC,LUSC39,WORK(KVEC1),0,LBLK)
-          END DO
-        END IF
-        CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
-      END IF
-C     ^ End of special handling of restarted calc with lambda modified op.
-C
 C
 C     ==============================================================
 C     Loop over GAS spaces and perform calcalations : CI, PERT, ....
@@ -1266,25 +1154,16 @@ C
       DO JCMBSPC = 1, NCMBSPC
         ISKIPEI = 0
 *
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(15X,A)')
+        WRITE(LUOUT,'(15X,/A)')
      &  '********************************'
         WRITE(LUOUT,'(15X,A)')
      &  ' ******************************'
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(15X,A,I3)')
+        WRITE(LUOUT,'(15X,/A,I3)')
      &  '   Calculations in space ', JCMBSPC
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(15X,A)')
+        WRITE(LUOUT,'(15X,/A)')
      &  ' ******************************'
-        WRITE(LUOUT,'(15X,A)')
+        WRITE(LUOUT,'(15X,A/)')
      &  '********************************'
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,*)
 C       WRITE(LUOUT,'(A,I3)')
 C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
 C       Special treatment of lambda calc in first calc
@@ -1294,57 +1173,7 @@ C       Special treatment of lambda calc in first calc
         END IF
 C
         I_EXPAND = 1
-        IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN
-          WRITE(LUOUT,*) ' =================================='
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) '   Modified operator will be used'
-          WRITE(LUOUT,*) ' =================================='
-CMO       IF(JCMBSPC.EQ.2) THEN
-C           Obtain modified operator for lambda calculations
-CMO         WRITE(LUOUT,*) ' Operator will be modified '
-CMO         CALL GENH1(XLAMBDA)
-CMO         CALL SCLH2(XLAMBDA)
-CMO       END IF
-        END IF
 C
-        IF(JCMBSPC.EQ.2.AND.IRESTR_ORIG.EQ.1.AND.XLAMBDA.NE.1.0D0)  THEN
-C         Obtain restart vectors for Lambda calculations from LUSC39
-          WRITE(LUOUT,*) ' Restart vectors will be copied to LUC'
-          WRITE(LUOUT,*) ' CI will restart with vectors from prev. calc'
-          IF(ICISTR.EQ.1) THEN
-            LBLK = XISPSM(IREFSM,2)
-          ELSE
-            LBLK = -1
-          END IF
-          CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
-          IF(ICISTR.EQ.1) THEN
-            LBLOCK = XISPSM(IREFSM,2)
-          ELSE IF (ICISTR.EQ.2) THEN
-            LBLOCK = MXSB
-          ELSE IF (ICISTR.EQ.3) THEN
-            LBLOCK = MXSOOB
-          END IF
-          CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-C         Copy vectors from LUSC39 to LUC
-          CALL REWINO(LUC)
-          CALL REWINO(LUSC39)
-          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-            DO JROOT = 1, NROOT
-              CALL COPVCD(LUSC39,LUC,WORK(KVEC1),0,LBLK)
-            END DO
-          END IF
-          CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
-C         No expansion should follow
-          I_EXPAND = 0
-C          But normal restart
-          IRESTR = 1
-        END IF
-C       ^ End of section copying restart vectors from LUSC39
 C       Loop over Calculations in given space
         DO JSEQ = 1,  NSEQCI(JCMBSPC)
         CARD = CSEQCI(JSEQ,JCMBSPC)
@@ -1397,7 +1226,7 @@ C           do CI in space JCMBPSC
             MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
             CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT,
-     &                 WORK(KPROCLIST),WORK(KGROUPLIST))
+     &                 proclist,grouplist)
 C
 *. Modified one-electron operator in first it
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN
@@ -1413,27 +1242,6 @@ C
             END IF
 *. Last space where vectors were stored
             ISTOSPC = JCMBSPC
-*
-* =======================
-* Vector free Calculation
-* =======================
-*
-          ELSE IF (CARD(1:7).EQ. 'VECFREE'     ) THEN
-            write(6,*) ' Vector free calculation NOT implemented. '
-            call quit(' LUCITA says good-bye. ')
-            WRITE(6,'(A,I3)') ' Vector free calculation at level ',
-     &                          -ISEQCI(JSEQ,JCMBSPC)
-            LEVEL =  -ISEQCI(JSEQ,JCMBSPC)
-*. Should the first order correction be explicitly constructed ?
-            IF(IC1DSC.LE.0) THEN
-              LU1EFF = 0
-            ELSE
-              LU1EFF = LUHC
-            END IF
-            WRITE(LUOUT,*) ' LU1EFF in MAIN ', LU1EFF
-*
-C           CALL DIRDIR(JCMBSPC-1,JCMBSPC,IREFSM,LUC,LEVEL,EREF,
-C    &                  LUSC2,LUSC3,LU1EFF)
 *
 * ================================
 * General perturbation calculation
@@ -1470,7 +1278,6 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
         WRITE(LUOUT,*) ' Transition properties of final states '
         WRITE(LUOUT,*) ' and states on file LUEXC ( unit 17 ) '
         WRITE(LUOUT,*) ' Will be called now '
-        WRITE(LUOUT,*)
         CALL LTRAPRP
       END IF
 *
@@ -1506,13 +1313,14 @@ C
       CALL SETUNITS_PAR_CLOSE_2
       CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
 #endif
-C
-      WRITE(LUOUT,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
-     &  ' finished with no errors.'
-*
-      CALL FLSHFO(LUOUT)
 
-      CALL QEXIT('PAMLU')
+!     free memory
+      deallocate(grouplist)
+      deallocate(proclist)
+C
+      write(luout,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
+     &  ' finished with no errors.'
+      call qexit('PAMLU')
 *
       END
 ***********************************************************************
