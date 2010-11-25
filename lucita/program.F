@@ -39,13 +39,14 @@ C
 ***********************************************************************
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
-     &                 IGROUPLIST)
+     &                 IGROUPLIST,fh_array)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
 *
 * Jeppe Olsen, Winter of 1995
 *
+      use file_io_model
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLC2B, KLCIOIO,
      &          KLCBLTP, KLCI1BTSCR, KBSCLFC, KBLCKIF, KBLCKPD,
@@ -99,6 +100,7 @@ C
 *
       DIMENSION ISYMS(MXPIRR),IPROCLIST(LUCI_NMPROC)
       DIMENSION IGROUPLIST(LUCI_NMPROC)
+      integer fh_array(nr_files)
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
@@ -549,11 +551,6 @@ C     debug printing
         END DO
       ENDIF
       NPTEST_VAR = 00
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      WRITE(LUWRTOUT,*) ' Thats it',LUCI_MYPROC
-CSK      CALL Abend2( 'Stefan forced me to stop after diagonal' )
 #endif
 *
 *. Transfer control to optimization routine
@@ -596,7 +593,7 @@ C
      &   ' restart file LUCVECT.0 will be copied to'//
      &   ' MPI-readable format ...'
 C
-         IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,LBLK)
+         IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,-1)
 C
          CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
      &                         WORK(KILU1LIST),
@@ -646,15 +643,11 @@ C
       CALL REWINE(LUC,-1)
 C
 #ifdef VAR_MPI
-C
-C
-C     close parallel files that are not needed anymore...
-C
-      CALL SETUNITS_PAR_CLOSE_1
+
+!     close parallel files that are no longer needed
+      call close_file_io_model(nr_files-1,0,fh_array)
 C
       IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
-C
-      LBLK = -1
 C
 C     copy c-vectors from nodes and master back to the master
 C
@@ -666,11 +659,11 @@ C
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KBLCKPD),NUM_BLOCKS2,
      &                            WORK(KBLCKIF),
-     &                            MPI_COMM_WORLD,LBLK,JROOT,
+     &                            MPI_COMM_WORLD,-1,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
            CALL REWINE(LUSC41,-1)
-           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
+           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,-1)
         END IF
       END DO
       CALL REWINE(LUC,-1)
@@ -679,7 +672,7 @@ C
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
           DO IVEC = 1, NROOT
             WRITE(LUWRT,*) '  final new C vector',IVEC
-            CALL WRTVCD(WORK(KVEC1),LUC,0,LBLK)
+            CALL WRTVCD(WORK(KVEC1),LUC,0,-1)
           END DO
         END IF
       END IF
@@ -738,8 +731,8 @@ C
         ELSE
           IF(IDENSI.GE.1.OR.NROOT.GT.1) THEN
              CALL REWINO(LUSC1)
-             CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
-             CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
+             CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,-1)
+             CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,-1)
           END IF
           CALL DENSI2(IDENSI,WORK(KRHO1),WORK(KRHO2),
      &          WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC,EXPS2)
@@ -765,9 +758,9 @@ C
              WRITE(LUWRTOUT,*) ' ======================'
              WRITE(LUWRTOUT,*)
              IF(NROOT.EQ.1) THEN
-               CALL WRTVCD(WORK(KVEC1),LUC  ,1,LBLK)
+               CALL WRTVCD(WORK(KVEC1),LUC  ,1,-1)
              ELSE
-               CALL WRTVCD(WORK(KVEC1),LUSC1,1,LBLK)
+               CALL WRTVCD(WORK(KVEC1),LUSC1,1,-1)
              END IF
           END IF
 *         ^ End if print of CI vector
@@ -801,7 +794,7 @@ C
                CALL FRMDSC_LUCI(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
              ELSE
                CALL REWINO(LUSC1)
-               CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
+               CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,-1)
              END IF
            END DO
            IF(ICISTR.EQ.1) THEN
@@ -810,7 +803,7 @@ C
      &                   WORK(KVEC1),WORK(KVEC2),0,0,EXPS2)
            ELSE
              CALL REWINO(LUSC1)
-             CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
+             CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,-1)
              CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
      &                   WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
            END IF
@@ -954,6 +947,7 @@ C
 * Stefan Knecht, Feb. 06 
 *
       use communication_model
+      use file_io_model
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 k_offset, k8base_lucita, KPROCLIST, KGROUPLIST, 
      &          KGROUPLIST2, KPROCLENGTH, KVEC1
@@ -985,13 +979,15 @@ C
 ! LUCITA as MCSCF work-horse
 #include "mcscf_citask.h"
       DIMENSION WRK(LWRK)
-C     character line and machinename
-      CHARACTER*72 CARD,MACHINENAME
-      INTEGER NAMELENGTH
+C     character line
+      CHARACTER*72 CARD
       integer               :: kbase_lucita
+      integer               :: files_to_close
+      integer               :: fh_offset
       integer, allocatable  :: proclist(:)
       integer, allocatable  :: grouplist(:)
       integer, allocatable  :: grouplist_shared_mem(:)
+      integer, allocatable  :: fh_array(:)
 
       CALL QENTER('PAMLU')
 
@@ -999,7 +995,6 @@ C     character line and machinename
       LUOUT      = IUNUT
       LUCIWT     = LUOUT
       LUWRT      = LUOUT
-      NAMELENGTH =   0
 
 !     for now we set it here - SK Nov 2010
       citask_id = 'standard ci '
@@ -1018,6 +1013,9 @@ C     character line and machinename
       proclist             = -1
       grouplist            = -1
       grouplist_shared_mem = -1
+
+!     currently we work with 9 scratch files (nr_files in parluci.h)
+      nr_files = 9
 
 #ifdef VAR_MPI
 
@@ -1051,13 +1049,35 @@ C     character line and machinename
      &                               my_groupn,
      &                               n_master,
      &                               n_master_sm,
-     &                               n_master_sm_c)
+     &                               n_master_sm_c,
+     &                               luout)
+
+      allocate(fh_array(nr_files))
+      fh_array = 0
+      call  setup_file_io_model(mynew_comm,
+     &                          nr_files,
+     &                          fh_array,
+     &                          my_groupn,
+     &                          newcomm_proc,
+     &                          'parci',
+     &                          luout)
+
+!     transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
+!     ILU1 has to be the last in the row because it is supposed to be
+!     closed after we have copied the final solution vector back to
+!     sequential format. Before doing that we want to free disk space by
+!     deleting all other MPI-I/O files.
+      IDIA = fh_array(1)
+      ILUC = fh_array(2)
+      ILU7 = fh_array(3)
+      ILU6 = fh_array(4)
+      ILU5 = fh_array(5)
+      ILU4 = fh_array(6)
+      ILU3 = fh_array(7)
+      ILU2 = fh_array(8)
+      ILU1 = fh_array(9)
 
       call quit('*** error: stefan forced me to stop after setup ***')
-C
-C      open the files for parallel file I/O
-C
-       CALL SETUNITS_PAR_OPEN(MY_GROUPN)
 #endif
 
 !     free currently unused shared-memory group list
@@ -1087,7 +1107,7 @@ C     Compute offset from WRK to WORK
  
 !     subtract dynamically allocated memory
       MXPWRD = LWRK
-      KADD   = MXPWRD - 2 * luci_nmproc
+      KADD   = MXPWRD - 2 * luci_nmproc - nr_files
 
 C     ratio beteeen real and integer word length
       CALL ZIRAT
@@ -1096,7 +1116,7 @@ C     ratio beteeen real and integer word length
 C     LUCITA is used in SPINFREE calculations: no complex part
       irc_save = 1
 
-C     Assign diskunits
+C     assign serial I/O disk units
       CALL DISKUN
 C
 C     input conversion
@@ -1226,7 +1246,7 @@ C           do CI in space JCMBPSC
             MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
             CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT,
-     &                 proclist,grouplist)
+     &                 proclist,grouplist,fh_array)
 C
 *. Modified one-electron operator in first it
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN
@@ -1307,11 +1327,15 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
       close(unit=LU91,status='DELETE')
 C
 #ifdef VAR_MPI
-C
-C     close MPI-I/O files and free groups
-C
-      CALL SETUNITS_PAR_CLOSE_2
-      CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
+!     close all remaining open parallel files (for GASCI: 1 --> ILU1)
+      files_to_close = 1
+      fh_offset      = 8
+      call close_file_io_model(files_to_close,fh_offset,fh_array)
+      deallocate(fh_array)
+
+!     reset communication groups
+      call close_communication_model(mynew_comm,icomm,mynew_comm_sm,
+     &                               mynew_comm_sm_c)
 #endif
 
 !     free memory
@@ -1322,7 +1346,7 @@ C
      &  ' finished with no errors.'
       call qexit('PAMLU')
 *
-      END
+      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

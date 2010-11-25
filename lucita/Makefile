@@ -15,7 +15,7 @@ F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
 
 # F90_MODS should contain all files with F90 modules in proper order
 #          (i.e. if b.F90 calls a module in k.F90, then the proper order is k.F90 b.F90)
-F90_MODS = par_io.F90 par_communication_model.F90
+F90_MODS = par_io.F90 par_communication_model.F90 par_io_fh.F90
 
 F90_MOD_OBJS = $(F90_MODS:.F90=.o)
 

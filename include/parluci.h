@@ -53,12 +53,12 @@ C     MPI file lists and MPI file handles
 C
       INTEGER IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5,
      &        IALL_LU6, IALL_LU7, IALL_LUC, IIJKL_ROD, ILPRP_X,
-     &        IJKL_PRE
+     &        IJKL_PRE, nr_files
       COMMON/LUCIAPFILE/ IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,
      &                   ILUC,
      &                   IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,
      &                   IALL_LU5, IALL_LU6, IALL_LU7, IALL_LUC, 
-     &                   IIJKL_ROD, ILPRP_X, IJKL_PRE
+     &                   IIJKL_ROD, ILPRP_X, IJKL_PRE, nr_files
 #if defined (VAR_MPI)
       INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, FILE_INFO_OBJ
       INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,

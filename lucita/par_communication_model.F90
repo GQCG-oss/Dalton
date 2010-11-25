@@ -23,6 +23,7 @@ module communication_model
   implicit none
 
   public setup_communication_model
+  public close_communication_model
 
   private
 
@@ -59,7 +60,8 @@ contains
                                        intra_node_group_id,            &                
                                        intra_node_master,              &
                                        shmem_master_ijkl,              &
-                                       shmem_master_cvec)
+                                       shmem_master_cvec,              &
+                                       print_unit)
 !******************************************************************************
 !
 !    purpose:  initialize communication model for parallel CI/MCSCF runs:
@@ -80,6 +82,7 @@ contains
      integer, intent(in )   :: nr_of_process_glb
      integer, intent(in )   :: communicator_glb
      integer, intent(in )   :: my_process_id_glb
+     integer, intent(in )   :: print_unit
      integer, intent(out)   :: group_list(nr_of_process_glb)
      integer, intent(out)   :: process_list_glb(nr_of_process_glb)
      integer, intent(out)   :: process_list_shared_mem_glb(nr_of_process_glb)
@@ -122,7 +125,8 @@ contains
                            nr_file_groups,            &
                            my_process_id_glb,         &
                            nr_of_process_glb,         &
-                           communicator_glb)
+                           communicator_glb,          &
+                           print_unit)
 
 !     2. setup communicators and process-id for the various communication levels
 !        a. intra-node
@@ -160,13 +164,15 @@ contains
                              nr_file_groups,          &
                              my_process_id_glb,       &
                              nr_of_process_glb,       &
-                             communicator_glb)
+                             communicator_glb,        &
+                             print_unit)
 !*******************************************************************************
      integer, intent(out)   :: process_list_glb(nr_of_process_glb)
      integer, intent(out)   :: nr_file_groups  
      integer, intent(in )   :: nr_of_process_glb
      integer, intent(in )   :: my_process_id_glb
      integer, intent(in )   :: communicator_glb
+     integer, intent(in )   :: print_unit
 !-------------------------------------------------------------------------------
      integer                          :: process_name_length  
      integer                          :: local_counter_file_groups  
@@ -257,8 +263,9 @@ contains
  
 !     report the count of intra-groups formed by all processes
       if(my_process_id_glb == 0)then
-        write(2,'(/a,i4,1x,a)') '  *** final output from the group generator:', &
-        local_counter_file_groups,' intra-node groups are constructed. ***'
+        write(print_unit,'(/a,i4,1x,a)')                                    &
+        '  *** final output from the group generator:',                     &
+        local_counter_file_groups,' intra-node group(s) (is) are built. ***'
       end if
 
       nr_file_groups = local_counter_file_groups
@@ -443,6 +450,30 @@ contains
       call mpi_comm_rank(new_communicator,my_id_group,ierr)
 
   end subroutine build_new_communicator_group
+!*******************************************************************************
+
+  subroutine close_communication_model(intra_node_comm,          &
+                                       inter_node_comm,          &
+                                       shmem_ijkl_comm,          &
+                                       shmem_cvec_comm)
+!*******************************************************************************
+!
+!     purpose: reset sub-group communicators.
+!
+!*******************************************************************************
+     integer, intent(inout) :: intra_node_comm
+     integer, intent(inout) :: inter_node_comm
+     integer, intent(inout) :: shmem_ijkl_comm
+     integer, intent(inout) :: shmem_cvec_comm
+!-------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+
+      call mpi_comm_free(intra_node_comm,ierr)
+      call mpi_comm_free(inter_node_comm,ierr)
+      call mpi_comm_free(shmem_ijkl_comm,ierr)
+      call mpi_comm_free(shmem_cvec_comm,ierr)
+ 
+  end subroutine close_communication_model
   
 #else 
 module dummy_comm_model
