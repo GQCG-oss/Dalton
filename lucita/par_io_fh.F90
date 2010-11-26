@@ -24,6 +24,7 @@ module file_io_model
 
   public setup_file_io_model
   public close_file_io_model
+  public set_file_io_offset
 
   private
 
@@ -137,6 +138,175 @@ contains
       end do
      
   end subroutine close_file_io_model
+!*******************************************************************************
+
+  subroutine set_file_io_offset(nr_files,                        &
+                                file_offset_off,                 &
+                                file_offset_array,               &
+                                file_offset_fac,                 &
+                                gvec_offset_real,                &
+                                gvec_offset_cplx,                &
+                                gvec_ablock_real,                &
+                                gvec_ablock_cplx,                &
+                                gvec_tblock_gnrl,                &
+                                complex_algebra,                 &
+                                my_process_id,                   &
+                                nr_gvec_ttss_blocks,             &
+                                intra_node_size,                 &
+                                group_list,                      &
+                                par_dist_block_list,             &
+                                block_list)
+!*******************************************************************************
+!
+!    purpose: set absolute offset for each process in MPI-I/O files and 
+!             provide general offset parameters.
+!
+!*******************************************************************************
+     integer, intent(in )                       :: nr_files
+     integer, intent(in )                       :: file_offset_off
+     integer, intent(in )                       :: my_process_id
+     integer, intent(in )                       :: nr_gvec_ttss_blocks
+     integer, intent(in )                       :: intra_node_size
+     integer, intent(in )                       :: group_list(*)
+     integer, intent(in )                       :: par_dist_block_list(nr_gvec_ttss_blocks)
+     integer, intent(in )                       :: block_list(nr_gvec_ttss_blocks)
+     integer, intent(out)                       :: gvec_ablock_real
+     integer, intent(out)                       :: gvec_ablock_cplx
+     integer, intent(out)                       :: gvec_tblock_gnrl
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_real
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_cplx
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: file_offset_array(nr_files+file_offset_off)
+     integer(kind=MPI_OFFSET_KIND), intent(in)  :: file_offset_fac(nr_files+file_offset_off)
+     logical, intent(in )                       :: complex_algebra
+!-------------------------------------------------------------------------------
+     integer                                    :: i
+     integer                                    :: mult_fac_gvec_blocks
+     integer(kind=MPI_OFFSET_KIND)              :: mult_fac_gvec_offset
+     integer(kind=MPI_OFFSET_KIND)              :: save_vec_offset
+!-------------------------------------------------------------------------------
+
+      mult_fac_gvec_blocks = 1
+      mult_fac_gvec_offset = 1
+
+      if(complex_algebra)then
+        mult_fac_gvec_blocks = 2
+        mult_fac_gvec_offset = 2
+      end if
+
+      call calc_general_offset_param(gvec_offset_real,         &
+                                     gvec_offset_cplx,         &
+                                     gvec_ablock_real,         &
+                                     gvec_ablock_cplx,         &
+                                     gvec_tblock_gnrl,         &
+                                     save_vec_offset,          &
+                                     mult_fac_gvec_blocks,     &
+                                     mult_fac_gvec_offset,     &
+                                     my_process_id,            &
+                                     nr_gvec_ttss_blocks,      &
+                                     intra_node_size,          &
+                                     group_list,               &
+                                     par_dist_block_list,      &
+                                     block_list)
+      do i = 1, nr_files
+        file_offset_array(i+file_offset_off) =                 & 
+        save_vec_offset * mult_fac_gvec_offset * file_offset_fac(i+file_offset_off)
+      end do
+     
+  end subroutine set_file_io_offset
+!*******************************************************************************
+
+  subroutine calc_general_offset_param(gvec_offset_real,         &
+                                       gvec_offset_cplx,         &
+                                       gvec_ablock_real,         &
+                                       gvec_ablock_cplx,         &
+                                       gvec_tblock_gnrl,         &
+                                       save_vec_offset,          &
+                                       mult_fac_gvec_blocks,     &
+                                       mult_fac_gvec_offset,     &
+                                       my_process_id,            &
+                                       nr_gvec_ttss_blocks,      &
+                                       intra_node_size,          &
+                                       group_list,               &
+                                       par_dist_block_list,      &
+                                       block_list)
+!*******************************************************************************
+!
+!    purpose: provide general offset parameters for MPI-I/O files.
+!
+!*******************************************************************************
+     integer, intent(in )                       :: my_process_id
+     integer, intent(in )                       :: nr_gvec_ttss_blocks
+     integer, intent(in )                       :: intra_node_size
+     integer, intent(in )                       :: group_list(*)
+     integer, intent(in )                       :: par_dist_block_list(nr_gvec_ttss_blocks)
+     integer, intent(in )                       :: block_list(nr_gvec_ttss_blocks)
+     integer, intent(in )                       :: mult_fac_gvec_blocks
+     integer, intent(out)                       :: gvec_ablock_real
+     integer, intent(out)                       :: gvec_ablock_cplx
+     integer, intent(out)                       :: gvec_tblock_gnrl
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_real
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_cplx
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: save_vec_offset
+     integer(kind=MPI_OFFSET_KIND), intent(in ) :: mult_fac_gvec_offset
+!-------------------------------------------------------------------------------
+     integer                       :: current_proc
+     integer                       :: process_id
+     integer                       :: current_block
+     integer                       :: tmp_active_blocks
+     integer(kind=MPI_OFFSET_KIND) :: tmp_gvec_offset
+     integer(kind=MPI_OFFSET_KIND) :: tmp_gvec_offset_2
+!-------------------------------------------------------------------------------
+
+      gvec_ablock_real     = 0
+      gvec_ablock_cplx     = 0
+      gvec_tblock_gnrl     = 0
+      gvec_offset_real     = 0
+      gvec_offset_cplx     = 0
+
+!     total number of ttss-blocks
+      gvec_tblock_gnrl = nr_gvec_ttss_blocks
+
+!     calculate general offset parameters for each process in a given group:
+!       a. total number of active ttss-blocks (real and complex)
+!       b. vector offset                      (real and complex)
+
+      tmp_active_blocks = 0
+      tmp_gvec_offset   = 0
+      tmp_gvec_offset_2 = 0
+
+      do current_proc = 1, intra_node_size
+ 
+        process_id = group_list(current_proc)
+
+        do current_block = 1, nr_gvec_ttss_blocks
+
+          if(par_dist_block_list(current_block) == process_id)then
+            tmp_gvec_offset = tmp_gvec_offset + block_list(current_block)
+            if(my_process_id == process_id)then
+              gvec_offset_real  = gvec_offset_real + block_list(current_block)
+              gvec_offset_cplx  = gvec_offset_cplx + block_list(current_block)
+              tmp_active_blocks = tmp_active_blocks + 1
+            end if
+          end if
+
+        end do !nr_gvec_ttss_blocks
+
+        if(my_process_id == process_id)then
+         
+          gvec_ablock_real = tmp_active_blocks
+          gvec_ablock_cplx = mult_fac_gvec_blocks * tmp_active_blocks
+          gvec_offset_cplx = mult_fac_gvec_offset * gvec_offset_cplx
+
+          save_vec_offset  = tmp_gvec_offset_2
+          
+        end if
+
+!       keep track of vector and block offsets
+        tmp_active_blocks = 0
+        tmp_gvec_offset_2 = tmp_gvec_offset
+      end do ! intra_node_size
+     
+  end subroutine calc_general_offset_param
 !*******************************************************************************
   
   subroutine int2char_converter(int_number,string_rep)
