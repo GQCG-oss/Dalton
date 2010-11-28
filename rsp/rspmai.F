@@ -251,14 +251,14 @@ C           hjaaj Nov 2001
          END IF
          FLAGSV = DORSP
          DORSP = .TRUE.
-         CALL SIROPI
+         CALL SIR_INTOPEN
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
          CALL FLSHFO(LUPRI)
       ELSE IF (SOPPA) THEN
          FLAGSV = DORSP
          DORSP = .TRUE.
-         CALL SIROPI
+         CALL SIR_INTOPEN
          DORSP = FLAGSV
       END IF
 C
