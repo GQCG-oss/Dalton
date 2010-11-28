@@ -529,8 +529,8 @@ C
      &   'ERROR No basis functions found for element',INTQ,' in basis:',
      &   BASNAM
          IF (ANO) WRITE(LUPRI,'(/A/A)')
-     &   'ERROR  NB! For ano basis sets, user must specify number of',
-     &   'ERROR  NB! AOs in each shell (example: "basis=ano-1 3 2 1")'
+     &   'ERROR NB! For ano basis sets, user must specify number of',
+     &   'ERROR     AOs in each shell (example: "basis=ano-1 3 2 1")'
          CALL QUIT('No basis functions found for this element')
       END IF
 C
@@ -689,6 +689,24 @@ C
                   READ (STRING, '(F16.9, 6F12.9)',IOSTAT=IOS)
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
+                  IF (IOS.NE.0) THEN
+                    WRITE(LUPRI,*) 'KNTORB=',KNTORB
+                    WRITE(LUPRI,'(A,A)') 'STRING=',STRING
+                    WRITE(LUPRI,*) 'I,J,NBLOCK:',I,J,NBLOCK
+                    WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
+                    WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
+     &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
+                    CALL QUIT('Error in reading basis set...')
+                  ENDIF
+
+                  IF (IPRINT.GE.6) THEN
+                    write(lupri,*)
+     &              'READNU read 2 - J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              J,NBLOCK,ALPHA(J,NBLOCK)
+                    write(lupri,*)
+     &              'READNU read 2 - CPRIMU:',
+     &              (CPRIMU(J,I,NBLOCK),I=1,KNTORB)
+                  ENDIF
 C   
 C     If there are more lines with contraction coefficients, 
 C     they will be read here.
@@ -716,6 +734,15 @@ C
                            READ (STRING,'(F16.9,6F12.9)',IOSTAT=IOS) 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
+                           IF (IOS.NE.0) THEN
+                             CALL QUIT('Error in reading sjjd393jdj')
+                           ENDIF
+                           IF (IPRINT.GE.6) THEN
+                             WRITE(LUPRI,*) 
+     &                       J,NLBLOCK,' CPRIMU(J,M,NBLOCK):'
+                             WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
+     &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
+                           ENDIF
                         END IF
 C
 C     Blank line read the next one
@@ -739,7 +766,7 @@ C Found a line with nothing sensible in it
 C
             GOTO 20
          END IF
-      ELSE
+      ELSE   ! IF ( J .LT. INTEXP) THEN
 C
 C        For uncontracted basis sets, update INTORB.
 C
@@ -1242,7 +1269,7 @@ C
             END IF
          ELSE 
             GOTO 20
-         END IF 
+         END IF
 C
 C Error messages 
 C

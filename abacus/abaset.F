@@ -47,7 +47,7 @@ C
 !=============================================================================
 !891108-hjaaj: do not open LUONEL (done in RDONEL)
 !900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
-!900216-hjaaj: call siropi to open luintm, revised check if luintm ok.
+!900216-hjaaj: call sir_intopen to open luintm, revised check if luintm ok.
 !900221-hjaaj: removed *CALL CBESPN from NSETUP -- was not used.
 !900229-hjaaj: NSETUP: +,NUMRUN in CALL PRTINP(IWUNIT,NUMRUN)
 !900402-tuh:   H2MO defined according to info from LUSIFC
@@ -528,8 +528,8 @@ C
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
-         CALL SIROPI
-C        ... SIROPI returns FLAG(14) false if no mo integral file
+         CALL SIR_INTOPEN
+C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
@@ -537,7 +537,7 @@ C        ... SOPPA requires full integral transformation
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
-         CALL SIROPI
+         CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
 C        not exist, but open to define name 'MOTWOINT' instead
@@ -547,7 +547,7 @@ C        does exist. /980529-hjaaj
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .TRUE.
-         CALL SIROPI
+         CALL SIR_INTOPEN
       END IF
 C
 C
@@ -597,7 +597,7 @@ C
       IF (NUMERR .GT. 0) THEN
          WRITE (LUPRI,'(///A/)')
      *      ' NSETUP - FATAL ERRORS DETECTED, SEE :'
-         CALL PRTINP(LUPRI,0,0)
+         CALL SIR_PRTINP(LUPRI,0,0)
          WRITE (LUPRI,'(///A/)')
      *      ' NSETUP - FATAL ERRORS DETECTED, SEE ABOVE'
          CALL QUIT('*** ERROR *** input inconsistent (NSETUP)')

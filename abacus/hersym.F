@@ -34,9 +34,8 @@ C
 C FILE    : hersym.F
 #include <single.h>
 C
-#ifdef OLD_LOG 
+#ifdef OLD_LOG
 ===========================================================================
-951116-hjaaj: subroutine sort renamed to SRTATM (sort is very generic)
 950522-kenneth
 Added solvent in FNDSYM, as well as using NUCIND instead ATMARR in loops
 950208-vebjorn

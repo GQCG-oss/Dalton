@@ -33,15 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
+#ifdef OLD_LOG
 c===========================================================================
 c/* Comdeck notes */
-c951129-hjaaj: force NEWTRA true if .INTSORT (later changed to .SORT Integrals)
 c950602-vebjorn:
 c  Added flag HRINPC to ensure that HERMIT input processing is done only once.
-c950505-hjaaj: let .NOTWO and .NOHAM imply .NOSUP
-c new option .SUPONLy for just SUPMAT .and. .NOT.HAMILT
-c    (for generating AOSUPINT file from existing AOTWOINT)
 c===========================================================================
 #endif
 C  /* Deck herctl */
@@ -1014,7 +1010,7 @@ C           SLATER = .TRUE.
   205    CONTINUE
 C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002).
             CALL QUIT('ERROR, .AUXBAS has been renamed to .R12AUX'//
-     &        ' and moved to *READIN')
+     &        ' and moved to *MOLBAS')
             GOTO 100
   206    CONTINUE
 C           No calculation of 1/r12 integrals (WK/UniKA/04-11-2002).
@@ -1193,7 +1189,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GO TO 100
 !        .NEWTRA ("new transformation" from 1988 (!)
-!        this option without calling SORTAO
+!        this option is without calling SORTAO
   237    CONTINUE
             NEWTRA = .TRUE.
             GO TO 100
@@ -1205,7 +1201,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+         WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
@@ -1579,9 +1575,11 @@ C
       CALL ER2INI
   301 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-         GO TO 300
+         READ (LUCMD, '(A7)') WORD
+         GO TO 301
       ELSE IF (PROMPT .EQ. '*') THEN
          IF (WORD(1:2) .EQ. '**') GO TO 399
+         CALL UPCASE(WORD)
          DO I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO (399,302,303,304,305,306,307,308,309), I
@@ -1592,12 +1590,13 @@ C
          CALL QUIT('Illegal input directive in HERINP.')
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,
-     *      '" illegal or out of order.'
+     &      '" illegal or out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
 C 302   CALL REAINP(WORD,RELCAL,TSTINP)
-  302   CALL QUIT('ERROR, *READIN has been moved to **DALTON section')
+  302   CALL QUIT('ERROR, *READIN has been moved to **DALTON section'//
+     &     ' as *MOLBAS')
       GO TO 301
   303   CALL HR1INP(WORD)
       GO TO 301
@@ -3741,7 +3740,7 @@ C/* Deck herini */
 #include <maxorb.h>
 #include <nuclei.h>
 #include <gnrinf.h>
-#include <inftra.h>
+#include "inftra.h"
 #include "cbirea.h"
 #include <cbisol.h>
 #include <cbiher.h>      
@@ -3754,7 +3753,7 @@ C/* Deck herini */
 C
 C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
 C
-      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA .AND. .NOT.DIRCAL) THEN
+      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
          NEWTRA = .TRUE.
          WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
      &     /'integral transformation (from 1988 ;-) )',
@@ -3764,13 +3763,13 @@ C
 C
 C     Initialize /CBIHER/
 C
+      USE_INTSORT = .FALSE. ! in inftra.h
       IF(RELCAL) THEN
         HAMILT = .FALSE.
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
         DIRAC_HER = .TRUE.
         SUPMAT = .FALSE.
-        USE_INTSORT = .FALSE.
       ELSE
         HAMILT = .TRUE.
         ONEPRP = .FALSE.

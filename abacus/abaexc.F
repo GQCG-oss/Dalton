@@ -75,10 +75,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in EXCINP.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in EXCINP.')
+               CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE
                   SKIP = .TRUE.
                   ICHANG = ICHANG + 1
@@ -164,6 +164,14 @@ C     NSYM is set to 8 since NSYM has not yet been set !!
 C     NTOT = ISUM(NSYM,NEXCIT,1)
       NTOT = ISUM(8,NEXCIT,1)
 C
+      IF (NTOT.EQ.0) THEN
+C        NSYM is set to 8 since NSYM has not yet been set !!
+C        DO I = 1, NSYM
+         DO I = 1, 8
+            NEXCIT(I) = 1
+         END DO
+      END IF
+C
 CSPAS : let's try whether we cannot calculate all excitation energies
 C
 C     maximum number of excitation energies
@@ -175,48 +183,31 @@ C     NSYM is set to 8 since NSYM has not yet been set !!
       END DO
 CKeinSPASmehr
 C
+      CALL HEADER('Changes of defaults for .EXCITA:',0)
+      WRITE (LUPRI,'(A,8I5)')
+     &   ' Number of excitation energies:',(NEXCIT(I),I=1,8)
+      IF (EXCTRP) WRITE (LUPRI,'(A)') ' Triplet excitation energies'
+C
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for EXCITA:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' EXCITA skipped in this run.'
          ELSE
-            IF (NTOT .GT. 0) THEN
-C               NSYM is set to 8 since NSYM has not yet been set !!
-               WRITE (LUPRI,'(A,8I5)')
-     &            ' Number of excitation energies:',(NEXCIT(I),I=1,8)
-            END IF
             WRITE (LUPRI,'(A,I5)')
-     &         ' Print level in EXCITA        :',IPREXC
+     &         ' Print level          :',IPREXC
             WRITE (LUPRI,'(A,I5)')
-     &         ' Integral print level in EXCITA        :',IPR1IN
+     &         ' Integral print level :',IPR1IN
             WRITE (LUPRI,'(A,1P,E9.2)')
-     &           ' Threshold in EXCITA          :',THREXC
-            WRITE(LUPRI,'(A,I5)')' Maximum iterations in EXCITA :',
-     &                           MAXITE
-            IF (CUT) THEN
-               WRITE (LUPRI,'(/,A)') ' Program is stopped after EXCITA.'
-            END IF
-            IF (ROTVEL) THEN
-               WRITE (LUPRI,'(A)') ' Conventional rotational strength'
-            END IF
-            IF (DIPSTR) THEN
-               WRITE (LUPRI,'(A)') ' Dipole strength'
-            END IF
-            IF (EXCTRP) THEN
-               WRITE (LUPRI,'(A)') ' Triplet excitation energies'
-            END IF
-            IF (FNAC) THEN
-               WRITE (LUPRI,'(A)') ' First order nonadiabatic '//
-     &                             'coupling elements'
-            END IF
+     &         ' Threshold            :',THREXC
+            WRITE(LUPRI,'(A,I5)')
+     &         ' Maximum iterations   :',MAXITE
+            IF (ROTVEL)
+     &         WRITE (LUPRI,'(A)') ' Conventional rotational strength'
+            IF (DIPSTR) WRITE (LUPRI,'(A)') ' Dipole strength'
+            IF (FNAC) WRITE (LUPRI,'(A)')
+     &         ' First order nonadiabatic coupling elements'
+            IF (CUT) WRITE (LUPRI,'(//A)')
+     &         ' Program is stopped after EXCITA.'
          END IF
-      END IF
-      IF (NTOT.EQ.0) THEN
-C         NSYM is set to 8 since NSYM has not yet been set !!
-C         DO 400 I = 1, NSYM
-         DO 400 I = 1, 8
-            NEXCIT(I) = 1
-  400    CONTINUE
       END IF
       RETURN
       END
