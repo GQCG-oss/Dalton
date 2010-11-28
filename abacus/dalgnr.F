@@ -1279,7 +1279,7 @@ C Table(01:32) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.XXXXXX', '.XXXXXX',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-32: '.THRRED', '.DOUGLA'
@@ -1363,12 +1363,15 @@ C        ".WALK  "
             RNSIRI = .TRUE.
          GO TO 100
  116     CONTINUE
+            WRITE(LUPRI,'(//A/)') 'INFO: .PRESORT obsolete, use .NEWTRA'
             NEWTRA = .TRUE.
          GO TO 100
  117     CONTINUE
             WESTA = .TRUE.
          GO TO 100
  118     CONTINUE
+            NEWTRA = .TRUE.
+         GO TO 100
  119     CONTINUE
  120     CONTINUE
  121     CONTINUE
