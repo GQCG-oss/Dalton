@@ -85,7 +85,7 @@ C
       DIMENSION WRK(LFREE)
 C
 #include <thrldp.h>
-      PARAMETER (MAXBCK = 15)
+      PARAMETER (MAXBCK = 5)
       PARAMETER (FAKABS = 0.40D0, STPABS = 0.20D0)
       PARAMETER (STPLCL = 0.15D0, SHFLCL = 1.D-3)
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.0D0)
@@ -2025,7 +2025,7 @@ C
       DIMENSION CMO(*), IBNDX(*), INDXCI(*), WRK(LFREE)
       PARAMETER ( DP1 = 0.1D0, DP5 = 0.5D0,
      *            D0  = 0.0D0, D1  = 1.0D0, D2  = 2.0D0 )
-      PARAMETER ( THDE = 1.D-5 )
+      PARAMETER ( THDE = 1.D-10 )
 #include <dummy.h>
 C
 C Used from common blocks:
@@ -2077,7 +2077,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.THDE ) THEN
+      IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
