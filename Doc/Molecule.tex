@@ -195,7 +195,7 @@ routines. These routines will detect any symmetry of a molecule
 by explicit testing for the occurrence of rotation axes, mirror planes
 and center of inversion. The occurrence of a symmetry element is
 tested in the program against a threshold which may be adjusted by the
-keyword \Key{SYMTHR} in the \Sec{READIN} input section. By default,
+keyword \Key{SYMTHR} in the \Sec{MOLBAS} input section. By default,
 the program will require
 geometries that are correct to the sixth decimal place in order to
 detect all symmetry elements.
@@ -331,7 +331,7 @@ integral\index{performance of integral program} calculation.
   is the ordinary orbital basis or the auxiliary basis set needed for
   instance in certain r12 calculations, see
   Sec.~\ref{sec:r12aux}. The keyword is only active when the keyword
-  \Key{R12AUX} has been specified in the \Sec{READIN} input section.
+  \Key{R12AUX} has been specified in the \Sec{MOLBAS} input section.
 \end{description}
 \item[6] \verb|NAME X Y Z Isotope=18|
 \begin{description}
@@ -706,7 +706,7 @@ Examples are provided by the following input files:
 12:H      1.427450200000000    .000000000000000   0.986437000000000       *
 \end{verbatim}
 Note that the keyword \Key{R12AUX} must be specified in the 
-\Sec{READIN} input section to be able to read the above inputs.
+\Sec{MOLBAS} input section to be able to read the above inputs.
 
 \section{The basis sets supplied with \dalton }
 \label{sec:basislist}
