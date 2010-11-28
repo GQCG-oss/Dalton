@@ -1707,8 +1707,9 @@ C
       GO TO 9000
 C
 C *** ICSTRT = 4, 5, 6, or 7 ***
+C     (See what codes means at beginning of this subroutine)
 C
-C === start guess should already be on LUIT1
+C === start guess should already be on LUIT1 (SIRIUS.RST)
 C     (but we test to be sure!)
 C
   400 CONTINUE
@@ -1716,6 +1717,8 @@ C
          IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
             READ (LUIT1,END=490,ERR=490)
          IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
+         IF ( ICI0.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.
+C        ... if user has specified .RESTART, then respect shift to NR
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.

@@ -147,7 +147,7 @@ C
 C ***** ORTHONORMALIZE ORBITALS, UNLESS RESTART
 C       feb. 2003 hjaaj: now always orthonormalize orbitals,
 C       becuase the user may have used .RESTART with 
-C       SIRIUS.RESTART from another geometry ...
+C       SIRIUS.RST from another geometry ...
 C
 Chj   IF (IREST.EQ.0 .OR. IORTO.EQ.1) THEN
          KW1=1
@@ -202,14 +202,15 @@ C  none
 C
 C Output:
 C  CMO, starting molecular orbitals
-C  IREST, = 1 if restart
-C  IREST, > 1 if start from old SIRIUS.RST or SIRIFC,
+C  IREST = 0 not a restart
+C        = 1 if old, standard restart for SIRIUS.RST
+C        > 1 if start from old SIRIUS.RST or SIRIFC,
 C             e.g. from another geometry
 C
 C Called from SIRINP
 C
 C Subroutine calls: MOLLAB (FIND RECORD ON DATA FILES)
-C                   PRTINP (PRINT INPUT)
+C                   SIR_PRTINP (PRINT INPUT)
 C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
@@ -777,7 +778,7 @@ C            now also defined in DIIS module.
           END IF
         END IF
         IF (.NOT.FLAG(21)) THEN
-C       ... if not QCSCF zero iteration limit (for consistent output in PRTINP)
+C       ... if not QCSCF zero iteration limit (for consistent output in SIR_PRTINP)
           MXHFMA = 0
           MXHFMI = 0
         END IF
@@ -1177,7 +1178,7 @@ C            IF (XPOTNC .NE. POTNUC) INPERR = INPERR + 1
 C            IF (XPOTNC .NE. POTNUC .AND. IREST .NE. 0) IREST = -1
 C              ... we cannot use this test because we
 C                  may have a new geometry (geometry optimization)
-C                  However, code info for PRTINP in IREST if restarted
+C                  However, code info for SIR_PRTINP in IREST if restarted
 C                  calculation /hjaaj feb. 2003
             ELSE
                INPERR = INPERR + 1
@@ -1444,7 +1445,7 @@ C
      &      ' Input error for DFT, HF, MP2, or CC calculation:',
      &      ' Initial SCF occupation has not been defined.'
          INIOCC = 0
-C        ... set INIOCC = 0 for PRTINP
+C        ... set INIOCC = 0 for SIR_PRTINP
       END IF
 C
 C CCSD only for closed shell RHF
@@ -1601,18 +1602,18 @@ C ***  PRINT INPUT DATA *****
 C
       IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2) INPPRC = .FALSE.
 C     ... force output if print level increased by user
-      CALL PRTINP(LUPRI,NUMRUN,IRDMO)
+      CALL SIR_PRTINP(LUPRI,NUMRUN,IRDMO)
       IF (IREST.NE.0) WRITE (LUPRI,3050)
       IF (IREST.EQ.-1) WRITE (LUPRI,3052)
       CALL FLSHFO(LUPRI)
       IF (LUW4 .NE. LUPRI .AND. P4FLAG(1)) THEN
-         CALL PRTINP(LUW4,NUMRUN,IRDMO)
+         CALL SIR_PRTINP(LUW4,NUMRUN,IRDMO)
          IF (IREST.NE.0) WRITE (LUW4,3050)
          IF (IREST.EQ.-1) WRITE (LUW4,3052)
          CALL FLSHFO(LUW4)
       END IF
       IF (LUCME .GT. 0) THEN
-         CALL PRTINP(LUCME,NUMRUN,IRDMO)
+         CALL SIR_PRTINP(LUCME,NUMRUN,IRDMO)
          IF (IREST.NE.0) WRITE (LUCME,3050)
          IF (IREST.EQ.-1) WRITE (LUCME,3052)
          CALL FLSHFO(LUCME)
@@ -1782,7 +1783,7 @@ C
 C *** Open other files
 C
 C
-      CALL SIROPN
+      CALL SIR_OPEN
 C
 C      
       NEWSYM = .FALSE.
@@ -1823,7 +1824,7 @@ C Input:
 C  none
 C
 C Output:
-C  IREST, =1 if restart
+C  IREST .ne. 0 if restart
 C
 C Called from SIRRDI
 C
@@ -2218,7 +2219,7 @@ C *** Option 4 >CC< We want to do a subsequent Coupled Cluster calculation
          FLAG(21) = .TRUE.
       GO TO 100
 C
-C *** Option 5 >RESTAR< restart SIRIUS, SIRIUS.RESTART (LUIT1) must be available
+C *** Option 5 >RESTAR< restart SIRIUS, SIRIUS.RST (LUIT1) must be available
   105 CONTINUE
         IREST = 1
       GO TO 100
@@ -4902,8 +4903,8 @@ C
    17 RETURN
 C
       END
-C  /* Deck prtinp */
-      SUBROUTINE PRTINP(IWUNIT,NUMRUN,IRDMO)
+C  /* Deck SIR_prtinp */
+      SUBROUTINE SIR_PRTINP(IWUNIT,NUMRUN,IRDMO)
 C
 C Last revisions
 C   12-Oct-1984 / 2-Jul-1984 / 4-May-1984 hjaaj
@@ -4979,6 +4980,7 @@ C
 C
 C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
+      CALL QENTER('SIR_PRTINP')
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
  200  FORMAT(3(/1X,A))
 
@@ -5100,7 +5102,7 @@ C     formulation of NEVPT.
          ELSE
 C          hjaaj Aug 2005 - program validity check, should not be possible
 C          to get here unless someone modifies SIRIUS incorrectly
-           CALL QUIT('ERROR in PRTINP - MCTYPE invalid for DOMC/DOCI')
+           CALL QUIT('ERROR - MCTYPE invalid for DOMC/DOCI')
          END IF
          IF (FLAG(23)) THEN
             WRITE(IWUNIT,1051)
@@ -5532,8 +5534,9 @@ C
 C
  8000 CONTINUE
 C
-C *** End of subroutine PRTINP
+C *** End of subroutine SIR_PRTINP
 C
+      CALL QEXIT('SIR_PRTINP')
       RETURN
       END
 C  /* Deck nevpt2inp */

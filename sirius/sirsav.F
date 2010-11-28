@@ -18,7 +18,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -38,15 +38,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:34  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.2  2000/05/01 14:04:06  hjj
-removed obsolete KAVER code.
-===========================================================================
-#endif
+C  Principal author of this file: Hans Jørgen Aa. Jensen
+C
 C  /* Deck sirsav */
       SUBROUTINE SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,
      *                   WRK,LFREE)
@@ -671,7 +664,7 @@ C        if (int.transf. needed in optimization) then new transf. needed
 C
 C *** End of subroutine SIRSAV
 C     Empty buffers to LUIT1 by rewinding
-C     (so we don't loose the restart information if for instance
+C     (so we do not loose the restart information if for instance
 C      the system crashes)
 C
  9000 CONTINUE

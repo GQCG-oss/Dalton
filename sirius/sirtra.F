@@ -42,18 +42,18 @@ C
 !951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
 !   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
 !950830-hjaaj: LRECL in *4 words for direct access under IRIX
-!941115-hjaaj: SIROPI: included FLAG(34) in def. of OLDTRA
-!940927-hjaaj: SIROPI: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
+!941115-hjaaj: SIR_INTOPEN: included FLAG(34) in def. of OLDTRA
+!940927-hjaaj: SIR_INTOPEN: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
 !940909-hjaaj: added PARAGON define label (same code as AIX)
 !940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
 !   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
 !   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
 !MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-!MAERKE 900111: reconsider in SIROPI (allow flag(14) also when flag(34?)
+!MAERKE 900111: reconsider in SIR_INTOPEN (allow flag(14) also when flag(34?)
 !-------- Revision n05 ends here ---------
 !940517-hjaaj
 !SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
-!SIROPI: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
+!SIR_INTOPEN: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
 !        true, irrespective of FLAG(34); fixed ICASE print error on Cray
 !        by extending IF (OPINTM) THEN to after ICASE print
 !TRAAB : removed unused DUMMY parameter statement
@@ -93,7 +93,7 @@ C
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
 !   if the needed mo integrals already available.
-! SIROPI: revised ITRLVL check against LUINTM for levels 2 and 3;
+! SIR_INTOPEN: revised ITRLVL check against LUINTM for levels 2 and 3;
 !   rationalized file openings for different computer types;
 !   write warning if flag(14) and integrals not found.
 !900307-hjaaj
@@ -112,7 +112,7 @@ C
 ! NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
 ! of that type needed, but not all (in that case needtp(ityp) .gt. 0)
 !900111-hjaaj
-! SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
+! SIR_INTOPEN: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
 !   MP2] to cases when LUINTM is opened.
 !900108-hjaaj
 ! NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
@@ -148,8 +148,8 @@ C
      *   T5,'Hans Joergen Aa. Jensen, University of Aarhus,  Denmark')
       RETURN
       END
-C  /* Deck siropi */
-      SUBROUTINE SIROPI
+C  /* Deck sir_intopen */
+      SUBROUTINE SIR_INTOPEN
 C
 C  3-Nov-1989 Hans Joergen Aa. Jensen
 C
@@ -180,7 +180,7 @@ C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
       IF (NEWTRA) THEN
-         CALL N_SIROPI
+         CALL SIR_INTOPEN_NEWTRA
          RETURN
       END IF
 C
@@ -243,19 +243,19 @@ C           no old luintm opened, then old integrals not available
          IF (OLDTRA .AND. ICASE .GT. 0) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(/A,I2,3(/A))')
-     *         ' WARNING SIROPI, old integral transformation not found'
-     *       //' as expected, ICASE =',ICASE,
-     *         ' if ICASE = 1: mo integral file LUINTM does not exist',
-     *         ' if ICASE = 2: no mo integrals on LUINTM',
-     *         ' if ICASE = 3: transformation level on LUINTM'
+     *         ' WARNING SIR_INTOPEN, old integral transformation not'
+     *       //' found as expected, ICASE =',ICASE,
+     *         ' - ICASE = 1: MO integral file MOTWOINT does not exist',
+     *         ' - ICASE = 2: no MO integrals on MOTWOINT',
+     *         ' - ICASE = 3: transformation level on MOTWOINT'
      *       //' not sufficient'
             IF (ICASE .EQ. 3) WRITE(LUPRI,'(A,2I5)')
-     *         ' ITRLVL requested, ITRLVL on LUINTM :',ITRLVL,JTRLVL
+     *         ' ITRLVL requested & ITRLVL on MOTWOINT :',ITRLVL,JTRLVL
          END IF
          LBUFMA = MAX(LBUFMA,NNORBT,LBINTM)
       END IF
 C
-C     END OF SIROPI (Open MO integral files)
+C     END OF SIR_INTOPEN (Open MO integral files)
 C
       RETURN
       END
@@ -2260,9 +2260,9 @@ C     900801-hjaaj: check if transformation already done
 C     971201-hjaaj: code moved to here (was too late)
 C        LSRTAO .ne. 0 should cover all situations where
 C        it is possible that MO integrals already exist
-C        on LUINTM. NOTE: this requires that SIROPI has been
+C        on LUINTM. NOTE: this requires that SIR_INTOPEN has been
 C        called before first call to TRACTL_1 !!!!!!
-C        SIROPI will set LSRTAO = -1 if LUINTM exists with
+C        SIR_INTOPEN will set LSRTAO = -1 if LUINTM exists with
 C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
 C     

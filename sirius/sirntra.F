@@ -138,7 +138,7 @@ C
          CALL FLSHFO(LUPRI)
 C
       END IF
-      CALL N_SIROPI
+      CALL SIR_INTOPEN_NEWTRA
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
@@ -282,8 +282,8 @@ C
       IADCDT = IADRM(3,1297)
       RETURN
       END
-C  /* Deck n_siropi */
-      SUBROUTINE N_SIROPI
+C  /* Deck sir_intopen_newtra */
+      SUBROUTINE SIR_INTOPEN_NEWTRA
 C
 C 900309-hjaaj
 C
@@ -310,12 +310,15 @@ C
            IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
          END IF
       ELSE
-         IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
-     &      'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
-         LUORDA = LUINTA
-      CALL REWSPL(LUINTA)
-      CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+         CALL GPINQ('AOTWOINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
+     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+            LUORDA = LUINTA
+            CALL REWSPL(LUINTA)
+            CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
+            READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+         END IF
       END IF
 C
       IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,FNINTM)
