@@ -84,6 +84,10 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+      integer                                   :: file_offset_off
+      integer,                      allocatable :: file_offset_fac_i4(:)
+      integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_fac(:)
+      integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_array(:)
 #endif
 #include "parluci.h"
 
@@ -98,9 +102,15 @@ C
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
-      DIMENSION ISYMS(MXPIRR),IPROCLIST(LUCI_NMPROC)
+      DIMENSION IPROCLIST(LUCI_NMPROC)
       DIMENSION IGROUPLIST(LUCI_NMPROC)
       integer fh_array(nr_files)
+      real(8),    allocatable :: tmp_block_scaling_fac(:)
+!     general information needed in parallel runs
+      integer,    allocatable :: par_dist_block_list(:)
+      integer,    allocatable :: block_list(:)
+      integer,    allocatable :: isyms_dummy(:)
+      integer,    allocatable :: cioio(:)
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
@@ -242,23 +252,26 @@ C     Memory for partitioning of C vector
 C
 C     Additional info required to construct partitioning
 C
-      CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+!     CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+      allocate(cioio(noctpa*noctpb))
       CALL MEMMAN(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
 C
-      CALL IAIBCM(ISPC,WORK(KLCIOIO))
+      CALL IAIBCM(ISPC,cioio)
 CTF
 C     The last argument in the call to ZBLTP is undefined in
 C     the original code (at least in gasci). So we initialize
 C     a zero array here with the length of the number of
 C     symmetries here.
 CTF
-      call isetvc(ISYMS,0,NSMST)
-      CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLCBLTP),ISYMS)
+      allocate(isyms_dummy(nsmst))
+      isyms_dummy = 0
+      CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLCBLTP),isyms_dummy)
+      deallocate(isyms_dummy)
 C     batches  of C vector
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
-     &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
+     &              NOCTPA,NOCTPB,NSMST,LBLOCK,cioio,
      &              ISMOST(1,ISM),
      &              NBATCH,WORK(KLCLBT),WORK(KLCLEBT),
      &              WORK(KLCI1BT),WORK(KLCIBT),0,ITTSS_ORD)
@@ -267,32 +280,33 @@ C     Number of BLOCKS
      &       + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
 C
 C     transfer to common block in parluci.h
-C
       NUM_BLOCKS  = NBLOCK
-      NUM_BLOCKS2 = NBLOCK
-      WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
+      NUM_BLOCKS2 = NUM_BLOCKS
+
+      WRITE(LUWRTOUT,*) '  ** total number of TTSS-blocks: ',NBLOCK
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
       CALL ICOPY(NTTS,WORK(KLCI1BT),1,WORK(KLCI1BTSCR),1)
 C     length of each block
       CALL EXTRROW(WORK(KLCIBT),8,8,NBLOCK,WORK(KLCI1BT))
 C
-C     check connections between sigma and c-blocks
-C
-      CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
-      CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
-      CALL ICOPY(NBLOCK,WORK(KLCI1BT),1,WORK(KBLCKIF),1)
-C     arrays for block distribution among cpu's (parallel run),
+      allocate(block_list(nblock))
+      call icopy(nblock,work(klci1bt),1,block_list,1)
+!     CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
+!     CALL ICOPY(NBLOCK,WORK(KLCI1BT),1,WORK(KBLCKIF),1)
+
+C     array for block distribution among cpu's (parallel run),
 C     some more scratch arrays needed for communication in the 
 C     diagonalizer
-      CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
-      IMIN2 = -2
-      CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
+!     IMIN2 = -2
+!     CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
+!     CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
+      allocate(par_dist_block_list(nblock))
+      par_dist_block_list = -2
       IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
       CALL MEMMAN(KSCRREDSP, 2*IMAXALLO,'ADDL  ',2,'SCRRED')
       CALL MEMMAN(KSCRREDSP2,2*IMAXALLO,'ADDL  ',2,'SCRRD2')
 C
-C     allocate new array that replaces global ICCTOS
-C
+C     allocate array for final sigma-cvec connection storage
       CALL MEMMAN(KRCCTOS,NBLOCK,'ADDS  ',1,'RCCTOS')
       CALL IZERO(WORK(KRCCTOS),NBLOCK)
 C
@@ -302,57 +316,96 @@ C     WORK(KBLCKIF) == list of all blocks containing their length
 C     WORK(KBLCKPD) == list of all blocks containing their assigned CPU
 C     --> this is the most important array! :)
 C
-CSK   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,LUCI_MYPROC
-C
 #ifdef VAR_MPI
-      CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
-     &                     WORK(KRCCTOS),WORK(KBSCLFC),
+      allocate(tmp_block_scaling_fac(nblock))
+
+      CALL BLOCK_DISTR_DRV(NBLOCK,block_list,par_dist_block_list,
+     &                     WORK(KRCCTOS),tmp_block_scaling_fac,
      &                     NVAR,IPROCLIST)
+
+      deallocate(tmp_block_scaling_fac)
+
 csk   WRITE(LUCIWT,*) ' block length'
-csk   CALL IWRTMAMN(WORK(KBLCKIF),1,NBLOCK,1,NBLOCK,LUCIWT)
+csk   CALL IWRTMAMN(block_list,NBLOCK,1,NBLOCK,LUCIWT)
 csk   WRITE(LUCIWT,*) ' distribution'
-csk   CALL IWRTMAMN(WORK(KBLCKPD),1,NBLOCK,1,NBLOCK,LUCIWT)
+csk   CALL IWRTMAMN(par_dist_block_list,1,NBLOCK,1,NBLOCK,LUCIWT)
 csk   WRITE(LUCIWT,*) ' RCCTOS output'
 csk   CALL IWRTMAMN(WORK(KRCCTOS),1,NBLOCK,1,NBLOCK,LUCIWT)
 C
-C     MPI file I/O setup
-C
-      CALL CALC_OFF_MPI_FILE2('ILUC  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),1)
-      CALL CALC_OFF_MPI_FILE2('ILU1  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),      NROOT)
-csk  &                        WORK(KBLCKPD),MXCIV+NROOT)
-      CALL CALC_OFF_MPI_FILE2('ILU2  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),MXCIV+NROOT)
-      CALL CALC_OFF_MPI_FILE2('ILU3  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),MXCIV + NROOT)
-      CALL CALC_OFF_MPI_FILE2('ILU4  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),MXCIV + NROOT)
-      CALL CALC_OFF_MPI_FILE2('ILU5  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),MXCIV + NROOT)
-      CALL CALC_OFF_MPI_FILE2('ILU6  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),1)
-      CALL CALC_OFF_MPI_FILE2('ILU7  ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),MXCIV)
-      CALL CALC_OFF_MPI_FILE2('LUDIA ',IGROUPLIST,WORK(KBLCKIF),
-     &                        WORK(KBLCKPD),1)
-C     initialize general offset for ILUC
-C
-C     NOTE: LU2 and LU4 have to have the same offset:
-C           --> initial s-vec to LU2 else LU4
-C
-      MY_LUC_OFF = 0
+!     ----------------------------------------------------------
+!     organize MPI file I/O offsets with the following ordering: 
+!     idia, iluc, ilu[2-7], ilu1
+!     ----------------------------------------------------------
+      allocate(file_offset_fac_i4(nr_files))
+      allocate(file_offset_fac(nr_files))
+      allocate(file_offset_array(nr_files))
+      file_offset_array = 0
+      file_offset_fac   = 0
+      file_offset_off   = 0
+
+      file_offset_fac_i4(1) = 1
+      file_offset_fac_i4(2) = 0
+      file_offset_fac_i4(3) = mxciv + nroot
+      file_offset_fac_i4(4) = mxciv + nroot
+      file_offset_fac_i4(5) = mxciv + nroot
+      file_offset_fac_i4(6) = mxciv + nroot
+      file_offset_fac_i4(7) = 1
+      file_offset_fac_i4(8) = mxciv
+      file_offset_fac_i4(9) = nroot
+
+      file_offset_fac(1) = file_offset_fac_i4(1)
+      file_offset_fac(2) = file_offset_fac_i4(2)
+      file_offset_fac(3) = file_offset_fac_i4(3)
+      file_offset_fac(4) = file_offset_fac_i4(4)
+      file_offset_fac(5) = file_offset_fac_i4(5)
+      file_offset_fac(6) = file_offset_fac_i4(6)
+      file_offset_fac(7) = file_offset_fac_i4(7)
+      file_offset_fac(8) = file_offset_fac_i4(8)
+      file_offset_fac(9) = file_offset_fac_i4(9)
+      
+      call set_file_io_offset(nr_files,
+     &                        file_offset_off,
+     &                        file_offset_array,
+     &                        file_offset_fac,
+     &                        my_vec1_ioff,
+     &                        my_vec2_ioff,
+     &                        my_act_blk1,
+     &                        my_act_blk2,
+     &                        my_act_blk_all,
+     &                        .false.,
+     &                        luci_myproc,
+     &                        num_blocks2,
+     &                        newcomm_proc,
+     &                        igrouplist,
+     &                        par_dist_block_list,
+     &                        block_list)
+
+!     save output in common block variables
+      my_dia_off = file_offset_array(1)
+      my_luc_off = file_offset_array(2)
+      my_lu2_off = file_offset_array(3)
+      my_lu3_off = file_offset_array(4)
+      my_lu4_off = file_offset_array(5)
+      my_lu5_off = file_offset_array(6)
+      my_lu6_off = file_offset_array(7)
+      my_lu7_off = file_offset_array(8)
+      my_lu1_off = file_offset_array(9)
+
+      deallocate(file_offset_array)
+      deallocate(file_offset_fac)
+
 C     length for allocation of file arrays
-      IALL_LUC = NUM_BLOCKS2
-      IALL_LU1 = (         NROOT ) * MY_ACT_BLK2
-csk   IALL_LU2 = (         NROOT ) * MY_ACT_BLK2
-csk   IALL_LU1 = ( MXCIV + NROOT ) * MY_ACT_BLK2
-      IALL_LU2 = ( MXCIV + NROOT ) * MY_ACT_BLK2
-      IALL_LU3 = ( MXCIV + NROOT ) * MY_ACT_BLK2
-      IALL_LU4 = ( MXCIV + NROOT ) * MY_ACT_BLK2
-      IALL_LU5 = ( MXCIV + NROOT ) * MY_ACT_BLK2
-      IALL_LU6 = ( 1 )             * MY_ACT_BLK2
-      IALL_LU7 = ( MXCIV )         * MY_ACT_BLK2
+      iall_luc =         1             * num_blocks2
+      iall_lu2 = file_offset_fac_i4(3) * my_act_blk2
+      iall_lu3 = file_offset_fac_i4(4) * my_act_blk2
+      iall_lu4 = file_offset_fac_i4(5) * my_act_blk2
+      iall_lu5 = file_offset_fac_i4(6) * my_act_blk2
+      iall_lu6 = file_offset_fac_i4(7) * my_act_blk2
+      iall_lu7 = file_offset_fac_i4(8) * my_act_blk2
+      iall_lu1 = file_offset_fac_i4(9) * my_act_blk2
+
+      deallocate(file_offset_fac_i4)
+
 C     allocate file arrays
       CALL MEMMAN(KILUCLIST,IALL_LUC,'ADDS  ',1,'LUCLST')
       CALL MEMMAN(KILU1LIST,IALL_LU1,'ADDS  ',1,'LU1LST')
@@ -470,7 +523,7 @@ C?        WRITE(6,*) ' MAXB1 2', MAXB1
 *.      Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
         IOCTPA = IBSPGPFTP(IATP)
         IOCTPB = IBSPGPFTP(IBTP)
-        CALL MXRESCPH(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
+        CALL MXRESCPH(cioio,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                NSMST,NSTFSMSPGP,MXPNSMST,
      &                NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
      &                NELFSPGP,
@@ -489,6 +542,9 @@ C
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
       END IF
 C     ^ I_USE_SBLOCK == 1
+!
+!     release scratch space
+      deallocate(cioio)
 C
 C     CI vector blocks
 C
@@ -522,7 +578,7 @@ C
 C       construct H diagonal
         CALL GASDIAT(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
      &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
-     &               WORK(KBLCKPD))
+     &               par_dist_block_list)
         IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
           CALL REWINO(LUDIA)
           CALL TODSC_LUCI(WORK(KVEC1),NVAR,-1,LUDIA)
@@ -539,9 +595,9 @@ C     debug printing
         ITEST_OFF = MY_DIA_OFF
         DO IIBLK = 1, NUM_BLOCKS
             ILEN = 0
-            CALL GET_BLOCK_PROC(WORK(KBLCKPD),IIBLK,IPROC)
+            CALL GET_BLOCK_PROC(par_dist_block_list,IIBLK,IPROC)
             IF( LUCI_MYPROC .eq. IPROC ) THEN
-              CALL GET_BLOCK_LENGTH(WORK(KBLCKIF),IIBLK,ILEN)
+              CALL GET_BLOCK_LENGTH(block_list,IIBLK,ILEN)
               CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
      &                              MPI_REAL8,ISTAT,IERR)
               WRITE(LUWRT,*) ' Diagonal elements',ILEN
@@ -597,7 +653,7 @@ C
 C
          CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
      &                         WORK(KILU1LIST),
-     &                         WORK(KBLCKPD),WORK(KBLCKIF),
+     &                         par_dist_block_list,block_list,
      &                         NBLOCK,NROOT,IRC_SAVE)
 C
         WRITE(LUWRTOUT,'(2X,A)') ' restart file is now in place! '
@@ -619,7 +675,7 @@ C
      &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
-     &     WORK(KBLCKIF),WORK(KBLCKPD),
+     &     block_list,par_dist_block_list,
      &     WORK(KSCRREDSP),WORK(KSCRREDSP2),WORK(KRCCTOS),IPROCLIST,
      &     IGROUPLIST
 #ifdef VAR_MPI
@@ -657,8 +713,8 @@ C
       DO JROOT = 1, NROOT
         CALL REWINE(LUSC41,-1)
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
-     &                            WORK(KBLCKPD),NUM_BLOCKS2,
-     &                            WORK(KBLCKIF),
+     &                            par_dist_block_list,NUM_BLOCKS2,
+     &                            block_list,
      &                            MPI_COMM_WORLD,-1,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
@@ -825,7 +881,9 @@ C?      WRITE(6,*) ' Home from CI_RESPONS'
       END IF
 C
 C     flush local memory
-C    
+      deallocate(par_dist_block_list)
+      deallocate(block_list)
+
       CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
 C
 C     eliminate scratch units
@@ -984,6 +1042,7 @@ C     character line
       integer               :: kbase_lucita
       integer               :: files_to_close
       integer               :: fh_offset
+      integer               :: max_num_ttss_blocks
       integer, allocatable  :: proclist(:)
       integer, allocatable  :: grouplist(:)
       integer, allocatable  :: grouplist_shared_mem(:)
@@ -1106,8 +1165,11 @@ C     Compute offset from WRK to WORK
       END IF
  
 !     subtract dynamically allocated memory
+      max_num_ttss_blocks = 15 000  
+!     the above value is an educated guess from my experience - sk nov 2010
       MXPWRD = LWRK
-      KADD   = MXPWRD - 2 * luci_nmproc - nr_files
+      KADD   = MXPWRD 
+     &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
 
 C     ratio beteeen real and integer word length
       CALL ZIRAT
