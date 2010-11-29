@@ -1807,6 +1807,9 @@ c /* deck ccqhypprt */
          IF (ISAPROP.EQ.0) SIGN = +ONE
 
          IFREQ = 1
+cmbh
+         PROP=0.0d0
+cmbh end
          IF (MULD2H(ISYMA,ISYMB).EQ.ISYMC) THEN
 
            PROP  = -HALF*(HYPERPOL(IFREQ,IOPER,1) +

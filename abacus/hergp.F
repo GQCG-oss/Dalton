@@ -1848,6 +1848,36 @@ C
          END IF
          IOFFAX = IOFFAX + NAXIS
   100 CONTINUE
+cmbh write dipole moment gradients here
+         LUMIDAS=-1
+      IF(DONE .AND. ITYPEF.EQ.1 .AND. ITYPEC.EQ.1 
+     &   .AND. FIELD.EQ.'E') THEN
+c        x component
+         CALL GPOPEN(LUMIDAS,'midasifc.muXder','UNKNOWN',' ',
+     &         'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUMIDAS,*)' ',3*NUCDEP
+         DO ICOOR = 1, 3*NUCDEP
+            WRITE(LUMIDAS,'(E22.16)')AMAT(1,ICOOR)
+         ENDDO
+         CALL GPCLOSE(LUMIDAS,'KEEP')
+c        y component
+         CALL GPOPEN(LUMIDAS,'midasifc.muYder','UNKNOWN',' ',
+     &         'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUMIDAS,*)' ',3*NUCDEP
+         DO ICOOR = 1, 3*NUCDEP
+            WRITE(LUMIDAS,'(E22.16)')AMAT(2,ICOOR)
+         ENDDO
+         CALL GPCLOSE(LUMIDAS,'KEEP')
+c        z component
+         CALL GPOPEN(LUMIDAS,'midasifc.muZder','UNKNOWN',' ',
+     &         'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUMIDAS,*)' ',3*NUCDEP
+         DO ICOOR = 1, 3*NUCDEP
+            WRITE(LUMIDAS,'(E22.16)')AMAT(3,ICOOR)
+         ENDDO
+         CALL GPCLOSE(LUMIDAS,'KEEP')
+      ENDIF
+cmbh end
       IF (.NOT.DONE) THEN
          WRITE (LUPRI,'(2X,A)') ' No elements calculated - '//
      &                         ' appropriate symmetries not requested.'

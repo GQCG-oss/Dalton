@@ -488,6 +488,9 @@ CCN              WRITE(LUPRI,'(/1X,2(A8,A10,F7.4,3X),F24.20)')
      &        LBLOPR(IBLROP(IOPER)),RLXB,'   -.-  ',
      &        '---'
            END IF
+cmbh: print a zero in midasifc.prop
+           PROP=0.0d0
+cmbh end
          END IF
          ISYMAB = MULD2H(ISYMA,ISYMB)
          CALL WRIPRO(PROP,MOPRPC,2,
