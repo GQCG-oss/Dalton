@@ -19,6 +19,7 @@ optn=0
 optlam=
 opti=0
 opto=0
+optt=0
 potfil=
 frl=rel
 #
@@ -28,8 +29,8 @@ usage (){
 	  echo
 	  echo "Usage: $0 [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
 	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory]"
-          echo  " dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
-          echo
+        echo  " dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
+        echo
 	  echo 'Options:'
 	  echo ' -b dir    prepend dir to directory list for basis set searches.'
 	  echo '           Current directory and dalton basis library are included automatically.'
@@ -37,18 +38,17 @@ usage (){
 	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
-          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
+        echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
 	  echo ' -M mb     set scratch memory to mb Megabytes'
 	  echo ' -m mem    set scratch memory to mem double precision words'
 	  echo ' -N num    use MPI version with num nodes'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-          echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
-          echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
+        echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
+        echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
 # Oct. 09: AHS and JMO
 #   added qmmm option to be used with QM/MM calculations
-          echo ' -qmmm opt if opt=save then copy relay matrix from TMPDIR to WRKDIR'
-          echo '           else if opt=copy then copy relay matrix from WRKDIR to TMPDIR'
-          echo '           else if opt=both then do both. Only valid for QM/MM calculations.'
+        echo ' -mmsv file copy relay matrix from $TMPDIR to $WRKDIR/$file'
+        echo ' -mmcp file copy relay matrix from $WRKDIR/$file to $TMPDIR'
 	  echo
 	 }
 #
@@ -88,11 +88,12 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
-      -t ) TMPDIR=$2; shift;;
+      -t ) optt=1; TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
 # Oct. 09: AHS and JMO
 #   added qmmm option to be used with QM/MM calculations
-      -qmmm ) optqmmm=$2; shift;;
+      -mmcp ) optqmmm=copy; relay=$2; shift;;
+      -mmsv ) optqmmm=save; relay=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
@@ -108,7 +109,7 @@ export BASDIR
 
 # check for correct input
 if [ -z "$1" ]; then
-   echo 'Input file[s] not specified'
+   echo 'Fatal error: Input file[s] not specified'
    echo "Your command was: $0 $paramlist"
    usage
    exit 1
@@ -157,7 +158,7 @@ export TMPDIR
 if [ ! -d "$TMPDIR" ]; then
    mkdir -p $TMPDIR
 fi
-if [ $optn -gt 1 ] ; then
+if [ $optn -gt 1 -o $optt -gt 0 ] ; then
   SCRATCHDIR=$TMPDIR
 else
   SCRATCHDIR=$TMPDIR/$USER/$outnam
@@ -168,7 +169,7 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   Dalton Release 2.0 (Feb. 2005)"
+echo "   Dalton Release 2010 (Dec. 2010)"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
@@ -215,11 +216,13 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
 # Oct. 09: AHS and JMO
 #   Copying the relay matrix to scratch directory to be used when restarting QM/MM calculations
    if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
-     if [ -s $WRKDIR/QMMMIM -a -r $WRKDIR/QMMMIM ]; then
+     if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
        echo "Copying the relay matrix to scratch directory..."
-       cp $WRKDIR/QMMMIM QMMMIM
+       cp $WRKDIR/$relay QMMMIM
        if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
          echo "Relay matrix not present in scratch directory. Continuing anyway..."
+       else
+         echo "Done" 
        fi
      else
        echo "Cannot copy relay matrix because it does not exist or is not readable"
@@ -227,8 +230,17 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
+         echo "====================="
          echo "The '-f' option is active, now unpacking $optf.tar.gz into:"
-	 gunzip < $WRKDIR/$optf.tar.gz | tar xvf -
+	   tar -z -x -v -f $WRKDIR/$optf.tar.gz
+         echo "====================="
+      elif [ -s $WRKDIR/$optf -a -r $WRKDIR/$optf ] ; then
+#     hjaaj: at least GNU tar finds out autmatically if tar, tar.gz or
+#     tar.bzip2 -- hopefully your tar program also does that!
+         echo "====================="
+         echo "The '-f' option is active, now unpacking $optf into:"
+	   tar -x -v -f $WRKDIR/$optf
+         echo "====================="
       else
          echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
          ierr=1
@@ -315,8 +327,8 @@ fi
 #   Saving the relay matrix to so it can be used in subsequent restarted QM/MM calculations
 if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
   if [ -s QMMMIM -a -r QMMMIM ]; then
-    echo "Saving the relay matrix in $WRKDIR/QMMMIM"
-    cp QMMMIM $WRKDIR/QMMMIM
+    echo "Saving the relay matrix in $WRKDIR/$relay"
+    cp QMMMIM $WRKDIR/$relay
   else
     echo "Could not save the relay matrix because it does not exist or is not readable"
   fi

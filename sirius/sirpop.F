@@ -303,9 +303,6 @@ C
 #include <implicit.h>
 #include <dummy.h>
 C
-#if defined (VAR_ITRAN2)
-      INTEGER*2 ITRAN
-#endif
       DIMENSION CMO(MATCMO),OCCUP(NOCCT),T(MATDIM),JTRAN(NBAST),
      *          ITRAN(NBAST,MXCGTO),CTRAN(NBAST,MXCGTO),
      *          IAMN(NBAST),IPR(NBAST)
@@ -344,7 +341,6 @@ C
      *     '     basic information for VIRIAL and MULLIKEN routines',
      *     ' is missing.'
          RETURN
-#if !defined (VAR_FASTIO)
       END IF
       READ (LUONEL)
       READ (LUONEL) NS,(NB(I),I=1,NS), DUMM,
@@ -429,7 +425,6 @@ c     IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
      *        /' Nuclear repulsion energy',T30,F18.10
      *        /' -V/T',T30,F14.6)
       RETURN
-#endif
       END
 C  /* Deck poptra */
       SUBROUTINE POPTRA (MATDIM,MXCGTO,MATCMO,CMO,S,JTRAN,ITRAN,CTRAN,
@@ -442,9 +437,6 @@ C          Based on release 82 08 31
 C
 #include <implicit.h>
 C
-#if defined (VAR_ITRAN2)
-      INTEGER*2 ITRAN
-#endif
       DIMENSION CMO(MATCMO),S(MATDIM),JTRAN(NBAST),
      *          ITRAN(NBAST,MXCGTO),CTRAN(NBAST,MXCGTO),
      *          CMOCGT(*),SS(*)

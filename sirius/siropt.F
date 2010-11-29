@@ -90,7 +90,7 @@ C
       DIMENSION WRK(LFREE)
 C
 #include <thrldp.h>
-      PARAMETER (MAXBCK = 15)
+      PARAMETER (MAXBCK = 5)
       PARAMETER (FAKABS = 0.40D0, STPABS = 0.20D0)
       PARAMETER (STPLCL = 0.15D0, SHFLCL = 1.D-3)
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.0D0)
@@ -1539,8 +1539,8 @@ C            fix AIX xlf v.2.3 error for 'xlf -O'.
      &         'ERROR (OPTST) non-existent configuration specified')
          END IF
          IF (LROOTS.GT.1) THEN
-            WRITE (LUPRI,5020)
-            WRITE (LUERR ,5020)
+            WRITE (LUPRI,5020) ICSTRT
+            WRITE (LUERR,5020) ICSTRT
             CALL QTRACE(LUERR)
             CALL QUIT('(OPTST) ICSTRT must be pos. when LROOTS .gt. 1')
          END IF
@@ -1580,11 +1580,11 @@ C        single configuration has always natural orbitals
          GO TO 9000
       END IF
  5010 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' specified start configuration no.',I8,
-     *        ' is non-existent (last CSF is no.',I8,')')
+     *       /' specified start configuration no.',I10,
+     *        ' is non-existent (last is no.',I10,')')
  5020 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' negative CISTRT option not allowed',
-     *        ' when LROOTS is greater then one.')
+     *       /' negative CISTRT option not allowed',I10,
+     *       /' when LROOTS is greater then one.')
 C
 C
 C *** ICSTRT > 0 ***
@@ -1712,8 +1712,9 @@ C
       GO TO 9000
 C
 C *** ICSTRT = 4, 5, 6, or 7 ***
+C     (See what codes means at beginning of this subroutine)
 C
-C === start guess should already be on LUIT1
+C === start guess should already be on LUIT1 (SIRIUS.RST)
 C     (but we test to be sure!)
 C
   400 CONTINUE
@@ -1721,6 +1722,8 @@ C
          IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
             READ (LUIT1,END=490,ERR=490)
          IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
+         IF ( ICI0.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.
+C        ... if user has specified .RESTART, then respect shift to NR
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.
@@ -2027,7 +2030,7 @@ C
       DIMENSION CMO(*), IBNDX(*), INDXCI(*), WRK(LFREE)
       PARAMETER ( DP1 = 0.1D0, DP5 = 0.5D0,
      *            D0  = 0.0D0, D1  = 1.0D0, D2  = 2.0D0 )
-      PARAMETER ( THDE = 1.D-5 )
+      PARAMETER ( THDE = 1.D-10 )
 #include <dummy.h>
 C
 C Used from common blocks:
@@ -2079,7 +2082,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.THDE ) THEN
+      IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE

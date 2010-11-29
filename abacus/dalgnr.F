@@ -1099,7 +1099,7 @@ C
 CSONIA
 #include <grdccpt.h>
 #include <infpar.h>
-      PARAMETER (NDIR = 9, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 10, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1110,20 +1110,19 @@ Clf
 Clf
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
-      DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
-     &             '*OPTIMI', '*NMDDRV', '*READIN',
-     &             '*PCM   ', '*QM3   ', '*QMMM  '/
-      DATA TABLE  /'.PRINT ', '.ITERAT', '.PRIERR',
-     &             '.INTEGR', '.WAVE F', '.PROPER',
-     &             '.INPTES', '.PARALL', '.DIRECT',
-     &             '.WALK  ', '.MAX IT', '.RESPON',
-     &             '.RUN PR', '.RUN RE', '.RUN WA',
-     &             '.PRESOR', '.WESTA ', '.XXXXXX',
-     &             '.XXXXXX', '.XXXXXX', '.XXXXXX',
-     &             '.XXXXXX', '.OPTIMI', '.TOTSYM',
-     &             '.VECLEN', '.RUNERI', '.XXXXXX',
-     &             '.RUN AL', '.NMDDRV', '.PARNMD',
-     &             'xXXXXXX', '.DOUGLA'/
+      DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
+     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN'/
+      DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
+     &            '.INTEGR', '.WAVE F', '.PROPER',
+     &            '.INPTES', '.PARALL', '.DIRECT',
+     &            '.WALK  ', '.MAX IT', '.RESPON',
+     &            '.RUN PR', '.RUN RE', '.RUN WA',
+     &            '.PRESOR', '.WESTA ', '.XXXXXX',
+     &            '.XXXXXX', '.XXXXXX', '.XXXXXX',
+     &            '.XXXXXX', '.OPTIMI', '.TOTSYM',
+     &            '.VECLEN', '.RUNERI', '.XXXXXX',
+     &            '.RUN AL', '.NMDDRV', '.PARNMD',
+     &            'xXXXXXX', '.DOUGLA'/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1280,7 +1279,7 @@ C Table(01:32) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.XXXXXX', '.XXXXXX',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-32: '.THRRED', '.DOUGLA'
@@ -1364,12 +1363,15 @@ C        ".WALK  "
             RNSIRI = .TRUE.
          GO TO 100
  116     CONTINUE
+            WRITE(LUPRI,'(//A/)') 'INFO: .PRESORT obsolete, use .NEWTRA'
             NEWTRA = .TRUE.
          GO TO 100
  117     CONTINUE
             WESTA = .TRUE.
          GO TO 100
  118     CONTINUE
+            NEWTRA = .TRUE.
+         GO TO 100
  119     CONTINUE
  120     CONTINUE
  121     CONTINUE
@@ -1499,7 +1501,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" (from 1988!) integral transformation used'
-      ELSE IF (.NOT. DIRCAL) THEN
+      ELSE
          WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
      &     ' (limited to max 255 basis functions)'
       END IF
@@ -1518,7 +1520,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*READIN', '*PCM   ', '*QM3   ', '*QMMM  '
+C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN'
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
@@ -1532,7 +1534,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9), I
+               GOTO (1,2,3,4,5,6,7,8,9,10), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1579,7 +1581,7 @@ C
         IF (WORD(1:1) .NE. '*') GOTO 205        
       GO TO 200
 C
-C     "*READIN" input
+C     "*MOLBAS" input
     6 CONTINUE
         CALL REAINP(WORD,RELCAL,TSTINP)
       GO TO 200
@@ -1597,9 +1599,17 @@ C     "*QM3   " input
     8 CONTINUE
         CALL QM3INP(WORD)
       GO TO 200
+C
+C     "*QMMM  " input
     9 CONTINUE
         CALL QMMMIN(WORD)
       GO TO 200
+C
+C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
+   10 CONTINUE
+        WRITE(LUPRI,'(//A/)')
+     &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
+      GO TO 6
 
 C     "*END OF" or "**something"
     1 CONTINUE

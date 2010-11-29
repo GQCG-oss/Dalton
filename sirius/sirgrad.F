@@ -568,7 +568,9 @@ C
 C
       CALL QENTER('FCKMAO')
 C
+#ifdef SIRGRAD_DEBUG
       P6FLAG(11) = .true. !Cdbg DEBUG
+#endif
 C
 C
       KFRSAV = 1
@@ -598,7 +600,7 @@ C     If this is a direct run, DCAO is returned in SO basis (to save
 C     memory). Thus, we need to recreate it. K.Ruud, March-98
 C
 ! hjaaj obsolete for srDFT, because DCAO is now never destroyed in SIRFCK
-! if srDFT (instead a copy is made which is destroyed) /hjaaj Feb 2010
+! when srDFT (instead a copy is made which is destroyed) /hjaaj Feb 2010
 ! NB! DV cannot be removed, needed for HSROHF and for direct MCSCF
       IF (DIRFCK .AND. .NOT.(DOHFSRDFT .OR. DOMCSRDFT)) THEN
          NOFV  = ( (NASHT .EQ. 0) .OR. ONLYFC )

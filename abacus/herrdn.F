@@ -154,7 +154,7 @@ C
 C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
 C
-      NEWDEF = (WORD .EQ. '*READIN')
+      NEWDEF = (WORD .EQ. '*READIN' .OR. WORD .EQ. '*MOLBAS')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -176,9 +176,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in REAINP.'
+     *            '" not recognized for *MOLBAS.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in REAINP.')
+               CALL QUIT('Illegal keyword for *MOLBAS.')
     1          CONTINUE
                   IPREAD_ini = IPREAD
                   READ (LUCMD, *) IPREAD
@@ -237,16 +237,17 @@ C          (renamed from .AUXBAS) /hjaaj
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in REAINP.'
+     *            '" not recognized for *MOLBAS.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in REAINP.')
+               CALL QUIT('Illegal prompt for *MOLBAS.')
             END IF
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for READIN:',0)
+         CALL HEADER('Changes of defaults for *MOLBAS:',0)
          IF (IPREAD .NE. IPREAD_ini) THEN
-            WRITE (LUPRI,'(A,I5)') ' Print level in READIN:',IPREAD
+            WRITE (LUPRI,'(A,I5)')
+     &         ' Print level in molecule setup (READIN):',IPREAD
          END IF
          IF (TOL_SYMADD .NE. 0.0D0) THEN
             WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOL_SYMADD
@@ -285,7 +286,7 @@ C          (renamed from .AUXBAS) /hjaaj
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
      &           ' Center of mass bf. not defined for l(max) .gt. 4'
-               CALL QUIT('Error in *READIN input processing')
+               CALL QUIT('Error in *MOLBAS input processing')
             END IF
          END IF
          WRITE (LUPRI,'()')
@@ -4201,8 +4202,6 @@ C            small molecules, otherwise just a lot of lines.
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
       ICRX = 1
-      ICRY = 2
-      ICRZ = 3
       IPCMN= 0
       NATOMS = 0
       KMASS  = NCOOR + 1
@@ -4234,14 +4233,10 @@ C
             END IF
             WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
             NATOMS = NATOMS + 1
-            WORK(ICRX) = CORD(1,ICENT)
-            WORK(ICRY) = CORD(2,ICENT)
-            WORK(ICRZ) = CORD(3,ICENT)
-C-----------------(WK/UniKA/14-11-2003)
+            WORK(ICRX  ) = CORD(1,ICENT)
+            WORK(ICRX+1) = CORD(2,ICENT)
+            WORK(ICRX+2) = CORD(3,ICENT)
             ICRX = ICRX + 3
-            ICRY = ICRY + 3
-            ICRZ = ICRZ + 3
-C--------------------------
          ELSE
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR

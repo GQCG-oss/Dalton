@@ -89,7 +89,7 @@ C          LUIT7 is for update information in SIRUPD
 C LUINF    file for writing information on convergence etc.
 C
 C *** Define buffer sizes (LBXXXX is buffer size for file LUXXXX)
-C     LBINTM defined in SIROPI (891107-hjaaj)
+C     LBINTM defined in SIR_INTOPEN (891107-hjaaj)
 C     LBONEL defined in RDONEL, if LBONEL .lt. 0 (900221)
 C     MAERKE 900108-hjaaj: LBXXXX should always be defined in routines
 C
@@ -286,11 +286,11 @@ C
 C ***
 C
       IF (NUMERR .GT. 0) THEN
-         IF (FIRST) CALL PRTINP(LUW4,-1,-1)
+         IF (FIRST) CALL SIR_PRTINP(LUW4,-1,-1)
          WRITE (LUW4,'(///A/)')
      *      ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          IF (LUPRI .NE. LUW4) THEN
-            IF (FIRST) CALL PRTINP(LUPRI,-1,-1)
+            IF (FIRST) CALL SIR_PRTINP(LUPRI,-1,-1)
             WRITE (LUPRI,'(///A/)')
      *         ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          END IF
@@ -305,14 +305,14 @@ C
       CALL QEXIT('SIRSET')
       RETURN
       END
-C  /* Deck siropn */
-      SUBROUTINE SIROPN
+C  /* Deck sir_open */
+      SUBROUTINE SIR_OPEN
 C
 C  5-May-1989 Hans Joergen Aa. Jensen
 C
 C  Open input/output units required by this Sirius calculation,
 C  as specified in command input.
-C  Mo integral files are opened in SIROPI
+C  Mo integral files are opened in SIR_INTOPEN
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -330,9 +330,9 @@ C
 C
       LOGICAL FEXIST
 C
-C     ***** CALL SIROPI to open MO integral files
+C     ***** CALL SIR_INTOPEN to open MO integral files
 C
-      CALL SIROPI
+      CALL SIR_INTOPEN
 C
 C     ***** Open other files
 C

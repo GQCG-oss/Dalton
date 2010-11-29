@@ -115,6 +115,8 @@ C     gives the number of functions in the small component for that type.
       LOGICAL SPLIT,TEST
 #endif /* PRG_DIRAC */
 C
+      CALL QENTER('BASLIB')
+C
 
       BASTMP = ' '
       BASSAV = BASNAM
@@ -406,7 +408,7 @@ C
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                     UNCONT,LUBAS,IQCORE,IPRINT)
                IF (INTORB .EQ. 0) THEN
-                  NBLOCK = NBLOCK - 1
+                  NBLOCK = NBLOCK - 1 ! why this? Can we imagine user wants 2 0 1, i.e. 2s 0p 1d ??????
                   CALL FINPOS ( NEWEL, INTEXP, INTORB,
      &                          INTISG, LUBAS, IPRINT)
                   GOTO 10
@@ -522,6 +524,16 @@ C Find reference information for the basis set.
 C
       CALL FINREF (BASREF,LUBAS,BASSAV)
 C
+      IF (NBLOCK .EQ. 0) THEN
+         WRITE (LUPRI,'(/A,I5,A/3X,A)')
+     &   'ERROR No basis functions found for element',INTQ,' in basis:',
+     &   BASNAM
+         IF (ANO) WRITE(LUPRI,'(/A/A)')
+     &   'ERROR NB! For ano basis sets, user must specify number of',
+     &   'ERROR     AOs in each shell (example: "basis=ano-1 3 2 1")'
+         CALL QUIT('No basis functions found for this element')
+      END IF
+C
       IQM = NBLOCK
 C
 C Setting JCO to one.
@@ -530,16 +542,17 @@ C
          JCO(I) = 1
       END DO
 C
-C Closing file
+C Close basis set file
 C
-
       BASNAM = BASSAV
 #ifdef PRG_DIRAC
       CLOSE (LUBAS, STATUS = 'KEEP')
 #else /* PRG_DIRAC */
       CALL GPCLOSE(LUBAS,'KEEP')
 #endif /* PRG_DIRAC */
+      CALL QEXIT('BASLIB')
       RETURN
+C
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' >>> BASLIB error, number of primitives per block  ',INTEXP,
@@ -551,6 +564,7 @@ C
      &  ' >>> BASLIB error, number of contracted functions  ',INTORB,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
+        CALL QUIT('Too many contracted  functions')
 C
       END
 C
@@ -675,6 +689,24 @@ C
                   READ (STRING, '(F16.9, 6F12.9)',IOSTAT=IOS)
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
+                  IF (IOS.NE.0) THEN
+                    WRITE(LUPRI,*) 'KNTORB=',KNTORB
+                    WRITE(LUPRI,'(A,A)') 'STRING=',STRING
+                    WRITE(LUPRI,*) 'I,J,NBLOCK:',I,J,NBLOCK
+                    WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
+                    WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
+     &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
+                    CALL QUIT('Error in reading basis set...')
+                  ENDIF
+
+                  IF (IPRINT.GE.6) THEN
+                    write(lupri,*)
+     &              'READNU read 2 - J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              J,NBLOCK,ALPHA(J,NBLOCK)
+                    write(lupri,*)
+     &              'READNU read 2 - CPRIMU:',
+     &              (CPRIMU(J,I,NBLOCK),I=1,KNTORB)
+                  ENDIF
 C   
 C     If there are more lines with contraction coefficients, 
 C     they will be read here.
@@ -702,6 +734,15 @@ C
                            READ (STRING,'(F16.9,6F12.9)',IOSTAT=IOS) 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
+                           IF (IOS.NE.0) THEN
+                             CALL QUIT('Error in reading sjjd393jdj')
+                           ENDIF
+                           IF (IPRINT.GE.6) THEN
+                             WRITE(LUPRI,*) 
+     &                       J,NLBLOCK,' CPRIMU(J,M,NBLOCK):'
+                             WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
+     &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
+                           ENDIF
                         END IF
 C
 C     Blank line read the next one
@@ -725,7 +766,7 @@ C Found a line with nothing sensible in it
 C
             GOTO 20
          END IF
-      ELSE
+      ELSE   ! IF ( J .LT. INTEXP) THEN
 C
 C        For uncontracted basis sets, update INTORB.
 C
@@ -1008,7 +1049,7 @@ C
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
             READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
             IF (IOS.NE.0) THEN
-             CALL QUIT('FINDEL: Error in reading NUCEL')
+               CALL QUIT('FINDEL: Error in reading NUCEL')
             ENDIF
  110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) RETURN
@@ -1113,7 +1154,7 @@ C
                      READ (LUBAS,*,IOSTAT=IOS) 
      &                ALPHA(ISLOOP,NBLOCK), CONTS
                      IF (IOS.NE.0) THEN
-                      CALL QUIT('FINNQD: Error in reading ALPHA, CONTS')
+                        CALL QUIT('FINNQD: Error reading ALPHA, CONTS')
                      ENDIF
                      IF (NUCEL .EQ. 1) ALPHA(ISLOOP,NBLOCK) =
      &                    ALPHA(ISLOOP,NBLOCK)*1.44D0
@@ -1228,7 +1269,7 @@ C
             END IF
          ELSE 
             GOTO 20
-         END IF 
+         END IF
 C
 C Error messages 
 C

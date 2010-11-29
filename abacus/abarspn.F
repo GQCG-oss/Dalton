@@ -233,8 +233,8 @@ cs
          FLAGSV = DORSP
          DORSP = .TRUE.
 cSPAS:29.11.2002 debugging newtra for SOPPA
-cSPAS    CALL SIROPI
-         IF (.NOT. NEWTRA) CALL SIROPI
+cSPAS    CALL SIR_INTOPEN
+         IF (.NOT. NEWTRA) CALL SIR_INTOPEN
 cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA) 
