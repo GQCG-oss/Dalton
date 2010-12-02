@@ -99,11 +99,7 @@
 
 *
 #include "units.inc"
-#ifdef VAR_MPI
-#include "mpif.h"
-#include "infpar.h"
 #include "parluci.h"
-#endif
       
 
 *
@@ -116,7 +112,6 @@
       LU_INTERNAL = LUSC_INT
       SCRFL ="LUSCDL"
 *
-#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',LUCI_MYPROC
          FLLNGTH=8
@@ -129,10 +124,6 @@
       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-#else
-      SCRFLL=SCRFL
-      FLLNGTH=6
-#endif
 
       Open(Unit=LU_INTERNAL,
      &     File=SCRFLL(1:FLLNGTH),

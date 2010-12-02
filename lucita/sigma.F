@@ -1158,22 +1158,24 @@ C
       CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
 *     batches  of s vector
       ITTSS_ORD = 2
-      
+
+      IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
-      CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+         CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
      &                   LBLOCK_LUCI,
      &                   WORK(KSIOIO),ISMOST(1,ISSM),
      &                   NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                   WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD,
      &                   NPARBLOCK,NUM_BLOCKS2)
-#else
-      CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+         CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &               WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
      &               WORK(KSIOIO),ISMOST(1,ISSM),
      &               NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &               WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
-#endif
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 C
       IF(I12.EQ.2) THEN
         IDOH2 = 1
@@ -2169,6 +2171,7 @@ C     NTEST = MAX(NTEST,IPRNT)
         WRITE(6,*) ' RASSG3 : NBATS = ',NBATS
       END IF
 *
+      IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
 *
 *     make an update of list ISCLFAC_GROUP using LUCLIST...
@@ -2239,19 +2242,21 @@ C
       END IF
 C
 *=====================================================
-#else
-      IF(LUHC.GT.0) CALL REWINE(LUHC,-1)
-C
-C     get scaling factor - 0.0D0 or 1.0D0
-C
-      CALL FIND_ACTIVE_BLOCKS(LUC,-1,SSCLFAC,CB)
 #endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+         IF(LUHC.GT.0) CALL REWINE(LUHC,-1)
+C
+C        get scaling factor - 0.0D0 or 1.0D0
+C
+         CALL FIND_ACTIVE_BLOCKS(LUC,-1,SSCLFAC,CB)
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 C
 C     loop over batches over sigma blocks
 C
       DO JBATS = 1, NBATS
 C
 #ifdef VAR_MPI
+       IF (LUCI_NMPROC .GT. 1) THEN
 *
 *       start various timings...
 *
@@ -2273,6 +2278,7 @@ csk     WRITE(LUWRT,*) ' ICOMPUTE is',ICOMPUTE
            starttimer = MPI_WTIME()
            GOTO 60
         ENDIF
+       END IF ! (LUCI_NMPROC .GT. 1) THEN
 *
 #endif /* if def VAR_MPI */
 C       zero SB
@@ -2292,8 +2298,10 @@ C
  60     CONTINUE
 C
 #ifdef VAR_MPI
+      IF (LUCI_NMPROC .GT. 1) THEN
         starttimer = MPI_WTIME()
         IF( ICOMPUTE .eq. 0 ) GOTO 70
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif /* if def VAR_MPI */
 C
         NTEST = 000
@@ -2312,6 +2320,7 @@ C
         DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
            IOFF = IBATS(6,ISBLK)
            LEN  = IBATS(8,ISBLK)
+         IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
 *          check again if block is needed
            IF( NPARBLOCK(ISBLK) .ne. LUCI_MYPROC ) GOTO 65
@@ -2346,14 +2355,16 @@ csk        WRITE(LUCIWT,*) 'offset,length',IOFF_SCR1,LEN
            INT_IOFF2 = 1
  65        CONTINUE
 C
-#else
+#endif
+          ELSE ! (LUCI_NMPROC .GT. 1) THEN
            CALL ITODS(LEN,1,-1,LUHC)
            CALL TODSC_LUCI(SB(IOFF),LEN,-1,LUHC)
-#endif
+          END IF ! (LUCI_NMPROC .GT. 1) THEN
         END DO
  70     CONTINUE
 #ifdef VAR_MPI
-        IF( ICOMPUTE .ne. 0 ) THEN
+        IF (LUCI_NMPROC .GT. 1) THEN
+          IF( ICOMPUTE .ne. 0 ) THEN
             writetime = writetime + MPI_WTIME() - starttimer
             sbatchtime = sbatchtime + MPI_WTIME() - starttime
 CSK too much information?                WALLTID  = SECTID(writetime)
@@ -2362,11 +2373,13 @@ CSK too much information?                 WRITE(LUWRT,50000) WALLTID
             WRITE(LUCIWT,60001) WALLTID2
 CSK         WRITE(LUWRT,60000) WALLTID2, JBATABS
           END IF
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif /* if def VAR_MPI */
       END DO
 *
-#ifdef VAR_MPI
 C
+      IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
       WALLTID2 = SECTID(BLOCKTIME)
       WRITE(LUWRT,80000) WALLTID2
 *
@@ -2399,7 +2412,8 @@ C
 C
       END IF
 C
-#else
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
 C     write EOF mark
       CALL ITODS(-1,1,-1,LUHC)
 C
@@ -2407,7 +2421,7 @@ C
         WRITE(LUCIWT,*) ' Final S-vector on disc'
         CALL WRTVCD(SB,LUHC,1,-1)
       END IF
-#endif
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 *
       CALL QEXIT('RASSG')
       END
@@ -5657,6 +5671,7 @@ C
       END IF
 C     copy scaling factors from restore array to working array
       CALL DCOPY(NUM_BLOCKS2,SSCLFAC,1,SCLFAC,1)
+      IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
 C     initialize offsets in C-vector file
       IOFFSET_SCR     = 0
@@ -5674,7 +5689,8 @@ C
      &                   LBLOCK_LUCI,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,
      &                   LECBLOCK,I1CBLOCK,ICBLOCK,0,ITTSS_ORD,
      &                   SCLFAC,NUM_BLOCKS2,0)
-#else
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
       IF(NTEST.GE.50) THEN
         WRITE(LUCIWT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
@@ -5691,7 +5707,7 @@ C     rewind C block file
 C
       REWIND LUC
 C
-#endif
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 C     set max. excitations allowed by operator IDOH2
       IF(IDOH2.EQ.1) THEN
         MXEXC  = 2
@@ -5718,7 +5734,9 @@ C       read C blocks into core
 C
         ICOFF = 1
         NJBLOCK = LCBLOCK(JCBATCH)
+
 #ifdef VAR_MPI
+        IF (LUCI_NMPROC .GT. 1) THEN
 C
 C       C block non-zero?
 C
@@ -5739,15 +5757,16 @@ csk       WRITE(LUCIWT,*) ' active C block found',ICBLK
           END DO
           GOTO 20000
         END IF
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
         DO JJCBLOCK = 1, NJBLOCK
           JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
           INTERACT = 0
-#ifdef VAR_MPI
-          IF( ISCLFAC_GROUP( JBLOCK ) .gt. 0 ) THEN
-#else
+!!!#ifdef VAR_MPI  -- for Stefan to check/remove later !!! 2-dec-2010
+!!!          IF( ISCLFAC_GROUP( JBLOCK ) .gt. 0 ) THEN
+!!!#else
           IF( SCLFAC(JBLOCK) .ne. 0.0D0 ) THEN
-#endif
+!!!#endif
 csk       WRITE(LUCIWT,*) ' Nonvanishing block ', JBLOCK
           JATP = ICBLOCK(1,JBLOCK)
           JBTP = ICBLOCK(2,JBLOCK)
@@ -5806,6 +5825,7 @@ C           ^ s-block loop
 *         ^ Checking was only done for nonvanishing blocks
 *
           ISCALE = 0
+        IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
 C         length of block
           LBL         = IBLOCKL(JBLOCK)
@@ -5828,7 +5848,8 @@ csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
           IOFF_SCR_C1 = IOFF_SCR_C1 + IOFF_SCR_C2
 csk       WRITE(LUWRT,*) ' set new IOFF_SCR_C2 for JBLOCK   ',
 csk  &                     IOFF_SCR_C2, JBLOCK
-#else
+#endif
+        ELSE ! (LUCI_NMPROC .GT. 1) THEN
           IF(INTERACT.EQ.1) THEN
             CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
      &                  NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
@@ -5842,7 +5863,7 @@ csk  &                 NSSOA(JASM,JATP),LUCIWT)
             CALL SKPRCD2(LBL,-1,LUC)
             SCLFAC(JBLOCK) = 0.0D0
           END IF
-#endif
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
 C
           IF(IDENT.EQ.1 .AND. LUCBLK.GT.0)THEN
             write(6,*) ' block will be copied to LUCLBLK'
@@ -5884,11 +5905,11 @@ C                          --------------
 C
         DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
 C
-#ifdef VAR_MPI
-            IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
-#else
+!!!#ifdef VAR_MPI
+!!!            IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
+!!!#else
             IF( SCLFAC( ICBLK ) .ne. 0.0D0 ) THEN
-#endif
+!!!#endif
               JATP = ICBLOCK(1,ICBLK)
               JBTP = ICBLOCK(2,ICBLK)
               JASM = ICBLOCK(3,ICBLK)
@@ -6024,7 +6045,9 @@ C?   &                         IPTSPC,JPTSPC,IJOP
                 END IF
 *
 #ifdef VAR_MPI
-                xxxcomputtime = MPI_WTIME()
+                IF (LUCI_NMPROC .GT. 1) THEN
+                   xxxcomputtime = MPI_WTIME()
+                END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 *
                 CALL RSSBCB2(IASM,IATP,IOCTPA,
@@ -6048,7 +6071,9 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
      &               MXTSOB,SOMESCR,SOMEH,XIJILS)
 #ifdef VAR_MPI
-                xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
+                IF (LUCI_NMPROC .GT. 1) THEN
+                   xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
+                END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 C
  8764         CONTINUE

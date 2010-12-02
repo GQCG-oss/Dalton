@@ -41,11 +41,6 @@ C
       SUBROUTINE DISKUN
       IMPLICIT REAL*8           (A-H,O-Z)
 *
-#ifdef VAR_MPI
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "priunit.h"
 #include "parluci.h"
 #include "files.inc"
@@ -122,23 +117,18 @@ C
 *. Scratch file for master <--> slave communication
       LUSCR_MPI = 51
       LUSCR_MPIN ="SIGMA_PAR" 
-#ifdef VAR_MPI
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSCR_MPI,'(A9,A1,I1)') LUSCR_MPIN,'.',LUCI_MYPROC
          LUSCR_MPIL=13
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUSCR_MPI,'(A9,A1,I2)') LUSCR_MPIN,'.',LUCI_MYPROC
          LUSCR_MPIL=14
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (NLUSCR_MPI,'(A9,A1,I3)') LUSCR_MPIN,'.',LUCI_MYPROC
          LUSCR_MPIL=15
-      ELSE
+       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-#else
-      NLUSCR_MPI=LUSCR_MPIN
-      LUSCR_MPIL=13
-#endif
+       ENDIF
       Open(Unit=LUSCR_MPI,File=NLUSCR_MPI(1:LUSCR_MPIL),
      &     Status='UNKNOWN',
      &     Form='UNFORMATTED')
@@ -150,70 +140,54 @@ C
       LUDIA = 60
 *
       LUDIA_MPIN ="CIDIA"
-#ifdef VAR_MPI
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUDIA_MPI,'(A5,A1,I1)') LUDIA_MPIN,'.',LUCI_MYPROC
          LUDIA_MPIL=7
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUDIA_MPI,'(A5,A1,I2)') LUDIA_MPIN,'.',LUCI_MYPROC
          LUDIA_MPIL=8
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (NLUDIA_MPI,'(A5,A1,I3)') LUDIA_MPIN,'.',LUCI_MYPROC
          LUDIA_MPIL=9
-      ELSE
+       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-*#elifdef VAR_MPI
-      
-#else
-      NLUDIA_MPI=LUDIA_MPIN
-      LUDIA_MPIL=5
-#endif
+       ENDIF
 *
       Open(Unit=LUDIA,File=NLUDIA_MPI(1:LUDIA_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *. CI vector
       LUC = 61
       LUC_MPIN ="LUCVECT"
-#ifdef VAR_MPI
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUC_MPI,'(A7,A1,I1)') LUC_MPIN,'.',LUCI_MYPROC
          LUC_MPIL=9
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUC_MPI,'(A7,A1,I2)') LUC_MPIN,'.',LUCI_MYPROC
          LUC_MPIL=10
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (NLUC_MPI,'(A7,A1,I3)') LUC_MPIN,'.',LUCI_MYPROC
          LUC_MPIL=11
-      ELSE
+       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-#else
-      NLUC_MPI=LUC_MPIN
-      LUC_MPIL=7
-#endif
+       ENDIF
+
       Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *. Sigma vector file
       LUHC = 62
       LUHC_MPIN ="HCFILE"
-#ifdef VAR_MPI
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUHC_MPI,'(A6,A1,I1)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=8
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUHC_MPI,'(A6,A1,I2)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=9
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (NLUHC_MPI,'(A6,A1,I3)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=10
-      ELSE
+       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-#else
-      NLUHC_MPI=LUHC_MPIN
-      LUHC_MPIL=6
-#endif
+       ENDIF
       Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 * =================
@@ -225,7 +199,6 @@ C
       LUSC2_MPIN ="LUSC2"
       LUSC3 = 72
       LUSC3_MPIN ="LUSC3"
-#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC1_MPI,'(A5,A1,I1)') LUSC1_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC2_MPI,'(A5,A1,I1)') LUSC2_MPIN,'.',LUCI_MYPROC
@@ -244,12 +217,6 @@ C
       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-#else
-      NLUSC1_MPI=LUSC1_MPIN
-      NLUSC2_MPI=LUSC2_MPIN
-      NLUSC3_MPI=LUSC3_MPIN
-      LUSC123_MPIL=5
-#endif
       Open(Unit=LUSC1,File=NLUSC1_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
       Open(Unit=LUSC2,File=NLUSC2_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
@@ -273,7 +240,6 @@ C
       LUSC40_MPIN ="LUSC40"
       LUSC41 = 97
       LUSC41_MPIN ="LUSC41"
-#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC34_MPI,'(A6,A1,I1)') LUSC34_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC35_MPI,'(A6,A1,I1)') LUSC35_MPIN,'.',LUCI_MYPROC
@@ -307,17 +273,6 @@ C
       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-#else
-      NLUSC34_MPI=LUSC34_MPIN
-      NLUSC35_MPI=LUSC35_MPIN
-      NLUSC36_MPI=LUSC36_MPIN
-      NLUSC37_MPI=LUSC37_MPIN
-      NLUSC38_MPI=LUSC38_MPIN
-      NLUSC39_MPI=LUSC39_MPIN
-      NLUSC40_MPI=LUSC40_MPIN
-      NLUSC41_MPI=LUSC41_MPIN
-      LUSC344_MPIL=6
-#endif
 
       Open(Unit=LUSC34,File=NLUSC34_MPI(1:LUSC344_MPIL),
      &Status='UNKNOWN',Form='UNFORMATTED')

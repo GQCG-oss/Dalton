@@ -1792,7 +1792,7 @@ CSK      CALL Abend2('Stefan forced me to stop in MICDV6_PAR')
  9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
  9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A)
       END
-#else
+#else /* defined VAR_MPI*/
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

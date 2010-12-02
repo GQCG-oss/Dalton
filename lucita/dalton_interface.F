@@ -475,28 +475,28 @@ ChjC#include "infpar.h"
 * 21: Type of parallel calculation
 *
       if (IMOKW(21).eq.0) then
-#ifdef VAR_MPI
+        IF (LUCI_NMPROC .GT. 1) THEN
          IODENSEPAR = 2
          IRUNPA     = 1
          IPARMODEL  = 2
-#else
+        ELSE
          IODENSEPAR = 0
          IRUNPA     = 0
          IPARMODEL  = 0
-#endif
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
          IMOKW(21) = 2
       end if
 *
 * 22: Type of I/O model in parallel calculation
 *
       if (IMOKW(22).eq.0) then
-#ifdef VAR_MPI
+        IF (LUCI_NMPROC .GT. 1) THEN
          IIOMOD = 1
          YESSTATEMENT = 'Yes'
-#else
+        ELSE
          IIOMOD = 0
          YESSTATEMENT = 'No'
-#endif
+        END IF
       end if
 *
 * 23: Number of maximum CI Iterations
@@ -3486,23 +3486,23 @@ CTF      write(*,'(1X,A6)') MACHINE
 * Write to file LUCIAIN
 *--------------------------------------------------
       LUCIAIN_MPIN = "LUCIAIN"
-#ifdef VAR_MPI
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+      IF (LUCI_NMPROC .GT. 1) THEN
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUCIAIN_MPI,'(A7,A1,I1)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=9
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+        ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUCIAIN_MPI,'(A7,A1,I2)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=10
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+        ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=11
-      ELSE
+        ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-#else
-      NLUCIAIN_MPI=LUCIAIN_MPIN
-      LUCIAIN_MPIL=7
-#endif
+        ENDIF
+      ELSE
+         NLUCIAIN_MPI=LUCIAIN_MPIN
+         LUCIAIN_MPIL=7
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 
       open(unit=LUINP,file=NLUCIAIN_MPI(1:LUCIAIN_MPIL),
      &     status='UNKNOWN',form='FORMATTED')
@@ -5586,7 +5586,7 @@ C
      &          (kr(i),kr(-i),i=1,nkr)
         end if
 #ifdef VAR_MPI
-        if (nmproc.gt.1) then
+        if (luci_nmproc.gt.1) then
            call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
      &                    mpi_comm_world,ierr)
            do j = 1, nkr

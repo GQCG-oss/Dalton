@@ -124,14 +124,16 @@ C         elements are obtained
 C
           NFINDM = MIN(NDIM,4*NROOTSL)
 C
+          IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
-          CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
+              CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
      &                    ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
      &                    SCR1,IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,IPRT)
-#else
-          CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
-     &                SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
 #endif
+          ELSE
+             CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
+     &            ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
+          END IF
           CALL REWINE(LU1,-1)
           IBASE = 1
           TEST = 1.0D-10
@@ -169,14 +171,16 @@ C
             ELSE
               JPACK = 0
             END IF
+            IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
-            CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
+               CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
      &                      IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
      &                      IROOTSI,LU1LIST)
-#else
-            CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                  LUDIA,JPACK)
 #endif
+            ELSE
+               CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
+     &                  LUDIA,JPACK)
+            END IF
             IBASE = IBASE + NDEG
   100     CONTINUE
         ELSE
@@ -226,13 +230,14 @@ C    &   '  Largest allowed number of vectors..',MAXVEC
          WRITE(LUCIWT,'(A,I3)')
      &   '  Allowed number of CI iterations  ..',MXCIIT
       END IF
-*
-      KRNRM = 1
-      KEIG = KRNRM + MXCIIT*NROOTSL
-      KFIN = KEIG  + MXCIIT*NROOTSL
+
+*     allocations for SCR1
+      KRNRM  = 1
+      KEIG   = KRNRM + MXCIIT*NROOTSL
+      KFIN   = KEIG  + MXCIIT*NROOTSL
       KAPROJ = KFIN + NROOTSL
-      KAVEC = KAPROJ + MAXVEC*(MAXVEC+1)/2
-      KWORK = KAVEC + MAXVEC ** 2
+      KAVEC  = KAPROJ + MAXVEC*(MAXVEC+1)/2
+      KWORK  = KAVEC + MAXVEC ** 2
       KLFREE = KWORK + MAXVEC*(MAXVEC+1)
       IF( IPRT .GE. 5 ) THEN
          WRITE(LUCIWT,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
@@ -248,6 +253,7 @@ C    &   '  Largest allowed number of vectors..',MAXVEC
        END IF
 *
 #ifdef VAR_MPI
+      IF (LUCI_NMPROC .GT. 1) THEN
 C
 C     partition CI vector with max. batch length using LBLOCK
 C
@@ -291,10 +297,8 @@ C
      &                   NBATCH,WORK(KLXLBT),WORK(KLXLEBT),
      &                   WORK(KLXI1BT),WORK(KLXIBT),0,ITTSS_ORD,
      &                   IBLKDSTND,IBLOCKI)
-#endif
 *
        I_USE_MICDV6 = 1
-#ifdef VAR_MPI
        CALL MICDV6_PAR(VEC1,VEC2,SCR1(KRNRM),SCR1(KEIG),
      &                 EROOTL,MXCIIT,NDIM,NROOTSL,
      &                 MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
@@ -307,14 +311,16 @@ C
      &                 WORK(KLXLBT),WORK(KLXLEBT),WORK(KLXI1BT),
      &                 WORK(KLXIBT),IPROCLIST,IGROUPLIST)
 
-#else
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+       I_USE_MICDV6 = 1
        CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
      &             EROOTL,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
      &             LUDIA,NROOTSL,
      &             MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &             H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
-#endif
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 
       ENOT = SCR1(KFIN)
 !     release scratch memory
@@ -323,9 +329,11 @@ C
       CALL QEXIT('CIEIG')
 
 #ifdef VAR_MPI
-C     eliminate local memory
-      IDUM = 0
-      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
+      IF (LUCI_NMPROC .GT. 1) THEN
+C       eliminate local memory
+        IDUM = 0
+        CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 *
       END

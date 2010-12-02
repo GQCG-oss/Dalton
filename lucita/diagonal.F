@@ -1218,15 +1218,19 @@ C     REAL * 8  INPROD
             write(6,*) ' number of diagonal elements to disc ',IDET
             CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
           END IF
+          IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
-          CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+             CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
      &                           MPI_REAL8,ISTAT,IERR)
-C         new offset
-          IDIA_OFFSET = IDIA_OFFSET + IDET
+C            new offset
+             IDIA_OFFSET = IDIA_OFFSET + IDET
 #else
-          CALL ITODS(IDET,1,-1,LUDIA)
-          CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
+             call quit('LUCI_NMPROC .gt. 1 but not VAR_MPI')
 #endif
+          ELSE
+             CALL ITODS(IDET,1,-1,LUDIA)
+             CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
+          END IF
           IDET = 0
         END IF
 2425    CONTINUE

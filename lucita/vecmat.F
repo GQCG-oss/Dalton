@@ -2316,12 +2316,6 @@ C    &           LUDIA)
 *.Vector is always written in packed form
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#ifdef VAR_MPI
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
       
 *.Input
       DIMENSION IPLAC(*),VAL(*)
@@ -2352,10 +2346,6 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
      &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
 *.CSK
   200     CONTINUE
-CSK          IF(MYPROC.EQ.MASTER) THEN
-CSK           write(6,*)  'record to be disced '
-CSK           CALL WRTMT_LU(VEC1,1,LBL,1,LBL)
-CSK          END IF
           IF(JPACK.EQ.1) THEN
             CALL TODSCP(VEC1,LBL,-1,LU)
           ELSE

@@ -3894,10 +3894,10 @@ C
 *        write(6,*) 'let us do nothing',nothing
        END
 *****************************************************
-#else
+#else   /* VAR_MPI */
 * dummy routine for normal compilation
        SUBROUTINE DO_NOTHING2(NOTHING)
        IMPLICIT REAL*8(A-H,O-Z)
 *        write(6,*) 'let us do nothing',nothing  
        END 
-#endif 
+#endif    /* VAR_MPI */

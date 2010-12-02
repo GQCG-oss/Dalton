@@ -4060,12 +4060,7 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KFREEL
 !               for addressing of WORK
-#ifdef VAR_MPI
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-#endif
 *. Input
 *     (and /LUCINP/ not occuring here )
 #include "mxpdim.inc"

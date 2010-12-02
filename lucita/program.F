@@ -317,6 +317,8 @@ C     WORK(KBLCKPD) == list of all blocks containing their assigned CPU
 C     --> this is the most important array! :)
 C
 #ifdef VAR_MPI
+      IF (LUCI_NMPROC .GT. 1) THEN
+
       allocate(tmp_block_scaling_fac(nblock))
 
       CALL BLOCK_DISTR_DRV(NBLOCK,block_list,par_dist_block_list,
@@ -425,6 +427,7 @@ C     initialize ...
       CALL IZERO(WORK(KILU6LIST),IALL_LU6)
       CALL IZERO(WORK(KILU7LIST),IALL_LU7)
 C
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 *. Class divisions of  dets
 *. ( Well, in principle I am against class division, but I
@@ -588,6 +591,8 @@ C       construct H diagonal
          WRITE(LUWRTOUT,*) ' Diagonal not calculated '
       END IF
 #ifdef VAR_MPI
+      IF (LUCI_NMPROC .GT. 1) THEN
+
 C     debug printing
       NPTEST_VAR = 00
       IF( NPTEST_VAR .ge. 10 ) THEN
@@ -607,6 +612,7 @@ C     debug printing
         END DO
       ENDIF
       NPTEST_VAR = 00
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 *
 *. Transfer control to optimization routine
@@ -640,6 +646,7 @@ C     debug printing
 C     check for restart without CI --> we want to run an analysis only
       IF( MAXIT .lt. 0) GOTO 404
 #ifdef VAR_MPI
+      IF (LUCI_NMPROC .GT. 1) THEN
 C
 C     copy restart vector to MPI-file format
 C
@@ -660,6 +667,7 @@ C
 C
       END IF
 C
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
       CALL CIEIG5(MV7,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,LUSC41,
@@ -700,6 +708,7 @@ C
 C
 #ifdef VAR_MPI
 
+      IF (LUCI_NMPROC .GT. 1) THEN
 !     close parallel files that are no longer needed
       call close_file_io_model(nr_files-1,0,fh_array)
 C
@@ -738,6 +747,7 @@ C
  505    CONTINUE
       close(unit=LUSC41,status='DELETE')
 *
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 C
       IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
@@ -953,7 +963,6 @@ C
 *
       IN = LUCMD
       IW = LUPRI
-#ifdef VAR_MPI
       LUCI_MASTER = MASTER
       LUCI_MYPROC = MYTID
 *     Add the master node
@@ -961,11 +970,8 @@ C
 C
 C     summon the slaves, who are waiting in the general menu routine
 C     --------------------------------------------------------------
-      CALL LUMSTI
-#else
-      LUCI_MASTER = 0
-      LUCI_MYPROC = 0
-      LUCI_NMPROC = 1
+#ifdef VAR_MPI
+      IF (LUCI_NMPROC .GT. 1) CALL LUMSTI
 #endif
 C
 C     Enter the generic LUCITA routine (master becomes 
@@ -976,7 +982,7 @@ C
 C     return the slaves to the general menu routine
 C     ---------------------------------------------
 #ifdef VAR_MPI
-      CALL LUMSTE
+      IF (LUCI_NMPROC .GT. 1) CALL LUMSTE
 #endif
 C
       END
@@ -1075,6 +1081,8 @@ C     character line
       nr_files = 9
 
 #ifdef VAR_MPI
+      
+      IF (LUCI_NMPROC .GT. 1) THEN
 
 !     setup the communication model.
 !     all important variables (input parameters to module) 
@@ -1135,6 +1143,8 @@ C     character line
       ILU1 = fh_array(9)
 
       call quit('*** error: stefan forced me to stop after setup ***')
+
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 
 !     free currently unused shared-memory group list
