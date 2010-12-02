@@ -419,7 +419,7 @@ C
       DOCI      = .FALSE.
       DOMC      = .FALSE.
       DONEVPT   = .FALSE.
-      DOLUCI    = .FALSE.
+      DOLUCITA  = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -2400,8 +2400,8 @@ C *** Option 21: .KSPT2
         READ (LUCMD,*) WDFTMP
       GO TO 100
   122 CONTINUE
-        doluci   = .true.
-        numrun = numrun + 1
+        DOLUCITA = .TRUE.
+        NUMRUN   = NUMRUN + 1
       GO TO 100
 C *** Options 23-25 not used
   123 CONTINUE
@@ -5056,7 +5056,12 @@ C
          WRITE (IWUNIT,1450) (NORBT,NORB(I),I=1,NSYM)
          WRITE (IWUNIT,1500) (NBAST,NBAS(I),I=1,NSYM)
          GO TO 8000
-      ELSE IF ( DOMC .OR. DOCI ) THEN
+      END IF
+      IF (DOLUCITA) THEN
+         WRITE (IWUNIT,1050) 'Generalized Active Space CI (with LUCITA)'
+         WRITE (IWUNIT,1051) 'preceded by :'
+      END IF
+      IF ( DOMC .OR. DOCI ) THEN
          IF ( DONEVPT ) then
 C Oct 2003 hjaaj: from koopro4.F:
 C     This program calculates the second order correction to the energy
