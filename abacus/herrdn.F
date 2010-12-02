@@ -4227,9 +4227,9 @@ C
             IPCMN = IPCMN + 1
             IF (IPREAD .GT. IPTEST) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
-     *              NAME, ICRX, CHRXYZ(-1), CORD(1,ICENT),
-     *                    ICRY, CHRXYZ(-2), CORD(2,ICENT),
-     *                    ICRZ, CHRXYZ(-3), CORD(3,ICENT)
+     *              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
+     *                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
+     *                    ICRX+2, CHRXYZ(-3), CORD(3,ICENT)
             END IF
             WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
             NATOMS = NATOMS + 1
@@ -4246,21 +4246,18 @@ C
                   WORK(KMASS + NATOMS) = 
      *                 DISOTP(IZATOM(ICENT),1,'MASS')
                   NATOMS = NATOMS + 1
-                  WORK(ICRX) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+                  WORK(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
      *                        *CORD(1,ICENT)
-                  WORK(ICRY) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+                  WORK(ICRX+1) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
      *                        *CORD(2,ICENT)
-                  WORK(ICRZ) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  WORK(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
-                  IF (IPREAD .GT. IPTEST) THEN
-                  WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
-     *                     NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
-     *                     ICRY,CHRXYZ(-2),WORK(ICRY),
-     *                     ICRZ,CHRXYZ(-3),WORK(ICRZ)
-                  END IF
+                  IF (IPREAD .GT. IPTEST)
+     &            WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
+     &               NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
+     &                        ICRX+1,CHRXYZ(-2),WORK(ICRX+1),
+     &                        ICRX+2,CHRXYZ(-3),WORK(ICRX+2)
                   ICRX = ICRX + 3
-                  ICRY = ICRY + 3
-                  ICRZ = ICRZ + 3
                END IF
   200       CONTINUE
          END IF
