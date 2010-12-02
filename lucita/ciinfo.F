@@ -4026,23 +4026,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE ZIRAT
-*
-* Ratio between real and integer
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-#include "SysDef.inc"
-*. Output
-#include "irat.inc"
-      IRAT=RtoI
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ZNELFSPGP(NTESTG)
 *
 * Generate for each supergroup the number of electrons in each active

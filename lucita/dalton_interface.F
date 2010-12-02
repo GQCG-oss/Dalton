@@ -40,26 +40,37 @@ C
 ***********************************************************************
 **********************************************************************
 *                                                                    *
-*          DALTON - LUCITA interface May 2008, HJaaj
+*          DALTON - LUCITA interface May 2008, HJAaJ                 *
 *                                                                    *
 *          based on                                                  *
-*          MOLCAS - LUCIA interface                                  *
-*          DIRAC  - LUCIA interface                                  *
-*                                                                    *
-*          written by Timo Fleig, Feb.-Apr. 1999                     *
-*          written by Timo Fleig, Dec       2001                     *
+*             MOLCAS - LUCIA interface                               *
+*             DIRAC  - LUCIA interface                               *
+*          written by Timo Fleig, 1999-2001                          *
 *                                                                    *
 *                                                                    *
 *                                                                    *
 **********************************************************************
 *
       subroutine dalton_lucita_input_interface
+!
+! Note that LUCITAINP has already been called before this call
+! where *LUCITA input options in .dal file has been read.
+
+!! #include "implicit.h"  ! hjaaj DEBUG
+!! #include "mxpdim.inc"
+!! #include "crun.inc"
+
+!!       ENVIRO='DALTON'
 *
 *  Say hello:
       call hello_dalton_lucita
+!! *
+!! *  Read symmetry info etc. for
+!! !     CALL GET_ORB_DIM_ENV(ECORE_ENV)
+!! !     write(6,*) 'after get_orb_dim_env ecore_env=',ecore_env
 *
 *  Get it going:
-      call dalluct
+      call dalton_lucita
 *
       end
 *********************************************************************
@@ -83,7 +94,7 @@ C
 *  Dec-Mar 2001/02,   Timo Fleig
 *********************************************************************
 *
-      subroutine dalluct
+      subroutine dalton_lucita
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -567,8 +578,7 @@ C        .. we do not accept user input of less than 100 000 !
 *
 *  1: Title
 *
-      write(LUOUT,*)
-      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
+      write(LUOUT,'(/1X,80A1)') ('*',I=1,80)
       write(LUOUT,'(1X,80A1)') '*',(' ',I=1,78),'*'
       write(LUOUT,'(1X,37A1,A6,37A1)')
      &        '*',(' ',I=1,36),'Title:',(' ',I=1,36),'*'
@@ -578,17 +588,15 @@ C        .. we do not accept user input of less than 100 000 !
       end do
       write(LUOUT,'(1X,80A1)') '*',(' ',I=1,78),'*'
       write(LUOUT,'(1X,80A1)') ('*',I=1,80)
-      write(LUOUT,*)
 *
 *  2: Initial wave function
 *
-      write(LUOUT,'(A42,A6)')
+      write(LUOUT,'(/A42,A6)')
      &  ' Orbitals as initial wave function .... ',WAFFCT
-      write(LUOUT,*)
 *
 *  3: Type of CI calculation
 *
-      write(LUOUT,'(A42,A6)')
+      write(LUOUT,'(/A42,A6)')
      &  ' Type of calculation .................. ',TYPE
       write(LUOUT,*)
 *
@@ -728,7 +736,7 @@ C        .. we do not accept user input of less than 100 000 !
 *-----------------------------------------------------------------*
 *  Call conversion routine for creating LUCIA input
 *-----------------------------------------------------------------*
-      call mol2luc(NTIT,NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
+      call dalton2lucita(NTIT,NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
 *
 6666  continue
 *
@@ -777,6 +785,7 @@ C        .. we do not accept user input of less than 100 000 !
 *. Output
       DIMENSION CMO(*)
 
+      write(6,*) 'GET_CMOAO: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         CALL GET_CMOAO_DALTON(CMO,NMOS_ENV(1),NAOS_ENV(1),NSMOB)
       ELSE IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
@@ -807,6 +816,9 @@ C        .. we do not accept user input of less than 100 000 !
       DIMENSION CMO(*)
 *
 
+      write(6,*) 'GET_CMOAO_DALTON: NSM  = ',NSM         !hjaaj DEBUG
+      write(6,*) 'GET_CMOAO_DALTON: NBAS = ',NBAS(1:NSM) !hjaaj DEBUG
+      write(6,*) 'GET_CMOAO_DALTON: NMO  = ',NMO (1:NSM) !hjaaj DEBUG
       ITAP30 = 16
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
@@ -816,7 +828,7 @@ C        .. we do not accept user input of less than 100 000 !
 *. And skip record containing eigenvalues etc
       READ(ITAP30)
 C     READ (ITAP30) NSYMHF,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYMHF),
-C    *              (NLAMDA(I),I=1,NSYMHF),(NORB(I),I=1,NSYMHF),
+C    *              (NORB(I),I=1,NSYMHF),(NBAS(I),I=1,NSYMHF),
 C    *              POTNUC,EMCSCF
 C
 C
@@ -830,7 +842,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
       READ (ITAP30) (CMO(I),I=1,NCOEF)
       CLOSE(ITAP30,STATUS='KEEP')
 *
-      NTEST = 000
+      NTEST = 100 ! hjaaj DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) '  MO - AO expansion matrix '
         WRITE(6,*) '============================='
@@ -1040,6 +1052,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GT_H1A')
 *
+      write(6,*) 'GET_H1AO: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         LSCR = NTOOB**2
         CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'GTH1SC')
@@ -1075,6 +1088,7 @@ C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
 *
       LOGICAL FNDLAB
 *
+      write(6,*) 'GET_H1AO_DALTON: LABEL = ',LABEL !hjaaj DEBUG
       NTEST =   02
       IF(NTEST.GE.2) THEN
         WRITE(6,*) ' Fetching one-electron integrals with Label ',
@@ -1288,11 +1302,12 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "lucinp.inc"
 #include "parluci.h"
 *
+      write(6,*) 'GET_ORB_DIM_ENV: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
 C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
         stop 'No MOLCAS ENVIRONMENT!'
       ELSE IF(ENVIRO(1:6).EQ.'DALTON' ) THEN
-        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
+        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSMOB)
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA') THEN
 *. Lucia : core energy is obtained from 2-e file
         CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
@@ -2147,8 +2162,8 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       END
 ***********************************************************************
 *
-      subroutine getmolinf(WAFFCT,IPRT,NACRAS,CARD,ITEM,MXITEM,
-     &                     IRETISH,IDBGRP)
+      subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS,CARD,ITEM,MXITEM,
+     &                     IRETISH)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -2159,70 +2174,59 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
 #include "units.inc"
 *
+      write(6,*) 'GET_DALTON_INF called, we try doing a little!' !hjaaj DEBUG
+      IRETISH = -1
       if (WAFFCT.eq.'HF_SCF') then
 *
 *  1) DHFSCF wave function, closed shell
-         call info_dirac(CARD,WAFFCT,NACRAS,IDBGRP,IRETISH,IPRT)
-         if (IPRT.ge.1) write(6,*)
+!        call info_dirac(CARD,WAFFCT,NACRAS,IRETISH,IPRT)
 *
       else if (WAFFCT.eq.'RASSCF') then
 
 *  2) DHFSCF wave function, open shell
-         call info_dirac(CARD,WAFFCT,NACRAS,IDBGRP,IRETISH,IPRT)
-         if (IPRT.ge.1) write(6,*)
+!        call info_dirac(CARD,WAFFCT,NACRAS,IRETISH,IPRT)
+      else
+         write(6,*) 'ERROR: unknown wave function type: ',WAFFCT
+         call quit('ERROR: unknown wave function type')
       end if
       return
       end
 ***********************************************************************
-      SUBROUTINE GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
+      SUBROUTINE GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSYM_ENV)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#include "priunit.h"
 *. Scratch
-      DIMENSION TITLE(24),NBAS(8), NOCC(8), NLAMDA(8), NORB(8)
+      DIMENSION NBAS(8), NOCC(8), NORB(8)
 *. Output
       DIMENSION NAOS_ENV(*), NMOS_ENV(*)
 
-*
-* AO info
-*
-C     Read information on file AONEINT from HERMIT.
-      ITAP34 = 66
-      OPEN (ITAP34,STATUS='OLD',FORM='UNFORMATTED',FILE='AOONEINT')
-      REWIND ITAP34
-      READ (ITAP34) TITLE,NST,(NBAS(I),I=1,NST),ENUC
-      CLOSE(ITAP34,STATUS='KEEP')
-      ECORE_ENV = ENUC
-C     WRITE(6,'(//A,2(/12A6)/)')
-C    *   ' Dalton   title from basis set input :',(TITLE(I),I=1,24)
-*
-C     WRITE(6,*) ' Number of basis functions per sym '
-C     CALL IWRTMA(NBAS,NST,1,NST,1)
-*
-      CALL ICOPVE(NBAS,NAOS_ENV,NST)
 C
-C     Read information on file SIRIFC written from SIRIUS.
+C     Read AO and MO information on file SIRIFC written from SIRIUS.
 C
-*
-* MO info
-*
-*. By trial and error - EKD + JO, NLAMDA was identified as
-*. the array holding number of MO's
-*
       ITAP30 = 16
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
-      CALL MOLLAB('TRCCINT ',ITAP30,6)
-      READ (ITAP30) NSYMHF,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYMHF),
-     *              (NLAMDA(I),I=1,NSYMHF),(NORB(I),I=1,NSYMHF),
+      CALL MOLLAB('TRCCINT ',ITAP30,lupri)
+      READ (ITAP30) NSYM,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYM),
+     *              (NORB(I),I=1,NSYM),(NBAS(I),I=1,NSYM),
      *              POTNUC,EMCSCF
-      CALL ICOPVE(NLAMDA,NMOS_ENV,NST)
-C?    WRITE(6,*) ' Norb as delivered from environment '
-C?    CALL IWRTMA(NORB,1,8,1,8)
+      NSYM_ENV = NSYM
+      CALL ICOPVE(NORB,NMOS_ENV,NSYM)
+      CALL ICOPVE(NBAS,NAOS_ENV,NSYM)
+      ECORE_ENV = POTNUC
+
+      write(lupri,*) 'GETOBS_DALTON' !hjaaj DEBUG
+      WRITE(lupri,*) ' Number of basis functions per sym '
+      CALL IWRTMA(NBAS,1,8,1,8)
 *
-C?    WRITE(6,*) ' NOCC NLAMDA  as delivered from DALTON'
-C?    CALL IWRTMA(NOCC,1,8,1,8)
-C?    CALL IWRTMA(NLAMDA,1,8,1,8)
+      WRITE(lupri,*) ' Norb as delivered from environment '
+      CALL IWRTMA(NORB,1,8,1,8)
+*
+      WRITE(lupri,*) ' NOCC as delivered from DALTON (discarded)'
+      CALL IWRTMA(NOCC,1,8,1,8)
 *.
-C?    WRITE(6,*) ' NORBT, NCMOT = ', NORBT,NCMOT
+      WRITE(lupri,*) ' from DALTON: NORBT, NBAST, NCMOT :',NORBT,NBAST,NCMOT
+
       RETURN
       END
 ***********************************************************************
@@ -2921,154 +2925,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       RETURN
       END
 ***********************************************************************
-      subroutine info_dirac(CARD,WAFFCT,NACRAS,IDBGRP,IRETISH,IPRT)
-*
-************************************************************************
-*                                                                      *
-*     Purpose:                                                         *
-*                                                                      *
-*     Transfer spinor and space information from DIRAC                 *
-*     environment to LUCITA common blocks. Decode cards.               *
-*                                                                      *
-*                      Timo Fleig, Jan. 2002                           *
-*                                                                      *
-************************************************************************
-*
-* MPI adaption by Stefan Knecht, Feb. 2006
-* only master read in MRCONEE and distributes the information 
-* to all nodes
-*
-      Implicit Real*8 (A-H,O-Z)
-*
-#include "mxpdim.inc"
-#include "orbinf_lucita.inc"
-#include "wrkspc.inc"
-#include "clunit.inc"
-#include "parluci.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-*
-      character*6 WAFFCT
-      character*8 FNIPH
-      character*14 DUMCHA(MXPIRR)
-      character*72 CARD,ITEM
-      logical BREIT
-      dimension ITEM(MXITEM),IDUMAR(MXPORB),DUMAR(MXPORB),NSPINR(2),
-     &          NSTR(2),NCORE(2),NDELE(2),IDUM2(MXPIRR)
-*
-      NTESTL = 0
-      NTEST = max(NTESTL,IPRT)
-*
-* Get info from DIRAC file MRCONEE
-C
-      IF (LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
-
-      open(LU1INT,FILE='MRCONEE',FORM='UNFORMATTED')
-      read(LU1INT) MORB,BREIT,ECORE_DIR,NFSYM,NZ
-      read(LU1INT) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
-     &                    (IDUM2(ID),ID=1,IDUMMY),
-     &                    (NSTR(I),I=1,NFSYM),
-     &                    (IDUM2(ID),ID=1,NFSYM),
-     &                    (NCORE(I),I=1,NFSYM),
-     &                    (IDUM2(ID),ID=1,NFSYM),
-     &                    (NDELE(I),I=1,NFSYM)
-      read(LU1INT)
-      read(LU1INT)
-      read(LU1INT) (IDUMAR(ID),IDUMAR(ID),DUMAR(ID),ID=1,MORB,1),
-     &             (IDUMAR(I),I=1,MORB,1),(IDUM2(ID),ID=1,NFSYM),NBREPD
-      close(LU1INT)
-*
-      if (NTEST.ge.1)
-     &  write(6,'(A,1F18.10)') '    DIRAC core energy = ',ECORE_DIR
-      if (NTEST.ge.3) then
-        write(6,*)
-        write(6,*) 'Testing read MRCONEE'
-        write(6,*) 'MORB = ',MORB
-        write(6,*) 'BREIT = ',BREIT
-        write(6,*) 'Number of Dirac boson symmetries: ',NBREPD
-        write(6,*) 'Boson symmetries of spinors:'
-        do IB=1,MORB,1
-          write(6,'(A11,I5,A3,I12)') 'Spinor no. ',IB,' : ',IDUMAR(IB)
-        end do
-      end if
-      END IF
-C    /\ read in master
-C
-C     Distribute the information read from MRCONEE
-C
-#ifdef VAR_MPI
-      IF (LUCI_NMPROC.GT.1) THEN
-        CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,
-     &                 LUCI_MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,
-     &                 LUCI_MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,
-     &                 LUCI_MASTER,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,IDUMMY,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NCORE,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NDELE,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUMAR,MORB,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NBREPD,1,my_MPI_INTEGER,LUCI_MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-      END IF
-#endif
-
-
-*
-*...  space definitions
-* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-*     Resolve number of frozen orbitals
-      if (CARD(1:1).ne.'N') then
-        call decode_line(CARD,72,NITEM,ITEM,MXITEM)
-        do ISYM=1,NBREPD,1
-          call char_to_integer_moluc(ITEM(ISYM),NFRO_INP(ISYM))
-        end do
-      else
-        do ISYM=1,NBREPD,1
-          NFRO_INP(ISYM) = 0
-        end do
-      end if
-*
-      NSYM = NBREPD
-*
-      call quit('*** error in info_dirac: transfer routine missing ***')
-!     call transf_dirac(IDBGRP,NSYM,NISH,NASH,NOCC,NORB,NEXT,
-!    &                  NFSYM,NZ,MORB,IDUMAR,NSTR,NCORE,NDELE,
-!    &                  NACTELD,WAFFCT,IRETISH,IPRT)
-*
-      NACRAS = NACTELD
-*
-      Return
-      End
-***********************************************************************
       SUBROUTINE INFSIR(IWRK,WRK,LWRK)
 C
 C     Written by Henrik Koch 06-09-89
@@ -3081,13 +2937,14 @@ C               propagator calculation.
 C     Argument list :
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include "irat.inc"
+#include "SysDef.inc"
       PARAMETER (LUINP = 17)
       PARAMETER ( ITAP30 = 16, LUPRI = 6, LUCMDS=17)
       PARAMETER ( LURSP   = 18 , LUONE = 19, LUW6 = 6)
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), IBUF(LBUF)
-      DIMENSION TITLE(24),NDEG(8),NBAS(8),NOCC(8),NEJBAS(8)
+      CHARACTER*72 TITLE(2)
+      DIMENSION NDEG(8),NBAS(8),NOCC(8),NEJBAS(8)
       DIMENSION IWRK(*),WRK(LWRK)
       LOGICAL LPPOP
       LOGICAL FNDLAB
@@ -3102,7 +2959,8 @@ C
       ITAP34 = 66
       OPEN (ITAP34,STATUS='OLD',FORM='UNFORMATTED',FILE='AOONEINT')
       REWIND ITAP34
-      READ (ITAP34) TITLE,NST,(NDEG(I),I=1,NST),ENUC
+      READ (ITAP34) TITLE
+      READ (ITAP34) NST,(NDEG(I),I=1,NST),ENUC
       CLOSE(ITAP34,STATUS='KEEP')
       CORE = ENUC
       enenuc = enuc
@@ -3117,8 +2975,8 @@ C
             MXCOEF = MXCOEF + NDEG(I)*NDEG(I)
          END IF
   100 CONTINUE
-      WRITE(6,'(//A,2(/12A6)/)')
-     *   ' Molecule title from basis set input :',(TITLE(I),I=1,24)
+      WRITE(6,'(//A/5X,A/5X,A)/)')
+     &   ' Molecule title from basis set input :',(TITLE(I),I=1,24)
 C?    WRITE(6,*) 'NBFAO  : ',NBFAO
 C?    WRITE(6,*) 'NSYMHF : ',NSYMHF
 C
@@ -3133,8 +2991,8 @@ C
       CALL ICOPVE(NLAMDA,NEJBAS,8)
 C
       KEIGVL = 1
-      KEIGSY = (KEIGVL + NORBT)*IRAT
-      KEIGVC = (KEIGSY + NORBT - 2)/IRAT + 2
+      KEIGSY = (KEIGVL + NORBT)*RtoI
+      KEIGVC = (KEIGSY + NORBT - 2)/RtoI + 2
 C
       READ (ITAP30) (WRK(KEIGVL+I-1),I=1,NORBT),
      *              (IWRK(KEIGSY+I-1),I=1,NORBT)
@@ -3469,7 +3327,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
      &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &                   IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
+     &                   IUSE_PH,IDEMOL,IRSTRT,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
 *
@@ -3519,9 +3377,7 @@ CTF      write(*,'(1X,A6)') MACHINE
            write(*,'(A6)') 'TERACI'
          end if
 *
-         write(*,'(A6)') 'DIRAC '
-*
-         write(*,'(1X,I1)') IDBGRP
+         write(*,'(A6)') 'DALTON'
 *
          write(*,'(A3)') 'D2H'
 *
@@ -3535,8 +3391,8 @@ CTF      write(*,'(1X,A6)') MACHINE
          write(*,'(1X,I3)') NGAS
 *
          HESTR = ' '
-         write (HESTR,'(A,I1,A)') '(X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
+         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(I4)'
          do IGAS = 1,NGAS,1
             write(*,HESTR)
      &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
@@ -3669,9 +3525,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
            write(LUINP,'(A6)') 'TERACI'
          end if
 *
-         write(LUINP,'(A6)') 'DIRAC '
-*
-         write(LUINP,'(1X,I1)') IDBGRP
+         write(LUINP,'(A6)') 'DALTON'
 *
          write(LUINP,'(A3)') 'D2H'
 *
@@ -3693,10 +3547,10 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
          end do
 *
          write(LUINP,'(A6)') 'NACTEL'
-         write(LUINP,'(1X,I3)') NACTEL
+         write(LUINP,'(I4)') NACTEL
 *
          write(LUINP,'(A6)') 'GASSPC'
-         write(LUINP,'(1X,I3)') NCISPC
+         write(LUINP,'(I4)') NCISPC
          do ISPC=1,NCISPC,1
             write(LUINP,'(1X,2I3)')
      &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
@@ -3845,7 +3699,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *
 *************************************************************
 *
-      subroutine mol2luc(NTIT,NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
+      subroutine dalton2lucita(NTIT,NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -3853,7 +3707,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 #include "luci.inc"
 #include "orbinf_lucita.inc"
 #include "machine.inc"
-#include "irat.inc"
+#include "SysDef.inc"
 *
       logical MSCOMB
 *
@@ -3863,6 +3717,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
+      write(6,*) 'enter dalton2lucita'
 *
 *------------------------------------------------------------------*
 *  Create default settings for LUCITA
@@ -3872,16 +3727,13 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *  Import required information from Dalton
 *------------------------------------------------------------------*
 *
-      print *, '*** stefan forced me to stop here in mol2luc! ***'
-      print *, '*** interface to Dalton required! ***'
-      call quit(' *** error in mol2luc: no interface to Dalton ***')
-      call getmolinf(WAFFCT,IPRT,NACRAS,CARD3,ITEM,MXITEM,
-     &               IRETISH,IDBGRP)
+      call get_dalton_inf(WAFFCT,IPRT,NACRAS,CARD3,ITEM,MXITEM,
+     &               IRETISH)
 *
 *.................................................................
 *  1) Type of wave function dependencies
 *.................................................................
-*      none (see getmolinf above)
+*      none (see get_dalton_inf above)
 *
 *.................................................................
 *  2) Inactive space as GAS 1 (if stated in input)
@@ -3931,19 +3783,15 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
               NTOCCH = NTOCCH + 2*NOCC(ISYM)
             end do
             NACTEL = NTOCCH
-            write(6,'(A42,I3)')
-     &      ' Number of active electrons ........... ',NACTEL
-            write(6,*)
           else if (WAFFCT.eq.'RASSCF') then
             do ISYM=1,NSYM,1
               NTOCCR = NTOCCR + 2*NISH(ISYM)
             end do
             NOCCIM = NTOCCR + NACRAS
             NACTEL = NOCCIM
-            write(6,'(A42,I3)')
-     &      ' Number of active electrons ........... ',NACTEL
-            write(6,*)
           end if
+          write(6,'(A42,I3/)')
+     &      ' Number of active electrons ........... ',NACTEL
         end if
         NTOOB = 0
         do ISYM=1,NSYM,1
@@ -4163,19 +4011,15 @@ CC        IVFLEV = 1               ! could be made more flexible
               NTOCCH = NTOCCH + 2*NOCC(ISYM)
             end do
             NACTEL = NTOCCH
-            write(6,'(A42,I3)')
-     &      ' Number of active electrons ........... ',NACTEL
-            write(6,*)
           else if (WAFFCT.eq.'RASSCF') then
             do ISYM=1,NSYM,1
               NTOCCR = NTOCCR + 2*NISH(ISYM)
             end do
             NOCCIM = NTOCCR + NACRAS
             NACTEL = NOCCIM
-            write(6,'(A42,I3)')
-     &      ' Number of active electrons ........... ',NACTEL
-            write(6,*)
           end if
+          write(6,'(A42,I3/)')
+     &      ' Number of active electrons ........... ',NACTEL
         end if
         NTOOB = 0
         do ISYM=1,NSYM,1
@@ -4502,19 +4346,15 @@ CC        IVFLEV = 1               ! could be made more flexible
               NTOCCH = NTOCCH + 2*NOCC(ISYM)
             end do
             NACTEL = NTOCCH
-            write(6,'(A42,I3)')
-     &      ' Number of active electrons ........... ',NACTEL
-            write(6,*)
           else if (WAFFCT.eq.'RASSCF') then
             do ISYM=1,NSYM,1
               NTOCCR = NTOCCR + 2*NISH(ISYM)
             end do
             NOCCIM = NTOCCR + NACRAS
             NACTEL = NOCCIM
-            write(6,'(A42,I3)')
-     &      ' Number of active electrons ........... ',NACTEL
-            write(6,*)
           end if
+          write(6,'(A42,I3/)')
+     &      ' Number of active electrons ........... ',NACTEL
         end if
         NTOOB = 0
         do ISYM=1,NSYM,1
@@ -5009,15 +4849,13 @@ CC        IVFLEV = 1               ! could be made more flexible
         else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
            if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
               write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(6,*) 'Compare with number of active electrons.'
               Call Abend2( 'quitting' )
            end if
         else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
            if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
               write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(6,*) 'Compare with number of active electrons.'
               Call Abend2( 'quitting' )
            end if
         end if
@@ -5163,7 +5001,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &             IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
+     &             IUSE_PH,IDEMOL,IRSTRT,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
      &             IPRDEN,IPROCC,IPRNCIV)
 *
@@ -5541,6 +5379,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &          NGSSH(MXPIRR,MXPNGAS),IORBF(2),NSTR(NFSYM)
       dimension ONEINT((2*NDIM)**2),DUMAR(*)
 *
+      write(6,*) 'RDONE_DALTON: ' !hjaaj DEBUG
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 *
@@ -5916,11 +5755,7 @@ C
 *. Modified for LUCIA : XIJKL added to list
 C
 C     -------------------------------------------------------
-C     IRAT  = (real word length) / (integer word length)
-C     IRAT2 = (real word length) / (half-integer word length)
-C             if available and used, otherwise IRAT2 = IRAT
-C     PARAMETER (IRAT = 2, IRAT2 = 2)
-#include "irat.inc"
+C
       DIMENSION WRK(LWRK)
       PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)
       INTEGER P,Q,R,S,A,B,C,D,E,F,G
@@ -5942,7 +5777,7 @@ C
 C     KBUF   = KTWOMO + NORBT*NORBT*NORBT*NORBT
       KBUF   = KTWOMO
       KIBUF  = KBUF   + LBINTM
-      KEND   = KIBUF  + LBINTM/IRAT + 1
+      KEND   = KIBUF  + LBINTM/RtoI + 1
 C
       IF ( KEND .GT. LWRK ) THEN
          Call Abend2( 'Insufficient spaces in READMO' )
@@ -5969,11 +5804,6 @@ C
       PARAMETER (LUPRI = 6)
 C
 C     -------------------------------------------------------
-C     IRAT  = (real word length) / (integer word length)
-C     IRAT2 = (real word length) / (half-integer word length)
-C             if available and used, otherwise IRAT2 = IRAT
-C     PARAMETER (IRAT = 2, IRAT2 = 2)
-#include "irat.inc"
       DIMENSION TWOMO(*),
      *          BUF(LBUF),IBUF(LBUF)
       PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)

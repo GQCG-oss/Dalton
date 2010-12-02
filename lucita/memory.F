@@ -224,7 +224,7 @@ CADDE
 *         = FLUSM : Flush local memory to previous mark
 *         = SFREEM: Return the free memory currently available in real*8 words
 * IR    : 1 => integer , 2 => real,
-*         ratio between integer and real is IRAT
+*         ratio between integer and real is RtoI
 * IDENT : identifier of memory slice,Character*6
 *
 * Local Memory not flushed before allocation of additional static memory
@@ -249,12 +249,12 @@ CADDE
       DATA PAD2/0.987654321D0/
 *
 #include "mxpdim.inc"
-#include "irat.inc"
+#include "SysDef.inc"
 #include "wrkspc.inc"
 *. Info from matml7
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
-CSK      write(6,*)'IRAT',IRAT,'for IR',IR
+CSK      write(6,*)'RtoI',RtoI,'for IR',IR
 CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ISTOP = 0
       ITSOK  = 1
@@ -301,7 +301,7 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ELSE IF(TASK(1:4).EQ.'ADDS') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
-          KFREES = KFREEL +(KADD+1)/IRAT + 2*NPAD
+          KFREES = KFREEL +(KADD+1)/RtoI + 2*NPAD
         ELSE
           KFREES = KFREEL + KADD + 2*NPAD
         END IF
@@ -344,7 +344,7 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ELSE IF(TASK(1:4).EQ.'ADDL') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
-          KFREEL = KFREEL +(KADD+1)/IRAT + 2*NPAD
+          KFREEL = KFREEL +(KADD+1)/RtoI + 2*NPAD
         ELSE
           KFREEL = KFREEL + KADD + 2*NPAD
         END IF

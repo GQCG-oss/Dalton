@@ -920,7 +920,7 @@ C      CALL SLASK
 *                                                                     *
 ***********************************************************************
 C
-      SUBROUTINE PAMLUCITA(WRK,LWRK)
+      SUBROUTINE LUCITA(WRK,LWRK)
 C
 C L U C I A
 C
@@ -958,22 +958,20 @@ C
       LUCI_MYPROC = MYTID
 *     Add the master node
       LUCI_NMPROC = NODTOT + 1
+C
+C     summon the slaves, who are waiting in the general menu routine
+C     --------------------------------------------------------------
+      CALL LUMSTI
 #else
       LUCI_MASTER = 0
       LUCI_MYPROC = 0
       LUCI_NMPROC = 1
 #endif
 C
-C     summon the slaves, who are waiting in the general menu routine
-C     --------------------------------------------------------------
-#ifdef VAR_MPI
-      CALL LUMSTI
-#endif
-C
 C     Enter the generic LUCITA routine (master becomes 
 C     now somewhat like primus inter pares -- "first among equals")
 C     -------------------------------------------------------------
-      CALL PAMLU(WRK,LWRK,IN,IW)
+      CALL LUCITA_MASTER(WRK,LWRK,IN,IW)
 C
 C     return the slaves to the general menu routine
 C     ---------------------------------------------
@@ -988,7 +986,7 @@ C
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE PAMLU(WRK,LWRK,IUNIN,IUNUT)
+      SUBROUTINE LUCITA_MASTER(WRK,LWRK,IUNIN,IUNUT)
 *
 * L U C I A
 *
@@ -1007,7 +1005,7 @@ C
       use communication_model
       use file_io_model
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 k_offset, k8base_lucita, KPROCLIST, KGROUPLIST, 
+      INTEGER*8 k_offset, KADD, KPROCLIST, KGROUPLIST, 
      &          KGROUPLIST2, KPROCLENGTH, KVEC1
 !               for addressing of WORK
 #include "infpar.h"
@@ -1048,7 +1046,7 @@ C     character line
       integer, allocatable  :: grouplist_shared_mem(:)
       integer, allocatable  :: fh_array(:)
 
-      CALL QENTER('PAMLU')
+      CALL QENTER('LUCITA_MASTER')
 
       LUIN       = IUNIN
       LUOUT      = IUNUT
@@ -1146,6 +1144,9 @@ C     memory on common block WORK: initialization and allocation
 C
 C     Compute offset from WRK to WORK
       CALL COMPOFF(WRK,WORK,K_OFFSET)
+#ifdef integer_test
+      ! integer   :: kbase_lucita
+      ! integer*8 :: k8base_lucita
       KBASE_LUCITA = K_OFFSET
       ! HJAaJ Aug 2008:
       ! MEMMAN in LUCITA is using default integer type
@@ -1163,6 +1164,7 @@ C     Compute offset from WRK to WORK
      &   '(See code in lucita/program.F)'
          CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
       END IF
+#endif
  
 !     subtract dynamically allocated memory
       max_num_ttss_blocks = 15 000  
@@ -1171,9 +1173,7 @@ C     Compute offset from WRK to WORK
       KADD   = MXPWRD 
      &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
 
-C     ratio beteeen real and integer word length
-      CALL ZIRAT
-      CALL MEMMAN(K8BASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
+      CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
  
 C     LUCITA is used in SPINFREE calculations: no complex part
       irc_save = 1
@@ -1341,9 +1341,9 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
               CALL PTFOCK(LUC,LUSC36,NPERT,IREFSM,JCMBSPC)
             END IF
           ELSE IF(CARD(1:2).EQ.'CC') THEN
-         call quit('*** error in PAMLU: CC calculation not allowed ***')
+         call quit('error in LUCITA_MASTER: CC calculation not allowed')
           ELSE IF(CARD(1:2).EQ.'IC') THEN
-         call quit('*** error in PAMLU: PT calculation not allowed ***')
+         call quit('error in LUCITA_MASTER: PT calculation not allowed')
           END IF
 *         ^ End of switch between types of calculations
         END DO
@@ -1408,7 +1408,11 @@ C
      &  ' finished with no errors.'
       call qexit('PAMLU')
 *
-      end
+      CALL FLSHFO(LUOUT)
+
+      CALL QEXIT('LUCITA_MASTER')
+*
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1507,7 +1511,7 @@ C
       NERROR = 0
       NWARN = 0
       EXTSPC = 0
-      IECHO = 0
+      IECHO = 1 ! hjaaj DEBUG , default 0
 * No cc as default
       I_DO_CC = 0
 *
@@ -2029,15 +2033,6 @@ C         write(6,*) ' Sirius Flag activated '
             ENVIRO(1:6) = 'NONE  '
             ISETKW(24) = 1
             GOTO 999
-         END IF
-*
-* 24 : Integral import
-*
-         IF(ISETKW(24).EQ.0) THEN
-*. Default is - from NOV26 : Dalton
-            INTIMP = 5
-            ENVIRO(1:6) = 'DALTON'
-            ISETKW(24) = 2
          END IF
 * ===============================
 * 25 :INCORE option for integrals
@@ -5586,7 +5581,7 @@ C
 *
 *     now let's call the working routine!
 *
-      CALL PAMLU(WRK,LWRK,LUCMD,outfile_node)
+      CALL LUCITA_MASTER(WRK,LWRK,LUCMD,outfile_node)
       CLOSE (outfile_node,STATUS='KEEP')
 !     CLOSE (LUCMD,STATUS='KEEP')
 *

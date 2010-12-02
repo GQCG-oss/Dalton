@@ -306,9 +306,9 @@
 *
       INTEGER WORK(*)
 *
-#include "irat.inc"
+#include "SysDef.inc"
 *. offset when work is integer array
-      IIOFF = 1 + IRAT * (IROFF-1)
+      IIOFF = 1 + RtoI * (IROFF-1)
       IFRMR = WORK(IIOFF-1+IELMNT)
 *
       RETURN

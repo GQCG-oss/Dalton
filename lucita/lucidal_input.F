@@ -1,5 +1,5 @@
 !***********************************************************************
-      subroutine lucitainp(word,inperr,allopt)
+      subroutine LUCITAINP(word,inperr,allopt)
 !***********************************************************************
 C
 C       Input section for LUCITA module
@@ -60,7 +60,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      &            '" not recognized in LUCITA.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in LUCTINP.')
+               CALL QUIT('Illegal keyword in LUCITAINP.')
 C
 C&&& TITLE : One title line for CI specification
     1          CONTINUE
@@ -215,9 +215,9 @@ C&&& MEMFAC     : memory multiplier
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in LUCTINP.'
+     *            '" not recognized in LUCITAINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in LUCTINP.')
+               CALL QUIT('Illegal prompt in LUCITAINP.')
             END IF
       END IF
   300 CONTINUE

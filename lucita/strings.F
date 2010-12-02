@@ -4078,7 +4078,6 @@ C
 #include "lucinp.inc"
 #include "stinf.inc"
 #include "strinp.inc"
-#include "irat.inc"
 *
 #include "wrkspc.inc"
 *
