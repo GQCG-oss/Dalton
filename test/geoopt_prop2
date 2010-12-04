@@ -134,7 +134,7 @@ ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 CRIT1=`$GREP "O * z * \-0*\.04102" $log | wc -l`
 CRIT2=`$GREP "H * y *   0*\.04951" $log | wc -l`
 CRIT3=`$GREP "H * z *   0*\.04102" $log | wc -l`
-TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3
+TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
@@ -155,7 +155,7 @@ ERROR[7]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
 CRIT1=`$GREP "0*\.88703. * 2\.25462. * 7\.5206" $log | wc -l`
-TEST[8]=`expr $CRIT1
+TEST[8]=`expr $CRIT1`
 CTRL[8]=1
 ERROR[8]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
