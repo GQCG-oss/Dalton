@@ -79,10 +79,6 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
 *
 * Lucia.f : GAS implementing no pair relativistic Theory
 *
@@ -130,7 +126,13 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
         DO IGAS = 1, NGAS
           LMO = LMO + NGSSH(IRREP,IGAS)
         END DO
-        IF(LMO.NE.NMOS_ENV(IRREP)) THEN
+        IF(LMO.LT.NMOS_ENV(IRREP)) THEN
+          WRITE(6,*)
+     &    ' Warning : Number of orbitals in irrep reduced compared'
+          WRITE(6,*)
+     &    ' with information from environment, IRREP,NMO,NMO_ENV'
+          WRITE(6,'(3I5)') IRREP,LMO,NMOS_ENV(IRREP)
+        ELSE IF(LMO.NE.NMOS_ENV(IRREP)) THEN
           WRITE(6,*)
      &    ' Error : Number of orbitals in irrep not consistent'
           WRITE(6,*)
@@ -147,10 +149,6 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE DXTYP2_GAS(NDXTP,ITP,JTP,KTP,LTP,
      &                     NOBTP,IL,IR,IPHGAS)
@@ -284,10 +282,6 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE EN_FROM_DENS(E,I12)
 *
@@ -424,10 +418,6 @@ C?              write(6,*) ' Updated 2e-energy ', E2
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE EXCCLS2(NCLS,IACTIN,IACTOUT,IEXC,
      &                   IBASSPC_MX,IBASSPC)
 * A set of classes ICLS are given with the active
@@ -460,11 +450,6 @@ C?              write(6,*) ' Updated 2e-energy ', E2
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*
       SUBROUTINE EXCCLS2_S(NGAS,ICLS,NCLS,IACTIN,IACTOUT,IEXC,
      &               IBASSPC_MX,IBASSPC)
 *
@@ -539,212 +524,6 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FINMO
-*
-* Obtain final set of orbitals
-*. Density matrix is assumed in place
-*
-* Type of final orbitals is provided by the keyword IFINMO
-*
-* IFINMO = 1 => Natural orbitals
-* IFINMO = 2 => Canonical orbitals
-* IFINMO = 3 => Pseudo-natural orbitals
-* IFINMO = 4 => Pseudo-canonical orbitals
-* IFINMO = 5 => Psedo-natural-cannonical orbitals
-*
-* Jeppe Olsen, Last modification Jan. 1999
-*
-* Final MO-AO expansion stored in KMOAOUT
-*       MO-MO expansion stored in KMOMO
-*
-* If no mo-ao trans is present, only, MOMO matrix is returned
-
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KMAT1, KMAT2, KMAT3, KMAT4, KMAT5, KMOAO1, KMOAO2
-      ! for addressing of WORK
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "crun.inc"
-#include "glbbas.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
-#include "cgas.inc"
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-C?    DIMENSION SCRTEST(10000)
-*
-*. A bit dirty -admitted , Should be encapsulated but NFRO is
-*  neded to obtain transformed mo's
-*
-      CHARACTER*80 TITLEMO
-      COMMON/MOLOBS/
-     & IOList(64),iToc(64),nBas(8),nOrb(8),nFro(8),nDel(8),
-     & Nsym
-
-      ifinmo = 0
-
-      NTEST = 000
-      IF(NTEST.GE.1) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' FINMO in action '
-        WRITE(6,*) ' ================'
-        WRITE(6,*)
-        WRITE(6,*) ' IFINMO parameter ', IFINMO
-      END IF
-
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'FINMO ')
-      CALL MEMMAN(KMAT1,NTOOB**2,'ADDL  ',2,'MAT1  ')
-      CALL MEMMAN(KMAT2,NTOOB**2,'ADDL  ',2,'MAT2  ')
-      CALL MEMMAN(KMAT3,NTOOB**2,'ADDL  ',2,'MAT3  ')
-      CALL MEMMAN(KMAT4,2*NTOOB**2,'ADDL  ',2,'MAT4  ')
-      CALL MEMMAN(KMAT5,NTOOB**2,'ADDL  ',2,'MAT5  ')
-*
-      LMOMO = 0
-      DO ISYM = 1, NSMOB
-       LMOMO = LMOMO + NMOS_ENV(ISYM) ** 2
-      END DO
-*.
-*
-*
-      IF(IFINMO.EQ.2.OR.IFINMO.EQ.4.OR.IFINMO.EQ.5) THEN
-*. Construct FI+FA in WORK(KMAT1)
-        CALL COPVEC(WORK(KINT1),WORK(KMAT1),NINT1)
-        CALL FIFAM(WORK(KMAT1))
-        IF(IFINMO.EQ.5) CALL COPVEC(WORK(KMAT1),WORK(KMAT5),NINT1)
-      END IF
-      IF(IFINMO.EQ.1.OR.IFINMO.EQ.3.OR.IFINMO.EQ.5) THEN
-*. Symmetry order density matrix
-        CALL TYPE_TO_SYM_REO_MAT(WORK(KRHO1),WORK(KMAT2))
-        print*,' After TYPE_TO_SYM_REO_MAT '
-*. Pack to triangular form
-        DO ISYM = 1, NSMOB
-          IF(ISYM.EQ.1) THEN
-            IOFFIN = 1
-            IOFFUT = 1
-          ELSE
-            IOFFIN = IOFFIN + NACOBS(ISYM-1)**2
-            IOFFUT = IOFFUT + NACOBS(ISYM-1)*(NACOBS(ISYM-1)+1)/2
-          END IF
-          LORB = NACOBS(ISYM)
-          SIGN = 1.0D0
-C              TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
-          CALL TRIPAK_LUCI(WORK(KMAT2-1+IOFFIN),WORK(KMAT1-1+IOFFUT),
-     &                1,LORB,LORB,SIGN)
-*. multiply by minus one to get natural orbitals
-*. with largest occupations first
-          ONEM = -1.0D0
-          LDIM = LORB*(LORB+1)/2
-          CALL SCALVE(WORK(KMAT1-1+IOFFUT),ONEM,LDIM)
-        END DO
-        IF(NTEST.GE.100) THEN
-          WRITE(6,*) ' Packed density matrix ( times - 1 )'
-C         CALL APRBLM2(CMOAO,NBAS,NBAS,NSYM,0)
-          CALL APRBLM2(WORK(KMAT1),NACOBS,NACOBS,NSMOB,1)
-        END IF
-        print*,' After APRBLM2 '
-      END IF
-      IF(IFINMO.EQ.3.OR.IFINMO.EQ.4.OR.IFINMO.EQ.5) THEN
-*. Diagonalize symmetry-type blocks
-C            DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,SCR1,SCR2)
-C            DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,SCR1,SCR2)
-        CALL DIAG_BLKS(WORK(KMAT1),WORK(KMAT2),NGSOB,NACOBS,MXPOBS,
-     &                 NSMOB,NGAS,WORK(KMAT3),WORK(KMAT4))
-      ELSE IF (IFINMO.EQ.1.OR.IFINMO.EQ.2) THEN
-        CALL DIAG_BLKS(WORK(KMAT1),WORK(KMAT2),NACOBS,NACOBS,MXPOBS,
-     &                 NSMOB,1,WORK(KMAT3),WORK(KMAT4))
-*. WORK(KMAT2) contains eigenvector expansions
-      END IF
-*
-*. pseudo-natural-canonical orbitals
-*
-      IF( IFINMO .EQ. 5 ) THEN
-*. Transform FIFA to pseudo natural basis
-C       TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
-        CALL TRAN_SYM_BLOC_MAT(WORK(KMAT5),WORK(KMAT2),NSMOB,NACOBS,
-     &                         WORK(KMAT3),WORK(KMAT4))
-*. Transformed FIFA is now in WORK(KMAT3)
-C?     write(6,*) ' Test : copying to scrtest '
-C?     call copvec(work(kmat3),scrtest,nint1)
-*. Diagonalize
-        CALL DIAG_BLKS(WORK(KMAT3),WORK(KMAT5),NPSSH,NACOBS,MXPIRR,
-     &                 NSMOB,NPSSPC,WORK(KMAT1),WORK(KMAT4))
-C?      write(6,*) ' test of diagonal properties '
-C       TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
-C?      CALL TRAN_SYM_BLOC_MAT(scrtest,WORK(KMAT5),NSMOB,NACOBS,
-C?   &                         scrtest(1+nint1),scrtest(1+2*nint1))
-
-
-*
-*. Second transformation matrix is now in WORK(KMAT5)
-*. Obtain total transformation matrix
-C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,
-C    &                LBROW,LBCOL,ITRNSP)
-        CALL MULT_BLOC_MAT(WORK(KMAT4),WORK(KMAT2),WORK(KMAT5),NSMOB,
-     &                     NACOBS,NACOBS,NACOBS,NACOBS,NACOBS,NACOBS,0)
-        CALL COPVEC(WORK(KMAT4),WORK(KMAT2),NTOOB**2)
-      END IF
-      CALL COPVEC(WORK(KMAT2),WORK(KMOMO),LMOMO)
-*     ^ MOMO transformation saved in WORK(KMOMO)
-CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
-*
-      IF(NOMOFL.EQ.0) THEN
-*
-*. MAX Length of MO-AO transformation matrix 
-*  (no frozen or deleted orbitals)
-*
-        LMOAO = 0
-        DO ISYM = 1, NSMOB
-         LMOAO = LMOAO + NBAS(ISYM) ** 2
-        END DO
-        WRITE(6,*) ' Length of MO-AO transformation matrix ',LMOAO
-        CALL MEMMAN(KMOAO1,LMOAO   ,'ADDL  ',2,'MOAO1 ')
-        CALL MEMMAN(KMOAO2,LMOAO   ,'ADDL  ',2,'MOAO2 ')
-*. Obtain input MO-AO transformation matrix
-        CALL GETMOAO(WORK(KMOAO1))
-*. Transform the MO-AO coefficient matrix to describe
-*. MO expansion of new mo's
-        DO ISYM = 1, NSMOB
-         IF(ISYM.EQ.1) THEN
-           IOFFMOS = 1
-           IOFFMO = IOFFMOS + NFRO(1)*NBAS(1)
-           IOFFEIG = 1
-         ELSE
-           IOFFMOS = IOFFMOS + NBAS(ISYM-1)**2
-           IOFFMO = IOFFMOS  + NFRO(ISYM)*NBAS(ISYM)
-           IOFFEIG = IOFFEIG + NACOBS(ISYM-1)**2
-         END IF
-         LACT = NACOBS(ISYM)
-         LBAS = NBAS(ISYM)
-         ZERO = 0.0D0
-         ONE = 1.0D0
-         CALL COPVEC(WORK(KMOAO1-1+IOFFMOS),
-     &               WORK(KMOAO2-1+IOFFMOS),LBAS**2)
-         CALL MATML7(WORK(KMOAO2-1+IOFFMO),WORK(KMOAO1-1+IOFFMO),
-     &               WORK(KMAT2-1+IOFFEIG),LBAS,LACT,LBAS,LACT,
-     &               LACT,LACT,ZERO,ONE,0)
-        END DO
-*
-        IF(NTEST.GE.100) THEN
-           WRITE(6,*) ' Output set of MO''s '
-           CALL APRBLM2(WORK(KMOAO2),NBAS,NBAS,NSMOB,0)
-        END IF
-*. Save on file LUMOUT
-        CALL PUTMOAO(WORK(KMOAO2))
-      END IF
-*     ^ End if MOAO file is present
-*
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'FINMO')
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE GASSPC
 *
 *
@@ -803,10 +582,6 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
       RETURN
       END
 ***********************************************************************
-*                                                                    *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
 *  Automatic splitting of GAS spaces if too many
 *  orbitals per GAS:
 *
@@ -853,10 +628,6 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 *
       return
       end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE GET_3BLKS(KVEC1,KVEC2,KC2)
 *
@@ -980,10 +751,6 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE GET_SPGP_INF(ISPGP,ITP,IGRP)
 *
 * Obtain groups defining supergroup ISPGP,ITP
@@ -1012,10 +779,6 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE GTSPGP(IEL,ISPGP,IWAY)
 *
@@ -1084,10 +847,6 @@ C    &            IGSOCCX(MXPNGAS,2,MXPICI),NCISPC
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE IAIBCM(ICISPC,IAIB)
 *
 * obtain allowed combinbation of alpha- and beta- supergroups
@@ -1131,10 +890,6 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       FUNCTION IBASSPC_FOR_CLS(ICLS)
 *
@@ -1194,10 +949,6 @@ C    &            NMXOCCLS,IPHGAS(MXPNGAS),IHPVGAS(MXPNGAS)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE INTDIM(IPRNT)
 *
 * Number of integrals and storage mode
@@ -1248,10 +999,6 @@ C     END IF
       NBINT2 = NSMOB ** 3
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE INTPNT(IPNT1,ISL1,IPNT2,ISL2)
 *
@@ -1311,10 +1058,6 @@ C?    write(6,*) ' Memory check INTPNT 2 '
 C?    CALL MEMCHK
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE LCISPC(IPRNT)
 *
@@ -1482,10 +1225,6 @@ C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
 *CADDB
       SUBROUTINE LCNHCN(LSCR)
 *
@@ -1534,10 +1273,6 @@ C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE MINMAX_FOR_SYM_DIST(NIGRP,IGRP,MNVAL,MXVAL,NDIST)
 *
@@ -1619,10 +1354,6 @@ C     END DO
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE MLSM(IML,IPARI,ISM,TYPE,IWAY)
 *
 * Transfer between ML,IPARI notation and compound notation ISM
@@ -1699,10 +1430,6 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE LNATORB(RHO1,NSMOB,NTOPSM,NACPSM,NINPSM,
      &                   ISTOB,XNAT,RHO1SM,OCCNUM,
@@ -1818,10 +1545,6 @@ C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 *
 * an input  supergroup is given.
@@ -1893,10 +1616,6 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,
      &           ISYM,ISYM_TOT,IFIRST,NONEW)
 *
@@ -1960,10 +1679,6 @@ C       END DO
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE NGASDT(IOCCMN,IOCCMX,NGAS,ITOTSM,
      &                  NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,
@@ -2086,10 +1801,6 @@ CSK                 IF(LUCI_MYPROC.EQ.LUCI_MASTER) write(6,*)'LTTSBL 2',LTTSBL
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS,IGSMIN,IGSMAX,
      &                  I_DO_BASSPC,IBASSPC)
 *
@@ -2208,10 +1919,6 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE OCCLS_IN_CI(NOCCLS,IOCCLS,ICISPC,NINCCLS,INCCLS)
 *
 * A set of occupation classes are given.
@@ -2279,10 +1986,6 @@ CMI     IF(INCLUDE.EQ.1) THEN
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE ORBINF(LUOUT,IPRNT)
 *
@@ -2415,10 +2118,6 @@ CMI     IF(INCLUDE.EQ.1) THEN
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE ORBORD_GAS(NSMOB,MXPOBS,MXPNGAS,NGAS,NGSOB,NGSOBT,
      &                  NOCOBS,NTOOBS,NTOOB,
@@ -2589,10 +2288,6 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE OSPIR(NOSPIR,IOSPIR,PNTGRP,NIRREP,MXPIRR,MXPOBS,IPRNT)
 *
 * Number and symmetries of orbitals corresponding to a given shell
@@ -2718,10 +2413,6 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE PERT_SUBSPACE(NPERT,H0,V,S,ECORE)
 *
@@ -2859,10 +2550,6 @@ C          MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE PNT2DM(I12SM,NSMOB,NSMSX,OSXO,IPSM,JPSM,
      &                  IJSM,ISM2,IPNTR,MXPOBS)
 *
@@ -2924,10 +2611,6 @@ C          MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE PNT4DM(NSMOB,NSMSX,MXPOBS,NO1PS,NO2PS,NO3PS,NO4PS,
      &           IDXSM,ADSXA,SXDXSX,IS12,IS34,IS1234,IPNTR,ISM4A,
@@ -3024,10 +2707,6 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE PTWFNRM(LU0,LUN,N,VEC1,VEC2,LUSCR1,LUSCR2,PTNORM)
 *
 * Norm of wavefunction obtained as perturbation expansion
@@ -3067,10 +2746,6 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE REPART_CIV(IBATCH,NBATCH,LBATCH,LEBATCH,
      &                  MXLNG,ICLS_A,IBLK_TO_CLS,NCLS,NBLKS,
@@ -3199,10 +2874,6 @@ C           I1BATCH(NBATCH+1) = IBLOCK
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE RSMXMN_LUCI(MAXEL,MINEL,NORB1,NORB2,NORB3,NEL,
      &                       MIN1,MAX1,MIN3,MAX3,NTEST)
 *
@@ -3252,10 +2923,6 @@ COLD  MIN1A = MIN1
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE SHTOOB(NSHPIR,NIRREP,MXPOBS,NSMOB,NOSPIR,IOSPIR,
      &           NOBPS,NOB)
@@ -3308,10 +2975,6 @@ COLD  MIN1A = MIN1
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE SIGVST(ISGVST,NSMST)
 *
 * Obtain ISGVST(ISM) : Symmetry of sigma v on string of symmetry ism
@@ -3336,10 +2999,6 @@ C            MLSM(IML,IPARI,ISM,TYPE,IWAY)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE SMOST(NSMST,NSMCI,MXPCSM,ISMOST)
 *
@@ -3375,10 +3034,6 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE STSTSM(STSTSX,STSTDX,NSMST)
 *
 * construct  STSTSX and STSTDX giving
@@ -3405,10 +3060,6 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
 *
       SUBROUTINE SXTYP_GAS(NSXTYP,ITP,JTP,NGAS,ILTP,IRTP)
@@ -3477,10 +3128,6 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE SYM_DIST_FOR_SPGRP(IGRP,NIGRP,ISM,NDIST,
      &           IDIST,LDIST,LENGTH,MXDIST)
@@ -3599,10 +3246,6 @@ C       NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,ISYM,ISYM_TOT,IFIRST,NONEW)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
 *
 * lucia6.f
 *
@@ -3658,9 +3301,6 @@ C       NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,ISYM,ISYM_TOT,IFIRST,NONEW)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE SYMCOM(ITASK,IOBJ,I1,I2,I12)
 *
 * Symmetries I1,I2,I12 are related as
@@ -3714,9 +3354,6 @@ C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE SYMINF(IPRNT)
 *
 * Information about number of symmetries
@@ -3795,9 +3432,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
      &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *
@@ -3956,9 +3590,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
 *
 * Codes for general symmetry handling
 *
@@ -4023,9 +3654,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ZNELFSPGP(NTESTG)
 *
 * Generate for each supergroup the number of electrons in each active
@@ -4070,9 +3698,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ZNONAB(INVCEN,MAXMLO,NSMOB,IPRNT)
 *
 *
@@ -4283,9 +3908,6 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ZSYM1(NIRREP,IPRNT)
 *
 * Number of symmetries for d2h
@@ -4331,9 +3953,6 @@ C     COPMT2(AIN,AOUT,NINR,NINC,NOUTR,NOUTC,IZERO)
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ZSYM2(IPRNT)
 *
 * Symmetry connecting arrays

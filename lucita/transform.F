@@ -1030,7 +1030,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRAN_SYM_BLOC_MAT3
-     &(AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
+     &   (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 *
 * Transform a blocked matrix AIN with blocked matrix
 *  X to yield blocked matrix AOUT

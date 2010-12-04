@@ -1380,7 +1380,7 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
       IF(NOMOFL.EQ.0) THEN
 *. Create final set of mo's
         WRITE(LUOUT,*) ' I am going to call FINMO '
-        CALL FINMO
+        CALL QUIT('FINMO not available in this version')
       END IF
 *
 * ===========================
@@ -1502,7 +1502,6 @@ C
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "oper.inc"
-#include "machine.inc"
 #ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
@@ -2715,7 +2714,8 @@ C        END DO
          CALL LFTPOS(CARD1,MXPLNC)
 *. Change to upper case
          CALL UPPCAS(CARD1,MXPLNC)
-         MACHINE(1:6) = CARD1(1:6)
+         !MACHINE(1:6) = CARD1(1:6)
+         call quit('MACHINE keyword not active')
 C?       WRITE(6,'(A,A)') ' Machine = ', MACHINE
          GOTO 999
       END IF
@@ -4042,13 +4042,6 @@ C     END IF
         ISETKW(55) = 2
       END IF
 *
-*  56 : Default Machine : Good old BIM machine
-*
-      IF(ISETKW(56).EQ.0) THEN
-        MACHINE(1:3) = 'IBM'
-        ISETKW(56) = 2
-      END IF
-*
 * 57 : Allow first order correction to be saved on DISC
 *     (For vector free calculations )
 *     Default is : NO !!
@@ -4563,9 +4556,6 @@ c     WRITE(LUOUT,*) '******************'
 c     WRITE(LUOUT,*)
 c     CALL PRTITL(TITLEC)
 c     WRITE(LUOUT,*)
-*
-*. Machine in use
-C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
 *
 *. Type of reference state
       WRITE(LUOUT,*)

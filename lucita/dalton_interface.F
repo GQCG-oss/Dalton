@@ -43,7 +43,6 @@ C
 *          DALTON - LUCITA interface May 2008, HJAaJ                 *
 *                                                                    *
 *          based on                                                  *
-*             MOLCAS - LUCIA interface                               *
 *             DIRAC  - LUCIA interface                               *
 *          written by Timo Fleig, 1999-2001                          *
 *                                                                    *
@@ -56,18 +55,18 @@ C
 ! Note that LUCITAINP has already been called before this call
 ! where *LUCITA input options in .dal file has been read.
 
-!! #include "implicit.h"  ! hjaaj DEBUG
-!! #include "mxpdim.inc"
-!! #include "crun.inc"
+#include "implicit.h"
+#include "mxpdim.inc"
+#include "crun.inc"
 
-!!       ENVIRO='DALTON'
+      ENVIRO='DALTON'
 *
 *  Say hello:
       call hello_dalton_lucita
-!! *
-!! *  Read symmetry info etc. for
-!! !     CALL GET_ORB_DIM_ENV(ECORE_ENV)
-!! !     write(6,*) 'after get_orb_dim_env ecore_env=',ecore_env
+*
+*  Read symmetry info etc. for
+      CALL GET_ORB_DIM_ENV(ECORE_ENV)
+      write(6,*) 'after get_orb_dim_env ecore_env=',ecore_env
 *
 *  Get it going:
       call dalton_lucita
@@ -102,7 +101,7 @@ C
 *
 #include "clunit.inc"
 #include "mxpdim.inc"
-#include "luci.inc"
+#include "lucinp.inc"
 #include "units.inc"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -114,10 +113,10 @@ ChjC#include "infpar.h"
       parameter (NCMD = 21)
       parameter (MXPLNC = 72)
       character*1 CRDHEL
-      character*3 SCR3,YESSTATEMENT
+      character*3 CALSIZ,SCR3,YESSTATEMENT
       character*10 PERFORMCI
       character*4 COMMAND,CMD(NCMD)
-      character*6 SCR6,MOLUCENV
+      character*6 PRILUC,SCR6,MOLUCENV
       character*72 LINE,CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),CARD3(5)
 *
       common/MLCENV/MOLUCENV
@@ -142,14 +141,6 @@ ChjC#include "infpar.h"
 *
 *  1: Default Title
 *
-      if (IMOKW(1).eq.0) then
-         NTIT = 1
-         TITLE(1) = ' Running LUCITA under DALTON. No title supplied.'
-         IMOKW(1) = 2
-      else if (IMOKW(1).eq.1) then
-         NTIT = 1
-         TITLE(1) = TITLUC
-      end if
 *
 *  2: Type of initial wave function (no default)
 *
@@ -161,14 +152,14 @@ ChjC#include "infpar.h"
       else
          call lftpos(WAFFCD,MXPLNC)
          call uppcas(WAFFCD,MXPLNC)
-         if (WAFFCD.eq.'DHFSCF') WAFFCT = 'HF_SCF'
-         if (WAFFCD.eq.'OSHSCF') WAFFCT = 'RASSCF'
-         if (WAFFCT.ne.'HF_SCF'.and.WAFFCT.ne.'RASSCF') then
+         if (WAFFCD.eq.'DHFSCF') WAFFCD = 'HF_SCF'
+         if (WAFFCD.eq.'OSHSCF') WAFFCD = 'RASSCF'
+         if (WAFFCD.ne.'HF_SCF'.and. WAFFCD.ne.'RASSCF') then
             write(6,*)
      &  ' Type of initial wave function not implemented. '
             write(6,*) ' You have chosen: ',WAFFCD
             write(6,*) ' Allowed types: '
-            write(6,*) ' DHFSCF, OSHSCF '
+            write(6,*) ' HF_SCF, RASSCF '
             Call Abend2('Input error')
          end if
       end if
@@ -182,12 +173,11 @@ ChjC#include "infpar.h"
       else
          call lftpos(CALCTP,MXPLNC)
          call uppcas(CALCTP,MXPLNC)
-         TYPE = CALCTP
-         if (TYPE.ne.'FCI   '.and.TYPE.ne.'SDCI  '.and.
-     &       TYPE.ne.'GASCI '.and.TYPE.ne.'RASCI '.and.
-     &       TYPE.ne.'SDTQ  ') then
+         if (CALCTP.ne.'FCI   '.and.CALCTP.ne.'SDCI  '.and.
+     &       CALCTP.ne.'GASCI '.and.CALCTP.ne.'RASCI '.and.
+     &       CALCTP.ne.'SDTQ  ') then
             write(6,*) ' Type of CI calculation not specified.'
-            write(6,*) ' You have chosen: ',TYPE
+            write(6,*) ' You have chosen: ',CALCTP
             write(6,*) ' Allowed types: '
             write(6,*) ' FCI, SDCI, GASCI, RASCI, SDTQ '
             Call Abend2('Input error')
@@ -197,25 +187,21 @@ ChjC#include "infpar.h"
 *  4: Number of roots to be obtained
 *
       if (IMOKW(4).eq.0) then
-         NROOT = 1
+         NROOTD = 1
          IMOKW(4) = 2
-      else if (IMOKW(4).eq.1) then
-         NROOT = NROOTD
       end if
 *
 *  5: State symmetry in point group
 *
       if (IMOKW(5).eq.0) then
-         IRREP = 1
+         ISSYMD = 1
          IMOKW(5) = 2
-      else if (IMOKW(5).eq.1) then
-         IRREP = ISSYMD
       end if
 *
 *  6: Active electrons
 *
       if (IMOKW(6).eq.0) then
-         if (TYPE.eq.'GASCI '.or.TYPE.eq.'RASCI ') then
+         if (CALCTP.eq.'GASCI '.or.CALCTP.eq.'RASCI ') then
             write(6,*) 'Number of active electrons NACTEL'
             write(6,*) 'has to be specified in this type of'
             write(6,*) 'calculation. Quitting.'
@@ -317,7 +303,7 @@ ChjC#include "infpar.h"
 * 11: Orbital distribution in inactive space (no defaults if RASCI)
 *
       if (IMOKW(11).eq.0) then
-         if (TYPE.eq.'RASCI ') then
+         if (CALCTP.eq.'RASCI ') then
             write(6,*) 'Number of inactive orbitals per sym'
             write(6,*) 'has to be specified. This is mandatory'
             write(6,*) 'in a RASCI calculation.'
@@ -327,7 +313,7 @@ ChjC#include "infpar.h"
             IMOKW(11) = 2
          end if
       else if (IMOKW(11).eq.1) then
-         if (TYPE.eq.'GASCI ') then
+         if (CALCTP.eq.'GASCI ') then
             write(6,*) 'INACtive orbitals not allowed in GASCI.'
             write(6,*) 'Use GAS 1 for these orbitals and restart.'
             Call Abend2('Quitting.')
@@ -339,7 +325,7 @@ ChjC#include "infpar.h"
 * 12: Orbital distribution in GAS spaces (no defaults if GASCI)
 *
       if (IMOKW(12).eq.0) then
-         if (TYPE.eq.'GASCI ') then
+         if (CALCTP.eq.'GASCI ') then
             write(6,*) 'GASCI type requires GASS to be specified.'
             write(6,*) 'Else, I do not know what to do.'
             Call Abend2('Quitting.')
@@ -347,10 +333,10 @@ ChjC#include "infpar.h"
          IMOKW(12) = 2
       end if
       if (IMOKW(12).eq.1) then
-         if (TYPE.ne.'GASCI ') then
+         if (CALCTP.ne.'GASCI ') then
            write(6,*) 'GASS specified and not doing GASCI.'
            write(6,*) 'This input will be ignored.'
-           write(6,*) 'Program will continue with ',TYPE,'.'
+           write(6,*) 'Program will continue with ',CALCTP,'.'
            IMOKW(12) = 3
          else
            NGAS = INGASD
@@ -363,7 +349,7 @@ ChjC#include "infpar.h"
 * 13: Cumulative min. and max. numbers of electrons in GAS spaces
 *
       if (IMOKW(13).eq.0) then
-         if (TYPE.eq.'GASCI ') then
+         if (CALCTP.eq.'GASCI ') then
             write(6,*) 'GSSP has to be specified in GASCI calculation.'
             write(6,*) 'No defaults in this type of CI.'
             Call Abend2('Quitting.')
@@ -371,10 +357,10 @@ ChjC#include "infpar.h"
          IMOKW(13) = 2
       end if
       if (IMOKW(13).eq.1) then
-         if (TYPE.ne.'GASCI ') then
+         if (CALCTP.ne.'GASCI ') then
            write(6,*) 'GSSP specified and not doing GASCI.'
            write(6,*) 'This input will be ignored.'
-           write(6,*) 'Program will continue with ',TYPE,'.'
+           write(6,*) 'Program will continue with ',CALCTP,'.'
            write(6,*) 'Defaults will be set.'
            IMOKW(13) = 3
          else
@@ -401,33 +387,33 @@ ChjC#include "infpar.h"
 * 15: RAS1 specification; no default
 *
       if (IMOKW(15).eq.0) then
-         if (TYPE.eq.'RASCI ') then
+         if (CALCTP.eq.'RASCI ') then
             write(6,*) 'RAS1 keyword missing. Add and restart.'
             Call Abend2('Quitting.')
          end if
          IMOKW(15) = 2
       else if (IMOKW(15).eq.1) then
-         if (TYPE.ne.'RASCI ') then
-            write(6,*) 'Keyword RAS1 not compatible with TYPE ',TYPE
+         if (CALCTP.ne.'RASCI ') then
+            write(6,*) 'Keyword RAS1 not compatible with TYPE ',CALCTP
             write(6,*) 'I will ignore your this input.'
             write(6,*) 'Program will continue.'
             IMOKW(15) = 3
          end if
          CARD3(3) = CRDRS1
-         MXHOL1 = MXHL1D
+         ! MXHL1D has been defined in input
       end if
 *
 * 16: RAS2 specification; no default
 *
       if (IMOKW(16).eq.0) then
-         if (TYPE.eq.'RASCI ') then
+         if (CALCTP.eq.'RASCI ') then
             write(6,*) 'RAS2 keyword missing. Add and restart.'
             Call Abend2('Quitting.')
          end if
          IMOKW(16) = 2
       else if (IMOKW(16).eq.1) then
-         if (TYPE.ne.'RASCI ') then
-            write(6,*) 'Keyword RAS2 not compatible with TYPE ',TYPE
+         if (CALCTP.ne.'RASCI ') then
+            write(6,*) 'Keyword RAS2 not compatible with TYPE ',CALCTP
             write(6,*) 'I will ignore your this input.'
             write(6,*) 'Program will continue.'
             IMOKW(16) = 3
@@ -438,20 +424,20 @@ ChjC#include "infpar.h"
 * 17: RAS3 specification; no default
 *
       if (IMOKW(17).eq.0) then
-         if (TYPE.eq.'RASCI ') then
+         if (CALCTP.eq.'RASCI ') then
             write(6,*) 'RAS3 keyword missing. Add and restart.'
             Call Abend2('Quitting.')
          end if
          IMOKW(17) = 2
       else if (IMOKW(17).eq.1) then
-         if (TYPE.ne.'RASCI ') then
-            write(6,*) 'Keyword RAS3 not compatible with TYPE ',TYPE
+         if (CALCTP.ne.'RASCI ') then
+            write(6,*) 'Keyword RAS3 not compatible with TYPE ',CALCTP
             write(6,*) 'I will ignore your this input.'
             write(6,*) 'Program will continue.'
             IMOKW(17) = 3
          end if
          CARD3(5) = CRDRS3
-         MXELR3 = MXEL3D
+         !MXEL3D has bee set
       end if
 *
 * 18: Default setting for DENSity matrices
@@ -576,40 +562,31 @@ C        .. we do not accept user input of less than 100 000 !
 *  Print section
 *-----------------------------------------------------------------*
 *
-*  1: Title
+*  1: Title (has been removed)
 *
-      write(LUOUT,'(/1X,80A1)') ('*',I=1,80)
-      write(LUOUT,'(1X,80A1)') '*',(' ',I=1,78),'*'
-      write(LUOUT,'(1X,37A1,A6,37A1)')
-     &        '*',(' ',I=1,36),'Title:',(' ',I=1,36),'*'
-      do I=1,NTIT
-         write(LUOUT,'(1X,4A1,A72,4A1)')
-     &        '*',(' ',J=1,3),Title(I),(' ',J=1,3),'*'
-      end do
-      write(LUOUT,'(1X,80A1)') '*',(' ',I=1,78),'*'
       write(LUOUT,'(1X,80A1)') ('*',I=1,80)
 *
 *  2: Initial wave function
 *
       write(LUOUT,'(/A42,A6)')
-     &  ' Orbitals as initial wave function .... ',WAFFCT
+     &  ' Orbitals as initial wave function .... ',WAFFCD
 *
 *  3: Type of CI calculation
 *
       write(LUOUT,'(/A42,A6)')
-     &  ' Type of calculation .................. ',TYPE
+     &  ' Type of calculation .................. ',CALCTP
       write(LUOUT,*)
 *
 *  4: Number of roots to be treated
 *
       write(LUOUT,'(A42,I3)')
-     &  ' Number of roots to be obtained ....... ',NROOT
+     &  ' Number of roots to be obtained ....... ',NROOTD
       write(LUOUT,*)
 *
 *  5: State symmetry
 *
       write(LUOUT,'(A42,I3)')
-     &  ' Calculation carried out in irrep ..... ',IRREP
+     &  ' Calculation carried out in irrep ..... ',ISSYMD
       write(LUOUT,*)
 *
 *  6: Number of active electrons
@@ -736,7 +713,10 @@ C        .. we do not accept user input of less than 100 000 !
 *-----------------------------------------------------------------*
 *  Call conversion routine for creating LUCIA input
 *-----------------------------------------------------------------*
-      call dalton2lucita(NTIT,NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
+      call dalton2lucita(ISSYMD,NROOTD,MULTIP,MXHL1D,MXEL3D,INACOB,
+     &                   IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
+     &                   CALCTP,WAFFCD,PRILUC,
+     &                   NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
 *
 6666  continue
 *
@@ -789,8 +769,8 @@ C        .. we do not accept user input of less than 100 000 !
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         CALL GET_CMOAO_DALTON(CMO,NMOS_ENV(1),NAOS_ENV(1),NSMOB)
       ELSE IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
-*. Readin from LUMORB file
-        CALL GETMOAO_MOLCAS(CMO,LUMOIN)
+*.
+        CALL QUIT('MOLCAS environment not available in this version')
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA' ) THEN
 *. Read in from LUCIA 1e file : unit 91
         LU91 = 91
@@ -824,9 +804,9 @@ C        .. we do not accept user input of less than 100 000 !
       REWIND ITAP30
       CALL MOLLAB('TRCCINT ',ITAP30,6)
 *. Skip record containing dimensions of orbitals
-      READ(ITAP30)
+      READ (ITAP30) NSYM
 *. And skip record containing eigenvalues etc
-      READ(ITAP30)
+      READ (ITAP30)
 C     READ (ITAP30) NSYMHF,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYMHF),
 C    *              (NORB(I),I=1,NSYMHF),(NBAS(I),I=1,NSYMHF),
 C    *              POTNUC,EMCSCF
@@ -1295,6 +1275,8 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * Jeppe Olsen, December 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
+
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -1302,10 +1284,9 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "lucinp.inc"
 #include "parluci.h"
 *
-      write(6,*) 'GET_ORB_DIM_ENV: ENVIRO = ',ENVIRO !hjaaj DEBUG
+      write(lupri,*) 'GET_ORB_DIM_ENV: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
-C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
-        stop 'No MOLCAS ENVIRONMENT!'
+        call quit( 'No MOLCAS ENVIRONMENT!')
       ELSE IF(ENVIRO(1:6).EQ.'DALTON' ) THEN
         CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSMOB)
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA') THEN
@@ -1313,25 +1294,26 @@ C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
         CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
       else if (ENVIRO(1:5).eq.'DIRAC') then
         if (myproc.eq.master) then
-*        write(6,*)
-        write(6,*) 'Integral import from DIRAC.'
-        write(6,*) 'No checking of environment dims.'
+        write(lupri,*) 'Integral import from DIRAC.'
+        write(lupri,*) 'No checking of environment dims.'
         end if
       ELSE IF(ENVIRO(1:4).EQ.'NONE') THEN
 *. No environment,
-        WRITE(6,*) 'GET_ORB_DIM_ENV  in problems '
-        WRITE(6,*) 'No ENVIRO parameter defined '
+        WRITE(lupri,*) 'GET_ORB_DIM_ENV  in problems '
+        WRITE(lupri,*) 'No ENVIRO parameter defined '
       END IF
 *
-      NTEST = 000
+      !hj DEBUG NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' From GET_ORB_FROM_ENV : '
-        WRITE(6,*) ' ======================='
-        WRITE(6,*) ' NAOS_ENV'
+        WRITE(lupri,*) ' From GET_ORB_FROM_ENV : '
+        WRITE(lupri,*) ' ======================='
+        WRITE(lupri,*) ' NSMOB   ',NSMOB
+        WRITE(lupri,*) ' NAOS_ENV'
         CALL IWRTMA(NAOS_ENV,1,NSMOB,1,NSMOB)
-        WRITE(6,*) ' NMOS_ENV'
+        WRITE(lupri,*) ' NMOS_ENV'
         CALL IWRTMA(NMOS_ENV,1,NSMOB,1,NSMOB)
-        WRITE(6,*) ' ECORE_ENV=', ECORE_ENV
+        WRITE(lupri,*) ' ECORE_ENV=', ECORE_ENV
       END IF
 *
       RETURN
@@ -1457,50 +1439,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
       RETURN
       END
 ***********************************************************************
-      Subroutine GetH0(H)
-************************************************************************
-*                                                                      *
-*     Purpose:                                                         *
-*     Load one electron integrals                                      *
-*     File assumed opened by GETOBS                                    *
-*                                                                      *
-*     Calling parameters:                                              *
-*     H   : core Hamiltonian matrix                                    *
-*                                                                      *
-***** M.P. Fuelscher, University of Lund, Sweden, 1991 *****************
-*
-      Implicit Real*8 (A-H,O-Z)
-*
-#include "SysDef.inc"
-*
-      Parameter( LuOne = 14)
-*
-      COMMON/MOLOBS/
-     & IOList(64),iToc(64),nBas(8),nOrb(8),nFro(8),nDel(8),
-     & nSym
-*
-      Dimension H(*)
-      Call qEnter('GetH0')
-*
-*----------------------------------------------------------------------*
-*     Determine the number of integrals (symmetry blocked)             *
-*----------------------------------------------------------------------*
-      NorbTT=0
-      Do iSym=1,nSym
-        NorbTT=NorbTT+(Norb(iSym)*Norb(iSym)+Norb(iSym))/2
-      End Do
-*----------------------------------------------------------------------*
-*     Load the core Hamiltonian matrix                                 *
-*----------------------------------------------------------------------*
-      iDisk=iToc(2)
-!     Call DaFile(LuOne,2,H,RtoI*NorbTT,iDisk)
-*----------------------------------------------------------------------*
-*     Terminate procedure                                              *
-*----------------------------------------------------------------------*
-      Call qExit('GetH0')
-      Return
-      End
-***********************************************************************
       Subroutine GetH0S(H,NTORB)
 ************************************************************************
 *                                                                      *
@@ -1540,7 +1478,7 @@ C----------------------------------------
 C
       OPEN (LUONE,STATUS='UNKNOWN',FORM='UNFORMATTED',
      *      FILE='MOONEINT')
-      READ(LUONE) NCMOT,(H(I),I=1,NCMOT)
+      READ(LUONE) N_Hmat_T,(H(I),I=1,N_Hmat_T)
       CLOSE (LUONE,STATUS='DELETE')
 *
       NTEST = 0
@@ -1549,7 +1487,7 @@ C
         WRITE(6,*) ' One electron integrals '
         WRITE(6,*) ' ======================'
         WRITE(6,*)
-        CALL WRTMT_LU(H,1,NCMOT,1,NCMOT)
+        CALL WRTMT_LU(H,1,N_Hmat_T,1,N_Hmat_T)
       END IF
 C
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'GETH0S')
@@ -1716,7 +1654,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *. Integral list
       Real * 8 Intlst(*)
       Dimension IJKLof(NsmOB,NsmOb,NsmOB)
-*. Pair of orbital indeces ( symmetry ordered ) => address in symmetry packed
+*. Pair of orbital indices ( symmetry ordered ) => address in symmetry packed
 *. matrix
       Dimension I2INDX(*)
 *.Output
@@ -2095,72 +2033,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       RETURN
       END
 ***********************************************************************
-      SUBROUTINE GETMOAO(CMOAO)
-*
-* Obtain MOAO matrix and save in CMOAO
-*
-* A sunny day in April 96
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
-#include "clunit.inc"
-#include "crun.inc"
-*
-      IF(INTIMP.EQ.1) THEN
-*. MOLCAS environment
-        WRITE(6,*) ' GETMOAO : MOLCAS environment'
-        CALL GETMOAO_MOLCAS(CMOAO,LUMOIN)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-      SUBROUTINE GETMOAO_MOLCAS(CMOAO,LU)
-*
-* THE MO-AO file is assumed to be a NBAS X NBAS file in LUMORB format
-* as delivered by SCF or RASREAD
-*
-* Obtain MOAO transformation matrix from
-* MOLCAS file
-*
-* GETOBS assumed called to define /MOLOBS/
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      CHARACTER*80 TITLEMO
-      COMMON/MOLOBS/
-     & IOList(64),iToc(64),nBas(8),nOrb(8),nFro(8),nDel(8),
-     & Nsym
-*
-      NTEST = 10
-      IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' Information available in GETMOAO_MOLCAS'
-        WRITE(6,*) ' ======================================='
-        WRITE(6,*)
-        WRITE(6,*) ' NSYM = ', NSYM
-        WRITE(6,*) ' NBAS : '
-        CALL IWRTMA(NBAS,1,NSYM,1,NSYM)
-        WRITE(6,*) 'NORB : '
-        CALL IWRTMA(NORB,1,NSYM,1,NSYM)
-        WRITE(6,*) 'NFRO : '
-        CALL IWRTMA(NFRO,1,NSYM,1,NSYM)
-      END IF
-*
-      LOCC = 0
-*. Full NBAS X NBAS matrix assumed, truncation only in in int transformation
-      CALL RDVEC('INPROB',LU,NSYM,NBAS,NBAS,CMOAO,OCC,LOCC,TITLEMO)
-      WRITE(6,*) ' Header from MOAO file (LUMOIN)'
-      WRITE(6,'(80A)') TITLEMO
-*
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Input MOAO transformation matrix '
-        CALL APRBLM2(CMOAO,NBAS,NBAS,NSYM,0)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
 *
       subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS,CARD,ITEM,MXITEM,
      &                     IRETISH)
@@ -2175,6 +2047,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 #include "units.inc"
 *
       write(6,*) 'GET_DALTON_INF called, we try doing a little!' !hjaaj DEBUG
+      write(6,*) 'WAFFCT = ',WAFFCT
       IRETISH = -1
       if (WAFFCT.eq.'HF_SCF') then
 *
@@ -2225,7 +2098,8 @@ C
       WRITE(lupri,*) ' NOCC as delivered from DALTON (discarded)'
       CALL IWRTMA(NOCC,1,8,1,8)
 *.
-      WRITE(lupri,*) ' from DALTON: NORBT, NBAST, NCMOT :',NORBT,NBAST,NCMOT
+      WRITE(lupri,*) ' from DALTON: NORBT, NBAST, NCMOT :',
+     &   NORBT,NBAST,NCMOT
 
       RETURN
       END
@@ -2251,174 +2125,6 @@ C
 *
       RETURN
       END
-***********************************************************************
-      FUNCTION GMIJKL(IORB,JORB,KORB,LORB,INTLST,IJKLOF)
-*
-* Obtain integral (IORB JORB ! KORB LORB) MOLCAS version
-* Integrals assumed in core
-*
-* Version for integrals stored in INTLST
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*.ORBINP
-C     COMMON/ORBINP/NINOB,NACOB,NDEOB,NOCOB,NTOOB,
-C    &              NORB0,NORB1,NORB2,NORB3,NORB4,
-C    &              NOSPIR(MXPIRR),IOSPIR(MXPOBS,MXPIRR),
-C    &              NINOBS(MXPOBS),NR0OBS(1,MXPOBS),NRSOBS(MXPOBS,3),
-C    &              NR4OBS(MXPR4T,MXPOBS),NACOBS(MXPOBS),NOCOBS(MXPOBS),
-C    &              NTOOBS(MXPOBS),NDEOBS(MXPOBS),NRS4TO(MXPR4T),
-C    &              IREOTS(MXPORB),IREOST(MXPORB),ISMFTO(MXPORB),
-C    &              ITPFSO(MXPORB),IBSO(MXPOBS),
-C    &              NTSOB(3,MXPOBS),IBTSOB(3,MXPOBS),ITSOB(MXPORB),
-C    &              NOBPTS(6+MXPR4T,MXPOBS),IOBPTS(6+MXPR4T,MXPOBS),
-C    &              ITOOBS(MXPOBS)
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
-*. Integral list
-      Real * 8 Intlst(*)
-      Dimension IJKLOF(NsmOB,NsmOb,NsmOB)
-      Logical iSymj,kSyml,ISYMK,JSYML,ijSymkl,IKSYMJL
-      Logical ijklPerm
-*.
-      NTEST = 000
-*
-*. The orbital list corresponds to type ordered indeces, reform to
-*. symmetry ordering
-*
-      IABS = IREOTS(IORB)
-      ISM = ISMFTO(IORB)
-      IOFF = IBSO(ISM)
-*
-      JABS = IREOTS(JORB)
-      JSM = ISMFTO(JORB)
-      JOFF = IBSO(JSM)
-*
-      KABS = IREOTS(KORB)
-      KSM = ISMFTO(KORB)
-      KOFF = IBSO(KSM)
-*
-      LABS = IREOTS(LORB)
-      LSM = ISMFTO(LORB)
-      LOFF = IBSO(LSM)
-*
-      If( Ntest.ge. 100) THEN
-        write(6,*) ' GMIJKL at your service '
-        WRITE(6,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
-        WRITE(6,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
-        WRITE(6,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
-        WRITE(6,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
-      END IF
-*
-      If ( jSm.gt.iSm .or. ( iSm.eq.jSm .and. JABS.gt.IABS)) Then
-        iSym=jSm
-        jSym=iSm
-        I = JABS - JOFF + 1
-        J = IABS - IOFF + 1
-      Else
-        iSym=iSm
-        jSym=jSm
-        I = IABS - IOFF + 1
-        J = JABS - JOFF + 1
-      End If
-      ijBlk=jSym+iSym*(iSym-1)/2
-      If ( lSm.gt.kSm  .or. ( kSm.eq.lSm .and. LABS.gt.KABS)) Then
-        kSym=lSm
-        lSym=kSm
-        K = LABS -LOFF + 1
-        L = KABS - KOFF + 1
-      Else
-        kSym=kSm
-        lSym=lSm
-        K = KABS - KOFF + 1
-        L = LABS -LOFF + 1
-      End If
-      klBlk=lSym+kSym*(kSym-1)/2
-*
-      ijklPerm=.false.
-      If ( klBlk.gt.ijBlk ) Then
-        iTemp=iSym
-        iSym=kSym
-        kSym=iTemp
-        iTemp=jSym
-        jSym=lSym
-        lSym=iTemp
-        iTemp=ijBlk
-        ijBlk=klBlk
-        klBlk=iTemp
-        ijklPerm=.true.
-*
-        iTemp = i
-        i = k
-        k = itemp
-        iTemp = j
-        j = l
-        l = iTemp
-      End If
-      If(Ntest .ge. 100 ) then
-        write(6,*) ' i j k l ',i,j,k,l
-        write(6,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
-      End if
-*
-*  Define offset for given symmetry block
-      IBLoff = IJKLof(Isym,Jsym,Ksym)
-      If(ntest .ge. 100 )
-     &WRITE(6,*) ' IBLoff Isym Jsym Ksym ', IBLoff,ISym,Jsym,Ksym
-      iSymj=iSym.eq.jSym
-      kSyml=kSym.eq.lSym
-      iSymk=iSym.eq.kSym
-      jSyml=jSym.eq.lSym
-      ikSymjl=iSymk.and.jSyml
-      ijSymkl=iSymj.and.kSyml
-*
-      itOrb=NTOOBS(iSym)
-      jtOrb=NTOOBS(jSym)
-      ktOrb=NTOOBS(kSym)
-      ltOrb=NTOOBS(lSym)
-C?    print *,' itOrb,jtOrb,ktOrb,ltOrb',itOrb,jtOrb,ktOrb,ltOrb
-      If ( iSymj ) Then
-        ijPairs=itOrb*(itOrb+1)/2
-        ij=j+i*(i-1)/2
-      Else
-        ijPairs=itOrb*jtOrb
-        ij=j + (i-1)*jtOrb
-      End if
-*
-      IF(KSYML ) THEN
-        klPairs=ktOrb*(ktOrb+1)/2
-        kl=l+k*(k-1)/2
-      ELSE
-        klPairs=ktOrb*ltOrb
-        kl=l+(k-1)*ltOrb
-      End If
-C?    print *,' ijPairs,klPairs',ijPairs,klPairs
-*
-      If ( ikSymjl ) Then
-        If ( ij.gt.kl ) Then
-          klOff=kl+(kl-1)*(kl-2)/2-1
-          ijkl=ij+(kl-1)*ijPairs-klOff
-        Else
-          ijOff=ij+(ij-1)*(ij-2)/2-1
-          ijkl=kl+(ij-1)*klPairs-ijOff
-        End If
-      Else
-        ijkl=ij+(kl-1)*ijPairs
-      End If
-      If( ntest .ge. 100 )
-     & write(6,*) ' ijkl ', ijkl
-*
-      GMIJKL = Intlst(iblOff-1+ijkl)
-      If( ntest .ge. 100 )
-     & write(6,*) ' GMIJKL ', GMIJKL
-*
-      RETURN
-      END
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine gslist
-      return
-      end
 ***********************************************************************
       FUNCTION GTIJKL(I,J,K,L)
 *
@@ -2449,7 +2155,7 @@ CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
      &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
        ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
 *. MOLCAS OR SIRIUS IMPORT ( I hope integrals are in core !! )
-          GTIJKL = GMIJKL(I,J,K,L,WORK(KINT2),WORK(KPINT2))
+          CALL QUIT('GMIJKL not implemented in this version')
        END IF
 *
       RETURN
@@ -2687,14 +2393,13 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 ************************************************************************
 #include "clunit.inc"
       Character*8   Fmt
-      Character*70  Line,BlLine,StLine
+      Character*70  Line,StLine
 *----------------------------------------------------------------------*
 *     Start and define the paper width                                 *
 *     Initialize blank and header lines                                *
 *----------------------------------------------------------------------*
       lLine=Len(Line)
       Do i=1,lLine
-        BlLine(i:i)=' '
         StLine(i:i)='*'
       End Do
       left=(lPaper-lLine)/2
@@ -2702,56 +2407,28 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *----------------------------------------------------------------------*
 *     Print the program header                                         *
 *----------------------------------------------------------------------*
-      nLine=30
       write(luout,'(/1x,a)') StLine
-      Do i=1,nLine
-        Line=BlLine
-        If ( i.eq.1 .or. i.eq.nLine )
-     &  Line=StLine
-        If ( i.eq.3 )
-     &  Line='D A L T O N - L U C I T A'
-        If ( i.eq.4 )
-     &  Line='An interface section for LUCITA under DALTON'
-        If ( i.eq.6 )
-     &  Line='Authors: J. Olsen, Univ. Aarhus'
-        If ( i.eq.7 )
-     &  Line='         H. J. Aa. Jensen, Univ. Southern Denmark '
-        If ( i.eq. 8)
-     &  Line='         S. Knecht, Univ. Southern Denmark        '
-        If ( i.eq. 9 )
-     &  Line='Based on LUCITA-DIRAC interface'
-        If ( i.eq.10)
-     &  Line='    Author: Timo Fleig, Univ. Duesseldorf         '
-        If ( i.eq.12)
-     &  Line='   Calling LUCIA version 1999'
-        If ( i.eq.14)
-     &  Line='     author: J. Olsen, Lund/Aarhus                '
-        If ( i.eq.15)
-     &  Line='Parallelization of LUCITA, Duesseldorf/Odense:    '
-        If ( i.eq.16)
-     &  Line='  S. Knecht, Univ. Southern Denmark               '
-        If ( i.eq.18)
-     &  Line='     Traditional sigma vector and density modules.'
-        If ( i.eq.20)
-     &  Line='Citation:                                         '
-        If ( i.eq.21)
-     &  Line='  J. Olsen, P. Joergensen, J. Simons,             '
-        If ( i.eq.22)
-     &  Line='          Chem. Phys. Lett. 169 (1990) 463        '
-        If ( i.eq.23)
-     &  Line='  T. Fleig, L. Visscher,                          '
-        If ( i.eq.24)
-     &  Line='          Chem. Phys. 311 (2005) 113              '
-        If ( i.eq.25)
-     &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
-        If ( i.eq.26)
-     &  Line='          J. Chem. Phys., 128 (2008) 014108       '
-        If ( i.eq.27)
-     &  Line='                                                  '
-        If ( i.eq.28 .or. i.eq.29 )
-     &  Line = StLine
-        write(LUOUT,*) Line
-      End Do
+      write(luout,'( 1x,a)') StLine,' ',
+     &   'D A L T O N - L U C I T A',
+     &   'An interface section for LUCITA under DALTON', ' ',
+     &   'Authors: J. Olsen, Univ. Aarhus',
+     &   '         H. J. Aa. Jensen, Univ. Southern Denmark ',
+     &   '         S. Knecht, Univ. Southern Denmark        ',
+     &   'Based on LUCITA-DIRAC interface',
+     &   '    Author: Timo Fleig, Univ. Duesseldorf', ' ',
+     &   '  Calling LUCIA version 1999', ' ',
+     &   '    Author: J. Olsen, Lund/Aarhus                ',
+     &   'Parallelization of LUCITA, Duesseldorf/Odense:    ',
+     &   '  S. Knecht, Univ. Southern Denmark', ' ',
+     &   '     Traditional sigma vector and density modules.',' ',
+     &   'Citations:',
+     &   '  J. Olsen, P. Joergensen, J. Simons,             ',
+     &   '          Chem. Phys. Lett. 169 (1990) 463        ',
+     &   '  T. Fleig, L. Visscher,                          ',
+     &   '          Chem. Phys. 311 (2005) 113              ',
+     &   '  S. Knecht, H. J. Aa. Jensen and T. Fleig,       ',
+     &   '          J. Chem. Phys., 128 (2008) 014108       ',' ',
+     &   StLine, Stline, Stline
 
       end
 ***********************************************************************
@@ -2762,12 +2439,9 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
       IMPLICIT REAL*8           (A-H,O-Z)
 *
 #include "mxpdim.inc"
-C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
-C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
 
 #include "glbbas.inc"
 *
-C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *
       I2EAD = I2EADS(IORB,JORB,KORB,LORB,WORK(KPINT2))
@@ -2778,7 +2452,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       FUNCTION I2EADS(IORB,JORB,KORB,LORB,IJKLOF)
 *
 * Obtain address of integral (IORB JORB ! KORB LORB) in MOLCAS order
-* IORB JORB KORB LORB corresponds to SYMMETRY ordered indeces !!
+* IORB JORB KORB LORB corresponds to SYMMETRY ordered indices !!
 * Integrals assumed in core
 *
 *
@@ -2811,7 +2485,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       LOFF = IBSO(LSM)
 *
       If( Ntest.ge. 100) THEN
-        write(6,*) ' GMIJKL at your service '
+        write(6,*) ' I2EADS at your service '
         WRITE(6,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
         WRITE(6,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
         WRITE(6,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
@@ -2938,21 +2612,15 @@ C     Argument list :
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "SysDef.inc"
-      PARAMETER (LUINP = 17)
+      PARAMETER ( LUINP = 17)
       PARAMETER ( ITAP30 = 16, LUPRI = 6, LUCMDS=17)
       PARAMETER ( LURSP   = 18 , LUONE = 19, LUW6 = 6)
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), IBUF(LBUF)
       CHARACTER*72 TITLE(2)
-      DIMENSION NDEG(8),NBAS(8),NOCC(8),NEJBAS(8)
+      DIMENSION NAOS(8),NBAS(8),NOCC(8),NORB(8)
       DIMENSION IWRK(*),WRK(LWRK)
-      LOGICAL LPPOP
-      LOGICAL FNDLAB
-      COMMON /CIPOL / NBAST, NNBAST, MORB(8), NMORBT, NORB(8),NNORB(8),
-     *                NSYMHF, LBINTM, LPPOP(3,3), LSYMOP(3,3),
-     *                NCMOT, NNORBX, NLAMDA(8), LUEGVC,NORBT,ISAT(128)
-      common /nuclear/ enenuc
-C
+      LOGICAL LPPOP, FNDLAB
 C
 C     Read information on file AONEINT from HERMIT.
 C
@@ -2960,35 +2628,28 @@ C
       OPEN (ITAP34,STATUS='OLD',FORM='UNFORMATTED',FILE='AOONEINT')
       REWIND ITAP34
       READ (ITAP34) TITLE
-      READ (ITAP34) NST,(NDEG(I),I=1,NST),ENUC
+      READ (ITAP34) NSYM_AO,(NAOS(I),I=1,NSYM_AO),ENUC
       CLOSE(ITAP34,STATUS='KEEP')
       CORE = ENUC
-      enenuc = enuc
 C
-      NSYMHF = 0
       MXCOEF = 0
       NBFAO  = 0
-      DO 100 I = 1,NST
-         IF (NDEG(I) .GT. 0) THEN
-            NBFAO  = NBFAO  + NDEG(I)
-            NSYMHF = NSYMHF + 1
-            MXCOEF = MXCOEF + NDEG(I)*NDEG(I)
-         END IF
+      DO 100 I = 1,NSYM_AO
+         NBFAO  = NBFAO  + NAOS(I)
+         MXCOEF = MXCOEF + NAOS(I)*NAOS(I)
   100 CONTINUE
       WRITE(6,'(//A/5X,A/5X,A)/)')
-     &   ' Molecule title from basis set input :',(TITLE(I),I=1,24)
+     &   ' Molecule title from basis set input :',(TITLE(I),I=1,2)
 C?    WRITE(6,*) 'NBFAO  : ',NBFAO
-C?    WRITE(6,*) 'NSYMHF : ',NSYMHF
 C
 C     Read information on file SIRIFC written from SIRIUS.
 C
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
       CALL MOLLAB('TRCCINT ',ITAP30,6)
-      READ (ITAP30) NSYMHF,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYMHF),
-     *              (NLAMDA(I),I=1,NSYMHF),(NORB(I),I=1,NSYMHF),
+      READ (ITAP30) NSYM,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYM),
+     *              (NORB(I),I=1,NSYM),(NBAS(I),I=1,NSYM),
      *              POTNUC,EMCSCF
-      CALL ICOPVE(NLAMDA,NEJBAS,8)
 C
       KEIGVL = 1
       KEIGSY = (KEIGVL + NORBT)*RtoI
@@ -3007,24 +2668,32 @@ C
 C
 C     Check information from AONEINT and SIRGEOM.
 C
-      I_DO_CHECK = 0
+      I_DO_CHECK = 1
       IF(I_DO_CHECK.EQ.0) THEN
         WRITE(6,*) ' Warning : No checks of consistency '
         WRITE(6,*) ' Between AOONEINT and SIRIFC '
       ELSE
-      IF ((MXCOEF .NE. NCMOT) .OR. (NBFAO  .NE. NORBT) .OR.
-     *    (NBAST  .NE. NBFAO) .OR. (ENUC   .NE. POTNUC)) THEN
-         WRITE(LUPRI,*) 'Inconsistency error between AONEINT and'
-         WRITE(LUPRI,*) 'SIRGEOM'
-         WRITE(LUPRI,*) 'MXCOEF AND NCMOT',MXCOEF,NCMOT
-         WRITE(LUPRI,*) 'NBFAO  AND NORBT',NBFAO,NORBT
-         WRITE(LUPRI,*) 'NSYMHF AND NSYM',NSYMHF,NSYM
-         WRITE(LUPRI,*) 'ENUC   AND POTNUC',ENUC,POTNUC
-         Call Abend2( 'INCONSISTENCY ERROR IN LOAD' )
-      ELSE
-         WRITE(LUPRI,*) 'Input from AONEINT and SIRGEOM was found'
-         WRITE(LUPRI,*) 'to be ok, and we thus proceed.'
-      ENDIF
+        IERR = 0
+        DO I = 1,NSYM
+         IF (NAOS(I) .NE. NBAS(I)) IERR = IERR + 1
+        END DO
+        IF (NSYM_AO .NE. NSYM  ) IERR = IERR + 1
+        IF (NBFAO   .NE. NBAST ) IERR = IERR + 1
+        IF (ENUC    .NE. POTNUC) IERR = IERR + 1
+        IF (MXCOEF  .LT. NCMOT ) IERR = IERR + 1
+        IF (IERR .GT. 0) THEN
+         WRITE(LUPRI,*) 'Inconsistency error between AONEINT and SIRIFC'
+         WRITE(LUPRI,*) 'MXCOEF  AND NCMOT ',MXCOEF,NCMOT
+         WRITE(LUPRI,*) 'NBFAO   AND NBAST ',NBFAO,NBAST
+         WRITE(LUPRI,*) 'NAOS(I)           ',NAOS(1:8)
+         WRITE(LUPRI,*) 'NBAS(I)           ',NBAS(1:8)
+         WRITE(LUPRI,*) 'NSYM_AO AND NSYM  ',NSYM_AO,NSYM
+         WRITE(LUPRI,*) 'ENUC    AND POTNUC',ENUC,POTNUC
+         Call Abend2( 'INCONSISTENCY ERROR IN INFSIR' )
+        ELSE
+         WRITE(LUPRI,*) 'Input from AONEINT and SIRIFC was found'//
+     &                  'to be ok, and we thus proceed.'
+        END IF
       END IF
 C
       NTEST = 0
@@ -3045,21 +2714,8 @@ C
       KONEEL = KEIGVC + NBAST*NBAST
       KMOONE = KONEEL + NBAST*NBAST
       KSCR1  = KMOONE + NBAST*NBAST
-      KEND   = KSCR2  + 3*NBAST*NBAST
+      KEND   = KSCR1  + 3*NBAST*NBAST
 *
-CTF
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) 'WARNING !!!'
-      write(6,*) ' KSCR2 is undefined in infsir !! '
-      write(6,*) 'KSCR2 = ',KSCR2
-CTF
 *
       IF ( KEND .GT. LWRK ) THEN
          Call Abend2( 'Insufficient spaces in INFSIR' )
@@ -3081,8 +2737,8 @@ C
       CLOSE(ITAP34,STATUS='KEEP')
 *. Transform
 C     TRAN_SYM_BLOC_MAT3(AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
-      CALL TRAN_SYM_BLOC_MAT3(WRK(KONEEL),WRK(KEIGVC),NST,
-     &     NDEG,NEJBAS,WRK(KMOONE),WRK(KSCR1),1)
+      CALL TRAN_SYM_BLOC_MAT3(WRK(KONEEL),WRK(KEIGVC),NSYM,
+     &     NBAS,NORB,WRK(KMOONE),WRK(KSCR1),1)
 C
 C     WRITE 1-E MOINTS TO DISK TEMPORARILY
 C
@@ -3132,7 +2788,7 @@ C
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
      &            WORK(KPINT2),WORK(KLSM2))
 *
-*. Pointer for orbital indeces for symmetry blocked matrices
+*. Pointer for orbital indices for symmetry blocked matrices
 C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
       CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
 *
@@ -3143,18 +2799,14 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 *  ==============
 *
         WRITE(6,*) ' Integrals imported from MOLCAS files'
-*.Initialize buffers, open
-        CALL MKLUNDIO
-*. Load one-electron integrals
-        CALL GETH0(WORK(KINT1))
-*. And two-electron integrals if desired
-        IF(INCORE.EQ.1) THEN
-          CALL INTIMM(WORK(KINT2),NSMOB)
-        END IF
-*
-* Formatted input of symmetry non-vanishing integrals
-*
+        CALL QUIT('Cannot read MOLCAS files in this version')
+
       ELSE IF (INTIMP.EQ.3.AND.NOINT.EQ.0 ) THEN
+*
+*  ==============
+* Formatted input of symmetry non-vanishing integrals
+*  ==============
+*
         WRITE(6,*) ' Integrals imported formatted (E22.15) '
 *.1 : One-electron integrals
         REWIND LU2INT
@@ -3184,7 +2836,7 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
           IDUM = 2803
           CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIRFAC')
           CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
-          CALL READMO_LUCI(WORK(KLSCR),LSCR,WORK(KINT2))
+          CALL READMO_LUCI(WORK(KINT2),WORK(KLSCR),LSCR)
           CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'SIRFAC')
         END IF
 *
@@ -3222,111 +2874,14 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       END
 ***********************************************************************
 *
-      SUBROUTINE INTIMM(XINT,MAXSYM)
-*
-* Import all two electron integrals from MOTRA 2e-file
-*
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-
-#include "SysDef.inc"
-
-*.ORBINP
-#include "mxpdim.inc"
-#include "orbinp.inc"
-*.LUNDIO
-      Parameter ( mxBatch = 106  )
-      Parameter ( mxSyBlk = 666  )
-      Common / LundIO / LuTr2,lTr2Rec,iDAdr(mxBatch),nBatch(mxSyBlk)
-*.Output
-      DIMENSION XINT(*)
-*. For testing
-      Ntest = 0
-      Ioff = 1
-      Do 101 Ism = 1, Maxsym
-        Do 102 Jsm = 1,Ism
-          Do 103 Ksm = 1, ISm
-            If(Ism .eq. Ksm ) Then
-             LsmMX = Jsm
-            Else
-             LsmMX = Ksm
-            End if
-            DO 104 Lsm = 1, LsmMX
-            If ( ieor(iSm-1,jSm-1).ne.ieor(kSm-1,lSm-1) )  goto 104
-*
-              IJbl = Ism*(Ism-1)/2 + Jsm
-              KLbl = Ksm*(Ksm-1)/2 + Lsm
-              IJKLbl = IJbl*(IJbl-1)/2 + KLbl
-*
-              nIorb = Ntoobs(Ism)
-              nJorb = Ntoobs(Jsm)
-              nKorb = Ntoobs(Ksm)
-              nLorb = Ntoobs(Lsm)
-*
-              If(Ism.Eq.Jsm) Then
-                nIJ = NIorb*(NIorb+1)/2
-              Else
-                nIJ = NIORB*NJORB
-              End If
-              If(Ksm.Eq.Lsm) Then
-               nKL = nKorb*(nKorb+1)/2
-              Else
-                nKL = nKorb*nLorb
-              End If
-*
-              If(Ism .Eq. Ksm .And. Jsm .Eq. Lsm ) Then
-                nIJKL= nIJ*(nIJ+1)/2
-              Else
-                nIJKL= nIJ*nKL
-              End if
-*
-              If ( Ntest .Ne. 0 ) then
-                Write(6,*) ' Ism Jsm Ksm Lsm ', Ism,Jsm,Ksm,Lsm
-                Write(6,*) ' Ioff, nIJKL ', Ioff,nIJKL
-              End if
-              Ibatch = nbatch(IJKLbl)
-              iDisk=iDAdr(iBatch)
-              If(Ntest.Ne.0) Write(6,*)
-     &        ' IJKLbl iBatch iDisk ', IJKLbl,iBatch,iDisk
-*. Loop over records
-              nRec = nIJKL/lTr2Rec
-              If(Nrec*lTr2Rec.Lt. nIJKL) nRec = nRec + 1
-              Ioffo = Ioff
-              Do 50 IRec = 1, Nrec
-                If ( IRec .Ne. Nrec ) Then
-                   Nintrc = lTr2Rec
-                Else
-                   Nintrc = nIJKL -(Nrec-1)*Ltr2Rec
-                End if
-!               Call Dafile(LuTr2,2,Xint(Ioff),RtoI*Nintrc,Idisk)
-                Ioff = Ioff + Nintrc
-   50        Continue
-*
-             If( Ntest .Ne. 0 ) then
-               Write(6,*) ' Integral block '
-               If(Ism.Eq.Ksm .And. Jsm. Eq. Lsm ) Then
-                 Call Prsym(Xint(Ioffo),nIJ)
-               Else
-                 Call WRTMT_LU(Xint(Ioffo),nIJ,nKL,nIJ,nKL)
-               End if
-             End if
-*
-  104       Continue
-  103     Continue
-  102   Continue
-  101 Continue
-*
-      Return
-      End
-***********************************************************************
 *  Create usual input file for LUCITA by writing keywords and
 *  values to unit ..
 *
       subroutine luciwrt(IPLOCAL,NSHPGS,MXPNGAS,MXPIRR,MXPICI,
      &                   NGAS,NSYM,NCISPC,NSEQ,TYPELUC,MAXIT,
      &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
-     &                   IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
-     &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
+     &                   IRREP,NROOT,MULTIP,MS2,NELGS,
+     &                   CALSIZ,IVFLEV,
      &                   IUSE_PH,IDEMOL,IRSTRT,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
@@ -3344,8 +2899,7 @@ ChjC#include "infpar.h"
       logical MSCOMB
       character*2 TYPELUC(MXSEQ)
       character*3 CALSIZ
-      character*6 MACHINE
-      character*72 TITLE(MXTIT),HESTR
+      character*72 HESTR
       CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
       INTEGER LUCIAIN_MPIL
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
@@ -3360,16 +2914,6 @@ ChjC#include "infpar.h"
          write(6,*) '==========================================='
 *
          write(*,'(A13)') '* &LUCIA &END'
-*
-         write(*,'(A5)') 'TITLE'
-         NTITMN = NTIT
-         do I=1,NTITMN,1
-            call leftad(TITLE(I))
-            write(*,'(1X,A70)') TITLE(I)
-         end do
-*
-CTF      write(*,'(A7)') 'MACHINE'
-CTF      write(*,'(1X,A6)') MACHINE
 *
          if (CALSIZ.eq.'NOR') then
            write(*,'(A6)') 'MEGACI'
@@ -3486,38 +3030,23 @@ CTF      write(*,'(1X,A6)') MACHINE
 * Write to file LUCIAIN
 *--------------------------------------------------
       LUCIAIN_MPIN = "LUCIAIN"
-      IF (LUCI_NMPROC .GT. 1) THEN
-        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUCIAIN_MPI,'(A7,A1,I1)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=9
-        ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUCIAIN_MPI,'(A7,A1,I2)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=10
-        ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',LUCI_MYPROC
          LUCIAIN_MPIL=11
-        ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-        ENDIF
       ELSE
-         NLUCIAIN_MPI=LUCIAIN_MPIN
-         LUCIAIN_MPIL=7
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
+         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
 
       open(unit=LUINP,file=NLUCIAIN_MPI(1:LUCIAIN_MPIL),
      &     status='UNKNOWN',form='FORMATTED')
          Rewind(LUINP)
          write(LUINP,'(A13)') '* &LUCIA &END'
-*
-         write(LUINP,'(A5)') 'TITLE'
-         NTITMN = NTIT
-         do I=1,NTITMN,1
-            call leftad(TITLE(I))
-            write(LUINP,'(1X,A70)') TITLE(I)
-         end do
-*
-CTF      write(LUINP,'(A7)') 'MACHINE'
-CTF      write(LUINP,'(1X,A6)') MACHINE
 *
          if (CALSIZ.eq.'NOR') then
            write(LUINP,'(A6)') 'MEGACI'
@@ -3634,90 +3163,39 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
       return
       end
 ***********************************************************************
-      Subroutine MkLundIO
-************************************************************************
-*                                                                      *
-*     Purpose:                                                         *
-*     Initialize the Common /LundIO/                                   *
-*                                                                      *
-*     Calling parameters: none                                         *
-*                                                                      *
-***** M.P. Fuelscher, University of Lund, Sweden, 1991 *****************
-*
-      Parameter ( mxBatch = 106  )
-      Parameter ( mxSyBlk = 666  )
-      Parameter ( lBlk    = 9600 )
-      Parameter ( LuTwo   = 13   )
-      Common / LundIO / LuTr2,lTr2Rec,iDAdr(mxBatch),nBatch(mxSyBlk)
-*----------------------------------------------------------------------*
-*     Start procedure:                                                 *
-*     First set the unit number, record length and open file           *
-*     per symmetry element                                             *
-*----------------------------------------------------------------------*
-      LuTr2=LuTwo
-      lTr2Rec=lBlk
-!     Call DaName(luTr2,'TRAINT')
-*----------------------------------------------------------------------*
-*     Load the table of disk adresses                                  *
-*----------------------------------------------------------------------*
-!     Call DaFile(LuTr2,2,iDAdr,mxBatch,iDisk)
-*----------------------------------------------------------------------*
-*     Generate the symmetry block to batch number translation table    *
-*----------------------------------------------------------------------*
-      iBatch=0
-      Do iSym=1,8
-        Do jSym=1,iSym
-          Do kSym=1,iSym
-            mxlSym=kSym
-            If ( kSym.eq.iSym ) mxlSym=jSym
-            Do lSym=1,mxlSym
-              If ( ieor(iSym-1,jSym-1).eq.ieor(kSym-1,lSym-1) ) Then
-                ijPair=jSym+iSym*(iSym-1)/2
-                klPair=lSym+kSym*(kSym-1)/2
-                iSyBlk=klPair+ijPair*(ijPair-1)/2
-                iBatch=iBatch+1
-                nBatch(iSyBlk)=iBatch
-              End If
-            End Do
-          End Do
-        End Do
-      End Do
-*----------------------------------------------------------------------*
-*     Terminate procedure                                              *
-*----------------------------------------------------------------------*
-      Return
-      End
-***********************************************************************
-*  Conversion routine from 'dummy' MOLCAS input for LUCITA to
+*  Conversion routine from 'dummy' DALTON input for LUCITA to
 *  true LUCITA input. This routine creates the required
 *  default settings and processes the input already given by
-*  the MOLCAS dummy.
+*  DALTON.
 *************************************************************
 *
-*   Modified for DIRAC environment
-*      Timo Fleig, Jan. 2002
-*
-*************************************************************
-*
-      subroutine dalton2lucita(NTIT,NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
+      subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
+     &                   IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
+     &                   TYPE,WAFFCT,PRILUC,
+     &                   NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
 *
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "luci.inc"
-#include "orbinf_lucita.inc"
-#include "machine.inc"
+#include "lucinp.inc"
 #include "SysDef.inc"
+*
+#include "inforb.h"
 *
       logical MSCOMB
 *
       character*2 TYPELUC(MXSEQ)
+      character*3 CALSIZ
+      character*6 TYPE,WAFFCT,PRILUC
       character*72 CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),
      &             ITEM(MXITEM),ITEMX,CARD3(5)
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
       write(6,*) 'enter dalton2lucita'
+*
+*
+      NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
 *
 *------------------------------------------------------------------*
 *  Create default settings for LUCITA
@@ -3862,15 +3340,16 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *  We will support CI, PERTUrbation theory, and VECFREE calculations
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
-        if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
-        else if (CALSIZ.eq.'HUG') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
+        MAXIT = IMAXCIITER
+!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
+!       else if (CALSIZ.eq.'HUG') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
-        end if
+!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -3901,7 +3380,7 @@ CC        IVFLEV = 1               ! could be made more flexible
             NGAS = 2
             do ISYM=1,NSYM,1
               NSHPGS(1,ISYM) = NOCC(ISYM)
-              NSHPGS(2,ISYM) = NEXT(ISYM)
+              NSHPGS(2,ISYM) = NSSH(ISYM)
               if (NSHPGS(2,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
@@ -3916,7 +3395,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               NGAS = 2
               do ISYM=1,NSYM,1
                 NSHPGS(1,ISYM) = NASH(ISYM)
-                NSHPGS(2,ISYM) = NEXT(ISYM)
+                NSHPGS(2,ISYM) = NSSH(ISYM)
                 if (NSHPGS(2,ISYM).gt.MXTSOB) then
                   call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                          MXTSOB,NGAS,IPRT)
@@ -3931,7 +3410,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               do ISYM=1,NSYM,1
                 NSHPGS(1,ISYM) = NISH(ISYM)
                 NSHPGS(2,ISYM) = NASH(ISYM)
-                NSHPGS(3,ISYM) = NEXT(ISYM)
+                NSHPGS(3,ISYM) = NSSH(ISYM)
                 if (NSHPGS(3,ISYM).gt.MXTSOB) then
                   call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                          MXTSOB,NGAS,IPRT)
@@ -3960,7 +3439,7 @@ CC        IVFLEV = 1               ! could be made more flexible
                 write(6,*) 'Reconsider input.'
                 Call Abend2( 'Quitting.' )
               end if
-              NSHPGS(3,ISYM) = NEXT(ISYM)
+              NSHPGS(3,ISYM) = NSSH(ISYM)
               if (NSHPGS(3,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
@@ -3989,7 +3468,7 @@ CC        IVFLEV = 1               ! could be made more flexible
                 Call Abend2( 'Quitting.' )
               end if
               NSHPGS(3,ISYM) = NASH(ISYM)
-              NSHPGS(4,ISYM) = NEXT(ISYM)
+              NSHPGS(4,ISYM) = NSSH(ISYM)
               if (NSHPGS(4,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
@@ -4197,15 +3676,16 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  We will support CI, PERTUrbation theory, and VECFREE calculations
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
-        if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
-        else if (CALSIZ.eq.'HUG') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
+        MAXIT = IMAXCIITER
+!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
+!       else if (CALSIZ.eq.'HUG') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
-        end if
+!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -4236,7 +3716,7 @@ CC        IVFLEV = 1               ! could be made more flexible
             NGAS = 2
             do ISYM=1,NSYM,1
               NSHPGS(1,ISYM) = NOCC(ISYM)
-              NSHPGS(2,ISYM) = NEXT(ISYM)
+              NSHPGS(2,ISYM) = NSSH(ISYM)
               if (NSHPGS(2,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
@@ -4251,7 +3731,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               NGAS = 2
               do ISYM=1,NSYM,1
                 NSHPGS(1,ISYM) = NASH(ISYM)
-                NSHPGS(2,ISYM) = NEXT(ISYM)
+                NSHPGS(2,ISYM) = NSSH(ISYM)
                 if (NSHPGS(2,ISYM).gt.MXTSOB) then
                     call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                            MXTSOB,NGAS,IPRT)
@@ -4266,7 +3746,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               do ISYM=1,NSYM,1
                 NSHPGS(1,ISYM) = NISH(ISYM)
                 NSHPGS(2,ISYM) = NASH(ISYM)
-                NSHPGS(3,ISYM) = NEXT(ISYM)
+                NSHPGS(3,ISYM) = NSSH(ISYM)
                 if (NSHPGS(3,ISYM).gt.MXTSOB) then
                   call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                          MXTSOB,NGAS,IPRT)
@@ -4295,7 +3775,7 @@ CC        IVFLEV = 1               ! could be made more flexible
                 write(6,*) 'Reconsider input.'
                 Call Abend2( 'Quitting.' )
               end if
-              NSHPGS(3,ISYM) = NEXT(ISYM)
+              NSHPGS(3,ISYM) = NSSH(ISYM)
               if (NSHPGS(3,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
@@ -4324,7 +3804,7 @@ CC        IVFLEV = 1               ! could be made more flexible
                 Call Abend2( 'Quitting.' )
               end if
               NSHPGS(3,ISYM) = NASH(ISYM)
-              NSHPGS(4,ISYM) = NEXT(ISYM)
+              NSHPGS(4,ISYM) = NSSH(ISYM)
               if (NSHPGS(4,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
@@ -4531,15 +4011,16 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  We will support CI, PERTUrbation theory, and VECFREE calculations
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
-        if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
-        else if (CALSIZ.eq.'HUG') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
+        MAXIT = IMAXCIITER
+!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
+!       else if (CALSIZ.eq.'HUG') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
-        end if
+!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -4681,15 +4162,16 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  We will support CI, PERTUrbation theory, and VECFREE calculations
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
-        if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
-        else if (CALSIZ.eq.'HUG') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
+        MAXIT = IMAXCIITER
+!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
+!       else if (CALSIZ.eq.'HUG') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
-        end if
+!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -4875,15 +4357,16 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  We will support CI, PERTUrbation theory, and VECFREE calculations
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
-        if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
-        else if (CALSIZ.eq.'HUG') then
-          TYPELUC(NSEQ) = 'CI'
-          MAXIT = IMAXCIITER
+        MAXIT = IMAXCIITER
+!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
+!       else if (CALSIZ.eq.'HUG') then
+!         TYPELUC(NSEQ) = 'CI'
+!         MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
-        end if
+!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -4999,8 +4482,8 @@ CC        IVFLEV = 1               ! could be made more flexible
       call luciwrt(IPRT,NSHPGS,MXPNGAS,MXPIRR,MXPICI,
      &             NGAS,NSYM,NCISPC,NSEQ,TYPELUC,MAXIT,
      &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
-     &             IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
-     &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
+     &             IRREP,NROOT,MULTIP,MS2,NELGS,
+     &             CALSIZ,IVFLEV,
      &             IUSE_PH,IDEMOL,IRSTRT,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
      &             IPRDEN,IPROCC,IPRNCIV)
@@ -5295,56 +4778,6 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
       RETURN
       END
 ***********************************************************************
-      SUBROUTINE PUTMOAO(CMOAO)
-*
-* SAVE   MOAO matrix CMOAO on LUMOUT
-*
-* A sunny day in April 96
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
-#include "clunit.inc"
-#include "crun.inc"
-*
-      IF(INTIMP.EQ.1) THEN
-*. MOLCAS environment
-        WRITE(6,*) ' PUTMOAO : MOLCAS environment'
-        CALL PUTMOAO_MOLCAS(CMOAO,LUMOUT)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-      SUBROUTINE PUTMOAO_MOLCAS(CMOAO,LU)
-*
-* WRITE MOAO matrix CMOAO on file LU in MOLCAS LUMORB format
-
-*
-* GETOBS assumed called to define /MOLOBS/
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      CHARACTER*80 TITLEMO
-      COMMON/MOLOBS/
-     & IOList(64),iToc(64),nBas(8),nOrb(8),nFro(8),nDel(8),
-     & Nsym
-*
-      LOCC = 0
-*. Full NBAS X NBAS assumed
-* Routine with the same name exists in DIRAC.
-C     CALL WRVEC('CIAORB',LU,NSYM,NBAS,NBAS,CMOAO,OCC,LOCC,
-C    &           ' MO orbitals obtained from LUCIA ')
-      WRITE(6,*) ' Mo coefficients written to ', LU
-*
-      RETURN
-      END
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine rdcom
-      return
-      end
 ***********************************************************************
 *  Import one-electron integrals from DALTON environment
 *
@@ -5745,7 +5178,7 @@ C
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
       END
 ***********************************************************************
-      SUBROUTINE READMO_LUCI(WRK,LWRK,XIJKL)
+      SUBROUTINE READMO_LUCI(XIJKL,WRK,LWRK)
 C
 C     Written by Henrik Koch 27-Mar-1990
 C
@@ -5759,23 +5192,16 @@ C
       DIMENSION WRK(LWRK)
       PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)
       INTEGER P,Q,R,S,A,B,C,D,E,F,G
-      COMMON /CIPOL / NBAST, NNBAST, MORB(8), NMORBT, NORB(8),NNORB(8),
-     *                NSYMHF, LBINTM, LPPOP(3,3), LSYMOP(3,3),
-     *                NCMOT, NNORBX, NLAMDA(8), LUEGVC,NORBT,ISAT(128)
 C
       OPEN (LUINT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      *      FILE='MOTWOINT')
-      REWIND LUINT
 C
       REWIND LUINT
       READ (LUINT)
       READ (LUINT) LBINTM, JTRLVL
 C?    WRITE(6,*) 'LBINTM   :  ',LBINTM,JTRLVL
 C
-      KONEMO = 1
-      KTWOMO = KONEMO + NORBT*NORBT
-C     KBUF   = KTWOMO + NORBT*NORBT*NORBT*NORBT
-      KBUF   = KTWOMO
+      KBUF   = 1
       KIBUF  = KBUF   + LBINTM
       KEND   = KIBUF  + LBINTM/RtoI + 1
 C
@@ -5787,12 +5213,12 @@ C-----------------------------------
 C     Read MO integrals into memory.
 C-----------------------------------
 C
-      CALL REDMO1(XIJKL,WRK(KBUF),WRK(KIBUF),LBINTM,NORBT)
+      CALL REDMO1(XIJKL,WRK(KBUF),WRK(KIBUF),LBINTM)
 *
       RETURN
       END
 ***********************************************************************
-      SUBROUTINE REDMO1(TWOMO,BUF,IBUF,LBUF,NORBT)
+      SUBROUTINE REDMO1(TWOMO,BUF,IBUF,LBUF)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
@@ -5812,10 +5238,7 @@ C----- bit manipulation definitions
       PARAMETER (IBT02=3, IBT08=255, IBT10=1023, IBT16=65535)
       PARAMETER (MYSHF=16,IBTMY=IBT16,MAXLN=16)
       IBTAND(I,J) = IAND(I,J)
-C     IBTOR(I,J)  = IOR(I,J)
-C     IBTSHL(I,J) = ISHFT(I,J)
       IBTSHR(I,J) = ISHFT(I,-J)
-C     IBTXOR(I,J) = IEOR(I,J)
 C-----
 C
       REWIND LUINT
@@ -5845,7 +5268,7 @@ c
  9500 CONTINUE
 *
       WRITE(6,*) ' Number of integrals read ', NINTR
-      WRITE(6,*) ' Indeces of last integral ', IA,IB,IC,ID
+      WRITE(6,*) ' Indices of last integral ', IA,IB,IC,ID
       RETURN
       END
 ***********************************************************************
