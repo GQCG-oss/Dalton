@@ -4220,6 +4220,8 @@ C
 C
 C
       DO 100 ICENT = 1, NUCIND
+         ICRY = ICRX + 1
+         ICRZ = ICRX + 2
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
@@ -4233,8 +4235,8 @@ C
             WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
             NATOMS = NATOMS + 1
             WORK(ICRX  ) = CORD(1,ICENT)
-            WORK(ICRX+1) = CORD(2,ICENT)
-            WORK(ICRX+2) = CORD(3,ICENT)
+            WORK(ICRY) = CORD(2,ICENT)
+            WORK(ICRZ) = CORD(3,ICENT)
             ICRX = ICRX + 3
          ELSE
             JATOM = 0
@@ -4258,8 +4260,6 @@ C
      *                     ICRZ,CHRXYZ(-3),WORK(ICRZ)
                   END IF
                   ICRX = ICRX + 3
-                  ICRY = ICRY + 3
-                  ICRZ = ICRZ + 3
                END IF
   200       CONTINUE
          END IF
