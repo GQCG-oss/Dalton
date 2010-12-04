@@ -1,0 +1,210 @@
+!dalton_copyright_start
+!
+!
+!dalton_copyright_end
+
+#ifdef VAR_MPI
+module dalton_mpi
+
+! stefan: - this module provides generic interfaces to major MPI routines
+!           in parallel calculations.
+!
+!           written by radovan bast, for DIRAC.
+!           adapted and extended for DALTON by sknecht, december 2010.
+
+  use mpi
+
+#if defined (VAR_INT64)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+
+  implicit none
+
+  public dalton_mpi_bcast
+
+  private
+
+  save 
+
+  integer, private                       :: istat(MPI_STATUS_SIZE)
+  integer, private                       :: ierr
+
+  interface dalton_mpi_bcast
+    module procedure dalton_mpi_bcast_i0
+    module procedure dalton_mpi_bcast_i1
+    module procedure dalton_mpi_bcast_i2
+    module procedure dalton_mpi_bcast_i3
+    module procedure dalton_mpi_bcast_i4
+    module procedure dalton_mpi_bcast_r0
+    module procedure dalton_mpi_bcast_r1
+    module procedure dalton_mpi_bcast_r2
+    module procedure dalton_mpi_bcast_r3
+    module procedure dalton_mpi_bcast_r4
+    module procedure dalton_mpi_bcast_l0
+    module procedure dalton_mpi_bcast_l1
+    module procedure dalton_mpi_bcast_l2
+  end interface
+
+contains
+
+  subroutine dalton_mpi_bcast_i0(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, 1, my_MPI_INTEGER, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_i1(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), my_MPI_INTEGER, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_i2(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), my_MPI_INTEGER, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_i3(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), my_MPI_INTEGER, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_i4(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), my_MPI_INTEGER, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_r0(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, 1, mpi_double_precision, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_r1(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_double_precision, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_r2(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_double_precision, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_r3(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_double_precision, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_r4(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_double_precision, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_l0(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    logical :: x
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, 1, mpi_logical, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_l1(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    logical :: x(:)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_logical, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_l2(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    logical :: x(:, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_logical, root_proc, communicator, ierr)
+
+  end subroutine
+#else /* ifdef VAR_MPI */
+module dummy_dalton_mpi
+#endif
+end module

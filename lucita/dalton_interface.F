@@ -654,43 +654,9 @@ C        .. we do not accept user input of less than 100 000 !
 * 10f: truncation factor
 *
       write(LUOUT,'(/A42,1P,D10.2)')
-     &  ' Truncation Factor ..................... ',ctrunc_fac
+     &  ' Truncation Factor ..................... ',trunc_fac
       write(LUOUT,*)
                    
-* 11: INAC specification of inactive orbitals per symmetry
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
-*
-* 12: GASS specification of orbitals per GAS per symmetry
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
-*
-* 13: GSSP specification of electrons in GAS Spaces
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
-*
-* 14: FRMO specification of orbitals per symmetry
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
-*
-* 15: RAS1 specification of orbitals per symmetry
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
-*
-* 16: RAS2 specification of orbitals per symmetry
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
-*
-* 17: RAS3 specification of orbitals per symmetry
-*
-*     No printing. Will be directed to luciwrt after resolution
-*
 *
 * 18: DENSity matrix level
 *
@@ -720,7 +686,6 @@ C        .. we do not accept user input of less than 100 000 !
 *
 6666  continue
 *
-      RETURN
       END
 ***********************************************************************
       SUBROUTINE DMPINT(LUINT)
@@ -4491,67 +4456,6 @@ CC        IVFLEV = 1               ! could be made more flexible
       return
       end
 ***********************************************************************
-* Determine max. number of 2-el. integrals of the Dirac-Coulomb
-* operator depending on symmetry information (no index permutation symmetry!)
-*
-      subroutine nsymint_dc(NCT,NTOOBS,NIRREP,NORB,IPRINT)
-*
-*-----------------------------------------
-*  Timo Fleig, May 2001
-*-----------------------------------------
-*
-      implicit real*8(A-H,O-Z)
-*
-#include "mxpdim.inc"
-#include "multd2h.inc"
-*
-      dimension NTOOBS(NIRREP),ISYMOB(MXPORB)
-*
-      NTESTL = 00
-      NTEST = max(NTESTL,IPRINT)
-*
-      ICT = 0
-      do ISM=1,NIRREP,1
-        do IOB=ICT+1,ICT+NTOOBS(ISM),1
-          ISYMOB(IOB) = ISM
-        end do
-        ICT = ICT + NTOOBS(ISM)
-      end do
-      if (NTEST.ge.3) then
-        write(6,*) 'ISYMOB array:'
-        call iwrtma(ISYMOB,NORB,1,NORB,1)
-      end if
-*
-      NCT = 0
-      do JORB=1,NORB,1
-        do IORB=JORB,NORB,1
-          ISYM = ISYMOB(IORB)
-          JSYM = ISYMOB(JORB)
-          KLSYM = MULTD2H(ISYM,JSYM)
-          do KSYM=1,NIRREP,1
-            LSYM = MULTD2H(KLSYM,KSYM)
-            if (NTEST.ge.3) then
-              write(6,'(A,4I3)')
-     &              'Index symmetries : ',ISYM,JSYM,KSYM,LSYM
-            end if
-            do KORB=1,NTOOBS(KSYM),1
-              do LORB=1,NTOOBS(LSYM),1
-                NCT = NCT + 1
-              end do
-            end do
-          end do
-        end do
-      end do
-*
-      if (NTEST.ge.2) then
-        write(6,*)
-        write(6,*) NCT,
-     &             ' 2-el. integrals need to be allocated for DIRAC!'
-      end if
-*
-      return
-      end
-***********************************************************************
 * Calculate total number of integrals on record
 * of a symmetry reduced list (r/i, particle symmetry)
 *
@@ -4935,7 +4839,7 @@ C
 *
 C     ...on here!
 C
-      if (myproc.eq.master) then
+      if(luci_myproc.eq.luci_master)then
       write(6,'(1X,A,1F18.10)') 'DIRAC core energy = ',ECORE_DIR
       end if
 C
