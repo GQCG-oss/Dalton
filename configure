@@ -1196,7 +1196,7 @@ rm conftest.c conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in DALTON
 # 1) Gen1Int
-get_yes_or_no "\nDo you want to install Gen1Int?" y
+get_yes_or_no "\nDo you want to install Gen1Int?" n
 if [ "$answer" = "y" ]; then
   $ECHO "\n-->Trying to find Gen1Int (libgen1int.a) ..."
   lib_genint=`locate libgen1int.a`
@@ -1207,8 +1207,11 @@ if [ "$answer" = "y" ]; then
   fi
   # checks if there is Gen1Int on the system
   if test ${#lib_genint} -gt 0; then
-    $ECHO "\n-->Gen1Int library $lib_genint"
+    $ECHO "\n-->Found Gen1Int ($lib_genint)"
     # everything is OK to install Gen1Int
+    $ECHO "\n-->Modifying Makefile.config ..."
+    $ECHO "-->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
+    $ECHO "-->(2) Adding $lib_genint to LIBS"
     cpp="-DBUILD_GEN1INT $cpp"
     LIB="$LIB $lib_genint"
   else

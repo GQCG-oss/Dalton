@@ -27,7 +27,24 @@ C> \return
       subroutine gen1int_cgto()
 #include<implicit.h>
 #ifdef BUILD_GEN1INT
+C defines MXCENT
+#include<mxcent.h>
+C defines MXSHEL, MXPRIM
+#include<maxorb.h>
+C defines MXQN
+#include<maxaqn.h>
+C defines MXCONT
+#include<aovec.h>
+C uses NUCDEP, CORD
+#include<nuclei.h>
+C uses KMAX (may also use NLRGSH & NSMLSH later), KHKT, NUCO, NCENT, NHKT, JSTRT, NRCO
+#include<shells.h>
+C uses DOCART
+#include<ccom.h>
+C uses PRIEXP, PRICCF
+#include<primit.h>
 #else
+      call QUIT("Gen1Int is not installed")
 #endif
 1000  format(A)
       end subroutine gen1int_cgto
@@ -40,7 +57,24 @@ C> \return
       subroutine gen1int_sgto()
 #include<implicit.h>
 #ifdef BUILD_GEN1INT
+C defines MXCENT
+#include<mxcent.h>
+C defines MXSHEL, MXPRIM
+#include<maxorb.h>
+C defines MXQN
+#include<maxaqn.h>
+C defines MXCONT
+#include<aovec.h>
+C uses NUCDEP, CORD
+#include<nuclei.h>
+C uses KMAX (may also use NLRGSH & NSMLSH later), KHKT, NUCO, NCENT, NHKT, JSTRT, NRCO
+#include<shells.h>
+C uses DOCART
+#include<ccom.h>
+C uses PRIEXP, PRICCF
+#include<primit.h>
 #else
+      call QUIT("Gen1Int is not installed")
 #endif
 1000  format(A)
       end subroutine gen1int_sgto
