@@ -23,6 +23,8 @@ module dalton_mpi
   implicit none
 
   public dalton_mpi_bcast
+  public dalton_mpi_reduce
+  public dalton_mpi_allreduce
 
   private
 
@@ -45,6 +47,32 @@ module dalton_mpi
     module procedure dalton_mpi_bcast_l0
     module procedure dalton_mpi_bcast_l1
     module procedure dalton_mpi_bcast_l2
+  end interface
+
+  interface dalton_mpi_reduce
+    module procedure dalton_mpi_reduce_i0
+    module procedure dalton_mpi_reduce_i1
+    module procedure dalton_mpi_reduce_i2
+    module procedure dalton_mpi_reduce_i3
+    module procedure dalton_mpi_reduce_i4
+    module procedure dalton_mpi_reduce_r0
+    module procedure dalton_mpi_reduce_r1
+    module procedure dalton_mpi_reduce_r2
+    module procedure dalton_mpi_reduce_r3
+    module procedure dalton_mpi_reduce_r4
+  end interface
+
+  interface dalton_mpi_allreduce
+    module procedure dalton_mpi_allreduce_i0
+    module procedure dalton_mpi_allreduce_i1
+    module procedure dalton_mpi_allreduce_i2
+    module procedure dalton_mpi_allreduce_i3
+    module procedure dalton_mpi_allreduce_i4
+    module procedure dalton_mpi_allreduce_r0
+    module procedure dalton_mpi_allreduce_r1
+    module procedure dalton_mpi_allreduce_r2
+    module procedure dalton_mpi_allreduce_r3
+    module procedure dalton_mpi_allreduce_r4
   end interface
 
 contains
@@ -202,6 +230,258 @@ contains
 !   ----------------------------------------------------------------------------
 
     call mpi_bcast(x, size(x), mpi_logical, root_proc, communicator, ierr)
+
+  end subroutine
+
+!   ************************* reduce interface *********************************
+  subroutine dalton_mpi_reduce_i0(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x
+    integer :: y
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, 1, my_MPI_INTEGER, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_i1(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:)
+    integer :: y(:)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), my_MPI_INTEGER, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_i2(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :)
+    integer :: y(:, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), my_MPI_INTEGER, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_i3(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :)
+    integer :: y(:, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), my_MPI_INTEGER, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_i4(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :, :)
+    integer :: y(:, :, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), my_MPI_INTEGER, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_r0(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x
+    real(8) :: y
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, 1, mpi_double_precision, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_r1(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:)
+    real(8) :: y(:)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), mpi_double_precision, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_r2(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :)
+    real(8) :: y(:, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), mpi_double_precision, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_r3(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :)
+    real(8) :: y(:, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), mpi_double_precision, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_reduce_r4(x,y,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :, :)
+    real(8) :: y(:, :, :, :)
+    integer :: root_proc
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_reduce(x, y, size(x), mpi_double_precision, mpi_sum, root_proc, communicator, ierr)
+
+  end subroutine
+
+!   ************************* allreduce interface ******************************
+  subroutine dalton_mpi_allreduce_i0(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x
+    integer :: y
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, 1, my_MPI_INTEGER, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_i1(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:)
+    integer :: y(:)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), my_MPI_INTEGER, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_i2(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :)
+    integer :: y(:, :)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), my_MPI_INTEGER, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_i3(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :)
+    integer :: y(:, :, :)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), my_MPI_INTEGER, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_i4(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :, :)
+    integer :: y(:, :, :, :)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), my_MPI_INTEGER, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_r0(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x
+    real(8) :: y
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, 1, mpi_double_precision, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_r1(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:)
+    real(8) :: y(:)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), mpi_double_precision, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_r2(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :)
+    real(8) :: y(:, :)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), mpi_double_precision, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_r3(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :)
+    real(8) :: y(:, :, :)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), mpi_double_precision, mpi_sum, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_allreduce_r4(x,y,communicator)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :, :)
+    real(8) :: y(:, :, :, :)
+    integer :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_allreduce(x, y, size(y), mpi_double_precision, mpi_sum, communicator, ierr)
 
   end subroutine
 #else /* ifdef VAR_MPI */

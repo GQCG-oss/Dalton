@@ -177,8 +177,8 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
        Call Abend2(' GASCI : Vanishing number of parameters ')
       END IF
 *.Transfer to CANDS
-      ICSM = ISM
-      ISSM = ISM
+      ICSM  = ISM
+      ISSM  = ISM
       ICSPC = ISPC
       ISSPC = ISPC
 *. Complete operator
@@ -683,8 +683,7 @@ C
      &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
-     &     block_list,par_dist_block_list,
-     &     WORK(KSCRREDSP),WORK(KSCRREDSP2),WORK(KRCCTOS),IPROCLIST,
+     &     block_list,par_dist_block_list,WORK(KRCCTOS),IPROCLIST,
      &     IGROUPLIST
 #ifdef VAR_MPI
      &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
@@ -1047,6 +1046,7 @@ C     character line
       integer               :: files_to_close
       integer               :: fh_offset
       integer               :: max_num_ttss_blocks
+      integer               :: max_subspace_dim
       integer, allocatable  :: proclist(:)
       integer, allocatable  :: grouplist(:)
       integer, allocatable  :: grouplist_shared_mem(:)
@@ -1142,7 +1142,6 @@ C     character line
       ILU2 = fh_array(8)
       ILU1 = fh_array(9)
 
-      call quit('*** error: stefan forced me to stop after setup ***')
 
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
@@ -1177,25 +1176,31 @@ C     Compute offset from WRK to WORK
 #endif
  
 !     subtract dynamically allocated memory
-      max_num_ttss_blocks = 15 000  
-!     the above value is an educated guess from my experience - sk nov 2010
+      max_num_ttss_blocks = 20 000
+      max_subspace_dim    = 300
+!     the above values are based on an educated guess from my experience 
+!     - sk nov 2010
       MXPWRD = LWRK
       KADD   = MXPWRD 
      &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
+     &       - (max_subspace_dim*(max_subspace_dim+1)/2)
+     7       - 2 * max_subspace_dim**2
 
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+
+      WRITE(LUOUT,'(10X,A,I18)')
+     &'Dimension of R*8 workspace : ', KADD
  
 C     LUCITA is used in SPINFREE calculations: no complex part
       irc_save = 1
 
+      call quit('*** error: stefan forced me to stop after setup ***')
 C     assign serial I/O disk units
       CALL DISKUN
 C
 C     input conversion
       call dalton_lucita_input_interface
 C
-      WRITE(LUOUT,'(10X,A,I18)')
-     &'Dimension of R*8 workspace : ', MXPWRD
 C    ======================================================
 C    1 : .Read input,insert defaults and cross check input
 C    ======================================================

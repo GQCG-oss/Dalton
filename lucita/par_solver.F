@@ -814,7 +814,7 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
      &                      IPRTXX,NPRDIM,H0,IPNTR,
      &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
      &                      IROOTHOMING,LUWRTOUT,IBLOCKL,NBLOCKDN,
-     &                      SCRRED,SCRRED2,RCCTOS,LU1LIST,LU2LIST,
+     &                      RCCTOS,LU1LIST,LU2LIST,
      &                      LU3LIST,LU4LIST,LU5LIST,LU6LIST,LU7LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      IPROCLIST,IGROUPLIST)
@@ -856,7 +856,7 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
 *         4 (NP1+NP2+NQ)
 *           LBLK : Defines block structure of matrices
 *
-!     not in use yet
+      use dalton_mpi
       use par_mcci_io
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "infpar.h"
@@ -867,20 +867,21 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
-      DIMENSION APROJ(*),AVEC(*),WORK(*)
+      DIMENSION APROJ(MAXVEC*(MAXVEC+1)/2),AVEC(*),WORK(*)
       DIMENSION H0(*),IPNTR(1)
-      DIMENSION H0SCR(*), SCRRED(*), SCRRED2(*)
+      DIMENSION H0SCR(*)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*), LU7LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LU6LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
+      real(8), allocatable :: tmp_space0(:)
+      real(8), allocatable :: tmp_space1(:)
+      real(8), allocatable :: tmp_space2(:)
 *
 * Dimensioning required of local vectors
 *     APROJ  : MAXVEC*(MAXVEC+1)/2
 *     AVEC   : MAXVEC ** 2
 *     WORK   : MAXVEC*(MAXVEC+1)/2
 *     H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
-*     SCRRED : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
-*     SCRRED2: MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
 *
 *     IROOTHOMING : Do roothoming, i.e. select the
 *     eigenvectors in iteration n+1 as the approximations
@@ -906,6 +907,14 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
       NZERO = 0
 *
       TIMING = .FALSE.
+
+!     scratch space
+      allocate(tmp_space0(maxvec*(maxvec+1)/2))
+      allocate(tmp_space1(maxvec**2))
+      allocate(tmp_space2(maxvec**2))
+      tmp_space0 = 0
+      tmp_space1 = 0
+      tmp_space2 = 0
 *
 C
 C     set check point parameters - after every 6th iteration
@@ -931,11 +940,6 @@ C     transfer root information to common block in parluci.h
 C
       NROOT_INFO = NROOT
 C
-*
-*     initialize LZERO_SCRRED
-*
-      LZERO_SCRRED = 0
-      LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
 *
       IPICO = 0
       IPRT = 000
@@ -968,7 +972,7 @@ C
 C     start timing of initial iteration
       WALLITR1 = MPI_WTIME()
 
-      CALL DZERO(APROJ, MAXVEC*(MAXVEC+1)/2 )
+      call dzero(aproj,maxvec*(maxvec+1)/2)
 C
       CALL IZERO(LU2LIST,IALL_LU2)
 C
@@ -1047,11 +1051,11 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
 *     synchronize MPI_COMM_WORLD
 *
-      IREDL = 0
       IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
-      CALL DZERO(SCRRED,IREDL)
-      CALL REDVEC_REL(APROJ,SCRRED,IREDL,2,MPI_SUM,MPI_COMM_WORLD,-1)
-      CALL DCOPY(IREDL,SCRRED,1,APROJ,1)
+      call dzero(tmp_space0,iredl)
+!     CALL REDVEC_REL(APROJ,tmp_space0,IREDL,2,MPI_SUM,MPI_COMM_WORLD,-1)
+      call dalton_mpi_allreduce(aproj,tmp_space0,MPI_COMM_WORLD)
+      call dcopy(iredl,tmp_space0,1,aproj,1)
 *
 *
 csk   IPRT = 5
@@ -1156,7 +1160,7 @@ C
      &                         IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,
      &                         LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU2_OFF,MY_LU1_OFF,MY_LU5_OFF,
-     &                         SCRRED,ILU2,ILU1,ILU5)
+     &                         tmp_space0,ILU2,ILU1,ILU5)
 *
 *
         IF( ITER .GT. MAXIT) GOTO 100
@@ -1213,7 +1217,7 @@ csk       CSCREEN = .FALSE.
      &                           LU3LIST,LU5LIST,
      &                           NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                           MY_LU1_OFF,MY_LU6_OFF,MY_LU3_OFF,
-     &                           MY_LU5_OFF,SCRRED,NVEC,IADD,
+     &                           MY_LU5_OFF,tmp_space0,NVEC,IADD,
      &                           ILU1,ILU6,ILU3,ILU5)
 *
         END IF
@@ -1244,7 +1248,8 @@ csk       CSCREEN = .FALSE.
       starttime = MPI_WTIME()
       xixidletime = 0.0D0
 *
-      CALL DZERO(SCRRED,LZERO_SCRRED)
+      call dzero(tmp_space0,maxvec*(maxvec+1)/2)
+
       IMUSTRED = 0
       ISTRED   = 0
 *      
@@ -1304,7 +1309,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *
 *       augment projected matrix using batch structure of CI vector(s)
 *
-        CALL INPROD_B_PAR_RL_LUCI2(ILU4,ILU1,ILU3,VEC1,VEC2,SCRRED,
+        CALL INPROD_B_PAR_RL_LUCI2(ILU4,ILU1,ILU3,VEC1,VEC2,tmp_space0,
      &                             NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                             MY_LU4_OFF,MY_LU1_OFF,MY_LU3_OFF,
      &                             LU4LIST,LU1LIST,LU3LIST,IVEC,NVEC,
@@ -1316,9 +1321,11 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *
 *
       xidletime = MPI_WTIME()
-      CALL DZERO(APROJ(ISTRED),IMUSTRED)
-      CALL REDVEC_REL(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
-     &                MPI_SUM,MPI_COMM_WORLD,-1)
+      call dzero(aproj(istred),imustred)
+!     CALL REDVEC_REL(tmp_space0(ISTRED),APROJ(ISTRED),IMUSTRED,2,
+!    &                MPI_SUM,MPI_COMM_WORLD,-1)
+      call dalton_mpi_allreduce(tmp_space0(istred),aproj(istred),
+     &                          MPI_COMM_WORLD)
       xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 csk   write(LUWRTOUT,*)'APROJ is'
@@ -1535,8 +1542,8 @@ csk     CALL PRSYM(APROJ,NVEC)
 *
 *         Orthogonalize to vectors on LU1 and to trial vectors on LU5
 *
-          CALL ORTHG_VEC_BATCH_LUCI1(VEC1,VEC2,WORK,SCRRED,
-     &                               SCRRED2,NROOT,JVEC,ISTART,
+          CALL ORTHG_VEC_BATCH_LUCI1(VEC1,VEC2,WORK,tmp_space1,
+     &                               tmp_space2,NROOT,JVEC,ISTART,
      &                               NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                               MY_LU3_OFF,MY_LU1_OFF,MY_LU5_OFF,
      &                               MY_LU7_OFF,LU3LIST,LU1LIST,LU5LIST,
@@ -1605,18 +1612,17 @@ csk     CALL PRSYM(APROJ,NVEC)
 *                                                          =
 *===========================================================
 *    
-      ISTRED   = 0
-      IMUSTRED = 0
-      ILOOP    = 0
-      ISETSCRRED = 0
-      ISETSCRRED = MAX( ISETSCRRED, MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
-      CALL DZERO(SCRRED,ISETSCRRED)
+      ISTRED     = 0
+      IMUSTRED   = 0
+      ILOOP      = 0
+      call dzero(tmp_space0,maxvec*(maxvec+1)/2)
 *
       DO IVEC = 1, NVEC
 *
         IF( IVEC .gt. NROOT ) ILOOP = ILOOP + 1
 *
-        CALL CALC_SUBSPACE_H_LUCI(VEC1,VEC2,SCRRED,IMUSTRED,IVEC,NROOT,
+        CALL CALC_SUBSPACE_H_LUCI(VEC1,VEC2,tmp_space0,IMUSTRED,IVEC,
+     &                            NROOT,
      &                            ISTRED,NBATV,LBATV,LEBATV,I1BATV,
      &                            IBATV,ILOOP,MY_LU1_OFF,MY_LU3_OFF,
      &                            MY_LU2_OFF,MY_LU4_OFF,
@@ -1627,10 +1633,13 @@ csk     CALL PRSYM(APROJ,NVEC)
 *
 *     communicate new subspace hamiltonian ...
 *
-      CALL DZERO(APROJ(ISTRED),IMUSTRED)
+      call dzero(aproj(istred),imustred)
       starttime = MPI_WTIME()
-      CALL REDVEC(SCRRED,APROJ(ISTRED),IMUSTRED,2,MPI_SUM,
-     &            MPI_COMM_WORLD,-1)
+!     CALL REDVEC(tmp_space0,APROJ(ISTRED),IMUSTRED,2,MPI_SUM,
+!    &            MPI_COMM_WORLD,-1)
+      call mpi_allreduce(tmp_space0,aproj(istred),imustred,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,
+     &                   MPI_COMM_WORLD,IERR)
       endtime = MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
       IF( TIMING )
@@ -1764,13 +1773,10 @@ C
       CALL FLSHFO(LUWRT)
 C
       Call Add_Info('E_CI',FINEIG,NROOT)
+      deallocate(tmp_space2)
+      deallocate(tmp_space1)
+      deallocate(tmp_space0)
 C
-CSK      WRITE(LUCIWT,'(A)' ) ' stop in MICDV6_PAR'
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK      CALL Abend2('Stefan forced me to stop in MICDV6_PAR')
-*
       RETURN
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
