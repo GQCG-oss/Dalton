@@ -2463,6 +2463,10 @@ Cef end
       WORK(IWOFF+1) = WRKDLM
       IF (.NOT. EXHER) THEN
          CALL EXEHER(WORK,LWORK,WRKDLM)
+#ifdef BUILD_GEN1INT
+C added by Bin Gao, Dec. 5, 2010
+         call gen1int(WORK(10), LMWORK-9)
+#endif
          EXHER  = .TRUE.
          NEWGEO = .TRUE.
          NPCMIN = .TRUE.
