@@ -1,0 +1,2374 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Prerelease 1.1, September 1999)
+
+                          Principal authors:
+
+            Trygve Helgaker,     University of Oslo,        Norway 
+            Hans Joergen Jensen, SDU - Odense University,   Denmark
+            Poul Joergensen,     Aarhus University,         Denmark
+            Jeppe Olsen,         Aarhus University,         Denmark
+            Kenneth Ruud,        San Diego Superc. Center,  USA    
+            Hans Aagren,         KTH Stockholm,             Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,         UNI-C,                     Denmark
+            Vebjoern Bakken,     University of Oslo,        Norway 
+            Ove Christiansen,    University of Lund,        Sweden 
+            Paal Dahle,          University of Oslo,        Norway 
+            Erik K. Dalskov,     UNI-C,                     Denmark
+            Thomas Enevoldsen,   SDU - Odense University,   Denmark
+            Berta Fernandez,     U.of Santiago de Compostela,Spain 
+            Hanne Heiberg,       University of Oslo,        Norway 
+            Hinne Hettema,       University of Auckland,    NZ     
+            Dan Jonsson,         San Diego Superc. Center,  USA    
+            Sheela Kirpekar,     SDU - Odense University,   Denmark
+            Rika Kobayashi,      Cambridge University,      England
+            Henrik Koch,         SDU - Odense University,   Denmark
+            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
+            Patrick Norman,      University of Linkoeping,  Sweden 
+            Martin J. Packer,    University of Sheffield,   UK     
+            Torgeir A. Ruden,    University of Oslo,        Norway 
+            Trond Saue,          University of Toulouse,    France 
+            Stephan P. A. Sauer, University of Copenhagen,  Denmark
+            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
+            Peter R.Taylor,      San Diego Superc. Center,  USA    
+            Olav Vahtras,        PDC, Stockholm,            Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, T. Andersen, K.L. Bak, V. Bakken, O. Christiansen
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T. Saue,
+     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.1 (1999), an electronic structure program"
+
+ 
+     Date and time (IRIX)   : Fri Nov 24 11:40:09 2000
+     Host name              : odin                                    
+
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ The following one-electron property integrals are calculated:
+
+          - overlap integrals
+          - dipole length integrals
+          - electronic angular momentum around the origin
+          - one-electron contribution to magnetic moment
+          - Ket-differentiated overlap matrix with respect to B
+          - First order magnetic derivative of electric field
+            Electric field applied in X-direction
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Verdet calculations                                                     
+  for HF in CM coor. system                                               
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "DunningDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  H           1       1       4       2      [4s|2s]                                      
+  F           1       9      24      10      [9s5p|4s2p]                                  
+  ----------------------------------------------------------------------
+  total:      2      10      28      12
+  ----------------------------------------------------------------------
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   H        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.6452250800
+
+   4   F        x      0.0000000000
+   5            y      0.0000000000
+   6            z     -0.0872757060
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           F   
+
+   H       0.000000
+   F       0.916800    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    F          H                              0.916800
+
+
+  Nuclear repulsion energy :    5.194802838029
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in S1MAGR is   0.01 seconds
+
+
+ >>> Time used in ANGMOM is   0.01 seconds
+
+
+ >>> Time used in MAGMOM is   0.03 seconds
+
+
+ >>> Time used in CM1    is   0.02 seconds
+
+
+ >>> Time used in GABGEN is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.12 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+@@     Starting Wave-Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (IRIX)   : Fri Nov 24 11:40:09 2000
+     Host name              : odin                                    
+
+ Title lines from integral program:
+     Verdet calculations                                                     
+     for HF in CM coor. system                                               
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4 =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 12
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          12
+     Number of basis functions         12
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               5
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ Quadratic response properties calculated
+
+ Dipole moment calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   1    -99.535674148065   4.79D+00  -9.95D+01    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   2    -99.962011142252   1.23D+00  -4.26D-01    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   3   -100.012235343061   4.52D-01  -5.02D-02    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   4   -100.021761825556   6.53D-02  -9.53D-03    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   5   -100.021969521562   1.54D-03  -2.08D-04    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   6   -100.021969690146   2.56D-04  -1.69D-07    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   7   -100.021969697096   5.57D-05  -6.95D-09    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   8   -100.021969697502   6.85D-06  -4.06D-10    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+   9   -100.021969697507   8.50D-07  -5.33D-12    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+  10   -100.021969697507   6.52D-08  -1.71D-13    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+  11   -100.021969697507   1.85D-09   1.56D-13    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+  12   -100.021969697507   1.58D-10  -9.95D-14    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+  13   -100.021969697507   5.04D-12   0.00D+00    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+  14   -100.021969697507   5.90D-13   2.84D-14    5
+ DIIS converged in  14 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -26.28780993    -1.60191829    -0.75316057    -0.64302523    -0.64302523
+         0.21315601     1.05741103     1.05741103     1.12796528     1.16329280
+
+    E(LUMO) :     0.21315601 au (symmetry 1)
+  - E(HOMO) :    -0.64302523 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.85618123 au
+1
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -100.021969697507
+     Nuclear repulsion:             5.194802838029
+     Electronic energy:          -105.216772535536
+
+     Final gradient norm:           0.000000000001
+
+ 
+     Date and time (IRIX)   : Fri Nov 24 11:40:09 2000
+     Host name              : odin                                    
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  H   1s     0.0000   0.1342   0.2876   0.0000   0.0000
+   2  H   1s    -0.0001   0.0014   0.0845   0.0000   0.0000
+   3  F   1s     0.5799  -0.1405   0.0380   0.0000   0.0000
+   4  F   1s     0.4622  -0.1929   0.0521   0.0000   0.0000
+   5  F   1s    -0.0002   0.5637  -0.1574   0.0000   0.0000
+   6  F   1s     0.0017   0.4829  -0.2181   0.0000   0.0000
+   7  F   2px    0.0000   0.0000   0.0000   0.7553   0.0000
+   8  F   2py    0.0000   0.0000   0.0000   0.0000   0.7553
+   9  F   2pz    0.0011   0.1009   0.6298   0.0000   0.0000
+  10  F   2px    0.0000   0.0000   0.0000   0.3809   0.0000
+  11  F   2py    0.0000   0.0000   0.0000   0.0000   0.3809
+  12  F   2pz   -0.0003   0.0226   0.2619   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.32 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (IRIX)   : Fri Nov 24 11:40:09 2000
+     Host name              : odin                                    
+
+@@- End of Wave-Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      12
+   IBAS   :       0
+   NRHF   :       5
+   NVIR   :       7
+   NRHFS  :       5
+   NVIRS  :       7
+   NRHFFR :       0
+   NVIRFR :       0
+   NORBTS :      12
+   NORBT  :      12
+   N2BAST :     144
+   N2BASX :     144
+   NNBASX :      78
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        35
+          Number of t2 amplitudes                 :       630
+          Total number of amplitudes in ccsd      :       665
+
+ Iter.  1: Coupled cluster MP2   energy :    -100.1561878287519200
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1551217883234400
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1579129504172600
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1586182477815800
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1586568608976500
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1586573098153300
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1586561354422300
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1586556951838500
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1586556839348400
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1586556793864300
+ Iter. 10: Coupled cluster CCSD  energy :    -100.1586556751838400
+ Iter. 11: Coupled cluster CCSD  energy :    -100.1586556744595100
+
+ CCSD  energy converged to within   0.10D-08 is   -100.158655674
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0219696975
+
+            Total MP2   energy:                  -100.1561878288
+
+            Total CCSD  energy:                  -100.1586556745
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+     Start vector generated from gradient
+
+
+ Analysis of the undifferentiated Lagrangian multipliers: 
+ --------------------------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.4329 %
+
+          Double Excitation Contribution :              99.5671 %
+
+          ||T1||/||T2||                  :               0.0659
+
+          Tau1 diagnostic                :               0.0074
+
+          Norm of Total Amplitude Vector :               0.3567
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   4       2     |       11          |              |   -0.006230  |
+ | 1   1   |   6       2     |       13          |              |   -0.003223  |
+ | 1   1   |   1       3     |       15          |              |    0.010802  |
+ | 1   1   |   4       3     |       18          |              |   -0.005268  |
+ | 1   1   |   5       3     |       19          |              |    0.007563  |
+ | 1   1   |   6       3     |       20          |              |   -0.007486  |
+ | 1   1   |   2       4     |       23          |              |   -0.010820  |
+ | 1   1   |   3       5     |       31          |              |   -0.010820  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   2   1   4   2 |       23        8 |          261 |    0.048840  |
+ | 1 1 1 1 |   3   1   5   2 |       31        8 |          473 |    0.048840  |
+ | 1 1 1 1 |   4   6   3   2 |       18       13 |          166 |   -0.056666  |
+ | 1 1 1 1 |   2   6   4   2 |       23       13 |          266 |    0.068276  |
+ | 1 1 1 1 |   3   6   5   2 |       31       13 |          478 |    0.068276  |
+ | 1 1 1 1 |   1   1   3   3 |       15       15 |          120 |   -0.076962  |
+ | 1 1 1 1 |   4   1   3   3 |       18       15 |          168 |   -0.064826  |
+ | 1 1 1 1 |   2   1   4   3 |       23       15 |          268 |    0.063285  |
+ | 1 1 1 1 |   3   1   5   3 |       31       15 |          480 |    0.063285  |
+ | 1 1 1 1 |   4   4   3   3 |       18       18 |          171 |   -0.099142  |
+ | 1 1 1 1 |   2   4   4   3 |       23       18 |          271 |    0.107523  |
+ | 1 1 1 1 |   3   4   5   3 |       31       18 |          483 |    0.107523  |
+ | 1 1 1 1 |   5   5   3   3 |       19       19 |          190 |   -0.044372  |
+ | 1 1 1 1 |   2   2   4   4 |       23       23 |          276 |   -0.100180  |
+ | 1 1 1 1 |   3   2   5   4 |       31       23 |          488 |   -0.125257  |
+ | 1 1 1 1 |   3   3   5   5 |       31       31 |          496 |   -0.100180  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3266
+
+
+          Printed all single excitations greater than 0.002632
+
+
+          Printed all double excitations greater than 0.039913
+
+
+              Constructing right-hand-side for CCSD-kappa-0
+              ---------------------------------------------
+
+
+
+                  Solving for orbital relaxation vector
+                  -------------------------------------
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+  
+   Equations converged to residual less than:  0.000000
+
+
+                       +---------------------------+
+                       ! CCSD  Natural Occupations !
+                       +---------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99981152   1.99139335   1.98319400   1.98319400   1.97160054
+   0.02698216   0.01626064   0.01626064   0.00938845   0.00153767
+   0.00022571   0.00015130
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.070807 electrons
+  
+
+
+          +------------------------------------------------------+
+          !   Relaxed CCSD First-order one-electron properties:  !
+          +------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.89897038      2.28497593
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   XDIPLEN     1    1  F    0
+    2   YDIPLEN     1    1  F    0
+    3   ZANGMOM     1   -1  F    0
+    4   ZDIPLEN     1    1  F    0
+    5   YANGMOM     1   -1  F    0
+    6   XANGMOM     1   -1  F    0
+    7   dh/dBZ      1   -1  T    0
+    8   dh/dBY      1   -1  T    0
+    9   dh/dBX      1   -1  T    0
+   10   HAM0        1    1  T    0
+
+  CHECK TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM 
+
+  PUT TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM 
+
+  PUT TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM 
+
+  PUT TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM 
+
+  PUT TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM 
+
+  PUT TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM 
+
+  PUT TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  YDIPLEN  dh/dBZ  
+WARNING: integrals for operator with label X-CM1 Z  are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label Y-CM1 Z  are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+
+  PUT TRIPLE: XDIPLEN  YDIPLEN  dh/dBZ   ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  XDIPLEN  dh/dBY  
+
+  PUT TRIPLE: ZDIPLEN  XDIPLEN  dh/dBY   ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  ZDIPLEN  dh/dBX  
+
+  PUT TRIPLE: YDIPLEN  ZDIPLEN  dh/dBX   ON THE LIST.
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   XANGMOM     1   -1  F
+    3   XDIPLEN     1    1  F
+    4   YANGMOM     1   -1  F
+    5   YDIPLEN     1    1  F
+    6   ZANGMOM     1   -1  F
+    7   ZDIPLEN     1    1  F
+    8   dh/dBX      1   -1  T
+    9   dh/dBY      1   -1  T
+   10   dh/dBZ      1   -1  T
+   11   X-CM1 Z     1    1  F
+   12   Y-CM1 Z     1    1  F
+   13   Z-CM1 Y     1    1  F
+   14   X-CM1 Y     1    1  F
+   15   Y-CM1 X     1    1  F
+   16   Z-CM1 X     1    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+    1   HAM0        1
+    2   dh/dBX      1
+    3   dh/dBY      1
+    4   dh/dBZ      1
+    5   ZANGMOM     1
+    6   YANGMOM     1
+    7   XANGMOM     1
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   XANGMOM   T    1     0.000000D+00
+    2   XANGMOM   F    1     0.000000D+00
+    3   XDIPLEN   F    1     0.000000D+00
+    4   YANGMOM   T    1     0.000000D+00
+    5   YANGMOM   F    1     0.000000D+00
+    6   YDIPLEN   F    1     0.000000D+00
+    7   ZANGMOM   T    1     0.000000D+00
+    8   ZANGMOM   F    1     0.000000D+00
+    9   ZDIPLEN   F    1     0.000000D+00
+   10   dh/dBX    T    1     0.000000D+00
+   11   dh/dBY    T    1     0.000000D+00
+   12   dh/dBZ    T    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   XANGMOM   T    1     0.000000D+00
+    2   XANGMOM   F    1     0.000000D+00
+    3   XDIPLEN   F    1    -1.139100D-01
+    4   XDIPLEN   F    1     1.139100D-01
+    5   YANGMOM   T    1     0.000000D+00
+    6   YANGMOM   F    1     0.000000D+00
+    7   YDIPLEN   F    1    -1.139100D-01
+    8   YDIPLEN   F    1     1.139100D-01
+    9   ZANGMOM   T    1     0.000000D+00
+   10   ZANGMOM   F    1     0.000000D+00
+   11   ZDIPLEN   F    1    -1.139100D-01
+   12   ZDIPLEN   F    1     1.139100D-01
+   13   dh/dBX    T    1     0.000000D+00
+   14   dh/dBY    T    1     0.000000D+00
+   15   dh/dBZ    T    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   XANGMOM   T    1     0.000000D+00
+    2   XANGMOM   F    1     0.000000D+00
+    3   XDIPLEN   F    1     0.000000D+00
+    4   YANGMOM   T    1     0.000000D+00
+    5   YANGMOM   F    1     0.000000D+00
+    6   YDIPLEN   F    1     0.000000D+00
+    7   ZANGMOM   T    1     0.000000D+00
+    8   ZANGMOM   F    1     0.000000D+00
+    9   ZDIPLEN   F    1     0.000000D+00
+   10   dh/dBX    T    1     0.000000D+00
+   11   dh/dBY    T    1     0.000000D+00
+   12   dh/dBZ    T    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   XANGMOM   T    1     0.000000D+00
+    2   XANGMOM   F    1     0.000000D+00
+    3   XDIPLEN   F    1    -1.139100D-01
+    4   XDIPLEN   F    1     1.139100D-01
+    5   YANGMOM   T    1     0.000000D+00
+    6   YANGMOM   F    1     0.000000D+00
+    7   YDIPLEN   F    1    -1.139100D-01
+    8   YDIPLEN   F    1     1.139100D-01
+    9   ZANGMOM   T    1     0.000000D+00
+   10   ZANGMOM   F    1     0.000000D+00
+   11   ZDIPLEN   F    1    -1.139100D-01
+   12   ZDIPLEN   F    1     1.139100D-01
+   13   dh/dBX    T    1     0.000000D+00
+   14   dh/dBY    T    1     0.000000D+00
+   15   dh/dBZ    T    1     0.000000D+00
+ NUMDIS,NBUFMX:           1           1
+ INDEXA:           3
+ IDEL2,INDEXA:           1           3
+ IDEL,ISAO:           3           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ NUMDIS,NBUFMX:           1           1
+ INDEXA:           1
+ IDEL2,INDEXA:           1           1
+ IDEL,ISAO:           1           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ NUMDIS,NBUFMX:           1           1
+ INDEXA:           2
+ IDEL2,INDEXA:           1           2
+ IDEL,ISAO:           2           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ NUMDIS,NBUFMX:           3           3
+ INDEXA:           4           5           6
+ IDEL2,INDEXA:           1           4
+ IDEL,ISAO:           4           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ IDEL2,INDEXA:           2           5
+ IDEL,ISAO:           5           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ IDEL2,INDEXA:           3           6
+ IDEL,ISAO:           6           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ NUMDIS,NBUFMX:           3           3
+ INDEXA:           7           8           9
+ IDEL2,INDEXA:           1           7
+ IDEL,ISAO:           7           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ IDEL2,INDEXA:           2           8
+ IDEL,ISAO:           8           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ IDEL2,INDEXA:           3           9
+ IDEL,ISAO:           9           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ NUMDIS,NBUFMX:           3           3
+ INDEXA:          10          11          12
+ IDEL2,INDEXA:           1          10
+ IDEL,ISAO:          10           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ IDEL2,INDEXA:           2          11
+ IDEL,ISAO:          11           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ IDEL2,INDEXA:           3          12
+ IDEL,ISAO:          12           1
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |   12   |  first-order amplitude equations                     |
+ |  X1  |   12   |  first-order multipliers equations                   |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |   15   |  first-order amplitude response                      |
+ |  L1  |   15   |  first-order multiplier response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |   15   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+
+ -------------------------------------------------------------------
+ |                   OUTPUT FROM CPHF SECTION                      |
+ -------------------------------------------------------------------
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested 12 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -  12Xi{O} vector calculations    
+   will be performed.
+
+
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+     R1  start vector nr.  1 of symmetry  1 generated from gradient
+     R1  start vector nr.  2 of symmetry  1 generated from gradient
+     R1  start vector nr.  3 of symmetry  1 generated from gradient
+     R1  start vector nr.  4 of symmetry  1 generated from gradient
+     R1  start vector nr.  5 of symmetry  1 generated from gradient
+     R1  start vector nr.  6 of symmetry  1 generated from gradient
+     R1  start vector nr.  7 of symmetry  1 generated from gradient
+     R1  start vector nr.  8 of symmetry  1 generated from gradient
+ WARNING: Zero gradient ???? 
+     R1  start vector nr.  9 of symmetry  1 generated from gradient
+ WARNING: Zero gradient ???? 
+     R1  start vector nr. 10 of symmetry  1 generated from gradient
+     R1  start vector nr. 11 of symmetry  1 generated from gradient
+     R1  start vector nr. 12 of symmetry  1 generated from gradient
+     R1  start vector nr. 13 of symmetry  1 generated from gradient
+     R1  start vector nr. 14 of symmetry  1 generated from gradient
+ WARNING: Zero gradient ???? 
+     R1  start vector nr. 15 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.47063D-32
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no. 15
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.40706D-32
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 14
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no. 15
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.93643D-33
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 14
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  5
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no.  6
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no. 11
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 11 to  8
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  1
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no.  2
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no.  5
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  5 to  2
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  1
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no.  2
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no.  4
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  4 to  1
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  1
+ is removed at input because of too small norm;
+ norm of input vector is 1.18676D-36
+
+ (CCORT) new  b-vector no.  2
+ is removed at input because of too small norm;
+ norm of input vector is 1.18760D-36
+
+ (CCORT) new  b-vector no.  3
+ is removed at input because of too small norm;
+ norm of input vector is 2.96690D-37
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ CCORT,**WARNING**  number vectors added is zero after check for vector norm , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ (CCORT)  trial vectors reduced from  3 to  0
+
+ *** MICROITERATIONS STOPPED DUE TO LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS
+           12 trial vectors converged
+  LINEAR DEPENDENCE BETWEEN           3 NON CONVERGED TRIAL VECTORS
+
+ ***  CCEQ_SOL -MICROITERATIONS STOPPED  
+     LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS
+     L1  start vector nr.  1 of symmetry  1 generated from gradient
+     L1  start vector nr.  2 of symmetry  1 generated from gradient
+     L1  start vector nr.  3 of symmetry  1 generated from gradient
+     L1  start vector nr.  4 of symmetry  1 generated from gradient
+     L1  start vector nr.  5 of symmetry  1 generated from gradient
+     L1  start vector nr.  6 of symmetry  1 generated from gradient
+     L1  start vector nr.  7 of symmetry  1 generated from gradient
+     L1  start vector nr.  8 of symmetry  1 generated from gradient
+ WARNING: Zero gradient ???? 
+     L1  start vector nr.  9 of symmetry  1 generated from gradient
+ WARNING: Zero gradient ???? 
+     L1  start vector nr. 10 of symmetry  1 generated from gradient
+     L1  start vector nr. 11 of symmetry  1 generated from gradient
+     L1  start vector nr. 12 of symmetry  1 generated from gradient
+     L1  start vector nr. 13 of symmetry  1 generated from gradient
+     L1  start vector nr. 14 of symmetry  1 generated from gradient
+ WARNING: Zero gradient ???? 
+     L1  start vector nr. 15 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 0.00000D+00
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no. 15
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 5.03748D-33
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 14
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no. 15
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.17787D-31
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 14
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  9
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no. 10
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 15
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 15 to 12
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  5
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no.  6
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no. 11
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 11 to  8
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  1
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no.  2
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no.  5
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  5 to  2
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  1
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no.  2
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no.  4
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  4 to  1
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+ WARNING: Zero gradient ???? 
+
+ (CCORT) new  b-vector no.  1
+ is removed at input because of too small norm;
+ norm of input vector is 4.96157D-36
+
+ (CCORT) new  b-vector no.  2
+ is removed at input because of too small norm;
+ norm of input vector is 4.96252D-36
+
+ (CCORT) new  b-vector no.  3
+ is removed at input because of too small norm;
+ norm of input vector is 1.24039D-36
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ CCORT,**WARNING**  number vectors added is zero after check for vector norm , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ CCORT, number vectors added is zero , NBADD :    0
+
+ (CCORT)  trial vectors reduced from  3 to  0
+
+ *** MICROITERATIONS STOPPED DUE TO LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS
+           12 trial vectors converged
+  LINEAR DEPENDENCE BETWEEN           3 NON CONVERGED TRIAL VECTORS
+
+ ***  CCEQ_SOL -MICROITERATIONS STOPPED  
+     LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested  9 quadratic response functions 
+         -   6 G matrix transformations 
+         -  42 B matrix transformations 
+         -   0 F matrix transformations 
+         -  33 F{O} matrix transformations 
+         -  66 ETA{O} vector calculations 
+         -  12 Xksi{O2} x L1 and Eta{O2} x R1 dot products
+         -   0 X1 x R2 dot products 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   6 G transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :     37.68      |
+ |  % of time used in CCRDAO       :      5.57      |
+ |  % of time used in CCTRBT       :      1.63      |
+ |  % of time used in CCG_21CD     :     18.18      |
+ |  % of time used in Fock interm. :      0.21      |
+ |  % of time used in CCS part     :      0.15      |
+ |  % of time used in 21 CCSD part :     18.29      |
+ |  % of time used in doubles part :     11.13      |
+ |  % of time used in I/O          :      2.53      |
+ +==================================================+
+
+
+
+>>> Time used for    6 G matrix transformations:        0.34 seconds.
+ +--------------------------------------------------+
+ | total time for  42 B transforms.:      1.69 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      5.58      |
+ |  % of time used in Fock interm. :      0.11      |
+ |  % of time used in ERI          :      7.61      |
+ |  % of time used in CCRDAO       :      1.14      |
+ |  % of time used in (**|k del)   :      0.17      |
+ |  % of time used in singles part :      2.47      |
+ |  % of time used in A term       :      9.33      |
+ |  % of time used in BF term      :      9.45      |
+ |  % of time used in F term       :      8.99      |
+ |  % of time used in E term       :      4.64      |
+ |  % of time used in C term       :     13.88      |
+ |  % of time used in D term       :     15.03      |
+ |  % of time used in I/O          :     16.49      |
+ +==================================================+
+
+
+
+>>> Time used for   42 B matrix transformations:        1.69 seconds.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+
+>>> Time used for   33 F{O} matrix transform.:          7.67 seconds.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+
+>>> Time used for   66 ETA{O} vector calculat.:         5.27 seconds.
+WARNING: integrals for operator with label X-CM1 Z  are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label Y-CM1 Z  are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label d|S>/dBZ are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+
+>>> Time used for   12 Xksi{O} and Eta{O2} vector calculat.:         0.22 seconds.
+
+>>> Total time for   9 quadratic response func.:       15.20 seconds.
+
+
+                 +---------------------------------------------------------------------------------------+
+                 !                FINAL CCSD RESULTS FOR THE FIRST HYPERPOLARIZABILITIES                 !
+                 +---------------------------------------------------------------------------------------+
+
+
+  A operator                  B operator                  C operator                     property 
+------------------------------------------------------------------------------------------------------
+
+ XDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   ZANGMOM  (unrel.)  0.0000     0.51782195    
+
+ ZDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   YANGMOM  (unrel.)  0.0000      1.2780083    
+
+ YDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   XANGMOM  (unrel.)  0.0000      1.2780083    
+
+ XDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   ZANGMOM  (relax.)  0.0000     0.51782195    
+
+ ZDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   YANGMOM  (relax.)  0.0000      1.2728313    
+
+ YDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   XANGMOM  (relax.)  0.0000      1.2728313    
+
+ XDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   dh/dBZ   (relax.)  0.0000     0.25891097    
+
+ ZDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   dh/dBY   (relax.)  0.0000     0.75223520    
+
+ YDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   dh/dBX   (relax.)  0.0000     0.75223520    
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0219696975                
+            Total MP2   energy:                  -100.1561878288                
+            Total CCSD  energy:                  -100.1586556745                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:  50.98 seconds
+ >>>> Total wall time used in DALTON:  59.00 seconds
+
+ 
+     Date and time (IRIX)   : Fri Nov 24 11:41:08 2000
+     Host name              : odin                                    

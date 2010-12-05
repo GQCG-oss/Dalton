@@ -1,0 +1,201 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_grad2.info <<'%EOF%'
+   cc_grad2
+   --------
+   Molecule:         N2H2 in C1
+   Wave Function:    CCSD / cc-pVDZ
+   Test Purpose:     Analytical gradient
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_grad2.mol <<'%EOF%'
+INTGRL
+  Cis-diazine CCSD geometry optimisation (cc-dzp basis)
+  001  ( A1)
+    2    0  Y  X      1.00D-15
+        7.0   2    3    3    2    1
+N   -1.1798400 0.0000000 -0.12616200       *
+N    1.1798400 0.0000000 -0.12616200       *
+    9    1
+9046.00000  0.000700
+1357.00000  0.005389
+ 309.30000  0.027406
+ 87.730000  0.103207
+ 28.560000  0.278723
+ 10.210000  0.448540
+  3.838000  0.278238
+  0.746600  0.015440
+  0.224800 -0.002864
+    9    1
+9046.00000 -0.000153
+1357.00000 -0.001208
+ 309.30000 -0.005992
+  87.73000 -0.024544
+  28.56000 -0.067459
+  10.21000 -0.158078
+   3.83800 -0.121831
+   0.74660  0.549003
+   0.22480  0.578815
+    1    1
+   0.22480  1.000000
+    4    1
+   13.5500  0.039919
+   2.91700  0.217169
+   0.79730  0.510319
+   0.21850  0.462214
+    1    1
+   0.21850  1.000000
+    1    1
+   0.81700  1.000000
+        1.0   2    2    2    1
+H   -1.9234220 0.0000000 1.75294370       *
+H    1.9234220 0.0000000 1.75294370       *
+    4    1
+   13.0100  0.019685
+    1.9620  0.137977
+    0.4446  0.478148
+    0.1220  0.501240
+    1    1
+    0.1220  1.000000
+    1    1    0
+    0.7270  1.000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_grad2.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.DEROVL
+.DERHAM
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+*CC INPUT
+.CCSD
+.THRLEQ
+ 1.0D-08
+.THRENR
+ 1.0D-10
+.PRINT
+ 2
+*CCFOP
+.DIPMOM
+*DERIVATIVES
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+ 
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc_grad2.check
+cat >>cc_grad2.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies: 
+CRIT1=`$GREP "Final * HF energy: * \-109\.99363488" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * \-110\.33256868" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * \-110\.35074180" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=5
+ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
+
+# CCSD (frozen core) total molecular gradient: 
+CRIT1=`$GREP "N * ( |0)\.00597115.. * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.01404906.." $log | wc -l`
+CRIT2=`$GREP "N * ( \-|\-0)\.00597115.. * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.01404906.." $log | wc -l`
+CRIT3=`$GREP "H * ( \-|\-0)\.00473117.. * (\-0|\-| |0)\.0000000000 * ( |0)\.01404906.." $log | wc -l`
+CRIT4=`$GREP "H * ( |0)\.00473117.. * (\-0|\-| |0)\.0000000000 * ( |0)\.01404906.." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[2]=4
+ERROR[2]="THE TOTAL MOLECULAR GRADIENT IS NOT ORRECT"
+
+# CCSD (frozen core) nuclear repulsion gradient: 
+CRIT1=`$GREP "N * 8\.6244264117 * (\-0|\-| |0)\.0000000000 * 1\.8692673216" $log | wc -l`
+CRIT2=`$GREP "N * \-8\.6244264117 * (\-0|\-| |0)\.0000000000 * 1\.8692673216" $log | wc -l`
+CRIT3=`$GREP "H * 1\.1532073922 * (\-0|\-| |0)\.0000000000 * \-1\.8692673216" $log | wc -l`
+CRIT4=`$GREP "H * \-1\.1532073922 * (\-0|\-| |0)\.0000000000 * \-1\.8692673216" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[3]=4
+ERROR[3]="THE NUCLEAR REPULSION GRADIENT IS NOT ORRECT"
+
+# CCSD (frozen core) one-electron integral gradient: 
+CRIT1=`$GREP "N * \-19\.3442745623 * (\-0|\-| |0)\.0000000000 * \-4\.8619669660" $log | wc -l`
+CRIT2=`$GREP "N * 19\.3442745623 * (\-0|\-| |0)\.0000000000 * \-4\.8619669660" $log | wc -l`
+CRIT3=`$GREP "H * \-2\.6838566773 * (\-0|\-| |0)\.0000000000 * 4\.8619669660" $log | wc -l`
+CRIT4=`$GREP "H * 2\.6838566773 * (\-0|\-| |0)\.0000000000 * 4\.8619669660" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[4]=4
+ERROR[4]="THE ONE-ELECTRON INTEGRAL GRADIENT IS NOT ORRECT"
+
+# CCSD (frozen core) nuclear two-electron integral gradient: 
+CRIT1=`$GREP "N * 10\.2559733709 * (\-0|\-| |0)\.0000000000 * 2\.7172591024" $log | wc -l`
+CRIT2=`$GREP "N * \-10\.2559733709 * (\-0|\-| |0)\.0000000000 * 2\.7172591024" $log | wc -l`
+CRIT3=`$GREP "H * 1\.4327633052 * (\-0|\-| |0)\.0000000000 * \-2\.7172591024" $log | wc -l`
+CRIT4=`$GREP "H * \-1\.4327633052 * (\-0|\-| |0)\.0000000000 * \-2\.7172591024" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[5]=4
+ERROR[5]="THE TWO-ELECTRON INTEGRAL GRADIENT IS NOT ORRECT"
+
+# CCSD (frozen core) nuclear reorthonormalization gradient: 
+CRIT1=`$GREP "N * ( |0)\.4698459344 * (\-0|\-| |0)\.0000000000 * ( |0)\.2613914785" $log | wc -l`
+CRIT2=`$GREP "N * ( \-|\-0)\.4698459344 * (\-0|\-| |0)\.0000000000 * ( |0)\.2613914785" $log | wc -l`
+CRIT3=`$GREP "H * ( |0)\.0931548012 * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.2613914785" $log | wc -l`
+CRIT4=`$GREP "H * ( \-|\-0)\.0931548012 * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.2613914785" $log | wc -l`
+TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[6]=4
+ERROR[6]="THE REORTHONORMALIZATION GRADIENT IS NOT ORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4 5 6
+do 
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+%EOF%
+chmod +x cc_grad2.check
+#######################################################################

@@ -1,0 +1,217 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > ccsdmm_e01_fop.info <<%EOF%
+   ccsdmm_e01_fop
+   --------------
+   Molecule:         H2O
+   Wave Function:    CCSD / cc-pVDZ
+   Test Purpose:     Check energy, dipole moment and quadrupole moment
+                     calculated using the SPC_E01 model for the five
+                     water molecules surrounding the QM water molecule.
+                     OLDTG = .FALSE.
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > ccsdmm_e01_fop.mol <<%EOF%
+ATOMBASIS
+QM/MM H2O(QM)+ 5 H2O(MM)
+------------------------
+    4    0         1 1.00D-12
+        8.0   1    Bas=cc-pVDZ
+O            0.000000        0.000000        0.000000 0 1
+        1.0   2    Bas=cc-pVDZ
+H           -0.756799        0.000000        0.586007 0 2
+H            0.756799        0.000000        0.586007 0 3
+   -0.669     5    Bas=MM
+O           -6.022295       -6.249876       -2.389355 1 1
+O           -0.590747        4.825666       -1.709744 2 1
+O            2.365069       -0.266593        1.169946 3 1
+O           -8.979615       -1.935917       -5.707554 4 1
+O           -5.696915       -2.203270        0.274131 5 1
+    0.3345   10    Bas=MM
+H           -6.934736       -6.264225       -2.100595 1 2
+H           -5.562128       -6.801680       -1.756974 1 3
+H           -1.493716        5.142033       -1.683118 2 2
+H           -0.065506        5.576575       -1.433333 2 3
+H            2.261479       -1.103382        1.622925 3 2
+H            3.132239       -0.390013        0.611059 3 3
+H           -8.312439       -2.243695       -5.094117 4 2
+H           -8.719849       -2.307644       -6.550450 4 3
+H           -4.847884       -2.109424       -0.157695 5 2
+H           -6.336813       -2.008951       -0.410639 5 3
+%EOF%
+#######################################################################
+#  QM/MM INTERACTION INPUT
+#######################################################################
+cat > ccsdmm_e01_fop.pot <<%EOF%
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC_E01
+.CHARGS (It is important to give the charges in the same order as the coordinates)
+ 3
+ -0.669
+ 0.3345
+ 0.3345
+.ALPISO
+ 1
+ 9.718
+*******
+.TYPE
+ 1-5
+.MODEL
+ SPC_E01  # This model includes the polarization in the optimization of
+.ALPISO   # the wave function in a mean field approximation. This intro-
+ 1        # duces a coupling of the t and t-bar equations and the model
+ 9.718    # is therefore more expensive than a vacuum calculation of the
+*******   # same molecule. See *CCSLV, .MXINIT in DALTON.INP!!!
+**TWOIA (i,j=0,1,2,...,N; if i=0 then j.neq.0)
+.LJ_A
+ 2
+ 2083000
+ 2083000
+.LJ_B
+ 2
+ 45.21
+ 45.21
+**END OF
+%EOF%
+#
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > ccsdmm_e01_fop.dal <<%EOF%
+**DALTON INPUT
+.RUN WAVE FUNCTION
+*QM3
+.QM3
+.THRDIP
+ 1.0D-12
+.MAXDIP
+ 80
+!.OLDTG
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.THETA
+.SECMOM
+**WAVE FUNCTIONS
+.CC
+*SCF INP
+.THRESH
+1.0D-11
+*CC INP
+.CCSD
+.THRLEQ
+ 1.0D-12
+.THRENR
+ 1.0D-12
+.MAX IT
+ 90
+.MXLRV
+ 180
+*CCSLV
+.CCMM
+.ETOLSL
+ 1.0D-11
+.TTOLSL
+ 1.0D-11
+.LTOLSL
+ 1.0D-11
+.MXSLIT
+ 200
+.MXINIT  # The number of micro iterations in the t (4) and t-bar (5) parameters
+ 4 5     # which reduces the number of total iterations considerably
+*CCFOP   # compared to iterating both parameters to convergence in each
+.DIPMOM  # macro iteration.
+.QUADRU
+.SECMOM
+.NONREL
+*END OF INPUT
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >ccsdmm_e01_fop.check
+cat >>ccsdmm_e01_fop.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# QM/MM interaction energy compared:
+CRIT1=`$GREP "\| * (\-|\-0)\.0106953383 \| * (\-|\-0)\.0018841275 \| * ( |0)\.0051109721 \| * (\-|\-0)\.0074684938 \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-76\.2389647131 \| * \-76\.2464332068 \| * ( |0)\.0000091219 \|" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2`
+CTRL[1]=2
+ERROR[1]="QM/MM ENERGY NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=`$GREP "x * ( |0)\.10022576 * ( |0)\.25474844" $log | wc -l`
+CRIT2=`$GREP "y * ( |0)\.01054212 * ( |0)\.02679539" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.81107768 * 2\.06155361" $log | wc -l` 
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=9
+ERROR[2]="DIPOLE MOMENT NOT CORRECT"
+
+# Quadrupole moment components compared:
+CRIT1=`$GREP "1 * 1\.55800778 * ( |0)\.00107131 * ( |0)\.15733597" $log | wc -l`
+CRIT2=`$GREP "2 * ( |0)\.00107131 * -1\.67909452 * ( |0)\.00559578" $log | wc -l`
+CRIT3=`$GREP "3 * ( |0)\.15733597 * ( |0)\.00559578 * ( |0)\.12108674" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=9
+ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
+
+# Second order electric moment components compared:
+CRIT1=`$GREP "1 * 7\.19396551 * (\-|\-0)\.00071420 * (\-|\-0)\.10489065" $log | wc -l`
+CRIT2=`$GREP "2 * (\-|\-0)\.00071420 * 5\.26141658 * (\-|\-0)\.00373052" $log | wc -l`
+CRIT3=`$GREP "3 * (\-|\-0)\.10489065 * (\-|\-0)\.00373052 * 6\.51393311" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=8
+ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

@@ -1,0 +1,131 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Calculation of excitation energies: \Sec{CCEXCI}}\label{sec:ccexci}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{linear response}
+\index{response!linear}
+\index{excitation energy!Coupled Cluster}
+\index{excited state!Coupled Cluster}
+
+In the \Sec{CCEXCI} section the input that is
+specific for coupled cluster linear response calculation of
+electronic excitation energies is given. 
+Coupled cluster linear response excitation energies 
+are implemented for the iterative CC models CCS, CC2, CCSD, and CC3 for 
+both singlet and triplet excited states.
+For singlet excited states the non-iterative models CC(2)(=CIS(D)) and CCSDR(3)
+are also available.
+%Publications that report results obtained with CC excitation energies
+%should cite Ref.\ \cite{Christiansen:JCP105} for singlet excitation energies
+%and \cite{Hald:JCP113} for triplet excitation energies.
+For understanding the theoretical background for some
+aspects of the CC3 calculations consult also Ref.\ \cite{Christiansen:JCP105,Hald:JCP113,Christiansen:JCP103,Hald:JCP115}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Singlet excitation energies: O.~Christiansen, H.~Koch, A.~Halkier, P.~J{\o}rgensen, T.~Helgaker, and A.~M.~Sanchez de Meras \newblock {\em J.~Chem.~Phys.}, {\bf 105},\hspace{0.25em}6921, (1996).
+\item Triplet excitation energies: K.~Hald, C.~H\"{a}ttig, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 113},\hspace{0.25em}7765, (2000).
+\end{list}
+}}
+\end{center}
+
+
+
+\begin{description}
+\item[\Key{CC2PIC}] 
+Functions as CCSPIC but the picking is based on CC2 excitation energies.
+\item[\Key{CCSDPI}] 
+Functions as CCSPIC but the picking is based on CCSD excitation energies.
+%
+\item[\Key{CCSPIC}] \verb| |\newline 
+\verb|READ(LUCMD,*) OMPCCS| \newline
+Keyword for picking a state with a given CCS excitation energy.
+Optimize a number of states in CCS with different symmetries and this option
+will pick the one in closest correspondence with the given input excitation
+energy, and skip the states at higher energies and other symmetries in 
+the following calculation.
+Useful for example in numerical Hessian calculations on excited states.
+
+\item[\Key{MARGIN}] 
+Specifies the maximum allowed deviation of the actual excitation energy
+from the input excitation energy when using CCSPIC, CC2PIC and CCSDPI. 
+
+\item[\Key{NCCEXC}] \verb| |\newline
+\verb|READ (LUCMD,*) (NCCEXCI(ISYM,1),ISYM=1,MSYM)|
+
+Give the number of states desired.
+For singlet states only, one single line is required with
+the number of excitation energies for each symmetry class (max. 8). \\ 
+If also triplet states are desired an additional line is given in same format. 
+%
+\item[\Key{NOSCOM}] 
+%
+For CC3 calculations only: indicates that no self-consistent solution
+should be seeked in the partitioned CC3 algorithm.
+
+\item[\Key{OMEINP}]\verb| |\newline
+%
+\verb|READ (LUCMD,*) (NOMINP(ISYM,1),ISYM=1,MSYM)|\newline
+\verb|DO ISYM = 1, MSYM|\newline
+\verb|  DO IOM = 1, NOMINP(ISYM,1)|\newline
+\verb|     READ (LUCMD,*) IOMINP(IOM,ISYM,1),EOMINP(IOM,ISYM,1)|\newline
+\verb|  ENDDO|\newline
+\verb|ENDDO|
+
+A way to provide an input omega for the partitioned CC3 algorithm or restrict
+the self-consistent solution to specific states.
+If OMEINP is not specified the program uses the best choice available to it at that
+moment based on previous levels of approximations (CCSD or even better CCSDR(3)) 
+and calculates all states as given by NCCEXC.
+IOMPINP is 1 for the lowest excited state of a given symmetry, 2 for the second lowest etc. \\
+By giving an 0.0 input excitation energy (as EOMINP) the program takes the best previous
+approximation found in this run - otherwise the user can specify a qualified guess 
+(perhaps from a previous calculation which is now restarted).
+
+\item[\Key{THREXC}] 
+
+The threshold for the solution of the excitation energies and
+corresponding response eigenvectors. 
+The threshold is the norm of the residual for the eigenvalue equation.
+(Default: 1.0D-04). 
+
+%
+%\item[\Key{FDJAC}] 
+%
+%\item[\Key{FDEXCI}] 
+%
+%\item[\Key{JACEXP}] 
+%
+%\item[\Key{JACTST}] 
+%
+%\item[\Key{LHTR}] 
+%
+%\item[\Key{STSD}] 
+%
+\item[\Key{TOLSC}] 
+For CC3 calculations only: 
+Set tolerance for excitation energies for obtaining a self-consistent
+solution to the partitioned CC3 algorithm.
+Tolerance refers to the eigenvalue itself in the self-consistency iterations
+of the default solver for CC3. Not used in DIIS solver (see \Key{R3DIIS}).
+(Default: 1.0D-04).
+
+\item[\Key{R3DIIS}]
+Use DIIS solver for CC3.
+% and for undocumented ccsdt-1a and ccsdt-1b
+This solver only scales linearly with the number of excited states
+in comparison to the default solver which scales quadratically.
+However this solver might fail in cases with states dominated by
+double or higher excited determinants. 
+(Default: OFF).
+
+%\item[\Key{STVEC}] 
+%
+%\item[\Key{STOLD}] 
+%
+\end{description}

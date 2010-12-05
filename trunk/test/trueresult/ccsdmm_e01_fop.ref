@@ -1,0 +1,2273 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+
+    Celestino Angeli,         University of Ferrara,        Italy      
+    Keld L. Bak,              UNI-C,                        Denmark    
+    Vebjoern Bakken,          University of Oslo,           Norway     
+    Ove Christiansen,         Aarhus University,            Denmark    
+    Renzo Cimiraglia,         University of Ferrara,        Italy      
+    Sonia Coriani,            University of Trieste,        Italy      
+    Paal Dahle,               University of Oslo,           Norway     
+    Erik K. Dalskov,          UNI-C,                        Denmark    
+    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
+    Berta Fernandez,          U. of Santiago de Compostela, Spain      
+    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
+    Kasper Hald,              Aarhus University,            Denmark    
+    Asger Halkier,            Aarhus University,            Denmark    
+    Hanne Heiberg,            University of Oslo,           Norway     
+    Trygve Helgaker,          University of Oslo,           Norway     
+    Hinne Hettema,            University of Auckland,       New Zealand
+    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
+    Dan Jonsson,              KTH Stockholm,                Sweden     
+    Poul Joergensen,          Aarhus University,            Denmark    
+    Sheela Kirpekar,          SDU - Odense University,      Denmark    
+    Wim Klopper,              University of Karlsruhe,      Germany    
+    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
+    Henrik Koch,              University of Trondheim,      Norway     
+    Andrea Ligabue,           University of Modena,         Italy      
+    Ola B. Lutnaes,           University of Oslo,           Norway     
+    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
+    Patrick Norman,           University of Linkoeping,     Sweden     
+    Jeppe Olsen,              Aarhus University,            Denmark    
+    Martin J. Packer,         University of Sheffield,      UK         
+    Thomas B. Pedersen,       University of Lund,           Sweden     
+    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
+    Elias Rudberg,            KTH Stockholm,                Sweden     
+    Torgeir A. Ruden,         University of Oslo,           Norway     
+    Kenneth Ruud,             University of Tromsoe,        Norway     
+    Pawel Salek,              KTH Stockholm,                Sweden     
+    Alfredo Sanchez de Meras, University of Valencia,       Spain      
+    Trond Saue,               University of Strasbourg,     France     
+    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
+    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
+    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
+    Peter R. Taylor,          University of Warwick,        UK         
+    Olav Vahtras,             KTH Stockholm,                Sweden     
+    David J. Wilson,          University of Oslo,           Norway     
+    Hans Agren,               KTH Stockholm,                Sweden     
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+
+     Date and time (Linux)  : Fri May 27 08:09:52 2005
+     Host name              : kemove2.chem.au.dk                      
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - traceless quadrupole moment integrals
+          - second moments integrals
+          - Electric field at the nucleus
+          - Potenial energy at the nuclei
+
+
+ Changes of defaults for QM3INP:
+ -------------------------------
+
+ +------------------+
+ |  WORD: | CHANGE: |
+ +------------------+
+ |    QM3 |       T |
+ +------------------+
+ | THDISC | 0.1E-11 |
+ +------------------+
+
+
+ ************************************************************************
+ ****************** Output from RDPOT input processing ******************
+ ************************************************************************
+
+
+
+ ------------------------------------------------------------------------
+ | QM-sys type: | Systems:    | Model:  | Electric properties:          |
+ ------------------------------------------------------------------------
+ |          0   | [   0;   0] | SPC_E01 |                               |
+ |              |             |         |   Q( 1)= -0.6690              |
+ |              |             |         |   Q( 2)=  0.3345              |
+ |              |             |         |   Q( 3)=  0.3345              |
+ |              |             |         | Isotropic polarizability:     |
+ |              |             |         | alp( 1)=  9.7180              |
+ ------------------------------------------------------------------------
+
+
+ ------------------------------------------------------------------------
+ | MM-sys type: | Systems:    | Model:  | Electric properties:          |
+ ------------------------------------------------------------------------
+ |          1   | [   1;   5] | SPC_E01 | Isotropic polarizability:     |
+ |              |             |         | alp( 1)=  9.7180              |
+ ------------------------------------------------------------------------
+
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  QM/MM H2O(QM)+ 5 H2O(MM)                                                
+  ------------------------                                                
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+ For atomic type no.  1 the basis set
+     cc-pVDZ                                                                         
+ from the basis set library will be used.
+
+ Huckel basis read for atomic type no.  1
+
+ For atomic type no.  2 the basis set
+     cc-pVDZ                                                                         
+ from the basis set library will be used.
+
+ Huckel basis read for atomic type no.  2
+
+ Atomic type no.  3 is a MM point charge without basis functions.
+
+ Atomic type no.  4 is a MM point charge without basis functions.
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.123934
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     5
+  Total number of atoms:   24
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  O           1  8.0000      26      14      [9s4p1d|3s2p1d]                              
+  H           1  1.0000       7       5      [4s1p|2s1p]                                  
+  H           1  1.0000       7       5      [4s1p|2s1p]                                  
+  O           1 -0.6690       0       0      Point Charge                                 
+  O           1 -0.6690       0       0      Point Charge                                 
+  O           1 -0.6690       0       0      Point Charge                                 
+  O           1 -0.6690       0       0      Point Charge                                 
+  O           1 -0.6690       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  H           1  0.3345       0       0      Point Charge                                 
+  A  0        1  0.0000       0       0      Point Charge                                 
+  A  1        1  0.0000       0       0      Point Charge                                 
+  A  2        1  0.0000       0       0      Point Charge                                 
+  A  3        1  0.0000       0       0      Point Charge                                 
+  A  4        1  0.0000       0       0      Point Charge                                 
+  A  5        1  0.0000       0       0      Point Charge                                 
+  ----------------------------------------------------------------------
+  total:     24 10.0000      40      24
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00E-12
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 72
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x     -1.4301428484
+   5            y      0.0000000000
+   6            z      1.1073927426
+
+   7   H        x      1.4301428484
+   8            y      0.0000000000
+   9            z      1.1073927426
+
+  10   O        x    -11.3804882477
+  11            y    -11.8105540110
+  12            z     -4.5152265867
+
+  13   O        x     -1.1163500444
+  14            y      9.1191871538
+  15            z     -3.2309479191
+
+  16   O        x      4.4693326978
+  17            y     -0.5037877592
+  18            z      2.2108775315
+
+  19   O        x    -16.9690131381
+  20            y     -3.6583529480
+  21            z    -10.7857139546
+
+  22   O        x    -10.7656091582
+  23            y     -4.1635768991
+  24            z      0.5180325148
+
+  25   H        x    -13.1047518510
+  26            y    -11.8376696913
+  27            z     -3.9695492683
+
+  28   H        x    -10.5108986418
+  29            y    -12.8533124506
+  30            z     -3.3201996844
+
+  31   H        x     -2.8227141619
+  32            y      9.7170341416
+  33            z     -3.1806320711
+
+  34   H        x     -0.1237884001
+  35            y     10.5381995153
+  36            z     -2.7086068287
+
+  37   H        x      4.2735759676
+  38            y     -2.0850898011
+  39            z      3.0668837859
+
+  40   H        x      5.9190738960
+  41            y     -0.7370177587
+  42            z      1.1547341617
+
+  43   H        x    -15.7082332149
+  44            y     -4.2399690780
+  45            z     -9.6264860242
+
+  46   H        x    -16.4781265391
+  47            y     -4.3608151746
+  48            z    -12.3785565539
+
+  49   H        x     -9.1611730890
+  50            y     -3.9862336603
+  51            z     -0.2980003627
+
+  52   H        x    -11.9748411319
+  53            y     -3.7963672065
+  54            z     -0.7759952499
+
+  55   A  0     x      0.0000000000
+  56            y      0.0000000000
+  57            z      0.1239337123
+
+  58   A  1     x    -11.4283136114
+  59            y    -11.8704214213
+  60            z     -4.4178212454
+
+  61   A  2     x     -1.1562925991
+  62            y      9.2320454274
+  63            z     -3.1989035064
+
+  64   A  3     x      4.5395024508
+  65            y     -0.6053243159
+  66            z      2.1996783721
+
+  67   A  4     x    -16.8709943745
+  68            y     -3.7302066777
+  69            z    -10.8099779187
+
+  70   A  5     x    -10.7434945512
+  71            y     -4.1331051144
+  72            z      0.3999589360
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.614717          1.000000    0.000000    0.000000
+   IB    1.154453          0.000000    0.000000    1.000000
+   IC    1.769170          0.000000    1.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         822132.5945         437764.9381         285658.8056 MHz
+           27.423392           14.602267            9.528552 cm-1
+
+
+  Nuclear repulsion energy :    9.195434939919
+ Norm2 of dipole moment vector:    0.025818182849180
+ Norm2 of dipole moment vector:    0.032341000357800
+ Norm2 of dipole moment vector:    0.033517618035322
+ Norm2 of dipole moment vector:    0.033684319964383
+ Norm2 of dipole moment vector:    0.033711644927055
+ Norm2 of dipole moment vector:    0.033715618302155
+ Norm2 of dipole moment vector:    0.033716265216336
+ Norm2 of dipole moment vector:    0.033716360257700
+ Norm2 of dipole moment vector:    0.033716375697108
+ Norm2 of dipole moment vector:    0.033716377973212
+ Norm2 of dipole moment vector:    0.033716378342487
+ Norm2 of dipole moment vector:    0.033716378397011
+ Norm2 of dipole moment vector:    0.033716378405848
+ Norm2 of dipole moment vector:    0.033716378407155
+ Norm2 of dipole moment vector:    0.033716378407366
+
+ Dipole vector converged in  15 iterations.
+
+
+ **************************************************************************
+ ***************** The MM/MM classical interaction energy *****************
+ **************************************************************************
+
+
+
+ ------------------------------------------------------------------------
+ |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |       -0.00070616 |
+ ------------------------------------------------------------------------
+ |  Epol  = - 1/2*Sum_a[ Pind_a*E^site_a ]          |        0.00000097 |
+ ------------------------------------------------------------------------
+ |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |       -0.00011662 |
+ ------------------------------------------------------------------------
+ |**************************************************|*******************|
+ ------------------------------------------------------------------------
+ |  E(MM/MM) = Eelec + Epol + Evdw                  |       -0.00082181 |
+ ------------------------------------------------------------------------
+
+
+
+
+ ************************************************************************
+ *************** The "QM"/MM classical interaction energy ***************
+ ************************************************************************
+
+
+
+ ------------------------------------------------------------------------
+ |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |       -0.00717456 |
+ ------------------------------------------------------------------------
+ |  Epol  = - 1/2*Sum_a[ Pind_a*E^(QMclassic)_a ]   |       -0.00099428 |
+ ------------------------------------------------------------------------
+ |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |        0.00511097 |
+ ------------------------------------------------------------------------
+ |**************************************************|*******************|
+ ------------------------------------------------------------------------
+ |  E("QM"/MM) = Eelec + Epol + Evdw                |       -0.00305786 |
+ ------------------------------------------------------------------------
+
+
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in THETA  is   0.01 seconds
+
+
+ >>> Time used in SECMOM is   0.01 seconds
+
+
+ >>> Time used in NUCPOT is   0.01 seconds
+
+
+ >>> Time used in NELFLD is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ Number of two-electron integrals written:       21643 ( 47.9% )
+ Megabytes written:                              0.254
+
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.12 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+WARNING: obsolete "*HF INP" specified, please use "*SCF IN".
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    7
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+ which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.685274      -1.626668      -0.762431      -0.682431      -0.616200
+           -0.241623      -0.165273
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Fri May 27 08:09:52 2005
+     Host name              : kemove2.chem.au.dk                      
+
+ Title lines from integral program:
+     QM/MM H2O(QM)+ 5 H2O(MM)                                                
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 24
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          24
+     Number of basis functions         24
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              5
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00E-11
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ Dipole moment calculated
+
+ Traceless quadrupole moment calculated
+
+ Electronic second moment of charge calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00E-12
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+   1    -75.571510082792   1.77E+00  -7.56E+01    5
+   2    -75.768557995240   3.85E-01  -1.97E-01    5
+   3    -75.776096044680   1.16E-01  -7.54E-03    5
+   4    -75.776956981562   4.78E-02  -8.61E-04    5
+   5    -75.777077296531   5.75E-03  -1.20E-04    5
+   6    -75.777082595955   1.46E-03  -5.30E-06    5
+   7    -75.777082955273   1.91E-04  -3.59E-07    5
+   8    -75.777082961088   2.88E-05  -5.81E-09    5
+   9    -75.777082961190   6.73E-06  -1.02E-10    5
+  10    -75.777082961197   1.41E-06  -6.98E-12    5
+  11    -75.777082961198   3.27E-07  -3.27E-13    5
+  12    -75.777082961198   6.89E-08  -2.84E-14    5
+  13    -75.777082961198   1.23E-08  -2.84E-14    5
+  14    -75.777082961198   2.47E-09   2.84E-14    5
+  15    -75.777082961198   3.73E-10  -2.84E-14    5
+  16    -75.777082961198   6.45E-11   4.26E-14    5
+  17    -75.777082961198   1.71E-11  -2.84E-14    5
+  18    -75.777082961197   4.49E-12   5.68E-14    5
+ DIIS converged in  18 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.52165198    -1.30882635    -0.67008740    -0.54007399    -0.46633168
+         0.21405110     0.30526910     0.81958076     0.89006497     1.18901106
+
+    E(LUMO) :     0.21405110 au (symmetry 1)
+  - E(HOMO) :    -0.46633168 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.68038278 au
+
+ >>> Writing SIRIFC interface file <<<
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -75.777082961197
+     Nuclear repulsion:             9.195434939919
+     Electronic energy:           -84.972517901116
+
+     Final gradient norm:           0.000000000004
+
+ 
+     Date and time (Linux)  : Fri May 27 08:09:52 2005
+     Host name              : kemove2.chem.au.dk                      
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  O   1s    -1.0004   0.0088   0.0007  -0.0022   0.0006
+   2  O   1s    -0.0023  -0.8689  -0.0100   0.2908   0.0067
+   3  O   1s     0.0014   0.1194  -0.0098   0.1778  -0.0015
+   4  O   2px    0.0001   0.0015  -0.7169  -0.0115   0.0009
+   5  O   2py    0.0000   0.0010   0.0006  -0.0055   0.9167
+   6  O   2pz   -0.0025  -0.1141  -0.0001  -0.7953  -0.0040
+   7  O   2px    0.0000  -0.0006   0.1020  -0.0031  -0.0004
+   8  O   2py    0.0000   0.0009   0.0003  -0.0008   0.0763
+   9  O   2pz    0.0016   0.0662  -0.0006  -0.0033  -0.0007
+  10  O   3d2-   0.0000   0.0000   0.0003   0.0000  -0.0003
+  11  O   3d1-   0.0000   0.0001   0.0000   0.0002   0.0179
+  12  O   3d0    0.0000  -0.0012   0.0000  -0.0176   0.0001
+  13  O   3d1+   0.0000   0.0001  -0.0264   0.0003   0.0000
+  14  O   3d2+  -0.0001  -0.0029   0.0005  -0.0045   0.0004
+  15  H   1s     0.0004  -0.3318   0.5625  -0.3495   0.0001
+  16  H   1s    -0.0006   0.1541  -0.1915   0.1297  -0.0022
+  17  H   2px    0.0006  -0.0373   0.0223  -0.0314   0.0001
+  18  H   2py    0.0000   0.0001  -0.0005   0.0002   0.0313
+  19  H   2pz   -0.0005   0.0205  -0.0327  -0.0079  -0.0001
+  20  H   1s     0.0004  -0.3215  -0.5421  -0.3445   0.0015
+  21  H   1s    -0.0006   0.1536   0.1956   0.1440  -0.0034
+  22  H   2px   -0.0006   0.0384   0.0269   0.0333   0.0000
+  23  H   2py    0.0000   0.0003   0.0007   0.0004   0.0293
+  24  H   2pz   -0.0005   0.0206   0.0328  -0.0058  -0.0002
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.07 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Fri May 27 08:09:52 2005
+     Host name              : kemove2.chem.au.dk                      
+
+ NOTE:    2 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+- End of Wave Function Section
+
+
+Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster MP2   energy :     -75.9806011336435461
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9855428064937257
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9893776481092118
+ Iter.  3: Coupled cluster CCSD  energy :     -75.9898180118132274
+ Iter.  4: Coupled cluster CCSD  energy :     -75.9898257525051122
+
+ CCSD energy will not be converged further
+
+ right now in CCSLV calc.
+ Accumulated inner iterations at this point are     4
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989825753
+  Change in norm^2 of T-amplitudes in this solvent it.:  0.0296292336
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 9
+  Change in norm^2 of L-amplitudes in this ccmm it.:  0.190356708
+
+ >>> Time used in LR=RCC is  -1.42 seconds
+
+ Total <Lambda|H|CC> energy:  -75.9898503
+            The singles contribution is:            -0.0000020047
+            The doubles contribution is:            -0.0000225383
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991651   1.98464730   1.97308353   1.96754721   1.96475467
+   0.02630792   0.02386011   0.01698363   0.01157810   0.00589506
+   0.00562007   0.00509342   0.00451035   0.00439959   0.00115102
+   0.00111324   0.00072427   0.00065919   0.00055873   0.00053421
+   0.00049323   0.00047407   0.00005685   0.00003771
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.110051 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.039668984971106
+ Norm2 of dipole moment vector:    0.033931804750442
+ Norm2 of dipole moment vector:    0.033926845919772
+ Norm2 of dipole moment vector:    0.033926386465270
+ Norm2 of dipole moment vector:    0.033926386476084
+ Norm2 of dipole moment vector:    0.033926386395988
+ Norm2 of dipole moment vector:    0.033926386395900
+
+ Dipole vector converged in   7 iterations.
+
+
+ E(QM/MM) contribution in iteration  0:           -0.0069358412
+ CC energy in the  current CCMM iteration:       -76.2463843282
+ CC energy in the previous CCMM iteration:         0.0000000000
+ Change in Total energy in this CCMM it.:         -0.762464E+02
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.07701788      0.19575990
+                    y      0.01145500      0.02911571
+                    z      0.79936823      2.03179116
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.54246106     0.00246093     0.12053374
+       2       0.00246093    -1.66217701     0.00669717
+       3       0.12053374     0.00669717     0.11971595
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.21233656    -0.00164062    -0.08035582
+       2      -0.00164062     5.25814480    -0.00446478
+       3      -0.08035582    -0.00446478     6.52285354
+
+ Alfa**2 Invariant:                         40.082974
+ Beta**2 Invariant:                          2.966309
+
+ Isotropic Property:                         6.331112 a.u.
+ Property anisotropy invariant:              1.722298 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9898257525051122
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897939550208008
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9897319094693415
+ Iter.  3: Coupled cluster CCSD  energy :     -75.9897251474364026
+ Iter.  4: Coupled cluster CCSD  energy :     -75.9897239176838042
+
+ CCSD energy will not be converged further
+
+ right now in CCSLV calc.
+ Accumulated inner iterations at this point are    13
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989723918
+  Change in norm^2 of T-amplitudes in this solvent it.: -0.000110675648
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 18
+  Change in norm^2 of L-amplitudes in this ccmm it.: -0.000441758074
+
+ >>> Time used in LR=RCC is  -0.52 seconds
+
+ Total <Lambda|H|CC> energy:  -75.9897702
+            The singles contribution is:            -0.0000006593
+            The doubles contribution is:            -0.0000456071
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466686   1.97309757   1.96774085   1.96479412
+   0.02631083   0.02358085   0.01699012   0.01160193   0.00590363
+   0.00562195   0.00508956   0.00451352   0.00440202   0.00115176
+   0.00110539   0.00072173   0.00066057   0.00054744   0.00053103
+   0.00049030   0.00046769   0.00005681   0.00003701
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109784 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036377095241534
+ Norm2 of dipole moment vector:    0.036379816631095
+ Norm2 of dipole moment vector:    0.036380013075395
+ Norm2 of dipole moment vector:    0.036380013081559
+ Norm2 of dipole moment vector:    0.036380013116306
+ Norm2 of dipole moment vector:    0.036380013116338
+
+ Dipole vector converged in   6 iterations.
+
+
+ E(QM/MM) contribution in iteration  1:           -0.0074490424
+ CC energy in the  current CCMM iteration:       -76.2464314602
+ CC energy in the previous CCMM iteration:       -76.2463843282
+ Change in Total energy in this CCMM it.:         -0.471320E-04
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.09935659      0.25253923
+                    y      0.01059612      0.02693264
+                    z      0.81065606      2.06048195
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55746425     0.00113499     0.15600281
+       2       0.00113499    -1.67851253     0.00564988
+       3       0.15600281     0.00564988     0.12104828
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19461028    -0.00075666    -0.10400187
+       2      -0.00075666     5.26131100    -0.00376659
+       3      -0.10400187    -0.00376659     6.51424117
+
+ Alfa**2 Invariant:                         39.985229
+ Beta**2 Invariant:                          2.917685
+
+ Isotropic Property:                         6.323387 a.u.
+ Property anisotropy invariant:              1.708123 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9897239176838042
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897233187145389
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9897212843132053
+ Iter.  3: Coupled cluster CCSD  energy :     -75.9897210787049886
+ Iter.  4: Coupled cluster CCSD  energy :     -75.9897210164467936
+
+ CCSD energy will not be converged further
+
+ right now in CCSLV calc.
+ Accumulated inner iterations at this point are    22
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989721016
+  Change in norm^2 of T-amplitudes in this solvent it.: -1.88513612E-06
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 27
+  Change in norm^2 of L-amplitudes in this ccmm it.: -1.03991026E-05
+
+ >>> Time used in LR=RCC is   0.37 seconds
+
+ Total <Lambda|H|CC> energy:  -75.9897671
+            The singles contribution is:             0.0000021289
+            The doubles contribution is:            -0.0000482123
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466676   1.97309764   1.96774928   1.96479428
+   0.02631154   0.02357048   0.01699023   0.01160348   0.00590398
+   0.00562188   0.00508941   0.00451365   0.00440213   0.00115181
+   0.00110519   0.00072168   0.00066071   0.00054709   0.00053093
+   0.00049014   0.00046746   0.00005682   0.00003699
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109776 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036471321340980
+ Norm2 of dipole moment vector:    0.036471422544175
+ Norm2 of dipole moment vector:    0.036471429731690
+ Norm2 of dipole moment vector:    0.036471429731944
+
+ Dipole vector converged in   4 iterations.
+
+
+ E(QM/MM) contribution in iteration  2:           -0.0074678061
+ CC energy in the  current CCMM iteration:       -76.2464331157
+ CC energy in the previous CCMM iteration:       -76.2464314602
+ Change in Total energy in this CCMM it.:         -0.165553E-05
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.10019541      0.25467131
+                    y      0.01054489      0.02680244
+                    z      0.81106184      2.06151334
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55798790     0.00107360     0.15728995
+       2       0.00107360    -1.67907298     0.00559825
+       3       0.15728995     0.00559825     0.12108508
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19398940    -0.00071573    -0.10485996
+       2      -0.00071573     5.26141286    -0.00373217
+       3      -0.10485996    -0.00373217     6.51394485
+
+ Alfa**2 Invariant:                         39.981792
+ Beta**2 Invariant:                          2.916105
+
+ Isotropic Property:                         6.323116 a.u.
+ Property anisotropy invariant:              1.707661 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9897210164467936
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897209934765385
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9897209191007050
+ Iter.  3: Coupled cluster CCSD  energy :     -75.9897209105227631
+ Iter.  4: Coupled cluster CCSD  energy :     -75.9897209080519218
+
+ CCSD energy will not be converged further
+
+ right now in CCSLV calc.
+ Accumulated inner iterations at this point are    31
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989720908
+  Change in norm^2 of T-amplitudes in this solvent it.: -8.01416026E-08
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 36
+  Change in norm^2 of L-amplitudes in this ccmm it.: -3.88286827E-07
+
+ >>> Time used in LR=RCC is   1.27 seconds
+
+ Total <Lambda|H|CC> energy:  -75.989767
+            The singles contribution is:             0.0000022229
+            The doubles contribution is:            -0.0000483331
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466675   1.97309764   1.96774959   1.96479430
+   0.02631154   0.02357011   0.01699023   0.01160354   0.00590400
+   0.00562188   0.00508940   0.00451366   0.00440214   0.00115181
+   0.00110518   0.00072168   0.00066071   0.00054708   0.00053092
+   0.00049013   0.00046745   0.00005682   0.00003699
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109775 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036474686099450
+ Norm2 of dipole moment vector:    0.036474689720708
+ Norm2 of dipole moment vector:    0.036474689975704
+ Norm2 of dipole moment vector:    0.036474689975711
+
+ Dipole vector converged in   4 iterations.
+
+
+ E(QM/MM) contribution in iteration  3:           -0.0074684701
+ CC energy in the  current CCMM iteration:       -76.2464332031
+ CC energy in the previous CCMM iteration:       -76.2464331157
+ Change in Total energy in this CCMM it.:         -0.874202E-07
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.10022471      0.25474578
+                    y      0.01054225      0.02679574
+                    z      0.81107712      2.06155219
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55800707     0.00107138     0.15733440
+       2       0.00107138    -1.67909376     0.00559589
+       3       0.15733440     0.00559589     0.12108668
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19396636    -0.00071425    -0.10488960
+       2      -0.00071425     5.26141645    -0.00373059
+       3      -0.10488960    -0.00373059     6.51393353
+
+ Alfa**2 Invariant:                         39.981662
+ Beta**2 Invariant:                          2.916045
+
+ Isotropic Property:                         6.323105 a.u.
+ Property anisotropy invariant:              1.707643 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9897209080519218
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897209073796205
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9897209047993414
+ Iter.  3: Coupled cluster CCSD  energy :     -75.9897209044852389
+ Iter.  4: Coupled cluster CCSD  energy :     -75.9897209043923709
+
+ CCSD energy will not be converged further
+
+ right now in CCSLV calc.
+ Accumulated inner iterations at this point are    40
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989720904
+  Change in norm^2 of T-amplitudes in this solvent it.: -2.8800788E-09
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 45
+  Change in norm^2 of L-amplitudes in this ccmm it.: -1.38067034E-08
+
+ >>> Time used in LR=RCC is   2.18 seconds
+
+ Total <Lambda|H|CC> energy:  -75.989767
+            The singles contribution is:             0.0000022261
+            The doubles contribution is:            -0.0000483376
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466675   1.97309764   1.96774960   1.96479430
+   0.02631154   0.02357010   0.01699023   0.01160354   0.00590400
+   0.00562188   0.00508940   0.00451366   0.00440214   0.00115181
+   0.00110518   0.00072168   0.00066071   0.00054708   0.00053092
+   0.00049013   0.00046745   0.00005682   0.00003699
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109775 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036474803267699
+ Norm2 of dipole moment vector:    0.036474803394846
+ Norm2 of dipole moment vector:    0.036474803403684
+ Norm2 of dipole moment vector:    0.036474803403684
+
+ Dipole vector converged in   4 iterations.
+
+
+ E(QM/MM) contribution in iteration  4:           -0.0074684930
+ CC energy in the  current CCMM iteration:       -76.2464332067
+ CC energy in the previous CCMM iteration:       -76.2464332031
+ Change in Total energy in this CCMM it.:         -0.352115E-08
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.10022572      0.25474835
+                    y      0.01054212      0.02679540
+                    z      0.81107766      2.06155356
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55800775     0.00107131     0.15733592
+       2       0.00107131    -1.67909449     0.00559578
+       3       0.15733592     0.00559578     0.12108674
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19396554    -0.00071421    -0.10489061
+       2      -0.00071421     5.26141657    -0.00373052
+       3      -0.10489061    -0.00373052     6.51393312
+
+ Alfa**2 Invariant:                         39.981658
+ Beta**2 Invariant:                          2.916043
+
+ Isotropic Property:                         6.323105 a.u.
+ Property anisotropy invariant:              1.707643 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9897209043923709
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897209043772079
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9897209042932786
+ Iter.  3: Coupled cluster CCSD  energy :     -75.9897209042829900
+ Iter.  4: Coupled cluster CCSD  energy :     -75.9897209042796788
+
+ CCSD energy will not be converged further
+
+ right now in CCSLV calc.
+ Accumulated inner iterations at this point are    49
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989720904
+  Change in norm^2 of T-amplitudes in this solvent it.: -8.47583254E-11
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 54
+  Change in norm^2 of L-amplitudes in this ccmm it.: -4.71524486E-10
+
+ >>> Time used in LR=RCC is   3.08 seconds
+
+ Total <Lambda|H|CC> energy:  -75.989767
+            The singles contribution is:             0.0000022262
+            The doubles contribution is:            -0.0000483378
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466675   1.97309764   1.96774960   1.96479430
+   0.02631154   0.02357010   0.01699023   0.01160354   0.00590400
+   0.00562188   0.00508940   0.00451366   0.00440214   0.00115181
+   0.00110518   0.00072168   0.00066071   0.00054708   0.00053092
+   0.00049013   0.00046745   0.00005682   0.00003699
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109775 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036474807195555
+ Norm2 of dipole moment vector:    0.036474807199869
+ Norm2 of dipole moment vector:    0.036474807200164
+
+ Dipole vector converged in   3 iterations.
+
+
+ E(QM/MM) contribution in iteration  5:           -0.0074684937
+ CC energy in the  current CCMM iteration:       -76.2464332068
+ CC energy in the previous CCMM iteration:       -76.2464332067
+ Change in Total energy in this CCMM it.:         -0.142776E-09
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.10022576      0.25474844
+                    y      0.01054212      0.02679539
+                    z      0.81107768      2.06155361
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55800778     0.00107131     0.15733597
+       2       0.00107131    -1.67909452     0.00559578
+       3       0.15733597     0.00559578     0.12108674
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19396552    -0.00071420    -0.10489065
+       2      -0.00071420     5.26141658    -0.00373052
+       3      -0.10489065    -0.00373052     6.51393311
+
+ Alfa**2 Invariant:                         39.981658
+ Beta**2 Invariant:                          2.916043
+
+ Isotropic Property:                         6.323105 a.u.
+ Property anisotropy invariant:              1.707643 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9897209042796788
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897209042798920
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989720904
+  Change in norm^2 of T-amplitudes in this solvent it.:  3.17149085E-13
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  CCSLV: We stop for now though not fully converged yet
+  Accumulated inner iterations are: 60
+  Change in norm^2 of L-amplitudes in this ccmm it.: -1.59985913E-11
+
+ >>> Time used in LR=RCC is   3.74 seconds
+
+ Total <Lambda|H|CC> energy:  -75.989767
+            The singles contribution is:             0.0000022262
+            The doubles contribution is:            -0.0000483378
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466675   1.97309764   1.96774960   1.96479430
+   0.02631154   0.02357010   0.01699023   0.01160354   0.00590400
+   0.00562188   0.00508940   0.00451366   0.00440214   0.00115181
+   0.00110518   0.00072168   0.00066071   0.00054708   0.00053092
+   0.00049013   0.00046745   0.00005682   0.00003699
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109775 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036474807304375
+ Norm2 of dipole moment vector:    0.036474807304494
+
+ Dipole vector converged in   2 iterations.
+
+
+ E(QM/MM) contribution in iteration  6:           -0.0074684938
+ CC energy in the  current CCMM iteration:       -76.2464332068
+ CC energy in the previous CCMM iteration:       -76.2464332068
+ Change in Total energy in this CCMM it.:         -0.861178E-11
+
+
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.10022576      0.25474844
+                    y      0.01054212      0.02679539
+                    z      0.81107768      2.06155361
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55800778     0.00107131     0.15733597
+       2       0.00107131    -1.67909452     0.00559578
+       3       0.15733597     0.00559578     0.12108674
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19396551    -0.00071420    -0.10489065
+       2      -0.00071420     5.26141658    -0.00373052
+       3      -0.10489065    -0.00373052     6.51393311
+
+ Alfa**2 Invariant:                         39.981658
+ Beta**2 Invariant:                          2.916043
+
+ Isotropic Property:                         6.323105 a.u.
+ Property anisotropy invariant:              1.707643 a.u.
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        95
+          Number of t2 amplitudes                 :      4560
+          Total number of amplitudes in ccsd      :      4655
+
+ Iter.  1: Coupled cluster RSTAR energy :     -75.9897209042798920
+ Iter.  1: Coupled cluster CCSD  energy :     -75.9897209042776183
+ Iter.  2: Coupled cluster CCSD  energy :     -75.9897209042771209
+
+ CCSD  energy converged to within   0.10E-11 is    -75.989720904
+  Change in norm^2 of T-amplitudes in this solvent it.: -2.11050968E-12
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CCSD      L0  vector
+  Change in norm^2 of L-amplitudes in this ccmm it.:  1.59205982E-13
+
+ >>> Time used in LR=RCC is   4.39 seconds
+
+ Total <Lambda|H|CC> energy:  -75.989767
+            The singles contribution is:             0.0000022262
+            The doubles contribution is:            -0.0000483378
+
+
+                        +--------------------------+
+                        ! CCSD Natural Occupations !
+                        +--------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99991644   1.98466675   1.97309764   1.96774960   1.96479430
+   0.02631154   0.02357010   0.01699023   0.01160354   0.00590400
+   0.00562188   0.00508940   0.00451366   0.00440214   0.00115181
+   0.00110518   0.00072168   0.00066071   0.00054708   0.00053092
+   0.00049013   0.00046745   0.00005682   0.00003699
+  
+   Sum in this symmetry class:  10.000000
+  
+  
+   Total Sum of natural occupation numbers:  10.000000
+  
+   Dynamical correlation move: 0.109775 electrons
+   
+
+ *****************************************************************
+ **** Output from Coupled Cluster/Molecular Mechanics program ****
+ *****************************************************************
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ Norm2 of dipole moment vector:    0.036474807323902
+ Norm2 of dipole moment vector:    0.036474807323925
+
+ Dipole vector converged in   2 iterations.
+
+
+ E(QM/MM) contribution in iteration  7:           -0.0074684938
+ CC energy in the  current CCMM iteration:       -76.2464332068
+ CC energy in the previous CCMM iteration:       -76.2464332068
+ Change in Total energy in this CCMM it.:          0.275691E-11
+
+
+
+
+ ------------------------------------------------------------------------
+ |<<<<<<<<<<<<<<< The MM/MM classical interaction energy >>>>>>>>>>>>>>>|
+ ------------------------------------------------------------------------
+ |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |       -0.00070616 |
+ ------------------------------------------------------------------------
+ |  Epol  = - 1/2*Sum_a[ MYind_a*E^site_a ]         |        0.00001010 |
+ ------------------------------------------------------------------------
+ |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |       -0.00011662 |
+ ------------------------------------------------------------------------
+ |**************************************************|*******************|
+ ------------------------------------------------------------------------
+ |  E(MM/MM) = Eelec + Epol + Evdw                  |       -0.00081269 |
+ ------------------------------------------------------------------------
+
+
+ +======================================================================+
+ |<<<<<<<<<<<<<< Final output from CCSD/MM energy program >>>>>>>>>>>>>>|
+ +======================================================================+
+ |      Eelec      |      Epol       |      Evdw       |    E(QM/MM)    |
+ +----------------------------------------------------------------------+
+ |   -0.0106953383 |   -0.0018841275 |    0.0051109721 |  -0.0074684938 |
+ +----------------------------------------------------------------------+
+ +======================================================================+
+ +----------------------------------------------------------------------+
+ |  <L|H(vac)|CC>  | <H(qm)+H(qmmm)> | Delta E(mm/mm)  | E_rep          |
+ +----------------------------------------------------------------------+
+ |  -76.2389647131 |  -76.2464332068 |    0.0000091219 |   0.0000000000 |
+ +======================================================================+
+
+
+ Maximum inner iterations for t set to   4 in each outer iteration
+ Maximum inner iterations for t-bar set to   5 in each outer iteration
+
+
+  CCMM equations are converged in   7 outer iterations
+  CCMM equations are converged in  66 inner iterations
+ *****************************************************************
+ ******* End of Coupled Cluster/Molecular Mechanics program ******
+ *****************************************************************
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CCSD    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.10022576      0.25474844
+                    y      0.01054212      0.02679539
+                    z      0.81107768      2.06155361
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                      +------------------------------+
+                      !  Electric Quadrupole Moment  !
+                      +------------------------------+
+
+
+
+                    Total Molecular quadrupole moment
+                    ---------------------------------
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       1.55800778     0.00107131     0.15733597
+       2       0.00107131    -1.67909452     0.00559578
+       3       0.15733597     0.00559578     0.12108674
+
+
+                  +--------------------------------------+
+                  !  Electronic second moment of charge  !
+                  +--------------------------------------+
+
+                    X              Y              Z
+
+               Column   1     Column   2     Column   3
+       1       7.19396551    -0.00071420    -0.10489065
+       2      -0.00071420     5.26141658    -0.00373052
+       3      -0.10489065    -0.00373052     6.51393311
+
+ Alfa**2 Invariant:                         39.981658
+ Beta**2 Invariant:                          2.916043
+
+ Isotropic Property:                         6.323105 a.u.
+ Property anisotropy invariant:              1.707643 a.u.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+            CCSD     Total energy:                 -76.2464332068               
+            CCSD     E(QM/MM):              -0.0074684938                       
+                                                                                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+
+ >>>> Total CPU  time used in DALTON:   6.92 seconds
+ >>>> Total wall time used in DALTON:   8.00 seconds
+
+ 
+     Date and time (Linux)  : Fri May 27 08:10:00 2005
+     Host name              : kemove2.chem.au.dk                      

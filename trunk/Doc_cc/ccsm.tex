@@ -1,0 +1,67 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Ground state--excited state two-photon transition moments:
+\Sec{CCSM}} \label{sec:ccsm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This section describes the calculation of 
+%second order 
+two-photon transition strengths 
+(two-photon dipole is a special case) 
+within the Coupled Cluster response code.
+The two-photon transition strength is defined
+\[
+S^{of}_{AB,CD}(\omega) = \frac{1}{2} \{ M^{AB}_{of}(-\omega) M^{CD}_{fo}(\omega)
+                         +[M^{CD}_{of}(-\omega) M^{AB}_{fo}(\omega)]^\ast\}
+\]
+\Sec{CCSM} drives the calculation of the left ($M^{XY}_{of}(\omega)$)
+and right ($M^{XY}_{fo}(\omega)$) transition moments, and of the transition 
+strength $S^{of}_{AB,CD}(\omega)$.
+The methodology is implemented for the CCS, CC2 and CCSD models.
+Results obtained using this functionality should cite~\cite{}.
+\begin{description}
+\item[\Key{OPERAT}] \verb| |\newline
+\verb|READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD|\newline
+\verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
+\verb|  READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD|\newline
+\verb|END DO|\newline
+Read quadruples of operator labels.
+For each of these operator quadruples the first residues of the quadratic response
+function will be evaluated at all frequencies.
+Operator pairs which do not correspond to symmetry allowed
+combinations will be ignored during the calculation.
+%
+\item[\Key{DIPOLE}] 
+Evaluate all symmetry allowed elements of the all--dipole tensor
+of the first residues of quadratic response function
+(81 components). In other words, all four operator labels 
+are set equal to all possible cartesian components of 
+the electric dipole moment operator (\verb+DIPLEN+ in Sec.~\Sec{*INTGRL}).
+%
+\item[\Key{PRINT }] \verb| |\newline
+\verb|READ (LUCMD,*) IPRSM|\newline
+Read print level. Default is 0.
+%
+\item[\Key{SELSTA}] \verb| | \newline
+\verb|READ (LUCMD,'(A70)') LABHELP|\newline
+\verb|DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')|\newline
+\verb|  READ (LUCMD,'(3A)') IXSYM, IXST, SMFREQ|\newline
+\verb|END DO| \newline
+Select one or more excited states $f$ (among those specified
+in \Sec{CCEXCI}), and the laser frequency $\omega$.
+The symmetry (\verb+IXSYM+) and state number (\verb+IXST+)
+within that symmetry are then given,
+one pair (\verb|IXSYM,IXST|) per line, together with the
+laser frequency \verb+SMFREQ+ (in atomic units).
+%\verb+SMFREQ+ specifies the frequency of the two-photon 
+%transition moment (in atomic units).
+
+Default is all states specified in \Sec{CCEXCI}, and for each state 
+a laser frequency equal to half the excitation energy.
+
+%
+\item[\Key{HALFFR}] 
+Set the frequency argument for the two-photon transition moments
+equal to  half the excitation energy to the final state $f$. Default,
+if \verb+SMFREQ+ is not specified in \Key{SELSTA}.
+%
+\end{description}

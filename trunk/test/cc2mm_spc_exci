@@ -1,0 +1,258 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc2mm_spc_exci.info <<%EOF%
+   cc2mm_spc_exci
+   ---------------
+   Molecule:            Alanine zwitter ion (QM) and 9 water molecules (MM)
+   Wave Function:       CC2 / STO-3G
+   Molecular Mechanics: SPC model: TIP3P point charges. OLDTG=.TRUE. meaning 
+                        that point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment, 5 lowest 
+                        ground state excitation energies and transition 
+                        properties.
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > cc2mm_spc_exci.mol <<%EOF%
+ATOMBASIS
+The Alanine zwitter ion micro solvated by 9 water molecules:
+------------------------------------------------------------
+    6    0         1 1.00D-15
+        8.0   2    Bas=STO-3G
+O         -0.535052   -1.049239    1.439280 0 1
+O         -1.690722    0.868759    1.230476 0 2
+        7.0   1    Bas=STO-3G
+N          0.979949    0.887748   -0.447468 0 3
+        6.0   3    Bas=STO-3G
+C          0.716909    0.948281    1.040486 0 4
+C         -0.622273    0.202228    1.279580 0 5
+C          0.727240    2.396469    1.508740 0 6
+        1.0   7    Bas=STO-3G
+H          1.523271    0.378290    1.507999 0 7
+H         -0.053285    2.973117    1.003943 0 8
+H          0.537206    2.439982    2.585183 0 9
+H          1.700364    2.861447    1.316727 0 10
+H          0.849881   -0.097082   -0.776576 0 11
+H          1.988137    1.127307   -0.664389 0 12
+H          0.333048    1.516821   -0.980800 0 13
+   -0.8340    9    Bas=MM
+O        -1.770350   -2.391881   -1.595783 1 1
+O        -3.109854    2.454522   -0.538636 2 1
+O        -0.775857    2.529871   -1.917205 3 1
+O        -3.437579   -0.384443   -0.418053 4 1
+O         0.755009   -1.889071   -0.816915 5 1
+O         3.456239   -1.758465   -1.038230 6 1
+O        -2.668612   -2.685616    1.028629 7 1
+O         3.670963    1.117386   -0.977135 8 1
+O         3.884408   -0.356039    1.305153 9 1
+    0.4170   18    Bas=MM
+H        -2.044856   -2.852711   -0.773158 1 2
+H        -2.249438   -1.541978   -1.481445 1 3
+H        -2.612599    2.181714    0.263113 2 2
+H        -3.569730    1.622300   -0.766070 2 3
+H        -1.686600    2.504299   -1.513508 3 2
+H        -0.527321    3.465821   -1.903363 3 3
+H        -2.837130   -0.031695    0.289116 4 2
+H        -3.800875   -1.181581    0.008998 4 3
+H         0.488698   -1.855071    0.131375 5 2
+H        -0.101507   -2.132535   -1.275101 5 3
+H         2.493337   -1.986469   -1.060704 6 2
+H         3.929366   -2.537608   -1.366655 6 3
+H        -1.937918   -2.065641    1.304088 7 2
+H        -2.648266   -3.405036    1.677042 7 3
+H         3.988723    0.875445   -0.076166 8 2
+H         3.763338    0.259400   -1.437031 8 3
+H         4.626413   -0.576312    1.888538 9 2
+H         3.828102   -1.084600    0.645628 9 3
+%EOF%
+#######################################################################
+#  QM/MM INTERACTION INPUT
+#######################################################################
+cat > cc2mm_spc_exci.pot <<%EOF%
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC
+.CHARGS
+ 13
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+*******
+.TYPE
+ 1-9
+.MODEL
+ SPC
+*******
+**TWOIA
+.LJ_A
+ 2
+ 2083000
+ 2083000
+.LJ_B
+ 2
+ 45.21
+ 45.21
+**END OF
+%EOF%
+#
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc2mm_spc_exci.dal <<%EOF%
+**DALTON
+.RUN WAVEFUNCTION
+*QM3
+.QM3
+.THRDIP
+ 1.0D-9
+.MAXDIP
+ 80
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESH
+1.0D-10
+*CC INP
+.CC2
+.FREEZE
+ 6 0
+.THRLEQ
+ 1.0D-09
+.THRENR
+ 1.0D-09
+.MAX IT
+ 150
+.MAXRED
+ 250
+.MXLRV
+ 200
+*CCSLV
+.CCMM
+.ETOLSL
+ 1.0D-08
+.TTOLSL
+ 1.0D-08
+.LTOLSL
+ 1.0D-08
+.MXSLIT
+ 200
+*CCFOP
+.DIPMOM
+.NONREL
+*CCEXCI
+.NCCEXCI
+ 4
+*CCLRSD
+.DIPOLE
+**END OF
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc2mm_spc_exci.check
+cat >>cc2mm_spc_exci.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#  The classical and QM/MM interaction energies compared:
+CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.08417171" $log | wc -l`
+CRIT2=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * ( |0)\.00000000" $log | wc -l`
+CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 \- B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.02847728" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.05569443" $log | wc -l`
+CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * ( |0)\.00000000" $log | wc -l`
+CRIT6=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * ( |0).00000000" $log | wc -l`
+CRIT7=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.00143016" $log | wc -l`
+CRIT8=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * ( |0)\.00000000" $log | wc -l`
+CRIT9=`$GREP "(\-|\-0)\.15553012.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.00143015.. \| * (\-|\-0)\.15696028.." $log | wc -l`
+CRIT10=`$GREP "\-317\.86855013.. \| \-318\.02551041.. \|    ( |0)\.00000000.. \|   ( |0)\.00000000.." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[1]=13
+ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=` $GREP "x * 3\.45113314 * 8\.77190449" $log | wc -l`
+CRIT2=` $GREP "y * 1\.63839196 * 4\.16437653" $log | wc -l`
+CRIT3=` $GREP "z * \-2\.89031691 * \-7\.34645199" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=4
+ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# First ground state excitation energy compared:
+CRIT1=`$GREP "\^1A   \|    1   \|     ( |0)\.1983...  \|       5\.3982.  \|     43539\...." $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.2235...  \|       6\.0836.  \|     49068\...." $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|     ( |0)\.3016...  \|       8\.2071.  \|     66194\...." $log | wc -l`
+CRIT4=`$GREP "\^1A   \|    4   \|     ( |0)\.3609...  \|       9\.8213.  \|     79214\...." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=4
+ERROR[3]="FIRST GROUND STATE EXCITATION ENERGY NOT CORRECT"
+
+# Transition moments between ground state and first excited state compared:
+CRIT1=`$GREP "\^1A   \|    1   \|        ( |0)\.0002...      \|      ( |0)\.0000..." $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|        ( |0)\.0046...      \|      ( |0)\.0006..." $log | wc -l`
+CRIT3=`$GREP "\^1A   \|    3   \|        ( |0)\.6467...      \|      ( |0)\.1300..." $log | wc -l`
+CRIT4=`$GREP "\^1A   \|    4   \|        ( |0)\.0085...      \|      ( |0)\.0020..." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[4]=4
+ERROR[4]="OSCILLATOR STRENGTH NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

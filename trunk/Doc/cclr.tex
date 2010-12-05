@@ -1,0 +1,187 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Linear response functions: \Sec{CCLR}}\label{sec:cclr}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{linear response}
+\index{response!linear}
+\index{Coupled Cluster!linear response}
+\index{polarizability!frequency-dependent}
+\index{polarizability!Coupled Cluster}
+\index{polarizability!static}
+\index{dipole polarizability}
+\index{dispersion coefficients}
+\index{Cauchy moments}
+\index{optical rotation!Coupled Cluster}
+\index{dipole gradient!Coupled Cluster}
+
+In the \Sec{CCLR} section the input that is
+specific for coupled cluster linear response properties is read in. 
+This section includes presently 
+\begin{itemize}
+\item frequency-dependent linear response properties 
+      $\alpha_{AB}(\omega)  = - \langle\langle A; B \rangle\rangle_\omega$
+      where $A$ and $B$ can be any of the one-electron
+      operators for which integrals are available in the 
+      \Sec{*INTEGRALS} input part.
+\item dispersion coefficients $D_{AB}(n)$ for $\alpha_{AB}(\omega)$
+      which for $n \ge 0$ are defined by the expansion
+      $$ \alpha_{AB}(\omega) = \sum_{n=0}^{\infty} \omega^n \, D_{AB}(n) $$
+      In addition to the dispersion coefficients for $n \ge 0$
+      there are also coefficients available for $ n = -1, \ldots, -4$,
+      which are related to the Cauchy moments
+       by $ D_{AB}(n) = S_{AB}(-n-2)$.
+      \\
+      Note, that for real response functions only even moments
+      $D_{AB}(2n) = S_{AB}(-2n-2)$ with $n \ge -2$ are available,
+      while for imaginary response functions only odd moments
+      $D_{AB}(2n+1) = S_{AB}(-2n-3)$ with $n \ge -2$ are available.
+\end{itemize}
+Coupled cluster linear response functions and dispersion coefficients
+are implemented for the models CCS, CC2 and CCSD. 
+%Publications that report results obtained with CC linear response
+%calculations should cite Ref.\ \cite{Christiansen:CCLR}. 
+The theoretical background for the implementation is detailed in Ref.\ \cite{Christiansen:CCLR,Christiansen:QEL,Haettig:CAUCHY,Haettig:DIPGRA}.
+%For dispersion coefficients also a citation of Ref.\ \cite{Haettig:CAUCHY} 
+%should be included.
+The properties calculated are in the approach now generally known as coupled cluster 
+linear response---in the frequency-independent limit this coincides with the so-called 
+orbital-unrelaxed energy derivatives (and thus the orbital-unrelaxed finite field result).
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Linear response:  O.~Christiansen, A.~Halkier, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}2801, (1998).
+\item Dispersion coefficients: C.~H\"{a}ttig, O.~Christiansen, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 107},\hspace{0.25em}10592, (1997).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+\item[\Key{ASYMSD}] 
+Use an asymmetric formulation of the linear response function which
+does not require the solution of response equations for the operators $A$, 
+but solves two sets of response equations for the operators $B$.
+%
+% \item[\Key{RELAXE}] 
+%
+% \item[\Key{UNRELA}] 
+%
+\item[\Key{AVERAG}] \verb| |\newline
+   \verb|READ (LUCMD,'(A)') AVERAGE|\newline
+   \verb|READ (LUCMD,'(A)') SYMMETRY|
+
+Evaluate special tensor averages of linear response functions.
+Presently implemented are the isotropic average of the dipole polarizability
+$\bar{\alpha}$ and the dipole polarizability anisotropy $\alpha_{ani}$.
+Specify \verb+ALPHA_ISO+ for \verb+AVERAGE+ to obtain $\bar{\alpha}$ and
+\verb+ALPHA_ANI+ to obtain $\alpha_{ani}$ and $\bar{\alpha}$.
+The \verb+SYMMETRY+ input defines the selection rules that can be
+exploited to reduce the number of tensor elements that have to be
+evaluated. Available options are
+\verb+ATOM+, \verb+SPHTOP+ (spherical top), \verb+LINEAR+,
+\verb+XYDEGN+ ($x$- and $y$-axis equivalent, {\it i.e.\/} a $C_z^n$
+symmetry axis with $n \ge 3$),  and \verb+GENER+ (use point
+group symmetry from geometry input).
+Integrals needed for operator DIPLEN.
+\index{dipole polarizability}
+
+\item[\Key{DIPGRA}]
+Evaluate dipole gradients, i.e. compute the Atomic Polar Tensor, and
+perform Cioslowski population analysis. Note that this keyword should
+only be used for static calculations.
+Integrals needed for operator DIPLEN, DIPGRA, DEROVL, and DERHAM.
+\index{dipole gradient!Coupled Cluster}
+ 
+\item[\Key{DIPOLE}] 
+Evaluate all symmetry allowed elements of the dipole polarizability
+(max. 6 components).
+Integrals needed for operator DIPLEN.
+\index{dipole polarizability}
+
+\item[\Key{DISPCF}] \verb| |\newline
+   \verb|READ (LUCMD,*) NLRDSPE|
+
+   Calculate the dispersion coefficients 
+   $D_{AB}(n)$ up to $n = $ \verb+NLRDSPE+.
+
+\item[\Key{FREQUE}] \verb| |\newline
+   \verb|READ (LUCMD,*) NBLRFR |\newline
+   \verb|READ (LUCMD,*) (BLRFR(I),I=1,NBLRFR)|
+
+Frequency input for $\langle\langle A;B \rangle\rangle_{\omega}$ in
+Hartree (may be combined with wave length input).
+
+%
+%\item[\Key{ALLDSP}] 
+%
+% \item[\Key{FTST}] 
+%
+\item[\Key{OPERAT}] \verb| |\newline
+   \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
+   \verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|END DO|
+
+Read pairs of operator labels. 
+
+\item[\Key{OR}] 
+Evaluate the specific and molar optical rotation using the length gauge
+and modified velocity gauge\index{Modified velocity gauge}
+expressions.
+Integrals needed for operators DIPLEN, DIPVEL, and ANGMOM.
+\index{optical rotation!Coupled Cluster}
+
+\item[\Key{OR LEN}] 
+Evaluate the specific and molar optical rotation using the length gauge
+expression. Note that the result is origin-dependent and the origin employed
+is the gauge origin used for computing the angular momentum integrals.
+Integrals needed for operators DIPLEN and ANGMOM.
+\index{optical rotation!Coupled Cluster}
+
+\item[\Key{OR MVE}] 
+Evaluate the specific and molar optical rotation using the modified velocity
+gauge\index{Modified velocity gauge}
+expression to ensure origin invariance as described in
+Ref.\ \cite{Pedersen:ORMVE}.
+Integrals needed for operators DIPVEL and ANGMOM.
+\index{optical rotation!Coupled Cluster}
+
+\item[\Key{ORGANL}] 
+Evaluate the origin-dependence of the length gauge optical rotation
+(see Ref.\ \cite{Pedersen:ORMVE}).
+Integrals needed for operators DIPLEN and DIPVEL.
+\index{optical rotation!Coupled Cluster}
+
+\item[\Key{ORIGIN}] \verb| |\newline
+  \verb|READ (LUCMD,*) NORGIN |\newline
+  \verb|DO J = 1,NORGIN       |\newline
+  \verb|   READ (LUCMD,*) (ORIGIN(I,J),I=1,3)|\newline
+  \verb|END DO|
+
+Additionally evaluate the length gauge optical rotation at the
+specified origins (relative to the origin of the angular momentum
+operator).
+Integrals needed for operators DIPLEN, DIPVEL, and ANGMOM.
+\index{optical rotation!Coupled Cluster}
+ 
+\item[\Key{PRINT}] \verb| |\newline
+   \verb|READ (LUCMD,*) IPRSOP|
+
+Set print level for linear response output.
+
+\item[\Key{STATIC}]
+Evaluate the linear response functions at zero frequency.
+May be combined with frequency/wave length input.
+
+\item[\Key{WAVELE}] \verb| |\newline
+   \verb|READ (LUCMD,*) NBLRWL |\newline
+   \verb|READ (LUCMD,*) (BLRWL(I),I=1,NBLRWL)|
+
+Frequency input for $\langle\langle A;B \rangle\rangle_{\omega}$
+supplied as wave length in nm (may be combined with frequency input).
+ 
+\end{description}

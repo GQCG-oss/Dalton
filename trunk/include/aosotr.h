@@ -1,0 +1,6 @@
+! FILE : aosotr.h
+!     AO to AO transformation (SO = symmetry orbital)
+      REAL*8  CTRAN(MXCORB,8)
+      INTEGER ITRAN(MXCORB,8),JTRAN(MXCORB), IPTYP(MXCORB),IPCEN(MXCORB)&
+     &      , IAOAO(MXCORB), JAOAO(MXCORB,2)
+      COMMON /AOSOTR/ CTRAN, ITRAN, JTRAN, IPTYP, IPCEN, IAOAO, JAOAO

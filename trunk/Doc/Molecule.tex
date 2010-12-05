@@ -1,0 +1,928 @@
+\chapter{\mol\ input style}\label{ch:molinp}
+\index{geometry!Cartesian coordinate input}
+\index{Cartesian coordinate input}
+\index{geometry!Z-matrix input}
+\index{Z-matrix input}
+
+The {\mol}-style input is originally based on the input for the \mol\
+integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
+few remnants of the original input structure. For users of earlier
+releases of the Dalton program, note should be taken of the fact that
+the input structure for the \mol\ file has undergone major changes,
+however, backward compatibility has in most cases been
+retained\footnote{The two exceptions to the backward are that when
+using the {\tt ATOMBASIS} keyword, the basis set name has to be
+preceded by ``Basis=''. When specifying the Cartesian
+coordinates of the atoms, it is no longer required that the
+coordinates start at position 5. However, blanks are no longer
+allowed in the names of atoms, and the atom names are still
+restricted to 4 characters.}.
+The program supports both Cartesian\index{Cartesian coordinate input}
+and Z-matrix input\index{Z-matrix input} of the
+molecular coordinates. However, the Z-matrix input provided is only a
+convenient way of describing the molecular geometry, as the Z-matrix is
+converted to Cartesian coordinates, which are then used in the
+subsequent calculations. Note that the Z-matrix input can only be
+used together with the basis set library (\quotekw{BASIS} in first line).
+
+The program includes an extensive basis set
+library\index{basis set!library}, which are described below. 
+There are additional possibilities for choosing the number of primitive
+and contracted orbitals to be used with the Atomic Natural Orbital
+(ANO) basis sets\index{ANO basis set}\index{basis set!ANO}
+and the ``Not Quite van Duijneveldt'' (NQvD) basis
+sets\index{NQvD basis set}\index{basis set!NQvD}. The large number of
+different basis sets provided is in part
+related to the variety of molecular properties with very different
+basis set requirements that can be calculated with \dalton.
+Most of the basis sets have been downloaded from the EMSL basis set
+library service\index{EMSL basis set library service}\index{basis set!EMSL library}\newline
+(http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
+Only a small number of the basis sets were obtained from different sources:
+
+\begin{list}{--}{}
+\item The ano-1, ano-2, ano-3, ano-4 and Sadlej-pVTZ basis sets which where
+downloaded from the MOLCAS home-page\index{NQvD basis set}\index{basis set!NQvD}\index{ANO basis set}
+\index{basis set!ANO}\index{sadlej basis set}\index{basis set!sadlej}
+(http://www.teokem.lu.se/molcas/).
+\item The NQvD (The Not Quite van Duijneveldt) basis sets were constructed
+by Knut F\ae gri for this distribution~\cite{nqvdref}.
+\item The Turbomole-X {X = SV,SVP,DZ,DZP,TZ,TZP,TZV,TZVP,TZVPP,TZVPPP} basis sets have
+been downloaded from Turbomole\index{Turbomole basis set}\index{basis set!Turbomole}(http://www.turbomole.com)
+\item The pc-$n$ and apc-$n$ polarization-consistent basis sets were provided to us by Frank Jensen.
+\end{list}
+
+We note that each file containing a given basis set in the BASIS
+directory contains the proper reference to be used when doing a 
+calculation with a given basis set. For convenience we also list 
+these references with the basis sets in Section~\ref{sec:basislist}.
+
+The description of the \mol\ input is divided into five parts.
+Section~\ref{sec:molgeneral} describes the general section of the
+molecule input,
+section~\ref{sec:molcart} describes the Cartesian coordinate
+input\index{Cartesian coordinate input},
+section~\ref{sec:molzmat} describes the Z-matrix
+input\index{Z-matrix input}, and finally
+Section~\ref{sec:molbasis} describes the basis set
+library\index{basis set!library}.
+Section~\ref{sec:basislist} lists the basis sets (including references and supported elements) 
+in the basis set library\index{basis set!library}.
+
+\section{General \mol\ input}\label{sec:molgeneral}
+
+In the general input section of the \mol\ input file, we will consider
+such information as molecular symmetry\index{symmetry}, number of
+symmetry distinct atoms\index{symmetry-distinct atom}, generators of a
+given molecular point group\index{symmetry!generator}\index{symmetry!group}, and so on.
+This information usually constitutes the four/five first lines of the
+input.
+
+The input is best described by an example.
+The following is the first lines of an input for
+tetrahedrane\index{tetrahedrane}, treated in
+$C_{2v}$~symmetry, with a 4-31G** basis.  The line numbers are for
+convenience in the subsequent input description and should {\em
+not} appear in the actual input.  Note also that in order to fit
+the example across the page some liberties have been taken with
+column spacings.
+\begin{verbatim}
+ 1:INTGRL
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:                 4-31G** basis
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+\end{verbatim}
+
+We now define the input line-by-line.  The {\tt FORMAT} is given
+in parenthesis.
+\begin{description}
+\item[1] The word \verb|INTGRL|\index{INTGRL} {\tt (A6)}.
+\item[2-3] Two arbitrary title lines {\tt (A72)}.
+\item[4] General instructions about the molecule.
+
+This line is keyword-driven. The general structure of the input is
+\verb|Keyword=|. The input is case sensitive, but \dalton\ will recognize
+the keywords whether specified with only three characters (minimum) or
+the full name (or any intermediate option). The order of the keywords
+is arbitrary. The following keywords are recognized for this line:
+\begin{description}
+\item[Angstrom] Indicates that the atomic Cartesian coordinates are
+  given in \AA ngstr\"{o}m, and not in bohr (atomic units) which is
+  the default.
+\item[Atomtypes] \verb|(Integer)|. {\em This keyword is
+  required\/}. Number of atom types (number of atoms specified 
+in separate blocks). For a Z-matrix input this will be the total
+number of atoms in the molecule, the Z-matrix module will then
+extract the number of atom types.
+\item[Cartesian] Indicates that a Cartesian Gaussian basis set will be
+  used in the calculations.\index{Cartesian basis function}\index{basis function!Cartesian}
+\item[Charge] \verb|(Integer)|. The charge of the molecule\index{charge
+  of molecule}. Will be used  by the program to determine the Hartree--Fock
+occupation\index{HF occupation}\index{Hartree--Fock occupation}.
+\item[Generators] \verb|(Integer|+\verb|Character)|. Number of symmetry
+  generators\index{symmetry!generator}. If this keyword is not
+  specified (and \verb|Nosymmetry| not invoked)
+  the automatic symmetry detection routines of the program will be
+invoked. Symmetry can be turned off (needed for instance if starting a
+walk at a highly symmetric structure which one knows will break
+symmetry) using the keyword \verb|Nosymmetry|. \dalton\ is restricted
+  to the Abelian subgroups of D$_{2h}$, and thus there can be 1 to 3
+  generating elements.
+
+The number of generators\index{symmetry!generator} is followed the
+equally many blocks of characters specifying which Cartesian axis
+change sign during each of the generators. {\tt X}
+is reflection\index{reflection}
+in the \mbox{$yz$-plane}, {\tt XY} is rotation\index{rotation} about
+the \mbox{$z$-axis},
+and {\tt XYZ} denotes inversion\index{inversion}. Due to the handling
+of symmetry in
+the program, it is recommended to use mirror planes as symmetry
+generating elements if possible.
+\item[Integrals] \verb|(Real)|. Indicates the threshold for which
+  integrals smaller than this will be considered to be zero. If not
+  specified, a threshold of 1.0D-15 will be used. A threshold
+of 1.0D-15 will give integrals correct to approximately 1.0D-13.
+\item[Nosymmetry] Indicates that the calculation is to be run without
+  the use of point-group symmetry. Automatic symmetry detection will
+  also be disabled.\index{symmetry!automatic detection}
+\item[Own] Indicates that a user-supplied scheme for generating
+  transformed angular momentum basis functions will be used.
+\item[Spherical] Default. Indicates that a spherical Gaussian basis
+  set will be used in the calculations.\index{spherical basis function}\index{basis function!spherical}
+\end{description}
+\end{description}
+
+Note that if one wants to use a basis set
+library\index{basis set!library}, there are two
+options. One option is to use a common basis set for the entire
+molecule in which the first line should be replaced by two lines,
+which for a calculation using the 4-31G** basis would look like:
+\begin{verbatim}
+ 1:BASIS
+ 2:4-31G**
+\end{verbatim}
+This option will not be active with customizable basis sets like the
+ANO or NQvD sets.
+
+
+Alternatively you may specify different basis sets for different
+atoms, in which case the first line should read
+\begin{verbatim}
+ 1:ATOMBASIS
+\end{verbatim}
+
+The fourth line (fifth in a calculation using the basis set library)
+looks a bit devastating. However, for ordinary
+Hartree--Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree--Fock}\index{M{\o}ller-Plesset!second-order}
+or MP2 calculations, only the number of different atom types and the charge
+need to be given (if the molecule is charged), as symmetry and
+Hartree--Fock occupation\index{HF occupation}\index{Hartree--Fock occupation}
+will be taken care of by the program. Thus
+this line could in the above example be reduced to
+\begin{verbatim}
+ 4:Atomtypes=2
+\end{verbatim}
+or even more concisely (though not more readable) as
+\begin{verbatim}
+ 4:Ato=2
+\end{verbatim}
+
+
+Let us finally give some remarks about the symmetry
+detection\index{symmetry!automatic detection}
+routines. These routines will detect any symmetry of a molecule
+by explicit testing for the occurrence of rotation axes, mirror planes
+and center of inversion. The occurrence of a symmetry element is
+tested in the program against a threshold which may be adjusted by the
+keyword \Key{SYMTHR} in the \Sec{MOLBAS} input section. By default,
+the program will require
+geometries that are correct to the sixth decimal place in order to
+detect all symmetry elements.
+
+The program will translate and rotate the molecule into a suitable
+reference geometry before testing for the occurrence of symmetry
+operations. The program will not, due to the handling of symmetry
+in the program, transform  the molecule back to original input
+coordinates. Furthermore, if there are symmetry equivalent nuclei,
+these will be removed from the input, and a new, standardized
+molecule input file will be generated and used in subsequent
+iterations of for instance a geometry optimization. This
+standardized input file (including basis set) is printed to the file
+\verb|DALTON.BAS|, which is among the files copied back after the end
+of a calculation.
+
+\dalton\ can only take advantage of point groups that are subgroups
+of D$_{2h}$. If symmetry higher than that is detected, the program
+will use the highest common subgroup of  the symmetry group
+detected and D$_{2h}$.
+
+We recommend that the automatic symmetry detection feature is not
+used when doing MCSCF\index{MCSCF} calculations, as symmetry
+generators\index{symmetry!generator} and their order in the input
+determines the order of the irreducible representations
+needed when specifying active spaces. Thus, for MCSCF calculations
+we recommend that the symmetry is  explicitly specified through
+the appropriate symmetry generators, as well as the explicit
+Hartree--Fock occupation numbers.
+
+\section{Cartesian geometry input}\label{sec:molcart}
+\index{Cartesian coordinate input}
+
+Assuming that we have given the general input as indicated above, we
+now want to specify the spatial arrangements of the atoms in a
+Cartesian coordinate system. We will also for sake of illustration
+assume that we have given explicitly the generators of the point group
+to be used in the calculation (in this case C$_{2v}$, with the yz- and
+xz-planes as mirror planes).
+
+In tetrahedrane we will have two different kinds of atoms, carbon
+and hydrogen, as indicated by the number 2 on the fourth (fifth)
+line of the input. We will also assume that we punch the basis set
+ourselves, in order to present the input format for the basis set.
+
+For tetrahedrane, the input would then look like
+\begin{verbatim}
+ 5:Charge=6.0 Atoms=2 Blocks=3 1 1 1
+ 6:C1    1.379495419          .0                 0.975450565
+ 7:C2     .0                 1.379495419         -.975450565
+ 8:    8    3
+ 9:486.9669   .01772582
+10:73.37109   .1234779
+11:16.41346   .4338754
+12:4.344984   .5615042
+13:8.673525            -.1213837
+14:2.096619            -.2273385
+15:.6046513             1.185174
+16:.1835578                      1.00000
+17:    4    2
+18:8.673525   .06354538
+19:2.096619   .2982678
+20:.6046513   .7621032
+21:.1835578             1.000000
+22:    1    1
+23:0.8        1.0
+24:Charge=1.0 Atoms=2 Blocks=2 1 1
+25:H1    3.020386510         .0                  2.1357357837
+26:H2     .0                 3.020386510         -2.1357357837
+27:    4    2
+28:18.73113   .03349460
+29:2.825394   .2347270
+30:.6401218   .8137573
+31:.1612778             1.000000
+32:    1    1
+33:0.75       1.0
+\end{verbatim}
+
+The different lines are:
+\begin{description}
+\item[5] This line is keyword-driven. The general structure of the input is
+\verb|Keyword=|. The input is case sensitive, but it will recognize
+the keywords whether specified with only three characters (minimum) or
+the full name (or any intermediate option). The order of the keywords
+is arbitrary. The following keywords are
+recognized for this line:
+\begin{description}
+\item[Atoms] \verb|(Integer)|. Number of {\em
+  symmetry-distinct}\index{symmetry-distinct atom} atoms of 
+this type (or, if the symmetry detection routines are being used, all
+atoms of this kind).
+\item[Basis] \verb|(Character)|. If \verb|ATOMBASIS| has been specified,
+  the keyword is required, and have to be followed by the name of the
+  basis set that is to be used for this group of atoms, {\it e.g.\/}
+  \verb|Basis=6-31G**|. By specifying
+  \verb|Basis=pointcharge|\index{point charge}, the
+  atoms in this block will be treated as point charges, that is,
+  having only a charge but no basis functions attached to
+  them. Stuttgart effective core potentials (ECP) with corresponding
+  Stuttgart double zeta basis sets\index{effective core
+  potentials}\index{ECP} can also by used by specifying
+  \verb|Basis=ecp-sdd-DZ|.
+\item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
+basis set for this atom type ($s=1$, $p=2$, etc.).
+Ignored if library basis sets are being used (\verb|BASIS| or
+\verb|ATOMBASIS| in first line). This number is followed by one
+integer for each angular momentum used in the basis, indicating 
+the number of groups (blocks) of generally contracted
+functions of angular quantum number~{\tt I-1}.
+Ignored if the basis set library is used. \newline
+It is noteworthy that
+\dalton\ collects all basis functions into one such shell, and
+evaluates all integrals arising from that 
+shell\index{shell of basis functions} simultaneously, and
+the memory requirements grow rapidly with the number of basis
+functions in a shell (note for instance that four $g$ functions
+actually are 36
+basis functions, as there are 9 components of each $g$
+function). Memory requirements\index{memory} can therefore be reduced
+by splitting
+basis functions of the quantum number into different blocks. However,
+this will decrease the performance of the
+integral\index{performance of integral program} calculation.
+\item[Charge] \verb|(Real)|. {\em This keyword is required\/}.
+  Charge of this atom\index{charge of atom} or point charge. 
+\item[Pol] \verb|(Integer+real)|. This keyword adds single, primitive
+  basis function of a given quantum number (quantum number + 1 given
+  in the input) and a given exponent. An arbitrary number of
+  polarization functions can be given. For instance, we can add a $p$
+  function with exponent $0.05$ and a $d$ function with exponents
+  $0.6$ we can write \verb|Pol 2 0.05 3 0.6|.
+\item[Set] \verb|(Integer)|. Indicates whether the basis set specified
+  is the ordinary orbital basis or the auxiliary basis set needed for
+  instance in certain r12 calculations, see
+  Sec.~\ref{sec:r12aux}. The keyword is only active when the keyword
+  \Key{R12AUX} has been specified in the \Sec{MOLBAS} input section.
+\end{description}
+\item[6] \verb|NAME X Y Z Isotope=18|
+\begin{description}
+\item[NAME] Atom name.  A different name should be used for
+each atom of the same type, although this is not required. Note that
+only the first four characters of the atom name will be used by the
+program, and that no spaces are allowed in naming the atom.
+\item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
+has been requested on line 4 of the input).
+\item[Y] $y$-coordinate.
+\item[Z] $z$-coordinate.
+\item[Isotope=] \index{Isotope=} Specify the atomic mass of the nucleus (closest
+  integer number). By default the mass of the most abundant isotope
+  of the element will be used. When automatic symmetry detection is
+  used, the program will distinguish between different nuclei if they
+  have different atomic mass number. A calculation of HDO would thus
+  be run in $C_s$ symmetry. 
+\end{description}
+The Cartesian coordinates may
+be given in free format.
+\item[7] This is the other symmetry-distinct center of this type.
+\item[8] \verb|FRMT, NPRIM, NCONT, NOINT| {\tt (A1,I4,2I5)}.
+\begin{description}
+\item[FRMT] A single character describing the input format of the
+basis set in this block. The default format is {\tt (8F10.4)} which
+will be used if {\tt FRMT} is left blank. In this format
+the first column is the orbital exponent and the seven last columns
+are contraction coefficients. If no numbers are given, a zero is
+assumed. If more than 7 contracted functions occur in a given block,
+the contraction coefficients may be continued on the next line, but
+the first column (where the orbital exponents are given) must then be
+left blank.
+
+An {\tt F} or {\tt f} in the first position will indicate that the
+input is in free format. This will of course require that all
+contraction coefficients need to be typed in, as all numbers need
+to be present on each line. However, note that this options is
+particularly handy together with completely decontracted basis
+sets, as described below. Note that the program reads the free
+format input from an internal file that is 80 characters long, and
+no line can therefore exceed 80 characters.
+
+One may also give the format {\tt H} or {\tt h}. This corresponds to
+high precision format {\tt (4F20.8)}, where the first column again is
+reserved for the orbital exponents, and the three next columns are
+designated to the contraction coefficients. If no number is given, a zero
+is assumed. If there are more than three contracted orbitals in a
+given block, the contraction coefficients may be continued on the next
+line, though keeping the column of the orbital exponents blank.
+
+\item[NPRIM] Number of primitive\index{primitive basis function}
+Gaussians in this block.
+\item[NCONT] Number of contracted\index{contracted basis function}
+Gaussians in this block. If a zero
+is given, an uncontracted basis set will be assumed, and only orbital
+exponents need to be given.
+\end{description}
+\item[9] \verb|EXP, (CONT(I), I=1,NCONT)|
+\begin{description}
+\item[EXP] Exponent of this primitive.
+\item[CONT(I)] Coefficient of this primitive in contracted
+function~{\tt I}.
+\end{description}
+We note that the format of the orbital exponents\index{orbital exponent} 
+and the contraction\index{contraction coefficient}
+coefficients are determined from the value of {\tt FRMT} defined on
+line~8.
+\item[10-16] These lines complete the specification of this
+contraction block: the $s$~basis here.
+\item[17-21] New contraction block (see lines~8 and~9 above).
+\item[22-23] New contraction block.
+\item[24-33] Specifies a new atom type: coordinates and basis set.
+\end{description}
+
+\section{Z-matrix input}\label{sec:molzmat}
+\index{geometry!Z-matrix input}
+\index{Z-matrix input}
+
+The Z-matrix input provided with \dalton\ is quite rudimentary, and
+common options like parameter representations of bond length and
+angles as well as dummy atoms are not provided. Furthermore,
+the Z-matrix input is not used in the program, but instead immediately
+converted to Cartesian coordinates which are then used in the
+subsequent calculation.
+Another restriction is that if Z-matrix input is used, one cannot
+punch ones own basis set, but must instead resort to one of the basis sets
+provided with the basis set library (i.e. {\tt BASIS} in first line).
+Finally, you cannot explicitly specify higher symmetry in input line 4
+when using Z-matrix input,
+you can only request no symmetry ($C_1$) with \verb|Nosymmetry|
+or allow \dalton\ to detect symmetry automatically.
+
+The input format is free, with
+the restriction that the name of each atom must be given a space
+of 4 characters, and none of the other input variables needed must be
+placed in these positions.
+
+The program will use Z-matrix input\index{Z-matrix input} if there is
+the word \quotekw{ZMAT} 
+in the first four position of line 6 in the molecule input.
+The following {\tt NONTYP} lines contain the Z-matrix specification
+for the {\tt NONTYP} atoms.
+
+A typical Z-matrix input could be:
+\begin{verbatim}
+BASIS
+6-31G**
+   Test Z-matrix input of ammonia
+   6-31G** basis set
+Atomtypes=4
+ZMAT
+N   1 7.0
+H1  2 1 1.0116 1.0
+H2  3 1 1.0116 2 106.7 1.0
+H3  4 1 1.0116 2 106.7 3 106.7 1 1.0
+\end{verbatim}
+The five first lines should be familiar by now, and will be discussed
+no further here. 
+The special 6'th line tells that this is Z-matrix input.
+The Z-matrix input starts on line 7, and on this first Z-matrix
+line only the atom name, a running number and the charge of the
+atom\index{charge of atom}
+is given. The running number is only for
+ease of reference to a given atom, and is actually not used within the
+program, where any reference to an atom, is the number of the
+atom consecutively in the input list.
+
+The second Z-matrix line consists of the atom name, a running number, the
+number of the atom to which this atom is bonded with a given bond
+length in {\AA}ngstr{\"o}ms, and then finally the charge of this atom.
+
+The third Z-matrix line is identical to the second, except that an extra atom
+number, to which the two first atoms on this line is bonded to with a
+given bond angle in degrees.
+
+On the fourth Z-matrix line yet another atom has been added, and the position
+of this atom relative to the three previous ones on this line is
+dependent upon on an extra number inserted just before the nuclear
+charge of this atom. If the next to last number is a 0, the
+position of this atom is given by the dihedral angle {\tt
+(A1,A2,A3,A4)} in degrees, where {\tt Ai} denotes atom {\tt i}. If, on the other
+hand, this next to last number is $\pm 1$, the position of the fourth
+atom is given with respect to two angles, namely {\tt (A1,A2,A3)} and
+{\tt (A2,A3,A4)}. The sign is to be $+ 1$ if the triple product
+$\overrightarrow{\left(A_{2}A_{1}\right)}\cdot\left[\overrightarrow{\left(A_{2}A_{3}\right)}\times\overrightarrow{\left(A_{2}A_{4}\right)}\right]$
+is positive.
+
+\section{Using basis set libraries}\label{sec:molbasis}
+\index{basis set!library}
+\index{BASIS}
+\index{ATOMBASIS}
+
+The use of predefined basis sets is indicated
+by the word {\tt BASIS} or {\tt ATOMBASIS} on the first line of the
+molecular input.
+(If you want Z-matrix input you must use {\tt BASIS}.)
+
+The specified basis set(s) are searched for in the following directories:
+\begin{itemize}
+\item all user specified basis set directories (with {\tt dalton -b dir1 -b dir2 ...}
+\item the job directory
+\item the basis set library supplied with \dalton.
+\end{itemize}
+
+If {\tt BASIS} is used, a common basis set is used for all atoms in
+the molecule, and the name of this basis set is given on the second line.
+If we want to use one basis set for all the
+atoms in a molecule, the molecule input file can be significantly
+simplified, as we may delete all the input information regarding the
+basis set. Thus, the input in the previous section for tetrahedrane
+with the 6-31G** basis will, if the basis set library is used,  be reduced
+to:
+
+\begin{verbatim}
+ 1:BASIS
+ 2:6-31G**
+ 3:        Tetrahedrane, Td_symmetric geometry
+ 4:                 4-31G** basis
+ 5:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 6:Charge=6.0 Atoms=2
+ 7:C1    1.379495419          .0                 0.975450565
+ 8:C2     .0                 1.379495419         -.975450565
+ 9:Charge=1.0 Atoms=2
+10:H1    3.020386510         .0                  2.1357357837
+11:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+The use of the basis set library is indicated by the presence of the
+\verb|BASIS| word in the beginning of \mol-file instead of
+\verb|INTGRL|.
+
+An alternative approach would be to use different basis sets for
+different atoms, {\it e.g.\/} the concept of locally
+dense\index{locally dense basis set} basis sets
+introduced in NMR calculations by Chesnut {\it et
+al.\/}~\cite{dbcberkdmdaejcc14}. This is for instance also required
+when using the ANO\index{ANO basis set}\index{basis set!ANO} or
+NQvD\index{NQvD basis set}\index{basis set!NQvD}
+basis sets. Another option is to use
+standards basis sets from the basis set 
+library\index{basis set!library} and add your own sets
+of diffuse, tight or polarizing\index{polarization function} basis
+functions. Returning to
+tetrahedrane, we could for instance use the 6-31G* basis set for
+carbon and the 4-31G** basis set for hydrogen. This could be achieved
+as
+
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:    Mixed basis (6-31G* on C and 4-31G** on H)
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2 Basis=6-31G*
+ 6:C1    1.379495419          .0                 0.975450565
+ 7:C2     .0                 1.379495419         -.975450565
+ 8:Charge=1.0 Atoms=2 Basis=4-31G Pol 2 0.75D0
+ 9:H1    3.020386510         .0                  2.1357357837
+10:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+
+Thus, when using {\tt ATOMBASIS}\index{ATOMBASIS} the name of the
+basis set for a given
+set of identical atoms is given on the same line as the nuclear
+charge, indicated by the keyword ``Basis=''.
+
+The string {\tt Pol} denotes that the rest of the line specifies
+diffuse, tight or polarizing\index{polarization function}
+functions, all which will be added as segmented basis functions.
+For each basis function, its ``angular momentum'' ($l+1$) and its
+exponent must be given. Thus, in the above input we indicate that
+we add a $p$ function with exponent 0.75 to the hydrogen basis
+set. The order of these functions are arbitrary (that is, a $p$
+function can be given before an $s$ function and so on).
+
+Augmenting\index{basis!augmented} the correlation-consistent\index{basis!correlation-consistent}\index{correlation-consistent basis set} 
+sets of Dunning~\cite{dewthdjcp100} is a straight-forward process in \dalton. 
+The aug-cc-pVXZ and aug-cc-pCVXZ basis sets are extended in an even-tempered manner 
+(in the manner of Dunning~\cite{dewthdjcp100})
+by including a 'd-', 't-' or 'q-' prefix to give doubly, triply or quadruply 
+augmented basis sets, respectively. For example, specifying t-aug-cc-pVDZ will
+produce a triply augmented cc-pVDZ basis.
+%hjaaj: aug-ecp does not exist in basis/ directory, thus commented here. /Aug-2005 hjaaj.
+%The aug-ecp basis sets may be augmented 
+%in the same manner by using the same prefixes, eg d-aug-ecp. 
+Note that these basis sets are not listed 
+explicitly in the basis library directory\index{basis set!library}, 
+but are automatically generated within \dalton\ from the respective 
+aug-cc-pVXZ
+% and aug-ecp basis sets. 
+basis set.
+
+The ANO basis sets require that you give the number of contracted
+functions you would like to use for each of the primitive sets defined
+in the basis sets. Thus, assuming we would like to simulate the
+6-31G** basis set input using an ANO basis set but with the
+polarization functions of the 6-31G** set, this could be achieved
+through an input like
+
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:    Mixed basis (6-31G* on C and 4-31G** on H)
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2 Basis=ano-1 3 2 0 0 Pol 3 0.8
+ 6:C1    1.379495419          .0                 0.975450565
+ 7:C2     .0                 1.379495419         -.975450565
+ 8:Charge=1.0 Atoms=2 Basis=ano-1 2 0 0 Pol 2 0.75D0
+ 9:H1    3.020386510         .0                  2.1357357837
+10:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+This input will give a [3s2p0d0f] ANO basis set\index{ANO basis set}\index{basis set!ANO}
+on carbon, with a
+polarizing $d$ function with exponent 0.8, and a [2s0p0d] ANO basis
+set on hydrogen with a polarizing $p$ function with exponent 0.75 as
+above.
+
+Note that the number of contracted functions in the ANO\index{ANO basis set}\index{basis set!ANO}
+set has to be
+given for all primitive blocks, even though you do not want any
+contracted functions of a given quantum number. Here also, {\tt Pol}
+separates the number of contracted functions from polarization
+functions.
+
+The NQvD basis set~\cite{nqvdref} was constructed in order to provide,
+in electronic form, a basis set compilation very similar to original
+set of van Duijneveldt~\cite{fbvdibmrap}\index{NQvD basis set}\index{basis set!NQvD}.
+The sets are in general as good, or slightly better, than the original
+van Duijneveldt basis, with only minor changes in the orbital
+exponents.
+
+In the NQvD basis set, you need not only to pick the number of
+contracted functions, but also your primitive set. The contracted
+basis set will be constructed contracting the (NPRIM-NCONT + 1)
+tightest functions with contraction coefficients based on the
+eigenvectors from the atomic optimization, keeping the outermost
+orbitals uncontracted.
+
+NOTE: As is customary, the orbital exponents of all hydrogen basis
+functions are automatically multiplied by a factor of 1.44.
+
+Thus, an input for tetrahedrane employing the NQvD basis set might
+look like
+
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:    Mixed basis (6-31G* on C and 4-31G** on H)
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2 Basis=NQvD 8 4 3 2 Pol 3 0.8D0
+ 6:C1    1.379495419          .0                 0.975450565
+ 7:C2     .0                 1.379495419         -.975450565
+ 8:Charge=1.0 Atoms=2 Basis=NQvD 4 2 Pol 2 0.75D0
+ 9:H1    3.020386510         .0                  2.1357357837
+10:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+This input will use an (8s4p/4s) primitive basis set on carbon and
+hydrogen respectively, contracting it to a [3s2p/2s] set. The
+polarization functions should not require further explanation at this
+stage.
+
+The only limitations to the use of polarization functions when {\tt
+ATOMBASIS} is used, is that the length of the line must note exceed 80
+characters. If that happens, we recommend collecting a standard basis set
+from the file \verb|DALTON.BAS|, and then adding
+functions to this set.
+
+\section{Auxiliary basis sets}
+\label{sec:r12aux}
+
+It is possible to specify more than one basis set. For example, by typing
+\begin{verbatim}
+ 1:BASIS
+ 2:4-31G** 6-311++G(3df,3pd)
+\end{verbatim}
+the basis set 6-311++G(3df,3pd) will be used as an auxiliary basis.
+When using an auxiliary basis, each atom line must contain a basis-set
+identifier, which at present may take the values \verb|Set=1| (orbital basis) or 
+\verb|Set=2| (auxiliary basis). Basis sets with \verb|Set=1| must be read first,
+basis sets with \verb|Set=2| thereafter.
+The above also applies to the \verb|ATOMBASIS| and \verb|INTGRL| input modes.
+Examples are provided by the following input files:
+\begin{verbatim}
+ 1:BASIS
+ 2:cc-pVDZ cc-pCVQZ
+ 3:Direct MP2-R12/cc-pVDZ calculation on H2O
+ 4:Auxiliary basis: cc-pCVQZ
+ 5:Atomtypes=1 Generators=1 X
+ 6:Charge=8.0 Atoms=1 Set=1
+ 7:O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 8:Charge=1.0 Atoms=1 Set=1
+ 9:H      1.427450200000000    .000000000000000   0.986437000000000       *
+10:Charge=8.0 Atoms=1 Set=2
+11:O       .000000000000000    .000000000000000  -0.124309000000000       *
+12:Charge=1.0 Atoms=1 Set=2
+13:H      1.427450200000000    .000000000000000   0.986437000000000       *
+\end{verbatim}
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:Direct MP2-R12/cc-pVDZ calculation on H2O
+ 3:Auxiliary basis: cc-pCVQZ
+ 4:Atomtypes=4 Generators=1 X
+ 5:Charge=8.0 Atoms=1 Set=1 Basis=cc-pVDZ
+ 6:O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 7:Charge=1.0 Atoms=1 Set=1 Basis=cc-pVDZ
+ 8:H      1.427450200000000    .000000000000000   0.986437000000000       *
+ 9:Charge=8.0 Atoms=1 Set=2 Basis=cc-pCVQZ
+10:O       .000000000000000    .000000000000000  -0.124309000000000       *
+11:Charge=1.0 Atoms=1 Set=2 Basis=cc-pCVQZ
+12:H      1.427450200000000    .000000000000000   0.986437000000000       *
+\end{verbatim}
+Note that the keyword \Key{R12AUX} must be specified in the 
+\Sec{MOLBAS} input section to be able to read the above inputs.
+
+\section{The basis sets supplied with \dalton }
+\label{sec:basislist}
+\index{basis set!library}
+
+As was mentioned above, all the basis sets supplied with this distribution
+of the \dalton\ program --- with a few exceptions --- have been obtained 
+from the EMSL basis set library~\cite{emslref}. 
+Supplied basis sets include the STO-$n$G and Pople style basis sets,
+Dunning's correlation-consistent basis 
+sets\index{basis!correlation-consistent}\index{correlation-consistent basis set}, 
+Ahlrichs Turbomole basis sets and Huzinaga basis sets. 
+In a very few cases we have corrected the
+files as obtained from EMSL, however we take no responsibility
+for any errors inherent in these files.
+
+The ANO and Sadlej-pVTZ polarization basis sets have been obtained from the
+MOLCAS homepage without any further processing, and should therefore
+be free of errors. The NQvD basis provided to us by Knut F\ae gri 
+along with the Turbomole basis sets have been slightly reformatted for more 
+convenient processing of the file, hopefully without having introduced any errors. 
+The pc-$n$ and apc-$n$ basis sets have been provided to us by Frank Jensen.
+
+We have included several Turbomole basis sets,
+although we have retained the Ahlrichs basis sets
+from the EMSL basis set library. We recommend the Turbomole
+basis sets rather than the Ahlrichs basis sets from EMSL, which
+contain some errors. The Ahlrichs-VDZ basis
+is similar to the Turbomole-SV basis, while the Ahlrichs-VTZ is a
+combination of the Turbomole-TZ (H--Ar) and Turbomole-DZ (K--Kr).
+
+Below we give a comprehensive list of all basis sets included in 
+the basis set library\index{basis set!library}, together with 
+a list of the elements supported, and the complete reference to be 
+cited when employing a given basis set in a calculation. 
+
+\setlongtables
+\begin{longtable}{lll}
+\multicolumn{3}{}{\bf Basis Sets included in \dalton\ distribution.} \\ 
+\hline \hline
+\bf{Basis set name} & \bf{Elements} & \bf{References}\\
+\hline\hline
+\endfirsthead
+\multicolumn{3}{}{\bf{Basis Sets included in \dalton\ distribution.}} \\
+\hline \hline
+\bf{Basis set name} & \bf{Elements} & \bf{References}\\
+\hline \hline
+\endhead
+\endfoot \endlastfoot
+\bf{\emph{STO-$n$G}} & & \\
+STO-2G & H--Ca, Sr & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
+STO-3G & H--Cd & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52,
+   wjpbalwjhrfsic19,wjpwjhjcc4} \\
+STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
+\hline
+\bf{\emph{Pople-style basis sets}} & & \\
+3-21G & H--Cs & \cite{jsbjapwjhjacs102,msgjsbjapwjpwjhjacs104,
+   kddwjhjcc7,kddwjhjcc8-1,kddwjhjcc8-2,edgdfjpc99} \\
+3-21G* & H--Cl & 3-21G, with polariz. functions from
+  \cite{wjpmmfwjhdjdjapjsbjacs104}.\\
+  & & \emph{Note}: Polariz. functions only on Na--Cl \\
+3-21++G & H, Li--Ar & 3-21G, with diffuse functions from
+  \cite{tcjcgwsprsjcc4}.\\
+3-21++G* & H--Cl & 3-21++G and 3-21G*\\
+4-31G & H--Ar & \cite{rdwjhjapjcp54,msgjsbjapwjpwjhjacs104} 
+   He,Ne from Gaussian 90 \\
+6-31G & H--Ar, Zn & \cite{wjhrdjapjcp56,jddjapjcp62,
+   mmfwjpwjhjsbmsgdjdjapjcp77,vrjapmrtlwjcp109} 
+   He,Ne from Gaussian 90 \\
+6-31G* & H--Ar & 6-31G, with polariz. functions from
+  \cite{pchjaptca28,mmfwjpwjhjsbmsgdjdjapjcp77}\\
+6-31G** & H--Ar  & 6-31G*, with polariz. functions from
+  \cite{pchjaptca28}\\
+6-31+G & H--Ar & 6-31G, with diffuse functions from
+  \cite{tcjcgwsprsjcc4}.\\
+6-31++G & H--Ar & 6-31G, with diffuse functions from
+  \cite{tcjcgwsprsjcc4}.\\
+6-31+G*   & H--Ar & 6-31+G and 6-31G*\\
+6-31++G*  & H--Ar & 6-31++G and 6-31G*\\
+6-31++G** & H--Ar & 6-31++G and 6-31G**\\
+6-31G(3df,3pd) & H--Ar & 6-31G, with polariz. functions from
+  \cite{mjfjapjsbjcp80}.\\
+6-311G & H--Ar, Br, I & \cite{rkjsbrsjapjcp72,admgscjcp72,
+   lacmpmjpbnedrcblrjcp103,mngapmpmlrjcp103}\\
+6-311G* & H--Ar, Br, I & 6-311G, with polariz. functions from
+  \cite{rkjsbrsjapjcp72,lacmpmjpbnedrcblrjcp103}.\\
+6-311G** & H--Ar, Br, I & 6-311G, with polariz. functions from
+  \cite{rkjsbrsjapjcp72,lacmpmjpbnedrcblrjcp103}.\\
+6-311+G* & H--Ne & 6-311G* with diffuse functions from 
+  \cite{tcjcgwsprsjcc4}.\\
+6-311++G** & H--Ne & 6-311G** with diffuse functions from
+  \cite{tcjcgwsprsjcc4}.\\
+6-311G(2df,2pd) & H--Ne & 6-311G, with polariz. functions from
+  \cite{mjfjapjsbjcp80}.\\
+6-311++G(2d,2p) & H--Ne & 6-311++G, with polariz. functions from
+  \cite{mjfjapjsbjcp80}.\\
+6-311++G(3df,3pd) & H--Ar & 6-311++G, with polariz. functions from
+  \cite{mjfjapjsbjcp80}.\\
+\hline
+%
+Huckel & H--Cd & \\
+MINI(Huzinaga) & H--Ca & \cite{huzinagabasis} \\
+MINI(Scaled) & H--Ca & \cite{huzinagabasis,htshjcc1} \\
+\hline
+%
+\bf{\emph{Dunning-Hay basis sets}} & & \\
+SV(Dunning-Hay) & H, Li--Ne & \cite{thdpjhhfs1977} \\
+SVP(Dunning-Hay) & H, Li--Ne & SV, with polariz. functions from
+  \cite{thdpjhhfs1977,emhfsjcp83}.\\
+SVP+Diffuse(Dunning-Hay) & H, Li--Ne & SVP with diffuse functions from
+  \cite{thdpjhhfs1977,emhfsjcp83}.\\
+SV+Rydberg(Dunning-Hay) & H, Li--Ne & SV, with polariz. functions from
+  \cite{thdpjhhfs1977-2}.\\
+\small{SV+DoubleRydberg(Dunning-Hay)} & H, Li--Ne & SV, with polariz. functions from
+  \cite{thdpjhhfs1977-2}.\\
+DZ(Dunning) & H, B--Ne, Al--Cl & \cite{thdjcp53,thdpjhhfs1977} \\
+DZP(Dunning) & H, B--Ne, Al--Cl & DZ, with polariz. functions from 
+  \cite{thdpjhhfs1977,emhfsjcp83}.\\
+DZP+Diffuse(Dunning) & H, B--Ne & DZP with diffuse functions from
+  \cite{thdpjhhfs1977,emhfsjcp83}.\\
+DZ+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZ, with polariz. functions from
+  \cite{thdpjhhfs1977-2}.\\
+DZP+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZP, with polariz. functions from 
+  \cite{thdpjhhfs1977-2}.\\
+TZ(Dunning) & H, Li--Ne & \cite{thdjcp55}\\
+\hline
+\multicolumn{2}{l}{\bf{\emph{Dunning's correlation-consistent basis 
+sets\index{basis set!correlation-consistent}\index{correlation-consistent basis set}}}} \\
+\multicolumn{3}{l}{\emph{Note: H,He (valence only) are included in all core-valence basis sets 
+  for convenience.}} \\
+cc-pVXZ (X = D,T,Q,5,6) & H--Ne, Al--Ar, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,
+  jkkapjpca106,akwdewkapthdjcp110} \\
+  & Ca, Ga--Kr & \emph{Note}: 6Z only includes H,C--O\\
+cc-pCVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with core functions from
+  \cite{thdjcp90,jkkapjpca106,dewthdjcp103}. \\
+  & Na--Ar & \emph{Note}: 5Z only includes H, He, B--Ne. \\
+cc-pwCVXZ (X = D,T,Q,5) & H, He, C--Ne,  & cc-pCVXZ with core functions from 
+  \cite{thdjcp90,kapthdjcp117} \\
+  & Al--Ar & \\
+aug-cc-pVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with aug. functions from 
+  \cite{thdjcp90,rakthdrjhjcp96,dewthdjcp98,dewthdjcp100}.\\
+  & Al--Ar, Ga--Kr & \\
+aug-cc-pV6Z & H, He, B--Ne, & \cite{akwtvmthdjsm388,tmakwtdhmp96} with aug. functions from 
+  \cite{akwtvmthdjsm388,tmakwtdhmp96,tmthdijqc76}.\\
+  & Al--Ar & \\
+aug-cc-pCVXZ (X = D,T,Q,5) & H, He, B--F, & aug-cc-pVXZ, cc-pCVXZ and \cite{dewthdjcp103,kapthdjcp117}.\\
+  & Ne, Al-Ar & \emph{Note}: Ne only available for TZ and QZ \\
+$n$-aug-cc-pVXZ ($n$ = d,t,q) & as aug-cc-pVXZ & aug-cc-pVXZ. See Sec.~\ref{sec:molbasis} \\
+$n$-aug-cc-pCVXZ ($n$ = d,t,q) & as aug-cc-pCVXZ & aug-cc-pCVXZ. See Sec.~\ref{sec:molbasis} \\
+\hline
+\newpage
+cc-pVXZdenfit (X=T,Q,5) & H, B--F, Al--Cl & Turbomole program \\
+cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
+  cc-pVXZ re-contracted for \\
+  & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
+\hline
+\multicolumn{2}{l}{\bf{\emph{Frank Jensen's polarization-consistent basis 
+sets\index{basis set!polarization-consistent}\index{polarization-consistent basis set}}}} \\
+pc-$n$ ($n$ = 0,1,2,3,4)  & H, C--F & \cite{fjjcp115,fjjcp116} \\
+                      & Si--Cl & \cite{fjthjcp121} \\
+apc-$n$ ($n$ = 0,1,2,3,4) & H, C--F & pc-$n$, with aug. functions from \cite{fjjcp117} \\
+                      & Si--Cl & \cite{fjthjcp121} \\
+\hline
+\bf{\emph{Ahlrich's Turbomole basis sets}} & & \\
+\multicolumn{3}{l}{\emph{Note}: See text above -- Turbomole basis sets are preferred over EMSL sets} \\
+Turbomole-SV & H--Kr & \cite{ashhrajcp97} Turbomole SV basis\\
+Turbomole-XZ (X=D,T) & H--Kr & \cite{ashhrajcp97} Turbomole DZ,TZ basis\\
+Turbomole-TZV & H--Kr & \cite{aschrajcp100} Turbomole TZV basis \\
+Turbomole-XP & H--Kr & \cite{ashhrajcp97,aschrajcp100} Turbomole polariz. basis \\
+ ~~~~(X=SV,DZ,TZ,TZV) & & \\
+Turbomole-TZVPP & H--Kr & \cite{aschrajcp100} Turbomole TZVPP basis \\
+Turbomole-TZVPPP & H--He,B--Ne,Al--Ar & \cite{aschrajcp100} Turbomole TZVPPP basis \\
+Ahlrichs-VXZ (X=D,T) & H--Kr & \cite{ashhrajcp97} From EMSL \\
+Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} From EMSL: polariz. functions unpublished.\\
+\hline
+%
+\bf{\emph{Huzinaga basis sets}} & & \\
+Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis sets are of\\
+Huz-IIsu2 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} approximate valence TZ quality\\
+Huz-III & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} \\
+Huz-IIIsu3 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
+Huz-IV & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
+Huz-IVsu4 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
+\hline
+GAMESS-VTZ & H, Be--Ne, Na--Ar & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
+GAMESS-PVTZ & H, Be--Ne & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
+%
+McLean-Chandler-VTZ & Na--Ar & \cite{admgscjcp72} \\
+Wachtersa+f & Sc--Cu & \cite{ajhwjcp52,wachterintern1969} with $f$ functions from \cite{cwbsrllabjcp91} \\
+Sadlej-pVTZ & H--I & \cite{ajstca79,ajsmujmst234,ajstca81,ajstca81-2} \\
+  &  & \emph{Note}: No rare-gas, B, Al, Ga or In basis sets\\
+%
+Sadlej-pVTZ-J & H, C--O, S & \cite{pfpgaaspasjcp115} Sadlej-pVTZ optimized for NMR calcs.\\
+aug-cc-pVTZ-J & H, C--F, S & \cite{pfpgaaspasjcp115} aug-cc-pVTZ optimized for NMR calcs. \\
+\hline
+\multicolumn{2}{l}{\bf{\emph{ANO basis sets\index{basis!ANO} -- see Sec.~\ref{sec:molbasis}.}}} & \\
+NQvD & & \cite{nqvdref} \\
+Almlof-Taylor-ANO & H--Ne & \cite{japrtjcp86} Almlof and Taylor ANO \\
+NASA-Ames-ANO & H, B--Ne, & \cite{japrtjcp86,cwbsrlaktca77} \\
+  & Al, P, Ti, Fe, Ni & \\
+ano-1 & H--Ne & \cite{powpambortca77} Roos Augmented ANO basis sets\\
+ano-2 & Na--Ar & \cite{powbjpbortca79} \\
+ano-3 & Sc--Zn & \cite{rpamminpowbortca92} \\
+ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
+\hline
+raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
+ & Po, Th, U & \\
+\hline
+\multicolumn{3}{l}{\bf{\emph{Stuttgart effective core potentials}}} \\
+\multicolumn{3}{l}{\emph{(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html)}} \\
+ecp-sdd-DZ & Li--Bi & Stuttgart ECP valence basis sets  \\
+           & \multicolumn{2}{l}{(some elements excluded)}  \\
+ecp-sdd-pseudo & H--Rn & Stuttgart ECPs. \\
+           & \multicolumn{2}{l}{(some elements excluded)}  \\
+\hline
+\end{longtable}
+
+
+
