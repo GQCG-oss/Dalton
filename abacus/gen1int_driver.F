@@ -225,7 +225,22 @@ C                end if
       implicit none
 C     workspace of Dalton
       integer LWORK
-      dimension WORK(LWORK)
+      double precision WORK(LWORK)
       call QUIT("Gen1Int is not installed")
 #endif
       end subroutine gen1int_driver
+
+C      subroutine gen1int_basinp()
+C      implicit none
+C      return
+C      end subroutine gen1int_basinp
+C
+C      subroutine gen1int_ecpinp()
+C      implicit none
+C      return
+C      end subroutine gen1int_ecpinp
+C
+C      subroutine gen1int_mcp1inp()
+C      implicit none
+C      return
+C      end subroutine gen1int_mcp1inp
