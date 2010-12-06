@@ -235,11 +235,6 @@ C      implicit none
 C      return
 C      end subroutine gen1int_basinp
 C
-C      subroutine gen1int_ecpinp()
-C      implicit none
-C      return
-C      end subroutine gen1int_ecpinp
-C
 C      subroutine gen1int_mcp1inp()
 C      implicit none
 C      return

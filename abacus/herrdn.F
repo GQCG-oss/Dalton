@@ -1023,6 +1023,10 @@ C***********************************************************************
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), ISGEN(KBLOCK)
       CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BKPLIN*80, TSTCHA*2
       CHARACTER*80 BASNAM, AUXNAM, BASNAMSAVE
+#ifdef BUILD_GEN1INT
+C     added by Bin Gao, for effective core potentials, Dec. 6, 2010
+      character*80 ECPNAME
+#endif
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS_TOT)
 #ifdef PRG_DIRAC
@@ -1334,6 +1338,37 @@ C                ... tell BASLIB that this is for Huckel
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
               ELSE IF (ATOMBA) THEN
+#ifdef BUILD_GEN1INT
+C                added by Bin Gao, for effective core potentials, Dec. 6, 2010
+C                sets the ECP
+                 IPOS = index(BKPLIN, 'ECP=')
+                 if (IPOS.ne.0) then
+C                  tries to find the name of ECP
+                   IPOS2 = 0
+                   do IPOS3 = IPOS+4, len(BKPLIN)
+                     if (BKPLIN(IPOS3:IPOS3).ne.' ') then
+                       IPOS2 = IPOS3
+                       exit
+                     end if
+                   end do
+                   if (IPOS2.eq.0) then
+                     write(LUPRI,'(/A/A//A)')
+     &                 ' Incorrect input for ECP name in line:',
+     &                 MLINE(NMLINE-NONT(I)),
+     &                 ' Format is "ECP=?"'
+                     call QUIT('Incorrect input for ECP name')
+                   end if
+                   IPOS3 = index(trim(BKPLIN(IPOS2:)), ' ')
+                   if (IPOS3.eq.0) IPOS3 = len_trim(BKPLIN(IPOS2:))
+                   IPOS3 = IPOS3+IPOS2-1
+                   ECPNAME = BKPLIN(IPOS2:IPOS3)
+                   call gen1int_ecpinp(I, int(Q), ECPNAME)
+C                  removes ECP information
+                   BKPLIN(IPOS:IPOS3) = ' '
+                   IPOS2 = index(MLINE(NMLINE-NONT(I)), 'ECP=')
+                   MLINE(NMLINE-NONT(I))(IPOS2:IPOS3+IPOS2-IPOS) = ' '
+                 end if
+#endif
                  IPOS = INDEX(BKPLIN,'BAS')
                  IF (IPOS .NE. 0) THEN
                     IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')
