@@ -2468,7 +2468,7 @@ C added by Bin Gao, Dec. 5, 2010
       IF (.NOT. EXHER) THEN
          CALL EXEHER(WORK,LWORK,WRKDLM)
 #ifdef BUILD_GEN1INT
-         call gen1int_driver(WORK(10), LMWORK-9)
+         call gen1int_prop(WORK(10), LMWORK-9)
 #endif
          EXHER  = .TRUE.
          NEWGEO = .TRUE.

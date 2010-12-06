@@ -19,18 +19,64 @@ C
 C  2010-07-28, Bin Gao
 C  * first version
 
+#ifdef BUILD_GEN1INT
+C>    \brief sets up AO-blocks
+C>    \author Bin Gao
+C>    \date 2010-12-06
+      subroutine gen1int_set_block
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "gen1int.h"
+C     incremental recorder over shells
+      integer ibra
+      call QENTER('gen1int_set_block')
+C     initializes the number of AO-blocks
+      NUM_BLOCK = 1
+      ibra = 1
+      IDX_SHELL(NUM_BLOCK) = ibra
+      do ibra = 1, KMAX-1
+C       finds a new AO-block
+        if (JSTRT(ibra).ne.JSTRT(ibra+1)) then
+          NUM_BLOCK = NUM_BLOCK+1
+          if (NUM_BLOCK.gt.MAX_NBLOCK) then
+            write(LUPRI,1000)
+     &        "Maximum number of AO-blocks (MAX_NBLOCK)", MAX_NBLOCK
+            call QUIT("Too many AO-blocks")
+          else
+            IDX_SHELL(NUM_BLOCK) = ibra+1
+          end if
+        end if
+      end do
+#ifdef GEN1INT_DEBUG
+      write(LUPRI,9000) "Number of AO-blocks:", NUM_BLOCK
+      write(LUPRI,9001) IDX_SHELL(1:NUM_BLOCK)
+#endif
+      call QEXIT('gen1int_set_block')
+1000  format("GEN1INT_ERROR>> ",A,I8)
+#ifdef GEN1INT_DEBUG
+9000  format("GEN1INT_DEBUG>> ",A,I8)
+9001  format("GEN1INT_DEBUG>> IDX_SHELL:",5I8)
+#endif
+      return
+      end subroutine gen1int_set_block
+#endif
+
 C>    \brief calculates integrals using Cartesian or real solid-harmonic Gaussian type orbitals
 C>    \detail modified files include
-C>            (1) abacus/dalgnr.F  -- adding interface of calling gen1int_driver(), such as
+C>            (1) abacus/dalgnr.F  -- adding interface of calling gen1int_prop(), such as
 C>                (a) including "gen1int.h"
 C>                (a) modifying RUN_GENINT
-C>                (b) calling gen1int_driver()
+C>                (b) calling gen1int_prop()
 C>                (c) adding '*GEN1IN' into TABDIR
+C>            (2) abacus/abaopt.F -- adding interface of calling gen1int_prop()
+C>                and including "gen1int.h"
 C>    \author Bin Gao
 C>    \date 2010-07-28
 C>    \param WORK is the workspace of Dalton
 C>    \param LWORK is the dimension of the workspace
-      subroutine gen1int_driver(WORK, LWORK)
+      subroutine gen1int_prop(WORK, LWORK)
 #ifdef BUILD_GEN1INT
 #include "implicit.h"
 #include "priunit.h"
@@ -59,9 +105,9 @@ C     start of contractions
       integer st_bra_contr, st_ket_contr
 C     end of contractions
       integer end_bra_contr, end_ket_contr
-C     incremental recorder over shells
+C     incremental recorders over AO-blocks
       integer ibra, iket
-      call QENTER('gen1int_driver')
+      call QENTER('gen1int_prop')
       call GETTIM(TIMHER, WALHER)
       call FLSHFO(LUPRI)
       call TITLER('Starting Gen1Int', ' ', 200)
@@ -82,26 +128,7 @@ C       tries to find keywords of Gen1Int
         write(LUPRI,9000) "Number of shells:", KMAX
 #endif
 C       sets up AO-blocks
-        NUM_BLOCK = 1
-        ibra = 1
-        IDX_SHELL(NUM_BLOCK) = ibra
-        do while (ibra.lt.KMAX)
-C         finds new AO-block
-          if (JSTRT(ibra).ne.JSTRT(ibra+1)) then
-            NUM_BLOCK = NUM_BLOCK+1
-            IDX_SHELL(NUM_BLOCK) = ibra+1
-          end if
-          ibra = ibra+1
-          if (NUM_BLOCK.gt.MAX_NBLOCK) then
-            write(LUPRI,1000)
-     &        "Maximum number of AO-blocks (MAX_NBLOCK)", MAX_NBLOCK
-            call QUIT("Too many AO-blocks")
-          end if
-        end do
-#ifdef GEN1INT_DEBUG
-        write(LUPRI,9000) "Number of AO-blocks:", NUM_BLOCK
-        write(LUPRI,9001) IDX_SHELL(1:NUM_BLOCK)
-#endif
+        call gen1int_set_block
 C       tries to find property integrals to calculate
         do while (.true.)
           read(LUCMD, '(A)', end=100) prop_name
@@ -211,12 +238,10 @@ C                end if
 
       call TITLER('End of Gen1Int', ' ', 200)
       call FLSHFO(LUPRI)
-      call QEXIT('gen1int_driver')
+      call QEXIT('gen1int_prop')
       return
-1000  format("GEN1INT_ERROR>> ",A,I8)
 #ifdef GEN1INT_DEBUG
 9000  format("GEN1INT_DEBUG>> ",A,I8)
-9001  format("GEN1INT_DEBUG>> IDX_SHELL:",5I8)
 9100  format("GEN1INT_DEBUG>> ",A,3F16.8)
 9200  format("GEN1INT_DEBUG>> Exponents:",5Es16.8)
 9300  format("GEN1INT_DEBUG>> Contr. Coef.:",5Es16.8)
@@ -228,14 +253,4 @@ C     workspace of Dalton
       double precision WORK(LWORK)
       call QUIT("Gen1Int is not installed")
 #endif
-      end subroutine gen1int_driver
-
-C      subroutine gen1int_basinp()
-C      implicit none
-C      return
-C      end subroutine gen1int_basinp
-C
-C      subroutine gen1int_mcp1inp()
-C      implicit none
-C      return
-C      end subroutine gen1int_mcp1inp
+      end subroutine gen1int_prop

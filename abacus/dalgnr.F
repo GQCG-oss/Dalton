@@ -689,7 +689,7 @@ C        ---------------------------------------
      &       ' <<<<<<<<<<'
             CALL EXEHER(WORK,LMWORK,WRKDLM)
 #ifdef BUILD_GEN1INT
-            call gen1int_driver(WORK(10), LMWORK-9)
+            call gen1int_prop(WORK(10), LMWORK-9)
 #endif
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
@@ -915,7 +915,7 @@ C
                SOLVNT = .FALSE.
                CALL EXEHER(WORK,LMWORK,WRKDLM)
 #ifdef BUILD_GEN1INT
-               call gen1int_driver(WORK(10), LMWORK-9)
+               call gen1int_prop(WORK(10), LMWORK-9)
 #endif
                CALL EXESIR(WORK,LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
@@ -991,7 +991,7 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 #ifdef BUILD_GEN1INT
-         call gen1int_driver(WORK(10), LMWORK-9)
+         call gen1int_prop(WORK(10), LMWORK-9)
 #endif
 C
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
@@ -1656,7 +1656,7 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
         WRITE(LUPRI,'(//A/)')
      &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
       GO TO 6
-C added by Bin Gao, Dec. 5, 2010
+C     added by Bin Gao, Dec. 5, 2010
    11 continue
         do while (.true.)
           read(LUCMD, '(A7)') WORD
