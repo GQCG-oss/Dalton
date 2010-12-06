@@ -1196,7 +1196,7 @@ rm conftest.c conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in DALTON
 # 1) Gen1Int
-get_yes_or_no "\nDo you want to install Gen1Int?" n
+get_yes_or_no "\nDo you want to install Gen1Int (see http://sourceforge.net/projects/gen1int)?" n
 if [ "$answer" = "y" ]; then
   $ECHO "\n-->Trying to find Gen1Int (libgen1int.a) ..."
   lib_genint=`locate libgen1int.a`

@@ -21,25 +21,27 @@ C  * first version
 
 C>    \brief calculates integrals using Cartesian or real solid-harmonic Gaussian type orbitals
 C>    \detail modified files include
-C>            (1) include/gnrinf.h -- adding GENINT
-C>            (2) abacus/dalgnr.F  -- adding interface of calling gen1int(), such as
-C>                (2.1) modifying GENINT
-C>                (2.2) calling gen1int()
-C>                (2.3) adding '*GEN1IN' into TABDIR
+C>            (1) abacus/dalgnr.F  -- adding interface of calling gen1int_driver(), such as
+C>                (a) including "gen1int.h"
+C>                (a) modifying RUN_GENINT
+C>                (b) calling gen1int_driver()
+C>                (c) adding '*GEN1IN' into TABDIR
 C>    \author Bin Gao
 C>    \date 2010-07-28
 C>    \param WORK is the workspace of Dalton
 C>    \param LWORK is the dimension of the workspace
-      subroutine gen1int(WORK, LWORK)
+      subroutine gen1int_driver(WORK, LWORK)
 #ifdef BUILD_GEN1INT
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-C#include "mxcent.h"
 #include "maxorb.h"
-Cinclude "maxaqn.h"
-#include "gnrinf.h"
+#include "maxaqn.h"
 #include "shells.h"
+#include "aovec.h"
+#include "primit.h"
+#include "lmns.h"
+#include "gen1int.h"
 C     workspace of Dalton
       integer LWORK
       dimension WORK(LWORK)
@@ -49,15 +51,22 @@ C     start and end of the read in keyword
       integer start_prop, end_prop
 C     start of comment
       integer start_pound, start_bang
+C     start of primitives
+      integer st_bra_prim, st_ket_prim
+C     end of primitives
+      integer end_bra_prim, end_ket_prim
+C     start of contractions
+      integer st_bra_contr, st_ket_contr
+C     end of contractions
+      integer end_bra_contr, end_ket_contr
 C     incremental recorder over shells
       integer ibra, iket
-      call QENTER('gen1int')
+      call QENTER('gen1int_driver')
       call GETTIM(TIMHER, WALHER)
       call FLSHFO(LUPRI)
       call TITLER('Starting Gen1Int', ' ', 200)
-      if (GENINT) then
-C       (1) processing DALTON.INP
-        call TITLER('Processing DALTON.INP', '*', 118)
+      if (RUN_GENINT) then
+C       processes DALTON.INP
         if (LUCMD.lt.0) then
           call GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
      &                IDUMMY, .FALSE.)
@@ -69,6 +78,31 @@ C       tries to find keywords of Gen1Int
           call UPCASE(prop_name)
           if (index(trim(prop_name), '*GEN1INT').gt.0) exit
         end do
+#ifdef GEN1INT_DEBUG
+        write(LUPRI,9000) "Number of shells:", KMAX
+#endif
+C       sets up AO-blocks
+        NUM_BLOCK = 1
+        ibra = 1
+        IDX_SHELL(NUM_BLOCK) = ibra
+        do while (ibra.lt.KMAX)
+C         finds new AO-block
+          if (JSTRT(ibra).ne.JSTRT(ibra+1)) then
+            NUM_BLOCK = NUM_BLOCK+1
+            IDX_SHELL(NUM_BLOCK) = ibra+1
+          end if
+          ibra = ibra+1
+          if (NUM_BLOCK.gt.MAX_NBLOCK) then
+            write(LUPRI,1000)
+     &        "Maximum number of AO-blocks (MAX_NBLOCK)", MAX_NBLOCK
+            call QUIT("Too many AO-blocks")
+          end if
+        end do
+#ifdef GEN1INT_DEBUG
+        write(LUPRI,9000) "Number of AO-blocks:", NUM_BLOCK
+        write(LUPRI,9001) IDX_SHELL(1:NUM_BLOCK)
+#endif
+C       tries to find property integrals to calculate
         do while (.true.)
           read(LUCMD, '(A)', end=100) prop_name
           call UPCASE(prop_name)
@@ -81,20 +115,85 @@ C       tries to find keywords of Gen1Int
           if (start_bang.gt.0) end_prop = min(end_prop, start_bang)
 C         reads in a property integral to calculate
           if (start_prop.gt.0 .and. start_prop.lt.end_prop) then
-C           (2) doing calculations now ...
+C           doing calculations now ...
             call TITLER('Calculating '//prop_name(start_prop:end_prop),
      &                  '*', 118)
-C           loops over shells of bra
-            do ibra = 1, KMAX
+C           loops over blocks of bra
+            do ibra = 1, NUM_BLOCK
+C             generates the Cartesian powers
+              call LMNVAL(NHKT(IDX_SHELL(ibra)), KCKT(IDX_SHELL(ibra)),
+     &                    LVALUA, MVALUA, NVALUA)
+              st_bra_prim = JSTRT(IDX_SHELL(ibra))+1
+              end_bra_prim = JSTRT(IDX_SHELL(ibra))
+     &                     + NUCO(IDX_SHELL(ibra))
+              st_bra_contr = NUMCF(IDX_SHELL(ibra))
+              end_bra_contr = NUMCF(IDX_SHELL(ibra))
+     &                      + NRCO(IDX_SHELL(ibra))-1
+#ifdef GEN1INT_DEBUG
+              write(LUPRI,9000) "Center of bra:", NCENT(IDX_SHELL(ibra))
+              write(LUPRI,9100) "Coordinates of bra",
+     &                          CENT(IDX_SHELL(ibra),:,1)
+              write(LUPRI,9000) "Angular number of bra:",
+     &                          NHKT(IDX_SHELL(ibra))-1
+              write(LUPRI,9000) "Number of bra prim.:",
+     &                          NUCO(IDX_SHELL(ibra))
+              write(LUPRI,9000) "Number of bra contr.:",
+     &                          NRCO(IDX_SHELL(ibra))
+              write(LUPRI,9000) "Number of bra Cart.:",
+     &                          KCKT(IDX_SHELL(ibra))
+              write(LUPRI,9000) "Start of bra prim.:", st_bra_prim
+              write(LUPRI,9000) "End of bra prim.:", end_bra_prim
+              write(LUPRI,9200) PRIEXP(st_bra_prim:end_bra_prim)
+              write(LUPRI,9000) "Start of bra contr.:", st_bra_contr
+              write(LUPRI,9000) "End of bra contr.:", end_bra_contr
+              write(LUPRI,9300) PRICCF(st_bra_prim:end_bra_prim,
+     &                                 st_bra_contr:end_bra_contr)
+#endif
 C             loops over shells of ket
-              do iket = 1, KMAX
-C                print *, SPHR(ibra), SPHR(iket)
+              do iket = 1, NUM_BLOCK
+C               generates the Cartesian powers
+                call LMNVAL(NHKT(IDX_SHELL(iket)),
+     &                      KCKT(IDX_SHELL(iket)),
+     &                      LVALUB, MVALUB, NVALUB)
+                st_ket_prim = JSTRT(IDX_SHELL(iket))+1
+                end_ket_prim = JSTRT(IDX_SHELL(iket))
+     &                       + NUCO(IDX_SHELL(iket))
+                st_ket_contr = NUMCF(IDX_SHELL(iket))
+                end_ket_contr = NUMCF(IDX_SHELL(iket))
+     &                        + NRCO(IDX_SHELL(iket))-1
                 select case(prop_name(start_prop:end_prop))
+C (a) contr_cgto_carmom: Cartesian multipole moments
+C (b) contr_cgto_delta:  Delta function
+C (c) contr_cgto_nucpot: nuclear attraction potential
+C (d) contr_cgto_isdpot: inverse square distance potential
+C (e) contr_cgto_gaupot: Gaussian charge potential
+C (f) contr_cgto_dso:    diamagnetic spin-orbit coupling
+C (g) contr_cgto_ecp:    effective core potential
+C (h) contr_cgto_mcp1:   model core potential (Version 1)
+C     &    ' Center of mass  (bohr):', (CMXYZ(I),I=1,3),
+C     &    ' Operator center (bohr):', (ORIGIN(I),I=1,3),
+C     &    ' Gauge origin    (bohr):', (GAGORG(I),I=1,3),
+C     &    ' Dipole origin   (bohr):', (DIPORG(I),I=1,3)
+                case('.OVERLAP')
+                  call contr_cgto_carmom(NCENT(IDX_SHELL(ibra)),
+     &              CENT(IDX_SHELL(ibra),:,1),
+     &              NHKT(IDX_SHELL(ibra))-1, NUCO(IDX_SHELL(ibra)),
+     &              PRIEXP(st_bra_prim:end_bra_prim),
+     &              NRCO(IDX_SHELL(ibra)),
+     &              PRICCF(st_bra_prim:end_bra_prim,
+     &                     st_bra_contr:end_bra_contr),
+     &              NCENT(IDX_SHELL(iket)), CENT(IDX_SHELL(iket),:,1),
+     &              NHKT(IDX_SHELL(iket))-1, NUCO(IDX_SHELL(iket)),
+     &              PRIEXP(st_ket_prim:end_ket_prim),
+     &              NRCO(IDX_SHELL(iket)),
+     &              PRICCF(st_ket_prim:end_ket_prim,
+     &                     st_ket_contr:end_ket_contr), DIPORG)
                 end select
-C                if (DOCART) then
-C                  call contr_cgto
-C                else
-C                  call contr_sgto
+C                if (SPHR(IDX_SHELL(iket))) then
+C                  call cgto_to_sgto()
+C                endif
+C                if (SPHR(IDX_SHELL(ibra))) then
+C                  call cgto_to_sgto()
 C                end if
               end do
             end do
@@ -112,8 +211,16 @@ C                end if
 
       call TITLER('End of Gen1Int', ' ', 200)
       call FLSHFO(LUPRI)
-      call QEXIT('gen1int')
+      call QEXIT('gen1int_driver')
       return
+1000  format("GEN1INT_ERROR>> ",A,I8)
+#ifdef GEN1INT_DEBUG
+9000  format("GEN1INT_DEBUG>> ",A,I8)
+9001  format("GEN1INT_DEBUG>> IDX_SHELL:",5I8)
+9100  format("GEN1INT_DEBUG>> ",A,3F16.8)
+9200  format("GEN1INT_DEBUG>> Exponents:",5Es16.8)
+9300  format("GEN1INT_DEBUG>> Contr. Coef.:",5Es16.8)
+#endif
 #else
       implicit none
 C     workspace of Dalton
@@ -121,4 +228,4 @@ C     workspace of Dalton
       dimension WORK(LWORK)
       call QUIT("Gen1Int is not installed")
 #endif
-      end subroutine gen1int
+      end subroutine gen1int_driver

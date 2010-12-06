@@ -633,6 +633,10 @@ C
 Cef begin
 #include <incore.h>
 Cef end
+#ifdef BUILD_GEN1INT
+C added by Bin Gao, Dec. 5, 2010
+#include "gen1int.h"
+#endif
       DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
@@ -647,8 +651,7 @@ C
      &      CALL QUIT('Geometry optimization not implemented for .QM3')
          RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-         GENINT = .true.
+         RUN_GENINT = .true.
 #endif
          RNABAC = .TRUE.
          DOWALK = .FALSE.
@@ -656,8 +659,7 @@ C added by Bin Gao, Dec. 5, 2010
       ELSE IF (OPTWLK) THEN
          RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-         GENINT = .true.
+         RUN_GENINT = .true.
 #endif
          RNABAC = .TRUE.
          IF (.NOT. NMWALK) THEN
@@ -687,8 +689,7 @@ C        ---------------------------------------
      &       ' <<<<<<<<<<'
             CALL EXEHER(WORK,LMWORK,WRKDLM)
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-            call gen1int(WORK(10), LMWORK-9)
+            call gen1int_driver(WORK(10), LMWORK-9)
 #endif
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
@@ -914,8 +915,7 @@ C
                SOLVNT = .FALSE.
                CALL EXEHER(WORK,LMWORK,WRKDLM)
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-               call gen1int(WORK(10), LMWORK-9)
+               call gen1int_driver(WORK(10), LMWORK-9)
 #endif
                CALL EXESIR(WORK,LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
@@ -991,8 +991,7 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-         call gen1int(WORK(10), LMWORK-9)
+         call gen1int_driver(WORK(10), LMWORK-9)
 #endif
 C
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
@@ -1119,6 +1118,10 @@ C
 CSONIA
 #include <grdccpt.h>
 #include <infpar.h>
+#ifdef BUILD_GEN1INT
+C added by Bin Gao, Dec. 5, 2010
+#include "gen1int.h"
+#endif
       PARAMETER (NDIR = 11, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
@@ -1185,8 +1188,7 @@ C
       USRIPR = .FALSE.
       RNHERM = .FALSE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-      GENINT = .false.
+      RUN_GENINT = .false.
 #endif
       RUNERI = .FALSE.
       RNSIRI = .FALSE.
@@ -1346,8 +1348,7 @@ C
   104    CONTINUE
             RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-            GENINT = .true.
+            RUN_GENINT = .true.
 #endif
             GO TO 100
   105    CONTINUE
@@ -1380,8 +1381,7 @@ C        ".WALK  "
   113    CONTINUE
             RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-            GENINT = .true.
+            RUN_GENINT = .true.
 #endif
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
@@ -1389,8 +1389,7 @@ C added by Bin Gao, Dec. 5, 2010
   114    CONTINUE
             RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-            GENINT = .true.
+            RUN_GENINT = .true.
 #endif
             RNSIRI = .TRUE.
             RNRESP = .TRUE.
@@ -1398,8 +1397,7 @@ C added by Bin Gao, Dec. 5, 2010
  115     CONTINUE
             RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-            GENINT = .true.
+            RUN_GENINT = .true.
 #endif
             RNSIRI = .TRUE.
          GO TO 100
@@ -1436,8 +1434,7 @@ C        '.OPTIMI'
  128     CONTINUE
             RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-            GENINT = .true.
+            RUN_GENINT = .true.
 #endif
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
@@ -1530,8 +1527,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
      &     'HERMIT 1- and 2-electron integral sections will be executed'
 #ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-      if (GENINT) write(LUPRI,'(4X,A)') 'Gen1Int will be executed'
+      if (RUN_GENINT) write(LUPRI,'(4X,A)') 'Gen1Int will be executed'
 #endif
       IF (RUNERI) THEN
          WRITE (LUPRI,'(4X,A)')
