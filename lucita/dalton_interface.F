@@ -64,9 +64,8 @@ C
 *  Say hello:
       call hello_dalton_lucita
 *
-*  Read symmetry info etc. for
+*  Read symmetry info etc.
       CALL GET_ORB_DIM_ENV(ECORE_ENV)
-      write(6,*) 'after get_orb_dim_env ecore_env=',ecore_env
 *
 *  Get it going:
       call dalton_lucita
@@ -97,6 +96,7 @@ C
 *
       implicit real*8 (A-H,O-Z)
 *
+#include "priunit.h"
 #include "luctinp.h"
 *
 #include "clunit.inc"
@@ -133,15 +133,15 @@ C
 *
 *
 *
-*  1: Default Title
+*  1: if (IMOKW(1).eq.1) User has specified a title (saved in TITLUC)
 *
 *
 *  2: Type of initial wave function (no default)
 *
       if (IMOKW(2).eq.0) then
-         write(6,*)
+         write(lupri,*)
      & ' Keyword for type of initial wave function missing. '
-         write(6,*) ' This keyword is mandatory. '
+         write(lupri,*) ' This keyword is mandatory. '
          Call Abend2('Input error')
       else
          call lftpos(WAFFCD,MXPLNC)
@@ -149,11 +149,10 @@ C
          if (WAFFCD.eq.'DHFSCF') WAFFCD = 'HF_SCF'
          if (WAFFCD.eq.'OSHSCF') WAFFCD = 'RASSCF'
          if (WAFFCD.ne.'HF_SCF'.and. WAFFCD.ne.'RASSCF') then
-            write(6,*)
+            write(lupri,*)
      &  ' Type of initial wave function not implemented. '
-            write(6,*) ' You have chosen: ',WAFFCD
-            write(6,*) ' Allowed types: '
-            write(6,*) ' HF_SCF, RASSCF '
+            write(lupri,*) ' You have chosen: ',WAFFCD
+            write(lupri,*) ' Allowed types  : HF_SCF, RASSCF'
             Call Abend2('Input error')
          end if
       end if
@@ -161,8 +160,8 @@ C
 *  3: CI type for LUCIA (no default)
 *
       if (IMOKW(3).eq.0) then
-         write(6,*) ' Keyword for type of CI calculation missing. '
-         write(6,*) ' This keyword is mandatory. '
+         write(lupri,*) ' Keyword for type of CI calculation missing. '
+         write(lupri,*) ' This keyword is mandatory. '
          Call Abend2('Input error')
       else
          call lftpos(CALCTP,MXPLNC)
@@ -170,10 +169,10 @@ C
          if (CALCTP.ne.'FCI   '.and.CALCTP.ne.'SDCI  '.and.
      &       CALCTP.ne.'GASCI '.and.CALCTP.ne.'RASCI '.and.
      &       CALCTP.ne.'SDTQ  ') then
-            write(6,*) ' Type of CI calculation not specified.'
-            write(6,*) ' You have chosen: ',CALCTP
-            write(6,*) ' Allowed types: '
-            write(6,*) ' FCI, SDCI, GASCI, RASCI, SDTQ '
+            write(lupri,'(//A//2A/A)')
+     &         ' Type of CI calculation not properly specified.',
+     &         ' You have chosen: ',CALCTP,
+     &         ' Allowed types  :  FCI, SDCI, GASCI, RASCI, SDTQ'
             Call Abend2('Input error')
          end if
       end if
@@ -196,9 +195,9 @@ C
 *
       if (IMOKW(6).eq.0) then
          if (CALCTP.eq.'GASCI '.or.CALCTP.eq.'RASCI ') then
-            write(6,*) 'Number of active electrons NACTEL'
-            write(6,*) 'has to be specified in this type of'
-            write(6,*) 'calculation. Quitting.'
+            write(lupri,'(//A/A/)')
+     &         ' Number of active electrons NACTEL must be',
+     &         ' specified for this type of calculation. Quitting.'
             Call Abend()
          else
             NACTEL = -1
@@ -216,32 +215,32 @@ C
             call evenodd(IEONAC,NACTEL)
             call evenodd(IEOMUL,MULTIP)
             if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-               write(6,*) 'Illegal spin multiplicity given.'
-               write(6,*) 'Read a book about fermions.'
+               write(lupri,*) 'Illegal spin multiplicity given.'
+               write(lupri,*) 'Read a book about fermions.'
                Call Abend2('quitting')
             else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-               write(6,*) 'Illegal spin multiplicity given.'
-               write(6,*) 'Read a book about fermions.'
+               write(lupri,*) 'Illegal spin multiplicity given.'
+               write(lupri,*) 'Read a book about fermions.'
                Call Abend2('quitting')
             else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
                if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-                  write(6,*) 'Illegal spin multiplicity given.'
-                  write(6,*) 'Compare with number of active'
-                  write(6,*) 'electrons.'
+                  write(lupri,'(//A/A/)')
+     &               ' Illegal spin multiplicity given.',
+     &               ' Compare with number of active electrons.'
                   Call Abend2('quitting')
                end if
             else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
                if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-                  write(6,*) 'Illegal spin multiplicity given.'
-                  write(6,*) 'Compare with number of active'
-                  write(6,*) 'electrons.'
+                  write(lupri,'(//A/A/)')
+     &               ' Illegal spin multiplicity given.',
+     &               ' Compare with number of active electrons.'
                   Call Abend2('quitting')
                end if
             end if
          end if
       else if (IMOKW(7).eq.0) then
-         write(6,*) 'Spin multiplicity is a MANDATORY keyword.'
-         write(6,*) 'Specify and restart.'
+         write(lupri,*) 'Spin multiplicity is a MANDATORY keyword.'
+         write(lupri,*) 'Specify and restart.'
          Call Abend2('Quitting.')
       end if
 *
@@ -262,8 +261,8 @@ C
          else if (IPRNGD.eq.4) then
             PRILUC = 'VHI'
          else
-            write(6,*) 'Invalid print flag. Check PRINTG.'
-            write(6,*) 'IPRNGD = ',IPRNGD
+            write(lupri,*) 'Invalid print flag. Check PRINTG.'
+            write(lupri,*) 'IPRNGD = ',IPRNGD
             Call Abend2('quitting')
          end if
       end if
@@ -288,8 +287,8 @@ C
          CALSIZ = SZCALD(1:3)
          if (CALSIZ.ne.'NOR'.and.CALSIZ.ne.'LAR'.and.
      &       CALSIZ.ne.'HUG') then
-           write(6,'(A,A3)') 'SIZE specified to ',CALSIZ
-           write(6,*) 'This is an unknown type.'
+           write(lupri,'(A,A3)') 'SIZE specified to ',CALSIZ
+           write(lupri,*) 'This is an unknown type.'
            Call Abend2('Quitting.')
          end if
       end if
@@ -298,9 +297,9 @@ C
 *
       if (IMOKW(11).eq.0) then
          if (CALCTP.eq.'RASCI ') then
-            write(6,*) 'Number of inactive orbitals per sym'
-            write(6,*) 'has to be specified. This is mandatory'
-            write(6,*) 'in a RASCI calculation.'
+            write(lupri,*) 'Number of inactive orbitals per sym'
+            write(lupri,*) 'has to be specified. This is mandatory'
+            write(lupri,*) 'in a RASCI calculation.'
             Call Abend2('Quitting.')
          else
             INACOB = 0
@@ -315,17 +314,17 @@ C
 *
       if (IMOKW(12).eq.0) then
          if (CALCTP.eq.'GASCI ') then
-            write(6,*) 'GASCI type requires GASS to be specified.'
-            write(6,*) 'Else, I do not know what to do.'
+            write(lupri,*) 'GASCI type requires GASS to be specified.'
+            write(lupri,*) 'Else, I do not know what to do.'
             Call Abend2('Quitting.')
          end if
          IMOKW(12) = 2
       end if
       if (IMOKW(12).eq.1) then
          if (CALCTP.ne.'GASCI ') then
-           write(6,*) 'GASS specified and not doing GASCI.'
-           write(6,*) 'This input will be ignored.'
-           write(6,*) 'Program will continue with ',CALCTP,'.'
+           write(lupri,*) 'GASS specified and not doing GASCI.'
+           write(lupri,*) 'This input will be ignored.'
+           write(lupri,*) 'Program will continue with ',CALCTP,'.'
            IMOKW(12) = 3
          else
            NGAS = INGASD
@@ -339,18 +338,19 @@ C
 *
       if (IMOKW(13).eq.0) then
          if (CALCTP.eq.'GASCI ') then
-            write(6,*) 'GSSP has to be specified in GASCI calculation.'
-            write(6,*) 'No defaults in this type of CI.'
+            write(lupri,*)
+     &         'GSSP has to be specified in GASCI calculation.'
+            write(lupri,*) 'No defaults in this type of CI.'
             Call Abend2('Quitting.')
          end if
          IMOKW(13) = 2
       end if
       if (IMOKW(13).eq.1) then
          if (CALCTP.ne.'GASCI ') then
-           write(6,*) 'GSSP specified and not doing GASCI.'
-           write(6,*) 'This input will be ignored.'
-           write(6,*) 'Program will continue with ',CALCTP,'.'
-           write(6,*) 'Defaults will be set.'
+           write(lupri,*) 'GSSP specified and not doing GASCI.'
+           write(lupri,*) 'This input will be ignored.'
+           write(lupri,*) 'Program will continue with ',CALCTP,'.'
+           write(lupri,*) 'Defaults will be set.'
            IMOKW(13) = 3
          else
            NCISPC = NSEQCD
@@ -377,15 +377,16 @@ C
 *
       if (IMOKW(15).eq.0) then
          if (CALCTP.eq.'RASCI ') then
-            write(6,*) 'RAS1 keyword missing. Add and restart.'
+            write(lupri,*) 'RAS1 keyword missing. Add and restart.'
             Call Abend2('Quitting.')
          end if
          IMOKW(15) = 2
       else if (IMOKW(15).eq.1) then
          if (CALCTP.ne.'RASCI ') then
-            write(6,*) 'Keyword RAS1 not compatible with TYPE ',CALCTP
-            write(6,*) 'I will ignore your this input.'
-            write(6,*) 'Program will continue.'
+            write(lupri,*)
+     &         'Keyword RAS1 not compatible with TYPE ',CALCTP
+            write(lupri,*) 'I will ignore your this input.'
+            write(lupri,*) 'Program will continue.'
             IMOKW(15) = 3
          end if
          CARD3(3) = CRDRS1
@@ -396,15 +397,16 @@ C
 *
       if (IMOKW(16).eq.0) then
          if (CALCTP.eq.'RASCI ') then
-            write(6,*) 'RAS2 keyword missing. Add and restart.'
+            write(lupri,*) 'RAS2 keyword missing. Add and restart.'
             Call Abend2('Quitting.')
          end if
          IMOKW(16) = 2
       else if (IMOKW(16).eq.1) then
          if (CALCTP.ne.'RASCI ') then
-            write(6,*) 'Keyword RAS2 not compatible with TYPE ',CALCTP
-            write(6,*) 'I will ignore your this input.'
-            write(6,*) 'Program will continue.'
+            write(lupri,*)
+     &         'Keyword RAS2 not compatible with TYPE ',CALCTP
+            write(lupri,*) 'INFO: I will ignore this input.'
+            write(lupri,*) 'Program will continue.'
             IMOKW(16) = 3
          end if
          CARD3(4) = CRDRS2
@@ -414,15 +416,16 @@ C
 *
       if (IMOKW(17).eq.0) then
          if (CALCTP.eq.'RASCI ') then
-            write(6,*) 'RAS3 keyword missing. Add and restart.'
+            write(lupri,*) 'RAS3 keyword missing. Add and restart.'
             Call Abend2('Quitting.')
          end if
          IMOKW(17) = 2
       else if (IMOKW(17).eq.1) then
          if (CALCTP.ne.'RASCI ') then
-            write(6,*) 'Keyword RAS3 not compatible with TYPE ',CALCTP
-            write(6,*) 'I will ignore your this input.'
-            write(6,*) 'Program will continue.'
+            write(lupri,*)
+     &         'Keyword RAS3 not compatible with TYPE ',CALCTP
+            write(lupri,*) 'INFO: I will ignore this input.'
+            write(lupri,*) 'Program will continue.'
             IMOKW(17) = 3
          end if
          CARD3(5) = CRDRS3
@@ -510,10 +513,10 @@ C        .. we do not accept user input of less than 100 000 !
         else if ( I_USE_DIST_ROUTE .eq. 2 ) then
           IDISTROUTE = I_USE_DIST_ROUTE
         else
-          write(6,*) 'Value for keyword DISTRT incorrect ',
+          write(lupri,*) 'Value for keyword DISTRT incorrect ',
      &               I_USE_DIST_ROUTE
-          write(6,*) 'I will ignore your input.'
-          write(6,*) 'Program will continue.'
+          write(lupri,*) 'INFO: I will ignore your input.'
+          write(lupri,*) 'Program will continue.'
           IDISTROUTE = 2   
           IMOKW(26) = 2
         endif
@@ -551,116 +554,107 @@ C        .. we do not accept user input of less than 100 000 !
 *  Print section
 *-----------------------------------------------------------------*
 *
-*  1: Title (has been removed)
+*  1: Title
 *
-      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
+      write(LUOUT,'(/1X,80A1)') ('*',I=1,80)
+      IF (IMOKW(1) .EQ. 1) THEN
+         WRITE(LUOUT,'(A/2A/A)') ' *',
+     &      ' * User specified title : ',TITLUC, ' *'
+         write(LUOUT,'(1X,80A1)') ('*',I=1,80)
+      END IF
 *
 *  2: Initial wave function
 *
-      write(LUOUT,'(/A42,A6)')
+      write(LUOUT,'(/A42,A6/)')
      &  ' Orbitals as initial wave function .... ',WAFFCD
 *
 *  3: Type of CI calculation
 *
-      write(LUOUT,'(/A42,A6)')
+      write(LUOUT,'(A42,A6/)')
      &  ' Type of calculation .................. ',CALCTP
-      write(LUOUT,*)
 *
 *  4: Number of roots to be treated
 *
-      write(LUOUT,'(A42,I3)')
+      write(LUOUT,'(A42,I3/)')
      &  ' Number of roots to be obtained ....... ',NROOTD
-      write(LUOUT,*)
 *
 *  5: State symmetry
 *
-      write(LUOUT,'(A42,I3)')
+      write(LUOUT,'(A42,I3/)')
      &  ' Calculation carried out in irrep ..... ',ISSYMD
-      write(LUOUT,*)
 *
 *  6: Number of active electrons
 *
       if (IMOKW(6).eq.1) then
-        write(LUOUT,'(A42,I3)')
+        write(LUOUT,'(A42,I3/)')
      &  ' Number of active electrons ........... ',NACTEL
-        write(LUOUT,*)
       end if
 *
 *  7: Spin multiplicity
 *
-      write(LUOUT,'(A42,I3)')
+      write(LUOUT,'(A42,I3/)')
      &  ' Spin multiplicity .................... ',MULTIP
-      write(LUOUT,*)
 *
 *  8: LUCIA global print parameter
 *
-      write(LUOUT,'(A42,A3)')
+      write(LUOUT,'(A42,A3/)')
      &  ' Global print level is ................ ',PRILUC
-      write(LUOUT,*)
 *
 *  9: MOLUC local print parameter
 *
-      write(LUOUT,'(A42,1I3)')
+      write(LUOUT,'(A42,I3/)')
      &  ' Local print level is ................. ',IPLOCAL
-      write(LUOUT,*)
 *
 * 10: SIZE of CI calculation
 *
-      write(LUOUT,'(A42,A3)')
+      write(LUOUT,'(A42,A3/)')
      &  ' Approximate size of CI calculation ... ',CALSIZ
-      write(LUOUT,*)
 *
 * 10b: runtype of CI calculation
 *
-      write(LUOUT,'(A42,A8)')
+      write(LUOUT,'(A42,A8/)')
      &  ' Running the CI calculation ........... ',performci
-      write(LUOUT,*)
 *
 *
 * 10c: runtype of parallel calculation
 *
       if(irunpa.gt.0)then
-        write(LUOUT,'(A42,I3)')
+        write(LUOUT,'(A42,I3/)')
      &  ' Applying parallel scheme ............. ',iparmodel
-        write(LUOUT,*)
       endif
 *
 *
 * 10d: file version to use in parallel calculation
 *
-      write(LUOUT,'(A42,A3)')
+      write(LUOUT,'(A42,A3/)')
      &  ' Using MPI-FILE I/O ................... ',YESSTATEMENT
-      write(LUOUT,*)
 *
 *
 * 10e: file system in parallel calculation
 *
       if( irunpa .gt. 0 ) then
-        write(LUOUT,'(A42,I1)')
+        write(LUOUT,'(A42,I1/)')
      &  ' Parallel distribution routine ........ ',IDISTROUTE
       end if
 *
 * 10f: truncation factor
 *
-      write(LUOUT,'(/A42,1P,D10.2)')
+      write(LUOUT,'(/A42,1P,D10.2/)')
      &  ' Truncation Factor ..................... ',trunc_fac
-      write(LUOUT,*)
                    
 *
 * 18: DENSity matrix level
 *
       if (IDEMOL.ge.1) then
-        write(LUOUT,'(A42,1I3)')
+        write(LUOUT,'(A42,I3/)')
      &    ' Calculating density matrices at level  ',IDEMOL
-        write(LUOUT,*)
       end if
 *
 * 19: Restart option activated
 *
       if (IRSTRT.eq.1) then
-        write(LUOUT,'(A42,A3)')
+        write(LUOUT,'(A42,A3/)')
      &    ' Restarted calculation from file ...... ','YES'
-        write(LUOUT,*)
       end if
  
 !     initialize number of inactive orbitals per symmetry irrep
@@ -713,6 +707,8 @@ C        .. we do not accept user input of less than 100 000 !
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
+#include "priunit.h"
+*
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cgas.inc"
@@ -722,7 +718,7 @@ C        .. we do not accept user input of less than 100 000 !
 *. Output
       DIMENSION CMO(*)
 
-      write(6,*) 'GET_CMOAO: ENVIRO = ',ENVIRO !hjaaj DEBUG
+      write(lupri,*) 'GET_CMOAO: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         CALL GET_CMOAO_DALTON(CMO,NMOS_ENV(1),NAOS_ENV(1),NSMOB)
       ELSE IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
@@ -733,8 +729,8 @@ C        .. we do not accept user input of less than 100 000 !
         LU91 = 91
         CALL GET_CMOAO_LUCIA(CMO,NMOS_ENV,NAOS_ENV,LU91)
       ELSE IF(ENVIRO(1:4).EQ.'NONE') THEN
-        WRITE(6,*) ' GET_CMOAO, Warning : Called with ENVIRO = NONE'
-        WRITE(6,*) ' No coefficients read in '
+        WRITE(lupri,*) ' GET_CMOAO, Warning : Called with ENVIRO = NONE'
+        WRITE(lupri,*) ' No coefficients read in '
       END IF
 *
       RETURN
@@ -747,15 +743,18 @@ C        .. we do not accept user input of less than 100 000 !
 * Jeppe Olsen, June 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
 *. Input
       INTEGER NBAS(*), NMO(*)
 *. Output
       DIMENSION CMO(*)
 *
 
-      write(6,*) 'GET_CMOAO_DALTON: NSM  = ',NSM         !hjaaj DEBUG
-      write(6,*) 'GET_CMOAO_DALTON: NBAS = ',NBAS(1:NSM) !hjaaj DEBUG
-      write(6,*) 'GET_CMOAO_DALTON: NMO  = ',NMO (1:NSM) !hjaaj DEBUG
+      write(lupri,*) 'GET_CMOAO_DALTON: NSM  = ',NSM         !hjaaj DEBUG
+      write(lupri,*) 'GET_CMOAO_DALTON: NBAS = ',NBAS(1:NSM) !hjaaj DEBUG
+      write(lupri,*) 'GET_CMOAO_DALTON: NMO  = ',NMO (1:NSM) !hjaaj DEBUG
       ITAP30 = 16
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
@@ -781,9 +780,9 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
 *
       NTEST = 100 ! hjaaj DEBUG
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) '  MO - AO expansion matrix '
-        WRITE(6,*) '============================='
-        WRITE(6,*)
+        WRITE(lupri,*) '  MO - AO expansion matrix '
+        WRITE(lupri,*) '============================='
+        WRITE(lupri,*)
         CALL APRBLM2(CMO,NBAS,NMO,NSM,0)
       END IF
 *
@@ -795,6 +794,9 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
 * Obtain CMOAO expansion matrix from LUCIA formatted file LUH
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -814,7 +816,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
 *
 * Jeppe Olsen, Feb. 98
 *
-      WRITE(6,*)  ' GET_CMOAO_LUCIA, LUH = ', LUH
+      WRITE(lupri,*)  ' GET_CMOAO_LUCIA, LUH = ', LUH
       CALL REWINO(LUH)
 *. skip Number of orbital symmetries
       READ(LUH,*)
@@ -830,7 +832,7 @@ C          ONEEL_MAT_DISC(H,IHSM,NSM,NRPSM,NCPSM,LUH,IFT)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' MO-AO transformation read in '
+        WRITE(lupri,*) ' MO-AO transformation read in '
         CALL PRHONE(CMO,NMOS,1,NSMOB,0)
 C            PRHONE(C,NFUNC,M,NSM,IPACK)
       END IF
@@ -859,6 +861,9 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 * Jeppe Olsen, February 1998 ( from FINMO)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
       INTEGER*8 KMAT1, KMAT2, KMAT3, KMAT4
       ! for addressing of WORK
 #include "mxpdim.inc"
@@ -874,11 +879,11 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *
       NTEST = 000
       IF(NTEST.GE.1) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ===================='
-        WRITE(6,*) ' GET_CMOMO in action'
-        WRITE(6,*) ' ===================='
-        WRITE(6,*)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ===================='
+        WRITE(lupri,*) ' GET_CMOMO in action'
+        WRITE(lupri,*) ' ===================='
+        WRITE(lupri,*)
       END IF
 
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GETCMO')
@@ -907,7 +912,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
         END DO
         CALL SCALVE(WORK(KMAT1),ONEM,LDIM)
         IF(NTEST.GE.100) THEN
-          WRITE(6,*) ' Packed density matrix ( times - 1 )'
+          WRITE(lupri,*) ' Packed density matrix ( times - 1 )'
           CALL APRBLM2(WORK(KMAT1),NACOBS,NACOBS,NSMOB,1)
         END IF
       END IF
@@ -921,7 +926,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *. Reorder to assure max diag dominance
         IREO = 1
         IF(IREO.NE.0) THEN
-          WRITE(6,*) ' CMOMO reordered to assure max. diag. dom.'
+          WRITE(lupri,*) ' CMOMO reordered to assure max. diag. dom.'
           DO ISM = 1, NSMOB
             IF(ISM.EQ.1) THEN
               IOFF = 1
@@ -940,7 +945,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *. Reorder to assure max diag dominance
         IREO = 1
         IF(IREO.NE.0) THEN
-          WRITE(6,*) ' CMOMO reordered to assure max. diag. dom.'
+          WRITE(lupri,*) ' CMOMO reordered to assure max. diag. dom.'
           DO ISM = 1, NSMOB
             IF(ISM.EQ.1) THEN
               IOFF = 1
@@ -955,7 +960,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
       END IF
 *
       IF(NTEST.GE.100) THEN
-         WRITE(6,*) ' Output set of MO''s '
+         WRITE(lupri,*) ' Output set of MO''s '
          CALL APRBLM2(CMOMO,NTOOBS,NTOOBS,NSMOB,0)
       END IF
 *
@@ -975,6 +980,9 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *
 * Jeppe Olsen, Feb.98
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
       INTEGER*8 KLSCR
       ! for addressing of WORK
 *
@@ -989,7 +997,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GT_H1A')
 *
-      write(6,*) 'GET_H1AO: ENVIRO = ',ENVIRO !hjaaj DEBUG
+      write(lupri,*) 'GET_H1AO: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         LSCR = NTOOB**2
         CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'GTH1SC')
@@ -1014,6 +1022,9 @@ C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
 * Jeppe Olsen
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
 *. Input
       CHARACTER*8 LABEL
       DIMENSION NBAS(*)
@@ -1025,12 +1036,12 @@ C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
 *
       LOGICAL FNDLAB
 *
-      write(6,*) 'GET_H1AO_DALTON: LABEL = ',LABEL !hjaaj DEBUG
+      write(lupri,*) 'GET_H1AO_DALTON: LABEL = ',LABEL !hjaaj DEBUG
       NTEST =   02
       IF(NTEST.GE.2) THEN
-        WRITE(6,*) ' Fetching one-electron integrals with Label ',
+        WRITE(lupri,*) ' Fetching one-electron integrals with Label ',
      &  LABEL
-        WRITE(6,*) ' IHSM NSM', IHSM,NSM
+        WRITE(lupri,*) ' IHSM NSM', IHSM,NSM
       END IF
 *
 *. Number of elements in : Complete lower half array
@@ -1042,7 +1053,7 @@ C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
        NBAST = NBAST + NBAS(ISM)
       END DO
       NINT01 = NBAST*(NBAST+1)/2
-C     write(6,*) ' IHSM = ', IHSM
+C     write(lupri,*) ' IHSM = ', IHSM
 *
       NINT10 = 0
       DO IRSM = 1, NSM
@@ -1066,18 +1077,18 @@ C     write(6,*) ' IHSM = ', IHSM
          OPEN (LUPRP,STATUS='OLD',FORM='UNFORMATTED',FILE='AOPROPER')
          REWIND (LUPRP)
          IF (FNDLAB(LABEL,LUPRP)) THEN
-C           write(6,*) ' Label obtained'
+C           write(lupri,*) ' Label obtained'
             READ(LUPRP) (SCR(I),I=1,NINT01)
-C           write(6,*) 'integrals readin'
+C           write(lupri,*) 'integrals readin'
 C           call prsym(scr,NBAST)
 C           CALL READT(LUPRP,NBAST*(NBAST+1)/2,WRK(KSCR2))
          ELSE
-            WRITE(6,*) 'Property lable: ',LABEL ,'  not found on file'
+            WRITE(lupri,*)'Property label "',LABEL,'" not found on file'
             Call Abend2( 'Wrong input or integrals not generated' )
          ENDIF
         CLOSE(LUPRP,STATUS='KEEP')
 *
-C        WRITE(6,*) ' Number of symmetry apdapted integrals',NINT10
+C        WRITE(lupri,*) ' Number of symmetry apdapted integrals',NINT10
 *
 *. Transfer integrals to symmetry adapted form, complete form
 *
@@ -1111,10 +1122,10 @@ C        WRITE(6,*) ' Number of symmetry apdapted integrals',NINT10
          END DO
 *
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' One-electron integrals obtained from AOPROPER'
+        WRITE(lupri,*) ' One-electron integrals obtained from AOPROPER'
         CALL PRSYM(SCR,NBAST)
 *
-        WRITE(6,*) ' One-electron integrals in packed form'
+        WRITE(lupri,*) ' One-electron integrals in packed form'
         CALL PRHONE(H1AO,NBAS,IHSM,NSM,0)
 C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       END IF
@@ -1131,6 +1142,9 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * Jeppe Olsen, Feb.98
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -1185,7 +1199,7 @@ C     DATA XYZ/'X','Y','Z'/
 *. Total number of properties ( 3 for each rank1, 6 for each rank 2)
       READ(LUH,*) NPROP_COMP
       IFOUND = 0
-      WRITE(6,*) ' NPROP_COMP = ', NPROP_COMP
+      WRITE(lupri,*) ' NPROP_COMP = ', NPROP_COMP
       DO IPROP_COM = 1, NPROP_COMP
         READ(LUH,'(A,I6,I6)') LABEL2,IOFF,LENGTH
         IF(LABEL2.EQ.LABELX) THEN
@@ -1195,12 +1209,12 @@ C     DATA XYZ/'X','Y','Z'/
         END IF
       END DO
       IF(IFOUND.EQ.0) THEN
-        WRITE(6,*) ' Label not found on file 91'
-        WRITE(6,'(A,A)' ) ' Label = ', LABELX
+        WRITE(lupri,*) ' Label not found on file 91'
+        WRITE(lupri,'(2A)' ) ' Label = ', LABELX
         Call Abend2( ' Label not found on file 91' )
       END IF
 *. Skip to start of integrals
-      WRITE(6,*) ' IOFFA, LENGTHA ', IOFFA,LENGTHA
+      WRITE(lupri,*) ' IOFFA, LENGTHA ', IOFFA,LENGTHA
       DO IJ = 1, IOFFA - 1
         READ(LUH,*)
       END DO
@@ -1212,7 +1226,7 @@ C          ONEEL_MAT_DISC(H,IHSM,NSM,NRPSM,NCPSM,LUH,IFT)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Property integrals read in '
+        WRITE(lupri,*) ' Property integrals read in '
         CALL PRHONE(H1,NAOS_ENV,IOPSM,NSMOB,0)
 C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       END IF
@@ -1232,6 +1246,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * Jeppe Olsen, December 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+
 #include "priunit.h"
 
 #include "mxpdim.inc"
@@ -1288,6 +1303,9 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * Jeppe Olsen, June 1997
 *              September 97 : ILOW added
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
 *. Input
       DIMENSION NMO(*),NBAS(*)
 #include "multd2h.inc"
@@ -1305,7 +1323,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
         NBAST = NBAST + NBAS(ISM)
         NMOT  = NMOT  + NMO(ISM)
       END DO
-C?    WRITE(6,*) ' Total number of basis functions ',NBAST
+C?    WRITE(lupri,*) ' Total number of basis functions ',NBAST
       LINTMX = NBAST*NBAST
 *
       KLH1AO = 1
@@ -1318,7 +1336,7 @@ C?    WRITE(6,*) ' Total number of basis functions ',NBAST
 *. Currently only DALTON route is working
       IDALTON = 1
       IF(IDALTON.EQ.1) THEN
-C?      WRITE(6,*) ' Dalton route in action'
+C?      WRITE(lupri,*) ' Dalton route in action'
 *. Obtain AO property integrals
 C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS)
 C            GET_H1AO(LABEL,H1AO,IHSM,NBAS)
@@ -1334,7 +1352,7 @@ C            TRAH1(NBAS,NORB,NSYM,HAO,C,HMO,IHSM,SCR)
       END IF
 *
       IF(NTEST .GE. 100 ) THEN
-        WRITE(6,*) 'electron integrals in MO basis, full format '
+        WRITE(lupri,*) 'electron integrals in MO basis, full format '
         CALL PRHONE(H,NMO,IHSM,NSM,0)
       END IF
       IF(ILOW.EQ.1) THEN
@@ -1382,14 +1400,14 @@ C           CALL TRPMAT(H(IOFF_IN),LIDIM,LJDIM,H(IOFF_OUT))
         END DO
         IFREE = NELMNT + 1
       END IF
-C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
+C?    WRITE(lupri,*) ' GET_PROP : NELMNT= ', NELMNT
       ZERO = 0.0D0
       NZERO = NMOT*NMOT - NELMNT
       IFREE = NELMNT + 1
       CALL SETVEC(H(IFREE),ZERO,NZERO)
 
       IF(NTEST .GE. 50 ) THEN
-        WRITE(6,*) 'electron integrals in MO basis '
+        WRITE(lupri,*) 'electron integrals in MO basis '
         CALL PRHONE(H,NMO,IHSM,NSM,ILOW)
       END IF
 *
@@ -1409,6 +1427,9 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *****  Author : Unknown                                *****************
 *
       Implicit Real*8 (A-H,O-Z)
+*
+#include "priunit.h"
+*
       INTEGER*8 KLH0, KLSCR
       ! for addressing of WORK
 *
@@ -1440,10 +1461,10 @@ C
 *
       NTEST = 0
       IF( NTEST .GE. 10 ) THEN
-        WRITE(6,*) ' ======================'
-        WRITE(6,*) ' One electron integrals '
-        WRITE(6,*) ' ======================'
-        WRITE(6,*)
+        WRITE(lupri,*) ' ======================'
+        WRITE(lupri,*) ' One electron integrals '
+        WRITE(lupri,*) ' ======================'
+        WRITE(lupri,*)
         CALL WRTMT_LU(H,1,N_Hmat_T,1,N_Hmat_T)
       END IF
 C
@@ -1467,6 +1488,9 @@ C
 *              Summer of 98 : CC options added
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 *.Global pointers
@@ -1502,7 +1526,7 @@ C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' H1 for itp ism jtp jsm ',ITP,ISM,JTP,JSM
+        WRITE(lupri,*) ' H1 for itp ism jtp jsm ',ITP,ISM,JTP,JSM
         CALL WRTMT_LU(H,NI,NJ,NI,NJ)
       END IF
 *
@@ -1555,6 +1579,9 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *
 * Interface from EXPHAM to LUCIA
       IMPLICIT REAL*8 (A-H,O-Z)
+*
+#include "priunit.h"
+*
 #include "mxpdim.inc"
 #include "orbinp.inc"
 *
@@ -1570,10 +1597,10 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *
       NTEST = 0
       IF( NTEST .NE. 0 ) THEN
-        WRITE(6,*) ' GETH1I : IORB JORB ', IORB, JORB
-        WRITE(6,*) ' ISM ITP IREL ', ISM,ITP,IREL
-        WRITE(6,*) ' JSM JTP JREL ', JSM,JTP,JREL
-        WRITE(6,*) ' GETH1I = ', GETH1I
+        WRITE(lupri,*) ' GETH1I : IORB JORB ', IORB, JORB
+        WRITE(lupri,*) ' ISM ITP IREL ', ISM,ITP,IREL
+        WRITE(lupri,*) ' JSM JTP JREL ', JSM,JTP,JREL
+        WRITE(lupri,*) ' GETH1I = ', GETH1I
       END IF
 *
       RETURN
@@ -1888,6 +1915,9 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
+#include "priunit.h"
+*
+*
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -1901,7 +1931,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       NTEST = 00
 *
       IF(NTEST.GE.5)
-     &WRITE(6,*) ' GETINT : ICC_EXC and ICOUL = ', ICC_EXC, ICOUL
+     &WRITE(lupri,*) ' GETINT : ICC_EXC and ICOUL = ', ICC_EXC, ICOUL
       IF(ICC_EXC.EQ.0) THEN
 *
 * =======================
@@ -1976,10 +2006,10 @@ C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
         ELSE
           NJL = NJ*(NJ+1)/2
         END IF
-        WRITE(6,*) ' 2 electron integral block for TS blocks '
-        WRITE(6,*) ' Ixchng :', IXCHNG
-        WRITE(6,*) ' After GETINC '
-        WRITE(6,'(1H ,4(A,I2,A,I2,A))')
+        WRITE(lupri,*) ' 2 electron integral block for TS blocks '
+        WRITE(lupri,*) ' Ixchng :', IXCHNG
+        WRITE(lupri,*) ' After GETINC '
+        WRITE(lupri,'(1H ,4(A,I2,A,I2,A))')
      &  '(',ITP,',',ISM,')','(',JTP,',',JSM,')',
      &  '(',KTP,',',KSM,')','(',LTP,',',LSM,')'
         CALL WRTMT_LU(XINT,NIK,NJL,NIK,NJL)
@@ -1996,6 +2026,9 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
       implicit real*8 (A-H,O-Z)
 *
+#include "priunit.h"
+*
+*
       character*6 WAFFCT
       character*8 FNCOM,FNIPH
       character*72 CARD
@@ -2003,8 +2036,8 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
 #include "units.inc"
 *
-      write(6,*) 'GET_DALTON_INF called, we try doing a little!' !hjaaj DEBUG
-      write(6,*) 'WAFFCT = ',WAFFCT
+      write(lupri,*) 'GET_DALTON_INF called, we try doing a little!' !hjaaj DEBUG
+      write(lupri,*) 'WAFFCT = ',WAFFCT
       IRETISH = -1
       if (WAFFCT.eq.'HF_SCF') then
 *
@@ -2016,7 +2049,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *  2) DHFSCF wave function, open shell
 !        call info_dirac(CARD,WAFFCT,NACRAS,IRETISH,IPRT)
       else
-         write(6,*) 'ERROR: unknown wave function type: ',WAFFCT
+         write(lupri,*) 'ERROR: unknown wave function type: ',WAFFCT
          call quit('ERROR: unknown wave function type')
       end if
       return
@@ -2147,7 +2180,7 @@ C     IF(INTIMP.EQ.1) THEN
           JJ = IREOTS(J)
           DO 50 I = 1, NTOOB
             II = IREOTS(I)
-C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
+C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
             RJ(I,J) = SCR((JJ-1)*NTOOB+II)
             RK(I,J) = SCR((JJ-1)*NTOOB+II+ NTOOB **2)
    50     CONTINUE
@@ -2162,7 +2195,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' RJ and RK from GTJK '
+        WRITE(lupri,*) ' RJ and RK from GTJK '
         CALL WRTMT_LU(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
         CALL WRTMT_LU(RK,NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
@@ -2187,7 +2220,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' RJ and RK from GTJK '
+        WRITE(lupri,*) ' RJ and RK from GTJK '
         CALL WRTMT_LU(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
         CALL WRTMT_LU(RK,NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
@@ -2415,6 +2448,9 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
+#include "priunit.h"
+*
+*
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
@@ -2442,11 +2478,11 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
       LOFF = IBSO(LSM)
 *
       If( Ntest.ge. 100) THEN
-        write(6,*) ' I2EADS at your service '
-        WRITE(6,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
-        WRITE(6,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
-        WRITE(6,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
-        WRITE(6,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
+        write(lupri,*) ' I2EADS at your service '
+        WRITE(lupri,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
+        WRITE(lupri,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
+        WRITE(lupri,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
+        WRITE(lupri,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
       END IF
 *
       If ( jSm.gt.iSm .or. ( iSm.eq.jSm .and. JABS.gt.IABS)) Then
@@ -2495,14 +2531,14 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
         l = iTemp
       End If
       If(Ntest .ge. 100 ) then
-        write(6,*) ' i j k l ',i,j,k,l
-        write(6,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
+        write(lupri,*) ' i j k l ',i,j,k,l
+        write(lupri,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
       End if
 *
 *  Define offset for given symmetry block
       IBLoff = IJKLof(Isym,Jsym,Ksym)
       If(ntest .ge. 100 )
-     &WRITE(6,*) ' IBLoff Isym Jsym Ksym ', IBLoff,ISym,Jsym,Ksym
+     &WRITE(lupri,*) ' IBLoff Isym Jsym Ksym ', IBLoff,ISym,Jsym,Ksym
       iSymj=iSym.eq.jSym
       kSyml=kSym.eq.lSym
       iSymk=iSym.eq.kSym
@@ -2544,13 +2580,13 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         ijkl=ij+(kl-1)*ijPairs
       End If
       If( ntest .ge. 100 )
-     & write(6,*) ' ijkl ', ijkl
+     & write(lupri,*) ' ijkl ', ijkl
 *
       I2EADS = iblOff-1+ijkl
       If( ntest .ge. 100 ) then
-        write(6,*) 'i j k l ', i,j,k,l
-        write(6,*) ' ibloff ijkl ',ibloff,ijkl
-        write(6,*) ' I2EADS  = ', I2EADS
+        write(lupri,*) 'i j k l ', i,j,k,l
+        write(lupri,*) ' ibloff ijkl ',ibloff,ijkl
+        write(lupri,*) ' I2EADS  = ', I2EADS
       END IF
 *
       RETURN
@@ -2568,10 +2604,13 @@ C               propagator calculation.
 C     Argument list :
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+*
+#include "priunit.h"
+*
 #include "SysDef.inc"
       PARAMETER ( LUINP = 17)
-      PARAMETER ( ITAP30 = 16, LUPRI = 6, LUCMDS=17)
-      PARAMETER ( LURSP   = 18 , LUONE = 19, LUW6 = 6)
+      PARAMETER ( ITAP30 = 16, LUCMDS=17)
+      PARAMETER ( LURSP   = 18 , LUONE = 19)
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), IBUF(LBUF)
       CHARACTER*72 TITLE(2)
@@ -2595,15 +2634,15 @@ C
          NBFAO  = NBFAO  + NAOS(I)
          MXCOEF = MXCOEF + NAOS(I)*NAOS(I)
   100 CONTINUE
-      WRITE(6,'(//A/5X,A/5X,A)/)')
+      WRITE(lupri,'(//A/5X,A/5X,A)/)')
      &   ' Molecule title from basis set input :',(TITLE(I),I=1,2)
-C?    WRITE(6,*) 'NBFAO  : ',NBFAO
+C?    WRITE(lupri,*) 'NBFAO  : ',NBFAO
 C
 C     Read information on file SIRIFC written from SIRIUS.
 C
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
-      CALL MOLLAB('TRCCINT ',ITAP30,6)
+      CALL MOLLAB('TRCCINT ',ITAP30,lupri)
       READ (ITAP30) NSYM,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYM),
      *              (NORB(I),I=1,NSYM),(NBAS(I),I=1,NSYM),
      *              POTNUC,EMCSCF
@@ -2627,8 +2666,8 @@ C     Check information from AONEINT and SIRGEOM.
 C
       I_DO_CHECK = 1
       IF(I_DO_CHECK.EQ.0) THEN
-        WRITE(6,*) ' Warning : No checks of consistency '
-        WRITE(6,*) ' Between AOONEINT and SIRIFC '
+        WRITE(lupri,*) ' Warning : No checks of consistency '
+        WRITE(lupri,*) ' Between AOONEINT and SIRIFC '
       ELSE
         IERR = 0
         DO I = 1,NSYM
@@ -2722,6 +2761,9 @@ C
 * Version : Fall 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+*
+#include "priunit.h"
+*
       INTEGER*8 KLSCR
       ! for addressing of WORK
 #include "mxpdim.inc"
@@ -2755,7 +2797,7 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * . Molcas format
 *  ==============
 *
-        WRITE(6,*) ' Integrals imported from MOLCAS files'
+        WRITE(lupri,*) ' Integrals imported from MOLCAS files'
         CALL QUIT('Cannot read MOLCAS files in this version')
 
       ELSE IF (INTIMP.EQ.3.AND.NOINT.EQ.0 ) THEN
@@ -5063,7 +5105,6 @@ C     Written by Henrik Koch 27-Mar-1990
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       PARAMETER (LUINT = 27)
-      PARAMETER (LUPRI = 6)
 *. Modified for LUCIA : XIJKL added to list
 C
 C     -------------------------------------------------------
@@ -5105,8 +5146,10 @@ C
 *. Modified to be SIRIUS-LUCIA interface, february 1993
 *
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+*
+#include "priunit.h"
+*
       PARAMETER (LUINT = 27)
-      PARAMETER (LUPRI = 6)
 C
 C     -------------------------------------------------------
       DIMENSION TWOMO(*),
@@ -5146,8 +5189,8 @@ c
       GOTO 200
  9500 CONTINUE
 *
-      WRITE(6,*) ' Number of integrals read ', NINTR
-      WRITE(6,*) ' Indices of last integral ', IA,IB,IC,ID
+      WRITE(lupri,*) ' Number of integrals read ', NINTR
+      WRITE(lupri,*) ' Indices of last integral ', IA,IB,IC,ID
       RETURN
       END
 ***********************************************************************
