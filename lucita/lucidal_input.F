@@ -29,7 +29,7 @@ C
 C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
-     &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
+     &            '.INACTI','.GASSHE','.GASSPC','xxxxxxx','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
      &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
      &            '.DISTRT','xxxxxxx','.TRUNCF','.MEMFAC','XXXXXXX'/
@@ -182,10 +182,7 @@ C&&& GASSPC: Cumulated max. and min. GAS occupations
                   IMOKW(13) = 1
                GO TO 100
    14          CONTINUE
-C&&& FROORB: Frozen orbital function space
-                  READ(LUCMD,'(A)') CRDFRO
-                  write(6,'(6A,1A72)') 'CRDFRO',CRDFRO
-                  IMOKW(14) = 1
+C&&& xxxxxx:
                GO TO 100
    15          CONTINUE
 C&&& RAS1  : RAS1 function space

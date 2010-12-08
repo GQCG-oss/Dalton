@@ -113,7 +113,7 @@ C
       character*4  COMMAND,CMD(NCMD)
       character*6  PRILUC,SCR6
       character*10 PERFORMCI
-      character*72 LINE,CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),CARD3(5)
+      character*72 LINE, CARD2(MXPNGAS,MXPICI)
 *
 *
 * Set logical units
@@ -306,7 +306,6 @@ C
             IMOKW(11) = 2
          end if
       else if (IMOKW(11).eq.1) then
-         CARD3(2) = CRDINA
          INACOB = 1
       end if
 *
@@ -328,9 +327,6 @@ C
            IMOKW(12) = 3
          else
            NGAS = INGASD
-!          do IGS = 1,NGAS,1
-!            CARD(IGS) = CRDGAS(IGS)
-!          end do
          end if
       end if
 *
@@ -362,17 +358,6 @@ C
          end if
       end if
 *
-* 14: FRMO (frozen orbitals from DIRAC) specification; no default
-*     can be used with any CI or WF type
-*
-      if (IMOKW(14).eq.0) then
-         CRDHEL(1:1) = 'N'
-         CARD3(1) = CRDHEL
-         IMOKW(14) = 2
-      else if (IMOKW(14).eq.1) then
-         CARD3(1) = CRDFRO
-      end if
-*
 * 15: RAS1 specification; no default
 *
       if (IMOKW(15).eq.0) then
@@ -389,7 +374,6 @@ C
             write(lupri,*) 'Program will continue.'
             IMOKW(15) = 3
          end if
-         CARD3(3) = CRDRS1
          ! MXHL1D has been defined in input
       end if
 *
@@ -409,7 +393,6 @@ C
             write(lupri,*) 'Program will continue.'
             IMOKW(16) = 3
          end if
-         CARD3(4) = CRDRS2
       end if
 *
 * 17: RAS3 specification; no default
@@ -428,7 +411,6 @@ C
             write(lupri,*) 'Program will continue.'
             IMOKW(17) = 3
          end if
-         CARD3(5) = CRDRS3
          !MXEL3D has bee set
       end if
 *
@@ -668,7 +650,7 @@ C        .. we do not accept user input of less than 100 000 !
       call dalton2lucita(ISSYMD,NROOTD,MULTIP,MXHL1D,MXEL3D,INACOB,
      &                   IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
      &                   CALCTP,WAFFCD,PRILUC,NINOBS,
-     &                   NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
+     &                   NGAS,NCISPC,IPLOCAL,CARD2)
 *
 6666  continue
 *
@@ -2021,8 +2003,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       END
 ***********************************************************************
 *
-      subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS,CARD,ITEM,MXITEM,
-     &                     IRETISH)
+      subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS,IRETISH)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -2031,8 +2012,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
       character*6 WAFFCT
       character*8 FNCOM,FNIPH
-      character*72 CARD
-      dimension ITEM(MXITEM)
 *
 #include "units.inc"
 *
@@ -2042,12 +2021,12 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       if (WAFFCT.eq.'HF_SCF') then
 *
 *  1) DHFSCF wave function, closed shell
-!        call info_dirac(CARD,WAFFCT,NACRAS,IRETISH,IPRT)
+!        call info_dirac(WAFFCT,NACRAS,IRETISH,IPRT)
 *
       else if (WAFFCT.eq.'RASSCF') then
 
 *  2) DHFSCF wave function, open shell
-!        call info_dirac(CARD,WAFFCT,NACRAS,IRETISH,IPRT)
+!        call info_dirac(WAFFCT,NACRAS,IRETISH,IPRT)
       else
          write(lupri,*) 'ERROR: unknown wave function type: ',WAFFCT
          call quit('ERROR: unknown wave function type')
@@ -3166,7 +3145,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
      &                         IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
      &                         TYPE,WAFFCT,PRILUC,NINOBS,
-     &                         NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
+     &                         NGAS,NCISPC,IPRT,CARD2)
 *
       use lucita_orbital_spaces
       implicit real*8 (A-H,O-Z)
@@ -3181,9 +3160,8 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
       character*2 TYPELUC(MXSEQ)
       character*3 CALSIZ
-      character*6 TYPE,WAFFCT,PRILUC
-      character*72 CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),
-     &             ITEM(MXITEM),ITEMX,CARD3(5)
+      character*6 TYPE, WAFFCT, PRILUC
+      character*72 CARD2(MXPNGAS,MXPICI)
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
@@ -3205,8 +3183,9 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *  Import required information from Dalton
 *------------------------------------------------------------------*
 *
-      call get_dalton_inf(WAFFCT,IPRT,NACRAS,CARD3,ITEM,MXITEM,
-     &               IRETISH)
+      print *, ' stefan: i think this call is now obsolete; we 
+     & obtain the info about nish, nash, etc. already at other places.'
+      call get_dalton_inf(WAFFCT,IPRT,NACRAS,IRETISH)
 *
 *.................................................................
 *  1) Type of wave function dependencies
@@ -3218,17 +3197,12 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *.................................................................
 *
 *
-*  INAC
-!     will soon be obsolete because we set it already in the input
-!     reader... stefan - dec 2010
-      if (INACOB.eq.1) then
-        call decode_line(CARD3(2),72,NITEM,ITEM,MXITEM)
-        do ISYM=1,NSYM,1
-          call char_to_integer_moluc(ITEM(ISYM),NINOBS(ISYM))
-        end do
-        NSUM = 0
-        do ISYM=1,NSYM,1
-          NSUM = NSUM + NINOBS(ISYM)
+*     inactive shells and total number of inactive orbitals
+      if(inacob .eq. 1)then
+        call icopy(nsym,nish_lucita,1,ninobs,1)
+        nsum = 0
+        do isym = 1, nsym
+          nsum = nsum + ninobs(isym)
         end do
       end if
 *
