@@ -1666,7 +1666,7 @@ C
       NP = NP1+NP2
       NPQ = NP + NQ
 *
-      CALL SETVEC(VECUT,0.0D0,NPQ)
+      call dzero(vecut,npq)
 *. PHQ * VECIN
       CALL MATVCC(PHQ,VECIN(1+NP),VECUT,NP1,NQ,0)
 *. PHP * VECIN
@@ -1692,7 +1692,6 @@ C
         CALL WRTMT_LU(VECIN,1,NPQ,1,NPQ)
         CALL WRTMT_LU(VECUT,1,NPQ,1,NPQ)
       END IF
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
