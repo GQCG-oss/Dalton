@@ -8,16 +8,23 @@ C       Written by Timo Fleig for Dirac, December 2001
 C       adapted for Dalton by Stefan Knecht, November 2010
 C
 C***********************************************************************
+      use lucita_orbital_spaces
 #include <implicit.h>
 #include "priunit.h"
 C
 #include "luctinp.h"
-#include "lucitaorb.h"
+#include "inforb.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
       LOGICAL   ALLOPT,NEWDEF
       CHARACTER WORD*7,WORD1*7,PROMPT*1,TABLE(NTABLE)*7
+!
+!     temporary scratch arrays for input processing
+      integer, allocatable :: tmp_inactive_shells(:)
+      integer, allocatable :: tmp_active_shells(:,:)
+      integer              :: max_number_of_ptg_irreps
+      integer              :: max_number_of_gas_spaces
 C
 C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
@@ -34,19 +41,43 @@ C
 !     (Therefore local keywords do not have to be initialized!)
       call izero(imokw,ntable)
 
-!     initialize CI orbital spaces
-      do i = 1, 8
-        nish_lucita(i) = 0
-        nash_lucita(i) = 0
-        nas1_lucita(i) = 0
-        nas2_lucita(i) = 0
-        nas3_lucita(i) = 0
-        nocc_lucita(i) = 0
-        nssh_lucita(i) = 0
-      end do
+!     allocate scratch space for input processing
+!     note: we assume that
+!           - we run in D2h or a subgroup of it, e.g. no super symmetry.
+!           - the number of GAS spaces does not exceed 6 (see MXPNGAS in lucita/mxpdim.inc)
+      if(nsym.gt.8) call quit(' *** error in LUCITAINP: only D2h 
+     & and its sub-point groups are implemented. ***')
 
-!
- 
+      max_number_of_ptg_irreps = 8
+      max_number_of_gas_spaces = 6
+
+      allocate(tmp_inactive_shells(max_number_of_ptg_irreps))
+      allocate(tmp_active_shells(max_number_of_gas_spaces,
+     &         max_number_of_ptg_irreps))
+
+      call izero(tmp_inactive_shells,8)
+      call izero(tmp_active_shells,6*8)
+
+!     initialize common block luctinfi in luctinp.h
+      NROOTD           = 0
+      ISSYMD           = 0
+      NACTED           = 0
+      IMULTD           = 0
+      IPRNGD           = 0
+      IPRNLD           = 0
+      IDENSD           = 0
+      MXHL1D           = 0
+      MXEL3D           = 0
+      INGASD           = 0
+      NSEQCD           = 0
+      IRSTLT           = 0
+      MXCIVE           = 0
+      IPARMODEL        = 0
+      ICIMAXITER       = 0
+      IMAXBLKSIZE      = 0
+      I_USE_DIST_ROUTE = 0
+      IN_MEMFAC        = 0
+
 !     Process input for LUCITA
 !     ========================
       NEWDEF = (WORD .EQ. '*LUCITA')
@@ -128,15 +159,18 @@ C&&& SZCALC: Rough size of calculation
                GO TO 100
    11          CONTINUE
 C&&& INACTI: Inactive function space
-                  READ(LUCMD,'(A)') CRDINA
+                  read(lucmd,*) (tmp_inactive_shells(i), i=1,nsym)
                   IMOKW(11) = 1
                GO TO 100
    12          CONTINUE
 C&&& GASSHE: Number of GAS and distribution
                   READ(LUCMD,*) INGASD
-                  DO IR = 1,INGASD,1
-                    READ(LUCMD,'(A)') CRDGAS(IR)
-                  END DO
+                  if(INGASD .gt. max_number_of_gas_spaces)
+     &            call quit(' *** error in LUCITAINP:  number of GAS
+     & spaces exceeds the current (efficiency) limit of 6. ***')
+                  do i = 1,ingasd
+                    read(lucmd,*) (tmp_active_shells(i,j), j=1,nsym)
+                  end do
                   IMOKW(12) = 1
                GO TO 100
    13          CONTINUE
@@ -155,18 +189,18 @@ C&&& FROORB: Frozen orbital function space
                GO TO 100
    15          CONTINUE
 C&&& RAS1  : RAS1 function space
-                  READ(LUCMD,'(A)') CRDRS1
+                  READ(LUCMD,*) (tmp_active_shells(1,j), j=1,nsym)
                   READ(LUCMD,*) MXHL1D
                   IMOKW(15) = 1
                GO TO 100
    16          CONTINUE
 C&&& RAS2  : RAS2 function space
-                  READ(LUCMD,'(A)') CRDRS2
+                  READ(LUCMD,*) (tmp_active_shells(2,j), j=1,nsym)
                   IMOKW(16) = 1
                GO TO 100
    17          CONTINUE
 C&&& RAS3  : RAS3 function space
-                  READ(LUCMD,'(A)') CRDRS3
+                  READ(LUCMD,*) (tmp_active_shells(3,j), j=1,nsym)
                   READ(LUCMD,*) MXEL3D
                   IMOKW(17) = 1
                GO TO 100
@@ -235,4 +269,41 @@ C&&& MEMFAC     : memory multiplier
             END IF
       END IF
   300 CONTINUE
-      END
+
+!     lucita input has been read - proceed with compulsory settings
+      if(ichang.gt.0)then
+
+!       a. orbital spaces
+
+!       init_input_type:
+!       1: ci input
+!       2: mcscf input
+        init_input_type = 1
+
+!       init_wave_f_type:
+!       1: GAS input
+!       2: RAS input
+        init_wave_f_type = 1
+        if(ingasd.eq.0) init_wave_f_type = 2
+
+        call define_lucita_orb_spaces(nsym,
+     &                                ingasd,
+     &                                max_number_of_ptg_irreps,
+     &                                max_number_of_gas_spaces,
+     &                                tmp_inactive_shells,
+     &                                tmp_active_shells,        
+     &                                norb,
+     &                                init_input_type,
+     &                                init_wave_f_type)
+
+!       b. more to come...???
+
+      end if
+
+!     reset inactive space keyword for GAS calculations (not in use there)
+      if((ingasd .gt. 0) .and. (imokw(11) .eq. 1)) imokw(11) = 0
+
+      deallocate(tmp_inactive_shells)
+      deallocate(tmp_active_shells)
+
+      end

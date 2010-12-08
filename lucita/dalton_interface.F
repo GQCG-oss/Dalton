@@ -103,23 +103,17 @@ C
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "units.inc"
-#ifdef VAR_MPI
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-ChjC#include "infpar.h"
+#include "orbinp.inc"
 #include "parluci.h"
 *
       parameter (NCMD = 21)
       parameter (MXPLNC = 72)
-      character*1 CRDHEL
-      character*3 CALSIZ,SCR3,YESSTATEMENT
+      character*1  CRDHEL
+      character*3  CALSIZ,SCR3,YESSTATEMENT
+      character*4  COMMAND,CMD(NCMD)
+      character*6  PRILUC,SCR6
       character*10 PERFORMCI
-      character*4 COMMAND,CMD(NCMD)
-      character*6 PRILUC,SCR6,MOLUCENV
       character*72 LINE,CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),CARD3(5)
-*
-      common/MLCENV/MOLUCENV
 *
 *
 * Set logical units
@@ -313,11 +307,6 @@ ChjC#include "infpar.h"
             IMOKW(11) = 2
          end if
       else if (IMOKW(11).eq.1) then
-         if (CALCTP.eq.'GASCI ') then
-            write(6,*) 'INACtive orbitals not allowed in GASCI.'
-            write(6,*) 'Use GAS 1 for these orbitals and restart.'
-            Call Abend2('Quitting.')
-         end if
          CARD3(2) = CRDINA
          INACOB = 1
       end if
@@ -340,9 +329,9 @@ ChjC#include "infpar.h"
            IMOKW(12) = 3
          else
            NGAS = INGASD
-           do IGS = 1,NGAS,1
-             CARD(IGS) = CRDGAS(IGS)
-           end do
+!          do IGS = 1,NGAS,1
+!            CARD(IGS) = CRDGAS(IGS)
+!          end do
          end if
       end if
 *
@@ -673,15 +662,18 @@ C        .. we do not accept user input of less than 100 000 !
      &    ' Restarted calculation from file ...... ','YES'
         write(LUOUT,*)
       end if
-*
-*
-*
+ 
+!     initialize number of inactive orbitals per symmetry irrep
+!     (lucita/orbinp.inc)
+!     values will be set in dalton2lucita for non-GAS calculations
+      call izero(ninobs,mxpobs)
+ 
 *-----------------------------------------------------------------*
 *  Call conversion routine for creating LUCIA input
 *-----------------------------------------------------------------*
       call dalton2lucita(ISSYMD,NROOTD,MULTIP,MXHL1D,MXEL3D,INACOB,
      &                   IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
-     &                   CALCTP,WAFFCD,PRILUC,
+     &                   CALCTP,WAFFCD,PRILUC,NINOBS,
      &                   NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
 *
 6666  continue
@@ -2973,7 +2965,7 @@ ChjC#include "infpar.h"
          write(*,'(1X,I3,A)') IPRNCIV
 *
          write(*,'(A6)') 'RESDIM'
-         write(*,'(1X,I4)') IRESDIM
+         write(*,'(1X,I8)') IRESDIM
 *
          write(*,'(A6)') 'LCSBLK'
          write(*,'(I20)') LCSBLK
@@ -3107,7 +3099,7 @@ ChjC#include "infpar.h"
          write(LUINP,'(1X,I3)') IPRNCIV
 *
          write(LUINP,'(A6)') 'RESDIM'
-         write(LUINP,'(1X,I4)') IRESDIM
+         write(LUINP,'(1X,I8)') IRESDIM
 *
          write(LUINP,'(A6)') 'LCSBLK'
          write(LUINP,'(I20)') LCSBLK
@@ -3135,12 +3127,12 @@ ChjC#include "infpar.h"
 *************************************************************
 *
       subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
-     &                   IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
-     &                   TYPE,WAFFCT,PRILUC,
-     &                   NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
+     &                         IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
+     &                         TYPE,WAFFCT,PRILUC,NINOBS,
+     &                         NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
 *
+      use lucita_orbital_spaces
       implicit real*8 (A-H,O-Z)
-*
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "SysDef.inc"
@@ -3161,6 +3153,11 @@ ChjC#include "infpar.h"
 *
 *
       NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
+      print *, '*** note from stefan: is it not dangerous 
+     &to re-set NSYM here in dalton2lucita??? NSYM is global in sirius!'
+!
+!     set IRESDIM independent from ci type
+      IRESDIM = 100 000
 *
 *------------------------------------------------------------------*
 *  Create default settings for LUCITA
@@ -3184,6 +3181,8 @@ ChjC#include "infpar.h"
 *
 *
 *  INAC
+!     will soon be obsolete because we set it already in the input
+!     reader... stefan - dec 2010
       if (INACOB.eq.1) then
         call decode_line(CARD3(2),72,NITEM,ITEM,MXITEM)
         do ISYM=1,NSYM,1
@@ -3318,15 +3317,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
-*
-*  RESDIM
-        if (CALSIZ.eq.'NOR') then
-          IRESDIM = 1000
-        else if (CALSIZ.eq.'LAR') then
-          IRESDIM = 10000
-        else if (CALSIZ.eq.'HUG') then
-          IRESDIM = 100000
-        end if
 *
 *  LCSBLK
         LCSBLK = 100000
@@ -3655,15 +3645,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
 *
-*  RESDIM
-        if (CALSIZ.eq.'NOR') then
-          IRESDIM = 1000
-        else if (CALSIZ.eq.'LAR') then
-          IRESDIM = 10000
-        else if (CALSIZ.eq.'HUG') then
-          IRESDIM = 100000
-        end if
-*
 *  LCSBLK
         LCSBLK = 100000
 *
@@ -3990,15 +3971,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
 *
-*  RESDIM
-        if (CALSIZ.eq.'NOR') then
-          IRESDIM = 1000
-        else if (CALSIZ.eq.'LAR') then
-          IRESDIM = 10000
-        else if (CALSIZ.eq.'HUG') then
-          IRESDIM = 100000
-        end if
-*
 *  LCSBLK
         LCSBLK = 100000
 *
@@ -4011,50 +3983,69 @@ CC        IVFLEV = 1               ! could be made more flexible
 *              ...............
 *
 *  NGSSH, NGAS
-*   given in input for moluc; resolve
-        IGSFILL = 0
-        do IGAS=1,NGAS,1
-          call decode_line(CARD(IGAS),72,NITEM,ITEM,MXITEM)
-          ITEMX = ITEM(1)
-          if (ITEMX(1:4).eq.'NONE') then
-            do ISYM=1,NSYM,1
-              NSHPGS(IGAS,ISYM) = 0
-            end do
-          else if (ITEMX(1:3).eq.'ALL'.or.
-     &             ITEMX(1:4).eq.'REST') then
-            if (IGSFILL.ne.0) then
-              write(6,*) 'Several shell spaces defined by'
-              write(6,*) 'ALL or REST.'
-              write(6,*) 'This is at least confusing.'
-              Call Abend2( 'Quitting.' )
-            end if
-            IGSFILL = IGAS
-          else
-            if (NITEM.ne.NSYM) then
-              write(6,*) 'Erroneous input to GASS.'
-              write(6,'(A72)') CARD(IGAS)
-              write(6,*) 'Specify either:  NONE'
-              write(6,*) '                  ALL'
-              write(6,*) '                 REST'
-              write(6,*) 'or NSYM integers.'
-              write(6,*)
-              write(6,*) 'NSYM has the value ',NSYM
-              Call Abend2( 'Quitting.' )
-            end if
-            do ISYM=1,NSYM,1
-              call char_to_integer_moluc(ITEM(ISYM),NSHPGS(IGAS,ISYM))
-            end do
-          end if
-          if (IGAS.eq.NGAS.and.ITEMX.eq.'REST') then
-            do ISYM=1,NSYM,1
-              NSHELLS = 0
-              do IGS=1,NGAS-1,1
-                NSHELLS = NSHELLS + NSHPGS(IGS,ISYM)
-              end do
-              NSHPGS(NGAS,ISYM) = NORB(ISYM) - NSHELLS
-            end do
-          end if
+
+!       synchronize module lucita_orbital_spaces (initialized after input ci/mcscf reading) 
+!       and internal lucita common blocks
+
+!       icopy does not work because of MXPNGAS == 16... not 6...
+!       call icopy(ngas*nsym,ngsh_lucita,1,nshpgs,1)
+
+        do j = 1, ngas
+          do i = 1, nsym
+            nshpgs(j,i) = ngsh_lucita(j,i)
+          end do
         end do
+
+        print *, ' shells per gas space in dalton2lucita:ngas,nsym',
+     &  ngas, nsym
+        do j = 1, ngas
+          print *, ' nshpgs per gas: ',
+     &    (nshpgs(j,i),i=1,nsym)
+        end do
+
+!       IGSFILL = 0
+!       do IGAS=1,NGAS,1
+!         call decode_line(CARD(IGAS),72,NITEM,ITEM,MXITEM)
+!         ITEMX = ITEM(1)
+!         if (ITEMX(1:4).eq.'NONE') then
+!           do ISYM=1,NSYM,1
+!             NSHPGS(IGAS,ISYM) = 0
+!           end do
+!         else if (ITEMX(1:3).eq.'ALL'.or.
+!    &             ITEMX(1:4).eq.'REST') then
+!           if (IGSFILL.ne.0) then
+!             write(6,*) 'Several shell spaces defined by'
+!             write(6,*) 'ALL or REST.'
+!             write(6,*) 'This is at least confusing.'
+!             Call Abend2( 'Quitting.' )
+!           end if
+!           IGSFILL = IGAS
+!         else
+!           if (NITEM.ne.NSYM) then
+!             write(6,*) 'Erroneous input to GASS.'
+!             write(6,'(A72)') CARD(IGAS)
+!             write(6,*) 'Specify either:  NONE'
+!             write(6,*) '                  ALL'
+!             write(6,*) '                 REST'
+!             write(6,*) 'or NSYM integers.'
+!             write(6,*)
+!             write(6,*) 'NSYM has the value ',NSYM
+!             Call Abend2( 'Quitting.' )
+!           end if
+!           do ISYM=1,NSYM,1
+!             call char_to_integer_moluc(ITEM(ISYM),NSHPGS(IGAS,ISYM))
+!           end do
+!         end if
+!         if (IGAS.eq.NGAS.and.ITEMX.eq.'REST') then
+!           do ISYM=1,NSYM,1
+!             NSHELLS = 0
+!             do IGS=1,NGAS-1,1
+!               NSHELLS = NSHELLS + NSHPGS(IGS,ISYM)
+!             end do
+!             NSHPGS(NGAS,ISYM) = NORB(ISYM) - NSHELLS
+!           end do
+!         end if
+!       end do
 *
 *  NACTEL
         NTOOB = 0
@@ -4141,15 +4132,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
 *
-*  RESDIM
-        if (CALSIZ.eq.'NOR') then
-          IRESDIM = 1000
-        else if (CALSIZ.eq.'LAR') then
-          IRESDIM = 10000
-        else if (CALSIZ.eq.'HUG') then
-          IRESDIM = 100000
-        end if
-*
 *  LCSBLK
         LCSBLK = 100000
 *
@@ -4163,6 +4145,8 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
 *  NGSSH, NGAS
 *   given in input for moluc; resolve
+        call quit(' *** error in dalton2lucita: @stefan -
+     & please fix RAS input conversion. ***')
         do ISYM=1,NSYM,1
           NSHPGS(1,ISYM) = NINOBS(ISYM)
         end do
@@ -4336,15 +4320,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
 *
-*  RESDIM
-        if (CALSIZ.eq.'NOR') then
-          IRESDIM = 1000
-        else if (CALSIZ.eq.'LAR') then
-          IRESDIM = 10000
-        else if (CALSIZ.eq.'HUG') then
-          IRESDIM = 100000
-        end if
-*
 *  LCSBLK
         LCSBLK = 100000
 *
@@ -4356,7 +4331,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         write(6,*) 'Unknown TYPE of CI statement.'
         write(6,*) 'You have chosen  ',TYPE
         write(6,*) 'I will refrain from doing this!'
-        Call Abend2( 'Quitting.' )
+        call quit( ' *** error in dalton2lucita: unknown CI type. ***')
       end if
 *
 *.................................................................

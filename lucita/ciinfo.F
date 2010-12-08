@@ -2003,7 +2003,6 @@ CMI     IF(INCLUDE.EQ.1) THEN
 *
 * Jeppe Olsen, Winter of 1991
 *
-      INTEGER CITYP
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "cgas.inc"
@@ -2041,9 +2040,9 @@ CMI     IF(INCLUDE.EQ.1) THEN
        IGSINA = 0
        IGSDEL = 0
 *
-       CALL ISETVC(NTOOBS,0,NSMOB)
-       CALL ISETVC(NOCOBS,0,NSMOB)
-       CALL ISETVC(NACOBS,0,NSMOB)
+       call izero(ntoobs,nsmob)
+       call izero(nocobs,nsmob)
+       call izero(nacobs,nsmob)
 *
        NTOOB = 0
        NACOB = 0
@@ -2116,7 +2115,6 @@ CMI     IF(INCLUDE.EQ.1) THEN
      &       IBSO,NTSOB,IBTSOB,ITSOB,NOBPTS,IOBPTS,
      &       ISMFSO,ITPFTO,NOBPT,IPRNT)
 *
-      RETURN
       END
 ***********************************************************************
       SUBROUTINE ORBORD_GAS(NSMOB,MXPOBS,MXPNGAS,NGAS,NGSOB,NGSOBT,

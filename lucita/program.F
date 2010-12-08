@@ -1004,11 +1004,15 @@ C
 * Written by Jeppe Olsen , winter of 1991
 *                          GAS version in action summer of 95
 *
-* Modifications wrt to a MPI implementation by 
-* Stefan Knecht, Feb. 06 
+* Modifications wrt to an MPI implementation by Stefan Knecht, Feb. 06 
 *
+!     dependencies on F90 modules
+!     common modules
+      use lucita_orbital_spaces
+!     parallel lucita
       use communication_model
       use file_io_model
+
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 k_offset, KADD, KPROCLIST, KGROUPLIST, 
      &          KGROUPLIST2, KPROCLENGTH, KVEC1
@@ -1194,7 +1198,7 @@ C     Compute offset from WRK to WORK
 C     LUCITA is used in SPINFREE calculations: no complex part
       irc_save = 1
 
-      call quit('*** error: stefan forced me to stop after setup ***')
+!     call quit('*** error: stefan forced me to stop after setup ***')
 C     assign serial I/O disk units
       CALL DISKUN
 C
@@ -1419,13 +1423,14 @@ C
       deallocate(grouplist)
       deallocate(proclist)
 C
+!     reset orbital spaces (should probably moved to the yet-to-write
+!     common ci/mcscf interface for lucita)
+      call lucita_orb_spaces_setup_delete
+
       write(luout,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
      &  ' finished with no errors.'
-      call qexit('PAMLU')
-*
-      CALL FLSHFO(LUOUT)
 
-      CALL QEXIT('LUCITA_MASTER')
+      call qexit('LUCITA_MASTER')
 *
       END
 ***********************************************************************
