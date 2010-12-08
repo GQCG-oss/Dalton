@@ -2887,12 +2887,8 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
       implicit real*8 (A-H,O-Z)
 *
+#include "priunit.h"
 #include "units.inc"
-#ifdef VAR_MPI
-ChjC#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
 *
       logical MSCOMB
@@ -2908,120 +2904,120 @@ ChjC#include "infpar.h"
 *-----------------------------------------------------------------*
 *
       if (IPLOCAL.ge.5) then
-         write(6,*) '==========================================='
-         write(6,*) '  Input written to file LUCIAIN     '
-         write(6,*) '==========================================='
+         write(lupri,*) '==========================================='
+         write(lupri,*) '  Input written to file LUCIAIN     '
+         write(lupri,*) '==========================================='
 *
-         write(*,'(A13)') '* &LUCIA &END'
+         write(lupri,'(A13)') '* &LUCIA &END'
 *
          if (CALSIZ.eq.'NOR') then
-           write(*,'(A6)') 'MEGACI'
+           write(lupri,'(A6)') 'MEGACI'
          else
-           write(*,'(A6)') 'TERACI'
+           write(lupri,'(A6)') 'TERACI'
          end if
 *
-         write(*,'(A6)') 'DALTON'
+         write(lupri,'(A6)') 'DALTON'
 *
-         write(*,'(A3)') 'D2H'
+         write(lupri,'(A3)') 'D2H'
 *
-         write(*,'(A6)') 'NIRREP'
-         write(*,'(1X,I3)') NSYM
+         write(lupri,'(A6)') 'NIRREP'
+         write(lupri,'(1X,I3)') NSYM
 *
-         write(*,'(A6)') 'IREFSM'
-         write(*,'(1X,I3)') IRREP
+         write(lupri,'(A6)') 'IREFSM'
+         write(lupri,'(1X,I3)') IRREP
 *
-         write(*,'(A5)') 'GASSH'
-         write(*,'(1X,I3)') NGAS
+         write(lupri,'(A5)') 'GASSH'
+         write(lupri,'(1X,I3)') NGAS
 *
          HESTR = ' '
          write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
          if (NSYM.eq.1) write (HESTR,'(A)') '(I4)'
          do IGAS = 1,NGAS,1
-            write(*,HESTR)
+            write(lupri,HESTR)
      &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
          end do
 *
-         write(*,'(A6)') 'NACTEL'
-         write(*,'(1X,I3)') NACTEL
+         write(lupri,'(A6)') 'NACTEL'
+         write(lupri,'(1X,I3)') NACTEL
 *
-         write(*,'(A6)') 'GASSPC'
-         write(*,'(1X,I3)') NCISPC
+         write(lupri,'(A6)') 'GASSPC'
+         write(lupri,'(1X,I3)') NCISPC
          do ISPC=1,NCISPC,1
-            write(*,'(1X,2I3)')
+            write(lupri,'(1X,2I3)')
      &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
          end do
 *
-         write(*,'(A6)') 'SEQUEN'
+         write(lupri,'(A6)') 'SEQUEN'
          do ICISPC=1,NCISPC,1
-            write(*,'(1X,I3)') NSEQ
+            write(lupri,'(1X,I3)') NSEQ
             do ISEQ=1,NSEQ,1
                if (TYPELUC(ISEQ).eq.'CI') then
-                  write(*,'(1X,A3,I3)') 'CI,',MAXIT
+                  write(lupri,'(1X,A3,I3)') 'CI,',MAXIT
                else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(*,'(1X,A6,I3)') 'PERTU,',MAXIT
+                  write(lupri,'(1X,A6,I3)') 'PERTU,',MAXIT
                else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(*,'(1X,A8,I3)') 'VECFREE,',IVFLEV
+                  write(lupri,'(1X,A8,I3)') 'VECFREE,',IVFLEV
                end if
             end do
          end do
 *
-         write(*,'(A6)') 'RESTRT'
-         write(*,'(1X,I3)') IRSTRT
+         write(lupri,'(A6)') 'RESTRT'
+         write(lupri,'(1X,I3)') IRSTRT
 *
-         write(*,'(A5)') 'MULTS'
-         write(*,'(1X,I3)') MULTIP
+         write(lupri,'(A5)') 'MULTS'
+         write(lupri,'(1X,I3)') MULTIP
 *
-         write(*,'(A3)') 'MS2'
-         write(*,'(1X,I3)') MS2
+         write(lupri,'(A3)') 'MS2'
+         write(lupri,'(1X,I3)') MS2
 *
          if (MSCOMB) then
-            write(*,'(A6)') 'MSCOMB'
-            write(*,'(1X,F3.1)') SCOMB
+            write(lupri,'(A6)') 'MSCOMB'
+            write(lupri,'(1X,F3.1)') SCOMB
          end if
 *
-         write(*,'(A5)') 'ROOTS'
-         write(*,'(1X,I3)') NROOT
+         write(lupri,'(A5)') 'ROOTS'
+         write(lupri,'(1X,I3)') NROOT
 *
-         write(*,'(A5)') 'DENSI'
-         write(*,'(1X,I3)') IDEMOL
+         write(lupri,'(A5)') 'DENSI'
+         write(lupri,'(1X,I3)') IDEMOL
 *
-         write(*,'(A5)') 'NOCSF'
+         write(lupri,'(A5)') 'NOCSF'
 *
-         write(*,'(A6)') 'IPRSTR'
-         write(*,'(1X,I3)') IPRSTR
-         write(*,'(A6)') 'IPRCIX'
-         write(*,'(1X,I3)') IPRCIX
-         write(*,'(A6)') 'IPRORB'
-         write(*,'(1X,I3)') IPRORB
-         write(*,'(A6)') 'IPRDIA'
-         write(*,'(1X,I3)') IPRDIA
-         write(*,'(A5)') 'IPRXT'
-         write(*,'(1X,I3)') IPRXT
-         write(*,'(A6)') 'IPRRSP'
-         write(*,'(1X,I3)') IPRRSP
-         write(*,'(A6)') 'IPRDEN'
-         write(*,'(1X,I3)') IPRDEN
-         write(*,'(A6)') 'IPROCC'
-         write(*,'(1X,I3)') IPROCC
-         write(*,'(A6)') 'PRNCIV'
-         write(*,'(1X,I3,A)') IPRNCIV
+         write(lupri,'(A6)') 'IPRSTR'
+         write(lupri,'(1X,I3)') IPRSTR
+         write(lupri,'(A6)') 'IPRCIX'
+         write(lupri,'(1X,I3)') IPRCIX
+         write(lupri,'(A6)') 'IPRORB'
+         write(lupri,'(1X,I3)') IPRORB
+         write(lupri,'(A6)') 'IPRDIA'
+         write(lupri,'(1X,I3)') IPRDIA
+         write(lupri,'(A5)') 'IPRXT'
+         write(lupri,'(1X,I3)') IPRXT
+         write(lupri,'(A6)') 'IPRRSP'
+         write(lupri,'(1X,I3)') IPRRSP
+         write(lupri,'(A6)') 'IPRDEN'
+         write(lupri,'(1X,I3)') IPRDEN
+         write(lupri,'(A6)') 'IPROCC'
+         write(lupri,'(1X,I3)') IPROCC
+         write(lupri,'(A6)') 'PRNCIV'
+         write(lupri,'(1X,I3,A)') IPRNCIV
 *
-         write(*,'(A6)') 'RESDIM'
-         write(*,'(1X,I8)') IRESDIM
+         write(lupri,'(A6)') 'RESDIM'
+         write(lupri,'(1X,I8)') IRESDIM
 *
-         write(*,'(A6)') 'LCSBLK'
-         write(*,'(I20)') LCSBLK
+         write(lupri,'(A6)') 'LCSBLK'
+         write(lupri,'(I20)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
-            write(*,'(A6)') 'USE_PH'
-            write(*,'(A6)') 'ADVICE'
+            write(lupri,'(A6)') 'USE_PH'
+            write(lupri,'(A6)') 'ADVICE'
          end if
 *
          if (CALSIZ.ne.'NOR') then
-            write(*,'(A6)') 'CLSSEL'
+            write(lupri,'(A6)') 'CLSSEL'
          end if
 *
-         write(*,'(A12)') 'END OF INPUT'
+         write(lupri,'(A12)') 'END OF INPUT'
 *
       end if
 *
@@ -3159,7 +3155,6 @@ ChjC#include "infpar.h"
 *
       close (unit=LUINP)
 *
-      return
       end
 ***********************************************************************
 *  Conversion routine from 'dummy' DALTON input for LUCITA to
@@ -3175,6 +3170,7 @@ ChjC#include "infpar.h"
 *
       use lucita_orbital_spaces
       implicit real*8 (A-H,O-Z)
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "SysDef.inc"
@@ -3191,7 +3187,7 @@ ChjC#include "infpar.h"
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
-      write(6,*) 'enter dalton2lucita'
+      write(lupri,*) 'enter dalton2lucita'
 *
 *
       NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
@@ -3274,7 +3270,7 @@ ChjC#include "infpar.h"
             NOCCIM = NTOCCR + NACRAS
             NACTEL = NOCCIM
           end if
-          write(6,'(A42,I3/)')
+          write(lupri,'(A42,I3/)')
      &      ' Number of active electrons ........... ',NACTEL
         end if
         NTOOB = 0
@@ -3283,10 +3279,10 @@ ChjC#include "infpar.h"
         end do
         MXTNEL = 2*NTOOB
         if (NACTEL.gt.MXTNEL) then
-          write(6,*) 'Number of active electrons exceeds '
-          write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
-          Call Abend2( 'Quitting.' )
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         Call Abend2( 'Quitting.' )
         end if
 *
 *  GASSPC, NCISPC
@@ -3306,27 +3302,27 @@ ChjC#include "infpar.h"
         call evenodd(IEONAC,NACTEL)
         call evenodd(IEOMUL,MULTIP)
         if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Number of active electrons: ',NACTEL
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Number of active electrons: ',NACTEL
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
            if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
            if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         end if
@@ -3418,8 +3414,8 @@ CC        IVFLEV = 1               ! could be made more flexible
                 end if
               end do
             else
-              write(6,*) 'IRETISH has unallowed value.'
-              write(6,*) 'IRETISH = ',IRETISH
+              write(lupri,*) 'IRETISH has unallowed value.'
+              write(lupri,*) 'IRETISH = ',IRETISH
               Call Abend2('Quitting.')
             end if
           end if
@@ -3431,9 +3427,9 @@ CC        IVFLEV = 1               ! could be made more flexible
               NSHPGS(1,ISYM) = NINOBS(ISYM)
               NSHPGS(2,ISYM) = NOCC(ISYM) - NINOBS(ISYM)
               if (NSHPGS(2,ISYM).lt.0) then
-                write(6,*) 'Too many inactive orbitals specified'
-                write(6,*) 'for symmetry ',ISYM
-                write(6,*) 'Reconsider input.'
+                write(lupri,*) 'Too many inactive orbitals specified'
+                write(lupri,*) 'for symmetry ',ISYM
+                write(lupri,*) 'Reconsider input.'
                 Call Abend2( 'Quitting.' )
               end if
               NSHPGS(3,ISYM) = NSSH(ISYM)
@@ -3448,10 +3444,10 @@ CC        IVFLEV = 1               ! could be made more flexible
             end do
           else if (WAFFCT.eq.'RASSCF') then
             if (IRETISH.eq.-1) then
-              write(6,*) 'You have specified inactive orbitals.'
-              write(6,*) 'But there are no doubly occupied'
-              write(6,*) 'orbitals left!      '
-              write(6,*) 'Reconsider your input or files.'
+              write(lupri,*) 'You have specified inactive orbitals.'
+              write(lupri,*) 'But there are no doubly occupied'
+              write(lupri,*) 'orbitals left!      '
+              write(lupri,*) 'Reconsider your input or files.'
               Call Abend2('Quitting.')
             end if
             NGAS = 4
@@ -3459,9 +3455,9 @@ CC        IVFLEV = 1               ! could be made more flexible
               NSHPGS(1,ISYM) = NINOBS(ISYM)
               NSHPGS(2,ISYM) = NISH(ISYM) - NINOBS(ISYM)
               if (NSHPGS(2,ISYM).lt.0) then
-                write(6,*) 'Too many inactive orbitals specified'
-                write(6,*) 'for symmetry ',ISYM
-                write(6,*) 'Reconsider input.'
+                write(lupri,*) 'Too many inactive orbitals specified'
+                write(lupri,*) 'for symmetry ',ISYM
+                write(lupri,*) 'Reconsider input.'
                 Call Abend2( 'Quitting.' )
               end if
               NSHPGS(3,ISYM) = NASH(ISYM)
@@ -3494,7 +3490,7 @@ CC        IVFLEV = 1               ! could be made more flexible
             NOCCIM = NTOCCR + NACRAS
             NACTEL = NOCCIM
           end if
-          write(6,'(A42,I3/)')
+          write(lupri,'(A42,I3/)')
      &      ' Number of active electrons ........... ',NACTEL
         end if
         NTOOB = 0
@@ -3503,10 +3499,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         end do
         MXTNEL = 2*NTOOB
         if (NACTEL.gt.MXTNEL) then
-          write(6,*) 'Number of active electrons exceeds '
-          write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
-          Call Abend2( 'Quitting.' )
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         Call Abend2( 'Quitting.' )
         end if
 *
 *  GASSPC, NCISPC
@@ -3633,27 +3629,27 @@ CC        IVFLEV = 1               ! could be made more flexible
         call evenodd(IEONAC,NACTEL)
         call evenodd(IEOMUL,MULTIP)
         if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Number of active electrons: ',NACTEL
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Number of active electrons: ',NACTEL
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
            if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
            if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         end if
@@ -3745,8 +3741,8 @@ CC        IVFLEV = 1               ! could be made more flexible
                 end if
               end do
             else
-              write(6,*) 'IRETISH has unallowed value.'
-              write(6,*) 'IRETISH = ',IRETISH
+              write(lupri,*) 'IRETISH has unallowed value.'
+              write(lupri,*) 'IRETISH = ',IRETISH
               Call Abend2('Quitting.')
             end if
           end if
@@ -3758,9 +3754,9 @@ CC        IVFLEV = 1               ! could be made more flexible
               NSHPGS(1,ISYM) = NINOBS(ISYM)
               NSHPGS(2,ISYM) = NOCC(ISYM) - NINOBS(ISYM)
               if (NSHPGS(2,ISYM).lt.0) then
-                write(6,*) 'Too many inactive orbitals specified'
-                write(6,*) 'for symmetry ',ISYM
-                write(6,*) 'Reconsider input.'
+                write(lupri,*) 'Too many inactive orbitals specified'
+                write(lupri,*) 'for symmetry ',ISYM
+                write(lupri,*) 'Reconsider input.'
                 Call Abend2( 'Quitting.' )
               end if
               NSHPGS(3,ISYM) = NSSH(ISYM)
@@ -3775,10 +3771,10 @@ CC        IVFLEV = 1               ! could be made more flexible
             end do
           else if (WAFFCT.eq.'RASSCF') then
             if (IRETISH.eq.-1) then
-              write(6,*) 'You have specified inactive orbitals.'
-              write(6,*) 'But there are no doubly occupied'
-              write(6,*) 'orbitals left!      '
-              write(6,*) 'Reconsider your input or files.'
+              write(lupri,*) 'You have specified inactive orbitals.'
+              write(lupri,*) 'But there are no doubly occupied'
+              write(lupri,*) 'orbitals left!      '
+              write(lupri,*) 'Reconsider your input or files.'
               Call Abend2('Quitting.')
             end if
             NGAS = 4
@@ -3786,9 +3782,9 @@ CC        IVFLEV = 1               ! could be made more flexible
               NSHPGS(1,ISYM) = NINOBS(ISYM)
               NSHPGS(2,ISYM) = NISH(ISYM) - NINOBS(ISYM)
               if (NSHPGS(2,ISYM).lt.0) then
-                write(6,*) 'Too many inactive orbitals specified'
-                write(6,*) 'for symmetry ',ISYM
-                write(6,*) 'Reconsider input.'
+                write(lupri,*) 'Too many inactive orbitals specified'
+                write(lupri,*) 'for symmetry ',ISYM
+                write(lupri,*) 'Reconsider input.'
                 Call Abend2( 'Quitting.' )
               end if
               NSHPGS(3,ISYM) = NASH(ISYM)
@@ -3821,7 +3817,7 @@ CC        IVFLEV = 1               ! could be made more flexible
             NOCCIM = NTOCCR + NACRAS
             NACTEL = NOCCIM
           end if
-          write(6,'(A42,I3/)')
+          write(lupri,'(A42,I3/)')
      &      ' Number of active electrons ........... ',NACTEL
         end if
         NTOOB = 0
@@ -3830,10 +3826,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         end do
         MXTNEL = 2*NTOOB
         if (NACTEL.gt.MXTNEL) then
-          write(6,*) 'Number of active electrons exceeds '
-          write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
-          Call Abend2( 'Quitting.' )
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         Call Abend2( 'Quitting.' )
         end if
 *
 *  GASSPC, NCISPC
@@ -3959,27 +3955,27 @@ CC        IVFLEV = 1               ! could be made more flexible
         call evenodd(IEONAC,NACTEL)
         call evenodd(IEOMUL,MULTIP)
         if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Number of active electrons: ',NACTEL
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Number of active electrons: ',NACTEL
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
            if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
            if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         end if
@@ -4045,50 +4041,6 @@ CC        IVFLEV = 1               ! could be made more flexible
      &    (nshpgs(j,i),i=1,nsym)
         end do
 
-!       IGSFILL = 0
-!       do IGAS=1,NGAS,1
-!         call decode_line(CARD(IGAS),72,NITEM,ITEM,MXITEM)
-!         ITEMX = ITEM(1)
-!         if (ITEMX(1:4).eq.'NONE') then
-!           do ISYM=1,NSYM,1
-!             NSHPGS(IGAS,ISYM) = 0
-!           end do
-!         else if (ITEMX(1:3).eq.'ALL'.or.
-!    &             ITEMX(1:4).eq.'REST') then
-!           if (IGSFILL.ne.0) then
-!             write(6,*) 'Several shell spaces defined by'
-!             write(6,*) 'ALL or REST.'
-!             write(6,*) 'This is at least confusing.'
-!             Call Abend2( 'Quitting.' )
-!           end if
-!           IGSFILL = IGAS
-!         else
-!           if (NITEM.ne.NSYM) then
-!             write(6,*) 'Erroneous input to GASS.'
-!             write(6,'(A72)') CARD(IGAS)
-!             write(6,*) 'Specify either:  NONE'
-!             write(6,*) '                  ALL'
-!             write(6,*) '                 REST'
-!             write(6,*) 'or NSYM integers.'
-!             write(6,*)
-!             write(6,*) 'NSYM has the value ',NSYM
-!             Call Abend2( 'Quitting.' )
-!           end if
-!           do ISYM=1,NSYM,1
-!             call char_to_integer_moluc(ITEM(ISYM),NSHPGS(IGAS,ISYM))
-!           end do
-!         end if
-!         if (IGAS.eq.NGAS.and.ITEMX.eq.'REST') then
-!           do ISYM=1,NSYM,1
-!             NSHELLS = 0
-!             do IGS=1,NGAS-1,1
-!               NSHELLS = NSHELLS + NSHPGS(IGS,ISYM)
-!             end do
-!             NSHPGS(NGAS,ISYM) = NORB(ISYM) - NSHELLS
-!           end do
-!         end if
-!       end do
-*
 *  NACTEL
         NTOOB = 0
         do ISYM=1,NSYM,1
@@ -4096,10 +4048,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         end do
         MXTNEL = 2*NTOOB
         if (NACTEL.gt.MXTNEL) then
-          write(6,*) 'Number of active electrons exceeds '
-          write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
-          Call Abend2( 'Quitting.' )
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         Call Abend2( 'Quitting.' )
         end if
 *
 *  GASSPC, NCISPC
@@ -4109,12 +4061,12 @@ CC        IVFLEV = 1               ! could be made more flexible
           end do
         end do
         if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
-          write(6,*) 'I am sure that fascinating discussions about'
-          write(6,*) 'the energy of such a wave function exist,'
-          write(6,*) 'but I am just a dumb program, so I will stop.'
-          write(6,*)
-          write(6,*) 'Number of active electrons does not match'
-          write(6,*) 'total number of electrons in GAS spaces.'
+          write(lupri,*) 'I am sure that fascinating discussions about'
+          write(lupri,*) 'the energy of such a wave function exist,'
+          write(lupri,*) 'but I am just a dumb program, so I will stop.'
+          write(lupri,*)
+          write(lupri,*) 'Number of active electrons does not match'
+          write(lupri,*) 'total number of electrons in GAS spaces.'
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -4122,25 +4074,25 @@ CC        IVFLEV = 1               ! could be made more flexible
         call evenodd(IEONAC,NACTEL)
         call evenodd(IEOMUL,MULTIP)
         if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
            if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
            if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active'
-              write(6,*) 'electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
               Call Abend2( 'quitting' )
            end if
         end if
@@ -4186,50 +4138,35 @@ CC        IVFLEV = 1               ! could be made more flexible
 *              ................
 *
 *  NGSSH, NGAS
-*   given in input for moluc; resolve
-        call quit(' *** error in dalton2lucita: @stefan -
-     & please fix RAS input conversion. ***')
-        do ISYM=1,NSYM,1
-          NSHPGS(1,ISYM) = NINOBS(ISYM)
-        end do
 *
-        call decode_line(CARD3(3),72,NITEM,ITEM,MXITEM)
-        do ISYM=1,NSYM,1
-          call char_to_integer_moluc(ITEM(ISYM),NSHPGS(2,ISYM))
+!       synchronize module lucita_orbital_spaces (initialized after input ci/mcscf reading) 
+!       and internal lucita common blocks
+
+        is_any_sshell = 0
+        do isym = 1, nsym
+          nshpgs(1,isym) = nish_lucita(isym)
+          nshpgs(2,isym) = nas1_lucita(isym)
+          nshpgs(3,isym) = nas2_lucita(isym)
+          nshpgs(4,isym) = nas3_lucita(isym)
+          is_any_sshell  = max(is_any_sshell,nssh_lucita(isym))
         end do
-*
-        call decode_line(CARD3(4),72,NITEM,ITEM,MXITEM)
-        do ISYM=1,NSYM,1
-          call char_to_integer_moluc(ITEM(ISYM),NSHPGS(3,ISYM))
-        end do
-*
-        call leftad(CARD3(5))
-        call upcase(CARD3(5))
-        if (CARD3(5).eq.'REST') then
-          NGAS = 4
-          IORBCT = 0
-          do ISYM=1,NSYM,1
-            NSHPGS(4,ISYM) = NORB(ISYM) - NINOBS(ISYM) -
-     &                       NSHPGS(2,ISYM) - NSHPGS(3,ISYM)
-            if (NSHPGS(4,ISYM).gt.MXTSOB) then
-              call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
-     &                      MXTSOB,NGAS,IPRT)
-            end if
+
+        if(is_any_sshell .gt. 0)then
+          do isym = 1, nsym
+            nshpgs(5,isym) = nssh_lucita(isym)
           end do
+          ngas         = 5
+          ngas_tmp_ras = 5
         else
-          NGAS = 5
-          call decode_line(CARD3(5),72,NITEM,ITEM,MXITEM)
-          do ISYM=1,NSYM,1
-            call char_to_integer_moluc(ITEM(ISYM),NSHPGS(4,ISYM))
-            NSHPGS(5,ISYM) = NORB(ISYM) - NINOBS(ISYM) -
-     &                       NSHPGS(2,ISYM) - NSHPGS(3,ISYM)
-     &                       - NSHPGS(4,ISYM)
-            if (NSHPGS(5,ISYM).gt.MXTSOB) then
-              call gassplit(NSHPGS(1,ISYM),5,MXPNGAS,
-     &                      MXTSOB,NGAS,IPRT)
-            end if
-          end do
+          ngas         = 4
+          ngas_tmp_ras = 4
         end if
+        do isym = 1, nsym
+          if(nshpgs(ngas_tmp_ras,isym) .gt. mxtsob)then
+            call gassplit(nshpgs(1,isym),ngas_tmp_ras,mxpngas,
+     &                    mxtsob,ngas,iprt)
+          end if
+        end do
 *
 *  NACTEL
         NTOOB = 0
@@ -4238,10 +4175,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         end do
         MXTNEL = 2*NTOOB
         if (NACTEL.gt.MXTNEL) then
-          write(6,*) 'Number of active electrons exceeds '
-          write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
-          Call Abend2( 'Quitting.' )
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         Call Abend2( 'Quitting.' )
         end if
 *
 *  GASSPC, NCISPC
@@ -4281,12 +4218,12 @@ CC        IVFLEV = 1               ! could be made more flexible
         end do
         NACTEL = NACTEL+NFMX
         if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
-          write(6,*) 'I am sure that fascinating discussions about'
-          write(6,*) 'the energy of such a wave function exist,'
-          write(6,*) 'but I am just a dumb program, so I will stop.'
-          write(6,*)
-          write(6,*) 'Number of active electrons does not match'
-          write(6,*) 'total number of electrons in GAS spaces.'
+          write(lupri,*) 'I am sure that fascinating discussions about'
+          write(lupri,*) 'the energy of such a wave function exist,'
+          write(lupri,*) 'but I am just a dumb program, so I will stop.'
+          write(lupri,*)
+          write(lupri,*) 'Number of active electrons does not match'
+          write(lupri,*) 'total number of electrons in GAS spaces.'
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -4312,23 +4249,23 @@ CC        IVFLEV = 1               ! could be made more flexible
         call evenodd(IEONAC,NACTEL)
         call evenodd(IEOMUL,MULTIP)
         if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(6,*) 'Illegal spin multiplicity given.'
-           write(6,*) 'Read a book about fermions.'
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
            Call Abend2( 'quitting' )
         else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
            if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active electrons.'
               Call Abend2( 'quitting' )
            end if
         else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
            if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(6,*) 'Illegal spin multiplicity given.'
-              write(6,*) 'Compare with number of active electrons.'
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active electrons.'
               Call Abend2( 'quitting' )
            end if
         end if
@@ -4370,9 +4307,9 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
 *
       else
-        write(6,*) 'Unknown TYPE of CI statement.'
-        write(6,*) 'You have chosen  ',TYPE
-        write(6,*) 'I will refrain from doing this!'
+        write(lupri,*) 'Unknown TYPE of CI statement.'
+        write(lupri,*) 'You have chosen  ',TYPE
+        write(lupri,*) 'I will refrain from doing this!'
         call quit( ' *** error in dalton2lucita: unknown CI type. ***')
       end if
 *
