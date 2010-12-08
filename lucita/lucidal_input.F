@@ -12,6 +12,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "luctinp.h"
+#include "lucitaorb.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
@@ -32,6 +33,19 @@ C
 !     Initialize keyword status flags driving interface.
 !     (Therefore local keywords do not have to be initialized!)
       call izero(imokw,ntable)
+
+!     initialize CI orbital spaces
+      do i = 1, 8
+        nish_lucita(i) = 0
+        nash_lucita(i) = 0
+        nas1_lucita(i) = 0
+        nas2_lucita(i) = 0
+        nas3_lucita(i) = 0
+        nocc_lucita(i) = 0
+        nssh_lucita(i) = 0
+      end do
+
+!
  
 !     Process input for LUCITA
 !     ========================
