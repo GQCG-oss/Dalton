@@ -4931,9 +4931,9 @@ C     END IF
      &  '     3 symmetry-occ-occ blocks will be held in core '
       END IF
       IF(LCSBLK.NE.0) WRITE(LUOUT,'(A,I10)')
-     &  '      Smallest allowed size of sigma- and C-batch ',LCSBLK
-      WRITE(LUOUT,'(1X ,A,I4)')
-     &  '     Dimension of block of resolution strings ', MXINKA
+     &  '      Smallest allowed size of sigma- and C-batch:',LCSBLK
+      WRITE(LUOUT,'(A,I10)')
+     &  '     Dimension of block of resolution strings    :',MXINKA
       IF(IUSE_PH.EQ.1) THEN
         WRITE(LUOUT,'(1X ,A)')
      &  '     Particle-hole separation used '
@@ -4955,27 +4955,17 @@ C     END IF
      &  '     Strings not divided into active and passive parts'
       END IF
 *
-C?    IF(MOCAA.NE.0) WRITE(LUOUT,'(1X ,A,I4)')
-C?   &  '     MOC method used for alpha-alpha+beta-beta loop '
-C?    IF(MOCAB.NE.0) WRITE(LUOUT,'(1X ,A,I4)')
-C?   &  '     MOC method used for alpha-beta loop            '
-*
-      WRITE(LUOUT,*)
       IF(IDENSI.EQ.0) THEN
-        WRITE(LUOUT,'(1X ,A)')
+        WRITE(LUOUT,'(1X ,/A)')
      &  '     No calculation of density matrices  '
       ELSE IF(IDENSI.EQ.1) THEN
-        WRITE(LUOUT,'(1X ,A)')
+        WRITE(LUOUT,'(1X ,/A)')
      &  '     One-body density matrix calculated'
       ELSE IF(IDENSI.EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A)')
+        WRITE(LUOUT,'(1X ,/A)')
      &  '     One- and two-body density matrices  calculated'
       END IF
       WRITE(LUOUT,*)
-C?    IF(MOCAA.NE.0) WRITE(LUOUT,'(1X ,A,I4)')
-C?   &  '     MOC method used for alpha-alpha+beta-beta loop '
-C?    IF(MOCAB.NE.0) WRITE(LUOUT,'(1X ,A,I4)')
-C?   &  '     MOC method used for alpha-beta loop            '
 *
 *. Diagonalization information
       WRITE(LUOUT,'(1X ,A)')
@@ -5042,9 +5032,8 @@ C    &  '        Allowed number of iterations    ',MAXIT
      &    '        No multispace method in use '
       END IF
 *
-      WRITE(LUOUT,*)
       IF(IDIAG.EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,E11.5)')
+        WRITE(LUOUT,'(1X ,/A,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE
         WRITE(LUOUT,'(1X ,A,E11.5)')
      &   '        Individual first order wavefunction threshold ',C_THRE
@@ -5073,16 +5062,7 @@ C    &  '        Allowed number of iterations    ',MAXIT
      &  '        Root Choosen as zero order state ', IRFROOT
         WRITE(LUOUT,*)
      &  '        Root used for zero order operator ', IH0ROOT
-COLD    IF(MPORENP.EQ.1) THEN
-COLD    WRITE(6,*)
-COLD &  '        Moller Plesset partitioning '
-COLD    ELSE IF (MPORENP.EQ.2) THEN
-COLD    WRITE(6,*)
-COLD &  '        Epstein-Nesbet partitioning '
-COLD    ELSE IF  (MPORENP.EQ.0) THEN
-COLD    WRITE(6,*)
-COLD &  '        One-body Hamiltonian readin '
-COLD    END IF
+
         IF(IE0AVEX.EQ.1) THEN
           WRITE(LUOUT,*)
      &  '        Expectation value of H0 used as zero order energy '
@@ -5102,7 +5082,6 @@ COLD    END IF
 *
         IF(IH0SPC.NE.0) THEN
         WRITE(LUOUT,*)
-        WRITE(LUOUT,*)
      &  '        Number of perturbation subspaces ', NPTSPC
         WRITE(LUOUT,*)
         WRITE(LUOUT,*)
@@ -5112,11 +5091,8 @@ COLD    END IF
         WRITE(LUOUT,*)
      &  '        ======================== '
         DO JPTSPC = 1, NPTSPC
-COLD      WRITE(LUOUT,'(A)')
-COLD &     ' ====================================================== '
-          WRITE(LUOUT,'(A)')
-          WRITE(LUOUT,'(7X,A)') '         Min. occ    Max. occ '
-          WRITE(LUOUT,'(7X,A)') '         ========    ======== '
+          WRITE(LUOUT,'(7X,/A)') '         Min. occ    Max. occ '
+          WRITE(LUOUT,'(7X,A)')  '         ========    ======== '
           DO IGAS = 1, NGAS
             WRITE(LUOUT,'(7X,A,I2,3X,I3,9X,I3)')
      &      '   GAS',IGAS,IOCPTSPC(1,IGAS,JPTSPC)
@@ -5124,50 +5100,43 @@ COLD &     ' ====================================================== '
           END DO
         END DO
 *
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(7X,A)') '========================================'
-        WRITE(LUOUT,'(7X,A)') 'Approximate Hamiltonian in CI subspaces '
-        WRITE(LUOUT,'(7X,A)') '========================================'
-        WRITE(LUOUT,'(7X,A)')
-        WRITE(LUOUT,'(7X,A)') '    Subspace          H(apr)   '
-        WRITE(LUOUT,'(7X,A)') '  ============================='
-        WRITE(LUOUT,'(7X,A)')
-        DO JPTSPC = 1, NPTSPC
-          IF(IH0INSPC(JPTSPC).EQ.1) THEN
-            WRITE(LUOUT,'(12X,I3,8X,A)')
-     &      JPTSPC, ' Diagonal Fock operator '
-          ELSE IF(IH0INSPC(JPTSPC).EQ.2) THEN
-            WRITE(LUOUT,'(12X,I3,8X,A)')
-     &      JPTSPC, ' Epstein-Nesbet operator'
-          ELSE IF(IH0INSPC(JPTSPC).EQ.3) THEN
-            WRITE(LUOUT,'(12X,I3,8X,A)')
-     &      JPTSPC, ' Nondiagonal Fock operator '
-          ELSE IF(IH0INSPC(JPTSPC).EQ.4) THEN
-            WRITE(LUOUT,'(12X,I3,8X,A)')
-     &      JPTSPC, ' Complete Hamiltonian  '
-          ELSE IF(IH0INSPC(JPTSPC).EQ.5) THEN
-            WRITE(LUOUT,'(12X,I3,8X,A)')
-     &      JPTSPC, ' Mix of Fock and Exact operator '
-          END IF
-         END DO
+       WRITE(LUOUT,'(7X,/A)') '========================================'
+       WRITE(LUOUT,'(7X,A)') 'Approximate Hamiltonian in CI subspaces '
+       WRITE(LUOUT,'(7X,A)') '========================================'
+       WRITE(LUOUT,'(7X,A)')
+       WRITE(LUOUT,'(7X,A)') '    Subspace          H(apr)   '
+       WRITE(LUOUT,'(7X,A)') '  ============================='
+       WRITE(LUOUT,'(7X,A)')
+       DO JPTSPC = 1, NPTSPC
+         IF(IH0INSPC(JPTSPC).EQ.1) THEN
+           WRITE(LUOUT,'(12X,I3,8X,A)')
+     &     JPTSPC, ' Diagonal Fock operator '
+         ELSE IF(IH0INSPC(JPTSPC).EQ.2) THEN
+           WRITE(LUOUT,'(12X,I3,8X,A)')
+     &     JPTSPC, ' Epstein-Nesbet operator'
+         ELSE IF(IH0INSPC(JPTSPC).EQ.3) THEN
+           WRITE(LUOUT,'(12X,I3,8X,A)')
+     &     JPTSPC, ' Nondiagonal Fock operator '
+         ELSE IF(IH0INSPC(JPTSPC).EQ.4) THEN
+           WRITE(LUOUT,'(12X,I3,8X,A)')
+     &     JPTSPC, ' Complete Hamiltonian  '
+         ELSE IF(IH0INSPC(JPTSPC).EQ.5) THEN
+           WRITE(LUOUT,'(12X,I3,8X,A)')
+     &     JPTSPC, ' Mix of Fock and Exact operator '
+         END IF
+        END DO
          IF(ISETKW(61).GT.0) THEN
-           WRITE(LUOUT,*)
            WRITE(LUOUT,'(7X,A)')
      &     ' Orbital subspaces where exact Hamiltonian is used : '
            WRITE(LUOUT,'(7X,A)')
      &      '===================================================='
-           WRITE(LUOUT,*)
            WRITE(LUOUT,'(10X,10(2X,I3))') (IH0EXSPC(I),I=1, NH0EXSPC)
-           WRITE(LUOUT,*)
          END IF
 *
        END IF
        END IF
 *
-       IF(NPROP.EQ.0) THEN
-       WRITE(LUOUT,*)
-C        WRITE(6,*) '     No calculation of properties'
-       ELSE
+       IF(NPROP.ne.0) THEN
          WRITE(LUOUT,'(7X,A,I3)')
      &   ' Number of properties to be calculated', NPROP
          WRITE(LUOUT,*)
@@ -5306,7 +5275,6 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
 *
 *. Print levels
 *
-      WRITE(LUOUT,*)
       WRITE(LUOUT,'(1X ,A)')  '     Print levels : '
       IF(ISETKW(29).EQ.2) THEN
         WRITE(LUOUT,'(1X ,A,I3)')
@@ -5370,10 +5338,6 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
         WRITE(LUOUT,'(1X ,A,I3)')
      &  '      Final CI vectors will be printed '
       END IF
-*
-      WRITE(LUOUT,*)
-C     IF(MOLCS.EQ.1) WRITE(LUOUT,'(1X ,A,E18.9)')
-C    &  '      Core energy : ', ECORE
 *
       IF(IDMPIN.EQ.1) THEN
         WRITE(LUOUT,'(1X ,A)')

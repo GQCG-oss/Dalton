@@ -479,8 +479,8 @@ C
      &                   IDEMOL,IRSTRT,max_ci_vector_subspace,
      &                   IMAXCIITER,
      &                   lucita_cfg_ci_type(1:6),
-     &                   lucita_cfg_ini_wavef(1:6),PRILUC,NINOBS,
-     &                   NGAS,NCISPC,IPLOCAL)
+     &                   lucita_cfg_ini_wavef(1:6),CALSIZ,
+     &                   PRILUC,NINOBS,NGAS,NCISPC,IPLOCAL)
 *
 6666  continue
 *
@@ -2979,7 +2979,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
       subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
      &                         IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
-     &                         TYPE,WAFFCT,PRILUC,NINOBS,
+     &                         TYPE,WAFFCT,CALSIZ,PRILUC,NINOBS,
      &                         NGAS,NCISPC,IPRT)
 *
       use lucita_cfg
@@ -3154,15 +3154,6 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
         MAXIT = IMAXCIITER
-!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-!       else if (CALSIZ.eq.'HUG') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-CC        TYPELUC(NSEQ) = 'VF'
-CC        IVFLEV = 1               ! could be made more flexible
-!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -3481,15 +3472,6 @@ CC        IVFLEV = 1               ! could be made more flexible
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
         MAXIT = IMAXCIITER
-!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-!       else if (CALSIZ.eq.'HUG') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-CC        TYPELUC(NSEQ) = 'VF'
-CC        IVFLEV = 1               ! could be made more flexible
-!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -3807,15 +3789,6 @@ CC        IVFLEV = 1               ! could be made more flexible
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
         MAXIT = IMAXCIITER
-!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-!       else if (CALSIZ.eq.'HUG') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-CC        TYPELUC(NSEQ) = 'VF'
-CC        IVFLEV = 1               ! could be made more flexible
-!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -3926,15 +3899,6 @@ CC        IVFLEV = 1               ! could be made more flexible
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
         MAXIT = IMAXCIITER
-!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-!       else if (CALSIZ.eq.'HUG') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-CC        TYPELUC(NSEQ) = 'VF'
-CC        IVFLEV = 1               ! could be made more flexible
-!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
@@ -4099,15 +4063,6 @@ CC        IVFLEV = 1               ! could be made more flexible
         NSEQ = 1
         TYPELUC(NSEQ) = 'CI'
         MAXIT = IMAXCIITER
-!       if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-!       else if (CALSIZ.eq.'HUG') then
-!         TYPELUC(NSEQ) = 'CI'
-!         MAXIT = IMAXCIITER
-CC        TYPELUC(NSEQ) = 'VF'
-CC        IVFLEV = 1               ! could be made more flexible
-!       end if
 *
 *  DENSIty matrices
 *   IDEMOL will be written directly to output
