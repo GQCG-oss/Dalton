@@ -94,10 +94,9 @@ C
 *
       subroutine dalton_lucita
 *
+      use lucita_cfg
       implicit real*8 (A-H,O-Z)
-*
 #include "priunit.h"
-#include "luctinp.h"
 *
 #include "clunit.inc"
 #include "mxpdim.inc"
@@ -109,421 +108,247 @@ C
       parameter (NCMD = 21)
       parameter (MXPLNC = 72)
       character*1  CRDHEL
-      character*3  CALSIZ,SCR3,YESSTATEMENT
+      character*3  CALSIZ,YESSTATEMENT
       character*4  COMMAND,CMD(NCMD)
-      character*6  PRILUC,SCR6
+      character*6  PRILUC
       character*10 PERFORMCI
-      character*72 LINE, CARD2(MXPNGAS,MXPICI)
+      character*72 LINE
 *
 *
 * Set logical units
       call setunits
 *
 *----------------------------------------------------------------------*
-*  Insert defaults and print (error) messages where appropriate
+*     check input and print (error) messages where appropriate
 *----------------------------------------------------------------------*
-*
-*  Code for keyword status vector:
-*
-*     IMOKW(N) = 0           keyword not provided in input,
-*                            default or error
-*     IMOKW(N) = 1           keyword given in input
-*     IMOKW(N) = 2           keyword has been set to default value
-*     IMOKW(N) = 3           keyword ignored, default is used
-*
-*
-*
-*  1: if (IMOKW(1).eq.1) User has specified a title (saved in TITLUC)
-*
-*
-*  2: Type of initial wave function (no default)
-*
-      if (IMOKW(2).eq.0) then
+!
+!     Type of initial wave function (no default)
+      if(lucita_cfg_ini_wavef(1:4).eq.'none')then
          write(lupri,*)
      & ' Keyword for type of initial wave function missing. '
          write(lupri,*) ' This keyword is mandatory. '
-         Call Abend2('Input error')
+         call quit(' *** error in dalton_lucita: keyword 
+     & .INIWFC not specified.')      
       else
-         call lftpos(WAFFCD,MXPLNC)
-         call uppcas(WAFFCD,MXPLNC)
-         if (WAFFCD.eq.'DHFSCF') WAFFCD = 'HF_SCF'
-         if (WAFFCD.eq.'OSHSCF') WAFFCD = 'RASSCF'
-         if (WAFFCD.ne.'HF_SCF'.and. WAFFCD.ne.'RASSCF') then
-            write(lupri,*)
+        if(lucita_cfg_ini_wavef(1:6).ne.'HF_SCF'
+     &    .and.lucita_cfg_ini_wavef(1:6).ne.'RASSCF')then
+          write(lupri,*)
      &  ' Type of initial wave function not implemented. '
-            write(lupri,*) ' You have chosen: ',WAFFCD
-            write(lupri,*) ' Allowed types  : HF_SCF, RASSCF'
-            Call Abend2('Input error')
+          write(lupri,*) ' You have chosen: ',lucita_cfg_ini_wavef
+          write(lupri,*) ' Allowed types  : HF_SCF, RASSCF'
+          call quit(' *** error in dalton_lucita: wrong input to
+     & keyword .INIWFC specified.')
          end if
       end if
-*
-*  3: CI type for LUCIA (no default)
-*
-      if (IMOKW(3).eq.0) then
+!
+!     CI type for LUCIA (no default)
+      if(lucita_cfg_ci_type(1:4).eq.'none')then
          write(lupri,*) ' Keyword for type of CI calculation missing. '
          write(lupri,*) ' This keyword is mandatory. '
-         Call Abend2('Input error')
+         call quit(' *** error in dalton_lucita: keyword 
+     & .CITYPE not specified.')      
       else
-         call lftpos(CALCTP,MXPLNC)
-         call uppcas(CALCTP,MXPLNC)
-         if (CALCTP.ne.'FCI   '.and.CALCTP.ne.'SDCI  '.and.
-     &       CALCTP.ne.'GASCI '.and.CALCTP.ne.'RASCI '.and.
-     &       CALCTP.ne.'SDTQ  ') then
-            write(lupri,'(//A//2A/A)')
-     &         ' Type of CI calculation not properly specified.',
-     &         ' You have chosen: ',CALCTP,
-     &         ' Allowed types  :  FCI, SDCI, GASCI, RASCI, SDTQ'
-            Call Abend2('Input error')
-         end if
+        if(lucita_cfg_ci_type(1:6).ne.'FCI   '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'SDCI  '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'GASCI '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'RASCI '.and.
+     &     lucita_cfg_ci_type(1:6).ne.'SDTQ  ') then
+           write(lupri,'(//A//2A/A)')
+     &     ' Type of CI calculation not properly specified.',
+     &     ' You have chosen: ',lucita_cfg_ci_type,
+     &     ' Allowed types  :  FCI, SDCI, GASCI, RASCI, SDTQ'
+          call quit(' *** error in dalton_lucita: wrong input to
+     & keyword .CITYPE specified.')
+        end if
       end if
 *
-*  4: Number of roots to be obtained
-*
-      if (IMOKW(4).eq.0) then
-         NROOTD = 1
-         IMOKW(4) = 2
-      end if
-*
-*  5: State symmetry in point group
-*
-      if (IMOKW(5).eq.0) then
-         ISSYMD = 1
-         IMOKW(5) = 2
-      end if
-*
-*  6: Active electrons
-*
-      if (IMOKW(6).eq.0) then
-         if (CALCTP.eq.'GASCI '.or.CALCTP.eq.'RASCI ') then
+*     Active electrons
+!     transfer to common block in lucita/lucinp.inc
+      nactel = lucita_cfg_nr_active_e
+      if(nactel.lt.0)then
+        if(lucita_cfg_ci_type(1:6).eq.'GASCI '.or.
+     &     lucita_cfg_ci_type(1:6).eq.'RASCI ') then
             write(lupri,'(//A/A/)')
      &         ' Number of active electrons NACTEL must be',
      &         ' specified for this type of calculation. Quitting.'
-            Call Abend()
-         else
-            NACTEL = -1
-            IMOKW(6) = 2
-         end if
-      else if (IMOKW(6).eq.1) then
-         NACTEL = NACTED
+          call quit(' *** error in dalton_lucita: # electrons
+     &   (.NACTEL) must be specified for GASCI or RASCI.')
+        end if
       end if
 *
 *  7: Spin multiplicity (no default)
 *
-      if (IMOKW(7).eq.1) then
-         MULTIP = IMULTD
-         if (IMOKW(6).eq.1) then
-            call evenodd(IEONAC,NACTEL)
-            call evenodd(IEOMUL,MULTIP)
-            if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-               write(lupri,*) 'Illegal spin multiplicity given.'
-               write(lupri,*) 'Read a book about fermions.'
-               Call Abend2('quitting')
-            else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-               write(lupri,*) 'Illegal spin multiplicity given.'
-               write(lupri,*) 'Read a book about fermions.'
-               Call Abend2('quitting')
-            else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
-               if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-                  write(lupri,'(//A/A/)')
-     &               ' Illegal spin multiplicity given.',
-     &               ' Compare with number of active electrons.'
-                  Call Abend2('quitting')
-               end if
-            else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
-               if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-                  write(lupri,'(//A/A/)')
-     &               ' Illegal spin multiplicity given.',
-     &               ' Compare with number of active electrons.'
-                  Call Abend2('quitting')
-               end if
-            end if
-         end if
-      else if (IMOKW(7).eq.0) then
-         write(lupri,*) 'Spin multiplicity is a MANDATORY keyword.'
-         write(lupri,*) 'Specify and restart.'
-         Call Abend2('Quitting.')
-      end if
-*
-*  8: Global print parameter
-*
-      if (IMOKW(8).eq.0) then
-         PRILUC = 'NON'
-         IMOKW(8) = 2
-      else if (IMOKW(8).eq.1) then
-         if (IPRNGD.eq.0) then
-            PRILUC = 'NON'
-         else if (IPRNGD.eq.1) then
-            PRILUC = 'LOW'
-         else if (IPRNGD.eq.2) then
-            PRILUC = 'MED'
-         else if (IPRNGD.eq.3) then
-            PRILUC = 'HIG'
-         else if (IPRNGD.eq.4) then
-            PRILUC = 'VHI'
-         else
-            write(lupri,*) 'Invalid print flag. Check PRINTG.'
-            write(lupri,*) 'IPRNGD = ',IPRNGD
-            Call Abend2('quitting')
-         end if
-      end if
-*
-*  9: Local print parameter
-*
-      if (IMOKW(9).eq.0) then
-         IPLOCAL = 0
-         IMOKW(9) = 2
-      else if (IMOKW(9).eq.1) then
-         IPLOCAL = IPRNLD
-      end if
-*
-* 10: Approximate size of calculation
-*
-      if (IMOKW(10).eq.0) then
-         CALSIZ = 'NOR'
-         IMOKW(10) = 2
+      multip = lucita_cfg_is_spin_multiplett
+      if(multip.lt.0)then
+        write(lupri,*) 'Spin multiplicity is a MANDATORY keyword.'
+        write(lupri,*) 'Specify and restart.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & (.MULTIP) must be specified in any case.')
       else
-         call lftpos(SZCALD,MXPLNC)
-         call uppcas(SZCALD,MXPLNC)
-         CALSIZ = SZCALD(1:3)
-         if (CALSIZ.ne.'NOR'.and.CALSIZ.ne.'LAR'.and.
-     &       CALSIZ.ne.'HUG') then
-           write(lupri,'(A,A3)') 'SIZE specified to ',CALSIZ
-           write(lupri,*) 'This is an unknown type.'
-           Call Abend2('Quitting.')
-         end if
+        call evenodd(IEONAC,NACTEL)
+        call evenodd(IEOMUL,MULTIP)
+        if(IEONAC.eq.2.and.IEOMUL.eq.2) then
+          write(lupri,*) 'Illegal spin multiplicity given.'
+          write(lupri,*) 'Read a book about fermions.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
+          write(lupri,*) 'Illegal spin multiplicity given.'
+          write(lupri,*) 'Read a book about fermions.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
+          if(MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
+            write(lupri,'(//A/A/)')
+     &      ' Illegal spin multiplicity given.',
+     &      ' Compare with number of active electrons.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+          end if
+        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
+          if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
+            write(lupri,'(//A/A/)')
+     &      ' Illegal spin multiplicity given.',
+     &      ' Compare with number of active electrons.'
+          call quit(' *** error in dalton_lucita: spin multiplicity
+     & is impossible.')
+          end if
+        end if
       end if
 *
-* 11: Orbital distribution in inactive space (no defaults if RASCI)
-*
-      if (IMOKW(11).eq.0) then
-         if (CALCTP.eq.'RASCI ') then
-            write(lupri,*) 'Number of inactive orbitals per sym'
-            write(lupri,*) 'has to be specified. This is mandatory'
-            write(lupri,*) 'in a RASCI calculation.'
-            Call Abend2('Quitting.')
-         else
-            INACOB = 0
-            IMOKW(11) = 2
-         end if
-      else if (IMOKW(11).eq.1) then
-         INACOB = 1
+*     Global print parameter
+      if(lucita_cfg_global_print_lvl .eq. 0)then
+         PRILUC = 'NON'
+      else if(lucita_cfg_global_print_lvl .eq. 1)then
+        PRILUC = 'LOW'
+      else if(lucita_cfg_global_print_lvl .eq. 2)then
+        PRILUC = 'MED'
+      else if(lucita_cfg_global_print_lvl .eq. 3)then
+        PRILUC = 'HIG'
+      else if(lucita_cfg_global_print_lvl .eq. 4)then
+        PRILUC = 'VHI'
+      else
+        write(lupri,*) 'Invalid print flag. Check .PRINTG.'
+        write(lupri,*) 'lucita_cfg_global_print_lvl = ',
+     &                  lucita_cfg_global_print_lvl
+        call quit(' *** error in dalton_lucita: global print level
+     & (.PRINTG) too high.')
       end if
 *
-* 12: Orbital distribution in GAS spaces (no defaults if GASCI)
+*     Local print parameter
+      IPLOCAL = lucita_cfg_local_print_lvl
 *
-      if (IMOKW(12).eq.0) then
-         if (CALCTP.eq.'GASCI ') then
-            write(lupri,*) 'GASCI type requires GASS to be specified.'
-            write(lupri,*) 'Else, I do not know what to do.'
-            Call Abend2('Quitting.')
-         end if
-         IMOKW(12) = 2
-      end if
-      if (IMOKW(12).eq.1) then
-         if (CALCTP.ne.'GASCI ') then
-           write(lupri,*) 'GASS specified and not doing GASCI.'
-           write(lupri,*) 'This input will be ignored.'
-           write(lupri,*) 'Program will continue with ',CALCTP,'.'
-           IMOKW(12) = 3
-         else
-           NGAS = INGASD
-         end if
-      end if
+*     Approximate size of calculation
+      CALSIZ = lucita_cfg_calculation_size(1:3)
 *
-* 13: Cumulative min. and max. numbers of electrons in GAS spaces
+*     Orbital distribution in inactive space (no defaults if RASCI)
 *
-      if (IMOKW(13).eq.0) then
-         if (CALCTP.eq.'GASCI ') then
-            write(lupri,*)
-     &         'GSSP has to be specified in GASCI calculation.'
-            write(lupri,*) 'No defaults in this type of CI.'
-            Call Abend2('Quitting.')
-         end if
-         IMOKW(13) = 2
-      end if
-      if (IMOKW(13).eq.1) then
-         if (CALCTP.ne.'GASCI ') then
-           write(lupri,*) 'GSSP specified and not doing GASCI.'
-           write(lupri,*) 'This input will be ignored.'
-           write(lupri,*) 'Program will continue with ',CALCTP,'.'
-           write(lupri,*) 'Defaults will be set.'
-           IMOKW(13) = 3
-         else
-           NCISPC = NSEQCD
-           do ISPC = 1,NCISPC,1
-             do IGS = 1,NGAS,1
-               CARD2(IGS,ISPC) = CRDGOC(IGS)
-             end do
-           end do
-         end if
+      INACOB = 0
+      if(lucita_cfg_inactive_shell_set)then
+        INACOB = 1
+!       not in use for GASCI
+        if(lucita_cfg_ci_type(1:6).eq.'GASCI ') INACOB = 0
+      else
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
+          write(lupri,*) 'Number of inactive orbitals per sym'
+          write(lupri,*) 'has to be specified. This is mandatory'
+          write(lupri,*) 'in a RASCI calculation.'
+          call quit(' *** error in dalton_lucita: inactive orbitals 
+     &    (.INACTI) not specified for RASCI calculation.')
+        end if
       end if
 *
-* 15: RAS1 specification; no default
-*
-      if (IMOKW(15).eq.0) then
-         if (CALCTP.eq.'RASCI ') then
-            write(lupri,*) 'RAS1 keyword missing. Add and restart.'
-            Call Abend2('Quitting.')
-         end if
-         IMOKW(15) = 2
-      else if (IMOKW(15).eq.1) then
-         if (CALCTP.ne.'RASCI ') then
-            write(lupri,*)
-     &         'Keyword RAS1 not compatible with TYPE ',CALCTP
-            write(lupri,*) 'I will ignore your this input.'
-            write(lupri,*) 'Program will continue.'
-            IMOKW(15) = 3
-         end if
-         ! MXHL1D has been defined in input
+*     Orbital distribution in GAS spaces (no defaults if GASCI)
+      ngas = lucita_cfg_nr_gas_spaces
+      if(ngas.lt.1)then
+        if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
+          write(lupri,*) 'GASCI type requires .GASSHE to be specified.'
+          write(lupri,*) 'Else, I do not know what to do.'
+          call quit(' *** error in dalton_lucita: GASCI run but
+     &    .GASSHE not specified.')
+        end if
       end if
 *
-* 16: RAS2 specification; no default
+*     Cumulative min. and max. numbers of electrons in GAS spaces
+      if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
+        if(.not.lucita_cfg_minmax_occ_gas_set)then
+          write(lupri,*) 'GASCI type requires .GASSPC to be specified.'
+          write(lupri,*) 'Else, I do not know what to do.'
+          call quit(' *** error in dalton_lucita: GASCI run but
+     &    .GASSPC not specified.')
+        end if
+      end if
+      NCISPC = lucita_cfg_nr_calc_sequences
 *
-      if (IMOKW(16).eq.0) then
-         if (CALCTP.eq.'RASCI ') then
-            write(lupri,*) 'RAS2 keyword missing. Add and restart.'
-            Call Abend2('Quitting.')
-         end if
-         IMOKW(16) = 2
-      else if (IMOKW(16).eq.1) then
-         if (CALCTP.ne.'RASCI ') then
-            write(lupri,*)
-     &         'Keyword RAS2 not compatible with TYPE ',CALCTP
-            write(lupri,*) 'INFO: I will ignore this input.'
-            write(lupri,*) 'Program will continue.'
-            IMOKW(16) = 3
-         end if
+*     RAS specifications; no default
+      if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
+        if(.not.lucita_cfg_ras1_set .or. .not. lucita_cfg_ras2_set.or.
+     &     .not.lucita_cfg_ras3_set)then
+          write(lupri,*) 'RASCI type requires .RAS1, .RAS2 and .RAS3'//
+     &                   ' to be specified.'
+          write(lupri,*) 'Else, I do not know what to do.'
+          call quit(' *** error in dalton_lucita: RASCI run but
+     &    not all RAS spaces specified.')
+        end if
       end if
 *
-* 17: RAS3 specification; no default
+*     Default setting for DENSity matrices
+      idemol = lucita_cfg_density_calc_lvl
+
+*     Default setting for Davidson subspace dimensions
+      max_ci_vector_subspace = lucita_cfg_max_dav_subspace_dim
+      max_ci_vector_subspace =
+     &      max(3*lucita_cfg_nr_roots, max_ci_vector_subspace)
 *
-      if (IMOKW(17).eq.0) then
-         if (CALCTP.eq.'RASCI ') then
-            write(lupri,*) 'RAS3 keyword missing. Add and restart.'
-            Call Abend2('Quitting.')
-         end if
-         IMOKW(17) = 2
-      else if (IMOKW(17).eq.1) then
-         if (CALCTP.ne.'RASCI ') then
-            write(lupri,*)
-     &         'Keyword RAS3 not compatible with TYPE ',CALCTP
-            write(lupri,*) 'INFO: I will ignore this input.'
-            write(lupri,*) 'Program will continue.'
-            IMOKW(17) = 3
-         end if
-         !MXEL3D has bee set
-      end if
+*     Restart option from CI vector(s)
+      irstrt = lucita_cfg_restart_ci
 *
-* 18: Default setting for DENSity matrices
+*     Type of parallel calculation
+      IF (LUCI_NMPROC .GT. 1) THEN
+        IODENSEPAR = 2
+        IRUNPA     = 1
+        IPARMODEL  = 2
+      ELSE
+        IODENSEPAR = 0
+        IRUNPA     = 0
+        IPARMODEL  = 0
+      END IF
 *
-      if (IMOKW(18).eq.0) then
-         IDEMOL = 0
-         IMOKW(18) = 2
-      else if (IMOKW(18).eq.1) then
-         IDEMOL = IDENSD
-      end if
+*     Type of I/O model in parallel calculation
+      IF (LUCI_NMPROC .GT. 1) THEN
+        IIOMOD = 1
+        YESSTATEMENT = 'Yes'
+      ELSE
+        IIOMOD = 0
+        YESSTATEMENT = 'No'
+      END IF
 *
-* 19: Restart option from CI vector(s)
+*     maximum number of CI Iterations
+      imaxciiter = lucita_cfg_max_nr_dav_ci_iter
 *
-      if (IMOKW(19).eq.0) then
-         IRSTRT = 0
-         IMOKW(19) = 2
-      else if (IMOKW(19).eq.1) then
-         IRSTRT = IRSTLT
-      end if
+*     Largest allowed batchsize (if larger than biggest block!) 
+      imaxlblksz = MAX(100 000,lucita_cfg_max_batch_size)
 *
-* 21: Type of parallel calculation
+*     Distribution routine to use (only relevant in parallel case) 
 *
-      if (IMOKW(21).eq.0) then
-        IF (LUCI_NMPROC .GT. 1) THEN
-         IODENSEPAR = 2
-         IRUNPA     = 1
-         IPARMODEL  = 2
-        ELSE
-         IODENSEPAR = 0
-         IRUNPA     = 0
-         IPARMODEL  = 0
-        END IF ! (LUCI_NMPROC .GT. 1) THEN
-         IMOKW(21) = 2
-      end if
-*
-* 22: Type of I/O model in parallel calculation
-*
-      if (IMOKW(22).eq.0) then
-        IF (LUCI_NMPROC .GT. 1) THEN
-         IIOMOD = 1
-         YESSTATEMENT = 'Yes'
-        ELSE
-         IIOMOD = 0
-         YESSTATEMENT = 'No'
-        END IF
-      end if
-*
-* 23: Number of maximum CI Iterations
-*
-      if (IMOKW(23).eq.0) then
-         IMAXCIITER = 100
-         IMOKW(23) = 2
-      else if (IMOKW(23).eq.1) then
-         if(ICIMAXITER.le.0) then
-           IMAXCIITER = 100
-         else
-           IMAXCIITER = ICIMAXITER
-         end if
-      end if
-*
-* 24: Largest allowed batchsize (if larger than biggest block!) 
-*
-      if (IMOKW(24).eq.0) then
-         IMAXBLKSIZE = 100 000 000
-         IMAXLBLKSZ = IMAXBLKSIZE
-         IMOKW(24) = 2
-      else if (IMOKW(24).eq.1) then
-         IMAXLBLKSZ = MAX(100 000,IMAXBLKSIZE)
-C        .. we do not accept user input of less than 100 000 !
-      end if
-*
-* 26: Distribution routine to use (only relevant in parallel case) 
-*
-      IDISTROUTE = 0
-      if (IMOKW(26).eq.0) then
-        IDISTROUTE = 2
-        IMOKW(26)  = 2
-      else if (IMOKW(26).eq.1) then
-        if( I_USE_DIST_ROUTE .eq. 1 ) then
-          IDISTROUTE = I_USE_DIST_ROUTE
-        else if ( I_USE_DIST_ROUTE .eq. 2 ) then
-          IDISTROUTE = I_USE_DIST_ROUTE
-        else
-          write(lupri,*) 'Value for keyword DISTRT incorrect ',
-     &               I_USE_DIST_ROUTE
+      idistroute = lucipar_cfg_ttss_dist_strategy
+      IF(LUCI_NMPROC .GT. 1)THEN
+        if(idistroute.gt.2.or.idistroute.lt.1)then
+          write(lupri,*) 'Value for keyword .DISTRT incorrect ',
+     &                    idistroute
           write(lupri,*) 'INFO: I will ignore your input.'
           write(lupri,*) 'Program will continue.'
-          IDISTROUTE = 2   
-          IMOKW(26) = 2
+          idistroute = 2   
         endif
-      end if
+      END IF
 *
-* 28: Truncate residual vectors before creating new trial vector?
+*     Truncate residual vectors before creating new trial vector?
 *     (14-jun-07, hjaaj)
-*
-      if (IMOKW(28).eq.1) then
-        trunc_fac = ctrunc_fac
-      else
-      ! default: remove only very small numbers, less than round-off
-      ! factor
-        trunc_fac = 1.0D-10
-      end if
+      trunc_fac = lucita_cfg_accepted_truncation
 *
 *
-* 29: memory multiplier ...
-*    
-*
-      if (IMOKW(29).eq.1) then
-         ISMEMFAC  = in_memfac 
-      else
-         ISMEMFAC  = 3
-      end if
+*     memory reduction multiplier ...
+      ISMEMFAC  = lucipar_cfg_mem_reduction_multp 
 
       if(irunpa.eq.1) then
         performci = 'parallel'
@@ -539,35 +364,36 @@ C        .. we do not accept user input of less than 100 000 !
 *  1: Title
 *
       write(LUOUT,'(/1X,80A1)') ('*',I=1,80)
-      IF (IMOKW(1) .EQ. 1) THEN
-         WRITE(LUOUT,'(A/2A/A)') ' *',
-     &      ' * User specified title : ',TITLUC, ' *'
-         write(LUOUT,'(1X,80A1)') ('*',I=1,80)
-      END IF
+      write(LUOUT,'(A/2A/A)') ' *',
+     &   ' * title : ',lucita_cfg_run_title, ' *'
+      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
 *
 *  2: Initial wave function
 *
       write(LUOUT,'(/A42,A6/)')
-     &  ' Orbitals as initial wave function .... ',WAFFCD
+     &  ' Orbitals as initial wave function .... ',
+     &    lucita_cfg_ini_wavef(1:6)
 *
 *  3: Type of CI calculation
 *
       write(LUOUT,'(A42,A6/)')
-     &  ' Type of calculation .................. ',CALCTP
+     &  ' Type of calculation .................. ',
+     &    lucita_cfg_ci_type(1:6)
 *
 *  4: Number of roots to be treated
 *
       write(LUOUT,'(A42,I3/)')
-     &  ' Number of roots to be obtained ....... ',NROOTD
+     &  ' Number of roots to be obtained ....... ',lucita_cfg_nr_roots
 *
 *  5: State symmetry
 *
       write(LUOUT,'(A42,I3/)')
-     &  ' Calculation carried out in irrep ..... ',ISSYMD
+     &  ' Calculation carried out in irrep ..... ',
+     &    lucita_cfg_ptg_symmetry
 *
 *  6: Number of active electrons
 *
-      if (IMOKW(6).eq.1) then
+      if(NACTEL.gt.0)then
         write(LUOUT,'(A42,I3/)')
      &  ' Number of active electrons ........... ',NACTEL
       end if
@@ -634,7 +460,7 @@ C        .. we do not accept user input of less than 100 000 !
 *
 * 19: Restart option activated
 *
-      if (IRSTRT.eq.1) then
+      if(IRSTRT.eq.1) then
         write(LUOUT,'(A42,A3/)')
      &    ' Restarted calculation from file ...... ','YES'
       end if
@@ -647,10 +473,14 @@ C        .. we do not accept user input of less than 100 000 !
 *-----------------------------------------------------------------*
 *  Call conversion routine for creating LUCIA input
 *-----------------------------------------------------------------*
-      call dalton2lucita(ISSYMD,NROOTD,MULTIP,MXHL1D,MXEL3D,INACOB,
-     &                   IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
-     &                   CALCTP,WAFFCD,PRILUC,NINOBS,
-     &                   NGAS,NCISPC,IPLOCAL,CARD2)
+      call dalton2lucita(lucita_cfg_ptg_symmetry,lucita_cfg_nr_roots,
+     &                   MULTIP,lucita_cfg_max_holes_ras1,
+     &                   lucita_cfg_max_e_ras3,INACOB,
+     &                   IDEMOL,IRSTRT,max_ci_vector_subspace,
+     &                   IMAXCIITER,
+     &                   lucita_cfg_ci_type(1:6),
+     &                   lucita_cfg_ini_wavef(1:6),PRILUC,NINOBS,
+     &                   NGAS,NCISPC,IPLOCAL)
 *
 6666  continue
 *
@@ -2003,7 +1833,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       END
 ***********************************************************************
 *
-      subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS,IRETISH)
+      subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -2017,7 +1847,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
       write(lupri,*) 'GET_DALTON_INF called, we try doing a little!' !hjaaj DEBUG
       write(lupri,*) 'WAFFCT = ',WAFFCT
-      IRETISH = -1
       if (WAFFCT.eq.'HF_SCF') then
 *
 *  1) DHFSCF wave function, closed shell
@@ -2860,7 +2689,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
      &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &                   IRREP,NROOT,MULTIP,MS2,NELGS,
      &                   CALSIZ,IVFLEV,
-     &                   IUSE_PH,IDEMOL,IRSTRT,
+     &                   IUSE_PH,IDEMOL,IRSTRT,MXCIVL,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
 *
@@ -2956,6 +2785,9 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
          write(lupri,'(A5)') 'ROOTS'
          write(lupri,'(1X,I3)') NROOT
+
+         write(lupri,'(A5)') 'MXCIV'
+         write(lupri,'(1X,I3)') MXCIVL
 *
          write(lupri,'(A5)') 'DENSI'
          write(lupri,'(1X,I3)') IDEMOL
@@ -3090,6 +2922,9 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
          write(LUINP,'(A5)') 'ROOTS'
          write(LUINP,'(1X,I3)') NROOT
+
+         write(LUINP,'(A5)') 'MXCIV'
+         write(LUINP,'(1X,I3)') MXCIVL
 *
          write(LUINP,'(A5)') 'DENSI'
          write(LUINP,'(1X,I3)') IDEMOL
@@ -3145,9 +2980,9 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
      &                         IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
      &                         TYPE,WAFFCT,PRILUC,NINOBS,
-     &                         NGAS,NCISPC,IPRT,CARD2)
+     &                         NGAS,NCISPC,IPRT)
 *
-      use lucita_orbital_spaces
+      use lucita_cfg
       implicit real*8 (A-H,O-Z)
 #include "priunit.h"
 #include "mxpdim.inc"
@@ -3161,7 +2996,6 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       character*2 TYPELUC(MXSEQ)
       character*3 CALSIZ
       character*6 TYPE, WAFFCT, PRILUC
-      character*72 CARD2(MXPNGAS,MXPICI)
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
@@ -3185,7 +3019,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
       print *, ' stefan: i think this call is now obsolete; we 
      & obtain the info about nish, nash, etc. already at other places.'
-      call get_dalton_inf(WAFFCT,IPRT,NACRAS,IRETISH)
+      call get_dalton_inf(WAFFCT,IPRT,NACRAS)
 *
 *.................................................................
 *  1) Type of wave function dependencies
@@ -3198,6 +3032,8 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
 *
 *
 *     inactive shells and total number of inactive orbitals
+      nsum    =  0
+      iretish = -1
       if(inacob .eq. 1)then
         call icopy(nsym,nish_lucita,1,ninobs,1)
         nsum = 0
@@ -3205,6 +3041,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
           nsum = nsum + ninobs(isym)
         end do
       end if
+      if(nsum.gt.0) iretish = 0
 *
 *.................................................................
 *  3) TYPE dependencies (keywords depending on type of CI chosen)
@@ -4031,7 +3868,9 @@ CC        IVFLEV = 1               ! could be made more flexible
 *  GASSPC, NCISPC
         do ICISPC=1,NCISPC,1
           do IGAS=1,NGAS,1
-            read(CARD2(IGAS,ICISPC),*) (NELGS(IGAS,I,ICISPC),I=1,2,1)
+            do i = 1, 2
+              nelgs(igas,i,icispc) = ngso_lucita(igas,i)
+            end do
           end do
         end do
         if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
@@ -4377,7 +4216,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &             IRREP,NROOT,MULTIP,MS2,NELGS,
      &             CALSIZ,IVFLEV,
-     &             IUSE_PH,IDEMOL,IRSTRT,
+     &             IUSE_PH,IDEMOL,IRSTRT,MXCIVL,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
      &             IPRDEN,IPROCC,IPRNCIV)
 *

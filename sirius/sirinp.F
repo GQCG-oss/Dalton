@@ -748,7 +748,8 @@ C NUMRUN = number of wave functions (e.g. RHF + MP2 + MCSCF: NUMRUN=3)
 C
       INPERR = 0
       NUMRUN = 0
-      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
+      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) THEN
          DOCINO = .FALSE.
@@ -1808,7 +1809,7 @@ C     END OF SIRRDI.
 C
       END
 C  /* Deck newinp */
-      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
+      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 C
 C Revisions
 C    1-OCT-1987 HA     Keyword directed input for all parameters
@@ -1952,13 +1953,19 @@ C 80 OTRIAL=TRUE; use orbital trial vectors each macro     OPT : ORB_TR
 C
 C******************************************
 C
+      use keyword
+      use input_reader
+      use lucita_cfg
+      use lucita_orbital_spaces
 #include <implicit.h>
 C
 C -- local variables and constants
 C
       PARAMETER (NTBMOD = 23)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
-      LOGICAL   ALLOPT, PTABMO
+      LOGICAL   ALLOPT, PTABMO, lucita_input_provided
+C needed for lucita: nsym, norb
+      DIMENSION NORB(*)
 C
 #include <priunit.h>
 #include <gnrinf.h>
@@ -1978,6 +1985,7 @@ C  ***************************************************
 C
       ALLOPT = .FALSE.
       PTABMO = .FALSE.
+      lucita_input_provided = .false.
 C
       WORD = '*GENERA'
       CALL SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
@@ -2059,7 +2067,12 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
- 3100  CALL LUCITAINP(WORD,INPERR,ALLOPT)
+!3100  CALL LUCITAINP(WORD,INPERR,ALLOPT)
+!      this is to keep backwards compatibility - lucita input is now
+!      processed via the new input reader module.
+ 3100  unit_in = LUCMD
+       call move_to_next_star(word)
+       lucita_input_provided = .true.
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -2067,9 +2080,37 @@ C  Here if "*END OF"
           CALL PRTAB(NTBMOD,TABMOD,'General Sirius input keywords',
      &               LUPRI)
        END IF
+
+!      process now the LUCITA input if applicable
+       if(lucita_input_provided)then
+         CALL GPCLOSE(LUCMD,'KEEP')
+!        reset orbital space arrays
+         call lucita_orb_spaces_setup_delete_total()
+         call read_input()
+         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+       end if
+
 C
 C ********  END OF READ OF INPUT DATA  **********
 C
+      if(lucita_input_provided)then
+!        LUCITA input has been processed - 
+!        complete now the remaining compulsory settings
+!        a. orbital spaces
+!        init_input_type:
+!        1: ci input
+!        2: mcscf input
+         init_input_type = 1
+
+         call define_lucita_orb_spaces(nsym,                        
+     &                                 lucita_cfg_nr_gas_spaces,    
+     &                                 max_number_of_ptg_irreps,    
+     &                                 max_number_of_gas_spaces,    
+     &                                 norb,                        
+     &                                 init_input_type,             
+     &                                 lucita_cfg_init_wave_f_type)
+      end if
 C
 C     We anyway need to process CC default settings
 C

@@ -985,6 +985,7 @@ C
 *
 !     dependencies on F90 modules
 !     common modules
+      use lucita_cfg
       use lucita_orbital_spaces
 !     parallel lucita
       use communication_model
@@ -1014,7 +1015,6 @@ C
 #include "cicisp.inc"
 #include "oper.inc"
 #include "cgas.inc"
-#include "luctinp.h"
 *.Memory
 #include "wrkspc.inc"
 
@@ -1400,7 +1400,7 @@ C
 C
 !     reset orbital spaces (should probably moved to the yet-to-write
 !     common ci/mcscf interface for lucita)
-      call lucita_orb_spaces_setup_delete
+      call lucita_orb_spaces_setup_delete_total
 
       write(luout,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
      &  ' finished with no errors.'

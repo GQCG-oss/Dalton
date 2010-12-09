@@ -34,7 +34,11 @@ module keyword
   public kw_read
 
   integer, parameter, public :: kw_length = 7
+#ifdef PRG_DIRAC
   integer, parameter, public :: unit_in   = 5
+#else
+  integer, public            :: unit_in   = 8
+#endif
 
   private
 

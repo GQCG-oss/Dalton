@@ -11,11 +11,11 @@ F77_OBJS = ciinfo.o  density.o  diagonal.o  diagonalize.o  \
            fock.o  dalton_interface.o  io.o  \
            memory.o program.o \
            property.o  sigma.o  strings.o  transform.o  utils.o  \
-           vecmat.o  par_lucia.o  par_solver.o lucidal_input.o
+           vecmat.o  par_lucia.o  par_solver.o
 
 # F90_MODS should contain all files with F90 modules in proper order
 #          (i.e. if b.F90 calls a module in k.F90, then the proper order is k.F90 b.F90)
-F90_MODS = dalton_mpi.F90 lucita_orbitalspaces.F90 par_sync_cw.F90 par_io.F90 par_communication_model.F90 par_io_fh.F90
+F90_MODS = dalton_mpi.F90 lucita_cfg.F90 lucita_orbitalspaces.F90 par_sync_cw.F90 par_io.F90 par_communication_model.F90 par_io_fh.F90
 
 F90_MOD_OBJS = $(F90_MODS:.F90=.o)
 
