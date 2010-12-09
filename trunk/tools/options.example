@@ -1,3 +1,0 @@
--O1 -fno-globals -Wno-globals -fno-second-underscore
--O2 -fno-globals -Wno-globals -fno-second-underscore
--O3 -fno-globals -Wno-globals -fno-second-underscore

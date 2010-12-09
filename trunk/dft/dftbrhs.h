@@ -1,2 +1,0 @@
-      LOGICAL DOVB
-      COMMON /DFTRHSB/ DOVB
