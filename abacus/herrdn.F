@@ -4236,6 +4236,8 @@ C            small molecules, otherwise just a lot of lines.
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
       ICRX = 1
+      ICRY = 2
+      ICRZ = 3
       IPCMN= 0
       NATOMS = 0
       KMASS  = NCOOR + 1
@@ -4255,8 +4257,6 @@ C
 C
 C
       DO 100 ICENT = 1, NUCIND
-         ICRY = ICRX + 1
-         ICRZ = ICRX + 2
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
@@ -4269,10 +4269,12 @@ C
             END IF
             WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
             NATOMS = NATOMS + 1
-            WORK(ICRX  ) = CORD(1,ICENT)
+            WORK(ICRX) = CORD(1,ICENT)
             WORK(ICRY) = CORD(2,ICENT)
             WORK(ICRZ) = CORD(3,ICENT)
             ICRX = ICRX + 3
+            ICRY = ICRY + 3
+            ICRZ = ICRZ + 3
          ELSE
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
@@ -4295,6 +4297,8 @@ C
      *                     ICRZ,CHRXYZ(-3),WORK(ICRZ)
                   END IF
                   ICRX = ICRX + 3
+                  ICRY = ICRY + 3
+                  ICRZ = ICRZ + 3
                END IF
   200       CONTINUE
          END IF
