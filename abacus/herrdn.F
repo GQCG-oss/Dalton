@@ -696,6 +696,7 @@ C
 #include <numder.h>
 #include <r12int.h>
 #include <qm3.h>
+#include <pcmlog.h>
       CALL QENTER('READ_MOL')
       ZMAT = .FALSE.
 C     Initialize auxiliary basis set variables (WK/UniKA/04-11-2002).
@@ -863,6 +864,12 @@ C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,DOOWN)
+C
+C     ***********************************
+C     ***** Process PCM speres data *****
+C     ***********************************
+C
+      IF(PCM) CALL PCMSPHGEN
 C
 C     Dec 04 hjaaj: TODO
 C     EWMO is only implemented for case with no
@@ -1147,7 +1154,8 @@ C        New or old input style ?
 C
          IF (INDEX(BKPLIN,'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),JCO(1,I,1),
-     &                 KANG,BASIS,ATOMBA,LMULBS,BASNAMSAVE,KSPH)
+     &                 KANG,BASIS,ATOMBA,LMULBS,BASNAMSAVE,
+     &           RADIUS_PCM, ALPHA_PCM)
             Q_EXPONENT = D0 ! hjaaj: should be introuduced in LINE5; GNU=
          ELSE
             Q_EXPONENT = D0
@@ -1283,7 +1291,8 @@ C
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
-         CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,NSYMOP,ANG,MBSI,KSPH)
+         CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
+     $        RADIUS_PCM, ALPHA_PCM)
 C        .. MBSI has been added (WK/UniKA/04-11-2002).
 C
          DO 300 J = 1,NSETS
@@ -1712,7 +1721,8 @@ C
       CALL QUIT('Cannot determine the charge of one atom')
       END
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,KSPH)
+      SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
+     $     RADIUS_PCM, ALPHA_PCM)
 C     MBSI has been added (WK/UniKA/04-11-2002).
 C*****************************************************************************
 C
@@ -1806,17 +1816,6 @@ C
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
      &         CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT),
      &         ISUBSY(NCTOT),ISUBSI(NCTOT)
-        ELSE IF (PCM) THEN
-           IF ( KSPH .EQ. 1) THEN
-              IDXSPH(NCTOT) = KSPH
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=103)
-     &            CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT),RSPH(NCTOT)
-           ELSE
-              IDXSPH(NCTOT) = 0
-              RSPH(NCTOT) = 0.0D0
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
-     &            CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT)
-           END IF
         ELSE
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
      &         CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT)
@@ -1848,18 +1847,8 @@ C
         ISTART = IPOS
         DO J = 1, 3
           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NCTOT),'REA',
-     &                IERR)
+    &                IERR)
         END DO
-        IF (PCM) THEN
-           IF (KSPH .GT. 0) THEN
-              IDXSPH(NCTOT) = KSPH
-              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,RSPH(NCTOT),
-     &             'REA',IERR)
-           ELSE
-              IDXSPH(NCTOT) = 0
-              RSPH(NCTOT) = 0.0D0
-           END IF
-        END IF
         IF (QM3) THEN
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSY(NCTOT),DUMMY,
      &                'INT',IERR)
@@ -1868,6 +1857,13 @@ C
         END IF
               
 #endif
+        IF (PCM .AND. (RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN
+           IDXSPH(NCTOT) = 1
+           RSPH(NCTOT)=RADIUS_PCM * ALPHA_PCM
+        ELSE
+           IDXSPH(NCTOT) = 0
+           RSPH(NCTOT) = 0.0D0
+        END IF
         IF (ISUBSY(NCTOT) .EQ. 0) NUCIND = NUCIND + 1
         IPOS = INDEX(MLINE(NMLINE),'Isotope=')
         IF (IPOS .NE. 0) THEN
@@ -3561,10 +3557,6 @@ C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
 C
       CALL SYMNCO(LWORK,WORK)
-C
-C LF Generate coordinates of cavity spheres if need be
-C
-      IF (PCM) CALL PCMSPHGEN
 C
       CALL QEXIT('NUCPRO')
       RETURN
@@ -6520,7 +6512,7 @@ C
       END
 C
       SUBROUTINE LINE5(TMPLN,Q,NONT,MBSI,IQM,JCO,KANG,
-     &                 BASIS,ATOMBA,LMULBS,BASNAM,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BASNAM,RADIUS_PCM,ALPHA_PCM)
 C
 C     Read the atom-specific information in new input style
 C
@@ -6529,10 +6521,13 @@ C
 #include <priunit.h>
 #include <pcmlog.h>
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
-      LOGICAL BASIS, ATOMBA, LMULBS
+      LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
       DIMENSION JCO(KANG)
 C
-      KSPH = 0
+      
+      RADIUS_PCM = 0.0D0
+      ALPHA_PCM = 0.0D0
+
       BKPLIN=TMPLN
       CALL UPCASE(BKPLIN)
       IPOS = INDEX(BKPLIN,'CHA')
@@ -6640,27 +6635,43 @@ C
 C
 C read in cavity information
 C
+         FOUNDR = .FALSE.
+         FOUNDA = .FALSE.
+         RADIUS_PCM = 0.0D0
+         ALPHA_PCM = 0.0D0
          IF (PCM) THEN
-            IPOS = INDEX(BKPLIN,'SPH')
+            IPOS = INDEX(BKPLIN,'RADIUS')
             IF (IPOS .NE. 0) THEN
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
-                  WRITE (LUPRI,*) 'Incorrect input for choice '//
-     &                 'of PCM cavity'
-                  WRITE (LUPRI,*) 'Format is "Sphere=?"'
-                  CALL QUIT('Incorrect input for choice of '//
-     &                 'PCM cavity')
+                  WRITE (LUPRI,*) 'Incorrect input for PCM radius'
+                  WRITE (LUPRI,*) 'Format is "Radius=?"'
+                  CALL QUIT('Incorrect input for PCM sphere radius')
                ELSE
-                  READ (BKPLIN((IPOS+IPOS2):),*) KSPH
+                  READ (BKPLIN((IPOS+IPOS2):),*) RADIUS_PCM
+                  FOUNDR = .TRUE.
                END IF
             END IF
+            IPOS = INDEX(BKPLIN,'ALPHA')
+            IF ((IPOS .NE. 0) .AND. FOUNDR) THEN
+               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
+               IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+                  WRITE (LUPRI,*) 'Incorrect input for PCM alpha'
+                  WRITE (LUPRI,*) 'Format is "Alpha=?"'
+                  CALL QUIT('Incorrect input for PCM sphere alpha')
+               ELSE
+                  READ (BKPLIN((IPOS+IPOS2):),*) ALPHA_PCM
+                  FOUNDA = .TRUE.
+               END IF
+            END IF
+            IF(FOUNDR .AND. .NOT. FOUNDA) ALPHA_PCM = 1.0
          END IF
       END IF
       RETURN
       END
 C
       SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,BASIS,ATOMBA,LMULBS,
-     &                  BASNAM,IQM,JCO,KANG,KSPH)
+     &                  BASNAM,IQM,JCO,KANG,RADUS_PCM, ALPHA_PCM)
 C
 C     Write out atom-specific input line in new format
 C     
@@ -6702,9 +6713,10 @@ C
          END DO
       END IF
 C
-      IF (PCM) THEN
-         WRITE (LINE(ISTART:),'(A7,I1)') 'Sphere=',KSPH
-         ISTART = ISTART + 8
+      IF (PCM.AND.(RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN  
+         WRITE (LINE(ISTART:),'(A7,F6.2)') 'Radius=',RADIUS_PCM
+         WRITE (LINE(ISTART:),'(A7,F6.2)') 'Alpha=',ALPHA_PCM
+         ISTART = ISTART + 30
       END IF
 c
       IF (ATOMBA) THEN

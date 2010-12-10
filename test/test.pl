@@ -1,9 +1,20 @@
 #!/usr/bin/perl -w
 #
-# Copyright (C) 2006 Luca Frediani
+#########################################################################
+#
+# Shell script for running DALTON perl-based tests 
+#
+# First version by Luca Frediani, 2006
+#
+#########################################################################
+#
 #
 # Revised Sep-2007 Hans Joergen Aa. Jensen
 #   - ignore case when searching for PATTERN (as if "grep -i PATTERN"  instead of "grep PATTERN")
+#
+# todo
+# override mechanism is primitive: list-type overrides need to be 
+# "overridden" with lists. It should not be necessary
 #
 # Setting default command line options
 #
@@ -446,22 +457,22 @@ sub parse_test_file($$$) {
     my @allchecks = ();
     my $check = "";
     foreach $check (@list) {
-	$idx++;
-	%check = load_check($check, $tstdir, \%files);
-	while (($idx <= $#list) and ($list[$idx]=~/OVERRIDE/)) {
-	    my $override = splice(@list,$idx,1);
-	    my @override = split(/\s+/,$override);
-	    if ($#override == 2) {
-		$check{$override[1]} = $override[2];
-	    }
-	    elsif ($#override > 2) {
-		$check{$override[1]} = [$override[2] .. $override[$#override]];
-	    }
-	    else {
-		print $log "override --@override-- has a wrong number of arguments and will not be included\n";
-	    }
-	}
-	push @allchecks,{%check}
+		$idx++;
+		%check = load_check($check, $tstdir, \%files);
+		while (($idx <= $#list) and ($list[$idx]=~/OVERRIDE/)) {
+			my $override = splice(@list,$idx,1);
+			my @override = split(/\s+/,$override);
+			if ($#override == 2) {
+				$check{$override[1]} = $override[2];
+			}
+			elsif ($#override > 2) {
+				$check{$override[1]} = [splice @override, 2];
+			}
+			else {
+				print $log "override --@override-- has a wrong number of arguments and will not be included\n";
+			}
+		}
+		push @allchecks,{%check}
     }
     close OUT;
     return @allchecks;
