@@ -223,6 +223,26 @@ sub control_check_list ($$) {
 		    post         => 0);
 	  last SWITCH;
       } 
+      if ($type == 6) {
+	  %key_list=(start_string => 'string',
+		     end_string   => 'string',
+		     name         => 'string',
+		     type         => 'integer',
+		     start_offset => 'integer',
+		     end_offset   => 'integer',
+		     pos          => 'integer_list',
+		     rel          => 'integer_list',
+		     abs          => 'integer_list',
+		     thr          => 'float_list');
+	  %max_val=(abs => 1, 
+	            rel => 1);
+	  %min_val=(abs => 0,
+		    rel => 0,
+		    pos => 1,
+		    start_offset => 0,
+		    thr => 1.0e-13);
+	  last SWITCH;
+      } 
   }
     $result = verify_hash_element_types(\%check,
 					\%key_list,
@@ -381,11 +401,12 @@ sub parse_test_file($$$) {
     my $name   = $_[0];
     my $tstdir = $_[1];
     my %files = %{$_[$#_]};
-    my ($log, $err, $dal, $mol, $ref) = ($_[$#_]{log}, 
+    my ($log, $err, $dal, $mol, $ref, $pot) = ($_[$#_]{log}, 
 					 $_[$#_]{err}, 
 					 $_[$#_]{dal}, 
 					 $_[$#_]{mol}, 
-					 $_[$#_]{ref});
+					 $_[$#_]{ref},
+					 $_[$#_]{pot});
     my @list=();
     my @check_list=();
     my $filename=$tstdir."/".$name.".tst";
@@ -408,6 +429,13 @@ sub parse_test_file($$$) {
     close OUT;
     foreach $item (@list) {
 	print $ref $item;
+    }
+
+    open OUT, $filename or die;
+    @list = get_portion("START POTINP","END POTINP",1,1,\%files);
+    close OUT;
+    foreach $item (@list) {
+	print $pot $item;
     }
 
     open OUT, $filename or die;
@@ -554,16 +582,16 @@ sub check_files
     my ($log, $err, $biglog) = ($files{log}, $files{err}, $files{biglog});
     my $result = 0;
     foreach $file (@_) {
-	next if -f $file;
-	$result++;
+       next if (-f $file);
+       $result++;
 	print $err "File $file is not readable!\n";
     }
     if ($result) {
-	print $err "One or more file are missing. Test will be skipped\n";
-	print $log "One or more file are missing. Test will be skipped\n";
-	print $log "Check error file for details\n";
-	print $biglog "One or more file are missing. Test will be skipped\n";
-	print $biglog "Check error file for details\n";
+       print $err "One or more file are missing. Test will be skipped\n";
+       print $log "One or more file are missing. Test will be skipped\n";
+       print $log "Check error file for details\n";
+       print $biglog "One or more file are missing. Test will be skipped\n";
+       print $biglog "Check error file for details\n";
     }
     return $result;
 }
@@ -1268,6 +1296,7 @@ my $LOGFILE = "LOGFILE";
 my $ERRFILE = "ERRFILE";
 my $DALINP  = "DALINP";
 my $MOLINP  = "MOLINP";
+my $POTINP  = "POTINP";
 my $REFOUT  = "REFOUT";
 my $DALOUT  = "DALOUT";
 
@@ -1285,6 +1314,7 @@ my %files = (log    => $LOGFILE,
 	     dal    => $DALINP,
 	     mol    => $MOLINP,
 	     ref    => $REFOUT,
+	     pot    => $POTINP,
 	     out    => $DALOUT,
 	     biglog => $BIGLOG,
 	     bigerr => $BIGERR);
@@ -1328,6 +1358,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 
     $dalinp  = $test.".dal";
     $molinp  = $test.".mol";
+    $potinp  = $test.".pot";
     $dalout  = $test.".out";
     $refout  = $test.".ref";
     $logdal  = $test.".log";
@@ -1340,6 +1371,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     $files{err_f}    = $errfile;
     $files{dal_f}    = $dalinp;
     $files{mol_f}    = $molinp;
+    $files{pot_f}    = $potinp;
     $files{ref_f}    = $refout;
     $files{out_f}    = $dalout;
     $files{biglog_f} = $biglog;
@@ -1349,6 +1381,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     open $ERRFILE,">$errfile" or die;
     open $DALINP, ">$dalinp"  or die;
     open $MOLINP, ">$molinp"  or die;
+    open $POTINP, ">$potinp"  or die;
     open $REFOUT, ">$refout " or die;
 
     print $BIGLOG "Now performing test $test ..............\n";
@@ -1382,7 +1415,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     } elsif ($oldout) {
 	system("cp $tstdir/$dalout $dalout");
     } else { 
-	system("$dalton $options $dalinp $molinp 1> $logdal 2> $errdal");
+	system("$dalton $options $test 1> $logdal 2> $errdal");
     }
     if (check_files($dalout,\%files)) {
 	title_print($BIGLOG ,"Corrupted output file. Test $test will be skipped\n");

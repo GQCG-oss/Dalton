@@ -141,6 +141,42 @@
 }
 ## elactive end  #######################################################
 
+## qm3ele start #######################################################
+{$params={
+  name         => "qm3ele", 
+  type         => 0, 
+  string => "Electrostatic energy:", 
+  pos    => 1};
+}
+## qm3ele end  #######################################################
+
+## qm3pol start #######################################################
+{$params={
+  name         => "qm3pol", 
+  type         => 0, 
+  string => "Polarization energy:", 
+  pos    => 1};
+}
+## qm3pol end  #######################################################
+
+## qm3wdv start #######################################################
+{$params={
+  name         => "qm3wdv", 
+  type         => 0, 
+  string => "van der Waals energy:", 
+  pos    => 1};
+}
+## qm3wdv end  #######################################################
+
+## qm3energy start #######################################################
+{$params={
+  name         => "qm3energy", 
+  type         => 0, 
+  string => "Total QM/MM energy:", 
+  pos    => 1};
+}
+## qm3energy end  #######################################################
+
 
 #
 # test type 1
@@ -379,6 +415,48 @@
 }
 ## dipole end  #######################################################
 
+## dipcompx start #######################################################
+{$params={
+  name         => "dipcompx",
+  type         => 2,
+  start_string => "Dipole moment components",
+  end_string   => "Units:",
+  start_offset => 0,
+  end_offset   => 0,
+  line         => 6,
+  pos          => 2,
+  thr          => 1.0e-8};
+}
+## dipcompx end  #######################################################
+
+## dipcompy start #######################################################
+{$params={
+  name         => "dipcompy",
+  type         => 2,
+  start_string => "Dipole moment components",
+  end_string   => "Units:",
+  start_offset => 0,
+  end_offset   => 0,
+  line         => 7,
+  pos          => 2,
+  thr          => 1.0e-8};
+}
+## dipcompy end  #######################################################
+
+## dipcompz start #######################################################
+{$params={
+  name         => "dipcompz",
+  type         => 2,
+  start_string => "Dipole moment components",
+  end_string   => "Units:",
+  start_offset => 0,
+  end_offset   => 0,
+  line         => 8,
+  pos          => 2,
+  thr          => 1.0e-8};
+}
+## dipcompz end  #######################################################
+
 ## dipolelf start #######################################################
 {$params ={
   name         => "dipolelf",
@@ -392,6 +470,21 @@
   thr          => 1.0e-6};
 }
 ## dipolelf end  #######################################################
+
+## excita start #######################################################
+{$params={
+  name         => "excita",
+  type         => 2,
+  start_string => "Singlet electronic excitation energies",
+#  end_string   => "Singlet electronic excitation energies"
+  end_string   => "Total CPU  time used in DALTON:",
+  start_offset => 0,
+  end_offset   => 50,
+  line         => 7,
+  pos          => 3,
+  thr          => 1.0e-6};
+}
+## excita end  #######################################################
 #
 #
 # test type 3
@@ -566,6 +659,18 @@
 }
 ## neqrsp end  #######################################################
 
+## qm3convergence start #######################################################
+{$params = {
+  name   => "qm3convergence",
+  type   => 4,
+  string => "QM/MM calculation converged :",
+  maxout => -1,
+  post   => 0,
+  rembeg => 0,
+  remend => 0};
+}
+## qm3convergence end  #######################################################
+
 #
 # test type 5 (this test type is discontinued!)
 # fetch a block of lines (as in test type 2) then
@@ -593,14 +698,16 @@
 ## default_5 end  #################################
 
 #
-# test type 6
+# test type 6 (NOT INCLUDED IN test.pl yet!)
 # fetch a block of lines (as in test type 2) then
 # performs a check on one or more numbers in each line (as in check type 2)
 # arguments:
 # start_string: String defining the starting line
 # end_string:   String defining the final line
 # star_offset:  n. of lines stripped away at the beginning of the block
-# end_offset:   n. of lines stripped away at the end of the block (if negative add the coresponding number of linse after the matching end string)
+# end_offset:   n. of lines stripped away at the end of the block 
+#               (if negative add the coresponding number of lines after 
+#               the matching end string)
 # pos:          list of positions of the values to extract on each line
 # thr:          list of threshold for the numerical comparisons
 # abs:          list of absolute value flags
@@ -618,64 +725,10 @@
   end_offset   => 0,
   pos          => [998,     999],
   thr          => [1.0e-10, 1.0e-10],
-  abs          => [0,       0]};
+  abs          => [0,       0],
   rel          => [0,       0]};
 }
 ## default_6 end  #################################
-
-#
-# test type 7
-# fetch lines as in test type 1 then compare all found numbers on each line
-# arguments
-# string:   string to search
-# maxout:   maximum lines of output to parse in file (all if negative)
-# maxget:   maximum number of matching lines to fetch (all if negative)
-# startn:   first number to check on the line
-# endn  :   last number to check on the line
-# howtospl: how to split each matching line
-#           - 0: split employing spaces
-# thr:      list of thresholds
-# abs:      list of 0/1 0: check with sign 1: check absolute value
-# rel:      list of 0/1 when active the relative error is used instead of the absolute error
-#
-# abs and thr are repolicated/ignored as in check n.3
-
-# WARNING: DO NOT change the following test. It provides default values for all tests of type 7
-## default_7 start ###############################
-{$params={
-  name     => "default_7", 
-  type     => 7, 
-  string   => "abcdefghijklmnopqrstuvwxyz", 
-  maxout   => -1,
-  maxget   => -1,
-  startn   => 1,
-  endn     => 1,
-  howtospl => 0,
-  abs      => [0, 0],
-  rel      => [0, 0],
-  thr      => [1.0e-10, 1.0e-10]};
-}
-## default_7 end  #################################
-
-## Frequencies start ###############################
-{$params={
-  name     => "Frequencies", 
-  type     => 7, 
-  string   => "Frequencies          ", 
-  maxout   => -1,
-  maxget   => 2,
-  startn   => 3,
-  endn     => 2,
-  howtospl => 0,
-  abs      => [0],
-  rel      => [0],
-  thr      => [1.0e-6]};
-=======
-  pos          => [7,10,13],
-  thr          => [1e-10],
-  abs          => [0]};
-}
-## coordi_sym end  #######################################################
 
 ## coordi_nosym start #######################################################
 {$params = {
@@ -691,6 +744,7 @@
 }
 ## coordi_nosym end  #######################################################
 
+
 #
 # test type 7
 # fetch lines as in test type 1 then compare all found numbers on each line
@@ -738,7 +792,7 @@
   abs      => [0],
   rel      => [0],
   thr      => [1.0e-6]};
->>>>>>> 1.5
 }
-## Frequencies end  #################################
+## Frequencies end ###############################
+
 
