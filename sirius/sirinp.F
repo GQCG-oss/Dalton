@@ -2067,12 +2067,11 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
-!3100  CALL LUCITAINP(WORD,INPERR,ALLOPT)
 !      this is to keep backwards compatibility - lucita input is now
 !      processed via the new input reader module.
- 3100  unit_in = LUCMD
-       call move_to_next_star(word)
+ 3100  unit_in               = lucmd
        lucita_input_provided = .true.
+       call move_to_next_star(word)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -2081,12 +2080,15 @@ C  Here if "*END OF"
      &               LUPRI)
        END IF
 
-!      process now the LUCITA input if applicable
+!      read LUCITA input if applicable
        if(lucita_input_provided)then
          CALL GPCLOSE(LUCMD,'KEEP')
-!        reset orbital space arrays
+
+!        a. reset orbital space arrays
          call lucita_orb_spaces_setup_delete_total()
+!        b. read input
          call read_input()
+
          CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
        end if
@@ -2097,8 +2099,7 @@ C
       if(lucita_input_provided)then
 !        LUCITA input has been processed - 
 !        complete now the remaining compulsory settings
-!        a. orbital spaces
-!        init_input_type:
+!        this is lucita-ci, therefore init_input_type:
 !        1: ci input
 !        2: mcscf input
          init_input_type = 1
