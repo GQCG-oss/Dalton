@@ -227,11 +227,9 @@ c/* Deck CC_JMAT */
       INTEGER ILSTSYM
 
 #if defined (SYS_CRAY) 
-      REAL DTIME, TIMALL
-      REAL DDOT, TIMTRN
+      REAL DDOT, DTIME, TIMALL, TIMTRN
 #else 
-      DOUBLE PRECISION DDOT
-      DOUBLE PRECISION DTIME, TIMALL, TIMTRN
+      DOUBLE PRECISION DDOT, DTIME, TIMALL, TIMTRN
 #endif 
   
 *---------------------------------------------------------------------*
@@ -328,7 +326,7 @@ c/* Deck CC_JMAT */
 
 
 * check return option for the result vectors:
-      LUBMAT = 0
+      LUBMAT = -1
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
          CALL WOPEN2(LUBMAT, FILJMA, 64, 0)
       ELSE IF (IOPTRES .EQ. 3 .OR. IOPTRES .EQ. 4) THEN

@@ -1,16 +1,16 @@
 $Basis = STO-2G
-
-$Elements supported
+$
+$ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sr 
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References 
 $ --------                             ----------  
 $  H - He: W.J. Hehre, R.F. Stewart and J.A. Pople, J. Chem.Phys. 2657 (1969). 
 $ Li - Ne, W.J. Hehre, R. Ditchfield, R.F. Stewart, J.A. Pople, 
 $ Na - Ar, J. Chem. Phys. 52, 2769 (1970).
 $  K - Kr:
-$
+$***********************************************************************
 a 1
 $ HYDROGEN     (2S) -> [1S]                                      
 $ S-TYPE FUNCTIONS
@@ -248,7 +248,7 @@ $ P-TYPE FUNCTIONS
       1.0530930  0.00000000  0.34804700
       0.3613060  0.00000000  0.72225200
 a 19
-$ POTASSIUM    (8S,6P) -> [4S,3P]                                
+$ POTASSIUM (KALIUM)    (8S,6P) -> [4S,3P]                                
 $ S-TYPE FUNCTIONS
     8    4    0
     295.0121465  0.43012850  0.00000000  0.00000000  0.00000000

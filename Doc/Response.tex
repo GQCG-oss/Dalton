@@ -838,6 +838,20 @@ Threshold for solving the linear response
 \index{linear response}\index{response!linear}
 eigenvalue equation. Default is $10^{-3}$.
 
+\item{\Key{TPCD}}
+Sets up the calculation of the tensor components of the two-photon circular dichroism rotatory 
+strength according to \cite{Rizzo:TPACD}, the TI equation.
+The tensor components are computed for all the excited states
+requested by the keyword \Key{ROOTS}, calculating the necessary
+quadratic response functions using the half-frequency of the
+excitation energy to the given state. The calculation path is identical to the
+one requested by \Key{TWO-PHOTON}, except that different operators are used.
+Please ignore the \mbox{***~FINAL~RESULTS~FROM~TWO-PHOTON~CALCULATION~***} output
+at the bottom of the output file when running TPCD.
+Do not forget to set \Key{DIPVEL}, \Key{ANGMOM} and \Key{ROTSTR} in **INTEGRAL
+input section.
+
+
 \item{\Key{TWO-PHOTON}}
 Sets up the calculation of the two-photon transition strengths. This
 calculates two-photon transition strengths for all the excited states

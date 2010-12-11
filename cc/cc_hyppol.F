@@ -355,7 +355,7 @@ c /* deck cc_hyppol */
         CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'L1 ',
      &                 '---',IDUMMY,       DUMMY,
      &                 'R1 ',WORK(KEADOTS),WORK(KEACONS),
-     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )        
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
         TIMEA = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
@@ -396,9 +396,9 @@ c /* deck cc_hyppol */
       IF ( USE_R2 ) THEN
         TIM1 = SECOND()
 
-c       CALL CC_DOTDRV('O2 ','L1 ',NR2TRAN,MXVEC,
-c    &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
-c    &                 WORK(KEND0), LEND0 )
+C       CALL CC_DOTDRV('O2 ','L1 ',NR2TRAN,MXVEC,
+C    &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
+C    &                 WORK(KEND0), LEND0 )
         CALL CC_DOTDRV('R2 ','X1B',NR2TRAN,MXVEC,
      &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
      &                 WORK(KEND0), LEND0 )
@@ -426,7 +426,7 @@ c    &                 WORK(KEND0), LEND0 )
       CALL CC_XIETA( WORK(KXETRAN), NXETRAN, IOPT, IORDER, 'L0 ',
      &               'L1 ',WORK(KXDOTS),WORK(KXCONS),
      &               'R1 ',WORK(KEDOTS),WORK(KECONS),
-     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )        
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
@@ -1739,7 +1739,7 @@ c /* deck ccqhypprt */
       PARAMETER (HALF = 0.5d0, ONE = 1.0d0, THIRD = 1.0d0/3.0d0)
       PARAMETER (ZERO = 0.0d0, FACTOR = 1.0d0/6.0d0)
 
-      CHARACTER*10  MODEL
+      CHARACTER*10  MODEL,MOPRPC
       INTEGER ISYMAB,ISYMABC
 *---------------------------------------------------------------------*
 * print header for first hyperpolarizabilities: 
@@ -1759,11 +1759,23 @@ c /* deck ccqhypprt */
          CALL QUIT('CCQHYPPRT called for an unkown '//
      &             'Coupled Cluster model.')
       END IF
-      IF (CCSD) MODEL = 'CCSD'
-      IF (CIS) MODEL  = 'CIS'
-      IF (CCS) MODEL  = 'CCS'
-      IF (CC2) MODEL  = 'CC2'
-      IF (CC3) MODEL  = 'CC3'
+
+      IF (CCSD) THEN
+         MODEL = 'CCSD'
+         MOPRPC = 'CCSD      '
+      ELSE IF (CIS) THEN
+         MODEL  = 'CIS'
+         MOPRPC = 'CIS       '
+      ELSE IF (CCS) THEN
+         MODEL  = 'CCS'
+         MOPRPC = 'CCS       '
+      ELSE IF (CC2) THEN
+         MODEL  = 'CC2'
+         MOPRPC = 'CC2       '
+      ELSE IF (CC3) THEN
+         MODEL  = 'CC3'
+         MOPRPC = 'CC3       '
+      END IF
 
       IF (IPRQHYP.GT.5) THEN
        WRITE(LUPRI,'(/1X,3(1X,A," operator",17X),4X,A,6X,A,/,130("-"))')
@@ -1795,6 +1807,9 @@ c /* deck ccqhypprt */
          IF (ISAPROP.EQ.0) SIGN = +ONE
 
          IFREQ = 1
+cmbh
+         PROP=0.0d0
+cmbh end
          IF (MULD2H(ISYMA,ISYMB).EQ.ISYMC) THEN
 
            PROP  = -HALF*(HYPERPOL(IFREQ,IOPER,1) +
@@ -1820,7 +1835,8 @@ c /* deck ccqhypprt */
      &          LBLOPR(ICQROP(IOPER)),RLXC,CQRFR(IFREQ), PROP, ERROR
             END IF
            ELSE
-            WRITE(LUPRI,'(/1X,3(A8,A10,F7.4,3X),G16.8)')
+              WRITE(LUPRI,'(/1X,3(A8,A10,F7.4,3X),G16.8)')
+CCN              WRITE(LUPRI,'(/1X,3(A8,A10,F7.4,3X),F24.20)')
      &        LBLOPR(IAQROP(IOPER)),RLXA,AQRFR(IFREQ),
      &        LBLOPR(IBQROP(IOPER)),RLXB,BQRFR(IFREQ),
      &        LBLOPR(ICQROP(IOPER)),RLXC,CQRFR(IFREQ), PROP
@@ -1844,11 +1860,11 @@ c /* deck ccqhypprt */
          END IF
          ISYMAB  = MULD2H(ISYMA,ISYMB)
          ISYMABC = MULD2H(ISYMAB,ISYMC)
-         CALL CC_PRPC(PROP,MODEL,3,
-     &                LBLOPR(IAQROP(IOPER)),LBLOPR(IBQROP(IOPER)),
-     &                LBLOPR(ICQROP(IOPER)),LBLOPR(ICQROP(IOPER)),
-     &                BQRFR(IFREQ),CQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     &                0,0,0)
+         CALL WRIPRO(PROP,MOPRPC,3,
+     &               LBLOPR(IAQROP(IOPER)),LBLOPR(IBQROP(IOPER)),
+     &               LBLOPR(ICQROP(IOPER)),LBLOPR(ICQROP(IOPER)),
+     &               BQRFR(IFREQ),CQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     &               0,0,0)
          DO IFREQ = 2, NQRFREQ
            IF (MULD2H(ISYMA,ISYMB).EQ.ISYMC) THEN
 
@@ -1865,11 +1881,11 @@ c /* deck ccqhypprt */
      &           AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), PROP
              END IF
            END IF
-          CALL CC_PRPC(PROP,MODEL,3,
-     &                  LBLOPR(IAQROP(IOPER)),LBLOPR(IBQROP(IOPER)),
-     &                  LBLOPR(ICQROP(IOPER)),LBLOPR(ICQROP(IOPER)),
-     &                  BQRFR(IFREQ),CQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     &                  0,0,0)
+          CALL WRIPRO(PROP,MOPRPC,3,
+     &                LBLOPR(IAQROP(IOPER)),LBLOPR(IBQROP(IOPER)),
+     &                LBLOPR(ICQROP(IOPER)),LBLOPR(ICQROP(IOPER)),
+     &                BQRFR(IFREQ),CQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     &                0,0,0)
          END DO
 
       END DO
@@ -1896,10 +1912,10 @@ c /* deck ccqhypprt */
      &   ' beta_||', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
        BETALAB='beta_|| '
-       CALL CC_PRPC(BETA,MODEL,3,
-     *                BETALAB,BETALAB,BETALAB,BETALAB,
-     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                0,0,0)
+       CALL WRIPRO(BETA,MOPRPC,3,
+     *             BETALAB,BETALAB,BETALAB,BETALAB,
+     *             AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *             0,0,0)
 C
        DO IFREQ = 2, NQRFREQ
         BETA = -0.3d0*(HYPERPOL(IFREQ,1,1)+HYPERPOL(IFREQ,1,2))
@@ -1919,10 +1935,10 @@ C
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
        BETALAB='beta_|| '
-       CALL CC_PRPC(BETA,MODEL,3,
-     *                BETALAB,BETALAB,BETALAB,BETALAB,
-     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                0,0,0)
+       CALL WRIPRO(BETA,MOPRPC,3,
+     *             BETALAB,BETALAB,BETALAB,BETALAB,
+     *             AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *             0,0,0)
 C
        END DO
    
@@ -1946,10 +1962,10 @@ C
      &   ' beta^K ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
        BETALAB='beta^K  '
-       CALL CC_PRPC(BETA,MODEL,3,
-     *                BETALAB,BETALAB,BETALAB,BETALAB,
-     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                0,0,0)
+       CALL WRIPRO(BETA,MOPRPC,3,
+     *             BETALAB,BETALAB,BETALAB,BETALAB,
+     *             AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *             0,0,0)
 C
        DO IFREQ = 2, NQRFREQ
         BETA = -0.3d0*(HYPERPOL(IFREQ,1,1)+HYPERPOL(IFREQ,1,2))
@@ -1970,10 +1986,10 @@ C
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
         BETALAB='beta^K  '
-        CALL CC_PRPC(BETA,MODEL,3,
-     *                 BETALAB,BETALAB,BETALAB,BETALAB,
-     *                 AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                 0,0,0)
+        CALL WRIPRO(BETA,MOPRPC,3,
+     *              BETALAB,BETALAB,BETALAB,BETALAB,
+     *              AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *              0,0,0)
 C
        END DO
    
@@ -1998,10 +2014,10 @@ C
      &   ' beta_|_', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
        BETALAB='beta_|_ '
-       CALL CC_PRPC(BETA,MODEL,3,
-     *                BETALAB,BETALAB,BETALAB,BETALAB,
-     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                0,0,0)
+       CALL WRIPRO(BETA,MOPRPC,3,
+     *             BETALAB,BETALAB,BETALAB,BETALAB,
+     *             AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *             0,0,0)
 C
        DO IFREQ = 2, NQRFREQ
         BETA = -0.1d0*(HYPERPOL(IFREQ,1,1)+HYPERPOL(IFREQ,1,2))
@@ -2020,10 +2036,10 @@ C
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
         BETALAB='beta_|_ '
-        CALL CC_PRPC(BETA,MODEL,3,
-     *                 BETALAB,BETALAB,BETALAB,BETALAB,
-     *                 AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                 0,0,0)
+        CALL WRIPRO(BETA,MOPRPC,3,
+     *              BETALAB,BETALAB,BETALAB,BETALAB,
+     *              AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *              0,0,0)
 C
        END DO
    
@@ -2047,10 +2063,10 @@ C
      &   ' beta_ms   ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
         BETALAB='beta_ms '
-        CALL CC_PRPC(BETA,MODEL,3,
-     *                 BETALAB,BETALAB,BETALAB,BETALAB,
-     *                 AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                 0,0,0)
+        CALL WRIPRO(BETA,MOPRPC,3,
+     *              BETALAB,BETALAB,BETALAB,BETALAB,
+     *              AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *              0,0,0)
 C
     
 
@@ -2071,10 +2087,10 @@ C
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
 C
          BETALAB='beta_ms '
-         CALL CC_PRPC(BETA,MODEL,3,
-     *                  BETALAB,BETALAB,BETALAB,BETALAB,
-     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                  0,0,0)
+         CALL WRIPRO(BETA,MOPRPC,3,
+     *               BETALAB,BETALAB,BETALAB,BETALAB,
+     *               AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *               0,0,0)
 C
        END DO
       END IF
@@ -2190,10 +2206,10 @@ C
      *                  BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
      *                  BETAVEC(I),' |'
 C
-            CALL CC_PRPC(BETAVEC(I),MODEL,3,
-     *                   BETALAB,BETALAB,BETALAB,BETALAB,
-     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                   0,0,0)
+            CALL WRIPRO(BETAVEC(I),MOPRPC,3,
+     *                  BETALAB,BETALAB,BETALAB,BETALAB,
+     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                  0,0,0)
 C 
           END DO
 C
@@ -2211,10 +2227,10 @@ C
      *                  BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
      *                  MUBETA(I),' |' 
 C
-            CALL CC_PRPC(MUBETA(I),MODEL,3,
-     *                   BETALAB,BETALAB,BETALAB,BETALAB,
-     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                   0,0,0)
+            CALL WRIPRO(MUBETA(I),MOPRPC,3,
+     *                  BETALAB,BETALAB,BETALAB,BETALAB,
+     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                  0,0,0)
           END DO
 C
           WRITE(LUPRI,'(20X,A)')
@@ -2226,10 +2242,10 @@ C
      *                BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
      *                MU_DOT_BETA,' |'
 C
-            CALL CC_PRPC(MU_DOT_BETA,MODEL,3,
-     *                   BETALAB,BETALAB,BETALAB,BETALAB,
-     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                   0,0,0)
+            CALL WRIPRO(MU_DOT_BETA,MOPRPC,3,
+     *                  BETALAB,BETALAB,BETALAB,BETALAB,
+     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                  0,0,0)
 C
           WRITE(LUPRI,'(20X,A)')
      *    '+----------+----------+----------+----------+----------+'
@@ -2240,10 +2256,10 @@ C
      *                BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
      *                MUBETANORM,' |'
 C
-            CALL CC_PRPC(MUBETANORM,MODEL,3,
-     *                   BETALAB,BETALAB,BETALAB,BETALAB,
-     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                   0,0,0)
+            CALL WRIPRO(MUBETANORM,MOPRPC,3,
+     *                  BETALAB,BETALAB,BETALAB,BETALAB,
+     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                  0,0,0)
 C
           WRITE(LUPRI,'(20X,A)')
      *    '+----------+----------+----------+----------+----------+'
@@ -2257,10 +2273,10 @@ C
      *                BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
      *                MEANBETA,' |'
 C
-            CALL CC_PRPC(MEANBETA,MODEL,3,
-     *                   BETALAB,BETALAB,BETALAB,BETALAB,
-     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
-     *                   0,0,0)
+            CALL WRIPRO(MEANBETA,MOPRPC,3,
+     *                  BETALAB,BETALAB,BETALAB,BETALAB,
+     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                  0,0,0)
 C
           WRITE(LUPRI,'(20X,A)')
      *    '+----------+----------+----------+----------+----------+'

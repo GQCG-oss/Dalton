@@ -159,7 +159,7 @@ C-----------------------------------------------
 C     Read zeroth-order AO Fock matrix from file
 C-----------------------------------------------
 C
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUFOCK)
@@ -208,7 +208,7 @@ C
 C
       INTEGER ISYMYZ,ISYMXYZ,LENFCKX,KFOCKX
 C
-      CHARACTER LABELX*(*)
+      CHARACTER LABELX*8
 C
 #if defined (SYS_CRAY) 
       REAL FOCKX(*),LAMPY(*),LAMHZ(*),WORK(LWORK)
@@ -237,11 +237,11 @@ C--------------------------------------
 C     Read property integrals (FOCKX) in AO basis from file
 C--------------------------------------
 C
-      CALL CCPRPAO(LABELX,WORK(KFOCKX),IRREP,ISYM,IERR,
+      CALL CCPRPAO(LABELX,.TRUE.,WORK(KFOCKX),IRREP,ISYM,IERR,
      *             WORK(KEND1),LWRK1)
 C
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
-          CALL QUIT('GET_FOCKX: error reading oper. ',LABELX)
+          CALL QUIT('GET_FOCKX: error reading oper. '//LABELX)
       ELSE IF (IERR.LT.0) THEN
           CALL DZERO(WORK(KFOCKX),LENFCKX)
       END IF
@@ -526,7 +526,7 @@ C-------------------------------------
 C     Read canonical orbital energies:
 C-------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
 C
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)

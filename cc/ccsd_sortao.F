@@ -51,6 +51,7 @@ C
       DIMENSION WORK(LWORK)
 C
       CHARACTER*8 NAME(8)
+      CHARACTER*8 LBLSAV
 C
 C     SAVE FIRST
 C
@@ -64,6 +65,7 @@ C
 #include <ccfop.h>
 #include <ccsdinp.h>
 #include <ccpack.h>
+#include <r12int.h>
 C
 C--------------------
 C     Only sort once.
@@ -80,7 +82,7 @@ C     Open integral files.
 C-------------------------
 C
       IF (LUINTA.LE.0) THEN
-        LUINTA = 0
+        LUINTA = -1
         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
       END IF
@@ -93,19 +95,45 @@ C
 C
    50 CONTINUE
 C
+C------------------------------
+C     Skip sorting if required.
+C------------------------------
+C     
+      IF (NOSORT) THEN
+C     
+          DO ISYMD = 1,NSYM
+             ISYDIS = MULD2H(ISYMD,ISYMOP)
+             LENGTH = NDISAO(ISYDIS)
+             IOFFID = 1
+             DO ID = 1,NBAS(ISYMD)
+                IDEL = ID + IBAS(ISYMD)
+                IOFFINT(IDEL) = IOFFID
+                IOFFID = IOFFID + LENGTH
+             END DO
+          END DO
+C
+          RETURN
+C     
+      END IF
+C
 C------------------------
 C     Buffer information.
 C------------------------
 C
-#if defined (SYS_CRAY)
-      NIBUF = 1
-      IF (NBAST .LE. 255) THEN
-         NBITS = 8
+      IF (CCR12) THEN
+        NALLBAS = 0
+        DO I = 1, NSYM
+          NALLBAS = NALLBAS + MBAS1(I) + MBAS2(I)
+        END DO
       ELSE
-         NBITS = 16
-      END IF
+        NALLBAS = NBAST 
+      ENDIF
+C
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
 #else
-      IF (NBAST .LE. 255) THEN
+      IF (NALLBAS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
@@ -141,7 +169,6 @@ C-------------------------------------------
 C
       IF (LPACKINT) THEN
          DTIME = SECOND()
-
          CALL INITPCKR8(THRPCKINT,IPCKTABINT,ENABLED)
 
          IF (.NOT.ENABLED) THEN
@@ -168,8 +195,8 @@ C
 C
          ISYDIS = MULD2H(ISYMD,ISYMOP)
          NTOTD  = NBAS(ISYMD)
-	 IF (NTOTD .EQ. 0) GOTO 100
-	 LENGTH = NDISAO(ISYDIS)
+       IF (NTOTD .EQ. 0) GOTO 100
+       LENGTH = NDISAO(ISYDIS)
 C
          NUMBAT = MIN(NTOTD,LWRK1/LENGTH)
 C
@@ -268,6 +295,7 @@ C
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include <ccsdsym.h>
+#include <r12int.h>
 #include <ibtfun.h>
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -290,6 +318,7 @@ C
             IQ = IBTAND(IBTSHR(LABLE,  NBITS),IBIT1)
             IR = IBTAND(IBTSHR(LABLE,2*NBITS),IBIT1)
             IS = IBTAND(IBTSHR(LABLE,3*NBITS),IBIT1)
+            IF (NOAUXB) CALL IJKAUX(IP,IQ,IR,IS)
 C
             IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN
                IADR = KAOG(IR,ISYDIS) + KAOAB(IP,IQ)
@@ -329,6 +358,7 @@ C
             IQ = IBTAND(IBTSHR(LABLE1,NBITS),IBIT1)
             IR = IBTAND(       LABLE2,       IBIT1)
             IS = IBTAND(IBTSHR(LABLE2,NBITS),IBIT1)
+            IF (NOAUXB) CALL IJKAUX(IP,IQ,IR,IS)
 C
             IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN
                IADR = KAOG(IR,ISYDIS) + KAOAB(IP,IQ)

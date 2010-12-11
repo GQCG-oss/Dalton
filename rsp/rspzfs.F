@@ -101,8 +101,17 @@ C
      &            WORK(KJORBS),WORK(KKORBS),0,NOBLK,IPRPAO)
 C
       CALL MEMREL('AVEDIA:PAOVEC',WORK,KJORBS,KJORBS,KFREE,LFREE)
-      
-      NOPV      =  NASHT .LE. 1 .OR. HSROHF
+C
+      IF (HSROHF) THEN
+         NODV = .FALSE.
+         NOPV = .TRUE.
+         NDMAT = 2
+      ELSE
+         NODV = .TRUE.
+         NOPV = NASHT .LE. 1
+         NDMAT = 0
+      END IF
+C
       IF (.NOT.NOPV) THEN
 C
 C     Transform two-electron density matrix to SO basis
@@ -145,13 +154,6 @@ C
       ITYPE     = 11
       MAXDIF    = 2
       JATOM     = 0
-      IF (HSROHF) THEN
-         NODV = .FALSE.
-         NDMAT = 2
-      ELSE
-         NODV = .TRUE.
-         NDMAT = 0
-      END IF
       NOCONT    = .FALSE.
       TTIME     = .FALSE.
       RETUR     = .FALSE.

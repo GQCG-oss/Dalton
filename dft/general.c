@@ -11,40 +11,6 @@ C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
 C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
 C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-*/
-/*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
 C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
@@ -102,21 +68,31 @@ C
 #include "inforb.h"
 
 /* C-wide constants */
-const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
+const integer ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
 const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 
 
 /* stub subroutines for the functional code */
 extern real dftgethf_(void);
 extern void dftsethf_(real *w);
-extern void dftsetcam_(real *w, real *b);
+extern real dftgetmp2_(void);
+extern void dftsetmp2_(real *w);
+extern void dftsetcam_(const real *w, const real *b);
 
 static real
 dal_get_hf_weight(void) { return dftgethf_(); }
 static void
 dal_set_hf_weight(real w) { dftsethf_(&w); }
+
+static real
+dal_get_mp2_weight(void) { return dftgetmp2_(); }
 static void
-dal_set_cam_param(real w, real be) { dftsetcam_(&w, &be);}
+dal_set_mp2_weight(real w) { dftsetmp2_(&w); }
+
+static void
+dal_set_cam_param(int cnt, const real *w, const real *be) {
+  dftsetcam_(w, be);
+}
 
 /* =================================================================== */
 /* dftinput:
@@ -130,7 +106,7 @@ dal_set_cam_param(real w, real be) { dftsetcam_(&w, &be);}
 */
 static char* DftConfString = NULL;
 int
-FSYM(dftsetfunc)(const char* line, int * inperr, int len)
+FSYM(dftsetfunc)(const char* line, integer * inperr, int len)
 {
     int i, off;
 
@@ -140,6 +116,8 @@ FSYM(dftsetfunc)(const char* line, int * inperr, int len)
     fun_printf        = fort_print;
     fun_set_hf_weight = dal_set_hf_weight;
     fun_get_hf_weight = dal_get_hf_weight;
+    fun_set_mp2_weight = dal_set_mp2_weight;
+    fun_get_mp2_weight = dal_get_mp2_weight;
     fun_set_cam_param = dal_set_cam_param;
 
     for(i=len-1; i>=0 && isspace((int)line[i]); i--)
@@ -208,7 +186,7 @@ dftpot0_(FirstDrv *ds, const real* weight, const FunDensProp* dp)
 
 void
 dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp, 
-         const int* triplet)
+         const integer* triplet)
 {
     
     FunSecondFuncDrv drvs;
@@ -311,7 +289,8 @@ dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
 }
 
 void
-dftpot3ab_(FourthDrv *ds, real *factor, const FunDensProp* dp, int *isgga)
+dftpot3ab_(FourthDrv *ds, const real *factor, const FunDensProp* dp,
+	   const integer *isgga)
 {
      FunFourthFuncDrv drvs;
      
@@ -462,6 +441,37 @@ dftpot3ab_(FourthDrv *ds, real *factor, const FunDensProp* dp, int *isgga)
 }
 
 
+void
+vxcfab_(real *rhoa, real *rhob, real *grada, real *gradb, 
+        real *gradab, real *wght, real *vx)
+{
+  FunFirstFuncDrv drvs;
+  FunDensProp dp;
+ 
+  dp.rhoa   = *rhoa;
+  dp.rhob   = *rhob; 
+  dp.grada  = *grada;
+  dp.gradb  = *gradb;
+  dp.gradab = *gradab;
+
+  if(dp.rhoa<1e-13)   dp.rhoa   = 1e-13;
+  if(dp.rhob<1e-13)   dp.rhob   = 1e-13;
+  if(dp.grada<1e-13)  dp.grada  = 1e-13;
+  if(dp.gradb<1e-13)  dp.gradb  = 1e-13;
+  if(dp.gradab<1e-13) dp.gradab = 1e-13;
+
+  drv1_clear(&drvs);
+  selected_func->first(&drvs, *wght, &dp);
+
+  vx[0] = drvs.df1000;
+  vx[1] = drvs.df0100;
+  vx[2] = drvs.df0010; 
+  vx[3] = drvs.df0001;
+  vx[4] = drvs.df00001; 
+}
+
+
+
 /* =================================================================== */
 /*    DFT density evaluators for restricted and unrestricted cases.    */
 /*    evaluate density properties                                      */
@@ -478,9 +488,9 @@ dft_dens_restricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
     /* transform grad vectors to molecular orbitals */
     if(rho>grid->dfthr0 && grid->dogga) {
         /* compute only half density gradient, i.e only grad_alpha. */
-        dgemv_("T", &inforb_.nbast, &THREEI, &ONER,
-               &grid->atv[inforb_.nbast], &inforb_.nbast, tmp_vec,
-               &ONEI, &ZEROR, grid->grada, &ONEI);
+      FSYM(dgemv)("T", &inforb_.nbast, &THREEI, &ONER,
+		  &grid->atv[inforb_.nbast], &inforb_.nbast, tmp_vec,
+		  &ONEI, &ZEROR, grid->grada, &ONEI);
         
         ngrad = sqrt(grid->grada[0]*grid->grada[0]+
                      grid->grada[1]*grid->grada[1]+
@@ -553,7 +563,10 @@ struct {
     { (DFTPropEvalMaster)FSYM2(dft_lin_respf),  dft_lin_respf_slave },
     { (DFTPropEvalMaster)dftqrcf_,              dft_qr_resp_slave   },
     { (DFTPropEvalMaster)FSYM2(dft_qr_respons), dft_qrbl_slave      },
-    { (DFTPropEvalMaster)FSYM(dftcrcf),         dft_cr_resp_slave   }
+    { (DFTPropEvalMaster)FSYM(dftcrcf),         dft_cr_resp_slave   },
+    { (DFTPropEvalMaster)FSYM(numdso),          numdso_slave        }, 
+    { (DFTPropEvalMaster)FSYM2(dft_kohn_shamab_b), dft_kohn_shamab_b_slave}, 
+    { (DFTPropEvalMaster)FSYM2(dft_lin_respab_b),  dft_lin_respab_b_slave}
 };
 
 /* mpi_sync_data:
@@ -596,7 +609,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
     MPI_Bcast(&iprtyp,1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&iprint,1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&id,    1, MPI_INT, 0, MPI_COMM_WORLD);
-    FSYM(dftintbcast)();
+    void FSYM(dftintbcast)();
 }
 
 /* dft_cslave:
@@ -606,7 +619,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
    that slaves should absolutely know but for some reason do not.
 */
 void
-FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
+FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
 {
     int rank, size;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
@@ -614,13 +627,13 @@ FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
     else {
         int id;
         MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-        FSYM(dftintbcast)();
+        void FSYM(dftintbcast)();
         (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
     }
 }
 #else
 void
-FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
+FSYM2(dft_cslave)(real* work,integer*lwork,integer*iprint)
 {
    fort_print("DFT slave called but does nothing now.");
 }
@@ -643,19 +656,20 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-extern void FSYM2(fort_wrt)(const char* str, const int* len, int ln);
+extern void FSYM2(fort_wrt)(const char* str, const integer* len, int ln);
 int
 fort_print(const char* format, ...)
 {
     char line[128];
-    int len;
+    integer len;
+    integer l;
     va_list a;
 
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
-    len = strlen(line);
-    FSYM2(fort_wrt)(line, &len, len);
+    len = l = strlen(line);
+    FSYM2(fort_wrt)(line, &len, l);
     return len;
 }
 
@@ -668,7 +682,7 @@ fort_print(const char* format, ...)
 /* dftfuncsync synchronises the selected functional between all
  * nodes. */
 void
-FSYM(dftfuncsync)(int *mynum, int *nodes)
+FSYM(dftfuncsync)(integer *mynum, integer *nodes)
 {
     static int done = 0;
     int len = DftConfString ? strlen(DftConfString) + 1: 0;

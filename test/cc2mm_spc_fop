@@ -98,25 +98,24 @@ cat > cc2mm_spc_fop.pot <<%EOF%
 cat > cc2mm_spc_fop.dal <<%EOF%
 **DALTON INPUT
 .RUN WAVE FUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.THETA
-.SECMOM
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-12
 .MAXDIP
  80
 !.OLDTG
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.THETA
+.SECMOM
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INP
 .THRESH
-1.0D-11
+ 1.0D-11
 *CC INP
 .CC2
 .THRLEQ
@@ -144,7 +143,7 @@ cat > cc2mm_spc_fop.dal <<%EOF%
 .QUADRU
 .SECMOM
 .NONREL
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
@@ -193,8 +192,8 @@ ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

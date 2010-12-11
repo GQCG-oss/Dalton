@@ -418,6 +418,7 @@ C
 C
       MXAB = (LDAMAX - 2)/(IRAT+1)
       WRITE(LUPRI,2050) RUNTP
+      write(lupri,*) 'ldamax,irat',ldamax,irat
       WRITE(LUPRI,2200) MX1BUF, MXAB, MX2BUF
       WRITE(LUPRI,2300) MAXCHN
       WRITE(LUPRI,2400) MAXSCM, MAXLCM
@@ -502,7 +503,7 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -766,7 +767,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <maxorb.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -935,7 +936,7 @@ C
 #include <dummy.h>
 #include <iratdef.h>
 C
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -1324,7 +1325,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 C
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -1360,11 +1361,11 @@ C
 C
 C     Statement functions
 C
-      ISHELL(I) = IBTAND(IBTSHR(I,IFIELD),IBIT08)
-      ICOMP(I)  = IBTAND(IBTSHR(I,4),IBIT04)
-      PAKK(I,J,K,L) = IBTOR(IBTSHL(I,3*IFIELD),IBTOR(IBTSHL(J,2*IFIELD),
-     *                IBTOR(IBTSHL(K,IFIELD),L)))
-      UNPAKK(IJ) = SQRT(SDPRE(IJ + IJ) + 0.25D0) + 0.4999D0
+c     ISHELL(I) = IBTAND(IBTSHR(I,IFIELD),IBIT08)
+c     ICOMP(I)  = IBTAND(IBTSHR(I,4),IBIT04)
+c     PAKK(I,J,K,L) = IBTOR(IBTSHL(I,3*IFIELD),IBTOR(IBTSHL(J,2*IFIELD),
+c    *                IBTOR(IBTSHL(K,IFIELD),L)))
+c     UNPAKK(IJ) = SQRT(SDPRE(IJ + IJ) + 0.25D0) + 0.4999D0
 C
       CALL QENTER('PSORG')
       IF (IPRINT .GT. 2) WRITE (LUPRI, 1000)
@@ -1372,8 +1373,6 @@ CHJ-860802:  find MEMS = available space for SORT(*), ISORT(*)
       MEMS  = IRAT * LWORK / (1+IRAT)
       IF (MEMS .LT. MINMEM)
      *   CALL STOPIT('PSORG',' ',(IRAT+1)*MINMEM,(IRAT+1)*MEMS)
-      MEMS2 = IRAT*MEMS
-      MEMSB = IRAT2*MEMS
       LBUF  = MAXBUF + IRAT*MAXBUF + 1
 C
 C           *************************************
@@ -1543,7 +1542,7 @@ C
          ENDIF
 20    CONTINUE
       NPASS = IMAX
-      MXBUF = IXBUF(I)
+      MXBUF = IXBUF(IMAX)
       CALL QEXIT('PSIZE')
       RETURN
       END
@@ -1563,7 +1562,7 @@ C
 #include <2gbdef.h>
       CHARACTER*80 FNNAME, FNNM2
 #endif
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -2010,7 +2009,7 @@ C  /* Deck psrset */
 #include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -2208,7 +2207,7 @@ C  /* Deck pvcmp */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#if defined (VAR_64BITS)
+#if defined (VAR_INT64)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
       PARAMETER (IBIT08 = 255, IFIELD = 8)
@@ -2291,7 +2290,7 @@ C  /* Deck makpvm */
       KPVSQ  = KUDV   + N2ASHX
       KWRK   = KPVSQ  + N2ASHX*N2ASHX
       LWRK   = LWORK  - KWRK + 1
-      IF (LWRK.GT.LWORK) CALL STOPIT('MAKPVM',' ',LWRK,LWORK)
+      IF (KWRK.GT.LWORK) CALL STOPIT('MAKPVM',' ',LWRK,LWORK)
       IF (DIA2SO) THEN
          CALL MAKPV2(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
      &               WORK(KWRK),LWRK,PANTI,IPRINT)
@@ -2508,7 +2507,7 @@ C
  10   CONTINUE
       RETURN
       END
-C  /* Deck makpv3 */
+C  /* Deck makpvq */
       SUBROUTINE MAKPVQ(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
@@ -2581,7 +2580,11 @@ C
 
       CALL DAXPY(N4,DM1,WORK(KPVTMP),1,PVSQ,1)
       CALL DSCAL(N4,DP25,PVSQ,1)
-ckr      PVSQ=RESHAPE(PVSQ,(/NASHT,NASHT,NASHT,NASHT/),ORDER=(/1,4,3,2/))
+#if defined (NO_F90)
+      CALL QUIT('RESHAPE of PVSQ only in F90')
+#else
+      PVSQ=RESHAPE(PVSQ,(/NASHT,NASHT,NASHT,NASHT/),ORDER=(/1,4,3,2/))
+#endif
       CALL DAXPY(N4,DP5,WORK(KPVTMP),1,PVSQ,1)
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('Complete PV matrix MAKPVM',-1)

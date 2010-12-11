@@ -97,6 +97,9 @@ C
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFTR0R')
 
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
@@ -348,7 +351,7 @@ C        -----------------------------------------------------------
          ENDIF
 
          IERR = -1
-         CALL CCPRPAO(LABEL,WORK(KXAO),IRREP,IREAL,IERR,
+         CALL CCPRPAO(LABEL,LONLYAO,WORK(KXAO),IRREP,IREAL,IERR,
      &                WORK(KEND2),LWRK2)
 
          IF (IERR .GT. 0) THEN

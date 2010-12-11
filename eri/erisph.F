@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C FILE : erisph.F
+C
 #include <single.h>
 C
 C  /* Deck sphmat */
@@ -50,7 +52,7 @@ C
 C
       IF (DOCART) THEN
          WRITE (LUPRI,'(1X,2A)') 
-     &     ' Only spherical-harmonic basis implemented in ERI.',
+     &     ' Only spherical-harmonic basis is implemented in ERI.',
      &     ' Run TWOINT instead.' 
          CALL QUIT('ERI does not work with Cartesian basis.')
       END IF
@@ -149,7 +151,7 @@ C
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
       HCF(I,J,K) = FACULT(I)/(FACULT(J)*FACULT(K/2)*FACULT(I-J-K))
-#include<ibtfun.h>
+#include <ibtfun.h>
 C
       M = M1 - L
       IF (L.EQ.1) THEN
@@ -169,7 +171,7 @@ C
       IF (M .NE. 0) FACNRM = SQRT(D2*FACULT(L+MABS)*FACULT(L-MABS))/
      &                       (FACULT(L)*(D2**MABS))
       FACNRM = FACNRM*DM1**((NEFG-MOD(NEFG,2))/2)*D2**(-NEFG)
-      IF (SPHNRM) FACNRM = FACNRM/SQRT(FACUL2(2*L-1))
+      FACNRM = FACNRM/SQRT(FACUL2(2*L-1))
       NDER = NIJK + NEFG 
       IOFF = NSPHER(L,I+E,J+F,K+G)
       DO 100 EE = 0, E
@@ -211,10 +213,12 @@ C
                      TOT = X + Y + Z
                      IADR = IOFF + NSPHAD(L,TOT-L,NDER) +
      &                      (2*L+1)*(NCRT(X,Y,Z)-1) + L + MADR
-C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                      IF (NCOLS.EQ.1) THEN
                         CSQ(IADR,1) = CSQ(IADR,1) + FACTOR 
                         IF (IPRINT.GT.20) THEN
+                           IATOM = 0
+                           BFAC  = 0.0D0
+                           ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                            WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
      &                               F10.5,I4,2X,2(3I3,2X),4I3)') 
      &                               L,M,I,J,K,E,F,G,
@@ -237,12 +241,13 @@ C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                               BFAC = FACTOR*(AX**PX)*(AY**PY)*(AZ**PZ)
                               CSQ(IADR,IA) = CSQ(IADR,IA) + BFAC
                               IF (IPRINT.GT.20) THEN
+                                 ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                                  WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
-     &                                     F10.5,I4,2X,2(3I3,2X),3I3)') 
-     &                                     L,M,I,J,K,E,F,G,
-     &                                     IA,BFAC,ALPHA,
-     &                                     PX,PY,PZ,X,Y,Z,
-     &                                     TOT,NCRT(X,Y,Z),IADR
+     &                             F10.5,I4,2X,2(3I3,2X),3I3)') 
+     &                             L,M,I,J,K,E,F,G,
+     &                             IA,BFAC,ALPHA,
+     &                             PX,PY,PZ,X,Y,Z,
+     &                             TOT,NCRT(X,Y,Z),IADR
                               END IF
                            END IF
   800                      CONTINUE 
@@ -256,28 +261,28 @@ C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
       RETURN
       END
 C  /* Deck nspher */
-      FUNCTION NSPHER(L,X,Y,Z)
+      INTEGER FUNCTION NSPHER(L,X,Y,Z)
 #include <implicit.h>
 #include <maxaqn.h>
 #include <ccom.h>
-      INTEGER D, X, Y, Z 
+      INTEGER D, L, X, Y, Z 
 C
       D = X + Y + Z 
       LMAX = NHTYP - 1
       NSPHER = (24 + 2*(1 + 2*D)*L*
-     &         (-2 + (3 + 2*D + 2*D**2)*L + 8*L**2 + 3*L**3) + 
-     &    (D*(2 + 3*D + D**2)*(1 + LMAX)*
-     &       (-54 - 134*LMAX - 85*LMAX**2 - 15*LMAX**3 - 
-     &         12*D**2*(1 + LMAX) + 20*D**3*(1 + LMAX) + 
-     &         D*(166 + 406*LMAX + 255*LMAX**2 + 45*LMAX**3)))/30 + 
-     &    (1 + 2*D)*(1 + LMAX)*
-     &     (12 + 28*LMAX + 17*LMAX**2 + 3*LMAX**3 + 2*D*(1 + LMAX) + 
-     &       2*D**2*(1 + LMAX))*(y + y**2 + 2*y*z + z*(3 + z)))/24
+     &          (-2 + (3 + 2*D + 2*D**2)*L + 8*L**2 + 3*L**3)
+     &       + (D*(2 + 3*D + D**2)*(1 + LMAX)*
+     &         (-54 - 134*LMAX - 85*LMAX**2 - 15*LMAX**3 - 
+     &          12*D**2*(1 + LMAX) + 20*D**3*(1 + LMAX) + 
+     &          D*(166 + 406*LMAX + 255*LMAX**2 + 45*LMAX**3)))/30
+     &       + (1 + 2*D)*(1 + LMAX)*
+     &        (12 + 28*LMAX + 17*LMAX**2 + 3*LMAX**3 + 2*D*(1 + LMAX) +
+     &          2*D**2*(1 + LMAX))*(y + y**2 + 2*y*z + z*(3 + z)))/24
       RETURN
       END 
 C  /* Deck lspher */
-      FUNCTION LSPHER(NDER)
-#include <implicit.h>
+      INTEGER FUNCTION LSPHER(NDER)
+      INTEGER NDER
       LSPHER = NSPHER(0,NDER+1,0,0) - 1
       RETURN
       END 
@@ -297,7 +302,7 @@ C  /* Deck sphdim */
       RETURN
       END
 C  /* Deck nsphad */
-      FUNCTION NSPHAD(L,LEVEL,NDER)
+      INTEGER FUNCTION NSPHAD(L,LEVEL,NDER)
 #include <implicit.h>
       NSPHAD = ((LEVEL + NDER)*(1 + 2*L)*(2 + LEVEL**2 
      &        + NDER**2 + 6*L + 3*L**2 - 3*NDER*(1 + L) 
@@ -305,19 +310,19 @@ C  /* Deck nsphad */
       RETURN
       END
 C  /* Deck ncrt */
-      FUNCTION NCRT(I,J,K)
+      INTEGER FUNCTION NCRT(I,J,K)
 #include <implicit.h>
       NCRT = 1 + J + 2*K + (J + K)*(J + K - 1)/2
       RETURN
       END 
 C  /* Deck lmcrt */
-      FUNCTION LMCRT(L,M,I,J,K)
+      INTEGER FUNCTION LMCRT(L,M,I,J,K)
 #include <implicit.h>
       LMCRT = (2*L+1)*(NCRT(I,J,K) - 1) + L + M + 1
       RETURN
       END 
 C  /* Deck sphadr */
-      FUNCTION KSQADR(L,X,Y,Z,C)
+      INTEGER FUNCTION KSQADR(L,X,Y,Z,C)
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxdr.h>
@@ -327,7 +332,7 @@ C  /* Deck sphadr */
 #include <ccom.h>
 C
       SAVE FIRST, ACOEF, BCOEF, NHOLD
-      DATA FIRST /.TRUE./
+      DATA FIRST,NHOLD /.TRUE.,0/
 C
       IF (FIRST .OR. NHTYP.NE.NHOLD) THEN
          DO J = 0, MXQN - 1
@@ -361,3 +366,4 @@ C  /* Deck sphab */
      &     2*D**2*(1+LX))
       RETURN
       END
+C --- end of erisph.F ---

@@ -24,7 +24,7 @@ cat > dft_properties_nosym.info <<'%EOF%'
    Wave Functions:   DFT B3LYP / cc-pVDZ
    Test Purpose:     DFT B3LYP properties test w/o symmetry:
                      Shieldings, excitation energies, spin-spin, darwin,
-                     mass-vel., dipol, spin-orbit,  P-viola
+                     mass-vel., dipol, spin-orbit,  P-violation
 %EOF%
 
 #######################################################################
@@ -71,7 +71,7 @@ cat > dft_properties_nosym.dal <<'%EOF%'
 **RESPONSE 
 .TRPFLG
 *LINEAR
-.MAXIT
+.MAX IT
 99
 .MAXITO
 99
@@ -140,7 +140,7 @@ CTRL[3]=2
 ERROR[3]="RELATIVISTIC PROPERTIES NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.748785 au * 1\.903222 Debye" $log | wc -l`
+CRIT1=`$GREP "(0| )\.748785 * 1\.903222" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="DIPOLE MOMENT NOT CORRECT"
@@ -185,8 +185,8 @@ ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

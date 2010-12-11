@@ -55,7 +55,7 @@ cat > cc2dc_resp_newlr.dal <<%EOF%
 *END OF HERMIT
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-11
 *CC INP
@@ -108,7 +108,7 @@ CTRL[1]=2
 ERROR[1]="ENERGY TERMS NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "z      ( |0)\.84595673      2\.15020731" $log | wc -l`
+CRIT1=`$GREP "z * ( |0)\.84595673 * 2\.15020731" $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
@@ -125,8 +125,8 @@ ERROR[3]="STATIC POLARIZABILITY NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

@@ -1,3 +1,4 @@
+c -*-mode:fortran; fortran-continuation-string: "&" -*-
 C
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -134,13 +135,9 @@ C
          WRITE (LUPRI, '(A,L5)') ' NODV  ', NODV
          WRITE (LUPRI, '(A,L5)') ' AOMAT ', AOMAT
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
@@ -961,13 +958,9 @@ C
 C
       LBUF = 600
       JBUF = 256
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
@@ -1190,8 +1183,9 @@ C  /* Deck traorb */
       SUBROUTINE TRAORB(ORBTRA,IDIM,IATOM,IPRINT)
 C
 C     Sets up transformation matrices between SO and AO orbitals
-C
 C     tuh Sep 07 1988
+C
+C     hjaaj 2008: IATOM .eq. -1 introduced, called p.t. by abamolden.F
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1206,10 +1200,13 @@ C
       DIMENSION ORBTRA(IDIM,IDIM)
 #include <ibtfun.h>
 C
-      IF (IATOM .EQ. 0) THEN
+      IF (IATOM .GT. 0) THEN
+         FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
+      ELSE IF (IATOM .EQ. 0 .OR. IATOM .EQ. -1) THEN
          FACTOR = 1.0D0
       ELSE
-         FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
+         CALL QENTER('TRAORB')
+         CALL QUIT('IATOM .lt. -1')
       END IF
       CALL DZERO(ORBTRA,IDIM*IDIM)
       DO 100 I = 1, IDIM
@@ -1230,16 +1227,17 @@ C
             DO 400 J = 1, IDIM
                SUM = SUM + ABS(ORBTRA(I,J))
  400        CONTINUE
-            SUM = FACTOR*SUM
+            SUM = 1.0D0/(FACTOR*SUM)
             DO 500 J = 1, IDIM
-               ORBTRA(I,J) = ORBTRA(I,J)/SUM
+               ORBTRA(I,J) = ORBTRA(I,J)*SUM
  500        CONTINUE
  300     CONTINUE
       END IF
 C
       IF (IPRINT .GE. 15) THEN
          CALL HEADER('SO to AO transformation matrix',-1)
-         CALL OUTPUT(ORBTRA,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
+         WRITE(LUPRI,*) '   for IATOM = ',IATOM
+         CALL OUTPUT(ORBTRA,1,IDIM,1,IDIM,IDIM,IDIM,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1530,10 +1528,10 @@ C
          WRITE (LUPRI,'(A,I5)') ' ICOOR  ', ICOOR
          WRITE (LUPRI,'(A,I5)') ' NORBT  ', NORBT
          WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
-         WRITE (LUPRI,'(A,2I5)') ' NNBASX, N2BASX ', NNBASX, N2BASX
-         WRITE (LUPRI,'(A,2I5)') ' NNORBX, N2ORBX ', NNORBX, N2ORBX
-         WRITE (LUPRI,'(A,I5)')  ' NCMOT  ', NCMOT
-         WRITE (LUPRI,'(A,I10)') ' LWORK  ', LWORK
+         WRITE (LUPRI,'(A,2I5)')' NNBASX, N2BASX ', NNBASX, N2BASX
+         WRITE (LUPRI,'(A,2I5)')' NNORBX, N2ORBX ', NNORBX, N2ORBX
+         WRITE (LUPRI,'(A,I5)') ' NCMOT  ', NCMOT
+         WRITE (LUPRI,'(A,I10)')' LWORK  ', LWORK
       END IF
 C
 C     ***** Make square matrix *****
@@ -1550,7 +1548,8 @@ C
 C     Loop over irreps for orbitals
 C
       NONSYM = .FALSE.
-      JCOOR = 3*(IATOM - 1) + ICOOR
+      JCOOR = MAX(1,3*(IATOM - 1) + ICOOR)
+C     ... hjaaj: to avoid referring to IPTCNT(-2,...) below when IATOM.eq.0
       DO 100 IREPA = 1,NSYM
       IF (NORB(IREPA) .GT. 0) THEN
          DO 200 IREPB = 1, IREPA
@@ -1607,24 +1606,27 @@ C  /* Deck transx */
        SUBROUTINE TRANSX(A,B,NA,NB,ANTSYM,IPRINT)
 C
 C Modified from TRANSA, tuh 2-Sep-1988
-C WRITTEN 1-FEB-1984 PJ
+C TRANSA written 1-Feb-1984 PJ
 C
-C PUT THE TRANSPOSED OF THE MATRIX A IN B
+C Put the lower triangle of A into the upper triangle of B
+C (if A = B, the matrix will become (anti)symmetric
+C  based on the lower triangle)
 C
 #include <implicit.h>
 #include <priunit.h>
 C
 C
-       DIMENSION A(NA,2),B(NB,2)
+       DIMENSION A(NA,*), B(NB,*)
        IF (IPRINT.GT.15) THEN
-          WRITE(LUPRI,150)NA,NB
- 150      FORMAT(/,' Dimension of matrix A is ',I5,I5)
+          WRITE(LUPRI,150) NA,NB,ANTSYM
+ 150      FORMAT(/' Dimension of matrix A is ',I5,I5,
+     &           /' ANTSYM =',F10.2)
           WRITE(LUPRI,'(/A)')' Matrix to be (anti)symmetrized '
           CALL OUTPUT(A(1,1),1,NA,1,NB,NA,NB,1,LUPRI)
        END IF
        DO 200 I=1,NB
          DO 100 J=1,I
-         B(J,I)=A(I,J)*ANTSYM
+           B(J,I)=A(I,J)*ANTSYM
  100     CONTINUE
  200   CONTINUE
        IF (IPRINT.GT.15) THEN
@@ -1687,7 +1689,6 @@ C
       IF (KGETSD.GT.LWORK) CALL STOPIT('GETSD',' ',KGETSD,LWORK)
       DO 100 ICOOR = 1, 3
          IF (DERIV(ICOOR)) THEN
-
             IF (IPRINT .GE. 10) THEN
                IF (ICOOR. EQ. 1) THEN
                   CALL TITLER('Differentiation in x direction',' ',200)
@@ -1739,10 +1740,14 @@ C
       CHARACTER*4 KEY
       CHARACTER*7 KEY2
 #include <inforb.h>
+#include "gnrinf.h"
 #include <abainf.h>
 #include <cbisol.h>
 #include <infinp.h>
+#include <pcmlog.h>
+#include <qmmm.h>
 #include <efield.h>
+#include <infpar.h>
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
       IF (IPRINT .GT. 5) CALL TITLER('Output from ONEDRL','*',103)
@@ -1839,16 +1844,51 @@ C
                END IF
  556        CONTINUE
          END IF
-         IF (SOLVNT .AND. (KEY .EQ. 'HMAT') .AND. (.NOT. NOLOND)) THEN
+C
+         IF ((SOLVNT .OR. PCM) .AND. (KEY .EQ. 'HMAT')
+     &                         .AND. (.NOT. NOLOND)) THEN
             KTMAT = KWRK
 	    MWRK  = KTMAT + 3*N2BASX
             IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','MAGSOL',MWRK,
-     &                                       LWRK)
+     &                                      LWRK)
             LLEFT = LWRK - MWRK + 1
-            CALL MAGSOL(WORK(KTMAT),3,IPRINT,INTPRI,
-     &                  WORK(MWRK),LLEFT)
+            IF (SOLVNT) THEN
+               CALL MAGSOL(WORK(KTMAT),3,IPRINT,INTPRI,
+     &                     WORK(MWRK),LLEFT)
+            ELSE
+               CALL MAGPCMFIRST(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),
+     &                          LLEFT)
+            END IF
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
          END IF
+C         
+         IF (QM3 .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            KTMAT = KWRK
+            MWRK  = KTMAT + 3*N2BASX
+            IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','QM3-1',MWRK,LWRK)
+            LLEFT = LWRK - MWRK + 1
+C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
+            IF (NODTOT.GE.1) THEN
+               CALL QM3FIRST_P(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),
+     &                       LLEFT)
+            ELSE
+               CALL QM3FIRST(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),
+     &                       LLEFT)
+            ENDIF
+            CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
+         END IF
+
+         IF (QMMM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+            KTMAT = KWRK
+            MWRK  = KTMAT + 3*N2BASX
+            IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','QMMM-1',MWRK,LWRK)
+            LLEFT = LWRK - MWRK + 1
+            CALL QMMMFIRST(WORK(KTMAT),IPRINT,INTPRI,WORK(MWRK),LLEFT)
+            CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
+            IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
+         END IF
+
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
          IF (DERY) CALL DCOPY(N2BASX,WORK(KMATS+  N2BASX),1,OMATY,1)
          IF (DERZ) CALL DCOPY(N2BASX,WORK(KMATS+2*N2BASX),1,OMATZ,1)
@@ -1980,7 +2020,7 @@ C
                   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                 'UNFORMATTED',IDUMMY,.FALSE.)         
                   DO 556 IFIELD = 1, NFIELD
-                     IF (EFIELD(IFIELD) .NE. D0) THEN
+                     IF (EFIELD(IFIELD) .NE. 0.D0) THEN
                         IF (LFIELD(IFIELD)(2:8) .NE. 'DIPLEN ') THEN
                            WRITE (LUPRI,'(/,3A,/)') 'Field type ',
      &                          LFIELD(IFIELD),

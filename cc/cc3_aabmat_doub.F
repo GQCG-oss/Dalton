@@ -170,12 +170,12 @@ C--------------------------------
 C     Open files
 C--------------------------------
 C
-      LUCKJD   = 0
-      LUTOC    = 0
-      LU3VI    = 0
-      LU3VI2   = 0
-      LUDKBC   = 0
-      LUDELD   = 0
+      LUCKJD   = -1
+      LUTOC    = -1
+      LU3VI    = -1
+      LU3VI2   = -1
+      LUDKBC   = -1
+      LUDELD   = -1
 C
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
       CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -188,12 +188,12 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUCKJDR2  = 0
-      LUDKBCR2  = 0
+      LU3SRTR   = -1
+      LUCKJDR   = -1
+      LUDELDR   = -1
+      LUDKBCR   = -1
+      LUCKJDR2  = -1
+      LUDKBCR2  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)

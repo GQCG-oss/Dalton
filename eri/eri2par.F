@@ -37,8 +37,7 @@ C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &                  NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                  DINTSKP)
+     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -54,13 +53,15 @@ C
 C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
-C INFPAR : MASTER, NODTOT, IPRPAR, MAXTSK, NCODE, DEBUG
+C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DEBUG
 C GNRINF : BASDIR, LENBAS
 C
 #include <infpar.h>
 #include <gnrinf.h>
       DATA TOTWAL /0./
       SAVE TOTWAL
+C
+      CALL QENTER('PARDRV')
 C
       IPRINT = MAX(IPRINT,IPRPAR)
 C
@@ -86,12 +87,16 @@ C
       CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
 #endif
       IF (IPRTYP.EQ.1) THEN
+         if (iprint .gt. 3) 
+     &        write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                   DINTSKP,RELCAL)
       ELSE
+         if (iprint .gt. 3)
+     &    write (lupri,*) 'Calling parallel ERI routines.'
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
       END IF
@@ -128,6 +133,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('PARDRV')
       RETURN
       END
 C  /* Deck rvtim */
@@ -242,6 +248,8 @@ C
       SAVE FIRST
       DATA FIRST/.TRUE./
 C
+      CALL QENTER('ERI_PARDRV')
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_PARDRV','*',103)
 C
 C     Consistancy check
@@ -301,6 +309,7 @@ C
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+      CALL QEXIT('ERI_PARDRV')
       RETURN
       END
 C  /* Deck eri_conchk */
@@ -411,6 +420,7 @@ C   /cbieri/ logicals
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
@@ -528,8 +538,8 @@ C--------------------------
 C     Make the index array.
 C--------------------------
 C
-      CALL INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,NTASK,NBATCH,
-     &            NPOS,IPRINT)
+      CALL HER_INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,
+     &            NTASK,NBATCH,NPOS,IPRINT)
 C
 Cef begin
 C  10.mai    INITX = .TRUE.
@@ -724,6 +734,8 @@ C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
+C
+C        Send (I|J) batch to NODEID
 C
          CALL MPIXRECV(IPLAC2,1,'INTEGER',NWHO,MTAG51)
 C
@@ -945,16 +957,21 @@ C
 C
       RETURN
       END
-C  /* Deck node */
+C  /* Deck nodedriver */
 #if defined (VAR_MPI)
-      SUBROUTINE NODSTR(WORK,MWORK,WRKDLM,MASTER,MYNUM)
+      SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <mtags.h>
+C infpar.h: MASTER,MYNUM
+#include <maxorb.h>
+#include <infpar.h>
       DIMENSION WORK(MWORK)
 C
-C     Get calculation type (iprtyp)
+      CALL QENTER('NODEDRIVER')
+C
+C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
@@ -981,16 +998,71 @@ C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFTHED_SLAVE(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.10) THEN
              CALL DFT_SUSCEP_SLAVE(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 11 .OR. IPRTYP .EQ. 13) THEN
+            CALL J1INTS(WORK,MWORK,IPRTYP,IPRINT)
+         ELSE IF (IPRTYP .EQ. 12) THEN
+            CALL J1XS(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 14) THEN
+            CALL J2XS(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 15) THEN
+            CALL DFT_MOMO_SLAVE(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 16) THEN
+            CALL QM3_NSPS(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 17) THEN
+            CALL QM3LNO_S(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 18) THEN
+            CALL QM3QRO_S(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 19) THEN
+            CALL QM3FIRST_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 20) THEN
+            CALL QM3FIRST_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 21) THEN
+            CALL PARQMMM_S(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 22) THEN
+            CALL QMMM_POLARI_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 23) THEN
+            CALL QMMM_POLARI_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 24) THEN
+            CALL QMMM_POLARI_S3(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 28) THEN
+            CALL QMMMLNO_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 29) THEN
+            CALL QMMMLNO_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 30) THEN
+            CALL QMMMQRO_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 31) THEN
+            CALL QMMMQRO_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 32) THEN
+            CALL QMMMCRO_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 33) THEN
+            CALL QMMMCRO_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 34) THEN
+            CALL QMMMFIRST_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 35) THEN
+            CALL QMMMFIRST_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 36) THEN
+            CALL QMMMFIRST_S3(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 37) THEN
+            CALL QMMMFIRST_S4(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 38) THEN
+            CALL QMMMB2_S1(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 39) THEN
+            CALL QMMMB2_S2(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 40) THEN
+            CALL QMMMB2_S3(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 41) THEN
+            CALL QMMMB2_S4(WORK,MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(NODSTR) ERROR on slave',MYTID,
+     &         '(NODEDRIVER) ERROR on slave',MYTID,
      &         ': Unknown calculation type request',IPRTYP
-            CALL QUIT('NODSTR: Unknown calculation type')
+            CALL QUIT('NODEDRIVER: Unknown calculation type')
          END IF
 C
          GO TO 100
       END IF
 C
+      CALL QEXIT('NODEDRIVER')
       RETURN
       END
 #endif
@@ -1104,6 +1176,8 @@ C
 C
 #include <memint.h>
 C
+      CALL QENTER('ERI_NODSTR')
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODSTR','*',103)
 C
 C     Start timing
@@ -1151,7 +1225,7 @@ C     Zero Fock-matrix
 C
       CALL DZERO(WORK(KFMAT),N2BASX)
 C
-      CALL HRFCK2(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRINT,
+      CALL ERIFCK(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRINT,
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKPT),
      &            WORK(KLAST),LWRK)
 C
@@ -1159,6 +1233,7 @@ C     Send overall timings if requested.
 C
       IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
 C
+      CALL QEXIT('ERI_NODSTR')
       RETURN
       END
 C  /* Deck eri_rvinit */
@@ -1171,7 +1246,7 @@ C
 #include <maxorb.h>
 #include <mtags.h>
 C
-      LOGICAL FIRST
+      LOGICAL FIRST, TSTINP
       DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
      &          JORBSH(*), KORBSH(*), ISYMDM(*), IFCTYP(*),
      &          WORK(LWORK)
@@ -1180,7 +1255,7 @@ C Used from common blocks
 C
 C MXCENT : MXCENT (for MOLINP)
 C MXORB  : MXSHEL (for INFPAR)
-C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN)
+C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN), RELCAL
 C SIRIPC : NEWGEO
 C MOLINP : NMLINE
 C MOLINC : MLINE()
@@ -1239,6 +1314,7 @@ C   /cbieri/
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
          CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
@@ -1288,6 +1364,15 @@ C
 C     Set hermit
 C
       IF (NEWGEO) RDINPC = .FALSE.
+C                                                                                                     
+C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
+C     initialize it properly                                                                        
+C                                                                                                     
+      IF (FIRST) THEN
+          RELCAL = .FALSE.
+          TSTINP = .FALSE.
+         CALL REAINI(0,RELCAL,TSTINP)
+      END IF
 C
       CALL SETHER(0,NEWGEO,WORK,LWORK)
 C
@@ -1397,6 +1482,8 @@ C
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
      &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
 #include <ibtfun.h>
+C
+      CALL QENTER('ERI_NODDRV')
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODDRV','*',103)
 C
@@ -1787,6 +1874,7 @@ C
 C
       IPRINT = IPRKEP
 C
+      CALL QEXIT('ERI_NODDRV')
       RETURN
       END
 C  /* Deck eri_sdcls */

@@ -494,7 +494,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ',
      *               'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -587,7 +587,7 @@ C
      &       'Insufficient core for allocation in CC_2EEXP (CCSD(T))')
            ENDIF
 C
-           LUPTIA = 0
+           LUPTIA = -1
            FNDPTIA  = 'DPTIA'
            CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
@@ -1335,7 +1335,8 @@ C
  
                   IF (IOPREL.EQ.3) THEN
                     CALL CCSD_ASYMSQ(WORK(KOFFIN),ISYMPQ,WORK(KINTAO),
-     &                               ISYMG,ISYMD)
+     &                               0,0)
+c    &                               ISYMG,ISYMD)
                   ELSE
                     CALL CCSD_SYMSQ(WORK(KOFFIN),ISYMPQ,WORK(KINTAO))
                   END IF
@@ -1433,7 +1434,7 @@ C
 C
       IF (.FALSE.) THEN
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC

@@ -8,7 +8,7 @@
 * http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html  *
 *                                                                      *
 ************************************************************************
-* REFERENCES
+$  REFERENCE
 *
 * Ref 1: P. Fuentealba, H. Preuss, H. Stoll, L. v. Szentpaly,
 *        Chem. Phys. Lett. 89, 418 (1982).
@@ -136,7 +136,7 @@ $ S TYPE FUNCTIONS
 $ P TYPE FUNCTIONS
     4    2    0
     16.69221800  0.04485600  0.00000000
-     3.90070200  0.22613000  0.00000000
+     3.90070200  0.22261300  0.00000000
      1.07825300  0.50018800  0.00000000
      0.28418900  0.00000000  1.00000000
 A 9

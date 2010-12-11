@@ -46,21 +46,20 @@ C/*deck  trahso*/
 C
 C Copyright Mar 1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
-      DIMENSION CMO(1),WRK(KWORK)
+#include "implicit.h"
+      DIMENSION CMO(*),WRK(KWORK)
 C
-#include <dummy.h>
+#include "dummy.h"
 #include <maxorb.h>
 C
 C Used from common blocks:
-C   INFDIM : MWORK
 C   INFTRA : IPRTRA
+C   INFTAP : LUAHSO, LUMHSO
 C   TRUNIT : LUORDA, LUMINT
 C
 #include <priunit.h>
-#include <inftap.h>
 #include <inftra.h>
-#include <infdim.h>
+#include <inftap.h>
 #include <trhso.h>
 #include <trunit.h>
 C
@@ -73,7 +72,6 @@ C
       NOEXCH = .TRUE.
       NOTUVX = .TRUE.
       MCOPT  = .FALSE.
-      MEMX   = KWORK
       IF (ITRLSO .EQ. 0) THEN
          ITRLVL = 200
       ELSE IF (ITRLSO .EQ. 1) THEN
@@ -89,10 +87,6 @@ C     Set TRINP and TRUNIT
 C     JRDAO = 2 is code for reading spin-orbit integrals
 C
       JRDAO = 2
-      MWRKSV = MWORK
-      MWORK = MIN(MWORK, KWORK)
-C     ... available memory may be less than MWORK here !!!
-      MWORK = MWRKSV
 C
 C
       IPRFIO = IPRTRA
@@ -111,7 +105,7 @@ C     save LUORDA, LUMINT (may point to normal integrals)
       LUMINTSV = LUMINT
       LUMINT   = LUMHSO
 C
-      CALL TRASET(JRDAO)
+      CALL TRASET(JRDAO,KWORK)
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
       IF (IPRTRA .GE. 2) THEN
@@ -143,8 +137,8 @@ C     restore LUORDA, LUMINT (may point to normal integrals)
       CALL QEXIT('TRAHSO')
       RETURN
       END
-C/*deck  trase2*/
-      SUBROUTINE TRASE2
+C/*deck  traset_2*/
+      SUBROUTINE TRASET_2( LX2X3,LWORK )
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -153,7 +147,7 @@ C
 #include <implicit.h>
 C
 C Used from common blocks:
-C  INFDIM : MWORK,N2BASM
+C  INFDIM : N2BASM
 C  INFTRA : IPRTRA
 C  TRINP  : MSYM, MBAS(), INTSYM
 C  TRHSO  : KSYMSO
@@ -166,7 +160,13 @@ C
 #include <trhso.h>
 #include <trunit.h>
 C
-      CALL QENTER('TRASE2')
+      CALL QENTER('TRASET_2')
+C
+         LX2X3  = 2*600 + 4*600
+C        for BUF(600), IBUF(600), and INDX(4,600) for both i*4 and i*8
+C        /Bugfix Oct07-hjaaj
+C MAERKE: remember to change here when new DR2OUT in her2out.F
+C
       KEEP(1) = MSYM
       INTSYM  = KSYMSO
       KEEP(2) = INTSYM
@@ -178,13 +178,13 @@ C
 C     980820-hjaaj: reserve NWRK*N2BASM memory for other
 C     buffers in integral transformation.
 C
-      NWRK = (MWORK/3) / N2BASM
+      NWRK = (LWORK/3) / N2BASM
 C     allocate 1/3 of memory for other buffers of size N2BASM
       NWRK = MAX(6+NORBMA,NWRK)
 C     We need at least ca. this number of buffers (as far as I can count
 C     today!) for the integral transformation to work.
 C
-      NPQ = MAX( MWORK / N2BASM - NWRK , 1 )
+      NPQ = MAX( LWORK / N2BASM - NWRK , 1 )
       NPQ = MIN( NPQ , N2BASM )
       DO 200 I = 1,LIDATA
          IDATA(I,1) = 0
@@ -192,7 +192,7 @@ C
   200 CONTINUE
       IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
      *   ' Symmetry of spin-orbit integrals from LUAHSO :',INTSYM
-      CALL QEXIT('TRASE2')
+      CALL QEXIT('TRASET_2')
       RETURN
       END
 C /*deck  rdhso2*/
@@ -211,7 +211,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
-      DIMENSION HSOPQ(1), BUF(600*(1+IRAT) + 1), IBUF(4,600)
+      DIMENSION HSOPQ(*), BUF(*), IBUF(4,600)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
@@ -241,24 +241,21 @@ C
 C
       LBUF = 600
       JBUF = 256
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
+         CALL QUIT('NBASIS .gt. 255 not implemented yet here')
          NIBUF = 2
          NBITS = 16
       END IF
 #endif
 C
-      LENINT = IRAT*LBUF + LBUF + 1
+      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KINT = 1
       KIINT = KINT + LBUF
 C

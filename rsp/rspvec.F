@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -254,9 +254,7 @@ C     ... skip this symmetry if no operators
 C
 C        DEFINE VARIABLES THAT DEPEND ON SYMMETRY
 C
-         CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     *               WRK,LWRK)
-C        CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+         CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 C SET VARIABLES IN SYMMETRY KSYMOP
 C
@@ -363,11 +361,9 @@ C     ... skip this symmetry if no operators
      *         ' - triplet property operator(s) of symmetry',KSYMOP
             END IF
 C
-C        DEFINE VARIABLES THAT DEPEND ON SYMMETRY
+C DEFINE VARIABLES THAT DEPEND ON SYMMETRY
 C
-            CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     *                  WRK,LWRK)
-C           CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+            CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 C SET VARIABLES IN SYMMETRY KSYMOP
 C
@@ -387,7 +383,7 @@ C
 C
 C     Delete LR files to save disk space /910109-hjaaj
 C
-      LURSP1 = 0
+      LURSP1 = -1
       CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPCLOSE(LURSP1,'DELETE')
@@ -453,9 +449,9 @@ C     space allocation for reduced E(2) and reduced S(2)
       END IF
 C
       IF (LWRK1 .LT. 3*KZYVAR) THEN
-         WRITE (LUERR,9000) LWRK1,3*KZYVAR
-         CALL QTRACE(LUERR)
-         CALL QUIT('ERROR, INSUFFICIENT SPACE FOR QRPPVE')
+         WRITE (LUPRI,9000) LWRK1,3*KZYVAR
+         CALL QTRACE(LUPRI)
+         CALL QUIT('ERROR, INSUFFICIENT WORK MEMORY FOR QRPPVE')
       ENDIF
  9000    FORMAT(/' QRPPVE, work space too small for 3 (z,y)-vectors',
      *          /'         had:',I10,', need more than:',I10)
@@ -487,8 +483,8 @@ C
       END IF
       IF ( NSIM.EQ.0) THEN
          WRITE(LUPRI,'(/A,I5)')
-     *   ' QRPPVE: TOO LITTLE WORK SPACE, NSIM= ',NSIM
-         CALL QUIT(' QRPPVE: TOO LITTLE WORK SPACE')
+     *   ' QRPPVE: TOO LITTLE WORK MEMORY, NSIM= ',NSIM
+         CALL QUIT(' QRPPVE: TOO LITTLE WORK MEMORY')
       END IF
       KBVECS = KWRK1
       KWRK2  = KBVECS + NSIM*KZYVAR
@@ -576,6 +572,8 @@ C
 #include <qrinf.h>
 #include <inforb.h>
 #include <inftap.h>
+!SONIA: MCDPRJ
+#include <infsmo.h>
 C
 C Local variables
 C
@@ -610,7 +608,7 @@ C
             JOPVEC = ILRQR(KSYMOP) + JOP
             IF (QRLBL(JOPVEC) .EQ. LRLAB(ILRLAB)) NFRQ = NFRQ + 1
   210    CONTINUE
-         IF (IPRLR .GT. 20) WRITE (LUPRI,*) 'New label, NFREQ =',NFRQ
+         IF (IPRLR .GT. 20) WRITE (LUPRI,*) 'New label, NFRQ =',NFRQ
          MXFRQ = MAX(MXFRQ,NFRQ)
   220 CONTINUE
 C     allocate core
@@ -619,9 +617,9 @@ C     ... 3*KZYVAR is an estimate of space needed in RSPCTL
       LNEEDB = 1 + 2*MAXRM
       NFRQMX = (LWRK - LNEEDA) / LNEEDB
       IF (NFRQMX .LT. MXFRQ) THEN
-         WRITE (LUERR,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
-         CALL QTRACE(LUERR)
-         CALL QUIT('QRLRVE: INSUFFICIENT SPACE TO '//
+         WRITE (LUPRI,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
+         CALL QTRACE(LUPRI)
+         CALL QUIT('QRLRVE: INSUFFICIENT WORK MEMORY TO '//
      &             'SOLVE LINEAR EQUATIONS ')
       ENDIF
  9100 FORMAT(/' QRLRVE, work space too small for 3 (z,y)-vectors',
@@ -637,6 +635,20 @@ C
       KGP    = KREDGP + MAXRM*MXFRQ
       KWRK1  = KGP    + KZYVAR
       LWRK1  = LWRK   - KWRK1
+      !Sonia: extra allocation for projecting out redundant excitation
+      !it does not work for MCSCF wfs.
+      IF (KZCONF .GT. 0) then
+         IF (MCDPRJ) write(lupri,*)'SONIA: RESET MCDPRJ=false for MCSCF'
+         MCDPRJ = .false.
+      END IF
+      if (MCDPRJ) then
+        write(lupri,*)'SONIA: allocating for projection'
+        KXf   = KWRK1
+        KS2Xf = KXf   + KZYVAR
+        KWRK1 = KS2Xf + KZYVAR
+        LWRK1 = LWRK  - KWRK1
+      end if
+      !----
 C     reuse KGP space for solution vectors.
       KBVECS = KGP
       LGP2   = KZYVAR + 6*N2BASX
@@ -683,8 +695,15 @@ C
                END IF
             END IF
   410    CONTINUE
+         if (mcdprj)
+     &   write(lupri,*)'SONIA: we requested NFREQ frequencies=',NFREQ
+
          IF (NFREQ .EQ. 0) GOTO 680
 C
+         !SONIA: usual code
+         if (.not.(mcdprj.and.LRLAB(ILRLAB)(2:7).eq.'DIPLEN')) then
+
+
          CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
@@ -713,17 +732,19 @@ C
      *               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      *               WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *               XINDX,WRK(KWRK1),LWRK1)
-C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C    *               LINEQ,GP,REDGP,REDE,REDS,
-C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
-C
+!        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+!    *               LINEQ,GP,REDGP,REDE,REDS,
+!    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
+!
          DO 580 IFREQ = 1,NFREQ,NFRQMX
+         if (mcdprj)
+     &      write(lupri,*)'SONIA: NFREQ=', NFREQ, ' NBX = ', NBX
             NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
             IBOFF = IFREQ - 1
             CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
-     *                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-C           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
-C
+     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+!           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
+!
             JBVECS = KBVECS
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
 CTODO        IF (IPRRSP.GE.5) THEN
@@ -751,6 +772,129 @@ CTODO        END IF
                JBVECS = JBVECS + KZYVAR
   560       CONTINUE
   580    CONTINUE
+         else !SONIA: MCDPRJ special code
+
+       !SONIA: MCD, we want to ensure we solve for 1 freq at at time
+       !in the resonant case (diplen)
+       do ifreq = 1, NFREQ
+         WRITE(LUPRI,*)'SONIA: CALL SOLVER 1 freq at a time', ifreq
+         !get property gradient vector
+         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
+     &                  ANTSYM,WRK(KGP),LWRK1)
+         GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
+         WRITE (LUPRI,'(//A,I3,/2A,/A,(T25,5F10.6))')
+     &   ' QRLRVE PRJ -- linear response calculation for sym',KSYMOP,
+     &   ' QRLRVE PRJ-- operator label : ',LRLAB(ILRLAB),
+     &   ' QRLRVE PRJ-- frequency :', WRK(KEIVAL+ifreq-1)
+
+         IF (GPNORM .LT. THRSML) THEN
+           WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+           WRITE (LUPRI,*) '     property vector is only',GPNORM
+           CALL DZERO(WRK(KBVECS),KZYVAR)
+           CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),BLANK,
+     &                     WRK(KEIVAL+IFREQ-1),D0,KSYMOP,0,D0,ANTSYM)
+           GO TO 680
+         END IF
+         !read in the excitation vector for the resonant excitation
+         afrq=WRK(KEIVAL+ifreq-1)
+         CALL REARSP(LURSP,KLEN,WRK(KXf),'EXCITLAB',BLANK,
+     &               afrq,D0,KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
+
+         if ((found).and.(conv)) then
+           write(lupri,*)'SONIA: found redundant exci X_f on file'
+           !CALL RSPPRO(WRK(KXf),KZVAR,-LUPRI)
+           call dzero(WRK(KS2Xf),KZYVAR)
+           CALL RSPSLI(0,1,DUMMY,WRK(KXf),
+     *                 UDV,WRK(KS2Xf),XINDX,WRK(KWRK1),LWRK1)
+           write(lupri,*)'SONIA: S2X_f of excitation vector'
+           CALL RSPPRO(WRK(KS2Xf),KZVAR,-LUPRI)
+        write(lupri,*)'XfS2Xf=',ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
+           tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
+           write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
+           !write(lupri,*)'SONIA: Property gradient before projection'
+           !CALL RSPPRO(WRK(KGP),KZVAR,-LUPRI)
+           !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
+           CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
+           write(lupri,*)'SONIA: property gradient after projection'
+           !CALL RSPPRO(WRK(KGP),KZVAR,-LUPRI)
+           tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
+           write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
+         end if
+         KZRED  = 0
+         KZYRED = 0
+         KEXSIM = 1
+         KEXCNV = 1
+         kfreque = KEIVAL+ifreq-1
+         !sonia: call response control to start the LR solution...
+         !if (.true.) then
+         if (abs(tt).le.1.0d-16) then
+            !if gradient does not have components along Xf no need
+            !to go thru this misery? Maybe not...
+            write(lupri,*)'Calling regular RSPCTL,tt=', tt
+            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     &               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
+     &               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
+     &               WRK(KIBTYP),WRK(Kfreque),WRK(KRESID),WRK(KEIVEC),
+     &               XINDX,WRK(KWRK1),LWRK1)
+
+         else
+            !use the projecting algorithm...
+            write(lupri,*)'Calling RSPCTLMCD, tt=',tt
+            CALL RSPCTLMCD(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     &               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
+     &               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
+     &               WRK(KIBTYP),WRK(kfreque),WRK(KRESID),WRK(KEIVEC),
+     &               XINDX,WRK(KXf),WRK(KS2Xf),WRK(KWRK1),LWRK1)
+            write(lupri,*)'Exit projecting response control'
+            call flshfo(lupri)
+         end if
+
+!         DO 580 IFREQ = 1,NFREQ,NFRQMX
+!            NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
+!            IBOFF = IFREQ - 1
+          NBX   = 1 !this is the number of freqs (sets of red space elements)
+          IBOFF = 0
+           !IBOFF = IFREQ - 1
+!          CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+!     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+          CALL RSPEVE(WRK(KIBTYP),WRK(kfreque),WRK(KEIVEC),
+     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+          write(lupri,*)'Exit RSPEVE PRJ iboff,ifreq', iboff, ifreq
+          call flshfo(lupri)
+
+          JBVECS = KBVECS
+          !compute the LR function of the current solution vector
+          !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
+!TODO     IF (IPRRSP.GE.5) THEN
+          JFREQ = IFREQ
+          WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
+     &    ' QRLRVE: SINGLET SOLUTION   LABEL',LRLAB(ILRLAB),
+     &    ' FREQUENCY ',WRK(KEIVAL-1+IFREQ),
+     &    ' SYMMETRY',KSYMOP
+          CALL FLSHFO(LUPRI)
+          JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
+          DO JLRLAB = 1, NLRLAB
+             CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
+     &                     ANTSM2,WRK(KGP2),LGP2)
+             VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
+             WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
+     &              '@QRLRVE:  << ', LRLAB(JLRLAB),' ; '
+     &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
+          END DO
+!TODO        END IF
+          IF (IPRRSP.GT.100) THEN
+            WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
+            CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+          END IF
+          !sonia: I dump the solution vector on file LURSP
+          CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
+     &                  BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
+     &                  WRK(KRESID - 1 + JFREQ),ANTSYM)
+          JBVECS = JBVECS + KZYVAR
+!  560      CONTINUE
+!  580    CONTINUE
+       end do !ifreq
+      end if  !SONIA extra MCDPRJ control...
   680 CONTINUE
 C
 C *** end of QRLRVE --
@@ -787,8 +931,7 @@ C
 #include <mxcent.h>
 C
 C PURPOSE:
-C CALCULATION OF FIRST HYPERPOLARIZABILITIES AND RELATED
-C PROPERTIES
+C CALCULATION OF FIRST HYPERPOLARIZABILITIES AND RELATED PROPERTIES
 C
       CHARACTER*1 ALABP, BLABP, CLABP
       CHARACTER*8 BLANK, LABEL
@@ -1019,14 +1162,13 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
      *                               MSYMC.EQ.IREFSY) THEN
                                     KSYMOP = 1
                                     CALL RSPVAR(UDV,FC,FC,FV,
-     *                              FCAC,H2AC,XINDX,
-     *                              WRK(KX3WRK),LX3WRK)
+     *                              FCAC,H2AC,XINDX,WRK(KX3WRK),LX3WRK)
                                     CALL DCOPY(KZWOPT,VECB(1+KZCONF),1,
      *                                         WRK(KX3WRK),1)
                                     CALL DCOPY(KZWOPT,
      *                                         VECB(1+KZCONF+KZVAR),1,
      *                                         WRK(KX3WRK+KZWOPT),1)
-                                    IF (ISPINA.EQ.ISPINB) THEN
+                                  IF (ISPINA.EQ.ISPINB) THEN
                                     TRPLET = ISPINA.EQ.1.AND.ISPINB.EQ.1
                                     WRITE(LUPRI,'(/3A)')
      *                                 ' LINEAR TRANSFORMATION WITH',
@@ -1037,13 +1179,13 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
      *                                          H2AC,XINDX,
      *                                          WRK(KX3WRK+KZYWOP),
      *                                          LX3WRK-KZYWOP)
-                                    END IF
+                                  END IF
                                     CALL DCOPY(KZWOPT,VECC(1+KZCONF),1,
      *                                         WRK(KX3WRK),1)
                                     CALL DCOPY(KZWOPT,
      *                                         VECC(1+KZCONF+KZVAR),1,
      *                                         WRK(KX3WRK+KZWOPT),1)
-                                    IF (ISPINA.EQ.ISPINC) THEN
+                                  IF (ISPINA.EQ.ISPINC) THEN
                                     TRPLET = ISPINA.EQ.1.AND.ISPINC.EQ.1
                                     WRITE(LUPRI,'(/3A)')
      *                                 ' LINEAR TRANSFORMATION WITH',
@@ -1054,7 +1196,7 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
      *                                          H2AC,XINDX,
      *                                          WRK(KX3WRK+KZYWOP),
      *                                          LX3WRK-KZYWOP)
-                                    END IF
+                                  END IF
                                     CALL GETREF(VECB,KZCONF)
                                     CALL DCOPY(KZCONF,VECB,1,
      &                                         VECB(KZVAR+1),1)
@@ -1075,12 +1217,14 @@ C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
                               END IF
                               IF (IAABB.NE.0) THEN
                                  IF (IAABB.EQ.1) THEN
+                                    NWARN = NWARN + 1
                                     WRITE(LUPRI,'(/A//3A)')
      *                                 ' ****WARNING******',
      *                              'WARNING: ONLY ALFA-ALFA AND',
      *                              ' BETA-BETA COMPONENTS IN',
      *                              ' DENSITY AND CI ROUTINES'
                                  ELSE IF (IAABB.EQ.2) THEN
+                                    NWARN = NWARN + 1
                                     WRITE(LUPRI,'(/A//3A)')
      *                                 ' ****WARNING******',
      *                              'WARNING: ONLY ALFA-BETA',
@@ -1531,6 +1675,8 @@ C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
      &            IMXEXC=20, D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
+      PARAMETER (AU_TO_GM=80*3.1415926D0**3 / 137.036**2 * 
+     &     0.591177**4 *2.418884)
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include <iratdef.h>
@@ -2102,16 +2248,21 @@ C
       IF (TWOPHO) THEN
          CALL TITLER('FINAL RESULTS FROM TWO-PHOTON CALCULATION',
      &        '*',112)
-         WRITE(LUPRI,'(A64,4(/A64))') 
+         WRITE(LUPRI,'(A64,5(/A64))') 
      & ' The two-photon absorption strength for an average molecular  ',
      & ' orientation is computed according to formulas given by       ',
-     & ' P.R. Monson and W.M. MacClain in J. Chem. Phys. 53:29, 1970  ',
-     & ' and W.M. MacClain in J. Chem. Phys. 55:2789, 1971.           ',
+     & ' P.R. Monson and W.M. McClain in J. Chem. Phys. 53:29, 1970   ',
+     & ' and W.M. McClain in J. Chem. Phys. 55:2789, 1971.            ',
      & ' The absorption depends on the light polarization.            ',
      & ' A monochromatic light source is assumed.                     '
-         WRITE(LUPRI,'(2(/A64))')
+         WRITE(LUPRI,'(3(/A64))')
      & ' All results are presented in atomic units, except the        ',
-     & ' excitation energy which is given in eV.                      '
+     & ' excitation energy which is given in eV and two-photon cross  ',
+     & ' section which is given in GM.                                '
+         WRITE(LUPRI,'(3(/A))')
+     &        '   Conversion factors:',
+     &        '      1 a.u. = 1.896788 10^{-50} cm^4 s/photon',
+     &        '      1 GM = 10^{-50} cm^4 s/photon'
          WRITE(LUPRI,'(/,3(/A52))') 
      &        '+--------------------------------+',
      &        '| Two-photon transition tensor S |',
@@ -2131,7 +2282,7 @@ C
      &              RESSOM(2,3,IC,ISYMC)
             ELSE
                WRITE(LUPRI,'(/A)') 
-     &              'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
+     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
             END IF
          END DO
          END DO
@@ -2144,21 +2295,25 @@ C
      &        ' D  = -2*Df + 6*Dg, Circular polarization',
      &        ' Df = sum(i,j){ S_ii * S_jj }/30         ',
      &        ' Dg = sum(i,j){ S_ij * S_ij }/30         '
+         WRITE(LUPRI,'(3(/A60))') 
+     &        '          Two-photon cross sections                ',
+     &        '---------------------------------------------------',
+     &        ' sigma  =  8*pi^3*alpha^2*hbar/e^4 * E^2*D   (a.u.)'
          WRITE(LUPRI,'(3(/A53))') 
      &        '       Polarization ratio      ',
      &        '-------------------------------',
      &        '    R  = (-Df+3*Dg)/(Df+2*Dg)  '  
          WRITE(LUPRI,'(/,3(/A56))') 
      &        '+-----------------------------------+',
-     &        '| Two-photon transition probability |',
+     &        '|   Two-photon absorption summary   |',
      &        '+-----------------------------------+'
          WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',
-     &'-----------'
-         WRITE(LUPRI,'(A6,A4,A8,A14,3A11,A8/A62,A)') 'Sym','No',
-     &        'Energy','Polarization','Df','Dg','D','R',
+     &'----------------------'
+         WRITE(LUPRI,'(A6,A4,A8,A14,4A11,A8/A62,A)') 'Sym','No',
+     &        'Energy','Polarization','Df','Dg','D','sigma','R',
      &'-----------------------------------------------------------',
-     &'-----------'
+     &'----------------------'
          DO ISYMC=1,NSYM
          DO IC = 1,NSMCNV(ISYMC)
             IF (IC.LE.IMXEXC) THEN
@@ -2172,80 +2327,67 @@ C
                END DO
                DF = DF/D30
                DG = DG/D30
-               R=(-DF+3*DG)/(DF+2*DG)
-               D=2*DF+4*DG
-               WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMC,IC,
-     &              RESFRE(IC,ISYMC)*XTEV,'Linear     ',DF,DG,D,R
+               R = (-DF+3*DG)/(DF+2*DG)
+               D = 2*DF+4*DG
+               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
+     &              RESFRE(IC,ISYMC)*XTEV,'Linear     ',DF,DG,D,s,R
                D=-2*DF+6*DG
-               WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMC,IC,
-     &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,R
-*********************************************************************
-*                                                                   *
-*                 Compute rotationally averaged                     *
-*                 two-photon transition strengths                   *
-*                 for different light beam polarizations            *
-*                                                                   *
-*       Martin J. Paterson      22/02/05                            *
-*                                                                   *
-*********************************************************************
-         WRITE(LUPRI,'(a)')
-     &    ' '
-         WRITE(LUPRI,'(6x,a)')
+               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
+     &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,s,R
+               IF (IPRRSP.GT.2) THEN
+                  WRITE(LUPRI,'(/,6x,a)')
      &    ' Rotationally averaged two-photon transition strengths',
      &    '                 and rate constants'
-
-         DELTA_TPlpa = ZERO
-         DELTA_TPlpa = ((2*DF)+(4*DG))
-         DELTA_TPlpe = ZERO
-         DELTA_TPlpe = ((-1*DF)+(5*DG))
-         DELTA_TPc = ZERO
-         DELTA_TPc = ((-2*DF)+(6*DG))
-         AUTIME = HBAR/XTJ
-         dK_1 = ZERO
-         dK_1 = (XTANG*XTANG*XTANG*XTANG)*AUTIME
-         dK_2 = ZERO
-         dK_2 = (8*PI*PI*PI)*(ALPHAC*ALPHAC)
-         dK_3 = ZERO
-         dK_3 = RESFRE(IC,ISYMC)*RESFRE(IC,ISYMC)
-         dK_lpa = ZERO
-         dK_lpa = dK_1*dK_2*dK_3*DELTA_TPlpa
-         dK_lpe = ZERO
-         dK_lpe = dK_1*dK_2*dK_3*DELTA_TPlpe
-         dK_c = ZERO
-         dK_c = dK_1*dK_2*dK_3*DELTA_TPc
-
-         WRITE(LUPRI,'(a)')
-     &    ' '
-         WRITE(LUPRI,'(6x,a)')
+                  DELTA_TPlpa = 0.0D0
+                  DELTA_TPlpa = ((2*DF)+(4*DG))
+                  DELTA_TPlpe = 0.0D0
+                  DELTA_TPlpe = ((-1*DF)+(5*DG))
+                  DELTA_TPc = 0.0D0
+                  DELTA_TPc = ((-2*DF)+(6*DG))
+                  AUTIME = HBAR/XTJ
+                  dK_1 = 0.0D0
+                  dK_1 = (XTANG*XTANG*XTANG*XTANG)*AUTIME
+                  dK_2 = 0.0D0
+                  dK_2 = (8*PI*PI*PI)*(ALPHAC*ALPHAC)
+                  dK_3 = 0.0D0
+                  dK_3 = RESFRE(IC,ISYMC)*RESFRE(IC,ISYMC)
+                  dK_lpa = 0.0D0
+                  dK_lpa = dK_1*dK_2*dK_3*DELTA_TPlpa
+                  dK_lpe = 0.0D0
+                  dK_lpe = dK_1*dK_2*dK_3*DELTA_TPlpe
+                  dK_c = 0.0D0
+                  dK_c = dK_1*dK_2*dK_3*DELTA_TPc
+                  WRITE(LUPRI,'(/,6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' |   Polarization    |    DELTA_TP    |   K (0 -> f)   |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+                  WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
      &    ' |  linear (para)    |', DELTA_TPlpa, '   |', dK_lpa,'  |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+                  WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
      &    ' |  linear (perp)    |', DELTA_TPlpe, '   |', dK_lpe,'  |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+                  WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
      &    ' |    circular       |', DELTA_TPc,   '   |', dK_c,'  |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-
-
+               END IF
 *********************************************************************
             ELSE
                WRITE(LUPRI,'(/A)') 
-     &              'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
+     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
             END IF
          END DO
          END DO
          WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',
-     &'-----------'
+     &'----------------------'
       END IF
 C
 C
@@ -2291,21 +2433,29 @@ C In 900 loop, if NGPPP(MSYMC).GT.0 calculate <0/C/i> moments
 C Calculate oscillator strengths,
 C    if DIPVEL then divide by frequency
 C
+C panor:
+C     DOESA=.TRUE.
+C     For excited state absorption we require the B-state to be the
+C     first state of symmetry ESASYM and that the C-state is separate
+C     from the B-state.
+C
       CALL QENTER('QREXM')
       IPRRSP = IPREXM
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
-         IF (EXMTES) THEN
+         IF (DOESA .OR. EXMTES) THEN
             MSYMBE = NSYM
          ELSE
             MSYMBE = MSYMC
          END IF
          DO 400 MSYMB = 1,MSYMBE
+            IF (DOESA .AND. MSYMB.NE.ESASYM) GOTO 400
             MSYMBX = MULD2H(IREFSY,MSYMB)
             MSYMA = MULD2H(MSYMC,MSYMB)
             IF ( (NPPCNV(MSYMC) .GT. 0) .AND. (NPPCNV(MSYMB) .GT. 0)
      *          .AND. (NGPPP(MSYMA).GT.0) ) THEN
                DO 900 IC = 1,NPPCNV(MSYMC)
+                  IF (DOESA .AND. MSYMC.EQ.MSYMB .AND. IC.EQ.1) GOTO 900
                   IF(.NOT.LCMEXC(IC,MSYMC)) GO TO 900
                   IF (ISPINC.EQ.ISPINB) THEN
                      ICEXNU = INQREX(MSYMC,IC)
@@ -2359,7 +2509,9 @@ C
      *                                  MZWOPT(MSYMC),MSYMC,
      *                                  MZVAR(MSYMC),LUPRI)
                   END IF
-                  IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
+                  IF (DOESA) THEN
+                     IBE = 1
+                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
                      IBE = NPPCNV(MSYMB)
                   ELSE
                      IBE = IC
@@ -2687,9 +2839,9 @@ C     ... 3*KZYVAR is an estimate of space needed in RSPCTL
       LNEEDB = 1 + 2*MAXRM
       NFRQMX = (LWRK - LNEEDA) / LNEEDB
       IF (NFRQMX .LT. MXFRQ) THEN
-         WRITE (LUERR,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
-         CALL QTRACE(LUERR)
-         CALL QUIT('QRTRVE: INSUFFICIENT SPACE TO '//
+         WRITE (LUPRI,9100) LWRK,LNEEDA+LNEEDB*MXFRQ
+         CALL QTRACE(LUPRI)
+         CALL QUIT('QRTRVE: INSUFFICIENT WORK MEMORY TO '//
      &             'SOLVE LINEAR EQUATIONS ')
       ENDIF
  9100 FORMAT(/' QRTRVE, work space too small for 3 (z,y)-vectors',
@@ -2852,6 +3004,7 @@ C
 C MEMFLG is false only if all A-operators are done before,
 C DOCAL controls a certain A-operator in the  IAOP loop
 C
+      ONFIL  = .FALSE.
       MEMFLG = .FALSE.
       DO IAOP = 1,NAQROP(ISYMA)
          DOCAL = .TRUE.
@@ -2865,6 +3018,7 @@ C
             DIPLEN = .FALSE.
          END IF
 C
+Clf         goto 1234
          DO I = 1,N
          DO J = 1,3
          DO K = 1,3
@@ -2980,6 +3134,15 @@ C
 C
 C If not done before, put in list
 C
+
+C     lf 1234 continue there is a minor bug here: for some components
+C     both the number is given and afterwards beta is set equal to a
+C     previously calculated component It affects just the printout, I
+C     hope...
+C     -- hjaaj 17oct07: discovered ONFIL was not always defined, maybe
+C     that was the reason for this error ? ONFIL is now always
+C     initialized to .false..
+
          IF (DOCAL .OR. ONFIL) THEN
             N = N + 1
             IF (N .GT. MXCALC) THEN

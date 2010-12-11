@@ -33,6 +33,26 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C  /* Deck rlmset */
+      SUBROUTINE RLMSET_CBISOL(LMAX)
+C
+C  17-Oct-2007 hjaaj
+C
+C  Set some /cbisol/ variables which are used in some calls,
+C  also when DORLM is false.
+C
+#include <implicit.h>
+C
+C  CBISOL : LCAVMX,LMTOT,LMNTOT
+C
+#include <cbisol.h>
+C
+C     transfer information to CBISOL (for SOLNUC)
+      LCAVMX = LMAX
+      LMTOT  = (LCAVMX+1) ** 2
+      LMNTOT = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3) / 6
+      RETURN
+      END
 C  /* Deck ireplm */
       FUNCTION IREPLM(L,M)
 C
@@ -40,12 +60,12 @@ C     Symmetry of RLM integrals
 C
 C     tuh 01.02.90
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IREPLM = 0
       IF (MOD(L + M,2) .EQ. 1)  IREPLM = ISYMAX(3,1)
@@ -62,10 +82,10 @@ C     Write Solvent integrals to LUSOL
 C
 C  SYMTOT true: only totally-symmetric integrals written to LUSOL.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RLMINT(NNBASX,NOPTYP), INTREP(NOPTYP)
       LOGICAL SYMTOT
-#include <priunit.h>
+#include "priunit.h"
 C
 C Used from common blocks:
 C  INFTAP : LUSOL
@@ -112,18 +132,18 @@ C        Find R(l,m), they come in the order 0,1,-1,2,-2,...
       RETURN
       END
 C  /* Deck rlmnuc */
-      SUBROUTINE RLMNUC(WORK,LWORK,LMAX,IPRINT)
+      SUBROUTINE RLMNUC(WORK,LWORK,IPRINT)
 C
 C  9-Feb-1993 hjaaj
 C
 C interface to SOLNUC for Hermit
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
 C
@@ -142,11 +162,6 @@ C
       DIMENSION   FILL4(4)
       DATA LABSOL/'********',' HERMIT ',' HERMIT ','SOLVRLM '/,
      *     FILL4 /4*1.0D20/
-C
-C     transfer information to CBISOL (for SOLNUC)
-      LCAVMX = LMAX
-      LMTOT  = (LCAVMX+1) ** 2
-      LMNTOT = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3) / 6
 C     Memory allocation
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -176,7 +191,7 @@ C
       CALL GETDAT(LABSOL(2),LABSOL(3))
       REWIND LUSOL
       WRITE (LUSOL) LABSOL
-      WRITE (LUSOL) LMAX, (LMAX+1)*(LMAX+1), NBAST, CAVORG
+      WRITE (LUSOL) LCAVMX, (LCAVMX+1)*(LCAVMX+1), NBAST, CAVORG
       CALL WRITT(LUSOL,LMTOT4,WORK(KRNUC))
       CALL MEMREL('RLMNUC',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
@@ -187,20 +202,20 @@ C  /* Deck solnuc */
 C
 C 12-Jan-1993 hjaaj+kvm
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TLMND(*),FCM(*), WORK(*), HSOLNN(*)
       LOGICAL   PROPTY, DIFDIP
 C
-#include <priunit.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT
 C  NUCLEI : NUCDEP
 C
-#include <nuclei.h>
-#include <cbisol.h>
+#include "nuclei.h"
+#include "cbisol.h"
 C
       IF (IPRINT .GT. 4) THEN
          CALL HEADER('Output from SOLNUC',-1)
@@ -245,12 +260,12 @@ C  /* Deck solnc0 */
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
       DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
@@ -265,18 +280,18 @@ C  CBISOL : LCAVMX,NCNTCV
 C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
-#include <cbisol.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <taysol.h>
-#include <orgcom.h>
+#include "cbisol.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "taysol.h"
+#include "orgcom.h"
 C
 C     Local arrays
 C
 C
 C     Statement functions
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Cartesian orders
 C     ----------------
@@ -423,8 +438,8 @@ C
 C Transform Cartesian vector (e.g. gradient) to
 C           symmetry  vector
 C
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION VEC(MXCOOR), CSTRA(MXCOOR,MXCOOR)
       DIMENSION SVEC(MXCOOR)
 C
@@ -443,8 +458,8 @@ C
 C Transform Cartesian matrix (e.g. Hessian) to
 C           symmetry  vector
 C
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION HMAT(MXCOOR,MXCOOR), TLMND(LMNTOT,NCOOR), 
      &          CSTRA(MXCOOR,MXCOOR), WORK(LWORK)
       NDIM = MAX(MXCOOR*MXCOOR,LMNTOT*NCOOR)
@@ -484,10 +499,10 @@ C
 C from common:
 C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0)
 C
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX)
@@ -500,9 +515,9 @@ C  CBISOL : LCAVMX,LMNTOT,?
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C  TAYSOL : GSOLNN(), HSOLNN()
 C
-#include <cbisol.h>
-#include <lmns.h>
-#include <taysol.h>
+#include "cbisol.h"
+#include "lmns.h"
+#include "taysol.h"
 C
 C     Statement functions
 C     -------------------
@@ -620,8 +635,8 @@ C  /* Deck solint */
 C
 C 27-May-1992 kvm+hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       DIMENSION RLMINT(*), RLMTAB(*), FCM(*), WORK(LWORK)
@@ -630,8 +645,8 @@ C Used from common blocks:
 C  ONECOM : NHKT[AB]
 C  CBISOL : LCAVMX,LMNTOT
 C
-#include <onecom.h>
-#include <cbisol.h>
+#include "onecom.h"
+#include "cbisol.h"
 C
       ITMAX = NHKTA-1 + NHKTB-1 + MAXDIF
       ITMAX = MIN(LCAVMX,ITMAX)
@@ -696,9 +711,9 @@ C              FCM(k) = -2 sum(lm) g(l) T(lm) C_k(lm)
 C                 where C_k(lm) transforms from Cartesian moments
 C                 to spherical moments.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -714,10 +729,10 @@ C  ONECOM : KCKTA, KCKTB, KCKTAB,
 C           (KCKTAB = KCKTA*KCKTB)
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C
-#include <cbisol.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <orgcom.h>
+#include "cbisol.h"
+#include "onecom.h"
+#include "lmns.h"
+#include "orgcom.h"
 C
       INTEGER T,U,V
 C
@@ -918,8 +933,8 @@ C
 C     This subroutine calculates Hermitian integrals
 C     used in SOLIN1 and MOMINT
 C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       DIMENSION HMULT(0:LCAVMX,0:LCAVMX,3), ORIGIN(3)
@@ -970,7 +985,7 @@ C  /* Deck rlmset */
 C
 C 27-May-1992 kvm+hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION LO(*), MO(*), NO(*)
 C
@@ -983,9 +998,6 @@ C
       RETURN
 C
       END
-#ifdef UNDEF
-/* Comdeck to_do */
-#endif
 #ifdef UNDEF
 /* Comdeck log */
 960417- kr
@@ -1012,11 +1024,11 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1024,17 +1036,17 @@ C Used from common blocks:
 C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
-#include <onecom.h>
-#include <symmet.h>
-#include <cbisol.h>
-#include <taysol.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "cbisol.h"
+#include "taysol.h"
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      *        DOCX, DOCY, DOCZ, DIFDIP
       DIMENSION DSHELL(MAXCMP), FCM(LMNTOT), TLMD(LMNTOT,*)
       DIMENSION RLMINT(KCKTAB,LMNTOT,7), RLMTAB(KCKTAB,21),
      &          LMNO(LMNTOT,3), HSOLT2(MXCOOR,MXCOOR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -1459,8 +1471,8 @@ C
 C FCM(LMN) = -2 * g(l) * sum(m) [T(lm) * C(LMN,m)]
 C  where l = L+M+N
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION GLM(LMTOT), TLM(LMTOT), FCM(LMNTOT), WORK(LWORK)
 C
 C
@@ -1496,7 +1508,7 @@ C  /* Deck fcmfa1 */
 C
 C 13-Oct-1992 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (DM2 = -2.0D0, D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
 C
@@ -1529,16 +1541,17 @@ C
 C
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
-#include <cbisol.h>
-#include <inforb.h>
+#include "cbisol.h"
+#include "inforb.h"
 C
 C
       CALL QENTER('MAGSOL')
@@ -1579,13 +1592,13 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       DIMENSION GLM(LMTOT), TLM(LMTOT),
      &          AOMAT1(NNBASX,NCOMP,(LCAVMX + 1)*(LCAVMX + 2)/2),
@@ -1649,25 +1662,16 @@ C
       READ (LUSOL)
       LM = 0
       ICOUNT = 0
-      DOALL  = .TRUE.
-      IF (NCOMP .EQ. 3) THEN
-         CALL DZERO(DERMAT,NCOMP*N2BASX)
-      ELSE
-         CALL DZERO(DERMAT,NCOMP*NNBASX)
-      END IF
+      DOALL_MGSOLT  = .TRUE.
+      CALL DZERO(DERMAT,NCOMP*N2BASX)
 C
       DO 100 L = 0, LSOLMX
          MCOMP = (L + 1)*(L + 2)*NCOMP/2
 C
 C     Construct differentiated integrals in spherical harmonic basis
 C
-         IF (NCOMP .EQ. 3) THEN
-            CALL GET1PR(AOMAT1,'LONSOL1',MCOMP,'TRIANG',.TRUE.,WORK,
+         CALL GET1PR(AOMAT1,'LONSOL1',MCOMP,'TRIANG',.TRUE.,WORK,
      &               LWORK,L,INTPRI)
-         ELSE
-            CALL GET1PR(AOMAT1,'LONSOL2',MCOMP,'TRIANG',.TRUE.,WORK,
-     &               LWORK,L,INTPRI)
-         END IF
          CALL SPHCOM(L,TRAMAT,2*L + 1,(L + 1)*(L + 2)/2,MORDER,MINTEG,
      &               WORK,LWORK,IPRINT)
          CALL DZERO(TEMPMA(1,1,-LCAVMX),NCOMP*(2*LCAVMX + 1)*NNBASX)
@@ -1718,49 +1722,25 @@ C
  190        CONTINUE
  200     CONTINUE
  100  CONTINUE
-      IF (NCOMP .EQ. 3) THEN
 C
 C        We need to square things away, in particular certain matrices
 C
-         CALL DCOPY(NCOMP*NNBASX,DERMAT,1,TEMPMA(1,1,-LCAVMX),1)
-         DO 300 ICOMP = 1, NCOMP
-            IOFFS = 1 + (ICOMP - 1)*N2BASX
-            CALL DAPTGE(NBAST,TEMPMA(1,ICOMP,-LCAVMX),DERMAT(IOFFS))
- 300     CONTINUE
-         IF (IPRINT .GT. 5) THEN
-           CALL AROUND('Solvent contributions to gradient in MAGSO1')
-           IOFF = 1
-           WRITE (LUPRI,'(2X,A)') 'X coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Y coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Z coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         IF (IPRINT .GT. 5) THEN
-            CALL AROUND('Solvent contributions to hessian in MAGSO1')
-            IOFF = 1
-            WRITE (LUPRI,'(2X,A)') 'XX coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'ZZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-         END IF
+      CALL DCOPY(NCOMP*NNBASX,DERMAT,1,TEMPMA(1,1,-LCAVMX),1)
+      DO 300 ICOMP = 1, NCOMP
+         IOFFS = 1 + (ICOMP - 1)*N2BASX
+         CALL DAPTGE(NBAST,TEMPMA(1,ICOMP,-LCAVMX),DERMAT(IOFFS))
+ 300  CONTINUE
+      IF (IPRINT .GT. 5) THEN
+         CALL AROUND('Solvent contributions to gradient in MAGSO1')
+         IOFF = 1
+         WRITE (LUPRI,'(2X,A)') 'X coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Y coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Z coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
 C     We ought to be more or less finished now
@@ -1776,13 +1756,13 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "iratdef.h"
+#include "priunit.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       CHARACTER*2 LBL3(3), LBL6(6), LABXY
       CHARACTER*8 LABINT(9*MXCENT), LABEL, RTNLBL(2)
@@ -1792,7 +1772,7 @@ C
      &          IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT),
      &          WORK(LWORK)
       DIMENSION CAVCNT(3)
-      LOGICAL   FOUND
+      LOGICAL   FOUND,FNDLAB
 C
 #include <symmet.h>
 #include <cbisol.h>
@@ -1851,12 +1831,8 @@ c      END IF
 C
       READ (LUSOL)
       LM = 0
-      DOALL = .FALSE.
-      IF (NCOMP .EQ. 3) THEN
-         CALL DZERO(DERMAT,NCOMP*N2BASX)
-      ELSE
-         CALL DZERO(DERMAT,NCOMP*NNBASX)
-      END IF
+      DOALL_MGSOLT = .FALSE.
+      CALL DZERO(DERMAT,NCOMP*N2BASX)
 C
 C     Calculate all integrals, order by order, component by component
 C
@@ -1868,13 +1844,9 @@ C
 C     Construct differentiated integrals in spherical harmonic basis
 C
             KPATOM = 0
-            IF (NCOMP .EQ. 3) THEN
-               CALL GET1IN(DUMMY,'LONSOL1',0,WORK,LWORK,LABINT,INTREP,
-     &                     INTADR,L,.TRUE.,KPATOM,.TRUE.,INTPRI)
-            ELSE
-               CALL GET1IN(DUMMY,'LONSOL2',0,WORK,LWORK,LABINT,INTREP,
-     &                     INTADR,L,.TRUE.,KPATOM,.TRUE.,INTPRI)
-            END IF
+            CALL GET1IN(DUMMY,'LONSOL1',0,WORK,LWORK,LABINT,INTREP,
+     &                  INTADR,L,.TRUE.,KPATOM,.TRUE.,DUMMY,.FALSE.,
+     &                  DUMMY,INTPRI)
  110     CONTINUE 
  100  CONTINUE 
 C
@@ -1889,11 +1861,7 @@ C
       KEND   = KSTART + (LCAVMX + 1)*(LCAVMX + 2)*NNBASX/2
       IF (KEND .GT. LWORK) CALL STOPIT('MAGSO2',' ',KEND,LWORK)
       DO 140 ICOOR = 1, NCOMP
-         IF (NCOMP .EQ. 3) THEN
-            LABXY = LBL3(ICOOR)
-         ELSE
-            LABXY = LBL6(ICOOR)
-         END IF
+         LABXY = LBL3(ICOOR)
          ICOUNT = 0
          DO 120 L = 0, LSOLMX
             CALL DZERO(WORK(KTMP),(2*LCAVMX + 1)*NNBASX)
@@ -1963,66 +1931,155 @@ C
  200        CONTINUE
  120     CONTINUE 
  140  CONTINUE 
-      IF (NCOMP .EQ. 3) THEN
 C
 C        We need to square things away, in particular certain matrices
 C
-         CALL DCOPY(NCOMP*NNBASX,DERMAT,1,WORK(1),1)
-         DO 300 ICOMP = 1, NCOMP
-            IOFFD = 1 + (ICOMP - 1)*NNBASX
-            IOFFS = 1 + (ICOMP - 1)*N2BASX
-            CALL DAPTGE(NBAST,WORK(IOFFD),DERMAT(IOFFS))
- 300     CONTINUE
-         IF (IPRINT .GT. 5) THEN
-           CALL AROUND('Solvent contributions to gradient in MAGSO2')
-           IOFF = 1
-           WRITE (LUPRI,'(2X,A)') 'X coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Y coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Z coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         IF (IPRINT .GT. 5) THEN
-            CALL AROUND('Solvent contributions to hessian in MAGSO2')
-            IOFF = 1
-            WRITE (LUPRI,'(2X,A)') 'XX coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'ZZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-         END IF
+      CALL DCOPY(NCOMP*NNBASX,DERMAT,1,WORK(1),1)
+      DO 300 ICOMP = 1, NCOMP
+         IOFFD = 1 + (ICOMP - 1)*NNBASX
+         IOFFS = 1 + (ICOMP - 1)*N2BASX
+         CALL DAPTGE(NBAST,WORK(IOFFD),DERMAT(IOFFS))
+ 300  CONTINUE
+      IF (IPRINT .GT. 5) THEN
+         CALL AROUND('Solvent contributions to gradient in MAGSO2')
+         IOFF = 1
+         WRITE (LUPRI,'(2X,A)') 'X coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Y coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Z coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
 C     We ought to be more or less finished now. Change EOF label in order
 C     to overwrite the integrals
 C
       CALL GPCLOSE(LUSOL,'KEEP')
-      IF (NCOMP .EQ. 3) THEN
-         LABEL = 'X 000000'
-      ELSE
-         LABEL = 'XX000000'
-      END IF
+      LABEL = 'X 000000'
       REWIND (LUPROP)
-      CALL FNDLAB(LABEL,LUPROP)
+      IF(.NOT.FNDLAB(LABEL,LUPROP)) THEN
+         WRITE (LUPRI,'(/A)') ' Integral label '//LABEL//
+     &        ' not found on file AOPROPER.'
+         CALL QUIT('Integral label not found in hersol')
+      END IF
       BACKSPACE LUPROP
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
       CALL GPCLOSE(LUPROP,'KEEP')
       RETURN
       END
+C  /* Deck magsolexp */
+      SUBROUTINE MAGSOLEXP(EXPVAL,EXPSPH,EXPCAR,INTREP,INTADR,LABINT,
+     &                     GLM,TLM,TRAMAT,INTPRI,DENMAT,WORK,LWORK)
+C
+C     K.Ruud, July-05
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <iratdef.h>
+      PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
+      LOGICAL EXP1VL
+      DIMENSION GLM(LMTOT), TLM(LMTOT),
+     &          EXPVAL(6), EXPSPH(6,-LCAVMX:LCAVMX),
+     &          EXPCAR(6,(LCAVMX + 1)*(LCAVMX + 2)/2),
+     &          INTREP(*), INTADR(*),
+     &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
+     &          DENMAT(*), WORK(LWORK)
+      CHARACTER*8 LABINT(*)
+#include <symmet.h>
+#include <cbisol.h>
+#include <orgcom.h>
+#include <mgsolt.h>
+#include <inforb.h>
+#include <infinp.h>
+#include <inftap.h>
+C
+      DIMENSION CAVCNT(3)
+      LOGICAL   FOUND
+C
+C     Construct GLM, TLM, and density matrix
+C
+      CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
+      CALL RDSIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      IF (.NOT. FOUND)
+     &    CALL QUIT('MAGSO1 ERROR: "SOLTLM" not found on SIRIFC.')
+C
+      CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      REWIND LUSOL
+      CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
+      READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
+      IF (LMAXSS .LT. LSOLMX) THEN
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' insufficient number of intgrals on LUSOL',
+     *   ' l max from SIRIUS input :',LSOLMX,
+     *   ' l max from LUSOL  file  :',LMAXSS
+         CALL QUIT('MAGSO1: lmax on LUSOL is too small')
+      END IF
+      IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' LUSOL file info inconsistent',
+     *   ' l_max               :',LMAXSS,
+     *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
+     *   ' LMTOTX              :',LMTOTX
+         CALL QUIT('MAGSO1: LUSOL info not internally consistent')
+      END IF
+C
+      READ (LUSOL)
+      LM = 0
+      ICOUNT = 0
+      DOALL_MGSOLT  = .TRUE.
+      EXP1VL = .TRUE.
+      CALL DZERO(EXPVAL,6)
+C
+      NCOMP = 6
+      DO 100 L = 0, LSOLMX
+         CALL DZERO(EXPSPH,(2*LCAVMX + 1)*6)
+         CALL DZERO(EXPCAR,(LCAVMX + 1)*(LCAVMX + 2)*3)
+         MCOMP = (L + 1)*(L + 2)*NCOMP/2
+C
+C     Construct differentiated integrals in spherical harmonic basis
+C
+         NPATOM = 0
+         JCOMP  = 0
+         CALL GET1IN(DUMMY,'LONSOL2',JCOMP,WORK,LWORK,LABINT,INTREP,
+     &               INTADR,L,.FALSE.,NPATOM,.TRUE.,EXPCAR,EXP1VL,
+     &               DENMAT,INTPRI)
+         CALL SPHCOM(L,TRAMAT,2*L + 1,(L + 1)*(L + 2)/2,MORDER,MINTEG,
+     &               WORK,LWORK,INTPRI)
+         DO 430 ICOOR = 1, NCOMP
+            DO 400 ICAR = 1, (L + 1)*(L + 2)/2
+               IL = 0
+               DO 410 ISPH = -L, L
+                  IL = IL + 1
+                  IELMNT = (L + 1)*(L + 2)*(IL - 1)/2 + ICAR
+                  COEF = TRAMAT(IELMNT)
+                  EXPSPH(ICOOR,ISPH) = EXPSPH(ICOOR,ISPH)
+     &                               + EXPCAR(ICOOR,ICAR)*COEF
+ 410           CONTINUE
+ 400        CONTINUE
+ 430     CONTINUE
+C
+C     Construct and -2g(l)sum(m) T(lm) t(lm)a_mn
+C
+         DO 200 M = -L, L
+            ICOUNT = ICOUNT + 1
+            DO 190 ICOOR = 1, NCOMP
+               FAC2 = -D2*GLM(ICOUNT)*TLM(ICOUNT)
+               EXPVAL(ICOOR) = EXPVAL(ICOOR) + EXPSPH(ICOOR,M)*FAC2
+ 190        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+C     We ought to be more or less finished now
+C
+      CALL GPCLOSE(LUSOL,'KEEP')
+      RETURN
+      END
+#endif /* ifndef PRG_DIRAC */
+! -- end of hersol.F --

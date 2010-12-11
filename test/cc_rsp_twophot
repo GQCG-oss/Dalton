@@ -95,10 +95,10 @@ else
 fi
 
 # SCF, MP2 and CC2 energies:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total MP2 * energy:  * \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CC2 * energy:  * \-100.19468693" $log | wc -l`
-CRIT4=`$GREP "Total CCSD * energy: * \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total MP2 * energy:  * \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CC2 * energy:  * \-100.194686(8|9)." $log | wc -l`
+CRIT4=`$GREP "Total CCSD * energy: * \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=7
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -124,8 +124,8 @@ ERROR[2]="CCS TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT"
 #  | YDIPLEN  XDIPLEN  |     0.81547843 |     0.41404819 |     0.33764737 |
 #  | XDIPLEN  YDIPLEN  |     0.81547843 |     0.41404819 |     0.33764737 |
 #  +-------------------+----------------+----------------+----------------+
-CRIT1=`$GREP "YDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.815478.. *. *(0| |\-0|\-)\.414048.. *. *(0| )\.337647.." $log | wc -l`
-CRIT2=`$GREP "XDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.815478.. *. *(0| |\-0|\-)\.414048.. *. *(0| )\.337647.." $log | wc -l`
+CRIT1=`$GREP "YDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.81547(8|9).. *. *(0| |\-0|\-)\.414048.. *. *(0| )\.33764(7|8).." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.81547(8|9).. *. *(0| |\-0|\-)\.414048.. *. *(0| )\.33764(7|8).." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="CC2 TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT"
@@ -153,13 +153,13 @@ ERROR[5]="CC EXCITATION ENERGIES NOT CORRECT"
 CRIT1=`$GREP "\^1A.  \|    1   \|     ( |0)\.396682.  \|      10\.7942.  \|     87061\....  \|  96\.73" $log | wc -l`
 CRIT2=`$GREP "\^1A.  \|    2   \|     1\.090983.  \|      29\.6871.  \|    239443\....  \|  96\.14" $log | wc -l`
 CRIT3=`$GREP "\^1A.  \|    3   \|     1\.518329.  \|      41\.3158.  \|    333234\....  \|  99\.13" $log | wc -l`
-CRIT4=`$GREP "\^1A.  \|    4   \|     1\.572808.  \|      42\.7983.  \|    345191\....  \|  98\.34" $log | wc -l`
+CRIT4=`$GREP "\^1A.  \|    4   \|     1\.572808.  \|      42\.798(2|3).  \|    345191\....  \|  98\.34" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=4
 ERROR[6]="CC2 EXCITATION ENERGIES NOT CORRECT"
 
 # CCSD excitation energies
-CRIT1=`$GREP "\^1A.  \|    3   \|     1\.328216.  \|      36\.1426.  \|    291509\....  \|   ( |0)\.35" $log | wc -l`
+CRIT1=`$GREP "\^1A.  \|    3   \|     1\.328216.  \|      36\.142(5|6).  \|    291509\....  \|   ( |0)\.35" $log | wc -l`
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1
 ERROR[7]="CC EXCITATION ENERGIES NOT CORRECT"
@@ -181,8 +181,8 @@ ERROR[7]="CC EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -106,55 +106,6 @@ C
         MODELPRI = ' CC2'
       ENDIF
 C
-      IF (MCC2) THEN
-        CALL AROUND('Coupled Cluster model is: MCC2')
-        MODEL = 'MCC2'
-        MODELPRI = 'MCC2'
-      ENDIF
-C
-      IF (MP2) THEN
-        CALL AROUND('Model is second order pert. theory: MP2 ')
-        MODEL = 'MP2'
-        MODELPRI = ' MP2'
-      ENDIF
-C
-      IF (CCS.AND.(.NOT.CIS)) THEN
-        CALL AROUND('Coupled Cluster model is: CCS')
-        MODEL = 'CCS'
-        MODELPRI = ' CCS'
-      ENDIF
-C
-      IF (CCS.AND.CIS) THEN
-        CALL AROUND('CIS model in use ')
-        MODEL = 'CCS'
-        MODELPRI = ' CIS'
-      ENDIF
-C
-      IF (CCD) THEN
-        CALL AROUND('Coupled Cluster model is: CCD')
-        MODEL = 'CCD'
-        MODELPRI = ' CCD'
-      ENDIF
-C
-      IF (CC3) THEN
-        CALL AROUND('Coupled Cluster model is: CC3')
-        MODEL = 'CC3'
-        MODELPRI = 'CC3'
-        CALL QUIT('CC3 first order properties not implemented')
-      ENDIF
-C
-      IF (CC1A) THEN
-        CALL AROUND('Coupled Cluster model is: CCSDT-1a')
-        MODEL = 'CCSDT-1a'
-        CALL QUIT( 'CCSDT-1a first order properties not implemented')
-      ENDIF
-C
-      IF (CC1B) THEN
-        CALL AROUND('Coupled Cluster model is: CCSDT-1b')
-        MODEL = 'CCSDT-1b'
-        CALL QUIT( 'CCSDT-1b first order properties not implemented')
-      ENDIF
-C
       IF (.NOT. (CCSD.OR.CC2)) THEN
         CALL QUIT('CCMM only implemented for the ' //
      &            'CC2 and CCSD parameterizations.') 
@@ -167,16 +118,21 @@ C-----------------------------------------------
 C     Calculate the E(QM/MM) part of the energy:
 C-----------------------------------------------
 C
-      ECMCON = 0.0D0 
+      ECMCON = ZERO
          
-      CALL CC_QM3E(ECMCON,EPOL,EEL,EELEL,EREP,AODEN,
+      IF (.NOT. NYQMMM) THEN
+        CALL CC_QM3E(ECMCON,EPOL,EEL,EELEL,EREP,AODEN,
      &             WORK,LWORK)
+      ELSE IF (NYQMMM) THEN
+        CALL CC_QMMME(ECMCON,EPOL,EEL,EELEL,EREP,AODEN,
+     &             WORK,LWORK)
+      END IF
 C
 C----------------------------
 C     Calculate new E(QM/MM):
 C----------------------------
 C
-      IF (.NOT. (OLDTG)) THEN
+      IF (.NOT. (OLDTG) .AND. .NOT. (NYQMMM)) THEN
         ECMCU = (ECCGRS - EELEL) + ECMCON 
         ECCGRS1 = (ECCGRS - EELEL)
       ELSE
@@ -207,11 +163,11 @@ C
         CONVERGED = .TRUE.
         IF (LOEC3) THEN
 C
-          EPOL = D0
+          EPOL = ZERO
 C
-          WRITE(LUPRI,'(1X,A)')'Perturbative correction to polarization'
-     *          //' energy is calculated' 
-          WRITE(LUPRI,'(1X,A15//)')'(Model SPC_EC3)'
+          WRITE(LUPRI,'(1X,A)')
+     &    'Perturbative correction to polarization energy is calculated'
+     &   ,'(Model SPC_EC3)'
 C
           CALL EPERT2(EPOL,WORK,LWORK)
         END IF
@@ -250,48 +206,50 @@ C       First the MM/MM energy with the QM induced
 C       dipole moments:
 C-------------------------------------------------
 C
-        WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A56,A16)')
+        IF (.NOT. NYQMMM) THEN
+         WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,A56,A16)')
      * '|<<<<<<<<<<<<<<< The MM/MM classical interaction energy ',
      * '>>>>>>>>>>>>>>>|'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+         WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *  '  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
      *  '|      ',EMMELC,' |'
-      IF (RELMOM) THEN
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+         IF (RELMOM) THEN
+          WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+          WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *  '  Epol  = - 1/2*Sum_a[ MYind_a*(E^s_a + E^ext)]         ',
      *  '|      ',EMMPOL,' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+          WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+          WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *  '  E_field = - Mu_perm* E^ext                            ',
      *  '|      ',PEDIP1,' |'
-      ELSE
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+         ELSE
+          WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+          WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *  '  Epol  = - 1/2*Sum_a[ MYind_a*E^site_a ]         ',
      *  '|      ',EMMPOL,' |'
-      END IF 
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+         END IF 
+         WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *  '  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
      *  '|      ',EMMVDW,' |'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        WRITE(LUPRI,'(1X,A1,50A,A1,A20)')
+         WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+         WRITE(LUPRI,'(1X,A1,50A,A1,A20)')
      *              '|',('*',J=1,50),'|',
      *              '*******************|'
-        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
-        IF (.NOT.(RELMOM)) THEN
+         WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+         IF (.NOT.(RELMOM)) THEN
           WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *    '  E(MM/MM) = Eelec + Epol + Evdw                  ',
      *    '|      ',EMM_MM,' |'
           WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
-        ELSE
+         ELSE
           WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *    '  E(MM/MM) = Eelec + Epol + E_field + Evdw         ',
      *    '|      ',EMM_MM,' |'
           WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+         END IF
         END IF
 C
 C--------------------------------------------
@@ -340,14 +298,14 @@ C
         WRITE(LUPRI,'(1X,A1,70A,A1//)') '+',('=',J=1,70),'+'
 C
         IF (RELMOM) THEN
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
           WRITE(LUPRI,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
           WRITE(LUPRI,*)'Pind_a is determined without external field'
           WRITE(LUPRI,*)'Delta E(mm/mm) is WRONG !!!                '
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
           WRITE(LUPRI,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(LUPRI,*)''
+          WRITE(LUPRI,*)' '
         END IF
 C------------------------------------------------------
 C       Third information concerning the convergence is 
@@ -370,22 +328,31 @@ C
      *  ' CCMM equations are converged in ',NSLVINIT,
      *  ' inner iterations'
 C
-        WRITE(LURES,'(12X,A8,A,F20.10)')
-     *  MODEL,' Total energy:           ',ECMCU
+        WRITE(LURES,'(12X,A4,A,F20.10)')
+     *  MODELPRI,' Total  energy:             ',ECMCU
 C
-        WRITE(LURES,'(12X,A8,A,F20.10,/)')
-     *  MODEL,' E(QM/MM):       ',ECMCON
+        WRITE(LURES,'(12X,A4,A,F20.10,/)')
+     *  MODELPRI,' E(QM/MM)     :             ',ECMCON
 C
         ECCGRS1 = ECMCU    
-        LABEL = MODELPRI//'/MM'
-        CALL CC_PRPC(ECCGRS1,MODEL,0,
-     *                LABEL,LABEL,LABEL,LABEL,
-     *                ZERO,ZERO,ZERO,1,0,0,0)
+        LABEL = MODELPRI//'/MM '
+        CALL WRIPRO(ECCGRS1,MODEL,0,
+     *              LABEL,LABEL,LABEL,LABEL,
+     *              ZERO,ZERO,ZERO,1,0,0,0)
 C
-        LABEL = 'E_QM/MM'
-        CALL CC_PRPC(ECMCON,MODEL,0,
-     *                LABEL,LABEL,LABEL,LABEL,
-     *                ZERO,ZERO,ZERO,1,0,0,0)
+        LABEL = 'E_QM/MM '
+        CALL WRIPRO(ECMCON,MODEL,0,
+     *              LABEL,LABEL,LABEL,LABEL,
+     *              ZERO,ZERO,ZERO,1,0,0,0)
+
+C------------------------------------------------------
+C       Print information concerning the reaction field
+C------------------------------------------------------
+
+        CALL RFQMMM()
+
+C------------------------------------------------------
+
       ELSE 
 C
         ICCSLIT = ICCSLIT + 1
@@ -416,20 +383,38 @@ C
 C
 C**************************************************************
 C  /* Deck cc_qm3e */
-      SUBROUTINE CC_QM3E(EQM3T,EPOL,EEL,EELEL,EREP,AODEN,WORK,LWORK)
+      SUBROUTINE CC_QM3E(ECCMM,EPOL,EEL,EELEL,EREP,AODEN,WORK,LWORK)
 C**************************************************************
 C
-C     Purpose: Calculation of E(QM/MM). 
-C     QM3, JK+AO+OC+KMI,01
+C     QM3: JK+AO+OC+KMI,01
+C     Purpose: Only calculation of E(QM/MM)
+C     QMMM: sneskov, 09
+C     Purpose: Updates the induced dipoles besides calculating E(QM/MM)
+C
+C     In new QMMM implementation (NYQMMM) the strategy is as follows
+C     1) Calculate F^sta=F^el+F^mul+F^nuc
+C     2) Calculate induced dipole by transforming with relay 
+C     matrix(MMMAT) or by iterative means (MMITER)
+C     3) Put induced moments to file
+C     4) Calculate Epol=-1/2sum_a\mu^ind_aF^sta_a
+C     5) Calculate Eelesta=-sum_s<N_s>
+C
+C     Also the LGFILE keyword is reset such that a new G matrix is
+C     written to file when TGT is called next time.
 C
 C**************************************************************
 C
 #include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
 #include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <qm3.h>
+#include <iratdef.h>
+#include <maxorb.h>
+#include <orgcom.h>
+#include <nuclei.h>
+#include <ccinftap.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
@@ -437,20 +422,33 @@ C
 #include <ccfield.h>
 #include <exeinf.h>
 #include <ccfdgeo.h>
-#include <qm3.h>
-#include <ccinftap.h>
 #include <thrzer.h>
+
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
+      PARAMETER (HALF = 1.0D0/2.0D0)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 C
+      LOGICAL LOCDEB
       DIMENSION WORK(LWORK),AODEN(*)
-      CHARACTER MODEL*10
+      CHARACTER LABEL*8
+
       DIMENSION CCNS(MXQM3),ALPHAMM(MXQM3),FFJ(3)
-      INTEGER   KS
+      INTEGER KS
 C
-      LOGICAL   FIRST
-      SAVE      FIRST
+      CALL QENTER('CC_QM3E')
+C------------------------------------------------------------------
+C       Init parameters
+C------------------------------------------------------------------
+
+      LOCDEB=.FALSE.
+      ISYMOP = 1
 C
+C------------------------------------------------------------------
+C       Dynamical allocation for CCMM 
+C------------------------------------------------------------------
+C
+
 C------------------------------------------------------------------
 C      Dynamical allocation. If all models are SPC (LOSPC = .TRUE.)
 C      the electric field from the electrons are not needed. Then 
@@ -458,37 +456,37 @@ C      only space for Ns in AO basis is allocated.
 C------------------------------------------------------------------
 C
 
-      IF ( .NOT. (LOSPC) ) THEN
+         IF ( .NOT. (LOSPC) ) THEN
 C
-        KRAAOx  = 1
-        KRAAOy = KRAAOx + N2BST(ISYMOP)
-        KRAAOz = KRAAOy + N2BST(ISYMOP)
-        KOMMSx = KRAAOz + N2BST(ISYMOP)
-        KOMMSy = KOMMSx + NCOMS
-        KOMMSz = KOMMSy + NCOMS
-        KNSAO =  KOMMSz + NCOMS
-        KRAx = KNSAO + N2BST(ISYMOP)
-        KRAy = KRAx + NCOMS
-        KRAz = KRAy + NCOMS
-        KWRK1 = KRAz + NCOMS
-        LWRK1 = LWORK - KWRK1
+            KRAAOx  = 1
+            KRAAOy = KRAAOx + N2BST(ISYMOP)
+            KRAAOz = KRAAOy + N2BST(ISYMOP)
+            KOMMSx = KRAAOz + N2BST(ISYMOP)
+            KOMMSy = KOMMSx + NCOMS
+            KOMMSz = KOMMSy + NCOMS
+            KNSAO =  KOMMSz + NCOMS
+            KRAx = KNSAO + N2BST(ISYMOP)
+            KRAy = KRAx + NCOMS
+            KRAz = KRAy + NCOMS
+            KWRK1 = KRAz + NCOMS
+            LWRK1 = LWORK - KWRK1
 C
-        CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMOP))
-        CALL DZERO(WORK(KOMMSx),3*NCOMS)
-        CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
-        CALL DZERO(WORK(KRAx),3*NCOMS)
+            CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMOP))
+            CALL DZERO(WORK(KOMMSx),3*NCOMS)
+            CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
+            CALL DZERO(WORK(KRAx),3*NCOMS)
 C
-      ELSE
+         ELSE
 C
-        KNSAO = 1
-        KWRK1 = KNSAO + N2BST(ISYMOP)
-        LWRK1 = LWORK - KWRK1
+            KNSAO = 1
+            KWRK1 = KNSAO + N2BST(ISYMOP)
+            LWRK1 = LWORK - KWRK1
 C
-       CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
+            CALL DZERO(WORK(KNSAO),N2BST(ISYMOP))
 C
-      END IF
+         END IF
 C
-      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3RAINT')
+         IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3RAINT')
 C 
 C----------------------------
 C     Read Rr(a) in AO basis:
@@ -496,29 +494,29 @@ C----------------------------
 C
 C     First we see if any static fields are to be added
 C
-        FFJ(1) = 0.0D0
-        FFJ(2) = 0.0D0
-        FFJ(3) = 0.0D0
+         FFJ(1) = 0.0D0
+         FFJ(2) = 0.0D0
+         FFJ(3) = 0.0D0
 C
-      IF (RELMOM) THEN
-        DO 330 IF =1, NFIELD
-          IF (LFIELD(IF) .EQ. 'XDIPLEN') FFJ(1) = FFJ(1) + EFIELD(IF)
-          IF (LFIELD(IF) .EQ. 'YDIPLEN') FFJ(2) = FFJ(2) + EFIELD(IF)
-          IF (LFIELD(IF) .EQ. 'ZDIPLEN') FFJ(3) = FFJ(3) + EFIELD(IF)
-  330   CONTINUE
-      END IF
+         IF (RELMOM) THEN
+            DO 330 IF =1, NFIELD
+               IF (LFIELD(IF).EQ. 'XDIPLEN') FFJ(1)=FFJ(1)+EFIELD(IF)
+               IF (LFIELD(IF).EQ. 'YDIPLEN') FFJ(2)=FFJ(2)+EFIELD(IF)
+               IF (LFIELD(IF).EQ. 'ZDIPLEN') FFJ(3)=FFJ(3)+EFIELD(IF)
+  330       CONTINUE
+         END IF
 C
-      IF (.NOT. LOSPC) THEN
-        CALL CC_QM3RAINT(WORK(KRAAOx),WORK(KRAAOy),WORK(KRAAOz),
+         IF (.NOT. LOSPC) THEN
+            CALL CC_QM3RAINT(WORK(KRAAOx),WORK(KRAAOy),WORK(KRAAOz),
      &                   AODEN,WORK(KRAx),WORK(KRAy),WORK(KRAz),
      &                   WORK(KWRK1),LWRK1,ISYMOP)
-      END IF
+         END IF
 C
 C------------------------------
 C        Read N(s) in AO basis:
 C------------------------------
 C
-      CALL CC_QM3NSINT(WORK(KNSAO),AODEN,CCNS,
+         CALL CC_QM3NSINT(WORK(KNSAO),AODEN,CCNS,
      &                 WORK(KWRK1),LWRK1,ISYMOP)
 C
 C-------------------------------------
@@ -526,126 +524,120 @@ C     Add up the energy contributions:
 C     1) Epol:
 C-------------------------------------
 C 
-      EQM3T = ZERO
+         ECCMM = ZERO
 C
-      IF (.NOT. LOSPC) THEN
-        CALL CC_GET31(LUCCOB,'OBARFILE',NCOMS,
-     *                 WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz)) 
+         IF (.NOT. LOSPC) THEN
+            CALL CC_GET31('OBARFILE',NCOMS,
+     *                     WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz)) 
 C
-        IF (IQM3PR .GT. 10) THEN
-          DO 777 I=1,NCOMS
-            WRITE(LUPRI,*)'WORK(KOMMSx) =',WORK(KOMMSx + I - 1)
-            WRITE(LUPRI,*)'WORK(KOMMSy) =',WORK(KOMMSy + I - 1)
-            WRITE(LUPRI,*)'WORK(KOMMSz) =',WORK(KOMMSz + I - 1)
-  777     CONTINUE
-        END IF
+            KS = 0
+
+            DO 110 I = 1, ISYTP
+               IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+                  DO 120 J = NSYSBG(I), NSYSED(I)
+                     DO 121 K = 1, NUALIS(I)
+                        KS = KS+1
+                        RAT = ZERO
+                        RAT =  0.5D0 * ALPIMM(I,K)*WORK(KRAx+KS-1) *
+     &                  (WORK(KRAx + KS -1) + WORK(KOMMSx + KS - 1))
+     &                  + 0.5D0 * ALPIMM(I,K) * WORK(KRAy + KS -1) *
+     &                  (WORK(KRAy + KS -1) + WORK(KOMMSy + KS - 1))
+     &                  + 0.5D0 * ALPIMM(I,K) * WORK(KRAz + KS -1) *
+     &                  (WORK(KRAz + KS -1) + WORK(KOMMSz + KS - 1))
+                        ECCMM = ECCMM - RAT
+  121                CONTINUE 
+  120             CONTINUE
+               END IF
+  110       CONTINUE
 C
-        KS = 0
+            TEMP1 = ECCMM
+            CALL QM3_OTILDE(OTILDE,FFJ)
+         ELSE
+            OTILDE = 0.0D0
+            TEMP1 = 0.0D0
+         END IF
 C
-        DO 110 I = 1, ISYTP
-          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
-            DO 120 J = NSYSBG(I), NSYSED(I)
-              DO 121 K = 1, NUALIS(I)
-                KS = KS+1
-                RAT = ZERO
-                RAT =  0.5D0 * ALPIMM(I,K) * WORK(KRAx + KS -1) *
-     &                (WORK(KRAx + KS -1) + WORK(KOMMSx + KS - 1))
-     &              + 0.5D0 * ALPIMM(I,K) * WORK(KRAy + KS -1) *
-     &                (WORK(KRAy + KS -1) + WORK(KOMMSy + KS - 1))
-     &              + 0.5D0 * ALPIMM(I,K) * WORK(KRAz + KS -1) *
-     &                (WORK(KRAz + KS -1) + WORK(KOMMSz + KS - 1))
-                EQM3T = EQM3T - RAT
-  121         CONTINUE 
-  120       CONTINUE
-          END IF
-  110   CONTINUE
-C
-        TEMP1 = EQM3T
-        CALL QM3_OTILDE(OTILDE,FFJ)
-      ELSE
-        OTILDE = 0.0D0
-        TEMP1 = 0.0D0
-      END IF
-C
-      EQM3T = EQM3T + OTILDE
-      EPOL = EQM3T
+         ECCMM = ECCMM + OTILDE
+         EPOL = ECCMM
 C
 C--------
 C 2) Eel:
 C--------
 C
-      ETEMP = 0.0D0
-      L = 0
+         ETEMP = 0.0D0
+         L = 0
 C
-      DO 130 I = 1, ISYTP
-        IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
-          DO 140 J = NSYSBG(I), NSYSED(I) 
-            DO 150 K = 1, NSISY(I)
-              L = L + 1
-              ETEMP = ETEMP - CCNS(L) 
-  150       CONTINUE  
-  140     CONTINUE
-        END IF
-  130 CONTINUE
+         DO 130 I = 1, ISYTP
+            IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
+               DO 140 J = NSYSBG(I), NSYSED(I) 
+                  DO 150 K = 1, NSISY(I)
+                     L = L + 1
+                     ETEMP = ETEMP - CCNS(L) 
+  150             CONTINUE  
+  140          CONTINUE
+            END IF
+  130    CONTINUE
 C
-      EELEL = ETEMP
+         EELEL = ETEMP
+
+         ECCMM = ECCMM + ENUQM3 + EELEL
 C
-      EQM3T = EQM3T + ENUQM3 + EELEL
-C
-      EEL = ENUQM3 + EELEL
+         EEL = ENUQM3 + EELEL
 C
 C-------------
-C 3) E(QM/MM):
+C 3) E(VDW):
 C-------------
 C
-      EQM3T = EQM3T + ECLVDW
+         ECCMM = ECCMM + ECLVDW
 C
 C-----------------------------------------------
 C 4) E_repulsion
 C
-      CALL CCMM_REP2(EREP,AODEN,WORK(KWRK1),LWRK1)
-      EQM3T = EQM3T + EREP
+         CALL CCMM_REP2(EREP,AODEN,WORK(KWRK1),LWRK1)
+         ECCMM = ECCMM + EREP
 C
 C-----------------------------------------------
 C   Testing the energy contributions one by one:
 C-----------------------------------------------
 C
-      IF (IQM3PR .GT. 5) THEN
-        WRITE(LUPRI,'(//,A)')
-        WRITE(LUPRI,'(/A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(1X,A)')
-     *       '|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
-     *      //'The different energy contributions outlined'
-     *      //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|'
-        WRITE(LUPRI,'(A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(1X,A)')
-     *       '| Evdw                | E-nuclear           |'
-     *      //' -Sum_s <N_s>        |'
-     *      //'| -alpha*Sum_a[<Rra> | O-tilde             |'
-        WRITE(LUPRI,'(1X,A)')
-     *       '| contribution        | contribution        |'
-     *      //'                     |'
-     *      //'*{<Rra>+OmmS}]       | contribution        |'
-        WRITE(LUPRI,'(A)')
-     *       ' +-------------------------------------'
-     *      //'--------------------------------------'
-     *      //'----------------------------------+'
-        WRITE(LUPRI,'(1X,A,F20.16,A,F20.16,A,F20.16,A,
-     &                F20.16,A,F20.16,A)')
-     *       '|',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
-     *      OTILDE,' |'
-        WRITE(LUPRI,'(A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
-        WRITE(LUPRI,'(//,A)')
-      END IF
+         IF (IQM3PR .GT. 5) THEN
+            WRITE(LUPRI,'(//,A)')
+            WRITE(LUPRI,'(/A)')
+     *     ' +====================================='
+     *     //'======================================'
+     *     //'==================================+'
+            WRITE(LUPRI,'(1X,A)')
+     *    '|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
+     *     //'The different energy contributions outlined'
+     *     //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|'
+            WRITE(LUPRI,'(A)')
+     *    ' +====================================='
+     *     //'======================================'
+     *     //'==================================+'
+            WRITE(LUPRI,'(1X,A)')
+     *    '| Evdw                | E-nuclear           |'
+     *     //' -Sum_s <N_s>        |'
+     *     //'| -alpha*Sum_a[<Rra> | O-tilde             |'
+            WRITE(LUPRI,'(1X,A)')
+     *    '| contribution        | contribution        |'
+     *     //'                     |'
+     *     //'*{<Rra>+OmmS}]       | contribution        |'
+            WRITE(LUPRI,'(A)')
+     *    ' +-------------------------------------'
+     *     //'--------------------------------------'
+     *     //'----------------------------------+'
+            WRITE(LUPRI,'(1X,A,F20.16,A,F20.16,A,F20.16,A,
+     &             F20.16,A,F20.16,A)')
+     *    '|',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
+     *   OTILDE,' |'
+            WRITE(LUPRI,'(A)')
+     *    ' +====================================='
+     *     //'======================================'
+     *     //'==================================+'
+            WRITE(LUPRI,'(//,A)')
+         END IF
+      
+      CALL QEXIT('CC_QM3E')
 C
       END
 C
@@ -710,6 +702,7 @@ C
         WRITE(LUPRI,*) 'Input symmetry claimed', isymt 
       ENDIF
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -777,16 +770,16 @@ C
       END IF 
 C
       IF (FIXMOM) THEN
-        WRITE(LUPRI,*)'NO ITER. DETERM. OF MYIND FIXMOM=',FIXMOM
+        WRITE(LUPRI,'(/A)')'FIXMOM: NO ITER. DETERM. OF MYIND'
       ELSE IF (LOSPC) THEN
-        WRITE(LUPRI,*)'All MM models are SPC INDMOM not called'
+        WRITE(LUPRI,'(/A)')'All MM models are SPC, INDMOM not called'
       ELSE 
         LOINDM = .FALSE.
         CALL INDMOM(EELEC,LOINDM,FFJ)
       END IF
 C
       CALL QM3_OBAR(FFJ)
-      CALL CC_PUT31(LUCCRA,'CC_RA',NCOMS,RAx,RAy,RAz)
+      CALL CC_PUT31('CC_RA',NCOMS,RAx,RAy,RAz)
 C
       END
 C
@@ -825,6 +818,7 @@ C
 C
       CHARACTER*8 LABEL
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCPO)
@@ -1009,7 +1003,7 @@ C-------------------------------------------------
 C
       IF ( (OLDTG) .AND. (LOSPC) ) GOTO 888 
 C
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+      CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
 C-------------------
@@ -1051,7 +1045,7 @@ C
          WRITE(LUPRI,'(//,A)')
       END IF
 C
-      CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,
+      CALL CC_GET31('ENSAFILE',NCOMS,
      *               WORK(KENSAx),WORK(KENSAy),WORK(KENSAz))
 
 C
@@ -1094,6 +1088,7 @@ C---------------------------------------
 C Read Rr(s) in ao basis and add to tao:
 C---------------------------------------
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -1174,6 +1169,7 @@ C-----------------------------------------------------------
 C
       IF (OLDTG) THEN
 C
+        LUCCPO = -1
         CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
         REWIND (LUCCPO)
@@ -1266,7 +1262,7 @@ C
         CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
         FILMMR  = 'MMREPOP_0'
-        LUMMRE  = 0
+        LUMMRE  = -1
         IADRFIL = 1
         NDATA   = N2BST(ISYMOP)
 C
@@ -1403,8 +1399,8 @@ C
 C------------------------------
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCMM_ETA'
         FILMMX = 'CCMM__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -1466,11 +1462,12 @@ C
       CALL DZERO(WORK(KRAx),3*NCOMS)
       CALL DZERO(WORK(KXIx),3*NTAMP)
 C 
-      CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,
+      CALL CC_GET31('ENSAFILE',NCOMS,
      *               WORK(KENSAx),WORK(KENSAy),WORK(KENSAz))
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+      CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -1728,6 +1725,7 @@ C
           IF (LWRK3.LT.0) 
      &        CALL QUIT( 'Too little work in CCMM_LTRB, 5')
 C
+          LUCCPO = -1
           CALL GPOPEN(LUCCPO,'POTMM','OLD',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)
           REWIND (LUCCPO)
@@ -1766,6 +1764,12 @@ C
   801         CONTINUE
             END IF
   800     CONTINUE
+        IF ( DEBUG .OR.(IQM3PR .GT. 10)) THEN
+          RHO1N = DDOT(NT1AM(ISYMTR),WORK(KXI1),1,WORK(KXI1),1)
+          RHO2N = DDOT(NT2AM(ISYMTR),WORK(KXI2),1,WORK(KXI2),1)
+          WRITE(LUPRI,*) ' Norm af elstat contribution to LHTR1:', RHO1N
+          WRITE(LUPRI,*) ' Norm af elstat contribution to LHTR2:', RHO2N
+        END IF
 C
           CALL GPCLOSE(LUCCPO,'KEEP')
 C
@@ -1792,7 +1796,7 @@ C
         CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
         FILMMR  = 'MMREPOP_0'
-        LUMMRE  = 0
+        LUMMRE  = -1
         IADRFIL = 1
         NDATA   = N2BST(ISYMOP)
 C
@@ -2131,6 +2135,7 @@ C     Read integrals from file
 C     and perform the calculation of HFNS: 
 C-----------------------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCPO)
@@ -2255,9 +2260,9 @@ C
 C
       CALL DZERO(WORK(KRAx),6*NCOMS)
 C
-      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CC_QM3')
+      IF (LWRK1.LT.0) CALL QUIT( 'Too little work space in CC_QM3')
 C
-      CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+      CALL CC_GET31('CC_RA',NCOMS,
      *               WORK(KRAx),WORK(KRAy),WORK(KRAz))
 C
       DO 111 I = 1,NCOMS
@@ -2286,7 +2291,7 @@ C
       CALL QM3_OBAR(FFJ)
       CALL QM3_OTILDE(OTILDE,FFJ)
 C
-      CALL CC_GET31(LUCCOB,'OBARFILE',NCOMS,
+      CALL CC_GET31('OBARFILE',NCOMS,
      *                 WORK(KOMMSx),WORK(KOMMSy),WORK(KOMMSz))
 C
       EQM3T = ZERO
@@ -2325,90 +2330,77 @@ C
 C
 C**************************************************************
 C  /* Deck cc_put31 */
-      SUBROUTINE CC_PUT31(NMBU,FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
+      SUBROUTINE CC_PUT31(FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
 C**************************************************************
 C
 #include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
 #include <dummy.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <ccinftap.h>
-C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-      PARAMETER (HALF = 0.5D0)
 C
       CHARACTER*(*) FLNAME
       INTEGER   NMBU,NULOOP
-      DIMENSION OMMSx(*)
-      DIMENSION OMMSy(*)
-      DIMENSION OMMSz(*)
+      DIMENSION OMMSx(*) , OMMSy(*) , OMMSz(*)
 C
-      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      NMBU = -1
+      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
 C
+      REWIND (NMBU)
       LM = 0
 C
       DO 820 L = 1,NULOOP
         LM = LM + 1
-        WRITE(NMBU,'(I5,3X,3E22.15)') LM,OMMSx(LM),OMMSy(LM),
-     *                                OMMSz(LM)
+        WRITE(NMBU,'(I5,3E25.15)') LM,OMMSx(LM),OMMSy(LM),OMMSz(LM)
   820 CONTINUE
 C
+      REWIND (NMBU)
       CALL GPCLOSE(NMBU,'KEEP')
 C
       END
 C
 C**************************************************************
 C  /* Deck cc_get31 */
-      SUBROUTINE CC_GET31(NMBU,FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
+      SUBROUTINE CC_GET31(FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
 C**************************************************************
 C
 #include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
 #include <dummy.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
 #include <priunit.h>
-#include <qm3.h>
-#include <ccinftap.h>
 C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-      PARAMETER (HALF = 0.5D0)
 C
       INTEGER   NMBU,NULOOP
       CHARACTER*(*) FLNAME
-      DIMENSION OMMSx(*)
-      DIMENSION OMMSy(*)
-      DIMENSION OMMSz(*)
+      DIMENSION OMMSx(*) , OMMSy(*) , OMMSz(*)
 C
-      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      LOGICAL FILE_EXIST
 C
-      LM = 0
+      INQUIRE(FILE=FLNAME,EXIST=FILE_EXIST)
+      IF (.NOT. FILE_EXIST) THEN
+         DO LM = 1,NULOOP
+            OMMSx(LM) = 0.0D0
+            OMMSy(LM) = 0.0D0
+            OMMSz(LM) = 0.0D0
+         END DO
+         GO TO 9000
+      END IF
 C
-      DO 820 L = 1,NULOOP
-        LM = LM + 1
-        READ(NMBU,'(I5,3X,3E22.15)',END=100) LM1,OMMSx(LM),OMMSy(LM),
-     *                                       OMMSz(LM)
-        GOTO 800
-C
-  100   OMMSx(LM) = 0.0D0
-        OMMSy(LM) = 0.0D0
-        OMMSz(LM) = 0.0D0
-C
-  800   CONTINUE
+
+      NMBU = -1
+      CALL GPOPEN(NMBU,FLNAME,'OLD',' ','FORMATTED',IDUMMY,.FALSE.)
+ 
+      DO 820 LM = 1,NULOOP
+
+        READ(NMBU,'(I5,3E25.15)',END=700,ERR=700)
+     &      LM1, OMMSx(LM), OMMSy(LM), OMMSz(LM)
+        IF (LM.NE.LM1) THEN
+           write (lupri,*) 'Error in CC_GET31 on ',FLNAME
+           write (lupri,*) 'LM, LM1, NULOOP',LM,LM1,NULOOP
+           CALL QUIT( 'Error in CC_GET31')
+        END IF
+  700   CONTINUE
   820 CONTINUE
-C
-      IF (LM.NE.NULOOP) CALL QUIT( 'Error on CC_GET31')
-C
+ 
       CALL GPCLOSE(NMBU,'KEEP')
+C
+ 9000 RETURN
 C
       END
 C
@@ -2489,7 +2481,8 @@ C
       NAMP2C  = NT2AM(ISYCTR)
       NAMPC   = NAMP1C + NAMP2C
 C
-      For the F = C X B vector
+C     For the F = C X B vector
+C
       ISYBC = MULD2H(ISYBTR,ISYCTR)
       NAMP1F  = NT1AM(ISYBC)
       NAMP2F  = NT2AM(ISYBC)
@@ -2671,7 +2664,7 @@ C
 C
       CHARACTER*8 LABEL,LR*(2),LIST
       CHARACTER*(8) FILMME, FILMMX
-      LOGICAL LEXIST
+      LOGICAL LEXIST, LOCDEB
 C
 C
       IF (IPRINT.GT.10) THEN
@@ -2696,8 +2689,8 @@ C
       IF (CCS)  NT2AM(ISYMTR) = IZERO
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCMM_ETA'
         FILMMX = 'CCMM__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -2719,6 +2712,11 @@ C
       IOPT = 2
       CALL CC_RDRSP(LISTIN,IDLIST,ISYMTR,IOPT,MODEL,
      *              WORK(KDUM),WORK(KT2AMPA))
+
+      IF (LOCDEB) THEN
+        RHO2N = DDOT(NT2AM(ISYMTR),WORK(KT2AMPA),1,WORK(KT2AMPA),1)
+        WRITE(LUPRI,*)'Norm af B2AM in CCMM_TGB on input:,1', RHO2N
+      END IF
 C
 C------------------------------------
 C     Dynamical allocation for CCMM :
@@ -2747,6 +2745,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCEF = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3022,6 +3021,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3158,7 +3158,7 @@ C
       CHARACTER*(3) LISTC
       CHARACTER*8 LABEL
       CHARACTER MODEL*10
-      LOGICAL LEXIST, LSAME
+      LOGICAL LEXIST, LSAME, LOCDEB
       INTEGER IDLSTA, IDLSTB, ISYMAB, ISYMA, ISYMB
       PARAMETER( KDUM = +99 999 999 ) ! dummy address for work space
 C
@@ -3207,6 +3207,15 @@ C
       IOPT = 1
       CALL CC_RDRSP(LISTA,IDLSTA,ISYMA,IOPT,MODEL,
      *              WORK(KT1AMPA),WORK(KDUM))
+
+      IF (LOCDEB) THEN
+        RHO1N = DDOT(NT1AM(ISYMAB),RHO1,1,RHO1,1)
+        RHO2N = DDOT(NT2AM(ISYMAB),RHO2,1,RHO2,1)
+        WRITE(LUPRI,*)'Norm of RHO1 in CCMM_QRTRANS on input:,1', RHO1N
+        WRITE(LUPRI,*)'Norm of RHO2 in CCMM_QRTRANS on input:,1', RHO2N
+        RHO1N = DDOT(NT1AM(ISYMA),WORK(KT1AMPA),1,WORK(KT1AMPA),1)
+        WRITE(LUPRI,*)'Norm af B1AM in CCMM_QRTRANS on input:,1', RHO1N
+      END IF
 C
       CALL CCMM_TGB(WORK(KT1AMPA),ISYMA,LISTA,IDLSTA,WORK(KTGA),'ET',
      *              MODEL,WORK(KWRK1),LWRK1)
@@ -3227,6 +3236,20 @@ C
       CALL DAXPY(NT1AM(ISYMAB),FACTSLV,WORK(KWRK1),1,RHO1,1)
       CALL DAXPY(NT2AM(ISYMAB),FACTSLV,
      *           WORK(KWRK1+NT1AM(ISYMAB)),1,RHO2,1)
+
+      IF (LOCDEB) THEN
+         TAL1= DDOT(NT1AM(ISYMAB),WORK(KWRK1),1,WORK(KWRK1),1)
+         TAL2= DDOT(NT2AM(ISYMAB),WORK(KWRK1+NT1AM(ISYMAB)),1,
+     *              WORK(KWRK1+NT1AM(ISYMAB)),1)
+         WRITE(LUPRI,*) 'Printing first contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+         TAL1= DDOT(NT1AM(ISYMAB),RHO1,1,RHO1,1)
+         TAL2= DDOT(NT2AM(ISYMAB),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*) 'Printing RHO total. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
 C
 C
       IF (.NOT.(LSAME)) THEN
@@ -3252,6 +3275,15 @@ C
         CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
      *                WORK(KT1AMPB),WORK(KDUM))
 
+        IF (LOCDEB) THEN
+         RHO1N = DDOT(NT1AM(ISYMAB),RHO1,1,RHO1,1)
+         RHO2N = DDOT(NT2AM(ISYMAB),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*)'Norm of RHO1 in CCMM_QRTRANS on input:,1', RHO1N
+         WRITE(LUPRI,*)'Norm of RHO2 in CCMM_QRTRANS on input:,1', RHO2N
+         RHO1N = DDOT(NT1AM(ISYMB),WORK(KT1AMPA),1,WORK(KT1AMPA),1)
+         WRITE(LUPRI,*)'Norm af B1AM in CCMM_QRTRANS on input:,1', RHO1N
+        END IF
+
         CALL CCMM_TGB(WORK(KT1AMPB),ISYMB,LISTB,IDLSTB,WORK(KTGB),'ET',
      *                MODEL,WORK(KWRK1),LWRK1)
 C
@@ -3264,6 +3296,21 @@ C
         CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KWRK1),1,RHO1,1)
         CALL DAXPY(NT2AM(ISYMAB),ONE,
      *             WORK(KWRK1+NT1AM(ISYMAB)),1,RHO2,1)
+
+        IF (LOCDEB) THEN
+         TAL1= DDOT(NT1AM(ISYMAB),WORK(KWRK1),1,WORK(KWRK1),1)
+         TAL2= DDOT(NT2AM(ISYMAB),WORK(KWRK1+NT1AM(ISYMAB)),1,
+     *              WORK(KWRK1+NT1AM(ISYMAB)),1)
+         WRITE(LUPRI,*) 'Printing second contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+
+         TAL1= DDOT(NT1AM(ISYMAB),RHO1,1,RHO1,1)
+         TAL2= DDOT(NT2AM(ISYMAB),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*) 'Printing RHO total. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+        END IF
 C
       END IF
 C
@@ -3281,11 +3328,18 @@ C
       IDLSTC =  1
       ISYMC  = ILSTSYM(LISTC,IDLSTC)
 C
+C      TAL2= DDOT(N2BST(ISYMAB),WORK(KTGAB),1,WORK(KTGAB),1)
+C      WRITE(LUPRI,*) 'Printing TGAB before build. 
+C     &                     Norm2 of operator: ', TAL2
       CALL CCMM_TGCB(ISYMAB,LISTC,LISTA,LISTB,
      *               IDLSTC,IDLSTA,IDLSTB,
      *               ISYMC,ISYMA,ISYMB,WORK(KTGAB),
      *               MODEL,WORK(KWRK1),LWRK1)
 C
+C      TAL2= DDOT(N2BST(ISYMAB),WORK(KTGAB),1,WORK(KTGAB),1)
+C      WRITE(LUPRI,*) 'Printing TGAB after build. 
+C     &                     Norm2 of operator: ', TAL2
+
       NAMPF = NT1AM(ISYMAB) + NT2AM(ISYMAB)
 C
       KXI   = KWRK1
@@ -3303,6 +3357,14 @@ C
       KXI2 = KXI1 + NT1AM(ISYMAB)
 C
       CALL CCLR_DIASCL(WORK(KXI2),2.0d0,ISYMAB)
+
+      IF (LOCDEB) THEN
+         TAL1= DDOT(NT1AM(ISYMAB),WORK(KXI1),1,WORK(KXI1),1)
+         TAL2= DDOT(NT2AM(ISYMAB),WORK(KXI2),1,WORK(KXI2),1)
+         WRITE(LUPRI,*) 'Printing XI^TGCB contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
 C
       CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KXI1),1,RHO1,1)
       CALL DAXPY(NT2AM(ISYMAB),ONE,WORK(KXI2),1,RHO2,1)
@@ -3404,6 +3466,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3519,7 +3582,7 @@ C
       CHARACTER*(*) LISTA, LISTB, LISTC
       CHARACTER*8 LABEL
       CHARACTER MODEL*10
-      LOGICAL LEXIST, LSAME
+      LOGICAL LEXIST, LSAME, LOCDEB
       INTEGER ISYCB,ISYRES,ISYMTA,ISYMTB,ISYMTC
       INTEGER IDLSTA,IDLSTB,IDLSTC
       INTEGER FACTSL
@@ -3579,6 +3642,15 @@ C
       CALL CC_RDRSP(LISTB,IDLSTB,ISYMTB,IOPT,MODEL,
      *              WORK(KT1AMPA),WORK(KDUM))
 
+      IF (LOCDEB) THEN
+         RHO1N = DDOT(NT1AM(ISYRES),RHO1,1,RHO1,1)
+         RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*)'Norm of RHO1 in CCMM_QRTRANS on input:,1', RHO1N
+         WRITE(LUPRI,*)'Norm of RHO2 in CCMM_QRTRANS on input:,1', RHO2N
+         RHO1N = DDOT(NT1AM(ISYMTB),WORK(KT1AMPA),1,WORK(KT1AMPA),1)
+         WRITE(LUPRI,*)'Norm af B1AM in CCMM_QRTRANS on input:,1', RHO1N
+      END IF
+
       CALL CCMM_TGB(WORK(KT1AMPA),ISYMTB,LISTB,IDLSTB,WORK(KTGB),'ET',
      *              MODEL,WORK(KWRK1),LWRK1)
 C
@@ -3593,10 +3665,26 @@ C
         FACTSLV = ONE
       END IF
 C
+      IF (LOCDEB) THEN
+         TAL1= DDOT(NT1AM(ISYCB),WORK(KWRK1),1,WORK(KWRK1),1)
+         TAL2= DDOT(NT2AM(ISYCB),WORK(KWRK1+NT1AM(ISYCB)),1,
+     *              WORK(KWRK1+NT1AM(ISYCB)),1)
+         WRITE(LUPRI,*) 'Printing transformed first contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
+C        
       CALL DAXPY(NT1AM(ISYCB),FACTSLV,WORK(KWRK1),1,RHO1,1)
       CALL DAXPY(NT2AM(ISYCB),FACTSLV,
      *           WORK(KWRK1+NT1AM(ISYCB)),1,RHO2,1)
-C
+
+      IF (LOCDEB) THEN
+         TAL1= DDOT(NT1AM(ISYCB),RHO1,1,RHO1,1)
+         TAL2= DDOT(NT2AM(ISYCB),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*) 'Printing RHO total. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
 C
       IF (.NOT. (LSAME)) THEN
 C
@@ -3619,6 +3707,15 @@ C
         CALL CC_RDRSP(LISTC,IDLSTC,ISYMTC,IOPT,MODEL,
      *                WORK(KT1AMPA),WORK(KDUM))
 
+        IF (LOCDEB) THEN
+         RHO1N = DDOT(NT1AM(ISYRES),RHO1,1,RHO1,1)
+         RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
+         WRITE(LUPRI,*)'Norm of RHO1 in CCMM_QRTRANS on input:,1', RHO1N
+         WRITE(LUPRI,*)'Norm of RHO2 in CCMM_QRTRANS on input:,1', RHO2N
+         RHO1N = DDOT(NT1AM(ISYMTB),WORK(KT1AMPA),1,WORK(KT1AMPA),1)
+         WRITE(LUPRI,*)'Norm af B1AM in CCMM_QRTRANS on input:,1', RHO1N
+        END IF
+
         CALL CCMM_TGB(WORK(KT1AMPA),ISYMTC,LISTC,IDLSTC,WORK(KTGC),'ET',
      *                MODEL,WORK(KWRK1),LWRK1)
 C
@@ -3626,10 +3723,26 @@ C
         CALL CCLR_FA(LABEL,ISYMTC,LISTB,IDLSTB,
      &               LISTA,IDLSTA,WORK(KTGC),WORK(KWRK1),LWRK1)
 C
-C
+        IF (LOCDEB) THEN
+          TAL1= DDOT(NT1AM(ISYCB),WORK(KWRK1),1,WORK(KWRK1),1)
+          TAL2= DDOT(NT2AM(ISYCB),WORK(KWRK1+NT1AM(ISYCB)),1,
+     *              WORK(KWRK1+NT1AM(ISYCB)),1)
+          WRITE(LUPRI,*) 'Printing transformed second contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+        END IF
+CC
         CALL DAXPY(NT1AM(ISYCB),ONE,WORK(KWRK1),1,RHO1,1)
         CALL DAXPY(NT2AM(ISYCB),ONE,
      *             WORK(KWRK1+NT1AM(ISYCB)),1,RHO2,1)
+
+        IF (LOCDEB) THEN
+          TAL1= DDOT(NT1AM(ISYCB),RHO1,1,RHO1,1)
+          TAL2= DDOT(NT2AM(ISYCB),RHO2,1,RHO2,1)
+          WRITE(LUPRI,*) 'Printing RHO total. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+        END IF
 C
       END IF
 C     finally, we consider the effective operator T^g sigma
@@ -3647,6 +3760,9 @@ C
      *               ISYMTA,ISYMTB,ISYMTC,WORK(KTGCB),
      *               MODEL,WORK(KWRK1),LWRK1)
 C
+C      TAL2= DDOT(N2BST(ISYRES),WORK(KTGCB),1,WORK(KTGCB),1)
+C      WRITE(LUPRI,*) 'Printing TGAB after build. 
+C     &                     Norm2 of operator: ', TAL2
       NAMPF = NT1AM(ISYCB) + NT2AM(ISYCB)
 C
       KETA    = KWRK1
@@ -3662,6 +3778,16 @@ C
 C
       KETA1   = KETA
       KETA2   = KETA1 + NT1AM(ISYCB)
+
+      IF (LOCDEB) THEN
+        TAL1= DDOT(NT1AM(ISYCB),WORK(KETA1),1,WORK(KETA1),1)
+        TAL2= DDOT(NT2AM(ISYCB),WORK(KETA2),1,
+     *              WORK(KETA2),1)
+        WRITE(LUPRI,*) 'Printing third GTR contribution. 
+     &                     Norm2 of singles: ', TAL1,
+     &                    'Norm2 of doubles: ', TAL2
+      END IF
+C
 C
       CALL DAXPY(NT1AM(ISYCB),ONE,WORK(KETA1),1,RHO1,1)
       CALL DAXPY(NT2AM(ISYCB),ONE,WORK(KETA2),1,RHO2,1)
@@ -3725,8 +3851,8 @@ C
         CALL FLSHFO(LUPRI)
       ENDIF
 C
-      LUMMET = 0
-      LUMMXI = 0
+      LUMMET = -1
+      LUMMXI = -1
       FILMME = 'CCMM_ETA'
       FILMMX = 'CCMM__XI'
 C
@@ -3760,6 +3886,7 @@ C----------------------------
 C     Read Rra in AO basis:
 C----------------------------
 C
+      LUCCPO = -1
       CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUCCEF)
@@ -3834,9 +3961,6 @@ C
 C  /* Deck quitmm */
       SUBROUTINE QUITMM(TEXT)
 #include <implicit.h>
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 #include <priunit.h>
       CHARACTER TEXT*(*)
 C
@@ -3895,6 +4019,7 @@ C     First we write to the INFO file
 C
       NTAL = NRHFS(1)*NBAS(1)
 C
+      LUMMMO = -1
       CALL GPOPEN(LUMMMO,'MMMO_INFO','UNKNOWN',' ',
      &                       'FORMATTED',IDUMMY,.FALSE.)
 C
@@ -3906,7 +4031,7 @@ C
       CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
 C
       FILMM   = 'MMMOS'
-      LUMMMO  = 0
+      LUMMMO  = -1
       IADRFIL = 1
       NDATA   = NTAL
 C
@@ -3924,6 +4049,7 @@ C
         CALL QUIT('Insufficient memory for allocation in CCMM_REP1 2')
       ENDIF
 C
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &           .FALSE.)
       REWIND LUSIFC
@@ -3945,7 +4071,7 @@ C
       ENDIF
 C
       FILMM   = 'MMEPS'
-      LUMMEP  = 0
+      LUMMEP  = -1
       IADRFIL = 1
       NDATA   = NRHFS(1)
 C
@@ -3956,7 +4082,6 @@ C
 C
 C
       END
-C******************************************************************
 C**************************************************************
 C  /* Deck cc_qm3nsint */
       SUBROUTINE CCMM_REP2(EREP,AODEN,WORK,LWORK)
@@ -4007,7 +4132,7 @@ C
       CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
       FILMMR  = 'MMREPOP_0'
-      LUMMRE  = 0
+      LUMMRE  = -1
       IADRFIL = 1
       NDATA   = N2BST(ISYMOP)
 C
@@ -4050,5 +4175,3 @@ C
       CALL WCLOSE2(LUMMRE,FILMMR, 'KEEP')
 C
       END
-C***********************************************************************
-

@@ -476,6 +476,7 @@ c /* deck cctpaprt */
       REAL TRANMOM(2,NOPPAIRS,NTRANSIT)
       REAL ZERO, THIRTY, DELTAF, DELTAG, DELTAH
       REAL DELTA_TPlpa, DELTA_TPlpe, DELTA_TPc
+      REAL DELTA_TPlpaE, DELTA_TPlpeE, DELTA_TPcE
       REAL AUTIME, K_1, K_2, K_3, K_lpa, K_lpe, K_c
       REAL SMFREQ, EIGV, SIGN, STRN, TMF0, TM0F
       REAL DIPLEN(3,3,2)
@@ -483,6 +484,7 @@ c /* deck cctpaprt */
       DOUBLE PRECISION TRANMOM(2,NOPPAIRS,NTRANSIT)
       DOUBLE PRECISION ZERO, THIRTY, DELTAF, DELTAG, DELTAH 
       DOUBLE PRECISION DELTA_TPlpa, DELTA_TPlpe, DELTA_TPc
+      DOUBLE PRECISION DELTA_TPlpaE, DELTA_TPlpeE, DELTA_TPcE
       DOUBLE PRECISION AUTIME, K_1, K_2, K_3, K_lpa, K_lpe, K_c
       DOUBLE PRECISION SMFREQ, EIGV, SIGN, STRN, TMF0, TM0F
       DOUBLE PRECISION DIPLEN(3,3,2)
@@ -493,6 +495,7 @@ c /* deck cctpaprt */
       CHARACTER*5  BLANKS
       CHARACTER*8  LABELA, LABELB
       CHARACTER*10 MODEL
+      CHARACTER*8 LAB
       CHARACTER*80 STRING
 
       LOGICAL LDIPLEN, LDIPL(3,3)
@@ -724,6 +727,30 @@ C          IF (ISAMA*ISAMB.EQ.0) SIGN = +ONE
          WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
 
+C
+C        Output to property file, both Delta and w_1*w_2*Delta 
+C
+         LAB = 'D_pa    ' 
+         CALL WRIPRO(DELTA_TPlpa,MODEL,-30,LAB,LAB,LAB,LAB,
+     *               SMFREQ,EIGV-SMFREQ,EIGV,1,ISYME,1,ISTATE)
+         LAB = 'D_pe    ' 
+         CALL WRIPRO(DELTA_TPlpe,MODEL,-31,LAB,LAB,LAB,LAB,
+     *               SMFREQ,EIGV-SMFREQ,EIGV,1,ISYME,1,ISTATE)
+         LAB = 'D_pc    ' 
+         CALL WRIPRO(DELTA_TPc,MODEL,-32,LAB,LAB,LAB,LAB,
+     *               SMFREQ,EIGV-SMFREQ,EIGV,1,ISYME,1,ISTATE)
+         DELTA_TPlpaE=SMFREQ*(EIGV-SMFREQ)*DELTA_TPlpa
+         DELTA_TPlpeE=SMFREQ*(EIGV-SMFREQ)*DELTA_TPlpe 
+         DELTA_TPcE=SMFREQ*(EIGV-SMFREQ)*DELTA_TPc
+         LAB = 'w1w2D_pa' 
+         CALL WRIPRO(DELTA_TPlpaE,MODEL,-33,LAB,LAB,LAB,LAB,
+     *               SMFREQ,EIGV-SMFREQ,EIGV,1,ISYME,1,ISTATE)
+         LAB = 'w1w2D_pe' 
+         CALL WRIPRO(DELTA_TPlpeE,MODEL,-34,LAB,LAB,LAB,LAB,
+     *               SMFREQ,EIGV-SMFREQ,EIGV,1,ISYME,1,ISTATE)
+         LAB = 'w1w2D_pc' 
+         CALL WRIPRO(DELTA_TPcE,MODEL,-35,LAB,LAB,LAB,LAB,
+     *               SMFREQ,EIGV-SMFREQ,EIGV,1,ISYME,1,ISTATE)
 
 *********************************************************************
 

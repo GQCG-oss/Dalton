@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   Dalton, a molecular electronic structure program, Release 2.0
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
+#ifdef OLD_LOG
 ===========================================================================
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
@@ -46,7 +46,7 @@ Do not read S(2) CI diagonal but use ilicit that itit is D1
 merged with SOPPA changes by ekd
 LRST  : modification needed for proper handling of cubic response
 950705-hjaaj
-RSPPP : New code of GOS oscillator strengths.
+RSPPP : New code for GOS oscillator strengths.
 940523-hjaaj
 RSPCTL: removed CALL FLUSH(LURSP1) (system dependent); instead REWIND LURSP1
 941117-hjaaj
@@ -106,6 +106,9 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
+C Manu debug
+C     IPRRSP=201
+C Manu debug
 #include <ibndxdef.h>
 C
       WRITE (LUPRI,'(//A/)') ' Test output requested with .ABSYM'
@@ -588,22 +591,22 @@ C
 C WRITTEN 13 FEB 1986
 C
 C PURPOSE:
-C    CALCULATE ONE INDEX TRANSFORMED DENSITY CONTRIBUTION TO
-C    ONE INDEX TRANSFORMED INACTIVE AND ACTIVE FOCK MATRICES
-C    USING A GENERAL TRANSFORMATION MATRIX
+C    CALCULATE ONE-INDEX TRANSFORMED DENSITY CONTRIBUTION TO
+C    ONE-INDEX TRANSFORMED INACTIVE AND ACTIVE FOCK MATRICES
+C    FOR A GENERAL TRANSFORMATION MATRIX
 C
-C    FCONE(P,Q) = SUM(R,J)( 2*(PQ,RJ)*(ZYMAT(J,R)-ZYMAT(R,J)) +
+C    FCONE(P,Q) = SUM(R,J) ( 2*(PQ,RJ)*(ZYMAT(J,R) - ZYMAT(R,J)) +
 C                 (PR,JQ)*ZYMAT(R,J) - (PJ,RQ)*ZYMAT(J,R) )
 C
-C    FVONE(P,Q) = SUM(R,Y)( (YR,PQ)*(DENB(R,Y)-DENA(R,Y)) +
+C    FVONE(P,Q) = SUM(R,Y) (   (PQ,YR)*(DENB(R,Y) - DENA(R,Y)) +
 C                 (PR,YQ)*DENA(R,Y)*0.5 - (PY,RQ)*DENB(R,Y)*0.5 )
 C
 C THE ROUTINE IS CALLED FOR EACH INTEGRAL DENSITY (CD,**) (C<D)
 C
 #include <implicit.h>
-      DIMENSION H2(NORBT,2),ZYMAT(NORBT,NORBT,2)
-      DIMENSION FCONE(NORBT,NORBT,2),FVONE(NORBT,NORBT,2)
-      DIMENSION DENA(NORBT,NASHDI,2),DENB(NORBT,NASHDI,2)
+      DIMENSION H2(NORBT,*),         ZYMAT(NORBT,NORBT,*)
+      DIMENSION FCONE(NORBT,NORBT,*),FVONE(NORBT,NORBT,*)
+      DIMENSION DENA(NORBT,NASHDI,*),DENB(NORBT,NASHDI,*)
 C
 C  INFDIM : NASHDI
 C
@@ -798,7 +801,7 @@ C WRITTEN 13 FEB 1986
 C revised 941117-hjaaj
 C
 C PURPOSE:
-C    ADD CONTRIBUTION TO ONE INDEX TRANSFORMED FOCK MATRICES WHICH
+C    ADD CONTRIBUTION TO ONE-INDEX TRANSFORMED FOCK MATRICES WHICH
 C    ORIGINATE FROM TRANSFORMING THE FOCK MATRICES
 C
 #include <implicit.h>
@@ -819,14 +822,14 @@ C
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
-     &           ' ONE INDEX TRANSFORMED FOCK CORE MATRIX',
-     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     &           ' ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
+     *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *           ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX',
-     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     *           ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
+     *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
@@ -888,13 +891,13 @@ C
 C
       IF (IPRRSP.GT.90) THEN
          DO 2000 ISIM = 1,NSIM
-            WRITE(LUPRI,*) ISIM,' ONE INDEX TRANSFORMED FOCK CORE '//
+            WRITE(LUPRI,*) ISIM,' ONE-INDEX TRANSFORMED FOCK CORE '//
      &                          'MATRIX'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                  ,1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *                   ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX'
+     *                   ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
@@ -1216,7 +1219,7 @@ C
             CALL QUIT('LRST error: Implement RSPAVE for RESTLR')
          END IF
 C
-         LURSP1 = 0
+         LURSP1 = -1
          CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LURSP1)
@@ -1630,7 +1633,7 @@ C           CALL DCOPY(NTOT,WRK(KBCVEC),1,WRK(1),1)
 C
       IF (KEXSTV .LE. 0) THEN
          IF (IPRRSP.GE.3) WRITE (LUPRI,'(//A,I5)')
-     *     ' LRST, START VECTOR IS NOT LINEAR INDEPENDENT.'
+     *     ' LRST, START VECTOR IS NOT LINEAR INDEPENDENT.',KEXSTV
          IF (KZRED.LE.0) THEN
             CALL QUIT(' LRST, START VECTORS NOT LINEAR INDEPENDENT.')
          END IF
@@ -1757,6 +1760,13 @@ c ach
                XPROP = SOPR(IFREQ,IOP,JOP)
                WRITE(LUPRI,'(5A,1P,D20.12)')
      * '@ -<< ',LBLLR(KSYMOP,IOP),' ; ',LBLLR(KSYMOP,JOP),' >> =',XPROP
+C JK
+                CALL WRIPRO(XPROP,"LR-SCF/DFT   ",2,
+     *                      LBLLR(KSYMOP,IOP),LBLLR(KSYMOP,JOP),
+     *                      LBLLR(KSYMOP,IOP),LBLLR(KSYMOP,JOP),
+     *                      FREQ(IFREQ),FREQ(IFREQ),FREQ(IFREQ),
+     *                      1,0,0,0)
+C JK
                IF (SOPW4) THEN
                   CALL GETGPV(LBLLR(KSYMOP,JOP),FC,DUMMY,CMO,UDV,PV,
      &                        XINDX,ANTSYM,WRK(KGP),LWRKGP)
@@ -2413,7 +2423,7 @@ C     |0(R)> = -SUM(N) S(N) *|N>
 C     |0(L)> =  SUM(N) S'(N)*|N>
 C
 C MODIFIED 5-5-1988 : ASSUME |0(L)> = 0 i.e. S' = 0 AND
-C                     NOT STORED
+C                     NOT STORED'
 #include <implicit.h>
 C
       DIMENSION ZYCVEC(KZCONF,*),FCAC(*),H2AC(*)
@@ -2875,6 +2885,7 @@ C
             ENDIF
          END IF
          CALL FLSHFO(LUPRI)
+
          CALL RSPELI(NCSIM,NOSIM,WRK(KBCVEC),WRK(KBOVEC),
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               XINDX,WRK(KWRK1),LWRK1)
@@ -2956,7 +2967,7 @@ C
          KTOT = KZRED + KOFFTY
          IF (IPRRSP.GT.7)
      *      WRITE(LUPRI,'(/A,I5)')' TRIAL VECTORS FOR RESTART:',KTOT
-         LURSP1 = 0
+         LURSP1 = -1
          CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LURSP1)
@@ -3091,7 +3102,7 @@ C
 C CONSTRUCT DIAGONAL OF E(2) + SHIFT* S(2)
 C
 #include <implicit.h>
-      DIMENSION A(1)
+      DIMENSION A(*)
       PARAMETER ( DMP5 = -0.5D0, D1 = 1.0D0 , DM2=-2.0D0 )
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -3262,12 +3273,14 @@ C
 C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
+C     (PP for Polarization Propagator)
 C
 #include <implicit.h>
+#include "maxorb.h"
 #include <dummy.h>
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
-      CHARACTER*8 BLANK
+      CHARACTER BLANK*8, PRI_LINE*80
 C
       PARAMETER ( MAXSIM = 15, LMXFR = 1000, BLANK = '        ' )
       PARAMETER ( TOLRTT = 1.0D-12)
@@ -3278,6 +3291,7 @@ C
       DIMENSION XLEVICI(3,3,3)
       DIMENSION XNACS2(MAXSIM+1) ,XNACGD(MAXSIM+1)
       LOGICAL REFST
+      LOGICAL DOMO2
       PARAMETER ( D2 = 2.0D0, D100 = 100.0D0, D0 = 0.0D0)
       PARAMETER ( D2R3 = (2.0D0/3.0D0))
 C
@@ -3301,11 +3315,14 @@ C
 #include <inflr.h>
 #include <inforb.h>
 #include <infdim.h>
+#include "infinp.h"
 #include <infpri.h>
 #include <inftap.h>
 #include <esg.h>
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
+!     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
+      DOMO2 = DODFT
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
@@ -3343,7 +3360,15 @@ C for reduced E(2) and reduced S(2)
          LROTL  = 0
          LROTV  = 0
       END IF
-      KFREX  = 1
+      IF (DOMO2) THEN
+         KCMO2 = 1
+         KLAST = KCMO2 + 2*N2ORBX
+         LWRK1 = LWRK + 1 - KLAST
+         CALL DFTMOMO(WRK(KCMO2),WRK(KLAST),LWRK1,IPRPP)
+      ELSE
+         KLAST = 1
+      END IF
+      KFREX  = KLAST
       KTRLEN = KFREX  + LFREX
       KTRVEL = KTRLEN + LTRVEC
       KTRMAG = KTRVEL + LTRVEC
@@ -3711,15 +3736,19 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                END IF
  600        CONTINUE
          END IF
-         WRITE (LUPRI,'(/,3(/A,I3))')
-     *   '@ Reference  state    symmetry',IREFSY,
-     *   '@ Excitation operator symmetry',KSYMOP,
-     *   '@ Excited    state    symmetry',KSYMST
+         PRI_LINE = ' '
+         WRITE (PRI_LINE,'(3(A,I2))')
+     &   '@ Excit. operator sym',KSYMOP,' & ref. state sym',IREFSY,
+     &   ' => excited state symmetry',KSYMST
+         CALL TITLER(PRI_LINE,'*',103)
          DO 555 INUM = 1,NBX
-            WRITE(LUPRI,'(/A,I5,//A,1P,G16.8,A,3(/A1,19X,G16.8,A),
+            PRI_LINE = ' '
+            WRITE (PRI_LINE,'(A,I5,A,I3)')
+     *      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST
+            CALL HEADER(PRI_LINE,0)
+            WRITE(LUPRI,'( A,1P,G16.8,A,3(/A1,19X,G16.8,A),
      *                   //A,T21,G16.8,A)')
-     *      '@ State no:',(ISIM-1+INUM),
-     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),'au',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
      *      ' ',WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
@@ -3741,22 +3770,18 @@ C                 ... skip HDO
 C
                   JOP = JOP + 1
                   WRITE(LUPRI,'(/A,A)')
-     *               '@ Operator type:    ',LBLPP(KSYMOP,IOP)
+     *                  '@ Operator type:    ',LBLPP(KSYMOP,IOP)
 C
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8)')
+                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
      *                  '@ Oscillator strength (LENGTH)   :',
-     *                  OSCSTR(INUM,JOP)
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment   (LENGTH)   :',
-     *                  TRSMOM(INUM,JOP)
+     *                  OSCSTR(INUM,JOP),
+     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
-                     WRITE(LUPRI,'(A,1P,G16.8)')
+                     WRITE(LUPRI,'(A,1P,G16.8,A,G16.8,A)')
      *                  '@ Oscillator strength (VELOCITY) :',
-     *                  OSCSTR(INUM,JOP)
-                     WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment   (VELOCITY) :',
-     *                  TRSMOM(INUM,JOP)
+     *                  OSCSTR(INUM,JOP),
+     *                  '  (Transition moment :',TRSMOM(INUM,JOP),' )'
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
@@ -3764,11 +3789,11 @@ C
      *                  OSCSTR(INUM,JOP)
                      IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
                         WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment  (cos(kr)/k) :',
+     *                  '@ Transition moment  (cos(kr)/k) :',
      *                  TRSMOM(INUM,JOP)
                      ELSE
                         WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  ' Transition moment  (sin(kr)/k) :',
+     *                  '@ Transition moment  (sin(kr)/k) :',
      *                  TRSMOM(INUM,JOP)
                      END IF
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
@@ -3797,6 +3822,8 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
+            IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
+     &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
      &                  'EXCITLAB',BLANK,WRK(KEIVAL-1+ISIM-1+INUM),D0,
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
@@ -3812,7 +3839,7 @@ C
          WRITE (LUPRI,'(/,3(/,5X,A,I3))')
      &   ' Reference  state    symmetry:',IREFSY,
      &   ' Excitation operator symmetry:',KSYMOP,
-     &   ' Excitation state    symmetry:',KSYMST
+     &   ' Excited    state    symmetry:',KSYMST
 
          WRITE (LUPRI,'(/,5X,A,/5X,A,//)')
      &      ' Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
@@ -3821,7 +3848,7 @@ C
          CALL HEADER('Oscillator and Scalar Rotatory Strength',18)
          WRITE(LUPRI,'(/,8X,A,/,8X,A,/,8X,A)')
      &   ' State Frequency   Oscillator Strength    Rotatory  Strength',
-     &   '         (eV)      Velocity     Length   Velocity     Length',
+     &   '         (eV)      Velocity     Length    Velocity    Length',
      &   ' -----------------------------------------------------------'
 
          DO LOCST = 1,NPPCNV(KSYMOP)
@@ -4151,6 +4178,9 @@ C
 C  /* Deck rsplr */
       SUBROUTINE RSPLR(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
+C     Driver Routine for Linear Response:
+C     DETERMINE SECOND ORDER MOLECULAR PROPERTIES
+C
 #include <implicit.h>
 #include <iratdef.h>
 #include <thrzer.h>
@@ -4175,7 +4205,6 @@ C Local variables
 C
       LOGICAL OLDDX, FOUND, CONV, NOSEL
 C
-C DETERMINE SECOND ORDER MOLECULAR PROPERTIES
 C
       NOSEL  = .FALSE.
 C
@@ -4212,19 +4241,19 @@ C NUMBER OF SIMULTANEOUS VECTORS
 C
       IF (MXFREQ .LE. 0) THEN
         WRITE (LUERR,9100) LWRK1,KWRK1+MWRK+MRES
-        WRITE (LUPRI ,9100) LWRK1,KWRK1+MWRK+MRES
+        WRITE (LUPRI,9100) LWRK1,KWRK1+MWRK+MRES
         CALL QTRACE(LUERR)
         CALL QUIT('RSPLR: INSUFFICIENT SPACE TO SOLVE LINEAR EQUATIONS')
       ENDIF
  9100 FORMAT(/' RSPLR, work space too small for RSPRES',
-     *       /'         had:',I10,', need more than:',I10)
+     *       /'        had:',I10,', need more than:',I10)
 C
 C     Open LURSP2 for NSOLVC solution vectors and NSOLVC
 C        residual vectors.
 C
       NSOLVC = NFREQ * NGPLR(KSYMOP)
 C
-      LURSP2 = 0
+      LURSP2 = -1
       IF (NSOLVC .GE. 1) CALL GPOPEN(LURSP2,'RSPSOLVEC.DA','NEW',
      &     'DIRECT',' ',IRAT*KZYVAR,OLDDX)
 C
@@ -4363,12 +4392,12 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
          KVECB = 1
          KWRK1 = KVECB + KZYVAR
          LWRK1 = LWRK - KWRK1
-         WRITE (LUPRI,'(/A)')'@ WARNING>>>>> Linear response function'//
+         NINFO = NINFO + 1
+         WRITE (LUPRI,'(/A)')'@ INFO >>>>> Linear response functions'//
      &        ' calculated using presolved response vectors',
-     &        '@ WARNING>>>>> These results will not have quadratic '//
+     &        '@ INFO >>>>> These results will not have quadratic '//
      &        'accuracy'
-         CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),
-     &              WRK(KWRK1),LWRK1)
+         CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),WRK(KWRK1),LWRK1)
       ELSE
          NOP   = NGPLR(KSYMOP)
          KSOPR = 1
@@ -4400,6 +4429,7 @@ C Used from common blocks:
 C   INFDIM : NVARMA
 C
 #include <priunit.h>
+#include <inftap.h>
 #include <infdim.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
@@ -4416,14 +4446,70 @@ C
 C
 C     Open LURD file from ABACUS
 C
-      LURD = 0
-      CALL GPOPEN(LURD,'ABACUS.RD','OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
+      LURD = -1
+      CALL GPOPEN(LURD,ABARDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
 C     Read RD_Z from ABACUS
       CALL READDX(LURD,NREC,IRAT*KZVAR,WRK(KRD))
       CALL GPCLOSE(LURD,'KEEP')
       IF (IPRRSP .GT. 120) THEN
          WRITE (LUPRI,*) 'RDS2 test print of ABACUS RD vector'
          WRITE (LUPRI,*) 'label : ',LABEL
+         WRITE (LUPRI,*) 'NREC  : ',NREC
+         WRITE (LUPRI,*) 'NVARMA: ',NVARMA
+         WRITE (LUPRI,*) 'KZVAR : ',KZVAR
+         CALL OUTPUT(WRK(KRD),1,KZVAR,1,1,KZVAR,1,1,LUPRI)
+      END IF
+C     Calculate S[2] * RD where we use RD_Y = -RD_Z
+      CALL DZERO(WRK(KS2LIN),KZYVAR)
+      IF (KZCONF.GT.0) THEN
+         CALL RSPSLI(1,0,WRK(KRD),DUMMY,UDV,WRK(KS2LIN),
+     *   XINDX,WRK(KWRK1),LWRK1)
+      END IF
+      IF (KZWOPT.GT.0) THEN
+         CALL DZERO(WRK(KRD+KZVAR),KZWOPT)
+         CALL RSPSLI(0,1,DUMMY,WRK(KRD+KZCONF),UDV,WRK(KS2LIN),
+     *   XINDX,WRK(KWRK1),LWRK1)
+      END IF
+      CALL DAXPY(KZVAR,D1,WRK(KS2LIN),1,WRK(KS2LIN+KZVAR),1)
+      CALL DCOPY(KZVAR,WRK(KS2LIN+KZVAR),1,WRK(KS2LIN),1)
+      RETURN
+      END
+C  /* Deck rds2x */
+      SUBROUTINE RDS2X(NLAB,UDV,XINDX,WRK,LWRK)
+C Made from RDS2 by klb feb. 1997.
+#include <implicit.h>
+#include <iratdef.h>
+      DIMENSION XINDX(*),UDV(*),WRK(*)
+      PARAMETER ( D1 = 1.0D0 )
+C
+C Used from common blocks:
+C   INFDIM : NVARMA
+C
+#include <priunit.h>
+#include <inftap.h>
+#include <infdim.h>
+#include <infrsp.h>
+#include <wrkrsp.h>
+C
+      LOGICAL OLDDX
+C
+      KS2LIN = 1
+      KRD    = KS2LIN + KZYVAR
+      KWRK1  = KRD    + KZVAR + KZWOPT
+      LWRK1  = LWRK   - KWRK1
+      IF (LWRK1.LT.0) CALL ERRWRK('RDS2X',KWRK1-1,LWRK)
+      NREC = 2*NLAB -1
+C
+C     Open LURD file from ABACUS
+C   
+      LURD = -1
+      CALL GPOPEN(LURD,ABARDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
+C     Read RD_Z from ABACUS
+      CALL READDX(LURD,NREC,IRAT*KZVAR,WRK(KRD))
+      CALL GPCLOSE(LURD,'KEEP')
+      IF (IPRRSP .GT. 120) THEN
+         WRITE (LUPRI,*) 'RDS2X test print of ABACUS RD vector'
+         WRITE (LUPRI,*) 'NLAB  : ',NLAB
          WRITE (LUPRI,*) 'NREC  : ',NREC
          WRITE (LUPRI,*) 'NVARMA: ',NVARMA
          WRITE (LUPRI,*) 'KZVAR : ',KZVAR
@@ -5968,10 +6054,58 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
 
       return
       end
-
-
-
-
-
-
-
+C  /* Deck RSPPMO */
+      SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
+C
+C     June 2008; PBHT MO overlap diagnostic
+C     Reference: 
+C       Excitation energies in density functional theory: An evaluation
+C       and a diagnostic test
+C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
+C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
+C
+C     (subroutine based on RSPPRO tuh)
+C
+#include <implicit.h>
+      PARAMETER(PTHRS = 1.D-08)
+      DIMENSION WOP(*)
+      DIMENSION CMO2(NORBT,NORBT,2)
+C
+#include <maxorb.h>
+#include <maxash.h>
+#include <infind.h>
+#include <inforb.h>
+#include <infvar.h>
+ 
+      CALL HEADER('PBHT MO Overlap Diagnostic',-1)
+      WRITE(LUPRI,'(A/A/)')
+     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
+     &  '             J Chem Phys 128, 044118 (2008)'
+      IF (NWOPT.GT.0) THEN 
+C        WRITE (LUPRI,1010) JWOPSY
+C        WRITE (LUPRI, '(2X,2A,/)')  '            I    A       ',
+C    &       'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
+         CMOTOT=0.d0
+         WOPTOT=0.d0
+         DO IG = 1,NWOPT
+            K  = JWOP(1,IG)
+            L  = JWOP(2,IG)
+            KS = ISMO(K)
+            LS = ISMO(L)
+            WOP1 = WOP(IG)
+            WOP2 = WOP(IOFFY+IG)
+            IF (ABS(WOP1).GT.PTHRS .OR. ABS(WOP2).GT.PTHRS) THEN
+C              WRITE (LUPRI,'(2X,A,3I5,4F15.10)') 
+C    &            '@@@', IG,K,L,WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2)
+                  WMJGP=(WOP1-WOP2)**2.0d0
+                  CMOMJGP=WMJGP*CMO2(K,L,1)
+                  CMOTOT=CMOTOT+CMOMJGP
+                  WOPTOT=WOPTOT+WMJGP
+            END IF
+         END DO
+         ALAMBDA=CMOTOT/WOPTOT
+         WRITE(LUPRI,'(25X,"Lambda:",2X,F15.10)')ALAMBDA
+      END IF
+      RETURN
+ 1010 FORMAT(5X,'Response orbital operator symmetry =',I2,/)
+      END

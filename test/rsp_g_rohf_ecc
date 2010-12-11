@@ -28760,13 +28760,13 @@ CRIT7=`$GREP "\@G Total * \-1257\. * \-176\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[1]=7
-ERROR[1]="NOT CORRECT"
+ERROR[1]="G-shift components NOT CORRECT"
 str="1"
 PASSED=1
 for i in $str
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -374,6 +374,9 @@ C
       IF (CC2)  MODEL = 'CC2'
       IF (CCSD) MODEL = 'CCSD'
 C
+      IF (CCR12) CALL QUIT('Finite-difference A{O}-matrix for CCR12 '//
+     &                     'not adapted')
+C
       KT1AMPSAV  = 1
       KT2AMPSAV  = KT1AMPSAV + NT1AMX
       KT1AMPA    = KT2AMPSAV + NT2AMX
@@ -437,8 +440,8 @@ C
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -451,7 +454,7 @@ C     ---------------------------------
 
       LEN       = NT1AMX + NT2AMX
       IADRF_XI  = IXETRAN(3,1)
-      LUETA = 0
+      LUETA = -1
       CALL WOPEN2(LUETA,FILXI,64,0)
       CALL GETWA2(LUETA,FILXI,WORK(KRHO1),IADRF_XI,LEN)
       CALL WCLOSE2(LUETA,FILXI,'KEEP')
@@ -490,8 +493,8 @@ C     -------------------------------------------------------------
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -546,8 +549,8 @@ C     --------------------------------------------
      &              WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
       IF (IPRSAV .GT. 5) THEN
          CALL AROUND(' END OF CC_FDAAMAT:')

@@ -37,7 +37,7 @@ c /* deck cc_iabj */
 *======================================================================*
        SUBROUTINE CC_IAJB( X1INT,   ISY1ALBE,
      &                     X2INT,   ISY2ALBE, 
-     &                     IDEL,    IGAM, 
+     &                     IDEL, IGAM, LAUXG, IBASX,
      &                     XIAJB,   XIABJ,   XIJBA,  
      &                     X2IAJB,  X2IABJ,  X2IJBA, 
      &                     XLAMDP1, XLAMDH1, ISYM1,
@@ -70,6 +70,8 @@ c /* deck cc_iabj */
 *            IOPT=1: (ia|j del) and (ia|del j) integrals
 *
 *            IOPT=2: (ia|j del), (ia|del j), and (ij|del a) integrals
+*
+*            IOPT=3: (ia|del j), and (ij|del a) integrals
 *
 *            IF LDERIV=.TRUE. transform also the derivative integrals:
 *                IOPT=0: (ia|j del)-bar
@@ -105,6 +107,9 @@ c /* deck cc_iabj */
 *
 *            IF LX2ISQ=.TRUE. derivative integrals are assumed to be
 *              stored in squared form (default is packed)
+*
+*            IF LAUXG=.TRUE. substract IBASX(ISYM) when calculating
+*              from IGAM the index within the symmetry class (irrep)
 *
 *            (ia|jb) integrals:
 *                  i            transform. with XLAMDP1 with sym. ISYM1
@@ -157,9 +162,9 @@ c /* deck cc_iabj */
 #endif
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0)
 
-      LOGICAL LDERIV, LRELAX, LZERO, LTRIANG, LX2ISQ, LLAO
+      LOGICAL LDERIV, LRELAX, LZERO, LTRIANG, LX2ISQ, LLAO, LAUXG
       INTEGER IDEL,IGAM,ISY1ALBE,ISY2ALBE,ISYM1,ISYM2,LWORK,IOPT,IREAL
-      INTEGER ISYB1, ISYB2
+      INTEGER ISYB1, ISYB2, IBASX(*)
       
 #if defined (SYS_CRAY)
       REAL XLAMDP1(*), XLAMDH1(*), XLMDPB1(*), XLMDHB1(*)
@@ -259,45 +264,47 @@ c /* deck cc_iabj */
 *     Add the contribution to the result XIAJB and X2IAJB vectors
 *     transform thereby gamma to j using XLMDPB1 and XLMDPB2
 *---------------------------------------------------------------------*
+      IF (IOPT.NE.3) THEN
 
-      IF ( LZERO ) THEN
-C        -------------------------
-C        add (i a|j del) to XIAJB:
-C        -------------------------
-         CALL CC_IAJB1(IGAM, WORK(KX1IA), ISYRES1, ISYGAM,
-     &                 XLMDPB1, ISYB1, XIAJB)
+         IF ( LZERO ) THEN
+C           -------------------------
+C           add (i a|j del) to XIAJB:
+C           -------------------------
+            CALL CC_IAJB1(IGAM, WORK(KX1IA), ISYRES1, ISYGAM,
+     &                    XLMDPB1, ISYB1, XIAJB, LAUXG, IBASX)
+         END IF
+       
+       
+         IF ( LRELAX ) THEN
+C           ------------------------------
+C           add (i a|j-bar del) to X2IAJB:
+C           ------------------------------
+            CALL CC_IAJB1(IGAM, WORK(KX1IA), ISYRES1, ISYGAM,
+     &                    XLMDPB2, ISYB2, X2IAJB, LAUXG, IBASX)
+         END IF
+       
+         IF ( LDERIV .OR. LRELAX ) THEN
+C           ------------------------------------------------
+C           add (i-bar a|j del) + (i a-bar|j del) to X2IAJB:
+C           ------------------------------------------------
+            CALL CC_IAJB1(IGAM, WORK(KX2GDIA), ISYRES2, ISYGAM,
+     &                    XLMDPB1, ISYB1, X2IAJB, LAUXG, IBASX)
+         END IF
+
       END IF
-
-
-      IF ( LRELAX ) THEN
-C        ------------------------------
-C        add (i a|j-bar del) to X2IAJB:
-C        ------------------------------
-         CALL CC_IAJB1(IGAM, WORK(KX1IA), ISYRES1, ISYGAM,
-     &                 XLMDPB2, ISYB2, X2IAJB)
-      END IF
-
-      IF ( LDERIV .OR. LRELAX ) THEN
-C        ------------------------------------------------
-C        add (i-bar a|j del) + (i a-bar|j del) to X2IAJB:
-C        ------------------------------------------------
-         CALL CC_IAJB1(IGAM, WORK(KX2GDIA), ISYRES2, ISYGAM,
-     &                 XLMDPB1, ISYB1, X2IAJB)
-      END IF
-
 *---------------------------------------------------------------------*
 *     Add the contributions to the (ia|del j) integrals in XIABJ vector
 *     and to the (ia|del j)-bar integrals in X2IABJ vector
 *     transform thereby gamma to j/j-bar using XLMDHB1/XLMDHB2 
 *---------------------------------------------------------------------*
-      IF ( IOPT.EQ.1 .OR. IOPT.EQ.2 ) THEN
+      IF ( IOPT.EQ.1 .OR. IOPT.EQ.2 .OR. IOPT.EQ.3) THEN
 
          IF ( LZERO ) THEN
 C           -------------------------
 C           add (i a|del j) to XIABJ:
 C           -------------------------
             CALL CC_IAJB1(IGAM, WORK(KX1IA), ISYRES1, ISYGAM,
-     &                    XLMDHB1, ISYB1, XIABJ)
+     &                    XLMDHB1, ISYB1, XIABJ, LAUXG, IBASX)
          END IF
 
 
@@ -306,7 +313,7 @@ C           ------------------------------
 C           add (i a|del j-bar) to X2IAJB:
 C           ------------------------------
             CALL CC_IAJB1(IGAM, WORK(KX1IA), ISYRES1, ISYGAM,
-     &                    XLMDHB2, ISYB2, X2IABJ)
+     &                    XLMDHB2, ISYB2, X2IABJ, LAUXG, IBASX)
          END IF
 
          IF ( LDERIV .OR. LRELAX ) THEN
@@ -315,10 +322,10 @@ C           add (i-bar a|del j) + (i a-bar|del j) to X2IABJ:
 C           ------------------------------------------------
             IF (LLAO) THEN
               CALL CC_IAJB1(IGAM, WORK(KX2DGIA), ISYRES2, ISYGAM,
-     &                      XLMDHB1, ISYB1, X2IABJ)
+     &                      XLMDHB1, ISYB1, X2IABJ, LAUXG, IBASX)
             ELSE
               CALL CC_IAJB1(IGAM, WORK(KX2GDIA), ISYRES2, ISYGAM,
-     &                      XLMDHB1, ISYB1, X2IABJ)
+     &                      XLMDHB1, ISYB1, X2IABJ, LAUXG, IBASX)
             END IF
          END IF
 
@@ -327,14 +334,14 @@ C           ------------------------------------------------
 *     Add the contributions to the result XIJBA/X2IJBA vectors
 *     transform thereby gamma to a/a-bar using XLMDHB1/XLMDHB2 
 *---------------------------------------------------------------------*
-      IF ( IOPT.EQ.2 ) THEN
+      IF ( IOPT.EQ.2 .OR. IOPT.EQ.3) THEN
 
          IF ( LZERO ) THEN
 C           -------------------------
 C           add (i j|del a) to XIJBA:
 C           -------------------------
             CALL CC_IJBA1(IGAM, WORK(KX1IJ), ISYRES1, ISYGAM,
-     &                    XLMDHB1, ISYB1, XIJBA)
+     &                    XLMDHB1, ISYB1, XIJBA, LAUXG, IBASX)
          END IF
 
 
@@ -343,7 +350,7 @@ C           ------------------------------
 C           add (i j|del a-bar) to X2IJBA:
 C           ------------------------------
             CALL CC_IJBA1(IGAM, WORK(KX1IJ), ISYRES1, ISYGAM,
-     &                    XLMDHB2, ISYB2, X2IJBA)
+     &                    XLMDHB2, ISYB2, X2IJBA, LAUXG, IBASX)
          END IF
 
          IF ( LDERIV .OR. LRELAX ) THEN
@@ -351,7 +358,7 @@ C           ------------------------------------------------
 C           add (i-bar j|del a) + (i j-bar|del a) to X2IJBA:
 C           ------------------------------------------------
             CALL CC_IJBA1(IGAM, WORK(KX2IJ), ISYRES2, ISYGAM,
-     &                    XLMDHB1, ISYB1, X2IJBA)
+     &                    XLMDHB1, ISYB1, X2IJBA, LAUXG, IBASX)
          END IF
 
       END IF 
@@ -387,8 +394,9 @@ c /* deck cc_iabj0 */
 *            X2IJ   = (i j|gam del)^(1)
 *
 *            iopt = 0 : only X1IA and X2GDIA
-*            iopt = 1 : in addiation X2DGIA if needed 
-*            iopt = 2 : in addiation X1IJ and X2IJ
+*            iopt = 1 : in addition X2DGIA if needed 
+*            iopt = 2 : in addition X1IJ and X2IJ
+*            iopt = 3 : in addition X1IJ (added on 30.05.2006)
 *
 *            X2DGIA is only needed if LDERIV is set and IREAL=-1
 *
@@ -435,7 +443,7 @@ c /* deck cc_iabj0 */
 #if defined (SYS_CRAY)
       REAL XLAMDP1(*), XLAMDH1(*)
       REAL XLAMDP2(*), XLAMDH2(*)
-      iEAL XINT1(*), XINT2(*)
+      REAL XINT1(*), XINT2(*)
       REAL X1IA(*), X2GDIA(*), X2DGIA(*), X1IJ(*), X2IJ(*)
       REAL WORK(LWORK)
       REAL FAC
@@ -601,7 +609,8 @@ c /* deck cc_iabj0 */
 * For IOPT=2 transform beta index to j using XLAMDH1
 *     -- store (i j|gam del) in X1IJ
 *----------------------------------------------------------------------*
-      IF ( IOPT.EQ.2 ) THEN
+CCN   added iopt.eq.3 (30.05.2006)
+      IF ( IOPT.EQ.2 .OR. IOPT.EQ.3 ) THEN
 
         KOFF2 = KHALF1
 
@@ -878,7 +887,7 @@ c /* deck cc_iabj0 */
 c /* deck cc_iajb1 */
 *=====================================================================*
       SUBROUTINE CC_IAJB1(IGAM, XIAG, ISYMAI, ISYGAM, 
-     &                    XLAMDA, ISYLAM, XIABJ  )
+     &                    XLAMDA, ISYLAM, XIABJ, LAUXG, IBASX  )
 *---------------------------------------------------------------------*
 *
 *   Purpose: transform (ia|gam del) to (ia|j del)
@@ -900,11 +909,14 @@ c /* deck cc_iajb1 */
       DOUBLE PRECISION XIAG(*), XIABJ(*), XLAMDA(*)
 #endif
 
-      INTEGER IGAM, ISYMAI, ISYGAM, ISYLAM, ISYMJ, KLAMD, KOFF0
+      LOGICAL LAUXG
+      INTEGER IGAM, ISYMAI, ISYGAM, ISYLAM, ISYMJ, KLAMD, KOFF0,
+     &        IBASX(*)
 
 * transform integral batch:
       ISYMJ  = MULD2H(ISYGAM,ISYLAM)
       G      = IGAM - IBAS(ISYGAM)
+      IF (LAUXG) G = G - IBASX(ISYGAM)
 
       DO J = 1, NRHF(ISYMJ)
 
@@ -924,7 +936,7 @@ c /* deck cc_iajb1 */
 c /* deck cc_ijba1 */
 *=====================================================================*
       SUBROUTINE CC_IJBA1(IGAM, XIJG, ISYMIJ, ISYGAM, 
-     &                    XLAMDA, ISYLAM, XIJBA  )
+     &                    XLAMDA, ISYLAM, XIJBA, LAUXG, IBASX  )
 *---------------------------------------------------------------------*
 *
 *   Purpose: transform (ij|gam del) to (ij|a del)
@@ -946,12 +958,14 @@ c /* deck cc_ijba1 */
       DOUBLE PRECISION XIJG(*), XIJBA(*), XLAMDA(*)
 #endif
 
+      LOGICAL LAUXG
       INTEGER IGAM, ISYMIJ, ISYGAM, ISYLAM, ISYMA, KLAMD, KOFF0
-      INTEGER ISYMAI, ISYMI, ISYMJ, KOFF5, NVIRA
+      INTEGER ISYMAI, ISYMI, ISYMJ, KOFF5, NVIRA, IBASX(*)
 
 * transform integral batch:
       ISYMA  = MULD2H(ISYGAM,ISYLAM)
       G      = IGAM - IBAS(ISYGAM)
+      IF (LAUXG) G = G - IBASX(ISYGAM)
       NVIRA  = MAX(NVIR(ISYMA),1)
 
       DO A = 1, NVIR(ISYMA)

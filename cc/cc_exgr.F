@@ -50,12 +50,14 @@ C     quadrupole moment, electric field gradients,
 C     relativistic corrections, electronic moments.
 C
 C     Written by Ove Christiansen April 1997.
-C     Restructured for incorporating CC3 by Christof Haettig, 2003.
+C
 C---------------------------------------------------------------------
-      IMPLICIT NONE
+C
+#include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 #include <mxcent.h>
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 #include <codata.h>
 #include <dummy.h>
 #include <iratdef.h>
@@ -77,35 +79,25 @@ C---------------------------------------------------------------------
 #include <dipole.h>
 #include <quadru.h>
 #include <nqcc.h>
-#include <ccnoddy.h>
-
-      INTEGER IZERO, LWORK
-
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
-      REAL ZERO, ONE, TWO, XD, XN, EXC, FF, DUM, DDOT
-      REAL DARW, VELO, PROP
-#else
-      DOUBLE PRECISION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
-      DOUBLE PRECISION ZERO, ONE, TWO, XD, XN, EXC, FF, DUM, DDOT
-      DOUBLE PRECISION DARW, VELO, PROP
-#endif
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-
-      CHARACTER MODEL*10, MODDUM*10
-      CHARACTER MODELPRI*4, MODELPRI2*30
-      CHARACTER LABEL*8
-      CHARACTER LABR12*3
-
-      CHARACTER*(8) FNE0DIA, FNE0DIA2, FNE0DAB, FNE0DIJ
-      PARAMETER (FNE0DIA='CC_E0DIA',FNE0DIA2='CCE0DIA2',
-     &           FNE0DAB='CC_E0DAB',FNE0DIJ ='CC_E0DIJ')
-
-      INTEGER IX, IEX, ISYMX, KDENS, KWRK2, LWRK2, IXNR, ILLNR, KDENS2,
-     &        KWRK3, LWRK3, ILRNR, IASGER, IDIP, KONEP, KWRK4, LWRK4,
-     &        ISY, IOPT, IJ, LENGTH, KDIAG, KAXIS, ICCPRI, IRC, IOP
 C
-C#include <leinf.h>
+      LOGICAL LINQCC, LPROJECT, TRIPLET, LREDS,B0SKIP
+      DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
+      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM,FS2AM
+      CHARACTER*3 APROXR12
+      PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM')
+      PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2')
+      PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
+      PARAMETER (FS2AM ='CCR_S2DM')
+      CHARACTER MODEL*10
+      CHARACTER MODELPRI*4, MODELPRI2*30
+      CHARACTER LABEL*8, LABR12*4
+      CHARACTER*2 LIST
+      CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
+      CHARACTER*6 FNDPTIA2
+      PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
+     *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
+C
+#include <leinf.h>
 C
       CALL QENTER('CC_EXGR')
 C
@@ -115,6 +107,23 @@ C------------------------------------
 C
 C     CALL TIMER('START ',TIMEIN,TIMOUT)
 C
+      LUFC1  = -1
+      LUFC2  = -1
+      LUFC12 = -1
+      LUFR1  = -1
+      LUFR2  = -1
+      LUFR12 = -1
+      LUFS12 = -1
+      LUFS2  = -1
+
+      IF (CCR12) THEN
+         LABR12 = '-R12'
+      ELSE
+         LABR12 = '    '
+      END IF
+C
+      IF (CCR12) CALL QUIT('R12 not yet implemented in CC_EXGR.')
+C      
       WRITE (LUPRI,'(1X,A,/)') '  '
       WRITE (LUPRI,'(1X,A)')
      *'*********************************************************'//
@@ -140,172 +149,437 @@ C
      *'*********************************************************'//
      *'**********'
 C
-      LABR12 = ' '
-      IF (CCR12) LABR12 = '-R12'
-C
-      MODEL = 'CCSD'
+      MODEL = 'CCSD      '
       IF (CC2) THEN
          CALL AROUND('Coupled Cluster model is: CC2'//LABR12)
-         MODEL = 'CC2'
+         MODEL = 'CC2       '
          MODELPRI = ' CC2'
       ENDIF
       IF (CCS.AND.(.NOT.CIS)) THEN
          CALL AROUND('Coupled Cluster model is: CCS')
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
          MODELPRI = ' CCS'
       ENDIF
       IF (CCS.AND.CIS) THEN
          CALL AROUND('Model is not CC but CIS crap.')
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
          MODELPRI = ' CIS'
       ENDIF
       IF (CCD) THEN
          CALL AROUND('Coupled Cluster model is: CCD'//LABR12)
-         MODEL = 'CCD'
+         MODEL = 'CCD       '
          MODELPRI = ' CCD'
       ENDIF
       IF (CC3  ) THEN
          CALL AROUND('Coupled Cluster model is: CC3'//LABR12)
-         MODEL = 'CC3'
+         MODEL = 'CC3       '
          MODELPRI = ' CC3'
+         WRITE(LUPRI,*)
+     *    'CC3 X-state first order properties not implemented'
+         RETURN
       ENDIF
       IF (CC1A) THEN
          CALL AROUND('Coupled Cluster model is: CCSDT-1a'//LABR12)
-         MODEL = 'CCSDT-1a'
-         WRITE(LUPRI,*) 
+         MODEL = 'CCSDT-1a  '
+         WRITE(LUPRI,*)
      *    'CCSDT-1a X-state first order properties not implemented'
-         CALL QEXIT('CC_EXGR')
          RETURN
       ENDIF
       IF (CC1B) THEN
          CALL AROUND('Coupled Cluster model is: CCSDT-1b'//LABR12)
-         MODEL = 'CCSDT-1b'
-         WRITE(LUPRI,*) 
+         MODEL = 'CCSDT-1b  '
+         WRITE(LUPRI,*)
      *    'CCSDT-1b X-state first order properties not implemented'
-         CALL QEXIT('CC_EXGR')
          RETURN
       ENDIF
       IF (CCSD) THEN
          CALL AROUND('Coupled Cluster model is: CCSD'//LABR12)
-         MODEL = 'CCSD'
+         MODEL = 'CCSD      '
          MODELPRI = 'CCSD'
       ENDIF
-      MODDUM=MODEL
+C
+      NSIDIN = NSIDE
+C
+      LREDS = CCR12
 C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CC_EXGR-1: Workspace:',LWORK
-
-*----------------------------------------------------------------------*
-* Loop over (selected) excited states:
-*----------------------------------------------------------------------*
+C
+C-----------------------------
+C     Initialize Variables.
+C-----------------------------
+C
+      ISYM = ISYMOP
+      ISYMTR = ISYMOP
+      IF (CCS) THEN
+        NCCVAR = NT1AM(ISYM)
+      ELSE      
+        NCCVAR = NT1AM(ISYM) + NT2AM(ISYM)
+        IF (CCR12) NCCVAR = NCCVAR + NTR12AM(ISYM)
+      END IF
+      TRIPLET = .FALSE.
+      CALL CCLR_LEINFI(TRIPLET)
+      THRLE = THRLEQ
+      LINQCC = .TRUE.
+      NLOAD  = 1
+      ISIDE  = -1
+      LIST  = 'E0'
+      IF (NCCVAR .LE. 0) THEN
+         WRITE(LUPRI,*) 'There are no amplitudes of this symmetry'
+         CALL QUIT('There are no amplitudes of this symmetry')
+      ENDIF
+C
+C-------------------------------------------
+C     For CIS jump solution for multipliers.
+C-------------------------------------------
+C
+      IF (CCS.AND.CIS) GOTO 47
+C
+C-----------------------------------------------
+C     Calculate appropriate F/B-transformations.
+C-----------------------------------------------
+C
+c     IF ((.NOT.E0SKIP).AND.(.NOT.B0SKIP)) THEN
+c hjaaj jan-07: B0SKIP is not defined
+      IF (.NOT.E0SKIP) THEN
+         CALL CC_FRE(WORK,LWORK)
+      ENDIF
+C
+C-----------------------------------------------------------------
+C     Start loop over lists over right hand lists to be solved.
+C     Find out how many from common block info.
+C-----------------------------------------------------------------
+C
+      IBOFF = 0
+      IBEND = NXGRST
+      NEQSYM  = IBEND - IBOFF
+      IF (E0SKIP) THEN
+         NEQSYM = 0
+         WRITE(LUPRI,*) 'Skipping solving for excited state t(0)'
+      ENDIF
+C
+C------------------------------------------------------------------
+C     Make bathching over nr. of simulatneous vectors to be solved.
+C     Find out how many simultaneously;
+C     all or take the number from input.
+C------------------------------------------------------------------
+C
+      IF (NEQSYM .EQ. 0 ) THEN
+         NSIM = 0
+         NBAT = 0
+      ELSE
+         IF ( NSIMLE .EQ. 0 ) THEN
+            NSIM  = NEQSYM
+         ELSE
+            NSIM  = NSIMLE
+         ENDIF
+         NBAT  = (NEQSYM-1)/NSIM + 1
+      ENDIF
+C
+      IF (DEBUG ) THEN
+         WRITE(LUPRI,*) '         '
+         WRITE(LUPRI,*) 'CC_EXGR      NEQSYM = ',NEQSYM
+         WRITE(LUPRI,*) 'CC_EXGR      IBOFF  = ',IBOFF
+         WRITE(LUPRI,*) 'CC_EXGR      IBEND  = ',IBEND
+         WRITE(LUPRI,*) 'CC_EXGR      NSIM   = ',NSIM
+         WRITE(LUPRI,*) 'CC_EXGR      NBAT   = ',NBAT
+      ENDIF
+C
+      DO 2000 IRB = 1, NBAT
+C
+C-------------------------------------------------
+C        Find start number for this batch on list.
+C        and the number of equations.
+C-------------------------------------------------
+C
+         IRST  = IBOFF + (IRB-1)*NSIM + 1
+         NSIMR = MIN(NSIM,NEQSYM - (IRB-1)*NSIM)
+         IREND = IRST  + NSIMR - 1
+C
+         IF (DEBUG ) THEN
+            WRITE(LUPRI,*) 'CC_EXGR      IRST   = ',IRST
+            WRITE(LUPRI,*) 'CC_EXGR      IREND  = ',IREND
+            WRITE(LUPRI,*) 'CC_EXGR      NSIMR  = ',NSIMR
+         ENDIF
+C
+         IF (IPRINT .GT. 2) THEN
+            WRITE(LUPRI,'(/,1x,A,I2,A)')
+     *        'Solving ',NSIMR,' response equations for states;'
+            DO 2005 IR = IRST,IREND
+                 IEX = IXGRST(IR)
+                 WRITE(LUPRI,'(1X,A,F10.6,A,I3,A,I3)')
+     *             'Energy:',EIGVAL(IEX),
+     *           ' and nr.: ',IEX-ISYOFE(ISYEXC(IEX)),' of symmetry: ',
+     *           ISYEXC(IEX)
+ 2005       CONTINUE
+         ENDIF
+C
+         IF (IPRINT.GT.10)
+     *         WRITE(LUPRI,*) 'CC_EXGR      Workspace:',LWORK
+C
+         CALL FLSHFO(LUPRI)
+C
+C---------------------------------
+C        Allocation of work space.
+C---------------------------------
+C
+         KIPLAC = 1
+         KREDH  = KIPLAC + MAXRED
+         KREDGD = KREDH  + MAXRED*MAXRED
+         KEIVAL = KREDGD + MAXRED
+         KSOLEQ = KEIVAL + MAXRED
+         KWRK1  = KSOLEQ + MAXRED*MAXRED
+         IF (LREDS) THEN
+           KREDS = KWRK1
+           KWRK1 = KREDS + MAXRED*MAXRED
+         END IF
+         LWRK1  = LWORK  - KWRK1
+C
+         IF (LWRK1.LT. 0 )
+     *         CALL QUIT(' TOO LITTLE WORKSPACE IN CC_RSPSOL')
+C
+C-------------------------
+C        Zero frequencies.
+C-------------------------
+C
+         CALL DZERO(WORK(KEIVAL),MAXRED)
+C
+C-------------------
+C        Open files.
+C-------------------
+C
+         CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12,FS2AM,LUFS2)
+C
+C-----------------------------
+C        Create start vectors.
+C-----------------------------
+C
+         TRIPLET  = .FALSE.
+         LPROJECT = .FALSE.
+         CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
+     *                 TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                 NREDH,WORK(KEIVAL),WORK(KIPLAC),
+     *                 WORK(KWRK1),LWRK1,LIST)
+C
+C------------------------------------------
+C        Solve equations by call to solver.
+C------------------------------------------
+C
+         write(LUPRI,*) 'exgr, irst:',irst
+         ECURR = 0.0D0
+         CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
+     *                 FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2,
+     *                 LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                 NREDH,WORK(KREDH),WORK(KEIVAL),
+     *                 WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
+C
+C----------------------------------
+C        Analysis of solution vectors.
+C----------------------------------
+C
+         NVARPT= LETOT + 2*NALLAI(ISYM)
+         KWRK2 = KWRK1 + NVARPT
+         LWRK2 = LWORK - KWRK2
+C
+         THRESH = 0.05
+         MAXLIN = 100
+         NSIMUL = MIN(NSIM,LWRK2/LETOT )
+         NBATCH = (NSIM-1)/NSIMUL + 1
+         IOFF1  = 1
+         ICOUNT = 0
+         ILSTNR = IRST
+C
+         DO 500 I = 1,NBATCH
+            IOFF2 = MIN(NSIMUL,NSIM - (I-1)*NSIMUL)
+            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
+     *                  TRIPLET,CCR12,NREDH,IOFF1,IOFF2,WORK(KSOLEQ),
+     *                  WORK(KWRK2),WORK(KWRK1))
+C
+            IF ( IPRINT .GT. 10 ) THEN
+               RHO1N = DDOT(NT1AM(ISYM),WORK(KWRK2),1,WORK(KWRK2),1)
+               RHO2N = DDOT(NT2AM(ISYM),WORK(KWRK2+NT1AMX),1,
+     *                      WORK(KWRK2+NT1AMX),1)
+               WRITE(LUPRI,*) 'Norm of Lambda vector :',RHO1N
+               WRITE(LUPRI,*) 'Norm of Lambda vector :',RHO2N
+            ENDIF
+C
+            IF ( IPRINT .GT. 30 ) THEN
+               CALL AROUND('CC_EXGR: E0 vector in mo basis' )
+               CALL OUTPUT(WORK(KWRK2),1,LETOT,1,NSIM,
+     *                     LETOT,NSIM,1,LUPRI)
+            ENDIF
+C
+            DO 510 J = 1,IOFF2
+               ICOUNT = ICOUNT + 1
+               IF (IPRINT .GT. 1) THEN
+                 WRITE(LUPRI,'(//1X,A)')
+     *'Analysis of the X-st 0-th order Lagrangian multipliers: '
+         WRITE(LUPRI,'(1X,A)')
+     *'--------------------------------------------------------'
+                 CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*LETOT),
+     *                        PT1LOCAL,ISYM,.FALSE.)
+               ENDIF
+               IF (CCSTST) THEN
+                  CALL DZERO(WORK(KWRK2+(ICOUNT-1)*LETOT+
+     *                       NT1AM(ISYM)),NT2AMX)
+               ENDIF
+C
+C-----------------------------------------
+C              Save response vectors on file.
+C-----------------------------------------
+C
+               KT1    = KWRK2 + (ICOUNT-1)*LETOT
+               KT2    = KWRK2 + (ICOUNT-1)*LETOT + NT1AM(ISYM)
+               IOPT   = 3
+               CALL CC_WRRSP('E0',ILSTNR,ISYM,IOPT,MODEL,DUMMY,
+     *                        WORK(KT1),WORK(KT2),WORK(KWRK1),NVARPT)
+               ILSTNR = ILSTNR + 1
+C
+  510       CONTINUE
+            IOFF1 = IOFF1 + NSIMUL
+  500    CONTINUE
+C
+C-------------------------------
+C        Close and delete files.
+C-------------------------------
+C
+         CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12,FS2AM,LUFS2)
+         CALL FLSHFO(LUPRI)
+C
+ 2000 CONTINUE
+C
+C--------------------------------
+C     Spaghetti goto end for CIS.
+C--------------------------------
+C
+  47  CONTINUE
+C
+C-----------------------------------------------------------------------
+C     Calculate one electron AO-density and thereby CC nat.occ.num.
+C-----------------------------------------------------------------------
+C
       DO 3000 IX = 1, NXGRST
+C
          IEX   = IXGRST(IX)
          ISYMX = ISYEXC(IEX)
          IXNR  = IEX - ISYOFE(ISYMX)
          WRITE(LUPRI,*) 'Total, actual nr.,loop index',NXGRST,IEX,IX
          WRITE(LUPRI,*) 'Sym, reduced nr.',ISYMX,IXNR
-
-*======================================================================*
-* Section 1: compute the excited state 1e^- AO density matrix
-*======================================================================*
-         KDENS = 1    
-         KWRK2 = KDENS  + N2BST(ISYMOP)
-         LWRK2 = LWORK  - KWRK2
-
-         IF (LWRK2 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK2
-            CALL QUIT('Insufficient memory for one '//
-     &           'e-density in CC_EXGR')
+         IF (.NOT.CCS) THEN
+            KDENS = 1    
+            KWRK2 = KDENS  + N2BST(ISYMOP)
+            LWRK2 = LWORK  - KWRK2
+C
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK2
+               CALL QUIT('Insufficient memory for one '//
+     &              'e-density in CC_EXGR')
+            ENDIF
+C
+            ILLNR = IX
+C
+Casm        ifort does not like LIST. Use 'E0' instead.
+C
+            CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
+     &                   LWRK2,MODEL,'E0',ILLNR,.FALSE.,
+     &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
+casm        CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
+casm &                   LWRK2,MODEL,LIST,ILLNR,.FALSE.,
+casm &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
+            IF (FROIMP .OR. FROEXP) THEN
+              CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK2),LWRK2,MODELPRI)
+            ENDIF
+C
+            IF (DEBUG) THEN
+               XD = DDOT(N2BST(ISYMOP),WORK(KDENS),1,WORK(KDENS),1)
+               WRITE(LUPRI,*) 'Norm of dens-1: ',XD
+            ENDIF
+C
+            KDENS2 = KWRK2
+            KWRK3  = KDENS2 + N2BST(ISYMOP)
+            LWRK3  = LWORK - KWRK3
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK2
+               CALL QUIT('Insufficient memory for one '//
+     &              'e-density in CC_EXGR')
+            ENDIF
+            CALL DZERO(WORK(KDENS2),N2BST(ISYMOP))
+            ILLNR = IEX
+            ILRNR = ILLNR
+            CALL CCX_D1AO(WORK(KDENS2),WORK(KWRK3),LWRK3,MODELPRI,
+     *                   'LE',ILLNR,'RE',ILRNR)
+            CALL DAXPY(N2BST(ISYMOP),ONE,WORK(KDENS2),1,WORK(KDENS),1)
+C
+            IF (DEBUG) THEN
+               XD = DDOT(N2BST(ISYMOP),WORK(KDENS),1,WORK(KDENS),1)
+               WRITE(LUPRI,*) 'Norm of dens-2: ',XD
+            ENDIF
+C
+            IF (IPRINT .GT. 50) THEN
+               CALL AROUND('One electron unrelaxed density in cc_exgr')
+               CALL CC_PRFCKAO(WORK(KDENS),1)
+            ENDIF
+C
+            CALL FLSHFO(LUPRI)
          ENDIF
-
-*----------------------------------------------------------------------*
-* Calculate contribution from <HF + Tbar^f|E_pq|CC>:
-* (this is done using the ground state routines, but interchanging
-*  Tbar^0 ("L0 ") by Tbar^f ("E0 "). Note that for CCS here only the
-*  ground state SCF density is calculated, for the contribution of
-*  Tbar^f see below)  
-*----------------------------------------------------------------------*
+C
+C------------------------------------------------------------------------
+C        Calculate the simple one electron AO-density in CCS calculation.
+C------------------------------------------------------------------------
+C
          IF (CCS) THEN
-           CALL CCS_D1AO(WORK(KDENS),WORK(KWRK2),LWRK2)
+C
+            KDENS = 1
+            KWRK3 = KDENS + N2BST(ISYMOP)
+            LWRK3 = LWORK - KWRK3
+C
+            KDENS2= KWRK3 
+            KWRK4 = KDENS2+ N2BST(ISYMOP)
+            LWRK4 = LWORK - KWRK3
+C
+            IF (LWRK4 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK4
+               CALL QUIT('Insufficient memory for CCS '//
+     &              'AO-density in CC_EXGR')
+            ENDIF
+C
+C------------------------------------------
+C           Usual <HF|Emn|HF> contribution. 
+C------------------------------------------
+C
+            CALL CCS_D1AO(WORK(KDENS),WORK(KWRK3),LWRK3)
+            IF (FROIMP .OR. FROEXP) THEN
+              CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK3),LWRK3,MODELPRI)
+            ENDIF
+            XN = DDOT(N2BST(ISYMOP),WORK(KDENS),1,WORK(KDENS),1)
+            WRITE(LUPRI,*) 'Norm of AO density-1' ,XN
+C
+C------------------------------------------------
+C           <LE1|[Emn,RE1]|HF> contribution. 
+C           For CCS but not CIS also; <L1|Emn|HF> 
+C------------------------------------------------
+C
+            ILLNR = IEX
+            ILRNR = ILLNR
+            CALL CCSX_D1AO(WORK(KDENS2),WORK(KWRK4),LWRK4,
+     *                    'LE',ILLNR,'RE',ILRNR,'E0',IX)
+            XN = DDOT(N2BST(ISYMOP),WORK(KDENS2),1,WORK(KDENS2),1)
+            WRITE(LUPRI,*) 'Norm of AO density2' ,XN
+            CALL DAXPY(N2BST(ISYMOP),ONE,WORK(KDENS2),1,WORK(KDENS),1)
          ELSE
-           ILLNR = IX
-
-           IF (CC3) THEN
-             ! calculate CC3 contributions in MO basis and pass them 
-             ! on the direct access files FNE0D* to CC_D1AO
-             IF (NODDY_DEN) THEN
-               CALL CCSDT_XI_CONT_NODDY('E0 ',DUMMY,ILLNR,1,
-     &                                  IDUMMY,IDUMMY,0,0,
-     &                                  .TRUE.,FNE0DIA,FNE0DIA2,
-     &                                   FNE0DAB,FNE0DIJ,
-     &                                  WORK(KWRK2),LWRK2) 
-             ELSE
-
-               CALL QUIT('CC_EXGR> Real code for CC3 Xi den. missing!')
-     
-             END IF
-           END IF
-
-           CALL CC_D1AO(WORK(KDENS),DUM,WORK(KWRK2),LWRK2,MODDUM,
-     *                  'E0 ',ILLNR,.FALSE.,
-     &                  FNE0DIA,FNE0DIA2,FNE0DAB,FNE0DIJ)
-         END IF
-
-         IF (FROIMP .OR. FROEXP) THEN
-           CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK2),LWRK2,MODDUM)
+            KWRK3 = KWRK2
+            LWRK3 = LWRK2
          ENDIF
-
-         IF (DEBUG) THEN
-            XD = DDOT(N2BST(ISYMOP),WORK(KDENS),1,WORK(KDENS),1)
-            WRITE(LUPRI,*) 'Norm of dens-1: ',XD
-         ENDIF
-
-*----------------------------------------------------------------------*
-* Calculate contribution from <Ebar^f|[E_pq,E^f]|CC>, where Ebar^f
-* and E^f are the left and right eigenvectors (on lists "LE " and "RE ")
-* Note that for CCS the contribution from <Tbar^f|E_pq|CC> is included
-* here
-*----------------------------------------------------------------------*
-         KDENS2 = KWRK2
-         KWRK3  = KDENS2 + N2BST(ISYMOP)
-         LWRK3  = LWORK - KWRK3
-         IF (LWRK2 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK2
-            CALL QUIT('Insufficient memory for one '//
-     &           'e-density in CC_EXGR')
-         ENDIF
-
-         CALL DZERO(WORK(KDENS2),N2BST(ISYMOP))
-         ILLNR = IEX
-         ILRNR = ILLNR
-
-         IF (CCS) THEN
-           CALL CCSX_D1AO(WORK(KDENS2),WORK(KWRK3),LWRK3,
-     *                   'LE ',ILLNR,'RE ',ILRNR,'E0 ',IX)
-         ELSE
-           CALL CCX_D1AO(WORK(KDENS2),WORK(KWRK3),LWRK3,MODDUM,
-     *                  'LE ',ILLNR,'RE ',ILRNR)
-         END IF
-         CALL DAXPY(N2BST(ISYMOP),ONE,WORK(KDENS2),1,WORK(KDENS),1)
-
-         IF (DEBUG) THEN
-            XD = DDOT(N2BST(ISYMOP),WORK(KDENS),1,WORK(KDENS),1)
-            WRITE(LUPRI,*) 'Norm of dens-2: ',XD
-         ENDIF
-
-         IF (IPRINT .GT. 50) THEN
-            CALL AROUND('One electron unrelaxed density in cc_exgr')
-            CALL CC_PRFCKAO(WORK(KDENS),1)
-         ENDIF
-
-         KWRK3 = KWRK2
-         LWRK3 = LWRK2
-
-*======================================================================*
-* Section 2: evaluate different properties and print:
-*======================================================================*
+C
          MODELPRI2 = 'Unrelaxed excited state '//MODELPRI
          CALL AROUND(MODELPRI2//' First-order properties: ')
-
+C
          ISYMX = ISYEXC(IEX)
          IXNR  = IEX - ISYOFE(ISYMX)
          EXC = EIGVAL(IEX) 
@@ -314,7 +588,6 @@ C
      *    'Excited state nr.:           ',IXNR,
      *    'Excited state sym:           ',ISYMX,
      *    'Excitation energy (au.,eV):  ',EXC,EXC*XTEV
-         CALL FLSHFO(LUPRI)
 C
 C=======================================
 C     Calculate molecular dipole moment.
@@ -328,7 +601,7 @@ C-------------------------------------------
 C        Calculate the nuclear contribution.
 C-------------------------------------------
 C
-         IASGER = IPRINT - 5
+         IASGER = IPRINT - 9
          CALL DIPNUC(WORK(KWRK3),WORK(KWRK3),IASGER,.FALSE.)
 C
          DO 100 IDIP = 1,3
@@ -377,8 +650,8 @@ C--------------------------------
 C           Store on prpc list.
 C--------------------------------
 C
-            CALL CC_PRPC(DIPMN(IDIP),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
-     *                   EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+            CALL WRIPRO(DIPMN(IDIP),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                  EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 C
   100    CONTINUE
 C
@@ -551,8 +824,8 @@ C--------------------------------
 C           Store on prpc list.
 C--------------------------------
 C
-            CALL CC_PRPC(ELSEMO(I,J),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
-     *                   EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+            CALL WRIPRO(ELSEMO(I,J),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                  EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 C
   125       CONTINUE
   115    CONTINUE
@@ -734,8 +1007,8 @@ C        Calculate the electronic contribution to the given property.
 C--------------------------------------------------------------------
 C
          PROP = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
-         CALL CC_PRPC(PROP,MODEL,-11,LABEL,LABEL,LABEL,LABEL,
-     *                EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+         CALL WRIPRO(PROP,MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *               EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 
 C
 C----------------------
@@ -759,7 +1032,14 @@ C------------------------------------------------------------------------
 C
  3000 CONTINUE
 C
+C------------------------------------
+C     Restore NSIDE to input/default.
+C------------------------------------
+C
+      IF (.NOT. CCS) NSIDE = NSIDIN
+C
       CALL QEXIT('CC_EXGR')
+C
       RETURN
       END
 C  /* Deck ccx_d1ao */
@@ -767,6 +1047,8 @@ C  /* Deck ccx_d1ao */
      *                    LLIST,ILLNR,RLIST,ILRNR)
 C
 C     Ove Christiansen April 1997 inspired by CC_D1AO
+C     KS Aug 2010: minor modifications to share routines
+C     with CCMM_D2AO
 C
 C     Purpose: To calculate contributions to the excited state
 C              one electron density matrix and return it backtransformed
@@ -796,21 +1078,7 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <cclr.h>
-#include <ccnoddy.h>
 C
-      CHARACTER*8 FNTOC
-      CHARACTER*4 FNDKBC
-      CHARACTER*5 FNDKBC3
-      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOPX
-      CHARACTER*7 FN3FOP2X
- 
-      PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
-      PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
-      PARAMETER (FN3VI   = 'CC3_VI'  )
-      PARAMETER (FN3FOPX = 'PTFOPX'  , FN3FOP2X= 'PTFOP2X' )
-      PARAMETER (FNDKBC3 = 'DKBC3'   )                      
-C
-      PARAMETER ( ISYM0 = 1 )
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
 C
@@ -930,7 +1198,7 @@ C
       LWRK2  = LWORK  - KEND1
 C
       IF (LWRK2 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND2
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
          CALL QUIT('Insufficient memory for 2. alloc. in CCX_D1AO')
       ENDIF
 C
@@ -962,6 +1230,7 @@ C--------------------------------------------------------------
 C     Construct <L1|[Emn,R1]|HF> contribution to DXaa and DXii.
 C--------------------------------------------------------------
 C
+c test
       CALL CC_DXIJ(WORK(KONEIJ),WORK(KL1AM),ISYML,WORK(KR1AM),ISYMR)
       CALL CC_DXAB(WORK(KONEAB),WORK(KL1AM),ISYML,WORK(KR1AM),ISYMR)
 C
@@ -978,6 +1247,10 @@ C
       KT2AM  = KEND0
       KEND3  = KT2AM  + NT2AM(ISYMOP) 
       LWRK3  = LWORK  - KEND3 
+
+C KS: Read amplitudes outside DXIA21 routine
+      IOPT = 2
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
 C
       IF (LWRK3 .LT. 0) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND3
@@ -1011,107 +1284,11 @@ C
       KEND4  = KLAMDH + NLAMDT
       LWRK4  = LWORK  - KEND4 
       IF (LWRK4 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND4
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
          CALL QUIT('Insufficient memory for 4. alloc. in CCX_D1AO')
       ENDIF
       CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),WORK(KEND4),
      *            LWRK4)
-
-*======================================================================*
-*     Get the triples contributions and add them:
-*======================================================================*
- 
-      IF (CCSDT) THEN
-
-        KFOCK0 = KEND4
-        KEND5  = KFOCK0 + N2BST(ISYM0)
-
-        KDAB   = KEND5
-        KDIJ   = KDAB   + NMATAB(ISYM0)
-        KDIA   = KDIJ   + NMATIJ(ISYM0)
-        KEND5  = KDIA   + NT1AM(ISYM0)  
-
-C       --------------------------------
-C       Get SCF Fock matrix in MO basis:
-C       --------------------------------
-        LWRK5  = LWORK  - KEND5 
-        IF (LWRK5 .LT. 0) THEN
-          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND5
-          CALL QUIT('Insufficient memory for 5. alloc. in CCX_D1AO')
-        ENDIF
-
-        ! read zeroth-order AO Fock matrix from file:
-        LUFOCK = 0
-        CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
-     &              .FALSE.)
-        REWIND(LUFOCK)
-        READ(LUFOCK) (WORK(KFOCK0-1+I),I=1,N2BST(ISYM0))
-        CALL GPCLOSE(LUFOCK,'KEEP')
- 
-        CALL CC_FCKMO(WORK(KFOCK0),WORK(KLAMDP),WORK(KLAMDH),
-     &                WORK(KEND5),LWRK5,1,1,1) 
-
-C       -------------------------
-C       Open some integral files:
-C       -------------------------
-        LUDELD  = 0
-        LUCKJD  = 0
-        LUDKBC  = 0
-        LUTOC   = 0
-        LU3VI   = 0
-        LUDKBC3 = 0
-        LU3FOPX = 0
-        LU3FOP2X= 0
-   
-        CALL WOPEN2(LUDELD,FNDELD,64,0)
-        CALL WOPEN2(LUCKJD,FNCKJD,64,0)
-        CALL WOPEN2(LUDKBC,FNDKBC,64,0)
-        CALL WOPEN2(LUTOC,FNTOC,64,0)
-        CALL WOPEN2(LU3VI,FN3VI,64,0)
-        CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
-        CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
-        CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
-
-C       ----------------------------------------------------------
-C       Get the triples contributions:
-C       ----------------------------------------------------------
-        IF (NODDY_DEN) THEN
-
-          CALL CCSDT_ADEN_NODDY(LLIST,ILLNR,RLIST,ILRNR,
-     *                    WORK(KLAMDP),WORK(KLAMDH),WORK(KFOCK0),
-     *                    WORK(KDIJ),WORK(KDAB),.TRUE.,WORK(KDIA),
-     *                    .FALSE.,DUMMY,WORK(KEND5),LWRK5,
-     *                    LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
-     *                    FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
-     *                    LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
-     *                    LU3FOP2X,FN3FOP2X)
-
-        ELSE
-
-          CALL QUIT('call to CC3_ADEN(?) missing in CCX_D1AO.')
-
-        END IF
-
-C       ---------------------------------------
-C       Add triples contributions to densities:
-C       ---------------------------------------
-        CALL DAXPY(NMATAB(ISYM0),ONE,WORK(KDAB),1,WORK(KONEAB),1)
-        CALL DAXPY(NMATIJ(ISYM0),ONE,WORK(KDIJ),1,WORK(KONEIJ),1)
-        CALL DAXPY(NT1AM(ISYM0), ONE,WORK(KDIA),1,WORK(KONEIA),1)
-
-C       ---------------------
-C       Close integral files:
-C       ---------------------
-        CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
-        CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
-        CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
-        CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
-        CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
-        CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
-        CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
-        CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')  
-
-      END IF
 C
 C--------------------------------------------------------
 C     Add the one electron density in the AO-basis.
@@ -1289,6 +1466,8 @@ C
 C     Purpose: Construct <L2|[[Eia,R1],T2]|HF> contribution to DXia, 
 C              the excited state CC one electron density in MO-basis.
 C              The Dia block is stored transposed, i.e. like a t1-amplitude.
+C     KS, Aug 10:
+C     Modified to calculate general <L2|[[Eia,R1],R2]|HF>
 C
 C
 #include <implicit.h>
@@ -1300,6 +1479,8 @@ C
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL2AM(*), XR1AM(*), T2AM(*),WORK(LWORK)
       CHARACTER*10 MODEL
+      LOGICAL LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
 C
       CALL QENTER('CC_DXIA21')
 C
@@ -1313,12 +1494,23 @@ C
       IF (ISYRES .NE. ISYMT2)
      &     CALL QUIT('symmetry mismatch in CC_DXIA21.')
 C
+      IF (LOCDEB) THEN
+        TAL1 = DDOT(NT2AMX,XL2AM,1,XL2AM,1)
+        WRITE(LUPRI,*) 'CC_EXGR: Norm of L0_2: ', TAL1 
+        TAL1 = DDOT(NT1AMX,XR1AM,1,XR1AM,1)
+        WRITE(LUPRI,*) 'CC_EXGR: Norm of B_1: ', TAL1 
+        TAL1 = DDOT(NT2AMX,T2AM,1,T2AM,1)
+        WRITE(LUPRI,*) 'CC_EXGR: Norm of C_2: ', TAL1 
+      END IF
+C KS schedule delete next 6 lines
+C since they are now read outside routine and carried
+C in memory at this time
 C---------------------------------------------------
 C     Read zero'th order cluster doubles amplitudes.
 C---------------------------------------------------
 C
-      IOPT = 2
-      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,T2AM)
+C      IOPT = 2
+C      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,T2AM)
 C
 C----------------------------------------------------------
 C     Construct <L2|[[Eia,R1],T2]|HF> contribution to DXia.
@@ -1340,12 +1532,8 @@ C-----------------------------------------------------------
 C     Calculate X-intermediate of L2AM- and T2AM-amplitudes.
 C-----------------------------------------------------------
 C
-         XLV2 = DDOT(NT2AM(ISYMT2),T2AM,1,T2AM,1)
-         WRITE(LUPRI,*) 'Norm of Response vector: T2AM   .',XLV2
          CALL CC_XI(WORK(KXMAT),XL2AM,ISYML,T2AM,ISYMT2,
      *           WORK(KEND1),LWRK1)
-         XIJ = DDOT(NMATIJ(ISYML),WORK(KXMAT),1,WORK(KXMAT),1)
-         WRITE(LUPRI,*) 'Norms: XMAT',XIJ
 C
 C-----------------------------------------------------------
 C     Calculate Y-intermediate of L2AM- and T2AM-amplitudes.
@@ -1353,12 +1541,16 @@ C-----------------------------------------------------------
 C
          CALL CC_YI(WORK(KYMAT),XL2AM,ISYML,T2AM,ISYMT2,
      *           WORK(KEND1),LWRK1)
+C         TAL1 = DDOT(NMATIJ(ISYML),WORK(KXMAT),1,WORK(KXMAT),1)
+C         TAL2 = DDOT(NMATAB(ISYML),WORK(KYMAT),1,WORK(KYMAT),1)
+C         WRITE(LUPRI,*) 'CC_EXGR: X intermediate: ',TAL1
+C         WRITE(LUPRI,*) 'CC_EXGR: Y intermediate: ',TAL2
 C
       CALL DZERO(WORK(KONEIJ),NMATIJ(ISYML))
       CALL DCOPY(NMATAB(ISYML),WORK(KYMAT),1,WORK(KONEAB),1)
       CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND1),LWRK1,ISYML)
       CALL DAXPY(NMATIJ(ISYML),XMONE,WORK(KXMAT),1,WORK(KONEIJ),1)
-      IF (DEBUG) THEN
+      IF (LOCDEB) THEN
          XIJ = DDOT(NMATIJ(ISYML),WORK(KONEIJ),1,WORK(KONEIJ),1)
          XAB = DDOT(NMATAB(ISYML),WORK(KONEAB),1,WORK(KONEAB),1)
          WRITE(LUPRI,*) 'Norms: DXIJ',XIJ
@@ -1607,4 +1799,53 @@ C
       CALL QEXIT('CC_TNSRAN')
 C
       END 
+C  /* Deck ccmm_dia */
+      SUBROUTINE CCMM_DIA(DIA,DIJ,ISYML,XR1AM,ISYMR)
+C
+C     Purpose: Calculates DIA block of quadratic density to be use
+C     for a quadratic response CC/MM calculation. It takes as input 
+C     a pseudo-density of product coefficients \sum_a t^a_i b_p^a = Dij
+C     calculated in the CC_DXIJ routine.
+C             
+C     KS, Aug 2010       
+C
+#include <implicit.h>
+      PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
+      DIMENSION DIA(*), DIJ(*), XR1AM(*)
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+C
+      CALL QENTER('CCMM_DIA')
+C
+C---------------------------------------------------------
+C     Add contribution.
+C     Assume ISYMR = ISYML and density is total symmetric.
+C---------------------------------------------------------
+C
+      ISYRES = MULD2H(ISYMR,ISYML)
+      IF (ISYRES.NE.ISYMOP) CALL QUIT('CCMM_DIA require tot.sym Dens.')
+C
+
+      DO 100 ISYMA = 1,NSYM
+C
+         ISYMI = MULD2H(ISYMA,ISYRES)
+         ISYMK = MULD2H(ISYMA,ISYMR)
+C
+         KOFF1 = IT1AM(ISYMA,ISYMK)  + 1
+         KOFF2 = IMATIJ(ISYMI,ISYMK) + 1
+         KOFF3 = IT1AM(ISYMA,ISYMI)  + 1
+C
+         NTOTA = MAX(NVIR(ISYMA),1)
+         NTOTI = MAX(NRHF(ISYMI),1)
+
+         CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
+     *              ONE,XR1AM(KOFF1),NTOTA,DIJ(KOFF2),NTOTI,ONE,
+     *              DIA(KOFF3),NTOTA)
+
+  100 CONTINUE
+C
+      CALL QEXIT('CCMM_DIA')
+C
+      END
 

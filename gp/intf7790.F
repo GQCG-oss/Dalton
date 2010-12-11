@@ -154,7 +154,7 @@ C
       WRITE(TMPLIN(10:20), '(A11)') '0          '
       MLINE(I) = TMPLIN
       CALL WLKMOL(CRDGEO)
-      CALL PNCMOL
+      CALL PNCMOL(-1,0)
       DO 100 I = 1, IATOMS
          DO 110 J = 1, 3
             CORD(J,I) = CRDGEO((I-1)*3+J)

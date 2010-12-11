@@ -114,16 +114,20 @@ C
       DOPRHS = SHIELD .OR. SPNSPN .OR. SPINRO
       IF (.NOT. (DOREAL .OR. DOIMAG)) RETURN
       CALL QENTER('MCORL')
+      KTEST = 1
+      WORK(KTEST) = -999.9D0
 C
 C     Unit for reorthonormalization
 C     =============================
 C
-      KLAST = 1
+      KLAST = KTEST + 1
       IF (DOSFD .AND. (MOLHES .OR. DIPDER .OR. QPGRAD)) THEN
          CALL GPOPEN(LUSFDA,ABASF,'UNKNOWN','DIRECT',' ',IRAT*N2ORBX,
      &               OLDDX)
-         KHESFS = 1
+         KHESFS = KLAST
          KLAST  = KHESFS + MXCOOR*MXCOOR
+      ELSE
+         KHESFS = KTEST
       END IF
       LWRK = LWORK - KLAST + 1
 C
@@ -205,9 +209,9 @@ C
                KHSOLT = KTLMB + LMTOT
                KLAST  = KHSOLT+ MXCOOR*MXCOOR
             ELSE
-               KTLMA  = KLAST
-               KTLMB  = KLAST
-               KHSOLT = KLAST
+               KTLMA  = KTEST
+               KTLMB  = KTEST
+               KHSOLT = KTEST
             END IF
             IF (KLAST .GT. LWRK) CALL STOPIT('MCORL',' ',KLAST,LWRK)
             CALL REORT(PASS,WORK(KSD),WORK(KY),WORK(KGLM),WORK(KHESFS),
@@ -216,6 +220,9 @@ C
             CALL GPCLOSE(LUSFDA,'DELETE')
             IF (SOLVNT) CALL GPCLOSE(LUTLM,'DELETE')
          END IF
+      END IF
+      IF (WORK(KTEST) .NE. -999.9D0) THEN
+         CALL QUIT('programming error, WORK(KTEST) has been modified')
       END IF
       CALL QEXIT('MCORL')
       RETURN
@@ -238,6 +245,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

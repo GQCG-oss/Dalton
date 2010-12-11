@@ -1,17 +1,17 @@
 $Basis = STO-6G
-
+$
 $Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
 $ Sc Ti V Cr Mn Fe Co Ni Cu Zn
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References                                
 $ --------                             ----------                                
-$ H - Ne:  W.J. Hehre, R.F. Stewart and J.A. Pople, 
-$          J. Chem. Phys. 51, 2657 (1969).                                                              
+$ H - Ne :  W.J. Hehre, R.F. Stewart and J.A. Pople, 
+$           J. Chem. Phys. 51, 2657 (1969).                                                              
 $ Na - Ar:  W.J. Hehre, R. Ditchfield, R.F. Stewart and J.A. Pople,              
-$          J. Chem. Phys. 52, 2769 (1970).
-$
+$           J. Chem. Phys. 52, 2769 (1970).
+$***********************************************************************
 A 1
 $ HYDROGEN     (6S) -> [1S]                                      
 $ S-TYPE FUNCTIONS
@@ -513,7 +513,7 @@ $ P-TYPE FUNCTIONS
       0.3719934  0.00000000  0.48896215
       0.1917126  0.00000000  0.10588165
 A 19
-$ POTASSIUM    (24S,18P) -> [4S,3P]                              
+$ POTASSIUM (KALIUM)    (24S,18P) -> [4S,3P]                              
 $ S-TYPE FUNCTIONS
    24    4    0
    8001.3214120  0.00916360  0.00000000  0.00000000  0.00000000

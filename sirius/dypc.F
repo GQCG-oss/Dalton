@@ -127,12 +127,11 @@ C
       dimension daa(1)
       dimension daat(1)
 #endif
-      indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
-      write(lupri,*)
-      write(lupri,*) 'STARTING THE PERTURBATION SUMMATION'
-      write(lupri,*)
-      write(lupri,*)
+      CALL QENTER('DYPC')
+
+      write(lupri,'(/A//)') ' STARTING THE PERTURBATION SUMMATION'
  
       nwall=0
       ntotdet=0
@@ -772,17 +771,15 @@ c      WRITE (lupri,1105) ESCF
       E2SC(1)=E2SC(1)+E(1)
       E2PC(1)=E2PC(1)+E(1)
       WRITE (lupri,1100) 1,E(1),E2SC(1),E2PC(1)
-      WRITE (lupri,'(//)')
-      WRITE (lupri,'(/)')
-      write (lupri,'(a,f8.2,a)')' Total elapsed time in dypc',
+      write (lupri,'(///a,f8.2,a/)')' Total elapsed time in dypc',
      *  tpp-t,' sec.'
-      write (lupri,*)
  1060 FORMAT (5X,'TOTAL ENERGY CONTRIBUTIONS')
  1070 FORMAT (' STATE',3X,'DIAGONALISATION        PERTURBATION SC-D',
      * '        PERTURBATION PC-D')
  1100 FORMAT (1x,I4,F17.8,3F24.8)
 c 1105 FORMAT (' REFERENCE: ',F16.8,//)
  2000 FORMAT (5X,32('*'))
+      CALL QEXIT('DYPC')
       return
       END
 c----------------------------------------------------------------------
@@ -790,7 +787,8 @@ c----------------------------------------------------------------------
       subroutine rdd2(lun31,da,nact)
 #include <implicit.h>      
       DIMENSION da(nact,nact)
-      read(lun31)((da(i,j),i=1,nact),j=1,nact)
+!     read(lun31)((da(i,j),i=1,nact),j=1,nact)
+      read(lun31) da
       return
       end
       subroutine rdd4(lun31,daat,i,j,nact)
@@ -869,6 +867,7 @@ cele      allocate(tint(ncore,ncore,nvirt))
 #if !defined(VAR_G77)
       allocate(tint(nvirt,nvirt))
 #endif
+      call dzero(tint,nvirt*nvirt)
 cele  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
   900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -926,37 +925,38 @@ cele
       isy=itsym(ii)
       jsy=itsym(ij)
       ijsy=its(isy,jsy)
-      do 600 ir=ncore+nact+1,norb
-      irsy=itsym(ir)
-      irijsy=its(ijsy,irsy)
+      do ir=ncore+nact+1,norb
+         irsy=itsym(ir)
+         irijsy=its(ijsy,irsy)
 cele
 
-      do 500 is=ir,norb
-      issy=itsym(is)
-      irsijsy=its(irijsy,issy)
-      if(irsijsy.ne.1)goto 500
+      do is=ir,norb
+         issy=itsym(is)
+         irsijsy=its(irijsy,issy)
+         if(irsijsy.ne.1)goto 500
       
 
-      zrs=ir.eq.is
-      zij=ii.eq.ij
+         zrs=ir.eq.is
+         zij=ii.eq.ij
 cele      ab1=tint(ij,ii,is-ncoat)
 cele      ab2=tint(ii,ij,is-ncoat)
-      ab1=tint(ir-ncoat,is-ncoat)
-      ab2=tint(is-ncoat,ir-ncoat)
+         ab1=tint(ir-ncoat,is-ncoat)
+         ab2=tint(is-ncoat,ir-ncoat)
 cele
       
-      if (zrs.and.zij) dint=ab1
-      if (zrs.neqv.zij) dint=sqrt(2.d0)*ab1
-      if (.not.(zrs.or.zij)) dint=2.d0*sqrt(ab1**2+ab2**2-ab1*ab2)
-      co=-dint/(fmpb(ir)+fmpb(is)-fmpb(ii)-fmpb(ij))
-      e2sc(1)=e2sc(1)+dint*co
-      psisc(1)=psisc(1)+co*co
-      e2scc(1)=e2scc(1)+dint*co
-      psiscc(1)=psiscc(1)+co*co
-  500 enddo
+         if (zrs.and.zij) dint=ab1
+         if (zrs.neqv.zij) dint=sqrt(2.d0)*ab1
+         if (.not.(zrs.or.zij)) dint=2.d0*sqrt(ab1**2+ab2**2-ab1*ab2)
+         co=-dint/(fmpb(ir)+fmpb(is)-fmpb(ii)-fmpb(ij))
+         e2sc(1)=e2sc(1)+dint*co
+         psisc(1)=psisc(1)+co*co
+         e2scc(1)=e2scc(1)+dint*co
+         psiscc(1)=psiscc(1)+co*co
+  500 continue
+      enddo
 
 cele
-  600 enddo
+      enddo
 cele
 
 cele  700 enddo
@@ -1171,6 +1171,8 @@ c------ two-electron part with Dirac distr (ii,ij|**)
       allocate(tintar(nact,nvirt))
       allocate(tintra(nvirt,nact))
 #endif
+      call dzero(tintar,nact*nvirt)
+      call dzero(tintra,nact*nvirt)
   900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ii=id2n(icd)
@@ -1191,55 +1193,56 @@ C --------- Strongly Contracted -----------------
       jsy=itsym(ij)
       ijsy=its(isy,jsy)
 
-      do 600 is=ncore+nact+1,norb
-      issy=itsym(is)
-      isijsy=its(ijsy,issy)
+      do is=ncore+nact+1,norb
+       issy=itsym(is)
+       isijsy=its(ijsy,issy)
 
 c       write (lupri,*) 'Eccitazione con gli indici',ii,ij,' -> ',is
 c       call flshfo(lupri)
 
-      dnormk=0.d0
-      epsimk=0.d0
-      do ia=1,nact
-       iaa=ia+ncore
-       do iap=1,nact
-        iaap=iap+ncore
-       contj=tintra(is-ncoat,ia)
-       contjp=tintra(is-ncoat,iap)
-       if (ij.eq.ii) then
-       cint=0.5d0*contj*contjp
-       else
-       contk=tintar(ia,is-ncoat)
-       contkp=tintar(iap,is-ncoat)
-       cint=contj*contjp+contk*contkp-
+       dnormk=0.d0
+       epsimk=0.d0
+       do ia=1,nact
+        iaa=ia+ncore
+        do iap=1,nact
+         iaap=iap+ncore
+         contj=tintra(is-ncoat,ia)
+         contjp=tintra(is-ncoat,iap)
+         if (ij.eq.ii) then
+          cint=0.5d0*contj*contjp
+         else
+          contk=tintar(ia,is-ncoat)
+          contkp=tintar(iap,is-ncoat)
+          cint=contj*contjp+contk*contkp-
      *       0.5d0*contj*contkp-0.5d0*contk*contjp
-       endif
-       if (ia.eq.iap) then
-       ro=2.d0-da(ia,iap)
-       else
-       ro=-da(ia,iap)
-       endif
-       dnormk=dnormk+2.d0*ro*cint
-       epsimk=epsimk+gkp1a(ia,iap)*cint
+         endif
+         if (ia.eq.iap) then
+          ro=2.d0-da(ia,iap)
+         else
+          ro=-da(ia,iap)
+         endif
+         dnormk=dnormk+2.d0*ro*cint
+         epsimk=epsimk+gkp1a(ia,iap)*cint
+        enddo
        enddo
-      enddo
 
-      if(abs(dnormk).lt.1.d-15)goto 600    
-      if(dnormk.lt.0.d0)then
+       if(abs(dnormk).lt.1.d-15)goto 600    
+       if(dnormk.lt.0.d0)then
          write(lupri,*)'Waring v1k: dnormk=',dnormk
          dnormk=0.d0
-      endif
-      if (dnormk.eq.0.d0) goto 600
-      epsimk=epsimk/dnormk
-      den=fmpb(ii)+fmpb(ij)-fmpb(is)-epsimk
-      co=dnormk/den
-      con=co/den
-      e2sc(1)=e2sc(1)+co
-      psisc(1)=psisc(1)+con
-      e2scc(2)=e2scc(2)+co
-      psiscc(2)=psiscc(2)+con
+       endif
+       if (dnormk.eq.0.d0) goto 600
+       epsimk=epsimk/dnormk
+       den=fmpb(ii)+fmpb(ij)-fmpb(is)-epsimk
+       co=dnormk/den
+       con=co/den
+       e2sc(1)=e2sc(1)+co
+       psisc(1)=psisc(1)+con
+       e2scc(2)=e2scc(2)+co
+       psiscc(2)=psiscc(2)+con
 
-  600 enddo
+  600 continue
+      enddo
 
 c  700 enddo
 
@@ -1462,12 +1465,14 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(4)=1
+      L_tint=nvirt*ncore*nvirt*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,ncore*nvirt*nact*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,ncore,nvirt,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -1493,16 +1498,16 @@ c------ two-electron part with mulliken distr (ir,ii|**)
 
 c
 C --------- Strongly Contracted -----------------
-      do 800 ii=1,ncore
+      do ii=1,ncore ! do 800
       if (zgel(ii)) goto 800
       isy=itsym(ii)
 
-      do 700 irc=1,nvirt
+      do irc=1,nvirt ! do 700
       ir=irc+ncoat
       irsy=itsym(ir)
       irisy=its(isy,irsy)
 
-      do 600 isc=irc,nvirt
+      do isc=irc,nvirt ! do 600
       is=isc+ncoat
       issy=itsym(is)
       irsisy=its(irisy,issy)
@@ -1551,11 +1556,14 @@ C --------- Strongly Contracted -----------------
 
 
 
-  600 enddo 
+  600 continue
+      enddo 
 
-  700 enddo
+  700 continue
+      enddo
 
-  800 enddo
+  800 continue
+      enddo
 c----Partially contracted NEV-PT---------------------------------
 #if !defined(VAR_G77)
       call e2m1cont(tint,e2,psi2,coef,s,w,da,fmpb,nact,ncore,norb,nnew
@@ -1663,7 +1671,8 @@ c--------------------------------
                enddo
             enddo
          enddo
- 1    enddo
+ 1    continue
+      enddo
       return
       end
 c-----------------------------------------------------------
@@ -1831,8 +1840,10 @@ c--------------------------------
                e2=e2-contri
                psi2=psi2+contri/deno
             enddo
- 2       enddo
- 1    enddo
+ 2       continue
+         enddo
+ 1    continue
+      enddo
       return
       end
 c-----------------------------------------------------------
@@ -1887,7 +1898,8 @@ c--------------------------------
             e2=e2-contri
             psi2=psi2+contri/deno
          enddo
- 1    enddo
+ 1    continue
+      enddo
       return
       end
 c----------------------------------------------------------------
@@ -1923,7 +1935,7 @@ c--------------------------------
       do ir=ncore+nact+1,norb
        irc=ir-ncore-nact
         i=ii
-	 j=ij
+        j=ij
 c         do i=1,ncore
 c          if (zgel(i)) goto 2
 c            do j=i,ncore
@@ -2000,12 +2012,14 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(2)=1
+      L_tint = nact*ncore*nact*ncore
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,ncore*nact*nvirt*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nact,ncore,nact,ncore))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -2035,11 +2049,11 @@ c------ two-electron part with mulliken distr (ia,ii|**)
 c
 C --------- Strongly Contracted -----------------
 
-      do 1800 ir=1,ncore
+      do ir=1,ncore ! do 1800
       if (zgel(ir)) goto 1800
       irsy=itsym(ir)
 
-      do 1700 is=ir,ncore
+      do is=ir,ncore ! do 1700
       if (zgel(is)) goto 1700
       issy=itsym(is)
       irssy=its(irsy,issy)
@@ -2073,17 +2087,19 @@ c
                   dumk=gkp2aa(icpa,idpa,ica,ida)
                   dint1=tint(icpa,is,idpa,ir)
                   dint2=tint(ica,is,ida,ir)
-		  cint=dint1*dint2
-		  if (ir.eq.is) then
-		  cint=cint*0.25d0
-		  dum=dum+daat(icpa,idpa,ida,ica)
-		  dumk=dumk+gkp2aa(idpa,icpa,ica,ida)
-		  endif
+                cint=dint1*dint2
+                if (ir.eq.is) then
+                cint=cint*0.25d0
+                dum=dum+daat(icpa,idpa,ida,ica)
+                dumk=dumk+gkp2aa(idpa,icpa,ica,ida)
+                endif
                   dn=dn+cint*dum
                   dk=dk+cint*dumk
- 1120          enddo
+ 1120          continue
+               enddo
             enddo
- 1121    enddo
+ 1121    continue
+         enddo
       enddo
       if(abs(dn).lt.1.d-15) goto 1700
       if(dn.lt.0.d0)then
@@ -2101,8 +2117,10 @@ c
          psiscc(4)=psiscc(4)+con
       endif
       
- 1700 enddo
- 1800 enddo
+ 1700 continue
+      enddo
+ 1800 continue
+      enddo
 
 c---Partially contracted NEV-PT-----------------------------------
       tini=second()
@@ -2414,12 +2432,14 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       LFREE=LWRK
       IDIST = 0
       needtp(5)=1
+      L_tint = nvirt*nact*nvirt*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,nact*nact*nvirt*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nvirt,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -2448,11 +2468,11 @@ c------ two-electron part with mulliken distr (ir,ia|**)
 #endif
 C --------- Strongly Contracted -----------------
 
-      do 1800 ir=ncore+nact+1,norb
+      do ir=ncore+nact+1,norb ! do 1800
       irc=ir-ncoat
       irsy=itsym(ir)
 
-      do 1700 is=ir,norb
+      do is=ir,norb ! do 1700
       isc=is-ncoat
       issy=itsym(is)
       irssy=its(irsy,issy)
@@ -2486,17 +2506,19 @@ c
                   dumk=gkm2aa(icpa,idpa,ica,ida)
                   dint1=tint(isc,icpa,irc,idpa)
                   dint2=tint(isc,ica,irc,ida)
-		  cint=dint1*dint2
-		  if (ir.eq.is) then
-		  cint=cint*0.25d0
-		  dum=dum+daa(icpa,idpa,ida,ica)
-		  dumk=dumk+gkm2aa(idpa,icpa,ica,ida)
-		  endif
+                cint=dint1*dint2
+                if (ir.eq.is) then
+                cint=cint*0.25d0
+                dum=dum+daa(icpa,idpa,ida,ica)
+                dumk=dumk+gkm2aa(idpa,icpa,ica,ida)
+                endif
                   dn=dn+dum*cint
                   dk=dk+dumk*cint 
- 1120          enddo
+ 1120          continue
+               enddo
             enddo
- 1121    enddo
+ 1121    continue
+         enddo
       enddo
       if(abs(dn).lt.1.d-15)goto 1700
       if(dn.lt.0.d0)then
@@ -2514,8 +2536,10 @@ c
          psiscc(5)=psiscc(5)+con
       endif
       
- 1700 enddo
- 1800 enddo
+ 1700 continue
+      enddo
+ 1800 continue
+      enddo
 
 c---Partially contracted NEV-PT-----------------------------------
       tini=second()
@@ -3036,12 +3060,14 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       LFREE=LWRK
       IDIST = 0
       needtp(5)=1
+      L_tinta = nvirt*nact*ncore*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,nvirt*nact*ncore*nact*8)
+      call nwadd(nwall,L_tinta*8)
       allocate(tinta(nvirt,nact,ncore,nact))
 #endif
+      CALL DZERO(tinta,L_tinta)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -3060,7 +3086,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
        do ib=1,nact
         ibd=in2d(ib+ncore)
         tinta(irc,iac,ii,ib)=h2m(iid,ibd)
-c	write (lupri,*) 'stoa',irc,iac,ii,ib,h2m(iid,ibd)
+c       write (lupri,*) 'stoa',irc,iac,ii,ib,h2m(iid,ibd)
        enddo
       enddo
       goto 900
@@ -3073,10 +3099,12 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(4)=1
+      L_tintc = nvirt*ncore*nact*nact
 #if !defined(VAR_G77)
-      call nwadd(nwall,nvirt*nact*ncore*nact*8)
+      call nwadd(nwall,L_tintc*8)
       allocate(tintc(nvirt,ncore,nact,nact))
 #endif
+      call dzero(tintc,L_tintc)
   910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1010
       ic=id2n(icd)
@@ -3104,11 +3132,11 @@ c------ two-electron part with mulliken distr (ir,ii|**)
 #endif
 C --------- Strongly Contracted -----------------
 
-      do 1800 ii=1,ncore
+      do ii=1,ncore ! do 1800
       if (zgel(ii)) goto 1800
       iis=itsym(ii)
 
-      do 1700 ir=ncore+nact+1,norb
+      do ir=ncore+nact+1,norb ! do 1700
       irc=ir-ncoat
       irs=itsym(ir)
       iirs=its(iis,irs)
@@ -3150,18 +3178,20 @@ c
                   dum2=ee2tr(ibpa,iba,iapa,iaa,daa,da,nact)
                   if(iaa.eq.iba) dum2=dum2+da(ibpa,iapa)
 
-               dn=dn+dint1*dum1+dint2*dum2
+                  dn=dn+dint1*dum1+dint2*dum2
 
-               dumk1=gk0pa(ibpa,iapa,iaa,iba)
-               dumk2=gk0pd(ibpa,iapa,iaa,iba)
-               dint1=djp*dj-0.5d0*djp*dk-0.5d0*dj*dkp
-               dint2=dkp*dk
-               dkoo=dkoo+dint1*dumk1+dint2*dumk2
+                  dumk1=gk0pa(ibpa,iapa,iaa,iba)
+                  dumk2=gk0pd(ibpa,iapa,iaa,iba)
+                  dint1=djp*dj-0.5d0*djp*dk-0.5d0*dj*dkp
+                  dint2=dkp*dk
+                  dkoo=dkoo+dint1*dumk1+dint2*dumk2
 
- 1120       enddo
-         enddo
- 1121 enddo
-      enddo
+ 1120          continue
+               enddo ! ibp
+            enddo ! iap
+ 1121    continue
+         enddo ! ib
+      enddo ! ia
 
       dummy=0.d0
       dummyk=0.d0
@@ -3188,7 +3218,7 @@ c
          dn=0.d0
       endif
       if(dn.gt.0.d0)then
-         epsimk=dkoo/dn                     
+         epsimk=dkoo/dn
          den=fmpb(ii)-fmpb(ir)-epsimk
          co=dn/den
          con=co/den
@@ -3198,8 +3228,10 @@ c
          psiscc(8)=psiscc(8)+con
       endif
       
- 1700 enddo
- 1800 enddo
+ 1700 continue
+      enddo
+ 1800 continue
+      enddo
       tsc=second()
       write (lupri,'(a,f8.2,a)')' Elapsed time for SC',tsc-tini,' sec.'
 c---Partially contracted NEV-PT      
@@ -3478,7 +3510,8 @@ c               endif
             enddo
 c            print*,'i,ivirt,rho',i,ivirt,rhoir(i,ivirt)
          enddo
- 1    enddo
+ 1    continue
+      enddo
 cro      if(zro)write(27)((rhoir(i,ivirt),i=1,ncore),ivirt=1,nvirt)
 cro      if(zro)deallocate(rhoir)
       return
@@ -3576,13 +3609,14 @@ c-------------------------------------------------------
         cont=aimu*co
         e2=e2-cont
         psi2=psi2+co**2
-c     if(zro)then
-c     do id=1,nact
-c     rhoid(i,id)=rhoid(i,id)-co*caux(id,mu)
-c     enddo
-c     endif
+c       if(zro)then
+c       do id=1,nact
+c        rhoid(i,id)=rhoid(i,id)-co*caux(id,mu)
+c       enddo
+c       endif
        enddo
- 1    enddo
+ 1    continue
+      enddo
       t5=second()
 c     if(zro)write(27)((rhoid(i,id),i=1,ncore),id=1,nact)
 c     if(zro)deallocate(rhoid)
@@ -3753,12 +3787,14 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       LFREE=LWRK
       IDIST = 0
       needtp(2)=1
+      L_tint = ncore*nact*nact*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,ncore*nact*nact*nact*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(ncore,nact,nact,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -3787,7 +3823,7 @@ c------ two-electron part with mulliken distr (ia,ii|**)
 
 C --------- Strongly Contracted -----------------
 
-      do 800 ii=1,ncore
+      do ii=1,ncore ! do 800
       if (zgel(ii)) goto 800
 
       dumm=0.d0
@@ -3851,7 +3887,8 @@ c            dumk3=dumk3+dint*amat(iap,ibp,icp,ia,ib,ic)*dint2
          psiscc(6)=psiscc(6)+con
       endif
 
-  800 enddo
+  800 continue
+      enddo
       tsc=second()
       write (lupri,'(a,f8.2,a)')' Elapsed time for SC',tsc-tini,' sec.'
 c--Partially contracted NEV-PT class (+1')
@@ -4075,12 +4112,14 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       LFREE=LWRK
       IDIST = 0
       needtp(5)=1
+      L_tint = nvirt*nact*nact*nact
 #if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
-      call nwadd(nwall,nvirt*nact*nact*nact*8)
+      call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nact,nact))
 #endif
+      call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
@@ -4110,7 +4149,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
 
 C --------- Strongly Contracted -----------------
 
-      do 800 ir=ncore+nact+1,norb
+      do ir=ncore+nact+1,norb ! do 800
       irc=ir-ncoat
       irsy=itsym(ir)
 
@@ -4185,7 +4224,8 @@ c            dumk3=dumk3+dint*amat(iap,ibp,icp,ia,ib,ic)*dint2
          psiscc(7)=psiscc(7)+con
       endif
 
-  800 enddo
+  800 continue
+      enddo
       tsc=second()
       write (lupri,'(a,f8.2,a)')' Elapsed time for SC',tsc-tini,' sec.'
 c--Partially contracted NEV-PT class (-1')
@@ -4512,9 +4552,9 @@ c----- Core eps
           jd=in2d(j)
           fmpb(ic)=fmpb(ic)+2.d0*h2m(jd,jd)
           fock(ic,ic)=fock(ic,ic)+2.d0*h2m(jd,jd)
-	  if (ic.ne.j) then
+         if (ic.ne.j) then
           fock(ic,j)=fock(ic,j)-h2m(icd,jd)
-	  endif
+         endif
           if (j.eq.ic) then
           fmpb(ic)=fmpb(ic)-h2m(jd,jd)
           fock(ic,ic)=fock(ic,ic)-h2m(jd,jd)
@@ -4533,11 +4573,11 @@ c----- Virt eps
           ird=in2d(ir)
           fmpb(ir)=fmpb(ir)+2.d0*h2m(ird,ird)
           fock(ir,ir)=fock(ir,ir)+2.d0*h2m(ird,ird)
-	  do is=ir+1,norb
+         do is=ir+1,norb
           isd=in2d(is)
           fock(ir,is)=fock(ir,is)+2.d0*h2m(ird,isd)
           fock(is,ir)=fock(is,ir)+2.d0*h2m(ird,isd)
-	  enddo
+         enddo
          enddo 
 
       else  ! if (ic.eq.id) then
@@ -4586,10 +4626,10 @@ c----- Core
       do ib=1,nact
         ibd=in2d(ib+ncore)
         fmpb(ii)=fmpb(ii)-0.5*h2m(iid,ibd)*da(ib,ia)
-	  do ij=1,ncore
+         do ij=1,ncore
           ijd=in2d(ij)
           fock(ii,ij)=fock(ii,ij)-0.5*h2m(ijd,ibd)*da(ib,ia)
-	  enddo
+         enddo
       enddo
       goto 300
   400 continue
@@ -4640,10 +4680,10 @@ c------ two-electron part with mulliken distr (ir,ia|**)
         ibd=in2d(ib+ncore)
         fmpb(ir)=fmpb(ir)-0.5*h2m(ird,ibd)*da(ib,ia)
           fock(ir,ir)=fock(ir,ir)-0.5*h2m(ird,ibd)*da(ib,ia)
-	  do is=ir+1,norb
-	   isd=in2d(is)
-	   fock(ir,is)=fock(ir,is)-0.5*h2m(isd,ibd)*da(ib,ia)
-	  enddo
+         do is=ir+1,norb
+          isd=in2d(is)
+          fock(ir,is)=fock(ir,is)-0.5*h2m(isd,ibd)*da(ib,ia)
+         enddo
       enddo
 c----- (tj,ju) part of heff (t=r,u=a,j=b)
       iad=in2d(ia+ncore)

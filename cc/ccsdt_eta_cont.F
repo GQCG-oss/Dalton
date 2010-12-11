@@ -108,7 +108,7 @@ C
         WRITE(LUPRI,*) 'LISTL,LISTR:',LISTL,LISTR
       END IF
 
-      LUDEFF  = 0
+      LUDEFF  = -1
       CALL WOPEN2(LUDEFF,FNDEFF,64,0)
 
       M2BST = 0
@@ -137,7 +137,7 @@ C
      &            WORK(KEND1),LWRK1)
 
 *     read zeroth-order AO Fock matrix from file: 
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -150,14 +150,14 @@ C
 *---------------------------------------------------------------------*
 *     precompute effective densities and store on file:
 *---------------------------------------------------------------------*
-      LUDELD  = 0
-      LUCKJD  = 0
-      LUDKBC  = 0
-      LUTOC   = 0
-      LU3VI   = 0
-      LUDKBC3 = 0
-      LU3FOPX = 0
-      LU3FOP2X= 0
+      LUDELD  = -1
+      LUCKJD  = -1
+      LUDKBC  = -1
+      LUTOC   = -1
+      LU3VI   = -1
+      LUDKBC3 = -1
+      LU3FOPX = -1
+      LU3FOP2X= -1
  
       CALL WOPEN2(LUDELD,FNDELD,64,0)
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -486,7 +486,7 @@ C
 
       CALL CC_T2SQ(WORK(KEND0),WORK(KT2Y),ISTAMY)
  
-      LUT2Y = 0
+      LUT2Y = -1
       CALL WOPEN2(LUT2Y,FNT2Y,64,0)
       CALL PUTWA2(LUT2Y,FNT2Y,WORK(KT2Y),1,NT2SQ(ISTAMY))
 C
@@ -605,8 +605,8 @@ C     ----------------------------------------------------------------
       IOPT = 1
       CALL CC_RDRSP(LISTR,IDLSTR,ISTAMY,IOPT,MODEL,WORK(KT1AMY),DUMMY)
 
-      LUPTIJ = 0
-      LUPTAB = 0
+      LUPTIJ = -1
+      LUPTAB = -1
 
       ! read intermediates from ground state density from file...
       CALL WOPEN2( LUPTIJ,FNDPTIJ,64,0)
@@ -919,8 +919,8 @@ C
          DO MCAU = 0, NCAU
 C
             !Open temporary files
-            LU3SRTR  = 0
-            LUDELDR  = 0
+            LU3SRTR  = -1
+            LUDELDR  = -1
             CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
             CALL WOPEN2(LUDELDR,FNDELDR,64,0)
 C
@@ -933,8 +933,8 @@ C
             END IF
 C
             !Open the files for T1-transformed integrals
-            LUCKJDR  = 0
-            LUDKBCR  = 0
+            LUCKJDR  = -1
+            LUDKBCR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
             CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
@@ -1033,7 +1033,7 @@ C-----------------------------------------------------------
 C
       IF ( (LISTR(1:3).EQ.'R1 ') .OR. (LISTR(1:3).EQ.'RC ') ) THEN
         ! read property integrals from file:
-        CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,IMAT,IERR,
+        CALL CCPRPAO(LABELY,.TRUE.,WORK(KFOCKY),IRREP,IMAT,IERR,
      *               WORK(KEND0),LWRK0)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISTAMY)) THEN
           WRITE(LUPRI,*) 'ISTAMY:',ISTAMY
@@ -1128,7 +1128,7 @@ C
             END IF
 C
             !Open the file for T1Y-transformed integrals
-            LUCKJDR  = 0
+            LUCKJDR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
 C
             !Get the offset for the integrals depending on MCAU
@@ -1183,8 +1183,8 @@ C---------------------------------------------
 C     Open files for Tbar and W intermediates:
 C---------------------------------------------
 C
-      LUTBAR = 0
-      LUWMAT = 0
+      LUTBAR = -1
+      LUWMAT = -1
   
       CALL WOPEN2(LUTBAR,FNTBAR,64,0)
       CALL WOPEN2(LUWMAT,FNWMAT,64,0)
@@ -1268,7 +1268,7 @@ C
                   END IF
 C
                   !Open the files for T1Y-transformed integrals
-                  LUDKBCR  = 0
+                  LUDKBCR  = -1
                   CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                   !Get the offset for a given MCAU
@@ -1717,7 +1717,7 @@ C
                         END IF
 C
                         !Open the files for T1Y-transformed integrals
-                        LUDKBCR  = 0
+                        LUDKBCR  = -1
                         CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                         !Get the offset for a given MCAU
@@ -2786,7 +2786,7 @@ C     -------------------------------------------------------
       IADRIA = IADRAB + NMATAB(ISYHOP)
       CALL GETWA2(LUDEFF,FNDEFF,WORK(KDIA),IADRIA,NT1AM(ISYHOP))
 
-      CALL CCPRPAO(LABELH,WORK(KFOCK),IRREP,IMAT,IERR,
+      CALL CCPRPAO(LABELH,.TRUE.,WORK(KFOCK),IRREP,IMAT,IERR,
      *             WORK(KEND1),LWRK1)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYHOP)) THEN
         WRITE(LUPRI,*) 'ISYHOP:',ISYHOP

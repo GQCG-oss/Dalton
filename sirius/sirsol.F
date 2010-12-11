@@ -33,8 +33,23 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C===========================================================================
+C
+C File   : sirius/sirsol.F
+C
+C Module for spherical dielectric continuum model.
+C
+C Original code written in fall 1986 in Minneapolis, USA,
+C when we all four visited Jan Almloef there.
+C
+C Original reference for the MCSCRF solvation model:
+C          K. V. Mikkelsen, H. Agren, H. J. Aa. Jensen, and T. Helgaker.
+C          J. Chem. Phys. 89 (1988) 3086-3095
+C
+C Intial polarization added later.
+C
+C===========================================================================
 #ifdef REV_LOG
-===========================================================================
 TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
 hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
        in Oslo stating
@@ -95,7 +110,7 @@ C     Reference for solvent routines in Sirius;
 C     called by SIRIUS.PRTINP
 C
       WRITE(IWUNIT,100)
-  100 FORMAT(/T2,'Reference for MCSCRF solvation model (version n01):'
+  100 FORMAT(/T2,'Original reference for MCSCRF solvation model:'
      *   /T5,'K.V.Mikkelsen, H.Agren, H.J.Aa.Jensen, and T. Helgaker',
      *   /T5,'J. Chem. Phys. 89 (1988) 3086-3095')
       RETURN
@@ -280,7 +295,7 @@ C
      &                               'UNFORMATTED',IDUMMY,.FALSE.)
       IF (FIRST) THEN
          REWIND LUSIFC
-         CALL MOLLAB('SOLVINFO',LUSIFC,LUERR)
+         CALL MOLLAB('SOLVINFO',LUSIFC,lupri)
 C        WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,RSOL,RSOL,LSOLMX
 C        WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C        CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1)))
@@ -331,7 +346,7 @@ C        WRITE (LUSIFC) NSYM, NBAS
 C
 C     Read TLMSI from LUSIFC
       REWIND LUSIFC
-      CALL MOLLAB('SOLVINFO',LUSIFC,LUERR)
+      CALL MOLLAB('SOLVINFO',LUSIFC,lupri)
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
@@ -640,7 +655,7 @@ C     Read and check dimension information (if first read) and
 C     nuclear contributions to ERLM (always).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       IF (FIRST) THEN
          READ (LUSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LSOLMX) THEN
@@ -1031,7 +1046,7 @@ C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       IF (FIRST) THEN
          READ (LUSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LSOLMX) THEN
@@ -1324,12 +1339,22 @@ C
       KNEED  = MAX(KW21,KW30)
       IF (KNEED .GT. LFREE) CALL ERRWRK('SOLLNC',KNEED,LFREE)
 C
+      IF (IPRSOL .GE. 140) THEN
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(ci,1) on entry'
+         DO I = 1,NCONST
+            IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
+     *      ' conf #',I,SVEC(I,1)
+         END DO
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(orb) on entry'
+         CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
+     *               NSVEC,NCSIM,1,LUPRI)
+      END IF
 C
 C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       READ (LUSOL)
       CALL READT(LUSOL,NLMSOL,WRK(KTNLM))
 C
@@ -1463,6 +1488,17 @@ C        ... tell SOLGO only to use the NWOPPT first JWOP entries
          NWOPH  = MWOPH
       END IF
 C
+      IF (IPRSOL .GE. 140) THEN
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(ci,1) on exit'
+         DO I = 1,NCONST
+            IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
+     *      ' conf #',I,SVEC(I,1)
+         END DO
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(orb) on exit'
+         CALL OUTPUT(SVEC(1 + NCONST,1),1,NWOPPT,1,NCSIM,
+     *               NSVEC,NCSIM,1,LUPRI)
+      END IF
+C
       CALL QEXIT('SOLLNC')
       RETURN
 C     end of sollnc.
@@ -1540,13 +1576,13 @@ C
          WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM SOLLNO >>>'
       END IF
       IF (IPRSOL .GE. 140) THEN
-      IF (FULHES) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(ci,1) on entry'
-         DO 30 I = 1,NCONST
-            IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
-     *      ' conf #',I,SVEC(I,1)
-   30    CONTINUE
-      END IF
+         IF (FULHES) THEN
+            WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(ci,1) on entry'
+            DO 30 I = 1,NCONST
+               IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
+     *              ' conf #',I,SVEC(I,1)
+ 30         CONTINUE
+         END IF
          WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)
@@ -1592,7 +1628,7 @@ C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
 C
       REWIND LUSOL
-      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
+      CALL MOLLAB('SOLVRLM ',LUSOL,lupri)
       READ (LUSOL)
       CALL READT(LUSOL,NLMSOL,WRK(KTNLM))
 C
@@ -1969,26 +2005,4 @@ C
       CALL QEXIT('SOLSC ')
       RETURN
       END
-C  /* Deck upkcmo */
-      SUBROUTINE UPKCMO(CMO,UCMO)
-C
-C  Copyright 6-May-1990 Hans Joergen Aa. Jensen
-C
-C  Unpack CMO from symmetry packed form to  UCMO
-C
-#include <implicit.h>
-      DIMENSION CMO(1), UCMO(NBAST,NORBT)
-C
-C Used from common blocks:
-C  INFORB : NSYM,NBAST,NORBT,...
-C
-#include <inforb.h>
-C
-      CALL DZERO(UCMO,NBAST*NORBT)
-      DO 400 ISYM = 1,NSYM
-         CALL MCOPY(NBAS(ISYM),NORB(ISYM),CMO(ICMO(ISYM)+1),NBAS(ISYM),
-     *              UCMO(IBAS(ISYM)+1,IORB(ISYM)+1),NBAST)
-C        CALL MCOPY(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
-  400 CONTINUE
-      RETURN
-      END
+C --- end of sirsol.F ---

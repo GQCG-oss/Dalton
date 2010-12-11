@@ -487,13 +487,11 @@ C
 #include <inftap.h>
 C
 C
-      LOGICAL     GETBVO, SOLVNT
+      LOGICAL     GETBVO
       CHARACTER*8 LABIT2(3)
       DATA  LABIT2/'CIDIAG2 ','ORBDIAG ','SOLVDIAG'/
 C
       CALL QENTER('SNRST ')
-C
-      SOLVNT = FLAG(16)
 C
 C     (space for both CI and orbital trial vectors)
 C

@@ -110,7 +110,6 @@ C     IDLSTL = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,ISYML)
       IPRINT = 51
       CALL CC_FMATOLD(LISTL,IDLSTL,LISTR,IDLSTR,WORK,LWORK)
 
-      RETURN
 
 c     KTHETA1 = IBTRAN(3,1)
 c     KTHETA2 = KTHETA1 + NT1AM(ISYMAB)
@@ -231,6 +230,8 @@ c     END IF
 #include <eribuf.h>
 #include <ccroper.h>
 #include <ccinftap.h>
+#include <r12int.h>
+#include <second.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF=-0.5D0,XHALF=0.5D0,THREE=3.0D0,XMONE=-1.0D0)
@@ -269,7 +270,9 @@ C-----------------------------------
 C     initialize overall timing
 C-----------------------------------
 C
-      TIMALL    = SECOND()
+      TIMALL  = SECOND()
+      TIMIO   = ZERO
+      TIMT2SQ = ZERO
 C
 C-----------------------------------
 C     echo input
@@ -362,13 +365,13 @@ C
       IERRTR = 0
       IERRBF = 0
 C
-      LUTR = 0
+      LUTR = -1
       IF ( .NOT. CCS ) THEN
          CALL WOPEN2(LUTR, TRFIL,64,0)
       ENDIF
 C
-      LUBFI = 0
-      LUBFD = 0
+      LUBFI = -1
+      LUBFD = -1
       IF (CCSD) THEN
          CALL WOPEN2(LUBFI,FNBFI,64,0)
          CALL WOPEN2(LUBFD,FNBFD,64,0)
@@ -395,8 +398,8 @@ C
 C       -----------------------------------------
 C       open file for P and Q intermediates:
 C       -----------------------------------------
-        LUPQR0 = 0
-        LUPQRR = 0
+        LUPQR0 = -1
+        LUPQRR = -1
         CALL WOPEN2(LUPQR0,FILPQR0,64,0)
         CALL WOPEN2(LUPQRR,FILPQRR,64,0)
 
@@ -556,8 +559,8 @@ C     Open files.
 C----------------
 C
       IF (.NOT.(CCS .OR. CC2)) THEN
-         LUC = 0
-         LUD = 0
+         LUC = -1
+         LUD = -1
 C
          CTFIL = 'CCLR_C'
          DTFIL = 'CCLR_D'
@@ -565,8 +568,8 @@ C
          CALL WOPEN2(LUC,CTFIL,64,0)
          CALL WOPEN2(LUD,DTFIL,64,0)
 C
-         LUCIM = 0
-         LUDIM = 0
+         LUCIM = -1
+         LUDIM = -1
 C
          CFIL = 'PMAT_C'
          DFIL = 'PMAT_D'
@@ -580,12 +583,12 @@ C-----------------------------------------
 C     Open scratch file CCINT3O and O3TFIL
 C-----------------------------------------
 C
-      LUO3 = 0
+      LUO3 = -1
       O3FIL = 'CCINT3O'
 C
       CALL WOPEN2(LUO3,O3FIL,64,0)
 C
-      LUO3T =  0
+      LUO3T =  -1
       O3TFIL = 'CCO3INT'
 C
       CALL WOPEN2(LUO3T,O3TFIL,64,0)
@@ -761,7 +764,7 @@ C           zeroth-order Zeta and T2AMP0 from file
 C           ---------------------------------------------------
 C
             DTIME = SECOND()
-            LUXYM = 0
+            LUXYM = -1
             CALL GPOPEN(LUXYM,FILXYM,'OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
 
@@ -1132,6 +1135,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1515,6 +1522,8 @@ C
 C
                   FACTC = XMONE 
                   ICON  = 3
+                  IOPTR12 = 0
+                  IOPTE = 0
 C
                   DTIME   = SECOND()
                   IF (.NOT. T2TCOR) THEN
@@ -1523,18 +1532,18 @@ C
      *                            WORK(KLAMDP),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KLAMPC),ISYMR,
      *                            WORK(KLAMHC),ISYMR,
-     *                            DUMMY,WORK(KEND4),
-     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                            CTFIL,1)
+     *                            DUMMY,DUMMY,WORK(KEND4),
+     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                            IOPTE,LUC,CTFIL,IDUMMY,DUMMY,1)
                   ELSE
                      CALL CCRHS_C(WORK(KXINT),WORK(KDSRHF),
      *                            DUMMY, WORK(K2C2C2),ISYMR,
      *                            WORK(KLAMDP),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KLAMPC),ISYMR,
      *                            WORK(KLAMHC),ISYMR,
-     *                            DUMMY,WORK(KEND4),
-     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                            CTFIL,1)
+     *                            DUMMY,DUMMY,WORK(KEND4),
+     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                            IOPTE,LUC,CTFIL,IDUMMY,DUMMY,1)
                   ENDIF
                   TIMC    = TIMC + SECOND() - DTIME
 
@@ -1562,14 +1571,17 @@ C
 C
                   ICON   = 3
                   FACTD  = 1.0D00
+                  IOPTR12 = 0
+                  IOPTE  = 0
 C
                   DTIME   = SECOND()
                   CALL CCRHS_D(WORK(KXINT),WORK(KDSRHF),DUMMY,
      *                         WORK(KC2AM),ISYMR,
      *                         WORK(KLAMDP),DUMMY,WORK(KLAMDH),
      *                         WORK(KLAMPC),ISYMR,WORK(KLAMHC),ISYMR,
-     *                         DUMMY,WORK(KEND4),LWRK4,IDEL,
-     *                         ISYMD,FACTD,ICON,LUD,DTFIL,1)
+     *                         DUMMY,DUMMY,WORK(KEND4),LWRK4,IDEL,
+     *                         ISYMD,FACTD,ICON,IOPTR12,IOPTE,
+     *                         LUD,DTFIL,IDUMMY,DUMMY,1)
                   TIMD    = TIMD     + SECOND() - DTIME
 C
                ENDIF
@@ -1673,7 +1685,7 @@ C
       ISYMHO = 1
 C
       IF ( .NOT. CCS) THEN
-         LFOCK = 0
+         LFOCK = -1
          CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LFOCK)
@@ -1904,7 +1916,7 @@ C        Read Omega intermediate.
 C--------------------------------
 C
          TIMEBF = SECOND()
-         LUOM = 0
+         LUOM = -1
          CALL GPOPEN(LUOM,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUOM)
@@ -2782,7 +2794,7 @@ C
         
         IOPT=3
         CALL CC_WRRSP('D0',0,1,IOPT,MODEL,DUMMY,WORK(KC1),WORK(KC2),
-     &                WORK(KEND1),LEND1)
+     &                WORK(KEND1),LWRK1)
 
         WORK(KC1-1+IVEC) = 0.0d0
 
@@ -2866,7 +2878,7 @@ C
 C
       DIMENSION WORK(LWORK),ITADR(2)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-07)
-      CHARACTER MODEL*10, LLIST(*)
+      CHARACTER MODEL*10, LLIST(*), APROXR12*3
       LOGICAL L1TST,L2TST
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
@@ -2876,6 +2888,9 @@ C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
+C
+      IF (CCR12) CALL QUIT('CCLR_FDF for CCR12 not adapted; use '//
+     &                     'CC_FTSTNEW / CC_FDF')
 C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CCLR_FDF  : MAKING FINITE DIFF. CC F-Matrix')
@@ -2962,7 +2977,7 @@ C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -3013,7 +3028,8 @@ C------------------------------------------
 C
       CALL DCOPY(NT1AMX,WORK(KC1AM),1,WORK(KRHO1D),1)
       CALL DCOPY(NT2AMX,WORK(KC2AM),1,WORK(KRHO2D),1)
-      CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY)
+      CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
+     &             APROXR12)
 C
 C-------------------------
 C     Zero out components.
@@ -3049,7 +3065,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -3068,7 +3084,7 @@ C
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *               WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C---------------------------------------------
 C        Get the CC left amplitudes from disk.
@@ -3096,7 +3112,8 @@ C------------------
 C
          CALL DCOPY(NT1AMX,WORK(KC1AM),1,WORK(KRHO1D),1)
          CALL DCOPY(NT2AMX,WORK(KC2AM),1,WORK(KRHO2D),1)
-         CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY)
+         CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
+     &             APROXR12)
 C
          IF (LCOR .OR. LSEC) THEN
             CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -3147,7 +3164,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -3168,7 +3185,7 @@ C
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *                 WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C-----------------------------------------------
 C          Get the CC left amplitudes from disk.
@@ -3203,7 +3220,8 @@ C--------------------
 C
            CALL DCOPY(NT1AMX,WORK(KC1AM),1,WORK(KRHO1D),1)
            CALL DCOPY(NT2AMX,WORK(KC2AM),1,WORK(KRHO2D),1)
-           CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY)
+           CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
+     &             APROXR12)
 C
            IF (LCOR .OR. LSEC) THEN
               CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -3270,7 +3288,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -3283,8 +3301,9 @@ C
      *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND2),LWRK2) 
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND2),LWRK2,'XXX') 
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CCLR_FDF ')
@@ -3388,7 +3407,7 @@ C----------------------------------------------------------------------
 *----------------------------------------------------------------------
 * open file and initialize start address:
 *----------------------------------------------------------------------
-      LUPQIM = 0
+      LUPQIM = -1
       CALL WOPEN2(LUPQIM,FILNAM,64,0)
 * reserve at the beginning a record for the start addresses:
       IADR = (MXCORB+IRAT)/IRAT + 1
@@ -3466,7 +3485,8 @@ C
 
         CALL DSCAL(NT2BCD(ISYTIN),-ONE,WORK(KTJNT),1)
 
-        CALL CCLT_P21I(WORK(KTJNT),ISYTIN,WORK(KEND2),LWRK2)
+        CALL CCLT_P21I(WORK(KTJNT),ISYTIN,WORK(KEND2),LWRK2,
+     &                 IT2BCD, NT2BCD, IT1AM, NT1AM, NVIR)
         
         CALL DAXPY(NT2BCD(ISYTIN),TWO,WORK(KTINT),1,WORK(KTJNT),1)
         TIMTAM = TIMTAM + SECOND() - DTIME
@@ -3698,7 +3718,7 @@ C
       CALL CC_MI(WORK(KMIM),WORK(KZETA),ISYZETA,WORK(KTAMP),ISYTAMP,
      &           WORK(KEND1),LWRK1)
 
-      LUXYM = 0
+      LUXYM = -1
       CALL GPOPEN(LUXYM,FILNAM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 

@@ -1,10 +1,10 @@
 $Basis = Huz-II
-
-$Elements supported
-$H C N O F P S 
+$
+$ Elements supported
+$ H C N O F P S 
 $
 $  REFERENCE
-$
+$***********************************************************************
 a 1
 $ HYDROGEN     (5s,1p) -> [3s,1p]                                
 $ S-TYPE FUNCTIONS

@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -54,6 +54,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -83,7 +84,7 @@ C
                   CUT  = .TRUE.
                GO TO 100
     4          CONTINUE
-                  READ (LUCMD,*) LMAX 
+                  READ (LUCMD,*) LMAX
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -104,7 +105,7 @@ C
                WRITE (LUPRI,'(A,I5)') ' Print level in FMMDRV:',IPRINT
             END IF
             IF (LMAX .NE. LMAXDF) THEN
-               WRITE (LUPRI,'(A,I5)') 
+               WRITE (LUPRI,'(A,I5)')
      &            ' Order of multipole expansion: ',LMAX
             END IF
             IF (CUT) THEN
@@ -122,13 +123,13 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <abainf.h>
-      CHARACTER OUTCEN*60                          !maw
-      PARAMETER (OUTCEN =                         !maw
-     &     "/people/mark/desktop/code/data/FMM_g-data.out")
 #include <cbifmm.h>
+C     CHARACTER OUTCEN*60                          !maw
+C     PARAMETER (OUTCEN =                         !maw
+C    &     "/people/mark/desktop/code/data/FMM_g-data.out")
 C
 C     Connecting output for Gaussian product co-ordinate data
-C      to be written in MOMINT subroutine 
+C      to be written in MOMINT subroutine
 C
 C     OPEN (UNIT=18, FILE=OUTCEN)                    !maw
 C
@@ -143,7 +144,7 @@ C
 C  /* Deck fmmdrv */
       SUBROUTINE FMMDRV(WORK,LWORK)
 C
-C     M. Watson & T. Helgaker 
+C     M. Watson & T. Helgaker
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -154,10 +155,10 @@ C
 #include <maxmom.h>
 #include <iratdef.h>
 #include <inforb.h>
-#include <cbifmm.h> 
+#include <cbifmm.h>
       DIMENSION WORK(LWORK)
 C
-      IF (SKIP) RETURN                           
+      IF (SKIP) RETURN
       IF (NSYM .GT. 1) THEN
          WRITE (LUPRI,'(2X,2A)')
      &      ' Symmetry not implemented in FMMDRV.',
@@ -169,7 +170,7 @@ C
       NCOMP = (LMAX + 1)**2
 C
 C     Allocations
-C    
+C
       KINTS = 1
       KDMAT = KINTS + NCOMP*NNBASX
       KAOCR = KDMAT + NNBASX
@@ -188,7 +189,7 @@ C  /* Deck fmmdr1 */
       SUBROUTINE FMMDR1(SPHINT,DENMAT,AOCOOR,AOEXP,LMAX,NCOMP,
      &                  WORK,LWORK,IPRINT)
 C
-C     M. Watson & T. Helgaker 
+C     M. Watson & T. Helgaker
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -199,8 +200,8 @@ C
 #include <maxorb.h>
 #include <aovec.h>
 C
-      DIMENSION SPHINT(NNBASX,NCOMP), DENMAT(NNBASX), 
-     &          AOCOOR(NBAST,3), AOEXP(NBAST), 
+      DIMENSION SPHINT(NNBASX,NCOMP), DENMAT(NNBASX),
+     &          AOCOOR(NBAST,3), AOEXP(NBAST),
      &          WORK(LWORK)
 C
 #include <inforb.h>
@@ -228,7 +229,7 @@ C     =================
 C
       CALL FMMDNS(DENMAT,WORK,LWORK,IPRINT)
 C
-C     Multipole moment integrals 
+C     Multipole moment integrals
 C     ==========================
 C
       CALL FMMINT(SPHINT,LMAX,WORK,LWORK,IPRINT)
@@ -236,8 +237,8 @@ C
 C     Expectation values
 C     ==================
 C
-      KDISM = 1 
-      KLAST = KDISM + 8*NNBASX 
+      KDISM = 1
+      KLAST = KDISM + 8*NNBASX
       IF (KLAST .GT. LWORK) CALL STOPIT('SPHAVE',' ',KLAST,LWORK)
       CALL SPHAVE(SPHINT,DENMAT,LMAX,WORK(KDISM),IPRINT)
 C
@@ -246,7 +247,7 @@ C
 C  /* Deck fmmncl */
       SUBROUTINE FMMNCL(WORK,LWORK,IPRINT)
 C
-C     T. Helgaker 
+C     T. Helgaker
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -289,38 +290,40 @@ C     =========================
 C
 C     total
 C
-      LUONEL = 0
+      LUONEL = -1
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
-     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.)
+     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.)
+c     call onedrv(work,lwork,iprint,propty,maxdif,difint,nodc,
+C    &            nodv,difdip,difqdp,hfonly,nclone,pcm)
       CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGONE,WORK(KDMAT),WORK(KHMAT),IPRINT)
       CALL RDONEL('KINETINT',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGKIN,WORK(KDMAT),WORK(KHMAT),IPRINT)
 C
-C     nonclassical 
+C     nonclassical
 C
-      LUONEL = 0
+      LUONEL = -1
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
-     &            .TRUE.,.FALSE.,.FALSE.,.TRUE.,.TRUE.)
+     &            .TRUE.,.FALSE.,.FALSE.,.TRUE.,.TRUE.,.FALSE.)
       CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGNCL,WORK(KDMAT),WORK(KHMAT),IPRINT)
 C
 C     contributions
 C
       EL1TOT = ERGONE - ERGKIN
-      EL1NON = ERGNCL - ERGKIN 
-      EL1CLS = EL1TOT - EL1NON 
+      EL1NON = ERGNCL - ERGKIN
+      EL1CLS = EL1TOT - EL1NON
 C
 C     Two-electron interactions
 C     =========================
 C
 C     total
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KLAST),LWRK)
@@ -328,7 +331,7 @@ C
 C
 C     nonclassical
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       NCLERI = .TRUE.
@@ -348,29 +351,29 @@ C     =====
 C
       ELNNON = EL1NON + EL2NON
       ELNCLS = EL1CLS + EL2CLS + POTNUC
-      ELNTOT = ELNNON + ELNCLS 
+      ELNTOT = ELNNON + ELNCLS
 C
       ETOT = ELNTOT + ERGKIN + ERGEXC
 C
       CALL HEADER('Decomposition of Coulomb energy',-1)
       WRITE (LUPRI,'(2X,17X,2A,/)') '        nonclassical',
      &             '         classical             total'
-      WRITE (LUPRI,'(2X,A,3F18.8)') 
+      WRITE (LUPRI,'(2X,A,3F18.8)')
      &       ' nuclear attraction',EL1NON,EL1CLS,EL1TOT
-      WRITE (LUPRI,'(2X,A,3F18.8)') 
+      WRITE (LUPRI,'(2X,A,3F18.8)')
      &       ' electron repulsion',EL2NON,EL2CLS,EL2TOT
-      WRITE (LUPRI,'(2X,A,3F18.8)') 
+      WRITE (LUPRI,'(2X,A,3F18.8)')
      &       ' nuclear repulsion ',D0,POTNUC,POTNUC
-      WRITE (LUPRI,'(2X,A,3F18.8)') 
+      WRITE (LUPRI,'(2X,A,3F18.8)')
      &       ' total Coulomb     ',ELNNON,ELNCLS,ELNTOT
       CALL HEADER('Decomposition of total electronic energy',-1)
-      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)') 
+      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)')
      &       ' kinetic energy    ',ERGKIN, D100*ERGKIN/ETOT,' %'
-      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)') 
+      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)')
      &       ' Coulomb energy    ',ELNTOT, D100*ELNTOT/ETOT,' %'
-      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)') 
+      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)')
      &       ' exchange energy   ',ERGEXC, D100*ERGEXC/ETOT,' %'
-      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)') 
+      WRITE (LUPRI,'(2X,A,F18.8,9X,F7.2,A)')
      &       ' total energy      ',ETOT, D100,' %'
 C
 C
@@ -379,7 +382,7 @@ C
 C  /* Deck fmmdns */
       SUBROUTINE FMMDNS(DENMAT,WORK,LWORK,IPRINT)
 C
-C     T. Helgaker 
+C     T. Helgaker
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -410,7 +413,7 @@ C
 C  /* Deck fmmint */
       SUBROUTINE FMMINT(SPHINT,LMAX,WORK,LWORK,IPRINT)
 C
-C     T. Helgaker 
+C     T. Helgaker
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -429,7 +432,7 @@ C
 C
       NCMPS = (LMAX + 1)**2
 C
-      KLABL = 1 
+      KLABL = 1
       KINTR = KLABL + NCMPS
       KINTA = KINTR + (NCMPS + IRAT - 1)/IRAT
       KLAST = KINTA + (NCMPS + IRAT - 1)/IRAT
@@ -449,14 +452,14 @@ C
       LFREE = LWRK
       IOFF = 0
       DO IORDER = 0, LMAX
-         NCOMPS = 2*IORDER + 1 
+         NCOMPS = 2*IORDER + 1
          CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTR),WORK(KINTA),
      &               WORK(KLABL),'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
      &               IPRINT,SPHINT(1,IOFF+1),NCOMP,TOFILE,'TRIANG',
-     &               DOINT)
+     &               DOINT,DUMMY,.FALSE.,DUMMY)
          IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+1),
      &                                  WORK(KLABL),WORK(KINTR),NCOMPS)
-         IOFF = IOFF + NCOMPS 
+         IOFF = IOFF + NCOMPS
       END DO
       RETURN
       END
@@ -464,13 +467,13 @@ C
 C  /* Deck fmmspr */
       SUBROUTINE FMMSPR(SPHINT,LABINT,INTREP,NCOMPS)
 C
-C     T. Helgaker 
+C     T. Helgaker
 C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
       CHARACTER LABINT(*)*8
-      DIMENSION SPHINT(NNBASX,*), INTREP(*) 
+      DIMENSION SPHINT(NNBASX,*), INTREP(*)
 #include <inforb.h>
 C
       DO ICOMP = 1, NCOMPS
@@ -504,13 +507,13 @@ C
 C
       CALL HEADER('Output from SPHAVE',-1)
 C
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'ABAFMM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINTM
 C
 C     Nuclear information
-C     =================== 
+C     ===================
 C
       WRITE (LUINTM) NUCIND
       DO I = 1, NUCIND
@@ -521,11 +524,11 @@ C     Electronic information
 C     ======================
 C
       ERFAC = ERFCIV(THRCLS)
-      WRITE (LUINTM) NBAST, LMAX, THRCLS, ERFAC 
+      WRITE (LUINTM) NBAST, LMAX, THRCLS, ERFAC
 C
       ICOMP = 0
       DO L = 0, LMAX
-      MM = 0  
+      MM = 0
       DO M = -L, L
          ICOMP = ICOMP + 1
          EXPVAL = D0
@@ -562,9 +565,9 @@ C
          WRITE (LUPRI,'(2X,A,2I3,2X,F12.6)')
      &      ' Expectation value of spherical harmonic ', L,M,EXPVAL
          IF (MM .GT. 0) THEN
-            MM = -MM 
+            MM = -MM
          ELSE
-            MM = -MM + 1 
+            MM = -MM + 1
          END IF
       END DO
       END DO
@@ -607,13 +610,14 @@ C
             AOEXP(IORBA) = PRIEXP(JSTRT(ISHELA) + NUMCF(ISHELA))
          END DO
       END DO
-      IF (IPRINT .GT. 5) THEN 
+      IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from FMMORB',-1)
          DO I = 1, NBAST
-            WRITE (LUPRI,'(2X,I5,2X,3F12.6,5X,F12.6)') 
+            WRITE (LUPRI,'(2X,I5,2X,3F12.6,5X,F12.6)')
      &            I, (AOCOOR(I,J),J=1,3), AOEXP(I)
-            WRITE (18,'(2X,I5,2X,3F24.16,2X,F20.12)') 
-     &            I, (AOCOOR(I,J),J=1,3), AOEXP(I)
+Chj: see FMMINI
+C           WRITE (18,'(2X,I5,2X,3F24.16,2X,F20.12)')
+C    &            I, (AOCOOR(I,J),J=1,3), AOEXP(I)
          END DO
       END IF
       RETURN
@@ -639,7 +643,7 @@ C
       ERGTOT = D0
       ERGCOU = D0
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -649,10 +653,10 @@ C
       LENINT = IRAT*LBUF + NIBUF*LBUF + 1
 C
       KINT  = 1
-      KIINT = KINT + LBUF 
-      KIIN4 = KINT + LENINT 
+      KIINT = KINT + LBUF
+      KIIN4 = KINT + LENINT
       KLAST = KIIN4 + 4*LBUF
-      IF (KLAST .GT. LWORK) CALL STOPIT('GETERG','LUINTA',KLAST,LWORK)     
+      IF (KLAST .GT. LWORK) CALL STOPIT('GETERG','LUINTA',KLAST,LWORK)
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
     1 CONTINUE
@@ -667,7 +671,7 @@ C
       CALL GPCLOSE(LUINTA,'DELETE')
       ERGTOT = D4*ERGTOT
       ERGCOU = D4*ERGCOU
-C     WRITE (LUPRI,'(1X,A,2F12.6)') 
+C     WRITE (LUPRI,'(1X,A,2F12.6)')
 C    &    ' Two-electron total and Coulomb energies: ',ERGTOT,ERGCOU
       RETURN
       END
@@ -728,15 +732,15 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION DIS(NDIM,8)
 C
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'ABAFMM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINTM
 C
 C     Nuclear information
-C     =================== 
+C     ===================
 C
-      CALL HEADER('Nuclear information',-1)      
+      CALL HEADER('Nuclear information',-1)
       READ (LUINTM) NUCIND
       DO I = 1, NUCIND
          READ (LUINTM) CHRG, CRDX, CRDY, CRDZ
@@ -746,12 +750,12 @@ C
 C     Electronic information
 C     ======================
 C
-      CALL HEADER('Electronic information',-1)      
+      CALL HEADER('Electronic information',-1)
       READ (LUINTM) NBAST, LMAX, THRCLS, ERFAC
 C
       WRITE (LUPRI,'(2X,A,I12)')    ' NBAST  ', NBAST
-      WRITE (LUPRI,'(2X,A,I12)')    ' LMAX   ', LMAX 
-      WRITE (LUPRI,'(2X,A,E12.6)') ' THRCLS ', THRCLS 
+      WRITE (LUPRI,'(2X,A,I12)')    ' LMAX   ', LMAX
+      WRITE (LUPRI,'(2X,A,E12.6)') ' THRCLS ', THRCLS
       WRITE (LUPRI,'(2X,A,F12.6)') ' ERFAC  ', ERFAC
 C
       DO L =  0, LMAX
@@ -764,7 +768,7 @@ C
                DIS(IJ,2) = PY
                DIS(IJ,3) = PZ
                DIS(IJ,4) = ERFAC/SQRT(EXPP)
-               DIS(IJ,5) = DSPH 
+               DIS(IJ,5) = DSPH
              ELSE IF (L.EQ.1) THEN
                IF (M.EQ.-1) DIS(IJ,6) = DSPH
                IF (M.EQ. 0) DIS(IJ,7) = DSPH
@@ -779,11 +783,11 @@ C
       ERGP = D0
       ERGQ = D0
       DO I = 1, NBAST*(NBAST+1)/2
-      DO J = 1, NBAST*(NBAST+1)/2 
+      DO J = 1, NBAST*(NBAST+1)/2
          RX = DIS(I,1)-DIS(J,1)
          RY = DIS(I,2)-DIS(J,2)
          RZ = DIS(I,3)-DIS(J,3)
-         R  = SQRT(RX**2 + RY**2 + RZ**2) 
+         R  = SQRT(RX**2 + RY**2 + RZ**2)
          R3 = R**3
          IF (R .GT. DIS(I,4) + DIS(J,4)) THEN
             P00 =   DIS(I,5)
@@ -801,15 +805,15 @@ C
             C001M = RY*P00*Q1M/R3
             C0010 = RZ*P00*Q10/R3
             C001P = RX*P00*Q1P/R3
-            ERG0  = ERG0 + C0000 
-            ERGP  = ERGP - C1M00 - C1000 - C1P00 
-            ERGQ  = ERGQ + C001M + C0010 + C001P 
+            ERG0  = ERG0 + C0000
+            ERGP  = ERGP - C1M00 - C1000 - C1P00
+            ERGQ  = ERGQ + C001M + C0010 + C001P
          END IF
       END DO
       END DO
       ERG0 = DP5*ERG0
       ERG1 = DP5*ERGP + DP5*ERGQ
-      WRITE (LUPRI,'(/2X,A,3F13.8)') 
+      WRITE (LUPRI,'(/2X,A,3F13.8)')
      &      ' First-order classical interaction:',ERG0,ERG1,ERG0+ERG1
       RETURN
       END
@@ -818,11 +822,11 @@ C  /* Deck erfciv */
 #include <implicit.h>
       PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
       DIMENSION ERFCI(0:15)
-      DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0, 
-     &                       2.75106D0, 3.12341D0, 3.45891D0, 3.76656D0, 
-     &                       4.05224D0, 4.32001D0, 4.57282D0, 4.81292D0, 
+      DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0,
+     &                       2.75106D0, 3.12341D0, 3.45891D0, 3.76656D0,
+     &                       4.05224D0, 4.32001D0, 4.57282D0, 4.81292D0,
      &                       5.04203D0, 5.26151D0, 5.47248D0, 5.67585D0/
       ARG = MAX(MAX(ABS(THR),THRMAX),D0)
       ERFCIV = ERFCI(-NINT(DLOG10(ARG)))
       RETURN
-      END 
+      END

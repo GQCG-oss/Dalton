@@ -15,7 +15,7 @@ cat > verdet_hf.info <<%EOF%
 #######################################################################
 cat > verdet_hf.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 Verdet calculations
 for HF in CM coor. system
     2    0  X  Y  Z   1.00D-15

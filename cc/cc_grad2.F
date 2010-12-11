@@ -73,7 +73,9 @@ C
 #include <symmet.h>
 #include <chrnos.h>
 #include <ccorb.h>
-#include <infind.h>
+CCN #include <infind.h> not compatible with R12!
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccfield.h>
 #include <ccsdinp.h>
@@ -106,7 +108,7 @@ C
       DIMENSION WORK(LWORK)
       LOGICAL LDERINT(8,3)
       LOGICAL DIRINT, SYM1ONLY, DIRSAV
-      CHARACTER*8 LABEL, LABELH
+      CHARACTER*8 LABEL1, LABEL1H
 C
       CHARACTER LSTRLX*(3), FILFCK*(8), MODEL*(10)
       LOGICAL LDOTHISATOM, LANYTHING, LEXPEC, LFOCK, LTWO, SQRINT
@@ -130,7 +132,7 @@ C
         CALL QUIT('Illegal value of I1DXORD in CC_GRAD2.')
       END IF
 C
-      LUFCK = 0
+      LUFCK = -1
       CALL WOPEN2(LUFCK,FILFCK,64,0)
 C
 C-----------------------------------------
@@ -500,11 +502,11 @@ C
          KEND1 = KEND1SV
          LWRK1 = LWRK1SV
 
-         CALL CCEFFFOCKHLP1(IATOM,I1DXORD,LDOTHISATOM,LABELH)
+         CALL CCEFFFOCKHLP1(IATOM,I1DXORD,LDOTHISATOM,LABEL1H)
             
          IF (.NOT.LDOTHISATOM) GOTO 90
          
-         IF ( LABELH(1:5).EQ.'1DHAM' .OR. LABELH(1:5).EQ.'dh/dB') THEN
+         IF ( LABEL1H(1:5).EQ.'1DHAM' .OR. LABEL1H(1:5).EQ.'dh/dB') THEN
             ! for derivative integrals use the DIRGRD flag to
             ! switch between direct/non-direct mode
             DIRECT = DIRGRD 
@@ -512,16 +514,16 @@ C
             ! set dorps.h common blocks... 
             ! this has to be adapted for symmetry...
             SYM1ONLY = .FALSE.
-            CALL CC_SETDORPS(LABELH,SYM1ONLY,0)
+            CALL CC_SETDORPS(LABEL1H,SYM1ONLY,0)
 
             IF (LOCDBG) THEN
                WRITE (LUPRI,'(A,I3,2X,A,2X,L3)') 
-     &           'CC_GRAD2> IATOM,LABEL,DIRECT:',IATOM,LABEL,DIRECT
+     &           'CC_GRAD2> IATOM,LABEL1H,DIRECT:',IATOM,LABEL1H,DIRECT
             END IF
 
             ! precalculate and sort derivative integrals for this atom
             IF (.NOT.DIRECT) THEN
-              CALL CCDER1(IATOM,LABELH,LDERINT,WORK(KEND1),LWRK1)
+              CALL CCDER1(IATOM,LABEL1H,LDERINT,WORK(KEND1),LWRK1)
             END IF
          ELSE
             DIRECT = DIRSAV
@@ -569,7 +571,7 @@ C
 
                CALL CCEFFFOCKHLP2(IDLST,JATOM,IATOM,ISYMOPR,ISYRLX,
      &                            ISYFCK,ISCOOR,ICOOR,ICORSY,MXCOMP,
-     &                            LEXPEC,LFOCK,LTWO,LABEL,IOPER,
+     &                            LEXPEC,LFOCK,LTWO,LABEL1,IOPER,
      &                            WORK(KKAPPA),WORK(KRMAT),WORK(KQAOS),
      &                            WORK(KT1AM),WORK(KOVERLP),
      &                            WORK(KLAMDPQ),WORK(KLAMDHQ),
@@ -586,7 +588,7 @@ C
                   WRITE (LUPRI,*) 'IDXORD.EQ.1 case:'
                   WRITE (LUPRI,*) 'two-electron part for:'
                   WRITE (LUPRI,*) 'IDLST:',IDLST
-                  WRITE (LUPRI,*) 'LABEL:',LABEL
+                  WRITE (LUPRI,*) 'LABEL1:',LABEL1
                   WRITE (LUPRI,*) 'IOPER:',IOPER
                   WRITE (LUPRI,*) 'IATOM:',JATOM
                   WRITE (LUPRI,*) 'LTWO :',LTWO
@@ -646,15 +648,15 @@ C
 C
             IF (DIRECT) THEN
 
-              IF      (LABELH(1:5).EQ.'HAM0 ') THEN
+              IF      (LABEL1H(1:5).EQ.'HAM0 ') THEN
                 NGDER  = 0
                 NBDER  = 0
                 NFILES = 1
-              ELSE IF (LABELH(1:5).EQ.'1DHAM') THEN
+              ELSE IF (LABEL1H(1:5).EQ.'1DHAM') THEN
                 NGDER  = 1
                 NBDER  = 0
                 NFILES = 1 + 3*NUCDEP
-              ELSE IF (LABELH(1:5).EQ.'dh/dB') THEN
+              ELSE IF (LABEL1H(1:5).EQ.'dh/dB') THEN
                 NGDER  = 0
                 NBDER  = 1
                 NFILES = 1 + 3*2
@@ -684,7 +686,7 @@ C                  END IF
      *                       WORK(KEND1), LWRK1,IPRERI)
 C             END IF
 
-              ! allocate memory for orbital/record labels
+              ! allocate memory for orbital/record LABEL1s
               NBUFMX = NBUFX(0)
               DO I = 1, NFILES-1
                 NBUFMX = MAX(NBUFMX,NBUFX(I))
@@ -719,6 +721,10 @@ C              AO integral distribution:
 C
                IF (DIRECT) THEN
                  IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                  ISYMD = ISAO(IDEL)
                  WRITE(LUPRI,*)'IDEL2,INDEXA:',IDEL2,INDEXA(IDEL2)
                  WRITE(LUPRI,*)'IDEL,ISAO:',IDEL,ISAO(IDEL)
@@ -862,14 +868,14 @@ C
                      IDLST   = IDLST0
 
                    CALL CCEFFFOCKHLP3(IDLST,IATOM,JATOM,ISYMOPR,ISYFCK,
-     &                                LABEL,IOPER,IORDER,
+     &                                LABEL1,IOPER,IORDER,
      &                                MXCOMP,ISCOOR,ICORSY,ICOOR,
      &                                LEXPEC,LFOCK,LTWO,WORK(KDNS1D),
      &                                WORK(KEND2),LWRK2)
                   END IF
 
                   IF (JATOM.EQ.IATOM .AND. LTWO .AND.
-     &                (LABEL(1:5).EQ.'HAM0 ' .OR. DIRECT
+     &                (LABEL1(1:5).EQ.'HAM0 ' .OR. DIRECT
      &                 .OR.LDERINT(ICORSY,ICOOR)) ) THEN 
 
 C
@@ -938,7 +944,7 @@ C--------------------------------------------------------------------
 C
                         D = IDEL - IBAS(ISYMD)
 C
-                        CALL CCEFFFOCK2(I1DXORD,LABEL,
+                        CALL CCEFFFOCK2(I1DXORD,LABEL1,
      &                                  ISCOOR,ICOOR,ICORSY,
      &                                  MXCOMP,ISYRLX,
      &                                  G,ISYMG,D,ISYMD,
@@ -988,7 +994,7 @@ C
          WRITE (LUPRI,'(2X,A,I5)') 'one-index transformation order:',
      &            I1DXORD 
 
-         WRITE (LUPRI,'(/2X,3A)') 'Label     Sym. ',
+         WRITE (LUPRI,'(/2X,3A)') 'LABEL1     Sym. ',
      &    ' <1el> CC    <2el> CC    <1el> HF    <2el> HF',
      &    '    Fock idx '
          WRITE (LUPRI,'(2X,72("-"))')
@@ -1003,14 +1009,14 @@ C
 
          DO IDLST = 1, NFOCKLBL
             IF (I1DXORD.EQ.0) THEN
-              LABEL   = LBLEXPFCK(IDLST)
+              LABEL1   = LBLEXPFCK(IDLST)
               ISYMOPR = ISYEXPFCK(IDLST)
               LEXPEC  = LEXPFCK(1,IDLST)
               LFOCK   = LEXPFCK(2,IDLST)
               ISYFCK  = ISYMOPR
             ELSE
-              LABEL  = LBL1DXFCK(IDLST)
-              IOPER  = IROPER(LABEL,ISYMOPR)
+              LABEL1  = LBL1DXFCK(IDLST)
+              IOPER  = IROPER(LABEL1,ISYMOPR)
               LEXPEC = .FALSE.
               LFOCK  = .TRUE.
               LSTRLX = LST1DXFCK(IDLST)
@@ -1019,21 +1025,21 @@ C
               ISYFCK = MULD2H(ISYMOPR,ISYRLX)
             END IF
             IF (LEXPEC.AND.LFOCK) THEN
-             WRITE (LUPRI,'(2X,A8,2I3,4G16.8,2I5)') LABEL, ISYMOPR, 
+             WRITE (LUPRI,'(2X,A8,2I3,4G16.8,2I5)') LABEL1, ISYMOPR, 
      &           ISYFCK,
      &           (EXPVALUE(I,IDLST),I=1,4),
      &           (IADRFCK(I,IDLST),I=1,2)
             ELSE IF (LEXPEC) THEN
-             WRITE (LUPRI,'(2X,A8,2I3,4G16.8,A10)') LABEL,ISYMOPR,
+             WRITE (LUPRI,'(2X,A8,2I3,4G16.8,A10)') LABEL1,ISYMOPR,
      &           ISYFCK,
      &           (EXPVALUE(I,IDLST),I=1,4), 
      &           '  ---  ---'
             ELSE IF (LFOCK)  THEN
-             WRITE (LUPRI,'(2X,A8,2I3,A48,2I5)') LABEL,ISYMOPR,ISYFCK,
+             WRITE (LUPRI,'(2X,A8,2I3,A48,2I5)') LABEL1,ISYMOPR,ISYFCK,
      &           '  --.-----    --.-----    --.-----    --.-----  ',
      &             (IADRFCK(I,IDLST),I=1,2)
             ELSE
-             WRITE (LUPRI,'(2X,A8,2I3,A48,A10)')LABEL,ISYMOPR,ISYFCK,
+             WRITE (LUPRI,'(2X,A8,2I3,A48,A10)')LABEL1,ISYMOPR,ISYFCK,
      &           '  --.-----    --.-----    --.-----    --.-----  ',
      &           '  ---  ---'
             END IF

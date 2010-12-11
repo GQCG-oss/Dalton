@@ -33,21 +33,21 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-C===========================================================================
+C=========================================================================
 C old log:
 C010131-vebjornb: Old dalton.F split into dalton.F (program) and
 C                 dalgnr.F (subroutines).
 C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
-C===========================================================================
+C=========================================================================
 C  /* Deck dalton */
       PROGRAM DALTON
 C
 C     NOTE
 C
-C     This is an experimental code for the evaluation of SCF, CC and
-C     MCSCF molecular properties as energy derivatives or response
+C     This is an experimental code for the evaluation of SCF, DFT, MCSCF
+C     and CC molecular properties as energy derivatives or response
 C     functions.  The authors accept no responsibility for the
 C     performance of the code or for the correctness of the results.
 C
@@ -77,22 +77,25 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mtags.h>
+#include <priunit.h>
 #include <maxorb.h>
 #include <infpar.h>
-#include <priunit.h>
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftap.h>
+#include <prpc.h>
 Cef begin
 #include <incore.h>
 Cef end
       EXTERNAL EXEDRV
 #if defined (VAR_MPI)
-      EXTERNAL NODSTR
+      EXTERNAL NODEDRIVER
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
+      CHARACTER*1 adummy
       CHARACTER*14 FILNAM
+      CHARACTER LABEL1*8, STHELP*10
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
@@ -117,25 +120,37 @@ C
 #endif
       DATA WRKDLM/12345678D0/
 C
-#if defined (VAR_MPI)
+
+      CALL QENTER('DALTON main')
+C
+C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
+C If not MPI, MPIXINIT defines: MYNUM  = 0; MASTER = 0; NODTOT = 0
+C
       CALL MPIXINIT
       PARIO = .FALSE.
-#else
-      MYNUM = 0
-#endif
-      CALL GPIOIN
-      IF (MYNUM .EQ. 0) THEN
+C
+C     Define SLAVE variable (only false for MASTER, MYNUM.eq.0)
+C     Initialize file pointers; open error file for MASTER
+C
+      CALL GPIO_INI_DALTON
+      IF (MYNUM .EQ. MASTER) THEN
+         SLAVE = .FALSE.
          CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
       ELSE
+         SLAVE = .TRUE.
+#ifdef SYS_LINUX
          LUERR = 0
+#else
+         LUERR = 6
+#endif
       END IF
       LMWORK = 0
 C
 C     Read environment variables for LMWORK and BASDIR
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
 C
-      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY)
+      CALL GETMMBAS(LMWORK,BASDIR,LBASDIR)
       IF (LMWORK .LE. 0) LMWORK = LWORK_DEF
 C
       NBYTES  = (LMWORK+2) * 8
@@ -158,7 +173,11 @@ C
      &       /'       (2) "datasize" resource limit too small.')
 C
 #if defined (SYS_IRIX) || defined (SYS_AIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_HAL) || defined (SYS_DEC)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))||defined(VAR_ABSOFT)
+
+#if defined (SYS_LINUX)
+      WADDR = 1
+#endif
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT)
       WADDR = MALLOC(NBYTES)
 #endif
 
@@ -176,15 +195,13 @@ C
       END IF
 #endif
 #endif
-#if (defined (SYS_LINUX))
-      WADDR = 1
-#endif
       IF (WADDR .EQ. 0) THEN
          WRITE(LUERR,1000)
          IF (LUERR .NE. 0) WRITE(0,1000)
          CALL QUIT(' DALTON: memory allocation failure')
       END IF
 #endif
+
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 C
       IABORT = 0
@@ -200,11 +217,11 @@ C
          CALL QUIT(' DALTON: Core HPALLOC failure')
       END IF
 #endif
+
 Cef begin
-C To run the incore-version of dalton where integrals are stored in memory
-C on each slave for reuse, just set AOSAVE = .TRUE. below, and take a look
-C at the header file DALTON_SOURCE_DIR/include/incore.h  and the variables:
-C MMWORK and IEIR. 
+C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
+C are stored in memory on each slave for reuse. Take a look at the header
+C file DALTON_SOURCE_DIR/include/incore.h  and the variables: MMWORK and IEIR. 
 C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
 C the chunk of array WORK which is reserved for incore-calculations. 
 C The variable IEIR in incore.h must also be set to a large enough positive 
@@ -215,50 +232,29 @@ C integer (we used IEIR=3000000).
       ISCORE = JSCORE
       MMCORE = LMCORE
       N_SHL = 1
-      AOSAVE = .TRUE.
+      AOSAVE = (MMWORK.GT.1)
       INITX = .FALSE.
       MSAVE = .TRUE.
       LINTSV = .FALSE.
       LINTMP = .FALSE.
-	INDX_SHL1 = 0
-	INDX_SHL2 = 0
-	INDX_SHL3 = 0
-	INDX_SHL4 = 0
+      INDX_SHL1 = 0
+      INDX_SHL2 = 0
+      INDX_SHL3 = 0
+      INDX_SHL4 = 0
 #if defined (VAR_MPI)
-     	CALL IZERO(INDX_SHL,MXSHL_KEEP)
+      CALL IZERO(INDX_SHL,MXSHL_KEEP)
 #endif
 C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 C
-	IF (MMWORK .NE. MMCORE) THEN
-	CALL QUIT('MMCORE must equal MMWORK.')
-	END IF
-Cef end
-      IF (INDEX(BASDIR,
-     &INSTALL_BASDIR
-     &) .LE. 0) THEN
-
-Chjaaj   IEND = INDEX(BASDIR,' ') - 1
-Chjaaj   not good, will give wrong IEND if any directories
-Chjaaj   contains blanks, as in '/home/my basdir/'); thus
-         DO I = LBASDIR,1,-1
-            IF (BASDIR(I:I) .NE. ' ') THEN
-               IEND = I
-               GO TO 20
-            END IF
-         END DO
-   20    CONTINUE
-C
-#if defined (VAR_ABSOFT)
-         BASDIR="Insert basis-directory path here"
-C        Example:
-C        BASDIR="/Users/helgaker/Dalton/basis/"
-#else
-         BASDIR=BASDIR(1:IEND)//':'//
-     &INSTALL_BASDIR
-#endif
+      IF (MMWORK .NE. MMCORE) THEN
+         CALL QUIT('MMCORE must equal MMWORK.')
       END IF
-      WRITE(LUERR,'(/A/8X,A)') ' Directories for basis set searches:',
-     &                         BASDIR
+Cef end
+
+      LEN_BASDIR = MAX(1,LNBLNK(BASDIR))
+      WRITE(LUERR,'(/I4,A/5X,A)')
+     &   MYNUM,': Directories for basis set searches:',
+     &   BASDIR(1:LEN_BASDIR)
 C
 C     Set memory traps and initialize unit numbers
 C
@@ -271,7 +267,6 @@ C     Next 20+ lines commented out, does not work for general parallel
 C     calculations.
 C
 c#if defined (VAR_MPI)
-c      CALL MPIXINIT
 c#if defined (SYS_CRAY)
 c      CALL INFO = ISHELL('mkdir $SCRATCHDIR')
 c      CALL INFO = ISHELL('cd $SCRATCHDIR')
@@ -287,49 +282,37 @@ C     the keyword .PARNMD. If found, read DALTON/MOLECULE.INP and send them
 C     to the slaves, who writes them out in their own files
 C
 c      IF (NODTOT .GT. 0) THEN
-c         IF (MYNUM .EQ. 0) THEN
+c         IF (MYNUM .EQ. MASTER) THEN
 c            CALL PARIOT
 c         ELSE
 c            CALL PARION
 c         END IF
 c      END IF
-c      CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-c      CALL MEMINI(LUPRI,LUERR)
-c#else
-C      CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-C      CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-C      CALL MEMINI(LUPRI,LUERR)
-C
-C     This is not an MPI version, but we anyway set
-C     variable MYNUM = 0 which for MPI identifies
-C     this node as the master node for output below
-C
-C      MYNUM = 0
 C#endif
 C
-C     Back to old version...   vb jan-01
-C     Revised June 01 /hjaaj
 C
-      IF (MYNUM .EQ. 0) THEN
-         CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
+      CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-C        ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
-C            if OUTFIL is an environment variable
-         CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
+C     ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
+C         for Master if OUTFIL is an environment variable;
+C         for slaves the name will be changed to
+C         "DALTON.OUT#<slave no>" in GPOPEN
+
+      CALL GPOPEN(LUNDPF,'DALTON.PROP','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-      ELSE
-         WRITE (FILNAM,'(A,I4.4)') 'DALTON.OUT',MYNUM
-         CALL GPOPEN(LUPRI,FILNAM,'NEW',' ','FORMATTED',
+      REWIND(LUNDPF)
+      CALL GPOPEN(LUNMPF,'midasifc.prop','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-      END IF
+      REWIND(LUNMPF)
+C
       CALL MEMINI(LUPRI,LUERR)
 C
-C     *** End of old version ***
-C
-      IF (MYNUM .EQ. 0) THEN
+      IF (MYNUM .EQ. MASTER) THEN
 C         
-         CALL TITLER(' DALTON - An electronic structure program ',
+         CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+C
+         CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
 C
          WRITE (LUPRI,'(T5,A//,(T5,A))')
@@ -378,7 +361,7 @@ C
      &                      //'Germany    ',
      *  'Rika Kobayashi,           ANU Supercomputer Facility,   '
      &                      //'Australia  ',
-     *  'Jakob Kongsted,           Aarhus University,            '
+     *  'Jacob Kongsted,           Univ. of Southern Denmark,    '
      &                      //'Denmark    ',
      *  'Henrik Koch,              University of Trondheim,      '
      &                      //'Norway     ',
@@ -453,23 +436,65 @@ C
 C     Stamp date and time and hostname to output
 C
          CALL TSTAMP('INIT',LUPRI)
-C
-C     Read general input
-C
-         CALL GNRLIN
-         IF (TESTIN) THEN
-            CALL QUIT('*** End of input test for GENERAL ***')
+         IF (GBYTES .GE. 1.D0) THEN
+           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')
+     &        ' * Work memory size             :',
+     &        LMWORK,' =',GBYTES,' gigabytes.'
+         ELSE
+           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')
+     &        ' * Work memory size             :',
+     &        LMWORK,' =',XMBYTES,' megabytes.'
          END IF
+         IF (AOSAVE) WRITE(LUPRI,'(A,I12)')
+     &        ' + memory for in-core integrals :',MMCORE
+C
+         WRITE(LUPRI,'(/A)')
+     &   ' * Directories for basis set searches:'
+         J_END = LNBLNK(BASDIR)
+         IF (J_END .LE. 0) THEN
+            WRITE(LUPRI,'(5X,A)') 'NONE SPECIFIED!'
+         ELSE
+C           structure of BASDIR: 'dir1:dir2:dir3'
+            I = 0
+            I_END = -1
+   20       CONTINUE
+               I_ST = I_END + 2
+               I_END = INDEX(BASDIR(I_ST:J_END),':') - 1
+               IF (I_END .LE. 0) THEN
+                  I_END = J_END
+               ELSE
+                  I_END = I_ST - 1 + I_END
+               END IF
+               IF (I_END .GT. I_ST) THEN
+                  I = I + 1
+                  WRITE(LUPRI,'(I4,2A)') I,') ',BASDIR(I_ST:I_END)
+                  GO TO 20
+               END IF
+         END IF
+C
+C        Read general input for Dalton
+C
+         CALL DALTON_GNRLINP
+C
 #if !defined (VAR_MPI)
       END IF
 #else /* VAR_MPI */
          CALL RECVNAMES
 #if defined (SYS_LINUX)
-         CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+         CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
-         CALL EXEDRV(WORK, LMWORK, WRKDLM,MASTER,MYNUM)
+         CALL EXEDRV(WORK, LMWORK, WRKDLM)
 #endif
          CALL FLSHFO(LUPRI)
+
+         LABEL1 = 'ALL_DONE'
+         STHELP = 'THE_END   '
+         CALL WRIPRO(0.0D0,STHELP,666,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+         IPRLOC = MAX(IPRUSR,IPRRHF)
+C        IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+         IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
@@ -478,18 +503,41 @@ C
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUERR,'KEEP')
          CALL GPCLOSE(LUMOLDEN,'KEEP')
+         CALL GPCLOSE(LUNDPF,'KEEP')
+         CALL GPCLOSE(LUNMPF,'KEEP')
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
+C     ... I am a "slave" ... (MYNUM .ne. MASTER)
+         CALL TITLER('DALTON - An electronic structure program',
+     &               '*',111)
+         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+         CALL TSTAMP('INIT',LUPRI)
+         IF (GBYTES .GE. 1.D0) THEN
+           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+     &        LMWORK,' =',GBYTES,' gigabytes.'
+         ELSE
+           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+     &        LMWORK,' =',XMBYTES,' megabytes.'
+         END IF
+         IF (AOSAVE) THEN
+           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+     &        MMCORE
+         END IF
          IF (PARIO) THEN
-            CALL GNRLIN
-            IF (TESTIN) THEN
-               CALL QUIT('*** End of input test for GENERAL ***')
-            END IF
+            CALL DALTON_GNRLINP
 #if defined (SYS_LINUX)
-            CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+            CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
-            CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
+            CALL EXEDRV(WORK, LMWORK,WRKDLM)
 #endif
+            LABEL1 = 'ALL_DONE'
+            STHELP = 'THE_END   '
+            CALL WRIPRO(0.0D0,STHELP,666,
+     *                  LABEL1,LABEL1,LABEL1,LABEL1,
+     *                  ZERO,ZERO,ZERO,1,0,0,0)
+            IPRLOC = MAX(IPRUSR,IPRRHF)
+C           IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+            IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
@@ -499,13 +547,15 @@ C
             CALL GPCLOSE(LUCME,'KEEP')
             CALL GPCLOSE(LUERR,'KEEP')
             CALL GPCLOSE(LUMOLDEN,'KEEP')
+            CALL GPCLOSE(LUNDPF,'KEEP')
+            CALL GPCLOSE(LUNMPF,'KEEP')
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
 #if defined (SYS_LINUX)
-            CALL CEXE(NODSTR,LMWORK,WRKDLM,MASTER,MYNUM)
+            CALL CEXE(NODEDRIVER,LMWORK,WRKDLM)
 #else
-            CALL NODSTR(WORK,LMWORK,WRKDLM,MASTER,MYNUM)
+            CALL NODEDRIVER(WORK,LMWORK,WRKDLM)
 #endif
          END IF
       END IF
@@ -528,13 +578,23 @@ C
 #endif
 #if !defined (VAR_MPI)
 #if defined (SYS_LINUX)
-      CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+      CALL CEXE(EXEDRV, LMWORK, WRKDLM)
 #else
-      CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
+      CALL EXEDRV(WORK, LMWORK,WRKDLM)
 #endif
+      LABEL1 = 'ALL_DONE'
+      STHELP = 'THE_END   '
+      CALL WRIPRO(0.0D0,STHELP,666,
+     *            LABEL1,LABEL1,LABEL1,LABEL1,
+     *            ZERO,ZERO,ZERO,1,0,0,0)
+      IPRLOC = MAX(IPRUSR,IPRRHF)
+C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
+      IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
       CALL GPCLOSE(LUERR,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUMOLDEN,'KEEP')
+      CALL GPCLOSE(LUNDPF,'KEEP')
+      CALL GPCLOSE(LUNMPF,'KEEP')
       CALL GPCLOSE(LUPRI,'KEEP')
 #endif
 #if defined (VAR_PVM)
@@ -550,54 +610,197 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+      CALL QEXIT('DALTON main')
       END
-      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
+      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER*(*) BASDIR
-#if defined(SYS_AIX)||defined(SYS_CRAY)||defined(SYS_IRIX)||defined(SYS_NEC)||defined(SYS_CONVEX)||defined(SYS_T3D)||defined(SYS_SUN)||defined (SYS_LINUX)||defined(SYS_HPUX)||defined(SYS_HAL)||defined(SYS_T90)||defined(SYS_DEC)
-      CHARACTER*20 WRKMEM
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
+      CHARACTER*20  WRKMEM
+#include <maxorb.h>
+#include <infpar.h>
 C
 C     Dynamic memory allocation; check for WRKMEM in environment
 C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96
 C
-      WRKMEM = '                    '
+      IF (.NOT. SLAVE) THEN
+C     ... only master reads environment, transferred
+C         to slave with MPI_BCAST.
+C         On some MPI implementations it requires extra
+C         options to transfer UNIX environment variables to
+C         slave nodes. /hjaaj June 2005
+        WRKMEM = '                    '
 #if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
+        CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
+        CALL PXFGETENV('BASDIR',6,BASDIR,LBASDR,IERR)
 #else
-      CALL GETENV('WRKMEM',WRKMEM)
-      CALL GETENV ('BASDIR',BASDIR)
+        CALL GETENV('WRKMEM',WRKMEM)
+        CALL GETENV('BASDIR',BASDIR)
 #endif
-      READ(WRKMEM, '(I20)', ERR=10) LMWORK
-      IF (LMWORK .GE. 0) GOTO 20
-   10    WRITE(LUERR,'(/3A)')
-     &   ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
-         LMWORK = 0
-   20 CONTINUE
+        READ(WRKMEM, '(I20)', ERR=10) LMWORK
+        IF (LMWORK .GE. 0) GO TO 20
+   10     WRITE(LUERR,'(/3A)')
+     &    ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
+          LMWORK = 0
+   20   CONTINUE
 C
-C     Either default memory size,
+C       Either default memory size,
 C
-      IF (LMWORK .LE. 0) THEN
-         WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
-      ELSE
+        IF (LMWORK .LE. 0) THEN
+          WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
+        ELSE
 C
-C     ... or user specified memory size.
+C       ... or user specified memory size.
 C
-         DO I=20,1,-1
-           IF(WRKMEM(I:I).NE.' ') GOTO 1312
-         ENDDO
-         CALL QUIT('Empty environment variable WRKMEM')
- 1312    LWMEM = I
-         WRITE(LUERR,'(/A/3A)')
-     &   ' DALTON: user specified work memory size used,',
-     &   '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
+          LWMEM = MAX(1,LNBLNK(WRKMEM))
+          WRITE(LUERR,'(/A/3A)')
+     &    ' DALTON: user specified work memory size used,',
+     &    '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
+        END IF
       END IF
+      IF (LNBLNK(BASDIR) .LT. 1) BASDIR = './:'
 #if defined(VAR_MPI)
-      CALL MPI_BCAST(LMWORK,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+C
+C     Transfer LMWORK and BASDIR to slaves
+C
+      CALL MPIXBCAST(LMWORK,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',MASTER)
 #endif /* defined(VAR_MPI) */
-#endif
+      END
+C  /* Deck GPIO_INI_DALTON */
+      SUBROUTINE GPIO_INI_DALTON
+C
+C 1-Mar-2000 K.Ruud
+C 10-Apr-2000 HJAaJ: changed initialization to -9xxx from 0,
+C                    because unit 0 is stderr on many systems.
+C                    The number -9xxx is used for easier debugging.
+C
+#include <mxcent.h>
+#include <eribuf.h>
+#include <priunit.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <r12int.h>
+C
+C     priunit.h:
+C
+      LUERR  = -8000
+      LUW4   = -8004
+      LUCMD  = -8005
+      LUPRI  = -8006
+      LUPOT  = -8009
+      NINFO  = 0
+      NWARN  = 0
+      IPRERR = 0
+C
+C     inftap.h:
+C
+      LUCME  = -9003
+      LUMOL  = -9004
+      LUPROP = -9005
+      LUSOL  = -9006
+      LUINTA = -9007
+      LUONEL = -9008
+      LUSUPM = -9009
+      LUTLM  = -9010
+      LUDA1  = -9011
+      LUITMP = -9012
+      LU2DER = -9013
+      LUDASP = -9014
+      LURDR  = -9016
+      LURDI  = -9017
+      LUGDR  = -9018
+      LUGDI  = -9019
+      LUGDT  = -9020
+      LURDT  = -9021
+      LUDFCK = -9022
+      LUSFDA = -9023
+      LUFDC  = -9024
+      LUWLK  = -9025
+      LUPAO  = -9026
+      LUPAS  = -9027
+      LUNR1  = -9028
+      LUNR3  = -9029
+      LUNR5  = -9030
+      LUINTR = -9032
+      LUMOLDEN=-9033
+      LUPMOM = -9034
+      LUMOM  = -9035
+      LUEIND = -9036
+      LUENUC = -9037
+      LUESITE= -9038
+      LUEOBAR= -9039
+      LUVDWSE= -9040
+      LUENSA = -9041
+      LUQM3E = -9042
+      LUQM3P = -9043
+      LUOSCR = -9044
+      LUMMOV = -9045
+      LUOVER = -9046
+      LUNDPF = -9047
+      LUSRINT =-9048
+      LUNMPF = -9049
+C
+C     /R12INT/ (WK/UniKA/26-11-2002).
+C
+      DO I = 1, 5
+         LUR12(I) = -9100 - MXCOOR - I
+      ENDDO
+C
+C     /ERITAP/
+C
+      DO I = 0, MXCOOR
+         LUAORC(I) = -10000 - I
+      ENDDO
+C
+C     /RSPTAP/
+C
+      LUAHSO = -9201
+      LUCRV1 = -9202
+      LUCRV2 = -9203
+      LUXYVE = -9204
+      LUCRVE = -9205
+      LURSP3 = -9206
+      LURSP4 = -9207
+      LURSP5 = -9208
+      LUMHSO = -9209
+      LURSP  = -9210
+C
+C     /SIRTAP/
+C
+      LUINTM = -9301
+      LUIT1  = -9302
+      LUIT2  = -9303
+      LUIT3  = -9304
+      LUIT5  = -9305
+      LUINF  = -9306
+      LUH2AC = -9307
+      LUSIFC = -9308
+C     next two for NEWTRA
+      LUORDA = -9309
+      LUMINT = -9310
+C
+      FNSOL  = 'AOSOLINT'
+      ABARDR = 'ABACUS.RD'
+      ABARDI = 'ABACUS.RDI'
+      ABAGDR = 'ABACUS.GD'
+      ABAGDI = 'ABACUS.GDI'
+      ABAGDT = 'ABACUS.GDT'
+      ABARDT = 'ABACUS.RDT'
+      ABADFK = 'ABACUS.DFK'
+      ABASF  = 'ABACUS.SF'
+      ABATLM = 'ABACUS.TLM'
+      ABAWLK = 'DALTON.WLK'
+      ABAIRC = 'DALTON.IRC'
+      ABATRJ = 'DALTON.TRJ'
+      ABANR1 = 'ABAENR.RST'
+      ABANR3 = 'ABAENR.BVC'
+      ABANR5 = 'ABAENR.SVC'
+      FNINTM = 'MOTWOINT'
+      FNSUPM = 'AOSUPINT'
+      FNONEL = 'AOONEINT'
+      FNSIFC = 'SIRIFC'
+      LBSIFC = 'SIR IPH '
+C
+      RETURN
       END

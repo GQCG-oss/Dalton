@@ -83,6 +83,48 @@ struct dso_data {
     real * r3i;      /** r3(nvec) = 1/|rvec(:,natoms)|^3 - temp space */
 };
 
+#ifdef VAR_MPI
+#include <mpi.h>
+
+void FSYM(getdsosz)(int *dsodim);
+void
+numdso_slave(real* work, integer* lwork, const integer* iprint)
+{
+    int sz, new_lwork;
+    integer dsodim;
+    int nucind;            /* IN: will be synced from master */
+    real *spndso;
+    
+    FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
+    if(*lwork < sz)
+	dalton_quit("Slave has not enough memory %d for DSO matrix %d",
+		    *lwork, sz);
+    new_lwork = *lwork-sz;
+    FSYM(dzero)(work, &sz);
+    FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
+}
+void FSYM(dsosyncslaves)(real *dmat,int *nucind,real *work,int *lwork);
+#define numdso_sync_slaves(dmat,nucind,work,lwork) \
+        FSYM(dsosyncslaves)(dmat,nucind,work,lwork)
+static void
+numdso_collect_info(real *spndso, real *work, int lwork)
+{
+    int dsodim,sz;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &sz);
+    if(sz <=1) return;
+
+    FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
+    dcopy_(&sz, spndso, &ONEI, work, &ONEI);
+    MPI_Reduce(work, spndso, sz, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+}
+#else /* VAR_MPI */
+#define numdso_sync_slaves(dmat,nucind,work,lwork) \
+        FSYM(dftdns)(dmat, work, lwork, &ZEROI)
+
+#define numdso_collect_info(a,work,lwork)
+#endif /* VAR_MPI */
+
 static void
 dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
        int bllen, int blstart, int blend, struct dso_data* dso)
@@ -98,8 +140,9 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
 
 /** NUMDSO:
  * computes the Dipole Spin-Orbit contribution to spin-spin couplings
- * averaged with given density matrix DMAT. The result is placed in 
- * provided matrix SPNDSO of size (MXCOOR,MXCOOR).
+ * averaged with given density matrix DMAT. The result is placed in
+ * provided matrix SPNDSO of size (MXCOOR,MXCOOR). Nucind is a number
+ * of atoms in the molecule.
  *
  * NOTE: provided matrix is in folded, packed format. In dft-qr methodology,
  * we could just provide a packed density evaluator. Here, we do not have
@@ -108,23 +151,25 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  */
 extern void FSYM2(numdso_finish)(real* spndso);
 void
-FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
+FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
 {
     extern void dunfld_(const int* n, const real* dsp, real* dge);
     struct tms starttm, endtm; clock_t utm;
     struct dso_data dso;
     real electrons, *dmat;
 
+    dft_wake_slaves((DFTPropEvalMaster)FSYM(numdso));
+    dmat = dal_malloc(inforb_.n2basx*sizeof(real));
+    numdso_sync_slaves(dmat, nucind,work,lwork);
+
     dso.dso  = spndso;
     dso.rvec = malloc(DFT_BLLEN*(*nucind)*3*sizeof(real));
     dso.r3i  = malloc(DFT_BLLEN*(*nucind)*sizeof(real));
-    dmat = malloc(inforb_.n2basx*sizeof(real));
-    if(!dso.rvec || !dso.r3i || !dmat) dalton_quit("ABORT!!!");
-    FSYM(dftdns)(dmat, work, lwork, &ZEROI);
-
+    if(!dso.rvec || !dso.r3i) dalton_quit("Not enough memory in numdso.");
     times(&starttm);
     electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0,
                                     (DftBlockCallback)dso_cb, &dso);
+    numdso_collect_info(spndso, work, *lwork);
 
     FSYM2(numdso_finish)(spndso);
     times(&endtm);

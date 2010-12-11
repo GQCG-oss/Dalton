@@ -121,6 +121,10 @@ C CBGETDIS : DISTYP,IADINT,IADH2,IADH2X
 C   INFTIM : NCALLS,TIMCPU,TIMWAL  ! IDTIM is index for these
 C
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 #include <priunit.h>
 #include <infinp.h>
 #include <infvar.h>
@@ -131,6 +135,8 @@ C
 #include <infpri.h>
 #include <cbgetdis.h>
 #include <dftcom.h> 
+! gnrinf.h: QM3 /CBN+JK 03.01.06
+#include <gnrinf.h>
 #include <wrkrsp.h>
 C ---
       PARAMETER (IDTIM1 = 6, IDTIM2 = 8, D4 = 4.0D0)
@@ -223,7 +229,11 @@ C-- SIRTR1, ..., ORBSIG
       KFXV   = KFXC   + NOSIM*N2ORBX
       KFTV   = KFXV   + NOSIM*N2ORBX
 C-- SIRTR1, ORBSIG, CISIG
-      KH2XAC = KFTV   + MCSIM*N2ORBX
+      LFTV   = MCSIM*N2ORBX
+      IF (DOMCSRDFT) LFTV = 2*LFTV
+C     ... Extra allocation for "FTC" in MCSCF-SRDFT
+C         Will be constructed in TR1FCY
+      KH2XAC = KFTV   + LFTV
       KFXQ   = KH2XAC + MOSIM*NNASHX*NNASHX
       KFTQ   = KFXQ   + NOSIM*NASHT*NORBT
 C-- SIRTR1, ORBSIG
@@ -262,7 +272,7 @@ C     KDTV need to be zeroed out in case of FCI solvent calculation
 C     (DTV only set in sirtr1). K.Ruud-July 97
 C
       CALL DZERO(WRK(KDTV),MCSIM*NNASHX)
-      IF (NWOPT.EQ.0) THEN
+      IF (NWOPT.EQ.0.AND. .NOT.DOMCSRDFT) THEN
          T2 = T1
          T3 = T1
          T4 = T1
@@ -340,12 +350,41 @@ C
 C           CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,
 C    *                  INDXCI,WRK,LFREE)
             DO 540 ICSIM = 1,NCSIM
-               JSCSIM = (KSCVEC-1) + (ICSIM-1)*NVAR
+               JSCVEC = (KSCVEC-1) + (ICSIM-1)*NVAR
                DO 520 I = 1,NCONF
-                  WRK(JSCSIM+I) =
-     *               D2 * ( WRK(JSCSIM+I) - EACTIV * BCVECS(I,ICSIM) )
+                  WRK(JSCVEC+I) =
+     *               D2 * ( WRK(JSCVEC+I) - EACTIV * BCVECS(I,ICSIM) )
   520          CONTINUE
   540       CONTINUE
+            IF (DOMCSRDFT) THEN
+C              ... special MCSRDFT contribution to csf sigma-vectors,
+C                  stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the 
+C                  standard FTV matrices.
+C                  In paper: V^([2c]xc-SR) matrix.
+               ESRLTR   = D0
+C              ... expectation value is not zero, but it doesn't matter
+C                  because CREF is projected out of SCVEC later
+               KSRCVEC  = KCW
+               KSRLTRAC = KSRCVEC + NCONF
+               KSRW     = KSRLTRAC + NNASHX
+               LSRW     = LFREE - KSRW
+               DO ICSIM = 1,NCSIM
+                  JFTC  = KFTV + (NCSIM+ICSIM-1)*N2ORBX
+                  JSCVEC = KSCVEC + (ICSIM-1)*NVAR
+                  CALL GETAC1(WRK(JFTC),WRK(KSRW))
+                  CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC))
+                  IF (IPRLIN .GT. 10) THEN
+                     WRITE(LUPRI,'(/A,I3)')
+     &               'MCSRDFT "FTC"="V^([2c],xc-SR)" no.',ICSIM
+             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+                     WRITE(LUPRI,'(/A,I3)') 'MCSRDFT SRLTRAC no.',ICSIM
+                     CALL OUTPAK(WRK(KSRLTRAC),NASHT,1,LUPRI)
+                  END IF
+                  CALL SOLGC(CREF,WRK(KSRLTRAC),ESRLTR,WRK(KSRCVEC),
+     &                       INDXCI,WRK(KSRW),LSRW)
+                  CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
+               ENDDO
+            END IF
          END IF
          IF (NOSIM .GT. 0 .AND. NCONF .GT. 0) THEN
          IF (NCONF .GT. 1 .OR. LSYMPT .NE. 1) THEN
@@ -421,12 +460,34 @@ C
          CALL SOLLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KWSOL),LWSOL)
-C
+         CALL GETTIM(T5,W5)
+      ELSEIF (PCM) THEN
+         MXSIM = MAX(NOSIM,NCSIM)
+         KVTEX = KWSOL
+         KWPCM = KVTEX + MXSIM*NTS
+         LWPCM = LWSOL - MXSIM*NTS
+         CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
+     &               WRK(KVTEX),WRK(KWPCM),LWPCM)
          CALL GETTIM(T5,W5)
       ELSE
          T5 = T4
          W5 = W4
       END IF
+C
+C---------------------------
+C CBN 03.01.06
+C---------------------------
+C
+      IF (QM3) THEN
+         CALL QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
+     &               WRK(KSOVEC),ORBLIN,WRK(K3A),L3A)
+         CALL GETTIM(T5,W5)
+      END IF
+C---------------------------
+C CBN 03.01.06
+C---------------------------
+C
 C
       NCALLS(IDTIM)   = NCALLS(IDTIM)   + 1
       TIMCPU(1,IDTIM) = TIMCPU(1,IDTIM) + T5 - T0
@@ -480,6 +541,7 @@ C
 #include <infdim.h>
 #include <inflin.h>
 #include <infpri.h>
+#include <infinp.h>
 C
       LOGICAL ORBLIN
 C
@@ -518,6 +580,23 @@ C
       CALL ORBSI2(NCSIM,NOSIM,SCVECS,SOVECS,
      *            DTV,FC,FTV,FTQ,DV,FXC,FXV,FXQ,
      *            WRK(KUBO),WRK(KUGORB),WRK(KUDV))
+C
+C     Special MCSRDFT correction, corresponding to the effective operator
+C        V^([2c],xc-SR)
+C     is saved in FTV(1,NCSIM+ICSIM) in SIRTR1.
+C
+      IF (DOMCSRDFT .AND. NCSIM .GT. 0) THEN
+#ifndef MOD_SRDFT
+         call quit('srdft not included in this version')
+#else
+         CALL DSPTSI(NASHT,DV,WRK(KUDV))
+         DO ICSIM = 1,NCSIM
+            JSCVEC = (NCONF + 1) + (ICSIM-1)*NVAR
+            JFSR   = 1 + (NCSIM+ICSIM-1)*N2ORBX
+            CALL SRDFTSO(2.0D0,WRK(KUDV),FTV(JFSR),SCVECS(JSCVEC))
+         END DO
+#endif
+      END IF
 C
 C     *** Make microcanonical average on SVECS
 C         (AVERAG returns immediately if no averageing requested)

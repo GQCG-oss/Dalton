@@ -94,7 +94,7 @@ C
       CALL DSPTSI(NASHT,FCAC,WRK(KFCAC2))
       CALL GETFIJ(WRK(KRJ),WRK(KRK),H2AC)
       IF (MCTYPE .EQ. 2) THEN
-C        ... reorder from Sirius to Lunar order
+C        ... reorder from Sirius to Lunar order for RAS
          CALL REORMT(WRK(KFCAC2),WRK(KWHAM),NASHT,NASHT,
      &               XNDXCI(KLTSOB),XNDXCI(KLTSOB))
          CALL DCOPY(N2ASHX,WRK(KWHAM),1,WRK(KFCAC2),1)
@@ -1127,7 +1127,7 @@ C ... JEPPE OLSEN JANUARY 1989
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION AI(1),AO(1)
+      DIMENSION AI(*),AO(*)
       DIMENSION LRC(NRC),LCC(NCC)
       DIMENSION IBLKI(NRC,NCC),IBLKO(NRC,NCC)
 C
@@ -1488,10 +1488,10 @@ C  /* Deck eigen */
       SUBROUTINE EIGEN(A,R,N,MV,MFKR)
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION A(1),R(1)
+      DIMENSION A(*),R(*)
       DATA TESTIT/1.D-20/
-      DATA TESTX/1.D-26/
-      DATA TESTY/1.D-18/
+      DATA TESTX /1.D-26/
+      DATA TESTY /1.D-18/
 C
 C        PURPOSE
 C           COMPUTE EIGENVALUES AND EIGENVECTORS OF A REAL SYMMETRIC
@@ -1524,8 +1524,8 @@ C           NONE
 C
 C        METHOD
 C           DIAGONALIZATION METHOD ORIGINATED BY JACOBI AND ADAPTED
-C           BY VON NEUMANN FOR LARGE COMPUTERS AS FOUND IN ?MATHEMATICAL
-C           METHODS FOR DIGITAL COMPUTERS?, EDITED BY A. RALSTON AND
+C           BY VON NEUMANN FOR LARGE COMPUTERS AS FOUND IN "MATHEMATICAL
+C           METHODS FOR DIGITAL COMPUTERS", EDITED BY A. RALSTON AND
 C           H.S. WILF, JOHN WILEY AND SONS, NEW YORK, 1962, CHAPTER 7
 C
 C     ..................................................................
@@ -1556,28 +1556,26 @@ C
 C        GENERATE IDENTITY MATRIX
 C
       RANGE=1.0D-12
-      IF(MV-1) 10,25,10
-   10 IQ=-N
+      IF(MV.eq.1) GO TO 25
+      IQ=-N
       DO 20 J=1,N
-      IQ=IQ+N
+        IQ=IQ+N
       DO 20 I=1,N
-      IJ=IQ+I
-      R(IJ)=0.0D+00
-      IF(I-J) 20,15,20
-   15 R(IJ)=1.0D+00
+        IJ=IQ+I
+        R(IJ)=0.0D+00
+        IF(I.eq.J) R(IJ)=1.0D+00
    20 CONTINUE
 C
 C        COMPUTE INITIAL AND FINAL NORMS (ANORM AND ANORMX)
 C
    25 ANORM=0.0D+00
-      DO 35 I=1,N
-      DO 35 J=I,N
-      IF(I-J) 30,35,30
-   30 IA=I+(J*J-J)/2
-      ANORM=ANORM+A(IA)*A(IA)
+      DO 35 J=2,N
+      DO 35 I=1,J-1
+        IA=I+(J*J-J)/2
+        ANORM=ANORM+A(IA)*A(IA)
    35 CONTINUE
-      IF(ANORM) 165,165,40
-   40 ANORM=1.414D+00*SQRT(ANORM)
+      IF(ANORM .LE. 0.0D0) GO TO 165
+      ANORM=SQRT(2.0D0*ANORM)
       ANRMX=ANORM*RANGE/DFLOAT(N)
 C
 C        INITIALIZE INDICATORS AND COMPUTE THRESHOLD, THR
@@ -1596,28 +1594,31 @@ C
       LM=L+MQ
       IF(ABS(A(LM)).LT.TESTY)A(LM)=0.D0
       IF(ABS(A(LM)).EQ.0.D0.AND.THR.EQ.0.D0)GO TO 130
-      IF(ABS(A(LM))-THR) 130,65,65
-   65 IND=1
+      IF(ABS(A(LM)) .lt. THR) go to 130
+      IND=1
       LL=L+LQ
       MM=M+MQ
       X=0.5D+00*(A(LL)-A(MM))
       AJUK=(A(LM)*A(LM)+X*X)
       AJUK=SQRT(AJUK)
-      IF(ABS(AJUK).LT.TESTIT)WRITE(LUPRI,3000)TESTIT,AJUK,A(LM)
- 3000 FORMAT(1H0,'***DENOMINATOR LT ',D12.6,'. VALUE=',D14.8,
-     &'. NUMERATOR=',D14.8)
-      Y=0.D0
-      IF(ABS(AJUK).LT.TESTIT)GO TO 67
-      Y=-A(LM)/AJUK
-   67 CONTINUE
-C  68 Y=-A(LM)/ SQRT(A(LM)*A(LM)+X*X)
-      IF(X) 70,75,75
-   70 Y=-Y
-   75 AJUK=(1.D0-Y*Y)
-      IF(AJUK.LT.0.D0)WRITE(LUPRI,3001) AJUK
- 3001 FORMAT(1H0,'***SQRT OF ',D14.8)
-      IF(AJUK.LT.0.D0)AJUK=0.D0
-      AJUK=SQRT(AJUK)
+      IF(ABS(AJUK).LT.TESTIT) THEN
+        WRITE(LUPRI,3000)TESTIT,AJUK,A(LM)
+ 3000 FORMAT(' ***in EIGEN: DENOMINATOR LT ',D14.6,'. VALUE=',D14.6,
+     &'. NUMERATOR=',D14.6)
+        Y=0.D0
+      ELSE
+        Y=-A(LM)/AJUK
+      END IF
+C     Y=-A(LM)/ SQRT(A(LM)*A(LM)+X*X)
+      IF(X .lt. 0.0d0) Y=-Y
+      AJUK=(1.D0-Y*Y)
+      IF(AJUK.LT.0.D0) THEN
+        WRITE(LUPRI,3001) AJUK
+ 3001 FORMAT(' ***in EIGEN: SQRT OF ',D20.8)
+        AJUK=0.D0
+      ELSE
+        AJUK=SQRT(AJUK)
+      END IF
       AJUK=2.D0*(1.D0+AJUK)
       AJUK=SQRT(AJUK)
       SINX=Y/AJUK
@@ -1636,20 +1637,22 @@ C
       IMQ=N*(M-1)
       DO 125 I=1,N
       IQ=(I*I-I)/2
-      IF(I-L) 80,115,80
-   80 IF(I-M) 85,115,90
-   85 IM=I+MQ
-      GO TO 95
-   90 IM=M+IQ
-   95 IF(I-L) 100,105,105
-  100 IL=I+LQ
-      GO TO 110
-  105 IL=L+IQ
+      IF(I.eq.L .or. I.eq.M) go to 115
+      IF(I.lt.M) THEN
+        IM=I+MQ
+      ELSE
+        IM=M+IQ
+      END IF
+      IF(I.lt.L) THEN
+        IL=I+LQ
+      ELSE
+        IL=L+IQ
+      END IF
   110 X=A(IL)*COSX-A(IM)*SINX
       A(IM)=A(IL)*SINX+A(IM)*COSX
       A(IL)=X
-  115 IF(MV-1) 120,125,120
-  120 ILR=ILQ+I
+  115 IF(MV.eq.1) go to 125
+      ILR=ILQ+I
       IMR=IMQ+I
       X=R(ILR)*COSX-R(IMR)*SINX
       R(IMR)=R(ILR)*SINX+R(IMR)*COSX
@@ -1666,22 +1669,25 @@ C        TESTS FOR COMPLETION
 C
 C        TEST FOR M = LAST COLUMN
 C
-  130 IF(M-N) 135,140,135
-  135 M=M+1
-      GO TO 60
+  130 IF (M.ne.N) THEN
+        M=M+1
+        GO TO 60
+      END IF
 C
 C        TEST FOR L = SECOND FROM LAST COLUMN
 C
-  140 IF(L-(N-1)) 145,150,145
-  145 L=L+1
-      GO TO 55
-  150 IF(IND-1) 160,155,160
-  155 IND=0
-      GO TO 50
+      IF (L.ne.(N-1)) THEN
+        L=L+1
+        GO TO 55
+      END IF
+      IF (IND.eq.1) THEN
+        IND=0
+        GO TO 50
+      END IF
 C
 C        COMPARE THRESHOLD WITH FINAL NORM
 C
-  160 IF(THR-ANRMX) 165,165,45
+      IF(THR .gt. ANRMX) go to 45
 C
 C        SORT EIGENVALUES AND EIGENVECTORS
 C
@@ -1694,12 +1700,12 @@ C
       DO 185 J=I,N
       JQ=JQ+N
       MM=J+(J*J-J)/2
-      IF(A(MM)-A(LL)) 170,185,185
+      IF(A(MM).ge.A(LL)) go to 185
   170 X=A(LL)
       A(LL)=A(MM)
       A(MM)=X
-      IF(MV-1) 175,185,175
-  175 DO 180 K=1,N
+      IF(MV.eq.1) go to 185
+      DO 180 K=1,N
       ILR=IQ+K
       IMR=JQ+K
       X=R(ILR)

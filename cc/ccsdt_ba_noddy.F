@@ -173,7 +173,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -186,6 +186,7 @@ C
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -211,7 +212,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -240,7 +241,7 @@ C
 *     Matrix with property integrals in MO basis:
 *---------------------------------------------------------------------*
       ! read property integrals from file:
-      CALL CCPRPAO(LABELB,WORK(KFOCKB_AO),IRREP,ISYMB,IERR,
+      CALL CCPRPAO(LABELB,.TRUE.,WORK(KFOCKB_AO),IRREP,ISYMB,IERR,
      &             WORK(KEND1),LWRK1)
       CALL DCOPY(NORBT*NORBT,WORK(KFOCKB_AO),1,WORK(KFOCKB),1)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMB)) THEN
@@ -309,6 +310,7 @@ C     ---------------------------------------------------
 C     -------------------------------------------------
 C     calculate the first-order triples amplitudes T^C:
 C     -------------------------------------------------
+      KDUM = KEND2
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTC,IDLSTC,FREQC,.FALSE.,
      &                     .FALSE.,WORK(KINT1S),WORK(KINT2S),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
@@ -319,7 +321,7 @@ C     -------------------------------------------------
      &                     WORK(KDUM),WORK(KFOCKD),
      &                     WORK(KEND2),LWRK2)
 
-      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM))
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM),1)
 
 C     --------------------------------------------------------------
 C     calculate one-index transf. property integrals: B^D = [B,T1^D]
@@ -340,6 +342,7 @@ C     ----------------------------------------------
 C     -------------------------------------------------
 C     calculate the first-order triples amplitudes T^D:
 C     -------------------------------------------------
+      KDUM = KEND2
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTD,IDLSTD,FREQD,.FALSE.,
      &                     .FALSE.,WORK(KINT1S),WORK(KINT2S),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
@@ -350,7 +353,7 @@ C     -------------------------------------------------
      &                     WORK(KDUM),WORK(KFOCKD),
      &                     WORK(KEND2),LWRK2)
 
-      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM))
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM),1)
 
 C     --------------------------------------------------------------
 C     calculate one-index transf. property integrals: B^C = [B,T1^C]

@@ -38,14 +38,14 @@ C  /* Deck oneinp */
 C
 C     Trygve Helgaker, University of Oslo, Norway
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbione.h>
+#include "abainf.h"
+#include "cbione.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','.NCLONE',
      *            '.NODC  ', '.NODV  ','.STOP  '/
@@ -54,6 +54,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -69,6 +70,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -138,11 +140,12 @@ C  /* Deck oneini */
 C
 C     Initialize /CBIONE/
 C
-#include <implicit.h>
+#include "implicit.h"
+#include "mxcent.h"
 #include <maxorb.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbione.h>
+
+#include "abainf.h"
+#include "cbione.h"
 #include <infinp.h>
 C
       IPRINT = IPRDEF
@@ -166,21 +169,21 @@ C
       RETURN
       END
 C  /* Deck oneint */
-      SUBROUTINE ONEINT(WORK,LWORK,PASS,PROPTY)
+      SUBROUTINE ONEINT(WORK,LWORK,PASS,PROPTY,PCM)
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-      LOGICAL PASS, PROPTY
+#include "implicit.h"
+#include "priunit.h"
+      LOGICAL PASS, PROPTY, PCM
       DIMENSION WORK(LWORK)
-#include <cbione.h>
+#include "cbione.h"
       IF (SKIP) RETURN
       IF (IPRINT .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPRINT .GT. 2) CALL TITLER('Output from ONEINT','*',103)
       PROPTY = .TRUE.
       CALL ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,NODV,
-     &            DIFDIP,DIFQDP,HFONLY,NCLONE)
+     &            DIFDIP,DIFQDP,HFONLY,NCLONE,PCM)
       IF (IPRINT .GE. 2) CALL TIMER ('ONEINT',TIMSTR,TIMEND)
       PASS = .TRUE.
       IF (CUT) THEN
@@ -193,45 +196,50 @@ C
       END
 C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
-     &                  NODV,DIFDIP,DIFQDP,HFONLY,NCLONE)
+     &                  NODV,DIFDIP,DIFQDP,HFONLY,NCLONE,PCM)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
-      LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2), HFONLY,
-     &        NCLONE, DIFQDP
+      LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2),
+     &        HFONLY, NCLONE, DIFQDP, PCM
+      CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "cbisol.h"
+
+#ifdef PRG_DIRAC
+      LOGICAL    FINDPT
+      PARAMETER (FINDPT = .FALSE.)
+#else
 #include <drw2el.h>
-#include <cbisol.h>
 #include <inforb.h>
+#endif
+
 C
-#include <ibtfun.h>
 C
+#include "ibtfun.h"
       CALL QENTER('ONEDRV')
 C
       DOINT(1,1) = .TRUE.
       DOINT(2,1) = .TRUE.
       DOINT(1,2) = .TRUE.
       DOINT(2,2) = .TRUE.
+      OMITVNUC(1)   = 'FFFF'
+      OMITVNUC(2)   = 'FFFF'
 C
 C     ***** Number of basis functions *****
 C
       NBAST  = 0
       NNBAST = 0
       DO 100 KB = 0, MAXREP
-         NBASI = 0
-         DO 200 ISHELL = 1, KMAX
-            IF (IBTAND(KB,ISTBAO(ISHELL)).EQ.0) THEN
-               NBASI = NBASI + KHKT(ISHELL)
-            END IF
-  200    CONTINUE
+         NBASI  = NAOS(KB+1)
          NBAST  = NBAST  + NBASI
          NNBAST = NNBAST + NBASI*(NBASI + 1)/2
   100 CONTINUE
@@ -239,18 +247,23 @@ C
 C
       KSTHMA = 1
       IF (FINDPT) THEN
-         KDENMA = KSTHMA + 4*NNBASX
+         N_STHMA = 4
       ELSE
-         KDENMA = KSTHMA + 3*NNBASX
+         N_STHMA = 3
       END IF
+      KDENMA = KSTHMA + N_STHMA*NNBASX
       KFOCMA = KDENMA +   NNBASX
       KFACIN = KFOCMA +   NNBASX
-      KCOORC = KFACIN +   NUCDEP
+      KCOORC = KFACIN + 2*NUCDEP
+C     allocate for nuclear charge AND an electronic core charge
+C     for modified nuclear attraction (e.g. for the small charge
+C     in relativistic calculations). /Mar2001 hjaaj
       KSIGNC = KCOORC + 3*NUCDEP
       KNCENT = KSIGNC + 3*NUCDEP
       KJSYMC = KNCENT +  (NUCDEP + 1)/IRAT
       KJCENT = KJSYMC +  (NUCDEP + 1)/IRAT
-      KCSTRA = KJCENT +  (NUCDEP + 1)/IRAT
+      KGEXP  = KJCENT +  (NUCDEP + 1)/IRAT
+      KCSTRA = KGEXP  +  NUCDEP
       KSCTRA = KCSTRA + MXCOOR*MXCOOR
       KTLMD  = KSCTRA + MXCOOR*MXCOOR
       IF (SOLVNT) THEN
@@ -286,20 +299,23 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('ONEDRV',' ',KLAST,LWORK)
       CALL ONEDR1(WORK(KSTHMA),WORK(KDENMA),WORK(KFOCMA),WORK(KFACIN),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
-     &            WORK(KJCENT),WORK(KTLMD),WORK(KCSTRA),WORK(KSCTRA),
-     &            WORK(KLAST),LWRK,IPRINT,PROPTY,MAXDIF,
-     &            NODC,NODV,DIFDIP,DIFQDP,NBAST,NNBASX,NNBAST,DOINT,
-     &            .TRUE.,WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),
-     &            WORK(KHSOLT),WORK(KHSOLN),WORK(KHEDFT),HFONLY,NCLONE)
+     &            WORK(KJCENT),WORK(KGEXP),WORK(KTLMD),
+     &            WORK(KCSTRA),WORK(KSCTRA),
+     &            WORK(KLAST),LWRK,IPRINT,PROPTY,MAXDIF,NODC,NODV,
+     &            DIFDIP,DIFQDP,NBAST,NNBASX,NNBAST,DOINT,.TRUE.,
+     &            WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),
+     &            WORK(KHSOLT),WORK(KHSOLN),WORK(KHEDFT),
+     &            OMITVNUC,HFONLY,NCLONE,PCM)
       CALL QEXIT('ONEDRV')
       RETURN
       END
 C  /* Deck onedr1 */
       SUBROUTINE ONEDR1(STHMAT,DENMAT,FOCMAT,FACINT,COORC,SIGNC,NCENTC,
-     &                  JSYMC,JCENTC,TLMD,CSTRA,SCTRA,WORK,LWORK,IPRINT,
-     &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,DIFQDP,NBAST,
-     &                  NNBASX,NNBAST,DOINT,TOFILE,HESSKE,HESSNA,HESFS2,
-     &                  HSOLT2,HSOLNN,HESDFT,HFONLY,NCLONE)
+     &                  JSYMC,JCENTC,GEXP,TLMD,CSTRA,SCTRA,WORK,LWORK,
+     &                  IPRINT,PROPTY,MAXDIF,NODC,NODV,DIFDIP,DIFQDP,
+     &                  NBAST,NNBASX,NNBAST,DOINT,TOFILE,
+     &                  HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,HESDFT,
+     &                  OMITVNUC,HFONLY,NCLONE,PCM)
 C
 C     TUH
 C
@@ -312,57 +328,64 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-#include <implicit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "iratdef.h"
 #include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <iratdef.h>
 #include <drw2el.h>
 #include <codata.h>
-#include <priunit.h>
-      PARAMETER (D0 = 0.00 D00)
+#include "priunit.h"
+      PARAMETER (D0 = 0.00D00)
 C
-#include <nuclei.h>
+#include "nuclei.h"
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
-     &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2
+     &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2, PCM,
+     &        LOMITVNUC(2,5)
+      CHARACTER*4 OMITVNUC(2)
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,*),
-     &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
+     &          FACINT(NUCDEP,*), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
-     &          JCENTC(NUCDEP), TLMD(3*NUCDEP*LMNTOT,2),
+     &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2),
      &          HESSKE(MXCOOR,MXCOOR), HESSNA(MXCOOR,MXCOOR),
      &          HESFS2(MXCOOR,MXCOOR), HSOLT2(MXCOOR,MXCOOR),
      &          HSOLNN(MXCOOR,MXCOOR), HESDFT(MXCOOR,MXCOOR),
      &          CSTRA(*), SCTRA(*)
       CHARACTER*8 RTNLBL(2)
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#include "dcbgrd.h"
+#else
+#include "gnrinf.h"
+#include "energy.h"
 #include <inftap.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <energy.h>
-#include <dipole.h>
-#include <taysol.h>
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <symind.h>
-#include <csym1.h>
+#endif
+#include "onecom.h"
+#include "lmns.h"
+#include "dipole.h"
+#include "taysol.h"
+#include "ccom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "symind.h"
+#include "csym1.h"
+#include "cbisol.h"
 #include <difsec.h>
-#include <cbisol.h>
 #include <dftcom.h>
-#include <gnrinf.h>
-#include <expopt.h>
+#include "expopt.h"
 #include <rspprp.h>
 #include <esg.h>
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
       TIMINT = D0
       FRSDER = MAXDIF .GE. 1
       SECDER = MAXDIF .EQ. 2
-      IF(THRS.EQ.0D0) THRS = 1D-15
+      IF(THRS.EQ.0D0) THRS = 1.D-15 ! to avoid log(0.0d0) below
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
       IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
@@ -371,12 +394,24 @@ C
          INDMAX = 0
          LENGTH = 0
       END IF
+      DO I = 1,2
+         LOMITVNUC(I,1) = (OMITVNUC(I)(1:1) .EQ. 'T')
+         LOMITVNUC(I,2) = (OMITVNUC(I)(2:2) .EQ. 'T')
+         LOMITVNUC(I,3) = (OMITVNUC(I)(3:3) .EQ. 'T')
+         LOMITVNUC(I,4) = (OMITVNUC(I)(4:4) .EQ. 'T')
+         LOMITVNUC(I,5) = LOMITVNUC(I,1) .OR. LOMITVNUC(I,2)
+     &             .OR. LOMITVNUC(I,3) .OR. LOMITVNUC(I,4)
+      ENDDO
+C
+Cjth
+#ifndef PRG_DIRAC
 C
 C     ***** Nuclear contributions *****
 C
       IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
-      IF (PROPTY .AND. DIFQDP) CALL SECNUC(CSTRA,SCTRA,IPRINT)
+      IF (PROPTY.AND.DIFQDP) CALL SECNUC(CSTRA,SCTRA,IPRINT)
 C
+#endif
 C     Gradient and Hessian elements equal to zero
 C
       IF (EXPGRA) THEN
@@ -384,9 +419,26 @@ C
       ELSE IF (PROPTY) THEN
          ENERKE = D0
          ENERNA = D0
+#ifdef PRG_DIRAC
+C
+         CALL DZERO(GRADKN(1,0),3*NUCDEP)
+         CALL DZERO(GRADKN(1,1),3*NUCDEP)
+         CALL DZERO(GRADKN(1,2),3*NUCDEP)
+C
+         CALL DZERO(GRADNU(1,0),3*NUCDEP)
+         CALL DZERO(GRADNU(1,1),3*NUCDEP)
+         CALL DZERO(GRADNU(1,2),3*NUCDEP)
+C
+C
+         CALL DZERO(GRADRO(1,0),3*NUCDEP)
+         CALL DZERO(GRADRO(1,1),3*NUCDEP)
+         CALL DZERO(GRADRO(1,2),3*NUCDEP)
+C
+#else 
          CALL DZERO(GRADKE,3*NUCDEP)
          CALL DZERO(GRADNA,3*NUCDEP)
          CALL DZERO(GRADFS,3*NUCDEP)
+#endif
          IF (SECDER) THEN
             CALL HESZER(HESSKE)
             CALL HESZER(HESSNA)
@@ -409,8 +461,25 @@ C
                CALL HESZER(HSOLT2)
                CALL HESZER(HSOLNN)
             END IF
+         ELSEIF (PCM) THEN
+            ESOLTT = D0
+            ESOLNN = D0
+            CALL DZERO(GSOLTT,3*NUCDEP)
+            CALL DZERO(GSOLNN,3*NUCDEP)
+            CALL DZERO(GSOLCV,3*NUCDEP)
+Clf            IF (SECDER) THEN
+            IF (.FALSE.) THEN
+               CALL QUIT('ONEINT: '// 
+     $              'SECOND DERIVATIVES NOT IMPLEMENTED WITH PCM')
+            END IF
          END IF
       END IF
+C
+Cjth
+C     The contravariant Fock matrix and the density matrix are
+C     allready given from DIRAC, so skip the next.
+C
+#if !defined(PRG_DIRAC)
 C
 C     **************************************************************
 C     ***** Set up total density and Fock matrices in AO basis *****
@@ -425,14 +494,17 @@ C
          IF (ESG) THEN
             CALL GPOPEN(LUESG,'ESG_AOMAT',' ',' ',' ',IDUMMY,.FALSE.)
             REWIND(LUESG)
-            READ (LUESG) NNBAST
+            READ (LUESG) MMBAST
+            IF (MMBAST .NE. NNBAST)
+     &      CALL QUIT('ESG error: NNBAST on LUESG not coorect')
             CALL GETESG_DENMAT_FOCMAT(WORK(KDSO),WORK(KFSO),NBAST,
      &                                NNBAST)
          ELSE
            CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
      &                 NODC,NODV)
          END IF
-         CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),NBAST,IPRINT)
+         CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),.TRUE.,
+     &              NBAST,IPRINT)
       END IF
 C
 C     ********************************************************
@@ -467,7 +539,10 @@ C
          CALL SOLNUC(.TRUE.,MAXDIF,DIFDIP,TLMD(1,2),HSOLNN,
      &               WORK(KFCM),WORK,KFREE,LFREE,IPRINT)
          KLAST = KFREE
+      ELSE IF(PROPTY .AND. PCM) THEN 
+         CALL PCMNUC
       END IF
+#endif
       LWRK  = LWORK - KLAST + 1
 C
 C     ************************************************************
@@ -475,10 +550,11 @@ C     ***** Triangular loop over symmetry independent shells *****
 C     ************************************************************
 C
       IF (FINDPT) THEN
-         CALL DZERO(STHMAT,4*NNBASX)
+         N_STHMA = 4
       ELSE
-         CALL DZERO(STHMAT,3*NNBASX)
+         N_STHMA = 3
       END IF
+      CALL DZERO(STHMAT,N_STHMA*NNBASX)
       CALL IZERO(ISOFRA, 8)
       IDENA = 0
       DO 100 ISHELA = 1,KMAX
@@ -602,13 +678,16 @@ C
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
          NATOMC = 0
-         DO 120 IATOMC = 1,NUCIND
+         IMXATM = NUCIND
+         IF (QM3) IMXATM = NCTOT
+         DO 120 IATOMC = 1,IMXATM
             MULC   = ISTBNU(IATOMC)
             MABC   = IBTOR(MULC,KAB)
             CORCX0 = CORD(1,IATOMC)
             CORCY0 = CORD(2,IATOMC)
             CORCZ0 = CORD(3,IATOMC)
-            FACTOR = - FMULT(IBTAND(MULC,KAB))*CHARGE(IATOMC)/HKAB
+            CHARG1 = CHARGE(IATOMC)
+            FACTOR = - FMULT(IBTAND(MULC,KAB))/HKAB
             DO 130 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
                   NATOMC = NATOMC + 1
@@ -620,20 +699,24 @@ C
                   COORC(1,NATOMC) = SIGNC(1,NATOMC)*CORCX0
                   COORC(2,NATOMC) = SIGNC(2,NATOMC)*CORCY0
                   COORC(3,NATOMC) = SIGNC(3,NATOMC)*CORCZ0
-                  FACINT(NATOMC)  = FACTOR
+                  GEXP(NATOMC)    = GNUEXP(IATOMC)
+                  FACINT(NATOMC,1)= FACTOR*CHARG1
+                  FACINT(NATOMC,2)= D0
                   NCENTC(NATOMC)  = NUCNUM(IATOMC,ISYMOP+1)
                END IF
   130       CONTINUE
   120    CONTINUE
+C         IF (NATOMC.NE.NUCDEP)
+C     &      print *,'ONEDR1 NATOMC, NUCDEP:',NATOMC,NUCDEP
 C
          CALL ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,
      &               WORK(KLAST),LWRK,
      &               IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
      &               DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
-     &               JCENTC,NCENTC,SIGNC,NNBASX,WORK(KFCM),TLMD(1,1),
-     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
+     &               JCENTC,NCENTC,SIGNC,GEXP,NNBASX,WORK(KFCM),TLMD,
+     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE,PCM)
   110    IDENB0 = IDENB0 + KHKTB*MULTB
-         IDENA = IDENA + KHKTA*MULTA
+         IDENA  = IDENA  + KHKTA*MULTA
   100 CONTINUE
 C
 C     ***** End loop over symmetry independent orbitals *****
@@ -680,13 +763,13 @@ C
 C     We use the modified Douglas-Kroll integrals instead
 C
            IF (DKTRAN) THEN
-              CALL DKTRF(STHMAT(1,2),NBAST,NNBASX,IPRINT)
+              CALL DKTRF(STHMAT(1,2),NBAST,NNBAST,IPRINT)
            ELSE
-              DO 800 I = 1, NNBASX
+              DO 800 I = 1, NNBAST
                  STHMAT(I,2) = STHMAT(I,2) + STHMAT(I,3)
  800          CONTINUE
            END IF
-           CALL WRTUND(STHMAT,NBAST,NNBASX,IPRINT)
+           CALL WRTUND(STHMAT,NNBAST,NNBASX,IPRINT)
         ENDIF
       END IF
 C
@@ -772,6 +855,18 @@ C
                CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Nuclear solvent part of gradient',-1)
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
+            ELSE IF (PCM) THEN
+               CALL HEADER('PCM Solvent energy contributions',-1)
+               WRITE(LUPRI,'(3(/A,F15.10))')
+     &              ' Nuclear solvent energy:',ESOLNN,
+     &              ' Electr. solvent energy:',ESOLTT,
+     &              ' Total   solvent energy:',ESOLNN+ESOLTT
+               CALL HEADER('Electronic solvent part of gradient',-1)
+               CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Nuclear solvent part of gradient',-1)
+               CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Cavity solvent part of the gradient',-1)
+               CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)
@@ -823,33 +918,6 @@ C
       END
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <mxcent.h>
-#include <abainf.h>
-      LOGICAL NODC, NODV
-      DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
-C
-      IF (ABASOP) THEN
-         LKDV  = NORBT*NORBT
-         LKUDV = NORBT*NORBT
-      ELSE
-         LKUDV = 0
-         LKDV  = NNASHX
-      ENDIF
-      KCMO  = 1
-      KFT   = KCMO + NCMOT
-      KDV   = KFT  + N2ORBT
-      KUDV  = KDV  + LKDV
-      KLAST = KUDV + LKUDV
-      IF (KLAST .GT. LWORK) CALL STOPIT('DSOFSO',' ',KLAST,LWORK)
-      CALL DSOFS1(WORK(KCMO),WORK(KFT),WORK(KDV),WORK(KUDV),
-     *     DSO,FSO,IPRINT,NODC,NODV)
-      RETURN
-      END
-C     /* Deck dsofs1 */
-      SUBROUTINE DSOFS1(CMO,FT,DV,UDV,DSO,FSO,IPRINT,NODC,NODV)
 C
 C     This subroutine calculates the folded total one-electron density
 C     and Fock matrices in SO basis (contravariant).  Input is
@@ -858,15 +926,51 @@ C     MO basis.
 C
 C     Symmetry included        880418  PRT & TUH
 C
-#include <implicit.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+! abainf.h for ABASOP
+#include "mxcent.h"
+#include "abainf.h"
+      LOGICAL NODC, NODV
+      DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
+C
+      IF (ABASOP) THEN
+         LKDV  = NORBT*NORBT
+         LKUDV = NORBT*NORBT
+      ELSE
+         LKDV  = NNASHX
+         LKUDV = 0
+      ENDIF
+      KCMO  = 1
+      KFT   = KCMO + NCMOT
+      KDV   = KFT  + N2ORBT
+      KUDV  = KDV  + LKDV
+      KLAST = KUDV + LKUDV
+      IF (KLAST .GT. LWORK) CALL STOPIT('DSOFSO',' ',KLAST,LWORK)
+      CALL DSOFSO_1(WORK(KCMO),WORK(KFT),WORK(KDV),WORK(KUDV),
+     &            DSO,FSO,IPRINT,NODC,NODV)
+      RETURN
+      END
+C  /* Deck dsofso_1 */
+      SUBROUTINE DSOFSO_1(CMO,FT,DV,UDV,DSO,FSO,IPRINT,NODC,NODV)
+C
+C     This subroutine calculates the folded total one-electron density
+C     and Fock matrices in AO basis (contravariant).  Input is
+C     one-electron active density matrix and total Fock matrix in
+C     MO basis.
+C
+C     Symmetry included        880418  PRT & TUH
+C
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
       DIMENSION UDV(NORBT,NORBT)
-#include <iratdef.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
 C Used from common blocks:
 C  INFRSP : CCPPA
@@ -910,7 +1014,7 @@ C
 C     ***** Print Section *****
 C
       IF (IPRINT .GT. 05) THEN
-         WRITE (LUPRI, '(//A/)') ' <<<<< SUBROUTINE DSOFS1 >>>>>'
+         WRITE (LUPRI, '(//A/)') ' <<<<< SUBROUTINE DSOFSO_1 >>>>>'
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NASH ', (NASH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NOCC ', (NOCC(I),I = 1,NSYM)
@@ -1117,12 +1221,11 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
       DIMENSION CSTRA(*), SCTRA(*)
@@ -1138,36 +1241,18 @@ C     Dipole moment
 C
       CALL DZERO(DIPMN,3)
 C
-      IF (.NOT. QM3) THEN 
-        DO 100 IATOM = 1, NUCIND
-          CHA = CHARGE(IATOM)
-          IF (ABS(CHA) .LT. D100) THEN
+      DO 100 IATOM = 1, NUCIND
+         CHA = CHARGE(IATOM)
+         IF (ABS(CHA) .LT. D100) THEN
             FAC = FMULT(ISTBNU(IATOM))*CHA
             DO 200 ICOOR = 1, 3
-              IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
-                 DIPMN(ICOOR) = DIPMN(ICOOR) 
-     &                        + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
-              END IF
-  200       CONTINUE
-          END IF
-  100   CONTINUE
-      ELSE
-        DO 101 IATOM = 1, NUCIND
-          IF ( (ISUBSY(IATOM) .EQ. 0) .AND.  
-     &      (ISUBSI(IATOM) .LE. NSISY(0)) )THEN
-            CHA = CHARGE(IATOM)
-            IF (ABS(CHA) .LT. D100) THEN
-              FAC = FMULT(ISTBNU(IATOM))*CHA
-              DO 201 ICOOR = 1, 3
-                IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
-                  DIPMN(ICOOR) = DIPMN(ICOOR)
+               IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
+                  DIPMN(ICOOR) = DIPMN(ICOOR) 
      &                         + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
-                END IF
- 201          CONTINUE
-            END IF
-          END IF
- 101    CONTINUE
-      END IF
+               END IF
+ 200        CONTINUE
+         END IF
+ 100  CONTINUE
 C
 C     Dipole moment gradient
 C
@@ -1267,11 +1352,11 @@ C
       END
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
-#include <nuclei.h>
+#include "nuclei.h"
       KGRADE = 1
       KGRADN = KGRADE + 3*NUCDEP
       KGDIFE = KGRADN + 3*NUCDEP
@@ -1286,18 +1371,18 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
-#include <nuclei.h>
+#include "nuclei.h"
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include <inftap.h>
-#include <cbisol.h>
-#include <taysol.h>
+#include "inftap.h"
+#include "cbisol.h"
+#include "taysol.h"
 C
 C     Test TLMD
 C
@@ -1374,10 +1459,10 @@ C
       END
 C  /* Deck tlmtra */
       SUBROUTINE TLMTRA(NMAT,CARMAT,SPHMAT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CARMAT(*), SPHMAT(*), WORK(LWORK)
-#include <cbisol.h>
+#include "cbisol.h"
 C
       MXLM  = 2*LCAVMX + 1
       MXXYZ = (LCAVMX+1)*(LCAVMX+2)/2
@@ -1392,14 +1477,14 @@ C
 C  /* Deck tlmtr1 */
       SUBROUTINE TLMTR1(NMAT,CARMAT,SPHMAT,TRAMAT,MXXYZ,MXLM,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
       DIMENSION CARMAT(LMNTOT,*), SPHMAT(LMNTOT,*), TRAMAT(MXXYZ,MXLM),
      &          WORK(LWORK)
-#include <cbisol.h>
+#include "cbisol.h"
 C
       JLM  = 0
       JXYZ = 0
@@ -1422,30 +1507,111 @@ C
   100 CONTINUE
       RETURN
       END
-C /* Deck dktrf */
-      SUBROUTINE DKTRF(STDER0,NBAST,NNBASX,IPRINT)
+C /* Deck PCMNUC */
+      SUBROUTINE PCMNUC
 C
-C     Read in Douglas-Kroll and overlap integrals and transfer to standard
-C     arrays
+C     Purpose: calculate nuclear contributions to PCM
 C
 #include <implicit.h>
-#include <priunit.h>
-      LOGICAL FNDLAB
-#include <inftap.h>
-      DIMENSION STDER0(NNBASX)
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
+#include <pi.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <nuclei.h>
+#include <pcmnuclei.h>
+#include <taysol.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <symmet.h>
+#include <ibtfun.h>
+
+      FACT = 4.0D0 * PI * EPS/(EPS - D1)
+      ISPP = 1
+      DO INUC = 1, NUCIND
+         DO ICOOR = 1,3
+            SESE=D0
+            SNSN=D0
+            SESN=D0
+            IF(ICESPH.NE.1) CALL PCMNUC_OVER(ISPP,ICOOR,SESE,SNSN,SESN)
+            DERU = D0
+            DERY = D0
+            XN = CORD(1,INUC)
+            YN = CORD(2,INUC) 
+            ZN = CORD(3,INUC)
+            DO JSYM = 0, MAXREP
+               SIGNX = PT(IBTAND(ISYMAX(1,1),JSYM))
+               SIGNY = PT(IBTAND(ISYMAX(2,1),JSYM))
+               SIGNZ = PT(IBTAND(ISYMAX(3,1),JSYM))
+               DO ITS = 1, NTSIRR
+                  XI = SIGNX * XTSCOR(ITS)
+                  YI = SIGNY * YTSCOR(ITS)
+                  ZI = SIGNZ * ZTSCOR(ITS)
+                  DIST = DSQRT ((XN-XI)**2 + (YN-YI)**2 + 
+     $                 (ZN-ZI)**2)
+                  IF(ICOOR .EQ. 1) PROD = XI - XN
+                  IF(ICOOR .EQ. 2) PROD = YI - YN
+                  IF(ICOOR .EQ. 3) PROD = ZI - ZN
+                  DVNUC = CHARGE(INUC) * PROD / DIST**3
+                  DERY = DERY + DVNUC * QSE(ITS)
+                  DERU = DERU + DVNUC * QSN(ITS)
+               ENDDO
+            ENDDO
+            IACOOR  = IPTCNT(3*(INUC-1)+ICOOR ,0,1)
+            IF(IACOOR .GT. 0) THEN
+               DOVERS = FACT * ((SESE + SNSN) * DP5 + SESN)
+               GSOLCV(IACOOR) = FMULT(ISTBNU(INUC))*DOVERS
+               GSOLNN(IACOOR) = FMULT(ISTBNU(INUC))*(DERY + DERU)
+            ENDIF
+         ENDDO
+         ISPP = ISPP + MULT(ISTBNU(INUC))
+      ENDDO
+      RETURN
+      END
+C/*DECK PCMNUC_OVER*/
+      SUBROUTINE PCMNUC_OVER(NSJ,IC,SESE,SNSN,SESN)
 C
-      REWIND (LUPROP)
-      IF (FNDLAB('DKPOTINT',LUPROP)) THEN
-         CALL READT(LUPROP,NNBASX,STDER0)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Douglas-Kroll matrix read from LUPROP '//
-     &                  'in DKTRF',-1)
-            CALL OUTPAK(STDER0,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll'//
-     &      'integrals not found on LUPROP.'
-         CALL QUIT('DKTRF error: Integrals not found on LUPROP')
-      END IF
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0)
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      DO ISYM = 0, MAXREP
+         MTS = NTSIRR * ISYM
+         SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
+         SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
+         SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
+         DO ITS=1,NTSIRR
+            L=ISPHE(ITS + MTS)
+            XNI = - (XE(L) - SIGNX * XTSCOR(ITS)) / RE(L)
+            YNI = - (YE(L) - SIGNY * YTSCOR(ITS)) / RE(L)
+            ZNI = - (ZE(L) - SIGNZ * ZTSCOR(ITS)) / RE(L)
+            IF(L.LE.NESFP)THEN
+               IF(INA(L).EQ.NSJ)THEN
+                  IF(IC.EQ.1)DN=XNI
+                  IF(IC.EQ.2)DN=YNI
+                  IF(IC.EQ.3)DN=ZNI
+                  SESE=SESE+DN*(QSE(ITS)**2)/AS(ITS)
+                  SNSN=SNSN+DN*(QSN(ITS)**2)/AS(ITS)
+                  SESN=SESN+DN*QSE(ITS)*QSN(ITS)/AS(ITS)
+               ENDIF
+            ELSE
+               DCENTN=XNI*Dercen(L,NSJ,IC,1)+
+     *                YNI*Dercen(L,NSJ,IC,2)+
+     *                ZNI*Dercen(L,NSJ,IC,3)
+               DN=DERRAD(L,NSJ,IC)+DCENTN
+               SESE=SESE+DN*(QSE(ITS)**2)/AS(ITS)
+               SNSN=SNSN+DN*(QSN(ITS)**2)/AS(ITS)
+               SESN=SESN+DN*QSE(ITS)*QSN(ITS)/AS(ITS)
+            ENDIF
+         ENDDO
+      ENDDO
       RETURN
       END

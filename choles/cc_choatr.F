@@ -29,7 +29,7 @@ C
 C     Debug: print.
 C     -------------
 
-c     IF (LOCDBG) THEN
+      IF (LOCDBG) THEN
          WRITE(LUPRI,'(/,5X,A,A,I10)')
      &   SECNAM,': ISIDE = ',ISIDE
          WRITE(LUPRI,'(5X,A,A,I10)')
@@ -40,7 +40,7 @@ c     IF (LOCDBG) THEN
      &   SECNAM,': Frequencies:'
          WRITE(LUPRI,'(1P,D20.12)') (FREQ(I), I = 1,NUMX)
          WRITE(LUPRI,*)
-c     ENDIF
+      ENDIF
 
 C     Calculate contribution from global E intermediates
 C     (initialization of result vectors in SIGMA1).

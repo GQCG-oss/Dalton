@@ -137,9 +137,9 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 8 * 42 * 35 * \[11s7p2d\|7s6p2d\]" $log | wc -l`
-CRIT2=`$GREP "H1 * 2 * 1 * 12 * 10 * \[6s2p\|4s2p\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 10 * 66 * 55" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 42 * 35 * \[11s7p2d\|7s6p2d\]" $log | wc -l`
+CRIT2=`$GREP "H1 * 2 * 1\.0000 * 12 * 10 * \[6s2p\|4s2p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 66 * 55" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
@@ -147,13 +147,13 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0|\-)\.2249058930" $log | wc -l`
-CRIT5=`$GREP "4 * H1 * 1 * x * 1\.4523499293" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.4523499293" $log | wc -l`
 CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (0| )\.8996235720" $log | wc -l`
-CRIT8=`$GREP "7 * H1 * 2 * x * \-1\.4523499293" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-1\.4523499293" $log | wc -l`
 CRIT9=`$GREP "8 * y * (0| )\.0000000000" $log | wc -l`
 CRIT10=`$GREP "9 * z * (0| )\.8996235720" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -169,9 +169,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.06188340[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.34839871[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-76\.1937039537[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.06188340" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.3483987" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-76\.19370395" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -194,8 +194,8 @@ ERROR[5]="SPIN-SPIN COUPLING NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

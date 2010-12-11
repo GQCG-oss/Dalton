@@ -633,6 +633,8 @@ c /* deck CC_ETA_SETUP1 */
       INTEGER ILRCAMP
       INTEGER ILC1AMP
 
+      CALL QENTER('CC_ETA_SETUP1')
+
 *---------------------------------------------------------------------*
 * initializations:
 *---------------------------------------------------------------------*
@@ -713,10 +715,13 @@ Csonia
      &                          FREQ(IVEC,IDXA),ISYM(IDXA))
           END DO
           IF (ORDER.GT.1) THEN
+            call quit(' Sonia: please insert LORXA and LPROJ in call')
             IE1(IDXA,1) = 
      &           IEL1AMP(ISTAT(IVEC,1), EIGV(IVEC,1),ISYMS(1),
      &                   LAB(IVEC,IDXA),FREQ(IVEC,IDXA),ISYM(IDXA))
                          !what about lprj and lorxa here?
+Cdef  INTEGER FUNCTION IEL1AMP(IEXCI,  EIGVNEW,ISYMS,
+Cdef *                         NEWLBLA,FRQANEW,ISYMA,LORXA,LPROJ )
           END IF
         END IF
 
@@ -1138,6 +1143,7 @@ C
 
       END IF
 
+      CALL QEXIT('CC_ETA_SETUP1')
       RETURN
       END
 

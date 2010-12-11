@@ -52,8 +52,9 @@ cat > r12_damped_herdir.dal <<'%EOF%'
 .RUN WAVE FUNCTION
 .DIRECT
 **INTEGRALS
-.R12EXP
-.123
+.R12RGG
+1
+1. .123
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -101,8 +102,8 @@ ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

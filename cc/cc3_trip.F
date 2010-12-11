@@ -66,6 +66,8 @@ C  /* Deck cc3_triplet */
 #include <eribuf.h>
 #include <ccorb.h>
 #include <inftap.h>
+#include <ccisao.h>
+#include <r12int.h>
 !
       INTEGER INDEX, LWORK, KCMO, KSCR1, KFOCKD, KINT1T
       INTEGER KINT2T, KINT3T, KINT4T, KINT1S, KINT2S, KINT3S, KINT4S
@@ -83,6 +85,7 @@ C  /* Deck cc3_triplet */
       INTEGER KINTTMP1, KINTTMP2, KTRTMP1
       INTEGER KTRTMP2, KTRTMP3, KTRTMP4
 !
+      INTEGER IDUM
 !
 #if defined (SYS_CRAY)
       REAL ZERO, HALF, ONE, TWO, DTIME ! , TIMHER1, TIMHER2
@@ -90,7 +93,6 @@ C  /* Deck cc3_triplet */
       REAL FOCK(*), XLAMDP(*), XLAMDH(*), XLAMPC(*)
       REAL XLAMHC(*), WORK(LWORK), C2AMP(*), C2AMM(*)
       REAL DDOT, RHO2N
-      REAL SECOND
       REAL XONE, XHALF, ECURR
       REAL C1AM(*)
 #else
@@ -101,7 +103,6 @@ C  /* Deck cc3_triplet */
       DOUBLE PRECISION DDOT, RHO2N
       DOUBLE PRECISION XONE, XHALF, ECURR
       DOUBLE PRECISION C1AM(*)
-      DOUBLE PRECISION SECOND
 #endif
 !
       LOGICAL LOCDBG
@@ -119,6 +120,7 @@ C  /* Deck cc3_triplet */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
+#include <second.h>
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
@@ -243,7 +245,7 @@ C  /* Deck cc3_triplet */
 !----------------------------------------------
 !
       IF (LUSIFC .LE. 0) THEN
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
       ENDIF
@@ -321,6 +323,10 @@ C  /* Deck cc3_triplet */
 !
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

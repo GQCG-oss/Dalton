@@ -128,35 +128,35 @@ C
 C
       MODEL = 'CCSD      '
       IF (CC2) THEN
-         MODEL = 'CC2'
+         MODEL = 'CC2       '
       ENDIF
       IF (CCS) THEN
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
       ENDIF
       IF (CC3  ) THEN
-         MODEL = 'CC3'
+         MODEL = 'CC3       '
          WRITE(LUPRI,'(/,1x,A)') 'CC3 Polari not implemented yet'
          CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CC1A) THEN
-         MODEL = 'CCSDT-1a'
+         MODEL = 'CCSDT-1a  '
          WRITE(LUPRI,'(/,1x,A)') 'CC1A Polari not implemented yet'
          CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CC1B) THEN
-         MODEL = 'CCSDT-1b'
+         MODEL = 'CCSDT-1b  '
          WRITE(LUPRI,'(/,1x,A)') 'CC1B Polari not implemented yet'
          CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CCSD) THEN
-         MODEL = 'CCSD'
+         MODEL = 'CCSD      '
       ENDIF
 C
       IF (CIS) THEN
-         MODELP = 'CIS'
+         MODELP = 'CIS       '
       ELSE
          MODELP = MODEL
       ENDIF
@@ -323,7 +323,7 @@ C-------------------------------------------------------------------
                 IFOCK = IEFFFOCK('HAM0    ',ISYM0,1)
                 IADRF = IADRFCK(1,IFOCK)
 
-                LUFCK = 0
+                LUFCK = -1
                 CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
                 CALL GETWA2(LUFCK,FILFCKEFF,WORK(KFOCK0),
      &                      IADRF,N2BST(ISYM0))
@@ -660,7 +660,7 @@ C
                KEND2  = KR1DEN + N2BST(ISYMB)
                LWRK2  = LWORK  - KEND2
 
-               LUFCK = 0
+               LUFCK = -1
                IFOCK = IEFFFOCK(LABELA,ISYM,1)
                IADRF = IADRFCK(2,IFOCK)
                CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
@@ -682,7 +682,7 @@ C
                KEND2  = KR1DEN + N2BST(ISYMA)
                LWRK2  = LWORK  - KEND2
 
-               LUFCK = 0
+               LUFCK = -1
                IFOCK = IEFFFOCK(LABELB,ISYM,1)
                IADRF = IADRFCK(2,IFOCK)
                CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
@@ -879,9 +879,10 @@ C
               END IF
 
             ENDIF
-            CALL CC_PRPC(RESULT,MODELP,2,
-     *                   LABELA,LABELB,LABELA,LABELB,
-     *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB)
+            CALL WRIPRO(RESULT,MODELP,2,
+     *                  LABELA,LABELB,LABELA,LABELB,
+     *                  BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     *                  0,0,0)
          END DO
 
          IF (DIPPOL.AND.(LABELA(2:7).EQ.'DIPLEN')
@@ -1308,9 +1309,9 @@ C
 C
       IF (.NOT.(CCS.OR.CC2.OR.CCSD)) THEN
          WRITE(LUPRI,'(A)')
-     &        ' CC_SOLRSP: Do not want to calculate anything'
+     &        ' CC_POLPRI: Do not want to calculate anything'
      *                  //' else than CCS, CC2 and CCSD properties '
-         CALL QUIT('Model not CCS, CC2, or CCSD in CC_SOLRSP')
+         CALL QUIT('Model not CCS, CC2, or CCSD in CC_POLPRI')
       ENDIF
 C
 C--------------------------------------
@@ -1320,6 +1321,26 @@ C
          WRITE(LUPRI,'(//,1X,A6,A,F10.6,/)') MODEL(1:6),
      *       'polarizability for frequency: ',FRQ
          CALL OUTPUT(POL,1,3,1,3,3,3,1,LUPRI)
+cmbh: print polarizability for MidasCpp
+         call wripro(POL(1),'  '//MODEL(1:6)//'  ',2,
+     *               'X_DIPLEN','X_DIPLEN','X_DIPLEN','X_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(2),'  '//MODEL(1:6)//'  ',2,
+     *               'X_DIPLEN','Y_DIPLEN','X_DIPLEN','Y_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(3),'  '//MODEL(1:6)//'  ',2,
+     *               'X_DIPLEN','Z_DIPLEN','X_DIPLEN','Z_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(5),'  '//MODEL(1:6)//'  ',2,
+     *               'Y_DIPLEN','Y_DIPLEN','Y_DIPLEN','Y_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(6),'  '//MODEL(1:6)//'  ',2,
+     *               'Y_DIPLEN','Z_DIPLEN','Y_DIPLEN','Z_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+         call wripro(POL(9),'  '//MODEL(1:6)//'  ',2,
+     *               'Z_DIPLEN','Z_DIPLEN','Z_DIPLEN','Z_DIPLEN',
+     *               FRQ,FRQ,FRQ,1,0,0,0) 
+cmbh end
 C
          CALL  TNSRAN(POL,PVAL,PAXIS,
      *                ALFSQ,BETSQ,ITST,ITST2,
@@ -1381,13 +1402,13 @@ C
          WRITE(LUPRI,'(/,1X,A,E18.8,A,/)')
      *      'Conversion factor (a.u. - S.I.):',DPOLAUTSI,' (C^2m^2J^-1)'
 C
-            CALL CC_PRPC(SHPAL,MODEL,2,
-     *                   'isoalpha','isoalpha','isoalpha','isoalpha',
-     *                   FRQ,DUMMY,DUMMY,1,0,0,0)
+            CALL WRIPRO(SHPAL,MODEL,2,
+     *                  'isoalpha','isoalpha','isoalpha','isoalpha',
+     *                  FRQ,DUMMY,DUMMY,1,0,0,0)
 C
-            CALL CC_PRPC(ANINV,MODEL,2,
-     *                   'anis_inv','anis_inv','anis_inv','anis_inv',
-     *                   FRQ,DUMMY,DUMMY,1,0,0,0)
+            CALL WRIPRO(ANINV,MODEL,2,
+     *                  'anis_inv','anis_inv','anis_inv','anis_inv',
+     *                  FRQ,DUMMY,DUMMY,1,0,0,0)
 C
       END
 c*DECK CC_LRESID
@@ -1478,29 +1499,29 @@ C
 C
       MODEL = 'CCSD      '
       IF (CC2) THEN
-         MODEL = 'CC2'
+         MODEL = 'CC2       '
       ENDIF
       IF (CCS) THEN
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
       ENDIF
       IF (CC3  ) THEN
-         MODEL = 'CC3'
+         MODEL = 'CC3       '
          WRITE(LUPRI,'(/,1x,A)')
      *    'CC3 Oscillator strengths not implemented yet'
          RETURN
       ENDIF
       IF (CC1A) THEN
-         MODEL = 'CCSDT-1a'
+         MODEL = 'CCSDT-1a  '
          WRITE(LUPRI,'(/,1x,A)')
      *    'CC1A Oscillator strengths not implemented yet'
          RETURN
       ENDIF
       IF (CCSD) THEN
-         MODEL = 'CCSD'
+         MODEL = 'CCSD      '
       ENDIF
 C
       IF (CIS) THEN
-         MODELP = 'CIS'
+         MODELP = 'CIS       '
       ELSE
          MODELP = MODEL
       ENDIF
@@ -1987,9 +2008,9 @@ C
             SQRRES  = 0.0D0
           ENDIF
           IF (LABELA.EQ.LABELB) THEN
-             CALL CC_PRPC(SQRRES,MODELP,-1,
-     *                    LABELA,LABELB,LABELA,LABELB,
-     *                    EIGV,EIGV,EIGV,ISYMEA)
+             CALL WRIPRO(SQRRES,MODEL,-1,
+     *                   LABELA,LABELB,LABELA,LABELB,
+     *                   EIGV,EIGV,EIGV,ISYMEA,ISYME,1,ISTATE)
           ENDIF
         END DO
       END DO
@@ -2934,7 +2955,11 @@ C
      *    'Principal axis of diagonalized oscillator strength matrix:'
       CALL OUTPUT(PAXIS,1,3,1,3,3,3,1,LUPRI)
       OSCS = PVAL(1)+PVAL(2)+PVAL(3)
-C
+
+      CALL WRIPRO(OSCS,MODEL,400,
+     &            "OSCI-LEN","OSCI-LEN","OSCI-LEN","OSCI-LEN",
+     &            EIGV,EIGV,EIGV,ISYM,ISYM,1,IEX)
+
       CDIP = 'unknown'
       IF (IPAR .EQ.1) CDIP = '   X   '
       IF (IPAR .EQ.2) CDIP = '   Y   '
@@ -3013,8 +3038,12 @@ C        Calculate response contribution to expectation value.
 C-------------------------------------------------------------
 C
       IF (.NOT.CCS) THEN
+         NVAR   = NT1AM(ISYMOP) + NT2AM(ISYMOP)
+         IF (CCR12) THEN
+           NVAR = NVAR + NTR12AM(ISYMOP)
+         ENDIF
          KETA   = 1
-         KWRK1  = KETA  + NT1AM(ISYMOP) + NT2AM(ISYMOP)
+         KWRK1  = KETA  + NVAR
          LWRK1  = LWORK - KWRK1
          IF (LWRK1 .LT. 0 )
      &        CALL QUIT('Too little workspace in CC_TSTAV-1')
@@ -3024,17 +3053,26 @@ C
             IOPT  = 3
             CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,WORK(KETA),
      *                    WORK(KETA+NT1AM(ISYMOP)))
+            IF (CCR12) THEN
+              IOPT = 32
+              CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,DUMMY,
+     *                      WORK(KETA+NT1AM(ISYMOP)+NT2AM(ISYMOP)))
+            ENDIF  
          ELSE
             WRITE(LUPRI,*) 'IOPTTST = ',IOPTTST
             CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV.')
          END IF
-         PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
+         PROPRSP = DDOT(NVAR,WORK(KETA),1,VEC,1)
 
          IF (LOCDBG) THEN
            write(lupri,*) 'Input vector:'
-           call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
+           call cc_prp(vec,vec(nt1am(isymop)+1),isymop,1,1)
+           if (CCR12) call cc_prpr12(vec(1+nt1am(isymop)+nt2am(isymop)),
+     *                               isymop,1,.true.)
            write(lupri,*) 'L0/X0 vector:'
-           call cc_prp(work(keta),work(keta+nt1am(isymop)),1,1,1)
+           call cc_prp(work(keta),work(keta+nt1am(isymop)),isymop,1,1)
+           if (CCR12) call cc_prpr12(work(keta+nt1am(isymop)+
+     *                               nt2am(isymop)),isymop,1,.true.)
            write(lupri,*) 'PROPRSP:',PROPRSP
          END IF
       ELSE
@@ -3084,6 +3122,8 @@ C              C is assumed to be a one-electron operator.
 C
 C     Written by Ove Christiansen 10-5-1996
 C
+C     Bug-Fix for frozen-core calculations: Chr. Neiss  22-04-2005
+C
 C-----------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -3094,6 +3134,7 @@ C
 C
       CHARACTER LBL*(*), MODEL*10
       DIMENSION WORK(LWORK)
+      INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), NGLMDS(8), IGLMVIS(8,8)
 C
 #include <ccorb.h>
 #include <cclr.h>
@@ -3106,11 +3147,32 @@ C
          CALL AROUND( 'IN CC_AVE ')
       ENDIF
 C
+      DO ISYM = 1, NSYM
+         ICOUNT  = 0
+         ICOUNT2 = 0
+         ICOUNT3 = 0
+         DO ISYM2 = 1, NSYM
+            ISYM1 = MULD2H(ISYM,ISYM2)
+            ICMO(ISYM1,ISYM2)    = ICOUNT
+            IGLMRHS(ISYM1,ISYM2) = ICOUNT2
+            ICOUNT  = ICOUNT  + NBAS(ISYM1)*NORBS(ISYM2)
+            ICOUNT2 = ICOUNT2 + NBAS(ISYM1)*NRHFS(ISYM2)
+            ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NRHFS(ISYM2)
+         END DO
+         NCMO(ISYM)   = ICOUNT
+         NGLMDS(ISYM) = ICOUNT2
+         DO ISYM2 = 1, NSYM
+            ISYM1 = MULD2H(ISYM,ISYM2)
+            IGLMVIS(ISYM1,ISYM2) = ICOUNT3
+            ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NVIRS(ISYM2)
+         END DO
+      END DO
+C
       KONEP  = 1
       KT1AM  = KONEP  + N2BST(ISYMOP)
-      KLAMDP = KT1AM  + NT1AMX
-      KLAMDH = KLAMDP + NLAMDT
-      KEND1  = KLAMDH + NLAMDT
+      KLAMDPS= KT1AM  + NT1AMX
+      KLAMDHS= KLAMDPS+ NGLMDS(1)
+      KEND1  = KLAMDHS+ NGLMDS(1)
       LWRK1  = LWORK  - KEND1
       IF ( LWRK1 .LT. 0 )
      *     CALL QUIT(' Too little workspace in CC_AVE')
@@ -3120,39 +3182,41 @@ C
 C
       IF (.NOT.CCS) THEN
          IOPT = 1
-         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+         CALL CC_RDRSP('R0 ',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ELSE IF (CCS ) THEN
          CALL DZERO(WORK(KT1AM),NT1AMX)
       ENDIF
 C
-      CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
-     *            WORK(KEND1),LWRK1)
-C
-      ISYFAO = 1
-      ISYMPA = 1
-      ISYMHO = 1
-C
-      CALL CC_FCKMO(WORK(KONEP),WORK(KLAMDP),WORK(KLAMDH),
-     *              WORK(KEND1),LWRK1,ISYFAO,ISYMPA,ISYMHO)
-C
-      IF (IPRINT .GT. 50) THEN
-         CALL AROUND( 'In CC_AVE: Pert. matrix' )
-         CALL CC_PRFCKMO(WORK(KONEP),ISYMOP)
-      ENDIF
+      CALL LAMMATS(WORK(KLAMDPS),WORK(KLAMDHS),WORK(KT1AM),ISYMOP,
+     *             .FALSE.,.FALSE.,NGLMDS,IGLMRHS,IGLMVIS,ICMO,
+     *             WORK(KEND1),LWRK1)
 C
       XVALUE = 0.0D0
-C
-      DO 200 ISYMI = 1, NSYM
-C
-         DO 210 I = 1, NRHF(ISYMI)
-C
-            KII  = KONEP - 1 + IFCRHF(ISYMI,ISYMI)
-     *           + NORB(ISYMI)*(I - 1) + I
-C
-            XVALUE = XVALUE + 2.0D00*WORK(KII)
-C
-  210    CONTINUE
-  200 CONTINUE
+C 
+      DO ISYM = 1, NSYM
+
+        KSCR1 = KEND1
+        KEND2 = KSCR1 + NBAS(ISYM) * NRHFS(ISYM)
+        LWRK2 = LWORK  - KEND2
+        IF ( LWRK2 .LT. 0 ) THEN
+          WRITE (LUPRI,*) 'LWORK, LWRK2: ',WORK, LWRK2
+          CALL QUIT('Too little workspace in CC_AVE')
+        END IF
+
+        NBAS1 = MAX(NBAS(ISYM),1)
+        KOFF1 = KONEP   + IAODIS(ISYM,ISYM)
+        KOFF2 = KLAMDHS + IGLMRHS(ISYM,ISYM)
+
+        CALL DGEMM('N','N',NBAS(ISYM),NRHFS(ISYM),NBAS(ISYM),
+     *             1.0D0,WORK(KOFF1),NBAS1,WORK(KOFF2),NBAS1,
+     *             0.0D0,WORK(KSCR1),NBAS1)
+
+        KOFF2 = KLAMDPS + IGLMRHS(ISYM,ISYM)
+
+        TRACE = DDOT(NBAS(ISYM)*NRHFS(ISYM),
+     &                 WORK(KOFF2),1,WORK(KSCR1),1)
+        XVALUE = XVALUE + 2.0D0 * TRACE
+      END DO
 C
       END
 c*DECK CC_XKSI
@@ -3251,7 +3315,7 @@ C
      *            WORK(KEND2),LEND2)
 C
       IF (CC2 .AND. IOPTCC2.EQ.1) THEN
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         REWIND(LUSIFC)
@@ -3494,7 +3558,7 @@ C
      *            WORK(KEND21),LEND21)
 C
       IF (CC2 .AND. IOPTCC2.EQ.1) THEN
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         REWIND(LUSIFC)
@@ -3937,7 +4001,7 @@ C
          MATZ = 1
          CALL DCOPY(3*3,TNSR,1,AMAT,1)
          CALL RG(3,3,AMAT,PVAL,WI,MATZ,PAXIS,V1,FV1,IERR)
-         CALL RGORD(3,3,PVAL,WI,PAXIS)
+         CALL RGORD(3,3,PVAL,WI,PAXIS,.FALSE.)
       ENDIF
 C
 C------------------------------------
@@ -4072,7 +4136,7 @@ C
       END
 c*DECK CC_PRPC
        SUBROUTINE CC_PRPC(PROP,LABEL,NORD,LABX,LABY,LABZ,LABU,
-     *                   FRQY,FRQZ,FRQU,ISYMIN)
+     *                   FRQY,FRQZ,FRQU,ISYMIN,ISYMEX,ISPINEX,IEX)
 C
 C-----------------------------------------------------------------------------
 C
@@ -4089,6 +4153,7 @@ C           -1    ground - excited  transition matrix element
 C           -2    excited - excited transition matrix element (not implemented yet)
 C           -3    ground - excited transition strength
 C           -4    excited - excited transition strength (not implemented yet)
+C           -11    First order excited state property
 C-----------------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -4108,12 +4173,6 @@ C
       LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
 C
-      PARAMETER (ISYMEX=0, ISPINEX=0, IEX=0)
-C     ... hjaaj Oct 2003: make sure these three variables are defined
-C     for "WRITE(LUPRPC," below, otherwise they are undefined and
-C     may be bigger than 'I4' format, giving stars in output
-C     and illegal character when LUPRPC is read again in cc_drv.F
-C
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
 C
 C--------------------------------------------------
@@ -4121,14 +4180,14 @@ C     Test if this property is already on the list.
 C     In that case find address else update NPRPC
 C--------------------------------------------------
 C
-      EXIST = .FALSE.
 C
       IF (NOEONL .AND. (NORD.EQ.0)) THEN
 C         if energy and NOEONList = true then skip addition to list.
         RETURN
       ELSE
+        EXIST = .FALSE.
         IF (EXIST) THEN
-           IPRPC = IHIT
+c          IPRPC = IHIT
         ELSE
            NPRPC = NPRPC + 1
            IPRPC = NPRPC
@@ -4207,7 +4266,7 @@ C     -----------------------------------------------------------
       ! read zeroth-order singles amplitudes and compute Lambda
       IOPT = 1
       CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AM0),DUMMY)
-      CALL LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AM),
+      CALL LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AM0),
      *            WORK(KEND1),LWRK1)
  
 C     -----------------------------------------------------------
@@ -4220,7 +4279,7 @@ C     -----------------------------------------------------------
       IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
 
       ! get X integrals:
-      CALL CCPRPAO(LABELX,WORK(KFOCKX),IRREP,ISYMM,IERR,
+      CALL CCPRPAO(LABELX,.TRUE.,WORK(KFOCKX),IRREP,ISYMM,IERR,
      &              WORK(KEND2),LWRK2)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
         CALL QUIT('CC_AVE2: error reading operator '//LABELX)
@@ -4246,7 +4305,7 @@ C     -----------------------------------------------------------
       IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
 
       ! get Y integrals:
-      CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,ISYMM,IERR,
+      CALL CCPRPAO(LABELY,.TRUE.,WORK(KFOCKY),IRREP,ISYMM,IERR,
      &              WORK(KEND2),LWRK2)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMY)) THEN
         CALL QUIT('CC_AVE2: error reading operator '//LABELY)
@@ -4318,13 +4377,17 @@ C----------------------------------------------------------------------
       LOGICAL LORX
       CHARACTER*10 MODEL
       INTEGER KETA, KEND1, LWRK1, IOPT, IDLSTX, IDLSTY,
-     &        IR1TAMP
+     &        IR1TAMP, NVAR
 
       IF (CCS) THEN
          PROPRSP = 0.0D0
       ELSE
+         NVAR   = NT1AM(ISYM0) + NT2AM(ISYM0)
+         IF (CCR12) THEN
+           NVAR = NVAR + NTR12AM(ISYM0)
+         ENDIF
          KETA   = 1 
-         KEND1  = KETA  + NT1AM(ISYM0) + NT2AM(ISYM0)
+         KEND1  = KETA  + NVAR
          LWRK1  = LWORK - KEND1 
          IF (LWRK1.LT.0) CALL QUIT('Too little workspace in CC_TSTAV2')
          IF      (IOPTTST.EQ.0) THEN
@@ -4333,17 +4396,26 @@ C----------------------------------------------------------------------
             IOPT  = 3
             CALL CC_RDRSP('L0 ',0,ISYM0,IOPT,MODEL,WORK(KETA),
      *                    WORK(KETA+NT1AM(ISYMOP)))
+            IF (CCR12) THEN
+              IOPT = 32
+              CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,DUMMY,
+     *                      WORK(KETA+NT1AM(ISYMOP)+NT2AM(ISYMOP)))
+            ENDIF
          ELSE
             WRITE(LUPRI,*) 'IOPTTST = ',IOPTTST
             CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV2.')
          END IF
-         PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
+         PROPRSP = DDOT(NVAR,WORK(KETA),1,VEC,1)
  
          IF (LOCDBG) THEN
            write(lupri,*) 'Input vector:'
-           call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
+           call cc_prp(vec,vec(nt1am(isymop)+1),isymop,1,1)
+           if (CCR12) call cc_prpr12(vec(1+nt1am(isymop)+nt2am(isymop)),
+     *                               isymop,1,.false.)
            write(lupri,*) 'L0/X0 vector:'
-           call cc_prp(work(keta),work(keta+nt1am(isymop)),1,1,1)
+           call cc_prp(work(keta),work(keta+nt1am(isymop)),isymop,1,1)
+           if (CCR12) call cc_prpr12(work(keta+nt1am(isymop)+
+     *                               nt2am(isymop)),isymop,1,.false.)
            write(lupri,*) 'PROPRSP:',PROPRSP
          END IF
       ENDIF
@@ -5717,9 +5789,13 @@ C     -----------------------------------------------------------
             END IF
 
             IF (LABELA .EQ. LABELB) THEN
-               CALL CC_PRPC(SQRRES,MODELP,-1,
-     &                      LABELA,LABELB,LABELA,LABELB,
-     &                      EIGV,EIGV,EIGV,ISYMEA)
+               CALL WRIPRO(SQRRES,MODEL,-1,
+     &                     LABELA,LABELB,LABELA,LABELB,
+     &                     EIGV,EIGV,EIGV,ISYMEA,ISYME,1,ISTATE)
+               OSCCON = EIGV*SQRRES*SQRRES 
+               CALL WRIPRO(OSCCON,MODEL,-21,
+     &                     LABELA,LABELB,LABELA,LABELB,
+     &                     EIGV,EIGV,EIGV,ISYMEA,ISYME,1,ISTATE)
             END IF
 
          END DO
@@ -6743,3 +6819,130 @@ C           -----------------------
 
       RETURN
       END
+c*DECK WRIPRO
+       SUBROUTINE WRIPRO(PROP,LABEL,NORD,LABX,LABY,LABZ,LABU,
+     *                   FRQY,FRQZ,FRQU,ISYMIN,ISYMEX,ISPINEX,IEX)
+C
+C-----------------------------------------------------------------------------
+C
+C     Purpose: Add response property to list of property information to be
+C              passed to numerical differentiantion/averaging.
+C
+C     Ove Christiansen August 1999.
+C
+C     NORD = 0    energy (ground or excited)
+C            1    exp. value
+C            2    Linear response function
+C            3    Quadratic response function
+C            4    Cubic response function
+C           -1    ground - excited  transition matrix element, <0|x|i>
+C           -2    excited - excited transition matrix element, |<i|x|f>|
+C           -11   First order excited state property, <i|x|i>
+C           -20   <0|x|i><i|y|0>
+C           -21   w*<0|x|i><i|y|0>
+C           -22   (w_f - w_i)*|<i|x|f>|^2
+C           -30   D_pa
+C           -31   D_pe
+C           -32   D_pc
+C           -33   w1w2D_pa
+C           -34   w1w2D_pe
+C           -35   w1w2D_pc
+C           -400  oscillator strength
+C            401  chemical shielding isotropic
+C            402  chemical shielding tensor
+C-----------------------------------------------------------------------------
+C
+#include <implicit.h>
+#include <maxorb.h>
+C
+#include <dummy.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <cclr.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <ccsdinp.h>
+#include <prpc.h>
+#include <inftap.h>
+C
+      LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
+      PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
+C
+      CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
+C
+C--------------------------------------------------
+C
+C
+      IF (NOEONL .AND. (NORD.EQ.0)) THEN
+C         if energy and NOEONList = true then skip addition to list.
+        RETURN
+      ELSE
+        EXIST = .FALSE.
+        IF (EXIST) THEN
+c          IPRMI = IHIT
+        ELSE
+           NPRMI = NPRMI + 1
+           IPRMI = NPRMI
+        ENDIF
+C
+        WRITE(LUNDPF,
+     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   IPRMI,ISYMIN,NORD,LABEL,PROP,
+     *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
+        WRITE(LUNMPF,
+     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   IPRMI,ISYMIN,NORD,LABEL,PROP,
+     *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
+      ENDIF
+C
+      END
+      SUBROUTINE stripblanks(tobestripped)
+#include <priunit.h>
+c
+c     mbh: transform nuclei string, e.g. 'C0   1' into
+c          'C0_1   '
+c
+      character tobestripped*8,helper*8,lastchar*1
+      integer i,j,idx
+c
+      idx=1
+      helper='        '
+      write(lupri,*)'String on input: "',tobestripped,'"'
+c
+c strip all blanks from beginning
+c
+      do 10 i=1,8
+         if(tobestripped(i:i).ne.' ') goto 15
+10    continue
+15    continue
+c
+c add to helper until we hit a blank again
+c
+      do 20 j=i,8
+         if(tobestripped(j:j).ne.' ') then
+            helper(idx:idx)=tobestripped(j:j)
+         else 
+            goto 25
+         endif
+         idx=idx+1
+20    continue
+25    continue
+      helper(idx:idx)='_'
+      lastchar='_'
+      idx=idx+1
+c
+c strip all blanks from here to next 'item'
+c
+      do 30 i=j,8
+         if(tobestripped(i:i).ne.' ') then
+            helper(idx:idx)=tobestripped(i:i)
+            lastchar=tobestripped(i:i)
+            idx=idx+1
+         endif
+30    continue
+      if(lastchar.eq.'_') helper(idx-1:idx-1)=' '
+      write(lupri,*)'String on input: "',helper,'"'
+      tobestripped=helper 
+      end
+C--------------------------------------------------------------

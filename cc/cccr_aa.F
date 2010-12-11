@@ -47,10 +47,11 @@ c /* deck cccr_aa */
 *
 *             A{A} * T^B = <mu|[A,T^B]|CC>
 *
-*    Note: the single and double excitation parts of the result RHO 
-*          are returned at the beginning of the work space in
+*    Note: the single, double and r12-double excitation parts of the 
+*          result RHO are returned at the beginning of the work space in
 *          WORK(1)... WORK(NT1AM(ISYRES))
 *          WORK(NT1AM(ISYRES)+1)... WORK(NT1AM(ISYRES)+NT2AM(ISYRES))
+*          WORK(WORK(NT1AM(ISYRES)+NT2AM(ISYRES)+1)... WORK(NT1AM(ISYRES)+NT2AM(ISYRES)+NTR12AM(ISYRES))
 *          (double excitation part will be stored in packed form)
 *
 *    symmetries:
@@ -74,6 +75,8 @@ c /* deck cccr_aa */
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 C#include <ccr1rsp.h>
+#include <r12int.h>
+#include <ccr12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -97,8 +100,9 @@ C#include <ccr1rsp.h>
       INTEGER KRHO1, KRHO2, KEND0, KAOO, KAOV, KAVV, KBTAOO, KBTAVV
       INTEGER KT1AMPB, KT2AMPB, KEND1, LEND1, KEND2, LEND2, IOPT
       INTEGER KPERTA, KT1AMP0, KT2AMP0, KLAMDP0, KLAMDH0
+      INTEGER LUNIT,IDUM,IAN,KLAMDPB,KLAMDHB,KRHO12SQ,KRHOR12
+      INTEGER KXINTTRI,KXINTSQ,KVXINTSQ,KT12AM0,KT12AMB,KSCR
       
-
 
 #if defined (SYS_CRAY)
       REAL FREQB
@@ -161,6 +165,11 @@ C#include <ccr1rsp.h>
         KRHO2 = KDUM
       END IF
 
+      IF (CCR12) THEN
+        KRHOR12 = KEND0 
+        KEND0   = KRHOR12 + NTR12AM(ISYRES)
+      END IF
+
       KPERTA  = KEND0
       KAOO    = KPERTA  + N2BST(ISYMTA)
       KAOV    = KAOO    + NMATIJ(ISYMTA)
@@ -200,10 +209,10 @@ C#include <ccr1rsp.h>
       KT1AMP0 = KEND1
       KLAMDP0 = KT1AMP0 + NT1AM(ISYM0)
       KLAMDH0 = KLAMDP0 + NLAMDT
-      KEND2   = KLAMDH0 + NLAMDT
-      LEND2   = LWORK - KEND2
+      KEND1   = KLAMDH0 + NLAMDT
+      LEND1   = LWORK - KEND1
 
-      IF (LEND2 .LT. 0) THEN
+      IF (LEND1 .LT. 0) THEN
         CALL QUIT('Insufficient work space in CCCR_AA.')
       END IF
 C
@@ -212,8 +221,8 @@ C     JK+OC, CCSLV
         CALL DCOPY(N2BST(ISYMTA),XINT(1),1,WORK(KPERTA),1)
       ELSE
 * read the AO integrals:
-        CALL CCPRPAO(LABELA,WORK(KPERTA),IRREP,ISYM,IERR,
-     &               WORK(KEND2),LEND2)
+        CALL CCPRPAO(LABELA,.TRUE.,WORK(KPERTA),IRREP,ISYM,IERR,
+     &               WORK(KEND1),LEND1)
         IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
           CALL QUIT('CCCR_AA: error while reading operator '//LABELA)
         END IF
@@ -224,11 +233,11 @@ C     JK+OC, CCSLV
 
 * get zeroth order Lambda matrices:
       CALL LAMMAT(WORK(KLAMDP0),WORK(KLAMDH0),WORK(KT1AMP0),
-     &            WORK(KEND2),LEND2)
+     &            WORK(KEND1),LEND1)
 
 * transform one-electron integrals in place:
       CALL CC_FCKMO(WORK(KPERTA),WORK(KLAMDP0),WORK(KLAMDH0),
-     &              WORK(KEND2),LEND2,ISYMTA,1,1)
+     &              WORK(KEND1),LEND1,ISYMTA,1,1)
 
 * gather occ/occ, occ/vir, and vir/vir blocks:
       CALL CC_GATHEROO(WORK(KPERTA),WORK(KAOO),ISYMTA)
@@ -359,9 +368,91 @@ C     JK+OC, CCSLV
 *---------------------------------------------------------------------*
       CAll CCLR_DIASCL(WORK(KRHO2),HALF,ISYRES)
 
+*---------------------------------------------------------------------*
+* calculate R12 contributions:
+*
+* C. Neiss,  june 2005
+*---------------------------------------------------------------------*
+      IF (CCR12) THEN
+        CALL DZERO(WORK(KRHOR12),NTR12AM(ISYRES))
+C
+        KT12AM0 = KEND1
+        KT12AMB = KT12AM0 + NTR12SQ(1)
+        KXINTTRI= KT12AMB + NTR12SQ(ISYMTB)
+        KXINTSQ = KXINTTRI+ NR12R12P(1)
+        KVXINTSQ= KXINTSQ + NR12R12SQ(1)
+        KSCR    = KVXINTSQ+ NR12R12SQ(ISYMTA)
+        KRHO12SQ= KSCR    + NTR12SQ(ISYRES)
+        KLAMDPB = KRHO12SQ+ NTR12SQ(ISYRES)
+        KLAMDHB = KLAMDPB + NGLMDT(ISYMTB)
+        KEND2   = KLAMDHB + NGLMDT(ISYMTB)
+        LEND2   = LWORK - KEND2
+        IF (LEND2.LT.0) THEN
+          CALL QUIT('Insufficient work space for R12 in CCCR_AA')
+        END IF
+
+* transform MO matrices with singles response amplitudes:
+        CALL CCLR_LAMTRA(WORK(KLAMDP0),WORK(KLAMDPB),WORK(KLAMDH0),
+     &                   WORK(KLAMDHB),WORK(KT1AMPB),ISYMTB)
+
+* read R12 ground state amplitudes:
+        CALL CC_R12GETCT(WORK(KT12AM0),1,0,IDUM,.FALSE.,'N',
+     &                   IDUM,IDUM,IDUM,IDUM,IDUM,WORK(KEND2),LEND2)
+
+* read R12 response amplitudes:
+        CALL CC_R12GETCT(WORK(KT12AMB),ISYMTB,2,KETSCL,.FALSE.,'N',
+     &                   IDUM,IDUM,IDUM,LISTB,ITAMPB,WORK(KEND2),LEND2)
+
+* read R12 overlap matrix:
+        LUNIT = -1
+        CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
+     &              IDUM,.FALSE.)
+        REWIND(LUNIT)
+ 8888   READ(LUNIT) IAN
+        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NR12R12P(1))
+        IF (IAN.NE.IANR12) GOTO 8888
+        CALL GPCLOSE(LUNIT,'KEEP')
+        IOPT = 2
+        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),'N',IOPT)
+
+* read R12 VXINT:
+        CALL DZERO(WORK(KVXINTSQ),NR12R12SQ(ISYMTA))
+        CALL CC_R12RDVXINT(WORK(KVXINTSQ),WORK(KEND2),LEND2,ONE,
+     &                     ISYMTA,LABELA)
+
+* read the AO integrals:
+      CALL CCPRPAO(LABELA,.TRUE.,WORK(KPERTA),IRREP,ISYM,IERR,
+     &             WORK(KEND2),LEND2)
+      IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
+        CALL QUIT('CCCR_AA: error while reading operator '//LABELA)
+      END IF
+
+* calculate first contribution:
+        CALL CC_R12XI(WORK(KRHO12SQ),ISYRES,'N',WORK(KT12AMB),ISYMTB,
+     &                WORK(KXINTSQ),WORK(KVXINTSQ),ISYMTA,
+     &                WORK(KPERTA),WORK(KLAMDP0),WORK(KLAMDH0),
+     &                'N',WORK(KEND2),LEND2)
+
+* calculate second contribution:
+        CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KT12AM0),1,
+     &                  WORK(KPERTA),ISYMTA,WORK(KLAMDP0),
+     &                  WORK(KLAMDHB),ISYMTB,'N',WORK(KEND2),LEND2)
+        CALL CC_R12XI2B(WORK(KRHO12SQ),'N',WORK(KXINTSQ),1,'N',
+     &                  WORK(KSCR),ISYRES,'N',-ONE)
+
+* pack to triangular format:
+        IOPT = 1
+        CALL CCR12PCK2(WORK(KRHOR12),ISYRES,.FALSE.,WORK(KRHO12SQ),
+     &                 'N',IOPT)
+        CALL CCLR_DIASCLR12(WORK(KRHOR12),BRASCL,ISYRES)
+ 
+      END IF
+*---------------------------------------------------------------------*
+
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'Final result of CCCR_AA: RHO:'
         Call CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYRES,1,1)
+        IF (CCR12) CALL CC_PRPR12(WORK(KRHOR12),ISYRES,1,.TRUE.)
       END IF
 
       RETURN

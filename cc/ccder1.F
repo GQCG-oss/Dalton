@@ -170,20 +170,16 @@ C
 * open files for sorted integrals:
 *----------------------------------------------------------------------*
       DO ISYM = 1,NSYM
-         LUAODR(ISYM) = 0
+         LUAODR(ISYM) = -1
          CALL WOPEN2(LUAODR(ISYM),NAME(ISYM),64,0)
       END DO
 
 *----------------------------------------------------------------------*
 *     set buffer information.
 *----------------------------------------------------------------------*
-#if defined (SYS_CRAY)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBAST .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBAST .LE. 255) THEN
          NIBUF = 1

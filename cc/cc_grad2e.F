@@ -302,7 +302,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -640,7 +640,7 @@ C     Open file for effective two electron densities.
 C-------------------------------------------------------
 C
       LDECH = N2BSTM*2 + 1
-      LUDE = 0
+      LUDE = -1
       CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT',
      *            'UNFORMATTED',LDECH,OLDDX)
 C
@@ -829,7 +829,6 @@ C
                   ELSE IF (CCS) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
      *                      + NFROIJ(ISYMPQ)*(G - 1)
-                     KLAMDH = KEND3
                   ENDIF
 C
 C----------------------------------------------------------
@@ -847,6 +846,7 @@ C
                      KFD2II = KFD2IA + NT1FRO(ISYMPQ)
                      KEND3  = KFD2II + NFROFR(ISYMPQ)
                      LWRK3  = LWORK  - KEND3
+                     IF (CCS) KLAMDH = KEND3
 C
                      IF (LWRK3 .LT. 0) THEN
                         WRITE(LUPRI,*) 'Available:', LWORK

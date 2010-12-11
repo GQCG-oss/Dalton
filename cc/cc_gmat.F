@@ -239,6 +239,8 @@ c/* Deck CC_GMAT */
 *
 *     Written by Christof Haettig, Aug. 1996; restructed, Sept. 1998.
 *
+*     included CC-R12: Christian Neiss, november 2005
+* 
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -260,6 +262,8 @@ c/* Deck CC_GMAT */
 #include <blocks.h>
 #include <second.h>
 #include <ccnoddy.h>
+#include <r12int.h>
+#include <ccr12int.h>
 #include <ccsections.h>
 #include <ccslvinf.h>
 #include <qm3.h>
@@ -287,6 +291,7 @@ c/* Deck CC_GMAT */
       INTEGER IGTRAN(4,NGTRAN)
       INTEGER IGDOTS(MXVEC,NGTRAN)
 
+      CHARACTER*(1) RSPTYP
       CHARACTER*(8) FNTOC
       CHARACTER*(7) FN3FOP2X
       CHARACTER*(6) FNCKJD, FN3VI, FN3FOPX
@@ -320,8 +325,8 @@ c/* Deck CC_GMAT */
       INTEGER KFBCOO(NGTRAN), KFBCVV(NGTRAN)
       INTEGER KDELTA1(NGTRAN), KCTR2(NGTRAN)
 
-      CHARACTER MODEL*(10), MODELW*(10)
-      LOGICAL LSAME, LLSAME
+      CHARACTER MODEL*(10), MODELW*(10), APROXR12*(3)
+      LOGICAL LSAME, LLSAME, CCSDR12
       INTEGER INDEXA(MXCORB)
       INTEGER IDLSTA, IDLSTB, IDLSTC, IDLSTD
       INTEGER ISYRES, ISYCTR, ISYMTB, ISYMTC, ISYMTD
@@ -345,7 +350,9 @@ c/* Deck CC_GMAT */
       INTEGER KXCIAJK, KECIAJK, KZCIAJK, KCCIAJK, KXLMDHC, KXLMDPC
       INTEGER MDISAO,MDSRHF,M2BST,MT2BGD,MT2SQ,MT2AM,MSCRATCH,MFREE
 
-      INTEGER ILSTSYM, IOPTTCME
+      INTEGER ILSTSYM, IOPTTCME, IOPTWR12, LENMOD
+      INTEGER IDUM
+      INTEGER KDELTAR12, KR12SCR, KVABKL, LUNIT, LENR12
 
       CALL QENTER('CC_GMAT')
 
@@ -369,6 +376,9 @@ c/* Deck CC_GMAT */
      &                    ' t-amplitude vectors in CC_GMAT.'
         CALL QUIT('Illegal LISTB or LISTC in CC_GMAT.')
       END IF
+
+      !set CCSDR12
+      CCSDR12 = CCR12 .AND. .NOT.(CC2.OR.CCS)
 
       IF (IPRINT.GT.0) THEN
  
@@ -448,7 +458,7 @@ c/* Deck CC_GMAT */
 
          FILGMA = LISTD(1:6)
 
-         LUGMAT = 0
+         LUGMAT = -1
          CALL WOPEN2(LUGMAT,FILGMA,64,0)
          IADRDEL = 1
 
@@ -820,7 +830,7 @@ C
 *
 *     KT1AMP0: singles cluster amplitudes 
 *     KLAMDH0: zeroth-order Lambda hole matrix 
-*     KLAMDP0: zeroth-order LAmbda particle matrix 
+*     KLAMDP0: zeroth-order Lambda particle matrix 
 *     KDELTA1: singles result vector
 *     KT1AMPB: singles response amplitudes B
 *     KLAMDHB: response Lambda hole matrix for B
@@ -1006,6 +1016,10 @@ C
 
             IF(DIRECT) THEN
               IDEL   = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                 IDUM = 1
+                 CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYDEL = ISAO(IDEL)
             ELSE
               IDEL   = IBAS(ISYMD1) + ILLL
@@ -1269,7 +1283,8 @@ C
          Call CCG_21CCSD(WORK(KDELTBC),ISYRES,LISTA,IDLSTA, 
      &                   WORK(KFOCKB(ITRAN)), ISYMFB,
      &                   WORK(KT1AMPB(ITRAN)),ISYMTB, 
-     &                   WORK(KT2AMPC), ISYMTC, 
+     &                   WORK(KT2AMPC), ISYMTC,
+     &                   LISTC, IDLSTC, 
      &                   WORK(KXBIAJK), WORK(KEBIAJK),        
      &                   WORK(KZBIAJK), WORK(KCBIAJK),        
      &                   WORK(KEND2),   LEND2                 )
@@ -1336,7 +1351,8 @@ C
              Call CCG_21CCSD (WORK(KDELTCB),ISYRES,LISTA,IDLSTA, 
      &                        WORK(KFOCKC(ITRAN)),  ISYMFC, 
      &                        WORK(KT1AMPC(ITRAN)), ISYMTC, 
-     &                        WORK(KT2AMPB), ISYMTB, 
+     &                        WORK(KT2AMPB), ISYMTB,
+     &                        LISTB, IDLSTB, 
      &                        WORK(KXCIAJK), WORK(KECIAJK),         
      &                        WORK(KZCIAJK), WORK(KCCIAJK),         
      &                        WORK(KEND2),   LEND2  )
@@ -1584,12 +1600,12 @@ C
      &                               WORK(KEND1),LEND1)
             ELSE
 
-             LUCKJD  = 0
-             LUTOC   = 0
-             LU3VI   = 0
-             LUDKBC3 = 0
-             LU3FOPX  = 0
-             LU3FOP2X = 0
+             LUCKJD   = -1
+             LUTOC    = -1
+             LU3VI    = -1
+             LUDKBC3  = -1
+             LU3FOPX  = -1
+             LU3FOP2X = -1
 C
              CALL WOPEN2(LUCKJD,FNCKJD,64,0)
              CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -1621,10 +1637,6 @@ C
 
          TIMTRIP = TIMTRIP + SECOND() - DTIME
 
-*=====================================================================*
-* end CCSD part for DELTA2; save result vector on file or calculate
-* the required dot products:
-*=====================================================================*
 C
 C       CCSLV part, JK+OC
 C       The result vectors are ind WORK(KDELTA1(ITRAN)) and WORK(KDELTA2)
@@ -1644,13 +1656,101 @@ C
      *                    LISTC,IDLSTC,ISYMTC,
      *                    MODEL,WORK(KEND2),LEND2)
 C
-          IF (CCMM) CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
-     *              WORK(KDELTA2),ISYRES,
-     *              LISTA,IDLSTA,ISYCTR,
-     *              LISTB,IDLSTB,ISYMTB,
-     *              LISTC,IDLSTC,ISYMTC,
-     *              MODEL,WORK(KEND2),LEND2)
+          IF (CCMM) THEN
+            IF (.NOT. NYQMMM) THEN
+              CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
+     *                   WORK(KDELTA2),ISYRES,
+     *                   LISTA,IDLSTA,ISYCTR,
+     *                   LISTB,IDLSTB,ISYMTB,
+     *                   LISTC,IDLSTC,ISYMTC,
+     *                   MODEL,WORK(KEND2),LEND2)
+C 
+            ELSE IF (NYQMMM) THEN
+              RSPTYP='G'
+              CALL CCMM_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
+     *                   WORK(KDELTA2),ISYRES,
+     *                   LISTB,IDLSTB,ISYMTB,
+     *                   LISTC,IDLSTC,ISYMTC,
+     *                   MODEL,RSPTYP,WORK(KEND2),LEND2)
+            END IF
+          END IF
         END IF
+
+*=====================================================================*
+* CCSD part for CC-R12
+*=====================================================================*
+
+         IF (CCSDR12) THEN
+C
+C          ------------------------------------------------------------
+C          allocate work space for r12 double excitation result vector
+C          right after conv. doubles and reset KEND1:
+C          ------------------------------------------------------------
+C
+           KDELTAR12 = KEND1
+           KEND1     = KDELTAR12 + NTR12AM(ISYRES)
+           LEND1     = LWORK   - KEND1
+
+           IF (LEND1 .LT. 0) THEN
+             CALL QUIT('Insufficient work space in CC_GMAT. '//
+     &                 '(r12 doubles part)')
+           END IF
+
+*          initialize DELTAR12 array:
+           Call DZERO(WORK(KDELTAR12), NTR12AM(ISYRES))
+C
+C          add B' term
+C
+           !read V_(alpha beta)^(kl) from disk
+           KVABKL = KEND1
+           KEND2  = KVABKL + NVABKL(1)
+           LEND2  = LWORK - KEND2
+           IF (LEND2 .LT. 0) THEN
+             CALL QUIT('Insuff. work space for V^(albe)_kl in CC_GMAT')
+           END IF
+           lunit = -1
+           call gpopen(lunit,fvabkl,'unknown',' ','unformatted',
+     &                 idum,.false.)
+           read (lunit)(work(kvabkl+i-1),i=1,nvabkl(1))
+           call gpclose(lunit,'KEEP')
+C
+           IOPT = 2
+           CALL CC_R12MKVIRT(WORK(KVABKL),WORK(KLAMDPB(ITRAN)),ISYMTB,
+     &                       WORK(KLAMDPC(ITRAN)),ISYMTC,
+     &                       'R12VCBDBKL',IOPT,WORK(KEND2),LEND2)
+C
+           !read doubles Lagrangian multipliers
+           KZETA2 = KEND1
+           KR12SCR= KZETA2 + NT2AM(ISYCTR)
+           KEND2  = KR12SCR+ NTR12SQ(ISYRES)
+           LEND2  = LWORK - KEND2
+           IF (LEND2 .LT. 0) THEN
+             CALL QUIT('Insuff. work space in CC_GMAT')
+           END IF
+C
+           CALL DZERO(WORK(KR12SCR),NTR12SQ(ISYRES))
+C
+           IOPT = 2
+           CALL CC_RDRSP(LISTA,IDLSTA,ISYCTR,IOPT,MODEL,
+     &                   WORK(KDUM),WORK(KZETA2))
+C
+           !calculate contribution
+           CALL CCRHS_BPP(WORK(KR12SCR),WORK(KZETA2),ISYCTR,.TRUE.,
+     &                 'R12VCBDBKL',ISYTCTB,WORK(KEND2),LEND2)
+C
+C          resort result into a symmetry packed triangular matrix
+C
+           IOPT = 1
+           CALL CCR12PCK2(WORK(KDELTAR12),ISYRES,.FALSE.,
+     &                    WORK(KR12SCR),'T',IOPT)
+           CALL CCLR_DIASCLR12(WORK(KDELTAR12),0.5D0*KETSCL,ISYRES)
+C
+         END IF !(CCSDR12)
+
+*=====================================================================*
+* end CCSD part for DELTA2 / DELTAR12; save result vector on file or
+* calculate the required dot products:
+*=====================================================================*
 C
 C        ---------------------------------
 C        here we continue for CCS and CC2:
@@ -1689,12 +1789,14 @@ C
             WRITE (LUPRI,*) 
      &           'Final result for G matrix transformation ',ITRAN
             Call CC_PRP(WORK(KDELTA1(ITRAN)),WORK(KDELTA2),ISYRES,1,1)
+            IF (CCSDR12) CALL CC_PRPR12(WORK(KDELTAR12),ISYRES,1,.TRUE.)
          END IF
 
          IFILE  = IGTRAN(4,ITRAN)
          IDLSTD = IGTRAN(4,ITRAN)
          LEN1   = NT1AM(ISYRES)
          LEN2   = NT2AM(ISYRES)
+         LENR12 = NTR12AM(ISYRES)
          
          IF (CCS) THEN
            IOPTW  = 1
@@ -1711,6 +1813,11 @@ C
            MODELW = 'CC3       '
          ELSE
            CALL QUIT('Unkown coupled cluster model in CC_GMAT.')
+         END IF
+         IF (CCR12) THEN
+           APROXR12 = '   '
+           CALL CCSD_MODEL(MODELW,LENMOD,10,MODELW,10,APROXR12)
+           IOPTWR12 = 32
          END IF
 
          IF ( IOPTRES.EQ.0 .OR. IOPTRES.EQ.1 ) THEN
@@ -1731,6 +1838,11 @@ C
               IADRDEL = IADRDEL + LEN2
            END IF
 
+           IF (CCSDR12) THEN
+              CALL PUTWA2(LUGMAT,FILGMA,WORK(KDELTAR12),IADRDEL,LENR12)
+              IADRDEL = IADRDEL + LENR12
+           END IF
+
            TIMIO = TIMIO + SECOND() - DTIME
 
          ELSE IF (IOPTRES.EQ.3) THEN
@@ -1742,6 +1854,11 @@ C
            DTIME = SECOND()
            CALL CC_WRRSP(LISTD,IFILE,ISYRES,IOPTW,MODELW,WORK(KDUM),
      &           WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
+           IF (CCSDR12) THEN
+             CALL CC_WRRSP(LISTD,IFILE,ISYRES,IOPTWR12,MODELW,
+     &                     WORK(KDUM),WORK(KDUM),WORK(KDELTAR12),
+     &                     WORK(KEND1),LEND1)
+           END IF
            IF (CCSDT) THEN
              CALL CC_WRRSP(LISTD,IFILE,ISYRES,IOPTWE,MODELW,WORK(KDUM),
      &             WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
@@ -1757,6 +1874,11 @@ C
            DTIME = SECOND()
            CALL CC_WARSP(LISTD,IFILE,ISYRES,IOPTW,MODELW,WORK(KDUM),
      &           WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
+           IF (CCSDR12) THEN
+             CALL CC_WARSP(LISTD,IFILE,ISYRES,IOPTWR12,MODELW,
+     &                     WORK(KDUM),WORK(KDUM),WORK(KDELTAR12),
+     &                     WORK(KEND1),LEND1)
+           END IF
            IF (CCSDT) THEN
              CALL CC_WARSP(LISTD,IFILE,ISYRES,IOPTWE,MODELW,WORK(KDUM),
      &             WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
@@ -1773,6 +1895,11 @@ C
            CALL CCDOTRSP(IGDOTS,GCON,IOPTW,LISTD,ITRAN,NGTRAN,MXVEC,
      &                   WORK(KDELTA1(ITRAN)),WORK(KDELTA2),ISYRES,
      &                   WORK(KEND1),LEND1)
+           IF (CCSDR12) THEN
+             CALL CCDOTRSP(IGDOTS,GCON,IOPTWR12,LISTD,ITRAN,NGTRAN,
+     &                     MXVEC,WORK(KDUM),WORK(KDELTAR12),ISYRES,
+     &                     WORK(KEND1),LEND1)
+           END IF
 
          ELSE
             CALL QUIT('Illegal value for IOPTRES in CC_GMAT.')
@@ -1833,8 +1960,8 @@ C
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          WRITE (LUPRI,'(1X,A,I4,A,F10.2,A)')
      &     '| total time for',NGTRAN,' G transforms.:',TIMALL,' secs.|'
-         WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          IF (TIMALL.GT.1.0D0) THEN
+          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
           CONVRT = 100.0D0/TIMALL
           WRITE (LUPRI,
      &        '(1X,"|  % of time used in ",A,":",F10.2,"      |")')
@@ -1848,9 +1975,9 @@ C
      &      'doubles part ', TIMDBL*CONVRT,
      &      'triples part ', TIMTRIP*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
+          END IF
 
           WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
-         END IF
       END IF
 
       CALL QEXIT('CC_GMAT')
@@ -2120,6 +2247,7 @@ c/* Deck CCG_21CCSD */
      &                        FockB,  ISYMFB,  ! inp: B transf. Fock Ma
      &                        T1AMPB, ISYMTB,  ! inp: resp. B singles
      &                        T2AMPC, ISYMTC,  ! inp: resp. C doubles
+     &                        LISTC,  IDLSTC,  ! inp: resp. C 
      &                        XIAJK,  EIAJK,   ! out: transf. integrals
      &                        ZIAJK,  CIAJK,   ! out: transf. multipl.
      &                        WORK,   LWORK   )! work space
@@ -2162,6 +2290,8 @@ c/* Deck CCG_21CCSD */
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <r12int.h>
+#include <ccr12int.h>
 
 * local parameters:
       CHARACTER MSGDBG*(19)
@@ -2177,9 +2307,10 @@ c/* Deck CCG_21CCSD */
     
 
 * input variables:
-      CHARACTER*(*) LISTA
+      CHARACTER*(*) LISTA, LISTC
       CHARACTER*(10) MODEL
       INTEGER ISYRES, ISYCTR, ISYMFB, ISYMTB, ISYMTC, LWORK, IZETVA
+      INTEGER IDLSTC
 
 #if defined (SYS_CRAY)
       REAL DELTA1(*), FOCKB(*), T1AMPB(*), T2AMPC(*)
@@ -2208,7 +2339,7 @@ c/* Deck CCG_21CCSD */
       INTEGER KT2AMP, ISYMDLK, KOFFAIK, KOFFDKL, ISYMAL, ISYML, ISYMA
       INTEGER KCINT, ISYMDKL, KEND1C, LEND1C, NTOTAI, NTOTB, NTOTJKL
       INTEGER KWTINT, KVTINT, KWHINT, KVHINT, KEXC, NTOTDKL, NTOTA
-      INTEGER IOPTTCME
+      INTEGER IOPTTCME, KTR12AM, KVINT, IAN, LUNIT 
    
 #if defined (SYS_CRAY)
       REAL DDOT
@@ -2280,6 +2411,13 @@ c/* Deck CCG_21CCSD */
 * read & unpack (ia|jb) integrals:
       Call CCG_RDIAJB(WORK(KEND1), NT2AM(ISYOVOV))
 
+CCN
+C     WRITE(LUPRI,*) '(ia|jb) integrals:'
+C     CALL CC_PRP(WORK(KDUM),WORK(KEND1),ISYOVOV,0,1)
+C     WRITE(LUPRI,*) 'T^C(el,dj) response amplitudes:'
+C     CALL CC_PRP(WORK(KDUM),T2AMPC,ISYMTC,0,1)
+CCN
+
       Call CC_T2SQ(WORK(KEND1), WORK(KXIAJB), ISYOVOV)
 
 *---------------------------------------------------------------------*
@@ -2291,6 +2429,37 @@ c/* Deck CCG_21CCSD */
 
       Call CC_MI(WORK(KKCINT),WORK(KXIAJB), ISYOVOV,
      &           T2AMPC,ISYMTC,WORK(KEND1),LEND1)
+
+*---------------------------------------------------------------------*
+* for CCSD(R12) (and higher) add Sum_mn (V^\dagger)_(im,kn) T^C(ml,nj)
+*---------------------------------------------------------------------*
+      IF (CCR12.AND..NOT.(CCS.OR.CC2)) THEN
+        KTR12AM = KEND1
+        KVINT   = KTR12AM + NTR12AM(ISYMTC)
+        KEND1   = KVINT   + NTR12AM(1)
+        LEND1   = LWORK - KEND1
+        IF (LEND1.LT.0) THEN
+          CALL QUIT('Insufficient work space in CCG_21CCSD. (1b)')
+        END IF
+
+        KDUM = - 99 999 999 ! dummy address
+        IOPT = 32
+        CALL CC_RDRSP(LISTC,IDLSTC,ISYMTC,IOPT,MODEL,WORK(KDUM),
+     &                WORK(KTR12AM))
+
+        LUNIT = -1
+        CALL GPOPEN(LUNIT,FCCR12V,'OLD',' ','UNFORMATTED',
+     &              KDUM,.FALSE.)
+ 9999   READ(LUNIT) IAN
+        READ(LUNIT) (WORK(KVINT-1+I), I=1, NTR12AM(1))
+        IF (IAN.NE.IANR12) GOTO 9999
+        CALL GPCLOSE(LUNIT,'KEEP')
+
+        IOPT = 2
+        CALL CC_R12CV(WORK(KKCINT),WORK(KTR12AM),ISYMTC,WORK(KVINT),
+     &                1,IOPT,WORK(KEND1),LEND1) 
+
+      END IF
 
       IF (.FALSE.) THEN
         WRITE (LUPRI,*) MSGDBG,'response K intermediate:'
@@ -2598,7 +2767,8 @@ c/* Deck CCG_21CCSD */
             CALL CCG_TI(WORK(KCINT),ISYMDKL,WORK(KCTR2),ISYCTR,A,ISYMA)
 
             CALL DCOPY(NT2BCD(ISYMDKL),WORK(KCINT),1,WORK(KEXC),1)
-            CALL CCLT_P21I(WORK(KEXC),ISYMDKL,WORK(KEND1C),LEND1C)
+            CALL CCLT_P21I(WORK(KEXC),ISYMDKL,WORK(KEND1C),LEND1C,
+     &                     IT2BCD, NT2BCD, IT1AM, NT1AM, NVIR)
             CALL DAXPY(NT2BCD(ISYMDKL),HALF,WORK(KCINT),1,WORK(KEXC),1)
 
             KOFF1   = ITAIKJ(ISYMDKL,ISYMI) 
@@ -2645,7 +2815,8 @@ c/* Deck CCG_21CCSD */
            CALL CCG_TI(WORK(KCINT),ISYMDKL,WORK(KXIAJB),ISYOVOV,A,ISYMA)
 
            CALL DCOPY(NT2BCD(ISYMDKL),WORK(KCINT),1,WORK(KEXC),1)
-           CALL CCLT_P21I(WORK(KEXC),ISYMDKL,WORK(KEND1C),LEND1C)
+           CALL CCLT_P21I(WORK(KEXC),ISYMDKL,WORK(KEND1C),LEND1C,
+     &                    IT2BCD, NT2BCD, IT1AM, NT1AM, NVIR)
            CALL DAXPY(NT2BCD(ISYMDKL),-HALF,WORK(KEXC),1,WORK(KCINT),1)
 
            KOFF1   = ITAIKJ(ISYMDKL,ISYMI) 
@@ -2681,6 +2852,10 @@ c/* Deck CCG_21CCSD */
 *---------------------------------------------------------------------*
 * loop over symmetry blocks and calculate G and F term contributions:
 *---------------------------------------------------------------------*
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,*) MSGDBG, 'Delta1 before G and F term:'
+        Call CC_PRP(DELTA1,WORK,ISYRES,1,0)
+      END IF
       DO ISYMC = 1, NSYM
 
           ISYMI   = MULD2H(ISYMC,ISYRES)
@@ -2715,8 +2890,30 @@ C         ----------------------------------------
           CALL DGEMM('N','N',NVIR(ISYMC),NRHF(ISYMI),NMAIJK(ISYMKLJ),
      &               ONE,CIAJK(KOFF2),NTOTC,WORK(KOFF1),NTOTJKL,
      &               ONE,DELTA1(NCI), NTOTC)
-
+CCN
+C       WRITE(LUPRI,*) 'K^C(i,klj):'
+C       CALL OUTPUT(WORK(KOFF1),1,NTOTJKL,1,NRHF(ISYMI),
+C    &              NTOTJKL,NRHF(ISYMI),1,LUPRI)
+C       WRITE(LUPRI,*) 'CIAJK:'
+C       CALL OUTPUT(CIAJK(KOFF2),1,NVIR(ISYMC),
+C    &              1,NMAIJK(ISYMKLJ),NVIR(ISYMC),NMAIJK(ISYMKLJ),
+C    &              1,LUPRI)
+C       WRITE (LUPRI,*) MSGDBG, 'after Symmetry block:',ISYMC
+C       Call CC_PRP(DELTA1,WORK,ISYRES,1,0)
+CCN
       END DO ! ISYMC 
+
+CCN
+C     WRITE(LUPRI,*) 'S^{B,c}(klj): '
+C     DO ISYMC = 1, NSYM
+C       ISYMS   = MULD2H(ISYCTR,ISYMTB)
+C       ISYMKLJ = MULD2H(ISYMC,ISYMS)
+C       WRITE(LUPRI,*) 'Symmetry block: ',ISYMKLJ,ISYMC
+C       CALL OUTPUT(CIAJK(1+ISJIKA(ISYMKLJ,ISYMC)),1,NVIR(ISYMC),
+C    &              1,NMAIJK(ISYMKLJ),NVIR(ISYMC),NMAIJK(ISYMKLJ),
+C    &              1,LUPRI)
+C     END DO
+CCN
 
 *---------------------------------------------------------------------*
 * print debug output and return:
@@ -2784,15 +2981,16 @@ c/* Deck CCG_21CD */
 #else
 # include <implicit.h>
 #endif
+#include <dummy.h>
 #include <priunit.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
  
 
 #if defined (SYS_CRAY)
-      REAL ZERO, ONE, TWO, FACT, DUMMY, FACTOR
+      REAL ZERO, ONE, TWO, FACT, FACTOR
 #else
-      DOUBLE PRECISION ZERO, ONE, TWO, FACT, DUMMY, FACTOR
+      DOUBLE PRECISION ZERO, ONE, TWO, FACT, FACTOR
 #endif
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0)
 
@@ -2811,6 +3009,7 @@ c/* Deck CCG_21CD */
       REAL XLAMDHB(*)   ! dimension (NGLMDT(ISYMLB))
       REAL XLAMDPB(*)   ! dimension (NGLMDT(ISYMLB))
       REAL WORK(LWORK)
+      REAL DDOT
 #else
       DOUBLE PRECISION RESVEC(*)    ! dimension (NT1AM(ISYRES))
       DOUBLE PRECISION CTR2(*)      ! dimension (NT2AM(ISYCTR))
@@ -2822,6 +3021,7 @@ c/* Deck CCG_21CD */
       DOUBLE PRECISION XLAMDHB(*)   ! dimension (NGLMDT(ISYMLB))
       DOUBLE PRECISION XLAMDPB(*)   ! dimension (NGLMDT(ISYMLB))
       DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION DDOT
 #endif
 
       INTEGER ISYLALB, ISYMAO, ISYMMO
@@ -2833,14 +3033,9 @@ c/* Deck CCG_21CD */
       INTEGER ISYMCI, ISYMI, KOFFZ, KOFFSV, NTOTC, NTOTBE, NTOTAL
       INTEGER ISYMCK, ISYMAJ, ISYMA, NAJ, KCTR2, ISYMD, KRESV
       INTEGER NTOTB, ISYMAI, KOFFZC, KOFFZB, ISYCTAB
-      INTEGER KCTR2AB, IDUMMY, NHALF, ISYCTB
+      INTEGER KCTR2AB, NHALF, ISYCTB
       INTEGER KMOINT
 
-#if defined (SYS_CRAY)
-      REAL DDOT
-#else
-      DOUBLE PRECISION DDOT
-#endif
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -4214,7 +4409,8 @@ c/* Deck CCG_TRANS13 */
       
 * if the first index should be transformed, exchange i and k:
       IF (IPOS .eq. 1) THEN
-        Call CCLT_P21I(WORK(KAIK),ISYMAIK,WORK(KFREE),LFREE)
+        Call CCLT_P21I(WORK(KAIK),ISYMAIK,WORK(KFREE),LFREE,
+     &                 IT2BCD, NT2BCD, IT1AM, NT1AM, NVIR)
       END IF
 
 * do the transformation:
@@ -4988,7 +5184,7 @@ c/* Deck CCG_LXD */
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)

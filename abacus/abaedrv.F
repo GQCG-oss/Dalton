@@ -58,9 +58,11 @@ C  /* Deck resinp */
 #include <cbires.h>
 C
 C     Used from common blocks:
+C       GNRINF : THR_REDFAC
 C       ANRINF : THRNR, MAXNR
 C       NUCLEI : NDCORD
 C
+#include <gnrinf.h>
 #include <abainf.h>
 #include <anrinf.h>
 #include <dorps.h>
@@ -83,6 +85,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -156,8 +159,13 @@ C
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRNR = THRNR*THR_REDFAC
+      END IF
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for RESPON:',0)
+         CALL HEADER('Changes of defaults for RESPON in ABACUS:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' RESPON skipped in this run.'
          ELSE
@@ -438,8 +446,8 @@ C
 C
 C     Work space allocations:
 C
+      KGD    = 1
       IF (INGD) THEN
-         KGD    = 1
          KREDH  = KGD    + NVARPT
       ELSE
          KREDH  = 1

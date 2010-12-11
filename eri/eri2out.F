@@ -343,14 +343,14 @@ C     ========================
 C
       IF (FIRST) THEN
          IF (DODIST) THEN
-           IF (LUINTR .LE. 0) THEN
+           IF (LUINTR .LT. 0) THEN
                CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',' ',
      *                     IDUMMY,.FALSE.)
             ENDIF
             REWIND LUINTR
          ELSE IF (GDER .OR. BDER) THEN
             DO I = 1, NPERTS 
-               LUINTD(I) = 0
+               LUINTD(I) = -1
                FAODER = 'AO2DER'//CHRNOS(I/10)
      &                         //CHRNOS(MOD(I,10))
                CALL GPOPEN(LUINTD(I),FAODER,'UNKNOWN',' ',

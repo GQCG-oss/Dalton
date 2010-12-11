@@ -70,7 +70,9 @@ C#include <inforb.h>
 #include <ccorb.h>
 #include <khaldtemp.h>
 COMMENT COMMENT COMMENT
-#include <infind.h>
+CCN #include <infind.h> not compatible with R12!
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <inftap.h>
 #include <ccsdinp.h>
@@ -215,7 +217,7 @@ C--------------------------------------------------
 C     Read in AO fock matrix and transform to MO
 C--------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     The T1 transformed density is used to calculate this AO fock matrix.
 C      CALL GPOPEN(LUFCK,'CC_FCKH','OLD',' ','UNFORMATTED',
 C     *            IDUMMY,.FALSE.)
@@ -420,6 +422,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

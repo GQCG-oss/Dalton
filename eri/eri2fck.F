@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck erifck */
-      SUBROUTINE HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+      SUBROUTINE ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)
 #include <implicit.h>
 #include <iratdef.h>
@@ -62,6 +62,8 @@ C
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*)
+C
+      CALL QENTER('ERIFCK')
 C
       IF (SLAVE) THEN
          IPRINT = IPRFCK
@@ -98,7 +100,7 @@ C     ===============================
 C
 C     KDAO  = 1
 C     KLAST = KDAO + N2BASX*NDMAT
-C     IF(KLAST.GT.LWORK) CALL STOPIT('HERFCK','DSOTAO',KLAST,LWORK)
+C     IF(KLAST.GT.LWORK) CALL STOPIT('ERIFCK','DSOTAO',KLAST,LWORK)
 C     LWRK  = LWORK - KLAST + 1
 C     DO IMAT = 1,NDMAT
 C        JDAO = KDAO + (IMAT-1)*N2BASX
@@ -188,12 +190,12 @@ C
 C           Error message in case of insufficient memory
 C
             IF (.NOT.MEMOK) THEN
-               WRITE (LUPRI,'(//,1X,A,3(/,1X,A,I10))')
+               WRITE (LUPRI,'(//A,3(/A,I12))')
      &            ' Not enough memory for this run of ERIFCK.',
      &            ' Available memory in ERIFCK:',LWORK,
      &            ' Required memory for ERIFCK:',LWORK + MEMADD,
      &            ' Increase memory (LWORK) by:',MEMADD
-               WRITE (LUPRI,'(/,1X,A,2I5)')
+               WRITE (LUPRI,'(/A,2I5)')
      &            ' Memory requirements largest for OD classes :',
      &              MODAB,MODCD
                CALL QUIT('Insufficient memory in ERIFCK.')
@@ -246,6 +248,7 @@ C
          CALL FLSHFO(LUPRI)
       END IF
 C
+      CALL QEXIT('ERIFCK')
       RETURN
       END
 C  /* Deck erifok */

@@ -43,6 +43,7 @@ C  /* Deck lrsinp */
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbilrs.h"
 C
+#include <gnrinf.h>
 #include <abainf.h>
 #include <anrinf.h>
 #include <dorps.h>
@@ -57,6 +58,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -72,6 +74,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -99,6 +102,7 @@ C
     3          CONTINUE
                   READ (LUCMD,*) MAXCLC
                GO TO 100
+C              .THRESH
     4          CONTINUE
                   READ (LUCMD,*) THRCLC
                GO TO 100
@@ -137,6 +141,12 @@ C
             END IF
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THRCLC = THRCLC*THR_REDFAC
+      END IF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for LINRES:',0)
          IF (SKIP) THEN
@@ -258,9 +268,9 @@ C
 C
       HFCLC  = NASHT .LE. 1
       IF (HFCLC) NCONF = 1
-      LUREVE = 0
-      LUSOVE = 0
-      LUGDVE = 0
+      LUREVE = -1
+      LUSOVE = -1
+      LUGDVE = -1
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -411,7 +421,7 @@ C
                   CALL WRITDX (LURDI,IREC2,IRAT*NVARPT,
      &                         WORK(NVARPT + 1))
 ckr                  IDORCI(IREC,2) = 2
-                  CALL WRITRS
+                  CALL ABAWRITRS
                   IF (IPRCLC .GT. 5) THEN
                      CALL HEADER('Response and residuum vectors in '//
      &                   'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)

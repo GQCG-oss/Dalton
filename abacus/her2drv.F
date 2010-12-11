@@ -86,6 +86,10 @@ C
 #include "infpar.h"
 #include "blocks.h"
 C
+Cholesky
+#include "ccdeco.h"
+Cholesky  
+C
       CALL QENTER('TWOINT')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
 C
@@ -161,6 +165,10 @@ C
 C     Threshold for integrals
 C
       THRESH = MAX(THRS,1.00D-15)
+C
+Cholesky
+      IF (CHOINT) THRESH = 1.0D-40    ! Probably not needed and surely too much
+Cholesky
 C
 C     *******************************
 C     ***** Calculate integrals *****
@@ -885,6 +893,13 @@ C      PARAMETER (LBUF = 600)
 #include "r12int.h"
 #include "drw2el.h"
 C
+Cholesky
+#include <ccdeco.h>
+#include <choles.h>
+#include <choskp.h>
+#include <ccdeco2.h>
+Cholesky
+C
       CALL QENTER('TWODSA')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODSA','*',103)
 C
@@ -922,6 +937,28 @@ C
         IBSMAX = MAXSHL
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+C
+Cholesky
+C
+      ELSEIF(I2TYP.EQ.4) THEN
+        IBSTRT = ISHLB
+        ICSTRT = 1
+        IDSTRT = 1
+        IASMAX = ISHLA
+        IBSMAX = ISHLB
+        ICSMAX = MAXSHL
+        IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.5) THEN
+        IBSTRT = ISHLB
+        ICSTRT = ISHLA
+        IDSTRT = ISHLB
+        IASMAX = ISHLA
+        IBSMAX = ISHLB
+        ICSMAX = ISHLA
+        IDSMAX = ISHLB
+C
+Cholesky
+C
       ELSE
         WRITE(LUPRI,'(A,I5)') 'TWODSA: Unknown I2TYP =' ,I2TYP
       ENDIF
@@ -977,6 +1014,12 @@ C
 C     ******************************
 C     ***** Second Shell Index *****
 C     ******************************
+C
+Cholesky
+      IALDON = 0
+      IALSKP = 0
+      J2TYP  = I2TYP
+Cholesky
 C
       DO 200 ISHELB = IBSTRT,IBSMAX
 C        Check for basis-set identifier (WK/UniKA/04-11-2002).
@@ -1054,6 +1097,9 @@ C           ******************************
 C
             ICMAX = ISHELC
             IF (SPNORB .OR. DIA2SO) ICMAX = MAXSHL
+Cholesky
+            IF (I2TYP.EQ.5) ICMAX=ISHELB
+Cholesky
             DO 400 ISHELD = IDSTRT, ICMAX
 C              Check for basis-set identifier (WK/UniKA/04-11-2002).
                MBSABCD = MBSABC + MBSISH(ISHELD)
@@ -1102,6 +1148,32 @@ C
                   SHCEQD = ISHELC .EQ. ISHELD
                END IF
                SHABAB = .FALSE.
+C
+C_to_do        Cholesky screening.
+C              -------------------
+C
+c               IF (I2TYP .EQ. 4) THEN
+C
+c                 IF (DIASC1(ISHELA,ISHELB) .EQ. ZERO) THEN
+c                    write(6,*) 'Ishelab screening:',ishela,ishelb
+c                    IALSKP = IALSKP + 1
+c                    GOTO 400
+c                 ENDIF
+c
+c                 IF (DIASC1(ISHELC,ISHELD) .EQ. ZERO) THEN
+c                    write(6,*) 'Ishelcd screening:',ishelc,isheld
+c                    write(6,*) 'Other indices:',ishela,ishelb
+c                    IALSKP = IALSKP + 1
+c                    GOTO 400
+c                 ENDIF
+C
+c                 write(6,*) 'Distribution calculated',ishela,ishelb,
+c    &                        ishelc,isheld
+c                 IALDON = IALDON + 1
+C
+c              ENDIF
+C
+C_to_do_end
 C
 C              *******************************
 C              ***** Calculate integrals *****
@@ -1155,7 +1227,11 @@ C
      &        WORK(LWORK)
 #include "blocks.h"
 #include "twocom.h"
-#include "inforb.h"
+C
+Cholesky #include "inforb.h"
+#include "ccorb.h"
+Cholesky
+C
 #include "symmet.h"
 #include "r12int.h"
       SAVE ISHLAB
@@ -1639,9 +1715,14 @@ C
          KLAST  = KNCSCD + (NORBC*NORBD*NODCCD + 1)/IRAT
       END IF
       KINDAB = KLAST
-      KINDCD = KINDAB + (2*NORBA*NORBB + 1)/IRAT
-      KLAST  = KINDCD + (2*NORBC*NORBD + 1)/IRAT
+C.....New code to fix Heike's error on tchplx4.
+C     Add 2 in place of 1 (WK/UniKA/18-06-2004).
+C     KINDCD = KINDAB + (2*NORBA*NORBB + 1)/IRAT
+C     KLAST  = KINDCD + (2*NORBC*NORBD + 1)/IRAT
 C
+      KINDCD = KINDAB + (2*NORBA*NORBB + 2)/IRAT
+      KLAST  = KINDCD + (2*NORBC*NORBD + 2)/IRAT
+C....New code
       LWRK = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('TWOODS',' ',KLAST,LWORK)
       LWTOT  = LWTOT + KLAST
@@ -1718,8 +1799,12 @@ C  /* Deck twood1 */
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
+C
+Cholesky
+#include <ccdeco.h>
+Cholesky
+C
 #include "ibtfun.h"
-  
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from TWOOD1','*',103)
 C
@@ -1895,7 +1980,7 @@ C
      &               IODDHR,INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &               IFCTYP,ADISTR,IORBSH,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
-     &               IXPAB,IXPCD)
+     &               IXPAB,IXPCD,CHOINT)
 C
          LWTOT = LWTOT - KLAST
       END IF
@@ -1917,7 +2002,7 @@ Cef begin
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &                  IFCTYP,ADISTR,IORBSH,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,
-     &                  IXPAB,IXPCD)
+     &                  IXPAB,IXPCD,CHOINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1935,7 +2020,9 @@ Cef begin
 #include "r12int.h"
 #include "doxyz.h"
 #include "blocks.h"
+#include "dftcom.h"
 #include "incore.h"
+#include "gnrinf.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -1966,13 +2053,23 @@ Cef begin
      &          GABRAO(NSYMBL,NSYMBL),DMRAO(NSYMBL,NSYMBL,NDMAT),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
      &          IXPAB(NUCA*NUCB,2,NODCAB), IXPCD(NUCC*NUCD,2,NODCCD)
-      dimension coefcd(*)
+      dimension COEFCD(*)
+C
+Cholesky
+#include "ccdeco2.h"
+      LOGICAL CHOINT
+Cholesky
+C
 #include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
       
+      CALL QENTER('SYMLOP')
+C
+      INTS = .FALSE.
+
 C
       LMCORE = MMCORE
       JSCORE = ISCORE
@@ -1980,7 +2077,14 @@ C
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
 C
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK.OR.DIA2SO.OR.ZFS2EL)
-     &     .AND. NSOINT.EQ.0 .AND. LAST) GOTO 400
+     &     .AND. NSOINT.EQ.0 .AND. LAST) THEN
+         IF (CHOINT) CALL CPRLOP(IPNTAO,IPNTOP,IPNTNO,IPNTRP,
+     &                           IPNTLG,SQ12EL,IPRINT)
+         GOTO 400
+      END IF
+C
+Cholesky
+C
 C
       IF (EXPECT .OR. SUSCEP .OR. DIRFCK .OR. DDFOCK .OR. DIA2SO .OR.
      &    ZFS2EL) THEN
@@ -2020,8 +2124,6 @@ C
       DOXYZ(1) = DOX
       DOXYZ(2) = DOY
       DOXYZ(3) = DOZ
-C
-      INTS = .FALSE.
 C
       ICENTA = -1
       ICENTB = -2
@@ -2229,8 +2331,10 @@ C Largest Coulomb contribution
      &                                    DMRAO(ISYBLB,ISYBLA,I),
      &                                    DMRAO(ISYBLC,ISYBLD,I),
      &                                    DMRAO(ISYBLD,ISYBLC,I))
+                        DNSMAX = MAX(DNSMAX,D4*DNSBUF(1,I))
 C Largest exchange contribution
-                        DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
+                        IF (HFXFAC .NE. 0.0D0) THEN
+                          DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
      &                                    DMRAO(ISYBLA,ISYBLC,I),
      &                                    DMRAO(ISYBLC,ISYBLB,I),
      &                                    DMRAO(ISYBLB,ISYBLC,I),
@@ -2238,13 +2342,15 @@ C Largest exchange contribution
      &                                    DMRAO(ISYBLA,ISYBLD,I),
      &                                    DMRAO(ISYBLB,ISYBLD,I),
      &                                    DMRAO(ISYBLD,ISYBLB,I))
-                        DNSMAX = MAX(DNSMAX,D4*DNSBUF(1,I),DNSBUF(2,I))
+                          DNSMAX = MAX(DNSMAX,DNSBUF(2,I))
+                        ELSE
+                          DNSBUF(2,I) = 0.0D0
+                        END IF
                       ENDDO
                       FCKMAX = DNSMAX*ULINT
                       IF(FCKMAX.LT.FCKTHR) THEN
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
-                        IF(IPRINT.GE.5) THEN
-                   WRITE(LUPRI,
+                        IF(IPRINT.GE.5) WRITE(LUPRI,
      &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
      &        '*Skip: ',FCKMAX,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
@@ -2255,14 +2361,13 @@ C Largest exchange contribution
      &        SPDCAR(NHKTSH(ISHELC)-1),')',
      &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
-                        ENDIF
 #if defined (VAR_MPI)
           IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. 
      &        DIRFCK .AND. HFXMU .EQ. D0) THEN
              I_SHL = I_SHL + 1
              IF (I_SHL .GT. MXSHL_KEEP) THEN
-                write(lupri,*) 'Received quit because'//
-     &               'I_SHL exceeds MXSHL_KEEP'
+                write(lupri,*) 'Received quit because '//
+     &               'I_SHL exceeds MXSHL_KEEP',I_SHL,MXSHL_KEEP
                 CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
              END IF
 #else
@@ -2271,15 +2376,16 @@ C Largest exchange contribution
      &                 INDX_SHL3 .GE. ISHELC .AND. 
      &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1
      &                 .AND. HFXMU .EQ. D0) THEN
+                     NINTYP = 1
                      I_SHL = I_SHL + NINTYP*NCCINT
                      IF (I_SHL .GT. MMCORE) THEN
-                        write(lupri,*) 'Received quit because'//
-     &                       'I_SHL exceeds MXSHL_KEEP'
-                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+                        write(lupri,*) 'Received quit because '//
+     &                       'I_SHL exceeds MMCORE',I_SHL,MMCORE
+                        CALL QUIT('I_SHL exceeds MMCORE.')
                      END IF
 #endif
-              LINTMP = .TRUE.
-                     END IF
+                     LINTMP = .TRUE.
+                  END IF
                         GOTO 300
                       ENDIF
                     ENDIF
@@ -2352,8 +2458,8 @@ C
 C                     write(lupri,*) 'I_SHL,INDX_SHL(I_SHL)', 
 C     &                    I_SHL,INDX_SHL(I_SHL)
 C
-C                     write(lupri,*) 'WORK(KAOINT): ',(WORK(KAOINT+II-1),
-C     &                    II=1,NCCINT)
+C                     write(lupri,*) 'WORK(KAOINT): ',(WORK(KAOINT+II),
+C     &                    II=0,NCCINT-1)
                      CALL INTFCK(FMAT,WORK(KAOINT),DMAT,NDMAT,
      &                    NCCINT,NINTYP,ICORBA,ICORBB,ICORBC,ICORBD,
      &                    HKABCD,IPRINT,NODV,NINDAB,NINDCD,SUSCEP,
@@ -2363,8 +2469,8 @@ C     &                    II=1,NCCINT)
 C
                      I_SHL = I_SHL + 1
                      IF (I_SHL .GT. MXSHL_KEEP) THEN
-                        write(lupri,*) 'Received quit because'//
-     &                       'I_SHL exceeds MXSHL_KEEP'
+                        write(lupri,*) 'Received quit because '//
+     &                       'I_SHL exceeds MXSHL_KEEP',I_SHL,MXSHL_KEEP
                         CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
                      END IF
 C
@@ -2409,8 +2515,8 @@ C
 C
                      I_SHL = I_SHL + NCCINT*NINTYP
                      IF (I_SHL .GT. MMCORE) THEN
-                        write(lupri,*) 'Received quit because'//
-     &                       'I_SHL exceeds MMCORE'
+                        write(lupri,*) 'Received quit because '//
+     &                       'I_SHL exceeds MMCORE',I_SHL,MMCORE
                         CALL QUIT('I_SHL exceeds MMCORE.')
                      END IF
 C
@@ -2473,7 +2579,9 @@ C
 C               
 C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
 C     &                    II=1,NCCINT)
-               IF (N_SHL .GT. (MXSHL_KEEP)) THEN
+               IF (N_SHL .GT. MXSHL_KEEP) THEN
+                  write(lupri,*) 'Received quit because '//
+     &                 'N_SHL exceeds MXSHL_KEEP',N_SHL,MXSHL_KEEP
                   CALL QUIT('N_SHL exceeds MXSHL_KEEP')
                END IF 
                ITOTNT = ITOTNT + NINTYP*NCCINT
@@ -2489,7 +2597,6 @@ C     &                 ISYMR,ISYMS
                   MMCORE = MMCORE - (NCCINT*NINTYP)
                   CALL DCOPY((NCCINT*NINTYP),WORK(KAOINT),1,
      &                 CORE(ISCORE),1)
-                  ISCORE = ISCORE + (NINTYP*NCCINT)
 C                  INDX_SHL(1,1) = ISHELA
 C                  INDX_SHL(2,1) = ISHELB
 C                  INDX_SHL(3,1) = ISHELC
@@ -2504,12 +2611,16 @@ C                  INDX_SHL(4,1) = ISHELD
                   INDX_SHL4 = ISHELD
 #if defined (VAR_MPI)                  
                   INDX_SHL(N_SHL) = ISCORE
+C                  write (lupri,*) 'n_shl,indx',n_shl,indx_shl(n_shl)
                   N_SHL = N_SHL + 1
+                  ISCORE = ISCORE + (NINTYP*NCCINT)
                   IF (N_SHL .GT. (MXSHL_KEEP+1)) THEN
-                     write(lupri,*) 'Received quit because'//
-     &                    'N_SHL exceeds MXSHL_KEEP+1'
+                     write(lupri,*) 'Received quit because '//
+     &                  'N_SHL exceeds MXSHL_KEEP+1',N_SHL,MXSHL_KEEP+1
                      CALL QUIT('N_SHL exceeds MXSHL_KEEP+1.')
                   END IF
+#else
+                  ISCORE = ISCORE + (NINTYP*NCCINT)
 #endif                  
 C     Lagrer integraler i minne: Oppdaterer array med beregnede ishela/b/c/d
                ELSE
@@ -2553,11 +2664,15 @@ C
                IF (DCCR12) THEN
                   CALL RN2OUT(SOINT,NSOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,
      &                        LAST,THRESH,NINDAB,NINDCD,IPRINT)
+               ELSE IF (SRINTS) THEN
+                  CALL SR2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+     &                        THRESH,NINDAB,NINDCD,IPRINT)
                ELSE
                   CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                        THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
+C           ... ADISTR true: Distributions (all gabcd for fixed a)
                IF (U21INT) THEN
                   CALL US2OUT(SOINT,NSOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,
      &                        FIRST,LAST,THRESH,NINDAB,NINDCD,
@@ -2578,6 +2693,10 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
+           IF (NBASIS .GT. 255) THEN
+            CALL QENTER('DR2OUT')
+            CALL QUIT('NBASIS .gt. 255 not implemented here yet, sorry')
+           END IF
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
@@ -2624,7 +2743,7 @@ C
             CALL QUIT(
      &      'DISTRI call of FCKOUT not implemented in this version')
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
-C     Note: Make FCKOUT general enough to handle distributions
+C     TODO: Make FCKOUT general enough to handle distributions
 C           CALL FCKOUT(FMAT,DMAT,NDMAT,GMAT,SOINT,DIRFCK,DISTRI,
 C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
             IF (TKTIME) THEN
@@ -2634,10 +2753,11 @@ C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
             FIRST = .FALSE.
          END IF
       ELSE IF (EXPECT) THEN
-         IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE,WORK,
-     & 	                                  WORK(1+MXCOOR*MXCOOR))
+         IF (IPRINT .GE. 6) 
+     & 	    CALL PRIGRD(GRADEE,WORK,WORK(1+MXCOOR*MXCOOR))
       END IF
 C
+      CALL QEXIT('SYMLOP')
       RETURN
 C     
       END
@@ -2907,6 +3027,8 @@ C
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
             END IF
+         ELSE
+            CALL QUIT('Programming error in CAOINT please report.')
          END IF
       END IF
       RETURN
@@ -2930,6 +3052,7 @@ C  /* Deck paovec */
       SUBROUTINE PAOVEC(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,
      &                  IATOM,NOBLK,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -2940,7 +3063,6 @@ C  /* Deck paovec */
       DIMENSION JSTRSH(MXSHEL,MXAOVC,2), NPRIMS(MXSHEL,MXAOVC,2),
      &          NCONTS(MXSHEL,MXAOVC,2), IORBSH(MXSHEL,MXAOVC)
 #include "gnrinf.h"
-#include "priunit.h"
 #include "shells.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -3994,9 +4116,9 @@ C
  100  CONTINUE
       NDISTR = IJ
       IF (NDISTR .GT. MAXDIS) THEN
-         WRITE (LUPRI,'(1X,A)')    ' Too many distributions in NDISTR.'
-         WRITE (LUPRI,'(1X,A,I5)') ' Number of distributions:',NDISTR
-         WRITE (LUPRI,'(1X,A,I5)') ' Maximum allowed:        ',MAXDIS
+         WRITE (LUPRI,'(A)')    ' Too many distributions in NDISTR.'
+         WRITE (LUPRI,'(A,I6)') ' Number of distributions:',NDISTR
+         WRITE (LUPRI,'(A,I6)') ' Maximum allowed:        ',MAXDIS
          CALL QUIT('Too many distributions required in NDISTR')
       END IF
       RETURN
@@ -4006,7 +4128,9 @@ C  /* Deck paoset */
 #include "implicit.h"
 #include "maxorb.h"
 #include "aovec.h"
-      PARAMETER (DSM = 1.0D-10)
+C
+C     DSM = parameter to determine zero coefficients for segmented contractions
+      PARAMETER (DSM = 1.0D-15)
 C
       DIMENSION KORBSH(MXSHEL,MXAOVC), IPRVPR(MXSHEL)
       DIMENSION JSTRSH(MXSHEL,MXAOVC,2), NPRIMS(MXSHEL,MXAOVC,2),
@@ -4015,6 +4139,7 @@ C
 #include "shells.h"
 #include "blocks.h"
 #include "primit.h"
+#include <priunit.h>
 C
 C     Parameters for sets of primitives
 C     =================================
@@ -4036,7 +4161,7 @@ C
             JSTRSH(I,J,1) = IPRVPR(KORBSH(I,J))
   300    CONTINUE
 C
-C           Segmented transformation matrix: Each contracted is one set
+C        Segmented transformation matrix: Each contracted is one set
 C
          IF (SEGMSH(I)) THEN
             ISET = 0
@@ -4211,16 +4336,15 @@ C  /* Deck twoper */
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (DMEGA = 1.0D6)
+      INTEGER*8 N2CART, N2PRIM
 #include "twosta.h"
 #include "nuclei.h"
-#include "sdpre.h"
-      ITRI(I) = I*(I + 1)/2
 C
       CALL HEADER('Performance of TWOINT',1)
-      N2CART = ITRI(NBASIS)
-      N2CART = ITRI(N2CART)
-      N2PRIM = ITRI(NPBAS)
-      N2PRIM = ITRI(N2PRIM)
+      N2CART = NBASIS*(NBASIS+1)/2
+      N2CART = N2CART*(N2CART+1)/2
+      N2PRIM = NPBAS *(NPBAS +1)/2
+      N2PRIM = N2PRIM*(N2PRIM+1)/2
       WRITE (LUPRI,'(2(2X,A,I5,/),/,3(2X,A,I12,/))')
      &   'Number of contracted functions:',NBASIS,
      &   'Number of primitive  functions:',NPBAS,
@@ -4228,9 +4352,12 @@ C
      &   'Number of contracted integrals (counting zeros):',N2CART,
      &   'Number of primitive integrals (counting zeros) :',N2PRIM
       IF (N2WRIT .GT. 0) THEN
-         PRFNON = DMEGA*T2INT/SDPRE(N2WRIT)
-         PRFCAR = DMEGA*T2INT/SDPRE(N2CART)
-         PRFPRM = DMEGA*T2INT/SDPRE(N2PRIM)
+         PRFNON = N2WRIT
+         PRFNON = DMEGA*T2INT/ PRFNON
+         PRFCAR = N2CART
+         PRFCAR = DMEGA*T2INT/ PRFCAR
+         PRFPRM = N2PRIM
+         PRFPRM = DMEGA*T2INT/ PRFPRM
          WRITE (LUPRI,'(3(/,2X,A,F7.1,A))')
      &      'Average time for non-zero (written) integrals:',
      &       PRFNON,' microseconds',
@@ -4239,8 +4366,10 @@ C
      &      'Average time for primitive integrals         :',
      &       PRFPRM,' microseconds'
       ELSE
-         PRFCAR = DMEGA*T2INT/SDPRE(N2CART)
-         PRFPRM = DMEGA*T2INT/SDPRE(N2PRIM)
+         PRFCAR = N2CART
+         PRFCAR = DMEGA*T2INT/ PRFCAR
+         PRFPRM = N2PRIM
+         PRFPRM = DMEGA*T2INT/ PRFPRM
          WRITE (LUPRI,'(2(/,2X,A,F7.1,A))')
      &      'Average time for zero/non-zero integrals     :',
      &       PRFCAR,' microseconds',
@@ -4687,8 +4816,8 @@ C
       IATOM  = 0
       MULTE  = 1
 C
-C     a) Undifferentiated integrals written on file
-C     =============================================
+C     a) Undifferentiated integrals (or 2-el.Darwin) written on file
+C     ==============================================================
 C
       IF (ITYPE .EQ. 0) THEN
          UNDIFF = .TRUE.
@@ -4788,7 +4917,7 @@ C
          DIA2SO = .TRUE.
          SQ12EL = .TRUE.
 C
-C     l) Zero-field electron spin-spin couplings
+C     m) Zero-field electron spin-spin couplings
 C     ==========================================
 C
       ELSE IF (ITYPE .EQ. 11) THEN
@@ -4802,7 +4931,7 @@ C
       ELSE
          WRITE (LUPRI,'(1X,A,I5)')
      &       ' Wrong run type in TWORUN, ITYPE =', ITYPE
-         CALL QUIT('ERROR in TWORUN.')
+         CALL QUIT('ERROR in TWORUN, unknown run type.')
       END IF
 C
 C     Set symmetry of operator
@@ -4856,4 +4985,4 @@ C
 C
       RETURN
       END
-      
+C -- end of her2drv.F --

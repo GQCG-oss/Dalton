@@ -87,8 +87,15 @@ C
 #include <infpri.h>
 #include <scbrhf.h>
 #include <gnrinf.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
+#include <dftcom.h>
 C
-      LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP
+      LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
+      LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
 C
 #include <sirbkd.h>
@@ -151,6 +158,15 @@ C     No optimal orbital trial vectors nor orbital absorption
 C     No active-active rotations
       FLAG(23) = .FALSE.
 C
+C     Do some solvent initializations
+C
+Cbm initialized PCMSV
+      PCMSV   = PCM
+c     WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
+c     IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
+      IF (PCM) CALL PCMSOLVNT(WORK,LWORK)
+C
+C
 C ***************************************************
 C        *** set RHF parameters for RHF and MP2 ***
 C
@@ -158,7 +174,11 @@ C
          MCTYPE   = 0
          IF (DOCINO .OR. DOCI .OR. DOMC) THEN
             FLAG(25)=.FALSE.
-            IF (DOMP2) FLAG(16)=.FALSE. 
+            IF (DOMP2) THEN
+               FLAG(16)= .FALSE.
+               PCMSV   = PCM
+               PCM     = .FALSE.
+            END IF
          END IF
 C        ... do not write interface file if RHF or MP2 not final calc.
 C        ... no solvent if RHF followed by MP2 and CI or MC
@@ -327,16 +347,17 @@ C
             MXMISV = MAXMIC
             MAXMAC = MXHFMA
             MAXJT  = MXHFMI
-            MAXMIC = MIN(200,MAXMAC*MAXJT)
+            MAXMIC = MIN(1000,MAXMAC*MAXJT)
             THRGRD = THRRHF
 C
-            THRLDG = 100*NWOPT*THRLDP
+            thrldg = nwopt
+            THRLDG = 1.0d2*thrldg*THRLDP
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL error: SCF threshold below lin.dep. limit',
-     *         ' SCF convergence threshold:',THRGRD,
-     *         ' lin.dep. limit           :',THRLDG
+     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit' 
+     *        ,' SCF convergence threshold:',THRGRD
+     *        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
      &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
@@ -377,33 +398,28 @@ C ***************************************************
 C        *** MP2 ***
 C
       IF (DOMP2) THEN
+         IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
+     &      'implemented in MP2 module and is ignored.'
+         END IF
+         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS = .FALSE.
+         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
             WRITE (LUERR ,7020)
             GO TO 8000
          END IF
- 7020    FORMAT(//' Sirius MP2 calculation aborted because',
-     *      ' preceeding Hartree-Fock not converged.')
+ 7020    FORMAT(//'ERROR: Sirius MP2 calculation aborted because',
+     *      ' preceding Hartree-Fock not converged.')
 C
          FLAG( 9) = .TRUE.
          FLAG( 2) = .FALSE.
          FLAG( 4) = .FALSE.
          FLAG(14) = .FALSE.
 C
-C        Transform to canonical orbitals, unless we know that
-C        the orbitals already are canonical orbitals.
-         IF (.NOT.DORHF .OR. .NOT.RHFCAN) THEN
-            IPRCAN = 0
-            KFRCAN = 1
-            LFRCAN = LWORK
-            CALL MEMGET('REAL',KCREF,NCONF,WORK,KFRCAN,LFRCAN)
-            CALL MEMGET('REAL',KCMO ,NCMOT,WORK,KFRCAN,LFRCAN)
-            CALL MEMGET('REAL',KOCC ,NORBT,WORK,KFRCAN,LFRCAN)
-            CALL SIRCAN(IPRCAN,WORK(KCREF),WORK(KCMO),WORK(KOCC),
-     *                  WORK,KFRCAN,LFRCAN)
-            CALL MEMREL('SIRCTL.MP2.SIRCAN',WORK,1,1, KFRCAN,LFRCAN)
-         END IF
          FLAG(21) = .FALSE.
 C
          CALL GETTIM(TSTART,WSTART)
@@ -418,6 +434,8 @@ C
          IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+         DFT_SPINDNS = DFT_SPINDNS_SAVE
+         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
       END IF
 C
 C ***************************************************
@@ -504,7 +522,17 @@ C ***************************************************
 C        *** CI ***
 C
       IF (DOCI .OR. DOCINO) THEN
+         IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
+     &      'implemented in CI module and is ignored.'
+         END IF
+         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS = .FALSE.
+         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
+         DOHFSRDFT = .FALSE.
+C        ... no more HFSRDFT
          FLAG( 4) = .TRUE.
          FLAG( 2) = .FALSE.
          FLAG(21) = .FALSE.
@@ -515,13 +543,14 @@ C        ... if CI it is again OK to call sirout.
          MCTYPE = MCTPSV
          IF (DOMC) FLAG(25) = .FALSE.
 C        ... do not write interface file if followed by MCSCF
-         THRLDG = 100*NCONF*THRLDP
+         thrldg = nconf
+         THRLDG = 1.0d2*thrldg*THRLDP
          THRLDG = SQRT(THRLDG)
          IF (THRCI .LT. THRLDG) THEN
             WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *      ' SIRCTL error: CI threshold below lin.dep. limit',
+     *      ' SIRCTL FATAL ERROR: CI threshold below lin.dep. limit',
      *      ' CI convergence threshold:',THRCI,
-     *      ' lin.dep. limit          :',THRLDG
+     *      ' linear dependency limit :',THRLDG
             CALL QUIT('SIRCTL error: CI threshold below lin.dep. limit')
          END IF
 C
@@ -549,18 +578,26 @@ C              ... orbital super symmetries may have been reordered
      &         'SIRCTL CINO error: inconsistency in sup.sym. averaging')
             END IF
          END IF
+         DFT_SPINDNS = DFT_SPINDNS_SAVE
+         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
       END IF
 C
 C ***************************************************
 C        *** MCSCF ***
 C
       IF (DOMC) THEN
+         DOHFSRDFT = .FALSE.
+         DOCISRDFT = .FALSE.
+C        ... no more HFSRDFT nor CISRDFT
          NUMRUN = NUMRUN + 1
 C
 C Recover MCSCF flags and settings
          DO 3 IFLAG = 1, NFLAG
             FLAG(IFLAG) = FLAGSV(IFLAG)
     3    CONTINUE
+         PCM    = PCMSV
+Cbm
+c        WRITE(LUPRI,*)'rimetto PCM = PCMSV',PCM
          MCTYPE = MCTPSV
 C
          FLAG( 2) = .TRUE.
@@ -583,13 +620,17 @@ C
          END IF
          THRGRD = THRMC
 C
-         THRLDG = 100*NVAR*THRLDP
+C        thrldg = 100*nvar*thrldp
+C        ^- gave negative number with both gfortran and ifort
+C           when nvar = 37 000 000. Thus the new code. /aug08-hjaaj
+         thrldg = nvar
+         THRLDG = 1.0d2*thrldg*THRLDP
          THRLDG = SQRT(THRLDG)
          IF (THRGRD .LT. THRLDG) THEN
             WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *      ' SIRCTL error: MC threshold below lin.dep. limit',
+     *      ' SIRCTL FATAL ERROR: MC threshold below lin.dep. limit',
      *      ' MC convergence threshold:',THRGRD,
-     *      ' lin.dep. limit          :',THRLDG
+     *      ' linear dependency limit :',THRLDG
             CALL QUIT('SIRCTL error: MC threshold below lin.dep. limit')
          END IF
 C
@@ -620,6 +661,7 @@ C
 C *** Output sections
 C
 C *** ORBITAL OUTPUT
+      IF (LUPROP .GE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       IF (FLAG(5) .AND. NUMRUN .GT. 0) THEN
          CALL SIROUT(ICONV,WORK,LWORK)
          CALL FLSHFO(LUW4)
@@ -629,23 +671,38 @@ C *** ORBITAL OUTPUT
       IF (LUINF .GT.0) CALL GPCLOSE(LUINF,'DELETE')
 C
 C ***************************************************
-C        *** NEVPT ***
+C     *** NEVPT ***
 C
       IF (DONEVPT) THEN
+       IF (ICONV .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' WARNING: NEVPT2 skipped because MCSCF not converged.'
+       ELSE
          JRDMO = 9
          KCMO  = 1
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
          USEDRC = .TRUE.
-         CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
+         IF (NEWTRA) THEN
+C        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
+C            they are only calculated for level 5 in "NEWTRA"
+C            transformation  /hjaaj June 09
+            CALL TRACTL(5,WORK(KCMO),WORK(KWRK1),LWRK1)
+         ELSE
+            CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
+         END IF
          CALL KOOPRO4(WORK,LWORK)
-      ENDIF
+       END IF
+      END IF
 C
 C *** POPULATION ANALYSIS AND PROPERTIES
 C
       IF (FLAG(6) .AND. NUMRUN .GT. 0) THEN
-         CALL SIRPOP(WORK,LWORK)
+         KDV   = 1
+         KWRK1 = KDV + NNASHX
+         LWRK1 = LWORK - KWRK1
+         CALL SIRPOP('FINAL',WORK(KDV),WORK(KWRK1),LWRK1)
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
@@ -688,6 +745,7 @@ C
       IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE')
       IF (LUW4 .NE. LUPRI) CALL GPCLOSE(LUW4,'KEEP')
 C
+      IF (PCM) CALL GPCLOSE(LUPCMD,'KEEP')
       CALL QEXIT('SIRCTL')
       RETURN
 C *** end of SIRCTL.

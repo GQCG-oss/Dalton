@@ -200,7 +200,10 @@ C
       LOGICAL LOCDBG, DEL
       PARAMETER (LOCDBG = .FALSE.)
 
-      INTEGER*8 ADR
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
+      INTEGER ADR
 
       INTEGER BBEG, BEND
       INTEGER ABEG, AEND
@@ -366,8 +369,8 @@ C     ----------------
 C     Open FILDEN.
 C     ------------
 
-      LUDEN = 1
-      CALL WOPEN2U(LUDEN,FILDEN,64,0)
+      LUDEN = 97
+      CALL WOPEN2(LUDEN,FILDEN,64,0)
 
 C     Read canonical orbital energies.
 C     --------------------------------
@@ -633,7 +636,7 @@ C           -----------------------------------------------------------
             ENDIF 
             
             IERR = -1
-            CALL CCPRPAO(LABEL,WORK(KXAO),IRREP,IREAL,IERR,
+            CALL CCPRPAO(LABEL,LONLYAO,WORK(KXAO),IRREP,IREAL,IERR,
      &                   WORK(KEND2),LWRK2)
 
             IF (IERR .GT. 0) THEN
@@ -766,7 +769,7 @@ C           --------------------------------------
 C           Read appropriate density matrix.
 C           --------------------------------
 
-            CALL GETWA2U(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
+            CALL GETWA2(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
 
             IF (IPRINT .GE. INFO) THEN
                WRITE(LUPRI,'(7X,A,A,A,I10,A)')
@@ -961,7 +964,7 @@ C           ----------------------------
 C           Write density blocks to disk and update address.
 C           ------------------------------------------------
 
-            CALL PUTWA2U(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
+            CALL PUTWA2(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
             ADR = ADR + LDEN
 
 C           Print info for this amplitude.
@@ -1042,7 +1045,7 @@ c        FREQ   = FRQLRT(ILSTNR)
          ENDIF
 
          LDEN = NMATIJ(ISYDEN) + NT1AM(ISYDEN) + NMATAB(ISYDEN)
-         CALL GETWA2U(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
+         CALL GETWA2(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
          CALL DZERO(WORK(KDNBJ),NT1AM(ISYDEN))
          ADR = ADR + LDEN
 
@@ -1063,9 +1066,9 @@ C     Close FILDEN, delete if requested.
 C     ----------------------------------
 
       IF (DELDEN) THEN
-         CALL WCLOSE2U(LUDEN,FILDEN,'DELETE')
+         CALL WCLOSE2(LUDEN,FILDEN,'DELETE')
       ELSE
-         CALL WCLOSE2U(LUDEN,FILDEN,'KEEP')
+         CALL WCLOSE2(LUDEN,FILDEN,'KEEP')
       ENDIF
 
 C     Print.
@@ -2580,6 +2583,9 @@ C
       CHARACTER*13 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1DBGAO')
 
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
       CHARACTER*8 LABA,LABB
 
       PARAMETER (THRDFF = 1.0D-14)
@@ -2660,7 +2666,7 @@ C              Read AO integrals.
 C              ------------------
 
                IERR = -1
-               CALL CCPRPAO(LABA,WORK(KINTA),IRREP,IREAL,IERR,
+               CALL CCPRPAO(LABA,LONLYAO,WORK(KINTA),IRREP,IREAL,IERR,
      &                      WORK(KEND2),LWRK2)
 
 C              Check.
@@ -2757,11 +2763,14 @@ C
       CHARACTER*13 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1DBGMO')
 
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
       CHARACTER*8 LABA,LABB
 
       PARAMETER (THRDFF = 1.0D-14)
 
-      INTEGER*8 ADR
+      INTEGER ADR
 
       INTEGER ILSTSYM
 
@@ -2773,8 +2782,8 @@ C     ---------------------
 C     Open FILDEN.
 C     ------------
 
-      LUDEN = 1
-      CALL WOPEN2U(LUDEN,FILDEN,64,0)
+      LUDEN = 97
+      CALL WOPEN2(LUDEN,FILDEN,64,0)
 
 C     Allocation.
 C     -----------
@@ -2840,7 +2849,7 @@ C        -----------
             CALL QUIT('Insufficient memory in '//SECNAM//' [1]')
          ENDIF
 
-         CALL GETWA2U(LUDEN,FILDEN,WORK(KDNIJ),ADR,LENDEN)
+         CALL GETWA2(LUDEN,FILDEN,WORK(KDNIJ),ADR,LENDEN)
          ADR = ADR + LENDEN
 
 C        Loop over operators A.
@@ -2873,7 +2882,7 @@ C              Read AO integrals.
 C              ------------------
                
                IERR = -1
-               CALL CCPRPAO(LABA,WORK(KINTA),IRREP,IREAL,IERR,
+               CALL CCPRPAO(LABA,LONLYAO,WORK(KINTA),IRREP,IREAL,IERR,
      &                      WORK(KEND2),LWRK2)
 
 C              Check.
@@ -2951,9 +2960,9 @@ C     Close FILDEN.
 C     -------------
 
       IF (DELDEN) THEN
-         CALL WCLOSE2U(LUDEN,FILDEN,'DELETE')
+         CALL WCLOSE2(LUDEN,FILDEN,'DELETE')
       ELSE
-         CALL WCLOSE2U(LUDEN,FILDEN,'KEEP')
+         CALL WCLOSE2(LUDEN,FILDEN,'KEEP')
       ENDIF
 
 C     Stop if requested.
@@ -2986,13 +2995,13 @@ C
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHODINI')
 
-      INTEGER*8 ADR
+      INTEGER ADR
       INTEGER   ILSTSYM
 
       IF (NPDEN .LE. 0) RETURN
 
-      LUDEN = 1
-      CALL WOPEN2U(LUDEN,FILDEN,64,0)
+      LUDEN = 97
+      CALL WOPEN2(LUDEN,FILDEN,64,0)
 
       ADR    = 1
       MAXDEN = -999
@@ -3010,12 +3019,12 @@ C
             CALL DZERO(WORK,LENDEN)
          ENDIF
 
-         CALL PUTWA2U(LUDEN,FILDEN,WORK,ADR,LENDEN)
+         CALL PUTWA2(LUDEN,FILDEN,WORK,ADR,LENDEN)
          ADR = ADR + LENDEN
 
       ENDDO
 
-      CALL WCLOSE2U(LUDEN,FILDEN,'KEEP')
+      CALL WCLOSE2(LUDEN,FILDEN,'KEEP')
 
       RETURN
       END
@@ -3169,7 +3178,7 @@ C
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1DS')
 
-      INTEGER*8 ADR
+      INTEGER ADR
 
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0)
 
@@ -3201,21 +3210,21 @@ C     -----------
 C     Read 0th order density blocks.
 C     ------------------------------
 
-      LUDN0 = 2
-      CALL WOPEN2U(LUDN0,FDEN00,64,0)
+      LUDN0 = 96
+      CALL WOPEN2(LUDN0,FDEN00,64,0)
       ADR = 1
-      CALL GETWA2U(LUDN0,FDEN00,WORK(KDOCC),ADR,NMATIJ(1))
+      CALL GETWA2(LUDN0,FDEN00,WORK(KDOCC),ADR,NMATIJ(1))
       ADR = ADR + NMATIJ(1) + NT1AM(1)
-      CALL GETWA2U(LUDN0,FDEN00,WORK(KDVIR),ADR,NMATAB(1))
-      CALL WCLOSE2U(LUDN0,FDEN00,'KEEP')
+      CALL GETWA2(LUDN0,FDEN00,WORK(KDVIR),ADR,NMATAB(1))
+      CALL WCLOSE2(LUDN0,FDEN00,'KEEP')
       IOPT = 1
       CALL CC_RDRSP('L0 ',1,1,IOPT,MODEL,WORK(KDEXC),DUMMY)
 
 C     Open FILDEN.
 C     ------------
 
-      LUDEN = 1
-      CALL WOPEN2U(LUDEN,FILDEN,64,0)
+      LUDEN = 97
+      CALL WOPEN2(LUDEN,FILDEN,64,0)
 
 C     Initialize ADR on FILDEN.
 C     -------------------------
@@ -3344,7 +3353,7 @@ C        Write density to disk.
 C        ----------------------
 
          LDEN = NMATIJ(ISYDEN) + NT1AM(ISYDEN) + NMATAB(ISYDEN)
-         CALL PUTWA2U(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
+         CALL PUTWA2(LUDEN,FILDEN,WORK(KDNJK),ADR,LDEN)
 
 C        Update ADR.
 C        -----------
@@ -3356,7 +3365,7 @@ C        -----------
 C     Close FILDEN.
 C     -------------
 
-      CALL WCLOSE2U(LUDEN,FILDEN,'KEEP')
+      CALL WCLOSE2(LUDEN,FILDEN,'KEEP')
 
       RETURN
       END

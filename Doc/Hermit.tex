@@ -118,9 +118,6 @@ the \Key{GAUGEO} keyword.
 \item Property labels: \verb|XANGMOM |, \verb|YANGMOM |, \verb|ZANGMOM |
 \end{list}
 
-\item[\Key{AUXBAS}] An auxiliary basis is used. Basis sets must be identified as
-orbital basis and auxiliary basis in the \verb|MOLECULE.INP| file (line 5).
-
 \item[\Key{CARMOM}]\verb| |\newline
 \verb|READ (LUCMD,*) IORCAR|
 
@@ -246,8 +243,9 @@ direction (x/y/z) of the dipole moment.
 \verb|READ (LUCMD, *) (DIPORG(I), I = 1, 3)|
 
 Specify the dipole origin\index{dipole origin} to be used in the
-calculation. Read one more
-line containing the three Cartesian components (*). Default is~(0,0,0).
+calculation.
+Read one more line containing the three Cartesian
+components in bohrs (*). Default is~(0,0,0).
 
 \item[\Key{DIPVEL}] Dipole velocity\index{dipole velocity} integrals.
 
@@ -420,8 +418,9 @@ directions. The center of expansion is always~(0,0,0).
   \verb|COS KZ/K|, \verb|SIN KX/K|, \verb|SIN KY/K|, \verb|SIN KZ/K|.
 \end{list}
 
-\item[\Key{FC}] Fermi-contact\index{Fermi contact} integrals, see
-Ref.~\cite{ovhapjhjajsbpthjcp96}.
+\item[\Key{FC}] Fermi contact integrals,
+\index{Fermi contact integrals}\index{integrals!Fermi contact}
+see Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{4\pi g_e}{3}\left<\chi_{\mu}\left|\delta\left({\bf
@@ -432,8 +431,9 @@ first letters in the name of this atom, as given in the
 symmetry-adapted nucleus.
 \end{list}
 
-\item[\Key{FC-KE}] Kinetic energy correction to
-  Fermi-contact\index{Fermi contact} integrals, see Ref.~\cite{pmpljvkrjcp119}.
+\item[\Key{FC-KE}] Kinetic energy correction to Fermi-contact integrals,
+\index{Fermi contact integrals!kinetic energy correction}
+see Ref.~\cite{pmpljvkrjcp119}.
 
 \begin{list}{}{}
 \item Integral: $\frac{2\pi g_e}{3}\left<\chi_{\mu}\left|\left[\nabla^2,\delta\left({\bf
@@ -459,7 +459,7 @@ calculation. Read one more line containing the three Cartesian
 components (*). Default is~(0,0,0).
 
 \item[\Key{HBDO}] Symmetric combination of half-differentiated
-  overap matrix with respect to an external magnetic field
+  overlap matrix with respect to an external magnetic field
   perturbation when London orbitals are used.
 
 \begin{list}{}{}
@@ -696,9 +696,11 @@ to distinguish between integrals, the first two letters in an
 atom's name must be unique.
 \end{list}
 
+
 \item[\Key{OCTGRA}]
 Calculate octupole gradient integrals, that is, the geometrical first
 derivatives of the third moment integrals (\Key{THIRDM}).
+(note: it is NOT the gradient of the \Key{OCTUPO} integrals).
 
 \begin{list}{}{}
 \item Integral: $\frac{\partial}{\partial {\mathbf
@@ -818,8 +820,9 @@ may be XX/XY/XZ/YY/YZ/ZZ-FGRD.
 \item[\Key{QDBTST}] Test of the \Key{QDBINT} integrals, mainly for
   debugging purposes.
 
-\item[\Key{QUADRU}] Quadrupole moment\index{quadrupole
-moment} integrals. For traceless quadrupole moment integrals as
+\item[\Key{QUADRU}] Quadrupole moment integrals.
+\index{quadrupole moment integrals}\index{integrals!quadrupole moment}
+For traceless quadrupole moment integrals as
 defined by Buckingham~\cite{adbacp12}, see the keyword \Key{THETA}.
 
 \begin{list}{}{}
@@ -961,8 +964,9 @@ r}^{T}\right|\chi_{\nu}\right>Q_{MN}$
 \item[\Key{S2MAGT}] Test the integrals calculated with the keyword
 \Key{S2MAG}. Mainly for debugging purposes.
 
-\item[\Key{SD}] Spin-dipole integrals\index{spin-dipole}, see
-Ref.~\cite{ovhapjhjajsbpthjcp96}.
+\item[\Key{SD}] Spin-dipole integrals,
+\index{spin-dipole integrals}\index{integrals!spin-dipole},
+see Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
@@ -973,8 +977,9 @@ symmetry-adapted nuclear magnetic moments) and \verb|d| is the x, y,
 or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
-\item[\Key{SD+FC}] Calculate the sum of the spin-dipole\index{spin-dipole} and
-Fermi-contact integrals\index{Fermi contact}.
+\item[\Key{SD+FC}] Calculate the sum of the spin-dipole\index{spin-dipole integrals} and
+Fermi-contact integrals\index{Fermi contact integrals}
+\index{integrals!spin-dipole plus Fermi-contact}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
@@ -987,8 +992,10 @@ symmetry-adapted nuclear magnetic moments) and \verb|d| is the x, y,
 or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
-\item[\Key{SD-KE}] Kinetic energy correction to spin--dipole
-  integrals\index{spin-dipole}, see Ref.~\cite{pmpljvkrjcp119}.
+\item[\Key{SD-KE}] Kinetic energy correction to spin--dipole integrals
+\index{spin-dipole integrals!kinetic energy correction}
+\index{integrals!kinetic energy correction to spin-dipole},
+see Ref.~\cite{pmpljvkrjcp119}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{4}\left<\chi_{\mu}\left|\left[\nabla^2,\frac{3{\bf
@@ -999,8 +1006,8 @@ symmetry-adapted nuclear magnetic moments) and \verb|c| is the x, y,
 or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
-\item[\Key{SECMOM}] Second-moment integrals\index{multipole
-integral}\index{second-moment}.
+\item[\Key{SECMOM}] Second moment integrals
+\index{integrals!second moment}\index{second moment integrals}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}{\bf
@@ -1108,7 +1115,7 @@ presence of the two-electron integral file\index{two-electron
 integral}\index{supermatrix}.
 
 \item[\Key{SUSCGO}] Diamagnetic magnetizability\index{diamagnetic
-magnetizability} integrals calculated
+magnetizability integrals} integrals calculated
 without the use of London atomic orbitals. The choice of gauge
 origin\index{gauge origin}
 can be controlled by the keyword \Key{GAUGEO}.
@@ -1121,7 +1128,7 @@ can be controlled by the keyword \Key{GAUGEO}.
 \end{list}
 
 \item[\Key{THETA}] Traceless quadrupole moment\index{quadrupole
-moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
+moment integrals!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}\left<\chi_{\mu}\left|
@@ -1132,8 +1139,8 @@ moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 \verb|XZTHETA |, \verb|YYTHETA |, \verb|YZTHETA |, \verb|ZZTHETA |
 \end{list}
 
-\item[\Key{THIRDM}] Third-moment integrals\index{multipole
-integral}\index{third-moment}.
+\item[\Key{THIRDM}] Third moment integrals\index{integrals!third moment}
+\index{third moment integrals}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}^3\right|\chi_{\nu}\right>$
@@ -1216,74 +1223,6 @@ Ref.~\cite{kvmhahjajthjcp89}.  Read one more line containing maximum
 angular quantum
 number for the multipole integrals\index{multipole integral} used for
 the reaction field.
-\end{description}
-
-\subsection{General: \Sec{READIN}}\label{sec:herrdn}
-
-Directives to control the reading of the molecule input appear in the
-\Sec{READIN} section.
-\begin{description}
-\item[\Key{CM FUN}]\verb| |\newline
-\verb|READ (LUCMD,*) LCMMAX, CMSTR, CMEND|
-
-Use Rydberg basis functions\index{Rydberg basis function}\index{basis function!Rydberg}
- (center of mass functions\index{center of mass function}) as suggested by
-Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22}. \verb|LCMMAX| denoted
-the maximum quantum number of the Rydberg functions, basis functions
-for all quantum up to and including \verb|LCMMAX| will be generated
-(s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
-start- and ending quantum number for the Rydberg basis functions. The
-basis functions will be placed at the position of a dummy center
-indicated as \verb|X| in the \verb|MOLECULE.INP| file. The charge of
-the ion-core is determined by the keyword \Key{ZCMVAL}. If no center
-named \verb|X| is present in the \verb|MOLECULE.INP| file, this input
-will be ignored.
-
-\item[\Key{MAXPRI}]\verb| |\newline
-\verb|READ (LUCMD,*) MAXPRI|
-
-Set maximum number of primitives\index{primitive orbitals} in any
-contraction.  Read one more line containing number.  Default
-is~25, except for the Cray-T3D/E, where the default is 14.
-
-%\item[\Key{MOLINP}] Indicates that the molecular input comes at the
-%end of the current file. 
-%Default is that the molecular input is to be
-%read from unit~9.
-
-\item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in {\dalton} 1.0.
-From {\dalton} 1.1, all components of spherical AO's are normalized to 1.
-This was not the case in {\dalton} 1.0, and this option is needed to read 
-MO's correctly from an old file generated by {\dalton} 1.0 if spherical AO's were used.
-(Cartesian AO's are still not all normalized to 1 for $d$-orbitals and higher $l$'s.)
-
-\item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD,*) IPREAD|
-
-Set print level for input processing.  Read one more line containing
-print level. Default is the \verb|IPRDEF| from the \Sec{*INTEGRALS} input
-module.
-
-\item[\Key{SYMTHR}]\verb| |\newline
-\verb|READ (LUCMD,*) TOLLRN|
-
-Read threshold for considering atoms to be related by symmetry. Used
-in the automatic symmetry detection routines. Default is $5.0\cdot
-10^{-6}$.
-
-\item[\Key{UNCONT}] Force the program to use the basis set as a primitive (completely decontracted) set.
-
-\item[\Key{WRTLIN}] Write out the lines read in during the input
-  processing of the \verb|MOLECULE.INP| file. Primarily for debugging
-  purposes or for analysing input errors in the \verb|MOLECULE.INP|
-  file.
-
-\item[\Key{ZCMVAL}]\verb| |\newline
-\verb|READ (LUCMD,*) ZCMVAL|
-
-Read the charge of the center of the Rydberg basis functions specified
-by the \Key{CM FUN} keyword. Default is a charge of one.
-
 \end{description}
 
 \subsection{Integral sorting: \Sec{SORINT}}
@@ -1448,7 +1387,7 @@ to disk. For compatibility with {\twoint}, the default buffer length
 is 600. Longer buffer lengths may give more efficient I/O.
 
 \item[\Key{DISTRI}] Use distributions for electron 1. Must be used in
-  connection with the keywork \Key{SELCT1}.
+  connection with the keyword \Key{SELCT1}.
 
 \item[\Key{DISTST}] Test the calculation of two-electron integrals
   using distributions.
@@ -1476,7 +1415,7 @@ debugging).
 \item[\Key{MAXDIS}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXDST|  
 
-Read in the maximimum number of integral distributions calculated in
+Read in the maximum number of integral distributions calculated in
 each call to the integral code. Default value is 40.
 
 \item[\Key{MXBCH}]\verb| |\newline

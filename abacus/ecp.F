@@ -54,7 +54,7 @@ C
 C
 C     Slaves can return here.
 C
-      IF (MYNUM.NE.0) RETURN
+      IF (SLAVE) RETURN
 C
 C     Initialize ECP specifics.
 C
@@ -63,20 +63,22 @@ C
          ECP = .TRUE.
       END IF
 C
-      STRING = 'ecp-sdd-pseudo'
-      LU = 0
-      CALL FIND_BASFIL(STRING,LU,IPRINT)
+      STRING = 'ecp-sdd-pseudo '
+      LEN_STRING = LNBLNK(STRING)
+      LU = -1
+      CALL FIND_BASFIL(STRING(1:LEN_STRING),LU,IPRINT)
 C
 C     Search for label identfying atom
 C
+      INTQINP = NINT(Q)
       REWIND(LU)
  20   CONTINUE
       READ(LU,'(A80)', ERR=900,END=910)
      &     STRING
       READ (STRING, '(A1)') LAB
-      IF (LAB.EQ.'A') THEN
+      IF (LAB.EQ.'A' .OR. LAB.EQ.'a') THEN
          READ (STRING, '(A1,I4)') LAB,INTQ
-         IF (INTQ.EQ.INT(Q)) THEN
+         IF (INTQ.EQ.INTQINP) THEN
             GOTO 100
          ELSE
             GOTO 20
@@ -135,13 +137,13 @@ C
 C     Print
 C
       IF (IPRINT.GE.0) THEN
-         WRITE(LUPRI,'(/A,I2,A,/A,2(/A,F5.1),2(/A,I5))')
-     &        ' Pseudo potential parameters for ECP type ',NTYECP,'.',
-     &        '------------------------------------------------',
-     &        ' Atomic charge  :', Q,
-     &        ' Effectiv charge:', QEFF,
-     &        ' Core electrons :', NCORE,
-     &        ' Max angular mom:', LMAX-1 
+         WRITE(LUPRI,'(5X,A,I2,A,/5X,A,2(/5X,A,F5.1),2(/5X,A,I5))')
+     &        'Pseudo potential parameters for ECP type ',NTYECP,'.',
+     &        '-----------------------------------------------',
+     &        'Atomic charge  :', Q,
+     &        'Effectiv charge:', QEFF,
+     &        'Core electrons :', NCORE,
+     &        'Max angular mom:', LMAX-1 
       END IF
 C
       IF (IPRINT.GE.2) THEN
@@ -170,83 +172,10 @@ C
      &   'ECPINP: Error when reading from basis file ECP_pseudo'
       CALL QUIT('Read error in ECPINP reading basis file ECP_pseudo')
  910  CONTINUE
-      WRITE (LUPRI,'(/I3,A)') INTQ,
+      WRITE (LUPRI,'(/I3,A)') INTQINP,
      &     ' is an unsupported element in basis file ECP_pseudo'
       CALL QUIT('Unsupported element in ECPINP')
 C
-      END
-      SUBROUTINE ECPLCORE(IQCORE,IQM,ILOFF)
-C
-C     Nov. 2003, Johan, Patrick and Hans Joergen.
-C
-C     Purpose: calculate ILOFF = number of core orbitals described by ECP
-C     for l_quantum_number = IQM - 1
-C     when IQCORE electrons are descibed with the ECP.
-C
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION ILCORE(4)
-C
-      IF (IQCORE .GT. 0) THEN
-         IF (MOD(IQCORE,2) .NE. 0) THEN
-            WRITE(LUPRI,'(/A,I5)')
-     &      'ECPLCORE ECP: odd number of core electrons',IQCORE
-            CALL QUIT('ECPLCORE ECP: odd number of core electrons ')
-         END IF
-         IF (IQM .GT. 4)
-     &      CALL QUIT('ECPLCORE ECP Huckel only for s,p,d,f')
-         DO I = 1, 4
-            ILCORE(I) = 0
-         END DO
-         IF (IQCORE .EQ. 2) THEN
-C           1s ECP
-            ILCORE(1) = 1
-         ELSE IF (IQCORE .EQ. 10) THEN
-C           1s,2s,2p ECP
-            ILCORE(1) = 2
-            ILCORE(2) = 1
-         ELSE IF (IQCORE .EQ. 18) THEN
-C           1s,2s,2p,3s,3p ECP
-            ILCORE(1) = 3
-            ILCORE(2) = 2
-         ELSE IF (IQCORE .EQ. 28) THEN
-C           1s,2s,2p,3s,3p,3d ECP
-            ILCORE(1) = 3
-            ILCORE(2) = 2
-            ILCORE(3) = 1
-         ELSE IF (IQCORE .EQ. 36) THEN
-C           1s,2s,2p,3s,3p,3d,4s,4p ECP
-            ILCORE(1) = 4
-            ILCORE(2) = 3
-            ILCORE(3) = 1
-         ELSE IF (IQCORE .EQ. 46) THEN
-C           1s,2s,2p,3s,3p,3d,4s,4p,4d ECP
-            ILCORE(1) = 4
-            ILCORE(2) = 3
-            ILCORE(3) = 2
-         ELSE IF (IQCORE .EQ. 60) THEN
-C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f ECP
-            ILCORE(1) = 4
-            ILCORE(2) = 3
-            ILCORE(3) = 2
-            ILCORE(4) = 1
-         ELSE IF (IQCORE .EQ. 78) THEN
-C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f,5s,5p,5d ECP
-            ILCORE(1) = 5
-            ILCORE(2) = 4
-            ILCORE(3) = 3
-            ILCORE(4) = 1
-         ELSE
-            WRITE(LUPRI,'(/A,I5)') 'REAANO FATAL ERROR: '//
-     &         'ECP Huckel not implemented for this core charge:',IQCORE
-            CALL QUIT('REAANO ECP not implemented for this core charge')
-         END IF
-         ILOFF = ILCORE(IQM)
-      ELSE
-         ILOFF = 0
-C        not ECP i.e. no core orbitals to exclude
-      END IF
-      RETURN
       END
       SUBROUTINE ECPINT(X2,Y2,Z2,X1,Y1,Z1,EXP2,EXP1,L2,L1,C2,C1,ADER,
      &                  WORK,LWORK,IPRINT)
@@ -267,21 +196,28 @@ C
       COMMON /TRQ77/  XI,YI,ZI,XJ,YJ,ZJ,XC,YC,ZC
 C
       PARAMETER ( D4 = 4.0D0, D1 = 1D0 )
-      DIMENSION WORK(*),ADER(L1*(L1+3)/2+1,L2*(L2+3)/2+1),
-     &          IORDER(35),IOFF(0:4)
-C
-#include <ibtfun.h>
+      DIMENSION WORK(*),ADER(L1*(L1+3)/2+1,L2*(L2+3)/2+1)
 C
 C     Used to scatter GOUT into ADER, the reason for the difference
 C     in ordering is that PSEUDO routines order according to ZYX whereas
 C     Dalton uses XYZ. Maximum g-functions at the moment.
 C
+      PARAMETER (MAX_L = 4)
+      DIMENSION IORDER(35),IOFF(0:MAX_L)
       DATA IORDER/1,
      &            1,2,3,
      &            1,4,6,2,3,5,
      &            1,7,10,2,3,4,8,6,9,5,
      &            1,11,15,2,3,7,12,10,14,4,6,13,5,8,9/
       DATA IOFF/0,1,4,10,20/  
+C
+#include <ibtfun.h>
+C
+      IF (L1 .GT. MAX_L .OR. L2 .GT. MAX_L) THEN
+         write(lupri,'(//A,3I8)')
+     &   'ERROR ECPINT: L1 or L2 .gt. MAX_L',L1,L2,MAX_L
+         CALL QUIT('ECPINT: L1 or L2 .gt. MAX_L')
+      END IF
 C
       KFREE = 1
       LFREE = LWORK
@@ -752,7 +688,8 @@ c*    common /zlmtab/ zlm(130)
       common /dfac/ dfac(29)
 c*    common /dfac/ dfac(23)
 c*    dimension ang(7,2), xab(2), yab(2), zab(2)
-      dimension ang(9,2), xab(2), yab(2), zab(2)
+chj   dimension ang(9,2), xab(2), yab(2), zab(2)
+      dimension ang(9,*), xab(*), yab(*), zab(*)
 c*    dimension lf(7),lmf(49),lml(49),lmx(130),lmy(130),lmz(130)
       dimension lf(9),lmf(81),lml(81),lmx(377),lmy(377),lmz(377)
 c*    data lf /0,1,4,9,16,25,36/
@@ -1055,7 +992,7 @@ c**
       subroutine facab(na1,nb1,crda,crdb,xab)
       implicit double precision (a-h,o-z)
 c*    dimension crda(2), crdb(2), bic(10), ind(4), xab(2)
-      dimension crda(2), crdb(2), bic(15), ind(5), xab(2)
+      dimension crda(*), crdb(*), bic(15), ind(5), xab(*)
 c*    data bic/4*1.0d0,2.0d0,2*1.0d0,2*3.0d0,1.0d0/
       data bic/4*1.0d0,2.0d0,2*1.0d0,2*3.0d0,1.0d0,1.0d0,4.0d0,6.0d0,
      a         4.0d0,1.0d0/

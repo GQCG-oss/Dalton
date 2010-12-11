@@ -1,19 +1,19 @@
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -79,10 +79,11 @@ C
   100 CONTINUE
       NBASF = NORB1(NSYM) + NORB2(NSYM)
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE (LUMULB,'KEEP')
+      IF (.NOT. (R12NOB .OR. NORXR)) THEN
       DO 200 ISYM = 1, NSYM
          DO 210 I = NORB1(ISYM) + 2,  NVIR(ISYM)
             DO 220 J = NORB1(ISYM) + 1 , I - 1
@@ -98,6 +99,7 @@ C
   220       CONTINUE
   210    CONTINUE
   200 CONTINUE
+      END IF
 C  
 C     Compute (ak|bl) = Sum_c X(ac)*(ck|bl) + Sum_d X(bd)*(ak|dl)
 C     The sum over c runs over the auxiliary basis only
@@ -115,22 +117,32 @@ C
                DO 304 K = 1, NRHF(ISYMK)
                   DO 305 L = 1, NRHF(ISYML)
                      DO 306 A = 1, NVIR(ISYMA)
-                        IF (A. LE. NORB1(ISYMA)) THEN
-                           NSTRC = NORB1(ISYMC) + 1
-                           NENDC = NVIR(ISYMC)
-                        ELSE
-                           NSTRC = A                
-                           NENDC = A                
+                        IF (R12CBS) THEN
+			   NSTRC = 1
+			   NENDC = NVIR(ISYMC)
+			ELSE
+                           IF (A. LE. NORB1(ISYMA)) THEN
+                              NSTRC = NORB1(ISYMC) + 1
+                              NENDC = NVIR(ISYMC)
+                           ELSE
+                              NSTRC = A                
+                              NENDC = A                
+                           END IF
                         END IF
                         NAK = IT1AM(ISYMA,ISYMK)
      *                      + NVIR(ISYMA)*(K-1) + A
                         DO 307 B = 1, NVIR(ISYMB)
-                           IF (B. LE. NORB1(ISYMB)) THEN
-                              NSTRD = NORB1(ISYMD) + 1
-                              NENDD = NVIR(ISYMD)
-                           ELSE
-                              NSTRD = B
-                              NENDD = B
+                           IF (R12CBS) THEN
+			      NSTRD = 1
+			      NENDD = NVIR(ISYMD)
+			   ELSE
+                              IF (B. LE. NORB1(ISYMB)) THEN
+                                 NSTRD = NORB1(ISYMD) + 1
+                                 NENDD = NVIR(ISYMD)
+                              ELSE
+                                 NSTRD = B
+                                 NENDD = B
+                              END IF
                            END IF
                            NBL = IT1AM(ISYMB,ISYML)
      *                         + NVIR(ISYMB)*(L-1) + B
@@ -185,20 +197,51 @@ C
                         ISYMJA = MULD2H(ISYMJ,ISYMA)
                         DO 407 B = 1, NVIR(ISYMB)
 C
-                           IF (IFLAG .EQ. 2) THEN
-                              AVIRT = A .GT. NRHFS(ISYMA) .AND.
-     *                                A .LE. NORB1(ISYMA)
-                              BVIRT = B .GT. NRHFS(ISYMB) .AND.
-     *                                B .LE. NORB1(ISYMB)
-                              IF (AVIRT .OR. BVIRT) GOTO 407 
-                           END IF
-                           IF ((A .GT. NORB1(ISYMA) .AND.
-     *                          B .GT. NORB1(ISYMB)) .OR.
-     *                         (A .LE. NORB1(ISYMA) .AND.
-     *                          B .LE. NORB1(ISYMB))) THEN
+                           AVIRT = A .GT. NRHFSA(ISYMA) .AND.
+     *                             A .LE. NORB1(ISYMA)
+                           BVIRT = B .GT. NRHFSA(ISYMB) .AND.
+     *                             B .LE. NORB1(ISYMB)
+                           
+                           IF (R12CBS) THEN
                               SFAC = D1
+			      IF (IFLAG .EQ. 1) THEN
+                                 IF (A .LE. NORB1(ISYMA) .OR. 
+     *                               B .LE. NORB1(ISYMB)) GOTO 407
+                              ELSE IF (IFLAG .EQ. 2) THEN
+                                 IF (A .LE. NRHFSA(ISYMA) .OR. 
+     *                               B .LE. NRHFSA(ISYMB)) GOTO 407
+                              ELSE IF (IFLAG .EQ. 3) THEN
+                                 IF (A .LE. NRHFSA(ISYMA) .OR. 
+     *                               B .LE. NRHFSA(ISYMB) .OR.
+     *                              (AVIRT .AND. BVIRT)) GOTO 407
+                              END IF
                            ELSE
-                              SFAC = - D1
+                              IF (IFLAG .EQ. 2) THEN
+                                 IF (AVIRT .OR. BVIRT) GOTO 407 
+                              END IF
+                              IF ((A .GT. NORB1(ISYMA) .AND.
+     *                             B .GT. NORB1(ISYMB)) .OR.
+     *                            (A .LE. NORB1(ISYMA) .AND.
+     *                             B .LE. NORB1(ISYMB))) THEN
+                                 SFAC = D1
+                              ELSE
+                                 SFAC = - D1
+                              END IF
+                              IF (IFLAG .EQ. 3) THEN
+                                IF ((A .GT. NORB1(ISYMA) .AND.
+     *                               B .GT. NORB1(ISYMB)) .OR.
+     *                              (A .LE. NRHFSA(ISYMA) .AND.
+     *                               B .LE. NRHFSA(ISYMB))) THEN
+                                    SFAC = D1
+                                ELSE
+                                    SFAC = - D1
+                                END IF
+                                IF (AVIRT) THEN
+                                   IF (.NOT. BVIRT) GOTO 407
+                                ELSE IF (BVIRT) THEN
+                                   IF (.NOT. AVIRT) GOTO 407
+                                END IF
+                              END IF
                            END IF
 C           
                            NAI = IT1AM(ISYMA,ISYMI)
@@ -261,22 +304,27 @@ C
       CALL ERISFK(TF,NSPAIR,1)
 C
       IF (IPRINT .GT.  3) THEN
-         GOTO (703,704), IFLAG
+         GOTO (703,704,705), IFLAG
          CALL QUIT('INVALID IFLAG IN RXR')
   703    CALL AROUND('Singlet <RXR> matrix')
          CALL OUTPUT(SF,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
          CALL AROUND('Triplet <RXR> matrix')
          CALL OUTPUT(TF,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-         GOTO 705
+         GOTO 706
   704    CALL AROUND('Singlet <RXR@> matrix')
          CALL OUTPUT(SF,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
          CALL AROUND('Triplet <RXR@> matrix')
          CALL OUTPUT(TF,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-  705    WRITE(LUPRI,*)
+         GOTO 706
+  705    CALL AROUND('Singlet <RXR3> matrix')
+         CALL OUTPUT(SF,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         CALL AROUND('Triplet <RXR3> matrix')
+         CALL OUTPUT(TF,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+  706    WRITE(LUPRI,*)
       END IF
 C
-      LUMUL = 34
-      GOTO (701,702), IFLAG
+      LUMUL = -34
+      GOTO (701,702,707), IFLAG
       CALL QUIT('INVALID IFLAG IN RXR')
   701 CALL GPOPEN(LUMUL,'XMATSN','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       WRITE(LUMUL,'(4E30.20)') (SF(KL), KL = 1, NSPAIR*NSPAIR)
@@ -291,11 +339,18 @@ C
       CALL GPOPEN (LUMUL,'XMATTP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       WRITE(LUMUL,'(4E30.20)') (TF(KL), KL = 1, NSPAIR*NSPAIR)
       CALL GPCLOSE(LUMUL,'KEEP')  
+cWK   GOTO 999
+  707 CALL GPOPEN(LUMUL,'XMATSQ','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+      WRITE(LUMUL,'(4E30.20)') (SF(KL), KL = 1, NSPAIR*NSPAIR)
+      CALL GPCLOSE(LUMUL,'KEEP')
+      CALL GPOPEN(LUMUL,'XMATTQ','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+      WRITE(LUMUL,'(4E30.20)') (TF(KL), KL = 1, NSPAIR*NSPAIR)
+      CALL GPCLOSE(LUMUL,'KEEP')
   999 CONTINUE
       RETURN
       END 
 C  /* Deck makegx */   
-      SUBROUTINE MAKEGX(V2AM,GX,F2AM,IPBAS)
+      SUBROUTINE MAKEGX(V2AM,GX,F2AM,WORK,LWORK,IPBAS)
 C
 C     This subroutine computes the X(p'k) matrix (exchange operator)
 C     by summing two-electron integrals (ip'|ik) in the orthonormal
@@ -309,9 +364,12 @@ C     is returned as GX.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
+C     Modified for natural virtual orbitals NATVIR (WK/UniKA/22-11-2005).
+C
 #include <implicit.h>
 #include <priunit.h>    
-      DIMENSION V2AM(*), GX(*), F2AM(*)
+      DIMENSION V2AM(*), GX(*), F2AM(*), WORK(*)
+      integer   iv1fro(8,8),it1vm(8,8),it2vm(8,8),iv2fro(8,8)
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
@@ -319,118 +377,270 @@ C
 #include <r12int.h> 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
-      CALL DZERO(GX,NT1AMX)
+      IF (NATVIR) THEN
+         CALL DZERO(GX,NT1AMX)
+         NNBASF = 0
+         DO ISYM = 1, NSYM
+            NONV = NVIR(ISYM) + NRHFS(ISYM)
+            NNBASF = NNBASF + NONV * (NONV + 1) / 2 
+         END DO
+         LUNT = -1
+         IF (NNBASF .GT. LWORK) CALL QUIT('Not enough memory in MAKEGX')
+         CALL GPOPEN(LUNT,'AUXFCKN','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+         READ(LUNT,'(4E30.20)') (WORK(I), I = 1, NNBASF)
+         CALL GPCLOSE(LUNT,'KEEP')
+         IOFF = 0
+         DO ISYMP = 1, NSYM
+            ISYMK =  ISYMP
+            NPK = IT1AM(ISYMP,ISYMK)
+            DO K =1 + NRHFFR(ISYMK), NRHFS(ISYMK)
+               DO P = 1 + NRHFS(ISYMP), NVIR(ISYMP) + NRHFS(ISYMP)
+                  NPK = NPK + 1
+                  GX(NPK) = WORK(IOFF + P*(P-1)/2 + K)
+               END DO
+            END DO
+            NONV = NVIR(ISYMP) + NRHFS(ISYMP)
+            IOFF = IOFF + NONV * (NONV + 1) / 2
+         END DO
+c        LUNT = -1
+c        CALL GPOPEN(LUNT,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+c        READ(LUNT,'(4E30.20)') (WORK(I), I = 1, NNBASF)
+c        CALL GPCLOSE(LUNT,'KEEP')
+c        IOFF = 0
+c        DO ISYMP = 1, NSYM
+c           ISYMK =  ISYMP
+c           NPK = IT1AM(ISYMP,ISYMK)
+c           DO K = NRHFFR(ISYMK)+1, NRHFSA(ISYMK)
+c              DO P = 1, NVIR(ISYMP)
+c                 NPK = NPK + 1
+c                 GX(NPK) = WORK(IOFF + P*(P-1)/2 + K)
+c              END DO
+c           END DO
+c           IOFF = IOFF + NVIR(ISYMP) * (NVIR(ISYMP) + 1) / 2
+c        END DO
+         GOTO 100
+      END IF
+ 
+      IF (R12PRP) THEN
+         CALL DZERO(GX,NT1VMX)
+         DO ISYMK = 1,NSYM
+            NV1FRO(ISYMK) = 0
+            DO ISYMJ = 1,NSYM
+               ISYMI  = MULD2H(ISYMK,ISYMJ)
+               NV1FRO(ISYMK) = NV1FRO(ISYMK) + NRHFFR(ISYMJ)*
+     &                          (NORB1(ISYMI)-NRHFFR(ISYMI))
+            ENDDO
+         ENDDO
+         
+         DO ISYMK = 1, NSYM
+            ICOUN1 = 0
+            ICOUN3 = 0 
+            ICOUN4 = 0 
+            DO ISYMJ = 1,NSYM
+               ISYMI  = MULD2h(ISYMK,ISYMJ)
+               IT1VM(ISYMI,ISYMJ)  = ICOUN1
+               ICOUN1 = ICOUN1 + (NORB1(ISYMJ)-NRHFFR(ISYMJ))
+     &                     *NVIR(ISYMI)
+               IV2FRO(ISYMI,ISYMJ) = ICOUN3
+               IV1FRO(ISYMI,ISYMJ) = ICOUN4
+               ICOUN3 = ICOUN3 + NT1FRO(ISYMI)*NV1FRO(ISYMJ)
+               ICOUN4 = ICOUN4 + (NRHFFR(ISYMI))
+     &                   *(NORB1(ISYMJ)-NRHFFR(ISYMJ))
+            ENDDO
+         ENDDO  
+      ELSE
+         CALL DZERO(GX,NT1AMX)
+      ENDIF
 C
 C     Compute SUM_i ( i p' | i k )
 C
-      DO 101 ISYMIP = 1, NSYM
-         ISYMIK = ISYMIP
-         IKOFF = NH1AM(ISYMIK) * (NH1AM(ISYMIK) + 1) / 2
-         DO 102 ISYMI = 1, NSYM
-            ISYMP = MULD2H(ISYMI,ISYMIP)
-            ISYMK = ISYMP  
-            DO 201 I = 1, NRHF(ISYMI)
-               NPK = IT1AM(ISYMP,ISYMK)
-               DO 202 K = NRHFFR(ISYMK)+1, NRHFS(ISYMK)
-                  DO 203 P = 1, NVIR(ISYMP)
-                     NPK = NPK + 1
-                     IF (ONEAUX) THEN
-                        IF (P .LE. NORB1(ISYMP)) THEN
-                           NPI = IH1AM(ISYMP,ISYMI)
-     *                         + NORB1(ISYMP)*(I-1) + P
-                           NKI = IH1AM(ISYMK,ISYMI)
-     *                         + NORB1(ISYMK)*(I-1) + K
-                           NPIKI = IH2AM(ISYMIP,ISYMIK)
-     *                           + INDEX(NPI,NKI)  
+celena
+      IF (R12PRP) THEN
+         DO ISYMIP = 1, NSYM
+            ISYMIK = ISYMIP
+            DO ISYMI = 1, NSYM
+               ISYMP = MULD2H(ISYMI,ISYMIP)
+               ISYMK = ISYMP
+               DO I = 1, NRHF(ISYMI)
+                  NPK = IT1vM(ISYMP,ISYMK)
+                  DO K = NRHFFR(ISYMK)+1, NORB1(ISYMK)
+                     DO P = 1, NVIR(ISYMP)
+                        IF (.NOT. ONEAUX) THEN
+                           NPK = NPK + 1
+                           NPI = IT1AM(ISYMP,ISYMI)
+     *                         + NVIR(ISYMP)*(I-1) + P
+                           NKI = IT1AM(ISYMK,ISYMI)
+     *                         + NVIR(ISYMK)*(I-1) + K
+                           NPIKI = IT2AM(ISYMIP,ISYMIK)
+     *                           + INDEX(NPI,NKI)
+                           GX(NPK) = GX(NPK) + V2AM(NPIKI)
+                        ENDIF
+                     ENDDO   
+                  ENDDO    
+               ENDDO   
+            ENDDO    
+         ENDDO    
+ccelena
+      ELSE
+         DO 101 ISYMIP = 1, NSYM
+            ISYMIK = ISYMIP
+            IKOFF = NH1AM(ISYMIK) * (NH1AM(ISYMIK) + 1) / 2
+            DO 102 ISYMI = 1, NSYM
+               ISYMP = MULD2H(ISYMI,ISYMIP)
+               ISYMK = ISYMP  
+               DO 201 I = 1, NRHFA(ISYMI)
+                  NPK = IT1AM(ISYMP,ISYMK)
+                  DO 202 K = NRHFFR(ISYMK)+1, NRHFS(ISYMK)
+                     DO 203 P = 1, NVIR(ISYMP)
+                        NPK = NPK + 1
+                        IF (ONEAUX) THEN
+                           IF (P .LE. NORB1(ISYMP)) THEN
+                              NPI = IH1AM(ISYMP,ISYMI)
+     *                            + NORB1(ISYMP)*(I-1) + P
+                              NKI = IH1AM(ISYMK,ISYMI)
+     *                            + NORB1(ISYMK)*(I-1) + K
+                              NPIKI = IH2AM(ISYMIP,ISYMIK)
+     *                              + INDEX(NPI,NKI)  
+                           ELSE
+                              NPI = IG1AM(ISYMP,ISYMI)
+     *                           + NORB2(ISYMK)*(I-1) + P - NORB1(ISYMP)
+                              NKI = IH1AM(ISYMK,ISYMI)
+     *                            + NORB1(ISYMK)*(I-1) + K
+                              NPIKI = IKOFF + IH2AM(ISYMIP,ISYMIK)
+     *                               + NH1AM(ISYMIK) * (NPI - 1) + NKI
+                           END IF
                         ELSE
-                           NPI = IG1AM(ISYMP,ISYMI)
-     *                         + NORB2(ISYMK)*(I-1) + P - NORB1(ISYMP)
+                           NPI = IT1AM(ISYMP,ISYMI)
+     *                         + NVIR(ISYMP)*(I-1) + P
                            NKI = IH1AM(ISYMK,ISYMI)
-     *                         + NORB1(ISYMK)*(I-1) + K
-                           NPIKI = IKOFF + IH2AM(ISYMIP,ISYMIK)
-     *                           + NH1AM(ISYMIK) * (NPI - 1) + NKI
+     *                         + NVIR(ISYMK)*(I-1) + K
+                           NPIKI = IT2AM(ISYMIP,ISYMIK)
+     *                           + INDEX(NPI,NKI)  
                         END IF
-                     ELSE
-                        NPI = IT1AM(ISYMP,ISYMI)
-     *                      + NVIR(ISYMP)*(I-1) + P
-                        NKI = IT1AM(ISYMK,ISYMI)
-     *                      + NVIR(ISYMK)*(I-1) + K
-                        NPIKI = IT2AM(ISYMIP,ISYMIK)
-     *                        + INDEX(NPI,NKI)  
-                     END IF
-                     GX(NPK) = GX(NPK) + V2AM(NPIKI)
-  203             CONTINUE
-  202          CONTINUE
-  201       CONTINUE 
-  102    CONTINUE
-  101 CONTINUE  
+                        GX(NPK) = GX(NPK) + V2AM(NPIKI)
+  203                CONTINUE
+  202             CONTINUE
+  201          CONTINUE 
+  102       CONTINUE
+  101    CONTINUE  
+      ENDIF
 C
       IF (FROIMP) THEN
 C
 C     Add contribution from frozen orbitals
 C
-         DO 301 ISYMIP = 1, NSYM
-            ISYMIK = ISYMIP
-            DO 302 ISYMI = 1, NSYM
-               ISYMP = MULD2H(ISYMI,ISYMIP)
-               ISYMK = ISYMP 
-               DO 401 I = 1, NRHFFR(ISYMI)
-                  NPK = IT1AM(ISYMP,ISYMK)  
-                  DO 402 K = 1, NRHF(ISYMK)
-                     DO 403 P = 1, NVIR(ISYMP)
-                        NPK = NPK + 1
-                        NKI = IF1FRO(ISYMI,ISYMK)
-     *                      + NRHFFR(ISYMI)*(K-1) + I 
-                        NPI = IT1FRO(ISYMP,ISYMI)
-     *                      + NVIR(ISYMP)*(I-1) + P
-                        NPIKI = IF2FRO(ISYMIP,ISYMIK)
-     *                        + NT1FRO(ISYMIP)*(NKI-1)   
-     *                        + NPI
-                         GX(NPK) = GX(NPK) + F2AM(NPIKI)
-  403             CONTINUE
-  402          CONTINUE
-  401       CONTINUE 
-  302    CONTINUE
-  301 CONTINUE  
+         IF (R12PRP) THEN
+           DO ISYMIP = 1, NSYM
+              ISYMIK = ISYMIP
+              DO ISYMI = 1, NSYM
+                 ISYMP = MULD2H(ISYMI,ISYMIP)
+                 ISYMK = ISYMP
+                 DO I = 1, NRHFFR(ISYMI)
+                    NPK = IT1VM(ISYMP,ISYMK)
+                    DO K = 1, NORB1(ISYMK)-NRHFFR(ISYMK)
+                       DO P = 1, NVIR(ISYMP)
+                          NPK = NPK + 1
+                          NKI = IV1FRO(ISYMI,ISYMK)
+     *                        + NRHFFR(ISYMI)*(K-1) + I
+                          NPI = IT1FRO(ISYMP,ISYMI)
+     *                        + NVIR(ISYMP)*(I-1) + P
+                          NPIKI = IV2FRO(ISYMIP,ISYMIK)
+     *                          + NT1FRO(ISYMIP)*(NKI-1)
+     *                          + NPI
+                          GX(NPK) = GX(NPK) + F2AM(NPIKI)
+                       ENDDO
+                    ENDDO
+                 ENDDO
+              ENDDO
+           ENDDO
+         ELSE
+           DO 301 ISYMIP = 1, NSYM
+              ISYMIK = ISYMIP
+              DO 302 ISYMI = 1, NSYM
+                 ISYMP = MULD2H(ISYMI,ISYMIP)
+                 ISYMK = ISYMP 
+                 DO 401 I = 1, NRHFFR(ISYMI)
+                    NPK = IT1AM(ISYMP,ISYMK)  
+                    DO 402 K = 1, NRHF(ISYMK)
+                       DO 403 P = 1, NVIR(ISYMP)
+                          NPK = NPK + 1
+                          NKI = IF1FRO(ISYMI,ISYMK)
+     *                        + NRHFFR(ISYMI)*(K-1) + I 
+                          NPI = IT1FRO(ISYMP,ISYMI)
+     *                        + NVIR(ISYMP)*(I-1) + P
+                          NPIKI = IF2FRO(ISYMIP,ISYMIK)
+     *                          + NT1FRO(ISYMIP)*(NKI-1)   
+     *                          + NPI
+                          GX(NPK) = GX(NPK) + F2AM(NPIKI)
+  403                  CONTINUE
+  402              CONTINUE
+  401           CONTINUE 
+  302        CONTINUE
+  301       CONTINUE  
+         ENDIF
       END IF   
 C
-      IF (R12OLD) GOTO 700
+  100 CONTINUE
+C
+      IF (R12OLD .OR. R12CBS) GOTO 700
 C
 C     Zero primary block 
 C
       IF (.NOT. R12HYB .OR. (R12HYB .AND. IPBAS .EQ. 2)) THEN
          DO 500 ISYM = 1, NSYM
-            NPK = IT1AM(ISYM,ISYM) + 1
-            DO 501 K = 1, NRHF(ISYM)
-               CALL DZERO(GX(NPK),NORB1(ISYM))
-               NPK = NPK + NVIR(ISYM)
-  501       CONTINUE
+            IF (R12PRP) THEN 
+               NPK = IT1vM(ISYM,ISYM) + 1
+               DO K = 1, NORB1(ISYM)-NRHFFR(ISYM)
+                  CALL DZERO(GX(NPK),NORB1(ISYM))
+                  NPK = NPK + NVIR(ISYM)
+               ENDDO   
+            ELSE
+               NPK = IT1AM(ISYM,ISYM) + 1
+               DO 501 K = 1, NRHF(ISYM)
+                  CALL DZERO(GX(NPK),NORB1(ISYM))
+                  NPK = NPK + NVIR(ISYM)
+  501          CONTINUE
+            ENDIF 
   500    CONTINUE
       END IF
+C
+  700 CONTINUE
 C
 C     Zero secondary block 
 C
       IF (R12HYB .AND. IPBAS .EQ. 1) THEN
          DO 600 ISYM = 1, NSYM
-            NPK = IT1AM(ISYM,ISYM) + NORB1(ISYM) + 1
-            DO 601 K = 1, NRHF(ISYM)
-               CALL DZERO(GX(NPK),NORB2(ISYM))
-               NPK = NPK + NVIR(ISYM)
-  601       CONTINUE
+            IF (R12PRP) THEN
+               NPK = IT1vM(ISYM,ISYM) + NORB1(ISYM)+ 1
+               DO K = 1, NORB1(ISYM)-NRHFFR(ISYM)
+                  CALL DZERO(GX(NPK),NORB2(ISYM))
+                  NPK = NPK + NVIR(ISYM)
+               ENDDO   
+            ELSE 
+               NPK = IT1AM(ISYM,ISYM) + NORB1(ISYM) + 1
+               DO 601 K = 1, NRHF(ISYM)
+                  CALL DZERO(GX(NPK),NORB2(ISYM))
+                  NPK = NPK + NVIR(ISYM)
+  601          CONTINUE
+            ENDIF 
   600    CONTINUE
       END IF 
 C
 C     Print section
 C
-  700 CONTINUE
-C
       IF (IPRINT .GT. 3) THEN
          DO 300 ISYM = 1, NSYM
             IF (NRHF(ISYM)*NVIR(ISYM) .NE. 0) 
      *      WRITE(LUPRI,'(/A,I2)') ' X-MATRIX/ISYM =',ISYM
-            NPK = IT1AM(ISYM,ISYM) + 1
-            CALL OUTPUT(GX(NPK),1,NVIR(ISYM),1,NRHF(ISYM),
-     *                  NVIR(ISYM),NRHF(ISYM),1,LUPRI) 
+            IF (R12PRP) THEN
+               NPK = IT1vM(ISYM,ISYM) + 1
+               CALL OUTPUT(GX(NPK),1,NVIR(ISYM),1,NORB1(ISYM),
+     *                     NVIR(ISYM),NORB1(ISYM),1,LUPRI) 
+            ELSE 
+               NPK = IT1AM(ISYM,ISYM) + 1
+               CALL OUTPUT(GX(NPK),1,NVIR(ISYM),1,NRHF(ISYM),
+     *                     NVIR(ISYM),NRHF(ISYM),1,LUPRI) 
+            ENDIF
   300    CONTINUE
       END IF
       RETURN
@@ -473,18 +683,24 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <ccsdinp.h>
 #include <r12int.h>  
 #include <maxorb.h>
 #include <infinp.h>
       DIMENSION R2AM(*), V2AM(*), U2AM(*), EV(*), WRK(*),
      *          RXRS(*), RXRT(*), S2AM(*), T2AM(*),
-     *          QQ2(*), QQ4(*), QQ6(*)
-      LOGICAL LGLOCAL
+     *          QQ2(*), QQ4(*), QQ6(*),ISB(8)
+      LOGICAL LGLOCAL,FRSWRT
 C
       LGLOCAL = BOYORB.OR.PIPORB
 C
       NOCDIM = NRHFT 
       NICDIM = NRHFTS
+      NACDIM = 0
+      DO ISYM = 1, NSYM
+         NACDIM = NACDIM + NRHFA(ISYM)
+      END DO
+      NAPAIR = NACDIM * (NACDIM + 1) / 2
       NSPAIR = NOCDIM * (NOCDIM + 1) / 2
       NTPAIR = NOCDIM * (NOCDIM - 1) / 2
       NPAIR2 = NSPAIR ** 2
@@ -547,12 +763,36 @@ C
 C
       IENDW = IEVL  + NSPAIR
 C
-      IF (IENDW .GT. LWRK) THEN
-         WRITE(LUPRI,'(A,I20/A,I20)') 
-     *    ' WORK SPACE REQUIRED =  ',IENDW,
-     *    ' WORK SPACE AVAILABLE = ',LWRK
-         CALL QUIT('INSUFFICIENT WORK SPACE IN R12DRV')
+c    Elena  work space allocation for r12grad
+      IF (R12PRP) THEN
+         ISB(1) = 0
+         DO ISYM = 2, NSYM
+            NBASF = NORB1(ISYM-1) + NORB2(ISYM-1)
+            NNBASF = NBASF * (NBASF + 1) / 2
+            ISB(ISYM) = ISB(ISYM-1) + NNBASF
+         ENDDO
+         NBASF = NORB1(NSYM) + NORB2(NSYM)
+         NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2
+
+         IGRAD = IENDW + NNBASF
+         LWRK1 = LWRK  - IGRAD 
+         IF (IGRAD .GT. LWRK) THEN
+            WRITE(LUPRI,'(A,I20/A,I20)') 
+     *      ' WORK SPACE REQUIRED =  ',IGRAD,
+     *      ' WORK SPACE AVAILABLE = ',LWRK
+            CALL QUIT('INSUFFICIENT WORK SPACE IN R12DRV')
+         ENDIF
+c    Elena
+C   
+      ELSE
+         IF (IENDW .GT. LWRK) THEN
+             WRITE(LUPRI,'(A,I20/A,I20)')
+     *       ' WORK SPACE REQUIRED =  ',IENDW,
+     *       ' WORK SPACE AVAILABLE = ',LWRK
+             CALL QUIT('INSUFFICIENT WORK SPACE IN R12DRV')
+         ENDIF
       ENDIF
+
       IF (R12ECO) THEN
          CALL ECODRV(V2AM,R2AM,EV,WRK(IV11),WRK(IB11),WRK(IQ11),
      *               WRK(IVS11),WRK(IVT11),WRK(IWS11),WRK(IWT11),
@@ -579,9 +819,12 @@ C
      *        R2AM,WRK(IFLMAT),WRK(ININ),WRK(III),WRK(IJJ),
      *        WRK(ICS11),WRK(ICT11),WRK(IOLWS),WRK(IOLWT),
      *        WRK(IOLYS),WRK(IOLYT),WRK(IOLZS),WRK(IOLZT),
-     *        WRK(IEVL),LGLOCAL)
+     *        WRK(IEVL),LGLOCAL,WRK(IGRAD),WRK(IENDW),LWRK-IENDW,
+     *        NACDIM,NAPAIR)
       END IF
-      IF (R12OLD .OR. LGLOCAL .OR. NOTTWO) RETURN
+      IF (R12OLD .OR. LGLOCAL .OR. NOTTWO) GOTO 999
+      IANSAZ = 2
+      FRSWRT = .TRUE.
       CALL AROUND('MP2-R12 ansatz := (1 - O1 - O2 + O1*O2) * R12')
       CALL MAKERV(V2AM,R2AM,U2AM,S2AM,T2AM,EV,WRK(IQQ11),
      *     WRK(IV11),WRK(IU11),WRK(IB11),
@@ -592,16 +835,38 @@ C
      *     WRK(IWT11),WRK(IQT11),WRK(IRT11),
      *     NICDIM,NOCDIM,NSPAIR,NTPAIR,
      *     WRK(IES),WRK(IET),WRK(IFS),WRK(IFT),
-     *     WRK(IEVS),WRK(ININV),QQ2,QQ4,QQ6,WRK(ICS11),WRK(ICT11))
+     *     WRK(IEVS),WRK(ININV),QQ2,QQ4,QQ6,WRK(ICS11),WRK(ICT11),
+     *     IANSAZ,FRSWRT,WRK(IENDW),LWRK-IENDW,
+     *     NACDIM,NAPAIR)
+ 999  CONTINUE
+      IF (NOTTRE .OR. R12OLD .OR. LGLOCAL) RETURN
+      IANSAZ = 3
+      FRSWRT = .TRUE.
+      CALL AROUND('MP2-R12 ansatz := '//
+     *            '(1 - V1*V2) * (1 - O1 - O2 + O1*O2) * R12')
+      CALL MAKERV(V2AM,R2AM,U2AM,S2AM,T2AM,EV,WRK(IQQ11),
+     *     WRK(IV11),WRK(IU11),WRK(IB11),
+     *     WRK(IW11),WRK(IQ11),WRK(IR11),
+     *     WRK(IVS11),WRK(IUS11),WRK(IBS11),
+     *     WRK(IWS11),WRK(IQS11),WRK(IRS11),
+     *     WRK(IVT11),WRK(IUT11),WRK(IBT11),
+     *     WRK(IWT11),WRK(IQT11),WRK(IRT11),
+     *     NICDIM,NOCDIM,NSPAIR,NTPAIR,
+     *     WRK(IES),WRK(IET),WRK(IFS),WRK(IFT),
+     *     WRK(IEVS),WRK(ININV),QQ2,QQ4,QQ6,WRK(ICS11),WRK(ICT11),
+     *     IANSAZ,FRSWRT,WRK(IENDW),LWRK-IENDW,
+     *     NACDIM,NAPAIR)
       RETURN
       END
 C  /* Deck makevr */
-      SUBROUTINE MAKEVR(V2AM,R2AM,U2AM,EV,QQ11,V11,U11,B11,W11,Q11,R11,
+      SUBROUTINE MAKEVR(V2AM,R2AM,U2AM,EV,QQ11,V11,U11,B11,W11,Q11,
+     *                  R11,
      *                  VS11,US11,BS11,WS11,QS11,RS11,VT11,UT11,BT11,
      *                  WT11,QT11,RT11,NICDIM,NOCDIM,NSPAIR,NTPAIR,
      *                  ES,ET,FS,FT,EVS,CNINV,RXRS,RXRT,QQ2,QQ4,QQ6,
      *                  TIJAB,FLMAT,NIND,III,JJJ,CS11,CT11,OLWS,OLWT,
-     *                  OLYS,OLYT,OLZS,OLZT,EVL,LGLOCAL)
+     *                  OLYS,OLYT,OLZS,OLZT,EVL,LGLOCAL,GRAD,
+     *                  WORK,LWORK,NACDIM,NAPAIR)
 C
 C     This subroutine computes the V(klmn), X(klmn), and B(klmn)
 C     matrices and evaluates the MP2-R12 energies.
@@ -616,7 +881,7 @@ C
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0,
      *           THRES = 1.0D-10)
       DIMENSION R2AM(*), V2AM(*), U2AM(*), EV(*)
-      DIMENSION TIJAB(*), FLMAT(*)
+      DIMENSION TIJAB(*), FLMAT(*), WORK(*), GRAD(*)
       DIMENSION NIND(NOCDIM,NOCDIM), III(NSPAIR), JJJ(NSPAIR)
       REAL*8  R1, R2, V1, U1, U2, VR, UR, RR,
      *        V11(NOCDIM,NOCDIM,NOCDIM,NOCDIM),
@@ -646,20 +911,38 @@ C
       DIMENSION OLYS(NSPAIR,NSPAIR),OLYT(NSPAIR,NSPAIR)
       DIMENSION OLZS(NSPAIR,NSPAIR),OLZT(NSPAIR,NSPAIR)
       DIMENSION EVL(NSPAIR)
-      INTEGER IDUM
+      INTEGER IDUM,LWORK
       LOGICAL LDUM
       LOGICAL LGLOCAL, LOCRST
       CHARACTER*11 CFN
+      CHARACTER*3 APPROX(0:7,2), IPCC
+      INTEGER NKILJ(8)
 #include <r12int.h>
+#include <ccr12int.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+      DATA APPROX
+     &/"0  ","A  ","A  ","A' ","B  ","B  ","xxx","xxx", 
+     & "0  ","A  ","A  ","A' ","B' ","B' ","B  ","B  "/
+
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
  1001 FORMAT('CSMAT.',I2.2,'.',I2.2)
  1002 FORMAT('CTMAT.',I2.2,'.',I2.2)
+Ckr   We need to have the next two unit numbers in consecutive order, and
+Ckr   thus assign a very large unit number in order to avoid conflicts with 
+Ckr   already open records.\kr-231007\
+Ckr
+      LUMULO = 90
+      LUMULN = 91
+      IF (R12CBS) THEN
+        FACX = - D1
+      ELSE
+        FACX = D1
+      END IF
       DELTA = R12LEV
       FF = D1 / SQRT(D2)
-      LU33 = 33
+      LU33 = -33
       CALL GPOPEN(LU33,'AUXQ12','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ(LU33,'(4E30.20)') QQ11
       CALL GPCLOSE(LU33,'KEEP')
@@ -698,12 +981,13 @@ C
             NCT = NCT + NRHFFR(ISYM)
             NRT = NRT + NORB1(ISYM)
          END DO
-         OPEN(99,FILE='FLOCA',FORM='FORMATTED')
+         LU99 = -99
+         CALL GPOPEN(LU99,'FLOCA','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
          NBASM = (NRT-NCT)*(NRT-NCT+1)/2
          DO I=1,NBASM 
-            READ(99,'(D30.20)') FLMAT(I)
+            READ(LU99,'(D30.20)') FLMAT(I)
          END DO
-         CLOSE(99)
+         CALL GPCLOSE(LU99,'KEEP')
          DO IJ  = 1, NSPAIR
             NI  = III(IJ)
             NJ  = JJJ(IJ)
@@ -722,8 +1006,9 @@ C
             IF (NI.EQ.NJ) FLMAT(NFI) = EVL(IJ) * DP5
          END DO
       END IF
-      IF (IPRINT .GE. 4) THEN
+      IF (IPRINT .GE. 4 .OR. LGLOCAL) THEN
          CALL AROUND('Fock matrix in occupied space') 
+         WRITE(LUPRI,*)
          CALL OUTPAK(FLMAT,NOCDIM,1,LUPRI)
          CALL AROUND('Pairs of orbital energies') 
          CALL OUTPUT(EVL,1,NSPAIR,1,1,NSPAIR,1,1,LUPRI)
@@ -768,6 +1053,7 @@ C
          ICOUNT=1
          CALL DZERO(TIJAB,NH2AMX)
   900    ICONV=0
+         E2 = D0
          DO 701 ISYMIA = 1, NSYM
             ISYMJB = ISYMIA
             DO 702 ISYMI = 1, NSYM
@@ -784,6 +1070,7 @@ C
                            DO 804 B = NRHFS(ISYMB) + 1, NORB1(ISYMB)
                               ISYMIB = MULD2H(ISYMI,ISYMB)
                               KOFFB = IVIR(ISYMB) + B
+                              IF (ONEAUX) THEN
                               NAI = IH1AM(ISYMA,ISYMI) +
      *                              NORB1(ISYMA)*(I-1) + A
                               NBJ = IH1AM(ISYMB,ISYMJ) +
@@ -796,6 +1083,20 @@ C
      *                              NORB1(ISYMB)*(I-1) + B
                               NAJBI = IH2AM(ISYMJA,ISYMIB) +
      *                                INDEX(NAJ,NBI)
+                              ELSE
+                              NAI = IT1AM(ISYMA,ISYMI) +
+     *                              NVIR(ISYMA)*(I-1) + A
+                              NBJ = IT1AM(ISYMB,ISYMJ) +
+     *                              NVIR(ISYMB)*(J-1) + B
+                              NAIBJ = IT2AM(ISYMIA,ISYMJB) +
+     *                                INDEX(NAI,NBJ)
+                              NAJ = IT1AM(ISYMA,ISYMJ) +
+     *                              NVIR(ISYMA)*(J-1) + A
+                              NBI = IT1AM(ISYMB,ISYMI) +
+     *                              NVIR(ISYMB)*(I-1) + B
+                              NAJBI = IT2AM(ISYMJA,ISYMIB) +
+     *                                INDEX(NAJ,NBI)
+                              END IF
                               VAIBJ = V2AM(NAIBJ)
                               VAJBI = V2AM(NAJBI)
                               VV = VAIBJ
@@ -813,10 +1114,17 @@ C
                               DO 902 K = 1, NRHF(ISYMK)
                                  IF ((K.EQ.I).AND.(ISYMI.EQ.ISYMK))
      *                                                     GOTO 902
-                                 NAK = IH1AM(ISYMA,ISYMK) +
-     *                                 NORB1(ISYMA)*(K-1) + A
-                                 NAKBJ = IH2AM(ISYMKA,ISYMJB) +
-     *                                 INDEX(NAK,NBJ)
+                                 IF (ONEAUX) THEN
+                                   NAK = IH1AM(ISYMA,ISYMK) +
+     *                                   NORB1(ISYMA)*(K-1) + A
+                                   NAKBJ = IH2AM(ISYMKA,ISYMJB) +
+     *                                   INDEX(NAK,NBJ)
+                                 ELSE
+                                   NAK = IT1AM(ISYMA,ISYMK) +
+     *                                   NVIR(ISYMA)*(K-1) + A
+                                   NAKBJ = IT2AM(ISYMKA,ISYMJB) +
+     *                                   INDEX(NAK,NBJ)
+                                 END IF
                                  NIK = INDEX(I,K)
                                  XXX = FLMAT(NIK) * TIJAB(NAKBJ)
                                  TKI = TKI + XXX
@@ -829,10 +1137,17 @@ C
                               DO 904 K = 1, NRHF(ISYMK)
                                  IF ((K.EQ.J).AND.(ISYMK.EQ.ISYMJ))
      *                                                     GOTO 904
-                                 NBK = IH1AM(ISYMB,ISYMK) +
-     *                                 NORB1(ISYMB)*(K-1) + B
-                                 NAIBK = IH2AM(ISYMKB,ISYMIA) +
-     *                                 INDEX(NBK,NAI)
+                                 IF (ONEAUX) THEN
+                                   NBK = IH1AM(ISYMB,ISYMK) +
+     *                                   NORB1(ISYMB)*(K-1) + B
+                                   NAIBK = IH2AM(ISYMKB,ISYMIA) +
+     *                                   INDEX(NBK,NAI)
+                                 ELSE
+                                   NBK = IT1AM(ISYMB,ISYMK) +
+     *                                   NVIR(ISYMB)*(K-1) + B
+                                   NAIBK = IT2AM(ISYMKB,ISYMIA) +
+     *                                   INDEX(NBK,NAI)
+                                 END IF
                                  NJK = INDEX(J,K)
                                  XXX = FLMAT(NJK)*TIJAB(NAIBK)
                                  TKJ = TKJ + XXX
@@ -845,10 +1160,17 @@ C
                               DO 906 NC = NRHFS(ISYMC) + 1, NORB1(ISYMC)
                                  IF ((NC.EQ.A).AND.(ISYMA.EQ.ISYMC))
      *                                                     GOTO 906
-                                 NCI = IH1AM(ISYMC,ISYMI) +
-     *                                 NORB1(ISYMC)*(I-1) + NC
-                                 NCIBJ = IH2AM(ISYMIC,ISYMJB) +
-     *                                 INDEX(NCI,NBJ)
+                                 IF (ONEAUX) THEN
+                                   NCI = IH1AM(ISYMC,ISYMI) +
+     *                                   NORB1(ISYMC)*(I-1) + NC
+                                   NCIBJ = IH2AM(ISYMIC,ISYMJB) +
+     *                                   INDEX(NCI,NBJ)
+                                 ELSE
+                                   NCI = IT1AM(ISYMC,ISYMI) +
+     *                                   NVIR(ISYMC)*(I-1) + NC
+                                   NCIBJ = IT2AM(ISYMIC,ISYMJB) +
+     *                                   INDEX(NCI,NBJ)
+                                 END IF
                                  NCA = INDEX(NC-NCT,A-NCT)
                                  XXX = FLMAT(NCA)*TIJAB(NCIBJ)
                                  TKA = TKA + XXX
@@ -861,10 +1183,17 @@ C
                               DO 908 NC = NRHFS(ISYMC) + 1, NORB1(ISYMC)
                                  IF ((NC.EQ.B).AND.(ISYMB.EQ.ISYMC))
      *                                                     GOTO 908
-                                 NCJ = IH1AM(ISYMC,ISYMJ) +
-     *                                 NORB1(ISYMC)*(J-1) + NC
-                                 NAICJ = IH2AM(ISYMJC,ISYMIA) +
-     *                                 INDEX(NCJ,NAI)
+                                 IF (ONEAUX) THEN
+                                   NCJ = IH1AM(ISYMC,ISYMJ) +
+     *                                   NORB1(ISYMC)*(J-1) + NC
+                                   NAICJ = IH2AM(ISYMJC,ISYMIA) +
+     *                                   INDEX(NCJ,NAI)
+                                 ELSE
+                                   NCJ = IT1AM(ISYMC,ISYMJ) +
+     *                                   NVIR(ISYMC)*(J-1) + NC
+                                   NAICJ = IT2AM(ISYMJC,ISYMIA) +
+     *                                   INDEX(NCJ,NAI)
+                                 END IF
                                  NCB = INDEX(NC-NCT,B-NCT)
                                  XXX = FLMAT(NCB)*TIJAB(NAICJ)
                                  TKB = TKB + XXX
@@ -876,8 +1205,10 @@ C
                               NJJ = INDEX(J,J)
                               DENOM = D1 / (FLMAT(NAA) + FLMAT(NBB) -
      *                                      FLMAT(NII) - FLMAT(NJJ))
-                              TIJAB(NAIBJ) = (TKI+ TKJ- TKA- TKB- VV )
-     *                                        * DENOM
+                              TIJAB(NAIBJ) = (TKI+TKJ-TKA-TKB-VV)
+     *                                       * DENOM
+                              VV = (D2 * VAIBJ - VAJBI)
+			      E2 = E2 + VV * TIJAB(NAIBJ)
                               IF (ABS(TIJAB(NAIBJ)-TINI).GT.THRES) 
      *                                                         ICONV = 1
   804                      CONTINUE
@@ -887,16 +1218,20 @@ C
   703          CONTINUE
   702       CONTINUE
   701    CONTINUE
-         IF (ICOUNT.LE.20) THEN
+	 IF (ICOUNT .EQ. 1) WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A,I3,3X,F15.9)') ' ENERGY IN ITERATION',
+     &   ICOUNT,E2
+         IF (ICOUNT.LE.50) THEN
              IF (ICONV.EQ.1) THEN
                  ICOUNT= ICOUNT + 1
                  GOTO 900
              ELSE
-                 WRITE(LUPRI,'(A,I3)') 'FINAL ITERATION OF LOCAL MP2',
+                 WRITE(LUPRI,*)
+                 WRITE(LUPRI,'(A,I3)') ' FINAL ITERATION OF LOCAL MP2',
      &                                                          ICOUNT
              END IF
          ELSE
-            WRITE(LUPRI,'(A)') 'ITERATIONS BIGGER THAN 20'
+            WRITE(LUPRI,'(A)') 'MORE THAN 50 ITERATIONS'
          END IF
       END IF
 C
@@ -915,14 +1250,16 @@ C
 C
 C              COMPUTE MP2 ENERGY
 C
-               DO 201 I = 1, NRHF(ISYMI)
+               DO 201 I = 1, NRHFA(ISYMI)
                   KOFFI = IRHF(ISYMI) + I
-                  DO 202 J = 1, NRHF(ISYMJ)
+                  KOFFIA = IRHFA(ISYMI) + I
+                  DO 202 J = 1, NRHFA(ISYMJ)
                      KOFFJ = IRHF(ISYMJ) + J           
-                     DO 203 A = NRHFS(ISYMA) + 1, NORB1(ISYMA)
+                     KOFFJA = IRHFA(ISYMJ) + J           
+                     DO 203 A = NRHFSA(ISYMA) + 1, NORB1(ISYMA)
                         ISYMJA = MULD2H(ISYMJ,ISYMA)
                         KOFFA = IVIR(ISYMA) + A 
-                        DO 204 B = NRHFS(ISYMB) + 1, NORB1(ISYMB)
+                        DO 204 B = NRHFSA(ISYMB) + 1, NORB1(ISYMB)
                            ISYMIB = MULD2H(ISYMI,ISYMB)
                            KOFFB = IVIR(ISYMB) + B
                            IF (ONEAUX) THEN
@@ -970,7 +1307,7 @@ C CANONICAL MP2
                               VT = (VAIBJ - VAJBI)**2
                            END IF
                            E2 = E2 + VV * DENOM
-                           IJ = INDEX(KOFFI,KOFFJ)
+                           IJ = INDEX(KOFFIA,KOFFJA)
                            ES(IJ) = ES(IJ) + VS * DENOM
                            ET(IJ) = ET(IJ) + VT * DENOM
   204                   CONTINUE
@@ -980,17 +1317,18 @@ C CANONICAL MP2
   103       CONTINUE
   102    CONTINUE
   101 CONTINUE
+      
 C
       IF (LGLOCAL) THEN
 C
 C        WRITE AMPLITUDES AND RESTORE R12 INTEGRALS
 C
-         LU43 = 43
+         LU43 = -43
          CALL GPOPEN(LU43,'TIJAB',
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          WRITE(LU43) (R2AM(I), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')
-         CALL GPOPEN(LU43,'R12R12',
+         CALL GPOPEN(LU43,FR12R12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          READ(LU43) (R2AM(I), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')
@@ -1181,7 +1519,7 @@ C
  1101 CONTINUE
 C
       WRITE(LUPRI,'(/A/)') ' SECOND-ORDER PAIR ENERGIES:'
-      DO 230 I=1,NSPAIR
+      DO 230 I=1,NAPAIR
          IF (LGLOCAL) THEN
              ES(I) = ES(I) * 0.5D0
              ET(I) = ET(I) * 1.5D0
@@ -1254,11 +1592,11 @@ C
 C
                   IF (R12EOR) THEN
                      RR = - D2 *(QQ6(I,J,K,L) + QQ6(I,J,L,K))
-                     RR = RR + (U11(I,J,K,L) + U11(I,J,L,K))
+                     RR = RR + (U11(I,J,K,L) + U11(I,J,L,K)) * FACX
                      RR = RR - (B11(I,J,K,L) + B11(I,J,L,K))
                      DX = D0
                   ELSE
-                     RR =   (U11(I,J,K,L) + U11(I,J,L,K))
+                     RR =   (U11(I,J,K,L) + U11(I,J,L,K)) * FACX
      *                    - (B11(I,J,K,L) + B11(I,J,L,K))
                      DX = D2
                   END IF
@@ -1268,11 +1606,11 @@ C
                   IF (IJ .EQ. KL) BS11(KL,IJ) = BS11(KL,IJ) - DX 
                   IF (R12EOR) THEN
                      RR = - D2 *(QQ6(I,J,K,L) - QQ6(I,J,L,K))
-                     RR = RR + (U11(I,J,K,L) - U11(I,J,L,K))
+                     RR = RR + (U11(I,J,K,L) - U11(I,J,L,K)) * FACX
                      RR = RR - (B11(I,J,K,L) - B11(I,J,L,K))
                      DX = D0
                   ELSE
-                     RR =   (U11(I,J,K,L) - U11(I,J,L,K))
+                     RR =   (U11(I,J,K,L) - U11(I,J,L,K)) * FACX
      *                    - (B11(I,J,K,L) - B11(I,J,L,K))
                      DX = D2
                   END IF
@@ -1282,12 +1620,12 @@ C
 C
                   IF (R12EOR) THEN
                      RR =      (QQ2(I,J,K,L) + QQ2(I,J,L,K))
-                     RR = RR + (V11(I,J,K,L) + V11(I,J,L,K))
+                     RR = RR + (V11(I,J,K,L) + V11(I,J,L,K)) * FACX
                      RR = RR - (W11(I,J,K,L) + W11(I,J,L,K))
                      DX = D0
                   ELSE
-                     RR =   (V11(I,J,K,L) + V11(I,J,L,K))
-     *                    - (W11(I,J,K,L) + W11(I,J,L,K))
+                     RR =    (V11(I,J,K,L) + V11(I,J,L,K)) * FACX
+     *                     - (W11(I,J,K,L) + W11(I,J,L,K))
                      DX = D1
                   END IF
                   WS11(KL,IJ) = RR
@@ -1296,11 +1634,11 @@ C
                   IF (IJ .EQ. KL) WS11(KL,IJ) = WS11(KL,IJ) + DX 
                   IF (R12EOR) THEN
                      RR =      (QQ2(I,J,K,L) - QQ2(I,J,L,K))
-                     RR = RR + (V11(I,J,K,L) - V11(I,J,L,K))
+                     RR = RR + (V11(I,J,K,L) - V11(I,J,L,K)) * FACX
                      RR = RR - (W11(I,J,K,L) - W11(I,J,L,K))
                      DX = D0
                   ELSE
-                     RR =   (V11(I,J,K,L) - V11(I,J,L,K))
+                     RR =   (V11(I,J,K,L) - V11(I,J,L,K)) * FACX
      *                    - (W11(I,J,K,L) - W11(I,J,L,K))
                      DX = D1
                   END IF
@@ -1325,14 +1663,16 @@ C
                   QT11(KL,IJ) = RR
 C
                   RR = QQIJKL + QQIJLK
-                  RR = RR + (Q11(I,J,K,L) + Q11(I,J,L,K))
+                  RR = RR + (Q11(I,J,K,L) + Q11(I,J,L,K)) * FACX
      *                    - (R11(I,J,K,L) + R11(I,J,L,K))
+ccn                  rr = + (Q11(I,J,K,L) + Q11(I,J,L,K)) * FACX
                   RS11(KL,IJ) = RR
                   IF (I .EQ. J) RS11(KL,IJ) = FF * RS11(KL,IJ)
                   IF (K .EQ. L) RS11(KL,IJ) = FF * RS11(KL,IJ)
                   RR = QQIJKL - QQIJLK
-                  RR = RR + (Q11(I,J,K,L) - Q11(I,J,L,K))
+                  RR = RR + (Q11(I,J,K,L) - Q11(I,J,L,K)) * FACX
      *                    - (R11(I,J,K,L) - R11(I,J,L,K))
+ccn                  rr = + (Q11(I,J,K,L) - Q11(I,J,L,K)) * FACX
                   RT11(KL,IJ) = RR
 C 
                   US11(KL,IJ) = US11(KL,IJ) * DP5 * DP25
@@ -1363,34 +1703,38 @@ C
          CALL DCOPY(NSPAIR*NSPAIR,QT11,1,RT11,1)
       ENDIF
 C
+      CALL VSHRNK(VS11,NSPAIR,NRHF,NRHFA,NSYM)
+      CALL VSHRNK(VT11,NSPAIR,NRHF,NRHFA,NSYM)
+      CALL VSHRNK(WS11,NSPAIR,NRHF,NRHFA,NSYM)
+      CALL VSHRNK(WT11,NSPAIR,NRHF,NRHFA,NSYM)
+C
       IF (IPRINT .LE. 3) GOTO 998
       CALL AROUND('OLD singlet <V> matrix') 
-      CALL OUTPUT(VS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL OUTPUT(VS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('OLD singlet <B> matrix') 
       CALL OUTPUT(US11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('OLD singlet <S> matrix') 
       CALL OUTPUT(QS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('OLD triplet <V> matrix') 
-      CALL OUTPUT(VT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL OUTPUT(VT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('OLD triplet <B> matrix') 
       CALL OUTPUT(UT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('OLD triplet <S> matrix') 
       CALL OUTPUT(QT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       IF (R12OLD) GOTO 998
       CALL AROUND('NEW singlet <V> matrix') 
-      CALL OUTPUT(WS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL OUTPUT(WS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW singlet <B> matrix') 
       CALL OUTPUT(BS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW singlet <S> matrix') 
       CALL OUTPUT(RS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW triplet <V> matrix') 
-      CALL OUTPUT(WT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL OUTPUT(WT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW triplet <B> matrix') 
       CALL OUTPUT(BT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('NEW triplet <S> matrix') 
       CALL OUTPUT(RT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-  998 LUMULO = 34
-      LUMULN = LUMULO + 1
+  998 CONTINUE
       CALL GPOPEN (LUMULO,'AOR12O','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN (LUMULN,'AOR12N','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       WRITE(LUMULO,'(4E30.20)') VS11
@@ -1406,9 +1750,9 @@ C
       WRITE(LUMULN,'(4E30.20)') BT11
       WRITE(LUMULN,'(4E30.20)') RT11
 C
-      LU43 = 43
-      LU44 = 44
-      LU45 = 45
+      LU43 = -43
+      LU44 = -44
+      LU45 = -45
       IF (R12OLD) THEN
         LUMULA = LUMULO
         LUMULE = LUMULO  
@@ -1423,7 +1767,7 @@ C
       DO 999 LUMULX = LUMULA, LUMULE
       IF (LUMULX .EQ. LUMULO) THEN
         CALL AROUND('Original MP2-R12 method')
-        IF (.NOT. R12NOB) THEN
+        IF (.NOT. R12NOB .OR. NATVIR) THEN
           CALL GPOPEN(LU43,'QMATSO','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
           READ(LU43,'(4E30.20)') US11
           CALL GPCLOSE(LU43,'KEEP')
@@ -1433,7 +1777,7 @@ C
         END IF
       ELSE
         CALL AROUND('Auxiliary-basis MP2-R12 method')
-        IF (.NOT. R12NOB) THEN
+        IF (.NOT. R12NOB .OR. NATVIR) THEN
           CALL GPOPEN(LU43,'QMATSN','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
           READ(LU43,'(4E30.20)') US11
           CALL GPCLOSE(LU43,'KEEP')
@@ -1461,55 +1805,102 @@ C
       READ(LUMULX,'(4E30.20)') RT11
       LUM = LUMULX
       CALL GPCLOSE(LUM,'KEEP')
+celena
+      IF (R12PRP) THEN
+          CALL GPOPEN(LU43,'CCR12_XP','UNKNOWN',' ','FORMATTED',
+     &                IDUM,LDUM)
+          WRITE(LU43,'(I3)') 1
+          WRITE(LU43,'(4E30.20)') RS11
+          WRITE(LU43,'(4E30.20)') RT11
+          CALL GPCLOSE(LU43,'KEEP')
+       ENDIF
+celena
+
+c     Write out V-matrix, etc. for CC2-R12 model (HF/UniKA/02-05-2003).
+c     modified by C. Neiss: no not use singlet/triplet format any more,
+c     make intermediates compatible with correlation factor r_12 (and 
+c     not 0.5*r_12 as in the MP2-R12 code)!
+c     (April 2005)
 c
-c     Write out V-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
+      IF (CCR12) THEN
+        KSCR = 1
+        KEND1 = KSCR + NGAMMA(1) !NGAMMA(1) in MP2-R12 >= NKILJ
+c       WRITE(LUPRI,*) 'NGAMMA(1) in CC_R12: ', NGAMMA(1)
+        IF (NGAMMA(1) .gt. LWORK) THEN
+          CALL QUIT('Insufficient WORK space in MAKEVR')
+        END IF
+        CALL DSCAL(NSPAIR*NSPAIR,2.0D0,WS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,2.0D0,WT11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,WT11,1)
+        CALL CCR12PCK(WORK(KSCR),1,WS11,WT11,NRHF,NRHFA,NKILJ)
+c       WRITE(LUPRI,*) 'VIJKL written in MP2R12:'
+c       CALL CC_PRPR12(WORK(KSCR),1,1,.FALSE.)
+        CALL GPOPEN(LU43,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUM,LDUM)
+        WRITE(LU43) 1
+        WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1))
+        CALL GPCLOSE(LU43,'KEEP')  
+        ! undo scaling
+        CALL DSCAL(NSPAIR*NSPAIR,3.0D0,WT11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.5D0,WS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.5D0,WT11,1)
 c
-      CALL GPOPEN(LU43,'CCR12_V','UNKNOWN',' ','FORMATTED',
-     &                   IDUM,LDUM)
-      WRITE (LU43,'(A8)') 'NOTEOFLB'
-      WRITE(LU43,'(I3)') 1
-      WRITE(LU43,'(4E30.20)') WS11
-      WRITE(LU43,'(4E30.20)') WT11
-      WRITE (LU43,'(A8)') 'EOFLABEL'
-      CALL GPCLOSE(LU43,'KEEP')
+c       Write out X-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
-c     Write out X-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
+        CALL DSCAL(NSPAIR*NSPAIR,4.0D0,RS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,4.0D0,RT11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,RT11,1)
+        CALL CCR12PCK(WORK(KSCR),1,RS11,RT11,NRHF,NRHF,NKILJ)
+        CALL GPOPEN(LU43,FCCR12X,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUM,LDUM)
+        WRITE(LU43) 1
+        WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1))
+        CALL GPCLOSE(LU43,'KEEP')
+        ! undo scaling
+        CALL DSCAL(NSPAIR*NSPAIR,3.0D0,RT11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.25D0,RS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.25D0,RT11,1)
 c
-      CALL GPOPEN(LU43,'CCR12_X','UNKNOWN',' ','FORMATTED',
-     &                   IDUM,LDUM)
-      WRITE (LU43,'(A8)') 'NOTEOFLB'
-      WRITE(LU43,'(I3)') 1
-      WRITE(LU43,'(4E30.20)') RS11
-      WRITE(LU43,'(4E30.20)') RT11
-      WRITE (LU43,'(A8)') 'EOFLABEL'
-      CALL GPCLOSE(LU43,'KEEP')
+c       Write out orbital energies for CC2-R12 model (HF/UniKA/02-05-2003).
 c
-c    Write out orbital energies for CC2-R12 model (HF/UniKA/02-05-2003).
-c
-      CALL GPOPEN(LU43,'CCR12_E','UNKNOWN',' ','FORMATTED',
-     &                   IDUM,LDUM)
-      WRITE(LU43,'(4E30.20)') EVL
-      CALL GPCLOSE(LU43,'KEEP')
+        CALL GPOPEN(LU43,FCCR12E,'UNKNOWN',' ','FORMATTED',
+     &           IDUM,LDUM)
+        WRITE(LU43,'(4E30.20)') EVL
+        CALL GPCLOSE(LU43,'KEEP')
+      END IF
 c        
 c     Open files for B and C (HF/UniKA/25-06-2003).
 c
-      IF (LUMULA .EQ. LUMULX) THEN
-         CALL GPOPEN(LU44,'CCR12_B','UNKNOWN',' ','FORMATTED',
-     &                    IDUM,LDUM)
-         CALL GPOPEN(LU45,'CCR12_D','UNKNOWN',' ','FORMATTED',
-     &                    IDUM,LDUM)
+      IF (CCR12 .AND. (LUMULA .EQ. LUMULX)) THEN
+        CALL GPOPEN(LU44,FCCR12B,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUM,LDUM)
+        CALL GPOPEN(LU45,FCCR12D,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUM,LDUM)
       END IF
 C
-      DO 999 IPDD = 1, 7
-      IF (IPDD .EQ. 4) THEN
-        IF (.NOT. R12NOB) THEN
-          DO I = 1, NSPAIR
-            DO J = 1, NSPAIR
-              BS11(I,J) = BS11(I,J) - US11(I,J)
-              BT11(I,J) = BT11(I,J) - UT11(I,J)
-            END DO
-          END DO
+      DO 999 IPDD = 0, 7
+chf
+        IF (R12HYB .OR. NORXR) THEN
+          IPCC = APPROX(IPDD,1)
+        ELSE
+          IPCC = APPROX(IPDD,2)
         END IF
+chf
+      IF (NATVIR .AND. IPDD .EQ. 3) THEN
+        DO I = 1, NSPAIR
+          DO J = 1, NSPAIR
+            BS11(I,J) = BS11(I,J) - US11(I,J)
+            BT11(I,J) = BT11(I,J) - UT11(I,J)
+          END DO
+        END DO
+      END IF
+      IF (IPDD .EQ. 4 .AND. .NOT. NATVIR .AND. .NOT. R12NOB) THEN
+        DO I = 1, NSPAIR
+          DO J = 1, NSPAIR
+            BS11(I,J) = BS11(I,J) - US11(I,J)
+            BT11(I,J) = BT11(I,J) - UT11(I,J)
+          END DO
+        END DO
       END IF
       IF (IPDD .EQ. 6) THEN
         IF (.NOT. R12NOB .AND..NOT. NORXR .AND. LUMULX .EQ. LUMULN) THEN
@@ -1532,7 +1923,11 @@ C
       IF (IPDD .EQ. 3 .AND. R12NOP) GOTO 999
       IF (IPDD .GE. 4 .AND. R12NOB) GOTO 999
       IF (IPDD .GE. 6 .AND. (LUMULX .EQ. LUMULO .OR. NORXR)) GOTO 999 
-      IF (IPDD .EQ. 1) THEN
+      IF (IPDD .EQ. 0) THEN
+         XPDD = D0
+         WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/0'//
+     *                   ' PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:'
+      ELSE IF (IPDD .EQ. 1) THEN
         XPDD = D0
         WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/A'//
      *                   ' PAIR ENERGIES:'
@@ -1573,14 +1968,22 @@ C
 c
 c     Write out B-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
-      WRITE (LU44,'(A8)') 'NOTEOFLB'
-      IF (LUMULX .EQ. LUMULO) THEN
-         WRITE(LU44,'(2I3)') 0,IPDD
-      ELSE
-         WRITE(LU44,'(2I3)') 1,IPDD
+      IF (CCR12) THEN 
+        IF (LUMULX .EQ. LUMULO) THEN
+          WRITE(LU44) 0,IPDD,IPCC
+        ELSE
+          WRITE(LU44) 1,IPDD,IPCC
+        END IF
+        CALL DSCAL(NSPAIR*NSPAIR,4.0D0,BS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,4.0D0,BT11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,BT11,1)
+        CALL CCR12PCK(WORK(KSCR),1,BS11,BT11,NRHF,NRHF,NKILJ)
+        WRITE(LU44) (WORK(KSCR-1+I), I=1, NKILJ(1))
+        ! undo scaling
+        CALL DSCAL(NSPAIR*NSPAIR,3.0D0,BT11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.25D0,BS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.25D0,BT11,1)
       END IF
-      WRITE(LU44,'(4E30.20)') BS11
-      WRITE(LU44,'(4E30.20)') BT11
 C
 C CCMS
 C   
@@ -1621,7 +2024,7 @@ C
       F2S = D0
       F2T = D0
       IJ = 0
-      DO 500 I = 1, NOCDIM
+      DO 500 I = 1, NACDIM
          DO 501 J = 1, I
             IJ = IJ + 1
             IF (ITER .EQ. 0) THEN
@@ -1657,16 +2060,16 @@ C
             F2T = F2T + FT(IJ) 
   501    CONTINUE
   500 CONTINUE 
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 4) THEN
          CALL AROUND('Singlet <C> matrix') 
-         CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         CALL OUTPUT(CS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
          CALL AROUND('Triplet <C> matrix') 
-         CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         CALL OUTPUT(CT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
       END IF
       CSALLI = CSALL
       CTALLI = CTALL
-      CSALL = DDOT(NSPAIR*NSPAIR,CS11,1,CS11,1)
-      CTALL = DDOT(NSPAIR*NSPAIR,CT11,1,CT11,1)
+      CSALL = DDOT(NSPAIR*NAPAIR,CS11,1,CS11,1)
+      CTALL = DDOT(NSPAIR*NAPAIR,CT11,1,CT11,1)
       CSALL = SQRT(CSALL)
       CTALL = SQRT(CTALL)
 C
@@ -1683,7 +2086,7 @@ C         IF (ABS(F2S-F2SI).GT.1.0d-10.OR.ABS(F2T-F2TI).GT.1.0d-10) THEN
             WRITE(LUPRI,'(I3,A,6F15.9/)') ITER,'@@',
      *                                         E2S,E2S+F2S,E2T,E2T+F2T,
      *                                         CSALL, CTALL
-            DO IJ = 1, NSPAIR
+            DO IJ = 1, NAPAIR
               WRITE(LUPRI,'(I4,4F15.9,2G16.6)') IJ,ES(IJ),ES(IJ)+FS(IJ),
      *                                             ET(IJ),ET(IJ)+FT(IJ),
      *                                             WSMIN,WTMIN
@@ -1695,9 +2098,9 @@ C         IF (ABS(F2S-F2SI).GT.1.0d-10.OR.ABS(F2T-F2TI).GT.1.0d-10) THEN
       END IF
       IF (IPRINT .GE. 4) THEN
          CALL AROUND('Singlet <C> matrix') 
-         CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         CALL OUTPUT(CS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
          CALL AROUND('Triplet <C> matrix') 
-         CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         CALL OUTPUT(CT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
       END IF
       WRITE(CFN,1001) IPDD,LUMULX
       CALL GPOPEN(LU43,CFN,'UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -1717,34 +2120,55 @@ C
       F2S = D0
       F2T = D0
       IJ = 0
-      DO 511 I = 1, NOCDIM
-         DO 512 J = 1, I
+      JI = 0
+      II = 0
+      DO 511 ISYM = 1, NSYM
+      DO 511 I = 1, NRHF(ISYM)
+         II = II + 1
+	 JJ = 0
+         DO 512 JSYM = 1, NSYM
+         DO 512 J = 1, NRHF(JSYM)
+	    JJ = JJ + 1
+            IF (JJ .GT. II) GOTO 512
+            JI = JI + 1
+            IF (I .GT. NRHFA(ISYM) .OR.
+     *          J .GT. NRHFA(JSYM)) GOTO 512
             IJ = IJ + 1
-            CNINV(IJ,1) = WS11(IJ,IJ)
-            CNINV(IJ,2) = BS11(IJ,IJ)
-            CNINV(IJ,9) = -BS11(IJ,IJ) / RS11(IJ,IJ)
-            IF (CNINV(IJ,2) .LT. -VCLTHR) THEN
-               CNINV(IJ,3) = CNINV(IJ,1) / CNINV(IJ,2)
+            CNINV(IJ,1) = WS11(JI,IJ)
+            CNINV(IJ,2) = BS11(JI,JI)
+            CNINV(IJ,9) = -BS11(JI,JI) / RS11(JI,JI)
+            IF (IPDD .EQ. 0) THEN
+               CNINV(IJ,3) = 1D0
+               CNINV(IJ,4) = 2D0*WS11(JI,IJ) - BS11(JI,JI)
             ELSE
-               WRITE(LUPRI,'(/A,E15.8,I4/)')
-     &       ' @ WARNING: NEGATIVE DIAGONAL ELEMENT OF SINGLET'//
-     &       ' B MATRIX',CNINV(IJ,2),IJ
-               CNINV(IJ,3) = D0
-            END IF
-            CNINV(IJ,4) = CNINV(IJ,1) * CNINV(IJ,3)
-            IF (I .NE. J) THEN
-               CNINV(IJ,5) = WT11(IJ,IJ)
-               CNINV(IJ,6) = BT11(IJ,IJ)
-               CNINV(IJ,10) = -BT11(IJ,IJ) / RT11(IJ,IJ)
-               IF (CNINV(IJ,6) .LT. -VCLTHR) THEN
-                  CNINV(IJ,7) = CNINV(IJ,5) / CNINV(IJ,6)
+               IF (CNINV(IJ,2) .LT. -VCLTHR) THEN
+                  CNINV(IJ,3) = CNINV(IJ,1) / CNINV(IJ,2)
                ELSE
-            WRITE(LUPRI,'(/A,E15.8,I4/)')
-     &       ' @ WARNING: NEGATIVE DIAGONAL ELEMENT OF TRIPLET'//
-     &       ' B MATRIX',CNINV(IJ,6),IJ
-                  CNINV(IJ,7) = D0
+                  WRITE(LUPRI,'(/A,E15.8,I4/)')
+     &          ' @ WARNING: NEGATIVE DIAGONAL ELEMENT OF SINGLET'//
+     &          ' B MATRIX',CNINV(IJ,2),IJ
+                  CNINV(IJ,3) = D0
                END IF
-               CNINV(IJ,8) = CNINV(IJ,5) * CNINV(IJ,7)
+               CNINV(IJ,4) = CNINV(IJ,1) * CNINV(IJ,3)
+            END IF
+            IF (II .NE. JJ) THEN
+               CNINV(IJ,5) = WT11(JI,IJ)
+               CNINV(IJ,6) = BT11(JI,JI)
+               CNINV(IJ,10) = -BT11(JI,JI) / RT11(JI,JI)
+               IF (IPDD .EQ. 0) THEN
+                   CNINV(IJ,7) = 0.5D0
+                   CNINV(IJ,8) = WT11(JI,IJ) - 0.25D0*BT11(JI,JI)
+               ELSE
+                  IF (CNINV(IJ,6) .LT. -VCLTHR) THEN
+                     CNINV(IJ,7) = CNINV(IJ,5) / CNINV(IJ,6)
+                  ELSE
+                     WRITE(LUPRI,'(/A,E15.8,I4/)')
+     &             ' @ WARNING: NEGATIVE DIAGONAL ELEMENT OF TRIPLET'//
+     &             ' B MATRIX',CNINV(IJ,6),IJ
+                     CNINV(IJ,7) = D0
+                  END IF
+                  CNINV(IJ,8) = CNINV(IJ,5) * CNINV(IJ,7)
+               END IF
             ELSE
                CNINV(IJ,5) = D0
                CNINV(IJ,6) = D0
@@ -1754,15 +2178,15 @@ C
             END IF
             FS(IJ) = CNINV(IJ,4)
             FT(IJ) = CNINV(IJ,8)
-            IF (IPDD .NE. 1 .AND. IPDD .NE. 4 .AND. IPDD .NE. 6) THEN
+            IF (IPDD .GT. 1 .AND. IPDD .NE. 4 .AND. IPDD .NE. 6) THEN
               IF (R12SVD) THEN
                 CALL R12MP2(WS11(1,IJ),WT11(1,IJ),WS11(1,IJ),WT11(1,IJ),
-     *          RS11,RT11,EVS(IJ),NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,
+     *          RS11,RT11,EVS(JI),NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,
      *          QS11,QT11,BS11,BT11,EVS,XPDD,QQ11,IJ,WSMIN,WTMIN,D0,
      *                                            CS11(1,IJ),CT11(1,IJ))
               ELSE IF (R12DIA) THEN
                 CALL MP2R12(WS11(1,IJ),WT11(1,IJ),WS11(1,IJ),WT11(1,IJ),
-     *          RS11,RT11,EVS(IJ),NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,
+     *          RS11,RT11,EVS(JI),NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,
      *          QS11,QT11,BS11,BT11,EVS,XPDD,QQ11,IJ,WSMIN,WTMIN,D0,
      *                                            CS11(1,IJ),CT11(1,IJ))
               ELSE
@@ -1788,14 +2212,20 @@ C
 c
 c     Write out amplitudes for CC2-R12 model (HF/UniKA/25-06-2003).
 c
-      WRITE (LU45,'(A8)') 'NOTEOFLB'
-      IF (LUMULX .EQ. LUMULO) THEN
-         WRITE(LU45,'(2I3)') 0,IPDD
-      ELSE
-         WRITE(LU45,'(2I3)') 1,IPDD
+      IF (CCR12) THEN
+        IF (LUMULX .EQ. LUMULO) THEN
+          WRITE(LU45) 0,IPDD,IPCC
+        ELSE
+          WRITE(LU45) 1,IPDD,IPCC
+        END IF
+        CALL DSCAL(NSPAIR*NSPAIR,0.5D0,CS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,0.5D0,CT11,1)
+        CALL CCR12PCK(WORK(KSCR),1,CS11,CT11,NRHF,NRHFA,NKILJ)
+        WRITE(LU45) (WORK(KSCR-1+I), I=1, NKILJ(1))
+        ! undo scaling:
+        CALL DSCAL(NSPAIR*NSPAIR,2.0D0,CS11,1)
+        CALL DSCAL(NSPAIR*NSPAIR,2.0D0,CT11,1)
       END IF
-      WRITE(LU45,'(4E30.20)') CS11
-      WRITE(LU45,'(4E30.20)') CT11
 c
       WRITE(CFN,1001) IPDD,LUMULX
       CALL GPOPEN(LU43,CFN,'UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -1806,14 +2236,29 @@ c
       WRITE(LU43,'(4E30.20)') CT11
       CALL GPCLOSE(LU43,'KEEP')
 c
-      IF (IPDD .EQ. 1) THEN
+      IF (IPDD .EQ. 0) THEN
+         WRITE(LUPRI,'(/A,F15.9//A/)')
+     * ' Noninvariant MP2-R12/0   correlation energy =',
+     *   E2S+E2T+F2S+F2T,
+     * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
+     *     '    V(IJ)       U(IJ)       C(IJ)   '
+         IJ = 0
+         DO I = 1, NACDIM
+            DO J = 1, I
+            IJ = IJ + 1
+            WRITE(LUPRI,'(I4,8E12.4)') IJ,(CNINV(IJ,K),K=1,3),
+     *                                (CNINV(IJ,K),K=5,7),CNINV(IJ,9),
+     *                                 CNINV(IJ,10)
+            END DO
+         END DO
+      ELSE IF (IPDD .EQ. 1) THEN
          WRITE(LUPRI,'(/A,F15.9//A/)') 
      * ' Noninvariant MP2-R12/A   correlation energy =',
      *   E2S+E2T+F2S+F2T,
      * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
      *     '    V(IJ)       U(IJ)       C(IJ)   '
          IJ = 0
-         DO 600 I = 1, NOCDIM
+         DO 600 I = 1, NACDIM
             DO 601 J = 1, I       
             IJ = IJ + 1
             WRITE(LUPRI,'(I4,8E12.4)') IJ,(CNINV(IJ,K),K=1,3),
@@ -1822,16 +2267,63 @@ c
   601       CONTINUE
   600    CONTINUE
       ELSE IF (IPDD .EQ. 2) THEN
-         IF (IPRINT .GE. 4) THEN
-            CALL AROUND('Singlet <C> matrix') 
+          IF (IPRINT .GE. 4) THEN
+c
+c    Print MP2-R12/A -Ansatz 1- amplitudes for 
+c
+            CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A)') 
             CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-            CALL AROUND('Triplet <C> matrix') 
+            CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A)') 
             CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+          ENDIF
+c
+c    Write out amplitudes for MP2-R12-Gradient(Elena) 
+c
+         LUNIT = -1
+         IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
+           LUNIT = -1
+           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &                 IDUM,LDUM)
+           WRITE(LUNIT,'(4E30.20)') CS11
+           WRITE(LUNIT,'(4E30.20)') CT11
+           CALL GPCLOSE(LUNIT,'KEEP')
+C
+           CALL CC_R12GRAD(IPDD,EV,V2AM,GRAD,LWORK)
+           IF (FROIMP) THEN
+              CALL CC_R12GRADFR(IPDD,EV,V2AM,GRAD,LWORK)
+           END IF
          END IF
+c
+cElena  
+
          WRITE(LUPRI,'(/A,F15.9 )') 
      * '              MP2-R12/A   correlation energy =',
      *   E2S+E2T+F2S+F2T
       ELSE IF (IPDD .EQ. 3) THEN 
+
+         LUNIT = -1
+         IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
+            IF (IPRINT .GE. 4) THEN
+              CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A'')')
+              CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+              CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A'')')
+              CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+           END IF
+           LUNIT = -1
+           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &                 IDUM,LDUM)
+           WRITE(LUNIT,'(4E30.20)') CS11
+           WRITE(LUNIT,'(4E30.20)') CT11
+           CALL GPCLOSE(LUNIT,'KEEP')
+c           KEND1 = 1
+c           LWRK1 = LWORK - KEND1
+
+           CALL CC_R12GRAD(IPDD,EV,V2AM,GRAD,LWORK)
+           IF (FROIMP) THEN
+              CALL CC_R12GRADFR(IPDD,EV,V2AM,GRAD,LWORK)
+           END IF
+         END IF
+c
          WRITE(LUPRI,'(/A,F15.9 )') 
      * '              MP2-R12/A''  correlation energy =',
      *   E2S+E2T+F2S+F2T
@@ -1850,7 +2342,7 @@ c
      *        '    V(IJ)       U(IJ)       C(IJ)   '
          END IF
          IJ = 0
-         DO 602 I = 1, NOCDIM
+         DO 602 I = 1, NACDIM
             DO 603 J = 1, I       
             IJ = IJ + 1
             WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
@@ -1859,6 +2351,25 @@ c
   602    CONTINUE
       ELSE IF (IPDD .EQ. 5) THEN
          IF (R12HYB .OR. (LUMULX .EQ. LUMULO)) THEN
+            IF (IPRINT. GE. 4) THEN
+              CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/B)')
+              CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+              CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/B)')
+              CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+            END IF
+            LUNIT = -1
+            IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
+              LUNIT = -1
+              CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &                    IDUM,LDUM)
+              WRITE(LUNIT,'(4E30.20)') CS11
+              WRITE(LUNIT,'(4E30.20)') CT11
+              CALL GPCLOSE(LUNIT,'KEEP')
+              CALL CC_R12GRAD(IPDD,EV,V2AM,GRAD,LWORK)
+              IF (FROIMP) THEN
+                  CALL CC_R12GRADFR(IPDD,EV,V2AM,GRAD,LWORK)
+              END IF
+            ENDIF
             WRITE(LUPRI,'(/A,F15.9 )')
      *    '              MP2-R12/B   correlation energy =',
      *      E2S+E2T+F2S+F2T    
@@ -1874,7 +2385,7 @@ c
      * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
      *     '    V(IJ)       U(IJ)       C(IJ)   '
          IJ = 0
-         DO 604 I = 1, NOCDIM
+         DO 604 I = 1, NACDIM
             DO 605 J = 1, I
             IJ = IJ + 1
             WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
@@ -1887,10 +2398,10 @@ c
      *   E2S+E2T+F2S+F2T  
       END IF
   999 CONTINUE
-      WRITE (LU44,'(A8)') 'EOFLABEL'
-      WRITE (LU45,'(A8)') 'EOFLABEL'
-      CALL GPCLOSE(LU44,'KEEP')
-      CALL GPCLOSE(LU45,'KEEP')
+      IF (CCR12) THEN
+        CALL GPCLOSE(LU44,'KEEP')
+        CALL GPCLOSE(LU45,'KEEP')
+      ENDIF
       RETURN
       END
 C  /* Deck mp2r12 */
@@ -1916,6 +2427,7 @@ C
       DIMENSION VOS(NSPAIR,NSPAIR),VOT(NSPAIR,NSPAIR)
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
+
       N12 = NSPAIR * (NSPAIR + 1) / 2
       N2 = NSPAIR * NSPAIR
       WS = D99
@@ -2170,7 +2682,7 @@ C
       RETURN
       END
 C  /* Deck makeug */
-      SUBROUTINE MAKEUG(GX,UG,QQ,WORK,LWORK,IPBAS)
+      SUBROUTINE MAKEUG(GX,UG,QQ,QV,WORK,LWORK,IPBAS)
 C
 C     This subroutine computes the orbitals i' by means
 C     of the matrix product |i'> = Sum_p' X(p'i) |p'>.
@@ -2183,7 +2695,7 @@ C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION GX(*), UG(*), WORK(*), QQ(*)
+      DIMENSION GX(*), UG(*), WORK(*), QQ(*),QV(*)
       CHARACTER*7 GUNAM
       INTEGER IDUM
       LOGICAL LDUM
@@ -2193,14 +2705,38 @@ C
 #include <r12int.h>
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J    
 C
+celena
+      NORB1T = 0
+      NORB2T = 0
+      NRHFST = 0
+      DO ISYM = 1, NSYM
+         NORB1T = NORB1T + NORB1(ISYM)
+         NORB2T = NORB2T + NORB2(ISYM)
+         NRHFST = NRHFST + NRHFS(ISYM)
+      ENDDO   
+      LUSIRG = -1
+      CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,LDUM)
+      REWIND LUSIRG
+
+      CALL MOLLAB(LABEL,LUSIRG,LUPRI)
+      READ (LUSIRG)
+C
+      READ (LUSIRG)
+      READ (LUSIRG) (WORK(i), I=1,NLAMDS)
+C
+      CALL GPCLOSE(LUSIRG,'KEEP')
+
+
+      
+celena
+
       NOCCT = NRHFT
-      LUSIRG = 30
-      IF ((NLAMDS + 2*NOCCT*NBAST + 14*NOCCT*NOCCT) .GT. LWORK)
-     *CALL STOPIT('MAKEUG',' ',LWORK,NLAMDS + 2*NOCCT*NBAST 
-     *                             + 14*NOCCT*NOCCT)
+      LUSIRG = -30
+      KEND = NLAMDS + 2*NOCCT*NBAST + 14*NOCCT*NOCCT + 1
+      IF (KEND .GT. LWORK) CALL STOPIT('MAKEUG',' ',LWORK,KEND)
       CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',IDUM,LDUM)
       REWIND LUSIRG
-C
+
       CALL MOLLAB(LABEL,LUSIRG,LUPRI)
       READ (LUSIRG)
 C
@@ -2212,26 +2748,109 @@ C
       IWORK = 1
       IGX = 1 
       IUG = 1 
-      DO 100 ISYM = 1, NSYM
-         IWORK = IWORK + NBAS(ISYM)*NRHFS(ISYM)
-         CALL MPAB(WORK(IWORK),NBAS(ISYM),NVIR(ISYM),
-     *                         NBAS(ISYM),NVIR(ISYM),
-     *             GX(IGX),NVIR(ISYM),NRHF(ISYM),
-     *                     NVIR(ISYM),NRHF(ISYM),
-     *             UG(IUG),NBAS(ISYM),NRHF(ISYM))
-         IF (IPRINT .GT. 3) THEN
-            IF (NRHF(ISYM)*NBAS(ISYM) .NE. 0) 
-     *      WRITE(LUPRI,'(/A,I2)') ' U x X/ISYM =',ISYM
-            CALL OUTPUT(UG(IUG),1,NBAS(ISYM),1,NRHF(ISYM),
-     *                  NBAS(ISYM),NRHF(ISYM),1,LUPRI)  
+      IF (R12PRP .AND. R12HYB) THEN
+         DO ISYM = 1, NSYM
+            IWORK = IWORK + NBAS(ISYM)*NRHFS(ISYM) 
+            CALL MPAB(WORK(IWORK),NBAS(ISYM),NVIR(ISYM),
+     *                            NBAS(ISYM),NVIR(ISYM),
+     *                GX(IGX),NVIR(ISYM),NORB1(ISYM),
+     *                        NVIR(ISYM),NORB1(ISYM),
+     *                UG(IUG),NBAS(ISYM),NORB1(ISYM))
+            IF (IPRINT .GT. 3) THEN
+               IF (NORB1(ISYM)*NBAS(ISYM) .NE. 0) 
+     *         WRITE(LUPRI,'(/A,I2)') ' U(NORB1) x X/ISYM =',ISYM
+               CALL OUTPUT(UG(IUG),1,NBAS(ISYM),1,NORB1(ISYM),
+     *                     NBAS(ISYM),NORB1(ISYM),1,LUPRI)  
+               WRITE(LUPRI,'(/A,I2)') ' G(NORB1) x X/ISYM =',ISYM
+               CALL OUTPUT(GX(IGX),1,NBAS(ISYM),1,NORB1(ISYM),
+     *                     NBAS(ISYM),NORB1(ISYM),1,LUPRI)  
+            ENDIF
+            IWORK = IWORK + NBAS(ISYM)*NVIRS(ISYM)
+            IGX = IGX + NVIR(ISYM)*(NORB1(ISYM)-NRHFFR(ISYM))
+            IUG = IUG + NBAS(ISYM)*(NORB1(ISYM)-NRHFFR(ISYM))
+         ENDDO   
+      ELSE 
+         DO 100 ISYM = 1, NSYM
+            IWORK = IWORK + NBAS(ISYM)*NRHFS(ISYM)
+            CALL MPAB(WORK(IWORK),NBAS(ISYM),NVIR(ISYM),
+     *                            NBAS(ISYM),NVIR(ISYM),
+     *                GX(IGX),NVIR(ISYM),NRHF(ISYM),
+     *                        NVIR(ISYM),NRHF(ISYM),
+     *                UG(IUG),NBAS(ISYM),NRHF(ISYM))
+            IF (IPRINT .GT. 3) THEN
+               IF (NRHF(ISYM)*NBAS(ISYM) .NE. 0) 
+     *         WRITE(LUPRI,'(/A,I2)') ' U x X/ISYM =',ISYM
+               CALL OUTPUT(UG(IUG),1,NBAS(ISYM),1,NRHF(ISYM),
+     *                     NBAS(ISYM),NRHF(ISYM),1,LUPRI)  
+             ENDIF 
+            IWORK = IWORK + NBAS(ISYM)*NVIRS(ISYM)
+            IGX = IGX + NVIR(ISYM)*NRHF(ISYM)
+            IUG = IUG + NBAS(ISYM)*NRHF(ISYM)
+  100    CONTINUE
+      ENDIF 
+      NTOTGU = IUG - 1
+C
+C     Add contribution from natural virtual orbitals (WK/UniKA/22-11-2005).
+C
+      IF (NATVIR) THEN
+         NR12xVIR = 0
+         DO ISYM = 1, NSYM
+           NR12xVIR = NR12xVIR + (NORB1(ISYM)-NRHFSA(ISYM))*NRXR12(ISYM)
+         END DO
+         KFCKMIX = KEND
+         KEND = KFCKMIX + NR12xVIR
+         KFCKHF = KEND + NR12xVIR * NBAST
+         KEND = KFCKHF
+         IF (KEND .GT. LWORK) CALL STOPIT('MAKEUG',' ',LWORK,KEND)
+         LUNIT = -1
+         CALL GPOPEN(LUNIT,'R12FVIR','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+         READ (LUNIT) (WORK(KFCKMIX+I-1), I=1, NR12xVIR)
+         CALL GPCLOSE(LUNIT,'KEEP')
+         XALPH = 1.0D0
+         IF (R12NOB) THEN
+            XBETA = 0.0D0
+         ELSE
+            XBETA = 1.0D0
          END IF
-         IWORK = IWORK + NBAS(ISYM)*NVIRS(ISYM)
-         IGX = IGX + NVIR(ISYM)*NRHF(ISYM)
-         IUG = IUG + NBAS(ISYM)*NRHF(ISYM)
-  100 CONTINUE
+         IUG = 1
+         JUG = 1
+         IWORK = 1
+         DO ISYM = 1, NSYM
+           IUG = IUG + NBAS(ISYM)*NRHFA(ISYM)
+           IWORK = IWORK + NBAS(ISYM)*(NRHFS(ISYM)+NRHFSA(ISYM))
+           NREAVR = NORB1(ISYM)-NRHFSA(ISYM)
+           IF (NRXR12(ISYM).GT.0)
+     *        CALL DGEMM('N','N',NBAS(ISYM),NRXR12(ISYM),NREAVR,XALPH,
+     *                    WORK(IWORK),NBAS(ISYM),WORK(KFCKMIX),NREAVR,
+     *                    XBETA,UG(IUG),NBAS(ISYM))
+           IF (IPRINT .GT. 4) THEN
+              IF (NRXR12(ISYM)*NBAS(ISYM) .NE. 0) THEN
+                 WRITE(LUPRI,'(/A,I2)') ' MO MATRIX/ISYM =',ISYM
+                 CALL OUTPUT(WORK(IWORK),1,NBAS(ISYM),1,NREAVR,
+     *                       NBAS(ISYM),NREAVR,1,LUPRI)  
+                 WRITE(LUPRI,'(/A,I2)') ' FOCK MATRIX/ISYM =',ISYM
+                 CALL OUTPUT(WORK(KFCKMIX),1,NREAVR,1,NRXR12(ISYM),
+     *                       NREAVR,NRXR12(ISYM),1,LUPRI)  
+              ENDIF 
+              WRITE(LUPRI,'(/A,I2)') ' U x (X + F)/ISYM =',ISYM
+              CALL OUTPUT(UG(JUG),1,NBAS(ISYM),1,NRHF(ISYM),
+     *                    NBAS(ISYM),NRHF(ISYM),1,LUPRI)  
+              JUG = JUG + NBAS(ISYM)*NRHF(ISYM)
+           ENDIF 
+           IUG = IUG + NBAS(ISYM)*NRXR12(ISYM)
+           IWORK = IWORK + NBAS(ISYM)*(NREAVR+NORB2(ISYM))
+           KFCKMIX = KFCKMIX + NREAVR*NRXR12(ISYM)
+         END DO
+         IF (IWORK-1 .NE. NLAMDS) 
+     *   CALL STOPIT('MAKEUGa',' ',IWORK-1,NLAMDS)
+         IF (NTOTGU .NE. IUG-1) 
+     *   CALL STOPIT('MAKEUGb',' ',NTOTGU,IUG-1)
+      END IF
+C 
       NTOTGU = IUG - 1
       WRITE(GUNAM,'(A6,I1)') 'GUMAT.',IPBAS
-      LU43 = 43
+      LU43 = -43
       CALL GPOPEN(LU43,GUNAM,'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
       REWIND(LU43)
       WRITE(LU43) NTOTGU
@@ -2241,9 +2860,11 @@ C
       ISMOU = 1              
       ISMO0 = 1              
       ISMO1 = ISMO0 + NLAMDS
-      ISMO2 = ISMO1 + NOCCT*NBAST
-      CALL DZERO(WORK(ISMO1),NOCCT*NBAST)
-      CALL DZERO(WORK(ISMO2),NOCCT*NBAST)
+celena
+      ISMO2 = ISMO1 + NORB1T*NBAST
+celena
+      CALL DZERO(WORK(ISMO1),NORB1T*NBAST)
+      CALL DZERO(WORK(ISMO2),NORB1T*NBAST)
       DO 505 ISYM=1,NSYM
          ISMO0 = ISMO0 + NBAS(ISYM)*NRHFFR(ISYM)
          DO 510 I = 1, NRHF(ISYM) 
@@ -2255,13 +2876,40 @@ C
            ISMOU = ISMOU + NBAS(ISYM)
   510    CONTINUE
          ISMO0 = ISMO0 + NVIR(ISYM)*NBAS(ISYM) 
+         IF (R12PRP) ISMOU=ISMOU + (NORB1(ISYM)-NRHFS(ISYM))*NBAS(ISYM) 
          ISMO1 = ISMO1 + NBAS(ISYM)
          ISMO2 = ISMO2 + NBAS(ISYM)
   505 CONTINUE 
+celena
+      IF (R12PRP) THEN
+         ISMO5 = 1 
+         ISMO3 = 1 + NLAMDS + NOCCT*NBAST
+         ISMO4 = 1 
+         ISMO6 = ISMO3 + NORB1T*NBAST
+         CALL DZERO(WORK(ISMO3),(NORB1T-NRHFST)*NBAST)
+         DO  ISYM=1,NSYM
+             ISMO4 = ISMO4 + 2*NBAS(ISYM)*NRHFS(ISYM)
+             ISMO5 = ISMO5 + NBAS(ISYM)*NRHF(ISYM)
+             DO I = 1, NORB1(ISYM)-NRHFS(ISYM)
+               CALL DCOPY(NBAS(ISYM),WORK(ISMO4),1,WORK(ISMO3),1)
+               CALL DCOPY(NBAS(ISYM),UG(ISMO5),1,WORK(ISMO6),1)
+               ISMO3 = ISMO3 + NBAST
+               ISMO4 = ISMO4 + NBAS(ISYM)
+               ISMO6 = ISMO6 + NBAST
+               ISMO5 = ISMO5 + NBAS(ISYM)
+             ENDDO 
+             ISMO3 = ISMO3 + NBAS(ISYM)
+             ISMO6 = ISMO6 + NBAS(ISYM)
+             ISMO4 = ISMO4 + NORB2(ISYM)*NBAS(ISYM)
+          ENDDO    
+      ENDIF
+celena
+
       ISMO0 = 1              
+      ISMA1 = ISMO0 + 2*NOCCT*NBAST 
       ISMO1 = ISMO0 + NLAMDS
-      ISMO2 = ISMO1 + NOCCT*NBAST
-      ISMS0 = ISMO2 + NOCCT*NBAST
+      ISMO2 = ISMO1 + NORB1T*NBAST
+      ISMS0 = ISMO2 + NORB1T*NBAST
       ISMX1 = ISMS0 + NOCCT*NOCCT*2
       ISMY1 = ISMX1 + NOCCT*NOCCT*2
       ISMZ1 = ISMY1 + NOCCT*NOCCT*2
@@ -2269,6 +2917,22 @@ C
       ISMY2 = ISMX2 + NOCCT*NOCCT*2
       ISMZ2 = ISMY2 + NOCCT*NOCCT*2
       IEND  = ISMZ2 + NOCCT*NOCCT*2
+celena
+      IF (R12PRP .AND. R12HYB) THEN
+         ISMRO0  = 1 
+         ISMRA1  = ISMRO0  + 2*NOCCT*NBAST
+         ISMRO1  = ISMRO0  + NLAMDS
+         ISMRO2  = ISMRO1  + NORB1T*NBAST
+         ISMRS0  = ISMRO2  + NORB1T*NBAST
+         ISMRX1  = ISMRS0  + 2*NORB1T*NORB1T
+         ISMRY1  = ISMRX1  + 2*NORB1T*NORB1T
+         ISMRZ1  = ISMRY1  + 2*NORB1T*NORB1T
+         ISMRX2  = ISMRZ1  + 2*NORB1T*NORB1T
+         ISMRY2  = ISMRX2  + 2*NORB1T*NORB1T
+         ISMRZ2  = ISMRY2  + 2*NORB1T*NORB1T
+         IEND    = ISMRZ2  + 2*NORB1T*NORB1T
+      ENDIF
+celena
       LQQ   = LWORK - IEND
       IF (IPRINT .GT. 3) THEN
          CALL AROUND('Active orbitals')
@@ -2279,7 +2943,63 @@ C
       IF (LQQ .LT. 0) CALL STOPIT('MAKEUG','R12QQ',LWORK,IEND)
       CALL R12QQ(QQ,WORK(ISMS0),WORK(ISMX1),WORK(ISMY1),WORK(ISMZ1), 
      *           WORK(ISMX2),WORK(ISMY2),WORK(ISMZ2), 
-     *           WORK(ISMO2),WORK(ISMO1),WORK(IEND),LQQ,NBAST,NOCCT)
+     *           WORK(ISMO2),WORK(ISMO1),
+     *           WORK(IEND),LQQ,NBAST,NOCCT)
+        LUNIT = -1
+celena
+      IF (R12PRP .AND. R12HYB) THEN
+         NVIR0T = NORB1T-NRHFST
+
+         CALL DZERO(WORK(ISMRS0),14*NORB1T*NORB1T) 
+         CALL DZERO(QV,NVIR0T*NRHFT**3)
+         CALL R12QV(.FALSE.,.FALSE.,QV,WORK(ISMRS0),WORK(ISMRX1),
+     *              WORK(ISMRY1),
+     *              WORK(ISMRZ1),
+     *              WORK(ISMRX2),WORK(ISMRY2),
+     *              WORK(ISMRZ2), 
+     *              WORK(ISMRO2),WORK(ISMRO1),
+     *              WORK(IEND),LQQ,NBAST,NORB1T,NOCCT,NVIR0T,.FALSE.)
+         LUNIT = -1
+         CALL GPOPEN(LUNIT,'AUXQSA12','UNKNOWN','SEQUENTIAL',
+     &                      'FORMATTED',IDUMMY,LDUMMY)
+         WRITE(LUNIT,'(4E30.20)') (QV(J+1), J = 0, (NORB1T-NRHFST)
+     &                                     *NOCCT**3 - 1)
+         CALL GPCLOSE(LUNIT,'KEEP')
+
+         CALL DZERO(WORK(ISMRS0),14*NORB1T*NORB1T) 
+         CALL DZERO(QV,NVIR0T*NRHFT**3)
+         CALL R12QV(.FALSE.,.FALSE.,QV,WORK(ISMRS0),WORK(ISMRX1),
+     *              WORK(ISMRY1),
+     *              WORK(ISMRZ1),
+     *              WORK(ISMRX2),WORK(ISMRY2),
+     *              WORK(ISMRZ2), 
+     *              WORK(ISMRO2),WORK(ISMRO1),
+     *              WORK(IEND),LQQ,NBAST,NORB1T,NOCCT,NVIR0T,.TRUE.)
+         LUNIT = -1
+         CALL GPOPEN(LUNIT,'AUXQSAJ12','UNKNOWN','SEQUENTIAL',
+     &                      'FORMATTED',IDUMMY,LDUMMY)
+         WRITE(LUNIT,'(4E30.20)') (QV(J+1), J = 0, (NVIR0T)
+     &                                     *NRHFT**3 - 1)
+         CALL GPCLOSE(LUNIT,'KEEP')
+
+         CALL DZERO(WORK(ISMRS0),14*NORB1T*NORB1T) 
+         CALL DZERO(QV,NVIR0T*NRHFT**3)
+         CALL R12QV(.FALSE.,.TRUE.,QV,WORK(ISMRS0),WORK(ISMRX1),
+     *              WORK(ISMRY1),
+     *              WORK(ISMRZ1),
+     *              WORK(ISMRX2),WORK(ISMRY2),
+     *              WORK(ISMRZ2), 
+     *              WORK(ISMRO2),WORK(ISMRO1),
+     *              WORK(IEND),LQQ,NBAST,NORB1T,NOCCT,NVIR0T,.FALSE.)
+         LUNIT = -1
+         CALL GPOPEN(LUNIT,'AUXQSAI12','UNKNOWN','SEQUENTIAL',
+     &                      'FORMATTED',IDUMMY,LDUMMY)
+         WRITE(LUNIT,'(4E30.20)') (QV(J+1), J = 0, (NVIR0T)
+     &                                     *NRHFT**3 - 1)
+         CALL GPCLOSE(LUNIT,'KEEP')
+
+      ENDIF  
+celena
       RETURN
       END
 C  /* Deck r12qq */  
@@ -2383,7 +3103,7 @@ C
       RETURN
       END 
 C  /* Deck qcal */
-      SUBROUTINE QCAL(QQ,R2AM,U2AM,WORK,LWORK,IFLAG)
+      SUBROUTINE QCAL(QQ,R2AM,U2AM,WORK,LWORK,IFLAG,IANSAZ)
 C
 C     Driver routine for the computation of the Q term
 C     of R12/B theory.
@@ -2411,12 +3131,12 @@ C
      *CALL STOPIT('QCAL',' ',LWORK,IEND) 
       CALL QCAL1(R2AM,U2AM,QQ,WORK(IR11),WORK(IQ11), 
      *           WORK(IRS11),WORK(IQS11),WORK(IRT11),
-     *           WORK(IQT11),NOCDIM,NSPAIR,IFLAG)
+     *           WORK(IQT11),NOCDIM,NSPAIR,IFLAG,IANSAZ)
       RETURN
       END
 C  /* Deck qcal1 */
       SUBROUTINE QCAL1(R2AM,U2AM,QQ11,R11,Q11,RS11,RT11,QS11,QT11,
-     *                 NOCDIM,NSPAIR,IFLAG)
+     *                 NOCDIM,NSPAIR,IFLAG,IANSAZ)
 C
 C     This subroutine computes the Q term of R12/B:
 C
@@ -2458,6 +3178,12 @@ C
          R11(I,1,1,1) = D0
          Q11(I,1,1,1) = D0
    90 CONTINUE
+C
+      IF (R12CBS) THEN
+         FACX = - D1
+      ELSE
+         FACX = D1 
+      END IF
 C
 C     CONSTRUCT PRODUCTS (IA|JB)*(KA|LB)
 C
@@ -2567,33 +3293,54 @@ C
                                     GOTO 111
 C
   114                               CONTINUE
-                                    IF (A .LE. NRHFS(ISYMA) .AND.
-     *                                  B .LE. NRHFS(ISYMB)) THEN   
+                                    IF (R12CBS) THEN
+                                       NQUEA = 0
+                                       NQUEB = 0
+                                    ELSE
+                                       NQUEA = NORB1(ISYMA)
+                                       NQUEB = NORB1(ISYMB)
+                                    END IF
+                                    IF (A .LE. NRHFSA(ISYMA) .AND.
+     *                                  B .LE. NRHFSA(ISYMB)) THEN   
 C
 C                                      Sum |ij><ij|
 C
                                        Q11(KOFFI,KOFFJ,KOFFK,KOFFL) =
      *                                 Q11(KOFFI,KOFFJ,KOFFK,KOFFL) - RR
 C
-                                    ELSE IF (A .LE. NRHFS(ISYMA) .AND.
-     *                                       B .GT. NORB1(ISYMB)) THEN
+                                    END IF
+                                    IF (A .LE. NRHFSA(ISYMA) .AND.
+     *                                  B .GT. NQUEB) THEN
 C
 C                                      Sum |iq'><iq'|
 C
                                        Q11(KOFFI,KOFFJ,KOFFK,KOFFL) =
      *                                 Q11(KOFFI,KOFFJ,KOFFK,KOFFL) + RR
 C
-                                    ELSE IF (A .GT. NORB1(ISYMA) .AND.
-     *                                       B .LE. NRHFS(ISYMB)) THEN
+                                    END IF
+                                    IF (A .GT. NQUEA .AND.
+     *                                  B .LE. NRHFSA(ISYMB)) THEN
 C
 C                                      Sum |p'j><p'j|
 C
                                        Q11(KOFFI,KOFFJ,KOFFK,KOFFL) =
      *                                 Q11(KOFFI,KOFFJ,KOFFK,KOFFL) + RR
-                                       IF (ONEAUX)
+                                       IF (ONEAUX.AND.A.GT.NORB1(ISYMA))
      *                                 Q11(KOFFJ,KOFFI,KOFFL,KOFFK) =
      *                                 Q11(KOFFJ,KOFFI,KOFFL,KOFFK) + RR
 C                                       
+                                    END IF
+                                    IF (A .GT. NRHFSA(ISYMA) .AND.
+     *                                  A .LE. NORB1(ISYMA) .AND.
+     *                                  B .GT. NRHFSA(ISYMB) .AND.
+     *                                  B .LE. NORB1(ISYMB)) THEN
+C
+C                                      Sum |ab><ab|
+C
+cWK                                    IF (IANSAZ .EQ. 3)
+cWK  *                                 Q11(KOFFI,KOFFJ,KOFFK,KOFFL) =
+cWK  *                                 Q11(KOFFI,KOFFJ,KOFFK,KOFFL) + RR
+C
                                     END IF
   111                               CONTINUE
   110                            CONTINUE
@@ -2641,19 +3388,19 @@ C
 C
                   IF (IFLAG .EQ. 2) GOTO 303
                   RR =   (QQIJKL + QQIJLK)
-     *                 + (Q11(I,J,K,L) + Q11(I,J,L,K))
+     *                 + (Q11(I,J,K,L) + Q11(I,J,L,K)) * FACX
      *                 - (R11(I,J,K,L) + R11(I,J,L,K))
                   IF (.NOT. ONEAUX) RR = RR
-     *                 + (Q11(J,I,L,K) + Q11(J,I,K,L))
+     *                 + (Q11(J,I,L,K) + Q11(J,I,K,L)) * FACX
      *                 - (R11(J,I,L,K) + R11(J,I,K,L))
                   RS11(KL,IJ) = RR
                   IF (I .EQ. J) RS11(KL,IJ) = FF * RS11(KL,IJ)
                   IF (K .EQ. L) RS11(KL,IJ) = FF * RS11(KL,IJ)
                   RR =   (QQIJKL - QQIJLK)
-     *                 + (Q11(I,J,K,L) - Q11(I,J,L,K))
+     *                 + (Q11(I,J,K,L) - Q11(I,J,L,K)) * FACX
      *                 - (R11(I,J,K,L) - R11(I,J,L,K))
                   IF (.NOT. ONEAUX) RR = RR
-     *                 + (Q11(J,I,L,K) - Q11(J,I,K,L))
+     *                 + (Q11(J,I,L,K) - Q11(J,I,K,L)) * FACX
      *                 - (R11(J,I,L,K) - R11(J,I,K,L))
                   RT11(KL,IJ) = RR
                   RS11(KL,IJ) = RS11(KL,IJ) * DP25 * DP5
@@ -2693,7 +3440,7 @@ C
       CALL AROUND('Triplet <Q@> matrix')
       CALL OUTPUT(QT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI) 
 C
-  998 LUMUL = 43
+  998 LUMUL = -43
       GOTO (996,997), IFLAG          
       CALL QUIT('INVALID IFLAG IN QCAL1')
   996 CALL GPOPEN(LUMUL,'QMATSO','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -2709,16 +3456,25 @@ C
       WRITE(LUMUL,'(4E30.20)') RT11
       CALL GPCLOSE(LUMUL,'KEEP')
       RETURN
-  997 CALL GPOPEN(LUMUL,'QMATSP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+  997 IF (IANSAZ .EQ. 2) THEN
+      CALL GPOPEN(LUMUL,'QMATSP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       WRITE(LUMUL,'(4E30.20)') QS11
       CALL GPCLOSE(LUMUL,'KEEP')
       CALL GPOPEN(LUMUL,'QMATTP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       WRITE(LUMUL,'(4E30.20)') QT11
       CALL GPCLOSE(LUMUL,'KEEP')
+      ELSE
+      CALL GPOPEN(LUMUL,'QMATSQ','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+      WRITE(LUMUL,'(4E30.20)') QS11
+      CALL GPCLOSE(LUMUL,'KEEP')
+      CALL GPOPEN(LUMUL,'QMATTQ','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
+      WRITE(LUMUL,'(4E30.20)') QT11
+      CALL GPCLOSE(LUMUL,'KEEP')
+      END IF
       RETURN
       END
 C  /* Deck ccsd_r12 */
-      SUBROUTINE CCSD_R12(WORK,LWORK,WXRK,LWXRK)
+      SUBROUTINE CCSD_R12(WORK,LWORK,WXRK,LWXRK,CCR12RSP)
 C
 C     R12 driver.
 C
@@ -2735,27 +3491,40 @@ C
 #include <ccsdio.h>
 #include <cclr.h>
 #include <ccfdgeo.h>
+#include <cbirea.h>
 #include <r12int.h>
+#include <ccr12int.h>
       PARAMETER (D0 = 0D0)
       CHARACTER*6 TIMLAB, LABINT
       CHARACTER*10 APPROX
       DIMENSION WORK(LWORK), WXRK(LWXRK)
       INTEGER IDUM, LU43
-      LOGICAL PROFIL, LDUM, TEMP_HERDIR, TEMP_DIRECT, TEMP_ONEAUX
+      LOGICAL PROFIL, LDUM, TEMP_HERDIR, TEMP_DIRECT, TEMP_ONEAUX, LHTF,
+     &        MKVAJKL, CCR12RSP,PROJVIR
+      CALL QENTER('CCSD_R12')
       TEMP_DIRECT = DIRECT
       DIRECT = .TRUE.
-      LUSIRG = 30
-      LU43 = 43
+      MKVAJKL=.FALSE.
+      LUSIRG = -30
+      LU43   = -43
       PROFIL = .FALSE.
       R12CAL = R12CAL .OR. LMULBS
       IF (R12CAL) THEN
          R12OLD = .TRUE.
          DO ISYM = 1, 8
             R12OLD = R12OLD .AND. NORB2(ISYM) .EQ. 0
+         IF (NVIRFR(ISYM) .NE. 0)
+     &      CALL QUIT('DO NOT FREEZE VIRTUALS IN R12 CALCULATIONS.')
          END DO
          NORXR = NORXR .OR. R12OLD .OR. R12HYB
+         NORXR = NORXR .OR. R12OLD
          ONEAUX = (R12HYB .OR. R12NOB) .AND. .NOT. R12OLD 
      &                                 .AND. .NOT. R12EOR
+     &                                 .AND. .NOT. CCR12RSP 
+celena
+         IF (R12PRP) ONEAUX = .FALSE.
+celena
+         R12HYB = R12HYB .OR. ONEAUX
          LABEL = 'FULLBAS '
          CALL CCSD_INIT1(WORK,LWORK)
          NORB1T = 0
@@ -2763,14 +3532,22 @@ C
          NNBASF = 0
          NSPAIR = NRHFT * (NRHFT + 1) / 2
          NOCXBS = 0
+         NVCXBS = 0
+         NBASTX = 0
          DO 230 ISYM = 1, NSYM
             NORB1T = NORB1T + NORB1(ISYM)
             NORB2T = NORB2T + NORB2(ISYM)
             NBASF = NORB1(ISYM) + NORB2(ISYM) 
             NNBASF = NNBASF + NBASF * (NBASF + 1) / 2
             NOCXBS = NOCXBS + NRHF(ISYM) * NBAS(ISYM)
+            NVCXBS = NVCXBS + NORB1(ISYM) * NBAS(ISYM)
+            NBASTX = NBASTX + NBAS(ISYM)
   230    CONTINUE
-C
+C 
+         WRITE(LUPRI,'(1X,A,8I8)') 
+     *     '  NRHF   :',(NRHF(ISYM),ISYM=1,NSYM)
+         WRITE(LUPRI,'(1X,A,8I8)')
+     *     '  NRHFS  :',(NRHFS(ISYM),ISYM=1,NSYM)
          WRITE(LUPRI,'(1X,A,8I8)') 
      *     '  NORB1  :',(NORB1(ISYM),ISYM=1,NSYM)
          WRITE(LUPRI,'(1X,A,8I8)') 
@@ -2781,6 +3558,8 @@ C
      *     'Number of secondary orbitals           : ',NORB2T
          WRITE(LUPRI,'(1X,A,I12)')
      *     'Total number of orbitals               : ',NORB2T + NORB1T
+         WRITE(LUPRI,'(1X,A,I12)')
+     *     'Total number of basis functions        : ',NBASTX
          IF (ONEAUX) THEN
             WRITE(LUPRI,'(1X,A,I12)')
      *     'Number of (i|p) integrals              : ',NH1AMX
@@ -2811,9 +3590,18 @@ C
          WRITE(LUPRI,'(1X,A,G13.6/)')
      *     'Threshold for singular value decomposition =',SVDTHR
          IF (R12EOR) THEN
-            WRITE(LUPRI,'(1X,A,G13.6,A)')  
-     *        'Calculation with Gaussian-damped linear r12 '//
-     *        '(gamma =', GAMAC,')'
+          IF (SLATER) THEN
+            WRITE(LUPRI,'(1X,A/1X,A)')  
+     *        'Calculation with Gaussian-type geminals (GTGs)',
+     *        'Expansion coefficients and exponents:'
+          ELSE
+            WRITE(LUPRI,'(1X,A/1X,A)')  
+     *        'Calculation with Gaussian-damped linear-r12 terms',
+     *        'Expansion coefficients and exponents:'
+          END IF
+            DO I = 1, NTOGAM
+               WRITE(LUPRI,'(I5,2F25.15)') I, GAMAB(I), GAMAX(I)
+            END DO
          ENDIF
          IF (R12DIA) THEN
             WRITE(LUPRI,'(1X,A/A/)')
@@ -2856,26 +3644,42 @@ C
          ELSE
             WRITE(APPROX,'(A10)') 's A and B.'
          END IF
-         IF (NOTONE) THEN
-            WRITE(LUPRI,'(A))')
-     *       ' Ansatz 2 is used and results are'//
-     *       ' printed for approximation'//APPROX
-         ELSE IF (NOTTWO) THEN
-            WRITE(LUPRI,'(A))')
+         IF (NOTTWO .AND. NOTTRE) THEN
+            WRITE(LUPRI,'(A)')
      *       ' Ansatz 1 is used and results are'//
      *       ' printed for approximation'//APPROX
-         ELSE
-            WRITE(LUPRI,'(A))')
+         ELSE IF (NOTONE .AND. NOTTRE) THEN
+            WRITE(LUPRI,'(A)')
+     *       ' Ansatz 2 is used and results are'//
+     *       ' printed for approximation'//APPROX
+         ELSE IF (NOTONE .AND. NOTTWO) THEN
+            WRITE(LUPRI,'(A)')
+     *       ' Ansatz 3 is used and results are'//
+     *       ' printed for approximation'//APPROX
+         ELSE IF (NOTTRE) THEN
+            WRITE(LUPRI,'(A)')
      *       ' Ansaetze 1 and 2 are used and results are'//
      *       ' printed for approximation'//APPROX
+         ELSE IF (NOTTWO) THEN
+            WRITE(LUPRI,'(A)')
+     *       ' Ansaetze 1 and 3 are used and results are'//
+     *       ' printed for approximation'//APPROX
+         ELSE IF (NOTONE) THEN
+            WRITE(LUPRI,'(A)')
+     *       ' Ansaetze 2 and 3 are used and results are'//
+     *       ' printed for approximation'//APPROX
+         ELSE
+            WRITE(LUPRI,'(A)')
+     *       ' Ansaetze 1, 2, 3 are used and results are'//
+     *       ' printed for approximation'//APPROX
          END IF
-         IF (R12EOR) WRITE(LUPRI,'(1X,A,3(/1X,A))')
+         IF (R12EOR) WRITE(LUPRI,'(A,3(/A))')
      *    '----------------------------------------'//
      *    '--------------------------------------',
-     *    'The Gaussian-damped R12 integrals'//
+     *    ' The Gaussian-damped R12 integrals'//
      *    ' are computed as described in:',
-     *    'C. C. M. Samson, W. Klopper and T. Helgaker,',
-     *    'Comp. Phys. Commun. 149, 1-10 (2002).'
+     *    ' C. C. M. Samson, W. Klopper and T. Helgaker,',
+     *    ' Comp. Phys. Commun. 149, 1-10 (2002).'
          WRITE(LUPRI,'(1X,78A1/)') ('*',I=1,78)
 C
          KFOCKD = 1
@@ -2883,40 +3687,60 @@ C
          KSF = KFOCKQ + 2 * NRHFT ** 4
          KTF = KSF + MAX(NSPAIR ** 2, NNBASF)
          KT1AM = KTF + MAX(NSPAIR ** 2, NNBASF)
-         KGXAM = KT1AM + NT1AMX
-         KQQAM = KGXAM + NT1AMX 
-         IF (R12EOR) THEN
-            KQQ2M = KQQAM + NRHFT ** 4 
-            KQQ4M = KQQ2M + NRHFT ** 4 
-            KQQ6M = KQQ4M + NRHFT ** 4 
+         KGXAM = KT1AM + NT1AMX * 10
+         IF (R12PRP) THEN
+            KQQAM = KGXAM + NT1VMX
          ELSE
-            KQQ2M = KQQAM 
-            KQQ4M = KQQAM 
-            KQQ6M = KQQAM
+            KQQAM = KGXAM + NT1AMX
          ENDIF
-         KUGAM = KQQ6M + NRHFT ** 4 
-         KFRIN = KUGAM + NOCXBS 
+         IF (R12EOR) THEN
+            KQQ2M = KQQAM + NRHFT ** 4
+            KQQ4M = KQQ2M + NRHFT ** 4
+            KQQ6M = KQQ4M + NRHFT ** 4
+            KCMOM = KQQ6M + NRHFT ** 4
+            KQVAM = KCMOM + 2*NLAMDS
+         ELSE
+            KQQ2M = KQQAM
+            KQQ4M = KQQ2M
+            KQQ6M = KQQ4M
+            KCMOM = KQQ6M
+            KQVAM = KCMOM + NRHFT**4
+         ENDIF
+celena
+         KUGAM = KQVAM + NBAST*NRHFT**3
+  
+celena 
+         IF (R12PRP) THEN
+            KFRIN = KUGAM + NVCXBS
+         ELSE
+            KFRIN = KUGAM + NOCXBS
+         ENDIF
 C
-         KS2AM = KFRIN + NF2FRO(1)
+celena
+         KFRIN1= KFRIN  + NFROVR(1)
+         KS2AM = KFRIN1 + NFROVF(1)
+celena
          IF (ONEAUX) THEN
            KT2AM = KS2AM + NH2AMX
-           KU2AM = KT2AM 
-           KR2AM = KT2AM + NH2AMX  
-           IF (R12XXL) THEN
+           KU2AM = KT2AM
+           KR2AM = KT2AM + NH2AMX
+cWK        IF (R12XXL) THEN
               KV2AM = KR2AM + NH2AMX
-              KW2AM = KV2AM + NH2AMX 
-           ELSE
-              KV2AM = KR2AM
-              KW2AM = KV2AM
-           END IF
+              KW2AM = KV2AM + NH2AMX
+cWK        ELSE
+c             KV2AM = KR2AM
+c             KW2AM = KV2AM
+cWK        END IF
            KEND1 = KW2AM + NH2AMX
+           LENT2AM = NH2AMX
          ELSE
            KT2AM = KS2AM + NT2AMX
-           KU2AM = KT2AM 
-           KR2AM = KT2AM + NT2AMX  
+           KU2AM = KT2AM
+           KR2AM = KT2AM + NT2AMX
            KV2AM = MAX(KR2AM + NT2AMX, KU2AM + NU2AMX)
-           KW2AM = KV2AM + NT2AMX 
+           KW2AM = KV2AM + NT2AMX
            KEND1 = KW2AM + NT2AMX
+           LENT2AM = NT2AMX
          END IF
          WRITE(LUPRI,'(A,I15,A/)')' Core memory required by CCSD_R12 :',
      &                             KEND1,'  (double words)'
@@ -2924,6 +3748,30 @@ C
          IF (KEND1 .GT. LWORK) CALL STOPIT('CCSD_R12','R12 WORK SPACE',
      &        LWORK,KEND1)
          IF (R12EOR) THEN
+C
+            LUSIFC = -1
+            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+            REWIND LUSIFC
+            CALL MOLLAB(LABEL,LUSIFC,LUPRI)
+            READ (LUSIFC)
+            READ (LUSIFC)
+            READ (LUSIFC) (WORK(KCMOM+I-1),I=1,NLAMDS)
+            CALL DCOPY(NLAMDS,WORK(KCMOM),1,WORK(KCMOM+NLAMDS),1)
+            KCMO1 = KCMOM
+            DO ISYM = 1, NSYM
+               KCMO2 = KCMO1 + NRHFS(ISYM)*NBAS(ISYM)
+               LENMO = NBAS(ISYM)*NRHFS(ISYM)
+               CALL DCOPY(LENMO,WORK(KCMO1),1,WORK(KCMO2),1)
+               KCMO1 = KCMO1 + 
+     &         (NRHFS(ISYM)+NORB1(ISYM)+NORB2(ISYM))*NBAS(ISYM)
+            ENDDO
+            REWIND LUSIFC
+            CALL MOLLAB(LABEL,LUSIFC,LUPRI)
+            READ (LUSIFC)
+            READ (LUSIFC)
+            WRITE (LUSIFC) (WORK(KCMOM+I-1),I=1,NLAMDS)
+            CALL GPCLOSE(LUSIFC,'KEEP')
 C
             R12EIN = .TRUE.
 C
@@ -2941,7 +3789,9 @@ C
             MBSMAX = 4
             INTGAC = 6
             CALL DZERO(WORK(KT1AM),NT1AMX)
-            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL CCSD_IKJL(WORK(KQQ6M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|[[f12,T1],f12]|jl) integrals done' 
@@ -2960,7 +3810,9 @@ C
             MBSMAX = 4
             INTGAC = 4
             CALL DZERO(WORK(KT1AM),NT1AMX)
-            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL CCSD_IKJL(WORK(KQQ4M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|f12**2|jl) integrals done' 
@@ -2976,16 +3828,29 @@ C
             U12INT = .FALSE.
             U21INT = .FALSE.
             V12INT = .FALSE.
+            CCR12SM = .TRUE.
             MBSMAX = 4
             INTGAC = 2
             CALL DZERO(WORK(KT1AM),NT1AMX)
-            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1) 
+            LHTF = CCR12
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1) 
             CALL CCSD_IKJL(WORK(KQQ2M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|f12/r12|jl) integrals done' 
             WRITE(TIMLAB,1013) '#2 ',MBSMAX
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
             R12EIN = .FALSE.
+            CCR12SM = .FALSE.
+            LUSIFC = -1
+            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+            REWIND LUSIFC
+            CALL MOLLAB(LABEL,LUSIFC,LUPRI)
+            READ (LUSIFC)
+            READ (LUSIFC)
+            WRITE (LUSIFC) (WORK(NLAMDS+KCMOM+I-1),I=1,NLAMDS)
+            CALL GPCLOSE(LUSIFC,'KEEP')
          ELSE
             CALL TIMER('START ',TIMSTR,TIMEND)  
          END IF
@@ -3006,14 +3871,21 @@ C
          V12INT = .FALSE.
          IF (R12OLD) THEN
             MBSMAX = 4
-         ELSE IF (R12NOB .OR. NORXR) THEN
+         ELSE IF ((R12NOB.AND.(.NOT.CCR12RSP)) .OR. 
+     &               (NORXR.AND.(.NOT.CCR12RSP))) THEN
             MBSMAX = 5
          ELSE
             MBSMAX = 6
          END IF
          CALL DZERO(WORK(KT1AM),NT1AMX)
-         CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
-         CALL GPOPEN(LU43,'R12R12',
+C........LHTF must be variable (WK/14-06-2004).
+         LHTF = CCR12.AND.(CCR12RSP.OR.IANR12.EQ.2.OR.IANR12.EQ.3)
+         CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),LHTF,
+     &                  CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+c------------------------------------------------------
+chf      get r12 integrals on file
+c------------------------------------------------------
+         CALL GPOPEN(LU43,FR12R12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          WRITE(LU43) (WXRK(KS2AM+I-1), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')  
@@ -3039,13 +3911,37 @@ C
             CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
          END IF
 C
-         IF (CC2R12INT .OR. R12PRP) THEN
-            FNBACK = 'CCR12_BACK'
-            CALL R12BATF(WXRK(KS2AM),WORK(KEND1),LWRK1)
-            WRITE(LUPRI,'(1X,A)')
-     *        'Backtransformation of (ip''|r12|jq'') integrals done'
-            CALL TIMER('R12BTF',TIMSTR,TIMEND)  
+         IF (CC2R12INT .OR. CCSDR12INT .OR. R12PRP) THEN
+           IF (IANR12.EQ.1.OR.IANR12.EQ.3) THEN
+             PROJVIR = (IANR12.EQ.3)
+             CALL R12BATF(WXRK(KS2AM),FNBACK,DUMMY,.FALSE.,
+     &                    PROJVIR,WORK(KEND1),LWRK1)
+           END IF
+           IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+             CALL CC_R12BATF2(WORK(KEND1),LWRK1)
+           END IF
+           WRITE(LUPRI,'(1X,A)')
+     *       'Backtransformation of (ip''|r12|jq'') integrals done'
+           CALL TIMER('R12BATF',TIMSTR,TIMEND)  
+CCN   
+           CALL CC_R12MKSAK(WORK(KEND1),LWRK1)
+
+           IF (CCR12RSP) THEN
+             CALL CC_R12VXINT2(WXRK(KS2AM),WORK(KEND1),LWRK1)
+           END IF
+CCN
          END IF
+celena
+         IF (IANR12.EQ.1.AND.R12PRP) THEN
+            MKVAJKL = .TRUE.
+            FNVAJKL = 'CCR12XAJKL'
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+            MKVAJKL = .FALSE.
+         ENDIF
+celena
 C
 C        COMPUTE (IA|1/R12|JB) INTEGRALS
 C
@@ -3064,40 +3960,70 @@ C
             MBSMAX = 5
          END IF
          CALL DZERO(WORK(KT1AM),NT1AMX)
-         IF (CC2R12INT .OR. R12PRP) THEN
+         IF (CC2R12INT .OR. (R12PRP.AND.IANR12.EQ.1)) THEN
             MKVAJKL = .TRUE.            
-            FNVAJKL = 'CCR12VAJKL'
+            IF (R12PRP.AND. IANR12.EQ.1) FNVAJKL = 'CCR12VAJKL'
          END IF
-         CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+C........LHTF must be variable (WK/14-06-2004).
+         LHTF = CCR12.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)
+         CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),LHTF,
+     &                  CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
          MKVAJKL = .FALSE. 
-         CALL GPOPEN(LU43,'R12V12',
+         CALL GPOPEN(LU43,FR12V12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          WRITE(LU43) (WXRK(KS2AM+I-1), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')  
 C
-         IF (R12PRP) THEN
-            FNBACK = 'CCV12_BACK'
-            CALL R12BATF(WXRK(KS2AM),WORK(KEND1),LWRK1)
+         IF (R12PRP.AND. IANR12.EQ.1) THEN
+            CALL R12BATF(WXRK(KS2AM),FV12BACK,DUMMY,.FALSE.,.FALSE.,
+     &                   WORK(KEND1),LWRK1)
          END IF
 C
          IF (R12ECO) GOTO 1094 
          IF (FROIMP) THEN
-            CALL GPOPEN(LU43,'INCJDK',
-     &                       'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
-            REWIND(LU43)
-            READ(LU43) (WORK(KFRIN+I-1), I = 1,NF2FRO(1))
-            CALL GPCLOSE(LU43,'KEEP')  
+            call dzero(WORK(KFRIN),NFROVR(1)) 
+            call dzero(WORK(KFRIN1),NFROVF(1)) 
+            IF (IANR12.EQ.1.AND.R12PRP) THEN
+                LUNIT = -1
+                CALL GPOPEN(LUNIT,'INCJDA',
+     &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+                REWIND(LUNIT)
+                READ(LUNIT) (WORK(KFRIN+I-1), I = 1,NFROVR(1))
+                CALL GPCLOSE(LUNIT,'DELETE')  
+
+                LUNIT = -1
+                CALL GPOPEN(LUNIT,'INCJDI',
+     &                         'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+                REWIND(LUNIT)
+                READ(LUNIT) (WORK(KFRIN1+I-1), I = 1,NFROVF(1))
+                CALL GPCLOSE(LUNIT,'DELETE')  
+            ELSE  
+                CALL GPOPEN(LU43,'INCJDK',
+     &                         'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+                REWIND(LU43)
+                READ(LU43) (WORK(KFRIN+I-1), I = 1,NF2FRO(1))
+                CALL GPCLOSE(LU43,'KEEP')  
+
+            ENDIF 
+
          END IF
-         CALL MAKEGX(WXRK(KS2AM),WORK(KGXAM),WORK(KFRIN),2)
+         CALL MAKEGX(WXRK(KS2AM),WORK(KGXAM),WORK(KFRIN),WORK(KEND1),
+     &               LWRK1,2)
+celena
          CALL MAKEUG(WORK(KGXAM),WORK(KUGAM),
-     &               WORK(KQQAM),WORK(KEND1),LWRK1,2) 
+     &               WORK(KQQAM),WORK(KQVAM),WORK(KEND1),LWRK1,2) 
          IF (R12HYB) THEN
-            CALL MAKEGX(WXRK(KS2AM),WORK(KGXAM),WORK(KFRIN),1)
+            CALL MAKEGX(WXRK(KS2AM),WORK(KGXAM),WORK(KFRIN),WORK(KEND1),
+     &                  LWRK1,1)
             CALL MAKEUG(WORK(KGXAM),WORK(KUGAM),
-     &                  WORK(KQQAM),WORK(KEND1),LWRK1,1) 
+     &                  WORK(KQQAM),WORK(KQVAM),WORK(KEND1),LWRK1,1) 
+celena
          END IF
+
+         IF (IANR12.EQ.1.AND.R12PRP) CALL CC_R12MKSFR(WXRK(KS2AM),
+     &                                   WORK(KFRIN1),WORK(KEND1),LWRK1)
  1094    CONTINUE
-         CALL GPOPEN(LU43,'R12R12',
+         CALL GPOPEN(LU43,FR12R12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          READ(LU43) (WXRK(KS2AM+I-1), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')  
@@ -3131,9 +4057,9 @@ C
 C
  1095    CONTINUE
 C 
-         IF (R12PRP) THEN
+         IF (IANR12.EQ.1.AND.R12PRP) THEN
             MKVAJKL = .TRUE.            
-            FNBACK = 'CCV12_BACK'
+chf         FNBACK = 'CCV12_BACK'
             FNVAJKL = 'CCR12VIJAL'
             R12TRA = .TRUE.
             V12INT = .FALSE.
@@ -3145,7 +4071,9 @@ C
                R12INT = .TRUE.
             END IF
             CALL DZERO(WORK(KT1AM),NT1AMX)
-            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
  
             MKVAJKL = .FALSE.           
          END IF
@@ -3167,7 +4095,31 @@ C
          U21INT = .FALSE.
          V12INT = .FALSE.
          IF (R12EOR) THEN   
+            R12EIN = .TRUE.
             IF (.NOT. R12NOB) THEN
+               LUSIFC = -1
+               CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               REWIND LUSIFC
+               CALL MOLLAB(LABEL,LUSIFC,LUPRI)
+               READ (LUSIFC)
+               READ (LUSIFC)
+               READ (LUSIFC) (WORK(KCMOM+I-1),I=1,NLAMDS)
+               CALL DCOPY(NLAMDS,WORK(KCMOM),1,WORK(KCMOM+NLAMDS),1)
+               KCMO1 = KCMOM
+               DO ISYM = 1, NSYM
+                  KCMO2 = KCMO1 + NRHFS(ISYM)*NBAS(ISYM)
+                  LENMO = NBAS(ISYM)*NRHFS(ISYM)
+                  CALL DCOPY(LENMO,WORK(KCMO1),1,WORK(KCMO2),1)
+                  KCMO1 = KCMO1 + 
+     &            (NRHFS(ISYM)+NORB1(ISYM)+NORB2(ISYM))*NBAS(ISYM)
+               ENDDO
+               REWIND LUSIFC
+               CALL MOLLAB(LABEL,LUSIFC,LUPRI)
+               READ (LUSIFC)
+               READ (LUSIFC)
+               WRITE (LUSIFC) (WORK(KCMOM+I-1),I=1,NLAMDS)
+               CALL GPCLOSE(LUSIFC,'KEEP')
                INTGAC = 4       
                IF (R12OLD .OR. R12HYB) THEN
                   MBSMAX = 4
@@ -3175,15 +4127,26 @@ C
                   MBSMAX = 5
                END IF
                CALL DZERO(WORK(KT1AM),NT1AMX)
-               CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+               LHTF = .FALSE.
+               CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
+     &                        LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
                CALL CCSD_IKJL(WORK(KQQAM),NRHFT,WXRK(KU2AM))
+               LUSIFC = -1
+               CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               REWIND LUSIFC
+               CALL MOLLAB(LABEL,LUSIFC,LUPRI)
+               READ (LUSIFC)
+               READ (LUSIFC)
+               WRITE (LUSIFC) (WORK(NLAMDS+KCMOM+I-1),I=1,NLAMDS)
+               CALL GPCLOSE(LUSIFC,'KEEP')
                WRITE(TIMLAB,1013) '#4 ',MBSMAX
                CALL TIMER(TIMLAB,TIMSTR,TIMEND)  
             END IF
             INTGAC = 3       
          END IF
          IF (R12OLD) THEN
-            IF (R12NOB) GOTO 1097
+            IF (R12NOB .AND. .NOT. NATVIR) GOTO 1097
             MBSMAX = 4
          ELSE IF (R12NOB .OR. R12HYB) THEN
             MBSMAX = 5
@@ -3191,13 +4154,57 @@ C
             MBSMAX = 6
          END IF
          ONEAUX = TEMP_ONEAUX
-         CALL DZERO(WORK(KT1AM),NT1AMX)
-         CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+celena
+         IF (R12PRP) ONEAUX = .FALSE.
+celena
+         IF (IANR12.EQ.1.AND.R12PRP) THEN
+            MBSMAX  = 5
+            MKVAJKL = .TRUE.
+            FNVAJKL= 'CCR12QAJKL' 
+            R12INT = .TRUE.
+            R12SQR = .FALSE.
+            U12INT = .FALSE.
+            U21INT = .FALSE.
+            V12INT = .FALSE.
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+            R12SQR = .TRUE.
+            MKVAJKL = .TRUE.
+            FNVAJKL = 'CCR12QIJAL' 
+            LHTF = .FALSE.
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+            MBSMAX  = 5
+            CALL R12BATF(WXRK(KU2AM),FQ12BACK,DUMMY,.FALSE.,.FALSE.,
+     &                   WORK(KEND1),LWRK1)
+            FNVAJKL = 'CCR12UIJAL' 
+            R12SQR = .FALSE.
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+            CALL R12BATF(WXRK(KU2AM),FU12BACK,DUMMY,.FALSE.,.FALSE.,
+     &                   WORK(KEND1),LWRK1)
+            FNVAJKL = 'CCR12UAJKL' 
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+            R12SQR = .TRUE.
+            MKVAJKL = .FALSE.
+         ELSE
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
+         ENDIF
          CALL QCAL(WORK(KQQAM),WXRK(KS2AM),WXRK(KU2AM),
-     *             WORK(KEND1),LWRK1,1)
+     *             WORK(KEND1),LWRK1,1,1)
          IF (.NOT. R12OLD) THEN
             CALL QCAL(WORK(KQQAM),WXRK(KS2AM),WXRK(KU2AM),
-     *                WORK(KEND1),LWRK1,2)
+     *                WORK(KEND1),LWRK1,2,2)
+            CALL QCAL(WORK(KQQAM),WXRK(KS2AM),WXRK(KU2AM),
+     *                WORK(KEND1),LWRK1,2,3)
             IF (R12HYB) THEN
                IF (R12EOR) THEN
                   IF (ONEAUX) THEN
@@ -3222,7 +4229,9 @@ C
                END IF
                COMBSS = .TRUE.  
                CALL DZERO(WORK(KT1AM),NT1AMX)
-               CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+               LHTF = .FALSE.
+               CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
+     &                       LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             END IF
             CALL COMKR(WXRK(KS2AM),WXRK(KU2AM),WORK(KV2AM),
      *                 WORK(KW2AM),WORK(KEND1),LWRK1)
@@ -3286,16 +4295,20 @@ C
             HERDIR = .TRUE.
             U21INT = .TRUE. 
          END IF
-         IF (R12PRP) THEN
+         IF (IANR12.EQ.1.AND.R12PRP) THEN
             MKVAJKL = .TRUE.            
-            FNBACK = 'CCR12_BACK'
+chf         FNBACK = 'CCR12_BACK'
             FNVAJKL = 'CCR12BAJKL'
          END IF
          CALL DZERO(WORK(KT1AM),NT1AMX)
          IF (ONEAUX) THEN
-            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
          ELSE
-            CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL TESTUU(WXRK(KU2AM),WXRK(KS2AM))
          END IF
          HERDIR = TEMP_HERDIR
@@ -3303,9 +4316,10 @@ C
          MKVAJKL = .FALSE.
          U21INT = .FALSE.
 C
-         IF (R12PRP) THEN
-            FNBACK = 'CCT12_BACK'
-            CALL R12BATF(WXRK(KS2AM),WORK(KEND1),LWRK1)
+         IF (IANR12.EQ.1.AND.R12PRP) THEN
+chf         FNBACK = 'CCT12_BACK'
+            CALL R12BATF(WXRK(KS2AM),FT12BACK,DUMMY,.FALSE.,.FALSE.,
+     &                   WORK(KEND1),LWRK1)
             R12TRA = .TRUE.
             IF (R12EOR) THEN
                R12EIN = .TRUE.
@@ -3324,10 +4338,12 @@ C
                MBSMAX = 5
             END IF
             MKVAJKL = .TRUE.            
-            FNBACK = 'CCT12_BACK'
+chf         FNBACK = 'CCT12_BACK'
             FNVAJKL = 'CCR12BIJAL'
             CALL DZERO(WORK(KT1AM),NT1AMX)
-            CALL CCSD_IAJB(WXRK(KT2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WXRK(KT2AM),WORK(KT1AM),
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             MKVAJKL = .FALSE.           
          END IF
 C
@@ -3354,19 +4370,40 @@ C
          END IF
 C
  1096    CONTINUE
-         CALL GPOPEN(LU43,'R12T12',
-     &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
-         WRITE(LU43) (WORK(KS2AM+I-1), I = 1,NH2AMX)
-         CALL GPCLOSE(LU43,'KEEP')  
-         CALL GPOPEN(LU43,'R12K12',
-     &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
-         WRITE(LU43) (WORK(KV2AM+I-1), I = 1,NH2AMX)
-         CALL GPCLOSE(LU43,'KEEP')  
-         CALL GPOPEN(LU43,'R12V12',
+
+         IF (CC2R12INT.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+           ! Resort integrals on WORK(KS2AM) to the order needed in
+           ! CC-R12, result returned on WXRK(KT2AM)
+           CALL CC_R12GETKIAJB(WORK(KS2AM),WXRK(KT2AM),ONEAUX,
+     &                NELEM,NH2AMX,IH2AM,NH1AM,IH1AM,NORB1,NRHF,NRHFSA) 
+           
+           CALL GPOPEN(LU43,FTR12,
+     &                      'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+           WRITE(LU43) (WXRK(KT2AM+I-1), I = 1,NELEM)
+           CALL GPCLOSE(LU43,'KEEP')  
+
+           ! Resort integrals on WORK(KV2AM) to the order needed in
+           ! CC-R12, result returned on WXRK(KT2AM)
+           CALL CC_R12GETKIAJB(WORK(KV2AM),WXRK(KT2AM),ONEAUX,
+     &                NELEM,NH2AMX,IH2AM,NH1AM,IH1AM,NORB1,NRHF,NRHFSA) 
+           CALL GPOPEN(LU43,FKR12,'UNKNOWN','SEQUENTIAL',
+     &                 'UNFORMATTED',IDUM,LDUM)
+           WRITE(LU43) (WXRK(KT2AM+I-1), I = 1,NELEM)
+           CALL GPCLOSE(LU43,'KEEP')  
+         END IF
+C
+         IF (CCSDR12INT.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+           !write integrals r_(bp')^(mn) to file
+           CALL CC_R12GETRAMNP(WORK(KS2AM),'R12RMNAP',ONEAUX,NORB1,
+     &                         NORB2,NRHF,NRHFSA,IH1AM,IH2AM,
+     &                         WXRK(KT2AM),LENT2AM)
+         END IF
+C
+         CALL GPOPEN(LU43,FR12V12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          READ(LU43) (WXRK(KT2AM+I-1), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')  
-         CALL GPOPEN(LU43,'R12R12',
+         CALL GPOPEN(LU43,FR12R12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          READ(LU43) (WXRK(KR2AM+I-1), I = 1,NH2AMX)
          CALL GPCLOSE(LU43,'KEEP')  
@@ -3399,6 +4436,20 @@ C
      *                  WORK(KQQ2M),WORK(KQQ4M),WORK(KQQ6M))
          END IF
          CALL TIMER('E(R12)',TIMSTR,TIMEND)  
+
+         IF (CC2R12INT.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+           ! Resort R12 integrals into WORK, sort them to the order
+           ! needed in CC-R12, result returned on WXRK, and write them
+           ! back to file
+           CALL GPOPEN(LU43,FR12R12,
+     &                      'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+           READ(LU43) (WORK(I), I = 1,NH2AMX)
+           CALL CC_R12GETKIAJB(WORK,WXRK(KR2AM),ONEAUX,NELEM,
+     &                NH2AMX,IH2AM,NH1AM,IH1AM,NORB1,NRHF,NRHFSA) 
+           REWIND(LU43)
+           WRITE(LU43) (WXRK(KR2AM + I - 1), I = 1,NELEM)
+           CALL GPCLOSE(LU43,'KEEP')  
+         END IF
       ENDIF
       R12TRA = .FALSE.
       R12INT = .FALSE.
@@ -3410,7 +4461,8 @@ C
       INTGAC = 0
       MBSMAX = 4
       ONEAUX = .FALSE.
-CWMK  DIRECT = TEMP_DIRECT
+      DIRECT = TEMP_DIRECT
+      CALL QEXIT('CCSD_R12')
       RETURN
  1013 FORMAT(A3,'[',I1,']')  
       END
@@ -3886,7 +4938,7 @@ C
   100 CONTINUE
       NBASF = NORB1(NSYM) + NORB2(NSYM)
       NNBASF = ISB(NSYM) + NBASF * (NBASF + 1) / 2
-      LUMULB = 34
+      LUMULB = -34
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE(LUMULB,'KEEP')
@@ -4072,7 +5124,7 @@ C
       IF (IPRINT .LE. 3) GOTO 998
       CALL AROUND('Singlet <Vab> matrix') 
       CALL OUTPUT(VS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-      CALL AROUND('Singlet <Bab> matrix') 
+      CALL AROUND('Singlet <inglet <V> matrixab> matrix') 
       CALL OUTPUT(BS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Singlet <Sab> matrix') 
       CALL OUTPUT(RS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
@@ -4211,9 +5263,9 @@ C
   102    CONTINUE
   101 CONTINUE
 C
-      LU33 = 33
-      LU34 = 34
-      LU35 = 35
+      LU33 = -33
+      LU34 = -34
+      LU35 = -35
       CALL GPOPEN(LU33,'PROFILE.1','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN(LU34,'PROFILE.2','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       CALL GPOPEN(LU35,'PROFILE.3','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
@@ -4263,5 +5315,37 @@ C
    30   CONTINUE
    40 CONTINUE
 C
+      RETURN
+      END
+C=====================================================================*
+C  /* Deck vshrnk */
+      SUBROUTINE VSHRNK(VS11,NSPAIR,NRHF,NRHFA,NSYM)
+#include <implicit.h>
+      DIMENSION VS11(NSPAIR,NSPAIR),NRHF(NSYM),NRHFA(NSYM)
+      IJ = 0
+      JI = 0
+      II = 0
+      DO ISYM = 1, NSYM
+       DO I = 1, NRHF(ISYM)
+        II = II + 1
+        JJ = 0
+        DO JSYM = 1, NSYM
+        DO J = 1, NRHF(JSYM)
+          JJ = JJ + 1
+          IF (JJ .LE. II) THEN
+            IJ = IJ + 1
+            IF (I .LE. NRHFA(ISYM) .AND.
+     *          J .LE. NRHFA(JSYM)) THEN
+              JI = JI + 1
+              IF (IJ .NE. JI)
+     *        CALL DCOPY(NSPAIR,VS11(1,IJ),1,VS11(1,JI),1)
+              END IF
+            END IF
+         END DO
+        END DO
+       END DO
+      END DO
+      IF (JI .LT. NSPAIR)
+     *CALL DZERO(VS11(1,JI+1),NSPAIR*(NSPAIR-JI))
       RETURN
       END

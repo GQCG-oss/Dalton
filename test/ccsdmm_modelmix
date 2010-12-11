@@ -222,20 +222,19 @@ cat > ccsdmm_modelmix.pot <<%EOF%
 cat > ccsdmm_modelmix.dal <<%EOF%
 **DALTON INPUT
 .RUN WAVEFUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-.THETA
-.SECMOM
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-11
 .MAXDIP
  80
 .OLDTG
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.THETA
+.SECMOM
 **WAVE FUNCTIONS
 .CC
 .PRINT
@@ -350,8 +349,8 @@ ERROR[7]="STATIC POLARIZATION NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

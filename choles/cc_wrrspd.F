@@ -106,7 +106,7 @@ C     --------------------------------
 C     Open and rewind file.
 C     ---------------------
 
-      LUSAVE = 0
+      LUSAVE = -1
       CALL GPOPEN(LUSAVE,FILEX,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND(LUSAVE,IOSTAT=IOS,ERR=992)

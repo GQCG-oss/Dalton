@@ -59,23 +59,27 @@ Functional* available_functionals[] = {
     &B97Functional,
     &B97_1Functional,
     &B97_2Functional,
+    &B97_3Functional,
+    &B97_KFunctional,
     &Example2Functional,
     &ExampleFunctional,
     &DK87xFunctional,
     &G96xFunctional,
     &KTxFunctional,
     &LB94Functional,
-    &LG93Functional,
+    &LG93xFunctional,
     &LRC95xFunctional,
     &LYPFunctional,
     &LYPrFunctional,
+    &HCTHFunctional,
     &HCTH93Functional,
+    &HCTH93mFunctional,
     &HCTH120Functional,
     &HCTH147Functional,
     &HCTH407Functional,
     &HCTH407pFunctional,
     &OPTXFunctional,
-    &mPWFunctional,
+    &mPWxFunctional,
     &P86cFunctional,
     &PW86xFunctional,
     &PW91cFunctional,
@@ -94,11 +98,13 @@ Functional* available_functionals[] = {
     &VWN3Functional,
     &VWN5Functional,
     &VWNIFunctional,
+    &VWN3IFunctional,
     &VWNFunctional,
     &XAlphaFunctional,
     &WignerFunctional,
     &WL90cFunctional,
     /* mixed functionals */
+    &B2PLYPFunctional,
     &B3LYPFunctional,
     &B3LYPgFunctional,
     &B3LYPGaussFunctional,
@@ -118,6 +124,7 @@ Functional* available_functionals[] = {
     &BP86Functional,
     &BPW91Functional,
     &BWFunctional,
+    &BFWFunctional,
     &Camb3lypFunctional,
     &CombineFunctional,
     &DBLYPFunctional,
@@ -130,17 +137,23 @@ Functional* available_functionals[] = {
     &G96LYPFunctional,
     &G96P86Functional,
     &G96PW91Functional,
+    &G961LYPFunctional,
     &KMLYPFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,
     &LDAFunctional,
+    &LG1LYPFunctional,
     &mPWVWNFunctional,
     &mPWLYPFunctional,
     &mPWP86Functional,
     &mPWPW91Functional,
+    &mPW91Functional,
     &mPW1PW91Functional,
     &mPW3PW91Functional,
+    &mPW1KFunctional,
+    &mPW1NFunctional,
+    &mPW1SFunctional,
     &OVWNFunctional,
     &OLYPFunctional,
     &OP86Functional,
@@ -175,13 +188,16 @@ static int my_printf(const char *fmt, ...)
  
 static void set_hf_weight(real w)         {}
 static real get_hf_weight(void)           {return 0;}
-static void set_cam_param(real w, real b) {}
+static void set_cam_param(int cnt, const real *w, const real *b) {}
 
 Functional* selected_func = &LDAFunctional;
 int (*fun_printf)(const char *fmt, ...) = my_printf;
 void (*fun_set_hf_weight)(real w)         = set_hf_weight;
 real (*fun_get_hf_weight)(void)           = get_hf_weight;
-void (*fun_set_cam_param)(real w, real b) = set_cam_param;
+void (*fun_set_mp2_weight)(real w)        = set_hf_weight;
+real (*fun_get_mp2_weight)(void)          = get_hf_weight;
+void (*fun_set_cam_param)(int cnt, const real *mu, const real *b)
+     = set_cam_param;
 
 /* =================================================================== */
 enum FunError

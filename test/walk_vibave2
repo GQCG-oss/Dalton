@@ -101,19 +101,19 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "H * 1 * 1 * 16 * 9 * \[7s3p\|3s2p\]" $log | wc -l`
-CRIT2=`$GREP "F * 1 * 9 * 43 * 23 * \[10s6p3d\|4s3p2d\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 2 * 10 * 59 * 32" $log | wc -l`
+CRIT1=`$GREP "H * 1 * 1\.0000 * 16 * 9 * \[7s3p\|3s2p\]" $log | wc -l`
+CRIT2=`$GREP "F * 1 * 9\.0000 * 43 * 23 * \[10s6p3d\|4s3p2d\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 10\.0000 * 59 * 32" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=16
+CTRL[1]=4
 ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "3 * z * 1\.7497928937" $log | wc -l`
 CRIT2=`$GREP "6 * z * (0| )\.0241892414" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[2]=4
+CTRL[2]=2
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Numerical differentiation
@@ -178,8 +178,8 @@ ERROR[9]="PROJECTED GRADIENT NOT CORRECT"
 # Projected Hessian
 CRIT1=`$GREP "3 * (0| |\-0|\-)\.00000000 * (0| |\-0|\-)\.00000000 * (0| )\.655267.[0-9] * (0| |\-0|\-)\.00000000" $log | wc -l`
 CRIT2=`$GREP "6 * (0| |\-0|\-)\.00000000 * (0| |\-0|\-)\.00000000 * (\-0|\-)\.655267.[0-9] * (0| |\-0|\-)\.00000000" $log | wc -l`
-CRIT3=`$GREP "3 * (0| |\-0|\-)\.00000000 * (\-0|\-)\.655267.[0-9]" $log | wc -l`
-CRIT4=`$GREP "6 * (0| |\-0|\-)\.00000000 * (0| )\.655267.[0-9]" $log | wc -l`
+CRIT3=`$GREP "3 * (\-0|\-)\.655267.[0-9]" $log | wc -l`
+CRIT4=`$GREP "6 * (0| )\.655267.[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[10]=4
 ERROR[10]="PROJECTED HESSIAN NOT CORRECT"
@@ -192,7 +192,7 @@ ERROR[11]="ENERGY AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Gradient at effective geometry
 CRIT1=`$GREP "1 * (0| |\-0|\-)\.00000000 * (0| |\-0|\-)\.00000000 * (0| )\.018485.[0-9] * (0| |\-0|\-)\.00000000" $log | wc -l`
-CRIT2=`$GREP "1 * (0| |\-0|\-)\.00000000 * (\-0|\-)\.018485.[0-9]" $log | wc -l`
+CRIT2=`$GREP "1 * (\-0|\-)\.018485.[0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="GRADIENT AT EFFECTIVE GEOMETRY NOT CORRECT"
@@ -264,8 +264,8 @@ ERROR[22]="FINAL ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

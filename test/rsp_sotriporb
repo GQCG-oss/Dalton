@@ -2,8 +2,9 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > $0.info <<%EOF%
-   $0
+testcase=`basename $0`
+cat > $testcase.info <<%EOF%
+   $testcase
    -------------
    Molecule:         H
    Wave Functions:   MCSCF (RAS) / STO-3G
@@ -15,7 +16,7 @@ cat > $0.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > $0.mol <<%EOF%
+cat > $testcase.mol <<%EOF%
 INTGRL
 Energy calculation without symmetry
 Basis set specified with ATOMBASIS
@@ -31,7 +32,7 @@ H     0 0 1.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > $0.dal <<%EOF%
+cat > $testcase.dal <<%EOF%
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRAL
@@ -66,6 +67,8 @@ cat > $0.dal <<%EOF%
 .TRPFLG
 *LINEAR
 .SINGLE RESIDUE
+.PRINT
+ 3
 .PROPRT
 Z2SPNORB
 .ROOTS
@@ -81,7 +84,7 @@ Z2SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh
+echo '#!/bin/sh
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -112,7 +115,7 @@ CTRL[3]=3
 ERROR[3]="GRADIENT NOT CORRECT"
 
 # ?
-CRIT1=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOM(D|E)NT\: \-1\.00146197E\-05 \*ENERGY\(eV\)\: * \-1(0| )\.234919" $log | wc -l`
+CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOM(D|E)NT\: \-1\.00146197E\-05 \*ENERGY\(eV\)\: * \-1(0| )\.234919" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="TRANSITION NOT CORRECT"
@@ -121,8 +124,8 @@ ERROR[4]="TRANSITION NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done
@@ -136,5 +139,5 @@ else
   exit 1
 fi
 
-' > $0.check
+' > $testcase.check
 #######################################################################

@@ -286,7 +286,8 @@ c /* deck CC_4HYP */
 * calculate F{O} matrix contributions:
 *---------------------------------------------------------------------*
       CALL CCQR_FADRV('L1 ','o1 ','R2 ','R2 ',N1FATRAN, MXVEC2,
-     &                 WORK(K1FATRAN),WORK(K1FADOTS),WORK(K1FACONS),
+     &                 WORK(K1FATRAN),WORK(K1FADOTS),
+     &                 WORK(K1FACONS),
      &                 WORK(KEND0), LEND0, 'DOTP' )
 
 *---------------------------------------------------------------------*

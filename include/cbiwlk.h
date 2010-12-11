@@ -1,7 +1,8 @@
       PARAMETER (MAXTMP = 20)
       LOGICAL WFPRED, REJECT, KEEPSY, VIBCNV,
      *        START, DOREPW, IMAGE, STRICT, NOORTH, NATCON, V3CAL,
-     *        VIBAVE, NMODIF, ECKART, DOTEMP, DOCENT, REUSED
+     *        VIBAVE, NMODIF, ECKART, DOTEMP, DOCENT, REUSED, ACCURT,
+     *        HESFLW
       COMMON /CBIWLK/ TOLST, TRUSTR, TRUSTI, TRUSTD,
      &                REJMIN, REJMAX, RTRMIN, RTRGOD,
      &                XMXNUC, ZERGRD, DISPLC,
@@ -15,4 +16,4 @@
      &                IMAGE, STRICT,
      &                NOORTH, NATCON, V3CAL, VIBAVE, NMODIF,
      &                ECKART, DOTEMP, DOCENT, TEMP(MAXTMP), NTEMP,
-     &                REUSED
+     &                REUSED, ACCURT, HESFLW

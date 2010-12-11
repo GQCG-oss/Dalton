@@ -110,9 +110,9 @@ C
 C
 C     Open the file
 C
-      LU3FOP  = 0
-      LU3VI2  = 0
-      LU3FOP2  = 0
+      LU3FOP  = -1
+      LU3VI2  = -1
+      LU3FOP2 = -1
       CALL WOPEN2(LU3FOP,FN3FOP,64,0)
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
       CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
@@ -278,14 +278,14 @@ C  /* Deck cc3_adenocc_cub */
 *************************************************************************
 *            
       IMPLICIT NONE
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<ccsdsym.h>
-#include<dummy.h>
-#include<priunit.h>
-#include<iratdef.h>
-#include<ccinftap.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <ccinftap.h>
 #include <ccsdinp.h>
 #include <ccr2rsp.h>
 C
@@ -376,19 +376,19 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDRZ  = 0
-      LUDELDRZ  = 0
-      LUDKBCRZ  = 0
+      LU3SRTR   = -1
+      LUCKJDRZ  = -1
+      LUDELDRZ  = -1
+      LUDKBCRZ  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDRZ,FNCKJDRZ,64,0)
       CALL WOPEN2(LUDELDRZ,FNDELDRZ,64,0)
       CALL WOPEN2(LUDKBCRZ,FNDKBCRZ,64,0)
 C
-      LUCKJDRU  = 0
-      LUDELDRU  = 0
-      LUDKBCRU  = 0
+      LUCKJDRU  = -1
+      LUDELDRU  = -1
+      LUDKBCRU  = -1
 C
       CALL WOPEN2(LUCKJDRU,FNCKJDRU,64,0)
       CALL WOPEN2(LUDELDRU,FNDELDRU,64,0)
@@ -2615,37 +2615,37 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDRZ  = 0
-      LUDELDRZ  = 0
-      LUDKBCRZ  = 0
+      LU3SRTR   = -1
+      LUCKJDRZ  = -1
+      LUDELDRZ  = -1
+      LUDKBCRZ  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDRZ,FNCKJDRZ,64,0)
       CALL WOPEN2(LUDELDRZ,FNDELDRZ,64,0)
       CALL WOPEN2(LUDKBCRZ,FNDKBCRZ,64,0)
 C
-      LUCKJDRU  = 0
-      LUDELDRU  = 0 
-      LUDKBCRU  = 0 
+      LUCKJDRU  = -1
+      LUDELDRU  = -1
+      LUDKBCRU  = -1
 C
       CALL WOPEN2(LUCKJDRU,FNCKJDRU,64,0)
       CALL WOPEN2(LUDELDRU,FNDELDRU,64,0)
       CALL WOPEN2(LUDKBCRU,FNDKBCRU,64,0)
 C
       ![[H,T1Z],T1U]
-      LUCKJDRZU  = 0
-      LUDELDRZU  = 0 
-      LUDKBCRZU  = 0 
+      LUCKJDRZU  = -1
+      LUDELDRZU  = -1
+      LUDKBCRZU  = -1
 C
       CALL WOPEN2(LUCKJDRZU,FNCKJDRZU,64,0)
       CALL WOPEN2(LUDELDRZU,FNDELDRZU,64,0)
       CALL WOPEN2(LUDKBCRZU,FNDKBCRZU,64,0)
 C
       ![H,T1ZU]
-      LUCKJDR2  = 0
-      LUDELDR2  = 0 
-      LUDKBCR2  = 0 
+      LUCKJDR2  = -1
+      LUDELDR2  = -1
+      LUDKBCR2  = -1
 C
       CALL WOPEN2(LUCKJDR2,FNCKJDR2,64,0)
       CALL WOPEN2(LUDELDR2,FNDELDR2,64,0)
@@ -3254,11 +3254,11 @@ C---------------------------------------------
 C     Open files for Tbar and W intermediates:
 C---------------------------------------------
 C
-      LUT3 = 0
-      LUWBMAT = 0
-      LUWBZU = 0
-      LUTHETA = 0
-      LUWZU = 0
+      LUT3    = -1
+      LUWBMAT = -1
+      LUWBZU  = -1
+      LUTHETA = -1
+      LUWZU   = -1
 
       CALL WOPEN2(LUT3,FNT3,64,0)
       CALL WOPEN2(LUWBMAT,FNWBMAT,64,0)
@@ -3569,12 +3569,9 @@ C              Can use kend3 since we do not need the integrals anymore.
                KW3MATZ      = KW3BMAT     + NCKIJ(ISWBMAT)
 c
 C
-               MAXX1 = MAX(NCKIJ(ISWMATZ),NCKIJ(ISWMATZU))
-               MAXX2 = MAX(NCKIJ(ISCKIJ),NCKIJ(ISWBMAT))
-C
                KWTEMP     = KW3MATZ      + NCKIJ(ISWMATZ)
-               KEND4  =     KWTEMP  + MAX(MAXX1,MAXX2)
-               LWRK4      = LWORK     - KEND4
+               KEND4      = KWTEMP       + NCKIJMAX
+               LWRK4      = LWORK        - KEND4
 C
                KW3MATU  = KEND4
                KINDSQWU = KW3MATU  + NCKIJ(ISWMATU)
@@ -6638,7 +6635,7 @@ C
             ELSE IF (ILOOP .EQ. 4) THEN
                CALL DCOPY(NCKATR(ISYAID),VGDKCB,1,WORK(KAID),1)
             END IF
-            CALL CCSDT_SRVIR3(WORK(KAID),WORK(LWRK1),ISYMB,B,ISINT2)
+            CALL CCSDT_SRVIR3(WORK(KAID),WORK(KEND1),ISYMB,B,ISINT2)
 C
             LENGTH = NCKIJ(JSAIKJ)
 C
@@ -8382,9 +8379,9 @@ C     Filip Pawlowski, Aarhus, Winter 2003
 *     Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYT30JK,ISYMT2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCL,ISYML,ISYMC,ISYBAI
@@ -8769,9 +8766,9 @@ C
 C     F. Pawlowski, Aarhus, Fall 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBAC,ISYMC,ISYAB,ISYBA,ISYMB,ISYMA
       INTEGER KOFF1,KOFF2

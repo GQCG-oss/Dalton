@@ -26,7 +26,7 @@
 const static int DFTQR_DEBUG = 0;
 
 void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv, 
-                 real* dxcao, real* dxvao, real* wrk, int* lfrsav);
+                 real* dxcao, real* dxvao, real* wrk, integer* lfrsav);
 
 typedef struct {
     real *res_omega, *res_omY, *res_omZ;
@@ -34,9 +34,9 @@ typedef struct {
                             * my is [rho,Y], etc. */
     real *yy, *zz, *yzzy;  /* vectors of expectation values */
     real *vy, *vz;         /* transformed orbitals */
-    int spinY, symY; 
-    int spinZ, symZ;
-    int symYZ; /* symmetry of the result = symA */
+    integer spinY, symY; 
+    integer spinZ, symZ;
+    integer symYZ; /* symmetry of the result = symA */
     unsigned is_gga:1; /* whether we should do the density-gradient
                         * dependent part of the transformation */
 } QuadBlData;
@@ -94,7 +94,7 @@ commute_d_x(real * RESTRICT kappaY, int symY,
 }
 
 static __inline__ void
-commute_matrices(int sz, const real* a, const real* b,
+commute_matrices(integer sz, const real* a, const real* b,
                  real* c, int addp)
 {
     static const real MONER = -1.0;
@@ -106,18 +106,18 @@ commute_matrices(int sz, const real* a, const real* b,
            b, &sz, a, &sz, &ONER, c, &sz);
 }
 
-int isetksymop_(const int *new_ksymop);
+int FSYM(isetksymop)(const integer *new_ksymop);
 static void
 qrbl_data_init(QuadBlData *d, real *cmo, int is_gga, int max_block_len,
-	      real *kappaY, int symY, int spinY, 
-	      real *kappaZ, int symZ, int spinZ,
+	      real *kappaY, integer symY, int spinY, 
+	      real *kappaZ, integer symZ, int spinZ,
 	      real *dmat,
-	      real *work, int *lwork)
+	      real *work, integer *lwork)
 {
     real dummy;
-    int isym;
-    int nbast = inforb_.nbast;
-    int norbt = inforb_.norbt;
+    integer isym;
+    integer nbast = inforb_.nbast;
+    integer norbt = inforb_.norbt;
     real *commuted_mat = work;
     real *work1 = commuted_mat + inforb_.n2orbx;
     real *work2 = work1        + inforb_.n2basx;
@@ -144,7 +144,7 @@ qrbl_data_init(QuadBlData *d, real *cmo, int is_gga, int max_block_len,
         dalton_quit("no enough mem in %s", __FUNCTION__);
     isym = isetksymop_(&symY);
     FSYM(deq27)(cmo, kappaY, &dummy, d->my,    &dummy, work, lwork);
-    isym = isetksymop_(&symZ);
+    isetksymop_(&symZ);
     FSYM(deq27)(cmo, kappaZ, &dummy, d->mz,    &dummy, work, lwork);
     isetksymop_(&isym);
 #if 0
@@ -184,15 +184,15 @@ qrbl_data_init(QuadBlData *d, real *cmo, int is_gga, int max_block_len,
     memset(d->myzzy, 0, nbast*nbast*sizeof(real));
     for(isym=0; isym<inforb_.nsym; isym++) {
         int ibasi = inforb_.ibas[isym];
-        int nbasi = inforb_.nbas[isym];
+        integer nbasi = inforb_.nbas[isym];
         int iorbi = inforb_.iorb[isym];
-        int norbi = inforb_.norb[isym];
+        integer norbi = inforb_.norb[isym];
         int icmoi = inforb_.icmo[isym];
         int jsym  = inforb_.muld2h[d->symYZ-1][isym]-1;
         int ibasj = inforb_.ibas[jsym];
-        int nbasj = inforb_.nbas[jsym];
+        integer nbasj = inforb_.nbas[jsym];
         int iorbj = inforb_.iorb[jsym];
-        int norbj = inforb_.norb[jsym];
+        integer norbj = inforb_.norb[jsym];
         int icmoj = inforb_.icmo[jsym];
         if(norbi == 0 || norbj == 0) continue;
         dgemm_("N","N", &nbasi, &norbj, &norbi,
@@ -220,7 +220,7 @@ qrbl_data_free(QuadBlData *d)
 
 static void
 qrbl_eval_rho_vars(DftIntegratorBl* grid, QuadBlData *data,
-		  real *tmp, int bllen, int blstart, int blend)
+		  real *tmp, integer bllen, int blstart, int blend)
 {
     /* compute vector of transformed densities vt */
     FSYM2(getexp_blocked_lda)(&data->symY, data->my, grid->atv,
@@ -278,7 +278,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
     }
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+        integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
         int ibl_cnt = grid->bas_bl_cnt[isym];
         
         for(ibl=0; ibl<ibl_cnt; ibl++)
@@ -302,7 +302,7 @@ qrbl_add_lda_contribution(DftIntegratorBl* grid, QuadBlData* d,
                 real * RESTRICT tmpi = tmp + i*bllen;
                 real * RESTRICT vyi = d->vy + i*bllen;
                 real * RESTRICT vzi = d->vz + i*bllen;
-                int (*RESTRICT jblocks)[2];
+                integer (*RESTRICT jblocks)[2];
 
                 jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
                 jblocks = BASBLOCK(grid,jsym);
@@ -359,7 +359,7 @@ qrbl_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  * =================================================================== */
 static void
 qrbl_eval_gga_vars(DftIntegratorBl* grid, QuadBlData *data,
-                    real *tmp, int bllen, int blstart, int blend)
+                    real *tmp, integer bllen, int blstart, int blend)
 {
     /* compute vector of transformed densities and density gradients vt */
     FSYM2(getexp_blocked_gga)(&data->symY, data->my, grid->atv,
@@ -484,7 +484,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
     }
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+        integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
         int ibl_cnt = grid->bas_bl_cnt[isym];
         for(ibl=0; ibl<ibl_cnt; ibl++)
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
@@ -519,7 +519,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
                     real * RESTRICT vyi = d->vy + i*bllen;
                     real * RESTRICT vzi = d->vz + i*bllen;
                     int jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
-                    int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                    integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                     int jbl_cnt = grid->bas_bl_cnt[jsym];
                     for(jbl=0; jbl<jbl_cnt; jbl++) {
                         for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
@@ -549,7 +549,7 @@ qrbl_add_gga_contribution(DftIntegratorBl* grid, QuadBlData* d,
                 real * RESTRICT vyi = d->vy + i*bllen;
                 real * RESTRICT vzi = d->vz + i*bllen;
                 int jsym = inforb_.muld2h[d->symYZ-1][isym]-1;
-                int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                 int jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
@@ -683,9 +683,9 @@ qrbl_collect_info(real* fi, real*work, int lwork)
  * =================================================================== */
 void
 FSYM2(dft_qr_respons)(real *fi, real *cmo,
-                      real *kappaY, int *symY, int *spinY, 
-                      real *kappaZ, int *symZ, int *spinZ,
-                      int *addfock, real *work, int *lwork)
+                      real *kappaY, integer *symY, integer *spinY, 
+                      real *kappaZ, integer *symZ, integer *spinZ,
+                      integer *addfock, real *work, integer *lwork)
 {
     static int msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;

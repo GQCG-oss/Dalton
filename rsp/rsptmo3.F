@@ -112,8 +112,8 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <iratdef.h>
-      DIMENSION CMO(2),UDV(2),PV(2),FC(2),FV(2),FCAC(2),H2AC(2)
-      DIMENSION XINDX(2),WRK(2)
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION XINDX(*),WRK(*)
 C
       CHARACTER*8 BLANK
       PARAMETER (D0 = 0.0D0)

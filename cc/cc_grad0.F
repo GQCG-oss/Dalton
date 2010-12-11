@@ -495,7 +495,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -809,6 +809,20 @@ C
          CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
 C
       ENDIF
+#ifdef asm_debug
+! ALFREDO OK ? I think you by mistake left in some debug code? See also
+! asm_debug below
+casm
+      xnorm = ddot(n2bst(1),work(kaoden),1,work(kaoden),1)
+      write(lupri,*) 'Norm of density :', xnorm
+      koff = kaoden
+      do isym = 1,nsym
+         write(lupri,*) 'Symmetry block :',isym
+         call output(work(koff),1,nbas(isym),1,nbas(isym),
+     &               nbas(isym),nbas(isym),1,lupri)
+         koff = koff + nbas(isym)*nbas(isym)
+      end do
+#endif
 C
 C===========================================================
 C Derivative one-electron integral contribution to gradient:
@@ -906,7 +920,7 @@ C
      &                          //CHRNOS(MOD(ISCOOR,100)/10)
      &                          //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-                 CALL CCPRPAO(LABEL,WORK(K1DHAM),IRREP,ISYM,IERR,
+                 CALL CCPRPAO(LABEL,.TRUE.,WORK(K1DHAM),IRREP,ISYM,IERR,
      &                        WORK(KEND2),LWRK2)
 C
                  IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
@@ -945,7 +959,7 @@ C     Open file for effective two electron densities:
 C----------------------------------------------------
 C
       LDECH = N2BSTM*2 + 1
-      LUDE = 0
+      LUDE = -1
       CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT',
      *            'UNFORMATTED',LDECH,OLDDX)
 C
@@ -990,6 +1004,8 @@ C     Loop over sets of delta distributions:
 C-------------------------------------------
 C
       IF (LOCDBG) WRITE(LUPRI,*) 'number of sets:',NTOT
+C
+      ECCSD2 = ZERO
 C
       DO 100 ILLD = 1,NTOT
 C
@@ -1105,6 +1121,12 @@ C
             ENDIF
             AUTIME = SECOND() - AUTIME
             TIMDEN = TIMDEN + AUTIME
+#ifdef asm_debug
+casm
+            xnorm = ddot(NF2IJG(ISYDEN),WORK(KD2IJG),1,WORK(KD2IJG),1)
+            write(lupri,'(a,3i5,d20.10)') 'isyden,illd,idel2,xnorm :',
+     &              isyden,illd,idel2,xnorm
+#endif
 C
 C-------------------------------------------------------------------
 C        Read in undifferentiated 2e-integrals for Eff. Fock matrix:
@@ -1121,6 +1143,11 @@ C
 
             CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWRK3,
      *                    WORK(KRECNR),DIRECT)
+#ifdef asm_debug
+            write(lupri,'(a,2i8,f16.10)')'idel,idel2,integral norm :',
+     &         idel,idel2,
+     &         ddot(ndisao(isymd),work(kxint),1,work(kxint),1)
+#endif
 C
 C---------------------------------------------------
 C           Start loop over second AO-index (gamma).
@@ -1602,7 +1629,7 @@ C
      &                       //CHRNOS(MOD(ISCOOR,100)/10)
      &                       //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-              CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
+              CALL CCPRPAO(LABEL,.TRUE.,WORK(K1DOVL),IRREP,ISYM,IERR,
      &                     WORK(KEND2),LWRK2)
 C
               IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
@@ -1697,21 +1724,21 @@ C
      *              ' calculation completed'
 
         TIMTOT = SECOND() - TIMTOT
-        WRITE(LUPRI,'(A,f10.2))') 'Total time used in CC_GRAD2E:',TIMTOT
+        WRITE(LUPRI,'(A,f10.2)') 'Total time used in CC_GRAD2E:',TIMTOT
 
         IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,'(/6(/A,f10.2))') 
-     &      'Time used for setting up d(pq,ga,de):',TIMDEN,
-     &      'Time used for full AO backtransformation:',TIMDAO,
-     &      'Time used for reading 2 e- AO-integrals:',TIRDAO,
+     &      'Time used for setting up d(pq,ga,de)       :',TIMDEN,
+     &      'Time used for full AO backtransformation   :',TIMDAO,
+     &      'Time used for reading 2 e- AO-integrals    :',TIRDAO,
      &      'Time used for calculating 2 e- AO-integrals:',TIMHE2,
-     &      'Time used for 1 e- part & intermediates:',TIMONE,
-     &      'Time used for reorthonormalization part:',TIMREO
+     &      'Time used for 1 e- part & intermediates    :',TIMONE
+C    &     ,'Time used for reorthonormalization part    :',TIMREO
         ENDIF
         CALL FLSHFO(LUPRI)
       END IF
 C
-C     restorte DIRECT flag
+C     restore DIRECT flag
 C
       DIRECT = DIRSAV
 C

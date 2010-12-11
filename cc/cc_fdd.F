@@ -70,6 +70,9 @@ C
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
 C
+      IF (CCR12) CALL QUIT('Finite-difference D-matrix for CCR12 '//
+     &                     'not adapted')
+C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CC_FDD  : MAKING FINITE DIFF. CC D Matrix')
       ENDIF
@@ -148,7 +151,7 @@ C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -217,7 +220,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -236,7 +239,7 @@ C
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *               WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C------------------
 C        Transform.
@@ -305,7 +308,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -326,7 +329,7 @@ C
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *                 WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C--------------------
 C          Transform.
@@ -432,7 +435,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -445,8 +448,9 @@ C
      *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND2),LWRK2) 
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND2),LWRK2,'XXX') 
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CC_FDD ')

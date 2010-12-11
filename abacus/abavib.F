@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -51,16 +51,17 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, CARD*80, TYPE*4,
      &          WORD1*7
       DIMENSION IA(4)
-      DATA TABLE /'.SKIP  ', '.PRINT ', '.ISOTOP', '.INTERN',
+      DATA TABLE /'xxxxxxx', '.PRINT ', '.ISOTOP', '.INTERN',
      &            '.XXXXXX', '.HESFIL', '.HESPUN'/
       DATA ISOTPD/0/, ISOTHD/0/, DOINT/.FALSE./
 C
-      NEWDEF = (WORD .EQ. '*VIBANA')
+      NEWDEF = ((WORD .EQ. '*VIBANA').OR.(WORD.EQ.'*HARMON'))
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   101       PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -80,7 +81,6 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in VIBINP.')
     1          CONTINUE
-                  SKIP = .TRUE.
                GO TO 100
     2          CONTINUE
                   READ (LUCMD,*) IPRINT
@@ -90,14 +90,14 @@ C
                   READ (LUCMD,*) NISOTP, NATM
                   IF (NISOTP .GT. MAXSUB) THEN
                      WRITE (LUPRI,*)' Too many isotopic substitutions'//
-     &                    ' requested in VIBANA input'
+     &                    ' requested in *VIBANA input'
                      WRITE (LUPRI,*) ' Increase MAXSUB, recompile and'//
      &                    ' be welcome back'
-                     CALL QUIT('Input error in VIBANA')
+                     CALL QUIT('Input error in *VIBANA')
                   END IF
                   DO 305 ICOUNT = 1, NISOTP
                      READ (LUCMD,*) (ISOTP(ICOUNT,N), N = 1, NATM)
- 305              CONTINUE 
+ 305              CONTINUE
                GO TO 100
     4             CONTINUE
   400                DOINT = .TRUE.
@@ -154,31 +154,27 @@ c                  MOLGRD = .FALSE.
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for VIBANA:',0)
-         IF (SKIP) THEN
-            WRITE (LUPRI,'(A)') ' VIBANA skipped in this run.'
+         IF (IPRINT .NE. IPRDEF) THEN
+            WRITE (LUPRI,'(A,I5)') ' Print level in VIBANA:',IPRINT
+         END IF
+         IF (DOINT) THEN
+            WRITE (LUPRI,'(A)') ' Forces and force constants will '//
+     &          'be printed in internal coordinates.'
+         END IF
+         IF (HESFIL) THEN
+            WRITE (LUPRI,'(A)') ' Vibrational analysis will be '//
+     &           'based on Hessian read from file'
+         END IF
+         IF (HESPUN) THEN
+            WRITE(LUPRI,'(A)') ' The vibrational Hessian will be '//
+     &           'punched to file'
+         END IF
+         IF (NISOTP .EQ. 0) THEN
+            WRITE (LUPRI, '(A)')
+     &           ' Vibrational analysis for parent molecule only.'
          ELSE
-            IF (IPRINT .NE. IPRDEF) THEN
-               WRITE (LUPRI,'(A,I5)') ' Print level in VIBANA:',IPRINT
-            END IF
-            IF (DOINT) THEN
-               WRITE (LUPRI,'(A)') ' Forces and force constants will '//
-     &             'be printed in internal coordinates.'
-            END IF
-            IF (HESFIL) THEN
-               WRITE (LUPRI,'(A)') ' Vibrational analysis will be '//
-     &              'based on Hessian read from file'
-            END IF
-            IF (HESPUN) THEN
-               WRITE(LUPRI,'(A)') ' The vibrational Hessian will be '//
-     &              'punched to file'
-            END IF
-            IF (NISOTP .EQ. 0) THEN
-               WRITE (LUPRI, '(A)')
-     &              ' Vibrational analysis for parent molecule only.'
-            ELSE
-               WRITE (LUPRI,'(4X,A,I3,A)')
-     &              ' Vibrational analysis for ',NISOTP+1,' molecules'
-            END IF
+            WRITE (LUPRI,'(4X,A,I3,A)')
+     &           ' Vibrational analysis for ',NISOTP+1,' molecules'
          END IF
       END IF
       RETURN
@@ -203,8 +199,7 @@ C
       DO 10 I = 1, MAXSUB
          DO 10 J = 1, MXCENT
          ISOTP(I,J) = 1
- 10   CONTINUE 
-      SKIP   = .NOT.VIB
+ 10   CONTINUE
       IF (MOLHES) THEN
          MAXDIF = 2
       ELSE IF (MOLGRD) THEN
@@ -266,7 +261,7 @@ C
 #include <cbivib.h>
 C
       CALL QENTER('VIBCTL')
-      LUHES = 0
+      LUHES = -1
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL TITLER
      &   ('ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS','*',115)
@@ -288,7 +283,7 @@ C
       KCAAT  = KDGRAD + 3*NCORD
       KWRK1  = KCAAT  + 3*NCORD
       LWRK1  = LWORK  - KWRK1
-      IF (KWRK1 .GE. LWORK) CALL STOPIT('VIBCTL','GETNOS',KWRK1,LWORK) 
+      IF (KWRK1 .GE. LWORK) CALL STOPIT('VIBCTL','GETNOS',KWRK1,LWORK)
       CALL GETNOS(WORK(KCHRG),WORK(KGEOM),WORK(KGRAD),WORK(KHESS),
      &            WORK(KGRDN),WORK(KDGRAD),WORK(KCAAT),
      &            WORK(KWRK1),LWRK1,NATOMS,NCORD,DIPDER,DOVCD,IPRINT,
@@ -299,7 +294,7 @@ C
          KHESS0 = KGRAD0 + NCORD
          KGRADF = KHESS0 + NCORD*NCORD
 C
-C     We use the gradient from the first iteration, since we are not in 
+C     We use the gradient from the first iteration, since we are not in
 C     the minimum geometry when we end geometry steps using NUMHES
 C
 ckr         CALL REANMHES(WORK(KCOOR0),WORK(KGRAD0),WORK(KHESS0),
@@ -318,7 +313,7 @@ C
       IF (HESFIL) THEN
          CALL DZERO(WORK(KHESS),NCORD*NCORD)
          CALL GPINQ('DALTON.HES','EXIST',HESEXS)
-         IF (.NOT. HESEXS) 
+         IF (.NOT. HESEXS)
      &        CALL QUIT('Unable to open the file DALTON.HES.')
          CALL GPOPEN(LUHES,'DALTON.HES','OLD',' ','FORMATTED',
      &              IDUMMY,.FALSE.)
@@ -352,7 +347,7 @@ C
      &           ' DALTON.HES differ from MOLECULE.INP',
      &           'Coordinates from DALTON.HES will be used'
          END IF
- 18      CONTINUE 
+ 18      CONTINUE
          CALL GPCLOSE(LUHES,'KEEP')
       END IF
 C
@@ -596,8 +591,8 @@ C
             ELSE
                NUMIS(IATOM) = ISOTP(I,IATOM)
             END IF
- 210     CONTINUE 
-C     
+ 210     CONTINUE
+C
          ISPEC = ISPEC + 1
          WRITE (LUPRI,'(//24X,A,I2)') ' Isotopic Molecule No.',ISPEC
          WRITE (LUPRI,'(  24X,A   )') ' ======================= '
@@ -626,7 +621,7 @@ C
 C
          IF (HESFIL) NONE = .FALSE.
          IF (.NOT.NONE) THEN
-C     
+C
 C              ********************************
 C              ***** Vibrational analysis *****
 C              ********************************
@@ -651,7 +646,7 @@ C
             KIMAG  = KROTST + NCORD
             KIRP   = KIMAG  + NCORD
             KLAST  = KIRP  + (NCORD + IRAT - 1)/IRAT
-C     
+C
             IF (RAMPRP) THEN
                KROAAF = KLAST
                KROAGN = KROAAF + 9*NFRVAL*NCORD
@@ -682,7 +677,7 @@ C
 C              *******************************
 C              ***** Partition functions *****
 C              *******************************
-C     
+C
             IF (.NOT.NOTALL) THEN
                CALL PRTFUN(TOTMAS,AIMOM,BIMOM,CIMOM,EVAL,
      &                     LINEAR,NCORD,NUMMOD)
@@ -716,10 +711,10 @@ C  /* Deck rotana */
 #include <mxcent.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
-      PARAMETER (ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU), 
+      PARAMETER (ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU),
      &           CINVRS = 1.0D4/CCM)
 C
-      DIMENSION GEOM(NCORD), AMASS(NATOMS), 
+      DIMENSION GEOM(NCORD), AMASS(NATOMS),
      &          AINRTI(3,3), AINRTP(6), VINRTI(3,3), VCMNUC(3),
      &          AWRKJC(3), IWRKJC(3)
 C
@@ -776,7 +771,7 @@ C
 C
       CALL HEADER
      &    ('Principal moments of inertia (u*A**2) and principal axes',0)
-      WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
+      WRITE (LUPRI,'(3X,A,F15.6,6X,3F12.6)')
      &     'IA',AIMOM,(VINRTI(K,1),K=1,3),
      &     'IB',BIMOM,(VINRTI(K,2),K=1,3),
      &     'IC',CIMOM,(VINRTI(K,3),K=1,3)
@@ -797,7 +792,7 @@ C
  420        CONTINUE
  410     CONTINUE
  400  CONTINUE
-C     
+C
 C        ***** Rotational constants *****
 C
       CALL HEADER('Rotational constants',0)
@@ -1040,7 +1035,7 @@ C
 C     We punch out the normal coordinates on the file DALTON.NCA for
 C     use with the Gamess-US visualization software
 C
-      LUIP = 0
+      LUIP = -1
       CALL GPOPEN(LUIP,'DALTON.NCA','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE(LUIP,8000)
@@ -1049,9 +1044,74 @@ C
       DO 910 IMODE = 1, NUMMOD
          WRITE(LUIP,8030) IMODE,FREQAU(IMODE)*XTKAYS
          WRITE(LUIP,8040) (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
- 910  CONTINUE 
+ 910  CONTINUE
       WRITE(LUIP,8050)
       CALL GPCLOSE(LUIP,'KEEP')
+
+C     We punch out harmonic freqs and normal coordinates on file
+C     DALTON.NOR
+
+      LUNOR = -1
+      CALL GPOPEN(LUNOR,'DALTON.NOR','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+      WRITE(LUNOR,'(A)') 'Harmonic Freqs. in cm^-1'
+      DO 911 IMODE = 1, NUMMOD
+        WRITE(LUNOR,'(E23.16)') FREQAU(IMODE)*XTKAYS
+ 911  CONTINUE
+      WRITE(LUNOR,*)
+      WRITE(LUNOR,'(A)') 'Normal Coordinates'
+      DO 912 IMODE = 1, NUMMOD
+        WRITE(LUNOR,8041) (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
+        WRITE(LUNOR,*)
+ 912  CONTINUE
+      WRITE(LUNOR,'(A)') 'Norm of Vectors'
+      DO 913 IMODE = 1, NUMMOD
+        ENORM2 = 0.0D0
+        DO 914 I = 1, NCORD
+          ENORM2 = ENORM2 + EVEC(I,IMODE)**2
+ 914    CONTINUE
+      WRITE(LUNOR,'(E23.16)') SXFAMU*sqrt(ENORM2)
+ 913  CONTINUE
+      CALL GPCLOSE(LUNOR,'KEEP')
+
+C
+C     We punch out structure, frequencies, and normal coordinates 
+C     for MidasCpp interface on file midasifc.coord 
+C     
+
+      LUMID  = -1
+      CALL GPOPEN(LUMID,'midasifc.coord','UNKNOWN',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+
+      WRITE(LUMID,'(I4,A)') NATOMS," au"
+      CALL PRIGEOLU(LUMID,CORD)
+C     DO ICENT=1,NUCDEP 
+C        WRITE(LUMID,'(A,3(2X,E22.16))')
+C    &         NAMEX(3*ICENT)(1:4),CORD(1,ICENT),
+C    &         CORD(2,ICENT),CORD(3,ICENT)
+C     ENDDO
+
+      WRITE(LUMID,'(A,I5)') "FREQ",MAXREP+1
+      WRITE(LUMID,'(A,A,E23.16)')
+     &    '  cm-1                    irrep   ', ' F_au_to_cm-1:',XTKAYS
+      DO 915 IMODE = 1, NUMMOD
+        IF (IREPS(IMODE) .GE. 0) THEN
+           IRPTXT = ' ' // REP(IREPS(IMODE)) // ' '
+        ELSE
+           IRPTXT = 'mixed'
+        END IF
+        WRITE(LUMID,'(E24.16,1X,A)') FREQAU(IMODE)*XTKAYS,
+     &                                  IRPTXT
+ 915  CONTINUE
+      WRITE(LUMID,'(A)') "COORD"
+      WRITE(LUMID,'(A)') "au"
+      DO 916 IMODE = 1, NUMMOD
+        WRITE(LUMID,'(3(E24.16,1X))')
+     &            (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
+        WRITE(LUMID,*)
+ 916  CONTINUE
+      CALL GPCLOSE(LUMID,'KEEP')
+
 C
 C     ****************************************************************
 C     ***** Normal coordinates in redundant internal coordinates *****
@@ -1158,7 +1218,7 @@ C
      &              WORK(KFMATF),1)
 C
          CALL TITLER('Linear coupling model gradient analysis','*',118)
-         WRITE (LUPRI,'(/15X,A,/15X,A)') 
+         WRITE (LUPRI,'(/15X,A,/15X,A)')
      &        '  Normal mode    Frequency     Gradient',
      &        '  --------------------------------------'
          DO IMOD = 1, NUMMOD
@@ -1209,6 +1269,7 @@ C
  8020 FORMAT(5F12.5)
  8030 FORMAT('MODE',I5,'   FREQUENCY=',F10.5,' (CM**-1)')
  8040 FORMAT(1P,3E17.9)
+ 8041 FORMAT(1P,3E23.16)
  8050 FORMAT('----- END OF NORMAL MODES FOR -MOLPLT- PROGRAM -----')
 C
       END
@@ -1357,8 +1418,8 @@ C
                   CALL DSWAP(NCORD,EVECS(1,ICOOR),1,EVECS(1,JCOOR),1)
                END IF
             END IF
- 610     CONTINUE 
- 600  CONTINUE 
+ 610     CONTINUE
+ 600  CONTINUE
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Sorted eigenvalues',-1)
@@ -1412,7 +1473,7 @@ C
 	            QRCOR  = ( D2/AIMOM - AIMOM/(BIMOM*CIMOM)
      &               + D2/BIMOM - BIMOM/(AIMOM*CIMOM)
      &               + D2/CIMOM - CIMOM/(BIMOM*AIMOM) )
-      END IF 
+      END IF
 C
 C     Loop over temperatures
 C
@@ -2325,7 +2386,7 @@ C
 C
 C     If we have asked that the Hessian be punched, so be it
 C
-      LUHES = 0
+      LUHES = -1
       IF (HESPUN) THEN
          CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
@@ -2335,12 +2396,12 @@ C
          DO 101 ICOOR = 1, NCORD
             DO 102 JCOOR = 1, NCORD
                WRITE(LUHES,*) HESS(JCOOR,ICOOR)
- 102        CONTINUE 
+ 102        CONTINUE
             WRITE (LUHES,*)
- 101     CONTINUE 
+ 101     CONTINUE
          DO 103 ICOOR = 1, NCORD
             WRITE (LUHES,*) GEOM(ICOOR)
- 103     CONTINUE 
+ 103     CONTINUE
          CALL GPCLOSE(LUHES,'KEEP')
       END IF
       RETURN
@@ -2358,7 +2419,7 @@ C  /* Deck vibv3 */
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
-      DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
+      DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD),
      &          FMATF(NCORD,NCORD,NCORD), CORR(NUMMOD),
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
@@ -2372,7 +2433,7 @@ C
 #include <cbiwlk.h>
 #include <gnrinf.h>
 #include <ibtfun.h>
-C      
+C
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
      &          .FALSE.)
       REWIND (LUWLK)
@@ -2426,7 +2487,7 @@ C
             CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
          END IF
       END IF
-      
+
 C
 C     Print in normal-coordinates
 C
@@ -2437,7 +2498,7 @@ C
          CALL OUTPUT(EVEC,1,NCORD,1,NUMMOD,NCORD,NCORD,1,LUPRI)
 C
          DO I = 1, NUMMOD
-            WRITE (LUPRI,'(/A,I5,/A)') 
+            WRITE (LUPRI,'(/A,I5,/A)')
      &      ' Anharmonic force constants for normal mode(*,*,I):',I,
      &      ' -------------------------------------------------------'
             CALL OUTPUT(FMATT(1,1,I),1,NUMMOD,1,NUMMOD,NCORD,NCORD,
@@ -2446,14 +2507,14 @@ C
       END IF
 C
 C     Calculate correction to equilibrium geometry in normal coordinates
-C     
+C
       IF (DOTEMP) THEN
          DO ITMP = 1, NTEMP
 C
-C     In case centrifugal distortions are to be included, calculate 
+C     In case centrifugal distortions are to be included, calculate
 C     contributions to the effective geometry here
-C     
-            WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)') 
+C
+            WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)')
      &           '----------------------------'//
      &           '------------------------------',
      &           'Vibrational corrections for temperature T = ',
@@ -2474,7 +2535,7 @@ C
      &                     'geometries in normal coordinates',1)
                DO IMOD = 1, NUMMOD
                   WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',
-     &                 IMOD,'   Frequency:', FREQAU(IMOD), 
+     &                 IMOD,'   Frequency:', FREQAU(IMOD),
      &                 '   Displacement:',WORK(KQCENT + IMOD - 1)
                END DO
             END IF
@@ -2498,7 +2559,7 @@ C
                END DO
                CORR(IMOD) = - TMP*PFACI
                WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',
-     &              IMOD,'   Frequency:', FREQAU(IMOD), 
+     &              IMOD,'   Frequency:', FREQAU(IMOD),
      &              '   Displacement:',CORR(IMOD)
             END DO
             IF (DOCENT) THEN
@@ -2507,7 +2568,7 @@ C
                DO IMOD = 1, NUMMOD
                   CORR(IMOD) = CORR(IMOD) + WORK(KQCENT + IMOD - 1)
                   WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',
-     &                 IMOD,'   Frequency:', FREQAU(IMOD), 
+     &                 IMOD,'   Frequency:', FREQAU(IMOD),
      &                 '   Displacement:',CORR(IMOD)
                END DO
             END IF
@@ -2521,7 +2582,7 @@ C
                DO IATOM = 1, NCORD/3
                   DO ICOOR = 1, 3
                      ICOR = ICOR + 1
-                     POS(ICOOR,IATOM) = POS(ICOOR,IATOM) 
+                     POS(ICOOR,IATOM) = POS(ICOOR,IATOM)
      &                                + CORR(IMOD)*EVEC(ICOR,IMOD)*FAC
                   END DO
                END DO
@@ -2532,18 +2593,17 @@ CKR
             CALL AROUND('Change to effective geometry')
             CALL HEADER('Cartesian coordinates (au)',-1)
             CALL PRIGEO(POS)
-C     
+C
             DO IATOM = 1, NCORD/3
                DO ICOOR = 1, 3
                   POS(ICOOR,IATOM) = CORD(ICOOR,IATOM) +POS(ICOOR,IATOM)
                END DO
             END DO
-C     
+C
             CALL AROUND('Estimated effective geometry')
             CALL HEADER('Cartesian coordinates (au)',-1)
             CALL PRIGEO(POS)
-            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &                  WORK,LWORK)
+            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
          END DO
       ELSE
          CALL HEADER('Effective geometry corrections in normal '//
@@ -2570,7 +2630,7 @@ C
             DO IATOM = 1, NCORD/3
                DO ICOOR = 1, 3
                   ICOR = ICOR + 1
-                  POS(ICOOR,IATOM) = POS(ICOOR,IATOM) 
+                  POS(ICOOR,IATOM) = POS(ICOOR,IATOM)
      &                             + CORR(IMOD)*EVEC(ICOR,IMOD)*FAC
                END DO
             END DO
@@ -2585,7 +2645,7 @@ C
          ELSE
             CALL PRIGEO(POS)
          END IF
-C     
+C
          ICOOR = 0
          IATOM = 0
          DO ICENT = 1, NUCIND
@@ -2601,7 +2661,7 @@ C
                END IF
             END DO
          END DO
-C     
+C
          CALL AROUND('Estimated effective geometry')
          CALL HEADER('Cartesian coordinates (au)',-1)
          IF (NMWALK) THEN
@@ -2611,13 +2671,12 @@ C
             END DO
          ELSE
             CALL PRIGEO(POS)
-            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &                  WORK,LWORK)
+            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
          END IF
       END IF
 C
 C     Some analysis of the quality of the above predictions
-C     
+C
       IF (IPRINT .GE. 1) THEN
          CALL AROUND('Perturbation expansion analysis')
          CALL HEADER ('Linear wave function parameters',-1)
@@ -2660,7 +2719,7 @@ C
          END DO
 C
 C     Not all matrix elements are meaningful
-C     
+C
          DO IMOD = 1, NUMMOD
             FMATF(IMOD,IMOD,IMOD) = D0
             DO JMOD = 1, NUMMOD
@@ -2670,7 +2729,7 @@ C
             END DO
          END DO
          DO I = 1, NUMMOD
-            WRITE (LUPRI,'(/A,I5,/A)') 
+            WRITE (LUPRI,'(/A,I5,/A)')
      &      ' Trilinear wave function parameters for mode (*,*,I):',I,
      &      ' -------------------------------------------------------'
             CALL OUTPUT(FMATF(1,1,I),1,NUMMOD,1,NUMMOD,NCORD,NCORD,
@@ -2766,7 +2825,7 @@ C
 #include <cbilnr.h>
 C
       INTEGER F
-      PARAMETER (DE3=1.0D3,DE13 = 1.0D13, D2=2.0D0, DE6=1.0D6 ) 
+      PARAMETER (DE3=1.0D3,DE13 = 1.0D13, D2=2.0D0, DE6=1.0D6 )
 C Conversion factors from au to derivated cgs
       PARAMETER (XFOAIN = ALPHAC*XTANG**4*XFAMU*DE6,
      &           XFRAIN = XTANG**4*XFAMU,
@@ -2923,7 +2982,7 @@ C
  560       CONTINUE
         END IF
 C
-C End of Raman Output for one frequency, going VROA or next freq. 
+C End of Raman Output for one frequency, going VROA or next freq.
 C
 C Calculate VROA properities and print them
 C
@@ -3030,7 +3089,7 @@ C
 C
 C  CIDs NoLondon
 C
-           WRITE (LUPRI,'(/,3X,A,//,2X,A,/)') '*** Circular '// 
+           WRITE (LUPRI,'(/,3X,A,//,2X,A,/)') '*** Circular '//
      &       'Intensity difference CID=(R-L)/(2*Int) (*E3) '//
      &       ' (NoLon) ***',
      &          'Mode   Frequency      CID(par)    CID(perp)'//
@@ -3170,7 +3229,7 @@ C
 C
 C     The "swapped" normal coordinates are temporarily stored in GVC2.
 C     Then they're moved back to EVC2.
-C            
+C
             DO 40 I = 1, NCORD/3
                GVC2((I-1)*3+1) = EVC2((ITRANS(I)-1)*3+1)
                GVC2((I-1)*3+2) = EVC2((ITRANS(I)-1)*3+2)
@@ -3204,7 +3263,7 @@ C
  65   CONTINUE
       IF (KK .LE. 7) THEN
          DO 67 I = 0, MAXREP
-            IF (ISOP(I) .EQ. KK) THEN
+            IF (JSOP(I) .EQ. KK) THEN
                ICHRVC(KK) = ITMP(IND)
                IND = IND + 1
             END IF
@@ -3222,7 +3281,7 @@ C
       IF ((.NOT. FOUND) .AND. (IREP .LE. MAXREP)) THEN
          FOUND = .TRUE.
          DO 52 I = 0, MAXREP
-            IF (ICHRVC(ISOP(I)) .NE. IXVAL(ISOP(I),IREP))
+            IF (ICHRVC(JSOP(I)) .NE. IXVAL(JSOP(I),IREP))
      &           FOUND = .FALSE.
  52      CONTINUE
          IREP = IREP + 1
@@ -3244,7 +3303,7 @@ C /* Deck prpvav */
      &                  SSJF,SSJAV,ROANL0,ROANLF,ROANLA,ROALO0,ROALOF,
      &                  ROALOA,CSTRA,SCTRA)
 C
-C     This subroutine calculates vibrationally averaged molecular 
+C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
@@ -3265,14 +3324,14 @@ C
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),
-     &          QUADAV(3,3), SIGMA0(3,3,MXCENT), 
-     &          SIGMAF(3,3,MXCENT,NUMMOD), SIGMAV(3,3,MXCENT), 
-     &          SRC0(3,3,MXCENT), SRCF(3,3,MXCENT,NUMMOD), 
+     &          QUADAV(3,3), SIGMA0(3,3,MXCENT),
+     &          SIGMAF(3,3,MXCENT,NUMMOD), SIGMAV(3,3,MXCENT),
+     &          SRC0(3,3,MXCENT), SRCF(3,3,MXCENT,NUMMOD),
      &          SRCAV(3,3,MXCENT), POLAR0(3,3), POLARF(3,3,NUMMOD),
      &          POLAV(3,3), ALFA0(3,3,MXFR), ALFAF(3,3,MXFR,NUMMOD),
      &          ALFAV(3,3,MXFR), EFG0(3,3,MXCENT),
      &          EFGF(3,3,MXCENT,NUMMOD),
-     &          EFGAV(3,3,MXCENT), SSJ0(MXCOOR,MXCOOR), 
+     &          EFGAV(3,3,MXCENT), SSJ0(MXCOOR,MXCOOR),
      &          SSJF(MXCOOR,MXCOOR,NUMMOD), SSJAV(MXCOOR,MXCOOR),
      &          ROANL0(3,3,MXFR), ROANLF(3,3,MXFR,MXCOOR),
      &          ROANLA(3,3,MXFR), ROALO0(3,3,MXFR),
@@ -3314,12 +3373,12 @@ C
      &     ' mode   cm-1     hartrees ',
      &     '--------------------------'
       DO IMODE = 1, NUMMOD
-         WRITE (LUPRI,'(2X,I2,F10.2,3X,F10.6)') 
+         WRITE (LUPRI,'(2X,I2,F10.2,3X,F10.6)')
      &        IMODE,XTKAYS*SQRT(EVAL(IMODE)),
      &        SQRT(EVAL(IMODE))
       END DO
       DO ITMP = 1, NTEMP
-            WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)') 
+            WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)')
      &           '----------------------------'//
      &           '------------------------------',
      &           'Vibrational corrections for temperature T = ',
@@ -3347,7 +3406,7 @@ C
       DIPAVZ = DIPAVZ*PREFAC
 C
 C     Magnetizabilities
-C     
+C
       IF (MAGSUS) THEN
          CALL DZERO(SUSAV,9)
          DO IMOD = 1, NUMMOD
@@ -3359,7 +3418,7 @@ C
             END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
-                  SUSAV(ICOOR,JCOOR) = SUSAV(ICOOR,JCOOR) 
+                  SUSAV(ICOOR,JCOOR) = SUSAV(ICOOR,JCOOR)
      &                 + SUSTF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
@@ -3380,7 +3439,7 @@ C
             END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
-                  GFACAV(ICOOR,JCOOR) = GFACAV(ICOOR,JCOOR) 
+                  GFACAV(ICOOR,JCOOR) = GFACAV(ICOOR,JCOOR)
      &                 + GFACF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
@@ -3401,7 +3460,7 @@ C
             END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
-                  QUADAV(ICOOR,JCOOR) = QUADAV(ICOOR,JCOOR) 
+                  QUADAV(ICOOR,JCOOR) = QUADAV(ICOOR,JCOOR)
      &                 + QUADF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
@@ -3423,7 +3482,7 @@ C
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
-                     SIGMAV(ICOOR,JCOOR,IATOM)=SIGMAV(ICOOR,JCOOR,IATOM) 
+                     SIGMAV(ICOOR,JCOOR,IATOM)=SIGMAV(ICOOR,JCOOR,IATOM)
      &                 + SIGMAF(ICOOR,JCOOR,IATOM,IMOD)*TFAC2
                   END DO
                END DO
@@ -3574,20 +3633,20 @@ C
      &     '<P^(0)_2>_eff','Vibrationally corrected'
       WRITE (LUPRI,'(A)') ' -------------------------------'//
      &     '----------------------------------------'
-      WRITE (LUPRI,'(3(/2X,A1,3(2X,F16.8,4X)))') 
+      WRITE (LUPRI,'(3(/2X,A1,3(2X,F16.8,4X)))')
      &     'X',DIPM0(1),DIPAVX,DIPM0(1)+DIPAVX,
      &     'Y',DIPM0(2),DIPAVY,DIPM0(2)+DIPAVY,
      &     'Z',DIPM0(3),DIPAVZ,DIPM0(3)+DIPAVZ
 C
 C     Magnetizabilities
-C     
+C
       IF (MAGSUS) THEN
          CALL HEADER ('Magnetizabilities (au)',-1)
          WRITE (LUPRI,'(4X,A,7X,A,6X,A)') 'Effective geometry',
      &        '<P^(0)_2>_eff','Vibrationally corrected'
          WRITE (LUPRI,'(A)') ' -------------------------------'//
      &        '----------------------------------------'
-         WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))') 
+         WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))')
      &        'XX',SUSTO0(1,1),SUSAV(1,1),SUSTO0(1,1)+SUSAV(1,1),
      &        'XY',SUSTO0(1,2),SUSAV(1,2),SUSTO0(1,2)+SUSAV(1,2),
      &        'XZ',SUSTO0(1,3),SUSAV(1,3),SUSTO0(1,3)+SUSAV(1,3),
@@ -3604,7 +3663,7 @@ C
      &        '<P^(0)_2>_eff','Vibrationally corrected'
          WRITE (LUPRI,'(A)') ' -------------------------------'//
      &        '----------------------------------------'
-         WRITE (LUPRI,'(9(/1X,A2,3(2X,F16.8,4X)))') 
+         WRITE (LUPRI,'(9(/1X,A2,3(2X,F16.8,4X)))')
      &        'AX',GFAC0(1,1),GFACAV(1,1),GFAC0(1,1)+GFACAV(1,1),
      &        'BX',GFAC0(1,2),GFACAV(1,2),GFAC0(1,2)+GFACAV(1,2),
      &        'CX',GFAC0(1,3),GFACAV(1,3),GFAC0(1,3)+GFACAV(1,3),
@@ -3624,7 +3683,7 @@ C
      &        '<P^(0)_2>_eff','Vibrationally corrected'
          WRITE (LUPRI,'(A)') ' -------------------------------'//
      &        '----------------------------------------'
-         WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))') 
+         WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))')
      &        'XX',QUAD0(1,1),QUADAV(1,1),QUAD0(1,1)+QUADAV(1,1),
      &        'XY',QUAD0(1,2),QUADAV(1,2),QUAD0(1,2)+QUADAV(1,2),
      &        'XZ',QUAD0(1,3),QUADAV(1,3),QUAD0(1,3)+QUADAV(1,3),
@@ -3643,7 +3702,7 @@ C
      &           '<P^(0)_2>_eff','Vibrationally corrected'
             WRITE (LUPRI,'(A)') ' -------------------------------'//
      &           '----------------------------------------'
-            WRITE (LUPRI,'(9(/1X,A4,3(2X,F16.8,4X)))') 
+            WRITE (LUPRI,'(9(/1X,A4,3(2X,F16.8,4X)))')
      &        'Bxmx',SIGMA0(1,1,IATOM),SIGMAV(1,1,IATOM),
      &           SIGMA0(1,1,IATOM)+SIGMAV(1,1,IATOM),
      &        'Bymx',SIGMA0(2,1,IATOM),SIGMAV(2,1,IATOM),
@@ -3675,7 +3734,7 @@ C
      &           '<P^(0)_2>_eff','Vibrationally corrected'
             WRITE (LUPRI,'(A)') ' -------------------------------'//
      &           '----------------------------------------'
-            WRITE (LUPRI,'(9(/1X,A4,3(2X,F16.8,4X)))') 
+            WRITE (LUPRI,'(9(/1X,A4,3(2X,F16.8,4X)))')
      &        'Jxmx',SRC0(1,1,IATOM),SRCAV(1,1,IATOM),
      &           SRC0(1,1,IATOM)+SRCAV(1,1,IATOM),
      &        'Jymx',SRC0(2,1,IATOM),SRCAV(2,1,IATOM),
@@ -3705,7 +3764,7 @@ C
      &        '<P^(0)_2>_eff','Vibrationally corrected'
          WRITE (LUPRI,'(A)') ' -------------------------------'//
      &        '----------------------------------------'
-         WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))') 
+         WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))')
      &        'XX',POLAR0(1,1),POLAV(1,1),POLAR0(1,1)+POLAV(1,1),
      &        'XY',POLAR0(1,2),POLAV(1,2),POLAR0(1,2)+POLAV(1,2),
      &        'XZ',POLAR0(1,3),POLAV(1,3),POLAR0(1,3)+POLAV(1,3),
@@ -3715,13 +3774,13 @@ C
       END IF
       IF (ALFA) THEN
          DO I = 1, NFRVAL
-            WRITE(LUPRI,'(//10X,A,F10.6)') 
+            WRITE(LUPRI,'(//10X,A,F10.6)')
      &           'Polarizability (au) for frequency', FRVAL(I)
             WRITE (LUPRI,'(/4X,A,7X,A,6X,A)') 'Effective geometry',
      &           '<P^(0)_2>_eff','Vibrationally corrected'
             WRITE (LUPRI,'(A)') ' -------------------------------'//
      &           '----------------------------------------'
-            WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))') 
+            WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))')
      &        'XX',ALFA0(1,1,I),ALFAV(1,1,I),ALFA0(1,1,I)+ALFAV(1,1,I),
      &        'XY',ALFA0(1,2,I),ALFAV(1,2,I),ALFA0(1,2,I)+ALFAV(1,2,I),
      &        'XZ',ALFA0(1,3,I),ALFAV(1,3,I),ALFA0(1,3,I)+ALFAV(1,3,I),
@@ -3742,7 +3801,7 @@ C
      &           '<P^(0)_2>_eff','Vibrationally corrected'
             WRITE (LUPRI,'(A)') ' -------------------------------'//
      &           '----------------------------------------'
-            WRITE (LUPRI,'(6(/1X,A2,2X,3(2X,F16.8,4X)))') 
+            WRITE (LUPRI,'(6(/1X,A2,2X,3(2X,F16.8,4X)))')
      &        'XX',EFG0(1,1,IATOM),EFGAV(1,1,IATOM),
      &           EFG0(1,1,IATOM)+EFGAV(1,1,IATOM),
      &        'XY',EFG0(1,2,IATOM),EFGAV(1,2,IATOM),
@@ -3770,20 +3829,20 @@ C
          CALL HEADER('Vibrationally averaged reduced spin-spin '//
      &               'coupling constants (Hz)',-1)
          CALL DAXPY(MXCOOR*MXCOOR,D1,SSJ0,1,SSJAV,1)
-         CALL PRIHES(SSJAV,'SPNSPN',CSTRA,SCTRA)         
+         CALL PRIHES(SSJAV,'SPNSPN',CSTRA,SCTRA)
       END IF
 C
 C     Optical rotation
 C
       IF (OPTROT) THEN
          DO I = 1, NFRVAL
-            WRITE(LUPRI,'(//10X,A,F10.6)') 
+            WRITE(LUPRI,'(//10X,A,F10.6)')
      &           'London G matrix (au) for frequency', FRVAL(I)
             WRITE (LUPRI,'(/4X,A,7X,A,6X,A)') 'Effective geometry',
      &           '<P^(0)_2>_eff','Vibrationally corrected'
             WRITE (LUPRI,'(A)') ' -------------------------------'//
      &           '----------------------------------------'
-            WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))') 
+            WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))')
      &     'XX',ROALO0(1,1,I),ROALOA(1,1,I),ROALO0(1,1,I)+ROALOA(1,1,I),
      &     'XY',ROALO0(1,2,I),ROALOA(1,2,I),ROALO0(1,2,I)+ROALOA(1,2,I),
      &     'XZ',ROALO0(1,3,I),ROALOA(1,3,I),ROALO0(1,3,I)+ROALOA(1,3,I),
@@ -3792,13 +3851,13 @@ C
      &     'ZZ',ROALO0(3,3,I),ROALOA(3,3,I),ROALO0(3,3,I)+ROALOA(3,3,I)
          END DO
          DO I = 1, NFRVAL
-            WRITE(LUPRI,'(//10X,A,F10.6)') 
+            WRITE(LUPRI,'(//10X,A,F10.6)')
      &           'No-London G matrix (au) for frequency', FRVAL(I)
             WRITE (LUPRI,'(/4X,A,7X,A,6X,A)') 'Effective geometry',
      &           '<P^(0)_2>_eff','Vibrationally corrected'
             WRITE (LUPRI,'(A)') ' -------------------------------'//
      &           '----------------------------------------'
-            WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))') 
+            WRITE (LUPRI,'(6(/1X,A2,3(2X,F16.8,4X)))')
      &     'XX',ROANL0(1,1,I),ROANLA(1,1,I),ROANL0(1,1,I)+ROANLA(1,1,I),
      &     'XY',ROANL0(1,2,I),ROANLA(1,2,I),ROANL0(1,2,I)+ROANLA(1,2,I),
      &     'XZ',ROANL0(1,3,I),ROANLA(1,3,I),ROANL0(1,3,I)+ROANLA(1,3,I),
@@ -3834,7 +3893,7 @@ C
      &                 ROANLA(3,3,IFRVAL))/(D3*FRVAL(IFRVAL))
             ALPHLA = FACTOT*BETALA*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
             ALPHNA = FACTOT*BETNLA*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
-            WRITE (LUPRI,'(//1X,A,F12.6,A,5X,F12.6,A)') 
+            WRITE (LUPRI,'(//1X,A,F12.6,A,5X,F12.6,A)')
      &           'Frequency: ',FRVAL(IFRVAL),' au',
      &           XTNM/FRVAL(IFRVAL), ' nm'
             WRITE (LUPRI,'(/1X,A,3F12.6)') 'Beta(London)    ['//
@@ -3862,7 +3921,7 @@ C
 C CALLED FROM THE SUBROUTINE EXOUT
 C
 C THIS SUBROUTINE COMPUTES THE CENTRIFUGAL DISTORTION OF THE MOLECULE
-C Juhani Lounila 21.1.1998 
+C Juhani Lounila 21.1.1998
 C
 C ***************************************************************************
 #include <implicit.h>
@@ -3893,7 +3952,7 @@ C
 C
 C FORM THE INERTIA TENSOR AINERT(I) (I=1,...,6)
 C IN A COORDINATE SYSTEM WHOSE ORIGIN IS AT THE CENTER OF MASS
-C (ELEMENTS: 1=XX, 2=XY, 3=YY, 4=XZ, 5=YZ, 6=ZZ) 
+C (ELEMENTS: 1=XX, 2=XY, 3=YY, 4=XZ, 5=YZ, 6=ZZ)
 C
       CALL DZERO(AINERT,6)
       DO K=1,NATM
@@ -3914,7 +3973,7 @@ C
       END IF
 C
 C DIAGONALISE THE INERTIA TENSOR
-C RESULTANT MATRIX OF EIGENVECTORS: TRANS(I) (I=1,...,9) 
+C RESULTANT MATRIX OF EIGENVECTORS: TRANS(I) (I=1,...,9)
 C (STORED COLUMNWISE, IN THE SAME SEQUENCE AS EIGENVALUES)
 C ELEMENTS: 1=XX, 2=YX, 3=ZX, 4=XY, 5=YY, 6=ZY, 7=XZ, 8=YZ, 9=ZZ
 C EIGENVECTORS: U(1,J)=(1,2,3), U(2,J)=(4,5,6), U(3,J)=(7,8,9)
@@ -3925,7 +3984,7 @@ C     WRITE (*,*) 'NEW INERTIA TENSOR (XX, XY, YY, XZ, YZ, ZZ)'
 C     WRITE (*,*) AINERT(1), AINERT(2), AINERT(3), AINERT(4),
 C    *AINERT(5), AINERT(6)
 C PRINCIPAL MOMENTS OF INERTIA AIXX, AIYY AND AIZZ
-C IN A COORDINATE SYSTEM WHOSE ORIGIN IS AT THE CENTER OF MASS 
+C IN A COORDINATE SYSTEM WHOSE ORIGIN IS AT THE CENTER OF MASS
 C
       AINERT(2) = AINERT(3)
       AINERT(3) = AINERT(6)
@@ -3949,7 +4008,7 @@ C
          DO 60 I=1,3
             DO 60 J=1,3
                CCOOR(K,I)=CCOOR(K,I)+U(I,J)*(COOR(J,K)-CC(J))
- 60   CONTINUE 
+ 60   CONTINUE
 C
 C NEW 'NORMAL COORDINATES' CCORN(I) (I=1,...,ND**2)
 C ND = THE NUMBER OF NORMAL COORDINATES
@@ -3964,7 +4023,7 @@ C
       CALL DZERO(CCORN,3*NATM*NINCOR)
       DO I=1,NINCOR
          M=ND*(I-1)
-         DO K=1,NATM 
+         DO K=1,NATM
             DO L=1,3
                DO J=1,3
                   NJ = J + 3*(K-1)

@@ -66,7 +66,8 @@ C
 #include <maxash.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+CCN #include <infind.h> replaced by #include <ccisao.h>
+#include <ccisao.h>
 #include <ccsdsym.h>
 #include <cbieri.h>
 #include <eribuf.h>
@@ -85,7 +86,7 @@ C
 C
       LOGICAL OLDDX, LONDON2
       INTEGER LENGTH(8), NDIMAB(8), NDIMDIS(8),IDSAO(8,8)
-      INTEGER KSCOOR, KCOOR, KCORSY, MAXCMP, MCSYM
+      INTEGER KSCOOR, KCOOR, KCORSY, MAXCMP, MCSYM, UNIAO2
       CHARACTER*8 NAME(16)
       CHARACTER*8 FNAME, FAODER
 C
@@ -215,6 +216,7 @@ C    *            'CC_RDAOD> LDERINT      = ',LDERINT(KCORSY,KCOOR)
 C
             ISYMD  = ISAO(IDEL(ID))
             D      = IDEL(ID) - IBAS(ISYMD)
+            IOFF0  = LENGTH(ISYMD)*(D-1)
 
             IF (D.LT.0 .OR. D.GT.NBAST) THEN
               WRITE (LUPRI,*) 'ORBITAL INDEX OUT OF RANGE IN CC_RDAOD.'
@@ -241,7 +243,6 @@ C
                WRITE (LUPRI,*) 'CC_RDAOD: LENGTH= ', LENGTH(ISYMD)
             END IF
 
-            IOFF0  = LENGTH(ISYMD)*(D-1)
 
             DO ICOOR  = 1, MXCOMP
             DO ICORSY = 1, NSYM
@@ -348,7 +349,8 @@ C
 *----------------------------------------------------------------------*
 *        open file, read integral distributions and close file again:
 *----------------------------------------------------------------------*
-         UNIAO2 = 0
+         !SONIA, changed to -1, UNIAO2 = 0
+         UNIAO2 = -1
          FAODER = 'AO2DIS'//CHRNOS(KSCOOR/10)
      &                    //CHRNOS(MOD(KSCOOR,10))
          CALL GPOPEN(UNIAO2,FAODER,'OLD','DIRECT',
@@ -362,7 +364,7 @@ C
      &                 KCORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
      &                 WORK(KAOAB),NDIMAB,WORK(KDIST),IBIT1,
      &                 IRECNR(1,KSCOOR),NRECS(KSCOOR))
-     &                 
+
          CALL GPCLOSE(UNIAO2,'KEEP')
  
 *----------------------------------------------------------------------*
@@ -372,7 +374,8 @@ C
            LONDON2 = .TRUE.
            KSCOOR = KSCOOR + 3
 
-           UNIAO2 = 0
+           !SONIA, changed to -1, UNIAO2 = 0
+           UNIAO2 = -1
            FAODER = 'AO2DIS'//CHRNOS(KSCOOR/10)
      &                      //CHRNOS(MOD(KSCOOR,10))
            CALL GPOPEN(UNIAO2,FAODER,'OLD','DIRECT',
@@ -382,7 +385,7 @@ C
      &                   KCORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
      &                   WORK(KAOAB),NDIMAB,WORK(KDIST),IBIT1,
      &                   IRECNR(1,KSCOOR),NRECS(KSCOOR))
-     &                 
+
            CALL GPCLOSE(UNIAO2,'KEEP')
          END IF
 

@@ -143,7 +143,7 @@ C     4   XQ00 YQ00 ZQ00
 C     7   XXPP XYPP XZPP YYPP YZPP ZZPP
 C     13  XXQQ XYQQ XZQQ YYQQ YZQQ ZZQQ
 C
-#include<ibtfun.h>
+#include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from U2HINT','*',103)
 C

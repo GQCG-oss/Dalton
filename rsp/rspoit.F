@@ -64,7 +64,7 @@ C Output:
 C  IDAXN  : file index for the transformed integrals
 C
 #include <implicit.h>
-      DIMENSION OITMAT(NORBT,NORBT), WRK(1)
+      DIMENSION OITMAT(NORBT,NORBT), WRK(*)
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBX
@@ -1589,7 +1589,7 @@ C
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION H2CD(1),NEEDTP(6),WRK(LFREE)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFORB : N2ORBX

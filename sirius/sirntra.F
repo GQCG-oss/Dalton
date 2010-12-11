@@ -76,7 +76,6 @@ C
 !   false; b) changed DORUPQ and DOUSPQ definitions so now always false
 !   if the corresponding integrals not needed for exchange.
 !-- TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
-!-- TRASE2: dummy routine
 !900924-hjaaj: define LUAINT as LUORD = LUDA = 14
 !-- changed IBM names from ORDINT,MOLINT to AORDINT,MTWOINT
 !900912-hjaaj: call flshfo(lupri) at end of tractl
@@ -91,28 +90,55 @@ C /* Deck n_tractl */
       SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK)
 C
 C Mar 1990 Hans Joergen Aa. Jensen
-C last revision 940727-hjaaj
+C last revision 100915-hjaaj (no AOORDINT)
 C
 #include "implicit.h"
-      DIMENSION CMO(NCMOT),WORK(KWORK)
+      DIMENSION CMO(*),WORK(KWORK)
 C
 #include "dummy.h"
 C
 C Used from common blocks:
-C   INFORB : NCMOT
 C   INFTRA : IPRTRA,USEDRC
 C CBGETDIS : IAD*
 C   INFTAP : LUORDA
 C
 #include "priunit.h"
-#include "inforb.h"
 #include "inftra.h"
 #include "cbgetdis.h"
 #include "inftap.h"
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT,DELORD
+      LOGICAL AOEXIST,MOEXIST
 C
       CALL QENTER('N_TRACTL')
+C
+C     (Re)calculate AO integrals, if necessary
+C     /hjaaj 11-jan-2007
+C
+      IF (USE_INTSORT) THEN
+         JRDAO = 0
+         CALL GPINQ('AOORDINT','EXIST',AOEXIST)
+      ELSE
+         JRDAO = 3
+         CALL GPINQ('AOTWOINT','EXIST',AOEXIST)
+      END IF
+      CALL GPINQ(FNINTM,'EXIST',MOEXIST)
+C                default is FNINTM = 'MOTWOINT'
+      IF (.NOT.(AOEXIST .AND. MOEXIST)) THEN
+C        ... we must maybe (re)generate AOORDINT
+C            but first we must test for AOTWOINT
+         CALL MAKE_AOTWOINT(WORK,KWORK)
+C
+         IF (USE_INTSORT) THEN
+            WRITE (LUPRI,'(/A)') '---> Generating AOORDINT'
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL SORTAO(WORK,KWORK)
+            CALL TIMER('SORTAO',TIMSTR,TIMEND)
+         END IF
+         CALL FLSHFO(LUPRI)
+C
+      END IF
+      CALL SIR_INTOPEN_NEWTRA
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
@@ -155,8 +181,7 @@ C
 C
 C     Set TRINP and TRUNIT
 C
-      JRDAO = 0
-      CALL TRASET(JRDAO)
+      CALL TRASET(JRDAO, KWORK)
 C
       CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
      &            WORK,KWORK)
@@ -178,7 +203,7 @@ C
 C        CALL FASTIO('ERRFIX=HARD')
       END IF
 C
-      IF (DELORD) THEN
+      IF (DELORD .AND. USE_INTSORT) THEN
          WRITE (LUPRI,'(/A)') ' AOORDINT will be deleted as requested.'
          CALL DARMOV(LUORDA)
       END IF
@@ -257,22 +282,46 @@ C
       IADCDT = IADRM(3,1297)
       RETURN
       END
-C  /* Deck n_siropi */
-      SUBROUTINE N_SIROPI
+C  /* Deck sir_intopen_newtra */
+      SUBROUTINE SIR_INTOPEN_NEWTRA
 C
 C 900309-hjaaj
 C
 #include "implicit.h"
 C
 C Used from common blocks:
-C   INFTAP : LUORDA,LUMINT
+C   priunit : LUPRI
+C   INFTRA  : USE_INTSORT
+C   INFTAP  : LUORDA,LUMINT,LUINTA
 C
+#include "priunit.h"
+#include "inftra.h"
 #include "inftap.h"
-#if defined (VAR_DARECL)
-      CALL DARECL(LUORDA,8*8*1024)
-#endif
-      IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
-      IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+C
+      LOGICAL FEXIST
+      integer nbas_x(8)
+C
+C     Open old AOORDINT/AOTWOINT if it exists,
+C     otherwise it will be attempted generated later.
+C
+      IF (USE_INTSORT) THEN
+         CALL GPINQ('AOORDINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+           IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
+         END IF
+      ELSE
+         CALL GPINQ('AOTWOINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
+     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+            LUORDA = LUINTA
+            CALL REWSPL(LUINTA)
+            CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
+            READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+         END IF
+      END IF
+C
+      IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,FNINTM)
       RETURN
       END
 C  /* Deck n_nxth2m */
@@ -307,7 +356,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION H2CD(1),NEEDTP(6),WRK(1)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -408,7 +457,7 @@ C
 C ****************************************************************
 C
 #include "implicit.h"
-      DIMENSION H2CD(NORBT,NORBT),BUF(1)
+      DIMENSION H2CD(NORBT,NORBT),BUF(*)
       INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
 C
 #include "iratdef.h"
@@ -684,7 +733,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION H2CD(1),NEEDTP(6),WRK(1)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -784,7 +833,7 @@ C
 C ****************************************************************
 C
 #include "implicit.h"
-      DIMENSION H2CD(NORBT,NORBT),BUF(1)
+      DIMENSION H2CD(NORBT,NORBT),BUF(*)
       INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
 C
 #include "iratdef.h"
@@ -1211,15 +1260,15 @@ C            ' Exchange (Dirac) integrals not calculated.'
       END IF
       L2M = 0
 C
-C     READ THE DAFILE ADDRESS LIST ON UNIT 13
+C     READ THE DAFILE ADDRESS LIST ON UNIT LUMINT
 C
       IDISKM = 0
       CALL DAREAD(LUMINT,IADOUT,3*LIADUT,IDISKM)
       IDISKM = IADOUT(1,LIADUT)
 C
-C     LOOP OVER QUADRUPLES OF SYMMETRIES (NSP,NSQ,NSR,NSS)
-C     NOTE THAT THE INTEGRALS ON LUORDA HAVE TO BE SORTED IN THE SAME
-C     ORDER AS THE LOOP STRUCTURE BELOW (USE PROGRAM INTSORT)
+C     Loop over quadruples of symmetries (NSP,NSQ,NSR,NSS)
+C     NOTE that the integrals on LUORDA must be sorted in the same
+C     order as the loop structure below (use program INTSORT)
 C     890826: This is not neccessary now because we have switched
 C             to absolute addressing of a given quadruplet.
 C
@@ -1340,9 +1389,9 @@ C
             CALL QUIT(' TR2CTL error, LADX .le. 0')
           END IF
 C
-C         CALLING SEQUENCE FOR SECOND ORDER TRANSFORMATION TRA2
+C         Calling sequence for second order transformation TRA2
 C         for symmetry quadruplet (isp,isq;isr,iss)
-C         FIRST ALLOCATE AND CHECK MEMORY
+C         First allocate and check memory
 C
           NBPQ = NBP*NBQ
           IF(ISP.EQ.ISQ) NBPQ = (NBP**2+NBP)/2
@@ -1360,7 +1409,7 @@ C         LX2X3 is buffer space needed by TRRDAO,
 C         LX2X3 is defined in TRASET
           LW4    = MAX(LW4, LW2 + LX2X3)
           MEMLFT = MEMX-LW4+1
-C         CORE ALLOCATION FOR THE SORTING AREAS RUPQ,USPQ, AND TUPQ
+C         Core allocation for the sorting areas RUPQ, USPQ, and TUPQ
           IF (NOCOUL .OR. NOTU.EQ.0) THEN
            NBPQMAX= NBPQ
            LTUPQCM= 0
@@ -1430,6 +1479,8 @@ C
           CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
      &              WORK(LW1),WORK(LW2),WORK(LW3),
      &              WORK(LW4),WORK(LW5),WORK(LW6))
+C         CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
+C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
           IF (IPRTRA .GE. 2) THEN
              CALL TIMING(CPT,CPE,TIOT,TIOE)
              IF (IPRTRA .GE. 5) WRITE(LUPRI,2000)
@@ -1568,9 +1619,9 @@ C
 C
       CALL QENTER('TRA2  ')
 C
-      LUHLF1 = 0
-      LUHLF2 = 0
-      LUHLF3 = 0
+      LUHLF1 = -1
+      LUHLF2 = -1
+      LUHLF3 = -1
       DOTUPQ = .NOT. NOCOUL .AND. NOCR*NOCS .GT. 0
       IF (NOEXCH) THEN
          DORUPQ = .FALSE.
@@ -2024,7 +2075,6 @@ C
 #include "trinfo.h"
 #include "inftra.h"
 #include "inftap.h"
-C
 C
       CALL QENTER('TRA2E1')
 C
@@ -2764,16 +2814,17 @@ C     MAERKE skal flere med i GSLIST?
       RETURN
       END
 C  /* Deck traset */
-      SUBROUTINE TRASET(JRDAO)
+      SUBROUTINE TRASET(JRDAO,LWORK)
 C
 C Dec 1989 Hans Joergen Aa. Jensen
 C Define TRINP and TRUNIT
 C
 C Input:
-C     JRDAO=0 : from ordered integral file produced by
+C     JRDAO=0 : from AOORDINT, ordered integral file produced by
 C               the Lund INTSORT program.
 C     JRDAO=1 : derivative integrals from Abacus
-C     JRDAO=2 : Spin-orbit integrals.
+C     JRDAO=2 : Spin-orbit integrals
+C     JRDAO=3 : from AOTWOINT
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -2789,7 +2840,6 @@ C
 #include "inforb.h"
 #include "trinp.h"
 #include "trinfo.h"
-#include "trbins.h"
 #include "inftra.h"
 C
 C     Local variables
@@ -2816,10 +2866,11 @@ C
 C
 C
 C     Set code for reading AO integrals
-C     IRDAO=0 : from ordered integral file produced by
+C     IRDAO=0 : from AOORDINT, ordered integral file produced by
 C               the Lund INTSORT program.
-C     IRDAO=1 : derivative integrals from Abacus
-C     IRDAO=2 : Spin-orbit integrals.
+C     IRDAO=1 : derivative AO integrals from Abacus
+C     IRDAO=2 : Spin-orbit AO integrals.
+C     IRDAO=3 : from AOTWOINT
 C
 C     (AB/TU) = ITUSYM*(AB/UT) = (BA/TU) = ITUSYM*(BA/UT)
 C     ITUSYM = -1 for spin-orbit integrals (JRDAO .EQ. 2)
@@ -2831,15 +2882,20 @@ C
       IF (IRDAO .EQ. 0) THEN
          ITUSYM =  1
          LX2X3  =  0
-         CALL TRASE0
-      ELSE IF (IRDAO.EQ.1) THEN
-         ITUSYM =  1
-         LX2X3  = ( LMSBIN*(IRAT+1)+2 - 1 ) / IRAT + 1
+         CALL TRASET_0
+! hjaaj Sep 2010: derivative integrals have not been
+!     implemented here for many years: since abadtra.F was
+!     written.
+!     ELSE IF (IRDAO.EQ.1) THEN
+!        ITUSYM =  1
+!        LX2X3  = ( LMSBIN*(IRAT+1)+2 - 1 ) / IRAT + 1
+!
       ELSE IF (IRDAO.EQ.2) THEN
          ITUSYM = -1
-         LX2X3  = 2*600
-C MAERKE: husk at rette her naar ny DSOUT2
-         CALL TRASE2
+         CALL TRASET_2(LX2X3, LWORK)
+      ELSE IF (IRDAO .EQ. 3) THEN
+         ITUSYM = 1
+         CALL TRASET_3(LX2X3, LWORK)
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
@@ -2850,7 +2906,7 @@ C
       RETURN
       END
 C  /* Deck trase0 */
-      SUBROUTINE TRASE0
+      SUBROUTINE TRASET_0
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -2874,7 +2930,7 @@ C
 #include "inftra.h"
 #include "inftap.h"
 C
-      CALL QENTER('TRASE0')
+      CALL QENTER('TRASET_0')
 C
 C     RETRIEVE BASE DATA FROM UNIT LUORDA
 C        KEEP(1)     = MSYM
@@ -2898,7 +2954,7 @@ C
 C
       IF (IPRTRA .GE. 10 .OR. NERROR .GT. 0) THEN
          WRITE (LUPRI,'(/A,2(/A,I5),2(/A,8I5))')
-     *      ' KEEP information from LUORDA',
+     *      ' KEEP information from AOORDINT',
      *      ' -- KEEP(1)     = MSYM     ',KEEP(1),
      *      ' -- KEEP(2)     = INTSYM   ',KEEP(2),
      *      ' -- KEEP(3:10)  = MBAS(1:8)',(KEEP(I),I=3,10),
@@ -2906,13 +2962,13 @@ C
       END IF
       IF (NERROR .GT. 0) THEN
          WRITE (LUPRI,'(/A)')
-     *      ' ERROR, MSYM and/or MBAS(*) not consistent with LUORDA'
+     *      ' ERROR, MSYM and/or MBAS(*) not consistent with AOORDINT'
          CALL QUIT(' ERROR, MSYM and/or MBAS(*) not consistent '//
-     *             'with LUORDA')
+     *             'with AOORDINT')
       END IF
       IF (IPRTRA .GE. 15) THEN
          WRITE (LUPRI,'(3(/A))')
-     *      ' Non-zero IDATA information from LUORDA :',
+     *      ' Non-zero IDATA information from AOORDINT :',
      *      ' ========================================',
      *      '     NCHAIN      LADX       NPQ'
          DO 20 I = 1,LIDATA
@@ -2923,14 +2979,217 @@ C
 C
       IF (KEEP(2) .NE. 0) THEN
          INTSYM = KEEP(2)
-         IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
-     *   ' Symmetry of integrals from LUORDA :',INTSYM
+         IF (IPRTRA .GT. 1 .OR. INTSYM .NE. 1) WRITE(LUPRI,'(/A,I8)')
+     *   ' Symmetry of integrals from AOORDINT :',INTSYM
       ELSE
          INTSYM = 1
          IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
      *   ' Integrals assumed to be totally symmetric.'
       END IF
-      CALL QEXIT('TRASE0')
+      CALL QEXIT('TRASET_0')
+      RETURN
+      END
+C/*deck  traset_3*/
+      SUBROUTINE TRASET_3( LX2X3, LWORK )
+C
+C Sep 2010 Hans Joergen Aa. Jensen (based on TRASET_2 from spin-orbit)
+C
+C Define KEEP and IDATA for AO->MO transformation from AOTWOINT
+C (instead of from AOORDINT)
+C
+#include <implicit.h>
+C
+C Used from common blocks:
+C  INFDIM : N2BASM
+C  INFTRA : IPRTRA
+C  TRINP  : MSYM, MBAS(), INTSYM
+C  TRHSO  : KSYMSO
+C  TRUNIT : KEEP,IDATA
+C
+#include <priunit.h>
+#include <infdim.h>
+#include <inftra.h>
+#include <trinp.h>
+#include <trhso.h>
+#include <trunit.h>
+C
+      CALL QENTER('TRASET_3')
+C
+      LX2X3  = 2*600 + 4*600
+C     for BUF(600), IBUF(600), and INDX(4,600) for both i*4 and i*8
+C        /Bugfix Oct07-hjaaj
+C MAERKE: remember to change here when new UN2OUT in her2out.F
+C TODO: use infor on LUINTA for allocation /Sep 2010 hjaaj
+C
+      KEEP(1) = MSYM
+      INTSYM = 1
+      IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A)')
+     *   ' AO 2-el integrals assumed to be totally symmetric.'
+      KEEP(2) = INTSYM
+      DO 100 I = 1,8
+         KEEP( 2+I) = MBAS(I)
+         KEEP(10+I) = 0
+  100 CONTINUE
+C
+C     980820-hjaaj: reserve NWRK*N2BASM memory for other
+C     buffers in integral transformation.
+C
+      NWRK = (LWORK/3) / N2BASM
+C     allocate 1/3 of memory for other buffers of size N2BASM
+      NWRK = MAX(6+NORBMA,NWRK)
+C     We need at least ca. this number of buffers (as far as I can count
+C     today!) for the integral transformation to work.
+C
+      NPQ = MAX( LWORK / N2BASM - NWRK , 1 )
+      NPQ = MIN( NPQ , N2BASM )
+      DO 200 I = 1,LIDATA
+         IDATA(I,1) = 0
+         IDATA(I,2) = NPQ
+  200 CONTINUE
+      CALL QEXIT('TRASET_3')
+      RETURN
+      END
+C /*deck  rdao2*/
+      SUBROUTINE RDAO2(LUINTA,BUF,IBUF,H2_RSPQ,MPQOFF)
+C
+C 20-Mar-1990 hjaaj
+C
+C Reads two-electron integrals from file to buffer.
+C LUINTA: File to read
+C BUF   : Points to start element in integral buffer.
+C IBUF  : Points to start element in label buffer.
+C H2_RSPQ : H2RSPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
+C MPQOFF: Offset of last element returned to calling routine
+C
+#include <implicit.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <mxcent.h>
+      DIMENSION H2_RSPQ(*), BUF(*), IBUF(4,600)
+C
+C Used from common blocsk:
+C   INFORB : IBAS(8)
+C   INFIND : IROW(*),ISAO(*)
+C   TRINFO : ISP,ISQ,ISR,ISS,NBQ,NPQ,NBRS
+C
+#include <maxash.h>
+#include <maxorb.h>
+#include <nuclei.h>
+#include <inforb.h>
+#include <infind.h>
+#include <trinfo.h>
+C
+      INTEGER NBAS_x(8)
+C
+#include <ibtfun.h>
+C
+      IBASP = IBAS(ISP)
+      IBASQ = IBAS(ISQ)
+      IBASR = IBAS(ISR)
+      IBASS = IBAS(ISS)
+C
+      CALL DZERO(H2_RSPQ,NBRS*NPQ)
+C
+      CALL REWSPL(LUINTA)
+      CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
+      ! hjaaj Sep 2010: should be moved out to GPOPEN(LUINTA)
+      READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+      IF (NSYM_x .ne. NSYM) call quit('RDAO2 NSYM_AOTWOINT .ne. NSYM')
+      ierr = 0
+      do i = 1,8
+         if (nbas(i) .ne. nbas_x(i)) ierr = ierr + 1
+      end do
+      IF (ierr.ne.0) call quit('RDAO2 NBAS_AOTWOINT .ne. NBAS')
+      IF (LBUF .ne. 600) THEN
+         call quit('RDAO2, LBUF .ne. 600 not implemented yet')
+         ! hjaaj sep 2010: must allocate enough for larger buffer outside!
+      END IF
+C
+      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      KINT = 1
+      KIINT = KINT + LBUF
+C
+      CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
+ 150  CONTINUE
+#if defined (VAR_SPLITFILES)         
+         JBUF = 608
+         CALL READSI(LUINTA,LENINT,BUF(KINT),JBUF)
+#else
+         CALL READI(LUINTA,LENINT,BUF(KINT))
+#endif
+         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         IF (LENGTH .GT. 0) THEN
+            DO 100 I = 1, LENGTH
+                  JP = IBUF(1,I)
+                  JSP = ISAO(JP)
+               IF (JSP .NE. ISP) GO TO 100
+                  JQ = IBUF(2,I)
+                  JSQ = ISAO(JQ)
+               IF (JSQ .NE. ISQ) GO TO 100
+                  JR = IBUF(3,I)
+                  JSR = ISAO(JR)
+               IF (JSR .NE. ISR) GO TO 100
+                  JS = IBUF(4,I)
+                  JSS = ISAO(JS)
+               IF (JSS .NE. ISS) GO TO 100
+C
+                  MP = JP - IBASP
+                  MQ = JQ - IBASQ
+                  IF (ISP .EQ. ISQ) THEN
+                     MPQ = IROW(MP) + MQ - MPQOFF
+                  ELSE
+                     MPQ = (MP-1)*NBQ + MQ - MPQOFF
+                  END IF
+                  IF (MPQ .GT. 0 .AND. MPQ .LE. NPQ) THEN
+                     MR = JR - IBASR
+                     MS = JS - IBASS
+                     IF (ISR .EQ. ISS) THEN
+                        MRS = IROW(MR) + MS
+                     ELSE
+                        MRS = (MR-1)*NBS + MS
+                     END IF
+                     H2_RSPQ((MPQ-1)*NBRS + MRS) = BUF(I)
+                  END IF
+  100       CONTINUE
+            DO 200 I = 1, LENGTH
+                  JP = IBUF(3,I)
+                  JSP = ISAO(JP)
+               IF (JSP .NE. ISP) GO TO 200
+                  JQ = IBUF(4,I)
+                  JSQ = ISAO(JQ)
+               IF (JSQ .NE. ISQ) GO TO 200
+                  JR = IBUF(1,I)
+                  JSR = ISAO(JR)
+               IF (JSR .NE. ISR) GO TO 200
+                  JS = IBUF(2,I)
+                  JSS = ISAO(JS)
+               IF (JSS .NE. ISS) GO TO 200
+C
+                  MP = JP - IBASP
+                  MQ = JQ - IBASQ
+                  IF (ISP .EQ. ISQ) THEN
+                     MPQ = IROW(MP) + MQ - MPQOFF
+                  ELSE
+                     MPQ = (MP-1)*NBQ + MQ - MPQOFF
+                  END IF
+                  IF (MPQ .GT. 0 .AND. MPQ .LE. NPQ) THEN
+                     MR = JR - IBASR
+                     MS = JS - IBASS
+                     IF (ISR .EQ. ISS) THEN
+                        MRS = IROW(MR) + MS
+                     ELSE
+                        MRS = (MR-1)*NBS + MS
+                     END IF
+                     H2_RSPQ((MPQ-1)*NBRS + MRS) = BUF(I)
+                  END IF
+  200       CONTINUE
+         ELSE IF (LENGTH .LT. 0 ) THEN
+            GO TO 300
+         END IF
+         GO TO 150
+C
+ 300  CONTINUE
+      MPQOFF = MPQOFF + NPQ
       RETURN
       END
 C  /* Deck tralim */
@@ -2967,7 +3226,7 @@ C     ITRTYP(1:NORBT) = number of integral indices in which this orbital
 C     enters (i.e. 0,1,2,3, or 4)
 C
 #include "implicit.h"
-      DIMENSION ICDTRA(1), ITRTYP(1)
+      DIMENSION ICDTRA(*), ITRTYP(*)
 C
 C Used from common blocks:
 C  TRINP  : MFRO,MISH,MASH,MORB
@@ -3151,6 +3410,8 @@ C
          CALL RDDER2(LUORDA,WRK,WRK,LWRK,X1,NX1,IDA)
       ELSE IF (IRDAO .EQ. 2) THEN
          CALL RDHSO2(LUORDA,WRK,WRK(600*(1+IRAT) + 1),X1,IDA)
+      ELSE IF (IRDAO .EQ. 3) THEN
+         CALL RDAO2(LUORDA,WRK,WRK(600*(1+IRAT) + 1),X1,IDA)
       ELSE
          WRITE (LUPRI,'(/A,I5)')
      &      ' TRDDAO ERROR, illegal code: IRDAO =',IRDAO

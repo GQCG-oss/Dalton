@@ -96,13 +96,13 @@ C--------------------------------
 C     Open files
 C--------------------------------
 C
-      LUCKJD   = 0
-      LUTOC    = 0
-      LUDELD   = 0
-      LUDKBC   = 0
-      LU3VI2   = 0
-      LU3VI    = 0
-      LU3FOP   = 0
+      LUCKJD   = -1
+      LUTOC    = -1
+      LUDELD   = -1
+      LUDKBC   = -1
+      LU3VI2   = -1
+      LU3VI    = -1
+      LU3FOP   = -1
 C
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
       CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -294,13 +294,13 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDRX  = 0
-      LUCKJDRY  = 0
-      LUDELDRX  = 0
-      LUDELDRY  = 0
-      LUDKBCRX  = 0
-      LUDKBCRY  = 0
+      LU3SRTR   = -1
+      LUCKJDRX  = -1
+      LUCKJDRY  = -1
+      LUDELDRX  = -1
+      LUDELDRY  = -1
+      LUDKBCRX  = -1
+      LUDKBCRY  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDRX,FNCKJDRX,64,0)
@@ -1587,14 +1587,14 @@ C  /* Deck cc3_aamatsdocc */
 *
 C
       IMPLICIT NONE
-#include<priunit.h>
-#include<ccsdsym.h>
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<dummy.h>
-#include<iratdef.h>
-#include<ccinftap.h>
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccinftap.h>
 #include <ccsdinp.h>
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI
@@ -3432,9 +3432,9 @@ C     Sort from L2 integral stored as X(aI,bJ) to X^IJ(a,b)
 C-------------------------------
 C
       IMPLICIT NONE
-#include<priunit.h>
-#include<ccsdsym.h>
-#include<ccorb.h>
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
 C
       INTEGER ISYMI,ISYMJ,ISYINT 
       INTEGER ISYMB,ISYMBIJ,ISYMA,ISYMAI,ISYMBJ,NBJ,NAB,NAI,NAIBJ 
@@ -3490,9 +3490,9 @@ C     Sort from L2 integral stored as X(ai,bJ) to X^J(bai)
 C-------------------------------
 C
       IMPLICIT NONE
-#include<priunit.h>
-#include<ccsdsym.h>
-#include<ccorb.h>
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
 C
       INTEGER ISYMJ,ISYINT 
       INTEGER ISYMBAI,ISYMB,ISYMAI,ISYMA,ISYMI,ISYMBJ,NBJ,NBAI,NAI,NAIBJ

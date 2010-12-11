@@ -5,11 +5,12 @@ include ../Makefile.config
 F_OBJS = gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 	qpack.o    graphic.o  vcraypack.o    gpsaue.o \
 	mpimacro.o pvmmacro.o gpdahle.o      intf7790.o \
+	gpjkp.o gpjt.o \
 	gpsimen.o $(GP_EXTRAS)
 
 F_CPPS = $(F_OBJS:.o=.i)
 
-pre: $(F_CPPS)
+pre: $(F_CPPS) mpi_dummy.i
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > gp.ftnchek

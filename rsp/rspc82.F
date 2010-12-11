@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   "Dalton, a molecular electronic structure program, Release 2.0"
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -46,7 +46,7 @@ polish in output
 do not save S(2) CI diagonal on LURSP4 ( all 1's)
 
 revision 1.2 2000/04/14 14:33:01 hjj
-1) partial bug fix for triplet and CSF's (more need to be done)
+1) partial bug fix for triplet and CSFs (more need to be done)
 2) polishing
 =============================================================================
 950208-hjaaj
@@ -115,6 +115,7 @@ C
 C
 C ALLOCATE WORK SPACE FOR RSPLIN
 C
+
       KELI   = 1
       KSLI   = KELI + (NCSIM+NOSIM) * KZYVAR
       KWRKS  = KSLI + (NCSIM+NOSIM) * KZYVAR
@@ -398,22 +399,22 @@ C    ZYM(U,X)*DV(T,X)-ZYM(X,T)*DV(X,U)
 C        L       K          K       L
 C        K       L          L       K
 C
-C    ACTIVE-SECUNDARY        (T,A)
+C    ACTIVE-SECONDARY        (T,A)
 C                             K,L
 C    ZYM(A,X)*DV(T,X)
 C        L       K
 C
-C    SECUNDARY-ACTIVE        (A,U)
+C    SECONDARY-ACTIVE        (A,U)
 C                             L,K
 C    -ZYM(X,A)*DV(X,U)
 C           L       K
 C
-C    INACTIVE-SECUNDARY      (I,A)
+C    INACTIVE-SECONDARY      (I,A)
 C                             K,L
 C    2*ZYM(A,I)
 C          L,K
 C
-C    SECUNDARY-INACTIVE      (A,J)
+C    SECONDARY-INACTIVE      (A,J)
 C                             L,K
 C    -2*ZYM(J,A)
 C           K,L
@@ -450,23 +451,23 @@ C
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
 C
-         KSYM1 = 0
+         K_SYM1 = 0
          DO 1300 IG = 1,KZWOPT
             K     = JWOP(1,IG)
             L     = JWOP(2,IG)
-            KSYM  = ISMO(K)
-            LSYM  = ISMO(L)
-            IF( KSYM.NE.KSYM1 ) THEN
-               KSYM1 = KSYM
-               IORBK = IORB(KSYM)
-               NASHK = NASH(KSYM)
-               NISHK = NISH(KSYM)
-               IASHK = IASH(KSYM)
-               IIORBK= IIORB(KSYM)
-               IORBL = IORB(LSYM)
-               NASHL = NASH(LSYM)
-               NISHL = NISH(LSYM)
-               IASHL = IASH(LSYM)
+            K_SYM  = ISMO(K)
+            L_SYM  = ISMO(L)
+            IF( K_SYM.NE.K_SYM1 ) THEN
+               K_SYM1 = K_SYM
+               IORBK = IORB(K_SYM)
+               NASHK = NASH(K_SYM)
+               NISHK = NISH(K_SYM)
+               IASHK = IASH(K_SYM)
+               IIORBK= IIORB(K_SYM)
+               IORBL = IORB(L_SYM)
+               NASHL = NASH(L_SYM)
+               NISHL = NISH(L_SYM)
+               IASHL = IASH(L_SYM)
             END IF
             ITYPK = IOBTYP(K)
             ITYPL = IOBTYP(L)
@@ -587,11 +588,14 @@ C
 #include <priunit.h>
 #include <maxorb.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <inforb.h>
 #include <infdim.h>
 #include <inftap.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
+#include <gnrinf.h>
+C
 C
 C ALLOCATE WORK SPACE
 C
@@ -616,29 +620,27 @@ C
          ELSE
             CALL RSPCLI(NCSIM,ZYCVEC,FCAC,H2AC,
      *                  WRK(KEVECS),XINDX,WRK(KRSPCL),LWRKRS)
-C           CALL RSPCLI(NCSIM,ZYCVEC,FCAC,H2AC,
-C    *                  EVECS,XINDX,WRK,LWRK)
+C           CALL RSPCLI(NCSIM,ZYCVEC,FCAC,H2AC,EVECS,XINDX,WRK,LWRK)
          END IF
       END IF
 C
 C ALLOCATE WORK SPACE FOR RSPOLI
 C
       KZYMAT = KRSPCL
-      KFCONE = KZYMAT + NOSIM * NORBT * NORBT
-      KFVONE = KFCONE + NOSIM * NORBT * NORBT
-      KQAONE = KFVONE + NOSIM * NORBT * NORBT
-      KQBONE = KQAONE + NOSIM * NORBT * NASHT
-      KFVTD  = KQBONE + NOSIM * NORBT * NASHT
-      KQATD  = KFVTD  + NCSIM * NORBT * NORBT
+      KFCX   = KZYMAT + NOSIM * NORBT * NORBT
+      KFVX   = KFCX   + NOSIM * NORBT * NORBT
+      KQAX   = KFVX   + NOSIM * NORBT * NORBT
+      KQBX   = KQAX   + NOSIM * NORBT * NASHT
+C
+      LFVTD  = NCSIM * N2ORBX
+      IF (DOMCSRDFT) LFVTD = 2*LFVTD
+C     ... Extra allocation for "FCTD" in MCSCF-SRDFT,
+C         is needed for the VxcTD matrices.
+      KFVTD  = KQBX   + NOSIM * NORBT * NASHT
+      KQATD  = KFVTD  + LFVTD
+C
       KQBTD  = KQATD  + NCSIM * NORBT * NASHT
-      KH2    = KQBTD  + NCSIM * NORBT * NASHT
-      IF (DIRFCK) THEN
-         KH2X   = KH2
-         KWRK1  = KH2X
-      ELSE
-         KH2X   = KH2    + NORBT * NORBT
-         KWRK1  = KH2X   + NORBT * NORBT
-      END IF
+      KWRK1  = KQBTD  + NCSIM * NORBT * NASHT
       LWRK1  = LWRK   - KWRK1
 C
 C UNPACK ORBITAL VECTORS
@@ -652,34 +654,30 @@ C
 C CONSTRUCT ORBITAL PART OF LINEAR TRANSFORMED VECTORS
 C
       IF (.NOT.RSPCI) THEN
-       CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,WRK(KZYMAT),
-     *            WRK(KFCONE),WRK(KFVONE),
-     *            WRK(KQAONE),WRK(KQBONE),WRK(KFVTD),
-     *            WRK(KQATD),WRK(KQBTD),WRK(KEVECS),
-     *            WRK(KH2),WRK(KH2X),XINDX,CMO,
-     *            WRK(KWRK1),LWRK1)
+        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,KZCONF,FC,FV,PVX,WRK(KZYMAT),
+     *              WRK(KFCX),WRK(KFVX), WRK(KQAX),WRK(KQBX),
+     *              WRK(KFVTD),WRK(KQATD),WRK(KQBTD),WRK(KEVECS),
+     *              XINDX,CMO,WRK(KWRK1),LWRK1)
+C       CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
+C    *              FCX,FVX,QAX,QBX, FVTD,QATD,QBTD,EVECS,
+C    *              XINDX,CMO,WRK,LWRK)
       ENDIF
-C        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,
-C    *               FCONE,FVONE,
-C    *               QAONE,QBONE,FVTD,
-C    *               QATD,QBTD,EVECS,
-C    *               H2,H2X,XINDX,CMO,WRK,LWRK)
-C
-C *** END OF RSPLIN
+
+      CALL FLSHFO(LUPRI)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION
 C
-
-      CALL FLSHFO(LUPRI)
-      IF (FLAG(16)) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
+C
+C *** END OF RSPLIN
+C
       RETURN
       END
 C  /* Deck rsporb */
-      SUBROUTINE RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-     *                  EVECS,ZYMAT)
+      SUBROUTINE RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV, EVECS,ZYMAT)
 C
 C WRITTEN 14-FEB 1986
 C
@@ -722,22 +720,22 @@ C    FCX(U,X)*DV(T,X)-FCX(X,T)*DV(X,U)+QBX(U,T)-QAX(T,U)
 C        L       K          K       L      L,K      K,L
 C        K       L          L       K      K,L      L,K
 C
-C    ACTIVE-SECUNDARY        (T,A)
+C    ACTIVE-SECONDARY        (T,A)
 C                             K,L
 C    FCX(A,X)*DV(T,X)+QBX(A,T)
 C        L       K        L,K
 C
-C    SECUNDARY-ACTIVE        (A,U)
+C    SECONDARY-ACTIVE        (A,U)
 C                             L,K
 C    -FCX(X,A)*DV(X,U)-QAX(A,U)
 C           L       K      L,K
 C
-C    INACTIVE-SECUNDARY      (I,A)
+C    INACTIVE-SECONDARY      (I,A)
 C                             K,L
 C    2*FCX(A,I)+2FVX(A,I)
 C          L,K       L,K
 C
-C    SECUNDARY-INACTIVE      (A,J)
+C    SECONDARY-INACTIVE      (A,J)
 C                             L,K
 C    -2*FCX(J,A)-2*FVX(J,A)
 C           K,L        K,L
@@ -753,10 +751,12 @@ C
       DIMENSION UDV(NASHDI,NASHDI,*), EVECS(KZYVAR,*)
       DIMENSION ZYMAT(NORBT,NORBT,*)
 C
+C  INFINP : DOMCSRDFT
 C  INFDIM : NASHDI
 C
 #include <maxorb.h>
 #include <maxash.h>
+#include <infinp.h>
 #include <infvar.h>
 #include <inforb.h>
 #include <infind.h>
@@ -771,29 +771,34 @@ C
 C
 C
       KYCONF = KZCONF + KZVAR
+      if (KYCONF + kzwopt .gt. kzyvar) then
+         write (lupri,*) 'hjaaj kzconf, kzvar, kzwopt, kzyvar',
+     &                    kzconf, kzvar, kzwopt, kzyvar
+         call quit('hjaaj problem in rsporb')
+      end if
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
 C
-         KSYM1 = 0
+         K_SYM1 = 0
          DO 1300 IG = 1,KZWOPT
             K     = JWOP(1,IG)
             L     = JWOP(2,IG)
-            KSYM  = ISMO(K)
-            LSYM  = ISMO(L)
-            IF( KSYM.NE.KSYM1 ) THEN
-               KSYM1 = KSYM
-               NORBK = NORB(KSYM)
-               IORBK = IORB(KSYM)
-               NASHK = NASH(KSYM)
-               NISHK = NISH(KSYM)
-               IASHK = IASH(KSYM)
-               IIORBK= IIORB(KSYM)
-               IORBL = IORB(LSYM)
-               NASHL = NASH(LSYM)
-               NISHL = NISH(LSYM)
-               NORBL = NORB(LSYM)
-               IASHL = IASH(LSYM)
-               IIORBL= IIORB(LSYM)
+            K_SYM  = ISMO(K)
+            L_SYM  = ISMO(L)
+            IF( K_SYM.NE.K_SYM1 ) THEN
+               K_SYM1 = K_SYM
+               NORBK = NORB(K_SYM)
+               IORBK = IORB(K_SYM)
+               NASHK = NASH(K_SYM)
+               NISHK = NISH(K_SYM)
+               IASHK = IASH(K_SYM)
+               IIORBK= IIORB(K_SYM)
+               IORBL = IORB(L_SYM)
+               NASHL = NASH(L_SYM)
+               NISHL = NISH(L_SYM)
+               NORBL = NORB(L_SYM)
+               IASHL = IASH(L_SYM)
+               IIORBL= IIORB(L_SYM)
             END IF
             NK    = K - IORBK
             NL    = L - IORBL
@@ -1335,7 +1340,7 @@ C
                WRITE(LUPRI,'(/6X,A)')
      &'Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue'
             END IF
-            WRITE(LUPRI,'(/6X,A)')
+            WRITE(LUPRI,'(6X,A)')
      &'----------------------------------------------------------------'
          END IF
          DO 2000 JR = 1,NBX
@@ -1343,7 +1348,7 @@ C
             JROOTJ = IBOFF+JR
             QONORM = DDOT(KZWOPT,BVECS(1+KZCONF+JROFF),1,
      *                               BVECS(1+KZCONF+JROFF),1)
-     *              + DDOT(KZWOPT,BVECS(1+KZVAR+KZCONF+JROFF),1,
+     *             + DDOT(KZWOPT,BVECS(1+KZVAR+KZCONF+JROFF),1,
      *                               BVECS(1+KZVAR+KZCONF+JROFF),1)
             QCZNOR = DDOT(KZCONF,BVECS(1+JROFF),1,
      *                               BVECS(1+JROFF),1)
@@ -1362,13 +1367,11 @@ C
      *           ' ROOT:',JROOTJ,' RESIDUAL TOT:',QNORM,
      *           ' CONF:',QCNORM,' ORB:',QONORM,
      *           ' BNORM:',BNORM,' EIVAL:',EIVAL(JROOTJ)
+               IF (QCNORM .NE. D0) WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
+     *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
             ELSE IF (IPRRSP.GE.3) THEN
                WRITE(LUPRI,'(I10,1P,D15.5,3D10.2,D15.5)')
      *           JROOTJ,QNORM,QCNORM,QONORM,BNORM,EIVAL(JROOTJ)
-            END IF
-            IF (IPRRSP.GT.7 .AND. QCNORM .NE. D0) THEN
-               WRITE(LUPRI,'(1P,T10,2(A,D12.5))')
-     *           ' RESIDUAL CONF Z-COMP',QCZNOR,'    Y-COMP',QCYNOR
             END IF
 CHJAAJ      BNORM = MIN(BNORM,D1)
 C           ... 880309: ask for absolute convergence if BNORM
@@ -1555,13 +1558,15 @@ C
  3010    CONTINUE
       ENDIF
       IF ((IPRRSP.GT.105).AND.(NCSIM.GT.0)) THEN
-         WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS AFTER RSPORT',NCSIM
+         WRITE(LUPRI,*)' NCSIM CSF trial vectors after RSPORT',NCSIM
          CALL OUTPUT(BVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,LUPRI)
       ENDIF
       IF ((IPRRSP.GT.105).AND.(NOSIM.GT.0)) THEN
-         WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS AFTER RSPORT',NOSIM
-         CALL OUTPUT(BVECS(1+NCSIM*KZCONF),1,KZYWOP,
-     *             1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
+         WRITE(LUPRI,'(/A,I5/A)')
+     +      ' NOSIM orbital trial vectors after RSPORT',NOSIM,
+     +      ' ( columns: Z_1 Y_1 Z_2 Y_2 ... Z_NOSIM Y_NOSIM)'
+         CALL OUTPUT(BVECS(1+NCSIM*KZCONF),1,KZWOPT,
+     *             1,NOSIM*2,KZWOPT,NOSIM*2,1,LUPRI)
       ENDIF
 C
  3999 CONTINUE
@@ -1683,7 +1688,7 @@ C
       PARAMETER (COMPLX = 1.0D7 )
       PARAMETER (D0=0.0D0, D1=1.0D0)
 C
-      IF (IPRRSP .GE. 81) THEN
+      IF (IPRRSP .GT. 20) THEN
          WRITE (LUPRI,'(//A/A)')
      *      '  (ALFAR + i ALFAI) / BETA are eigenvalues;',
      *      '     ALFAR           ALFAI          BETA'
@@ -1717,7 +1722,7 @@ C
             ALFAR(I) = COMPLX
          END IF
   10  CONTINUE
-      IF (IPRRSP .GT. 120) THEN
+      IF (IPRRSP .GT. 15) THEN
          WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
       END IF
@@ -1981,12 +1986,12 @@ C
             OVLPI = D2*DDOT(KZWOPT,BVECS(IBVEC),1,BVECS(JBVEC),1)
 C           test if Z + Y is zero
             TZPY  = T1 + OVLPI
-            IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
+            IF (IPRRSP .GE. 10) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
      *         ' ** TEST OF Z = Y OR Z = -Y:',
      *         ' (Z Y) norm squared =',T1,
      *         ' Z + Y norm squared =',TZPY
             IF (TZPY .LE. OVLMIN*T1) THEN
-               IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A,I4/A)')
+               IF (IPRRSP .GE. 10) WRITE (LUPRI,'(/A,I4/A)')
      *            ' Z = -Y in trial vector no.',IRX,
      *            ' Y component removed.'
                CALL DZERO(BVECS(JBVEC),KZWOPT)
@@ -1995,10 +2000,10 @@ C              test if Z - Y is zero;
 C              only if TZPY = 2 * T1 can Z - Y be zero,
 C              so TZPY .gt. T1 is a safe test.
                TZMY = T1 - OVLPI
-               IF (IPRRSP .GE. 20) WRITE (LUPRI,'(A,1P,D15.8)')
+               IF (IPRRSP .GE. 10) WRITE (LUPRI,'(A,1P,D15.8)')
      *            ' Z - Y norm squared =',TZMY
                IF (TZMY .LE. OVLMIN*T1) THEN
-                  IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A,I4/A)')
+                  IF (IPRRSP .GE. 10) WRITE (LUPRI,'(/A,I4/A)')
      *            ' Z = Y in trial vector no.',IRX,
      *            ' Y component removed.'
                   CALL DZERO(BVECS(JBVEC),KZWOPT)
@@ -2123,7 +2128,7 @@ C
          IF (JLDP(IRX) .NE. 0) THEN
             TT = DDOT(LBZY,BVECS(IBVEC),1,BVECS(IBVEC),1)
             IF (TT .LE. THRLDP) THEN
-               IF (IPRRSP.GT.5) WRITE (LUPRI,3250) IRX,JLDP(IRX),TT
+               IF (IPRRSP.GT.2) WRITE (LUPRI,3250) IRX,JLDP(IRX),TT
                JLDP(IRX) = 0
             ELSE IF (TT .LT. THRRND) THEN
                IF (ITURN .EQ. 1) THEN
@@ -2134,7 +2139,7 @@ C
                END IF
             END IF
             IF (JLDP(IRX) .NE. 0) THEN
-               IF (IPRRSP .GE. 20) WRITE (LUPRI,'(/A,2I6,1P,D12.5)')
+               IF (IPRRSP .GE. 8) WRITE (LUPRI,'(/A,2I6,1P,D12.5)')
      &          ' RSPORT: b-vector, root no., norm**2:',IRX,JLDP(IRX),TT
                IF (TT .LT. T1MIN) THEN
                   TT = D1 / SQRT(TT)
@@ -2248,6 +2253,11 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
 C
 C     Set NBNEW to actual number of new trial vectors
 C
+      IF (IBPREV-NBPREV .NE. NBNEW) THEN
+         WRITE(LUPRI,'(A,I5,A,I5,A)')
+     &      'RSPORT:',NBNEW - IPREV + NBPREV,' out of',
+     &       NBNEW,' new trial vectors linear dependent'
+      END IF
       NBNEW = IBPREV - NBPREV
 C
       RETURN
@@ -2708,6 +2718,7 @@ C
 #include <wrkrsp.h>
 #include <infind.h>
 #include <infpri.h>
+#include <absorp.h>
       DIMENSION IVENU(MAXNVE)
 C
       LOGICAL LINEQ
@@ -2722,6 +2733,16 @@ C
      *   ' WHICH EXCEEDS ALLOWED DIMENSION',MAXRM
          CALL QUIT('RSPRED: TOO LARGE DIMENSION OF REDUCED SPACE')
       END IF
+CSPAS:01.05.2009 bug fix for large number of  excitation energies
+      IF (KZYRED.GT.LIROW) THEN
+         WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
+     *   ' >>> ERROR IN RSPRED >>>',
+     *   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
+     *   ' NEEDED ',KZYRED,', GIVEN :',LIROW,
+     *   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
+         CALL QUIT('RSPRED: TOO SMALL DIMENSION OF IROW: RECOMPILE')
+      END IF
+CKeinSPASmehr
 C
 C Section 1: extend reduced E[2]-AND S[2]-matrices
 C            with N new b-vectors
@@ -3014,19 +3035,18 @@ C
             INEG     = ISNDX(2)
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
-            IF (IPRRSP.GE.4 .OR. ISNDX(3).GT.0) THEN
+            IF (ISNDX(3).GT.0 .AND. .NOT.ABSORP) 
+     *           WRITE(LUPRI,'(/A)')
+     *         ' *** INFO, negative eigenvalues in reduced matrix.'
+            IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
- 1800       FORMAT(/' GP * SOLUTION VECTOR AT FREQUENCY',F12.5,' AU',
-     *             /' AFTER',I5,' LINEAR TRANSFORMATIONS IS ',F15.8,
-     *             /' INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS',3I5,
-     *             /' DETERMINANT OF REDUCED MATRIX IS',F6.2,
+ 1800       FORMAT(/' GP * SOLUTION vector at frequency',F12.5,' a.u.',
+     *             /' after',I5,' linear transformations is ',F15.8,
+     *             /' INERTIA (POS,ZER,NEG) of reduced matrix is',3I5,
+     *             /' Determinant of reduced matrix is',F6.2,
      *              ' * 10 **',F5.1)
-C
-            IF (ISNDX(3) .GT. 0) WRITE(LUPRI,'(//2A,3I5)')
-     *         ' ***WARNING, negative eigenvalues in reduced matrix,',
-     *         ' inertia is',ISNDX
 C
             IF (IPRRSP .GE. 14) THEN
                WRITE (LUPRI,'(/A)')
@@ -3192,9 +3212,9 @@ C
       KEXST2 = MIN(5*KEXSTV+8,KZVAR)
       KEXST2 = MIN(KEXST2,  MAXST)
       IF (IPRRSP .GT.110 ) THEN
-         WRITE(LUPRI,'(/A)') ' DIAGONAL E(2)'
+         WRITE(LUPRI,'(/A)') ' DIAGONAL of E(2)'
          CALL OUTPUT(WRK(KDIAE),1,KZVAR,1,1,KZVAR,1,1,LUPRI)
-         WRITE(LUPRI,'(/A)') ' DIAGONAL orbital part of S(2)'
+         WRITE(LUPRI,'(/A)') ' DIAGONAL of orbital part of S(2)'
          CALL OUTPUT(WRK(KDIASO),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
       END IF
       DO 53 I = 1,KZWOPT

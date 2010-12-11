@@ -646,6 +646,8 @@ c /* deck cccm_setup */
       NFCTRAN = 0
       NXETRAN = 0
       NCAUMOM = 0
+      MFCVEC  = 0
+      MXEVEC  = 0
  
 *---------------------------------------------------------------------*
 * start loop over all requested Cauchy moments 
@@ -851,11 +853,14 @@ c /* deck CCCM_VEC */
 #endif
       PARAMETER (ZERO=0.0d0, ONE=1.0d0)
 
-      CHARACTER MODEL*10, MODELW*10, LABEL*8
-      INTEGER IOPT, IOPTW, IDLSTRC, IDLSTLC, NCAU, ISYM, ICAU,
+      CHARACTER*(10) MODEL, MODELW
+      CHARACTER*(8)  LABELA, LABELB, LABEL
+      CHARACTER*(3)  APROXR12
+      INTEGER ILROP, IVECR, IVECR1, IVECL, IVECL1, KAXI1, KAXI2
+      INTEGER ISYML, IOPT, IOPERA, IOPERB, ISYMA, ISYMB, KAXI0
+      INTEGER IOPTW, IDLSTRC, IDLSTLC, NCAU, ISYM, ICAU,
      &        KSING, KDOUB, KORB, KEND1, LEND1, NAMP, IDXLST
     
- 
 * external functions:
       INTEGER ILSTSYM
       INTEGER ILRCAMP
@@ -948,7 +953,8 @@ c           -------------------
             ! Transform XiB vector with Jacobian. Xib is stored at 
             ! the beginning of WORK and will be replaced by the
             ! transformed vector.
-            CALL CC_ATRR(ZERO,ISYM,1,WORK(KSING),LWORK,.FALSE.,DUMMY)
+            CALL CC_ATRR(ZERO,ISYM,1,WORK(KSING),LWORK,.FALSE.,DUMMY,
+     &                   'XXX')
             
             CALL CC_WRRSP('RC ',IDLSTRC,ISYM,IOPTW,MODELW,WORK(KORB),
      &                    WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
@@ -1028,7 +1034,8 @@ c          -----------------------------------
             CALL CC_RDRSP('LC ',IDXLST,ISYM,IOPT,MODEL,
      &                     WORK(KSING),WORK(KDOUB))
             
-            CALL CC_ATRR(ZERO,ISYM,-1,WORK(KSING),LWORK,.FALSE.,DUMMY)
+            CALL CC_ATRR(ZERO,ISYM,-1,WORK(KSING),LWORK,.FALSE.,DUMMY,
+     &                   'XXX')
             CALL DSCAL(NAMP,-ONE,WORK(KSING),1)
             
             ! add to Cbar(-2) vector on file:

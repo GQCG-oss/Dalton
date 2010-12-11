@@ -89,6 +89,9 @@ C
 C     Scanning for zero integrals; this is done twice, but
 C     saves quite a bit of memory
 C
+      IF (NINTYP .GT. 1) THEN
+         CALL QUIT('Programming error please report. NINTYP .gt. 1')
+      END IF
       NBUF = 0
       IF(DOSCRN) THEN
         FCKTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
@@ -546,7 +549,7 @@ C  /* Deck sklfck */
 #include <inforb.h>
       LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR, SPNORB
       DIMENSION FMAT(N2BASX,*), WORK(LWORK), HESSEE(*), ISYMDM(*),
-     &          IFCTYP(NDMAT)
+     &          IFCTYP(*)
 #include <abainf.h>
 #include <ccom.h>
 #include <shells.h>
@@ -892,7 +895,7 @@ C
             CALL HEADER("AO Fock matrix in SKLFC1",1)
             DO 40 N = 1, NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,1,LUPRI)
    40       CONTINUE
          END IF
 C
@@ -1243,8 +1246,9 @@ C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton Fock matrices in SKLOND",1)
          DO 100 X = 1, NFMAT
+            WRITE(LUPRI,*) 'Input skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+     &                                NBASIS,NBASIS,-1,LUPRI)
   100    CONTINUE
       END IF
 C
@@ -1263,6 +1267,7 @@ C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Symmetric skeleton Fock matrix in SKLOND",1)
          DO 300 X = 1, NFMAT
+            WRITE(LUPRI,*) 'Symmetric skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
      &                              1,LUPRI)
   300    CONTINUE
@@ -1334,6 +1339,7 @@ C
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)
             DO 700 X = 1, NFMAT
+               WRITE(LUPRI,*) 'AO skeleton Fock matrix no.',X,NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
      &                                   NBASIS,NBASIS,1,LUPRI)
   700       CONTINUE
@@ -1400,3 +1406,4 @@ C
       END IF
       RETURN
       END
+C --- end of her2fck.F ---

@@ -46,8 +46,8 @@ cat > rsp_mnf.dal <<'%EOF%'
 .RUN RESPONSE
 **INTEGRALS
 .MNF-SO       
-.PRINT
-6
+!.PRINT
+!6
 **WAVE FUNCTIONS
 .MCSCF
 *CONFIGURATION INPUT
@@ -89,24 +89,24 @@ cat >>rsp_mnf.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -a -i"
 else
-   GREP="egrep"
+   GREP="egrep -i"
 fi
 
 # Basis set
-CRIT1=`$GREP "O * 2 * 8 * 61 * 14 * \[14s9p4d\|3s2p1d\]" $log | wc -l`
-CRIT2=`$GREP "total\: * 2 * 16 * 122 * 28" $log | wc -l`
+CRIT1=`$GREP "O * 2 * 8\.0000 * 61 * 14 * \[14s9p4d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "total\: * 2 * 16\.0000 * 122 * 28" $log | wc -l`
 CRIT3=`$GREP "Spherical harmonic basis used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=3
 ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "1 * O * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "3 * z * 1\.1405000000" $log | wc -l`
-CRIT4=`$GREP "4 * O * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "6 * z * \-1\.1405000000" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
@@ -122,12 +122,14 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Integrals
 CRIT1=`$GREP "SO\-integrals are calculated for * O\: \[He\]2s\^2 2p\^4" $log | wc -l`
-CRIT2=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
-CRIT3=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
-CRIT4=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
-TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[4]=4
-ERROR[4]="INTEGRALS NOT SET UP CORRECTLY"
+# hjaaj: I have reduced print level. The headings doesn't say anything about the integrals correct anyway.
+#CRIT2=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
+#CRIT3=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
+#CRIT4=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
+#TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="MNF-SO INTEGRALS NOT SET UP CORRECTLY"
 
 # Energy
 CRIT1=`$GREP "Final MCSCF energy\: * \-149\.5554630357" $log | wc -l`
@@ -146,23 +148,23 @@ ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moment
 CRIT1=`$GREP "\@ *Transition operator type\: * Z1MNF\-SO" $log | wc -l`
-CRIT2=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )8\.704081[45][0-9](D|E)\-04 \*ENERGY\(eV\)\: * \-2\.912542[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: *\-*8\.704081[45].(D|E)\-04 \*ENERGY\(eV\)\: * \-2\.912542[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="TRANSITION MOMENT NOT CORRECT"
 
 # Excitation energy
-CRIT1=`$GREP "\@ *Excitation operator symmetry * 4" $log | wc -l`
-CRIT2=`$GREP "\@ *Excited * state * symmetry * 4" $log | wc -l`
-CRIT3=`$GREP "\@ *Excitation energy \: (\-0| \-)\.1070339[0-9] * au" $log | wc -l`
-CRIT4=`$GREP "\@ *Total energy \: * \-149\.662[45][0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@.*Excit.* operator sym.* * 4" $log | wc -l`
+CRIT2=`$GREP "\@.*Excited * state * sym.* * 4" $log | wc -l`
+CRIT3=`$GREP "\@ *Excitation energy \: \-0*\.1070339. * au" $log | wc -l`
+CRIT4=`$GREP "\@ *Total energy \: * \-149\.662[45]. * au" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[8]=4
 ERROR[8]="EXCITATION ENERGY NOT CORRECT"
 
 # Spin-orbit
 CRIT1=`$GREP "\@ *Operator type\: * Z1MNF\-SO" $log | wc -l`
-CRIT2=`$GREP "\@ *Spin\-orbit coupling constant \(Z1MNF\-SO\) \: * (\-| )191\.0325[0-9] * cm\-1" $log | wc -l`
+CRIT2=`$GREP "\@ *Spin\-orbit coupling constant \(Z1MNF\-SO\) \: * \-*191\.0325. * cm\-1" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="SPIN-ORBIT COUPLING CONSTANT NOT CORRECT"
@@ -170,8 +172,8 @@ ERROR[9]="SPIN-ORBIT COUPLING CONSTANT NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

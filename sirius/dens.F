@@ -1233,6 +1233,71 @@ C
 C     ... end of MAKDV
 C
       END
+C  /* Deck makdsv */
+      SUBROUTINE MAKDSV(CREF,RHO1S,XNDXCI,WORK,LFREE)
+C
+C     CONSTRUCT (RHO1S) ONE PARTICLE SPIN DENSITY MATRIX
+C
+C  OUTPUT:
+C
+C     RHO1S(KL)  = (0/ EA(KL)-EB(KL) /0)   K>L
+C
+C
+#include <implicit.h>
+C
+      DIMENSION CREF(*),RHO1S(*),XNDXCI(*),WORK(*)
+C
+      PARAMETER ( D0 = 0.0 D0 )
+#include <dummy.h>
+C
+C Used from common blocks:
+C   INFINP : LSYM,FLAG(*)
+C   INFORB : NASHT,N2ASHX,NNASHX
+C   INFVAR : NCONF
+C
+#include <maxorb.h>
+#include <infinp.h>
+#include <inforb.h>
+#include <infvar.h>
+C
+      INTEGER RHOTYP
+      LOGICAL USEPSM, CSFEXP, TDM, NORHO2
+C
+      RHOTYP = 1
+      ISPIN1 = 1
+      ISPIN2 = 0
+      ILSYM  = LSYM
+      IRSYM  = LSYM
+      IF (FLAG(66)) THEN
+         USEPSM = .FALSE.
+      ELSE
+         USEPSM = .TRUE.
+      END IF
+      TDM    = .FALSE.
+      NORHO2 = .TRUE.
+C
+C
+      CSFEXP = .NOT.FLAG(27)
+C
+      KRHO1S  = 1
+      KFREE  = KRHO1S  + N2ASHX
+      CALL SETVEC(WORK(KRHO1S),D0,N2ASHX)
+      CALL GETTIM(T1,W1)
+      CALL DENSID(ILSYM,IRSYM,NCONF,NCONF,CREF,CREF,WORK(KRHO1S),DUMMY,
+     *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
+     *            XNDXCI,WORK,KFREE,LFREE)
+C     CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1S,RHO2,
+C    *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
+C    *            XNDXCI,WORK,KFREE,LFREE)
+C
+      CALL DSITSP(NASHT,WORK(KRHO1S),RHO1S)
+C     ... pack RHO1S as triangular matrix
+C
+      RETURN
+C
+C     ... end of MAKDSV
+C
+      END
 C  /* Deck maktdm */
       SUBROUTINE MAKTDM(NCSIM,BCVECS,CREF,RHO1,RHO2,XNDXCI,WORK,LWRK)
 #if defined (VAR_PACKPV)
@@ -1582,7 +1647,7 @@ C
 #include <maxash.h>
 C
 C Used from common blocks:
-C   INFINP : MCTYPE
+C   INFINP : ?
 C   INFORB : MULD2H(8,8),NASHT,N2ASHX,NNASHX
 C   INFPRI : IPRDNS, LUERR
 C
@@ -1623,8 +1688,8 @@ C
          WRITE(LUPRI,'(/A)')' *DENSD2* RIGHT REFERENCE VECTOR'
          CALL OUTPUT(CR,1,NRDET,1,1,NRDET,1,1,LUPRI)
       END IF
-      LUL = 0
-      LUR = 0
+      LUL = -1
+      LUR = -1
 c. Allocate local memory
       KFREEO = KFREE
       CALL MEMADD(KLLSOS,MAXSYM,KFREE,1)
@@ -1698,11 +1763,11 @@ c
          WRITE(LUPRI,'(/A,/I6,I7,L7)') ' ISPIN1 ISPIN2 PERMSM :',
      *      ISPIN1,ISPIN2,PERMSM
       END IF
-      IF ( IPRDNS.GT.45 ) THEN
-         WRITE (LUPRI,1100)
-         CALL OUTPUT(RHO1,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+      IF ( IPRDNS.GT.15 ) THEN
+         CALL HEADER(
+     &   'DENSD2: One-el. density matrix, active part, MO-basis',-1)
+         CALL OUTPUT(RHO1,1,NASHT,1,NASHT,NASHT,NASHT,-11,LUPRI)
       ENDIF
- 1100 FORMAT(/' DENSD2: One-el. density matrix, active part, MO-basis')
 C
       CALL MEMADD(KDUMMY,KFREEO-KFREE,KFREE,2 )
 C     ... release space

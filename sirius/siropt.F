@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -101,11 +101,13 @@ C  INFOPT: EMCSCF,...
 C  INFDIM: LCINDX,MAXRL,?
 C  INFTAP: LUIT1,?
 C  CBIHR2: IFTHRS,USRSCR
+C  CBIREA: LMULBS
+C  R12INT: R12CAL
 C
 #include <maxorb.h>
-#include <r12int.h>
 #include <priunit.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <infvar.h>
 #include <inforb.h>
 #include <infopt.h>
@@ -115,6 +117,11 @@ C
 #include <itinfo.h>
 #include <gnrinf.h>
 #include <cbihr2.h>
+#include <cbirea.h>
+#include <r12int.h>
+C------------------------
+#include <dfterg.h>
+#include <dftcom.h>
 C ---
 C
 C *** local:
@@ -173,11 +180,12 @@ C        FLAG(53) = .FALSE.
          FLAG(52) = .FALSE.
          FLAG(53) = .FALSE.
       END IF
-      IF (FLAG(51) .OR. FLAG(52)) THEN
-         KTRLVL = 0
-      ELSE
+CHJAaJ Nov 09: KTRLVL=0 does not work in TR1H2M in current Dalton
+CHJ   IF (FLAG(51) .OR. FLAG(52)) THEN
+CHJ      KTRLVL = 0
+CHJ   ELSE
          KTRLVL = ITRLVL
-      END IF
+CHJ   END IF
 #if defined (VAR_NOITRABS)
 C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
 C               IF KTRLVL = 0 !
@@ -211,12 +219,29 @@ C.. 1.1.1 .. (GETCIX, TRACTL, READMO)
       KWRK10 = KCMO   + NCMOT
       LWRK10 = LFREE  + 1 - KWRK10
 C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
+      IF (DFT_SPINDNS) THEN
+         NDV = 2
+      ELSE
+         NDV = 1
+      END IF
       KGTOT  = KWRK10
       KDV    = KGTOT  + NVARH
-      KPV    = KDV    + NNASHX
+      KPV    = KDV    + NDV*NNASHX
       KFC    = KPV    + NNASHX*NNASHX
       KFV    = KFC    + NNORBT
-      KFQ    = KFV    + NNORBT
+!HJJ - FRAN KFS added for the SR_DFT Spin Dens. contribution
+      KFS    = KFV    + NNORBT
+      IF (DFT_SPINDNS) THEN
+         KSRHYB = KFS + NNORBT
+      ELSE
+         KSRHYB = KFS
+      END IF
+!HJJ - FRAN END
+      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+         KFQ = KSRHYB + NNORBT
+      ELSE
+         KFQ = KSRHYB
+      END IF
       KFCAC  = KFQ    + NASHT*NORBT
       KCREF  = KFCAC  + NNASHX
       KH2AC  = KCREF  + NCONF
@@ -286,7 +311,7 @@ C jan00 hjaaj: set screening threshold for SIRCNO in OPTST for direct
 C    SCF (canonical orbitals are not needed with high precision).
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
-         IFTHRS  = MIN( IFTHSV, 7 )
+         IFTHRS  = MIN( IFTHSV, 9 )
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I5)')
      &      ' Fock matrix screening setting for SIRCNO: IFTHRS =',
      &      IFTHRS
@@ -449,17 +474,27 @@ C        use PRWF here ?? 890925-hjaaj
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
-C
-C dec99 hjaaj: set screening threshold for direct SCF gradient
+C Dec99 hjaaj: set screening threshold for direct SCF gradient
 C              GNORM(3) = grdnrm from prev.iter. (THRGRD in iter 1)
 C              (based on code in sirdiis.F)
+C Nov07 hjaaj: we expect quadratic convergence and GNORM(3) is from
+C              prev.iter., thus GNORM(3)**2 
+C              NORBT factor: statistical error is ca. sqrt(# elements) ~ NORBT
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
-         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GNORM(3)))+5 )
-         IFTHRS  = MAX( 7, IFTHRS )
-         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I5)')
-     &      ' Fock matrix screening setting for gradient: IFTHRS =',
-     &      IFTHRS
+         IF (UPDATE) THEN
+           ! Hessian update gives max a factor 0.1, so 0.01 should be safe
+           GRDACC  = MAX(THRGRD,0.01D0*GNORM(3))
+         ELSE
+           ! quadratic convergence; IFTHRS .ge. 9 takes care of linear region
+           GRDACC  = MAX(THRGRD,GNORM(3)**2)
+         END IF
+         GRDACC  = GRDACC / NORBT
+         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(GRDACC)) + 1)
+         IFTHRS  = MAX( 9, IFTHRS )
+         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
+     &   ' Fock matrix screening setting for this macro iteration: 10^('
+     &   ,-IFTHRS,')'
       END IF
       IF (.NOT.UPDATE) THEN
          CALL GRAD (WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
@@ -479,14 +514,28 @@ C
 C     hj-861130 solvent contribution, ESOLT is saved in /INFOPT/
 C
       IF (SOLVNT) THEN
-         CALL SOLGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
-     *               WRK(KDV),WRK(KGTOT),ESOLT,
-     *               WRK(KERLM),WRK(KWRKG),LWRKG)
-C        CALL SOLGRD(CREF,CMO,INDXCI,DV,
-C    *               G,ESOLT,ERLM,WRK,LFREE)
+         CALL SOLGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     &               WRK(KGTOT),ESOLT,WRK(KERLM),WRK(KWRKG),LWRKG)
+C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
+      ELSEIF (PCM) THEN
+         CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     %               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
       ELSE
          ESOLT = D0
       END IF
+C----------------
+C CBN+JK 03.01.06
+C----------------
+      IF (QM3) THEN
+         CALL QM3GRAD(WRK(KCREF),WRK(KCMO),
+     &                WRK(KCINDX),WRK(KGTOT),
+     &                EQM3,WRK(KWRKG),LWRKG,IPRSOL)
+      ELSE
+         EQM3=D0
+      END IF
+C----------------
+C CBN+JK 03.01.06
+C----------------
       GNRMSV = GNORM(3)
       CALL GRDINF(GNORM,WRK(KGTOT))
 C
@@ -499,39 +548,67 @@ C
          ITABS = -1
       END IF
 C
-      EMCSCF = POTNUC + EMY + EACTIV + ESOLT
+C----------------
+      EMCSCF = POTNUC + EMY + EACTIV + ESOLT + EQM3
+C----------------
+C
       IF (ITABS .GT. 0) THEN
          WRITE (LUW4,1005) EMCSCF,ITABS
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1005) EMCSCF,ITABS
       ELSE
-         WRITE (LUW4,1010) EMCSCF,ITMAC
-         IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
-      END IF
-      IF (P4FLAG(2)) THEN
-         WRITE (LUW4,1015) POTNUC,EMY,EACTIV
-      END IF
-      IF (P6FLAG(1)) THEN
-         IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
-            WRITE (LUPRI,1015) POTNUC,EMY,EACTIV
+         IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
+            WRITE (LUW4,1011) EMCSCF,ITMAC
+            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1011) EMCSCF,ITMAC
+         ELSE
+            WRITE (LUW4,1010) EMCSCF,ITMAC
+            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
          END IF
       END IF
+      IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
+         EMYTMP = EMY - ESRDFTY
+      ELSE
+         EMYTMP = EMY
+      ENDIF
+      IF (P4FLAG(2)) THEN
+         WRITE (LUW4,1015) POTNUC,EMYTMP,EACTIV
+         IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1018) ESRDFTY
+      END IF
+chj   IF (P6FLAG(1)) THEN
+         IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
+            WRITE (LUPRI,1015) POTNUC,EMYTMP,EACTIV
+            IF (DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUPRI,1018) ESRDFTY
+         END IF
+chj   END IF
       IF (SOLVNT) WRITE (LUW4,1016) ESOLT
+      IF (PCM)    WRITE (LUW4,1019) ESOLT
+      IF (QM3)    WRITE (LUW4,1017) EQM3
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
-         IF (SOLVNT) WRITE (LUPRI,1016) ESOLT
+         IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
+         IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
- 1005 FORMAT(/' Total MCSCF energy       :',F25.15,T54,
-     *        '(after absorp ',I3,')' )
- 1010 FORMAT(/' Total MCSCF energy       :',F25.15,T60,
-     *        '(MACRO  ',I3,')' )
- 1015 FORMAT(/' - Nuclear repulsion      :',F25.15,
-     *       /' - Inactive energy        :',F25.15,
-     *       /' - Active energy          :',F25.15)
- 1016 FORMAT( ' - Dielec. solvation ener.:',F25.15)
+ 1005 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T54,
+     *        '(after absorp',I4,')' )
+ 1010 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T60,
+     *        '(MACRO ',I4,')' )
+ 1011 FORMAT(/' Total MC-SRDFT energy    :',1P,G25.15,T60,
+     *        '(MACRO ',I4,')' )
+ 1015 FORMAT(/' - Nuclear repulsion      :',1P,G25.15,
+     *       /' - Inactive energy        :',1P,G25.15,
+     *       /' - Active energy          :',1P,G25.15)
+ 1016 FORMAT( ' - Dielec. solvation ener.:',1P,G25.15)
+ 1017 FORMAT( ' - QM/MM solvation ener.  :',1P,G25.15)
+ 1018 FORMAT( ' - SRDFT effective energy :',1P,G25.15)
+ 1019 FORMAT( ' - PCM solvation energy   :',1P,G25.15)
  1020 FORMAT(/' Norm of total gradient   :',F22.12,
      *       /' -    of CI gradient      :',F22.12,
      *       /' -    of orbital gradient :',F22.12)
+
+      IF (lim_poppri .gt. 0) THEN
+         call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
+      END IF
+
 C
 C
       IF (SOLVNT .AND. IPRI6 .GT. 1) THEN
@@ -643,6 +720,10 @@ C                    need higher int. transf. level for NEO/NR
                      CALL SOLGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KERLM),WRK(KWRKG),LWRKG)
+                  ELSEIF (PCM) THEN
+                     CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
+     *                  WRK(KDV),WRK(KGTOT),ESOLT,
+     *                  WRK(KWRKG),LWRKG)
                   END IF
 #endif
                ELSE
@@ -683,7 +764,8 @@ C
          GO TO 700
       ELSE IF (ISTEP.LT.0) THEN
 C        close to convergence, no step control performed
-         IF (GNORM(3) .GT. GNRMSV) THEN
+         IF (ITMACN .GT. 1 .AND. GNORM(3) .GT. GNRMSV) THEN
+C            ... hjaaj: no test if restart (ITMACN .eq. 1)
             WRITE (LUW4,'(/A/A)')
      &         ' ERROR EXIT: gradient norm increasing in local region.',
      &         ' Probable cause: numerical round-off errors'//
@@ -692,7 +774,8 @@ C        close to convergence, no step control performed
      &         ' ERROR EXIT: gradient norm increasing in local region.',
      &         ' Probable cause: numerical round-off errors'//
      &         ' or too many integrals neglected.'
-            GO TO 750
+c           GO TO 750
+            write(lupri,*) 'Well, let us try anyway ...'
          END IF
          ITBCK = 0
       ELSE
@@ -720,26 +803,6 @@ C
 C **********
 C We have not converged (yet),
 C
-C dec99 hjaaj: set screening threshold for direct SCF in NEO/NR
-C              (based on code in sirdiis.F)
-C              -- note that NEO/NR trial vectors are normalized
-C
-      IF (DIRFCK .AND. .NOT. USRSCR .AND. .NOT.UPDATE) THEN
-         IFTHOLD = IFTHRS
-C           - norm(DCAO elements)*norm(BVEC) is assumed to 
-C             approximate norm(DXCAO elements) 
-C           - grdnrm is used for screening with DCAO
-C           - 0.1*grdnrm is for global region where
-C             we need new trial vector within 10%
-C           - grdnrm*grdnrm is for quadratic accuracy in NEO/NR
-C             where we want solution accurate to grdnrm 
-         FTEST = MIN(0.1D0,GNORM(3)) * GNORM(3)
-         IFTHRS  = MIN( IFTHSV, NINT(-LOG10(FTEST))+5 )
-         IFTHRS  = MAX( 7, IFTHRS )
-         IF (IFTHRS.NE.IFTHOLD .AND. IPRI6.GE.0) WRITE (LUPRI,'(A,I5)')
-     &      ' New Fock matrix screening setting for NEO/NR: IFTHRS =',
-     &      IFTHRS
-      END IF
 C
 C if (ABSORP) then call SIRORB for orbital optimization.
 C
@@ -747,8 +810,7 @@ C
       IF (ITABS .EQ. 0) THEN
          CHKSTP = .FALSE.
          CALL SIRORB(MAXAPM,ITABS,WRK(KCMO),WRK(KGTOT+NCONF),WRK(KDV),
-     *      WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ),
-     &      WRK(KWOCTL),LWOCTL)
+     &      WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ), WRK(KWOCTL),LWOCTL)
 C        CALL SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,WRK,LFREE)
          GO TO 700
 C        ... change 870607/hjaaj, was GO TO 100
@@ -769,7 +831,7 @@ C
          CALL DCOPY(NCONF,WRK(KCREF),1,WRK(KREFU),1)
          CALL DCOPY(NVAR,WRK(KGTOT),1,WRK(KGRDU),1)
          CALL SIRUPD(ICONV,MAXUIT,WRK(KREFU),WRK(KGRDU),WRK(KCMO),
-     *               WRK(KCINDX),WRK(KWU),LWU)
+     &               WRK(KCINDX),WRK(KWU),LWU)
 C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
          LTRLVL = ITRLVL
          ITRLVL = ITRLSV
@@ -780,7 +842,7 @@ C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
          IF (ICONV .GT. 0) THEN
             IF (FLAG(25)) THEN
                WRITE (LUPRI,'(//A/)')
-     *            ' >>> after UPDATE: recalculate gradient for SIRIFC'
+     &            ' >>> after UPDATE: recalculating gradient for SIRIFC'
                ICONV    = 0
                UPDATE   = .FALSE.
                IF (.NOT. RHFCLC) FLAG(14) = .TRUE.
@@ -832,6 +894,7 @@ C
      *               WRK(KDV),WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFCAC),
      *               WRK(KH2AC),EACTIV,WRK(KIBNDX),
      &               WRK(KWNEO),LWNEO)
+
 C        CALL SIRNEO(CREF,G,CMO,INDXCI,DV,PV,
 C    *               FC,FV,FCAC,H2AC,EACTIV,IBNDX,WRK,LFREE)
 C
@@ -845,7 +908,7 @@ C     Check if local region where absorption normally is
 C     switched off (unless FLAG(54) has been set in input)
 C
       IF (ABSORP .AND. .NOT.FLAG(54)) THEN
-         LOCAL = (STPLEN .LT. STPABS*RTRUST)
+         LOCAL = (STPLEN .LT. STPABS*RTRUST) .AND. ITBCK .EQ. 0
          IF (LOCAL) ITABS = -1
 C        ... no absorption next iteration
          LOCAL = (LOCAL .AND. STPC .LT. D2*STPO)
@@ -994,19 +1057,38 @@ C
      &               WRK(KERLM),.TRUE.,DUMSOL,
      &               WRK(KWRKG),LWRKG,IPRSOL)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      ELSE IF (PCM) THEN
+         KFCSOL = KWRKG
+         KWRKG  = KFCSOL + NNORBT
+         LWRKG  = LFREE  - (KWRKG-1)
+         CALL PCMFCK(DUMMY,DUMMY,WRK(KFCSOL),WRK(KCMO),
+     &               .TRUE.,DUMSOL, WRK(KWRKG),LWRKG,IPRSOL)
+         CALL DSCAL(NNORBT,-1.0D0,WRK(KFCSOL),1)
+         CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+C------------------
+C CBN+JK 03.01.06
+C------------------
+      ELSE IF (QM3) THEN
+         KFCSOL = KWRKG
+         KWRKG  = KFCSOL + NNORBT
+         LWRKG  = LFREE  - (KWRKG-1)
+         CALL QM3FCKMO(WRK(KCMO),WRK(KFCSOL),WRK(KWRKG),
+     &                 LWRKG,IPRSOL)
+         CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
       ELSE
          KFCSOL = KFC
       END IF
+
       IF (NASHT .EQ. 0) THEN
 C        hjaaj dec 2002: if extended to cover nasht.eq.1 as in sirdiis.F
 C        then remember to add FCSOL and FV to FD for RHFENR call
-         WRITE (LUW4,'(//A)') ' *** RHF orbital energy analysis ***'
-         IF (SOLVNT)
+         WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
+         IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
-            WRITE (LUPRI,'(//A)') ' *** RHF orbital energy analysis ***'
-            IF (SOLVNT)
+            WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
+            IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
@@ -1166,8 +1248,22 @@ C
       IF (LNEED .GT. LSCRA) CALL ERRWRK('RHFENR',LNEED,LSCRA)
       CALL DZERO(SCRA,NORBT)
 C
+C     Print orbital energies.
 C     Check if orbitals are canonical orbitals
 C
+      IF (SUPSYM) THEN
+         IF (DODFT) THEN
+            WRITE (LUPRI,1841)
+         ELSE
+            WRITE (LUPRI,1741)
+         END IF
+      ELSE
+         IF (DODFT) THEN
+            WRITE (LUPRI,1840)
+         ELSE
+            WRITE (LUPRI,1740)
+         END IF
+      END IF
       VALCON =  D0
       EHOMO  = -DBIG
       IHOMO  = 0
@@ -1227,26 +1323,24 @@ C                     because the Fock matrix is not zero for these
             ELUMO = ELUMOI
             ILUMO = ISYM
          END IF
-         IF (SUPSYM) THEN
-            WRITE (LUPRI,1741) ISYM
-         ELSE
-            WRITE (LUPRI,1740) ISYM
-         END IF
          IF (IPRINT .GE. 10) THEN
             NLAST = NORBI
          ELSE
             NLAST = MIN(NORBI,NOCC(ISYM)+5)
          END IF
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
-     &      ' Note: the first',NFRHFI,' orbitals are frozen'
+     &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
          IF (SUPSYM) THEN
             WRITE (LUPRI,1751)
-     &         (SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
+     &         ISYM,(SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
          ELSE
-            WRITE (LUPRI,1750) (SCRA(IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1750) ISYM,(SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
-      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY)
+      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
+C     take care of 1-electron case and no virtuals case
+      IF (EHOMO .EQ. -DBIG) EHOMO = D0
+      IF (ELUMO .EQ.  DBIG) ELUMO = D0
       WRITE (LUPRI,'(2(/A,F15.8,A,I2,A)/A/A,F15.8,A)')
      &   '    E(LUMO) :',ELUMO,' au (symmetry',ILUMO,')',
      &   '  - E(HOMO) :',EHOMO,' au (symmetry',IHOMO,')',
@@ -1278,11 +1372,14 @@ C                     because the Fock matrix is not zero for these
 C
 C1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
 C1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
- 1740 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2/)
- 1741 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2,
-     &         ' (supersymmetry in parenthesis)'/)
- 1750 FORMAT(4X,5F15.8)
- 1751 FORMAT(4(F15.8,' (',I2,')'))
+ 1740 FORMAT( /' Sym       Hartree-Fock orbital energies')
+ 1741 FORMAT( /' Sym       Hartree-Fock orbital energies',
+     &         ' (supersymmetry in parenthesis)')
+ 1840 FORMAT( /' Sym       Kohn-Sham orbital energies')
+ 1841 FORMAT( /' Sym       Kohn-Sham orbital energies',
+     &         ' (supersymmetry in parenthesis)')
+ 1750 FORMAT(/I3,1X,5F15.8/,(4X,5F15.8) )
+ 1751 FORMAT(/I3,1X,4(F15.8,' (',I2,')')/,(4X,4(F15.8,' (',I2,')')) ) 
 C
 C
 C *** end of subroutine RHFENR
@@ -1365,6 +1462,7 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <gnrinf.h>
+#include <dftcom.h>
 C
 C *** Externals:
 C
@@ -1373,6 +1471,7 @@ C
 C *** Local variables:
 C
       LOGICAL     HFCALC,    RSTFLG(4), TRCNO,     LSAV15
+      LOGICAL     DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       CHARACTER*8 TABLE(8),  LBLINF(2), LBLDAT(2), STAR8
       CHARACTER*6 CNOLBL
 C
@@ -1435,8 +1534,8 @@ C            fix AIX xlf v.2.3 error for 'xlf -O'.
      &         'ERROR (OPTST) non-existent configuration specified')
          END IF
          IF (LROOTS.GT.1) THEN
-            WRITE (LUPRI,5020)
-            WRITE (LUERR ,5020)
+            WRITE (LUPRI,5020) ICSTRT
+            WRITE (LUERR,5020) ICSTRT
             CALL QTRACE(LUERR)
             CALL QUIT('(OPTST) ICSTRT must be pos. when LROOTS .gt. 1')
          END IF
@@ -1476,11 +1575,11 @@ C        single configuration has always natural orbitals
          GO TO 9000
       END IF
  5010 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' specified start configuration no.',I8,
-     *        ' is non-existent (last CSF is no.',I8,')')
+     *       /' specified start configuration no.',I10,
+     *        ' is non-existent (last is no.',I10,')')
  5020 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' negative CISTRT option not allowed',
-     *        ' when LROOTS is greater then one.')
+     *       /' negative CISTRT option not allowed',I10,
+     *       /' when LROOTS is greater then one.')
 C
 C
 C *** ICSTRT > 0 ***
@@ -1567,10 +1666,28 @@ C        ... we do not know which root will become ISTATE
             ISTACI = ISTATE
          END IF
 C
+         IF (DOMCSRDFT) THEN
+            ADDSRI    = .FALSE.
+            DOCISRDFT = .TRUE.
+            IF (DFT_SPINDNS .OR. DFT_LOCALSPIN)THEN
+               WRITE(LUPRI,'(/A)')
+     &           'INFO : spin density ignored in initial CI iterations.'
+            END IF
+            DFT_SPINDNS_SAVE = DFT_SPINDNS
+            DFT_SPINDNS = .FALSE.
+            DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+            DFT_LOCALSPIN = .FALSE.
+         END IF
          CALL CICTL(1,LROOTS,MAXCIT,THRCIX,WRK(KCMO),INDXCI,
      *              WRK(KECI),ICONV,WRK(KICROO),WRK(KW22),LW22)
 C        CALL CICTL(ICICTL,NCROOT,MAXITC,THRCIX,CMO,INDXCI,
 C    *              ECI,ICONV,ICROOT,WRK,LFREE)
+         IF (DOMCSRDFT) THEN
+            ADDSRI    = .TRUE.
+            DOCISRDFT = .FALSE.
+            DFT_SPINDNS   = DFT_SPINDNS_SAVE
+            DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
+         END IF
          FLAG(15) = LSAV15
          ISTACI   = ISTASV
 C
@@ -1590,8 +1707,9 @@ C
       GO TO 9000
 C
 C *** ICSTRT = 4, 5, 6, or 7 ***
+C     (See what codes means at beginning of this subroutine)
 C
-C === start guess should already be on LUIT1
+C === start guess should already be on LUIT1 (SIRIUS.RST)
 C     (but we test to be sure!)
 C
   400 CONTINUE
@@ -1599,6 +1717,8 @@ C
          IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
             READ (LUIT1,END=490,ERR=490)
          IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
+         IF ( ICI0.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.
+C        ... if user has specified .RESTART, then respect shift to NR
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.
@@ -1732,11 +1852,11 @@ C        "UPDSAVE" restart
       END IF
       REWIND LUIT1
       GO TO 9000
- 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,F25.15,
+ 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,1P,G25.15,
      *       /T18,'for macro iteration no.',T49,I10
      *       /T23,'BETA value:',T49,F10.2,
      *       /T23,'Trust radius:',T44,F15.5,
-     *       /T18,'Predicted new MCSCF energy:',T50,F25.15)
+     *       /T18,'Predicted new MCSCF energy:',T50,1P,G25.15)
  6000 FORMAT(//' (OPTST) Geometry walk',
      *       /T16,'Old MCSCF energy:       ',F25.15,
      *       /T16,'Predicted energy change:',F25.15,
@@ -1783,6 +1903,7 @@ C
             WRK(KCVECS) = D1
             ICREF  = 1
             NCVECS = 1
+            JSTA   = 1
          ELSE
             REWIND (LUIT1)
 C           ... search for "STARTVEC"
@@ -1818,7 +1939,7 @@ C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CREF,CMO,AOCC,
 C    *               INDXCI,WRK,KFRSAV,LFRSAV)
 C
          REWIND (LUIT1)
-         CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+         CALL MOLLAB(TABLE(3),LUIT1,lupri)
 C        search for "STARTVEC"
          WRITE (LBLINF(1),'(2I4)') NCVECS,JSTA
          LBLINF(2) = 'CNOSAVE '
@@ -1913,7 +2034,7 @@ C  INFORB: NCMOT
 C  INFVAR: NWOPT
 C  INFOPT: NREDL,EMCSCF,EMCOLD,DEPRED,BETA,GAMMA,SHFLVL,
 C          STPLEN,STPMAX,STPINC,STPRED,
-C          RTRUST,RTTOL,RATMIN,RATGOD,RATREJ,REJWMI,REJWMA
+C          RTRUST,RTTOL,RATMIN,RATGOD,RATREJ,REJWMI,REJWMA, GRDNRM
 C  ITINFO: DINFO(*)
 C  INFTAP: LUIT1
 C  INFPRI: P4FLAG(*),P6FLAG(*)
@@ -1956,13 +2077,19 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.THDE ) THEN
+      IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
+         IF (DEPRED .NE. 0.0D0) THEN
+           RATIO = DEACT / DEPRED
+           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
+         ELSE
+           IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
+         END IF
          RATIO = D1
          ISTEP = -1
-         IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
       END IF
  1100 FORMAT (/' (SIRSTP) Energy difference;',
      *        /' actual, predicted and ratio:',2F15.10,F12.6)
@@ -2071,7 +2198,7 @@ C
 C     Recover old orbitals, IBNDX and REDL from previous macro iteration
 C
       REWIND LUIT1
-      CALL MOLLAB(TABLE(1),LUIT1,LUERR)
+      CALL MOLLAB(TABLE(1),LUIT1,lupri)
       CALL READT(LUIT1,NCMOT,CMO)
       CALL MOLLB2 (TABLE(2),RTNLBL,LUIT1,LUERR)
       IF (RTNLBL(2) .NE. 'NEOSAVE ') THEN
@@ -2092,7 +2219,7 @@ C        this should never occur ...
          CALL QTRACE(LUERR)
          CALL QUIT('ERROR (SIRSTP) unexpected value of NREDL on LUIT1')
       END IF
-      CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+      CALL MOLLAB(TABLE(3),LUIT1,lupri)
       CALL READT(LUIT1,NNREDL,WRK(KREDL))
 C
 C
@@ -2340,10 +2467,16 @@ C   INFTAP : LUSIFC
 C   INFDIM : NASHDI,NASHMA,NORBMA
 C   INFPRI : ?
 C CBGETDIS : IADH2
+C   CBIREA : LMULBS
+C   R12INT : R12CAL
 C
 #include <maxash.h>
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
 #include <priunit.h>
+#include <pcm.h>
+#include <pcmlog.h>
 #include <infinp.h>
 #include <infopt.h>
 #include <infvar.h>
@@ -2353,15 +2486,21 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <cbgetdis.h>
+#include <cbirea.h>
 #include <r12int.h>
+C----------------
+C CBN+JK 03.01.06 gnrinf.h included
+#include <gnrinf.h>
+C----------------
 C
-      LOGICAL     FNDLAB, ORBHES, LGLOCAL
+      LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(8), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(10), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
-     *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS'/
+     *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
+     *            'PCMINFO ','PCMJXMAT'/
       DATA LABEOD, LABCC /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2553,7 +2692,7 @@ C        ... CIDIAG1 is only used if CASGUGA
             REWIND LUIT2
          END IF
 C
-         CALL MOLLAB(TABLE(2),LUIT2,LUERR)
+         CALL MOLLAB(TABLE(2),LUIT2,lupri)
          CALL READT (LUIT2,NCONF,WRK(KWRK1))
          WRITE (LUSIFC) LAB123,TABLE(2)
          CALL WRITT (LUSIFC,NC4,WRK(KWRK1))
@@ -2561,7 +2700,7 @@ C
 C
       IF (NWOPT .GT. 0 .AND. ORBHES) THEN
          REWIND LUIT2
-         CALL MOLLAB(TABLE(3),LUIT2,LUERR)
+         CALL MOLLAB(TABLE(3),LUIT2,lupri)
          CALL READT (LUIT2,NWOPT,WRK(KWRK1))
          WRITE (LUSIFC) LAB123,TABLE(3)
          CALL WRITT (LUSIFC,NW4,WRK(KWRK1))
@@ -2582,7 +2721,7 @@ C     Write Solvent information, if Solvent calculation.
          KTMAT = KWRK1
          KWRK2 = KTMAT + NNORBT
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-2',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-SOLVENT',KWRK2,LFREE)
          WRITE (LUSIFC) LAB123,TABLE(6)
          WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
          WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
@@ -2590,12 +2729,82 @@ C     Write Solvent information, if Solvent calculation.
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1))
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,2))
          WRITE (LUSIFC) NSYM, NBAS
-         IPRTMP = 0
          CALL SOLFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,ERLM(1,1),.TRUE.,
-     *               DUMSOL,WRK(KWRK2),LWRK2,IPRTMP)
+     *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
+C     Write PCM solvent info if PCM calculation
+      IF (PCM) THEN
+         KTMAT = 1
+         KDCAO = KTMAT + NNORBT
+         KDVAO = KDCAO + N2BASX
+         KPOT  = KDVAO + N2BASX
+         KWRK2 = KPOT  + NTS
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-PCM',KWRK2,LFREE)
+C
+         CALL PCMFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,.TRUE.,
+     *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
+         WRITE (LUSIFC) LAB123,TABLE(10)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+         WRITE (LUSIFC) LAB123,TABLE(9)
+         WRITE (LUSIFC) NTS
+         WRITE (LUSIFC) (QSE(ITS),ITS = 1, NTS)
+         WRITE (LUSIFC) (QSN(ITS),ITS = 1, NTS)
+         WRITE (LUSIFC) (-QSE(ITS)-QSN(ITS),ITS = 1, NTS)
+C
+Clf         WRITE (LUSIFC) (QSE(ITS)-QSN(ITS),ITS = 1, NTS)
+Clf
+C
+C     Calculate expectation value of the electronic potential
+C     at the tessera
+C
+         EXP1VL = .TRUE.
+         TOFILE = .FALSE.
+         CALL DZERO(WRK(KDCAO),2*N2BASX)
+         CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDCAO),
+     &               WRK(KDVAO),CMO,DV,WRK(KWRK2),LWRK2)
+         CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KWRK2))
+         CALL DCOPY(NNORBX,WRK(KWRK2),1,WRK(KDCAO),1)
+ckr         CALL PKSYM1(WRK(KWRK2),WRK(KDCAO),NBAS,NSYM,1)
+         IF (NASHT .GT. 0) THEN
+            CALL DGEFSP(NBAST,WRK(KDVAO),WRK(KWRK2))
+            CALL DCOPY(NNORBX,WRK(KWRK2),1,WRK(KDVAO),1)
+ckr            CALL PKSYM1(WRK(KWRK2),WRK(KDVAO),NBAS,NSYM,1)
+         END IF
+Ckr
+Ckr      Check whether DV+DC is good enough for open-shell systems (should
+Ckr      be the case).
+Ckr
+         CALL DAXPY(NNBASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+         CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDCAO),1,TOFILE,'NPETES ',
+     &              1,WRK(KWRK2),LWRK2)
+         WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
+         IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
+      END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
+C Write qm3 solvent part of the Fock matrix to interface file
+
+      IF (QM3) THEN
+         KTMAT = KWRK1
+         KFSOLAO = KTMAT + NNORBT
+         KUCMO = KFSOLAO + NNBASX
+         KWRK2 = KUCMO + NORBT*NBAST
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-QM3',KWRK2,LFREE)
+         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
+         CALL UPKCMO(CMO,WRK(KUCMO))
+         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
+     &             NBAST,NORBT)
+         WRITE (LUSIFC) LAB123,TABLE(7)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+      END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
 C
 C     Write CREF in determinants here, if NCDETS .gt. NCONF
 C
@@ -2648,6 +2857,19 @@ C
 C
       IF (LMULBS .OR. R12CAL) THEN
 C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
+         DO ISYM = 1, NSYM
+           IF (NRXR12(ISYM).GT.(NORB1(ISYM)-NOCC(ISYM))) THEN
+             WRITE(LUPRI,*) 'You specified more virtual R12 orbitals '//
+     &                   'than there are virtual orbitals in this '//
+     &                   'symmery:'
+             WRITE(LUPRI,*) 'NVIR(',ISYM,') = ',NORB1(ISYM)-NOCC(ISYM)
+             WRITE(LUPRI,*) 'NRXR12(',ISYM,') = ',NRXR12(ISYM)
+             CALL QUIT('Too many virtual R12 orbitals')
+           ELSE
+             !redefine NOCC
+             NOCC(ISYM) = NOCC(ISYM) + NRXR12(ISYM)
+           END IF
+         END DO
          LUMULB = 34
          CALL GPOPEN(LUMULB,'AUXBAS','UNKNOWN','SEQUENTIAL',
      &               'FORMATTED',IDUMMY,LDUMMY)
@@ -2707,7 +2929,6 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
             END DO
             CLOSE(99)
             CALL DCOPY(NBASL*NOCL,WRK(ICMOL),1,WRK(IOCCL),1)
-            CALL DCOPY(NBASL*NORB1L,WRK(ICMOL),1,WRK(ICMOL),1)
             CALL DCOPY(NORB2L*NBASL,WRK(3*NBASC+1),1,
      *           WRK(IOCCL+NBASL*(NORB1L+NOCL)),1)
             WRITE (LUSIFC) LAB123, LABUNI
@@ -2715,8 +2936,6 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
      *                     NORB2L+NOCL,NBASL,POTNUC,EMCSCF
             WRITE (LUSIFC) (WRK(IEIGL+I-1),I=1,MAX(NORBFTL,4))
             WRITE (LUSIFC) (WRK(IOCCL+I-1),I=1,MAX(NMOFLTL,4))
-            write(lupri,*) 'WMK: NBASL,NORB1L,NORB2L,NOCL,NMOFLTL  =',
-     &                           NBASL,NORB1L,NORB2L,NOCL,NMOFLTL
          ELSE
             IOFF1 = KFCDIA
             IOFF2 = KFCDIA + NBASC

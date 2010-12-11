@@ -22,7 +22,7 @@ cat > energy_restart.info <<'%EOF%'
    --------------
    Molecule:         H2O
    Wave Functions:   MCSCF (RAS) / cc-pVDZ
-   Test Purpose:     Restart an MCSCF wave function
+   Test Purpose:     Restart an MCSCF wave function optimization
 %EOF%
 
 #######################################################################
@@ -31,7 +31,7 @@ cat > energy_restart.info <<'%EOF%'
 cat > energy_restart.mol <<'%EOF%'
 BASIS
 cc-pVDZ
-Restarting an MCSCF wave function
+Restarting an MCSCF wave function optimization
 
     2
         8.    1
@@ -66,9 +66,9 @@ cat > energy_restart__1.dal <<'%EOF%'
 .CAS SPACE
  4 2 2 0
 *OPTIMIZATION
-.THRESH
-1.0D-3
-*END OF INPUT
+.MAX MACRO
+ 3
+**END OF DALTON INPUT
 %EOF%
 
 cat > energy_restart__2.dal <<'%EOF%'
@@ -88,7 +88,7 @@ cat > energy_restart__2.dal <<'%EOF%'
  8
 .CAS SPACE
  4 2 2 0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -111,9 +111,9 @@ fi
 
 # Basis set
 CRIT1=`$GREP "Basis set used is \"cc\-pVDZ\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "O * 1 * 8 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 3 * 10 * 40 * 24" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 10\.0000 * 40 * 24" $log | wc -l`
 CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[1]=5
@@ -121,13 +121,13 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0| \-)\.1258515023" $log | wc -l`
-CRIT5=`$GREP "4 * H * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * 1\.4523500000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (0| )\.9986773907" $log | wc -l`
-CRIT8=`$GREP "7 * H * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
 CRIT9=`$GREP "8 * y * \-1\.4523500000" $log | wc -l`
 CRIT10=`$GREP "9 * z * (0| )\.9986773907" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -143,32 +143,23 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.14761413597" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.147613.*NOT CONVERGED" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
 
-# Occupancy
-CRIT1=`$GREP "2\.000000000 * 1\.98908001[0-9] * 1\.97643839[0-9] * (0| )\.02420710[0-9] * (0| )\.01125003[0-9]" $log | wc -l`
-CRIT2=`$GREP "1\.98138164[0-9] * (0| )\.01780007[0-9]" $log | wc -l`
-CRIT3=`$GREP "1\.97463013[0-9] * (0| )\.02521259[0-9]" $log | wc -l`
-CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[5]=6
-ERROR[5]="OCCUPANCIES NOT CORRECT"
-
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done
 
 if [ $PASSED -eq 1 ]
 then
-  echo TEST ENDED PROPERLY
+  echo TEST ENDED AS EXPECTED
   exit 0
 else
   echo THERE IS A PROBLEM
@@ -189,9 +180,9 @@ fi
 
 # Basis set
 CRIT1=`$GREP "Basis set used is \"cc\-pVDZ\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "O * 1 * 8 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 3 * 10 * 40 * 24" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 10\.0000 * 40 * 24" $log | wc -l`
 CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[1]=5
@@ -199,13 +190,13 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0| \-)\.1258515023" $log | wc -l`
-CRIT5=`$GREP "4 * H * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * 1\.4523500000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (0| )\.9986773907" $log | wc -l`
-CRIT8=`$GREP "7 * H * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
 CRIT9=`$GREP "8 * y * \-1\.4523500000" $log | wc -l`
 CRIT10=`$GREP "9 * z * (0| )\.9986773907" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -223,31 +214,34 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 # Old MCSCF energy
 # (hjaaj: the remaining digits in "Old MCSCF en" are beyond convergence
 # and can be anything, that is, small changes in implementation can change them)
-CRIT1=`$GREP "\(OPTST\) RESTART\, Old MCSCF energy\: * \-76\.14761373104" $log | wc -l`
+CRIT1=`$GREP "\(OPTST\) RESTART\, Old MCSCF energy\: * \-76\.14743" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="OLD MCSCF ENERGY (FROM RESTART) NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.14761415901[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.1476141590.." $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="FINAL MCSCF ENERGY NOT CORRECT"
 
 # Occupancy
-CRIT1=`$GREP "2\.000000000 * 1\.98908073[0-9] * 1\.97643661[0-9] * (0| )\.02420948[0-9] * (0| )\.01125112[0-9]" $log | wc -l`
-CRIT2=`$GREP "1\.98138086[0-9] * (0| )\.01779856[0-9]" $log | wc -l`
-CRIT3=`$GREP "1\.97462753[0-9] * (0| )\.02521508[0-9]" $log | wc -l`
+CRIT1=`$GREP "2\.000000000 * 1\.989080... * 1\.976436... * (0| )\.024209... * (0| )\.011251..." $log | wc -l`
+CRIT2=`$GREP "1\.981380... * (0| )\.017798..." $log | wc -l`
+CRIT3=`$GREP "1\.974627... * (0| )\.02521[45]..." $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=6
+   if [ ${TEST[6]} -gt ${CTRL[6]} ]; then
+      CTRL[6]=${TEST[6]}
+   fi
 ERROR[6]="FINAL OCCUPANCY NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi
 done

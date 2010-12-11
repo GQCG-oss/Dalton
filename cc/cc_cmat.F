@@ -93,6 +93,8 @@ c/* Deck CC_CMAT */
 *
 *     Written by Christof Haettig, april-june 1997.
 *
+*     included CC-R12: Christian Neiss, nov. 2005
+*
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -114,6 +116,8 @@ c/* Deck CC_CMAT */
 #include "ccfield.h"
 #include "aovec.h"
 #include "blocks.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -172,6 +176,7 @@ c/* Deck CC_CMAT */
       INTEGER KENDF1, LENDF1, KENDF2, LENDF2, KEND1, LEND1
       INTEGER KEND2, LEND2, KEND3, LEND3, KENDA3, LENDA3
       INTEGER KENDB3, LENDB3, IOPTTCME
+      INTEGER IDUM, IAN, KTR12AM, KVINT, LUNIT
       
 #if defined (SYS_CRAY) 
       REAL XNORM
@@ -249,7 +254,7 @@ C     END IF
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
 
-        LUCMAT = 0
+        LUCMAT = -1
         CALL WOPEN2(LUCMAT,FILCMA,64,0)
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -884,6 +889,10 @@ C     END IF
 
             IF (DIRECT) THEN
               IDEL   = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                IDUM = 1
+                CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYDEL = ISAO(IDEL)
             ELSE
               IDEL   = IBAS(ISYMD1) + ILLL
@@ -1216,10 +1225,10 @@ c    &                    WORK(KENDF1),LENDF1)
 *=====================================================================*
         ISYMKC  = MULD2H(ISYOVOV,ISYMTC)
 
-        KXIAJB  = KEND2
+        KKINTC  = KEND2
+        KXIAJB  = KKINTC  + N3ORHF(ISYMKC)
         KT2AMPC = KXIAJB  + NT2SQ(ISYOVOV)
-        KKINTC  = KT2AMPC + MAX(NT2AM(ISYMTC),NT2AM(ISYOVOV))
-        KENDB3  = KKINTC  + N3ORHF(ISYMKC)
+        KENDB3  = KT2AMPC + MAX(NT2AM(ISYMTC),NT2AM(ISYOVOV))
         LENDB3  = LWORK - KENDB3
 
         IF (LENDB3 .LT. 0) THEN
@@ -1241,6 +1250,34 @@ c    &                    WORK(KENDF1),LENDF1)
 * construct PHI^C intermediate:
         CALL CC_MI(WORK(KKINTC),WORK(KXIAJB),ISYOVOV,
      &             WORK(KT2AMPC),ISYMTC,WORK(KENDB3),LENDB3)
+
+* for CCSD(R12) add correction term:
+        IF (CCR12.AND..NOT.(CCS.OR.CC2)) THEN
+          KTR12AM = KXIAJB
+          KVINT   = KTR12AM + NTR12AM(ISYMTC)
+          KENDB3  = KVINT   + NTR12AM(1)
+          LENDB3  = LWORK - KENDB3
+          IF (LENDB3.LT.0) THEN
+            CALL QUIT('Insufficient work space in CC_CMAT (B-R12)')
+          END IF
+
+          IOPT = 32
+          CALL CC_RDRSP(LISTC,IDLSTC,ISYMTC,IOPT,MODEL,WORK(KDUM),
+     &                  WORK(KTR12AM))
+
+          LUNIT = -1
+          CALL GPOPEN(LUNIT,FCCR12V,'OLD',' ','UNFORMATTED',
+     &                KDUM,.FALSE.)
+ 9999     READ(LUNIT) IAN
+          READ(LUNIT) (WORK(KVINT-1+I), I=1, NTR12AM(1))
+          IF (IAN.NE.IANR12) GOTO 9999
+          CALL GPCLOSE(LUNIT,'KEEP')
+
+          IOPT = 2
+          CALL CC_R12CV(WORK(KKINTC),WORK(KTR12AM),ISYMTC,WORK(KVINT),
+     &                  1,IOPT,WORK(KENDB3),LENDB3)
+
+        END IF
 
 * double oneindex-transform PHI^C intermediate to result vector:
         CALL CCC_OVOV(WORK(KTHETA2),ISYRES,WORK(KKINTC),ISYMKC,

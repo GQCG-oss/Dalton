@@ -100,9 +100,9 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total MP2   energy:                  \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:                  \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -123,7 +123,7 @@ ERROR[2]="CCSD TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 
 # CCSD excitation energies
-CRIT1=`$GREP "\^1A.  \|    3   \|     1\.328216.  \|      36\.1426.  \|    291509\....  \|   ( |0)\.35" $log | wc -l`
+CRIT1=`$GREP "\^1A.  \|    3   \|     1\.328216.  \|      36\.142(5|6).  \|    291509\....  \|   ( |0)\.35" $log | wc -l`
 TEST[3]=`expr $CRIT1`
 CTRL[3]=1
 ERROR[3]="CC EXCITATION ENERGIES NOT CORRECT"
@@ -132,8 +132,8 @@ ERROR[3]="CC EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

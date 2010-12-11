@@ -221,12 +221,12 @@ c /* deck ccexlr */
         IOPT = 5
         CALL CC_FMATRIX(WORK(KFTRAN),NFTRAN,'LE ','ER1',IOPT,'R1 ',
      &                  WORK(KFDOTS),WORK(KFCONS),MXVEC,
-     &                  WORK(KEND0), LEND0, IOPT )
+     &                  WORK(KEND0), LEND0)
       ELSE
         IOPT = 5
         CALL CC_FMATRIX(WORK(KFTRAN),NFTRAN,'EL1','RE ',IOPT,'R1 ',
      &                  WORK(KFDOTS),WORK(KFCONS),MXVEC,
-     &                  WORK(KEND0), LEND0, IOPT )
+     &                  WORK(KEND0), LEND0)
       END IF
 
       TIMF = SECOND() - TIM1

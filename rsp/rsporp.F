@@ -3,7 +3,7 @@ C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   "Dalton, a molecular electronic structure program, Release 2.0"
 C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
@@ -223,13 +223,11 @@ C
       KEVECS = 1
       KSVECS = KEVECS +  KZYWOP
       KZYMAT = KSVECS +  KZYWOP
-      KFCONE = KZYMAT + NOSIM * NORBT * NORBT
-      KFVONE = KFCONE + NOSIM * NORBT * NORBT
-      KQAONE = KFVONE + NOSIM * NORBT * NORBT
-      KQBONE = KQAONE + NOSIM * NORBT * NASHT
-      KH2    = KQBONE + NOSIM * NORBT * NASHT
-      KH2X   = KH2    + NORBT * NORBT
-      KWRK1  = KH2X   + NORBT * NORBT
+      KFCX   = KZYMAT + NOSIM * NORBT * NORBT
+      KFVX   = KFCX   + NOSIM * NORBT * NORBT
+      KQAX   = KFVX   + NOSIM * NORBT * NORBT
+      KQBX   = KQAX   + NOSIM * NORBT * NASHT
+      KWRK1  = KQBX   + NOSIM * NORBT * NASHT
       LWRK1  = LWRK   - KWRK1
       IF (LWRK1.LT.0) CALL ERRWRK('ORPLIN',KWRK1-1,LWRK)
 C
@@ -257,17 +255,13 @@ C
 C
 C CONSTRUCT ORBITAL PART OF LINEAR TRANSFORMED VECTORS
 C
-      CALL RSPOLI(0,NOSIM,UDV,DUMMY,FC,FV,PVX,WRK(KZYMAT),
-     *            WRK(KFCONE),WRK(KFVONE),
-     *            WRK(KQAONE),WRK(KQBONE),DUMMY,
-     *            DUMMY,DUMMY,WRK(KEVECS),
-     *            WRK(KH2),WRK(KH2X),XINDX,CMO,
-     &            WRK(KWRK1),LWRK1)
-C     CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,
-C    *            FCONE,FVONE,
-C    *            QAONE,QBONE,FVTD,
-C    *            QATD,QBTD,EVECS,
-C    *            H2,H2X,XINDX,CMO,WRK,LWRK)
+      CALL RSPOLI(0,NOSIM,UDV,DUMMY,0,FC,FV,PVX,WRK(KZYMAT),
+     *            WRK(KFCX),WRK(KFVX), WRK(KQAX),WRK(KQBX),
+     *            DUMMY,DUMMY,DUMMY,WRK(KEVECS),
+     *            XINDX,CMO, WRK(KWRK1),LWRK1)
+C     CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
+C    *            FCX,FVX, QAX,QBX,
+C    *            FVTD,QATD,QBTD,EVECS, XINDX,CMO,WRK,LWRK)
 C
       CALL DZERO(WRK(KSVECS),KZYWOP)
       CALL RSPSLI(0,NOSIM,DUMMY,ZYOVEC,UDV,WRK(KSVECS),XINDX,
@@ -793,6 +787,16 @@ C
 #include <infpri.h>
 C
       KOZYRE = 2*KOZRED
+CSPAS:01.05.2009 bug fix for large number of  excitation energies
+      IF (KOZYRE.GT.LIROW) THEN
+         WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
+     *   ' >>> ERROR IN ORPRED >>>',
+     *   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
+     *   ' NEEDED ',KOZYRE,', GIVEN :',LIROW,
+     *   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
+         CALL QUIT('ORPRED: TOO SMALL DIMENSION OF IROW: RECOMPILE')
+      END IF
+CKeinSPASmehr
 C
 C Section 1: extend reduced OE(2)-AND OS(2)-matrices
 C            and A1 vector
@@ -867,7 +871,8 @@ C
 C     CALL DSPSOL(N,NSIM,AP,B,KPIVOT,INFO)
 C
       IF (INFO .NE. 0) THEN
-         WRITE (LUPRI,'(/A,I5)') ' *** ERROR IN ORPRED.DSPSOL, INFO =',INFO
+         WRITE (LUPRI,'(/A,I5)')
+     &      ' *** ERROR IN ORPRED.DSPSOL, INFO =',INFO
          CALL QUIT('*** ERROR IN ORPREDO.DSPSOL')
       END IF
 C

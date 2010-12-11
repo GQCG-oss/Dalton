@@ -518,6 +518,9 @@ C
 #include <dccsdsym.h>
 #include <ccdeco.h>
 #include <chomp2.h>
+Casm
+#include <chomp2_b.h>
+Casm
 #include <priunit.h>
 
       INTEGER BBEG, BEND
@@ -532,6 +535,9 @@ C
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
+Casm
+      LOGICAL LDUM
+Casm
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'MP2CHO_1')
@@ -583,6 +589,7 @@ C     Initializations.
 C     ----------------
 
       EMP2   = ZERO
+      IF (RSTMP2) EMP2 = OLDEN2
       MXMEMT = 0
       MXMEML = 0
       XLWORK = ONE*LWORK
@@ -590,6 +597,28 @@ C     ----------------
       DO ISYM = 1,NSYM
          LSYM(ISYM) = ISYM
       ENDDO
+
+Casm
+C     Restart info
+C     ------------
+
+      IF (RSTMP2) THEN
+         WRITE(LUPRI,'(//,10X,A,/,10X,A,/,10X,A,/)') 
+     &                               '-----------------------',
+     &                               'Restarting Cholesky MP2',
+     &                               '-----------------------'
+         WRITE(LUPRI,'(A,I5,A,I2,/)') 'First orbital is nr',
+     &                                IFVIRB,' of symmetry',IFSYMB
+         IF (OLDKNO) THEN
+            WRITE(LUPRI,'(A,F15.10)') 
+     &           'Contribution from previous batches : ', OLDEN2
+         ELSE
+            WRITE(LUPRI,'(A,A)') 'Contribution from previous batches ',
+     &            'not known. You must add it by yourself!!'
+         END IF
+         WRITE(LUPRI,*)
+      END IF 
+Casm
 
 C     Set # vectors.
 C     --------------
@@ -705,7 +734,34 @@ C     ------
 C     Start of batched loop over b.
 C     -----------------------------
 
-      BBEG  = 1
+Casm
+C
+C     BBEG  = 1
+C
+C     Restart MP2
+C
+      IF (RSTMP2) THEN
+         BBEG = 0
+         DO ISYM = 1,IFSYMB-1
+            BBEG = BBEG + NVIR(ISYM)
+         END DO
+         BBEG = BBEG +  IFVIRB
+      ELSE
+         BBEG = 1
+      END IF
+      LMPRST = -1
+      LDUM   = .FALSE.
+      CALL GPOPEN(LMPRST,'CHOMP2_RST','UNKNOWN',' ','FORMATTED',
+     &                  IDUM,LDUM)
+      REWIND(LMPRST)
+      WRITE(LMPRST,'(/,10X,A,/,10X,A,//)')
+     &          'Cholesky MP2 restart information',
+     &          '--------------------------------'
+      WRITE(LMPRST,'(2X,3(A5,3X),5X,3(A5,3X),11X,A6)')
+     &      'FstSy','FstOr','Bfrst','LstSy','LstOrb','Blast','Energy'
+      CALL FLSHFO(LMPRST)
+C
+Casm
       NUMB  = 0
       NPASS = 0
   100 CONTINUE
@@ -1050,6 +1106,13 @@ C        ------------------------------------
      &      NUMB,LBFST,ISBBEG,LBLST,ISBEND,XMUSE,TBBAT
             CALL FLSHFO(LUPRI)
          ENDIF
+
+C
+C        Restart info
+C
+         WRITE(LMPRST,'(2(3X,I2,3X,I6,2X,I6,7X),F17.10)')
+     &         ISBBEG,LBFST,BBEG,ISBEND,LBLST,BEND,EMP2
+         CALL FLSHFO(LMPRST)
 
 C        Update memory info.
 C        -------------------
@@ -3188,9 +3251,14 @@ C
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-
+Casm
+      LOGICAL LDUM
+Casm
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'MP2CHO_3')
+Casm
+#include <chomp2_b.h>
+Casm
 
 C     Start timing.
 C     -------------
@@ -3241,6 +3309,7 @@ C     Initializations.
 C     ----------------
 
       EMP2   = ZERO
+      IF (RSTMP2) EMP2 = OLDEN2
       MXMEMT = 0
       MXMEML = 0
       NPASS  = 0
@@ -3249,6 +3318,26 @@ C     ----------------
       DO ISYM = 1,NSYM
          LSYM(ISYM) = ISYM
       ENDDO
+
+Casm
+C     Restart info
+C     ------------
+
+      IF (RSTMP2) THEN
+         WRITE(LUPRI,'(//,A,/,A,/)') 'Restarting Cholesky MP2',
+     &                               '-----------------------'
+         WRITE(LUPRI,'(A,I5,A,I2,/)') 'First orbital is nr',
+     &                                IFVIRB,' of symmetry',IFSYMB
+         IF (OLDKNO) THEN
+            WRITE(LUPRI,'(A,F15.10)')
+     &           'Contribution from previous batches : ', OLDEN2
+         ELSE
+            WRITE(LUPRI,'(A,A)') 'Contribution from previous batches ',
+     &            'not known. You must add it by yourself!!'
+         END IF
+         WRITE(LUPRI,*)
+      END IF
+Casm
 
 C     Set # vectors.
 C     --------------
@@ -3304,8 +3393,34 @@ C     ------
 C     Start batch loop over b.
 C     ------------------------
 
+Casm
+C
+C     Restart MP2
+C
+      IF (RSTMP2) THEN
+         BBEG = 0
+         DO ISYM = 1,IFSYMB-1
+            BBEG = BBEG + NVIR(ISYM)
+         END DO
+         BBEG = BBEG +  IFVIRB
+      ELSE
+         BBEG = 1
+      END IF
+      LMPRST = -1
+      LDUM   = .FALSE.
+      CALL GPOPEN(LMPRST,'CHOMP2_RST','UNKNOWN','SEQUENTIAL',
+     &            'FORMATTED',IDUM,LDUM)
+      REWIND(LMPRST)
+      WRITE(LMPRST,'(/,10X,A,/,10X,A,//)')
+     &          'Cholesky MP2 restart information',
+     &          '--------------------------------'
+      WRITE(LMPRST,'(2X,3(A5,3X),5X,3(A5,3X),11X,A6)')
+     &      'FstSy','FstOr','Bfrst','LstSy','LstOrb','Blast','Energy'
+      CALL FLSHFO(LMPRST)
+C
+Casm
       IBATB = 0
-      BBEG  = 1
+Casm  BBEG  = 1
       NUMB  = 0
       NPASS = 0
   100 CONTINUE
@@ -3834,8 +3949,8 @@ C           -----------------------------
                XMUSE = (D100*MXMEML)/XLWORK
                LAFST = IOFA1(ISABEG)
                LALST = IOFA1(ISAEND) + LVIRA(ISAEND) - 1
-         WRITE(LUPRI,'(5X,I6,4X,I6,1X,I1,8X,I6,1X,I1,9X,F6.2,8X,F10.2)')
-     &         NUMA,LAFST,ISABEG,LALST,ISAEND,XMUSE,TABAT
+         WRITE(LUPRI,'(I11,I10,1X,I1,8X,I6,1X,I1,9X,F6.2,F18.2,F15.8)')
+     &         NUMA,LAFST,ISABEG,LALST,ISAEND,XMUSE,TABAT,EMP2
                CALL FLSHFO(LUPRI)
             ENDIF
 
@@ -3857,6 +3972,14 @@ C        ---------------
 
   190    CONTINUE
 
+C
+C        Restart info
+C
+         WRITE(LMPRST,'(2(3X,I2,3X,I6,2X,I6,7X),F17.10)')
+     &         ISBBEG,IOFB1(ISBBEG),BBEG,
+     &         ISBEND,IOFB1(ISBEND)+LVIRB(ISBEND)-1,BEND,EMP2
+         CALL FLSHFO(LMPRST)
+ 
 C        Print info for this b-batch and got to next.
 C        (Which will exit immediately if no more b's.)
 C        ---------------------------------------------

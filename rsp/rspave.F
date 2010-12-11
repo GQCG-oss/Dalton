@@ -290,8 +290,7 @@ C  /* Deck rspcfa */
       SUBROUTINE RSPCFA(NSIM,GRA,EVECS)
 #include <implicit.h>
 C
-      DIMENSION GRA(NORBT,NORBT,2)
-      DIMENSION EVECS(KZYVAR,2)
+      DIMENSION GRA(NORBT,NORBT,*), EVECS(KZYVAR,*)
 C
 #include <maxorb.h>
 #include <maxash.h>

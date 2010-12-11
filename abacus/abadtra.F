@@ -36,20 +36,15 @@ C
 #ifdef UNDEF
 ===========================================================================
 /* Comdeck log */
-kr/gh970815: Fixed bug in TRDSET, where second loop should go to IBSYM instead
-             of IASYM
 NOTE: H2DAO and H2DAC submatrices are transposed compared to abaltra
   because of possible triangular NNASHX packing.
 
 TO DO: s/INFTRL/CBDTRA/ ????
-950102-hjaaj
-TRDTDS: improved vectorization (now not NASHA in inner loop)
 
 from abaltra.u:
 921117:to do: skip pack/unpack if NSYM .eq. 1
               option for only FQD if open-shell Hartree-Fock ?
               probably not worth the effort
-no changes made today; abaltra.f and abaltra.o from Nov. 10 is still OK
 ===========================================================================
 #endif
 C  /* Deck dertra */
@@ -58,6 +53,8 @@ C
 C     ***************************************************************
 C     *****   Transformation of symmetry integral derivatives   *****
 C     ***************************************************************
+C
+C Written 1992 by Hans Joergen Aa. Jensen.
 C
 C IPRTRD in common /CBDTRA/ controls printout,
 C IPRTRD .le. 0, no printout
@@ -214,7 +211,7 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       CALL QENTER('TRDNEW')
       if (iprint .gt. 6) then
@@ -403,7 +400,7 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
 C-B-HJTEMP-MAERKE
       PARAMETER (LBINT = 600)
@@ -624,7 +621,7 @@ C   INFTRL: IH1AO(8,8),IH1AC(8,8),NDAO(8), NDAC(8)
 C
 #include <priunit.h>
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       PARAMETER (IMEMERR = -999 999 999)
 C
@@ -754,7 +751,7 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       DO 800 KR = 1,NBAST
          KRSYM = ISAO(KR)
@@ -791,6 +788,7 @@ C  /* Deck trdtds */
       SUBROUTINE TRDTDS(IABSYM,H2CDAO,H2CDAC,CMO,WRK)
 C
 C Copyright (c) 4-Jul-1994/2-Jan-1995 Hans Joergen Aa. Jensen
+C 950102 revision : improved vectorization (now not NASHA in inner loop)
 C
 C Transform H2CDAO(nbast,nbast) of symmetry IABSYM
 C        to H2CDAC(nasht,nasht) using CMO.
@@ -813,7 +811,7 @@ C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
 C  INFTRL : IH1AO(8,8), IH1AC(8,8)
 C
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
 C     Allocation for IABSYM .eq. 1
       KAC = 1
@@ -886,7 +884,7 @@ C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
 C     Local variables:
 C
@@ -898,13 +896,9 @@ C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
 C     CALL MOLLAB(KEY,LUDERA,LUPRI)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
@@ -1096,9 +1090,11 @@ C   INFTRL : NDAC(8),MXNDAO,NXNDAC
 C
 #include <priunit.h>
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
+#if defined (VAR_H2DPACK)
       IROW(I) = (I*(I-1))/2
+#endif
 C
       IF (IPRINT .GT. 25) THEN
          write (lupri,*) 'output from trdah2, kr,kssym = ',kr,kssym
@@ -1180,7 +1176,7 @@ C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       PARAMETER (IWAY = -1, D2 = 2.0D0)
 C     ... IWAY=-1 to unpack
@@ -1240,7 +1236,7 @@ C  INFORB : NASHT
 C  INFTRL : NDAC(8)
 C
 #include <inforb.h>
-#include <inftrl.h>
+#include "inftrl.h"
 C
       NDACUV = NDAC(KUVSYM)
       CALL DZERO(PVXS,MXNDAC)
@@ -1324,6 +1320,7 @@ C        dimension NDIM(NBLK)
       IF (IBSYM .GT. IASYM) GO TO 300
          NBLKA  = NBLK(IASYM)
          NBLKB  = NBLK(IBSYM)
+      IF (NBLKA .EQ. 0 .OR. NBLKB .EQ. 0) GO TO 300
          IBLKA  = IBLK(IASYM)
          IB1    = IBLK(IBSYM) + 1
          DO 200 IA = IBLKA+1,IBLKA+NBLKA

@@ -89,7 +89,7 @@ C
 C
 C     Open DRCINT and check if integrals already there ...
 C
-      LUINTD = 0
+      LUINTD = -1
       CALL GPOPEN(LUINTD,'DRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       IF (FNDLAB('DRCINFO',LUINTD)) THEN

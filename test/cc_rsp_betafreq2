@@ -102,9 +102,9 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Total SCF   energy:                  \-100.00891992" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy:                  \-100.008919(8|9)." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy:                  \-100.193662(5|6)." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:                  \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=7
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -148,8 +148,8 @@ ERROR[3]="FREQ.-DEP. CCSD FIRST HYPERPOLARIZABILITIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

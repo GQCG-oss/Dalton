@@ -41,7 +41,8 @@ C  /* Deck hr2drv */
 C
 C     T. Helgaker, Sep. 91
 C
-C     gnrinf.h needed for PANAS correction factor
+C     gnrinf.h needed for PANAS correction factor, and CHIVAL,ERFEXP,
+C              SRINTS for partition of r_12 (MCDFT)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -67,7 +68,7 @@ C
      &            WORK(KRJ000),WORK(KPQX),WORK(KPQY),WORK(KPQZ),
      &            WORK(KLAST),LWRK,NTUV,JMAX,MAXDER,NUABCD,IPQ0X,IPQ0Y,
      &            IPQ0Z,NOINT,ONECEN,NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,
-     &            THRESH,IPRINT,SIGNT,IODDHR,PANAS)
+     &            THRESH,IPRINT,SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,SRINTS)
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -76,14 +77,15 @@ C  /* Deck hr2dr1 */
      &                  FAC34,RJ000,PQX,PQY,PQZ,WORK,LWORK,NTUV,JMAX,
      &                  MAXDER,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,NOINT,ONECEN,
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
-     &                  SIGNT,IODDHR,PANAS)
+     &                  SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,SRINTS)
 C     Modified for r12 integrals (WK/UniKA/15-11-2002).
 #include <implicit.h>
 #include <priunit.h>
 #include <r12int.h>
 #include <drw2el.h>
 #include <maxaqn.h>
-      LOGICAL NOINT, ONECEN
+      PARAMETER (D1 = 1.D0)
+      LOGICAL NOINT, ONECEN, ERFEXP, SRINTS
 #include <twosta.h>
 C     HERINT is declared 3-dimensional for r12 integrals (WK/UniKA/14-11-2002).
       DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*), IODDHR(*),
@@ -146,7 +148,7 @@ C
          CALL R000(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
      &             PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,
      &             NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
-     &             PANAS,WORK,LWORK)
+     &             PANAS,CHIVAL,ERFEXP,SRINTS,WORK,LWORK)
          IF (TKTIME) THEN
             TIMEND = SECOND()
             TIME = TIMEND - TIMSTR
@@ -189,64 +191,95 @@ C
             END IF
          END IF
       END IF
+C
       RETURN
       END
 C  /* Deck r000 */
       SUBROUTINE R000(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,
      &                PQY,PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,
      &                NUC4,NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,
-     &                SIGNT,PANAS,WORK,LWORK)
+     &                SIGNT,PANAS,CHIVAL,ERFEXP,SRINTS,WORK,LWORK)
 C
 C     TUH 84
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxaqn.h>
 #include <iratdef.h>
+#include <maxaqn.h>
 #include <twosta.h>
 #include <r12int.h>
-      LOGICAL ONECEN, NOINT
+      LOGICAL ONECEN, NOINT, ERFEXP, SRINTS
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WORK(LWORK)
 C-----------------------------------------------------------------------
+C     =============================================
+C     Parameters used for memory-allocations
+C     =============================================
+      LXJ000 = (JMAX+1)*NUABCD
+      IF(ERFEXP) THEN
+C      Allocate extra memory for exponential factors 
+C      in modified two-electron operator. \jkp
+         NTALPHX = 2
+      ELSE
+         NTALPHX = 1
+      ENDIF
+      IF (SRINTS) THEN
+         NTALPHX = NTALPHX + 1
+      END IF
+C     =============================================
+C     Allocations
+C     =============================================
       KWVALU = 1
-      KALPHA = KWVALU + NUABCD
-      KALPHJ = KALPHA + NUABCD
-      KINDAD = KALPHJ + NUABCD
-      KLAST  = KINDAD + (NUABCD + 1)/IRAT
+      KALPHA = KWVALU + NTALPHX*NUABCD
+      KALPHJ = KALPHA + NTALPHX*NUABCD
+      KINDAD = KALPHJ + NTALPHX*NUABCD
+      KEJ000 = KINDAD + (NUABCD + 1)/IRAT
+      IF(ERFEXP) THEN
+         KSJ000 = KEJ000 + LXJ000
+      ELSE
+         KSJ000 = KEJ000
+      ENDIF
+      IF(SRINTS) THEN
+         KLAST  = KSJ000 + LXJ000
+      ELSE
+         KLAST  = KSJ000
+      ENDIF
       IF (KLAST .GT. LWORK) CALL STOPIT('R000',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
+C     =============================================
       CALL R0001(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
      &           PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,
      &           THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
      &           WORK(KWVALU),WORK(KALPHJ),WORK(KALPHA),WORK(KINDAD),
-     &           PANAS,WORK(KLAST),LWRK)
+     &           PANAS,CHIVAL,ERFEXP,NTALPHX,WORK(KEJ000),WORK(KSJ000),
+     &           SRINTS,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck r0001 */
       SUBROUTINE R0001(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,
      &                PQY,PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,
      &                NUC4,NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,
-     &                SIGNT,WVALU,TALPHA,SCLFAC,INDADR,PANAS,WORK,LWORK)
+     &                SIGNT,WVALU,TALPHA,SCLFAC,INDADR,PANAS,CHIVAL,
+     &                ERFEXP,NTALPHX,EJ000,SJ000,SRINTS,WORK,LWORK)
 C
 C     TUH 84
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxaqn.h>
 #include <iratdef.h>
+#include <maxaqn.h>
 #include <aovec.h>
 #include <codata.h>
 #include <drw2el.h>
-      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP25 = 0.25D0)
-      LOGICAL ONECEN, NOINT
-      DIMENSION RJ000(NUABCD,0:JMAX), WORK(LWORK),
-     &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
-     &          COOR12(NUC1*NUC2,3), COOR34(NUC3*NUC4,3),
+      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0,DP25 = 0.25D0)
+      LOGICAL ONECEN, NOINT, ERFEXP, SRINTS
+      DIMENSION RJ000(NUABCD,0:JMAX),EJ000(NUABCD,0:JMAX),
+     &          SJ000(NUABCD,0:JMAX),PQX(NUABCD),PQY(NUABCD),
+     &          PQZ(NUABCD),COOR12(NUC1*NUC2,3),COOR34(NUC3*NUC4,3),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
-     &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
-     &          SCLFAC(NUABCD)
+     &          WVALU(NUABCD,NTALPHX), TALPHA(NUABCD,NTALPHX), 
+     &          INDADR(NUABCD),SCLFAC(NUABCD,NTALPHX),WORK(LWORK)
 #include <twosta.h>
 #include <dftcom.h>
 #include <subdir.h>
@@ -266,6 +299,9 @@ C     this may in the case of one-center integrals introduce
 C     numerical instabilities for large exponents.
 C
       NOINT = .FALSE.
+      IF (ERFEXP) IEJ = 2
+      IF (SRINTS.AND.ERFEXP) IEJ = 3
+      IF (ERFEXP) CALL DZERO(EJ000(1,0),(JMAX+1)*NUABCD)
       IF (AD2DAR) DRWFAC=DP25*ALPHA2*DARFAC
       IF (DO2DAR) DRWFAC=DP25*ALPHA2
       IF (S4CENT) DRWFAC=-DP25/PI
@@ -290,11 +326,11 @@ C
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
-                  EXPPQI = D1/(EXPP + EXPQ) 
+                  EXPPQI = D1/EXPPQ 
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
-                  TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
-                  SCLFAC(IODS) = FACTOR*TALPHA(IODS)
-                  RJ000(IODS,0) = DRWFAC*SCLFAC(IODS)
+                  TALPHA(IODS,1) = - D2*EXPP*EXPQ*EXPPQI
+                  SCLFAC(IODS,1) = FACTOR*TALPHA(IODS,1)
+                  RJ000(IODS,0) = DRWFAC*SCLFAC(IODS,1)
                END DO
             ELSE IF (AD2DAR) THEN
 C
@@ -307,35 +343,99 @@ C
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
-                  EXPPQI = D1/(EXPP + EXPQ) 
+                  EXPPQI = D1/EXPPQ 
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
-                  TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
-                  SCLFAC(IODS) = FACTOR*TALPHA(IODS)
-                  RJ000(IODS,0) = FACTOR+DRWFAC*SCLFAC(IODS)
+                  TALPHA(IODS,1) = - D2*EXPP*EXPQ*EXPPQI
+                  SCLFAC(IODS,1) = FACTOR*TALPHA(IODS,1)
+                  RJ000(IODS,0) = FACTOR+DRWFAC*SCLFAC(IODS,1)
                END DO
             ELSE IF (HFXMU .NE. D0) THEN
                DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
-                  EXPPQI = D1/(EXPP + EXPQ)
+                  EXPPQI = D1/EXPPQ 
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   ALPHA  = EXPP*EXPQ*EXPPQI
                   BETA   = HFXMU**2/(ALPHA + HFXMU**2)
-                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  TALPHA(IODS,1) = - D2*ALPHA*BETA
                   RJ000(IODS,0) = SQRT(BETA)*FACTOR
                END DO
-            ELSE IF (PANAS .EQ. D0) THEN
+            ELSE IF (PANAS .EQ. D0 .AND. CHIVAL .EQ. -1.D0) THEN
+C
+C              Regular two-electron integrals
+C
                DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
-                  EXPPQI = D1/(EXPP + EXPQ)
+                  EXPPQI = D1/EXPPQ
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
-                  TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
+                  TALPHA(IODS,1) = - D2*EXPP*EXPQ*EXPPQI
                   RJ000(IODS,0) = FACTOR
                END DO
+            ELSE IF (SRINTS) THEN
+C
+C              Short-range two-electron integrals (MCDFT)
+C
+               CHISQ     = CHIVAL**2
+               DO IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+c              --- Regular
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQ  = EXPP + EXPQ
+                  EXPPQI = D1/EXPPQ
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  TALPHA(IODS,1) = - D2*EXPP*EXPQ*EXPPQI
+                  RJ000(IODS,0) = FACTOR
+c              --- Modified
+                  EXPPI  = D1/EXPP
+                  EXPQI  = D1/EXPQ
+                  EXPPQ  = EXPPI*EXPQI
+                  EXPPQI = EXPPI + EXPQI + D1/CHISQ
+                  EXPPQII= D1/EXPPQI
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
+                  TALPHA(IODS,2) = - D2*EXPPQII
+                  SJ000(IODS,0) = FACTOR
+                  IF(ERFEXP) THEN
+                     AI = D3/CHISQ
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                     EJ000(IODS,0) = - FAC12I*FAC34(IOD34)*CHIVAL*
+     &               SQRT((AI*EXPFACI)**3/(EXPP*EXPQ))
+                  ENDIF
+c              ---
+               END DO
+            ELSE IF (PANAS .EQ. D0) THEN
+C
+C              Long-range two-electron integrals (MCDFT)
+C
+               CHISQ     = CHIVAL**2
+               DO IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+                  EXPQ   = EXP34(IOD34)
+                  EXPPI  = D1/EXPP
+                  EXPQI  = D1/EXPQ
+                  EXPPQ  = EXPPI*EXPQI
+                  EXPPQI = EXPPI + EXPQI + D1/CHISQ
+                  EXPPQII= D1/EXPPQI
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
+                  TALPHA(IODS,1) = - D2*EXPPQII
+                  RJ000(IODS,0) = FACTOR
+                  IF(ERFEXP) THEN
+                     AI = D3/CHISQ
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                     EJ000(IODS,0) = - FAC12I*FAC34(IOD34)*CHIVAL*
+     &               SQRT((AI*EXPFACI)**3/(EXPP*EXPQ))
+                  ENDIF
+               END DO
             ELSE
+C
+C              Two-electron integrals regularized according to I.Panas
+C
                DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
@@ -343,7 +443,7 @@ C
                   EXPMOD = EXPPQ/D2
                   EXPPQP = EXPMOD + SQRT(EXPMOD**2 + EXPP*EXPQ*PANAS)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
-                  TALPHA(IODS) = - D2*EXPP*EXPQ/EXPPQP
+                  TALPHA(IODS,1) = - D2*EXPP*EXPQ/EXPPQP
                   RJ000(IODS,0) = FACTOR
                END DO
             END IF
@@ -352,29 +452,52 @@ C
             IF (DO2DAR .OR. S4CENT) THEN
                DO J = 1, JMAX
                   DO I = 1, NUABCD
-                     SCLFAC(I) = TALPHA(I)*SCLFAC(I)
-                     RJ000(I,J) = DRWFAC*SCLFAC(I)
+                     SCLFAC(I,1) = TALPHA(I,1)*SCLFAC(I,1)
+                     RJ000(I,J) = DRWFAC*SCLFAC(I,1)
                   END DO
                END DO
             ELSE IF (AD2DAR) THEN
                DO J = 1, JMAX
                   FAC = D1/SDPRE(2*J + 1)
                   DO I = 1, NUABCD
-                     RJ000(I,J) = (FAC+DRWFAC*TALPHA(I))*SCLFAC(I)
-                     SCLFAC(I) = TALPHA(I)*SCLFAC(I)
+                     RJ000(I,J) = (FAC+DRWFAC*TALPHA(I,1))*SCLFAC(I,1)
+                     SCLFAC(I,1) = TALPHA(I,1)*SCLFAC(I,1)
                   END DO
                END DO
             ELSE
-               CALL DCOPY(NUABCD,TALPHA,1,SCLFAC,1)
+               CALL DCOPY(NUABCD,TALPHA(1,1),1,SCLFAC(1,1),1)
+               IF(SRINTS) CALL DCOPY(NUABCD,TALPHA(1,2),1,SCLFAC(1,2),1)
+               IF(ERFEXP) 
+     &                CALL DCOPY(NUABCD,TALPHA(1,IEJ),1,SCLFAC(1,IEJ),1)
+               IF (SRINTS) THEN
+C             ... Calculate SJ000 for short-range integrals
+                  DO J = 1, JMAX
+                     FAC = D1/SDPRE(2*J + 1)
+                     DO I = 1, NUABCD
+                        SJ000(I,J) = FAC*SCLFAC(I,2)*SJ000(I,0)
+                        SCLFAC(I,2) = TALPHA(I,2)*SCLFAC(I,2)
+                     END DO
+                  END DO
+               END IF
+               IF (ERFEXP) THEN
+C             ... Calculate EJ000 for long-range integrals
+                  DO J = 1, JMAX
+                     DO I = 1, NUABCD
+                        EJ000(I,J)  = EJ000(I,0)*SCLFAC(I,IEJ)
+                        SCLFAC(I,IEJ) = TALPHA(I,IEJ)*SCLFAC(I,IEJ)
+                     END DO
+                  END DO
+               END IF
+C             ... Calculate regular two-electron integrals
                DO J = 1, JMAX
                   FAC = D1/SDPRE(2*J + 1)
                   DO I = 1, NUABCD
-                     RJ000(I,J) = FAC*SCLFAC(I)*RJ000(I,0)
-                     SCLFAC(I) = TALPHA(I)*SCLFAC(I)
+                     RJ000(I,J) = FAC*SCLFAC(I,1)*RJ000(I,0)
+                     SCLFAC(I,1) = TALPHA(I,1)*SCLFAC(I,1)
                   END DO
                END DO
             END IF
-         END IF
+         END IF   ! JMAX .GT. 0
 C
 C     General case: Multicenter Integrals
 C     ===================================
@@ -396,7 +519,7 @@ C
             SGN34Z = SIGNT(3)
          END IF
 C
-C	It turns out 64-bits IRIX compiler misinterprets this statement with
+C    It turns out 64-bits IRIX compiler misinterprets this statement with
 C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
 #if defined (SYS_IRIX)
          IODS  = 1
@@ -421,25 +544,29 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   ALPHA = EXPP*EXPQ*EXPPQI
                   BETA = HFXMU**2/(ALPHA + HFXMU**2)
-                  SCLFAC(IODS) = SQRT(BETA)*FACTOR
+                  SCLFAC(IODS,1) = SQRT(BETA)*FACTOR
 #if !defined (SYS_IRIX)
                   NODS = NODS + 1
 #endif
-                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  TALPHA(IODS,1) = - D2*ALPHA*BETA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
                   PQYI = PY - SGN34Y*COOR34(IOD34,2)
                   PQZI = PZ - SGN34Z*COOR34(IOD34,3)
                   PQX(IODS) = PQXI
                   PQY(IODS) = PQYI
                   PQZ(IODS) = PQZI
-                  WVALU(NODS)=ALPHA*BETA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  WVALU(NODS,1)=ALPHA*BETA*
+     &               (PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
 #if defined (SYS_IRIX)
                   IODS = IODS + 1
                   NODS = NODS + 1
 #endif
                END DO
-            ELSE IF (PANAS .EQ. D0) THEN
+            ELSE IF (PANAS .EQ. D0 .AND. CHIVAL .EQ. -1.D0) THEN
+C
+C              Regular two-electron integrals
+C
                DO IOD34 = 1, NUC34
 #if !defined (SYS_IRIX)
                   IODS = IODS + 1
@@ -447,19 +574,115 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   EXPQ   = EXP34(IOD34)
                   EXPPQI = D1/(EXPP + EXPQ)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
-                  SCLFAC(IODS) = FACTOR
+                  SCLFAC(IODS,1) = FACTOR
 #if !defined (SYS_IRIX)
                   NODS = NODS + 1
 #endif
                   ALPHA = EXPP*EXPQ*EXPPQI
-                  TALPHA(IODS) = - D2*ALPHA
+                  TALPHA(IODS,1) = - D2*ALPHA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
                   PQYI = PY - SGN34Y*COOR34(IOD34,2)
                   PQZI = PZ - SGN34Z*COOR34(IOD34,3)
                   PQX(IODS) = PQXI
                   PQY(IODS) = PQYI
                   PQZ(IODS) = PQZI
-                  WVALU(NODS) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  WVALU(NODS,1) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  INDADR(NODS) = IODS
+#if defined (SYS_IRIX)
+                  IODS = IODS + 1
+                  NODS = NODS + 1
+#endif
+               END DO
+            ELSE IF (SRINTS) THEN
+C
+C              Short-range two-electron integrals (MCDFT)
+C
+               CHISQ     = CHIVAL**2
+               DO IOD34 = 1, NUC34
+#if !defined (SYS_IRIX)
+                  IODS = IODS + 1
+#endif
+c                --- Regular
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  SCLFAC(IODS,1) = FACTOR
+c                --- Modified
+                  EXPPI  = D1/EXPP
+                  EXPQI  = D1/EXPQ
+                  EXPPQ  = EXPPI*EXPQI
+                  EXPPQI2= EXPPI + EXPQI + D1/CHISQ
+                  EXPPQII= D1/EXPPQI2
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
+                  SCLFAC(IODS,2) = FACTOR
+#if !defined (SYS_IRIX)
+                  NODS = NODS + 1
+#endif
+                  ALPHA = EXPP*EXPQ*EXPPQI
+                  TALPHA(IODS,1) = - D2*ALPHA
+                  TALPHA(IODS,2) = - D2*EXPPQII
+                  PQXI = PX - SGN34X*COOR34(IOD34,1)
+                  PQYI = PY - SGN34Y*COOR34(IOD34,2)
+                  PQZI = PZ - SGN34Z*COOR34(IOD34,3)
+                  PQX(IODS) = PQXI
+                  PQY(IODS) = PQYI
+                  PQZ(IODS) = PQZI
+                  PQXYZI    = PQXI*PQXI+PQYI*PQYI+PQZI*PQZI
+                  IF(ERFEXP) THEN
+                     AI = D3/CHISQ
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     FACTOR = FAC12I*FAC34(IOD34)*
+     &               CHIVAL*SQRT(D1/(EXPP*EXPQ))*(SQRT(AI*EXPFACI))**3
+                     EJ000(IODS,0) = - FACTOR * DEXP(- EXPFACI*PQXYZI)
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                  ENDIF
+                  WVALU(NODS,1) = ALPHA*PQXYZI
+                  WVALU(NODS,2) = EXPPQII*PQXYZI
+                  INDADR(NODS) = IODS
+#if defined (SYS_IRIX)
+                  IODS = IODS + 1
+                  NODS = NODS + 1
+#endif
+               END DO
+            ELSE IF (PANAS .EQ. D0) THEN
+C
+C              Long-range two-electron integrals (MCSCF-DFT)
+C
+               CHISQ     = CHIVAL**2
+               DO IOD34 = 1, NUC34
+#if !defined (SYS_IRIX)
+                  IODS = IODS + 1
+#endif
+                  EXPQ   = EXP34(IOD34)
+                  EXPPI  = D1/EXPP
+                  EXPQI  = D1/EXPQ
+                  EXPPQ  = EXPPI*EXPQI
+                  EXPPQI = EXPPI + EXPQI + D1/CHISQ
+                  EXPPQII= D1/EXPPQI
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
+                  SCLFAC(IODS,1) = FACTOR
+#if !defined (SYS_IRIX)
+                  NODS = NODS + 1
+#endif
+                  TALPHA(IODS,1) = - D2*EXPPQII
+                  PQXI = PX - SGN34X*COOR34(IOD34,1)
+                  PQYI = PY - SGN34Y*COOR34(IOD34,2)
+                  PQZI = PZ - SGN34Z*COOR34(IOD34,3)
+                  PQX(IODS) = PQXI
+                  PQY(IODS) = PQYI
+                  PQZ(IODS) = PQZI
+                  PQXYZI    = PQXI*PQXI+PQYI*PQYI+PQZI*PQZI
+                  WVALU(NODS,1) = EXPPQII*PQXYZI
+                  IF (ERFEXP) THEN
+                     AI = D3/CHISQ
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                     FACTOR = FAC12I*FAC34(IOD34)*CHIVAL*
+     &                        SQRT(D1/(EXPP*EXPQ))*(SQRT(AI*EXPFACI))**3
+                     EJ000(IODS,0) = - FACTOR* DEXP(- EXPFACI*PQXYZI)
+                  ENDIF
                   INDADR(NODS) = IODS
 #if defined (SYS_IRIX)
                   IODS = IODS + 1
@@ -467,6 +690,9 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
 #endif
                END DO
             ELSE
+C
+C              Two-electron integrals regularized according to I.Panas
+C
                DO IOD34 = 1, NUC34
 #if !defined (SYS_IRIX)
                   IODS = IODS + 1
@@ -476,19 +702,19 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   EXPMOD = EXPPQ/D2
                   EXPPQP = EXPMOD + SQRT(EXPMOD**2 + EXPP*EXPQ*PANAS)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
-                  SCLFAC(IODS) = FACTOR
+                  SCLFAC(IODS,1) = FACTOR
 #if !defined (SYS_IRIX)
                   NODS = NODS + 1
 #endif
                   ALPHA = EXPP*EXPQ/EXPPQP
-                  TALPHA(IODS) = - D2*ALPHA
+                  TALPHA(IODS,1) = - D2*ALPHA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
                   PQYI = PY - SGN34Y*COOR34(IOD34,2)
                   PQZI = PZ - SGN34Z*COOR34(IOD34,3)
                   PQX(IODS) = PQXI
                   PQY(IODS) = PQYI
                   PQZ(IODS) = PQZI
-                  WVALU(NODS) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  WVALU(NODS,1) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
 #if defined (SYS_IRIX)
                   IODS = IODS + 1
@@ -496,10 +722,10 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
 #endif
                END DO
             END IF
-  300    CONTINUE
+ 300     CONTINUE
 #if defined (SYS_IRIX)
-	 IODS = IODS - 1
-	 NODS = NODS - 1
+         IODS = IODS - 1
+         NODS = NODS - 1
 #endif
          IF (.NOT.NOINT) THEN
             IPQ0X = 1
@@ -510,6 +736,7 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
             IF (DASUM(NUABCD,PQZ,1) .GT. THRESH) IPQ0Z = 0
 C
             CALL DZERO(RJ000(1,0),(JMAX+1)*NUABCD)
+            IF (SRINTS) CALL DZERO(SJ000(1,0),(JMAX+1)*NUABCD)
 C
 C           Calculate gamma function
 C           ========================
@@ -522,38 +749,77 @@ C
             KREXPW = KFJW   + NODS*(JMAX + 1)
             KLAST  = KREXPW + NODS
             IF (KLAST .GT. LWORK) CALL STOPIT('R0001',' ',KLAST,LWORK)
-            IF (.NOT. (DO2DAR .OR. S4CENT))
-     &      CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,WORK(KFJW),
-     &                  WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
+            IF (.NOT. (DO2DAR .OR. S4CENT)) THEN
+               CALL GETGAM(NODS,INDADR,WVALU(1,1),RJ000,JMAX,NUABCD,
+     &                     WORK(KFJW),WORK(KINDAD),WORK(KWVALS),
+     &                     WORK(KREXPW),IPRINT)
+               IF (SRINTS)
+     &            CALL GETGAM(NODS,INDADR,WVALU(1,2),SJ000,JMAX,NUABCD,
+     &                        WORK(KFJW),WORK(KINDAD),WORK(KWVALS),
+     &                        WORK(KREXPW),IPRINT)
+               IF (ERFEXP)
+     &            CALL DCOPY(NUABCD,TALPHA(1,IEJ),1,SCLFAC(1,IEJ),1)
+            END IF
 C
 C           Scale gamma function
 C
             IF (DO2DAR .OR. AD2DAR .OR. S4CENT) THEN
               DO I = 1, NUABCD
-                WVALU(I) = DRWFAC*TALPHA(I)*EXP(-WVALU(I))
+                WVALU(I,1) = DRWFAC*TALPHA(I,1)*EXP(-WVALU(I,1))
               END DO
-            ENDIF
-            IF (DO2DAR .OR. S4CENT) THEN
+             IF (DO2DAR .OR. S4CENT) THEN
               DO J = 0, JMAX
                 DO I = 1, NUABCD
-                  RJ000(I,J) = WVALU(I)
+                  RJ000(I,J) = WVALU(I,1)
                 END DO
               END DO 
-            ELSE IF (AD2DAR) THEN
+             ELSE IF (AD2DAR) THEN
               DO J = 0, JMAX
                 DO I = 1, NUABCD
-                  RJ000(I,J) = RJ000(I,J) + WVALU(I)
+                  RJ000(I,J) = RJ000(I,J) + WVALU(I,1)
                 END DO
               END DO
+             END IF
+            ENDIF
+            IF (SRINTS) THEN
+C          ... Calculate SJ000 for short-range integrals
+               DO J = 0, JMAX
+                  DO I = 1, NUABCD
+                     SJ000(I,J) = SCLFAC(I,2)*SJ000(I,J)
+                     SCLFAC(I,2) = TALPHA(I,2)*SCLFAC(I,2)
+                  END DO
+               END DO
             END IF
+            IF (ERFEXP) THEN
+C          ... Calculate EJ000 for long-range integrals
+               DO J = 1, JMAX
+                  DO I = 1, NUABCD
+                  EJ000(I,J)  = EJ000(I,0)*SCLFAC(I,IEJ)
+                  SCLFAC(I,IEJ) = TALPHA(I,IEJ)*SCLFAC(I,IEJ)
+                  END DO
+               END DO
+            END IF
+C          ... Calculate regular two-electron integrals
             DO J = 0, JMAX
                DO I = 1, NUABCD
-                  RJ000(I,J) = SCLFAC(I)*RJ000(I,J)
-                  SCLFAC(I) = TALPHA(I)*SCLFAC(I)
+                  RJ000(I,J) = SCLFAC(I,1)*RJ000(I,J)
+                  SCLFAC(I,1) = TALPHA(I,1)*SCLFAC(I,1)
                END DO
             END DO
          END IF
+C
       END IF
+C
+C     For modified operators, R000(I,J) can now be assigned correctly
+C
+      IF(SRINTS) THEN
+         IF (ERFEXP) 
+     &      CALL DAXPY(NUABCD*(JMAX+1), D1,EJ000(1,0),1,SJ000(1,0),1)
+            CALL DAXPY(NUABCD*(JMAX+1),-D1,SJ000(1,0),1,RJ000(1,0),1)
+      ELSE
+         IF (ERFEXP)
+     &      CALL DAXPY(NUABCD*(JMAX+1),D1,EJ000(1,0),1,RJ000(1,0),1)
+      ENDIF
 C
 C     *************************
 C     ***** PRINT SECTION *****

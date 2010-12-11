@@ -52,14 +52,14 @@ C
 C
       IF (MAXREP.EQ.0) THEN
          CALL DFTAOS(GSO(KSO0),GSO(KSO1),GSO(KSO2),GSO(KSOB),GSO(KSOB1),
-     &               NCNT,COR(1),COR(2),COR(3),WORK,LWORK,NBAST,DOLND,
-     &               DOGGA,DFTHRI,IPRINT)
+     &               NCNT,COR(1),COR(2),COR(3),NBAST,
+     &               DOLND,DOGGA,DFTHRI,IPRINT)
       ELSE
          KGAO = 1
          KLST = KGAO + NTYPSO*NBAST
          IF (KLST.GT.LWORK) CALL STOPIT('DFTAOS','LWORK',KLST,LWORK)
          CALL DFTAOS(WORK(KSO0),WORK(KSO1),WORK(KSO2),WORK(KSOB),
-     &               WORK(KSOB1),NCNT,COR(1),COR(2),COR(3),WORK,LWORK,
+     &               WORK(KSOB1),NCNT,COR(1),COR(2),COR(3),
      &               NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
          CALL DFTSOS(WORK(KSO0),GSO,NBAST,NTYPSO,NCNT,IPRINT)
       END IF
@@ -68,7 +68,7 @@ C
       END      
 C  /* Deck getaos */
       SUBROUTINE DFTAOS(GAO,GAO1,GAO2,GAB1,GAB2,NCNT,CORPX,CORPY,CORPZ,
-     &                  WORK,LWORK,NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
+     &                  NBAST,DOLND,DOGGA,DFTHRI,IPRINT)
 C
 C     T. Helgaker sep 99
 C
@@ -83,8 +83,7 @@ C
 C   
       LOGICAL DOLND, DOGGA
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &          GAB1(NBAST,3), GAB2(NBAST,3,3),
-     &          WORK(LWORK), NCNT(NBAST)
+     &          GAB1(NBAST,3), GAB2(NBAST,3,3), NCNT(NBAST)
 C
 #include <onecom.h>
 #include <lmns.h>
@@ -160,7 +159,7 @@ C
 C
 C     Print section
 C
-      IF (IPRINT .GE. 50) THEN
+      IF (IPRINT .GT. 100) THEN
           CALL HEADER('Output from DFTAOS',-1)
           WRITE (LUPRI,'(A,3F12.6)') ' CORP ', CORPX,CORPY,CORPZ 
           IF (IPRINT .GT. 200) THEN
@@ -248,9 +247,10 @@ C
                   IF (DABS(CINT).GT.DFTHRI) THEN
                      DO I = 1, KHKTA
                         SPHFAC = CSP(I,J)
-                        IF (ABS(SPHFAC).GT.D0) THEN
+c                       IF (ABS(SPHFAC).GT.D0) THEN
+chj Oct07: test must be slower than the DAXPY ??
                            GAO(I) = GAO(I) + SPHFAC*CINT
-                        END IF
+c                       END IF
                      END DO
                   END IF 
                END DO
@@ -594,7 +594,7 @@ C
 #include <pincom.h>
 #include <symmet.h>
 #include <ibtfun.h>
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine DFTSOS',-1)
+      IF (IPRINT .GE. 100) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
 C
@@ -621,7 +621,7 @@ C
          END DO
          ISTRA = ISTRA + NORBA
       END DO
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 100) THEN
          CALL HEADER('AOs in DFTSOS',-1)
          CALL OUTPUT(GAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
          CALL HEADER('SOs in DFTSOS',-1)
@@ -700,7 +700,6 @@ C
 C     PA2 contains distance from the basis function center to respective
 c     grid point.
       DIMENSION PA(3,NVCLEN), PA2(NVCLEN)
-c
 #include <onecom.h>
 #include <lmns.h>
 #include <nuclei.h>
@@ -712,6 +711,13 @@ c
 #include <dftinf.h>
 C
 #include <ibtfun.h>
+
+!#define DEBUG_SHELL_RANGE
+#ifdef DEBUG_SHELL_RANGE
+!radovan: this debug info is used in DIRAC
+      character(kmax) :: shell_range
+#endif
+
 C
       IF(NDER.GT.1) THEN
 c        fixme - this won't scale linearly 
@@ -721,8 +727,19 @@ c        fixme - this won't scale linearly
          END IF
       END IF
 
+#ifdef DEBUG_SHELL_RANGE
+      do ishela = 1, kmax
+         shell_range(ishela:ishela) = ' '
+      end do
+#endif
+
       DO IBL = 1, NBLCNT
       DO ISHELA = IBLCKS(1,IBL),IBLCKS(2,IBL)
+
+#ifdef DEBUG_SHELL_RANGE
+         shell_range(ishela:ishela) = '*'
+#endif
+
          IADR =   KSTRT(ISHELA)+1
          NHKTA  = NHKT(ISHELA)
          KHKTA  = KHKT(ISHELA)
@@ -799,6 +816,11 @@ C        call output(gao(1,1,9),1,nvclen,1,nbast,nvclen,nbast,1,2)
 C        write (2,*) ' zz integrals from BLDFTAOS '
 C        call output(gao(1,1,10),1,nvclen,1,nbast,nvclen,nbast,1,2)
 C     end if
+
+#ifdef DEBUG_SHELL_RANGE
+      write(lupri, *) 'shell range: [', shell_range, ']'
+#endif
+
       RETURN
       END
 C  /* Deck blgetgao */
@@ -1606,8 +1628,10 @@ c               print *,I,'th GSO has contribution from GAO=',INDA
       END
 C
       SUBROUTINE SETUPSOS(GEODRV,DOLND,ITYPE,IOFF)
-CC     sets DFTINF common block up so it is ready for subsequent
+C
+C     Set DFTINF common block up so it is ready for subsequent
 C     execution of GETSOS.
+C
 #include <implicit.h>
 c     Pawel Salek, feb 2001
 c     GEODRV - 0 for just orbital values, 1 for first order orbital
@@ -1621,43 +1645,51 @@ c     do compute derivatives wrt magnetic field ("london" derivatives).
 c     the computed orbitals are ordered as follows:
 c     (orbital values=O, [dO/dx,dO/dy,dO/dz, [d0/dxx, ..]],
 c      [dO/dBx, dO/dBy, dO/dBz])
+C
 #include <dftinf.h>
 #include <inforb.h>
 C
+      CALL QENTER('SETUPSOS')
       NDER = GEODRV
-      IF (NDER.EQ.0) NTYPSO =  1
-      IF (NDER.EQ.1) NTYPSO =  4
-      IF (NDER.EQ.2) NTYPSO = 10
-      IF (NDER.EQ.3) NTYPSO = 20
-      NSO0 = 1
-      NSO1 = 2
-      NSO2 = 5
-      NSO3 = 11
-      IF (DOLND) THEN
-         NTYPSO = NTYPSO + 3
-         NSOB   = NTYPSO - 2 
-         IF (NDER.GT.0) THEN
-            NTYPSO = NTYPSO + 9
-            NSOB1  = NTYPSO - 8 
-         ELSE
-C           assuming NSOB1 not referred.
-            NSOB1 = 0
-         END IF
+      IF (NDER.EQ.0) THEN
+         NTYPSO =  1
+      ELSE IF (NDER.EQ.1) THEN
+         NTYPSO =  4
+      ELSE IF (NDER.EQ.2) THEN
+         NTYPSO = 10
+      ELSE IF (NDER.EQ.3) THEN
+         NTYPSO = 20
       ELSE
-c         assuming NSOB not referred.
-c         assuming NSOB1 not referred?
-         NSOB  = 0
-         NSOB1 = 0
+         CALL QUIT('Input NDER value not implemented.')
       END IF
-c      NOSB1 defined in common block but never used? or is it NSOB1?
-      KSO0  = (NSO0-1)*NBAST + 1
-      KSO1  = (NSO1-1)*NBAST + 1
-      KSO2  = (NSO2-1)*NBAST + 1
-      KSO3  = (NSO3-1)*NBAST + 1
-      KSOB  = (NSOB-1)*NBAST + 1
-      KSOB1 = (NSOB1-1)*NBAST + 1
+      ISO0 = 0
+      ISO1 = 1
+      ISO2 = 4
+      ISO3 = 10
+      IF (DOLND) THEN
+         ISOB   = NTYPSO
+         NTYPSO = NTYPSO + 3
+         ISOB1  = NTYPSO
+         IF (NDER.GT.0) NTYPSO = NTYPSO + 9
+C        ... only allocate if needed
+      ELSE
+         ISOB  = NTYPSO
+         ISOB1 = NTYPSO
+      END IF
+c      NOSB1 defined in common block but never used? or is it ISOB1?
+      KSO0  = ISO0 *NBAST + 1
+      KSO1  = ISO1 *NBAST + 1
+      KSO2  = ISO2 *NBAST + 1
+      KSO3  = ISO3 *NBAST + 1
+      KSOB  = ISOB *NBAST + 1
+      KSOB1 = ISOB1*NBAST + 1
+      NSOB  = ISOB  + 1
+      NSOB1 = ISOB1 + 1
       ITYPE = NTYPSO
-      IOFF(1) = NSOB
+      IOFF(1) = ISOB
+C
+      CALL QEXIT('SETUPSOS')
+      RETURN
       END
 C
       SUBROUTINE zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)

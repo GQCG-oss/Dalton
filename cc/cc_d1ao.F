@@ -34,8 +34,8 @@ C
 #include <single.h>
 C
 C  /* Deck cc_d1ao */
-      SUBROUTINE CC_D1AO(AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,ILLNR,NO,
-     &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
+      SUBROUTINE CC_D1AO(IPDD,R12PRP,AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,
+     &                   ILLNR,NO,FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
 C
 C     Written by Asger Halkier January 1996.
 C
@@ -63,11 +63,12 @@ C
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
+      logical r12prp
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+#include <infind.h> 
 #include <inftap.h>
 #include <blocks.h>
 #include <ccsdinp.h>
@@ -82,8 +83,6 @@ C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*)
       CHARACTER*(*) FNDPTIA, FNDPTAB, FNDPTIJ, FNDPTIA2
-C     CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
-C     CHARACTER*6 FNDPTIA2
       LOGICAL NO
 C
 C----------------------------------------
@@ -109,13 +108,14 @@ C
          KT1AM  = KONEIA + NT1AMX
          KLAMDH = KT1AM  + NT1AMX
          KLAMDP = KLAMDH + NLAMDT
-         KEND1  = KLAMDP + NLAMDT
+         KRMAT  = KLAMDP + NLAMDT 
+         KEND1  = KRMAT  + NMATIJ(1)
          LWRK1  = LWORK  - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            WRITE(LUPRI,*) 'MP2 - Available:', LWORK, 'Needed:', KEND1
             CALL QUIT('Insufficient memory for work '//
-     &           'allocation in CC_D1AO')
+     &           'allocation in CC_D1AO for MP2')
          ENDIF
 C
 C-----------------------------------------------------------------
@@ -127,6 +127,7 @@ C
          CALL DZERO(WORK(KONEIJ),NMATIJ(1))
          CALL DZERO(WORK(KONEIA),NT1AMX)
          CALL DZERO(WORK(KT1AM),NT1AMX)
+         CALL DZERO(WORK(KRMAT),NMATIJ(1))
 C
 C--------------------------------------------------
 C        Set up the relaxation part of the density.
@@ -139,12 +140,62 @@ C
 C
 C-------------------------------------
 C        Add the Hartree-Fock density.
+C        Add R12/A' contribution (Elena)
 C-------------------------------------
 C
+celena
+         IF (R12PRP .AND. (IPDD .EQ. 3 .OR. IPDD .EQ. 5)) THEN
+            lunit = -1
+            IF (IPDD .EQ. 3) THEN
+               call gpopen(lunit,'CCR12YIJ','unknown',' ','unformatted',
+     &                     idummy,.false.)
+             ELSEIF (IPDD .EQ. 5) THEN
+               call gpopen(lunit,'CCR12YIJB','unknown',' ',
+     &                     'unformatted',idummy,.false.)
+             ENDIF
+        
+           do isymaj = 1,nsym
+              isymij = isymaj
+              ncvij = 0
+              do isyma = 1,nsym
+                 isymj = muld2h(isymaj,isyma)
+                 isymi = muld2h(isymij,isymj)
+                 ncvij = ncvij +  nrhf(isyma)*nrhf(isymi)
+              enddo
+            enddo
+        
+            read(lunit)(work(krmat+i-1),i=1,ncvij)
+            call gpclose(lunit,'KEEP')
+
+            DO ISYMI = 1,NSYM
+               ISYMJ = ISYMI
+               DO  J = 1,NRHF(ISYMJ)
+                   DO  I = J+1,NRHF(ISYMI)
+                       NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)
+     *                          *(J - 1) + I
+                       NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)
+     *                          *(I - 1) + J
+                       WORK(KONEIJ + NIJ - 1) = WORK(KONEIJ + NIJ - 1)
+     *                          + work(krmat + nij - 1)
+                       WORK(KONEIJ + NJI - 1) = WORK(KONEIJ + NJI - 1)
+     *                          + work(krmat + nji - 1)
+C
+                   ENDDO   
+               ENDDO   
+            ENDDO    
+         
+         ENDIF
+
+celena
+
          DO 80 ISYM = 1,NSYM
             DO 90 I = 1,NRHF(ISYM)
                NII = IMATIJ(ISYM,ISYM) + NRHF(ISYM)*(I - 1) + I
                WORK(KONEIJ + NII - 1) = WORK(KONEIJ + NII - 1) + TWO
+               if (r12prp .and. (ipdd .eq. 3 .or. ipdd .eq. 5)) then
+                  WORK(KONEIJ + NII - 1) = WORK(KONEIJ + NII - 1) + 
+     &                   1.0d0*work(krmat + nii - 1)              
+               endif
    90       CONTINUE
    80    CONTINUE
 C
@@ -287,9 +338,9 @@ C
          LWRK1  = LWORK  - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
-            CALL QUIT('Insufficient memory for first '//
-     &           'allocation in CC_D1AO')
+            WRITE(LUPRI,*) 'CC_D1AO; Available:',LWORK, 'Needed:',KEND1
+            CALL QUIT(
+     &           'Insufficient memory for first allocation in CC_D1AO')
          ENDIF
 C
 C---------------------------------------------------------
@@ -333,28 +384,28 @@ C
                CALL QUIT('Out of memory in CC_D1AO (CC3)')
             ENDIF
 C
-            LUPTIA = 0
+            LUPTIA = -1
             CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
             IOFF = 1 + NT1AMX*(ILLNR-1)
             CALL GETWA2(LUPTIA,FNDPTIA,WORK(KEND1),IOFF,NT1AMX)
             CALL WCLOSE2(LUPTIA,FNDPTIA,'KEEP')
             CALL DAXPY(NT1AMX,1.0D0,WORK(KEND1),1,WORK(KONEIA),1)
 C
-            LUPTAB = 0
+            LUPTAB = -1
             CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
             IOFF = 1 + NMATAB(1)*(ILLNR-1)
             CALL GETWA2(LUPTAB,FNDPTAB,WORK(KEND1),IOFF,NMATAB(1))
             CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
             CALL DAXPY(NMATAB(1),1.0D0,WORK(KEND1),1,WORK(KONEAB),1)
 C
-            LUPTIJ = 0
+            LUPTIJ = -1
             CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
             IOFF = 1 + NMATIJ(1)*(ILLNR-1)
             CALL GETWA2(LUPTIJ,FNDPTIJ,WORK(KEND1),IOFF,NMATIJ(1))
             CALL WCLOSE2(LUPTIJ,FNDPTIJ,'KEEP')
             CALL DAXPY(NMATIJ(1),1.0D0,WORK(KEND1),1,WORK(KONEIJ),1)
 C
-            LUPTIA2 = 0
+            LUPTIA2 = -1
             CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
             IOFF = 1 + NT1AMX*(ILLNR-1)
             CALL GETWA2(LUPTIA2,FNDPTIA2,WORK(KEND1),IOFF,NT1AMX)
@@ -379,7 +430,7 @@ C----------------------------------------------------------------
 C           Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------------
 C
-            LUSIFC = 0
+            LUSIFC = -1
             CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
             REWIND LUSIFC
@@ -508,7 +559,7 @@ C
 C
       ENDIF
 C
-      CALL CC_DEDIAN(WORK(KDENFO),MODEL,WORK(LWRK2),LWRK2)
+      CALL CC_DEDIAN(WORK(KDENFO),MODEL,WORK(KEND2),LWRK2)
 C
 C-----------------------
 C     write out timings.
@@ -2799,7 +2850,7 @@ C----------------------------------------------
 C     Read MO-coefficients from interface file.
 C----------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -3013,7 +3064,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC

@@ -321,13 +321,13 @@ C--------------------------------
 C     Open files
 C--------------------------------
 C
-      LUCKJD   = 0
-      LUTOC    = 0
-      LUDELD   = 0
-      LUDKBC   = 0
-      LU3VI2   = 0
-      LU3VI    = 0
-      LU3FOP   = 0
+      LUCKJD   = -1
+      LUTOC    = -1
+      LUDELD   = -1
+      LUDKBC   = -1
+      LU3VI2   = -1
+      LU3VI    = -1
+      LU3FOP   = -1
 C
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
       CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -525,13 +525,13 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDRZ  = 0
-      LUCKJDRU  = 0
-      LUDELDRZ  = 0
-      LUDELDRU  = 0
-      LUDKBCRZ  = 0
-      LUDKBCRU  = 0
+      LU3SRTR   = -1
+      LUCKJDRZ  = -1
+      LUCKJDRU  = -1
+      LUDELDRZ  = -1
+      LUDELDRU  = -1
+      LUDKBCRZ  = -1
+      LUDKBCRU  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDRZ,FNCKJDRZ,64,0)
@@ -1837,16 +1837,16 @@ C  /* Deck cc3_amatt3zuocc */
 **************************************************************
 C
       IMPLICIT NONE
-#include<priunit.h>
-#include<ccsdsym.h>
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<dummy.h>
-#include<iratdef.h>
-#include<ccinftap.h>
-#include<ccsdinp.h>
-#include<ccr2rsp.h>
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccinftap.h>
+#include <ccsdinp.h>
+#include <ccr2rsp.h>
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LU3FOP,LU3VI
@@ -2543,7 +2543,7 @@ C
 #include <ccsdinp.h>
 #include <dummy.h>
 #include <ccorb.h>
-#include<ccr2rsp.h>
+#include <ccr2rsp.h>
 #include <ccer1rsp.h>
 C
       CHARACTER*6 FN3VI
@@ -2734,9 +2734,9 @@ C------------------------------------------
 C     Open files (integrals in contraction)
 C------------------------------------------
 C
-      LUTOC    = 0
-      LU3VI    = 0
-      LU3VI2   = 0
+      LUTOC    = -1
+      LU3VI    = -1
+      LU3VI2   = -1
 C
       CALL WOPEN2(LUTOC,FNTOC,64,0)
       CALL WOPEN2(LU3VI,FN3VI,64,0)
@@ -2746,8 +2746,8 @@ C------------------------------------------
 C     Open files (H0 integrals for WBD)
 C------------------------------------------
 C
-      LUCKJD = 0
-      LUDKBC = 0
+      LUCKJD = -1
+      LUDKBC = -1
 C
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
       CALL WOPEN2(LUDKBC,FNDKBC,64,0)
@@ -2756,10 +2756,10 @@ C-----------------------------------------
 C     Open temporary files (H^Z integrals)
 C-----------------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
@@ -2771,8 +2771,8 @@ C     Open temporary files (H^{Z,U} integrals) !double one-index transformed
 C                                              !with first-order amplitudes
 C------------------------------------------
 C
-      LUCKJDR1  = 0
-      LUDKBCR1  = 0
+      LUCKJDR1  = -1
+      LUDKBCR1  = -1
 C
       CALL WOPEN2(LUCKJDR1,FNCKJDR1,64,0)
       CALL WOPEN2(LUDKBCR1,FNDKBCR1,64,0)
@@ -2781,8 +2781,8 @@ C------------------------------------------
 C     Open temporary files (H^U integrals)
 C------------------------------------------
 C
-      LUCKJDR2  = 0
-      LUDKBCR2  = 0
+      LUCKJDR2  = -1
+      LUDKBCR2  = -1
 C
       CALL WOPEN2(LUCKJDR2,FNCKJDR2,64,0)
       CALL WOPEN2(LUDKBCR2,FNDKBCR2,64,0)
@@ -2792,8 +2792,8 @@ C     Open temporary files (H^ZU integrals) !one-index transformed
 C                                           !with second-order amplitudes
 C------------------------------------------
 C
-      LUCKJDR3  = 0
-      LUDKBCR3  = 0
+      LUCKJDR3  = -1
+      LUDKBCR3  = -1
 C
       CALL WOPEN2(LUCKJDR3,FNCKJDR3,64,0)
       CALL WOPEN2(LUDKBCR3,FNDKBCR3,64,0)

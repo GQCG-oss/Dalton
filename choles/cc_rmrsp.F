@@ -36,7 +36,7 @@ C     ----------------------------
 
       IF (LEXIST) THEN
          IF (.NOT. LOPEND) THEN
-            LUSAVE = 0
+            LUSAVE = -1
             CALL GPOPEN(LUSAVE,FILEX,'OLD','SEQUENTIAL','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
          ENDIF

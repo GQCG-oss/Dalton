@@ -110,6 +110,8 @@ C
         CALL FLSHFO(LUPRI)
       END IF
 C
+      ECCSD2 = 0.0D0
+
       CALL DZERO(GRADH2,MXCOOR)
       CALL DZERO(GRADH1,MXCOOR)
       CALL DZERO(GRADFS,MXCOOR)
@@ -125,7 +127,6 @@ C
       TIMDAO = ZERO
       TIRDAO = ZERO
       TIMHE2 = ZERO
-      TIMONE = ZERO
       TIMONE = SECOND()
 C
 C----------------------------------------------------
@@ -508,7 +509,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -1
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND LUSIFC
@@ -614,8 +615,8 @@ CSONIA SONIA
      &       'Insufficient core for allocation in CCPT_GRAD0')
            ENDIF
 C
-           LUPTIA = 0
-           FNDPTIA  = 'DPTIA'
+           LUPTIA  = -1
+           FNDPTIA = 'DPTIA'
            CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
            IOFF = 1
@@ -998,7 +999,7 @@ C
      &                          //CHRNOS(MOD(ISCOOR,100)/10)
      &                          //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-                 CALL CCPRPAO(LABEL,WORK(K1DHAM),IRREP,ISYM,IERR,
+                 CALL CCPRPAO(LABEL,.TRUE.,WORK(K1DHAM),IRREP,ISYM,IERR,
      &                        WORK(KEND2),LWRK2)
 C
                  IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
@@ -1037,7 +1038,7 @@ C     Open file for effective two electron densities:
 C----------------------------------------------------
 C
       LDECH = N2BSTM*2 + 1
-      LUDE = 0
+      LUDE  = -1
       CALL GPOPEN(LUDE,'CCTWODEN','UNKNOWN','DIRECT',
      *            'UNFORMATTED',LDECH,OLDDX)
 C
@@ -1804,6 +1805,7 @@ C--------------------------------------------------------------
 C     calculate reorthonormalization contributions to gradient.
 C--------------------------------------------------------------
 C
+      TIMREO = SECOND()
       DO IATOM = 1, NUCIND
         DO ICOOR  = 1, 3
 C
@@ -1824,7 +1826,7 @@ C
      &                       //CHRNOS(MOD(ISCOOR,100)/10)
      &                       //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-              CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
+              CALL CCPRPAO(LABEL,.TRUE.,WORK(K1DOVL),IRREP,ISYM,IERR,
      &                     WORK(KEND2),LWRK2)
 C
               IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
@@ -1919,7 +1921,7 @@ C
      *              ' calculation completed'
 
         TIMTOT = SECOND() - TIMTOT
-        WRITE(LUPRI,'(A,f10.2))') 'Total time used in CC_GRAD2E:',TIMTOT
+        WRITE(LUPRI,'(A,f10.2)') 'Total time used in CC_GRAD2E:',TIMTOT
 
         IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,'(/6(/A,f10.2))') 

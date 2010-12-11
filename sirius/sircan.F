@@ -147,13 +147,12 @@ C
   275    CONTINUE
 C
          IF (NCONF.GT.1 .AND. .NOT.ONLYFD .AND. IPRCAN .GT. 0) THEN
-            WRITE (LUW4,3040) ISYM, (OCC(JOCC1+I),I=1,NASHI)
-            WRITE (LUW4,3041) OCCSUM
+            WRITE (LUW4,3040) ISYM, OCCSUM, (OCC(JOCC1+I),I=1,NASHI)
          END IF
   300 CONTINUE
 C
- 3040 FORMAT(/' Symmetry',I3,//,(5F14.9))
- 3041 FORMAT(/' Sum =',T15,F14.9)
+ 3040 FORMAT(/' Symmetry',I3,'  Total occupancy this symmetry',F14.9,
+     &      //,(5F14.9))
 C
 C     Print out natural orbitals
 C
@@ -176,7 +175,7 @@ C
      *             WRK(KCINDX),CREF,NCONF)
 C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
       IF (NASHT .EQ. 1 .OR. (.NOT.ONLYFD .AND. NASHT.GT.1)) THEN
-         CALL MOLLAB('NEWORB  ',LUIT1,LUERR)
+         CALL MOLLAB('NEWORB  ',LUIT1,lupri)
          READ (LUIT1)
          CALL GETDAT(LAB123(2),LAB123(3))
          WRITE (LUIT1) LAB123(1),LAB123(2),'(SIRCAN)','NATOCCAC'
@@ -218,7 +217,7 @@ C        get the CREF for NO's calculated by CICTL
 C
          IF (FLAG(47)) THEN
             REWIND LUIT1
-            CALL MOLLAB('STARTVEC',LUIT1,LUERR)
+            CALL MOLLAB('STARTVEC',LUIT1,lupri)
             DO 980 I = 1,(ISTATE-1)
                READ (LUIT1)
   980       CONTINUE
@@ -265,6 +264,7 @@ C
 C
 C -- local variables and constants
 C
+      LOGICAL   DFT_SPINDNS_SAVE
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
       PARAMETER ( THRCAN = 1.0D-10 )
 C
@@ -287,11 +287,14 @@ C
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       DIMENSION DVZRAS(3)
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
 C
       CALL QENTER('SIRCNO')
+      DFT_SPINDNS_SAVE = DFT_SPINDNS
+      DFT_SPINDNS = .FALSE.  ! no spin densities needed for canonical orbitals
       IF (IPRCNO .GE. 2) CALL GETTIM (T0,W0)
       IF (IPRCNO .GE. 1) THEN
          WRITE (LUPRI,'(/2A/)')
@@ -402,6 +405,9 @@ C .. 1.2 .. (FCKMAT)
       KFC    = KWRK1
       KFV    = KFC    + NNORBT
       KWRK2  = KFV    + NNORBT
+      IF (SRHYBR) KWRK2 = KWRK2 + NNORBT
+C     ... space for extra matrix for SRHYBR
+C         but we do not use this matrix in SIRCNO /hjaaj oct 04
       LWRK2  = LWRK   - KWRK2
 C .. 1.3  (2*JACO)
       KBIG   = KWRK2
@@ -488,25 +494,27 @@ C
          NFROI = NFRO(ISYM)
          NISHI = NISH(ISYM)
          NOCCI = NOCC(ISYM)
+         NASHI = NOCCI - NISHI
          IF (NFROI .GT. 0) THEN
-            DO 162 I = 2,NORBI
+C           zero off-diagonal frozen-frozen elements
+            DO I = 2,NFROI
                JSTA = JFC + IROW(I)
-               JEND = JSTA - 1 + MIN(NFROI,I-1)
-               DO 162 J = JSTA,JEND
+               JEND = JSTA + I - 2
+               DO J = JSTA,JEND
                   WRK(J) = D0
-  162       CONTINUE
+               END DO
+            END DO
          END IF
-         DO 167 I = (NISHI+1),NORBI
-            JSTA = JFC + IROW(I)
-            IF (I .LE. NOCCI) THEN
-               JEND = JSTA - 1 + NISHI
-            ELSE
-               JEND = JSTA - 1 + NOCCI
-            END IF
-            DO 164 J = JSTA,JEND
-               WRK(J) = D0
-  164       CONTINUE
-  167    CONTINUE
+         IF (NISHI .GT. 0) THEN
+C           zero inactive-(active+secondary) block
+C           Note that any frozen orbitals are also "inactive".
+            CALL DSPZERO(NORBI,WRK(JFC),1,NISHI,NISHI+1,NORBI)
+C           call dspzero(n,asp, nrsta,nrend, ncsta,ncend)
+         END IF
+         IF (NASHI .GT. 0) THEN
+C           zero active-secondary block
+            CALL DSPZERO(NORBI,WRK(JFC),NISHI+1,NOCCI,NOCCI+1,NORBI)
+         END IF
 C
 C
          CALL JACO(WRK(JFC),WRK(JCMO2),NORBI,NORBI,NBASI,
@@ -521,16 +529,15 @@ C        skip frozen orbitals
 C
          JCMO2 = JCMO2 + NFROI*NBASI
          JCMO  = 1 + ICMO(ISYM) + NFROI*NBASI
-         NISHJ = NISHI - NFROI
-         IF (NISHJ .GT. 1) THEN
+         NISHI_NF = NISHI - NFROI
+         IF (NISHI_NF .GT. 1) THEN
 C           order inactive orbitals which are not frozen
             CALL ORDRSS(WRK(JCMO2),WRK(KBIG+NFROI),
-     &                  ISSMO(IORBI+NFROI+1),NISHJ,NBASI)
-            CALL DCOPY(NISHJ*NBASI,WRK(JCMO2),1,CMO(JCMO),1)
+     &                  ISSMO(IORBI+NFROI+1),NISHI_NF,NBASI)
+            CALL DCOPY(NISHI_NF*NBASI,WRK(JCMO2),1,CMO(JCMO),1)
          END IF
-         JCMO2 = JCMO2 + NISHJ*NBASI
-         JCMO  = JCMO  + NISHJ*NBASI
-         NASHI = NOCCI - NISHI
+         JCMO2 = JCMO2 + NISHI_NF*NBASI
+         JCMO  = JCMO  + NISHI_NF*NBASI
          IF (.NOT. GETOCC .AND. .NOT. TRTOCO .AND.
      &       NASHI .GT. 1 .AND. .NOT. SUPSYM) THEN
 C           order active orbitals
@@ -737,6 +744,7 @@ C        ... redo JWOP in case ISSMO should have changed in ORDRSS /hjaaj aug 04
          CALL GETTIM (TEND,WEND)
          WRITE (LUPRI,'(/A,F9.2)') ' CPU time used in SIRCNO :',TEND-T0
       END IF
+      DFT_SPINDNS = DFT_SPINDNS_SAVE
       CALL QEXIT('SIRCNO')
       RETURN
 C
@@ -922,7 +930,7 @@ C            for non-zero diagonal elements.
      &                  ISSMO(JORB),NASHI,NASHT)
   420    CONTINUE
          IF (SUPSYM) CALL AVEORD()
-C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
+C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
          IF (MOISNO) THEN
             DO 430 I = 1,NASHT
   430          IF (UNO(I,I) .NE. D1) MOISNO = .FALSE.
@@ -930,14 +938,14 @@ C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
                WRITE(LUPRI,'(/A)')
      *           ' GETNO: The natural orbitals are reordered.'
             ENDIF
-         END IF
+        END IF
       END IF
       IF (IPRINT .GE. 1) THEN
          WRITE (LUPRI,'(//A/A)')
      *      ' Occupancies of natural orbitals',
      *      ' -------------------------------'
          IF (SUPSYM .AND. .NOT. NOAVER) WRITE (LUPRI,'(/A)')
-     *      ' NOTE: degenerate orbitals are averaged'
+     *      ' NOTE: degenerate orbitals have been averaged.'
          DO 520 ISYM = 1,NSYM
             NOCCI = NOCC(ISYM)
             IF (NOCCI .EQ. 0) THEN
@@ -947,21 +955,22 @@ C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
                IOCCI = IOCC(ISYM)
                IORBI = IORB(ISYM)
                IF (SUPSYM) THEN
-                  WRITE (LUPRI,3045) ISYM,
+                  WRITE (LUPRI,3045) ISYM,OCCSUM,
      &               (OCCNO(IOCCI+I),ISSMO(IORBI+I),I=1,NOCCI)
                ELSE
-                  WRITE (LUPRI,3040) ISYM,
+                  WRITE (LUPRI,3040) ISYM,OCCSUM,
      &               (OCCNO(IOCCI+I),I=1,NOCCI)
                END IF
-               WRITE (LUPRI,3041) OCCSUM
             END IF
   520    CONTINUE
-C  HJAAJ MAERKE 921106: if (supsym) print also sorted after supsym
+C  HJAAJ MAERKE TODO 921106: if (supsym) print also sorted after supsym
+C  HJAAJ MAERKE TODO 071108: if (supsym) also OCCSUM for each supersym
       END IF
- 3030 FORMAT(/' Symmetry',I3,//,'   No occupied orbitals')
- 3040 FORMAT(/' Symmetry',I3,//,(5F14.9))
- 3041 FORMAT(/' Sum =',T15,F14.9)
+ 3030 FORMAT(/' Symmetry',I3,' -- No occupied orbitals')
+ 3040 FORMAT(/' Symmetry',I3,' -- Total occupation in this symmetry is',
+     &          F14.9,//,(5F14.9))
  3045 FORMAT(/' Symmetry',I3,' (supersymmetry in parenthesis)',
+     &       /' -- Total occupation in this symmetry is',F14.9,
      *       //,4(F14.9,' (',I2,')'))
       IF (IPRINT .GT. 5 .AND. NASHT .GT. 0 .AND. .NOT.MOISNO) THEN
          DO 620 ISYM = 1,NSYM

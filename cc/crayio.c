@@ -11,40 +11,6 @@ C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
 C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
 C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-*/
-/*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
 C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
@@ -66,47 +32,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
-/*
-       Copyright (c) 2001 by the authors of Dalton (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       "Dalton, a molecular electronic structure program, Release 1.2
-       (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-       J. Olsen, K. Ruud, H. Agren, A.A. Auer, K.L. Bak, V. Bakken,
-       O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-       T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-       H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-       H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-       T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-       B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-       and O. Vahtras"
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dalton,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dalton-admin@kjemi.uio.no
-    
-       For information on how to get a licence see:
-          http://www.kjemi.uio.no/software/dalton/dalton.html
-*/
-
 /* 
-   this version of CC was generated from version used 1998/99 on
+   This version of CC was generated from version used 1998/99 on
    jensen by a merge with the version used on Linux PCs
    Christof Haettig, April 1999
 
    fixed for 64 bit mode on IBM AIX with VAR_INT64 and SYS_AIX set
    Christof Haettig, Mar 19 2003
+   
+   General interfacing with fortran code compiled with non-default
+   integer size done by Pawel Salek, Feb 2008.
 */
 
 /* Simulate the cray 64 bit word addressable I/O routines and
@@ -124,6 +59,7 @@ C
 
    Currently the I/O is syncronous and unbuffered */
 #define _BSD_SOURCE 1
+#define _LARGEFILE64_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -135,49 +71,50 @@ C
 
 #define max_file 99
 
-/* for machines, which don´t have lseek64, we overwrite here
-   lseek64 by lseek and off64_t by off_t
+/* define here the integer type, which has the same lengths
+   as the integers used under fortran */
+#if defined (VAR_INT64) || defined (SYS_AIX)
+#include <stdint.h>
+typedef int64_t INTEGER;
+#else
+typedef int INTEGER;
+#endif
+
+/* Mark Fortran-callable API with FSYM */
+#include "FSYMdef.h"
+
+/* For propertiary machines, which have no lseek64() because their
+   developers though that 64-bit lseek should be good enough for
+   everybody, map the symbols to the old API that makes so guarantees
+   about file pointer size - and hope it works.
+
+   This problem has been reported for many other programs, for eg. OS
+   X and HP/UX. Web searching engines are your friends.
 */
-#if defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_HPUX)
+#if defined (HAVE_NO_LSEEK64)
 #define lseek64 lseek
 #define off64_t off_t
 #endif
 
-/* define here the integer type, which has the same lengths
-   as the integers used under fortran */
-#if defined (VAR_INT64) && defined (SYS_AIX)
-#define INTEGER long
-#else
-#define INTEGER int
-#endif
-
+/* Disable old cruft. */
+#if defined(OLD_CRUFT)
 #if defined (SYS_FUJITSU)
 #ifdef __uxp__
 #define L_XTND SEEK_END
 #define lseek64 lseek
 #define _LLTYPES
 #endif
-#endif
 
-/* for some machines we have to add an underscore to the routine names:  */
-#if defined(SYS_AIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) ||  defined (SYS_SUN) || defined(SYS_HPUX)
-#define WOPEN wopen_
-#define WCLOSE wclose_
-#define GETWA getwa_
-#define PUTWA putwa_
-#else
-#define WOPEN wopen
-#define WCLOSE wclose
-#define GETWA getwa
-#define PUTWA putwa
-#endif
+#endif /* OLD_CRUFT */
 
-static INTEGER first_call = 1;   /* need to do stuff on the first call */
+#endif 
+
+static int first_call = 1;   /* need to do stuff on the first call */
 
 static struct w_file {
   int fds;                     /* file descriptor */
-  long long length;            /* file length in bytes */
-  long long position;          /* current file position in bytes a la lseek */
+  off64_t length;              /* file length in bytes */
+  off64_t position;            /* current file position in bytes a la lseek */
   char *path;                  /* file name */
   INTEGER stats;                   /* boolean flag to collect statistics */
   double words_write;          /* total no. of words written */
@@ -190,10 +127,10 @@ static struct w_file {
   INTEGER seek_write;              /* no. of seeks on write */
 } file_array[max_file];
 
-void walltm_(ai)
-    double *ai;
-/* return ai with the wall clock time in seconds as a double.
-   it might be accurate to about 0.01s at best */
+/** returns ai with the wall clock time in seconds as a double.  The
+    actual accuracy is OS-dependent. */
+void
+FSYM(walltm)(double *ai)
 {
   struct timeval tp;
   struct timezone tzp;
@@ -202,8 +139,9 @@ void walltm_(ai)
   *ai = (double) tp.tv_sec + ((double) tp.tv_usec) * 1.0e-6;
 }
 
-static INTEGER CheckUnit(unit)
-     INTEGER unit;
+
+static INTEGER
+isUnitValidAndOpen(INTEGER unit)
 {
   if ( (unit < 0) || (unit >= max_file) )
     return -1;
@@ -214,26 +152,20 @@ static INTEGER CheckUnit(unit)
   return 0;
 }
 
-static INTEGER CheckAddr(addr)
-     INTEGER addr;
+static INTEGER
+isAddressValid(INTEGER addr)
 {
-  if (addr <= 0)
-    return -4;
-  else
-    return 0;
+  return (addr <= 0) ?  -4 : 0;
 }
 
-static INTEGER CheckCount(count)
-     INTEGER count;
+static INTEGER
+isCountValid(INTEGER count)
 {
-  if (count < 0)
-    return -4;
-  else
-    return 0;
+  return (count < 0) ? -4 : 0;
 }
 
-void InitFileStats(file)
-     struct w_file *file;
+static void
+InitFileStats(struct w_file* file)
 {
   file->stats = 1;
   file->words_write = 0.0e0;
@@ -246,14 +178,11 @@ void InitFileStats(file)
   file->seek_write = 0;
 }
 
-void PrintFileStats(unit, file)
-     struct w_file *file;
-     INTEGER unit;
+static void
+PrintFileStats(INTEGER unit, const struct w_file *file)
 {
   double ave_read=0.0e0, ave_write=0.0e0;
   double rate_read=0.0e0, rate_write=0.0e0;
-
-  (void) fflush(stdout);
 
   if (file->n_read) {
     ave_read = file->words_read / (double) file->n_read;
@@ -267,29 +196,31 @@ void PrintFileStats(unit, file)
       rate_write = file->words_write / (1000000.0e0 * file->time_write);
   }
 
-  (void) fflush(stdout);
-  (void) fprintf(stderr,"CRAYIO: Statistics for unit %d, file '%s', length=%ld bytes.\n",
-		 unit, file->path, file->length);
-  (void) fprintf(stderr,"CRAYIO: oper :  #req.  :  #seek  :   #words  :");
-  (void) fprintf(stderr," #w/#req : time(s) :  MW/s \n");
-  (void) fprintf(stderr,"CRAYIO: read : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
-		 file->n_read, file->seek_read, (INTEGER) file->words_read, 
-		 (INTEGER) ave_read, file->time_read, rate_read);
-  (void) fprintf(stderr,"CRAYIO:write : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
-		 file->n_write, file->seek_write, (INTEGER) file->words_write, 
-		 (INTEGER) ave_write, file->time_write, rate_write);
+  fflush(stdout);
+  fprintf(stderr,"CRAYIO: Statistics for unit %d, file '%s', length=%lu bytes.\n",
+          unit, file->path, (unsigned long)file->length);
+  fprintf(stderr,
+          "CRAYIO: oper :  #req.  :  #seek  :   #words  :"
+          " #w/#req : time(s) :  MW/s \n"
+          "CRAYIO: read : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
+          file->n_read, file->seek_read, (int) file->words_read, 
+          (int) ave_read, file->time_read, rate_read);
+  fprintf(stderr,"CRAYIO:write : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
+          file->n_write, file->seek_write, (int) file->words_write, 
+          (int) ave_write, file->time_write, rate_write);
 }
 
-void InitFileData(file)
-     struct w_file *file;
+static void
+InitFileData(struct w_file *file)
 {
   file->fds = -1;
-  file->length = (long long) -1;
-  file->path = (char *) NULL;
-  file->position = (long long) -1;
+  file->length = (off64_t) -1;
+  file->path = NULL;
+  file->position = (off64_t) -1;
 }
 
-void FirstCall()
+static void
+FirstCall()
      /* Initialization on first call to anything */
 {
   INTEGER i;
@@ -297,22 +228,21 @@ void FirstCall()
   for (i=0; i<max_file; i++) {
 
     InitFileData(&file_array[i]);
-
     InitFileStats(&file_array[i]);
   }
 
   first_call = 0;
 }
 
-void WCLOSE(unit, ierr)
-     INTEGER *unit, *ierr;
+void
+FSYM(wclose)(const INTEGER *unit, INTEGER *ierr)
 {
   struct w_file *file;
 
   if (first_call)
     FirstCall();
 
-  if (*ierr = CheckUnit(*unit))
+  if (*ierr = isUnitValidAndOpen(*unit))
     return;
 
   file = file_array + *unit;
@@ -328,9 +258,8 @@ void WCLOSE(unit, ierr)
 }
 
 /* ARGSUSED */
-void WOPEN(unit, name, lennam, blocks, stats, ierr)
-     INTEGER *unit, *lennam, *blocks, *stats, *ierr;
-     char *name;
+void FSYM(wopen)(const INTEGER *unit, const char *name, const INTEGER *lennam,
+		 const INTEGER* blocks, const INTEGER *stats, INTEGER *ierr)
 {
   struct w_file *file;
 
@@ -369,25 +298,25 @@ void WOPEN(unit, name, lennam, blocks, stats, ierr)
 
 }
 
-void GETWA(unit, result, addr, count, ierr)
-     INTEGER *unit, *addr, *count, *ierr;
-     double *result;
+void
+FSYM(getwa)(const INTEGER *unit, double *result, const INTEGER *addr, 
+	    const INTEGER *count, INTEGER *ierr)
 {
-  long nbytes, con2;
-  long long where, con1;
+  size_t nbytes, con2;
+  off64_t where, con1;
   double start, end;
   struct w_file *file;
 
   if (first_call)
     FirstCall();
 
-  if (*ierr = CheckUnit(*unit))
+  if (*ierr = isUnitValidAndOpen(*unit))
     return;
 
-  if (*ierr = CheckAddr(*addr))
+  if (*ierr = isAddressValid(*addr))
     return;
 
-  if (*ierr = CheckCount(*count))
+  if (*ierr = isCountValid(*count))
     return;
 
   file = file_array + *unit;
@@ -395,17 +324,19 @@ void GETWA(unit, result, addr, count, ierr)
   con1 = *addr;
   con2 = *count;
 
-  nbytes = con2 * (long) 8;
-  where = (con1 - (long long) 1) * (long long) 8;
+  nbytes = con2 * 8;
+  where = (con1 - (off64_t) 1) * (off64_t) 8;
 
   if ( (where+nbytes) > file->length ) {
     *ierr = -5;
-    (void) fflush(stdout);
-    (void) fprintf(stderr,"GETWA: where %ld \n",where);
-    (void) fprintf(stderr,"GETWA: nbytes %ld \n",nbytes);
-    (void) fprintf(stderr,"GETWA: file->length %ld \n",file->length);
-    (void) PrintFileStats(*unit, file);
-    (void) fflush(stdout);
+    fflush(stdout);
+    fprintf(stderr,
+            "GETWA: where %lu \n"
+            "GETWA: nbytes %lu \n"
+            "GETWA: file->length %lu \n",
+            (unsigned long)where, (unsigned long)nbytes,
+	    (unsigned long)file->length);
+    PrintFileStats(*unit, file);
     return;
   }
 
@@ -414,13 +345,13 @@ void GETWA(unit, result, addr, count, ierr)
 
   if (where != file->position) {
     file->seek_read++;
-    if ( (file->position = lseek64(file->fds, (off64_t) where, SEEK_SET)) == (long long) -1) {
+    if ( (file->position = lseek64(file->fds, where, SEEK_SET)) == (off64_t) -1) {
       *ierr = -4;
       return;
     }
   }
 
-  if ((long) read(file->fds, (char *) result, (long) nbytes) != nbytes) {
+  if ( read(file->fds, result, nbytes) != nbytes) {
     *ierr = -6;
     return;
   }
@@ -437,26 +368,25 @@ void GETWA(unit, result, addr, count, ierr)
   *ierr = 0;
 }
   
-void PUTWA(unit, source, addr, count, ierr)
-     INTEGER *unit, *addr, *count, *ierr;
-     double *source;
+void
+FSYM(putwa)(const INTEGER *unit, const double *source, const INTEGER *addr,
+	    const INTEGER *count, INTEGER *ierr)
 {
   size_t nbytes,con2;
-  long long where, con1;
+  off64_t where, con1;
   double start, end;
-/*  long long jerr; */
   struct w_file *file;
 
   if (first_call)
     FirstCall();
 
-  if ( *ierr = CheckUnit(*unit))
+  if ( *ierr = isUnitValidAndOpen(*unit))
     return;
 
-  if (*ierr = CheckAddr(*addr))
+  if (*ierr = isAddressValid(*addr))
     return;
 
-  if (*ierr = CheckCount(*count))
+  if (*ierr = isCountValid(*count))
     return;
 
   file = file_array + *unit;
@@ -464,21 +394,21 @@ void PUTWA(unit, source, addr, count, ierr)
   con1 = *addr;
   con2 = *count;
 
-  nbytes = con2 * (long) 8;
-  where = (con1 - (long long) 1) * (long long) 8;
+  nbytes = con2 * 8;
+  where = (con1 - (off64_t) 1) * (off64_t) 8;
   
   if (file->stats)
     walltm_(&start);
 
   if (where != file->position) {
     file->seek_write++;
-    if ( (file->position = lseek64(file->fds, (off64_t) where, SEEK_SET)) == (long long) -1) {
+    if ( (file->position = lseek64(file->fds, where, SEEK_SET)) == (off64_t) -1) {
       *ierr = -4;
       return;
     }
   }
 
-  if ( (*ierr=write(file->fds, (char *) source, nbytes)) != nbytes) {
+  if ( (*ierr=write(file->fds, source, nbytes)) != nbytes) {
     printf("\n write returned %d \n",*ierr);
     *ierr = -6;
     return;
@@ -499,4 +429,3 @@ void PUTWA(unit, source, addr, count, ierr)
 
   *ierr = 0;
 }
-

@@ -56,6 +56,7 @@ C
          WORD1 = WORD
  100     CONTINUE
          READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
             GOTO 100
@@ -199,6 +200,7 @@ C
 #include <abainf.h>
 #include <magone.h>
 C
+
       MPRINT = IPRDEF
       MSKIP  = .NOT.(SHIELD .OR. MAGSUS .OR. SPNSPN .OR. VCD .OR.
      &               MASSVE .OR. DARWIN .OR. SPINRO .OR. MOLGFA)
@@ -213,7 +215,7 @@ C
       MELFLD = (SPINRO .AND. NOLOND)
       MQUADR = QUADRU
       MSECND = SECNDM
-      MOCTUP = OCTUPO
+      MTHIRD = THIRDM
       MNQCC  = NQCC
       ALLCOM = .NOT. DODRCT
       MPQUAD = 40
@@ -228,6 +230,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxmom.h>
+#include "maxorb.h"
 #include <maxaqn.h>
       PARAMETER (D0 = 0.D0)
       LOGICAL PASS
@@ -237,14 +240,14 @@ C
 #include <nuclei.h>
 #include <abainf.h>
 #include <inforb.h>
+#include "symmet.h"
 #include <dorps.h>
 #include <spnout.h>
 #include <relcor.h>
 #include <dipole.h>
-#include <maxorb.h>
-#include <symmet.h>
-      IF (MSKIP .OR. ((.NOT. DODSO) .AND. (SST
-     &          .AND. .NOT. (NST .OR. MDIASU)))) RETURN
+#include <pcmlog.h>
+      IF (MSKIP) RETURN
+      IF (.NOT.DODSO .AND. (SST .AND. .NOT.(NST .OR. MDIASU))) RETURN
       CALL QENTER('MAGINT')
       IF (MPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (MPRINT .GT. 2) CALL TITLER('Output from MAGINT','*',103)
@@ -258,20 +261,34 @@ C     **************************************************************
 C
       KDENMA = 1
       KFOCMA = KDENMA + NNBASX
-      KLAST  = KFOCMA + NNBASX
+      KDSO   = KFOCMA + NNBASX
+      KFSO   = KDSO   + NNBASX
+      KLAST  = KFSO   + NNBASX
       LWRK   = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('MAGINT',' ',KLAST,LWORK)
 C 
-      CALL DZERO(WORK(KDENMA),NNBASX)
-      CALL DZERO(WORK(KFOCMA),NNBASX)
-      CALL DSOFSO(WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,MPRINT,
+      CALL DZERO(WORK(KDSO),NNBASX)
+      CALL DZERO(WORK(KFSO),NNBASX)
+      CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,MPRINT,
      &            MNODC,MNODV)
+      CALL DSYM1(WORK(KDENMA),WORK(KFOCMA),WORK(KDSO),WORK(KFSO),
+     &           .TRUE.,NBAST,MPRINT)
+      KLAST = KDSO
+      LWRK = LWRK + 2*NNBASX
 C
 C     We always start by calculating the dipole moment
 C
       NCOMP = 3
       CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &            MPRINT,MNODC,MNODV,'DIPLEN ',NCOMP)
+C
+C     Local-field corrected dipole moment
+C
+      IF(PCM.AND.LOCFLD) THEN
+         NCOMP = 3
+         CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
+     &        MPRINT,MNODC,MNODV,'DIPLOC ',NCOMP)
+      END IF
 C
       IF (NST) THEN
          IF (NOLOND) THEN
@@ -294,10 +311,10 @@ C
          IF (SPINRO .AND. .NOT. NOLOND) THEN
             WORD = 'NSTCGOS'
             NDEGMX = 1
-            DO 13 I = 1, NUCIND
+            DO I = 1, NUCIND
                NDEG = NUCDEG(I)
                IF (NDEG .GT. NDEGMX) NDEGMX = NDEG
- 13         CONTINUE
+            END DO
             NCOMP = 9*NDEGMX
             CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),
      &                  LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
@@ -382,7 +399,7 @@ c        identical results.
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &               MPRINT,MNODC,MNODV,WORD,NCOMP)
       END IF
-      IF (MOCTUP) THEN
+      IF (MTHIRD) THEN
          WORD = 'THRMOM '
          NCOMP = 10
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
@@ -436,29 +453,28 @@ C
 C
 #include <ibtfun.h>       
 C
+      CALL QENTER('MAGDRV')
+C
       MAXTYP = 3*MXCOOR
       IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
-      CALL QENTER('MAGDRV')
-      KSTHMA = 1
-      KEXPVA = KSTHMA + NNBASX*NCOMP
+      KEXPVA = 1
       KINTRP = KEXPVA + NCOMP
       KINTAD = KINTRP + (9*MXCENT**2+1)/IRAT
-      KOVERL = KINTAD + (9*MXCENT**2+1)/IRAT
-      KFMOVL = KOVERL + 6*NNBASX
+      KFMOVL = KINTAD + (9*MXCENT**2+1)/IRAT
       KLAST  = KFMOVL + 6
       LWRK   = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('MAGDRV',' ',KLAST,LWORK)
-      CALL MAGDR1(SPNDSO,WORK(KSTHMA),DENMAT,FOCMAT,
+      CALL MAGDR1(SPNDSO,DENMAT,FOCMAT,
      &            WORK(KEXPVA),WORK(KLAST),LWRK,IPRINT,NODC,NODV,
      &            NNBASX,NNBAST,NBAST,WORD,WORK(KINTRP),WORK(KINTAD),
-     &            WORK(KOVERL),WORK(KFMOVL),NCOMP)
+     &            WORK(KFMOVL),NCOMP)
       CALL QEXIT('MAGDRV')
       RETURN
       END
 C  /* Deck magdr1 */
-      SUBROUTINE MAGDR1(SPNDSO,STHMAT,DENMAT,FOCMAT,EXPVAL,WORK,LWORK,
+      SUBROUTINE MAGDR1(SPNDSO,DENMAT,FOCMAT,EXPVAL,WORK,LWORK,
      &                  IPRINT,NODC,NODV,NNBASX,NNBAST,NBAST,WORD,
-     &                  INTREP,INTADR,OVERLP,FMOVL,NCOMP)
+     &                  INTREP,INTADR,FMOVL,NCOMP)
 C
 C     K.Ruud, April 1992
 C
@@ -476,12 +492,12 @@ C
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TMAT
-      LOGICAL NODC, NODV
+      LOGICAL NODC, NODV, EXP1VL
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
-      DIMENSION STHMAT(NNBASX,NCOMP), SPNDSO(*),
+      DIMENSION SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
-     &          FOCMAT(NNBASX), EXPVAL(NCOMP), OVERLP(NNBASX,6),
-     &          FMOVL(6),WORK(LWORK)
+     &          FOCMAT(NNBASX), EXPVAL(NCOMP), FMOVL(6),WORK(LWORK)
+#include <gnrinf.h>
 #include <abainf.h>
 #include <efield.h>
 #include <cbisol.h>
@@ -490,90 +506,53 @@ C
 #include <onecom.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <qmmm.h>
+cDM added to pass vectors to MAGPCMSEC
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+cDM
 C
       SIGN = 1.0D0
+      EXP1VL = .TRUE.
+      KCOMP = 0
       IF (IPRINT .GT. 2) CALL TITLER('Output form MAGDR1','*',103)
-C
-C     Get the magnetic integrals
-C
-      IF ((WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ')
-     &     .AND. .NOT. ALLCOM) THEN
-         NPATOM = 2
-         DO 60 I = 1, NUCIND
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,
-     &            INTREP,INTADR,I,.FALSE.,NPATOM,.TRUE.,IPRINT)
-C
-            IF (IPRINT .GT. 5) THEN
-               DO 101 ICOMP = 1, NCOMP
-                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &                  INTREP(ICOMP) + 1
-                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 101           CONTINUE
-            END IF
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                  IPRINT,WORD,LABINT,SIGN)
- 60      CONTINUE
+      IF (WORD .EQ. 'DSO    ') THEN
+         NPATOM = 1
+         CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &               EXP1VL,DENMAT,IPRINT)
+         CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,
+     &               IPRINT,WORD,LABINT,SIGN)
       ELSE IF (WORD .EQ. 'NSTCGOS') THEN
          NPATOM = 2
-         DO 61 I = 1, NUCIND
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,
-     &            INTREP,INTADR,I,.FALSE.,NPATOM,.TRUE.,IPRINT)
-C
-            IF (IPRINT .GT. 5) THEN
-               DO 102 ICOMP = 1, NCOMP
-                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &                  INTREP(ICOMP) + 1
-                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 102           CONTINUE
-            END IF
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
+         DO I = 1, NUCIND
+            KCOMP = 0
+            CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &                  INTADR,I,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &                  EXP1VL,DENMAT,IPRINT)
+            CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,
      &                  IPRINT,WORD,LABINT,SIGN)
- 61      CONTINUE
-      ELSE IF (WORD .EQ. 'DSO    ') THEN
-         IF (ALLCOM) THEN
-            NPATOM = 1
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &                  INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
-            IF (IPRINT .GE. 15) THEN
-               DO ICOMP = 1, NCOMP
-                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &                 INTREP(ICOMP) + 1
-                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
-               END DO
-            END IF
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                  IPRINT,WORD,LABINT,SIGN)
-         ELSE
-            CALL GET1DS(STHMAT,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
-     &                  INTADR,SPNDSO,DENMAT,EXPVAL,MPQUAD,IPRINT)
-         END IF
+         END DO
       ELSE
          NPATOM = 0
          IF (WORD .EQ. 'DSUSCGM') THEN
-            CALL GET1IN(STHMAT,'DSUSCGO',NCOMP,WORK(1),LWORK,LABINT,
-     &           INTREP,INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
+            CALL GET1IN(DUMMY,'DSUSCGO',KCOMP,WORK(1),LWORK,LABINT,
+     &           INTREP,INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &           EXP1VL,DENMAT,IPRINT)
          ELSE
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
-         END IF
-         IF (IPRINT .GE. 15) THEN
-            DO 140 ICOMP = 1, NCOMP
-               CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-               WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &               INTREP(ICOMP) + 1
-               CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 140        CONTINUE
+            CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &                  INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &                  EXP1VL,DENMAT,IPRINT)
          END IF
 C
 C     Add contribution from electric field, KRu, Aug.-93
 C
          IF (NFIELD .GT. 0 .AND. (WORD .EQ. 'DIASUS ')) THEN
-            NCOMP = 6
-            KTMAT = 1
-            LWRK  = KTMAT + NNBAST*NCOMP
+            NCOMP  = 6
+            KEXPT  = 1
+            NPATOM = 0
+            LWRK  = KEXPT + NCOMP
             IF (LWRK .GT. LWORK) CALL STOPIT('MAGDR1',' ',LWRK,LWORK)
             LLEFT = LWORK - LWRK + 1
             DO 555 IFIELD = 1, NFIELD
@@ -591,66 +570,110 @@ C
                      CALL QUIT('Illegal field type for '//
      &                         'magnetizabileties')
                   END IF
-                  CALL GET1PR(WORK(KTMAT),'CM2    ',NCOMP,'TRIANG',
-     &                        .TRUE.,WORK(LWRK),LLEFT,IDUMMY,IPRINT)
-                  CALL DAXPY(NNBASX*NCOMP,EFIELD(IFIELD),WORK(KTMAT),1,
-     &                       STHMAT,1)
+                  KCOMP = 0
+                  CALL GET1IN(DUMMY,'CM2    ',KCOMP,WORK(LWRK),LLEFT,
+     &                        LABINT,INTREP,INTADR,MPQUAD,.FALSE.,
+     &                        NPATOM,.TRUE.,WORK(KEXPT),EXP1VL,DENMAT,
+     &                        IPRINT)
+                  CALL DAXPY(KCOMP,EFIELD(IFIELD),WORK(KEXPT),1,
+     &                       EXPVAL,1)
                END IF
  555        CONTINUE
          END IF
 C
-         IF (SOLVNT .AND. (WORD .EQ. 'DIASUS')) THEN
+         IF (QM3 .AND. (WORD .EQ. 'DIASUS')) THEN
             NCOMP  = 6
-	    KDERMA = 1
-            LWRK   = KDERMA + NNBASX*NCOMP
-            IF (LWRK .GT. LWORK) CALL STOPIT('MAGDR1','SOLVENT',
-     &                                       LWRK,LWORK)
-            LLEFT = LWORK - LWRK + 1
-            CALL MAGSOL(WORK(KDERMA),NCOMP,IPRINT,IPRINT,
-     &                  WORK(LWRK),LLEFT)
-	    CALL DAXPY(NNBASX*NCOMP,D1,WORK(KDERMA),1,STHMAT,1)
+            KSLEXP = 1
+            KLAST  = KSLEXP + NCOMP
+            LWRK   = LWORK - KLAST + 1
+            CALL QM3B2(WORK(KSLEXP),DENMAT,WORK(KLAST),LWRK)
+            IF (IPRINT .GT. 5) THEN
+               CALL AROUND('Second-order QM/MM contribution')
+               CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
+            END IF
+            CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
          END IF
 C
-         IF (IPRINT .GT. 5) THEN
-            DO 100 ICOMP = 1, NCOMP
-               CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-               WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &               INTREP(ICOMP) + 1
-               CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 100        CONTINUE
+         IF (QMMM .AND. (WORD .EQ. 'DIASUS')) THEN
+            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+            NCOMP  = 6
+            KSLEXP = 1
+            KLAST  = KSLEXP + NCOMP
+            LWRK   = LWORK - KLAST + 1
+            CALL QMMMB2(WORK(KSLEXP),DENMAT,WORK(KLAST),LWRK,IPRINT)
+            IF (IPRINT .GT. 5) THEN
+               CALL AROUND('Second-order QM/MM contribution')
+               CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
+            END IF
+            CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+            IF (IPQMMM .GT. 1) CALL TIMER('QMMMB2',TIMSTR,TIMEND)
          END IF
-         CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &               IPRINT,WORD,LABINT,SIGN)
+C
+         IF ((SOLVNT.OR.PCM) .AND. (WORD .EQ. 'DIASUS')) THEN
+            NCOMP  = 6
+            IF (SOLVNT) THEN
+cDM Onsager solvent model contributions
+               KSLEXP = 1
+               KSLSPH = KSLEXP + NCOMP
+               KSLCAR = KSLSPH + (2*LCAVMX + 1)*NCOMP
+               KGLM   = KSLCAR + (LCAVMX + 1)*(LCAVMX + 2)*NCOMP/2
+               KTLM   = KGLM   + LMTOT
+               KTRAMT = KTLM   + LMTOT
+               KLAST  =KTRAMT+(LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2
+               IF (KLAST .GT. LWORK) CALL STOPIT('MAGDR1','MAGSOLEXP',
+     &                                           KLAST,LWORK)
+               LWRK   = LWORK - KLAST + 1
+               CALL MAGSOLEXP(WORK(KSLEXP),WORK(KSLSPH),WORK(KSLCAR),
+     &                        INTREP,INTADR,LABINT,WORK(KGLM),
+     &                        WORK(KTLM),WORK(KTRAMT),IPRINT,
+     &                        DENMAT,WORK(KLAST),LWRK)
+            ELSE 
+cDM IEF-PCM solvent model contributions
+               CALL QUIT('PCM magnetizabilities not rewritten for new'//
+     &                   'integral structure')
+               KDERMA = 1
+               KPOTPR = KDERMA +  NNBASX*NCOMP
+               KQSEPR = KPOTPR + NTSIRR*NCOMP
+               LWRK = KQSEPR + NTSIRR*NCOMP
+               LLEFT=LWORK - LWRK + 1
+
+               CALL MAGPCMSEC(WORK(KDERMA),NCOMP,IPRINT,IPRINT,
+     &              WORK(LWRK),LLEFT,DENMAT,WORK(KPOTPR),WORK(KQSEPR))
+            END IF
+C
+            IF (IPRINT.GT.5) THEN
+               CALL AROUND('Second-order solvent contribution')
+               CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
+            END IF
+
+cDM add the solvent contribution to perturbed Fock matrix 
+	    CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+C
+         END IF
+C
+         CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,IPRINT,WORD,
+     &               LABINT,SIGN)
       END IF
 C
 C     Multiplies Fock matrix with second derivative of overlap integrals
 C
       IF (WORD .EQ. 'DIASUS ' .OR. WORD .EQ. 'DSUSCGO') THEN
-         NCOMP  = 6
+         NCOMP  = 0
          NPATOM = 0
-         CALL GET1IN(OVERLP,'S2MAG  ',NCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
-         IF (IPRINT .GT. 10) THEN
-            DO 110 ICOMP = 1, 6
-               CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-               WRITE (LUPRI,'(A,I2)') 'Symmetry of operator:',
-     &               INTREP(ICOMP) + 1
-               CALL OUTPUT(OVERLP(1,ICOMP),1,NBAST,1,NBAST,NBAST,NBAST,
-     &                     1,LUPRI)
- 110        CONTINUE
-         END IF
+         CALL GET1IN(DUMMY,'S2MAG  ',NCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,EXP1VL,
+     &               FOCMAT,IPRINT)
          SIGN = -1.0D0
-         CALL MAGAVE(SPNDSO,OVERLP,FOCMAT,FMOVL,6,WORK,LWORK,IPRINT,
+         CALL MAGAVE(SPNDSO,EXPVAL,NCOMP,WORK,LWORK,IPRINT,
      &               'S2MAG  ',LABINT,SIGN)
       END IF
       RETURN
       END
 C  /* Deck magave */
-      SUBROUTINE MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,
+      SUBROUTINE MAGAVE(SPNDSO,EXPVAL,NCOMP,WORK,
      &                  LWORK,IPRINT,WORD,LABINT,SIGN)
 C
-C     Calculates the diamagnetic susceptibility expectation values
-C     K.Ruud, April 1992
+C     Distribute calculated expectation values into proper arrays
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -658,11 +681,11 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
+#include <inforb.h>
       PARAMETER (DP5 = 0.5D0)
       CHARACTER WORD*7, LABINT(9*MXCENT)*8
-      DIMENSION STHMAT(NNBASX,NCOMP), DENMAT(NNBASX),
+      DIMENSION DENMAT(NNBASX),
      &          EXPVAL(NCOMP), SPNDSO(*), WORK(LWORK)
-#include <inforb.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <suscpt.h>
@@ -676,45 +699,41 @@ C
 C
       CALL QENTER('MAGAVE')
 C
-      CALL DZERO(EXPVAL,NCOMP)
-      DO 20 ICOMP = 1, NCOMP
-         NROW   = 0
-         IELMNT = 0
-         IOFF = 0
-         DO 15 ISYM = 1, NSYM
-            DO 10 IROW = 1, NBAS(ISYM)
-            DO 10 ICOL = 1, IROW
-               I = IOFF + IROW
-               J = IOFF + ICOL
-               IJ = I*(I - 1)/2 + J
-               IELMNT = IELMNT + 1
-               EXPVAL(ICOMP) = EXPVAL(ICOMP) +
-     &                         DENMAT(IELMNT)*STHMAT(IJ,ICOMP)
- 10         CONTINUE
-            IOFF = IOFF + NBAS(ISYM)
- 15      CONTINUE
-         EXPVAL(ICOMP) = EXPVAL(ICOMP)*SIGN
- 20   CONTINUE
-      IF (WORD .EQ. 'DARWIN ') DARWN  = EXPVAL(1)
-      IF (WORD .EQ. 'MASSVEL') RMASSV = EXPVAL(1)
+      IF (WORD .EQ. 'DARWIN ') DARWN  = -EXPVAL(1)
+      IF (WORD .EQ. 'MASSVEL') RMASSV = -EXPVAL(1)
       IF (WORD .EQ. 'DIPLEN ') THEN
-         DIPME(1) = -EXPVAL(1)
-         DIPME(2) = -EXPVAL(2)
-         DIPME(3) = -EXPVAL(3)
+         DIPME(1) = EXPVAL(1)
+         DIPME(2) = EXPVAL(2)
+         DIPME(3) = EXPVAL(3)
+Clf
          KCSTRA = 1
          KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
          KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          CALL DIPNUC(WORK(KCSTRA),WORK(KSCTRA),IPRINT,.FALSE.)
+      END IF
+Clf Calculation of dipole moment corrected with the local field factor
+C for the electronic part we use the same structure as for diplen but
+C using the DIPLOC integrals instead
+C for the nuclear part we add the local field contribution calculated in 
+C DIPLFN to the nuclear part of the dipole which is already present in dipmn
+      IF (WORD .EQ. 'DIPLOC ') THEN
+         DLFE(1) = EXPVAL(1)
+         DLFE(2) = EXPVAL(2)
+         DLFE(3) = EXPVAL(3)
+         CALL DIPLFN(IPRINT)
+         DLFN(1) = DLFN(1) + DIPMN(1)
+         DLFN(2) = DLFN(2) + DIPMN(2)
+         DLFN(3) = DLFN(3) + DIPMN(3)
       END IF
       IF (WORD .EQ. 'DIASUS ' .OR. WORD .EQ. 'DSUSCGO') THEN
          IJ = 0
          DO 100 I = 1, 3
          DO 100 J = I, 3
             IJ = IJ + 1
-            SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
-            GFACDI(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            GFACDI(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
+            SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
+            SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
+            GFACDI(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
+            GFACDI(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
   100   CONTINUE
       END IF
       IF (WORD .EQ. 'DSUSCGM') THEN
@@ -722,13 +741,13 @@ C
          DO 101 I = 1, 3
          DO 101 J = I, 3
             IJ = IJ + 1
-            SUSCOM(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            SUSCOM(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
+            SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
+            SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
             GFACDI(IPTAX(J,2),IPTAX(I,2)) =
-     &           GFACDI(IPTAX(J,2),IPTAX(I,2)) - EXPVAL(IJ)
+     &           GFACDI(IPTAX(J,2),IPTAX(I,2)) + EXPVAL(IJ)
             IF (I .NE. J) THEN
                GFACDI(IPTAX(I,2),IPTAX(J,2)) =
-     &              GFACDI(IPTAX(I,2),IPTAX(J,2)) - EXPVAL(IJ)
+     &              GFACDI(IPTAX(I,2),IPTAX(J,2)) + EXPVAL(IJ)
             END IF
  101     CONTINUE
       END IF
@@ -737,8 +756,8 @@ C
          DO 110 I = 1, 3
          DO 110 J = I, 3
             IJ = IJ + 1
-            QDREL(IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJ)
-            QDREL(IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJ)
+            QDREL(IPTAX(J,1),IPTAX(I,1)) = -EXPVAL(IJ)
+            QDREL(IPTAX(I,1),IPTAX(J,1)) = -EXPVAL(IJ)
  110     CONTINUE
       END IF
       IF (WORD .EQ. 'SECMOM ') THEN
@@ -746,8 +765,8 @@ C
         DO 150 I = 1, 3
         DO 150 J = I, 3
            IJ = IJ + 1
-           SCMEL(IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJ)
-           SCMEL(IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJ)
+           SCMEL(IPTAX(J,1),IPTAX(I,1)) = -EXPVAL(IJ)
+           SCMEL(IPTAX(I,1),IPTAX(J,1)) = -EXPVAL(IJ)
  150    CONTINUE   
       END IF
       IF (WORD .EQ. 'THRMOM')THEN
@@ -756,12 +775,12 @@ C
          DO 160 J = I, 3
          DO 160 K = J, 3          
             IJK = IJK + 1
-            THDMEL(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(I,1),IPTAX(K,1),IPTAX(J,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(J,1),IPTAX(I,1),IPTAX(K,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(J,1),IPTAX(K,1),IPTAX(I,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(K,1),IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(K,1),IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(I,1),IPTAX(K,1),IPTAX(J,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(J,1),IPTAX(I,1),IPTAX(K,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(J,1),IPTAX(K,1),IPTAX(I,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(K,1),IPTAX(I,1),IPTAX(J,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(K,1),IPTAX(J,1),IPTAX(I,1)) = -EXPVAL(IJK)
  160     CONTINUE
       END IF
       IF (WORD .EQ. 'S2MAG  ') THEN
@@ -784,9 +803,9 @@ C
       END IF
       IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ' .OR.
      &    WORD .EQ. 'NSTCGOS') THEN
-         NROW = NUCDEP
+         NROW = 3*NUCDEP
          KIVEC  = 1
-         KCSTRA = KIVEC  + 3*NUCDEP
+         KCSTRA = KIVEC  + 3*NROW
          KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
          KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          LWRK   = LWORK - KLAST + 1
@@ -815,35 +834,35 @@ C
 C     Print section
 C
       IF (IPRINT .GT. 3) THEN
-         IF (SIGN .GT. 0) THEN
-            WRITE (LUPRI,'(/2A)')' Expectation values for ', WORD
+         WRITE (LUPRI,'()')
+         IF (SIGN .GT. 0.D0) THEN
+            WRITE (LUPRI,'(2A)') ' Expectation values for ', WORD
          ELSE
             WRITE (LUPRI,'(/2A)')' Trace of Fock matrix multiplied by ',
      &                           WORD
          END IF
          DO 30 ICOMP = 1, NCOMP
-            WRITE (LUPRI,'(A,A,10X,F12.6)') ' Component: ',
+            WRITE (LUPRI,'(A,A,10X,F16.6)') ' Component: ',
      &            LABINT(ICOMP), EXPVAL(ICOMP)
  30      CONTINUE
          WRITE(LUPRI,'(//)')
          IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ') THEN
             IOFF = 0
             DO 40 IATOM = 1, NUCDEP
-               WRITE (LUPRI,1000) NAMDPX(IOFF + 1),
-     &               (WORK(KIVEC + IOFF + I*NROW    ), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDPX(IOFF + 2),
-     &               (WORK(KIVEC + IOFF + I*NROW + 1), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDPX(IOFF + 1),
-     &               (WORK(KIVEC + IOFF + I*NROW + 2), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IATOM),'x',
+     &               (WORK(KIVEC + IOFF +     I*NROW), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IATOM),'y',
+     &               (WORK(KIVEC + IOFF + 1 + I*NROW), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IATOM),'z',
+     &               (WORK(KIVEC + IOFF + 2 + I*NROW), I = 0, 2)
                IOFF = IOFF + 3
                WRITE (LUPRI,'()')
  40         CONTINUE
          END IF
          IF (WORD .EQ. 'DIASUS ' .OR. WORD .EQ. 'S2MAG  ' .OR.
      &       WORD .EQ. 'DSUSCGO') THEN
-            WRITE (LUPRI,'(24X,A,19X,A,19X,A)') (CHRXYZ(I), I = 1,3)
-            WRITE (LUPRI,'()')
-            WRITE (LUPRI,'(10X,A,4X,F20.10)') CHRXYZ(1), EXPVAL(1)
+            WRITE (LUPRI,'(24X,A,19X,A,19X,A/)') (CHRXYZ(I), I = 1,3)
+            WRITE (LUPRI,'(10X,A,4X, F20.10)') CHRXYZ(1), EXPVAL(1)
             WRITE (LUPRI,'(10X,A,4X,2F20.10)') CHRXYZ(2), EXPVAL(2),
      &             EXPVAL(4)
             WRITE (LUPRI,'(10X,A,4X,3F20.10)') CHRXYZ(3), EXPVAL(3),
@@ -856,7 +875,7 @@ C
       END IF
       CALL QEXIT('MAGAVE')
       RETURN
- 1000 FORMAT (1X,A,' :',F17.10,2F24.10)
+ 1000 FORMAT (1X,A6,1X,A1,' :',F17.10,2F24.10)
       END
 C  /* Deck get1pr */
       SUBROUTINE GET1PR(SINTMA,WORD,NCOMP,MTFORM,TRIMAT,WORK,LWORK,
@@ -903,20 +922,22 @@ C
       LFREE = LWRK
       CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,IDUMMY,TRIANG,
-     &            PROPRI,IPRINT,SINTMA,NCOMP,TOFILE,MTFORM,DOINT)
+     &            PROPRI,IPRINT,SINTMA,NCOMP,TOFILE,MTFORM,DOINT,
+     &            DUMMY,.FALSE.,DUMMY)
       CALL GPCLOSE(LUPROP,'KEEP')
       RETURN
       END
 C  /* Deck get1in */
       SUBROUTINE GET1IN(SINTMA,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
-     &                  INTADR,MPQUAD,TOFILE,KPATOM,TRIMAT,NPRINT)
+     &                  INTADR,MPQUAD,TOFILE,KPATOM,TRIMAT,EXPVAL,
+     &                  EXP1VL,DENMAT,NPRINT)
 C
 C     K.Ruud, March 1992. This routine generates the nescessary input
 C     for getting first-order magnetic derivatives from HERMIT
 C
 C     Some comments about the input variables:
 C     KPATOM = 1 => Spin-spin couplings
-C     KPATOM = 2 => The nuclear shieldings (or eleectric field gradients)
+C     KPATOM = 2 => The nuclear shieldings (or electric field gradients)
 C                   are calculated for one symmetry
 C                   independent nuclei at a time (loop is outside subroutine)
 C
@@ -936,9 +957,10 @@ C
 #include <spnout.h>
 #include <inftap.h>
 C
-      LOGICAL TOFILE, TRIMAT, DOINT(2,2)
+      LOGICAL TOFILE, TRIMAT, DOINT(2,2), EXP1VL
       CHARACTER WORD*7, LABINT(*)*8
-      DIMENSION WORK(LWORK), SINTMA(*), INTREP(*), INTADR(*)
+      DIMENSION WORK(LWORK), SINTMA(*), INTREP(*), INTADR(*), EXPVAL(*),
+     &          DENMAT(*)
 C
       TRIANG = TRIMAT
       PROPRI = NPRINT .GT. 5
@@ -985,86 +1007,18 @@ C
          IORDER = IDUMMY
       END IF
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
+      LUPBKP = LUPROP
+      IF (LUPROP .LE. 0) THEN
+         CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     $        'UNFORMATTED',IDUMMY,.FALSE.)
+      END IF
       KFREE = 1
       LFREE = LWORK
       CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
-     &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT)
-      CALL GPCLOSE(LUPROP,'KEEP')
-      RETURN
-      END
-C  /* Deck get1ds */
-      SUBROUTINE GET1DS(STHMAT,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
-     &                  INTADR,SPNDSO,DENMAT,EXPVAL,MPQUAD,NPRINT)
-C
-C     K.Ruud, May 2002. Calculates diamagnetic spin-orbit integrals
-C                       by looping over pairs of nuclei, and contracts
-C                       them with densities. Alternative routine for 
-C                       reducing memory requirements in the 1-el.int.part
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <dorps.h>
-#include <spnout.h>
-#include <inftap.h>
-C
-      LOGICAL DOINT(2,2), TOFILE, NOTALL
-      CHARACTER WORD*7, LABINT(*)*8
-      DIMENSION WORK(LWORK), STHMAT(*), INTREP(*), INTADR(*), SPNDSO(*),
-     &          DENMAT(*), EXPVAL(*)
-C
-      CALL QENTER('GET1DS')
-      TRIANG = .TRUE.
-      TOFILE = .FALSE.
-      SIGN   = 1.0D0
-      PROPRI = NPRINT .GT. 5
-C
-      DOINT(1,1) = .TRUE.
-      DOINT(2,2) = .TRUE.
-      DOINT(1,2) = .FALSE.
-      DOINT(2,1) = .FALSE.
-C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      NOTALL = DOSELE .OR. NUCSPI .GT. 0
-      DO INUC = 1, NUCIND
-         IF (.NOT. NOTALL .OR. (DOSELE .AND. DOPERT(INUC,2)) 
-     &        .OR. (NUCSPI .GT. 0)) THEN
-         DO JNUC = 1, INUC - 1
-         IF (.NOT. NOTALL .OR. (DOSELE .AND. DOPERT(JNUC,2))
-     &           .OR. (NUCSPI .GT. 0)) THEN
-            IF ((NUCSPI .EQ. 0) .OR. (NUCSPI .GT. 0 .AND. 
-     /           (NCSPNI(INUC) .OR. NCSPNI(JNUC)))) THEN
-               KFREE = 1
-               LFREE = LWORK
-               IF (INUC .EQ. JNUC) THEN
-                  NPATOM = 1
-               ELSE
-                  NPATOM = 2
-                  IPATOM(2) = JNUC
-               END IF
-               IPATOM(1) = INUC
-               ALLATM = .FALSE.
-               CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
-     &                     WORD,IDUMMY,MPQUAD,TRIANG,PROPRI,
-     &                     NPRINT,STHMAT,NCOMP,TOFILE,'TRIANG',DOINT)
-               CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                     NPRINT,WORD,LABINT,SIGN)
-            END IF
-            END IF
-         END DO
-         END IF
-      END DO
-      CALL GPCLOSE(LUPROP,'KEEP')
-      CALL QEXIT('GET1DS')
+     &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT,EXPVAL,
+     &            EXP1VL,DENMAT)
+      IF (LUPBKP .LE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       RETURN
       END
 C  /* Deck spntra */
@@ -1103,7 +1057,7 @@ C  /* Deck efntra */
 #include <symmet.h>
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
-         NSTNUM = WORD(5:6)
+         NSTNUM = WORD(6:7)
          NUMBER = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*10
          IROW = NUMBER + ICHAR(NSTNUM(2:2)) - ICHAR('0')
          STAVEC(IROW) = EXPVAL(ICOMP)
@@ -1223,7 +1177,7 @@ C  /* Deck spninp */
 #include <spnout.h>
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
-     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC ','.ISOTOP',
+     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDXFC ','.ISOTOP',
      &            '.COUPLI'/
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
@@ -1232,6 +1186,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -1407,6 +1362,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1748,13 +1704,14 @@ C
 C
       NREC = 0
       IF (DOSD) THEN
-         NCOMP  = 0
          IF (DODRCT) THEN
             NPATOM = 2
             ISTRT  = 1
             DO I = 1, NUCIND
+               NCOMP  = 0
                CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,LABEL,
-     &                     ISDREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &                     ISDREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &                     .FALSE.,DUMMY,INTPRI)
                ITYP  = 0
                ITYP2 = 0
                DO J = 0, MAXREP
@@ -1777,9 +1734,10 @@ C
             NREC = NREC + 6*NUCDEP
          ELSE
             NPATOM = 0
+            NCOMP = 0
             CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,SDLAB,
      &                  ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &                  INTPRI)
+     &                  DUMMY,.FALSE.,DUMMY,INTPRI)
             NREC = NREC + 6*NUCDEP
          END IF
       END IF
@@ -1788,25 +1746,28 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'FERMI C',NCOMP,WORK,LWORK,FCLAB,
      &               IFCREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &               INTPRI)
+     &               DUMMY,.FALSE.,DUMMY,INTPRI)
          NREC = NREC + NUCDEP
       END IF
       IF (DOSDFC) THEN
          NPATOM = 0
          NCOMP  = 0
          CALL GET1IN(DUMMY,'SDFC   ',NCOMP,WORK,LWORK,SDLAB,
-     &               ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &               ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &               .FALSE.,DUMMY,INTPRI)
          NREC = NREC + 9*NUCDEP
       END IF
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
-      IF (OLDDX) THEN
-         WRITE (LUPRI,'(/A)') ' Old LUGDT file opened in TRPRH1.'
-      ELSE
-         CALL DZERO(WORK,NVARMA)
-         DO 50 I = 1, NREC
-            CALL WRITDX(LUGDT,I,IRAT*NVARMA,WORK)
- 50      CONTINUE
-      END IF
+chj 7-mar-06: I don't think it matters if old or not ... /hjaaj
+chj           and the records are anyway written below
+chj   IF (OLDDX) THEN
+chj      WRITE (LUPRI,'(/A)') ' Old LUGDT file opened in TRPRH1.'
+chj   ELSE
+chj      CALL DZERO(WORK,NVARMA)
+chj      DO I = 1, NREC
+chj         CALL WRITDX(LUGDT,I,IRAT*NVARMA,WORK)
+chj      END DO
+chj   END IF
 C
 C     Construct right-hand side
 C
@@ -1872,11 +1833,9 @@ C
                ELSE
                   PRFAC = 0.1D0
                END IF
-               CALL PRKAP(NWOPPT,WORK(NCONST + 1),PRFAC,
-     &              LUPRI)
+               CALL PRKAP(NWOPPT,WORK(NCONST + 1),PRFAC,LUPRI)
             END IF
-            CALL WRITDX(LUGDT,IREC,IRAT*NVARPT,
-     &           WORK)
+            CALL WRITDX(LUGDT,IREC,IRAT*NVARPT,WORK)
  200     CONTINUE
  100  CONTINUE
 C
@@ -1919,9 +1878,9 @@ C
 C
 C     Open direct access file
 C
-      LUGDVE = 0
-      LUSOVE = 0
-      LUREVE = 0
+      LUGDVE = -1
+      LUSOVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
 C     ...changed NREC to 2*NREC to cover residuals
       CALL GPOPEN(LURDT,ABARDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
@@ -2016,7 +1975,7 @@ C
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
 ckr               IDORCT(IREC) = 1
-               CALL WRITRS
+               CALL ABAWRITRS
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residuum vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)
@@ -2049,9 +2008,10 @@ cLig <> added include abainf.h
 #include <abainf.h>
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
+#include <ctocdcc.h>
 cLig >> changed the values of the memory for CTOCD 
       KSPMAT = 1
-      IF(CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
         KSMMAT = KSPMAT + 9*MXCENT
         KCMAT  = KSMMAT + 9*MXCENT
       ELSE
@@ -2113,17 +2073,62 @@ cLig <<
 #include <symmet.h>
 #include <sigma.h>
 #include <cbisol.h>
+C
+CTOCD
+#include <ctocdcc.h>
+      LOGICAL PRTSHI(NUCIND)
+      LOGICAL ALLATM
+      DIMENSION IPATOM(MXCENT)
+CTOCD
+
 #include <ibtfun.h>
 C
-      CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+
+C     Get ipatom stuff (if CC some only atoms can be selected)
+C
+      IF (CTOMAG) THEN
+         CALL SELINF(NPATOM,IPATOM,ALLATM)
+      ELSE
+         ALLATM = .TRUE.
+      END IF
+
+      IF (CTOMAG) THEN
+C
+C        Print proper title
+C
+         IF (EXTSOP) THEN
+            CALL TITLER(
+     &           'CTOCD-DZ SHIELDINGS FROM EXTERNAL LINEAR RESPONSES',
+     &           ':',102)
+         ELSE IF (ALCCS) THEN
+C        IF (ALCCS) THEN
+            CALL TITLER('CCS CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCC2) THEN
+            CALL TITLER('CC2 CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCC3) THEN
+            CALL TITLER('CC3 CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCCSD) THEN
+            CALL TITLER('CCSD CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         END IF
+C
+C        Initialize DOSYM
+C
+         DO IREP = 1, MAXREP+1
+            DOSYM(IREP) = .TRUE.
+         END DO
+C
+      ELSE
+         CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+      END IF
+C
 cLig >> added CTOCD-DZ results title
-      IF (CTOCD) THEN
+      IF (CTOCD .AND. (.NOT. CTOMAG)) THEN
         CALL HEADER('CTOCD-DZ results',1)
       ENDIF
 cLig <<
       CALL HEADER('Shielding tensors in symmetry coordinates (ppm)',-1)
 cLig >> added call to FCPRI for shieldings
-      IF (CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
         CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
       ELSE
 cLig <<
@@ -2136,7 +2141,7 @@ C
 C     Transform to non-symmetry basis
 C
 cLig >> added the call to TRADIP ... for CTOCD
-      IF (CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
          CALL TRADIP(SIGMADZ,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          IF (DONS) THEN
@@ -2158,12 +2163,30 @@ cLig <<
         CALL DAXPY(9*NUCDEP,-D1,PMAT,1,DMAT,1)
 cLig <> closed the IF
       ENDIF
+C
+CTOCD
+      IF (ALLATM) THEN
+         DO I = 1, NUCINS
+            PRTSHI(I) = .TRUE.
+         END DO
+      ELSE
+         DO I = 1, NUCINS
+            PRTSHI(I) = .FALSE.
+         END DO
+         DO I = 1,NPATOM
+            PRTSHI(IPATOM(I)) = .TRUE.
+         END  DO
+      END IF
+CTOCD
+C
+
       IATOM = 0
       DO 100 I = 1, NUCINS
          DO 200 ISYMOP = 0, MAXOPR
          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
-            CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
      &                  AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &                  ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM),
      &                  ANIS2(IATOM),ASYM2(IATOM),SKEW(IATOM),
@@ -2192,7 +2215,8 @@ C
             ELSE
                DIAPAR = 'diamagnetic '
             END IF
-            WRITE (LUPRI,'(1X,2A,7F10.4)') '@1',
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      WRITE (LUPRI,'(1X,2A,7F10.4)') '@1',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         SKEW(IATOM),SPAN(IATOM),ANIS2(IATOM),ASYM2(IATOM)
          END IF
@@ -2219,7 +2243,8 @@ C
             ELSE
                DIAPAR = 'diamagnetic '
             END IF
-            WRITE (LUPRI,'(1X,2A,7F10.4)') '@2',
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      WRITE (LUPRI,'(1X,2A,7F10.4)') '@2',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM)
          END IF
@@ -2244,11 +2269,19 @@ cLig >> added include mxcent abainf and sigma
 cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
-      CHARACTER NAME*6, NAMEX(3)*8, SGN*3
+      CHARACTER NAME*6, NAMEX(3)*8, SGN*3, LAPRPC*8, LANAME*8
+cmbh
+      character lbname*8,midasname*8
+cmbh end
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include <chrxyz.h>
+C
+CTOCD
+#include <ctocdcc.h>
+      CHARACTER*10 LABMET
+CTOCD
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
@@ -2330,7 +2363,7 @@ C
       APAR = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
       SPAR = ABS(ANIS)*SQRT(D1 + (ASYM**2)/D3)
 cLig >> added title for CTOCD shieldings
-      IF (CTOCD) THEN
+      IF (CTOCD .OR. CTOMAG) THEN
          CALL TITLER('CTOCD-DZ: Chemical shielding for '
      &               //NAME//':','=',1)
       ELSE
@@ -2349,6 +2382,49 @@ cLig <<
      &   ' Asymmetry:         ',ASYM,  '    ',
      &   ' S parameter:       ',SPAR,  ' ppm',
      &   ' A parameter:       ',APAR,  ' ppm'
+C << JK write results to DALTON.PROP file
+      LANAME = NAME//'  '
+      LAPRPC = 'SH-CONST'
+C
+CTOCD
+      IF (ALCCS) THEN
+         LABMET = 'DZ /CCS   '
+      ELSE IF (ALCC2) THEN
+         LABMET = 'DZ /CC2   '
+      ELSE IF (ALCC3) THEN
+         LABMET = 'DZ /CC3   '
+      ELSE IF (ALCCSD) THEN
+         LABMET = 'DZ/CCSD   '
+      ELSE
+         LABMET = 'SCF/DFT   '
+      END IF
+CTOCD
+C
+CTOCD CALL WRIPRO(AVETOT,"SCF/DFT   ",401,
+      CALL WRIPRO(AVETOT, LABMET     ,401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'ANISO   '
+CTOCD CALL WRIPRO(ANIS  ,"SCF/DFT   ",401,
+      CALL WRIPRO(ANIS  , LABMET     ,401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'ASYMMETR'
+CTOCD CALL WRIPRO(ASYM  ,"SCF/DFT   ",401,
+      CALL WRIPRO(ASYM  , LABMET     ,401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'S-PARAME'
+CTOCD CALL WRIPRO(SPAR  ,"SCF/DFT   ",401,
+      CALL WRIPRO(SPAR  , LABMET     ,401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'A-PARAME'
+CTOCD CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
+      CALL WRIPRO(APAR  , LABMET     ,401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+C << JK
       CALL HEADER('Total shielding tensor (ppm):',1)
 csonia 04/10/95
       IF (LUCME.GT.0) THEN
@@ -2356,6 +2432,57 @@ csonia 04/10/95
          WRITE (LUCME,'(A)')  'Total shielding tensor (ppm):'
       END IF
 csonia 04/10/95
+C << JK write shielding tensor to DALTON.PROP
+cmbh change output slightly
+      LAPRPC = '_COMP  '
+      midasname=NAME//'  '
+      call stripblanks(midasname)
+      LANAME = 'X'//LAPRPC
+      LBNAME = 'X'//LAPRPC
+      CALL WRIPRO(TMAT(1,1),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'X'//LAPRPC
+      LBNAME = 'Y'//LAPRPC
+      CALL WRIPRO(TMAT(2,1),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'X'//LAPRPC
+      LBNAME = 'Z'//LAPRPC
+      CALL WRIPRO(TMAT(3,1),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'Y'//LAPRPC
+      LBNAME = 'X'//LAPRPC
+      CALL WRIPRO(TMAT(1,2),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'Y'//LAPRPC
+      LBNAME = 'Y'//LAPRPC
+      CALL WRIPRO(TMAT(2,2),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'Y'//LAPRPC
+      LBNAME = 'Z'//LAPRPC
+      CALL WRIPRO(TMAT(3,2),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'Z'//LAPRPC
+      LBNAME = 'X'//LAPRPC
+      CALL WRIPRO(TMAT(1,3),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'Z'//LAPRPC
+      LBNAME = 'Y'//LAPRPC
+      CALL WRIPRO(TMAT(2,3),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = 'Z'//LAPRPC
+      LBNAME = 'Z'//LAPRPC
+      CALL WRIPRO(TMAT(3,3),"SCF/DFT   ",402,
+     *            LANAME,LBNAME,midasname,midasname,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+C << JK
       WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
       DO 400 ICOOR = 1, 3
          WRITE (LUPRI,'(2X,A8,3F15.8)')
@@ -2546,6 +2673,7 @@ C  /* Deck isospn */
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
+      CHARACTER LAPRPC*8, LANAM1*8, LANAM2*8
 #include <dorps.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -2652,6 +2780,7 @@ C
          DO 87 ISYM2 = 0, MAXSYM
             IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
                IATOM2 = IATOM2 + 1
+               IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 87
                IF (DOPERT(I2,2)) THEN
                   IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
                   NZ1 = IZATOM(I1)
@@ -2683,6 +2812,31 @@ C
                         PSO    = AVEISO(IATIJ,3)*FACTOR
                         SD     = AVEISO(IATIJ,4)*FACTOR
                         FC     = AVEISO(IATIJ,5)*FACTOR
+C MBH+JK
+                        LANAM1 = NAMDEP(IATOM1)//'  '
+                        LANAM2 = NAMDEP(IATOM2)//'  '
+                        LAPRPC = 'SP-SPISO'
+                        CALL WRIPRO(AVETOT/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPDSO'
+                        CALL WRIPRO(DSO/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPPSO'
+                        CALL WRIPRO(PSO/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPSD '
+                        CALL WRIPRO(SD/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+                        LAPRPC = 'SP-SPFC '
+                        CALL WRIPRO(FC/AUTOHZ,"SCF/DFT   ",410,
+     *                  LANAM1,LANAM2,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,1,0,0,0)
+C                        WRITE(LUPRI,*)'MBH: AUTOHZ VALUE: ',AUTOHZ
+C MBH+JK
                         WRITE(LUPRI,'(9(/,2X,A,F12.4,A),/,/)')
      &                       'Isotropic coupling        :',AVETOT,' Hz',
      &                       'Anisotropic coupling      :',ANIS  ,' Hz',
@@ -2982,13 +3136,14 @@ C     Nuclear contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 #include <nuclei.h>
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
 #include <symmet.h>
+#include <qm3.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C
@@ -2997,102 +3152,55 @@ C
       KK = 1
       NATOM = 1
 C
-      IF (.NOT. QM3) THEN
-        DO 10 I = 1, NUCIND
-          DO 20 ISYMOP = 0, MAXOPR
+      DO 10 I = 1, NUCIND
+         DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
-              LL = 1
-              DO 100 I2 = 1, NUCIND
-                IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
-                DO 110 ISYM = 0, MAXOPR
-                  IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
-                    IF (LL .NE. KK) THEN
-                      XCOOR = GEOM(LL) - GEOM(KK)
-                      YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
-                      ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
-                      R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                      R5 = R2*R2*SQRT(R2)
-                      UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
-     &                       + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
-                      UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
-     &                       + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
-                      UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
-     &                       + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
-                      UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
-     &                       + CHARGE(I2)*D3*XCOOR*YCOOR/R5
-                      UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
-     &                       + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
-                      UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
-     &                       + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
-                    END IF
-                    LL = LL + 3
-                  END IF
- 110            CONTINUE
- 100          CONTINUE
-              UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
-              UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
-              UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
-              NATOM = NATOM + 1
-              KK = KK + 3
-            END IF
- 20       CONTINUE
- 10     CONTINUE
-        IF (IPRINT .GE. 5) THEN
-          CALL HEADER('Nuclear contribution to electric field gradient',
-     &                -1)
-          CALL EFGPRI(UCNNQC,'                                 ')
-        END IF
-      ELSE
-        DO 30 I = 1, NUCIND
-          IF ( (ISUBSY(I) .EQ. 0) .AND.
-     &      (ISUBSI(I) .LE. NSISY(0)) )THEN
-            DO 40 ISYMOP = 0, MAXOPR
-              IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
-                LL = 1
-                DO 130 I2 = 1, NUCIND
-                  IF ( (ISUBSY(I2) .EQ. 0) .AND.
-     &              (ISUBSI(I2) .LE. NSISY(0)) ) THEN
-                    IF (CHARGE(I2) .EQ. 0.0D0) GOTO 130
-                    DO 140 ISYM = 0, MAXOPR
-                      IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+               LL = 1
+               DO 100 I2 = 1, NUCIND
+                  IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
+                  DO 110 ISYM = 0, MAXOPR
+                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
                         IF (LL .NE. KK) THEN
-                          XCOOR = GEOM(LL) - GEOM(KK)
-                          YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
-                          ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
-                          R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                          R5 = R2*R2*SQRT(R2)
-                          UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
-     &                           + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
-                          UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
-     &                           + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
-                          UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
-     &                           + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
-                          UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
-     &                           + CHARGE(I2)*D3*XCOOR*YCOOR/R5
-                          UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
-     &                           + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
-                          UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
-     &                           + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
+                           XCOOR = GEOM(LL) - GEOM(KK)
+                           YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
+                           ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
+                           R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                           R5 = R2*R2*SQRT(R2)
+                           UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
+     &                          + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
+                           UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
+     &                          + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
+                           UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
+     &                          + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
+                           UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
+     &                          + CHARGE(I2)*D3*XCOOR*YCOOR/R5
+                           UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
+     &                          + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
+                           UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
+     &                          + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
                         END IF
                         LL = LL + 3
-                      END IF
- 140                CONTINUE
-                  END IF 
- 130            CONTINUE
-                UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
-                UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
-                UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
-                NATOM = NATOM + 1
-                KK = KK + 3
-              END IF
- 40         CONTINUE
-          END IF
- 30     CONTINUE
-        IF (IPRINT .GE. 5) THEN
-          CALL HEADER('Nuclear contribution to electric field gradient',
-     &                -1)
-          CALL EFGPRI(UCNNQC,'                                 ')
-        END IF
+                     END IF
+ 110              CONTINUE
+ 100           CONTINUE
+               UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
+               UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
+               UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
+               NATOM = NATOM + 1
+               KK = KK + 3
+            END IF
+ 20      CONTINUE
+ 10   CONTINUE
+
+      IF ( (QM3) .AND. (.NOT. (SKIPNC)) ) THEN
+        CALL QM3QCC1(LUPRI,IPRINT)
+        IF ( .NOT. (LOSPC) ) CALL QM3QCC2(LUPRI,IPRINT)
+      END IF
+
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('Nuclear contribution to electric field gradient',
+     &        -1)
+         CALL EFGPRI(UCNNQC,'                                 ')
       END IF
       RETURN
       END
@@ -3104,7 +3212,6 @@ C     K.Ruud, nov.-94
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
@@ -3122,72 +3229,35 @@ C
       IY = IPTAX(2,1)
       IZ = IPTAX(3,1)
 C
-      IF (.NOT. QM3) THEN
-        DO 10 I = 1, NUCIND
-          DO 20 ISYMOP = 0, MAXOPR
+      DO 10 I = 1, NUCIND
+         DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
-              XCOOR = GEOM(KK) - ORIGIN(1)
-              YCOOR = GEOM(KK + 1) - ORIGIN(2)
-              ZCOOR = GEOM(KK + 2) - ORIGIN(3)
-              R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-              QDRNUC(IX,IX) = QDRNUC(IX,IX) + DP5*CHARGE(I)*
+               XCOOR = GEOM(KK) - ORIGIN(1)
+               YCOOR = GEOM(KK + 1) - ORIGIN(2)
+               ZCOOR = GEOM(KK + 2) - ORIGIN(3)
+               R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+               QDRNUC(IX,IX) = QDRNUC(IX,IX) + DP5*CHARGE(I)*
      &                        (D3*XCOOR*XCOOR - R2)
-              QDRNUC(IY,IY) = QDRNUC(IY,IY) + DP5*CHARGE(I)*
+               QDRNUC(IY,IY) = QDRNUC(IY,IY) + DP5*CHARGE(I)*
      &                        (D3*YCOOR*YCOOR - R2)
-              QDRNUC(IZ,IZ) = QDRNUC(IZ,IZ) + DP5*CHARGE(I)*
+               QDRNUC(IZ,IZ) = QDRNUC(IZ,IZ) + DP5*CHARGE(I)*
      &                        (D3*ZCOOR*ZCOOR - R2)
-              QDRNUC(IX,IY) = QDRNUC(IX,IY) + DP5*CHARGE(I)*
+               QDRNUC(IX,IY) = QDRNUC(IX,IY) + DP5*CHARGE(I)*
      &                         D3*XCOOR*YCOOR
-              QDRNUC(IX,IZ) = QDRNUC(IX,IZ) + DP5*CHARGE(I)*
+               QDRNUC(IX,IZ) = QDRNUC(IX,IZ) + DP5*CHARGE(I)*
      &                         D3*XCOOR*ZCOOR
-              QDRNUC(IY,IZ) = QDRNUC(IY,IZ) + DP5*CHARGE(I)*
+               QDRNUC(IY,IZ) = QDRNUC(IY,IZ) + DP5*CHARGE(I)*
      &                         D3*YCOOR*ZCOOR
-              KK = KK + 3
+               KK = KK + 3
             END IF
- 20       CONTINUE
- 10     CONTINUE
-        QDRNUC(IY,IX) = QDRNUC(IX,IY)
-        QDRNUC(IZ,IX) = QDRNUC(IX,IZ)
-        QDRNUC(IZ,IY) = QDRNUC(IY,IZ)
-        IF (IPRINT .GE. 5) THEN
-          CALL HEADER('Nuclear contribution to quadrupole moment',-1)
-          CALL POLPRI(QDRNUC,'   ',1)
-        END IF
-      ELSE
-        DO 30 I = 1, NUCIND
-          IF ( (ISUBSY(I) .EQ. 0) .AND.
-     &      (ISUBSI(I) .LE. NSISY(0)) )THEN
-            DO 40 ISYMOP = 0, MAXOPR
-              IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
-                XCOOR = GEOM(KK) - ORIGIN(1)
-                YCOOR = GEOM(KK + 1) - ORIGIN(2)
-                ZCOOR = GEOM(KK + 2) - ORIGIN(3)
-                R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                QDRNUC(IX,IX) = QDRNUC(IX,IX) + DP5*CHARGE(I)*
-     &                          (D3*XCOOR*XCOOR - R2)
-                QDRNUC(IY,IY) = QDRNUC(IY,IY) + DP5*CHARGE(I)*
-     &                          (D3*YCOOR*YCOOR - R2)
-                QDRNUC(IZ,IZ) = QDRNUC(IZ,IZ) + DP5*CHARGE(I)*
-     &                          (D3*ZCOOR*ZCOOR - R2)
-                QDRNUC(IX,IY) = QDRNUC(IX,IY) + DP5*CHARGE(I)*
-     &                          D3*XCOOR*YCOOR
-                QDRNUC(IX,IZ) = QDRNUC(IX,IZ) + DP5*CHARGE(I)*
-     &                          D3*XCOOR*ZCOOR
-                QDRNUC(IY,IZ) = QDRNUC(IY,IZ) + DP5*CHARGE(I)*
-     &                          D3*YCOOR*ZCOOR
-                KK = KK + 3
-              END IF
- 40         CONTINUE
-          END IF
- 30     CONTINUE
-        QDRNUC(IY,IX) = QDRNUC(IX,IY)
-        QDRNUC(IZ,IX) = QDRNUC(IX,IZ)
-        QDRNUC(IZ,IY) = QDRNUC(IY,IZ)
-        IF (IPRINT .GE. 5) THEN
-          CALL HEADER('Nuclear contrib. to quadrupole moment (QM/MM)',
-     &                 -1)
-          CALL POLPRI(QDRNUC,'   ',1)
-        END IF
+ 20      CONTINUE
+ 10   CONTINUE
+      QDRNUC(IY,IX) = QDRNUC(IX,IY)
+      QDRNUC(IZ,IX) = QDRNUC(IX,IZ)
+      QDRNUC(IZ,IY) = QDRNUC(IY,IZ)
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('Nuclear contribution to quadrupole moment',-1)
+         CALL POLPRI(QDRNUC,'   ',1)
       END IF
       RETURN
       END
@@ -3317,7 +3387,7 @@ C
 C  /* Deck nucmgf */
       SUBROUTINE NUCMGF(GEOM,ORIGIN,LUPRI,IPRINT)
 C
-C     Calculate nuclear contribution to molecular g-factors
+C     Calculate nuclear contribution to molecular rotational g-factors
 C     K.Ruud, June-94
 C
 #include <implicit.h>
@@ -3360,7 +3430,8 @@ C
       GFANUC(IZ,IX) = GFANUC(IX,IZ)
       GFANUC(IZ,IY) = GFANUC(IY,IZ)
       IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Nuclear contribution to molecular g-factor',-1)
+         CALL HEADER(
+     &   'Nuclear contribution to molecular rotational g-factor',-1)
          CALL OUTPUT(GFANUC,1,3,1,3,3,3,1,LUPRI)
       END IF
       RETURN
@@ -3468,7 +3539,7 @@ C
       D23 = .FALSE.
 C
       IF (IPRINT .GE. 0)
-     &     CALL TITLER('ABACUS - MOLECULAR g-TENSOR','*',124)
+     &     CALL TITLER('ABACUS - MOLECULAR ROTATIONAL g-TENSOR','*',124)
       CALL DZERO(TOTMGF,9)
 C
 C     Add terms to diamagnetic molecular g factor
@@ -3496,27 +3567,26 @@ C
      &   'Nuclear contribution * proton mass * moment of inertia',-1)
          CALL POLPRI(GFANUC,'   ',-2)
          AVENUC = (GFANUC(1,1) + GFANUC(2,2) + GFANUC(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVENUC
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVENUC
 C
          CALL HEADER(
      &   'Diamagnetic contribution * proton mass * moment of inertia',
      &   -1)
          CALL POLPRI(GFACDI,'   ',-2)
          AVEDIA = (GFACDI(1,1) + GFACDI(2,2) + GFACDI(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEDIA
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVEDIA
 C
          CALL HEADER(
      &   'Electronic contribution * proton mass * moment of inertia',-1)
          CALL POLPRI(ELMGF,'   ',-2)
          AVEEL = (ELMGF(1,1) + ELMGF(2,2) + ELMGF(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEEL
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVEEL
 C
-         CALL HEADER(
-     &   'Total molecular g-tensor * proton mass * moment of inertia',
-     &   -1)
+         CALL HEADER('Total molecular rotational g-tensor'//
+     &      ' * proton mass * moment of inertia',-1)
          CALL POLPRI(TOTMGF,'   ',2)
          AVETOT = (TOTMGF(1,1) + TOTMGF(2,2) + TOTMGF(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVETOT
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVETOT
       END IF
 C
 C     Determine principal moments of inertia
@@ -3539,8 +3609,8 @@ C
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINEAR)
 C
-C     Transform molecular g-tensor to principal axis system, and multiply by
-C     inverse moment of inertia and proton mass
+C     Transform molecular rotational g-tensor to principal axis system,
+C     and multiply by inverse moment of inertia and proton mass
 C
       IF (IPRINT .GE. 0) THEN
          IF (NOLOND) THEN
@@ -3558,21 +3628,21 @@ C
             AVEDIA = GFACDI(1,1)*PMASS*EIGVAL(3)
             AVEEL  = ELMGF (1,1)*PMASS*EIGVAL(3)
             AVENUC = GFANUC(1,1)*PMASS*EIGVAL(3)
-            CALL DZERO(GTRAN,9)
-            GTRAN(1,1) = AVETOT
          ELSE
             AVETOT = TOTMGF(2,2)*PMASS*EIGVAL(3)
             AVEDIA = GFACDI(2,2)*PMASS*EIGVAL(3)
             AVEEL  = ELMGF (2,2)*PMASS*EIGVAL(3)
             AVENUC = GFANUC(2,2)*PMASS*EIGVAL(3)
-            CALL DZERO(GTRAN,9)
-            GTRAN(1,1) = AVETOT
          END IF
+         CALL DZERO(GTRAN,9)
+         GTRAN(1,1) = TOTMGF(1,1)*PMASS*EIGVAL(3)
+         GTRAN(2,2) = TOTMGF(2,2)*PMASS*EIGVAL(3)
+         GTRAN(3,3) = TOTMGF(3,3)*PMASS*EIGVAL(3)
          IF (IPRDEF .GE. 0) THEN
-            WRITE (LUPRI,'(A,F12.6)') ' Moment of inertia :',
+            WRITE (LUPRI,'(A,F16.6)') ' Moment of inertia :',
      &           D1/EIGVAL(3)
-            CALL HEADER('Molecular g-factor',1)
-            WRITE(LUPRI,'(4(A,F12.8/))')
+            CALL HEADER('Molecular rotational g-factor',1)
+            WRITE(LUPRI,'(4(A,F16.8/))')
      &           ' Isotropic g-factor          :',AVETOT,
      &           ' Nuclear part of g-factor    :',AVENUC,
      &           ' Diamagnetic part of g-factor:',AVEDIA,
@@ -3619,12 +3689,13 @@ C
          AVEDIA = (GTRAN3(1,1) + GTRAN3(2,2) + GTRAN3(3,3))/D3
          IF (IPRINT .GE. 0) THEN
          IF (D12 .AND. D23) THEN
-            WRITE (LUPRI,'(4(/,1X,A,F12.8))')
-     &           ' Molecular g-factor      :  ',AVETOT,
+            WRITE (LUPRI,'(4(/A,F16.8))')
+     &           ' Molecular rot. g-factor :  ',AVETOT,
      &           ' Nuclear contribution    :  ',AVENUC,
      &           ' Diamagnetic contribution:  ',AVEDIA,
      &           ' Electronic contribution :  ',AVEEL
-            WRITE (LUPRI,'(/,1X,A)') ' Molecular g-tensor is spherical.'
+            WRITE (LUPRI,'(/A)')
+     &           ' Molecular rotational g-tensor is spherical.'
          ELSE IF (D12 .OR. D23) THEN
             IF (D12) THEN
                PAR = GTRAN(3,3)
@@ -3634,71 +3705,72 @@ C
                PER = (GTRAN(2,2) + GTRAN(3,3))/D2
             END IF
             ANI = PAR - PER
-            CALL HEADER('Molecular g-factor',1)
-            WRITE (LUPRI,'(6(1X,A,F12.8,/))')
+            CALL HEADER('Molecular rotational g-factor',1)
+            WRITE (LUPRI,'(6(A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
      &           ' Electronic contribution  : ',AVEEL,
      &           ' Parallel component:        ',PAR,
      &           ' Perpendicular component:   ',PER,
      &           ' Anisotropy:                ',ANI
-            WRITE (LUPRI,'(1X,A)') ' Molecular g-tensor is cylindrical.'
-            CALL HEADER('Molecular g-tensor in principal axis system '//
-     &                  '(a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(A)')
+     &           ' Molecular rotational g-tensor is cylindrical.'
+            CALL HEADER('Molecular rotational g-tensor in principal'//
+     &                  ' axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
      &         'C', (GTRAN(I,3),I = 1,3)
             CALL HEADER('Nuclear contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN1(I,1),I = 1,3),
      &         'B', (GTRAN1(I,2),I = 1,3),
      &         'C', (GTRAN1(I,3),I = 1,3)
             CALL HEADER('Electronic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN2(I,1),I = 1,3),
      &         'B', (GTRAN2(I,2),I = 1,3),
      &         'C', (GTRAN2(I,3),I = 1,3)
             CALL HEADER('Diamagnetic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN3(I,1),I = 1,3),
      &         'B', (GTRAN3(I,2),I = 1,3),
      &         'C', (GTRAN3(I,3),I = 1,3)
          ELSE
             ANI1 = GTRAN(1,1) - (GTRAN(2,2) + GTRAN(3,3))/D2
             ANI2 = GTRAN(2,2) - (GTRAN(1,1) + GTRAN(3,3))/D2
-            CALL HEADER('Molecular g-tensor',1)
-            WRITE (LUPRI,'(6(1X,A,F12.8,/))')
+            CALL HEADER('Molecular rotational g-tensor',1)
+            WRITE (LUPRI,'(6(1X,A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
      &           ' Diamagnetic contribution : ',AVEDIA,
      &           ' Electronic contribution  : ',AVEEL,
      &           ' 1st anisotropy:            ',ANI1,
      &           ' 2nd anisotropy:            ',ANI2
-            CALL HEADER('Molecular g-tensor in principal axis system '//
-     &                  '(a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            CALL HEADER('Molecular rotational g-tensor in principal'//
+     &                  ' axis system (a.u.):',1)
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
      &         'C', (GTRAN(I,3),I = 1,3)
             CALL HEADER('Nuclear contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN1(I,1),I = 1,3),
      &         'B', (GTRAN1(I,2),I = 1,3),
      &         'C', (GTRAN1(I,3),I = 1,3)
             CALL HEADER('Electronic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN2(I,1),I = 1,3),
      &         'B', (GTRAN2(I,2),I = 1,3),
      &         'C', (GTRAN2(I,3),I = 1,3)
             CALL HEADER('Diamagnetic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN3(I,1),I = 1,3),
      &         'B', (GTRAN3(I,2),I = 1,3),
      &         'C', (GTRAN3(I,3),I = 1,3)
@@ -3798,8 +3870,8 @@ C     All components of the moment of inertia not defined for linear molecules
 C
       IF (LINEAR) THEN
          IF (IPRINT .GE. 0) THEN
-            WRITE (LUPRI,'(1X,A)') 'The molecule is linear'
-            WRITE (LUPRI,'(1X,A,F12.6)')'Moment of inertia :',
+            WRITE (LUPRI,'(A)') ' The molecule is linear'
+            WRITE (LUPRI,'(A,F16.6)')' Moment of inertia :',
      &                                  D1/EIGVAL(3)
          END IF
          DO 98 IATOM = 1, NUCDEP
@@ -3816,16 +3888,16 @@ C
                   AVENUC = SPRNUC(1,1,IATOM)*FACTOT/D2
                   AVEPAR = PARMAT(1,1,IATOM)*FACTOT
                   AVEDIA = DIAMAT(1,1,IATOM)*FACTOT
-                  CALL DZERO(GTRANT(1,1,IATOM),9)
-                  GTRANT(1,1,IATOM) = AVETOT
                ELSE
                   AVETOT = TOTSPR(2,2,IATOM)*FACTOT
                   AVENUC = SPRNUC(2,2,IATOM)*FACTOT/D2
                   AVEPAR = PARMAT(2,2,IATOM)*FACTOT
                   AVEDIA = DIAMAT(2,2,IATOM)*FACTOT
-                  CALL DZERO(GTRANT(1,1,IATOM),9)
-                  GTRANT(1,1,IATOM) = AVETOT
                END IF
+               CALL DZERO(GTRANT(1,1,IATOM),9)
+               GTRANT(1,1,IATOM) = AVETOT
+               GTRANT(2,2,IATOM) = AVETOT
+               GTRANT(3,3,IATOM) = AVETOT
                IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &              ' Total spin-rotation constant       :',AVETOT,
      &              ' Nuclear part of spin-rotation      :',AVENUC,
@@ -3874,23 +3946,23 @@ C
      &              'principal axis system'
                   IF (IPRINT .GT. 2) THEN
                      CALL HEADER('Nuclear contribution',-1)
-                     WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRANN(I,1),I = 1,3),
      &                    'B', (GTRANN(I,2),I = 1,3),
      &                    'C', (GTRANN(I,3),I = 1,3)
                      CALL HEADER('Diamagnetic contribution',-1)
-                     WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRAND(I,1),I = 1,3),
      &                    'B', (GTRAND(I,2),I = 1,3),
      &                    'C', (GTRAND(I,3),I = 1,3)
                      CALL HEADER('Paramagnetic contribution',-1)
-                     WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRANP(I,1),I = 1,3),
      &                    'B', (GTRANP(I,2),I = 1,3),
      &                    'C', (GTRANP(I,3),I = 1,3)
                      CALL HEADER('Total spin rotation constants',-1)
                   END IF
-                  WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                  WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
@@ -3907,7 +3979,6 @@ C     Collect and arrange electronic contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nqcc.h>
@@ -3921,44 +3992,38 @@ C
       CALL DZERO(TEMP,9*NUCDEP)
 C
       DO 100 IATOM = 1, NUCIND
-        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
-          DO 200 ICOOR1 = 1, 3
+         DO 200 ICOOR1 = 1, 3
             DO 210 ICOOR2 = ICOOR1, 3
-              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-              DO 300 IREPC = 0, MAXREP
-                IF (IBTAND(ISTBNU(IATOM),
-     &            IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-                  ITYP = ITYP + 1
-                  TEMP(ICOOR1,ICOOR2,IATOM) =
-     &            TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(ITYP)
-     &                                       /NUCDEG(IATOM)
-                END IF
- 300          CONTINUE
+               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               DO 300 IREPC = 0, MAXREP
+                  IF (IBTAND(ISTBNU(IATOM),
+     &                 IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                     ITYP = ITYP + 1
+                     TEMP(ICOOR1,ICOOR2,IATOM) =
+     &                    TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(ITYP)
+     &                                               /NUCDEG(IATOM)
+                  END IF
+ 300           CONTINUE
  210        CONTINUE
- 200      CONTINUE
-        END IF
+ 200     CONTINUE
  100  CONTINUE
 C
       NATOM = 1
 C
       DO 110 IATOM = 1, NUCIND
-        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
-     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
-          DO 310 IREPC = 0, MAXREP
+         DO 310 IREPC = 0, MAXREP
             IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
-              DO 220 I = 1, 3
-                DO 230 J = I, 3
-                  ELNQC(I,J,NATOM) = TEMP(I,J,IATOM)*
-     &            PT(IBTAND(IBTXOR(ISYMAX(I,1),
-     &            ISYMAX(J,1)),IREPC))
-                  IF (I .NE. J) ELNQC(J,I,NATOM) = ELNQC(I,J,NATOM)
- 230            CONTINUE
- 220          CONTINUE
-              NATOM = NATOM + 1
+               DO 220 I = 1, 3
+                  DO 230 J = I, 3
+                     ELNQC(I,J,NATOM) = TEMP(I,J,IATOM)*
+     &                    PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                    ISYMAX(J,1)),IREPC))
+                     IF (I .NE. J) ELNQC(J,I,NATOM) = ELNQC(I,J,NATOM)
+ 230              CONTINUE
+ 220           CONTINUE
+               NATOM = NATOM + 1
             END IF
- 310      CONTINUE
-        END IF
+ 310     CONTINUE
  110  CONTINUE
       IF (IPRINT .GE. 5) THEN
          CALL HEADER('Electronic contribution to electric field '//
@@ -3985,6 +4050,7 @@ C
 #include <symmet.h>
 #include <spinro.h>
 #include <orgcom.h>
+#include <helfey.h>
 #include <ibtfun.h>
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
@@ -4035,3 +4101,26 @@ C
       RETURN
  1000 FORMAT (1X,A6,F17.10,2F24.10)
       END
+C    
+C  /* Deck selinf */    
+      SUBROUTINE SELINF(MPATOM,JPATOM,ATMALL)
+C        
+C 
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <cbiher.h>
+C    
+      DIMENSION JPATOM(MXCENT)
+      LOGICAL ATMALL
+C    
+C    
+      ATMALL = ALLATM
+C    
+      MPATOM = NPATOM
+      DO I = 1,MXCENT
+         JPATOM(I) = IPATOM(I)
+      END DO
+C           
+      RETURN
+      END  

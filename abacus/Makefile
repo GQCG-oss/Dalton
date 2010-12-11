@@ -14,14 +14,15 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	her2ave.o    her2dir.o    her2drv.o    her2el1.o\
 	her2el2.o    her2fck.o    her2her.o    her2odc.o\
 	her2out.o    her2sup.o    her2sym.o    herbas.o\
-	herdirect.o  herdrv.o     hergam.o     hergeo.o\
-	hergp.o      herrdn.o     hersol.o     huckel.o\
+	herdirect.o  herdkh.o     herdrv.o     hergam.o     hergeo.o\
+	hergp.o      hergroup.o   herrdn.o     hersol.o     huckel.o\
 	her2gab.o    hersym.o     hertst.o     herqm3.o\
 	abaopt.o     abavrml.o    abaqr.o      abarint.o\
 	abander.o    abandsym.o   herfckcon.o  abaop2.o\
 	abasop.o     abamolden.o  eckart.o     ecp.o\
 	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o\
-	abactocd.o   abaqpg.o
+	abactocd.o   abaqpg.o     abapcm.o     abaqm3.o\
+	abaqmmm.o    gen1int_prop.o    gen1int_ecp.o
 
 C_OBJS = linux_mem_allo.o
 
@@ -48,8 +49,9 @@ Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
+
 her2el2.o: her2el2.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 
 
 hersym.o: hersym.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 

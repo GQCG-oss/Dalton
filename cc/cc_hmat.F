@@ -260,7 +260,7 @@ c/* Deck CC_HMAT */
 *---------------------------------------------------------------------*
 * calculate H matrix transformation (for CCS the result is zero!):
 *---------------------------------------------------------------------*
-        IF (.NOT. CCS) THEN
+       IF (.NOT. CCS) THEN
 
 *---------------------------------------------------------------------*
 * initialize pointer for work space & read single parts of the vectors
@@ -344,7 +344,7 @@ c/* Deck CC_HMAT */
      &               WORK(KEPSI1),  ISYRES, !out: Epsilon result vector
      &               WORK(KEND1),   LEND1  )!wrk: work space    
 
-        END IF ! (.NOT. CCS) 
+       END IF ! (.NOT. CCS) 
 
 *---------------------------------------------------------------------*
 * add CC3 contributions:
@@ -382,6 +382,9 @@ c/* Deck CC_HMAT */
           END IF
 
 #endif
+        ELSE
+          KEPSI2 = KSTART
+C         ! to not get undefined address in calls below /hjaaj Aug 07
         END IF
 *=====================================================================*
 * store result vectors:
@@ -811,6 +814,9 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
+      IF (CCR12) CALL QUIT('Finite-difference on H-matrix for CCR12 '//
+     &                     'not adapted')
+C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CC_FDH  : MAKING FINITE DIFF. CC H-Matrix')
       ENDIF
@@ -889,7 +895,7 @@ C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -950,7 +956,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -969,7 +975,7 @@ C
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *               WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C-----------------------------------------
 C        Get the CC response vector again.
@@ -1047,7 +1053,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
-           LUTAM = 0
+           LUTAM = -1
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -1068,7 +1074,7 @@ C
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *                 WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C-------------------------------------------
 C          Get the CC response vector again.
@@ -1175,7 +1181,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
-      LUTAM = 0
+      LUTAM = -1
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -1188,8 +1194,9 @@ C
      *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND2),LWRK2) 
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND2),LWRK2,'XXX') 
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CC_FDH ')
@@ -1390,7 +1397,7 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)

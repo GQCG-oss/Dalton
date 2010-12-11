@@ -54,9 +54,9 @@ C
       DATA NEEDSO/1,1,1,1,1,0/
 C
       PARAMETER(D0=0D0, D1=1D0, DM1=-1D0, D2=2D0)
-      LOGICAL SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON, TRPDEN
+      LOGICAL SO2TRA, FILE_EXISTS, FOPEN, DO1, DO2, LORB, LCON, TRPDEN
       CHARACTER*8 LABEL
-      LOGICAL FNDLAB
+      LOGICAL  FNDLAB
       EXTERNAL FNDLAB
 C
 C Used from common blocks:
@@ -146,14 +146,18 @@ C
 C
 C Check if gradient is on file
 C
-      LUHSO = 0
+      INQUIRE(FILE='HSOGRAD',EXIST=FILE_EXISTS)
+      LUHSO = -1
       CALL GPOPEN(LUHSO,'HSOGRAD','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUHSO
+      IF (FILE_EXISTS) THEN
+C     ... aug07-hjaaj: gfortran doesn't like BACKSPACE(LUHSO) in FNDLAB on empty file!
       IF (FNDLAB(WORD,LUHSO)) THEN
          CALL READT(LUHSO,KZYVAR,GP)
          CALL GPCLOSE(LUHSO,'KEEP')
          GO TO 9999
+      END IF
       END IF
 C
 C ALLOCATE WORK SPACE
@@ -170,6 +174,8 @@ C
       CALL MEMGET('REAL', KH2 , NORBT*NORBT,WRK,KWRK1,LWRK1)
       IF (LCON) THEN
          CALL MEMGET('REAL',  KH2AC , NNASHX*NNASHX,WRK,KWRK1,LWRK1)
+      ELSE
+         CALL MEMGET('REAL',  KH2AC , 0            ,WRK,KWRK1,LWRK1)
       END IF
 C
       IF (IPRHSO.GT.20 .AND. LORB .AND. NASHT.GT.0) THEN
@@ -214,7 +220,7 @@ C
       IF (TRPLET) THEN
          TRPDEN=.FALSE.
          CALL HSOFCK(WORD,WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB),
-     &   WRK(KH2AC),UDV,PV,CMO,LORB,LCON,WRK,KWRK1,LWRK1)
+     &               WRK(KH2AC),UDV,PV,CMO,LORB,LCON,WRK,KWRK1,LWRK1)
       ELSE
          TRPDEN=.TRUE.
          CALL MEMGET('REAL',KD,N2ASHX,WRK,KWRK1,LWRK1)
@@ -341,6 +347,7 @@ C
 C
 C Save on file
 C
+      REWIND LUHSO
       CALL NEWLAB(WORD,LUHSO,LUERR)
       CALL WRITT(LUHSO,KZYVAR,GP)
       CALL MEMREL('HSOCTL',WRK,1,1,KWRK1,LWRK1)
@@ -376,6 +383,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -491,7 +499,7 @@ C
 C
       DIMENSION H2(NORBT,NORBT)
       DIMENSION FCSO(NORBT,NORBT),FVSO(NORBT,NORBT)
-      DIMENSION UDV(NASHT,NASHT),WRK(1)
+      DIMENSION UDV(NASHT,NASHT),WRK(*)
       LOGICAL LORB
 C
       PARAMETER (D1=1.0D0, D1P5=1.5D0, D2=2.0D0)
@@ -824,7 +832,7 @@ C
 C
       DIMENSION QASO(NORBT,NASHT),QBSO(NORBT,NASHT)
       DIMENSION PV12(NASHT,NASHT),PV21(NASHT,NASHT)
-      DIMENSION H2(NORBT,NORBT),PVX(1),WRK(1)
+      DIMENSION H2(NORBT,NORBT),PVX(*),WRK(*)
 C
       PARAMETER(D2=2.0D0)
 C
@@ -1135,7 +1143,7 @@ C Sep 14, 1990
 C
       DIMENSION FC(NORBT,NORBT)
       DIMENSION H2AC(NNASHX,NNASHX)
-      DIMENSION GP(KZYVAR),XINDX(1),WRK(1)
+      DIMENSION GP(KZYVAR),XINDX(*),WRK(*)
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -1445,18 +1453,18 @@ C Build HSO inactive fockmatrix from AO integrals
 C If DIRFCK=.TRUE. call TWOINT
 C else read from AO2SOINT
 C
+#include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <dummy.h>
 #include <infinp.h>
 #include <wrkrsp.h>
 #include <inforb.h>
 #include <aovec.h>
 #include <infrsp.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <symmet.h>
 #include <dftcom.h>
+#include <symmet.h>
 #ifdef VAR_DEBUG
 #define DEBUG .TRUE.
 #else
@@ -1534,10 +1542,9 @@ C
          IPRTWO = 0
          TKTIME = .FALSE.
          CALL DZERO(WRK(KFC),NDMAT*N2BASX)
-         IF (DFTRUN) THEN
-            HFXSAV=HFXFAC
-            HFXFAC=D1
-         END IF
+C        Always full exchange for spin-orbit integrals:
+         HFXSAV=HFXFAC
+         HFXFAC=D1
          CALL TWOINT(WRK(KFREE),LFREE,WRK(KFREE),
      &               WRK(KFC),WRK(KDC),NDMAT,
      &               IDUMMY, IFCTYP,
@@ -1547,15 +1554,13 @@ C
      &               WRK(KNPRIM),WRK(KNCONT),WRK(KIORBS),
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &               .FALSE.)
+         HFXFAC=HFXSAV
          CALL MEMREL('HSOFCKAO.TWOINT',WRK,KFC,KJSTRS,KFREE,LFREE)
          IF (DEBUG) THEN
             CALL MAOPRI(WRK(KFC),':TWOINT:Calculated F1')
             IF (NASHT.GT.0) THEN
                CALL MAOPRI(WRK(KFC+N2BASX),':TWOINT:Calculated F2')
             END IF
-         END IF
-         IF (DFTRUN) THEN
-            HFXFAC=HFXSAV
          END IF
 C
 C  Transform to SO
@@ -1610,10 +1615,10 @@ C        CALL DSWAP(N2BASX,WRK(KFC),1,WRK(KFV),1)
       END IF
 C
       CALL DZERO(FC,N2ORBX)
-      CALL AOTOMO(WRK(KFC),FC,CMO,KSYMOP)
+      CALL AOTOMO(WRK(KFC),FC,CMO,KSYMOP,WRK(KFREE),LFREE)
       IF (NASHT.GT.0) THEN
          CALL DZERO(FV,N2ORBX)
-         CALL AOTOMO(WRK(KFV),FV,CMO,KSYMOP)
+         CALL AOTOMO(WRK(KFV),FV,CMO,KSYMOP,WRK(KFREE),LFREE)
       END IF
       IF (DEBUG) THEN
          CALL MAOPRI(WRK(KFC),'HSOFCKAO:FC(AO)')
@@ -2095,7 +2100,7 @@ C
 C
 C Symmetry 1
 C
-      LUINDX = 0
+      LUINDX = -1
       CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUINDX
@@ -2293,6 +2298,9 @@ cF90   REAL(DOUBLE) DP5, D1P5, D1, D2,
       PARAMETER(DP5=0.5D0, D1P5=1.5D0, D1=1.0D0, D2=2.0D0)
 C
       CALL QENTER('GETFMATX')
+      IF (ND .GT. 2) THEN
+         CALL QUIT('ND .gt. fixed dimension of 2')
+      END IF
 C
 C READ AND DISTRIBUTE SPIN-ORBIT AO INTEGRALS
 C
@@ -2330,7 +2338,7 @@ cF90  READFILE: DO
 cF90     IF (LENGTH.LE.0) EXIT
          IF (LENGTH.LE.0) GO TO 300
 cF90     BUFFER: DO IB=1,LENGTH
-         DO 200 IB=1,LENGTH
+         DO IB=1,LENGTH
             LABEL=IBUF(IB)
             I = IBITS(LABEL,24,8)
             J = IBITS(LABEL,16,8)
@@ -2363,7 +2371,8 @@ cF90        IF (ICOOR.NE.COMPONENT) CYCLE BUFFER
                F(K,J,ID) = F(K,J,ID) - XIJKL*D(L,I,ID)
             END DO
 cF90     END DO BUFFER
-  200    END DO
+  200    CONTINUE
+         END DO
 cF90  END DO READFILE
       GO TO 100
   300 CONTINUE

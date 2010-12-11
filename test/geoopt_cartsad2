@@ -91,7 +91,7 @@ CRIT2=`$GREP "Default 1st order TS\-method will be used\: * Bofills update\." $l
 CRIT3=`$GREP "Optimization will be performed in Cartesian coordinates\." $log | wc -l`
 CRIT4=`$GREP "Model Hessian will be used as initial Hessian\." $log | wc -l`
 CRIT5=`$GREP "Partitioned rational function method will be used to control step\." $log | wc -l`
-CRIT6=`$GREP "The eigenvector corresponding to the lowest eigenvalue is chosen" $log | wc -l`
+CRIT6=`$GREP "The eigenvector corresponding to the lowest non-zero eigenvalue is chosen" $log | wc -l`
 CRIT7=`$GREP "as reaction mode \(default\)\." $log | wc -l`
 CRIT8=`$GREP "Baker.s convergence criteria will be used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -101,24 +101,24 @@ ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "3 * z * 1\.4598223474" $log | wc -l`
-CRIT2=`$GREP "4 * C * x * (0| )\.0201357029" $log | wc -l`
+CRIT2=`$GREP "4 * x * (0| )\.0201357029" $log | wc -l`
 CRIT3=`$GREP "6 * z * \-1\.4596834723" $log | wc -l`
-CRIT4=`$GREP "7 * H * x * 1\.6428197329" $log | wc -l`
+CRIT4=`$GREP "7 * x * 1\.6428197329" $log | wc -l`
 CRIT5=`$GREP "8 * y * 1\.0258944623" $log | wc -l`
 CRIT6=`$GREP "9 * z * 2\.1559360111" $log | wc -l`
-CRIT7=`$GREP "10 * H * x * \-1\.7169234124" $log | wc -l`
+CRIT7=`$GREP "10 * x * \-1\.7169234124" $log | wc -l`
 CRIT8=`$GREP "11 * y * (0| )\.9139003605" $log | wc -l`
 CRIT9=`$GREP "12 * z * 2\.1327640108" $log | wc -l`
-CRIT10=`$GREP "13 * H * x * (0| )\.0599355947" $log | wc -l`
+CRIT10=`$GREP "13 * x * (0| )\.0599355947" $log | wc -l`
 CRIT11=`$GREP "14 * y * \-1\.9397948248" $log | wc -l`
 CRIT12=`$GREP "15 * z * 2\.1450189290" $log | wc -l`
-CRIT13=`$GREP "16 * H * x * \-1\.9208446692" $log | wc -l`
+CRIT13=`$GREP "16 * x * \-1\.9208446692" $log | wc -l`
 CRIT14=`$GREP "17 * y * (\-0|\-)\.4855279159" $log | wc -l`
 CRIT15=`$GREP "18 * z * \-2\.1578535369" $log | wc -l`
-CRIT16=`$GREP "19 * H * x * 1\.2716620058" $log | wc -l`
+CRIT16=`$GREP "19 * x * 1\.2716620058" $log | wc -l`
 CRIT17=`$GREP "20 * y * \-1\.3596527890" $log | wc -l`
 CRIT18=`$GREP "21 * z * \-2\.1358349591" $log | wc -l`
-CRIT19=`$GREP "22 * H * x * (0| )\.4235983754" $log | wc -l`
+CRIT19=`$GREP "22 * x * (0| )\.4235983754" $log | wc -l`
 CRIT20=`$GREP "23 * y * 1\.8451807069" $log | wc -l`
 CRIT21=`$GREP "24 * z * \-2\.1416840166" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -129,73 +129,73 @@ CTRL[2]=21
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Initial energy
-CRIT1=`$GREP "Final * HF energy\: * \-78\.30080922911[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-78\.3008092291" $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="INITIAL ENERGY NOT CORRECT"
 
-# Initial gradient
-CRIT1=`$GREP "C * (\-0|\-)\.0011909..[0-9] * (0| )\.0000227..[0-9] * (0| )\.009427(3|4)..[0-9]" $log | wc -l`
-CRIT2=`$GREP "C * (0| )\.07332(69|70)..[0-9] * (\-0|\-)\.0036549..[0-9] * (\-0|\-)\.02252(89|90)..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * (0| )\.0033217..[0-9] * (0| )\.0032651..[0-9] * (\-0|\-)\.0035247..[0-9]" $log | wc -l`
-CRIT4=`$GREP "H * (\-0|\-)\.0048395..[0-9] * (0| )\.0012941..[0-9] * (\-0|\-)\.0032903..[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * (0| )\.0010404..[0-9] * (\-0|\-)\.0047229..[0-9] * (\-0|\-)\.0032142..[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * (\-0|\-)\.0282015..[0-9] * (\-0|\-)\.0037244..[0-9] * (\-0|\-)\.007790(6|7)..[0-9]" $log | wc -l`
-CRIT7=`$GREP "H * (\-0|\-)\.0322100..[0-9] * (0| )\.0242617..[0-9] * (0| )\.0197641..[0-9]" $log | wc -l`
-CRIT8=`$GREP "H * (\-0|\-)\.0112471..[0-9] * (\-0|\-)\.0167414..[0-9] * (0| )\.0111575..[0-9]" $log | wc -l`
+# Initial gradient to 1.0D-6 (threshold for SCF convergence)
+CRIT1=`$GREP "C * \-0*\.001190.*   0*\.000022.*   0*\.009427" $log | wc -l`
+CRIT2=`$GREP "C *   0*\.07332[67].* \-0*\.003654.* \-0*\.02252[89]" $log | wc -l`
+CRIT3=`$GREP "H *   0*\.003321.*   0*\.003265.* \-0*\.003524" $log | wc -l`
+CRIT4=`$GREP "H * \-0*\.004839.*   0*\.00129[34].* \-0*\.003290" $log | wc -l`
+CRIT5=`$GREP "H *   0*\.001040.* \-0*\.004722.* \-0*\.003214" $log | wc -l`
+CRIT6=`$GREP "H * \-0*\.028201.* \-0*\.003724.* \-0*\.007790" $log | wc -l`
+CRIT7=`$GREP "H * \-0*\.032210.*   0*\.024261.*   0*\.01976[34]" $log | wc -l`
+CRIT8=`$GREP "H * \-0*\.01124[67].* \-0*\.016741.*   0*\.011157" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[4]=8
 ERROR[4]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial step
-CRIT1=`$GREP "C * (\-0|\-)\.01148....[0-9] * (0| )\.00490....[0-9] * 1\.45442....[0-9]" $log | wc -l`
-CRIT2=`$GREP "C * (\-0|\-)\.03496....[0-9] * (0| )\.01128....[0-9] * \-1\.46395....[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 1\.54745....[0-9] * 1\.12322....[0-9] * 2\.19361....[0-9]" $log | wc -l`
-CRIT4=`$GREP "H * \-1\.76199....[0-9] * (0| )\.78071....[0-9] * 2\.20589....[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * (0| )\.19120....[0-9] * \-1\.91160....[0-9] * 2\.17265....[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * \-1\.92548....[0-9] * (\-0|\-)\.36868....[0-9] * \-2\.17294....[0-9]" $log | wc -l`
-CRIT7=`$GREP "H * 1\.18912....[0-9] * \-1\.46749....[0-9] * \-2\.18052....[0-9]" $log | wc -l`
-CRIT8=`$GREP "H * (0| )\.58654....[0-9] * 1\.82765....[0-9] * \-2\.21068....[0-9]" $log | wc -l`
+CRIT1=`$GREP "C * (\-0|\-)\.01148.* * (0| )\.00490.* * 1\.45442....[0-9]" $log | wc -l`
+CRIT2=`$GREP "C * (\-0|\-)\.03496.* * (0| )\.01128.* * \-1\.46395....[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 1\.5474.* * 1\.1232.* * 2\.1936" $log | wc -l`
+CRIT4=`$GREP "H * \-1\.7619.* * 0*\.7807.* * 2\.2058" $log | wc -l`
+CRIT5=`$GREP "H * 0*\.1912.* * \-1\.9116.* * 2\.1726" $log | wc -l`
+CRIT6=`$GREP "H * \-1\.9254.* * \-0*\.3686.* * \-2\.1729" $log | wc -l`
+CRIT7=`$GREP "H * 1\.1891.* * \-1\.4674.* * \-2\.1805" $log | wc -l`
+CRIT8=`$GREP "H * 0*\.5865.* * 1\.8276.* * \-2\.2106" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[5]=8
 ERROR[5]="INITIAL STEP NOT CORRECT"
 
 # Second iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30428[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00882[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.34040[0-9]" $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30428" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * 0*\.0088" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * 0*\.3404" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30317[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.01768[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.34190[0-9]" $log | wc -l`
+CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.30317" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * 0*\.0176" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * 0*\.34(19|20)" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="THIRD ITERATION NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "C * (\-0| \-)\.01523...[0-9][0-9] * (\-0| \-)\.00013...[0-9][0-9] * 1\.46251...[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "C * (\-0| \-)\.03962...[0-9][0-9] * (0| )\.00028...[0-9][0-9] * \-1\.46282...[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 1\.14249...[0-9][0-9] * 1\.52752...[0-9][0-9] * 2\.19270...[0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "H * \-1\.90778...[0-9][0-9] * (0| )\.23282...[0-9][0-9] * 2\.21824...[0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "H * (0| )\.738(59|60)...[0-9][0-9] * \-1\.76151...[0-9][0-9] * 2\.19529...[0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "H * \-1\.94729...[0-9][0-9] * (0| )\.21275...[0-9][0-9] * \-2\.18681...[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "H * (0| )\.72095...[0-9][0-9] * \-1\.75248...[0-9][0-9] * \-2\.20890...[0-9][0-9]" $log | wc -l`
-CRIT8=`$GREP "H * 1\.08827...[0-9][0-9] * 1\.54074...[0-9][0-9] * \-2\.21172...[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "C * \-0*\.0152.* * (\-0| \-)\.0001.* * 1\.4625" $log | wc -l`
+CRIT2=`$GREP "C * \-0*\.0396.* * 0*\.0002.* * \-1\.4628" $log | wc -l`
+CRIT3=`$GREP "H * 1\.142.* * 1\.527.* * 2\.192" $log | wc -l`
+CRIT4=`$GREP "H * \-1\.907.* * (0| )\.232.* * 2\.218" $log | wc -l`
+CRIT5=`$GREP "H * 0*\.738.* * \-1\.761.* * 2\.195" $log | wc -l`
+CRIT6=`$GREP "H * \-1\.947.* * (0| )\.212.* * \-2\.186" $log | wc -l`
+CRIT7=`$GREP "H * 0*\.72(1|09).* * \-1\.752.* * \-2\.208" $log | wc -l`
+CRIT8=`$GREP "H * 1\.088.* * 1\.540.* * \-2\.211" $log | wc -l`
 TEST[8]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
                 $CRIT7 \+ $CRIT8`
 CTRL[8]=32
 ERROR[8]="FINAL GEOMETRY NOT CORRECT"
 
 # Geometry convergence
-CRIT1=`$GREP "Geometry converged in * 14( |  )iterations\!" $log | wc -l`
-CRIT2=`$GREP "Energy at final geometry is * \: * \-78\.30160[0-9] a\.u\." $log | wc -l`
-CRIT3=`$GREP "Energy change during optimization \: * (\-0| \-)\.00079[0-9] a\.u\." $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 14  *iterations\!" $log | wc -l`
+CRIT2=`$GREP "Energy at final geometry is * \: * \-78\.30160.* a\.u\." $log | wc -l`
+CRIT3=`$GREP "Energy change during optimization \: * \-0*\.00079.* a\.u\." $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="GEOMETRY OPTIMIZATION NOT CONVERGED"
@@ -203,8 +203,8 @@ ERROR[9]="GEOMETRY OPTIMIZATION NOT CONVERGED"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi
 done

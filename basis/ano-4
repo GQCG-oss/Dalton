@@ -1,5 +1,6 @@
 $Basis = ano-4
-************************************************************************
+$  REFERENCE
+$***********************************************************************
 /H.ano.Pierloot.7s3p.4s3p.
 K. Pierloot, B. Dumez, P.-O. Widmark and B. O. Roos
 Theor. Chim. Acta, 90, 87 (1995)
@@ -75,7 +76,7 @@ Theor. Chim. Acta, 90, 87 (1995)
 * Augmented: 1s with exponent 0.35x lowest exponent                    *
 *            4p 3 optimized for Li2 with 1 added as an                 *
 *               eventempered continuation.                             *
-*            3p 2 optimized for Li2 with 1 added as an                 *
+*            3d 2 optimized for Li2 with 1 added as an                 *
 *               eventempered continuation.                             *
 *                                                                      *
 * Contraction: State Field Method Weight                               *

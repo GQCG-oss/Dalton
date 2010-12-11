@@ -1,28 +1,25 @@
 $Basis = 6-31+G
-
-$Elements supported
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
+$
+$ Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 $
 $  REFERENCE
-$Elements                             References                                
-$--------                             ----------                                
-$ H - He: W.J. Hehre, R. Ditchfield and J.A. Pople, J. Chem. Phys. 56,          
-$Li - Ne: 2257 (1972).  Note: Li and B come from J.D. Dill and J.A.             
-$         Pople, J. Chem. Phys. 62, 2921 (1975).                                
-$Na - Ar: M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon,       
-$         D.J. DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982)           
-$K  - Zn: V. Rassolov, J.A. Pople, M. Ratner and T.L. Windus, J. Chem. Phys.    
-$         109, 1223 (1998)                                                      
-$**                                                                             
-$         Note: He and Ne are unpublished basis sets taken from the Gaussian    
-$         program
+$ Elements                             References                                
+$ --------                             ----------                                
+$  H - He: W.J. Hehre, R. Ditchfield and J.A. Pople, J. Chem. Phys. 56,          
+$ Li - Ne: 2257 (1972).  Note: Li and B come from J.D. Dill and J.A.             
+$          Pople, J. Chem. Phys. 62, 2921 (1975).                                
+$ Na - Ar: M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon,       
+$          D.J. DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982)           
+$ K  - Zn: V. Rassolov, J.A. Pople, M. Ratner and T.L. Windus, J. Chem. Phys.    
+$          109, 1223 (1998)                                                      
+$ Note: He and Ne are unpublished basis sets taken from Gaussian    
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
-$Elements                             Reference                                 
-$--------                             ----------                                
-$H, Li-Cl: T. Clark, J. Chandrasekhar, P.V.R. Schleyer, J. Comp. Chem. 4, 294   
-$          (1983).
-$
+$ Elements                             Reference                                 
+$ --------                             ----------                                
+$ H, Li-Cl: T. Clark, J. Chandrasekhar, P.V.R. Schleyer, J. Comp. Chem. 4, 294 (1983).
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS
@@ -32,16 +29,16 @@ $ S-TYPE FUNCTIONS
       0.6401217  0.81375733  0.00000000
       0.1612778  0.00000000  1.00000000
 a 2
-$ HELIUM       (4s) -> [2s]                                      
+$ HELIUM       (4s) -> [2s]
 $ S-TYPE FUNCTIONS
     4    2    0
-     38.4216340  0.02376600  0.00000000
-      5.7780300  0.15467900  0.00000000
-      1.2417740  0.46963000  0.00000000
+     38.4216340  0.04013974  0.00000000
+      5.7780300  0.26124610  0.00000000
+      1.2417740  0.79318462  0.00000000
       0.2979640  0.00000000  1.00000000
 a 3
 $ LITHIUM      (10s,4p) -> [3s,2p]                               
-$ LITHIUM      (Diffuse sp)                                      
+$ LITHIUM      (1s,1p) diffuse
 $ S-TYPE FUNCTIONS
    11    4    0
     642.4189200  0.00214260  0.00000000  0.00000000  0.00000000
@@ -64,7 +61,7 @@ $ P-TYPE FUNCTIONS
       0.0074000  0.00000000  0.00000000  1.00000000
 a 4
 $ BERYLLIUM    (10s,4p) -> [3s,2p]                               
-$ BERYLLIUM    (Diffuse sp)                                      
+$ BERYLLIUM    (1s,1p)
 $ S-TYPE FUNCTIONS
    11    4    0
    1264.5857000  0.00194480  0.00000000  0.00000000  0.00000000
@@ -87,7 +84,7 @@ $ P-TYPE FUNCTIONS
       0.0207000  0.00000000  0.00000000  1.00000000
 a 5
 $ BORON        (10s,4p) -> [3s,2p]                               
-$ BORON        (Diffuse sp)                                      
+$ BORON        (1s,1p)                                      
 $ S-TYPE FUNCTIONS
    11    4    0
    2068.8823000  0.00186630  0.00000000  0.00000000  0.00000000
@@ -110,7 +107,7 @@ $ P-TYPE FUNCTIONS
       0.0315000  0.00000000  0.00000000  1.00000000
 a 6
 $ CARBON       (10s,4p) -> [3s,2p]                               
-$ CARBON       (Diffuse sp)                                      
+$ CARBON       (1s,1p)                                      
 $ S-TYPE FUNCTIONS
    11    4    0
    3047.5249000  0.00183470  0.00000000  0.00000000  0.00000000
@@ -133,7 +130,7 @@ $ P-TYPE FUNCTIONS
       0.0438000  0.00000000  0.00000000  1.00000000
 a 7
 $ NITROGEN     (10s,4p) -> [3s,2p]                               
-$ NITROGEN     (Diffuse sp)                                      
+$ NITROGEN     (1s,1p)                                      
 $ S-TYPE FUNCTIONS
    11    4    0
    4173.5110000  0.00183480  0.00000000  0.00000000  0.00000000
@@ -156,7 +153,7 @@ $ P-TYPE FUNCTIONS
       0.0639000  0.00000000  0.00000000  1.00000000
 a 8
 $ OXYGEN       (10s,4p) -> [3s,2p]                               
-$ OXYGEN       (Diffuse sp)                                      
+$ OXYGEN       (1s,1p)                                      
 $ S-TYPE FUNCTIONS
    11    4    0
    5484.6717000  0.00183110  0.00000000  0.00000000  0.00000000
@@ -504,7 +501,4 @@ $ P-TYPE FUNCTIONS
       0.1738880  0.00000000  0.00000000  1.00000000  0.00000000
       0.0600000  0.00000000  0.00000000  0.00000000  1.00000000
 
-
-
-
-
+$ END OF BASIS

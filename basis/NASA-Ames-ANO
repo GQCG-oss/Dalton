@@ -1,13 +1,13 @@
 $Basis = NASA-Ames-ANO
-
-$Elements supported
-$H B C N O F Ne Al P Ti Fe Ni 
+$
+$ Elements supported
+$ H B C N O F Ne Al P Ti Fe Ni 
 $
 $  REFERENCE
-$ J. ALMLOF AND P.R. TAYLOR, J. CHEM. PHYS. 86, 4070 (1987).                   
-$ C.W. BAUSCHLICHER, JR., S.R. LANGHOFF, A. KORMORNICKI,  THEOR. CHIM ACTA 77, 
-$  263 (1990)                                                                  
-$
+$     J. ALMLOF AND P.R. TAYLOR, J. CHEM. PHYS. 86, 4070 (1987).                   
+$     C.W. BAUSCHLICHER, JR., S.R. LANGHOFF, A. KORMORNICKI, 
+$          THEOR. CHIM ACTA 77, 263 (1990)                                                                  
+$***********************************************************************
 a 1
 $ HYDROGEN     (8s,6p,4d,3f) -> [4s,3p,2d,1f]                    
 $ S-TYPE FUNCTIONS

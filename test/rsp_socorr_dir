@@ -135,7 +135,7 @@ CRIT5=`$GREP "\- Fermi contact integrals" $log | wc -l`
 CRIT6=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
 CRIT7=`$GREP "\- paramagnetic spin\-orbit integrals" $log | wc -l`
 CRIT8=`$GREP "\(nuclear moment \- electron orbit coupling\)" $log | wc -l`
-CRIT9=`$GREP "Direct calculation" $log | wc -l`
+CRIT9=`$GREP "AO-direct calculation" $log | wc -l`
 CRIT10=`$GREP "Integrals for all indirect spin\-spin coupling and/or shielding tensors are calculated\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
@@ -143,19 +143,19 @@ CTRL[1]=10
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "He * 1 * 2 * 4 * 4 * \[1s1p\|1s1p\]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1 * 1 * 1 * \[1s\|1s\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 2 * 3 * 5 * 5" $log | wc -l`
+CRIT1=`$GREP "He * 1 * 2\.0000 * 4 * 4 * \[1s1p\|1s1p\]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * 1\.0000 * 1 * 1 * \[1s\|1s\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 3\.0000 * 5 * 5" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * He * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0|\-)\.7000000000" $log | wc -l`
-CRIT5=`$GREP "4 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (0| )\.7000000000" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -215,8 +215,8 @@ ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

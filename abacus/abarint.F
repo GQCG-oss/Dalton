@@ -33,14 +33,15 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
-C File:  abarint.F
+C File:  abacus/abarint.F
 C
 C New module taking care of redundant internal coordinates.
 C The procedures are called from abaopt.F /960818-vebjornb
 C
 C  /* Deck inired */
       SUBROUTINE INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,BMTINV,PJINMT,
-     &                TMPMAT,TMPMT2,TMPMT3,TMPMT4)
+     &                  TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,TMPMT6,
+     &                  WRK,LWRK)
 C
 C     Initializes everything that has to do with redundant internal
 C     coordinates.
@@ -53,11 +54,18 @@ C
       DIMENSION BMTINV(MXRCRD*MX2CRD), PJINMT(MXRCRD*MXRCRD)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)
+      DIMENSION TMPMT5(MX2CRD,MX2CRD), TMPMT6(MX2CRD,MX2CRD)
+      DIMENSION WRK(LWRK)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
 C     First we have to determine the redundant internal coordinates.
 C
       CALL FNDRED(TMPMAT,TMPMT2)
+      IF (REDRED) THEN
+         CALL RREDUN
+         IF (IPRINT .GE. IPRMIN) WRITE(LUPRI,'(/A,I6)')
+     &        ' Number of internal coordinates after removals :',IINTCR
+      END IF
 C
 C     Then we construct Wilsons B matrix
 C
@@ -66,12 +74,12 @@ C
 C     ... and the derivative of the B matrix
 C
       IF (IPRINT .GE. IPRDBG)
-     &     CALL GETDWL(MXRCRD,TMPMAT,TMPMT2,TMPMT3,WILBMT)
+     &   CALL GETDWL(MXRCRD,TMPMAT,TMPMT2,TMPMT3,WILBMT)
 C
 C     We also need the inverse of the rectangular B matrix.
 C
       CALL GTBINV(MXRCRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,WILBMT,
-     &     BMTRAN,BMTINV,PJINMT)
+     &     BMTRAN,BMTINV,PJINMT,TMPMT5,TMPMT6,WRK,LWRK)
       RETURN
       END
 
@@ -159,7 +167,7 @@ C
             WRITE(LUPRI,'(/A)') 'Try running the calculation in ' //
      &           'Cartesian coordinates.'
          END IF
-         CALL QUIT('Too many internal ccordinates!')
+         CALL QUIT('Too many internal coordinates!')
       END IF
       IC = 1
  20   CONTINUE
@@ -193,20 +201,23 @@ C
 #include "optinf.h"
 #include "codata.h"
       DIMENSION VALINT(ICRD)
-      CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
+      CHARACTER CRDTXT*26, MARK*3, UNTTXT*5
       LOGICAL REMCRD
 C
       CALL HEADER('Redundant internal coordinates',-1)
-      EMPTXT = '        '
+      IF (IPRINT .LT. 3) WRITE(LUPRI,'(11X,A/)')
+     &   '(Auxiliary bonds are not printed at this print level.)'
       REMCRD = .FALSE.
+      IREMCRD = 0
       DO 10 I = 1, ICRD
-         CRDTXT = '                      '
-         MARK = ' '
-         IF (CONOPT .AND. (ICNSTR(I) .EQ. 1)) MARK = '*'
+         MARK = '   '
+         IF (CONOPT .AND. (ICNSTR(I) .EQ. 1)) MARK = '*  '
          IF (ICNSTR(I) .EQ. 2) THEN
-            MARK = '#'
+            MARK = '#  '
             REMCRD = .TRUE.
+            IREMCRD = IREMCRD + 1
          END IF
+         CRDTXT = '                          '
          IF (INTCRD(I,1) .LT. 10) THEN
             UNTTXT = ' Ang.'
             IF (INTCRD(I,1) .EQ. 1) CRDTXT='Regular bond'
@@ -214,36 +225,42 @@ C
             IF (INTCRD(I,1) .EQ. 4) CRDTXT='Additional interfrag. bond'
             IF (INTCRD(I,1) .EQ. 5) CRDTXT='Hydrogen bond'
             IF (INTCRD(I,1) .EQ. 7) CRDTXT='Auxiliary bond'
+            IF (INTCRD(I,1) .EQ. 9) CRDTXT='Manual bond'
             IF ((INTCRD(I,1) .NE. 7) .OR. (IPRINT .GE. 3))
-     &           WRITE(LUPRI,'(A,I3,2A,A22,2I4,A,F14.5,A5)') EMPTXT,I,
-     &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),EMPTXT,
+     &           WRITE(LUPRI,'(I8,2A,2I4,F22.5,A5)') I,
+     &           MARK,CRDTXT,INTCRD(I,2),INTCRD(I,3),
      &           XTANG*VALINT(I),UNTTXT
          ELSE IF (INTCRD(I,1) .GT. 20) THEN
             UNTTXT = ' deg.'
             IF (INTCRD(I,1) .EQ. 21) CRDTXT='Dihedral angle'
             IF (INTCRD(I,1) .EQ. 23) CRDTXT='Extra dihedral angle'
-            WRITE(LUPRI,'(A,I3,2A,A22,4I4,F14.3,A5)') EMPTXT,I,
-     &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),
+            IF (INTCRD(I,1) .EQ. 25)
+     &           CRDTXT='Interfrag. dihedral angle'
+            IF (INTCRD(I,1) .EQ. 29) CRDTXT='Manual dihedral angle'
+            WRITE(LUPRI,'(I8,2A,4I4,F14.3,A5)') I,
+     &           MARK,CRDTXT,INTCRD(I,2),INTCRD(I,3),
      &           INTCRD(I,4),INTCRD(I,5),1.8D2*VALINT(I)/PI,UNTTXT
          ELSE
             UNTTXT = ' deg.'
             IF (INTCRD(I,1) .EQ. 11) CRDTXT='Regular angle'
             IF (INTCRD(I,1) .EQ. 12) CRDTXT='Additional angle'
-            WRITE(LUPRI,'(A,I3,2A,A22,3I4,A,F14.3,A5)') EMPTXT,I,
-     &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),
-     &           INTCRD(I,4),EMPTXT(1:4),1.8D2*VALINT(I)/PI,UNTTXT
+            IF (INTCRD(I,1) .EQ. 19) CRDTXT='Manual angle'
+            WRITE(LUPRI,'(I8,2A,3I4,F18.3,A5)') I,
+     &           MARK,CRDTXT,INTCRD(I,2),INTCRD(I,3),
+     &           INTCRD(I,4),180.D0*VALINT(I)/PI,UNTTXT
          END IF
  10   CONTINUE
       IF (CONOPT .OR. REMCRD) THEN
          WRITE(LUPRI,*)
          IF (CONOPT) WRITE(LUPRI,*)
-     &        '*) Constrained (fixed) coordinates.'
+     &        '*) Constrained (fixed) coordinate.'
          IF (REMCRD) WRITE(LUPRI,*)
      &        '#) Coordinate will be removed.'
       END IF
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A,I5)')
-     &     ' Total number of redundant internal coordinates: ',ICRD
+      WRITE(LUPRI,'(/A,I6)')
+     &     ' Total number of redundant internal coordinates:',ICRD
+      IF (IREMCRD .GT. 0) WRITE(LUPRI,'(/A,I6)')
+     &     ' Total number of removed internal coordinates:  ',IREMCRD
       RETURN
       END
 
@@ -449,8 +466,7 @@ C
          GOTO 20
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A,I4)') 
+         WRITE(LUPRI,'(/A,I4)') 
      &        ' Number of separate fragments found: ', IFRAG
       END IF
 C
@@ -610,6 +626,40 @@ C
  77      CONTINUE
       END IF
 C
+C     Bond coordinates that have been manually specified are added
+C     (if not already present)
+C
+      IBEFOR = IINTCR
+      IF (ADDCRD .AND. (IPRINT .GE. IPRMAX)) THEN
+         CALL HEADER('Manually added bonds',-1)
+      END IF
+      DO 700 I = 1, IADDCR(0,1)
+         IF ((IADDCR(I,3) .EQ. 0) .AND. (IADDCR(I,4) .EQ. 0)) THEN
+            IF ((IADDCR(I,1) .GT. IATOM)
+     &           .OR. (IADDCR(I,2) .GT. IATOM)) THEN
+               WRITE(LUPRI,'(A,I4)')
+     &              ' Critical error in additional coordinate #', I
+               WRITE(LUPRI,'(A)') ' Chosen atom number '
+     &              // 'is larger than the number of atoms.'
+               CALL QUIT(' Error detected in the specification of '
+     &              // 'additional bond coordinate(s)!')
+            END IF
+            IF (IBOND(IADDCR(I,1),IADDCR(I,2)) .EQ. 0) THEN
+               IINTCR = IINTCR + 1
+               INTCRD(IINTCR,1) = 9
+               INTCRD(IINTCR,2) = IADDCR(I,1)
+               INTCRD(IINTCR,3) = IADDCR(I,2)
+            END IF
+         END IF
+ 700  CONTINUE
+      IF ((IBEFOR .NE. IINTCR) .AND. (IPRINT .GE. IPRMAX)) THEN
+         DO 710 I = IBEFOR + 1, IINTCR
+            WRITE(LUPRI,'(A,2I4)')
+     &           ' Manual bond between atoms: ',
+     &           INTCRD(I,2),INTCRD(I,3)
+ 710     CONTINUE
+      END IF
+C
 C     We also determine "extra bonds" between atoms. These will
 C     not generate angles and dihedral angles, but they seem to
 C     make geometry optimization in redundant coordinates more
@@ -618,9 +668,7 @@ C
       IBEFOR = IINTCR
 C      IF (.NOT. NOAUX) THEN
       IF (.NOT. NOAUX .AND. (MODHES .OR. CMBMOD .OR. INMDHS)) THEN
-         IF (IPRINT .GE. IPRMAX) THEN
-            CALL HEADER('Auxiliary bonds',-1)
-         END IF
+         IF (IPRINT .GE. IPRMAX) CALL HEADER('Auxiliary bonds',-1)
          DO 80 I = 1, IATOM - 1
             DO 85 J = I + 1, IATOM
                RADI = ATMARR(I,5)
@@ -633,21 +681,18 @@ C
 C     Extra bonds have dist. less than 2.5 times sum of cov. radii
 C
                IF ((DIST .LE. 2.5D0*(RADI+RADJ)) .AND.
-     &              (IBOND(I,J) .NE. 1)) THEN
+     &              (IBOND(I,J) .EQ. 0)) THEN
                   IINTCR = IINTCR + 1
                   INTCRD(IINTCR,1) = 7
                   INTCRD(IINTCR,2) = I
                   INTCRD(IINTCR,3) = J
-                  IF (IPRINT .GE. IPRMAX) THEN
-                     WRITE(LUPRI,'(A,2I4)')
-     &                    ' Auxiliary bond between atoms: ',i,j
-                  END IF
+                  IF (IPRINT .GE. IPRMAX) WRITE(LUPRI,'(A,2I4)')
+     &                 ' Auxiliary bond between atoms: ',i,j
                END IF
  85         CONTINUE
  80      CONTINUE
-         IF ((IPRINT .GE. IPRMAX) .AND. (IBEFOR .EQ. IINTCR)) THEN
-            WRITE(LUPRI,'(A)') ' None were added.'
-         END IF
+         IF ((IPRINT .GE. IPRMAX) .AND. (IBEFOR .EQ. IINTCR)) 
+     &        WRITE(LUPRI,'(A)') ' None were added.'
       END IF
       RETURN
       END
@@ -672,17 +717,20 @@ C
       DO 10 I = 1, IATOM
          NUMBND = 0
          DO 15 J = 1, IATOM
-            IF (IBOND(I,J) .GT. 0) NUMBND = NUMBND + 1
+            IF ((IBOND(I,J) .GT. 0) .AND. (IBOND(I,J) .NE. 9))
+     &           NUMBND = NUMBND + 1
  15      CONTINUE
          IF (NUMBND .GT. 1) THEN
             DO 20 J = 1, IATOM - 1
-               IF ((IBOND(I,J) .GT. 0) .AND. (IBOND(I,J) .NE. 4)) THEN
+               IF ((IBOND(I,J) .GT. 0) .AND. (IBOND(I,J) .NE. 4) 
+     &              .AND. (IBOND(I,J) .NE. 9)) THEN
                   VEC1(1) = ATMARR(J,2)-ATMARR(I,2)
                   VEC1(2) = ATMARR(J,3)-ATMARR(I,3)
                   VEC1(3) = ATMARR(J,4)-ATMARR(I,4)
                   DO 25 K = J + 1, IATOM
                      IF ((IBOND(I,K) .GT. 0) .AND.
-     &                   (IBOND(I,K) .NE. 4)) THEN
+     &                    (IBOND(I,K) .NE. 4) .AND.
+     &                    (IBOND(I,K) .NE. 9)) THEN
                         IINTCR = IINTCR + 1
                         INTCRD(IINTCR,1) = 11
                         INTCRD(IINTCR,2) = J
@@ -697,7 +745,8 @@ C
                         VEC2(2) = ATMARR(K,3)-ATMARR(I,3)
                         VEC2(3) = ATMARR(K,4)-ATMARR(I,4)
                         BNDANG = VECANG(VEC1,VEC2)
-                        IF (ABS(BNDANG) .GE. 175D0*PI/180D0) THEN
+                        IF ((ABS(BNDANG) .GE. 175D0*PI/180D0) .AND.
+     &                       (.NOT. NOADDA)) THEN
                            IINTCR = IINTCR + 1
                            INTCRD(IINTCR,1) = 12
                            INTCRD(IINTCR,2) = J
@@ -719,6 +768,45 @@ C
      &           INTCRD(I,2),INTCRD(I,3),INTCRD(I,4)
  30      CONTINUE
       END IF
+C
+C     Angle coordinates that have been manually specified are added
+C     (if not already present)
+C
+      IBEFOR = IINTCR
+      IF (ADDCRD .AND. (IPRINT .GE. IPRMAX)) THEN
+         CALL HEADER('Manually added angles',-1)
+      END IF
+      DO 50 I = 1, IADDCR(0,1)
+         IF ((IADDCR(I,3) .GT. 0) .AND. (IADDCR(I,4) .EQ. 0)) THEN
+            IF ((IADDCR(I,1) .GT. IATOM) .OR. (IADDCR(I,2) .GT. IATOM) 
+     &           .OR. (IADDCR(I,3) .GT. IATOM))  THEN
+               WRITE(LUPRI,'(A,I4)')
+     &              ' Critical error in additional coordinate #', I
+               WRITE(LUPRI,'(A)') ' Chosen atom number '
+     &              // 'is larger than the number of atoms.'
+               CALL QUIT(' Error detected in the specification of '
+     &              // 'additional angle coordinate(s)!')
+            END IF
+            IBND1 = IBOND(IADDCR(I,1),IADDCR(I,2))
+            IBND2 = IBOND(IADDCR(I,2),IADDCR(I,3))
+C     Check if the three atoms should already have produced an angle coordinate
+            IF (.NOT.(((IBND1.GT.0).AND.(IBND1.NE.4).AND.(IBND1.NE.9))
+     &      .AND.((IBND2.GT.0).AND.(IBND2.NE.4).AND.(IBND2.NE.9)))) THEN
+               IINTCR = IINTCR + 1
+               INTCRD(IINTCR,1) = 19
+               INTCRD(IINTCR,2) = IADDCR(I,1)
+               INTCRD(IINTCR,3) = IADDCR(I,2)
+               INTCRD(IINTCR,4) = IADDCR(I,3)
+            END IF
+         END IF
+ 50   CONTINUE
+      IF ((IBEFOR .NE. IINTCR) .AND. (IPRINT .GE. IPRMAX)) THEN
+         DO 710 I = IBEFOR + 1, IINTCR
+            WRITE(LUPRI,'(A,3I4)')
+     &           ' Manual angle between atoms: ',
+     &           INTCRD(I,2),INTCRD(I,3),INTCRD(I,4)
+ 710     CONTINUE
+      END IF
       RETURN
       END
 
@@ -737,14 +825,17 @@ C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (DEG175 = 175D0*PI/180D0)
+      LOGICAL FRGBND, FOUND
 C
 C     We have to find all dihedral angles between bonded atoms
 C
       IF (IATOM .LE. 3) RETURN
+      FRGBND = .FALSE.
       INODIH = IINTCR
       IBEFOR = IINTCR
       DO 10 I = 1, IATOM
          DO 15 J = 1, IATOM
+            IF (IBOND(I,J) .EQ. 3) FRGBND = .TRUE.
             IF ((IBOND(I,J) .GT. 0) .AND. (IBOND(I,J) .NE. 4)) THEN
                DO 20 K = 1, IATOM
                   IF ((IBOND(J,K) .GT. 0) .AND. (K .NE. I) .AND.
@@ -795,11 +886,113 @@ C
  30      CONTINUE
       END IF
 C
+C     For weakly bound systems, we want to make sure that we add
+C     dihedrals across the interfragment bonds (if not already present)
+C
+      IF (FRGBND) THEN
+         DO 40 IFBCRD = 1, IINTCR
+            IF (INTCRD(IFBCRD,1) .EQ. 3) THEN
+               I = INTCRD(IFBCRD,2)
+               J = INTCRD(IFBCRD,3)
+               FOUND = .FALSE.
+C
+C     Check if dihedral(s) already span this interfragment bond
+C
+               DO 41 ICRD = 1, IINTCR
+                  IF (INTCRD(ICRD,1) .EQ. 21) THEN
+                     IF ((INTCRD(ICRD,3) .EQ. I) .AND.
+     &                    (INTCRD(ICRD,4) .EQ. J))
+     &                    FOUND = .TRUE.
+                     IF ((INTCRD(ICRD,3) .EQ. J) .AND.
+     &                    (INTCRD(ICRD,4) .EQ. I))
+     &                    FOUND = .TRUE.
+                  END IF
+ 41            CONTINUE
+C
+C     If not, we have to do a wider search. What we are looking for are
+C     dihedrals A-B-C-D, where the actual bonding situation is A--B...C--X--D,
+C     i.e. BC is the interfragment bond while C and D are both bonded
+C     to the same atom X
+C
+               IF (.NOT. FOUND) THEN
+                  DO 42 ICRD = 1, IINTCR
+                     IF (INTCRD(ICRD,1) .EQ. 1) THEN
+                        II1 = 0
+                        IF (INTCRD(ICRD,2) .EQ. I) THEN
+                           II1 = INTCRD(ICRD,3)
+                           II2 = I
+                           II3 = J
+                        ELSE IF (INTCRD(ICRD,3) .EQ. I) THEN
+                           II1 = INTCRD(ICRD,2)
+                           II2 = I
+                           II3 = J
+                        ELSE IF (INTCRD(ICRD,2) .EQ. J) THEN
+                           II1 = INTCRD(ICRD,3)
+                           II2 = J
+                           II3 = I
+                        ELSE IF (INTCRD(ICRD,3) .EQ. J) THEN
+                           II1 = INTCRD(ICRD,2)
+                           II2 = J
+                           II3 = I
+                        END IF
+                        IF (II1 .GT. 0) THEN
+                           DO 43 IAT1 = 1, IATOM
+                              IF (IBOND(IAT1,II3) .EQ. 1) THEN
+                                 DO 44 IAT2 = 1, IATOM
+                                    IF ((IBOND(IAT1,IAT2) .EQ. 1) .AND.
+     &                                   (IAT2 .NE. II3)) THEN
+                                       II4 = IAT2
+C     Check for linearity.
+                                       VEC1(1) = ATMARR(II1,2)
+     &                                      - ATMARR(II2,2)
+                                       VEC1(2) = ATMARR(II1,3)
+     &                                      - ATMARR(II2,3)
+                                       VEC1(3) = ATMARR(II1,4)
+     &                                      - ATMARR(II2,4)
+                                       VEC2(1) = ATMARR(II3,2)
+     &                                      - ATMARR(II2,2)
+                                       VEC2(2) = ATMARR(II3,3)
+     &                                      - ATMARR(II2,3)
+                                       VEC2(3) = ATMARR(II3,4)
+     &                                      - ATMARR(II2,4)
+                                       BNDAN1  = VECANG(VEC1,VEC2)
+                                       VEC1(1) = -VEC2(1)
+                                       VEC1(2) = -VEC2(2)
+                                       VEC1(3) = -VEC2(3)
+                                       VEC2(1) = ATMARR(II4,2)
+     &                                      - ATMARR(II3,2)
+                                       VEC2(2) = ATMARR(II4,3)
+     &                                      - ATMARR(II3,3)
+                                       VEC2(3) = ATMARR(II4,4)
+     &                                      - ATMARR(II3,4)
+                                       BNDAN2  = VECANG(VEC1,VEC2)
+                                       IF ((ABS(BNDAN1).LT.DEG175).AND.
+     &                                    (ABS(BNDAN2).LT.DEG175)) THEN
+                                          IINTCR = IINTCR + 1
+                                          INTCRD(IINTCR,1) = 25
+                                          INTCRD(IINTCR,2) = II1
+                                          INTCRD(IINTCR,3) = II2
+                                          INTCRD(IINTCR,4) = II3
+                                          INTCRD(IINTCR,5) = II4
+                                       END IF
+                                    END IF
+ 44                              CONTINUE
+                              END IF
+ 43                        CONTINUE
+                        END IF
+                     END IF
+ 42               CONTINUE
+               END IF
+            END IF
+ 40      CONTINUE
+      END IF
+C
 C     Systems with more than three atoms where no regular dihedral
 C     angles has been found, need addition of dihedral angles to take
 C     care of out of plane bending. First we find the central atom.
 C
       ICNT = 0
+      IBNDNR = 0
       IF ((IATOM .GE. 4) .AND. (IBEFOR .EQ. IINTCR)) THEN
          DO 50 I = 1, IATOM
             INUMBN = 0
@@ -904,6 +1097,49 @@ C
  70         CONTINUE
          END IF
       END IF
+C
+C     Dihedral angle coordinates that have been manually specified are added
+C     (if not already present)
+C
+      IBEFOR = IINTCR
+      IF (ADDCRD .AND. (IPRINT .GE. IPRMAX)) THEN
+         CALL HEADER('Manually added dihedral angles',-1)
+      END IF
+      DO 90 I = 1, IADDCR(0,1)
+         IF ((IADDCR(I,3) .GT. 0) .AND. (IADDCR(I,4) .GT. 0)) THEN
+            IF ((IADDCR(I,1) .GT. IATOM) .OR. (IADDCR(I,2) .GT. IATOM)
+     &           .OR. (IADDCR(I,3) .GT. IATOM)
+     &           .OR. (IADDCR(I,4) .GT. IATOM)) THEN
+               WRITE(LUPRI,'(A,I4)')
+     &              ' Critical error in additional coordinate #', I
+               WRITE(LUPRI,'(A)') ' Chosen atom number '
+     &              // 'is larger than the number of atoms.'
+               CALL QUIT(' Error detected in the specification of '
+     &              // 'additional dihedral coordinate(s)!')
+            END IF
+            IBND1 = IBOND(IADDCR(I,1),IADDCR(I,2))
+            IBND2 = IBOND(IADDCR(I,2),IADDCR(I,3))
+            IBND3 = IBOND(IADDCR(I,3),IADDCR(I,4))
+C     Check if the four atoms should already have produced a dihedral coordinate
+            IF (.NOT.(((IBND1.GT.0).AND.(IBND1.NE.4).AND.(IBND1.NE.9))
+     &      .AND.((IBND2.GT.0).AND.(IBND2.NE.4).AND.(IBND2.NE.9))
+     &      .AND.((IBND3.GT.0).AND.(IBND3.NE.4).AND.(IBND3.NE.9)))) THEN
+               IINTCR = IINTCR + 1
+               INTCRD(IINTCR,1) = 29
+               INTCRD(IINTCR,2) = IADDCR(I,1)
+               INTCRD(IINTCR,3) = IADDCR(I,2)
+               INTCRD(IINTCR,4) = IADDCR(I,3)
+               INTCRD(IINTCR,5) = IADDCR(I,4)
+            END IF
+         END IF
+ 90   CONTINUE
+      IF ((IBEFOR .NE. IINTCR) .AND. (IPRINT .GE. IPRMAX)) THEN
+         DO 95 I = IBEFOR + 1, IINTCR
+            WRITE(LUPRI,'(A,4I4)')
+     &           ' Manual dihedral between atoms: ',
+     &           INTCRD(I,2),INTCRD(I,3),INTCRD(I,4),INTCRD(I,5)
+ 95      CONTINUE
+      END IF
       RETURN
       END
 
@@ -919,8 +1155,8 @@ C
 #include "pi.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
-      NDIHD = 0
       IBEFOR = IINTCR
+      NDIHD = 0
       DO 10 I = 1, IINTCR
          IF (INTCRD(I,1) .GE. 20) NDIHD = NDIHD + 1
  10   CONTINUE
@@ -929,6 +1165,7 @@ C     The number of dihedral angles should be larger than 10 and
 C     comprise more than 1/3 of the total number of coordinates.
 C
       IF ((NDIHD .LT. 10) .OR. (NDIHD .LT. IINTCR/3)) RETURN
+C
       IFIRST = IINTCR - NDIHD + 1
       IC = IFIRST
 C
@@ -975,16 +1212,14 @@ C
             GOTO 35
          END IF
       END IF
-      NDIHD = NDIHD - (IBEFOR-IINTCR)
+      NDIHD = IINTCR - IFIRST + 1
       IF ((NDIHD .GT. 10) .AND. (NDIHD .GT. IINTCR/5)) THEN
          IC = IINTCR - NDIHD + 1
          GOTO 20
       END IF
       IF (IPRINT .GE. IPRMIN) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) IBEFOR-IINTCR,
+         WRITE(LUPRI,'(/I10,A/)') IBEFOR-IINTCR,
      &        ' dihedral angles were removed to reduce redundancy!'
-         WRITE(LUPRI,*)
       END IF
       RETURN
       END
@@ -1051,7 +1286,7 @@ C
                VEC1(3) = ATMARR(INTCRD(IC,2),4) - ATMARR(INTCRD(IC,3),4)
                BNDL1 = SQRT(DDOT(3,VEC1,1,VEC1,1))
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*) 'Numerical results for coordinate',IC
                WRITE(LUPRI,*)
                DO 27 II = 1, IATOM
                   DO 28 JJ = 1, 3
@@ -1137,7 +1372,7 @@ C
                IF ((INTCRD(IC,1) .EQ. 12) .OR. (INTCRD(IC+1,1) .EQ. 12))
      &              ANGLE = VECANG(VEC1,VEC4) + VECANG(VEC4,VEC2)
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*) 'Numerical results for coordinate',IC
                WRITE(LUPRI,*)
                DO 47 II = 1, IATOM
                   DO 48 JJ = 1, 3
@@ -1242,9 +1477,8 @@ C
                VEC6(1) = VEC3(1)
                VEC6(2) = VEC3(2)
                VEC6(3) = VEC3(3)
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
-               WRITE(LUPRI,*)
+               WRITE(LUPRI,'(/A,I6/)')
+     &         'Numerical results for dihedral coordinate:',IC
                FAC = -D1
                DO 97 II = 1, IATOM
                   DO 98 JJ = 1, 3
@@ -1306,12 +1540,10 @@ C
             WRITE(TXT(28:32),'(I5)') IC
             CALL HEADER(TXT,-1)
             DO 99 K = 1, IATOM
-               WRITE(LUPRI,'(I25,A,F16.6)')
-     &              K,'x',WILBMT(IC,(K-1)*3+1)
-               WRITE(LUPRI,'(I25,A,F16.6)')
-     &              K,'y',WILBMT(IC,(K-1)*3+2)
-               WRITE(LUPRI,'(I25,A,F16.6)')
-     &              K,'z',WILBMT(IC,(K-1)*3+3)
+               WRITE(LUPRI,'(I10,3(5X,A,F16.6))')
+     &              K,'x',WILBMT(IC,(K-1)*3+1),
+     &                'y',WILBMT(IC,(K-1)*3+2),
+     &                'z',WILBMT(IC,(K-1)*3+3)
  99         CONTINUE
          END IF
  20   CONTINUE
@@ -1436,6 +1668,7 @@ C
  58               CONTINUE
  56            CONTINUE
                CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1445,6 +1678,7 @@ C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1539,6 +1773,7 @@ C
  98               CONTINUE
  96            CONTINUE
                CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1548,6 +1783,7 @@ C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1643,6 +1879,7 @@ C
  255              CONTINUE
  250           CONTINUE
                CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1652,6 +1889,7 @@ C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               WRITE(LUPRI,*) 'Internal coordinate no.',IC
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -2011,10 +2249,13 @@ C
 
 C  /* Deck gtbinv */
       SUBROUTINE GTBINV(MXRCRD,UMAT,WMAT,VMAT,VAL,WILBMT,BMTRAN,
-     &     BMTINV,PJINMT)
+     &     BMTINV,PJINMT,VMATRED,TMPMAT,WRK,LWRK)
 C
 C     Decomposes the transpose of Wilson's B matrix, then one can
-C     construct the inverse of the rectangulat matrix.
+C     construct the inverse of the rectangular matrix.
+C
+C     7/5-2009 Optimization of code, mostly by replacing matrix multiplies 
+C              with dgemm (and by introducing VMATRED). /Simen Reine
 C
 #include "implicit.h"
 #include "mxcent.h"
@@ -2024,14 +2265,24 @@ C
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), PJINMT(MXRCRD,MXRCRD)
+      DIMENSION VMATRED(MXRCRD,MXRCRD), TMPMAT(MXRCRD,MXRCRD)
+      DIMENSION WRK(LWRK)
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       IF (IPRINT .GE. IPRMED) CALL TITLER('Output from GTBINV','*',103)
       IDIM1 = ICRTCR
       IDIM2 = IINTCR
-      CALL DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,WILBMT,
-     &     BMTINV,PJINMT)
+#ifdef VAR_LINSCA
+C     New, more efficient verison of DECOMP
+C     VMATRED is used to store VMATTR in DECOMP temporarily
+      CALL DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,WILBMT,TMPMAT,
+     &     VMATRED,VAL,WRK,LWRK)
+#else
+C     The old version of DECOMP
+      CALL DCMPOL(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,WILBMT,
+     &     BMTINV)
+#endif
 C
 C     Some output
 C
@@ -2046,7 +2297,9 @@ C
 C
 C     Based on the singular value decomposition of the B matrix,
 C     we can construct a non-redundant B matrix mixing the various
-C     internal primitives. The eigenvectors is stored in BMTRAN.
+C     internal primitives. The eigenvectors are stored in BMTRAN.
+C
+C     Not optimized time-wise! /SR
 C
       IF (DELINT .AND. (IREDIC .LT. 0)) THEN
 C
@@ -2061,7 +2314,8 @@ C
 C
 C     We remove all vectors in V corresponding to singular values.
 C
-         WMAT(IDIM2+1,IDIM2+1) = 1.1D6
+Chjaaj   WMAT(IDIM2+1,IDIM2+1) = 1.1D6
+Chjaaj-Oct07: bugfix: this goes out of bounds!!!!!
          IDIM3 = IDIM2
          IC = 1
  550     CONTINUE
@@ -2075,12 +2329,17 @@ C
  567           CONTINUE
                WMAT(I,I) = WMAT(I+1,I+1)
  560        CONTINUE
-            WMAT(IDIM3,IDIM3) = WMAT(IDIM3+1,IDIM3+1)
+Chjaaj-Oct07: new code follows next 5 lines
+            IF (IDIM3 .EQ. IDIM2) THEN
+               WMAT(IDIM3,IDIM3) = 1.1D6
+            ELSE
+               WMAT(IDIM3,IDIM3) = WMAT(IDIM3+1,IDIM3+1)
+            END IF
             IDIM3 = IDIM3 - 1
             GOTO 550
          ELSE IF (ABS(WMAT(IC,IC)) .LT. 1.0D6) THEN
             IC = IC + 1
-            GOTO 550
+            IF (IC .LE. IDIM2) GOTO 550
          END IF
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Reduced U matrix',-1)
@@ -2136,8 +2395,13 @@ C
 C     Then we start the decomposition again with this matrix
 C     (which now should have no singular values).
 C
-         CALL DECOMP(MXRCRD,IDIM1,IDIM3,UMAT,WMAT,VMAT,VAL,
-     &        WILBMT,BMTINV,PJINMT)
+#ifdef VAR_LINSCA
+         CALL DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,WILBMT,TMPMAT,
+     &        VMATRED,VAL,WRK,LWRK)
+#else
+         CALL DCMPOL(MXRCRD,IDIM1,IDIM3,UMAT,WMAT,VMAT,VAL,
+     &        WILBMT,BMTINV)
+#endif
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Non-redundant U matrix in GTBINV',-1)
             CALL OUTPUT(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
@@ -2168,15 +2432,21 @@ C
 C     A projection operator that will be used later,
 C     is also constructed: P = V W W^-1 V^t
 C
+C     Set up reduced V
+      NK = 0
+      DO K=1,IDIM2
+        IF (ABS(WMAT(K,K)) .GE. 1.0D-10) THEN
+          NK = NK + 1
+          DO I=1,IDIM2
+            VMATRED(I,NK) = VMAT(I,K)
+          ENDDO
+        ENDIF
+      ENDDO
+C     Calculate P
       CALL DZERO(PJINMT,MXRCRD*MXRCRD)
-      DO 140 I = 1, IDIM2
-         DO 142 J = 1, IDIM2
-            DO 144 K = 1, IDIM2
-               IF (ABS(WMAT(K,K)) .GE. 1.0D-10)
-     &              PJINMT(I,J) = PJINMT(I,J) + VMAT(I,K)*VMAT(J,K)
- 144        CONTINUE
- 142     CONTINUE
- 140  CONTINUE
+      CALL DGEMM('N','T',IDIM2,IDIM2,NK,1.0d0,VMATRED,MXRCRD,
+     &           VMATRED,MXRCRD,0.0d0,PJINMT,MXRCRD)
+
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Projection matrix',-1)
          CALL OUTPUT(PJINMT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
@@ -2184,24 +2454,14 @@ C
 C
 C     We construct (1/w_ii) U^t
 C
-      DO 160 I = 1, IDIM2
-         DO 162 J = 1, IDIM1
-            DO 164 K = 1, IDIM2
-               BMTINV(I,J) = BMTINV(I,J) + WMAT(I,K)*UMAT(J,K)
- 164        CONTINUE
- 162     CONTINUE
- 160  CONTINUE
+      CALL DGEMM('N','T',IDIM2,IDIM1,IDIM2,1.0d0,WMAT,MXRCRD,
+     &           UMAT,MXCOOR,0.0d0,BMTINV,MXRCRD)
 C
 C     Then V (1/w_ii) U^t
 C
-      CALL DZERO(WMAT,MXRCRD*MXRCRD)
-      DO 170 I = 1, IDIM2
-         DO 172 J = 1, IDIM1
-            DO 174 K = 1, IDIM2
-               WMAT(I,J) = WMAT(I,J) + VMAT(I,K)*BMTINV(K,J)
- 174        CONTINUE
- 172     CONTINUE
- 170  CONTINUE
+      CALL DGEMM('N','N',IDIM2,IDIM1,IDIM2,1.0d0,VMAT,MXRCRD,
+     &           BMTINV,MXRCRD,0.0d0,WMAT,MXRCRD)
+
       CALL DZERO(BMTINV,MXRCRD*MXCOOR)
       DO 180 J = 1, IDIM1
          DO 182 I = 1, IDIM2
@@ -2213,11 +2473,9 @@ C
          CALL OUTPUT(BMTINV,1,IDIM2,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Total number of internal coordinates: ',IINTCR
-         WRITE(LUPRI,*) 'Number of non-redundant coordinates : ',NPROJ
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(//A,I8/A,I8/)')
+     &      ' Total number of internal coordinates:',IINTCR,
+     &      ' Number of non-redundant coordinates :',NPROJ
       END IF
 C
 C     Put number of coordinates to be projected away in NPROJ
@@ -2226,9 +2484,10 @@ C
       RETURN
       END
 
+#ifdef VAR_LINSCA
 C  /* Deck decomp */
-      SUBROUTINE DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,
-     &     WILBMT,BMTINV,PJINMT)
+      SUBROUTINE DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,WILBMT,
+     &                  WBMTTR,VMATTR,SVAL,WRK,LWRK)
 C
 C     Decomposes the transpose of Wilson's B matrix.
 C
@@ -2237,9 +2496,294 @@ C
 #include "optinf.h"
 #include "priunit.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
+      DIMENSION VMAT(MXRCRD,MXRCRD)
+      DIMENSION WILBMT(MXRCRD,MXCOOR),WRK(LWRK)
+      DIMENSION WBMTTR(MXCOOR,MXRCRD)
+      DIMENSION VMATTR(MXRCRD,MXRCRD)
+      DIMENSION SVAL(MXCOOR)
+      PARAMETER (D0 = 0.0D0)
+C
+C     The transpose of Wilsons B matrix is decomposed to:
+C
+C           B^t = U W V^t  ;   U,V orthogonal, W diagonal
+C
+      CALL DZERO(UMAT,MXRCRD*MXCOOR)
+      CALL DZERO(WMAT,MXRCRD*MXRCRD)
+      CALL DZERO(VMAT,MXRCRD*MXRCRD)
+      CALL DZERO(WBMTTR,MXCOOR*MXRCRD)
+      CALL DZERO(SVAL,MXCOOR)
+C
+C     The transpose is placed in WBMTTR
+C
+      DO I = 1, IDIM2
+         DO J = 1, IDIM1
+            WBMTTR(J,I) = WILBMT(I,J)
+         ENDDO
+      ENDDO
+C
+C     The transpose of Wilsons B matrix is decomposed to:
+C
+C           B^t = U W V^t  ;   U,V orthogonal, W diagonal
+C
+      CALL DGESVD('A','A',IDIM1,IDIM2,WBMTTR,MXCOOR,SVAL,UMAT,MXCOOR,
+     &            VMATTR,MXRCRD,WRK,LWRK,INFO)
+      IF (INFO.NE.0) THEN
+        WRITE(*,*) 'Error in DECOMP! Info = ',INFO
+        CALL QUIT('Error in DECOMP!')
+      ENDIF
+      DO I=1,IDIM2
+        WMAT(I,I) = SVAL(I)
+      ENDDO
+      DO I=1,IDIM2
+        DO J=1,IDIM2
+          VMAT(J,I) = VMATTR(I,J)
+        ENDDO
+      ENDDO
+C
+C     The transpose is placed in WBMTTR
+C
+      DO I = 1, IDIM2
+         DO J = 1, IDIM1
+            UMAT(J,I) = WILBMT(I,J)
+         ENDDO
+      ENDDO
+      BMTNRM = D0
+      SCL    = D0
+      SGNFAC = D0
+      DO 20 I = 1, IDIM2
+         SVAL(I) = SCL*SGNFAC
+         SCL    = D0
+         SGNFAC = D0
+         SUM    = D0
+         II = I + 1
+         IF (I .LE. IDIM1) THEN
+            DO 25 J = I, IDIM1
+               SCL = SCL + ABS(UMAT(J,I))
+ 25         CONTINUE
+            IF (SCL .NE. D0) THEN
+               DO 30 J = I, IDIM1
+                  UMAT(J,I) = UMAT(J,I)/SCL
+                  SUM = SUM + UMAT(J,I)*UMAT(J,I)
+ 30            CONTINUE
+               DIAG = UMAT(I,I)
+               SGNFAC = -SIGN(SQRT(SUM),DIAG)
+               FAC = SGNFAC*DIAG - SUM
+               UMAT(I,I) = DIAG - SGNFAC
+               DO 35 J = II, IDIM2
+                  SUM = D0
+                  DO 37 K = I, IDIM1
+                     SUM = SUM + UMAT(K,I)*UMAT(K,J)
+ 37               CONTINUE
+                  FAC2 = SUM/FAC
+                  DO 39 K = I, IDIM1
+                     UMAT(K,J) = UMAT(K,J)+FAC2*UMAT(K,I)
+ 39               CONTINUE
+ 35            CONTINUE
+               DO 40 J = I, IDIM1
+                  UMAT(J,I) = SCL*UMAT(J,I)
+ 40            CONTINUE
+            END IF
+         END IF
+         WMAT(I,I) = SCL*SGNFAC
+         SUM    = D0
+         SGNFAC = D0
+         SCL    = D0
+         IF ((I .LE. IDIM1) .AND. (I .NE. IDIM2)) THEN
+            DO 45 J = II, IDIM2
+               SCL = SCL + ABS(UMAT(I,J))
+ 45         CONTINUE
+            IF (SCL .NE. D0) THEN
+               DO 50 J = II, IDIM2
+                  UMAT(I,J) = UMAT(I,J)/SCL
+                  SUM = SUM + UMAT(I,J)*UMAT(I,J)
+ 50            CONTINUE
+               FAC = UMAT(I,II)
+               SGNFAC = -SIGN(SQRT(SUM),FAC)
+               FAC2 = SGNFAC*FAC - SUM
+               UMAT(I,II) = FAC - SGNFAC
+               DO 52 J = II, IDIM2
+                  SVAL(J) = UMAT(I,J)/FAC2
+ 52            CONTINUE
+               DO 54 J = II, IDIM1
+                  SUM = D0
+                  DO 56 K = I+1, IDIM2
+                     SUM = SUM + UMAT(J,K)*UMAT(I,K)
+ 56               CONTINUE
+                  DO 58 K = II, IDIM2
+                     UMAT(J,K) = UMAT(J,K) + SUM*SVAL(K)
+ 58               CONTINUE
+ 54            CONTINUE
+               DO 60 J = II, IDIM2
+                  UMAT(I,J) = SCL*UMAT(I,J)
+ 60            CONTINUE
+            END IF
+         END IF
+         BMTNRM = MAX(BMTNRM,(ABS(WMAT(I,I)) + ABS(SVAL(I))))
+ 20   CONTINUE
+      DO 70 I = IDIM2, 1, -1
+         IF (I .LT. IDIM2) THEN
+            IF (SGNFAC .NE. D0) THEN
+               DO 72 J = II, IDIM2
+                  VMAT(J,I) = UMAT(I,J)/(SGNFAC*UMAT(I,II))
+ 72            CONTINUE
+               DO 74 J = II, IDIM2
+                  SUM = D0
+                  DO 76 K = II, IDIM2
+                     SUM = SUM + UMAT(I,K)*VMAT(K,J)
+ 76               CONTINUE
+                  DO 78 K = II, IDIM2
+                     VMAT(K,J) = VMAT(K,J) + SUM*VMAT(K,I)
+ 78               CONTINUE
+ 74            CONTINUE
+            END IF
+            DO 79 J = II, IDIM2
+               VMAT(I,J) = D0
+               VMAT(J,I) = D0
+ 79         CONTINUE
+         END IF
+         VMAT(I,I) = 1.0D0
+         SGNFAC = SVAL(I)
+         II = I
+ 70   CONTINUE
+      DO 80 I = MIN(IDIM1,IDIM2), 1, -1
+         II = I + 1
+         SGNFAC = WMAT(I,I)
+         DO 82 J = II, IDIM2
+            UMAT(I,J) = D0
+ 82      CONTINUE
+         IF (SGNFAC .NE. D0) THEN
+            SGNFAC = 1.0D0/SGNFAC
+            DO 84 J = II, IDIM2
+               SUM = D0
+               DO 86 K = II, IDIM1
+                  SUM = SUM + UMAT(K,I)*UMAT(K,J)
+ 86            CONTINUE
+               FAC = SGNFAC*(SUM/UMAT(I,I))
+               DO 88 K = I, IDIM1
+                  UMAT(K,J) = UMAT(K,J) + FAC*UMAT(K,I)
+ 88            CONTINUE
+ 84         CONTINUE
+            DO 90 J = I, IDIM1
+               UMAT(J,I) = SGNFAC*UMAT(J,I)
+ 90         CONTINUE
+         ELSE
+            DO 92 J = I, IDIM1
+               UMAT(J,I) = D0
+ 92         CONTINUE
+         END IF
+         UMAT(I,I) = UMAT(I,I) + 1.0D0
+ 80   CONTINUE
+      DO 100 J = IDIM2, 1, -1
+         DO 105 ITRS = 1, 50
+            DO 110 K = J, 1, -1
+               KK = K - 1
+               IF ((ABS(SVAL(K))+BMTNRM) .EQ. BMTNRM) GOTO 902
+               IF ((ABS(WMAT(KK,KK))+BMTNRM) .EQ. BMTNRM) GOTO 901
+ 110        CONTINUE
+ 901        CONTINUE
+            FC   = D0
+            SUM = 1.0D0
+            DO 112  I = K, J
+               FAC = SUM*SVAL(I)
+               SVAL(I) = FC*SVAL(I)
+               IF ((ABS(FAC)+BMTNRM) .EQ. BMTNRM) GOTO 902
+               SGNFAC = WMAT(I,I)
+               FAC2 = SQRT(FAC*FAC + SGNFAC*SGNFAC)
+               WMAT(I,I) = FAC2
+               FAC2 = 1.0D0/FAC2
+               FC  = SGNFAC*FAC2
+               SUM =   -FAC*FAC2
+               DO 114 L = 1, IDIM1
+                  FY = UMAT(L,KK)
+                  FZ = UMAT(L,I)
+                  UMAT(L,KK) = FY*FC + FZ*SUM
+                  UMAT(L,I)  = FZ*FC - FY*SUM
+ 114           CONTINUE
+ 112        CONTINUE
+ 902        CONTINUE
+            FZ = WMAT(J,J)
+            IF (K .EQ. J) THEN
+               IF (FZ .LT. D0) THEN
+                  WMAT(J,J) = -FZ
+                  DO 116 L = 1, IDIM2
+                     VMAT(L,J) = -VMAT(L,J)
+ 116              CONTINUE
+               END IF
+               GOTO 903
+            END IF
+            IF (ITRS .EQ. 50) CALL QUIT('No convergence in GTBINV.')
+            FX = WMAT(K,K)
+            JJ = J - 1
+            FY = WMAT(JJ,JJ)
+            SGNFAC = SVAL(JJ)
+            FAC2 = SVAL(J)
+            FAC = ((FY-FZ)*(FY+FZ) + (SGNFAC-FAC2)*(SGNFAC+FAC2))/
+     &           (2.0D0*FAC2*FY)
+            SGNFAC = SQRT(FAC*FAC + 1.0D0)
+            FAC = ((FX-FZ)*(FX+FZ)+FAC2*((FY/(FAC+SIGN(SGNFAC,FAC)))
+     &           -FAC2))/FX
+            FC  = 1.0D0
+            SUM = 1.0D0
+            DO 120 L = K, JJ
+               I = L + 1
+               SGNFAC = SVAL(I)
+               FY = WMAT(I,I)
+               FAC2   = SGNFAC*SUM
+               SGNFAC = SGNFAC*FC
+               FZ = SQRT(FAC*FAC + FAC2*FAC2)
+               SVAL(L) = FZ
+               FC  = FAC/FZ
+               SUM = FAC2/FZ
+               FAC = (FX*FC) + (SGNFAC*SUM)
+               SGNFAC = -(FX*SUM) + (SGNFAC*FC)
+               FAC2 = FY*SUM
+               FY = FY*FC
+               DO 122 M = 1, IDIM2
+                  FX = VMAT(M,L)
+                  FZ = VMAT(M,I)
+                  VMAT(M,L) = (FX*FC) + (FZ*SUM)
+                  VMAT(M,I) =-(FX*SUM) + (FZ*FC)
+ 122           CONTINUE
+               FZ = SQRT(FAC*FAC + FAC2*FAC2)
+               WMAT(L,L) = FZ
+               IF (FZ .NE. D0) THEN
+                  FZ = 1.0D0/FZ
+                  FC = FAC*FZ
+                  SUM = FAC2*FZ
+               END IF
+               FAC = (FC*SGNFAC) + (SUM*FY)
+               FX = -(SUM*SGNFAC) + (FC*FY)
+               DO 124 M = 1, IDIM1
+                  FY = UMAT(M,L)
+                  FZ = UMAT(M,I)
+                  UMAT(M,L) = (FY*FC) + (FZ*SUM)
+                  UMAT(M,I) = -(FY*SUM) + (FZ*FC)
+ 124           CONTINUE
+ 120        CONTINUE
+            SVAL(K) = D0
+            SVAL(J) = FAC
+            WMAT(J,J) = FX
+ 105     CONTINUE
+ 903     CONTINUE
+ 100  CONTINUE
+      RETURN
+      END
+#endif
+
+C  /* Deck dcmpol */
+      SUBROUTINE DCMPOL(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,
+     &     WILBMT,BMTINV)
+C
+C     Old version of subroutine to decompose the transpose of Wilson's B matrix.
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
+      DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
-      DIMENSION BMTINV(MXRCRD,MXCOOR), PJINMT(MXRCRD,MXRCRD)
+      DIMENSION BMTINV(MXRCRD,MXCOOR)
       PARAMETER (D0 = 0.0D0)
 C
       CALL DZERO(BMTINV,MXRCRD*MXCOOR)
@@ -2927,7 +3471,7 @@ C 90   CONTINUE
 
 C  /* Deck diaint */
       SUBROUTINE DIAINT(MXRCRD,MX2CRD,NCRDHS,EVEC,EVCTMP,HESPCK,
-     &     TMPHES,TMPMAT,THRIND,HESINT)
+     &     TMPHES,TMPMAT,THRIND,HESINT,DIDENT,WRK,LWRK)
 C
 C     The Hessian in redundant internal coordinates is diagonalized.
 C
@@ -2938,8 +3482,10 @@ C
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS,NCRDHS)
       DIMENSION HESPCK(NCRDHS*NCRDHS), TMPHES(NCRDHS,NCRDHS)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESINT(MXRCRD,MXRCRD)
+      DIMENSION DIDENT(MXRCRD,MXRCRD), WRK(LWRK)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
+#ifdef OLD_DIAINT
       DO 10 J = 1, IINTCR
          DO 12 I = 1, IINTCR
             TMPHES(I,J) = HESINT(I,J)
@@ -2984,6 +3530,51 @@ C
  22      CONTINUE
          IF (EVAL(J) .LT. -THRIND) INDTOT = INDTOT + 1
  20   CONTINUE
+#else
+C
+C     Code for circumventing the time-demanding call to JACO. /SR 4/5-2009
+C
+      DO J = 1, IINTCR
+         DO I = 1, IINTCR
+            TMPHES(I,J) = HESINT(I,J)
+         ENDDO
+      ENDDO
+      IF (RATFUN .AND. (.NOT. SADDLE)) THEN
+         DO I = 1, IINTCR
+            TMPHES(I,NCRDHS) = GRDINT(I)
+            TMPHES(NCRDHS,I) = GRDINT(I)
+         ENDDO
+         TMPHES(NCRDHS,NCRDHS) = D0
+      END IF
+
+      CALL DUNIT(DIdent,NCRDHS)
+
+#define VAR_DEBUG
+#ifdef VAR_DEBUG
+! March 2010 - debugging gfortran problem with segmentation error in
+! dsygv /hjaaj
+      write (lupri,*) 'ncrdhs,lwrk',ncrdhs,lwrk
+      write (lupri,*) 'TMPHES'
+      call output(tmphes,1,ncrdhs,1,ncrdhs,ncrdhs,ncrdhs,-1,lupri)
+      write (lupri,*) 'DIDENT'
+      call output(dident,1,ncrdhs,1,ncrdhs,ncrdhs,ncrdhs,-1,lupri)
+      write (lupri,*) 'eval'
+      call output(eval,1,1,1,ncrdhs,1,ncrdhs,-1,lupri)
+      write (lupri,*) 'WRK(1:40)',WRK(1:40)
+      call flshfo(lupri)
+#endif
+      
+      CALL DSYGV(1,'V','U',NCRDHS,TMPHES,NCRDHS,DIdent,NCRDHS,EVAL,
+     &          WRK,LWRK,INFO)
+      INDTOT = 0
+      DO J = 1, NCRDHS
+         GRDDIA(J) = DDOT(NCRDHS,GRDINT,1,TMPHES(1,J),1)
+         DO I = 1, NCRDHS
+            EVEC(I,J) = TMPHES(I,J)
+         ENDDO
+         IF (EVAL(J) .LT. -THRIND) INDTOT = INDTOT + 1
+      ENDDO
+#endif
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Eigenvalues in DIAINT',-1)
          CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
@@ -3190,16 +3781,16 @@ C     towards a maximum/saddle point. We then simply reverse the
 C     step direction (a bit dirty, but seems to work).
 C
          IF ((.NOT. SADDLE) .AND. (ERGPRD .GT. 0.0D0)) THEN
+            WRITE(LUPRI,'(A,F25.15)')
+     &           ' Original pred. energy change',ERGPRD
             WRITE(LUPRI,*) 'Reversing step!'
             DO 40 I = 1, IINTCR
                STPDIA(I) = -STPDIA(I)
  40         CONTINUE
             ERGPRD = DDOT(IINTCR,GRDDIA,1,STPDIA,1)
      &           + 0.5D0*DV3DOT(IINTCR,STPDIA,EVAL,STPDIA)
-            IF (IPRINT .GT. 2) THEN
-               WRITE(LUPRI,'(A,F25.15)')
-     &              ' New pred. energy change',ERGPRD
-            END IF
+            WRITE(LUPRI,'(A,F25.15)')
+     &           ' New pred. energy change',ERGPRD
          END IF
          IF (IPRINT .GE. IPRMIN) THEN
             IF (IPRINT .GE. IPRDBG) THEN
@@ -3356,7 +3947,7 @@ C
 #include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3)
-      PARAMETER (D0 = 0.0D0, DEG175 = 175D0*PI/180D0)
+      PARAMETER (D0 = 0.0D0, DEG179 = 179D0*PI/180D0)
       CALL DZERO(VALINT,MXRCRD)
       NRIC = IINTCR
       IF (DELINT) NRIC = IREDIC
@@ -3427,10 +4018,12 @@ C
             IF ((DDOT(3,VEC1,1,VEC1,1) .GT. 1.0D-16) .AND.
      &           (DDOT(3,VEC3,1,VEC3,1) .GT. 1.0D-16)) THEN
                VALINT(IC) = VECANG(VEC1,VEC3)
-               IF (ABS(VALINT(IC)) .GT. DEG175) THEN
+               IF (ABS(VALINT(IC)) .GT. DEG179) THEN
                   CALL VECPRD(VEC1,VEC2,VEC4)
                   CALL NRMLVC(VEC4)
-                  VALINT(IC) = VECANG(VEC1,VEC4) + VECANG(VEC4,VEC3)
+                  DCMP2 = VECANG(VEC4,VEC3)
+                  IF (DCMP2 .GE. PI/2.D0) DCMP2 = PI - DCMP2
+                  VALINT(IC) = VECANG(VEC1,VEC4) + DCMP2
                END IF
                CALL VECPRD(VEC1,VEC3,VEC4)
                IF (DDOT(3,VEC2,1,VEC4,1) .LT. 0.0D0)
@@ -3505,6 +4098,10 @@ C
          CALL GETINT(IATOM,MXRCRD,CRDOLD,VALOLD)
          RMSLIM = 1.0D-6
       ELSE
+         IATOM = ICRTCR / 3
+C        ... BUGFIX hjaaj Oct 07, IATOM was not defined.
+C            Is used for TMPVEC below, which has dimension ICRTCR,
+C            based on this I divided by three to get IATOM (see DO 15 loop)
          DO 3 I = 1, NRIC
             VALORG(I) = VALOLD(I)
             VALOLD(I) = VALNEW(I)
@@ -3820,6 +4417,46 @@ C
          STPSYM(I) = STPSYM(I)/SCLVEC(I)
  90   CONTINUE
       CALL WLKCOR(STPSYM,CSTEP,ICRTCR,MXCOOR,IPRINT)
+C
+C     Experimental extra stabilization by freezing atoms.
+C     All Cartesian step vector components are simply set to zero
+C     for the selected frozen atoms. Note that this is only applied
+C     to the correctional step
+C
+      IF (CORREC .AND. (IFREEZ(0) .GT. 0)) THEN
+         DO 510 I = 1, IFREEZ(0)
+            DO 515 J = 1, 3
+               CSTEP(3*(IFREEZ(I)-1)+J) = 0.D0
+ 515        CONTINUE
+ 510     CONTINUE
+C     Calculate new internal coordinates
+         DO 530 I = 1, IATOM
+            DO 535 J = 1, 3
+               CRDNEW(I,J+1) = CRDORG(I,J+1)+ CSTEP(3*(I-1)+J)
+ 535        CONTINUE
+ 530     CONTINUE
+         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
+         DO 550 I = 1, NRIC
+            STPINT(I) = VALNEW(I) - VALORG(I)
+            IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
+            IF ((INTCRD(I,1) .GT. 20)
+     &           .AND. (ABS(STPINT(I)) .GT. PI)) THEN
+               IF (STPINT(I) .GT. 0.0D0) THEN
+                  STPINT(I) = STPINT(I) - 2.0D0*PI
+               ELSE
+                  STPINT(I) = STPINT(I) + 2.0D0*PI
+               END IF
+            END IF
+ 550     CONTINUE
+         IF (IPRINT .GE. IPRMAX) THEN
+            CALL HEADER('Adjusted step after freezing',-1)
+            CALL OUTPUT(STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+         END IF
+C     If .FRZITR has been specified, the freezing is turned off after
+C     the requested number of iterations
+         IF ((ITRFRZ .GT. 0) .AND. ((ITRNMR+1) .GE. ITRFRZ))
+     &        IFREEZ(0) = 0
+      END IF
       RETURN
       END
 
@@ -3978,9 +4615,7 @@ C
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
-      IF (INDEX(TMPLN,'Ato') .NE. 0) THEN
-         DOCART = .FALSE.
-         DOOWN = .FALSE.
+      IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
          CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
      &              ID3,DOCART,DOOWN)
          AUTOSY = .TRUE.
@@ -3999,9 +4634,9 @@ C
       IATOM = 1
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
-         IF (INDEX(MLINE(I),'Cha') .NE. 0) THEN
+         IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,BSNM)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,KSPH)
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -4037,8 +4672,15 @@ C
                   ELSE
                      TMPTXT = TMPLN(IPOS:IPOS+11)
                   END IF
-                  WRITE(TMPLN(5:75),'(3F20.16,1X,A11)') COOX,COOY,COOZ,
-     &                 TMPTXT
+                  IF (ABS(COOX).ge.100.0D0 .OR.
+     &                ABS(COOY).ge.100.0D0 .OR.
+     &                ABS(COOZ).ge.100.0D0) THEN
+                     WRITE(TMPLN(5:76),'(3F20.10,1X,A11)')
+     &                    COOX,COOY,COOZ,TMPTXT
+                  ELSE
+                     WRITE(TMPLN(5:76),'(3F20.15,1X,A11)')
+     &                    COOX,COOY,COOZ,TMPTXT
+                  END IF
                   MLINE(INSLIN + 1) = TMPLN
                   NMLINE = NMLINE + 1
                   IXTRA = IXTRA + 1
@@ -4047,9 +4689,9 @@ C
             IATOM = IATOM + 1
  70      CONTINUE
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
-         IF (INDEX(TMPLN,'Cha') .NE. 0) THEN
-            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
-     &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN)
+         IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
+            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
           ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF
@@ -4058,7 +4700,7 @@ C
 C
 C     Write updated geometry to files.
 C
-      CALL PNCMOL
+      CALL PNCMOL(ITRNMR,IPRINT)
 C
 C     To mark that symmetry was broken, the index of the hessian is
 C     given a negative sign. This is interpreted in PRIINF.
@@ -4411,6 +5053,13 @@ C
           RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST,LINDHD)
           RKL = RHOIJ(ATMARR,INTCRD(IC,4),INTCRD(IC,5),ALFA,DIST,LINDHD)
         END IF
+C
+C     Feb 2009 - VB:
+C     Attempt to scale interfragment bonds, no definite improvement, thus turned off
+C
+C        IF ((INTCRD(IC,1) .EQ. 3) .OR.(INTCRD(IC,1) .EQ. 4)) THEN
+C           FAC = FAC*0.5D0
+C        END IF
         HESINT(IC,IC) = FAC*RIJ*RJK*RKL
  10   CONTINUE
       RETURN
@@ -4457,3 +5106,4 @@ C
       VPRD(3) =  VEC1(1)*VEC2(2) - VEC2(1)*VEC1(2)
       RETURN
       END
+C --- end of abarint.F ---

@@ -89,6 +89,8 @@ c/* Deck CC_BAMAT */
 *
 *     Written by Christof Haettig, Maj 1997.
 *
+*     Adapted for CC-R12: Chrsitian Neiss, July 2005
+*
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -101,6 +103,8 @@ c/* Deck CC_BAMAT */
 #include <ccorb.h>
 #include <ccroper.h>
 #include <cclists.h>
+#include <r12int.h>
+#include <ccr12int.h>
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -137,7 +141,7 @@ c/* Deck CC_BAMAT */
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, HALF = 0.5d0)
 
       CHARACTER*(10) MODEL, MODELW
-      CHARACTER*(8)  LABEL
+      CHARACTER*(8)  LABELO
 
       INTEGER KEND1, KEND2, LEND2, LENALL, KEND3, LEND3
       INTEGER ISYMTA, ISYMTB, ISYMO, ISYRES, ISYMAO, ISYMBO, IOPTW
@@ -147,6 +151,10 @@ c/* Deck CC_BAMAT */
       INTEGER KTHETA0, KTHETA1, KTHETA2, KT2AMPA, KT2AMPB
       INTEGER IRREP, IERR, IERRB, IOPT, ISYM, LEN, ITRAN, IADRTH,
      &        KTHETA1EFF, KTHETA2EFF
+      INTEGER IOPTWR12,LENMOD,KTHETAR12,KATRANR12
+      INTEGER KLAMDPB,KLAMDHB,KLAMDPA,KLAMDHA,KT12AMP,KXINTTRI,KXINTSQ
+      INTEGER LUNIT,IAN,DUMMY,ISYM1,ISYM2,IDLST1,IDLST2
+      CHARACTER APROXR12*3,LIST1*3,LIST2*3
 
 * external functions:
       INTEGER ILSTSYM
@@ -213,11 +221,16 @@ c/* Deck CC_BAMAT */
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_BAMAT.')
       END IF
+      IF (CCR12) THEN
+        APROXR12 = '   '
+        CALL CCSD_MODEL(MODELW,LENMOD,10,MODELW,10,APROXR12)
+        IOPTWR12 = 32
+      END IF
 
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
 
-        LUBMAT = 0
+        LUBMAT = -1
         CALL WOPEN2(LUBMAT,FILBAM,64,0)
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -242,7 +255,7 @@ c/* Deck CC_BAMAT */
         IDLSTA = IBATRAN(2,ITRAN)
         IDLSTB = IBATRAN(3,ITRAN)
 
-        LABEL  = LBLOPR(IDLSTO)
+        LABELO = LBLOPR(IDLSTO)
 
         ISYMO  = ILSTSYM(LISTO,IDLSTO)
         ISYMTA = ILSTSYM(LISTA,IDLSTA)
@@ -262,6 +275,10 @@ c/* Deck CC_BAMAT */
           KTHETA1 = KEND1
           KTHETA2 = KTHETA1 + NT1AM(ISYRES)
           KEND2   = KTHETA2 + NT2AM(ISYRES)
+          IF (CCR12) THEN
+            KTHETAR12 = KTHETA2 + NT2AM(ISYRES)
+            KEND2     = KTHETAR12 + NTR12AM(ISYRES)
+          END IF
         END IF
         IF (CCSDT .AND. IOPTRES.NE.5) THEN
           KTHETA1EFF = KEND2
@@ -333,9 +350,10 @@ c/* Deck CC_BAMAT */
      &              WORK(KEND2),LEND2)
 
 * read the AO integrals:
-      CALL CCPRPAO(LABEL,WORK(KPERT),IRREP,ISYM,IERR,WORK(KEND2),LEND2)
+      CALL CCPRPAO(LABELO,.TRUE.,WORK(KPERT),IRREP,ISYM,IERR,
+     &             WORK(KEND2),LEND2)
       IF (IERR.NE.0 .OR. IRREP.NE.ISYMO) THEN
-        CALL QUIT('CC_BAMAT: error while reading operator '//LABEL)
+        CALL QUIT('CC_BAMAT: error while reading operator '//LABELO)
       END IF
 
 * transform one-electron integrals in place:
@@ -507,6 +525,91 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
       END IF ! (.NOT. (CCS .OR. CCSTST))
 
 *---------------------------------------------------------------------*
+* initialize the R12 doubles part of the result vector THETA:
+*---------------------------------------------------------------------*
+      IF ( CCR12 ) THEN
+        CALL DZERO(WORK(KTHETAR12),NTR12AM(ISYRES))
+
+        KLAMDPB = KEND2
+        KLAMDHB = KLAMDPB + NGLMDT(ISYMTB)
+        KLAMDPA = KLAMDHB + NGLMDT(ISYMTB)
+        KLAMDHA = KLAMDPA + NGLMDT(ISYMTA)
+        KT12AMP = KLAMDHA + NGLMDT(ISYMTA)
+        KXINTTRI= KT12AMP + MAX(NTR12SQ(ISYMTA),NTR12SQ(ISYMTB))
+        KXINTSQ = KXINTTRI + MAX(NR12R12P(1),NTR12SQ(ISYRES))
+        KSCR    = KXINTSQ + NR12R12SQ(1)
+        KEND3   = KSCR + NTR12SQ(ISYRES)
+        LEND3   = LWORK - KEND3
+        IF (LEND3 .LT. 0) THEN
+          CALL QUIT('Insufficient work space in CC_BAMAT')
+        END IF
+
+        CALL CCPRPAO(LABELO,.TRUE.,WORK(KPERT),IRREP,ISYM,IERR,
+     &             WORK(KEND2),LEND2)
+        IF (IERR.NE.0 .OR. IRREP.NE.ISYMO) THEN
+          CALL QUIT('CC_BAMAT: error while reading operator '//LABELO)
+        END IF
+
+        CALL CCLR_LAMTRA(WORK(KLAMDP0),WORK(KLAMDPA), WORK(KLAMDH0),
+     &                   WORK(KLAMDHA),WORK(KT1AMPA),ISYMTA)
+
+        CALL CCLR_LAMTRA(WORK(KLAMDP0),WORK(KLAMDPB), WORK(KLAMDH0),
+     &                   WORK(KLAMDHB),WORK(KT1AMPB),ISYMTB)
+
+        LUNIT = -1
+        CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
+     &              DUMMY,.FALSE.)
+        REWIND(LUNIT)
+ 8888   READ(LUNIT) IAN
+        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NR12R12P(1))
+        IF (IAN.NE.IANR12) GOTO 8888
+        CALL GPCLOSE(LUNIT,'KEEP')
+        IOPT = 2
+        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),'N',IOPT)
+C
+        DO I = 1, 2
+          IF (I.EQ.1) THEN
+            ISYM1 = ISYMTA
+            ISYM2 = ISYMTB
+            LIST1 = LISTA
+            IDLST1 = IDLSTA
+          ELSE IF (I.EQ.2) THEN
+            ISYM1 = ISYMTB
+            ISYM2 = ISYMTA
+            LIST1 = LISTB
+            IDLST1 = IDLSTB
+          END IF
+          !read R12 response amplitudes
+          CALL CC_R12GETCT(WORK(KT12AMP),ISYM1,2,KETSCL,.FALSE.,'N',
+     &                 DUMMY,DUMMY,DUMMY,LIST1,IDLST1,WORK(KEND3),LEND3)
+          !calculate....
+          IF (I.EQ.1) THEN
+            CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KT12AMP),ISYM1,
+     &                      WORK(KPERT),ISYMO,WORK(KLAMDP0),
+     &                      WORK(KLAMDHB),ISYM2,'N',
+     &                      WORK(KEND3),LEND3)
+            CALL DCOPY(NTR12SQ(ISYRES),WORK(KSCR),1,WORK(KXINTTRI),1)
+          ELSE IF (I.EQ.2) THEN
+            CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KT12AMP),ISYM1,
+     &                      WORK(KPERT),ISYMO,WORK(KLAMDP0),
+     &                      WORK(KLAMDHA),ISYM2,'N',
+     &                      WORK(KEND3),LEND3)
+          END IF
+        END DO       
+C
+        CALL DAXPY(NTR12SQ(ISYRES),ONE,WORK(KXINTTRI),1,WORK(KSCR),1)
+        CALL DZERO(WORK(KXINTTRI),NTR12SQ(ISYRES))
+        CALL CC_R12XI2B(WORK(KXINTTRI),'N',WORK(KXINTSQ),1,'N',
+     &                  WORK(KSCR),ISYRES,'N',-ONE)
+C
+        IOPT = 1
+        CALL CCR12PCK2(WORK(KTHETAR12),ISYRES,.FALSE.,WORK(KXINTTRI),
+     &                 'N',IOPT)
+        CALL CCLR_DIASCLR12(WORK(KTHETAR12),BRASCL,ISYRES)
+C
+      END IF
+
+*---------------------------------------------------------------------*
 * compute CC3 contributions:
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
@@ -520,7 +623,7 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
            FREQB = FREQLST(FILBAM,IBATRAN(4,ITRAN))
          END IF
 
-         CALL CCSDT_BAMAT_NODDY(IOPTRES,FREQB,LABEL,ISYMO,
+         CALL CCSDT_BAMAT_NODDY(IOPTRES,FREQB,LABELO,ISYMO,
      &                          LISTA,IDLSTA,
      &                          LISTB,IDLSTB,
      &                          WORK(KTHETA1),WORK(KTHETA2),
@@ -548,6 +651,12 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
           CALL PUTWA2(LUBMAT,FILBAM,WORK(KTHETA2),IADRTH,NT2AM(ISYRES))
           IADRTH = IADRTH + NT2AM(ISYRES)
         END IF
+        
+        IF (CCR12) THEN
+          CALL PUTWA2(LUBMAT,FILBAM,WORK(KTHETAR12),IADRTH,
+     &                NTR12AM(ISYRES))
+          IADRTH = IADRTH + NTR12AM(ISYRES)
+        END IF
 
         IF (LOCDBG) THEN
          WRITE (LUPRI,*) 'B{O} matrix transform. nb. ',ITRAN,
@@ -557,10 +666,13 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
          XNORM = DDOT(NT1AM(ISYRES),WORK(KTHETA1),1,WORK(KTHETA1),1)
          IF (.NOT.CCS) XNORM = XNORM +
      &           DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
+         IF (CCR12) XNORM = XNORM +
+     &        DDOT(NTR12AM(ISYRES),WORK(KTHETAR12),1,WORK(KTHETAR12),1)
          WRITE (LUPRI,*) 'Norm:', XNORM
 
          Call AROUND('B{O} matrix transformation written to file:')
          Call CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYRES,1,1)
+         IF (CCR12) CALL CC_PRPR12(WORK(KTHETAR12),ISYRES,1,.TRUE.)
         END IF
 
       ELSE IF ( IOPTRES .EQ. 3 .OR. IOPTRES .EQ. 4 ) THEN
@@ -574,6 +686,11 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
            CALL CC_WRRSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LEND2)
+           IF (CCR12) THEN
+             CALL CC_WRRSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTWR12,
+     &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
+     &                     WORK(KEND2),LEND2)
+           END IF
            IF (CCSDT) THEN
             CALL CC_WRRSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTWE,MODEL,
      &                    WORK(KTHETA0),WORK(KTHETA1EFF),
@@ -583,6 +700,11 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
            CALL CC_WARSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LEND2)
+           IF (CCR12) THEN
+             CALL CC_WARSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTWR12,
+     &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
+     &                     WORK(KEND2),LEND2)
+           END IF
            IF (CCSDT) THEN
             CALL CC_WARSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTWE,MODELW,
      &                    WORK(KTHETA0),WORK(KTHETA1EFF),
@@ -600,7 +722,9 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
            WRITE (LUPRI,*) 'index of result vector:',IBATRAN(4,ITRAN)
            XNORM = DDOT(NT1AM(ISYRES),WORK(KTHETA1),1,WORK(KTHETA1),1)
            IF (.NOT.CCS) XNORM = XNORM +
-     &             DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
+     &         DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
+           IF (CCR12) XNORM = XNORM +
+     &         DDOT(NTR12AM(ISYRES),WORK(KTHETAR12),1,WORK(KTHETAR12),1)
            WRITE (LUPRI,*) 'norm^2 of result vector:',XNORM
          END IF
 
@@ -609,6 +733,11 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
          CALL CCDOTRSP(IBDOTS,BCONS,IOPTW,FILBAM,ITRAN,NBATRAN,MXVEC,
      &                 WORK(KTHETA1),WORK(KTHETA2),ISYRES,
      &                 WORK(KEND2),LEND2)
+         IF (CCR12) THEN
+           CALL CCDOTRSP(IBDOTS,BCONS,IOPTWR12,FILBAM,ITRAN,NBATRAN,
+     &                   MXVEC,DUMMY,WORK(KTHETAR12),ISYRES,
+     &                   WORK(KEND2),LEND2)
+         END IF
 
       ELSE
         CALL QUIT('Illegal value for IOPTRES in CC_BAMAT.')

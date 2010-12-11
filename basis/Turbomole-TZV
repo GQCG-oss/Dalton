@@ -4,11 +4,11 @@ $ Supported Elements
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
 $ Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr 
 $
-$Elements                             References                                
-$--------                             ----------                                
-$Li - Kr: A. Schafer, C. Huber and R. Ahlrichs, J. Chem. Phys. 100, 5829 (1994).
-$
-************************************************************************
+$  REFERENCE
+$ Elements                             References                                
+$ --------                             ----------                                
+$ Li - Kr: A. Schafer, C. Huber and R. Ahlrichs, J. Chem. Phys. 100, 5829 (1994).
+$***********************************************************************
 a 1
 $ HYDROGEN     (5s) -> [3s]
 $ S-TYPE FUNCTIONS
@@ -79,7 +79,7 @@ $ P-TYPE FUNCTIONS
      1.49860813  0.13151231  0.00000000  0.00000000
      0.50927831  0.33197168  0.00000000  0.00000000
      0.18147078  0.00000000  1.00000000  0.00000000
-     0.64621894  0.00000000  0.00000000  1.00000000
+     0.06462189  0.00000000  0.00000000  1.00000000
 a 6
 $ CARBON       (11s,6p) -> [5s,3p]                                              
 $ S-TYPE FUNCTIONS

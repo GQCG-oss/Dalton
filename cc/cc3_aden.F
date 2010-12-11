@@ -117,9 +117,9 @@ C
 C
 C     Open the file
 C
-      LU3FOP  = 0
-      LU3VI2  = 0
-      LU3FOP2  = 0
+      LU3FOP  = -1
+      LU3VI2  = -1
+      LU3FOP2 = -1
       CALL WOPEN2(LU3FOP,FN3FOP,64,0)
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
       CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
@@ -207,14 +207,14 @@ C  /* Deck cc3_adenocc */
 *=====================================================================*
 C
       IMPLICIT NONE
-#include<ccl1rsp.h>
-#include<ccr1rsp.h>
-#include<ccorb.h>
-#include<ccsdsym.h>
-#include<dummy.h>
-#include<priunit.h>
-#include<iratdef.h>
-#include<ccinftap.h>
+#include <ccl1rsp.h>
+#include <ccr1rsp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <ccinftap.h>
 #include <ccsdinp.h>
 #include <cclrmrsp.h>
 #include <ccexci.h>
@@ -1306,9 +1306,9 @@ C     Filip Pawlowski, Aarhus, Winter 2003
 *     The memory bug fixed on 27-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYT30JK,ISYMT2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCL,ISYML,ISYMC,ISYBAI
@@ -2486,9 +2486,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBAC,ISYMC,ISYAB,ISYBA,ISYMB,ISYMA
       INTEGER KOFF1,KOFF2
@@ -2550,9 +2550,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBCA,ISYMC,ISYAB,ISYMB,ISYMA,ISYBC
       INTEGER KOFF1,KOFF2
@@ -2614,9 +2614,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>  
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>  
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYACB,ISYMC,ISYAB,ISYMB,ISYAC,ISYMA
       INTEGER KOFF1,KOFF2 
@@ -2678,9 +2678,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYCAB,ISYMC,ISYAB,ISYMB,ISYCA,ISYMA
       INTEGER KOFF1,KOFF2
@@ -2742,9 +2742,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>  
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>  
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYCBA,ISYMC,ISYAB,ISYMB,ISYMA,ISYCB
       INTEGER KOFF1,KOFF2
@@ -2812,9 +2812,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYMC,ISYAB,ISYCI,ISYMB,ISYMA
       INTEGER NAB,NCI
@@ -2893,9 +2893,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER IOPT
       INTEGER ISYMT,ISYMI,ISYABC,ISYMC,ISYAB,ISYMB,ISYMA
@@ -2973,9 +2973,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYINT,ISYMI,ISYMK,ISYAKI,ISYMJ,ISYAK,ISYMA
       INTEGER KOFF1,KOFF2
@@ -3027,9 +3027,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYINT,ISYMI,ISYAKI,ISYMJ,ISYAK,ISYMK,ISYMA,ISYJA
       INTEGER KOFF1,KOFF2,NAK
@@ -3085,9 +3085,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYINT,ISYMK,ISYMI,ISYAKI,ISYMJ,ISYAK,ISYMA,ISYAI
       INTEGER KOFF1,KOFF2,NAI
@@ -3479,9 +3479,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT2,ISYMB,ISYAIJ,ISYMJ,ISYAI,ISYIA,ISYIAB,ISYMI,ISYMA
       INTEGER KOFF1,KOFF2
@@ -3545,9 +3545,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYMT2,ISYMB,ISYAIJ,ISYMJ,ISYAI,ISYMI,ISYMA,ISYAB,ISYABJ
       INTEGER KOFF1,KOFF2,NABJ
@@ -4381,9 +4381,9 @@ C Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 *
 ********************************************************************
       IMPLICIT NONE
-#include<ccsdsym.h>
-#include<ccorb.h>
-#include<priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <priunit.h>
 C
       INTEGER ISYT3B0JK,ISYML2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCN,ISYMN,ISYMC,ISYBAI
@@ -9274,10 +9274,10 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
@@ -9514,7 +9514,7 @@ C     get T2 amplitudes for R1 list in a special manner
 C------------------------------------------------------
 C     
       IF (DO_YMMAT) THEN
-          LUT2Y = 0
+          LUT2Y = -1
           CALL WOPEN2(LUT2Y,FNT2Y,64,0)
 
           KR2TP = KEND1
@@ -9749,9 +9749,9 @@ C---------------------------------------------
 C     Open files for Tbar and W intermediates:
 C---------------------------------------------
 C
-      LUT3 = 0
-      LUWBMAT = 0
-      LUTHETA = 0
+      LUT3 = -1
+      LUWBMAT = -1
+      LUTHETA = -1
 
       CALL WOPEN2(LUT3,FNT3,64,0)
       CALL WOPEN2(LUWBMAT,FNWBMAT,64,0)

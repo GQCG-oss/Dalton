@@ -57,7 +57,8 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -91,7 +92,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C 
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC
@@ -164,7 +165,7 @@ C
                KEND1 = KENDSV
                LWRK1 = LWRKSV
 C
-               DTIME  = SECOND()
+c              DTIME  = SECOND()
                IF (HERDIR) THEN
                   CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
      &                        IPRINT)
@@ -178,8 +179,8 @@ C
      *                        WORK(KCCFB1),WORK(KINDXB),
      *                        WORK(KEND1), LWRK1,IPRERI)
                ENDIF
-               DTIME  = SECOND() - DTIME
-               TIMHE2 = TIMHE2   + DTIME
+c              DTIME  = SECOND() - DTIME
+c              TIMHE2 = TIMHE2   + DTIME
 C
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
@@ -200,6 +201,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

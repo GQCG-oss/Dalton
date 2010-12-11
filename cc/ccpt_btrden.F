@@ -430,7 +430,7 @@ c---------------------------------------------------------
       KEND1 = 1
       KDENSBT = KEND1
       KEND2   = KDENSBT + NTOTOC(ISYDEN)
-      LWRK2   = LWORK - LWRK2
+      LWRK2   = LWORK - KEND2
 
       CALL DZERO(WORK(KDENSBT),NTOTOC(ISYDEN))
 
@@ -563,7 +563,7 @@ c---------------------------------------------------------
       KEND1 = 1
       KDENSBT = KEND1
       KEND2   = KDENSBT + NTOTOC(ISYDEN)
-      LWRK2   = LWORK - LWRK2
+      LWRK2   = LWORK - KEND2
 
       ISYCMO = 1
 
@@ -714,7 +714,7 @@ c---------------------------------------------------------
 
       KDENSBT = 1
       KEND1   = KDENSBT + N3ODEL(ISYDEN)
-      LWRK1   = LWORK - LWRK1
+      LWRK1   = LWORK - KEND1
 
       CALL DZERO(WORK(KDENSBT),N3ODEL(ISYDEN))
 

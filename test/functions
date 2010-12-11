@@ -55,6 +55,32 @@ fi
 # ###################################################################
 # miscellaneous tests listed here.
 
+# check_basis:
+# check whether number of primitives and contraction parameters
+# are as expected. Unlikely to fail but...
+# $1 - name of the basis set
+# $2 - string like "H 1 1 4s1p 2s1p" containing
+#      atom label, number of atoms with this label, charge, 
+#      number of primitives, number of contracted functions,
+#      types of primitives and contracted functions.
+check_basis() {
+if [ "$2" = "" ]; then echo "not enough parameters to $0"; return 1; fi
+$AWK -v "s=$2" '
+/Basis set used is /{
+split(s,a)
+getline;getline;getline
+for(i=1; a[i] != ""; i+=4) {
+getline;
+if(a[i] != $1 || a[i+1] != $2 || a[i+2] != $3 || a[i+3] != $6) {
+    print; print a[i], a[i+1], a[i+2], a[i+3]
+    exit(1)
+}
+}
+done=1
+}
+END {exit(done ? 0 : 1)}' $log || ERRLIST="$ERRLIST; BASIS-SET"
+}
+
 # check_scf_energy:
 # $1 - calculation type: HF|DFT
 # $2 - expected energy
@@ -72,7 +98,8 @@ return(v>r||v<-r)}
 # $2 - max deviation
 check_dipole() {
 [ "$2" = "" ] &&  echo "not enough parameters to check_dipole."
-$AWK '/Dipole moment$/{getline; getline;getline;s=($1<'$1-$2'||$1>'$1+$2'); exit 0;}END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
+$AWK '/Dipole moment$/{getline;getline;getline;getline;
+s=($1<'$1-$2'||$1>'$1+$2'); exit 0;}END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
 }
 
 # check_dip_components:
@@ -156,6 +183,45 @@ $AWK 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
                  else { print substr($0,31) " " '$3'; }
                }
 END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Linear response"
+}
+
+# check_exc_energy:
+# check excitation energy
+# $1 - symmetry of the excited state
+# $2 - number of the excited state
+# $3 - excitation energy.
+# $4 - max deviation.
+check_exc_energy() {
+[ "$4" = "" ] &&  echo "not enough parameters to check_exc_energy."
+$AWK -v "symm=$1" -v "nr=$2" -v "ene=$3" -v "thr=$4" '
+function e(val,r){return(val>r||val<-r)}
+/^@ Excited    state    symmetry/{ rsy= ($5==symm)}
+/^@ State no:/                   {rst=  ($4==nr)}
+rsy && rst && /^@ Excitation energy/{
+getline;res=e(ene-$2,thr)
+}
+END{exit (res) }' $log || ERRLIST="$ERRLIST; Excitation energy"
+}
+
+# check_aba_polarizability:
+# check the static polarizability as reported by ABACUS property module.
+# $1 - the threshold
+# $2..$4 -- Ex, Ey, Ez in a.u.
+check_aba_polarizability() {
+if [ "$4" = "" ]; then
+    echo "not enough parameters to $0."; return 1
+fi
+$AWK -v "thr=$1" -v "ex=$2" -v "ey=$3" -v "ez=$4" '
+function e(v,r){return(v>r||v<-r)}
+/Static polarizabilities .au/{
+for(i=0;i<4;i++) getline;
+getline; if($1 != "Ex" || e($2-ex,thr)) {print $2 " " ex;exit(1);}
+getline; if($1 != "Ey" || e($2-ey,thr)) {print $2 " " ex;exit(1);}
+getline; if($1 != "Ez" || e($2-ez,thr)) {print $2 " " ex;exit(1);}
+s=1
+}
+END{exit(!s)}
+' $log || ERRLIST="$ERRLIST; static polarizability"
 }
 
 # ###################################################################
@@ -247,7 +313,7 @@ END {exit(failed)}
 # handle strings longer than 399 characters.
 check_mol_hessian() {
 if [ "$3" = "" ]; then
-    echo "not enough parameters to check_vibr_freq."; return 1
+    echo "not enough parameters to check_mol_hessian."; return 1
 fi
 p=`echo $3|sed 's,[ 0]* , ,g'`
 $AWK 'function e(v,r){#print "mol_hessian: checking " v,",", r;
@@ -336,25 +402,23 @@ if [ "$2" = "" ]; then
     echo "not enough parameters to check_vibr_freq."; return 1
 fi
 p=`echo $2`
-$AWK 'function e(v,r){#print "vibr_freq: checking " v,",", r;
+$AWK -v "tol=$1" 'function e(v,r){#print "vibr_freq: checking " v,",", r;
 return(v>r||v<-r)}
  BEGIN {s=0;c=0}
 / Vibrational Frequencies and IR Intensities/ {
-for(i=0; i<8; i++) getline;
-tol='$1';
+for(i=0; i<9; i++) getline;
 split("'"$p"'",arr," ");
 idx=1;
 failed=0;
-while(arr[idx] != "") {
+for(idx=1;arr[idx] != ""; idx+=6) {
 getline; split($0,l," ");
-for(i=1; l[i]!= ""; i++) {
- #print "Expected:",arr[idx]," Found:",l[i]
+for(i=1; i<=6; i++) {
+ #print "Expected:",arr[idx+i-1]," Found:",l[i]
  if(l[i] ~ /-?[.0-9]+/) {
-   if(e(arr[idx]-l[i],tol)) {failed++;print "a"}
+   if(e(arr[idx+i-1]-l[i],tol)) {failed++;print "expected",arr[idx+i-1]," Found ", l[i],tol}
   } else {
-   if(arr[idx] != l[i])     {failed++;print "b"}
+   if(arr[idx+i-1] != l[i])     {failed++;print "b"}
   } 
-  idx++
 }
 if(failed>5) break
 }
@@ -377,4 +441,98 @@ $AWK 'function e(v,r){#print "checking ",v, r;
 return(v>r||v<-r)}
 $1== "##" && $2 == '$1' && $7=='$3' { exit(e($8-('$3'),'$4'))  }
 ' $log || ERRLIST="$ERRLIST; ORB. GRADIENT $1"
+}
+
+check_magnetizabilities() {
+return 0
+}
+
+# check_mag_tensors:
+# check magnetizability tensors, total, diamagnetic and paramagnetic
+# contributions.
+# $1 - threshold
+# $2 - total tensor
+# $3 - nuclear contribution to the tensor
+# $4 - electronic contribution to the tensor
+check_mag_tensors() {
+if [ "$4" = "" ]; then
+    echo "not enough parameters to check_mag_tensors."; return 1
+fi
+
+$AWK -v "tol=$1" -v "t=`echo $2`" -v "d=`echo $3`" -v "p=`echo $4`" '
+function e(v,r){return(v>r||v<-r)}
+/Total magnetizability tensor/ {
+split(t,a); for(i=0;i<5;i++)getline;
+if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
+getline;
+if(e($2-a[4],tol) || e($3-a[5],tol) ||e($4-a[6],tol)) exit 1
+getline;
+if(e($2-a[7],tol) || e($3-a[8],tol) ||e($4-a[9],tol)) exit 1
+foundt=1
+}
+/Diamagnetic magnetizability tensor/ {
+split(d,a); for(i=0;i<5;i++)getline;
+if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
+getline;
+if(e($2-a[4],tol) || e($3-a[5],tol) ||e($4-a[6],tol)) exit 1
+getline;
+if(e($2-a[7],tol) || e($3-a[8],tol) ||e($4-a[9],tol)) exit 1
+foundd=1
+}
+/Paramagnetic magnetizability tensor/ {
+split(p,a); for(i=0;i<5;i++)getline;
+if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
+getline;
+if(e($2-a[4],tol) || e($3-a[5],tol) ||e($4-a[6],tol)) exit 1
+getline;
+if(e($2-a[7],tol) || e($3-a[8],tol) ||e($4-a[9],tol)) exit 1
+foundp=1
+}
+END{exit( (foundt && foundd && foundp) ? 0 : 1) }
+' $log  || ERRLIST="$ERRLIST; MAGNETIZABILITY TENSORS"
+}
+
+# check_g_tensors:
+# check rotational g-tensors, total, nuclear and electronic
+# contributions.
+# $1 - threshold
+# $2 - total tensor
+# $3 - nuclear contribution to the tensor
+# $4 - electronic contribution to the tensor
+check_g_tensors() {
+if [ "$4" = "" ]; then
+    echo "not enough parameters to check_g_tensors."; return 1
+fi
+
+$AWK -v "tol=$1" -v "t=`echo $2`" -v "nu=`echo $3`" -v "el=`echo $4`" '
+function e(v,r){return(v>r||v<-r)}
+/Molecular rotational g-tensor in principal axis system/ {
+split(t,a); for(i=0;i<3;i++)getline;
+if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
+getline;
+if(e($2-a[4],tol) || e($3-a[5],tol) ||e($4-a[6],tol)) exit 1
+getline;
+if(e($2-a[7],tol) || e($3-a[8],tol) ||e($4-a[9],tol)) exit 1
+foundt=1
+}
+/Nuclear contribution in principal axis system/ {
+split(nu,a); for(i=0;i<3;i++)getline;
+if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
+getline;
+if(e($2-a[4],tol) || e($3-a[5],tol) ||e($4-a[6],tol)) exit 1
+getline;
+if(e($2-a[7],tol) || e($3-a[8],tol) ||e($4-a[9],tol)) exit 1
+foundn=1
+}
+/Electronic contribution in principal axis system/ {
+split(el,a); for(i=0;i<3;i++)getline;
+if(e($2-a[1],tol) || e($3-a[2],tol) ||e($4-a[3],tol)) exit 1
+getline;
+if(e($2-a[4],tol) || e($3-a[5],tol) ||e($4-a[6],tol)) exit 1
+getline;
+if(e($2-a[7],tol) || e($3-a[8],tol) ||e($4-a[9],tol)) exit 1
+founde=1
+}
+END{exit( (foundt && foundn && founde) ? 0 : 1) }
+' $log  || ERRLIST="$ERRLIST; G-TENSORS"
 }

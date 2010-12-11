@@ -157,7 +157,7 @@ c
       INTEGER KGZAIM, KGZQAI, KBFZA, KBFZQA, KCTILD, KDTILD
       INTEGER KXIJCB, KXCJIB, KGAMMAQ, LENGAM, KYPSA,KYPSQA,KXBICJ
       INTEGER ISYMCJ, ISYMBI, NDIM1, NDIM2, ISYIAJB, ITRAN, KTEST
-      INTEGER IOPTTCME
+      INTEGER IOPTTCME, IOPTR12
 * external 
       INTEGER ILSTSYM
 
@@ -790,7 +790,7 @@ c
 c
          IOPT = 2
          LOCC = .FALSE.
-         CALL CC_IAJB2(WORK(KXIAJB),ISYIAJB,IOPT,LRELAX,LOCC,
+         CALL CC_IAJB2(WORK(KXIAJB),ISYIAJB,IOPT,LRELAX,LOCC,.FALSE.,
      &                LU0IAJB,FN0IAJB,IT2DEL0,XLAMDH0,ISYM0,
      &                LU1IAJB,FN1IAJB,IT2DELB,XLAMDQH,ISYHOP,
      &                WORK(KEND3),LWRK3)
@@ -902,7 +902,7 @@ c
 
          IOPT = 2
          LOCC = .FALSE.
-         CALL CC_IAJB2(WORK(KXIJCB),ISYHTA,IOPT,LRELAX,LOCC,
+         CALL CC_IAJB2(WORK(KXIJCB),ISYHTA,IOPT,LRELAX,LOCC,.FALSE.,
      &                  LU0IJCB,FN0IJCB,IT2DELA0,XLAMDH0,ISYM0,
      &                  LU1IJCB,FN1IJCB,IT2DELAB,XLAMDQH,ISYHOP,
      &                  WORK(KEND2),LWRK2)
@@ -964,7 +964,7 @@ c            CALL CC_PRSQ(DUM,WORK(KXIAJB),ISYRES,0,1)
 *         ------------------------------------------------------------
 *
          FAC = -0.5D0
-         CALL CC_CDBAR2(WORK(KCTILD),WORK(KEMAT1A),FAC,ISYHTA)
+         CALL CC_CDBAR2(WORK(KCTILD),WORK(KEMAT1A),FAC,.FALSE.,ISYHTA)
 
 *        ------------------------------------------------------------
 *        add special integrals
@@ -997,8 +997,8 @@ c             CALL CC_PRP(WORK,WORK(KZETA2),ISYCTR,0,1)
 *         ------------------------------------------
 *         calculate C term and add to result vector:
 *         ------------------------------------------
-*
-          CALL CC_CD('C',-1,THETA2,ISYRES,WORK(KZETA2),
+          ioptr12 = 0
+          CALL CC_CD('C',-1,ioptr12,THETA2,ISYRES,WORK(KZETA2),
      &               ISYCTR,WORK(KCTILD),ISYHTA,WORK(KEND2),LWRK2)
 
           IF (LOCDBG) THEN
@@ -1031,7 +1031,7 @@ c             CALL CC_PRP(THETA1,THETA2,ISYRES,1,1)
 *  -----------------------------------------------------------
          IOPT = 2
          LOCC = .FALSE.
-         CALL CC_IAJB2(WORK(KXCJIB),ISYHTA,IOPT,LRELAX,LOCC,
+         CALL CC_IAJB2(WORK(KXCJIB),ISYHTA,IOPT,LRELAX,LOCC,.FALSE.,
      &                  LU0CJIB,FN0CJIB,IT2DELA0,XLAMDH0,ISYM0,
      &                  LU1CJIB,FN1CJIB,IT2DELAB,XLAMDQH,ISYHOP,
      &                  WORK(KEND2),LWRK2)
@@ -1084,7 +1084,7 @@ c            CALL CC_PRSQ(DUM,WORK(KXBICJ),ISYRES,0,1)
 *        ------------------------------------------------------------
 *
          FAC = 0.5D0
-         CALL CC_CDBAR2(WORK(KDTILD),WORK(KEMAT1A),FAC,ISYHTA)                  
+         CALL CC_CDBAR2(WORK(KDTILD),WORK(KEMAT1A),FAC,.FALSE.,ISYHTA)
 
 *        ------------------------------------------------------------
 *        add special integrals
@@ -1117,7 +1117,8 @@ c             CALL CC_PRP(WORK,WORK(KZETA2),ISYCTR,0,1)
 c             CALL FLSHFO(LUPRI)
           END IF
 *
-          CALL CC_CD('D',-1,THETA2,ISYRES,WORK(KZETA2),ISYCTR,
+          ioptr12 = 0
+          CALL CC_CD('D',-1,ioptr12,THETA2,ISYRES,WORK(KZETA2),ISYCTR,
      &                      WORK(KDTILD),ISYHTA,WORK(KEND2),LWRK2)
 *
           IF (LOCDBG) THEN
@@ -1187,7 +1188,7 @@ c
 
         IOPT = 2              !also derivative/relaxed integrals
         LOCC = .TRUE.         !delta is transformed to occupied
-        CALL CC_IAJB2(WORK(KXIFJL),ISYIFJL,IOPT,LRELAX,LOCC,
+        CALL CC_IAJB2(WORK(KXIFJL),ISYIFJL,IOPT,LRELAX,LOCC,.FALSE.,
      &                LU0IAJB,FN0IAJB,IT2DEL0,XLAMDH0,ISYM0,
      &                LU1IAJB,FN1IAJB,IT2DELB,XLAMDQH,ISYHOP,
      &                WORK(KEND3),LWRK3)
@@ -1253,7 +1254,7 @@ c
 
         IOPT = 2
         LOCC = .TRUE.
-        CALL CC_IAJB2(WORK(KXIFJL),ISYIFJL,IOPT,LRELAX,LOCC,
+        CALL CC_IAJB2(WORK(KXIFJL),ISYIFJL,IOPT,LRELAX,LOCC,.FALSE.,
      &                LU0IAJB,FN0IAJB,IT2DEL0,XLAMDAH,ISYMTA,
      &                LU1IAJB,FN1IAJB,IT2DELB,XLAMQAH,ISYHTA,
      &                WORK(KEND3),LWRK3)
@@ -1416,7 +1417,7 @@ C           CALL CC_PRP(WORK,THETA2,ISYRES,0,1)
 
             IOPT = 2
             LOCC = .FALSE.
-            CALL CC_IAJB2(WORK(KXIAJB),ISYRES,IOPT,LRELAX,LOCC,
+            CALL CC_IAJB2(WORK(KXIAJB),ISYRES,IOPT,LRELAX,LOCC,.FALSE.,
      &                    LU0IAJB,FN0IAJB,IT2DEL0,WORK(KYPSA),ISYZTA,
      &                    LU1IAJB,FN1IAJB,IT2DELB,WORK(KYPSQA),ISYRES,
      &                    WORK(KEND3),LWRK3)

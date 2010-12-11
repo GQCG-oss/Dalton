@@ -86,6 +86,10 @@ C   INFDIM : LCINDX
 C
 #include <maxash.h>
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 #include <priunit.h>
 #include <molde.h>
 #include <infinp.h>
@@ -96,15 +100,19 @@ C
 #include <infopt.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <gnrinf.h>
+#include <qm3.h>
+#include <qmmm.h>
 C
 C
 C EXTERNAL FUNCTIONS
 C
       LOGICAL FNDLAB
 C
-      LOGICAL CICALC, MOISNO
+      LOGICAL CICALC, MOISNO, LDUMP
 C
-      CHARACTER*8 TABLE(4), RTNLBL(2)
+      CHARACTER   CONV_text*17
+      CHARACTER*8 TABLE(4), RTNLBL(2), LAPRPC
       DATA TABLE/'********','OLDORB  ','NEWORB  ','STARTVEC'/
 C
       CALL QENTER('SIROUT')
@@ -118,6 +126,7 @@ C
       LWRK1  = MAX(LBIMAC,NCMOT)
       IF (LWRK.LT.LWRK1) CALL ERRWRK('SIROUT',LWRK1,LWRK)
 C
+      LDUMP = .TRUE.
       IF (IPRI4 .GE. 3) P4FLAG(3) = .TRUE.
       IF (P4FLAG(3) .AND. FLAG(2)) THEN
 C
@@ -255,9 +264,9 @@ C
       KFRSAV= 1
       KFREE = KFRSAV
       LFREE = LWRK
-      CALL MEMGET('REAL', KCMO,NCMOT,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCREF,NCONF,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL', KOCC,NORBT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL', KCMO,NCMOT, WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCREF,NCONF, WRK,KFREE,LFREE)
+      CALL MEMGET('REAL', KOCC,NORBT, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
             NWARN = NWARN + 1
@@ -317,9 +326,44 @@ csonia 04/10/95
          IF (INERSF) WRITE (LUW4,'(/5X,A)')
      *      'This is the final state in a calculation with'//
      *      ' inertial polarization.'
+      ELSE IF (PCM) THEN
+         IF (NONEQ) THEN
+            WRITE (LUW4,'(/5X,A,2(/10X,A,F12.6))')
+     *           'SOLVATION MODEL: polarizable continuum model (PCM),'
+     *           ,'dielectric constant =',EPSINF,
+     *           'static diel. const. =',EPS
+         ELSE
+            WRITE (LUW4,'(/5X,A,(/10X,A,F12.6))')
+     *           'SOLVATION MODEL: polarizable continuum model (PCM),'
+     *           ,'dielectric constant =',EPS
+         END IF
+
+      ELSE IF (QM3) THEN
+        WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUW4,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
+        WRITE(LUW4,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
+        WRITE(LUW4,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
+        WRITE(LUW4,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
+      ELSE IF (QMMM) THEN
+        WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Charge contribution:    ', ECHART
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Dipole contribution:    ', EDIPT 
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Quadrupole contribution:', EQUADT
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Octuple contribution:   ', EOCTUP
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Electronic Pol. energy: ', EDELD 
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ', EDNUC
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ', EDMULT
+        WRITE(LUW4,'(5X,A24,F20.12)') 'Total QM/MM energy:     ', ESOLT
       ELSE
-         ESOLT = D0
+        ESOLT = D0
       END IF
+C
+      IF (ICONV .EQ. 0) THEN
+         CONV_text = ' (NOT CONVERGED!)'
+      ELSE
+         CONV_text = '                 '
+      END IF
+C
       IF (CICALC) THEN
 C        CI calculation
          IF (DOCINO) THEN
@@ -329,20 +373,44 @@ C        CI calculation
          END IF
       ELSE IF (FLAG(2) .AND. MCTYPE .GT. 0) THEN
 C        MCSCF calculation
-         WRITE (LUW4,5020) ISTATE,EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
-         IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
+         IF (DOMCSRDFT) THEN
+            WRITE (LUW4,5024) ISTATE,EMCSCF,CONV_text,
+     &         POTNUC,(EMCSCF-POTNUC-ESOLT)
+         ELSE
+            WRITE (LUW4,5020) ISTATE,EMCSCF,CONV_text,
+     &         POTNUC,(EMCSCF-POTNUC-ESOLT)
+         END IF
+         IF (FLAG(16) .OR. PCM) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM
       ELSE IF (DORHF) THEN
-         IF (.NOT.DODFT) THEN
+         IF (DOHFSRDFT) THEN
+           WRITE (LUW4,5023) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+         ELSE IF (.NOT.DODFT) THEN
 C        ... DIIS-HF or QC-HF optimization
-             WRITE (LUW4,5021) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+             WRITE (LUW4,5021) EMCSCF,CONV_text,
+     &          POTNUC,(EMCSCF-POTNUC-ESOLT)
          ELSE
 C        ... DIIS-DFT or QC-DFT optimization
-             WRITE (LUW4,5022) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+             WRITE (LUW4,5022) EMCSCF,CONV_text,
+     &          POTNUC,(EMCSCF-POTNUC-ESOLT)
+         END IF
+         IF (DOCCSD .AND. .NOT.(QM3)) LDUMP = .FALSE.
+         IF (DOCCSD .AND. .NOT.(QMMM)) LDUMP = .FALSE.
+         IF (LDUMP) THEN
+            LAPRPC = 'ENERGY  '
+            CALL WRIPRO(EMCSCF,"SCF/DFT   ",0,
+     *                  LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM
       END IF
+
+      IF (QMMM .AND. MMPROP) THEN
+        WRITE (LUW4,*)  
+        WRITE (LUW4,*)
+        CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
+      ENDIF 
 
  5000 FORMAT(//T21,'>>> FINAL RESULTS FROM SIRIUS <<<',
      *       //T6,'Spin multiplicity:',T31,I5,
@@ -351,13 +419,20 @@ C        ... DIIS-DFT or QC-DFT optimization
  5010 FORMAT(/T6,'This was a CI-NO calculation.')
  5012 FORMAT(/T6,'This was a CI calculation.')
  5020 FORMAT( T6,'State number:',T31,I5,
-     *      //T6,'Final MCSCF energy:',T31,F20.12,
+     *      //T6,'Final MCSCF energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
- 5021 FORMAT(/T6,'Final HF energy:',T31,F20.12,
+ 5021 FORMAT(/T6,'Final HF energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
- 5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,
+ 5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,A,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5023 FORMAT(/T6,'Final HF-SRDFT energy:',T31,F20.12,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5024 FORMAT( T6,'State number:',T31,I5,
+     *      //T6,'Final MC-SRDFT energy:',T31,F20.12,A,
      *       /T6,'Nuclear repulsion:',T31,F20.12,
      *       /T6,'Electronic energy:',T31,F20.12)
  5025 FORMAT( T6,'Solvation  energy:',T31,F20.12)
@@ -366,33 +441,9 @@ C
 C       stamp date, time, and hostname to LUW4
         CALL TSTAMP(' ',LUW4)
 C
-#if defined (VAR_OCCPRINT)
-
-MAERKE 901102-hjaaj: KOCC is not defined here any more !!!!
-
-C
-C ***  Natural occupancies
-C
-      IF (FLAG(3) .AND. IPRI4.GT.0) THEN
-      IF (NASHT .GT. 0) THEN
-         DO 3040 ISYM = 1,NSYM
-            IF (NOCC(ISYM) .GT. 0) THEN
-               JOCC1 = KOCC + IORB(ISYM) - 1
-               OCCSUM = DSUM(NOCC(ISYM),WRK(JOCC1+1),1)
-               WRITE (LUW4,'(//A,I3/)')
-     *           ' Occupancies of natural orbitals, symmetry',
-     *           ISYM
-               WRITE (LUW4,'(6F12.6)') (WRK(JOCC1+I),I=1,NOCC(ISYM))
-               WRITE (LUW4,'(/A,T13,F12.6)') ' Sum =',OCCSUM
-            END IF
- 3040    CONTINUE
-C     ELSE
-CMAERKE-901025 write orbital energies for Hartree-Fock
-      END IF
-      END IF
-#endif
-      IF (NASHT .GT. 1 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
+      IF (MCTYPE .GT. 0 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
      *    .NOT.(CICALC.AND.DOCINO) ) THEN
+C     if MC/CI and NO's not already printed
          KREL1 = KFREE
          CALL MEMGET('REAL',KUNO,N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
@@ -401,7 +452,7 @@ C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
          CALL RDCREF(WRK(KCREF))
          CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
-     *              .TRUE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
+     *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
      *              WRK,KFREE,LFREE,LUW4,IPRNO)
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
@@ -417,11 +468,11 @@ C
          REWIND LUIT1
          IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
             NWARN = NWARN + 1
-            WRITE (LUPRI,'(//2A/)')
-     *         ' WARNING, new orbitals not found on LUIT1,',
+            WRITE (LUPRI,'(//A/)')
+     *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *         ' will try "OLDORB "'
             REWIND LUIT1
-            CALL MOLLAB(TABLE(2),LUIT1,LUW4)
+            CALL MOLLAB(TABLE(2),LUIT1,lupri)
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
        IF (CICALC .AND. DOCINO) THEN
@@ -441,9 +492,20 @@ C             (CREF was not saved on file)
      *              WRK,KFREE,LFREE,LUW4,IPRNO)
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
-         CALL MEMREL('SIROUT.molden.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
+         CALL MEMREL('SIROUT.MOLDEN.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
        END IF
-         CALL MOMOS(1,WRK(KCMO),WRK(KOCC))
+
+       IF (MEP) THEN
+         CALL DOMEP(WRK(KCMO),WRK,KFREE,LFREE)
+       ENDIF
+
+       KREL2 = KFREE
+       CALL MEMGET('REAL', KAOSO,  N2BASX,      WRK, KFREE, LFREE)
+       CALL MEMGET('REAL', KUNPAK, NORBT*NBAST, WRK, KFREE, LFREE)
+       CALL MEMGET('REAL', KOVEC,  NBAST,       WRK, KFREE, LFREE)
+       CALL MOMOS(1,WRK(KCMO), WRK(KOCC), WRK(KAOSO),
+     $            WRK(KUNPAK), WRK(KOVEC))
+       CALL MEMREL('SIROUT.MOMOS',WRK,KREL2,KREL2,KFREE,LFREE)
       END IF
 C     
 C ***  Print final MCSCF orbitals ***
@@ -454,11 +516,11 @@ C
             REWIND LUIT1
             IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
                NWARN = NWARN + 1
-               WRITE (LUPRI,'(//2A/)')
-     *            ' WARNING, new orbitals not found on LUIT1,',
+               WRITE (LUPRI,'(//A/)')
+     *            ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *            ' will try "OLDORB "'
                REWIND LUIT1
-               CALL MOLLAB(TABLE(2),LUIT1,LUERR)
+               CALL MOLLAB(TABLE(2),LUIT1,lupri)
             END IF
             CALL READT(LUIT1,NCMOT,WRK(KCMO))
          ELSE
@@ -506,8 +568,9 @@ c--renzo modif
             IF (RTNLBL(2) .EQ. 'CISAVE ') THEN
                IF (.NOT. CICALC) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,*) 'WARNING, internal error in SIROUT'
-                  WRITE (LUW4,*) 'CICALC false, but CISAVE on LUIT1'
+                  WRITE (LUW4,'(//A/A/)')
+     &               ' WARNING, internal error in SIROUT subroutine',
+     &               ' CICALC false, but CISAVE label on SIRIUS.RST'
                END IF
                CICALC = .TRUE.
                IF (I .GT. 0 .AND. I .NE. ISTACI) THEN
@@ -519,8 +582,9 @@ c--renzo modif
             ELSE
                IF (CICALC) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,*) 'WARNING, internal error in SIROUT'
-                  WRITE (LUW4,*) 'CICALC true, but not CISAVE on LUIT1'
+                  WRITE (LUW4,'(//A/A/)')
+     &               ' WARNING, internal error in SIROUT subroutine',
+     &               ' CICALC true, but no CISAVE label on SIRIUS.RST'
                   CICALC = .FALSE.
                END IF
                IF (ABS(I) .NE. ISTATE) THEN
@@ -559,13 +623,13 @@ C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
          CALL MEMREL('SIROUT.PRWF',WRK,KFRSAV,KCINDX,KFREE,LFREE)
       END IF
   110 CONTINUE
- 1050 FORMAT(//' Printout of CI-coefficients larger than',F8.5,
-     *         ' for root',I3,/)
- 1051 FORMAT(' (this is the reference state)'/)
- 1052 FORMAT(' (this is the CI reference state)'/)
+ 1050 FORMAT(/' Printout of CI-coefficients abs greater than',F8.5,
+     *         ' for root',I3)
+ 1051 FORMAT(' *** NOTE: this root is the reference state ***')
+ 1052 FORMAT(' *** NOTE: this root is the CI reference state ***')
  1077 FORMAT(/' *** SIROUT, Wave function not printed as requested',
      *  /,15X,'Reason: insufficient work memory space',
-     *  /,15X,'need more than',I10,' additional real*8 work space')
+     *  /,15X,'need more than',I12,' additional real*8 work space')
 C
 C If FLAG(18):
 C punch final orbitals (and, if FLAG(3): call sircan, also
@@ -577,11 +641,11 @@ C
             WRITE (LUPRI,'(/A/)') ' "NEWORB " orbitals punched.'
          ELSE
             NWARN = NWARN + 1
-            WRITE (LUPRI,'(//2A/)')
-     *         ' WARNING, new orbitals not found on LUIT1,',
+            WRITE (LUPRI,'(//A/)')
+     *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
      *         ' will try "OLDORB "'
             REWIND LUIT1
-            CALL MOLLAB(TABLE(2),LUIT1,LUERR)
+            CALL MOLLAB(TABLE(2),LUIT1,lupri)
             WRITE (LUPRI,'(/A/)') ' "OLDORB " orbitals punched.'
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
@@ -601,364 +665,4 @@ C
       CALL QEXIT('SIROUT')
       RETURN
       END
-C  /* Deck prorb */
-      SUBROUTINE PRORB(CMO,PROCC,IOUT)
-C
-C Written 11-Dec-1983 by ha/hjaaj
-C Revised  8-Jul-1992 hjaaj
-C
-C Purpose:
-C  Print molecular orbital coefficients on unit IOUT.
-C
-C Input:
-C  CMO, MO orbital coefficients (symmetry blocked)
-C  PROCC, print only occupied orbitals
-C  IOUT, output file unit
-C
-#include <implicit.h>
-      DIMENSION CMO(*)
-      LOGICAL   PROCC
-C
-C Used from common blocks:
-C   INFINP : CENT,TYPE,SUPSYM,?
-C   INFORB : NSYM,...
-C   INFIND : ISSMO(),
-C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-C
-C *** FORMAT statements
-C
- 2400 FORMAT(/5X,'Molecular orbitals for symmetry species',I4)
- 2600 FORMAT(/' Orbital  ',7I9)
- 2620 FORMAT( ' Sup.sym. ',7I9)
- 2800 FORMAT(1X,I3,2X,2A4,7F9.4)
-C
-C *** Print molecular orbitals
-C
-      ISTBAS = 0
-      DO 400 ISYM = 1,NSYM
-         IF (PROCC) THEN
-            NENDI = NOCC(ISYM)
-         ELSE
-            NENDI = NORB(ISYM)
-         END IF
-         NBASI = NBAS(ISYM)
-      IF (NENDI.EQ.0) GO TO 300
-         WRITE(IOUT,2400) ISYM
-C
-         ICMOI = ICMO(ISYM)
-         ISTORB = IORB(ISYM)
-         IEND=0
-  100       IST =IEND+1
-            ISTMO=IEND*NBASI+ICMOI
-            IEND=IEND+7
-            IF(IEND.GT.NENDI) IEND=NENDI
-            IEMO=NBASI*(IEND-1)+ICMOI
-            WRITE(IOUT,2600) (I,I=IST,IEND)
-            IF (SUPSYM) WRITE(IOUT,2620) (ISSMO(ISTORB+I),I=IST,IEND)
-            DO 200 I=1,NBASI
-               JSMO=ISTMO+I
-               JEMO=IEMO+I
-               WRITE(IOUT,2800) I,CENT(I+ISTBAS),TYPE(I+ISTBAS),
-     *            (CMO(J),J=JSMO,JEMO,NBASI)
-  200       CONTINUE
-         IF (IEND.NE.NENDI) GO TO 100
-C
-  300 CONTINUE
-        ISTBAS = ISTBAS + NBASI
-  400 CONTINUE
-C
-C *** End of subroutine PRORB
-C
-      RETURN
-      END
-C  /* Deck prkap */
-      SUBROUTINE PRKAP (NKAPT,XKAP,PRFAC,LUPRIN)
-C
-C Jan 90 hjaaj (descendant of PRWOP)
-C
-C Purpose:
-C  Write orbital operator array XKAP to unit LUPRIN.
-C
-C  if PRFAC  .gt. 0, write only elements with absolute value
-C                    .ge. PRFAC * (max. absolute value)
-C  if PRFAC  .eq. 0, write all elements;
-C  if PRFAC  .lt. 0, write only elements with
-C                    value .le. PRFACX * min. pos value
-C                    where PRFACX = MAX(-PRFAC, -1.0/PRFAC)
-C
-#include <implicit.h>
-      DIMENSION XKAP(*)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-C
-C Used from common blocks:
-C   INFVAR : NWOPT,NWOPH,JWOPSY,JWOP(2,*)
-C
-#include <maxorb.h>
-#include <infvar.h>
-C
-C Check if NKAPT legal
-C
-      IF (NKAPT .NE. NWOPT .AND. NKAPT .NE. NWOPH) THEN
-         WRITE (LUPRIN,'(//A/A,3I10)')
-     &      ' ERROR in PRKAP, NKAPT .ne. NWOPT,NWOPH',
-     &      ' NKAPT, NWOPT, NWOPH :',NKAPT,NWOPT,NWOPH
-         CALL QUIT(' ERROR in PRKAP, NKAPT .ne. NWOPT,NWOPH')
-      END IF
-C
-C Any elements?
-C
-      IF (NKAPT.LE.0) THEN
-         WRITE (LUPRIN,8000) JWOPSY
-         GO TO 9999
-      END IF
- 8000 FORMAT(/5X,'Orbital operator symmetry =',I2,
-     *       /5X,'>> NO ELEMENTS <<')
-C
-C Print XKAP as requested:
-C
-      IF (PRFAC .GT. D0) THEN
-         KMAX   = IDAMAX(NKAPT,XKAP,1)
-         THPKAP = PRFAC*ABS(XKAP(KMAX))
-         WRITE (LUPRIN,1010) JWOPSY,PRFAC
-         INPR = 0
-         DO 100 IG = 1,NKAPT
-            IF ( ABS(XKAP(IG)) .GT. THPKAP ) THEN
-               K = JWOP(1,IG)
-               L = JWOP(2,IG)
-               WRITE (LUPRIN,1100) IG,K,L,XKAP(IG)
-            ELSE
-               INPR = INPR + 1
-            END IF
-  100    CONTINUE
-         IF (INPR.GT.0) WRITE (LUPRIN,1210) INPR,THPKAP
-      ELSE IF (PRFAC .EQ. D0) THEN
-         WRITE (LUPRIN,1020) JWOPSY
-         INPR = 0
-         DO 200 IG = 1,NKAPT
-            IF ( XKAP(IG) .NE. D0 ) THEN
-               K = JWOP(1,IG)
-               L = JWOP(2,IG)
-               WRITE (LUPRIN,1100) IG,K,L,XKAP(IG)
-            ELSE
-               INPR = INPR + 1
-            END IF
-  200    CONTINUE
-         IF (INPR.GT.0) WRITE (LUPRIN,1220) INPR
-      ELSE
-C     (PRFAC .LT. D0)
-         KMIN   = IDAMIN(NKAPT,XKAP,1)
-         PRFACX = MAX( -PRFAC, -D1/PRFAC)
-         THPKAP = PRFACX*ABS(XKAP(KMIN))
-         WRITE (LUPRIN,1030) JWOPSY,THPKAP
-         INPR = 0
-         DO 300 IG = 1,NKAPT
-            IF ( XKAP(IG) .LE. THPKAP ) THEN
-               K = JWOP(1,IG)
-               L = JWOP(2,IG)
-               WRITE (LUPRIN,1100) IG,K,L,XKAP(IG)
-            ELSE
-               INPR = INPR + 1
-            END IF
-  300    CONTINUE
-         IF (INPR.GT.0) WRITE (LUPRIN,1230) INPR,THPKAP
-      END IF
-C
-C
- 9999 CONTINUE
-      RETURN
-C
- 1010 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
-     *  5X,'(only elements abs greater than',1P,D8.1,
-     *     ' times max abs value)'//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1020 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1030 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
-     *  5X,'(only elements less than',1P,D10.2,')'//
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1100 FORMAT(I15,I7,I3,F20.10)
- 1210 FORMAT(/1X,I8,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.')
- 1220 FORMAT(/1X,I8,' zero elements not printed.')
- 1230 FORMAT(/1X,I8,' elements with value greater than',
-     *       1P,D9.2,' not printed.')
-C
-C -- end of subroutine PRKAP
-C
-      END
-C  /* Deck prwop */
-      SUBROUTINE PRWOP (WOP,IUNITX)
-C
-C Written 11-Apr-1984 -- hjaaj
-C Last revision 17-Oct-1984 hjaaj (IUNITX.lt.0 option)
-C                9-May-1984 hjaaj
-C
-C Purpose:
-C  Write orbital operator array WOP to unit IUNIT.
-C
-C  IUNIT = IABS(IUNITX)
-C
-C  If IUNITX .lt. 0, write all elements;
-C  if IUNITX .gt. 0, write only elements with absolute value
-C                    .ge. PRFAC * (max. absolute value)
-C
-#include <implicit.h>
-      DIMENSION WOP(*)
-      PARAMETER (PRFAC = 0.1D0, D0 = 0.0D0)
-C
-C Used from common blocks:
-C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
-C
-#include <maxorb.h>
-#include <infvar.h>
-C
-      IUNIT = IABS(IUNITX)
-C
-C Any elements?
-C
-      IF (NWOPT.LE.0) GO TO 300
-C
-C 1. find maximum absolute value in WOP
-C
-      IF (IUNITX.GT.0) THEN
-         MAX = IDAMAX(NWOPT,WOP,1)
-         THPWOP = PRFAC*ABS(WOP(MAX))
-         WRITE (IUNIT,1000) JWOPSY,PRFAC
-      ELSE
-         WRITE (IUNIT,1010) JWOPSY
-         THPWOP = D0
-      END IF
-      INPR = 0
-      DO 200 IG = 1,NWOPT
-         IF (ABS(WOP(IG)).GE.THPWOP) THEN
-            K = JWOP(1,IG)
-            L = JWOP(2,IG)
-            WRITE (IUNIT,1100) IG,K,L,WOP(IG)
-         ELSE
-            INPR = INPR + 1
-         END IF
-  200 CONTINUE
-      IF (INPR.GT.0) WRITE (IUNIT,1200) INPR,THPWOP
-C
-      RETURN
-C
-  300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
-      RETURN
-C
- 1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
-     *  5X,'(only elements abs greater than',1P,D8.1,
-     *     ' times max abs value)'//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1010 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1100 FORMAT(I15,I7,I3,F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.')
- 3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
-     *       /5X,'>> NO ELEMENTS <<')
-C
-C -- end of subroutine PRWOP
-C
-      END
-C  /* Deck punmo */
-        SUBROUTINE PUNMO(IPCTL,CMO,OCC)
-C
-C 25-May-1985 hjaaj
-C l.r. 910715-hjaaj (added formats 7010-7050)
-C
-C Purpose:
-C   punch mo coefficients and, conditionally, occupation numbers
-C   to LUPNCH
-C
-C Control:
-C   IPCTL .eq. 1: also punch occupation numbers
-C   else        : do not punch occupation numbers
-C
-#include <implicit.h>
-#include <dummy.h>
-      DIMENSION CMO(*),OCC(*)
-      PARAMETER (D0 = 0.0D0)
-C
-C Used from common blocks:
-C   INFORB : NSYM,NORB(*),NBAS(*)
-C
-#include <inforb.h>
-C
-      CHARACTER*8 LBLDAT(2)
-C
-      CALL QENTER('PUNMO')
-      CALL GETDAT(LBLDAT(1),LBLDAT(2))
-      LUPNCH = 0
-      CALL GPOPEN(LUPNCH,'DALTON.MOPUN','UNKNOWN',' ','FORMATTED',
-     &            IDUMMY,.FALSE.)
-      REWIND LUPNCH
-      IF (IPCTL.EQ.1) THEN
-         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
-     *      '**NATORB   ( punched by SIRIUS ',LBLDAT,' )'
-      ELSE
-         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
-     *      '**MOLORB   ( punched by SIRIUS ',LBLDAT,' )'
-      END IF
-C
-      IEND =0
-      DO 700 ISYM=1,NSYM
-         NORBI=NORB(ISYM)
-      IF (NORBI.EQ.0) GO TO 700
-         NBASI=NBAS(ISYM)
-         DO 705 NI=1,NORBI
-            IST=IEND+1
-            IEND=IEND+NBASI
-            IMOMXV = IDAMAX(NBASI,CMO(IST),1)
-            CMOMXV = ABS(CMO(IST-1+IMOMXV))
-            IF (CMOMXV .LT. 1.0D2) THEN
-               WRITE (LUPNCH,7000) (CMO(NP),NP=IST,IEND)
-            ELSE IF (CMOMXV .LT. 1.0D3) THEN
-               WRITE (LUPNCH,7010) (CMO(NP),NP=IST,IEND)
-            ELSE IF (CMOMXV .LT. 1.0D4) THEN
-               WRITE (LUPNCH,7020) (CMO(NP),NP=IST,IEND)
-            ELSE IF (CMOMXV .LT. 1.0D5) THEN
-               WRITE (LUPNCH,7030) (CMO(NP),NP=IST,IEND)
-            ELSE IF (CMOMXV .LT. 1.0D6) THEN
-               WRITE (LUPNCH,7040) (CMO(NP),NP=IST,IEND)
-            ELSE
-               WRITE (LUPNCH,7050) (CMO(NP),NP=IST,IEND)
-            END IF
-  705    CONTINUE
-         NDELI = NBASI-NORBI
-      IF (NDELI.EQ.0) GO TO 700
-         DO 706 NI=1,NDELI
-            WRITE (LUPNCH,7000) (D0,NP=1,NBASI)
-  706    CONTINUE
-  700 CONTINUE
-      CALL GPCLOSE(LUPNCH,'KEEP')
-C
-      IF (IPCTL.EQ.1) THEN
-         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
-     *   '**NATOCC   ( punched by SIRIUS ',LBLDAT,' )'
-         WRITE(LUPNCH,7000) (OCC(NP),NP=1,NORBT)
-      END IF
-C
-      CALL QEXIT('PUNMO')
-      RETURN
-C
- 7000 FORMAT(4F18.14)
- 7010 FORMAT(4F18.13)
- 7020 FORMAT(4F18.12)
- 7030 FORMAT(4F18.11)
- 7040 FORMAT(4F18.10)
- 7050 FORMAT(4G18.11)
-C
-C end of PUNMO
-C
-      END
+C --- end of sirius/sirout.F ---

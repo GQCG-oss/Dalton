@@ -159,7 +159,7 @@ C
 C     We will need rotational g tensors and spin-rotation constants in 
 C     space-fixed xyz axis system
 C
-      IF (MOLGFA) THEN
+      IF (MOLGFA .AND. .NOT. LINEAR) THEN
          CALL DGEMM('N','N',3,3,3,1.D0,
      &              CMAT,3,
      &              GTRAN,3,0.D0,
@@ -213,11 +213,11 @@ C
          CALL OUTPUT(XJMAT,1,3,1,3,3,3,1,LUPRI)
       END IF
 C
-      ECKP(1) = 1.0D-0
-      ECKP(2) = 1.0D-0
-      ECKP(3) = 1.0D-0
+      ECKP(1) = 1.0D0
+      ECKP(2) = 1.0D0
+      ECKP(3) = 1.0D0
 C
-      CALL MNEWT(NTRIAL,ECKP,3,BVEC,XJMAT,TOLX,TOLF)
+      CALL ECK_MNEWT(NTRIAL,ECKP,BVEC,XJMAT,TOLX,TOLF)
       XN(1) = SIN(ECKP(1))*COS(ECKP(2))
       XN(2) = SIN(ECKP(1))*SIN(ECKP(2))
       XN(3) = COS(ECKP(1))
@@ -294,7 +294,7 @@ C
      &              CMAT,3,0.D0,
      &              GTRAN,3)
          IF (IPRINT .GE. 2) THEN
-            CALL HEADER('Molecular g-tensor '
+            CALL HEADER('Molecular rotational g-tensor '
      &           //'in the Eckart frame:',0)
             CALL OUTPUT(GTRAN,1,3,1,3,3,3,1,LUPRI)
          ENDIF
@@ -463,8 +463,8 @@ C
       C(3) = A(1)*B(2) - A(2)*B(1)
       RETURN
       END
-      SUBROUTINE USRFUN(ECKP,N,NP,FVEC,FJAC,BX,BY,BZ,JXX,JXY,JXZ,JYX,
-     &                  JYY,JYZ,JZX,JZY,JZZ)
+      SUBROUTINE ECK_USRFUN(ECKP,FVEC,FJAC,BX,BY,BZ,
+     &                      JXX,JXY,JXZ,JYX,JYY,JYZ,JZX,JZY,JZZ)
 C
 C the system of equations to be solved for obtaining the Eckart frame
 C is specified with this subroutine
@@ -474,7 +474,6 @@ C
       DOUBLE PRECISION ECKP(3),FVEC(3),FJAC(3,3),SINK,COSK,
      &     SINL,COSL,SINM,COSM,JXX,JXY,JXZ,JYX,JYY,JYZ,JZX,JZY,JZZ,
      &     BX,BY,BZ
-      INTEGER N,NP
 C
       SINK    = SIN(ECKP(1))
       COSK    = COS(ECKP(1))
@@ -591,33 +590,30 @@ C
       END
 C
 C
-      SUBROUTINE mnewt(ntrial,x,n,bvec,xjmat,tolx,tolf)
+      SUBROUTINE ECK_mnewt(ntrial,x,bvec,xjmat,tolx,tolf)
 C
-C source: Numerical Recipes in Fortran, 2nd edition
-C
-      INTEGER n,ntrial,NP
-      DOUBLE PRECISION tolf,tolx,x(n)
-      PARAMETER (NP=3)
-      INTEGER i,k,indx(NP)
-      DOUBLE PRECISION d,errf,errx,fjac(NP,NP),fvec(NP),p(NP),
+      INTEGER ntrial
+      DOUBLE PRECISION tolf,tolx,x(3)
+      INTEGER i,k,indx(3)
+      DOUBLE PRECISION errf,errx,fjac(3,3),fvec(3),p(3),
      &     bvec(3), xjmat(3,3)
       do k=1,ntrial               
-         call usrfun(x,n,NP,fvec,fjac,bvec(1),bvec(2),bvec(3),
+         call ECK_usrfun(x,fvec,fjac,bvec(1),bvec(2),bvec(3),
      &               xjmat(1,1),xjmat(1,2),xjmat(1,3),xjmat(2,1),
      &               xjmat(2,2),xjmat(2,3),xjmat(3,1),xjmat(3,2),
      &               xjmat(3,3))
          errf =0.0d0
-         do i=1,n
+         do i=1,3
             errf=errf+abs(fvec(i))
          enddo
          if(errf.le.tolf)return
-         do i=1,n                       
+         do i=1,3                       
             p(i)=-fvec(i)
          enddo 
-         call ludcmp(fjac,n,NP,indx,d)    
-         call lubksb(fjac,n,NP,indx,p)  
+         call ECK_lucdmpHJ(fjac,indx)    
+         call ECK_lubksb(fjac,indx,p)  
          errx=0.0d0
-         do i=1,n
+         do i=1,3
             errx=errx+abs(p(i))
             x(i)=x(i)+p(i)
          enddo
@@ -627,27 +623,34 @@ C
       END
 C
 C
-      SUBROUTINE ludcmp(a,n,np,indx,d)
+      SUBROUTINE ECK_lucdmpHJ(a,indx)
 C
-C source: Numerical Recipes in Fortran, 2nd edition
+C Rev. Mar. 2006 hjaaj so it can treat singular
+C  matrices (which occur for linear molecules)
 C
-      INTEGER n,np,indx(n),NMAX
-      DOUBLE PRECISION d,a(np,np),TINY
-      PARAMETER (NMAX=500,TINY=1.0d-20) 
+      INTEGER indx(3)
+      DOUBLE PRECISION a(3,3),TINY
+      PARAMETER (TINY=1.0d-20) 
       INTEGER i,imax,j,k
-      DOUBLE PRECISION aamax,dum,sum,vv(NMAX)
+      DOUBLE PRECISION aamax,dum,sum,vv(3)
 #include <priunit.h>
-      d=1.d0   
-      call output(a,1,np,1,np,np,np,1,LUPRI)
-      do i=1,n                
+      call output(a,1,3,1,3,3,3,1,LUPRI)
+      do i=1,3
          aamax=0.0d0
-         do j=1,n
+         do j=1,3
             if (abs(a(i,j)).gt.aamax) aamax=abs(a(i,j))
          enddo
-         if (aamax.eq.0.0d0) call quit('singular matrix in ludcmp')
-         vv(i)=1.d0/aamax                 
+CHJ      if (aamax.eq.0.0d0) call quit('singular matrix in ludcmp')
+CHJ      vv(i)=1.d0/aamax                 
+         if (aamax.le.TINY) then
+            a(i,i)=TINY
+            vv(i)=1.d0/TINY
+         else
+            vv(i)=1.d0/aamax                 
+         end if
+CHJ end
       enddo
-      do j=1,n                        
+      do j=1,3
          do i=1,j-1                
             sum=a(i,j)
             do k=1,i-1
@@ -656,7 +659,8 @@ C
             a(i,j)=sum
          enddo 
          aamax=0.0d0
-         do i=j,n                   
+         imax=j
+         do i=j,3
             sum=a(i,j)                 
             do k=1,j-1
                sum=sum-a(i,k)*a(k,j)
@@ -669,19 +673,18 @@ C
             endif
          enddo
          if (j.ne.imax)then             
-            do k=1,n               
+            do k=1,3
                dum=a(imax,k)
                a(imax,k)=a(j,k)
                a(j,k)=dum
             enddo
-            d=-d                      
             vv(imax)=vv(j)             
          endif
          indx(j)=imax
          if(a(j,j).eq.0.0d0)a(j,j)=TINY
-         if(j.ne.n)then
+         if(j.ne.3)then
             dum=1.d0/a(j,j)
-            do i=j+1,n
+            do i=j+1,3
                a(i,j)=a(i,j)*dum
             enddo
          endif
@@ -690,16 +693,15 @@ C
       END
 C
 C
-      SUBROUTINE lubksb(a,n,np,indx,b)
+      SUBROUTINE ECK_lubksb(a,indx,b)
 C
-C source: Numerical Recipes in Fortran, 2nd edition
 C
-      INTEGER n,np,indx(n)
-      DOUBLE PRECISION a(np,np),b(n)
+      INTEGER indx(3)
+      DOUBLE PRECISION a(3,3),b(3)
       INTEGER i,ii,j,ll
       DOUBLE PRECISION sum
       ii=0               
-      do i=1,n         
+      do i=1,3
          ll=indx(i)      
          sum=b(ll)        
          b(ll)=b(i)
@@ -712,9 +714,9 @@ C
          endif               
          b(i)=sum
       enddo
-      do i=n,1,-1         
+      do i=3,1,-1         
          sum=b(i)
-         do j=i+1,n
+         do j=i+1,3
             sum=sum-a(i,j)*b(j)
          enddo
          b(i)=sum/a(i,i)     

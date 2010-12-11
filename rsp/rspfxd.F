@@ -55,10 +55,10 @@ C
 C Used from common blocks:
 C  ?
 C
-#include <dftcom.h>
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
+#include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
 #include <infdim.h>
@@ -74,11 +74,9 @@ C
  
       DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT)
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
-      DIMENSION H2(NORBT,NORBT)
-      DIMENSION H2X (NORBT,NORBT)
+      DIMENSION H2(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION H2AX(N2ASHX*N2ASHX,*)
-      DIMENSION DEN1(NASHDI,NASHDI)
-      DIMENSION DEN2(*)
+      DIMENSION DEN1(NASHDI,NASHDI), DEN2(*)
       DIMENSION PVDEN(NASHDI,NASHDI)
       DIMENSION ZYMAT1(NORBT,NORBT),ZYMAT2(NORBT,NORBT)
       DIMENSION ZYMAT3(NORBT,NORBT)
@@ -92,6 +90,9 @@ C     Put up the structure for reading the (transformed) integrals:
 C     IEND < 0 flags the completeness of the distributions
 C
       CALL QENTER('RSPFXD')
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         CALL QUIT('srDFT not implemented yet in RSPFXD')
+      END IF
       KWRK = KFREE
       LWRK = LFREE
       ID1 = 1
@@ -99,7 +100,7 @@ C
       CALL DZERO(H2,N2ORBX)
       IF (IKLVL.GE.2) NEEDED(6) = 1
       IF (IPRFX.GT.200) THEN
-         WRITE(LUPRI,'(/A)') 'ENTER RSPFXD'
+         WRITE(LUPRI,'(/A)')   '>>>>>> ENTERING RSPFXD <<<<<<'
          WRITE(LUPRI,'(A,I5)') 'IDAX =',IDAX
          WRITE(LUPRI,'(A,I5)') 'INTSYM =',INTSYM
          WRITE(LUPRI,'(A,I5)') 'ISYMDN =',ISYMDN
@@ -114,14 +115,14 @@ C
          WRITE(LUPRI,'(A,I5)') 'ISYM1 =',ISYM1
          WRITE(LUPRI,'(A,I5)') 'ISYM2 =',ISYM2
          WRITE(LUPRI,'(A,I5)') 'ISYM3 =',ISYM3
-         WRITE(LUPRI,'(A)') 'One-electron FI'
+         WRITE(LUPRI,'(/A)') 'One-electron FI'
          CALL OUTPUT(FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-         WRITE(LUPRI,'(A)') 'One-electron density'
+         WRITE(LUPRI,'(/A)') 'One-electron density'
          CALL OUTPUT(DEN1,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
-         WRITE(LUPRI,'(A)') 'Two-electron density'
+         WRITE(LUPRI,'(/A)') 'Two-electron density'
          CALL PRIAC2(DEN2,NASHT,LUPRI)
          IF (TRPFLG) THEN
-            WRITE(LUPRI,'(A)') 'Two-electron density'
+            WRITE(LUPRI,'(/A)') 'Two-electron density, triplet'
             CALL PRIAC2(DEN2(ID2),NASHT,LUPRI)
          END IF
       END IF
@@ -132,18 +133,24 @@ C
       IF (IKLVL.EQ.0) THEN
          CALL MEMGET('REAL',KFI,N2ORBX,WRK,KWRK,LWRK)
          CALL DZERO(WRK(KFI),N2ORBX)
+      ELSE
+         CALL MEMGET('REAL',KFI,0     ,WRK,KWRK,LWRK)
       END IF
       IF (IKLVL.EQ.3) THEN
          CALL MEMGET('REAL',KH2,N2ORBX,WRK,KWRK,LWRK)
+      ELSE
+         CALL MEMGET('REAL',KH2,0     ,WRK,KWRK,LWRK)
       END IF
+      LSCR = 0
       IF (NASHT.GT.0) THEN
          CALL MEMGET('REAL',KH2XAC,N2ASHX,WRK,KWRK,LWRK)
          CALL DZERO(WRK(KH2XAC),N2ASHX)
-         IF (LORB) THEN
-            LSCR = MAX(NORBT,N2ASHX)
-            CALL MEMGET('REAL',KSCR,LSCR,WRK,KWRK,LWRK)
-         END IF
+         IF (LORB) LSCR = MAX(NORBT,N2ASHX)
+      ELSE
+         CALL MEMGET('REAL',KH2XAC,0,WRK,KWRK,LWRK)
       END IF
+      CALL MEMGET('REAL',KSCR,LSCR,WRK,KWRK,LWRK)
+C
 1000  CALL NXTH2M(IC,ID,H2,NEEDED,WRK,KWRK,LWRK,IDIST)
       IF ( IDIST .LT. 0) GO TO 2000
 C
@@ -750,7 +757,7 @@ C        F(C,q) = F(C,q) - (D q|C D)
 C
 #include <implicit.h>
 C
-      PARAMETER ( D2= 2.0D0, DM1 = -1.0D0 )
+      PARAMETER ( D0 = 0.0D0, D2= 2.0D0, DM1 = -1.0D0 )
 C
 #include <dftcom.h>
 #include <maxorb.h>
@@ -766,7 +773,7 @@ C
 #include <infpri.h>
 #include <infspi.h>
 C
-      DIMENSION FI(NORBT,NORBT),H2X (NORBT,NORBT)
+      DIMENSION FI(NORBT,NORBT), H2X(NORBT,NORBT)
       CALL QENTER('FIXAD1')
       IF (ICDTYP.EQ.JTSESE) GOTO 999
 C
@@ -826,7 +833,7 @@ C
 C        F(p,q) = F(p,q) -  (pj|jq)
 C        F(p,D) = F(p,D) -  (pC|CD)
 C
-      IF (ICTYP.EQ.JTINAC) THEN
+      IF (ICTYP.EQ.JTINAC .AND. HFXFAC.NE.D0) THEN
          IPSYM  = MULD2H(IDSYM,INTSYM)
          IF (IDTYP.EQ.JTSEC) THEN
             NORBP = NOCC(IPSYM)
@@ -849,7 +856,7 @@ C
 C        F(p,q) = F(p,q) - (j q|p j)
 C        F(C,q) = F(C,q) - (D q|C D)
 C
-      IF (IDTYP.EQ.JTINAC) THEN
+      IF (IDTYP.EQ.JTINAC .AND. HFXFAC.NE.D0) THEN
          IQSYM   = MULD2H(ICSYM,INTSYM)
          IF (ICTYP.EQ.JTSEC) THEN
             NORBQ  =  NOCC(IQSYM)
@@ -959,7 +966,7 @@ C
 #include <infspi.h>
 #include <dftcom.h>
 C
-      DIMENSION FI(NORBT,NORBT),H2X (NORBT,NORBT)
+      DIMENSION FI(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)
       CALL QENTER('FIXAD2')
 C
@@ -1002,6 +1009,7 @@ C         - 2(kk|CD)ZYMAT(D,q) -> F(C,q)
 C
          IQSYM = MULD2H(IFCKSY,ICSYM)
          NORBQ = NORB(IQSYM)
+        IF (NORBQ .GT. 0) THEN
          IQST = IORB(IQSYM) + 1
          CALL DAXPY(NORBQ,-DTRACE,ZYMAT(ID,IQST),NORBT,
      *                               FI(IC,IQST),NORBT)
@@ -1009,6 +1017,7 @@ C
             WRITE(LUPRI,'(/A)') 'FIXAD2:FI after case 1a'
             CALL OUTPUT (FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
+        END IF
 C
 C Case 1b)
 C         2*ZYMAT(p,r)(kk|rq) -> F(p,q)
@@ -1016,12 +1025,14 @@ C         2*ZYMAT(p,C)(kk|CD) -> F(p,D)
 C
          IPSYM=MULD2H(IFCKSY,IDSYM)
          NORBP=NORB(IPSYM)
+        IF (NORBP .GT. 0) THEN
          IPST=IORB(IPSYM)+1
          CALL DAXPY(NORBP,DTRACE,ZYMAT(IPST,IC),1,FI(IPST,ID),1)
          IF (IPRRSP.GT.300) THEN
             WRITE(LUPRI,'(/A)') 'FIXAD2:FI after case 1b'
             CALL OUTPUT (FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
+        END IF
       END IF
 C
 C Case 2)
@@ -1057,6 +1068,7 @@ C
 C
 C Case 3)
 C
+      IF (HFXFAC.NE.D0) THEN
       IF (ICTYP.EQ.JTINAC) THEN
 C
 C Case 3a)
@@ -1067,6 +1079,7 @@ C
          IQSYM=MULD2H(IZYSYM,IDSYM)
          NORBP=NORB(IPSYM)
          NORBQ=NORB(IQSYM)
+        IF (NORBP .GT. 0 .AND. NORBQ .GT. 0) THEN
          IPST=IORB(IPSYM)+1
          IQST=IORB(IQSYM)+1
          CALL DGEMM('N','N',NORBP,NORBQ,1,HFXFAC,
@@ -1077,6 +1090,7 @@ C
             WRITE(LUPRI,'(/A)') 'FIXAD2:FI after case 3a'
             CALL OUTPUT (FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
+        END IF
       ELSE
 C
 C Case 3b)
@@ -1087,6 +1101,7 @@ C
          IKSYM=MULD2H(IZYSYM,ICSYM)
          NORBP=NORB(IPSYM)
          NISHK=NISH(IKSYM)
+        IF (NORBP .GT. 0 .AND. NISHK .GT. 0) THEN
          IPST=IORB(IPSYM)+1
          IKST=IORB(IKSYM)+1
          CALL DGEMM('N','N',NORBP,1,NISHK,-HFXFAC,
@@ -1097,6 +1112,7 @@ C
             WRITE(LUPRI,'(/A)') 'FIXAD2:FI after case 3b'
             CALL OUTPUT (FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
+        END IF
       END IF
 C
 C Case 4)
@@ -1111,6 +1127,7 @@ C
          IQSYM=MULD2H(INTSYM,ICSYM)
          NORBP=NORB(IPSYM)
          NORBQ=NORB(IQSYM)
+        IF (NORBP .GT. 0 .AND. NORBQ .GT. 0) THEN
          IPST=IORB(IPSYM)+1
          IQST=IORB(IQSYM)+1
          CALL DGEMM('N','N',NORBP,NORBQ,1,-HFXFAC,
@@ -1121,6 +1138,7 @@ C
             WRITE(LUPRI,'(/A)') 'FIXAD2:FI after case 4b'
             CALL OUTPUT (FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
+        END IF
 C
 C Case 4a)
 C         (kq|pr)ZYMAT(r,k) -> F(p,q)
@@ -1131,6 +1149,7 @@ C
          IQSYM=MULD2H(IFCKSY,ICSYM)
          NISHK=NISH(IKSYM)
          NORBQ=NORB(IQSYM)
+        IF (NISHK .GT. 0 .AND. NORBQ .GT. 0) THEN
          IKST=IORB(IKSYM)+1
          IQST=IORB(IQSYM)+1
          CALL DGEMM('N','N',1,NORBQ,NISHK,HFXFAC,
@@ -1141,7 +1160,9 @@ C
             WRITE(LUPRI,'(/A)') 'FIXAD2:FI after case 4a'
             CALL OUTPUT (FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
+        END IF
       END IF
+      END IF ! if (hfxfac.ne.0.0d0)
       CALL QEXIT('FIXAD2')
       RETURN
       END
@@ -1189,7 +1210,7 @@ C
 #include <infpri.h>
 #include <infspi.h>
 C
-      DIMENSION DEN1(NASHT,NASHT),FA(NORBT,NORBT),H2X (NORBT,NORBT)
+      DIMENSION DEN1(NASHT,NASHT),FA(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION H2XAC(NASHT,NASHT)
 C     LOGICAL NATORB
 C
@@ -1322,8 +1343,7 @@ C  /* Deck faxad2 */
       SUBROUTINE FAXAD2(INTSYM,IC,ID,ICDTYP,ICTYP,IDTYP,
      *                 ICDSYM,ICSYM,IDSYM,
      *                 DEN1,IDENSY,FA,H2X,IGRSPI,ISPIN1,ISPIN2,
-     *                 ZYMAT,IZYSYM,
-     *                 H2XAC,WRK)
+     *                 ZYMAT,IZYSYM, H2XAC,WRK)
 C
 C     Olav Vahtras
 C
@@ -1407,9 +1427,8 @@ C
 #include <inforb.h>
 #include <infpri.h>
 #include <infspi.h>
-#include <dftcom.h>
 C
-      DIMENSION FA(NORBT,NORBT),H2X (NORBT,NORBT)
+      DIMENSION FA(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)
       DIMENSION DEN1(NASHT,NASHT)
       DIMENSION H2XAC(NASHT,NASHT)
@@ -1722,8 +1741,7 @@ C
       DIMENSION DEN2A(NASHT,NASHT,NASHT,NASHT)
       DIMENSION DEN2B(NASHT,NASHT,NASHT,NASHT)
       DIMENSION PVDEN(NASHDI,NASHDI)
-      DIMENSION H2X(NORBT,NORBT)
-      DIMENSION H2XAC(NASHT,NASHT)
+      DIMENSION H2X(NORBT,NORBT),  H2XAC(NASHT,NASHT)
 C
       IF (ICDTYP.EQ.JTSESE .OR. NASHT.LE.1)  RETURN
 C
@@ -1858,8 +1876,7 @@ C
 C  /* Deck qxad2 */
       SUBROUTINE QXAD2(INTSYM,IC,ID,ICDTYP,
      *                ICDSYM,ICSYM,IDSYM,QA,QB, H2X,DEN2A,DEN2B,
-     *                IDENSY,PVDEN,
-     *                H2XAC,SCR,ZYMAT,IZYSYM)
+     *                IDENSY,PVDEN, H2XAC,SCR,ZYMAT,IZYSYM)
 C
 C
 C Olav Vahtras
@@ -1931,8 +1948,7 @@ C
       DIMENSION DEN2A(NASHT,NASHT,NASHT,NASHT)
       DIMENSION DEN2B(NASHT,NASHT,NASHT,NASHT)
       DIMENSION PVDEN(NASHDI,NASHDI)
-      DIMENSION H2X(NORBT,NORBT)
-      DIMENSION H2XAC(NASHT,NASHT)
+      DIMENSION H2X(NORBT,NORBT), H2XAC(NASHT,NASHT)
 C Allocated for temporary space max(n2ashx,norbt)
       DIMENSION SCR(*)
       DIMENSION ZYMAT(NORBT,NORBT)

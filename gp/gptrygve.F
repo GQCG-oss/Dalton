@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -30,7 +30,20 @@ C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C 
 C
+C FILE    : gptrygve.F
+C
+! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
+! If one set then set the other:
+#ifdef INT_STAR8
+#define VAR_INT64
+#else
+#ifdef VAR_INT64
+*define INT_STAR8
+#endif
+#endif
+!
 #include <single.h>
 C
 #ifdef REV_LOG
@@ -47,7 +60,7 @@ cGPIOIN: initialize priunit.h, new defaults:  /hjaaj apr 2000
 c   LUPRI = 6 (to use stdout on unix)
 c   LUW4  = 6 (same as LUPRI by default)
 c   NINFO = 0, NWARN = 0 (zero counters moved to here)
-c   LUERR = -9xxx (let GPOPEN assign this one, could be = stderr on unix)
+c   LUERR = -8xxx (let GPOPEN assign this one, could be = stderr on unix)
 c   IPRERR = 0 (no debug print on LUERR)
 c----------------------------
 crevision 1.3 2000/04/10 10:52:18 hjj
@@ -62,26 +75,26 @@ c===========================================================================
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
 C
-      LENGTH = LEN(HEAD)
+      LHEAD = LNBLNK(HEAD)
       IF (IN .GE. 0) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = (72 - LENGTH)/2 + 1
+         INDENT = MAX(1,(80 - LHEAD)/2 + 1)
       END IF
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-      WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), ('-',I=1,LENGTH)
+      WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+      WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
       RETURN
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
-#include <implicit.h>
-      CHARACTER TEXT*6
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER TEXT*(*), OUT_TEXT*50
 C
-      IF (TEXT .EQ. 'START ') THEN
+      IF (TEXT(1:6) .EQ. 'START ') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
@@ -90,19 +103,24 @@ C
 #endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
-         WRITE (LUPRI,'()')
-         CALL TIMTXT('>>> Time used in '//TEXT//' is',TIME,LUPRI)
-         WRITE (LUPRI,'()')
-         CALL FLSHFO(LUPRI)
+         IF (TIME .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
+            LOUT = 17 + LTEXT + 3
+            CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
+            CALL FLSHFO(LUPRI)
+         END IF
       END IF
       RETURN
       END
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
-#include <implicit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER TEXT*6
       PARAMETER (HUN = 100.0D00)
-#include <priunit.h>
       SAVE TREST
       DATA TREST /0.0D0/
       IF (TEXT .EQ. 'REST  ') THEN
@@ -110,6 +128,7 @@ C  /* Deck timpri */
 C 980826-hjaaj: initialize TREST for next abacus call
          TREST = 0.0D0
       END IF
+      IF (TIMALL .EQ. 0.0D0) RETURN
       ITIME = NINT(HUN*TIME/TIMALL)
       IF (ITIME .GT. 0 .AND. INT(TIME) .GT. 0) THEN
          MINUTE = INT(TIME)/60
@@ -125,10 +144,11 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
-      CHARACTER HEAD*(*), A
-#include <priunit.h>
+#include "priunit.h"
+      CHARACTER HEAD*(*), A*(*)
 C
-      LENGTH = LEN(HEAD)
+      LHEAD  = LNBLNK(HEAD)
+      LENGTH = LHEAD
       IF (IN .EQ. 200) THEN
          LENGTH = LENGTH + 2
       ELSE IF (IN .GE. 100) THEN
@@ -139,26 +159,27 @@ C
       IF (IN .GE. 0 .AND. IN .LT. 100) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = MAX(1,(72 - LENGTH)/2 + 1)
+         INDENT = MAX(1,(80 - LENGTH)/2 + 1)
       END IF
       IF (IN .EQ. 200) THEN
-         WRITE (LUPRI, '(//,80A)')
-     *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
-         WRITE (LUPRI,'(80A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
-         WRITE (LUPRI, '(80A)')
-     *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
+         WRITE (LUPRI, '(//150A)')
+     *      (' ',I=1,INDENT),'.', ('-',I=1,LENGTH),'.'
+         WRITE (LUPRI, '(150A)')
+     &      (' ',I=1,INDENT),'| ', HEAD(1:LHEAD), ' |'
+         WRITE (LUPRI, '(150A)')
+     *      (' ',I=1,INDENT),'`', ('-',I=1,LENGTH),"'"
       ELSE IF (IN .EQ. 100) THEN
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE IF (IN .GT. 100) THEN
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT),
-     *      (A,I=1,MARG-1), ' ', HEAD, ' ', (A,I=1,MARG-1)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT),
+     *      (A,I=1,MARG-1), ' ', HEAD(1:LHEAD), ' ', (A,I=1,MARG-1)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       END IF
       WRITE (LUPRI, '()')
       CALL FLSHFO(LUPRI)
@@ -167,26 +188,27 @@ C
 C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
       CHARACTER HEAD*(*)
-#include <priunit.h>
-      LNG = LEN(HEAD) + 2
-      IND = (72 - LNG)/2 + 1
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '! ', HEAD, ' !'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-C     WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '| ', HEAD, ' |'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
-      WRITE (LUPRI, '()')
+#include "priunit.h"
+      LHEAD  = LNBLNK(HEAD)
+      LNG    = LHEAD + 2
+      IND = MAX(1,(80 - LNG)/2 + 1)
+      WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+      WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '! ', HEAD(1:LHEAD), ' !'
+      WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
+Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
+Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
+      WRITE (LUPRI,'()')
       RETURN
       END
 C  /* Deck stopit */
       SUBROUTINE STOPIT(SUB,PLACE,INT1,INT2)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
-      IF ((LEN(PLACE) .GT. 1) .OR. (PLACE .NE. ' ')) THEN
+      IF (LNBLNK(PLACE) .GT. 0) THEN
          WRITE (LUPRI,'(/2A)') ' Location: ',PLACE
       END IF
       JNT1  = ABS(INT1)
@@ -203,11 +225,13 @@ C  /* Deck stopit */
       END
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
 #include <priunit.h>
+C INFPAR: MYNUM
+#include <infpar.h>
       CHARACTER TEXT*(*)
 C
 C     Stamp date and time and hostname to output
@@ -222,15 +246,20 @@ C
       END IF
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
      &   LUPRIN)
+#if defined (VAR_MPI)
+      WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
+#else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
+#endif
 #if defined (SYS_CRAY) || defined (SYS_UNIX) || defined (SYS_AIX)  \
  || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC)  \
  || defined (SYS_DEC)  || defined (SYS_T3D)  || defined (SYS_LINUX)\
  || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)   \
  || defined (SYS_T90)
 C     Write to stderr
-      WRITE (0,'(/A/1X,A)')
-     *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
+      WRITE (0,'(/A,I6,A/1X,A)') ' Node ',MYNUM,
+     &   ':  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
       CALL GETTIM(CTOT,WTOT)
       CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
@@ -347,7 +376,7 @@ C
 #else
 #ifdef VAR_INT64
       LRECL  = 8*NELEM
-#else 
+#else
       LRECL  = 4*NELEM
 #endif
 #endif
@@ -434,15 +463,15 @@ C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
 C For direct access read
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <2gbdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "2gbdef.h"
+#include "dummy.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
 #if defined (VAR_SPLITFILES)
@@ -463,8 +492,8 @@ C
 C     Error branch for very large record lengths
 C
       IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)') 
-     &        ' ERROR: The requested record length of ', LRECL, 
+         WRITE (LUPRI,'(/A,I14,A)')
+     &        ' ERROR: The requested record length of ', LRECL,
      &        ' is larger than 2Gb'
          WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
      &        'single record to file!'
@@ -520,15 +549,15 @@ C  /* Deck writdx */
 C
 C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "2gbdef.h"
+#include "priunit.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
@@ -548,8 +577,8 @@ C
 C     Error branch for very large record lengths
 C
       IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)') 
-     &        ' ERROR: The requested record length of ', LRECL, 
+         WRITE (LUPRI,'(/A,I14,A)')
+     &        ' ERROR: The requested record length of ', LRECL,
      &        ' is larger than 2Gb'
          WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
      &        'single record to file!'
@@ -584,7 +613,7 @@ C
          CALL GPOPEN(LU,FNNM2(1:LN2),'UNKNOWN','DIRECT',' ',LRECL,
      &               OLDDX)
       ELSE
-         IRECT = I   
+         IRECT = I
       END IF
 #else
       IRECT = I
@@ -609,43 +638,45 @@ C                 31-Jul-1996 hjaaj (new NIBUF parameter)
 C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IINDPK(*), IINDX4(4,*)
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
 C
       IF (NIBUF .EQ. 1) THEN
-      IF (NBITS .EQ. 8) THEN
-         DO 100 I = 1,N
+        IF (NBITS .EQ. 8) THEN
+          DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
-  100    CONTINUE
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      ELSE IF (NBITS .EQ. 16) THEN
-         DO 200 I = 1,N
+          END DO
+        ELSE IF (NBITS .EQ. 16) THEN
+#ifdef INT_STAR8
+          DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
-  200    CONTINUE
+          END DO
+#else
+          CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
 #endif
+        ELSE
+          CALL QUIT('AOLAB4 error; NBITS neither 8 nor 16')
+        END IF
       ELSE
-         CALL QUIT('AOLAB4 error')
-      END IF
-      ELSE
-         DO 300 I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-            LABEL = IINDPK(NMAX+I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
-  300    CONTINUE
+        DO I = 1,N
+          LABEL = IINDPK(I)
+          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+          LABEL = IINDPK(NMAX+I)
+          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+        END DO
       END IF
 C
       RETURN
@@ -663,10 +694,10 @@ C
 C   Direct access files are provided with a UNIT-number, but the rest
 C   of the file opening process is taken care of by a call to OPENDX.
 C
-C   These files are strongly machine dependent, although care has been 
+C   These files are strongly machine dependent, although care has been
 C   taken to avoid using unit numbers that are illegal or reserved on a
 C   particular architecture. However, the use of GPOPEN and GPCLSE should
-C   remove much of the machine dependence in the rest of the Dalton 
+C   remove much of the machine dependence in the rest of the Dalton
 C   program
 C
 C Input:
@@ -679,7 +710,6 @@ C  ACCEIN   Access method. 'DIRECT' or 'SEQUENTIAL'. Default is sequential.
 C  FORMIN   Formatted or unformatted file format. Default is 'UNFORMATTED'
 C
 C Direct access-specific input:
-C
 C  NELEM    number of integer words per logical record
 C  NREC     number of logical records
 C
@@ -687,9 +717,7 @@ C
 C Output:
 C  LUNIT    Assigned file unit number
 C
-C  Direct access-specific output (through 
-C  LRDX     physical record length (in integers)
-C  NBDX     number of physical records per logical record
+C Direct access-specific output:
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
@@ -698,16 +726,20 @@ C
 #include <chrnos.h>
       CHARACTER*80 STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
-      CHARACTER OUTFIL*40, WRKDIR*80, FILENM*121
+      integer max_filename_length
+      parameter (max_filename_length = 500)
+      CHARACTER OUTFIL*(max_filename_length)
+      CHARACTER WRKDIR*(max_filename_length)
+      CHARACTER FILENM*(max_filename_length)
       INTEGER FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
 #include <gnrinf.h>
-c maxorb for infpar.h
-#include <maxorb.h>
 #include <infpar.h>
       DATA FIRST /.TRUE./
       SAVE FIRST
+C
+      CALL QENTER('GPOPEN')
 C
 C     Initialization
 C     
@@ -716,17 +748,55 @@ C
          FIRST = .FALSE.
       END IF
 C
-C     We first deal with the unit number
 C
-      FILELN = LEN(FILEIN)
-      STATLN = LEN(STATIN)
-      ACCELN = LEN(ACCEIN)
-      FORMLN = LEN(FORMIN)
-      FILENM(1:FILELN) = FILEIN(1:FILELN)
-      STATUF(1:STATLN) = STATIN(1:STATLN)
-      ACCESF(1:ACCELN) = ACCEIN(1:ACCELN)
-      FORMF (1:FORMLN) = FORMIN(1:FORMLN)
-      IF ((LUNIT .LT. 1) .OR. (LUNIT .GT. 99)) THEN
+#ifdef SYS_LINUX
+C     Just return if user has asked explicitly for stderr, stdinp, or stdout
+C     /HJAaJ Sep 2007
+      IF (LUNIT .EQ. 0) GO TO 9002
+      IF (LUNIT .EQ. 0) GO TO 8000
+      IF (LUNIT .EQ. 5) GO TO 8000
+      IF (LUNIT .EQ. 6) GO TO 8000
+#endif 
+C
+C     Copy input strings to local strings,
+C     remove trailing blanks, check for use of defaults
+C
+      FILELN = LNBLNK(FILEIN)
+      IF (FILELN .GT. 0) THEN
+         FILENM(1:FILELN) = FILEIN(1:FILELN)
+      ELSE
+         FILENM = ' '
+      END IF
+
+      ACCELN = LNBLNK(ACCEIN)
+      IF (ACCELN .GT. 0) THEN
+         ACCESF(1:ACCELN) = ACCEIN(1:ACCELN)
+         CALL UPCASE(ACCESF)
+      ELSE
+         ACCESF = ' '
+      END IF
+
+      STATLN = LNBLNK(STATIN)
+      IF (STATLN .GT. 0) THEN
+         STATUF(1:STATLN) = STATIN(1:STATLN)
+         CALL UPCASE(STATUF)
+      ELSE
+         STATLN = 7
+         STATUF(1:7) = 'UNKNOWN'
+      END IF
+
+      FORMLN = LNBLNK(FORMIN)
+      IF (FORMLN .GT. 0) THEN
+         FORMF (1:FORMLN) = FORMIN(1:FORMLN)
+         CALL UPCASE(FORMF)
+      ELSE
+         FORMLN = 11
+         FORMF(1:11)='UNFORMATTED'
+      END IF
+C
+C     We then deal with the unit number
+C
+      IF ((LUNIT .LT. 0) .OR. (LUNIT .GT. 99)) THEN
 C
 C     Unit number left unassigned, we get to decide!
 C
@@ -767,58 +837,74 @@ C
 #else 
          CALL GETENV ('OUTFIL',OUTFIL)
 #endif
-         IF (OUTFIL(1:1) .NE. ' ') THEN
-            LENOUT = 0
-            DO I = 1, 40
-               IF (OUTFIL(I:I) .EQ. ' ') GO TO 43
-               LENOUT = LENOUT + 1
-            END DO
- 43         CONTINUE
+         LENOUT = LNBLNK(OUTFIL)
+         if (LENOUT .EQ. max_filename_length) then
+            write (lupri,*) 'max_filename_length is too short'
+            write (lupri,*) OUTFIL
+            call quit('file name too long')
+         end if
+         if (LENOUT .gt. 0) then
+c        IF (OUTFIL(1:1) .NE. ' ') THEN
+c           LENOUT = 0
+c           DO I = 1, max_filename_length
+c              IF (OUTFIL(I:I) .EQ. ' ') GO TO 43
+c              LENOUT = LENOUT + 1
+c           END DO
+c43         CONTINUE
 #if defined (SYS_T3D) || defined (SYS_T90)
             CALL PXFGETENV ('WRKDIR',6,WRKDIR,LWRKDR,IERR)
 #else 
             CALL GETENV ('WRKDIR',WRKDIR)
 #endif
-            LENWRK = 0
-            DO I = 1, 80
-               IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
-               LENWRK = LENWRK + 1
-            END DO
- 44         CONTINUE
+            LENWRK = lnblnk(WRKDIR)
+            if (LENWRK .EQ. max_filename_length) then
+               write (lupri,*) 'max_filename_length is too short'
+               write (lupri,*) WRKDIR
+               call quit('work directory name too long')
+            end if
+c           LENWRK = 0
+c           DO I = 1, max_filename_length
+c              IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
+c              LENWRK = LENWRK + 1
+c           END DO
+c44         CONTINUE
             FILELN = LENWRK + LENOUT + 1
+            if (FILELN .EQ. max_filename_length) then
+               write (lupri,*) 'max_filename_length is too short'
+               write (lupri,*) WRKDIR(1:LENWRK)//'/'//
+     &                         OUTFIL(1:LENOUT)
+               call quit('file name too long')
+            end if
             FILENM(1:FILELN) = WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
          END IF
       END IF
       END IF
-      IF (STATLN .EQ. 1) THEN
-         STATLN = 7
-         STATUF(1:7) = 'UNKNOWN'
-      END IF
 C
 C     We've got a file number now, get rid of the direct access case
 C
       IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
-         IF (FILELN .EQ. 1) THEN
+         IF (FILELN .LE. 1) THEN
             IF (MYNUM .EQ. 0) THEN
                FILELN = 9
                FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'
             ELSE
-               FILELN = 13
-               FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
+               FILELN = 14
+               FILENM(1:14) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'//
-     &                        '#'//CHRNOS(MYNUM/100)//
+     &                        '.n'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
             END IF
          ELSE
-            IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &          MYNUM .GT. 0) THEN
-               FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
+            IF (MYNUM .GT. 0) THEN
+             IF (FILENM(FILELN-4:FILELN-3) .NE. '.n') THEN
+               FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-               FILELN = FILELN + 4
+               FILELN = FILELN + 5
+             END IF
             END IF
          END IF
          IF (IPRERR.GT.1) WRITE (LUERR,*) 'GPOPEN calling OPENDX ',
@@ -830,25 +916,24 @@ C
 C
 C     This better be a file with a name, and it better exist
 C
-            IF (FILELN .EQ. 1) GOTO 9005
-            IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &           MYNUM .GT. 0 .AND. .NOT. OLDDX
-     &           .AND. FILENM(FILELN-5:FILELN) .NE. 'NUMCAL') THEN
+            IF (FILELN .LE. 0) GOTO 9005
+C
+            IF (MYNUM .GT. 0 .AND. .NOT. OLDDX) THEN
+             IF (INDEX(FILENM,'.n') .NE. FILELN-4 .AND.
+     &           INDEX(FILENM,'NUMCAL') .EQ. 0) THEN
 C
 C     The last test will not be necessary anymore when we get
 C     locking RMA operations in MPI2
 C
-               FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
+               FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-               FILELN = FILELN + 4
+               FILELN = FILELN + 5
+             END IF
             END IF
+C
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
             IF (.NOT. FEXST) GOTO 9007
-            IF (FORMLN .EQ. 1) THEN
-               FORMLN = 11
-               FORMF(1:FORMLN)='UNFORMATTED'
-            END IF
             IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq OLD ',LUNIT,
      &         ' ',FILENM(1:FILELN),' ',FORMF(1:FORMLN)
             OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),STATUS='OLD',
@@ -857,31 +942,28 @@ C
          ELSE
             IF (STATUF(1:3) .EQ. 'NEW' .AND. IUNTAB(LUNIT) .NE. 0)
      &           GOTO 9006
-            IF (FILELN .EQ. 1) THEN
+            IF (FILELN .LE. 0) THEN
                IF (MYNUM .EQ. 0) THEN
                   FILELN = 6
                   FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
      &                     CHRNOS(MOD(LUNIT,10))
                ELSE
-                  FILELN = 10
+                  FILELN = 11
                   FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
      &                      CHRNOS(MOD(LUNIT,10))//
-     &                      '#'//CHRNOS(MYNUM/100)//
+     &                      '.n'//CHRNOS(MYNUM/100)//
      &                      CHRNOS(MOD(MYNUM,100)/10)//
      &                      CHRNOS(MOD(MOD(MYNUM,100),10))
                END IF
             ELSE
-               IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &             MYNUM .GT. 0) THEN
-                  FILENM(FILELN+1:FILELN+4) = '#'//CHRNOS(MYNUM/100)//
+               IF (MYNUM .GT. 0) THEN
+                IF (INDEX(FILENM,'.n') .NE. FILELN-4) THEN
+                  FILENM(FILELN+1:FILELN+5) = '.n'//CHRNOS(MYNUM/100)//
      &                                     CHRNOS(MOD(MYNUM,100)/10)//
-     &                                  CHRNOS(MOD(MOD(MYNUM,100),10))
-                  FILELN = FILELN + 4
+     &                                 CHRNOS(MOD(MOD(MYNUM,100),10))
+                  FILELN = FILELN + 5
+                END IF
                END IF
-            END IF
-            IF (FORMLN .EQ. 1) THEN
-               FORMLN = 11
-               FORMF(1:11)='UNFORMATTED'
             END IF
             IF (STATUF(1:7) .EQ. 'SCRATCH') THEN
                IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq scratch ',
@@ -900,8 +982,9 @@ C                  This will often be the case if we restart a
 C                  calculation.
                   INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
                   IF (FEXST) THEN
-                     IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN INFO: '//
-     &               'this file exists and is deleted first.'
+                     IF (IPRERR.gt.1) write (LUERR,*)
+     &                  'GPOPEN INFO: file ',FILENM(1:FILELN),
+     &                  ' already exists and is deleted first.'
                      OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),
      &                   STATUS='OLD',ACCESS='SEQUENTIAL',
      &                   FORM=FORMF(1:FORMLN),ERR=9004,IOSTAT=IOS)
@@ -914,7 +997,8 @@ C                  calculation.
             END IF
          END IF
       END IF
-  100 IUNTAB(LUNIT) = 1
+ 8000 IUNTAB(LUNIT) = 1
+      CALL QEXIT('GPOPEN')
       RETURN
 C     
 C error branches
@@ -943,7 +1027,7 @@ C
       WRITE (LUGPPRI,'(//A/A,I3/A//2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO OPEN UNIT',LUNIT,
-     &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS RESERVED'//
+     &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS RESERVED '//
      &   'UNIT NUMBER',
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
@@ -1086,7 +1170,7 @@ C
          IF (IPRERR.gt.1) write (LUERR,*) 'GPCLOSE keep',LUNIT
          CLOSE (LUNIT,STATUS='KEEP',ERR=9003)
          IUNTAB(LUNIT) = 0
-         LUNIT = -10000-LUNIT
+         LUNIT = -30000-LUNIT
          GOTO 30
       ELSE
 #if defined (VAR_SPLITFILES)
@@ -1234,11 +1318,9 @@ C
       INTEGER FILELN
       LOGICAL VALUE
 #include <chrnos.h>
-c maxorb for infpar.h
-#include <maxorb.h>
 #include <infpar.h>
 C
-      FILELN = LEN(FILENM)
+      FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN
          FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
      &                        '#'//CHRNOS(MYNUM/100)//
@@ -1257,111 +1339,39 @@ C
       END IF
       RETURN
       END
-C  /* Deck gpioin */
-      SUBROUTINE GPIOIN
+C /* Deck UPCASE */
+      SUBROUTINE UPCASE(WORD)
 C
-C 1-Mar-2000 K.Ruud
-C 10-Apr-2000 HJAaJ: changed initialization to -9xxx from 0,
-C                    because unit 0 is stderr on many systems.
-C                    The number -9xxx is used for easier debugging.
+C     Routine that uppercases the word provided. Allows the input easily to
+C     be made case insensitive. F90 routine supplied by Anthony Stone and 
+C     77-ified by K.Ruud
 C
-#include <mxcent.h>
-#include <eribuf.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <r12int.h>
+#include "implicit.h"
+      CHARACTER word*(*)
+      CHARACTER*26 UPPER, LOWER
 C
-      LUCMD  = -9001
-      LUPRI  = -9002
+      UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      LOWER = "abcdefghijklmnopqrstuvwxyz"
 C
-      LUCME  = -9003
-      LUMOL  = -9004
-      LUPROP = -9005
-      LUSOL  = -9006
-      LUINTA = -9007
-      LUONEL = -9008
-      LUSUPM = -9009
-      LUTLM  = -9010
-      LUDA1  = -9011
-      LUITMP = -9012
-      LU2DER = -9013
-      LUDASP = -9014
-      LUAAT  = -9015
-      LURDR  = -9016
-      LURDI  = -9017
-      LUGDR  = -9018
-      LUGDI  = -9019
-      LUGDT  = -9020
-      LURDT  = -9021
-      LUDFCK = -9022
-      LUSFDA = -9023
-      LUFDC  = -9024
-      LUWLK  = -9025
-      LUPAO  = -9026
-      LUPAS  = -9027
-      LUNR1  = -9028
-      LUNR3  = -9029
-      LUNR5  = -9030
-      LUCMD  = -9031
-      LUINTR = -9032
-      LUMOLDEN=-9033
-      DO I = 1, MXCOOR
-         LUAORC(I) = -9034 - I
-      ENDDO
+C     Remove in-line comment /hjaaj March 2010
+      K1 = INDEX(WORD,'!')
+      K2 = INDEX(WORD,'#')
+      K3 = INDEX(WORD,'*')
+      K  = MIN(K1, K2, K3)
+      IF (K .EQ. 1) GO TO 9000
+C        ......... then whole line is a comment line, we skip it
+      LEN_WORD = LNBLNK(WORD)
+      IF (K .GT. 0) THEN
+         WORD(K:LEN_WORD) = ' '
+         LEN_WORD = LNBLNK(WORD)
+      END IF
 C
-C     /R12INT/ (WK/UniKA/26-11-2002).
+      DO I = 1, LEN_WORD
+         K = INDEX(LOWER,WORD(I:I))
+         IF (K .NE. 0) WORD(I:I)=UPPER(K:K)
+      END DO
 C
-      DO I = 1, 5
-         LUR12(I) = -9034 - MXCOOR - I
-      ENDDO
-C
-C     /RSPTAP/
-C
-      LUAHSO = -9201
-      LUCRV1 = -9202
-      LUCRV2 = -9203
-      LUXYVE = -9204
-      LUCRVE = -9205
-      LURSP3 = -9206
-      LURSP4 = -9207
-      LURSP5 = -9208
-      LUMHSO = -9209
-C
-C     /SIRTAP/
-C
-      LUINTM = -9301
-      LUIT1  = -9302
-      LUIT2  = -9303
-      LUIT3  = -9304
-      LUIT5  = -9305
-      LUINF  = -9306
-      LUH2AC = -9307
-      LUSIFC = -9308
-C     next two for NEWTRA
-      LUORDA = -9309
-      LUMINT = -9310
-C
-      FNSOL  = 'AOSOLINT'
-      ABARDR = 'ABACUS.RD'
-      ABARDI = 'ABACUS.RDI'
-      ABAGDR = 'ABACUS.GD'
-      ABAGDI = 'ABACUS.GDI'
-      ABAGDT = 'ABACUS.GDT'
-      ABARDT = 'ABACUS.RDT'
-      ABADFK = 'ABACUS.DFK'
-      ABASF  = 'ABACUS.SF'
-      ABATLM = 'ABACUS.TLM'
-      ABAWLK = 'DALTON.WLK'
-      ABAIRC = 'DALTON.IRC'
-      ABATRJ = 'DALTON.TRJ'
-      ABANR1 = 'ABAENR.RST'
-      ABANR3 = 'ABAENR.BVC'
-      ABANR5 = 'ABAENR.SVC'
-      FNINTM = 'MOTWOINT'
-      FNSUPM = 'AOSUPINT'
-      FNONEL = 'AOONEINT'
-      FNSIFC = 'SIRIFC'
-      LBSIFC = 'SIR IPH '
-C
+ 9000 CONTINUE
       RETURN
       END
+! -- end of gptrygve.F --

@@ -85,9 +85,9 @@ C
       INTEGER KWMAT, ISWMAT, LENSQW, KINDSQW
       INTEGER KXIAJB, KDIAGW, KTROC, KTROC1
       INTEGER LENGTH, ISYOPE, IOPTTCME, KRBJIA
-      INTEGER KT1B, KT2B, ISINTR1, ISINTR2
+      INTEGER KT1B, KT2B
       INTEGER LU3SRTR, LUCKJDR, LUDELDR, LUDKBCR, LUDKBCR4
-      INTEGER ISCKB2Y, ISCKD2Y, KTROC0Y, KTRVI0Y, KTRVI8Y
+      INTEGER KTROC0Y, KTRVI0Y, KTRVI8Y
 C
       INTEGER ICAU
 C
@@ -262,8 +262,8 @@ C
          DO MCAU = 0, NCAU
 C
             !Open temporary files
-            LU3SRTR  = 0
-            LUDELDR  = 0
+            LU3SRTR  = -1
+            LUDELDR  = -1
             CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
             CALL WOPEN2(LUDELDR,FNDELDR,64,0)
 C
@@ -289,8 +289,8 @@ C
             CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
             !Open the files for C1-transformed integrals
-            LUCKJDR  = 0
-            LUDKBCR  = 0
+            LUCKJDR  = -1
+            LUDKBCR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
             CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
@@ -363,7 +363,7 @@ C-----------------------------------------------------
 C     Construct the T1 transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
        CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -612,7 +612,7 @@ C
             CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
             !Open the file for C1-transformed integrals
-            LUCKJDR  = 0
+            LUCKJDR  = -1
             CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
 C
             !Get the offset for a given MCAU
@@ -638,7 +638,6 @@ C
 C
          ISAIJ1  = MULD2H(ISYMD,ISYRES)
          ISCKB2  = MULD2H(ISINT2,ISYMD)
-         ISCKB2Y = MULD2H(ISINTR2,ISYMD)
          ISCKB1  = MULD2H(ISINT1,ISYMD)
 C
          IF (IPRINT .GT. 55) THEN
@@ -785,7 +784,7 @@ C
                   CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
                   !Open the files for C1-transformed integrals
-                  LUDKBCR  = 0
+                  LUDKBCR  = -1
                   CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                   !Get the offset for a given MCAU
@@ -816,7 +815,6 @@ C
                ISYMBD  = MULD2H(ISYMB,ISYMD)
                ISCKIJ  = MULD2H(ISYMBD,ISYMT3)
                ISCKD2  = MULD2H(ISINT2,ISYMB)
-               ISCKD2Y = MULD2H(ISINTR2,ISYMB)
                ISWMAT  = MULD2H(ISYFKY,ISCKIJ)
 C
                IF (IPRINT .GT. 55) THEN
@@ -963,7 +961,7 @@ C
                         CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
 C
                         !Open the files for C1-transformed integrals
-                        LUDKBCR  = 0
+                        LUDKBCR  = -1
                         CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
 C
                         !Get the offset for a given MCAU

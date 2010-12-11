@@ -242,7 +242,7 @@ C         F(i,j) = (1/8) * FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
 #if defined (VAR_VECTOR)
-            J=0
+            J = 0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
               DO K=1,ICHUNK
@@ -305,10 +305,10 @@ C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
 #if defined (VAR_VECTOR)
-            J=0
+            J = 0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
-              DO K=1,ICHUNK
+              DO K = 1,ICHUNK
                 J = J + 1
 #else
             DO J = 1,NBUF
@@ -356,10 +356,10 @@ C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
 #if defined (VAR_VECTOR)
-            J=0
+            J = 0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
-              DO K=1,ICHUNK
+              DO K = 1,ICHUNK
                 J = J + 1
 #else
             DO J = 1,NBUF

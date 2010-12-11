@@ -83,10 +83,10 @@ C              CC_MCDCAL   calculation of B terms in MCD
 C
 C     Loop over all models specified. The order is supposed
 C     to be the optimal one from a computational point of view.
-C     Energy calculations are restarted from the preceeding
+C     Energy calculations are restarted from the preceding
 C     calculation. Excitation vectors is also saved
 C     and the excitation energy calculation is restarted
-C     from preceeding model solution as well. Similar for
+C     from preceding model solution as well. Similar for
 C     response vectors in property calculations.
 C
 C     (ground state) geometry optimizations using the
@@ -120,15 +120,22 @@ C
 #include <ccfop.h>
 #include <ccfro.h>
 #include <eribuf.h>
+#include <cbirea.h>
 #include <r12int.h>
 #include <grdccpt.h>
+#include <ccfield.h>
 #include <qm3.h>
-
+C
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
+C
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
-      LOGICAL   MOLGRD, LSORT
-      LOGICAL   CC3RSP, LONERN
+      LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
+      LOGICAL   CC3RSP, CCR12RSP, CCR12LIM
 #if defined CC_AARHUS
       PARAMETER (CC3RSP = .TRUE.)
 #else
@@ -137,6 +144,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER FILPQIM*(6), FILXYM*(6)
       PARAMETER (FILPQIM = 'CCPQ00', FILXYM = 'CC_XYM')
+      CHARACTER*3 APROXR12
       CHARACTER*8 NAME(8)
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
@@ -185,6 +193,7 @@ C
       END IF
 C
       IF (ONLYMO) THEN
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
         REWIND LUSIFC
@@ -199,7 +208,7 @@ C
 C
 C       Unit no. for info file set to zero
 C
-        LUMMMO = 0
+        LUMMMO = -1
 C
         CALL QUITMM('SCF orbitals and energies calculated')
 C
@@ -222,14 +231,17 @@ C----------------------------------------------------------------------
 C     Open files needed open throughout entire CC calculation.
 C----------------------------------------------------------------------
 C
+      LURES = -1
       CALL GPOPEN(LURES,'CC_RES','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LURES)
-C
+
+      LUPRPC = -1
       CALL GPOPEN(LUPRPC,'CC_PRPC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUPRPC)
-C
+
+      LUIAJB = -1
       CALL GPOPEN(LUIAJB,'CCSD_IAJB','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUIAJB)
@@ -260,6 +272,7 @@ C
          IMULTE2(IEX) = IMULTE(IEX)
       ENDDO
       NPRPC = 0
+      NPRMI = 0
 C
 C---------------------------------------------------
 C     Set some logicals needed for R12 calculations:
@@ -270,9 +283,13 @@ C
       ! request that some intermediates needed for CC2-R12
       ! are calculated during MP2-R12 calculation
       CC2R12INT = R12CAL .AND. CC2
+      CCSDR12INT = R12CAL .AND. (CCSD.OR.CCPT.OR.CCP3.OR.CC3)
 
       ! switch on R12 flag used in CC routines
       CCR12 = R12CAL
+
+      ! CCR12 not possible as CCS:
+      IF (CCR12.AND.CCS) CALL QUIT('CCS not reasonable with R12')
 C
 C-------------------------------------
 C     Set logicals: 4,6,8 is obsolete.
@@ -297,22 +314,27 @@ C
       LCCSAV(16) = CC3
       LCCSAV(17) = CC1A
       LCCSAV(18) = CC1B
+      APROXR12   = '   '
 C
-      IMOD   = 0
       LTCEXC = .FALSE.
 C
       MMOD = 0
       DO I = 0, NMODEL
         IF (LCCSAV(I)) MMOD = MMOD + 1
       END DO
-
-C-----------------------------------------------------------------
-C     set flags controlling AO integral sort for non-direct runs
-C     and AO -> MO transformation to (ia|jb) etc. integrals
-C-----------------------------------------------------------------
-      LSORT  = .TRUE.
-      INTTR  = .TRUE.
-
+C
+C------------------------------------------
+C     Call the CCSD initialization routine.
+C------------------------------------------
+C
+      ISYMOP = 1
+      LABEL  = 'TRCCINT '
+      IF (LMULBS) THEN
+         NOAUXBSAVE = NOAUXB
+         NOAUXB = .TRUE.
+      END IF
+      CALL CCSD_INIT1(WORK,LWORK)
+C
 C-----------------------------------------------------------------
 C     flag for ground state zeroth-order Lagrange multiplier:
 C-----------------------------------------------------------------
@@ -359,6 +381,19 @@ C-----------------------------------------------------------------
       RSPIM   = RSPIM .OR. LRSPSYM .OR. LTBAR0
 
 C-----------------------------------------------------------------
+C     set flag for CCR12 response beyond excitation energies
+C     (controls the calculation of certain integrals)
+C-----------------------------------------------------------------
+      CCR12RSP = CCR12 .AND. (LRSPSYM .OR. NONHF .OR. CCFOP) .AND.
+     &           .NOT. R12PRP
+      IF (CCR12RSP.AND.(IANCC2.NE.1)) THEN
+        WRITE(LUPRI,*) 'CCR12RSP = ',CCR12RSP
+        WRITE(LUPRI,*) 'IANR12 = ',IANCC2
+        CALL QUIT('Sorry, only Ansatz 1 implemented '//
+     &            'for CC response')
+      END IF
+
+C-----------------------------------------------------------------
 C     flag for left eigenvector calculation:
 C-----------------------------------------------------------------
       LLEFTEIG = CCOPA .OR. CCTPA .OR. CCXOPA .OR.
@@ -372,9 +407,64 @@ C
       LPTEXC = .FALSE.
       IF (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) LPTEXC = .TRUE.
 C
+C----------------------------------------------------------------
+C     CCR12LIM - controls if intermediates for CCR12 left transf.
+C                are needed
+C----------------------------------------------------------------
+C
+      CCR12LIM = CCR12.AND.(CCR12RSP.OR.LLEFTEIG.OR.LHTR)
+C
+C------------------------------------------
+C     Sort AO-integrals into distributions.
+C------------------------------------------
+C
+      IF ((.NOT. CHOINT) .AND. (.NOT. DIRECT)) THEN
+         CALL CCSD_SORTAO(WORK,LWORK)
+      ENDIF
+C
+C-----------------------------------------------------------
+C     Calculate the ( ia | jb ) integrals and write to disk.
+C-----------------------------------------------------------
+C
+      IF ((.NOT. CHOINT) .AND. (.NOT.LISKIP)) THEN
+         IF (LMULBS.AND.MMOD.LE.1.AND.MP2.AND.(.NOT.NATVIR).AND.
+     *       (.NOT.R12PRP)) THEN
+           ! if only MP2-R12 the (IA|JB) integrals are not needed
+           ! on file LUIAJB
+           CONTINUE
+         ELSE IF (LMULBS.AND.HERDIR) THEN
+           CALL QUIT('CC-R12 with HERDIR not implemented')
+         ELSE
+           KT1AM = 1
+           KT2AM = KT1AM + NT1AMX
+           KEND  = KT2AM + NT2AMX
+           LWRK  = LWORK - KEND
+           IF (LWRK .LT. 0) CALL QUIT ('Insufficient memory in CC_DRV')
+           CALL DZERO(WORK(KT1AM),NT1AMX)
+           LHTF = .FALSE.
+           CALL CCSD_IAJB(WORK(KT2AM),WORK(KT1AM),LHTF,
+     *                         .FALSE.,.FALSE.,WORK(KEND),LWRK)
+           REWIND(LUIAJB)
+           CALL WRITI(LUIAJB,IRAT*NT2AM(ISYMOP),WORK(KT2AM))
+         ENDIF
+      ENDIF
+C
+C--------------------------------------------------------------------
+C     Calculate semi-natural virtual orbitals from MP2-Guess for R12:
+C--------------------------------------------------------------------
+C
+      IF ((.NOT.LISKIP).AND.NATVIR) THEN
+         CALL CC_R12NO(WORK(KT1AM),WORK(KT2AM),WORK(KEND),LWRK)
+      END IF
+C
+      IF (LMULBS) NOAUXB = NOAUXBSAVE
+C
 C----------------------
 C     Loop over models.
 C----------------------
+C
+      INTTR  = .FALSE.
+      IMOD   = 0
 C
       DO 100 I = 0, NMODEL
 C
@@ -446,7 +536,8 @@ C
             CCSDT  =  .TRUE.
          ENDIF
 C
-         IF (CCR12 .AND. .NOT. MP2) THEN
+         IF (CCR12 .AND. .NOT.(CCS .OR. MP2 .OR. CC2.OR.
+     &       CCSD.OR.CCPT.OR.CCP3.OR.CC3)) THEN
            CALL QUIT('R12 not yet implemented for this CC model')
          END IF
 
@@ -470,33 +561,12 @@ C
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        Start loop over R12 ansaetze and approximations
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-         IANR12 = 0
-         IAPR12 = 0
-	 LONERN = .FALSE.
- 9001    IANR12 = IANR12 + 1
- 9002    IAPR12 = IAPR12 + 1
-         IPDD = IAPR12
-         IF (CCR12) THEN
-          IF (IANR12 .EQ. 1) THEN
-           IF (NORXR) THEN
-              IF (.NOT. R12XXL .AND.
-     *       (IPDD .NE. 2 .AND. IPDD .NE. 3 .AND. IPDD .NE. 5))GOTO 9003
-           ELSE
-              IF (.NOT. R12XXL .AND.
-     *       (IPDD .NE. 2 .AND. IPDD .NE. 3 .AND. IPDD .NE. 7))GOTO 9003
-           END IF
-           IF (IPDD .LE. 3 .AND. R12NOA) GOTO 9003
-           IF (IPDD .EQ. 3 .AND. R12NOP) GOTO 9003
-           IF (IPDD .GE. 4 .AND. R12NOB) GOTO 9003
-           IF (IPDD .GE. 6 .AND. NORXR)  GOTO 9003
-          END IF
 C
-C         Noninvariant forms not implemented: goto 9003
-          IF (IPDD .EQ. 1 .OR. IPDD .EQ. 4 .OR. IPDD .EQ. 6) GOTO 9003
+         IANR12 = IANCC2
+         IAPR12 = IAPCC2
+C
           WRITE(LUPRI,'(//A,I3)') ' CCR12 ANSATZ = ',IANR12
           WRITE(LUPRI,'(/A,I3/)') ' CCR12 APPROX = ',IAPR12
-         END IF
-         LONERN = .TRUE.
 
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        1. Start loop over different solvents.
@@ -532,7 +602,10 @@ C
 C          ! no energy in gradient step for geometry optimization
            IF (.NOT.MOLGRD) THEN
 
-              CALL CCSD_ENERGY(LSORT,WORK,LWORK)
+              CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
+c
+c              write(lupri,*) 'after CCSD_ENERGY: APROXR12 = ',APROXR12
+c
 
            END IF
 C
@@ -540,7 +613,6 @@ C          switch off flags for sort and transformation
 C          done in CCSD_ENERGY
 C
            INTTR = .FALSE.
-           LSORT = .FALSE.
 C
            IF (CCP2) CCS = .TRUE.
 C
@@ -551,18 +623,28 @@ C          ****************************
 C--------------------------------------
 C
 
-           IF ((CCFOP.OR.LTBAR0)
-     *       .AND.(.NOT.
+           IF ((CCFOP.OR.LTBAR0).AND.(.NOT. 
      *       (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
 C
-             IF (CCR12) THEN
-              WRITE(LUPRI,*) 'CC_FOP not adapted for CCR12...'
-              WRITE(LUPRI,*) 'will be ignored...'
-             ELSE
-              IF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
-                 CALL CC_FOP(WORK,LWORK)
-              ENDIF
-             END IF
+             IF (CCR12.AND.MP2.AND..NOT.R12PRP) THEN
+                 WRITE(LUPRI,*) 'Please specify R12PRP in your input...'
+                 WRITE(LUPRI,*) 'CCFOP will be ignored...'
+             ELSEIF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
+                 !...................................
+                 !SONIA: I am not sure but let us try
+                 !...................................
+                 !IF ( I .EQ. 10 ) CALL CC3_FILOP()
+                 !...................................
+                 IF (R12PRP) THEN
+                    DO IPDD = 1,5
+                       IF (IPDD .EQ.2.OR.IPDD.EQ.3.OR.IPDD.EQ.5)THEN
+                           CALL CC_FOP(IPDD,WORK,LWORK,APROXR12)
+                       ENDIF
+                    ENDDO
+                 ELSE
+                    CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
+                 ENDIF
+             ENDIF
 C
            ENDIF
 C
@@ -646,7 +728,7 @@ C
             IF (((.NOT. MP2).OR.CCP2).AND.(.NOT.(CCD.OR.CCPT))) THEN
 C
                IF ((.NOT. LHTR).AND.(.NOT.RESKIP)) THEN
-                  CALL CC_EXCI(WORK,LWORK,'RE ')
+                  CALL CC_EXCI(WORK,LWORK,'RE ',APROXR12)
                ENDIF
 C
                IF (CCSPIC.AND.CCS) CALL CC_REDEIG(WORK,LWORK,OMPCCS)
@@ -656,7 +738,7 @@ C
                IF (LHTR.OR.CCLRSD.OR.CCQR2R.OR.LPTEXC.OR.CCP2.OR.
      *             LLEFTEIG.OR.CCEXGR) THEN
                  IF ((I .LT. 17).AND.(.NOT.LESKIP)) THEN
-                   CALL CC_EXCI(WORK,LWORK,'LE ')
+                   CALL CC_EXCI(WORK,LWORK,'LE ',APROXR12)
                  ELSE
                    WRITE(LUPRI,*) 'No triples left excitation energies '
                  ENDIF
@@ -709,7 +791,7 @@ C        ***************************************
 C-----------------------------------------------
 C
          IF (LRSPSYM) THEN
-            CALL CC_SOLRSP(WORK,LWORK)
+           CALL CC_SOLRSP(WORK,LWORK,APROXR12)
          END IF
 C
 C-----------------------------------------------------
@@ -720,12 +802,12 @@ C-----------------------------------------------------
 C
          IF (CCEXGR) THEN
            IF (.NOT. CCSLV) THEN
-             IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
-              CALL CC_EXGR(WORK,LWORK)
-             ELSE
-              WRITE(LUPRI,*) 'Excited state gradient properties'//
-     &         'are not implemented for the requested model.'
-             END IF
+            IF ((CCS.or.CC2.or.CCSD.or.CC3).and.(.not.CCR12)) THEN
+             CALL CC_EXGR(WORK,LWORK)
+            ELSE
+             WRITE(LUPRI,*) 'Excited state gradient properties'//
+     &          'are not implemented for the requested model.'
+            END IF
            ELSE 
             WRITE(LUPRI,*) 'Solvent model not implemented for'//
      &                     'excited state gradients.'
@@ -739,7 +821,7 @@ C        ***************************************
 C-----------------------------------------------
 C
          IF (CCLRSD) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
+           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)) THEN
             IF (OLDLRS) THEN
                CALL CC_LRESID(WORK,LWORK)
             ELSE
@@ -751,16 +833,19 @@ C
            END IF
          END IF
 
-#if defined CC_AARHUS
          IF (CCOPA) THEN 
-           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+#if defined CC_AARHUS
+           IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
+     &          .and. (.not. CCR12)) THEN
+#else
+           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)) THEN
+#endif
             CALL CC_OPA(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
      &         ' are not implemented for the requested model.'
            END IF
          END IF
-#endif
 C
 C--------------------------------------------------------
 C        ************************************************
@@ -769,7 +854,7 @@ C        ************************************************
 C--------------------------------------------------------
 C
          IF (CCQR2R) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
+           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)) THEN
             CALL CC_QR2RSD(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'Quadratic response residues'//
@@ -779,7 +864,8 @@ C
 
 #if defined CC_AARHUS
          IF (CCXOPA) THEN
-           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+           IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
+     &          .and. (.not. CCR12)) THEN
             CALL CC_XOPA(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
@@ -795,7 +881,8 @@ C        ***********************************************
 C-------------------------------------------------------
 C
          IF (CCTPA) THEN 
-           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+           IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
+     &          .and. (.not. CCR12)) THEN
             CALL CC_TPA(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'two-photon absorption strengths'//
@@ -810,7 +897,8 @@ C        **********************************************
 C------------------------------------------------------
 C
          IF (CCTM) THEN
-           IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
+           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12) 
+     &          .AND. (.NOT. CCSLV)) THEN
             CALL CC_TMCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'third-order transition moments'//
@@ -825,7 +913,8 @@ C        ***********************************************
 C-------------------------------------------------------
 C
          IF (CCMCD) THEN
-           IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
+           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)
+     &          .AND. (.NOT. CCSLV)) THEN
             CALL CC_MCDCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'magnetic circular dichroism'//
@@ -843,11 +932,11 @@ C
 C
            IF (CIS .OR. CCS .OR. CC2 .OR. CCSD .OR. (CC3.AND.CC3RSP))
      &     THEN
-              IF ((OLDLR .AND. .NOT.CC3) .OR. CIS) THEN
-                CALL CC_LR(WORK,LWORK)
-              ELSE
-                CALL CC_SOP(WORK,LWORK)
-              END IF
+             IF ((OLDLR .AND. .NOT.CC3) .OR. CIS) THEN
+               CALL CC_LR(WORK,LWORK)
+             ELSE
+               CALL CC_SOP(WORK,LWORK)
+             END IF
            ELSE
               WRITE(LUPRI,'(/,1X,A)')
      &             ' No polarizabilities for present model'
@@ -862,8 +951,8 @@ C        *****************************
 C-----------------------------------------
 C
          IF ( CCLR .AND. CAUCHY) THEN
-           IF ( (CCS .or. CC2 .or. CCSD .OR. (CC3.AND.CC3RSP)) 
-     &        .AND. (.NOT. CCSLV) ) THEN
+           IF ((CCS .or. CC2 .or. CCSD .OR. (CC3.AND.CC3RSP)) 
+     &         .AND. (.NOT.CCR12) .AND. (.NOT. CCSLV) ) THEN
              CALL CC_CAUCHY(WORK,LWORK)
            ELSE
              WRITE(LUPRI,'(/,1X,2A)') 'Cauchy moments',
@@ -878,8 +967,8 @@ C        ********************************************
 C----------------------------------------------------
 C
          IF (CCEXLR) THEN 
-           IF ( (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
-     &        .AND. (.NOT. CCSLV) ) THEN
+           IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
+     &          .and. (.not. CCR12) .AND. (.NOT. CCSLV)) THEN
             CALL CC_EXLR(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'Excited state linear response'//
@@ -962,23 +1051,14 @@ C        *****  B,F,C,D... matrix test calls  *****
 C        ******************************************
 C--------------------------------------------------
 C
-         IF ( .FALSE. ) THEN
+         IF ( .TRUE. ) THEN
 C
             IF (CCS .or. CC2 .or. CCSD) THEN
-C              CALL CC_BTST(WORK,LWORK)
+C              !NOTE: Only CC_FTSTNEW, CC_BTST are compatible with CC-R12!
+C              CALL CC_BTST(WORK,LWORK,APROXR12)
 C              CALL CC_CTST(WORK,LWORK)
 C              CALL CC_DTST(WORK,LWORK)
-C
-C              ! the following calls to CC_PQIM and CC_XYIM should be
-C              ! moved inside to the CC_FTST routine...
-C              IF (.NOT.(CCS.OR.MP2.OR.CC2)) THEN
-C                 CALL CC_PQIM('L0',0,'R0',0,FILPQIM,WORK,LWORK)
-C              END IF
-C              IF (.NOT.CCS) THEN
-C                 CALL CC_XYMIM('L0',0,'R0',0,FILXYM,WORK,LWORK)
-C              END IF
-C              CALL CC_FTST(WORK,LWORK)
-C
+C              CALL CC_FTSTNEW(WORK,LWORK,APROXR12)
 C              CALL CC_GTST(WORK,LWORK)
 C              CALL CC_HTST(WORK,LWORK)
 C              CALL CC_XETST(WORK,LWORK)
@@ -997,21 +1077,6 @@ C
 C SLV98,OC End of solvent loop
 C
  9999    CONTINUE
-C
- 9003    CONTINUE
-         IF (CCR12) THEN
-          IF (CC2 .OR. CCSD .OR..NOT. LONERN) THEN
-           IF (IANR12 .EQ. 1) THEN
-             IF (IAPR12 .LE. 6) GOTO 9002
-C for ansatz 2:
-C            IAPR12 = 0
-C            GOTO 9001
-C          ELSE 
-C            IF (IAPR12) .LE. 13) GOTO 9002
-           END IF
-          
-          END IF
-         END IF
 C
 C-------------------------------------------------
 C        Close files used in triples calculations.
@@ -1115,7 +1180,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER*80  STR
       CHARACTER STHELP*10
-      CHARACTER LABEL1*8
+      CHARACTER LABEL*10, LABEL1*8
       
 #include <codata.h>
 #include <ccorb.h>
@@ -1125,6 +1190,7 @@ C
 #include <cclr.h>
 #include <prpc.h>
 #include <ccpack.h>
+#include <inftap.h>
 #include <ccinftap.h>
 #include <numder.h>
 C
@@ -1190,11 +1256,12 @@ C
          DO ISYM=1,8
             NPRPINSYM(ISYM) = 0
          ENDDO
-         LUPRPCO = 0
+         LUPRPCO = -1
          CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *        IDUMMY,.FALSE.)
          REWIND(LUPRPCO)
          REWIND(LUPRPC)
+
          NPRPCO = NPRPC
          DO I = 1, NPRPC
             READ(LUPRPC,
@@ -1224,6 +1291,7 @@ C
             LEND  = LWORK - KEND
             IF (LEND.LE.0)CALL QUIT('Too little workspace in cc_resume')
             REWIND(LUPRPC)
+
             DO I = 1, NPRPC
                READ(LUPRPC,
      *          '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
@@ -1236,9 +1304,10 @@ C
 C
 C     Writeout the list of properties to summary section of output file.
 C
+
       CALL FLSHFO(LUPRI)
-      IF ((NPRPC.GT.0).AND.(IPRINT.GT.8)) THEN
-        CALL PRPRPC(LUPRPC,1,DUMMY)
+      IF ((NPRPC.GT.0).AND.(IPRINT.GT.100)) THEN
+        CALL PRPRPC(LUPRPC,1,DUMMY,NPRPC)
       ENDIF
 C
       IF ( LPACKINT ) THEN
@@ -1278,8 +1347,9 @@ C
      *'**********************'
 C
       LABEL1 = 'ALL_DONE'
-      STHELP = 'THE_END '
-      CALL CC_PRPC(ESCF,STHELP,666,
+      STHELP = 'THE_END   '
+      ZERO=0.0D0
+      CALL CC_PRPC(ZERO,STHELP,666,
      *             LABEL1,LABEL1,LABEL1,LABEL1,
      *             ZERO,ZERO,ZERO,1,0,0,0)
 
@@ -1407,10 +1477,9 @@ C
 C
       CALL QENTER('CCTAPINI')
 C
-      LUBFDN  = 0
-      LURES   = 0
-      LUCSOL  = 0
-      LUCTLM  = 0
+      LUBFDN  = -1
+      LURES   = -1
+      LUCSOL  = -1
 C
       CALL QEXIT('CCTAPINI')
 C
@@ -1431,7 +1500,7 @@ C
 C
       CALL QENTER('CC_WPRPC  ')
 C
-      LUPRP = 0
+      LUPRP = -1
       CALL GPOPEN(LUPRP,'PRPCOP','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
 C
@@ -1478,7 +1547,7 @@ C-----------------------------------------------
 C     Save the current list on ("prpc_tmp") on file.
 C-----------------------------------------------
 C
-      LUPRPCTMP = 0
+      LUPRPCTMP = -1
       CALL GPOPEN(LUPRPCTMP,'CC_PRPC_TMP','UNKNOWN',' ','FORMATTED',
      *           IDUMMY,.FALSE.)
       REWIND(LUPRPCTMP)
@@ -1500,7 +1569,7 @@ C-----------------------------------------------
 C     Open the saved list ("prpc_o") on file.
 C-----------------------------------------------
 C
-      LUPRPCO   = 0
+      LUPRPCO   = -1
       CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
 C
@@ -1564,7 +1633,7 @@ C
       END
 C
 C
-      SUBROUTINE PRPRPC(LU,IOPT,PROPIN)
+      SUBROUTINE PRPRPC(LU,IOPT,PROPIN,NUOFPR)
 C
 C     Outputs the prpc to lupri the list of properties
 C     that is stored on the file opened with unit number LU
@@ -1575,7 +1644,6 @@ C                 labels etc. comming from the prpc list.
 C
 #include <implicit.h>
 #include <priunit.h>
-C
 #include <prpc.h>
       CHARACTER STHELP*10
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
@@ -1588,15 +1656,22 @@ C
      *' | List of selected calculated molecular properties (a.u.) | '
       WRITE (LUPRI,'(A,/)')
      *' +---------------------------------------------------------+ '
-      STHELP = 'Dummy'
+      STHELP = 'Dummy   '
+      WRITE (LUPRI,*) ' Properties are read from unit number ', LU
       REWIND(LU)
-      DO I = 1, NPRPC
+      DO I = 1, NUOFPR
        READ(LU,
      *      '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *      IPRPC,ISYMIN,NORD,LABEL,PROP,
      *      LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
-       IF (I.NE.IPRPC) WRITE(LUPRI,*) ' PROBLEM OM PRPC LIST?'
+       IF (LABEL .EQ. 'THE_END   ') THEN
+         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(1X,A)') LABEL
+         return
+       END IF
+       IF (I.NE.IPRPC) WRITE(LUPRI,*) ' PROBLEM OM PROPERTY LIST?'
        IF (IOPT.EQ.2) PROP = PROPIN(I)
+
        IF (STHELP.NE.LABEL) WRITE(LUPRI,'(/,1X,A10,A)') LABEL,
      *   ' properties :'
        STHELP = LABEL
@@ -1606,13 +1681,16 @@ C
             WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,3(A,F18.10))')
      *      '#',I,ISYMIN,
      *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
-     *       ' E_tot:',PROP,' w:',FRQZ,' E_grs:',FRQU
+     *       ' E_tot:',FRQU,' w:',PROP,' E_grs:',FRQY
           ELSE
             WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,1(A,F18.10))')
      *      '#',I,ISYMIN,
      *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
      *       ' E_tot:',PROP
           ENDIF
+         ELSE IF (LABX.EQ."Exctot  ") THEN
+            WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,F18.10)')
+     *      '#',I,ISYMIN,' ',LABX,' Excited state Energy = ',PROP
          ELSE
             WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,F18.10)')
      *      '#',I,ISYMIN,' ',LABX,' Ground state Energy = ',PROP
@@ -1621,7 +1699,7 @@ C
        IF (NORD.EQ.1) WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A3,F20.12)')
      *  '#',I,ISYMIN,' <',LABX,'> = ',PROP
        IF (NORD.EQ.-11)
-     *   WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,I1,X,I1,I3,F9.6,A,F20.12)')
+     *   WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,I1,I2,I3,F9.6,A,F20.12)')
      *  '#',I,ISYMIN,' <',LABX,'>(',ISYEX,ISPEX,IEX,FRQY,') = ',PROP
        IF (NORD.EQ.2) WRITE(LUPRI,
      * '(1X,A,I3,I2,A,A8,A1,A8,A3,F9.6,A,F20.12)')
@@ -1640,7 +1718,7 @@ C
        IF (NORD.EQ.-1) WRITE(LUPRI,
      *   '(1X,A,I3,I2,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
      *   '#',I,ISYMIN,' |<O|',LABX,'|i(',FRQY,')>| =',PROP
-       IF (NORD.EQ.-10) WRITE(LUPRI,
+       IF (NORD.EQ.-2) WRITE(LUPRI,
      *   '(1X,A,I3,I2,A,F9.6,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
      *   '#',I,ISYMIN,' |<i(',FRQY,')|',LABX,'|f(',FRQZ,
      *   ')>| =',PROP

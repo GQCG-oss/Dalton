@@ -78,11 +78,15 @@ else
    GREP="egrep"
 fi
 
-# Visualization setup
-CRIT1=`$GREP "Visualization has been requested\. No optimization will be done\." $log | wc -l`
+# Visualization setup (next four lines is dec07 version of output)
+#   Visualization has been requested. No geometry optimization will be done.
+#   VRML-file of geometry will be created.
+#   Bonds will be drawn between nearby atoms.
+#   Any other keywords in this module are ignored!
+CRIT1=`$GREP "Visualization has been requested\. No .*optimization will be done\." $log | wc -l`
 CRIT2=`$GREP "VRML\-file of geometry will be created\." $log | wc -l`
 CRIT3=`$GREP "Bonds will be drawn between nearby atoms\." $log | wc -l`
-CRIT4=`$GREP "Other keywords will be ignored\!" $log | wc -l`
+CRIT4=`$GREP "ther keywords .*ignored\!" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
 ERROR[1]="VISUALIZATION NOT SET UP CORRECTLY"
@@ -103,8 +107,8 @@ ERROR[3]="OTHER PARTS OF DALTON SHOULD NOT BE RUN"
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi
 done

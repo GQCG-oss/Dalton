@@ -134,6 +134,7 @@ C     --------------------------
       CALL CC2_INITAM(WORK(KFOCKD),WORK(KT1AM),WORK(KOMEG1),
      &                WORK(KEND1),LWRK1,ECC2,IRST)
 
+
 C     Start of iterative loop.
 C     ------------------------
 
@@ -258,6 +259,13 @@ C     --------------------------------
      & 'Total time used for CC2 optimization is ',TIMTOT,' seconds'
 
       CALL FLSHFO(LUPRI)
+
+C     Calculate and write Fock matrix
+C     -------------------------------
+
+      IF (RSPIM2) THEN
+         CALL CHO_FCKH(WORK(KT1AM),WORK(KEND1),LWRK1)
+      END IF
 
 C     Close DIIS files.
 C     -----------------
@@ -515,7 +523,7 @@ C        --------------------------------------------------------
  1000       RSTART = .FALSE.
  1100       CONTINUE
             IF (RSTART) THEN
-              LUTAM = 0
+              LUTAM = -1
               CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
      *                    IDUMMY,.FALSE.)
               REWIND(LUTAM)
@@ -2487,7 +2495,7 @@ C
 #include <ccsdinp.h>
 #include <priunit.h>
 
-      INTEGER*8 LROW, ICOL, ADDR
+      INTEGER LROW, ICOL, ADDR
 
       CHARACTER*5 SECNAM
       PARAMETER (SECNAM = 'CC2_Y')
@@ -2533,7 +2541,7 @@ C        Open Y-intermediate file for this symmetry.
 C        -------------------------------------------
 
          DTIME  = SECOND()
-         CALL WOPEN2U(LCC2YM,FCC2YM(ISYCHO),64,0)
+         CALL WOPEN2(LCC2YM,FCC2YM(ISYCHO),64,0)
          DTIME  = SECOND() - DTIME
          TIMWRY = TIMWRY   + DTIME
 
@@ -2658,12 +2666,12 @@ C              --------------------------
 
                IF (LOCDBG) THEN
                   WRITE(LUPRI,'(5X,A,A)')
-     &            SECNAM,': debug: calling PUTWA2U:'
+     &            SECNAM,': debug: calling PUTWA2:'
                   WRITE(LUPRI,'(7X,A,I1)')
      &            '- full amplitude array of sym. ',ISYCHO
                ENDIF
 
-               CALL PUTWA2U(LCC2YM,FCC2YM(ISYCHO),WORK(KRESY),ADDR,LEN)
+               CALL PUTWA2(LCC2YM,FCC2YM(ISYCHO),WORK(KRESY),ADDR,LEN)
 
             ELSE IF (NX1AM(ISYCHO) .LT. NT1AM(ISYCHO)) THEN
 
@@ -2692,7 +2700,7 @@ C              ----------------------------------------------
 
                            IF (LOCDBG) THEN
                               WRITE(LUPRI,'(5X,A,A)')
-     &                        SECNAM,': debug: calling PUTWA2U:'
+     &                        SECNAM,': debug: calling PUTWA2:'
                               WRITE(LUPRI,'(7X,A,I1,1X,I1)')
      &                        '- full symmetry block a,i: ',ISYMA,ISYMI
                            ENDIF
@@ -2703,7 +2711,7 @@ c      write(lupri,*) 'IT1AM     : ',IT1AM(ISYMA,ISYMI)
 c      write(lupri,*) 'ADDR expr.: ',LROW*ICOL+IT1AM(ISYMA,ISYMI)
 c      write(lupri,*) 'ADDR pass.: ',ADDR
 
-                           CALL PUTWA2U(LCC2YM,FCC2YM(ISYCHO),
+                           CALL PUTWA2(LCC2YM,FCC2YM(ISYCHO),
      &                                  WORK(KOFFY),ADDR,
      &                                  NVIR(ISYMA)*NRHF(ISYMI))
 
@@ -2722,14 +2730,14 @@ c      write(lupri,*) 'ADDR pass.: ',ADDR
 
                               IF (LOCDBG) THEN
                                  WRITE(LUPRI,'(5X,A,A)')
-     &                           SECNAM,': debug: calling PUTWA2U:'
+     &                           SECNAM,': debug: calling PUTWA2:'
                                  WRITE(LUPRI,'(7X,A,I1,1X,I1)')
      &                           '- symmetry block a,i: ',ISYMA,ISYMI
                                  WRITE(LUPRI,'(7X,A,I10,A,I10)')
      &                           '- writing ',LVIR(ISYMA),' for i = ',I
                               ENDIF
 
-                              CALL PUTWA2U(LCC2YM,FCC2YM(ISYCHO),
+                              CALL PUTWA2(LCC2YM,FCC2YM(ISYCHO),
      &                                     WORK(KOFFY),ADDR,
      &                                     LVIR(ISYMA))
 
@@ -2769,7 +2777,7 @@ C        Close Y-intermediate file for this symmetry.
 C        --------------------------------------------
 
          DTIME  = SECOND()
-         CALL WCLOSE2U(LCC2YM,FCC2YM(ISYCHO),'KEEP')
+         CALL WCLOSE2(LCC2YM,FCC2YM(ISYCHO),'KEEP')
          DTIME  = SECOND() - DTIME
          TIMWRY = TIMWRY   + DTIME
 
@@ -3588,7 +3596,7 @@ C
 
       INTEGER IOFFC(8), IOFFZ(8), IOFFY(8)
 
-      INTEGER*8 LROW, ICOL, ADDR
+      INTEGER LROW, ICOL, ADDR
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CHOCC2_JG')
@@ -3673,7 +3681,7 @@ C        Open file with Y-intermediates.
 C        -------------------------------
 
          DTIME  = SECOND()
-         CALL WOPEN2U(LCC2YM,FCC2YM(ISYCHO),64,0)
+         CALL WOPEN2(LCC2YM,FCC2YM(ISYCHO),64,0)
          DTIME  = SECOND() - DTIME
          TIMYIO = TIMYIO   + DTIME
 
@@ -3779,7 +3787,7 @@ C           ----------------------------
             LROW = NT1AM(ISYCHO)
             ADDR = LROW*ICOL + 1
             LEN  = NT1AM(ISYCHO)*NUMV
-            CALL GETWA2U(LCC2YM,FCC2YM(ISYCHO),WORK(KZMAT),ADDR,LEN)
+            CALL GETWA2(LCC2YM,FCC2YM(ISYCHO),WORK(KZMAT),ADDR,LEN)
 
             DTIME  = SECOND() - DTIME
             TIMYIO = TIMYIO   + DTIME
@@ -3992,7 +4000,7 @@ C        Close file with Y-intermediates.
 C        --------------------------------
 
          DTIME  = SECOND()
-         CALL WCLOSE2U(LCC2YM,FCC2YM(ISYCHO),'KEEP')
+         CALL WCLOSE2(LCC2YM,FCC2YM(ISYCHO),'KEEP')
          DTIME  = SECOND() - DTIME
          TIMYIO = TIMYIO   + DTIME
 
@@ -4075,7 +4083,7 @@ C
 
       INTEGER IOFFX(8), IOFFC(8)
 
-      INTEGER*8 LROW, ICOL, ADDR
+      INTEGER LROW, ICOL, ADDR
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CHOCC2_H')
@@ -4114,7 +4122,7 @@ C        Open file for Y-intermediates.
 C        ------------------------------
 
          DTIME  = SECOND()
-         CALL WOPEN2U(LCC2YM,FCC2YM(ISYCHO),64,0)
+         CALL WOPEN2(LCC2YM,FCC2YM(ISYCHO),64,0)
          DTIME  = SECOND() - DTIME
          TIMYIO = TIMYIO   + DTIME
 
@@ -4239,7 +4247,7 @@ C              -------------
                ICOL   = JVEC - 1
                LROW   = NT1AM(ISYCHO)
                ADDR   = LROW*ICOL + 1
-               CALL GETWA2U(LCC2YM,FCC2YM(ISYCHO),WORK(KSCR1),ADDR,
+               CALL GETWA2(LCC2YM,FCC2YM(ISYCHO),WORK(KSCR1),ADDR,
      &                      NT1AM(ISYCHO))
                DTIME  = SECOND() - DTIME
                TIMYIO = TIMYIO   + DTIME
@@ -4297,7 +4305,7 @@ C        Close file for Y-intermediates.
 C        -------------------------------
 
          DTIME  = SECOND()
-         CALL WCLOSE2U(LCC2YM,FCC2YM(ISYCHO),'KEEP')
+         CALL WCLOSE2(LCC2YM,FCC2YM(ISYCHO),'KEEP')
          DTIME  = SECOND() - DTIME
          TIMYIO = TIMYIO   + DTIME
 
@@ -4375,3 +4383,113 @@ C
 
       RETURN
       END
+C
+C /* Deck cho_fckh */
+      SUBROUTINE CHO_FCKH(T1AM,WORK,LWORK)
+C
+C     Write Fock matrix in CC_FCKH  needed in CC property calculation
+C     Use Cholesky vectors
+C
+C     asm September 2005
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <ccorb.h>
+#include <ccdeco.h>
+#include <chocc2.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <ccfield.h>
+C
+      LOGICAL TINFO, IOPTPV
+C
+      DIMENSION T1AM(*)
+      DIMENSION WORK(LWORK)
+C
+C
+C---------------
+C     Initialize
+C---------------
+C
+      TINFO   = IPRINT .GE. 5
+      ISYDEN = 1
+C
+C-----------------
+C     Allocation.1
+C-----------------
+C
+      KDENSI = 1
+      KLAMDP = KDENSI + N2BST(ISYDEN)
+      KLAMDH = KLAMDP + NLAMDT
+      KEND0  = KLAMDH + NLAMDT
+      LWRK0  = LWORK  - KEND0 + 1
+C
+      IF (LWRK0 .LT. 0) STOP 'Not enough space in CHO_FCKH.0'
+C
+C------------------------------
+C     Construct density matrix
+C------------------------------
+C
+c     IOPT = 1
+c     CALL CC_RDRSP('R0 ',1,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+C
+      CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),T1AM,WORK(KEND0),LWRK0)
+C
+      IC = 1
+      CALL CC_AODENS(WORK(KLAMDP),WORK(KLAMDH),WORK(KDENSI),ISYDEN,
+     &               IC,WORK(KEND0),LWRK0)
+C
+      IF (IPRINT .GT. 50) THEN
+         CALL AROUND( 'Density matrix' )
+         CALL CC_PRFCKAO(WORK(KDENSI),ISYDEN)
+      END IF
+C
+C-----------------
+C     Allocation.2
+C-----------------
+C
+      KFOCK = KLAMDP
+      KEND1 = KFOCK + N2BST(ISYDEN)
+      LWRK1 = LWORK - KEND1 + 1
+C
+      IF (LWRK1 .LT. 0) STOP 'Not enough space in CHO_FCKH.1'
+C
+C--------------------------
+C     Construct Fock matrix
+C--------------------------
+C
+      CALL DZERO(WORK(KFOCK),N2BST(ISYDEN))
+C
+      CALL CCRHS_ONEAO(WORK(KFOCK),WORK(KEND1),LWRK1)
+C
+      DO I = 1, NFIELD
+         FIELD = EFIELD(I)
+         CALL CC_ONEP(WORK(KFOCK),WORK(KEND1),LWRK1,FIELD,1,LFIELD(I))
+      END DO
+C
+      IOPTPV = .TRUE.
+      CALL SCF_CHOFCK3(WORK(KDENSI),WORK(KFOCK),WORK(KEND1),LWRK1,
+     &                 ISYDEN,TINFO,IOPTPV)
+C
+C------------------
+C     Write do disk
+C------------------
+C
+      LUFCK = -1
+      CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND(LUFCK)
+      WRITE(LUFCK)(WORK(KFOCK+I-1), I = 1,N2BST(ISYDEN))
+      CALL GPCLOSE(LUFCK,'KEEP' )
+C
+      IF (IPRINT .GT. 50) THEN
+         CALL AROUND( 'Fock AO matrix written to disk' )
+         CALL CC_PRFCKAO(WORK(KFOCK),ISYDEN)
+      END IF
+C
+      RETURN
+      END
+

@@ -110,20 +110,19 @@ cat > cc2mm_exci.pot <<%EOF%
 cat > cc2mm_exci.dal <<%EOF%
 **DALTON.INP
 .RUN WAVEFUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-9
 .MAXDIP
  90
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INP
 .THRESH
 1.0D-10
 .MAX DIIS
@@ -222,8 +221,8 @@ ERROR[5]="OSCILLATOR STRENGTH NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

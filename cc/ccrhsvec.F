@@ -68,6 +68,10 @@ c /* deck CCRHSVEC */
 #include <ccorb.h>
 #include <cclists.h>
 #include <dummy.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 
 * local parameters:
       CHARACTER*(18) MSGDBG
@@ -99,7 +103,8 @@ c /* deck CCRHSVEC */
 #endif
       PARAMETER (ZERO = 0.0d0)
 
-      CHARACTER MODEL*(10)
+      CHARACTER MODEL*(10), MODELW*(10)
+      CHARACTER APROXR12*(3)
       LOGICAL NEW_RHS
       INTEGER IOPT, ISYM, IVEC, MPERM, NSTAT, ORDER, IDUM, IOPTE
       INTEGER MXTRAN,MXDTRAN,MXCTRAN,MXBTRAN,MXBATRAN,MXAATRAN,MXXETRAN
@@ -109,7 +114,8 @@ c /* deck CCRHSVEC */
       INTEGER KCATRAN, KBA2TRAN, KAA2TRAN
       INTEGER NCATRAN, NBA2TRAN, NAA2TRAN
       INTEGER KEND0, LEND0, LMAX1, LMAX2, KRHS1, KRHS2, KEND1, LEND1
-      INTEGER KLHS1, KLHS2, KEND2, LEND2, IDXVEC
+      INTEGER KLHS1, KLHS2, KEND2, LEND2, IDXVEC 
+      INTEGER KRHSR12, LMAXR12, IOPTR12, MODLEN
 
 * external functions:
       INTEGER ILSTSYM, ILRCAMP
@@ -184,6 +190,15 @@ c /* deck CCRHSVEC */
         CALL QUIT('required rhs vectors not implemented.')
       END IF
 
+* Cholesky check: only CC2 O1 has been implemented
+      IF (CHOINT .AND. CC2) THEN
+         IF (TYPE(1:2).NE.'O1') THEN
+            WRITE (LUPRI,*)
+     &      'rhs vectors ',TYPE(1:2),' not implemented for Cholesky.'
+            CALL QUIT('required rhs vectors not implemented.')
+         ENDIF
+      ENDIF
+
 * print some debug/info output
       IF (IPRINT .GT. 10 .OR. LOCDBG) THEN
         WRITE(LUPRI,*) 'CCRHSVEC Workspace:',LWORK
@@ -249,14 +264,17 @@ c /* deck CCRHSVEC */
 
         LMAX1 = 0
         LMAX2 = 0
+        LMAXR12 = 0
         DO ISYM = 1, NSYM
           LMAX1 = MAX(LMAX1,NT1AM(ISYM))
           LMAX2 = MAX(LMAX2,NT2AM(ISYM))
+          IF (CCR12) LMAXR12 = MAX(LMAXR12,NTR12AM(ISYM))
         END DO
 
         KRHS1 = KEND0
         KRHS2 = KRHS1 + LMAX1
-        KEND1 = KRHS2 + LMAX2
+        KRHSR12 = KRHS2 + LMAX2
+        KEND1 = KRHSR12 + LMAXR12
         LEND1 = LWORK - KEND1
 
         IF (LEND1 .LT. 0 ) THEN
@@ -267,6 +285,7 @@ c /* deck CCRHSVEC */
 
         CALL DZERO(WORK(KRHS1),LMAX1)
         IF (.NOT.CCS) CALL DZERO(WORK(KRHS2),LMAX2)
+        IF (CCR12) CALL DZERO(WORK(KRHSR12),LMAXR12)
 
         IF (CCS) THEN
            MODEL = 'CCS       '
@@ -285,13 +304,22 @@ c /* deck CCRHSVEC */
         ELSE
            CALL QUIT('Unkown coupled cluster model in CCRHSVEC.')
         END IF
+        IF (CCR12) THEN
+          APROXR12 = '   '
+          IOPTR12 = 32
+        END IF
+        CALL CCSD_MODEL(MODELW,MODLEN,10,MODEL,10,APROXR12)
 
         DO IVEC = IOFFV+1, IOFFV+NVEC
          ISYM = ILSTSYM(TYPE,IVEC)
-         CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPT,MODEL,IDUMMY,
+         CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPT,MODELW,IDUMMY,
      &                 WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
+         IF (CCR12) THEN
+           CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTR12,MODELW,IDUMMY,
+     &                   IDUMMY,WORK(KRHSR12),WORK(KEND1),LEND1)
+         END IF
          IF (CCSDT) THEN
-           CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTE,MODEL,IDUMMY,
+           CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTE,MODELW,IDUMMY,
      &                   WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
            CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTE,MODEL,
      &                   WORK(KRHS1),WORK(KRHS2))
@@ -518,6 +546,19 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
 *---------------------------------------------------------------------*
 * calculate Xi{O} vector contributions:
 *---------------------------------------------------------------------*
+
+Cholesky
+*
+*   the Cholesky routine is *far* less general, hence most of the
+*   input is implicit: all that's needed are the operator indices
+*   in KXETRAN.
+
+      IF (CHOINT .AND. TYPE(1:2).EQ.'O1') THEN
+         CALL CC_CHOXI0(WORK(KXETRAN),NXETRAN,WORK(KEND0),LEND0)
+         GOTO 1234
+      END IF
+Cholesky
+
       IF ( TYPE(1:3).EQ.'O1 '.OR. TYPE(1:3).EQ.'X1 ') THEN
         IOPT = 3
         CALL CC_XIETA(WORK(KXETRAN),NXETRAN,IOPT, ORDER, 'L0 ',
@@ -535,17 +576,24 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &                .TRUE.,0, WORK(KEND0),LEND0)
       END IF
 
+ 1234 CONTINUE     ! From Cholesky
+
       IF (LOCDBG) THEN
         LMAX1 = 0
         LMAX2 = 0
+        LMAXR12 = 0
         DO ISYM = 1, NSYM
           LMAX1 = MAX(LMAX1,NT1AM(ISYM))
           LMAX2 = MAX(LMAX2,NT2AM(ISYM))
+          IF (CCR12) THEN
+            LMAXR12 = MAX(LMAXR12,NTR12AM(ISYM))
+          END IF
         END DO
 
         KRHS1 = KEND0
         KRHS2 = KRHS1 + LMAX1
-        KEND1 = KRHS2 + LMAX2
+        KRHSR12 = KRHS2 + LMAX2
+        KEND1 = KRHSR12 + LMAXR12
         LEND1 = LWORK - KEND1
 
         IF (LEND1 .LT. 0 ) THEN
@@ -571,8 +619,15 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
           CALL CC_RDRSP(LISTR,IDXVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
           XNORM = DDOT(NT1AM(ISYM),WORK(KRHS1),1,WORK(KRHS1),1)
-          IF (.NOT. CCS)
+Chol      IF (.NOT. CCS)
+          IF ((.NOT. CCS) .AND. (.NOT. (CHOINT.AND.CC2)))
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KRHS2),1,WORK(KRHS2),1)
+          IF (CCR12) THEN
+            CALL CC_RDRSP(LISTR,IDXVEC,ISYM,IOPTR12,MODEL,
+     &                  DUMMY,WORK(KRHSR12))
+            XNORM = XNORM + DDOT(NTR12AM(ISYM),WORK(KRHSR12),1,
+     &                           WORK(KRHSR12),1)
+          END IF
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
       END IF
@@ -853,6 +908,7 @@ c /* deck CC_RHS_SETUP */
         END DO
       END IF
       IF (TYPE(1:2).EQ.'EO' .AND. ORDER.GT.1) THEN
+        call quit('Sonia: please define LPROJ in IER1AMP call')
         DO IDXA = 1, ORDER
          IE1(IDXA)=IER1AMP(ISTAT(IVEC,1),EIGV(IVEC),ISYMS,
      &                     LAB(IVEC,IDXA),FREQ(IVEC,IDXA),ISYM(IDXA))

@@ -36,26 +36,32 @@ C
 C     P. Salek and T. Helgaker October 2003
 C
 #include <implicit.h>
-#include <inforb.h>
 #include <priunit.h>
+#include <infpar.h>
+#include <inforb.h>
       DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)
       EXTERNAL DFTKSMGGA,DFTKSMLDA
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
-      COMMON /DKSMPRIV/ ENERGY
+      COMMON /DKSMPRIV/ ENERGY_DFTKSM
 C      
-      CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
+      CALL QENTER('DFTKSMb')
+C
+      IF (NODTOT.gt.0) CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
       DOGGA = DFT_ISGGA()
-      ENERGY = 0D0
+      ENERGY_DFTKSM = 0.D0
       IF(DOGGA) THEN
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMGGA,FKSM,ELE)
       ELSE
+         DO I = 1, NBAST
+            FKSM(I,I) = FKSM(I,I)*2.0D0
+         END DO
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMLDA,FKSM,ELE)
 C
       END IF
-      CALL KSMCOLLECT(FKSM,ENERGY,WORK,LWORK)
+      IF (NODTOT.gt.0) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
       DO I = 1, NBAST
          DO J = 1, I-1
             AVERAG = 0.5*(FKSM(J,I) + FKSM(I,J))
@@ -64,10 +70,12 @@ C
          END DO
          IF(.NOT.DOGGA) FKSM(I,I) = FKSM(I,I)*0.5D0
       END DO
-      EDFTY = ENERGY
-      IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14,A,E8.2)')
-     &     'K-S electrons/energy :', ELE, EDFTY,
-     &     ' err:', ELE-2D0*NRHFT
+      EDFTY = ENERGY_DFTKSM
+      ELE_ERROR = ELE - 2.0D0*NRHFT
+      IF (ABS(ELE_ERROR) .gt. 1.0D-8 .or. IPRFCK .ge. 0)
+     &   WRITE(LUPRI,'(A,F20.12,F15.10,1P,D12.2)')
+     &     'K-S energy, electrons, error :', EDFTY, ELE, ELE_ERROR
+      CALL QEXIT('DFTKSMb')
       RETURN
       END
 C
@@ -84,21 +92,24 @@ C
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &     FKSM(*)
       EXTERNAL DFTENE
-      COMMON /DKSMPRIV/ ENERGY
+      COMMON /DKSMPRIV/ ENERGY_DFTKSM
 C
       DIMENSION VXC(NBLEN),VX(5)
       PARAMETER (DUMMY = 0D0)
+c     CALL QENTER('DFTKSMLDA')
+c     .. called often - thus QENTER is too much overhead
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
       DO IPNT = 1, NBLEN
          CALL DFTPTF0(RHOA(IPNT),DUMMY,WGHT(IPNT),VX)
-         ENERGY = ENERGY
+         ENERGY_DFTKSM = ENERGY_DFTKSM
      &        + DFTENE(RHOA(IPNT),DUMMY)*WGHT(IPNT)
          VXC(IPNT) = 2D0*VX(1)
       END DO
       CALL DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &     VXC,GAO,FKSM)
+c     CALL QEXIT('DFTKSMLDA')
       RETURN
       END
 c
@@ -116,14 +127,16 @@ C
       EXTERNAL DFTENE
 C
       DIMENSION VXC(2,NBLEN),VX(5)
-      COMMON /DKSMPRIV/ ENERGY
+      COMMON /DKSMPRIV/ ENERGY_DFTKSM
+c     CALL QENTER('DFTKSMGGA')
+c     .. called often - thus QENTER is too much overhead
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
       DO IPNT = 1, NBLEN
          GRD = SQRT(GRADA(1,IPNT)**2+GRADA(2,IPNT)**2+GRADA(3,IPNT)**2)
          CALL DFTPTF0(RHOA(IPNT),GRD,WGHT(IPNT),VX)
-         ENERGY = ENERGY
+         ENERGY_DFTKSM = ENERGY_DFTKSM
      &        + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
          VXC(1,IPNT) = VX(1)
          IF(GRD.GT.1D-40) THEN
@@ -134,6 +147,8 @@ C
       END DO
       CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,FKSM)
+c     CALL QEXIT('DFTKSMGGA')
+C
       RETURN
       END
 c     ================================================================
@@ -356,6 +371,7 @@ c
 #include <infpar.h>
 #include <inforb.h>
       DIMENSION WRK(LWRK)
+      CALL QENTER('DFT_KSMSLAVE')
 c
       CALL DFTINTBCAST
       KDMAT = 1
@@ -367,6 +383,7 @@ c
       CALL DZERO(WRK(KFKSM),N2BASX)
       CALL DFTKSMb(WRK(KDMAT),WRK(KFKSM),EDFTY,
      &             WRK(KFREE),LFREE,IPRINT)
+      CALL QEXIT('DFT_KSMSLAVE')
       END
 c      
       SUBROUTINE KSMSYNC(DMAT)

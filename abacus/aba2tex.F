@@ -60,6 +60,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -492,8 +493,9 @@ C
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-            IF (NDMAT .NE. 1) CALL QUIT
-     &         (' ERROR in TWOEXP: PARCAL only implemented for SCF')
+            IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
+     &         CALL QUIT(' ERROR in TWOEXP: PARCAL only'// 
+     &                   ' implemented for SCF')
 C
             KNSTAT = KLAST
             KLAST  = KNSTAT + (NODTOT + 1)/IRAT
@@ -501,13 +503,40 @@ C
      &         CALL STOPIT('TWOEXP','PARDRV',KLAST,LWRK)
             LWRK = LWRK - KLAST
 C
+            IATOM = 0
             IPRTYP = 1
+            HFXM0 = HFXMU
+            HFXMU = D0
             CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
      &                  WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &                  RETUR,IPRINT,IPRTYP,
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
      &                  DUMMY)
+            HFXMU = HFXM0
+            IF (HFXMU.NE.D0) THEN
+
+               KFCTMP = KLAST
+               KLAST  = KFCTMP + NFMAT*N2BASX
+               IF (KLAST .GT. LWRK)
+     &              CALL STOPIT('TWOEXP','PARDRV',KLAST,LWRK)
+               LWRK = LWRK - NFMAT*N2BASX
+
+               HFXFC0 = HFXFAC
+               HFXFAC = HFXATT
+               IATOM = 1
+               IF (NFMAT .GT. 0) CALL DCOPY(NFMAT*N2BASX,WORK(KFMAT),1,
+     &                                      WORK(KFCTMP),1)
+               CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
+     &              WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
+     &              ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
+     &              RETUR,IPRINT,IPRTYP,
+     &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &              DUMMY)
+               IF (NFMAT .GT. 0) CALL DAXPY(NFMAT*N2BASX,1D0,
+     &                                     WORK(KFCTMP),1,WORK(KFMAT),1)
+               HFXFAC = HFXFC0
+            END IF
          ELSE
 #endif
             IF (DOERI) THEN
@@ -547,7 +576,8 @@ C
      &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
                   HFXFAC = HFXFC0
                END IF
-               IF (IPRINT .GE. 2) CALL TIMER('TWOINT',TIMSTR,TIMEND)
+               IF (IPRINT .GE. 2)
+     &         CALL TIMER('TWOEXP/TWOINT',TIMSTR,TIMEND)
             END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
@@ -617,7 +647,7 @@ C
      &               IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR)
       END IF
       IF (CUT) THEN
-         WRITE (LUPRI,'(/,A)')
+         WRITE (LUPRI,'(/A)')
      &          ' Program stopped after TWOEXP as required.'
          WRITE (LUPRI,'(A)') ' No restart file has been written.'
          CALL QUIT(' ***** End of ABACUS (in TWOEXP) *****')

@@ -77,14 +77,13 @@ C-----------------------------------------------------------------------
       CALL QUIT('NEVPT2 not available for this platform')
       return
 #endif
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)) && defined (NO_F90)
-      write(lupri,*)' '
-      write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
-      write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
-      write(lupri,*
-     $     )'sorry, NEVPT2 at present needs the INTEL FORTRAN COMPILER'
-      write(lupri,*)' or the Portland Group FORTRAN Compiler'
-      write(lupri,*)' or G77 FORTRAN Compiler'
+#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)||defined(VAR_GFORTRAN)) && defined (NO_F90)
+      write(lupri,'(A)') ' ',
+     &   '<<<<<<<<<<<===========>>>>>>>>>>>>',
+     &   'ATTENTION ATTENTION ATTENTION ATTENTION', ' ',
+     &   'Sorry, NEVPT2 at present needs the INTEL FORTRAN COMPILER',
+     &   ' or the Portland Group FORTRAN Compiler',
+     &   ' or g77 FORTRAN Compiler or gfortran FORTRAN compiler'
       CALL QUIT('NEVPT2 not available for this compiler')
       return
       end
@@ -100,8 +99,7 @@ C-----------------------------------------------------------------------
       logical*1 zseg
       COMMON /CIP/NORBFE,NOCB,NCF,ZSEG
       common /actspace/mact,nact2,nact3,nact4
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14),
-     *            normind(14,14,14,14)
+#include "nevpt2.h"
 c      real*4 tarray(2)
       logical zcapos,zion
       integer*1 ioccfe
@@ -165,8 +163,12 @@ c      allocatable sppm(:),orbfe(:)
 c      integer orbfe
 c      character*1 sppm
 C--- Cele  Debug
-      indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
+      CALL QENTER('koopro4')
+      KFRSAV=1
+      KFREE=KFRSAV
+      LFREE=LWRK
 C--- Cele  Debug
 c       nexc(1)='F'
 c       nexc(2)='M'
@@ -193,16 +195,6 @@ c       sppm(norbt+norbt+1)='+'
 c       orbfe(norbt+norbt+1)=norbt+1
 C--- Cele  Debug
 
-c     if(.NOT.FLAG(27))then
-c        write(lupri,*)' '
-c        write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
-c        write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
-c        write(lupri,'(a,$)'
-c    $        )'For the moment NEVPT2 needs the .DETERMINANT'
-c        write(lupri,*)' keyword'
-c        write(lupri,*)'Please restart'
-c        CALL QUIT('NEVPT2 error: .DETERMINANT option required')
-c     endif
       if(DOCI.AND.ISTNEVCI.eq.0)then
          write(lupri,*)' '
          write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
@@ -216,18 +208,17 @@ c     endif
       nwall=0
       norbfe=norbt
       t=second()
-      write (lupri,*)
-      write (lupri,*)
-      write (lupri,*)
-      write (lupri,*)'*******************************************',
-     * '***************************'
-      write (lupri,*)'*                    SC and PC NEVPT2 Calcu',
-     * 'lation                    *'
-      write (lupri,*)'*******************************************',
-     * '***************************'
-      write (lupri,*)
-      write (lupri,*)
-      write (lupri,*)
+      write (lupri,'(///A)')' ***************************************'//
+     * '*******************************'
+      IF (DoMCSRDFT) THEN
+         write (lupri,'(A)')' *              SC and PC NEVPT2-srDFT '//
+     *   'Calculation                    *'
+      ELSE
+         write (lupri,'(A)')' *                    SC and PC NEVPT2 '//
+     *   'Calculation                    *'
+      END IF
+      write (lupri,'(A///)')' ***************************************'//
+     * '*******************************'
 
        do i=1,8
         do j=1,8
@@ -251,19 +242,12 @@ C
 #endif
 
 C
-C     Getting the informations on the determinants in the MR wavefunction
-C
-      KFREE=1
-      LFREE=LWRK
-      CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
-      CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-
-C
 C     Getting the coefficients of the determinants
 C
       call nwadd(nwall,ncdets*8)
 #if !defined(VAR_G77)
       allocate (cvec(ncdets))
+      i_cvec=1
 #else
       i_cvec=iallor8(cvec,ncdets)
 #endif
@@ -289,45 +273,27 @@ C        else MCSCF with only reference vector saved (NRSAVE)
          istate=ioldstate
       endif
       if(.NOT.FLAG(27)) then
-#if !defined(VAR_G77)
-         allocate (detvec(ncdets))
-         CALL READT(LUIT1,NCONF,CVEC)
-         call csdtvc(cvec,detvec,1,WRK(KCINDX+KDTOC-1),
-     *   WRK(KCINDX+KICTS(1)-1),lsym,1,0)
-#else
-         i_detvec=iallor8(detvec,ncdets)
+C
+C     Getting the informations on the determinants in the MR wavefunction
+C
+         CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDETVEC,NCDETS,WRK,KFREE,LFREE)
+         CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
          CALL READT(LUIT1,NCONF,CVEC(i_CVEC))
-         call csdtvc(cvec(i_cvec),detvec(i_detvec),1,WRK(KCINDX+KDTOC-1)
+         call csdtvc(cvec(i_cvec),WRK(KDETVEC),1,WRK(KCINDX+KDTOC-1)
      $        ,WRK(KCINDX+KICTS(1)-1),lsym,1,0)
-#endif
-#if !defined(VAR_G77)
-         deallocate (detvec)
-#else
-         call memrelr8(detvec(i_detvec))
-#endif
+         CALL MEMREL('after csdtvc',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       else
-#if !defined(VAR_G77)
-         CALL READT(LUIT1,NCDETS,CVEC)
-#else
-         CALL READT(LUIT1,NCDETS,CVEC(i_CVEC))
-#endif
+         CALL READT(LUIT1,NCDETS,CVEC(i_cvec))
       endif
-c     CALL WRTMAT(CVEC,1,NCDETS,1,NCDETS,0)
+C     CALL WRTMAT(CVEC(i_cvec),1,NCDETS,1,NCDETS,0)
 
 C
 C     Getting the one-particle density matrix
 C     (Not used for the moment!)
 C
-C      allocate (dal(nasht,nasht))
-C      CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
-C      CALL MAKDV(CVEC,WRK(KDV),WRK(KCINDX),WRK(KFREE),LFREE)
-C      CALL DSPTGE(NASHT,WRK(KDV),DAL) !unpack low triang -> square
+C Manu April 2009: now it is used in the NEVPT2-srDFT :-)
 
-C      write (lupri,*) 'Number of dets',ncdets
-C      do i=1,nasht
-C      write (lupri,*) 'occ numb',i,dal(i,i)
-C      enddo
-      
       
       do i=1,norbt
 #if !defined(VAR_G77)
@@ -522,10 +488,9 @@ c      i_jstr=ialloi4(jstr,nbel*ncf)
      $     ne(i_ne),trou(i_trou),part(i_part),nd(i_nd),norbt,nish,nash
      $     ,nasht,lfermi,nisht,nsym,LUN98,ispin)
 #endif
-      write (lupri,*)
-      write (lupri,*) 'Done with dalcip'
       tdal=second()
-      write(lupri,'(a,f8.2,a)')' Elapsed time ',tdal-t,' sec.'
+      write(lupri,'(a,f8.2,a)')
+     &   ' Elapsed time after dalcip ',tdal-t,' sec.'
       call flshfo(lupri)
       CALL GPCLOSE(LUN98,'KEEP')
       call nwdel(nwall,2*(nbel*ncf)*4)
@@ -583,26 +548,25 @@ C
       i_ispinfe=ialloi2(ispinfe,norbt+norbt+1)
       i_iorbfe=ialloi2(iorbfe,norbt+norbt+1)
 #endif
-      call nwadd(nwall,2*(norbt+norbt+1)*8)
+      call nwadd(nwall,2*nnorbx*8)
 #if !defined(VAR_G77)
-      allocate(f(norbt*(norbt+1)/2))
-      allocate(aj(norbt*(norbt+1)/2))
+      allocate(f(nnorbx))
+      allocate(aj(nnorbx))
 #else
-      i_f=iallor8(f,norbt*(norbt+1)/2)
-      i_aj=iallor8(aj,norbt*(norbt+1)/2)
+      i_f=iallor8(f,nnorbx)
+      i_aj=iallor8(aj,nnorbx)
 #endif
       NOCB=nisht+lfermi
 
       if (DOCI) then
-      REWIND LUIT1
-      CALL MOLLAB('ENERGIES',LUIT1,LUERR)
-      READ (LUIT1) (escf,I=1,ISTNEVCI)
+        REWIND LUIT1
+        CALL MOLLAB('ENERGIES',LUIT1,LUERR)
+        READ (LUIT1) (escf,I=1,ISTNEVCI)
       else
-      escf=emcscf
+        escf=emcscf
       endif
 
-      write (lupri,*)
-      write (lupri,'(1x,a,i7)')   'NORB   =',norbt
+      write (lupri,'(/1x,a,i7)')  'NORB   =',norbt
       write (lupri,'(1x,a,i7)')   'NOCB   =',NOCB
       write (lupri,'(1x,a,i7)')   'NCF    =',ncf
       write (lupri,'(1x,a,i7)')   'NTOTHP =',ntothp
@@ -623,10 +587,11 @@ C
 c      if(zion)nele=nele-1
       ndim2=nasht*(nasht+1)/2
       ndim3=ndim2*(ndim2+1)/2
-      if(nasht.gt.14)then
-         write(lupri,*
-     $        )'n. of active orbitals greater than 14: not supported'
-         stop 'nact greater than 14'
+      if(nasht.gt.max_act)then
+         write(lupri,*)
+     &     'no. of active orbitals greater than',max_act,
+     &     ': not supported'
+         CALL QUIT('nevpt2 error: nact greater than "max_act" ')
       endif
       do i=1,nasht
       lindi(i)=(i-1)*i*(i+1)*(i+2)/24
@@ -692,18 +657,58 @@ c      if(zion)nele=nele-1
          ispinfe(i_ispinfe+norbt+norbt)=1
 #endif
       endif
+C
+C Manu comment: the one-electron part of the Hamiltonian is built here !
+C
       call nwadd(nwall,NNORBX*8)
 #if !defined(VAR_G77)
       ALLOCATE (onel(NNORBX))
-      call readint(onel,atwo,aj,wrk,lfree,id2n,in2d,lupri)
+C      
+C ***********************************************************
+C Manu b
+      IF (DOMCSRDFT) THEN
+C        Build active density matrix wrk(dv) with ro1 ... 
+
+         CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
+         call dzero(dal,n2ashx)
+         call ro1(cvec,dal,nisht,nasht,thr,trou
+     $        ,part,ne,nd,ispinfe
+     $        ,iorbfe,itsym)
+         CALL DGETSP(NASHT,dal,wrk(kdv)) 
+      ELSE
+         CALL MEMGET('REAL',KDV,0,WRK,KFREE,LFREE)
+      END IF
+      call readint(onel,atwo,aj,wrk(kdv),
+     &     wrk(kfree),lfree,id2n,in2d,lupri)
 #else
       i_onel=iallor8(onel,NNORBX)
-      call readint(onel(i_onel),atwo(i_atwo),aj(i_aj),wrk,lfree
-     $     ,id2n(i_id2n),in2d(i_in2d),lupri)
+C    
+C ***********************************************************
+C Manu b
+C Manu b: added wrk(kdv) as argument to readint in order to add
+C         the srHxc potential to the Hamiltonian
+      IF (DOMCSRDFT) THEN
+C        Build active density matrix wrk(dv) with ro1 ... 
+
+         CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
+         call dzero(dal(i_dal),n2ashx)
+         call ro1(cvec(i_cvec),dal(i_dal),nisht,nasht,thr,trou(i_trou)
+     $        ,part(i_part),ne(i_ne),nd(i_nd),ispinfe(i_ispinfe)
+     $        ,iorbfe(i_iorbfe),itsym(i_itsym))
+         CALL DGETSP(NASHT,dal(i_dal),wrk(kdv)) 
+      ELSE
+         CALL MEMGET('REAL',KDV,0,WRK,KFREE,LFREE)
+      END IF
+      call readint(onel(i_onel),atwo(i_atwo),aj(i_aj),wrk(kdv),
+     $     wrk(kfree),lfree,id2n(i_id2n),in2d(i_in2d),lupri)
+C Manu e      
+
 #endif
-      write (lupri,*) 
-      write (lupri,*) 'Done with readint'
-      call flshfo(lupri)
+
+      CALL MEMREL('DV',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      
+!     write (lupri,'(/A)') 'Done with readint'
+!     call flshfo(lupri)
 
 #if !defined(VAR_G77)
       call dzero(ro4,nwords*nasht**4)
@@ -717,8 +722,7 @@ c      if(zion)nele=nele-1
       call dzero(dal(i_dal),nasht**2)
 #endif
 
-      write (lupri,*)
-      write (lupri,*) 'Multiplicity is',ispin
+      write (lupri,'(/A,I5)') ' Spin multiplicity is',ispin
 c      if(ispin.eq.1.or.ispin.eq.2.or.ispin.eq.3)then
 #if !defined(VAR_G77)
       allocate(ioccfe(norbt,1))
@@ -757,7 +761,6 @@ c      endif
          if(zcapos(i_zcapos+i-1))ncapos=ncapos+1
 #endif
       enddo
-c      write (lupri,'(a,i6,a)')
       write (lupri,'(a,i7,2a)') ' There are',ncapos,' different orbital'
      $     ,' occupation patterns'
       call flshfo(lupri)
@@ -783,9 +786,8 @@ c      write (lupri,'(a,i6,a)')
 #endif
          endif
       enddo
-      write(lupri,*)
-      write(lupri,*) 'Density matrices calculation'
-      call flshfo(lupri)
+!     write(lupri,'(/A)) ' Density matrices calculation'
+!     call flshfo(lupri)
 #if !defined(VAR_G77)
       allocate(iocca(norbfe+1))
       allocate(ioccb(norbfe+1))
@@ -812,6 +814,9 @@ c      write (lupri,'(a,i6,a)')
          call ro1(cvec,dal,nisht,nasht,thr,trou,part,ne,nd,
      *        ispinfe,iorbfe,itsym)
 #else
+C Manu b
+C     print *, 'var_G77 not defined ...'
+C Manu e
       i_iocca=ialloi4(iocca,norbfe+1)
       i_ioccb=ialloi4(ioccb,norbfe+1)
       i_flip=ialloi1(flip,ncf+1000)
@@ -850,6 +855,9 @@ c      write (lupri,'(a,i6,a)')
          call memrelr8(tbb(i_tbb))
          call memrelr8(tab(i_tab))
          call bro1(taa(i_taa),dal(i_dal),nasht,nele)
+C
+C
+C Manu b 
       elseif(nele.eq.1)then
          write(lupri,*) 'just one active electron: are you kidding?'
          call ro1(cvec(i_cvec),dal(i_dal),nisht,nasht,thr,trou(i_trou)
@@ -866,9 +874,8 @@ c      write (lupri,'(a,i6,a)')
       call memreli4(ioccb(i_ioccb))
       call memreli4(flip(i_flip))
 #endif
-      write(lupri,*)
-      write(lupri,*) 'Done with density matrices calculation'
-      call flshfo(lupri)
+!     write(lupri,'(/A)') ' Done with density matrices calculation'
+!     call flshfo(lupri)
 
       call nwdel(nwall,ncdets*8)
 #if !defined(VAR_G77)
@@ -907,7 +914,8 @@ c      write (lupri,'(a,i6,a)')
       call memreli1 (ioccfe(i_ioccfe))
 #endif
       t2=second()
-      write(lupri,'(a,f8.2,a)')' Elapsed time ',t2-tdal,' sec.'
+      write(lupri,'(a,f8.2,a)')
+     &   ' Elapsed time after density matrices ',t2-tdal,' sec.'
       n=nasht
       nstop=(n+n*n)/2
 c---calcolo Koopmans esteso doppie ionizzazioni---------------------
@@ -966,8 +974,8 @@ c         enddo
 #else
       call wr2(koopaa(i_koopaa),taa(i_taa),dal(i_dal),nasht,lun31)
 #endif
-      write(lupri,*)
-      write(lupri,*) 'Done with one part/hole Koopmans'' matrices'
+!     write(lupri,*)
+!     write(lupri,*) 'Done with one part/hole Koopmans'' matrices'
 #if !defined(VAR_G77)
       call koop2E(atwo,daaa,taa,dal,koopaa,koopeaa,nasht,nisht
      $     ,f,aj,itsym,its)
@@ -976,8 +984,8 @@ c         enddo
      $,koopaa(i_koopaa),koopeaa(i_koopeaa),nasht,nisht,f(i_f),aj(i_aj)
      $,itsym(i_itsym),its)
 #endif
-      write(lupri,*)
-      write(lupri,*) 'Done with two part/hole Koopmans'' matrices'
+!     write(lupri,*)
+!     write(lupri,*) 'Done with two part/hole Koopmans'' matrices'
       t3=second()
       write(lupri,'(a,f10.2,a)')' KoopE and KoopE2 have taken ',t3-t2,
      * ' seconds'
@@ -992,8 +1000,8 @@ c         enddo
      $     ,koopaa(i_koopaa),koopbb(i_koopbb),koopab(i_koopab),nasht
      $     ,nisht,f(i_f),aj(i_aj),itsym(i_itsym),its)
 #endif
-      write(lupri,*)
-      write(lupri,*) 'Done with excitation Koopmans'' matrix'
+!     write(lupri,*)
+!     write(lupri,*) 'Done with excitation Koopmans'' matrix'
       t4=second()
       write(lupri,'(a,f10.2,a)')' Koopman0pE has taken ',t4-t3,
      *                 ' seconds'
@@ -1008,8 +1016,7 @@ c         enddo
             if(fprov.gt.fmax)fmax=fprov
          enddo
       enddo
-      write(lupri,*)
-      write(lupri,'(a,d10.3)') ' Maximum value of F matrix is:',fmax
+      write(lupri,'(/a,d10.3)') ' Maximum value of F matrix is:',fmax
 #if !defined(VAR_G77)
       call wr4(koopaa,koopbb,koopab,nasht,lun31)
 #else
@@ -1068,8 +1075,6 @@ c-----scrittura matrici A e D-----------------------------------
      $     ,daaa(i_daaa),taa(i_taa),dal(i_dal),nasht,nisht,f(i_f)
      $     ,aj(i_aj),itsym(i_itsym),its,norbt)
 #endif
-      write(lupri,*) 
-      write(lupri,*) 'Done with matrices AMAT and ATMAT'
       call nwdel(nwall,nwords*nasht**4*8)
 #if !defined(VAR_G77)
       deallocate (ro4)
@@ -1085,8 +1090,6 @@ c-----scrittura matrici A e D-----------------------------------
       call bbmat(atwo(i_atwo),bmat(i_bmat),btmat(i_btmat),daaa(i_daaa)
      $,taa(i_taa),dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
 #endif
-      write(lupri,*) 
-      write(lupri,*) 'Done with matrices BMAT and BTMAT'
       t7=second()
       write(lupri,'(a,f10.2,a)')' BBMAT has taken ',t7-t6,' seconds'
 #if !defined(VAR_G77)
@@ -1095,8 +1098,6 @@ c-----scrittura matrici A e D-----------------------------------
       call bcmat(atwo(i_atwo),cmat(i_cmat),ctmat(i_ctmat),daaa(i_daaa)
      $,taa(i_taa),dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
 #endif
-      write(lupri,*) 
-      write(lupri,*) 'Done with matrices CMAT and CTMAT'
       t8=second()
       write(lupri,'(a,f10.2,a)')' BCMAT has taken ',t8-t7,' seconds'
 #if !defined(VAR_G77)
@@ -1108,8 +1109,6 @@ c-----scrittura matrici A e D-----------------------------------
       call bdmat(atwo(i_atwo),dmat(i_dmat),dtmat(i_dtmat),taa(i_taa)
      $     ,dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
 #endif
-      write(lupri,*) 
-      write(lupri,*) 'Done with matrix DMAT'
       t9=second()
       write(lupri,'(a,f10.2,a)')' BDMAT has taken ',t9-t8,' seconds'
 #if !defined(VAR_G77)
@@ -1121,10 +1120,8 @@ c-----scrittura matrici A e D-----------------------------------
      $,dtmat(i_dtmat),nasht,lun31)
 #endif
 
-      write(lupri,*)
-      write(lupri,'(a,f8.2,a)')' Total elapsed time in Koopro4',t9-t,
+      write(lupri,'(/a,f8.2,a)')' Total elapsed time in Koopro4',t9-t,
      * ' seconds'
-      write(lupri,*)
       call flshfo(lupri)
 
       call nwdel(nwall,nasht**6*8)
@@ -1208,6 +1205,8 @@ c-----scrittura matrici A e D-----------------------------------
       call nwdel(nwall,2*nasht*4)
 #endif
 c----that's all folks
+      CALL QEXIT('koopro4')
+      return
       end
 c-------------------------------------------------------------------
       subroutine rofour(c,amat,nisht,nasht,thr,icomp,iconf,ioccfe,
@@ -1220,8 +1219,7 @@ c-------------------------------------------------------------------
 #endif
 #include <priunit.h>
       dimension amat(nwords,nasht,nasht,nasht,nasht)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     *     ,normind(14,14,14,14)
+#include "nevpt2.h"
       dimension c(*),zcapos(*)
       integer*2 icomp(*),iconf(*)
       integer*1 ioccfe(norb,ncaptot),flip
@@ -1274,7 +1272,7 @@ c     nhitsd=0
          nec=ne(minit)
          ndm=nd(minit)
          nfin=0
-         do  ncap=1,mcap      !do 2
+         do ncap = 1,mcap      !do 2
             ninit=nfin+1
             nfin=ninit+icomp(ninit)-1
             nedif=abs(ne(minit)-ne(ninit))
@@ -1905,10 +1903,14 @@ c     contributo a daabb
      $                       ,amat,nasht,m,n)
                      endif
                   endif
- 4             enddo
- 3          enddo
- 2       enddo
- 1    enddo
+ 4             continue
+               enddo
+ 3          continue
+            enddo
+ 2       continue
+         enddo
+ 1    continue
+      enddo
 c---renzo debug
       write(lupri,*)
       write(lupri,*)'number of single    differences=',nsings
@@ -1957,8 +1959,8 @@ c      include 'rotwo.par'
       integer*1 flip
       dimension iocca(*),ioccb(*),flip(*)
       nocc=NOCB-nisht
-      write(lupri,*)'nocc,NOCB',nocc,NOCB
       write(lupri,*)'subr. ro3'
+      write(lupri,*)'nocc,NOCB',nocc,NOCB
       write(lupri,*)'nasht=',nasht,' nocc=',nocc,' ncf=',ncf
 #if !defined(VAR_G77)
       allocate(dbbb(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
@@ -2335,10 +2337,14 @@ c     casi aaa, bbb, aab, bba
                      endif
 c---- renzo            if(abs(c(n)).lt.thr)goto 2
                   endif
- 4          enddo
- 3          enddo
- 2       enddo
- 1    enddo
+ 4          continue
+            enddo
+ 3          continue
+            enddo
+ 2       continue
+         enddo
+ 1    continue
+      enddo
 c--costruzione matrice ro3 spinless
       do i=1,nasht
          do j=1,nasht
@@ -2399,7 +2405,7 @@ c-------------------------------------------------------
       dimension iocca(*),ioccb(*),flip(*)
       external index
       parameter (pt5=0.5d0)
-      indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
+c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 c common e dimensionamenti mettere dopo
 #if !defined(VAR_G77)
       allocate(d2bebe(1:nasht,1:nasht,1:nasht,1:nasht))
@@ -2407,7 +2413,6 @@ c common e dimensionamenti mettere dopo
 #endif
       n=nasht
       nocc=NOCB-nisht
-      write(lupri,*)'nocc,NOCB',nocc,NOCB
       nbig=(n*n+n)/2
       nstop=nbig
       nbig=(nbig*nbig+nbig)/2
@@ -2584,6 +2589,7 @@ c-----------------------------------------------------
       dimension nv(4),nw(4)
       n=nasht
       nocc=NOCB-nisht
+C     note: NOCB = nisht + lfermie
       nn=(n*n+n)/2
       write(lupri,*)'subr. ro1'
       write(lupri,*)'n=',n,' nocc=',nocc,' ncf=',ncf
@@ -3323,13 +3329,15 @@ C
 C     LE DETERMINANT - 1 - EST CHOISI COMME LE
 C     DETERMINANT AYANT LE PLUS D'O.M. EXCITEES
 C     
-      zshift=.false.
-      IF (NE(KR)-NE(KL)) 5,7,7
-    5 KKKK=KR
-      KR=KL
-      KL=KKKK
-      zshift=.true.
-    7 NE1=NE(KR)
+      IF (NE(KR) .lt. NE(KL)) then
+        KKKK=KR
+        KR=KL
+        KL=KKKK
+        zshift=.true.
+      else
+        zshift=.false.
+      end if
+      NE1=NE(KR)
 C     TEST SUR LE FONDAMENTAL
       IF (NE1.EQ.0) GOTO 44
       NE2=NE(KL)
@@ -3452,19 +3460,13 @@ c------------------------------------------------------------------
       subroutine accum(amat,ip,jp,kp,lp,mp,np,op,pp,val,nasht)
 #include <implicit.h>
 #include <priunit.h>
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14),
-     *            normind(14,14,14,14)
+#include "nevpt2.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
       integer op,pp
+      lindice(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
+
       ind=lindice(ip,jp,kp,lp)
       amat(ind,mp,np,op,pp)=amat(ind,mp,np,op,pp)+val
-      return
-      end
-c------------------------------------------------------------------
-      function lindice(i,j,k,l)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14),
-     *            normind(14,14,14,14)
-      lindice=lindi(i)+lindj(j)+lindk(k)+l
       return
       end
 c-----------------------------------------------------------------
@@ -3573,7 +3575,8 @@ c-------------------
                         enddo
                      enddo
                   enddo
- 1             enddo
+ 1             continue
+               enddo
             enddo
          enddo
       enddo
@@ -3626,7 +3629,8 @@ c-------------------
                         enddo
                      enddo
                   enddo
- 2             enddo
+ 2             continue
+               enddo
             enddo
          enddo
       enddo
@@ -3787,8 +3791,7 @@ c-------------------------------------------------------------------
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     *     ,normind(14,14,14,14)
+#include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
       dimension amat(nasht,nasht,nasht,nasht,nasht,nasht)
       dimension atmat(nasht,nasht,nasht,nasht,nasht,nasht)
@@ -3967,7 +3970,8 @@ c-------------------
                               enddo
                            enddo
                         enddo
-   1                 enddo
+   1                 continue
+                     enddo
                   enddo
                enddo
             enddo
@@ -4210,14 +4214,13 @@ c-------------------------------------------------------------------
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     *     ,normind(14,14,14,14)
+#include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
 c----four-particle density matrix dealt with here
 c--a,c,e,g    b,d,f,h
-      lindice1(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
+      lindice(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
       call ord8(a,c,e,g,b,d,f,h,i1,i2,i3,i4,i5,i6,i7,i8)
-      ind=lindice1(i1,i2,i3,i4)
+      ind=lindice(i1,i2,i3,i4)
       eeee=ro4(ind,i5,i6,i7,i8)
       if(b.eq.c)eeee=eeee+d3(a,e,g,d,f,h)
       if(b.eq.e)eeee=eeee+d3(a,c,g,f,d,h)
@@ -4243,8 +4246,7 @@ c-------------------------------------------------------------------
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     *     ,normind(14,14,14,14)
+#include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
       eeeet=-eeee(a,b,d,c,e,f,g,h,d3,d2,d1,ro4,nasht)
       if(c.eq.d)eeeet=eeeet+2.d0*eee2(a,b,e,f,g,h,d3,d2,d1,nasht)
@@ -4545,8 +4547,7 @@ c------------------------------------------------------
       integer i1,i2,i3,i4,i5,i6,i7,i8,norm1,norm2,nwords,normind
       integer lindi,lindj,lindk
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     * ,normind(14,14,14,14)
+#include "nevpt2.h"
 
       norm1=normind(ia,ic,ie,ig)
       norm2=normind(ia2,ic2,ie2,ig2)
@@ -4678,8 +4679,7 @@ c-----------------------------------------------------------
       subroutine ord22(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
 #include <implicit.h>
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     * ,normind(14,14,14,14)
+#include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,m,n
 
@@ -4869,8 +4869,7 @@ c------------------------------------------------------
       subroutine ordsame(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
 #include <implicit.h>
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     * ,normind(14,14,14,14)
+#include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,n,m
 
@@ -4944,8 +4943,7 @@ c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
       common /actspace/nasht,nact2,nact3,nact4
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     * ,normind(14,14,14,14)
+#include "nevpt2.h"
 c      write (6,'(''ord8 in'',8I3)') ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2
 
 c      call getnorm(ia1,ic1,ie1,ig1,norm1)
@@ -5006,8 +5004,7 @@ c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
       common /actspace/nasht,nact2,nact3,nact4
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     * ,normind(14,14,14,14)
+#include "nevpt2.h"
 c      write (6,'(''ord8 in'',8I3)') ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2
 
 c      call getnorm(ia1,ic1,ie1,ig1,norm1)
@@ -5127,9 +5124,9 @@ c-----------------------------------------------------------------
 #include <implicit.h>
 #include <priunit.h>
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
-      common/lndc/nwords,lindi(14),lindj(14),lindk(14)
-     *     ,normind(14,14,14,14)
+#include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
+      lindice(i,j,k,l)=lindi(i)+lindj(j)+lindk(k)+l
 cc---controllo su contrazione della ro4
       do i=1,nasht
          do j=1,nasht
@@ -5509,10 +5506,23 @@ c------------------------------------------------------------------------
       RETURN
       END
 c-------------------------------------------------------------------
-      subroutine readint(onel,atwo,aj,wrk,lfree,id2n,in2d,lupri)
+
+C
+C Manu april 2009: DV (active density matrix in the MO basis) added as argument so that we can calculate
+C the density of the MCSCF wave function in case we need it (for
+C computing the srHxc potential in a NEVPT2-srDFT calculation for example)
+C
+               
+      subroutine readint(onel,atwo,aj,dv,wrk,lfree,id2n,in2d,lupri)
+C      
+C      
 #include <implicit.h>
 #include <maxorb.h>
 #include <inforb.h>
+C Manu: for NEVPT2-srDFT
+#include <inftap.h>
+#include <infinp.h>
+C#include <priunit.h>
       DIMENSION NEEDTP(6)
 c      DATA NEEDTP /0,0,1,0,0,0/
 #if !defined(VAR_G77)
@@ -5522,18 +5532,29 @@ c      DATA NEEDTP /0,0,1,0,0,0/
       ALLOCATABLE H1MO(:)
 #else
       dimension h2m(1),cmo(1),h1ao(1),h1mo(1)
+      
 #endif
       dimension id2n(*),in2d(*),aj(*),wrk(*),onel(*)
       dimension atwo(nasht,nasht,nasht,nasht)
       integer a,b,ac,bc,acd,bcd
+C Manu: needed for the NEVPT2-srDFT ...      
+C
+      DIMENSION DV(*)
+      DOUBLE PRECISION EDFT 
+      INTEGER LFREE
+      PARAMETER (D1 = 1.0D0) 
+C
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
 C
+      call dzero(aj,nnorbx)
+      call dzero(atwo,n2ashx*n2ashx)
       do i=1,6
        needtp(i)=0
       enddo
       needtp(3)=1
-      KFREE=1
+      KFRSAV = 1
+      KFREE = KFRSAV
       IDIST = 0
 #if !defined(VAR_G77)
       allocate (h2m(norbt,norbt))
@@ -5676,18 +5697,301 @@ C
 #if !defined(VAR_G77)
       CALL READMO(CMO,JRDMO,WRK(KFREE),LFREE)
 c      CALL PRORB(CMO,.FALSE.,LUPRI) ! Write MO sym packed
+C
+C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
+C
+
+C Manu b
+      write(lupri,*) 'VAR_G77 is NOT defined !' 
+C Manu e
+
+C
+C
 c      CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+
+C
+C************ NEVPT2-srDFT -- start ***************
+C
+C March 2009 Emmanuel Fromager
+
+C Purpose: add the frozen srHXC potential calculated
+C for the MCSCF-srDFT density to the one-electron part of the 
+C Hamiltonian. 
+C
+
+      IF (DOMCSRDFT) THEN
+#ifndef MOD_SRDFT
+         call quit('srdft not implemented in this version')
+#else
+
+C        Allocation of memory for ...       
+
+C        full (inactive+active) DM in the AO basis             
+         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE) 
+C        sr H or xc potential in the AO basis          
+         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE) 
+C        active part of the DM in the AO basis         
+         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE) 
+
+C Manu b
+!        write(lupri,*) 'print DV before calling FCKDEN'
+!        call outpak(dv,nasht,1,lupri)
+C Manu e
+
+C        Backtransform the inactive and active MCSCF-srDFT density matrix to the AO
+C        basis       
+
+         CALL FCKDEN(.TRUE.,.TRUE.,WRK(KDAO),WRK(KDVAO),CMO,DV,
+     &               WRK(KFREE),LFREE)
+
+C Manu b
+         
+!        write(lupri,*) 'print DVAO just after calling FCKDEN'
+!        CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+!        write(lupri,*) 'print DCAO just after calling FCKDEN'
+!        CALL OUTPUT(WRK(KDAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+C Manu e
+
+C        make total density matrix (in the AO basis) in WORK(KDAO)
+
+         CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDAO),1)
+C
+
+C        Release memory allocated for DVAO 
+C
+         CALL MEMREL('Releasing mem. used for DVAO',
+     &             WRK,KFRSAV,KDVAO,KFREE,LFREE)  
+
+C        calculate the srH potential (for the MCSCF-srDFT density) 
+
+         CALL DZERO(WRK(KVSRAO),N2BASX)
+
+         IFCTMP = 11 ! sr Hartree term only
+         NSRDMAT = 1 ! only one density matrix (the MCSCF-srDFT one)
+         ISYMDM = 1  ! DMAT of symmetry 1 
+
+         CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
+     &                WRK(KDAO),NSRDMAT,ISYMDM,IFCTMP,WRK(KFREE),LFREE)
+
+
+C manu b
+!        write(lupri,*) 'print VSRAO after calling sirfck2'
+!        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+!        write(lupri,*) 'print H1AO after calling sirfck2'
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+       
+C manu e
+
+C        Add the srH potential to the one-electron part of the Hamiltonian
+
+         CALL ADDSUSP(WRK(KVSRAO),H1AO)
+C manu b
+!        write(lupri,*) 'print H1AO after 1st call to addsusp'
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+       
+C manu e
+
+C        Calculate the srxc potential for the MCSCF-srDFT density  
+
+         CALL DZERO(WRK(KVSRAO),N2BASX)
+
+         IPRFCK = 0
+
+         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+     &              WRK(KFREE),LFREE,IPRFCK)
+
+C Comment Manu: we do not care about the energy contribution EDFT. It
+C is just that it is calculated with the srxc potential ...
+
+C manu b
+!        write(lupri,*) 'print VSRAO after calling srdft'
+!        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+!        write(lupri,*) 'print H1AO after calling srdft'
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+       
+C manu e
+
+C        Add the srxc potential to the one-electron part of the Hamiltonian
+
+         CALL ADDSUSP(WRK(KVSRAO),H1AO)
+
+C        Release memory
+
+         CALL MEMREL('Releasing mem. used for DAO and VSRAO',
+     &             WRK,KFRSAV,KDAO,KFREE,LFREE)  
+         
+
+#endif
+      END IF 
+
+C Manu b       
+C     write(lupri,*) 'print H1AO before calling UTHUB'
+C     CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+C Manu e       
+
+C************ NEVPT2-srDFT -- end ***************
+C
+
+
       CALL UTHUB(H1AO,H1MO,CMO,WRK(KFREE),NSYM,NBAS,NORB)
       CALL PKSYM1(onel,H1MO,NORB,NSYM,-1) ! Unpack H1MO in low tri onel
 c      CALL OUTPKB(H1MO,NORB,NSYM,1,LUPRI)
 c      CALL OUTPAK(onel,NORBT,1,LUPRI)
 #else
       CALL READMO(CMO(i_cmo),JRDMO,WRK(KFREE),LFREE)
+
+C Manu b
+!     write(lupri,*) 'print CMO before call sirh1'
+!     CALL OUTPUT(CMO(i_cmo),1,nbast,1,norbt,nbast,norbt,-1,LUPRI)
+C Manu e
+C Manu b: just want to be sure ....
+!     write(lupri,*) '!!!! initialize h1ao to zero !!!!' 
+      CALL DZERO(H1AO(i_h1ao),NNBAST)
+C Manu e
+
       CALL SIRH1(H1AO(i_h1ao),WRK(KFREE),LFREE)
+C
+C************ NEVPT2-srDFT -- start ***************
+C
+C March 2009 Emmanuel Fromager
+
+C Purpose: add the frozen srHXC potential calculated
+C for the MCSCF-srDFT density to the one-electron part of the 
+C Hamiltonian. 
+C
+
+      IF (DOMCSRDFT) THEN
+#ifndef MOD_SRDFT
+         call quit('srdft not implemented in this version')
+#else
+
+C        Allocation of memory for ...       
+
+C        full (inactive+active) DM in the AO basis             
+         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE) 
+C        sr H or xc potential in the AO basis          
+         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE) 
+C        active part of the DM in the AO basis         
+         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE) 
+C----------------------------------------------------------------------
+
+C Manu b
+!        write(lupri,*) 'print DV before calling FCKDEN'
+!        call outpak(dv,nasht,1,lupri)
+C Manu e
+
+
+
+C        Backtransform the inactive and active MCSCF-srDFT density matrix to the AO
+C        basis       
+
+         CALL FCKDEN(.TRUE.,.TRUE.,WRK(KDAO),WRK(KDVAO),CMO(i_cmo),DV
+     &               ,WRK(KFREE),LFREE)
+
+C Manu b
+         
+!        write(lupri,*) 'print DVAO just after calling FCKDEN'
+!        CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+!        write(lupri,*) 'print DCAO just after calling FCKDEN'
+!        CALL OUTPUT(WRK(KDAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+C Manu e
+C        Release memory allocated for DV
+
+C        CALL MEMREL('Releasing mem. used for DV',
+C    &             WRK,KFRSAV,KDV,KFREE,LFREE)  
+
+C        make total density matrix (in the AO basis) in WORK(KDAO)
+
+         CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDAO),1)
+C
+
+C        Release memory allocated for DVAO 
+C
+         CALL MEMREL('Releasing mem. used for DVAO',
+     &             WRK,KFRSAV,KDVAO,KFREE,LFREE)  
+
+C        calculate the srH potential (for the MCSCF-srDFT density) 
+
+         CALL DZERO(WRK(KVSRAO),N2BASX)
+
+         IFCTMP = 11 ! sr Hartree term only
+         NSRDMAT = 1 ! only one density matrix (the MCSCF-srDFT one)
+         ISYMDM = 1  ! DMAT of symmetry 1 
+
+         CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
+     &                WRK(KDAO),NSRDMAT,ISYMDM,IFCTMP,WRK(KFREE),LFREE)
+
+
+C manu b
+!        write(lupri,*) 'print VSRAO after calling sirfck2'
+!        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+!        write(lupri,*) 'print H1AO after calling sirfck2'
+!        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+       
+C manu e
+
+C        Add the srH potential to the one-electron part of the Hamiltonian
+
+         CALL ADDSUSP(WRK(KVSRAO),H1AO(i_h1ao))
+C manu b
+!        write(lupri,*) 'print H1AO after 1st call to addsusp'
+!        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+       
+C manu e
+
+C        Calculate the srxc potential for the MCSCF-srDFT density  
+
+         CALL DZERO(WRK(KVSRAO),N2BASX)
+
+         IPRFCK = 0
+
+         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+     &              WRK(KFREE),LFREE,IPRFCK)
+
+C Comment Manu: we do not care about the energy contribution EDFT. It
+C is just that it is calculated with the srxc potential ...
+
+C manu b
+!        write(lupri,*) 'print VSRAO after calling srdft'
+!        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+!        write(lupri,*) 'print H1AO after calling srdft'
+!        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+       
+C manu e
+
+C        Add the srxc potential to the one-electron part of the Hamiltonian
+
+         CALL ADDSUSP(WRK(KVSRAO),H1AO(i_h1ao))
+
+C        Release memory
+
+         CALL MEMREL('Releasing mem. used for DAO and VSRAO',
+     &             WRK,KFRSAV,KDAO,KFREE,LFREE)  
+         
+
+#endif
+      END IF 
+
+C Manu b       
+C     write(lupri,*) 'print H1AO before calling UTHUB'
+C        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+C Manu e       
+
+C************ NEVPT2-srDFT -- end ***************
+C
+C
       CALL UTHUB(H1AO(i_h1ao),H1MO(i_h1mo),CMO(i_cmo),WRK(KFREE),NSYM
      $     ,NBAS,NORB)
+
+
       CALL PKSYM1(onel,H1MO(i_h1mo),NORB,NSYM,-1) ! Unpack H1MO in low tri onel
+
+C Manu b
+!     write(lupri,*) 'print onel (unpacked H1MO)'
+!     CALL OUTPAK(onel,NORBT,1,LUPRI)
+C Manu e
+
 #endif
 
 c----building Dyall's h eff in aj----------
@@ -5699,10 +6003,10 @@ c----building Dyall's h eff in aj----------
             bcd=in2d(bc)
             jab=indice(ac,bc)
             jabd=indice(acd,bcd)
-c            write (lupri,*) ac,bc,onel(jabd),acd,bcd
+c           write (lupri,*) ac,bc,onel(jabd),acd,bcd
 c	    call flshfo(lupri)
             aj(jab)=aj(jab)+onel(jabd)
-c            write (lupri,*) 'one',ac,bc,aj(jab)
+c           write (lupri,*) 'one',ac,bc,aj(jab)
 c	    call flshfo(lupri)
          enddo
       enddo
@@ -5718,6 +6022,58 @@ c	    call flshfo(lupri)
 
       return
       end
+
+c-----------------------------------------------------
+C  /* Deck addsusp */
+      SUBROUTINE ADDSUSP(VSRAO,H1AO)
+C
+C April-2009 Emmanuel Fromager 
+C
+C This subroutine adds the symmetric UNPACKED matrix VSRAO to the
+C symmetry PACKED H1AO matrix 
+C
+#include <implicit.h>
+      DIMENSION VSRAO(NBAST,NBAST),H1AO(*)   
+C 
+#include <inforb.h>
+#include <priunit.h>
+C 
+
+         IH1AO = 0 
+         IVSRAO = 0
+         DO 2500 ISYM = 1,NSYM
+            NBASI  = NBAS(ISYM)
+C ***** initial code - assuming packed wrt column ... ******
+C           DO 2600 J = 1,NBASI 
+C              DO 2700 I = J,NBASI
+C***********************************************************     
+            DO 2600 I = 1,NBASI 
+               DO 2700 J = 1,I
+C Manu b
+C        write(lupri,*) 'debug printing in addsusp ...'
+C        write(lupri,*) 'H1AO(',
+C    &   IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2),') =',
+C    &   H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2))
+C        write(lupri,*) 'VSRAO(', IVSRAO+I,',',IVSRAO+J,
+C    &   ')=', VSRAO(IVSRAO+I,IVSRAO+J) 
+C Manu e
+C ***** initial code - assuming packed wrt column ... ******
+C                 H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2)) =
+C    &            H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2)) +
+C    &            VSRAO(IVSRAO+I,IVSRAO+J)    
+C***********************************************************     
+                  H1AO(IH1AO+J+(I*(I-1)/2)) =
+     &            H1AO(IH1AO+J+(I*(I-1)/2)) +
+     &            VSRAO(IVSRAO+I,IVSRAO+J)    
+ 2700          CONTINUE
+ 2600       CONTINUE
+            IVSRAO = IVSRAO + NBASI
+            IH1AO  = IH1AO + ((NBASI*(NBASI+1))/2)
+ 2500    CONTINUE
+C
+      RETURN
+      END
+C
 c-----------------------------------------------------
       subroutine getnorm(ia,ic,ie,ig,norm)
 #include <implicit.h>

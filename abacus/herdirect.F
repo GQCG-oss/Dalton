@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -263,18 +263,18 @@ C
      &            IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &            WORK(KIORBS),
      &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
-      CALL TIMER('TWOINT',TIMSTR,TIMEND)
+      IF (IPRINT.GT.0) CALL TIMER('GETDIS/TWOINT',TIMSTR,TIMEND)
 C
 C--------------------------------------
-C     Write out integrals distributions
+C     Write out integral distributions
 C--------------------------------------
 C
       IF (IPRINT.GT.3) THEN
          CALL HEADER('Distribution matrices in GETDIS',-1)
          DO 300 I = 1, NUMDIS
             CALL UNPKIJ(INDXAB(I),IA,IB)
-            WRITE(LUPRI,'(//,1X,A,I4)')' Distribution matrix No.',I
-            WRITE(LUPRI,'(1X,A,2I4)')  ' Orbital indices:       ',IA,IB
+            WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
+            WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB
             CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
@@ -325,7 +325,7 @@ C
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL GETFCK(WORK(KFMAT),WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,DIRECT,
      *          .FALSE.)
-      CALL TIMER('GETFCK',TIMSTR,TIMEND)
+      CALL TIMER('FCKTES/GETFCK',TIMSTR,TIMEND)
       if (.true.) return
 C
 C     Test distributions
@@ -356,29 +356,24 @@ C  /* Deck sqdens */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include <inforb.h>
-#include <symmet.h>
 C
-      IF (IPRINT .GT. 5) CALL TITLER('Output from SQDENS','*',103)
       CALL DZERO(DMAT,NBAST*NBAST)
       ISOFF = 0
-      DO 100 IREP = 1, NSYM
-         DO 200 I = 1, NBAS(IREP)
-            INDA = IBAS(IREP) + I
+      DO 100 ISYM = 1, NSYM
+         DO 200 I = 1, NBAS(ISYM)
+            INDA = IBAS(ISYM) + I
             DO 300 J = 1, I
-               INDB = IBAS(IREP) + J
-               ISOFF = ISOFF + 1
-               DMAT(INDA,INDB) = DMAT(INDA,INDB) + DTSO(ISOFF)
+               INDB = IBAS(ISYM) + J
+               DMAT(INDA,INDB) = DMAT(INDA,INDB) + DTSO(ISOFF+J)
                DMAT(INDB,INDA) = DMAT(INDA,INDB)
  300        CONTINUE
+            ISOFF = ISOFF + I
  200     CONTINUE
  100  CONTINUE
       IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Squared matrix in SQDENS',-1)
+         CALL TITLER('Output of squared matrix from SQDENS','*',103)
          CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
       RETURN
@@ -404,12 +399,16 @@ C
       SAVE    SFIRST
       DATA    SFIRST /.TRUE./
 C
+      CALL QENTER('SETHER')
+C
 C     Initialize /CBIREA/ and call readin
 C
       IF (SFIRST .OR. NEWGEO) THEN
-         RELCAL = .FALSE.
-         TSTINP = .FALSE.
-         CALL REAINI(JPRINT,RELCAL,TSTINP)
+chj   May 09: should we really call READIN here now,
+chj   when they always are called in the beginning, also when RNHERM false??
+Chj   June 09: maybe READIN may still be needed for NEWGEO, keep it for
+Chj   now for safety, but REAINI should definitely NOT be called, it will
+Chj   reiinitialize variables changed by user under *READIN
 C
          IPREAD = JPRINT
          HERMIT = .FALSE.
@@ -437,6 +436,7 @@ C
          END IF
          SFIRST = .FALSE.
       END IF
+      CALL QEXIT('SETHER')
       RETURN
       END
 C  /* Deck herfck */
@@ -448,16 +448,18 @@ C               two-electron part of the fock matrices.
 C               We assume the densities and fock matrices are full
 C               squares and without symmetry reduction .
 C
-C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or HRFCK2
+C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or ERIFCK
 C     (old integral routines or new ERI integral routines)
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <iratdef.h>
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <aovec.h>
       LOGICAL USEERI, LDUMMY
+      PARAMETER (D0 = 0.0D0)
 C
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*), 
      &          WORK(*)
@@ -479,7 +481,7 @@ C
 C
       CALL QENTER('HERFCK')
 C
-C     The new ERI routines haven't been parallelized yet.
+C     The new ERI routines have not been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
 C     USEERI is a temporary flag to check if we actually can in the present 
 C     passage.
@@ -491,10 +493,14 @@ C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
 C We need to include nuclei.h here, to have NBASIS and NODD.
 C Initalization of NODD in herrdn.F and eriaob.F
 C
-      USEERI = RUNERI
+      USEERI = RUNERI .AND.
+     &        .NOT.SRINTS .AND. CHIVAL.EQ.-1.D0 .AND. PANAS.EQ.D0
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
+      IF (RUNERI .AND. .NOT.USEERI) WRITE(LUPRI,'(/A/A)')
+     &   'INFO HERFCK: Using Hermit instead of ERI for 2-el. ints.',
+     &   'because requested calculation is not implemented in ERI.'
 #if defined (VAR_VECTOR)
       ICHUNK = MAX(IVECLN/NDMT,1)
 #endif
@@ -505,16 +511,17 @@ C
       ELSE
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
+            if (iprfck .gt. 1) write (lupri,*) '- using parallel ERI'
             CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
             IPRTYP = 2
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
      &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
      &                  IPRFCK,IPRTYP,
-     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                  DUMMY)
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY)
 
          ELSE
+#endif
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
 #if defined (VAR_VECTOR)
@@ -523,24 +530,14 @@ C
 #else
            KFCKTP = KFREE
 #endif
-           CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+           if (iprfck .gt. 1) write (lupri,*) '- using sequential ERI'
+           CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
+#if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
-#else
-         CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)           
-         CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)           
-#if defined (VAR_VECTOR)
-         CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS,
-     &               WORK,KFREE,LFREE)
-#else
-         KFCKTP = KFREE
 #endif
-         CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
-     &               WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &               WORK(KFREE),LFREE)
-#endif
-         CALL MEMREL('HERFCK',WORK,KWORK,KWORK,KFREE,LFREE)
+         CALL MEMREL('ERIFCK',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
       CALL QEXIT('HERFCK')
       RETURN
@@ -604,8 +601,8 @@ C
 #include <blocks.h>
 C
 #include <memint.h> 
-      IF (NDMAT .EQ. 0) RETURN  
-      CALL QENTER('HERFCK1')
+      IF (NDMAT .LE. 0) RETURN  
+      CALL QENTER('HRFCK1')
       I2TYP = 0
 C
 C     Inquire if this is an ABACUS run or not:
@@ -656,7 +653,7 @@ C
       CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
       CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            WORK(KJORBS),WORK(KKORBS),0,.FALSE.,IPRINT)
-      CALL MEMREL('HERFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
+      CALL MEMREL('HRFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
 C
 C     Transform density to AO basis
 C     Modified july-97, kr
@@ -667,7 +664,7 @@ C
          CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),NBAST,ISYMDM(IMAT),IPRINT)
          CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
   200 CONTINUE
-      CALL DZERO(FMAT(1,1),N2BASX)
+      CALL DZERO(FMAT(1,1),NDMAT*N2BASX)
 C
 C     Prepare for screening
 C     =====================
@@ -680,8 +677,13 @@ C
 C     
 C     Get GAB-matrix (Cauchy-Schwartz)
 C
-      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
-     &            WORK(KFREE),LFREE)
+      IF (SRINTS) THEN
+         CALL GETGAB(WORK(KGAB),'GABSRXXX',N2GAB,
+     &               WORK(KFREE),LFREE)
+      ELSE
+         CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
+     &               WORK(KFREE),LFREE)
+      END IF
 C
 C     Make reduced density matrix for screening
 C
@@ -692,6 +694,7 @@ C--------------------------------
 C     Calculate fock matrices.
 C--------------------------------
 C
+      CALL GETTIM(CPU1,WALL1)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       IF (PARCAL) THEN
          IATOM = 0
@@ -705,6 +708,12 @@ C
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+         IF (IPRINT .GT. 0) THEN
+           CALL GETTIM(CPU2,WALL2)
+           WALL   = WALL2 - WALL1
+           CALL SCRSTA('HRFCK1/PARDRV',WORK(KDSKP),WALL)
+         END IF
+
          HFXMU = HFXM0
 C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
@@ -727,13 +736,16 @@ c           calculation.
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+            IF (IPRINT .GT. 0) THEN
+              CALL GETTIM(CPU1,WALL1)
+              WALL   = WALL1 - WALL2
+              CALL SCRSTA('HRFCK1/PARDRV-hfxatt',WORK(KDSKP),WALL)
+            END IF
             CALL DAXPY(NDMAT*N2BASX,1D0,WORK(KFCTMP),1,FMAT,1)
             HFXFAC = HFXFC0
          END IF
 
-         CALL MEMREL('HERFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
-         IF (IPRINT .GT. 0)
-     &      CALL SCRSTA('PARDRV',WORK(KDSKP))
+         CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
       ELSE
 #endif
 C
@@ -751,6 +763,11 @@ C
      &               WORK(KIORBS),ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
          HFXMU = HFXM0
+         IF (IPRINT .GT. 0) THEN
+           CALL GETTIM(CPU2,WALL2)
+           WALL   = WALL2 - WALL1
+           CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP),WALL)
+         END IF
 C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C
@@ -765,11 +782,14 @@ C
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+            IF (IPRINT .GT. 0) THEN
+              CALL GETTIM(CPU1,WALL1)
+              WALL   = WALL1 - WALL2
+              CALL SCRSTA('HRFCK1/TWOINT-hfxatt',WORK(KDSKP),WALL)
+            END IF
             HFXFAC = HFXFC0
          END IF
-         CALL TIMER('TWOINT',TIMSTR,TIMEND)
-         IF (IPRINT .GT. 0)
-     &      CALL SCRSTA('TWOINT',WORK(KDSKP))
+         IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
@@ -782,17 +802,19 @@ C     Write out densities and associated fock matrices.
 C------------------------------------------------------
 C
       IF (IPRINT.GT.5) THEN
-         CALL HEADER('Density and Fock matrices in HERFCK1',-1)
+         CALL HEADER('Density and Fock matrices in HRFCK1',-1)
          DO 300 I = 1, NDMAT
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(//A,I3,A,I3)')
+     &         ' Density matrix No.',I,' of',NDMAT
+            CALL OUTPUTx(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(//A,I3,A,I3)')
+     &         ' Fock matrix No.',I,' of',NDMAT
+            CALL OUTPUTx(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
 C
-      CALL MEMREL('HERFCK1',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('HERFCK1')
+      CALL MEMREL('HRFCK1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('HRFCK1')
       RETURN
       END
 C  /* Deck aindex */

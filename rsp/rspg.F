@@ -104,7 +104,7 @@ C
 C
 C Calculate second-order properties
 C
-      DO 100 ISYM=1,NSYM
+      DO ISYM = 1,NSYM
          KSYMOP = ISYM
 C
 C Define variables that depend on symmetry
@@ -118,14 +118,14 @@ C Solve linear response equations
 C
          IF (NGPLR(ISYM).GT.0) THEN
             CALL RSPLR(
-     &      WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KFC),WORK(KFV),
-     &      WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1
-     &      )
+     &         WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KFC),WORK(KFV),
+     &         WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1)
             CALL MEMCHK('GDRV<-RSPLR',WORK,1)
             CALL GSET2(WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KINDX),
      &         WORK(KWRK1),LWRK1)
          END IF
-  100 END DO
+  100 CONTINUE
+      END DO
 C
       CALL GPRINT(WORK(KWRK1),LWRK1)
 C
@@ -613,6 +613,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, *) WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -808,7 +809,7 @@ C
 C
 C  Check that diamagnetic spin-orbit integrals exist
 C
-      LUPROP = 0
+      LUPROP = -1
       CALL GPOPEN(LUPROP,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',
      &   IDUMMY,OLDDX)
       REWIND LUPROP
@@ -934,7 +935,7 @@ C
 C
 C  Check that scalled diamagnetic spin-orbit integrals exist
 C
-      LUPROP = 0
+      LUPROP = -1
       CALL GPOPEN(LUPROP,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',
      &   IDUMMY,OLDDX)
       REWIND LUPROP
@@ -2044,7 +2045,6 @@ C
 
       SUBROUTINE TENPRI(LU,FMT,LABEL,PR,G)
       IMPLICIT NONE
-#include <kinds.h>
       INTEGER LU
       CHARACTER*(*) FMT,LABEL
       LOGICAL LINEAR,DIAGONAL,PR(5)

@@ -228,7 +228,7 @@ C
 
 COMMENT COMMENT
 COMMENT COMMENT
-C        LUSIFC = 0
+C        LUSIFC = -1
 C        CALL GPOPEN(LUSIFC,'T3AMFD','UNKNOWN',' ','FORMATTED',IDUMMY,
 C    &               .FALSE.)
 C        REWIND LUSIFC
@@ -837,7 +837,7 @@ C----------------------------------------
       CALL CCSDT_CLEAN_T3(T3AM,NT1AMX,NVIRT,NRHFT)
 
       IF (NONHF) THEN
-         LUTEMP = 0
+         LUTEMP = -1
          CALL GPOPEN(LUTEMP,'CC3AMTMP','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND LUTEMP

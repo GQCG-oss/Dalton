@@ -89,13 +89,13 @@ else
 fi
 
 # Molecular geometry
-CRIT1=`$GREP "1 * Cl * x * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "3 * z * 1\.0000000000" $log | wc -l`
-CRIT4=`$GREP "4 * O1 * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "5 * y * 2\.3736000000" $log | wc -l`
 CRIT6=`$GREP "6 * z * (\-0|\-)\.4431700000" $log | wc -l`
-CRIT7=`$GREP "7 * O1 * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "8 * y * \-2\.3736000000" $log | wc -l`
 CRIT9=`$GREP "9 * z * (\-0|\-)\.4431700000" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -118,41 +118,41 @@ ERROR[3]="ENERGY NOT CORRECT"
 
 # Cl quadropole coupling
 CRIT1=`$GREP "Spin * \: * 1\.5 * Quadrupole moment\:\-\.08165000" $log | wc -l`
-CRIT2=`$GREP "Cl * 35 * Vx \= * (\-0|\-)\.272182 * 5\.221780 * 1\.865422" $log | wc -l`
-CRIT3=`$GREP "Cl * 35 * Vy \= * \-2\.394406 * 45\.936379 * 16\.410250" $log | wc -l`
-CRIT4=`$GREP "Cl * 35 * Vz \= * 2\.666588 * \-51\.158159 * \-18\.275671" $log | wc -l`
-CRIT5=`$GREP "Auxiliary value au * 1\/T * (0| )\.574136(D|E)\-02" $log | wc -l`
+CRIT2=`$GREP "Cl * 35 * Vx \= * (\-0|\-)\.272172 * 5\.22158. * 1\.86535." $log | wc -l`
+CRIT3=`$GREP "Cl * 35 * Vy \= * \-2\.39441. * 45\.93653. * 16\.41030." $log | wc -l`
+CRIT4=`$GREP "Cl * 35 * Vz \= * 2\.66658. * \-51\.15811. * \-18\.27565." $log | wc -l`
+CRIT5=`$GREP "Auxiliary value au * 1\/T * (0| )\.57413(6|7)(D|E)\-02" $log | wc -l`
 CRIT6=`$GREP "Spin * \: * 1\.5 * Quadrupole moment\:\-\.06435000" $log | wc -l`
-CRIT7=`$GREP "Cl * 37 * Vx \= * (\-0|\-)\.272182 * 4\.115389 * 1\.470176" $log | wc -l`
-CRIT8=`$GREP "Cl * 37 * Vy \= * \-2\.394406 * 36\.203380 * 12\.933246" $log | wc -l`
-CRIT9=`$GREP "Cl * 37 * Vz \= * 2\.666588 * \-40\.318769 * \-14\.403422" $log | wc -l`
-CRIT10=`$GREP "Asymmetry constant eta\: * (0| )\.795857" $log | wc -l`
-CRIT11=`$GREP "Auxiliary value au * 1\/T * (0| )\.356615(D|E)\-02" $log | wc -l`
+CRIT7=`$GREP "Cl * 37 * Vx \= * (\-0|\-)\.272172 * 4\.11523. * 1\.47012." $log | wc -l`
+CRIT8=`$GREP "Cl * 37 * Vy \= * \-2\.39441. * 36\.20349. * 12\.93328." $log | wc -l`
+CRIT9=`$GREP "Cl * 37 * Vz \= * 2\.66658. * \-40\.31873. * \-14\.40340." $log | wc -l`
+CRIT10=`$GREP "Asymmetry constant eta\: * (0| )\.79586." $log | wc -l`
+CRIT11=`$GREP "Auxiliary value au * 1\/T * (0| )\.35661(5|6)(D|E)\-02" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
 CTRL[4]=12
-ERROR[4]="CL QUADROPOLE COUPLING NOT CORRECT"
+ERROR[4]="Cl QUADRUPOLE COUPLING NOT CORRECT"
 
 # O quadropole coupling
 CRIT1=`$GREP "Spin * \: * 2\.5 * Quadrupole moment\:\-\.02558000" $log | wc -l`
-CRIT2=`$GREP "O1 * 1 17 * Vx \= * (\-0|\-)\.494792 * 2\.973894 * 1\.062390" $log | wc -l`
-CRIT3=`$GREP "O1 * 1 17 * Vy \= * \-1\.185838 * 7\.127360 * 2\.546168" $log | wc -l`
-CRIT4=`$GREP "O1 * 1 17 * Vz \= * 1\.680630 * \-10\.101254 * \-3\.608558" $log | wc -l`
-CRIT5=`$GREP "O1 * 2 17 * Vx \= * (\-0|\-)\.494792 * 2\.973894 * 1\.062390" $log | wc -l`
-CRIT6=`$GREP "O1 * 2 17 * Vy \= * \-1\.185838 * 7\.127360 * 2\.546168" $log | wc -l`
-CRIT7=`$GREP "O1 * 2 17 * Vz \= * 1\.680630 * \-10\.101254 * \-3\.608558" $log | wc -l`
-CRIT8=`$GREP "Asymmetry constant eta\: * (0| )\.411183" $log | wc -l`
+CRIT2=`$GREP "O1 * 1 17 * Vx \= * (\-0|\-)\.49479. * 2\.97388. * 1\.06238." $log | wc -l`
+CRIT3=`$GREP "O1 * 1 17 * Vy \= * \-1\.18583. * 7\.12736. * 2\.54617." $log | wc -l`
+CRIT4=`$GREP "O1 * 1 17 * Vz \= * 1\.6806(2|3). * \-10\.10125. * \-3\.608558" $log | wc -l`
+CRIT5=`$GREP "O1 * 2 17 * Vx \= * (\-0|\-)\.49479. * 2\.97388. * 1\.06238." $log | wc -l`
+CRIT6=`$GREP "O1 * 2 17 * Vy \= * \-1\.18583. * 7\.12736. * 2\.54617." $log | wc -l`
+CRIT7=`$GREP "O1 * 2 17 * Vz \= * 1\.6806(2|3). * \-10\.10125. * \-3\.608558" $log | wc -l`
+CRIT8=`$GREP "Asymmetry constant eta\: * (0| )\.41118." $log | wc -l`
 CRIT9=`$GREP "Auxiliary value au * 1\/T * (0| )\.468562(D|E)\-04" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[5]=12
-ERROR[5]="O QUADROPOLE COUPLING NOT CORRECT"
+ERROR[5]="O QUADRUPOLE COUPLING NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -81,7 +81,6 @@ C  /* Deck ccpt_fckd1 */
            ISYMI = MULD2H(ISYMA,ISYFCK)
            DO A = 1,NVIR(ISYMA)
              KOFFPQ = IFCVIR(ISYMI,ISYMA) + NORB(ISYMI)*(A - 1) + 1
-     &                                      
              KOFFIA = IT1AMT(ISYMI,ISYMA) + NRHF(ISYMI)*(A - 1) + KFCKIA
              CALL DCOPY(NRHF(ISYMI),FOCK(KOFFPQ),1,WORK(KOFFIA),1)
             END DO
@@ -621,7 +620,7 @@ C--------------------------------------
 C     Read integrals (cJ|dk) from disk.
 C--------------------------------------
 C
-      LUCJDK = 0
+      LUCJDK = -1
       CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCJDK)
@@ -640,7 +639,7 @@ C--------------------------------------
 C     Read integrals (cd|kJ) from disk.
 C--------------------------------------
 C
-      LUCDKJ = 0
+      LUCDKJ = -1
       CALL GPOPEN(LUCDKJ,'INCDKJ','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCDKJ)

@@ -1,34 +1,69 @@
-#if defined(__CVERSION__)
-#define MAXNOD 128
-#define MAXCL2 10000
-#define MAXTSK (MXSHEL*(MXSHEL+1)/2)
-#define NPARI  ((MAXNOD + 1) + 7)
-extern struct common_infpar {
-    int nodtot, nodeid[MAXNOD+1], ncode,  iprpar, mtottk, ntask,  
-	nfmat,  ndegdi, master, mynum,  mytid,  timing,   slave,
-	debug;
-    char nodnam[MAXNOD][20], myname[20];
-} infpar_;
-extern struct common_parioc {
-    int pario;
-} parioc_;
+#ifdef COMMENT
+! -- infpar.h --
+!     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
+!        so we can handle "-i8" compilations on 32-bit machines,
+!        using VAR_INT64 /Jan-2007 hjaaj
+#endif
+#if defined (VAR_INT64)
+#define my_MPI_INTEGER MPI_INTEGER8
 #else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+
+#if defined(__CVERSION__)
+#define MAXNOD 200
+#define MAXCL2 10000
+#define NPARI  ((MAXNOD + 1) + 6)
+extern struct common_infpar {
+#if defined (VAR_INT64)
+    long iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
+    long nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, debug, pario;
+    long timing, slave;
+#else
+    int  iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
+    int  nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, debug, pario;
+    int  timing, slave;
+#endif
+    char nodnam[MAXNOD][20], myname[20];
+} daltoninfpar_;
+#else
+C File: infpar.h for Dalton; special information for parallel calculations
 C
 C     Parameters NPARI must be updated after changes (for parallelization)
 C
-C     NOTE: Integers  (MASTER,...)
-C           Logicals  (TIMING,...)
-C           Character (NODNAM,...) should NOT be sent to slaves
+C     NOTE: Integers  (IPRPAR,...,MASTER,...,MYTID)
+C           Logicals  (TIMING,SLAVE)
+C           Character (NODNAM,MYNAME) should NOT be sent to slaves
+C     THUS: NPARI is length from NODTOT,...,PARIO
 C
-      PARAMETER (MAXNOD=128, MAXCL2=10000, MAXTSK=MXSHEL*(MXSHEL+1)/2)
-      PARAMETER (NPARI = (MAXNOD + 1) + 7)
-      LOGICAL SLAVE, TIMING, DEBUG, PARIO
-      CHARACTER*20 NODNAM, MYNAME
-      DIMENSION NODEID(0:MAXNOD), NODNAM(0:MAXNOD)
-      COMMON /INFPAR/ NODTOT, NODEID, NCODE, IPRPAR, MTOTTK, NTASK,  
-     &                NFMAT,  NDEGDI, 
-     &                MASTER, MYNUM,  MYTID,
-     &                TIMING, SLAVE,  DEBUG,
-     &                NODNAM, MYNAME
-      COMMON /PARIOC/ PARIO
+      INTEGER MAXNOD, MAXCL2
+      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
+      PARAMETER (NPARI = (MAXNOD + 1) + 6)
+      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
+      INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
+      LOGICAL PARHER, PARIO, DEBUG,     TIMING, SLAVE
+      CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
+      COMMON /DALTONINFPAR/                                              &
+     &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
+     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, DEBUG, PARIO        &
+     &       ,TIMING, SLAVE , NODNAM, MYNAME
+#ifdef PRG_DIRAC
+      EQUIVALENCE (NODTOT, NUMNOD)
+!     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
+!         This equivalence is important such that both e.g. abacus routines using NODTOT
+!         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
+#endif
+
+#if defined (VAR_INT64)
+!     integer array ISTAT contains MPI_SOURCE information.
+!     Proper use of ISTAT on 64-bit machines in 
+!     combination with VAR_INT64 requires explicit declaration 
+!     as INTEGER*4 /March-2007 sk - This is only true for 
+!     32-bit MPI libraries.
+!     64-bit MPI libraries require INTEGER ISTAT (which will then be INTEGER*8)
+!
+      INTEGER*4 ISTAT
+#endif
+
+! -- end of infpar.h --
 #endif

@@ -89,7 +89,7 @@ C          LUIT7 is for update information in SIRUPD
 C LUINF    file for writing information on convergence etc.
 C
 C *** Define buffer sizes (LBXXXX is buffer size for file LUXXXX)
-C     LBINTM defined in SIROPI (891107-hjaaj)
+C     LBINTM defined in SIR_INTOPEN (891107-hjaaj)
 C     LBONEL defined in RDONEL, if LBONEL .lt. 0 (900221)
 C     MAERKE 900108-hjaaj: LBXXXX should always be defined in routines
 C
@@ -286,11 +286,11 @@ C
 C ***
 C
       IF (NUMERR .GT. 0) THEN
-         IF (FIRST) CALL PRTINP(LUW4,-1,-1)
+         IF (FIRST) CALL SIR_PRTINP(LUW4,-1,-1)
          WRITE (LUW4,'(///A/)')
      *      ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          IF (LUPRI .NE. LUW4) THEN
-            IF (FIRST) CALL PRTINP(LUPRI,-1,-1)
+            IF (FIRST) CALL SIR_PRTINP(LUPRI,-1,-1)
             WRITE (LUPRI,'(///A/)')
      *         ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          END IF
@@ -305,14 +305,14 @@ C
       CALL QEXIT('SIRSET')
       RETURN
       END
-C  /* Deck siropn */
-      SUBROUTINE SIROPN
+C  /* Deck sir_open */
+      SUBROUTINE SIR_OPEN
 C
 C  5-May-1989 Hans Joergen Aa. Jensen
 C
 C  Open input/output units required by this Sirius calculation,
 C  as specified in command input.
-C  Mo integral files are opened in SIROPI
+C  Mo integral files are opened in SIR_INTOPEN
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -330,9 +330,9 @@ C
 C
       LOGICAL FEXIST
 C
-C     ***** CALL SIROPI to open MO integral files
+C     ***** CALL SIR_INTOPEN to open MO integral files
 C
-      CALL SIROPI
+      CALL SIR_INTOPEN
 C
 C     ***** Open other files
 C
@@ -608,7 +608,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : ISTATE,MCTYPE,FLAG(*),?
-C   INFVAR : MAXOCC,NWOPT,JWOPSY,JWOP(2,*),NWOP(8)
+C   INFVAR : MAXOCC,NWOPT,JWOPSY,JWOP(2,*)
 C   INFORB : NISH(8),...
 C   INFIND : ICH(*),?
 C   INFDIM : NWOPMA,?
@@ -655,7 +655,6 @@ C
          NWOPA = 0
       END IF
       IACT  = 0
-      CALL IZERO(NWOP,8)
       IF (FLAG(23) .AND. NWOPA.GT.0) THEN
          INPERR = 0
          DO 3210 I = 1,NWOPA
@@ -669,7 +668,6 @@ C
             ELSE IF (NSM(K).NE.NSM(L)) THEN
                INPERR = INPERR + 10000
             END IF
-            NWOP( NSM(K) ) = NWOP( NSM(K) ) + 1
  3210    CONTINUE
          IF (INPERR.GT.0) THEN
             WRITE (LUERR,3212) INPERR
@@ -690,9 +688,9 @@ C
      *  (I10,':',2I4))
 C
       IF (FLAG(11) .AND. NWOPA.GT.0) THEN
-         WRITE (LUERR,'(/A,A)') ' *** ERROR ***',
+         WRITE (LUPRI,'(/A,A)') ' *** ERROR ***',
      *      ' (SETWOP) ACTROT option not implemented for FLAG(11)'
-         CALL QTRACE(LUERR)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*ERROR-SETWOP**ACTROT not implemented for FLAG(11)')
       END IF
 C
@@ -714,7 +712,7 @@ C              in order to implement combination runs.
 C     used to be: WRINDX = FIRST, now for DALTON:
 C     WRINDX moved to common block GNRINF in order to have external control
 C
-      LUINDX = 0
+      LUINDX = -1
       IF (WRINDX) THEN
          CALL GETDAT(LAB123(2),LAB123(3))
          CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
@@ -756,6 +754,7 @@ C
  1220             CONTINUE
                END IF
  1210       CONTINUE
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
 C
 C           *** INACTIVE-SECONDARY ELEMENTS
 C
@@ -774,6 +773,7 @@ C
  1250             CONTINUE
                END IF
  1240       CONTINUE
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
 C
 C           *** active-active elements, if RAS or
 C           if FLAG(23) (i.e. active-active rotations) or "orbital
@@ -807,6 +807,7 @@ C
             ELSE
                IACT = 0
             END IF
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
 C           *** ACTIVE-SECONDARY ELEMENTS
  1165       IF (NASH(ISYM).EQ.0.OR.NSSH(JSYM).EQ.0) GO TO 1260
             IF (LVLABS .EQ.1 .OR. LVLABS .EQ. 2) GO TO 1260
@@ -822,8 +823,8 @@ C           *** ACTIVE-SECONDARY ELEMENTS
  1280          CONTINUE
  1270       CONTINUE
  1260       CONTINUE
-            NWOP(ISYM) = NWOP(ISYM) + NWOPX-NWOPX1
             NWOPX1 = NWOPX
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
  1290    CONTINUE
 C
 C        Construct KLWOP and remove any duplicate active-active
@@ -833,22 +834,23 @@ C
          IF (NKLWOP/IRAT + 1 .GT. LKLWOP)
      &      CALL ERRWRK('SETWOP',(NKLWOP/IRAT),LKLWOP)
          CALL IZERO(KLWOP,NKLWOP)
-         NWOPT = 0
-         DO 140 IG = 1,NWOPX
+         NWOPX = 0
+         DO 140 IG = 1,NWOPX1
             KW = ISW(JWOP(1,IG))
             LW = ISW(JWOP(2,IG))-NISHT
             IF (KLWOP(KW,LW) .EQ. 0) THEN
-               NWOPT = NWOPT + 1
-               KLWOP(KW,LW)  = NWOPT
-               JWOP(1,NWOPT) = JWOP(1,IG)
-               JWOP(2,NWOPT) = JWOP(2,IG)
+               NWOPX = NWOPX + 1
+               KLWOP(KW,LW)  = NWOPX
+               JWOP(1,NWOPX) = JWOP(1,IG)
+               JWOP(2,NWOPX) = JWOP(2,IG)
             END IF
   140    CONTINUE
+         IF (NWOPX .GT. MAXWOP) GOTO 2500
+         NWOPT = NWOPX
 C
 C        Fill up with redundant active-active orbital rotations,
 C        they are needed for LINTRN.
 C
-         NWOPH = NWOPT
          IF (IOPSY.EQ.1 .AND. IACT .EQ. 0) THEN
             DO 2400 KW = NISHT+1, NOCCT-1
                DO 2200 LW = KW+1, NOCCT
@@ -856,23 +858,27 @@ C
                      KX = ISX(KW)
                      LX = ISX(LW)
                      IF (ISSMO(KX) .EQ. ISSMO(LX)) THEN
-                        NWOPH = NWOPH + 1
-                        JWOP(1,NWOPH) = KX
-                        JWOP(2,NWOPH) = LX
+                        NWOPX = NWOPX + 1
+                        JWOP(1,NWOPX) = KX
+                        JWOP(2,NWOPX) = LX
                      END IF
                   END IF
  2200          CONTINUE
  2400       CONTINUE
          END IF
+         NWOPH = NWOPX
          NWOPMA = MAX(NWOPH,NWOPMA)
 C
-         IF (NWOPH .GT. MAXWOP) THEN
-            WRITE (LUERR ,2410) IOPSY,NWOPH,MAXWOP
-            WRITE (LUPRI,2410) IOPSY,NWOPH,MAXWOP
+ 2500    CONTINUE
+         IF (NWOPX .GT. MAXWOP) THEN
+            WRITE (LUERR,2410) IOPSY,NWOPX,MAXWOP
+            WRITE (LUPRI,2410) IOPSY,NWOPX,MAXWOP
             CALL QUIT('SETWOP, TOO MANY ORBITAL ROTATIONS.')
          END IF
- 2410    FORMAT(///,' SETWOP, TOO MANY ORBITAL ROTATIONS SYMMETRY',I3,
-     *           //,' NWOPH  =',I8,/,' MAXWOP =',I8)
+ 2410 FORMAT(///' SETWOP - Too many orbital rotations in symmetry',I3
+     &  //' NWOPX  =',I8/' MAXWOP =',I8
+     &  //' To run this calculation you must modify the Dalton source:'
+     &   /'   Increase MAXWOP in include/infvar.h; make depend; make')
 C
          IF (IPRERR.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
      *      ' (SETWOP) orbital rotation operators, abs level',
@@ -904,23 +910,22 @@ C               if no orbital rotations!
             END IF
             WRITE (LUINDX) LAB123,ABSLBL(LVLABS)
          END IF
-         WRITE (LUINDX) NWOPT,NWOP,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,7)
+         WRITE (LUINDX) NWOPT,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,4)
          LENGTH = MAX(IRAT*4,2*NWOPH)
          CALL WRITI  (LUINDX,LENGTH,JWOP)
-         CALL WRITI  (LUINDX,NKLWOP,KLWOP)
+         LENGTH = MAX(IRAT*4,NKLWOP)
+         CALL WRITI  (LUINDX,LENGTH,KLWOP)
  1293    IF (IOPSY.EQ.1 .AND. MAKABS) THEN
              LVLABS = LVLABS + 1
              IF (LVLABS .LE. 3) GO TO 1292
          END IF
-C        reinitialize NWOP(*) for next operator symmetry
-         CALL IZERO(NWOP,8)
  1295 CONTINUE
 C
 C     recover operator of symmetry JWOPSY
 C
       REWIND LUINDX
-      CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUERR)
-      READ (LUINDX) NWOPT, NWOP, NWOPH, JWOPSY1, NKLWOP
+      CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUPRI)
+      READ (LUINDX) NWOPT, NWOPH, JWOPSY1, NKLWOP
       IF (JWOPSY1 .NE. JWOPSY) CALL QUIT(
      &   'PROGRAM ERROR: JWOPSY on LUINDX does not correspond to label')
       CALL READI  (LUINDX,(2*NWOPH),JWOP)
@@ -949,15 +954,7 @@ C     Set up RAS active to active orbital rotations
 C     from symmetry ISYM to JSYM.
 C
 #include <implicit.h>
-#if defined (VAR_STAR2)
-      INTEGER*2 JWOP(2,*)
-#else
-#if defined (VAR_STAR4)
-      INTEGER*4 JWOP(2,*)
-#else
       INTEGER JWOP(2,*)
-#endif
-#endif
 C
 C Used from common blocks:
 C  INFINP : MCTYPE,NELMN1,NELMX1,NELMN3,NELMX3,NACTEL

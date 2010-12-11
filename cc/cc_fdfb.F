@@ -57,6 +57,7 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <leinf.h>
+#include <ccinftap.h>
 #include <dummy.h>
 C
 C------------------------------------------------------------
@@ -67,10 +68,14 @@ C------------------------------------------------------------
       DIMENSION WORK(LWORK), RHODIF(*), CMOQ(*)
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0, TWO = 2.0d0, XHALF = 0.5D0)
       CHARACTER MODEL*10, LISTL*(*), LISTR*(*)
+      LOGICAL   LHTF
 C
       IF (IPRINT.GT.10) THEN
         CALL AROUND('IN CC_FDFB : MAKING FIN. DIFF. CC F*T^A Vector')
       END IF
+C
+      IF (CCR12) CALL QUIT('Finite-difference of F*T^A Vector for '//
+     &                     'CCR12 not adapted')
 C
 C----------------------------
 C     Work space allocations.
@@ -121,7 +126,7 @@ C---------------------------------------------
 C     Read the reference CMO vector from disk:
 C---------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','UNKNOWN',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
@@ -135,7 +140,9 @@ C     make sure that the correct response intermediates are on disc:
 C-------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+      LHTF = .FALSE.
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
+     &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -143,9 +150,9 @@ C
       CALL CC_RDRSP('R0 ',0,1,IOPT,MODEL,WORK(KT1AMP0),WORK(KT2AMP0))
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1 ),WORK(KOMEGA2 ),              
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2), 
      &            WORK(KT1AMP0),WORK(KT2AMP0),
-     &            WORK(KEND1),LWRK1)  
+     &            WORK(KEND1),LWRK1,'XXX')  
 C
 C-------------------------------------------------------------------
 C     calculate the reference vector:
@@ -199,7 +206,9 @@ C        calculate new response (global) intermediates:
 C        -------------------------------------
 C
          CALL DZERO(WORK(KT1AMP0),NT1AMX)                      
-         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+         LHTF = .FALSE.
+         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),
+     &                  LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -209,7 +218,7 @@ C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),
      &               WORK(KT1AMP0),WORK(KT2AMP0),
-     &               WORK(KEND1),LWRK1)  
+     &               WORK(KEND1),LWRK1,'XXX')  
 C
 C        ---------------------------------
 C        calculate the transformed vector:
@@ -275,7 +284,9 @@ C     the reference CMO vector:
 C------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+      LHTF = .FALSE.
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
+     &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -285,7 +296,7 @@ C
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
      &            WORK(KT1AMP0),WORK(KT2AMP0),
-     &            WORK(KEND1),LWRK1)  
+     &            WORK(KEND1),LWRK1,'XXX')  
 C
       IPRINT = IPRSAVE
 C
@@ -446,8 +457,8 @@ C     -------------------------------------------------------------
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -466,7 +477,7 @@ C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
-      LUETA = 0
+      LUETA = -1
       CALL WOPEN2(LUETA,FILETA,64,0)
       CALL GETWA2(LUETA,FILETA,WORK(KRHO1),IADRF_ETA,LEN)
       CALL WCLOSE2(LUETA,FILETA,'KEEP')
@@ -508,7 +519,7 @@ C     -------------------------------------------------------------
  
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+     &     WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -572,7 +583,7 @@ C     --------------------------------------------
  
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+     &     WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
       IF (IPRSAV .GT. 5) THEN
          CALL AROUND(' END OF CC_FDFBMAT2:')
@@ -731,7 +742,7 @@ C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
-      LUETA = 0
+      LUETA = -1
       CALL WOPEN2(LUETA,FILETA,64,0)
       CALL GETWA2(LUETA,FILETA,WORK(KRHO1),IADRF_ETA,LEN)
       CALL WCLOSE2(LUETA,FILETA,'KEEP')
@@ -773,7 +784,7 @@ C     -------------------------------------------------------------
  
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+     &     WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -837,7 +848,7 @@ C     --------------------------------------------
  
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+     &     WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
       IF (IPRSAV .GT. 5) THEN
          CALL AROUND(' END OF CC_FDFBMAT2:')

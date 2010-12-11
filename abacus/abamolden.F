@@ -71,6 +71,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
+#include <aosotr.h>
 #include <maxaqn.h>
 #include <codata.h>
       PARAMETER (D0 = 0.0D0)
@@ -99,49 +100,54 @@ c
          ICENTO = 1
          IBLOCK = 0
          INON   = 0
-         IPSTRT = 0
-         IPRIM  = 0
+         IPROLD = 0
+         IPRIM = 0
+         IBS = 0
          DO 100 I = 1, NONTYP
             DO 110 N = 1, NONT(I)
                ICENT = ICENT + 1
                NDEG  = NUCDEG(ICENT)
-               KBCH  = IBLOCK
                ILL   = 0
-               DO 200 J = 1, IQM(I)
-                  GTOTMP = SPDCAR(J-1)
-               DO 200 K = 1, JCO(J,I)
-                  KBCH = KBCH + 1
-                  NNUC  = NUC(KBCH)
-                  NNRC  = NRC(KBCH)
-                  IF (NNUC .EQ. 0) GO TO 200
-                  ITYP = NHKOFF(J)
-                  IPSTRT = IPRIM
-                  IPRIM = IPRIM + NNUC
-                  ITYP = ITYP + 1  
-                  DO 420 INNRC = 1, NNRC
-                  DO 400 L = 1, NDEG
-
-                     IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
-     &                    WRITE (LUMOLDEN,'(/I5,A2)') ICENTO+L-1,' 0'
-                     INON = I      
-                     ILL  = L
-
-                     WRITE (LUMOLDEN,'(1X,A1,1X,I3,A5)')
-     &                       GTOTMP, NNUC, ' 1.00'
-
-                     DO 410 INNUC = 1, NNUC
-
-                        WRITE (LUMOLDEN,'(1X,F15.7,1X,F15.10)')
-     &                       PRIEXP(IPSTRT+INNUC),
-     &                       CPRIMU(INNUC,INNRC,KBCH)
-
- 410                 CONTINUE
- 400              CONTINUE
- 420              continue
- 200           CONTINUE
- 110        CONTINUE
+               DO L = 1, NDEG
+                  WRITE (LUMOLDEN,'(/I5,A2)') ICENTO+L-1,' 0'
+                  KBCH  = IBLOCK
+                  IF (L.EQ.1) THEN
+                     IPROLD  = IPRIM
+                  ELSE
+                     IPRIM = IPROLD
+                  END IF
+                  DO 200 J = 1, IQM(I) ! l quantum number s, p, d, ...
+                     GTOTMP = SPDCAR(J-1)
+                     DO 200 K = 1, JCO(J,I) ! n of blocks for a given AO
+                        KBCH = KBCH + 1
+                        NNUC  = NUC(KBCH)
+                        NNRC  = NRC(KBCH)
+                        IF (NNUC .EQ. 0) GO TO 200
+                        ITYP = NHKOFF(J)
+                        IPSTRT = IPRIM
+                        IPRIM = IPRIM + NNUC
+                        ITYP = ITYP + 1  
+                        DO 420 INNRC = 1, NNRC
+                           
+Clf                  DO 400 L = 1, NDEG
+Clf                     IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
+Clf                     INON = I      
+Clf                     ILL  = L
+                           WRITE (LUMOLDEN,'(1X,A1,1X,I3,A5)')
+     &                          GTOTMP, NNUC, ' 1.00'
+                           DO 410 INNUC = 1, NNUC
+                              WRITE (LUMOLDEN,'(1X,F15.7,1X,F15.10)')
+     &                             PRIEXP(IPSTRT+INNUC),
+     &                             CPRIMU(INNUC,INNRC,KBCH)
+                              
+ 410                       CONTINUE
+Clf 400              CONTINUE
+ 420                    CONTINUE
+ 200                 CONTINUE
+                  END DO
+                  ICENTO = ICENTO + NDEG
+ 110           CONTINUE
             IBLOCK = IBLOCK + NBLCK(I)
-            ICENTO = ICENTO + NUCDEG(ICENT)
  100     CONTINUE
          
       ENDIF
@@ -162,7 +168,9 @@ C
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
-      CHARACTER*2 ASYMB(103)
+
+C     include character ASYMB(103)*2 with atomic symbols
+#include <asymb.h>
 
 #include <molde.h>
 #include <nuclei.h>
@@ -174,19 +182,6 @@ C
 #include <chrsgn.h>
 #include <chrnos.h>
 #include <ibtfun.h>
-
-      DATA (ASYMB(I),I = 1,103)
-     1/' H', 'He', 'Li', 'Be', ' B', ' C', ' N', ' O', ' F', 'Ne',
-     2 'Na', 'Mg', 'Al', 'Si', ' P', ' S', 'Cl', 'Ar', ' K', 'Ca',
-     3 'Sc', 'Ti', ' V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
-     4 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', ' Y', 'Zr',
-     5 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
-     6 'Sb', 'Te', ' I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
-     7 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
-     8 'Lu', 'Hf', 'Ta', ' W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',
-     9 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
-     O 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
-     1 'Md', 'No', 'Lr' /
 
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
@@ -255,20 +250,20 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
        RETURN
        END
 
-      SUBROUTINE MOMOS(ITASK,ORVAL,OCCUP)
+      SUBROUTINE MOMOS(ITASK,ORVAL,OCCUP,ORBTRA,UNPAK,ORBVEC)
 C
 C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
 #include <implicit.h>
+#include <priunit.h>
 #include <maxorb.h>
 #include <inftap.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aosotr.h>
 #include <molde.h>
-#include <priunit.h>
 #include <cbieri.h>
 #include <inforb.h>
 #include <nuclei.h>
@@ -276,88 +271,55 @@ C           2 save orbital energies in ORVAL
 #include <pgroup.h>
     
       LOGICAL WRTELEM,WRTZERO
-      DIMENSION ORVAL(*), OCCUP(*)
+      DIMENSION ORVAL(*), OCCUP(*), ORBTRA(*), UNPAK(*), ORBVEC(*)
 
 #include <chrsgn.h>
 
+      MOPRIN = 0
       IF (ITASK .EQ. 1) THEN
-
          IF (.NOT. DONEIV) THEN 
+            WRITE(LUMOLDEN,'(/A)') '[5D]' 
             WRITE(LUMOLDEN,'(/A)') '[MO]' 
-
-           JOCC  = 0
-           IADD  = 0
-           ICMMO = 1
-           DO 10 ISYM = 1,NSYM
-
-             NOCCI = NOCC(ISYM)
-             DO 1 I=1,NORB(ISYM)
-
-               II = IORB(ISYM) + I         
-               WRITE(LUMOLDEN,'(2A)')     'Sym= ',REP(ISYM-1)
-               WRITE(LUMOLDEN,'(A,F9.4)') 'Ene= ',OREN(II)
-               WRITE(LUMOLDEN,'(A)')      'Spin= Alpha'
-
-C              note OCCUP(NOCCT) only over occupied orbitals
-               IF (I .LE. NOCCI) THEN
-                  JOCC = JOCC + 1
-                  WRITE(LUMOLDEN,'(A,F6.4)') 'Occup= ',OCCUP(JOCC)
-               ELSE
-                  WRITE(LUMOLDEN,'(A     )') 'Occup= 0.0000'
-               END IF
-          
-               DO 4 M=1,NBAST
-
-                  WRTELEM = .FALSE.
-                  WRTZERO = .TRUE.
-
-                  DO 2 K=1,NAOS(ISYM)
-
-                     DO 3 J=1,NUCDEG(IPCEN(K+IADD))
-                        IF (M.EQ.ITRAN(K+IADD,J))THEN
-
-                           IF (J.EQ.NUCDEG(IPCEN(K+IADD)))THEN
-                              WRTELEM = .TRUE.
-                           ELSE 
-                              WRTZERO = .FALSE.
-                           END IF
-
-                           IF (CHRSGN(NINT(CTRAN(K+IADD,J))).EQ.'+')THEN
-                              WRITE(LUMOLDEN,'(I5,1X,F15.6)')
-     &                             M,ORVAL(ICMMO)
-                           ELSE
-                              WRITE(LUMOLDEN,'(I5,1X,F15.6)')
-     &                             M,-ORVAL(ICMMO)
-                           END IF
-                        END IF
- 3                   CONTINUE
- 2                CONTINUE
-
-                  IF(WRTELEM) THEN
-                     ICMMO = ICMMO+1
-                  ELSE IF(WRTZERO) THEN
-                     WRITE(LUMOLDEN,'(I5,A)')M,'  0.000000'
+C           call traorb to generate SO to AO transformation
+            CALL TRAORB(ORBTRA,NBAST,-1,MOPRIN)
+            CALL DZERO(UNPAK, NBAST * NORBT)
+            CALL DZERO(ORBVEC,NBAST)
+            CALL UPKCMO(ORVAL,UNPAK)
+            JOCC = 0
+            IIO = 0
+            DO ISYM = 1,NSYM
+               NOCCI = NOCC(ISYM)
+               DO I=1,NORB(ISYM)
+                  IIO = IIO + 1
+                  II = IORB(ISYM) + I         
+                  WRITE(LUMOLDEN,'(2A)')     'Sym= ',REP(ISYM-1)
+                  WRITE(LUMOLDEN,'(A,F9.4)') 'Ene= ',OREN(II)
+                  WRITE(LUMOLDEN,'(A)')      'Spin= Alpha'
+                  IF (I .LE. NOCCI) THEN
+                     JOCC = JOCC + 1
+                     WRITE(LUMOLDEN,'(A,F6.4)') 'Occup= ',OCCUP(JOCC)
+                  ELSE
+                     WRITE(LUMOLDEN,'(A     )') 'Occup= 0.0000'
                   END IF
-
- 4             CONTINUE
-
- 1           CONTINUE
-             IADD = IADD + NAOS(ISYM)
- 10        CONTINUE
-
-           CALL MOATOMS('ATOM') 
-
+                  JJO = 1 + (IIO-1) * NBAST
+                  ICENT = IPCEN(I)
+                  CALL DGEMV('T',NBAST,NBAST,1.0D0,ORBTRA,NBAST,
+     $                 UNPAK(JJO),1,0.0D0,ORBVEC,1)
+                  DO IB=1,NBAST
+                     WRITE(LUMOLDEN,'(I5,1X,2F15.6)') 
+     $                    IB,ORBVEC(JAOAO(IB,1)+JAOAO(IB,2))
+                  END DO
+               END DO
+            END DO
+            CALL MOATOMS('ATOM') 
          END IF
          DONEIV = .TRUE.
-
       END IF
 
       IF (ITASK .EQ. 2) THEN
-       
          DO I = 1, NORBT
             OREN(I)=ORVAL(I)
          ENDDO
-
       END IF
       CALL FLSHFO(LUMOLDEN)
       RETURN 

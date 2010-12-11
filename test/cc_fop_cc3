@@ -93,36 +93,36 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final * HF energy: * -99\.983408962374" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -100\.111083370" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -100\.114449803" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy: * -99\.9834089....." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.1110833.." $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.114449(7|8).." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 first order properties :
-CRIT1=`$GREP  "   z *  ( -|-0)\.8606995. * -2\.18767976" $log | wc -l`
+CRIT1=`$GREP  "   z *  ( -|-0)\.860699(4|5). * -2\.187679.." $log | wc -l`
 CRIT2=`$GREP  "   1 *  ( -|-0)\.7623851. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
 CRIT3=`$GREP  "   2 * ( |0)\.0000000. * ( -|-0)\.7623851. * ( |0)\.0000000" $log | wc -l`
-CRIT4=`$GREP  "   3 * ( |0)\.0000000. * ( |0)\.0000000. * 1\.524770(3|4)" $log | wc -l`
-CRIT5=`$GREP  "   1 * 4\.0503074. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
-CRIT6=`$GREP  "   2 * ( |0)\.0000000. * 4\.0503074. * ( |0)\.0000000" $log | wc -l`
-CRIT7=`$GREP  "   3 * ( |0)\.0000000. * ( |0)\.0000000. * 5\.3020685" $log | wc -l`
+CRIT4=`$GREP  "   3 * ( |0)\.0000000. * ( |0)\.0000000. * 1\.524770." $log | wc -l`
+CRIT5=`$GREP  "   1 * 4\.050307.. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
+CRIT6=`$GREP  "   2 * ( |0)\.0000000. * 4\.050307.. * ( |0)\.0000000" $log | wc -l`
+CRIT7=`$GREP  "   3 * ( |0)\.0000000. * ( |0)\.0000000. * 5\.302068(5|6)" $log | wc -l`
 CRIT8=`$GREP  "Alfa\*\*2 Invariant: *  19\.95910" $log | wc -l`
 CRIT9=`$GREP  "Beta\*\*2 Invariant: *   1\.56690" $log | wc -l`
 CRIT10=`$GREP "Isotropic Property:  *   4\.46756. a\.u\." $log | wc -l`
 CRIT11=`$GREP "Property anisotropy invariant: * 1\.251761 a\.u\." $log | wc -l`
-CRIT12=`$GREP "   1 * -1\.490361(5|6). * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
-CRIT13=`$GREP "   2 * ( |0)\.0000000.  * -1\.490361(5|6). * ( |0)\.0000000" $log | wc -l`
-CRIT14=`$GREP "   3 * ( |0)\.0000000. * ( |0)\.0000000. * 2\.9807231" $log | wc -l`
+CRIT12=`$GREP "   1 * -1\.49036(0|1).. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
+CRIT13=`$GREP "   2 * ( |0)\.0000000.  * -1\.49036(0|1).. * ( |0)\.0000000" $log | wc -l`
+CRIT14=`$GREP "   3 * ( |0)\.0000000. * ( |0)\.0000000. * 2\.98072.." $log | wc -l`
 CRIT15=`$GREP "H       2    Vx = * ( -|-0)\.3235(8|9). * ( -|-0)\.21745. * ( -|-0)\.077682" $log | wc -l`
 CRIT16=`$GREP "H       2    Vy = * ( -|-0)\.3235(8|9). * ( -|-0)\.21745. * ( -|-0)\.077682" $log | wc -l`
 CRIT17=`$GREP "H       2    Vz = * ( |0)\.6471(7|8). * ( |0)\.43490. * ( |0)\.155365" $log | wc -l`
-CRIT18=`$GREP "   1-elec\. Darwin term: * ( |0)\.316392" $log | wc -l`
+CRIT18=`$GREP "   1-elec\. Darwin term: * ( |0)\.31639." $log | wc -l`
 CRIT19=`$GREP "   Mass-Velocity term: * ( -|-0)\.40228" $log | wc -l`
-CRIT20=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.0858887" $log | wc -l`
-CRIT21=`$GREP "Ecorr = * -100\.1144498030" $log | wc -l`
+CRIT20=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.0858(8|9).." $log | wc -l`
+CRIT21=`$GREP "Ecorr = * -100\.114449(7|8)..." $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
@@ -136,8 +136,8 @@ ERROR[2]="CC3 FIRST ORDER PROPERTIES NOT CORRECT"
 PASSED=1
 for i in 1 2
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

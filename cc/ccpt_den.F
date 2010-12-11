@@ -76,7 +76,8 @@ C
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
       LOGICAL LTSTE, LETAFI, LETIFJ
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -107,8 +108,8 @@ C
          NAME1 = 'CCFRO1IN'
          NAME2 = 'CCFRO2IN'
 C
-         LUN1  = 0
-         LUN2  = 0
+         LUN1  = -1
+         LUN2  = -1
 C
          CALL WOPEN2(LUN1,NAME1,64,0)
          CALL WOPEN2(LUN2,NAME2,64,0)
@@ -354,11 +355,11 @@ C        finite field.
 C---------------------------------------------------------
 C
         DO 13 IF = 1, NFIELD
-           DTIME  = SECOND()
+c          DTIME  = SECOND()
            FF = EFIELD(IF)
            CALL CC_ONEP(WORK(KONINT),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
-           DTIME  = DTIME - SECOND()
-           TIMFCK = TIMFCK + DTIME
+c          DTIME  = DTIME - SECOND()
+c          TIMFCK = TIMFCK + DTIME
  13     CONTINUE
 C
 C--------------------------------------------------
@@ -523,7 +524,7 @@ C--------------------------------------------------
         KEND1     = KONEIA_PT + NT1AMX
         LWRK1     = LWORK - KEND1
 C
-        LUPTIA = 0
+        LUPTIA = -1
         FNDPTIA = 'DPTIA'
         CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
@@ -721,6 +722,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1326,8 +1331,8 @@ C
          if (.true.) then
          IF (IMODEL.EQ.1) THEN
 
-           LUKAPAB = 0
-           LUKAPIJ = 0
+           LUKAPAB  = -1
+           LUKAPIJ  = -1
            FNKAPAB  = 'KAPAB'
            FNKAPIJ  = 'KAPIJ'
 
@@ -1570,8 +1575,8 @@ C     Close intermediate files.
 C------------------------------
 C
       IF (FROIMP) THEN
-         CALL WCLOSE2(LUN1,NAME1,IERR1)
-         CALL WCLOSE2(LUN2,NAME2,IERR2)
+         CALL WCLOSE2(LUN1,NAME1,'KEEP')
+         CALL WCLOSE2(LUN2,NAME2,'KEEP')
       ENDIF
 C
 C-----------------------
@@ -1658,7 +1663,9 @@ C
       DIMENSION D1PTIA(*)
       LOGICAL LTSTEN
 #include <ccorb.h>
-#include <infind.h>
+CCN #include <infind.h> not compatible with R12!
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -1750,7 +1757,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC
@@ -1860,6 +1867,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

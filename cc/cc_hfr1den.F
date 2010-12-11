@@ -128,7 +128,7 @@ C
 *---------------------------------------------------------------------*
 *     read SCF orbital coefficient matrix from file: 
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND(LUSIFC)

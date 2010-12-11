@@ -276,7 +276,7 @@ C
 *---------------------------------------------------------------------*
       if (lista(1:3).eq.'R1 ') then
         ! read property integrals from file:
-        call ccprpao(labela,work(kfocka_ao),irrep,isyma,ierr,
+        call ccprpao(labela,.TRUE.,work(kfocka_ao),irrep,isyma,ierr,
      &               work(kend1),lwrk1)
         if ((ierr.gt.0) .or. (ierr.eq.0 .and. irrep.ne.isyma)) then
           call quit('CCSDT_T32_NODDY: error reading operator '//LABELA)
@@ -292,7 +292,7 @@ C
 
       if (listb(1:3).eq.'R1 ') then
         ! read property integrals from file:
-        call ccprpao(labelb,work(kfockb_ao),irrep,isymb,ierr,
+        call ccprpao(labelb,.TRUE.,work(kfockb_ao),irrep,isymb,ierr,
      &               work(kend1),lwrk1)
         if ((ierr.gt.0) .or. (ierr.eq.0 .and. irrep.ne.isymb)) then
           call quit('CCSDT_T32_NODDY: error reading operator '//LABELB)

@@ -285,15 +285,7 @@ C the kappa vector for use in one-index transformation.
 C
 #include <implicit.h>
       DIMENSION UPWOP(NORBT,NORBT),WOP(NWOPT)
-#if defined (VAR_STAR2)
-      INTEGER*2 JWOP(2,NWOPT)
-#else
-#if defined (VAR_STAR4)
-      INTEGER*4 JWOP(2,NWOPT)
-#else
       INTEGER JWOP(2,NWOPT)
-#endif
-#endif
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBX
@@ -321,15 +313,7 @@ C ("WOP") from matrix form (the reverse of UPKWOP)
 C
 #include <implicit.h>
       DIMENSION UPWOP(NORBT,NORBT),WOP(NWOPT)
-#if defined (VAR_STAR2)
-      INTEGER*2 JWOP(2,NWOPT)
-#else
-#if defined (VAR_STAR4)
-      INTEGER*4 JWOP(2,NWOPT)
-#else
       INTEGER JWOP(2,NWOPT)
-#endif
-#endif
 C
 C Used from common blocks:
 C   INFORB : NORBT
@@ -357,7 +341,7 @@ C
 C
 C Used from common blocks:
 C   INFORB: MULD2H()
-C   INFVAR: MAXOCC,NWOPT,NVAR,NWOP(8),NWOPH,NVARH,JWOP(2,*),JWOPSY
+C   INFVAR: MAXOCC,NWOPT,NVAR,NWOPH,NVARH,JWOP(2,*),JWOPSY
 C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
 C   INFPRI: NWARN,LUERR
@@ -372,13 +356,13 @@ C
 C
       LOGICAL FNDLAB
 C
-      LUNIT = 0
+      LUNIT = -1
       CALL GPOPEN(LUNIT,'LUINDF','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUNIT
       IF ( FNDLAB(XLABEL,LUNIT) ) THEN
          GETWOP = .TRUE.
-         READ (LUNIT) NWOPT, NWOP, NWOPH, JWOPSY
+         READ (LUNIT) NWOPT, NWOPH, JWOPSY
          CALL READI  (LUNIT,(2*NWOPH),JWOP)
          NWOPDI = MAX(1,NWOPT)
          NWOPMA = MAX(NWOPMA,NWOPT,NWOPH)
@@ -415,7 +399,7 @@ C
 C Purpose: Generate KLWOP array from JWOP
 C
 #include <implicit.h>
-      DIMENSION KLWOP(NOCCT,NORBT)
+      DIMENSION   KLWOP(NOCCT,NORBT)
       CHARACTER*8 XLABEL
 C
 C Used from common blocks:
@@ -449,6 +433,201 @@ C
       END DO
 C
       RETURN
+      END
+C  /* Deck prkap */
+      SUBROUTINE PRKAP (NKAPT,XKAP,PRFAC,LUPRIN)
+C
+C Jan 90 hjaaj (descendant of PRWOP)
+C
+C Purpose:
+C  Write orbital operator array XKAP to unit LUPRIN.
+C
+C  if PRFAC  .gt. 0, write only elements with absolute value
+C                    .ge. PRFAC * (max. absolute value)
+C  if PRFAC  .eq. 0, write all elements;
+C  if PRFAC  .lt. 0, write only elements with
+C                    value .le. PRFACX * min. pos value
+C                    where PRFACX = MAX(-PRFAC, -1.0/PRFAC)
+C
+#include <implicit.h>
+      DIMENSION XKAP(*)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+C
+C Used from common blocks:
+C   INFVAR : NWOPT,NWOPH,JWOPSY,JWOP(2,*)
+C
+#include <maxorb.h>
+#include <infvar.h>
+C
+C Check if NKAPT legal
+C
+      IF (NKAPT .NE. NWOPT .AND. NKAPT .NE. NWOPH) THEN
+         WRITE (LUPRIN,'(//A/A,3I10)')
+     &      ' ERROR in PRKAP, NKAPT .ne. NWOPT,NWOPH',
+     &      ' NKAPT, NWOPT, NWOPH :',NKAPT,NWOPT,NWOPH
+         CALL QUIT(' ERROR in PRKAP, NKAPT .ne. NWOPT,NWOPH')
+      END IF
+C
+C Any elements?
+C
+      IF (NKAPT.LE.0) THEN
+         WRITE (LUPRIN,8000) JWOPSY
+         GO TO 9999
+      END IF
+ 8000 FORMAT(/5X,'Orbital operator symmetry =',I2,
+     *       /5X,'>> NO ELEMENTS <<')
+C
+C Print XKAP as requested:
+C
+      IF (PRFAC .GT. D0) THEN
+         KMAX   = IDAMAX(NKAPT,XKAP,1)
+         THPKAP = PRFAC*ABS(XKAP(KMAX))
+         WRITE (LUPRIN,1010) JWOPSY,PRFAC
+         INPR = 0
+         DO 100 IG = 1,NKAPT
+            IF ( ABS(XKAP(IG)) .GT. THPKAP ) THEN
+               K = JWOP(1,IG)
+               L = JWOP(2,IG)
+               WRITE (LUPRIN,1100) IG,K,L,XKAP(IG)
+            ELSE
+               INPR = INPR + 1
+            END IF
+  100    CONTINUE
+         IF (INPR.GT.0) WRITE (LUPRIN,1210) INPR,THPKAP
+      ELSE IF (PRFAC .EQ. D0) THEN
+         WRITE (LUPRIN,1020) JWOPSY
+         INPR = 0
+         DO 200 IG = 1,NKAPT
+            IF ( XKAP(IG) .NE. D0 ) THEN
+               K = JWOP(1,IG)
+               L = JWOP(2,IG)
+               WRITE (LUPRIN,1100) IG,K,L,XKAP(IG)
+            ELSE
+               INPR = INPR + 1
+            END IF
+  200    CONTINUE
+         IF (INPR.GT.0) WRITE (LUPRIN,1220) INPR
+      ELSE
+C     (PRFAC .LT. D0)
+         KMIN   = IDAMIN(NKAPT,XKAP,1)
+         PRFACX = MAX( -PRFAC, -D1/PRFAC)
+         THPKAP = PRFACX*ABS(XKAP(KMIN))
+         WRITE (LUPRIN,1030) JWOPSY,THPKAP
+         INPR = 0
+         DO 300 IG = 1,NKAPT
+            IF ( XKAP(IG) .LE. THPKAP ) THEN
+               K = JWOP(1,IG)
+               L = JWOP(2,IG)
+               WRITE (LUPRIN,1100) IG,K,L,XKAP(IG)
+            ELSE
+               INPR = INPR + 1
+            END IF
+  300    CONTINUE
+         IF (INPR.GT.0) WRITE (LUPRIN,1230) INPR,THPKAP
+      END IF
+C
+C
+ 9999 CONTINUE
+      RETURN
+C
+ 1010 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
+     *  5X,'(only elements abs greater than',1P,D8.1,
+     *     ' times max abs value)'//,
+     *  5X,' Index(r,s)     r  s      operator value',/,
+     *  5X,' ----------    -- --      --------------')
+ 1020 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
+     *  5X,' Index(r,s)     r  s      operator value',/,
+     *  5X,' ----------    -- --      --------------')
+ 1030 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
+     *  5X,'(only elements less than',1P,D10.2,')'//
+     *  5X,' Index(r,s)     r  s      operator value',/,
+     *  5X,' ----------    -- --      --------------')
+ 1100 FORMAT(I15,I7,I3,F20.10)
+ 1210 FORMAT(/1X,I8,' elements with absolute value less than',
+     *       1P,D9.2,' not printed.')
+ 1220 FORMAT(/1X,I8,' zero elements not printed.')
+ 1230 FORMAT(/1X,I8,' elements with value greater than',
+     *       1P,D9.2,' not printed.')
+C
+C -- end of subroutine PRKAP
+C
+      END
+C  /* Deck prwop */
+      SUBROUTINE PRWOP (WOP,IUNITX)
+C
+C Written 11-Apr-1984 -- hjaaj
+C Last revision 17-Oct-1984 hjaaj (IUNITX.lt.0 option)
+C                9-May-1984 hjaaj
+C
+C Purpose:
+C  Write orbital operator array WOP to unit IUNIT.
+C
+C  IUNIT = IABS(IUNITX)
+C
+C  If IUNITX .lt. 0, write all elements;
+C  if IUNITX .gt. 0, write only elements with absolute value
+C                    .ge. PRFAC * (max. absolute value)
+C
+#include <implicit.h>
+      DIMENSION WOP(*)
+      PARAMETER (PRFAC = 0.1D0, D0 = 0.0D0)
+C
+C Used from common blocks:
+C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
+C
+#include <maxorb.h>
+#include <infvar.h>
+C
+      IUNIT = IABS(IUNITX)
+C
+C Any elements?
+C
+      IF (NWOPT.LE.0) GO TO 300
+C
+C 1. find maximum absolute value in WOP
+C
+      IF (IUNITX.GT.0) THEN
+         MAX = IDAMAX(NWOPT,WOP,1)
+         THPWOP = PRFAC*ABS(WOP(MAX))
+         WRITE (IUNIT,1000) JWOPSY,PRFAC
+      ELSE
+         WRITE (IUNIT,1010) JWOPSY
+         THPWOP = D0
+      END IF
+      INPR = 0
+      DO 200 IG = 1,NWOPT
+         IF (ABS(WOP(IG)).GE.THPWOP) THEN
+            K = JWOP(1,IG)
+            L = JWOP(2,IG)
+            WRITE (IUNIT,1100) IG,K,L,WOP(IG)
+         ELSE
+            INPR = INPR + 1
+         END IF
+  200 CONTINUE
+      IF (INPR.GT.0) WRITE (IUNIT,1200) INPR,THPWOP
+C
+      RETURN
+C
+  300 CONTINUE
+      WRITE (IUNIT,3000) JWOPSY
+      RETURN
+C
+ 1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
+     *  5X,'(only elements abs greater than',1P,D8.1,
+     *     ' times max abs value)'//,
+     *  5X,' Index(r,s)     r  s      operator value',/,
+     *  5X,' ----------    -- --      --------------')
+ 1010 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
+     *  5X,' Index(r,s)     r  s      operator value',/,
+     *  5X,' ----------    -- --      --------------')
+ 1100 FORMAT(I15,I7,I3,F20.10)
+ 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+     *       1P,D9.2,' not printed.')
+ 3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
+     *       /5X,'>> NO ELEMENTS <<')
+C
+C -- end of subroutine PRWOP
+C
       END
 C  /* Deck readmo */
       SUBROUTINE READMO(CMO,JRDMO,WRK,LFREE)
@@ -517,7 +696,7 @@ C
       END IF
 C
       JLUCMD = LUCMD
-      IF (JLUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP',
+      IF (JLUCMD .LT. 0) CALL GPOPEN(LUCMD,'DALTON.INP',
      &   'OLD',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD)
   310 READ (LUCMD,'(A)',END=400,ERR=400) MOLABL
@@ -537,7 +716,7 @@ C
          END IF
   335    CONTINUE
   340 CONTINUE
-      IF (JLUCMD .LE. 0) CALL GPCLOSE(LUCMD,'KEEP')
+      IF (JLUCMD .LT. 0) CALL GPCLOSE(LUCMD,'KEEP')
       GO TO 9000
   400 CONTINUE
          WRITE (LUPRI,'(//A)')
@@ -565,7 +744,7 @@ C
       LBLERR = -1
       CALL MOLLAB(MOLABL,LUIT1,LBLERR)
       IF (LBLERR .GE. 0) THEN
-         CALL READT(LUIT1,NCMOT,CMO(1))
+         CALL READT(LUIT1,NCMOT,CMO)
       ELSE IF (LBLERR .EQ. -1) THEN
          WRITE (LUPRI,'(//3A)')
      & ' >>> FATAL ERROR, MO label "',MOLABL,'" not found on SIRIUS.RST'
@@ -649,9 +828,9 @@ C
 #include <inftap.h>
 C
       LOGICAL FNDLAB
-      CHARACTER*8 MOLBL(3),LABTBL(2)
+      CHARACTER*8 MOLBL(3),LABTBL(3)
       DATA MOLBL /'********','        ','        '/
-      DATA LABTBL/'NEWORB  ','EODATA  '/
+      DATA LABTBL/'BASINFO ','NEWORB  ','EODATA  '/
 C
       CALL QENTER('NEWORB')
 C
@@ -663,17 +842,36 @@ C
          CALL NEWIT1
       ELSE
          REWIND LUIT1
-         IF (FNDLAB(LABTBL(1),LUIT1)) THEN
-            BACKSPACE LUIT1
-         ELSE
-            REWIND LUIT1
-            IF (FNDLAB(LABTBL(2),LUIT1)) BACKSPACE LUIT1
+         IF (.NOT.FNDLAB(LABTBL(1),LUIT1)) THEN
+C           no "BASINFO ",
+C           must be a new SIRIUS.RST file, save BASINFO on it:
+            CALL NEWIT1
+            GO TO 100
          END IF
+         REWIND LUIT1
+         IF (FNDLAB(LABTBL(2),LUIT1)) THEN
+C           found "NEWORB  ",
+C           backspace before writing new "NEWORB  " label
+            BACKSPACE LUIT1
+            GO TO 100
+         END IF
+         REWIND LUIT1
+         IF (FNDLAB(LABTBL(3),LUIT1)) THEN
+C           no "NEWORB  " but found "EODATA  ",
+C           backspace before writing "NEWORB  " label
+            BACKSPACE LUIT1
+            GO TO 100
+         END IF
+C
+C        no "NEWORB  " and no "EODATA  "
+C        is positioned at end-of-file on LUIT1 after last FNDLAB
+C        /hjaaj June 09
       END IF
-      WRITE (LUIT1) MOLBL(1),MOLBL(2),LABEL3,LABTBL(1)
+
+  100 WRITE (LUIT1) MOLBL(1),MOLBL(2),LABEL3,LABTBL(2)
 C     ...label 'NEWORB  '
       CALL WRITT(LUIT1,NCMOT4,CMO)
-      WRITE (LUIT1) MOLBL,LABTBL(2)
+      WRITE (LUIT1) MOLBL,LABTBL(3)
 C     ...label 'EODATA  '
       REWIND LUIT1
 C
@@ -917,22 +1115,22 @@ C
 C     Note: if FOUND true, it must not be updated.
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C     Global array
       DIMENSION A(NA,*)
       CHARACTER KEY*(*)
       LOGICAL   FOUND, RDBUF
 C
 C Used from common blocks:
-C   INFINP : TITMOL(12,2), POTNUC, CENT(*), TYPE(*)
+C   INFINP : TITMOL(2), POTNUC, CENT(*), TYPE(*)
 C   INFORB : NBAS(8), NSYM, NBAST, NNBAST
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "r12int.h"
 C     Local arrays
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
@@ -974,8 +1172,8 @@ C        ... file is opened automatically first time RDONEL is called.
          CALL GPCLOSE(LUONEL,'KEEP')
       ELSE IF(KEY.EQ.'MLCLINFO') THEN
          REWIND LUONEL
-         READ (LUONEL) ((TITMOL(I,J),I=1,12),J=1,2),
-     *                 NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
+         READ (LUONEL) TITMOL
+         READ (LUONEL) NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
          NBAST  = 0
          NNBAST = 0
          DO 110 I = 1,NSYM
@@ -1126,7 +1324,7 @@ C
       RETURN
       END
 C  /* Deck ijkaux */
-      SUBROUTINE IJKAUX(II,JJ,KK)
+      SUBROUTINE IJKAUX(II,JJ,KK,LL)
 #include <implicit.h>
 #include <priunit.h>
 #include <ccorb.h>
@@ -1157,6 +1355,7 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
       II = IJ(II)
       JJ = IJ(JJ)
       KK = IJ(KK)
+      LL = IJ(LL)
       RETURN
       END
 C  /* Deck inoaux */
@@ -1208,7 +1407,7 @@ C Used from common blocks:
 C  INFORB : NBAST,N2BASX
 C  INFTAP : LUSUPM
 C  INFPRI : IPRERR,LUERR
-C  CBIHRS : parameters for FRMSUP
+C  CBIHRS : parameters for FORMSUP
 C
 #include <inforb.h>
 #include <inftap.h>
@@ -1236,10 +1435,10 @@ C
          I = I + 1
          CALL REWSPL(LUSUPM)
          IF (.NOT. FNDLAB('PSUPMAT ',LUSUPM)) THEN
-            IF (I.GT.1) CALL QUIT('CALL FRMSUP failed')
+            IF (I.GT.1) CALL QUIT('CALL FORMSUP failed')
             CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL FRMSUP(WORK,LFREE,NOSSUP,THRSUP,IPRSUP)
-            CALL TIMER('FRMSUP',TIMSTR,TIMEND)
+            CALL FORMSUP(WORK,LFREE,NOSSUP,THRSUP,IPRSUP)
+            CALL TIMER('FORMSUP',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
             GO TO 100
          END IF
@@ -1621,11 +1820,11 @@ C
 #include <implicit.h>
 #include <dummy.h>
       CHARACTER*8 WORD
-      DIMENSION PRPAO(NNBASX)
+      DIMENSION PRPAO(*)
       LOGICAL   ANTSYM
 C
 C -- common blocks:
-C  INFORB : NNBASX
+C  INFORB : NNBASX, N2BASX
 C
 #include <priunit.h>
 #include <inftap.h>
@@ -1640,17 +1839,23 @@ C
      &            'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUPROP
       IF ( FNDLB2(WORD,RTNLBL,LUPROP)) THEN
-         IF (RTNLBL(2).EQ.'SYMMETRI') THEN
+         IF (RTNLBL(2).EQ.'SQUARE  ') THEN
+            CALL READT(LUPROP,N2BASX,PRPAO)
             ANTSYM = .FALSE.
+         ELSE IF (RTNLBL(2).EQ.'SYMMETRI') THEN
+            ANTSYM = .FALSE.
+            CALL READT(LUPROP,NNBASX,PRPAO)
          ELSE IF (RTNLBL(2).EQ.'ANTISYMM') THEN
             ANTSYM = .TRUE.
+            CALL READT(LUPROP,NNBASX,PRPAO)
          ELSE
-            WRITE (LUPRI,'(//A)')
-     *         ' RDPROP error: No antisymmetry label on AOPROPER'
+            WRITE (LUPRI,'(//3A/3(A,1X))')
+     &         ' >>> RDPROP error: property "',WORD,
+     &         '" on AOPROPER has no valid antisymmetry label.',
+     &         '     Labels read on file:',RTNLBL(1),RTNLBL(2)
             CALL QTRACE(LUPRI)
             CALL QUIT('RDPROP error: No antisymmetry label on AOPROPER')
          END IF
-         CALL READT(LUPROP,NNBASX,PRPAO)
       ELSE
          WRITE (LUPRI,'(//3A)') ' >>> RDPROP error: property "',WORD,
      *      '" not found on AOPROPER.'
@@ -1885,6 +2090,10 @@ C   INFTAP : LUIT2
 C   INFPRI : IPRI6
 C
 #include <maxorb.h>
+#include <mxcent.h>
+Clf#include <pcmdef.h>
+Clf#include <pcm.h>
+#include <pcmlog.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <infdim.h>
@@ -1905,7 +2114,7 @@ C        Find label CIDIAG2, for diagonal of CI Ham. matrix.
 C        Hessian diagonal is 2 * (CIDIAG2 - EACTVN).
          CALL MOLLAB(LABIT2(1),LUIT2,LUPRI)
          CALL READT(LUIT2,NCONF,DIAGL)
-         IF (FLAG(16)) THEN
+         IF (FLAG(16) .OR. PCM) THEN
 C        IF (SOLVNT) THEN
             MAXPHP = 0
 CPHPMAERKE  ... PHP not implemented for SOLVNT in this version.
@@ -1991,5 +2200,29 @@ C
 C
 C *** END OF SRWPHP
 C
+      RETURN
+      END
+C  /* Deck upkcmo */
+      SUBROUTINE UPKCMO(CMO,UCMO)
+C
+C  Copyright 6-May-1990 Hans Joergen Aa. Jensen
+C
+C  Unpack CMO from symmetry packed form to  UCMO
+C
+#include <implicit.h>
+      DIMENSION CMO(*), UCMO(NBAST,NORBT)
+C
+C Used from common blocks:
+C  INFORB : NSYM,NBAST,NORBT,...
+C
+#include <inforb.h>
+C
+      CALL DZERO(UCMO,NBAST*NORBT)
+      DO 400 ISYM = 1,NSYM
+         IF (NORB(ISYM) .GT. 0)
+     &   CALL MCOPY(NBAS(ISYM),NORB(ISYM),CMO(ICMO(ISYM)+1),NBAS(ISYM),
+     &              UCMO(IBAS(ISYM)+1,IORB(ISYM)+1),NBAST)
+C        CALL MCOPY(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
+  400 CONTINUE
       RETURN
       END

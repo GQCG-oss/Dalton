@@ -112,6 +112,10 @@ C          'FC' : F-transformed first-order right Cauchy vectors
 C          'CF2': F-transformed second-order right Cauchy vectors
 C          'FR' : F-transformed right eigenvector
 C
+C          'XF1': F-transformed right first-order response vectors,
+C                 F12*R2 contribution for Cholesky CC2.
+C
+C
 C          'O1 ': rhs for first-order amplitude equations
 C          'O2' : rhs for second-order amplitude equations
 C          'O3' : rhs for third-order amplitude equations
@@ -120,8 +124,11 @@ C          'CO2': rhs for second-order cauchy equations
 C          'EO1': rhs for right eigenvector first-order response
 C          'EO2': rhs for right eigenvector second-order response
 C
+C          'eO1': effective rhs for first-order amplitude equations for
+C                 Cholesky CC2
+C
+C
 C          'X1' : first-order eta vectors
-C          'X2': second-order eta vectors
 C          'X2': second-order eta vectors
 C          'X3': third-order eta vectors
 C          'X4': fourth-order eta vectors
@@ -149,7 +156,9 @@ C
 C  Christof Haettig, October 1996, restructered in May 1997
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C  CC3 effective vectors introduced 2002 by Christof Haettig
+C  Cholesky extensions by Thomas Bondo Pedersen, March/April 2003.
 C  R12 double excitation part introduced Jun 2003 by Christof Haettig
+C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <priunit.h>
@@ -157,13 +166,17 @@ C---------------------------------------------------------------------*
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccexci.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RDRSP')
       INTEGER LUSAVE
 C
       INTEGER IDXLST, ISYM, IOPT, IDXVEC
-      CHARACTER LIST*(*),LISTI*(4)
+      CHARACTER LIST*(*),LISTI*(4), LIST3*(3)
 C
       CHARACTER FILEX*(10), MODFIL*(10)
       LOGICAL LEXIST
@@ -181,6 +194,12 @@ C
 * external functions:
       INTEGER IDXSYM
       INTEGER ILSTSYM
+*
+      IF (LEN(LIST) .EQ. 2) THEN
+         LIST3 = LIST//' '
+      ELSE
+         LIST3 = LIST(1:3)
+      END IF
  
 *---------------------------------------------------------------------*
 *     get file name and modified LIST label and IDXVEC:
@@ -189,10 +208,18 @@ C
 
 *---------------------------------------------------------------------*
 *     Test if abort under fail 
+*     If Cholesky CC2, then IOPT=33 means singles if available, please!
+*     [Note: IOPT=3 is actually OK, as IOPT is reset during the check
+*      of the header as IOPT = IAND(IOPT,5)]
 *---------------------------------------------------------------------*
       IF (IOPT .EQ. 33) THEN
          IOPTSV = 33
-         IOPT   = 3
+Chol     IOPT   = 3
+         IF (CHOINT .AND. CC2) THEN
+            IOPT = 1
+         ELSE
+            IOPT   = 3
+         ENDIF
       ELSE IF (IOPT.LT.0) THEN
          IOPTSV = 33
          IOPT   = -IOPT
@@ -204,7 +231,7 @@ C
 *---------------------------------------------------------------------*
 * return a fake zero vector for CCS R0/L0 vector:
 *---------------------------------------------------------------------*
-      IF ( (LIST(1:2).EQ.'R0'.OR.LIST(1:2).EQ.'L0') .AND. CCS ) THEN
+      IF ( (LIST3(1:2).EQ.'R0'.OR.LIST3(1:2).EQ.'L0') .AND. CCS ) THEN
          IOPT = IAND(IOPT,1)
          IF (IOPT.NE.0) CALL DZERO(VEC1,NT1AMX)
          RETURN
@@ -213,7 +240,7 @@ C
 *---------------------------------------------------------------------*
 * open & rewind file:
 *---------------------------------------------------------------------*
-      LUSAVE = 0
+      LUSAVE = -1
 
       INQUIRE(FILE=FILEX,EXIST=LEXIST,IOSTAT=IOS,ERR=990)
       IF (.NOT. LEXIST) GOTO 991
@@ -231,17 +258,17 @@ C
 
       IF (IOPT.EQ.0) THEN
         IF (IAND(IOPTIN,3).GT.0) THEN
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate singles/doubles vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate singles/doubles vector found on file ',FILEX
         ELSE IF (IAND(IOPTIN,24).GT.0) THEN
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate eff. CC3 rhs vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate eff. CC3 rhs vector found on file ',FILEX
         ELSE IF (IAND(IOPTIN,32).GT.0) THEN
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate R12 doubles vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate R12 doubles vector found on file ',FILEX
         ELSE
-         WRITE (LUPRI,'(1X,2A)') 
-     &    'no appropriate vector found on file ',FILEX
+         WRITE (LUPRI,'(2A)') 
+     &    ' no appropriate vector found on file ',FILEX
         END IF
         GOTO 996
       END IF
@@ -249,12 +276,13 @@ C
 *---------------------------------------------------------------------*
 * find the multiplicity of the vector:
 *---------------------------------------------------------------------*
-      ! default is singlett
-      IMUL = 1
 
+      IF (LIST3(1:2).EQ.'RE' .OR. LIST3(1:2).EQ.'LE') THEN
       ! for excited states we get it from the common block:
-      IF (LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE') THEN
          IMUL = IMULTE(IDXLST)
+      ELSE
+      ! default is singlet
+         IMUL = 1
       END IF
                                                 
 *---------------------------------------------------------------------*
@@ -272,13 +300,14 @@ C
          CALL DZERO(VEC2,NT2AM(ISYM))
       ENDIF
 
+
       RETURN
 *---------------------------------------------------------------------*
 * handle i/o errors:
 *---------------------------------------------------------------------*
 990   CONTINUE
       IF ((IOPTSV .NE. 33) .OR. (IPRINT .GT. 0)) THEN 
-        WRITE (LUPRI,'(2A)')' an error occured while inquireing file ',
+        WRITE (LUPRI,'(2A)')' an error occured while inquiring file ',
      &        FILEX
       END IF
       GOTO 996
@@ -316,19 +345,19 @@ C
 
 999   CONTINUE
       WRITE (LUPRI,'(A,A)')       ' Fatal I/O error in ',SUBRNAME
-      WRITE (LUPRI,'(A,3A)')      ' LIST / LISTI   :',LIST(1:3),' / ',
+      WRITE (LUPRI,'(A,3A)')      ' LIST / LISTI   :',LIST3,' / ',
      &     LISTI
       WRITE (LUPRI,'(A,I5,A,I5)') ' IOPTSV / IOPT  :',IOPTSV,' / ',
      &     IOPT
       WRITE (LUPRI,'(A,2I5)')     ' IDXLST, IDXVEC :',IDXLST,IDXVEC
       WRITE (LUPRI,'(A,I5)')      ' unit number    :',LUSAVE
       WRITE (LUPRI,'(A,I5)')      ' returned IOSTAT:',IOS
-      CALL QUIT ('fatal i/o error in '//SUBRNAME)
+      CALL QUIT ('Fatal i/o error in '//SUBRNAME)
 
-      END 
 *---------------------------------------------------------------------*
 *                    END OF SUBROUTINE CC_RDRSP
 *---------------------------------------------------------------------*
+      END 
 c/* Deck cc_rwpre */
       SUBROUTINE CC_RWPRE(LIST,IDXLST,ISYM,LISTI,IDXVEC,FILEX)
 C---------------------------------------------------------------------*
@@ -354,26 +383,18 @@ C
       PARAMETER (SUBRNAME = 'CC_RWPRE')
 C
       INTEGER IDXLST, ISYM, ISYM1, ISYM2, IDXFIL, IDXVEC
-      CHARACTER LIST*(*), LISTI*(*)
+      CHARACTER LIST*(*), LISTI*(*), LIST3*(3)
 C
       CHARACTER FILEX*(*)
-#if defined (SYS_CRAY)
-      REAL ZERO
-#else
-      DOUBLE PRECISION ZERO
-#endif
+      REAL*8  ZERO
       PARAMETER (ZERO = 0.0d0)
 
 
 * external functions:
-      INTEGER IDXSYM
-      INTEGER ILSTSYM
-      INTEGER IR1TAMP
-      INTEGER IR2TAMP
-      INTEGER IL1ZETA
-      INTEGER IL2ZETA
-      INTEGER IRHSR2
-      INTEGER ICHI2
+      INTEGER IDXSYM,  ILSTSYM
+      INTEGER IR1TAMP, IR2TAMP
+      INTEGER IL1ZETA, IL2ZETA
+      INTEGER IRHSR2,  ICHI2
 
  
 *---------------------------------------------------------------------*
@@ -393,12 +414,17 @@ C
 *---------------------------------------------------------------------*
 *     Make symmetry reduced list numbers.
 *---------------------------------------------------------------------*
+      IF (LEN(LIST) .EQ. 2) THEN
+         LIST3 = LIST(1:2)//' '
+      ELSE
+         LIST3 = LIST(1:3)
+      END IF
       IF ( LIST(1:2).EQ.'R0' .OR. LIST(1:2).EQ.'L0' .OR.
      &     LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'L1' .OR.
      &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
      &     LIST(1:2).EQ.'R3' .OR. LIST(1:2).EQ.'L3' .OR.
      &     LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'L4' .OR.
-     &     LIST(1:3).EQ.'O1 '.OR. LIST(1:3).EQ.'X1 '.OR.
+     &     LIST3(1:3).EQ.'O1 '.OR. LIST3(1:3).EQ.'X1 '.OR.
      &     LIST(1:2).EQ.'O2' .OR. LIST(1:2).EQ.'X2' .OR.
      &     LIST(1:2).EQ.'O3' .OR. LIST(1:2).EQ.'X3' .OR.
      &     LIST(1:2).EQ.'O4' .OR. LIST(1:2).EQ.'X4' .OR.
@@ -423,42 +449,52 @@ C
 *---------------------------------------------------------------------*
 * special treatment for cauchy vectors with zero Cauchy orders:
 *---------------------------------------------------------------------*
-      IF      ( LIST(1:2).EQ.'RC' .AND. ILRCAU(IDXLST).EQ.0 ) THEN
+      IF      ( LIST(1:2).EQ.'RC') THEN
+       IF (ILRCAU(IDXLST).EQ.0 ) THEN
         LISTI(1:3) = 'R1_'
         IDXVEC = IR1TAMP(LRCLBL(IDXLST),.FALSE.,ZERO,ISYM)
         IDXFIL = IDXSYM('R1',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:2).EQ.'FC' .AND. ILRCAU(IDXLST).EQ.0 ) THEN
+       END IF
+      ELSE IF ( LIST(1:2).EQ.'FC') THEN
+       IF (ILRCAU(IDXLST).EQ.0 ) THEN
         LISTI(1:3) = 'F1_'
         IDXVEC = IR1TAMP(LRCLBL(IDXLST),.FALSE.,ZERO,ISYM)
         IDXFIL = IDXSYM('F1',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:2).EQ.'LC' .AND. ILC1CAU(IDXLST).EQ.0 ) THEN
+       END IF
+      ELSE IF ( LIST(1:2).EQ.'LC') THEN
+       IF (ILC1CAU(IDXLST).EQ.0 ) THEN
         LISTI(1:3) = 'L1_'
         IDXVEC = IL1ZETA(LBLLC1(IDXLST),.FALSE.,ZERO,ISYM)
         IDXFIL = IDXSYM('L1',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CR2' .AND. 
-     &      ICR2CAU(IDXLST,1).EQ.0 .AND. ICR2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CR2') THEN
+       IF (ICR2CAU(IDXLST,1).EQ.0 .AND. ICR2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'R2_'
         IDXVEC = IR2TAMP(LBLCR2(IDXLST,1),.FALSE.,ZERO,ISYM1,
      &                   LBLCR2(IDXLST,2),.FALSE.,ZERO,ISYM2)
         IDXFIL = IDXSYM('R2',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CO2' .AND. 
-     &      ICO2CAU(IDXLST,1).EQ.0 .AND. ICO2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CO2') THEN
+       IF (ICO2CAU(IDXLST,1).EQ.0 .AND. ICO2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'O2_'
         IDXVEC = IRHSR2(LBLCO2(IDXLST,1),.FALSE.,ZERO,ISYM1,
      &                  LBLCO2(IDXLST,2),.FALSE.,ZERO,ISYM2)
         IDXFIL = IDXSYM('O2',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CL2' .AND. 
-     &      ICL2CAU(IDXLST,1).EQ.0 .AND. ICL2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CL2') THEN
+       IF (ICL2CAU(IDXLST,1).EQ.0 .AND. ICL2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'L2_'
         IDXVEC = IL2ZETA(LBLCL2(IDXLST,1),ZERO,ISYM1,
      &                   LBLCL2(IDXLST,2),ZERO,ISYM2)
         IDXFIL = IDXSYM('L2',ISYM,IDXVEC)
-      ELSE IF ( LIST(1:3).EQ.'CX2' .AND. 
-     &      ICX2CAU(IDXLST,1).EQ.0 .AND. ICX2CAU(IDXLST,2).EQ.0) THEN
+       END IF
+      ELSE IF ( LIST3(1:3).EQ.'CX2') THEN
+       IF (ICX2CAU(IDXLST,1).EQ.0 .AND. ICX2CAU(IDXLST,2).EQ.0) THEN
         LISTI(1:3) = 'X2_'
         IDXVEC = ICHI2(LBLCX2(IDXLST,1),.FALSE.,ZERO,ISYM1,
      &                 LBLCX2(IDXLST,2),.FALSE.,ZERO,ISYM2)
         IDXFIL = IDXSYM('X2',ISYM,IDXVEC)
+       END IF
       END IF
 
 *---------------------------------------------------------------------*
@@ -532,6 +568,10 @@ c/* Deck cc_rcrsp */
 #include <cccl2rsp.h>
 #include <ccexci.h>
 #include <ccpl1rsp.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
   
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RCRSP')
@@ -540,7 +580,7 @@ c/* Deck cc_rcrsp */
       INTEGER LUSAVE, MAXORDER
       PARAMETER (MAXORDER = 4)
  
-      CHARACTER LIST*(*), FILEX*(*)
+      CHARACTER LIST*(*), FILEX*(*), LIST3*(3)
       INTEGER IDXLST, IOPT, IOPTSV, NVEC, IOS
  
       CHARACTER MODFIL*(10), TYPE*(3)
@@ -569,6 +609,12 @@ c/* Deck cc_rcrsp */
 * set up the information to check the header:
 *=====================================================================*
 
+      IF (LEN(LIST) .EQ. 2) THEN
+         LIST3 = LIST//' '
+      ELSE
+         LIST3 = LIST(1:3)
+      end if
+
 *.....................................................................
 * 'R0' - zeroth-order amplitudes:
 *.....................................................................
@@ -577,8 +623,13 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'R1' - first-order response t amplitudes:
 * 'F1' - F transformation of first-order response t amplitudes:
+* 'XF1' - F transformed first-order response t amplitudes,
+*         F12*R2 contribution:
+* 'eO1' - Effective rhs for Cholesky first-order response t  amplitude
 *.....................................................................
-      ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Chol  ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &          LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'eO1') THEN
           ORDER = 1
           DO IOP = 1, ORDER
             FRQLST(IOP)  = FRQLRT(IDXLST)
@@ -630,7 +681,7 @@ c/* Deck cc_rcrsp */
 * 'CR2' -  second-order right Cauchy vectors
 * 'CF2' -  F-transformed second-order right Cauchy vectors
 *.....................................................................
-      ELSE IF (LIST(1:3).EQ.'CR2' .OR. LIST(1:3).EQ.'CF2') THEN
+      ELSE IF (LIST3.EQ.'CR2' .OR. LIST3.EQ.'CF2') THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -642,7 +693,7 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'CO2' -  RHS vector for second-order right Cauchy vectors
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CO2' ) THEN
+      ELSE IF ( LIST3.EQ.'CO2' ) THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -654,7 +705,7 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'CL2' -  second-order left Cauchy vectors
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CL2' ) THEN
+      ELSE IF ( LIST3.EQ.'CL2' ) THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -666,7 +717,7 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'CX2' -  second-order Cauchy eta vectors
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CX2' ) THEN
+      ELSE IF ( LIST3.EQ.'CX2' ) THEN
           ORDER = 2
           DO IOP = 1, ORDER
             FRQLST(IOP)  = ZERO
@@ -704,7 +755,7 @@ c/* Deck cc_rcrsp */
 * 'ER1' -  Right eigenvectors first-order response
 * 'EO1' -  RHS vector for right eigenvectors first-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER1' .OR. LIST(1:3).EQ.'EO1' ) THEN
+      ELSE IF ( LIST3.EQ.'ER1' .OR. LIST3.EQ.'EO1' ) THEN
           ORDER = 2
           FRQLST(1)  = EIGER1(IDXLST)
           LABLST(1)  = '        '
@@ -720,7 +771,7 @@ c/* Deck cc_rcrsp */
 * 'ER2' -  Right eigenvectors second-order response
 * 'EO2' -  RHS vector for right eigenvectors second-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER2' .OR. LIST(1:3).EQ.'EO2' ) THEN
+      ELSE IF ( LIST3.EQ.'ER2' .OR. LIST3.EQ.'EO2' ) THEN
           ORDER = 3
           FRQLST(1)  = EIGER2(IDXLST)
           LABLST(1)  = '        '
@@ -738,7 +789,7 @@ c/* Deck cc_rcrsp */
 * 'EL1' -  Left eigenvectors first-order response
 * 'EX1' -  RHS vector for left eigenvectors first-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'EL1' .OR. LIST(1:3).EQ.'EX1' ) THEN
+      ELSE IF ( LIST3.EQ.'EL1' .OR. LIST3.EQ.'EX1' ) THEN
           ORDER = 2
           FRQLST(1)  = EIGEL1(IDXLST)
           LABLST(1)  = '        '
@@ -754,7 +805,7 @@ c/* Deck cc_rcrsp */
 * 'EL2' -  Left eigenvectors second-order response
 * 'EX2' -  RHS vector for left eigenvectors second-order response
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'EL2' .OR. LIST(1:3).EQ.'EX2' ) THEN
+      ELSE IF ( LIST3.EQ.'EL2' .OR. LIST3.EQ.'EX2' ) THEN
           ORDER = 3
           FRQLST(1)  = EIGEL2(IDXLST)
           LABLST(1)  = '        '
@@ -908,7 +959,7 @@ Cold        LORXLST(IOP) = .FALSE.
 *.....................................................................
 * 'X1_'/'X1e' -  rhs for first-order lagrangian multipliers equations:
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'X1_'.OR.LIST(1:3).EQ.'X1e' ) THEN
+      ELSE IF ( LIST3.EQ.'X1_'.OR.LIST3.EQ.'X1e' ) THEN
           ORDER = 1
           FRQLST(1)  = FRQX1(IDXLST)
           LABLST(1)  = LBLX1(IDXLST)
@@ -982,7 +1033,7 @@ Cold        LORXLST(IOP) = .FALSE.
 *.....................................................................
 * 'PL1' -  Projected left eigenvectors first-order response (sonia)
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'PL1' ) THEN
+      ELSE IF ( LIST3.EQ.'PL1' ) THEN
           !info expected to be on header as obtained from the list
           ORDER = 1
           DO IOP = 1, ORDER
@@ -1001,7 +1052,7 @@ Cold        LORXLST(IOP) = .FALSE.
 * unknown list:
 *.....................................................................
       ELSE
-         CALL QUIT ('unknown list '//LIST(1:3)//' in '//SUBRNAME)
+         CALL QUIT ('Unknown list '//LIST3//' in '//SUBRNAME)
       ENDIF
 
 
@@ -1065,10 +1116,20 @@ Cold    TYPE(3:3)  = '_'
         INDFIL(1) = 0
       
 *.....................................................................
+* XF1, eO1   (Cholesky)
+*.....................................................................
+      ELSE IF ( LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'eO1') THEN
+
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
+     &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
+
+        INDFIL(1) = 0
+
+*.....................................................................
 * ER1, EO1, EL1, EX1
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER1' .OR. LIST(1:3).EQ.'EO1' .OR.
-     &          LIST(1:3).EQ.'EL1' .OR. LIST(1:3).EQ.'EX1'      ) THEN
+      ELSE IF ( LIST3.EQ.'ER1' .OR. LIST3.EQ.'EO1' .OR.
+     &          LIST3.EQ.'EL1' .OR. LIST3.EQ.'EX1'      ) THEN
 
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      INDFIL(1), ISYFIL(1), FRQFIL(1),
@@ -1082,7 +1143,7 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * PL1 (sonia)
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'PL1' ) THEN
+      ELSE IF ( LIST3.EQ.'PL1' ) THEN
         !read the header of the PL1 vector on file
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
      &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
@@ -1105,9 +1166,9 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * CR2, CL2, CO2, CX2, CF2
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'CR2' .OR. LIST(1:3).EQ.'CL2' .OR.
-     &          LIST(1:3).EQ.'CO2' .OR. LIST(1:3).EQ.'CX2' .OR.
-     &          LIST(1:3).EQ.'CF2'                              ) THEN
+      ELSE IF ( LIST3.EQ.'CR2' .OR. LIST3.EQ.'CL2' .OR.
+     &          LIST3.EQ.'CO2' .OR. LIST3.EQ.'CX2' .OR.
+     &          LIST3.EQ.'CF2'                              ) THEN
 
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), INDFIL(1),
@@ -1138,8 +1199,8 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * ER2, EO2, EL2, EX2
 *.....................................................................
-      ELSE IF ( LIST(1:3).EQ.'ER2' .OR. LIST(1:3).EQ.'EO2' .OR.
-     &          LIST(1:3).EQ.'EL2' .OR. LIST(1:3).EQ.'EX2'      ) THEN
+      ELSE IF ( LIST3.EQ.'ER2' .OR. LIST3.EQ.'EO2' .OR.
+     &          LIST3.EQ.'EL2' .OR. LIST3.EQ.'EX2'      ) THEN
 
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      INDFIL(1), ISYFIL(1), FRQFIL(1),
@@ -1201,7 +1262,7 @@ Cold    TYPE(3:3)  = '_'
 *.....................................................................
 * unknown list:
       ELSE
-         CALL QUIT ('unknown list '//LIST(1:3)//' in '//SUBRNAME)
+         CALL QUIT ('Unknown list '//LIST3//' in '//SUBRNAME)
       ENDIF
 
 *=====================================================================*
@@ -1212,10 +1273,10 @@ Cold    TYPE(3:3)  = '_'
         CALL QUIT (' no vector found on file '//FILEX(1:10))
       END IF
 
-      IF (TYPE(1:3) .NE. LIST(1:3) ) THEN
+      IF (TYPE(1:3) .NE. LIST3 ) THEN
         WRITE (LUPRI,*) ' wrong type of vector found on file '//
      &        FILEX(1:10)
-        WRITE (LUPRI,*) ' on file:',TYPE(1:3),' expected:',LIST(1:3)
+        WRITE (LUPRI,*) ' on file:',TYPE(1:3),' expected:',LIST3
         CALL QUIT (' wrong type of vector found on file '//FILEX(1:10))
       END IF
 
@@ -1296,7 +1357,14 @@ Cold    TYPE(3:3)  = '_'
      *    MODFIL(7:10) .EQ.'-R12'.OR.
      *    MODFIL(8:10) .EQ.'-R1' .OR.
      *    MODFIL(9:10) .EQ.'-R'  .OR.
-     *    MODFIL(10:10).EQ.'-'       ) THEN
+     *    MODFIL(10:10).EQ.'-'   .OR.
+     *    MODFIL(4:8)  .EQ.'(R12)'.OR.
+     *    MODFIL(5:9)  .EQ.'(R12)'.OR.
+     *    MODFIL(6:10) .EQ.'(R12)'.OR.
+     *    MODFIL(7:10) .EQ.'(R12'.OR.
+     *    MODFIL(8:10) .EQ.'(R1' .OR.
+     *    MODFIL(9:10) .EQ.'(R'  .OR.
+     *    MODFIL(10:10).EQ.'('       ) THEN
         IBIT32=32
       ELSE
         IBIT32 = 0
@@ -1307,6 +1375,11 @@ Cold    TYPE(3:3)  = '_'
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *      (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT = IAND(IOPT,1+4)
+Cholesky
+C     No doubles in Cholesky CC2
+      ELSE IF (MODFIL(1:3).EQ.'CC2' .AND. CHOINT) THEN
+        IOPT = IAND(IOPT,5)
+Cholesky
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
      *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
      *        ) THEN
@@ -1365,7 +1438,7 @@ C
 C
       INTEGER ISYM, IOPT, IMUL
 
-      DIMENSION VEC0(*), VEC1(*),VEC2(*)
+      DIMENSION VEC0(*), VEC1(*), VEC2(*)
 C
       INTEGER IOS
 
@@ -1407,7 +1480,7 @@ C
 
       ! R12 doubles cluster amplitudes
       IF (IOPT.EQ.32) THEN
-         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NGAMMA(ISYM))
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NTR12AM(ISYM))
          IF (IMUL.EQ.3) THEN
            CALL QUIT('Triplet not yet implemented for R12 in CC_RVRSP')
 C          READ(LUSAVE,IOSTAT=IOS,ERR=993)
@@ -1465,12 +1538,15 @@ C     CALL QUIT ('fatal i/o error in CC_RVRSP')
 *---------------------------------------------------------------------*
 c /* deck CCPRPAO */
 *=====================================================================*
-       SUBROUTINE CCPRPAO(LABEL,PRPAO,IRREP,ISYM,IERR,WORK,LWORK)
+       SUBROUTINE CCPRPAO(LABEL1,LONLYAO,PRPAO,IRREP,ISYM,IERR,
+     &                    WORK,LWORK)
 *---------------------------------------------------------------------*
 *
 *  Purpose: read property one-electron AO integrals from file AOPROPER
 *
-*       input:   LABEL -- search string for AOPROPER file
+*       input:   LABEL1 -- search string for AOPROPER file
+*                LONLYAO -- property AO integrals only for AO basis
+*                           or for AO + auxiliary basis?
 *                
 *       output:  PRPAO -- property AO integrals in coupled cluster
 *                         storage scheme (dimension of ouput vector
@@ -1492,6 +1568,25 @@ c /* deck CCPRPAO */
 *  Thomas Bondo Pedersen, April 2003:
 *     Correct sign error in *ANGMOM integrals.
 *
+*  Christian Neiss, Dec. 2004:
+*  adapted for R12
+*  Note: the meaning of nbas, mbas1, mbas2,... depends on from WHERE
+*  this routine is called (these common blocks are overwritten 
+*  during R12 with different values):
+*  within normal CC: nbas   number of AO basis functions
+*                    mbas1  0 or not initialized
+*                    mbas2  0 or not initialized
+*                    ....
+*  within R12 environment: nbas   number of AO + auxiliary basis func.
+*                          mbas1  number of AO basis functions
+*                          mbas2  number of auxiliary basis functions
+*                          ....
+*  To ensure the highest possible flexilbility of this subroutine,
+*  we use the R12-specific variables throughout the routine. If the 
+*  calculation is not R12, the variables are initialized with the 
+*  corespondig values; in these cases it does not matter, whether
+*  LONLYAO is TRUE or FALSE.
+*  
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -1506,6 +1601,7 @@ c /* deck CCPRPAO */
 #include <inftap.h>
 #include <ccisao.h>
 #include <dummy.h>
+#include <r12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1520,7 +1616,7 @@ c /* deck CCPRPAO */
 
 
 * input:
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL1
       INTEGER IRREP, ISYM, IERR, LWORK
 
 #if defined (SYS_CRAY)
@@ -1532,9 +1628,12 @@ c /* deck CCPRPAO */
 #endif
 
       CHARACTER*8 RTNLBL(2)
-      LOGICAL LOPENED
+      LOGICAL LOPENED, LONLYAO
       INTEGER IDX, IDXI, IDXJ
       INTEGER KEND0, LEND0, KINTEG, ISYMA, ISYMB, IOLD, INEW
+      INTEGER nallbas,nsquare,ntriangle,istart,iend
+      INTEGER isymi,isymj,isymab,icount1,icount2,ioff
+      INTEGER ibasxtd(8),nbasxtd(8),iaodis1(8,8),iaodis2(8,8)
 
 * functions:
       INTEGER IDAMAX
@@ -1549,11 +1648,11 @@ c /* deck CCPRPAO */
 
 
       IERR = -1
-      CALL MOLLB2(LABEL,RTNLBL,LUPROP,IERR)
+      CALL MOLLB2(LABEL1,RTNLBL,LUPROP,IERR)
 
       IF (IERR .NE. 0) THEN
         IERR = ABS(IERR)  ! force IERR to be positive for I/O errors
-        WRITE (LUPRI,'(3A)')   'WARNING: property label ',LABEL,
+        WRITE (LUPRI,'(3A)')   'WARNING: property LABEL ',LABEL1,
      &                  ' not found on file AOPROPER.'
         WRITE (LUPRI,'(A,i5)') 'WARNING: IERR =',IERR
         WRITE (LUPRI,'(A)')    'WARNING: no integrals read.'
@@ -1561,89 +1660,187 @@ c /* deck CCPRPAO */
         RETURN
       END IF
 
-      IF (LOCDBG) THEN
-        WRITE (LUPRI,*) 'CCPRPAO> LABEL:',LABEL
-        WRITE (LUPRI,*) 'CCPRPAO> IERR:',IERR
-        WRITE (LUPRI,*) 'CCPRPAO> N2BASX:',N2BASX
-        WRITE (LUPRI,*) 'CCPRPAO> NNBASX:',NNBASX
-        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(1):',RTNLBL(1)
-        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(2):',RTNLBL(2)
-        CALL FLSHFO(LUPRI)
-      END IF
+*---------------------------------------------------------------------*
+* set dimensions
+*---------------------------------------------------------------------*
+      if (.NOT. CCR12) then
+        do i = 1, nsym
+          mbas1(i) = nbas(i)
+          mbas2(i) = 0
+        end do
+      end if
 
+      nallbas = 0
+      do i = 1, nsym
+        nbasxtd(i) = mbas1(i) + mbas2(i)
+        nallbas = nallbas + nbasxtd(i) 
+      end do
+      nsquare = nallbas*nallbas
+      ntriangle = nallbas*(nallbas+1)/2
+
+      ibasxtd(1) = 0
+      do i = 2, nsym
+        ibasxtd(i) = ibasxtd(i-1) + nbasxtd(i-1)
+      end do
+ 
       KINTEG = 1
-      KEND0  = KINTEG + N2BASX
+      KEND0  = KINTEG + nsquare
       LEND0  = LWORK - KEND0
 
       IF (LEND0.LT.0) CALL QUIT('Insufficient memory in CCPRPAO.')
+
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,*) 'CCPRPAO> LABEL:',LABEL1
+        WRITE (LUPRI,*) 'CCPRPAO> LONLYAO:',LONLYAO
+        WRITE (LUPRI,*) 'CCPRPAO> IERR:',IERR
+        WRITE (LUPRI,*) 'CCPRPAO> N2BASX:',N2BASX
+        WRITE (LUPRI,*) 'CCPRPAO> NNBASX:',NNBASX
+        WRITE (LUPRI,*) 'CCPRPAO> NSQAURE:',nsquare
+        WRITE (LUPRI,*) 'CCPRPAO> NTRIANGLE:',ntriangle
+        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(1):',RTNLBL(1)
+        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(2):',RTNLBL(2)
+        do i = 1, nsym
+C          write(lupri,*) 'ibas(',i,') = ',ibas(i)
+          write(lupri,*) 'nbas(',i,') = ',nbas(i)
+C          write(lupri,*) 'ibasxtd(',i,') = ',ibasxtd(i)
+          write(lupri,*) 'nbasxtd(',i,') = ',nbasxtd(i)
+          write(lupri,*) 'mbas1(',i,') = ',mbas1(i)
+          write(lupri,*) 'mbas2(',i,') = ',mbas2(i)
+        end do
+        CALL FLSHFO(LUPRI)
+      END IF
 
 *---------------------------------------------------------------------*
 * read integrals and resort them to a full square matrix:
 *---------------------------------------------------------------------*
       IF (RTNLBL(2).EQ.'SQUARE  ') THEN
         ISYM = 0
-        CALL READT(LUPROP,N2BASX,WORK(KINTEG))
+        CALL READT(LUPROP,nsquare,WORK(KINTEG))
         CALL GPCLOSE(LUPROP,'KEEP')
       ELSE IF (RTNLBL(2).EQ.'SYMMETRI') THEN
         ISYM = +1
-        IF (LEND0.LT.NNBASX)
+        IF (LEND0.LT.ntriangle)
      &       CALL QUIT('Insufficient memory in CCPRPAO.')
-        CALL READT(LUPROP,NNBASX,WORK(KEND0))
-        CALL DSPTGE(NBAST,WORK(KEND0),WORK(KINTEG))
+        CALL READT(LUPROP,ntriangle,WORK(KEND0))
+        CALL DSPTGE(NALLBAS,WORK(KEND0),WORK(KINTEG))
         CALL GPCLOSE(LUPROP,'KEEP')
       ELSE IF (RTNLBL(2).EQ.'ANTISYMM') THEN
         ISYM = -1
-        IF (LEND0.LT.NNBASX)
+        IF (LEND0.LT.ntriangle)
      &       CALL QUIT('Insufficient memory in CCPRPAO.')
-        CALL READT(LUPROP,NNBASX,WORK(KEND0))
-        CALL DAPTGE(NBAST,WORK(KEND0),WORK(KINTEG))
+        CALL READT(LUPROP,ntriangle,WORK(KEND0))
+        CALL DAPTGE(NALLBAS,WORK(KEND0),WORK(KINTEG))
         CALL GPCLOSE(LUPROP,'KEEP')
       ELSE
         IERR = 1
-        WRITE (LUPRI,'(3A)') 'WARNING: no antisymmetry label for ',
-     &              LABEL,' integrals on file AOPROPER.'
+        WRITE (LUPRI,'(3A)') 'WARNING: no antisymmetry LABEL for ',
+     &              LABEL1,' integrals on file AOPROPER.'
         WRITE (LUPRI,'(A)') 'WARNING: no integrals read.'
         CALL GPCLOSE(LUPROP,'KEEP')
         RETURN
       END IF
 
       IF (IPRINT.GT.99 .OR. LOCDBG) THEN
-        CALL AROUND('CCPRPAO: '//LABEL//'-integrals')
-        CALL OUTPUT(WORK(KINTEG),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        CALL AROUND('CCPRPAO: '//LABEL1//'-integrals')
+        CALL OUTPUT(WORK(KINTEG),1,NALLBAS,1,NALLBAS,NALLBAS,NALLBAS,
+     &              1,LUPRI)
       END IF
-
 *---------------------------------------------------------------------*
 * find irrep symmetry of the operator:
 *---------------------------------------------------------------------*
-      IDX = IDAMAX(N2BASX,WORK(KINTEG),1)
+      IDX = IDAMAX(nsquare,WORK(KINTEG),1)
       IF ( ABS(WORK(KINTEG-1+IDX)) .GT. CKMXPR ) THEN
-        IDXI  = (IDX+NBAST-1) / NBAST
-        IDXJ  = IDX - (IDXI-1)*NBAST
-        IRREP = MULD2H(ISAO(IDXI),ISAO(IDXJ))
+        IDXI  = (IDX+NALLBAS-1) / NALLBAS
+        IDXJ  = IDX - (IDXI-1)*NALLBAS
+C        IRREP = MULD2H(ISAO(IDXI),ISAO(IDXJ))
+        do isyma = 1, nsym
+c         do i = 1, nbasxtd(isyma)
+c           ioff = ibasxtd(i) + i 
+c           if (ioff .eq. idxi) isymi = isyma
+c           if (ioff .eq. idxj) isymj = isyma
+c         end do   
+c         a bit simpler / more elegant: 
+          istart = ibasxtd(isyma) + 1
+          iend   = istart-1 + nbasxtd(isyma)
+          if (idxi.ge.istart .and. idxi.le.iend) isymi = isyma
+          if (idxj.ge.istart .and. idxj.le.iend) isymj = isyma
+        end do
+        IRREP = muld2h(isymi,isymj)
+        if (locdbg) then
+          write(lupri,*) 'CCPRPAO> IRREP = ',IRREP
+        end if
       ELSE
         IRREP = 0
         IERR  = -1
         WRITE (LUPRI,'(3A,1P,D15.7)')
-     &       'WARNING: integrals for operator with label ',LABEL,
+     &       'WARNING: integrals for operator with LABEL ',LABEL1,
      &               ' are smaller than ',CKMXPR
         WRITE (LUPRI,'(A)')
      &       'WARNING: irrep symmetry can not be determined.'
+        CALL FLSHFO(LUPRI)
         RETURN
       END IF
       
 *---------------------------------------------------------------------*
 * resort integrals to coupled cluster storage:
 *---------------------------------------------------------------------*
+      !determine offsets   
+      do isymab = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        do isymb = 1, nsym
+          isyma = muld2h(isymab,isymb)
+          iaodis1(isyma,isymb) = icount1
+          iaodis2(isyma,isymb) = icount2
+          icount1 = icount1 + mbas1(isyma)*mbas1(isymb)
+          icount2 = icount2 + nbasxtd(isyma)*nbasxtd(isymb) 
+c         if (locdbg) then
+c           write(lupri,*) 'iaodis1(',isyma,',',isymb,') = ',
+c    &        iaodis1(isyma,isymb)
+c         end if
+        end do
+      end do
+
       DO ISYMA = 1, NSYM
         ISYMB = MULD2H(IRREP,ISYMA)
-        DO A = 1, NBAS(ISYMA)
-        DO B = 1, NBAS(ISYMB)
-          IOLD = (IBAS(ISYMA)+A-1)*NBAST + (IBAS(ISYMB)+B)
-          INEW = IAODIS(ISYMB,ISYMA) + NBAS(ISYMB)*(A-1) + B
-          PRPAO(INEW) = WORK(KINTEG-1+IOLD)
-        END DO
-        END DO
+        if (LONLYAO) then
+          DO A = 1, mbas1(ISYMA)
+          DO B = 1, mbas1(ISYMB)
+            IOLD = (ibasxtd(isyma)+A-1)*NALLBAS + ibasxtd(isymb) + B
+            INEW = IAODIS1(ISYMB,ISYMA) + MBAS1(ISYMB)*(A-1) + B
+            if (locdbg) then
+              write(lupri,*) 'isyma, isymb, iold, inew = ',isyma, isymb,
+     &          iold, inew
+            end if
+            PRPAO(INEW) = WORK(KINTEG-1+IOLD)
+          END DO
+          END DO
+        else 
+          do A = 1, nbasxtd(isyma)
+          do B = 1, nbasxtd(isymb)
+            IOLD = (ibasxtd(isyma)+A-1)*NALLBAS +
+     &             (ibasxtd(isymb)+B)
+            INEW = IAODIS2(ISYMB,ISYMA) + 
+     &             (nbasxtd(isymb))*(A-1) + B
+            PRPAO(INEW) = WORK(KINTEG-1+IOLD)
+          end do
+          end do
+        end if
       END DO
+
+      IF (LOCDBG) THEN
+        call around('CCPRPAO: Resorted '//LABEL1//'-integrals')
+        do isyma = 1, nsym
+          isymb = muld2h(irrep,isyma)
+          write(lupri,*) 'Symmetry block: ',isymb, isyma
+          if (nbas(isyma).eq.0 .or. nbas(isymb).eq.0) then
+            write(lupri,*) 'This symmetry is empty'
+          else
+            call output(prpao(1+IAODIS1(ISYMB,ISYMA)),1,nbas(isymb),1,
+     &                  nbas(isyma),nbas(isymb),nbas(isyma),1,lupri)
+          end if
+        end do
+      END IF
 
 *---------------------------------------------------------------------*
 * Correct sign error in *ANGMOM squaring:
@@ -1654,7 +1851,7 @@ C  TODO/FIXME: KR has promised to look at the signs of *all* one-el.
 C              integrals. For now, the sign of rot. strengths and
 C              optical rotations is changed in the CC code.
 C
-C     IF (LABEL(2:7) .EQ. 'ANGMOM') THEN
+C     IF (LABEL1(2:7) .EQ. 'ANGMOM') THEN
 C        CALL DSCAL(N2BST(IRREP),-1.0D0,PRPAO,1)
 C     ENDIF
 
@@ -1700,6 +1897,56 @@ C     ENDIF
         WRITE(LUPRI,*) 'Length of CMO (NLAMDS):',NLAMDS
         WRITE(LUPRI,*) 'Norm^2 of CMO:',DDOT(NLAMDS,CMO,1,CMO,1)
       END IF
+
+      RETURN
+      END
+*=====================================================================*
+*=====================================================================*
+      SUBROUTINE CC_GET_ORBENE(ORBENE,DELFRO,LOCDBG,WORK,LWORK)
+*---------------------------------------------------------------------*
+*     Purpose: read canonical orbital energies from SIRIFC file
+*     Christof Haettig, spring 2005, Friedrichstal(Baden)
+*=====================================================================*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <inftap.h>
+#include <dummy.h>
+#include <ccsdinp.h>
+
+      LOGICAL DELFRO, LOCDBG
+      INTEGER IDX, NORBEN, LWORK
+
+#if defined (SYS_CRAY) 
+      REAL ORBENE(NORBTS), WORK(LWORK)
+#else
+      DOUBLE PRECISION ORBENE(NORBTS), WORK(LWORK)
+#endif
+
+*---------------------------------------------------------------------*
+*     read canonical orbital energies from SIRIFC file:
+*---------------------------------------------------------------------*
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUSIFC
+      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+      READ (LUSIFC)
+      READ (LUSIFC) (WORK(IDX),IDX=1,NORBTS)
+      CALL GPCLOSE(LUSIFC,'KEEP')
+
+      NORBEN = NORBTS
+      IF ( DELFRO .AND. (FROIMP .OR. FROEXP)) THEN
+        CALL CCSD_DELFRO(WORK,WORK(NORBTS+1),LWORK-NORBTS)
+        NORBEN = NORBT
+      END IF
+      CALL FOCK_REORDER(WORK,WORK(NORBTS+1),LWORK-NORBTS)
+     
+      CALL DCOPY(NORBEN,WORK,1,ORBENE,1)
+
+      IF (LOCDBG) THEN
+         CALL AROUND('Canonical orbital energies:')
+         CALL OUTPUT(ORBENE,1,NORBEN,1,1,NORBEN,1,1,LUPRI)
+      ENDIF
 
       RETURN
       END

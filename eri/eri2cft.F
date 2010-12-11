@@ -45,7 +45,7 @@ C
 #include <priunit.h>
 #include <r12int.h>
       PARAMETER (D1 = 1.0D0)
-      INTEGER X
+      INTEGER X, T
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NPP12,3), EXP12(NPP12,3), IAB0(3), 
      &          HPI(NPP12), PA(NPP12,3), PB(NPP12,3),
@@ -89,16 +89,58 @@ C
      &               ETIJ(1,0,0,0,X,2),NPP12,MAX1,MAX2,JMAX1,JMAX2,
      &               SIGN,IAB0(X),PA(1,X),PB(1,X),EXP12,HPI,
      &               X,0,IPRINT)
-         IF (U12INT)
+         IF (U12INT) then
 C           Calculate expansion coefficients for [T1,r12] integrals (WK/UniKA/04-11-2002).
-     &      CALL WKEQ30(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
+            CALL WKEQ30(1,ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
+     &                  ETIJ(1,0,0,0,X,1),
      &                  JMAX1,JMAX2,NPP12,MAX1,MAX2,SIGN,
      &                  IAB0(X),PA(1,X),PB(1,X),TEXPA,TEXPB,AOVERP,
      &                  BOVERP,HPI,EQ30LB(X),IPRINT)
-      END DO
-      IF (U12INT)
-     &   CALL AMINBP(AOVERP,NPP12,TEXPA,TEXPB,HPI,SIGN,IPRINT)
-C        Calculate (a-b)/(a+b) for [T1,r12] integrals (WK/UniKA/04-11-2002).
+            IF(XMIADR.GT.0) THEN
+C             Calculates exp. coeff. for [T1,r12] integrals derivatives.
+c             C. Villani, Uni-Ka, Feb 2005
+              CALL WKEQ30(2,ETIJ(1,0,0,0,X,2),ETIJ(1,0,0,0,X,3),
+     &                    ETIJ(1,0,0,0,X,1),
+     &                    JMAX1,JMAX2,NPP12,MAX1,MAX2,SIGN,
+     &                    IAB0(X),PA(1,X),PB(1,X),TEXPA,TEXPB,AOVERP,
+     &                    BOVERP,HPI,EQ30LB(X),IPRINT)
+            end if
+         end if
+      end do
+      IF ((U12INT.AND.(XMIADR.EQ.0))) THEN
+C       Calculates (a-b)/(a+b) for [T1,r12] integrals (WK/UniKA/04-11-2002).
+        CALL AMINBP(AOVERP,NPP12,TEXPA,TEXPB,HPI,SIGN,IPRINT)
+      ELSE IF(U12INT) THEN
+C       Calculates (a)/(a+b) or -(b)/(a+b) needed only for
+c       [T1,r12] integral derivatives, see subroutine CMIASB
+c       C. Villani, Uni-Ka, Feb 2005
+        IF(AENONB) THEN
+          DO I=1,NPP12
+            AOVERP(I)=EXP12(I,1)
+          END DO
+        ELSE
+          DO I=1,NPP12
+            AOVERP(I)=-EXP12(I,2)
+          END DO
+        END IF
+      END IF
+      IF (MIAU12) THEN
+        IF (IDL.NE.0) stop 'idl.ne.0 and miau12.eq.true.!!'
+        IF (U12INT) stop 'Miau12 and u12int!'
+c       for half computed [T1,r12] integrals, multiply x computed expantion
+c       coefficients for the (a-b)/(a+b) factor
+c       C. Villani, Uni-Ka, Feb 2005
+        DO J = 0, MAX2
+          DO I = 0, MAX1
+            DO T = 0, I + J
+              DO K = 1, NPP12
+                ETIJ(K,T,I,J,1,1) = (EXP12(K,1)-EXP12(K,2))
+     .                              * ETIJ(K,T,I,J,1,1)
+              END DO
+            END DO
+          END DO
+        END DO
+      END IF
 C
 C     Scale coefficients
 C     ==================

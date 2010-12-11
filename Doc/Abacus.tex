@@ -62,7 +62,7 @@ undifferentiated solvent integrals in the {\her} section, see Chapter~\ref{sec:o
 \item[\Key{CTOCD}] Starts the calculation of the magnetic properties with the
 CTOCD-DZ\index{CTOCD-DZ} method (Ref.~\cite{paololazz1,paololazz2,ctocd}). This sets also 
 automatically the .NOLOND option since the CTOCD-DZ formalism is gauge 
-independent for Nuclear Magnetic Shieldings. The default gauge origin is choosen to be 
+independent for Nuclear Magnetic Shieldings. The default gauge origin is chosen to be 
 the center of mass.  \Key{CTOCD} and \Key{SOPPA} or \Key{SOPPA(CCSD)} can be combined to 
 perform CTOCD calculations at the SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} level.
 
@@ -76,11 +76,12 @@ intensity}.
 \item[\Key{DIPORG}]\verb| |\newline
 \verb|READ (LUCMD, *) (DIPORG(ICOOR), ICOOR = 1, 3)|
 
-Reads in a user defined dipole origin\index{dipole origin}. This may
-affect properties in 
+Reads in a user defined dipole origin\index{dipole origin}\index{origin!dipole, second order, quadrupole, third order} in bohrs.
+It is also used for second order (.SECMOM), quadrupole (.QUADRU),
+and third order (.THIRDM) moments.  This may affect properties in 
 which changes in the dipole origin\index{dipole origin} is canceled by
-similar changes in the 
-nuclear part. It should also be used with care, as the same dipole
+similar changes in the nuclear part.
+It should also be used with care, as the same dipole
 origin must be used during the integral evaluation sections, in
 particular if one is doing numerical 
 differentiation with respect to electric field perturbations. For such
@@ -102,7 +103,7 @@ excitation\index{electronic excitation}\index{excitation energy}
 energies as residues of linear response functions\index{linear response}\index{response!linear}\index{single residue}
 as described by Olsen and J\o rgensen \cite{jopjjcp82}. It also
 calculates closely related properties like transition
-moments\index{transition moment}\index{rotatory strength} and 
+moments\index{transition moments}\index{rotatory strength} and 
 rotatory strengths. Combined with the 
 keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
 or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of electronic
@@ -116,9 +117,11 @@ ordinary calculations the total CPU time will increase as a result of
 invoking this option.
 
 \item[\Key{EXPGRA}] Calculates the gradient of the orbital
-  exponents. This can be used to optimize the so-called polarization
-  consistent basis sets~\cite{gjjcp115} if combined with a suitable script for
+  exponents. This can be used to optimize the exponents in an
+  uncontracted basis set, if combined with a suitable script for
   predicting new orbital exponents based on this gradient.
+  It has been used for the optimization of polarization consistent basis
+  sets~\cite{fjjcp115}.
 
 \item[\Key{GAUGEO}]\verb| |\newline
 \verb|READ (LUCMD, *) (GAGORG(ICOOR), ICOOR = 1, 3)|
@@ -341,9 +344,9 @@ more line containing print level. Default print level is the
 value of \verb|IPRDEF| from the general input module.
 
 \item[\Key{QUADRU}] Calculates the molecular quadrupole
-moment\index{quadrupole moment}. This
-includes both the electronic and nuclear contribution to the
-quadrupole moment. These will printed separately only if a printed
+moment\index{quadrupole moments}\index{moments!total quadrupole}. This
+includes both the electronic and nuclear contributions to the
+quadrupole moments. These will printed separately only if a print
 level of 2 or higher has been chosen. Note that the quadrupole moment is
 defined according to Buckingham \cite{adbacp12}. The quadrupole moment
 is printed in the molecular input orientation as well as being 
@@ -380,7 +383,13 @@ only those perturbations specified in the sequence will be considered.
 
 The perturbation ordering follows the ordering of the symmetrized
 nuclear coordinates. This ordering can be obtained by setting the
-print level in the \verb|*READIN| module to 20 or higher.
+print level in the \verb|*MOLBAS| module to 11 or higher.
+
+\item[\Key{SECMOM}] Calculates the 9 cartesian molecular second order
+moments\index{second order moments}\index{moments!total second order}.
+This includes both the electronic and nuclear contribution to the
+second order moment. These will printed separately only if a print
+level of 2 or higher has been chosen.
 
 \item[\Key{SHIELD}] Invokes the calculation of nuclear
 shielding\index{nuclear shielding} constants. By default this is done
@@ -451,7 +460,7 @@ used during the calculation of spin-rotation constants.
 \item[\Key{SPIN-S}] Invokes the calculation of indirect nuclear
 spin-spin coupling\index{spin-spin coupling} constants. By default all
 spin-spin couplings 
-between nuclei with naturally occuring isotopes with abundance more
+between nuclei with naturally occurring isotopes with abundance more
 than 1\% and non-zero spin will be calculated, as well as all the different
 contributions (Fermi contact, dia- and paramagnetic spin-orbit and
 spin-dipole)\index{Fermi contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in 
@@ -462,6 +471,12 @@ consult the chapter describing the calculation of NMR-parameters
 (Ch.~\ref{ch:magnetic}). The main control of which
 contributions and which nuclei to calculate spin-spin couplings
 between is done in the \verb|*SPIN-S| module.
+
+\item[\Key{THIRDM}] Calculates the 27 cartesian molecular third order
+moments\index{third order moments}\index{moments!third order}.
+This includes both the electronic and nuclear contribution to the
+third order moments. These will printed separately only if a print
+level of 2 or higher has been chosen.
 
 \item[\Key{VCD}] Invokes the calculation of Vibrational Circular
 Dichroism (VCD)\index{VCD}\index{vibrational circular dichroism}
@@ -532,7 +547,7 @@ Set the print level in the calculation of the necessary differentiated
 integrals when calculating Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Read one more line
 containing print level. Default value is value of \verb|IPRDEF|
 from the general input module. The print level of the rest of the
-calculation of Atomic Axial Tensors are controled by the keyword
+calculation of Atomic Axial Tensors are controlled by the keyword
 \verb|.PRINT |.
 
 \item[\Key{NODBDR}] Skip contributions originating from first
@@ -564,7 +579,7 @@ results for VCD\index{VCD}\index{vibrational circular dichroism}. Mainly for deb
 
 Set print level in the calculation of Atomic Axial Tensors\index{atomic axial tensor}\index{AAT} (this does
 not include the print level in the integral calculation, which are
-controled by the keyword \verb|.INTPRI|). Read one
+controlled by the keyword \verb|.INTPRI|). Read one
 more line containing print level. Default value is the value of
 \verb|IPRDEF| from the general input module.
 
@@ -576,11 +591,10 @@ debugging purposes.
 calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: {\tt
-*ABALNR}}\label{sec:abalnr}
+\subsection{Linear response calculation: \Sec{ABALNR}}\label{sec:abalnr}
 
 Directives to control the calculation of frequency dependent linear
-response\index{frequency}\index{linear response}\index{response!linear}
+response\index{linear response}\index{response!linear}
 functions. 
 %At present these directives only affect the 
 %calculation of frequency dependent linear response functions appearing
@@ -592,7 +606,8 @@ functions.
 \verb|READ (LUCMD,*) NFRVAL|\newline
 \verb|READ (LUCMD,*) (FRVAL(I), I = 1, NFRVAL)|
 
-Set the number of frequencies as well as the frequency\index{frequency} at which the
+Set the number of frequencies as well as the
+frequency\index{frequency!linear response} at which the
 frequency-dependent linear response equations are to be evaluated.
 Read one more line containing the number of frequencies to be
 calculated, and another line reading these frequencies. The
@@ -663,12 +678,12 @@ of the frequency dependent response equations. Read one more line
 containing the convergence threshold~(D12.6). The default value is
 $5.0\cdot10^{-5}$.
 
-\item[\Key{FREQUE}]\verb| |\newline
+\item[\Key{WAVELE}]\verb| |\newline
 \verb|READ (LUCMD,*) NWVLEN|\newline
 \verb|READ (LUCMD,*) (WVLEN(I), I = 1, NWVLEN)|
 
-Set the number of wave lengths as well as the wave lengths\index{frequency}
-at which the
+Set the number of wave lengths as well as the wave
+lengths\index{wave lengths!linear response} at which the
 frequency-dependent linear response equations are to be evaluated.
 Read one more line containing the number of wave lengths to be
 calculated, and another line reading these wave lengths. The
@@ -676,11 +691,11 @@ wave lengths are to be entered in units of nanometers (nm).
 By default only the
 static case (infinite wavelength, zero frequency) is evaluated.
 The \Key{WAVELE} keyword may be combined with the frequency input
-\Key{WAVELE} (see above).
+\Key{FREQUE} (see above).
 \end{description}
 
-\subsection{Dipole moment and dipole gradient contributions: {\tt
-*DIPCTL}}\label{sec:dipctl} 
+\subsection{Dipole moment and dipole gradient contributions:
+\Sec{DIPCTL}}\label{sec:dipctl} 
 
 Directives controlling the calculation of contributions to the
 dipole gradient\index{dipole gradient} appear in the \verb|*DIPCTL| section.
@@ -688,11 +703,11 @@ dipole gradient\index{dipole gradient} appear in the \verb|*DIPCTL| section.
 \begin{description}
 \item[\Key{NODC}] Neglect contributions to traces from
 inactive one-electron density matrix. This will give wrong results for
-the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+the dipole gradient. Mainly for debugging purposes.
 
 \item[\Key{NODV}] Neglect contributions to traces from
 active one-electron density matrix. This will give wrong results for the
-dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+dipole gradient. Mainly for debugging purposes.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPRINT|
@@ -701,7 +716,7 @@ Set print level in the calculation of the dipole gradient\index{dipole gradient}
 line containing print level. The default 
 is the variable \verb|IPRDEF| from the general input module.
 
-\item[\Key{SKIP}] Skip the calculation of dipole gradient\index{dipole gradient}.
+\item[\Key{SKIP}] Skip the calculation of dipole gradient.
 
 %\item[\Key{TEST}] Test dipole moments and dipole
 %reorthonormalization(?) through a dummy routine. This test routine is
@@ -709,25 +724,30 @@ is the variable \verb|IPRDEF| from the general input module.
 %only be used together with the \verb|.NODIFC| keyword.
 
 \item[\Key{STOP}] Stop the program after finishing the calculation
-of the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+of the dipole gradient. Mainly for debugging purposes.
 \end{description}
 
-\subsection{End of input: \Sec{END OF}}
+%hjaaj: do not document *END OF as this is an obsolete keyword,
+%       only kept for backwards compatibility /July 2005
+%\subsection{End of input: \Sec{END OF}}
+%
+%The last directive in the input can be \verb|*END OF|.
 
-The last directive in the input should be \verb|*END OF|.
-
-\subsection{Calculation of excitation energies: {\tt
-*EXCITA}}\label{sec:excita}
+\subsection{Calculation of excitation energies: \Sec{EXCITA}}
+\label{sec:excita}
 
 Directives to control the calculations of electronic
 transition\index{electronic excitation}
 properties and excitation energies\index{excitation energy} appear in
-the \verb|*EXCITA| input 
-module. For SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
+the \verb|*EXCITA| input module.
+For SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions the properties are calculated using the 
-random phase approximation (RPA) and for MCSCF\index{MCSCF} wave functions the
-multiconfigurational (MC)-RPA is used. In the case of Kohn--Sham DFT, time-dependent linear response theory is used in the adiabatic approximation with the exact functional kernel. Implemented electronic transition
-properties are at the moment:
+random phase approximation (RPA) and for MCSCF\index{MCSCF}
+wave functions the multiconfigurational (MC-RPA) is used.
+In the case of Kohn--Sham DFT, time-dependent linear response theory
+is used in the adiabatic approximation with the exact functional kernel.
+
+Implemented electronic transition properties are at the moment:
 
 \begin{enumerate}
 \item Oscillator Strength\index{oscillator strength} which determines
@@ -760,7 +780,7 @@ integrals when calculating the linear response functions. Read one
 more line containing print level. Default value is the value of 
 \verb|IPRDEF| from the general input module. The print level of the
 rest of the calculation of electronic excitation energies are
-controled by the keyword \verb|.PRINT |. 
+controlled by the keyword \verb|.PRINT |. 
 
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXITE|
@@ -838,12 +858,12 @@ Indicates that it is triplet excitation energies that is to be
 calculated.
 \end{description}
 
-\subsection{One-electron expectation values: {\tt
-*EXPECT}}\label{sec:expect}
+\subsection{One-electron expectation values:
+\Sec{EXPECT}}\label{sec:expect}
 
 Directive that control the calculation of one-electron expectation
 values appear in the \verb|*EXPECT| input module. Notice, however,
-that the directives controling the calculation of one-electron
+that the directives controlling the calculation of one-electron
 expectation values to the geometric Hessian appear in the
 \verb|*ONEINT| section.
 
@@ -910,9 +930,9 @@ Read one more line containing print level. Default value is the
 value of \verb|IPRDEF| from the general input module.
 
 \item[\Key{QUADRU}] Calculates the electronic contribution to the
-molecular (traceless) quadrupole moment\index{quadrupole
-moment}. Default value is \verb|TRUE| 
-if molecular quadrupole moment have been requested in the general input
+molecular (traceless) quadrupole moments\index{quadrupole
+moments}\index{moments!electronic quadrupole}. Default value is \verb|TRUE| 
+if molecular quadrupole moment has been requested in the general input
 module, otherwise \verb|FALSE|.
 
 \item[\Key{SHIELD}] Invokes the calculation of the one-electron
@@ -1148,7 +1168,7 @@ keywords \verb|.FCKPRI|, \verb|.GDYPRI|, \verb|.INTPRI|,
 Set print level for the  two-electron densities transformation. Read
 one more line containing print level. 
 Default value is the value of  \verb|IPRDEF| from the general input
-module. Note also that this print level is also controled by the keyword
+module. Note also that this print level is also controlled by the keyword
 \verb|.PRINT |. 
 
 \item[\Key{PTRSKI}] Skip transformation of active two-electron
@@ -1220,8 +1240,7 @@ transformation. The calculation will not be aborted. Mainly for
 debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: {\tt
-*LINRES}}\label{sec:linres}
+\subsection{Linear response calculation: \Sec{LINRES}}\label{sec:linres}
 
 Directives to control the calculation of frequency-independent linear
 response functions\index{linear response}\index{response!linear}. At
@@ -1499,8 +1518,8 @@ value is~10$^{-3}$.
 the geometric  response equations. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Second-order polarization propagator approximation: {\tt
-*SOPPA}}\label{sec:soppa}
+\subsection{Second-order polarization propagator approximation:
+\Sec{SOPPA}}\label{sec:soppa}
 
 This input module controls the calculation of molecular properties
 using the second-order polarization propagator approximation, see
@@ -1514,8 +1533,8 @@ Chapter~\ref{ch:soppa}.
   are calculated explicitly.
 \end{description}
 
-\subsection{Indirect nuclear spin-spin couplings: {\tt
-*SPIN-S}}\label{sec:spin-s}
+\subsection{Indirect nuclear spin-spin couplings:
+\Sec{SPIN-S}}\label{sec:spin-s}
 
 This input module controls the calculation of which indirect nuclear
 spin-spin coupling constants and what contributions to the total
@@ -1543,14 +1562,14 @@ to which couplings shall be calculated, and the next line reads in
 the number of the symmetry-independent nucleus as given in the
 \verb|MOLECULE.INP| file.
 
-\item[\Key{ISOTOPE}]\verb| |\newline
+\item[\Key{ISOTOP}]\verb| |\newline
 \verb|READ (LUCMD,*) (ISOTPS(IS), IS=1, NATOMS)|
 
 Calculate the indirect spin--spin coupling constants for a given
 isotopic constitution of the molecule. The next line reads the isotope
 number for each of the atoms in the molecule (including also
 symmetry-dependent molecules). The isotopic number for each atom is
-given in terms of the occurance in the list of natural abundance of
+given in terms of the occurrence in the list of natural abundance of
 the isotopes for the given atom, {\it i.e.\/} the most abundant
 isotope is number 1, the second-most abundant is number 2 and so on.
 
@@ -1597,7 +1616,7 @@ dipole--Fermi\index{spin-dipole}\index{Fermi contact} contact cross
 term, and the 
 Fermi contact--Fermi contact contribution for the triplet
 responses. The first of these two terms only contribute to the
-anistotropy, and one may in this way obtain the most important triplet
+anisotropy, and one may in this way obtain the most important triplet
 contributions to the isotropic and 
 anisotropic\index{spin-spin coupling}\index{spin-spin anisotropy}
 spin-spin couplings by only solving one instead of seven response
@@ -1658,8 +1677,8 @@ supposedly independent coordinates.  Read one more line specifying
 value.  Default is~0.1.
 \end{description}
 
-\subsection{Response equations for triplet operators: {\tt
-*TRPRSP}}\label{sec:trprsp}
+\subsection{Response equations for triplet operators:
+\Sec{TRPRSP}}\label{sec:trprsp}
 
 Directives controlling the set-up of right-hand sides for triplet
 perturbing operators (for instance the Fermi contact and spin-dipole
@@ -1809,7 +1828,7 @@ noddy-routine for comparison.
 Set print level for the two-electron density matrix transformation.
 Read one more line containing print level. Default value is the
 value of  \verb|IPRDEF| from the general input module. Note also that
-this print level is controled by the keyword \verb|.PRINT |.
+this print level is controlled by the keyword \verb|.PRINT |.
 
 \item[\Key{PTRSKI}] Skip transformation of active two-electron
 density matrix. This will give wrong results for the total molecular
@@ -1824,7 +1843,7 @@ under \verb|.INTPRI| above. Mainly for debugging purposes.
 Set print level for the two-electron density matrix sorting. Read one
 more line containing print level. Default value is the value of
 \verb|IPRDEF| from the general input module. Note also that this print
-level is controled by the keyword \verb|.PRINT |.
+level is controlled by the keyword \verb|.PRINT |.
 
 \item[\Key{SORSKI}] Skip sorting of symmetry-orbital two-electron
 density matrix. This will give wrong results for the total molecular

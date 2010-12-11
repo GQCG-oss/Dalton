@@ -623,6 +623,9 @@ C
 
       LOGICAL LPDBAS
 
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
       CHARACTER*8  LABEL
       CHARACTER*10 MODEL
 
@@ -758,7 +761,7 @@ C        -------------------------------------
             WRITE(LUPRI,'(//,5X,A,A,A8,A,I2)')
      &      SECNAM,': Error: Hermiticity of operator ',LABEL,
      &      ' out of bounds:',IHERM
-            CALL QUIT('Error in '//SECNAM)
+casm        CALL QUIT('Error in '//SECNAM)
          ENDIF
 
 C        Allocation.
@@ -787,7 +790,7 @@ C        Read AO integrals and check info.
 C        ---------------------------------
 
          IERR = -1
-         CALL CCPRPAO(LABEL,WORK(KPROP),IRREP,IREAL,IERR,
+         CALL CCPRPAO(LABEL,LONLYAO,WORK(KPROP),IRREP,IREAL,IERR,
      &                WORK(KEND2),LWRK2)
 
          IF (IERR .GT. 0) THEN
@@ -834,7 +837,7 @@ C        ---------------------------------
             WRITE(LUPRI,'(5X,A,I10,/,5X,A,I10,/)')
      &      'CCPRPAO returned: ',IREAL,
      &      '- expected      : ',IHERM
-            CALL QUIT('Hermiticity mismatch in '//SECNAM)
+casm        CALL QUIT('Hermiticity mismatch in '//SECNAM)
          ENDIF
 
 C        Transform AO integrals to ai and ia.
@@ -959,6 +962,9 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
       CHARACTER*10 MODEL
 
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -1045,7 +1051,7 @@ C     Read AO property integrals.
 C     ---------------------------
 
       IERR = -1
-      CALL CCPRPAO(LABEL,WORK(KPRPAO),IRREP,IREAL,IERR,
+      CALL CCPRPAO(LABEL,LONLYAO,WORK(KPRPAO),IRREP,IREAL,IERR,
      &             WORK(KEND0),LWRK0)
             
       IF (IERR .GT. 0) THEN
@@ -2243,6 +2249,9 @@ C
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOETADOT')
 
+      LOGICAL LONLYAO
+      DATA LONLYAO /.TRUE./
+
       CHARACTER*3 LISTD
       PARAMETER (LISTD = 'd01')
 
@@ -2281,7 +2290,7 @@ C        Read integrals for A.
 C        ---------------------
 
          IERR = -1
-         CALL CCPRPAO(LABELA,WORK(KOPERA),IRREP,IREAL,IERR,
+         CALL CCPRPAO(LABELA,LONLYAO,WORK(KOPERA),IRREP,IREAL,IERR,
      &                WORK(KEND1),LWRK1)
 
 C        Check.
@@ -2338,7 +2347,7 @@ C        ------
             WRITE(LUPRI,'(5X,A,I10,/,5X,A,I10,/)')
      &      'CCPRPAO returned : ',IREAL,
      &      '- expected       : ',IHERMA
-            CALL QUIT('Hermiticity mismatch in '//SECNAM)
+casm        CALL QUIT('Hermiticity mismatch in '//SECNAM)
          ENDIF
 
 C        Loop over densities (i.e. TB vectors).

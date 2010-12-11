@@ -149,7 +149,7 @@ C       --------------------------------------------
         CALL DZERO(ONEHQ,N2BST(ISYHOP))
       ELSE 
 * check what ISYM is
-        CALL CCPRPAO(LABELH,ONEHQ,IRREP,ISYM,IERR,WORK,LWORK)
+        CALL CCPRPAO(LABELH,.TRUE.,ONEHQ,IRREP,ISYM,IERR,WORK,LWORK)
         IF (IERR.NE.0 .OR. IRREP.NE.ISYHOP) THEN
           CALL QUIT('CCFBINT2: error while reading operator '//LABELH)
         END IF

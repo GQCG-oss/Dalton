@@ -60,7 +60,6 @@ C
       DIMENSION XSEL0(8),YSEL0(8)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
-c
 C
 C     Initializations.
 C     ----------------
@@ -69,20 +68,26 @@ C
       TIMINI = SECOND()
       TIMINT = ZERO
 C
+      IPRINT = IPRCHO
+C
       ICHOV  = 0
+      NCHOV2 = 0
+      NINT2  = 0
+C
       XDISC   = 0.0D0
       XNDISC  = 0.0D0
 C
-      WRITE(LUPRI,'(//,2(9X,A,/))') 'Initial diagonal information',
+      IF (IPRINT .GT. 0) THEN
+          WRITE(LUPRI,'(//,2(9X,A,/))') 'Initial diagonal information',
      &                          '----------------------------'
-      WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB',' NNBST ','IDIAG '
-      DO ISYM = 1,NSYM
-         WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),IDIAG(ISYM)
-      END DO
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A,I10)') 'Number of diagonal elements:',NDIAG
-      WRITE(LUPRI,*)
-      CALL FLSHFO(LUPRI)
+          WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB',' NNBST ','IDIAG '
+          DO ISYM = 1,NSYM
+             WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),IDIAG(ISYM)
+          END DO
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,'(A,I10)') 'Number of diagonal elements:',NDIAG
+          CALL FLSHFO(LUPRI)
+      END IF
 C
 C
 C     Open files for storing the Cholesky vectors.
@@ -91,26 +96,27 @@ C
       IF (.NOT. RSTCHO)
      &    CALL CHO_NAME(ISYMAB,IFILE,LUCHO,NAME,'INI')
 C
-      LUDIAG = 0
+      LUDIAG = -1
       CALL GPOPEN(LUDIAG,'CHODIAG','UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &            IDUM,.FALSE.)
 C
       NAME  = ROOT(1:7)//'SEL'
-      CALL WOPEN2U(28,NAME,64,0)
+C
+      LUSEL = 98
+      CALL WOPEN2(LUSEL,NAME,64,0)
 C
 C     Initialize integral calculation.
 C     --------------------------------
 C
       NTOINT = 0
 C
-      IPRINT = 0 
       T1 = SECOND()
-      CALL HERDI1(WORK,LWORK,IPRINT)
+      JPRINT = 0
+      CALL HERDI1(WORK,LWORK,JPRINT)
       T1 = SECOND() - T1
       TIMINT = TIMINT + T1
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A,I5)')  'Number of shells:',MAXSHL
-      WRITE(LUPRI,*)
+      IF (IPRINT .GT. 0) 
+     &    WRITE(LUPRI,'(A,I5,/)')  'Number of shells:',MAXSHL
 C
 C     Calculate diagonal elements.
 C     ----------------------------
@@ -131,6 +137,7 @@ C
 C     Analyse diagonal by Cauchy-Schwarts.
 C     ------------------------------------
 C
+      IF (IPRINT .GE. 10) THEN
       CALL AROUND('Cauchy-Schwarts screening based on initial diagonal')
       XTHR = THRDEF**2
 C
@@ -153,6 +160,7 @@ C
          CALL FLSHFO(LUPRI)
 C
       ENDDO
+      END IF
 C
 c     do i = 1,ndiag
 c        write(lupri,*) 'Diagonal: ',i,diag(i)
@@ -161,8 +169,10 @@ C
 C     Analyse the diagonal.
 C     ---------------------
 C
-      WRITE(LUPRI,'(//,A,/)') ' >>> Checking initial diagonal'
-      CALL CC_ANADI(DIAG,.TRUE.)
+      IF (IPRINT .GT. 2) THEN
+         WRITE(LUPRI,'(//,A,/)') '>>> Checking initial diagonal'
+         CALL CC_ANADI(DIAG,.TRUE.)
+      END IF
       TIMDIA = SECOND() - TIMDIA
 C
 C     Zero out converged elements.
@@ -189,8 +199,6 @@ C
             END DO
 C
          END DO
-         WRITE(LUPRI,'(/,A,2I10,//)') 'Zeroed initial diagonals : ',IZER
-c        WRITE(LUPRI,'(/,A,2I10,//)') 'Zeroed initial diagonals    : ',IZER
       END IF
 C
 C     Get reduced set.
@@ -212,26 +220,34 @@ C
             NREDUC(ISYM) = ICOUNT
             LRDTOT = LRDTOT + NREDUC(ISYM)
          END DO
-         WRITE(LUPRI,'(/,A,8I8)') 'NREDUC :',(NREDUC(I),I=1,NSYM)
-         WRITE(LUPRI,'(A,I16,/)') 'LRDTOT :',LRDTOT
          LRDTOT = LREDU * NSYM
 C
       ELSE
          LRDTOT = 1
       END IF
-      CALL FLSHFO(LUPRI)
+C
+      IF (IPRINT .GT. 0) THEN
+         IF (SCDIAG) WRITE(LUPRI,'(/,A,I10)') 
+     &                     'Zeroed initial diagonals : ',IZER
+         IF (REDUCE) THEN
+            WRITE(LUPRI,'(A,I10)') 'LRDTOT :',LRDTOT
+            WRITE(LUPRI,'(A,8I8,/)') 'NREDUC :',(NREDUC(I),I=1,NSYM)
+         END IF
+         CALL FLSHFO(LUPRI)
+      END IF
 C
 C     Setup index information.
 C     ------------------------
 C
       ISHLB  = 1
-      IPRINT = 0
+      JPRINT = 0
       SETUP  = .TRUE.
       DO ISHLA = 1,MAXSHL
 C
          T1 = SECOND()
+         JPRINT = 0
          CALL NERDI2(WORK,LWORK,INDEXA,INDEXB,ISHLA,ISHLB,
-     *               NUMDIA,NUMDIB,IPRINT,SETUP,1)
+     *               NUMDIA,NUMDIB,JPRINT,SETUP,1)
          T1 = SECOND() - T1
          TIMINT = TIMINT + T1
 C
@@ -267,7 +283,7 @@ C
       IF (REDUCE) THEN
          LENAB = MXREDU
       ELSE IF (.NOT. COMP) THEN
-         LENAB = 1
+         LENAB = MXNNBS
       ELSE
          LENAB = MXNNBS + (MXNNBS-1)/IRAT + 2
       END IF
@@ -280,6 +296,12 @@ C
       MINEED = LREAD + MXNNBS
 C
       NCHORD = MIN((LWRKX-MINEED)/MINCHO,MXCHRD)
+C
+Casm  Don't read more than 2 Gb (268435456 dw)
+C
+      MCHRD2 = 268435456 / MINCHO
+      NCHORD = MIN(NCHORD,MCHRD2)
+C
       IF (NCHORD .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. NCHORD :',NCHORD
          STOP 'Not enough space in CC_CHOLESKY'
@@ -290,18 +312,30 @@ C
       LNEED = LCHO1 + LREAD
 C
       MAXSEL = MIN((LWORK-LNEED)/MXNNBS,MAXQUA)
+C
+Casm  Don't read more than 2 Gb (268435456 dw)
+C
+      MXSEL2 = 268435456 / MXNNBS
+      MAXSEL = MIN(MAXSEL,MXSEL2)
+C
       IF (MAXSEL .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. MAXSEL :',MAXSEL
          STOP 'Not enough space in CC_CHOLESKY'
       END IF
 C
-      WRITE(LUPRI,'(/,A,I4)') 'Maximum number of vectors read        :',
-     &                    NCHORD
-      WRITE(LUPRI,'(A,I4)') 'Maximum number of diagonals qualified :',
-     &                  MAXSEL
+      IF (IPRINT .GT. 2) THEN
+         WRITE(LUPRI,'(/,A,I4)') 
+     &         'Maximum number of vectors read        :',NCHORD
+         WRITE(LUPRI,'(A,I4)') 
+     &         'Maximum number of diagonals qualified :',MAXSEL
 C
-      WRITE(LUPRI,'(/,A,//)') 'End of Cholesky initializations'
-      CALL FLSHFO(6)
+      END IF
+      IF (IPRINT .GT. 0)
+     &   WRITE(LUPRI,'(/,A,//)') 'End of Cholesky initializations'
+      IF (IPRINT .EQ. 1) 
+     &   WRITE(LUPRI,'(//4X,A,10X,A,5X,A,6X,A)')
+     &         'Vectors','Distributions','Qualified','Max. diagonal'
+      CALL FLSHFO(LUPRI)
 C
 C-------------------------------------------
 C     The Cholesky passes should start here.
@@ -327,9 +361,9 @@ C
       END DO
 C
       IF (ABS(XMAX2) .LT. THRCOM) THEN
-         CALL AROUND('Cholesky elements to discard')
-         WRITE(LUPRI,*) 'Number of Elements:',
-     *                  XDISC,XNDISC,(XDISC/XNDISC)*100.0D0
+c        CALL AROUND('Cholesky elements to discard')
+c        WRITE(LUPRI,*) 'Number of Elements:',
+c    *                  XDISC,XNDISC,(XDISC/XNDISC)*100.0D0
          CALL CHO_END(DIAG,NTOINT,XSEL0,YSEL0)
          RETURN
       END IF
@@ -342,9 +376,6 @@ C
 C
   110 CONTINUE
 C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)
       CALL CC_DIAGLR0(XC,ISYMXC,ISHLA,ISHLB)
 C
       IF (XC .EQ. ZERO) GOTO 120
@@ -353,14 +384,7 @@ C
          ITMP(I) = NQUAL(I) + 1
       END DO
 C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-C        THRCOM = XC * 1.0d-15
-C        IF (THRCOM .LT. THRDEF) THRCOM = THRDEF
-         THRCOM = THRDEF
-         WRITE(LUPRI,'(//,A,2D20.10,/)') 'Largest diagonal,thrcom :',
-     &                               XC,THRCOM
-      END IF
+      THRCOM = THRDEF
 C
 C     Overall convergence check.
 C     --------------------------
@@ -399,15 +423,18 @@ c     END DO
 c     IALTOT = IALSKP + IALDON
 C
 c     IALTOT = IALDON + IALSKP
-      WRITE(LUPRI,'(2A,2I6)') 'Entering new distribution ',
+      IF (IPRINT. GT. 2 ) THEN
+         WRITE(LUPRI,'(2A,2I6)') 'Entering new distribution ',
      &            'corresponding to shells :',ISHLA,ISHLB
-      CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUPRI)
+      END IF
+      
 c     WRITE(LUPRI,'(3(A,I8,X))') 'CD distributions. Total :',IALTOT,
 c    &                       'Calculated :',IALDON,'Skipped :',IALSKP
 C
       T1 = SECOND()
       CALL NERDI2(WORK,LWORK,INDEXA,INDEXB,ISHLA,ISHLB,
-     *            NUMDIA,NUMDIB,IPRINT,SETUP,1)
+     *            NUMDIA,NUMDIB,JPRINT,SETUP,1)
       T1 = SECOND() - T1
       TIMINT = TIMINT + T1
 C
@@ -416,6 +443,7 @@ C
 C     Select diagonals in this distribution.
 C     --------------------------------------
 C
+      IALSEL = 0
       DO 300 NA = 1,NUMDIA
          INUM = 1
          IF (ISHLA .EQ. ISHLB) INUM = NA
@@ -438,6 +466,7 @@ C
 C
             NAB = IDIAG(JSYMAB) + IAODPK(JSYMA,JSYMB) + NAB
 
+
             IF ((DIAG(NAB).GE.DIAMIN(JSYMAB)) .AND.
      &          (DIAG(NAB).GE.THRCOM)) THEN
 C
@@ -445,6 +474,8 @@ C
                   DECO = .TRUE.
                   GOTO 400
                ENDIF
+C
+               IALSEL = 1
 C
                NQUAL(JSYMAB) = NQUAL(JSYMAB) + 1
                IQUAL = NQUAL(JSYMAB)
@@ -456,6 +487,12 @@ C
 C
   400    CONTINUE
   300 CONTINUE
+C
+
+      IF (IALSEL .NE. 1) THEN
+         DECO = .TRUE.
+         GOTO 120
+      END IF
 C
 C
 C     Read integrals from disk. 
@@ -472,25 +509,20 @@ C
          KIREC = KINT1 + NNBST(ISYMAB)*NUMAB
          KEND1 = KIREC + (NBUFX(0) - 1)/IRAT + 1
          LWRK1 = LWORK - KEND1
+         IF (LWRK1 .LT. 0) STOP 'Not enough space for CC_RDAON'
 C
          NEWDIS = .TRUE.
          CALL CC_RDAON(WORK(KINT1),IQUVEA(I,ISYMAB),IQUVEB(I,ISYMAB),
      *                 NUMAB,ISYMAB,WORK(KIREC),WORK(KEND1),LWRK1)
 C
-         LUNIT  = 28
+         LUNIT  = 98
          NAME   = ROOT(1:7)//'SEL'
          LENGTH = NNBST(ISYMAB) * NUMAB
 C
          IF (LENGTH .NE. 0) THEN
-c           write(6,*) 'mxnnbs :',mxnnbs
-c           write(6,*) 'maxsel :',maxsel
-c           write(6,*) 'isymab :',isymab
-c           write(6,*) 'nnbst  :',nnbst(isymab) 
-c           write(6,*) 'itmp   :',itmp(isymab) 
             IADR = MXNNBS * MAXSEL * (ISYMAB-1)
      &            + NNBST(ISYMAB) * (ITMP(ISYMAB)-1) + 1
-c           write(6,*) 'iadr   :',iadr  
-            CALL PUTWA2U(LUNIT,NAME,WORK(KINT1),IADR,LENGTH)
+            CALL PUTWA2(LUNIT,NAME,WORK(KINT1),IADR,LENGTH)
          END IF
 C
   350 CONTINUE
@@ -505,22 +537,29 @@ C
 C
   120 CONTINUE
 C
-      WRITE(LUPRI,'(////A,I4)')
-     &     'Number of calculated distributions :',NUMINT
-      WRITE(LUPRI,'(A,8I4)')
+      NINT2  = NINT2 + NUMINT
+C
+      IF (IPRINT .GT. 1) THEN
+          WRITE(LUPRI,'(/,A,2I6)')
+     &     'Number of calculated distributions :',NUMINT,NINT2
+         WRITE(LUPRI,'(A,2X,8I4)')
      &     'Number of qualified diagonals      :',(NQUAL(I),I=1,NSYM)
-      WRITE(LUPRI,'(A,D17.8//)') 
-     &     'Maximum diagonal among them        :',XMAX2
-      WRITE(LUPRI,'(A,15X,A,12X,2(4X,A),9X,A)')
-     &  'ISAB    Iter','Treated','Conv','Neg','Max'
-
+         WRITE(LUPRI,'(A,D18.8)') 
+     &     'Maximum diagonal among them        : ',XMAX2
+         IF (IPRINT. GT. 2)
+     &       WRITE(LUPRI,'(/,A,15X,A,15X,2(4X,A),6X,A)')
+     &                 'ISAB    Iter','Treated','Conv','Neg','Max'
+      END IF
 C
 C     Loop over symmetries in file to decompose.
 C     ------------------------------------------
 C
+      ICHOV2 = ICHOV
+      DIMAX  = ZERO
       DO 200 ISYMAB = 1,NSYM
 C
          IF (NNBST(ISYMAB) .EQ. 0) GOTO 200
+         IF (NQUAL(ISYMAB) .EQ. 0) GOTO 200
 C
 C        Allocations.
 C        ------------
@@ -529,7 +568,7 @@ C
             LENAB = NREDUC(ISYMAB)
             LEMAB = LENAB
          ELSE IF (.NOT. COMP) THEN
-            LENAB = 0
+            LENAB = NNBST(ISYMAB)
             LEMAB = NNBST(ISYMAB)
          ELSE
             LENAB = NNBST(ISYMAB) + (NNBST(ISYMAB)-1)/IRAT + 2
@@ -549,18 +588,17 @@ C
          END IF
          NVEFIL = MAXLEN / LEMAB
          NCHORD = MIN(NCHORD,NVEFIL)
-c
-c        nchord = min(nchord,300)
+         NCHORD = MIN(NCHORD,MCHRD2)
+         NCHORD = MIN(NCHORD,MXCHRD)
 C
          LCHO2 = LENAB * NCHORD + NNBST(ISYMAB)
-c
-c        write(6,*) 'Vectors read:',nchord
 C
          KINT1 = 1
          KCHO1 = KINT1 + NNBST(ISYMAB)*NQUAL(ISYMAB)
          KCHO2 = KCHO1 + NNBST(ISYMAB)*NCHORD
          KEND1 = KCHO2 + LCHO2
          LWRK1 = LWORK - KEND1
+c
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Insufficient work space in CC_CHOLESKY.1'
             WRITE(LUPRI,*) 'Needed and available memory',KEND1,LWORK
@@ -570,15 +608,16 @@ C
 C        Read integrals from disk. 
 C        -------------------------
 C
-         LUNIT  = 28
+         LUNIT  = 98
          NAME   = ROOT(1:7)//'SEL'
          LENGTH = NNBST(ISYMAB) * NQUAL(ISYMAB)
 C
          IF (LENGTH .NE. 0) THEN
             IADR = MXNNBS * MAXSEL * (ISYMAB-1) + 1
-            CALL GETWA2U(LUNIT,NAME,WORK(KINT1),IADR,LENGTH)
+            CALL GETWA2(LUNIT,NAME,WORK(KINT1),IADR,LENGTH)
          END IF
 C
+
 C        Batch over previous cholesky vectors.
 C        -------------------------------------
 C
@@ -633,7 +672,8 @@ C
 C
          END DO
 C
-         WRITE(LUPRI,'(2A,3F12.2)') 'Time in reading, preparing,',
+         IF (IPRINT .GT. 5)
+     &   WRITE(LUPRI,'(2A,3F12.2)') 'Time in reading, preparing,',
      &                          ' multiplying :',TIMRD,TIMPR,TIMDG
   444    CONTINUE
 C
@@ -703,7 +743,7 @@ C
             XSEL0(ISYMAB) = XSEL0(ISYMAB) + XSEL1
             YSEL0(ISYMAB) = YSEL0(ISYMAB) + YSEL1
 C
-            IF (IPRINT .GT. 3) WRITE(LUPRI,'(A,3X,2(A,F8.0,2X),A,I8)')
+            IF (IPRINT .GT. 15) WRITE(LUPRI,'(A,3X,2(A,F8.0,2X),A,I8)')
      &                              'Elementents in vector',
      &                              'Real 0 :',YSEL1,
      &                              'Zeroed :',XSEL1,
@@ -719,6 +759,7 @@ C
                IF (DIAG(II) .GT. XM) XM = DIAG(II)
             ENDDO
 C
+            IF (XM .GT. DIMAX) DIMAX = XM
             DIAMIN(ISYMAB) = XM * SPAN
             IF (DIAMIN(ISYMAB) .LT. THRCOM) DIAMIN(ISYMAB) = THRCOM
 C
@@ -766,12 +807,29 @@ C
 C
   600    CONTINUE 
   200 CONTINUE
+
 C
 C     Statistics after treating distribution(s).
 C     ------------------------------------------
 C
-      WRITE(LUPRI,'(//,A,/)') ' >>> Checking diagonal'
-      CALL CC_ANADI(DIAG,.FALSE.)
+      IF (IPRINT .GE. 1) THEN
+         ICHOV2 = ICHOV - ICHOV2
+         NQTOT  = 0
+         DO JSYM = 1,NSYM
+            NQTOT = NQTOT + NQUAL(JSYM)
+         END DO
+         IF (IPRINT .EQ. 1) THEN
+            WRITE(LUPRI,'(I4,I9,8X,I3,I7,I13,D24.9)') ICHOV2,ICHOV,
+     &                                 NUMINT,NINT2,NQTOT,DIMAX
+         ELSE
+            WRITE(LUPRI,'(/,A,2I6)')
+     &           'Number of Cholesky vectors so far  : ',ICHOV2,ICHOV
+            WRITE(LUPRI,'(A,D18.8)')
+     &           'Max. diagonal after decomposition  : ',DIMAX
+            WRITE(LUPRI,'(/,A,I5,A)') 'Histogram of diagonal elements:'
+            CALL CC_ANADI(DIAG,.FALSE.)
+         END IF
+      END IF
 C
 C     Check if we can decompose more in the last distribution.
 C     --------------------------------------------------------
@@ -841,8 +899,11 @@ C
          NSEL = NSEL + NQUAL(I)
       END DO
       IF (NSEL .LT. 30) THEN
-         WRITE(LUPRI,*) 'Not enough diagonals qualified at second pass'
-         WRITE(LUPRI,*) 'NQUAL : ', (NQUAL(I),I=1,NSYM)
+         IF (IPRINT .GT. 5) THEN
+            WRITE(LUPRI,*) 
+     &            'Not enough diagonals qualified at second pass'
+            WRITE(LUPRI,*) 'NQUAL : ', (NQUAL(I),I=1,NSYM)
+         END IF
          GOTO 100      
       END IF
 C
@@ -869,14 +930,14 @@ C
          CALL CC_RDAON(WORK(KINT1),IQUVEA(I,ISYMAB),IQUVEB(I,ISYMAB),
      *                 NUMAB,ISYMAB,WORK(KIREC),WORK(KEND1),LWRK1)
 C
-         LUNIT  = 28
+         LUNIT  = 98
          NAME   = ROOT(1:7)//'SEL'
          LENGTH = NNBST(ISYMAB) * NUMAB
 C
          IF (LENGTH .NE. 0) THEN
             IADR = MXNNBS * MAXSEL * (ISYMAB-1)
      &            + NNBST(ISYMAB) * (ITMP(ISYMAB)-1) + 1
-            CALL PUTWA2U(LUNIT,NAME,WORK(KINT1),IADR,LENGTH)
+            CALL PUTWA2(LUNIT,NAME,WORK(KINT1),IADR,LENGTH)
          END IF
 C
   351 CONTINUE
@@ -1179,13 +1240,14 @@ C
 C
       DIACAL = .TRUE.
 C
-      WRITE(LUPRI,'(A,I5)') 'Number of shells: ', MAXSHL
+c     WRITE(LUPRI,'(A,I5)') 'Number of shells: ', MAXSHL
       DO ISHLA = 1,MAXSHL
          DO ISHLB = 1,ISHLA
 C
-            SETUP = .FALSE.
+            SETUP  = .FALSE.
+            JPRINT = 0
             CALL NERDI2(WORK,LWORK,INDEXA,INDEXB,ISHLA,ISHLB,
-     *                  NUMDIA,NUMDIB,IPRINT,SETUP,2)
+     *                  NUMDIA,NUMDIB,JPRINT,SETUP,2)
 C
             DO I = 1,NUMDIA
                JNDEXA(INDEXA(I)) = I
@@ -1265,11 +1327,16 @@ C
       DIMENSION TITMOL(12,2)
       DIMENSION WORK(LWORK)
       DIMENSION MMBST(8)
+      LOGICAL   LDUM
 C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccdeco.h>
 #include <choio.h>
+#include <chorst.h>
+C
+#include <mxcent.h>
+#include <eribuf.h>
 C
 C------------------------------------------------------
 C     Get basis information and construct index arrays.
@@ -1279,19 +1346,19 @@ C
      &            .FALSE.)
       REWIND(LUONEL)
 C
-      READ (LUONEL) ((TITMOL(I,J),I=1,12),J=1,2),
-     &               NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
+      READ (LUONEL) 
+      READ (LUONEL) NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
 C
       CALL GPCLOSE(LUONEL,'KEEP')
       CALL CHO_INDEX
-c     CALL FLSHFO(6)
+      CALL FLSHFO(LUPRI)
 C
 C----------------
 C     Read input.
 C----------------
 C
       CALL CC_CHOINP
-      CALL FLSHFO(6)
+      CALL FLSHFO(LUPRI)
 C
 C-----------------------
 C     Memory allocation.
@@ -1317,11 +1384,11 @@ C----------------------
 C     Do Cholesky loop.
 C----------------------
 C
-      LURST = 0
+      LURST = -1
       CALL GPOPEN(LURST,'CHOLESKY.RST','UNKNOWN','SEQUENTIAL',
      &            'UNFORMATTED',IDUM,.FALSE.)
 C
-      LUSEC = 0
+      LUSEC = -1
       CALL GPOPEN(LUSEC,'CHOLESKY.SEC','UNKNOWN','SEQUENTIAL',
      &            'UNFORMATTED',IDUM,.FALSE.)
 C
@@ -1329,20 +1396,26 @@ C-------------------------
 C     Restart information.
 C-------------------------
 C
-      IF (RSTCHO) THEN
+      IF (RSTCHO .OR. SKIP) THEN
 C
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '        -------------------------'
-         WRITE(LUPRI,*) '          Restarted calculation'
-         WRITE(LUPRI,*) '        -------------------------'
-         WRITE(LUPRI,*)
+         IF (SKIP) THEN
+            WRITE (LUPRI,'(//,A,/,A,//)') 
+     &            'Cholesky decomposition skipped',
+     &            'It is assumed that was completed previously'
 C
-C        Use ldum instead of comp/reduce for compatibilty with Cholesky
-C        files older than last splitting. 
+         ELSE
+C
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) '        -------------------------'
+            WRITE(LUPRI,*) '          Restarted calculation'
+            WRITE(LUPRI,*) '        -------------------------'
+            WRITE(LUPRI,*)
+C
+         END IF
+C
 C
          REWIND(LURST)
-C_orig   READ(LURST,ERR=666,END=666) MSYM,THRCOM,COMP,REDUCE,LRDTOT,
-         READ(LURST,ERR=666,END=666) MSYM,THRCOM,ldum,ldum,LRDTOT,
+         READ(LURST,ERR=666,END=666) MSYM,THRCOM,LRDTOT,
      &               (MMBST(ISYM),ISYM=1,MSYM),
      &               (NUMCHO(ISYM),ISYM=1,MSYM),
      &               (IADRTO(ISYM),ISYM=1,MSYM),
@@ -1350,11 +1423,17 @@ C_orig   READ(LURST,ERR=666,END=666) MSYM,THRCOM,COMP,REDUCE,LRDTOT,
 C
          IF (MSYM .NE. NSYM) THEN
             WRITE(LUPRI,*) 'Error in symmetry checking at restart'
+            WRITE(LUPRI,*) 'NSYM expected :',NSYM
+            WRITE(LUPRI,*) 'NSYM read     :',MSYM
             GOTO 666
          END IF
          DO I = 1,NSYM
             IF (MMBST(I) .NE. NNBST(I)) THEN
                WRITE(LUPRI,*) 'Error in basis checking at restart'
+               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',I,
+     &                         'NNBST expected :',NNBST(I)
+               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',I,
+     &                         'NNBST read     :',MMBST(I)
                GOTO 666
             END IF
          END DO
@@ -1386,7 +1465,7 @@ C
          WRITE(LUPRI,'(//,A,/,A,//)') 'Error reading CHOLESKY.RST',
      &                   'Trying to use CHOLESKY.SEC instead'
          REWIND(LUSEC)
-         READ(LUSEC) MSYM,THRCOM,ldum,ldum,LRDTOT,
+         READ(LUSEC) MSYM,THRCOM,LRDTOT,
      &               (MMBST(ISYM),ISYM=1,MSYM),
      &               (NUMCHO(ISYM),ISYM=1,MSYM),
      &               (IADRTO(ISYM),ISYM=1,MSYM),
@@ -1394,11 +1473,17 @@ C
 C
          IF (MSYM .NE. NSYM) THEN
             WRITE(LUPRI,*) 'Error in symmetry checking at restart'
+            WRITE(LUPRI,*) 'NSYM expected :',NSYM
+            WRITE(LUPRI,*) 'NSYM read     :',MSYM
             STOP 'Error in symmetry checking at restart'
          END IF
          DO I = 1,NSYM
             IF (MMBST(I) .NE. NNBST(I)) THEN
                WRITE(LUPRI,*) 'Error in basis checking at restart'
+               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',ISYM,
+     &                         'NNBST expected :',NNBST(ISYM)
+               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',ISYM,
+     &                         'NNBST read     :',MMBST(ISYM)
                STOP 'Error in basis checking at restart'
             END IF
          END DO
@@ -1418,20 +1503,19 @@ C
       END IF
 C
   777 CONTINUE
+      IF (SKIP) RETURN
 C
 C
          CALL CC_CHOLESKY(WORK(KDIAG),WORK(KOLD),WORK(KIND),
      &                    WORK(KEND),LWRK)
 C
 C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) 'Integral decomposition completed'
-      WRITE(LUPRI,*)
-C
 C     Poor man check result.
 C
-      WRITE(LUPRI,'(//,A,//)') 'Poor man check of decomposition'
-      CALL CHO_RESTART(WORK(KDIAG),WORK(KIND),WORK(KEND),LWRK)
+      IF (IPRINT .GE. 0) THEN
+         WRITE(LUPRI,'(//,A,//)') 'Poor man check of decomposition'
+         CALL CHO_RESTART(WORK(KDIAG),WORK(KIND),WORK(KEND),LWRK)
+      END IF
 C
 C     Write restart files
 C
@@ -1447,6 +1531,10 @@ C
       CALL GPCLOSE(LUDIAG,'KEEP')
       CALL GPCLOSE(LURST,'KEEP')
       CALL GPCLOSE(LUSEC,'KEEP')
+      CALL GPCLOSE(LUAORC(0),'DELETE')
+C
+      LUSEL = 98
+      CALL WCLOSE2(LUSEL,'CHOLES_SEL','DELETE')
 C
       WRITE(LUPRI,*)
       WRITE(LUPRI,*)
@@ -1459,6 +1547,7 @@ C  /* Deck cc_choinp */
       SUBROUTINE CC_CHOINP
 C
 #include <implicit.h>
+#include <gnrinf.h>
 #include <maxorb.h>
 #include <priunit.h>
 #include <inftap.h>
@@ -1471,7 +1560,7 @@ C
 #include <chorst.h>
 #include <choio.h>
 C
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 15)
 C
       LOGICAL SET,THRCHA,CHLBUF,SPANDI,THSCH1,THSCH2
       SAVE SET
@@ -1482,17 +1571,17 @@ C
       DATA SET /.FALSE./
       DATA TABLE /'.THINDI','.THSUDI','.NOSCDI','.NOCOMP','.THRCOM',
      &            '.LENBUF','.RSTDIA','.RSTCHO','.SPANDI','.DENDEC',
-     &            '.THRSTR','.REDUCE'/
+     &            '.THRSTR','.REDUCE','.SKIP  ','.PRINT ','.XXXXXX'/
 C
 C
       IF (SET) RETURN
       SET = .TRUE.
 C
-      CALL AROUND('Output from CHOLE_INP')
-C
 C---------------------
 C     Initializations.
 C---------------------
+C
+      IPRCHO = MAX(1,IPRUSR)
 C
       THINDI = 1.0D+3
       THSUDI = 1.0D+3
@@ -1513,11 +1602,17 @@ C
       CHLBUF = .FALSE.
       SPANDI = .FALSE.
 C
+      SKIP   = .FALSE.
+C
 C--------------------------------------
 C     Initialize info for Cholesky SCF.
 C--------------------------------------
 C
-      CALL SET_CHOSCFDEF()
+      CCMODSK = .TRUE.
+      LUCCMO  = 79
+      FCCMO   = 'CHOCMO'
+      CALL IZERO(NDVCS,8)
+      THRDC   = 1.00D-12
 C
 C-------------------
 C     Procces input.
@@ -1546,7 +1641,7 @@ C
       ELSE IF (WORD(1:1) .EQ. '.') THEN
          DO I = 1,NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GOTO(1,2,3,4,5,6,7,8,9,10,11,12) I
+               GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) I
             END IF
          END DO
          WRITE(LUPRI,*) 'Illegal keyword in input: ',WORD
@@ -1643,6 +1738,23 @@ C
          REDUCE = .TRUE.
       GOTO 200
 C
+C     reduce
+C
+   13 CONTINUE
+         SKIP = .TRUE.
+      GOTO 200
+C
+C     print
+C
+   14 CONTINUE
+         READ(LUCMD,*) IPRCHO
+      GOTO 200
+C
+C     not used
+C
+   15 CONTINUE
+      GOTO 200
+C
 C------------------------------------------------------
 C     The Cholesky input should now be completely read.
 C------------------------------------------------------
@@ -1660,6 +1772,11 @@ C
 c        COMP   = .TRUE.
          SCDIAG = .TRUE.
       END IF
+C
+C
+      IF (IPRCHO .LE. 0) GOTO 999
+C
+      CALL AROUND('Output from CHOLE_INP')
 C
       IF (REDUCE) THEN
           WRITE(LUPRI,'(A)') 'Cholesky vectors written in reduced set'
@@ -1721,6 +1838,7 @@ C
      &   'SCF density will be decomposed; threshold: ',THRDC
       ENDIF
 C
+  999 CONTINUE
       RETURN
       END
 C
@@ -1846,34 +1964,21 @@ C
       ICHOV  = 0
       NDIAG  = ICOUNT
 C
-#if defined (VAR_CHO2)
-      IGB = 2
-#else
-#if defined(VAR_CHO8)
-      IGB = 8
-#else
-#if defined(VAR_CHO32)
-      IGB = 32
-#else
-#if defined(VAR_CHO64)
-      IGB = 64
-#else
-#if defined(VAR_CHOTERA)
-      IGB = 1024
+#if defined (VAR_INT64)
+      IGB = 128
 #else
       IGB = 16
 #endif
-#endif
-#endif
-#endif
+#if defined (VAR_CHO2)
+      IGB = 2
 #endif
 C
-C     maxlen = N Gb / 8 bytes = N * 1024**3 / 8 
+C     maxlen (wrd) = N Gb * 1073741824 wrd/Gb
 C     (minus security margin, probably not needed)
 C
-      MAXLEN = IGB * 1024*1024
-      MAXLEN = MAXLEN * 1024 / 8 - MAXDIA
-c     maxlen = maxlen / 64 / 16
+      MAXLEN = 1073741823
+      MAXLEN = MAXLEN * IGB
+      MAXLEN = MAXLEN - MAXDIA
 C
 C-------------
 C     symsq.h
@@ -1929,7 +2034,7 @@ C
       END DO
 C
 C
-c     IF (IPRINT .GT. 5) THEN
+      IF (IPRCHO .GT. 5) THEN
 C
          CALL AROUND('Information from CHO_INDEX')
 C
@@ -1952,7 +2057,7 @@ C
 C
          WRITE(LUPRI,*)
          DO I = 1,NSYM
-            WRITE(LUPRI,1) 'IAODPK :',(IAODPK(I,J), J=1,NSYM)
+            WRITE(LUPRI,1) 'IAODPK :',(IAODIS(I,J), J=1,NSYM)
          END DO
 C
          WRITE(LUPRI,*)
@@ -1960,7 +2065,7 @@ C
             WRITE(LUPRI,1) 'IAODIS :',(IAODIS(I,J), J=1,NSYM)
          END DO
 C
-c     END IF
+      END IF
 C
     1 FORMAT(3X,A8,8I8)
 C
@@ -2142,7 +2247,7 @@ C
       DIMENSION INDRED(*)
 C
 C
-      CALL AROUND('Summary of Cholesky restart')
+      IF (IPRCHO .GT. 0) CALL AROUND('Summary of Cholesky restart')
 C
       NTOT = 0
       NSAV = 0
@@ -2153,11 +2258,13 @@ C
       REWIND(LUDIAG)
       READ(LUDIAG) (DIAG(I),I = 1,NDIAG)
 C
-      WRITE(LUPRI,'(//,A,I10,//)') 'Number of diagonal elements :',NDIAG
-      CALL FLSHFO(6)
+      IF (IPRCHO .GT. 2) THEN
+         WRITE(LUPRI,'(//,A,I10)') 'Number of diagonal elements :',NDIAG
+         CALL FLSHFO(LUPRI)
 C
-      WRITE(LUPRI,'(//,A,//)') 'Analysis of read diagonal'
-      CALL CC_ANADI(DIAG,.TRUE.)
+         WRITE(LUPRI,'(//,A,//)') 'Analysis of read diagonal'
+         CALL CC_ANADI(DIAG,.TRUE.)
+      END IF
 C
       DO ISYMAB = 1,NSYM
 C
@@ -2193,8 +2300,11 @@ C
             LENAB = NDIM
          END IF
 C
-         NRDMX = LWRKX / LENAB
-c        nrdmx = min(300,nrdmx)
+Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+C
+         NRDMX  = LWRKX / LENAB
+         NRDMX1 = 268435456 / LENAB
+         NRDMX  = MIN(NRDMX,NRDMX1)
          IF (NRDMX .LT. 1) STOP 'Allocation failure in CHO_RESTART'
 C
          NBAT = (NVEC-1)/NRDMX + 1
@@ -2266,8 +2376,8 @@ C
 C        Check and zero out converged diagonal elements.
 C        -----------------------------------------------
 C
-         WRITE(LUPRI,'(/,A,I3)') 'Check information for symmetry',ISYMAB
-         call flshfo(6)
+         IF (IPRCHO .GE. 0) WRITE(LUPRI,'(/,A,I3)') 
+     &                      'Check information for symmetry',ISYMAB
 C
          DO I = 1,NUMCHO(ISYMAB)
             KOFF = IDNTCH(I,ISYMAB) + IDIAG(ISYMAB)
@@ -2314,33 +2424,37 @@ C
          END DO
          IUNCO = NDIM - ICONV
 C
-         WRITE(LUPRI,'(/,A,I8,/)') 'Number of vectors      :',NVEC
-         WRITE(LUPRI,'(2(A,D18.8,/))') 'Maximum diagonal       :',XM,
+         IF (IPRCHO .GE. 0) THEN
+            WRITE(LUPRI,'(/,A,I8,/)') 'Number of vectors      :',NVEC
+            WRITE(LUPRI,'(2(A,D18.8,/))') 'Maximum diagonal       :',XM,
      &                             'Minimum diagonal       :',YM
-         WRITE(LUPRI,'(A,2D18.8,/)')'Maximum absolute error :',
+            WRITE(LUPRI,'(A,2D18.8,/)')'Maximum absolute error :',
      &                             ERRMX1,EXACT1
-         WRITE(LUPRI,'(3(A,I8,/))') 'Converged   diagonals :',ICONV,
+            WRITE(LUPRI,'(3(A,I8,/))') 'Converged   diagonals :',ICONV,
      &                          'Zeroed neg  diagonals :',INEG,
      &                          'Unconverged diagonals :',IUNCO
-         CALL FLSHFO(6)
+            CALL FLSHFO(LUPRI)
+         END IF
 C
   100    CONTINUE
 C
       END DO
 C
-      WRITE(LUPRI,'(//,2(9X,A,/))') 'Histogram of diagonal elements',
+      IF (IPRCHO .GT. 1) THEN
+         WRITE(LUPRI,'(//,2(9X,A,/))') 'Histogram of diagonal elements',
      &                          '------------------------------'
-      CALL CC_ANADI(DIAG,.TRUE.)
+         CALL CC_ANADI(DIAG,.TRUE.)
 C
-      WRITE(LUPRI,'(//,2(9X,A,/))') 'Number of vectors',
+         WRITE(LUPRI,'(//,2(9X,A,/))') 'Number of vectors',
      &                          '-----------------'
-      WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB','Maximum','Actual'
-      DO ISYM = 1,NSYM
-         WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),NUMCHO(ISYM)
-      END DO
+         WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB','Maximum','Actual'
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),NUMCHO(ISYM)
+         END DO
 C
-      WRITE(LUPRI,*)
-      CALL FLSHFO(LUPRI)
+         WRITE(LUPRI,*)
+         CALL FLSHFO(LUPRI)
+      END IF
 C
       RETURN 
       END
@@ -2432,7 +2546,7 @@ C
       DATA ROOT    /'CHOLES_'/
 C
       CHARACTER*3 TASK
-      INTEGER*8 ITEMP
+      INTEGER     ITEMP
 C
       SAVE NTOTFI
 C
@@ -2454,9 +2568,9 @@ C
 C
          DO I = 1,NSYM
             WRITE(CSYM,'(I1)') I
-            LUCHO = 30 + I
+            LUCHO = 70 + I
             NAME  = ROOT(1:7)//CSYM//UNDERL//CFIL
-            CALL WOPEN2U(LUCHO,NAME,64,0)
+            CALL WOPEN2(LUCHO,NAME,64,0)
 C
             IADRTO(I)   = 1
             IADRLU(J,I) = 1
@@ -2483,12 +2597,12 @@ C
          WRITE(CSYM,'(I1)') I
 C
          NTOTFI = NTOTFI + 1
-         LUCHO  = 30 + NTOTFI
+         LUCHO  = 70 + NTOTFI
          NUMFIL(I)   = NUMFIL(I) + 1
          IDNTLU(J,I) = LUCHO
 C
          NAME  = ROOT(1:7)//CSYM//UNDERL//CFIL
-         CALL WOPEN2U(LUCHO,NAME,64,0)
+         CALL WOPEN2(LUCHO,NAME,64,0)
 C
       ELSE IF (TASK .EQ. 'RST') THEN
 C
@@ -2504,7 +2618,7 @@ C
 C
                NAME  = ROOT(1:7)//CSYM//UNDERL//CFIL
                LUCHO = IDNTLU(J,I)
-               CALL WOPEN2U(LUCHO,NAME,64,0)
+               CALL WOPEN2(LUCHO,NAME,64,0)
 C
             END DO
          END DO
@@ -2561,7 +2675,7 @@ Corig DIMENSION CHOVEC(N2BST(ISYMAB),NR),WORK(LWORK)
       DIMENSION CHOVEC(NR,*),WORK(LWORK)  ! just for it to compile...
       DIMENSION IND1(*),IND2(*)
 C
-      INTEGER*8 MDIM,JSTART
+      INTEGER MDIM,JSTART
 C
       WRITE(lupri,*) 'Very old version of CHO_READ called'
       WRITE(lupri,*) 'It does not work any more'
@@ -2653,7 +2767,7 @@ C
 C
 C           Read the vectors and move them to CHOVEC
 C
-            CALL GETWA2U(LUCHO,NAME,WORK(1),IADR,LENTOT)
+            CALL GETWA2(LUCHO,NAME,WORK(1),IADR,LENTOT)
             CALL WCLOSE2(LUCHO,NAME,'KEEP')
 C
             KOFVEC = 1
@@ -2786,7 +2900,6 @@ C
 #include <mxcent.h>
 #include <eribuf.h>
 #include <ccpack.h>
-#include <ccdeco.h>
 C
 C----------------------------
 C     Construct index arrays.
@@ -2800,11 +2913,7 @@ C
          STOP 'Insufficient space for allocation in CC_RDAO'
       END IF
 C
-      IF (CHOVER .EQ. 1) THEN
-         CALL CC_INXN(WORK(KADR2),ISYMGD)
-      ELSE
-         CALL CC_INXN2(WORK(KADR2),ISYMGD)
-      END IF
+      CALL CC_INXN(WORK(KADR2),ISYMGD)
 C
 C--------------------
 C     Construct XINT.
@@ -3006,10 +3115,10 @@ C
 C     Purpose: Construct index arrays for CC_RDAO
 C
 #include <implicit.h>
-#include <ccorb.h>
 C
       DIMENSION KADR2(NBAST,NBAST)
 C
+#include <ccorb.h>
 #include <ccsdsym.h>
 C
          ICOUN2 = 0
@@ -3055,48 +3164,7 @@ C
 C
       RETURN
       END
-C     Deck cc_inxn2 */
-      SUBROUTINE CC_INXN2(KADR2,ISYMAB)
 C
-C     Thomas Bondo Pedersen, 15-july-2005
-C
-C     Purpose: Construct lower triangular index arrays for CC_RDAO
-C              Needed for Version 2 of the Cholesky decomposition.
-C
-#include <implicit.h>
-#include <ccorb.h>
-      DIMENSION KADR2(NBAST,NBAST)
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <symsq.h>
-C
-      DO ISYMB = 1,NSYM
-         ISYMA = MULD2H(ISYMB,ISYMAB)
-         IF (ISYMA .GT. ISYMB) THEN
-            K1 = IAODPK(ISYMA,ISYMB) - 1
-            DO B = 1,NBAS(ISYMB)
-               NB = IBAS(ISYMB) + B
-               DO A = 1,NBAS(ISYMA)
-                  NA = IBAS(ISYMA) + A
-                  KADR2(NA,NB) = K1 + NBAS(ISYMA)*(B-1) + A
-                  KADR2(NB,NA) = KADR2(NA,NB)
-               END DO
-            END DO
-         ELSE IF (ISYMA .EQ. ISYMB) THEN
-            K1 = IAODPK(ISYMA,ISYMB) - 1
-            DO B = 1,NBAS(ISYMB)
-               NB = IBAS(ISYMB) + B
-               DO A = B,NBAS(ISYMA)
-                  NA = IBAS(ISYMA) + A
-                  KADR2(NA,NB) = K1 + A*(A-1)/2 + B
-                  KADR2(NB,NA) = KADR2(NA,NB)
-               END DO
-            END DO
-         END IF
-      END DO
-C
-      RETURN
-      END
 C/* Deck cc_putcho */
       SUBROUTINE CC_PUTCHO(CHOVEC,IDNTC1,NCHORD,NWRITE,ISYMAB,
      &                     INDRED,WORK,LWORK)
@@ -3176,6 +3244,7 @@ C
       NFIL2 = 0
 C
       LENGTH = NWRITE * MDIM
+      
       JFINIS = IADR + LENGTH - 1
       IF (JFINIS .GT. MAXLEN) THEN
          IROOM  = MAXLEN - IADR + 1
@@ -3200,7 +3269,7 @@ C
             IADRTO(ISYMAB)    = IADRTO(ISYMAB) + MDIM
          END DO
 C
-         CALL PUTWA2U(LUCHO,NAME,CHOVEC,IADR,LENTOT)
+         CALL PUTWA2(LUCHO,NAME,CHOVEC,IADR,LENTOT)
 C
       ELSE
 C
@@ -3239,7 +3308,7 @@ C
 c        write(6,*) 'lucho,name :',lucho,name
 c        write(6,*) 'first,last :',work(kwrit),work(kwrit+lentot-1)
 c        write(6,*) 'chovec :',chovec(1),chovec(ioff2)
-         CALL PUTWA2U(LUCHO,NAME,WORK(KWRIT),IADR,LENTOT)
+         CALL PUTWA2(LUCHO,NAME,WORK(KWRIT),IADR,LENTOT)
 C
       END IF
       IF (NFIL2 .EQ. 0) GOTO 999
@@ -3263,7 +3332,7 @@ C
          END DO
 C
          KOFF = NFIL1*MDIM + 1
-         CALL PUTWA2U(LUCHO,NAME,CHOVEC(KOFF),IADR,LENTOT)
+         CALL PUTWA2(LUCHO,NAME,CHOVEC(KOFF),IADR,LENTOT)
 C
       ELSE
 C
@@ -3303,7 +3372,7 @@ c        write(6,*) 'lucho,name :',lucho,name
 c        write(6,*) 'iadr,jadr :',iadr,jadr
 c        write(6,*) 'first,last :',work(kwrit),work(kwrit+lentot-1)
 c        write(6,*) 'chovec :',chovec(1 + NFIL1*MDIM),chovec(ioff2)
-         CALL PUTWA2U(LUCHO,NAME,WORK(KWRIT),IADR,LENTOT)
+         CALL PUTWA2(LUCHO,NAME,WORK(KWRIT),IADR,LENTOT)
 C
       END IF
       GOTO 999
@@ -3341,7 +3410,7 @@ C
 C
          IF (JFINIS .GT. MAXLEN) THEN
             LENTOT = LENTOT - LENGTH
-            CALL PUTWA2U(LUCHO,NAME,WORK,IADR,LENTOT)
+            CALL PUTWA2(LUCHO,NAME,WORK,IADR,LENTOT)
 C
             IADR  = 1
             IFILE = IFILE + 1
@@ -3355,14 +3424,14 @@ C
 C
       IF (I .LT. ILAST) GOTO 200
 C
-      CALL PUTWA2U(LUCHO,NAME,WORK,IADR,LENTOT)
+      CALL PUTWA2(LUCHO,NAME,WORK,IADR,LENTOT)
 C
   999 CONTINUE
 C
 C     Restart info
 C
       REWIND(LURST)
-      WRITE(LURST) NSYM,THRCOM,COMP,REDUCE,LRDTOT,
+      WRITE(LURST) NSYM,THRCOM,LRDTOT,
      &             (NNBST(ISYM),ISYM=1,NSYM),
      &             (NUMCHO(ISYM),ISYM=1,NSYM),
      &             (IADRTO(ISYM),ISYM=1,NSYM),
@@ -3464,7 +3533,7 @@ C
       IF (INFO) THEN
           WRITE(LUPRI,'(//,A,2I15,//)') 
      &         'Number of elements (total and saved):',NTOT,NSAV
-          CALL FLSHFO(6)
+          CALL FLSHFO(LUPRI)
           RETURN
       END IF
 C
@@ -3507,7 +3576,7 @@ C
       DIMENSION INDRED(*)
 C
       CHARACTER*10 NAME
-      INTEGER*8 MDIM,LONG1
+      INTEGER MDIM,LONG1
 C
 C
 C     Initial stuff
@@ -3571,12 +3640,12 @@ C
       IF (.NOT. REDUCE) THEN
           IF (NFIL2 .EQ. 0) THEN
 C
-             CALL GETWA2U(LUCHO,NAME,CHOVEC,IADR,LENTOT)
+             CALL GETWA2(LUCHO,NAME,CHOVEC,IADR,LENTOT)
 C
           ELSE
 C
              LENTOT = NFIL1 * MDIM            
-             CALL GETWA2U(LUCHO,NAME,CHOVEC,IADR,LENTOT)
+             CALL GETWA2(LUCHO,NAME,CHOVEC,IADR,LENTOT)
 C
              LENTOT = NFIL2 * MDIM
              IFILE  = IFILE + 1
@@ -3584,7 +3653,7 @@ C
 C
              KOFF = MDIM * NFIL1 + 1
              IADR = 1
-             CALL GETWA2U(LUCHO,NAME,CHOVEC(KOFF),IADR,LENTOT)
+             CALL GETWA2(LUCHO,NAME,CHOVEC(KOFF),IADR,LENTOT)
 C
           END IF
           RETURN
@@ -3605,14 +3674,14 @@ C
 C
           CALL DZERO(CHOVEC,LENGTH)
           IF (NFIL2 .EQ. 0) THEN
-             CALL GETWA2U(LUCHO,NAME,WORK(KREAD),IADR,LENTOT)
+             CALL GETWA2(LUCHO,NAME,WORK(KREAD),IADR,LENTOT)
           ELSE
 C
              LENTOT = NFIL1 * MDIM
 c            write(6,*) 'Reading vectors from :', NAME,NFIL1
 c            write(6,*) 'jadr,iadr : ',jadr,iadr
 c            write(6,*) 'kread :',kread,kread+lentot-1
-             CALL GETWA2U(LUCHO,NAME,WORK(KREAD),IADR,LENTOT)
+             CALL GETWA2(LUCHO,NAME,WORK(KREAD),IADR,LENTOT)
 c            write(6,*) 'First and last :',work(kread),
 c    &                   work(kread+lentot-1)
 C
@@ -3625,7 +3694,7 @@ C
 c            write(6,*) 'Reading vectors from :', NAME,NFIL2
 c            write(6,*) 'jadr,iadr : ',jadr,iadr
 c            write(6,*) 'kread :',koff,kread+lentot-1
-             CALL GETWA2U(LUCHO,NAME,WORK(KOFF),IADR,LENTOT)
+             CALL GETWA2(LUCHO,NAME,WORK(KOFF),IADR,LENTOT)
 c            write(6,*) 'First and last :',work(koff),
 c    &                   work(kread+lentot-1)
          END IF
@@ -3672,18 +3741,18 @@ C
 C
       CALL DZERO(CHOVEC,LENGTH)
       IF (LENGT2 .EQ. 0) THEN
-         CALL GETWA2U(LUCHO,NAME,WORK(KREAD),IADR,LENTOT)
+         CALL GETWA2(LUCHO,NAME,WORK(KREAD),IADR,LENTOT)
       ELSE
 C
          LENGT1 = LENTOT - LENGT2
-         CALL GETWA2U(LUCHO,NAME,WORK(KREAD),IADR,LENGT1)
+         CALL GETWA2(LUCHO,NAME,WORK(KREAD),IADR,LENGT1)
 C
          IFILE = IFILE + 1
          CALL CHO_NAME(ISYMAB,IFILE,LUCHO,NAME,'OLD')
 C
          IADR = 1
          KOFF = KREAD + LENGT1
-         CALL GETWA2U(LUCHO,NAME,WORK(KOFF),IADR,LENGT2)
+         CALL GETWA2(LUCHO,NAME,WORK(KOFF),IADR,LENGT2)
 C
       END IF
 C
@@ -3811,7 +3880,7 @@ c
       NUMS = NUM10 + NUM12 + NUM15 + NUM20
 c
       NUMT = NUMH
-      WRITE(LUPRI,'(A,2I10)') 'Larger than 1.0D2           : ',NUMH,NUMT
+      WRITE(LUPRI,'(A,2I10)') 'Larger than 1.0D+2          : ',NUMH,NUMT
       NUMT = NUMT + NUM0
       WRITE(LUPRI,'(A,2I10)') 'Between 1.0D+2 and 1.0D+0   : ',NUM0,NUMT
       NUMT = NUMT + NUM2
@@ -3842,7 +3911,7 @@ c
       END IF
       NUMT = NUMT + NUMZ 
       WRITE(LUPRI,'(A,2I10)') 'Exactly 0.0d+00             : ',NUMZ,NUMT
-      WRITE(LUPRI,'(/,A,2I10,//)') 'Negative diagonals          : ',NUMN
+      WRITE(LUPRI,'(A,I10,///)') 'Negative diagonals          : ',NUMN
 C
       RETURN
       END
@@ -3903,16 +3972,18 @@ C
          END IF
       END DO
 C
-      WRITE(LUPRI,'(I3,I8,I10,2D14.5,I8,I6,D14.5)')
+      IF (IPRCHO .GT. 2) THEN
+          WRITE(LUPRI,'(I3,I8,I10,2D14.5,I8,I6,D14.5)')
      &         ISYMAB,ICHOV,ICAB,XC,OLDIAG,ICONV,INEG,XMAX1
-      CALL FLSHFO(6)
+          CALL FLSHFO(LUPRI)
+      END IF
 C
 C     Write secure restart file
 C
       IF (MOD(ICHOV,500) .EQ. 0) THEN
 C
          REWIND(LUSEC)
-         WRITE(LUSEC) NSYM,THRCOM,COMP,REDUCE,LRDTOT,
+         WRITE(LUSEC) NSYM,THRCOM,LRDTOT,
      &             (NNBST(ISYM),ISYM=1,NSYM),
      &             (NUMCHO(ISYM),ISYM=1,NSYM),
      &             (IADRTO(ISYM),ISYM=1,NSYM),
@@ -3961,6 +4032,8 @@ C
 #include <priunit.h>
 C
 C
+      WRITE(LUPRI,'(/)')
+C
       CALL AROUND('Summary of Cholesky decomposition')
       YC = -1.0d0
       DO I = 1,NDIAG
@@ -3971,29 +4044,33 @@ C
          IF (DIAG(I) .LT. -THRCOM) WRITE(LUPRI,'(A,I8,D15.5)')
      &      'Negative diagonal:',I,DIAG(I)
       ENDDO
-      WRITE(LUPRI,'(//,2(9X,A,/))') 'Number of vectors',
+      WRITE(LUPRI,'(/,2(9X,A,/))') 'Number of vectors',
      &                          '-----------------'
-      WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB','Maximum','Actual'
+      WRITE(LUPRI,'(6X,A,9X,A,10X,A)') 'ISAB','Maximum','Actual'
       DO ISYM = 1,NSYM
          WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),NUMCHO(ISYM)
       END DO
 C
       WRITE(LUPRI,'(//,2(9X,A,/))') 'Number of elements',
      &                              '------------------'
-      WRITE(LUPRI,'(6X,A,8X,A,3(7X,A))') 'ISAB','Reduced','Real 0',
-     &                                   'Zeroed','Non zero'
+c     WRITE(LUPRI,'(6X,A,8X,A,3(9X,A))') 'ISAB','Reduced','Real 0',
+c    &                                   'Zeroed','Non zero'
+      WRITE(LUPRI,'(6X,A,7X,A,X,2(9X,A))') 'ISAB','Reduced','Real 0',
+     &                                   'Non zero'
       DO ISYM = 1,NSYM
          XELEM = DFLOAT(NUMCHO(ISYM))*DFLOAT(NREDUC(ISYM))
          YELEM = XELEM - YSEL0(ISYM) - XSEL0(ISYM)
+c        WRITE(LUPRI,'(7X,I2,4F16.0)') ISYM,XELEM,YSEL0(ISYM),
+c    &                                 XSEL0(ISYM),YELEM
          WRITE(LUPRI,'(7X,I2,4F16.0)') ISYM,XELEM,YSEL0(ISYM),
-     &                                 XSEL0(ISYM),YELEM
+     &                                 YELEM
       END DO
 C
-      WRITE(LUPRI,'(/,A,D15.5)') 
+      WRITE(LUPRI,'(//,A,D15.5)') 
      *     'Largest absolute element in diagonal:',DIAG(IY)
 C
       MAXINT = MAXSHL * (MAXSHL+1) / 2
-      WRITE(LUPRI,'(/,A,2I10,//)')
+      WRITE(LUPRI,'(A,2I10,//)')
      &         'Number of distributions (total and actual):',
      &          MAXINT,NTOINT
 C
@@ -4066,11 +4143,12 @@ C
 #include <blocks.h>
 #include <ccdeco.h>
 #include <choio.h>
+#include <priunit.h>
 C
 C
       REWIND(LUSEC)
 C
-      WRITE(LUSEC) NSYM,THRCOM,COMP,REDUCE,LRDTOT,
+      WRITE(LUSEC) NSYM,THRCOM,LRDTOT,
      &             (NNBST(ISYM),ISYM=1,NSYM),
      &             (NUMCHO(ISYM),ISYM=1,NSYM),
      &             (IADRTO(ISYM),ISYM=1,NSYM),
@@ -4095,7 +4173,7 @@ C
 C
       REWIND(LURST)
 C
-      WRITE(LURST) NSYM,THRCOM,COMP,REDUCE,LRDTOT,
+      WRITE(LURST) NSYM,THRCOM,LRDTOT,
      &             (NNBST(ISYM),ISYM=1,NSYM),
      &             (NUMCHO(ISYM),ISYM=1,NSYM),
      &             (IADRTO(ISYM),ISYM=1,NSYM),

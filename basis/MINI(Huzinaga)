@@ -1,13 +1,13 @@
 $Basis = MINI (Huzinaga)
-
-$Elements supported
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
+$
+$ Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
 $
 $  REFERENCE
-$ S. HUZINAGA, ED.,J. ANDZELM, M. KLOBUKOWSKI, E. RADZIO-ANDZELM, Y. SAKAI,    
-$ H. TATEWAKI IN GAUSSIAN BASIS SETS FOR MOLECULAR CALCULATIONS:               
-$ ELSEVIER, AMSTERDAM, 1984.                                                   
-$
+$  S. HUZINAGA, ED.,J. ANDZELM, M. KLOBUKOWSKI, E. RADZIO-ANDZELM, Y. SAKAI,    
+$  H. TATEWAKI IN GAUSSIAN BASIS SETS FOR MOLECULAR CALCULATIONS:               
+$  ELSEVIER, AMSTERDAM, 1984.                                                   
+$***********************************************************************
 a 1
 $ HYDROGEN     (3S) -> [1S]                                      
 $ S-TYPE FUNCTIONS

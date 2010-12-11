@@ -1,26 +1,26 @@
 $Basis = pV6Z
 $
-$Elements supported
-$H C N O
+$ Elements supported
+$ H C N O
 $
-$Note: an error was discovered in the carbon basis set published in J. Chem.
-$Phys. 101, (1994).  That error has been corrected in this version of the basis.
+$ Note: an error was discovered in the carbon basis set published in J. Chem.
+$ Phys. 101, (1994).  That error has been corrected in this version of the basis.
 $
-$This collection of basis sets was designed to mimic and extend the correlation
-$consistent sets.  These sets were created before the official cc-pV6Z sets were
-$developed.
+$ This collection of basis sets was designed to mimic and extend the correlation
+$ consistent sets.  These sets were created before the official cc-pV6Z sets were
+$ developed.
 $
 $  REFERENCE
-$Elements                             References
-$--------                             ----------
-$H:         T. H. Dunning, Jr., (to be published).
-$C:         A.D. Pradhan, H. Partridge and C.W. Bauschlicher, Jr., J. Chem.
-$           Phys. 101, 3857 (1994) with correction to the p set.
-$O:         (s,p) set from H. Partridge, (d,f,g) from T.H. Dunning, Jr.,
-$           (h,i) from D. Feller.
-$N:         C.W. Bauschlicher, Jr. and H. Partridge, J. Chem. Phys. 100,
-$           4329 (1994).
-************************************************************************
+$ Elements                             References
+$ --------                             ----------
+$ H:         T. H. Dunning, Jr., (to be published).
+$ C:         A.D. Pradhan, H. Partridge and C.W. Bauschlicher, Jr., J. Chem.
+$            Phys. 101, 3857 (1994) with correction to the p set.
+$ O:         (s,p) set from H. Partridge, (d,f,g) from T.H. Dunning, Jr.,
+$            (h,i) from D. Feller.
+$ N:         C.W. Bauschlicher, Jr. and H. Partridge, J. Chem. Phys. 100,
+$            4329 (1994).
+$***********************************************************************
 a 1
 $ HYDROGEN     (10s,5p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]
 $ S-TYPE FUNCTIONS

@@ -86,6 +86,8 @@ C          'FC' : F-transformed right first-order Cauchy vectors.
 C          'CF2': F-transformed right second-order Cauchy vectors.
 C          'FR' : F-transformed right eigenvectors.
 C
+C          'XF1': F-transformed right first-order response vectors,
+C                 F12*R2 contribution for Cholesky CC2.
 C
 C          'O1 ': rhs for first-order amplitude equations
 C          'O1e': effective 'O1' vector for triples models
@@ -95,6 +97,9 @@ C          'O4' : rhs for fourth-order amplitude equations
 C          'CO2': rhs for second-order right Cauchy equations
 C          'EO1': rhs for first-order response of right eigenvectors
 C          'EO2': rhs for second-order response of right eigenvectors
+C
+C          'eO1': effective rhs for first-order amplitude equations for
+C                 Cholesky CC2
 C
 C          'X1 ': first-order chi/eta vectors
 C          'X1e': effective 'X1' vector for triples models
@@ -162,6 +167,11 @@ C---------------------------------------------------------------------*
 #include <ccexci.h>
 #include <ccpl1rsp.h>
 #include <dummy.h>
+Cholesky
+#include <maxorb.h>
+#include <cclr.h>
+#include <ccdeco.h>
+Cholesky
  
       CHARACTER SUBRNAME*(8)
       INTEGER LUSAVE
@@ -207,6 +217,15 @@ C---------------------------------------------------------------------*
       IF (MODFIL(1:3).EQ.'SCF') THEN
         IOPT   = IAND(IOPT,4) 
         NWRITE = 1
+C
+Cholesky 
+C
+      ELSE IF (MODFIL(1:3).EQ.'CC2' .AND. CHOINT) THEN
+        IOPT   = IAND(IOPT,5)
+        NWRITE = 2
+C     
+Cholesky
+C 
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *    (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT   = IAND(IOPT,1+4) 
@@ -244,12 +263,13 @@ C---------------------------------------------------------------------*
          IMUL = IMULTE(IDXVEC)
       END IF                              
 
+      IF (LOCDBG) WRITE(LUPRI,*) 'CC_WRRSP> FILE:',FILEX 
 *---------------------------------------------------------------------*
 * open & rewind file:
 *---------------------------------------------------------------------*
       INQUIRE(FILE=FILEX,EXIST=LEXISTS)
 
-      LUSAVE = 0
+      LUSAVE = -1
       CALL GPOPEN(LUSAVE,FILEX,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
 
@@ -260,9 +280,11 @@ C---------------------------------------------------------------------*
       KDOUBLE   = 1
       KSINGLEFF = 1
       KDOUBLEFF = 1
+      KR12DBLE  = 1
       KEND      = 1
 
-      IF (LEXISTS .AND. LISTI(1:2).NE.'R0') THEN
+CCH   IF (LEXISTS .AND. LISTI(1:2).NE.'R0') THEN
+      IF (LEXISTS) THEN
 C
 C        check model and how many vectors were stored on file
 C
@@ -341,22 +363,23 @@ C        read CC R12 doubles vector...
 C
          IF (NVEC.GE.4 .AND. IAND(IOPT,32).EQ.0 .AND. CCR12) THEN
             KR12DBLE = KEND
-            KEND     = KR12DBLE  + NGAMMA(ISYM)
+            KEND     = KR12DBLE  + NTR12AM(ISYM)
             IF (LWORK.LT.KEND-1) THEN
                CALL QUIT('Insufficient memory in CC_WRRSP (r12 dbls).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
-     &            (WORK(KR12DBLE-1+I),I=1,NGAMMA(ISYM))
+     &            (WORK(KR12DBLE-1+I),I=1,NTR12AM(ISYM))
             IF (IMUL.EQ.3) THEN
               CALL QUIT('Triplet for R12 not implemented in CC_WRRSP.')
 C             KEND     = KDOUBLE  + NT2AM(ISYM)+NT2AMA(ISYM)
 C             READ(LUSAVE,ERR=888,END=888) 
 C    &            (WORK(KDOUBLE+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
             END IF
+            IF (LOCDBG) WRITE(LUPRI,*) 'read r12 doubles part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
             READ(LUSAVE,ERR=888,END=888) 
-            IF (LOCDBG) WRITE(LUPRI,*) 'read r12 doubles part'
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped r12 doubles part'
          END IF
          NVECR = 4
 C
@@ -442,6 +465,18 @@ C
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
      &    LISTI(1:3), LRTLBL(IDXVEC), ISYLRT(IDXVEC), FRQLRT(IDXVEC),
      &    LORXLRT(IDXVEC)
+
+*.....................................................................*
+* 'XF1' - F transformed first-order response t amplitudes,
+*         F12*R2 contribution for Cholesky CC2: 
+* 'eO1' - eff. rhs for first-order response t amplitudes for
+*         Cholesky CC2:
+*.....................................................................*
+
+      ELSE IF ( LIST(1:3) .EQ. 'XF1' .OR. LIST(1:3) .EQ. 'eO1') THEN
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
+     &    LIST(1:3), LRTLBL(IDXLST), ISYLRT(IDXLST), FRQLRT(IDXLST),
+     &    LORXLRT(IDXLST)
 
 *.....................................................................*
 * 'R2' - second-order response t amplitudes:
@@ -791,7 +826,6 @@ C
 C
       INTEGER IOS
 
-
 * write vector components to file:
       ! CPHF part for orbital relaxed response 
       IF (NWRITE.GE.1) THEN
@@ -842,7 +876,7 @@ C
       ! R12 doubles cluster amplitudes
       IF (NWRITE.GE.4 .AND. CCR12) THEN
          IF ( IAND(IOPT,32).EQ.32 ) THEN
-            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NGAMMA(ISYM))
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NTR12AM(ISYM))
             IF (IMUL.EQ.3) THEN
               CALL QUIT('Triplet not implemented for R12 in CC_WVRSP')
 C             WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
@@ -851,7 +885,7 @@ C    &            (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
               WRITE(LUSAVE,IOSTAT=IOS,ERR=993)   
             END IF
          ELSE
-            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS2P(I),I=1,NGAMMA(ISYM))
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS2P(I),I=1,NTR12AM(ISYM))
             IF (IMUL.EQ.3) THEN
               CALL QUIT('Triplet not implemented for R12 in CC_WVRSP')
 C             WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
@@ -1005,7 +1039,7 @@ C---------------------------------------------------------------------*
       ELSE IF (IOPT.EQ.32) THEN
         KVEC1 = -999 999
         KVEC2 = 1
-        KEND  = KVEC2 + NGAMMA(ISYM)
+        KEND  = KVEC2 + NTR12AM(ISYM)
       ELSE
         CALL QUIT('Illegal case in CC_WARSP.')
       END IF
@@ -1061,7 +1095,7 @@ C     END IF
         CALL DAXPY(NT2AM(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
       END IF
       IF ( IAND(IOPT,32).NE.0 ) THEN
-        CALL DAXPY(NGAMMA(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
+        CALL DAXPY(NTR12AM(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
       END IF
 C     IF ( IAND(IOPT,4).NE.0 ) THEN
 C       CALL DAXPY(2*NALLAI(ISYM),1.0d0,VEC0,1,WORK(KVEC0),1)

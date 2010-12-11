@@ -29,7 +29,7 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT   -91.324723027810  1-e13
+check_scf_energy DFT   -91.339783336169  1-e13
 '
 . ./functions || { echo "'functions' library not found." ; exit 1; }
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

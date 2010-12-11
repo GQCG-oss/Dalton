@@ -52,7 +52,14 @@ C  /* Deck odbchs */
 #include <iratdef.h>
 #include <odbtch.h>
 #include <odclss.h>
+#include <cbirea.h>
 #include <r12int.h>
+C
+      CALL QENTER('ODBCHS')
+C
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
 C
 C     Initialize
 C
@@ -99,11 +106,9 @@ C
 C     Gab integrals for Cauchy-Schwartz inequality
 C     ============================================
 C
-      KGAB  = 1
-      KLAST = KGAB + NGAB*NGAB
-      LWRK  = LWORK - KLAST + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('ODBCHS','GAB',KLAST,LWORK)
+      CALL MEMGET('REAL',KGAB,NGAB*NGAB,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KGAB),NGAB*NGAB)
+      KGABWRK = KFREE
 C
 C     CALL GETGAB(WORK(KGAB),LWRK,IPRINT)
 C
@@ -121,55 +126,52 @@ C
       NPRIM  = ISUM(NAOBCH,NPRFBT,1)
       NPRIM2 = NPRIM*NPRIM
 C
-      KODBCH = KLAST
-      KRDBCH = KODBCH + (NITBC*NAOBC2 - 1)/IRAT + 1
-      KODPPR = KRDBCH +  NRTBC*NAOBC2
-      KRDPPR = KODPPR + (NITPP*NPRIM2 - 1)/IRAT + 1
-      KODTRA = KRDPPR +  NRTPP*NPRIM2
-      KLAST  = KODTRA + (NITTR*NAOBC2 - 1)/IRAT + 1
-      LWRK   = LWORK  - KLAST + 1
-      IF (KLAST.GT.LWORK) CALL STOPIT('ODBCHS','GODBCH 1',KLAST,LWORK)
+      CALL MEMGET('INTE',KODBCH,NITBC*NAOBC2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRDBCH,NRTBC*NAOBC2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KODPPR,NITPP*NPRIM2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRDPPR,NRTPP*NPRIM2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KODTRA,NITTR*NAOBC2,WORK,KFREE,LFREE)
       CALL GODBCH(WORK(KODBCH),WORK(KODTRA),WORK(KRDBCH),NAOBC2,
-     &            WORK(KODPPR),WORK(KRDPPR),NPRIM2,CCFBT,WORK(KLAST),
-     &            LWRK,ODTRI1,IPRINT)
+     &            WORK(KODPPR),WORK(KRDPPR),NPRIM2,CCFBT,WORK(KFREE),
+     &            LFREE,ODTRI1,IPRINT)
 C
 C     OD classes
 C     ==========
 C
-      KCLASS = KLAST
-      KLASTO = KCLASS + (NITCL*NODCLS - 1)/IRAT + 1
-      LWRK   = LWORK  - KLASTO + 1
-      IF (KLASTO.GT.LWORK) CALL STOPIT('ODBCHS','CLSINF 1',KLAST,LWORK)
+      CALL MEMGET('INTE',KCLASS,NITCL*NODCLS,WORK,KFREE,LFREE)
       CALL CLSINF(WORK(KODBCH),WORK(KODTRA),WORK(KCLASS),
-     &            WORK(KLASTO),LWRK,IPRINT)
+     &            WORK(KFREE),LFREE,IPRINT)
+C
+      CALL MEMCHK('ODBCHS after CLSINF',WORK,1)
 C
 C     Compress and save results
 C     =========================
 C
+      KLAST0 = KFREE
       NODCL1 = NODCLS
       NODBC1 = NODBCH
       NODPP1 = NODPPR
 C
-      KODCL1 = 1
+      KODCL1 = KGABWRK
+C              ------- We save GAB for next electron
       KODBC1 = KODCL1 + (NITCL*NODCL1 - 1)/IRAT + 1
       KRDBC1 = KODBC1 + (NITBC*NODBC1 - 1)/IRAT + 1
       KODPP1 = KRDBC1 +  NRTBC*NODBC1
       KRDPP1 = KODPP1 + (NITPP*NODPP1 - 1)/IRAT + 1
       KLAST1 = KRDPP1 +  NRTPP*NODPP1
 C
-      IF (KLAST1 .GT. KLASTO) THEN
+      IF (KLAST1 .GT. KLAST0) THEN
          WRITE (LUPRI,'(/,1X,A,2(2X,A,I10))')
-     &      ' Error in ODBCHS: KLAST1 greater than KLASTO.',
-     &      ' KLAST1: ',KLAST1,' KLASTO: ',KLASTO
+     &      ' Error in ODBCHS: KLAST1 greater than KLAST0.',
+     &      ' KLAST1: ',KLAST1,' KLAST0: ',KLAST0
          CALL QUIT('Error in ODBCHS')
       END IF
 C
-      KGABX  = KLASTO
-      KODCLX = KGABX  + NGAB*NGAB
-      KODBCX = KODCLX + (NITCL*NODCL1 - 1)/IRAT + 1
-      KRDBCX = KODBCX + (NITBC*NODBC1 - 1)/IRAT + 1
-      KODPPX = KRDBCX +  NRTBC*NODBC1
-      KRDPPX = KODPPX + (NITPP*NODPP1 - 1)/IRAT + 1
+      KODCLX = KODCL1 + (KLAST0 - KGABWRK)
+      KODBCX = KODBC1 + (KLAST0 - KGABWRK)
+      KRDBCX = KRDBC1 + (KLAST0 - KGABWRK)
+      KODPPX = KODPP1 + (KLAST0 - KGABWRK)
+      KRDPPX = KRDPP1 + (KLAST0 - KGABWRK)
       KRDPPY = KRDPPX +  NRTPP*NODPP1
       KLAST  = KRDPPY +  NRTPB*NODPP1
 C
@@ -185,16 +187,7 @@ C
       CALL DCOPY(NRTPB*NODPP1,WORK(KSTART),1,WORK(KRDPPY),1)
       CALL RTRMAT(NODPP1,NRTPB,WORK(KRDPPY),WORK(KSTART))
 C
-C     We must save GAB for next electron
-C
-      CALL DCOPY(NGAB*NGAB,WORK(KGAB),1,WORK(KGABX),1)
-      KGAB = KGABX
-C
-      CALL ICOPY(NITCL*NODCL1,WORK(KODCLX),1,WORK(KODCL1),1)
-      CALL ICOPY(NITBC*NODBC1,WORK(KODBCX),1,WORK(KODBC1),1)
-      CALL DCOPY(NRTBC*NODBC1,WORK(KRDBCX),1,WORK(KRDBC1),1)
-      CALL ICOPY(NITPP*NODPP1,WORK(KODPPX),1,WORK(KODPP1),1)
-      CALL DCOPY(NRTPP*NODPP1,WORK(KRDPPX),1,WORK(KRDPP1),1)
+      CALL DCOPY((KLAST1-KODCL1),WORK(KODCLX),1,WORK(KODCL1),1)
 C
 C     **********************
 C     ***** Electron 2 *****
@@ -235,11 +228,11 @@ C        OD classes
 C        ==========
 C
          KCLASS = KLAST
-         KLASTO = KCLASS + (NITCL*NODCLS - 1)/IRAT + 1
-         LWRK   = LWORK  - KLASTO + 1
+         KLAST0 = KCLASS + (NITCL*NODCLS - 1)/IRAT + 1
+         LWRK   = LWORK  - KLAST0 + 1
          IF (KLAST.GT.LWORK)CALL STOPIT('ODBCHS','CLSINF 2',KLAST,LWORK)
          CALL CLSINF(WORK(KODBCH),WORK(KODTRA),WORK(KCLASS),
-     &               WORK(KLASTO),LWRK,IPRINT)
+     &               WORK(KLAST0),LWRK,IPRINT)
 C
 C        Compress and save results
 C        =========================
@@ -255,14 +248,14 @@ C
          KRDPP2 = KODPP2 + (NITPP*NODPP2 - 1)/IRAT + 1
          KLAST2 = KRDPP2 +  NRTPP*NODPP2
 C
-         IF (KLAST2 .GT. KLASTO) THEN
+         IF (KLAST2 .GT. KLAST0) THEN
             WRITE (LUPRI,'(/,1X,A,2(2X,A,I10))')
-     &         ' Error in ODBCHS: KLAST2 greater than KLASTO.',
-     &         ' KLAST2: ',KLAST2,' KLASTO: ',KLASTO
+     &         ' Error in ODBCHS: KLAST2 greater than KLAST0.',
+     &         ' KLAST2: ',KLAST2,' KLAST0: ',KLAST0
             CALL QUIT('Error in ODBCHS')
          END IF
 C
-         KODCLX = KLASTO
+         KODCLX = KLAST0
          KODBCX = KODCLX + (NITCL*NODCL2 - 1)/IRAT + 1
          KRDBCX = KODBCX + (NITBC*NODBC2 - 1)/IRAT + 1
          KODPPX = KRDBCX +  NRTBC*NODBC2
@@ -293,6 +286,7 @@ C
       LFREE = LWORK - KFREE + 1
       IF (KFREE.GT.LWORK) CALL STOPIT('ODBCHS','FREE',KFREE,LWORK)
 C
+      CALL QEXIT('ODBCHS')
       RETURN
       END
 C  /* Deck rtrmat */
@@ -420,8 +414,10 @@ C  /* Deck odsor1 */
 #include <odclss.h>
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          ISORT(3,NBCH), DSORT(1,NBCH), NSORT(NPSORT,NBCH),
-     &          IODPPR(NITPP,*), RODPPR(NRTPP,*),
+     &          IODPPR(*), RODPPR(NRTPP,*),
      &          KODSRT(NBCH), KCLASS(NBCH), CCFBT(*), WORK(LWORK)
+Cx    dimension of IODPPR was IODPPR(NITPP,*) but changed because NITPP = 0
+Cx    in this version. /hjaaj Oct07 (gave out of bounds in CALL NODDIM below)
 C
       CALL IZERO(NSORT,NPSORT*NBCH)
 C
@@ -437,8 +433,9 @@ C
             END IF
             IA = KAOSRT(KQNBT(NHKTA) - 1 + A)
             IB = KAOSRT(KQNBT(NHKTB) - 1 + B)
+            J_IODPPR = (IPRADR-1)*NITPP + 1
             CALL NODDIM(IA,IB,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
-     &                  ICMATA,ICMATB,PRXFAB,IODPPR(1,IPRADR),
+     &                  ICMATA,ICMATB,PRXFAB,IODPPR(J_IODPPR), ! Cx IODPPR(1,IPRADR) not OK for NITPP=0
      &                  RODPPR(1,IPRADR),CCFBT)
             IF (NPRFAB .GT. 0) THEN
                IBATCH = IBATCH + 1
@@ -581,7 +578,7 @@ C
       ICMATA = KCMTBT(A)
       ICMATB = KCMTBT(B)
 C
-      GCNT   =  GENCON .OR. NCTFAB .GT. 1
+      GCNT   =  GENCON_ERI .OR. NCTFAB .GT. 1
 C
       NCNTAB = 2
       IF (NCNTBT(A) .EQ. NCNTBT(B) .AND. MLTPR.EQ.1) NCNTAB = 1

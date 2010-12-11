@@ -79,7 +79,7 @@ c###############################################################################
       ZA(4)='Z1MNF-SO'  
 c
 c     read information from SYMINFO   
-      ISYMUNIT = 0
+      ISYMUNIT = -1
       inquire(FILE='SYMINFO',EXIST=EX) 
       if (.not.EX) CALL QUIT('SYMINFO not present. Sorry')
       CALL GPOPEN(ISYMUNIT,'SYMINFO','UNKNOWN',' ','FORMATTED',IDUMMY,

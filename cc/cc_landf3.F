@@ -345,7 +345,8 @@ C-----------------------------------------------------
 C
       IF (IOPT .EQ. 2) THEN
 C
-         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK)
+         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK,
+     &                  IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
 C
       ENDIF
 C
@@ -377,7 +378,8 @@ C-------------------------------------------
 C
       IF (IOPT .EQ. 2) THEN
 C
-         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK)
+         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK,
+     &                  IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
 C
       ENDIF
 C

@@ -173,7 +173,7 @@ C
           write(lupri,'(1x,a)')   '---------------------------'
           write(lupri,'(1x,a)')   'State  Excitation Energy'
 
-          ludeg = 0
+          ludeg = -1
           call wopen2(ludeg,fndeg,64,0) 
 
 c         ---------------------------------------------------
@@ -703,7 +703,7 @@ C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
 *---------------------------------------------------------------------*
 *     Read zeroth-order AO Fock matrix from file:
 *---------------------------------------------------------------------*
-      lufock = 0
+      lufock = -1
       call gpopen(lufock,'CC_FCKH','OLD',' ','UNFORMATTED',idummy,
      &            .false.)
       rewind(lufock)
@@ -1034,8 +1034,8 @@ C  /* Deck cc3_lr_ovlp */
 C
       IMPLICIT NONE
 C
-#include<ccexci.h>
-#include<priunit.h>
+#include <ccexci.h>
+#include <priunit.h>
 C
       INTEGER ilstnrst,ilstnrnd,istartend(maxexci,2),lwork
       INTEGER LU3VI,LU3VI2,LU3FOP,LU3FOP2,LUCKJD,LUTOC,LUDKBC
@@ -1097,13 +1097,13 @@ C     Open the files
 C-------------------
 C
 
-      LU3VI   = 0
-      LU3VI2   = 0
-      LU3FOP  = 0
-      LU3FOP2 = 0
-      LUCKJD  = 0
-      LUTOC   = 0
-      LUDKBC   = 0
+      LU3VI   = -1
+      LU3VI2  = -1
+      LU3FOP  = -1
+      LU3FOP2 = -1
+      LUCKJD  = -1
+      LUTOC   = -1
+      LUDKBC  = -1
 C
       CALL WOPEN2(LU3VI,FN3VI,64,0)
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
@@ -1195,14 +1195,14 @@ C  /* Deck eb3_e3_ovlp */
 C
       IMPLICIT NONE 
 C
-#include<priunit.h>
-#include<ccorb.h>
-#include<ccexci.h>
-#include<ccsdsym.h>
-#include<dummy.h>
-#include<iratdef.h>
-#include<cc3t3d.h>
-#include<ccinftap.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccexci.h>
+#include <ccsdsym.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <cc3t3d.h>
+#include <ccinftap.h>
 C
       INTEGER IDLSTEB,ISYMEB,IDLSTE,ISYME,ISYM0,ISINTETR,LWORK
       INTEGER IOPT,IOFF
@@ -1283,12 +1283,12 @@ C--------------------------------
 C     Open temporary files
 C--------------------------------
 C
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUWEB    = 0
-      LUWE     = 0
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUWEB    = -1
+      LUWE     = -1
 C
       CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
       CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
@@ -2013,7 +2013,7 @@ C     Construct TMAT^AC(bjik) = WE^AC(bkji) + WE^AC(bjki)
 C-----------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include<priunit.h>
+#include <priunit.h>
 C
       INTEGER ISWEMAT,LENSQ,INDSQ(LENSQ,6)
       INTEGER I
@@ -2047,8 +2047,8 @@ C******************************************************************
 C
       IMPLICIT NONE 
 C
-#include<ccorb.h>
-#include<ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
 C
       INTEGER ISAIBJ,ISYMB,ISYAIJ,ISYMJ,ISYMBJ,ISYMAI,ISYMI,ISYMA
       INTEGER NBJ,NAI,KOFF1,KOFF2

@@ -71,7 +71,9 @@ C
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
       DIMENSION INDEXA(MXCORB) 
 #include <ccorb.h>
-#include <infind.h>
+CCN !#include <infind.h> not compatible with R12!
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccfield.h>
 #include <ccsdinp.h>
@@ -90,6 +92,10 @@ C
       CALL QENTER('CC2_DEN')
 C
       TIMETO = SECOND()
+      TIMDEN = ZERO
+      TIMHE2 = ZERO
+      TIMRES = ZERO
+      TIRDAO = ZERO
 C
       IF ((IPRINT .GT. 3) .AND. (IOPT .EQ. 1)) THEN
          CALL HEADER('Calculating diagonal blocks of zeta-kappa-0',-1)
@@ -133,7 +139,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC
@@ -449,6 +455,10 @@ C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
                   ISYMD = ISAO(IDEL)
+                  IF (NOAUXB) THEN
+                    IDUM = 1
+                    CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
                   ISYMD = ISYMD1
@@ -815,14 +825,13 @@ C
      *         'Requested density dependent quantities calculated'
          WRITE(LUPRI,*) 'Total time used in CC2_DEN:', TIMETO
       ENDIF
-      IF (IPRINT .GT. 9) THEN
-         WRITE(LUPRI,*) 'Time used for setting up 2 e- density:', TIMDEN
-         WRITE(LUPRI,*) 'Time used for contraction with integrals:', TIMRES
-         WRITE(LUPRI,*) 'Time used for reading 2 e- AO-integrals:', TIRDAO
-         WRITE(LUPRI,*) 'Time used for calculating 2 e- AO-integrals:',
-     *              TIMHE2
-C        WRITE(LUPRI,*) 'Time used for 1 e- density & intermediates:',
-C    *              TIMONE
+      IF (IPRINT .GT. 5) THEN
+         WRITE(LUPRI,'(A,F15.2)')
+     &      ' Time used for setting up 2 e- density      :', TIMDEN
+     &     ,' Time used for contraction with integrals   :', TIMRES
+     &     ,' Time used for reading 2 e- AO-integrals    :', TIRDAO
+     &     ,' Time used for calculating 2 e- AO-integrals:', TIMHE2 
+C    &     ,' Time used for 1 e- density & intermediates :', TIMONE
       ENDIF
 C
 C----------------------------------------------
@@ -857,7 +866,7 @@ C
          ETAABN = ETAABN**0.5
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,*) 'Norm of occupied-occupied block:', ETAIJN
-         WRITE(LUPRI,*) 'Norm of virtual-virtual block:', ETAABN
+         WRITE(LUPRI,*) 'Norm of virtual-virtual block  :', ETAABN
 C
          CALL AROUND('Zeta-kappa-0 diagonal blocks')
          ZKAPI1 = DDOT(NMATIJ(1),ZKDIA(1),1,ZKDIA(1),1)
@@ -867,7 +876,7 @@ C
          ZKAPAB = ZKAPA1**0.5
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,*) 'Norm of occupied-occupied block:', ZKAPIJ
-         WRITE(LUPRI,*) 'Norm of virtual-virtual block:', ZKAPAB
+         WRITE(LUPRI,*) 'Norm of virtual-virtual block  :', ZKAPAB
 C
 c         IF (FROIMP) THEN
 c            ZKAPF1 = DDOT(NCOFRO(1),ZKDIA(KOFRES),1,

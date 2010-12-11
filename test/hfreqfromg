@@ -85,13 +85,11 @@ else
 fi
 
 # Starting geometry and energy
-CRIT1=`$GREP "bond distance\: * H * N * 1\.032522" $log | wc -l`
-CRIT2=`$GREP "bond angle\: * H * N * H * 104\.164" $log | wc -l`
-CRIT3=`$GREP "Final * HF energy\: * \-55\.455419779253" $log | wc -l`
-CRIT4=`$GREP "Nuclear repulsion\: * 11\.737180794400" $log | wc -l`
-CRIT5=`$GREP "Electronic energy\: * \-67\.192600573652" $log | wc -l`
-TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[1]=54
+CRIT1=`$GREP "Final * HF energy\: * \-55\.45541977925." $log | wc -l`
+CRIT2=`$GREP "Nuclear repulsion\: * 11\.73718079440." $log | wc -l`
+CRIT3=`$GREP "Electronic energy\: * \-67\.19260057365." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
 ERROR[1]="STARTING GEOMETRY/ENERGY NOT CORRECT"
 
 # Symmetry input.
@@ -144,8 +142,8 @@ ERROR[4]="FREQUENCIES AND NORMAL COORDINATES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -190,6 +190,7 @@ C
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -224,7 +225,7 @@ C
           CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (T03)')
         END IF
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -232,7 +233,7 @@ C
 
 
         ! store triples amplitudes on file
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -262,6 +263,7 @@ C
 
       IF      (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ' .OR.
      &         LISTB(1:3).EQ.'RC '                              ) THEN
+        KDUM = KEND2
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
@@ -292,7 +294,7 @@ C
       END IF
 
       IF (NONHF .OR. FD_TEST) THEN
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3BARAM','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -390,6 +392,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND3),LWRK3,
      *                  WORK(KRECNR),DIRECT)
  
@@ -482,6 +486,7 @@ C           ----------------------------------
 
       ! read T^0 doubles amplitudes from file and square up 
       IOPT   = 2
+      KDUM = KEND3
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND3))
       CALL CC_T2SQ(WORK(KEND3),WORK(KT02AM),ISYM0)
 
@@ -514,7 +519,7 @@ C           ----------------------------------
           CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (nhf1)')
         ENDIF
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3BARAM','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -602,6 +607,7 @@ c       -------------------------------------------
      *    DDOT(NORBT*NORBT,WORK(KFLDB1),1,WORK(KFLDB1),1)
 
         L2INCL = .FALSE.
+        KDUM = KEND3
         CALL CCSDT_E3AM(WORK(KF3AM),WORK(KDUM),WORK(KL3AM),
      &                  WORK(KFLDB1),L2INCL)
       END IF
@@ -621,7 +627,7 @@ c       -------------------------------------------
            CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (9)')
         ENDIF
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,'T3BARAM','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         REWIND LUTEMP
@@ -694,6 +700,7 @@ c       -------------------------------------------
 
         ! read T^0 doubles amplitudes from file and square up 
         IOPT   = 2
+        KDUM = KEND3
         Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND3))
         CALL CC_T2SQ(WORK(KEND3),WORK(KT02AM),ISYM0)
 
@@ -949,7 +956,7 @@ C------------------------------------------------------
       Call CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT3AM))
       CALL CC_T2SQ(WORK(KT3AM),WORK(KT2AM),1)
 
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'T3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -966,7 +973,7 @@ C------------------------------------------------------
       Call CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KL1AM),WORK(KL3AM))
       CALL CC_T2SQ(WORK(KL3AM),WORK(KL2AM),1)
 
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'L3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -1317,6 +1324,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
      &                  WORK(KRECNR),DIRECT)
  
@@ -1376,7 +1385,7 @@ c       -------------------------------------------
 c       Matrix with property integrals in MO basis:
 c       -------------------------------------------
         ! read property integrals from file:
-        CALL CCPRPAO(LABELB,WORK(KFOCKB),IRREP,IMAT,IERR,
+        CALL CCPRPAO(LABELB,.TRUE.,WORK(KFOCKB),IRREP,IMAT,IERR,
      &               WORK(KEND1),LWRK1)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMB)) THEN
           WRITE(LUPRI,*) 'IERR,IRREP,ISYMB:',IERR,IRREP,ISYMB
@@ -1639,6 +1648,7 @@ c       -------------------------------
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
+      KDUM = KEND1
       Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -1688,6 +1698,7 @@ c       -------------------------------
 
       IF (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ' .OR.
      &    LISTB(1:3).EQ.'RC '                               ) THEN
+        KDUM = KEND2
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),

@@ -1,9 +1,9 @@
 $Basis = NqVD 
 $
-$ REFERENCE
+$  REFERENCE
 $ K.~Faegri, Technical Report, Department of Chemistry,
 $            University of Oslo, 1994. 
-$
+$***********************************************************************
 a 1 2 
    0.201529638D+00    0.821230D+00
    0.133249963D+01    0.274403D+00

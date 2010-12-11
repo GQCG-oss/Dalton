@@ -51,6 +51,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -215,14 +216,13 @@ C        Pick out matrices HESFLT, DIPFLT, POLFLT i from GRED
 C
          CALL FLTHDP(WORK(KRED),NIND)
       ELSE
-C         IF (MOLHES) THEN
-C            DO 200 I = 1, 3*NUCDEP
-C               DO 300 J = 1, I
-C                  HESFLT(I,J) = HESMOL(I,J)
-C                  HESFLT(J,I) = HESMOL(I,J)
-C  300          CONTINUE
-C  200       CONTINUE
-C         END IF
+         IF (MOLHES) THEN
+            DO 200 I = 1, 3*NUCDEP
+               DO 300 J = 1, I
+                  HESMOL(J,I) = HESMOL(I,J)
+  300          CONTINUE
+  200       CONTINUE
+         END IF
          IF (DIPDER) THEN
             DO 400 I = 1, 3*NUCDEP
                DO 500 J = 1, 3

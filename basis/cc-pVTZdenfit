@@ -1,6 +1,11 @@
 $jkbas cc-pVTZaux
 $
-$  REFERENCE turbomole webpage: ftp://ftp.chemie.uni-karlsruhe.de/pub/jkbasen
+$ SUPPORTED ELEMENTS
+$ H B C N O F Al Si P S Cl
+$
+$  REFERENCE 
+$ turbomole webpage: ftp://ftp.chemie.uni-karlsruhe.de/pub/jkbasen
+$***********************************************************************
 a 1
 $ HYDROGEN (4s3p2d1f) / [4s3p2d1f]     {1111/111/11/1}
 $ S-TYPE FUNCTIONS
@@ -257,12 +262,12 @@ $ D-TYPE FUNCTIONS
     0.10843455615    1.0
 $ F-TYPE FUNCTIONS
     3    0    0
-   1.371889973133925   1.0
-   .16796856375255     1.0
-   .39196856375255     1.0
+   1.371889973133925 1.0
+   .16796856375255   1.0
+   .39196856375255   1.0
 $ G-TYPE FUNCTIONS
     1    0    0
-   .30296856375255     1.0
+   .30296856375255   1.0
 
 a 14
 $ SILICON

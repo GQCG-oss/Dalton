@@ -119,7 +119,7 @@ cat > cc2mm_atmvdw.pot <<%EOF%
  6.708867  0.0001115   # Interaction is calculated as 
  6.708867  0.0001115   # Evdw_ij = 4*epsilon_ij*[sigma_ij/R^12-sigma_ij/R^6]
  6.708867  0.0001115   # Construction of two-body parameters are given
- 6.708867  0.0001115   # as input in DALTON.INP, *QM3INP with the keyword
+ 6.708867  0.0001115   # as input in DALTON.INP, *QM3 with the keyword
  6.708867  0.0001115   # .ATMVDW. A multiplication and an additive rule
  5.801443  0.0002709   # is implemented for both parameters:
  4.572986  0.0000478   # SIGADD (+), SIGMLT (*), EPSADD (+), EPSMLT  (*)
@@ -151,12 +151,7 @@ cat > cc2mm_atmvdw.pot <<%EOF%
 cat > cc2mm_atmvdw.dal <<%EOF%
 **DALTON
 .RUN WAVEFUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.THETA
-.NELFLD
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-9
@@ -165,10 +160,14 @@ cat > cc2mm_atmvdw.dal <<%EOF%
 .ATMVDW  # (Giving the Van der Waals sigma and epsilon parameters atomic specific)
  SIGMLT  # (Sigma_ij= sqrt[sigma_i*sigma_j]: Option 2: .SIGADD s_ij=1/2(s_i+s_j))
  EPSMLT  # (epsilon_ij=sqrt[epsilon_i*epsilon_j]: Option 2: .EPSADD)
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.THETA
+.NELFLD
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INP
 .THRESH
 1.0D-10
 *CC INP
@@ -247,9 +246,9 @@ CTRL[3]=3
 ERROR[3]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=` $GREP "1      \-2\.99511544     ( |0)\.01163407     ( |0)\.00364972" $log | wc -l`
-CRIT2=` $GREP "2       ( |0)\.01163407     1\.80034154    \-3\.79640215" $log | wc -l`
-CRIT3=` $GREP "3       ( |0)\.00364972    \-3\.79640215     1\.19477391" $log | wc -l`
+CRIT1=` $GREP "1 * \-2\.99511544 * ( |0)\.01163407 * ( |0)\.00364972" $log | wc -l`
+CRIT2=` $GREP "2 * ( |0)\.01163407 * 1\.80034154 * \-3\.79640215" $log | wc -l`
+CRIT3=` $GREP "3 * ( |0)\.00364972 * \-3\.79640215 * 1\.19477391" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="QUADRUPOLE MOMENT COMPONENTS ARE NOT CORRECT"
@@ -264,8 +263,8 @@ ERROR[5]="LOWEST EXCITATION ENERGIES ARE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

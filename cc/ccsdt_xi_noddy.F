@@ -307,7 +307,7 @@ C
 C     ---------------------------------------
 C     read the zero-order triples amplitudes:
 C     ---------------------------------------
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       READ(LUTEMP) (WORK(KT3AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -539,7 +539,8 @@ c     ----------------------------------------------
         END IF
 
         ! read property integrals from file:
-        CALL CCPRPAO(LABELB,FOCKB,IRREP,ISYMM,IERR,WORK(KEND0),LWRK0)
+        CALL CCPRPAO(LABELB,.TRUE.,FOCKB,IRREP,ISYMM,IERR,
+     &               WORK(KEND0),LWRK0)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMB)) THEN
           CALL QUIT('CCSDT_T31_NODDY: error reading operator '//LABELB)
         ELSE IF (IERR.LT.0) THEN
@@ -659,7 +660,7 @@ c         ----------------------------------
              CALL QUIT('Insufficient space in CCSDT_T31_NODDY (nonhf)')
           ENDIF
 
-          LUTEMP = 0
+          LUTEMP = -1
           CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &                IDUMMY,.FALSE.)
           READ(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -1277,7 +1278,7 @@ C    *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
       CALL QENTER('CCSDT_XI_CONT_NODDY')
 
       IF (.NOT. EMULATE_CCSDPT_DENS2) THEN
-        LUDEFF = 0
+        LUDEFF = -1
         CALL WOPEN2(LUDEFF,FNDEFF,64,0)
       END IF
 
@@ -1327,7 +1328,7 @@ C    *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -1339,7 +1340,7 @@ C    *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file:
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -1393,6 +1394,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
+            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
+            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
      *                  WORK(KRECNR),DIRECT)
  
@@ -1447,7 +1450,7 @@ C     --------------------------------------------
      *                 WORK(KFIELD),WORK(KT3AM2))
 
       IF (NONHF .AND. NFIELD.GT.0) THEN
-         LUT3AM = 0
+         LUT3AM = -1
          CALL GPOPEN(LUT3AM,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND LUT3AM
@@ -1494,7 +1497,7 @@ C     --------------------------------------------
           IF (NONHF .AND. NFIELD.GT.0) THEN
              ! restor T3 amplitudes which in case of finite difference 
              ! calculations have been overwritten in CCSDT_L03AM 
-             LUT3AM = 0
+             LUT3AM = -1
              CALL GPOPEN(LUT3AM,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
      &                   IDUMMY,.FALSE.)
              REWIND LUT3AM
@@ -1533,25 +1536,25 @@ c         write different blocks of the density matrix to
 c         special files as is also done by CCSDPT_DENS2:
 c         (they will be read in by CC_D1AO)
 c         -----------------------------------------------
-          LUDEFF = 0
+          LUDEFF = -1
           IADRIA = 1 + NT1AM(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTIA,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTIA,WORK(KDIA),IADRIA,NT1AM(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTIA,'KEEP') 
 
-          LUDEFF = 0
+          LUDEFF = -1
           IADRAB = 1 + NMATAB(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTAB,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTAB,WORK(KDAB),IADRAB,NMATAB(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTAB,'KEEP') 
  
-          LUDEFF = 0
+          LUDEFF = -1
           IADRIJ = 1 + NMATIJ(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTIJ,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTIJ,WORK(KDIJ),IADRIJ,NMATIJ(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTIJ,'KEEP') 
  
-          LUDEFF = 0
+          LUDEFF = -1
           IADRIA = 1 + NT1AM(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTIA2,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTIA2,WORK(KDIA2),IADRIA,NT1AM(ISYDEN))

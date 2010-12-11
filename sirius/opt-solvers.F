@@ -32,22 +32,23 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
       SUBROUTINE DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,FAOS,DAOS,INDEVC,
-     &                      NEVC,GVEC,BMAT,CVEC,MXERRV,KFREE,LFREE,WRK)
-c     computes weights that old density matrices are summed up with
+     &                       NEVC,GVEC,BMAT,CVEC,MXERRV,KFREE,LFREE,WRK)
+c
+c     Computes weights that old density matrices are summed up with
 c     to create new trial density matrix.
 c     GVEC and BMAT store information between steps.
-c     exact content of these date structures depends on the method used
+c     Exact content of these date structures depends on the method used
 c     to optimize (EDIIS, total energy based, h1-energy based, 
-c     DIIS, with lagrange multplier, without, etc).
+c     DIIS, with lagrange multiplier, without, etc).
 c
 c     The methods are assumed to optimize a quadratic problem:
-c     E = G*c + c'*B*c
-c     where vector G and B are specific to the method.
+c        E = G*c + c'*B*c
+c     where vector G and matrix B are specific to the method.
 c
 c     No matter which method is implemented, it can be divided into three
 c     phases: a). update GVec. b). update B matrix. c). find coefficients c.
 c
-c     The convention is that the weights vector C includes extra entry
+c     The convention is that the weights vector C includes an extra entry
 c     corresponding to the quality of the solution. It can be lambda in
 c     the case of DIIS, or interpolated energy (possibly the electronic
 c     part, depending on the formulation of the problem) in the case of
@@ -59,33 +60,34 @@ c     nitpicking: function pointers would be ideal here...
 #include <infinp.h>
 #include <priunit.h>
 #include <inforb.h>
-      INTEGER METHOD
+      CHARACTER*10 METHOD
       DIMENSION H1AO(NNBAST),SAOUNP(NBAST,NBAST)
       DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
-      INTEGER INDEVC, NEVC
+      INTEGER   INDEVC, NEVC
       DIMENSION GVEC(NEVC),BMAT(NEVC,NEVC),CVEC(NEVC+1)
 
       DIMENSION GVECTMP(NEVC),WRK(*)
-      LOGICAL FEASIBLE
-c      call outpkb(DAOS(1,INDEVC,2),NBAS,NSYM,1,0)
+      LOGICAL   FEASIBLE
+      CALL QENTER('DIISWEIGHTS')
+c     call outpkb(DAOS(1,INDEVC,2),NBAS,NSYM,1,0)
 c     setup the default that acts only when NEVC == 1
       CVEC(1) = 1D0
-      IF(METHOD.EQ.DIMDIIS) THEN
+      IF (METHOD(1:4).EQ.'DIIS') THEN
 c        GVEC is not accessed for DIIS
          IF(NEVC.GT.1) THEN
             CALL diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
      &           MXERRV,KFREE,LFREE,WRK)
             CALL diis_solve_for_coefs(NEVC,GVEC,BMAT,CVEC)
          ENDIF
-      ELSEIF(METHOD.EQ.DIMC2DIIS) THEN
-c     GVEC is not accessed for C2DIIS
+      ELSE IF (METHOD(1:6).EQ.'C2DIIS') THEN
+c        GVEC is not accessed for C2DIIS
          IF(NEVC.GT.1) THEN
             CALL diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
      &           MXERRV,KFREE,LFREE,WRK)
-            CALL c2diis_solve_for_coefs(NEVC,BMAT,CVEC,KFREE,LFREE,WRK)
+            CALL c2diis_solve_for_coefs(NEVC,BMAT,CVEC,WRK,KFREE,LFREE)
          ENDIF
 
-      ELSE IF(METHOD.EQ.DIMEDIIS) THEN
+      ELSE IF (METHOD.EQ.'EDIIS') THEN
          CALL ediis_update_gvec(nevc,energ,H1AO,DAOS,GVEC,INDEVC)
          IF(NEVC.GT.1) THEN
             CALL DCOPY(NEVC,GVEC,1,GVECTMP,1)
@@ -101,9 +103,11 @@ c     GVEC is not accessed for C2DIIS
          END IF
       ELSE
          WRITE(LUPRI,*) 'ERROR: unknown DIIS optimization method: ',
-     &        DIISMETHOD
-         CALL QUIT('unknown DIIS optimization method.')
+     &        METHOD
+         CALL QUIT('Unknown DIIS optimization method.')
       END IF
+      CALL QEXIT('DIISWEIGHTS')
+      RETURN
       END
 c     -------------------------------------------------------------------
 c     DIIS-specific chunk of code
@@ -165,17 +169,17 @@ c     conditioning of the bmatrix to get better lagrangian multipliers.
       ENDDO
       END
 c     -------------------------------------------------------------------
-      SUBROUTINE diis_solve_for_coefs(NEVC,GVEC,BMAT,CVEC)
+      SUBROUTINE diis_solve_for_coefs(NEVC,BMAT,CVEC)
 c     find optimal weights for DIIS using precomputed B matrix
 #include <implicit.h>
-      DIMENSION GVEC(NEVC), BMAT(NEVC,NEVC),CVEC(NEVC+1)
+      DIMENSION BMAT(NEVC,NEVC),CVEC(NEVC+1)
       DIMENSION CONSTR(NEVC+1,NEVC+1)
       INTEGER PIV(NEVC+1)
 #include <priunit.h>
       NPAR = NEVC+1
       DO I = 1,NEVC
-         CONSTR(NPAR,I) = 1D0
-         CONSTR(I,NPAR) = 1D0
+         CONSTR(NPAR,I) = 1.D0
+         CONSTR(I,NPAR) = 1.D0
          DO J = 1,NEVC
             CONSTR(J,I) = BMAT(J,I)
             CONSTR(I,J) = BMAT(J,I)
@@ -183,17 +187,21 @@ c     find optimal weights for DIIS using precomputed B matrix
       ENDDO
       CONSTR(NPAR,NPAR) = 0D0
       CALL DZERO(CVEC,NEVC)
-      CVEC(NPAR) = 1D0
+      CVEC(NPAR) = 1.D0
       CALL DGESV(NPAR,1,CONSTR,NPAR,PIV,CVEC,NPAR,INFO)
-      IF(INFO.NE.0)WRITE(LUPRI,*)'ERROR: DIIS matrix cannot be inverted'
+      IF (INFO.NE.0) THEN
+         WRITE(LUPRI,*)'ERROR: DIIS matrix cannot be inverted'
+         CALL QUIT('ERROR: DIIS matrix cannot be inverted')
+      END IF
+      RETURN
       END
 
 c     
 c     -------------------------------------------------------------------
 c     C2DIIS-specific chunk of code
 c     -------------------------------------------------------------------
-      SUBROUTINE c2diis_solve_for_coefs(NEVC,BMAT,CVEC,KFRSAV,LFRSAV,
-     &     WRK)
+      SUBROUTINE c2diis_solve_for_coefs(NEVC,BMAT,CVEC,
+     &       WRK,KFRSAV,LFRSAV)
 c     find optimal weights for C2DIIS using precomputed B matrix
 #include <implicit.h>
       DIMENSION BMAT(NEVC,NEVC),CVEC(NEVC+1),WRK(*)
@@ -275,10 +283,16 @@ c     -------------------------------------------------------------------
       ENDDO
 
 #else /* do EDIIS with formulas that do not substract similar matrices */
+      ierr = 0
       DO I = 1,NEVC
          DO J = I,NEVC
             BMAT(I,J) = -DDOT(NNBAST,DAOS(1,I,1),1,FAOS(1,J,1),1)
-            BMAT(J,I)=BMAT(I,J)
+#ifdef NO_BMAT_SYM_TEST
+            BMAT(J,I) = BMAT(I,J)
+#else
+            BMAT(J,I) = -DDOT(NNBAST,DAOS(1,J,1),1,FAOS(1,I,1),1)
+            IF (ABS(BMAT(J,I) - BMAT(I,J)) .gt. 1.0D-10) ierr = ierr + 1
+#endif
          ENDDO
       ENDDO
       DO J = 1,NEVC
@@ -293,6 +307,7 @@ c     -------------------------------------------------------------------
      &           - BMAT(INDEVC,J) + BMAT(INDEVC,INDEVC)
          END IF
       ENDDO
+
       GVEC(INDEVC) = D0
       DO J = 1,NEVC
          BMAT(J,INDEVC) = D0
@@ -313,25 +328,96 @@ c     -------------------------------------------------------------------
       INTEGER INDEVC
       LOGICAL FEASIBLE
 
+C     local, temporary arrays
+      DIMENSION CVEC(NEVC)
+C     The B-matrix with the constraint sum(weights)=1.
+      DIMENSION CONSTR(NEVC,NEVC)
+      INTEGER PIV(NEVC)
+
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
+C
+      IF (NEVC .EQ. 1) THEN
+         CALL QUIT('EDIIS called with NEVC .eq. 1')
+      END IF
+c#define EDIIS_SCAN_WHOLE_SPACE 1
+#ifdef EDIIS_SCAN_WHOLE_SPACE 
+         CALL ediis_scan_whole_space(
+     &           NEVC,GVEC,BMAT,WEIGHTVEC,INDEVC,FEASIBLE)
+         GO TO 9999
+#endif
+
+      N2EVC = NEVC*NEVC
+      CALL DCOPY(N2EVC,BMAT,1,CONSTR,1)
+c        WRITE(LUPRI,*) ' CONSTR matrix:'
+c        CALL OUTPUT(CONSTR,1,NEVC,1,NEVC,NEVC,NEVC,1,LUPRI)
+c
+C     Put the weights where none is forced zero last in CVEC.
+
+      CALL DCOPY(NEVC,GVEC,1,CVEC,1)
+c        WRITE(LUPRI,*) 'DIISenergies. ', NEVC, 'error vectors'
+c        WRITE(LUPRI,'(8F10.5)') (CVEC(I),i=1,NEVC)      
+      CALL DGESV(NEVC,1,CONSTR,NEVC,PIV,CVEC,NEVC,INFO)
+      FEASIBLE = INFO.EQ.0
+
+c     Check out quality of the initial EDIIS solution.
+C     (reuse CONSTR as work array)
+      CALL DGEMV('N',NEVC,NEVC,1.D0,BMAT,NEVC,cvec,1, 0.D0,CONSTR,1)
+      EK1 = DDOT(NEVC,CVEC,1,GVEC,1)
+      EK2 = - 0.5D0*DDOT(NEVC,CVEC,1,CONSTR,1)
+      EK  = EK1 + EK2
+      SUMC = DSUM(NEVC,CVEC,1)
+      CVEC(INDEVC) = D1 - SUMC
+      DO I = 1,NEVC
+         IF (CVEC(I).LT.D0) THEN
+            FEASIBLE = .FALSE.
+         ENDIF
+      ENDDO
+      WRITE(LUPRI,*) 'Computed EDIIS weights:'
+      WRITE(LUPRI,'(8F10.5)') (CVEC(I),i=1,NEVC)      
+      WRITE(LUPRI,*) '(full) interpolated Delta energy: ',EK, FEASIBLE
+c
+c     look for other, constrained solution when using ediis.
+c
+      IF (.NOT.FEASIBLE) THEN
+c        ELSE No solution lowering the energy found
+      ELSE
+         CALL DCOPY(NEVC,CVEC,1,WEIGHTVEC,1)
+      ENDIF
+C
+ 9999 CONTINUE
+      write(LUPRI,*) 'Final "ediis" weights, feasible=', FEASIBLE
+      write(LUPRI,*) (weightvec(i),i=1,nevc)
+      write(0,*) 'Final "ediis" weights, feasible=', FEASIBLE
+      write(0,*) (weightvec(i),i=1,nevc)
+      RETURN
+      END
+      SUBROUTINE ediis_scan_whole_space(
+     &           NEVC,GVEC,BMAT,WEIGHTVEC,INDEVC,FEASIBLE)
+#include <implicit.h>
+#include <inforb.h>      
+#include <priunit.h>
+
+      INTEGER NEVC
+      DIMENSION GVEC(*),BMAT(NEVC,NEVC),WEIGHTVEC(*)
+      INTEGER INDEVC
+      LOGICAL FEASIBLE
+
 C     All the 2**NEVC-1 possibilities of a weightvector including energy.
       DIMENSION CVEC(NEVC+1,2**NEVC-1)
       DIMENSION CVECTMP(NEVC+1)
 C     The B-matrix with the constraint sum(weights)=1.
       DIMENSION CONSTR(NEVC,NEVC)
       INTEGER I,PIV(NEVC),ACTSIZE
-c#define EDIIS_SCAN_WHOLE_SPACE 1
-#ifdef EDIIS_SCAN_WHOLE_SPACE 
       LOGICAL ZEROWEIGHT(NEVC)
       INTEGER ZERCNT(2**NEVC-1)
       CHARACTER*2 CTYPE
-#endif
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 C     size (nr of possibilties) in active set
       ACTSIZE=2**NEVC-1
-      N2PAR = NEVC*NEVC
+      N2EVC = NEVC*NEVC
+      CALL DCOPY(N2EVC,BMAT,1,CONSTR,1)
 
-      CALL DCOPY(N2PAR,BMAT,1,CONSTR,1)
 c      WRITE(LUPRI,*) ' CONSTR matrix:'
 c      CALL OUTPUT(CONSTR,1,NEVC,1,NEVC,NEVC,NEVC,1,LUPRI)
 c
@@ -364,8 +450,7 @@ c
 c     look for other, constrained solution when using ediis.
 c
       IF (.NOT.FEASIBLE) THEN
-#ifdef EDIIS_SCAN_WHOLE_SPACE
-         CALL DZERO(CONSTR,NEVC**2)
+         CALL DZERO(CONSTR,N2EVC)
          DO K = 1,ACTSIZE-1
             NROFZEROS = 0
             DO I = 1,NEVC
@@ -432,9 +517,9 @@ c     the B matrix. We just have to skip this combination.
                cvec(nevc+1,k) = EK
             ELSE
                CTYPE = 'UN'
-               CVEC(NEVC+1,k) = 1D0  !9999.D0
+               CVEC(NEVC+1,k) = 1.D0  !9999.D0
             ENDIF
-            WRITE(LUPRI,*) CTYPE,'feasible solution. interpolated E=',
+            WRITE(LUPRI,*) CTYPE,'feasible solution. Interpolated E=',
      &           ek,' weights:'
             WRITE(LUPRI,'(5F10.4)') (cvec(i,k),i=1,nevc)
          ENDDO
@@ -456,7 +541,6 @@ C     different than just skipping it
          ELSE
             FEASIBLE = .FALSE.
          ENDIF
-#endif /* EDIIS_SCAN_WHOLE_SPACE */
 c        ELSE No solution lowering the energy found
       ELSE
          CALL DCOPY(NEVC,CVEC(1,ACTSIZE),1,WEIGHTVEC,1)
@@ -466,3 +550,4 @@ c        ELSE No solution lowering the energy found
       print *, 'Final weights, feasible=', FEASIBLE
       print *, (weightvec(i),i=1,nevc)
       END
+C --- end of opt-solvers.F ---

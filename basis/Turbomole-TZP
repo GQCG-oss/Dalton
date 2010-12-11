@@ -1,14 +1,13 @@
 $Basis = Turbomole-TZP
-
+$
 $ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References 
 $ --------                             ---------- 
-$ H - Kr: A. Schafer, H. Horn and R. Ahlrichs, J. Chem. Phys. 97, 2571 (1992).                                                           
-$
-************************************************************************
+$ H - Kr: A. Schafer, H. Horn and R. Ahlrichs, J. Chem. Phys. 97, 2571 (1992).
+$***********************************************************************
 a 1
 $ HYDROGEN     (5s) -> [3s]                                      
 $ HYDROGEN     (1p)
@@ -565,5 +564,5 @@ $ D-TYPE FUNCTIONS
     1    1    0  
      0.96900000  1.00000000  
 
-
+$END OF BASIS
 

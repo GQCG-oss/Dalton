@@ -227,12 +227,12 @@ matn_times_vec_MO(int ops,const real* mat, const real* vec, real a, real* res)
 
     for(isym=0; isym<inforb_.nsym; isym++) {
         int iorbs = inforb_.iorb[isym];
-        int noccs = inforb_.nocc[isym];
-        int nvirs = inforb_.nvir[isym];
+        integer noccs = inforb_.nocc[isym];
+        integer nvirs = inforb_.nvir[isym];
         int i     = inforb_.muld2h[ops][isym]-1;
         int iorbi = inforb_.iorb[i];
-        int nocci = inforb_.nocc[i];
-        int nviri = inforb_.nvir[i];
+        integer nocci = inforb_.nocc[i];
+        integer nviri = inforb_.nvir[i];
         int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
         int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
 	if(nviri>0) {
@@ -257,12 +257,12 @@ matt_times_vec_MO(int ops,const real* mat, const real* vec, real a, real* res)
 
     for(isym=0; isym<inforb_.nsym; isym++) {
         int iorbs = inforb_.iorb[isym];
-        int noccs = inforb_.nocc[isym];
-        int nvirs = inforb_.nvir[isym];
+        integer noccs = inforb_.nocc[isym];
+        integer nvirs = inforb_.nvir[isym];
         int i     = inforb_.muld2h[ops][isym]-1;
         int iorbi = inforb_.iorb[i];
-        int nocci = inforb_.nocc[i];
-        int nviri = inforb_.nvir[i];
+        integer nocci = inforb_.nocc[i];
+        integer nviri = inforb_.nvir[i];
         int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
         int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(noccs>0) {
@@ -288,12 +288,12 @@ matn_times_vec3_MO(int ops, const real* mat, const real* vec3, real a,
 
     for(isym=0; isym<inforb_.nsym; isym++) {
         int iorbs = inforb_.iorb[isym];
-        int noccs = inforb_.nocc[isym];
-        int nvirs = inforb_.nvir[isym];
+        integer noccs = inforb_.nocc[isym];
+        integer nvirs = inforb_.nvir[isym];
         int i     = inforb_.muld2h[ops][isym]-1;
         int iorbi = inforb_.iorb[i];
-        int nocci = inforb_.nocc[i];
-        int nviri = inforb_.nvir[i];
+        integer nocci = inforb_.nocc[i];
+        integer nviri = inforb_.nvir[i];
         int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
         int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
 	if(nviri>0) {
@@ -331,12 +331,12 @@ matt_times_vec3_MO(int ops, const real* mat, const real* vec3, real a,
 
     for(isym=0; isym<inforb_.nsym; isym++) {
         int iorbs = inforb_.iorb[isym];
-        int noccs = inforb_.nocc[isym];
-        int nvirs = inforb_.nvir[isym];
+        integer noccs = inforb_.nocc[isym];
+        integer nvirs = inforb_.nvir[isym];
         int i     = inforb_.muld2h[ops][isym]-1;
         int iorbi = inforb_.iorb[i];
-        int nocci = inforb_.nocc[i];
-        int nviri = inforb_.nvir[i];
+        integer nocci = inforb_.nocc[i];
+        integer nviri = inforb_.nvir[i];
         int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
         int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(noccs>0) {
@@ -370,7 +370,9 @@ matt_times_vec3_MO(int ops, const real* mat, const real* vec3, real a,
 static __inline__ void
 eval_rho_vars(DftGrid* grid, QuadFastData* d)
 {
-    int isym,nocci,iorbi;
+    int isym,iorbi;
+    integer nocci;
+
     /* u_YN = kappaY*mov; u_YT = kappaY'*mov */
     matn_times_vec_MO(d->symY, d->kappaY, grid->mov, 0.0, d->u_YN);
     matt_times_vec_MO(d->symY, d->kappaY, grid->mov, 0.0, d->u_YT);
@@ -710,9 +712,9 @@ dft_qr_resp_collect_info(real* fi, real*work, int lwork)
    addfock - should Fock-like contribution [k,[k,o]] be added? 
 */
 void
-dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY, 
-         real* kappaZ, int* symZ, int* spinZ, int* addfock, 
-         real* work, int* lwork)
+dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY, 
+         real* kappaZ, integer* symZ, integer* spinZ, integer* addfock, 
+         real* work, integer* lwork)
 {
     static int msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
@@ -740,7 +742,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
 
     electrons = dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
     
-    dft_qr_resp_collect_info(data->dftcontr, work,lwork); /* NO-OP in serial */
+    dft_qr_resp_collect_info(data->dftcontr, work,*lwork); /* NO-OP in serial */
     daxpy_(&inforb_.n2orbx, &ONER, data->dftcontr, &ONEI, fi, &ONEI);
     if(inforb_.norbt<=4) {
         fort_print("Dumping DFT quadratic contribution");

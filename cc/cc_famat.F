@@ -68,6 +68,7 @@ c /* deck cc_famat */
 *
 *     Written by Christof Haettig, October 1996.
 *     CC3 noddy version, April 2002, Christof Haettig
+*     Added CCR12, June 2005, Christian Neiss
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -87,6 +88,8 @@ c /* deck cc_famat */
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <cclists.h>
+#include <r12int.h>
+#include <ccr12int.h>
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -119,6 +122,8 @@ c /* deck cc_famat */
 
       INTEGER NFATRAN, MXVEC, IOPTRES, ITRAN
       INTEGER IFATRAN(MXDIM_FATRAN,NFATRAN), IFADOTS(MXVEC,NFATRAN)
+      INTEGER KGAMMAR12, KCTRR12, KT12AMB, KXINTTRI, KXINTSQ, IDUM
+      INTEGER LUNIT, IAN, KLAMDPB, KLAMDHB, LENMOD, IOPTWR12
 
 #if defined (SYS_CRAY)
       REAL FREQB, FREQA
@@ -131,6 +136,7 @@ c /* deck cc_famat */
 #endif
 
       INTEGER ILSTSYM
+      CHARACTER*(3) APROXR12
 
   
       CALL QENTER('CC_FAMAT')
@@ -245,7 +251,7 @@ c /* deck cc_famat */
       END IF
 
 * read the AO integrals:
-      CALL CCPRPAO(LABELA,WORK(KCTMO),IRREP,ISYM,IERR,
+      CALL CCPRPAO(LABELA,.TRUE.,WORK(KCTMO),IRREP,ISYM,IERR,
      &             WORK(KEND1A),LEND1A)
       IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
          CALL QUIT('CC_FAMAT: error while reading operator '//LABELA)
@@ -525,6 +531,102 @@ c /* deck cc_famat */
       END IF
 
 *=====================================================================*
+* CC-R12 part:
+*=====================================================================*
+      IF (CCR12) THEN 
+        IF (.NOT.IANR12.EQ.1) THEN
+          CALL QUIT('Sorry, only CC-R12 Ansatz 1 implemented yet!')
+        ENDIF
+* allocate memory:
+        KGAMMAR12 = KEND0
+        KEND0     = KGAMMAR12 + NTR12AM(ISYRES)
+        LEND0     = LWORK - KEND0
+C
+        KCTRR12 = KEND0
+        KT12AMB = KCTRR12 + NTR12SQ(ISYCTR)
+        KXINTTRI= KT12AMB + MAX(NTR12SQ(ISYMTB),NTR12SQ(ISYRES))
+        KXINTSQ = KXINTTRI+ NR12R12P(1)
+        KSCR    = KXINTSQ + NR12R12SQ(1)
+        KCTMO   = KSCR    + NTR12SQ(ISYRES)
+        KT1AMP0 = KCTMO   + N2BST(ISYMTA)
+        KLAMDP0 = KT1AMP0 + NT1AMX
+        KLAMDH0 = KLAMDP0 + NLAMDT
+        KT1AMPB = KLAMDH0 + NLAMDT 
+        KLAMDPB = KT1AMPB + NT1AM(ISYMTB)
+        KLAMDHB = KLAMDPB + NGLMDT(ISYMTB)
+        KEND1   = KLAMDHB + NGLMDT(ISYMTB)
+        LEND1   = LWORK - KEND1
+        IF (LEND1.LT.0) THEN
+          CALL QUIT('Insufficient work space for R12 in CC_FAMAT')
+        END IF
+        
+*---------------------------------------------------------------------*
+* read in everything needed: 
+*---------------------------------------------------------------------*
+* read the AO integrals:
+        CALL CCPRPAO(LABELA,.TRUE.,WORK(KCTMO),IRREP,ISYM,IERR,
+     &               WORK(KEND1),LEND1)
+        IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
+          CALL QUIT('CC_FAMAT: error while reading operator '//LABELA)
+        END IF
+
+* get MO coefficients:
+        CALL DZERO(WORK(KT1AMP0),NT1AMX)
+        CALL LAMMAT(WORK(KLAMDP0),WORK(KLAMDH0),WORK(KT1AMP0),
+     &              WORK(KEND1),LEND1)        
+* transform MO matrices with C1:
+        IOPT = 1
+        Call CC_RDRSP(LISTB,ITAMPB,ISYMTB,IOPT,MODEL,WORK(KT1AMPB),
+     &                DUMMY)
+        CALL CCLR_LAMTRA(WORK(KLAMDP0),WORK(KLAMDPB),WORK(KLAMDH0),
+     &                   WORK(KLAMDHB),WORK(KT1AMPB),ISYMTB)
+
+* read R12 Lagrangian multipliers:
+        CALL CC_R12GETCT(WORK(KCTRR12),ISYCTR,2,2.0D0*BRASCL,.FALSE.,
+     &                   'N',IDUM,IDUM,IDUM,LISTC,IZETVC,
+     &                   WORK(KEND1),LEND1) 
+
+* read R12 response amplitudes:
+        CALL CC_R12GETCT(WORK(KT12AMB),ISYMTB,2,KETSCL,.FALSE.,'N',
+     &                   IDUM,IDUM,IDUM,LISTB,ITAMPB,WORK(KEND1),LEND1)
+
+* read R12 overlap matrix:
+        LUNIT = -1
+        CALL GPOPEN(LUNIT,FCCR12X,'OLD',' ','UNFORMATTED',
+     &              IDUM,.FALSE.)
+        REWIND(LUNIT)
+ 8888   READ(LUNIT) IAN
+        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NR12R12P(1))
+        IF (IAN.NE.IANR12) GOTO 8888
+        CALL GPCLOSE(LUNIT,'KEEP')
+        IOPT = 2
+        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),'N',IOPT) 
+        
+*---------------------------------------------------------------------*
+* Calculate singles contribution:
+*---------------------------------------------------------------------*
+       CALL CC_R12ETAA(WORK(KGAMMA1),ISYRES,WORK(KCTRR12),ISYCTR,
+     &                  WORK(KT12AMB),ISYMTB,WORK(KXINTSQ),WORK(KCTMO),
+     &                  ISYMTA,WORK(KLAMDP0),WORK(KLAMDH0),.FALSE.,
+     &                  WORK(KEND1),LEND1)
+
+*---------------------------------------------------------------------*
+* Calculate R12 doubles contribution:
+*---------------------------------------------------------------------*
+        CALL DZERO(WORK(KT12AMB),NTR12SQ(ISYRES))
+        CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KCTRR12),ISYCTR,
+     &                  WORK(KCTMO),ISYMTA,WORK(KLAMDP0),WORK(KLAMDHB),
+     &                  ISYMTB,'T',WORK(KEND1),LEND1)
+        CALL CC_R12XI2B(WORK(KT12AMB),'N',WORK(KXINTSQ),1,'N',
+     &                  WORK(KSCR),ISYRES,'N',-1.0D0)
+        IOPT = 1
+        CALL CCR12PCK2(WORK(KGAMMAR12),ISYRES,.FALSE.,WORK(KT12AMB),
+     &                 'N',IOPT)
+        CALL CCLR_DIASCLR12(WORK(KGAMMAR12),0.5D0*KETSCL,ISYRES)
+
+      END IF 
+
+*=====================================================================*
 * CC3 part:
 *=====================================================================*
       IF (CCSDT) THEN
@@ -575,6 +677,7 @@ c /* deck cc_famat */
 *      the memory has to be organized as follows:
 *         kgamma1     singles result vector
 *         kgamma2     doubles result vector
+*         kgammar12   r12 doubles result vector
 *         kgamma1eff  effective singles result vector for CC3
 *         kgamma2eff  effective doubles result vector for CC3
 *         kend0       start of unused work space
@@ -599,6 +702,11 @@ c /* deck cc_famat */
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_FAMAT.')
       END IF
+      IF (CCR12) THEN
+        APROXR12 = '   '
+        CALL CCSD_MODEL(MODELW,LENMOD,10,MODELW,10,APROXR12)
+        IOPTWR12 = 32
+      END IF
 
 
       IF (IOPTRES.EQ.0 .OR. IOPTRES.EQ.1) THEN
@@ -611,10 +719,17 @@ c /* deck cc_famat */
        END IF
        CALL CC_WRRSP(FILFA,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &               WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND0),LEND0)
+       IF (CCR12) THEN
+         CALL CC_WRRSP(FILFA,IFILE,ISYRES,IOPTWR12,
+     &                 MODELW,DUMMY,DUMMY,WORK(KGAMMAR12),
+     &                 WORK(KEND0),LEND0)
+       END IF
+#if defined CC_AARHUS
        IF (CCSDT) THEN
          CALL CC_WRRSP(FILFA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &             WORK(KGAMMA1EFF),WORK(KGAMMA2EFF),WORK(KEND0),LEND0)
        END IF
+#endif
       ELSE IF (IOPTRES.EQ.4) THEN
        IFILE  = IFATRAN(4,ITRAN)
        IF (ILSTSYM(FILFA,IFILE).NE.ISYRES) THEN
@@ -622,10 +737,17 @@ c /* deck cc_famat */
        END IF
        CALL CC_WARSP(FILFA,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &               WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND0),LEND0)
+       IF (CCR12) THEN
+         CALL CC_WARSP(FILFA,IFILE,ISYRES,IOPTWR12,
+     &                 MODELW,DUMMY,DUMMY,WORK(KGAMMAR12),
+     &                 WORK(KEND0),LEND0)
+       END IF
+#if defined CC_AARHUS
        IF (CCSDT) THEN
         CALL CC_WARSP(FILFA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &             WORK(KGAMMA1EFF),WORK(KGAMMA2EFF),WORK(KEND0),LEND0)
        END IF
+#endif
       ELSE IF (IOPTRES.EQ.5) THEN
        IF (LOCDBG) THEN
          IVEC = 1
@@ -641,6 +763,12 @@ c /* deck cc_famat */
        CALL CCDOTRSP(IFADOTS,FACON,IOPTW,FILFA,ITRAN,NFATRAN,MXVEC,
      &               WORK(KGAMMA1),WORK(KGAMMA2),ISYRES,
      &               WORK(KEND0),LEND0)
+
+       IF (CCR12) THEN
+         CALL CCDOTRSP(IFADOTS,FACON,IOPTWR12,FILFA,ITRAN,NFATRAN,MXVEC,
+     &                 DUMMY,WORK(KGAMMAR12),ISYRES,
+     &                 WORK(KEND0),LEND0)
+       END IF
 
        IF (LOCDBG) THEN
          IVEC = 1
@@ -803,7 +931,7 @@ c /* deck cc_famat */
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -824,7 +952,7 @@ c /* deck cc_famat */
 *---------------------------------------------------------------------*
 *     read zeroth-order AO Fock matrix from file: 
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -858,7 +986,7 @@ c /* deck cc_famat */
 *---------------------------------------------------------------------*
       ISYMA = 1 ! since this code is limited to C1 symmetry...
 
-      CALL CCPRPAO(LABELA,WORK(KFOCKA_AO),IRREP,ISYM,IERR,
+      CALL CCPRPAO(LABELA,.TRUE.,WORK(KFOCKA_AO),IRREP,ISYM,IERR,
      &             WORK(KEND1),LWRK1)
       IF (IERR.NE.0 .OR. IRREP.NE.ISYMA) THEN
        CALL QUIT('CCSDT_FA_NODDY: error reading operator '//LABELA)
@@ -1071,7 +1199,7 @@ C           ----------------------------------
       END DO
 
 ctest
-C     LUFOCK = 0
+C     LUFOCK = -1
 C     CALL GPOPEN(LUFOCK,'CCTEST'//LISTL(1:2)//LISTB(1:2),
 C    &            'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
 C     REWIND(LUFOCK)
@@ -1515,7 +1643,7 @@ C     -------------------------
 *---------------------------------------------------------------------*
 *     get zeroth-order AO Fock in Lambda-MO basis:
 *---------------------------------------------------------------------*
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -1528,17 +1656,17 @@ C     -------------------------
 *---------------------------------------------------------------------*
 *     open some files:
 *---------------------------------------------------------------------*
-      LUINTER = 0
+      LUINTER = -1
       CALL WOPEN2(LUINTER,FNINTER,64,0)
 
-      LUDELD  = 0
-      LUCKJD  = 0
-      LUDKBC  = 0
-      LUTOC   = 0
-      LU3VI   = 0
-      LUDKBC3 = 0
-      LU3FOPX = 0
-      LU3FOP2X= 0
+      LUDELD  = -1
+      LUCKJD  = -1
+      LUDKBC  = -1
+      LUTOC   = -1
+      LU3VI   = -1
+      LUDKBC3 = -1
+      LU3FOPX = -1
+      LU3FOP2X= -1
  
       CALL WOPEN2(LUDELD,FNDELD,64,0)
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -1647,7 +1775,7 @@ c       ---------------------------------------------
 c       read and resort doubles response multipliers:
 c       ---------------------------------------------
         IF (NEED_R2TP) THEN
-          LUR2TP = 0
+          LUR2TP = -1
           CALL WOPEN2(LUR2TP,FNR2TP,64,0)
 
           KR2TP = KEND2
@@ -1826,7 +1954,7 @@ c       -------------------------------------------------
 *---------------------------------------------------------------------*
 *     now compute the F{A} densities from the intermediates:
 *---------------------------------------------------------------------*
-      LUDEFF = 0
+      LUDEFF = -1
       CALL WOPEN2(LUDEFF,FNDEFF,64,0)
 
       IADRIA = 1
@@ -1995,7 +2123,7 @@ c       -------------------------------------------------
             IADRIA = IADR_DEN(IFADEN)
             CALL GETWA2(LUDEFF,FNDEFF,WORK(KDIA1),IADRIA,NT1AM(ISYDEN))
 
-            CALL CCPRPAO(LABELA,WORK(KFOCK),IRREP,IMAT,IERR,
+            CALL CCPRPAO(LABELA,.TRUE.,WORK(KFOCK),IRREP,IMAT,IERR,
      *                   WORK(KEND1),LWRK1)
             IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMA)) THEN
               WRITE(LUPRI,*) 'ISYMA :',ISYMA

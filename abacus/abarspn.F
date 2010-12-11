@@ -81,10 +81,12 @@ C
 C
 C Used from common blocks:
 C ABAINF : DODRCT
+C INFLIN : NCONRF
 C INFTRA : USEDRC
 C
 #include <abainf.h>
 #include <exeinf.h>
+#include <inflin.h>
 #include <infinp.h>
 #include <cbisol.h>
 #include <inforb.h>
@@ -131,8 +133,8 @@ C
       END IF
       CALL FLSHFO(LUPRI)
 C
-      IF (DODRCT) FABRHS = .FALSE.
-C     ... no integral transformation for direct calculations.
+      IF (DODRCT .AND. NCONRF.LE.1) FABRHS = .FALSE.
+C     ... no integral transformation for HF or DFT direct calculations.
 C
       REWIND LUGDVE
       REWIND LUSOVE
@@ -231,8 +233,8 @@ cs
          FLAGSV = DORSP
          DORSP = .TRUE.
 cSPAS:29.11.2002 debugging newtra for SOPPA
-cSPAS    CALL SIROPI
-         IF (.NOT. NEWTRA) CALL SIROPI
+cSPAS    CALL SIR_INTOPEN
+         IF (.NOT. NEWTRA) CALL SIR_INTOPEN
 cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA) 
@@ -681,22 +683,22 @@ C
 C
       IF (ABSORP) THEN
 C
-C     Finite lifetime of the excited states,
-C     corresponds to complex response including absorption
-C     in the system
+C     Nonzero damping parameter corresponds to complex response including 
+C     absorption in the system
 C
          IF (.NOT.RESFLG(KSYMOP)) THEN
             CALL RESONANT(WRK(KREDE),WRK(KREDS),WRK(KIBTYP),
      &           WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),CMO,UDV,PV,
-     &           FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
+     &           FOCK,FC,FV,FCAC,H2AC,XINDX,DUMMY,WRK(KFREE),LFREE)
             RESFLG(KSYMOP) = .TRUE.
          END IF
 C
+         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,LFREE)
          CALL ABSCTL(KOPER,LABEL,WRK(KREDE),WRK(KREDS),
      &        WRK(KREDZ),WRK(KREDGD),WRK(KREDZGD),
      &        WRK(KEIVEC),WRK(KIBTYP),
      &        CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     &        WRK(KFREE),LFREE)
+     &        WRK(KRES),WRK(KFREE),LFREE)
 C
       ELSE
 C

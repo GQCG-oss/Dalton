@@ -67,6 +67,9 @@ c /* deck cc_cphf */
 #include <cclr.h>
 #include <ccfro.h>
 #include <inflin.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 
 * local parameters:
       CHARACTER*(18) MSGDBG
@@ -137,6 +140,15 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         WRITE (LUPRI,*) 'CPHF vectors ',TYPE(1:3),' not implemented.'
         CALL QUIT('required CPHF vectors not implemented.')
       END IF
+
+* Refuse to do anything for Cholesky.
+      IF (CHOINT) THEN
+         WRITE(LUPRI,'(/A/A/A/A/)') '*** WARNING from CC_CPHF:',
+     &      ' WARNING: Refusing to do CPHF for Cholesky, because',
+     &      ' WARNING: ABACUS has not been modified yet!',
+     &      ' WARNING: Program continues nevertheless...'
+         RETURN
+      ENDIF
 
 * get some variables from SIRIUS common blocks
       CALL CC_SIRINF(NCMOT,NASHT,N2ASHX,LCINDX)
@@ -219,9 +231,9 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 
 * open file for right hand side and solution vectors:
 
-      LUGDVE = 0
-      LUSOVE = 0
-      LUREVE = 0
+      LUGDVE = -1
+      LUSOVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUGDVE,FNGDVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL GPOPEN(LUSOVE,FNSOVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -241,7 +253,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         IF (FILCPHF(I:I).EQ.' ') FILCPHF(I:I) = '_'
       END DO
 
-      LUCPHF = 0
+      LUCPHF = -1
       CALL WOPEN2(LUCPHF,FILCPHF,64,0)
 
 *---------------------------------------------------------------------*
@@ -482,7 +494,7 @@ C  Christof Haettig, summer 2003
       END DO
 
 * open direct access file: 
-      LUCPHF = 0
+      LUCPHF = -1
       CALL WOPEN2(LUCPHF,FILCPHF,64,0)
 
 * read vector number IDXLST from file:

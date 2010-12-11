@@ -35,11 +35,6 @@ C
 C
 #ifdef OLD_REV_OLG
 !===========================================================================
-!Revision 1.3  2000/05/24 12:55:16  hjj
-!inserted two missing priunit.h (ftnchek)
-!
-!Revision 1.2  2000/05/02 13:11:45  hjj
-!changed checks for GPOPEN from LU* .EQ. 0 to LU* .LE. 0
 !
 !---
 !971201-hjaaj: TRACTL: make check for transformation already there
@@ -47,20 +42,18 @@ C
 !951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
 !   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
 !950830-hjaaj: LRECL in *4 words for direct access under IRIX
-!941115-hjaaj: SIROPI: included FLAG(34) in def. of OLDTRA
-!940927-hjaaj: SIROPI: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
+!941115-hjaaj: SIR_INTOPEN: included FLAG(34) in def. of OLDTRA
+!940927-hjaaj: SIR_INTOPEN: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
 !940909-hjaaj: added PARAGON define label (same code as AIX)
 !940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
 !   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
 !   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
 !MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-!MAERKE 900111: reconsider in SIROPI (allow flag(14) also when flag(34?)
+!MAERKE 900111: reconsider in SIR_INTOPEN (allow flag(14) also when flag(34?)
 !-------- Revision n05 ends here ---------
 !940517-hjaaj
-!TRACTL: removed obsolete calculation of NRINTM
 !SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
-!--*-- : added HPUX and IRIX define labels (same code as AIX)
-!SIROPI: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
+!SIR_INTOPEN: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
 !        true, irrespective of FLAG(34); fixed ICASE print error on Cray
 !        by extending IF (OPINTM) THEN to after ICASE print
 !TRAAB : removed unused DUMMY parameter statement
@@ -95,16 +88,12 @@ C
 !   of record (a small test program showed that reading more than one
 !   variable read the label in the next record and so on; however, after
 !   the reading the pointer was at the beginning of next record!)
-!900912-hjaaj
-! TRACTL: call flshfo(lupri) before return
 !900801-hjaaj
-! Removed FASTIO file openings (FASTIO was never implemented).
-! Define AIX for file openings.
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
 !   if the needed mo integrals already available.
-! SIROPI: revised ITRLVL check against LUINTM for levels 2 and 3;
+! SIR_INTOPEN: revised ITRLVL check against LUINTM for levels 2 and 3;
 !   rationalized file openings for different computer types;
 !   write warning if flag(14) and integrals not found.
 !900307-hjaaj
@@ -123,27 +112,19 @@ C
 ! NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
 ! of that type needed, but not all (in that case needtp(ityp) .gt. 0)
 !900111-hjaaj
-! SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
+! SIR_INTOPEN: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
 !   MP2] to cases when LUINTM is opened.
 !900108-hjaaj
 ! NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
-!891213-hjaaj
-! inserted *CALL MAXASH in all decks with INFIND
-! inserted *CALL MXCORB in all decks with INFIND or INFINP
 !891208-hjaaj
 ! SORTA,TRACD,TRAAB: print threshold for discarding integrals
 ! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
 !         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
-!891127-hjaaj
-! %s/ICDTYP/ITYPCD/
 !891117-hjaaj
 ! TRAUTH added
 !891116-hjaaj
 ! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
 !   corrupted. Release buffer allocation when no more buffers.
-!891107-hjaaj
-! SIRTRA.U extracted from sir.l02.su
-! NXTH2*,NX2H2* appended
 !890710-hjaaj
 ! Write label 'END INTM' at end of LUINTM in TRAAB
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
@@ -152,7 +133,6 @@ C
 !890615-hjaaj
 ! disabled FIRST=.FALSE. in TRACTL so it can be used in combination runs.
 !890220-hjaaj
-! sortb -- fejl for ITRLVL = 10; indfoert MAXD
 ! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
 #endif
@@ -168,8 +148,8 @@ C
      *   T5,'Hans Joergen Aa. Jensen, University of Aarhus,  Denmark')
       RETURN
       END
-C  /* Deck siropi */
-      SUBROUTINE SIROPI
+C  /* Deck sir_intopen */
+      SUBROUTINE SIR_INTOPEN
 C
 C  3-Nov-1989 Hans Joergen Aa. Jensen
 C
@@ -200,7 +180,7 @@ C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
       IF (NEWTRA) THEN
-         CALL N_SIROPI
+         CALL SIR_INTOPEN_NEWTRA
          RETURN
       END IF
 C
@@ -263,19 +243,19 @@ C           no old luintm opened, then old integrals not available
          IF (OLDTRA .AND. ICASE .GT. 0) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(/A,I2,3(/A))')
-     *         ' WARNING SIROPI, old integral transformation not found'
-     *       //' as expected, ICASE =',ICASE,
-     *         ' if ICASE = 1: mo integral file LUINTM does not exist',
-     *         ' if ICASE = 2: no mo integrals on LUINTM',
-     *         ' if ICASE = 3: transformation level on LUINTM'
+     *         ' WARNING SIR_INTOPEN, old integral transformation not'
+     *       //' found as expected, ICASE =',ICASE,
+     *         ' - ICASE = 1: MO integral file MOTWOINT does not exist',
+     *         ' - ICASE = 2: no MO integrals on MOTWOINT',
+     *         ' - ICASE = 3: transformation level on MOTWOINT'
      *       //' not sufficient'
             IF (ICASE .EQ. 3) WRITE(LUPRI,'(A,2I5)')
-     *         ' ITRLVL requested, ITRLVL on LUINTM :',ITRLVL,JTRLVL
+     *         ' ITRLVL requested & ITRLVL on MOTWOINT :',ITRLVL,JTRLVL
          END IF
          LBUFMA = MAX(LBUFMA,NNORBT,LBINTM)
       END IF
 C
-C     END OF SIROPI (Open MO integral files)
+C     END OF SIR_INTOPEN (Open MO integral files)
 C
       RETURN
       END
@@ -409,13 +389,23 @@ C
       LBUF   = IDABUF + LDABUF + 2
       NDAREC = (2 * LPQRS - NMBASX)/ LDABUF + 1
 C
-C...  OPEN AO INTEGRAL FILE
-C     AND DIRECT ACCESS FILE FOR SORTED AO INTEGRALS
+C...  OPEN AO INTEGRAL FILE AO2INTFILE_LABEL, typically = "AOTWOINT"
 C
-      CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
+      CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,'OLD',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) NSYMAO, (NAOS(I),I=1,8),LBUFAO,NIBUFAO,NBITSAO
+C
+      IF (NIBUFAO .NE. 1) THEN
+         CALL QUIT('Only NIBUF.eq.1 on AOTWOINT has been implemented')
+      END IF
+C
+      IBITMASK  = 2**NBITSAO - 1
+      IBITSHR_1 = 3*NBITSAO
+      IBITSHR_2 = 2*NBITSAO
+      IBITSHR_3 =   NBITSAO
+C
+C...  OPEN DIRECT ACCESS FILE FOR SORTED AO INTEGRALS "AOSRTINT.DA"
 C
       CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
       IF (FEXIST) THEN
@@ -423,8 +413,7 @@ C
      &                                ' ',LBUF,OLDDX)
          CALL GPCLOSE(LUDA,'DELETE')
       END IF
-      CALL GPOPEN(LUDA,'AOSRTINT.DA','NEW','DIRECT',' ',LBUF,
-     &            OLDDX)
+      CALL GPOPEN(LUDA,'AOSRTINT.DA','NEW','DIRECT',' ',LBUF,OLDDX)
 C
 C....    PREPARE LOOK-UP TABLE OF BUFFER STARTING ADDRESSES
 C
@@ -498,10 +487,10 @@ C
 C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
          IF (ABS(VALUE).LT.THRQ) GOTO 3
-            ISS=IBTAND(IBTSHR(LABEL,24),IBT08)
-            IR =IBTAND(IBTSHR(LABEL,16),IBT08)
-            IQ =IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IP =IBTAND(       LABEL,    IBT08)
+            ISS=IBTAND(IBTSHR(LABEL,IBITSHR_1),IBITMASK)
+            IR =IBTAND(IBTSHR(LABEL,IBITSHR_2),IBITMASK)
+            IQ =IBTAND(IBTSHR(LABEL,IBITSHR_3),IBITMASK)
+            IP =IBTAND(       LABEL           ,IBITMASK)
             IF (IP.GE.IQ) THEN
                IPQ = IT(IP) + IQ
             ELSE
@@ -1819,11 +1808,11 @@ C
          KFRSAV = 1
          KFREE  = 1
          LFREE  = KWORK
-         CALL MEMGET('INTE',KITSMO,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KITSAO,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KITSW ,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KITSX ,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIT   ,NORBT+1,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSMO,NBAST,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSAO,NBAST,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSW ,NBAST,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSX ,NBAST,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIT   ,NBAST+1,WORK,KFREE,LFREE)
          CALL TRACTL_1(KTRLVL,CMO,WORK(KITSMO),WORK(KITSAO),
      &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -1953,9 +1942,9 @@ C
       IADH2  = -1
       IADH2X = -1
       IADH2D = -1
-      LUHALF = 0
-      LUDA   = 0
-      LUDA2  = 0
+      LUHALF = -1
+      LUDA   = -1
+      LUDA2  = -1
 C
 C     ***** TYPE OF TRANSFORMATION                             *****
 C     ***** ITRLVL=0:FIRST INDEX,ALL ORBITALS                  *****
@@ -2271,9 +2260,9 @@ C     900801-hjaaj: check if transformation already done
 C     971201-hjaaj: code moved to here (was too late)
 C        LSRTAO .ne. 0 should cover all situations where
 C        it is possible that MO integrals already exist
-C        on LUINTM. NOTE: this requires that SIROPI has been
+C        on LUINTM. NOTE: this requires that SIR_INTOPEN has been
 C        called before first call to TRACTL_1 !!!!!!
-C        SIROPI will set LSRTAO = -1 if LUINTM exists with
+C        SIR_INTOPEN will set LSRTAO = -1 if LUINTM exists with
 C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
 C     
@@ -2333,6 +2322,9 @@ C        ... LUDA does not exist
          END IF
       END IF
       IF (LSRTAO.EQ.0) THEN
+C        hjaaj 11-jan-2007: make sure AOTWOINT exists
+         CALL MAKE_AOTWOINT(WORK,KWORK)
+
 C     HJ-840710 was: IF (JTER.EQ.1) THEN
          CALL GPCLOSE(LUINTM,'DELETE')
          CALL GPOPEN(LUINTM,FNINTM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -2573,8 +2565,8 @@ C     and allocate space for buffers.
 C
       IF (IDIST .EQ. 0) THEN
          CALL REWSPL(LUINTM)
-         READ (LUINTM)
-         READ (LUINTM) LBINTM, LVLMOL
+         READ (LUINTM,ERR=998,END=999)
+         READ (LUINTM,ERR=998,END=999) LBINTM, LVLMOL
          LVLMIN = 0
          IF (NEEDTP(1).NE.0 .OR. NEEDTP(2).NE.0. .OR.
      &       NEEDTP(4).NE.0 .OR. NEEDTP(5).NE.0) LVLMIN = 2
@@ -2587,6 +2579,7 @@ C        distributions must be available (needtp .gt. 0).
      &         'NXTH2M error, LVLMOL on LUINTM too small'
             WRITE (LUPRI,*) 'LVLMOL =',LVLMOL
             WRITE (LUPRI,*) 'need   :',LVLMIN
+            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=1,6)
             CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF
@@ -2636,6 +2629,12 @@ C
       END IF
       CALL QEXIT('NXTH2M')
       RETURN
+  998 CONTINUE
+         WRITE (LUPRI,*) 'ERROR reading MOTWOINT in NXTH2M'
+         CALL QUIT('ERROR reading MOTWOINT in NXTH2M')
+  999 CONTINUE
+         WRITE (LUPRI,*) 'END OF FILE reading MOTWOINT in NXTH2M'
+         CALL QUIT('END OF FILE reading MOTWOINT in NXTH2M')
       END
 C  /* Deck nx2h2m */
       SUBROUTINE NX2H2M(IC,ID,H2CD,NEEDTP,BUF,IBUF,IDIST)

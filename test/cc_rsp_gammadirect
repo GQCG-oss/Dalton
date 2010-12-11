@@ -105,10 +105,10 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\--100.00891992" | wc -l`
-CRIT2=`$GREP "Total SCF   energy:                  \-100.00891992" $log | wc -l`
-CRIT3=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT4=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\--100.008919(8|9)." | wc -l`
+CRIT2=`$GREP "Total SCF   energy:                  \-100.008919(8|9)." $log | wc -l`
+CRIT3=`$GREP "Total MP2   energy:                  \-100.193662(5|6)." $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy:                  \-100.1977909." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -121,11 +121,11 @@ ERROR[1]="ENERGIES NOT CORRECT"
 # gamma_0   26.650035
 # A         5.5617554   
 CRIT1=`$GREP "0    105\.3291.       105\.3291.       105\.3291.       105\.3291." $log | wc -l`
-CRIT2=`$GREP "2    5756\.566.       2878\.283.       1918\.855.       959\.4276." $log | wc -l`
+CRIT2=`$GREP "2    5756\.566.       2878\.283.       1918\.855.       959\.427(6|7)." $log | wc -l`
 CRIT3=`$GREP "0    26\.65003.       26\.65003.       26\.65003.       26\.65003." $log | wc -l`
-CRIT4=`$GREP "2    1778\.651.       889\.3258.       592\.8839.       296\.4419." $log | wc -l`
+CRIT4=`$GREP "2    1778\.65(1|2).       889\.325(8|9).       592\.88(39|40).       296\.44(19|20)." $log | wc -l`
 CRIT5=`$GREP "gamma_0   26\.65003." $log | wc -l`
-CRIT6=`$GREP "A         5\.561755." $log | wc -l`
+CRIT6=`$GREP "A         5\.56175(5|6)." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 + $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[2]=6
 ERROR[2]="CCSD GAMMA DISPERSION COEFFICIENTS NOT CORRECT"
@@ -148,8 +148,8 @@ CRIT3=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-|  | 0)\.[ 0]+ XDIPLEN  \(unrel\.\)  
 CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-|  | 0)\.[ 0]+ ZDIPLEN  \(unrel\.\)  ( |0)\.[ 0]+ YDIPLEN  \(unrel\.\) (\-0| \-|  | 0)\.[ 0]+ ( |0)\.902737" $log | wc -l`
 CRIT5=`$GREP "beta_\|\| * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000     10\.311797" $log | wc -l`
 CRIT6=`$GREP "beta\^K * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000     10\.311797" $log | wc -l`
-CRIT7=`$GREP "beta_\|_ * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000     3\.4372657" $log | wc -l`
-CRIT8=`$GREP "beta_ms" $log | sed "s/D/E/" | awk "{if (\\\$NF < 1.0E-8 ) print \\\$0}" | wc -l`
+CRIT7=`$GREP "beta_\|_ * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000 * (\-0|\-| |0)\.0000     3\.437265(7|8)" $log | wc -l`
+CRIT8=`$GREP "  beta_ms  " $log | sed "s/D/E/" | awk '{if (\$NF < 1.0E-8 && \$NF > -1.0E-8 ) print \$0}' | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 + $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
 CTRL[4]=8
 ERROR[4]="CCSD STATIC FIRST HYPERPOLARIZABILITIES (BETA) NOT CORRECT"
@@ -157,8 +157,8 @@ ERROR[4]="CCSD STATIC FIRST HYPERPOLARIZABILITIES (BETA) NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

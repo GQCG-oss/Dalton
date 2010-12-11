@@ -159,8 +159,8 @@ C
   300    CONTINUE
          IF (NZROW .GT. 0) WRITE(LUPRI,1400) NZROW
       END IF
- 1200 FORMAT(/I6,' :',10I7,/,(8X,10I7))
- 1300 FORMAT(/I6,' :',5I14,/,(8X,5I14))
+ 1200 FORMAT( I6,' :',10I7,/,(8X,10I7))
+ 1300 FORMAT( I6,' :',5I14,/,(8X,5I14))
  1400 FORMAT(/I6,' rows with only zeroes were not printed.')
 C
       RETURN
@@ -296,7 +296,7 @@ C VERY SUBTLE ROUTINE FOR DYNAMIC ALLOCATION
 C
 #include <iratdef.h>
 C
-      IF (KADD .GT. 0) THEN
+      IF (KADD .GE. 0) THEN
          KBASE = KFREE
          IF ( IR .EQ. 1 ) THEN
             KFREE = KFREE + (KADD-1)/IRAT + 1

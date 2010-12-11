@@ -116,6 +116,7 @@ c/* Deck CC_DMAT */
 #include "ccfield.h"
 #include "aovec.h"
 #include "blocks.h"
+#include "r12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -127,7 +128,7 @@ c/* Deck CC_DMAT */
       LOGICAL APPEND, NOAPPEND
       PARAMETER (APPEND = .TRUE., NOAPPEND = .FALSE.)
 
-      INTEGER KDUM
+      INTEGER KDUM, IDUM
       PARAMETER( KDUM = +99 999 999 ) ! dummy address for work space
       INTEGER ISYM0
       PARAMETER( ISYM0 = 1 ) ! symmetry of the reference state
@@ -247,7 +248,7 @@ C     END IF
 
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
-        LUDMAT = 0
+        LUDMAT = -1
         CALL WOPEN2(LUDMAT,FILDMA,64,0)
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -544,6 +545,10 @@ C     END IF
 
             IF (DIRECT) THEN
               IDEL   = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                IDUM = 1
+                CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYDEL = ISAO(IDEL)
             ELSE
               IDEL   = IBAS(ISYMD1) + ILLL
@@ -737,7 +742,7 @@ c    &                    WORK(KENDF1),LENDF1)
 * check return option for the result vectors:
       IF (IOPTRES .EQ. 0 .OR. IOPTRES .EQ. 1) THEN
 
-        CALL WCLOSE2(LUDMAT,FILDMA,IERROR)
+        CALL WCLOSE2(LUDMAT,FILDMA,'KEEP')
 
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4 .OR. IOPTRES.EQ.5) THEN
         CONTINUE

@@ -74,10 +74,10 @@ C
 C
 C     We proceed to open the output-file
 C
-      LUVRML = 0
+      LUVRML = -1
       FILENM = 'first.wrl'
       IF (LAST) THEN
-         LUVRML = 0
+         LUVRML = -1
          FILENM = 'last.wrl'
       END IF
       CALL VRINI(LUVRML,FILENM)
@@ -99,7 +99,7 @@ C
 C     Finally all eigenvectors are visualized
 C
       IF (VREIGV) THEN
-         LUVRML = 0
+         LUVRML = -1
          IEIG = 1
          IEVEC = 1
          IF (IPRINT .GT. 0) THEN
@@ -228,7 +228,7 @@ C
 C
 C     We proceed to open the output-file
 C
-      LUVRML = 0
+      LUVRML = -1
       FILENM = 'norm_XXX.wrl'
       WRITE(FILENM(6:8),'(I3)') MODENR
       IF (MODENR .LT. 100) WRITE(FILENM(6:6),'(A1)') '0'
@@ -345,7 +345,7 @@ C
 C
 C     We proceed to open the output-file
 C
-      LUVRML = 0
+      LUVRML = -1
       FILENM = 'firstsym.wrl'
       CALL VRINI(LUVRML,FILENM)
 C

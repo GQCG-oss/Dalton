@@ -11,6 +11,7 @@ FFILES = \
         dft_exp.F    \
         dft_gridLL.F \
         dft_mag.F    \
+	dft_mos.F    \
         dft_grad.F   \
         dft_hes.F    \
         dft_aux.F    \
@@ -23,13 +24,15 @@ FFILES = \
 # we define functional files separately since they are used also 
 # for the fun-tester.
 FUNFILES = \
-	fun-becke.c	\
-	fun-becke35.c	\
 	fun-b86.c	\
 	fun-b86mx.c	\
-	fun-b97.c	\
 	fun-b97-1.c	\
 	fun-b97-2.c	\
+	fun-b97-3.c	\
+	fun-b97-k.c	\
+	fun-b97.c	\
+	fun-becke.c	\
+	fun-becke35.c	\
 	fun-cam-b3lyp.c \
 	fun-dk87x.c	\
 	fun-example.c	\
@@ -41,35 +44,36 @@ FUNFILES = \
 	fun-example7.c	\
 	fun-example8.c	\
 	fun-example9.c	\
-	fun-gga.c	\
 	fun-g96.c	\
+	fun-gga.c	\
+	fun-hcth93.c	\
+	fun-hcth93m.c	\
+	fun-hcth120.c	\
+	fun-hcth147.c	\
+	fun-hcth407.c	\
+	fun-hcth407p.c	\
 	fun-kt.c	\
 	fun-lb94.c	\
+	fun-lg93.c	\
+	fun-lrc95x.c	\
 	fun-lyp.c	\
 	fun-lypr.c	\
-	fun-hcth93.c	\
- 	fun-hcth120.c	\
- 	fun-hcth147.c	\
- 	fun-hcth407.c	\
- 	fun-hcth407p.c	\
-	fun-lrc95x.c	\
-	fun-lg93.c	\
+	fun-mpbex.c	\
+	fun-mpwx.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\
 	fun-pbex.c	\
-	fun-revpbex.c	\
-	fun-rpbex.c	\
-	fun-mpbex.c	\
 	fun-pw86x.c	\
 	fun-pw91c.c	\
 	fun-pw91nc.c	\
-	fun-pw92c.c	\
-	fun-pw92ac.c	\
 	fun-pw91x.c	\
 	fun-pw91x2.c	\
-	fun-mpw.c	\
+	fun-pw92ac.c	\
+	fun-pw92c.c	\
 	fun-pz81.c	\
+	fun-revpbex.c	\
+	fun-rpbex.c	\
 	fun-slater.c	\
 	fun-vwn.c       \
         fun-wignerc.c   \
@@ -109,7 +113,7 @@ Makefile.depend depend: *.h ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 libdft.a: $(OBJS) Makefile
-	-rm $@
+	-rm -f $@
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 

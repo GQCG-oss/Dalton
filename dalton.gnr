@@ -1,7 +1,7 @@
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
-# (before standard dalton basis library, predefined in dalton.x)
-BASDIR=$WRKDIR ; export BASDIR
+# (before standard dalton basis library in INSTALL_BASDIR, appended below)
+BASDIR=$WRKDIR
 #
 paramlist="$*"
 
@@ -19,16 +19,18 @@ optn=0
 optlam=
 opti=0
 opto=0
+optt=0
+potfil=
 frl=rel
 #
 # Define usage message
 #
 usage (){
 	  echo
-	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
-	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
-          echo  "pot{.$POTEXT} (if QM3 calculation)"
-          echo
+	  echo "Usage: $0 [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
+	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory]"
+        echo  " dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
+        echo
 	  echo 'Options:'
 	  echo ' -b dir    prepend dir to directory list for basis set searches.'
 	  echo '           Current directory and dalton basis library are included automatically.'
@@ -36,13 +38,17 @@ usage (){
 	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
-          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
+        echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
 	  echo ' -M mb     set scratch memory to mb Megabytes'
 	  echo ' -m mem    set scratch memory to mem double precision words'
 	  echo ' -N num    use MPI version with num nodes'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-          echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
-          echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
+        echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
+        echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
+# Oct. 09: AHS and JMO
+#   added qmmm option to be used with QM/MM calculations
+        echo ' -mmsv file copy relay matrix from $TMPDIR to $WRKDIR/$file'
+        echo ' -mmcp file copy relay matrix from $WRKDIR/$file to $TMPDIR'
 	  echo
 	 }
 #
@@ -71,7 +77,7 @@ backup () {
 #
 while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
-      -b ) BASDIR="$2:$BASDIR"; export BASDIR; shift;;
+      -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
       -ext ) OUTEXT=$2; shift;;
@@ -82,25 +88,49 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
-      -t ) TMPDIR=$2; shift;;
+      -t ) optt=1; TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
+# Oct. 09: AHS and JMO
+#   added qmmm option to be used with QM/MM calculations
+      -mmcp ) optqmmm=copy; relay=$2; shift;;
+      -mmsv ) optqmmm=save; relay=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
 done
+
+# append default basis set directory /hjaaj Apr 2006
+len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
+if [ $len_INSTALL_BASDIR -gt 1 ]; then
+   # do not count newline char
+   BASDIR="$BASDIR:$INSTALL_BASDIR"
+fi
+export BASDIR
+
 # check for correct input
 if [ -z "$1" ]; then
-   echo 'Input file[s] not specified'
+   echo 'Fatal error: Input file[s] not specified'
+   echo "Your command was: $0 $paramlist"
    usage
    exit 1
 fi
 #  remove .dal, if added by user
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
-#  only one common input file;
-   molfil=$dalfil
-   outnam=$molfil
-   input_files="input file: $dalfil.$DALEXT"
+#  only one input file, check if molfil exist with same base name;
+   if [ -r ${dalfil}.mol ]; then
+      molfil=$dalfil
+    if [ -r ${dalfil}.pot ]; then
+      potfil=$dalfil
+      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+    else
+      input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+    fi
+   else
+      molfil=
+      input_files="input file: $dalfil.$DALEXT"
+   fi
+   outnam=$dalfil
 else
 #  two input files;
 #  remove .mol, if added by user
@@ -121,21 +151,25 @@ if [ -n "$3" ]; then
    else
       outnam=${dalfil}_${molfil}_${potfil}
    fi
-   input_files="input files: $dalfil.$DALEXT ,$molfil.$MOLEXT and $potfil.$POTEXT"
+   input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
 #
 export TMPDIR
 if [ ! -d "$TMPDIR" ]; then
    mkdir -p $TMPDIR
 fi
-SCRATCHDIR=$TMPDIR/$outnam
+if [ $optn -gt 1 -o $optt -gt 0 ] ; then
+  SCRATCHDIR=$TMPDIR
+else
+  SCRATCHDIR=$TMPDIR/$USER/$outnam
+fi
 #
 echo
 echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   Dalton Release 2.0 (Feb. 2005)"
+echo "   Dalton Release 2010 (Dec. 2010)"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
@@ -169,21 +203,44 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
    else
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
-#      ierr=1
+      echo " => assuming user has written MOLECULE input in dalton input file"
    fi
    if [ "$potfil" != "" ]; then 
      if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
         cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
      else
-        echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
-        echo "A file with the extension $POTEXT only exist in QM/MM calc."
-#       ierr=1
+        echo "$WRKDIR/$potfil.$POTEXT for QM/MM does not exist or is not readable"
+        ierr=1
+     fi
+   fi
+# Oct. 09: AHS and JMO
+#   Copying the relay matrix to scratch directory to be used when restarting QM/MM calculations
+   if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
+     if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
+       echo "Copying the relay matrix to scratch directory..."
+       cp $WRKDIR/$relay QMMMIM
+       if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
+         echo "Relay matrix not present in scratch directory. Continuing anyway..."
+       else
+         echo "Done" 
+       fi
+     else
+       echo "Cannot copy relay matrix because it does not exist or is not readable"
      fi
    fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
+         echo "====================="
          echo "The '-f' option is active, now unpacking $optf.tar.gz into:"
-	 gunzip < $WRKDIR/$optf.tar.gz | tar xvf -
+	   tar -z -x -v -f $WRKDIR/$optf.tar.gz
+         echo "====================="
+      elif [ -s $WRKDIR/$optf -a -r $WRKDIR/$optf ] ; then
+#     hjaaj: at least GNU tar finds out autmatically if tar, tar.gz or
+#     tar.bzip2 -- hopefully your tar program also does that!
+         echo "====================="
+         echo "The '-f' option is active, now unpacking $optf into:"
+	   tar -x -v -f $WRKDIR/$optf
+         echo "====================="
       else
          echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
          ierr=1
@@ -199,20 +256,21 @@ fi
 #
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
-      if [ -a $DALMPI -a -x $DALMPI ]; then
+      if [ -s $DALMPI -a -x $DALMPI ]; then
 	 if [ -n "$optlam" ] ; then
 	    lamboot -v  $WRKDIR/$optlam
-	    $MPIRUN -np $optn $DALMPI
+	    $MPIRUN -wd $TMPDIR -np $optn $DALMPI
             ierr=$?
 	    wipe    -v  $WRKDIR/$optlam
 	 else
 	    $MPIRUN -np $optn $DALMPI
+#	    $MPIRUN --prefix /usr/local/lib/openmpi -np $optn $DALMPI
             ierr=$?
 	 fi
          if [ $ierr -ne 0 ];then
             echo "Error in $MPIRUN -np $optn $DALMPI, exit code $ierr"
 #           No "exit $ierr" here, because we want to save output and 
-#           tar-file for restart possibilities.
+#           tar-file for restart possibilities !!!!!!
          fi
       else
 	 echo "$DALMPI does not exist or is not executable"
@@ -242,7 +300,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
+filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then
@@ -263,6 +321,17 @@ if [ -s $outnam.tar.gz ] ; then
    echo "$outnam.tar.gz has been copied to $WRKDIR"
 else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
+fi
+
+# Oct. 09: AHS and JMO
+#   Saving the relay matrix to so it can be used in subsequent restarted QM/MM calculations
+if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
+  if [ -s QMMMIM -a -r QMMMIM ]; then
+    echo "Saving the relay matrix in $WRKDIR/$relay"
+    cp QMMMIM $WRKDIR/$relay
+  else
+    echo "Could not save the relay matrix because it does not exist or is not readable"
+  fi
 fi
 
 if [ $opto -eq 1 ] ; then
@@ -297,7 +366,8 @@ cd $WRKDIR
 
 NERR=`grep -c ERROR $OUTFIL`
 if [ $ierr -ne 0 -o $NERR -gt 0 ] ; then
-   echo; echo "WARNING for ERROR  (Dalton program stopped with exit code $ierr)"
+   echo "----------------------------------------------------------"
+   echo "WARNING for ERROR  (Dalton program stopped with exit code $ierr)"
    if [ $optD -eq 1 ] ; then
       echo "- THEREFORE scratch directory $SCRATCHDIR is not deleted"
       echo "  by this script so you may restart the calculation, if possible"
@@ -310,19 +380,19 @@ fi
 
 nwrn=`grep -c -i WARNING $OUTFIL`
 if [ $nwrn -gt 0 ] ; then
-   echo
+   echo "----------------------------------------------------------"
    echo "$nwrn WARNINGS have been issued by Dalton,"
-   echo "output from 'grep -n -i WARNING'  (max 5 warnings):"
-   grep -n -i "WARNING" $OUTFIL | head -5
+   echo "output from 'grep -n -i WARNING'  (max 10 warnings):"
+   grep -n -i "WARNING" $OUTFIL | head -10
 fi
 
-if [ `grep -c '[^"]INFO' $OUTFIL` -gt 0 ] ; then
-   echo
-   echo "Informational messages have been issued by Dalton,"
-   echo "output from 'grep -n INFO'  (max 5 lines):"
-   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -5
+ninfo=`grep -c '[^"]INFO' $OUTFIL`
+if [ $ninfo -gt 0 ] ; then
+   echo "----------------------------------------------------------"
+   echo "$ninfo informational messages have been issued by Dalton,"
+   echo "output from 'grep -n INFO'  (max 10 lines):"
+   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -10
 fi
-
 
 # Disabled check of DALTON.ERR, it is generally duplication
 # of the warnings etc. in DALTON.OUT /hjaaj
@@ -344,6 +414,9 @@ fi
 if [ $optD -eq 1 ] ; then
    rm -rf $SCRATCHDIR
 fi
+
+echo; echo "   `date`"
+echo "   ***************************************** "
 
 if [ $ierr -ne 0 ]; then
    exit $ierr

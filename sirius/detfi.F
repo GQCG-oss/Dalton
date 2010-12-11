@@ -160,7 +160,7 @@ C
       RETURN
       END
 C  /* Deck ioctyp */
-      FUNCTION IOCTYP(STRING,IAB,IFLAG)
+      INTEGER FUNCTION IOCTYP(STRING,IAB,IFLAG)
 C
 C OBTAIN OCCUPATION TYPE NUMBER FOR STRING WITH
 C FORBIDDEN STRINGS RETURN WITH A ZERO TYPE
@@ -241,7 +241,7 @@ C WITH ZERO STRINGS
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION NSTAOC(1), IPOINT(1)
+      DIMENSION NSTAOC(*), IPOINT(*)
       DIMENSION NL1FTP(*),NL2FTP(*),NL3FTP(*)
 C
       IF (NTEST .GT. 2) THEN
@@ -316,11 +316,11 @@ C SOME DIMENSION OF STRINGS FOR DEFINING STATIC PARTITIONING OF
 C MEMORY
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <mxpdim.h>
 #include <maxash.h>
 #include <strnum.h>
 #include <ciinfo.h>
-#include <priunit.h>
 c.Added sept 90
 c NL1FTP : Number of electron in ras 1 for string of given type
 c NL2FTP : Number of electron in ras 2 for string of given type
@@ -346,9 +346,10 @@ COLD  MS2  = MULTS - 1
       IF (NTEST .GT. 1) WRITE(LUPRI,*) ' MS2 NAEL NBEL ', MS2,NAEL,NBEL
 C
       IF (NAEL + NBEL .NE. NEL ) THEN
-        WRITE(LUPRI,*)
-     &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
-        CALL QUIT('NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY')
+         WRITE(LUPRI,'(/A/A,2I15)')
+     &'STOP in STRDIM: No. of ELECTRONS and MULTIPLICITY INCONSISTENT',
+     &'MS2, NEL', MS2, NEL
+         CALL QUIT('NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY')
       END IF
 C
       NORB1 = IORB1L - IORB1F + 1
@@ -533,7 +534,7 @@ C
       RETURN
       END
 C  /* Deck msympr */
-      FUNCTION MSYMPR(STRING,NEL,ORBSYM)
+      INTEGER FUNCTION MSYMPR(STRING,NEL,ORBSYM)
 c
 c 910415-hjaaj MSYMPR routine for SIRIUS
 c
@@ -683,8 +684,6 @@ C
         CALL MEMADD(KTBSYM,(MAXSYM+1)*NBSTR,KFREE,1)
         CALL MEMADD(KNXFSB,NBSTR,KFREE,1)
       END IF
-      KIXSOA = -1
-      KIXSOB = -1
 C
       IF( NTEST .GE. 3 ) THEN
         WRITE(LUPRI,'(//A/)') ' >>> Output from MEMDET <<<'
@@ -730,7 +729,7 @@ C
 C NOSYM added Nov '88
 #include <implicit.h>
       INTEGER   CLCTYP
-      DIMENSION WORK(1)
+      DIMENSION WORK(*)
       DIMENSION NRAS1(8),NRAS2(8),NRAS3(8)
       LOGICAL   REFSPC
 C
@@ -963,7 +962,7 @@ C
 #include <priunit.h>
       INTEGER ORBSYM(1)
       DIMENSION NRAS1(MAXSYM),NRAS2(MAXSYM),NRAS3(MAXSYM)
-      DIMENSION ILTSOB(1),ISTLOB(1)
+      DIMENSION ILTSOB(*),ISTLOB(*)
 #include <cbreor.h>
 C
         MINTP = 1

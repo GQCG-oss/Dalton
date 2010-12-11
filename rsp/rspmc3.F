@@ -48,7 +48,7 @@ C
 C
       CHARACTER*(*)PRPLBL
 C
-      DIMENSION PRPMO(NORBT,2),DEN1(NASHDI,2)
+      DIMENSION PRPMO(NORBT,*),DEN1(NASHDI,*)
 C
 #include <priunit.h>
 #include <wrkrsp.h>

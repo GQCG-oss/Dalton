@@ -99,8 +99,8 @@ C
       REAL T1AM(*), T2TP(*)
       REAL L1AM(*), L2TP(*)
       REAL WORK(LWORK), ONE
-      REAL TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
-      REAL TICONV, TICONO, RHO1N, RHO2N
+      REAL TITRAN, TISORT, TISMAT, TIQMAT, TIOME1
+      REAL RHO1N, RHO2N
       REAL XT2TP, DDOT, XIAJB, XINT, XTROC, XTROC1, XTROC0
       REAL XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       REAL XSMAT, XTMAT, XQMAT, XRMAT, ZERO, TWO, HALF
@@ -109,8 +109,8 @@ C
       DOUBLE PRECISION T1AM(*), T2TP(*)
       DOUBLE PRECISION L1AM(*), L2TP(*)
       DOUBLE PRECISION WORK(LWORK), ONE
-      DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
-      DOUBLE PRECISION TICONV, TICONO, RHO1N, RHO2N
+      DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TIOME1
+      DOUBLE PRECISION RHO1N, RHO2N
       DOUBLE PRECISION XT2TP, DDOT, XIAJB, XINT, XTROC, XTROC1, XTROC0
       DOUBLE PRECISION XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       DOUBLE PRECISION XSMAT, XTMAT, XQMAT, XRMAT, ZERO, TWO, HALF
@@ -162,7 +162,6 @@ C
       TISORT = 0.0D0
       TISMAT = 0.0D0
       TIQMAT = 0.0D0
-      TICONT = 0.0D0
       TIOME1 = 0.0D0
 C
 C--------------------------------------
@@ -271,7 +270,7 @@ C-----------------------------------------------------
 C     Construct the transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C
       IF (CC3) THEN
 C     This AO Fock matrix is constructed from the T1 transformed density
@@ -546,19 +545,19 @@ C--------------------------------------------------------
 C     Open files to the one and two electron densities.
 C--------------------------------------------------------
 C
-      LUPTIA   = 0
+      LUPTIA   = -1
       FNDPTIA  = 'DPTIA'
 C     d_{ia}
       CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
       IF ((.NOT. CC3) .AND. (RELORB)) THEN
-         LUPTIAJB = 0
-         LUABI1   = 0
-         LUABI2   = 0
-         LUABI3   = 0
-         LUABI4   = 0
-         LUAIJK   = 0
-         LUIAJK   = 0
+         LUPTIAJB = -1
+         LUABI1   = -1
+         LUABI2   = -1
+         LUABI3   = -1
+         LUABI4   = -1
+         LUAIJK   = -1
+         LUIAJK   = -1
          FNDIAJB  = 'DPTIAJB'
          FNDABI1  = 'DPTABIC1'
          FNDABI2  = 'DPTABIC2'
@@ -582,9 +581,9 @@ C        d_{aijk}
 C        d_{iajk}
          CALL WOPEN2(LUIAJK,FNDIAJK,64,0)
       ELSE
-         LUPTIA2  = 0
-         LUPTAB   = 0
-         LUPTIJ   = 0
+         LUPTIA2  = -1
+         LUPTAB   = -1
+         LUPTIJ   = -1
          FNDPTIA2 = 'DPTIA2'
          FNDPTAB  = 'DPTAB'
          FNDPTIJ  = 'DPTIJ'
@@ -1992,8 +1991,8 @@ C
             WRITE(LUPRI,*) 'Norm of KAPAA : ',RHO1N
          ENDIF
 C
-         LUKAPAB = 0
-         LUKAPIJ = 0
+         LUKAPAB  = -1
+         LUKAPIJ  = -1
          FNKAPAB  = 'KAPAB'
          FNKAPIJ  = 'KAPIJ'
          CALL WOPEN2(LUKAPAB,FNKAPAB,64,0)
@@ -2067,8 +2066,6 @@ C
          WRITE(LUPRI,1) 'CC3_SORT  : ',TISORT
          WRITE(LUPRI,1) 'CC3_SMAT  : ',TISMAT
          WRITE(LUPRI,1) 'CC3_QMAT  : ',TIQMAT
-         WRITE(LUPRI,1) 'CC3_CONV  : ',TICONV
-         WRITE(LUPRI,1) 'CC3_CONO  : ',TICONO
          WRITE(LUPRI,1) 'CC3_OME1  : ',TIOME1
          WRITE(LUPRI,*)
       END IF

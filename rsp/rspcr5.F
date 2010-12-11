@@ -89,44 +89,47 @@ C
       CHARACTER*8 LABX1,LABX2,LAB1,LAB2,BLANK
       PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
 C
-      FOUND = .FALSE.
-      CONV = .FALSE.
+      FOUND  = .FALSE.
+      CONV   = .FALSE.
       USOLVD = .FALSE.
       REWIND (LU)
+C
   100 READ(LU,END=200,ERR=200)
      &      LABX1,LABX2,FREQX1,FREQX2,ISYMX1,ISYMX2,ANTSYM,
      &      RSDX,LEN,EMCX,NBSX,NRBX
-      IF (LABX1 .EQ. 'EOFLABEL') THEN
-         RETURN
-      END IF
+      IF (LABX1 .EQ. 'EOFLABEL') GOTO 200
+C
       IF ((NRBX .NE. NORBT) .OR. (NBSX .NE. NBAST)) THEN
-            WRITE (LUPRI,'(/A,2(/A,I5,2X,I5))')
-     &           ' Orbital data found on response'//
-     &           ' vector file does not match current orbital data',
-     &           ' Number of basis functions/orbitals on file      : ',
-     &           NBSX,NRBX,
-     &           ' Number of basis functions/orbitals in this calc.: ',
-     &           NBAST,NORBT
-            WRITE (LUPRI,'(/A)') ' Calculation will be stopped'
-            CALL QUIT('Inconsistent orbital description found '//
-     &                'on response vector file')
+         WRITE (LUPRI,'(/A,2(/A,I5,2X,I5))')
+     &        ' Orbital data found on response'//
+     &        ' vector file does not match current orbital data',
+     &        ' Number of basis functions/orbitals on file      : ',
+     &        NBSX,NRBX,
+     &        ' Number of basis functions/orbitals in this calc.: ',
+     &        NBAST,NORBT
+         WRITE (LUPRI,'(/A)') ' RSPVEC is reset to empty file'
+         REWIND (LU)
+         WRITE (LU) 'EOFLABEL'
+         GOTO 200
       ELSE
-         IF (ABS(EMCX - EMCSCF) .GT. THRZER) THEN
-            IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR. 
-     &          (OPTWLK .AND. ITERNR .GT. 0)) THEN
+         IF (ABS((EMCX - EMCSCF)/EMCSCF) .GT. 100D0*THRZER) THEN
+Chj         IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR. 
+Chj  &          (OPTWLK .AND. ITERNR .GT. 0)) THEN
+Chj         Try to use as initial guess /hjaaj-Mar2006
                USOLVD = .TRUE.
-               WRITE (LUPRI,'(/A,/2A)') ' Converged vectors from'//
-     &            ' previous geometry are used as starting '//
-     &              'vectors for property',LABX1, LABX2
-            ELSE
-               WRITE (LUPRI,'(/A,2(/A,F20.10))')
+Chj         ELSE
+            IF (ABS((EMCX - EMCSCF)/EMCSCF) .GT. 1.D-3) THEN
+Chj         If they don't agree to three digits, then probably
+Chj         from a different calculation /hjaaj-Mar2006
+               WRITE (LUPRI,'(/A,2(/A,F24.14))')
      &              ' Molecular energy found on response'//
      &              ' vector file does not match current energy',
      &              ' Energy on file            : ',EMCX,
      &              ' Energy in this calculation: ',EMCSCF
-               WRITE (LUPRI,'(/A)') ' Calculation will be stopped'
-               CALL QUIT('Inconsistent energy found on response '//
-     &                   'vector file')
+               WRITE (LUPRI,'(/A)') ' RSPVEC is reset to empty file'
+               REWIND (LU)
+               WRITE (LU) 'EOFLABEL'
+               GOTO 200
             END IF
          END IF
       END IF
@@ -162,6 +165,11 @@ C
       END IF
 C
  199  CONTINUE
-      IF (USOLVD) CONV = .FALSE.
+      IF (USOLVD) THEN
+         CONV = .FALSE.
+         WRITE (LUPRI,'(/A,/2A)') ' Converged vectors from'//
+     &      ' previous calculation are used as starting '//
+     &      'vectors for property',LABX1, LABX2
+      END IF
  200  RETURN
       END

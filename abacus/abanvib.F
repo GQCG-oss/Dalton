@@ -63,6 +63,7 @@ C
       WORD1 = WORD
  100  CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -621,10 +622,10 @@ C
             DO IMPCAL = 1, NMPCAL
                CALL AROUND('New geometry:')
                WRITE (LUPRI,'(5X,A,I5)') 'Geometry number:', IMPCAL
-               LUPRPCO = 0
+               LUPRPCO = -1
                CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
      &                     ' ','FORMATTED',IDUMMY,.FALSE.)
-               CALL PRPRPC(LUPRPCO,2,CCPRFV(1,IMPCAL))
+               CALL PRPRPC(LUPRPCO,2,CCPRFV(1,IMPCAL),NPRMI)
                CALL GPCLOSE(LUPRPCO,'KEEP')
             END DO
          END IF
@@ -902,7 +903,7 @@ C
 C
 C     *** Opening property file. ***
 C
-      LUNDPR = 0
+      LUNDPR = -1
       CALL GPOPEN(LUNDPR,'PROPERTY.NDER','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND(LUNDPR)
@@ -1500,7 +1501,7 @@ C
 C
 C     *** Open ref file. ***
 C
-      LUREF = 0
+      LUREF = -1
       CALL GPOPEN(LUREF,'PROPERTY.REF','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND(LUREF)

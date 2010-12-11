@@ -98,28 +98,28 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "C * 1 * 6 * 20 * 10 * \[8s4p\|4s2p\]" $log | wc -l`
-CRIT2=`$GREP "H * 4 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 5 * 10 * 36 * 18" $log | wc -l`
+CRIT1=`$GREP "C * 1 * 6\.0000 * 20 * 10 * \[8s4p\|4s2p\]" $log | wc -l`
+CRIT2=`$GREP "H * 4 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 5 * 10\.0000 * 36 * 18" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=3
 ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: 15" $log | wc -l`
-CRIT2=`$GREP "1 * C * x * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "Total number of coordinates\: * 15" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
-CRIT5=`$GREP "4 * H * 1 * x * 1\.182370971[0-4]" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.182370971[0-4]" $log | wc -l`
 CRIT6=`$GREP "5 * y * 1\.182370971[0-4]" $log | wc -l`
 CRIT7=`$GREP "6 * z * 1\.182370971[0-4]" $log | wc -l`
-CRIT8=`$GREP "7 * H * 2 * x * 1\.182370971[0-4]" $log | wc -l`
+CRIT8=`$GREP "7 * x * 1\.182370971[0-4]" $log | wc -l`
 CRIT9=`$GREP "8 * y * \-1\.182370971[0-4]" $log | wc -l`
 CRIT10=`$GREP "9 * z * \-1\.182370971[0-4]" $log | wc -l`
-CRIT11=`$GREP "10 * H * 3 * x * \-1\.182370971[0-4]" $log | wc -l`
+CRIT11=`$GREP "10 * x * \-1\.182370971[0-4]" $log | wc -l`
 CRIT12=`$GREP "11 * y * 1\.182370971[0-4]" $log | wc -l`
 CRIT13=`$GREP "12 * z * \-1\.182370971[0-4]" $log | wc -l`
-CRIT14=`$GREP "13 * H * 4 * x * \-1\.182370971[0-4]" $log | wc -l`
+CRIT14=`$GREP "13 * x * \-1\.182370971[0-4]" $log | wc -l`
 CRIT15=`$GREP "14 * y * \-1\.182370971[0-4]" $log | wc -l`
 CRIT16=`$GREP "15 * z * 1\.182370971[0-4]" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -136,9 +136,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Total SCF   energy\: * \-40\.170920554[0-9]" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy\: * \-40\.27892377(7|8)[0-9]" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy\: * \-40\.299263340[0-9]" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy\: * \-40\.170920554." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy\: * \-40\.27892377.." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy\: * \-40\.29926334.." $log | wc -l`
 TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=6
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -164,8 +164,8 @@ ERROR[6]="SOPPA(CCSD) POLARIZABILITIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

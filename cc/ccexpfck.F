@@ -130,7 +130,7 @@ C
       END IF                           
 
       ! open file for effective Fock matrices
-      LUFCK = 0
+      LUFCK = -1
       CALL WOPEN2(LUFCK,FILFCK,64,0)        
 
       ! initialize start address for eff. Fock matrices on file
@@ -258,7 +258,7 @@ C
       ELSE
 
          ! the standard case: retrieve integrals using CCPRPAO
-         CALL CCPRPAO(LABEL,WORK(K1INT),ISYM,IMATRIX,IERR,
+         CALL CCPRPAO(LABEL,.TRUE.,WORK(K1INT),ISYM,IMATRIX,IERR,
      &                     WORK(KEND1),LWRK1)
          IF (IERR.LT.0) THEN
            CALL DZERO(WORK(K1INT),N2BST(ISYMOPR))
@@ -1072,6 +1072,7 @@ C  /* Deck cc_expfck_init */
 *---------------------------------------------------------------------*
 *     if needed, first magnetic derivative (London) integrals 
 *---------------------------------------------------------------------*
+      LDHDB = .FALSE.
       DO I = 1, NRSOLBL
          IF ( LBLOPR(I)(1:5).EQ.'dh/dB' ) LDHDB = .TRUE.
       END DO

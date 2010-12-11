@@ -1,3 +1,8 @@
+!hjaaj 17. april 2006: husk at implementere ny ide til RSTEP,
+! nemlig ROSTEP = max(i) (sum(j) xkap(j,i)**2 ) i stedet for
+!        ROSTEP = 0.5 sum(j,i) xkap(j,i)**2
+! dette burde være OK, jvf. erfaring med Roothaan og Lea/Stinne/Jeppe
+!---
 C
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -13,7 +18,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -33,15 +38,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:34  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.2  2000/05/01 14:04:06  hjj
-removed obsolete KAVER code.
-===========================================================================
-#endif
+C  Principal author of this file: Hans Jørgen Aa. Jensen
+C
 C  /* Deck sirsav */
       SUBROUTINE SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,
      *                   WRK,LFREE)
@@ -199,10 +197,10 @@ C     ... if (neosave or nrsave) then
          IF (ICTL .EQ. 1) THEN
             CALL WRITT(LUIT1,NNRED4,REDL(1))
          ELSE
-Chj-aug99:  NR, we must create REDL matrix in WRK(KREDL)
+Chj-aug99:  NR; we must therefore create REDL matrix in WRK(KREDL)
 C           so backup to NEO and use in UPDATE is possible
-C           REDL(1:MAXRL) = REDG
-C           REDL(MAXRL+1:) = REDH
+C           REDG = REDL(1:MAXRL)
+C           REDH = REDL(MAXRL+1:)
 C
             KREDL = 1
             KEND  = KREDL + NREDL*(NREDL+1)/2
@@ -212,7 +210,7 @@ C
 Chj:        redl(1,1) = 0
             NREDH = NREDL - 1
             IREDH = MAXRL
-            IREDL = 1
+            IREDL = KREDL
             DO I = 1, NREDH
                WRK(IREDL + 1) = REDL(I)
 Chj:           redl(1+i,1) = redg(i)
@@ -611,7 +609,7 @@ C
          IF (NCONF .GT. 1) THEN
             REWIND (LUIT1)
 C           search for "STARTVEC"
-            CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+            CALL MOLLAB(TABLE(3),LUIT1,lupri)
             DO 9010 I = 1,NRS
                JCVECS = KCVECS + (I-1)*NCONF
                CALL READT(LUIT1,NCONF,WRK(JCVECS))
@@ -638,7 +636,7 @@ C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CVECS,CMO,AOCC,
 C    *               INDXCI,WRK,KFREE,LFREE)
 C
          REWIND (LUIT1)
-         CALL MOLLAB(TABLE(3),LUIT1,LUERR)
+         CALL MOLLAB(TABLE(3),LUIT1,lupri)
 C        search for "STARTVEC"
          RSTKEY = 'CNOSAVE '
          BACKSPACE LUIT1
@@ -666,7 +664,7 @@ C        if (int.transf. needed in optimization) then new transf. needed
 C
 C *** End of subroutine SIRSAV
 C     Empty buffers to LUIT1 by rewinding
-C     (so we don't loose the restart information if for instance
+C     (so we do not loose the restart information if for instance
 C      the system crashes)
 C
  9000 CONTINUE

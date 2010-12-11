@@ -118,7 +118,7 @@ C
      &        DOTHIS
 #include <primit.h>
 #include <symmet.h>
-      COMMON /MAXOLD/ OLDMAX
+      COMMON /MAXOLD/ SRFMAX,OLDMAX
       DIMENSION NPCO1(NSET1,2,0:NODC12), NPCO2(NSET2,2,0:NODC12),
      &          JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -136,6 +136,7 @@ C
      &          XFAC(8), YFAC(8), ZFAC(8),
      &          NREDCC(NORB1,NORB2), NRED12(NORB1*NORB2),
      &          NFTOR1(NUC1), NFTOR2(NUC2)
+C
 
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
@@ -154,13 +155,19 @@ C
          CALL QUIT('Illegal value of NSET in ODCGEN.')
       END IF
 C
-      SRFMAX = D0
       IF (ITYPE .EQ. 12) THEN
          IELCTR = 1
+         SRFMAX = D0
          THRSH  = THRESH
       ELSE
          IELCTR = 2
+C
+C     This adjustment of screening thresholds seems to lead to stalling and
+C     odd convergence behaviour. Disabled. kr-230106
+C     hjaaj-071017: reenabled; I think the problem was SRFMAX was not saved
+C
          THRSH  = THRESH/OLDMAX
+Chj      THRSH  = THRESH
       END IF
 C
 C     XFAC, YFAC and ZFAC
@@ -242,7 +249,12 @@ Chj         CFMAX  = CFMAX1(IPRM1)*CFMX2
 C
 C           screening test
 C
-            DOTHIS = .FALSE.
+C           DOTHIS = .FALSE.
+C dothis set to .true. 
+C Must not be futher changed without extensive
+C testing on large molecules! tuh 08.12.05
+C
+            DOTHIS = .TRUE.
             DO 315 ISYM = 1, NODC12
 Chj: next line moved from 320 loop to here
                NPRI12(ISYM) = NPRI12(ISYM) + 1
@@ -552,7 +564,7 @@ C
 #include <primit.h>
 #include <symmet.h>
 #include <expopt.h>
-      COMMON /MAXOLD/ OLDMAX
+      COMMON /MAXOLD/ SRFMAX,OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
      &          EXP12(NUC1*NUC2,3,NODC12),
@@ -560,6 +572,7 @@ C
      &          NUCS12(NORB1*NORB2,NODC12), NPRI12(8),
      &          NIND12(NORB1*NORB2,2), NORT12(8),
      &          IXP12(NUC1*NUC2,2,NODC12)
+C
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
@@ -575,7 +588,13 @@ C
          THRSH  = THRESH
       ELSE
          IELCTR = 2
+C
+C     This adjustment of screening thresholds seems to lead to stalling and
+C     odd convergence behaviour. Disabled. kr-230106
+C     hjaaj-071017: reenabled; I think the problem was SRFMAX was not saved
+C
          THRSH  = THRESH/OLDMAX
+Chj      THRSH  = THRESH
       END IF
 Chj aug99: find max relevant isymop
 C          test is trivially true for ISYMOP .eq. 1
@@ -733,7 +752,7 @@ CDIR$ NOVECTOR
                      DIST12 = DIFX*DIFX + DIFY*DIFY + DIFZ*DIFZ
                      FAC12I = CCF12*EXP(-EXPQ*DIST12)
                      ABSFAC = ABS(FAC12I)
-Chj                  IF (DOTHIS) THEN
+Chj                  IF (DOTHIS) THEN ! we now only enter here if needed
                         NPRI12(NSYMOP) = NPRI12(NSYMOP) + 1
                         NUCT12(NSYMOP) = NUCT12(NSYMOP) + 1
                         SRFMAX = MAX(SRFMAX,ABSFAC)
@@ -1010,11 +1029,13 @@ C
      &               MAX2,SIGN,I120X,COOR12(1,1,2),COOR12(1,1,3),HEXPPI,
      &               'EX00',IPRINT)
          IF (U12INT)
-     &   CALL WKEQ30(COEF12(1,0,0,0,1,1),COEF12(1,0,0,0,1,2),
+     &   CALL WKEQ30(1,COEF12(1,0,0,0,1,1),COEF12(1,0,0,0,1,2),
+     &               COEF12(1,0,0,0,3,1),
      &               JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
      &               I120X,COOR12(1,1,2),COOR12(1,1,3),EXP12(1,2),
      &               EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
      &               'EX01',IPRINT)
+c        argument list changed! C. Villani, Uni-Ka, Spring 2005
 C
 C        y component
 C        ===========
@@ -1028,11 +1049,13 @@ C
      &                  MAX1,MAX2,SIGN,I120Y,COOR12(1,2,2),
      &                  COOR12(1,2,3),HEXPPI,'EY00',IPRINT)
             IF (U12INT)
-     &      CALL WKEQ30(COEF12(1,0,0,0,2,1),COEF12(1,0,0,0,2,2),
+     &      CALL WKEQ30(1,COEF12(1,0,0,0,2,1),COEF12(1,0,0,0,2,2),
+     &                  COEF12(1,0,0,0,3,1),
      &                  JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
      &                  I120Y,COOR12(1,2,2),COOR12(1,2,3),EXP12(1,2),
      &                  EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
      &                  'EY01',IPRINT)
+c           argument list changed! C. Villani, Uni-Ka, Spring 2005
          END IF
 C
 C        z component
@@ -1051,11 +1074,13 @@ C
      &                  MAX1,MAX2,SIGN,I120Z,COOR12(1,3,2),
      &                  COOR12(1,3,3),HEXPPI,'EZ00',IPRINT)
             IF (U12INT)
-     &      CALL WKEQ30(COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
+     &      CALL WKEQ30(1,COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
+     &                  COEF12(1,0,0,0,3,1),
      &                  JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
      &                  I120Z,COOR12(1,3,2),COOR12(1,3,3),EXP12(1,2),
      &                  EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
      &                  'EZ01',IPRINT)
+c          argument list changed! C. Villani, Uni-Ka, Spring 2005
          END IF
       END IF
 C

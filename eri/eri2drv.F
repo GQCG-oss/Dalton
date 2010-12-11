@@ -63,6 +63,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -192,7 +193,7 @@ C
                   COMPRS = .FALSE. 
                GO TO 100
    34          CONTINUE
-                  GENCON = .TRUE. 
+                  GENCON_ERI = .TRUE. 
                GO TO 100
    35          CONTINUE
                   NCLERI = .TRUE. 
@@ -264,7 +265,7 @@ C
      &           IPROD1, IPROD2
             IF (.NOT.COMPRS) WRITE (LUPRI,'(A)')
      &         ' No integral screening before write.'
-            IF (GENCON) WRITE (LUPRI,'(A)')
+            IF (GENCON_ERI) WRITE (LUPRI,'(A)')
      &         ' All contractions treated as general.' 
             IF (NCLERI) WRITE (LUPRI,'(A)')
      &         ' Only nonclassical integrals are calculated.' 
@@ -281,7 +282,7 @@ C
             END IF
             DO IELCTR = 1, 4
                IF (NSELCT(IELCTR).GT.0) THEN
-                  WRITE (LUPRI,'(/A,I3,A,I2,A,5I5,/,(43X,5I5)))')
+                  WRITE (LUPRI,'(/A,I3,A,I2,A,5I5,/,(43X,5I5))')
      &            ' Only ',NSELCT(IELCTR),
      &            ' AO batches active for electron',IELCTR,':',
      &            (NACTAO(I,IELCTR),I=1,NSELCT(IELCTR))
@@ -363,7 +364,7 @@ C
       DO I = 1, 4
          NSELCT(I) = 0
       END DO
-      GENCON = .FALSE.
+      GENCON_ERI = .FALSE.
       NCLERI = .FALSE.
 
       RETURN
@@ -389,6 +390,8 @@ C  /* Deck er2int */
 #include <odbtch.h>
 #include <symmet.h>
 #include <inforb.h>
+C
+      CALL QENTER('ER2INT')
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
@@ -495,6 +498,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('ER2INT')
       RETURN
       END
 C  /* Deck odcdrv */
@@ -568,13 +572,9 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T90) || defined (SYS_NEC) 
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASE .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASE .LE. 255) THEN
          NIBUF = 1
@@ -775,7 +775,7 @@ C     NRTPP = 3
 C
 C     RODPP1(*,1): exponent for primitive a
 C     RODPP1(*,2): exponent for primitive b
-C     RODPP1(*,*): preexponential factors for ab
+C     RODPP1(*,3): preexponential factors for ab
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from subroutine ODCDR1',-1)
@@ -809,7 +809,6 @@ C
             CALL OUTPUT(RODPP2,1,NODPP2,1,NRTPP,NODPP2,NRTPP,1,LUPRI)
          END IF
       END IF
-C
 C
 C     COMMON /DOXYZ/
 C
@@ -1013,7 +1012,7 @@ C           For [r12,T1+T2] integrals, JMAX must be increased by 1. For
 C           r12 integrals, JMAX must be 1 for (ss|ss) integrals, but is
 C           not increased otherwise. JMAX is also increased for #5 integrals 
 C           (WK/UniKA/04-11-2002).
-            IF (U12INT)        JMAX = JMAX + 1
+            IF (U12INT) JMAX = JMAX + 1
             IF (INTGAC .EQ. 5) JMAX = JMAX + 1
             IF (R12INT)        JMAX = MAX(1,JMAX)
 C
@@ -1029,10 +1028,10 @@ C
             SPHRAB = SPHRA .OR. SPHRB
             SPHRCD = SPHRC .OR. SPHRD
 C
-            GCONA  = GENCON .OR. NCTFA .GT. 1 
-            GCONB  = GENCON .OR. NCTFB .GT. 1 
-            GCONC  = GENCON .OR. NCTFC .GT. 1 
-            GCOND  = GENCON .OR. NCTFD .GT. 1 
+            GCONA  = GENCON_ERI .OR. NCTFA .GT. 1 
+            GCONB  = GENCON_ERI .OR. NCTFB .GT. 1 
+            GCONC  = GENCON_ERI .OR. NCTFC .GT. 1 
+            GCOND  = GENCON_ERI .OR. NCTFD .GT. 1 
 C
             GCONAB = GCONA .OR. GCONB
             GCONCD = GCONC .OR. GCOND
@@ -1094,13 +1093,11 @@ C           Memory requirements
 C
             CALL MEMPQB(MEMBCH,NALLOI,IPRINT)
             IF (MEMBCH .GT. LWORK) THEN
-               IF (IPRINT .GT. 5) THEN
-                  WRITE (LUPRI,'(/,1X,A,2I5,2(/1X,A,I10))')
+               WRITE (LUPRI,'(/,1X,A,2I5,2(/1X,A,I10))')
      &              ' Not enough memory for one PQ batch for'//
      &              ' OD classes: ',IODAB, IODCD,
      &              ' Available memory in ODCPAR:',LWORK,
      &              ' Required memory for ODCPAR:',MEMBCH
-               END IF
                MEMOK = .FALSE.
                NEEDMR = MEMBCH - LWORK
                IF (NEEDMR .GT. MEMADD) THEN
@@ -2036,6 +2033,8 @@ C     Arrays for Gaussian-damped R12 integrals (WK/UniKA/04-11-2002).
      &          ALPHA(NPPX), FACPQ(NPPS),
      &          COORPQ(NPPX,3),
      &          CSQ(*), NCENTR(NPQBCS,MLTPZ,4)
+c     C. Villani Uni-KA, Feb 2005
+      LOGICAL   MIOTST
 #include <cbieri.h>
 #include <odclss.h>
 #include <ericom.h>
@@ -2054,6 +2053,12 @@ C
 C     IF (NREDZ .GT. 1) CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
       CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
 C     Try to avoid zeroing - check sph2 rouintes.
+c
+c     Variable for integral printing (debug)
+      miotst=.false.
+c     Initializing variable for [T1,r12] derivative integrals
+c     C. Villani Uni-KA, Feb 2005
+      miau12=.false.
 C
       IOFRST = 0
       DO IOPS = 1, NREDZ 
@@ -2073,7 +2078,7 @@ C        Preexponential factors
 C        =======================
 C
          CALL ERIPFS(FACINT,FACPQ,COORAB,COORCD,
-     &               RODPP1(2*NODPP1+1,1),RODPP2(2*NODPP2+1,1),
+     &               RODPP1(1,3),RODPP2(1,3),
      &               IPNTPP,ROD1,ROD2,IPRINT)
 C
 C        Set up coordinate vectors
@@ -2197,6 +2202,22 @@ C        B: Differentiated Cartesian integrals
 C        =====================================
 C
          ELSE
+           IF(IPRINT.GT.5) THEN
+c            Header for integral derivatives over different operators
+c            C. Villani Uni-KA, Feb 2005
+             WRITE(LUPRI,*) "-----------------------------------------"
+             IF(U12INT) THEN
+c              if(npqbcs.ne.1.or.mltpx.ne.1.or.mltpz.ne.1)
+c    .         write(lupri,*) "warning: may not work"
+               WRITE(LUPRI,*) "   Derivatives of [T1,r12] integrals "
+               XMIADR=0
+             ELSE IF(R12INT) THEN
+               WRITE(LUPRI,*) "   Derivatives of r12 integrals      "
+             ELSE
+               WRITE(LUPRI,*) "   Derivatives of 1/r12 integrals    "
+             END IF
+             WRITE(LUPRI,*) "-----------------------------------------"
+           END IF
 C
 C           CD derivatives
 C           --------------
@@ -2204,24 +2225,33 @@ C
             IPATH  = 1
             NDIMD1 = 3
             CALL SETCAO(IPRINT)
+            IF(U12INT) THEN
+c             symmetry control (ioddhr) is here always switched off,
+c             only that for the hermite integrals (ipqxyz) is kept.
+c             C. Villani Uni-KA, Feb 2005
+              IHCBIT=0
+              ICCXYZ=0
+            END IF
             CALL CR1DRV(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                  COORAB,EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
-C
             IF (UNDIFF) THEN
                IF (IPRINT.GT.5) CALL HEADER('Undiff. integrals',1)
                NDER3 = 0
                NDER4 = 0
                IAOCR = 13 
+c              NDIMD1 = 3
+               NDIMD1=1
+c              Here it is just needed ndimd1=1, oder????????
+c              C. Villani Uni-KA, Feb 2005
                CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
      &                     IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
      &                     IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
      &                     COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
      &                     NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+               NDIMD1=3
             END IF
-C
             IF (IPRINT.GT.5) CALL HEADER('Calculating C derivatives',1)
-C
             NDER3 = 1
             NDER4 = 0
             IAOCR = 7
@@ -2230,9 +2260,7 @@ C
      &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
      &                  COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
      &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
-C
             IF (IPRINT.GT.5) CALL HEADER('Calculating D derivatives',1)
-C
             NDER3 = 0
             NDER4 = 1
             IAOCR = 10
@@ -2245,37 +2273,118 @@ C
 C           AB derivatives
 C           --------------
 C
-            IPATH  = 2
-            NDIMD2 = 3
-            CALL SETCAO(IPRINT)
-            CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
-            CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
-     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
-     &                  COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
+            IF(U12INT) THEN
+c             half-computed A and B derivatives [ (d/dP)(d/dR)(ab|r12|cd) ]
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              IPATH  = 1
+              NDIMD2 = 1
+c             decreasing ntuv34, just for this derivative part
+              nsave34=ntuv34
+              ntuv34= max(1,(JMAXCD + 1)*(JMAXCD + 2)*(JMAXCD)/6)
+c             calculates half-transformed integrals before eriswp call
+              DO XMIADR=1,3
+c               loop over x,y,z coordinates
+c 
+c               A half-derivatives
+                AENONB=.TRUE.
+                if(iprint.gt.5)
+     .            write(lupri,*) 'half-computed A derivatives ', xmiadr
+                CALL CR1MIA(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                     IODDHR(1,0),INDHSQ,LMNPWR,IPNTUV,COORAB,
+     &                     EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
+                NDER3 = 0
+                NDER4 = 0
+                IAOCR = XMIADR
+                CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                      IODDHR(1,0),IODDHR(1,0),
+     &                      IODDHR(1,0),LMNPWR,IPNTUV,
+     &                      COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
+     &                      NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+c               B half-derivatives
+                AENONB=.FALSE.
+                if(iprint.gt.5)
+     .            write(lupri,*) 'half-computed B derivatives ', xmiadr
+c 
+                CALL CR1MIA(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                 IODDHR(1,0),INDHSQ,LMNPWR,IPNTUV,COORAB,
+     &                 EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
+                NDER3 = 0
+                NDER4 = 0
+                IAOCR = 3 + XMIADR
+                CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                      IODDHR(1,0),IODDHR(1,0),
+     &                      IODDHR(1,0),LMNPWR,IPNTUV,
+     &                      COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
+     &                      NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+c               just changing sign for B half-derivatives
+                call miach(aoint(1,iofrst+1,1,iaocr),ncct*khktab*khktcd)
+              END DO
+c             giving ntuv34 its value back
+              ntuv34= nsave34
+              XMIADR=0
+c             switching on the option for the calculation
+c             of (a-b)/(a+b) d/dA (ab|1/r12|cd)
+c             and (a-b)/(a+b) d/dB (ab|1/r12|cd) integral derivatives
+c             contribution
+              MIAU12=.TRUE.
+c             U12INT need to be false in the next call to CR1DRV
+c             R12INT=.FALSE.
+              U12INT=.FALSE.
+            END IF
+c
+            IF(MIAU12.AND.NGTOAB.EQ.1.AND.NPRFAB.EQ.1) THEN
+c             case a=b, uncontracted,      (a-b)/(a+b) = 0
+c             For derivatives of [T1,r12] integrals,
+c             Just skip the computation of the second contribution
+c
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              if(iprint.gt.5)
+     .        write(lupri,*) 'skipping A and B second-half derivatives'
+            ELSE
+              IPATH  = 2
+              NDIMD2 = 3
+              CALL SETCAO(IPRINT)
+              CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
+              CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                    IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                    COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
 C
-            IF (IPRINT.GT.5) CALL HEADER('Calculating A derivatives',1)
+              IF(IPRINT.GT.5) CALL HEADER('Calculating A derivatives',1)
 C
-            NDER3 = 1
-            NDER4 = 0
-            IAOCR = 1
-            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
-     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
-     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
-     &                  COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
-     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+              NDER3 = 1
+              NDER4 = 0
+              IAOCR = 1
+              CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                    IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                    IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                    COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
+     &                    NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
  
-            IF (IPRINT.GT.5) CALL HEADER('Calculating B derivatives',1)
+              IF(IPRINT.GT.5) CALL HEADER('Calculating B derivatives',1)
 C
-            NDER3 = 0
-            NDER4 = 1
-            IAOCR = 4
-            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
-     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
-     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
-     &                  COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
-     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+              NDER3 = 0
+              NDER4 = 1
+              IAOCR = 4
+              CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                    IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                    IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                    COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
+     &                    NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+            END IF
+            IF(MIAU12) THEN
+c             After [T1,r12] integrals derivatives are computed,
+c             the logical variable U12INT is given its true value back
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              U12INT=.TRUE.
+              MIAU12=.FALSE.
+            END IF
+            if(miotst) then
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              IF(UNDIFF) call mia2pr(aoint(1,iofrst+1,1,13),
+     .                               ncct,khktab,khktcd,1,lupri)
+              call miaprt(aoint(1,iofrst+1,1,1),iofrst,iprint,lupri)
+           end if
          END IF
-C
          IOFRST = IOFRST + MLTPZ
       END DO
 C
@@ -2692,13 +2801,13 @@ C
       RETURN
       END
 C  /* Deck npairs */
-      FUNCTION NPAIRS(J)
-#include <implicit.h>
+      INTEGER FUNCTION NPAIRS(J)
+      INTEGER J
       NPAIRS = J*(J+1)/2
       RETURN
       END
 C  /* Deck kcdim */
-      FUNCTION KCDIM(JMAX1,JMAX2)
+      INTEGER FUNCTION KCDIM(JMAX1,JMAX2)
 #include <implicit.h>
       ITRI1(I) = (I + 1)*(I + 2)/2
       ITRI2(I) = (I + 1)*(I + 2)*(I + 3)/6
@@ -2729,6 +2838,7 @@ C  /* Deck mempqb */
 #include <eribuf.h>
 #include <symmet.h>
 #include <r12int.h>
+C
       MEMI(I) = I
       MEMR(I) = IRAT*I
 C------------------------------------
@@ -2973,11 +3083,12 @@ C
 C     Total memory
 C     ============
 C
+      MEM_CR1  = NCR1 + MAX(MEMC1T,MEMC1O)
       MEMORY = MEMPAR + MEMPAS + MAX(
      &                               NQ52,
      &                               NGAM + MEMGAM + MEMGGM,
      &                               NHER + MEMTUV,
-     &                               NCR1 + MAX(MEMC1T,MEMC1O),
+     &                               MEM_CR1,
      &                               NCR2 + MEMC2T,
      &                               NOUT + MEMOUT
      &                              )
@@ -2986,51 +3097,54 @@ C
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from MEMPQB',-1)
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMPAR ',MEMPAR
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMPAS ',MEMPAS
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMGAM ',MEMGAM
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMGGM ',MEMGGM
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMTUV ',MEMTUV
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMC1T ',MEMC1T
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMC1O ',MEMC1O
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMOUT ',MEMOUT
-         WRITE (LUPRI,'(2X,A,I10)') 'MEMORY ',MEMORY
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMPAR',MEMPAR
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMPAS',MEMPAS
+         WRITE (LUPRI,'(2X,A,I12)') 'NQ52  ',NQ52
+         WRITE (LUPRI,'(2X,A,I12)') 'NGAM  ',NGAM
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMGAM',MEMGAM
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMGGM',MEMGGM
+         WRITE (LUPRI,'(2X,A,I12)') 'NHER  ',NHER
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMTUV',MEMTUV
+         WRITE (LUPRI,'(2X,A,I12)') 'NCR1  ',NCR1
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMC1T',MEMC1T
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMC1O',MEMC1O
+         WRITE (LUPRI,'(2X,A,I12)') 'NCR2  ',NCR2
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMC2T',MEMC2T
+         WRITE (LUPRI,'(2X,A,I12)') 'NOUT  ',NOUT
+         WRITE (LUPRI,'(2X,A,I12)') 'MEMOUT',MEMOUT
+         WRITE (LUPRI,'(2X,A,I12)') 'MLTPZ ',MLTPZ
+         WRITE (LUPRI,'(2X,A,I12)') 'NPRFPQ',NPRFPQ
+         WRITE (LUPRI,'(A,I12)')  '**MEMORY',MEMORY
+         WRITE (LUPRI,'(A,I12)')  '**NALLOI',NALLOI
       END IF
 C
       RETURN
       END
 C  /* Deck memcr1 */
-      FUNCTION MEMCR1(KHKT12,KCKT12,KHKT1,KHKT2,JMAX12,JMAX1,JMAX2,
-     &                SPHR12,SPHR1,SPHR2,NPRF34,NTUV34,NPRFPQ)
+      INTEGER FUNCTION MEMCR1(KHKT12,KCKT12,KHKT1,KHKT2,
+     &        JMAX12,JMAX1,JMAX2,
+     &        SPHR12,SPHR1,SPHR2, NPRF34,NTUV34,NPRFPQ)
 C
 #include <implicit.h>
 #include <r12int.h>
 C
       LOGICAL SPHR12, SPHR1, SPHR2
 C
-      LCCONT = 0
-      LCSINT = 0
-      LFCSNT = 0
-      LFCINT = 0
-      LECOEF = 0
-      LHPI   = 0
-      LPA    = 0
-      LPB    = 0
-      LEUV   = 0
-      LETUV  = 0
-      LHCPRM = 0
-C
-      LFIRST = NTUV34
-C
       IF (KHKT12 .GT. 1 .OR. U12INT) THEN
 C        No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
          IF (SPHR12) THEN
             LCCONT = NPRF34*NTUV34*KCKT12
             LFCINT = NTUV34*KHKT12
+         ELSE
+            LCCONT = 0
+            LFCINT = 0
          END IF
          IF (SPHR1 .AND. SPHR2) THEN
             LCSINT = NPRF34*NTUV34*KHKT2
             LFCSNT = NTUV34*KHKT2
+         ELSE
+            LCSINT = 0
+            LFCSNT = 0
          END IF
 C
          LECOEF = 3*NPRFPQ*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
@@ -3042,46 +3156,37 @@ C
          LETUV  = NPRFPQ
 C
          LHCPRM = NPRFPQ*NTUV34
+         MEM_A  = MAX(LHPI+LPA+LPB,LEUV+LETUV+LHCPRM+NTUV34)
+         MEMCR1 = LCCONT
+     &       + MAX(LCSINT + LFCSNT + LFCINT, LECOEF + MEM_A)
+      ELSE
+         MEMCR1 = NTUV34
       END IF
 C
-      MEMCR1 = LCCONT
-     &       + MAX(
-     &              LCSINT + LFCSNT + LFCINT,
-     &              LECOEF + MAX(
-     &                           LHPI+LPA+LPB,
-     &                           LEUV+LETUV+LHCPRM+LFIRST
-     &                          )
-     &         )
       RETURN
       END
 C  /* Deck memcr2 */
-      FUNCTION MEMCR2(KHKT12,KHKT34,KHKT4,KCKT34,JMAX34,JMAX3,JMAX4,
-     &                SPHR34,SPHR3,SPHR4,NCTF12,NPRF34,NCTFPQ)
+      INTEGER FUNCTION MEMCR2(KHKT12,KHKT34,KHKT4,KCKT34,
+     &                 JMAX34,JMAX3,JMAX4,
+     &                 SPHR34,SPHR3,SPHR4, NCTF12,NPRF34,NCTFPQ)
 C
 #include <implicit.h>
       LOGICAL SPHR34,SPHR3,SPHR4
-C
-      LCCONT = 0
-      LCSINT = 0
-      LFCSNT = 0
-      LFAONT = 0
-      LECOEF = 0
-      LHPI   = 0
-      LPC    = 0
-      LPD    = 0
-      LEUV   = 0
-      LETUV  = 0
-      LCCPRM = 0
-      LFIRST = KHKT12
 C
       IF (KHKT34 .GT. 1) THEN
          IF (SPHR34) THEN
             LCCONT = NCTFPQ*KHKT12*KCKT34
             LFAONT = KHKT12*KHKT34
+         ELSE
+            LCCONT = 0
+            LFAONT = 0
          END IF
          IF (SPHR3 .AND. SPHR4) THEN
             LCSINT = NCTFPQ*KHKT12*KHKT4
             LFCSNT = KHKT12*KHKT4
+         ELSE
+            LCSINT = 0
+            LFCSNT = 0
          END IF
 C
          LECOEF = 3*NCTF12*NPRF34*(JMAX34+1)*(JMAX3+1)*(JMAX4+1)
@@ -3093,14 +3198,172 @@ C
          LETUV  = NCTF12*NPRF34
 C
          LCCPRM = NCTF12*NPRF34*KHKT12
+         MEM_A  = MAX(LHPI+LPC+LPD,LEUV+LETUV+LCCPRM+KHKT12)
+         MEMCR2 = LCCONT + MAX(LCSINT + LFCSNT + LFAONT,LECOEF + MEM_A)
+      ELSE
+         MEMCR2 = KHKT12
       END IF
 C
-      MEMCR2 = LCCONT + MAX(
-     &                      LCSINT + LFCSNT + LFAONT,
-     &                      LECOEF + MAX(
-     &                                   LHPI+LPC+LPD,
-     &                                   LEUV+LETUV+LCCPRM+LFIRST
-     &                                  )
-     &                      )
       RETURN
       END
+
+      subroutine miaprt(aoint,iof,iprint,iu)
+#include <implicit.h>
+#include <ericom.h>
+#include <eriao.h>
+      integer iprint
+      dimension aoint(ncct,khktab,khktcd,*)
+
+c     Not sure, here
+      if(ncct.ne.ncccc) stop "ncct.ne.ncccc, unexpected"
+
+c     if(iprint.ge.99) then
+        call header('Final spherical integrals - MIAPRT',-1)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "C derivatives: "
+        call mia2pr(aoint(1,iof+1,1,7),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "D derivatives: "
+        call mia2pr(aoint(1,iof+1,1,10),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "A derivatives: "
+        call mia2pr(aoint(1,iof+1,1,1),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "B derivatives: "
+        call mia2pr(aoint(1,iof+1,1,4),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) "==========================================="
+        write(iu,*) "Checking sum of derivatives... "
+c     end if
+      call mia2cps(aoint(1,iof+1,1,1),ncccc,khktab,khktcd,3,iu)
+
+      return
+      end
+c
+      subroutine mia2pr(aoint,nccmio,khktab,khktcd,ndimd,u)
+      implicit none
+      integer nccmio, khktab, khktcd, ndimd, u, i, j, k, icc
+      double precision aoint(nccmio,khktab,khktcd,ndimd)
+      character*1 xyz(3)
+
+      xyz(1)='x'
+      xyz(2)='y'
+      xyz(3)='z'
+
+      if(ndimd.gt.1) then
+        do k = 1, ndimd
+          write(u, '(/1x,a1,a)') xyz(k), ' derivatives '
+          do i = 1, khktab
+            do j = 1, khktcd
+              if(nccmio.eq.1) then
+                write(u,505) i, j, aoint(1,i,j,k)
+              else
+                stop 'may not work...'
+                do icc=1,nccmio
+                  write(u,505) i, j, aoint(1+icc-1,i,j,k)
+                end do
+              end if
+            end do
+          end do
+        end do
+      else
+        do i = 1, khktab
+          do j = 1, khktcd
+            if(nccmio.eq.1) then
+              write(u,505) i, j, aoint(1,i,j,1)
+            else
+              stop 'may not work...'
+              do icc=1,nccmio
+                write(u,505) i, j, aoint(1+icc-1,i,j,1)
+              end do
+            end if
+          end do
+        end do
+      end if
+
+      return
+ 505  format(2i4,f22.14)
+      end
+
+      subroutine miach(v,n)
+      implicit none
+      integer i, n
+      double precision v(n)
+c
+c     The half-computed B derivatives integrals have the wrong sign
+c     it would be more efficient to change sign inside the eri2cft,
+c     however this additional call should not affect efficiency much.
+c
+c     C. Villani (Uni Karlsruhe Feb 2005)
+c
+      do i=1,n
+        v(i)=-v(i)
+      end do
+      return
+      end
+
+      subroutine mia2cps(aoint,nccmio,khktab,khktcd,ndimd,u)
+      implicit none
+      logical prt
+      integer nccmio, khktab, khktcd, ndimd, u, i, j, k, icc
+      double precision aoint(nccmio,khktab,khktcd,ndimd), s, thr
+      character*1 xyz(3)
+c
+c     checks translational invariancy of the integrals derivatives
+c
+c     C. Villani, Uni Karlsruhe, Feb 2005
+
+      xyz(1)='x'
+      xyz(2)='y'
+      xyz(3)='z'
+
+      prt=.false.
+      thr=0.00000001d0
+
+      if(ndimd.gt.1) then
+        do k = 1, ndimd
+          if(prt) write(u, '(/1x,a1,a)') xyz(k), ' derivatives '
+          do i = 1, khktab
+            do j = 1, khktcd
+              s=aoint(1,i,j,k)+aoint(1,i,j,k+3)+
+     .          aoint(1,i,j,k+6)+aoint(1,i,j,k+9)
+              if(nccmio.eq.1) then
+                if(prt) write(u,505) i, j, s
+                if(dabs(s).gt.thr) then
+                  print *, i, j, s, 'non inv'
+                  write(u,*) i, j, s, 'non inv'
+                  call quit('Integral deriv. are trasl. non invariant')
+                end if
+              else
+c               not sure, here
+                stop 'Integral deriv. ncc>1, may not work...'
+              end if
+            end do
+          end do
+        end do
+      else
+        do i = 1, khktab
+          do j = 1, khktcd
+            s=aoint(1,i,j,k)+aoint(1,i,j,k+3)+
+     .        aoint(1,i,j,k+6)+aoint(1,i,j,k+9)
+            if(nccmio.eq.1) then
+              if(prt) write(u,505) i, j, s
+              if(dabs(s).gt.thr) then
+                print *, i, j, s, 'non inv'
+                write(u,*) i, j, s, 'non inv'
+                call quit('Integral deriv. are trasl. non invariant')
+              end if
+            else
+c               not sure, here
+              stop 'Integral deriv. ncc>1, may not work...'
+            end if
+          end do
+        end do
+      end if
+
+      return
+ 505  format(2i4,f22.14)
+      end

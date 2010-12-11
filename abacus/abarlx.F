@@ -51,6 +51,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -219,33 +220,37 @@ C
 C     Allocate extra work space if contribution from triplet
 C     operators is to be calculated
 C
+      KTEST = 1
+      KLAST = KTEST + 1
+      WORK(KTEST) = -999.9D0
       IF (DOTRPL) THEN
-         KWRKSD = 1
+         KWRKSD = KLAST
          KWRKFC = KWRKSD + 9*9*NUCDEP*NUCDEP
          KWRKSF = KWRKFC + NUCDEP*NUCDEP
          KLAST  = KWRKSF + 9*NUCDEP*NUCDEP
          LWRK1  = LWORK - KLAST + 1
-         IF (KLAST .GT. LWORK) CALL STOPIT('ADDREL',' ',KLAST,LWORK)
       ELSE
          IF (MOLHES) THEN
-            KHESRL = 1
+            KHESRL = KLAST
 #if 0
             IF (DFTRUN) THEN 
                KDFTSH = KHESRL + MXCOOR*MXCOOR
                KLAST  = KDFTSH + MXCOOR*MXCOOR
             ELSE 
+               KDFTSH = KTEST
                KLAST  = KHESRL + MXCOOR*MXCOOR
             END IF
 #else
+            KDFTSH = KTEST
             KLAST  = KHESRL + MXCOOR*MXCOOR
 #endif
-            LWRK1  = LWORK - KLAST + 1
-            IF (KLAST .GT. LWORK) CALL STOPIT('ADDREL',' ',KLAST,LWORK)
          ELSE
-            KLAST  = 1
-            LWRK1  = LWORK
+            KHESRL = KTEST
+            KDFTSH = KTEST
          END IF
       END IF
+      LWRK1  = LWORK - KLAST + 1
+      IF (KLAST .GT. LWORK) CALL STOPIT('ADDREL',' ',KLAST,LWORK)
 C
 C     *****************************************
 C     ***** Calculate relaxation energies *****
@@ -362,15 +367,15 @@ C     ******************************************************
 C     Calculate static contribution to dft magnetic hessian
 C     ******************************************************
 C
-      IF (DFTRUN.AND.(MAGSUS.OR.MOLGFA))
-     &                  CALL DFTBHES(SUSDFT,WORK(KLAST),LWRK1,IPRINT)
+      IF (DFTRUN.AND.(MAGSUS.OR.MOLGFA).AND.(.NOT.NOLOND))
+     &           CALL DFTBHES(SUSDFT,WORK(KLAST),LWRK1,IPRINT)
 C
 C     ***********************
 C     ***** Close units *****
 C     ***********************
 C
       IF (DOREAL) THEN
-         IF (DOWALK .OR. VCD) THEN
+         IF (DOWALK .OR. VCD .OR. NACME) THEN
             CALL GPCLOSE(LUGDR,'KEEP')
             CALL GPCLOSE(LURDR,'KEEP')
          ELSE
@@ -459,11 +464,15 @@ C
       END IF
 C
       IF (IPRINT .GT. 0 .OR. SYMTST) CALL TIMER ('RELAX ',TIMEIN,TIMOUT)
+      IF (WORK(KTEST) .NE. -999.9D0) THEN
+         CALL QUIT('WORK corrupted, WORK(KTEST) is wrong')
+      END IF
+C
       PASS = .TRUE.
       IF (CUT) THEN
-         WRITE (LUPRI,'(/,A)')
-     &          ' Program stopped after RELAX as required.'
-         WRITE (LUPRI,'(A)') ' No restart file has been written.'
+         WRITE (LUPRI,'(/A/A)')
+     &      ' Program stopped after RELAX as required.',
+     &      ' No restart file has been written.'
          CALL QUIT(' ***** End of ABACUS (in RELAX) *****')
       END IF
       CALL QEXIT('RELAX')
@@ -543,17 +552,19 @@ C
                   JREC = 2*IGDREC(JOP,LSYMPT,ITYPE) - 1
                END IF
             END IF
-            IF (DOTRPL .AND. IDORCT(ITRREC(JOP,LSYMPT)).NE.0) GO TO 200
-            IF (DOTRPL .AND. ANISON .AND. (JCOR .GT. 0)) GO TO 200
-            IF (ITYPE .EQ. 2 .AND. .NOT. DOTRPL .AND.
-     &          IDORCI(IGDREC(JOP,LSYMPT,ITYPE),ITYPE).NE.0) GO TO 200
+            IF (DOTRPL) THEN
+               IF (IDORCT(ITRREC(JOP,LSYMPT)).NE.0) GO TO 200
+               IF (ANISON .AND. (JCOR .GT. 0)) GO TO 200
+            ELSE IF (ITYPE .EQ. 2) THEN
+               IF (IDORCI(IGDREC(JOP,LSYMPT,2),2).NE.0) GO TO 200
+            END IF
             CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
             REL(IOP,JOP) = DDOT(NVARPT,WORK(KIRHS),1,WORK(KJVEC),1)
 CHJ Sep 2001: calc. -<0| d2/dx2 |0> as <d0/dQ | d0/dQ>
             IF (DOD2DQ2 .AND. IOP.EQ.1 .AND. ITYPE.EQ.1) THEN
-C              ... the JOP loop and not the IOP loop has solution vectors,
-C                  but we only want this once, thus the IOP.eq.1 test
-C              ... MOLHES is for ITYPE.eq.1
+C           ... the JOP loop and not the IOP loop has solution vectors,
+C               but we only want this once, thus the IOP.eq.1 test
+C           ... MOLHES is for ITYPE.eq.1
                JCOOR = IGDCOR(JOP,LSYMPT,ITYPE)
                IF (JCOOR .GT. 0) THEN
 C              ... this is a nuclear coordinate

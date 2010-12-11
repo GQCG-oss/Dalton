@@ -119,9 +119,9 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 8 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 1 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 10 * 60 * 39" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 60 * 39" $log | wc -l`
 CRIT4=`$GREP "Cartesian basis used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
@@ -129,13 +129,13 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.1241444240" $log | wc -l`
-CRIT5=`$GREP "4 * H * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * 1\.4315300000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (\-0|\-)\.9852655760" $log | wc -l`
-CRIT8=`$GREP "7 * H * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
 CRIT9=`$GREP "8 * y * \-1\.4315300000" $log | wc -l`
 CRIT10=`$GREP "9 * z * (\-0|\-)\.9852655760" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -163,7 +163,7 @@ CRIT1=`$GREP "SOPPA\(CCSD\) \: * Second Order Polarization Propagator Approximat
 CRIT2=`$GREP "Nuclear magnetic shieldings" $log | wc -l`
 CRIT3=`$GREP "Magnetic susceptibilities" $log | wc -l`
 CRIT4=`$GREP "London orbitals are NOT used" $log | wc -l`
-CRIT4=`$GREP "Molecular g\-factor" $log | wc -l`
+CRIT4=`$GREP "Molecular rotational g\-factor" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[5]=5
 ERROR[5]="CALCULATION OF PROPERTIES NOT SET UP CORRECTLY"
@@ -179,9 +179,9 @@ CTRL[6]=5
 ERROR[6]="MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.02608826...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.96710195...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.03383083...[0-9] *" $log | wc -l`
+CRIT1=`$GREP "Bx * \-3\.0260882..... * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.9671019..... * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.0338308..... *" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -202,7 +202,7 @@ TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
-# Molecular g-factor
+# Molecular rotational g-factor
 CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.7199346[0-9]" $log | wc -l`
 CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.9745334[0-9]" $log | wc -l`
 CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.0000000" $log | wc -l`
@@ -211,15 +211,15 @@ CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.0177308[0-9]" $log | wc -l`
 CRIT6=`$GREP "2nd anisotropy\: * (0| )\.0647314[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[10]=6
-ERROR[10]="MOLECULAR G-FACTOR NOT CORRECT"
+ERROR[10]="MOLECULAR ROT G-FACTOR NOT CORRECT"
 
-# Molecular g-factor in principal axis system
+# Molecular rotational g-factor in principal axis system
 CRIT1=`$GREP "A * (0| )\.7081141[0-9] * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000" $log | wc -l`
 CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.7630889[0-9] * (\-0| \-| 0|  )\.00000000" $log | wc -l`
 CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000 * (0| )\.6886009[0-9]" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
-ERROR[11]="MOLECULAR G-FACTOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
+ERROR[11]="MOLECULAR ROT G-FACTOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
 CRIT1=`$GREP "O * y * 354\.86104..[0-9]" $log | wc -l`
@@ -305,8 +305,8 @@ ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

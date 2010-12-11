@@ -14,7 +14,7 @@ F_CPPS = $(F_OBJS:.o=.i)
 pre: $(F_CPPS)
 
 ftnchek: pre
-	ftnchek $(CHEKFLAGS) *.i > rsp.ftnchek
+	ftnchek $(CHEKFLAGS) *.i > eri.ftnchek
 
 liberi.a : $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?

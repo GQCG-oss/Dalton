@@ -61,7 +61,8 @@ C
       DIMENSION ETAAI(*), ETAIJ(*), ETAAB(*), WORK(LWORK)
       LOGICAL LTSTEN
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -143,7 +144,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
  
-      LUSIFC = 0
+      LUSIFC = -1
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND LUSIFC
@@ -256,6 +257,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -323,7 +328,7 @@ C
                write(lupri,*)'norm of ia,gamma;delta', 
      &                        xtest, isymd, idel
 
-                  xniagd = xniagd + xtest
+                  xnaigd = xnaigd + xtest
 
                   xtest = ddot(ND2ABG(ISYDEN),WORK(KD2ABG_PT),1,
      &                                     WORK(KD2ABG_PT),1)
@@ -550,7 +555,7 @@ C
          WRITE (LUPRI,*) 'Total time used in CC_DEN_PT2:', TIMTOT
       ENDIF
       IF (IPRINT .GT. 9) THEN
-         WRITE (LUPRI,*) 'Time used for setting up 2 e- density:', TIMDEN
+         WRITE (LUPRI,*) 'Time used for setting up 2 e- density:',TIMDEN
          WRITE (LUPRI,*) 'Time used for contraction with integrals:',
      &        TIMRES
          WRITE (LUPRI,*) 'Time used for reading 2 e- AO-integrals:',

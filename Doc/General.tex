@@ -8,12 +8,19 @@ input file for the \siraba\ program.
 \section{General input to DALTON : \Sec{*DALTON}}\label{sec:general}
 
 This input module describes the overall type of calculation that is to
-be done. It also contains four submodules describing the
-performance of parallel calculations, the control of the two different geometry optimization 
-routines, as well as control the general routines for calculating
+be done. It also contains seven submodules describing
+the control of the two different geometry optimization routines,
+the control of the two different environment models, PCM and QM3,
+the control of the reading of the molecule and basis set input
+  in the ".mol" file,
+tuning of the performance of parallel calculations,
+as well as control of the general routines for calculating
 numerical geometrical derivatives of molecular energies or selected
-first- and second-order properties. We note that this input module has
-to start all input files for \siraba .
+first- and second-order properties.
+
+We note that \verb|**DALTON| identifies that what follows is Dalton input,
+and therefore this input module \emph{must} start any input file for \siraba .
+Lines before the first line with \verb|**DALTON| are ignored by \siraba .
 
 \begin{description}
 %\item[\Key{ABACUS}] Alternative keyword to \verb|.PROPERTIES|. Obsolete, do not use.
@@ -77,12 +84,11 @@ option.
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
 %do not use.
 
-\item[\Key{OPTIMIZE}] Do a geometry walk\index{geometry walk}. If no
-input is given in the
-\Sec{OPTIMIZE} input submodule, an optimization of the molecular
-geometry\index{geometry optimization} to a stationary point with no
-negative Hessian eigenvalues\index{Hessian} (a
-local minimum) will be done using the default first-order
+\item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization}.
+The default is a geometry minimization\index{geometry minimization}:
+an optimization of the molecular geometry to a stationary point with no
+negative Hessian eigenvalues
+(a local minimum) will be done using the default first-order
 methods. However, this may be changed using appropriate
 keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
 the chapter on potential energy surfaces
@@ -147,12 +153,12 @@ Reads in the print level that is to be used the rest of the subsequent
 calculations. Default is a print level of 0.
 
 \item[\Key{PROPERTIES}] Invoke the \aba\ program for the evaluation of static
-and dynamic properties. See Chapter~\ref{ch:abacus}.
+and dynamic properties, using a previously converged and saved wave function. See Chapter~\ref{ch:abacus}.
 
 \item[\Key{RESPONSE}]
 
 Invoke the \resp\ program for the evaluation of static and dynamic
-properties. See Chapter~\ref{ch:response}.
+properties, using a previously converged and saved wave function. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
 
@@ -213,8 +219,9 @@ detailed description of possible options.
 \item[\Key{WAVE FUNCTIONS}]
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}\index{MCSCF}\index{CC}
 Invoke the {\sir} program for the evaluation of SCF, MP2, Coupled
-Cluster and MCSCF wave functions as well as DFT calculations. See
-Chapter~\ref{chap:sirius-inpref}. 
+Cluster and MCSCF wave functions as well as DFT calculations.
+Necessary one-electron integrals are already evaluated and saved on files.
+See Chapter~\ref{chap:sirius-inpref}. 
 \end{description}
 
 %hjaaj Feb 2003: next is redundant, do not mention but keep in code for now
@@ -357,7 +364,7 @@ functions. Default is $1.0\cdot 10^{-3}$ a.u.
 \newline
 \verb|READ(LUCMD,*) THRERG|
 
-Set the convergence threshold for the energy. This is one of the three
+Set the convergence threshold for the energy (in a.u.). This is one of the three
 convergence thresholds\index{convergence!geometry, criteria} (the keywords
 \Key{GRADIE} and \Key{STEP T}
 control the other two). Default value is the maximum of $1.0\cdot
@@ -385,10 +392,11 @@ procedure.
 \newline
 \verb|READ(LUCMD,*) THRGRD|
 
-Set the convergence threshold for the gradient norm. This is one of
+Set the convergence threshold for the norm of the molecular gradient (in
+a.u.). This is one of
 the three convergence thresholds (the keywords \Key{ENERGY} and
 \Key{STEP T} control the other two). Default value is the maximum of
-$1.0\cdot 10^{-5}$ and two times the threshold for the wave function
+$1.0\cdot 10^{-4}$ and two times the threshold for the wave function
 gradient.
 
 \item[\Key{GRDINI}]
@@ -469,7 +477,7 @@ been specified.
 %in each iteration, allowing easy monitoring of the optimization.
 
 \item[\Key{LINE S}]
-Turns on line searching\index{line serach}\index{geometry optimization!line search},
+Turns on line searching\index{line search}\index{geometry optimization!line search},
 using a quartic polynomial. By default this
 is turned off, as there seems to be no gain in efficiency. Can only be
 used for minimizations.
@@ -687,7 +695,7 @@ basis set\index{basis set}.
 \verb|READ(LUCMD,*) ISTBLZ|
 
 Tries to ``stabilize'' the predicted new molecular geometries (and
-thus reduce the risk of symmetry breakings) by ignoring all numbers
+thus reduce the risk of symmetry breaking) by ignoring all numbers
 appearing in the Cartesian coordinates of the atoms beyond digit
 number \verb|ISTBLZ|.
 
@@ -707,19 +715,19 @@ Hessian).
 \newline
 \verb|READ(LUCMD,*) THRSTP|
 
-Set the convergence\index{convergence!geometry, criteria} threshold for the step
-norm. This is one of the
-three convergence thresholds (the keywords \Key{ENERGY} and
+Set the convergence\index{convergence!geometry, criteria} threshold for
+the norm of the geometry step (in a.u.).
+This is one of the three convergence thresholds (the keywords \Key{ENERGY} and
 \Key{GRADIE} control the other two). Default value is $1.0\cdot
-10^{-5}$.
+10^{-4}$.
 
 \item[\Key{SYMTHR}]\verb| |
 \newline
 \verb|READ(LUCMD,*) THRSYM|
 
-Determines the gradient threshold for breaking of the
+Determines the gradient threshold (in a.u.) for breaking of the
 symmetry\index{symmetry!breaking}. That is, if the index of the
-Hessian\index{Hessian!index} is non-zero when the gradient norm
+molecular Hessian\index{Hessian!index of molecular} is non-zero when the gradient norm
 drops below this value, the symmetry is broken to avoid unnecessary
 iterations within the wrong symmetry. This option only applies to
 second-order\index{second-order optimization} methods and when the
@@ -912,6 +920,17 @@ parallel efficiency\index{parallel efficiency}. A complete
 timing for all nodes will be
 given if the print level is 4 or higher.
 \end{description}
+
+\subsection{PCM environment model: \Sec{PCM}}
+\label{sec:pcm}
+
+Not documented yet. Examples can be found by grepping for "PCM" in the "dalton/test" directory in the distribution.
+
+\subsection{QM/MM environment model: \Sec{QM3}}
+\label{sec:qm3}
+
+Not documented yet. Examples can be found by grepping for "QM3" in the "dalton/test" directory in the distribution.
+
 
 \subsection{Geometry optimization: \Sec{WALK}}
 \label{sec:abawalk}
@@ -1236,6 +1255,79 @@ is~10$^{-5}$. This keyword is mainly used for judging which modes are
 symmetry breaking when using the keyword \Key{KEEPSY} as well as
 when deciding what step to take when starting a walk from a transition
 state.
+\end{description}
+
+\subsection{General: \Sec{MOLBAS}}\label{sec:herrdn}
+
+Directives to control the reading of the molecule input appear in the
+\Sec{MOLBAS} section.
+\begin{description}
+\item[\Key{CM FUN}]\verb| |\newline
+\verb|READ (LUCMD,*) LCMMAX, CMSTR, CMEND|
+
+Use Rydberg basis functions\index{Rydberg basis function}\index{basis function!Rydberg}
+ (center of mass functions\index{center of mass function}) as suggested by
+Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22}. \verb|LCMMAX| denoted
+the maximum quantum number of the Rydberg functions, basis functions
+for all quantum up to and including \verb|LCMMAX| will be generated
+(s=0, p=1 etc.) \verb|CMSTR| and \verb|CMEND| are the half-integer
+start- and ending quantum number for the Rydberg basis functions. The
+basis functions will be placed at the position of a dummy center
+indicated as \verb|X| in the \verb|MOLECULE.INP| file. The charge of
+the ion-core is determined by the keyword \Key{ZCMVAL}. If no center
+named \verb|X| is present in the \verb|MOLECULE.INP| file, this input
+will be ignored.
+
+\item[\Key{MAXPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXPRI|
+
+Set maximum number of primitives\index{primitive orbitals} in any
+contraction.  Read one more line containing number.  Default
+is~25, except for the Cray-T3D/E, where the default is 14.
+
+%\item[\Key{MOLINP}] Indicates that the molecular input comes at the
+%end of the current file. 
+%Default is that the molecular input is to be
+%read from unit~9.
+
+\item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in {\dalton} 1.0.
+From {\dalton} 1.1, all components of spherical AO's are normalized to 1.
+This was not the case in {\dalton} 1.0, and this option is needed to read 
+MO's correctly from an old file generated by {\dalton} 1.0 if spherical AO's were used.
+(Cartesian AO's are still not all normalized to 1 for $d$-orbitals and higher $l$'s.)
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPREAD|
+
+Set print level for input processing.  Read one more line containing
+print level. Default is the \verb|IPRDEF| from the \Sec{*INTEGRALS} input
+module.
+
+\item[\Key{R12AUX}] An auxiliary basis is used.
+Basis sets must be identified as either orbital basis or
+auxiliary basis in the \verb|MOLECULE.INP| file (line 5).
+See Sec.~\ref{sec:r12aux} on page~\pageref{sec:r12aux}.
+
+\item[\Key{SYMTHR}]\verb| |\newline
+\verb|READ (LUCMD,*) TOLLRN|
+
+Read threshold for considering atoms to be related by symmetry. Used
+in the automatic symmetry detection routines. Default is $5.0\cdot
+10^{-6}$.
+
+\item[\Key{UNCONT}] Force the program to use the basis set as a primitive (completely decontracted) set.
+
+\item[\Key{WRTLIN}] Write out the lines read in during the input
+  processing of the \verb|MOLECULE.INP| file. Primarily for debugging
+  purposes or for analyzing input errors in the \verb|MOLECULE.INP|
+  file.
+
+\item[\Key{ZCMVAL}]\verb| |\newline
+\verb|READ (LUCMD,*) ZCMVAL|
+
+Read the charge of the center of the Rydberg basis functions specified
+by the \Key{CM FUN} keyword. Default is a charge of one.
+
 \end{description}
 
 \section{Numerical differentiation : \Sec{*NMDDRV}}\label{sec:nmddrv}

@@ -31,6 +31,7 @@ C
 
       CHARACTER*1  CDUM
       CHARACTER*3  LIST
+      CHARACTER*3  APROXR12
       CHARACTER*10 MODEL,MODFIL
 
       LOGICAL DEBGER, LOCDBG
@@ -111,7 +112,9 @@ C     ==========================================
       ENDDO
 
       IF (.NOT. L0SKIP) THEN
-         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
+C
+         APROXR12 = '   '
+         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,APROXR12,
      *                  IDUMMY,IDUMMY,DUMMY,LDUM,
      *                  IDUMMY,CDUM,DUMMY,IDUMMY,
      *                  ISYOF,1,1,WORK,LWORK)
@@ -564,7 +567,7 @@ C
       CHARACTER*3 LIST
       PARAMETER (LIST = 'd00')
 
-      INTEGER*8 ADR
+      INTEGER ADR
 
 C     Calculate MO density matrix in T1-transformed basis.
 C     ----------------------------------------------------
@@ -592,10 +595,10 @@ C     ------------------------
 
       ADR   = 1
       LDEN  = NMATIJ(1) + NT1AM(1) + NMATAB(1)
-      LUDEN = 1
-      CALL WOPEN2U(LUDEN,FDEN00,64,0)
-      CALL PUTWA2U(LUDEN,FILDEN,WORK(KDNIJ),ADR,LDEN)
-      CALL WCLOSE2U(LUDEN,FILDEN,'KEEP')
+      LUDEN = 97
+      CALL WOPEN2(LUDEN,FDEN00,64,0)
+      CALL PUTWA2(LUDEN,FILDEN,WORK(KDNIJ),ADR,LDEN)
+      CALL WCLOSE2(LUDEN,FILDEN,'KEEP')
 
 C     Analysis: CC2 natural occupations.
 C     ----------------------------------
@@ -1727,7 +1730,7 @@ C           ---------------------
                CALL QUIT('Insufficient memory in '//SECNAM)
             ENDIF
 
-            LUSIR = 0
+            LUSIR = -1
             CALL GPOPEN(LUSIR,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
             REWIND LUSIR

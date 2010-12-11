@@ -44,7 +44,7 @@ C  /* Deck qpginp */
 #include <abainf.h>
 #include <cbiqpg.h>
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
-     *            '.XXXXXX', '.AOMAT ', '.STOP  '/
+     *            'XXXXXXX', 'XXXXXXX', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*QPGCTL')
       ICHANG = 0
@@ -52,6 +52,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -85,7 +86,7 @@ C
                GO TO 100
     5             CONTINUE
                GO TO 100
-    6             QAOMAT = .TRUE.
+    6             CONTINUE
                GO TO 100
     7             QCUT   = .TRUE.
                GO TO 100
@@ -113,8 +114,6 @@ C
      *      ' density matrix neglected in QPGCTL.'
             IF (QTEST) WRITE (LUPRI,'(/,2A)') ' Test for quadrupole',
      *      ' moments and quadrupole reorthonormalization.'
-            IF (QAOMAT) WRITE (LUPRI, '(A)')
-     *         ' AO printing of SO overlap matrices.'
             IF (QCUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after QPGCTL.'
             END IF
@@ -135,16 +134,15 @@ C
       QNODC   = .FALSE.
       QNODV   = .FALSE.
       QTEST   = .FALSE.
-      QAOMAT  = .FALSE.
       QSKIP = .NOT. QPGRAD
       QCUT  = .FALSE.
 C
       RETURN
       END
-C  /* Deck dipctl */
+C  /* Deck qpgctl */
       SUBROUTINE QPGCTL(WORK,LWORK,PASS)
 C
-C     tuh 1985
+C     Based on DIPCTL by tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
 #include <implicit.h>
@@ -221,9 +219,9 @@ C
 #include <infinp.h>
 #include <inflin.h>
 #include <gdvec.h>
-#include <ibtfun.h>
-      LOGICAL OLDDX
 #include <chrxyz.h>
+      LOGICAL OLDDX
+#include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from QPGCT1','*',103)
 C
@@ -259,7 +257,7 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('QPGCT1','GET1IN',KLAST,LWORK)
       CALL GET1IN(SOPACK,'SECMOM ',NCOMP,WORK(KLAST),LWRK,LABINT,
      &            WORK(KINT),WORK(KREP),IDUMMY,.FALSE.,NPATOM,.TRUE.,
-     &            IPRINT)
+     &            DUMMY,.FALSE.,DUMMY,IPRINT)
 
       IF (NNBASX .GT. LWORK) CALL STOPIT('QPGCT1','SYMUPK',NNBASX,LWORK)
 
@@ -312,8 +310,7 @@ ckr               END IF
 C
 C           ***** Reorthonormalization and right-hand side *****
             CALL OPGCTL(SECREO,SECRHS,CMO,DV,SOINT,SECACT,SECICT,
-     &                           WORK,LWORK,IREP,QNODC,QNODV,QAOMAT,
-     &                           IPRINT)
+     &                  WORK,LWORK,IREP,QNODC,QNODV,IPRINT)
 C
 C           ***** Add reorthonormalization to DSECS *****
 C
@@ -397,9 +394,9 @@ C
 #include <dipole.h>
 #include <inforb.h>
 #include <infinp.h>
-#include <ibtfun.h>
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP)
       DIMENSION GEOM(3*NATOMS), NATTYP(NATOMS)
+#include <ibtfun.h>
 C
       NCOOR = 3*NUCDEP
 C
@@ -532,9 +529,9 @@ C
 #include <dipole.h>
 #include <inforb.h>
 #include <infinp.h>
-#include <ibtfun.h>
       DIMENSION DIPA(3), SECA(3,3), THIRDA(3,3,3)
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP), GEOM(3*NATOMS)
+#include <ibtfun.h>
 C
 C     Molecular dipole moment
 C

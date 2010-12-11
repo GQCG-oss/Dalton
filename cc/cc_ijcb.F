@@ -255,7 +255,7 @@ c /* deck ccijcb */
 
       LOGICAL LDERIV, LRELAX, LZERO, LNEWTA
       INTEGER IDEL, IGAM, ISY1ALBE, ISY2ALBE, ISYML1, ISYML2
-      INTEGER ISYML3, ISYML4, LWORK, IOPT
+      INTEGER ISYML3, ISYML4, LWORK, IOPT, IDUMMY
       
 #if defined (SYS_CRAY)
       REAL XLAMDP1(*), XLAMDH1(*)
@@ -899,7 +899,7 @@ c***
             ISYCJ3 = MULD2H(ISY1ALBE,ISYL13)
 
             CALL CC_IAJB1(IGAM, WORK(KSCR5), ISYCJ3, ISYGAM,
-     &                    XLAMDP1, ISYML1, X1CJIB)
+     &                    XLAMDP1, ISYML1, X1CJIB, .FALSE., IDUMMY)
          END IF
 
 
@@ -910,7 +910,7 @@ C           ------------------------------
             ISYCJ3 = MULD2H(ISY1ALBE,ISYL13)
 
             CALL CC_IAJB1(IGAM, WORK(KSCR5), ISYCJ3, ISYGAM,
-     &                    XLAMDP2, ISYML2, X2CJIB)
+     &                    XLAMDP2, ISYML2, X2CJIB, .FALSE., IDUMMY)
          END IF
 
          IF ( LDERIV .OR. LRELAX ) THEN
@@ -920,7 +920,7 @@ C           ------------------------------------------------
             ISYCJ4 = MULD2H(ISY1ALBE,ISYL14)
 
             CALL CC_IAJB1(IGAM, WORK(KSCR7), ISYCJ4, ISYGAM,
-     &                    XLAMDP1, ISYML1, X2CJIB)
+     &                    XLAMDP1, ISYML1, X2CJIB, .FALSE., IDUMMY)
          END IF
 
       END IF

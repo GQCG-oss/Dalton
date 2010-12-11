@@ -92,8 +92,8 @@ C-----------------------------
 C
       CDUMMY = ' '
 C
-      LUDELD = 0
-      LUDKBC = 0
+      LUDELD = -1
+      LUDKBC = -1
       FNDELD = 'CC3_T3_TMP1'
       FNDKBC = 'CC3_T3_TMP2'
 C
@@ -265,7 +265,7 @@ C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
 C     Can use WORK(KCMO) here!!!
 C----------------------------------------------------------------------
 C
-      DTIME  = SECOND() - DTIME
+      DTIME  = SECOND()
 C
       CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0),WORK(KCMO),
      *                 WORK(KEND2),LWRK2,ISINT2)
@@ -1518,12 +1518,12 @@ C     Initialise character strings and open files
 C----------------------------------------------------
 C
       CDUMMY = ' '
-      LUDKBC4 = 0
+      LUDKBC4 = -1
       FNDKBC4 = 'CC3_L3_TMP1'
 C
-      LU3FOP  = 0
-      LU3FOP2 = 0
-      LU3VI2  = 0
+      LU3FOP  = -1
+      LU3FOP2 = -1
+      LU3VI2  = -1
 C
       CALL WOPEN2(LU3FOP,FN3FOP,64,0)
       CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
@@ -1533,9 +1533,9 @@ C
 C
       IF (.NOT.LVVVV) THEN
          !Open files for N1MAT intermediates
-         LUGEI = 0
-         LUFEI = 0
-         LUN1  = 0
+         LUGEI = -1
+         LUFEI = -1
+         LUN1  = -1
          CALL WOPEN2(LUGEI,FNGEI,64,0)
          CALL WOPEN2(LUFEI,FNFEI,64,0)
          CALL WOPEN2(LUN1,FNN1,64,0)
@@ -1677,7 +1677,7 @@ C-----------------------------------------------------
 C     Construct the transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
       CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -2316,10 +2316,10 @@ C------------------------------------
 C     Open temporary files
 C------------------------------------
 C
-         LUTMP1 = 0
-         LUTMP2 = 0
-         LUTMP3 = 0
-         LUTMP4 = 0
+         LUTMP1 = -1
+         LUTMP2 = -1
+         LUTMP3 = -1
+         LUTMP4 = -1
          FNTMP1 = 'CC3_TCME_1'
          FNTMP2 = 'CC3_TCME_2'
          FNTMP3 = 'CC3_TCME_3'
@@ -5255,7 +5255,8 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h> 
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -5278,6 +5279,7 @@ C
       INTEGER IOPT
 c
       integer isymi,isymalbe
+      INTEGER IDUM
 C
 #if defined (SYS_CRAY)
       REAL XLAMP1(*),XLAMP2(*),XLAMH1(*),XLAMH2(*)
@@ -5307,6 +5309,7 @@ C-----------------------------------
 C
       IF (DIRECT) THEN
          IF (HERDIR) THEN
+            LWRK1 = LWORK - KEND1
             CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
          ELSE
             KCCFB1 = 1
@@ -5397,6 +5400,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -7562,9 +7569,9 @@ C  /* Deck n1_resort */
 *
       IMPLICIT NONE
 C
-#include<ccorb.h>
-#include<ccsdsym.h>
-#include<priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <priunit.h>
 C
       LOGICAL SKIPGEI
 C

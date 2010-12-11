@@ -228,14 +228,14 @@ C
 C
       SKIPGEI = .FALSE.
 C
-      LU3VI2   = 0
-      LU3FOP  = 0
-      LU3FOP2 = 0
-      LUTOC   = 0
-      LU3VI   = 0
-      LUDKBC3 = 0
-      LU3FOPX  = 0
-      LU3FOP2X = 0
+      LU3VI2   = -1
+      LU3FOP   = -1
+      LU3FOP2  = -1
+      LUTOC    = -1
+      LU3VI    = -1
+      LUDKBC3  = -1
+      LU3FOPX  = -1
+      LU3FOP2X = -1
 
 
 C
@@ -252,14 +252,14 @@ C-------------------------
 C     Open temporary files
 C-------------------------
 C
-      LU4VBD     = 0
-      LU4VCD     = 0
-      LU4VBC    = 0
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUDKBCR4 = 0
+      LU4VBD   = -1
+      LU4VCD   = -1
+      LU4VBC   = -1
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUDKBCR4 = -1
 C     
       FN4VBD     = 'CC3_FMAT_TMP1'
       FN4VCD     = 'CC3_FMAT_TMP2'
@@ -344,27 +344,27 @@ C
 C
       IF (.NOT.LVVVV) THEN
          !Open files for N1MAT^B intermediates
-         LUGEIB = 0
-         LUFEIB = 0
-         LUN1B  = 0
+         LUGEIB = -1
+         LUFEIB = -1
+         LUN1B  = -1
          CALL WOPEN2(LUFEIB,FNFEIB,64,0)
          CALL WOPEN2(LUN1B,FNN1B,64,0)
          IF (.NOT.SKIPGEI) THEN
             CALL WOPEN2(LUGEIB,FNGEIB,64,0)
          END IF
          !Open files for N1MAT^C intermediates
-         LUGEIC = 0
-         LUFEIC = 0
-         LUN1C  = 0
+         LUGEIC = -1
+         LUFEIC = -1
+         LUN1C  = -1
          CALL WOPEN2(LUFEIC,FNFEIC,64,0)
          CALL WOPEN2(LUN1C,FNN1C,64,0)
          IF (.NOT.SKIPGEI) THEN
             CALL WOPEN2(LUGEIC,FNGEIC,64,0)
          END IF
          !Open files for N1MAT^D intermediates
-         LUGEID = 0
-         LUFEID = 0
-         LUN1D  = 0
+         LUGEID = -1
+         LUFEID = -1
+         LUN1D  = -1
          CALL WOPEN2(LUFEID,FNFEID,64,0)
          CALL WOPEN2(LUN1D,FNN1D,64,0)
          IF (.NOT.SKIPGEI) THEN

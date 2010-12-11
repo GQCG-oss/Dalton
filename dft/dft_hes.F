@@ -56,10 +56,10 @@ C
 #include <dftcom.h>
 #include "dftmolhes.h"
 C
-      EXTERNAL DFTSTATHES
-      LOGICAL DFT_ISGGA, DOKAPPA
-      EXTERNAL DFT_ISGGA
+      LOGICAL  DFT_ISGGA           ! , DOKAPPA
+      EXTERNAL DFT_ISGGA, DFTSTATHES
 C     
+      CALL QENTER('DFTMOLHES')
       DOGGA = DFT_ISGGA()
       IF (IPRINT .GE. 5) CALL TITLER('Output from DFTMOLHES','*',103)
 C     
@@ -107,6 +107,7 @@ C
         CALL HEADER('DFT static contribution to molecular Hessian',-1)
         CALL PRIHES(WORK(KDFTHS),'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
       END IF
+      CALL QEXIT('DFTMOLHES')
       RETURN
       END
 C
@@ -142,22 +143,16 @@ C
       CALL DZERO(CMO,NCMOT)
       CALL RDSIFC('CMO',FOUND,CMO,WORK,LWRK)
       IF(.NOT.FOUND)CALL QUIT('GETV1MAT error: CMO not found on SIRIFC')
-      IF(NSYM.GT.1)CALL QUIT(
+      IF (NSYM.GT.1)CALL QUIT(
      &     'DFT analytical Hessians do not work with symmetry')
 C    
-      NORBI = 0
-      NISHI = 0
-      NBASI = 0
       DO ISYM = 1, NSYM
-         NORBI  = NORB(ISYM)
          NISHI  = NISH(ISYM)
+         NORBI  = NORB(ISYM)
          NBASI  = NBAS(ISYM)
-         RS     = 0
-         ICEND  = 0
-         ICENDI = 0
+         ICEND  = ICMO(ISYM)
          DO R = 1, NBASI
-         DO S = 1, NBASI
-            RS = RS + 1
+         DO S = 1, R
             DTRS = D0
             ICENDI = ICEND
             DO I = 1, NISHI 
@@ -165,13 +160,13 @@ C
                ICENDI = ICENDI + NBASI
             END DO
             DMAT(R,S) = D2*DTRS
-            DTUV = D0
-            ICENDI = ICEND
-            DO I = 1, NORBT
-               DTUV = DTUV + CMO(ICENDI+R)*CMO(ICENDI+S)
+            DMAT(S,R) = D2*DTRS
+            DO I = NISHI+1, NORBT
+               DTRS = DTRS + CMO(ICENDI+R)*CMO(ICENDI+S)
                ICENDI = ICENDI + NBASI
             END DO
-            QMAT(R,S) = DTUV 
+            QMAT(R,S) = DTRS 
+            QMAT(S,R) = DTRS 
          END DO          
          END DO          
       END DO
@@ -224,7 +219,7 @@ C
 C     Exchange-correlation contribution to molecular hessian - static
 C     This subroutine splits up "cbdata" needed for the calculation
 C
-C     O.B.Lutn?s, D.J.Wilson, T. Helgaker  Jan 04
+C     O.B.Lutnaes, D.J.Wilson, T. Helgaker  Jan 04
 C
 C     HESDAT includes:
 C        dft molecular hessian contribution
@@ -1211,6 +1206,7 @@ C
             VXCRR(I) = VX(3)
             VXCRZ(I) = VX(4)*GDNRMI + VX(6)
             VXCZZ(I) = DP5*(VX(5)*(GDNRMI**2)-VX(2)*(GDNRMI**3))
+     &                 + DP5*VX(8) + GDNRMI* VX(7)
          END DO
       ELSE
          DO I = 1, NBLEN
@@ -1327,9 +1323,8 @@ C
       DIMENSION WORK(LWORK)
 #include "dftcom.h"
 #include "mpif.h"
-      EXTERNAL DFTSTATHES
-      LOGICAL DFT_ISGGA
-      EXTERNAL DFT_ISGGA
+      LOGICAL  DFT_ISGGA
+      EXTERNAL DFT_ISGGA, DFTSTATHES
 C     
       KCMO   = 1 
       KDMAT  = KCMO   + NCMOT

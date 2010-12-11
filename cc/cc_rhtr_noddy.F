@@ -197,7 +197,7 @@ C
 *---------------------------------------------------------------------*
 *     Get zero-order amplitudes:
 *---------------------------------------------------------------------*
-      LUTEMP = 0
+      LUTEMP = -1
       CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       READ(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)

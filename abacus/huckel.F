@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C   /* Deck hucdrv */
-      SUBROUTINE HUCDRV(WORK,LWORK,CMO)
+      SUBROUTINE HUCDRV(CMO,WORK,LWORK)
 C
 C     K.Ruud, July-96
 C
@@ -58,6 +58,10 @@ C
       N2HUCBA = NHUCBA*NHUCBA
       NTRDIM = MAX(NHUCMX*NBASMA,NBASMA*(NBASMA + 1)/2)
 C
+      IF (NHUCBA .LE. 0) THEN
+         CALL QUIT('No Huckel basis functions.')
+      END IF
+C
       KFREE = 1
       LFREE = LWORK
       CALL MEMGET('REAL',KTOTOV,NELMNT,WORK,KFREE,LFREE)
@@ -68,7 +72,7 @@ C
       CALL MEMGET('REAL',KEIGVL,NHUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVS,NHUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KOVERL,NBASMA*NBASMA,WORK,KFREE,LFREE)
-      CALL HUCDR1(WORK(KFREE),LFREE,WORK(KTOTOV),NELMNT,NROW,
+      CALL HUCDRV_1(WORK(KFREE),LFREE,WORK(KTOTOV),NELMNT,NROW,
      &            WORK(KHUCMT),WORK(KHUCOV),NHUCMX,WORK(KEIGVC),
      &            WORK(KTRANM),WORK(KEIGVL),WORK(KEIGVS),WORK(KOVERL),
      &            CMO)
@@ -76,8 +80,8 @@ C
       CALL QEXIT('HUCDRV')
       RETURN
       END
-C   /* Deck hucdr1 */
-      SUBROUTINE HUCDR1(WORK,LWORK,TOTOVL,NELMNT,NROW,
+C   /* Deck HUCDRV_1 */
+      SUBROUTINE HUCDRV_1(WORK,LWORK,TOTOVL,NELMNT,NROW,
      &                  HUCMAT,HUCOVL,NHUCMX,
      &                  EIGVEC,TRANMT,EIGVAL,EIGVLS,OVERLP,CMO)
 C
@@ -111,14 +115,12 @@ C
      &      'Using EHT  model: ',.NOT.EWMO,
      &      'Number of Huckel orbitals each symmetry:',
      &      (NHUCAO(I),I=1,NSYM)
-      IF (EWMO) THEN
-         WRITE (LUPRI,'(/A/A/A)')
-     &   ' EWMO - Energy Weighted Maximum Overlap - is a Huckel type'//
-     &   ' method,',
-     &   ' which normally is better than Extended Huckel Theory.',
-     &   ' Reference: Linderberg and Ohrm, Propagators in Quantum'//
-     &   ' Chemistry (Wiley, 1973)'
-      END IF
+      IF (EWMO) WRITE (LUPRI,'(/A/A/A)')
+     &  ' EWMO - Energy Weighted Maximum Overlap - is a Huckel type'//
+     &  ' method,',
+     &  '        which normally is better than Extended Huckel Theory.',
+     &  ' Reference: Linderberg and Ohrn, Propagators in Quantum'//
+     &  ' Chemistry (Wiley, 1973)'
 C
       NNHUCBA = NHUCBA * (NHUCBA + 1) / 2
 C
@@ -133,15 +135,15 @@ C
          REWIND LUPROP
          IF (FNDLB2('HUCKOVLP',RTNLBL,LUPROP)) THEN
             CALL READT(LUPROP,NELMNT,TOTOVL)
-            IF (P6FLAG(6)) THEN
+            IF (P6FLAG(6) .OR. IPRRHF .GE. 10) THEN
                CALL HEADER(
-     &         'HUCDR1: HUCKOVLP matrix read from AOPROPER',-1)
+     &         'HUCDRV_1: HUCKOVLP matrix read from AOPROPER',-1)
                CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
             END IF
          ELSE
-            WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: "HUCKOVLP"'//
+            WRITE (LUPRI,'(//3A)') ' >>> HUCDRV_1 error: "HUCKOVLP"'//
      *         ' matrix not found on AOPROPER.'
-            CALL QUIT('HUCDR1 error: HUCKOVLP not found on AOPROPER')
+            CALL QUIT('HUCDRV_1 error: HUCKOVLP not found on AOPROPER')
          END IF
 C
 C     ... extract EWMO overlap matrix from TOTOVL:
@@ -152,37 +154,30 @@ C
          JPOS   = 1
 C
          DO ISYM = 1, NSYM
-            NHAOSY = NHUCAO(ISYM)
-         IF (NHAOSY .GT. 0) THEN
+            NHUCAOI = NHUCAO(ISYM)
+         IF (NHUCAOI .GT. 0) THEN
             NBASI  = NBAS(ISYM)
             IBASTO = IBAS(ISYM) + NHUCT
             IHUCI  = IBASTO + NBASI
-            NORBI  = NORB(ISYM)
-            IF (NORBI .EQ. 0) THEN
-               WRITE (LUPRI,'(/A,I3/I5,A)')
-     &            'HUCDRV error in symmetry',ISYM,
-     &            NHAOSY,' Huckel orbitals, but no orbitals!'
-               CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
-            END IF
             ISTRT  = (IHUCI*(IHUCI + 1))/2
 C
 C           Copy the Huckel overlap matrix into a lower triangular matrix,
 C           where the elements are sorted in consecutive order
 C
             IPOS = JPOS
-            DO I = 1, NHAOSY
+            DO I = 1, NHUCAOI
                CALL DCOPY(I,TOTOVL(ISTRT + IHUCI + 1),1,HUCOVL(IPOS),1)
                IPOS = IPOS + I
                ISTRT = ISTRT + (IHUCI + I)
-            END DO   ! I = 1,NHAOSY
+            END DO   ! I = 1,NHUCAOI
             IF (P6FLAG(6) .OR. IPRRHF.GE.6) THEN
                WRITE (LUPRI,'(/A,I3,/A)')
      &            ' Extracted EWMO overlap matrix of symmetry :',ISYM,
      &            ' ------------------------------------------------'
-               CALL OUTPAK(HUCOVL(JPOS),NHAOSY,1,LUPRI)
+               CALL OUTPAK(HUCOVL(JPOS),NHUCAOI,1,LUPRI)
             END IF
             JPOS = IPOS
-            NHUCT = NHUCT + NHAOSY
+            NHUCT = NHUCT + NHUCAOI
          END IF
          END DO   ! ISYM = 1,NSYM
       END IF
@@ -194,13 +189,14 @@ C
          CALL READT(LUPROP,NELMNT,TOTOVL)
          IF (P6FLAG(6)) THEN
             CALL HEADER(
-     &      'HUCDR1: Huckel matrix read from AOPROPER',-1)
+     &      'HUCDRV_1: Huckel matrix read from AOPROPER',-1)
             CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: "HUCKEL  "'//
-     *      ' matrix not found on AOPROPER.'
-         CALL QUIT('HUCDR1 error: HUCKEL overlap not found on AOPROPER')
+         WRITE (LUPRI,'(//3A)') ' >>> HUCDRV_1 error: "HUCKEL  "'//
+     &      ' matrix not found on AOPROPER.'
+         CALL QUIT('HUCDRV_1 error:'//
+     &      ' HUCKEL overlap not found on AOPROPER')
       END IF
       CALL GPCLOSE(LUPROP,'KEEP')
 C
@@ -219,17 +215,19 @@ C
       JPOS   = 1
 C
       DO 100 ISYM = 1, NSYM
-         NHAOSY = NHUCAO(ISYM)
-         IF (NHAOSY .EQ. 0) GO TO 100
+         NHUCAOI = NHUCAO(ISYM)
+       IF (NHUCAOI .EQ. 0) GO TO 100
          NBASI  = NBAS(ISYM)
          IBASTO = IBAS(ISYM) + NHUCT
          IHUCI  = IBASTO + NBASI
          NORBI  = NORB(ISYM)
          IF (NORBI .EQ. 0) THEN
-            WRITE (LUPRI,'(/A,I3/I5,A)')
-     &         'HUCDRV error in symmetry',ISYM,
-     &         NHAOSY,' Huckel orbitals, but no orbitals!'
-            CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
+            WRITE (LUPRI,'(/A,I3/I5,A/A)')
+     &         'HUCDRV warning in symmetry',ISYM,
+     &         NHUCAOI,' Huckel orbitals, but no orbitals!',
+     &         'Thus no Huckel projection in this symmetry!'
+            GO TO 100
+c           CALL QUIT('HUCDRV error, NHUCAOI.ne.0 .and. NORBI.eq.0')
          END IF
          ISTRT  = (IHUCI*(IHUCI + 1))/2
          ICSYM  = ICMO(ISYM) + 1
@@ -251,7 +249,7 @@ C
 C     Also extract the transformation matrix from HUCKEL basis to full basis
 C
          IPOS = 1
-         DO 110 I = 1, NHAOSY
+         DO 110 I = 1, NHUCAOI
             CALL DCOPY(I,TOTOVL(ISTRT + IHUCI + 1),1,
      &                 HUCMAT(IPOS),1)
             CALL DCOPY(NBASI,TOTOVL(ISTRT + IBASTO + 1),1,
@@ -263,52 +261,52 @@ C
             WRITE (LUPRI,'(/A,I3,/A)')
      &           ' Extracted Huckel matrix of symmetry :',ISYM,
      &           ' ------------------------------------------------'
-            CALL OUTPAK(HUCMAT,NHAOSY,1,LUPRI)
+            CALL OUTPAK(HUCMAT,NHUCAOI,1,LUPRI)
          END IF
          IF (P6FLAG(6) .OR. IPRRHF.GE.15) THEN
             WRITE (LUPRI,'(/A,I3,/A)')
      &           ' Extracted transformation matrix of symmetry :',ISYM,
      &           ' ------------------------------------------------'
-            CALL OUTPUT(TRANMT,1,NBASI,1,NHAOSY,NBASI,NHAOSY,1,LUPRI)
+            CALL OUTPUT(TRANMT,1,NBASI,1,NHUCAOI,NBASI,NHUCAOI,1,LUPRI)
          END IF
 C
-C        EWMO or EHT ?
+C       ??? EWMO or EHT ?
 C
         IF (EWMO) THEN
 C        ... call EISPACK routine RSG
-         N2HAOSY = NHAOSY*NHAOSY
+         N2HUCAOI = NHUCAOI*NHUCAOI
          IPOS = 1 + (NHUCT*(NHUCT + 1))/2 + NHUCT
          KHMAT = KWRK
-         KSMAT = KHMAT+ N2HAOSY
-         KFV1  = KSMAT+ N2HAOSY
-         KFV2  = KFV1 + NHAOSY
-         KLAST = KFV2 + NHAOSY
+         KSMAT = KHMAT+ N2HUCAOI
+         KFV1  = KSMAT+ N2HUCAOI
+         KFV2  = KFV1 + NHUCAOI
+         KLAST = KFV2 + NHUCAOI
          IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV','RSG',KLAST,LWORK)
-         CALL DSPTSI(NHAOSY,HUCMAT,WORK(KHMAT))
-         CALL DSPTSI(NHAOSY,HUCOVL(JPOS),WORK(KSMAT))
+         CALL DSPTSI(NHUCAOI,HUCMAT,WORK(KHMAT))
+         CALL DSPTSI(NHUCAOI,HUCOVL(JPOS),WORK(KSMAT))
          IF (P6FLAG(6) .OR. IPRRHF.GE.8) THEN
             WRITE (LUPRI,*) 'EWMO AO Hamiltonian matrix W'//
      &                      ' corresponding to separate atoms'
-            CALL OUTPUT(WORK(KHMAT),1,NHAOSY,1,NHAOSY,
-     &                  NHAOSY,NHAOSY,1,LUPRI)
+            CALL OUTPUT(WORK(KHMAT),1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
-         CALL DGEMM('N','N',NHAOSY,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KHMAT),NHAOSY, WORK(KSMAT),NHAOSY,0.D0,
-     &              EIGVEC,NHAOSY)
-         CALL DGEMM('N','N',NHAOSY,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KSMAT),NHAOSY, EIGVEC,NHAOSY,0.D0,
-     &              WORK(KHMAT),NHAOSY)
+         CALL DGEMM('N','N',NHUCAOI,NHUCAOI,NHUCAOI,1.D0,
+     &              WORK(KHMAT),NHUCAOI, WORK(KSMAT),NHUCAOI,0.D0,
+     &              EIGVEC,NHUCAOI)
+         CALL DGEMM('N','N',NHUCAOI,NHUCAOI,NHUCAOI,1.D0,
+     &              WORK(KSMAT),NHUCAOI, EIGVEC,NHUCAOI,0.D0,
+     &              WORK(KHMAT),NHUCAOI)
 C        HMAT = SWS , SMAT = S
          IF (P6FLAG(6) .OR. IPRRHF.GE.4) THEN
-            WRITE (LUPRI,*) 'EWMO Hamiltonian matrix SWS'
-            CALL OUTPUT(WORK(KHMAT),1,NHAOSY,1,NHAOSY,
-     &                  NHAOSY,NHAOSY,1,LUPRI)
-            WRITE (LUPRI,*) 'EWMO overlap matrix S'
-            CALL OUTPUT(WORK(KSMAT),1,NHAOSY,1,NHAOSY,
-     &                  NHAOSY,NHAOSY,1,LUPRI)
+            WRITE (LUPRI,'(/A)') 'EWMO Hamiltonian matrix SWS'
+            CALL OUTPUT(WORK(KHMAT),1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
+            WRITE (LUPRI,'(/A)') 'EWMO overlap matrix S'
+            CALL OUTPUT(WORK(KSMAT),1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
-         JPOS = JPOS + ( NHAOSY * (NHAOSY+1) ) / 2
-         CALL RSG(NHAOSY,NHAOSY,WORK(KHMAT),WORK(KSMAT),
+         JPOS = JPOS + ( NHUCAOI * (NHUCAOI+1) ) / 2
+         CALL RSG(NHUCAOI,NHUCAOI,WORK(KHMAT),WORK(KSMAT),
      &            EIGVAL(NHUCT+1),1,EIGVEC,WORK(KFV1),WORK(KFV2),IERR)
          IF ( IERR.NE.0 ) THEN
             WRITE(LUPRI,'(/A,I10)')
@@ -316,19 +314,19 @@ C        HMAT = SWS , SMAT = S
             CALL QUIT('HUCDRV: EWMO eigenvalue equation not converged')
          END IF
 C           Save orbital symmetry in EIGVLS
-            DO I = 1, NHAOSY
+            DO I = 1, NHUCAOI
                EIGVLS(NHUCT + I) = ISYM
             END DO
-        ELSE
+        ELSE ! not EWMO
 C
 C       EHT: Diagonalize Huckel matrix (Note: KLAST is not a misprint)
 C
          KSCRA1 = KWRK
-         KSCRA2 = KSCRA1 + NBASI
-         KLAST  = KSCRA1 + NBASI*NHAOSY
+         KSCRA2 = KSCRA1 + NHUCAOI
+         KLAST  = KSCRA1 + NBASI*NHUCAOI
          IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV','JACO',KLAST,LWORK)
-         CALL DUNIT(EIGVEC,NHAOSY)
-         CALL JACO(HUCMAT,EIGVEC,NHAOSY,NHAOSY,NHAOSY,WORK(KSCRA1),
+         CALL DUNIT(EIGVEC,NHUCAOI)
+         CALL JACO(HUCMAT,EIGVEC,NHUCAOI,NHUCAOI,NHUCAOI,WORK(KSCRA1),
      &             WORK(KSCRA2))
 C
 C     Sort the eigenvalues and eigenvectors
@@ -336,12 +334,12 @@ C     Save orbital symmetry in EIGVLS
 C
          II = 0
          DISYM = ISYM
-         DO 120 I = 1, NHAOSY
+         DO 120 I = 1, NHUCAOI
             II = II + I
             EIGVAL(NHUCT + I) = HUCMAT(II)
             EIGVLS(NHUCT + I) = DISYM
  120     CONTINUE 
-         CALL ORDER(EIGVEC,EIGVAL(NHUCT + 1),NHAOSY,NHAOSY)
+         CALL ORDER(EIGVEC,EIGVAL(NHUCT + 1),NHUCAOI,NHUCAOI)
         END IF
 C
 C
@@ -356,7 +354,7 @@ C
                WRITE (LUPRI,'(/A,I3)') ' Huckel EHT eigenvalues for'//
      &           ' symmetry :',ISYM
             END IF
-            WRITE (LUPRI,'(5X,5F15.6)') (EIGVAL(NHUCT+I), I = 1, NHAOSY)
+            WRITE (LUPRI,'(5X,5F15.6)') (EIGVAL(NHUCT+I), I=1, NHUCAOI)
          END IF
          IF (P6FLAG(6) .OR. IPRRHF.GE.2) THEN
             IF (EWMO) THEN
@@ -366,49 +364,64 @@ C
                WRITE (LUPRI,'(/A,I3)') ' Huckel EHT eigenvectors for'//
      &           ' symmetry :',ISYM
             END IF
-            CALL OUTPUT(EIGVEC,1,NHAOSY,1,NHAOSY,NHAOSY,NHAOSY,1,LUPRI)
+            CALL OUTPUT(EIGVEC,1,NHUCAOI,1,NHUCAOI,
+     &                  NHUCAOI,NHUCAOI,1,LUPRI)
          END IF
-         NHUCT = NHUCT + NHAOSY
+         NHUCT = NHUCT + NHUCAOI
 C         
 C     Project eigenvectors onto complete basis
 C
 C     We do this as (S_{NN})^{-1}*(S_{NO}*C_{O})
 C     N and O refers to new (large) and old (small) basis respectively
 C     For HUCKEL basis to HUCKEL basis this gives the identity matrix
+
+C     Jan 2007 HJAaJ: No! We want to project on the MO basis
+C     from DELMO, otherwise this will reintroduce some parts of the
+C     deleted atomic orbitals again, leading to "mysterious" too
+C     big MO coefficients.
+C     Revised algorithm: (CMO_{Nn})^{T}*(S_{NO}*CMO_{OO})
+C     where N,n is new basis NBASI,NORBI; O is old basis (Huckel basis);
+C     and CMO_(OO) contains the Huckel molecular orbitals in Huckel basis.
 C
-C     Explicit inversion may take some time.....
-C
+C     ( Recall that CMO^{T} = CMO^{-1} * S^{-1} )
+
          KSCRA1 = KWRK
-         KSCRA2 = KSCRA1 + NBASI
-         KLAST  = KSCRA1 + NBASI*NHAOSY
-         IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEINV',KLAST,LWORK)
-         CALL DGEINV(NBASI,OVERLP,OVERLP,WORK(KSCRA1),WORK(KSCRA2),INFO)
-         IF (INFO .NE. 0) THEN
-            WRITE (LUPRI,'(/A/A)') ' Singular overlap matrix HUCDRV',
-     &           ' Huckel guess aborted'
-            CALL QUIT('Singular overlap matrix when projecting '//
-     &                'in Huckel')
+         KSCRA2 = KSCRA1 + NBASI*NHUCAOI
+         KLAST  = KSCRA2 + NBASI*NHUCAOI
+         IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEMM ',KLAST,LWORK)
+C        1) Do (S_{NO}*CMO_{O}) part: 
+         CALL DGEMM('N','N',NBASI,NHUCAOI,NHUCAOI,1.D0,
+     &              TRANMT,NBASI, EIGVEC,NHUCAOI, 0.D0,
+     &              WORK(KSCRA1),NBASI)
+C        2) Check for orbital types in Huckel basis not in regular basis
+C           (e.g. a 3d on Aluminium, not included in basis sets w/o pol)
+         MHUCAOI = 0
+         DO IHUCAOI = 1, NHUCAOI
+            JSCRA1 = KSCRA1 + (IHUCAOI-1)*NBASI
+            TNORM = DNRM2(NBASI,WORK(JSCRA1),1)
+            IF (TNORM .GT. 1.0D-8) THEN
+               JSCRA2 = KSCRA2 + MHUCAOI*NBASI
+               MHUCAOI = MHUCAOI + 1
+               CALL DCOPY(NBASI,WORK(JSCRA1),1,WORK(JSCRA2),1)
+            END IF
+         END DO
+         IF (MHUCAOI .GT. NORBI) MHUCAOI = NORBI
+C        ... hjaaj sep 07: decrease if huckel basis bigger than user basis,
+C            e.g. if user is calculating with S-atom without d-orbitals.
+         IF (NHUCAOI .NE. MHUCAOI) THEN
+            WRITE(LUPRI,'(/A,I2,A,I3,A,I3)')
+     &      'HUCDRV: reduced number of huckel orbitals in sym',ISYM,
+     &      ' from',NHUCAOI,' to',MHUCAOI
+            NHUCAOI = MHUCAOI
          END IF
-         CALL DGEMM('N','N',NBASI,NHAOSY,NBASI,1.D0,
-     &              OVERLP,NBASI, TRANMT,NBASI,0.D0, WORK(KSCRA1),NBASI)
-         CALL DGEMM('N','N',NBASI,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KSCRA1),NBASI, EIGVEC,NHAOSY,0.D0,
+C        3) Do (CMO_{Nn})^{T}* (work(kscra2)) part
+         CALL DGEMM('T','N',NORBI,NHUCAOI,NBASI,1.D0,
+     &              CMO(ICSYM),NBASI, WORK(KSCRA2),NBASI,0.D0,
+     &              WORK(KSCRA1),NORBI)
+         CALL DGEMM('N','N',NBASI,NHUCAOI,NORBI,1.D0,
+     &              WORK(KCMO1-1+ICSYM),NBASI, WORK(KSCRA1),NORBI,0.D0,
      &              CMO(ICSYM),NBASI)
- 100  CONTINUE 
-      IF (P6FLAG(6)) THEN
-         WRITE (LUPRI,'(/A)')
-     &   ' Huckel guess MOs before Gram-Schmidt orthogonalization:'
-         CALL PRORB(CMO,.FALSE.,LUPRI)
-      END IF
-C
-C     We do our own Gram-Schmidt Orthogonalization of the trial vectors
-C
-      CALL HUCORT(CMO,WORK(KCMO1),TOTOVL,WORK(KWRK),LWRK)
-      IF (P6FLAG(6)) THEN
-         WRITE (LUPRI,'(/A)')
-     &   ' Huckel guess MOs after Gram-Schmidt orthogonalization:'
-         CALL PRORB(CMO,.FALSE.,LUPRI)
-      END IF
+ 100  CONTINUE   ! DO 100 ISYM = 1, NSYM
 C
 C     Determine Hartree-Fock occupation if requested
 C
@@ -431,6 +444,20 @@ C
          END IF
       END IF
 C
+C     We do our own Gram-Schmidt Orthogonalization of the trial vectors
+C
+      IF (P6FLAG(6)) THEN
+         WRITE (LUPRI,'(/A)')
+     &   ' Huckel guess MOs before Gram-Schmidt orthogonalization:'
+         CALL PRORB(CMO,.FALSE.,LUPRI)
+      END IF
+      CALL HUCORT(CMO,WORK(KCMO1),TOTOVL,WORK(KWRK),LWRK)
+      IF (P6FLAG(6)) THEN
+         WRITE (LUPRI,'(/A)')
+     &   ' Huckel guess MOs after Gram-Schmidt orthogonalization:'
+         CALL PRORB(CMO,.FALSE.,LUPRI)
+      END IF
+C
 C     We are done
 C
       RETURN
@@ -444,6 +471,12 @@ C     both for all-electron and effective core calculations. Ionizations
 C     energies are taken from: Joseph B. Mann, "Atomic Structure Calculations 
 C     I. Hartree-Fock Energy Results for the Elements H through Lr", 
 C     Report LA-3690 (Los Alamos National Laboratory, 1967).
+C
+C hjaaj mar 2006:
+C     Added 2p for Li, Be; 3p for Na, Mg; 4p for K, Ca
+C     with energy parameters from A. Herman, Modelling Simul. Mater.
+C     Sci. Eng. 12 (2004) 21. TODO: add 4p for first row transition metals etc.
+C
 C
 C     Input:
 C     NQ     = atomic number
@@ -459,95 +492,107 @@ C
 #include <maxorb.h>
 #include <huckel.h>
 C
-      DIMENSION ENERGY(86,15),IOFF(4)
 C
 C     Ionization energies for shells:
-C     1s,2s,3s,4s,5s,6s,2p,3p,4p,5p,6p,3d,4d,5d,4f
+C     1s,2s,3s,4s,5s,6s, 2p,3p,4p,5p,6p, 3d,4d,5d, 4f
 C
-      DATA (IOFF(I),I=1,4) /0,6,11,14/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=1,10) /
+      DIMENSION ENERGY(15,86), IOFF(4)
+C
+C     Ionization energies for 7. period shells:
+C     1s,2s,3s,4s,5s,6s,7s,2p,3p,4p,5p,6p,7p,3d,4d,5d,6d,4f,5f
+C
+      DIMENSION ENERGY7(19,87:103), IOFF7(4)
+C
+      SAVE ENERGY, IOFF, ENERGY7, IOFF7
+C
+      DATA (IOFF(I),I=1,4)  /0,6,11,14/
+      DATA (IOFF7(I),I=1,4) /0,7,13,17/
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=1,10) /
 C    H    Z= 1
-     & 5.000000D-01,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.500000D+00,0.125000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.125000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   He    Z= 2
-     & 9.180000D-01,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.918000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Li    Z= 3
-     & 2.477700D+00,1.963000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 2.477700D+00,0.196300D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.130000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Be    Z= 4
-     & 4.732700D+00,3.093000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 4.732700D+00,0.309300D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.206000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    B    Z= 5
      & 7.695300D+00,4.947000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,3.099000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    C    Z= 6
-     & 1.133840D+01,7.121000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 11.33840D+00,7.121000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,4.069000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    N    Z= 7
-     & 1.566640D+01,9.637000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 15.66640D+00,9.637000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,5.087000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    O    Z= 8
-     & 2.068090D+01,1.250400D+00,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,6.162000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 20.68090D+00,1.250400D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.616200D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    F    Z= 9
-     & 2.638270D+01,1.572500D+00,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,7.300000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 26.38270D+00,1.572500D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.730000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Ne    Z=10
-     & 3.277240D+01,1.930400D+00,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,8.504000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 32.77240D+00,1.930400D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.850400D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=11,20) /
+
+C hjaaj Jun 2006: inserted Hydrogen 3d energy for Na-Ca
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=11,20) /
 C   Na    Z=11
-     & 4.047850D+01,2.797000D+00,1.821000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,1.518100D+00,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 40.47850D+00,2.797000D+00,0.182100D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,1.518100D+00,0.114000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Mg    Z=12
-     & 4.903170D+01,3.767700D+00,2.531000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,2.282200D+00,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 49.03170D+00,3.767700D+00,0.253100D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,2.282200D+00,0.157000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Al    Z=13
-     & 5.850090D+01,4.910700D+00,3.934000D-01,0.000000D+00,0.000000D+00,
+     & 58.50090D+00,4.910700D+00,3.934000D-01,0.000000D+00,0.000000D+00,
      & 0.000000D+00,3.218300D+00,2.100000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Si    Z=14
      & 6.881920D+01,6.163000D+00,5.436000D-01,0.000000D+00,0.000000D+00,
      & 0.000000D+00,4.262400D+00,2.787000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    P    Z=15
      & 7.998890D+01,7.528700D+00,7.064000D-01,0.000000D+00,0.000000D+00,
      & 0.000000D+00,5.418400D+00,3.506000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    S    Z=16
-     & 9.201040D+01,9.009900D+00,8.827000D-01,0.000000D+00,0.000000D+00,
+     & 92.01040D+00,9.009900D+00,8.827000D-01,0.000000D+00,0.000000D+00,
      & 0.000000D+00,6.688000D+00,4.263000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Cl    Z=17
      & 1.048839D+02,1.060740D+01,1.072900D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,8.072200D+00,5.064000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Ar    Z=18
      & 1.186098D+02,1.232210D+01,1.277300D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,9.571400D+00,5.910000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    K    Z=19
      & 1.335325D+02,1.448990D+01,1.748800D+00,1.475000D-01,0.000000D+00,
-     & 0.000000D+00,1.151930D+01,9.544000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,1.151930D+01,9.544000D-01,0.103000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Ca    Z=20
      & 1.493631D+02,1.682270D+01,2.245400D+00,1.955000D-01,0.000000D+00,
-     & 0.000000D+00,1.362930D+01,1.340700D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=21,30) /
+     & 0.000000D+00,1.362930D+01,1.340700D+00,0.138000D+00,0.000000D+00,
+     & 0.000000D+00,0.055556D+00,0.000000D+00,0.000000D+00,0.000000D+00/
+
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=21,30) /
 C   Sc    Z=21
      & 1.658992D+02,1.908060D+01,2.567300D+00,2.101000D-01,0.000000D+00,
      & 0.000000D+00,1.566820D+01,1.574500D+00,0.000000D+00,0.000000D+00,
@@ -588,7 +633,7 @@ C   Zn    Z=30
      & 3.533042D+02,4.436160D+01,5.637800D+00,2.925000D-01,0.000000D+00,
      & 0.000000D+00,3.892480D+01,3.839300D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,7.825000D-01,0.000000D+00,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=31,40) /
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=31,40) /
 C   Ga    Z=31
      & 3.788181D+02,4.816830D+01,6.394600D+00,4.246000D-01,0.000000D+00,
      & 0.000000D+00,4.249390D+01,4.482300D+00,2.085000D-01,0.000000D+00,
@@ -629,7 +674,7 @@ C   Zr    Z=40
      & 6.507100D+02,9.138430D+01,1.606170D+01,2.424700D+00,2.086000D-01,
      & 0.000000D+00,8.348520D+01,1.302650D+01,1.492500D+00,0.000000D+00,
      & 0.000000D+00,7.522500D+00,3.109000D-01,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=41,50) /
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=41,50) /
 C   Nb    Z=41
      & 6.854655D+02,9.699750D+01,1.726960D+01,2.557800D+00,1.950000D-01,
      & 0.000000D+00,8.884600D+01,1.410410D+01,1.577200D+00,0.000000D+00,
@@ -670,7 +715,7 @@ C   Sn    Z=50
      & 1.041224D+03,1.569813D+02,3.160340D+01,5.517000D+00,4.793000D-01,
      & 0.000000D+00,1.464938D+02,2.721350D+01,3.973500D+00,2.486000D-01,
      & 0.000000D+00,1.916790D+01,1.373500D+00,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=51,60) /
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=51,60) /
 C   Sb    Z=51
      & 1.085597D+03,1.647690D+02,3.364800D+01,6.074800D+00,5.889000D-01,
      & 0.000000D+00,1.540157D+02,2.911790D+01,4.456200D+00,2.992000D-01,
@@ -711,7 +756,7 @@ C     Z=60
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=61,70) /
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=61,70) /
 C     Z=61
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
@@ -752,7 +797,7 @@ C     Z=70
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=71,80) /
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=71,80) /
 C     Z=71
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
@@ -793,7 +838,8 @@ C   Hg    Z=80
      & 2.778639D+03,4.707342D+02,1.131364D+02,2.557330D+01,4.182000D+00,
      & 2.610000D-01,4.521794D+02,1.043406D+02,2.169890D+01,2.850800D+00,
      & 0.000000D+00,8.814520D+01,1.460960D+01,7.142000D-01,5.012400D+00/
-      DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=81,86) /
+
+      DATA ((ENERGY(ISHELL,IZ),ISHELL=1,15),IZ=81,86) /
 C   Tl    Z=81
      & 2.851505D+03,4.845593D+02,1.171502D+02,2.688340D+01,4.618700D+00,
      & 3.611000D-01,4.657258D+02,1.081966D+02,2.291760D+01,3.231300D+00,
@@ -819,7 +865,49 @@ C   Rn    Z=86
      & 8.740000D-01,5.366755D+02,1.286712D+02,2.949110D+01,5.225200D+00,
      & 4.280000D-01,1.107011D+02,2.133120D+01,2.326300D+00,1.010760D+01/
 C
-      IF (NQ.LE.0 .AND. NQ .GT. 87) GOTO 999
+
+      DATA ((ENERGY7(ISHELL,IZ),ISHELL=1,19),IZ=87,103) /
+C         Z=87:89
+     & 57*0.0D0,
+C   Th    Z=90
+     & 3.630265D+03,5.969115D+02,1.544216D+02,3.792060D+01,8.905800D+00,
+     & 1.274000D+00,2.317762D-01,
+     & 5.766755D+02,1.446712D+02,3.349110D+01,6.825200D+00,6.280000D-01,
+     & 1.439827D-01,
+     & 1.267011D+02,2.533120D+01,3.526300D+00,3.659896D-01,
+     & 1.410760D+01,6.131576D-01,
+C   Pa    Z=91
+     & 3.730265D+03,6.069115D+02,1.584216D+02,3.892060D+01,9.405800D+00,
+     & 1.374000D+00,2.164518D-01,
+     & 5.866755D+02,1.486712D+02,3.449110D+01,7.225200D+00,6.780000D-01,
+     & 1.359714D-01,
+     & 1.307011D+02,2.633120D+01,3.826300D+00,2.972997D-01,
+     & 1.510760D+01,7.485778D-01,
+C    U    Z=92
+     & 3.830265D+03,6.169115D+02,1.624216D+02,3.992060D+01,9.905800D+00,
+     & 1.474000D+00,2.276235D-01,
+     & 5.966755D+02,1.526712D+02,3.549110D+01,7.625200D+00,7.280000D-01,
+     & 1.426965D-01,
+     & 1.347011D+02,2.733120D+01,4.126300D+00,3.349674D-01,
+     & 1.610760D+01,8.589352D-01,
+C   Np    Z=93
+     & 3.930265D+03,6.269115D+02,1.684216D+02,4.092060D+01,1.040580D+01,
+     & 1.574000D+00,2.302694D-01,
+     & 6.066755D+02,1.566712D+02,3.649110D+01,8.225200D+00,7.780000D-01,
+     & 1.440930D-01,
+     & 1.387011D+02,2.833120D+01,4.426300D+00,3.396713D-01,
+     & 1.710760D+01,9.281336D-01,
+C   Pu    Z=94
+     & 4.030265D+03,6.369115D+02,1.724216D+02,4.192060D+01,1.090580D+01,
+     & 1.674000D+00,2.214497D-01,
+     & 6.166755D+02,1.606712D+02,3.749110D+01,8.625200D+00,8.280000D-01,
+     & 1.410060D-01,
+     & 1.427011D+02,2.933120D+01,4.726300D+00,2.324009D-01,
+     & 1.810760D+01,8.401564D-01,
+C         Z=95:103
+     & 171*0.0D0/
+C
+      IF ((NQ.LE.0) .OR. (NQ.GE.104)) GOTO 999
 C
 C     Calculate offset for this l quantum number for ECP,
 C     where the lowest orbitals are excluded.
@@ -827,14 +915,19 @@ C     If not ECP, i.e. IQCORE .eq. 0, then ILOFF will be zero.
 C
       CALL ECPLCORE(IQCORE,IQM,ILOFF)
       ISHL = ISHL1 + ILOFF
-      HUCTER = -ENERGY(NQ,IOFF(IQM)+ISHL)
+      IF (NQ .LE. 86) THEN
+         HUCTER = -ENERGY(IOFF(IQM)+ISHL,NQ)
+      ELSE
+         HUCTER = -ENERGY7(IOFF7(IQM)+ISHL,NQ)
+      END IF
       IF (HUCTER.EQ.0.0D0) GOTO 999
       RETURN
 C
  999  CONTINUE
-      WRITE (LUPRI,'(/A,I3,/A)') ' No orbital ionization potential'//
-     &     ' for nucleus with charge ', NQ, ' Hueckel start guess'//
-     &     ' replaced with a diagonlization of H1'
+      WRITE (LUPRI,'(/A,I3/A,4I10//A)')
+     &' No orbital ionization potential for nucleus with charge ', NQ,
+     &' Debug info: IQCORE, IQM, ISHL, ILOFF =',IQCORE,IQM,ISHL,ILOFF,
+     &' INFO: Hueckel start guess replaced with a diagonlization of H1'
       DOHUCKEL = .FALSE.
       RETURN
       END
@@ -877,11 +970,24 @@ C
          NBASI = NBAS(ISYM)
          NHUCI = NHUCAO(ISYM)
          IF (NORBI .EQ. 0) GO TO 101
+         IF (NHUCI .GT. NORBI) THEN
+            NOCCI = NOCC(ISYM)
+            IF (NOCCI .EQ. 0) NOCCI = NORBI
+            NHUCI = MIN( NHUCI, NOCCI )
+         END IF
+C        ... hjaaj Sep07: take care of calculations with minimum basis set
+C                         smaller than Huckel, e.g. S atoms without d-orbitals
+C            hjaaj Jun10: only project on the occupied orbitals in this
+C                         case (because we have seen a problem when
+C                         running an STO-3G calculation with lower symmetry
+C                         than the real symmetry)
 C
 C     We orthogonalize the projected Huckel eigenvectors first
 C
-         CALL NORM(S(ISTS),CMO(ISTC),NBASI,NHUCI,WORK,THNORM,IRETUR)
-         IF (IRETUR.NE.0) GO TO 5000
+         IF (NHUCI .GT. 0) THEN
+            CALL NORM(S(ISTS),CMO(ISTC),NBASI,NHUCI,WORK,THNORM,IRETUR)
+            IF (IRETUR.NE.0) GO TO 5000
+         END IF
 C
 C     Now we add vectors that span the entire space and orthogonalize 
 C     them to the previous vectors

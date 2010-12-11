@@ -1500,11 +1500,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck scrsta */
-#ifndef PRG_DIRAC
-      SUBROUTINE SCRSTA(TEXT,DINTSKP)
-#else /* PRG_DIRAC */
       SUBROUTINE SCRSTA(TEXT,DINTSKP,CPUSEC)
-#endif /* PRG_DIRAC */
 C*****************************************************************************
 C
 C     Provide statistics about screening
@@ -1538,14 +1534,11 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
-#ifndef PRG_DIRAC
-      CHARACTER TEXT*6
-#else /* PRG_DIRAC */
-      CHARACTER SECTID*12, INTTID*12,TEXT*9
-#endif /* PRG_DIRAC */
+      CHARACTER TEXT*(*)
+      CHARACTER SECTID*12, INTTID*12
 C
       IF(TEXT(1:6).EQ.'Header') THEN
-        WRITE(LUPRI,'(A3,6X,4(5X,A8),3X,A9)') 
+        WRITE(LUPRI,'(A3,6X,4(5X,A8),3X,A8)') 
      &    'SCR','Step1   ','Step2   ',
      &    'Coulomb ','Exchange','CPU-time'
         RETURN
@@ -1563,22 +1556,19 @@ C
       IF(DINTSKP(1,4).GT.D0) 
      &           DSTEP(4) = (DINTSKP(2,4)/DINTSKP(1,4))*DA
 C
+      INTTID = SECTID(CPUSEC)
 #ifndef PRG_DIRAC
 C
-C VB mar 2001:
-C     SCRSTA is only entered if IPRINT > 0, so no need to check
 C
-C      IF (IPRINT.GT.0) THEN
-         WRITE(LUPRI,'(A)') '* Screening statistics:'
-         WRITE(LUPRI,'(6X,4(5X,A8))') 'Step1   ','Step2   ',
-     &        'Coulomb ','Exchange'
-         WRITE(LUPRI,'(A6,4(6X,F6.2,A1))') 
-     &        TEXT,(DSTEP(I),'%',I=1,4)
-C      END IF
+         WRITE(LUPRI,'(2A)') '* Screening statistics ',TEXT
+         WRITE(LUPRI,'(4(5X,A8),3X,A9)') 'Step1   ','Step2   ',
+     &        'Coulomb ','Exchange','WALL-time'
+         WRITE(LUPRI,'(4(6X,F6.2,A1),3X,A12)') 
+     &        (DSTEP(I),'%',I=1,4),INTTID
 #else /* PRG_DIRAC */
-      INTTID = SECTID(CPUSEC)
       WRITE(LUPRI,'(A9,4(6X,F6.2,A1),3X,A12)') 
      &     TEXT,(DSTEP(I),'%',I=1,4),INTTID
+#endif
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1618,13 +1608,15 @@ C
      &            '1234','xxxx','xxxx','xxxx','xxxx','xxxx','xxxx'/
       DATA NTYPE /7,6,1/
 C
+#ifdef VAR_DEBUG
       DO I =1,3 
       DO J =1,14
       DO K =1,3
-      WRITE(6,*) DINTSKP(I,J,K)
+         WRITE(LUPRI,*) DINTSKP(I,J,K)
       END DO
       END DO
       END DO
+#endif
       ITURN = 0
  10   CONTINUE
       IF (ITURN .EQ. 0) THEN
@@ -1735,7 +1727,6 @@ C
          END DO
          GOTO 10
       END IF
-#endif /* PRG_DIRAC */
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1813,8 +1804,12 @@ C***********************************************************************
 #include <priunit.h>
 #include <dummy.h>
 C
+C Used from
+C  gnrinf.h: SRINTS
+C
 #include <maxorb.h>
 #include <mxcent.h>
+#include <gnrinf.h>
 #include <nuclei.h>
 #include <blocks.h>
 #include <inftap.h>
@@ -1838,7 +1833,12 @@ C
       ENDIF
       DO I = 1,NGAB
          IF    (IJOB.EQ.0) THEN
-            GABLAB(I)(4:5) = 'AO'
+            IF (SRINTS) THEN
+C           ... short range integrals
+               GABLAB(I)(4:5) = 'SR'
+            ELSE
+               GABLAB(I)(4:5) = 'AO'
+            END IF
          ELSEIF(IJOB.EQ.1) THEN
             GABLAB(I)(4:5) = 'SO'
          ELSE
@@ -1958,6 +1958,8 @@ C***********************************************************************
       DIMENSION GABM(N2GAB), WORK(*)
 #include <inftap.h>
 C
+      CALL QENTER('GETGAB')
+C
 C     Check if file AOPROPER is present
 C
       CALL GPINQ('AOPROPER','EXIST',EXTST)
@@ -1966,7 +1968,7 @@ C     File AOPROPER present; see if it is opened
         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,
      &     'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       ELSE
-        WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
+        WRITE(LUPRI,'(/A)') 'GETGAB: AOPROPER not found !'
         CALL QUIT('GETGAB: AOPROPER not found !')
       ENDIF
 C
@@ -1979,23 +1981,24 @@ C
          WRITE(LUPRI,'(/A,A8,A)') '*** WARNING  GETGAB: ',
      &        GABLAB,' not found on AOPROPER. Regenerating.'
          CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
-         CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER',
+     &      'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
          REWIND LUPROP
          IF(FNDLAB(GABLAB,LUPROP)) THEN
             READ(LUPROP,ERR=10,END=20) GABM
          ELSE
-            WRITE(LUPRI,'(A,A8,A)')
+            WRITE(LUPRI,'(/A,A8,A)')
      &           'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
             CALL QUIT('GETGAB: No GAB on AOPROPER !')
          END IF
       ELSE
-         WRITE(LUPRI,'(A,A8,A)')
+         WRITE(LUPRI,'(/A,A8,A)')
      &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
          CALL QUIT('GETGAB: No derivative GAB on AOPROPER !')
       ENDIF
 C
       CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('GETGAB')
       RETURN
  10   CONTINUE
       WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB
@@ -2004,3 +2007,4 @@ C
       WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
         CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END
+C -- end of her2gab.F --

@@ -117,8 +117,7 @@ C
             XINTM(KOFF + I) = SCRAB(INDV2(I))
 C
   130    CONTINUE
-#endif
-#if defined (SYS_CRAY)
+#else
          CALL GATHER(NNBST(ISYMAB),XINTP(KOFF + 1),SCRAB,INDV1)
          CALL GATHER(NNBST(ISYMAB),XINTM(KOFF + 1),SCRAB,INDV2)
 #endif

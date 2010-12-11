@@ -42,12 +42,12 @@ C IPACK :
 C         1 : MATRIX IS PACKED USING 8-FOLD PERMUTATIONAL SYMMETRY
 C
 #include <implicit.h>
-      DIMENSION RHO(1)
+      DIMENSION RHO(*)
       PARAMETER ( THRPRI = 1.0D-8 , THRZER = 1.0D-15 )
 C     ... 880420: limit chosen based on the F13.8 format below
 C
       IF (IPACK .EQ. 1 ) THEN
-      WRITE(LUPRI,'(/A,1P,D10.2,A/)')
+      WRITE(LUPRI,'(/A,1P,E10.2,A/)')
      *   ' ( only elements with absolut value greater than',THRPRI,' )'
 C
       IPRPRI = 0
@@ -80,7 +80,7 @@ C
    80     CONTINUE
    90   CONTINUE
   100 CONTINUE
-         WRITE(LUPRI,'(/I10,A,1P,D10.2,A/I10,A,D10.2,A/I10,A/)')
+         WRITE(LUPRI,'(/I10,A,1P,E10.2,A/I10,A,E10.2,A/I10,A/)')
      *      IPRPRI,' elements larger than',THRPRI,' printed,',
      *      IPRSML,' small non-zero (',THRZER,') not printed, and',
      *      IPRZER,' zero elements not printed.'
@@ -98,7 +98,7 @@ C
 C  880528 hjaaj
 C
 #include <implicit.h>
-      DIMENSION C(1), XNDXCI(1)
+      DIMENSION C(*), XNDXCI(*)
 C
 C Used from common blocks:
 C  INFINP : LSYM
@@ -131,7 +131,7 @@ C           ... use determinant expansion
 C        CALL ANACIN(CIVEC,ICSYM,THRES,MAXTRM,XNDXCI,SYMPRO,IOUT,INCSFB)
       ELSE
          WRITE(IOUT,50)C(1)
-   50    FORMAT(/6X,'Configuration 1 out of 1, coefficient',F10.6)
+   50    FORMAT(/'  Configuration no. 1 out of 1, coefficient',F10.6)
       END IF
 C
       RETURN
@@ -161,6 +161,7 @@ c remco
 #include <infvar.h>
 #include <priunit.h>
 #if (defined(VAR_G77))
+!     integer*8 i_detvec, i_cvec
       dimension detvec(1),cvec(1)
 #elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
       allocatable detvec(:),cvec(:)
@@ -179,14 +180,11 @@ C. SD basis
      &              NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
      &              XNDXCI(KLTSOB),IOUT)
       ELSE
-C. CSF basis
-        if (.not.DONEVPT) then
-           CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
-     &                 NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
+C. CSF basis (INCSFB .ne. 0)
+        CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
+     &              NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
 #if (defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77) || !defined (NO_F90))
-        else
-           CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
-     &                 NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
+        if (DONEVPT) then
            write(lupri,100)
 #if !(defined(VAR_G77))
            allocate(detvec(ncdets))
@@ -237,12 +235,21 @@ C  /* Deck anacsf */
 C
 C Analyze CI vector in CSF basis
 C
+! hjaaj Nov 07: TODO, make output something like:
+! (is configuration number not irrelevant?)
+!
+!   Symmetry      1---------- 2-------
+!   Orbital       1   2   3   4   5   6
+! -0.06584956     2   2       2                   <- spin coupling
+! -0.06242366     2       2       2
+! -0.07355010     2   2   1  -1   1  -1
+C
 #include <implicit.h>
 #include <mxpdim.h>
 #include <strnum.h>
 #include <spinfo.h>
 #include <ciinfo.h>
-      DIMENSION ICONF(1),IPROCS(1),ILTSOB(1)
+      DIMENSION ICONF(*),IPROCS(*),ILTSOB(*)
       DIMENSION CIVEC(*)
 C
       NCIVAR = NCSASM(IREFSM)
@@ -263,9 +270,9 @@ C
       END IF
       IF(XMIN .LT. THRES  ) XMIN =  THRES
 C
-      WRITE(IOUT,'(//A,1P,G10.4,A,G10.4/A)')
-     &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
-     &'  ============================================================='
+      WRITE(IOUT,'(/A,1P,E12.4,A,E12.4/A)')
+     &' Printout of coefficients in interval',XMIN,' to',XMAX,
+     &' ==============================================================='
 C. Loop over configurations and CSF's for given configuration
       ICNF = 0
       ICSF = 0
@@ -291,19 +298,19 @@ C. CSF's in this configuration
           DO 800 IICSF = 1, NNCSF
             ICSF = ICSF+1
             IF( XMAX .GE. ABS(CIVEC(ICSF)) .AND.
-     &         ABS(CIVEC(ICSF)).GT. XMIN ) THEN
+     &          XMIN .LT. ABS(CIVEC(ICSF)) ) THEN
               ITRM  = ITRM + 1
               INRANG = INRANG + 1
               IF( ITRM .LE. MAXTRM ) THEN
                 CNORM = CNORM + CIVEC(ICSF) ** 2
-                WRITE(IOUT,'(/A,I10,A,1P,G16.8/A)')
-     &          ' Coefficient of CSF no.',ICSF,' is',CIVEC(ICSF),
-     &          ' Occupation and spin coupling '
-                WRITE(IOUT,'(4X,10I5)')
-     &          (ILTSOB(ICONF(ICNBS-1+II)),II = 1,IOPEN+ICL)
-                WRITE(IOUT,'(4X,10I5)')
-     &          ( 2, II = 1, ICL),
-     &          ((2*IPROCS(IPBAS+(IICSF-1)*IOPEN-1+II)-1),II=1,IOPEN)
+                WRITE(IOUT,'(/A,I10,A,F16.8,1P,E18.8)')
+     &           '  Coefficient of CSF no.',ICSF,' is',
+     &           CIVEC(ICSF),CIVEC(ICSF)
+                WRITE(IOUT,'(A,40I4)') '  Orbital       ',
+     &           (ILTSOB(ICONF(ICNBS-1+II)),II = 1,ICL+IOPEN)
+                WRITE(IOUT,'(A,40I4)') '  Spin coupling ',
+     &           ( 2, II = 1, ICL),
+     &           ((2*IPROCS(IPBAS+(IICSF-1)*IOPEN-1+II)-1),II=1,IOPEN)
               ELSE
                 NOPRT = NOPRT + 1
               END IF
@@ -313,15 +320,15 @@ C. CSF's in this configuration
  1000 CONTINUE
       IF(INRANG .EQ. 0 ) WRITE(IOUT,'(A)') '   ( no coefficients )'
       IF(NOPRT.NE.0) WRITE(IOUT,'(A,I10)')
-     &' Number of coefficients not printed', NOPRT
+     & ' Number of coefficients not printed', NOPRT
       IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
-       WRITE(IOUT,'(//A,F15.8)')
-     & '  Norm of printed CI vector .. ', CNORM
+       WRITE(IOUT,'(/A,F15.8)')
+     & ' Norm of printed CI vector .. ', CNORM
 C
-       WRITE(IOUT,'(/A)') '   Magnitude of CI coefficients '
-       WRITE(IOUT,'(A/)') '  =============================='
-       WRITE(IOUT,'(A,1P,E10.2,A/)')
-     & '   ( Ranges are relative to norm of vector :',VNRM,' )'
+       WRITE(IOUT,'(/A/A/A,1P,E10.2,A/)')
+     &    ' Magnitude of CI coefficients',
+     &    ' ============================',
+     &    ' ( Ranges are relative to norm of vector :',VNRM,' )'
 C
        CNORM = 0.0D0
        ISUM = 0
@@ -342,7 +349,7 @@ C
          CNORM = CNORM + CLNORM
 C
          IF (INRANG .GT. 0)
-     &     WRITE(IOUT,'(A,I2,A,I2,3X,I7,3X,E15.8,3X,E15.8)')
+     &     WRITE(IOUT,'(A,I2,A,I2,I10,E18.8,F18.10)')
      &     '  10-',IPOT+1,' to 10-',IPOT,INRANG,CLNORM,CNORM
 C
          ISUM = ISUM + INRANG
@@ -359,8 +366,8 @@ C  /* Deck anaci2 */
      &                 ICSM,NCIVAR,ICOMBI,IASTR,IBSTR,ILTSOB,IOUT)
 C
 C ANALYZE CI VECTOR :
-C       PRINT , ATMOST MAXTRM , DETERMINANTS OR COMBINATIONS
-C       COEFFICIENTS LARGER THAN THRES.
+C       PRINT atmost MAXTRM DETERMINANTS OR COMBINATIONS
+C       with COEFFICIENTS LARGER THAN THRES.
 C
 C       NUMBER OF COEFFICIENTS OF EACH MAGNITUDE
 C
@@ -381,6 +388,8 @@ C
       DIMENSION ISSOA(NOCTPA,MAXSYM),ISSOB(NOCTPB,MAXSYM)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*),ILTSOB(*)
       DIMENSION IOCOC(NOCTPA,NOCTPB)
+      PARAMETER (LEN_LINE = 300)
+      CHARACTER*(LEN_LINE) ALINE, BLINE
       data itimes/0/
       save itimes
       logical owrite
@@ -394,8 +403,8 @@ C
       endif
 c
       LUN98=-13300
-      CALL GPOPEN(LUN98,'DETSTR','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *           .FALSE.)
+      if (owrite) CALL GPOPEN(
+     *   LUN98,'DETSTR','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       VNRM = DNORM2(NCIVAR,CIVEC,1)
       ITRM = 0
       IDET = 0
@@ -419,6 +428,7 @@ C
       WRITE(IOUT,'(//A,E10.4,A,E10.4/A)')
      &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
      &'  =============================================================='
+      NOPRT = 0
       DO 100 IASM = 1, MAXSYM
         IBSM = SYMPRO(ICSM,IASM)
         DO 95 IATP = 1, NOCTPA
@@ -439,31 +449,58 @@ C
 c--renzo begin
 c            print*,'idet,civec',idet,civec(idet)
             if(iloop.eq.1.and.owrite)then
-               write(LUN98) civec(idet),(ILTSOB(IASTR(IEL,IA)),
-     $              IEL=1,NAEL),(ILTSOB(IBSTR(IEL,IB)),IEL= 1,NBEL)
-               endif
+               write(LUN98) civec(idet),
+     &              (ILTSOB(IASTR(IEL,IA)), IEL=1,NAEL),
+     &              (ILTSOB(IBSTR(IEL,IB)), IEL=1,NBEL)
+            endif
 c--renzo end
             IF( XMAX .GE. ABS(CIVEC(IDET)) .AND.
-     &         ABS(CIVEC(IDET)).GT. XMIN ) THEN
+     &          XMIN .LT. ABS(CIVEC(IDET))) THEN
               ITRM = ITRM + 1
               IIDET = IIDET + 1
               IF( ITRM .LE. MAXTRM ) THEN
                 CNORM = CNORM + CIVEC(IDET) ** 2
 C
                 IF(ICOMBI .EQ. 0 )THEN
-                  WRITE(IOUT,'(/A,I8,A,E14.8)')
-     &            '  Coefficient of determinant ',IDET,' is ',
-     &            CIVEC(IDET)
+                  WRITE(IOUT,'(/A,I10,A,F16.8,1P,E16.8)')
+     &            ' Coefficient of determinant',IDET,' is',
+     &            CIVEC(IDET),CIVEC(IDET)
                 ELSE
-                  WRITE(IOUT,'(/A,I8,A,E14.8)')
-     &            '  Coefficient of combination ',IDET,' is ',
-     &            CIVEC(IDET)
+                  WRITE(IOUT,'(/A,I10,A,F16.8,1P,E16.8)')
+     &            ' Coefficient of combination',IDET,' is',
+     &            CIVEC(IDET),CIVEC(IDET)
                 END IF
 C
-                WRITE(IOUT,'(A,15I4:/,(14X,15I4))')
-     &          '  alpha-string:',(ILTSOB(IASTR(IEL,IA)),IEL = 1, NAEL )
-                WRITE(IOUT,'(A,15I4:/,(14X,15I4))')
-     &          '   beta-string:',(ILTSOB(IBSTR(IEL,IB)),IEL = 1, NBEL )
+                aline = ' '
+                do iel = 1, nael
+                   iael = iltsob(iastr(iel,ia))
+                   if (iael .le. (LEN_LINE/3) ) then
+                      jael = 3*iael - 2  ! from: jael = 1 + 3*(iael-1)
+                      write(aline(jael:),'(I3)') iael
+                   else
+                      write (iout,*) 'Overflow alpha orbital:', iael
+                   end if
+                end do
+                bline = ' '
+                do iel = 1, nbel
+                   ibel = iltsob(ibstr(iel,ib))
+                   if (ibel .le. (LEN_LINE/3) ) then
+                      jbel = 3*ibel - 2  ! from: jbel = 1 + 3*(ibel-1)
+                      write(bline(jbel:),'(I3)') ibel
+                   else
+                      write (iout,*) 'Overflow  beta orbital:', ibel
+                   end if
+                end do
+                iend = LNBLNK(aline)
+                write(iout,'(2A)') ' alpha-string:',aline(1:iend)
+                iend = LNBLNK(bline)
+                write(iout,'(2A)') '  beta-string:',bline(1:iend)
+c               WRITE(IOUT,'(A,20I4:/,(14X,20I4))')
+c    &          ' alpha-string:',(ILTSOB(IASTR(IEL,IA)),IEL = 1, NAEL )
+c               WRITE(IOUT,'(A,20I4:/,(14X,20I4))')
+c    &          '  beta-string:',(ILTSOB(IBSTR(IEL,IB)),IEL = 1, NBEL )
+              ELSE
+                NOPRT = NOPRT + 1
               END IF
             END IF
    80     CONTINUE
@@ -471,18 +508,20 @@ C
    94   CONTINUE
    95  CONTINUE
   100 CONTINUE
-       IF(IIDET .EQ. 0 ) WRITE(IOUT,*) '   ( no coefficients )'
+       IF(IIDET .EQ. 0 ) WRITE(IOUT,'(A)') '   ( no coefficients )'
+       IF(NOPRT .NE. 0 ) WRITE(IOUT,'(A,I10)')
+     & ' Number of coefficients not printed', NOPRT
        IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
 C
-       WRITE(IOUT,'(//A,F15.8)')
-     & '  Norm of printed CI vector .. ', CNORM
+       WRITE(IOUT,'(/A,F15.8)')
+     & ' Norm of printed part of CI vector .. ', CNORM
 C
 C.. SIZE OF CI-COEFFICIENTS
 C
-       WRITE(IOUT,'(/A)') '   Magnitude of CI coefficients '
-       WRITE(IOUT,'(A/)') '  =============================='
+       WRITE(IOUT,'(/A)') '  Magnitude of CI coefficients'
+       WRITE(IOUT,'(A/)') '  ============================'
        WRITE(IOUT,'(A,1P,E10.2,A/)')
-     & '   ( Ranges are relative to norm of vector :',VNRM,' )'
+     & '  ( Ranges are relative to norm of vector :',VNRM,' )'
 C
        CNORM = 0.0D0
        ISUM = 0
@@ -512,7 +551,7 @@ C
 C
       WRITE(IOUT,*) ' Number of coefficients less than 10^-11 times ',
      & 'norm is  ',NCIVAR - ISUM
-      CALL GPCLOSE(LUN98,'KEEP')
 C
+      IF (owrite) CALL GPCLOSE(LUN98,'KEEP')
       RETURN
       END

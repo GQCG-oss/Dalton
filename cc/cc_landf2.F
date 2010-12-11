@@ -51,6 +51,8 @@ C
 C     General symmetry of both CLTR2 and T2AM for F-mat. and etaC.
 C
 #include <implicit.h>
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION YMAT(*),CLTR2(*),T2AM(*),WORK(LWORK)
 #include <priunit.h>
@@ -178,6 +180,11 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) '>>>>>CC_YI: Norm of Y-intermediate:',
+     &    DDOT(NMATAB(ISYRES),YMAT,1,YMAT,1)
+      END IF
+C
       RETURN
       END
 C  /* Deck cc_xi */
@@ -197,6 +204,8 @@ C     General symmetry of both CLTR2 and T2AM for F-mat. and etaC.
 C
 C
 #include <implicit.h>
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG=.FALSE.)
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XMAT(*),CLTR2(*),T2AM(*),WORK(LWORK)
 #include <priunit.h>
@@ -324,6 +333,11 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      IF (LOCDBG) THEN 
+        WRITE(LUPRI,*) '>>>>>CC_XI: Norm of X-intermediate:', 
+     &    DDOT(NMATIJ(ISYRES),XMAT,1,XMAT,1)
+      END IF
+C
       RETURN
       END
 C  /* Deck cc_21efm */
@@ -348,7 +362,7 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
-      IF (LWORK .LT. NT1AM(ISYMIM)) THEN
+      IF (LWORK .LT. NT1AM(ISYFCK)) THEN
          CALL QUIT('Insufficient work-space-area in CC_12EMF')
       ENDIF
 C
@@ -875,7 +889,8 @@ C---------------------------------------------
 C           Resort intermediate result-matrix.
 C---------------------------------------------
 C
-            CALL CCLT_P21I(WORK(KSCR1),ISYAJI,WORK(KEND1),LWRK1)
+            CALL CCLT_P21I(WORK(KSCR1),ISYAJI,WORK(KEND1),LWRK1,
+     &                     IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
 C
 C-----------------------------------------------------------------
 C           Final scaling with XLAMDH-element and storage in RHO2.
@@ -1054,7 +1069,8 @@ C----------------------------------------
 C
             CALL DCOPY(NT2BCD(ISYAIJ),WORK(KSCRN),1,WORK(KSCRT),1)
 C
-            CALL CCLT_P21I(WORK(KSCRT),ISYAIJ,WORK(KEND1),LWRK1)
+            CALL CCLT_P21I(WORK(KSCRT),ISYAIJ,WORK(KEND1),LWRK1,
+     &                     IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
 C
 C-----------------------------------------------------------------
 C           Final scaling with XLAMDH-element and storage in RHO2.

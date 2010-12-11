@@ -31,18 +31,28 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+
+C----------------------------------------------------------------------------
       SUBROUTINE DFTINI
+C----------------------------------------------------------------------------
+c     DFTINI
+C     intialize DFTCOM common block
+C------------------------------------------------------------------------------
 #include <implicit.h>
 #include <mxcent.h>
       PARAMETER (D0=0D0, D1=1D0)
+#include <gnrinf.h>
 #include <dftcom.h>
 #include <dftacb.h>
+      IPRDFT = IPRUSR
       HFXFAC = D1
       HFXMU  = D0 
+      HFXSET = .FALSE. !hjaaj: HFXFAC has not been set (i.e. redefined) by user
       WDFTX  = D0
       WDFTC  = D0
       WDFTL  = D0
       WDFTB  = D0
+      WDFTMP = 0.27D0 
       DFTHR0 = 1.0D-9
       DFTHRL = 1.0D-10
       DFTHRI = 2.0D-12
@@ -65,6 +75,52 @@ C
       DFTBR1 = 1.0D-20
       DFTBR2 = 1.0D-20
 C
+C     Common block used by SR-DFT hybrids.
+C
+      IF (ERFEXP) THEN
+C        default scaling factor for ERFEXP, as proposed by Savin & Toulouse
+C        (COPFAC becomes approx. 1/3.375)
+         COPFAC   = 1.0D0+6.0D0*SQRT(3.0D0)
+         COPFAC   = 1.0D0/SQRT(COPFAC)
+      ELSE
+         COPFAC   = D1
+      ENDIF
+
+      IWINT    = 0
+      SRXFUN   = '      '
+      SRCFUN   = '      '
+      DOSRX_LDA = .FALSE.
+      DOSRX_GGA = .FALSE.
+      DOSRX_WIB = .FALSE.
+      DOSRGGA2 = .FALSE.
+      DOSRBCK  = .FALSE.
+      DOHFEXCH = .FALSE.
+
+C JT 12-02-05 beg
+      ISJT     = .FALSE.
+      DOSRX_PBEHSE = .FALSE.
+      DOSRX_PBETCS = .FALSE.
+      DOSRC_PBETCS = .FALSE.
+      DOSRX_PBERI  = .FALSE.
+      DOSRC_PBERI  = .FALSE.
+C JT 12-02-05 end
+
+C JT 11-08-09 beg
+      DOSRX_PBEGWS = .FALSE.
+      DOSRC_PBEGWS = .FALSE.
+C JT 11-08-09 end
+
+C JT 17-08-09 beg
+      DOSRX_LDAS = .FALSE.
+      DOSRC_LDAS = .FALSE.
+C JT 17-08-09 end
+
+      DOSRC_LDA = .FALSE.
+      DOSRC_GGA = .FALSE.
+      DOSRC_WIB = .FALSE.
+      DOSRMULO = .FALSE.
+      DOSRLYPT = .FALSE.
+
       RETURN
       END
 c
@@ -215,12 +271,13 @@ c
 #include <implicit.h>
 #include <inforb.h>
       DIMENSION CMO(*), DMATA(*),DMATB(*),WORK(LWORK)
-      KUNIT = 1
-      KLAST = KUNIT + N2ASHX
+      KUDV = 1
+      KLAST = KUDV + N2ASHX
       IF(KLAST.GT.LWORK) CALL QUIT('no mem in dft_get_ao_dens_matab')
       LWRK = LWORK - KLAST + 1
-      CALL DUNIT(WORK(KUNIT),NASHT)
-      CALL GTDMSO(WORK(KUNIT),CMO,DMATA,DMATB,WORK(KLAST))
+      CALL DUNIT(WORK(KUDV),NASHT)
+C     ... high spin, i.e. active density matrix UDV is a unit matrix.
+      CALL GTDMSO(WORK(KUDV),CMO,DMATA,DMATB,WORK(KLAST))
       END
 c
       SUBROUTINE OUTMAT(A,IRLOW,IRHI,ICLOW,ICHI,IROWS,ICOLS)
@@ -239,6 +296,18 @@ C
 #include <implicit.h>
 #include <dftcom.h>
       dftgethf = HFXFAC
+      END
+
+      SUBROUTINE dftsetmp2(W)
+#include <implicit.h>
+#include <dftcom.h>
+      WDFTMP = W
+      END
+C     
+      FUNCTION dftgetmp2()
+#include <implicit.h>
+#include <dftcom.h>
+      dftgetmp2 = WDFTMP
       END
 c
       SUBROUTINE dftsetcam(W,BETA)

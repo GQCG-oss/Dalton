@@ -73,6 +73,7 @@ C
 #include <eribuf.h>
 #include <ccroper.h>
 #include <ccinftap.h>
+#include <r12int.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF=-0.5D0,XHALF=0.5D0,THREE=3.0D0,XMONE=-1.0D0)
@@ -112,8 +113,10 @@ C-----------------------------------
 C     initialize overall timing
 C-----------------------------------
 C
-      TIMALL    = SECOND()
-      NULL = 0
+      TIMALL  = SECOND()
+      TIMIO   = ZERO
+      TIMT2SQ = ZERO
+      NULL    = 0
 C
 C-----------------------------------
 C     echo input
@@ -208,13 +211,13 @@ C
       IERRTR = 0
       IERRBF = 0
 C
-      LUTR  = 0
+      LUTR  = -1
       IF ( .NOT. CCS ) THEN
          CALL WOPEN2(LUTR, TRFIL,64,0)
       ENDIF
 C
-      LUBFI = 0
-      LUBFD = 0
+      LUBFI = -1
+      LUBFD = -1
       IF (CCSD) THEN
          CALL WOPEN2(LUBFI,FNBFI,64,0)
          CALL WOPEN2(LUBFD,FNBFD,64,0)
@@ -241,8 +244,8 @@ C
 C       -----------------------------------------
 C       open file for P and Q intermediates:
 C       -----------------------------------------
-        LUPQR0 = 0
-        LUPQRR = 0
+        LUPQR0 = -1
+        LUPQRR = -1
         CALL WOPEN2(LUPQR0,FILPQR0,64,0)
         CALL WOPEN2(LUPQRR,FILPQRR,64,0)
 
@@ -398,8 +401,8 @@ C     Open files.
 C----------------
 C
       IF (.NOT.(CCS .OR. CC2)) THEN
-         LUC = 0
-         LUD = 0
+         LUC = -1
+         LUD = -1
 C
          CTFIL = 'CCLR_C'
          DTFIL = 'CCLR_D'
@@ -407,8 +410,8 @@ C
          CALL WOPEN2(LUC,CTFIL,64,0)
          CALL WOPEN2(LUD,DTFIL,64,0)
 C
-         LUCIM = 0
-         LUDIM = 0
+         LUCIM = -1
+         LUDIM = -1
 C
          CFIL = 'PMAT_C'
          DFIL = 'PMAT_D'
@@ -422,12 +425,12 @@ C-----------------------------------------
 C     Open scratch file CCINT3O and O3TFIL
 C-----------------------------------------
 C
-      LUO3 = 0
+      LUO3 = -1
       O3FIL = 'CCINT3O'
 C
       CALL WOPEN2(LUO3,O3FIL,64,0)
 C
-      LUO3T =  0
+      LUO3T =  -1
       O3TFIL = 'CCO3INT'
 C
       CALL WOPEN2(LUO3T,O3TFIL,64,0)
@@ -603,7 +606,7 @@ C           zeroth-order Zeta and T2AMP0 from file
 C           ---------------------------------------------------
 C
             DTIME = SECOND()
-            LUXYM = 0
+            LUXYM = -1
             CALL GPOPEN(LUXYM,FILXYM,'OLD',' ','UNFORMATTED',IDUMMY,
      &                  .FALSE.)
 
@@ -983,6 +986,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1391,6 +1398,8 @@ C
 C
                   FACTC = XMONE 
                   ICON  = 3
+                  IOPTR12 = 0
+                  IOPTE = 0
 C
                   DTIME   = SECOND()
                   IF (.NOT. T2TCOR) THEN
@@ -1399,18 +1408,18 @@ C
      *                            WORK(KLAMDP),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KLAMPC),ISYMR,
      *                            WORK(KLAMHC),ISYMR,
-     *                            DUMMY,WORK(KEND4),
-     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                            CTFIL,1)
+     *                            DUMMY,DUMMY,WORK(KEND4),
+     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                            IOPTE,LUC,CTFIL,IDUMMY,DUMMY,1)
                   ELSE
                      CALL CCRHS_C(WORK(KXINT),WORK(KDSRHF),
      *                            DUMMY, WORK(K2C2C2),ISYMR,
      *                            WORK(KLAMDP),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KLAMPC),ISYMR,
      *                            WORK(KLAMHC),ISYMR,
-     *                            DUMMY,WORK(KEND4),
-     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                            CTFIL,1)
+     *                            DUMMY,DUMMY,WORK(KEND4),
+     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                            IOPTE,LUC,CTFIL,DUMMY,DUMMY,1)
                   ENDIF
                   TIMC    = TIMC + SECOND() - DTIME
 
@@ -1438,14 +1447,17 @@ C
 C
                   ICON   = 3
                   FACTD  = 1.0D00
+                  IOPTR12 = 0
+                  IOPTE  = 0
 C
                   DTIME   = SECOND()
                   CALL CCRHS_D(WORK(KXINT),WORK(KDSRHF),DUMMY,
      *                         WORK(KC2AM),ISYMR,
      *                         WORK(KLAMDP),DUMMY,WORK(KLAMDH),
      *                         WORK(KLAMPC),ISYMR,WORK(KLAMHC),ISYMR,
-     *                         DUMMY,WORK(KEND4),LWRK4,IDEL,
-     *                         ISYMD,FACTD,ICON,LUD,DTFIL,1)
+     *                         DUMMY,DUMMY,WORK(KEND4),LWRK4,IDEL,
+     *                         ISYMD,FACTD,ICON,IOPTR12,IOPTE,
+     *                         LUD,DTFIL,IDUMMY,DUMMY,1)
                   TIMD    = TIMD     + SECOND() - DTIME
 C
                ENDIF
@@ -1553,7 +1565,7 @@ C
       ISYMHO = 1
 C
       IF ( .NOT. CCS) THEN
-         LFOCK = 0
+         LFOCK = -1
          CALL GPOPEN(LFOCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LFOCK)
@@ -1838,7 +1850,7 @@ C        Read Omega intermediate.
 C--------------------------------
 C
          TIMEBF = SECOND()
-         LUOM = 0
+         LUOM = -1
          CALL GPOPEN(LUOM,'CC_BFIM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUOM)

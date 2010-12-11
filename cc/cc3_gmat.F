@@ -127,14 +127,14 @@ C----------------------------------------------------
 C
       CDUMMY = ' '
 C
-      LU4VBC   = 0
-      LU4VC    = 0
-      LU4VB    = 0
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUDKBCR4 = 0
+      LU4VBC   = -1
+      LU4VC    = -1
+      LU4VB    = -1
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUDKBCR4 = -1
 C
       FN4VBC   = 'CC3_GMAT_TMP1'
       FN4VC    = 'CC3_GMAT_TMP2'
@@ -447,7 +447,7 @@ C-----------------------------------------------------
 C     Construct the transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
       CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -1305,7 +1305,8 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <distcl.h>
@@ -1322,6 +1323,7 @@ C
       INTEGER ISYDIS,ISYAIK,ISYCKJ,KXINT,KCKJ,KEND2,LWRK2
       INTEGER KLAMHZ,ISYMD1
       INTEGER IDLSTX,IDLSTY,IDLSTZ
+      INTEGER IDUM
 C
       INTEGER INDEXA(MXCORB)
 #if defined (SYS_CRAY)
@@ -1458,6 +1460,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

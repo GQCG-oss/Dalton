@@ -1,3 +1,4 @@
+      INTEGER NCKIJMAX
       INTEGER NT1AMX, NT2AMX, NT1AM, NT2AM, NT2AMA, NT2AMT, NNBST,
      &        NDISAO, NDSRHF, IDSAOG, ILMRHF, NDISAOSQ, NDSRHFSQ,
      &        ILMVIR, IT1AM, IT2AM, IAODIS, IDSAOGSQ,
@@ -26,7 +27,7 @@
      &        NT2AIJ,NMAIJK,IMAIJK,NCKASR,
      &        IMAIJA,NMAIJA,ID2IJG,ID2AIG,
      &        ID2ABG,ND2IJG,ND2AIG,ND2ABG,
-     &        IFCKDO,IFCKDV, NDSGRH,
+     &        IFCKDO,IFCKDV, NDSGRH, IT2VO,
      &        I3VOOO,N3VOOO,
      &        NU2AMX, NU2AM, IU2AM,
      &        ICDKAO,ICDKVI,N3VDEL, N3VVIR,
@@ -37,10 +38,15 @@
      &        IMAIAB,NMAIAB,IMAIAJ,NMAIAJ,
      &        IMAAOBI,NMAAOBI,IG1AM,NG1AM,
      &        NH1AMX,NH1AM,IH1AM,NH2AMX,NH2AM,IH2AM,
-     &        NVAJKL,IVAJKL,
-     &        I3AORHF,N3AORHF,I3AO,N3AO,IRHF3O,NRHF3O
+     &        NVAJKL,IVAJKL,NVABKL,IVABKL,NT1VM,NT1VMX,
+     &        I3AORHF,N3AORHF,I3AO,N3AO,IRHF3O,NRHF3O,
+     &        IRHFA,IRHFB,
+     &        NMATKL,NMATKI,NTR12AM,NR12R12P,NTR12SQ,NR12R12SQ,
+     &        IMATKL,IMATKI,ITR12AM,IR12R12P,ITR12SQ,ITR12SQT,
+     &        IR12R12SQ,NT2R12,IT2R12,NTG2SQ,ITG2SQ
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
+      COMMON /CCSDMAX/ NCKIJMAX
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
      &                 NT2AMT(8), NNBST(8), 
      &                 NDISAO(8),NDISAOSQ(8),IDSAOG(8,8),IDSAOGSQ(8,8),
@@ -73,7 +79,7 @@
      &                 IMAIJA(8,8),NMAIJA(8),ID2IJG(8,8),ID2AIG(8,8),
      &                 ID2ABG(8,8),ND2IJG(8),ND2AIG(8),ND2ABG(8),
      &                 ICDKAO(8,8),ICDKVI(8,8),
-     &                 IFCKDO(8),IFCKDV(8),NDSGRH(8,8),
+     &                 IFCKDO(8),IFCKDV(8),NDSGRH(8,8), IT2VO(8,8),
      &                 IMAABC(8,8), NMAABC(8), I3VDEL(8,8), 
      &                 I3VVIR(8,8), N3VDEL(8), N3VVIR(8),
      &                 OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,
@@ -87,8 +93,14 @@
      &                 IMAAOBI(8,8),NMAAOBI(8),NH1AMX,NH1AM(8),
      &                 IH1AM(8,8),NH2AMX,NH2AM(8),IH2AM(8,8),
      &                 IG1AM(8,8),NG1AM(8),
-     &                 NVAJKL(8),IVAJKL(8,8),
-     &                 I3AORHF(8,8),N3AORHF(8),
-     &                 I3AO(8,8),N3AO(8),IRHF3O(8,8),NRHF3O(8)
+     &                 NVAJKL(8),IVAJKL(8,8),NVABKL(8),IVABKL(8,8),
+     &                 NT1VM(8),NT1VMX,I3AORHF(8,8),N3AORHF(8),
+     &                 I3AO(8,8),N3AO(8),IRHF3O(8,8),NRHF3O(8),IRHFA(8),
+     &                 IRHFB(8),NMATKL(8),NMATKI(8),NTR12AM(8),
+     &                 NR12R12P(8),NTR12SQ(8),NR12R12SQ(8),
+     &                 IMATKL(8,8),IMATKI(8,8),ITR12AM(8,8),
+     &                 IR12R12P(8,8),ITR12SQ(8,8),ITR12SQT(8,8),
+     &                 IR12R12SQ(8,8),NT2R12(8),IT2R12(8,8),
+     &                 NTG2SQ(8),ITG2SQ(8,8)
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N

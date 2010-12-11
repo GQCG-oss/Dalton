@@ -33,7 +33,9 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-      PROGRAM NODPRG
+      PROGRAM NODPRG_DALTON
+C
+C     Node program (slave program) for PVM
 C
 #include <implicit.h>
 #include <priunit.h>

@@ -42,11 +42,15 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+C     Oct - Dev. 99: Extended by K.L.Bak for calculation of
+C     vibrational g-factors.
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <cbiexc.h>
+#include <gnrinf.h>
 #include <cbilnr.h>
 #include <abainf.h>
 #include <anrinf.h>
@@ -56,20 +60,22 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include <codata.h>
+#include <pcmlog.h>
 C
-      PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
+      PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF, LOCFIN
-      CHARACTER*8 DIPLEN(3), ANGMOM(3), LONMAG(3)
+      CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
+      DATA DIPLOC/'XDIPLOC','YDIPLOC','ZDIPLOC'/
       DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
       DATA LONMAG/'XLONMAG','YLONMAG','ZLONMAG'/
 C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.STATIC','.XXXXXX',
-     *            '.OPTORB', '.FREQUE','.XXXXXX','.PRINT ',
-     *            '.LIFETI', '.STOP  '/
+     *            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
+     *            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -79,6 +85,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -86,14 +93,14 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+               WRITE (LUPRI,'(/3A/)') ' Keyword "',WORD,
      *            '" not recognized in LNRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword under *ABALNR.')
@@ -140,6 +147,7 @@ C
                      MAXITE = INPVAL
                   END IF
                GO TO 100
+C              .THRESH
     4          CONTINUE
                   READ (LUCMD,*) DTHCLN
                   ICHANG = ICHANG + 1
@@ -198,6 +206,10 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
    11             CONTINUE
+                  READ(LUCMD,*) NFREQ_BATCH
+                  IF (NFREQ_BATCH.GT.MXFR) THEN
+                     NFREQ_BATCH = MXFR
+                  END IF
                GO TO 100
    12             CONTINUE
                   READ (LUCMD,*) IPRLNR
@@ -207,11 +219,19 @@ C
    13             CONTINUE
                   ABSORP = .TRUE.
                   ICHANG = ICHANG + 1
-                  READ (LUCMD,*) LIFETIME
+                  READ (LUCMD,*) DAMPING
                GO TO 100
    14             CONTINUE
                   CUT    = .TRUE.
                   ICHANG = ICHANG + 1
+               GO TO 100
+ 15            CONTINUE
+                  ABS_INTERVAL = .TRUE.
+                  ABS_REDUCE = .TRUE.
+                  READ(LUCMD,*) (FREQ_INTERVAL(I), I=1,3)
+               GO TO 100
+ 16            CONTINUE
+                 ABS_REDUCE=.TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -224,11 +244,20 @@ C
       END IF
   300 CONTINUE
 C
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         DTHCLN = DTHCLN*THR_REDFAC
+      END IF
       CALL IZERO(NOPER,8)
       DO ILABEL=1,3
          ISYM = ISYMAX(ILABEL,1) + 1
          NOPER(ISYM) = NOPER(ISYM) + 1
          LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+         IF(PCM.AND.LOCFLD) THEN
+            LABOP(NOPER(ISYM),ISYM) = DIPLOC(ILABEL)
+         END IF
       END DO
       IF (STATIC) THEN
          DO ILABEL=1,3
@@ -244,29 +273,83 @@ C
       END IF
 C
       IF ((VROA .OR. RAMAN .OR. OPTROT) .AND. NODIFC) THEN
-         WRITE (LUPRI,'(/,3A,/)')
-     &   ' Raman properties calculation is NOT ',
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(/2A/A/A/)')
+     &   ' WARNING: Raman properties calculation is NOT ',
      &   ' implemented with the NODIFC keyword active. ',
-     &   ' Try calculation again without specifying NODIFC.'
+     &   ' WARNING: Raman properties calculation ignord',
+     &   ' WARNING: Try calculation again without specifying NODIFC.'
          ROAA = .FALSE.
          ROAG = .FALSE.
       ELSEIF (VROA) THEN
-         ROAG = .TRUE.
          ROAA = .TRUE.
+         ROAG = .TRUE.
       ELSE IF (OPTROT) THEN
+         ROAA = .FALSE.
          ROAG = .TRUE.
       ELSE IF (RAMAN) THEN
+         ROAA = .FALSE.
+         ROAG = .FALSE.
          ALFA = .TRUE.
       ELSE
          ROAA = .FALSE.
          ROAG = .FALSE.
       END IF
 C
+      IF (VIB_G .AND. NODIFC) THEN
+         WRITE(LUPRI,'(/,3A,/)')
+     &   ' Vibrational g-factors are NOT',
+     &   ' implemented with the NODIFC keyword active. ',
+     &   ' Try calculation again without specifying NODIFC.'
+         VIB_G = .FALSE.
+      END IF
+C
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for LNRABA:',0)
+         CALL HEADER('Changes of defaults for *ABALNR:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' LNRABA skipped in this run.'
          ELSE
+            IF (ABSORP) THEN
+               IF (ABS_INTERVAL) THEN
+                  NFREQ_INTERVAL = 1 +
+     &                 INT((FREQ_INTERVAL(2)-FREQ_INTERVAL(1))/
+     &                 FREQ_INTERVAL(3))
+                  NFRVAL = NFREQ_INTERVAL
+                  DO I=1,NFRVAL
+                     FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
+                  END DO                  
+               ELSE
+                  NFREQ_ALPHA = NFRVAL
+                  NFREQ_INTERVAL = NFRVAL
+                  DO I=1,NFREQ_ALPHA
+                     FREQ_ALPHA(I) = FRVAL(I)
+                  END DO
+               END IF
+               THCLR_ABSORP = THCLNR
+               IPRABS = IPRLNR
+               MAX_MACRO  = MAXITE
+               IF(ABS_INTERVAL .AND.
+     &              (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
+     &           (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.FREQ_INTERVAL(3)
+     &            .OR. FREQ_INTERVAL(3).LE.0.0D0) ) THEN
+                  WRITE(LUPRI,'(/,A,/,A,/,/,A,/,A,/,/,A)')
+     & ' Warning: Frequency interval for absorption calculation is not',
+     & '          correctly specified according to:',
+     & '                 .FREQ_INTERVAL',
+     & '                 STARTFREQ ENDFREQ STEPSIZE',
+     & '          This input will be ignored. Calculation continues.'
+                  ABS_INTERVAL = .FALSE.
+                  FREQ_INTERVAL(1)=0.0D0
+                  FREQ_INTERVAL(2)=0.0D0
+                  FREQ_INTERVAL(3)=1.0D0
+               END IF
+            ELSE IF (ABS_INTERVAL) THEN
+               ABS_INTERVAL = .FALSE.
+               WRITE(LUPRI,'(/A,/A)')
+     & ' Warning: Frequency interval input only available for'//
+     & '          absorption calculation.',
+     & '          This input will be ignored. Calculation continues.'
+            END IF
             IF (NFRVAL .GT. 0) THEN
                IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
                J = MIN(MXFR,NFRVAL)
@@ -284,34 +367,24 @@ C
      &         'You have asked for too many frequencies under *ABALNR')
              END IF
             END IF
-            WRITE (LUPRI,'(A,I4)')
-     &         ' Print level in LNRABA     :',IPRLNR
-            WRITE (LUPRI,'(A,1P,D10.2)')
-     &         ' Threshold in LNRABA       :',THCLNR
-            WRITE(LUPRI,'(A,I4)')' Max. iterations in LNRABA :',
-     &                           MAXITE
-            IF (CUT) THEN
-               WRITE (LUPRI,'(/,A)') ' Program is stopped after LNRINP.'
-            END IF
+            IF (STATIC) WRITE(LUPRI,'(A)') 
+     &         ' (Also) using static approximation for'//
+     &         ' optical activity G tensor.'
             IF (ABSORP) THEN
-               WRITE(LUPRI,'(A,F8.2,A)') 
-     &              ' Finite lifetime of the excited states :',
-     &              LIFETIME, ' cm-1'
-               LIFETIME = LIFETIME*CM_TO_AU                  
-               NFREQ_ALPHA = NFRVAL
-               DO I=1,NFREQ_ALPHA
-                  FREQ_ALPHA(I) = FRVAL(I)
-               END DO
-               THCLR_ABSORP = THCLNR
-               THCPP_ABSORP = 1.0D-3
-               IPRABS = IPRLNR
-               NEXCITED_STATES = 2
-               MAX_MACRO  = 5
-               MAX_MICRO  = MAXITE
-               MAX_ITORB = 5
+               WRITE(LUPRI,'(A,F9.6,A)') 
+     &              ' Damping parameter equals  :',DAMPING, ' a.u.'
             END IF
-            IF (STATIC) WRITE(LUPRI,'(/,A)') 
-     &          ' Using static approximation.'
+            WRITE (LUPRI,'(A,I4)')
+     &         ' Print level                    :',IPRLNR
+            WRITE (LUPRI,'(A,1P,D10.2)')
+     &         ' Lin Resp convergence threshold :',THCLNR
+            WRITE (LUPRI,'(A,I4)')
+     &         ' Max. Lin Resp iterations       :',MAXITE
+            IF (OOTV) WRITE (LUPRI,'(A)')
+     &         ' Optimal orbital microiterations used.'
+            IF (CUT) THEN
+               WRITE (LUPRI,'(/A)') ' Program is stopped after LNRABA.'
+            END IF
          END IF
       END IF
 C
@@ -344,8 +417,8 @@ C
       RETURN
       END
 C  /* Deck lnraba */
-      SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,WORK,LWORK,
-     &                  PASS)
+      SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,FOVIBG,
+     &                  WORK,LWORK,PASS)
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -360,10 +433,15 @@ C  /* Deck lnraba */
       DIMENSION POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR)
       DIMENSION POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR)
       DIMENSION POLDLS(3,3), POLDAS(3,3)
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C     DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
+      DIMENSION FOVIBG(3*NATOMS+3,3*NATOMS+3,NSYM,MXFR)
+CKeinSPASmehr
       CHARACTER*8 LABEL1, LABEL2, LABINT(3*MXCOOR), BLANK
       PARAMETER (DP5=0.5D0)
       PARAMETER (LOCDBG = 3)
 C
+#include <orgcom.h>
 #include <cbiexc.h>
 #include <inflin.h>
 #include <infvar.h>
@@ -380,13 +458,14 @@ C
 #include <gnrinf.h>
 #include <infsop.h>
 #include <absorp.h>
+#include <pcmlog.h>
 C
       IF (SKIP) RETURN
       CALL QENTER('LNRABA')
       CALL TIMER('START ',TIMEIN,TIMOUT)
 C
       IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+     &     CALL TITLER('Solving Linear Response Equations','*',118)
 C
       IPRRSP = IPRLNR
 C
@@ -502,18 +581,37 @@ C
       IF (ALFA .OR. ROAA .OR. ROAG) THEN
          NCOMP  = 0
          NPATOM = 0
-         CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
-     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
-         NLAB = 3
-         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+Clf
+         IF(PCM.AND.LOCFLD) THEN
+            CALL GET1IN(DUMMY,'DIPLOC ',NCOMP,WORK(KWORK2),LWORK2,
+     &           LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+            NLAB = 3
+            CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+         ELSE
+            CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
+     &           LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+            NLAB = 3
+            CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+         END IF
       ENDIF
       IF (ROAA) THEN
          NCOMP  = 0
          NPATOM = 0
+         DIPTMX = DIPORG(1)
+         DIPTMY = DIPORG(2)
+         DIPTMZ = DIPORG(3)
+         DIPORG(1) = 0.0D0
+         DIPORG(2) = 0.0D0
+         DIPORG(3) = 0.0D0
          CALL GET1IN(DUMMY,'THETA  ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &            IPRINT)
+         DIPORG(1) = DIPTMX
+         DIPORG(2) = DIPTMY
+         DIPORG(3) = DIPTMZ
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
@@ -528,7 +626,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &            IPRINT)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 C
@@ -537,12 +636,33 @@ C
             NPATOM = 0
             CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &                  IPRINT)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          END IF
 C
       END IF
+C
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C
+      IF (VIB_G) THEN
+         NCOMP  = 0
+         NPATOM = 0
+         CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
+     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPRINT)
+         NLAB = 3
+         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+      END IF
+C
+CKeinSPASmehr
+C
+C     Start calculation of polarizabilities and raman optical activity.
+C     =================================================================
+C
+      IF (ALFA .OR. ROAA .OR. ROAG) THEN
 C
 C     Set variables and logicals
 C
@@ -597,9 +717,9 @@ C
 C
       DO IRUN = 1,NUMRUN
 C
-         LUSOVE = 0
-         LUGDVE = 0
-         LUREVE = 0
+         LUSOVE = -1
+         LUGDVE = -1
+         LUREVE = -1
          CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -623,10 +743,14 @@ C
                KOPER=IOPER
                LABEL1 = LABOP(IOPER,KSYMOP)
                IDIP = 0
-               IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-               IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-               IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
-               IF (LABEL1(2:7) .EQ.'DIPLEN') THEN
+               IF ((LABEL1 .EQ.'XDIPLEN').OR.(LABEL1 .EQ.'XDIPLOC')) 
+     $              IDIP = 1
+               IF ((LABEL1 .EQ.'YDIPLEN').OR.(LABEL1 .EQ.'YDIPLOC')) 
+     $              IDIP = 2
+               IF ((LABEL1 .EQ.'ZDIPLEN').OR.(LABEL1 .EQ.'ZDIPLOC')) 
+     $              IDIP = 3
+               IF ((LABEL1(2:7) .EQ.'DIPLEN') .OR. (LABEL1(2:7) .EQ.
+     &                             'DIPLOC')) THEN
                   NABATY = 1
                ELSE IF ((LABEL1(2:7) .EQ. 'ANGMOM') .OR.
      &                  (LABEL1(2:7) .EQ. 'LONMAG')) THEN
@@ -740,8 +864,8 @@ C
                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                          ' ',IDUMMY,.FALSE.)
                            CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
-     &                          BLANK,FREQ_ALPHA(IFRVAL),0.0D0,ISYM,0,
-     &                          THCLR_ABSORP,FOUND,CONV,ANTSYM)
+     &                          'COMPLEX ',FRVAL(IFRVAL),0.0D0,
+     &                          ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
                            CALL GPCLOSE(LURSP,'KEEP')
                            SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
      &                          WORK(KGD1),1)
@@ -791,6 +915,21 @@ C
                                  POLDD(1,IDIP,3,IFRVAL) = SNDPRP(1)
                                  POLDD(2,IDIP,3,IFRVAL) = SNDPRP(2)
                               END IF
+Clf
+                           ELSE IF (LABEL2(2:7).EQ.'DIPLOC') THEN
+                              IF (LABEL2(1:1).EQ.'X') THEN
+                                 POLDD(1,IDIP,1,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,1,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Y') THEN
+                                 POLDD(1,IDIP,2,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,2,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Z') THEN
+                                 POLDD(1,IDIP,3,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,3,IFRVAL) = SNDPRP(2)
+                              END IF
+Clf
                            ELSE IF (LABEL2(3:8).EQ.'THETA ') THEN
                               IF (LABEL2(1:2).EQ.'XX') THEN
                                  POLDQ(1,IDIP,1,1,IFRVAL) = SNDPRP(1)
@@ -994,8 +1133,9 @@ C
       END IF
 C
 C     Skip point if no frequencies specified
-      IF (STATIC) CALL LNRAST(POLDLS,POLDAS,WORK(KCMO),WORK(KWORK1),
-     &     LWORK1)
+C     STATIC = static approximation to optical rotation G tensor
+      IF (STATIC)
+     &   CALL LNRAST(POLDLS,POLDAS,WORK(KCMO),WORK(KWORK1),LWORK1)
 C
  999  CONTINUE
 C
@@ -1003,13 +1143,494 @@ C-tbp CALL GPCLOSE(LUSOVE,'DELETE')
 C-tbp CALL GPCLOSE(LUGDVE,'DELETE')
 C-tbp CALL GPCLOSE(LUREVE,'DELETE')
 C
+      END IF
+C
+C     Start calculation of vibrational g-factors.
+C     ===========================================
+C
+      IF (VIB_G) THEN
+         CALL HEADER('Calculating terms for vibrational g-factor',-1)
+C
+C        Set variables and logicals
+C
+         CICLC  = .FALSE.
+         HFCLC  = NASHT .LE. 1
+         TRIPLE = .FALSE.
+         EXECLC = .FALSE.
+         NABATY = -1
+         LUSOVE = -1
+         LUGDVE = -1
+         LUREVE = -1
+         NABAOP = 1
+         BLANK  = '        '
+CSPAS:8/10-08 there is no frequency for VIB_G
+         IFRVAL = 1
+CKeinSPASmehr
+C
+         CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C        CALL DZERO(FOVIBG,3*NATOMS*3*NATOMS*NSYM*NFRVAL)
+         CALL DZERO(FOVIBG,(3*NATOMS+3)*(3*NATOMS+3)*NSYM*NFRVAL)
+CKeinSPASmehr
+C
+C        Loop over the first operators in the linear response function.
+C        These are derivatives with respect to the nuclear cartesian 
+C        coordinates.
+C        ==============================================================
+C
+         NBR = 0
+C
+         DO ISYM = 1,NSYM
+C
+            CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
+C
+C           3. Work Allocations:
+C
+            KGD1   = KWORK1
+            KWRKG1 = KGD1
+            LWRKG1 = LWORK - KWRKG1
+            KSLV   = KGD1 + 2*NVARPT
+            KLAST  = KSLV + 2*NVARPT
+            IF (KLAST.GT.LWORK) CALL STOPIT('LNRABA',' ',KLAST,LWORK)
+            KWRK   = KLAST
+            LWRK   = LWORK - KLAST + 1
+C
+            DO IATOM = 1,NUCIND
+               DO ICOOR = 1,3
+C
+C                 Determine the displacement coordinate number ISCOOR
+C                 of symmetry ISYM. If the displacement coordinate
+C                 does not have symmetry ISYM, ISCOOR is set to zero.
+C                 =================================================== 
+C
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM-1,1)
+C
+                  IF (ISCOOR.GT.0) THEN
+C
+                     NBR = NBR + 1
+C
+                     IF (NBR .NE. ISCOOR) THEN
+                        WRITE(LUPRI,'(A/A,2I8)') 
+     &                  'Keld, why are NBR and ISCOOR different?',
+     &                  'IATOM,NBR,ISCOOR',IATOM,NBR,ISCOOR
+                     END IF
+C
+C                    Find right hand side for first operator 
+C                    and write to file
+C                    =======================================
+C
+                     CALL RDS2X(NBR,WORK(KUDV),WORK(KXINDX),
+     &                          WORK(KWRKG1),LWRKG1)
+                     REWIND LUGDVE
+                     CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
+C
+                     IF (IPRLNR.GT.3) THEN
+                        WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
+                        CALL OUTPUT(WORK(KWRKG1),1,NVARPT,1,2,
+     &                              NVARPT,2,1,LUPRI)
+                     ENDIF
+C
+C                    Calculate eigenvector for first operator
+C                    (i.e. derivatives with respect to the 
+C                    nuclear cartesian coordinates) and write to file.
+C                    =================================================
+C
+                     CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
+     &                           FRVAL,NFRVAL,NABATY,NABAOP,'d/dR    ',
+     &                           LUGDVE,LUSOVE,LUREVE,THCLNR,MAXITE,
+     &                           IPRRSP,MXRM,MXPHP,WORK(KWRK),LWRK)
+C
+C                    Loop over the second operators in the linear 
+C                    response function.
+C                    These are derivatives with respect to the nuclear 
+C                    cartesian coordinates.
+C                    =================================================
+C
+                     DO JATOM = 1,NUCIND
+                        DO JCOOR = 1,3
+C
+C                       Determine the displacement coordinate number 
+C                       JSCOOR of symmetry ISYM. If the displacement 
+C                       coordinate does not have symmetry ISYM, 
+C                       JSCOOR is set to zero.
+C                       ============================================
+C
+                           JSCOOR = IPTCNT(3*(JATOM-1)+JCOOR,ISYM-1,1)
+C
+                           IF (JSCOOR.GT.0) THEN
+C
+C                             Find right hand side for second operator
+C                             ========================================
+C
+                              CALL RDS2X(JSCOOR,WORK(KUDV),WORK(KXINDX),
+     &                                   WORK(KWRKG1),LWRKG1)
+C
+                              IF (IPRLNR.GT.13) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'GP Vector, label: ','d/dR'
+                                 CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+
+C                             Form the second order property: 
+C                             vibrational g-factor.
+C                             ===============================
+C
+                              REWIND LUSOVE
+C
+CSPAS:8/10-08 there is no frequency for VIB_G
+C                             DO IFRVAL = 1,NFRVAL
+CKeinSPASmehr
+C
+                                 CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                                 FOVIBG(NBR,JSCOOR,ISYM,IFRVAL) 
+     &                               = DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                      WORK(KGD1),1)
+C
+                                 IF (IPRLNR.GT.13) THEN
+                                    WRITE (LUPRI,'(2A)') 
+     &                                 'Solution Vector, label: ','d/dR'
+                                    CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,
+     &                                          1,2*NVARPT,1,1,LUPRI)
+                                 ENDIF
+C
+                                 IF (IPRLNR.GT.2) THEN
+CSPAS:8/10-08 there is no frequency for VIB_G
+C                                   WRITE (LUPRI,'(A,F15.8)')
+C    &                                  'Frequence = ',FRVAL(IFRVAL)
+CKeinSPASmehr
+                                    WRITE (LUPRI,'(4A,F15.8)')
+     &                                  'Second order property for ',
+     &                                  'd/dR','d/dR',' = ',
+     &                                  FOVIBG(NBR,JSCOOR,ISYM,IFRVAL)
+                                 ENDIF
+C     
+CSPAS:8/10-08 there is no frequency for VIB_G
+C                             END DO
+CKeinSPASmehr
+C     
+                           END IF
+C     
+                        END DO
+                     END DO
+C
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C
+C                    Loop over dipole velocity operators
+C                    ===================================
+C     
+                     DO JPRLBL = 1, NLBTOT
+C     
+C                       Find label and symmetry of operator
+C                       ===================================
+C
+                        LABEL2 = LABAPP(JPRLBL)
+                        KSYM   = LABSYM(JPRLBL)
+C
+C                       Check for dipole velocity operator
+C                       ==================================
+C
+                        IF (LABEL2(2:7).EQ.'DIPVEL') THEN
+C
+                           IF (LABEL2(1:1).EQ.'X') JDIPV = 1
+                           IF (LABEL2(1:1).EQ.'Y') JDIPV = 2
+                           IF (LABEL2(1:1).EQ.'Z') JDIPV = 3
+C     
+C                          If symmetry of first operator equals symmetry of
+C                          second operator, that is if ISYM = KSYM, then
+C                          ================================================
+C     
+                           IF (KSYM.EQ.ISYM) THEN
+C     
+C                             Find right hand side (gradient) 
+C                             for second operator
+C                             ===============================
+C     
+                              CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),
+     &                                    WORK(KUDV),WORK(KPVX),
+     &                                    WORK(KXINDX),ANTSYM,
+     &                                    WORK(KWRKG1),LWRKG1)
+C
+                              IF (IPRLNR.GT.3) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'GP Vector, label: ',LABEL2
+                                 CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+C
+C                             Form the second order property: 
+C                             << X/Y/ZDIPVEL ; d/dR >>
+C                             ===============================
+C
+                              REWIND LUSOVE
+C
+CSPAS:8/10-08 there is no frequency for VIB_G
+C                             DO IFRVAL = 1,NFRVAL
+CKeinSPASmehr
+C
+                                 CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                                 FOVIBG(NBR,3*NATOMS+JDIPV,ISYM,IFRVAL) 
+     &                               = DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                      WORK(KGD1),1)
+C
+                                 IF (IPRLNR.GT.3) THEN
+                                    WRITE (LUPRI,'(2A)') 
+     &                                 'Solution Vector, label: ','d/dR'
+                                    CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,
+     &                                          1,2*NVARPT,1,1,LUPRI)
+                                 ENDIF
+C
+                                 IF (IPRLNR.GT.2) THEN
+CSPAS:8/10-08 there is no frequency for VIB_G
+C                                   WRITE (LUPRI,'(A,F15.8)')
+C    &                                  'Frequence = ',FRVAL(IFRVAL)
+CKeinSPASmehr
+                                    WRITE (LUPRI,'(4A,F15.8)')
+     &                                  'Second order property for ',
+     &                                  LABEL2,'d/dR',' = ',
+     &                                  FOVIBG(NBR,3*NATOMS+JDIPV,ISYM,
+     &                                         IFRVAL)
+                                 ENDIF
+C     
+CSPAS:8/10-08 there is no frequency for VIB_G
+C                             END DO
+CKeinSPASmehr
+C
+                           ENDIF
+C
+                        ENDIF
+C
+                     END DO
+C
+CKeinSPASmehr
+C
+C     
+                  END IF
+C
+               END DO
+            END DO
+C
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C
+C           Loop over dipole velocity operators
+C           ===================================
+C     
+            DO IPRLBL = 1, NLBTOT
+C     
+C              Find label and symmetry of operator
+C              ===================================
+C
+               LABEL1 = LABAPP(IPRLBL)
+               KSYMOP = LABSYM(IPRLBL)
+C
+C              Check for dipole velocity operator
+C              ==================================
+C
+               IF (LABEL1(2:7).EQ.'DIPVEL') THEN
+C
+                  IF (LABEL1(1:1).EQ.'X') IDIPV = 1
+                  IF (LABEL1(1:1).EQ.'Y') IDIPV = 2
+                  IF (LABEL1(1:1).EQ.'Z') IDIPV = 3
+C     
+C                 If symmetry of first operator is correct 
+C                 that is if ISYM = KSYMOP, then
+C                 ========================================
+C     
+                  IF (KSYMOP.EQ.ISYM) THEN
+C     
+C                    Find right hand side (gradient) for first operator
+C                    ==================================================
+C     
+                     CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),
+     &                           WORK(KUDV),WORK(KPVX),WORK(KXINDX),
+     &                           ANTSYM,WORK(KWRKG1),LWRKG1)
+                     REWIND LUGDVE
+                     CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
+C
+                     IF (IPRLNR.GT.3) THEN
+                        WRITE (LUPRI,'(2A)') 
+     &                      'GP Vector, label: ',LABEL1
+                        CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
+     &                              1,2*NVARPT,1,1,LUPRI)
+                     ENDIF
+C     
+C                    Calculate linear response vector and write to file
+C                    ==================================================
+C     
+                     CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
+     &                    FRVAL,NFRVAL,NABATY,NABAOP,LABEL1,LUGDVE,
+     &                    LUSOVE,LUREVE,THCLNR,MAXITE,IPRRSP,MXRM,MXPHP,
+     &                    WORK(KWRK),LWRK)
+C
+C                    Loop over the second operators in the linear 
+C                    response function.
+C                    These are derivatives with respect to the nuclear 
+C                    cartesian coordinates.
+C                    =================================================
+C
+                     DO JATOM = 1,NUCIND
+                        DO JCOOR = 1,3
+C
+C                       Determine the displacement coordinate number 
+C                       JSCOOR of symmetry ISYM. If the displacement 
+C                       coordinate does not have symmetry ISYM, 
+C                       JSCOOR is set to zero.
+C                       ============================================
+C
+                           JSCOOR = IPTCNT(3*(JATOM-1)+JCOOR,ISYM-1,1)
+C
+                           IF (JSCOOR.GT.0) THEN
+C
+C                             Find right hand side for second operator
+C                             ========================================
+C
+                              CALL RDS2X(JSCOOR,WORK(KUDV),WORK(KXINDX),
+     &                                   WORK(KWRKG1),LWRKG1)
+C
+                              IF (IPRLNR.GT.3) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'GP Vector, label: ','d/dR'
+                                 CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+
+C                             Form the second order property: 
+C                             << d/dR ; X/Y/ZDIPVEL >>
+C                             ===============================
+C
+                              REWIND LUSOVE
+C
+                              CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                              FOVIBG(3*NATOMS+IDIPV,JSCOOR,ISYM,IFRVAL) 
+     &                            = DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                   WORK(KGD1),1)
+C
+                              IF (IPRLNR.GT.3) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'Solution Vector, label: ',LABEL1
+                                 CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+C
+                              IF (IPRLNR.GT.2) THEN
+                                 WRITE (LUPRI,'(4A,F15.8)')
+     &                               'Second order property for ',
+     &                               'd/dR',LABEL1,' = ',
+     &                               FOVIBG(3*NATOMS+IDIPV,JSCOOR,ISYM,
+     &                                      IFRVAL)
+                              ENDIF
+C     
+                           END IF
+C     
+                        END DO
+                     END DO
+C
+C                    Loop over dipole velocity operators
+C                    ===================================
+C     
+                     DO JPRLBL = 1, NLBTOT
+C     
+C                       Find label and symmetry of operator
+C                       ===================================
+C
+                        LABEL2 = LABAPP(JPRLBL)
+                        KSYM   = LABSYM(JPRLBL)
+C
+C                       Check for dipole velocity operator
+C                       ==================================
+C
+                        IF (LABEL2(2:7).EQ.'DIPVEL') THEN
+C
+                           IF (LABEL2(1:1).EQ.'X') JDIPV = 1
+                           IF (LABEL2(1:1).EQ.'Y') JDIPV = 2
+                           IF (LABEL2(1:1).EQ.'Z') JDIPV = 3
+C     
+C                          If symmetry of first operator equals symmetry of
+C                          second operator, that is if ISYM = KSYM, then
+C                          ================================================
+C     
+                           IF (KSYM.EQ.ISYM) THEN
+C     
+C                             Find right hand side (gradient) 
+C                             for second operator
+C                             ===============================
+C     
+                              CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),
+     &                                    WORK(KUDV),WORK(KPVX),
+     &                                    WORK(KXINDX),ANTSYM,
+     &                                    WORK(KWRKG1),LWRKG1)
+C
+                              IF (IPRLNR.GT.3) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'GP Vector, label: ',LABEL2
+                                 CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+C
+C                             Form the second order property: 
+C                             << X/Y/ZDIPVEL ; X/Y/ZDIPVEL >>
+C                             ===============================
+C
+                              REWIND LUSOVE
+C
+                              CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+C
+                              FOVIBG(3*NATOMS+IDIPV,3*NATOMS+JDIPV,ISYM,
+     &                               IFRVAL) 
+     &                            = DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                   WORK(KGD1),1)
+C
+                              IF (IPRLNR.GT.3) THEN
+                                 WRITE (LUPRI,'(2A)') 
+     &                               'Solution Vector, label: ',LABEL1
+                                 CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,
+     &                                       1,2*NVARPT,1,1,LUPRI)
+                              ENDIF
+C
+                              IF (IPRLNR.GT.2) THEN
+                                 WRITE (LUPRI,'(4A,F15.8)')
+     &                               'Second order property for ',
+     &                               LABEL2,LABEL1,' = ',
+     &                               FOVIBG(3*NATOMS+IDIPV,
+     &                                      3*NATOMS+JDIPV,ISYM,
+     &                                      IFRVAL)
+                              ENDIF
+C
+                           ENDIF
+C
+                        ENDIF
+C
+                     END DO
+C
+                  ENDIF
+C
+               ENDIF
+C
+            END DO
+C
+CKeinSPASmehr
+C
+         END DO
+C
+         CALL GPCLOSE(LUSOVE,'DELETE')
+         CALL GPCLOSE(LUGDVE,'DELETE')
+         CALL GPCLOSE(LUREVE,'DELETE')
+C
+      END IF
+C
       CALL TIMER ('LNRABA',TIMEIN,TIMOUT)
       PASS = .TRUE.
       IF (CUT) THEN
-         WRITE (LUPRI,'(/,A)')
-     &          ' Program stopped after LNRABA as required.'
-         WRITE (LUPRI,'(A)') ' No restart file has been written.'
-         CALL QUIT(' ***** End of ABACUS (in LNRABA) *****')
+         WRITE (LUPRI,'(/A/A)')
+     &     ' Program stopped after LNRABA as requested.',
+     &     ' No restart file has been written.'
+         CALL QUIT(' ***** End of ABACUS (.STOP in *ABALNR) *****')
       END IF
 C
       CALL QEXIT('LNRABA')
@@ -1018,6 +1639,8 @@ C
 C
 C  /* Deck lnrast */ 
       SUBROUTINE LNRAST(POLDLS,POLDAS,CMO,WORK,LWORK)
+C
+C     _ST_atic approximation to optical rotation G tensors.
 C      
 #include <implicit.h>
 #include <dummy.h>
@@ -1151,14 +1774,13 @@ C
             END IF
          END DO
       END DO
-      WRITE(LUPRI,9000)
       WRITE(LUPRI,9003)
       WRITE(LUPRI,9007)
       WRITE(LUPRI,9009) 'Bx','By','Bz'
       WRITE(LUPRI,9008) 'Ex',(POLDLS(1,JDIP), JDIP=1,3)
       WRITE(LUPRI,9008) 'Ey',(POLDLS(2,JDIP), JDIP=1,3)
       WRITE(LUPRI,9008) 'Ez',(POLDLS(3,JDIP), JDIP=1,3)
-      WRITE(LUPRI,9000)
+C
       WRITE(LUPRI,9004)
       WRITE(LUPRI,9007)
       WRITE(LUPRI,9009) 'Bx','By','Bz'
@@ -1166,7 +1788,6 @@ C
       WRITE(LUPRI,9008) 'Ey',(POLDAS(2,JDIP), JDIP=1,3)
       WRITE(LUPRI,9008) 'Ez',(POLDAS(3,JDIP), JDIP=1,3)         
       DO IFRVAL=1,NFRVAL
-         WRITE(LUPRI,9000)
          WRITE(LUPRI,9005) FRVAL(IFRVAL)
          WRITE(LUPRI,9007)
          WRITE(LUPRI,9009) 'Bx','By','Bz'
@@ -1176,6 +1797,7 @@ C
      &        JDIP=1,3)
          WRITE(LUPRI,9008) 'Ez',(POLDLS(3,JDIP)*FRVAL(IFRVAL),
      &        JDIP=1,3)   
+
          WRITE(LUPRI,9006) FRVAL(IFRVAL)
          WRITE(LUPRI,9007)
          WRITE(LUPRI,9009) 'Bx','By','Bz'
@@ -1186,12 +1808,11 @@ C
          WRITE(LUPRI,9008) 'Ez',(POLDAS(3,JDIP)*FRVAL(IFRVAL),
      &        JDIP=1,3)           
       END DO
- 9000 FORMAT (/)
- 9003 FORMAT (/,10X,'London    G tensor using static approximation')
- 9004 FORMAT (/,10X,'No-London G tensor using static approximation')
- 9005 FORMAT (/,10X,'London    G tensor stat. appr. for freq ',F12.6,
+ 9003 FORMAT (//10X,'London    G tensor using static approximation')
+ 9004 FORMAT (//10X,'No-London G tensor using static approximation')
+ 9005 FORMAT (//10X,'London    G tensor stat. appr. for freq ',F12.6,
      &     ' au') 
- 9006 FORMAT (/,10X,'No-London G tensor stat. appr. for freq ',F12.6,
+ 9006 FORMAT (/10X,'No-London G tensor stat. appr. for freq ',F12.6,
      &     ' au')
  9007 FORMAT (10X,'------------------------------------------------')
  9008 FORMAT (16X,A,2X,3F12.7)
@@ -1516,13 +2137,14 @@ C ****************** FREQ is in Hartree = 2Pi*freq
 C
 #include <implicit.h>
 #include <codata.h>
-      PARAMETER ( D180 = 18.0D1)
+      PARAMETER ( D180 = 180.D0)
 C
       CROSSK = (FRVAL-FREQ)**3*FRVAL/FREQ/D180/CVEL**3
       RETURN
       END
 C  /* Deck lnrout */
-      SUBROUTINE LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRINT)
+      SUBROUTINE LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,IPRINT,
+     &                  WORK,LWORK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1534,7 +2156,6 @@ C
 #include <codata.h>
       PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
      &           D3 = 3.0D0)
-      PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include <nuclei.h>
 #include <symmet.h>
 #include <abainf.h>
@@ -1543,10 +2164,19 @@ C
      &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
      &          BETAVL(2), BETAVV(2), ALPHVL(2), ALPHVV(2)
+cmbh: helper strings
+      character mlab1*8,mlab2*8,mlab3*8
+cmbh end
+      CHARACTER COORDI*21,COORDJ*21
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+C     DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
+      DIMENSION FOVIBG(3*NATOMS+3,3*NATOMS+3,NSYM,MXFR)
+CKeinSPASmehr
+      DIMENSION WORK(LWORK)
 #include <ibtfun.h>
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
-         WRITE(LUPRI,9000)
+         CALL TITLER('Frequency dependent polarizabilities','+',118)
          DO 100 IFRVAL = 1,NFRVAL
             WRITE(LUPRI,9001) FRVAL(IFRVAL)
             WRITE(LUPRI,9002)
@@ -1555,6 +2185,36 @@ C
             WRITE(LUPRI,9004) 'Ex',(POLDD(1,1,JDIP,IFRVAL), JDIP=1,3)
             WRITE(LUPRI,9004) 'Ey',(POLDD(1,2,JDIP,IFRVAL), JDIP=1,3)
             WRITE(LUPRI,9004) 'Ez',(POLDD(1,3,JDIP,IFRVAL), JDIP=1,3)
+cmbh: print out polarizabilities for MidasCpp
+            mlab1='XDIPLEN'
+            mlab2='YDIPLEN'
+            mlab3='ZDIPLEN'
+            call wripro(POLDD(1,1,1,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab1,mlab1,mlab1,mlab1,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,1,2,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab1,mlab2,mlab1,mlab2,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,1,3,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab1,mlab3,mlab1,mlab3,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,2,2,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab2,mlab2,mlab2,mlab2,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,2,3,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab2,mlab3,mlab2,mlab3,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+            call wripro(POLDD(1,3,3,IFRVAL),"SCF/DFT   ",2,
+     *                  mlab3,mlab3,mlab3,mlab3,
+     *                  FRVAL(IFRVAL),FRVAL(IFRVAL),FRVAL(IFRVAL),1,0,
+     *                  0,0)
+
+cmbh end
             IF (ABSORP) THEN
                WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
                WRITE(LUPRI,9003) 'Ex','Ey','Ez'
@@ -1562,21 +2222,31 @@ C
                WRITE(LUPRI,9004) 'Ey',(POLDD(2,2,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9004) 'Ez',(POLDD(2,3,JDIP,IFRVAL), JDIP=1,3)
             END IF
+            POLISO = (POLDD(1,1,1,IFRVAL) +
+     &                POLDD(1,2,2,IFRVAL) +
+     &                POLDD(1,3,3,IFRVAL)) / D3
+            WRITE (LUPRI,'(/A,1P,G14.7)')
+     &         'Isotropic polarizability: ',POLISO
   100    CONTINUE
       ENDIF
       IF (ROAG) THEN
-         CALL TITLER('Optical rotation','+',118)
+         IF (ABSORP) THEN
+            CALL TITLER('Optical Rotation and Electronic Circular '//
+     &           'Dichroism','+',102)
+         ELSE
+            CALL TITLER('Optical rotation','+',118)
+         END IF
          IF (IPRINT .GE. 0) THEN
             DO IFRVAL = 1,NFRVAL
                WRITE(LUPRI,9005) FRVAL(IFRVAL)
                WRITE(LUPRI,9007)
-               IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+               IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                WRITE(LUPRI,9009) 'Bx','By','Bz'
                WRITE(LUPRI,9008) 'Ex',(POLDL(1,1,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ey',(POLDL(1,2,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ez',(POLDL(1,3,JDIP,IFRVAL), JDIP=1,3)
                IF (ABSORP) THEN
-                  WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                  WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                   WRITE(LUPRI,9009) 'Bx','By','Bz'
                   WRITE(LUPRI,9008) 'Ex',(POLDL(2,1,JDIP,IFRVAL), 
      &                 JDIP=1,3)
@@ -1589,13 +2259,13 @@ C
             DO IFRVAL = 1,NFRVAL
                WRITE(LUPRI,9006) FRVAL(IFRVAL)
                WRITE(LUPRI,9007)
-               IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+               IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                WRITE(LUPRI,9009) 'Bx','By','Bz'
                WRITE(LUPRI,9008) 'Ex',(POLDA(1,1,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ey',(POLDA(1,2,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9008) 'Ez',(POLDA(1,3,JDIP,IFRVAL), JDIP=1,3)
                IF (ABSORP) THEN
-                  WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                  WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                   WRITE(LUPRI,9009) 'Bx','By','Bz'
                   WRITE(LUPRI,9008) 'Ex',(POLDA(2,1,JDIP,IFRVAL), 
      &                 JDIP=1,3)
@@ -1617,7 +2287,7 @@ C
                      CALL DSCAL(18,FRQINV,POLVL(1,1,1,IFRVAL),1)
                      WRITE(LUPRI,9010) FRVAL(IFRVAL)
                      WRITE(LUPRI,9007)
-                     IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+                     IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                      WRITE(LUPRI,9009) 'Bx','By','Bz'
                      WRITE(LUPRI,9008) 'Ex',(POLVL(1,1,JDIP,IFRVAL),
      &                    JDIP=1,3)
@@ -1626,7 +2296,7 @@ C
                      WRITE(LUPRI,9008) 'Ez',(POLVL(1,3,JDIP,IFRVAL),
      &                    JDIP=1,3)
                      IF (ABSORP) THEN
-                        WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                        WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                         WRITE(LUPRI,9009) 'Bx','By','Bz'
                         WRITE(LUPRI,9008) 'Ex',(POLVL(2,1,JDIP,IFRVAL),
      &                       JDIP=1,3)
@@ -1648,7 +2318,7 @@ C
                      CALL DSCAL(18,FRQINV,POLVV(1,1,1,IFRVAL),1)
                      WRITE(LUPRI,9011) FRVAL(IFRVAL)
                      WRITE(LUPRI,9007)
-                     IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+                     IF (ABSORP) WRITE(LUPRI,'(/10X,A)') 'Real part:'
                      WRITE(LUPRI,9009) 'Bx','By','Bz'
                      WRITE(LUPRI,9008) 'Ex',(POLVV(1,1,JDIP,IFRVAL),
      &                    JDIP=1,3)
@@ -1657,7 +2327,7 @@ C
                      WRITE(LUPRI,9008) 'Ez',(POLVV(1,3,JDIP,IFRVAL),
      &                    JDIP=1,3)
                      IF (ABSORP) THEN
-                        WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                        WRITE(LUPRI,'(/10X,A)') 'Imaginary part:'
                         WRITE(LUPRI,9009) 'Bx','By','Bz'
                         WRITE(LUPRI,9008) 'Ex',(POLVV(2,1,JDIP,IFRVAL),
      &                       JDIP=1,3)
@@ -1685,9 +2355,21 @@ C
             END DO
          END DO
          FACTOT = FACTOR*XTKAYS*XTKAYS
-         WRITE(LUPRI,'(2(/,10X,A))')
-     &        'Optical rotation summary',
-     &        '------------------------'
+         IF (ABSORP) THEN
+            WRITE(LUPRI,'(2(/,10X,A))')
+     &      'Optical rotation and Electronic Circular Dicroism summary',
+     &      '---------------------------------------------------------'
+            WRITE(LUPRI,'(/,10X,A)')
+     &           'ORD is given in units:'//
+     &           ' degrees/(dm g/cm^3)'
+            WRITE(LUPRI,'(10X,A)')
+     &           'CD extinction coefficient is given in units:'//
+     &           ' L/(mol cm)'
+         ELSE
+            WRITE(LUPRI,'(2(/,10X,A))')
+     &           'Optical rotation summary',
+     &           '------------------------'
+         END IF
          DO IFRVAL = 1, NFRVAL
             TSTFR = ABS(FRVAL(IFRVAL))
             IF (TSTFR .LT. 1.0D-14) THEN
@@ -1733,8 +2415,9 @@ C
             ALPHVL(2)=XXXCON*BETAVL(2)
             ALPHVV(2)=XXXCON*BETAVV(2)
             IF (ABSORP) THEN
-               WRITE(LUPRI,'(10X,A,F12.2,A)')
-     &              'Lifetime : ',LIFETIME/CM_TO_AU,' cm-1'
+               WRITE(LUPRI,'(10X,A,F12.6,A,F12.2,A)')
+     &              'Damping  : ',DAMPING,' au  = ',
+     &              DAMPING*XTKAYS,' cm-1'
                IF (MVEOR) THEN
                   WRITE(LUPRI,'(8(/10X,2(A,F15.6)))')
      &              'Beta (London)                :',
@@ -1754,15 +2437,20 @@ C
      &              'Optical rotation (Mod. Vel.) :',
      &              ALPHVV(1),'  + i ',ALPHVV(2)
                ELSE
-                  WRITE(LUPRI,'(4(/10X,2(A,F12.6)))') 
-     &              'Beta (London)                :',
+                  WRITE(LUPRI,'(2(/10X,2(A,F12.6)))') 
+     &              'Beta (London)                  :',
      &              BETAL(1), '  + i ',BETAL(2),
-     &              'Beta (No-London)             :',
-     &              BETANL(1),'  + i ',BETANL(2),
-     &              'Optical rotation (London)    :', 
-     &              ALPHAL(1),'  + i ',ALPHAL(2),
-     &              'Optical rotation (No-London) :', 
-     &              ALPHNL(1),'  + i ',ALPHNL(2)
+     &              'Beta (No-London)               :',
+     &              BETANL(1),'  + i ',BETANL(2)
+                  WRITE(LUPRI,'(4(/10X,A,F16.6))') 
+     &              'Optical rotation (London)      :', 
+     &              ALPHAL(1),
+     &              'Optical rotation (No-London)   :', 
+     &              ALPHNL(1),
+     &              'Circular dichroism (London)    :', 
+     &              ALPHAL(2)*TMASS/3.2988D5,
+     &              'Circular dichroism (No-London) :', 
+     &              ALPHNL(2)*TMASS/3.2988D5
                END IF
             ELSE
                IF (MVEOR) THEN
@@ -1784,7 +2472,7 @@ C
                END IF
             END IF
             IF (IPRINT .GE. 1) THEN
-               WRITE(LUPRI,'(/,A,1P,D16.9)')
+               WRITE(LUPRI,'(/A,1P,D16.9)')
      &         'Conversion, beta --> alpha: ',XXXCON
             END IF
          END DO
@@ -1799,26 +2487,133 @@ C
                DO ISTATE=1,NEXCITED_STATES
                   WRITE(LUPRI,'(6X,2I6,F12.4,A,F9.3,A,F10.2,A)') 
      &                 ISYM,ISTATE,EXC_ENERGY(ISTATE,ISYM),' a.u.',
-     &                 EXC_ENERGY(ISTATE,ISYM)*AU_TO_EV,' eV',
+     &                 EXC_ENERGY(ISTATE,ISYM)*XTEV,' eV',
      &                 XTNM/EXC_ENERGY(ISTATE,ISYM),' nm'
                END DO
             END IF
          END DO
       END IF
 C
- 9000 FORMAT (/)
- 9001 FORMAT (/,10X,'Polarizability tensor for frequency ',F12.6,' au')
+      IF (VIB_G) THEN
+         NCOOR  = 3*NUCDEP
+         KCSTRA = 1
+         KSCTRA = KCSTRA + NCOOR*NCOOR
+         KLAST  = KSCTRA + NCOOR*NCOOR
+         IF (KLAST .GT. LWORK) CALL STOPIT('EXCOUT',' ',KLAST,LWORK)
+         CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,0)
+C
+         CALL HEADER('Vibrational g-factor',-1)
+CSPAS:8/10-08 there is no frequency for VIB_G
+C        DO IFRVAL = 1,NFRVAL
+         IFRVAL = 1
+CKeinSPASmehr
+            WRITE(LUPRI,9110) FRVAL(IFRVAL)
+            WRITE(LUPRI,9111)
+            WRITE(LUPRI,'(16X,A,21X,A,5X,A,8X,A)')
+     &         'Coordinates','Sym','(au)','(cm-1 u)'
+            WRITE(LUPRI,'(4X,2A)') 
+     &          ('--------------------------------------',I=1,2)
+            DO ISYM = 1,NSYM
+               DO ISCOOR = 1,3*NATOMS
+                  CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
+                  IF (ICORSY .EQ. ISYM) THEN
+                     DO JSCOOR = 1,3*NATOMS
+                        CALL GENCOR(WORK(KCSTRA),NCOOR,JSCOOR,COORDJ,
+     &                              JCORSY)
+                        IF (JCORSY .EQ. ISYM) THEN
+                           VAL = FOVIBG(ISCOOR,JSCOOR,ISYM,IFRVAL)
+                           WRITE(LUPRI,'(5X,2A,I3,F12.6,F14.3)') 
+     &                           COORDI, COORDJ, ISYM, 
+     &                           VAL,VAL*XTKAYS/XFAMU
+                        END IF
+                     END DO
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+                     DO JDIPV = 1,3
+                        IF (JDIPV.EQ.1) THEN
+                           COORDJ = "XDIPVEL"
+                           JDIPSY = ISYMAX(1,1) + 1
+                        ELSE IF (JDIPV.EQ.2) THEN
+                           COORDJ = "YDIPVEL"
+                           JDIPSY = ISYMAX(2,1) + 1
+                        ELSE IF (JDIPV.EQ.3) THEN
+                           COORDJ = "ZDIPVEL"
+                           JDIPSY = ISYMAX(3,1) + 1
+                        END IF
+                        IF (JDIPSY .EQ. ISYM) THEN
+                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+     &                           COORDI, COORDJ, ISYM, 
+     &                           FOVIBG(ISCOOR,3*NATOMS+JDIPV,ISYM,
+     &                                  IFRVAL)
+                        END IF
+                     END DO
+CKeinSPASmehr
+                  END IF
+               END DO
+CSPAS:6/10-08: trying to add mass independent vibrational g-factor
+               DO IDIPV = 1,3
+                  IF (IDIPV.EQ.1) THEN
+                     COORDI = "XDIPVEL"
+                     IDIPSY = ISYMAX(1,1) + 1
+                  ELSE IF (IDIPV.EQ.2) THEN
+                     COORDI = "YDIPVEL"
+                     IDIPSY = ISYMAX(2,1) + 1
+                  ELSE IF (IDIPV.EQ.3) THEN
+                     COORDI = "ZDIPVEL"
+                     IDIPSY = ISYMAX(3,1) + 1
+                  END IF
+                  IF (IDIPSY .EQ. ISYM) THEN
+                     DO JSCOOR = 1,3*NATOMS
+                        CALL GENCOR(WORK(KCSTRA),NCOOR,JSCOOR,COORDJ,
+     &                              JCORSY)
+                        IF (JCORSY .EQ. ISYM) THEN
+                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+     &                           COORDI, COORDJ, ISYM, 
+     &                           FOVIBG(3*NATOMS+IDIPV,JSCOOR,ISYM,
+     &                                  IFRVAL)
+                        END IF
+                     END DO
+                     DO JDIPV = 1,3
+                        IF (JDIPV.EQ.1) THEN
+                           COORDJ = "XDIPVEL"
+                           JDIPSY = ISYMAX(1,1) + 1
+                        ELSE IF (JDIPV.EQ.2) THEN
+                           COORDJ = "YDIPVEL"
+                           JDIPSY = ISYMAX(2,1) + 1
+                        ELSE IF (JDIPV.EQ.3) THEN
+                           COORDJ = "ZDIPVEL"
+                           JDIPSY = ISYMAX(3,1) + 1
+                        END IF
+                        IF (JDIPSY .EQ. ISYM) THEN
+                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+     &                           COORDI, COORDJ, ISYM, 
+     &                           FOVIBG(3*NATOMS+IDIPV,3*NATOMS+JDIPV,
+     &                                  ISYM,IFRVAL)
+                        END IF
+                     END DO
+                  END IF
+               END DO
+CKeinSPASmehr
+            END DO
+            WRITE(LUPRI,9111)
+CSPAS:8/10-08 there is no frequency for VIB_G
+C        END DO
+CKeinSPASmehr
+      END IF
+C
+ 9001 FORMAT (/10X,'Polarizability tensor for frequency ',F12.6,' au')
  9002 FORMAT (10X,'----------------------------------------------------'
      &       )
- 9003 FORMAT (16X,3(A12),/)
- 9004 FORMAT (16X,A,2X,3F12.7)
- 9005 FORMAT (/,10X,'London    G tensor for frequency ',F12.6,' au')
- 9006 FORMAT (/,10X,'No-London G tensor for frequency ',F12.6,' au')
+ 9003 FORMAT (16X,3(A14,1X),/)
+ 9004 FORMAT (16X,A,2X,1P,3(G14.7,1X))
+ 9005 FORMAT (/10X,'London    G tensor for frequency ',F12.6,' au')
+ 9006 FORMAT (/10X,'No-London G tensor for frequency ',F12.6,' au')
  9007 FORMAT (10X,'-------------------------------------------------')
  9008 FORMAT (16X,A,2X,3F12.7)
  9009 FORMAT (27X,3(A,10X)/)
- 9010 FORMAT (/,10X,'Velocity  G tensor for frequency ',F12.6,' au')
- 9011 FORMAT (/,10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
+ 9010 FORMAT (/10X,'Velocity  G tensor for frequency ',F12.6,' au')
+ 9011 FORMAT (/10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
+ 9110 FORMAT (14X,'Vibrational g-factors for frequency ',F12.6,' au',/)
+ 9111 FORMAT (4X,76('='))
 C
       RETURN
       END

@@ -72,6 +72,7 @@ C  /* Deck ccrhsn3 */
 #include <cbieri.h>
 #include <eribuf.h>
 #include <second.h>
+#include <r12int.h>
 !
       INTEGER LWORK, ISYMTR, LUCSIM, LUDTIM, IERRCS, IERRDT
       INTEGER KOMG1, KOMG2, KLAMDP, KLAMIP, KLAMDH, KDENSI
@@ -88,12 +89,14 @@ C  /* Deck ccrhsn3 */
 !
       INTEGER INDEXA(MXCORB)
 !
+      INTEGER IDUM
+!
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL DTIME, DDOT, FACTC, FACTD, FAKE, FF, HALF, ONE
       REAL PHONEY, RHO1N, RHO2N, FACTE1, FACTE2
       REAL TIMALL, TIMBF, TIMC, TIMDM
-      REAL TIMD, TIMEI, TIMF, TIMFCK, TIMGAM, TIMHER1
+      REAL TIMEI, TIMF, TIMFCK, TIMGAM, TIMHER1
       REAL TIMHER2, TIMLAM, TIMRDAO, TIMT2AO, TIMT2BT, TIMT2TR, TIMTRBT
       REAL TWO, XMHALF, XMONE, ZERO, XNORM
 #else
@@ -102,7 +105,7 @@ C  /* Deck ccrhsn3 */
       DOUBLE PRECISION FAKE, FF, HALF, ONE, PHONEY
       DOUBLE PRECISION RHO1N, RHO2N, FACTE1, FACTE2
       DOUBLE PRECISION TIMALL, TIMBF, TIMC, TIMDM
-      DOUBLE PRECISION TIMD, TIMEI, TIMFCK
+      DOUBLE PRECISION TIMEI, TIMFCK
       DOUBLE PRECISION TIMGAM, TIMHER1, TIMHER2, TIMLAM
       DOUBLE PRECISION TIMRDAO, TIMT2AO, TIMT2BT, TIMT2TR, TIMTRBT
       DOUBLE PRECISION TWO, XMHALF, XMONE, ZERO, XNORM
@@ -126,8 +129,8 @@ C  /* Deck ccrhsn3 */
 !     Open files.
 !----------------
 !
-      LUDTIM  = 0
-      LUCSIM  = 0
+      LUDTIM  = -1
+      LUCSIM  = -1
       CSFIL   = 'PMAT_C'
       DTFIL   = 'PMAT_DT'
 !
@@ -295,6 +298,10 @@ C  /* Deck ccrhsn3 */
 !
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -379,7 +386,7 @@ C  /* Deck ccrhsn3 */
      *                          ISYMD,FACTD,ICON,LUDTIM,DTFIL,IV)
 !
                DTIME   = SECOND() - DTIME
-               TIMD    = TIMD   + DTIME
+               TIMDM   = TIMDM  + DTIME
 !
                ENDIF
 !
@@ -396,7 +403,7 @@ C  /* Deck ccrhsn3 */
          WRITE(LUPRI,9999) 'RHSN3 - TOT.', TIMALL
       ENDIF
       IF (IPRINT .GT. 9) THEN
-         WRITE(LUPRI,9999) 'CCRHS_DM   ', TIMDM
+         WRITE(LUPRI,9999) 'CCRHS_D3   ', TIMDM
          WRITE(LUPRI,9999) 'HERDIS1    ', TIMHER1
          WRITE(LUPRI,9999) 'HERDIS2    ', TIMHER2
          WRITE(LUPRI,9999) 'CCRHS_LAM  ', TIMLAM

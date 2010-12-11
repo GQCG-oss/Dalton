@@ -33,6 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C FILE: eri/eri2r12.F
+C
 C  /* Deck eriifc */
       SUBROUTINE ERIIFC(NNTUV,NNPPX,NIPQ0X,NIPQ0Y,NIPQ0Z,NJMAX)
 C
@@ -69,26 +71,97 @@ C
 #include <ericom.h>
 #include <r12int.h>
       IF (R12EIN) THEN
+        IF (SLATER) THEN
+C
+C        exp(r12) Hermite integrals
+C        ==============================
+C
+         IF (INTGAC .EQ. 4 .OR. INTGAC .EQ. 6) THEN
+           DO I = 1, NTOGAM
+             GAMAC = GAMAX(I)
+             DO J = 1, NTOGAM
+              GAMAD = GAMAX(J)
+              GAMFX = GAMAB(I) * GAMAB(J)
+              INTGAD = 0
+              CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &                   FACINT,HEXPP,HEXPQ,IPRINT)
+              CALL ERIFGHTUV(HRIN1,HRIN2,HRIN3,COORPQ(1,1),COORPQ(1,2),
+     &                       COORPQ(1,3),INDHER,HARGE,IPRINT)
+              CALL WKER12(HRINT1,HRIN1,HRIN2,HRIN3,HPRE1,HPRE2,HPRE3,
+     &                    GAMFX,I,J,IPRINT)
+             END DO
+           END DO
+         ELSE
+           DO I = 1, NTOGAM
+             GAMAC = GAMAX(I)
+             GAMAD = GAMAX(I)
+             GAMFX = GAMAB(I)
+             IF (INTGAC .EQ. 2) THEN
+                INTGAD = 1
+                CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &                     FACINT,HEXPP,HEXPQ,IPRINT)
+                CALL ERIGOM(RO000,RJ000,HARGE,HARGF,COORPQ,
+     &                      WORK,LWORK,IPRINT)
+                CALL ERIOMTUV(HRIN1,HRIN2,RO000,RJ000,HARGE,HARGF,
+     &                        COORPQ,INDHER,WORK,LWORK,IPRINT)
+             ELSE
+                INTGAD = 0
+                CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &                     FACINT,HEXPP,HEXPQ,IPRINT)
+                CALL ERIFGHTUV(HRIN1,HRIN2,HRIN3,COORPQ(1,1),
+     &                         COORPQ(1,2),COORPQ(1,3),INDHER,HARGE,
+     &                         IPRINT)
+             END IF
+             CALL WKER12(HRINT1,HRIN1,HRIN2,HRIN3,HPRE1,HPRE2,HPRE3,
+     &                   GAMFX,I,1,IPRINT)
+           END DO
+         END IF
+         IF (INTGAC .EQ. 5) CALL DCOPY(NPPX*NTUV,HRINT1,1,HRINT2,1)
+        ELSE
 C
 C        r12*exp(r12) Hermite integrals
 C        ==============================
 C
-         INTGAD = 2 * MOD(INTGAC,2)
-         CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
-     &              FACINT,HEXPP,HEXPQ,IPRINT)
-         CALL ERIFGHTUV(HRIN1,HRIN2,HRIN3,COORPQ(1,1),COORPQ(1,2),
-     &                  COORPQ(1,3),INDHER,HARGE,IPRINT)
-         IF (INTGAC .EQ. 3 .OR. INTGAC .EQ. 5) THEN
-            INTGAD = 1
-            CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
-     &                 FACINT,HEXPP,HEXPQ,IPRINT)
-            CALL ERIGOM(RO000,RJ000,HARGE,HARGF,COORPQ,
-     &                  WORK,LWORK,IPRINT)
-            CALL ERIOMTUV(HRIN2,HRIN3,RO000,RJ000,HARGE,HARGF,
-     &                    COORPQ,INDHER,WORK,LWORK,IPRINT)
+         IF (INTGAC .EQ. 4 .OR. INTGAC .EQ. 6) THEN
+           DO I = 1, NTOGAM
+             GAMAC = GAMAX(I)
+             DO J = 1, NTOGAM
+              GAMAD = GAMAX(J)
+              GAMFX = GAMAB(I) * GAMAB(J)
+              INTGAD = 2 * MOD(INTGAC,2)
+              CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &                   FACINT,HEXPP,HEXPQ,IPRINT)
+              CALL ERIFGHTUV(HRIN1,HRIN2,HRIN3,COORPQ(1,1),COORPQ(1,2),
+     &                       COORPQ(1,3),INDHER,HARGE,IPRINT)
+              CALL WKER12(HRINT1,HRIN1,HRIN2,HRIN3,HPRE1,HPRE2,HPRE3,
+     &                    GAMFX,I,J,IPRINT)
+             END DO
+           END DO
+         ELSE
+           DO I = 1, NTOGAM
+             GAMAC = GAMAX(I)
+             GAMAD = GAMAX(I)
+             GAMFX = GAMAB(I)
+             INTGAD = 2 * MOD(INTGAC,2)
+             CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &                  FACINT,HEXPP,HEXPQ,IPRINT)
+             CALL ERIFGHTUV(HRIN1,HRIN2,HRIN3,COORPQ(1,1),COORPQ(1,2),
+     &                      COORPQ(1,3),INDHER,HARGE,IPRINT)
+             IF (INTGAC .EQ. 3 .OR. INTGAC .EQ. 5) THEN
+                INTGAD = 1
+                CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
+     &                     FACINT,HEXPP,HEXPQ,IPRINT)
+                CALL ERIGOM(RO000,RJ000,HARGE,HARGF,COORPQ,
+     &                      WORK,LWORK,IPRINT)
+                CALL ERIOMTUV(HRIN2,HRIN3,RO000,RJ000,HARGE,HARGF,
+     &                        COORPQ,INDHER,WORK,LWORK,IPRINT)
+             END IF
+             CALL WKER12(HRINT1,HRIN1,HRIN2,HRIN3,HPRE1,HPRE2,HPRE3,
+     &                   GAMFX,I,1,IPRINT)
+           END DO
          END IF
-         CALL WKER12(HRINT1,HRIN1,HRIN2,HRIN3,HPRE1,HPRE2,HPRE3,IPRINT)
          IF (INTGAC .EQ. 5) CALL DCOPY(NPPX*NTUV,HRINT1,1,HRINT2,1)
+        END IF
       ELSE
 C
 C        1/r12 Hermite integrals
@@ -324,7 +397,7 @@ C
       RETURN   
       END
 C  /* Deck wkeq30 */
-      SUBROUTINE WKEQ30(C0,C1,JMAX1,JMAX2,
+      SUBROUTINE WKEQ30(N,C0,C1,CM2,JMAX1,JMAX2,
      &                  NUCAB,MAX1,MAX2,SIGN,
      &                  I120,DIFPA,DIFPB,TEXPA,TEXPB,
      &                  AOVERP,BOVERP,HEXPPI,WORD,IPRINT)
@@ -337,6 +410,8 @@ C     cf. T. Helgaker, P.R. Taylor, Theor. Chim. Acta (1992) 83:177.
 C     --------------------------------------------------------------
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
+c
+c     Modified by Cristian Villani (Karlsruhe, Feb 2005) for n>1
 C
 #include <implicit.h>
 #include <priunit.h> 
@@ -347,6 +422,14 @@ C
       DIMENSION AOVERP(NUCAB), BOVERP(NUCAB)
       DIMENSION C0(NUCAB,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
       DIMENSION C1(NUCAB,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
+c     if n>1, the E(k,0,0,0,n-2) coefficients are needed, for all k
+      DIMENSION CM2(NUCAB)
+c     if n<2, this vector is not used
+c     Note that cm2(K)=1, if n=2, since the coefficients are
+c     normalized to Kab
+c
+c     C. Villani Uni-Ka, Feb 2005
+c
 #include <ibtfun.h>
 #include <sdpre.h>
       DO 100 K = 1, NUCAB
@@ -364,21 +447,23 @@ C           Note that (-2ab/p)*Rx = 2a*(Px-Ax).
 C
             DO 200 K = 1, NUCAB
                C1(K,0,0,0) = TEXPA(K)*DIFPA(K)*C0(K,0,0,0)
+               IF(N.GT.1) C1(K,0,0,0) = C1(K,0,0,0) + 
+     .            (N-1)*TEXPA(K)* BOVERP(K)*CM2(K)
   200       CONTINUE
          ELSE IF (I .EQ. 1) THEN
             DO 300 K = 1, NUCAB
                C1(K,0,1,0) =  DIFPA(K)*C1(K,0,0,0)
-     &                     + BOVERP(K)*C0(K,0,0,0)
+     &                     + N*BOVERP(K)*C0(K,0,0,0)
                C1(K,1,1,0) = HEXPPI(K)*C1(K,0,0,0)
   300       CONTINUE
          ELSE IF (I .GE. 2) THEN
             DO 400 K = 1, NUCAB
                C1(K,0  ,I,0) =  DIFPA(K)*C1(K,0,I-1,0)
-     &                       + BOVERP(K)*C0(K,0,I-1,0)
+     &                       + N*BOVERP(K)*C0(K,0,I-1,0)
      &                       +      SIGN*C1(K,1,I-1,0)
                C1(K,I-1,I,0) = HEXPPI(K)*C1(K,I-2,I-1,0)
      &                       +  DIFPA(K)*C1(K,I-1,I-1,0)
-     &                       + BOVERP(K)*C0(K,I-1,I-1,0)
+     &                       + N*BOVERP(K)*C0(K,I-1,I-1,0)
                C1(K,I  ,I,0) = HEXPPI(K)*C1(K,I-1,I-1,0)
   400       CONTINUE
             IF (I .GE. 3) THEN
@@ -387,7 +472,7 @@ C
                DO 520 K = 1, NUCAB
                   C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
      &                        +  DIFPA(K)*C1(K,T  ,I-1,0)
-     &                        + BOVERP(K)*C0(K,T  ,I-1,0)
+     &                        + N*BOVERP(K)*C0(K,T  ,I-1,0)
      &                        +    TPLUS1*C1(K,T+1,I-1,0)
   520             CONTINUE
   510          CONTINUE
@@ -399,17 +484,17 @@ C
             IF (IJ .EQ. 1) THEN
                DO 700 K = 1, NUCAB
                   C1(K,0,I,J) =  DIFPB(K)*C1(K,0,I,J-1)
-     &                        + AOVERP(K)*C0(K,0,I,J-1)
+     &                        + N*AOVERP(K)*C0(K,0,I,J-1)
                   C1(K,1,I,J) = HEXPPI(K)*C1(K,0,I,J-1)
   700          CONTINUE
             ELSE IF (IJ .GE. 2) THEN
                DO 800 K = 1, NUCAB
                   C1(K,0   ,I,J) =  DIFPB(K)*C1(K,0   ,I,J-1)
-     &                           + AOVERP(K)*C0(K,0   ,I,J-1)
+     &                           + N*AOVERP(K)*C0(K,0   ,I,J-1)
      &                           +      SIGN*C1(K,1   ,I,J-1)
                   C1(K,IJ-1,I,J) = HEXPPI(K)*C1(K,IJ-2,I,J-1)
      &                           +  DIFPB(K)*C1(K,IJ-1,I,J-1)
-     &                           + AOVERP(K)*C0(K,IJ-1,I,J-1)
+     &                           + N*AOVERP(K)*C0(K,IJ-1,I,J-1)
                   C1(K,IJ  ,I,J) = HEXPPI(K)*C1(K,IJ-1,I,J-1)
   800          CONTINUE
                IF (IJ .GE. 3) THEN
@@ -418,7 +503,7 @@ C
                      DO 920 K = 1, NUCAB
                      C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
      &                           +  DIFPB(K)*C1(K,T  ,I,J-1)
-     &                           + AOVERP(K)*C0(K,T  ,I,J-1)
+     &                           + N*AOVERP(K)*C0(K,T  ,I,J-1)
      &                           +    TPLUS1*C1(K,T+1,I,J-1)
   920                CONTINUE
   910             CONTINUE
@@ -449,59 +534,123 @@ C
     1 CONTINUE
 C
       DO 1001 I = 0, MAX1
-         IF (I .EQ. 1) THEN
-            DO 301 K = 1, NUCAB
-               C1(K,0,1,0) = BOVERP(K)*C0(K,0,0,0)
-  301       CONTINUE
+         IF(I.EQ.0.AND.N.GT.1) THEN
+           DO 333 K = 1, NUCAB
+             C1(K,0,0,0) = (N-1)*TEXPA(K)*BOVERP(K)*CM2(K)
+  333      CONTINUE
+         ELSE IF (I .EQ. 1) THEN
+            IF (IBTAND(N,1) .EQ. 1) THEN
+               DO 301 K = 1, NUCAB
+                  C1(K,0,1,0) = N*BOVERP(K)*C0(K,0,0,0)
+  301          CONTINUE
+            ELSE
+c              case n even, C. Villani Uni-Ka, Feb 2005
+               DO K = 1, NUCAB
+                  C1(K,1,1,0) = HEXPPI(K)*C1(K,0,0,0)
+               END DO
+            END IF
          ELSE IF (I .GE. 2) THEN
-            IF (IBTAND(I,1) .EQ. 1) THEN
-               DO 401 K = 1, NUCAB
-                  C1(K,0,I,0) = BOVERP(K)*C0(K,0,I-1,0)
+            IF (IBTAND(N,1) .EQ. 1) THEN
+               IF (IBTAND(I,1) .EQ. 1) THEN
+                 DO 401 K = 1, NUCAB
+                   C1(K,0,I,0) = N*BOVERP(K)*C0(K,0,I-1,0)
+     &                         +      SIGN*C1(K,1,I-1,0)  
+  401            CONTINUE
+               END IF
+               DO 402 K = 1, NUCAB
+                  C1(K,I-1,I,0) = HEXPPI(K)*C1(K,I-2,I-1,0)
+     &                          + N*BOVERP(K)*C0(K,I-1,I-1,0)
+  402          CONTINUE
+               IF (I .GE. 3) THEN
+                  DO 511 T = 1 + IBTAND(I,1), I - 2, 2
+                  TPLUS1 = SIGN*SDPRE(T + 1)
+                  DO 521 K = 1, NUCAB
+                     C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
+     &                           + N*BOVERP(K)*C0(K,T  ,I-1,0)
+     &                           +    TPLUS1*C1(K,T+1,I-1,0)
+  521                CONTINUE
+  511             CONTINUE
+               END IF
+            ELSE
+c              case n even, C. Villani Uni-Ka, Feb 2005
+               IF (IBTAND(I,1) .EQ. 0) THEN
+                 DO K = 1, NUCAB
+                    C1(K,0,I,0) = N*BOVERP(K)*C0(K,0,I-1,0)
      &                        +      SIGN*C1(K,1,I-1,0)  
-  401          CONTINUE
-            END IF 
-            DO 402 K = 1, NUCAB
-               C1(K,I-1,I,0) = HEXPPI(K)*C1(K,I-2,I-1,0)
-     &                       + BOVERP(K)*C0(K,I-1,I-1,0)
-  402       CONTINUE
-            IF (I .GE. 3) THEN
-               DO 511 T = 1 + IBTAND(I,1), I - 2, 2
-               TPLUS1 = SIGN*SDPRE(T + 1)
-               DO 521 K = 1, NUCAB
-                  C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
-     &                        + BOVERP(K)*C0(K,T  ,I-1,0)
-     &                        +    TPLUS1*C1(K,T+1,I-1,0)
-  521             CONTINUE
-  511          CONTINUE
+                 END DO
+               END IF
+               DO K = 1, NUCAB
+                  C1(K,I,I,0) = HEXPPI(K)*C1(K,I-1,I-1,0)
+               END DO
+               IF (I .GE. 3) THEN
+                  DO T = 1 + IBTAND(I+1,1), I - 1, 2
+                  TPLUS1 = SIGN*SDPRE(T + 1)
+                  DO K = 1, NUCAB
+                     C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
+     &                           + N*BOVERP(K)*C0(K,T  ,I-1,0)
+     &                           +    TPLUS1*C1(K,T+1,I-1,0)
+                     END DO
+                  END DO
+               END IF
             END IF
          END IF
          IF (MAX2 .LE. 0) GO TO 1001
          DO 601 J = 1, MAX2
             IJ = I + J
             IF (IJ .EQ. 1) THEN
-               DO 701 K = 1, NUCAB
-                  C1(K,0,I,J) = AOVERP(K)*C0(K,0,I,J-1)
-  701          CONTINUE
-            ELSE IF (IJ .GE. 2) THEN
-               IF (IBTAND(IJ,1) .EQ. 1) THEN
-                  DO 801 K = 1, NUCAB
-                     C1(K,0,I,J) = AOVERP(K)*C0(K,0,I,J-1)
-     &                           +      SIGN*C1(K,1,I,J-1)
-  801             CONTINUE
+               IF (IBTAND(N,1) .EQ. 1) THEN
+                  DO 701 K = 1, NUCAB
+                     C1(K,0,I,J) = N*AOVERP(K)*C0(K,0,I,J-1)
+  701             CONTINUE
+               ELSE
+c                 case n even, C. Villani Uni-Ka, Feb 2005
+                  DO K = 1, NUCAB
+                     C1(K,1,I,J) = HEXPPI(K)*C1(K,0,0,0)
+                  END DO
                END IF
-               DO 802 K = 1, NUCAB
-                  C1(K,IJ-1,I,J) = HEXPPI(K)*C1(K,IJ-2,I,J-1)
-     &                           + AOVERP(K)*C0(K,IJ-1,I,J-1)
-  802          CONTINUE
-               IF (IJ .GE. 3) THEN
-                  DO 911 T = 1 + IBTAND(IJ,1), IJ - 2, 2
-                     TPLUS1 = SIGN*SDPRE(T + 1)
-                     DO 921 K = 1, NUCAB
-                     C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
-     &                           + AOVERP(K)*C0(K,T  ,I,J-1)
-     &                           +    TPLUS1*C1(K,T+1,I,J-1)
-  921                CONTINUE
-  911             CONTINUE
+            ELSE IF (IJ .GE. 2) THEN
+               IF (IBTAND(N,1) .EQ. 1) THEN
+                  IF (IBTAND(IJ,1) .EQ. 1) THEN
+                     DO 801 K = 1, NUCAB
+                        C1(K,0,I,J) = N*AOVERP(K)*C0(K,0,I,J-1)
+     &                              +      SIGN*C1(K,1,I,J-1)
+  801                CONTINUE
+                  END IF
+                  DO 802 K = 1, NUCAB
+                     C1(K,IJ-1,I,J) = HEXPPI(K)*C1(K,IJ-2,I,J-1)
+     &                              + N*AOVERP(K)*C0(K,IJ-1,I,J-1)
+  802             CONTINUE
+                  IF (IJ .GE. 3) THEN
+                     DO 911 T = 1 + IBTAND(IJ,1), IJ - 2, 2
+                        TPLUS1 = SIGN*SDPRE(T + 1)
+                        DO 921 K = 1, NUCAB
+                        C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
+     &                              + N*AOVERP(K)*C0(K,T  ,I,J-1)
+     &                              +    TPLUS1*C1(K,T+1,I,J-1)
+  921                   CONTINUE
+  911                CONTINUE
+                  END IF
+               ELSE
+c                 case n even, C. Villani Uni-Ka, Feb 2005
+                  IF (IBTAND(IJ,1) .EQ. 0) THEN
+                     DO K = 1, NUCAB
+                        C1(K,0,I,J) = N*AOVERP(K)*C0(K,0,I,J-1)
+     &                              +      SIGN*C1(K,1,I,J-1)
+                     END DO
+                  END IF
+                  DO K = 1, NUCAB
+                     C1(K,IJ,I,J) = HEXPPI(K)*C1(K,IJ-1,I,J-1)
+                  END DO
+                  IF (IJ .GE. 3) THEN
+                     DO T = 1 + IBTAND(IJ+1,1), IJ - 1, 2
+                        TPLUS1 = SIGN*SDPRE(T + 1)
+                        DO K = 1, NUCAB
+                           C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
+     &                                 + N*AOVERP(K)*C0(K,T  ,I,J-1)
+     &                                 +    TPLUS1*C1(K,T+1,I,J-1)
+                        END DO
+                     END DO
+                  END IF
                END IF
             END IF
   601    CONTINUE
@@ -519,7 +668,8 @@ C
       DO 2000 I = 0, MAX1
          DO 2100 J = 0, MAX2
             DO 2200 T = 0, I + J
-               IF (IBTAND(I + J  - T,1) .EQ. 1) THEN
+c              introduced n, C. Villani Uni-Ka, Feb 2005
+               IF (IBTAND(I + J  - T + N,1) .EQ. 0) THEN
                   WRITE (LUPRI, 1100) WORD, I, J, T
                   WRITE (LUPRI, 1130) (C1(K,T,I,J), K = 1, NUCAB)
                END IF
@@ -549,7 +699,7 @@ C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
       RETURN
       END
 C  /* Deck wker12 */
-      SUBROUTINE WKER12(RES,A,B,C,P1,P2,P3,IPRINT)
+      SUBROUTINE WKER12(RES,A,B,C,P1,P2,P3,GAMFX,II,JJ,IPRINT)
 C     Written by Claire C.M. Samson and Wim Klopper 
 C     (University of Oslo, 29 October 2001).
 #include <implicit.h>
@@ -558,21 +708,34 @@ C     (University of Oslo, 29 October 2001).
      &          C(NPPX,NTUV), P1(NPPX), P2(NPPX), P3(NPPX)
 #include <r12int.h>
 #include <ericom.h>
+      IF (II .EQ. 1 .AND. JJ .EQ. 1) THEN
+         DO J = 1, NTUV
+            DO I = 1, NPPX
+               RES(I,J) = P1(I)*A(I,J)*GAMFX
+            ENDDO      
+         ENDDO  
+      ELSE
+         DO J = 1, NTUV
+            DO I = 1, NPPX
+               RES(I,J) = RES(I,J) + P1(I)*A(I,J)*GAMFX
+            ENDDO      
+         ENDDO  
+      END IF
+      IF (SLATER) THEN
+         IF (INTGAC .NE. 6) GOTO 100
+      ELSE
+         IF (INTGAC .EQ. 2) GOTO 100
+      END IF
       DO J = 1, NTUV
          DO I = 1, NPPX
-            RES(I,J) = P1(I)*A(I,J)
-         ENDDO      
-      ENDDO  
-      IF (INTGAC .EQ. 2) GOTO 100
-      DO J = 1, NTUV
-         DO I = 1, NPPX
-            RES(I,J) = RES(I,J) + P2(I)*B(I,J)
+            RES(I,J) = RES(I,J) + P2(I)*B(I,J)*GAMFX
          ENDDO
       ENDDO 
+      IF (SLATER) GOTO 100
       IF (INTGAC .EQ. 4) GOTO 100
       DO J = 1, NTUV
          DO I = 1, NPPX
-            RES(I,J) = RES(I,J) + P3(I)*C(I,J)
+            RES(I,J) = RES(I,J) + P3(I)*C(I,J)*GAMFX
          ENDDO
       ENDDO 
   100 RETURN
@@ -903,6 +1066,48 @@ C
 C
 C     Calculate the prefactors
 C
+      IF (SLATER) THEN
+      IF (INTGAC .EQ. 2) THEN
+         DO I = 1, NPPX
+            PRE1(I) = FACINT(I)*BETA(I)*(PP(I)+PQ(I))**DP05M
+            PRE2(I) = D0
+            PRE3(I) = D0
+         END DO
+      ELSE IF (INTGAC .EQ. 3 .OR. INTGAC .EQ. 4 .OR. INTGAC .EQ. 5) THEN
+C**as if INTGAC=2
+         DO I = 1, NPPX
+            PRE1(I) = FACINT(I)*DP05*SQRT(PI*BETA(I)**3/(PP(I)*PQ(I)))
+            PRE2(I) = D0
+            PRE3(I) = D0
+         END DO
+      ELSE IF (INTGAC .EQ. 6) THEN
+C**as if INTGAC=4 ** times 4*VSQ
+         DO I = 1, NPPX
+            ZZ = FACINT(I)*D2*VSQ*SQRT(PI*BETA(I)**3/(PP(I)*PQ(I)))
+     &         / (ALPHA(I)+VAR)
+            YY = ALPHA(I)*BETA(I)
+            PRE1(I) = ZZ*DP15
+            PRE2(I) = ZZ*YY
+            PRE3(I) = D0
+         END DO
+      END IF
+C
+C     Calculate the arguments of the exponentials and the Boys functions.
+C
+      IF (INTGAD .EQ. 1) THEN
+         DO I = 1, NPPX
+            ARGE(I) = VAR*BETA(I)
+            ARGF(I) = ALPHA(I)*BETA(I) 
+         END DO
+      ELSE
+         IF (INTGAD .NE. 0) THEN
+            CALL QUIT('ILLEGAL INTGAD IN COEFF')
+         END IF
+         DO 501 I = 1, NPPX
+            ARGE(I) = VAR*BETA(I)
+  501    END DO
+      END IF
+      ELSE
       IF (INTGAC .EQ. 2) THEN
          DO I = 1, NPPX
             PRE1(I) = FACINT(I)*DP05*SQRT(PI*BETA(I)**3/(PP(I)*PQ(I)))
@@ -948,6 +1153,7 @@ C
       ELSE
          IF (INTGAD .EQ. 2) THEN
             DO I = 1, NPPX
+C**this is equal to ALPHA(I)
                ARGE(I) = (VAR+ALPHA(I))*BETA(I)
             END DO  
          ELSE
@@ -956,13 +1162,14 @@ C
   500       END DO  
          END IF
       END IF
+      END IF
 C
 C     Print section
 C
       IF (IPRINT .GE. 10) THEN
         CALL AROUND('Output from COEFF')
         WRITE(LUPRI,'(3X,5(10X,A4))') 'PRE1','PRE2','PRE3','ARGE','ARGF'
-        IF (INTGAC .EQ. 1) THEN
+        IF (INTGAD .EQ. 1) THEN
           DO I = 1, NPPX
             WRITE(LUPRI,'(I3,5F14.9)') I,
      &      PRE1(I),PRE2(I),PRE3(I),ARGE(I),ARGF(I)
@@ -1371,8 +1578,13 @@ C
       CALL DZERO(CURG,NPPX*NTUV)
       CALL DZERO(CURH,NPPX*NTUV)
 C
-      DOH = INTGAC .EQ. 6
-      DOG = INTGAC .EQ. 4 .OR. DOH
+      IF (SLATER) THEN
+         DOH = .FALSE.
+         DOG = INTGAC .EQ. 6
+      ELSE
+         DOH = INTGAC .EQ. 6
+         DOG = INTGAC .EQ. 4 .OR. DOH
+      ENDIF
 C
       IPQX = IPQ0(1) + 1
       IPQY = IPQ0(2) + 1
@@ -1382,19 +1594,26 @@ C
       PQYGT0 = IPQY .EQ. 1
       PQZGT0 = IPQZ .EQ. 1
 C
+      M1T = 1 ! to avoid INDHER(-1,0,0)
+      M2T = 1 ! to avoid INDHER(-2:-1,0,0)
       DO T = 0, JMAX, IPQX
-      DO U = 0, JMAX - T, IPQY
-      DO V = 0, JMAX - T - U , IPQZ
-         TUV = INDHER(T,U,V  )
-         M1T = INDHER(T-1,0,0)
-         M2T = INDHER(T-2,0,0)
-         M1U = INDHER(T,U-1,0)
-         M2U = INDHER(T,U-2,0)
-         M1V = INDHER(T,U,V-1)
-         M2V = INDHER(T,U,V-2)
          TMIN1 = SDPRE(T - 1)
+         IF (T .GT. 0) M1T = INDHER(T-1,0,0)
+         IF (T .GT. 1) M2T = INDHER(T-2,0,0)
+         M1U = 1 ! to avoid INDHER(T,-1,0)
+         M2U = 1 ! to avoid INDHER(T,-2:-1,0)
+      DO U = 0, JMAX - T, IPQY
          UMIN1 = SDPRE(U - 1)
+         IF (U .GT. 0) M1U = INDHER(T,U-1,0)
+         IF (U .GT. 1) M2U = INDHER(T,U-2,0)
+         M1V = 1 ! to avoid INDHER(T,U,-1)
+         M2V = 1 ! to avoid INDHER(T,U,-2:-1)
+      DO V = 0, JMAX - T - U , IPQZ
          VMIN1 = SDPRE(V - 1)
+         IF (V .GT. 0) M1V = INDHER(T,U,V-1)
+         IF (V .GT. 1) M2V = INDHER(T,U,V-2)
+C
+         TUV = INDHER(T,U,V)
 C
 C        (0,0,0)
 C
@@ -1460,7 +1679,7 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL AROUND('Output from ERIFGHTUV')
          DO ITUV = 1, NTUV
-            WRITE(LUPRI,'(1X,A5,I5)') 'TUV =', ITUV
+            WRITE(LUPRI,'(A5,I5)') ' TUV =', ITUV
             WRITE(LUPRI,'(3X,3(10X,A4))') 'CURF','CURG','CURH'
             DO I = 1, NPPX
                WRITE(LUPRI,'(I3,5F14.9)') I,
@@ -1473,9 +1692,9 @@ C
 C  /* Deck ericrx */
       SUBROUTINE ERICRX(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include<implicit.h>
+#include <implicit.h>
       PARAMETER (D0 = 0D0)
-#include<ericom.h>
+#include <ericom.h>
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C
@@ -1505,9 +1724,9 @@ C
 C  /* Deck ericri */
       SUBROUTINE ERICRI(R,S,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include<implicit.h>
+#include <implicit.h>
       PARAMETER (D0 = 0D0)
-#include<ericom.h>
+#include <ericom.h>
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX)
 C
@@ -1537,9 +1756,9 @@ C
 C  /* Deck ericrp */
       SUBROUTINE ERICRP(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include<implicit.h>
+#include <implicit.h>
       PARAMETER (D0 = 0D0)
-#include<ericom.h>
+#include <ericom.h>
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C
@@ -1562,3 +1781,4 @@ C
       END IF
       RETURN
       END 
+C --- end of eri2r12.F ---

@@ -12,8 +12,8 @@ Geometry optimization, calculation of quadrupole moment, magnetizabilities
 and nuclear shieldings at the optimized geometry
     1    0
         7.    2    6    1    1    1    1    1    1
-N     0.00000 0.000000  1.034
-N     0.00000 0.000000 -1.034
+ N1   0.00000 0.000000  1.034
+ N2   0.00000 0.000000 -1.034
 H   7    0
 1792.96029032
  269.84707155
@@ -39,8 +39,6 @@ H   1    0
 
 dalton='**DALTON INPUT
 .RUN PROPERTIES
-**INTEGRALS
-.NOSUP
 **WAVE FUNCTION
 .DFT
  BLYP
@@ -50,7 +48,7 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT -109.508937550101 7e-8
+check_scf_energy DFT -109.508937550101 1e-6
 
 check_exp_grad  1 1792.9602903200    -0.0000000001 1-e7
 check_exp_grad  2  269.8470715500    -0.0000000033 1-e7

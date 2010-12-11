@@ -133,17 +133,16 @@ cat > cc2mm_spc_exci.pot <<%EOF%
 cat > cc2mm_spc_exci.dal <<%EOF%
 **DALTON
 .RUN WAVEFUNCTION
-**INTEGRALS
-.DIPLEN
-.NUCPOT
-.NELFLD
-*QM3INP
+*QM3
 .QM3
 .THRDIP
  1.0D-9
 .MAXDIP
  80
-*END OF HERMIT
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -212,9 +211,9 @@ CTRL[1]=13
 ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=` $GREP "x      3\.45113314      8\.77190449" $log | wc -l`
-CRIT2=` $GREP "y      1\.63839196      4\.16437653" $log | wc -l`
-CRIT3=` $GREP "z     \-2\.89031691     \-7\.34645199" $log | wc -l`
+CRIT1=` $GREP "x * 3\.45113314 * 8\.77190449" $log | wc -l`
+CRIT2=` $GREP "y * 1\.63839196 * 4\.16437653" $log | wc -l`
+CRIT3=` $GREP "z * \-2\.89031691 * \-7\.34645199" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=4
 ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
@@ -240,8 +239,8 @@ ERROR[4]="OSCILLATOR STRENGTH NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

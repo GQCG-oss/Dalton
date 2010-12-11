@@ -5,8 +5,8 @@
    This file could be merged with other DFT related files later on.
 */
 
-#ifndef _RESP_QUADRA_H_
-#define _RESP_QUADRA_H_
+#ifndef _INTEGRATOR_H_
+#define _INTEGRATOR_H_
 
 #if defined(__CVERSION__) /* THE C VERSION OF THE HEADERS */
 
@@ -17,7 +17,7 @@ struct DftGrid_ {
     /* private to integrator */
     real (*coor)[3];
     real* weight;
-    int* ncnt;
+    integer* ncnt;
     real* atv; /* the orbital values and their derivatives at given 
 		* grid point. The vector is indexed by dftinf_.kso1, etc
 		*/
@@ -25,12 +25,12 @@ struct DftGrid_ {
     real dfthri; /* threshold on orbital values */
     real dfthr0; /* threshold on density values */
     /* public, read only */
-    int ntypso; /* how many different vectors are computed for each
-                 * (point,orbital) pair. i.e whether only orbital values
-                 * are computed (1), orbital values and first derivatives 
-                 * (4), etc. */
+    integer ntypso; /* how many different vectors are computed for each
+		     * (point,orbital) pair. i.e whether only orbital values
+		     * are computed (1), orbital values and first derivatives 
+		     * (4), etc. */
 
-    int london_off; /* offset of the "london" orbital derivatives */
+    integer london_off; /* offset of the "london" orbital derivatives */
     /* 1 - only values; 4 - values + (x,y,z) derivatives, etc */
     FunDensProp dp;
     real grada[3];/* alpha, also used in closed-shell code */
@@ -39,10 +39,10 @@ struct DftGrid_ {
     real *mog;
     int  curr_point;  /* index of the current point */
     real curr_weight; /* the weight at current grid point */
-    int dogga;        /* whether the functional requires gradient correction*/
+    integer dogga;    /* whether the functional requires gradient correction*/
     int needgrad;     /* the property evaluator requires orbital derivatives*/
     int needlap;      /* whether second order orbital derivatives are needed*/
-    int needgb;
+    integer needgb;
 };
 
 typedef void (*DftCallback)(DftGrid* grid, void* cb_data);
@@ -57,9 +57,9 @@ typedef struct DftCallbackData_ DftCallbackData;
 */
 DftGrid* dft_grid_new(int needgrad, int needlap, int needgb);
 void dft_grid_free(DftGrid* res);
-real dft_integrate(real* cmo, real* work, int* lwork, 
+real dft_integrate(real* cmo, real* work, integer* lwork, 
 		   const DftCallbackData* cbarr, int cbcount);
-real dft_integrate_ao(DftDensity* dens, real* work, int* lwork, 
+real dft_integrate_ao(DftDensity* dens, real* work, integer* lwork, 
                       int needgrad, int needlap, int needgb,
                       const DftCallbackData* cbarr, int cbcount);
 
@@ -80,17 +80,18 @@ typedef struct DftIntegratorBl_ {
                 * the dimensioning is (C syntax) [ntypso][nbast][bllen].
 		*/
     real dfthri; /* threshold on orbital values */
-    int nsym, shl_bl_cnt, bas_bl_cnt[8];
-    int (*RESTRICT shlblocks)[2]; /* shell blocks   */
-    int (*RESTRICT basblocks)[2]; /* basis function blocks */
+    int nsym;
+    integer shl_bl_cnt, bas_bl_cnt[8];
+    integer (*RESTRICT shlblocks)[2]; /* shell blocks   */
+    integer (*RESTRICT basblocks)[2]; /* basis function blocks */
 #define BASBLOCK(grid,isym) ((grid)->basblocks + (isym)*(grid)->shl_bl_cnt)
 
-    int ntypso; /* how many different vectors are computed for each
+    integer ntypso; /* how many different vectors are computed for each
                  * (point,orbital) pair. i.e whether only orbital values
                  * are computed (1), orbital values and first derivatives 
                  * (4), etc. */
 
-    int london_off; /* offset of the "london" orbital derivatives */
+    integer london_off; /* offset of the "london" orbital derivatives */
     /* 1 - only values; 4 - values + (x,y,z) derivatives, etc */
 
     int ndmat; /* 1 for closed shell, 2 for open shell */
@@ -112,7 +113,7 @@ typedef struct DftIntegratorBl_ {
     real tgrad[3];/* alpha, also used in closed-shell code */
     int  curr_point;  /* index of the current point */
     real curr_weight; /* the weight at current grid point */
-    int dogga, needlap, needgb;
+    integer dogga, needlap, needgb;
 } DftIntegratorBl;
 
 /* dft_integrate_ao_bl:
@@ -122,7 +123,7 @@ typedef void (*DftBlockCallback)(DftIntegratorBl* grid, real *tmp,
                                  int bllen, int blstart, int blend,
                                  void* cb_data);
 
-real dft_integrate_ao_bl(int ndmat, real *dmat, real* work, int* lwork,
+real dft_integrate_ao_bl(int ndmat, real *dmat, real* work, integer* lwork,
                          int needlnd, DftBlockCallback cb, void *cb_data);
 
 #else /* THE FORTRAN VERSION OF THE HEADERS */

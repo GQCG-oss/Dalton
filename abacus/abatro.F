@@ -56,6 +56,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -144,6 +145,8 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
+! nuclei.h needed for NUCDEP
 #include <abainf.h>
 #include <cbitro.h>
 #include <infinp.h>
@@ -151,8 +154,8 @@ C
       IPRINT = IPRDEF
       THRESH = 0.1D00
       COMPAR = VCD .OR. QPGRAD
-      SKIP   = .NOT. ((MOLGRD .OR. MOLHES .OR. DIPDER .OR. QPGRAD) 
-     &         .AND.   DOSYM(1))
+      SKIP   = (.NOT. ((MOLGRD .OR. MOLHES .OR. DIPDER .OR. QPGRAD) 
+     &         .AND.   DOSYM(1))) .OR. NUCDEP .GE. 10
       CUT    = .FALSE.
       NOROT1  = .FALSE.
       HESTRO = .TRUE.
@@ -345,6 +348,7 @@ C
 C     DCORD & DCORGD
 C
       DO 100 I = 1, 2
+C        ... I = 1 geometric pertubations, I = 2 magnetic perturbations
          DOPERT(0,I) = .FALSE.
          DO 110 JATOM = 1, NUCIND
             DO 120 ICOOR = 1, 3
@@ -1541,7 +1545,7 @@ C
          DODMAT = .TRUE.
       ELSE
          WRITE (LUPRI,'(/2A)') ' Second keyword illegal in GETTRO:',KEY2
-         CALL QUIT('Illegal keyword in GETTRO.')
+         CALL QUIT('Illegal second keyword in GETTRO.')
       END IF
 C
       IF (KEY3 .EQ. 'TC') THEN
@@ -1552,7 +1556,7 @@ C
          NTR = NCOL
       ELSE
          WRITE (LUPRI,'(/2A)') ' Third keyword illegal in GETTRO:',KEY3
-         CALL QUIT('Illegal keyword in GETTRO.')
+         CALL QUIT('Illegal third keyword in GETTRO.')
       END IF
 C
 C     Set IPTCOL
@@ -1655,8 +1659,18 @@ C
                      FACA = FACTOR*CORD(IA,IATOM)
                      FACB = FACTOR*CORD(IB,IATOM)
                   ELSE
-                     FACA = FACTOR*GRDMOL(IPTCNT(3*(IATOM-1) + IA,0,1))
-                     FACB = FACTOR*GRDMOL(IPTCNT(3*(IATOM-1) + IB,0,1))
+                     ISCORA = IPTCNT(3*(IATOM - 1) + IA,0,1)
+                     ISCORB = IPTCNT(3*(IATOM - 1) + IB,0,1)
+                     IF (ISCORA .GT. 0) THEN
+                        FACA = FACTOR*GRDMOL(ISCORA)
+                     ELSE
+                        FACA = 0.0D0
+                     END IF
+                     IF (ISCORB .GT. 0) THEN
+                        FACB = FACTOR*GRDMOL(ISCORB)
+                     ELSE
+                        FACB = 0.0D0
+                     END IF
                   END IF
                   ISCORA = IPTCNT(3*(IATOM - 1) + IA,IREP,1)
                   ISCORB = IPTCNT(3*(IATOM - 1) + IB,IREP,1)

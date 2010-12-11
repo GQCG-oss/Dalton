@@ -85,7 +85,7 @@ C
  || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
  || defined (SYS_SX) || defined (SYS_DARWIN) || defined (SYS_NEC) 
       CHARACTER*(24) FFDATE
-#if defined (SYS_LINUX) || defined(SYS_AIX) || defined (SYS_HAL)
+#if defined(SYS_AIX) || defined (SYS_HAL)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE
@@ -197,7 +197,7 @@ C
       itimwl = darr(1) - iwall0
       TIMWAL = itimwl
 #else
-#if defined (SYS_LINUX) && defined (VAR_G77)
+#if defined (VAR_G77) || defined (VAR_GFORTRAN)
 C 990819-ekd: Use time8() and second() system routines for timings
 C             ONLY available for GNU g77 compiler!!!!!!!!
       logical first
@@ -225,7 +225,7 @@ C
 C insert appropriate routine to get elapsed real time (wall time)
 C here
       TIMWAL = D0
-#endif  /* VAR_G77 */
+#endif  /* VAR_G77, VAR_GFORTRAN */
 #endif  /* VAR_IFC */
 #endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
 #endif  /* SYS_NEC */
@@ -359,18 +359,20 @@ C
 #endif
 C
       LTEXT = LEN(TEXT)
-      IF (TEXT(1:4) .EQ. 'INIT') THEN
+      IF (LTEXT .GT. 0) THEN
+        IF (TEXT(1:LTEXT) .EQ. 'INIT') THEN
 CHJ March 2005: this is not working on all machines, so ...
-C        WRITE (LUPRIN,'(3(/T6,2A)/)')
+C        WRITE (LUPRIN,'(3(/T3,2A)/)')
 C    &   'Last compilation       : ',
 C    &   LAST_DALTON_COMPILATION
 C    &  ,'Fortran and C compilers: ',
 C    &   F_AND_C_COMPILERS
 C    &  ,'Scientific libraries   : ',
 C    &   LIBRARY_LIST
-         WRITE (LUPRIN,'()')
-      ELSE IF (LTEXT .GT. 0) THEN
-         WRITE (LUPRIN,'(/A)') TEXT
+           WRITE (LUPRIN,'()')
+         ELSE
+           WRITE (LUPRIN,'(/A)') TEXT
+         END IF
       ELSE
          WRITE (LUPRIN,'()')
       END IF
@@ -410,7 +412,8 @@ C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #if defined (SYS_SX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
 #endif
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) && !(defined(GFORTRAN) && GFORTRAN <= 402)
+c     bug in gfortran-4.0.2 causes a segfault here.
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
@@ -602,6 +605,21 @@ C
       DATA    A/1/,B/0/,C/0/
       C = C + A/B
 #endif
+#if defined (SYS_AIX)
+C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
+C  Note: integer divide by zero is the only error which
+C        always will cause an exception
+C
+      include 'fexcp.h'
+      save i,j
+      data i,j /1,0/
+C
+      call SIGNAL(SIGTRAP,xl__trce)
+      i = i/j
+#endif
+Chjaaj apr06:
+C     Use stderr on unix/linux systems, if LUPRI not defined yet.
+      IF (LUPRI .LT. 0) LUPRI = 0
 #if defined (SYS_IRIX)
       WRITE(LUPRI,*) 'IRIX has no obvious system traceback facility.'
 #endif
@@ -625,18 +643,6 @@ C
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
       CALL TRBK()
-#endif
-#if defined (SYS_AIX)
-C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
-C  Note: integer divide by zero is the only error which
-C        always will cause an exception
-C
-      include 'fexcp.h'
-      save i,j
-      data i,j /1,0/
-C
-      call SIGNAL(SIGTRAP,xl__trce)
-      i = i/j
 #endif
       RETURN
       END
@@ -664,117 +670,13 @@ C  /* Deck canon */
       END IF
       RETURN
       END
-C  /* Deck dunit */
-      SUBROUTINE DUNIT(A,N)
-C
-C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
-C  TO A UNIT MATRIX.
-C  /VER 2/ 14-Sep-1983 hjaaj
-C
-#include "implicit.h"
-      DIMENSION A(*)
-      PARAMETER (D1=1.0D00, D0=0.0D00)
-C
-      NN = N*N
-      DO 100 I = 1,NN
-         A(I) = D0
-  100 CONTINUE
-      N1 = N + 1
-      DO 200 I = 1,NN,N1
-         A(I) = D1
-  200 CONTINUE
-      RETURN
-      END
-C  /* Deck dzero */
-      SUBROUTINE DZERO(DX,LENGTH)
-#include "implicit.h"
-C
-C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine DZERO sets a real array of length *LENGTH*
-C   to zero.
-C...................................................................
-      DIMENSION DX(*)
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I = 1,LENGTH
-  100    DX(I) = 0.0D00
-C
-      RETURN
-      END
-C  /* Deck isum */
-      FUNCTION ISUM(N,IA,INCA)
-C
-C     8-Feb-1987 hjaaj
-C     Sums elements of a integer vector.
-C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
-C     -- based on DDOT from LINPACK
-C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
-C
-      INTEGER ISUM,  IA(*), ITEMP
-      INTEGER I,INCA,JA,M,MP1,N
-C
-      ISUM  = 0
-      IF(N.LE.0)RETURN
-      ITEMP = 0
-      IF(INCA.EQ.1)GO TO 20
-C
-C        CODE FOR UNEQUAL INCREMENTS OR EQUAL INCREMENTS
-C          NOT EQUAL TO 1
-C
-      JA = 1
-      IF(INCA.LT.0)JA = (-N+1)*INCA + 1
-      DO 10 I = 1,N
-        ITEMP = ITEMP + IA(JA)
-        JA = JA + INCA
-   10 CONTINUE
-      ISUM = ITEMP
-      RETURN
-C
-C        CODE FOR BOTH INCREMENTS EQUAL TO 1
-C
-C
-C        CLEAN-UP LOOP
-C
-   20 M = MOD(N,5)
-      IF( M .EQ. 0 ) GO TO 40
-      DO 30 I = 1,M
-        ITEMP = ITEMP + IA(I)
-   30 CONTINUE
-      IF( N .LT. 5 ) GO TO 60
-   40 MP1 = M + 1
-      DO 50 I = MP1,N,5
-         ITEMP = ITEMP     + IA(I)     + IA(I + 1)
-     *         + IA(I + 2) + IA(I + 3) + IA(I + 4)
-   50 CONTINUE
-   60 ISUM = ITEMP
-      RETURN
-      END
-C  /* Deck izero */
-      SUBROUTINE IZERO(INT,LENGTH)
-C...................................................................
-C Written 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine IZERO sets an integer array of length *LENGTH*
-C   to zero.
-C...................................................................
-      INTEGER INT(*)
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH
-  100    INT(I) = 0
-C
-      RETURN
-      END
 C  /* Deck jaco */
       SUBROUTINE JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
 C
 C     F is symmetric packed matrix of dimension NB.
-C     The first block of size NMAX will be diagonalized.
+C       The first block of size NMAX will be diagonalized.
 C     V is for eigenvectors, only V(NROWV,NMAX) will be referenced.
-C     On entry it must correspond the basis vectors corresponding to the
+C       On entry it must correspond the basis vectors corresponding to the
 C       F matrix on entry, e.g. unit matrix or AO coefficients for each MO.
 C
 C Revisions:
@@ -797,19 +699,22 @@ C     Jun-1992 ov     Parameters for 0.5, 1.5, ... (for Cray)
 C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
-C
+C  18-aug-2005 wmk    Changed C1 to 1.D-15
 #include "implicit.h"
-      DIMENSION F(*),V(*)
+#include "priunit.h"
+      DIMENSION F(*),V(NROWV,*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
 #include "thrzer.h"
-      DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
+      DATA C1,C2,C3,C4,C5,C6/1.D-15,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
+Cwas: DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
 Cwas: IF (NB.EQ.1) RETURN !900727-hjaaj
       CALL QENTER('JACO')
+      CALL GETTIM(TSTRT, WSTRT)
       DO 190 I=1,NB
          JBIGI=0
          J=MIN(I-1,NMAX)
@@ -879,7 +784,7 @@ C
   271       T2X2 =BIG(IB)/DIF
             T2X25=T2X2*T2X2
          IF(T2X25 .GT. C4) GO TO 240
-            CX=1.D 00
+            CX=D1
             SX=T2X2
          GO TO 270
   240    IF(T2X25 .GT. C5) GO TO 250
@@ -970,15 +875,20 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SX
                   IEBR = IEBR + 1
                END IF
   390       CONTINUE
-         JAA=(IA-1)*NROWV
-         JBB=(IB-1)*NROWV
+C
 #include "ivdep.h"
-         DO 400 I=1,NROWV
-            T=V(JBB+I)*SX
-            V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
-  400       V(JAA+I)= V(JAA+I)*CX + T
+         DO I=1,NROWV
+            VIIA = V(I,IA)
+            VIIB = V(I,IB)
+            V(I,IA) =  VIIA*CX + VIIB*SX
+            V(I,IB) = -VIIA*SX + VIIB*CX
+         END DO
       GO TO 410
   420 CONTINUE
+c     CALL GETTIM(TEND, WEND)
+c     WRITE(LUPRI,'(/A,4I10/A,2F20.2)')
+c    &    'JACO -- ITJACO, NB,NMAX,NROWV :',ITJACO, NB,NMAX,NROWV,
+c    &    'JACO -- CPUTIME, WALLTIME     :',TEND-TSTRT, WEND-WSTRT
       CALL QEXIT('JACO')
       RETURN
       END
@@ -1011,10 +921,12 @@ C
 C     N = 1 special case
 C
       IF (N .EQ. 1) THEN
-         IF (VC(1,1)*VC(1,1) .LT. THNORM) THEN
-            IRETUR=-1
-         ELSE
-            VC(1,1) = D1/SQRT(S(1))
+         IF (M .EQ. 1) THEN
+            IF (VC(1,1)*VC(1,1) .LT. THNORM) THEN
+               IRETUR=-1
+            ELSE
+               VC(1,1) = D1/SQRT(S(1))
+            END IF
          END IF
          RETURN
       END IF
@@ -1132,11 +1044,13 @@ C  /* Deck readt */
       RETURN
  10   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: END reading file ',FNAME, 'length ',N
+      WRITE (LUPRI,*) 'READT: END reading file ',FNAME,
+     & ' UNIT ',IT, ' record length ',N
       CALL QUIT('READT: END reading file')
  20   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
-      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME, 'length ',N
+      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME,
+     & ' UNIT ',IT, ' record length ',N
       CALL QUIT('READT: Error reading file')
  30   CONTINUE
       WRITE (LUPRI,*) 'READT ERRROR: non-positive file unit number ',IT
@@ -1388,8 +1302,8 @@ C
       CHARACTER*8 A, B(4), C
 #if defined (VAR_SPLITFILES)
 #include "dummy.h"
-      CHARACTER FNNAME*80
 #endif
+      CHARACTER FNNAME*80
       DATA C/'********'/
       IRDERR = 0
 #if defined (VAR_SPLITFILES)
@@ -1403,7 +1317,7 @@ C
          LU = LUBKP
          CALL GPOPEN(LU,FNNAME(1:LN),'OLD','SEQUENTIAL','UNFORMATTED',
      &               IDUMMY,.FALSE.)
-      INQUIRE (UNIT=LU,NAME=FNNAME)
+         INQUIRE (UNIT=LU,NAME=FNNAME)
          REWIND (LU)
          GOTO 1
       ELSE IF (FNNAME(LN:LN) .EQ. ' ') THEN
@@ -1430,12 +1344,15 @@ C 940510-hjaaj: same change for Cray's multifile datasets
          LUERR = -1
          RETURN
       ELSE
-         WRITE(LUERR,4)A,LU
+         INQUIRE (UNIT=LU,NAME=FNNAME)
+         WRITE(LUERR,4)A,LU,FNNAME
          CALL QTRACE(LUERR)
+         REWIND (LU)
+         CALL DMPLAB(LU,LUERR)
          CALL QUIT('ERROR (MOLLAB) MOLECULE label not found on file')
       END IF
     4 FORMAT(/' *** ERROR (MOLLAB), MOLECULE label ',A8,
-     *        ' not found on unit',I4)
+     *        ' not found on unit',I4/' File name: ',A)
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 10) GO TO 1
@@ -1457,6 +1374,7 @@ C
 C 26-May-1985 hjaaj -- logical function version of SEARCH
 C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
 C
+#include "priunit.h"
       CHARACTER*8 A, B(4), C
       DATA C/'********'/
       IRDERR = 0
@@ -1471,12 +1389,17 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
 C 940510-hjaaj: same change for Cray's multifile datasets
-      BACKSPACE LU
+      BACKSPACE (LU,ERR=7)
+C     ... aug07-hjaaj: new ERR branch to avoid problems with backspace on empty files.
+      GO TO 8
+    7 write (LUPRI,*)
+     &  'FNDLAB WARNING: ERR branch for backspace on LU ',LU
+      call qdump(LUPRI)
 #endif
 C
     8 FNDLAB = .FALSE.
@@ -1722,7 +1645,7 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77)
+#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77) && !defined (VAR_GFORTRAN)
       FUNCTION SECOND ()
 #if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
  || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
@@ -1915,7 +1838,11 @@ C
 C     K.Ruud, April 19 (2000)
 C
 #if !defined (VAR_SPLITFILES)
+#include "priunit.h"
+      INTEGER LU
       IF (LU .LT. 1) THEN
+         WRITE (LUPRI,'(/A,I10)')
+     &      'ERROR in REWSPL: negative unit number =',LU
          CALL QUIT('REWSPL called with negative unit number LU')
       END IF
       REWIND (LU)
@@ -2004,6 +1931,9 @@ C
   140 CONTINUE
       RETURN
       END
+c     LOC() is not provided by gfortran-4.0.2 and this routine is not
+c     used at all in ther code.
+#if !(defined(GFORTRAN) && GFORTRAN <= 402)
       SUBROUTINE COMPOFF(WRK, WORK, KBASE)
 C
 C     Nov. 2004 Hans Joergen Aa. Jensen
@@ -2017,3 +1947,4 @@ C
 C     write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
       RETURN
       END
+#endif

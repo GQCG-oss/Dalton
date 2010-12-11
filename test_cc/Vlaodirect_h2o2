@@ -15,7 +15,7 @@ cat > Vlaodirect_h2o2.info <<%EOF%
 #####################################################################
 cat > Vlaodirect_h2o2.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 Verdet constant of H2O2
     start geom from "the book". Dihedric angle 111.93
     2    1 XY 

@@ -69,6 +69,10 @@ static real vwni_energy(const FunDensProp* dp);
 static void vwni_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
 static void vwni_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static real vwn3i_energy(const FunDensProp* dp);
+static void vwn3i_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn3i_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void vwn3i_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 /* VWN3 is a Gaussian version of the VWN functional based on suboptimal
  * set of parameters */
@@ -123,6 +127,16 @@ Functional VWNIFunctional = {
     vwni_first,
     vwni_second,
     vwni_third
+};
+Functional VWN3IFunctional = {
+    "VWN3I",      /* name */
+    vwn_isgga,  /* gga-corrected */
+    vwn_read,   /* no extra input expected, just set the common block */
+    NULL,
+    vwn3i_energy, 
+    vwn3i_first,
+    vwn3i_second,
+    vwn3i_third
 };
 
 
@@ -1034,4 +1048,28 @@ static void
 vwni_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
 {
     fun_printf("vwni_third not implemented."); exit(1);
+}
+
+static real
+vwn3i_energy(const FunDensProp* dp)
+{
+    return spni_energy(dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3i_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    spni_first(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3i_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    spni_second(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3i_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    fun_printf("vwn3i_third not implemented."); exit(1);
 }

@@ -139,9 +139,9 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 8 * 42 * 35 * \[11s7p2d\|7s6p2d\]" $log | wc -l`
-CRIT2=`$GREP "H1 * 2 * 1 * 12 * 10 * \[6s2p\|4s2p\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 10 * 66 * 55" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 42 * 35 * \[11s7p2d\|7s6p2d\]" $log | wc -l`
+CRIT2=`$GREP "H1 * 2 * 1\.0000 * 12 * 10 * \[6s2p\|4s2p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 66 * 55" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
@@ -149,13 +149,13 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0|\-)\.2249058930" $log | wc -l`
-CRIT5=`$GREP "4 * H1 * 1 * x * 1\.4523499293" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.4523499293" $log | wc -l`
 CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (0| )\.8996235720" $log | wc -l`
-CRIT8=`$GREP "7 * H1 * 2 * x * \-1\.4523499293" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-1\.4523499293" $log | wc -l`
 CRIT9=`$GREP "8 * y * (0| )\.0000000000" $log | wc -l`
 CRIT10=`$GREP "9 * z * (0| )\.8996235720" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -171,9 +171,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.06188340[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.34839871[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-76\.1937039537[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.06188340" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.3483987" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-76\.19370395" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -190,14 +190,14 @@ CTRL[5]=6
 ERROR[5]="CALCULATION SETUP NOT CORRECT"
 
 # Shielding tensor
-CRIT1=`$GREP "O * y * 315\.7308891[0-9]" $log | wc -l`
-CRIT2=`$GREP "H1 * y * 46\.2765017[0-9]" $log | wc -l`
-CRIT3=`$GREP "O * x * 370\.3845833[0-9]" $log | wc -l`
-CRIT4=`$GREP "H1 * x * 76\.2088275[0-9]" $log | wc -l`
-CRIT5=`$GREP "H1 * z * 15\.5839308[0-9]" $log | wc -l`
-CRIT6=`$GREP "O * z * 329\.6701363[0-9]" $log | wc -l`
-CRIT7=`$GREP "H1 * x * 18\.6333666[0-9]" $log | wc -l`
-CRIT8=`$GREP "H1 * z * 59\.9807365[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 315\.730" $log | wc -l`
+CRIT2=`$GREP "H1 * y * 46\.276" $log | wc -l`
+CRIT3=`$GREP "O * x * 370\.384" $log | wc -l`
+CRIT4=`$GREP "H1 * x * 76\.208" $log | wc -l`
+CRIT5=`$GREP "H1 * z * 15\.583" $log | wc -l`
+CRIT6=`$GREP "O * z * 329\.670" $log | wc -l`
+CRIT7=`$GREP "H1 * x * 18\.633" $log | wc -l`
+CRIT8=`$GREP "H1 * z * 59\.980" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[6]=9
@@ -209,7 +209,7 @@ CRIT2=`$GREP "Anisotropy\: * 47\.6841 ppm" $log | wc -l`
 CRIT3=`$GREP "Asymmetry\: * (0| )\.4385" $log | wc -l`
 CRIT4=`$GREP "S parameter\: * 49\.1884 ppm" $log | wc -l`
 CRIT5=`$GREP "A parameter\: * (0| )\.0000 ppm" $log | wc -l`
-CRIT6=`$GREP "Diamagnetic contribution\: * 413\.05623[0-9] * Paramagnetic\: * \-74\.46102[0-9]" $log | wc -l`
+CRIT6=`$GREP "Diamagnetic contribution\: * 413\.0562.. * Paramagnetic\: * \-74\.4610.." $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[7]=6
 ERROR[7]="O CHEMICAL SHIELDING NOT CORRECT"
@@ -220,18 +220,18 @@ CRIT2=`$GREP "Anisotropy\: * 19\.6560 ppm" $log | wc -l`
 CRIT3=`$GREP "Asymmetry\: * (0| )\.1100" $log | wc -l`
 CRIT4=`$GREP "S parameter\: * 19\.6956 ppm" $log | wc -l`
 CRIT5=`$GREP "A parameter\: * (0| )\.7624 ppm" $log | wc -l`
-CRIT6=`$GREP "Diamagnetic contribution\: * 24\.92597[0-9] * Paramagnetic\: * 5\.48503[0-9]" $log | wc -l`
+CRIT6=`$GREP "Diamagnetic contribution\: * 24\.9259.. * Paramagnetic\: * 5\.4850.." $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[8]=12
 ERROR[8]="H CHEMICAL SHIELDING NOT CORRECT"
 
 # Chemical shieldings
-CRIT1=`$GREP "\@1O * 338\.5952 * 413\.0562 * \-74\.4610 * (0| )\.4899 * 54\.6537 * 47\.6841 * (0| )\.4385" $log | wc -l`
-CRIT2=`$GREP "\@1H1 * 1 * 30\.4110 * 24\.9260 * 5\.4850 * (0| )\.8585 * 20\.3768 * 19\.6560 * (0| )\.1100" $log | wc -l`
-CRIT3=`$GREP "\@1H1 * 2 * 30\.4110 * 24\.9260 * 5\.4850 * (0| )\.8585 * 20\.3768 * 19\.6560 * (0| )\.1100" $log | wc -l`
-CRIT4=`$GREP "\@2O * 338\.5952 * 413\.0562 * \-74\.4610 * 47\.6841 * (0| )\.4385 * 49\.1884 * (0| )\.0000" $log | wc -l`
-CRIT5=`$GREP "\@2H1 * 1 * 30\.4110 * 24\.9260 * 5\.4850 * 19\.6560 * (0| )\.1100 * 19\.6956 * (0| )\.7624" $log | wc -l`
-CRIT6=`$GREP "\@2H1 * 2 * 30\.4110 * 24\.9260 * 5\.4850 * 19\.6560 * (0| )\.1100 * 19\.6956 * (0| )\.7624" $log | wc -l`
+CRIT1=`$GREP "\@1O * 338\.5952 * 413\.0562 * \-74\.461. * 0*\.489. * 54\.653. * 47\.684. * 0*\.438." $log | wc -l`
+CRIT2=`$GREP "\@1H1 * 1 * 30\.4110 * 24\.9260 * 5\.4850 * 0*\.8585 * 20\.3768 * 19\.6560 * 0*\.1100" $log | wc -l`
+CRIT3=`$GREP "\@1H1 * 2 * 30\.4110 * 24\.9260 * 5\.4850 * 0*\.8585 * 20\.3768 * 19\.6560 * 0*\.1100" $log | wc -l`
+CRIT4=`$GREP "\@2O * 338\.5952 * 413\.0562 * \-74\.461. * 47\.684. * 0*\.438. * 49\.188. * 0*\.0000" $log | wc -l`
+CRIT5=`$GREP "\@2H1 * 1 * 30\.4110 * 24\.9260 * 5\.4850 * 19\.6560 * 0*\.1100 * 19\.6956 * 0*\.7624" $log | wc -l`
+CRIT6=`$GREP "\@2H1 * 2 * 30\.4110 * 24\.9260 * 5\.4850 * 19\.6560 * 0*\.1100 * 19\.6956 * 0*\.7624" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[9]=6
 ERROR[9]="CHEMICAL SHIELDINGS NOT CORRECT"
@@ -284,8 +284,8 @@ ERROR[12]="H-H SPIN-SPIN COUPLING NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

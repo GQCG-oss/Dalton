@@ -2132,7 +2132,8 @@ C
       RETURN
       END
 C  /* Deck cclt_p21i */
-      SUBROUTINE CCLT_P21I(X21INT,ISYINT,WORK,LWORK)
+      SUBROUTINE CCLT_P21I(X21INT,ISYINT,WORK,LWORK,
+     &                     IT2BCD,NT2BCD,IT1AM,NT1AM,MVIR)
 C
 C     Written by Asger Halkier 26/10 - 1995
 C
@@ -2142,11 +2143,20 @@ C     Purpose: To transpose the occupied indices of the intermediates
 C              entering some of the terms in the 2.1-block.
 C
 C
-#include <implicit.h>
-      DIMENSION X21INT(*), WORK(LWORK)
+C#include <implicit.h>
+      IMPLICIT NONE
 #include <priunit.h>
 #include <ccorb.h>
-#include <ccsdsym.h>
+C#include <ccsdsym.h>
+
+      INTEGER LWORK,ISYINT
+      INTEGER IT2BCD(8,8),NT2BCD(8),IT1AM(8,8),NT1AM(8),MVIR(8)
+      INTEGER ISYMJ, J, ISYMI, I, ISYMA, ISYMAI, ISYMAJ, NAIJ, NAJI
+#if defined (SYS_CRAY)
+      REAL X21INT(*), WORK(LWORK)
+#else
+      DOUBLE PRECISION X21INT(*), WORK(LWORK)
+#endif
 C
       CALL QENTER('CCLT_P21I')
 C
@@ -2174,11 +2184,11 @@ C
                DO 130 I = 1,NRHF(ISYMI)
 C
                   NAIJ = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J - 1)
-     &                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + 1
+     &                 + IT1AM(ISYMA,ISYMI) + MVIR(ISYMA)*(I - 1) + 1
                   NAJI = IT2BCD(ISYMAJ,ISYMI) + NT1AM(ISYMAJ)*(I - 1)
-     &                 + IT1AM(ISYMA,ISYMJ) + NVIR(ISYMA)*(J - 1) + 1
+     &                 + IT1AM(ISYMA,ISYMJ) + MVIR(ISYMA)*(J - 1) + 1
 C
-                  CALL DCOPY(NVIR(ISYMA),WORK(NAIJ),1,X21INT(NAJI),1)
+                  CALL DCOPY(MVIR(ISYMA),WORK(NAIJ),1,X21INT(NAJI),1)
 C
   130          CONTINUE
   120       CONTINUE
@@ -2477,14 +2487,14 @@ C-----------------------------------------------
 C     Read RMAT and SMAT written by energy code.
 C-----------------------------------------------
 C
-      LUE1 = 0
+      LUE1 = -1
       CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUE1)
       READ(LUE1) (WORK(KRMAT+I-1),I = 1,NMATAB(ISYMOP))
       CALL GPCLOSE(LUE1,'KEEP')
 C
-      LUE2 = 0
+      LUE2 = -1
       CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUE2)
@@ -2630,6 +2640,7 @@ C
 #include <ccsdinp.h>
 #include <ccsections.h>
 #include <qm3.h>
+!#include <qmmm.h>
 #include <ccfield.h>
 #include <leinf.h>
 C
@@ -2646,7 +2657,7 @@ C
          KEND1  = KEMAT2 + NMATIJ(ISYMTR)
          LWRK1  = LWORK  - KEND1
          IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Needed:', KWRK1, 'Available:', LWORK
+            WRITE(LUPRI,*) 'Needed:', KEND1, 'Available:', LWORK
             CALL QUIT('Insufficient memory for allocation in cc_rcc2ff')
          ENDIF
 C
@@ -2682,7 +2693,12 @@ C-------------------------------------
 C
          IF (CCMM) THEN
             DTIME = SECOND()
-            CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_ADDG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+C               CALL CCMM_TGT(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
      *                       SECOND() - DTIME
@@ -2745,6 +2761,7 @@ C
 #include <ccfield.h>
 #include <leinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_LCC2FF')
@@ -2756,7 +2773,7 @@ C
       KEND1  = KFOCK2 + MAX(N2BST(ISYMOP),N2BST(ISYMLA))
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Needed:', KWRK1, 'Available:', LWORK
+         WRITE(LUPRI,*) 'Needed:', KEND1, 'Available:', LWORK
            CALL QUIT('Insufficient memory for allocation in cc_lcc2ff')
       ENDIF
 C
@@ -2790,7 +2807,12 @@ C-------------------------------------
 C
          IF (CCMM) THEN
             DTIME = SECOND()
-            CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            IF (.NOT. NYQMMM) THEN
+               CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM) THEN
+               CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+C               CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
      *                       SECOND() - DTIME
@@ -2837,6 +2859,7 @@ C
 #include <ccfield.h>
 #include <leinf.h>
 #include <qm3.h>
+!#include <qmmm.h>
 C
       LOGICAL ETRAN,FCKCON
 C
@@ -2854,7 +2877,7 @@ C
       KEND1  = KEMAT2 + NMATIJ(ISYMLA)
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Needed:', KWRK1, 'Available:', LWORK
+         WRITE(LUPRI,*) 'Needed:', KEND1, 'Available:', LWORK
          CALL QUIT('Insufficient memory for allocation in cc_fcc2ff')
       ENDIF
 C
@@ -2891,7 +2914,12 @@ C-------------------------------------
 C
       IF (CCMM) THEN
          DTIME = SECOND()
-         CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         IF (.NOT. NYQMMM ) THEN
+            CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         ELSE IF (NYQMMM) THEN
+            CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+C            CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         END IF
          IF (IPRINT .GT. 5) THEN
            WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_FCC2FF) 1',
      *                    SECOND() - DTIME

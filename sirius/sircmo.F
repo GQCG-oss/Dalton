@@ -457,11 +457,11 @@ C           include only 'X', 'Y', or 'Z' in TEXTUC
       RETURN
       END
 C  /* Deck delmo */
-      SUBROUTINE DELMO(CMO,SCRA,LSCRA,THROVL,DELEMO)
+      SUBROUTINE DELMO(CMO,SCRA,LSCRA,THROVL,CMAXMO,DELEMO)
 C
 C Written 18-Jan-198* by Hans Jorgen Aa. Jensen and Hans Agren
 C Revised 26-Aug-1992 by OV+HJAaJ
-C Revised 2004-Feb.2005 by HJAaJ
+C Revised 2004-Feb.2005, Jan.2007 by HJAaJ
 C
 C Purpose:
 C  Obtain initial guess for molecular orbitals by
@@ -469,6 +469,14 @@ C  diagonalizing the overlap matrix and discarding
 C  numerically linar dependent orbitals
 C  (defined by eigenvalue of overlap matrix .lt. THROVL).
 C
+C Input:
+C  CMO contains initial molecular orbital coefficients
+C      (unit matrix, one where 3s in d etc. are deleted, or ?).
+C  THROVL: min overlap eigenvalue
+C  CMAXMO: max MO coefficient
+C          (Generally CMAXMO \approx sqrt(d1/THROVL)
+C           but they can be set independently by user.
+C           Therefore we require both criteria fulfilled. /hjaaj jan 07)
 C Output:
 C  CMO; molecular orbitals
 C  DELEMO set true if orbitals have been deleted
@@ -483,16 +491,18 @@ C Used from common blocks:
 C   INFORB : NNBAST,...
 C   INFDIM : NNBASM, NBASMA
 C   INFPRI : LUW4
+C   CBIREA : LMULBS
+C   R12INT : LAUXBS
 C
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
-C         CMO contains initial matrix
-C         (either unit matrix or one where 3s in d etc. are deleted).
+      CALL QENTER('DELMO ')
 C
-C core allocate
+C Core allocation
 C
       KOVLP = 1
       KS1T  = KOVLP + NNBAST
@@ -504,6 +514,8 @@ C
 C Read the overlap matrix in AO-basis.
 C
       CALL RDONEL('OVERLAP ',.TRUE.,SCRA(KOVLP),NNBAST)
+C
+      DELEMO = .FALSE.
 C
       ICSYM = 1
       DO 200 ISYM = 1,NSYM
@@ -519,7 +531,7 @@ C
       IF (NORBI.EQ.0) GO TO 200
          IF (LMULBS) THEN
             IF (LAUXBS) THEN
-              IF (.NOT. R12ECO) THEN
+              IF (.NOT. (R12ECO .OR. R12CBS)) THEN
 C              Overlap matrix elements that belong to the 
 C              primary basis are zeroed (WK/UniKA/04-11-2002).
 C              This routine will then delete the corresponding vectors from CMO.
@@ -542,48 +554,8 @@ C              This routine will then delete the corresponding vectors from CMO.
             ENDIF
          END IF
 C
-C        If orbitals are deleted, take another turn for better
-C        numerical stability /hjaaj Dec 2004
-C        
-         ITURN = 0
-         JDEL  = 0
-         NORBISAV = NORBI
-  100    CONTINUE
-         ITURN = ITURN + 1
-         IF (JDEL .GT. 0) THEN
-            WRITE (LUW4,*) 'DELMO: ISYM, ITURN, NORBISAV, NORBI',
-     &                             ISYM, ITURN, NORBISAV, NORBI
-         END IF
+C        Update SCR(KS1T) to the new CMO vectors:
 C
-         IF (NORBI .NE. NBASI) THEN
-C           Make CMO orthornormal wrt. unit metric
-C           (needed for canonicial orthonormalization)
-            THRLDP = 1.0D-14
-            CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(ICSYM),SCRA(KSCR1))
-            CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
-     *                NBASI,NORBI)
-C           CALL UTHU(H,HT,U,WRK,NAO,NMO)
-         ELSE
-            NNBASI = NNBAS(ISYM)
-            CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
-            CALL DUNIT(CMO(ICSYM),NBASI)
-         END IF
-C
-C        Normalize primary CMO vectors
-C        (required for proper canonical orthonormalization)
-C
-         JS1T = KS1T - 1
-         DO I = 1, NORBI
-           JS1T = JS1T + I
-           IF (SCRA(JS1T) .GT. 0.0D0) THEN
-C          ... we may have zeroed some elements above
-C              in order that they should be excluded by this routine
-              FAC = D1 / SQRT(SCRA(JS1T))
-              JCSYM = ICSYM + (I-1)*NBASI
-              CALL DSCAL(NBASI,FAC,CMO(JCSYM),1)
-           END IF
-         END DO
-C        and update SCR(KS1T) to the new CMO vectors:
          CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
      *             NBASI,NORBI)
 C
@@ -601,11 +573,11 @@ C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          IF (IPRI6 .GT. 10 .OR. P6FLAG(38)) THEN
             IF (LMULBS .AND. LAUXBS) THEN
               WRITE (LUPRI,'(/A,I5/)')
-     &        'DELMO: eigenvalues of overlap matrix for '//
+     &        ' DELMO: eigenvalues of overlap matrix for '//
      &        'auxiliary basis for symmetry',ISYM
             ELSE
               WRITE (LUPRI,'(/A,I5/)')
-     &        'DELMO: eigenvalues of overlap matrix for symmetry',ISYM
+     &        ' DELMO: eigenvalues of overlap matrix for symmetry',ISYM
             END IF
             WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
          END IF
@@ -614,8 +586,11 @@ C Delete orbitals with small ( THROVL ) eigenvalues
 C
          IDEL = 0
          DO 275 J = 1, NORBI
-           EIGVAL = SCRA(KS1T + J -1)
-           IF (EIGVAL .LT. THROVL) THEN
+           EIGVAL = SCRA(KS1T + J - 1)
+           JCMO = ICSYM + (J-1)*NBASI
+           ICMOMAX = IDAMAX(NBASI,CMO(JCMO),1)
+           CMOMAX  = ABS( CMO(JCMO-1+ICMOMAX) ) / SQRT(EIGVAL)
+           IF (EIGVAL .LT. THROVL .OR. CMOMAX .GT. CMAXMO) THEN
               IDEL  = (NORBI + 1 - J)
 C
               IF (LAUXBS) THEN
@@ -638,7 +613,7 @@ C             ... secondary basis
                    DO 250 I = 0, NORB2(JSYM)*NBAS(JSYM) - 1
                      CMO(ICTO + I) = CMO(ICFROM + I)
   250              CONTINUE
-                   ICTO = ICTO + NORB2(JSYM)*NBAS(JSYM)   
+                   ICTO = ICTO + NORB2(JSYM)*NBAS(JSYM)     
                    ICFROM = ICFROM + NORB2(JSYM)*NBAS(JSYM)
   260            CONTINUE
                 END IF
@@ -649,13 +624,18 @@ C             ... primary basis
                 IF (JDEL .GT. 0) THEN
                    IF (.NOT.DELEMO) WRITE (LUW4,'(//A/A/A,1P,D10.2)')
      *           '@ Primary orbitals are deleted during canonical'//
-     *           ' orthonormalization',
-     *           '@   because of detected numerical linear dependence.',
+     *            ' orthonormalization',
+     *           '@   because of detected numerical linear dependence'//
+     &            ' or too large coefficients.',
      *           '@ Eigenvalue threshold for num. lin. dep. =',THROVL
                    WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
      *           '@',JDEL,' MO components are deleted in symmetry',ISYM,
      *           ' Overlap eigenvalues of the deleted orbitals:',
      *            (SCRA(KS1T + J - 2 + I),I = 1,JDEL)
+                   WRITE (LUW4,'(/A,1P,2D10.2)')
+     &           ' Max MO coeff. of last deleted MO & limit:',
+     &             CMOMAX,CMAXMO
+
                  DELEMO = .TRUE.
                 END IF
                 IF (ISYM .LT. NSYM) THEN
@@ -672,13 +652,10 @@ C             ... primary basis
                 NORB(ISYM) = NORB(ISYM) - IDEL
                 NCMOT = NCMOT - IDEL*NBASI
               END IF
-C             We have deleted some orbitals, for numerical
-C             stability we take another turn ... /hjaaj Dec 04
-              NORBI = NORBI - IDEL
-              GO TO 100
-           ELSE
+              GOTO 280
            END IF
   275    CONTINUE
+  280    CONTINUE
 C
 C        Finish canonical orthonormalization by 
 C        normalization (C = S**(-0.5)*U = U * Seig**(-0.5) )
@@ -724,6 +701,7 @@ C
 C
 C *** end of subroutine DELMO
 C
+      CALL QEXIT('DELMO ')
       RETURN
       END
 C  /* Deck reord */
@@ -866,7 +844,7 @@ C
 C
       IMAX = IDAMAX(NCMOT,CMO,1)
       CMAX = ABS( CMO(IMAX) )
-      IF (CMAX .GE. CMAXMO) P6FLAG(6) = .TRUE.
+c     IF (CMAX .GE. CMAXMO) P6FLAG(6) = .TRUE.
 C
 C     ***** PRINT MOLECULAR ORBITALS ON UNIT LUPRI *****
 C
@@ -902,18 +880,34 @@ C     ***** (LINEAR DEPENDENCIES IN ATOMIC BASIS SET)
 C
 C
   104 CONTINUE
-      WRITE(LUERR,3010) CMAX,CMAXMO
-      WRITE(LUW4 ,3010) CMAX,CMAXMO
-      IF (IPRI6.GT.0 .AND. LUPRI.NE.LUW4) WRITE(LUPRI,3010) CMAX,CMAXMO
+      DO ISYM = 1,NSYM
+         NORBI = NORB(ISYM)
+         NBASI = NBAS(ISYM)
+         NCMOI = NORBI*NBASI
+         IMAX = IDAMAX(NCMOI,CMO(ICMO(ISYM)+1),1)
+         CMAX = ABS( CMO(ICMO(ISYM)+IMAX) )
+      IF (CMAX .GT. CMAXMO) THEN
+         IORBI = (IMAX-1)/NBASI + 1
+         WRITE(LUERR,3010) CMAX,ISYM,IORBI,NORBI,CMAXMO
+         WRITE(LUW4 ,3010) CMAX,ISYM,IORBI,NORBI,CMAXMO
+         IF (LUPRI.NE.LUW4)
+     &   WRITE(LUPRI,3010) CMAX,ISYM,IORBI,NORBI,CMAXMO
+      END IF
+      END DO
+      WRITE (LUW4,3020)
+      IF (LUPRI.NE.LUW4) WRITE(LUPRI,3020)
  3010 FORMAT(/' *** ORTHO-FATAL ERROR ***',
-     *    /'Largest molecular orbital coefficient    ',1P,E20.6
-     *    /'This number is larger than accepted limit',E20.6
-     *    /'Significant loss of accuaracy is probable ',
-     *    /'in transformation of two-electron integrals,'
-     *    /'*** program stops here. ***   Your options:',
-     *    /'Modify basis set, decrease numerical linear dependency',
-     &    /'with ".AO DELETE", or take the chance and increase ',
-     *    /'limit with ".CMOMAX" in "*ORBITAL INPUT".')
+     &    /' Largest molecular orbital coefficient/sym',1P,D20.6,3I5,
+     &    /' This number is larger than accepted limit',D20.6)
+ 3020 FORMAT(
+     &    /' Significant loss of accuaracy is probable ',
+     &    /' in transformation of two-electron integrals,'
+     &   //'*** Program stops here. ***   Your options:',
+     &    /' 1) modify basis set,',
+     &    /' 2) decrease numerical linear dependency by increasing',
+     &     ' ".AO DELETE" limit, or'
+     &    /' 3) take the chance and increase',
+     &     ' limit with ".CMOMAX" in "*ORBITAL INPUT".')
       GO TO 5000
 C
 C
@@ -1333,7 +1327,6 @@ C
 #include <infind.h>
 #include <infpri.h>
 #include <infinp.h>
-#include <gnrinf.h>
 C
       DIMENSION MISH(8), MRHF(8)
 C
@@ -1359,26 +1352,26 @@ C
      &   ' Number of occupied orbitals in each symmetry: ',
      &   (MRHF(I),I=1,NSYM)
 C
-      KFC  = 1
-      KWRK = KFC  + NNORBT
+      KFC_MVO  = 1
+      KWRK = KFC_MVO  + NNORBT
       LNEED= KWRK + 2*NBAST
       LWRK = LFREE - KWRK
       IF (LNEED .GT. LFREE) CALL ERRWRK('FCVIRT',LNEED,LFREE)
 C
-C ***** retrieve atomic ONE ELECTRON HAMILTONIAN matrix
+C ***** Calculate a Fock matrix "FC_MVO" based on NMVO(*) occupied orbitals
+C       instead fo NISH(*).
 C
       CALL ICOPY(8,NISH,1,MISH,1)
       CALL ICOPY(8,NMVO,1,NISH,1)
       MISHT = NISHT
       NISHT = NMVOT
-      IF(DIRCAL) CALL QUIT('FCVIRT: NO direct !!!')
-      CALL FCKMAT(.TRUE.,DUMMY,CMO,EMCMY,WRK(KFC),DUMMY,
+      CALL FCKMAT(.TRUE.,DUMMY,CMO,EMCMY,WRK(KFC_MVO),DUMMY,
      &             WRK(KWRK),LWRK)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFRSAV)
       CALL ICOPY(8,MISH,1,NISH,1)
       NISHT = MISHT
 C
-C ***** ZERO ALL ELEMENTS IN FC MATRIX EXCEPT VIRTUAL HARTREE-FOCK BLOCK
+C ***** Zero all elements in FC_MVO matrix except virtual Hartree-Fock block
 C
       DO 200 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
@@ -1386,7 +1379,7 @@ C
          IORBI = IORB(ISYM)
          NBASI = NBAS(ISYM)
          NOCCI = MRHF(ISYM)
-         JXFC  = KFC + IIORB(ISYM)
+         JXFC  = KFC_MVO + IIORB(ISYM)
          JCMO =  1 + ICMO(ISYM)
 C
 C
@@ -1429,3 +1422,198 @@ C
       CALL QEXIT('FCVIRT')
       RETURN
       END
+C  /* Deck prorb */
+      SUBROUTINE PRORB(CMO,PROCC,IOUT)
+C
+C Written 11-Dec-1983 by ha/hjaaj
+C Revised  8-Jul-1992 hjaaj
+C
+C Purpose:
+C  Print molecular orbital coefficients on unit IOUT.
+C
+C Input:
+C  CMO, MO orbital coefficients (symmetry blocked)
+C  PROCC, print only occupied orbitals
+C  IOUT, output file unit
+C
+#include <implicit.h>
+      DIMENSION CMO(*)
+      LOGICAL   PROCC
+C
+C Used from common blocks:
+C   INFINP : CENT,TYPE,SUPSYM,?
+C   INFORB : NSYM,...
+C   INFIND : ISSMO(),
+C   CBIREA : LMULBS
+C
+#include <maxorb.h>
+#include <maxash.h>
+#include <infinp.h>
+#include <inforb.h>
+#include <infind.h>
+#include <cbirea.h>
+#include <r12int.h>
+C
+C *** FORMAT statements
+C
+ 2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
+     &       /' ------------------------------------------')
+ 2600 FORMAT(/' Orbital   ',7I9)
+ 2620 FORMAT( ' Sup.sym.  ',7I9)
+ 2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
+C
+C *** Print molecular orbitals
+C
+      IF (PROCC) THEN
+         THRPRI = 1.0D-2
+         WRITE(IOUT,'(/A,F6.4,A)')
+     &   ' (Only coefficients >',THRPRI,' are printed.)'
+      ELSE
+         THRPRI = 1.0D-4
+      END IF
+C
+      ISTBAS = 0
+      DO 400 ISYM = 1,NSYM
+         NBASI = NBAS(ISYM)
+         MBASI = NBAS(ISYM)
+         IF (LMULBS) MBASI = MBAS1(ISYM)
+C
+         IF (PROCC) THEN
+            IF (NBAST .LE. 25) THEN
+C           print all occupied and 2 lowest unoccupied this symmetry
+               IEND = 0
+            ELSE
+C           print 5 highest occupied and 2 lowest unoccupied this symmetry
+C           (output becomes too big otherwise ... /hjaaj Dec08)
+               IEND  = MAX(0,NOCC(ISYM)-5)
+            END IF
+            NENDI = NOCC(ISYM)
+     &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
+         ELSE
+            IEND  = 0
+            NENDI = NORB(ISYM)
+         END IF
+      IF (NENDI.EQ.0) GO TO 300
+         WRITE(IOUT,2400) ISYM
+C
+         ICMOI = ICMO(ISYM)
+         ISTORB = IORB(ISYM)
+  100       IST =IEND+1
+            ISTMO=IEND*NBASI+ICMOI
+            IEND=IEND+7
+            IF(IEND.GT.NENDI) IEND=NENDI
+            IEMO=NBASI*(IEND-1)+ICMOI
+            WRITE(IOUT,2600) (I,I=IST,IEND)
+            IF (SUPSYM) WRITE(IOUT,2620) (ISSMO(ISTORB+I),I=IST,IEND)
+            DO 200 I=1,MBASI
+               JSMO=ISTMO+I
+               JEMO=IEMO+I
+               JJ = 0
+               DO J=JSMO,JEMO,NBASI
+                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
+               END DO
+               IF (JJ .EQ. 1) WRITE(IOUT,2800) I,CENT(I+ISTBAS),
+     *            TYPE(I+ISTBAS),(CMO(J),J=JSMO,JEMO,NBASI)
+  200       CONTINUE
+         IF (IEND.NE.NENDI) GO TO 100
+C
+  300 CONTINUE
+        ISTBAS = ISTBAS + NBASI
+  400 CONTINUE
+C
+C *** End of subroutine PRORB
+C
+      RETURN
+      END
+C  /* Deck punmo */
+        SUBROUTINE PUNMO(IPCTL,CMO,OCC)
+C
+C 25-May-1985 hjaaj
+C l.r. 910715-hjaaj (added formats 7010-7050)
+C
+C Purpose:
+C   punch mo coefficients and, conditionally, occupation numbers
+C   to LUPNCH
+C
+C Control:
+C   IPCTL .eq. 1: also punch occupation numbers
+C   else        : do not punch occupation numbers
+C
+#include <implicit.h>
+#include <dummy.h>
+      DIMENSION CMO(*),OCC(*)
+      PARAMETER (D0 = 0.0D0)
+C
+C Used from common blocks:
+C   INFORB : NSYM,NORB(*),NBAS(*)
+C
+#include <inforb.h>
+C
+      CHARACTER*8 LBLDAT(2)
+C
+      CALL QENTER('PUNMO')
+      CALL GETDAT(LBLDAT(1),LBLDAT(2))
+      LUPNCH = -1
+      CALL GPOPEN(LUPNCH,'DALTON.MOPUN','UNKNOWN',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      REWIND LUPNCH
+      IF (IPCTL.EQ.1) THEN
+         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
+     *      '**NATORB   ( punched by SIRIUS ',LBLDAT,' )'
+      ELSE
+         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
+     *      '**MOLORB   ( punched by SIRIUS ',LBLDAT,' )'
+      END IF
+C
+      IEND =0
+      DO 700 ISYM=1,NSYM
+         NORBI=NORB(ISYM)
+      IF (NORBI.EQ.0) GO TO 700
+         NBASI=NBAS(ISYM)
+         DO 705 NI=1,NORBI
+            IST=IEND+1
+            IEND=IEND+NBASI
+            IMOMXV = IDAMAX(NBASI,CMO(IST),1)
+            CMOMXV = ABS(CMO(IST-1+IMOMXV))
+            IF (CMOMXV .LT. 1.0D2) THEN
+               WRITE (LUPNCH,7000) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D3) THEN
+               WRITE (LUPNCH,7010) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D4) THEN
+               WRITE (LUPNCH,7020) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D5) THEN
+               WRITE (LUPNCH,7030) (CMO(NP),NP=IST,IEND)
+            ELSE IF (CMOMXV .LT. 1.0D6) THEN
+               WRITE (LUPNCH,7040) (CMO(NP),NP=IST,IEND)
+            ELSE
+               WRITE (LUPNCH,7050) (CMO(NP),NP=IST,IEND)
+            END IF
+  705    CONTINUE
+         NDELI = NBASI-NORBI
+      IF (NDELI.EQ.0) GO TO 700
+         DO 706 NI=1,NDELI
+            WRITE (LUPNCH,7000) (D0,NP=1,NBASI)
+  706    CONTINUE
+  700 CONTINUE
+      CALL GPCLOSE(LUPNCH,'KEEP')
+C
+      IF (IPCTL.EQ.1) THEN
+         WRITE (LUPNCH,'(A,A8,2X,A8,A)')
+     *   '**NATOCC   ( punched by SIRIUS ',LBLDAT,' )'
+         WRITE(LUPNCH,7000) (OCC(NP),NP=1,NORBT)
+      END IF
+C
+      CALL QEXIT('PUNMO')
+      RETURN
+C
+ 7000 FORMAT(4F18.14)
+ 7010 FORMAT(4F18.13)
+ 7020 FORMAT(4F18.12)
+ 7030 FORMAT(4F18.11)
+ 7040 FORMAT(4F18.10)
+ 7050 FORMAT(4G18.11)
+C
+C end of PUNMO
+C
+      END
+C --- end of sirius/sircmo.F ---

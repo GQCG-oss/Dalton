@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -38,20 +38,23 @@ C  /* Deck oneprm */
      &                  QINT1,RLMINT,RLMTAB,FCM,
      &                  WORK,LWORK,IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,
      &                  TOLS,SECDER,DIFDIP,DIFQDP,FACINT,COORC,
-     &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
+     &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER,PCM)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 C
-      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP
+      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
-     &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3), 
-     &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6), 
+     &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3),
+     &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
 #include <onecom.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
 #include <expopt.h>
 C
       JMAXD = 2
@@ -68,16 +71,23 @@ C
 C
       KAHGTF = 1
       KODC   = KAHGTF + (NATOMC + 1)*NAHGTF
-      KLAST  = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
+      IF (PCM) THEN
+         KTSGTF = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
+         KLAST = KTSGTF + (NTS + 1) * NAHGTF
+      ELSE
+         KLAST  = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
+         KTSGTF = KLAST
+      ENDIF
       LWRK   = LWORK  - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('ONEPRM',' ',KLAST,LWORK)
       CALL DZERO(WORK(KAHGTF),(NATOMC + 1)*NAHGTF)
+      IF (PCM) CALL DZERO(WORK(KTSGTF),(NTS + 1)*NAHGTF)
       CALL ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,QINT1,
      &            RLMINT,RLMTAB,FCM,
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
      &            DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
-     &            NCLONE,EXPDER,WORK(KLAST),LWRK)
+     &            NCLONE,PCM,WORK(KTSGTF),EXPDER,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck onepr1 */
@@ -86,7 +96,7 @@ C  /* Deck onepr1 */
      &                  AHGTF,ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT,
      &                  PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
      &                  DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
-     &                  NCLONE,EXPDER,WORK,LWORK)
+     &                  NCLONE,PCM,TSHGTF,EXPDER,WORK,LWORK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -99,12 +109,12 @@ C
      &           GNUTHR = 1.D-4)
 C
       LOGICAL PROPTY, KINODC, SECDER, DIFDIP, NCLONE, CLASIC(MXCENT),
-     &        DIFQDP
+     &        DIFQDP, PCM
       DIMENSION WORK(LWORK), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
-     &          QINT1(KCKTAB,3,6), ADER(*), AHGTF(*), NCENTC(*), 
-     &          FACINT(*), COORC(3,*),GNUEXP(*), JCENTC(*), 
+     &          QINT1(KCKTAB,3,6), ADER(*), AHGTF(*), NCENTC(*),
+     &          FACINT(*), COORC(3,*),GNUEXP(*), TSHGTF(*), JCENTC(*),
      &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
@@ -113,8 +123,13 @@ C
 #include <ader.h>
 #include <clsfmm.h>
 #include <primit.h>
+#include <pcmdef.h>
+#include <pcm.h>
+Clf#include <pcmlog.h>
+#include <symmet.h>
 #include <ecpinf.h>
 #include <expopt.h>
+#include <ibtfun.h>
 C
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -196,6 +211,8 @@ C
             CALL DZERO(RLMINT,7*LMNTOT*KCKTAB)
             IF (MAXDIF .GE. 2) CALL DZERO(RLMTAB,21*KCKTAB)
          END IF
+      ELSE IF (PCM) THEN
+         CALL DZERO(RLMINT,7*NTS*KCKTAB)
       END IF
 C
 C     Non-classical contributions
@@ -229,7 +246,7 @@ C
                END DO
             END DO
          END DO
-      END IF 
+      END IF
 C
 C     ****************************************
 C     ***** Loop over primitive orbitals *****
@@ -357,6 +374,28 @@ C
                CALL SOLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &                     RLMINT,RLMTAB,CORPX,CORPY,CORPZ,MAXDIF,
      &                     EXPPI,FCM,WORK,LWORK,IPRINT)
+            ELSE IF (PCM) THEN
+               IADR = 1
+               DO ISYM = 0, MAXREP
+                  SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
+                  SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
+                  SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
+CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammenheng med loop i PCMGRI
+                  DO 310 ITS = 1,NTSIRR
+                     FACTOR = 1.0D0
+                     DIFCPX = SIGNX * XTSCOR(ITS) - CORPX
+                     DIFCPY = SIGNY * YTSCOR(ITS) - CORPY
+                     DIFCPZ = SIGNZ * ZTSCOR(ITS) - CORPZ
+                     CALL HERNAI(TSHGTF,JMAX,EXPP,DIFCPX,DIFCPY,
+     *                    DIFCPZ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,
+     *                    IPRINT)
+                     IADR = IADR + NAHGTF
+ 310              CONTINUE
+               ENDDO
+               CALL PCMGRI(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &              RLMINT,CORPX,CORPY,CORPZ,
+     &              EXPPI,TSHGTF,WORK,LWORK,IPRINT)
+
             END IF
   200    CONTINUE
   100 CONTINUE
@@ -984,6 +1023,7 @@ C
       DIMENSION SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
      &          QINT1(KCKTAB,3,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include <orgcom.h>
 #include <onecom.h>
 #include <lmns.h>
       INT1 = 0
@@ -1004,23 +1044,23 @@ C
          SX1 = SHGTF*ODC(LVALA,LVALB,0,1,0,1)
          SY1 = SHGTF*ODC(MVALA,MVALB,0,1,0,2)
          SZ1 = SHGTF*ODC(NVALA,NVALB,0,1,0,3)
-         DX0 = SHGTF*ODC(LVALA,LVALB,1,0,0,1) + CORPX*SX0
-         DY0 = SHGTF*ODC(MVALA,MVALB,1,0,0,2) + CORPY*SY0
-         DZ0 = SHGTF*ODC(NVALA,NVALB,1,0,0,3) + CORPZ*SZ0
-         DX1 = SHGTF*ODC(LVALA,LVALB,1,1,0,1) + CORPX*SX1
-         DY1 = SHGTF*ODC(MVALA,MVALB,1,1,0,2) + CORPY*SY1
-         DZ1 = SHGTF*ODC(NVALA,NVALB,1,1,0,3) + CORPZ*SZ1
-         QX0 = SHGTF*D2*ODC(LVALA,LVALB,2,0,0,1) 
+         DX0 = SHGTF*ODC(LVALA,LVALB,1,0,0,1) + (CORPX-DIPORG(1))*SX0
+         DY0 = SHGTF*ODC(MVALA,MVALB,1,0,0,2) + (CORPY-DIPORG(2))*SY0
+         DZ0 = SHGTF*ODC(NVALA,NVALB,1,0,0,3) + (CORPZ-DIPORG(3))*SZ0
+         DX1 = SHGTF*ODC(LVALA,LVALB,1,1,0,1) + (CORPX-DIPORG(1))*SX1
+         DY1 = SHGTF*ODC(MVALA,MVALB,1,1,0,2) + (CORPY-DIPORG(2))*SY1
+         DZ1 = SHGTF*ODC(NVALA,NVALB,1,1,0,3) + (CORPZ-DIPORG(3))*SZ1
+         QX0 = SHGTF*D2*ODC(LVALA,LVALB,2,0,0,1)
      &       + D2*CORPX*DX0 - (CORPX*CORPX - DP5*EXPPI)*SX0
-         QY0 = SHGTF*D2*ODC(MVALA,MVALB,2,0,0,2) 
+         QY0 = SHGTF*D2*ODC(MVALA,MVALB,2,0,0,2)
      &       + D2*CORPY*DY0 - (CORPY*CORPY - DP5*EXPPI)*SY0
-         QZ0 = SHGTF*D2*ODC(NVALA,NVALB,2,0,0,3) 
+         QZ0 = SHGTF*D2*ODC(NVALA,NVALB,2,0,0,3)
      &       + D2*CORPZ*DZ0 - (CORPZ*CORPZ - DP5*EXPPI)*SZ0
-         QX1 = SHGTF*D2*ODC(LVALA,LVALB,2,1,0,1) 
+         QX1 = SHGTF*D2*ODC(LVALA,LVALB,2,1,0,1)
      &       + D2*CORPX*DX1 - (CORPX*CORPX - DP5*EXPPI)*SX1
-         QY1 = SHGTF*D2*ODC(MVALA,MVALB,2,1,0,2) 
+         QY1 = SHGTF*D2*ODC(MVALA,MVALB,2,1,0,2)
      &       + D2*CORPY*DY1 - (CORPY*CORPY - DP5*EXPPI)*SY1
-         QZ1 = SHGTF*D2*ODC(NVALA,NVALB,2,1,0,3) 
+         QZ1 = SHGTF*D2*ODC(NVALA,NVALB,2,1,0,3)
      &       + D2*CORPZ*DZ1 - (CORPZ*CORPZ - DP5*EXPPI)*SZ1
 C
          SINT0(INT1)   = SINT0(INT1)   + SX0*SY0*SZ0
@@ -1113,10 +1153,10 @@ C
 C
          AFAC = (DP5*(LVALA + MVALA + NVALA) + DP75)*AINV
          BFAC = (DP5*(LVALB + MVALB + NVALB) + DP75)*BINV
-         EXPDER(INT,1,1) = EXPDER(INT,1,1) + AFAC*S0X*S0Y*S0Z 
-     &                   - SAX*S0Y*S0Z - S0X*SAY*S0Z - S0X*S0Y*SAZ 
+         EXPDER(INT,1,1) = EXPDER(INT,1,1) + AFAC*S0X*S0Y*S0Z
+     &                   - SAX*S0Y*S0Z - S0X*SAY*S0Z - S0X*S0Y*SAZ
          EXPDER(INT,2,1) = EXPDER(INT,2,1) + BFAC*S0X*S0Y*S0Z
-     &                   - SBX*S0Y*S0Z - S0X*SBY*S0Z - S0X*S0Y*SBZ 
+     &                   - SBX*S0Y*S0Z - S0X*SBY*S0Z - S0X*S0Y*SBZ
 C
 C     ***************************************
 C     ***** CALCULATE KINETIC INTEGRALS *****
@@ -1168,11 +1208,11 @@ C
                   E0XZ = E0X*E0Z
                   E0YZ = E0Y*E0Z
                   IF      (IT.GT.MAXT) THEN
-                     AE = - EAX*E0YZ 
-                     BE = - EBX*E0YZ 
+                     AE = - EAX*E0YZ
+                     BE = - EBX*E0YZ
                   ELSE IF (IU.GT.MAXU) THEN
-                     AE = - EAY*E0XZ 
-                     BE = - EBY*E0XZ 
+                     AE = - EAY*E0XZ
+                     BE = - EBY*E0XZ
                   ELSE IF (IV.GT.MAXV) THEN
                      AE = - EAZ*E0XY
                      BE = - EBZ*E0XY
@@ -1196,5 +1236,102 @@ C
          EXPDER(INT,1,2) = EXPDER(INT,1,2) + AINT
          EXPDER(INT,2,2) = EXPDER(INT,2,2) + BINT
   100 CONTINUE
+      RETURN
+      END
+C/*DECK Pcmgri*/
+      SUBROUTINE PCMGRI(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &                     PCMINT,CORPX,CORPY,CORPZ,
+     &                     EXPPI,TSHGTF,WORK,LWORK,IPRINT)
+
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
+#include <mxcent.h>
+#include <maxaqn.h>
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+      DIMENSION TSHGTF(*),PCMINT(KCKTAB,7,NTS)
+#include <onecom.h>
+#include <lmns.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+C
+      INT = 1
+      MAXADD = 0
+      IF (.NOT. ONECEN) MAXADD = 1
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB + MAXADD
+         MAXU = MVALA + MVALB + MAXADD
+         MAXV = NVALA + NVALB + MAXADD
+         IADRAV = 1
+         DO 200 IV = 0, MAXV
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            FV = ODC(NVALA,NVALB,IV,1,0,3)
+            IADRAU = IADRAV
+            DO 300 IU = 0, MAXU
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               FU = ODC(MVALA,MVALB,IU,1,0,2)
+               DO 400 IT = 0, MAXT
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  FT = ODC(LVALA,LVALB,IT,1,0,1)
+                  EEE = ET*EU*EV
+                  FEE = FT*EU*EV
+                  EFE = ET*FU*EV
+                  EEF = ET*EU*FV
+                  IADR00 = IADRAU + IT
+                  IADR0T = IADR00 + 1
+                  IADR0U = IADR00 + ISTEPU
+                  IADR0V = IADR00 + ISTEPV
+                  IADD = - NAHGTF
+CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammheng med tidliger loop.
+                  DO 500 ITS = 1, NTS
+                     IADD = IADD + NAHGTF
+                     AH00 = TSHGTF(IADR00 + IADD)
+                     AH0T = TSHGTF(IADR0T + IADD)
+                     AH0U = TSHGTF(IADR0U + IADD)
+                     AH0V = TSHGTF(IADR0V + IADD)
+C
+C                    Multiply by expansion coefficients
+C                    and add to appropriate CGTF integral
+C
+C                    Undifferentiated integral:
+C
+                     PCMINT(INT,1,ITS) = PCMINT(INT,1,ITS) + EEE*AH00
+                     IF (ONECEN) THEN
+                        PCMINT(INT,5,ITS) = PCMINT(INT,5,ITS) - EEE*AH0T
+                        PCMINT(INT,6,ITS) = PCMINT(INT,6,ITS) - EEE*AH0U
+                        PCMINT(INT,7,ITS) = PCMINT(INT,7,ITS) - EEE*AH0V
+                     ELSE
+C
+C                    A differentiated integrals:
+C
+                        PCMINT(INT,2,ITS) = PCMINT(INT,2,ITS) - FEE*AH00
+                        PCMINT(INT,3,ITS) = PCMINT(INT,3,ITS) - EFE*AH00
+                        PCMINT(INT,4,ITS) = PCMINT(INT,4,ITS) - EEF*AH00
+C
+C                    C differentiated integrals:
+C
+                        PCMINT(INT,5,ITS) = PCMINT(INT,5,ITS) - EEE*AH0T
+     $                       + FEE*AH00
+                        PCMINT(INT,6,ITS) = PCMINT(INT,6,ITS) - EEE*AH0U
+     $                       + EFE*AH00
+                        PCMINT(INT,7,ITS) = PCMINT(INT,7,ITS) - EEE*AH0V
+     $                       + EEF*AH00
+                     END IF
+ 500              CONTINUE
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+         INT = INT + 1
+ 100  CONTINUE
       RETURN
       END

@@ -1,11 +1,11 @@
 $Basis = SVP+Diffuse(Dunning-Hay)
-
-$Elements supported
-$H Li Be B C N O F Ne 
+$
+$ Elements supported
+$ H Li Be B C N O F Ne 
 $
 $  REFERENCE
-$ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
-$ VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
+$  T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
+$  VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
 $  H - F: T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE    
@@ -13,9 +13,9 @@ $              THEORY VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).
 $  Si - Cl:    E. MAGNUSSON AND H.F. SCHAEFER III, JCP 83, 5721 (1985).        
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
-$ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
-$ VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
-************************************************************************
+$  T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
+$  VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ HYDROGEN     (1p)                                              

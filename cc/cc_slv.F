@@ -38,8 +38,7 @@ C  /* Deck cc_slv */
 C
 C-----------------------------------------------------------------------------
 C
-C     Purpose: Direct calculation of Coupled Cluster
-C              solvent effects.
+C     Purpose: Direct calculation of Coupled Cluster solvent effects.
 C
 C              CCS(CIS/HF)(nci), MP2(nci), CC2(nci), CCSD, CC3(nci), MCC2(nci)
 C
@@ -266,6 +265,7 @@ C
 C
       LOGICAL     FIRST
       SAVE FIRST
+      DATA FIRST /.TRUE./
 C
       DOUBLE PRECISION GL
       EXTERNAL GL
@@ -285,6 +285,7 @@ C-------------------------------------------------------
 C     Check integrals and readin nuclear contributions.
 C-------------------------------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -315,6 +316,7 @@ C
             CALL QUIT('CC_SLVE: LUCSOL info not '//
      &                'consistent with SIRIUS input.')
          END IF
+         FIRST = .FALSE.
       ELSE
          READ (LUCSOL)
       END IF
@@ -621,6 +623,7 @@ C
 C
       LOGICAL FIRST
       SAVE  FIRST
+      DATA  FIRST/.TRUE./
 C
       IF (IPRINT.GT.10) THEN
         WRITE(LUPRI,*) 
@@ -628,9 +631,10 @@ C
       ENDIF
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -660,6 +664,7 @@ C
             CALL QUIT('CCSL_RHSTG: LUCSOL info not '//
      &                'consistent with SIRIUS input.')
          END IF
+         FIRST = .FALSE.
       ELSE
          READ (LUCSOL)
       END IF
@@ -831,8 +836,8 @@ C
       NTAMP   = NTAMP1 + NTAMP2
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCSL_ETA'
         FILMMX = 'CCSL__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -840,9 +845,10 @@ C
       END IF
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -1066,7 +1072,7 @@ C
 C
       CALL GPCLOSE(LUCSOL,'KEEP')
       END
-C  /* Deck ccsl_tlmput*/
+C  /* Deck ccsl_tlmget*/
       SUBROUTINE CCSL_TLMGET
 #include <implicit.h>
 #include <maxorb.h>
@@ -1079,14 +1085,15 @@ C  /* Deck ccsl_tlmput*/
 #include <ccslvinf.h>
 #include <ccinftap.h>
 C
+      LUCTLM = -1
       CALL GPOPEN(LUCTLM,'CC_TL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       LM = 0
       DO 820 L = 0,LMAXCU
         DO 800 M = -L,L
           LM = LM + 1
-          READ(LUCTLM,'(I5,3X,E22.15)',END=100) LM1,CCTLM(LM) 
-          IF (LM1.NE.LM) CALL QUIT( 'Error on CC_TL')
+          READ(LUCTLM,'(I5,E25.15)',END=100,ERR=100) LM1,CCTLM(LM)
+          IF (LM1.NE.LM) CALL QUIT( 'CCSL_TLMGET: Error on CC_TL')
           GOTO 800
   100     CCTLM(LM) = 0.0D0   
 C
@@ -1111,6 +1118,7 @@ C  /* Deck ccsl_tlmput*/
 #include <ccslvinf.h>
 #include <ccinftap.h>
 C
+      LUCTLM = -1
       CALL GPOPEN(LUCTLM,'CC_TL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -1118,7 +1126,7 @@ C
       DO 920 L = 0,LMAXCU
         DO 900 M = -L,L
           LM = LM + 1
-          WRITE(LUCTLM,'(I5,3X,E22.15)') LM,CCTLM(LM) 
+          WRITE(LUCTLM,'(I5,E25.15)') LM,CCTLM(LM) 
   900   CONTINUE
   920 CONTINUE
 C
@@ -1194,7 +1202,8 @@ C
       NAMP2C  = NT2AM(ISYCTR)
       NAMPC   = NAMP1C + NAMP2C
 C
-      For the F = C X B vector 
+C     For the F = C X B vector 
+C
       ISYBC = MULD2H(ISYBTR,ISYCTR)
       NAMP1F  = NT1AM(ISYBC)
       NAMP2F  = NT2AM(ISYBC)
@@ -1426,9 +1435,10 @@ C     element from the left hand side. The ' means that
 C     the HF contribution is skipped.
 C 
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -1603,8 +1613,8 @@ C
 C
 C
       IF (DISCEX) THEN
-        LUMMET = 0
-        LUMMXI = 0
+        LUMMET = -1
+        LUMMXI = -1
         FILMME = 'CCSL_ETA'
         FILMMX = 'CCSL__XI'
         CALL WOPEN2(LUMMET, FILMME, 64, 0)
@@ -1628,9 +1638,10 @@ C
      *              WORK(KDUM),WORK(KT2AMPA))
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -2047,9 +2058,10 @@ C
       END IF
 C
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)
@@ -2350,8 +2362,8 @@ C
       CHARACTER*(8) FILMME, FILMMX, LABEL
       CHARACTER*2 LIST
 C
-      LUMMET = 0
-      LUMMXI = 0
+      LUMMET = -1
+      LUMMXI = -1
       FILMME = 'CCSL_ETA'
       FILMMX = 'CCSL__XI'
 C
@@ -2359,9 +2371,10 @@ C
       CALL WOPEN2(LUMMXI, FILMMX, 64, 0)
 
 C---------------------------------
-C     Readin integrals from  file.
+C     Read in integrals from  file.
 C---------------------------------
 C
+      LUCSOL = -1
       CALL GPOPEN(LUCSOL,'AOSOLINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUCSOL)

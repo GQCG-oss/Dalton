@@ -167,12 +167,13 @@ C
 *---------------------------------------------------------------------*
 *     read zeroth-order effective Fock matrix if available:
 *---------------------------------------------------------------------*
+      call quit('hjaaj: code error, ISYM not defined, please fix!')
       IFOCK = IEFFFOCK(LABEL0,ISYM,1)
 
       IF (LEXPFCK(2,IFOCK)) THEN
          IADRF = IADRFCK(1,IFOCK)
 
-         LUFCK = 0
+         LUFCK = -1
          CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
          CALL GETWA2(LUFCK,FILFCKEFF,WORK(KFOCK0),IADRF,N2BST(ISYM0))
          CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')   
@@ -226,6 +227,7 @@ C
          END IF
  
          ! read first-order effective Fock matrix from file
+         call quit('hjaaj: code error, ISYM not defined, please fix!')
          IFOCK = IEFFFOCK(LABEL,ISYM,1)
          IEXPV = IEXPECT(LABEL,ISYM)
          IADRF = IADRFCK(1,IFOCK)  

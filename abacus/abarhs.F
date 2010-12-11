@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -88,6 +88,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -415,7 +416,7 @@ C
       TRATST = .FALSE.
       RUNGDY = MOLHES .OR. DIPDER .OR. SHIELD .OR. VCD .OR. MAGSUS
      &                .OR. ECD .OR. VROA .OR. MOLGFA .OR. MCD 
-     &	              .OR. VERDET .OR. SPINRO .OR. OPTROT .OR. QPGRAD
+     &                .OR. VERDET .OR. SPINRO .OR. OPTROT .OR. QPGRAD
       IPRGDY = IPRDEF
       NODC   = .FALSE.
       NODV   = .FALSE.
@@ -518,7 +519,7 @@ C     matrices for each coordinate are written by WRINTD called from
 C     GETGDY. (860401-hjaaj)
 C
       IF (GDHAM) THEN
-         LUGDH = 0
+         LUGDH = -1
          CALL GPOPEN(LUGDH,'ABACUS.GDHAM','NEW',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND LUGDH
@@ -554,8 +555,9 @@ C
             LONDON = .TRUE.
             KLAST = KFRSAV
          ELSE
+            KLAST = KFRSAV
             IF (IATOM .EQ. 1 .AND. DOREAL .AND. (.NOT. NODIFC)) THEN
-               KINTRP = KFRSAV
+               KINTRP = KLAST
                KINTAD = KINTRP + (9*MXCENT + 1)/IRAT
                KLAST  = KINTAD + (9*MXCENT + 1)/IRAT
                LWRK   = LWORK - KLAST + 1
@@ -565,12 +567,12 @@ C
                NCOMP  = 0
                CALL GET1IN(DUMMY,'SQHDOR ',NCOMP,WORK(KLAST),LWRK,
      &              LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,
-     &              .TRUE.,NPATOM,.FALSE.,IPRGDY)
+     &              .TRUE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,IPRGDY)
                IF (NFIELD .GT. 0) THEN
                   NCOMP = 0
                   CALL GET1IN(DUMMY,'DPLGRA ',NCOMP,WORK(KLAST),LWRK,
      &                    LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,.TRUE.
-     &                    ,NPATOM,.TRUE.,IPRGDY)
+     &                    ,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRGDY)
                END IF
             END IF
             DERIV(1) = DOREAL .AND. DCORGD(IATOM,1,1)
@@ -734,6 +736,10 @@ C
                IF (ITYPE .EQ. 1) THEN
                   NDMAT  = 1
                   NFMAT  = NDMAT
+                  KDMAT  = KLAST
+                  KFMAT  = KLAST
+C                 ... so KDMAT, KFMAT is defined in subroutine calls below,
+C                     also when WORK(KFMAT) is not used.
                   MAXDIF = 1
                ELSE IF (ABS(ITYPE) .EQ. 5) THEN
                   NDMAT = 2
@@ -860,12 +866,36 @@ C
      &               CALL STOPIT('RHSIDE','PARDRV',KLAST,LWRK)
                   LWRK = LWRK - KLAST
                   IPRTYP = 1
+                  HFXM0 = HFXMU
+                  HFXMU = D0
                   CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,
      &                        IFCTYP,WORK(KLAST),WORK(KNSTAT),DUMMY,
      &                        LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
      &                        TKTIME,RETUR,IPRINT,IPRTYP,
      &                        IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
      &                        DUMMY)
+                  HFXMU = HFXM0
+                  IF (HFXMU.NE.D0) THEN
+                     KFCTMP = KLAST
+                     KLAST  = KFCTMP + NFMAT*N2BASX
+                     IF (KLAST .GT. LWRK)
+     &                    CALL STOPIT('TWOEXP','PARDRV',KLAST,LWRK)
+                     LWRK = LWRK - NFMAT*N2BASX
+                     
+                     HFXFC0 = HFXFAC
+                     HFXFAC = HFXATT
+                     CALL DCOPY(NFMAT*N2BASX,WORK(KFMAT),1,
+     &                    WORK(KFCTMP),1)
+                     CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,
+     &                    IFCTYP,WORK(KLAST),WORK(KNSTAT),DUMMY,
+     &                    LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
+     &                    TKTIME,RETUR,IPRINT,IPRTYP,
+     &                    IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &                    DUMMY)
+                     CALL DAXPY(NFMAT*N2BASX,1D0,WORK(KFCTMP),1,
+     &                    WORK(KFMAT),1)
+                     HFXFAC = HFXFC0
+                  END IF               
                   IF (IPRALL .GT. 2 .AND. (MAGSUS .OR. MOLGFA)) THEN
                      CALL HEADER('Two-electron expectation value '
      &                    //'contribution to susceptibilities',-1)
@@ -1235,17 +1265,18 @@ CKeinSPASmehr
       ELSE
          KFREE = KCINDX
       END IF
-      IF (LONDON) THEN
-         NDIMPV = N2ASHX
-      ELSE
-         NDIMPV = NNASHX
-      END IF
+      LFREE = LWORK  - KFREE  + 1
 C
 C     **************************************
 C     ***** Get two-electron densities *****
 C     **************************************
 C
       IF (NASHT .GT. 0) THEN
+         IF (LONDON) THEN
+            NDIMPV = N2ASHX
+         ELSE
+            NDIMPV = NNASHX
+         END IF
          IF (NOPV) THEN
             CALL DZERO(PV,NDIMPV*NDIMPV)
          ELSE
@@ -1276,7 +1307,7 @@ C
 C           Case 2: Densities read in
 C
             ELSE
-               CALL RDSIFC('PV',FOUND,PV,WORK(KLAST),LWRK)
+               CALL RDSIFC('PV',FOUND,PV,WORK(KFREE),LFREE)
                IF (.NOT.FOUND)
      &            CALL QUIT('RHSIDE error: PV not found on SIRIFC')
             END IF
@@ -1649,7 +1680,7 @@ ckr            IDORCI(ISCOOR,2) = 1
          ELSE
 ckr            IDORCI(ISCOOR,1) = 1
          END IF
-         CALL WRITRS
+         CALL ABAWRITRS
   300    CONTINUE
   100 CONTINUE
 C
@@ -2890,7 +2921,7 @@ C
 C
 C     Two-electron part
 C
-      LUINTA = 0
+      LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL REWSPL(LUINTA)
@@ -3359,6 +3390,7 @@ C
       IF ((.NOT. (SHIELD .OR. SPNSPN .OR. SPINRO)) .OR. 
      &   ((.NOT. (SHIELD .OR. SPINRO))
      &    .AND. (SPNSPN .AND. (.NOT. DOPSO)))) RETURN
+      CALL QENTER('PSORHS')
 C
       IF (IPRALL .GE. 3) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPRALL .GE. 4) CALL TITLER('Output from PSORHS','*',103)
@@ -3392,6 +3424,7 @@ C
          CALL FCPRI(SIGMAS,'SIGMA',WORK(KCSTRA),WORK(KSCTRA))
       END IF
       IF (IPRALL .GE. 3) CALL TIMER('PSORHS',TIMSTR,TIMEND)
+      CALL QEXIT('PSORHS')
       RETURN
       END
 C  /* Deck psorh1 */
@@ -3513,15 +3546,15 @@ C
 C
 C     Construct the appropriate property vectors
 C
-      NCOMP  = 0
-      NPATOM = 0
       IF (DODRCT .AND. .NOT. RALLCO) THEN
          NPATOM = 2
          ISTRT  = 1
          DO 77 I = 1, NUCIND
+            NCOMP  = 0
+            NPATOM = 2
             CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABTMP,
      &                  INTREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,
-     &                  IPRINT)
+     &                  DUMMY,.FALSE.,DUMMY,IPRINT)
             ITYP  = 0
             ITYP2 = 0
             DO 78 J = 1, NSYM
@@ -3540,9 +3573,11 @@ C
  78         CONTINUE
  77      CONTINUE
       ELSE
+         NCOMP  = 0
+         NPATOM = 0
          CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABINT,
      &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &               IPRINT)
+     &               DUMMY,.FALSE.,DUMMY,IPRINT)
       END IF
       NREC = 3*NUCDEP
 C
@@ -3557,13 +3592,7 @@ C
          KSYMST = LSYMST
          KSYMOP = LSYMPT
          KZWOPT = NWOPT
-         IF ((NASHT .EQ. 0).AND.(.NOT.ABASOP)) THEN
-            KZCONF = 0
-         ELSE IF (NASHT .EQ. 1) THEN
-            KZCONF = 1
-         ELSE
-            KZCONF = NCONST
-         END IF
+         KZCONF = NCONST
          KZVAR  = KZWOPT + KZCONF
          KZYWOP = 2*KZWOPT
          KZYCON = 2*KZCONF

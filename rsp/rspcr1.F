@@ -38,6 +38,7 @@ C
 #include <implicit.h>
 C
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infrsp.h>
 #include "rspprp.h"
 #include <inflr.h>
@@ -74,6 +75,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -261,6 +263,12 @@ C                 and solve linear equations by matrix inversion
          GO TO 100
       END IF
   300 CONTINUE
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         ICHANG = ICHANG + 1
+         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
+     &   ' thresholds multiplied with general factor',THR_REDFAC
+         THCLR = THCLR*THR_REDFAC
+      END IF
       NACRTO = 0
       NBCRTO = 0
       NCCRTO = 0
@@ -623,7 +631,7 @@ C SUCH OPERATORS ARE REMOVED FROM THE CALCULATION IN THIS ROUTINE.
 C
 C BASED ON ANASYM
 C
-      DIMENSION NAOPNU(2),NBOPNU(2),NCOPNU(2),NDOPNU(2),IWRK(2)
+      DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*),NDOPNU(*),IWRK(*)
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')
@@ -887,8 +895,8 @@ C
 C PURPOSE:
 C DRIVER ROUTINE FOR CUBIC RESPONSE
 C
-      DIMENSION CMO(2),UDV(2),PV(2),FOCK(2),FC(2),FCAC(2),H2AC(2)
-      DIMENSION XINDX(2),WRK(2)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION XINDX(*),WRK(*)
 C
 #include <dummy.h>
 #include <maxorb.h>
@@ -939,7 +947,7 @@ C
 C Delete files to save disk space
 C Keep LURSP and LUXYVE for later use
 C
-      LURSP1 = 0
+      LURSP1 = -1
       CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPCLOSE(LURSP1,'DELETE')
@@ -999,8 +1007,8 @@ C
       CHARACTER*8 BLANK
       PARAMETER (BLANK = '        ', D1 = 1.0D0, D0 = 0.0D0)
       LOGICAL FOUND, CONV
-      DIMENSION CMO(2),UDV(2),PV(2),FOCK(2),FC(2),FCAC(2),H2AC(2)
-      DIMENSION XINDX(2),WRK(2)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION XINDX(*),WRK(*)
 C
 #include <maxorb.h>
 #include <priunit.h>

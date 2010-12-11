@@ -194,14 +194,17 @@ cLig  <> added the TODOINT to see if the property was already in the file
       ELSE
         CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &              LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &              IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &              IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &              IPR1IN)
       ENDIF
       NLAB = 3
       CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       IF (MAGSUS) THEN
+         NCOMP  = 0
          CALL GET1IN(DUMMY,'RANGMO ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
          NLAB = 9
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          NLBSHIS = 13
@@ -211,9 +214,11 @@ cLig  <> added the TODOINT to see if the property was already in the file
          IF (TODOINT('RPSO    ',LUPROP)) THEN
            CALL GETLAB('RPSO',4,LABINT,WORK(KIDSYM),LUPROP)
          ELSE
-           CALL GET1IN(DUMMY,'RPSO   ',NCOMP,WORK(KWORK2),LWORK2,
-     &                 LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+            NCOMP  = 0
+            CALL GET1IN(DUMMY,'RPSO   ',NCOMP,WORK(KWORK2),LWORK2,
+     &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &                  IPR1IN)
          ENDIF
          NLAB = 3*NCOOR
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
@@ -221,9 +226,11 @@ cLig  <> added the TODOINT to see if the property was already in the file
          IF (TODOINT('PSO     ',LUPROP)) THEN
            CALL GETLAB('PSO',3,LABINT,WORK(KIDSYM),LUPROP)
          ELSE
-           CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK(KWORK2),LWORK2,
-     &                 LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+            NCOMP  = 0
+            CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK(KWORK2),LWORK2,
+     &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &                  IPR1IN)
          ENDIF
          NLAB = NCOOR
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
@@ -254,9 +261,9 @@ C        Loop over the right operators which are the
 C        the dipole velocity operators 
 C        ===========================================
 C   
-      LUSOVE = 0
-      LUGDVE = 0
-      LUREVE = 0
+      LUSOVE = -1
+      LUGDVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)

@@ -67,6 +67,7 @@ cs   ci sono quelle elencate in TABLE
 cs
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -318,7 +319,8 @@ cs
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
      &               KDLAB,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPRINT)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,KDLAB,WORK(KIDSYM),LABAPP,LABSYM)
 C
@@ -327,7 +329,8 @@ cs
             IF (NOLOND) THEN
                CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &                     KDLAB,WORK(KIDSYM),WORK(KIDADR),
-     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,
+     &                     DUMMY,IPRINT)
                NLAB = 3
                CALL LABCOP(NLAB,NLBTOT,KDLAB,WORK(KIDSYM),
      &                     LABAPP,LABSYM)
@@ -342,7 +345,8 @@ C
                NPATOM = 0
                CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK(KWORK2),LWORK2,
      &                     KDLAB,WORK(KIDSYM),WORK(KIDADR),
-     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,
+     &                     DUMMY,IPRINT)
                NLAB = 3
                CALL LABCOP(NLAB,NLBTOT,KDLAB,WORK(KIDSYM),LABAPP,
      &                     LABSYM)
@@ -401,9 +405,9 @@ cs    Probabilmente con questa chiamata parte il calcolo vero e proprio
 cs    ABARSP e' in abarspn.F
 cs
       ISYM = 1
-      LUSOVE = 0
-      LUGDVE = 0
-      LUREVE = 0
+      LUSOVE = -1
+      LUGDVE = -1
+      LUREVE = -1
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)

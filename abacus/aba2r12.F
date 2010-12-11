@@ -498,13 +498,9 @@ C
          WRITE (LUPRI,'(2X,A, I5)') 'NDIST ', NDIST
       END IF
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_INT64)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
-         NBITS = 8
-      ELSE
-         NBITS = 16
-      END IF
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
@@ -822,15 +818,17 @@ C
             END IF
             IF (IRAT .EQ. 1) LWORD = 8
             IF (IRAT .EQ. 2) LWORD = 4
-            KBYTES = NBUFX(0)*LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
-            KBYTES = (KBYTES + 999)/1000
-            NALL   = (NBASIS*(NBASIS + 1))/2
-            NALL   = (NALL*(NALL + 1))/2
-            PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
-            WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A,/1X,A,I10//)')
-     &         'Number of two-electron integrals written:',N2WRIT,
+            FMBYTES = LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
+            FMBYTES = NBUFX(0)*FMBYTES
+            FMBYTES = FMBYTES / (1024.D0**2)
+            FNALL  = (NBASIS*(NBASIS + 1))/2
+            FNALL  = FNALL*(FNALL + 1.0D0)*0.5D0
+            PERCNT = N2WRIT
+            PERCNT = 100.D0*PERCNT / FNALL
+            WRITE (LUPRI,'(/A,I10,A,F4.1,A/A,F10.3//)')
+     &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'%)',
-     &         'Kilobytes written:                       ',KBYTES
+     &         ' Megabytes written:                       ',FMBYTES
          END IF
       END IF
       RETURN

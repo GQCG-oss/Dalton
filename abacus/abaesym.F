@@ -58,9 +58,9 @@ C
 #include <mxcent.h>
 #include <iratdef.h>
 C
-      DIMENSION REDH(2),REDGD(2),SOLEQ(2),IBNDX(2)
-      DIMENSION CMO(2),UDV(2),PV(2),FC(2),FV(2),FCAC(2),H2AC(2)
-      DIMENSION CREF(2),GORB(2),DIAOR(2),DIACI(2),INDXCI(2),WRK(2)
+      DIMENSION REDH(*),REDGD(*),SOLEQ(*),IBNDX(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION CREF(*),GORB(*),DIAOR(*),DIACI(*),INDXCI(*),WRK(*)
       DIMENSION GD(1)
 C
 #include <abainf.h>
@@ -319,7 +319,7 @@ C  INFORB : MULD2H
 C  INFDIM : NCONDI, NWOPDI
 C  INFTAP : LUINDX
 C  INFVAR : JWOPSY, NCONF, NWOPT, NWOPH, NVAR, NVARH
-C  INFLIN : LSYMRF, LSYMST, LSYMPT, NCONRF, NCONST, NWOPPT, NVARPT
+C  INFLIN : LSYMRF, LSYMST, LSYMPT, NCONST, NWOPPT, NVARPT
 C  LINABA : ABAHF, ABACI, LOFFRD
 C  ABAINF : ABASOP
 C  INFSOP : N2P2HS, N2P2HT, NS2P2H, NT2P2H, N12P2H, N22P2H, N32P2H
@@ -440,8 +440,8 @@ C
       LOGICAL NOH2
       PARAMETER (NOH2 = .FALSE.)
 C
-      DIMENSION UDV(2),FOCK(2),FC(2),FV(2),FCAC(2),H2AC(2)
-      DIMENSION XNDXCI(2), WRK(2)
+      DIMENSION UDV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION XNDXCI(*), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NSYM, NASHT, NORB(), ?
@@ -468,7 +468,7 @@ C
          KWRK1  = KDIACI + NCONST
          LWRK1  = LWRK   - KWRK1
          LUIT2S = LUIT2
-         LUIT2  = 0
+         LUIT2  = -1
 C        ... set LUIT2 = 0 so that diagonal isn't written to LUIT2
          CALL CIDIAG(LSYMST,NOH2,FCAC,H2AC,XNDXCI,WRK(KDIACI),
      &               WRK(KWRK1),LWRK1)
@@ -562,8 +562,8 @@ C
 #include <priunit.h>
 C
 C
-      DIMENSION FC(2),FV(2),FOCK(2),UDV(NASHDI,NASHDI)
-      DIMENSION EODIA(2)
+      DIMENSION FC(*),FV(*),FOCK(*),UDV(NASHDI,NASHDI)
+      DIMENSION EODIA(*)
 C
 #include <maxash.h>
 #include <maxorb.h>

@@ -131,13 +131,13 @@ C
 *---------------------------------------------------------------------*
 *     Open some files needed:
 *---------------------------------------------------------------------*
-      LUDELD  = 0
+      LUDELD  = -1
       CALL WOPEN2(LUDELD,FNDELD,64,0)
 
-      LUCKJD  = 0
+      LUCKJD  = -1
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
 
-      LUDKBC  = 0
+      LUDKBC  = -1
       CALL WOPEN2(LUDKBC,FNDKBC,64,0)
 
 *---------------------------------------------------------------------*
@@ -236,9 +236,9 @@ C       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,HALF,WORK(KT3AMPXY),1)
 *---------------------------------------------------------------------*
 * print debug output, close files and return:
 *---------------------------------------------------------------------*
-      CALL WCLOSE2(LUDELD,FNDELD,64,0)
-      CALL WCLOSE2(LUCKJD,FNCKJD,64,0)
-      CALL WCLOSE2(LUDKBC,FNDKBC,64,0)
+      CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
+      CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+      CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
 
       RETURN
       END
@@ -846,7 +846,7 @@ C       ---------------------------------------
      &                        .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         REWIND LUSIFC
@@ -880,7 +880,7 @@ C       ---------------------------------------
         ! of three W intermediates give the complete Tbar3
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,ONE/THREE,WYINT,1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (T3AMP0(I),I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -947,7 +947,7 @@ C       ---------------------------------------
      &                        .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
-        LUSIFC = 0
+        LUSIFC = -1
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &              .FALSE.)
         REWIND LUSIFC
@@ -981,7 +981,7 @@ C       ---------------------------------------
         ! of three W intermediates give the complete Tbar3
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,ONE/THREE,WXINT,1)
 
-        LUTEMP = 0
+        LUTEMP = -1
         CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         READ(LUTEMP) (T3AMP0(I),I=1,NT1AMX*NT1AMX*NT1AMX)
@@ -1030,7 +1030,7 @@ C     END IF
         LABELX = LRTLBL(IDLSTX)
 
         ! read property integrals from file:
-        CALL CCPRPAO(LABELX,WORK(KXPROP_AO),IRREP,ISYMX,IERR,
+        CALL CCPRPAO(LABELX,.TRUE.,WORK(KXPROP_AO),IRREP,ISYMX,IERR,
      &               WORK(KEND2),LWRK2)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
           CALL QUIT('CCSDT_T32_NODDY: error reading operator '//LABELX)
@@ -1047,7 +1047,7 @@ C     END IF
       IF (LISTY(1:3).EQ.'R1 ') THEN
         LABELY = LRTLBL(IDLSTY)
         ! read property integrals from file:
-        CALL CCPRPAO(LABELY,WORK(KYPROP_AO),IRREP,ISYMY,IERR,
+        CALL CCPRPAO(LABELY,.TRUE.,WORK(KYPROP_AO),IRREP,ISYMY,IERR,
      &               WORK(KEND2),LWRK2)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMY)) THEN
           CALL QUIT('CCSDT_T32_NODDY: error reading operator '//LABELY)

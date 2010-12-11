@@ -1,14 +1,14 @@
 $Basis = MINI (Scaled)
-
-$Elements supported
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
+$
+$ Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
 $
 $  REFERENCE
-$ S. HUZINAGA, ED.,J. ANDZELM, M. KLOBUKOWSKI, E. RADZIO-ANDZELM, Y. SAKAI,    
-$ H. TATEWAKI IN GAUSSIAN BASIS SETS FOR MOLECULAR CALCULATIONS:               
-$ ELSEVIER, AMSTERDAM, 1984.                                                   
-$ VALENCE SCALE FACTORS FROM JOHN DEISZ OF NORTH DAKOTA STATE UNIVERSITY.      
-$
+$  S. HUZINAGA, ED.,J. ANDZELM, M. KLOBUKOWSKI, E. RADZIO-ANDZELM, Y. SAKAI,    
+$  H. TATEWAKI IN GAUSSIAN BASIS SETS FOR MOLECULAR CALCULATIONS:               
+$  ELSEVIER, AMSTERDAM, 1984.                                                   
+$  VALENCE SCALE FACTORS FROM JOHN DEISZ OF NORTH DAKOTA STATE UNIVERSITY.      
+$***********************************************************************
 a 1
 $ HYDROGEN     (3S) -> [1S]                                      
 $ S-TYPE FUNCTIONS

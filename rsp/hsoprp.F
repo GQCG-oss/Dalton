@@ -94,22 +94,24 @@ C
       CALL QENTER('HSOCTL')
 C
       IF (SOPPA) CALL QUIT('HSOCTL: SOPPA not implemented yet!')
+C
       CALL DZERO(GP,KZYVAR)
-      HSOFAC=ALPHAC**2/4
+      HSOFAC = ALPHAC**2 / 4
       IF (WORD(2:2).EQ.'1') THEN
          CALL PRPCTL(WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
          CALL DSCAL(KZYVAR,HSOFAC,GP,1)
          GO TO 9999
-      END IF
-      ANTSYM = 1.0D0
-      IF (WORD(2:2).EQ.'2') THEN
+      ELSE IF (WORD(2:2).EQ.'2') THEN
          DO1 = .FALSE.
          DO2 = .TRUE.
-      END IF
-      IF (WORD(2:2).EQ.' ') THEN
+      ELSE IF (WORD(2:2).EQ.' ') THEN
          DO1 = DOSO1
          DO2 = DOSO2
+      ELSE
+         WRITE(LUPRI,*) 'Programming error: WORD is not valid: ',WORD
+         CALL QUIT('Programming error: WORD is not valid')
       END IF
+      ANTSYM = 1.0D0
 C
       IF (IPRHSO.GT.0) THEN
          CALL TIMER('START ',HSOSTA,HSOTIM)
@@ -134,7 +136,7 @@ C
 C
 C Check if gradient is on file
 C
-      LUHSO = 0
+      LUHSO = -1
       CALL GPOPEN(LUHSO,'HSOGRAD','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUHSO
@@ -146,7 +148,9 @@ C
 C
 C ALLOCATE WORK SPACE do it smarter here
 C
-      KFC    = 1
+      KTEST  = 1
+      WORK(KTEST) = -999.9D0
+      KFC    = KTEST + 1
       IF (LORB) THEN
          KFV    = KFC    + NORBT*NORBT
          KQA    = KFV    + NORBT*NORBT
@@ -156,13 +160,19 @@ C
          KH1    = KPV21  + N2ASHX
       ELSE
          KH1    = KFC    + NORBT*NORBT
+         KFV    = KTEST
+         KQA    = KTEST
+         KQB    = KTEST
+         KPV12  = KTEST
+         KPV21  = KTEST
       END IF
       KH2    = KH1 + NORBT*NORBT
       IF (LCON) THEN
-         KH2AC  = KH2 + NORBT*NORBT
-         KWRK1 =  KH2AC + NNASHX*NNASHX
+         KH2AC  = KH2   + NORBT*NORBT
+         KWRK1  = KH2AC + NNASHX*NNASHX
       ELSE
-         KWRK1 = KH2 + NORBT*NORBT
+         KH2AC  = KTEST
+         KWRK1  = KH2   + NORBT*NORBT
       END IF
       LWRK1 = LWRK - KWRK1 + 1
       IF (LWRK1.LT.0) CALL ERRWRK('HSOCTL',KWRK1-1,LWRK)
@@ -406,6 +416,11 @@ C
       END IF
 C
       IF (IPRHSO.GT.0) CALL TIMER('HSOCTL',HSOSTA,HSOTIM)
+C     Test if work(ktest) has been touched:
+      IF (WORK(KTEST) .ne. -999.9D0) THEN
+         CALL QUIT('Programming error, WORK(KTEST) has been touched!')
+      END IF
+C
       IF (X2GRAD) THEN
          CALL HEADER('X2GRAD TEST FOR SPIN-ORBIT GRADIENT ELEMENTS',3)
          CALL DZERO(WRK,KWRK2-1)
@@ -468,6 +483,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -583,7 +599,7 @@ C
 C
       DIMENSION H2(NORBT,NORBT)
       DIMENSION FCSO(NORBT,NORBT),FVSO(NORBT,NORBT)
-      DIMENSION UDV(NASHT,NASHT),WRK(1)
+      DIMENSION UDV(NASHT,NASHT),WRK(*)
       LOGICAL LORB
 C
       PARAMETER (D1=1.0D0, D1P5=1.5D0)
@@ -913,7 +929,7 @@ C
 C
       DIMENSION QASO(NORBT,NASHT),QBSO(NORBT,NASHT)
       DIMENSION PV12(NASHT,NASHT),PV21(NASHT,NASHT)
-      DIMENSION H2(NORBT,NORBT),PVX(1),WRK(1)
+      DIMENSION H2(NORBT,NORBT),PVX(*),WRK(*)
 C
       PARAMETER(D2=2.0D0)
 C
@@ -1224,7 +1240,7 @@ C Sep 14, 1990
 C
       DIMENSION FC(NORBT,NORBT)
       DIMENSION H2AC(NNASHX,NNASHX)
-      DIMENSION GP(KZYVAR),XINDX(1),WRK(1)
+      DIMENSION GP(KZYVAR),XINDX(*),WRK(*)
 C
 #include <maxorb.h>
 #include <maxash.h>

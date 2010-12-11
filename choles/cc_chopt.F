@@ -35,7 +35,10 @@ C
 C
       PARAMETER (INFO = 3)
 C
+      CALL QENTER('CC_CHOPT')
+C
       TITOT = SECOND()
+      CALL GETTIM(TSTART,WSTART)
 C 
 C De-commented by Domenico
       CALL DZERO(SCNDSA,MAXCHO)
@@ -64,9 +67,18 @@ C De-commented by Domenico
       CALL DZERO(ENERGI,MAXCHO)
       CALL DZERO(ENERGJ,MAXCHO)
       CALL DZERO(ENERGX,MAXCHO)
-D 
 C
       CALL AROUND('Output from CC_CHOPT')
+C
+      LUCHOU = -1
+      CALL GPOPEN(LUCHOU,'CHOPT_RST','UNKNOWN',' ','FORMATTED',
+     &                     IDUM,LDUM)
+      REWIND(LUCHOU)
+C
+      WRITE(LUCHOU,'(/,10X,A,/,10X,A,//)')
+     &             'Cholesky CCSD(T) restart information',
+     &             '------------------------------------'
+      CALL FLSHFO(LUCHOU)
 C
       IF (FBATCH) THEN
          WRITE(LUPRI,'(A)')
@@ -145,7 +157,7 @@ C
       CALL CCHO_TRAINT(WORK(KEND0),LWRK0,WORK(KOINT),LUVI1,FILVI1,
      &                 LUVI2,FILVI2)
 C
-      xnorm = DSQRT(DDOT(NTRAOC(1),WORK(KOINT),1,WORK(KOINT),1))
+c     xnorm = DSQRT(DDOT(NTRAOC(1),WORK(KOINT),1,WORK(KOINT),1))
 c      write(LUPRI,*) 'After CCHO_TRAINT: Norm of (ia|jk): ',xnorm
 c      call flshfo(lupri)
 C
@@ -185,6 +197,12 @@ C
       IOPT = 2
       CALL CC_RDRSP('R0',1,1,IOPT,MODFIL,DUMMY,WORK(KIAJB))
 C
+c     write(lupri,*) 'isymt2,NT2am(ISYMT2)',isymt2,NT2am(ISYMT2)
+c     tnorm = dnorm2(NT2am(ISYMT2),WORK(KIAJB),1)
+c     write(LUPRI,*) 'Before CCHO_T2VO: Norm of IAJB: ',tnorm
+c     do i = 1,nt2am(isymt2)
+c        write(lupri,*) i,work(kiajb+i-1)
+c     end do
 C---------------------------------
 C     Sort amplitudes as t(ab,ij).
 C---------------------------------
@@ -204,7 +222,8 @@ C         and unit 52 must be open!
 C------------------------------------------------
 C
       CALL CCG_RDIAJB(WORK(KIAJB),NT2AM(ISYMOP))
-      CALL CCSD_TCMEPK(WORK(KIAJB),ONE,ISYMOP)
+      IOPT = 1
+      CALL CCSD_TCMEPK(WORK(KIAJB),ONE,ISYMOP,IOPT)
 
 c     znorm = DSQRT(DDOT(NT2AM(ISYMOP),WORK(KIAJB),1,WORK(KIAJB),1))
 c     write(LUPRI,*) 'After CCHO_RDIAJB: Norm of L(iajb): ',znorm,
@@ -223,9 +242,77 @@ C
 C
       IF (IPRINT .GE. INFO) TIMEV = SECOND()
 C
-      DO 100 ISYMB = 1,NSYM
+C     If restarting, go to the appropriate section
 C
-         IF (NVIR(ISYMB) .EQ. 0) GOTO 100
+      C4ORO = OLD4O
+      C5ORO = OLD5O
+C
+      IF (RSTH.OR.RSTH1.OR.RSTF1.OR.RSTC1.OR.RSTC2.OR.RSTVIR) THEN
+         WRITE(LUPRI,'(//,A,/,A,//)') 
+     &        '    Restarted CHO(T) calculation',
+     &        '    ----------------------------'
+         IF (UKNE4V) THEN
+            WRITE(LUPRI,'(A,A)') 'Previous 4-V correction unknown. ',
+     &                           'Be careful !!!'
+         ELSE
+            WRITE(LUPRI,'(A,D20.10)') '4-V correction : ',OLD4V
+         END IF
+         IF (UKNE5V) THEN
+            WRITE(LUPRI,'(A,A)') 'Previous 5-V correction unknown. ',
+     &                           'Be careful !!!'
+         ELSE
+            WRITE(LUPRI,'(A,D20.10)') '5-V correction : ',OLD5V
+         END IF
+      END IF
+C
+      IF (RSTH1 .OR. RSTF1 .OR. RSTC1 .OR. RSTC2) THEN
+         IF (UKNE5O) THEN
+            WRITE(LUPRI,'(A,A)') 'Previous 5-O correction unknown. ',
+     &                           'Be careful !!!'
+         ELSE 
+            WRITE(LUPRI,'(A,D20.10)') '5-O correction : ',OLD5O
+         END IF
+      END IF
+C
+      IF (RSTC1 .OR. RSTC2) THEN
+         IF (UKNE5O) THEN
+            WRITE(LUPRI,'(A,A)') 'Previous 4-O correction unknown. ',
+     &                           'Be careful !!!'
+         ELSE 
+            WRITE(LUPRI,'(A,D20.10)') '4-O correction : ',OLD4O
+         END IF
+      END IF
+C
+      IF (RSTH) THEN 
+         WRITE(LUPRI,'(//,A,//)') 'Restarting from H term'
+         GOTO 222
+      ELSE IF (RSTH1) THEN
+         WRITE(LUPRI,'(//,A,//)') 'Restarting from H1 term'
+         GOTO 223
+      ELSE IF (RSTF1) THEN
+         WRITE(LUPRI,'(//,A,//)') 'Restarting from F1 term'
+         GOTO 224
+      ELSE IF (RSTC1) THEN
+         WRITE(LUPRI,'(//,A,//)') 'Restarting from C1 term'
+         GOTO 225
+      ELSE IF (RSTC2) THEN
+         WRITE(LUPRI,'(//,A,//)') 'Restarting from C2 term'
+         GOTO 226
+      ELSE IF (RSTVIR) THEN
+         WRITE(LUPRI,'(//,A,/,A,I4,A,I2,/)')
+     &       'Restarting virtual orbital loop ',
+     &       'from orbital',IFVIOR,' of symmetry',IFVISY
+      END IF
+C
+      DO 100 ISYMB = IFVISY,NSYM
+C
+         IF (RSTVIR) THEN
+            NVIRB = NVIR(ISYMB) - IFVIOR + 1
+         ELSE
+            NVIRB = NVIR(ISYMB)
+         END IF
+C
+         IF (NVIRB .EQ. 0) GOTO 100
 C
          ISYEMD = MULD2H(ISYMB,ISYMOP)
          ISYIJC = MULD2H(ISYMB,ISYMT2)
@@ -238,13 +325,14 @@ C
             LEFF = NEFB*LENB + 1
             LWRK = MIN(LWRK,LEFF)
          ENDIF
-         NUMB  = MIN(NVIR(ISYMB),LWRK/LENB)
+C
+         NUMB  = MIN(NVIRB,LWRK/LENB)
          IF (NUMB .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMB .EQ. 0 in CC_CHOPT'
             STOP 'Not enough space in CC_CHOPT'
          END IF
 C
-         NBATB = (NVIR(ISYMB)-1)/NUMB + 1
+         NBATB = (NVIRB-1)/NUMB + 1
 C
          IF (IPRINT .GE. INFO) THEN
             WRITE(LUPRI,'(3X,A,I1,A,/,3X,A)')
@@ -258,7 +346,7 @@ C
      &      'Required number of B-batches  : ',NBATB
          ENDIF
 C
-         IB2 = 0
+         IB2 = IFVIOR - 1
          DO IBATB = 1,NBATB
 C
             IB1 = IB2 + 1
@@ -319,8 +407,10 @@ C
 c     len   = NCKATR(ISYMB)*NUMIB
 c     xnorm = DSQRT(DDOT(len,WORK(KJINT),1,WORK(KJINT),1))
 c     xinorm= DSQRT(DDOT(len,WORK(KIINT),1,WORK(KIINT),1))
-c     write(LUPRI,*) 'After CCHO_RDINT: IB1, NUMIB, ISYMB: ',IB1,NUMIB,ISYMB
-c     write(LUPRI,*) 'After CCHO_RDINT: norm of J(em,d;#b)=(em|#bd): ',xnorm
+c     write(LUPRI,*) 'After CCHO_RDINT: IB1, NUMIB, ISYMB: ',IB1,NUMIB,
+c    &                ISYMB
+c     write(LUPRI,*) 'After CCHO_RDINT: norm of J(em,d;#b)=(em|#bd): ',
+c    &                xnorm
 c     write(LUPRI,*) 'After CCHO_RDINT: norm of I(em,d;#b)=(#bm|ed): ',
 c    &           xinorm
 C
@@ -749,9 +839,9 @@ C
                   END DO
 C
                   E4BT = E4BT + BCOR
-D 
+C 
                  ENERGB(ICHO) = ENERGB(ICHO) + BCOR
-D
+C
 C De-commented by Domenico
                  TNOW = SECOND()
                  DELTAT = TNOW - TLAST
@@ -793,10 +883,10 @@ C
                   CALL FLSHFO(LUPRI)
 C
                   E4AT = E4AT + ACOR
-D 
+C 
                  ENERGA(ICHO) = ENERGA(ICHO) + ACOR
-D
-D 
+C
+C 
 C Decommented by Domenico
                  TNOW = SECOND()
                  DELTAT = TNOW - TLAST
@@ -840,9 +930,9 @@ C
                      CALL FLSHFO(LUPRI)
 C
                      E4I = E4I + CORI
-D 
+C 
                     ENERGI(ICHO) = ENERGI(ICHO) + CORI
-D
+C
 C Decommented by Domenico
                     TNOW = SECOND()
                     DELTAT = TNOW - TLAST
@@ -1026,8 +1116,55 @@ C
             ENDIF
            TLAST = SECOND()
 C
+C========================================================
+C          Write restart information at the end of batch.
+C========================================================
+C
+         C4ORV = E4AT + E4BT + E4D + E4E1 + E4E2 + E4F2 + E4I + E4J
+         C4ORV = 2.0D0 * C4ORV + OLD4V
+         C5ORV = E5G1 + E5G
+         C5ORV = 2.0D0 * C5ORV + OLD5V
+C
+         WRITE(LUCHOU,'(A,I2,2I4)') 'B-symmetry, first and last B :',
+     &                               ISYMB, IB1, IB2
+         WRITE(LUCHOU,'(A,D20.10)') 'A  contribution :', E4AT
+         WRITE(LUCHOU,'(A,D20.10)') 'B  contribution :', E4BT
+         WRITE(LUCHOU,'(A,D20.10)') 'D  contribution :', E4D 
+         WRITE(LUCHOU,'(A,D20.10)') 'E1 contribution :', E4E1
+         WRITE(LUCHOU,'(A,D20.10)') 'E2 contribution :', E4E2
+         WRITE(LUCHOU,'(A,D20.10)') 'F2 contribution :', E4F2
+         WRITE(LUCHOU,'(A,D20.10)') 'G1 contribution :', E5G1
+         WRITE(LUCHOU,'(A,D20.10)') 'G  contribution :', E5G 
+         WRITE(LUCHOU,'(A,D20.10)') 'I  contribution :', E4I 
+         WRITE(LUCHOU,'(A,D20.10)') 'J  contribution :', E4J 
+         WRITE(LUCHOU,'(A,20A)') '-----------------',('-',IK = 1,20)
+C
+         WRITE(LUCHOU,'(A,D20.10)') '4-V correction  :', C4ORV
+         WRITE(LUCHOU,'(A,D20.10)') '5-V correction  :', C5ORV
+         WRITE(LUCHOU,*)
+         WRITE(LUCHOU,*)
+         CALL FLSHFO(LUCHOU)
+C
          END DO
+C
+         WRITE(LUCHOU,'(9X,A,I2,//)') 
+     &       'Completed contribution from virtuals of symmetry :',ISYMB
+C
+         IF (RSTVIR) THEN
+            RSTVIR = .FALSE.                  ! No restart in next symmetry
+            IFVIOR = 1
+         END IF
+C
   100 CONTINUE
+C
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,'(9X,A)') '======================================'
+      WRITE(LUCHOU,'(9X,A)') 'Virtual contribution to CHOPT finished'
+      WRITE(LUCHOU,'(9X,A)') '======================================'
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
 C
       IF (IPRINT .GE. INFO) THEN
          TIMEV = SECOND() - TIMEV
@@ -1042,17 +1179,41 @@ C===========================
 C     Calculate the H terms.
 C===========================
 C
+  222 CONTINUE           !H term
+C
+      WRITE(LUCHOU,'(A)') 'About to calculate H-term'
+      WRITE(LUCHOU,'(A)') '.........'
+      CALL FLSHFO(LUCHOU)
+C 
       TIMEH = SECOND()
       CALL CCHO_HTERM(FOCKD,T1AM,WORK(KOINT),WORK(KT2VO),WORK(KIAJB),
      &                WORK(KEND1),LWRK1,CHOELE,NUMCHO,E5H,
      &                FBATCH,IPRINT.GE.INFO,NONB,NONA)
       TIMEH = SECOND() - TIMEH
 C
+      C5ORO = C5ORO + TWO*E5H
+      WRITE(LUCHOU,'(A,D20.10)') 'H  contribution :', E5H 
+      WRITE(LUCHOU,'(A,D20.10)') '5-O correction  :', C5ORO
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
+C
+  223 CONTINUE           !H1 term
+C
+      WRITE(LUCHOU,'(A)') 'About to calculate H1-term'
+      WRITE(LUCHOU,'(A)') '.........'
+      CALL FLSHFO(LUCHOU)
+C 
       TIMH1 = SECOND()
       CALL CCHO_H1TERM(FOCKD,T1AM,WORK(KOINT),WORK(KT2VO),WORK(KIAJB),
      &                 WORK(KEND1),LWRK1,CHOELE,NUMCHO,E5H1,
      &                 FBATCH,IPRINT.GE.INFO,NONB,NONA)
       TIMH1 = SECOND() - TIMH1
+C
+      C5ORO = C5ORO + TWO*E5H1
+      WRITE(LUCHOU,'(A,D20.10)') 'H1 contribution :', E5H1
+      WRITE(LUCHOU,'(A,D20.10)') '5-O correction  :', C5ORO
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
 C
       IF (IPRINT .GE. INFO) THEN
          WRITE(LUPRI,'(A,F10.2,A)')
@@ -1060,15 +1221,31 @@ C
          CALL FLSHFO(LUPRI)
       ENDIF
 C
+C
 C=================================
 C           Calculate the F1 term.
 C=================================
 C
+  224 CONTINUE           !F1 term
+C
+      KENDB2 = KEND1
+      LWRKB2 = LWRK1
+C
+      WRITE(LUCHOU,'(A)') 'About to calculate F1-term'
+      WRITE(LUCHOU,'(A)') '.........'
+      CALL FLSHFO(LUCHOU)
+C 
       TIMF1 = SECOND()
       CALL CCHO_FTERM1(WORK(KOINT),WORK(KT2VO),FOCKD,NUMCHO,
      &                 CHOELE,WORK(KENDB2),LWRKB2,E4F1,
      &                 FBATCH,IPRINT.GE.INFO,NONB,NONA)
       TIMF1 = SECOND() - TIMF1
+C
+      C4ORO = C4ORO + TWO*E4F1
+      WRITE(LUCHOU,'(A,D20.10)') 'F1 contribution :', E4F1
+      WRITE(LUCHOU,'(A,D20.10)') '4-O correction  :', C4ORO
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
 C
       IF (IPRINT .GE. INFO) THEN
          WRITE(LUPRI,'(A,F10.2,A)')
@@ -1080,11 +1257,27 @@ C=================================
 C           Calculate the C1 term.
 C=================================
 C
+  225 CONTINUE           !C1 term
+C
+      KENDB2 = KEND1
+      LWRKB2 = LWRK1
+C
+      WRITE(LUCHOU,'(A)') 'About to calculate C1-term'
+      WRITE(LUCHOU,'(A)') '.........'
+      CALL FLSHFO(LUCHOU)
+C 
       TIMC1 = SECOND()
       CALL CC_CHOC1TERM(WORK(KOINT),WORK(KT2VO),FOCKD,NUMCHO,
      &                 CHOELE,WORK(KENDB2),LWRKB2,E4C1,
      &                 FBATCH,IPRINT.GE.INFO,NONB,NONA)
       TIMC1 = SECOND() - TIMC1
+C
+      C4ORO = C4ORO + TWO*E4C1
+      WRITE(LUCHOU,'(A,D20.10)') 'C1 contribution :', E4C1
+      WRITE(LUCHOU,'(A,D20.10)') '4-O correction  :', C4ORO
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
+C
 *     CALL C1_DEBUG(WORK(KOINT),WORK(KT2VO),FOCKD,NUMCHO,
 *    &                 CHOELE,WORK(KENDB2),LWRKB2,THRCHO,
 *    &                 NRHFT,NVIRT)
@@ -1093,14 +1286,62 @@ C=================================
 C           Calculate the C2 term.
 C=================================
 C
+  226 CONTINUE           !C2 term
+C
+      KENDB2 = KEND1
+      LWRKB2 = LWRK1
+C
+      WRITE(LUCHOU,'(A)') 'About to calculate C2-term'
+      WRITE(LUCHOU,'(A)') '.........'
+      CALL FLSHFO(LUCHOU)
+C 
       TIMC2 = SECOND()
       CALL CC_CHOC2TERM(WORK(KOINT),WORK(KT2VO),FOCKD,NUMCHO,
      &                 CHOELE,WORK(KENDB2),LWRKB2,E4C2,
      &                 FBATCH,IPRINT.GE.INFO,NONB,NONA)
       TIMC2 = SECOND() - TIMC2
+C
+      C4ORO = C4ORO + TWO*E4C2
+      WRITE(LUCHOU,'(A,D20.10)') 'C2 contribution :', E4C2
+      WRITE(LUCHOU,'(A,D20.10)') '4-O correction  :', C4ORO
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
+C
 *     CALL C2_DEBUG(WORK(KOINT),WORK(KT2VO),FOCKD,NUMCHO,
 *    &                 CHOELE,WORK(KENDB2),LWRKB2,THRCHO,
 *    &                 NRHFT,NVIRT)
+C
+      WRITE(LUCHOU,'(A,D20.10)') 'C1 contribution :', E4C1
+      WRITE(LUCHOU,'(A,D20.10)') 'C2 contribution :', E4C2
+      WRITE(LUCHOU,'(A,D20.10)') 'F1 contribution :', E4F1
+      WRITE(LUCHOU,'(A,D20.10)') 'H1 contribution :', E5H1
+      WRITE(LUCHOU,'(A,D20.10)') 'H  contribution :', E5H
+      WRITE(LUCHOU,'(A,20A)') '-----------------',('-',IK = 1,20)
+C
+      WRITE(LUCHOU,'(A,D20.10)') '4-O correction  :', C4ORO
+      WRITE(LUCHOU,'(A,D20.10)') '5-O correction  :', C5ORO
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
+
+C
+C
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,'(9X,A)') '======================================='
+      WRITE(LUCHOU,'(9X,A)') 'Occupied contribution to CHOPT finished'
+      WRITE(LUCHOU,'(9X,A)') '======================================='
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,*)
+C
+      WRITE(LUCHOU,'(A,D20.10)') 'E(4) correction :', C4ORO + C4ORV
+      WRITE(LUCHOU,'(A,D20.10)') 'E(5) correction :', C5ORO + C5ORV
+      WRITE(LUCHOU,'(A,20A)') '-----------------',('-',IK = 1,20)
+      WRITE(LUCHOU,'(A,D20.10)') 'E(T) correction :', 
+     &                           C4ORO + C4ORV + C5ORO + C5ORV 
+      WRITE(LUCHOU,*)
+      WRITE(LUCHOU,*)
+      CALL FLSHFO(LUCHOU)
 C
       IF (IPRINT .GE. INFO) THEN
          WRITE(LUPRI,'(A,F10.2,A)')
@@ -1127,6 +1368,9 @@ C
       E5TH = E5G1 + E5G + E5H + E5H1
       ETOT = E4TH + E5TH
 C
+      C4TOT = C4ORV + C4ORO
+      C5TOT = C5ORV + C5ORO
+C
       XENA = TWO*E4AT
       XENB = TWO*E4BT
       XENC = TWO*(E4C1 + E4C2)
@@ -1141,6 +1385,7 @@ C
       XEN5 = TWO*E5TH
 C
       WRITE(LUPRI,*) 'ENERGIES/2 FOR EACH CHOLESKY VECTOR:'
+      WRITE(LUPRI,*)
       WRITE(LUPRI,*) 'A TERM: '
       WRITE(LUPRI,'(4D20.10)') (ENERGA(I),I=1,MXCHVE)
       WRITE(LUPRI,*) 'B TERM: ' 
@@ -1174,7 +1419,9 @@ C
      &             + ENERGI(I)
      &             + ENERGJ(I))*TWO
       ENDDO
-      WRITE(LUPRI,*) 'E(ICHO): ' 
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*) 'Total contribiution of each vector ' 
+      WRITE(LUPRI,*)
 
 C-tbp WRITE(LUPRI,'(4D20.10)') (ENERGX(I),I=1,MXCHVE)
       DO I = 1,MXCHVE
@@ -1211,70 +1458,88 @@ C-tbp WRITE(LUPRI,'(4D20.10)') (ENERGX(I),I=1,MXCHVE)
      &            + ENERGI(I)
      &            + ENERGJ(I)
       ENDDO
+      WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,D20.10,/)') '--- TOTAL ENERGY: ',TWO*SUMENERG
+      WRITE(LUPRI,*)
+C
+      IF (RSTH.OR.RSTH1.OR.RSTF1.OR.RSTC1.OR.RSTC2.OR.RSTVIR) THEN
+         WRITE(LUPRI,'(/,10X,A,/,A,/)') 
+     &               'Final results from CHOPT (restart included)',
+     &               '==========================================='
+         WRITE(LUPRI,'(10X,A,D20.10)') '4th order correction', C4TOT
+         WRITE(LUPRI,'(10X,A,D20.10)') '5th order correction', C5TOT
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Total (T) correction', 
+     &                                                 C4TOT + C5TOT
+      END IF
 C      
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: A    ',E4AT*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: B    ',E4BT*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: C1   ',E4C1*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: C2   ',E4C2*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: D    ',E4D*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E1   ',E4E1*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E2   ',E4E2*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: F1   ',E4F1*2.0d0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: F2   ',E4F2*2.0d0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: J    ',E4J*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: I    ',E4I*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: G    ',E5G*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: G1   ',E5G1*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: H    ',E5H*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: H1   ',E5H1*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E4th ',E4TH*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E5th ',E5TH*2.0D0
-      WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: ETOT ',ETOT*2.0D0
+      IF (IPRINT .GT. 3) THEN
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: A    ',E4AT*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: B    ',E4BT*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: C1   ',E4C1*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: C2   ',E4C2*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: D    ',E4D*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E1   ',E4E1*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E2   ',E4E2*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: F1   ',E4F1*2.0d0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: F2   ',E4F2*2.0d0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: J    ',E4J*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: I    ',E4I*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: G    ',E5G*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: G1   ',E5G1*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: H    ',E5H*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: H1   ',E5H1*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E4th ',E4TH*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: E5th ',E5TH*2.0D0
+         WRITE(LUPRI,'(10X,A,D20.10)') 'Contribution: ETOT ',ETOT*2.0D0
+      END IF
 C
       XENA = E4AT
 C
-      WRITE(LUPRI,'(/,10X,A,F10.2)') 'TIMEA: ',TIMA1 + TIMA2
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEB: ',TIMEB
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMC1: ',TIMC1
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMC2: ',TIMC2
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMED: ',TIMED
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIME1: ',TIME1
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIME2: ',TIME2
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMF1: ',TIMF1
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMF2: ',TIMF2
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEJ: ',TIMEJ
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEI: ',TIMEI
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEG: ',TIMEG
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMG1: ',TIMG1
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEH: ',TIMEH
-      WRITE(LUPRI,'(10X,A,F10.2)')   'TIMH1: ',TIMH1
-      WRITE(LUPRI,'(10X,A,F10.2,/)') 'TITOT: ',SECOND() - TITOT
+      IF (IPRINT .GT. 6) THEN
+         WRITE(LUPRI,'(/,10X,A,F10.2)') 'TIMEA: ',TIMA1 + TIMA2
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEB: ',TIMEB
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMC1: ',TIMC1
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMC2: ',TIMC2
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMED: ',TIMED
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIME1: ',TIME1
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIME2: ',TIME2
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMF1: ',TIMF1
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMF2: ',TIMF2
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEJ: ',TIMEJ
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEI: ',TIMEI
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEG: ',TIMEG
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMG1: ',TIMG1
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMEH: ',TIMEH
+         WRITE(LUPRI,'(10X,A,F10.2)')   'TIMH1: ',TIMH1
+         WRITE(LUPRI,'(10X,A,F10.2,/)') 'TITOT: ',SECOND() - TITOT
+      END IF
 c    
 C De-commented by Domenico
-      WRITE(LUPRI,*) 'TIMINGS FOR EACH CHOLESKY VECTOR:'
-      WRITE(LUPRI,*) 'SET UP: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSX(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'A TERM: '
-      WRITE(LUPRI,'(4F15.1)') (SCNDSA(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'B TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSB(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'C TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSC(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'D TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSD(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'E TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSE(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'F TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSF(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'G TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSG(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'H TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSH(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'I TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSI(I),I=1,MXCHVE)
-      WRITE(LUPRI,*) 'J TERM: ' 
-      WRITE(LUPRI,'(4F15.1)') (SCNDSJ(I),I=1,MXCHVE)
+      IF (IPRINT .GT. 10) THEN
+         WRITE(LUPRI,*) 'TIMINGS FOR EACH CHOLESKY VECTOR:'
+         WRITE(LUPRI,*) 'SET UP: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSX(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'A TERM: '
+         WRITE(LUPRI,'(4F15.1)') (SCNDSA(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'B TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSB(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'C TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSC(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'D TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSD(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'E TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSE(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'F TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSF(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'G TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSG(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'H TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSH(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'I TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSI(I),I=1,MXCHVE)
+         WRITE(LUPRI,*) 'J TERM: ' 
+         WRITE(LUPRI,'(4F15.1)') (SCNDSJ(I),I=1,MXCHVE)
+      END IF
 C De-commented by Domenico
 C     SUMSCNDS = ZERO
 C    DO I = 1,MXCHVE
@@ -1300,6 +1565,13 @@ C
       CALL WCLOSE2(LUVI1,FILVI1,'KEEP')
       CALL WCLOSE2(LUVI2,FILVI2,'KEEP')
 C
+      CALL GETTIM(TEND,WEND)
+      TCPU = TEND -TSTART
+      TWAL = WEND -WSTART
+      WRITE (LUPRI,'(//A,2F10.2,A/)')
+     *      ' CPU and wall time in CC_CHOPT :',TCPU,TWAL,' seconds'
+C
+      CALL QEXIT('CC_CHOPT')
       RETURN
       END
 C  /* Deck ccho_traint */
@@ -1315,12 +1587,18 @@ C
 C
       DIMENSION WORK(LWORK), OCINT(*)
       CHARACTER*7 FILVI1, FILVI2
+C
+      CHARACTER*6 FN3VI
+      CHARACTER*8 FN3VI2,FNTOC
+      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2 = 'CC3_VI12')
+C
 *     dimension temp(10)
 C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <dummy.h>
 #include <ccinftap.h>
+#include <cc_cho.h>
 C
 C---------------------------
 C     Work space allocation.
@@ -1338,7 +1616,7 @@ C----------------------------------------------
 C     Read MO-coefficients from interface file.
 C----------------------------------------------
 C
-      LUSIRG = 0
+      LUSIRG = -1
       CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND LUSIRG
@@ -1357,30 +1635,51 @@ C---------------------------------------
 C
       CALL CMO_REORDER(WORK(KCMO),WORK(KEND),LWRK)
 C
+C-----------------------------
+C     Open old integral files.
+C-----------------------------
+C
+      LU3VI  = 0
+      LU3VI2 = 0
+      CALL WOPEN2(LU3VI,FN3VI,64,0)
+      CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+C
 C-----------------------------------------------------
 C     Transform integrals in CC3_VI (from ccinftap.h).
 C-----------------------------------------------------
 C
-*     call system('echo ***CC3_VI*** >> io.info;ls -l >> io.info')
-*     write(lupri,*) 'Transforming integrals in CC3_VI'
-      CALL CCHO_TRINT1(WORK(KCMO),FN3VI,LU3VI,FILVI1,LUVI1,
-     &                 WORK(KEND),LWRK)
+      IF (SKIVI1) THEN
+         WRITE(LUPRI,'(//,10X,A,/,10X,A,/)') 
+     &         'Using existing CHO_VI1 file', 
+     &         '---------------------------'
+      ELSE
+         WRITE(LUCHOU,'(A)') 'About to build CHO_VI1 file'
+         WRITE(LUCHOU,'(A)') '............'
+         CALL CCHO_TRINT1(WORK(KCMO),FN3VI,LU3VI,FILVI1,LUVI1,
+     &                    WORK(KEND),LWRK)
+         WRITE(LUCHOU,'(A,/)') 'CHO_VI1 file built up'
 C
-      CALL WCLOSE2(LU3VI,FN3VI,'DELETE')
+         CALL WCLOSE2(LU3VI,FN3VI,'DELETE')
+      END IF
 C
 C-------------------------------------------------------
 COLD: Transform integrals in CC3_VI2.
 CNEW: Transform integrals in CC3_VI12 (from ccinftap.h).
 C-------------------------------------------------------
 C
-*     call system('echo ***CC3_VI12*** >> io.info;ls -l >> io.info')
-*     write(lupri,*) 'Transforming integrals in CC3_VI12'
-*     call getwa2(lu3vi2,fn3vi2,temp,1,10)
-*     write(lupri,*) (temp(ii),ii=1,10)
-      CALL CCHO_TRINT1(WORK(KCMO),FN3VI2,LU3VI2,FILVI2,LUVI2,
-     &                 WORK(KEND),LWRK)
+      IF (SKIVI2) THEN
+         WRITE(LUPRI,'(/,10X,A,/,10X,A,//)') 
+     &         'Using existing CHO_VI2 file', 
+     &         '---------------------------'
+      ELSE
+         WRITE(LUCHOU,'(A)') 'About to build CHO_VI2 file'
+         WRITE(LUCHOU,'(A)') '............'
+         CALL CCHO_TRINT1(WORK(KCMO),FN3VI2,LU3VI2,FILVI2,LUVI2,
+     &                    WORK(KEND),LWRK)
+         WRITE(LUCHOU,'(A,//)') 'CHO_VI2 file built up'
 C
-      CALL WCLOSE2(LU3VI2,FN3VI2,'DELETE')
+         CALL WCLOSE2(LU3VI2,FN3VI2,'DELETE')
+      END IF
 C
 C----------------
 C     Allocation.
@@ -1403,7 +1702,39 @@ C-------------------------------------------------------
 C
       IOFF   = 1
       IF (NTOTOC(1) .GT. 0) THEN
-         CALL GETWA2(LUTOC,FNTOC,WORK(KINTOC),IOFF,NTOTOC(1))
+         LUTOC = 0
+         FNTOC = 'CCSDT_OC'
+         CALL WOPEN2(LUTOC,FNTOC,64,0)
+C        CALL GETWA2(LUTOC,FNTOC,WORK(KINTOC),IOFF,NTOTOC(1))
+C
+Casm     Never read more than 2Gb (268435456 words) in a single shot
+C
+         LRDMAX = 268435456 / 4 - 1
+         NRDBAT = (NTOTOC(1) - 1) / LRDMAX + 1
+         LRD1 = 0
+         LRD2 = 0
+         KOFF = KINTOC
+c        write(lupri,*) 'NTOTOC(1),nrdbat',NTOTOC(1),nrdbat
+         DO IRDBAT = 1,NRDBAT
+            LRD3 = LRDMAX
+            LRD1 = LRD1 + LRDMAX
+            IF (LRD1 .GT. NTOTOC(1)) LRD3 = NTOTOC(1) - LRD2
+c           write(lupri,*) 'ioff,irdbat,lrd1,lrd2,lrd3',
+c    &                      ioff,irdbat,lrd1,lrd2,lrd3
+c           call  flshfo(lupri)
+            CALL GETWA2(LUTOC,FNTOC,WORK(KOFF),IOFF,LRD3)
+            IOFF = IOFF + LRD3
+            LRD2 = LRD2 + LRD3
+            KOFF = KOFF + LRD3
+c           write(lupri,*) 'irdbat,koff,ldr2,ldr3,ntotoc :',
+c    &                      irdbat,koff,ldr2,ldr3,ntotoc(1)
+c           call  flshfo(lupri)
+         END DO
+         IF (LRD2 .NE. NTOTOC(1)) THEN
+            WRITE(LUPRI,*) 'Error reading CCSDT_OC'
+            STOP 'Error reading CCSDT_OC'
+         END IF
+         CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
       ENDIF
 C
 C-------------------------------------------------
@@ -1545,6 +1876,13 @@ C
          NUMB   = MIN(NVIRB,LWORK/LENMIN)
          IF (NUMB .EQ. 0) STOP 'Not enough space in CCHO_TRINT1'
 C
+Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+C
+         MXDAL1 = 268435456 / NCKA(ISYEMD)
+         MXDAL2 = 268435456 / NCKATR(ISYEMD)
+         MXDALF = MIN(MXDAL1,MXDAL2)
+         NUMB   = MIN(NUMB,MXDALF)
+C
          NBATB  = (NVIRB-1)/NUMB + 1
 C
 C------------------------
@@ -1578,7 +1916,9 @@ C----------------------------------------
 C           Read untransformed integrals.
 C----------------------------------------
 C
-            IOFF   = ICKAD(ISYEMD,ISYMB) + NCKA(ISYEMD)*(IB1-1) + 1
+            NCKA8  = NCKA(ISYEMD)
+            IB8    = IB1
+            IOFF   = ICKAD(ISYEMD,ISYMB) + NCKA8*(IB8-1) + 1
             LENGTH = NCKA(ISYEMD)*NUMB
 C
             IF (LENGTH .GT. 0) THEN
@@ -1626,7 +1966,9 @@ C---------------------------------------
 C           Write transformed integrals.
 C---------------------------------------
 C
-            IOFF   = ICKBD(ISYEMD,ISYMB) + NCKATR(ISYEMD)*(IB1-1) + 1
+            NCKA8  = NCKATR(ISYEMD)
+            IB8    = IB1
+            IOFF   = ICKBD(ISYEMD,ISYMB) + NCKA8*(IB8-1) + 1
             LENGTH = NCKATR(ISYEMD)*NUMB
 C
             IF (LENGTH .GT. 0) THEN
@@ -1825,7 +2167,6 @@ C
 C
       IOFF   = ICKBD(ISYEMD,ISYMB) + NCKATR(ISYEMD)*(IB1 - 1) + 1
       LENGTH = NCKATR(ISYEMD)*NUMIB
-C
       IF (LENGTH .GT. 0) THEN
          CALL GETWA2(LUNIT,FILNAM,XINT,IOFF,LENGTH)
       ENDIF
@@ -1848,6 +2189,7 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER*7 FILNAM
       DIMENSION XKINT(*),XLINT(*),WORK(LWORK)
@@ -1865,9 +2207,7 @@ C
          IF (LWORK .LT. LENGTH) STOP 'Not enough space in CCHO_RDKIN'
 C
          IF (LENGTH .GT. 0) THEN
-C
             CALL GETWA2(LUNIT,FILNAM,WORK,IOFF,LENGTH)
-C
          END IF
 C
          DO ISYMC = 1,NSYM
@@ -2483,9 +2823,9 @@ C
 #include <cc_cho.h>
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -2781,9 +3121,9 @@ C
                ENDDO
 C
                E4DE = E4DE + DECOR 
-D 
+C 
                ENERGE(ICHO) = ENERGE(ICHO) + DECOR
-D 
+C 
 C Decommented by Domenico
               TNOW = SECOND()
               DELTAT = TNOW - TLAST
@@ -3200,10 +3540,10 @@ C
 #include <cc_cho.h>
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-D 
+C 
       dimension scndsce(maxcho)
       TLAST = SECOND()
-D 
+C 
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -3517,16 +3857,16 @@ C
 C
                DECOR = TWO*DECOR
                E4DE  = E4DE + DECOR 
-D 
+C 
                ENERGE(ICHO) = ENERGE(ICHO) + DECOR
-D 
+C 
 C Decommented by Domenico
               TNOW = SECOND()
               DELTAT = TNOW - TLAST
               TLAST = TNOW
               SCNDSE(ICHO)= SCNDSE(ICHO) + DELTAT
 C Decommented by Domenico
-D 
+C 
 C
 c              WRITE(LUPRI,'(A,4I4,2D15.6)')'ISC,ISI,IBI,IV,DCO,DT',
 c    &                  ISYMC,ISYMI,IBATI,ICHO,DECOR,E4DT
@@ -3931,9 +4271,9 @@ C
 #include <cc_cho.h>
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 C
       IF (PRINT) TIMT = SECOND()
 C
@@ -4091,16 +4431,16 @@ C-----------------------------------------
 C
             EDCOR = TWO*DDOT(NUMIA*NUMII,WORK(KVMAT),1,WORK(KWMAT),1)
             E4D   = E4D + EDCOR
-D 
+C 
               ENERGD(ICHO) = ENERGD(ICHO) + EDCOR
-D 
+C 
 C Decommented by Domenico
            TNOW = SECOND()
            DELTAT = TNOW - TLAST
            TLAST = TNOW
             SCNDSD(ICHO) = SCNDSD(ICHO) 
      &                          + DELTAT
-D 
+C 
 C Decommented by Domenico
 C
 c     write(LUPRI,*) '   DTERM: E4D = ',E4D,' (ICHO = ',ICHO,')'
@@ -4942,9 +5282,9 @@ C
 #include <cc_cho.h>
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -5480,9 +5820,9 @@ C
                ENDDO
 C
                E4J = E4J + EJCOR
-D 
+C 
              ENERGJ(ICHO) = ENERGJ(ICHO) + EJCOR
-D 
+C 
 C Decommented by Domenico
               TNOW = SECOND()
               DELTAT = TNOW - TLAST
@@ -6782,9 +7122,9 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
-D 
+C 
       TLAST = SECOND()
-D 
+C 
       IF (PRINT) THEN
          TIMT = SECOND()
          WRITE(LUPRI,'(6X,A,/,6X,A,/)')
@@ -7397,9 +7737,9 @@ C              Add energy contribution.
 C--------------------------------------
 C
                EG = EG + GCOR
-D 
+C 
               ENERGG(ICHO) = ENERGG(ICHO) + GCOR
-D 
+C 
 C Decommented by Domenico
                     TNOW = SECOND()
                     DELTAT = TNOW - TLAST
@@ -7407,7 +7747,7 @@ C Decommented by Domenico
                     SCNDSG(ICHO) = SCNDSG(ICHO) 
      &                          + DELTAT
 C Decommented by Domenico
-D 
+C 
 C
 c              IF (PRINT) THEN
 c                 WRITE(LUPRI,'(15X,A,I3,A,/,15X,A)')
@@ -8274,9 +8614,9 @@ C
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 C
       IF (PRINT) TIMT = SECOND()
 
@@ -8543,9 +8883,9 @@ C
             G1COR = G1COR + DDOT(LENBA,WORK(KVMAT),1,WORK(KPMAT),1)
 C
             EG1 = EG1 + G1COR
-D 
+C 
               ENERGG(ICHO) = ENERGG(ICHO) + G1COR
-D 
+C 
 C Decommented by Domenico
            TNOW = SECOND()
            DELTAT = TNOW - TLAST
@@ -8553,7 +8893,7 @@ C Decommented by Domenico
            SCNDSG(ICHO) = SCNDSG(ICHO) 
      &                   + DELTAT
 C Decommented by Domenico
-D 
+C 
 C
 c           IF (PRINT) THEN
 c              WRITE(LUPRI,'(12X,A,I3,A,/,12X,A)')
@@ -8797,9 +9137,9 @@ C
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -9720,9 +10060,9 @@ C                    Check convergence.
 C--------------------------------------
 C
                      EH = EH + HCOR
-D 
+C 
               ENERGH(ICHO) = ENERGH(ICHO) + HCOR
-D 
+C 
 C Decommented by Domenico
                     TNOW = SECOND()
                     DELTAT = TNOW - TLAST
@@ -9730,7 +10070,7 @@ C Decommented by Domenico
                     SCNDSH(ICHO) = SCNDSH(ICHO) 
      &                          + DELTAT
 C Decommented by Domenico
-D 
+C 
 C
 c                    IF (PRINT) THEN
 c                       WRITE(LUPRI,'(15X,A,I3,A,/,15X,A)')
@@ -10598,9 +10938,9 @@ C
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
-D 
+C 
       TLAST = SECOND()
-D
+C
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -10930,9 +11270,9 @@ C                 Check convergence.
 C-----------------------------------
 C
                   EH1 = EH1 + H1COR
-D 
+C 
               ENERGH(ICHO) = ENERGH(ICHO) + H1COR
-D 
+C 
 C Decommented by Domenico
                  TNOW = SECOND()
                  DELTAT = TNOW - TLAST
@@ -10940,7 +11280,7 @@ C Decommented by Domenico
                  SCNDSH(ICHO) = SCNDSH(ICHO) 
      &                         + DELTAT
 C Decommented by Domenico
-D
+C
 C
 c                 IF (PRINT) THEN
 c                    WRITE(LUPRI,'(15X,A,I3,A,/,15X,A)')
@@ -11952,9 +12292,8 @@ C
 #include <cc_cho.h>
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-D 
+C
       TLAST = SECOND()
-D 
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -11982,7 +12321,7 @@ C
 *        print *, 'ISYMJ = ',isymj
 *        print *, '----------------------------------'
 C     
-         IF ( NRHF(ISYMJ) .EQ. 0 ) CYCLE
+         IF ( NRHF(ISYMJ) .EQ. 0 ) GOTO 1234
 C      
          ISYMEMI = ISYMJ
 C         
@@ -12079,7 +12418,7 @@ C
             DO ISYMA = 1,NSYM
 *        print *, 'ISYMA = ',isyma
 C
-               IF (NVIR(ISYMA) .EQ. 0) CYCLE
+               IF (NVIR(ISYMA) .EQ. 0) GOTO 1235
 C              
                ISYMEMK = ISYMA
 C                 
@@ -12256,7 +12595,7 @@ C
                      DO ISYMI = 1,NSYM
 *        print *, 'ISYMI = ',isymi
 C                    
-                        IF ( NRHF(ISYMI) .EQ. 0 ) CYCLE
+                        IF ( NRHF(ISYMI) .EQ. 0 ) GOTO 1236
 C                       
                         ISYMEM = MULD2H(ISYMI,ISYMJ)
                         ISYMDL = MULD2H(ISYMI,ISYMA)
@@ -12375,14 +12714,16 @@ C
                                ENDDO
                             ENDDO
                          ENDDO
+
+ 1236                    CONTINUE
 C                        
                      ENDDO
 C                    End ISYMI loop
                      !FCOR = TWO*FCOR
                      E4F1 = E4F1 + FCOR
-D 
+C 
               ENERGF(ICHO) = ENERGF(ICHO) + FCOR
-D 
+C 
 C Decommented by Domenico
                     TNOW = SECOND()
                     DELTAT = TNOW - TLAST
@@ -12390,7 +12731,7 @@ C Decommented by Domenico
                     SCNDSF(ICHO) = SCNDSF(ICHO) 
      &                          + DELTAT
 C Decommented by Domenico
-D 
+C 
 *     e4f11 = e4f11 + fcor11                  
 *     e4f12 = e4f12 + fcor12                  
 *     print *,'Energy E4F1  : ',two*e4f1                  
@@ -12418,10 +12759,12 @@ C                 End ICHO loop
   1               CONTINUE                 
                ENDDO
 C              End IBATA loop
+ 1235          CONTINUE              
             ENDDO
 C           End ISYMA loop
          ENDDO
 C        End IBATJ loop
+ 1234    CONTINUE
       ENDDO
 C     End ISYMJ loop
 *     print *,'I total norm:',dsqrt(xitotal)
@@ -12887,9 +13230,9 @@ C
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR  =  4.0D0)
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 *     dimension xchoototal(50),xchovtotal(50)
 *     dimension xmttotal(50),xnttotal(50) 
 *     dimension xt21ttotal(50),xt22ttotal(50)
@@ -12985,7 +13328,7 @@ C
 *    &           + dnrm2(nckatr(isymbcj),work(kchov),1)**2
 *        enddo
 *     endif
-            IF ( NVIR(ISYMA) .EQ. 0 ) CYCLE
+            IF ( NVIR(ISYMA) .EQ. 0 ) GOTO 1234
 C
             ISYMBCJ = ISYMA
             ISYMDLI = ISYMA
@@ -13159,7 +13502,7 @@ C
                   DO ISYMJ = 1,NSYM
 *     print *,'ISYMJ = ',isymj         
 C                 
-                     IF ( NRHF(ISYMJ) .EQ. 0 ) CYCLE
+                     IF ( NRHF(ISYMJ) .EQ. 0 ) GOTO 1235
 C
                      ISYMBC  = MULD2H(ISYMJ,ISYMA)
                      ISYMKI  = ISYMBC
@@ -13168,7 +13511,7 @@ C
                      DO ISYMK = 1,NSYM
 *     print *,'ISYMK = ',isymk         
 C                 
-                        IF ( NRHF(ISYMK) .EQ. 0 ) CYCLE
+                        IF ( NRHF(ISYMK) .EQ. 0 ) GOTO 1236
 C
                         ISYMI   = MULD2H(ISYMKI,ISYMK)
                         ISYMDL  = MULD2H(ISYMI,ISYMA)
@@ -13297,8 +13640,10 @@ C
 C
                         ENDDO
 C                       End NUMIA loop
+ 1236                   CONTINUE
                      ENDDO
 C                    End ISYMK loop
+ 1235                CONTINUE
                   ENDDO
 C                 End ISYMJ loop
 C
@@ -13310,9 +13655,9 @@ C
 *     print *,'Energy correction fcor22: ',fcor22                 
 C
                   E4F2 = E4F2 + FCOR
-D 
+C 
               ENERGF(ICHO) = ENERGF(ICHO) + FCOR
-D 
+C 
 C Decommented by Domenico
                  TNOW = SECOND()
                  DELTAT = TNOW - TLAST
@@ -13320,7 +13665,7 @@ C Decommented by Domenico
                  SCNDSF(ICHO) = SCNDSF(ICHO) 
      &                         + DELTAT
 C Decommented by Domenico
-D 
+C 
 *     e4f21 = e4f21 + fcor21                  
 *     e4f22 = e4f22 + fcor22                  
 *     print *,'Energy E4F2  : ',e4f2                  
@@ -13334,6 +13679,7 @@ C              End ICHO loop
     2          CONTINUE               
             ENDDO
 C           End IBATA loop
+ 1234       CONTINUE
          ENDDO
 C        End ISYMA loop
 *     print *,'d(dli) sq norms:',(xchoototal(i),i=1,numcho)
@@ -13919,9 +14265,9 @@ C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR  =  4.0D0)
 *     call escribe(lupri,xiint,xjint,xoint,t2vo,fockd,nrhft,nvirt)
-D
+C
       TLAST = SECOND()
-D
+C
 C
       IF (PRINT) THEN
          TIMT = SECOND()
@@ -14055,7 +14401,7 @@ C
 C                 
                   DO ISYMJ = 1,NSYM
 C                 
-                     IF ( NRHF(ISYMJ) .EQ. 0 ) CYCLE
+                     IF ( NRHF(ISYMJ) .EQ. 0 ) GOTO 1234
 C
                      ISYMBC  = MULD2H(ISYMJ,ISYMA)
                      ISYMKI  = ISYMBC
@@ -14063,7 +14409,7 @@ C
 C
                      DO ISYMK = 1,NSYM
 C                 
-                        IF ( NRHF(ISYMK) .EQ. 0 ) CYCLE
+                        IF ( NRHF(ISYMK) .EQ. 0 ) GOTO 1235
 C
                         ISYMI   = MULD2H(ISYMKI,ISYMK)
                         ISYMDL  = MULD2H(ISYMI,ISYMA)
@@ -14166,17 +14512,19 @@ C
 C
                         ENDDO
 C                       End NUMIA loop
+ 1235                   CONTINUE
                      ENDDO
 C                    End ISYMK loop
+ 1234                CONTINUE
                   ENDDO
 C                 End ISYMJ loop
 C
                   FCOR = TWO * FCOR
 C
                   E4F2 = E4F2 + FCOR
-D 
+C 
               ENERGF(ICHO) = ENERGF(ICHO) + FCOR
-D 
+C 
 C Decommented by Domenico
                     TNOW = SECOND()
                     DELTAT = TNOW - TLAST
@@ -14184,7 +14532,7 @@ C Decommented by Domenico
                     SCNDSF(ICHO) = SCNDSF(ICHO) 
      &                          + DELTAT
 C Decommented by Domenico
-D 
+C 
 C
 c                 IF (PRINT) THEN
 c                    WRITE(LUPRI,'(15X,A,I3,A,/,15X,A)')
@@ -14698,9 +15046,9 @@ C
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-D 
+C 
       TLAST = SECOND()
-D 
+C 
 *     icounter=0
 *     do jj = 1,5
 *        do ii = 1,5
@@ -14749,7 +15097,7 @@ C
 *        WRITE(LUPRI,*)  'ISYMI = ',isymi
 *        WRITE(LUPRI,*)  '----------------------------------'
 C     
-         IF ( NRHF(ISYMI) .EQ. 0 ) CYCLE
+         IF ( NRHF(ISYMI) .EQ. 0 ) GOTO 1234
 C      
          ISYMABJ = ISYMI
          ISYMCMK = ISYMI
@@ -14884,11 +15232,11 @@ C
 *                 WRITE(LUPRI,*) 'd(cm,l) update norm:',xchoonrm
 *           endif
 C           
-               IF(NRHF(ISYMJ) .EQ. 0) CYCLE
+               IF(NRHF(ISYMJ) .EQ. 0) GOTO 1235
 C              
                ISYMAB = MULD2H(ISYMI,ISYMJ)
 C               
-               IF(NMATAB(ISYMAB) .EQ. 0) CYCLE
+               IF(NMATAB(ISYMAB) .EQ. 0) GOTO 1235
 C               
                ISYMCML = ISYMJ
                ISYMABI = MULD2H(ISYMAB,ISYMI)
@@ -15139,12 +15487,12 @@ C
 *        WRITE(LUPRI,*)  'ISYMK = ',isymk
 *        WRITE(LUPRI,*)  '----------------------------------'
 C                    
-                        IF( NRHF(ISYMK) .EQ. 0 ) CYCLE
+                        IF( NRHF(ISYMK) .EQ. 0 ) GOTO 1236
 C                       
                         ISYML = MULD2H(ISYMKL,ISYMK) 
                         ISYMCM = MULD2H(ISYML,ISYMJ)
 C                        
-                        IF( NT1AM(ISYMCM) .EQ. 0 ) CYCLE
+                        IF( NT1AM(ISYMCM) .EQ. 0 ) GOTO 1236
 C                        
 C----------------------------------------------------------------
 C                       Calculate the V, A, B and D intermediates
@@ -15270,13 +15618,14 @@ C
                            ENDDO
                         ENDDO
 C                       
+ 1236                   CONTINUE
                      ENDDO
 C                    enddo isymk
 C                    
                      E4C1 = E4C1 + EC1COR
-D 
+C 
               ENERGC(ICHO) = ENERGC(ICHO) + EC1COR
-D 
+C 
 C Decommented by Domenico
                     TNOW = SECOND()
                     DELTAT = TNOW - TLAST
@@ -15284,7 +15633,7 @@ C Decommented by Domenico
                     SCNDSC(ICHO) = SCNDSC(ICHO) 
      &                          + DELTAT
 C Decommented by Domenico
-D 
+C 
 *                    E4C11= E4C11+ EC11COR
 *                    E4C12= E4C12+ EC12COR
 *     if(icho .eq. 1) then
@@ -15301,10 +15650,12 @@ C                 enddo icho
   1               CONTINUE                  
                ENDDO
 C              enddo ibatj
+ 1235          CONTINUE
             ENDDO
 C           enddo isymj
          ENDDO
 C        enddo ibati
+ 1234    CONTINUE
       ENDDO
 C     enddo isymi
 C
@@ -15811,9 +16162,9 @@ C
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-D 
+C 
       TLAST = SECOND()
-D 
+C 
       IF (IPRINT) THEN
          TIMT = SECOND()
          WRITE(LUPRI,'(A,/,A,/)')
@@ -15841,7 +16192,7 @@ C
 *        WRITE(LUPRI,*)  'ISYMI = ',isymi
 *        WRITE(LUPRI,*)  '----------------------------------'
 C     
-         IF ( NRHF(ISYMI) .EQ. 0 ) CYCLE
+         IF ( NRHF(ISYMI) .EQ. 0 ) GOTO 1234
 C      
          ISYMABK = ISYMI
          ISYMCLM = ISYMI
@@ -16128,9 +16479,9 @@ C
      &                   + DDOT(NIJ,WORK(KAMAT),1,WORK(KBMAT),1)
 C                 
                   E4C2 = E4C2 + EC2COR
-D 
+C 
               ENERGC(ICHO) = ENERGC(ICHO) + EC2COR
-D 
+C 
 C Decommented by Domenico
                  TNOW = SECOND()
                  DELTAT = TNOW - TLAST
@@ -16152,6 +16503,7 @@ C              enddo icho
 C           enddo ibatj
          ENDDO
 C        enddo ibati
+ 1234    CONTINUE
       ENDDO
 C     enddo isymi
 C     

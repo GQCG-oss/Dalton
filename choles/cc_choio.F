@@ -397,374 +397,9 @@ C
       RETURN
       END
 C  /* Deck cho_readn */
-      SUBROUTINE CHO_READN(CHOVEC,IFIRST,NREAD,XIND1,IND2,ISYCHO,
-     &                     ISTORE,WORK,LWORK)
+      SUBROUTINE CHO_READN(CHOVEC,IFIRST,NREAD,IND1,IND2,ISYCHO,ISTORE,
+     &                     WORK,LWORK)
 C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: Read NREAD Cholesky vectors (AO) starting with IFIRST
-C              of symmetry ISYCHO.
-C
-C     For version 1 of the decomposition, see CHO_READN_V1 for details
-C     about the arguments.
-C
-C     For version 2 of the decomposition, see CHO_READN_V2 for details
-C     about the arguments.
-C
-#include <implicit.h>
-      DIMENSION CHOVEC(*), WORK(LWORK)
-      DIMENSION XIND1(*)
-      DIMENSION IND2(*)
-#include <maxorb.h>
-#include <ccdeco.h>
-
-      CHARACTER*9 SECNAM
-      PARAMETER (SECNAM = 'CHO_READN')
-
-      IF (CHOVER .EQ. 1) THEN
-         CALL CHO_READN_V1(CHOVEC,IFIRST,NREAD,XIND1,IND2,ISYCHO,
-     &                     ISTORE,WORK,LWORK)
-      ELSE IF (CHOVER .EQ. 2) THEN
-         CALL CHO_READN_V2(CHOVEC,IFIRST,NREAD,XIND1,ISYCHO,
-     &                     ISTORE,WORK,LWORK)
-      ELSE
-         CALL QUIT('CHOVER out of bounds in '//SECNAM)
-      END IF
-
-      END
-C  /* Deck cho_readn_v2 */
-      SUBROUTINE CHO_READN_V2(CHOVEC,IFIRST,NREAD,XIND1,ISYCHO,
-     &                        ISTORE,WORK,LWORK)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: Read NREAD Cholesky vectors (AO) starting with IFIRST
-C              of symmetry ISYCHO. Calls CHO_GETVEC1 for the reading
-C              process.
-C
-C     ISTORE requests the vector storage format on output:
-C
-C        ISTORE = 1 --- not implemented; reserved for reading vectors
-C                       directly in reduced set (trivial to implement,
-C                       but not useful for SCF,MP2, etc. with current
-C                       implementation).
-C
-C        ISTORE = 2 --- Full square, incl. zeros.
-C
-C        ISTORE = 3 --- Packed, incl. zeros.
-C
-C     XIND1 must contain necessary reduced set index arrays on input.
-C     May be obtained by calling CC_GETIND1 prior to calling this
-C     routine.
-C
-C     The minimum work space needed can be estimated prior to calling
-C     this routine by function MEMRD. In general, however, pass as much
-C     space as possible to minimize the number of system calls.
-C
-#include <implicit.h>
-      DIMENSION CHOVEC(*), WORK(LWORK)
-      DIMENSION XIND1(*)
-#include <cholesky.h>
-#include <iratdef.h>
-
-      CHARACTER*12 SECNAM
-      PARAMETER (SECNAM = 'CHO_READN_V2')
-
-      LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
-
-      DIMENSION LNNBST(8), LN2BST(8)
-
-      IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Enter ',SECNAM,':'
-         WRITE(LUPRI,*) 'IFIRST,NREAD : ',IFIRST,NREAD
-         WRITE(LUPRI,*) 'ISYCHO,ISTORE: ',ISYCHO,ISTORE
-         WRITE(LUPRI,*) 'LWORK        : ',LWORK
-         CALL FLSHFO(LUPRI)
-      END IF
-
-C     Set up pointers to index arrays in XIND1.
-C     -----------------------------------------
-
-      NNSHL = NSHELL*(NSHELL+1)/2
-
-      MISCR = NNBSTR(1,1)
-      DO ISYM = 2,NSYM
-         MISCR = MAX(MISCR,NNBSTR(ISYM,1))
-      END DO
-
-      LIRS1TOF  = (2*NNBSTRT(1)  - 1)/IRAT + 1
-      LINFVEC   = (MAXVEC*3*NSYM - 1)/IRAT + 1
-      LINFRED   = (MAXRED        - 1)/IRAT + 1
-      LIIBSTRSH = (NSYM*NNSHL*3  - 1)/IRAT + 1
-      LNNBSTRSH = (NSYM*NNSHL*3  - 1)/IRAT + 1
-      LINDRED   = (NNBSTRT(1)*3  - 1)/IRAT + 1
-      LINDRSH   = (NNBSTRT(1)    - 1)/IRAT + 1
-      LISCR     = (MISCR         - 1)/IRAT + 1
-
-      KIRS1TOF  = 1
-      KINFVEC   = KIRS1TOF  + LIRS1TOF
-      KINFRED   = KINFVEC   + LINFVEC
-      KIIBSTRSH = KINFRED   + LINFRED
-      KNNBSTRSH = KIIBSTRSH + LIIBSTRSH
-      KINDRED   = KNNBSTRSH + LNNBSTRSH
-      KINDRSH   = KINDRED   + LINDRED
-      KISCR     = KINDRSH   + LINDRSH
-
-      IF (LOCDBG) THEN
-         LTOT = LIRS1TOF + LINFVEC + LINFRED + LIIBSTRSH + LNNBSTRSH
-     &        + LINDRED  + LINDRSH + LISCR
-         WRITE(LUPRI,*) 'Debug info from ',SECNAM,':'
-         WRITE(LUPRI,*) 'LIND1 should be: ',LTOT
-         CALL FLSHFO(LUPRI)
-      END IF
-
-C     Read, reorder to full packed storage.
-C     If requested (ISTORE=2), square up.
-C     -------------------------------------
-
-      IF (ISTORE.EQ.2 .OR. ISTORE.EQ.3) THEN
-
-         CALL CHO_DAL_NNBST(LNNBST,NSYM)
-         CALL DZERO(CHOVEC,LNNBST(ISYCHO)*NREAD)
-         CALL CHO_READN_V2_RR(CHOVEC,IFIRST,NREAD,ISYCHO,
-     &                        XIND1(KIRS1TOF),
-     &                        XIND1(KINFVEC),XIND1(KINFRED),
-     &                        XIND1(KIIBSTRSH),XIND1(KNNBSTRSH),
-     &                        XIND1(KINDRED),XIND1(KINDRSH),
-     &                        XIND1(KISCR),
-     &                        NSYM,NNSHL,NNBSTRT(1),MAXVEC,MAXRED,MISCR,
-     &                        WORK,LWORK)
-
-         IF (ISTORE .EQ. 2) THEN  ! square up vectors
-            NEED = LNNBST(ISYCHO)*NREAD
-            IF (LWORK .LT. NEED) THEN
-               CALL QUIT('Insufficient memory for squaring in //SECNAM')
-            END IF
-            CALL DCOPY(NEED,CHOVEC,1,WORK,1)
-            CALL CHO_DAL_N2BST(LN2BST,NSYM)
-            DO IREAD = 1,NREAD
-               KOFF1 = LNNBST(ISYCHO)*(IREAD-1) + 1
-               KOFF2 = LN2BST(ISYCHO)*(IREAD-1) + 1
-               CALL CCSD_SYMSQ(WORK(KOFF1),ISYCHO,CHOVEC(KOFF2))
-            END DO
-         END IF
-
-      ELSE
-
-         CALL QUIT('ISTORE out of bounds in '//SECNAM)
-
-      END IF
-
-      IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Exit ',SECNAM,':'
-         WRITE(LUPRI,*) 'IFIRST,NREAD : ',IFIRST,NREAD
-         WRITE(LUPRI,*) 'ISYCHO,ISTORE: ',ISYCHO,ISTORE
-         WRITE(LUPRI,*) 'LWORK        : ',LWORK
-         CALL FLSHFO(LUPRI)
-      END IF
-
-      END
-C  /* Deck cho_readn_v2_rr */
-      SUBROUTINE CHO_READN_V2_RR(CHOVEC,IFIRST,NREAD,ISYCHO,
-     &                           IRS1TOF,
-     &                           INFVEC,INFRED,
-     &                           IIBSTRSH,NNBSTRSH,
-     &                           INDRED,INDRSH,
-     &                           ISCR,
-     &                           MSYM,MMSHL,MMBSTRT,MVEC,MRED,LISCR,
-     &                           WORK,LWORK)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: Read and reorder NREAD Cholesky vectors (AO) starting
-C              with IFIRST of symmetry ISYCHO.
-C
-C     NB! DO NOT CALL THIS ROUTINE DIRECTLY -- USE CHO_READN INTERFACE!
-C
-#include <implicit.h>
-      DIMENSION CHOVEC(*)
-      DIMENSION IRS1TOF(2,MMBSTRT)
-      DIMENSION INFVEC(MVEC,3,MSYM), INFRED(MRED)
-      DIMENSION IIBSTRSH(MSYM,MMSHL,3), NNBSTRSH(MSYM,MMSHL,3)
-      DIMENSION INDRED(MMBSTRT,3), INDRSH(MMBSTRT)
-      DIMENSION ISCR(LISCR)
-      DIMENSION WORK(LWORK)
-#include <cholesky.h>
-#include <chov2io.h>
-
-      CHARACTER*15 SECNAM
-      PARAMETER (SECNAM = 'CHO_READN_V2_RR')
-
-C     Set reduced set at location 2 to that of the first vector.
-C     The vectors read by CHO_GETVEC1 are returned in this format.
-C     NB! It is assumed here that the variable CHOV2I(2) [from
-C         chov2io.h] is maintained correctly outside this routine.
-C     ------------------------------------------------------------
-
-      IRED = INFVEC(IFIRST,2,ISYCHO)
-      IF (CHOV2I(2) .NE. IRED) THEN
-         CALL CHO_GETRED(INFRED,NNBSTRSH(1,1,2),INDRED(1,2),
-     &                   INDRSH,MRED,MSYM,MMSHL,MMBSTRT,IRED,.FALSE.)
-         CALL CHO_SETREDIND(IIBSTRSH,NNBSTRSH,MSYM,MMSHL,2)
-         IF (IRED .EQ. 1) THEN ! reset indred for rs1
-            I1 = IIBSTR(ISYCHO,2) + 1
-            I2 = I1 + NNBSTR(ISYCHO,2) - 1
-            DO I = I1,I2
-               INDRED(I,2) = I
-            END DO
-         END IF
-         CHOV2I(2) = IRED
-      END IF
-      IF (CHOV2I(3) .NE. CHOV2I(2)) THEN
-         CALL CHO_RSCOPY(IIBSTRSH,NNBSTRSH,INDRED,2,3,
-     &                   MSYM,MMSHL,MMBSTRT,3)
-         CHOV2I(3) = CHOV2I(2)
-      END IF
-
-C     Start read/reorder batch loop.
-C     ------------------------------
-
-      LENVEC = NNBSTR(ISYCHO,2)
-      LENSCR = LENVEC + 1
-
-      KSCR = 1
-      KEND = KSCR  + LENSCR
-      LWRK = LWORK - KEND + 1
-
-      IF (LWRK .LT. LENVEC) THEN
-         CALL QUIT('Insufficient memory for batch [1] in '//SECNAM)
-      END IF
-
-      NRD = MIN(NREAD,LWRK/LENVEC)
-      IF (NRD .LT. 1) THEN ! should never happen...
-         CALL QUIT('Insufficient memory for batch [2] in '//SECNAM)
-      END IF
-      NBATCH = (NREAD - 1)/NRD + 1
-
-      DO IBATCH = 1,NBATCH
-
-         IF (IBATCH .EQ. NBATCH) THEN
-            NUMRD = NREAD - NRD*(NBATCH-1)
-         ELSE
-            NUMRD = NRD
-         END IF
-         IVEC1 = IFIRST + NUMRD*(IBATCH-1)
-
-         KCHO  = KEND
-         KEND1 = KCHO  + LENVEC*NUMRD
-         LWRK1 = LWORK - KEND1 + 1
-
-         IF (LWRK1 .LT. 0) THEN ! should never happen...
-            CALL QUIT('Batch setup error in '//SECNAM)
-         END IF
-
-C        Maintain index arrays at location 2 and 3.
-C        ------------------------------------------
-
-         IRED = INFVEC(IVEC1,2,ISYCHO)
-         IF (CHOV2I(2) .NE. IRED) THEN
-            CALL CHO_GETRED(INFRED,NNBSTRSH(1,1,2),INDRED(1,2),
-     &                      INDRSH,MRED,MSYM,MMSHL,MMBSTRT,IRED,.FALSE.)
-            CALL CHO_SETREDIND(IIBSTRSH,NNBSTRSH,MSYM,MMSHL,2)
-            IF (IRED .EQ. 1) THEN ! reset indred for rs1
-               I1 = IIBSTR(ISYCHO,2) + 1
-               I2 = I1 + NNBSTR(ISYCHO,2) - 1
-               DO I = I1,I2
-                  INDRED(I,2) = I
-               END DO
-            END IF
-            CHOV2I(2) = IRED
-         END IF
-         IF (CHOV2I(3) .NE. CHOV2I(2)) THEN
-            CALL CHO_RSCOPY(IIBSTRSH,NNBSTRSH,INDRED,2,3,
-     &                      MSYM,MMSHL,MMBSTRT,3)
-            CHOV2I(3) = CHOV2I(2)
-         END IF
-
-C        Read vectors. They are returned in the storage of index arrays
-C        at location 2.
-C        -------------------------------------------------------------
-
-         IREDC = CHOV2I(3)
-         CALL CHO_GETVEC1(WORK(KCHO),LENVEC,NUMRD,IVEC1,ISYCHO,
-     &                    INFRED,INFVEC,
-     &                    INDRED,INDRSH,IIBSTRSH,NNBSTRSH,
-     &                    ISCR,
-     &                    MRED,MVEC,MSYM,MMBSTRT,MMSHL,LISCR,
-     &                    WORK(KSCR),LENSCR,IREDC)
-         CHOV2I(3) = IREDC
-
-C        Reorder vectors to packed storage.
-C        ----------------------------------
-
-         CALL CHO_READN_V2_RTOP(CHOVEC,WORK(KCHO),NUMRD,ISYCHO,
-     &                          IRS1TOF,INDRED,MMBSTRT)
-
-      END DO
-
-      END
-C  /* Deck cho_readn_v2_rtop */
-      SUBROUTINE CHO_READN_V2_RTOP(FVEC,RVEC,NUMV,ISYCHO,
-     &                             IRS1TOF,INDRED,MMBSTRT)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: extract reduced vectors to full storage (packed, a <= b).
-C
-C     TODO/FIXME: would it be faster to interchange the loops?
-C                 (less work done in mapping rs to full, but at the cost
-C                 of none-stride 1 operations on RVEC)
-C
-#include <implicit.h>
-      DIMENSION FVEC(*), RVEC(*)
-      DIMENSION IRS1TOF(2,MMBSTRT), INDRED(MMBSTRT,3)
-#include <cholesky.h>
-#include <choorb.h>
-
-      INTEGER LNNBST(8), LIAODPK(8,8)
-      INTEGER CHO_ISAO
-
-      ITRI(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-
-      CALL CHO_DAL_NNBST(LNNBST,NSYM)
-      CALL CHO_DAL_IAODPK(LIAODPK,NSYM)
-
-      DO IVEC = 1,NUMV
-         KOFF0 = LNNBST(ISYCHO)*(IVEC-1)
-         LOFF0 = NNBSTR(ISYCHO,2)*(IVEC-1)
-         DO I = 1,NNBSTR(ISYCHO,2)
-            J = INDRED(IIBSTR(ISYCHO,2)+I,2) ! addr. in rs1
-            IAG = IRS1TOF(1,J) ! global AO index alpha
-            IBG = IRS1TOF(2,J) ! global AO index beta
-            ISYMA = CHO_ISAO(IAG)
-            ISYMB = CHO_ISAO(IBG)
-            IA = IAG - IBAS(ISYMA)
-            IB = IBG - IBAS(ISYMB)
-            IF (ISYMA .EQ. ISYMB) THEN
-               KOFF1 = KOFF0
-     &               + LIAODPK(ISYMA,ISYMB)
-     &               + ITRI(IA,IB)
-            ELSE IF (ISYMA .LT. ISYMB) THEN
-               KOFF1 = KOFF0
-     &               + LIAODPK(ISYMA,ISYMB)
-     &               + NBAS(ISYMA)*(IB-1) + IA
-            ELSE
-               KOFF1 = KOFF0
-     &               + LIAODPK(ISYMB,ISYMA)
-     &               + NBAS(ISYMB)*(IA-1) + IB
-            END IF
-            FVEC(KOFF1) = RVEC(LOFF0+I)
-         END DO
-      END DO
-
-      END
-C  /* Deck cho_readn_v1 */
-      SUBROUTINE CHO_READN_V1(CHOVEC,IFIRST,NREAD,IND1,IND2,ISYCHO,
-     &                        ISTORE,WORK,LWORK)
-C
-C     Thomas Bondo Pedersen, July 2002.
-C     - modified version of original CHO_READ by Alfredo Sanchez.
 C     - renamed, TBP July 2005.
 C
 C     Purpose: Read NREAD Cholesky vectors (AO) starting with IFIRST
@@ -786,17 +421,20 @@ C
 #include <implicit.h>
 #include <maxorb.h>
       DIMENSION CHOVEC(*), WORK(LWORK)
-      DIMENSION IND1(*), IND2(*)
+      INTEGER IND1(*), IND2(*)
 #include <ccsdsym.h>
 #include <priunit.h>
 
-      CHARACTER*12 SECNAM
-      PARAMETER (SECNAM = 'CHO_READN_V1')
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CHO_READN')
 
 C     Read the vectors.
 C     -----------------
 
       CALL CC_GETCHO(CHOVEC,NREAD,ISYCHO,IFIRST,IND1,WORK,LWORK)
+c     xnorm = ddot(nnbst(isycho),chovec,1,chovec,1)
+c     write(lupri,'(a,i4,a,i2,a,d12.4)') 'Vector',jchol,
+c    &     ' of symmetry',isycho,'. Norm after GETCHO: ',xnorm
 
 C     Change storage format.
 C     ======================
@@ -847,243 +485,11 @@ C        ---------------
 C  /* Deck cc_getind1 */
       SUBROUTINE CC_GETIND1(WORK,LWORK,LIND1)
 C
-C     Thomas Bondo Pedersen, July 2005.
+C     Thomas Bondo Pedersen, July 2002.
 C
 C     Purpose:
-C        Setup index arrays needed for reading Cholesky vectors.
-C        On exit, LIND1 is the length of the index array in WORK.
-C
-#include <implicit.h>
-      DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-
-      CHARACTER*10 SECNAM
-      PARAMETER (SECNAM = 'CC_GETIND1')
-
-C     Setup depending on decomposition version.
-C     -----------------------------------------
-
-      IF (CHOVER .EQ. 1) THEN
-         CALL CC_GETIND1_V1(WORK,LWORK,LIND1)
-      ELSE IF (CHOVER .EQ. 2) THEN
-         CALL CC_GETIND1_V2(WORK,LWORK,LIND1)
-      ELSE
-         CALL QUIT('CHOVER out of bounds in '//SECNAM)
-      END IF
-
-      END
-C  /* Deck cc_getind1_v2 */
-      SUBROUTINE CC_GETIND1_V2(WORK,LWORK,LIND1)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: allocate and read reduced index arrays (Cholesky version
-C              2).
-C
-#include <implicit.h>
-      DIMENSION WORK(LWORK)
-#include <cholesky.h>
-#include <choorb.h>
-#include <chov2io.h>
-#include <iratdef.h>
-
-      CHARACTER*13 SECNAM
-      PARAMETER (SECNAM = 'CC_GETIND1_V2')
-
-      LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
-
-      IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Enter ',SECNAM,':'
-         WRITE(LUPRI,*) 'LWORK: ',LWORK
-         CALL FLSHFO(LUPRI)
-      END IF
-
-C     Allocation of index arrays.
-C     NB: the order of the allocations is crucial!!
-C     ---------------------------------------------
-
-      NNSHL = NSHELL*(NSHELL+1)/2
-
-      MISCR = NNBSTR(1,1)
-      DO ISYM = 2,NSYM
-         MISCR = MAX(MISCR,NNBSTR(ISYM,1))
-      END DO
-
-      LIRS1TOF  = (2*NNBSTRT(1)  - 1)/IRAT + 1
-      LINFVEC   = (MAXVEC*3*NSYM - 1)/IRAT + 1
-      LINFRED   = (MAXRED        - 1)/IRAT + 1
-      LIIBSTRSH = (NSYM*NNSHL*3  - 1)/IRAT + 1
-      LNNBSTRSH = (NSYM*NNSHL*3  - 1)/IRAT + 1
-      LINDRED   = (NNBSTRT(1)*3  - 1)/IRAT + 1
-      LINDRSH   = (NNBSTRT(1)    - 1)/IRAT + 1
-      LISCR     = (MISCR         - 1)/IRAT + 1
-      LISHL2F   = (MXORSH*NSHELL - 1)/IRAT + 1
-
-      KIRS1TOF  = 1
-      KINFVEC   = KIRS1TOF  + LIRS1TOF
-      KINFRED   = KINFVEC   + LINFVEC
-      KIIBSTRSH = KINFRED   + LINFRED
-      KNNBSTRSH = KIIBSTRSH + LIIBSTRSH
-      KINDRED   = KNNBSTRSH + LNNBSTRSH
-      KINDRSH   = KINDRED   + LINDRED
-      KISCR     = KINDRSH   + LINDRSH
-      KISHL2F   = KISCR     + LISCR
-      KEND      = KISHL2F   + LISHL2F
-      LWRK      = LWORK     - KEND
-
-      IF (LWRK .LT. 0) THEN
-         WRITE(LUPRI,*) 'Insufficient memory [1] in ',SECNAM
-         WRITE(LUPRI,*) 'Need     : ',KEND
-         WRITE(LUPRI,*) 'Available: ',LWORK
-         CALL QUIT('Insufficient memory [1] in '//SECNAM)
-      END IF
-
-C     Read INFVEC and INFRED from restart file.
-C     -----------------------------------------
-
-      IFAIL = 0
-      CALL CHO_RDRSTC(WORK(KINFRED),MAXRED,WORK(KINFVEC),MAXVEC,3,NSYM,
-     &                IFAIL)
-      IF (IFAIL .NE. 0) THEN
-         WRITE(LUPRI,*) SECNAM,
-     &   ': failed to read restart info from disk, IFAIL = ',IFAIL
-         CALL QUIT('Cholesky initialization error in '//SECNAM)
-      END IF
-
-C     Set IIBSTRSH, NNBSTRSH, INDRED, and INDRSH index arrays.
-C     --------------------------------------------------------
-
-      CALL CHO_GETRED(WORK(KINFRED),WORK(KNNBSTRSH),WORK(KINDRED),
-     &                WORK(KINDRSH),MAXRED,NSYM,NNSHL,NNBSTRT(1),
-     &                1,.TRUE.)
-      CALL CHO_SETREDIND(WORK(KIIBSTRSH),WORK(KNNBSTRSH),NSYM,NNSHL,1)
-      CALL CHO_RSCOPY(WORK(KIIBSTRSH),WORK(KNNBSTRSH),WORK(KINDRED),1,2,
-     &                NSYM,NNSHL,NNBSTRT(1),3)
-      CALL CHO_RSCOPY(WORK(KIIBSTRSH),WORK(KNNBSTRSH),WORK(KINDRED),2,3,
-     &                NSYM,NNSHL,NNBSTRT(1),3)
-
-C     Set IDs of index arrays (used during I/O).
-C     ------------------------------------------
-
-      DO I = 1,3
-         CHOV2I(I) = 1
-      END DO
-
-C     Setup mapping from rs1 to full storage.
-C     ---------------------------------------
-
-      CALL CC_ISHL2F(WORK(KISHL2F),MXORSH,NSHELL)
-      CALL CC_IRS1TOF(WORK(KIRS1TOF),WORK(KISHL2F),
-     &                WORK(KIIBSTRSH),WORK(KNNBSTRSH),
-     &                WORK(KINDRED),
-     &                NNBSTRT(1),MXORSH,NSHELL,NSYM,NNSHL)
-
-C     Finally, compute LIND1.
-C     -----------------------
-
-      LIND1 = LIRS1TOF  + LINFVEC   + LINFRED
-     &      + LIIBSTRSH + LNNBSTRSH + LINDRED  + LINDRSH
-     &      + LISCR
-
-      IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Exit ',SECNAM,':'
-         WRITE(LUPRI,*) 'LWORK: ',LWORK
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'LIRS1TOF  = ',LIRS1TOF
-         WRITE(LUPRI,*) 'LINFVEC   = ',LINFVEC
-         WRITE(LUPRI,*) 'LINFRED   = ',LINFRED
-         WRITE(LUPRI,*) 'LIIBSTRSH = ',LIIBSTRSH
-         WRITE(LUPRI,*) 'LNNBSTRSH = ',LNNBSTRSH
-         WRITE(LUPRI,*) 'LINDRED   = ',LINDRED
-         WRITE(LUPRI,*) 'LINDRSH   = ',LINDRSH
-         WRITE(LUPRI,*) 'LISCR     = ',LISCR
-         WRITE(LUPRI,*) '--------------------------------'
-         WRITE(LUPRI,*) 'LIND1     = ',LIND1
-         CALL FLSHFO(LUPRI)
-      END IF
-
-      END
-C  /* Deck cc_ishl2f */
-      SUBROUTINE CC_ISHL2F(ISHL2F,MXDSHL,MSHELL)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: set mapping from shell index to full.
-C
-#include <implicit.h>
-      DIMENSION ISHL2F(MXDSHL,MSHELL)
-#include <cholesky.h>
-#include <choorb.h>
-
-      CHARACTER*9 SECNAM
-      PARAMETER (SECNAM = 'CC_ISHL2F')
-
-      CALL IZERO(ISHL2F,MXORSH*NSHELL)
-      DO I = 1,NBAST      ! AO index
-         ISHL = ISOSHL(I) ! shell
-         IA   = ISHLSO(I) ! addr. in shell
-         IF (ISHL2F(IA,ISHL) .NE. 0) THEN
-            WRITE(LUPRI,*) SECNAM,': ISHL2F(',IA,',',ISHL,') already ',
-     &                     'set to: ',ISHL2F(IA,ISHL)
-            CALL QUIT('Setup error for ISHL2F in '//SECNAM)
-         ELSE
-            ISHL2F(IA,ISHL) = I
-         END IF
-      END DO
-
-      END
-C  /* Deck cc_irs1tof */
-      SUBROUTINE CC_IRS1TOF(IRS1TOF,ISHL2F,IIBSTRSH,NNBSTRSH,INDRED,
-     &                      MMBSTRT,MXDSHL,MSHELL,MSYM,MMSHL)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose: set mapping from 1st reduced set to full AO indices (not
-C              symmetry reduced).
-C
-#include <implicit.h>
-      DIMENSION IRS1TOF(2,MMBSTRT), ISHL2F(MXDSHL,MSHELL)
-      DIMENSION IIBSTRSH(MSYM,MMSHL,3)
-      DIMENSION NNBSTRSH(MSYM,MMSHL,3)
-      DIMENSION INDRED(MMBSTRT,3)
-#include <cholesky.h>
-
-      INTEGER A,B
-
-      CALL IZERO(IRS1TOF,2*MMBSTRT)
-      NNSHL = NSHELL*(NSHELL+1)/2
-      DO ISHLAB = 1,NNSHL
-         CALL CHO_INVPCK(ISHLAB,ISHLA,ISHLB,.TRUE.)
-         DO ISYM = 1,NSYM
-            I1 = IIBSTR(ISYM,1) + IIBSTRSH(ISYM,ISHLAB,1) + 1
-            I2 = I1 + NNBSTRSH(ISYM,ISHLAB,1) - 1
-            DO I = I1,I2
-               IAB = INDRED(I,1) ! addr in shell pair
-               IF (ISHLA .EQ. ISHLB) THEN
-                  CALL CHO_INVPCK(IAB,IA,IB,.TRUE.)
-               ELSE
-                  CALL CHO_INVREC(IAB,IA,IB,NBSTSH(ISHLA),
-     &                                      NBSTSH(ISHLB))
-               END IF
-               A = ISHL2F(IA,ISHLA) ! global AO index, alpha
-               B = ISHL2F(IB,ISHLB) ! global AO index, beta
-               IRS1TOF(1,I) = A
-               IRS1TOF(2,I) = B
-            END DO
-         END DO
-      END DO
-
-      END
-C  /* Deck cc_getind1_v1 */
-      SUBROUTINE CC_GETIND1_V1(WORK,LWORK,LIND1)
-C
-C     Thomas Bondo Pedersen, July 2002.
-C     Renamed, TBP July 2005.
-C
-C     Purpose: allocate and read reduced index array (Cholesky version
-C              1).
+C        Read the reduce index vector from the Cholesky decomposition
+C        into work space. On exit, LIND1 is the length of the index array.
 C
 #include <implicit.h>
       DIMENSION WORK(LWORK)
@@ -1094,8 +500,8 @@ C
 #include <ccsdsym.h>
 #include <priunit.h>
 
-      CHARACTER*13 SECNAM
-      PARAMETER (SECNAM = 'CC_GETIND1_V1')
+      CHARACTER*10 SECNAM
+      PARAMETER (SECNAM = 'CC_GETIND1')
 
       IF (REDUCE) THEN
 
@@ -1173,13 +579,10 @@ C  /* Deck memrd */
       INTEGER FUNCTION MEMRD(NUMVEC,ISYCHO,ISTORE)
 C
 C     Thomas Bondo Pedersen, July 2002.
-C     Modified for Cholesky version 2 by TBP, July 2005.
 C
 C     Purpose:
-C        Function MEMRD returns the memory needed in CHO_READN for
-C        reading NUMVEC Cholesky vectors of symmetry ISYCHO.
-C        ISTORE=2: full squared vectors are requested.
-C        ISTORE=3: full packed (triangular) vectors are requested.
+C        Function MEMRD returns the memory needed in
+C        CHO_READN (incl. call to CC_GETCHO).
 C
 #include <implicit.h>
 #include <iratdef.h>
@@ -1187,28 +590,7 @@ C
 #include <ccdeco.h>
 #include <ccsdsym.h>
 
-C     Set a default value.
-C     --------------------
-
       MEMRD = 1
-
-C     Redirect invocation for version 2.
-C     ----------------------------------
-
-      IF (CHOVER .EQ. 2) THEN
-         MEMRD = MEMRD_V2(NUMVEC,ISYCHO,ISTORE,NNBST)
-         RETURN
-      END IF
-
-C     Check that this is really version 1.
-C     ------------------------------------
-
-      IF (CHOVER .NE. 1) THEN
-         CALL QUIT('CHOVER out of bounds in MEMRD')
-      END IF
-
-C     Original code for version 1.
-C     ----------------------------
 
       IF ((COMP) .AND. (.NOT. REDUCE)) THEN
 
@@ -1244,35 +626,6 @@ C        =============================================
          ENDIF
 
       ENDIF
-
-      RETURN
-      END
-C  /* Deck memrd_v2 */
-      INTEGER FUNCTION MEMRD_V2(NUMVEC,ISYCHO,ISTORE,NNBST)
-C
-C     Thomas Bondo Pedersen, July 2005.
-C
-C     Purpose:
-C        Function MEMRD_V2 returns the memory needed in CHO_READN for
-C        reading NUMVEC Cholesky vectors of symmetry ISYCHO from version
-C        2 of the Cholesky decomposition.
-C        ISTORE=2: full squared vectors are requested.
-C        ISTORE=3: full packed (triangular) vectors are requested.
-C
-#include <implicit.h>
-      DIMENSION NNBST(*)
-#include <cholesky.h>
-
-      MEMRD_V2 = 1
-      IF (ISTORE .EQ. 2) THEN
-         NEEDRR = 2*NNBSTR(ISYCHO,1) + 1
-         NEEDSQ = NUMVEC*NNBST(ISYCHO)
-         MEMRD_V2 = MAX(NEEDRR,NEEDSQ)
-      ELSE IF (ISTORE .EQ. 3) THEN
-         MEMRD_V2 = 2*NNBSTR(ISYCHO,1) + 1
-      ELSE
-         CALL QUIT('ISTORE out of bounds in MEMRD_V2')
-      END IF
 
       RETURN
       END
@@ -1410,21 +763,20 @@ C
       TIMT = SECOND()
 
       CALL CC_CYITRNSL(JSIDE,ISIDE)
-
       IF (IOPT .LT. 0) THEN
 
          IF (JSIDE .EQ. -1) THEN
-            CALL WOPEN2U(LCC2YL,FCC2YL(ISYCHO),64,0)
+            CALL WOPEN2(LCC2YL,FCC2YL(ISYCHO),64,0)
          ELSE IF (JSIDE .EQ. 0) THEN
-            CALL WOPEN2U(LCC2YM,FCC2YM(ISYCHO),64,0)
+            CALL WOPEN2(LCC2YM,FCC2YM(ISYCHO),64,0)
          ELSE IF (JSIDE .EQ. 1) THEN
-            CALL WOPEN2U(LCC2YR,FCC2YR(ISYCHO),64,0)
+            CALL WOPEN2(LCC2YR,FCC2YR(ISYCHO),64,0)
          ELSE IF (JSIDE .EQ. 2) THEN
-            CALL WOPEN2U(LCC2Y1,FCC2Y1(ISYCHO),64,0)
+            CALL WOPEN2(LCC2Y1,FCC2Y1(ISYCHO),64,0)
          ELSE IF (JSIDE .EQ. 3) THEN
-            CALL WOPEN2U(LCC2Y2,FCC2Y2(ISYCHO),64,0)
+            CALL WOPEN2(LCC2Y2,FCC2Y2(ISYCHO),64,0)
          ELSE IF (JSIDE .EQ. 4) THEN
-            CALL WOPEN2U(LCC2Y3,FCC2Y3(ISYCHO),64,0)
+            CALL WOPEN2(LCC2Y3,FCC2Y3(ISYCHO),64,0)
          ELSE
             WRITE(LUPRI,'(//,10X,A,A,A,I10)')
      &      '*** WARNING: Illegal ISIDE in ',SECNAM,': ',ISIDE
@@ -1436,17 +788,17 @@ C
       ELSE IF (IOPT .EQ. 0) THEN
 
          IF (JSIDE .EQ. -1) THEN
-            CALL WCLOSE2U(LCC2YL,FCC2YL(ISYCHO),'DELETE')
+            CALL WCLOSE2(LCC2YL,FCC2YL(ISYCHO),'DELETE')
          ELSE IF (JSIDE .EQ. 0) THEN
-            CALL WCLOSE2U(LCC2YM,FCC2YM(ISYCHO),'DELETE')
+            CALL WCLOSE2(LCC2YM,FCC2YM(ISYCHO),'DELETE')
          ELSE IF (JSIDE .EQ. 1) THEN
-            CALL WCLOSE2U(LCC2YR,FCC2YR(ISYCHO),'DELETE')
+            CALL WCLOSE2(LCC2YR,FCC2YR(ISYCHO),'DELETE')
          ELSE IF (JSIDE .EQ. 2) THEN
-            CALL WCLOSE2U(LCC2Y1,FCC2Y1(ISYCHO),'DELETE')
+            CALL WCLOSE2(LCC2Y1,FCC2Y1(ISYCHO),'DELETE')
          ELSE IF (JSIDE .EQ. 3) THEN
-            CALL WCLOSE2U(LCC2Y2,FCC2Y2(ISYCHO),'DELETE')
+            CALL WCLOSE2(LCC2Y2,FCC2Y2(ISYCHO),'DELETE')
          ELSE IF (JSIDE .EQ. 4) THEN
-            CALL WCLOSE2U(LCC2Y3,FCC2Y3(ISYCHO),'DELETE')
+            CALL WCLOSE2(LCC2Y3,FCC2Y3(ISYCHO),'DELETE')
          ELSE
             WRITE(LUPRI,'(//,10X,A,A,A,I10)')
      &      '*** WARNING: Illegal ISIDE in ',SECNAM,': ',ISIDE
@@ -1458,17 +810,17 @@ C
       ELSE
 
          IF (JSIDE .EQ. -1) THEN
-            CALL WCLOSE2U(LCC2YL,FCC2YL(ISYCHO),'KEEP')
+            CALL WCLOSE2(LCC2YL,FCC2YL(ISYCHO),'KEEP')
          ELSE IF (JSIDE .EQ. 0) THEN
-            CALL WCLOSE2U(LCC2YM,FCC2YM(ISYCHO),'KEEP')
+            CALL WCLOSE2(LCC2YM,FCC2YM(ISYCHO),'KEEP')
          ELSE IF (JSIDE .EQ. 1) THEN
-            CALL WCLOSE2U(LCC2YR,FCC2YR(ISYCHO),'KEEP')
+            CALL WCLOSE2(LCC2YR,FCC2YR(ISYCHO),'KEEP')
          ELSE IF (JSIDE .EQ. 2) THEN
-            CALL WCLOSE2U(LCC2Y1,FCC2Y1(ISYCHO),'KEEP')
+            CALL WCLOSE2(LCC2Y1,FCC2Y1(ISYCHO),'KEEP')
          ELSE IF (JSIDE .EQ. 3) THEN
-            CALL WCLOSE2U(LCC2Y2,FCC2Y2(ISYCHO),'KEEP')
+            CALL WCLOSE2(LCC2Y2,FCC2Y2(ISYCHO),'KEEP')
          ELSE IF (JSIDE .EQ. 4) THEN
-            CALL WCLOSE2U(LCC2Y3,FCC2Y3(ISYCHO),'KEEP')
+            CALL WCLOSE2(LCC2Y3,FCC2Y3(ISYCHO),'KEEP')
          ELSE
             WRITE(LUPRI,'(//,10X,A,A,A,I10)')
      &      '*** WARNING: Illegal ISIDE in ',SECNAM,': ',ISIDE
@@ -1508,7 +860,7 @@ C
 #include <priunit.h>
 #include <cyit.h>
 
-      INTEGER*8 IADR, ICOL, LROW
+      INTEGER IADR, ICOL, LROW
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIRDF')
@@ -1525,17 +877,17 @@ C
 
       IF (LEN .GT. 0) THEN
          IF (JSIDE .EQ. -1) THEN
-            CALL GETWA2U(LCC2YL,FCC2YL(ISYCHO),YIM,IADR,LEN)
+            CALL GETWA2(LCC2YL,FCC2YL(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 0) THEN
-            CALL GETWA2U(LCC2YM,FCC2YM(ISYCHO),YIM,IADR,LEN)
+            CALL GETWA2(LCC2YM,FCC2YM(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 1) THEN
-            CALL GETWA2U(LCC2YR,FCC2YR(ISYCHO),YIM,IADR,LEN)
+            CALL GETWA2(LCC2YR,FCC2YR(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 2) THEN
-            CALL GETWA2U(LCC2Y1,FCC2Y1(ISYCHO),YIM,IADR,LEN)
+            CALL GETWA2(LCC2Y1,FCC2Y1(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 3) THEN
-            CALL GETWA2U(LCC2Y2,FCC2Y2(ISYCHO),YIM,IADR,LEN)
+            CALL GETWA2(LCC2Y2,FCC2Y2(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 4) THEN
-            CALL GETWA2U(LCC2Y3,FCC2Y3(ISYCHO),YIM,IADR,LEN)
+            CALL GETWA2(LCC2Y3,FCC2Y3(ISYCHO),YIM,IADR,LEN)
          ELSE
             WRITE(LUPRI,'(//,5X,A,A,A,I10,/)')
      &      'Error in ',SECNAM,': Unknown option, ISIDE = ',ISIDE
@@ -1571,7 +923,7 @@ C
 #include <priunit.h>
 #include <cyit.h>
 
-      INTEGER*8 IADR, ICOL, LROW
+      INTEGER IADR, ICOL, LROW
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIWRF')
@@ -1588,17 +940,17 @@ C
 
       IF (LEN .GT. 0) THEN
          IF (JSIDE .EQ. -1) THEN
-            CALL PUTWA2U(LCC2YL,FCC2YL(ISYCHO),YIM,IADR,LEN)
+            CALL PUTWA2(LCC2YL,FCC2YL(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 0) THEN
-            CALL PUTWA2U(LCC2YM,FCC2YM(ISYCHO),YIM,IADR,LEN)
+            CALL PUTWA2(LCC2YM,FCC2YM(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 1) THEN
-            CALL PUTWA2U(LCC2YR,FCC2YR(ISYCHO),YIM,IADR,LEN)
+            CALL PUTWA2(LCC2YR,FCC2YR(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 2) THEN
-            CALL PUTWA2U(LCC2Y1,FCC2Y1(ISYCHO),YIM,IADR,LEN)
+            CALL PUTWA2(LCC2Y1,FCC2Y1(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 3) THEN
-            CALL PUTWA2U(LCC2Y2,FCC2Y2(ISYCHO),YIM,IADR,LEN)
+            CALL PUTWA2(LCC2Y2,FCC2Y2(ISYCHO),YIM,IADR,LEN)
          ELSE IF (JSIDE .EQ. 4) THEN
-            CALL PUTWA2U(LCC2Y3,FCC2Y3(ISYCHO),YIM,IADR,LEN)
+            CALL PUTWA2(LCC2Y3,FCC2Y3(ISYCHO),YIM,IADR,LEN)
          ELSE
             WRITE(LUPRI,'(//,5X,A,A,A,I10,/)')
      &      'Error in ',SECNAM,': Unknown option, ISIDE = ',ISIDE
@@ -1640,7 +992,7 @@ C
 #include <priunit.h>
 #include <cyit.h>
 
-      INTEGER*8 IADR, ICOL, LROW
+      INTEGER IADR, ICOL, LROW
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_CYIRD')
@@ -1684,22 +1036,22 @@ C        -----------
                      LEN   = NVIR(ISYMA)*NRHF(ISYMI)
 
                      IF (JSIDE .EQ. -1) THEN
-                        CALL GETWA2U(LCC2YL,FCC2YL(ISYCHO),YIM(KOFFY),
+                        CALL GETWA2(LCC2YL,FCC2YL(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 0) THEN
-                        CALL GETWA2U(LCC2YM,FCC2YM(ISYCHO),YIM(KOFFY),
+                        CALL GETWA2(LCC2YM,FCC2YM(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 1) THEN
-                        CALL GETWA2U(LCC2YR,FCC2YR(ISYCHO),YIM(KOFFY),
+                        CALL GETWA2(LCC2YR,FCC2YR(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 2) THEN
-                        CALL GETWA2U(LCC2Y1,FCC2Y1(ISYCHO),YIM(KOFFY),
+                        CALL GETWA2(LCC2Y1,FCC2Y1(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 3) THEN
-                        CALL GETWA2U(LCC2Y2,FCC2Y2(ISYCHO),YIM(KOFFY),
+                        CALL GETWA2(LCC2Y2,FCC2Y2(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 4) THEN
-                        CALL GETWA2U(LCC2Y3,FCC2Y3(ISYCHO),YIM(KOFFY),
+                        CALL GETWA2(LCC2Y3,FCC2Y3(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE
                         WRITE(LUPRI,'(//,5X,A,A,A,I10,/)')
@@ -1722,22 +1074,22 @@ C        -----------
 
 
                         IF (JSIDE .EQ. -1) THEN
-                           CALL GETWA2U(LCC2YL,FCC2YL(ISYCHO),
+                           CALL GETWA2(LCC2YL,FCC2YL(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 0) THEN
-                           CALL GETWA2U(LCC2YM,FCC2YM(ISYCHO),
+                           CALL GETWA2(LCC2YM,FCC2YM(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 1) THEN
-                           CALL GETWA2U(LCC2YR,FCC2YR(ISYCHO),
+                           CALL GETWA2(LCC2YR,FCC2YR(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 2) THEN
-                           CALL GETWA2U(LCC2Y1,FCC2Y1(ISYCHO),
+                           CALL GETWA2(LCC2Y1,FCC2Y1(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 3) THEN
-                           CALL GETWA2U(LCC2Y2,FCC2Y2(ISYCHO),
+                           CALL GETWA2(LCC2Y2,FCC2Y2(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 4) THEN
-                           CALL GETWA2U(LCC2Y3,FCC2Y3(ISYCHO),
+                           CALL GETWA2(LCC2Y3,FCC2Y3(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE
                            WRITE(LUPRI,'(//,5X,A,A,A,I10,/)')
@@ -1793,7 +1145,7 @@ C
 #include <priunit.h>
 #include <cyit.h>
 
-      INTEGER*8 IADR, ICOL, LROW
+      INTEGER IADR, ICOL, LROW
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_CYIWR')
@@ -1837,22 +1189,22 @@ C        ------------
                      LEN   = NVIR(ISYMA)*NRHF(ISYMI)
 
                      IF (JSIDE .EQ. -1) THEN
-                        CALL PUTWA2U(LCC2YL,FCC2YL(ISYCHO),YIM(KOFFY),
+                        CALL PUTWA2(LCC2YL,FCC2YL(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 0) THEN
-                        CALL PUTWA2U(LCC2YM,FCC2YM(ISYCHO),YIM(KOFFY),
+                        CALL PUTWA2(LCC2YM,FCC2YM(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 1) THEN
-                        CALL PUTWA2U(LCC2YR,FCC2YR(ISYCHO),YIM(KOFFY),
+                        CALL PUTWA2(LCC2YR,FCC2YR(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 2) THEN
-                        CALL PUTWA2U(LCC2Y1,FCC2Y1(ISYCHO),YIM(KOFFY),
+                        CALL PUTWA2(LCC2Y1,FCC2Y1(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 3) THEN
-                        CALL PUTWA2U(LCC2Y2,FCC2Y2(ISYCHO),YIM(KOFFY),
+                        CALL PUTWA2(LCC2Y2,FCC2Y2(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE IF (JSIDE .EQ. 4) THEN
-                        CALL PUTWA2U(LCC2Y3,FCC2Y3(ISYCHO),YIM(KOFFY),
+                        CALL PUTWA2(LCC2Y3,FCC2Y3(ISYCHO),YIM(KOFFY),
      &                               IADR,LEN)
                      ELSE
                         WRITE(LUPRI,'(//,5X,A,A,A,I10,/)')
@@ -1874,22 +1226,22 @@ C        ------------
      &                        + NVIR(ISYMA)*(I - 1) + IOFA1(ISYMA)
 
                         IF (JSIDE .EQ. -1) THEN
-                           CALL PUTWA2U(LCC2YL,FCC2YL(ISYCHO),
+                           CALL PUTWA2(LCC2YL,FCC2YL(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 0) THEN
-                           CALL PUTWA2U(LCC2YM,FCC2YM(ISYCHO),
+                           CALL PUTWA2(LCC2YM,FCC2YM(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 1) THEN
-                           CALL PUTWA2U(LCC2YR,FCC2YR(ISYCHO),
+                           CALL PUTWA2(LCC2YR,FCC2YR(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 2) THEN
-                           CALL PUTWA2U(LCC2Y1,FCC2Y1(ISYCHO),
+                           CALL PUTWA2(LCC2Y1,FCC2Y1(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 3) THEN
-                           CALL PUTWA2U(LCC2Y2,FCC2Y2(ISYCHO),
+                           CALL PUTWA2(LCC2Y2,FCC2Y2(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE IF (JSIDE .EQ. 4) THEN
-                           CALL PUTWA2U(LCC2Y3,FCC2Y3(ISYCHO),
+                           CALL PUTWA2(LCC2Y3,FCC2Y3(ISYCHO),
      &                                  YIM(KOFFY),IADR,LEN)
                         ELSE
                            WRITE(LUPRI,'(//,5X,A,A,A,I10,/)')

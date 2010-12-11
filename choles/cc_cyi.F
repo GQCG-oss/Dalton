@@ -300,7 +300,7 @@ C     ------
 C     Print.
 C     ------
 
-      IF (IPRINT .GE. INFO) THEN
+Casm  IF (IPRINT .GE. INFO) THEN
 
          CALL AROUND('Output from '//SECNAM)
 
@@ -319,7 +319,9 @@ C     ------
      &   'Remaining memory used for Cholesky vectors   : ',LEFT,
      &   ' words (',XPC2,'%).'
 
-      ENDIF
+         CALL FLSHFO(LUPRI)
+
+Casm  ENDIF
 
 C     Start batch loop over b.
 C     ------------------------
@@ -405,7 +407,7 @@ C        --------------------
 C        Print.
 C        ------
 
-         IF (IPRINT .GE. INFO) THEN
+Casm     IF (IPRINT .GE. INFO) THEN
             WRITE(LUPRI,'(5X,A,I6,A,/,5X,A)')
      &      'b-batch number ',IBATB,':',
      &      '======================'
@@ -424,7 +426,7 @@ C        ------
      &      '------------------------------------------------------',
      &      '---------------'
             CALL FLSHFO(LUPRI)
-         ENDIF
+Casm     ENDIF
 
 C        Start batch loop over a.
 C        ------------------------
@@ -638,14 +640,6 @@ C           ------------------------------------------------
             DTIME = SECOND() - DTIME
             TIMCYI(5) = TIMCYI(5) + DTIME
 
-c     if ((nx2sq.eq.nt2sq(isyint)) .and. (nump12.gt.1)) then
-c        call around('doubles amplitudes in '//SECNAM)
-c        write(lupri,*) 'symmetry: ',isyint
-c        write(lupri,*) 'Sq.-norm: ',x2nrm
-c        write(lupri,*) '2-norm  : ',dsqrt(x2nrm)
-c        write(lupri,*)
-c        call nocc_prt(work(kxint),isyint,'AIBJ')
-c     endif
 
 C           Set up 2 Coulomb minus exchange (almost) in place, if
 C           requested through IOPTCE, and compute contribution to
@@ -717,7 +711,7 @@ C           --------------------------
 C           Print information from this a batch.
 C           ------------------------------------
 
-            IF (IPRINT .GE. INFO) THEN
+Casm        IF (IPRINT .GE. INFO) THEN
                TABAT = SECOND() - TABAT
                XMUSE = (D100*MXMEML)/XLWORK
                LAFST = IOFA1(ISABEG)
@@ -726,7 +720,8 @@ C           ------------------------------------
      &                        TIMI,TIMY,TABAT
     1          FORMAT(5X,I6,1X,I6,1X,I1,2X,I6,1X,I1,2X,F7.2,3X,F10.2,1X,
      &                F10.2,1X,F10.2)
-            ENDIF
+               CALL FLSHFO(LUPRI)
+Casm        ENDIF
 
 C           Update memory info.
 C           -------------------
@@ -749,7 +744,7 @@ C        Print info for this b-batch and got to next.
 C        (Which will exit immediately if no more b's.)
 C        ---------------------------------------------
 
-         IF (IPRINT .GE. INFO) THEN
+Casm     IF (IPRINT .GE. INFO) THEN
             WRITE(LUPRI,'(5X,A,A,/)')
      &      '------------------------------------------------------',
      &      '---------------'
@@ -763,7 +758,7 @@ C        ---------------------------------------------
      &      'Minimum number of Cholesky batches: ',MNCHBT,
      &      'Maximum number of Cholesky batches: ',MXCHBT
             CALL FLSHFO(LUPRI)
-         ENDIF
+Casm     ENDIF
 
          GO TO 100
 
@@ -2461,6 +2456,7 @@ C        -----------------
             IF (IBATCH .EQ. NBATCH) THEN
                NUMV = NUMCHO(ISYCHO) - NVEC*(NBATCH - 1)
             ENDIF
+            
 
             JVEC1 = NVEC*(IBATCH - 1) + 1
 

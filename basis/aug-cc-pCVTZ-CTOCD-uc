@@ -1,13 +1,14 @@
 $Basis = aug-cc-pCVTZ-CTOCD-uc
-
-$Elements supported
-$H C N O F
 $
-$  REFERENCE   A. Ligabue, S. P. A. Sauer and P. Lazzeretti, J. Chem. Phys. 118, 6830-6845 (2003)
-$              T. H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989)
-$              R. A. Kendall, T. H. Dunning, Jr. and R. J. Harrison, J. Chem. Phys. 96, 6769 (1992).
-$              D. E. Woon and T. H. Dunning, Jr. J. Chem. Phys. 103, 4572 (1995).
-************************************************************************
+$ Elements supported
+$ H C N O F
+$
+$  REFERENCE   
+$    A. Ligabue, S. P. A. Sauer and P. Lazzeretti, J. Chem. Phys. 118, 6830-6845 (2003)
+$    T. H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989)
+$    R. A. Kendall, T. H. Dunning, Jr. and R. J. Harrison, J. Chem. Phys. 96, 6769 (1992).
+$    D. E. Woon and T. H. Dunning, Jr. J. Chem. Phys. 103, 4572 (1995).
+$***********************************************************************
 a 1
 $ HYDROGEN     (6s,4p,1d) -> [4s,4p,1d]
 $ HYDROGEN     Diffuse (1s,1p)

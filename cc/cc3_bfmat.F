@@ -196,13 +196,13 @@ C
 C
       SKIPGEI = .FALSE.
 C
-      LU4V     = 0
-      LU4VB    = 0
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUDKBCR4 = 0
+      LU4V     = -1
+      LU4VB    = -1
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUDKBCR4 = -1
 C     
       FN4V     = 'CC3_FMAT_TMP2'
       FN4VB    = 'CC3_FMAT_TMP3'
@@ -329,18 +329,18 @@ C
 C
       IF (.NOT.LVVVV) THEN
          !Open files for N1MAT intermediates
-         LUGEI = 0
-         LUFEI = 0
-         LUN1  = 0
+         LUGEI = -1
+         LUFEI = -1
+         LUN1  = -1
          CALL WOPEN2(LUFEI,FNFEI,64,0)
          CALL WOPEN2(LUN1,FNN1,64,0)
          IF (.NOT.SKIPGEI) THEN
             CALL WOPEN2(LUGEI,FNGEI,64,0)
          END IF
          !Open files for N1MAT^B intermediates
-         LUGEIB = 0
-         LUFEIB = 0
-         LUN1B  = 0
+         LUGEIB = -1
+         LUFEIB = -1
+         LUN1B  = -1
          CALL WOPEN2(LUFEIB,FNFEIB,64,0)
          CALL WOPEN2(LUN1B,FNN1B,64,0)
          IF (.NOT.SKIPGEI) THEN

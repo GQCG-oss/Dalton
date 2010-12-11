@@ -34,9 +34,10 @@ C
 #include <single.h>
 C
 C  /* Deck intexp */
-      SUBROUTINE INTEXP(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,NINDAB,
-     &                  NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,
-     &                  ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,SYMFAC,
+      SUBROUTINE INTEXP(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,
+     &                  NINDAB,NINDCD,NCCINT,NINTYP,WORK,LWORK,
+     &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
+     &                  THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
      &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
 #include <implicit.h>
@@ -53,34 +54,38 @@ C  /* Deck intexp */
 C
 C     Allocations
 C
-      KDERIV = 1
-      KPAO   = KDERIV + NINTYP
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
+
+      CALL MEMGET('REAL',KDERIV,NINTYP,WORK,KFREE,LFREE)
+      LPAO = NORBA*NORBB*NORBC*NORBD
+      CALL MEMGET('REAL',KPAO  ,LPAO  ,WORK,KFREE,LFREE)
       IF (SUSCEP) THEN
-         KPAA   = KPAO + NORBA*NORBB*NORBC*NORBD
-         KLAST  = KPAA + NORBA*NORBB*NORBC*NORBD
+         CALL MEMGET('REAL',KPAA  ,LPAO  ,WORK,KFREE,LFREE)
       ELSE
-         KLAST  = KPAO + NORBA*NORBB*NORBC*NORBD
-         KPAA   = KLAST
+         CALL MEMGET('REAL',KPAA  ,0     ,WORK,KFREE,LFREE)
       END IF
       IF (LONDON .AND. DDFOCK) THEN
-         KPINT = KLAST
-         KQINT = KPINT + 3*NCCINT
-         KLAST = KQINT + 3*NCCINT
+         CALL MEMGET('REAL',KPINT ,3*NCCINT,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KQINT ,3*NCCINT,WORK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KPINT ,0       ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KQINT ,0       ,WORK,KFREE,LFREE)
       END IF
-      IF (KLAST .GT. LWORK) CALL STOPIT('INTEXP',' ',KLAST,LWORK)
-      LWRK   = LWORK  - KLAST + 1
-      MWINTE = MAX(MWINTE,KLAST)
-      LWTOT  = LWTOT + KLAST
+      MWINTE = MAX(MWINTE,KFREE)
+      LWTOT  = LWTOT + KFREE
       MWTOT  = MAX(MWTOT,LWTOT)
       CALL INTEX1(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,WORK(KDERIV),
      &            WORK(KPAO),WORK(KPAA),WORK(KPINT),
-     &            WORK(KQINT),WORK(KLAST),LWRK,
+     &            WORK(KQINT),WORK(KFREE),LFREE,
      &            NCCINT,NINTYP,ISYMR,ISYMS,ISYMT,
      &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
      &            DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
-      LWTOT  = LWTOT - KLAST
+      LWTOT  = LWTOT - KFREE
+      CALL MEMREL('INTEXP',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C  /* Deck intex1 */
@@ -280,15 +285,15 @@ C
                      CALL PBLOCK(PSO,PAO,ICOMPA,ICOMPB,ICOMPC,ICOMPD,
      &                           NHKTA,NHKTB,NHKTC,NHKTD,
      &                           KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
-     &                           NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,
-     &                           ISYMT)
+     &                           NORBA,NORBB,NORBC,NORBD,
+     &                           ISYMR,ISYMS,ISYMT)
                   END IF
                   IF (.NOT.NOPMAT .AND. SUSCEP) THEN
                      CALL PBLOCK(PSA,PAA,ICOMPA,ICOMPB,ICOMPC,ICOMPD,
      &                           NHKTA,NHKTB,NHKTC,NHKTD,
      &                           KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
-     &                           NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,
-     &                           ISYMT)
+     &                           NORBA,NORBB,NORBC,NORBD,
+     &                           ISYMR,ISYMS,ISYMT)
                   END IF
                   IF (IPRINT .GT. 10) THEN
                      WRITE (LUPRI,'(A,I10)') ' IAOFF ', IAOFF
@@ -347,33 +352,32 @@ C
                               ELSE
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
-                              IF (ESG) THEN 
-                                 CALL ESG_PVAL(DFTADD,HFXFAC,
-     &                                         PVAL,DMAT,A,B,C,D,
-     &                                         DP5*FAB*FCD*FCABCD)
-                              ELSE IF (HFXMU .NE. D0) THEN
-                                 PVAL = DP5*FAB*FCD*FCABCD*(
-     &                                - HFXFAC*DP25*
-     &                                  (DTAC*DTBD + DTAD*DTBC))
-                              ELSE IF (DFTADD) THEN
-                                 PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
-     &                                - HFXFAC*DP25*
+                              PFAC = DP5*FAB*FCD*FCABCD 
+                              IF (DFTADD) THEN
+                                 XFAC = HFXFAC
+                              ELSE
+                                 XFAC = 1.0D0
+                              END IF
+                              IF (HFXMU .NE. D0) THEN
+                                 PVAL = PFAC*( - HFXFAC*DP25*
      &                                  (DTAC*DTBD + DTAD*DTBC))
                               ELSE IF (NODV) THEN
-                                 PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
-     &                                - DP25*(DTAC*DTBD + DTAD*DTBC)
+                                 PVAL = PFAC*(DTAB*DTCD
+     &                                - XFAC*DP25*(DTAC*DTBD+DTAD*DTBC)
      &                                + PAOVAL)
-                              ELSE IF (HSROHF) THEN
-                                 PVAL = DP5*FAB*FCD*FCABCD*
-     &                                 (DTAB*DTCD
-     &                                - DP25*(DTAC*DTBD + DVAC*DVBD
+                              ELSE IF (HSROHF .OR. 
+     &                                (DFTADD .AND. .NOT. NODV)) THEN
+                                 PVAL = PFAC*(DTAB*DTCD
+     &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD
      &                                      + DTAD*DTBC + DVAD*DVBC))
+                              ELSE IF (ESG) THEN 
+                                 CALL ESG_PVAL(DFTADD,HFXFAC,
+     &                                         PVAL,DMAT,A,B,C,D,PFAC)
                               ELSE
-                                 PVAL = DP5*FAB*FCD*FCABCD*
-     &                                  (DTAB*DTCD - DVAB*DVCD
-     &                                  - DP25*(DTAC*DTBD - DVAC*DVBD
-     &                                          + DTAD*DTBC - DVAD*DVBC)
-     &                                  + PAOVAL)
+                                 PVAL = PFAC*(DTAB*DTCD - DVAB*DVCD
+     &                                - DP25*(DTAC*DTBD - DVAC*DVBD
+     &                                      + DTAD*DTBC - DVAD*DVBC)
+     &                                + PAOVAL)
                               END IF
                               IF (ABS(PVAL) .GT. THRSH) THEN
                                  IF (EXPGRA) THEN
@@ -628,15 +632,17 @@ C
 C
 C                             exchange contribution
 C
-                              AOX = D1P5*HFXFAC*AOC
-                              FT(A,D,N) = FT(A,D,N) - DMAT(B,C,N)*AOX
-                              FT(D,A,N) = FT(D,A,N) + DMAT(C,B,N)*AOX
-                              FT(A,C,N) = FT(A,C,N) + DMAT(B,D,N)*AOX
-                              FT(C,A,N) = FT(C,A,N) - DMAT(D,B,N)*AOX
-                              FT(B,D,N) = FT(B,D,N) - DMAT(A,C,N)*AOX
-                              FT(D,B,N) = FT(D,B,N) + DMAT(C,A,N)*AOX
-                              FT(B,C,N) = FT(B,C,N) + DMAT(A,D,N)*AOX
-                              FT(C,B,N) = FT(C,B,N) - DMAT(D,A,N)*AOX
+                              IF (HFXFAC .NE. 0.0D0) THEN
+                                 AOX = D1P5*HFXFAC*AOC
+                                 FT(A,D,N) = FT(A,D,N) - DMAT(B,C,N)*AOX
+                                 FT(D,A,N) = FT(D,A,N) + DMAT(C,B,N)*AOX
+                                 FT(A,C,N) = FT(A,C,N) + DMAT(B,D,N)*AOX
+                                 FT(C,A,N) = FT(C,A,N) - DMAT(D,B,N)*AOX
+                                 FT(B,D,N) = FT(B,D,N) - DMAT(A,C,N)*AOX
+                                 FT(D,B,N) = FT(D,B,N) + DMAT(C,A,N)*AOX
+                                 FT(B,C,N) = FT(B,C,N) + DMAT(A,D,N)*AOX
+                                 FT(C,B,N) = FT(C,B,N) - DMAT(D,A,N)*AOX
+                              END IF
                            END IF
                            END DO
                         ELSE IF (DIA2SO) THEN

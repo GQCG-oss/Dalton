@@ -72,6 +72,7 @@ C
       WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -123,44 +124,56 @@ C  /* Deck rspslv */
      &                  UDV,EVECS,WRK,LWRK)
 C
 #include <implicit.h>
+#include <maxorb.h>
 C
 #include <priunit.h>
 #include <infpri.h>
+#include <infinp.h>
+#include <pcmlog.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <inforb.h>
 #include <infslv.h>
+C---------------------
+#include <gnrinf.h>
+#include <infpar.h>
+#include <mxcent.h>
+#include <qmmm.h>
+C gnrinf.h for QM3 by CBN+JK 03.01.06
+C---------------------
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
       DIMENSION BCVECS(*),BOVECS(*),CMO(*),INDXCI(*)
       DIMENSION UDV(NASHT,*),EVECS(*),WRK(LWRK)
 C
-C WORK ALLOCATION
+C
 C
       CALL QENTER('RSPSLV')
+
       IF (SOPPA) THEN
          WRITE (LUPRI,*)
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
          CALL QUIT(
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
       END IF
-      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
-     &   THEN
+Clf      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
+Clf     &   THEN
+ClfC
+ClfChj-May2000: it is not so quick to implement triplet solvent response
+ClfC  with CSF's because RSPSLV calls sirius routines, and all the Sirius
+ClfC  routines are using CSF's if that was used in Sirius.
+ClfC  However, when triplet we need to use determinants to get the triplet
+ClfC  configurations included.
+ClfC
+Clf         WRITE (LUPRI,*) 'RSPSLV-ERROR: '//
+Clf     &      'solvent triplet response is not implemented for CSFs'
+Clf         WRITE (LUPRI,*) 'KZCONF .ne. NCREF:',KZCONF,NCREF
+Clf         WRITE(LUPRI,*)'Use .DETERMINANTS and try again!'
+Clf         CALL QUIT('RSPSLV-ERROR: '//
+Clf     &      'solvent triplet response is not implemented for CSFs')
+Clf      END IF
 C
-Chj-May2000: it is not so quick to implement triplet solvent response
-C  with CSF's because RSPSLV calls sirius routines, and all the Sirius
-C  routines are using CSF's if that was used in Sirius.
-C  However, when triplet we need to use determinants to get the triplet
-C  configurations included.
-C
-         WRITE (LUPRI,*) 'RSPSLV-ERROR: '//
-     &      'solvent triplet response is not implemented for CSFs'
-         WRITE (LUPRI,*) 'KZCONF .ne. NCREF:',KZCONF,NCREF
-         WRITE(LUPRI,*)'Use .DETERMINANTS and try again!'
-         CALL QUIT('RSPSLV-ERROR: '//
-     &      'solvent triplet response is not implemented for CSFs')
-      END IF
       IPRSAV = IPRRSP
       IPRRSP = IPRSLV
       IF (SLVANT) THEN
@@ -171,29 +184,28 @@ C
       IF (IPRRSP. GT . 101 ) THEN
          IF (NCSIM.GT.0) THEN
             WRITE(LUPRI,*) NCSIM ,' CONFIGURATION TRIAL VECTORS'
-            CALL OUTPUT(BCVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,LUPRI)
+            CALL OUTPUT(BCVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,-1,LUPRI)
          END IF
          IF (NOSIM.GT.0) THEN
-            WRITE(LUPRI,*) NOSIM ,' ORBITAL TRIAL VECTORS'
-            CALL OUTPUT(BOVECS,1,KZCONF,1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
+            WRITE(LUPRI,*) NOSIM ,' (Z_i Y_i) ORBITAL TRIAL VECTORS'
+            CALL OUTPUT(BOVECS,1,KZWOPT,1,2*NOSIM,
+     &           KZWOPT,2*NOSIM,-1,LUPRI)
          END IF
       END IF
+C
+C WORK ALLOCATION
+C
       KFRSAV = 1
-      LFRSAV = LWRK
       KFREE  = KFRSAV
       LFREE  = LWRK
-      KSTRT  = 1
 C
-C er ikke sikker paa brugen af memget kstrt,kfree ,lfree
-C
-      CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
-      IF (NCSIM.GT.0 ) CALL MEMGET('REAL',KDVT,(N2ASHX*NCSIM),
-     *                              WRK,KFREE,LFREE)
-      IF (NCSIM.GT.0 ) CALL MEMGET('REAL',KDVTTR,(N2ASHX*NCSIM),
-     *                              WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDVTR,NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCREF ,NCREF,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDVT  ,(N2ASHX*NCSIM),WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDVTTR,(N2ASHX*NCSIM),WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDV   ,NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDVTR ,NNASHX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KUDVTR,N2ASHX,WRK,KFREE,LFREE)
+
       CALL GETREF(WRK(KCREF),NCREF)
 C
 C CALCULATE TRANSITION DENSITY MATRIX
@@ -204,7 +216,7 @@ C
          CALL RSPTDM(NCSIM,IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      *                 BCVECS,WRK(KDVT),DUMMY,
      *                 JSPIN1,JSPIN2,.TRUE.,.TRUE.,
-     *                 INDXCI,WRK(KFREE),KSTRT,LFREE)
+     *                 INDXCI,WRK,KFREE,LFREE)
 C        CALL RSPTDM(NCSIM,ILRESY,IRSYM,NCLREF,NCRDIM,CLREF,
 C    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
 C    *                 XNDXCI,WORK,KFREE,LFREE)
@@ -216,7 +228,7 @@ C |OR> has minus sign, scale density with minus
          CALL RSPTDM(NCSIM,IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      *                 BCVECS,WRK(KDVTTR),DUMMY,
      *                 JSPIN1,JSPIN2,.TRUE.,.TRUE.,
-     *                 INDXCI,WRK(KFREE),KSTRT,LFREE)
+     *                 INDXCI,WRK,KFREE,LFREE)
 C        CALL RSPTDM(NCSIM,ILRESY,IRSYM,NCLREF,NCRDIM,CLREF,
 C    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
 C    *                 XNDXCI,WORK,KFREE,LFREE)
@@ -234,9 +246,9 @@ C
          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),
      *                 WRK(KCREF),WRK(KUDVTR),DUMMY,
      *                 JSPIN1,JSPIN2,.FALSE.,.TRUE.,
-     *                 INDXCI,WRK(KFREE),KSTRT,LFREE)
+     *                 INDXCI,WRK,KFREE,LFREE)
 C
-C TRIANGULAR PACKING OF TRIPLET ONE ELECTRON DENSITY MATRIX
+C TRIANGULAR PACKING OF TRIPLET ONE-ELECTRON DENSITY MATRIX
 C
          IJ = 0
          DO 103 I = 1,NASHT
@@ -246,9 +258,9 @@ C
  203        CONTINUE
  103     CONTINUE
          IF (IPRRSP.GT.50 .AND. NASHT.GT.0) THEN
-            WRITE(LUPRI,*)' TRIPLET ONE ELECTRON DENSITY MATRIX'
+            WRITE(LUPRI,*)' TRIPLET ONE-ELECTRON DENSITY MATRIX'
             CALL OUTPUT(WRK(KUDVTR),1,NASHT,1,NASHT,NASHT,NASHT,
-     *                                            1,LUPRI)
+     *                                            -1,LUPRI)
          END IF
       END IF
 C
@@ -262,7 +274,7 @@ C
  200     CONTINUE
  100  CONTINUE
       IF (SLVANT) THEN
-         KFREE1 = KFREE + NCSIM * NNASHX*NCSIM
+         KFREE1 = KFREE + NNASHX*NCSIM
          LFREE1 = LWRK - KFREE1
          DO 300 ICSIM = 1,NCSIM
             KOFDVT = (ICSIM-1)*N2ASHX
@@ -285,37 +297,67 @@ C
      &               WRK(KDV),WRK(KFREE),EVECS,EVECS(NCSIM*KZYVAR+1),
      &               .FALSE.,WRK(KFREE1),LFREE1)
          IF ((NCSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
-            CALL OUTPUT(EVECS,1,KZVAR,1,NCSIM,KZVAR,NCSIM,1,LUPRI)
+            WRITE(LUPRI,*)' Linear transformed CONFIGURATION VECTORS'
+            CALL OUTPUT(EVECS,1,KZVAR,1,2*NCSIM,KZVAR,2*NCSIM,-1,LUPRI)
          END IF
          IF ((NOSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED ORBITAL VECTOR'
-            CALL OUTPUT(EVECS(1+KZYVAR*NCSIM),1,KZVAR,1,NOSIM,
-     *                                       KZVAR,NOSIM,1,LUPRI)
+            WRITE(LUPRI,*)' Linear transformed ORBITAL VECTORS'
+            CALL OUTPUT(EVECS(1+KZYVAR*NCSIM),1,KZVAR,1,2*NOSIM,
+     *                                          KZVAR,2*NOSIM,-1,LUPRI)
          END IF
          CALL DZERO(EVECS,(NOSIM+NCSIM)*KZYVAR)
       END IF
+      IF (PCM) THEN
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+     *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      ELSE IF (QM3) THEN
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+     *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
+         IF (NODTOT .GE. 1) THEN
+            CALL QM3LNO_P(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+     &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
+     &               WRK(KFREE),LFREE)
+         ELSE
+            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+     &               WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               EVECS(NCSIM*KZYVAR+1),
+     &               WRK(KFREE),LFREE)
+         END IF
+      ELSE IF (QMMM) THEN
+         IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+     *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
+         CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+         IF (IPQMMM .GT. 1) CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
+      ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
-      CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &                 UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &                 WRK(KDVT),WRK(KDVTTR),
-     &                 EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+         CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      END IF
 C
       IF ((NCSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
-         CALL OUTPUT(EVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTORS'
+         CALL OUTPUT(EVECS,1,KZVAR,1,2*NCSIM,KZVAR,2*NCSIM,-1,LUPRI)
       END IF
       IF ((NOSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFIRMED ORBITAL VECTOR'
-         CALL OUTPUT(EVECS(1+NCSIM*KZYVAR),1,KZYVAR,1,NOSIM,
-     *                                     KZYVAR,NOSIM,1,LUPRI)
+         CALL OUTPUT(EVECS(1+NCSIM*KZYVAR),1,KZVAR,1,2*NOSIM,
+     *                                       KZVAR,2*NOSIM,-1,LUPRI)
       END IF
       IF (SLVANT) THEN
          WRITE(LUPRI,*)' TEST CALCULATION : SLVANT = ', SLVANT
-         CALL QUIT(' RSPSLV; TEST CALCULATION ')
+         CALL QUIT(' RSPSLV; TEST calculation with SLVANT finished ')
       END IF
-      CALL MEMREL('RSPSLV',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('RSPSLV',WRK,1,KFRSAV,KFREE,LFREE)
       IPRRSP = IPRSAV
       CALL QEXIT('RSPSLV')
       RETURN
@@ -345,6 +387,7 @@ C
 #include <infinp.h>
 #include <infrsp.h>
 #include <inftap.h>
+#include <wrkrsp.h>
 C     logical inersf
       inersf = .false.
 
@@ -373,23 +416,33 @@ C
       IF (LUSOL .LE. 0)
      &CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       IF (NCSIM .GT. 0) THEN
+         IF (IPRRSP.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE SLVLNC **** '
+            CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         END IF
          CALL SLVLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *               WRK(KFLVEC),WRK(KFLINR),WRK(KTLMSI),
      *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK(KSYRLM),
      *               WRK(KFREE),LFREE)
          IF (IPRRSP.GT.101) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER SLVLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
       END IF
       IF ( NOSIM .GT.0 ) THEN
+         IF (IPRRSP.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** AFTER SLVLNO **** '
+            CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
          CALL SLVLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               WRK(KFLVEC),WRK(KFLINR),WRK(KTLMSI),
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK(KSYRLM),
      *               WRK(KFREE),LFREE)
          IF (IPRRSP.GT.101) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
             WRITE(LUPRI,*)' **** AFTER SLVLNO **** '
             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
          END IF
@@ -621,7 +674,7 @@ C
             JRXC   = JRXC   + NNORBX
   800    CONTINUE
          IF (IPRRSP.GT.101) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER SLVSOR  in SLVLNC **** '
             CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
@@ -1574,13 +1627,14 @@ C
       RETURN
       END
 C  /* Deck slvsor */
-      SUBROUTINE SLVSOR(ONEIND,SNGDN,NSIM,UDV,SVECS,ZYMAT)
+      SUBROUTINE SLVSOR(ONEIND,SNGDN,NSIM,UDV,EVECS,ZYMAT)
 C
 C WRITTEN 14-april 1993 (modified RSPSOR)
 C
 C PURPOSE:
 C
-C   CREATE ORBITAL PART OF LINEAR TRANSFORMATION WITH S(2)
+C   CREATE ORBITAL PART OF LINEAR TRANSFORMATION WITH
+C   solvent contribution to E(2)
 C
 C    ONEIND = .TRUE. FOR NORMAL ONE ELECTRON DENSITY MATRIX
 C
@@ -1639,9 +1693,8 @@ C
 C
       LOGICAL ONEIND,SNGDN
 C
-      DIMENSION UDV(NASHDI,NASHDI,2)
-      DIMENSION SVECS(KZYVAR,2)
-      DIMENSION ZYMAT(NORBT,NORBT,2)
+      DIMENSION UDV(NASHDI,NASHDI,*), EVECS(KZYVAR,*)
+      DIMENSION ZYMAT(NORBT,NORBT,*)
 C
 C  INFDIM : NASHDI
 C
@@ -1685,34 +1738,34 @@ C
             END IF
             ITYPK = IOBTYP(K)
             ITYPL = IOBTYP(L)
-            IF ( ITYPK.EQ.JTINAC )THEN
+            IF ( ITYPK.EQ.JTINAC ) THEN ! inactive-active or inactive-secondary
                DO 2000 ISIM = 1 ,NSIM
                   IF (ONEIND) THEN
                    IF ( SNGDN ) THEN
-                     SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                     EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                       + D2 * ZYMAT(L,K,ISIM)
-                     SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                       - D2 * ZYMAT(K,L,ISIM)
                    END IF
                   END IF
-                  IF ( ITYPL.EQ.JTACT ) THEN
+                  IF ( ITYPL.EQ.JTACT ) THEN ! inactive-active
                    IF (ONEIND) THEN
                      NWL = ISW(L) - NISHT
-                        SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                        EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                  - DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
                         DO 735 IX = 1,NASHL
-                           SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                           EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                        + ZYMAT(K,IORBL+NISHL+IX,ISIM)*
      *                          UDV(NWL,IASHL+IX,1)
  735                    CONTINUE
                    ELSE
                      NWL = ISW(L) - NISHT
-                        SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                        EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                  - DDOT(NASHK,ZYMAT(IORBK+NISHK+1,K,ISIM),1,
      *                                        UDV(IASHK+1,NWL,1),1)
                         DO 736 IX = 1,NASHK
-                           SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                           EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                        + ZYMAT(K,IORBK+NISHK+IX,ISIM)*
      *                          UDV(NWL,IASHK+IX,1)
  736                    CONTINUE
@@ -1720,24 +1773,24 @@ C
                   END IF
  2000          CONTINUE
             ELSE
-              IF (ITYPL.EQ.JTACT) THEN
+              IF (ITYPL.EQ.JTACT) THEN ! active-active
                 IF (ONEIND) THEN
                   NWL = ISW(L) - NISHT
                   NWK = ISW(K) - NISHT
                   DO 2020 ISIM=1,NSIM
-                        SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                        EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
                         DO 745 IX = 1,NASHL
-                           SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                           EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                        +ZYMAT(K,IORBL+NISHL+IX,ISIM)*
      *                                        UDV(NWL,IASHL+IX,1)
  745                    CONTINUE
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
      *                                      UDV(IASHK+1,NWK,1),1)
                         DO 755 IX = 1,NASHK
-                           SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                           EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +ZYMAT(L,IORBK+NISHK+IX,ISIM)*
      *                                      UDV(NWK,IASHK+IX,1)
  755                    CONTINUE
@@ -1746,33 +1799,33 @@ C
                   NWL = ISW(L) - NISHT
                   NWK = ISW(K) - NISHT
                   DO 2021 ISIM=1,NSIM
-                        SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                        EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,K,ISIM),1,
      *                                        UDV(IASHK+1,NWL,1),1)
                         DO 746 IX = 1,NASHK
-                           SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                           EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                        +ZYMAT(K,IORBK+NISHK+IX,ISIM)*
      *                                        UDV(NWL,IASHK+IX,1)
  746                    CONTINUE
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,L,ISIM),1,
      *                                      UDV(IASHL+1,NWK,1),1)
                         DO 756 IX = 1,NASHL
-                           SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                           EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +ZYMAT(L,IORBL+NISHL+IX,ISIM)*
      *                                      UDV(NWK,IASHL+IX,1)
  756                    CONTINUE
  2021             CONTINUE
                 END IF
-             ELSE
+             ELSE ! active-secondary
                IF (ONEIND) THEN
                   NWK = ISW(K) - NISHT
                   DO 2030 ISIM=1,NSIM
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
      *                                        UDV(IASHK+1,NWK,1),1)
                         DO 765 IX = 1,NASHK
-                           SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                           EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +ZYMAT(L,IORBK+NISHK+IX,ISIM)*
      *                                        UDV(NWK,IASHK+IX,1)
  765                    CONTINUE
@@ -1780,11 +1833,11 @@ C
               ELSE
                   NWK = ISW(K) - NISHT
                   DO 2031 ISIM=1,NSIM
-                        SVECS(KYCONF+IG,ISIM) = SVECS(KYCONF+IG,ISIM)
+                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,L,ISIM),1,
      *                                        UDV(IASHL+1,NWK,1),1)
                         DO 766 IX = 1,NASHL
-                           SVECS(KZCONF+IG,ISIM) = SVECS(KZCONF+IG,ISIM)
+                           EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +ZYMAT(L,IORBL+NISHL+IX,ISIM)*
      *                                        UDV(NWK,IASHL+IX,1)
  766                    CONTINUE
@@ -1796,8 +1849,9 @@ C
 C
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)' ONEIND =',ONEIND
-         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  S(2)'
-         CALL OUTPUT(SVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
+         WRITE(LUPRI,*)
+     &   ' After LINEAR TRANSFORMATION with solvent part of E[2]'
+         CALL OUTPUT(EVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
       END IF
 C
 C END OF SLVSOR

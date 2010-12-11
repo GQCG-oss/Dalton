@@ -295,14 +295,14 @@ C
 C
       PATH1 = IPATH .EQ. 1
 C
-C     IF (FLEVEL) THEN
+c     IF (FLEVEL) THEN
          DO IKMP12 = 1, KHKT12
          DO IKMP34 = 1, KHKT34
-            FAOINT(IKMP12,IKMP34) = .TRUE.
+c           FAOINT(IKMP12,IKMP34) = .TRUE.
             FAOINT(IKMP12,IKMP34) = .FALSE.
          END DO
          END DO
-C     END IF
+c     END IF
 C
 C     Transformation of both indices
 C     ==============================

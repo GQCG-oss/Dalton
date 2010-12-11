@@ -91,7 +91,7 @@ c/* Deck CC_XETST */
       PARAMETER (ZERO = 0.0D0, ONE  = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0, FIVE = 5.0D0)
 
-      CHARACTER*(3) FILXI, FILETA, LISTL
+      CHARACTER*(3) FILXI, FILETA, LISTL, APROXR12
       CHARACTER*(8) LABEL, LABEL1, LABEL2
       CHARACTER*(10) MODEL, CROUT
       LOGICAL LORX, LORX1, LORX2, LTWO, LTWO1, LTWO2
@@ -107,6 +107,7 @@ c/* Deck CC_XETST */
       INTEGER KCMO,KCMO0,KCMOPQ,KCMOHQ,IDLSTL,ISYCTR,IDXR1,INUM,IREAL
       INTEGER KKAPPA, KRMAT, KLEFT1, KLEFT2, KETA1, KETA2, KRHO1, KRHO2
       INTEGER IRELAX, IRELAX1, IRELAX2, ISYM1, ISYM2, KCTR1, KCTR2
+      INTEGER KETA12
 
 
 * external function:
@@ -123,6 +124,10 @@ c/* Deck CC_XETST */
 *---------------------------------------------------------------------*
 *  number of simultaneous transformations:
       NXETRAN = 1
+*---------------------------------------------------------------------*
+*    some initialization
+      LORX1 = .FALSE.
+      LORX2 = .FALSE.
 *---------------------------------------------------------------------*
 *  test 1: use zeroth-order Hamiltonian as perturbation. this gives
 *          a xi vector which is 5 x vector function (omega) and a
@@ -400,7 +405,7 @@ C         ------------------------------------------------------------
      &                  WORK(KT1AMP0),WORK(KT2AMP0))
           RSPIM = .FALSE.
           CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
-     &                WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+     &                WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
           CALL DSCAL(NT1AMX,5.0D0,WORK(KOMEGA1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AMX,5.0D0,WORK(KOMEGA2),1)
           CALL AROUND('result from CCRHSN (x 5):')
@@ -521,7 +526,7 @@ C       -------------------------------------------------
      &                  WORK(KT1AMP0),WORK(KT2AMP0))
           RSPIM = .TRUE.
           CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
-     &                WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+     &                WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
       END IF
 
 *---------------------------------------------------------------------*
@@ -542,6 +547,10 @@ C       -------------------------------------------------
       KETA1   = KRHO2   + NT2AM(ISYETA)
       KETA2   = KETA1   + NT1AM(ISYETA)
       KEND1   = KETA2   + NT2AM(ISYETA)
+      if (CCR12) then
+        keta12 = kend1
+        kend1 = keta12 + ntr12am(isyeta)
+      end if
       LWRK1   = LWORK   - KEND1
 
       IF (LWRK1.LT.0 .OR. LWRK1A.LT.0) THEN
@@ -560,7 +569,8 @@ C          result for the eta vector:
 C          ------------------------------------------------------------
            CALL DCOPY(NT1AM(ISYCTR),WORK(KLEFT1),1,WORK(KRHO1),1)
            CALL DCOPY(NT2AM(ISYCTR),WORK(KLEFT2),1,WORK(KRHO2),1)
-           CALL CC_ATRR(0.0D0,ISYCTR,-1,WORK(KRHO1),LWRK1,.FALSE.,DUMMY)
+           CALL CC_ATRR(0.0D0,ISYCTR,-1,WORK(KRHO1),LWRK1,.FALSE.,DUMMY,
+     &                  APROXR12)
            IF (LISTL(1:2).EQ.'L0') THEN
              CALL CC_ETA(WORK(KETA1),WORK(KEND1),LWRK1)
              CALL DAXPY(NT1AMX,1.0D0,WORK(KETA1),1,WORK(KRHO1),1)
@@ -677,18 +687,22 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <inftap.h>
+#include <ccinftap.h>
 #include <leinf.h>
 #include <ccfield.h>
 C
       DIMENSION WORK(LWORK), OMEGADIF(*), CMO1(*)
       PARAMETER (DELTA = 1.0D-07, DELINV = 1.0D+7)
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0, TWO = 2.0d0, XHALF = 0.5D0)
-      LOGICAL NONHFSAVE
+      LOGICAL NONHFSAVE,LHTF
       CHARACTER MODEL*10
 C
       IF (IPRINT.GT.10) THEN
          CALL AROUND( 'IN CC_FDXI  : MAKING FINITE DIFF. CC Xi Vector')
       END IF
+C
+      IF (CCR12) CALL QUIT('Finite-difference Xi-vector for CCR12 '//
+     &                     'not adapted')
 C
       IF (CC2) THEN
         IF (NFIELD.GT.0 .AND. (.NOT.NONHF)) THEN
@@ -756,7 +770,9 @@ C
       CALL GPCLOSE(LUSIFC,'KEEP') 
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+      LHTF = .FALSE.
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
+     &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -774,7 +790,7 @@ C
       RSPIM = .FALSE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
      &            WORK(KT1AMP0),WORK(KT2AMP0),
-     &            WORK(KEND1),LWRK1)  
+     &            WORK(KEND1),LWRK1,'XXX')  
 C
       IF (CCS) CALL DZERO(WORK(KOMEGA2),NT2AMX)
 C
@@ -789,7 +805,7 @@ C
       CALL DCOPY(NT1AMX,WORK(KOMEGA1),1,WORK(KOMREF1),1)
       CALL DCOPY(NT2AMX,WORK(KOMEGA2),1,WORK(KOMREF2),1)
 C
-      LUFOCK = 0
+      LUFOCK = -1
       CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUFOCK)
@@ -821,7 +837,9 @@ C
          CALL GPCLOSE(LUSIFC,'KEEP') 
 C
          CALL DZERO(WORK(KT1AMP0),NT1AMX)
-         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+         LHTF = .FALSE.
+         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),
+     &                   LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -835,7 +853,7 @@ C
          RSPIM = .FALSE.
          CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
      &               WORK(KT1AMP0),WORK(KT2AMP0),
-     &               WORK(KEND1),LWRK1)  
+     &               WORK(KEND1),LWRK1,'XXX')  
 C
          IF (CCS) CALL DZERO(WORK(KOMEGA2),NT2AMX)
 C
@@ -941,14 +959,16 @@ C------------------------------------------------------------------
 C
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+      LHTF = .FALSE.
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
+     &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
      &            WORK(KT1AMP0),WORK(KT2AMP0),
-     &            WORK(KEND1),LWRK1)  
+     &            WORK(KEND1),LWRK1,'XXX')  
 C
       IF (IPRINT.GT.10) THEN
          CALL AROUND(' END OF CC_FDXI ')
@@ -991,7 +1011,7 @@ C
       DIMENSION WORK(LWORK), RHODIF(*), CMO1(*), VECL1(*), VECL2(*)
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0, TWO = 2.0d0, XHALF = 0.5D0)
       CHARACTER MODEL*10, LISTL*(*)
-      LOGICAL NONHFSAVE
+      LOGICAL NONHFSAVE,LHTF
 C
       IF (IPRINT.GT.10) THEN
         CALL AROUND('IN CC_FDETA : MAKING FIN. DIFF. CC Eta{O} Vector')
@@ -1040,6 +1060,10 @@ C
       KETA1      = KEND1A   
       KETA2      = KETA1    + NT1AMX
       KEND1B     = KETA2    + NT2AMX
+      if (CCR12) then
+        keta12   = kend1b
+        kend1b   = keta12   + ntr12am(1)
+      end if
       LWRK1B     = LWORK    - KEND1B
 C
       IF ( LWRK1.LT.0 .OR. LWRK1B.LT.0 .OR. LWRK1A.LT.0) THEN
@@ -1074,7 +1098,9 @@ C     make sure that the correct response intermediates are on disc:
 C-------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+      LHTF = .FALSE.
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
+     &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -1082,9 +1108,9 @@ C
       CALL CC_RDRSP('R0 ',0,1,IOPT,MODEL,WORK(KT1AMP0),WORK(KT2AMP0))
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1  ),WORK(KRHO2  ),
+      CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),
      &            WORK(KT1AMP0),WORK(KT2AMP0),
-     &            WORK(KEND1),LWRK1)  
+     &            WORK(KEND1),LWRK1,'XXX')  
 C
 C-------------------------------------------------------------------
 C     calculate the reference vector:
@@ -1093,7 +1119,8 @@ C
       CALL DCOPY(NT1AMX,VECL1,1,WORK(KRHO1),1)
       IF (.NOT.CCS) CALL DCOPY(NT2AMX,VECL2,1,WORK(KRHO2),1)
 C
-      CALL CC_ATRR(0.0D0,ISYM0,-1,WORK(KRHO1),LWRK0,.FALSE.,DUMMY)
+      CALL CC_ATRR(0.0D0,ISYM0,-1,WORK(KRHO1),LWRK0,.FALSE.,DUMMY,
+     &                  APROXR12)
 C
       IF (LISTL(1:2).EQ.'L0') THEN
          CALL CC_ETA(WORK(KETA1),WORK(KEND1B),LWRK1B)
@@ -1141,7 +1168,9 @@ C        calculate new response intermediates:
 C        -------------------------------------
 C
          CALL DZERO(WORK(KT1AMP0),NT1AMX)
-         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+         LHTF = .FALSE.
+         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),
+     &                  LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -1151,7 +1180,7 @@ C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),
      &               WORK(KT1AMP0),WORK(KT2AMP0),
-     &               WORK(KEND1),LWRK1)  
+     &               WORK(KEND1),LWRK1,'XXX')  
 C
 C        ---------------------------------
 C        calculate the transformed vector:
@@ -1160,7 +1189,8 @@ C
          CALL DCOPY(NT1AMX,VECL1,1,WORK(KRHO1),1)
          IF (.NOT.CCS) CALL DCOPY(NT2AMX,VECL2,1,WORK(KRHO2),1)
 C
-         CALL CC_ATRR(0.0D0,ISYM0,-1,WORK(KRHO1),LWRK0,.FALSE.,DUMMY)
+         CALL CC_ATRR(0.0D0,ISYM0,-1,WORK(KRHO1),LWRK0,.FALSE.,DUMMY,
+     &                  APROXR12)
 C
          IF (LISTL(1:2).EQ.'L0') THEN
             CALL CC_ETA(WORK(KETA1),WORK(KEND1B),LWRK1B)
@@ -1250,7 +1280,9 @@ C     the reference CMO vector:
 C------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),WORK(KEND1),LWRK1)
+      LHTF = .FALSE.
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
+     &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
 C
@@ -1264,7 +1296,7 @@ C
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),
      &            WORK(KT1AMP0),WORK(KT2AMP0),
-     &            WORK(KEND1),LWRK1)  
+     &            WORK(KEND1),LWRK1,'XXX')  
 C
       IF (IPRINT.GT.10) THEN
         CALL AROUND(' END OF CC_FDETA ')

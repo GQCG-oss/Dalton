@@ -118,7 +118,7 @@ CTRL[1]=5
 ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
 
 # CCSD (frozen core) total molecular gradient: 
-CRIT1=`$GREP "N * 0?\.0000000000 * 0?\.0000000000 * -0?\.05049652" $log | wc -l`
+CRIT1=`$GREP "N * (\-| )0?\.0000000000 * (\-| )0?\.0000000000 * -0?\.05049652" $log | wc -l`
 TEST[2]=`expr $CRIT1` 
 CTRL[2]=1
 ERROR[2]="THE TOTAL MOLECULAR GRADIENT IS NOT CORRECT"
@@ -142,7 +142,7 @@ CTRL[5]=1
 ERROR[5]="THE TWO-ELECTRON INTEGRAL GRADIENT IS NOT CORRECT"
 
 # CCSD (frozen core) nuclear reorthonormalization gradient: 
-CRIT1=`$GREP "N * 0?\.0000000000 * 0?\.0000000000 * -0?\.75450143" $log | wc -l`
+CRIT1=`$GREP "N * (\-| )0?\.0000000000 * (\-| )0?\.0000000000 * -0?\.75450143" $log | wc -l`
 TEST[6]=`expr $CRIT1` 
 CTRL[6]=1
 ERROR[6]="THE REORTHONORMALIZATION GRADIENT IS NOT ORRECT"
@@ -151,8 +151,8 @@ ERROR[6]="THE REORTHONORMALIZATION GRADIENT IS NOT ORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

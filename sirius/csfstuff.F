@@ -77,8 +77,8 @@ c Jeppe Olsen
 c
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION IDFTP(1),ICFTP(1),DTOC(1)
-      DIMENSION WORK(1)
+      DIMENSION IDFTP(*),ICFTP(*),DTOC(*)
+      DIMENSION WORK(*)
 #include <spinfo.h>
 C
 C .. SET UP DETERMINANTS AND UPPER DETERMINANTS
@@ -675,10 +675,8 @@ C
 #include <strnum.h>
 #include <spinfo.h>
 #include <ciinfo.h>
-      DIMENSION ICONF(1),IPRODT(1)
-      DIMENSION ICTSDT(1)
-      DIMENSION IWORK(1),XNDXCI(1)
-      INTEGER ORBSYM(2)
+      DIMENSION ICONF(*),IPRODT(*), ICTSDT(*), IWORK(*),XNDXCI(*)
+      INTEGER   ORBSYM(*)
 C
 C IWORK should at least be of length (MXDT+2)*NEL,
 C where MXDT is the largest number of prototype determinants occuring
@@ -889,7 +887,7 @@ C JEPPE OLSEN , NOVEMBER 1988
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION ICONF(NORB), IPDET(1       ), IDET(NEL,NDET)
+      DIMENSION ICONF(NORB), IPDET(*       ), IDET(NEL,NDET)
 C     DIMENSION ICONF(NORB), IPDET(NOP,NDET), IDET(NEL,NDET)
 C     890417-hj: new IPDET definition to avoid error when NOP.eq.0
 C
@@ -1462,7 +1460,7 @@ C
 #include <priunit.h>
 C
 C Used from common blocks:
-C  INFINP : FLAG(27),MCTYPE,LSYM,?
+C  INFINP : FLAG(27),LSYM,?
 C  PHPINF : MXPDIM,NPCVAR,...
 C  CIINFO : ICOMBI,IPSIGN,NDTASM,NCSASM
 C  DETBAS : KLTSOB,?
@@ -1833,7 +1831,7 @@ c
 #include <priunit.h>
       DIMENSION EIGVC(NSBDIM,NSBDIM),EIGVL(NSBDIM),INDEX(NSBDIM)
       DIMENSION X1(NSBDIM),X2(NSBDIM)
-      DIMENSION VECI(1),VECO(1)
+      DIMENSION VECI(*),VECO(*)
 c
       CALL GATVEC(X1,VECI,INDEX,NSBDIM)
       CALL MATVCD(EIGVC,X1,X2,NSBDIM,NSBDIM,1)
@@ -1856,7 +1854,7 @@ C
 C VDSV = SUM(I) VECIN(I) ** 2 /( DIAG(I) + SHIFT )
 C
 #include <implicit.h>
-      DIMENSION VECOUT(1),VECIN(1),DIAG(1)
+      DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
       THRES=1.0D-5
       VDSV = 0.0D0
@@ -2313,7 +2311,7 @@ c
       KLFREE = KLFREE + NDETL*NDETR
       LFREE  = LSCR - KLFREE + 1
 c
-C     SUBROUTINE DIHDJ(IASTR,IBSTR,NIDET,JASTR,JBSTR,NJDET,NAEL,NBEL,
+C     CALL DIHDJ(IASTR,IBSTR,NIDET,JASTR,JBSTR,NJDET,NAEL,NBEL,
 C    &   IWORK,LWORK,NORB,ONEBOD,RJ,RK,FIJKL,ILTSOB,
 C    &   HAMIL,ISYM,ECORE,ICOMBI,PSIGN)
       CALL DIHDJ(SCR(KLDTLA),SCR(KLDTLB),NDETL,
@@ -2563,8 +2561,7 @@ C  /* Deck detgn4 */
 c
 c     Purpose:
 c
-c     Turbo routine for generating strings that fulfills RAS
-c     constraints
+c     Turbo routine for generating strings that fulfills RAS constraints
 c
 c     Externals
 c
@@ -2575,11 +2572,9 @@ c
 #include <implicit.h>
 #include <priunit.h>
 c.Input
-      INTEGER Z(*)
-      DIMENSION ISTR(NEL,MAXSTR)
-      DIMENSION IREORD(*)
+      INTEGER Z(*), IREORD(*), ISTR(NEL,MAXSTR)
 c.Scratch
-      DIMENSION IOC(*)
+      INTEGER IOC(*)
 c
       NSTRIN = 0
       IORB1F = 1
@@ -2656,7 +2651,7 @@ c Loop over RAS 3 occupancies
            WRITE(LUPRI,*) ' RAS 1 2 3 STRING '
            CALL IWRTMA(IOC,1,NEL,1,NEL)
          ENDIF
-c Next string has been constructed , Enlist it |.
+c Next string has been constructed , Enlist it !.
              NSTRIN = NSTRIN + 1
              IADRES = IZNUM( IOC ,NEL,Z,NEL,NORB,IREORD,IPRINT)
              IF(IADRES .GT. MAXSTR) THEN
@@ -2667,7 +2662,7 @@ c Next string has been constructed , Enlist it |.
                CALL QUIT('Too many strings in DETGN4')
              END IF
              IREORD(IADRES) = -NSTRIN
-             CALL ICOPVE(IOC(1),ISTR(1,NSTRIN),NEL)
+             IF (NEL .GT. 0) CALL ICOPVE(IOC(1),ISTR(1,NSTRIN),NEL)
            IF( IEL3 .NE. 0 ) GOTO 903
            IF( IEL2 .NE. 0 ) GOTO 902
            IF( IEL1 .NE. 0 ) GOTO 901
@@ -2712,11 +2707,11 @@ c
 c     Purpose
 c
 c     AN ORDERED SET OF NUMBERS INUM(I),I=1,NELMNT IS
-c     GIVEN IN STRICTLY ASCENDING ORDER. VALUES OF INUM(*) IS
-c     RESTRICTED TO THE INTERVAL MINVAL,MAXVAL .
+c        GIVEN IN STRICTLY ASCENDING ORDER.
+c     VALUES OF INUM(*) IS RESTRICTED TO THE INTERVAL MINVAL,MAXVAL .
 c     FIND NEXT HIGHER NUMBER.
 c     NONEW = 1 ON RETURN INDICATES THAT NO ADDITIONAL NUMBERS
-c     COULD BE OBTAINED.
+c        COULD BE OBTAINED.
 c
 c     Externals
 c
@@ -2757,7 +2752,7 @@ c
  1001 CONTINUE
 c
       IF( IPRINT.GT.30 ) THEN
-        WRITE(LUPRI,*) ' New number '
+        WRITE(LUPRI,*) ' New number in NXTORD:'
         CALL IWRTMA(INUM,1,NELMNT,1,NELMNT)
       END IF
 c
@@ -2797,8 +2792,8 @@ c
 #include <priunit.h>
 c
       INTEGER SYMPRO(8,8)
-      INTEGER  ORBSYM(NACTOB)
-      DIMENSION IWORK(1)
+      INTEGER ORBSYM(NACTOB)
+      DIMENSION IWORK(*)
 c
 #include <ciinfo.h>
 #include <spinfo.h>
@@ -3352,7 +3347,7 @@ CHJ: The MAXASH below is max for NORB.
       DIMENSION NFTPA(MXPTP,MXSMOB),IFTPA(MXPTP,MXSMOB),
      &          INDX7(MXPTP,MXSMOB)
 c
-      DIMENSION SCR(1),ILTSOB(1),ISTLOB(*)
+      DIMENSION ILTSOB(*),ISTLOB(*)
       DIMENSION ISTINA(NAEL,*),ISTINB(NBEL,*)
 c
       DATA  SYMPRO/1,2,3,4,5,6,7,8,
@@ -5742,10 +5737,10 @@ c. Information about CL and CR
 c
 c CL : Left side vector, or buffer for it
 c CR : Right side vector, or buffer for it
-c LUL : Logical unit containing CL, if LUL .ne. 0
+c LUL : Logical unit containing CL, if LUL .gt. 0
 c       CL is assumed to be stored on LUL and is read in in symmetry
 c       blocks
-c LUR : Logical unit containing CR, if LUR .ne. 0
+c LUR : Logical unit containing CR, if LUR .gt. 0
 c       CR is assumed to be stored on LUR and is read in in symmetry
 c       blocks
 c ILSMOS(ISM) : If symmetry of one string in CL is of symmetry ISM,
@@ -5803,12 +5798,12 @@ c
 c. Loop over symmetry blocks of CL(IASM,IBSM) and CR(JASM,JBSM)
 c
 
-      IF(LUL.NE.0) CALL REWINO (LUL)
+      IF(LUL.GT.0) CALL REWINO (LUL)
       ICLSOF = 1
       DO 7000 IASM = 1, NSMST
         IBSM = ILSMOS(IASM)
 c. first element in symmetry block
-        IF(LUL.NE.0.OR.IASM.EQ.1) THEN
+        IF(LUL.GT.0.OR.IASM.EQ.1) THEN
           ILSOFF = 1
         ELSE
           ILSOFF = ILSOFF + NLDTBL
@@ -5820,11 +5815,11 @@ c. occupation class
      &       NSSOB(1,IBSM),NLDTBL,ILOFF,NLDT,MXPTP,IMXATP,IMXBTP)
 c
         IF(NLDTBL.EQ.0) GOTO 7000
-        IF(LUR.NE.0) CALL REWINO(LUR)
+        IF(LUR.GT.0) CALL REWINO(LUR)
         DO 6000 JASM = 1, NSMST
           JBSM = IRSMOS(JASM)
 c. first element in symmetry block
-          IF(LUR.NE.0.OR.JASM.EQ.1) THEN
+          IF(LUR.GT.0.OR.JASM.EQ.1) THEN
            IRSOFF = 1
           ELSE
            IRSOFF = IRSOFF + NRDTBL

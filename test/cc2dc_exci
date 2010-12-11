@@ -55,7 +55,7 @@ cat > cc2dc_exci.dal <<%EOF%
 *END OF HERMIT
 **WAVE FUNCTIONS
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
 1.0D-11
 *CC INP
@@ -113,7 +113,7 @@ CTRL[1]=2
 ERROR[1]="ENERGY TERMS NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "z      ( |0)\.84595673      2\.15020731" $log | wc -l`
+CRIT1=`$GREP "z * ( |0)\.84595673 * 2\.15020731" $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
@@ -129,10 +129,10 @@ CTRL[3]=4
 ERROR[3]="EXCITATION ENERGIES NOT CORRECT"
 
 # The first four excitation energies compared:
-CRIT1=`$GREP "1A * \| * 1 * \| * ( |0)\.1447848 * \| * ( |0)\.0305320 * \| * Y" $log | wc -l`
-CRIT2=`$GREP "1A * \| * 2 * \| * ( |0)\.0000000 * \| * ( |0)\.0000000 * \| * -" $log | wc -l`
-CRIT3=`$GREP "1A * \| * 3 * \| * ( |0)\.3729071 * \| * ( |0)\.1022546 * \| * Z" $log | wc -l`
-CRIT4=`$GREP "1A * \| * 4 * \| * ( |0)\.2619028 * \| * ( |0)\.0867016 * \| * X" $log | wc -l`
+CRIT1=`$GREP "1A * \| * 1 * \| * 0*\.1447848 * \| * 0*\.0305320 * \| * Y" $log | wc -l`
+CRIT2=`$GREP "1A * \| * 2 * \| * \-*0*\.0000000 * \| * \-*0*\.0000000 * \| * -" $log | wc -l`
+CRIT3=`$GREP "1A * \| * 3 * \| * 0*\.3729071 * \| * 0*\.1022546 * \| * Z" $log | wc -l`
+CRIT4=`$GREP "1A * \| * 4 * \| * 0*\.2619028 * \| * 0*\.0867016 * \| * X" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[4]=4
 ERROR[4]="TRANSITION PROPERTIES NOT CORRECT"
@@ -140,8 +140,8 @@ ERROR[4]="TRANSITION PROPERTIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

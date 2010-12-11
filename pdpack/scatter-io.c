@@ -54,20 +54,9 @@ C
 
 #include "../dft/general.h"
 
-/* definition below must match the types used by the fortran
- * compilers.  There is usually no problem if you use same defaults
- * for C and fortran compilers. The conditionals below are taken from
- * cc/crayio.c. */
-
-#if defined (VAR_INT64) && defined (SYS_AIX)
-#define integer long
-#else
-#define integer int
-#endif
-
 #if defined(SYS_DEC)
 /* DEC C V5.9-005 on Digital UNIX V4.0 (Rev. 1229) has no fseeko,
- * fall back to old inteface. */
+ * fall back to old interface. */
 #define fseeko fseek
 #endif
 
@@ -106,7 +95,7 @@ do {                                                               \
 /** fastio_() is used just for setting various options, tracing etc.
  * and is not used any more. We could remove just calls to it. */
 void
-fastio_(void)
+FSYM(fastio)(void)
 {
     printf("fastio called.\n");
 }
@@ -114,7 +103,7 @@ fastio_(void)
 /** daopen(lu,name) opens given file for reading/writing. If the file
  * does not exist, it is created. */
 void
-daopen_(int *lu, const char *name, int len)
+FSYM(daopen)(integer *lu, const char *name, int len)
 {
     int idx;
     *lu = idx = da_get_first_free_entry();
@@ -137,7 +126,7 @@ daopen_(int *lu, const char *name, int len)
 
 /** darmov_() closes file identified by lu and removes it. */
 void
-darmov_(int *lu)
+FSYM(darmov)(integer *lu)
 {
     int idx = *lu-1;
     CHECK_ARGS(idx>=0 && idx <DA_MAXOPEN);
@@ -153,7 +142,7 @@ darmov_(int *lu)
 
 /** daclos_() closes file identified by lu */
 void
-daclos_(int *lu)
+FSYM(daclos)(integer *lu)
 {
     int idx = *lu-1;
     CHECK_ARGS(idx>=0 && idx <DA_MAXOPEN);
@@ -169,7 +158,7 @@ daclos_(int *lu)
 /** dawrite() writes wrdlen words (integers) starting at buffer to
  * file lu at position pos (in integers). pos is updated on exit. */
 void
-dawrite_(int *lu, void *buffer, integer *wrdlen, integer *pos)
+FSYM(dawrite)(integer *lu, void *buffer, integer *wrdlen, integer *pos)
 {
     int idx = *lu-1;
     off_t off;
@@ -187,7 +176,7 @@ dawrite_(int *lu, void *buffer, integer *wrdlen, integer *pos)
 /** dawrite() reads wrdlen words (integers) to the buffer from the
  * file lu at position pos (in integers). pos is updated on exit. */
 void
-daread_(int *lu, void *buffer, integer *wrdlen, integer *pos)
+FSYM(daread)(integer *lu, void *buffer, integer *wrdlen, integer *pos)
 {
     int idx = *lu-1;
     off_t off;
@@ -212,7 +201,7 @@ daread_(int *lu, void *buffer, integer *wrdlen, integer *pos)
  */
 
 void
-darelist_(int *lu, integer *pos, integer *nlist,...)
+FSYM(darelist)(integer *lu, integer *pos, integer *nlist,...)
 {
     va_list alist;
     int i;
@@ -242,7 +231,7 @@ darelist_(int *lu, integer *pos, integer *nlist,...)
  * as INTEGERs.
  */
 void
-dawrlist_(int *lu, integer *pos, integer *nlist,...)
+FSYM(dawrlist)(integer *lu, integer *pos, integer *nlist,...)
 {
     va_list alist;
     int i;
@@ -268,7 +257,7 @@ dawrlist_(int *lu, integer *pos, integer *nlist,...)
 
 /* daskip updates pos taking into account block size */
 void
-daskip_(int *lu, integer *wrdlen, integer *pos)
+FSYM(daskip)(integer *lu, integer *wrdlen, integer *pos)
 {
     integer occupied_blocks = 1 + ((*wrdlen)*sizeof(integer)-1)/DA_BLOCKSZ;
     *pos += occupied_blocks;

@@ -409,7 +409,7 @@ C
       WRITE(LUPRI,'(A64,4(/A64))')
      & ' The three-photon absorption strength for an average molecular',
      & ' orientation is computed according to formulas given by       ',
-     & ' W.M. MacClain in J. Chem. Phys. 57:2264, 1972. The absorption',
+     & ' W.M. McClain in J. Chem. Phys. 57:2264, 1972. The absorption ',
      & ' depends on the light polarization. A monochromatic light     ',
      & ' source is assumed.                                           '
       WRITE(LUPRI,'(2(/A64))')

@@ -220,7 +220,10 @@ C A = 2*sum(l,m) f(l) <0| TE(l,m) |0> TE(l,m)
 C
       CALL TOPGET(DUMMY,DUMMY,DUMMY,0,D1,1,
      *            IDUM,IDUM,IDUM,A,UDV,EPSOL,.FALSE.,
-     *            ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A')
+     *            ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A',0)
+c     call TOPGET(ZYM1,ZYM2,ZYM3,IKLVL,OVLAP,ISYMDN,
+c    *            ISYMV1,ISYMV2,ISYMV3,TOP,DEN1,EPS,NUCFLG,
+c    *            ISYRLM,CMO,WRK,LWRK,IPRLVL,PRSTR,ADDFLG)
       CALL DSCAL(N2ORBX,D2,A,1)
 C
 C W = 2*sum(l,m) f(l)*( <0|TE(l,m)|0> - Tn(l,m) )*TE(l,m) 
@@ -232,11 +235,11 @@ C
       END IF
       CALL TOPGET(DUMMY,DUMMY,DUMMY,0,DUMMY,1,
      *            IDUM,IDUM,IDUM,W,DUMMY,EPS,.TRUE.,
-     *            ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'W')
+     *            ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'W',0)
       CALL DSCAL(N2ORBX,-D1,W,1)
       CALL TOPGET(DUMMY,DUMMY,DUMMY,0,D1,1,
      *            IDUM,IDUM,IDUM,W,UDV,EPS,.FALSE.,
-     *            ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'W')
+     *            ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'W',0)
       CALL DSCAL(N2ORBX,D2,W,1)
 C
 C A1 = 2*sum(l,m) f(l) <0| TE(l,m)(k1) |0> TE(l,m) + ...
@@ -244,7 +247,7 @@ C
       IF (MZWOPT(ISYMV1).GT.0) THEN
          CALL TOPGET(ZYM1,DUMMY,DUMMY,1,D1,1,
      *        ISYMV1,IDUM,IDUM,A1,UDV,EPSOL,.FALSE.,
-     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A1 cont1')
+     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A1 cont1',0)
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <01L| TE(l,m) |0> + <0| TE(l,m) |01R> ) TE(l,m) 
@@ -268,7 +271,7 @@ C
 C
          CALL TOPGET(DUMMY,DUMMY,DUMMY,0,OVLAP,ISYMDN,
      *        IDUM,IDUM,IDUM,B1,DEN1,EPSOL,.FALSE.,
-     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A1 cont2')
+     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A1 cont2',0)
       END IF
 C
       CALL DAXPY(N2ORBX,D1,B1,1,A1,1)
@@ -284,7 +287,7 @@ C
       IF (MZWOPT(ISYMV2).GT.0) THEN
          CALL TOPGET(ZYM2,DUMMY,DUMMY,1,D1,1,
      *        ISYMV2,IDUM,IDUM,A2,UDV,EPSOL,.FALSE.,
-     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A2 cont1')
+     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A2 cont1',0)
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <02L| TE(l,m) |0> + <0| TE(l,m) |02R> ) TE(l,m) 
@@ -308,7 +311,7 @@ C
 C
          CALL TOPGET(DUMMY,DUMMY,DUMMY,0,OVLAP,ISYMDN,
      *        IDUM,IDUM,IDUM,A2,DEN1,EPSOL,.FALSE.,
-     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A2 cont2')
+     *        ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A2 cont2',0)
       END IF
 C
       CALL DSCAL(N2ORBX,D2,A2,1)
@@ -320,10 +323,10 @@ C
       IF (MZWOPT(ISYMV1).GT.0 .AND. MZWOPT(ISYMV2).GT.0) THEN
          CALL TOPGET(ZYM1,ZYM2,DUMMY,2,D1,1,
      *               ISYMV1,ISYMV2,IDUM,A12,UDV,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont1a')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont1a',0)
          CALL TOPGET(ZYM2,ZYM1,DUMMY,2,D1,1,
      *               ISYMV2,ISYMV1,IDUM,A12,UDV,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont1b')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont1b',0)
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <01L| TE(l,m)(k2) |0> + 
@@ -353,7 +356,7 @@ C
 C
          CALL TOPGET(ZYM2,DUMMY,DUMMY,1,OVLAP,ISYMDN,
      *               ISYMV2,IDUM,IDUM,A12,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont2a')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont2a',0)
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <02L| TE(l,m)(k1) |0> + 
@@ -380,7 +383,7 @@ C
 C
          CALL TOPGET(ZYM1,DUMMY,DUMMY,1,OVLAP,ISYMDN,
      *               ISYMV1,IDUM,IDUM,A12,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont2b')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont2b',0)
       END IF
 C     
 C ... + 2*sum(l,m) f(l) ( <01L| TE(l,m) |02R> + 
@@ -407,7 +410,7 @@ C
 C
          CALL TOPGET(DUMMY,DUMMY,DUMMY,0,OVLAP,ISYMDN,
      *               IDUM,IDUM,IDUM,A12,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont3')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A12 cont3',0)
       END IF
 C
 C     Restore the scaled vector
@@ -423,10 +426,10 @@ C
      *    .AND. MZWOPT(ISYMV3).GT.0) THEN
          CALL TOPGET(ZYM1,ZYM2,ZYM3,3,D1,1,
      *               ISYMV1,ISYMV2,ISYMV3,A123,UDV,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont1a')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont1a',0)
          CALL TOPGET(ZYM1,ZYM3,ZYM2,3,D1,1,
      *               ISYMV1,ISYMV3,ISYMV2,A123,UDV,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont1b')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont1b',0)
          CALL DSCAL(N2ORBX,D1/D3,A123,1)
       END IF
 C
@@ -454,14 +457,14 @@ C
 C
          CALL TOPGET(ZYM2,ZYM3,DUMMY,2,OVLAP,ISYMDN,
      *               ISYMV2,ISYMV3,IDUM,A123,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont2a')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont2a',0)
 C
 C ... + sum(l,m) f(l) ( <01L| TE(l,m)(k3,k2) |0> + 
 C                         <0| TE(l,m)(k3,k2) |01R> ) TE(l,m) + ...
 C
          CALL TOPGET(ZYM3,ZYM2,DUMMY,2,OVLAP,ISYMDN,
      *               ISYMV3,ISYMV2,IDUM,A123,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont2b')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont2b',0)
       END IF
 C     
 C ... + 2*sum(l,m) f(l) ( <02L| TE(l,m)(k1) |03R> + 
@@ -487,10 +490,10 @@ C
 C
          CALL TOPGET(ZYM1,DUMMY,DUMMY,1,OVLAP,ISYMDN,
      *               ISYMV1,IDUM,IDUM,A123,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont3')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont3',0)
          CALL TOPGET(ZYM1,DUMMY,DUMMY,1,OVLAP,ISYMDN,
      *               ISYMV1,IDUM,IDUM,A123,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont3')
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,IPRLVL,'A123 cont3',0)
       END IF
 C
       RETURN

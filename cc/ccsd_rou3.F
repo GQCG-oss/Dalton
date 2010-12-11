@@ -2357,7 +2357,6 @@ C
                      ISYMBI = MULD2H(ISYMB,ISYMI)
 C
                      NBI = IT1AO(ISYMB,ISYMI) + NBAS(ISYMB)*(I-1) + 1
-     *
 C
                      DO 750 J = 1,NRHF(ISYMJ)
 C
@@ -4985,8 +4984,8 @@ C
 C
       RETURN
       END
-C  /* Deck cc_pram */
-      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR)
+C  /* Deck cc_pram3 */
+      SUBROUTINE CC_PRAM3(CAM1,CAMP,CAMM,PT1,PTP,PTM,ISYMTR,LGRS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
@@ -5006,6 +5005,7 @@ C
 #include <ccsdinp.h>
 C
 C
+      LOGICAL LGRS
       DIMENSION CAM1(*), CAMP(*), CAMM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -5027,11 +5027,17 @@ C
 C
       CNOSQ  = C1NOSQ + C2PNOSQ + C2MNOSQ
 C
-      PT1 = (C1NOSQ /CNOSQ)*100.0D0
-      PTP = (C2PNOSQ/CNOSQ)*100.0D0
-      PTM = (C2MNOSQ/CNOSQ)*100.0D0
+      IF (CNOSQ .EQ. 0.0D0) THEN
+         PT1 = 0.0D0
+         PTP = 0.0D0
+         PTM = 0.0D0
+      ELSE
+         PT1 = (C1NOSQ /CNOSQ)*100.0D0
+         PTP = (C2PNOSQ/CNOSQ)*100.0D0
+         PTM = (C2MNOSQ/CNOSQ)*100.0D0
+      END IF
 C
-      IF (.NOT. CCS) THEN
+      IF (.NOT. CCS .AND. CNOSQ .NE. 0.0D0) THEN
         WRITE(LUPRI,'(//5X,A)')
      *     'CC_PRAM:Overall Contribution of the Different Components'
         WRITE(LUPRI,'(5X,A//)')
@@ -5044,7 +5050,7 @@ C
         WRITE(LUPRI,'(/5X,A,5X,F10.4)')
      *     '||T1||/||T2||                       : ',
      *      SQRT(C1NOSQ/(C2PNOSQ+C2MNOSQ))
-        WRITE(LUPRI,'(/5X,A,5X,F10.4)')
+        IF (LGRS) WRITE(LUPRI,'(/5X,A,5X,F10.4)')
      *     'Tau1 diagnostic                     : ',
      *      SQRT(C1NOSQ/(TWO*DFLOAT(NRHFT)))
       END IF
@@ -6014,7 +6020,7 @@ C
       INTEGER NABIJP, NABIJM, ISYMAI, ISYMBJ, NBASA, NBASB
       INTEGER NVIRA, KOFF1, KOFF2, ISYMK, ISYMC, ISYMD, ISYDI
       INTEGER ISYCJ, LENGTH, NTOTAL, NTOTBE, NTOTK, NCJ
-      INTEGER NDICJ, NCK, NRHFA, ISYML, ISYMKI, ISYMLJ, NLJ
+      INTEGER NDICJ, NCK, NRHFA1, ISYML, ISYMKI, ISYMLJ, NLJ
       INTEGER NKL, NKI, NKILJ
 !
 #if defined (SYS_CRAY)
@@ -6322,8 +6328,8 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 180
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            RHO2(NAIBJ) = RHO2(NAIBJ) + WORK(NAB)
@@ -6394,8 +6400,8 @@ C
      *                              + NT1AM(ISYMAI)*(NBJ - 1) + NAI
                            ELSEIF (ISYMAI .GT. ISYMBJ) THEN
                               GOTO 182
-                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
+c                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+c    *                              + NT1AM(ISYMBJ)*(NAI - 1) + NBJ
                            ENDIF
 C
                            NAB  = KSCR3+ NVIR(ISYMA)*(B - 1) + A - 1
@@ -6483,7 +6489,7 @@ C
 C
                      NBASA = MAX(NBAS(ISYAL),1)
                      NBASB = MAX(NBAS(ISYBE),1)
-                     NRHFA = MAX(NRHF(ISYAL),1)
+                     NRHFA1 = MAX(NRHF(ISYAL),1)
 C
                      KOFF1 = ILMRHF(ISYBE) + 1
 C
@@ -6497,7 +6503,7 @@ C
                      CALL DGEMM('T','N',NRHF(ISYAL),NRHF(ISYBE),
      *                          NBAS(ISYAL),ONE,XLAMDP(KOFF2),NBASA,
      *                          WORK(KSCR4),NBASA,ZERO,WORK(KSCR5),
-     *                          NRHFA)
+     *                          NRHFA1)
 C
 C-------------------------------------------
 C                    Store the gamma matrix.
@@ -6549,7 +6555,6 @@ C
       END
 C  /* Deck hescompa */
       SUBROUTINE HESCOMPA(REDHES1,REDHES2,NREDH,NCOMPO,COMTHRES)
-     *             
 !
 !     Written by Kasper Hald 3/2-2000
 !

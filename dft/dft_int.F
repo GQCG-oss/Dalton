@@ -31,38 +31,44 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-      SUBROUTINE DFTINT(DMAT,NDMAT,NGEODRV,DOLND,WRK,LWRK,CB,
+      SUBROUTINE DFTINT(DMAT,NDMAT,NGEODRV,DOLND,WORK,LWORK,CB,
      &                  CBDATA,ELECTRONS)
 #include <implicit.h>      
 #include <inforb.h>
 #include <dftcom.h>
 #include <priunit.h>
-      DIMENSION DMAT(NBAST,NBAST,NDMAT), WRK(LWRK), CBDATA(*)
+      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
 C
-      KGAO   = 1
-      KDMGAO = KGAO   + MXBLLEN*NBAST*22 
-      KFREE  = KDMGAO + MXBLLEN*NBAST
-      IF (KFREE.GT.LWRK) CALL STOPIT("DFTINT",'DFTINT',KFREE,LWRK)
-      LFREE = LWRK - KFREE + 1
+      CALL QENTER('DFTINT')
 C
-      CALL DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,WRK(KFREE),LFREE,CB,
-     &            CBDATA,ELECTRONS,WRK(KGAO),WRK(KDMGAO))
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
+      LGAO   = MXBLLEN*NBAST*22
+      LDMGAO = MXBLLEN*NBAST
+      CALL MEMGET2('REAL','   GAO',KGAO  ,LGAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL',' DMGAO',KDMGAO,LDMGAO,WORK,KFREE,LFREE)
 C
+      CALL DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
+     &            WORK(KGAO),WORK(KDMGAO),WORK,KFREE,LFREE)
+C
+      CALL QEXIT('DFTINT')
       END
-      SUBROUTINE DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,WORK,LWORK,CB,
-     &                  CBDATA,ELECTRONS,GAO,DMAGAO)
+      SUBROUTINE DFTIN1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
+     &                  GAO,DMAGAO,WORK,KFREE,LFREE)
 
 C
 C     P. Salek and T. Helgaker, October 2003
 C
 #include <implicit.h>      
-#include <inforb.h>
+#include <priunit.h>
+C
 #include <maxorb.h>
+#include <inforb.h>
 #include <shells.h>
 #include <dftcom.h>
-#include <priunit.h>
 #ifdef VAR_MPI
 #include <infpar.h>
 #include <mpif.h>
@@ -71,7 +77,7 @@ C     choose reasonably large. Exceeding this limit means that boxes are
 C     too large.
       PARAMETER(NBUFLEN=99000)
 C
-      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
+      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(*), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
       DIMENSION DMAGAO(MXBLLEN,NBAST),GAO(MXBLLEN,NBAST,22)
@@ -79,8 +85,9 @@ C
       DIMENSION COOR(3,NBUFLEN), WEIGHT(NBUFLEN)
       DIMENSION NSHLBLCK(2,KMAX), NBLCNT(8), NBLOCKS(2,NBAST,8)
       DIMENSION RHOA(MXBLLEN), GRADA(3,MXBLLEN)
+      DIMENSION RHOB(MXBLLEN), GRADB(3,MXBLLEN) 
 C
-      LOGICAL DOGGA, DFT_ISGGA, CHECKELS
+      LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
       DIMENSION IORIDX(KMAX,2,8)
 C     
@@ -89,55 +96,104 @@ C
       IGEODRV = NGEODRV
       IF (DOGGA) IGEODRV = IGEODRV + 1
       CALL SETUPSOS(IGEODRV,DOLND,IDUM1,IDUM2)
-      CALL OPNQUA(NBAST,DMAT,WORK,LWORK) ! C code
+      CALL OPNQUA(NBAST,DMAT,WORK(KFREE),LFREE) ! C code
       NPOINTS = 0
       CALL CONSTRUCT_IORIDX(IORIDX)
+
+!#define EXPORT_GRID
+#ifdef EXPORT_GRID
+      lunit_export = 137
+      open(lunit_export,
+     &     form   = 'formatted',
+     &     status = 'unknown',
+     &     access = 'sequential',
+     &     file   =  'grid.export')
+
+      rewind lunit_export
+#endif /* ifdef EXPORT_GRID */
+
  100  CONTINUE
          CALL REAQUA(NSHELL,NSHLBLCK,NBUFLEN,COOR,WEIGHT,NLEN) ! C code
-         IF(NLEN .LE. 0) GO TO 200
+         if (nlen .le. 0) then
+#ifdef EXPORT_GRID
+!          there are no more points
+!          write some negative integer
+!          so that DIRAC knows that it's over
+           write(lunit_export, *) -1
+#endif /* ifdef EXPORT_GRID */
+           go to 200
+         end if
          NPOINTS = NPOINTS + NLEN
+
+#ifdef EXPORT_GRID
+         write(lunit_export, *) nlen
+         do i = 1, nlen
+           write(lunit_export, '(4d20.12)') coor(1, i),
+     &                                      coor(2, i),
+     &                                      coor(3, i),
+     &                                      weight(i)
+         enddo
+#endif /* ifdef EXPORT_GRID */
+
          DO IPT = 1, NLEN, MXBLLEN
             NCURLEN=MIN(MXBLLEN,NLEN-IPT+1)
             CALL BLGETSOS(NCURLEN,GAO,COOR(1,IPT),NSHELL,NSHLBLCK,
-     &                    WORK,LWORK,NBAST,DOLND,DOGGA,DFTHRI,0)
+     &                    WORK(KFREE),LFREE,NBAST,DOLND,DOGGA,DFTHRI,0)
             CALL SHLTOORB(NSHELL,NSHLBLCK,NBLCNT,NBLOCKS,IORIDX)
             IF(DOGGA) THEN
                CALL GETRHO_BLOCKED_GGA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOA,GRADA)
+               IF (NDMAT .EQ. 2) CALL GETRHO_BLOCKED_GGA(DMAT(1,1,2),
+     &                                 GAO,NBLCNT,NBLOCKS,NSHELL,
+     &                                 DMAGAO,NCURLEN,RHOB,GRADB)
             ELSE
                CALL GETRHO_BLOCKED_LDA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOA)
+               IF (NDMAT .EQ. 2) CALL GETRHO_BLOCKED_LDA(DMAT(1,1,2),
+     &                                 GAO,NBLCNT,NBLOCKS,NSHELL,
+     &                                 DMAGAO,NCURLEN,RHOB)
             END IF
-            DO I = 1, NCURLEN
-               ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)
-            END DO
-            CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
-     &              COOR(1,IPT),WEIGHT(IPT),CBDATA)
+            IF (NDMAT .EQ. 2) THEN
+              DO I = 1, NCURLEN
+                 ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1) 
+     &                     * (RHOA(I)+RHOB(I))
+              END DO
+              CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,RHOB, 
+     &                GRADA,GRADB,COOR(1,IPT),WEIGHT(IPT),CBDATA)
+            ELSE 
+               DO I = 1, NCURLEN
+                  ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)              
+               END DO
+               CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
+     &                 COOR(1,IPT),WEIGHT(IPT),CBDATA)
+            END IF 
          END DO
          GO TO 100
  200     CONTINUE
+
+#ifdef EXPORT_GRID
+      close(lunit_export, status = 'keep')
+#endif /* ifdef EXPORT_GRID */
+
       CALL CLSQUA !C code
 C
 C     Test on the number of electrons
 C   
 C     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       CALL  DFTINTCOLLECT(ELECTRONS)
-#ifdef VAR_MPI
-      CHECKELS = MYNUM.EQ.0
-#else
-      CHECKELS = .TRUE.
-#endif
-      ELCTRX = FLOAT(2*NISHT + NASHT)
-      ERROR  = ELECTRONS - ELCTRX
-      IF (CHECKELS.AND.ABS(ERROR) .GT. DFTELS*ELCTRX) THEN
-         WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
-     &   ' Number of electrons from numerical integration:',ELECTRONS,
-     &   ' Number of electrons from orbital occupations:  ',ELCTRX,
-     &   ' Error in the number of electrons:              ',ERROR,
-     &   ' Error larger than DFTELS (set input):          ',DFTELS,
-     &   ' Calculation aborted.'
-         CALL QUIT
+      IF (MYNUM.EQ.0) THEN
+        ELCTRX = FLOAT(2*NISHT + NASHT)
+        ERROR  = ELECTRONS - ELCTRX
+        IF (ABS(ERROR) .GT. DFTELS*ELCTRX) THEN
+          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
+     &    ' Number of electrons from numerical integration:',ELECTRONS,
+     &    ' Number of electrons from orbital occupations:  ',ELCTRX,
+     &    ' Error in the number of electrons:              ',ERROR,
+     &    ' Error larger than DFTELS (set input):          ',DFTELS,
+     &    ' Calculation aborted.'
+          CALL QUIT
      &    ('Wrong number of electrons in DFTINT. Calculation aborted.')
+        END IF
       END IF
       RETURN
       END
@@ -307,7 +363,15 @@ c     /XYZPOW/
      &               0, MPI_COMM_WORLD,ie)
 c     /DFTCOM/
       CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
-c
+
+!     sync thresholds
+      call mpi_bcast(dfthr0, 1, mpi_double_precision, 
+     &                       0, mpi_comm_world, ie)
+      call mpi_bcast(dfthrl, 1, mpi_double_precision, 
+     &                       0, mpi_comm_world, ie)
+      call mpi_bcast(dfthri, 1, mpi_double_precision, 
+     &                       0, mpi_comm_world, ie)
+
 c     sync functionals, too.
       CALL DFTFUNCSYNC(MYNUM,NODTOT)
 c      
@@ -319,8 +383,6 @@ c
 c
 #include <implicit.h>
 #include <mpif.h>
-#include <maxorb.h>
-#include <infpar.h>
       A = ELECTRONS
       CALL MPI_Reduce(A,ELECTRONS,1,MPI_DOUBLE_PRECISION,MPI_SUM,
      &                0,MPI_COMM_WORLD,IERR)

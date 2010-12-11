@@ -51,6 +51,10 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 
       LOGICAL TRIPLET, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -141,6 +145,12 @@ C
       ENDIF
 C
       IF (CCS .OR. CIS) GOTO 9999
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         CALL QEXIT('CCLR_DIA')
+         RETURN
+      END IF
+Cholesky
 C
 C------------------------------------------------
 C     FOCK based approximative A(2,2) diagonal.
@@ -310,7 +320,7 @@ C       CALL CCLR_DIAR12(DIAA(KOFF12),WORK,LWORK)
 C       CALL QUIT('Missing subroutine in CCLR_DIA...')
 c       Write(LUPRI,*)'Warning Missing subroutine in CCLR_DIA...'
 c       Write(LUPRI,*)'Set R12 Jacobian diagonal to 1.0D01...'
-        CALL DCOPY(NGAMMA(ISYMTR),1.0D01,0,DIAA(KOFF12),1)
+        CALL DCOPY(NTR12AM(ISYMTR),1.0D01,0,DIAA(KOFF12),1)
       END IF
 C
       IF (IPRINT.GT. 20 .OR. DEBUG .OR. LOCDBG) THEN
@@ -324,8 +334,8 @@ C
          END IF
          IF (CCR12) THEN
            WRITE(LUPRI,*) 'R12 doubles part:'
-           CALL OUTPUT(DIAA(KOFF12),1,NGAMMA(ISYMTR),
-     *                 1,1,NGAMMA(ISYMTR),1,1,LUPRI)
+           CALL OUTPUT(DIAA(KOFF12),1,NTR12AM(ISYMTR),
+     *                 1,1,NTR12AM(ISYMTR),1,1,LUPRI)
          END IF
       ENDIF
 C
@@ -512,7 +522,7 @@ C
 C
       END
 c*DECK CCLR_JAC
-      SUBROUTINE CCLR_JAC(WORK,LWORK)
+      SUBROUTINE CCLR_JAC(ISIDE,WORK,LWORK,APROXR12)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -531,6 +541,7 @@ C
       LOGICAL   RSPIM2
       DIMENSION WORK(LWORK)
       CHARACTER*24 CBLOCK
+      CHARACTER*(*) APROXR12
 C
 #include <ccsdinp.h>
 #include <cclr.h>
@@ -571,8 +582,8 @@ c        ENDIF
          NC2VEC = NT2AM(ISYMTR)
       ENDIF
       IF (CCR12) THEN
-        NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NGAMMA(ISYMTR)
-        NTEMP2 = NTEMP*(NC1VEC + NC2VEC + NGAMMA(ISYMTR))
+        NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
+        NTEMP2 = NTEMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
       ELSE
         NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR)
         NTEMP2 = NTEMP*(NC1VEC + NC2VEC)
@@ -599,7 +610,8 @@ C
            CALL QUIT('Too little workspace in CCLR_JAC')
          END IF
          CALL AROUND( 'Calculation of analytical CC Jacobian')
-         CALL CCLR_JACAN(NC1VEC,NC2VEC,WORK(KJACAN),LWORK)
+         CALL CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK(KJACAN),LWORK,
+     &                   APROXR12)
       ENDIF
 C
 C-------------------------------------------------------
@@ -620,7 +632,7 @@ C
       CALL AROUND( 'Calculation of finite difference  CC Jacobian')
       RSPIM2 =  RSPIM
       RSPIM  = .FALSE.
-      CALL CCLR_FDJAC(NC1VEC,NC2VEC,WORK(KFDJAC),LWRK1)
+      CALL CCLR_FDJAC(NC1VEC,NC2VEC,WORK(KFDJAC),LWRK1,APROXR12)
       RSPIM  = RSPIM2
 C
 C--------------------------------------------------------
@@ -653,7 +665,7 @@ C
             IF (CCR12) THEN
               CALL AROUND('DIFFERENCE. CC JACOBIAN - R12 doubles PART')
               CALL OUTPUT(WORK(KJACAN+NTEMP*(NC1VEC+NC2VEC)),
-     *                    1,NTEMP,1,NGAMMA(1),NTEMP,NGAMMA(1),1,LUPRI)
+     *                    1,NTEMP,1,NTR12AM(1),NTEMP,NTR12AM(1),1,LUPRI)
             END IF
          ENDIF
          DIFNOR  = DDOT(NTEMP2,WORK(KJACAN),1,WORK(KJACAN),1)
@@ -672,7 +684,7 @@ C
       RETURN
       END
 c*DECK CCLR_JACAN
-      SUBROUTINE CCLR_JACAN(NC1VEC,NC2VEC,WORK,LWORK)
+      SUBROUTINE CCLR_JACAN(NC1VEC,NC2VEC,ISIDE,WORK,LWORK,APROXR12)
 C
 C-------------------------------------------------------------------------
 C     Test routine for calculating the CC Jacobian by Transformation of
@@ -696,6 +708,7 @@ C
 C
       DIMENSION WORK(LWORK)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-08)
+      CHARACTER*(*) APROXR12
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_JACAN')
@@ -707,8 +720,8 @@ C----------------------------
 C
       ISYMTR     = 1
       IF (CCR12) THEN
-        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NGAMMA(ISYMTR)
-        NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NGAMMA(ISYMTR))
+        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(ISYMTR)
+        NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NTR12AM(ISYMTR))
       ELSE
         NTAMP      = NT1AMX + NT2AMX
         NTAMP2     = NTAMP*(NC1VEC + NC2VEC )
@@ -746,17 +759,16 @@ C     elements in work.
 C     Work follows immediately after vectors as it should.
 C---------------------------------------------------------
 C
-      DO I = 1, NC1VEC + NC2VEC + NGAMMA(1)
+      DO I = 1, NC1VEC + NC2VEC + NTR12AM(1)
          CALL DCOPY(NTAMP,WORK(KC1+NTAMP*(I-1)),1,WORK(KEND1),1)
-         ISIDE = 1
          CALL CC_ATRR(0.0D0,ISYMOP,ISIDE,WORK(KEND1),LWRK1,
-     &                .FALSE.,DUMMY)
+     &                .FALSE.,DUMMY,APROXR12)
          CALL DCOPY(NTAMP,WORK(KEND1),1,WORK(KC1+NTAMP*(I-1)),1)
   
          IF (CCR12) THEN  
            KS12AM = KEND1 + NTAMP
            KM12AM = KMETRIC + NT1AM(ISYMTR)+NT2AM(ISYMTR)+NTAMP*(I-1)
-           CALL DCOPY(NGAMMA(1),WORK(KS12AM),1,WORK(KM12AM),1)
+           CALL DCOPY(NTR12AM(1),WORK(KS12AM),1,WORK(KM12AM),1)
          END IF
       END DO
 C
@@ -797,11 +809,23 @@ C
          IF ( CCR12) THEN
            CALL AROUND( 'CC JACOBIANT I PRESUME - A*C12 PART ' )
            CALL OUTPUT(WORK(KJACOBI+NTAMP*(NC1VEC+NC2VEC)),1,NTAMP,
-     *                 1,NGAMMA(1),NTAMP,NGAMMA(1),1,LUPRI)
+     *                 1,NTR12AM(1),NTAMP,NTR12AM(1),1,LUPRI)
            CALL AROUND( 'CC-R12 METRIC') 
-           CALL OUTPUT(WORK(KMETRIC),1,NTAMP,1,NC1VEC+NC2VEC+NGAMMA(1),
-     *                 NTAMP,NC1VEC+NC2VEC+NGAMMA(1),1,LUPRI)
+           CALL OUTPUT(WORK(KMETRIC),1,NTAMP,1,NC1VEC+NC2VEC+NTR12AM(1),
+     *                 NTAMP,NC1VEC+NC2VEC+NTR12AM(1),1,LUPRI)
          END IF
+
+         CALL AROUND( 'FULL ANALYTICAL CC JACOBIANT' )
+         IF (ISIDE.EQ.-1) THEN
+           CALL CCLR_TRANSSQ(WORK(KJACOBI),NTAMP)
+         ENDIF
+         if (.not. CCR12) then
+         call output(WORK(KJACOBI),1,NTAMP,1,NC1VEC+NC2VEC,NTAMP,
+     &               NC1VEC+NC2VEC,1,LUPRI)
+         else
+         call output(WORK(KJACOBI),1,NTAMP,1,NC1VEC+NC2VEC+NTR12AM(1),
+     &               NTAMP,NC1VEC+NC2VEC+NTR12AM(1),1,LUPRI)
+         end if
 
          CALL AROUND(' END OF CCLR_JACAN ')
       ENDIF
@@ -838,7 +862,7 @@ C
       END DO
 
       IF (CCR12) THEN
-        DO J = 1, NGAMMA(1)
+        DO J = 1, NTR12AM(1)
           CALL DZERO(C12AM(1,J),NTAMP)
           C12AM(J + NT1AMX+NT2AMX,J) = 1.0D00
         END DO
@@ -872,7 +896,7 @@ C
          X21 = X21 + DDOT(NT2AMX,XJAC(1 + NT1AMX,I),1,
      *                    XJAC(1 + NT1AMX,I),1)
          IF (CCR12) THEN
-           XR1 = XR1 + DDOT(NGAMMA(1),XJAC(1+NT1AMX+NT2AMX,I),1,
+           XR1 = XR1 + DDOT(NTR12AM(1),XJAC(1+NT1AMX+NT2AMX,I),1,
      *                                XJAC(1+NT1AMX+NT2AMX,I),1)
          END IF
 C
@@ -884,18 +908,18 @@ C
          X22 = X22 + DDOT(NT2AMX,XJAC(1 + NT1AMX,I),1,
      *                    XJAC(1 + NT1AMX,I),1)
          IF (CCR12) THEN
-           XR2 = XR2 + DDOT(NGAMMA(1),XJAC(1+NT1AMX+NT2AMX,I),1,
+           XR2 = XR2 + DDOT(NTR12AM(1),XJAC(1+NT1AMX+NT2AMX,I),1,
      *                                XJAC(1+NT1AMX+NT2AMX,I),1)
          END IF
 C
  200  CONTINUE
 
       IF (CCR12) THEN
-       DO I = NC1VEC+NC2VEC+1,NC1VEC+NC2VEC+NGAMMA(1)
+       DO I = NC1VEC+NC2VEC+1,NC1VEC+NC2VEC+NTR12AM(1)
          X1R = X1R + DDOT(NT1AMX,XJAC(1,I),1,XJAC(1,I),1)
          X2R = X2R + DDOT(NT2AMX,XJAC(1 + NT1AMX,I),1,
      *                           XJAC(1 + NT1AMX,I),1)
-         XRR = XRR + DDOT(NGAMMA(1),XJAC(1+NT1AMX+NT2AMX,I),1,
+         XRR = XRR + DDOT(NTR12AM(1),XJAC(1+NT1AMX+NT2AMX,I),1,
      *                              XJAC(1+NT1AMX+NT2AMX,I),1)
        END DO
       END IF
@@ -917,7 +941,7 @@ C
       END
 C-----------------------------------------------------------------------
 c*DECK CCLR_FDJAC
-      SUBROUTINE CCLR_FDJAC(NC1VEC,NC2VEC,WORK,LWORK)
+      SUBROUTINE CCLR_FDJAC(NC1VEC,NC2VEC,WORK,LWORK,APROXR12)
 C-----------------------------------------------------------------------
 C     Test routine for calculating the CC Jacobian by finite 
 C     difference on the CC vector function.
@@ -937,7 +961,7 @@ C-----------------------------------------------------------------------
 #include <ccsdinp.h>
 #include <cclr.h>
 #include <r12int.h>
-
+#include <ccr12int.h>
  
       INTEGER NC1VEC, NC2VEC, LWORK
    
@@ -951,23 +975,34 @@ C-----------------------------------------------------------------------
       DOUBLE PRECISION TI,X11,X12,X21,X22,XNJ,X1R,XR1,X2R,XR2,XRR,DDOT
 #endif 
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, 
-     &           DELTA = 1.0D-05, DELTAI = 1.0D00/DELTA)
-      CHARACTER*10 MODEL
-      CHARACTER*8 FC12AM, FS12AM
+C    &           DELTA = 1.0D-05, DELTAI = 1.0D00/DELTA)
+     &           DELTA = 1.0D-07, DELTAI = 1.0D00/DELTA)
+      CHARACTER*10 MODEL,MODELR12
+      CHARACTER*8 FC12AM,FS12AM,FC2AM,FS2AM
+      CHARACTER*(*) APROXR12
       PARAMETER (FC12AM='CCR_C12M',FS12AM='CCR_S12M')
+      PARAMETER (FC2AM='CCR_C2AM',FS2AM='CCR_S2DM')
 
       INTEGER NTAMP,NTAMP2,KJACOBI,KJACCO,KRHO1,KRHO2,KRHO1D,KRHO2D,
      &        KC1AM,KC2AM,KEND1,LWRK1,KJACOBI2,IOPT,LUJAC, KJACOBIR,
-     &        NAI, NBJ, NKI, NLJ, KCR12AM, KRHOR12, KRHOR12D, NRHFTRIA,
-     &        N2, KR12TRIP, KR12SING, IJ, LUNIT, LUFC12, LUFS12, LUMET
+     &        NAI, NBJ, NKI, NLJ, KCR12AM, KRHOR12, KRHOR12D, 
+     &        LUNIT, LUFC12, LUFS12, LUMET,
+     &        LUFS2,LUFC2,LUMET2,LUMET3,KC2AMPCK,KSCR1
 C
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
+      CALL QENTER('FDJAC')
  
+      LUFC2  = -1
+      LUFS2  = -1
+      LUFS12 = -1
+      LUFC12 = -1
+
       IF (OMEGSQ) CALL QUIT('CCLR_FDJAC incompatible with OMEGSQ.')
       IF (LCOR.OR.LSEC) 
      &   CALL QUIT('CCLR_FDJAC incompatible with FCORE and FSECON.')
+      IF (NSYM.NE.1) CALL QUIT('CCLR_FDJAC must run in C1 symmetry.')
 C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CCLR_FDJAC: MAKING FINITE DIFF. CC JACOBIANT')
@@ -975,7 +1010,7 @@ C
          WRITE(LUPRI,*) 'Number of double excitations:',NC2VEC
          IF (CCR12) THEN
            WRITE(LUPRI,*) 'This is a CC-R12 calculation...'
-           WRITE(LUPRI,*) 'Number of R12 double excitations:',NGAMMA(1)
+           WRITE(LUPRI,*) 'Number of R12 double excitations:',NTR12AM(1)
          END IF
       ENDIF
 C 
@@ -984,21 +1019,29 @@ C     Write the jacobian to disk if FDJAC is done.
 C--------------------------------------------------
 C
       IF (FDJAC ) THEN
-         LUJAC = 0
+         LUJAC = -1
          CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          IF (IPRINT.GT.5) WRITE(LUPRI,'(3X,A,//)') 
      &        'FINITE DIFF. JACOBIAN WILL BE WRITTEN TO DISK'
          IF (CCR12) THEN
-           LUMET = 0
+           LUMET = -1
            CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            IF (IPRINT.GT.5) WRITE(LUPRI,'(3X,A,//)') 
      &        'METRIC MATRIX WILL BE WRITTEN TO DISK'
-           LUFC12 = 0 
            CALL WOPEN2(LUFC12,FC12AM,64,0)
-           LUFS12 = 0 
            CALL WOPEN2(LUFS12,FS12AM,64,0)
+           IF (IANR12.EQ.2) THEN
+             LUMET2 = -1
+             CALL GPOPEN(LUMET2,'CCLR_MET2','UNKNOWN',' ','UNFORMATTED',
+     *                 IDUMMY,.FALSE.)
+             LUMET3 = -1
+             CALL GPOPEN(LUMET3,'CCLR_MET3','UNKNOWN',' ','UNFORMATTED',
+     *                 IDUMMY,.FALSE.)
+             CALL WOPEN2(LUFS2,FS2AM,64,0)
+             CALL WOPEN2(LUFC2,FC2AM,64,0)
+           END IF
          END IF
       ENDIF
 C
@@ -1008,8 +1051,8 @@ C----------------------------
 C
       ISYMTR     = 1
       IF (CCR12) THEN
-        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NGAMMA(1)
-        NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NGAMMA(1))
+        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NTR12AM(1)
+        NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NTR12AM(1))
       ELSE
         NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR)
         NTAMP2     = NTAMP*(NC1VEC + NC2VEC)
@@ -1037,18 +1080,18 @@ C
       KRHO1D     = KC1AM    + NT1AMX
       KRHO2D     = KRHO1D   + NT1AM(ISYMOP)
       KC2AM      = KRHO2D   + MAX(NT2AMX,NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
-      KEND1      = KC2AM    + NT2SQ(ISYMOP)
+      KEND1      = KC2AM    + MAX(NT2SQ(ISYMOP),NT2R12(1))
 
       IF (CCR12) THEN
-        NRHFTRIA = NRHFT*(NRHFT+1)/2
-        N2       = NRHFTRIA * NRHFTRIA
-  
         KCR12AM  = KEND1 
-        KRHOR12  = KCR12AM  + NGAMMA(1)
-        KRHOR12D = KRHOR12  + NGAMMA(1)
-        KR12SING = KRHOR12D + NGAMMA(1)
-        KR12TRIP = KR12SING + N2
-        KEND1    = KR12TRIP + N2
+        KRHOR12  = KCR12AM  + NTR12AM(1)
+        KRHOR12D = KRHOR12  + NTR12AM(1)
+        KEND1    = KRHOR12D + NTR12AM(1)
+        IF (IANR12.EQ.2) THEN
+          KC2AMPCK = KEND1
+          KSCR1  = KC2AMPCK + NT2AM(ISYMTR)
+          KEND1  = KSCR1 + MAX(NT2AM(ISYMTR),NTR12AM(ISYMTR))
+        END IF
       ELSE
         KCR12AM  = -999999
         KRHOR12  = -999999
@@ -1105,7 +1148,6 @@ C------------------------------------------------
 C
       IOPT = 3
       CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
-
 C
 C--------------------------------------
 C     Calculate reference omega vector.
@@ -1113,20 +1155,19 @@ C--------------------------------------
 C
       RSPIM = .FALSE.
 C
-      if (.false.) then
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND1),LWRK1)
+      IF (.FALSE.) THEN
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND1),LWRK1,APROXR12)
 C
       CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1),1)
       CALL DCOPY(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2),1)
       IF (CCR12) THEN
-        LUNIT = 0
-        CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
-     &                     IDUMMY,.FALSE.)
-        READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-        READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-        CALL GPCLOSE(LUNIT,'KEEP') 
-        CALL CCR12PCK(WORK(KRHOR12),1,WORK(KR12SING),WORK(KR12TRIP))
+        LUNIT = -1
+        CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
+     *                     IDUMMY,.FALSE.)
+        READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
+        CALL GPCLOSE(LUNIT,'KEEP')
       END IF
 C
       IF (IPRINT.GT.125) THEN
@@ -1136,10 +1177,10 @@ C
          CALL OUTPAK(WORK(KRHO2),NT1AMX,1,LUPRI)
          IF (CCR12) THEN
            CALL AROUND( 'RHO-R12' )
-           CALL OUTPAK(WORK(KRHOR12),NMATIJ(1),1,LUPRI)
+           CALL OUTPAK(WORK(KRHOR12),NMATKI(1),1,LUPRI)
          END IF
       ENDIF
-      end if
+      END IF
 C
 C---------------------------------------------
 C     Calculate Jacobiant by finite difference.
@@ -1151,23 +1192,23 @@ C
 C        Compute Omega(t - 0.5 delta)
          WORK(KC1AM +I -1) = WORK(KC1AM +I -1 ) - 0.5D0*DELTA
 
-         CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),WORK(KC2AM),
-     *               WORK(KEND1),LWRK1)
+         CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
+     &               WORK(KC2AM),
+     *               WORK(KEND1),LWRK1,APROXR12)
          IF (CCR12) THEN
-           LUNIT = 0
-           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+           LUNIT = -1
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
-           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-           CALL GPCLOSE(LUNIT,'KEEP') 
-           CALL CCR12PCK(WORK(KRHOR12),1,WORK(KR12SING),WORK(KR12TRIP))
+           READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
+           CALL GPCLOSE(LUNIT,'KEEP')
          END IF
 
 C        Compute Omega(t + 0.5 delta)
          WORK(KC1AM +I -1) = WORK(KC1AM +I -1 ) + DELTA
 
-         CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *               WORK(KEND1),LWRK1)
+         CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),
+     &               WORK(KC1AM),WORK(KC2AM),
+     *               WORK(KEND1),LWRK1,APROXR12)
 
 C        Restore t amplitudes
          WORK(KC1AM +I -1) = WORK(KC1AM +I -1) - 0.5D0*DELTA
@@ -1179,7 +1220,7 @@ C        Restore t amplitudes
            CALL OUTPAK(WORK(KRHO2D),NT1AMX,1,LUPRI)
          ENDIF
 
-C        Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
+C        Calculate [Omega(t+0.5delta)-(omega(t-0.5delta)]/delta
          CALL DAXPY(NT1AMX,-1.0D00,WORK(KRHO1),1,WORK(KRHO1D),1)
          CALL DAXPY(NT2AMX,-1.0D00,WORK(KRHO2),1,WORK(KRHO2D),1)
          CALL CCLR_DIASCL(WORK(KRHO2D),XHALF,ISYMTR)
@@ -1187,20 +1228,19 @@ C        Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
          CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
 
          IF (CCR12) THEN
-           LUNIT = 0
-           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+           LUNIT = -1
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &                     IDUMMY,.FALSE.)
-           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           READ(LUNIT) (WORK(KRHOR12D+N), N = 0, NTR12AM(1)-1 )
            CALL GPCLOSE(LUNIT,'KEEP') 
-           CALL CCR12PCK(WORK(KRHOR12D),1,WORK(KR12SING),WORK(KR12TRIP))
            IF (IPRINT.GT.125) THEN
              CALL AROUND( 'RHO-R12' )
-             CALL OUTPAK(WORK(KRHO2),NMATIJ(1),1,LUPRI)
+             CALL OUTPAK(WORK(KRHO2),NMATKI(1),1,LUPRI)
            END IF
-           CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHOR12),1,WORK(KRHOR12D),1)
+           CALL DAXPY(NTR12AM(1),-1.0D0,WORK(KRHOR12),1,
+     &                WORK(KRHOR12D),1)
            CALL CCLR_DIASCLR12(WORK(KRHOR12D),BRASCL,1)
-           CALL DSCAL(NGAMMA(1),DELTAI,WORK(KRHOR12D),1)
+           CALL DSCAL(NTR12AM(1),DELTAI,WORK(KRHOR12D),1)
          END IF
 
          IF (JACTST) THEN
@@ -1208,20 +1248,20 @@ C        Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
      *                 WORK(KJACOBI+NTAMP*(I-1)),1)
             CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                WORK(KJACOBI+NTAMP*(I-1)+NT1AMX),1)
-            IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+            IF (CCR12) CALL DCOPY(NTR12AM(1),WORK(KRHOR12D),1,
      *              WORK(KJACOBI+NTAMP*(I-1)+NT1AMX+NT2AMX),1)
          ENDIF
          IF (FDJAC ) THEN
             CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KJACCO),1)
             CALL DCOPY(NT2AMX,WORK(KRHO2D),1,WORK(KJACCO+NT1AMX),1)
-            IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+            IF (CCR12) CALL DCOPY(NTR12AM(1),WORK(KRHOR12D),1,
      *                                WORK(KJACCO+NT1AMX+NT2AMX),1)
             WRITE(LUJAC) (WORK(KJACCO +J-1), J = 1, NTAMP)
          ENDIF
          X11 = X11 + DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
          X21 = X21 + DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
          IF (CCR12) 
-     *    XR1 = XR1 + DDOT(NGAMMA(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
+     *    XR1 = XR1 + DDOT(NTR12AM(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
 C
          TI   = SECOND() - TI
          IF (IPRINT.GT.5 ) THEN
@@ -1248,22 +1288,21 @@ C          Compute Omega(t - 0.5 delta)
            WORK(KC2AM + I -1) = WORK(KC2AM+I -1) - 0.5D0*DELTA
 
            CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND1),LWRK1)
+     *               WORK(KC2AM),WORK(KEND1),LWRK1,APROXR12)
            IF (CCR12) THEN
-            LUNIT = 0
-            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+            LUNIT = -1
+            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &                      IDUMMY,.FALSE.)
-            READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-            READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+            READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
             CALL GPCLOSE(LUNIT,'KEEP') 
-            CALL CCR12PCK(WORK(KRHOR12),1,WORK(KR12SING),WORK(KR12TRIP))
            END IF
  
 C          Compute Omega(t + 0.5 delta)
            WORK(KC2AM + I -1) = WORK(KC2AM+I -1) + DELTA
 
-           CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND1),LWRK1)
+           CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),
+     &               WORK(KC1AM),
+     *               WORK(KC2AM),WORK(KEND1),LWRK1,APROXR12)
  
 C          Restore t amplitudes
            WORK(KC2AM + I -1) = WORK(KC2AM+I -1) - 0.5D0*DELTA
@@ -1284,28 +1323,25 @@ C          Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
            CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
 
            IF (CCR12) THEN
-             LUNIT = 0
-             CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
-     &                     IDUMMY,.FALSE.)
-             READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-             READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+             LUNIT = -1
+             CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ',
+     &                     'UNFORMATTED',IDUMMY,.FALSE.)
+             READ(LUNIT) (WORK(KRHOR12D+N), N = 0, NTR12AM(1)-1 )
              CALL GPCLOSE(LUNIT,'KEEP') 
-             CALL CCR12PCK(WORK(KRHOR12D),1,
-     &                     WORK(KR12SING),WORK(KR12TRIP))
              IF (IPRINT.GT.125) THEN
                CALL AROUND( 'RHO-R12' )
-               CALL OUTPAK(WORK(KRHO2),NMATIJ(1),1,LUPRI)
+               CALL OUTPAK(WORK(KRHO2),NMATKI(1),1,LUPRI)
              END IF
-             CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHOR12),1,
+             CALL DAXPY(NTR12AM(1),-1.0D0,WORK(KRHOR12),1,
      *                                   WORK(KRHOR12D),1)
              CALL CCLR_DIASCLR12(WORK(KRHOR12D),BRASCL,1)
-             CALL DSCAL(NGAMMA(1),DELTAI,WORK(KRHOR12D),1)
+             CALL DSCAL(NTR12AM(1),DELTAI,WORK(KRHOR12D),1)
            END IF
 C
            IF (NAI.EQ.NBJ) THEN
               CALL DSCAL(NT1AMX,2.0D00,WORK(KRHO1D),1)
               CALL DSCAL(NT2AMX,2.0D00,WORK(KRHO2D),1)
-              IF (CCR12) CALL DSCAL(NGAMMA(1),2.0D00,WORK(KRHOR12D),1)
+              IF (CCR12) CALL DSCAL(NTR12AM(1),2.0D00,WORK(KRHOR12D),1)
            ENDIF
 C
            IF (JACTST) THEN
@@ -1313,7 +1349,7 @@ C
      *                 WORK(KJACOBI2+NTAMP*(I-1)),1)
               CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                 WORK(KJACOBI2+NTAMP*(I-1)+NT1AMX),1)
-              IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+              IF (CCR12) CALL DCOPY(NTR12AM(1),WORK(KRHOR12D),1,
      *                WORK(KJACOBI2+NTAMP*(I-1)+NT1AMX+NT2AMX),1)
            ENDIF
 C
@@ -1321,15 +1357,33 @@ C
               CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KJACCO ),1)
               CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                  WORK(KJACCO+NT1AMX),1)
-              IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+              IF (CCR12) CALL DCOPY(NTR12AM(1),WORK(KRHOR12D),1,
      *                  WORK(KJACCO+NT1AMX+NT2AMX),1)
               WRITE(LUJAC) (WORK(KJACCO +J-1), J = 1, NTAMP)
+              IF (CCR12.AND.IANR12.EQ.2) THEN
+c               make unit vector for this element (0 1 0) and
+c               compute lower nondiagonal part for metric and
+c               store it on file CCLR_MET3               
+                CALL DZERO(WORK(KC2AMPCK),NT2AM(1))
+                WORK(KC2AMPCK+I-1) = 1.0d0
+                CALL CC_WVEC(LUFC2,FC2AM,NT2AM(1),NT2AM(1),1,
+     &                       WORK(KC2AMPCK))
+                CALL DZERO(WORK(KSCR1),NTR12AM(1))
+                CALL CC_WVEC(LUFC12,FC12AM,NTR12AM(1),NTR12AM(1),1,
+     &                       WORK(KSCR1))
+                CALL CC_R12METRIC(1,BRASCL,KETSCL,WORK(KEND1),LWRK1,
+     &                            FC2AM,LUFC2,FC12AM,LUFC12,FS12AM,
+     &                            LUFS12,FS2AM,LUFS2,1,.FALSE.,DUMMY)
+                CALL CC_RVEC(LUFS12,FS12AM,NTR12AM(1),NTR12AM(1),1,
+     &                       WORK(KSCR1))
+                WRITE(LUMET3) (WORK(KSCR1 +J-1), J = 1, NTR12AM(1))
+              END IF
            ENDIF
 C
            X12 = X12 + DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
            X22 = X22 + DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
            IF (CCR12)
-     *      XR2=XR2 + DDOT(NGAMMA(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
+     *      XR2=XR2 + DDOT(NTR12AM(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
 
            TI   = SECOND() - TI
            IF (IPRINT.GT.5 ) THEN
@@ -1353,24 +1407,18 @@ C----------------------------------------------------------------
 C
       IF (CCR12) THEN
        ! read R12 doubles amplitudes from file
-       LUNIT = 0
-       CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
-       READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-       READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-       CALL GPCLOSE(LUNIT,'KEEP') 
-       CALL CCR12PCK(WORK(KCR12AM),1,WORK(KR12SING),WORK(KR12TRIP))
+       IOPT = 32
+       CALL CC_RDRSP('R0 ',0,1,IOPT,MODELR12,DUMMY,WORK(KCR12AM))
 
        ! make copy from which correct amplitudes can be 
        ! restored after finite difference calculation
-       LUNIT = 0
-       CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','FORMATTED',
+       LUNIT = -1
+       CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
-       WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-       WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+       WRITE(LUNIT) (WORK(KCR12AM+N), N = 0, NTR12AM(1)-1 )
        CALL GPCLOSE(LUNIT,'KEEP') 
 
-       DO NKI = 1, NMATIJ(1)
+       DO NKI = 1, NMATKI(1)
         DO NLJ = 1, NKI
          I = INDEX(NKI,NLJ)
 C
@@ -1378,39 +1426,27 @@ C
 
 C          Compute Omega(t - 0.5 delta)
            WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) - 0.5D0*DELTA
-           CALL CCR12UNPCK(WORK(KCR12AM),1,
-     &                     WORK(KR12SING),WORK(KR12TRIP))
-           LUNIT = 0
-           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
-     &                        IDUMMY,.FALSE.)
-           WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-           WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-           CALL GPCLOSE(LUNIT,'KEEP') 
+           IOPT = 32
+           CALL CC_WRRSP('R0 ',0,1,IOPT,MODELR12,DUMMY,DUMMY,
+     *                   WORK(KCR12AM),WORK(KEND1),LWRK1)
 
            CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND1),LWRK1)
-           LUNIT = 0
-           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     *               WORK(KC2AM),WORK(KEND1),LWRK1,APROXR12)
+           LUNIT = -1
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
-           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-           CALL GPCLOSE(LUNIT,'KEEP') 
-           CALL CCR12PCK(WORK(KRHOR12),1,
-     &                   WORK(KR12SING),WORK(KR12TRIP))
- 
-C          Compute Omega(t + 0.5 delta)
-           WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) + DELTA
-           CALL CCR12UNPCK(WORK(KCR12AM),1,
-     &                     WORK(KR12SING),WORK(KR12TRIP))
-           LUNIT = 0
-           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
-     &                        IDUMMY,.FALSE.)
-           WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-           WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           READ(LUNIT) (WORK(KRHOR12+N), N = 0, NTR12AM(1)-1 )
            CALL GPCLOSE(LUNIT,'KEEP') 
 
-           CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND1),LWRK1)
+C          Compute Omega(t + 0.5 delta)
+           WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) + DELTA
+           IOPT = 32
+           CALL CC_WRRSP('R0 ',0,1,IOPT,MODELR12,DUMMY,DUMMY,
+     *                   WORK(KCR12AM),WORK(KEND1),LWRK1)
+
+           CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),
+     &                 WORK(KC1AM),
+     *                 WORK(KC2AM),WORK(KEND1),LWRK1,APROXR12)
  
 C          Restore t amplitudes
            WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) - 0.5D0*DELTA
@@ -1430,27 +1466,24 @@ C          Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
            CALL DSCAL(NT1AMX,DELTAI,WORK(KRHO1D),1)
            CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
 
-           LUNIT = 0
-           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+           LUNIT = -1
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
-           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           READ(LUNIT) (WORK(KRHOR12D+N), N = 0, NTR12AM(1)-1 )
            CALL GPCLOSE(LUNIT,'KEEP') 
-           CALL CCR12PCK(WORK(KRHOR12D),1,
-     &                   WORK(KR12SING),WORK(KR12TRIP))
            IF (IPRINT.GT.125) THEN
              CALL AROUND( 'RHO-R12' )
-             CALL OUTPAK(WORK(KRHO2),NMATIJ(1),1,LUPRI)
+             CALL OUTPAK(WORK(KRHO2),NMATKI(1),1,LUPRI)
            END IF
-           CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHOR12),1,
+           CALL DAXPY(NTR12AM(1),-1.0D0,WORK(KRHOR12),1,
      *                                 WORK(KRHOR12D),1)
            CALL CCLR_DIASCLR12(WORK(KRHOR12D),BRASCL,1)
-           CALL DSCAL(NGAMMA(1),DELTAI,WORK(KRHOR12D),1)
+           CALL DSCAL(NTR12AM(1),DELTAI,WORK(KRHOR12D),1)
 C
            IF (NKI.EQ.NLJ) THEN
               CALL DSCAL(NT1AMX,KETSCL,WORK(KRHO1D),1)
               CALL DSCAL(NT2AMX,KETSCL,WORK(KRHO2D),1)
-              IF (CCR12) CALL DSCAL(NGAMMA(1),KETSCL,WORK(KRHOR12D),1)
+              IF (CCR12) CALL DSCAL(NTR12AM(1),KETSCL,WORK(KRHOR12D),1)
            ENDIF
 C
            IF (JACTST) THEN
@@ -1458,7 +1491,7 @@ C
      *                 WORK(KJACOBIR+NTAMP*(I-1)),1)
               CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                 WORK(KJACOBIR+NTAMP*(I-1)+NT1AMX),1)
-              IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+              IF (CCR12) CALL DCOPY(NTR12AM(1),WORK(KRHOR12D),1,
      *                WORK(KJACOBIR+NTAMP*(I-1)+NT1AMX+NT2AMX),1)
            ENDIF
 C
@@ -1466,27 +1499,39 @@ C
               CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KJACCO ),1)
               CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                  WORK(KJACCO+NT1AMX),1)
-              CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+              CALL DCOPY(NTR12AM(1),WORK(KRHOR12D),1,
      *                  WORK(KJACCO+NT1AMX+NT2AMX),1)
               WRITE(LUJAC) (WORK(KJACCO +J-1), J = 1, NTAMP)
 
               ! make unit vector for this element and compute
               ! S * R_12 and store on file CCLR_MET:
-              CALL DZERO(WORK(KRHOR12D),NGAMMA(1))
+              CALL DZERO(WORK(KRHOR12D),NTR12AM(1))
               WORK(KRHOR12D + I -1) = 1.0D0
-              CALL CC_WVEC(LUFC12,FC12AM,NGAMMA(1),NGAMMA(1),1,
+              CALL CC_WVEC(LUFC12,FC12AM,NTR12AM(1),NTR12AM(1),1,
      &                     WORK(KRHOR12D))
-              CALL CC_R12METRIC(1,WORK(KEND1),LWRK1,
-     &             FC12AM,LUFC12,FS12AM,LUFS12,1)
-              CALL CC_RVEC(LUFS12,FS12AM,NGAMMA(1),NGAMMA(1),1,
+              IF (IANR12.EQ.2) THEN
+                CALL DZERO(WORK(KC2AMPCK),NT2AM(1))
+                CALL CC_WVEC(LUFC2,FC2AM,NT2AM(1),NT2AM(1),1,
+     &                       WORK(KC2AMPCK))
+              END IF
+              CALL CC_R12METRIC(1,BRASCL,KETSCL,WORK(KEND1),LWRK1,
+     &                          FC2AM,LUFC2,FC12AM,LUFC12,FS12AM,
+     &                          LUFS12,FS2AM,LUFS2,1,.FALSE.,DUMMY)
+              CALL CC_RVEC(LUFS12,FS12AM,NTR12AM(1),NTR12AM(1),1,
      &                     WORK(KRHOR12D))
+              IF (IANR12.EQ.2) THEN
+                CALL CC_RVEC(LUFS2,FS2AM,NT2AM(1),NT2AM(1),1,
+     &                       WORK(KC2AMPCK))
+c               write mixed S matrix on file
+                WRITE(LUMET2) (WORK(KC2AMPCK +J-1), J = 1, NT2AM(1))
+              END IF
         
-              WRITE(LUMET) (WORK(KRHOR12D +J-1), J = 1, NGAMMA(1))
+              WRITE(LUMET) (WORK(KRHOR12D +J-1), J = 1, NTR12AM(1))
            ENDIF
 C
-           X1R = X1R + DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
-           X2R = X2R + DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
-           XRR = XRR + DDOT(NGAMMA(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
+           X1R = X1R +DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
+           X2R = X2R +DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
+           XRR = XRR +DDOT(NTR12AM(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
 
            TI   = SECOND() - TI
            IF (IPRINT.GT.5 ) THEN
@@ -1499,18 +1544,14 @@ C
        END DO
 
        ! restore R12 amplitudes
-       LUNIT = 0
-       CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','FORMATTED',
+       LUNIT = -1
+       CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','UNFORMATTED',
      &         IDUMMY,.FALSE.)
-       READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-       READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-       CALL GPCLOSE(LUNIT,'KEEP') 
-       LUNIT = 0
-       CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
-     &         IDUMMY,.FALSE.)
-       WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
-       WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
-       CALL GPCLOSE(LUNIT,'KEEP') 
+       READ(LUNIT) (WORK(KCR12AM+N), N = 0, NTR12AM(1)-1 )
+       CALL GPCLOSE(LUNIT,'DELETE') 
+       IOPT = 32
+       CALL CC_WRRSP('R0 ',0,1,IOPT,MODELR12,DUMMY,DUMMY,
+     *               WORK(KCR12AM),WORK(KEND1),LWRK1) 
       END IF
 C
       WRITE(LUPRI,*) '    '
@@ -1521,6 +1562,12 @@ C
           CALL GPCLOSE(LUMET,'KEEP')
           CALL WCLOSE2(LUFC12,FC12AM,'DELETE')
           CALL WCLOSE2(LUFS12,FS12AM,'DELETE')
+          IF (IANR12.EQ.2) THEN
+            CALL WCLOSE2(LUFS2,FS2AM,'DELETE')
+            CALL WCLOSE2(LUFC2,FC2AM,'DELETE')
+            CALL GPCLOSE(LUMET2,'KEEP')
+            CALL GPCLOSE(LUMET3,'KEEP')
+          END IF
       END IF
       IF (IPRINT.GE.5 .AND. JACTST) THEN
          CALL AROUND( 'FINITE DIFF. CC JACOBIANT - singles PART  ' )
@@ -1531,8 +1578,8 @@ C
      *               NTAMP,NC2VEC,1,LUPRI)
          IF (CCR12) THEN
            CALL AROUND( 'FINITE DIFF. CC JACOBIANT - R12 doubles PART')
-           CALL OUTPUT(WORK(KJACOBIR),1,NTAMP,1,NGAMMA(1),
-     *                 NTAMP,NGAMMA(1),1,LUPRI)
+           CALL OUTPUT(WORK(KJACOBIR),1,NTAMP,1,NTR12AM(1),
+     *                 NTAMP,NTR12AM(1),1,LUPRI)
          END IF
       ENDIF
       IF (JACTST) THEN
@@ -1558,18 +1605,22 @@ C
       IOPT = 3
       RSPIM = .TRUE.
       CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND1),LWRK1)
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND1),LWRK1,APROXR12)
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CCLR_FDJAC ')
       ENDIF
 C
+      CALL QEXIT('FDJAC')
+C
       RETURN
       END
 C-----------------------------------------------------------------------
 c*DECK CCLR_DUMTRR
-      SUBROUTINE CCLR_DUMTRR(CVEC1,RHO1,RHO2,RHO12,S12AM,WORK,LWORK)
+      SUBROUTINE CCLR_DUMTRR(CVEC1,RHO1,RHO2,RHO12,S12AM,S2AM,
+     &                       WORK,LWORK)
 C-------------------------------------------------------------------
 C     Written by Ove Christiansen 21-11-1994
 C
@@ -1590,10 +1641,11 @@ C
 #include <ccsdio.h>
 #include <aovec.h>
 #include <leinf.h>
+#include <r12int.h>
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )
       CHARACTER*1 TRANS
       DIMENSION CVEC1(*),WORK(LWORK)
-      DIMENSION RHO1(*),RHO2(*), RHO12(*), S12AM(*)
+      DIMENSION RHO1(*),RHO2(*), RHO12(*), S12AM(*), S2AM(*)
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_DUMTRR ')
@@ -1608,17 +1660,17 @@ C
          CALL CC_PRP(CVEC1,CVEC1(1+NT1AM(ISYMTR)),ISYMTR,1,1)
          CALL AROUND('R12 double excitation part of vector:')
          CALL OUTPUT(CVEC1(1+NT1AM(ISYMTR)+NT2AM(ISYMTR)),1,
-     *               NGAMMA(ISYMTR),1,1,NGAMMA(ISYMTR),1,1,LUPRI)
+     *               NTR12AM(ISYMTR),1,1,NTR12AM(ISYMTR),1,1,LUPRI)
       ENDIF
 C
       NTAMP = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMTR)
+      IF (CCR12) NTAMP = NTAMP + NTR12AM(ISYMTR)
 C
 C------------------------
 C     Open Jacobian file.
 C------------------------
 C
-      LUJAC = 0
+      LUJAC = -1
       CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUJAC)
@@ -1693,7 +1745,7 @@ C
  200  CONTINUE
 
       IF (CCR12) THEN
-       DO I = 1, NGAMMA(ISYMTR)
+       DO I = 1, NTR12AM(ISYMTR)
          IF (NSIDE.EQ.-1) THEN
             READ(LUJAC) (WORK(KJACCR+K-1),K=1,NTAMP)
             IF (IPRINT.GT.110) THEN
@@ -1714,20 +1766,36 @@ C
        END DO
       
        KSMAT = 1
-       KEND1 = KSMAT + NGAMMA(ISYMTR)*NGAMMA(ISYMTR)
+       KEND1 = KSMAT + NTR12AM(ISYMTR)*NTR12AM(ISYMTR)
+       IF (IANR12.EQ.2) THEN
+         KS2MAT = KEND1
+         KEND1  = KS2MAT + NT2AM(ISYMTR)*NT2AM(ISYMTR)
+       END IF
        LWRK1 = LWORK - KEND1
        IF (LWRK1 .LT. 0)
      &     CALL QUIT(' INSUFFICIENT WORK SPACE IN CCLR_DUMTRR ')
 
-       LUMET = 0
+       LUMET = -1
        CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
      *             IDUMMY,.FALSE.)
-       CALL DZERO(WORK(KSMAT),NGAMMA(ISYMTR)*NGAMMA(ISYMTR))
-       DO I = 1, NGAMMA(1)
-         IOFFS = KSMAT-1+NGAMMA(ISYMTR)*(I-1)
-         READ(LUMET) (WORK(IOFFS+J),J=1,NGAMMA(ISYMTR))
+       CALL DZERO(WORK(KSMAT),NTR12AM(ISYMTR)*NTR12AM(ISYMTR))
+       DO I = 1, NTR12AM(1)
+         IOFFS = KSMAT-1+NTR12AM(ISYMTR)*(I-1)
+         READ(LUMET) (WORK(IOFFS+J),J=1,NTR12AM(ISYMTR))
        END DO
        CALL GPCLOSE(LUMET,'KEEP')
+
+       IF (IANR12.EQ.2) THEN
+         LUMET2 = -1
+         CALL GPOPEN(LUMET2,'CCLR_MET2','UNKNOWN',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         CALL DZERO(WORK(KS2MAT),NT2AM(ISYMTR)*NT2AM(ISYMTR))
+         DO I = 1, NT2AM(ISYMTR)
+           IOFFS2 = KS2MAT -1+NT2AM(ISYMTR)*(I-1)
+           READ(LUMET2)(WORK(IOFFS2+J),J=1,NT2AM(ISYMTR))
+         END DO
+         CALL GPCLOSE(LUMET2,'KEEP')
+       END IF
 
        IF (NSIDE.EQ.1) THEN
          TRANS = 'N'
@@ -1737,8 +1805,16 @@ C
          CALL QUIT('Illegal NSIDE in CCLR_DUMTRR.')
        END IF
        KR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1
-       CALL DGEMV(TRANS,NGAMMA(ISYMTR),NGAMMA(ISYMTR),1.0D0,WORK(KSMAT),
-     *            NGAMMA(ISYMTR),CVEC1(KR12),1,0.0D0,S12AM,1)
+       CALL DGEMV(TRANS,NTR12AM(ISYMTR),NTR12AM(ISYMTR),1.0D0,
+     *            WORK(KSMAT),NTR12AM(ISYMTR),CVEC1(KR12),1,0.0D0,
+     *            S12AM,1)
+       IF (IANR12.EQ.2) THEN
+         KR12 = NT1AM(ISYMTR)+1
+         CALL DGEMV(TRANS,NT2AM(ISYMTR),NT2AM(ISYMTR),1.0D0,
+     &              WORK(KS2MAT),NT2AM(ISYMTR),CVEC1(KR12),1,0.0D0,
+     &              S2AM,1)
+
+       END IF
       END IF
 C
 C----------------------------------
@@ -1749,11 +1825,11 @@ C
          CALL AROUND(' CCLR_DUMTRR: transformed vectors ')
          CALL CC_PRP(RHO1,RHO2,ISYMTR,1,1)
          CALL AROUND('R12 double excitation part of vector:')
-         CALL OUTPUT(RHO12,1,NGAMMA(ISYMTR),1,1,
-     *               NGAMMA(ISYMTR),1,1,LUPRI)
+         CALL OUTPUT(RHO12,1,NTR12AM(ISYMTR),1,1,
+     *               NTR12AM(ISYMTR),1,1,LUPRI)
          CALL AROUND('R12 double excitation part of metric:')
-         CALL OUTPUT(S12AM,1,NGAMMA(ISYMTR),1,1,
-     *               NGAMMA(ISYMTR),1,1,LUPRI)
+         CALL OUTPUT(S12AM,1,NTR12AM(ISYMTR),1,1,
+     *               NTR12AM(ISYMTR),1,1,LUPRI)
       ENDIF
 C
       IF (IPRINT .GT. 10) THEN
@@ -1786,7 +1862,7 @@ C
       DIMENSION XJACCR(*),WORK(LWORK)
 C
       NTAMP = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMTR)
+      IF (CCR12) NTAMP = NTAMP + NTR12AM(ISYMTR)
 C
 C---------------------------
 C     Work space allocation.
@@ -2018,6 +2094,91 @@ C
 C
       RETURN
       END
+C  /* Deck cc_prpao */
+      SUBROUTINE CC_PRPAO(T1AO,T2AO,ISYM,NT1,NT2)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Ove Christiansen 24-1-1994
+C     PRint Packed Vector - PRP (in general non. tot. sym.) (t1,t2).
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include <implicit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+C
+      DIMENSION T1AO(*),T2AO(*)
+C
+C------------------------------------
+C     set dimensions
+C------------------------------------
+C
+      LT1AO = NT1AO(ISYM)
+      LT2AO = NT2AO(ISYM)
+
+C
+C------------------------------------
+C     Write single excitation vector.
+C------------------------------------
+C
+      DO 10 I = 1, NT1
+C
+         CALL AROUND('single excitation part of vector ')
+         IF (NT1.GT.1) WRITE(LUPRI,*) 'Vector Number:',I
+C
+         DO 100 ISYMI = 1,NSYM
+C
+            ISYMA = MULD2H(ISYMI,ISYM)
+C
+            WRITE(LUPRI,*) 'Symmetry block number(a,i): ',ISYMA,ISYMI
+            KOFF = LT1AO*(I-1) + IT1AO(ISYMA,ISYMI) + 1
+            CALL OUTPUT(T1AO(KOFF),1,NBAS(ISYMA),1,NRHF(ISYMI),
+     *                  NBAS(ISYMA),NRHF(ISYMI),1,LUPRI)
+            WRITE(LUPRI,*) ' '
+C
+  100    CONTINUE
+C
+   10 CONTINUE
+C
+C------------------------------------
+C     Write double excitation vector.
+C------------------------------------
+C
+      DO 20 I = 1,NT2
+C
+         CALL AROUND('double excitation part of vector ')
+         IF (NT2.GT.1) WRITE(LUPRI,*) 'Vector Number:',I
+C
+         DO 200 ISYMBJ = 1,NSYM
+C
+            ISYMAI = MULD2H(ISYMBJ,ISYM)
+C
+            KOFF = LT2AO*(I-1) + IT2AO(ISYMAI,ISYMBJ) + 1
+
+            IF (ISYMAI.EQ.ISYMBJ) THEN
+C
+               WRITE(LUPRI,*) 'Symmetry block number(ai,bj): ',
+     &              ISYMAI,ISYMBJ
+               CALL OUTPAK(T2AO(KOFF),NT1AO(ISYMAI),1,LUPRI)
+               WRITE(LUPRI,*) ' '
+C
+            ELSE IF (ISYMBJ.GT.ISYMAI) THEN
+C
+               WRITE(LUPRI,*) 'Symmetry block number(ai,bj): ',
+     &              ISYMAI,ISYMBJ
+               CALL OUTPUT(T2AO(KOFF),1,NT1AO(ISYMAI),1,NT1AO(ISYMBJ),
+     *                     NT1AO(ISYMAI),NT1AO(ISYMBJ),1,LUPRI)
+               WRITE(LUPRI,*) ' '
+C
+            ENDIF
+C
+  200    CONTINUE
+C
+   20 CONTINUE
+C
+      RETURN
+      END
 C  /* Deck cc_prsq */
       SUBROUTINE CC_PRSQ(T1AM,T2AM,ISYM,NT1,NT2)
 C
@@ -2117,8 +2278,10 @@ C
 #include <cclr.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
+c
+#include <r12int.h>
 C
-      LOGICAL OPNSTA
+      LOGICAL OPNSTA, LOCDBG
       DIMENSION WORK(LWORK)
       PARAMETER (THRZER = 1.0D-99)
 C
@@ -2128,6 +2291,8 @@ C---------------------------------------------
 C     Header of Excitation Energy calculation.
 C---------------------------------------------
 C
+      CALL QENTER('FDEXCI')
+c
       CALL TIMER('START ',TIMEIN,TIMOUT)
 
       IF (IPRINT .GT. 0) THEN
@@ -2146,16 +2311,18 @@ C
       NREDH   = NT1AMX + NT2AMX
       NTAMP   = NT1AMX + NT2AMX
       IF (CCR12) THEN
-        NREDH = NREDH + NGAMMA(1)
-        NTAMP = NTAMP + NGAMMA(1)
+        NREDH = NREDH + NTR12AM(1)
+        NTAMP = NTAMP + NTR12AM(1)
       END IF
 C
 C----------------------------
 C     Alloction of Workspace.
 C----------------------------
 C
-      IF (NTAMP.GT.MAXRED .OR. NREDH.GT.MAXRED)
-     &  CALL QUIT('MAXRED too small in CCLR_FDEXCI.')
+      IF (NTAMP.GT.MAXRED .OR. NREDH.GT.MAXRED) THEN
+        WRITE (LUPRI,*)'MAXRED, NTAMP, NREDH', MAXRED, NTAMP, NREDH
+        CALL QUIT('MAXRED too small in CCLR_FDEXCI.')
+      END IF
 C
       KWI     = 1
       KAMAT   = KWI  + MAXRED
@@ -2171,6 +2338,14 @@ C
         KDENOM = KWRK1
         KSMAT  = KDENOM + MAXRED 
         KWRK1  = KSMAT  + MAXRED*MAXRED
+        IF (IANR12.EQ.2) THEN
+          KSEIVAL  = KWRK1
+          KSWI     = KSEIVAL + MAXRED
+          KSOL     = KSWI + MAXRED
+          KSOLEQS  = KSOL + MAXRED*MAXRED
+          KSCOPY   = KSOLEQS + MAXRED*MAXRED
+          KWRK1    = KSCOPY + MAXRED*MAXRED
+        END IF
       END IF
       LWRK1   = LWORK - KWRK1
       IF (LWRK1.LT. 0)
@@ -2191,7 +2366,7 @@ C
          IF (CCR12) THEN
           CALL AROUND( 'FIN. DIF. CC JACOBIANT - A*CR12 PART ' )
           CALL OUTPUT(WORK(KSOLEQ +MAXRED*(NT1AMX+NT2AMX)),1,NTAMP,
-     *               1,NGAMMA(1),MAXRED,NGAMMA(1),1,LUPRI)
+     *               1,NTR12AM(1),MAXRED,NTR12AM(1),1,LUPRI)
           CALL AROUND( 'CC METRIC' )
           CALL OUTPUT(WORK(KSMAT),1,NTAMP,1,NTAMP,MAXRED,NTAMP,1,LUPRI)
          END IF
@@ -2202,7 +2377,103 @@ C     Solve for eigenvalues.
 C---------------------------
 C
       IF (CCR12) THEN
+        CALL DZERO(WORK(KAMAT),MAXRED*MAXRED)
         CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT),1)
+        WRITE(LUPRI,'(/A)')'Jacobi matrix:' 
+        CALL OUTPUT(WORK(KAMAT),1,MAXRED,1,NREDH,MAXRED,MAXRED,1,LUPRI)
+
+C       lujacobi = 0
+C       call gpopen(lujacobi,'JACOBIMAT','UNKNOWN',' ','FORMATTED',
+C    &              IDUMMY,.FALSE.)
+
+C       do i = 1, nrhf(1)
+C       do a = 1, nvir(1)
+C          nai = nvir(1)*(i-1) + a
+C          do j = 1, nrhf(1)
+C          do b = 1, nvir(1)
+C            nbj = nvir(1)*(j-1) + b 
+C            if (nbj.le.nai) then
+C              naibj = nai*(nai-1)/2 + nbj
+C              idxaibj = naibj + nvir(1)*nrhf(1)
+
+C              do k = 1, nrhf(1)
+CCN            do m = 1, nrhf(1)
+C              do m = 1, nrhfb(1)
+CCN              nmk = nrhf(1)*(k-1) + m
+C                nmk = nrhfb(1)*(k-1) + m
+C                  do l = 1, nrhf(1)
+CCN                do n = 1, nrhf(1)
+C                  do n = 1, nrhfb(1)
+CCN                  nnl = nrhf(1)*(l-1) + n
+C                    nnl = nrhfb(1)*(l-1) + n
+C                    if (nnl.le.nmk) then
+C                      nmknl = nmk*(nmk-1)/2 + nnl
+C                      idxmknl = nmknl + nvir(1)*nrhf(1) +
+C    &                         (nrhf(1)*nvir(1))*(nrhf(1)*nvir(1)+1)/2
+
+C                      idx23 = maxred*(idxaibj-1) + idxmknl 
+C                      idx32 = maxred*(idxmknl-1) + idxaibj 
+
+C                      if ((dabs(work(kamat-1+idx23))+
+C    &                      dabs(work(ksmat-1+idx23))+
+C    &                      dabs(work(kamat-1+idx32))+
+C    &                      dabs(work(ksmat-1+idx32))).gt.1.0d-8) then
+
+C                        write(lujacobi,'(8i2,4e20.10)') 
+C    &                     i,a,j,b,k,m,l,n,
+C    &                      work(kamat-1+idx23),
+C    &                      work(ksmat-1+idx23),
+C    &                      work(kamat-1+idx32),
+C    &                      work(ksmat-1+idx32)
+C                       end if
+
+C                    end if 
+C                  end do
+C                  end do
+C               end do
+C               end do
+C            end if
+C          end do
+C          end do
+C       end do
+C       end do
+          
+C       call gpclose(lujacobi,'KEEP')
+        
+c       get idea of stability matrix
+        call cc_r12stabmat(work(kamat),maxred,nt1am(1),nt2am(1),
+     &                     ntr12am(1),work(kwrk1),lwrk1)
+       
+        write(lupri,*)'A(2,3) Block:'
+        call output(work(kamat),nt1am(1)+1,
+     &              nt1am(1)+nt2am(1),nt1am(1)+nt2am(1)+1,
+     &              nt1am(1)+nt2am(1)+ntr12am(1),maxred,maxred,1,lupri)
+        write(lupri,*)'A(3,2) Block:'
+        call output(work(kamat),nt1am(1)+nt2am(1)+1,
+     &              nt1am(1)+nt2am(1)+ntr12am(1),nt1am(1)+1,
+     &              nt1am(1)+nt2am(1),maxred,maxred,1,lupri)
+c
+        IF (IANR12.EQ.2) THEN
+          WRITE(LUPRI,*)'S matrix:' 
+          CALL OUTPUT(WORK(KSMAT),1,NTAMP,1,NTAMP,MAXRED,NTAMP,1,LUPRI)
+          CALL DCOPY(MAXRED*MAXRED,WORK(KSMAT),1,WORK(KSCOPY),1)
+chf
+          write(lupri,*)'S(2,3) Block:'
+          call output(work(ksmat),nt1am(1)+1,
+     &              nt1am(1)+nt2am(1),nt1am(1)+nt2am(1)+1,
+     &              nt1am(1)+nt2am(1)+ntr12am(1),maxred,maxred,1,lupri)
+          write(lupri,*)'S(3,2) Block:'
+          call output(work(ksmat),nt1am(1)+nt2am(1)+1,
+     &                nt1am(1)+nt2am(1)+ntr12am(1),nt1am(1)+1,
+     &                nt1am(1)+nt2am(1),maxred,maxred,1,lupri)
+c         get eigenvalues of S matrix to check if it is positive definite
+c         caution rg routine destroys old S matrix
+          CALL RG(MAXRED,NREDH,WORK(KSCOPY),WORK(KSEIVAL),WORK(KSWI),
+     &            MATZ,WORK(KSOLEQS),WORK(KIV1),WORK(KFV1),IERR)
+          WRITE(LUPRI,'(/A)')'Eigenvalues of S matrix:' 
+          CALL OUTPUT(WORK(KSEIVAL),1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
+        END IF
+c
         CALL RGG(MAXRED,NREDH,WORK(KAMAT),WORK(KSMAT),WORK(KEIVAL),
      *           WORK(KWI),WORK(KDENOM),MATZ,WORK(KSOLEQ),IERR)
         DO I = 1, NREDH
@@ -2234,7 +2505,8 @@ C
          CALL OUTPUT(WORK(KSOLEQ),1,NREDH,1,NREDH,MAXRED,MAXRED,1,LUPRI)
       END IF
 C
-      CALL RGORD(MAXRED,NREDH,WORK(KEIVAL),WORK(KWI),WORK(KSOLEQ))
+      CALL RGORD(MAXRED,NREDH,WORK(KEIVAL),WORK(KWI),WORK(KSOLEQ),
+     *           .FALSE.)
 C
       IF (IPRINT .GE. 70 ) THEN
          WRITE (LUPRI,'(/A)') ' EIGENVECTORS :'
@@ -2280,9 +2552,11 @@ C
          WRITE(LUPRI,'(/15X,A,F10.5,A)')
      *   'Excitation Energy   :  ',WORK(KEIVAL+I-1)*XTEV,
      *   ' eV'
-         CALL CC_PRAM(WORK(KSOLEQ + (I-1)*MAXRED),PT1,1)
+         CALL CC_PRAM(WORK(KSOLEQ + (I-1)*MAXRED),PT1,1,.FALSE.)
   500 CONTINUE
 C
+      CALL QEXIT('FDEXCI')
+c
       RETURN
       END
 c*DECK CCLR_JACIN
@@ -2304,19 +2578,20 @@ C
 #include <cclr.h>
 #include <ccsdio.h>
 #include <aovec.h>
+#include <cbirea.h>
 #include <r12int.h>
 C
       DIMENSION FDJACO(MAXRED,MAXRED)
       DIMENSION SMATRIX(MAXRED,MAXRED)
 C
       NTAMP = NT1AMX + NT2AMX
-      IF (LMULBS) NTAMP = NTAMP + NGAMMA(1)
+      IF (LMULBS) NTAMP = NTAMP + NTR12AM(1)
 C
 C------------------------
 C     Open Jacobian file.
 C------------------------
 C
-      LUJAC = 0
+      LUJAC = -1
       CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUJAC)
@@ -2329,17 +2604,40 @@ C
 
 
       IF (CCR12) THEN
-        LUMET = 0
+        LUMET = -1
         CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
         CALL DZERO(SMATRIX,MAXRED*MAXRED)
         DO I = 1, NT1AMX+NT2AMX
           SMATRIX(I,I) = 1.0D0
         END DO
-        DO I = NT1AMX+NT2AMX+1, NT1AMX+NT2AMX+NGAMMA(1)
-          READ(LUMET) (SMATRIX(NT1AMX+NT2AMX+J,I),J=1,NGAMMA(1))
+chf
+        IF (IANR12.EQ.2) THEN
+          LUMET2 = -1
+          CALL GPOPEN(LUMET2,'CCLR_MET2','UNKNOWN',' ','UNFORMATTED',
+     *              IDUMMY,.FALSE.)
+          LUMET3 = -1
+          CALL GPOPEN(LUMET3,'CCLR_MET3','UNKNOWN',' ','UNFORMATTED',
+     *              IDUMMY,.FALSE.)
+
+          DO I = NT1AM(1)+NT2AM(1)+1, NT1AM(1)+NT2AM(1)+NTR12AM(1)
+            READ(LUMET2)(SMATRIX(NT1AM(1)+J,I),J=1,NT2AM(1))
+          END DO
+c
+          DO I = NT1AM(1)+1, NT1AM(1)+NT2AM(1)
+            READ(LUMET3)(SMATRIX(NT1AM(1)+NT2AM(1)+J,I),J=1,NTR12AM(1))
+          END DO
+          CALL GPCLOSE(LUMET2,'KEEP')
+          CALL GPCLOSE(LUMET3,'KEEP')
+        END IF
+c
+        DO I = NT1AMX+NT2AMX+1, NT1AMX+NT2AMX+NTR12AM(1)
+          READ(LUMET) (SMATRIX(NT1AMX+NT2AMX+J,I),J=1,NTR12AM(1))
         END DO
         CALL GPCLOSE(LUMET,'KEEP')
+c       WRITE(LUPRI,*)'S-Matrix out of cclr_jacin'
+c       CALL OUTPUT(SMATRIX,1,NT1AMX+NT2AMX+NTR12AM(1),1,
+c    &              NT1AMX+NT2AMX+NTR12AM(1),MAXRED,MAXRED,1,LUPRI)
       END IF
 C
       RETURN
@@ -2351,7 +2649,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
 C
-C     Purpose: To zero core and secondary part og
+C     Purpose: To zero core and secondary part of
 C              CC vector.
 C              ISYMTR is symmetry of vector.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2508,7 +2806,7 @@ C
       RETURN
       END
 C  /* Deck cc_pram */
-      SUBROUTINE CC_PRAM(CAM,PT1,ISYMTR)
+      SUBROUTINE CC_PRAM(CAM,PT1,ISYMTR,LGRS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
@@ -2525,11 +2823,22 @@ C
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <priunit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+C
+      LOGICAL CCSEFF
+Cholesky
 C
 C
+      LOGICAL LGRS
       DIMENSION CAM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+Cholesky
+      CCSEFF = CCS .OR. (CHOINT.AND.CC2)
+Cholesky
 C
 C------------------------
 C     Add up the vectors.
@@ -2540,10 +2849,12 @@ C
       KC1 = 1
       KC2 = KC1 + NT1AM(ISYMTR)
       C1NOSQ = DDOT(NT1AM(ISYMTR),CAM(KC1),1,CAM(KC1),1)
-      IF (.NOT. CCS) C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
+Chol  IF (.NOT. CCS) C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
+      IF (.NOT. CCSEFF)
+     &   C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
       CNOSQ  = C1NOSQ + C2NOSQ
 C
-      IF (.NOT. (CCS.OR.CCP2)) THEN
+      IF (.NOT. (CCSEFF.OR.CCP2)) THEN
 C
          WRITE(LUPRI,'(//10X,A)')
      *     'CC_PRAM:Overall Contribution of the Different Components'
@@ -2558,7 +2869,7 @@ C
          WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *     '||T1||/||T2||                  : ',
      *      SQRT(C1NOSQ/C2NOSQ)
-         WRITE(LUPRI,'(/10X,A,10X,F10.4)')
+         IF (LGRS) WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *     'Tau1 diagnostic                : ',
      *      SQRT(C1NOSQ/(TWO*DFLOAT(NRHFT)))
          PT1 = (C1NOSQ/CNOSQ)*HUNDRED
@@ -2648,10 +2959,11 @@ C
       CALL FLSHFO(LUPRI)
 C
 C--------------------------------------------
-C     Loop through Doublee excitation vector.
+C     Loop through Double excitation vector.
 C     If not ccs or ccp2
-      IF (.NOT. ( CCS .OR. CCP2 )) THEN
 C--------------------------------------------
+C
+      IF (.NOT. ( CCSEFF .OR. CCP2 )) THEN
 C
       WRITE(LUPRI,'(A)')
      *     ' +----------------------------------------------'
@@ -2742,7 +3054,7 @@ C
      *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
       WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
      *     'Printed all single excitations greater than',THR1
-      IF (.NOT. (CCS.OR.CCP2)) THEN
+      IF (.NOT. (CCSEFF.OR.CCP2)) THEN
          WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
      *     'Printed all double excitations greater than',THR2
       ENDIF
@@ -3094,16 +3406,46 @@ C             put into VEC. The position is calculated relative to
 C             LLEN which is the length of the vectors according to
 C             which the vectors was put there in the first place.
 C
+C     tbp: Use fortran I/O for Cholesky....
+C
+C
 #include <implicit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+#include <priunit.h>
+Cholesky
       DIMENSION VEC(*)
       CHARACTER FIL*(*)
 C
-      IOFF = 1 + LLEN*(NR-1)
+      IF (CHOINT) THEN
+
+C        Fortran I/O section.
+C        --------------------
+
+         IF (LLEN .NE. LEN) THEN
+            WRITE(LUPRI,'(//,5X,A,/,5X,A,I10,/,5X,A,I10,/)')
+     &     'Fatal error in CC_RVEC: LLEN .ne. LEN:',
+     &     'LLEN = ',LLEN,
+     &     'LEN  = ',LEN
+           CALL QUIT('Fatal [FORTRAN] I/O error in CC_RVEC')
+         ENDIF
+
+         CALL CHO_MOREAD(VEC,LEN,1,NR,LU)
+
+      ELSE
+
+C        crayio section.
+C        ---------------
 C
-      IF (LEN .GT. 0) THEN
-         CALL GETWA2(LU,FIL,VEC,IOFF,LEN)
+         IOFF = 1 + LLEN*(NR-1)
 C
-      ENDIF
+         IF (LEN .GT. 0) THEN
+            CALL GETWA2(LU,FIL,VEC,IOFF,LEN)
+C
+         ENDIF
+C
+      END IF
 C
       RETURN
       END
@@ -3118,14 +3460,41 @@ C             LLEN which is the length of the vectors according to
 C             which the vectors was put there in the first place.
 C
 #include <implicit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+#include <priunit.h>
+Cholesky
       DIMENSION VEC(*)
       CHARACTER FIL*(*)
 C
-      IOFF = 1 + LLEN*(NR-1)
+      IF (CHOINT) THEN
+
+C        Fortran I/O section.
+C        --------------------
+
+         IF (LLEN .NE. LEN) THEN
+            WRITE(LUPRI,'(//,5X,A,/,5X,A,I10,/,5X,A,I10,/)')
+     &     'Fatal error in CC_WVEC: LLEN .ne. LEN:',
+     &     'LLEN = ',LLEN,
+     &     'LEN  = ',LEN
+           CALL QUIT('Fatal [FORTRAN] I/O error in CC_WVEC')
+         ENDIF
+
+         CALL CHO_MOWRITE(VEC,LEN,1,NR,LU)
+
+      ELSE
+
+C        crayio section.
+C        ---------------
+
+         IOFF = 1 + LLEN*(NR-1)
 C
-      IF (LEN .GT. 0) THEN
-         CALL PUTWA2(LU,FIL,VEC,IOFF,LEN)
-      END IF
+         IF (LEN .GT. 0) THEN
+            CALL PUTWA2(LU,FIL,VEC,IOFF,LEN)
+         ENDIF
+C
+      ENDIF
 C
       RETURN
       END
@@ -3140,7 +3509,7 @@ C     Written by Ove Christiansen 13-10-1995
 C
 C     Christof Haettig, October 1998:
 C       changed to a dummy routine, because call of CCLR_RHTR and
-C       CCLHST via CCLR_TRR was switched of since quite some time...
+C       CCLHST via CCLR_TRR was switched off since quite some time...
 C       after change of F matrix implementation CCLR_TRR was 
 C       completly dummy and removed...
 C
@@ -3167,12 +3536,13 @@ CCH   IF (IPRINT .GT. 10) THEN
          CALL AROUND(' The routine is outdated... Leaving CC_JACEXP.')
          RETURN
 CCH   ENDIF
+#ifdef OUTDATED_ROUTINE
 C
 C-------------------
 C     Open jac file.
 C-------------------
 C
-      LUJAC = 0
+      LUJAC = -1
       CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUJAC)
@@ -3216,6 +3586,7 @@ C
       CALL GPCLOSE(LUJAC,'KEEP')
 C
       RETURN
+#endif
       END
 C
 C  /* Deck cc_pronelao */
@@ -3241,3 +3612,228 @@ C
       END DO
 C
       END
+C
+C  /* Deck cc_prpr12 */
+      SUBROUTINE CC_PRPR12(TR12AM,ISYM,NTR12,LHEAD)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Christian Neiss, Feb. 2005
+C     PRint Packed R12-vector - PRPR12 (in general non. tot. sym.)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include <implicit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+C
+      LOGICAL   LHEAD
+      DIMENSION TR12AM(*)
+
+C
+C------------------------------------
+C     Write R12 vector.
+C------------------------------------
+C
+      DO 20 I = 1,NTR12
+C
+         IF (LHEAD) CALL AROUND('R12 part of vector ')
+         IF (NTR12.GT.1) WRITE(LUPRI,*) 'Vector Number:',I
+C
+         DO 200 ISYMLJ = 1,NSYM
+C
+            ISYMKI = MULD2H(ISYMLJ,ISYM)
+C
+            KOFF = ITR12AM(ISYMKI,ISYMLJ) + 1
+
+            IF (ISYMKI.EQ.ISYMLJ) THEN
+C
+               WRITE(LUPRI,*) 'Symmetry block number(ki,lj): ',
+     &              ISYMKI,ISYMLJ
+               IF (NMATKI(ISYMKI).EQ.0) THEN
+                  WRITE(LUPRI,*) 'This symmetry is empty'
+               ELSE
+                  CALL OUTPAK(TR12AM(KOFF),NMATKI(ISYMKI),1,LUPRI)
+               END IF
+               WRITE(LUPRI,*) ' '
+C
+            ELSE IF (ISYMLJ.GT.ISYMKI) THEN
+C
+               WRITE(LUPRI,*) 'Symmetry block number(ki,lj): ',
+     &              ISYMKI,ISYMLJ
+               IF (NMATKI(ISYMKI).EQ.0 .OR. NMATKI(ISYMLJ).EQ.0) THEN
+                  WRITE(LUPRI,*) 'This symmetry is empty'
+               ELSE
+                  CALL OUTPUT(TR12AM(KOFF),1,NMATKI(ISYMKI),
+     &                        1,NMATKI(ISYMLJ),
+     *                        NMATKI(ISYMKI),NMATKI(ISYMLJ),1,LUPRI)
+               END IF
+               WRITE(LUPRI,*) ' '
+C
+            ENDIF
+C
+  200    CONTINUE
+C
+   20 CONTINUE
+C
+      RETURN
+      END
+C
+C  /* Deck cc_prsqr12 */
+      SUBROUTINE CC_PRSQR12(TR12AM,ISYM,TRANS,NTR12,LHEAD)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Christian Neiss  Feb. 2005
+C     PRint SQuared R12 vector. general non. tot. sym.
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include <implicit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+C
+      LOGICAL     LHEAD
+      CHARACTER*1 TRANS
+      DIMENSION   TR12AM(*)
+C
+      IF ((TRANS.NE.'T').AND.(TRANS.NE.'N')) 
+     &   CALL QUIT('Illegal value for "TRANS" in CC_PRSQR12')
+C
+C
+C------------------------------------
+C     Write R12 vector.
+C------------------------------------
+C
+      DO 20 I = 1, NTR12
+C
+         IF (LHEAD) CALL AROUND('R12 part of vector ')
+        
+         IF (NTR12.GT.1) WRITE(LUPRI,*) 'Vector Number:',I
+C
+         DO 200 ISYMIJ = 1,NSYM
+C
+            ISYMKL = MULD2H(ISYMIJ,ISYM)
+C
+            IF (TRANS.EQ.'T') THEN
+             WRITE(LUPRI,*) 'Symmetry block (ij,kl):',
+     &             ISYMIJ,ISYMKL
+            ELSE IF (TRANS.EQ.'N') THEN
+             WRITE(LUPRI,*) 'Symmetry block (kl,ij):',
+     &             ISYMKL,ISYMIJ
+            END IF
+            IF (NMATKL(ISYMKL).EQ.0 .OR. NMATIJ(ISYMIJ).EQ.0) THEN
+            WRITE(LUPRI,*) 'This symmetry is empty'
+            ELSE
+              IF (TRANS.EQ.'T') THEN
+               KOFF = ITR12SQT(ISYMIJ,ISYMKL) + 1
+               CALL OUTPUT(TR12AM(KOFF),1,NMATIJ(ISYMIJ),1,
+     *                   NMATKL(ISYMKL),NMATIJ(ISYMIJ),NMATKL(ISYMKL),
+     *                   1,LUPRI)
+              ELSE IF (TRANS.EQ.'N') THEN
+               KOFF = ITR12SQ(ISYMKL,ISYMIJ) + 1
+               CALL OUTPUT(TR12AM(KOFF),1,NMATKL(ISYMKL),1,
+     *                   NMATIJ(ISYMIJ),NMATKL(ISYMKL),NMATIJ(ISYMIJ),
+     *                   1,LUPRI)
+              END IF
+            END IF
+C
+            WRITE(LUPRI,*) ' '
+C
+  200    CONTINUE
+C
+   20 CONTINUE
+C
+      RETURN
+      END
+C
+C  /* Deck cclr_transsq */
+      SUBROUTINE CCLR_TRANSSQ(MATRIX,NROWS)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Christian Neiss  Mar. 2005
+C     Transpose a square matrix 'in place'
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+      implicit none
+#include <priunit.h>
+C
+      INTEGER IDXIJ,IDXJI,NROWS,I,J
+#if defined (SYS_CRAY)
+      REAL X1,X2,matrix(*)
+#else
+      DOUBLE PRECISION X1,X2,matrix(*) 
+#endif
+C
+      do i = 1, nrows
+        do j = 1, i
+          idxij = nrows*(j-1) + i
+          idxji = nrows*(i-1) + j
+          x1 = matrix(idxij)
+          x2 = matrix(idxji)
+          matrix(idxij) = x2
+          matrix(idxji) = x1
+        end do
+      end do
+
+      RETURN
+      END
+C
+C  /* Deck cclr_trsqr12 */
+      SUBROUTINE CCLR_TRSQR12(MATRIX,ISYM)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Christian Neiss  April 2005
+C     Transpose a symmetry packed square matrix X_kl^ij:
+C     X(kl,ij) --> X(ij,kl) 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+      implicit none
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER IDXKLIJ,IDXIJKL,IDXKL,IDXIJ,ISYM,ISYMKL,ISYMIJ
+#if defined (SYS_CRAY)
+      REAL X1,X2,matrix(*)
+#else
+      DOUBLE PRECISION X1,X2,matrix(*)
+#endif
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+C
+      if (locdbg) then
+        do I = 1, NSYM
+        write(lupri,*) 'ITR12SQ = ', (ITR12SQ(I,J), J=1,NSYM)
+        write(lupri,*) 'ITR12SQT= ', (ITR12SQT(I,J),J=1,NSYM)
+        end do
+        call around('Input Matrix in CCLR_TRSQR12')
+        call cc_prsqr12(matrix,isym,'N',1,.false.)
+      end if
+C
+      do isymkl = 1, nsym
+        isymij = muld2h(isym,isymkl)
+        do idxkl = 1, nmatkl(isymkl)  
+          do idxij = 1, nmatij(isymij)
+            idxklij = itr12sq(isymkl,isymij) + 
+     &                nmatkl(isymkl)*(idxij-1) + idxkl
+            idxijkl = itr12sqt(isymij,isymkl) + 
+     &                nmatij(isymij)*(idxkl-1) + idxij
+            if (idxklij.lt.idxijkl) then
+              x1 = matrix(idxklij)
+              x2 = matrix(idxijkl)
+              matrix(idxklij) = x2
+              matrix(idxijkl) = x1
+            end if
+          end do
+        end do
+      end do
+C
+      if (locdbg) then
+        call around('Transposed Matrix in CCLR_TRSQR12')
+        call cc_prsqr12(matrix,isym,'T',1,.false.)
+      end if
+C
+      RETURN
+      END
+C

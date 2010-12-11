@@ -116,14 +116,14 @@ C----------------------------------------------------
 C
       CDUMMY = ' '
 C
-      LUDKBC4  = 0
-      LU4V     = 0
-      LU4VB    = 0
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUDKBCR4 = 0
+      LUDKBC4  = -1
+      LU4V     = -1
+      LU4VB    = -1
+      LU3SRTR  = -1
+      LUCKJDR  = -1
+      LUDELDR  = -1
+      LUDKBCR  = -1
+      LUDKBCR4 = -1
 C
       FNDKBC4  = 'CC3_FMAT_TMP1'
       FN4V     = 'CC3_FMAT_TMP2'
@@ -383,7 +383,7 @@ C-----------------------------------------------------
 C     Construct the transformed Fock matrix
 C-----------------------------------------------------
 C
-      LUFCK = 0
+      LUFCK = -1
 C     This AO Fock matrix is constructed from the T1 transformed density
       CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
@@ -1178,13 +1178,15 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <distcl.h>
 #include <cbieri.h>
 #include <eribuf.h>
+#include <second.h>
 C
       INTEGER ISYINT, LU4V, IDLSTB, ISYMB, LWORK
       INTEGER KLAMDP, KLAMDH, KEND1, LWRK1, KEND2, LWRK2, KENDS2, LWRKS2
@@ -1198,7 +1200,7 @@ C
       INTEGER KLAMPB, KLAMHB, KT1AM, ISYMLP, K3OINT2
       INTEGER KOOOO, ISYMB2
       INTEGER INDEXA(MXCORB)
-      INTEGER ISYMC2,ISYMC,IDLSTC,ISYMBC,MAXBC,KLAMPC,KLAMHC
+      INTEGER ISYMC2,ISYMC,IDLSTC,ISYMBC,MAXBC,KLAMPC,KLAMHC,IDUM
 C
 #if defined (SYS_CRAY)
       REAL XOOOO(*), XOOVV(*), XOVVO(*), WORK(LWORK)
@@ -1212,9 +1214,6 @@ C
       DOUBLE PRECISION TIMEINTDEL, TIME2O2V, TIMHE1, TIMHE2
       DOUBLE PRECISION DTIME, ZERO, ONE
       DOUBLE PRECISION ddot ,xnormval
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
-#endif
 #endif
 C
       LOGICAL DO_LAMB,DO_LAMC
@@ -1243,6 +1242,8 @@ C
       TIMEINTDEL = ZERO
       TIME2O2V   = ZERO
       TIME2O2V   = ZERO
+      TIMHE1     = ZERO
+      TIMHE2     = ZERO
 C
       IF (.NOT. DO_LAMB) THEN
          ISYMB2 = ISYMOP
@@ -1287,8 +1288,8 @@ C-------------------------------
 C     Open scratch files
 C-------------------------------
 C
-      LUIN3O  = 0   
-      LU3V    = 0
+      LUIN3O  = -1
+      LU3V    = -1
 C
       FNIN3O = 'CC3_INT_TMP1'
       FN3V   = 'CC3_INT_TMP2'
@@ -1299,7 +1300,7 @@ C
       END IF
 C
       IF (DO_LAMB) THEN
-         LUIN3O2 = 0   
+         LUIN3O2 = -1
          FNIN3O2 = 'CC3_INT_TMP3'
          CALL WOPEN2(LUIN3O2,FNIN3O2,64,0)
       ENDIF
@@ -1367,7 +1368,6 @@ C
          IF (HERDIR) THEN
             CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
          ELSE
-            TIMHE1 = 0.0D0
             KCCFB1 = KEND1
             KINDXB = KCCFB1 + MXPRIM*MXCONT
             KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
@@ -1448,6 +1448,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                    IDUM = 1
+                    CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1919,7 +1923,8 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h> 
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -1935,7 +1940,7 @@ C
       INTEGER KFREE, LFREE, NTOSYM, ISYMD1, NTOT, ILLL
       INTEGER KRECNR, NUMDIS, IDEL2, IDEL, ISYMD, ISYDIS
       INTEGER ISYAIK, KXINT, KLAMPB, KLAMHB, ISYCKJ, KCKJ
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB),IDUM
 C
 #if defined (SYS_CRAY)
 #else
@@ -2044,6 +2049,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                    IDUM = 1
+                    CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
