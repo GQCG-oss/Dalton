@@ -13,7 +13,7 @@ C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
 C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -596,15 +596,15 @@ C Written 4-Dec-1983 hjaaj
 C
 #include "implicit.h"
 #include "priunit.h"
-#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) \
-  && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D)   \
-  && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) \
-  && !defined (SYS_HAL) && !defined (SYS_T90)
+!#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) \
+!  && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D)   \
+!  && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) \
+!  && !defined (SYS_HAL) && !defined (SYS_T90)
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/
       C = C + A/B
-#endif
+!#endif
 #if defined (SYS_AIX)
 C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
 C  Note: integer divide by zero is the only error which

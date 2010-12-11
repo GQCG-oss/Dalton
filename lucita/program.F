@@ -1175,7 +1175,6 @@ C     Compute offset from WRK to WORK
 C     LUCITA is used in SPINFREE calculations: no complex part
       irc_save = 1
 
-!     call quit('*** error: stefan forced me to stop after setup ***')
 C     assign serial I/O disk units
       CALL DISKUN
 C

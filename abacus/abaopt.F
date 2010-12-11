@@ -2456,6 +2456,10 @@ Cef begin
 #include <incore.h>
 #endif
 Cef end
+#ifdef BUILD_GEN1INT
+C added by Bin Gao, Dec. 5, 2010
+#include "gen1int.h"
+#endif
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       REAL EXCQQ2
@@ -2463,6 +2467,9 @@ Cef end
       WORK(IWOFF+1) = WRKDLM
       IF (.NOT. EXHER) THEN
          CALL EXEHER(WORK,LWORK,WRKDLM)
+#ifdef BUILD_GEN1INT
+         call gen1int_prop(WORK(10), LMWORK-9)
+#endif
          EXHER  = .TRUE.
          NEWGEO = .TRUE.
          NPCMIN = .TRUE.
@@ -6697,6 +6704,7 @@ C
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT), JCO(MXAQN,MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR), IQM(MXCENT)
       DIMENSION TMPMAT(NCRTOT*NCRTOT), Q(MXCENT)
+      DIMENSION RADIUS_PCM(MXCENT), ALPHA_PCM(MXCENT)
 #include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
@@ -6866,7 +6874,8 @@ C
          CALL UPCASE(MLINE(I))
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+     &                 BASIS,ATOMBA,LMULBS,BSNM,
+     &           RADIUS_PCM(J), ALPHA_PCM(J))
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -6921,7 +6930,8 @@ C
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
-     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
+     &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
          ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF

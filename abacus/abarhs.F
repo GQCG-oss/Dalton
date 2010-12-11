@@ -2927,7 +2927,7 @@ C
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) MSYM, (MBAS(I),I=1,8), KBUF, NIBUF, NBITS
-      JBUF = 0
+      IF (KBUF .NE. LBUF) CALL QUIT('OFABH1: KBUF .ne. LBUF')
 C
       LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KFREE = 1
@@ -2989,13 +2989,13 @@ C  /* Deck rumog1 */
 #include <implicit.h>
 #include <iratdef.h>
 #include <priunit.h>
+      PARAMETER (LBUF = 600)
       LOGICAL NOH2, NOLOND
       INTEGER P,Q,R,S,X
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
 #include <inftap.h>      
 #include <ibtfun.h>
 C
-      LBUF = 600
       JBUF = 256
 C
       LENINT = IRAT*LBUF + LBUF + 1

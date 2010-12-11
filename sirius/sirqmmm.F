@@ -3979,7 +3979,7 @@ C     Calculate gradient of these integrals
 
       FSCAL = 1.0D0/(2.0D0*DELFLD)
       CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT2),1,WRK(KMAT1),1)
-      CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT1),1)
+      CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT1),1)
       CALL DZERO(WRK(KMAT2),6*NNBASX)
 
       IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
@@ -4024,7 +4024,7 @@ C       Calculate gradient of these integrals
 
       FSCAL = 1.0D0/(2.0D0*DELFLD)
       CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT3),1,WRK(KMAT2),1)
-      CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT2),1)
+      CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT2),1)
       CALL DZERO(WRK(KMAT3),6*NNBASX)
 
       IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
@@ -4069,7 +4069,7 @@ C     Calculate gradient of these integrals
 
       FSCAL = 1.0D0/(2.0D0*DELFLD)
       CALL DAXPY(6*NNBASX,FACM1,WRK(KMAT4),1,WRK(KMAT3),1)
-      CALL DSCAL(3*NNBASX,FSCAL,WRK(KMAT3),1)
+      CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT3),1)
       CALL DZERO(WRK(KMAT4),6*NNBASX)
 
       IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
@@ -5040,6 +5040,8 @@ C      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
 C     Start parallelized loop
       LRI = 1
@@ -5171,6 +5173,8 @@ C     Damping
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -5288,6 +5292,8 @@ C     <-
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
       LRI = 1   ! important should be zero due to the indexing used !
 
@@ -5398,6 +5404,8 @@ C     <-
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -5516,6 +5524,8 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
       IINIM = 0   ! important should be zero due to the indexing used !
 
@@ -5654,8 +5664,11 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
-C     Do the work
+C     Compute polarization contributions to the Fock/KS matrix and
+C     total solvation energy
 
       CALL DZERO(WRK(KTAO),NNBASX)
 

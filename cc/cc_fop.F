@@ -114,7 +114,7 @@ C
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
       CHARACTER*(*) APROXR12 
       CHARACTER*17 MODELPRI2
-      CHARACTER*10 MODEL
+      CHARACTER*10 MODEL,MODELFM
       CHARACTER*8  LABEL1, FNTOC, FN3VI2
       CHARACTER*7  FN3FOP2X
       CHARACTER*6  FN3VI, FN3FOP2, FNDPTIA2, FNDELD, FNCKJD, FN3FOPX
@@ -220,6 +220,8 @@ C
          MODEL = 'CCSD'
          MODELPRI = 'CCSD'
       ENDIF
+C
+      MODELFM=MODEL
 C
       IF (RELORB .AND. CC2) THEN
          IF ((FROIMP) .OR. (FROEXP)) THEN
@@ -1675,7 +1677,7 @@ C--------------------------------
 C
             IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
      *                     .OR.(CCDC.AND.DIELCONV))
-     *         CALL WRIPRO(DIPMN(IDIP),MODEL,1,LABEL1,LABEL1,LABEL1,
+     *         CALL WRIPRO(DIPMN(IDIP),MODELFM,1,LABEL1,LABEL1,LABEL1,
      *                     LABEL1,DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   100    CONTINUE
 C
@@ -1895,7 +1897,7 @@ C
                IF (IJ .EQ. 5) LABEL1 = 'YZTHETA '
                IF (IJ .EQ. 6) LABEL1 = 'ZZTHETA '
 C
-               CALL WRIPRO(SKODN(I,J),MODEL,1,LABEL1,
+               CALL WRIPRO(SKODN(I,J),MODELFM,1,LABEL1,
      *                     LABEL1,LABEL1,LABEL1,
      *                     DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 
@@ -2360,7 +2362,7 @@ C
             IF (IRC.EQ.2) PROP = VELO
             IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
      *             .OR.(CCDC.AND.DIELCONV)) 
-     *          CALL WRIPRO(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
+     *          CALL WRIPRO(PROP,MODELFM,1,LABEL1,LABEL1,LABEL1,LABEL1,
      *                      DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   130    CONTINUE
 C
@@ -2545,7 +2547,7 @@ C
             ENDIF
          ENDIF
 C
-         CALL WRIPRO(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
+         CALL WRIPRO(PROP,MODELFM,1,LABEL1,LABEL1,LABEL1,LABEL1,
      *               DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 C
 C-------------------------

@@ -1372,6 +1372,9 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
 
          IFREQ = 1
+cmbh initialize
+         PROP=0.0d0
+cmbh end
          IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMC,ISYMD)) THEN
           PROP = HALF*(HYPERPOL(IFREQ,IOPER,1)+HYPERPOL(IFREQ,IOPER,2))
           IF (IPRCHYP.GT.5) THEN
@@ -1412,7 +1415,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
           END IF
           ISYOLD = 0
          END IF
-         CALL WRIPRO(PROP,MOPRPC,4,
+         CALL WRIPRO(PROP,model,4,
      &               LBLOPR(IACROP(IOPER)),LBLOPR(IBCROP(IOPER)),
      &               LBLOPR(ICCROP(IOPER)),LBLOPR(IDCROP(IOPER)),
      &               BCRFR(IFREQ),CCRFR(IFREQ),DCRFR(IFREQ),ISYMABCD,
@@ -1434,6 +1437,13 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
      &        HALF*(HYPERPOL(IFREQ,IOPER,1)+HYPERPOL(IFREQ,IOPER,2))
            END IF
           END IF
+cmbh
+          CALL WRIPRO(PROP,model,4,
+     &               LBLOPR(IACROP(IOPER)),LBLOPR(IBCROP(IOPER)),
+     &               LBLOPR(ICCROP(IOPER)),LBLOPR(IDCROP(IOPER)),
+     &               BCRFR(IFREQ),CCRFR(IFREQ),DCRFR(IFREQ),ISYMABCD,
+     &               0,0,0)
+cmbh end
          END DO
 
       END DO
