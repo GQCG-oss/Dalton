@@ -639,10 +639,16 @@ C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION IINDPK(*), IINDX4(4,*)
 #include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
+      IF (N .GT. NMAX) THEN
+         WRITE(LUPRI,*) 'AOLAB4 error, N .gt. NMAX',N,NMAX
+         CALL QENTER('AOLAB4')
+         CALL QUIT('buffer length greater than max length')
+      END IF
 C
       IF (NIBUF .EQ. 1) THEN
         IF (NBITS .EQ. 8) THEN
