@@ -704,6 +704,23 @@ C
          WRITE (LUPRI,'(//A)')
      &      ' WARNING: LUCITA skipped because HF/MCSCF not converged.'
        ELSE
+         JRDMO = 9
+         KCMO  = 1
+         KWRK1 = KCMO  + NCMOT
+         LWRK1 = LWORK - KWRK1
+         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         USEDRC = .TRUE.
+#warning TRACTL not called yet before LUCITA - should maybe be called
+#warning inside lucita
+         write(lupri,*) 'WARNING: tractl not called for LUCITA yet'
+!        IF (NEWTRA) THEN
+!        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
+!            they are only calculated for level 5 in "NEWTRA"
+!            transformation  /hjaaj June 09
+!           CALL TRACTL(5,WORK(KCMO),WORK(KWRK1),LWRK1)
+!        ELSE
+!           CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
+!        END IF
          CALL LUCITA(WORK,LWORK)
        END IF
       END IF
