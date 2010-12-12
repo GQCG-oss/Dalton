@@ -1934,6 +1934,7 @@ C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
      &      ' to',1.D-15
          THRQ=1.D-15
       END IF
+      print *, 'LSRTAO at the start of TRACTL_1',LSRTAO
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
@@ -2267,6 +2268,7 @@ C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
 C     
 C   
+      print *, 'passed by here'
       IF (LSRTAO .NE. 0) THEN
          CALL REWSPL(LUINTM)
          READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
@@ -2321,12 +2323,17 @@ C        ... LUDA does not exist
             LSRTAO = 0
          END IF
       END IF
+      print *, 'LSRTAO at the start of TRACTL_1',LSRTAO
       IF (LSRTAO.EQ.0) THEN
+      print *, 'passed by here 2'
 C        hjaaj 11-jan-2007: make sure AOTWOINT exists
          CALL MAKE_AOTWOINT(WORK,KWORK)
 
 C     HJ-840710 was: IF (JTER.EQ.1) THEN
-         CALL GPCLOSE(LUINTM,'DELETE')
+      print *, 'passed by here 2.1'
+         CALL GPINQ(FNINTM,'EXIST',FEXIST)
+         if(FEXIST) CALL GPCLOSE(LUINTM,'DELETE')
+      print *, 'passed by here 2.2'
          CALL GPOPEN(LUINTM,FNINTM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
 C        ... empty old mo integral file to save disk space during
@@ -2334,6 +2341,7 @@ C            the transformation
 C        Now done by deleting the file, just in case it has been split
 C        K.Ruud, April 19 2000
 C
+      print *, 'passed by here 3'
          CALL SORTA(LUDA,WORK,WORK,WORK(KWORK1),WORK(KWORK1),
      *              LWORK1,LTRI,IT)
 C        CALL SORTA(RINT,IINT,SCR,ISCR,MEMSX,MEMTX,IT)

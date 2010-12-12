@@ -921,7 +921,6 @@ contains
     if (kw_matches(word, '.INACTI')) then
 
       lucita_cfg_inactive_shell_set = .true.
-      allocate(nish_lucita(max_number_of_ptg_irreps))
       read(unit_in, *) (nish_lucita(i), i=1,nsym)
 
     end if
@@ -935,7 +934,6 @@ contains
 
       if(lucita_cfg_nr_gas_spaces <= max_number_of_gas_spaces)then
 
-        allocate(ngsh_lucita(max_number_of_gas_spaces,max_number_of_ptg_irreps))
         do i = 1, lucita_cfg_nr_gas_spaces
           read(unit_in, *) (ngsh_lucita(i,j), j=1,nsym)
         end do
@@ -955,7 +953,6 @@ contains
         call quit(' error in input reading: .GASSHE has to be specified before .GASSPC.')
       else
        
-        allocate(ngso_lucita(max_number_of_gas_spaces,2))
         do i = 1, lucita_cfg_nr_gas_spaces
           read(unit_in, *) (ngso_lucita(i,j), j=1,2)
         end do
@@ -968,7 +965,6 @@ contains
       lucita_cfg_ras1_set         = .true.
       lucita_cfg_init_wave_f_type = 2
 
-      allocate(nas1_lucita(max_number_of_ptg_irreps))
       read(unit_in, *) (nas1_lucita(i), i=1,nsym)
       call kw_read(word, lucita_cfg_max_holes_ras1)
 
@@ -976,14 +972,12 @@ contains
 
     if (kw_matches(word, '.RAS2  ')) then
       lucita_cfg_ras2_set = .true.
-      allocate(nas2_lucita(max_number_of_ptg_irreps))
       read(unit_in, *) (nas2_lucita(i), i=1,nsym)
     end if
 
     if (kw_matches(word, '.RAS3  ')) then
 
       lucita_cfg_ras3_set = .true.
-      allocate(nas3_lucita(max_number_of_ptg_irreps))
       read(unit_in, *) (nas3_lucita(i), i=1,nsym)
       call kw_read(word, lucita_cfg_max_e_ras3)
 
