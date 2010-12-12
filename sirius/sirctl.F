@@ -713,6 +713,17 @@ C
 #warning TRACTL not called yet before LUCITA - should maybe be called
 #warning inside lucita
          write(lupri,*) 'WARNING: tractl not called for LUCITA yet'
+!        maybe the code should better be moved to a subroutine - this
+!        could be advantageous when having lucita as working horse for
+!        the mcscf...
+C ***************************************************
+C        *** reset to lucita flags ***
+!        do isym = 1, nsym
+!          NFRO(ISYM) = NFROSV(ISYM)
+!          NISH(ISYM) = NISHSV(ISYM)
+!          NASH(ISYM) = NASHSV(ISYM)
+!        end do
+!        NACTEL = NACTSV
 !        IF (NEWTRA) THEN
 !        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
 !            they are only calculated for level 5 in "NEWTRA"
