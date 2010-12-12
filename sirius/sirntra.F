@@ -2854,9 +2854,6 @@ C     JRDAO=1 : derivative integrals from Abacus
 C     JRDAO=2 : Spin-orbit integrals
 C     JRDAO=3 : from AOTWOINT
 C
-!     stefan: this module contains the orbital spaces as defined for 
-!             lucita ci-runs
-      use lucita_cfg
 #include "implicit.h"
 #include "iratdef.h"
 C
@@ -2883,33 +2880,16 @@ C     Transfer information from INFORB to TRINP
 C
       MSYM  = NSYM
       MORBT = 0
-      if(.not.lucita_cfg_abcd_transformation)then
-        DO 100 I = 1,8
-           MFRO(I) = NFRO(I)
-           MISH(I) = NISH(I)
-           MASH(I) = NASH(I)
-           MORB(I) = NORB(I)
-           MBAS(I) = NBAS(I)
-           MORBT   = MORBT + MORB(I)
-  100   CONTINUE
-        MMASHX = NNASHX
-        MMORBX = NNORBX
-      else
-        nasht_lucita = 0
-        DO 200 I = 1,8
-           MFRO(I)      = 0
-           MISH(I)      = nish_lucita(i)
-           MASH(I)      = nash_lucita(i)
-           MORB(I)      = nssh_lucita(i) + nocc_lucita(i)
-           MBAS(I)      = -1
-           MORBT        = MORBT + MORB(i)
-           nasht_lucita = nash_lucita(i)
-  200   CONTINUE
-           MMASHX = (nasht_lucita*(nasht_lucita+1))/2
-           MMORBX = NNORBX
-        print *, ' *** @hjj+stefan: define mbas and nnashx, nnorbx ***'
-        call quit(' *** definition of mbas and nnashx, nnorbx missing.')
-      end if
+      DO 100 I = 1,8
+         MFRO(I) = NFRO(I)
+         MISH(I) = NISH(I)
+         MASH(I) = NASH(I)
+         MORB(I) = NORB(I)
+         MBAS(I) = NBAS(I)
+         MORBT   = MORBT + MORB(I)
+  100 CONTINUE
+      MMASHX = NNASHX
+      MMORBX = NNORBX
       LCMO   = NCMOT
 C
 C
