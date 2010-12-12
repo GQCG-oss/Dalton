@@ -1396,16 +1396,12 @@ C
 !     free memory
       deallocate(grouplist)
       deallocate(proclist)
-C
-!     reset orbital spaces (should probably moved to the yet-to-write
-!     common ci/mcscf interface for lucita)
-      call lucita_orb_spaces_setup_delete_total
 
       write(luout,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
      &  ' finished with no errors.'
 
       call qexit('LUCITA_MASTER')
-*
+
       END
 ***********************************************************************
 *

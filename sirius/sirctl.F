@@ -61,6 +61,9 @@ C   Box 518, S-75120 Uppsala
 C   Sweden
 C
 C
+
+      use lucita_orbital_spaces
+
 #include <implicit.h>
 C
       DIMENSION WORK(LWORK)
@@ -97,7 +100,7 @@ C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
-C
+ 
 #include <sirbkd.h>
 C
 C *** Call setup to define limits and I/O units
@@ -709,30 +712,13 @@ C
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
-         USEDRC = .TRUE.
-#warning TRACTL not called yet before LUCITA - should maybe be called
-#warning inside lucita
-         write(lupri,*) 'WARNING: tractl not called for LUCITA yet'
-!        maybe the code should better be moved to a subroutine - this
-!        could be advantageous when having lucita as working horse for
-!        the mcscf...
-C ***************************************************
-C        *** reset to lucita flags ***
-!        do isym = 1, nsym
-!          NFRO(ISYM) = NFROSV(ISYM)
-!          NISH(ISYM) = NISHSV(ISYM)
-!          NASH(ISYM) = NASHSV(ISYM)
-!        end do
-!        NACTEL = NACTSV
-!        IF (NEWTRA) THEN
-!        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
-!            they are only calculated for level 5 in "NEWTRA"
-!            transformation  /hjaaj June 09
-!           CALL TRACTL(5,WORK(KCMO),WORK(KWRK1),LWRK1)
-!        ELSE
-!           CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
-!        END IF
+         CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
+         ! orbital occupations for TRACTL
+         JTRALVL = 0 ! all active orbitals for all four indices
+         USEDRC = .FALSE.
+         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL LUCITA(WORK,LWORK)
+         CALL SET_INFORB_LUCITA('RESET ')
        END IF
       END IF
 C

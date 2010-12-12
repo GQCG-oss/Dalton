@@ -6,10 +6,9 @@
 module lucita_orbital_spaces
 
 ! stefan: - this module provides all necessary functionality
-!           to setup the orbital spaces in LUCITA mcscf/ci 
-!           calculations.
+!           to setup the orbital spaces in LUCITA mcscf/ci calculations.
 !
-!           written by sknecht for DALTON, december 2010.
+!           Written by sknecht for DALTON, december 2010.
 !
 !     nish_lucita(:)  : total number of inactive (doubly occupied) shells per irrep
 !     nash_lucita(:)  : total number of active shells (GAS and RAS case) per irrep
@@ -26,6 +25,7 @@ module lucita_orbital_spaces
   implicit none
 
   public define_lucita_orb_spaces
+  public set_inforb_lucita
 
   private
 
@@ -33,8 +33,6 @@ contains
  
   subroutine define_lucita_orb_spaces(number_of_ptg_irreps,        &
                                       number_of_gas_spaces,        &
-                                      mx_number_of_ptg_irreps,     &
-                                      mx_number_of_gas_spaces,     &
                                       nr_orb_tot,                  &
                                       init_input_type,             &
                                       init_wave_f_type)
@@ -45,15 +43,16 @@ contains
 !*******************************************************************************
     integer, intent(in) :: number_of_ptg_irreps
     integer, intent(in) :: number_of_gas_spaces
-    integer, intent(in) :: mx_number_of_ptg_irreps
-    integer, intent(in) :: mx_number_of_gas_spaces
-    integer, intent(in) :: nr_orb_tot(mx_number_of_ptg_irreps)
+    integer, intent(in) :: nr_orb_tot(max_number_of_ptg_irreps)
     integer, intent(in) :: init_input_type
     integer, intent(in) :: init_wave_f_type
 !-------------------------------------------------------------------------------
 
 !     (reset and) initialize lucita orbital space arrays
-      call lucita_orb_spaces_init(mx_number_of_ptg_irreps,mx_number_of_gas_spaces)
+      nfro_lucita = 0
+      nash_lucita = 0
+      nocc_lucita = 0
+      nssh_lucita = 0
 
 !     transfer information from temporary arrays provided in: 
 !     case 1: lucita input 
@@ -63,14 +62,10 @@ contains
 
         case(1)
 
-          if(init_wave_f_type == 2)then
-            allocate(ngsh_lucita(mx_number_of_gas_spaces,mx_number_of_ptg_irreps))
-          end if
-
           call fill_lucita_orb_spaces_ci(number_of_ptg_irreps,        &
                                          number_of_gas_spaces,        &
-                                         mx_number_of_ptg_irreps,     &
-                                         mx_number_of_gas_spaces,     &
+                                         max_number_of_ptg_irreps,    &
+                                         max_number_of_gas_spaces,    &
                                          nr_orb_tot,                  &
                                          nish_lucita,                 &
                                          nash_lucita,                 &
@@ -84,8 +79,8 @@ contains
 
         case(2)
 
-          call quit(' *** error in lucita_orb_spaces_init: mcscf orbital& 
- input conversion not available yet. ***')
+          call quit(' *** error in lucita_orb_spaces_init: mcscf orbital' & 
+                    //' input conversion not available yet. ***')
           
 !         call fill_lucita_orb_spaces_mcscf
 
@@ -190,48 +185,47 @@ contains
   end subroutine fill_lucita_orb_spaces_ci
 !*******************************************************************************
  
-  subroutine lucita_orb_spaces_init(mx_number_of_ptg_irreps,    &
-                                    mx_number_of_gas_spaces)
+  subroutine set_inforb_lucita(keyword)
 !*******************************************************************************
 !
-!    purpose:  initialize (if necessary) the orbital spaces for LUCITA
-!              calculations.
-!
-!*******************************************************************************
-      integer, intent(in) :: mx_number_of_ptg_irreps
-      integer, intent(in) :: mx_number_of_gas_spaces
-!-------------------------------------------------------------------------------
-
-!     reset arrays (if necessary)
-      call lucita_orb_spaces_setup_delete_subset()
-
-!     allocate CI orbital space arrays
-      allocate(nash_lucita(mx_number_of_ptg_irreps))
-      allocate(nocc_lucita(mx_number_of_ptg_irreps))
-      allocate(nssh_lucita(mx_number_of_ptg_irreps))
-
-!     initialize CI orbital spaces
-      nash_lucita = 0
-      nocc_lucita = 0
-      nssh_lucita = 0
-
-  end subroutine lucita_orb_spaces_init
-!*******************************************************************************
-
-  subroutine lucita_orb_spaces_setup_delete_subset
-!*******************************************************************************
-!
-!    purpose: deallocate selected CI orbital space arrays for LUCITA, 
-!             i.e. those which are not allocated in the input reader.
+!    purpose: transfer LUCITA orbital information to common blocks in inforb.h
+!             (inforb.h defines the current orbital spaces in SIRIUS, including
+!              the integral transformation module)
 !
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-
-      if(allocated(nash_lucita))deallocate(nash_lucita)
-      if(allocated(nocc_lucita))deallocate(nocc_lucita)
-      if(allocated(nssh_lucita))deallocate(nssh_lucita)
-
-  end subroutine lucita_orb_spaces_setup_delete_subset
+      character, intent(in) :: keyword*(*)
+!
+#include "priunit.h"
+#include "inforb.h"
+!
+      integer, save         :: NFRO_SAVE(8), NISH_SAVE(8), NASH_SAVE(8)
 !*******************************************************************************
+
+      select case(keyword)
+
+        case('LUCITA')
+
+          NFRO_SAVE(1:8) = NFRO(1:8)
+          NISH_SAVE(1:8) = NISH(1:8)
+          NASH_SAVE(1:8) = NASH(1:8)
+          NFRO(1:8) = 0
+          NISH(1:8) = nish_lucita(1:8)
+          NASH(1:8) = nash_lucita(1:8)
+          
+        case('RESET')
+
+          NFRO(1:8) = NFRO_SAVE(1:8)
+          NISH(1:8) = NISH_SAVE(1:8)
+          NASH(1:8) = NASH_SAVE(1:8)
+
+        case DEFAULT
+
+          WRITE(LUPRI,*) 'Keyword "',keyword,'" not understood in set_inforb_lucita'
+          CALL QUIT('FATAL ERROR: Unrecognized keyword in set_inforb_lucita')
+
+      end select
+
+  end subroutine set_inforb_lucita
   
 end module

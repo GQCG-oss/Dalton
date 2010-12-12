@@ -6,11 +6,10 @@
 module lucita_cfg
 
 ! stefan: please note that if you modify this module (e.g. add new variables)
-!         do not forget to update sync_coworkers_cfg (in module sync_coworkers)
+!         do not forget to update sync_coworkers_cfg (in module sync_coworkers
+!         in file par_sync_cw.F90)
 
   implicit none
-
-  public lucita_orb_spaces_setup_delete_total
 
   save
 
@@ -60,39 +59,18 @@ module lucita_cfg
   integer, public :: lucipar_cfg_ttss_dist_strategy  =  2
   integer, public :: lucipar_cfg_mem_reduction_multp =  3
 
-  integer, allocatable, public :: nish_lucita(:)
-  integer, allocatable, public :: nash_lucita(:)
-  integer, allocatable, public :: nas1_lucita(:)
-  integer, allocatable, public :: nas2_lucita(:)
-  integer, allocatable, public :: nas3_lucita(:)
-  integer, allocatable, public :: nocc_lucita(:)
-  integer, allocatable, public :: nssh_lucita(:)
-  integer, allocatable, public :: ngsh_lucita(:,:)
-  integer, allocatable, public :: ngso_lucita(:,:)
+! input orbital spaces
+  integer, public :: nas1_lucita(max_number_of_ptg_irreps)
+  integer, public :: nas2_lucita(max_number_of_ptg_irreps)
+  integer, public :: nas3_lucita(max_number_of_ptg_irreps)
+  integer, public :: nssh_lucita(max_number_of_ptg_irreps)
+  integer, public :: ngsh_lucita(max_number_of_ptg_irreps,max_number_of_gas_spaces)
+  integer, public :: ngso_lucita(max_number_of_ptg_irreps,2)
 
-  private
-
-contains
-
- subroutine lucita_orb_spaces_setup_delete_total
-!*******************************************************************************
-!
-!    purpose: deallocate all CI orbital space arrays for LUCITA.
-!
-!*******************************************************************************
-!-------------------------------------------------------------------------------
-
-      if(allocated(nish_lucita))deallocate(nish_lucita)
-      if(allocated(nash_lucita))deallocate(nash_lucita)
-      if(allocated(nas1_lucita))deallocate(nas1_lucita)
-      if(allocated(nas2_lucita))deallocate(nas2_lucita)
-      if(allocated(nas3_lucita))deallocate(nas3_lucita)
-      if(allocated(nocc_lucita))deallocate(nocc_lucita)
-      if(allocated(nssh_lucita))deallocate(nssh_lucita)
-      if(allocated(ngsh_lucita))deallocate(ngsh_lucita)
-      if(allocated(ngso_lucita))deallocate(ngso_lucita)
-
-  end subroutine lucita_orb_spaces_setup_delete_total
-!*******************************************************************************
+! calculated orbital spaces based on input orbital spaces
+  integer, public :: nfro_lucita(max_number_of_ptg_irreps) ! might become input in future
+  integer, public :: nish_lucita(max_number_of_ptg_irreps)
+  integer, public :: nash_lucita(max_number_of_ptg_irreps)
+  integer, public :: nocc_lucita(max_number_of_ptg_irreps)
 
 end module

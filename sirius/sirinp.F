@@ -2084,9 +2084,7 @@ C  Here if "*END OF"
        if(lucita_input_provided)then
          CALL GPCLOSE(LUCMD,'KEEP')
 
-!        a. reset orbital space arrays
-         call lucita_orb_spaces_setup_delete_total()
-!        b. read input
+!        read input
          call read_input()
 
          CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -2106,8 +2104,6 @@ C
 
          call define_lucita_orb_spaces(nsym,                        
      &                                 lucita_cfg_nr_gas_spaces,    
-     &                                 max_number_of_ptg_irreps,    
-     &                                 max_number_of_gas_spaces,    
      &                                 norb,                        
      &                                 init_input_type,             
      &                                 lucita_cfg_init_wave_f_type)
