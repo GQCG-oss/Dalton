@@ -4,11 +4,12 @@ struct common_priunit {
 };
 extern struct common_priunit priunit_;
 #else
-C     FILE: priunit.h
+!     FILE: priunit.h
       CHARACTER*80 SEPARATOR
-      PARAMETER (SEPARATOR = '----------------------------------------'
+      PARAMETER (SEPARATOR = '----------------------------------------' &
      &                     //'----------------------------------------')
       INTEGER LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT
-      COMMON /PRIUNIT/
+      COMMON /PRIUNIT/                                                  &
      &        LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT
+! ---  end of priunit.h ---
 #endif
