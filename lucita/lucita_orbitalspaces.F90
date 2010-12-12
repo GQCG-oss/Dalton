@@ -71,6 +71,7 @@ contains
                                          nash_lucita,                 &
                                          nocc_lucita,                 &
                                          nssh_lucita,                 &
+                                         nfro_lucita,                 &
                                          nas1_lucita,                 &
                                          nas2_lucita,                 &
                                          nas3_lucita,                 &
@@ -98,6 +99,7 @@ contains
                                        is_nash_lucita,              &
                                        is_nocc_lucita,              &
                                        is_nssh_lucita,              &
+                                       is_nfro_lucita,              &
                                        is_nas1_lucita,              &
                                        is_nas2_lucita,              &
                                        is_nas3_lucita,              &
@@ -121,6 +123,7 @@ contains
     integer, intent(out)   :: is_nash_lucita(mx_number_of_ptg_irreps)
     integer, intent(out)   :: is_nocc_lucita(mx_number_of_ptg_irreps)
     integer, intent(out)   :: is_nssh_lucita(mx_number_of_ptg_irreps)
+    integer, intent(out)   :: is_nfro_lucita(mx_number_of_ptg_irreps)
     integer, intent(inout) :: is_ngsh_lucita(mx_number_of_gas_spaces,mx_number_of_ptg_irreps)
 !-------------------------------------------------------------------------------
     integer             :: tmp_nr_gas_spaces
@@ -173,7 +176,13 @@ contains
       is_nssh_lucita(i) = nr_orb_tot(i) - is_nocc_lucita(i)
     end do
 
+!   e. total number of frozen shells for each point group irrep
+    do i = 1, number_of_ptg_irreps
+      is_nfro_lucita(i) = 0
+    end do
+
     print *, ' debug print of orbital spaces:'
+    print *, ' nfro_lucita        : ',(is_nfro_lucita(i),i=1,number_of_ptg_irreps)
     print *, ' nish_lucita        : ',(is_nish_lucita(i),i=1,number_of_ptg_irreps)
     print *, ' nash_lucita        : ',(is_nash_lucita(i),i=1,number_of_ptg_irreps)
     print *, ' nocc_lucita        : ',(is_nocc_lucita(i),i=1,number_of_ptg_irreps)
