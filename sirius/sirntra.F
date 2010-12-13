@@ -291,10 +291,12 @@ C
 C
 C Used from common blocks:
 C   priunit : LUPRI
-C   INFTRA  : USE_INTSORT
+C   INFORB  : NBAS()
+C   INFTRA  : USE_INTSORT, NIBUF,NBITS,LBUF
 C   INFTAP  : LUORDA,LUMINT,LUINTA
 C
 #include "priunit.h"
+#include "inforb.h"
 #include "inftra.h"
 #include "inftap.h"
 C
@@ -315,9 +317,35 @@ C
             IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
      &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
             LUORDA = LUINTA
+
             CALL REWSPL(LUINTA)
             CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
+!           consistency checks before reading of AOTWOINT in RDAO2
             READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+            ierr = 0
+            IF (NSYM_x .ne. NSYM) THEN
+               ierr = ierr + 1
+               WRITE(LUPRI,*)
+     &         'SIR_INTOPEN_NEWTRA: NSYM_AOTWOINT .ne. NSYM',NSYM_x,NSYM
+            END IF
+            do i = 1,8
+               if (nbas(i) .ne. nbas_x(i)) ierr = ierr + 10
+            end do
+            IF (ierr.ge.10) THEN
+               write(lupri,*)
+     &            'SIR_INTOPEN_NEWTRA: NBAS_AOTWOINT .ne. NBAS:'
+               write(lupri,'(8I5)') (NBAS_x(i), i=1,NSYM_x)
+               write(lupri,'(8I5)') (NBAS  (i), i=1,NSYM  )
+            END IF
+            IF (LBUF .ne. 600) THEN
+               write(lupri,*) 'LBUF .ne. 600 not implemented yet',LBUF
+               ! hjaaj sep 2010: must allocate enough for larger buffer
+               ! in RDAO2 outside RDAO2!
+            END IF
+            IF (ierr .gt. 0) THEN
+               call quit(
+     &            'SIR_INTOPEN_NEWTRA: AOTWOINT info not consistent')
+            END IF
          END IF
       END IF
 C
@@ -3078,6 +3106,8 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <trinfo.h>
+
+#include <inftra.h>
 C
       INTEGER NBAS_x(8)
 C
@@ -3090,24 +3120,14 @@ C
 C
       CALL DZERO(H2_RSPQ,NBRS*NPQ)
 C
-      CALL REWSPL(LUINTA)
-      CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      ! hjaaj Sep 2010: should be moved out to GPOPEN(LUINTA)
-      READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
-      IF (NSYM_x .ne. NSYM) call quit('RDAO2 NSYM_AOTWOINT .ne. NSYM')
-      ierr = 0
-      do i = 1,8
-         if (nbas(i) .ne. nbas_x(i)) ierr = ierr + 1
-      end do
-      IF (ierr.ne.0) call quit('RDAO2 NBAS_AOTWOINT .ne. NBAS')
-      IF (LBUF .ne. 600) THEN
-         call quit('RDAO2, LBUF .ne. 600 not implemented yet')
-         ! hjaaj sep 2010: must allocate enough for larger buffer outside!
-      END IF
+C     LBUF, NIBUF, and NBITS have been read from LUINTA in
+C     SIR_INTOPEN_NEWTRA
 C
       LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KINT = 1
       KIINT = KINT + LBUF
+C
+      CALL REWSPL(LUINTA)
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE
@@ -3119,7 +3139,7 @@ C
 #endif
          CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
-            DO 100 I = 1, LENGTH
+            DO 200 I = 1, LENGTH
                   JP = IBUF(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
@@ -3150,8 +3170,9 @@ C
                      END IF
                      H2_RSPQ((MPQ-1)*NBRS + MRS) = BUF(I)
                   END IF
+
   100       CONTINUE
-            DO 200 I = 1, LENGTH
+
                   JP = IBUF(3,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 200
@@ -3182,6 +3203,7 @@ C
                      END IF
                      H2_RSPQ((MPQ-1)*NBRS + MRS) = BUF(I)
                   END IF
+
   200       CONTINUE
          ELSE IF (LENGTH .LT. 0 ) THEN
             GO TO 300

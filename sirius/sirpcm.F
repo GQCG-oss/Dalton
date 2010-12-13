@@ -251,7 +251,7 @@ C
          NERR=NERR+1
       END IF
       IF(ICESPH.GT.3) THEN
-         WRITE(LUPRI,9010) 'WRONG VALUE FOR -ICESPH- (>2)'
+         WRITE(LUPRI,9010) 'WRONG VALUE FOR -ICESPH- (>3)'
          NERR=NERR+1
       END IF
       IF(ICOMPCM.GT.3) THEN
@@ -475,7 +475,7 @@ Clf            YE(J)=PCMCORD(2,J)*TOANGS
 Clf            ZE(J)=PCMCORD(3,J)*TOANGS
 Clf            NUCZ = INT(PCMCHG(J))
 Clf            RIN(J) = RVDW(NUCZ)
-Clf       	    IAN(J)=1
+Clf       	   IAN(J)=1
 Clf         ENDDO
 Clf      END IF
 C
@@ -590,10 +590,12 @@ C
 
       WRITE(LUPRI,9010)
       NERR = 0
-      DO J=1,NESFP
-         WRITE(LUPRI,9020) J,XE(J),YE(J),ZE(J),RIN(J)
-         IF(RIN(J).LE.0) NERR=NERR+1
-      ENDDO
+      IF(ICESPH .LT. 3) THEN
+         DO J=1,NESFP
+            WRITE(LUPRI,9020) J,XE(J),YE(J),ZE(J),RIN(J)
+            IF(RIN(J).LE.0) NERR=NERR+1
+         ENDDO
+      END IF
       IF(NERR.GT.0) THEN
          WRITE(LUPRI,9030)
          CALL QUIT('Inconsistent input in PCMCAV')
@@ -1448,6 +1450,7 @@ C
          PCMCORD(2,I)=CORD(2,N)
          PCMCORD(3,I)=CORD(3,N)
          PCMCHG(I)=CHARGE(N)
+         print *, 'nucind',i,rsph(n)
       END DO
       DO K = 1, MAXREP
          DO N = 1, NUCIND
@@ -1463,7 +1466,8 @@ C
                PCMCORD(2,I)=CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K))
                PCMCORD(3,I)=CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K))
                PCMCHG(I)=CHARGE(N)
-               RSPH(I)=RSPH(N)
+               RSPH(I) = RSPH(N)
+               print *, 'nucdep',i,rsph(i)
             END IF
          END DO
       END DO
@@ -1504,10 +1508,11 @@ Clf  100 CONTINUE
 ClfC
 ClfC GENERATION OF ALL SPHERES FROM COORDINATES
 ClfC 
-ClfC ICESPH = 0 SPHERES ON ALL ATOMS WITH TABULATED RADII                  
-ClfC ICESPH = 1 SPHERES GIVEN FROM INPUT (X,Y,Z,R)                    
-ClfC ICESPH = 2 SPHERES ON SELECTED NUCLEI WITH RADII GIVEN FROM INPUT
-ClfC
+C ICESPH = 0 SPHERES ON ALL ATOMS WITH TABULATED RADII                  
+C ICESPH = 1 SPHERES GIVEN FROM INPUT (X,Y,Z,R)                    
+C ICESPH = 2 SPHERES ON SELECTED NUCLEI WITH RADII GIVEN FROM INPUT
+C ICESPH = 3 Spheres from mol file (Sphere=1,2...)
+
       IF(ICESPH.EQ.0) THEN
          NESFP = I
          DO J=1,NESFP
@@ -1536,6 +1541,7 @@ ClfC
                NESFP = NESFP + 1
                INA(NESFP) = J
                RIN(NESFP) = RSPH(J)
+               ALPHA(NESFP) = 1.0D0
                XE(NESFP)  = PCMCORD(1,J)
                YE(NESFP)  = PCMCORD(2,J)
                ZE(NESFP)  = PCMCORD(3,J)

@@ -11,6 +11,7 @@ tes
 nuc
 nucchg
 diplen
+OVERRIDE thr 1.0e-4
 END CHECKLIST
 
 ########## DALTON.INP ##############################
@@ -43,12 +44,12 @@ ATOMBASIS
 
 
 Atomtypes=3 Charge=+2 Angstrom Generators=2 X Y
-Charge=6.0 Atoms=1 Basis=STO-3G  Sphere=1
-C     0.000000     0.000000     0.000000   1.60
-Charge=8.0 Atoms=1 Basis=STO-3G  Sphere=1
-O     0.000000     0.000000     1.220000   1.50
-Charge=1.0 Atoms=1 Basis=STO-3G  Sphere=1
-H     0.943102     0.000000    -0.544500   1.20
+Charge=6.0 Atoms=1 Basis=STO-3G  Radius=1.6 Alpha=1.2
+C     0.000000     0.000000     0.000000   
+Charge=8.0 Atoms=1 Basis=STO-3G  Radius=1.5 Alpha=1.2
+O     0.000000     0.000000     1.220000   
+Charge=1.0 Atoms=1 Basis=STO-3G  Radius=1.2 Alpha=1.2
+H     0.943102     0.000000    -0.544500   
 
 END MOLINP
 
