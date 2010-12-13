@@ -4584,13 +4584,13 @@ c     WRITE(LUOUT,*)
      &  '     Parity   ..............  Ungerade'
       END IF
 *.Spin
-      WRITE(LUOUT,'(1X ,A,I2)')
-     &  '     2 times spinprojection  ', MS2
-      WRITE(LUOUT,'(1X ,A,I2)')
-     &  '     Spin multiplicity ....  ', MULTS
+      WRITE(LUOUT,'(1X ,A,I4)')
+     &  '     2 times spinprojection', MS2
+      WRITE(LUOUT,'(1X ,A,I4)')
+     &  '     Spin multiplicity ....', MULTS
 *.Number of active electrons
-      WRITE(LUOUT,'(1X ,A,I2)')
-     &  '     Active electrons .....  ', NACTEL
+      WRITE(LUOUT,'(1X ,A,I4)')
+     &  '     Active electrons .....', NACTEL
       WRITE(LUOUT,*)
       WRITE(LUOUT,*) '*********************************************'
       WRITE(LUOUT,*) '*  Shell spaces and occupation constraints  *'
@@ -4643,27 +4643,27 @@ c     WRITE(LUOUT,*)
 *. Secondary space
       IF(ISETKW(13).EQ.1) THEN
         DO 310 ITP = 1,MXR4TP
-          WRITE(LUOUT,'(1X ,A,I2,A,10I4)')
-     &  '     Secondary',ITP,'      ',(NRS4SH(I,ITP),I=1,NIRREP)
+          WRITE(LUOUT,'(A,I2,A,10I4)')
+     &  '      Secondary',ITP,'      ',(NRS4SH(I,ITP),I=1,NIRREP)
   310   CONTINUE
       END IF
 *. Deleted space
       IF(ISETKW(26).EQ.1) THEN
-        WRITE(LUOUT,'(1X ,A,10I4)')
-     &  '     Deleted          ',(NDELSH(I),I=1,NIRREP)
+        WRITE(LUOUT,'(A,10I4)')
+     &  '      Deleted          ',(NDELSH(I),I=1,NIRREP)
       END IF
-      IF(IMLCR3.EQ.2) WRITE(LUOUT,'(1X ,A)')
-     &  '     ( Deleted shells supplied by courtesy of TRAONE )'
+      IF(IMLCR3.EQ.2) WRITE(LUOUT,'(A)')
+     &  '      ( Deleted shells supplied by courtesy of TRAONE )'
 *.Core space
       WRITE(LUOUT,*)
       IF(ISETKW(8).EQ.1) THEN
-        WRITE(LUOUT,'(1X ,A,I2)')
-     &  '     Largest number of excitations out of core .....   ',MXHR0
+        WRITE(LUOUT,'(1X ,A,I4)')
+     &  '     Largest number of excitations out of core ..... ',MXHR0
       END IF
 *.Secondary space
       IF(ISETKW(13).EQ.1) THEN
-        WRITE(LUOUT,'(1X ,A,I2)')
-     &  '     Largest number of excitations to secondary space  ',MXER4
+        WRITE(LUOUT,'(1X ,A,I4)')
+     &  '     Largest number of excitations to secondary space',MXER4
       END IF
       ELSE
 *
@@ -4677,10 +4677,10 @@ c     WRITE(LUOUT,*)
       WRITE(LUOUT,'(A)') ' Orbital subspaces:'
       WRITE(LUOUT,'(A)') ' ================== '
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1X ,A,10I4,A)')
-     &  '                Irrep ',(I,I = 1,NIRREP)
-      WRITE(LUOUT,'(1X ,A,2X,10A,A)')
-     &  '                ===== ',('====',I = 1,NIRREP)
+      WRITE(LUOUT,'(A,20I4)')
+     &  '                 Irrep ',(I,I = 1,NIRREP)
+      WRITE(LUOUT,'(A,2X,20A)')
+     &  '                 ===== ',('====',I = 1,NIRREP)
       DO IGAS = 1, NGAS
         WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
      &  '        GAS',IGAS,'          ',
@@ -4928,7 +4928,7 @@ C     END IF
       IF(LCSBLK.NE.0) WRITE(LUOUT,'(A,I10)')
      &  '      Smallest allowed size of sigma- and C-batch:',LCSBLK
       WRITE(LUOUT,'(A,I10)')
-     &  '     Dimension of block of resolution strings    :',MXINKA
+     &  '      Dimension of block of resolution strings   :',MXINKA
       IF(IUSE_PH.EQ.1) THEN
         WRITE(LUOUT,'(1X ,A)')
      &  '     Particle-hole separation used '
@@ -4952,7 +4952,7 @@ C     END IF
 *
       IF(IDENSI.EQ.0) THEN
         WRITE(LUOUT,'(1X ,/A)')
-     &  '     No calculation of density matrices  '
+     &  '      No calculation of density matrices'
       ELSE IF(IDENSI.EQ.1) THEN
         WRITE(LUOUT,'(1X ,/A)')
      &  '     One-body density matrix calculated'
@@ -5006,14 +5006,14 @@ C     END IF
      &  '        (Only active in connection with TERACI )'
       END IF
 *. Number of iterations
-C     WRITE(LUOUT,'(1X ,A,I2)')
-C    &  '        Allowed number of iterations    ',MAXIT
+C     WRITE(LUOUT,'(A,I5)')
+C    &  '         Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
-      WRITE(LUOUT,'(1X ,A,I2)')
-     &  '        Allowed Dimension of CI subspace',MXCIV
+      WRITE(LUOUT,'(A,I5)')
+     &  '         Allowed Dimension of CI subspace',MXCIV
 *
-      WRITE(LUOUT,'(A,1P,E11.5)')
-     &  '        Convergence threshold for energy ',THRES_E
+      WRITE(LUOUT,'(A,1P,E11.2)')
+     &  '         Convergence threshold for energy',THRES_E
 *. Multispace (multigrid info )
       IF(MULSPC.EQ.1) THEN
         WRITE(LUOUT,'(1X ,A,I3)')
@@ -5209,36 +5209,34 @@ C       WRITE(6,*) ' Number of response calculations ', NRESP
 *
 C     IF(NOMOFL.EQ.0) THEN
         WRITE(LUOUT,*)
-        WRITE(LUOUT,'(7X,A)') ' Final orbitals :'
-        WRITE(LUOUT,'(7X,A)') ' ================'
-        WRITE(LUOUT,*)
+        WRITE(LUOUT,'(5X,A)') ' Final orbitals :'
+        WRITE(LUOUT,'(5X,A)') ' ================'
         IF(IFINMO.EQ.1) THEN
-          WRITE(LUOUT,'(10X,A)') ' Natural orbitals'
+          WRITE(LUOUT,'(8X,A)') ' Natural orbitals'
         ELSE IF(IFINMO.EQ.2) THEN
-          WRITE(LUOUT,'(10X,A)') ' Canonical orbitals'
+          WRITE(LUOUT,'(8X,A)') ' Canonical orbitals'
         ELSE IF(IFINMO.EQ.3) THEN
-          WRITE(LUOUT,'(10X,A)') ' Pseudo-natural orbitals'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)') ' Pseudo-natural orbitals'
+          WRITE(LUOUT,'(8X,A)')
      &   ' (Density matrix diagonalized in orbital subspaces )'
         ELSE IF(IFINMO.EQ.4) THEN
-          WRITE(LUOUT,'(10X,A)') ' Pseudo-canonical orbitals'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)') ' Pseudo-canonical orbitals'
+          WRITE(LUOUT,'(8X,A)')
      &   ' (FI+FA  diagonalized in orbital subspaces )'
          ELSE IF (IFINMO .EQ. 5 ) THEN
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)')
      &   ' Pseudo-natural-canonical orbitals (sic)'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)')
      &   ' (Pseudo natural orbitals are first obtained'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)')
      &   '  by diagonalizing density matrix in orbital subpspaces.'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)')
      &   '  FI+FA is transformed to this basis, and the transformed'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A/)')
      &   '  matrix is block diagonalized) '
-          WRITE(LUOUT,*)
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)')
      &   ' Orbital spaces in which transformed FIFA is diagonalized'
-          WRITE(LUOUT,'(10X,A)')
+          WRITE(LUOUT,'(8X,A)')
      &   ' ========================================================'
           DO IPSSPC = 1, NPSSPC
             WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
@@ -5268,74 +5266,75 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
       END IF
 
 *
-*. Print levels
+*.Print levels
 *
-      WRITE(LUOUT,'(1X ,A)')  '     Print levels : '
+      WRITE(LUOUT,'(/A/A)')  '      Print levels : ',
+     &                       '      =============='
       IF(ISETKW(29).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for string    information = ', IPRSTR
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for string    information = ', IPRSTR
       END IF
       IF(ISETKW(30).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for CI space  information = ', IPRCIX
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for CI space  information = ', IPRCIX
       END IF
       IF(ISETKW(31).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for orbital   information = ', IPRORB
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for orbital   information = ', IPRORB
       END IF
       IF(ISETKW(65).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for density matrix        = ', IPRDEN
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for density matrix        = ', IPRDEN
       END IF
       IF(ISETKW(32).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for iterative information = ', IPRDIA
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for iterative information = ', IPRDIA
       END IF
       IF(ISETKW(36).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for External blocks       = ', IPRXT
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for External blocks       = ', IPRXT
       END IF
 *
       IF(IRESPONS.NE.0) THEN
       IF(ISETKW(84).EQ.2) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Default print level for response section      = ', IPRRSP
       ELSE
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Raised  print level for response section      = ', IPRRSP
       END IF
       END IF
 *
       IF(IPROCC.NE.0) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Occupation of SD''s/ configurations           = ',IPROCC
       END IF
 *
       IF(IPRNCIV.EQ.1 ) THEN
-        WRITE(LUOUT,'(1X ,A,I3)')
+        WRITE(LUOUT,'(3X ,A,I3)')
      &  '      Final CI vectors will be printed '
       END IF
 *
       IF(IDMPIN.EQ.1) THEN
-        WRITE(LUOUT,'(1X ,A)')
+        WRITE(LUOUT,'(3X ,A)')
         WRITE(LUOUT,*) 
      & '      Integrals written in formatted form (E22.15)'
         WRITE(LUOUT,*) '      on file 90 '
