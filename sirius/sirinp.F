@@ -2069,9 +2069,8 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
 !      this is to keep backwards compatibility - lucita input is now
 !      processed via the new input reader module.
- 3100  unit_in               = lucmd
-       lucita_input_provided = .true.
-       call move_to_next_star(word)
+ 3100  lucita_input_provided = .true.
+       call move_to_next_star(word,lucmd)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -2084,7 +2083,7 @@ C  Here if "*END OF"
        if(lucita_input_provided)then
          CALL GPCLOSE(LUCMD,'KEEP')
 
-!        read input
+!        read lucita input
          call read_menu_input('*LUCITA',lucita_input_provided)
          if (.not. lucita_input_provided) then
          call quit('Oops, read_menu_input could not find *LUCITA input')

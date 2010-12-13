@@ -33,12 +33,9 @@ module keyword
   public kw_matches
   public kw_read
 
-  integer, parameter, public :: kw_length = 7
-#ifdef PRG_DIRAC
-  integer, parameter, public :: unit_in   = 5
-#else
-  integer, public            :: unit_in   = 5
-#endif
+  integer, parameter, public :: kw_length       = 7
+  integer, parameter, public :: unit_in_default = 5
+  integer,            public :: unit_in         = unit_in_default
 
   private
 

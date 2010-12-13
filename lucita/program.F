@@ -1155,7 +1155,7 @@ C     Compute offset from WRK to WORK
          CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
       END IF
 #endif
- 
+! 
 !     subtract dynamically allocated memory
       max_num_ttss_blocks = 20 000
       max_subspace_dim    = 300

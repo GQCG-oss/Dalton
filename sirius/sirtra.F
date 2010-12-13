@@ -1404,7 +1404,6 @@ C     should never happen.
       END IF
       IF (ITRLVL.LE.5) THEN
          MAXID = MOCCT
-         print *,' inside traab - mocct is',mocct
       ELSE
          MAXID = MORBT
 C        ... full integral transformation
@@ -1416,7 +1415,6 @@ C        ... full integral transformation
          NCR=NC-JORB(ISC)
 CHJ      IDMAX=IC
 CHJ      IF (IC.GT.MOCCT) IDMAX=MOCCT
-         print *,' inside traab - NXISHT is',NXISHT
          IF (IC.LE.NXISHT) THEN
             IDMIN = IC
             IDMAX = IC
@@ -1488,21 +1486,15 @@ C              INDCD = ND*2**24 + NC*2**16
             END IF
             INDCD = IBTSHL( INDCD , 16 )
 C           ***** SET THE ARRAY ABCD TO ZERO *****
-            print *, 'abcd with length MORBT*MORBT',MORBT*MORBT
             CALL DZERO(ABCD,MORBT*MORBT)
 C           ***** SET START ADDRESS IN TRI FOR INTEGRALS WITH *****
 C           ***** FIRST PAIR INDEX EQUAL TO ICD.              *****
             NTCD=NMBASX*(LCD-1)
 C           ***** LOOP OVER FIRST INDEX P *****
-            print *, 'loop over mbast',mbast
             DO 150 NP=1,MBAST
-               print *, 'np is',np
                ISPA=ITSAO(NP)
 C              ***** DETERMINE SYMMETRY FOR SECOND INDEX *****
-               print *, 'ispa, iscd is',ispa,iscd
                ISQB=MUL(ISPA,ISCD)
-               print *, 'ISQB is',ISQB
-               print *, 'MASH(ISQB) is',MASH(ISQB)
 C              ***** NUMBER OF ORBITALS AND BASIS FUNCTIONS *****
                IF(ITRLVL.EQ.0.AND.MASH(ISQB).EQ.0)GO TO 150
                MORBA=MORB(ISPA)
@@ -1598,7 +1590,6 @@ C     ***** START ADDRESSES FOR MO*S *****
 C     ***** SET THE ARRAY PBCD TO ZERO *****
                IMOP = JCMO(ISPA) + NARMIN-1 + (NP-JBASP-1)*MORBP
                IMOQ = JCMO(ISQB) + NBRMIN
-            print *, 'PBCD with length NNBR at NBRMIN',NBRMIN
                CALL DZERO(PBCD(NBRMIN),NNBR)
                NCDITP = NTCD + IT(NP)
                NCDP   = NTCD + NP
@@ -1662,23 +1653,17 @@ C        ***** LOOP OVER ORBITALS B AND ADD CONTRIBUTION *****
 C        ***** TO INTEGRALS (AB/CD)                      *****
          DO 135 NBR = NBRS,NBRE
 !           that could be done with daxpy, could not it?
-            print *, 'ABCD JORBB+NBR, NA, NBR',JORBB+NBR,NA,NBR
             ABCD(JORBB+NBR,NA) = ABCD(JORBB+NBR,NA) + CMOP*PBCD(NBR)
   135    CONTINUE
-         print *, ' going up to 140 '
   140 CONTINUE
-         print *, ' going up to 150 '
   150 CONTINUE
-               print *, '150 done'
 C     ***** ALL INTEGRALS (AB/CD) FOR A GIVEN PAIR CD HAVE *****
 C     ***** BEEN CREATED. WRITE THEM ON UNIT LUINTM WITH   *****
 C     ***** INDICES A,B,C AND D.                           *****
 CHJ: new index order: C,D; A,B
       DO 170 NA=1,MORBT
-         print *, 'NA is',NA
          INDCDA = IBTOR(INDCD , IBTSHL( NA, 8 ) )
          ISA = ITSMO( NA )
-         print *, 'ISA, ISCD is',ISA,ISCD
          ISB = MUL( ISA, ISCD )
          NBST  = JORB(ISB) + 1
          NBEND = JORB(ISB) + MORB(ISB)
@@ -1686,7 +1671,6 @@ C        ... not NBEND = MIN(NA,NBEND)
 C            because e.g. (ph/ph) integrals do not follow NB .le. NA
          DO 160 NB = NBST,NBEND
             P = ABCD(NB,NA)
-            print *, 'P is for NB,NA',P,NB,NA
          IF (ABS(P).LT.THRP) GO TO 160
             LABCD=LABCD+1
             IOUT =IOUT+1
@@ -1717,7 +1701,6 @@ C              ***** WRITE THIS BUFFER *****
             OUTB(IOUT) = P
             IOUTB(LOUTI+IOUT) = IBTOR( INDCDA , NB )
   160    CONTINUE
-         print *, '160 done'
   170 CONTINUE
 CHJ 3 *** Going to next (CD), empty this buffer ***
       IOUTB(LOUT21) = IOUT
@@ -1828,7 +1811,6 @@ C
          LFREE  = KWORK
 !        problem here with lucita: nbast is 8 but down in TRAAB we
 !        access field #9...
-         print *,'NBAST is',NBAST
          CALL MEMGET('INTE',KITSMO,NBAST,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KITSAO,NBAST,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KITSW ,NBAST,WORK,KFREE,LFREE)
@@ -1955,7 +1937,6 @@ C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
      &      ' to',1.D-15
          THRQ=1.D-15
       END IF
-      print *, 'LSRTAO at the start of TRACTL_1',LSRTAO
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
@@ -2004,6 +1985,14 @@ C     Note: index on LUITM are wrong if MFRO(ISYM) .ne. 0 !!
          MSSH(ISYM) = NSSH(ISYM)
          MBAS(ISYM) = NBAS(ISYM)
     5 CONTINUE
+      IF (IPRTRA .GE. 5) THEN
+         WRITE(LUPRI,*) 'MSYM',MSYM
+         WRITE(LUPRI,*) 'MFRO',MFRO(1:8)
+         WRITE(LUPRI,*) 'MISH',MISH(1:8)
+         WRITE(LUPRI,*) 'MASH',MASH(1:8)
+         WRITE(LUPRI,*) 'MSSH',MSSH(1:8)
+         WRITE(LUPRI,*) 'MBAS',MBAS(1:8)
+      END IF
 C
 C     If first call of TRACTL_1 set up orbital information in /INTTRA/
 C        ... 890615 - hjaaj: in new combination runs
@@ -2030,6 +2019,7 @@ C     ***** SET UP ORBITAL DATA *****
    10    CONTINUE
 C
          MORBT=MOCCT+MSSHT
+         IF (MORBT .GT. MBAST) CALL QUIT('MORBT .gt. MBAST :(')
 CHJ-S-841208
          IF (MORBT.GT.255 .OR. MBAST.GT.255) THEN
             WRITE (LUPRI,*)
@@ -2289,7 +2279,6 @@ C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
 C     
 C   
-      print *, 'passed by here'
       IF (LSRTAO .NE. 0) THEN
          CALL REWSPL(LUINTM)
          READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
@@ -2344,17 +2333,13 @@ C        ... LUDA does not exist
             LSRTAO = 0
          END IF
       END IF
-      print *, 'LSRTAO at the start of TRACTL_1',LSRTAO
       IF (LSRTAO.EQ.0) THEN
-      print *, 'passed by here 2'
 C        hjaaj 11-jan-2007: make sure AOTWOINT exists
          CALL MAKE_AOTWOINT(WORK,KWORK)
 
 C     HJ-840710 was: IF (JTER.EQ.1) THEN
-      print *, 'passed by here 2.1'
          CALL GPINQ(FNINTM,'EXIST',FEXIST)
          if(FEXIST) CALL GPCLOSE(LUINTM,'DELETE')
-      print *, 'passed by here 2.2'
          CALL GPOPEN(LUINTM,FNINTM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
 C        ... empty old mo integral file to save disk space during
@@ -2362,10 +2347,8 @@ C            the transformation
 C        Now done by deleting the file, just in case it has been split
 C        K.Ruud, April 19 2000
 C
-      print *, 'passed by here 3'
          CALL SORTA(LUDA,WORK,WORK,WORK(KWORK1),WORK(KWORK1),
      *              LWORK1,LTRI,IT)
-      print *, 'survived sortra'
 C        CALL SORTA(RINT,IINT,SCR,ISCR,MEMSX,MEMTX,IT)
          DFIN = SECOND()
          DTIM = DFIN - DST
@@ -2405,7 +2388,6 @@ C
          MORBI=MORB(ISYM)
       IF(MORBI.EQ.0) GO TO 720
          MFROI=MFRO(ISYM)
-         print *,'mfroi is',mfroi
          MBASI=NBAS(ISYM)
          I1   = 1   + ICMO(ISYM) + MFROI*MBASI
          I2   = LW1 + JCMO(ISYM)
@@ -2414,11 +2396,9 @@ C
 C
 C     ***** CALLING SEQUENCE FOR FIRST TRANSFORMATION STEP *****
 C
-         print *,'calling first halftr'
       CALL TRACD(ITRLVL,LUHALF,LUDA,WORK(LW1),WORK(LW2),WORK(LW2),
      &           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6),
      &           ITSMO,ITSAO,ITSX,IT)
-         print *,'survived first halftr'
       DFIN = SECOND()
       DTIM = DFIN - DST
       DST  = DFIN
@@ -2445,10 +2425,8 @@ C
 C
 C     ***** CALLING SEQUENCE FOR SECOND SORT *****
 C
-         print *,'calling SORTB'
       CALL SORTB(ITRLVL,LUHALF,LUDA2,WORK,WORK,WORK(KWORK1),
      1           WORK(KWORK1),LWORK1,LTRI,IT)
-         print *,'survived SORTB'
       CALL GPCLOSE(LUHALF,'DELETE')
       DFIN = SECOND()
       DTIM = DFIN - DST
@@ -2480,11 +2458,9 @@ C 860731-hjaaj: done
       WRITE (LUINTM) LBINTM,ITRLVL,NSYM,NORB,NBAS
       WRITE (LUINTM) (CMO(I),I=1,NCMOT)
 C
-         print *,'calling TRAAB'
       CALL TRAAB(ITRLVL,LUDA2,WORK(LW1),WORK(LW2),WORK(LW2),
      &           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6),
      &           ITSMO,ITSAO,ITSW,ITSX,IT)
-         print *,'survived TRAAB'
       IF (LPQCD.GT.0) CALL GPCLOSE(LUDA2,'DELETE')
 C
       DFIN = SECOND()

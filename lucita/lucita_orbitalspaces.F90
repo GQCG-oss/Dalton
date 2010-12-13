@@ -208,7 +208,7 @@ contains
 #include "priunit.h"
 #include "inforb.h"
 !
-      integer, save         :: NFRO_SAVE(8), NISH_SAVE(8), NASH_SAVE(8)
+      integer, save         :: NFRO_SAVE(8), NISH_SAVE(8), NASH_SAVE(8), NSSH_SAVE(8)
 !*******************************************************************************
 
       select case(keyword)
@@ -218,15 +218,19 @@ contains
           NFRO_SAVE(1:8) = NFRO(1:8)
           NISH_SAVE(1:8) = NISH(1:8)
           NASH_SAVE(1:8) = NASH(1:8)
+          NSSH_SAVE(1:8) = NSSH(1:8)
           NFRO(1:8) = 0
           NISH(1:8) = nish_lucita(1:8)
           NASH(1:8) = nash_lucita(1:8)
+          NASH(1:8) = nash_lucita(1:8)
+          NSSH(1:8) = nssh_lucita(1:8)
           
         case('RESET')
 
           NFRO(1:8) = NFRO_SAVE(1:8)
           NISH(1:8) = NISH_SAVE(1:8)
           NASH(1:8) = NASH_SAVE(1:8)
+          NSSH(1:8) = NSSH_SAVE(1:8)
 
         case DEFAULT
 

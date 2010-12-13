@@ -10,7 +10,7 @@ F_OBJS = gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 
 # F90_MODS should contain all files with F90 modules in proper order
 # #          (i.e. if b.F90 calls a module in k.F90, then the proper order is k.F90 b.F90)
-F90_MODS = character_processing.F90 keyword.F90 input_reader.F90
+F90_MODS = character_processing.F90 keyword.F90 dalton_input_processing.F90 input_reader.F90
 #
 F90_MOD_OBJS = $(F90_MODS:.F90=.o)
 #
