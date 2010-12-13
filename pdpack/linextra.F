@@ -907,7 +907,7 @@ C
 C   Subroutine IZERO sets an integer array of length *LENGTH*
 C   to zero.
 C...................................................................
-      INTEGER LEGNTH, INTVEC(*)
+      INTEGER LENGTH, INTVEC(*)
 C
       IF (LENGTH.LE.0) RETURN
 C
