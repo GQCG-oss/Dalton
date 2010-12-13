@@ -23,56 +23,37 @@
 *
 *========================================================*
 *  Common LUCITA and LUCIAREL routines                   *
+*  LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig*
 *                                                        *
 *   collected by Timo Fleig, Jul 12 - Sep, 2002          *
 *========================================================*
 *
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       subroutine abend(CHARINP)
       implicit none
       character*(*) CHARINP
-      write(6,*) CHARINP
-      call quit ('Abend called')
+      write(6,*) 'abend called with: ',CHARINP
+      call quit (CHARINP)
       return
       end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       subroutine abend1(CHARINP)
       implicit none
       character*(*) CHARINP
-      write(6,*) CHARINP
-      call quit ('Abend1 called')
+      write(6,*) 'abend1 called with: ',CHARINP
+      call quit (CHARINP)
       return
       end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       subroutine abend2(CHARINP)
       implicit none
       character*(*) CHARINP
-      write(6,*) CHARINP
-      call quit ('Abend2 called')
+      write(6,*) 'abend2 called with: ',CHARINP
+      call quit (CHARINP)
       return
       end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       subroutine abend3(CHARINP)
       implicit none
       character*(*) CHARINP
-      write(6,*) CHARINP
-      call quit ('Abend3 called')
+      write(6,*) 'abend3 called with: ',CHARINP
+      call quit (CHARINP)
       return
       end
 ***********************************************************************
@@ -690,17 +671,19 @@ C
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
       DIMENSION A(*)
       DIMENSION LROW(NBLK),LCOL(NBLK)
-C
+
+#include "priunit.h"
+
+      WRITE(lupri,*) ' Blocked matrix '
+      WRITE(lupri,*) '================'
+
       IBASE = 1
-      WRITE(6,*) ' Blocked matrix '
-      WRITE(6,*) '================'
-      WRITE(6,*)
       DO 100 IBLK = 1, NBLK
-        WRITE(6,'(A,I3)') ' Block ... ',IBLK
+        WRITE(lupri,'(/A,I3)') ' Block ... ',IBLK
         IF(ISYM.EQ.0) THEN
         IF(IBLK .NE. 1 ) IBASE = IBASE + LROW(IBLK-1)*LCOL(IBLK-1)
         CALL WRTMT_LU(A(IBASE),LROW(IBLK),LCOL(IBLK),
-     &              LROW(IBLK),LCOL(IBLK) )
+     &                  LROW(IBLK),LCOL(IBLK) )
        ELSE
         IF(IBLK .NE. 1 )
      &  IBASE = IBASE + LROW(IBLK-1)*(LCOL(IBLK-1)+1)/2
@@ -4795,48 +4778,34 @@ C?      write(6,*) 'NBLK ',nblk
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
       SUBROUTINE WRTMT_LU(A,NROW,NCOL,NMROW,NMCOL)
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION A(NMROW,NMCOL)
+#include "priunit.h"
 C
       DO 100 I=1,NROW
-      WRITE(6,1010) I,(A(I,J),J=1,NCOL)
- 1010 FORMAT(/I4,2X,4(1X,E14.8),/,(6X,4(1X,E14.8)))
+        WRITE(lupri,1010) I,(A(I,J),J=1,NCOL)
   100 CONTINUE
+ 1010 FORMAT(/I4,':',5E15.8,/,(5X,5E15.8))
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE WRTMATMN(A,NROW,NCOL,NMROW,NMCOL,LUWRT)
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION A(NMROW,NMCOL)
 C
-      XXX = 0.0D0
-      XXX = DDOT(NMCOL,A,1,A,1)
-      IF( XXX .eq. 0.0D0 ) GOTO 200
+!     XXX = 0.0D0
+!     XXX = DDOT(NMCOL,A,1,A,1) <- hjaaj: this cannot be correct /dec 2010
+!     IF( XXX .eq. 0.0D0 ) GOTO 200
 C
       DO 100 I=1,NROW
-      WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
- 1010 FORMAT(/I4,2X,4(1X,E14.8),/,(6X,4(1X,E14.8)))
+        WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
   100 CONTINUE
-  200 CONTINUE
+ 1010 FORMAT(/I4,':',5E15.8,/,(5X,5E15.8))
+! 200 CONTINUE
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE WRTMATMN8(A,NROW8,NCOL8,NMROW8,NMCOL8,LUWRT)
 C
@@ -4845,87 +4814,67 @@ C
       DIMENSION A(NMROW8,NMCOL8)
 C
       DO 100 I=1,NROW8
-      WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL8)
- 1010 FORMAT(/I4,2X,4(1X,E14.8),/,(6X,4(1X,E14.8)))
+         WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL8)
   100 CONTINUE
+ 1010 FORMAT(/I4,':',5E15.8,/,(5X,5E15.8))
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMA8(MAT,NROW,NCOL,NMROW,NMCOL)
 C
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION MAT(NMROW,NMCOL)
+#include "priunit.h"
 C
       DO 100 I=1,NROW
-      WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
- 1010 FORMAT(/I4,2X,4(1X,I18),/,(6X,4(1X,I18)))
+         WRITE(lupri,1010) I,(MAT(I,J),J=1,NCOL)
   100 CONTINUE
+ 1010 FORMAT(/I4,':',5I15,/,(5X,5I15))
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          * 
-*                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMAMN(MAT,NROW,NCOL,NMROW,NMCOL,LUWRT)
 C
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION MAT(NMROW,NMCOL)
 C
       DO 100 I=1,NROW
-      WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL)
- 1010 FORMAT(/I4,2X,4(1X,I10),/,(6X,4(1X,I10)))
+         WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL)
   100 CONTINUE
+ 1010 FORMAT(/I4,':',5I15,/,(5X,5I15))
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          * 
-*                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMAMN8(MAT,NROW8,NCOL8,NMROW8,NMCOL8,LUWRT)
 C
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       INTEGER*8 NROW8, NCOL8
       DIMENSION MAT(NMROW8,NMCOL8)
 C
       DO 100 I=1,NROW8
-      WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL8)
- 1010 FORMAT(/I4,2X,4(1X,I10),/,(6X,4(1X,I10)))
+         WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL8)
   100 CONTINUE
+ 1010 FORMAT(/I4,':',5I15,/,(5X,5I15))
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMAS(MAT,NROW,NCOL,NMROW,NMCOL)
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION MAT(NMROW,NMCOL)
       INTEGER ITEST,INACTIVE
+#include "priunit.h"
+
       INACTIVE = 0
 C
       DO 100 I=1,NROW
          ITEST = 0
         DO II = 1, NCOL
-         ITEST = ITEST + MAT(I,II) 
+         ITEST = ITEST + MAT(I,II)
         ENDDO
-      IF(ITEST.EQ.0) INACTIVE = INACTIVE + 1
-      IF(ITEST.EQ.0) GOTO 100
-      WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
- 1010 FORMAT(1X,I4,2X,60(1X,I1),/,(7X,60(1X,I1)))
+        IF(ITEST.EQ.0) THEN
+         INACTIVE = INACTIVE + 1
+        ELSE
+         WRITE(lupri,1010) I,(MAT(I,J),J=1,NCOL)
+        END IF
   100 CONTINUE
-      WRITE(6,*)'  ' 
-      WRITE(6,'(1X,A,1X,I3)')'TOTAL    NUMBER:',NCOL
-      WRITE(6,'(1X,A,1X,I3)')'ACTIVE   BLOCKS:',NCOL-INACTIVE
-      WRITE(6,'(1X,A,1X,I3)')'INACTIVE BLOCKS:',INACTIVE 
-      WRITE(6,*)'  ' 
+ 1010 FORMAT(I4,': ',60I2,/,(6X,60I2))
+      WRITE(lupri,'(/1X,A,I4 )')'TOTAL    NUMBER:',NCOL
+      WRITE(lupri,'( 1X,A,I4 )')'ACTIVE   BLOCKS:',NCOL-INACTIVE
+      WRITE(lupri,'( 1X,A,I4/)')'INACTIVE BLOCKS:',INACTIVE 
       END
 ***********************************************************************
 *                                                                     *
