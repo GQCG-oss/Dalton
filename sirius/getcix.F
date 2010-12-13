@@ -143,32 +143,6 @@ C     ... RHF or ROHF
 C
       RETURN
       END
-C  /* Deck getfci */
-      SUBROUTINE GETFCI(FCAC,H2AC,WRK,LFREE)
-C
-C 20-Jan-1988 hjaaj :
-C
-C   Version for Determinant CI
-C
-C   Modify H2AC and FCAC as expected by CI routines.
-C
-C   >>> No modification for determinant CI <<<
-C
-Cinclude <implicit.h>
-C     DIMENSION FCAC(NNASHX),H2AC(NNASHX,NNASHX), WRK(LFREE)
-C
-C
-C Used from common blocks:
-C   INFORB : NNASHX
-C
-Cinclude <inforb.h>
-C
-C
-C
-C     *** end of getfci ***
-C
-      RETURN
-      END
 C  /* Deck getfij */
       SUBROUTINE GETFIJ(FIJ,FJI,H2AC)
 C

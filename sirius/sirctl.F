@@ -713,7 +713,7 @@ C
          LWRK1 = LWORK - KWRK1
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
-         ! orbital occupations for TRACTL
+           ! orbital occupations for TRACTL
          JTRALVL = 0 ! all active orbitals for all four indices
          USEDRC = .FALSE.
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KWRK1),LWRK1)
