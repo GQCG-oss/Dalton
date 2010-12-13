@@ -37,7 +37,7 @@ module keyword
 #ifdef PRG_DIRAC
   integer, parameter, public :: unit_in   = 5
 #else
-  integer, public            :: unit_in   = 8
+  integer, public            :: unit_in   = 5
 #endif
 
   private

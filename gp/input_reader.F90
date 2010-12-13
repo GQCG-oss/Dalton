@@ -37,7 +37,7 @@ module input_reader
 
   implicit none
 
-  public read_input
+  public read_menu_input
   public move_to_next_star
 
   private
@@ -61,7 +61,7 @@ contains
   end subroutine
 #endif
 
-  subroutine read_input()
+  subroutine read_menu_input(input_section_in,input_found)
 
 !   radovan: - this routine should not include any common blocks
 !              this should be done in called subroutines
@@ -69,78 +69,32 @@ contains
 !              of this subroutine
 
 !   ----------------------------------------------------------------------------
-    character(kw_length) :: word
-    character(kw_length) :: kw_section
+    character(*),intent(in) :: input_section_in
+    logical,intent(out)     :: input_found
+!   ----------------------------------------------------------------------------
+    character(kw_length)    :: input_section
+    character(kw_length)    :: word
+    character(kw_length)    :: kw_section
+    logical                 :: read_all_input
 !   ----------------------------------------------------------------------------
 
 !   this is to catch keywords that appear before some section starts
     kw_section = '       '
+    input_section = uppercase(input_section_in) ! truncate or extend to kw_length
+    if (input_section(1:3) == 'ALL') then
+       read_all_input = .true.
+    else
+       read_all_input = .false.
+    end if
 
 #ifdef PRG_DIRAC
     open(unit_in, file='DIRAC.INP')
-    rewind unit_in
-
-    do while (.true.)
-
-      read(unit_in, '(a7)', end=1) word
-
-      if (word == '       ') then
-!         blank line
-      else
-         select case (word(1:1))
-         
-           case ('!', '#')
-!            comment
-         
-           case ('*')
-!            section
-             kw_section = uppercase(word)
-         
-           case default
-!            keyword
-             select case (kw_section)
-         
-!              case ('**METHO', '**WAVE ')
-!                call read_input_method(word, kw_section)
-         
-               case ('*DFT   ')
-                 call read_input_dft(word, kw_section)
-         
-!              *VISUAL is for backward compatibility
-!              *VISUAL used to be under **ANALYZE
-               case ('**VISUA', '*VISUAL')
-                 call read_input_visual(word, kw_section)
-         
-               case ('*OPENRS')
-                 call read_input_openrsp(word, kw_section)
-         
-               case ('**RELCC')
-                 call read_input_relcc(word, kw_section)
-         
-               case ('*END OF')
-                 go to 1
-         
-!              case ('       ')
-!                call quit('keyword '//word//' without section')
-         
-               case default
-!                activate as soon as everything is merged to here
-!                call quit('section '//kw_section//' not recognized')
-         
-             end select
-         
-         end select
-      end if
-
-    end do
-
-1   close(unit_in)
-
-#else /* PRG_DIRAC */
-
+#else
     open(unit_in, file='DALTON.INP')
+#endif
     rewind unit_in
 
+    input_found = .false.
     do while (.true.)
 
       read(unit_in, '(a7)', end=1) word
@@ -156,31 +110,18 @@ contains
            case ('*')
 !            section
              kw_section = uppercase(word)
+             if (word == '*END OF' .or. word == '**END O') go to 1
          
            case default
 !            keyword
-             select case (kw_section)
-         
-!              case ('**METHO', '**WAVE ')
-!                call read_input_method(word, kw_section)
-         
-               case ('*LUCITA')
-                 call read_input_lucita(word, kw_section)
-         
-!              case ('*OPENRS')
-!                call read_input_openrsp(word, kw_section)
-         
-               case ('**END OF')
-                 go to 1
-         
-!              case ('       ')
-!                call quit('keyword '//word//' without section')
-         
-               case default
-!                activate as soon as everything is merged to here
-!                call quit('section '//kw_section//' not recognized')
-         
-             end select
+             if (read_all_input .or. kw_section == input_section) then
+               input_found = .true.
+#ifdef PRG_DIRAC
+               call read_dirac_input(word, kw_section)
+#else
+               call read_dalton_input(word, kw_section)
+#endif
+             end if
          
          end select
       end if
@@ -188,7 +129,6 @@ contains
     end do
 
 1   close(unit_in,status='keep')
-#endif
 
   end subroutine
 
@@ -211,6 +151,42 @@ contains
   end subroutine
 
 #ifdef PRG_DIRAC
+  subroutine read_dirac_input(word, kw_section) !!! not finished yet, Stefan fixes
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+
+             select case (kw_section)
+         
+!              case ('**METHO', '**WAVE ')
+!                call read_input_method(word, kw_section)
+         
+               case ('*DFT   ')
+                 call read_input_dft(word, kw_section)
+         
+!              *VISUAL is for backward compatibility
+!              *VISUAL used to be under **ANALYZE
+               case ('**VISUA', '*VISUAL')
+                 call read_input_visual(word, kw_section)
+         
+               case ('*OPENRS')
+                 call read_input_openrsp(word, kw_section)
+         
+               case ('**RELCC')
+                 call read_input_relcc(word, kw_section)
+         
+!              case ('       ')
+!                call quit('keyword '//word//' without section')
+         
+               case default
+!                activate as soon as everything is merged to here
+!                call quit('section '//kw_section//' not recognized')
+         
+             end select
+  end subroutine read_dirac_input
+
   subroutine read_input_dft(word, kw_section)
 
     use dft_cfg
@@ -868,6 +844,25 @@ contains
   end subroutine
 
 #else /* ifdef PRG_DIRAC */
+  subroutine read_dalton_input(word, kw_section)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+
+    select case (kw_section)
+         
+      case ('*LUCITA')
+        call read_input_lucita(word, kw_section)
+         
+      case default
+!       activate as soon as everything is merged to here
+!       call quit('section '//kw_section//' not recognized')
+         
+    end select
+
+  end subroutine read_dalton_input
 
   subroutine read_input_lucita(word, kw_section)
 
