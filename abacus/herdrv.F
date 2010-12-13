@@ -1831,6 +1831,7 @@ C      ERFEXP = .FALSE.
 C
       NEWDEF = WORD .EQ. '*TWOINT'
       ICHANG = 0
+      IPRSUM = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
