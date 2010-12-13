@@ -82,22 +82,27 @@ C
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *.Output
 #include "glbbas.inc"
-*.1 : One electron integrals( Complete matrix allocated )
-      CALL MEMMAN(KINT1,NTOOB ** 2,'ADDS  ',2,'INT1  ')
-*. A copy of the original UNMODIFIED 1-elecs ints
-      CALL MEMMAN(KINT1O,NTOOB ** 2,'ADDS  ',2,'INT1O ')
-*. Zero to avoid problems with elements that will not
-*. be initialized
-      ZERO = 0.0D0
-      CALL DZERO(WORK(KINT1),NTOOB**2)
-      CALL DZERO(WORK(KINT1O),NTOOB**2)
+*.1 : One electron integrals( Complete matrix allocated ) + copy of the original UNMODIFIED 1-elecs ints
+      CALL MEMMAN(KINT1, NTOOB ** 2,'ADDS  ',2,'INT1  ')
+!     CALL MEMMAN(KINT1O,NTOOB ** 2,'ADDS  ',2,'INT1O ')
 *.1.1 : Inactive fock matrix
       CALL MEMMAN(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI    ')
-      CALL MEMMAN(KFIO ,NTOOB ** 2,'ADDS  ',2,'FIO   ')
+!     CALL MEMMAN(KFIO ,NTOOB ** 2,'ADDS  ',2,'FIO   ')
+!
+!     dec 2010 - stefan: reactivate or rather allocate when needed and
+!     NOT in general.
+      KINT1O = 0
+      KFIO   = 0
 *.2 : Two electron integrals
       IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
          CALL MEMMAN(KINT2,NINT2,'ADDS  ',2,'INT2  ')
       END IF
+*.    initialize
+      CALL DZERO(WORK(KINT1) ,NTOOB**2)
+      CALL DZERO(WORK(KFI)   ,NTOOB**2)
+      CALL DZERO(WORK(KINT2) ,NINT2)
+!     CALL DZERO(WORK(KFIO)  ,NTOOB**2)
+!     CALL DZERO(WORK(KINT1O),NTOOB**2)
 *. Pointers to symmetry block of integrals
       CALL MEMMAN(KPINT1,NBINT1,'ADDS  ',2,'PINT1 ')
       CALL MEMMAN(KPINT2,NBINT2,'ADDS  ',2,'PINT2 ')
@@ -111,12 +116,17 @@ C
 *. Symmetry of last index as a function of initial index
       CALL MEMMAN(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
       CALL MEMMAN(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
-*.3 One-body density
+
+!     density matrices
+!     ----------------
+!     one-body density matrix
       CALL MEMMAN(KRHO1,NTOOB ** 2,'ADDS  ',2,'RHO1  ')
-*.4  Two-body density matrix
+!     two-body density matrix
       LRHO2 = NTOOB**2*(NTOOB**2+1)/2
-      IF(IDENSI.EQ.2)
-     &CALL MEMMAN(KRHO2,LRHO2     ,'ADDS  ',2,'RHO2  ')
+      if(idensi.eq.2)then 
+        CALL MEMMAN(KRHO2,LRHO2,'ADDS  ',2,'RHO2  ')
+      end if
+
       KPNIJ = 1
       KIJKK = 1
       IF(MXP1+MXP2+MXQ. NE. 0 .OR. IPROCC.NE.0 ) THEN
@@ -131,9 +141,8 @@ C
         CALL MEMMAN(KSBIDT,LSCR,'ADDS  ',1,'KSBIDT')
 *. ( NSBDET + 1 elements allocated since NSBDET+1 values are
 * obtained in order to check for degenerencies )
-CADDB
+
         CALL MEMMAN(KSBCNF,LSCR        ,'ADDS  ',1,'KSBCNF')
-CADDE
         CALL MEMMAN(KSBIA ,LSCR        ,'ADDS  ',1,'KSBIA ')
         CALL MEMMAN(KSBIB ,LSCR        ,'ADDS  ',1,'KSBIB ')
 *
@@ -175,7 +184,6 @@ CADDE
       END IF
 *. (more to come )
       CALL MEMMAN(IDUMMY,IDUMMU,'CHECK',IDUMMY,'Dummy ')
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
