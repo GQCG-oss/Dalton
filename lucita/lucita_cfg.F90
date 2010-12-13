@@ -63,7 +63,6 @@ module lucita_cfg
   integer, public :: nas1_lucita(max_number_of_ptg_irreps)
   integer, public :: nas2_lucita(max_number_of_ptg_irreps)
   integer, public :: nas3_lucita(max_number_of_ptg_irreps)
-  integer, public :: nssh_lucita(max_number_of_ptg_irreps)
   integer, public :: ngsh_lucita(max_number_of_gas_spaces,max_number_of_ptg_irreps)
   integer, public :: ngso_lucita(max_number_of_ptg_irreps,2)
 

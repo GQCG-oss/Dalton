@@ -1225,64 +1225,6 @@ C?    WRITE(lupri,*) ' GET_PROP : NELMNT= ', NELMNT
       RETURN
       END
 ***********************************************************************
-      Subroutine GetH0S(H,NTORB)
-************************************************************************
-*                                                                      *
-*     Purpose:                                                         *
-*     Obtain one electron integrals                                    *
-*     SIRIUS interface                                                 *
-*                                                                      *
-*     Calling parameters:                                              *
-*     H   : core Hamiltonian matrix                                    *
-*                                                                      *
-*****  Author : Unknown                                *****************
-*
-      Implicit Real*8 (A-H,O-Z)
-*
-#include "priunit.h"
-*
-      INTEGER*8 KLH0, KLSCR
-      ! for addressing of WORK
-*
-      Parameter (LUONE = 19)
-*
-      Dimension H(*)
-*
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-*
-      IDUM = 1
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GETH0S')
-*. Square form of H0
-      CALL MEMMAN(KLH0,NTORB**2,'ADDL  ',2,'KLH0  ')
-*. Allocate scratch memory
-      LSCR = 100000
-      CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'H0SCR   ')
-*. Get one body matrix in MO basis
-      CALL INFSIR(WORK(KLSCR),WORK(KLSCR),LSCR)
-C
-C----------------------------------------
-C     Read in the one electron integrals.
-C----------------------------------------
-C
-      OPEN (LUONE,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *      FILE='MOONEINT')
-      READ(LUONE) N_Hmat_T,(H(I),I=1,N_Hmat_T)
-      CLOSE (LUONE,STATUS='DELETE')
-*
-      NTEST = 0
-      IF( NTEST .GE. 10 ) THEN
-        WRITE(lupri,*) ' ======================'
-        WRITE(lupri,*) ' One electron integrals '
-        WRITE(lupri,*) ' ======================'
-        WRITE(lupri,*)
-        CALL WRTMT_LU(H,1,N_Hmat_T,1,N_Hmat_T)
-      END IF
-C
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'GETH0S')
-      Return
-      End
-***********************************************************************
       SUBROUTINE GETH1(H,ISM,ITP,JSM,JTP)
 *
 * One-electron integrals over orbitals belonging to
@@ -1738,27 +1680,22 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 #include "wrkspc.inc"
 #include "glbbas.inc"
 *
-      CALL QENTER('GETIN')
+      CALL QENTER('LGETINT')
       NTEST = 00
 *
       IF(NTEST.GE.5)
-     &WRITE(lupri,*) ' GETINT : ICC_EXC and ICOUL = ', ICC_EXC, ICOUL
-      IF(ICC_EXC.EQ.0) THEN
+     &WRITE(lupri,*) ' LGETINT : ICC_EXC and ICOUL = ', ICC_EXC, ICOUL
+
+      IF (ICC_EXC.EQ.0) THEN
 *
 * =======================
 * Usual/Normal  integrals
 * =======================
 *
 *. Integrals in core in internal LUCIA format
-        IF(ICOUL.NE.2) THEN
-          CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
-     &                  IXCHNG,IKSM,JLSM,WORK(KINT2),
-     &                  WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
-        ELSE
-          CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
-     &                  IXCHNG,IKSM,JLSM,WORK(KINT2),
-     &                  WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
-        END IF
+         CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
+     &                 IXCHNG,IKSM,JLSM,WORK(KINT2),
+     &                 WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
       ELSE IF (ICC_EXC.EQ.1) THEN
 *
 * ============================
@@ -1772,6 +1709,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
           IKLJ = 1
           IJ_TRNSP = 0
         END IF
+        call quit('CC coefficients not implemented in LGETINT')
 *. IJ_TRNSP : RSBB2BN requires blocks for e(ijkl) in the form C(ji,kl)
 *. Amplitudes fetched from KCC1, KCC2 used as scratch
 !       CALL GET_DX_BLK(ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,WORK(KCC1+NSXE),
@@ -1826,7 +1764,7 @@ C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
         CALL WRTMT_LU(XINT,NIK,NJL,NIK,NJL)
       END IF
 *
-      CALL QEXIT('GETIN')
+      CALL QEXIT('LGETINT')
 C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       RETURN
       END
@@ -2634,16 +2572,19 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 *
       ELSE IF (INTIMP .EQ. 5.AND.NOINT.EQ.0  ) THEN
         WRITE(6,*) ' Integrals imported from DALTON/SIRIUS files'
-*. Load one-electron integrals
-        CALL GETH0S(WORK(KINT1),NOCOB)
-*. And two-electron integrals if desired
+*. Load one-electron integrals and two-electron integrals
         IF(INCORE.EQ.1) THEN
-          LSCR = 100000
           IDUM = 2803
           CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIRFAC')
+          CALL MEMMAN(L2BLOCK,0,'SFREEM',2,'SHOWMM')
+          LSCR = L2BLOCK - 1000
           CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
-          CALL READMO_LUCI(WORK(KINT2),WORK(KLSCR),LSCR)
+          CALL LUCITA_GETINT_DALTON(ECORE,WORK(KINT1),WORK(KINT2),
+     &         WORK(KLSCR),LSCR)
+!         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, WRK, LWRK)
           CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'SIRFAC')
+        ELSE
+          CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
         END IF
 *
 * ===============
@@ -3607,12 +3548,12 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
           nshpgs(2,isym) = nas1_lucita(isym)
           nshpgs(3,isym) = nas2_lucita(isym)
           nshpgs(4,isym) = nas3_lucita(isym)
-          is_any_sshell  = max(is_any_sshell,nssh_lucita(isym))
+          is_any_sshell  = max(is_any_sshell,NSSH(isym))
         end do
 
         if(is_any_sshell .gt. 0)then
           do isym = 1, nsym
-            nshpgs(5,isym) = nssh_lucita(isym)
+            nshpgs(5,isym) = NSSH(isym)
           end do
           ngas         = 5
           ngas_tmp_ras = 5
@@ -4486,98 +4427,68 @@ C
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
       END
 ***********************************************************************
-      SUBROUTINE READMO_LUCI(XIJKL,WRK,LWRK)
+      SUBROUTINE LUCITA_GETINT_DALTON(EMY, XINT1, XINT2, WORK, LWORK)
 C
-C     Written by Henrik Koch 27-Mar-1990
+C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      PARAMETER (LUINT = 27)
-*. Modified for LUCIA : XIJKL added to list
+#include "implicit.h"
+
+      DIMENSION XINT1(*), XINT2(*), WORK(LWORK)
+ 
+C Used from include files:
+C  priunit: LUPRI
+C  inforb: NCMOT
+C  inftap: LUINTM, FNINTM
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+
+      LOGICAL CLOSE_MOTWOINT, DISKH2
 C
 C     -------------------------------------------------------
 C
-      DIMENSION WRK(LWRK)
-      PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)
-      INTEGER P,Q,R,S,A,B,C,D,E,F,G
-C
-      OPEN (LUINT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *      FILE='MOTWOINT')
-C
-      REWIND LUINT
-      READ (LUINT)
-      READ (LUINT) LBINTM, JTRLVL
-C?    WRITE(6,*) 'LBINTM   :  ',LBINTM,JTRLVL
-C
-      KBUF   = 1
-      KIBUF  = KBUF   + LBINTM
-      KEND   = KIBUF  + LBINTM/RtoI + 1
-C
-      IF ( KEND .GT. LWRK ) THEN
-         Call Abend2( 'Insufficient spaces in READMO' )
-      ENDIF
+      KFREE = 1
+      LFREE = LWORK
+      CALL MEMGET('REAL',KFCAC,NNASHX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+      CALL GET_CMOAO(WORK(KCMO))
 C
 C-----------------------------------
 C     Read MO integrals into memory.
 C-----------------------------------
 C
-      CALL REDMO1(XIJKL,WRK(KBUF),WRK(KIBUF),LBINTM)
-*
-      RETURN
-      END
-***********************************************************************
-      SUBROUTINE REDMO1(TWOMO,BUF,IBUF,LBUF)
+      IF (LUINTM .LE. 0) THEN
+          CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+          CLOSE_MOTWOINT = .TRUE.
+      ELSE
+          CLOSE_MOTWOINT = .FALSE.
+      END IF
+
+      DISKH2 = .FALSE.
+      CALL CIINTS(DISKH2,WORK(KCMO),EMY,WORK(KFCAC),WORK(KH2AC),
+     &            WORK(KFREE),LFREE)
+
+      IF (CLOSE_MOTWOINT) THEN
+         CALL GPCLOSE(LUINTM,'KEEP')
+      END IF
+
+!     IF (IPR???) THEN
+         WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
+         CALL OUTPAK(WORK(KFCAC),NASHT,-1,LUPRI)
+         WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
+         CALL OUTPUT(WORK(KH2AC),1,NNASHX,1,NNASHX,
+     &               NNASHX,NNASHX,-1,LUPRI)
+!     END IF
 C
-C     Written by Henrik Koch 27-Mar-1990.
+C-----------------------------------
+C     Transfer 1e- and 2e-integrals from Dalton to LUCITA order
+C-----------------------------------
 C
-*
-*. Modified to be SIRIUS-LUCIA interface, february 1993
-*
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-*
-#include "priunit.h"
-*
-      PARAMETER (LUINT = 27)
-C
-C     -------------------------------------------------------
-      DIMENSION TWOMO(*),
-     *          BUF(LBUF),IBUF(LBUF)
-      PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)
-      INTEGER P,Q,R,S,A,B,C,D,E,F,G
-C----- bit manipulation definitions
-      PARAMETER (IBT02=3, IBT08=255, IBT10=1023, IBT16=65535)
-      PARAMETER (MYSHF=16,IBTMY=IBT16,MAXLN=16)
-      IBTAND(I,J) = IAND(I,J)
-      IBTSHR(I,J) = ISHFT(I,-J)
-C-----
-C
-      REWIND LUINT
-      CALL MOLLAB('MOLTWOEL',LUINT,LUPRI)
-C
-      INDCD = 0
-      NINTR = 0
-  200 READ (LUINT) BUF,IBUF,LENGTH
-      IF (LENGTH .EQ. 0) GOTO 200
-      IF (LENGTH .EQ. -1) GOTO 9500
-      INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
-      IF ( INDCDN .NE. INDCD ) THEN
-         INDCD = INDCDN
-         IC    = IBTAND(IBTSHR(INDCD,8),IBT08)
-         ID    = IBTAND(       INDCD,   IBT08)
-      ENDIF
-      DO 280 I = 1,LENGTH
-         IA = IBTAND(IBTSHR(IBUF(I),8),IBT08)
-         IB = IBTAND(       IBUF(I),   IBT08)
-         NINTR = NINTR + 1
-         IABCD = I2EAD(IA,IB,IC,ID)
-C         write(6,*) ' IA IB IC ID IABCD ',IA,IB,IC,ID,IABCD
-         TWOMO(IABCD) = BUF(I)
-c
-  280 CONTINUE
-      GOTO 200
- 9500 CONTINUE
-*
-      WRITE(lupri,*) ' Number of integrals read ', NINTR
-      WRITE(lupri,*) ' Indices of last integral ', IA,IB,IC,ID
+!     call xxxxx (WORK(KFCAC), WORK(KH2AC), XINT1, XINT2, ...)
+      CALL MEMREL('LUCITA_GETINT_DALTON',WORK,1,1,KFREE,LFREE)
+      call quit('NEXT TO DO: store integrals in LUCITA packing')
       RETURN
       END
 ***********************************************************************

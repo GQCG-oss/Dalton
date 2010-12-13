@@ -16,7 +16,6 @@ module lucita_orbital_spaces
 !     nas2_lucita(:)  : total number of active shells in RAS2 (RAS case only) per irrep
 !     nas3_lucita(:)  : total number of active shells in RAS3 (RAS case only) per irrep
 !     nocc_lucita(:)  : total number of occupied shells (nish_lucita + nash_lucita) per irrep
-!     nssh_lucita(:)  : total number of secondary (virtual) shells per irrep
 !     ngsh_lucita(:,:): total number of active shells per gas space and irrep
 !     ngso_lucita(:,2): min and max # accumulated electrons per gas space
 
@@ -52,7 +51,6 @@ contains
       nfro_lucita = 0
       nash_lucita = 0
       nocc_lucita = 0
-      nssh_lucita = 0
 
 !     transfer information from temporary arrays provided in: 
 !     case 1: lucita input 
@@ -70,7 +68,6 @@ contains
                                          nish_lucita,                 &
                                          nash_lucita,                 &
                                          nocc_lucita,                 &
-                                         nssh_lucita,                 &
                                          nfro_lucita,                 &
                                          nas1_lucita,                 &
                                          nas2_lucita,                 &
@@ -98,7 +95,6 @@ contains
                                        is_nish_lucita,              &
                                        is_nash_lucita,              &
                                        is_nocc_lucita,              &
-                                       is_nssh_lucita,              &
                                        is_nfro_lucita,              &
                                        is_nas1_lucita,              &
                                        is_nas2_lucita,              &
@@ -122,7 +118,6 @@ contains
     integer, intent(in)    :: is_nas3_lucita(mx_number_of_ptg_irreps)
     integer, intent(out)   :: is_nash_lucita(mx_number_of_ptg_irreps)
     integer, intent(out)   :: is_nocc_lucita(mx_number_of_ptg_irreps)
-    integer, intent(out)   :: is_nssh_lucita(mx_number_of_ptg_irreps)
     integer, intent(out)   :: is_nfro_lucita(mx_number_of_ptg_irreps)
     integer, intent(inout) :: is_ngsh_lucita(mx_number_of_gas_spaces,mx_number_of_ptg_irreps)
 !-------------------------------------------------------------------------------
@@ -171,12 +166,7 @@ contains
       is_nocc_lucita(i) = is_nash_lucita(i) + is_nish_lucita(i)
     end do
 
-!   d. total number of secondary shells for each point group irrep
-    do i = 1, number_of_ptg_irreps
-      is_nssh_lucita(i) = nr_orb_tot(i) - is_nocc_lucita(i)
-    end do
-
-!   e. total number of frozen shells for each point group irrep
+!   d. total number of frozen shells for each point group irrep
     do i = 1, number_of_ptg_irreps
       is_nfro_lucita(i) = 0
     end do
@@ -186,7 +176,6 @@ contains
     print *, ' nish_lucita        : ',(is_nish_lucita(i),i=1,number_of_ptg_irreps)
     print *, ' nash_lucita        : ',(is_nash_lucita(i),i=1,number_of_ptg_irreps)
     print *, ' nocc_lucita        : ',(is_nocc_lucita(i),i=1,number_of_ptg_irreps)
-    print *, ' nssh_lucita        : ',(is_nssh_lucita(i),i=1,number_of_ptg_irreps)
     do j = 1, tmp_nr_gas_spaces
       print *, ' ngsh_lucita per gas: ',(is_ngsh_lucita(j,i),i=1,number_of_ptg_irreps)
     end do
@@ -208,7 +197,7 @@ contains
 #include "priunit.h"
 #include "inforb.h"
 !
-      integer, save         :: NFRO_SAVE(8), NISH_SAVE(8), NASH_SAVE(8), NSSH_SAVE(8)
+      integer, save         :: NFRO_SAVE(8), NISH_SAVE(8), NASH_SAVE(8)
 !*******************************************************************************
 
       select case(keyword)
@@ -218,19 +207,20 @@ contains
           NFRO_SAVE(1:8) = NFRO(1:8)
           NISH_SAVE(1:8) = NISH(1:8)
           NASH_SAVE(1:8) = NASH(1:8)
-          NSSH_SAVE(1:8) = NSSH(1:8)
           NFRO(1:8) = 0
           NISH(1:8) = nish_lucita(1:8)
           NASH(1:8) = nash_lucita(1:8)
           NASH(1:8) = nash_lucita(1:8)
-          NSSH(1:8) = nssh_lucita(1:8)
+
+          CALL SETORB ! set derived orbital spaces in inforb.h
           
         case('RESET')
 
           NFRO(1:8) = NFRO_SAVE(1:8)
           NISH(1:8) = NISH_SAVE(1:8)
           NASH(1:8) = NASH_SAVE(1:8)
-          NSSH(1:8) = NSSH_SAVE(1:8)
+
+          CALL SETORB ! reset derived orbital spaces in inforb.h
 
         case DEFAULT
 
