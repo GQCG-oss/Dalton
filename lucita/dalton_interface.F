@@ -2509,7 +2509,7 @@ C
 *
 #include "priunit.h"
 *
-      INTEGER*8 KLSCR
+      INTEGER*8 KLSCR, current_free_mem
       ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2525,15 +2525,11 @@ C
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 
-      CALL LMEMCHK
-*
 *. : Pointers for symmetry blocks of integrals
-*
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
      &            WORK(KPINT2),WORK(KLSM2))
 *
 *. Pointer for orbital indices for symmetry blocked matrices
-C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
       CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
 *
       IF(INTIMP.EQ.1.AND.NOINT.EQ.0) THEN
@@ -2551,7 +2547,7 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * Formatted input of symmetry non-vanishing integrals
 *  ==============
 *
-        WRITE(6,*) ' Integrals imported formatted (E22.15) '
+        WRITE(lupri,*) ' Integrals imported formatted (E22.15) '
 *.1 : One-electron integrals
         REWIND LU2INT
         READ(LU2INT,'(E22.15)') (WORK(KINT1-1+INT1),INT1=1,NINT1)
@@ -2560,7 +2556,7 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
           READ(LU2INT,'(E22.15)') (WORK(KINT2-1+INT2),INT2=1,NINT2)
         END IF
 *.3 : Core energy
-        WRITE(6,*) ' Core energy will be read '
+        WRITE(lupri,*) ' Core energy will be read '
         READ(LU2INT,'(E22.15)') ECORE
 *
 *. Proceed in Normal MOLCAS way so
@@ -2571,13 +2567,13 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * ===============
 *
       ELSE IF (INTIMP .EQ. 5.AND.NOINT.EQ.0  ) THEN
-        WRITE(6,*) ' Integrals imported from DALTON/SIRIUS files'
+        WRITE(lupri,*) ' Integrals imported from DALTON/SIRIUS files'
 *. Load one-electron integrals and two-electron integrals
         IF(INCORE.EQ.1) THEN
-          IDUM = 2803
+          IDUM = 0
           CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIRFAC')
-          CALL MEMMAN(L2BLOCK,0,'SFREEM',2,'SHOWMM')
-          LSCR = L2BLOCK - 1000
+          CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
+          LSCR = current_free_mem - 1000
           CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
           CALL LUCITA_GETINT_DALTON(ECORE,WORK(KINT1),WORK(KINT2),
      &         WORK(KLSCR),LSCR)
@@ -2592,31 +2588,29 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * ===============
 *
       else if (INTIMP.eq.6.and.NOINT.eq.0) then
-        call quit('*** error in intim: integral interface missing ***')
-        if (myproc.eq.master) then
-          write(6,*) 'Integrals imported from DIRAC files'
-        else
-          write(12,*) 'Integrals imported from DIRAC files'
-        end if
+        call quit('*** error in intim: dirac integral interface
+     & missing ***')
 !       call rdint_dirac(KINT1,KINT2,DOUGRP,IPRNT)
       END IF
 *
 *. Change one-electron integrals to inactive fock matrix
       IF(NOINT.EQ.0) THEN
-C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
-        CALL COPVEC(WORK(KINT1),WORK(KINT1O),NINT1)
+
+        call dcopy(nint1,work(kint1),1,work(kint1o),1)
+
         IF(IUSE_PH.EQ.1) THEN
            CALL FI(WORK(KINT1),ECORE_HEX,1)
         ELSE
            ECORE_HEX = 0.0D0
         END IF
       END IF
+
       ECORE_ORIG = ECORE
-      ECORE = ECORE + ECORE_HEX
-      if (myproc.eq.master) then
-        WRITE(6,*) 'Updated core energy ',ECORE
+      ECORE      = ECORE + ECORE_HEX
+      if(myproc.eq.luci_master)then
+        write(lupri,*) 'Updated core energy ',ECORE
       end if
-      CALL LMEMCHK
+!     CALL LMEMCHK
 *
       END
 ***********************************************************************
@@ -2942,7 +2936,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       write(lupri,*) 'enter dalton2lucita'
 *
 *
-      NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
+!     NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
       print *, '*** note from stefan: is it not dangerous 
      &to re-set NSYM here in dalton2lucita??? NSYM is global in sirius!'
       print *,'NSMOB is',NSMOB
@@ -4437,11 +4431,20 @@ C
  
 C Used from include files:
 C  priunit: LUPRI
-C  inforb: NCMOT
+C  inforb: NCMOT, nsym
 C  inftap: LUINTM, FNINTM
+C  mxpdim: MXPOBS
+C  orbinp: ntoobs
 #include "priunit.h"
 #include "inforb.h"
 #include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
 
       LOGICAL CLOSE_MOTWOINT, DISKH2
 C
@@ -4486,11 +4489,99 @@ C-----------------------------------
 C     Transfer 1e- and 2e-integrals from Dalton to LUCITA order
 C-----------------------------------
 C
-!     call xxxxx (WORK(KFCAC), WORK(KH2AC), XINT1, XINT2, ...)
-      CALL MEMREL('LUCITA_GETINT_DALTON',WORK,1,1,KFREE,LFREE)
+!     initialize
+      call dzero(x1int,nr_1int)
+      call dzero(x2int,nr_2int)
+
+      print *, 'KFREE is',KFREE
+      KFREE_save = KFREE
+      call sirint2luint(work(kfcac),work(kh2ac),x1int,x2int,adsxa, 
+     &                  nasht,nnashx,ntoobs,nsym,mxpobs)
+
+      call MEMCHK('test',WORK,1)
+      
+      print *, 'KFREE is now',KFREE
+      CALL MEMREL('LUCITA_GETINT_DALTON',WORK,1,1,KFREE_save,LFREE)
       call quit('NEXT TO DO: store integrals in LUCITA packing')
       RETURN
       END
+***********************************************************************
+      subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,
+     &                        return_sym_of_jorb,nr_actorb,nnashx,
+     &                        nr_orb_per_sym,nr_sym,max_orb_per_sym)
+!
+!     purpose: reorder integrals from dalton-sirius format to internal
+!              lucita format.
+!
+!     -----------------------------------------------------------------
+      implicit none
+#include "priunit.h"
+      integer :: nr_actorb
+      integer :: nnashx
+      integer :: nr_sym
+      integer :: max_orb_per_sym
+      integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
+      integer :: nr_orb_per_sym(max_orb_per_sym)
+      real(8) :: h1_in(*)
+      real(8) :: h2_in(*)
+      real(8) :: h1_out(*)
+      real(8) :: h2_out(*)
+!     -----------------------------------------------------------------
+      integer :: isym, jsym, ijsym
+      integer :: offset_total, offset_internal, is_orb, js_orb
+!     -----------------------------------------------------------------
+
+      print *,' h1_in:'
+      do isym = 1, nnashx
+        print *,' h1_in(',isym,') = ',h1_in(isym)
+      end do
+
+!     1-electron integrals
+!     --------------------
+      ijsym           = 1
+      offset_total    = 0
+      offset_internal = 1
+
+      do isym = 1, nr_sym
+
+        jsym = return_sym_of_jorb(isym,ijsym)
+        print *,' isym, jsym',isym, jsym
+
+        if(isym .eq. jsym)then
+          do is_orb = 1, nr_orb_per_sym(isym)
+            do js_orb = 1, is_orb, 1
+!             h1_out(offset_internal) = 1
+              h1_out(offset_internal) =
+     &        h1_in(offset_internal+offset_total)
+
+        print *,'offset_total, offset_internal, is_orb, h1_out',
+     &  offset_total, offset_internal, is_orb, h1_out(offset_internal)
+
+!             count the number of non-vanishing 1-electron integrals
+              offset_internal         = offset_internal + 1
+            end do
+          end do
+        end if
+!       total offset in sirius 1-electron integrals
+        offset_total = offset_total + nr_orb_per_sym(isym)
+      end do
+!     DO 100 ISM = 1,NSMOB
+!       JSM = OSXO(ISM,IJSM)
+!       IF(JSM.EQ.0) GOTO 100
+!       IF(I12SM.EQ.0.OR.ISM.GE.JSM) THEN
+!. Allowed block
+!         IPNTR(ISM) = IOFF
+!         ISM2(ISM) = JSM
+!         IF(I12SM.GT.0.AND.ISM.EQ.JSM) THEN
+!           IOFF = IOFF + IPSM(ISM)*(IPSM(ISM)+1)/2
+!         ELSE
+!           IOFF = IOFF + IPSM(ISM)*JPSM(JSM)
+!         END IF
+!       END IF
+! 100 CONTINUE
+
+      end
+
 ***********************************************************************
       SUBROUTINE SCLH2(XLAMBDA)
 *
@@ -4502,7 +4593,6 @@ C
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *
-      CALL SCALVE(WORK(KINT2),XLAMBDA,NINT2)
+      call dscal(nint2,xlambda,work(kint2),1)
 *
-      RETURN
       END

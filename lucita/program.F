@@ -1194,13 +1194,13 @@ C     From shells to orbitals
 C     Number of string types
       CALL STRTYP_GAS(IPRSTR)
 C     Divide orbital spaces into inactive/active/secondary
-      CALL GASSPC
+      CALL GASSPC()
 C     Symmetry information
       CALL SYMINF(IPRORB)
 C     Number of integrals
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
-      CALL ALLOC
+      CALL ALLOC()
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)

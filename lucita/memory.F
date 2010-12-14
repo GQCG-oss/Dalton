@@ -84,15 +84,15 @@ C
 #include "glbbas.inc"
 *.1 : One electron integrals( Complete matrix allocated ) + copy of the original UNMODIFIED 1-elecs ints
       CALL MEMMAN(KINT1, NTOOB ** 2,'ADDS  ',2,'INT1  ')
-!     CALL MEMMAN(KINT1O,NTOOB ** 2,'ADDS  ',2,'INT1O ')
+      CALL MEMMAN(KINT1O,NTOOB ** 2,'ADDS  ',2,'INT1O ')
 *.1.1 : Inactive fock matrix
       CALL MEMMAN(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI    ')
-!     CALL MEMMAN(KFIO ,NTOOB ** 2,'ADDS  ',2,'FIO   ')
+      CALL MEMMAN(KFIO ,NTOOB ** 2,'ADDS  ',2,'FIO   ')
 !
 !     dec 2010 - stefan: reactivate or rather allocate when needed and
 !     NOT in general.
-      KINT1O = 0
-      KFIO   = 0
+!     KINT1O = 0
+!     KFIO   = 0
 *.2 : Two electron integrals
       IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
          CALL MEMMAN(KINT2,NINT2,'ADDS  ',2,'INT2  ')
@@ -101,8 +101,8 @@ C
       CALL DZERO(WORK(KINT1) ,NTOOB**2)
       CALL DZERO(WORK(KFI)   ,NTOOB**2)
       CALL DZERO(WORK(KINT2) ,NINT2)
-!     CALL DZERO(WORK(KFIO)  ,NTOOB**2)
-!     CALL DZERO(WORK(KINT1O),NTOOB**2)
+      CALL DZERO(WORK(KFIO)  ,NTOOB**2)
+      CALL DZERO(WORK(KINT1O),NTOOB**2)
 *. Pointers to symmetry block of integrals
       CALL MEMMAN(KPINT1,NBINT1,'ADDS  ',2,'PINT1 ')
       CALL MEMMAN(KPINT2,NBINT2,'ADDS  ',2,'PINT2 ')
@@ -186,32 +186,12 @@ C
       CALL MEMMAN(IDUMMY,IDUMMU,'CHECK',IDUMMY,'Dummy ')
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine getmem
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE LMEMCHK
 *
 * Check memory allocated  with the memory manager
-*
       CALL MEMMAN(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
 *
-      RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
 ***********************************************************************
       SUBROUTINE MEMMAN(KBASE,KADD,TASK,IR,IDENT)
 *
