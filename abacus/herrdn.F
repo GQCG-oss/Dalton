@@ -39,9 +39,6 @@ C
 C
 #ifdef OLD_REVISION_LOG
 c===========================================================================
-cRevision 1.9  2000/05/03 10:58:51  hjj
-cinclude maxorb.h now needed for molde.h
-c
 crevision 1.7-1.8 2000/04/28 10:27:31  hjj
 c - implemented new normalized s,p,d,f,g,h,i GTO's in SPHINP as default
 c - reactivated Huckel for Q .le. 36 for spherical GTO's because
@@ -1494,7 +1491,7 @@ C     after J=2: reading Huckel basis (if DOHUCKEL)
      &                   'with auto-detected symmetry.')
                     CALL ECPINP(Q,QEFF,I,IPREAD)
                     INDECP(NTYECP) = NCTOT+1 - NONT(I)
-                    NECP(NTYECP) = NONT(I)
+                    NECP(NTYECP)   = NONT(I)
                     IF (NECP(NTYECP).GT.MXNONT) THEN
                        WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ', 
      &                      NTYECP, ' EXCEEDS MXNONT=',MXNONT
@@ -1569,8 +1566,8 @@ C
 C
          DO 400 K = 1,NONT(I)
             NOORBT(K+INUC) = NOORBTS
-            IF (INDEX(BASNAM,'ecp') .NE. 0) CHARGE(K+INUC) =  QEFF
-C           reset charge to effective charge for ECP
+            CHARGE(K+INUC) = QEFF
+C           reset charge to effective charge (different from Q for ECP)
             IF (IQM(I,1) .EQ. 0) THEN
 C           ... this is a point charge (no basis fu.) /hjaaj Nov 2003
                IZATOM(K+INUC) = -2
