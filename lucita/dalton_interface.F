@@ -2509,7 +2509,7 @@ C
 *
 #include "priunit.h"
 *
-      INTEGER*8 KLSCR, current_free_mem
+      INTEGER*8 current_free_mem
       ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2570,15 +2570,10 @@ C
         WRITE(lupri,*) ' Integrals imported from DALTON/SIRIUS files'
 *. Load one-electron integrals and two-electron integrals
         IF(INCORE.EQ.1) THEN
-          IDUM = 0
-          CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIRFAC')
           CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
           LSCR = current_free_mem - 1000
-          CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
-          CALL LUCITA_GETINT_DALTON(ECORE,WORK(KINT1),WORK(KINT2),
-     &         WORK(KLSCR),LSCR)
-!         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, WRK, LWRK)
-          CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'SIRFAC')
+          CALL LUCITA_GETINT_DALTON(ECORE,WORK(KINT1),WORK(KINT2),LSCR)
+!         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, LWRK)
         ELSE
           CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
         END IF
@@ -4421,13 +4416,13 @@ C
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
       END
 ***********************************************************************
-      SUBROUTINE LUCITA_GETINT_DALTON(EMY, XINT1, XINT2, WORK, LWORK)
+      SUBROUTINE LUCITA_GETINT_DALTON(EMY, XINT1, XINT2, LWORK)
 C
 C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
 #include "implicit.h"
 
-      DIMENSION XINT1(*), XINT2(*), WORK(LWORK)
+      DIMENSION XINT1(*), XINT2(*)
  
 C Used from include files:
 C  priunit: LUPRI
@@ -4447,15 +4442,25 @@ C  orbinp: ntoobs
      &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
 
       LOGICAL CLOSE_MOTWOINT, DISKH2
+!     scratch space
+      real(8), allocatable :: cmo(:)
+      real(8), allocatable :: fcac(:)
+      real(8), allocatable :: h2ac(:,:)
+      real(8), allocatable :: tmp_work(:)
 C
 C     -------------------------------------------------------
 C
-      KFREE = 1
-      LFREE = LWORK
-      CALL MEMGET('REAL',KFCAC,NNASHX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-      CALL GET_CMOAO(WORK(KCMO))
+!     allocate scratch matrices
+      allocate(cmo(ncmot))
+      allocate(fcac(nnashx))
+      allocate(h2ac(nnashx,nnashx))
+
+!     allocate work array to be used inside sirius routines
+      lfree = lwork - ncmot - nnashx**2 - nnashx
+      allocate(tmp_work(lfree))
+
+!     read molecular orbital coefficients from file
+      CALL GET_CMOAO(cmo)
 C
 C-----------------------------------
 C     Read MO integrals into memory.
@@ -4470,8 +4475,7 @@ C
       END IF
 
       DISKH2 = .FALSE.
-      CALL CIINTS(DISKH2,WORK(KCMO),EMY,WORK(KFCAC),WORK(KH2AC),
-     &            WORK(KFREE),LFREE)
+      CALL CIINTS(DISKH2,cmo,EMY,fcac,h2ac,tmp_work,lfree)
 
       IF (CLOSE_MOTWOINT) THEN
          CALL GPCLOSE(LUINTM,'KEEP')
@@ -4479,9 +4483,9 @@ C
 
 !     IF (IPR???) THEN
          WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
-         CALL OUTPAK(WORK(KFCAC),NASHT,-1,LUPRI)
+         CALL OUTPAK(fcac,NASHT,-1,LUPRI)
          WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
-         CALL OUTPUT(WORK(KH2AC),1,NNASHX,1,NNASHX,
+         CALL OUTPUT(h2ac,1,NNASHX,1,NNASHX,
      &               NNASHX,NNASHX,-1,LUPRI)
 !     END IF
 C
@@ -4493,17 +4497,17 @@ C
       call dzero(x1int,nr_1int)
       call dzero(x2int,nr_2int)
 
-      print *, 'KFREE is',KFREE
-      KFREE_save = KFREE
-      call sirint2luint(work(kfcac),work(kh2ac),x1int,x2int,adsxa, 
+      call sirint2luint(fcac,h2ac,x1int,x2int,adsxa, 
      &                  nasht,nnashx,ntoobs,nsym,mxpobs)
 
-      call MEMCHK('test',WORK,1)
-      
-      print *, 'KFREE is now',KFREE
-      CALL MEMREL('LUCITA_GETINT_DALTON',WORK,1,1,KFREE_save,LFREE)
+!     release scratch space
+      deallocate(tmp_work)
+      deallocate(h2ac)
+      deallocate(fcac)
+      deallocate(cmo)
+
       call quit('NEXT TO DO: store integrals in LUCITA packing')
-      RETURN
+
       END
 ***********************************************************************
       subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,
@@ -4549,8 +4553,8 @@ C
 
         if(isym .eq. jsym)then
           do is_orb = 1, nr_orb_per_sym(isym)
-            do js_orb = 1, is_orb, 1
-!             h1_out(offset_internal) = 1
+            do js_orb = 1, is_orb
+
               h1_out(offset_internal) =
      &        h1_in(offset_internal+offset_total)
 
@@ -4565,34 +4569,6 @@ C
 !       total offset in sirius 1-electron integrals
         offset_total = offset_total + nr_orb_per_sym(isym)
       end do
-!     DO 100 ISM = 1,NSMOB
-!       JSM = OSXO(ISM,IJSM)
-!       IF(JSM.EQ.0) GOTO 100
-!       IF(I12SM.EQ.0.OR.ISM.GE.JSM) THEN
-!. Allowed block
-!         IPNTR(ISM) = IOFF
-!         ISM2(ISM) = JSM
-!         IF(I12SM.GT.0.AND.ISM.EQ.JSM) THEN
-!           IOFF = IOFF + IPSM(ISM)*(IPSM(ISM)+1)/2
-!         ELSE
-!           IOFF = IOFF + IPSM(ISM)*JPSM(JSM)
-!         END IF
-!       END IF
-! 100 CONTINUE
 
       end
-
 ***********************************************************************
-      SUBROUTINE SCLH2(XLAMBDA)
-*
-*. Scale two electron integrals
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*
-      call dscal(nint2,xlambda,work(kint2),1)
-*
-      END

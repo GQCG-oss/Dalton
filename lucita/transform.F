@@ -1109,5 +1109,18 @@ C?     CALL WRTMT_LU(SCR(K1),LXC,LXC,LXC,LXC)
         CALL APRBLM2(AOUT,LX_COL,LX_COL,NBLOCK,ISYM)
       END IF
 *
-      RETURN
+      END
+
+***********************************************************************
+      SUBROUTINE SCLH2(XLAMBDA)
+*
+*. Scale two electron integrals
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+*
+      call dscal(nint2,xlambda,work(kint2),1)
+*
       END
