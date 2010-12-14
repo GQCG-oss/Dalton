@@ -11,13 +11,14 @@ DALTON_LIBS = \
 -Lcc  -lcc		\
 -Ldft -ldft		\
 -Lsoppa -lsoppa		\
+-Lcholes -lcholes \
 -Lgp -lgp		\
 -Lpdpack -lpdpack
 
 MODULES = MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ
+	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ
 
-SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa
+SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles
 
 OBJSLAVE = abacus/herpar.o eri/eri2par.o
 
@@ -149,6 +150,9 @@ DFT_OBJ	:
 
 SOP_OBJ	:
 	cd soppa && $(MAKE) all
+
+CHOLESKY_OBJ	:
+	cd choles && $(MAKE) all
 
 IO_OBJ	:
 	cd cc && $(MAKE) io

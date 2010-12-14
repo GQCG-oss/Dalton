@@ -58,6 +58,9 @@ C
 #include "cclists.h"
 #include <ccsdinp.h>
 #include <ccnoddy.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -121,6 +124,20 @@ C
 *               to the dot products are computed in CCSDT_XIETA_CONT
 *               (see below).
 *---------------------------------------------------------------------*
+
+
+Cholesky
+C
+      IF (CHOINT .AND. CC2) THEN
+         CALL CC_CHOXIETA(IXETRAN,NXETRAN,IOPTRES,IORDER,LISTL,
+     &                    FILXI,IXDOTS,XCONS,FILETA,IEDOTS,ECONS,
+     &                    MXVEC,WORK,LWORK)
+         GOTO 1234
+      ENDIF
+C
+Cholesky
+C
+
       NBATCH = (NXETRAN+MAXXETRAN-1)/MAXXETRAN
 
       IF (LOCDBG) THEN
@@ -300,6 +317,8 @@ C
         END IF
 #endif
       END IF
+
+ 1234 CONTINUE      ! From Cholesky
 
       CALL QEXIT('CC_XIETA')
 

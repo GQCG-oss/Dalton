@@ -1548,6 +1548,10 @@ C
 #include <cclr.h>
 #include <ccsdsym.h>
 #include <leinf.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
       LOGICAL TRIPLET
 C
@@ -1564,10 +1568,24 @@ C
       THRLE  = THREXC
       MAXLE  = MAXITE
       IPRLE  = IPRINT
-      LETYPA = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      IF (  TRIPLET  ) LETYPA = LETYPA + NT2AMA(ISYMTR)
-      IF (   CCR12   ) LETYPA = LETYPA + NTR12AM(ISYMTR)
-      IF (CCS.OR.CCP2) LETYPA = NT1AM(ISYMTR)
+C
+Cholesky
+C
+      IF (CHOINT) THEN
+         IF (TRIPLET)
+     &   CALL QUIT('CCLR_LEINFI: Triplet Cholesky not implemented')
+         IF (CC2) THEN
+            LETYPA = NT1AM(ISYMTR)
+         ELSE
+            CALL QUIT('CCLR_LEINFI: Only Cholesky CC2 implemented')
+         ENDIF
+      ELSE
+         LETYPA = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+         IF (  TRIPLET  ) LETYPA = LETYPA + NT2AMA(ISYMTR)
+         IF (   CCR12   ) LETYPA = LETYPA + NTR12AM(ISYMTR)
+         IF (CCS.OR.CCP2) LETYPA = NT1AM(ISYMTR)
+      END IF
+C
       LETYPB = 0
       LETOT  = LETYPA + LETYPB
       NBASIS = 1
@@ -1600,6 +1618,13 @@ C
       LLEWA = LLEWA + 2*NT2MAO(1,1)
 C
       IF (CCSDT) LLEWA = LLEWA  +  NT2SQ(1)
+C
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         NRHO2 = 0
+         LLEWA = 0
+      END IF
+Cholesky
 C
 C---------------------------------------------------------------
 C     t2tcor is taken care of in routine, that is; it is forced
@@ -2057,6 +2082,10 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2127,7 +2156,10 @@ C
    20    CONTINUE
    10 CONTINUE
 C
-      IF (.NOT. CCS) THEN
+C
+C     Skip doubles part if CCS or Cholesky CC2
+C
+      IF (.NOT. (CCS .OR. (CHOINT .AND. CC2))) THEN
         DO 100 ISYMBJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMBJ,ISYMTR)
@@ -2191,8 +2223,14 @@ C
       ENDIF
 C
       IF (IPRINT .GT. 80) THEN
-         CALL AROUND('CC_VSCAL - end - : RHO1,RHO2 ')
-         CALL CC_PRP(OMEGA1,OMEGA2,ISYMTR,1,1)
+         IF (CCS .OR. (CHOINT.AND.CC2)) THEN
+            I = 0
+            CALL AROUND('CC_VSCAL - end - : RHO1')
+         ELSE
+            I = 1
+            CALL AROUND('CC_VSCAL - end - : RHO1,RHO2')
+         ENDIF
+         CALL CC_PRP(OMEGA1,OMEGA2,ISYMTR,1,I)
       ENDIF
 C
       CALL QEXIT('CC_VSCAL')

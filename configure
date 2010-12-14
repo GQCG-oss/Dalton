@@ -1418,7 +1418,7 @@ fi
 #
 # Make sure Makefile.depend files exist
 #
-for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius; do
+for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius choles; do
  touch $i/Makefile.depend
 done
 #

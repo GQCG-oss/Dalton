@@ -2008,9 +2008,10 @@ cLig <> added include abainf.h
 #include <abainf.h>
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
+#include <ctocdcc.h>
 cLig >> changed the values of the memory for CTOCD 
       KSPMAT = 1
-      IF(CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
         KSMMAT = KSPMAT + 9*MXCENT
         KCMAT  = KSMMAT + 9*MXCENT
       ELSE
@@ -2072,17 +2073,62 @@ cLig <<
 #include <symmet.h>
 #include <sigma.h>
 #include <cbisol.h>
+C
+CTOCD
+#include <ctocdcc.h>
+      LOGICAL PRTSHI(NUCIND)
+      LOGICAL ALLATM
+      DIMENSION IPATOM(MXCENT)
+CTOCD
+
 #include <ibtfun.h>
 C
-      CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+
+C     Get ipatom stuff (if CC some only atoms can be selected)
+C
+      IF (CTOMAG) THEN
+         CALL SELINF(NPATOM,IPATOM,ALLATM)
+      ELSE
+         ALLATM = .TRUE.
+      END IF
+
+      IF (CTOMAG) THEN
+C
+C        Print proper title
+C
+         IF (EXTSOP) THEN
+            CALL TITLER(
+     &           'CTOCD-DZ SHIELDINGS FROM EXTERNAL LINEAR RESPONSES',
+     &           ':',102)
+         ELSE IF (ALCCS) THEN
+C        IF (ALCCS) THEN
+            CALL TITLER('CCS CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCC2) THEN
+            CALL TITLER('CC2 CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCC3) THEN
+            CALL TITLER('CC3 CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCCSD) THEN
+            CALL TITLER('CCSD CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         END IF
+C
+C        Initialize DOSYM
+C
+         DO IREP = 1, MAXREP+1
+            DOSYM(IREP) = .TRUE.
+         END DO
+C
+      ELSE
+         CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+      END IF
+C
 cLig >> added CTOCD-DZ results title
-      IF (CTOCD) THEN
+      IF (CTOCD .AND. (.NOT. CTOMAG)) THEN
         CALL HEADER('CTOCD-DZ results',1)
       ENDIF
 cLig <<
       CALL HEADER('Shielding tensors in symmetry coordinates (ppm)',-1)
 cLig >> added call to FCPRI for shieldings
-      IF (CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
         CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
       ELSE
 cLig <<
@@ -2095,7 +2141,7 @@ C
 C     Transform to non-symmetry basis
 C
 cLig >> added the call to TRADIP ... for CTOCD
-      IF (CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
          CALL TRADIP(SIGMADZ,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          IF (DONS) THEN
@@ -2117,12 +2163,30 @@ cLig <<
         CALL DAXPY(9*NUCDEP,-D1,PMAT,1,DMAT,1)
 cLig <> closed the IF
       ENDIF
+C
+CTOCD
+      IF (ALLATM) THEN
+         DO I = 1, NUCINS
+            PRTSHI(I) = .TRUE.
+         END DO
+      ELSE
+         DO I = 1, NUCINS
+            PRTSHI(I) = .FALSE.
+         END DO
+         DO I = 1,NPATOM
+            PRTSHI(IPATOM(I)) = .TRUE.
+         END  DO
+      END IF
+CTOCD
+C
+
       IATOM = 0
       DO 100 I = 1, NUCINS
          DO 200 ISYMOP = 0, MAXOPR
          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
-            CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
      &                  AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &                  ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM),
      &                  ANIS2(IATOM),ASYM2(IATOM),SKEW(IATOM),
@@ -2151,7 +2215,8 @@ C
             ELSE
                DIAPAR = 'diamagnetic '
             END IF
-            WRITE (LUPRI,'(1X,2A,7F10.4)') '@1',
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      WRITE (LUPRI,'(1X,2A,7F10.4)') '@1',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         SKEW(IATOM),SPAN(IATOM),ANIS2(IATOM),ASYM2(IATOM)
          END IF
@@ -2178,7 +2243,8 @@ C
             ELSE
                DIAPAR = 'diamagnetic '
             END IF
-            WRITE (LUPRI,'(1X,2A,7F10.4)') '@2',
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      WRITE (LUPRI,'(1X,2A,7F10.4)') '@2',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM)
          END IF
@@ -2211,6 +2277,11 @@ cmbh end
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include <chrxyz.h>
+C
+CTOCD
+#include <ctocdcc.h>
+      CHARACTER*10 LABMET
+CTOCD
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
@@ -2292,7 +2363,7 @@ C
       APAR = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
       SPAR = ABS(ANIS)*SQRT(D1 + (ASYM**2)/D3)
 cLig >> added title for CTOCD shieldings
-      IF (CTOCD) THEN
+      IF (CTOCD .OR. CTOMAG) THEN
          CALL TITLER('CTOCD-DZ: Chemical shielding for '
      &               //NAME//':','=',1)
       ELSE
@@ -2314,23 +2385,43 @@ cLig <<
 C << JK write results to DALTON.PROP file
       LANAME = NAME//'  '
       LAPRPC = 'SH-CONST'
-      CALL WRIPRO(AVETOT,"SCF/DFT   ",401,
+C
+CTOCD
+      IF (ALCCS) THEN
+         LABMET = 'DZ /CCS   '
+      ELSE IF (ALCC2) THEN
+         LABMET = 'DZ /CC2   '
+      ELSE IF (ALCC3) THEN
+         LABMET = 'DZ /CC3   '
+      ELSE IF (ALCCSD) THEN
+         LABMET = 'DZ/CCSD   '
+      ELSE
+         LABMET = 'SCF/DFT   '
+      END IF
+CTOCD
+C
+CTOCD CALL WRIPRO(AVETOT,"SCF/DFT   ",401,
+      CALL WRIPRO(AVETOT, LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'ANISO   '
-      CALL WRIPRO(ANIS  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(ANIS  ,"SCF/DFT   ",401,
+      CALL WRIPRO(ANIS  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'ASYMMETR'
-      CALL WRIPRO(ASYM  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(ASYM  ,"SCF/DFT   ",401,
+      CALL WRIPRO(ASYM  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'S-PARAME'
-      CALL WRIPRO(SPAR  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(SPAR  ,"SCF/DFT   ",401,
+      CALL WRIPRO(SPAR  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'A-PARAME'
-      CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
+      CALL WRIPRO(APAR  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
 C << JK
@@ -4010,3 +4101,26 @@ C
       RETURN
  1000 FORMAT (1X,A6,F17.10,2F24.10)
       END
+C    
+C  /* Deck selinf */    
+      SUBROUTINE SELINF(MPATOM,JPATOM,ATMALL)
+C        
+C 
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <cbiher.h>
+C    
+      DIMENSION JPATOM(MXCENT)
+      LOGICAL ATMALL
+C    
+C    
+      ATMALL = ALLATM
+C    
+      MPATOM = NPATOM
+      DO I = 1,MXCENT
+         JPATOM(I) = IPATOM(I)
+      END DO
+C           
+      RETURN
+      END  

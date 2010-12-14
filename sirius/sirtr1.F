@@ -778,6 +778,9 @@ C
 #include <infpri.h>
 #include <dftcom.h>
 #include <abainf.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 C
 #if defined (VAR_DEBUG)
 #include <idbg.h>
@@ -894,10 +897,12 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
          DO 400 IDMAT = 1,NDMAT
             ISYMDM(IDMAT) = JWOPSY
             IFCTYP(IDMAT) = 13
+            IF (CHOINT) IFCTYP(IDMAT) = 3
   400    CONTINUE
          IF (HSROHF) THEN
             DO IDMAT = NOSIM+1,NDMAT
                IFCTYP(IDMAT) = 12
+               IF (CHOINT) IFCTYP(IDMAT) = 2
             END DO
          END IF
          DFTADX = DFTADD

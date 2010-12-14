@@ -67,6 +67,9 @@ c /* deck cc_cphf */
 #include <cclr.h>
 #include <ccfro.h>
 #include <inflin.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 
 * local parameters:
       CHARACTER*(18) MSGDBG
@@ -137,6 +140,15 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         WRITE (LUPRI,*) 'CPHF vectors ',TYPE(1:3),' not implemented.'
         CALL QUIT('required CPHF vectors not implemented.')
       END IF
+
+* Refuse to do anything for Cholesky.
+      IF (CHOINT) THEN
+         WRITE(LUPRI,'(/A/A/A/A/)') '*** WARNING from CC_CPHF:',
+     &      ' WARNING: Refusing to do CPHF for Cholesky, because',
+     &      ' WARNING: ABACUS has not been modified yet!',
+     &      ' WARNING: Program continues nevertheless...'
+         RETURN
+      ENDIF
 
 * get some variables from SIRIUS common blocks
       CALL CC_SIRINF(NCMOT,NASHT,N2ASHX,LCINDX)

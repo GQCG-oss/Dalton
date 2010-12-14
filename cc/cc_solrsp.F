@@ -91,6 +91,9 @@ C
 #include <leinf.h>
 #include <ccpl1rsp.h>
 #include <ccslvinf.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 C
 C
       LOGICAL LOCDBG, lold
@@ -151,6 +154,13 @@ C
          CALL QUIT('Model not CCS or CC2 or CCSD in CC_SOLRSP')
       ENDIF
  
+      IF (CHOINT .AND. (.NOT. CC2)) THEN
+         WRITE(LUPRI,'(A,A,A)')
+     &   ' CC_SOLRSP: Cholesky decomposed integrals not implemented',
+     &   ' for ',MODEL
+         CALL QUIT('Cholesky '//MODEL//' not implemented in CC_SOLRSP')
+      ENDIF
+
       WRITE (LUPRI,'(4X,A,/)') '  '
       WRITE (LUPRI,'(4X,A)')
      *'*********************************************************'//
@@ -161,6 +171,13 @@ C
       WRITE (LUPRI,'(4X,A,///)')
      *'*********************************************************'//
      *'**********'
+
+      IF (CHOINT) THEN
+         WRITE(LUPRI,'(4X,A,///)')
+     &   '         (Calculation using Cholesky decomposed integrals)'
+      ELSE
+         WRITE(LUPRI,'(A)') ' '
+      ENDIF
 
 C======================================================================
 
@@ -327,6 +344,9 @@ C     equations for which this is neccessary, because
 C     they involve orbital relaxaton and/or derivative integrals
 C     precalculate first-order chi vectors "X1" for those first-order
 C======================================================================
+Ctmp
+      CALL GPINQ('SKIP_O1','EXIST',O1SKIP)
+Ctmp
       IF ( .NOT. O1SKIP ) THEN
  
           CALL CCRHSVEC('O1 ',LBLO1,IDUMMY,IDUMMY,DUMMY,ISYO1,FRQO1,
@@ -337,6 +357,7 @@ C======================================================================
         WRITE (LUPRI,*)
      &        'Skipped calculation of O1 right hand side vectors.'
         O1SKIP = .FALSE.
+        CALL SYSTEM('rm SKIP_O1')
       END IF
 C
 C------------------------------------------------------------------
@@ -421,6 +442,35 @@ C
      &                  ISYLRT, LRTLBL, FRQLRT, IDUMMY,
      &                  ISYOFT, NLRTLBL, MAXTLBL, WORK, LWORK)
       END IF
+
+C======================================================================
+C     For Cholesky CC2, calculate the "right" first-order density
+C     matrix.
+C======================================================================
+
+      IF (CHOINT .AND. CC2) THEN
+         IF (.NOT. D01SKIP) THEN
+
+            ORDER = 1
+            ISIDE = 1
+
+            DO IDXR1 = 1, NLRTLBL
+               IFTRAN(1,IDXR1) = 0
+               IFTRAN(2,IDXR1) = IDXR1
+               IFTRAN(3,IDXR1) = IDXR1
+            ENDDO
+
+            CALL CC_CHOPDEN(IFTRAN,NLRTLBL,'L0 ','R1 ','d01',ORDER,
+     &                      ISIDE,'DENSITY_01',.TRUE.,WORK,LWORK)
+
+         ELSE
+
+            WRITE (LUPRI,*) 'Skipped right first-order density (d01)',
+     &                      ' calculation'
+            D01SKIP = .FALSE.
+
+         ENDIF
+      ENDIF
 
 C======================================================================
 C     Solve first-order Lagrange multiplier response equations.
@@ -1695,6 +1745,10 @@ C
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <dummy.h>
+Cholesky
+#include <ccdeco.h>
+      LOGICAL CCSEFF
+Cholesky
 C
       LOGICAL TRIPLET
       PARAMETER (TRIPLET= .FALSE.)       
@@ -1722,6 +1776,9 @@ C
 #endif
                                                             
       INTEGER ILSTSYM
+
+      CCSEFF = CCS .OR. (CHOINT .AND. CC2)  ! No doubles for Chol. CC2, tbp
+      
                                                                      
 C
          IF (NVEC.LE.0) THEN
@@ -1788,7 +1845,8 @@ C
            ISYM = ILSTSYM(LIST,ILSTNR)
            KT1  = 1 
            KEND1= KT1  + NT1AM(ISYM)
-           IF (.NOT. CCS) THEN
+Chol       IF (.NOT. CCS) THEN
+           IF (.NOT. CCSEFF) THEN
               KT2   = KEND1
               KEND1 = KT2  + NT2AM(ISYM)
            ENDIF 
@@ -1807,7 +1865,8 @@ C
      &                   WORK(KT2))
 
            X1 = DDOT(NT1AM(ISYM),WORK(KT1),1,WORK(KT1),1)
-           IF (CCS) THEN
+Chol       IF (CCS) THEN
+           IF (CCSEFF) THEN
               X2 = 0.0D0
            ELSE
               X2 = DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
@@ -1879,6 +1938,12 @@ C
            ENDIF
 
          END DO
+
+         IF (CHOINT .AND. CC2) THEN
+            WRITE(LUPRI,'(/,1X,A,A)')
+     &      'NOTICE: Cholesky CC2 doubles not stored! Artificial',
+     &      ' zero norm printed.'
+         ENDIF
 
          WRITE (LUPRI,'(//)')
 

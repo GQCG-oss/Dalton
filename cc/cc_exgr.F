@@ -483,9 +483,15 @@ C
             ENDIF
 C
             ILLNR = IX
+C
+Casm        ifort does not like LIST. Use 'E0' instead.
+C
             CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
-     &                   LWRK2,MODEL,LIST,ILLNR,.FALSE.,
+     &                   LWRK2,MODEL,'E0',ILLNR,.FALSE.,
      &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
+casm        CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
+casm &                   LWRK2,MODEL,LIST,ILLNR,.FALSE.,
+casm &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
             IF (FROIMP .OR. FROEXP) THEN
               CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK2),LWRK2,MODELPRI)
             ENDIF

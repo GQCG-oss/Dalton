@@ -68,6 +68,10 @@ c /* deck CCRHSVEC */
 #include <ccorb.h>
 #include <cclists.h>
 #include <dummy.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 
 * local parameters:
       CHARACTER*(18) MSGDBG
@@ -185,6 +189,15 @@ c /* deck CCRHSVEC */
         WRITE (LUPRI,*) 'rhs vectors ',TYPE(1:2),' not implemented.'
         CALL QUIT('required rhs vectors not implemented.')
       END IF
+
+* Cholesky check: only CC2 O1 has been implemented
+      IF (CHOINT .AND. CC2) THEN
+         IF (TYPE(1:2).NE.'O1') THEN
+            WRITE (LUPRI,*)
+     &      'rhs vectors ',TYPE(1:2),' not implemented for Cholesky.'
+            CALL QUIT('required rhs vectors not implemented.')
+         ENDIF
+      ENDIF
 
 * print some debug/info output
       IF (IPRINT .GT. 10 .OR. LOCDBG) THEN
@@ -533,6 +546,19 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
 *---------------------------------------------------------------------*
 * calculate Xi{O} vector contributions:
 *---------------------------------------------------------------------*
+
+Cholesky
+*
+*   the Cholesky routine is *far* less general, hence most of the
+*   input is implicit: all that's needed are the operator indices
+*   in KXETRAN.
+
+      IF (CHOINT .AND. TYPE(1:2).EQ.'O1') THEN
+         CALL CC_CHOXI0(WORK(KXETRAN),NXETRAN,WORK(KEND0),LEND0)
+         GOTO 1234
+      END IF
+Cholesky
+
       IF ( TYPE(1:3).EQ.'O1 '.OR. TYPE(1:3).EQ.'X1 ') THEN
         IOPT = 3
         CALL CC_XIETA(WORK(KXETRAN),NXETRAN,IOPT, ORDER, 'L0 ',
@@ -549,6 +575,8 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &                'RC ', IDUM, RDUM, '---', IDUM, RDUM,
      &                .TRUE.,0, WORK(KEND0),LEND0)
       END IF
+
+ 1234 CONTINUE     ! From Cholesky
 
       IF (LOCDBG) THEN
         LMAX1 = 0
@@ -591,7 +619,8 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
           CALL CC_RDRSP(LISTR,IDXVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
           XNORM = DDOT(NT1AM(ISYM),WORK(KRHS1),1,WORK(KRHS1),1)
-          IF (.NOT. CCS)
+Chol      IF (.NOT. CCS)
+          IF ((.NOT. CCS) .AND. (.NOT. (CHOINT.AND.CC2)))
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KRHS2),1,WORK(KRHS2),1)
           IF (CCR12) THEN
             CALL CC_RDRSP(LISTR,IDXVEC,ISYM,IOPTR12,MODEL,

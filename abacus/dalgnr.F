@@ -633,6 +633,12 @@ C
 Cef begin
 #include <incore.h>
 Cef end
+C
+Cholesky
+#include <ccdeco.h>
+#include <center.h>
+Cholesky
+C
 #ifdef BUILD_GEN1INT
 C added by Bin Gao, Dec. 5, 2010
 #include "gen1int.h"
@@ -994,7 +1000,13 @@ Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
          call gen1int_prop(WORK(10), LMWORK-9)
 #endif
 C
+Cholesky
+         IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM)
+Cholesky
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
+Cact
+         IF (ACTIVE) CALL EXEACT(WORK,LMWORK,WRKDLM)
+Cact
          IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
@@ -1118,6 +1130,11 @@ C
 CSONIA
 #include <grdccpt.h>
 #include <infpar.h>
+C
+Cholesky
+#include <ccdeco.h>
+#include <center.h>
+C
 #ifdef BUILD_GEN1INT
 C added by Bin Gao, Dec. 5, 2010
 #include "gen1int.h"
@@ -1128,24 +1145,24 @@ C added by Bin Gao, Dec. 5, 2010
 #else
       PARAMETER (IVECDF = 1)
 #endif
-Clf
+C
       LOGICAL ALLOPT
-Clf
+C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN',
      &            '*GEN1IN'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
-     &            '.INTEGR', '.WAVE F', '.PROPER',
+     &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
-     &            '.WALK  ', '.MAX IT', '.RESPON',
+     &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
-     &            '.PRESOR', '.WESTA ', '.XXXXXX',
-     &            '.XXXXXX', '.XXXXXX', '.XXXXXX',
-     &            '.XXXXXX', '.OPTIMI', '.TOTSYM',
-     &            '.VECLEN', '.RUNERI', '.XXXXXX',
-     &            '.RUN AL', '.NMDDRV', '.PARNMD',
+     &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
+     &            '.VECLEN', '.RUNERI', '.NEWTRA',
+     &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            'xXXXXXX', '.DOUGLA'/
 C
       CALL QENTER('DALTON_GNRLINP')
@@ -1269,6 +1286,11 @@ C
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
 C
+Cholesky
+      CHOINT = .FALSE.
+      ACTIVE = .FALSE.
+Cholesky
+C
 C     Initialize /GRDCCPT/
 C
       IGRDCCPT = 1
@@ -1306,7 +1328,7 @@ C Table(01:32) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.XXXXXX', '.XXXXXX',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-32: '.THRRED', '.DOUGLA'
@@ -1321,7 +1343,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113,114,115,116,117,118,119,112,
+     &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
      &                131,132), I
             END IF
@@ -1409,7 +1431,9 @@ C        ".WALK  "
             WESTA = .TRUE.
          GO TO 100
  118     CONTINUE
-            NEWTRA = .TRUE.
+            RNHERM = .TRUE.
+            CHOINT = .TRUE.
+            DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE
  120     CONTINUE
@@ -1429,7 +1453,9 @@ C        '.OPTIMI'
  126     CONTINUE
             RUNERI = .TRUE.
          GO TO 100
+C        .NEWTRA
  127     CONTINUE
+            NEWTRA = .TRUE.
          GO TO 100
  128     CONTINUE
             RNHERM = .TRUE.
@@ -1562,6 +1588,14 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+C
+Cholesky
+      IF (CHOINT) WRITE (LUPRI,'(4X,A)')
+     &  'Cholesky decomposition-based calculation will be done'
+      IF (ACTIVE) WRITE (LUPRI,'(4X,A)')
+     &  'Selection of active atoms switched on'
+Cholesky
+C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
@@ -1900,3 +1934,65 @@ C
       RETURN
       END
 #endif
+C
+Cholesky
+C  /* Deck execho */
+      SUBROUTINE EXECHO(WORK, LMWORK, WRKDLM)
+#include <implicit.h>
+#include <dummy.h>
+      DIMENSION WORK(0:LMWORK)
+#include <priunit.h>
+#include <gnrinf.h>
+#include <dftcom.h>
+C
+C     Run Cholesky stuff
+C
+      CALL QENTER('CHODRV')
+C
+      WRITE(LUPRI, '(/A/)') '    Starting in Cholesky Section -'
+C
+      CALL CC_CHODRV(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLES')
+C
+ctst  CLOSE(24)
+      WRITE(LUPRI, '(/A)') '- End of Cholesky Section'
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('CHODRV')
+      RETURN
+      END
+C
+C
+C /* Deck exeact */
+C
+      SUBROUTINE EXEACT(WORK, LMWORK, WRKDLM)
+#include <implicit.h>
+#include <dummy.h>
+      DIMENSION WORK(0:LMWORK)
+#include <priunit.h>
+#include <gnrinf.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <center.h>
+casm
+#include <ccorb.h>
+C
+C
+C     Select orbitals and basis fucntions for hybrid CC models.
+C
+      CALL QENTER('SELACT')
+C
+      WRITE(LUPRI, '(A/)') '    Starting in Selact Section -'
+C
+C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
+      write(lupri,*) 'Not yet implemented'
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELACT')
+C
+ctst  CLOSE(24)
+      WRITE(LUPRI, '(/A)') '- End of Selact Section'
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('SELACT')
+      RETURN
+      END
+C --- end of dalgnr.F ---

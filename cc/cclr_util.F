@@ -51,6 +51,10 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 
       LOGICAL TRIPLET, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -141,6 +145,12 @@ C
       ENDIF
 C
       IF (CCS .OR. CIS) GOTO 9999
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         CALL QEXIT('CCLR_DIA')
+         RETURN
+      END IF
+Cholesky
 C
 C------------------------------------------------
 C     FOCK based approximative A(2,2) diagonal.
@@ -2813,12 +2823,22 @@ C
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <priunit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+C
+      LOGICAL CCSEFF
+Cholesky
 C
 C
       LOGICAL LGRS
       DIMENSION CAM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+Cholesky
+      CCSEFF = CCS .OR. (CHOINT.AND.CC2)
+Cholesky
 C
 C------------------------
 C     Add up the vectors.
@@ -2829,10 +2849,12 @@ C
       KC1 = 1
       KC2 = KC1 + NT1AM(ISYMTR)
       C1NOSQ = DDOT(NT1AM(ISYMTR),CAM(KC1),1,CAM(KC1),1)
-      IF (.NOT. CCS) C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
+Chol  IF (.NOT. CCS) C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
+      IF (.NOT. CCSEFF)
+     &   C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
       CNOSQ  = C1NOSQ + C2NOSQ
 C
-      IF (.NOT. (CCS.OR.CCP2)) THEN
+      IF (.NOT. (CCSEFF.OR.CCP2)) THEN
 C
          WRITE(LUPRI,'(//10X,A)')
      *     'CC_PRAM:Overall Contribution of the Different Components'
@@ -2939,8 +2961,9 @@ C
 C--------------------------------------------
 C     Loop through Double excitation vector.
 C     If not ccs or ccp2
-      IF (.NOT. ( CCS .OR. CCP2 )) THEN
 C--------------------------------------------
+C
+      IF (.NOT. ( CCSEFF .OR. CCP2 )) THEN
 C
       WRITE(LUPRI,'(A)')
      *     ' +----------------------------------------------'
@@ -3031,7 +3054,7 @@ C
      *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
       WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
      *     'Printed all single excitations greater than',THR1
-      IF (.NOT. (CCS.OR.CCP2)) THEN
+      IF (.NOT. (CCSEFF.OR.CCP2)) THEN
          WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
      *     'Printed all double excitations greater than',THR2
       ENDIF
@@ -3383,16 +3406,46 @@ C             put into VEC. The position is calculated relative to
 C             LLEN which is the length of the vectors according to
 C             which the vectors was put there in the first place.
 C
+C     tbp: Use fortran I/O for Cholesky....
+C
+C
 #include <implicit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+#include <priunit.h>
+Cholesky
       DIMENSION VEC(*)
       CHARACTER FIL*(*)
 C
-      IOFF = 1 + LLEN*(NR-1)
+      IF (CHOINT) THEN
+
+C        Fortran I/O section.
+C        --------------------
+
+         IF (LLEN .NE. LEN) THEN
+            WRITE(LUPRI,'(//,5X,A,/,5X,A,I10,/,5X,A,I10,/)')
+     &     'Fatal error in CC_RVEC: LLEN .ne. LEN:',
+     &     'LLEN = ',LLEN,
+     &     'LEN  = ',LEN
+           CALL QUIT('Fatal [FORTRAN] I/O error in CC_RVEC')
+         ENDIF
+
+         CALL CHO_MOREAD(VEC,LEN,1,NR,LU)
+
+      ELSE
+
+C        crayio section.
+C        ---------------
 C
-      IF (LEN .GT. 0) THEN
-         CALL GETWA2(LU,FIL,VEC,IOFF,LEN)
+         IOFF = 1 + LLEN*(NR-1)
 C
-      ENDIF
+         IF (LEN .GT. 0) THEN
+            CALL GETWA2(LU,FIL,VEC,IOFF,LEN)
+C
+         ENDIF
+C
+      END IF
 C
       RETURN
       END
@@ -3407,14 +3460,41 @@ C             LLEN which is the length of the vectors according to
 C             which the vectors was put there in the first place.
 C
 #include <implicit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+#include <priunit.h>
+Cholesky
       DIMENSION VEC(*)
       CHARACTER FIL*(*)
 C
-      IOFF = 1 + LLEN*(NR-1)
+      IF (CHOINT) THEN
+
+C        Fortran I/O section.
+C        --------------------
+
+         IF (LLEN .NE. LEN) THEN
+            WRITE(LUPRI,'(//,5X,A,/,5X,A,I10,/,5X,A,I10,/)')
+     &     'Fatal error in CC_WVEC: LLEN .ne. LEN:',
+     &     'LLEN = ',LLEN,
+     &     'LEN  = ',LEN
+           CALL QUIT('Fatal [FORTRAN] I/O error in CC_WVEC')
+         ENDIF
+
+         CALL CHO_MOWRITE(VEC,LEN,1,NR,LU)
+
+      ELSE
+
+C        crayio section.
+C        ---------------
+
+         IOFF = 1 + LLEN*(NR-1)
 C
-      IF (LEN .GT. 0) THEN
-         CALL PUTWA2(LU,FIL,VEC,IOFF,LEN)
-      END IF
+         IF (LEN .GT. 0) THEN
+            CALL PUTWA2(LU,FIL,VEC,IOFF,LEN)
+         ENDIF
+C
+      ENDIF
 C
       RETURN
       END

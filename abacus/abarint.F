@@ -3549,6 +3549,7 @@ C
 
       CALL DUNIT(DIdent,NCRDHS)
 
+#define VAR_DEBUG
 #ifdef VAR_DEBUG
 ! March 2010 - debugging gfortran problem with segmentation error in
 ! dsygv /hjaaj
@@ -3559,6 +3560,7 @@ C
       call output(dident,1,ncrdhs,1,ncrdhs,ncrdhs,ncrdhs,-1,lupri)
       write (lupri,*) 'eval'
       call output(eval,1,1,1,ncrdhs,1,ncrdhs,-1,lupri)
+      write (lupri,*) 'WRK(1:40)',WRK(1:40)
       call flshfo(lupri)
 #endif
       

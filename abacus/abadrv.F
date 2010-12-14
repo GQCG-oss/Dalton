@@ -2983,12 +2983,33 @@ C  /* Deck susres */
 #include <suscpt.h>
 #include <abainf.h>
 #include <inftap.h>
+C
+CTOCD
+#include <ctocdcc.h> 
+CTOCD
+C
       CHARACTER*6 ABC(3)
       CHARACTER*8 LAPRPC
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
-      CALL TITLER('ABACUS - Magnetizabilities','*',124)
+
+C
+      IF (CTOMAG) THEN
+         IF (ALCCS) THEN
+            CALL TITLER('CCS CTOCD-DZ MAGNETIZABILITIES','*',122)
+         ELSE IF (ALCC2) THEN
+            CALL TITLER('CC2 CTOCD-DZ MAGNETIZABILITIES','*',122)
+         ELSE IF (ALCC3) THEN
+            CALL TITLER('CC3 CTOCD-DZ MAGNETIZABILITIES','*',122)
+         ELSE IF (ALCCSD) THEN
+            CALL TITLER('CCSD CTOCD-DZ MAGNETIZABILITIES','*',122)
+         END IF
+      ELSE
+         CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
+      END IF
+C
+
 cLig <> added the .NOT. CTOCD
-      IF ((.NOT.NOLOND).AND.(.NOT.CTOCD)) THEN
+      IF ((.NOT.NOLOND).AND.(.NOT.CTOCD) .AND. (.NOT.CTOMAG)) THEN
 C
          CALL DZERO(SUSTOT,9)
          CALL DZERO(DIASUS,9)
@@ -3042,7 +3063,7 @@ C
 C
          END IF
 cLig >> what to do for CTOCD
-      ELSE IF(CTOCD) THEN
+      ELSE IF(CTOCD .OR. CTOMAG) THEN
 cDEBUG
 c 	write(LUPRI,*) 'Dentro SUSRES'
 c	write(LUPRI,*) 'SUSDZD= ',SUSDZD
@@ -3102,7 +3123,7 @@ C
          WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
       END IF
 cLig >> added a print statement
-      IF (CTOCD) THEN
+      IF (CTOCD .OR. CTOMAG) THEN
         WRITE (LUPRI,'(/,1X,A)')'CTOCD-DZ results:'   
       ENDIF 
 cLig <<

@@ -418,6 +418,7 @@ C
 C
       MXAB = (LDAMAX - 2)/(IRAT+1)
       WRITE(LUPRI,2050) RUNTP
+      write(lupri,*) 'ldamax,irat',ldamax,irat
       WRITE(LUPRI,2200) MX1BUF, MXAB, MX2BUF
       WRITE(LUPRI,2300) MAXCHN
       WRITE(LUPRI,2400) MAXSCM, MAXLCM

@@ -132,6 +132,9 @@ C
       INTEGER IPDD
 C
 #include <leinf.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 C
       CALL QENTER('CC_FOP')
 C     Define CCDC and initialize local variables
@@ -167,6 +170,15 @@ C
       WRITE (LUPRI,'(1X,A,/)')
      *'*********************************************************'//
      *'**********'
+C
+Cholesky
+C
+      IF (CHOINT) THEN
+         CALL FLSHFO(LUPRI)
+         CALL CC_CHOFOP(WORK,LWORK)
+         GO TO 9999
+      ENDIF
+Cholesky
 C
       MODEL = 'CCSD'
 
@@ -1352,6 +1364,27 @@ C
       ENDIF
       CALL FLSHFO(LUPRI)
 C
+Cholesky
+C
+C------------------------------
+C     Write AO density to disk.
+C------------------------------
+C
+      IF (CHOINT) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) '********************************'
+         WRITE(LUPRI,*) 'Writing AO density do disk.'
+         WRITE(LUPRI,*) 'WARNING : You should not be here'
+         WRITE(LUPRI,*) '          Check program flow'
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) '********************************'
+         WRITE(LUPRI,*)
+         CALL CC_WRRSPD('d00',1,1,MODEL,RELORB,WORK(KDENS),
+     &                  WORK(KWRK3),LWRK3)
+      ENDIF
+C
+Cholesky
+C
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C     Solvent section
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1406,6 +1439,23 @@ C
          ENDIF
 C
       ENDIF
+C
+Cholesky
+C
+      IF (CHOINT) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) '***************************************'
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'WARNING : You should not be here either'
+         WRITE(LUPRI,*) '          Check program flow'
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) '***************************************'
+         WRITE(LUPRI,*)
+         CALL CC_WRRSPD('d00',1,1,MODEL,RELORB,
+     &                  WORK(KDENS),WORK(KWRK3),LWRK3)
+      END IF
+C
+Cholesky
 C
       MODELPRI2 = '  Relaxed '//MODELPRI
       IF (.NOT. RELORB) MODELPRI2 = 'Unrelaxed '//MODELPRI
@@ -2729,6 +2779,7 @@ C------------------------------------
 C
       IF ((.NOT.RLORBS).AND.MP2) RELORB = RLORBS 
 C
+ 9999 CONTINUE
       CALL QEXIT('CC_FOP')
       RETURN
       END

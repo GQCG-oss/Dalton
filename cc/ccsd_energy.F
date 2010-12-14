@@ -71,6 +71,14 @@ C
 !Sonia
 #include <ccfop.h>
 #include <ccnoddy.h>
+Cholesky
+#include <ccdeco.h>
+#include <chodbg.h>
+#include <cc_cho.h>
+#include <chocc2.h>
+C
+      LOGICAL CPTDBG
+Cholesky
       LOGICAL LCONVG,RSPIM2,EX,LEXIST,LHTF,MKVABKL
       LOGICAL CCR12RSP, CCR12LIM
       LOGICAL LCONV1,LCONV2
@@ -246,6 +254,12 @@ C     IF (CCR12RSP) THEN
 C       call cc_r12vxint(work,lwork,.false.)
 C     END IF
 C
+C-------------------
+C     Cholesky debug
+C-------------------
+C
+      IF (CHODBG) CALL CC_CHODBG(WORK,LWORK)
+C
 C----------------------------------------------------------------------
 C     Save RSPIM flag to calculate response global intermediates later.
 C     If CCS or MP2 no intermediates is calculated.
@@ -338,6 +352,98 @@ C
 
          GO TO 9999
 C        ... exit this routine
+      ENDIF
+C
+C     
+C--------------------
+C     Cholesky stuff.
+C--------------------
+C        
+C     Cholesky MP2 section.
+C     ---------------------
+         
+      IF (MP2 .AND. CHOINT) THEN
+      
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.) 
+         REWIND LUSIFC
+         CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+         READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
+     &              LSYM
+         ESCF = EMCSCF
+         CALL GPCLOSE(LUSIFC,'KEEP')
+         
+C        Calculate MP2 energy correction.
+C        --------------------------------
+
+         CALL CC_CHOMP2(WORK,LWORK,EMP2)
+C        
+C        Write SCF and MP2 energies to output and summary.
+C        -------------------------------------------------
+
+         ETY1   = 'MP2  '
+         ECCGRS = ESCF + EMP2
+         
+         CALL AROUND
+     &   ('Final results from the Coupled Cluster energy program')
+     
+         WRITE(LUPRI,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LUPRI,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+         WRITE(LURES,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LURES,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+
+         LABEL1 = 'ENERGY  '
+         MODREF = 'MP2/CHOLES'
+         CALL CC_PRPC(ECCGRS,MODREF,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(ECCGRS,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+
+         GOTO 9999
+
+      ENDIF
+C
+C     Cholesky CC2 section.
+C     ---------------------
+
+      IF (CC2 .AND. CHOINT) THEN
+
+         CALL CC_CHOECC2(WORK,LWORK,ESCF,ECC2,RSPIM2)
+
+         ETY1   = 'CC2  '
+         ECCGRS = ECC2
+
+         CALL AROUND
+     &   ('Final results from the Coupled Cluster energy program')
+
+         WRITE(LUPRI,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LUPRI,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+         WRITE(LURES,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LURES,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+
+
+         LABEL1 = 'ENERGY  '
+         MODREF = 'CC2/CHOLES'
+         CALL CC_PRPC(ECCGRS,MODREF,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(ECCGRS,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+
+
+         GOTO 9999
+
       ENDIF
 C
 C------------------------
@@ -734,6 +840,22 @@ C
          LCONV2 = OMNM .LT. THRVEC
          LCONVG = LCONV1 .AND. LCONV2
 
+#if defined (VAR_IFC)
+Casm     Silly code that solves an strange bug in ifort compiler
+
+         luwast = -1
+         call gpopen(luwast,'WASTE.OUT','UNKNOWN','SEQUENTIAL',
+     &               'formatted',idum,ldum)
+         write(luwast,*) 'lconv1 : ',lconv1
+         write(luwast,*) 'en1 : ',en1
+         write(luwast,*) 'en2 : ',en2
+         write(luwast,*) 'dif : ',dabs(en1-en2)
+         write(luwast,*) 'the : ',THRENR
+         write(luwast,*) 'lconv2 : ',lconv2
+         write(luwast,*) 'lconvg : ',lconvg
+         call gpclose(luwast,'DELETE')
+#endif
+
          ITER = ITER+1
          IF (ITER .GT. MAXITE) THEN
            WRITE(LUPRI,*) 'Energy not converged in ',MAXITE,
@@ -964,28 +1086,66 @@ C--------------------------------------------------
 C
          CCSDT = .TRUE.
 C
-         IF (CCPT) THEN
-            CC1BSV = CC1B
-            CC1B   = .TRUE.
-            CC1ASV = CC1A
-            CC1A   = .TRUE.
-         ENDIF
+         IF (.NOT. CHOPT) THEN
 C
-         CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
+            IF (CCPT) THEN
+               CC1BSV = CC1B
+               CC1B   = .TRUE.
+               CC1ASV = CC1A
+               CC1A   = .TRUE.
+            ENDIF
+C
+            CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
      *               WORK(KT2AM),WORK(KEND1),LWRK1,APROXR12)
 C
-         IF (CCPT) THEN
-            CC1B   = CC1BSV
-            CC1A   = CC1ASV
-         ENDIF
+            IF (CCPT) THEN
+               CC1B   = CC1BSV
+               CC1A   = CC1ASV
+            ENDIF
 C
-         IOPTTCME = 1
-         CALL CCSD_TCMEPK(WORK(KT2AM),0.5d0,1,IOPTTCME)
-         ECCP1 = TWO*DDOT(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
-         ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
+            IOPTTCME = 1
+            CALL CCSD_TCMEPK(WORK(KT2AM),0.5d0,1,IOPTTCME)
+            ECCP1 = TWO*DDOT(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
+            ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
 C
-         IOPT = 3
-         CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
+            IOPT = 3
+            CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
+C
+         ELSE
+C
+C----------------------------
+C           Cholesky CCSD(T)
+C----------------------------
+C
+            INQUIRE(FILE='CC_CHOPT_DBG',EXIST=CPTDBG)
+            IF (CPTDBG) THEN
+               WRITE(LUPRI,'(//,15X,A,/,15X,A)')
+     &               '*** NOTICE ***',
+     &               'File CC_CHOPT_DBG found. Calling CC_CHOPT_DBG.'
+               CALL CC_CHOPT_DBG(WORK,LWORK)
+               GOTO 9999
+            ENDIF
+C
+C-----------------------------------------------------------------------
+C           NB! This assumes that the orbital energies and
+C           T1 amplitudes are in fact in these positions:
+C-----------------------------------------------------------------------
+C
+            KFOCKD  = 1
+            KT1AM   = KFOCKD + NORBTS
+            KEND1   = KT1AM  + NT1AMX
+            LWRK1   = LWORK  - KEND1
+C
+            CHOTIM = SECOND()
+            CALL CC_CHOPT(WORK(KFOCKD),WORK(KT1AM),WORK(KEND1),LWRK1)
+            CHOTIM = SECOND() - CHOTIM
+            WRITE(LUPRI,9998) 'CC_CHOPT',CHOTIM
+ 9998       FORMAT(7X,'Time used in',2X,A12,2X,': ',F10.2,' seconds')
+C
+            ECCP1 = XEN5
+            ECCP2 = XEN4
+C
+         END IF
 C
          IF ( CCR3 ) THEN
 C
@@ -1351,6 +1511,11 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+Cholesky
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
       LOGICAL TRIPLET
 C
@@ -1378,6 +1543,9 @@ C
 C
 c     ENDIF
 c     IF (LBRUK) CALL DCOPY(NVIRT*NRHFT,OMEGA1,1,T1AM,1)
+C
+C
+      IF (CC2 .AND. CHOINT) GOTO 1000  ! Skip doubles part for Cholesky CC2.
 C
       DO 200 ISYMBJ = 1,NSYM
          ISYMAI = MULD2H(ISYMBJ,ISYMT)
@@ -1473,6 +1641,7 @@ C
       END DO
       ENDIF
 C
+ 1000 CONTINUE
       CALL QEXIT('CCSD_NXTAM')
 C
       RETURN
@@ -2365,7 +2534,7 @@ C------------------------------------------------------------------
 C                 Transform integrals and add to the result vector.
 C------------------------------------------------------------------
 C
-                  IF (CCSDT .OR. CCPT .OR.
+                  IF (CCSDT .OR. CCPT .OR. CHOPT .OR.
      *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
                       LUTOC = -1
                       FNTOC = 'CCSDT_OC'
@@ -2516,13 +2685,13 @@ C                  Construct I(kd,c) for fixed alpha.
 C                  Not needed for R12 integrals (WK/UniKA/04-11-2002).
 C----------------------------------------------------------------------
 C
-                  IF (CCSDT .OR. CCPT .OR.
+                  IF (CCSDT .OR. CCPT .OR. CHOPT .OR.
      *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
                      CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
                   ENDIF
 C
                   IF (.NOT. R12TRA .AND. (CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
+     *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B.OR.CHOPT))) THEN
 
                      KINT3 = KEND2
                      KINT4 = KINT3 + NT1AM(ISYMAB)*NVIR(ISYMG)
@@ -2715,7 +2884,7 @@ C
       ENDIF
 C
       IF (.NOT.R12TRA.AND.(CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *    (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
+     *    (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B.OR.CHOPT))) THEN
 C
 C------------------------------------
 C        Sort integrals (kc,d alpha).
@@ -2878,8 +3047,8 @@ C------------------------------------------
 C        Write out integrals used in CCSDT.
 C------------------------------------------
 C
-         IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) 
-     *                                                            THEN
+         IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT
+     *       .OR.CCR3.OR.CCR1A.OR.CCR1B .OR. CHOPT) THEN
 C       
             ISYMI  = ISYMJ
             ISYMCK = ISYMAB
@@ -3107,6 +3276,12 @@ C
 #include <ccisao.h>
 #include <r12int.h>
 #include <cc3t3d.h>
+Cholesky
+#include <dccorb.h>
+#include <dccsdsym.h>
+#include <ccisvi.h>
+Cholesky
+C
       INTEGER NMATAK(8)
       LOGICAL FIRST
       DATA FIRST /.TRUE./
@@ -3169,6 +3344,7 @@ C
       ICOUN1 = 0
       ICOUN2 = 0
       IOFF   = 0
+      JOFF   = 0  ! ALFREDO OK? JOFF was not initialized in your ccsd_energy.F
 C
       DO 5 ISYM = 1,NSYM
 C
@@ -3177,6 +3353,10 @@ C
          NRHF(ISYM)  = NRHFS(ISYM) - NRHFFR(ISYM)
          NVIR(ISYM)  = NVIRS(ISYM) - NVIRFR(ISYM)
          NORB(ISYM)  = NRHF(ISYM)  + NVIR(ISYM)
+C
+         XRHF(ISYM) = 1.0D0 * NRHF(ISYM)
+         XVIR(ISYM) = 1.0D0 * NVIR(ISYM)
+C
          IF (LABEL.EQ.'TRCCINT ') THEN
            NRHFA(ISYM)  = NRHF(ISYM) 
            NRHFSA(ISYM) = NRHFS(ISYM) 
@@ -3208,7 +3388,14 @@ C
              ISAO(IOFF) = ISYM
 C
     6   CONTINUE
-C
+Cholesky
+        DO I = 1,NVIR(ISYM)
+
+           JOFF = JOFF + 1
+           ISVI(JOFF) = ISYM
+
+        ENDDO
+Cholesky
     5 CONTINUE
 C
       NVIRT  = NORBT  - NRHFT
@@ -3272,6 +3459,10 @@ C
       DO 100 ISYMAI = 1,NSYM
          NT1AM(ISYMAI) = 0
          NT1AO(ISYMAI) = 0
+Chol
+         XT1AM(ISYMAI) = 0.0D0
+         XT1AO(ISYMAI) = 0.0D0
+Chol
          NH1AM(ISYMAI) = 0
          NG1AM(ISYMAI) = 0
 celena
@@ -3281,6 +3472,10 @@ celena
             ISYMA = MULD2H(ISYMAI,ISYMI)
             NT1AM(ISYMAI) = NT1AM(ISYMAI) + NVIR(ISYMA) * NRHF(ISYMI)
             NT1AO(ISYMAI) = NT1AO(ISYMAI) + NBAS(ISYMA) * NRHF(ISYMI)
+Chol
+            XT1AM(ISYMAI) = XT1AM(ISYMAI) + XVIR(ISYMA) * XRHF(ISYMI)
+            XT1AO(ISYMAI) = XT1AO(ISYMAI) + NBAS(ISYMA) * XRHF(ISYMI)
+Chol
             NH1AM(ISYMAI) = NH1AM(ISYMAI) + NORB1(ISYMA) * NRHF(ISYMI)
             NG1AM(ISYMAI) = NG1AM(ISYMAI) + NORB2(ISYMA) * NRHF(ISYMI)
 celena
@@ -3297,6 +3492,9 @@ C
          NT2AMT(ISAIBJ) = 0
          NH2AM(ISAIBJ)  = 0
          NU2AM(ISAIBJ)  = 0
+Chol
+         XT2AM(ISAIBJ) = 0.0D0
+Chol
          DO 400 ISYMBJ = 1,NSYM
             ISYMAI = MULD2H(ISYMBJ,ISAIBJ)
             IF (ISYMBJ .GT. ISYMAI) THEN
@@ -3306,6 +3504,10 @@ C
      &                         NT1AO(ISYMAI) * NT1AO(ISYMBJ)
                NT2AMA(ISAIBJ)= NT2AM(ISAIBJ)
                NT2AMT(ISAIBJ)= NT2AM(ISAIBJ) + NT2AMA(ISAIBJ)     
+Chol
+               XT2AM(ISAIBJ) = XT2AM(ISAIBJ) +
+     &                         XT1AM(ISYMAI) * XT1AM(ISYMBJ)
+Chol
                NH2AM(ISAIBJ) = NH2AM(ISAIBJ) +
      &                         NH1AM(ISYMAI) * NT1AM(ISYMBJ)
             ELSE IF (ISYMBJ .EQ. ISYMAI) THEN
@@ -3315,6 +3517,10 @@ C
      &                         NT1AO(ISYMAI) * (NT1AO(ISYMBJ)+1)/2
                NT2AMA(ISAIBJ)= NT2AM(ISAIBJ)
                NT2AMT(ISAIBJ)= NT2AM(ISAIBJ) + NT2AMA(ISAIBJ)  
+Chol
+               XT2AM(ISAIBJ) = XT2AM(ISAIBJ) +
+     &               XT1AM(ISYMAI) * (XT1AM(ISYMBJ)+1.0D0) / 2.0D0
+Chol
                NH2AM(ISAIBJ) = NH2AM(ISAIBJ) +
      &                         NH1AM(ISYMAI) * (NH1AM(ISYMBJ)+1)/2 +
      &                         NH1AM(ISYMAI) * NG1AM(ISYMBJ)
@@ -3410,6 +3616,9 @@ C
          ICOUN2 = 0
          ICOUN3 = 0
          ICOUN4 = 0
+Chol
+         XCOUN4 = 0.0D0
+Chol
          ICOUN5 = 0
          ICOUN6 = 0
          ICOUN7 = 0
@@ -3496,6 +3705,9 @@ C
 C
             ICOUN3 = ICOUN3 + NVIR(ISYMI)*NBAS(ISYMJ)
             ICOUN4 = ICOUN4 + NRHF(ISYMI)*NRHF(ISYMJ)
+Chol
+            XCOUN4 = XCOUN4 + XRHF(ISYMI)*XRHF(ISYMJ)
+Chol
             ICOU24 = ICOU24 + NRHFB(ISYMI)*NRHFB(ISYMJ)
             ICOU25 = ICOU25 + NRHFB(ISYMI)*NRHFA(ISYMJ)
             ICOU26 = ICOU26 + NVIR(ISYMI)*NRHFB(ISYMJ)
@@ -3517,6 +3729,9 @@ C
          NEMAT1(ISYMK) = ICOUN3
          NMATIJ(ISYMK) = ICOUN4
          NMATAV(ISYMK) = ICOU18
+Chol
+         XMATIJ(ISYMK) = XCOUN4
+Chol
          NMATKL(ISYMK) = ICOU24
          NMATKI(ISYMK) = ICOU25
          NMATAK(ISYMK) = ICOU26
@@ -3601,6 +3816,7 @@ C
          ICOUN8 = 0
          ICOUN9 = 0
          ICOUN10 = 0
+         ICOUN11 = 0
          DO 560 ISYMK = 1,NSYM
             ISYMIJ = MULD2H(ISYMK,ISYIJK)
             IMAIJK(ISYMIJ,ISYMK) = ICOUN1
@@ -3613,6 +3829,9 @@ C
             IMAABI(ISYMIJ,ISYMK) = ICOUN8
             IMAIAB(ISYMIJ,ISYMK) = ICOUN9
             IMAIAJ(ISYMIJ,ISYMK) = ICOUN10
+Cholesky
+            IT2VO(ISYMIJ,ISYMK)  = ICOUN11
+Cholesky
             ICOUN1 = ICOUN1 + NMATIJ(ISYMIJ)*NRHF(ISYMK)
             ICOUN2 = ICOUN2 + NVIR(ISYMIJ)*NMATIJ(ISYMK)
             ICOUN3 = ICOUN3 + NMATIJ(ISYMIJ)*NVIR(ISYMK)
@@ -3623,6 +3842,9 @@ C
             ICOUN8 = ICOUN8 + NMATAB(ISYMIJ)*NRHF(ISYMK)
             ICOUN9 = ICOUN9 + NT1AM(ISYMIJ)*NVIR(ISYMK)
             ICOUN10 = ICOUN10 + NRHF(ISYMIJ)*NT1AM(ISYMK)
+Cholesky
+            ICOUN11 = ICOUN11 + NMATAB(ISYMIJ)*NMATIJ(ISYMK)
+Cholesky
   560    CONTINUE
          NMAIJK(ISYIJK) = ICOUN1
          NT2AIJ(ISYIJK) = ICOUN2
@@ -3831,6 +4053,9 @@ C
          ICOUNT = 0
          ICOUN1 = 0
          ICOUN2 = 0
+C           
+         XCOUN1 = 0.0D0
+C
          DO 910 ISYMJ = 1,NSYM
 C
             ISYMI  = MULD2H(ISYMJ,ISYM)
@@ -3840,12 +4065,16 @@ C
             ICOUNT = ICOUNT + NT1AO(ISYMI)*NT1AO(ISYMJ)
             ICOUN1 = ICOUN1 + NT1AM(ISYMI)*NT1AM(ISYMJ)
             ICOUN2 = ICOUN2 + NT1AM(ISYMI)*NG1AM(ISYMJ)
+C           
+            XCOUN1 = XCOUN1 + XT1AM(ISYMI)*XT1AM(ISYMJ)
 C
   910    CONTINUE
 C
          NT2AOS(ISYM) = ICOUNT
          NT2SQ(ISYM)  = ICOUN1
          NTG2SQ(ISYM) = ICOUN2
+C
+         XT2SQ(ISYM)  = XCOUN1
 C
   900 CONTINUE
 C
@@ -3931,6 +4160,9 @@ C
          ICOUN2 = 0
          ICOUN3 = 0
          ICOUN4 = 0
+Chol
+         XCOUN2 = 0.0D0
+Chol
          DO 1050 ISYMA = 1,NSYM
 C
             ISYMCK = MULD2H(ISYMA,ISYCKA)
@@ -3946,12 +4178,16 @@ C
             ICOUN3 = ICOUN3 + NT1AM(ISYMCK)*NVIR(ISYMA)
             ICOUN4 = ICOUN4 + NMATAB(ISYMCK)*NRHF(ISYMA)
 C
+            XCOUN2 = XCOUN2 + XT1AM(ISYMCK)*XRHF(ISYMA)
+C
  1050    CONTINUE
 C
          NCKA(ISYCKA)   = ICOUN1
          NCKI(ISYCKA)   = ICOUN2
          NCKATR(ISYCKA) = ICOUN3
          NCKASR(ISYCKA) = ICOUN4
+C
+         XCKI(ISYCKA)   = XCOUN2
 C
  1040 CONTINUE
 C
@@ -4016,6 +4252,27 @@ C
             ICOUN9 = ICOUN9 + NRHF(ISYAIK)*NCKATR(ISYMJ)
             ICOUN10 = ICOUN10 + NVIR(ISYAIK)*NCKATR(ISYMJ)
             ICOUN11 = ICOUN11 + NCKATR(ISYAIK)*NRHF(ISYMJ)
+C
+            IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT.OR.
+     *                CHOPT .OR. CCR3.OR.CCR1A.OR.CCR1B) THEN
+               IF (ICOUN1 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative ICKITR in CCSD_INIT1'
+               IF (ICOUN2 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative ICKID in CCSD_INIT1'
+               IF (ICOUN6 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative IT2SP in CCSD_INIT1'
+               IF (ICOUN9 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative ICKDAO in CCSD_INIT1'
+               IF (ICOUN11 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative IMAJBAIT in CCSD_INIT1'
+               IF ((ICOUN1 .LT. 0) .OR. (ICOUN2 .LT. 0) .OR.
+     &             (ICOUN6 .LT. 0) .OR. (ICOUN9 .LT. 0)) THEN
+                   WRITE(LUPRI,'(A,A)') 
+     &                  'Calculation too large for 32-bit integers',
+     &                  'Try rebuilding Dalton using 64-bit integers'
+                   STOP 'Negative index in CCSD_INIT1'
+               END IF
+            END IF
 C
  1080    CONTINUE
 C
@@ -4380,6 +4637,15 @@ C
          WRITE(LUPRI,1) 'NLRHSI :',NLRHSI
          WRITE(LUPRI,1) 'NLAMDT :',NLAMDT
          WRITE(LUPRI,1) 'NLMRHF :',NLMRHF
+C
+         CALL AROUND('Information from DCCSDSYM')
+         WRITE(LUPRI,2) 'XT1AM  :',(XT1AM(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XT2AM  :',(XT2AM(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XT2SQ  :',(XT2SQ(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XCKI   :',(XCKI(I),  I=1,NSYM)
+         WRITE(LUPRI,2) 'XMATIJ :',(XMATIJ(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XT1AO  :',(XT1AO(I),  I=1,NSYM)
+C
       END IF
 C
       CALL QEXIT('CCSD_INIT1')
@@ -4387,6 +4653,7 @@ C
       RETURN
 C
     1 FORMAT(3X,A8,8I8)
+    2 FORMAT(3X,A8,8D8.3)
 C
       END
 C  /* Deck fock_reorder */
@@ -4791,6 +5058,11 @@ C
 C
          LENMIN = NCKATR(ISYCKB) + MAXCK
          NDISTR = MIN(LWORK/LENMIN,NBAS(ISYMD))
+C
+Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+C        
+         MXDALF = 268435455 / NCKATR(ISYCKB)
+         NDISTR = MIN(NDISTR,MXDALF)
 C
          IF (NDISTR .EQ. 0) THEN
             CALL QUIT('Insufficient work space in CC3_SORT1')

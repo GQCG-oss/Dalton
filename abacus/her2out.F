@@ -1252,10 +1252,18 @@ C
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*), IORBSH(*)
 #include <disbuf.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
 C---------------------------------
 C     Call sort and write routine.
 C---------------------------------
+C
+Cholesky
+      IF (CHOINT) THRESH = 1.0D-40
+Cholesky
 C
       CALL DS2OU1(SO,WRKBUF(KDSBF),WRKBUF(KDSIBF),WRKBUF(KDSNCT),
      &            WRKBUF(KDSORB),WRKBUF(KORBDS),IPNTNO,IPNTRP,IPNTLG,
@@ -1293,6 +1301,10 @@ C
 #include <twocom.h>
 #include <symmet.h>
 #include <drw2el.h>
+C
+Cholesky
+#include <ccdeco.h>
+Cholesky
 C
 #include <ibtfun.h>
 C
@@ -1367,18 +1379,32 @@ C
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
                   INDA = IPTSYM(NSTRNA + IA,IREPA)
+Cholesky
+                  INDB = IPTSYM(NSTRNB + IB,IREPB)
+Cholesky
                   INDAB = INDA*(IBIT1 + 1) + IPTSYM(NSTRNB + IB,IREPB)
                   IDIST = IORBDS(INDA)
+Cholesky
+                  IF (DIACAL .AND. CHOINT) THEN
+                     IDIST = 1
+                  ENDIF
+Cholesky
                   DO 210 ICD = 1, NORBCD
                      INT = INT + 1
                      SOINT = SO(ISOFF+INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
                        IC = KHKTC*(NINDCD(ICD,1) - 1)
                        ID = KHKTD*(NINDCD(ICD,2) - 1)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE.  INDC) GOTO 210
+                          IF (INDB .NE.  INDD) GOTO 210
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
+Cholesky
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1388,8 +1414,15 @@ C
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
+Cholesky
+                          INDX = INDA
+                          IF (DIACAL .AND. CHOINT) THEN
+                             INDX = 1
+                          ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
@@ -1406,16 +1439,28 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                   INDB = IPTSYM(NSTRNB + IB,IREPB)
                   INDAB = INDA*(IBIT1 + 1) + INDB
                   IDIST = IORBDS(INDA)
+Cholesky
+                  IF (DIACAL .AND. CHOINT) THEN
+C                    IF (INDB .GT.  INDA) GOTO 205
+                     IDIST = 1
+                  ENDIF
+Cholesky
                   DO 215 ICD = 1, NORBCD
                      INT = INT + 1
                      SOINT = SO(ISOFF+INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
                        IC = KHKTC*(NINDCD(ICD,1) - 1)
                        ID = KHKTD*(NINDCD(ICD,2) - 1)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE.  INDC) GOTO 215
+                          IF (INDB .NE.  INDD) GOTO 215
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
+Cholesky
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1426,8 +1471,15 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
+Cholesky
+                          INDX = INDA
+                          IF (DIACAL .AND. CHOINT) THEN
+                             INDX = 1
+                          ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
@@ -1447,6 +1499,12 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                INDB = IPTSYM(NSTRNB + IB,IREPB)
                INDAB = INDA*(IBIT1 + 1) + INDB
                IDIST = IORBDS(INDA)
+Cholesky
+               IF (DIACAL .AND. CHOINT) THEN
+C                 IF (INDB .GT. INDA) GOTO 300
+                  IDIST = 1
+               ENDIF
+Cholesky
                DO 310 ICD = 1,NORBCD
                   IC = KHKTC*(NINDCD(ICD,1) - 1)
                   ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1458,10 +1516,15 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                   SOINT = SO(ISOFF+INT)
                   IF (ABS(SOINT) .GT. THRESH) THEN
                      IF (NIBUF .EQ. 1) THEN
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE. INDC) GOTO 310
+                          IF (INDB .NE. INDD) GOTO 310
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1470,18 +1533,32 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        END IF
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
+Cholesky
+                       INDX = INDA
+                       IF (DIACAL .AND. CHOINT) THEN
+                          INDX = 1
+                       ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
                           NCOUNT(IDIST) = 0
                        END IF
                      ELSE
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
+Cholesky               NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+Cholesky               ICOUNT = NCOUNT(IDIST)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE. INDC) GOTO 310
+                          IF (INDB .NE. INDD) GOTO 310
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1491,8 +1568,15 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        IBUF(ICOUNT,1,IDIST) = INDAB
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
+Cholesky
+                       INDX = INDA
+                       IF (DIACAL .AND. CHOINT) THEN
+                          INDX = 1
+                       ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
@@ -1512,10 +1596,24 @@ C     ***** Last call to empty buffer *****
 C     *************************************
 C
       IF (LAST) THEN
+Cholesky
+         NUMD = NDIST
+         IF (DIACAL .AND. CHOINT) THEN
+            NUMD = 1
+         ENDIF
+Cholesky
          DO 400 IDIST = 1, NDIST
             NWRIT = NWRIT + NCOUNT(IDIST)
+Cholesky
+            INDX = IDSORB(IDIST)
+            IF (DIACAL .AND. CHOINT) THEN
+               INDX = 1
+            ENDIF
             CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
+     &                  NCOUNT(IDIST),1,INDX,IPRINT)
+Cholesky
+Chol        CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+Chol &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
 C           CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
 C     &                 NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
@@ -1525,7 +1623,8 @@ C        NALL   = NDIST*(NBASIS + 1)*(NBASIS**2)/2
          FNALL  = NDIST*(FNBASIS+1.0D0)*FNBASIS*FNBASIS*0.5D0
          PERCNT = NWRIT
          PERCNT = 100.0D0*PERCNT / FNALL
-         IF (IPRINT.GE.0) WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
+         IF ((.NOT. CHOINT) .AND. (IPRINT.GE.0)) 
+     &         WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
      &         ' Number of two-electron spin-orbit integrals written:',
      &         NWRIT,' (',PERCNT,'%)'
       END IF

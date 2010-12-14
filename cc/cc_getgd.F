@@ -82,6 +82,9 @@ C
 #include <cccl2rsp.h>
 #include <leinf.h>
 #include <ccpl1rsp.h>
+Cholesky
+#include <ccdeco.h>
+Cholesky
 C
       CHARACTER MODEL*(10), LIST*(*)
 C
@@ -124,6 +127,12 @@ C     ---------------------------------------------------------------
         NTAMP = NTAMP + NTR12AM(ISYMGD) 
       END IF
  
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         NTAMP = NT1AM(ISYMGD)
+      END IF
+Cholesky
+
 C----------------------------------------------------------------------
 C 'R3 ' third-order response t amplitudes:  --> 'O3 '
 C----------------------------------------------------------------------
@@ -188,11 +197,41 @@ C----------------------------------------------------------------------
          ILSTGD = IRHSR1(LRTLBL(ILSTNR),LORXLRT(ILSTNR),
      &                   FRQLRT(ILSTNR),ISYM1)
 
-         CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTRDG,MODEL,
-     &                  GD(IADR1),GD(IADR2))
-         IF (CCR12) THEN
-           CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTR12,MODEL,
-     &                   DUMMY,GD(IADR12))
+C       For Cholesky CC2 we need to add a frequency-dependent term to
+C       get the effective right-hand side. [Which is also why the
+C       solver only solves equations for 1 frequency at a time.]
+C       Try to read the eff. rhs from disk; if it fails, calculate
+C       the eff. rhs and write it to disk for later use.
+C       Conventional: simply read from disk.
+C       -------------------------------------------------------------
+
+        IF (CHOINT .AND. CC2) THEN
+           MODEL = 'CC2       '
+           IOPT = 33
+           CALL CC_RDRSP('eO1',ILSTNR,ISYMGD,IOPT,MODEL,
+     &                   GD,DUMMY)
+           IF (IOPT .EQ. 33) THEN
+              IF (IPRINT .GT. 2) THEN
+                 WRITE(LUPRI,'(1X,A,A)')
+     &           'Effective Cholesky gradient not found on file. ',
+     &           'Calculating gradient...'
+              ENDIF
+              IALG = 0
+              CALL CC_CHOXI1(GD,WORK,LWORK,ILSTGD,LRTLBL(ILSTNR),
+     &                       FRQLRT(ILSTNR),ISYMGD,IALG)
+              IOPT = 1
+              CALL CC_WRRSP('eO1',ILSTNR,ISYMGD,IOPT,MODEL,
+     &                      DUMMY,GD,DUMMY,WORK,LWORK)
+           ENDIF
+
+         ELSE         !Conventional
+
+           CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTRDG,MODEL,
+     &                    GD(IADR1),GD(IADR2))
+           IF (CCR12) THEN
+             CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTR12,MODEL,
+     &                     DUMMY,GD(IADR12))
+           END IF
          END IF
 
          IF (CCSLV) THEN
@@ -274,7 +313,13 @@ C----------------------------------------------------------------------
          IF (ISIDE .NE.-1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
 
-         CALL CC_ETA(GD,WORK,LWORK)
+Cholesky
+         IF (CHOINT .AND. CC2) THEN
+            CALL CC_CHOETA(GD,WORK,LWORK)
+            NTAMP = NT1AM(ISYMOP)
+         ELSE
+            CALL CC_ETA(GD,WORK,LWORK)
+         END IF
 
 C----------------------------------------------------------------------
 C 'N2 ' Lagrangian multipliers:

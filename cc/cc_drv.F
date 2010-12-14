@@ -125,7 +125,12 @@ C
 #include <grdccpt.h>
 #include <ccfield.h>
 #include <qm3.h>
-
+C
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
+C
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
@@ -413,7 +418,7 @@ C------------------------------------------
 C     Sort AO-integrals into distributions.
 C------------------------------------------
 C
-      IF (.NOT. DIRECT) THEN
+      IF ((.NOT. CHOINT) .AND. (.NOT. DIRECT)) THEN
          CALL CCSD_SORTAO(WORK,LWORK)
       ENDIF
 C
@@ -421,7 +426,7 @@ C-----------------------------------------------------------
 C     Calculate the ( ia | jb ) integrals and write to disk.
 C-----------------------------------------------------------
 C
-      IF (.NOT.LISKIP) THEN
+      IF ((.NOT. CHOINT) .AND. (.NOT.LISKIP)) THEN
          IF (LMULBS.AND.MMOD.LE.1.AND.MP2.AND.(.NOT.NATVIR).AND.
      *       (.NOT.R12PRP)) THEN
            ! if only MP2-R12 the (IA|JB) integrals are not needed

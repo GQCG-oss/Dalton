@@ -57,6 +57,9 @@ c/* Deck CC_FMATRIX */
 #include <priunit.h>
 #include <ccsdinp.h>
 #include "maxorb.h"
+Cholesky
+#include <ccdeco.h>
+Cholesky
 #include "ccsdio.h"
 #include "ccnoddy.h"
 
@@ -112,6 +115,19 @@ COMMENT COMMENT
 *               the remaining contributions <L2|[...,R3]|HF> are
 *               calculated in CCSDT_FMAT_CONT (see below).
 *---------------------------------------------------------------------*
+*
+Cholesky
+C
+      IF (CHOINT .AND. CC2) THEN
+
+         CALL CC_CHOFMAT(IFTRAN, NFTRAN, LISTL, LISTR, IOPTRES,
+     &                   FILFMA, IFDOTS, FCONS, MXVEC, WORK, LWORK)
+
+         GOTO 9999
+      END IF
+C
+Cholesky
+*
       MAXFTRAN = MAXSIM
 
       NBATCH = (NFTRAN+MAXFTRAN-1)/MAXFTRAN
@@ -300,6 +316,7 @@ COMMENT COMMENT
 
       IF (LOCDBG) WRITE(LUPRI,*) 'Leave CC_FMATRIX...'
 
+ 9999 CONTINUE
       CALL QEXIT('CC_FMATRIX')
 
       RETURN

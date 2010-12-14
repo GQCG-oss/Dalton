@@ -112,6 +112,10 @@ C          'FC' : F-transformed first-order right Cauchy vectors
 C          'CF2': F-transformed second-order right Cauchy vectors
 C          'FR' : F-transformed right eigenvector
 C
+C          'XF1': F-transformed right first-order response vectors,
+C                 F12*R2 contribution for Cholesky CC2.
+C
+C
 C          'O1 ': rhs for first-order amplitude equations
 C          'O2' : rhs for second-order amplitude equations
 C          'O3' : rhs for third-order amplitude equations
@@ -119,6 +123,10 @@ C          'O4' : rhs for fourth-order amplitude equations
 C          'CO2': rhs for second-order cauchy equations
 C          'EO1': rhs for right eigenvector first-order response
 C          'EO2': rhs for right eigenvector second-order response
+C
+C          'eO1': effective rhs for first-order amplitude equations for
+C                 Cholesky CC2
+C
 C
 C          'X1' : first-order eta vectors
 C          'X2': second-order eta vectors
@@ -148,7 +156,9 @@ C
 C  Christof Haettig, October 1996, restructered in May 1997
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C  CC3 effective vectors introduced 2002 by Christof Haettig
+C  Cholesky extensions by Thomas Bondo Pedersen, March/April 2003.
 C  R12 double excitation part introduced Jun 2003 by Christof Haettig
+C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <priunit.h>
@@ -156,6 +166,10 @@ C---------------------------------------------------------------------*
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccexci.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RDRSP')
@@ -194,10 +208,18 @@ C
 
 *---------------------------------------------------------------------*
 *     Test if abort under fail 
+*     If Cholesky CC2, then IOPT=33 means singles if available, please!
+*     [Note: IOPT=3 is actually OK, as IOPT is reset during the check
+*      of the header as IOPT = IAND(IOPT,5)]
 *---------------------------------------------------------------------*
       IF (IOPT .EQ. 33) THEN
          IOPTSV = 33
-         IOPT   = 3
+Chol     IOPT   = 3
+         IF (CHOINT .AND. CC2) THEN
+            IOPT = 1
+         ELSE
+            IOPT   = 3
+         ENDIF
       ELSE IF (IOPT.LT.0) THEN
          IOPTSV = 33
          IOPT   = -IOPT
@@ -546,6 +568,10 @@ c/* Deck cc_rcrsp */
 #include <cccl2rsp.h>
 #include <ccexci.h>
 #include <ccpl1rsp.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
   
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RCRSP')
@@ -597,8 +623,13 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'R1' - first-order response t amplitudes:
 * 'F1' - F transformation of first-order response t amplitudes:
+* 'XF1' - F transformed first-order response t amplitudes,
+*         F12*R2 contribution:
+* 'eO1' - Effective rhs for Cholesky first-order response t  amplitude
 *.....................................................................
-      ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Chol  ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &          LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'eO1') THEN
           ORDER = 1
           DO IOP = 1, ORDER
             FRQLST(IOP)  = FRQLRT(IDXLST)
@@ -1085,6 +1116,16 @@ Cold    TYPE(3:3)  = '_'
         INDFIL(1) = 0
       
 *.....................................................................
+* XF1, eO1   (Cholesky)
+*.....................................................................
+      ELSE IF ( LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'eO1') THEN
+
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
+     &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
+
+        INDFIL(1) = 0
+
+*.....................................................................
 * ER1, EO1, EL1, EX1
 *.....................................................................
       ELSE IF ( LIST3.EQ.'ER1' .OR. LIST3.EQ.'EO1' .OR.
@@ -1334,6 +1375,11 @@ Cold    TYPE(3:3)  = '_'
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *      (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT = IAND(IOPT,1+4)
+Cholesky
+C     No doubles in Cholesky CC2
+      ELSE IF (MODFIL(1:3).EQ.'CC2' .AND. CHOINT) THEN
+        IOPT = IAND(IOPT,5)
+Cholesky
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
      *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
      *        ) THEN

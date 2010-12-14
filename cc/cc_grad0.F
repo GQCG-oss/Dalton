@@ -809,6 +809,20 @@ C
          CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
 C
       ENDIF
+#ifdef asm_debug
+! ALFREDO OK ? I think you by mistake left in some debug code? See also
+! asm_debug below
+casm
+      xnorm = ddot(n2bst(1),work(kaoden),1,work(kaoden),1)
+      write(lupri,*) 'Norm of density :', xnorm
+      koff = kaoden
+      do isym = 1,nsym
+         write(lupri,*) 'Symmetry block :',isym
+         call output(work(koff),1,nbas(isym),1,nbas(isym),
+     &               nbas(isym),nbas(isym),1,lupri)
+         koff = koff + nbas(isym)*nbas(isym)
+      end do
+#endif
 C
 C===========================================================
 C Derivative one-electron integral contribution to gradient:
@@ -1107,6 +1121,12 @@ C
             ENDIF
             AUTIME = SECOND() - AUTIME
             TIMDEN = TIMDEN + AUTIME
+#ifdef asm_debug
+casm
+            xnorm = ddot(NF2IJG(ISYDEN),WORK(KD2IJG),1,WORK(KD2IJG),1)
+            write(lupri,'(a,3i5,d20.10)') 'isyden,illd,idel2,xnorm :',
+     &              isyden,illd,idel2,xnorm
+#endif
 C
 C-------------------------------------------------------------------
 C        Read in undifferentiated 2e-integrals for Eff. Fock matrix:
@@ -1123,6 +1143,11 @@ C
 
             CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWRK3,
      *                    WORK(KRECNR),DIRECT)
+#ifdef asm_debug
+            write(lupri,'(a,2i8,f16.10)')'idel,idel2,integral norm :',
+     &         idel,idel2,
+     &         ddot(ndisao(isymd),work(kxint),1,work(kxint),1)
+#endif
 C
 C---------------------------------------------------
 C           Start loop over second AO-index (gamma).

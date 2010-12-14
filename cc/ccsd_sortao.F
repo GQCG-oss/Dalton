@@ -95,6 +95,27 @@ C
 C
    50 CONTINUE
 C
+C------------------------------
+C     Skip sorting if required.
+C------------------------------
+C     
+      IF (NOSORT) THEN
+C     
+          DO ISYMD = 1,NSYM
+             ISYDIS = MULD2H(ISYMD,ISYMOP)
+             LENGTH = NDISAO(ISYDIS)
+             IOFFID = 1
+             DO ID = 1,NBAS(ISYMD)
+                IDEL = ID + IBAS(ISYMD)
+                IOFFINT(IDEL) = IOFFID
+                IOFFID = IOFFID + LENGTH
+             END DO
+          END DO
+C
+          RETURN
+C     
+      END IF
+C
 C------------------------
 C     Buffer information.
 C------------------------

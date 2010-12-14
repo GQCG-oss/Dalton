@@ -86,6 +86,10 @@ C
 #include "infpar.h"
 #include "blocks.h"
 C
+Cholesky
+#include "ccdeco.h"
+Cholesky  
+C
       CALL QENTER('TWOINT')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
 C
@@ -161,6 +165,10 @@ C
 C     Threshold for integrals
 C
       THRESH = MAX(THRS,1.00D-15)
+C
+Cholesky
+      IF (CHOINT) THRESH = 1.0D-40    ! Probably not needed and surely too much
+Cholesky
 C
 C     *******************************
 C     ***** Calculate integrals *****
@@ -885,6 +893,13 @@ C      PARAMETER (LBUF = 600)
 #include "r12int.h"
 #include "drw2el.h"
 C
+Cholesky
+#include <ccdeco.h>
+#include <choles.h>
+#include <choskp.h>
+#include <ccdeco2.h>
+Cholesky
+C
       CALL QENTER('TWODSA')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODSA','*',103)
 C
@@ -922,6 +937,28 @@ C
         IBSMAX = MAXSHL
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+C
+Cholesky
+C
+      ELSEIF(I2TYP.EQ.4) THEN
+        IBSTRT = ISHLB
+        ICSTRT = 1
+        IDSTRT = 1
+        IASMAX = ISHLA
+        IBSMAX = ISHLB
+        ICSMAX = MAXSHL
+        IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.5) THEN
+        IBSTRT = ISHLB
+        ICSTRT = ISHLA
+        IDSTRT = ISHLB
+        IASMAX = ISHLA
+        IBSMAX = ISHLB
+        ICSMAX = ISHLA
+        IDSMAX = ISHLB
+C
+Cholesky
+C
       ELSE
         WRITE(LUPRI,'(A,I5)') 'TWODSA: Unknown I2TYP =' ,I2TYP
       ENDIF
@@ -977,6 +1014,12 @@ C
 C     ******************************
 C     ***** Second Shell Index *****
 C     ******************************
+C
+Cholesky
+      IALDON = 0
+      IALSKP = 0
+      J2TYP  = I2TYP
+Cholesky
 C
       DO 200 ISHELB = IBSTRT,IBSMAX
 C        Check for basis-set identifier (WK/UniKA/04-11-2002).
@@ -1054,6 +1097,9 @@ C           ******************************
 C
             ICMAX = ISHELC
             IF (SPNORB .OR. DIA2SO) ICMAX = MAXSHL
+Cholesky
+            IF (I2TYP.EQ.5) ICMAX=ISHELB
+Cholesky
             DO 400 ISHELD = IDSTRT, ICMAX
 C              Check for basis-set identifier (WK/UniKA/04-11-2002).
                MBSABCD = MBSABC + MBSISH(ISHELD)
@@ -1102,6 +1148,32 @@ C
                   SHCEQD = ISHELC .EQ. ISHELD
                END IF
                SHABAB = .FALSE.
+C
+C_to_do        Cholesky screening.
+C              -------------------
+C
+c               IF (I2TYP .EQ. 4) THEN
+C
+c                 IF (DIASC1(ISHELA,ISHELB) .EQ. ZERO) THEN
+c                    write(6,*) 'Ishelab screening:',ishela,ishelb
+c                    IALSKP = IALSKP + 1
+c                    GOTO 400
+c                 ENDIF
+c
+c                 IF (DIASC1(ISHELC,ISHELD) .EQ. ZERO) THEN
+c                    write(6,*) 'Ishelcd screening:',ishelc,isheld
+c                    write(6,*) 'Other indices:',ishela,ishelb
+c                    IALSKP = IALSKP + 1
+c                    GOTO 400
+c                 ENDIF
+C
+c                 write(6,*) 'Distribution calculated',ishela,ishelb,
+c    &                        ishelc,isheld
+c                 IALDON = IALDON + 1
+C
+c              ENDIF
+C
+C_to_do_end
 C
 C              *******************************
 C              ***** Calculate integrals *****
@@ -1155,7 +1227,11 @@ C
      &        WORK(LWORK)
 #include "blocks.h"
 #include "twocom.h"
-#include "inforb.h"
+C
+Cholesky #include "inforb.h"
+#include "ccorb.h"
+Cholesky
+C
 #include "symmet.h"
 #include "r12int.h"
       SAVE ISHLAB
@@ -1723,6 +1799,11 @@ C  /* Deck twood1 */
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
+C
+Cholesky
+#include <ccdeco.h>
+Cholesky
+C
 #include "ibtfun.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from TWOOD1','*',103)
@@ -1899,7 +1980,7 @@ C
      &               IODDHR,INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &               IFCTYP,ADISTR,IORBSH,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
-     &               IXPAB,IXPCD)
+     &               IXPAB,IXPCD,CHOINT)
 C
          LWTOT = LWTOT - KLAST
       END IF
@@ -1921,7 +2002,7 @@ Cef begin
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &                  IFCTYP,ADISTR,IORBSH,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,
-     &                  IXPAB,IXPCD)
+     &                  IXPAB,IXPCD,CHOINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1973,6 +2054,12 @@ Cef begin
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
      &          IXPAB(NUCA*NUCB,2,NODCAB), IXPCD(NUCC*NUCD,2,NODCCD)
       dimension COEFCD(*)
+C
+Cholesky
+#include "ccdeco2.h"
+      LOGICAL CHOINT
+Cholesky
+C
 #include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
@@ -1990,7 +2077,14 @@ C
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
 C
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK.OR.DIA2SO.OR.ZFS2EL)
-     &     .AND. NSOINT.EQ.0 .AND. LAST) GOTO 400
+     &     .AND. NSOINT.EQ.0 .AND. LAST) THEN
+         IF (CHOINT) CALL CPRLOP(IPNTAO,IPNTOP,IPNTNO,IPNTRP,
+     &                           IPNTLG,SQ12EL,IPRINT)
+         GOTO 400
+      END IF
+C
+Cholesky
+C
 C
       IF (EXPECT .OR. SUSCEP .OR. DIRFCK .OR. DDFOCK .OR. DIA2SO .OR.
      &    ZFS2EL) THEN
@@ -4045,6 +4139,7 @@ C
 #include "shells.h"
 #include "blocks.h"
 #include "primit.h"
+#include <priunit.h>
 C
 C     Parameters for sets of primitives
 C     =================================

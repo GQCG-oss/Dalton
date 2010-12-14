@@ -86,6 +86,8 @@ C          'FC' : F-transformed right first-order Cauchy vectors.
 C          'CF2': F-transformed right second-order Cauchy vectors.
 C          'FR' : F-transformed right eigenvectors.
 C
+C          'XF1': F-transformed right first-order response vectors,
+C                 F12*R2 contribution for Cholesky CC2.
 C
 C          'O1 ': rhs for first-order amplitude equations
 C          'O1e': effective 'O1' vector for triples models
@@ -95,6 +97,9 @@ C          'O4' : rhs for fourth-order amplitude equations
 C          'CO2': rhs for second-order right Cauchy equations
 C          'EO1': rhs for first-order response of right eigenvectors
 C          'EO2': rhs for second-order response of right eigenvectors
+C
+C          'eO1': effective rhs for first-order amplitude equations for
+C                 Cholesky CC2
 C
 C          'X1 ': first-order chi/eta vectors
 C          'X1e': effective 'X1' vector for triples models
@@ -162,6 +167,11 @@ C---------------------------------------------------------------------*
 #include <ccexci.h>
 #include <ccpl1rsp.h>
 #include <dummy.h>
+Cholesky
+#include <maxorb.h>
+#include <cclr.h>
+#include <ccdeco.h>
+Cholesky
  
       CHARACTER SUBRNAME*(8)
       INTEGER LUSAVE
@@ -207,6 +217,15 @@ C---------------------------------------------------------------------*
       IF (MODFIL(1:3).EQ.'SCF') THEN
         IOPT   = IAND(IOPT,4) 
         NWRITE = 1
+C
+Cholesky 
+C
+      ELSE IF (MODFIL(1:3).EQ.'CC2' .AND. CHOINT) THEN
+        IOPT   = IAND(IOPT,5)
+        NWRITE = 2
+C     
+Cholesky
+C 
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *    (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT   = IAND(IOPT,1+4) 
@@ -446,6 +465,18 @@ C
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
      &    LISTI(1:3), LRTLBL(IDXVEC), ISYLRT(IDXVEC), FRQLRT(IDXVEC),
      &    LORXLRT(IDXVEC)
+
+*.....................................................................*
+* 'XF1' - F transformed first-order response t amplitudes,
+*         F12*R2 contribution for Cholesky CC2: 
+* 'eO1' - eff. rhs for first-order response t amplitudes for
+*         Cholesky CC2:
+*.....................................................................*
+
+      ELSE IF ( LIST(1:3) .EQ. 'XF1' .OR. LIST(1:3) .EQ. 'eO1') THEN
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
+     &    LIST(1:3), LRTLBL(IDXLST), ISYLRT(IDXLST), FRQLRT(IDXLST),
+     &    LORXLRT(IDXLST)
 
 *.....................................................................*
 * 'R2' - second-order response t amplitudes:

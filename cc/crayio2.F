@@ -220,8 +220,10 @@ C
         END IF
 
       END IF
-      IUNCRAY(LUNIT) = 0
-      LUNIT = -1
+      IF (LUNIT .LE. 70) THEN
+         IUNCRAY(LUNIT) = 0
+         LUNIT = -1
+      END IF
       RETURN
       END
 *=====================================================================*
@@ -233,12 +235,17 @@ c/* Deck INITWIO */
       SUBROUTINE INITWIO()
 *---------------------------------------------------------------------*
 * Purpose: initialize common /UNICRAYIO/ (all files marked as unused)
+*          reserve units .gt. 70 for Cholesky
 *=====================================================================*
       INTEGER IUNCRAY
       COMMON /UNICRAYIO/ IUNCRAY(1:99)
  
-      DO J = 1, 99
+      DO J = 1, 70
         IUNCRAY(J) = 0
+      END DO
+ 
+      DO J = 71, 99
+        IUNCRAY(J) = 1
       END DO
  
       RETURN
@@ -257,7 +264,7 @@ c/* Deck WCLOSEALL */
 #include <ccsdinp.h>
       COMMON /UNICRAYIO/ IUNCRAY(1:99)
 C
-      DO LUNIT = 1, 99
+      DO LUNIT = 1, 70
 
          IF (IUNCRAY(LUNIT) .NE. 0) THEN
 
@@ -277,7 +284,7 @@ c            WRITE (LUPRI,*) 'MODE:', MODE
              CALL QUIT('I/O ERROR IN WCLOSEALL')
            END IF
  
-           IUNCRAY(LUNIT) = 0
+           IF (LUNIT .LE. 70) IUNCRAY(LUNIT) = 0
 
          END IF
 
