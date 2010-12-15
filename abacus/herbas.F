@@ -365,13 +365,13 @@ C
 
       IF (IPRINT.GE.10) THEN
         CALL HEADER('Output from BASLIB',-1)
-        WRITE(LUPRI,*) 'ISTART=',ISTART
-        WRITE(LUPRI,'(A,A)') 'BASTMP=',BASTMP
-        WRITE(LUPRI,*) 'IPOLST=',IPOLST
-        WRITE(LUPRI,*) 'POLFUN=',POLFUN
-        WRITE(LUPRI,*) 'ANO=',ANO
-        WRITE(LUPRI,*) 'SADLEJ=',SADLEJ
-        WRITE(LUPRI,*) 'NQVD=',NQVD
+        WRITE(LUPRI,*) 'ISTART =',ISTART
+        WRITE(LUPRI,'(A,A)') ' BASTMP = ',BASTMP
+        WRITE(LUPRI,*) 'IPOLST =',IPOLST
+        WRITE(LUPRI,*) 'POLFUN =',POLFUN
+        WRITE(LUPRI,*) 'ANO    =',ANO
+        WRITE(LUPRI,*) 'SADLEJ =',SADLEJ
+        WRITE(LUPRI,*) 'NQVD   =',NQVD
       ENDIF
 C      
 C Finds the right element in the file. 
