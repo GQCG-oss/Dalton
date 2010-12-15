@@ -168,8 +168,8 @@ else
    GREP="egrep"
 fi
 
-CRIT1=`$GREP "CC2 Total energy: *\-76.1208243315" $log | wc -l`
-CRIT2=`$GREP "CCSD Total energy: *\-76.1264845200" $log | wc -l`
+CRIT1=`$GREP " CC2 Total  *energy: *\-76.1208243315" $log | wc -l`
+CRIT2=`$GREP "CCSD Total  *energy: *\-76.1264845200" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 ` 
 CTRL[1]=2
 ERROR[1]="ENERGIES NOT CORRECT"

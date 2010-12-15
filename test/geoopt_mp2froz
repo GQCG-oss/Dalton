@@ -1,4 +1,4 @@
-#!/bin/sh
+#.!/bin/sh
 #
 # This is the script for generating files for a specific Dalton test job.
 #
@@ -118,8 +118,8 @@ CTRL[5]=112
 ERROR[5]="MP2 FROZEN ORBITALS NOT CORRECT"
 
 # Initial energies
-CRIT1=`$GREP "\= MP2 second order energy \: * \-228\.238786825[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-228\.241609824[0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy \: * \-228\.2387868" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-228\.2416098" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=3
 ERROR[6]="INITIAL ENERGIES NOT CORRECT"
