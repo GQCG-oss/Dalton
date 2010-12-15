@@ -4416,17 +4416,17 @@ C
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
       END
 ***********************************************************************
-      SUBROUTINE LUCITA_GETINT_DALTON(EMY, XINT1, XINT2, LWORK)
+      SUBROUTINE LUCITA_GETINT_DALTON(EMY,X1INT,X2INT,LWORK)
 C
 C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
 #include "implicit.h"
 
-      DIMENSION XINT1(*), XINT2(*)
+      DIMENSION X1INT(*), X2INT(*)
  
 C Used from include files:
 C  priunit: LUPRI
-C  inforb: NCMOT, nsym, muld2h
+C  inforb: NCMOT, nsym
 C  inftap: LUINTM, FNINTM
 C  mxpdim: MXPOBS
 C  orbinp: ntoobs
@@ -4443,6 +4443,7 @@ C  orbinp: ntoobs
 
       LOGICAL CLOSE_MOTWOINT, DISKH2
 !     scratch space
+      integer, allocatable :: mult_ptg(:,:)
       real(8), allocatable :: cmo(:)
       real(8), allocatable :: fcac(:)
       real(8), allocatable :: h2ac(:,:)
@@ -4451,12 +4452,13 @@ C
 C     -------------------------------------------------------
 C
 !     allocate scratch matrices
+      allocate(mult_ptg(8,8))
       allocate(cmo(ncmot))
       allocate(fcac(nnashx))
       allocate(h2ac(nnashx,nnashx))
 
 !     allocate work array to be used inside sirius routines
-      lfree = lwork - ncmot - nnashx**2 - nnashx
+      lfree = lwork - ncmot - nnashx**2 - nnashx - 8*8
       allocate(tmp_work(lfree))
 
 !     read molecular orbital coefficients from file
@@ -4488,23 +4490,24 @@ C
          CALL OUTPUT(h2ac,1,NNASHX,1,NNASHX,
      &               NNASHX,NNASHX,-1,LUPRI)
 !     END IF
-C
-C-----------------------------------
-C     Transfer 1e- and 2e-integrals from Dalton to LUCITA order
-C-----------------------------------
-C
-!     initialize
-      call dzero(x1int,nr_1int)
-      call dzero(x2int,nr_2int)
 
-      call sirint2luint(fcac,h2ac,x1int,x2int,adsxa,muld2h,
-     &                  nasht,nnashx,ntoobs,nsym,mxpobs)
+!--------------------------------------------------------------
+!     transfer 1e- and 2e-integrals from Dalton to LUCITA order
+!--------------------------------------------------------------
+
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,8)
+
+      call sirint2luint(fcac,h2ac,x1int,x2int,mult_ptg,adsxa,nasht,
+     &                  nnashx,ntoobs,nsym,mxpobs,nint1,nint2)
 
 !     release scratch space
       deallocate(tmp_work)
       deallocate(h2ac)
       deallocate(fcac)
       deallocate(cmo)
+      deallocate(mult_ptg)
 
       call quit('NEXT TO DO: store integrals in LUCITA packing')
 
@@ -4513,7 +4516,8 @@ C
 ***********************************************************************
       subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,mult_ptg,
      &                        return_sym_of_jorb,nr_actorb_tot,nnashx,
-     &                        nr_orb_per_sym,nr_sym,max_orb_per_sym)
+     &                        nr_orb_per_sym,nr_sym,max_orb_per_sym,
+     &                        nr_1int,nr_2int)
 !
 !     purpose: reorder integrals from dalton-sirius format to internal
 !              lucita format.
@@ -4528,11 +4532,13 @@ C
       integer :: nnashx
       integer :: nr_sym
       integer :: max_orb_per_sym
+      integer :: nr_1int
+      integer :: nr_2int
       integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
       integer :: nr_orb_per_sym(max_orb_per_sym)
       integer :: mult_ptg(nr_sym,nr_sym)
-      real(8) :: h1_in(*)
-      real(8) :: h2_in(*)
+      real(8) :: h1_in(nnashx)
+      real(8) :: h2_in(nnashx,nnashx)
       real(8) :: h1_out(*)
       real(8) :: h2_out(*)
 !     ------------------------------------------------------------------
@@ -4540,19 +4546,28 @@ C
 !     1-electron integrals
 !     --------------------
       call sir1int2lu1int(h1_in,h1_out,return_sym_of_jorb,nnashx,
-     &                    nr_orb_per_sym,nr_sym,max_orb_per_sym)
+     &                    nr_orb_per_sym,nr_sym,max_orb_per_sym,
+     &                    nr_1int)
       
 !     2-electron integrals
 !     --------------------
       call sir2int2lu2int(h2_in,h2_out,mult_ptg,nr_actorb_tot,
      &                    nnashx,nr_orb_per_sym,nr_sym,
-     &                    max_orb_per_sym)
+     &                    max_orb_per_sym,nr_2int)
+
+!#ifdef LUCI_DEBUG
+      write(lupri,*) '  symmetry reduced 1-el'
+      call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+      write(lupri,*) '  symmetry reduced 2-el'
+      call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
+!#endif
 
       end
 
 ***********************************************************************
       subroutine sir1int2lu1int(h1_in,h1_out,return_sym_of_jorb,nnashx,
-     &                          nr_orb_per_sym,nr_sym,max_orb_per_sym)
+     &                          nr_orb_per_sym,nr_sym,max_orb_per_sym,
+     &                          nr_1int)
 !
 !     purpose: reorder integrals from dalton-sirius format to internal
 !              lucita format.
@@ -4570,6 +4585,7 @@ C
       integer :: nnashx
       integer :: nr_sym
       integer :: max_orb_per_sym
+      integer :: nr_1int
       integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
       integer :: nr_orb_per_sym(max_orb_per_sym)
       real(8) :: h1_in(*)
@@ -4638,12 +4654,20 @@ C
         orb_tmp = orb_tmp + nr_act_isym
       end do
 
+!     final # of 1-el ints
+      nr_1int = offset_internal - 1
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) '  final 1e- list: # of ints =', nr_1int
+      call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+#endif
+
       end
 ***********************************************************************
 
       subroutine sir2int2lu2int(h2_in,h2_out,mult_ptg,nr_actorb_tot,
      &                          nnashx,nr_orb_per_sym,nr_sym,
-     &                          max_orb_per_sym)
+     &                          max_orb_per_sym,nr_2int)
 !
 !     purpose: reorder integrals from dalton-sirius format to internal
 !              lucita format.
@@ -4657,9 +4681,10 @@ C
       integer :: nnashx
       integer :: nr_sym
       integer :: max_orb_per_sym
+      integer :: nr_2int
       integer :: nr_orb_per_sym(max_orb_per_sym)
       integer :: mult_ptg(nr_sym,nr_sym)
-      real(8) :: h2_in(*)
+      real(8) :: h2_in(nnashx,nnashx)
       real(8) :: h2_out(*)
 !     -----------------------------------------------------------------
       integer :: isym, jsym, ksym, lsym, llsym, ijsym, klsym, ijklsym
@@ -4668,15 +4693,22 @@ C
       integer :: ioff, joff, koff, loff
       integer :: ij_res, kl_res, ijkl_res
       integer :: i_first, j_first, j_last, l_last
-      integer :: i, j, l, k
+      integer :: i, j, k, l, ij, kl
 !     -----------------------------------------------------------------
 
 !#ifdef LUCI_DEBUG
       print *,' h2_in:'
       do isym = 1, nnashx
         do jsym = 1, nnashx
-          print *,' h2_in(',((isym-1)*nnashx)+jsym,') = ',
-     &              h2_in(((isym-1)*nnashx)+jsym)
+          print *,' h2_in(',isym,jsym,') = ',
+     &              h2_in(isym,jsym)
+        end do
+      end do
+      print *,' mult_ptg:'
+      do isym = 1, nr_sym
+        do jsym = 1, nr_sym
+          print *,' mult_ptg(',isym,jsym,') = ',
+     &              mult_ptg(isym,jsym)
         end do
       end do
 !#endif
@@ -4684,7 +4716,7 @@ C
 !     2-electron integrals
 !     --------------------
       offset_internal = 1
-      ioff = 1
+      ioff            = 1
 !     4-index loop
       do isym = 1, nr_sym
         nr_act_isym = nr_orb_per_sym(isym)
@@ -4703,16 +4735,23 @@ C
               nr_act_lsym = nr_orb_per_sym(lsym)
 
               ijsym   = mult_ptg(isym,jsym)
+              print *, ' isym, jsym',isym,jsym
               klsym   = mult_ptg(ksym,lsym)
+              print *, ' ksym, lsym',ksym,lsym
               ijklsym = mult_ptg(ijsym,klsym)
 
 !             restrict loop to non-vanishing symmetry combinations of (ij|kl)
 
               if(ijklsym .eq. 1)then
 
+!#ifdef LUCI_DEBUG
+                print *, ' check current symmetries'
+                print('(/a,4i6)'), 'isym,jsym,ksym,lsym',
+     &                              isym,jsym,ksym,lsym
+!#endif
 
 !               index restrictions
-                if(ISYM .eq. JSYM)then
+                if(isym .eq. jsym)then
                   ij_res = 1
                 else
                   ij_res = 0
@@ -4734,8 +4773,6 @@ C
 !  L
 !   I
 !    J
-                write(lupri,*) ' loop over non-redundant output indices'
-
 !               loop over non-redundant output indices including symmetry offsets
                 do k = koff, koff + nr_act_ksym - 1
 
@@ -4769,57 +4806,58 @@ C
 
                       do j = j_first, j_last
 
-                          print ('(/2x,a)'),
+                        print ('(/2x,a)'),
      &        '-------------------------------------------------------'
-                          print ('(2x,a,4i4)'), 'next indices pairs:'//
-     &                      ' I, J, K, L = ',i,j,k,l
-                          print('(2x,a/)'),
+                        print ('(2x,a,2i4,a,2i4,a)'),'next integral:'//
+     &                    ' (ij|kl) = (',i,j,'|',k,l,')'
+                        print('(2x,a/)'),
      &        '-------------------------------------------------------'
-!#ifdef LUCI_DEBUG
-                          print *, ' check current symmetries'
-                          print('(/a,4i6)'), 'isym,jsym,ksym,lsym',
-     &                                        isym,jsym,ksym,lsym
-                          print *, ' check current offsets'
-                          print('(/a,4i6)'), 'ioff,joff,koff,loff',
-     &                                        ioff,joff,koff,loff
-!#endif
-                          offset_ijkl = (ijsym-1)*nnashx + klsym
-                          print *, 'offset_ijkl =',offset_ijkl
-                          print *, 'ijsym, klsym, nnashx =',
-     &                              ijsym, klsym, nnashx
-*
-!                       IBLKOFF = IOFF12(KR(IIN),KR(JIN))
-!                       do INRUN=1,IBLLEN,1
-!                         if (KR(INDK(INRUN+IBLKOFF)).eq.KR(KIN).and.
-!    &                        KR(INDL(INRUN+IBLKOFF)).eq.KR(LIN))
-!    &                    then
-!                           TWELINT(ICT) = RKL(INRUN+IBLKOFF)
-!                           if (NTEST.ge.10) then
-!                             write(6,'(2x,a/,4i6,1F18.12/)')
-!    &                          ' integral fetched: integral number,'//
-!    &                          ' (IBLKOFF + INRUN) = offset on input'//
-!    &                          ' block, integral value:',ICT,
-!    &                            IBLKOFF,INRUN,IBLKOFF+INRUN,
-!    &                            TWELINT(ICT)
-!                           end if
-!                           ICT = ICT + 1
-!                           goto 10
-!                         end if
-!                       end do
-                      end do
-                    end do
-                  end do
-                end do
-*               ^ End loops over 4 indices
-              end if ! non-vanishing symmetry block
+                        print *, 'ij =',(i*(i-1))/2 + j
+                        print *, 'kl =',(k*(k-1))/2 + l
+                        ij                      = (i*(i-1))/2 + j
+                        kl                      = (k*(k-1))/2 + l
+                        h2_out(offset_internal) = h2_in(ij,kl)
+                        print *, 'h2_out(offset_internal) =',
+     &                            h2_out(offset_internal)
+                        offset_internal         = offset_internal + 1
+                      end do ! j
+                    end do ! i
+                  end do ! l
+                end do ! k
+              end if ! non-vanishing non-redundant (wrt symmetry) integrals
               loff = loff + nr_act_lsym
-            end do ! l
+            end do ! lsym
             koff = koff + nr_act_ksym
-          end do ! k
+          end do ! ksym
           joff = joff + nr_act_jsym
-        end do ! j
+        end do ! jsym
         ioff = ioff + nr_act_isym
-      end do ! i
+      end do ! isym
+
+!     final # of 2-el ints
+      nr_2int = offset_internal - 1
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) '  final 2e- list: # of ints =', nr_2int
+      call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
+#endif
 
       end
 ***********************************************************************
+
+      subroutine set_ptg_multiplication_table(mult_ptg,nr_ptg_irreps)
+!
+!     purpose: set point-group multiplication table for 
+!              dalton -> lucita integral transfer.
+!
+!     -----------------------------------------------------------------
+      implicit none
+#include "priunit.h"
+#include "multd2h.inc"
+      integer :: nr_ptg_irreps
+      integer :: mult_ptg(nr_ptg_irreps,nr_ptg_irreps)
+!     -----------------------------------------------------------------
+
+      call icopy(nr_ptg_irreps*nr_ptg_irreps,multd2h,1,mult_ptg,1)
+
+      end
