@@ -1726,7 +1726,8 @@ C         if reading input from a terminal
             IF (INDEX(WORD,'EWMO') .GT. 0) THEN
                EWMO = .TRUE.
                DOHUCKEL = .TRUE.
-            ELSE IF (INDEX(WORD,'HUCKEL') .GT. 0) THEN
+            ELSE IF (INDEX(WORD,'HUCKEL') .GT. 0
+     &          .OR. INDEX(WORD,'EHT')    .GT. 0) THEN
                EWMO = .FALSE.
                DOHUCKEL = .TRUE.
             ELSE
