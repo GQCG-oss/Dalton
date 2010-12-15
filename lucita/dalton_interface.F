@@ -4511,16 +4511,24 @@ C
       END
 ***********************************************************************
       subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,
-     &                        return_sym_of_jorb,nr_actorb,nnashx,
+     &                        return_sym_of_jorb,nr_actorb_tot,nnashx,
      &                        nr_orb_per_sym,nr_sym,max_orb_per_sym)
 !
 !     purpose: reorder integrals from dalton-sirius format to internal
 !              lucita format.
 !
+!              1-electron integrals: on output symmetry-reduced list
+!              2-electron integrals: on output symmetry-reduced list
+!
+!              note from stefan: i am not sure whether my code actually 
+!              works for non-totally symmetric 1-electron operators as
+!              well, i.e. if we do property calculations. 
+!              this should be checked with due care.
+!
 !     -----------------------------------------------------------------
       implicit none
 #include "priunit.h"
-      integer :: nr_actorb
+      integer :: nr_actorb_tot
       integer :: nnashx
       integer :: nr_sym
       integer :: max_orb_per_sym
@@ -4532,7 +4540,10 @@ C
       real(8) :: h2_out(*)
 !     -----------------------------------------------------------------
       integer :: isym, jsym, ijsym
-      integer :: offset_total, offset_internal, is_orb, js_orb
+      integer :: offset_ij, offset_internal, isorb, jsorb
+      integer :: nr_act_isym, nr_act_jsym, orb_tmp
+      integer :: i_index, j_index
+      character (len=90) :: error_message
 !     -----------------------------------------------------------------
 
       print *,' h1_in:'
@@ -4542,33 +4553,55 @@ C
 
 !     1-electron integrals
 !     --------------------
-      ijsym           = 1
-      offset_total    = 0
+      orb_tmp         = 0
+      offset_ij       = 0
       offset_internal = 1
+      ijsym           = 1
+
+!     insert check for symmetry of 1-electron operator - quit if not
+!     totally symmetric for the time being
+      if(ijsym .gt. 1)then
+        error_message = '*** error in integral resorting for dalton'//
+     &                  ' 1-e ints. operator is not totally symmetric.'
+        call quit(error_message)
+      end if
 
       do isym = 1, nr_sym
 
-        jsym = return_sym_of_jorb(isym,ijsym)
+
+        nr_act_isym = nr_orb_per_sym(isym)
+        jsym        = return_sym_of_jorb(isym,ijsym)
         print *,' isym, jsym',isym, jsym
 
-        if(isym .eq. jsym)then
-          do is_orb = 1, nr_orb_per_sym(isym)
-            do js_orb = 1, is_orb
+        if(jsym .ge. isym)then
 
-              h1_out(offset_internal) =
-     &        h1_in(offset_internal+offset_total)
+          nr_act_jsym = nr_orb_per_sym(jsym)
 
-        print *,'offset_total, offset_internal, is_orb, h1_out',
-     &  offset_total, offset_internal, is_orb, h1_out(offset_internal)
+          do jsorb = 1, nr_act_jsym
+            do isorb = 1, jsorb
+!             calculate offset on dalton 1e-array (lower triangular matrix)
+              j_index   = ((orb_tmp+jsorb)*(orb_tmp+jsorb-1)/2)
+              i_index   =  (orb_tmp+isorb)
+              offset_ij = i_index + j_index
+  
+              h1_out(offset_internal) = h1_in(offset_ij)
+  
+              print *,'offset_ij, offset_internal,jsorb, h1',
+     &                 offset_ij, offset_internal,jsorb, 
+     &                 h1_out(offset_internal)
 
 !             count the number of non-vanishing 1-electron integrals
-              offset_internal         = offset_internal + 1
+              offset_internal = offset_internal + 1
             end do
           end do
-        end if
-!       total offset in sirius 1-electron integrals
-        offset_total = offset_total + nr_orb_per_sym(isym)
+        end if ! jsym >= isym
+
+!       total # of active orbitals for each isym
+        orb_tmp = orb_tmp + nr_act_isym
       end do
+
+!     2-electron integrals
+!     --------------------
 
       end
 ***********************************************************************
