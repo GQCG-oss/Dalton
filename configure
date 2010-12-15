@@ -1440,8 +1440,8 @@ fi
 #
 # Make sure Makefile.depend files exist
 #
-for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius lucita soppa; do
- touch $i/Makefile.depend
+for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius soppa choles lucita ; do
+  touch $i/Makefile.depend
 done
 #
 # Update the DALTON run-script

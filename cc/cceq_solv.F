@@ -141,6 +141,12 @@ C
 #include <cclr.h>
 #include <leinf.h>
 #include <ccslvinf.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+C
+      PARAMETER (TOL = 1.0D-14)
+Cholesky
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*) FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM,FS2AM
@@ -174,11 +180,52 @@ C
       TIMNEX = D0
       ITLE   = 0
 C
+Cholesky
+C
+C     Check that this is N-R for Cholesky CC2: Eigenvalue equations
+C     are non-linear and cannot be determined here...
+C
+      IF ((CHOINT .AND. CC2) .AND. (.NOT. LINQCC)) THEN
+         WRITE(LUPRI,'(//,A)')
+     &   'CCEQ_SOL: Cholesky CC2 eigenvalues not available:'
+         WRITE(LUPRI,'(A,A,/,A,/)')
+     &  'The eigenvalue equations for Cholesky CC2 are ',
+     &  'non-linear and thus outside the scope of CCEQ_SOL'
+        CALL QUIT('CCEQ_SOL: no eigenvalues for Cholesky CC2')
+      ENDIF
+C
+C     Check that all frequencies in EIVAL are identical for Cholesky CC2.
+C
+      IF (CHOINT .AND. CC2.AND. (NVEC.GT.0)) THEN
+         ICOUN = 0
+         REFRQ = EIVAL(1)
+         DO I = 2,NVEC
+            DIFF = DABS(EIVAL(I) - REFRQ)
+            IF (DIFF .GT.  TOL) ICOUN = ICOUN + 1
+         ENDDO
+         IF (ICOUN .GT. 0) THEN
+            WRITE(LUPRI,'(//,A)')
+     &      'CCEQ_SOL: frequencies MUST be identical for all',
+     &      ' perturbations for Cholesky CCC2.'
+            WRITE(LUPRI,'(A)')
+     &      'Frequencies passed to CCEQ_SOL in EIVAL array:'
+            WRITE(LUPRI,'(4D20.12)') (EIVAL(I), I = 1,NVEC)
+            CALL QUIT('CCEQ_SOL: frequency error for Cholesky CC2')
+         ENDIF
+      ENDIF
+C
+Cholesky
+C
 C     print banner for solver:
 C
       IF (IPRLE.GT.0) THEN
          WRITE (LUPRI,'(///A/)') 
      &        ' >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<'
+Chol
+         IF (CHOINT .AND. CC2.AND. (NVEC.GT.0))
+     &       WRITE(LUPRI,'(A,F12.5,/)')
+     &            ' Frequnecy :',EIVAL(1)
+Chol
          WRITE (LUPRI,'(3X,A)')
      &        ' Iter  #Vectors  time (min)   residual'
          WRITE (LUPRI,'(3X,A)')
@@ -208,10 +255,13 @@ C
      *      TRIPLET, ECURR
          ENDIF                      
 C
+Cholesky     Pass EIVAL (before it was DUMMY) to CC_TRDRV
+Cholesky     to be used by CC_CHOATR
+C
          IST = NREDH - NUPVEC + 1
          CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                       FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                 TRIPLET,.FALSE.,IDUMMY,DUMMY,FS12AM,LUFS12,
+     *                 TRIPLET,.FALSE.,IDUMMY,EIVAL,FS12AM,LUFS12,
      *                 FS2AM,LUFS2,
      *                 ISIDE,IST,NUPVEC,WRK,LWRK,APROXR12)
 C
@@ -568,7 +618,8 @@ C        ----------------------------------------------
                WRITE(LUPRI,'(A,I3,A,I3,A)') ' Vector nr.',ILSTNR,
      &         ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
                WRITE(LUPRI,'(4A)') ' Start vector is a ',
-     &         MODEL,LIST(1:LEN_LIST),' vector'
+     &         MODEL,LIST(1:3),' vector'
+Casm &         MODEL,LIST(1:LEN_LIST),' vector'
             ENDIF
          ENDIF
 C
@@ -785,6 +836,10 @@ C
 #include <ccfro.h>
 #include <leinf.h>
 #include <r12int.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
       LOGICAL LOCDBG,LNOREAD
       PARAMETER ( LOCDBG = .FALSE. )
       PARAMETER ( THRLDP = 1.D-20 )
@@ -1004,32 +1059,42 @@ C        --------------------------------------------
 C        Use generalized conjugate gradient algorithm
 C        to form new trial vectors
 C        --------------------------------------------
-C        KDIA   = KWRK1
-C        KWRK2  = KDIA  + NCCVAR
-C        LWRK2  = LWRK  - KWRK2 
-C        IF (LWRK2 .LT. 0 ) THEN 
-C           CALL QUIT('Too little work in CCNEX')
-C        END IF
-C        CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
-C        CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
+Cholesky
 C
-C        DO JR = 1,NFIN
-C           IOFF = (JR-1)*NCCVAR
-C           DO I=1,NCCVAR
-C              WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
-C           END DO
-C        END DO
+C    Cholesky CC2 did not converge using precond, so
+C    uncomment next lines and go back to old safe method
 C
+       IF (CHOINT) THEN
+          KDIA   = KWRK1
+          KWRK2  = KDIA  + NCCVAR
+          LWRK2  = LWRK  - KWRK2
+          IF (LWRK2 .LT. 0 ) THEN
+             CALL QUIT('Too little work in CCNEX')
+          END IF
+          CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
+          CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
+C
+          DO JR = 1,NFIN
+             IOFF = (JR-1)*NCCVAR
+             DO I=1,NCCVAR
+                WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
+             END DO
+          END DO
+C
+       ELSE
 CCH
-C           WRITE(LUPRI,'(/I4,1X,A)') NFIN,
+C         WRITE(LUPRI,'(/I4,1X,A)') NFIN,
 C     *         'new trial vectors before PRECOND:'
-C           WRITE (LUPRI,*) 'NORM: ',DDOT(NCCVAR*NFIN,WRK(KRES),1,
+C         WRITE (LUPRI,*) 'NORM: ',DDOT(NCCVAR*NFIN,WRK(KRES),1,
 C     *                                   WRK(KRES),1)
-C           CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
+C         CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
 CCH
          CALL CC_PRECOND(WRK(KRES),NFIN,NCCVAR,ISYMTR,TRIPLET,
      &                   WRK(KWRK1),LWRK1)
-
+       END IF
+C
+Cholesky
+C
          IF ((IPRLE.GT.105 .OR. LOCDBG).AND. NFIN .GT. 0) THEN
            WRITE(LUPRI,'(/I4,1X,A)') NFIN,
      *         'new trial vectors before CCORT/PRJDRV:'
@@ -2202,6 +2267,10 @@ C
 #include <leinf.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
 C
       CHARACTER*(*) LIST
       CHARACTER*14  MODEL, LABR12
@@ -2232,6 +2301,9 @@ C
       KT2   = 1 + NT1AM(ISYM)
 C
       IOPT   = 3
+Cholesky
+      IF (CHOINT .AND. CC2) IOPT = 1
+Cholesky
       CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,VEC(KT1),
      *              VEC(KT2),WORK,LWORK)
       IF (CCR12 .AND. (.NOT.(CCS.OR.CIS))) THEN

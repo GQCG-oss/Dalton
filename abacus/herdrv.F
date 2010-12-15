@@ -107,6 +107,10 @@ C
 #include <nuclei.h>
 #include <pcmlog.h>
 C
+Cholesky
+#include <ccdeco.h>
+Cholesky
+C
 C inftra : USE_INTSORT
 C
 #include "inftra.h"
@@ -233,7 +237,7 @@ C     **********************************
 C
 C     Integrals on AOORDINT
 C
-      IF (USE_INTSORT) THEN
+      IF (USE_INTSORT .AND. (.NOT. CHOINT)) THEN
          CALL GPINQ('AOTWOINT','EXIST',FEXIST)
          IF (FEXIST) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
@@ -3752,6 +3756,10 @@ C/* Deck herini */
 #include <infinp.h>
 #include <qm3.h>
 C
+Cholesky
+#include <ccdeco.h>
+Cholesky
+C
 C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
 C
       IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
@@ -3948,6 +3956,11 @@ chj may 09: GAGORG and DIPORG now initialized in READIN
 chj   CALL DZERO(GAGORG,3)
 chj   CALL DZERO(DIPORG,3)
       CALL DZERO(EXPKR ,3)
+C
+Cholesky
+      IF (CHOINT) NOTWO = .TRUE.
+Cholesky
+C
 CTSAUE
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus

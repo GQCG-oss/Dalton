@@ -147,6 +147,15 @@ C
 #include <infvar.h>
 #include <infpri.h>
 C
+Cholesky
+#include <ccdeco.h>
+#include <choscf.h>
+C
+      PARAMETER (NBLOC = 1)
+      INTEGER LUBLOC(NBLOC)
+      DATA LUBLOC / 21 /
+Cholesky
+C
       PARAMETER (D4 = 4.0D0)
       LOGICAL C2DIIS
 C
@@ -179,6 +188,16 @@ C
       LUWOUT = LUPRI
   10  WRITE (LUWOUT,'(//A)')
      &      ' >>>>> DIIS optimization of Hartree-Fock <<<<<'
+Cholesky
+      IF (CHOINT) THEN
+         WRITE(LUWOUT,'(A)')
+     &      '     (using Cholesky decomposed integrals)'
+         IF (.NOT. CCMODSK) THEN
+            WRITE(LUWOUT,'(A,1P,D9.2,A)')
+     &      '     (decomposing density, thr = ',THRDC,')'
+         END IF
+      ENDIF
+Cholesky
       IF (C2DIIS) THEN
          WRITE (LUWOUT,'(/A,I5)')
      &      ' C2-DIIS algorithm; max error vectors =',MXERRV
@@ -334,6 +353,17 @@ C
 #include "incore.h"
 #include <qmmm.h>
 #include <infpar.h>
+C
+Cholesky
+#include <ccdeco.h>
+#include <sirftim.h>
+#include <choscf.h>
+C
+#include <center.h>
+C
+      LOGICAL DIFDNO
+Cholesky
+C
 C------------------------
 C
       PARAMETER (THDDEF = 1.0D-5)
@@ -517,7 +547,11 @@ C      IF (QMMM .AND. NODTOT .GE. 1) CALL PARQMMM_INIT()
          INDEVC = MOD(JTDIIS-1,MXERRV) + 1
          NEVC   = MIN(MXERRV,JTDIIS)
 C
-         IF (DIRFCK .AND. (IPRDIS .GE. 0 .AND. IPRDIS .LE. 1)) THEN
+Cholesky  No screening.
+C
+Chol     IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)) THEN
+         IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)
+     &              .AND. (.NOT. CHOINT)) THEN
             WRITE (LUPRI,'(I4,A,I5,L5)') 
      &      ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
      &      -IFTHRS, DIFDEN
@@ -547,6 +581,24 @@ C
             CALL DAXPY(N2BASX,D1,DCAO(1+N2BASX),1,DCAO,1)
             CALL DSCAL(N2BASX,-D1,DCAO(1+N2BASX),1)
          END IF
+C
+C-tbp: For Cholesky, save a copy of the occupied part of CMO
+C      on disk (for use in SIRFCK)
+C
+          IF (CHOINT .AND. CCMODSK) THEN
+             CALL WOPEN2(LUCCMO,FCCMO,64,0)
+             IADR2 = 1
+             DO ISYM = 1,NSYM
+                NDVCS(ISYM) = NISH(ISYM)
+                IF (NISH(ISYM) .GT. 0) THEN
+                   JCMO = ICMO(ISYM) + 1
+                   LEN = NBAS(ISYM)*NISH(ISYM)
+                   CALL PUTWA2(LUCCMO,FCCMO,CMO(JCMO),IADR2,LEN)
+                   IADR2 = IADR2 + LEN
+                ENDIF
+             ENDDO
+             CALL WCLOSE2(LUCCMO,FCCMO,'KEEP')
+         ENDIF
 C
          CALL MEMGET('REAL',KTMP1,NNBASX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KTMP2,N2BASX,WRK,KFREE,LFREE)
@@ -834,6 +886,28 @@ C
             WRITE (LUPRI,4110) ITDIIS
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS
 C
+Cholesky
+            IF (IPRDIS .GE. -1) THEN
+              IF (CHOINT .AND. (IPRDIS .GE. 3)) THEN
+                 WRITE(LUPRI,4116) 'Coulomb part',CSIRF
+                 WRITE(LUPRI,4116) 'Exchange part',XSIRF
+                 WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
+                 WRITE(LUPRI,4116) 'MO transform.',OSIRF
+                 WRITE(LUPRI,4116) 'MO sorting ',SSIRF
+              ENDIF
+              WRITE(LUPRI,4115) TSIRF
+              IF (LUW4 .NE. LUPRI) THEN
+                 IF (CHOINT .AND. (IPRDIS .GE. 3)) THEN
+                    WRITE(LUPRI,4116) 'Coulomb part',CSIRF
+                    WRITE(LUPRI,4116) 'Exchange part',XSIRF
+                    WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
+                    WRITE(LUPRI,4116) 'MO transform.',OSIRF
+                    WRITE(LUPRI,4116) 'MO sorting ',SSIRF
+                 ENDIF
+                 WRITE(LUW4,4115) TSIRF
+              ENDIF
+            ENDIF
+Cholesky
 C           Save converged CMO 
             WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
             CALL NEWORB(CMOLBL,CMO,LNEWOCC)
@@ -851,6 +925,8 @@ C           ... REWIT1 false: do not destroy any GEOWALK information
             GO TO 1100
          END IF
  4110 FORMAT(' DIIS converged in',I4,' iterations !')
+ 4115 FORMAT(' - total time used in SIRFCK        : ',F10.2,' seconds')
+ 4116 FORMAT(' - total time used for ',A13,': ',F10.2,' seconds')
  4120 FORMAT(' DIIS aborted because max DIIS iterations reached !')
 C
 Chj 990819: use DIFDEN more often
@@ -882,6 +958,22 @@ C        DIFDEN true if not new threshold and not "no difden"
 C        -- if we have tightened screening threshold we must
 C           calculate w/o DIFDEN or the error in the Fock matrix
 C           would correspond to the previous screening threshold.
+C
+C-tbp: Dirty hack: turn off DIFDEN for Cholesky deco.
+          IF (CHOINT .AND. DIFDEN) THEN
+             DIFDNO = DIFDEN
+             DIFDEN = .FALSE.
+             IF (IPRDIS .GE. 25) THEN
+                WRITE (LUPRI,'(A,I5,L5)')
+     &          ' Screening settings in next iteration (IFTHRS/DIFDEN)',
+     &          IFTHRS, DIFDNO
+                WRITE (LUPRI,'(A,I5,L5)')
+     &          ' Cholesky decomposition: new settings (IFTHRS/DIFDEN)',
+     &          IFTHRS, DIFDEN
+                CALL FLSHFO(LUPRI)
+             ENDIF
+          ENDIF
+C-tbp
 C
 C        Test if convergence is stopping because of numerical problems
 C        (EMCDIF test should make sure we are in local region)

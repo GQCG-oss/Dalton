@@ -102,7 +102,17 @@ C
 #include <cbieri.h>
 #include <ccroper.h>
 #include <cch2d.h>
-      PARAMETER (NTABLE = 110)
+Cholesky
+#include <cc_cho.h>
+#include <ccdeco.h>
+#include <chodbg.h>
+#include <chomp2.h>
+#include <chocc2.h>
+C
+#include <center.h>
+Cholesky  
+C
+      PARAMETER (NTABLE = 120)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -130,7 +140,9 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
-     &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.XXXXXX'/
+     &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.NOSORT',
+     &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
+     &            '.D01SKI','*ACTIVE','.CHO(T)','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -181,7 +193,15 @@ C
       CCTPA  = .FALSE.
       CCEXLR = .FALSE.
       CCDERI = .FALSE.
-
+C     
+Cholesky
+C 
+      CHOPT  = .FALSE.
+      CALL CC_CHOPTINIT
+      CHODBG = .FALSE.
+C     
+Cholesky
+C 
       LVVVV  = .FALSE.
 
       L0SKIP = .FALSE.
@@ -225,6 +245,8 @@ C
 
       HERDIR = .FALSE.
 
+      NOSORT = .FALSE.
+
       ANAAOD   = .FALSE.
       MAXRED   = 200
       MXLRV    = MAXRED - 1
@@ -263,6 +285,13 @@ C----------------------------------------------------------------
 
       ETACCPT = .FALSE.
       DIRKAPB = .FALSE.
+C
+C-----------------------------
+C     Cholesky initializations
+C-----------------------------
+C
+      CALL CC_CHOMP2INIT
+      CALL CC_CHOCC2INIT
 C
 C---------------------------------------------------------------------
 C     CCSAVE is true for all case, but can be turned of in *ccexci
@@ -371,7 +400,8 @@ C
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
-     *                105,106,107,108,109,110), I
+     *                105,106,107,108,109,110,111,112,113,114,115,
+     *                116,117,118,119,120), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -822,6 +852,47 @@ C                '.AO-SOPPA'
                   KEEPAOIN = .TRUE.
                GO TO 1000
  110           CONTINUE 
+C                 'NOSORT'
+                  NOSORT = .TRUE.
+               GO TO 1000
+ 111           CONTINUE 
+C                 'KEPAOI'
+                  KEEPAOIN = .TRUE.
+               GO TO 1000
+ 112           CONTINUE 
+C                '*CHO(T)'
+                  CHOPT = .TRUE.
+                  CCPT  = .TRUE.
+                  CALL CC_CHOPTINP(WORD)
+               GO TO 1000
+ 113           CONTINUE 
+C                '*CHOCC2'
+                 CALL CC_CHOCC2INP(WORD)
+               GO TO 1000
+ 114           CONTINUE 
+C                '*CHOMP2'
+                 CALL CC_CHOMP2INP(WORD)
+               GO TO 1000
+ 115           CONTINUE 
+C                '*CHODBG'
+                 CALL CC_CHODBINP(WORD)
+               GO TO 1000
+ 116           CONTINUE 
+C                '.D01SKI'
+                 D01SKIP = .TRUE.
+               GO TO 1000
+ 117           CONTINUE 
+C                '*ACTIVE'
+                 ACTIVE = .TRUE.
+                 CALL CC_ACTINP(WORD)
+               GO TO 1000
+ 118           CONTINUE 
+C                '.CHO(T)'
+                  CHOPT = .TRUE.
+                  CCPT  = .TRUE.
+               GO TO 1000
+ 119           CONTINUE 
+ 120           CONTINUE 
                GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
@@ -850,6 +921,10 @@ C
       !Sonia: replace ETAPTI keyword....
       ETACCPT = ( (OPTNEW.OR.CCDERI).AND.(CCPT) )
 
+Cho
+      IF (CHOINT) IPRINT = MAX(IPRINT,1)
+      IF (CHOINT) THRVEC = THRENR*1.0D2
+Cho
       RETURN
       END
 C  /* Deck CC_PRTI */
@@ -4179,6 +4254,14 @@ C#endif
 #include <mxcent.h>
 #include <nuclei.h>
 #include <codata.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
+CTOCD  
+#include <ctocdcc.h>
+CTOCD  
+
 
 * local parameters:
       CHARACTER SECNAM*(8)
@@ -4207,6 +4290,9 @@ C#endif
       LOGICAL LRELAX, LRELAS, LOCSTAT
       INTEGER IDX, IJUMP, IDIP(3), IGRA(MXCOOR)
 
+!     LOGICAL EXCLRL
+      INTEGER IGNCHO(4)
+
 * external function:
       INTEGER INDPRPCC
 
@@ -4220,7 +4306,7 @@ C#endif
      *            '.OLD_LR','.ASYMSD','.DISPCF','.OPERAT','.AVERAG',
      *            '.PRINT ','.STATIC','.DIPGRA','.OR LEN','.OR VEL', 
      *            '.OR    ','.OR MVE','.ORGANL','.ORIGIN','.WAVELE', 
-     *            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/ 
+     *            '.INCLRL','.EXCLRL','.CTOSUS','.CTOSHI','.XXXXXX'/ 
 
 *---------------------------------------------------------------------*
 * begin:
@@ -4250,6 +4336,14 @@ C
       ORVEL  = .FALSE.
       ORMVE  = .FALSE.
       ORGANL = .FALSE.
+C
+Cmodvel
+C
+!     INCLRL = .FALSE.
+!     EXCLRL = .FALSE.
+C
+Cmodvel
+C
       ASYMSD = .FALSE.
       LRELAX = .FALSE.
       DIPGRA = .FALSE.
@@ -4257,9 +4351,15 @@ C
 
       OLDLR  = .FALSE.
 
+      CALL IZERO(IGNCHO,4)
       CALL DZERO(ORGIN,MORGIN+1)
 
       LOCSTAT = .FALSE.
+
+CTOCD
+      CTOSHI = .FALSE.
+      CTOSUS = .FALSE.
+CTOCD
 
 *---------------------------------------------------------------------*
 * read input:
@@ -4297,6 +4397,10 @@ C-----------------------
 C
 1           CONTINUE
                LRELAX    = .TRUE.
+               IF (CHOINT) THEN
+                  IGNCHO(4) = 1
+                  LRELAX = .FALSE.
+               ENDIF
             GO TO 100
 C
 C-----------------------
@@ -4350,6 +4454,10 @@ C           -----------------------------------
 C
 6           CONTINUE
               OLDLR = .TRUE.
+              IF (CHOINT) THEN
+                 IGNCHO(3) = 1
+                 OLDLR = .FALSE.
+              ENDIF
             GO TO 100
 
 C
@@ -4361,6 +4469,11 @@ C           -------------------------------------------------
 C
 7           CONTINUE
               ASYMSD =.TRUE.
+              ASYMSD =.TRUE.
+              IF (CHOINT) THEN
+                 IGNCHO(1) = 1
+                 ASYMSD = .FALSE.
+              ENDIF
             GO TO 100
 C
 C           ---------------------------------
@@ -4373,6 +4486,9 @@ C           ---------------------------------
                 CALL QUIT('NLRDISP < 0 not allowed '//
      &                'for .DISPCF in *CCLR')
               END IF
+              IF (CHOINT) THEN
+                 IGNCHO(2) = 1
+              ENDIF
             GO TO 100
 
 C           -------------------------------------------
@@ -4692,17 +4808,47 @@ C
               ENDDO
               NBLRFR = NBLRFR + NWAVEL
             GO TO 100
-C                                                                     
+C
+C---------------------------------------------------------
+C           '.INCLRL': Include commutator terms in OR VEL.
+C---------------------------------------------------------
+C
+21          CONTINUE
+              call quit('.INCLRL not implemented in this version')
+!             INCLRL = .TRUE.
+            GO TO 100
+C
+C---------------------------------------------------------
+C           '.EXCLRL': Exclude commutator terms in OR VEL.
+C---------------------------------------------------------
+C
+22          CONTINUE
+              call quit('.EXCLRL not implemented in this version')
+!             EXCLRL = .TRUE.
+            GO TO 100
+C
+C-------------------------------------------
+C           '.CTOSUS': CTOCD susceptibility.
+C-------------------------------------------
+C
+23          CONTINUE
+              CTOSUS = .TRUE.
+            GO TO 100
+C
+C--------------------------------------
+C           '.CTOSHI': CTOCD shielding.
+C--------------------------------------
+C
+24          CONTINUE
+              CTOSHI = .TRUE.
+            GO TO 100
+C
 C           -------------------------------------------------
 C           .XXXXXXX unused keywords
 C           -------------------------------------------------
 C
-21          CONTINUE
-22          CONTINUE
-23          CONTINUE
-24          CONTINUE
 25          CONTINUE
-            GO TO 100                 
+            GO TO 100
 C
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
@@ -4725,6 +4871,45 @@ C
 
 200   CONTINUE
 C
+C------------------------------------------------
+C     Do some checking for Cholesky calculations:
+C------------------------------------------------
+C
+      IGNSUM = 0
+      DO I = 1,4
+         IGNSUM = IGNSUM + ABS(IGNCHO(I))
+      ENDDO
+      IF (CHOINT .AND. (IGNSUM.NE.0)) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A,A)')
+     &   SECNAM,
+     &   ': WARNING: *CCLR options not implemented for Cholesky job:'
+         IF (IGNCHO(1) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      '.ASYMSD ignored (default 2n+2 expression will be used).'
+         ENDIF
+         IF (IGNCHO(2) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      'FATAL ERROR: No Cauchy for Cholesky job! (.DISPCF option)'
+         ENDIF
+         IF (IGNCHO(3) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      '.OLD_LR ignored (default code will be used).'
+         ENDIF
+         IF (IGNCHO(4) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      '.RELAXE ignored (unrelaxed properties will be calculated).'
+         ENDIF
+         WRITE(LUPRI,*)
+         IF (IGNCHO(2) .NE. 0) CALL QUIT('Error in '//SECNAM)
+      ENDIF
+C
+C------------------------------------------------------------
+C     Check if commutator terms are to be included in OR VEL:
+C------------------------------------------------------------
+C
+!     IF (EXCLRL) INCLRL = .FALSE.
+C
 C-----------------------------------------------
 C check, if operators and frequencies specified:
 C-----------------------------------------------
@@ -4738,6 +4923,14 @@ C
         IF (NLROP .EQ.0) WRITE(LUPRI,'(/A)')
      &     '(*CCLR   input ignored, because no operators requested.)'
       END IF
+C
+C--------------------------------------
+C     Include operator pairs for CTOCD.
+C--------------------------------------
+C
+      CTOMAG = CTOSUS .OR. CTOSHI
+      IF (CTOMAG) CALL CC_CTOMAG
+C
 C----------------------------
 C     Make wa frequency list. 
 C----------------------------
@@ -8549,4 +8742,1250 @@ CCN
       RETURN
   300 write (lupri,*) 'WRONG CC2LAB: ',CC2LAB
       CALL QUIT('WRONG CC2LAB')
+      END
+C
+C  /* Deck cc_chodbinp */
+      SUBROUTINE CC_CHODBINP(WORD)
+C
+C     Thomas Bondo Pedersen, May 2002.
+C
+C     Purpose: Read input for CC Cholesky debug input section.
+C
+#include <implicit.h>
+      CHARACTER*7 WORD
+#include <priunit.h>
+#include <chodbg.h>
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'CC_CHODBINP')
+
+      PARAMETER (NTABLE = 4)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*7 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.DBIAJB','.STIAJB','.DBAOIN','.STAOIN'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Initializations and defaults.
+C     -----------------------------
+
+      DBAOIN = .FALSE.
+      STAOIN = .FALSE.
+      DBIAJB = .FALSE.
+      STIAJB = .FALSE.
+      ICHANG  = 0
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHODBG') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                    '.DBIAJB'
+C                    Test Cholesky (ia|jb) integrals.
+                     DBIAJB = .TRUE.
+                  GOTO 100   
+
+    2             CONTINUE
+C                    '.STIAJB'
+C                    Stop after (ia|jb) test.
+                     STIAJB = .TRUE.
+                  GOTO 100   
+
+    3             CONTINUE
+C                    '.DBAOIN'
+C                    Test Cholesky AO integrals.
+                     DBAOIN = .TRUE.
+                  GOTO 100
+
+    4             CONTINUE
+C                    '.STAOIN'
+C                    Stop after AO integral test.
+                     STAOIN = .TRUE.
+                  GOTO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+C     Finally, set overall Cholesky debug flag.
+C     -----------------------------------------
+
+      CHODBG = DBIAJB .OR. DBAOIN
+
+      RETURN
+      END
+C  /* Deck cc_chomp2inp */
+      SUBROUTINE CC_CHOMP2INP(WORD)
+C
+C     Thomas Bondo Pedersen, July 2002.
+C
+C     Purpose: Read input for Cholesky based MP2 calculation.
+C
+#include <implicit.h>
+      CHARACTER*7 WORD
+#include <priunit.h>
+#include <chomp2.h>
+Casm
+#include <chomp2_b.h>
+Casm
+
+      CHARACTER*12 SECNAM
+      PARAMETER (SECNAM = 'CC_CHOMP2INP')
+
+      PARAMETER (NTABLE = 20)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*8 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.NOCHOM','.THRMP2','.SPAMP2','.MXDECM','.NCHORD',
+     &            '.MP2SAV','.SKIPTR','.SKIPCH','.CHOMO ','.ALGORI',
+     &            '.SPRMP2','.SCRMP2','.SPLITM','.ZERO  ','.RSTMP2',
+     &            '.OLDEN2','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Initializations and defaults.
+C     Negative values of THRMP2 and SPAMP2 prompt the use of
+C     corresponding AO decomposition values.
+C     ------------------------------------------------------
+
+      CALL CC_CHOMP2INIT
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHOMP2') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+     &                  16,17,18,19,20), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                 '.NOCHOM'
+C                 Do not decompose (ai|bj).
+                  CHOMO = .FALSE.
+                  GOTO 100
+
+    2             CONTINUE
+C                 '.THRMP2'
+C                 Threshold for (ai|bj) decomposition.
+                  READ(LUCMD,*) THRMP2
+                  GOTO 100
+
+    3             CONTINUE
+C                 '.SPAMP2'
+C                 Span factor for (ai|bj) decomposition.
+                  READ(LUCMD,*) SPAMP2
+                  GOTO 100
+
+    4             CONTINUE
+C                 '.MXDECM'
+C                 Max. qualified diagonals in (ai|bj) decomposition.
+                  READ(LUCMD,*) MXDECM
+COLD              IF (MXDECM .GT. MAXMOD) THEN
+COLD                 WRITE(LUPRI,'(//,5X,A,A,I10)')
+COLD &               SECNAM,': MXDECM too large. Max. allowed: ',MAXMOD
+COLD                 CALL QUIT('Input error in '//SECNAM)
+COLD              ELSE IF (MXDECM .LE. 0) THEN
+                  IF (MXDECM .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': MXDECM must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    5             CONTINUE
+C                 '.NCHORD'
+C                 Max. prev. vectors in (ai|bj) decomposition.
+                  READ(LUCMD,*) NCHORD
+                  IF (NCHORD .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': NCHORD must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    6             CONTINUE
+C                 '.MP2SAV'
+C                 Save MP2 amplitudes on disk.
+                  MP2SAV = .TRUE.
+                  GOTO 100
+
+    7             CONTINUE
+C                 '.SKIPTR'
+C                 Skip MO transformation; use old vectors.
+                  SKIPTR = .TRUE.
+                  GOTO 100
+
+    8             CONTINUE
+C                 '.SKIPCH'
+C                 Skip (ai|bj) decompositon; read info from disk
+                  SKIPCH = .TRUE.
+                  GOTO 100
+
+    9             CONTINUE
+C                 '.CHOMO '
+C                 (ai|bj) decompositon
+                  CHOMO = .TRUE.
+                  GOTO 100
+
+   10             CONTINUE
+C                 '.ALGORI'
+C                 algorithm:
+C                 <1: decided by MP2 routine (default, IALMP2=0)
+C                  1: force storage of full-square (ia|jb) in core
+C                  2: batch over one virtual index
+C                  3: batch over two virtual indices
+C                 >3: same as <1.
+                  READ(LUCMD,*) IALMP2
+                  GOTO 100
+
+   11             CONTINUE
+C                 '.SPRMP2'
+C                 Use sparse representation of Cholesky vector.
+                  SPRMP2 = .TRUE.
+                  GOTO 100
+
+   12             CONTINUE
+C                 '.SCRMP2'
+C                 Screening threshold for sparse representation.
+                  READ(LUCMD,*) SCRMP2
+                  GOTO 100
+
+   13             CONTINUE
+C                 '.SPLITM'
+C                 Weight factor for Cholesky part in memory split for
+C                 virtual batch algorithms.
+                  READ(LUCMD,*) TMP
+                  IF (TMP .GT. 0.0D0) SPLITM = TMP
+                  GOTO 100
+
+   14             CONTINUE
+C                 '.ZERO  '
+C                 Threshold for diagonal zeroing in decompositions.
+                  READ(LUCMD,*) THZMP2
+                  GOTO 100
+
+   15             CONTINUE
+C                 '.RSTMP2'
+C                 Restart MP2
+                  RSTMP2 = .TRUE.
+                  READ(LUCMD,*)  IFSYMB, IFVIRB
+                  GOTO 100
+
+   16             CONTINUE
+C                 '.OLDEN2'
+C                 Old MP2 energy (if desided)
+                  OLDKNO = .TRUE.
+                  READ(LUCMD,*)  OLDEN2
+                  GOTO 100
+
+   17             CONTINUE
+   18             CONTINUE
+   19             CONTINUE
+   20             CONTINUE
+C                 '.XXXXXX'
+C                 Not used
+                  GOTO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+
+      RETURN
+      END
+C  /* Deck cc_chocc2inp */
+      SUBROUTINE CC_CHOCC2INP(WORD)
+C
+C     Thomas Bondo Pedersen, August 2002.
+C
+C     Purpose: Read input for Cholesky based CC2 calculation.
+C
+#include <implicit.h>
+      CHARACTER*7 WORD
+#include <priunit.h>
+#include <chocc2.h>
+
+      CHARACTER*12 SECNAM
+      PARAMETER (SECNAM = 'CC_CHOCC2INP')
+
+      PARAMETER (NTABLE = 15)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*8 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.CHOMO ','.THRCC2','.SPACC2','.MXDECM','.NCHORD',
+     &            '.XXXXXX','.CHOT2 ','.NOCHOM','.ALGORI','.THRCCC',
+     &            '.SPACCC','.SPLITM','.ZERO  ','.XXXXXX','.XXXXXX'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Initializations and defaults.
+C     Negative values of THRCC2 and SPACC2 prompt the use of
+C     corresponding AO decomposition values.
+C     ------------------------------------------------------
+
+      CALL CC_CHOCC2INIT
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHOCC2') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                 '.CHOMO '
+C                 Decompose (ai|bj) (=> CHOT2 = .FALSE.).
+                  CHOT2  = .FALSE.
+                  CHOMO2 = .TRUE.
+                  GOTO 100
+
+    2             CONTINUE
+C                 '.THRCC2'
+C                 Threshold for decomposition.
+                  READ(LUCMD,*) THRCC2
+                  GOTO 100
+
+    3             CONTINUE
+C                 '.SPACC2'
+C                 Span factor for decomposition.
+                  READ(LUCMD,*) SPACC2
+                  GOTO 100
+
+    4             CONTINUE
+C                 '.MXDECM'
+C                 Max. qualified diagonals in decomposition.
+                  READ(LUCMD,*) MXDEC2
+                  IF (MXDEC2 .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': .MXDECM input must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    5             CONTINUE
+C                 '.NCHORD'
+C                 Max. prev. vectors in decomposition.
+                  READ(LUCMD,*) NCHRD2
+                  IF (NCHRD2 .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': .NCHORD input must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    6             CONTINUE
+C                 '.XXXXXX'
+                  GOTO 100
+
+    7             CONTINUE
+C                 '.CHOT2 '
+C                 Decompose CC2 T2 amplitudes. (=> CHOMO2 = .FALSE.)
+                  CHOT2  = .TRUE.
+                  CHOMO2 = .FALSE.
+                  GOTO 100
+
+    8             CONTINUE
+C                 '.NOCHOM'
+C                 No decompositions in CC2 section.
+                  CHOT2  = .FALSE.
+                  CHOMO2 = .FALSE.
+                  GOTO 100
+
+    9             CONTINUE
+C                 '.ALGORI'
+C                 Set algorithm (=1 for single virtual batch, =2 for double)
+                  READ(LUCMD,*) IALGO
+                  IF (IALGO .LE. 1) THEN
+                     IALCC2 = 1
+                  ELSE
+                     IALCC2 = 2
+                  ENDIF
+                  GOTO 100
+
+   10             CONTINUE
+C                 '.THRCCC'
+C                 Threshold to use in amplitude decomposition for
+C                 response intermediates and right-hand sides.
+                  READ(LUCMD,*) THRCCC
+                  GOTO 100
+
+   11             CONTINUE
+C                 '.SPACCC'
+C                 Span factor to use in amplitude decomposition for
+C                 response intermediates and right-hand sides.
+                  READ(LUCMD,*) SPACCC
+                  GOTO 100
+
+   12             CONTINUE
+C                 '.SPLITM'
+C                 Weight factor for Cholesky part in memory split for
+C                 batching over virtuals.
+                  READ(LUCMD,*) TMP
+                  IF (TMP .GT. 0.0D0) SPLITC = TMP
+                  GOTO 100
+
+   13             CONTINUE
+C                 '.ZERO  '
+C                 Threshold for diagonal zeroing in decompositions.
+                  READ(LUCMD,*) THZCC2
+                  GOTO 100
+
+   14             CONTINUE
+C                 '.XXXXXX'
+C                 Not used.
+                  GOTO 100
+
+   15             CONTINUE
+C                 '.XXXXXX'
+C                 Not used.
+                  GOTO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+      RETURN
+      END
+C  /* Deck cc_chomp2init */
+      SUBROUTINE CC_CHOMP2INIT
+C
+C     Thomas Bondo Pedersen, October 2002.
+C
+C     Initialize chomp2.h
+#include <implicit.h>
+#include <chomp2.h>
+
+      MP2SAV = .FALSE.
+      CHOMO  = .TRUE.
+      SKIPTR = .FALSE.
+      SKIPCH = .FALSE.
+      THRMP2 = -1.0D8
+      SPAMP2 = -1.0D8
+      MXDECM = 50
+      NCHORD = 200
+      THZMP2 = -1.0D8
+      IALMP2 = 0
+      SPRMP2 = .FALSE.
+      SCRMP2 = -1.0D8
+      SPLITM = 1.0D0
+
+      RETURN
+      END
+C  /* Deck cc_chocc2init */
+      SUBROUTINE CC_CHOCC2INIT
+C
+C     Thomas Bondo Pedersen, October 2002.
+C
+C     Initialize chocc2.h
+#include <implicit.h>
+#include <chocc2.h>
+Casm
+#include <chomp2_b.h>
+C
+      LOGICAL SET
+      SAVE SET
+      DATA SET /.FALSE./
+
+C
+      IF (SET) THEN
+         RETURN
+      ELSE
+         SET = .TRUE.
+      END IF
+Casm
+      IALCC2 = 2
+      CHOT2  = .FALSE.
+      CHOMO2 = .FALSE.
+      CHOT2C = .FALSE.
+      DSKETA = .FALSE.
+      DSKFY2 = .FALSE.
+      THRCC2 = -1.0D8
+      SPACC2 = -1.0D8
+      MXDEC2 = 50
+      NCHRD2 = 200
+      THZCC2 = -1.0D8
+      THRCCC = THRCC2
+      SPACCC = SPACC2
+      MXDECC = MXDEC2
+      NCHRDC = NCHRD2
+      SPLITC = 1.0D0
+
+Casm
+      RSTMP2 = .FALSE.
+      OLDKNO = .FALSE.
+      OLDEN2 = 0.0D0
+Casm
+      RETURN
+      END
+C  /* Deck cc_choptinit */
+      SUBROUTINE CC_CHOPTINIT
+C
+C     TBP, JLC, BFR, AS, and HK,  May 2003.
+C
+C     Purpose: Set defaults for Cholesky denominator CCSD(T) program.
+C
+#include <implicit.h>
+      PARAMETER (ZERO = 0.0D0)
+#include <cc_cho.h>
+
+      MXCHVE = MIN(MAXCHO,10)
+      THRCHO = -1.0D10
+Casm
+C
+C     Virtual part
+C
+      RSTVIR = .FALSE.
+      IFVISY = 1
+      IFVIOR = 1
+C
+C     Occupied part
+C
+      RSTH  = .FALSE.
+      RSTH1 = .FALSE.
+      RSTF1 = .FALSE.
+      RSTC1 = .FALSE.
+      RSTC2 = .FALSE.
+C
+C     Files
+C
+      SKIVI1 = .FALSE.
+      SKIVI2 = .FALSE.
+C
+C     Previous values
+C
+      UKNE4V = .TRUE.
+      UKNE5V = .TRUE.
+      UKNE4O = .TRUE.
+      UKNE5O = .TRUE.
+C
+      OLD4V = ZERO
+      OLD5V = ZERO
+      OLD4O = ZERO
+      OLD5O = ZERO
+Casm
+      RETURN
+      END
+C  /* Deck cc_choptinp */
+      SUBROUTINE CC_CHOPTINP(WORD)
+C
+C     TBP, JLC, BFR, AS, and HK,  May 2003.
+C
+C     Purpose: Process input for changing defaults for the Cholesky denominator
+C              CCSD(T) program.
+C
+#include <implicit.h>
+      CHARACTER*7 WORD
+#include <priunit.h>
+#include <cc_cho.h>
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'CC_CHOPTINP')
+
+      PARAMETER (NTABLE = 15)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*8 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.MXCHVE','.THRCHO','.RSTVIR','.RSTH  ','.RSTH1 ',
+     &            '.RSTF1 ','.RSTC1 ','.RSTC2 ','.SKIVI1','.SKIVI2',
+     &            '.OLD4V ','.OLD5V ','.OLD4O ','.OLD5O ','.XXXXXX'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Set defaults.
+C     -------------
+
+      CALL CC_CHOPTINIT
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHO(T)') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                 '.MXCHVE'
+C                 Maximum number of Cholesky vectors used.
+                  NCHDEF = MXCHVE
+                  READ(LUCMD,*) MXCHVE
+                  IF (MXCHVE .LE. 0) THEN
+                     WRITE(LUPRI,'(/,1X,A,A,A,I10,A,/,1X,A,I10,/)')
+     &               SECNAM,': NOTICE: Number of Cholesky vectors ',
+     &               'specified (',MXCHVE,')',
+     &               'is reset to the default value ',NCHDEF
+                     MXCHVE = NCHDEF
+                  ELSE IF (MXCHVE .GT. MAXCHO) THEN
+                     WRITE(LUPRI,'(/,1X,A,A,A,I10,A,/,1X,A,I10,/)')
+     &               SECNAM,': NOTICE: Number of Cholesky vectors ',
+     &               'specified (',MXCHVE,')',
+     &               'is reset to the maximum value ',MAXCHO
+                     MXCHVE = MAXCHO
+                  ENDIF
+                  GOTO 100
+
+    2             CONTINUE
+C                 '.THRCHO'
+C                 Threshold for skipping remaining Cholesky vectors in each
+C                 term.
+                  READ(LUCMD,*) THRCHO
+                  GO TO 100
+
+    3             CONTINUE
+                     RSTVIR = .TRUE.
+                     READ(LUCMD,*) IFVISY,IFVIOR
+                  GO TO 100
+
+    4             CONTINUE
+                     RSTH = .TRUE.
+                  GO TO 100
+C
+    5             CONTINUE
+                     RSTH1 = .TRUE.
+                  GO TO 100
+C
+    6             CONTINUE
+                     RSTF1 = .TRUE.
+                  GO TO 100
+C
+    7             CONTINUE
+                     RSTC1 = .TRUE.
+                  GO TO 100
+C
+    8             CONTINUE
+                     RSTC2 = .TRUE.
+                  GO TO 100
+C
+    9             CONTINUE
+                     SKIVI1 = .TRUE.
+                  GO TO 100
+C
+   10             CONTINUE
+                     SKIVI2 = .TRUE.
+                  GO TO 100
+
+   11             CONTINUE
+                     UKNE4V = .FALSE.
+                     READ(LUCMD,*) OLD4V
+                  GO TO 100
+
+   12             CONTINUE
+                     UKNE5V = .FALSE.
+                     READ(LUCMD,*) OLD5V
+                  GO TO 100
+
+   13             CONTINUE
+                     UKNE4O = .FALSE.
+                     READ(LUCMD,*) OLD4O
+                  GO TO 100
+
+   14             CONTINUE
+                     UKNE5O = .FALSE.
+                     READ(LUCMD,*) OLD5O
+                  GO TO 100
+
+   15             CONTINUE
+C                    Not used
+                  GO TO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+      RETURN
+C
+C
+      END
+C  /* Deck cc_ctomag */
+      SUBROUTINE CC_CTOMAG
+C
+C     asm September 2005
+C
+C     Purpose: Set up operator list for CTOCD calculations
+C
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <cclrinf.h>
+#include <ctocdcc.h>
+C
+      PARAMETER (MAXOPR = 10 * MXLROP)
+C
+      CHARACTER*8 RECORD(4), STARS, LABEL, LABELA, LABELB
+      PARAMETER (STARS = '********')
+C
+      CHARACTER*8 LSTLBL(MAXOPR)
+      INTEGER     SYMLBL(MAXOPR)
+C
+      LOGICAL SET,LF
+      SAVE  SET
+      DATA  SET /.FALSE./
+      DATA  LF /.FALSE./
+C
+C
+      IF (SET) RETURN
+      SET = .TRUE.
+C
+      LUPROP = -1
+      CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+      REWIND(LUPROP)
+C
+C     Read labels in AOPROPER and sort
+C
+      NOPER = 0
+  100 CONTINUE
+         READ(LUPROP, END=200, ERR=300) RECORD
+         IF (RECORD(1) .NE. STARS) THEN
+            GOTO 100
+         ELSE
+            LABEL = RECORD(4)
+            IF ((LABEL .EQ. 'HUCKOVLP') .OR. (LABEL .EQ. 'HUCKEL  ')
+     &          .OR. (LABEL .EQ. 'OVERLAP ')) GOTO 100
+C
+            NOPER = NOPER + 1
+            IF (NOPER .GT. MAXOPR) STOP 
+     &                             'Too many label found by CC_CTOMAG'
+C
+            READ(RECORD(2),'(I1)') SYMLBL(NOPER)
+            LSTLBL(NOPER) = LABEL
+         END IF
+      GOTO  100
+C
+  200 CONTINUE
+C
+C     Select pairs of operators to compute
+C
+      DO I = 1,NOPER
+C
+         LABELA = LSTLBL(I)
+         ISYMA  = SYMLBL(I)
+C
+         IF (LABELA(2:7) .EQ. 'DIPVEL') THEN     ! Most of ctocd properties
+C
+            DO J = 1,NOPER
+C
+               LABELB = LSTLBL(J)
+               ISYMB  = SYMLBL(J)
+C
+               IF (ISYMA .EQ. ISYMB) THEN        ! Otherwise, sop is zero
+C
+                  IF (LABELB(3:6) .EQ. 'RANG') THEN          !Dia suscep
+                     IF (CTOSUS)
+     &                  CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  ELSE IF (LABELB(4:7) .EQ. 'RPSO') THEN     !Dia shield
+                     IF (CTOSHI)
+     &                  CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  ELSE IF (LABELB(1:3) .EQ. 'PSO') THEN      !Shift shield
+                     IF (CTOSHI)
+     &                  CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  END IF
+C
+               END IF
+C
+            END DO
+C
+         ELSE IF (CTOSUS .AND. (LABELA(2:7) .EQ. 'ANGMOM')) THEN   !Para suscep
+C
+            DO J = 1,NOPER
+C
+               LABELB = LSTLBL(J)
+               ISYMB  = SYMLBL(J)
+C
+               IF (ISYMA .EQ. ISYMB) THEN        ! Otherwise, sop is zero
+C
+                  IF (LABELB(2:7) .EQ. 'ANGMOM') THEN    
+                     CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  END IF
+C
+               END IF
+C
+            END DO
+C
+         ELSE IF (CTOSHI .AND. (LABELA(1:3) .EQ. 'PSO')) THEN      !Para shield
+C
+            DO J = 1,NOPER
+C
+               LABELB = LSTLBL(J)
+               ISYMB  = SYMLBL(J)
+C
+               IF (ISYMA .EQ. ISYMB) THEN        ! Otherwise, sop is zero
+C
+                  IF (LABELB(2:7) .EQ. 'ANGMOM') THEN
+                     CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  END IF
+C
+               END IF
+C
+            END DO
+C
+         END IF
+C
+      END DO
+      GOTO 999
+C
+  300 STOP 'Error when reading in CC_CTOMAG'
+C
+  999 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck cc_actinp */
+      SUBROUTINE CC_ACTINP(WORD)
+C
+C     Alfredo Sanchez de Meras. May 2008
+C
+C     Purpose: Read input for CC Active section
+C
+#include <implicit.h>
+      CHARACTER*7 WORD
+#include <priunit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <center.h>
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_ACTINP')
+C
+      PARAMETER (NTABLE = 15)
+      CHARACTER*7 TABLE(NTABLE)
+      DATA TABLE /'.ATOMIC','.BOXDEF','.ACTFRE','.DIFADD','.NBOEXP',
+     &            '.SELDIR','.THACOC','.THACVI','.SELDIA','.ORDER ',
+     &            '.FULDEC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+C
+      LOGICAL SET, CHKACT
+      SAVE SET
+      DATA SET /.FALSE./
+      DATA CHKACT /.FALSE./
+C
+C
+      IF (SET) RETURN
+      SET = .TRUE.
+C
+C     Initializations
+C
+      ATOMIC = .FALSE.
+      ACTFRE = .FALSE.
+      DIFADD = .FALSE.
+      NBOEXP = .FALSE.
+      SELDIR = .FALSE.
+      ACTIVE = .TRUE.
+C
+      THACOC = 1.0D-4
+      THACVI = 1.0D-4
+C
+ctmp  DO I = 1,NUCIND
+ctmp     IORDEC(I) = I
+ctmp  END DO
+C
+      ICHANG  = 0
+C
+C     Process input section.
+C
+      IF (WORD(1:7) .EQ. '*ACTIVE') THEN
+C
+  100    CONTINUE
+C
+C           Read new input line.
+C
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+C
+            IF (WORD(1:1) .EQ. '.') THEN
+C
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+C
+               IF (IJUMP .LE. NTABLE) THEN
+C
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+C
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+C
+    1             CONTINUE
+C                    '.ATOMIC'
+C                    Select active atoms (no boxes)
+                     ATOMIC = .TRUE.
+                     CHKACT = .TRUE.
+                     READ(LUCMD,*) NACINP
+                     IF (NACINP .GT. MXACAT) THEN
+                        WRITE(LUPRI,*) 'ERROR: From center.h, ' ,
+     &                                 'maximum number of active ',
+     &                                 'atoms is',MXACAT
+                        STOP 'Too many active atoms'
+                     END IF
+                     READ(LUCMD,*) (LACINP(I), I=1,NACINP)
+C
+                     DO I = 1,NACINP
+                        DO J = 1,I-1
+                           IF (LACINP(J) .EQ. LACINP(I)) THEN
+                              WRITE(LUPRI,*) 'ERROR : ',
+     &                                       'One atom declared ',
+     &                                       'twice as active'
+                              STOP 'One atom is hyperactive'
+                           ELSE IF (LACINP(J) .GT. LACINP(I)) THEN
+                              ITMP = LACINP(J)          ! Not needed,
+                              LACINP(J) = LACINP(I)     ! but output
+                              LACINP(I) = ITMP          ! looks nicer
+                           END IF
+                        END DO
+                     END DO
+                  GOTO 100   
+C
+    2             CONTINUE
+C                    '.BOXDEF'
+C                    Boxes definition.           
+                     CHKACT = .TRUE.
+C_to_do              copy & paste from mkinp.f
+                  GOTO 100   
+C
+    3             CONTINUE
+C                    '.ACTFRE'
+C                    Freeze orbitals in active atomic space
+                     ACTFRE = .TRUE.
+                     READ(LUCMD,*) NACTFR
+                  GOTO 100
+C
+    4             CONTINUE
+C                    '.DIFADD'
+C                    Include in active space selected (diffuse) basis
+                     DIFADD = .TRUE.
+                     CHKACT = .TRUE.
+                     DO ISYM = 1,NSYM
+                        READ(LUCMD,*) NEXTBS(ISYM)
+                        READ(LUCMD,*) (IEXTBS(I,ISYM), I=1,NEXTBS(ISYM))
+                     END DO
+                  GOTO 100
+C
+    5             CONTINUE
+C                    '.NBOEXP'
+C                    n-body interactions among boxes
+                     NBOEXP = .TRUE.
+C_to_do              copy & paste from mkinp.f
+                  GOTO 100
+    6             CONTINUE
+C                    '.SELDIR'
+C                    Decompose only selected centers
+                     SELDIR = .TRUE.
+                  GOTO 100
+    7             CONTINUE
+C                    '.THACOC'
+C                    Threshold for decomposition of active occupied block
+                     READ(LUCMD,*) THACOC
+                  GOTO 100
+    8             CONTINUE
+C                    '.THACVI'
+C                    Threshold for decomposition of virtual occupied block
+                     READ(LUCMD,*) THACVI
+                  GOTO 100
+    9             CONTINUE
+C                    '.SELDIA'
+C                    Select which diagonals to decompose in one atom
+                     READ(LUCMD,*) IAT1,NSLTMP
+                     NSELD(IAT1) = NSLTMP
+                     READ(LUCMD,*) (ISELD(I,IAT1),I=1,NSELD(IAT1))
+                     DIASEL(IAT1) = .TRUE.
+                  GOTO 100
+   10             CONTINUE
+C                    '.ORDER'
+C                    Order to decompose atoms
+ctmp                 READ(LUCMD,*) (IORDEC(I), I=1,NUCIND)
+                  GOTO 100
+   11             CONTINUE             
+C                    '.FULDEC'
+C                    Select all the atoms
+                     FULDEC = .TRUE.
+                     SELDIR = .TRUE.
+                  GOTO 100
+C                    '.XXXXXX'
+   12             CONTINUE             
+   13             CONTINUE             
+   14             CONTINUE             
+   15             CONTINUE             
+                  GOTO 100
+
+C
+               ELSE
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+               END IF
+C
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+               BACKSPACE (LUCMD)
+               GO TO 200
+            END IF
+C
+      END IF
+C
+  200 CONTINUE
+C
+C     Check that input makes sense
+C
+      WRITE(LUPRI,'(//,A)') '       ----------------------------'
+      WRITE(LUPRI,'(A)') '          Info from Selact input'
+      WRITE(LUPRI,'(A,/)') '       ----------------------------'
+C
+      IF (ACTIVE .AND. (.NOT.  CHKACT)) THEN
+         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '>>> ERROR :',
+     &                '>>> *ACTIVE was specified, but no definition',
+     &                ' of active atoms, boxes or basis',
+     &                ' functions was given',
+     &                '    Program will stop'
+         CALL QUIT(SECNAM//' called but no selection data given')
+      END IF
+C
+      IF (ATOMIC) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(I5,A)') NACINP, ' centers declared as active :'
+         WRITE(LUPRI,'(14I5)') (LACINP(I), I=1,NACINP)
+      END IF
+C
+      IF (SELDIR) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Density decomposition only in active space'
+      ELSE
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Decompose in atom-by-atom basis and ',
+     &                  'select afterwards'
+      END IF
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*)
+C
+      RETURN
       END

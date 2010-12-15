@@ -3763,7 +3763,8 @@ C             although code in GNRLIN in dalton.F takes care of that
              IRDMO = 9
           ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
              IRDMO = 10
-          ELSE IF (INDEX(REWORD,'HUCKEL') .GT. 0) THEN
+          ELSE IF (INDEX(REWORD,'HUCKEL') .GT. 0 .OR.
+     &             INDEX(REWORD,'EHT')    .GT. 0) THEN
              IRDMO = 8
              IF (.NOT.DOHUCKEL) THEN
                 WRITE (LUPRI,'(/A)') ' INFO: .MOSTART HUCKEL changed'//
@@ -5007,14 +5008,14 @@ C
       CHARACTER*6 RDMOLB(12)
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
-     &            'HUCKEL','EWMO  '/
+     &            'EHT   ','EWMO  '/
       CHARACTER*33 TXTOCC(0:6)
       DATA TXTOCC/'NOTHING because of error(s).     ',
      &            'user input.                      ',
      &            'SIRIUS restart file (SIRIUS.RST).',
      &            'SIRIUS interface file (SIRIFC).  ',
      &            'diagonal of H1 matrix.           ',
-     &            'Huckel guess.                    ',
+     &            'extended Huckel guess.           ',
      &            'total charge (only one symmetry!)'/
 C
       CHARACTER*70 STARS,RELEAS

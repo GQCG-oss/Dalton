@@ -39,9 +39,6 @@ C
 C
 #ifdef OLD_REVISION_LOG
 c===========================================================================
-cRevision 1.9  2000/05/03 10:58:51  hjj
-cinclude maxorb.h now needed for molde.h
-c
 crevision 1.7-1.8 2000/04/28 10:27:31  hjj
 c - implemented new normalized s,p,d,f,g,h,i GTO's in SPHINP as default
 c - reactivated Huckel for Q .le. 36 for spherical GTO's because
@@ -262,10 +259,8 @@ C          (renamed from .AUXBAS) /hjaaj
      *         ' Maximum number of primitives per integral block :',
      *         MAXPRI
          END IF
-         IF (LMULBS) THEN
-            WRITE (LUPRI,'(/A)')
-     &         ' Reading auxiliary basis sets from .mol file for R12'
-         END IF
+         IF (LMULBS) WRITE (LUPRI,'(/A)')
+     &   ' .R12AUX: Reading auxiliary basis sets from .mol file for R12'
          IF (BIGVC) THEN
             WRITE (LUPRI,'(/A)')
      *         ' Primitives from different centers treated '//
@@ -370,7 +365,7 @@ C
       FIRST_CALL = .FALSE.
  9999 CONTINUE
       RETURN
-      END
+      END ! SUBROUTINE REAINI
 C  /* Deck readin */
       SUBROUTINE READIN(WORK,LWORK,HERMIT)
 C     Based on
@@ -544,7 +539,7 @@ C
       ELSE
         KATOM  = MXCENT_QM
       END IF
-      KANG   = 2*MXQN+1 ! max 2 * L + 1 components
+      KANG   = 2*MXQN+1 ! max ang momentum needed is 2 * max(L) + 1
       KAOVEC = MXAOVC
       KBLOCK = KATOM*KAOVEC
       KPRIM  = MAXPRI
@@ -604,7 +599,7 @@ C
       CALL STOPIT('READIN','READ_MOL',KLAST,LWORK)
 C5030 CONTINUE
       CALL QUIT('Wrong keyword. Expecting FINISH')
-      END
+      END ! SUBROUITNE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
@@ -615,10 +610,10 @@ C     Reads and processes input file of molecular data
 C
 C       **** Temporary variables used in READIN ****
 C
-C       KATOM   - number of atomic types
-C       KANG    - number of different angular momenta
-C       KBLOCK  - number of AO-blocks
-C       KPRIM   - maximum number of primitives
+C       KATOM   - max number of atomic types
+C       KANG    - max number of different angular momenta
+C       KBLOCK  - max number of AO-blocks
+C       KPRIM   - max number of primitives
 C
 C      (Large/small)
 C       NONT            (KATOM)         - number of symmetry independent
@@ -713,7 +708,7 @@ C***********************************************************************
 C     Card 2: If basis set library, read additional card containing basis set
 C***********************************************************************
       DO J=1,MXMULB
-        MULNAM(J) = ' '
+         MULNAM(J) = ' '
       END DO
       IF (BASIS) THEN
          CALL RDLINE(LUINFO)
@@ -731,7 +726,7 @@ C*****************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
       IF (IPREAD .GT. 0) THEN
-         WRITE (LUPRI,'(4X,A/4X,A/2A/2A/4X,A)')
+         WRITE (LUPRI,'(/4X,A/4X,A/2A/2A/4X,A)')
      &   'The two title cards from your ".mol" input:', SEPARATOR(1:72),
      &   ' 1: ',TTITLE(1),' 2: ',TTITLE(2),SEPARATOR(1:72)
          IF (LUCME.GT.0) WRITE (LUCME,'(2X,A)')
@@ -934,7 +929,7 @@ C
 C
       CALL QEXIT('READ_MOL')
       RETURN
-      END
+      END ! SUBROUTINE READ_MOL
 C  /* Deck baspar */
       SUBROUTINE BASPAR(NSYMOP)
 C***********************************************************************
@@ -997,13 +992,13 @@ C
       END IF
       MAXOPR = MAXOPR - 1
 C
-      END
+      END ! SUBROUTINE BASPAR
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,
      &                  IQM,NBLCK,JCO,BASREF,
      &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,
-     &                  ANG,ZMTTST,MXSPD,ADDSYM,MXBLCK)
+     &                  ANG,ZMAT_INPUT,MXSPD,ADDSYM,MXBLCK)
 C***********************************************************************
 C
 C       Read orbital and geometry input data
@@ -1020,9 +1015,9 @@ C***********************************************************************
 #include "cbirea.h"
 #include "symmet.h"
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,ANG,NOORBTS,NOFITFS,ZMTTST,CNTBAS, MM_ATOMTYPE
-      LOGICAL ADDSYM
-      INTEGER TEMP
+      LOGICAL   SEG,ANG,NOORBTS,NOFITFS,ZMAT_INPUT,CNTBAS, MM_ATOMTYPE
+      LOGICAL   ADDSYM
+      INTEGER   INT_TEMP
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &          SEG(KBLOCK,KSETS), ALPHA(KPRIM,KBLOCK,KSETS),
@@ -1051,7 +1046,7 @@ C     added by Bin Gao, for effective core potentials, Dec. 6, 2010
 #include "qm3.h"
 #include "infpar.h"
 C
-C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
+C     MBSIP = identifier for Previus basis-set identifier MBSI (WK/UniKA/04-11-2002).
       MBSIP     = 0
 C
       NUCIND    = 0
@@ -1087,6 +1082,7 @@ C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
+      if (ipread .gt. 10) write(lupri,*) 'setting NSETS =',NSETS
 C
 C     Run over atomic centers
 C     =======================
@@ -1094,8 +1090,8 @@ C
       NONTYP_QM = 0
       MM_ATOMTYPE = .FALSE.
       DO 100 I = 1, NONTYP
-         NOORBTS = .TRUE.
-         NOFITFS = .TRUE.
+         NOORBTS = .TRUE. ! NO ORBiTalS
+         NOFITFS = .TRUE. ! NO FIT FunctionS
          INUC = NCTOT
 C
 C***********************************************************************
@@ -1117,7 +1113,7 @@ C
            READ (BKPLIN,'(A4)',IOSTAT=IOS) ZMATL
            IF (IOS.NE.0) CALL QUIT('Error read READ..ZMATL')
            IF (ZMATL .EQ. 'ZMAT') THEN
-             ZMTTST = .TRUE.
+             ZMAT_INPUT = .TRUE.
              WRITE (LUPRI,'(/A)')
      &        'Atoms and their geometry are read in Z-matrix format.'
 
@@ -1276,27 +1272,43 @@ C       ... QEFF is effective charge and will be reset if ECP
 C
 C       Read/process data on symmetry independent centers
 C       =================================================
-C       (if ZMAT then it is done later)
+C       (if ZMAT then this is done later)
 C
-         IF (ZMTTST) GO TO 100
+         IF (ZMAT_INPUT) GO TO 100
 C
          IF (IPREAD .GT. 0 .OR. NONT(I).LE.0) THEN
-            WRITE(LUPRI,'(/A,I5/A)') '  Atomic type no.',I,
-     &         '  --------------------'
-            WRITE(LUPRI,'(A,F10.5)') '  Nuclear charge:',Q
-            WRITE(LUPRI,'(A,I5)')
-     &         '  Number of symmetry independent centres:',NONT(I)
+            WRITE(LUPRI,'(/A,I5/A/A,F10.5/A,I5)')
+     &         '  Atomic type no.',I,
+     &         '  --------------------',
+     &         '  Nuclear charge:',Q,
+     &         '  Number of symmetry independent centers:',NONT(I)
             IF (NONT(I).LE.0) THEN
                WRITE(LUPRI,'(/A)') 'INPUT ERROR: '//
-     &         'Number of symmetry independent centes invalid.'
+     &         'Number of symmetry independent centers invalid.'
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
          CALL CNTINP(LUINFO,NONT(I),Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
-     $        RADIUS_PCM, ALPHA_PCM)
+     &               RADIUS_PCM, ALPHA_PCM)
 C        .. MBSI has been added (WK/UniKA/04-11-2002).
 C
-         DO 300 J = 1,NSETS
+         IF (MBSI .GT. 1) THEN
+!           .. no Huckel and density fitting bases for duplicate atomic
+!              centers for R12 auxiliary basis
+            NSETS_NOW = 1
+         ELSE
+            NSETS_NOW = NSETS
+         END IF
+         IF (IPREAD .GT. 0) THEN
+            IF (MBSI.gt.1) THEN
+               WRITE(LUPRI,'(A,I5)')
+     &         '  This is an auxiliary basis for R12, MBSI:',MBSI
+            ELSE
+               WRITE(LUPRI,'(A,I5)')
+     &         '  Number of basis sets to read;',NSETS_NOW
+            END IF
+         END IF
+         DO 300 J = 1,NSETS_NOW
           IF (J.EQ.1 .OR. (J.EQ.ISETHUCKEL) 
      &               .OR. (J.EQ.2 .AND. DIRAC) 
      &               .OR. (J.EQ.3 .AND. ATOMDF) ) THEN
@@ -1339,6 +1351,8 @@ C                (Feb. 2006: exept for QM3 / MM which is also skipped below)
 C                ... avoid floating orbitals
                  IF (IQM(1,1) .EQ. 0) BASNAM = 'pointcharge'
 C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
+                 IF (BASNAM(1:2) .EQ. 'MM') BASNAM = 'pointcharge'
+C                ... avoid MM atoms
                  IF (BASNAM(1:2) .EQ. 'MM') BASNAM = 'pointcharge'
 C                ... avoid MM atoms
 
@@ -1495,7 +1509,7 @@ C     after J=2: reading Huckel basis (if DOHUCKEL)
      &                   'with auto-detected symmetry.')
                     CALL ECPINP(Q,QEFF,I,IPREAD)
                     INDECP(NTYECP) = NCTOT+1 - NONT(I)
-                    NECP(NTYECP) = NONT(I)
+                    NECP(NTYECP)   = NONT(I)
                     IF (NECP(NTYECP).GT.MXNONT) THEN
                        WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ', 
      &                      NTYECP, ' EXCEEDS MXNONT=',MXNONT
@@ -1569,15 +1583,25 @@ C
  300     CONTINUE  ! DO 300 J = 1,NSETS
 C
          DO 400 K = 1,NONT(I)
-            NOORBT(K+INUC) = NOORBTS
-            IF (INDEX(BASNAM,'ecp') .NE. 0) CHARGE(K+INUC) =  QEFF
-C           reset charge to effective charge for ECP
-            IF (IQM(I,1) .EQ. 0) THEN
-C           ... this is a point charge (no basis fu.) /hjaaj Nov 2003
-               IZATOM(K+INUC) = -2
-C              ... code to tell this is a point charge (no basis fu.) /hjaaj Nov 2003
+            NOORBT(K+INUC) = NOORBTS ! no orbitals ?
+            IF (MBSI .GT. 1) THEN
+               CHARGE(K+INUC) = 0.0D0
+               ! .. necessary to get nuclear repulsion, nuclear dipole
+               ! moment etc. right - this nucleus is already added
+               ! for MBSI.eq.1
+               IZATOM(K+INUC) = -NQ
+               ! .. code -Z to tell MBSI.gt.1 (value of 0 is floating orbitals)
                GNUEXP(K+INUC) = D0
-C              ... make sure the point charge IS a point /hjaaj Feb 2006
+            ELSE
+               ! .. reset charge to effective charge (different from Q for ECP)
+               CHARGE(K+INUC) = QEFF
+               IF (IQM(I,1) .EQ. 0) THEN
+               ! ... this is a point charge (no basis fu.) /hjaaj Nov 2003
+                  IZATOM(K+INUC) = -1234567890
+                  ! .. special code to tell this is a point charge (no basis fu.) /hjaaj Nov 2003
+                  GNUEXP(K+INUC) = D0
+                  ! .. make sure the point charge IS a point !! /hjaaj Feb 2006
+               END IF
             END IF
  400     CONTINUE
 C
@@ -1592,8 +1616,8 @@ C           then it may have a different basis set
 C           and FNDSYM routine can currently not detect that
 C           (e.g. if some Carbon have STO-3G and others have
 C           6-31G**) /hjaaj Mar 2004
-C           We skip point charges/MM atoms (IZATOM -2) and multiple
-C           basis set (IZATOM -1) for this test, because they
+C           We skip point charges/MM atoms (IZATOM -1234567890) and multiple
+C           basis set (IZATOM -Z) for this test, because they
 C           cannot destroy symmetry check (either no basis fu.
 C           thus same basis set on all point charges (!)
 C           or - for multiple basis set - already checked for
@@ -1678,23 +1702,21 @@ C    read matches the number generated from the knowledge of sytem-
 C    types and number of nuclei for each systemtype:
 C
           IF (LTWOPAR) THEN
-            TEMP = 0
+            INT_TEMP = 0
             DO 888 LVDW = 0, ISYTP
               DO 889 kVDW = LVDW, ISYTP
                 IF (LVDW .EQ. KVDW) THEN
-                  IF (LVDW .EQ. 0) THEN
-                    TEMP = TEMP
-                  ELSE
-                    TEMP = TEMP + IFAC(NSISY(LVDW))
+                  IF (LVDW .NE. 0) THEN
+                    INT_TEMP = INT_TEMP + IFAC(NSISY(LVDW))
                   END IF
                 ELSE
-                    TEMP = TEMP + NSISY(LVDW) * NSISY(KVDW)
+                    INT_TEMP = INT_TEMP + NSISY(LVDW) * NSISY(KVDW)
                 END IF
  889          CONTINUE
  888        CONTINUE
-            IF (TEMP .NE. NSIGEPS) THEN
+            IF (INT_TEMP .NE. NSIGEPS) THEN
               WRITE(LUPRI,'(1X,A,I3,A)')
-     *                    'Needs ',TEMP, 'sigma/epsilon parameters!'
+     *                    'Needs ',INT_TEMP, 'sigma/epsilon parameters!'
               CALL QUIT('Number of diatomic sigma/epsilon parameters '//
      *                  'incorrect!')
             END IF
@@ -1720,7 +1742,7 @@ C
      &     'type', I
       WRITE (LUPRI,'(A)') "Correct input format is: Charge=???"
       CALL QUIT('Cannot determine the charge of one atom')
-      END
+      END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
       SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
      $     RADIUS_PCM, ALPHA_PCM)
@@ -1936,17 +1958,17 @@ C
         MULBSI(NCTOT) = MAX(MBSI,1)
         IF (MBSI .GT. 1) THEN
           CHARGE(NCTOT) = D0
-          IZATOM(NCTOT) = -1
+          IZATOM(NCTOT) = -NQ
 C         ... code -1 to tell MBSI (value of 0 is floating orbitals)
           GNUEXP(NCTOT) = D0
         ELSE
           CHARGE(NCTOT) = Q
           IZATOM(NCTOT) = NQ
-C         ... if point charge this is reset outside to -2
+C         ... if point charge this is reset outside to -1234567890
 C             to tell this is a point charge /hjaaj Nov 2003
           GNUEXP(NCTOT) = GEXP
         END IF
-  100 CONTINUE
+  100 CONTINUE   !  DO 100 N = 1,NONT
       RETURN
 C
 C       Error messages:
@@ -2239,7 +2261,7 @@ C*****************************************************************************
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       CHARACTER*1  SPDCAR, KASYM(3,3)
       CHARACTER*(6*MXQN+3) TSTRING(MXBSETS_TOT)
-      CHARACTER*31 SET_TYPE(MXBSETS_TOT)
+      CHARACTER*37 SET_TYPE(MXBSETS_TOT)
       DIMENSION NPRIM(MXBSETS_TOT), NCONT(MXBSETS_TOT)
       DIMENSION IBLOCK(MXBSETS_TOT)
 #include <molde.h>
@@ -2258,12 +2280,12 @@ C
          SET_TYPE(2) = 'small component basis functions'
          SET_TYPE(3) = 'primary density fit functions  '
          SET_TYPE(4) = 'secondary density fit functions'
-         SET_TYPE(5) = 'Huckel basis functions'
+         SET_TYPE(5) = 'extended Huckel basis functions'
 C
       ELSE
          SET_TYPE(1) = 'basis functions'
-         SET_TYPE(2) = 'Huckel basis functions'
-         SET_TYPE(3) = 'auxiliary basis functions'
+         SET_TYPE(2) = 'extended Huckel basis functions'
+         SET_TYPE(3) = 'auxiliary density fit basis functions'
       END IF
 C
 C     ******************************************
@@ -2272,10 +2294,10 @@ C     ******************************************
 C
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Atoms and basis sets',1)
-         WRITE (LUPRI,'(A,I5 )') '  Number of atom types: ',NONTYP
+         WRITE (LUPRI,'(A,I5 )') '  Number of atom types :',NONTYP
          WRITE (LUPRI,'(A,I5/)') '  Total number of atoms:',NUCDEP
          IF (LUCME.GT.0) THEN
-            WRITE (LUCME,'(A,I5 )') '  Number of atom types: ',NONTYP
+            WRITE (LUCME,'(A,I5 )') '  Number of atom types :',NONTYP
             WRITE (LUCME,'(A,I5/)') '  Total number of atoms:',NUCDEP
          END IF
          IF (BASIS) THEN
@@ -2297,13 +2319,11 @@ C           Output for multiple basis sets (WK/UniKA/04-11-2002).
          IF (LMULBS) THEN
 C         Output for multiple basis sets (WK/UniKA/04-11-2002).
           WRITE (LUPRI,'(A)')
-     &        '  label  basis   atoms  charge'//
-     &        '   prim  cont     basis'
+     &        '  label  basis   atoms  charge   prim  cont     basis'
           WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
           IF (LUCME.GT.0) THEN
              WRITE (LUCME,'(A)')
-     &           '  label  basis   atoms  charge'//
-     &           '   prim   cont     basis'
+     &        '  label  basis   atoms  charge   prim  cont     basis'
              WRITE (LUCME,'(2X,78A1)') ('-',I=1,78)
           END IF
          ELSE
@@ -2345,24 +2365,20 @@ C
 
          NUCTYP = 0
          NCHTYP = 0
-         CHTTYP = 0.0D0
          DO N = 1,NONT(I)
             ICENT  = ICENT + 1
             NUCTYP = NUCTYP + NUCDEG(ICENT)
+            CHTTYP = CHARGE(ICENT)
 
             NCHARG = MAX(0,IZATOM(ICENT))
-C           hjaaj: do not add the code for point charges (-2)
-C           or the code for multiple basis (-1) to the total charge !!
+C           hjaaj: do not add the code for point charges (-1234567890)
+C           or the code for multiple basis (-NQ) to the total charge !!
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
 
-            IF (IZATOM(ICENT) .EQ. -1) THEN
-C           ... do not add charges second time for multiple basis sets,
-C               however, we do add point charges (incl. MM) /hjaaj Feb 2006
-               CHTTYP = 0.0D0
-            ELSE
-               CHTTYP = CHARGE(ICENT)
-            END IF
             QM3CHT = QM3CHT + NUCDEG(ICENT)*CHTTYP
+C           ... note that charges for multiple basis sets are not added
+C           here because CHARGE of these centers has been reset to zero.
+C           However, we do add point charges (incl. MM) /hjaaj Feb 2006
 C
             IF (ISUBSY(ICENT) .EQ. 0) NQMBAS = NQMBAS + NCONT(ISET)
          END DO
@@ -3128,6 +3144,7 @@ C*****************************************************************************
                      CENT(ISHELL,3,1) = CORD(3,ICENT)
 C                    Basis-set identifier (WK/UniKa/04-11-2002).
                      MBSID(ISHELL) = MULBSI(ICENT)
+
                      IORB  = IORB  + NCOMP
                      IORBD = IORBD + NCOMP*NDEG
                      
@@ -3483,14 +3500,14 @@ C
          IVARB = ISTBNU(N)
          NDEG  = MULT(IVARB)
          IF (IPREAD .GE. 5)
-     &      WRITE (LUPRI,1000) NAMN(N),(CORD(I,N),I=1,3),
+     &      WRITE (LUPRI,1000) NAMN(N),(CORD(I,N),I=1,3),CHARGE(N),
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav')
      &      NFLOAT = NFLOAT + 1
          IF ( ISUBSY(N) .EQ. 0 ) THEN
-C        ... only QM atoms
+C        ... only QM atoms contribute to nuclear dipole moment
             DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
             DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
             DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
@@ -3511,9 +3528,9 @@ C        ... only QM atoms
                ELSE
                   ICHARD = ICHAR('0') + II
                   NAMDEP(NCDTOT)     = NAMN(N)//' '//CHAR(ICHARD)
-                  NAMDPX(3*NCDTOT-2) = NAMDEP(NUCDEP)//' x'
-                  NAMDPX(3*NCDTOT-1) = NAMDEP(NUCDEP)//' y'
-                  NAMDPX(3*NCDTOT  ) = NAMDEP(NUCDEP)//' z'
+                  NAMDPX(3*NCDTOT-2) = NAMDEP(NCDTOT)//' x'
+                  NAMDPX(3*NCDTOT-1) = NAMDEP(NCDTOT)//' y'
+                  NAMDPX(3*NCDTOT  ) = NAMDEP(NCDTOT)//' z'
                   NDEGNM(NCDTOT)     = II
                END IF
             ELSE
@@ -3521,9 +3538,9 @@ C        ... only QM atoms
             END IF
   200    CONTINUE
   100 CONTINUE
+C     Now: NUCDEP = QM atoms + floating centers
+C          NCDTOT = NUCDEP + MM centers
       NATOMS = NUCDEP - NFLOAT
-ckr      IF (NUCDEP .GT. MXCENT) GOTO 5010
-ckr   This is not a very elegant solution and must be fixed TODO TODO
       IF (QM3) NUCDEP = NCDTOT
       IF (NCDTOT .GT. MXCENT) GOTO 5010
 C
@@ -3581,8 +3598,8 @@ C
      &      ' Increase MXCENT to at least',NUCDEP,' and recompile.'
       CALL QUIT('Too many atoms in READIN.')
 C
- 1000 FORMAT(2X,A4,5X,3F10.5,6X,/,
-     &       16X, 'Stabilizer ',I3,',   with ',I2,
+ 1000 FORMAT(2X,A4,5X,3F10.5,F20.8/,
+     &       16X, 'Stabilizer',I3,', with',I2,
      &       ' symmetry equivalent atoms',/)
       END
 C  /* Deck sympro */
@@ -3838,9 +3855,9 @@ C
                      NQ     = IZATOM(NCENT(IA))
 C                    ... atomic charge of this center
                    IF (NQ .GT. 0) THEN
-C                  ... skip point charges (code NQ=-2),
-C                     floating orbitals (NQ = 0), and
-C                     auxiliary basis sets (code NQ=-1)
+C                  ... skip point charges (code NQ=-1234567890),
+C                      and centers for multiple basis sets (NQ=-Z)
+C                      and floating orbital centers (NQ=0)
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
                      IQCORE = NINT(CHARGE(NCENT(IA)))
@@ -4228,7 +4245,6 @@ C            small molecules, otherwise just a lot of lines.
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
-      ICRX = 1
       IPCMN= 0
       NATOMS = 0
       KMASS  = NCOOR + 1
@@ -4247,6 +4263,7 @@ C
 C
 C
 C
+      ICRX = 1
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
@@ -5567,7 +5584,7 @@ C
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
-      LOGICAL NOORBTS, DOOWN
+      LOGICAL   NOORBTS, DOOWN
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION A(MXCENT),B(MXCENT),CZ(MXCENT,3),D(MXCENT)
       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
@@ -5796,6 +5813,7 @@ C
          CHNON(ITYP) = CHARGE(I)
  600  CONTINUE
 C     define atom number in IZATOM /hjaaj Mar 2004
+C     TODO : define multiple basis sets and point charges
       DO I = 1, NUCIND
          IZATOM(I) = NINT(CHARGE(I))
       END DO
@@ -5842,6 +5860,8 @@ C     define atom number in IZATOM /hjaaj Mar 2004
  606     CONTINUE
 C
 C     Add basis set to newly order atomic set
+C
+C     TODO : fix code for LMULBS true below
 C
          DO J = 1,NSETS
             Q    = CHARGE(IATOM-1)
@@ -6197,7 +6217,7 @@ C
       RETURN
       END
 C  /* Deck READ_basmul */
-      SUBROUTINE READ_BASMUL(A)
+      SUBROUTINE READ_BASMUL(INPUT_LINE)
 C
 C     Read basis set labels from input line.
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
@@ -6205,21 +6225,21 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
-      CHARACTER*80 A
+      CHARACTER*80 INPUT_LINE
       LOGICAL NEXTMB
 
       N = 0
       NEXTMB = .FALSE.
       DO I=1,80
-       IF (A(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
+       IF (INPUT_LINE(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
         NEXTMB = .TRUE.
         K = I
-       ELSE IF (A(I:I) .EQ. ' ' .AND. NEXTMB) THEN
+       ELSE IF (INPUT_LINE(I:I) .EQ. ' ' .AND. NEXTMB) THEN
         L = I - 1
         NEXTMB = .FALSE.
         N = N + 1
         IF (N .GT. MXMULB) CALL QUIT('Too many basis sets')
-        MULNAM(N)(1:I-K) = A(K:L)
+        MULNAM(N)(1:I-K) = INPUT_LINE(K:L)
         IF (IPREAD .GT. 1) THEN
           WRITE (LUPRI,'(/A,I2,A)') ' Basis set',N,' is  "'//
      &    MULNAM(N)(1:I-K)//'" from the basis set library.'
@@ -6231,7 +6251,7 @@ C
       IF (.NOT. LMULBS .AND. N.GT.1) THEN
          WRITE (LUPRI,'(/A/5X,A/A)')
      &      ' INFO: basis set line contains more than one basis set:',
-     &      A(1:L),
+     &      INPUT_LINE(1:L),
      &      ' INFO: ".R12AUX" activated automatically.'
          LMULBS = .TRUE.
       END IF
@@ -6424,8 +6444,8 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
       IF (ADDSYM) NSYMOP = 0
       RETURN
  199  CONTINUE
-      WRITE (LUPRI,'(A)') ' Error in the determination of the number '//
-     &     'of different atomic types'
+      WRITE (LUPRI,'(/A)') ' Error in the determination of the number'
+     &   //' of different atomic types'
       WRITE (LUPRI,*) "Correct input structure is: Atomtypes=???"
       WRITE (LUPRI,*) LINE
       CALL QUIT('Error in determining the number of different '//

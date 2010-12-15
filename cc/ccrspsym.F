@@ -98,6 +98,9 @@ c /* deck ccrspsym */
 #include <cclres.h>  
 #include <ccpl1rsp.h>
 #include <ccexci.h>
+Cholesky
+#include <cclrcho.h>
+Cholesky
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -202,6 +205,10 @@ c /* deck ccrspsym */
 * init number of response operators:
       NRSOLBL  = 0
       NRSO2LBL = 0
+Cholesky
+* number of unique operators for Cholesky CC2-LR
+      CALL IZERO(NCHOPLR,NSYM)
+Cholesky
       LOPROPN  = .TRUE.  ! open list for extension
       LOPR2OPN = .TRUE.  ! open list for extension
 
@@ -1030,6 +1037,9 @@ C          ----------------------------------------------------
          DO I = 1, NO1LBL
            WRITE(LUPRI,'(13X,I4,6X,A8,5X,L3,I6,3X,1P,D15.6)') 
      &            I, LBLO1(I), LORXO1(I), ISYO1(I), FRQO1(I)
+Cholesky
+           NCHOPLR(ISYO1(I)) = NCHOPLR(ISYO1(I)) + 1
+Cholesky
          END DO
          WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
@@ -5366,6 +5376,13 @@ C  /* Deck cclstsort */
 * projection flag 1998
 * orbital relaxation flag 1999
 * PL1 vectors, Sonia march 2000
+*
+Cholesky
+* Swapped sorting order so that LABEL sort is done
+* after FREQ sort by modifying CCLSTCMP
+* tbp 2003. Only tested for linear response!
+Cholesky
+*
 *=====================================================================*
       IMPLICIT NONE
 #include <priunit.h>
@@ -5525,6 +5542,10 @@ C  /* Deck cclstcmp */
 *=====================================================================*
       IMPLICIT NONE
 #include <priunit.h>
+Cholesky
+#include <maxorb.h>
+#include <ccdeco.h>
+Cholesky
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
@@ -5647,6 +5668,10 @@ C  /* Deck cclstcmp */
         END IF
       END DO
 
+* If Cholesky, sort before after frequencies
+
+      IF (.NOT. CHOINT) THEN
+
 *---------------------------------------------------------------------*
 * compare the labels
 *---------------------------------------------------------------------*
@@ -5664,6 +5689,8 @@ C  /* Deck cclstcmp */
           END IF
         END DO
       END DO
+
+      END IF      ! Cholesky
 
 *---------------------------------------------------------------------*
 * compare the frequencies
@@ -5685,6 +5712,30 @@ C  /* Deck cclstcmp */
         END DO
 
       END IF
+
+* If Cholesky, sort now after frequencies
+
+      IF (CHOINT) THEN
+
+*---------------------------------------------------------------------*
+* compare the labels
+*---------------------------------------------------------------------*
+      DO IDX = 1, ORDER
+        DO I = 1, 8
+          IF ( LGT(LABEL(IVEC,IDX)(I:I),LABEL(IVEC+1,IDX)(I:I)) ) THEN
+            IF (LOCDBG) WRITE (LUPRI,*)
+     &            'swap because of operator labels.'
+            CCLSTCMP = .TRUE.
+            RETURN
+          END IF
+          IF ( LLT(LABEL(IVEC,IDX)(I:I),LABEL(IVEC+1,IDX)(I:I)) ) THEN
+            CCLSTCMP = .FALSE.
+            RETURN
+          END IF
+        END DO
+      END DO
+
+      END IF     ! Cholesky
 
 *---------------------------------------------------------------------*
 * compare the cauchy orders:
@@ -6003,6 +6054,14 @@ C  /* Deck ilstsym */
       ELSE IF (LIST(1:3).EQ.'CX2') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NCX2LBL) LEOOR = .TRUE.
          ILSTSYM = MULD2H(ISYCX2(INDEX,1),ISYCX2(INDEX,2))
+C
+Cholesky
+C
+      ELSE IF (LIST(1:3).EQ.'d00') THEN
+         ILSTSYM = 1
+C
+Cholesky
+C
       ELSE IF (LIST(1:2).EQ.'L0' .OR. LIST(1:2).EQ.'R0') THEN
          ILSTSYM = 1
       ELSE IF (LIST(1:2).EQ.'D0') THEN
@@ -6031,7 +6090,12 @@ C  /* Deck ilstsym */
       ELSE IF (LIST(1:2).EQ.'M1'.OR.LIST(1:2).EQ.'FR') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRM   ) LEOOR = .TRUE.
          ILSTSYM = ISYLRM(INDEX)
-      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Cholesky
+Chol  ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &         LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'d01' .OR.
+     &         LIST(1:3).EQ.'eO1') THEN
+Cholesky
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRTLBL) LEOOR = .TRUE.
          ILSTSYM = ISYLRT(INDEX)
       ELSE IF ((LIST(1:2).EQ.'RC').OR.(LIST(1:2).EQ.'FC')) THEN
@@ -6358,6 +6422,7 @@ C  /* Deck idxsym */
 *
 * Christof Haettig, November 1996(ILSTSYM), Ove Christiansen Feb. 1997
 * PL1 vectors, Sonia 2000
+* Cholesky CC2 vectors, tbp 2003
 *=====================================================================*
       IMPLICIT NONE
 #include <ccorb.h>
@@ -6405,7 +6470,14 @@ C  /* Deck idxsym */
          IDXSYM  = 1
       ELSE IF (LIST(1:2).EQ.'D0') THEN
          IDXSYM  = 1
-      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Cholesky
+      ELSE IF (LIST(1:3).EQ.'d00') THEN
+         IDXSYM = 1
+Chol  ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &         LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'d01' .OR.
+     &         LIST(1:3).EQ.'eO1') THEN
+Cholesky
          IF (INDEX.LT.0 .OR. INDEX.GT.NLRTLBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFT(ISYM) 
       ELSE IF (LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'F2') THEN

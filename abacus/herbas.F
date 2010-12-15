@@ -132,6 +132,10 @@ C
 C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
 C     from calling routine
       IPRINT = IPRBAS
+      IF (IPRINT .GE. 5) THEN
+         write (lupri,*) 'BASLIB: Q, QEFF, INTQ',Q,QEFF,INTQ
+         write (lupri,*) 'BASLIB: BASNAM ',BASNAM
+      END IF
 
       IF (BASNAM(1:6) .EQ. 'HUCKEL') THEN
 
@@ -361,13 +365,13 @@ C
 
       IF (IPRINT.GE.10) THEN
         CALL HEADER('Output from BASLIB',-1)
-        WRITE(LUPRI,*) 'ISTART=',ISTART
-        WRITE(LUPRI,'(A,A)') 'BASTMP=',BASTMP
-        WRITE(LUPRI,*) 'IPOLST=',IPOLST
-        WRITE(LUPRI,*) 'POLFUN=',POLFUN
-        WRITE(LUPRI,*) 'ANO=',ANO
-        WRITE(LUPRI,*) 'SADLEJ=',SADLEJ
-        WRITE(LUPRI,*) 'NQVD=',NQVD
+        WRITE(LUPRI,*) 'ISTART =',ISTART
+        WRITE(LUPRI,'(A,A)') ' BASTMP = ',BASTMP
+        WRITE(LUPRI,*) 'IPOLST =',IPOLST
+        WRITE(LUPRI,*) 'POLFUN =',POLFUN
+        WRITE(LUPRI,*) 'ANO    =',ANO
+        WRITE(LUPRI,*) 'SADLEJ =',SADLEJ
+        WRITE(LUPRI,*) 'NQVD   =',NQVD
       ENDIF
 C      
 C Finds the right element in the file. 
