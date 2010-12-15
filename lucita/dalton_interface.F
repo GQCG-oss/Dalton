@@ -4426,7 +4426,7 @@ C
  
 C Used from include files:
 C  priunit: LUPRI
-C  inforb: NCMOT, nsym
+C  inforb: NCMOT, nsym, muld2h
 C  inftap: LUINTM, FNINTM
 C  mxpdim: MXPOBS
 C  orbinp: ntoobs
@@ -4497,7 +4497,7 @@ C
       call dzero(x1int,nr_1int)
       call dzero(x2int,nr_2int)
 
-      call sirint2luint(fcac,h2ac,x1int,x2int,adsxa, 
+      call sirint2luint(fcac,h2ac,x1int,x2int,adsxa,muld2h,
      &                  nasht,nnashx,ntoobs,nsym,mxpobs)
 
 !     release scratch space
@@ -4509,8 +4509,9 @@ C
       call quit('NEXT TO DO: store integrals in LUCITA packing')
 
       END
+
 ***********************************************************************
-      subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,
+      subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,mult_ptg,
      &                        return_sym_of_jorb,nr_actorb_tot,nnashx,
      &                        nr_orb_per_sym,nr_sym,max_orb_per_sym)
 !
@@ -4519,11 +4520,6 @@ C
 !
 !              1-electron integrals: on output symmetry-reduced list
 !              2-electron integrals: on output symmetry-reduced list
-!
-!              note from stefan: i am not sure whether my code actually 
-!              works for non-totally symmetric 1-electron operators as
-!              well, i.e. if we do property calculations. 
-!              this should be checked with due care.
 !
 !     -----------------------------------------------------------------
       implicit none
@@ -4534,10 +4530,50 @@ C
       integer :: max_orb_per_sym
       integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
       integer :: nr_orb_per_sym(max_orb_per_sym)
+      integer :: mult_ptg(nr_sym,nr_sym)
       real(8) :: h1_in(*)
       real(8) :: h2_in(*)
       real(8) :: h1_out(*)
       real(8) :: h2_out(*)
+!     ------------------------------------------------------------------
+
+!     1-electron integrals
+!     --------------------
+      call sir1int2lu1int(h1_in,h1_out,return_sym_of_jorb,nnashx,
+     &                    nr_orb_per_sym,nr_sym,max_orb_per_sym)
+      
+!     2-electron integrals
+!     --------------------
+      call sir2int2lu2int(h2_in,h2_out,mult_ptg,nr_actorb_tot,
+     &                    nnashx,nr_orb_per_sym,nr_sym,
+     &                    max_orb_per_sym)
+
+      end
+
+***********************************************************************
+      subroutine sir1int2lu1int(h1_in,h1_out,return_sym_of_jorb,nnashx,
+     &                          nr_orb_per_sym,nr_sym,max_orb_per_sym)
+!
+!     purpose: reorder integrals from dalton-sirius format to internal
+!              lucita format.
+!
+!              1-electron integrals: on output symmetry-reduced list
+!
+!              note from stefan: i am not sure whether my code actually 
+!              works for non-totally symmetric 1-electron operators as
+!              well, i.e. if we do property calculations. 
+!              this should be checked with due care.
+!
+!     -----------------------------------------------------------------
+      implicit none
+#include "priunit.h"
+      integer :: nnashx
+      integer :: nr_sym
+      integer :: max_orb_per_sym
+      integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
+      integer :: nr_orb_per_sym(max_orb_per_sym)
+      real(8) :: h1_in(*)
+      real(8) :: h1_out(*)
 !     -----------------------------------------------------------------
       integer :: isym, jsym, ijsym
       integer :: offset_ij, offset_internal, isorb, jsorb
@@ -4546,10 +4582,12 @@ C
       character (len=90) :: error_message
 !     -----------------------------------------------------------------
 
+#ifdef LUCI_DEBUG
       print *,' h1_in:'
       do isym = 1, nnashx
         print *,' h1_in(',isym,') = ',h1_in(isym)
       end do
+#endif
 
 !     1-electron integrals
 !     --------------------
@@ -4600,8 +4638,188 @@ C
         orb_tmp = orb_tmp + nr_act_isym
       end do
 
+      end
+***********************************************************************
+
+      subroutine sir2int2lu2int(h2_in,h2_out,mult_ptg,nr_actorb_tot,
+     &                          nnashx,nr_orb_per_sym,nr_sym,
+     &                          max_orb_per_sym)
+!
+!     purpose: reorder integrals from dalton-sirius format to internal
+!              lucita format.
+!
+!              2-electron integrals: on output symmetry-reduced list
+!
+!     -----------------------------------------------------------------
+      implicit none
+#include "priunit.h"
+      integer :: nr_actorb_tot
+      integer :: nnashx
+      integer :: nr_sym
+      integer :: max_orb_per_sym
+      integer :: nr_orb_per_sym(max_orb_per_sym)
+      integer :: mult_ptg(nr_sym,nr_sym)
+      real(8) :: h2_in(*)
+      real(8) :: h2_out(*)
+!     -----------------------------------------------------------------
+      integer :: isym, jsym, ksym, lsym, llsym, ijsym, klsym, ijklsym
+      integer :: offset_internal, offset_ijkl
+      integer :: nr_act_isym, nr_act_jsym, nr_act_ksym, nr_act_lsym
+      integer :: ioff, joff, koff, loff
+      integer :: ij_res, kl_res, ijkl_res
+      integer :: i_first, j_first, j_last, l_last
+      integer :: i, j, l, k
+!     -----------------------------------------------------------------
+
+!#ifdef LUCI_DEBUG
+      print *,' h2_in:'
+      do isym = 1, nnashx
+        do jsym = 1, nnashx
+          print *,' h2_in(',((isym-1)*nnashx)+jsym,') = ',
+     &              h2_in(((isym-1)*nnashx)+jsym)
+        end do
+      end do
+!#endif
+
 !     2-electron integrals
 !     --------------------
+      offset_internal = 1
+      ioff = 1
+!     4-index loop
+      do isym = 1, nr_sym
+        nr_act_isym = nr_orb_per_sym(isym)
+        joff = 1
+        do jsym = 1, isym
+          nr_act_jsym = nr_orb_per_sym(jsym)
+          koff = 1
+          do ksym = 1, isym
+            nr_act_ksym = nr_orb_per_sym(ksym)
+            llsym = ksym
+
+            if(ksym .eq. isym) llsym = jsym
+
+            loff  = 1
+            do lsym = 1, llsym
+              nr_act_lsym = nr_orb_per_sym(lsym)
+
+              ijsym   = mult_ptg(isym,jsym)
+              klsym   = mult_ptg(ksym,lsym)
+              ijklsym = mult_ptg(ijsym,klsym)
+
+!             restrict loop to non-vanishing symmetry combinations of (ij|kl)
+
+              if(ijklsym .eq. 1)then
+
+
+!               index restrictions
+                if(ISYM .eq. JSYM)then
+                  ij_res = 1
+                else
+                  ij_res = 0
+                end if
+                if(ksym .eq. lsym)then
+                  kl_res = 1
+                else
+                  kl_res = 0
+                end if
+ 
+!               particle symmetry
+                if(isym.eq.ksym.and.jsym.eq.lsym)then
+                  ijkl_res = 1
+                else
+                  ijkl_res = 0
+                end if
+!
+! K
+!  L
+!   I
+!    J
+                write(lupri,*) ' loop over non-redundant output indices'
+
+!               loop over non-redundant output indices including symmetry offsets
+                do k = koff, koff + nr_act_ksym - 1
+
+                  if(kl_res .eq. 1)then
+                    l_last = k
+                  else
+                    l_last = loff + nr_act_lsym - 1
+                  end if
+
+                  do l = loff, l_last
+
+                    if(ijkl_res .eq. 1)then
+                      i_first = k
+                    else
+                      i_first = ioff
+                    end if
+
+                    do i = i_first, ioff + nr_act_isym - 1
+
+                      if(ij_res .eq. 1)then
+                        j_last = i
+                      else
+                        j_last = joff + nr_act_jsym - 1
+                      end if
+
+                      if(ijkl_res .eq. 1 .and. i .eq. k)then
+                        j_first = l
+                      else
+                        j_first = joff
+                      end if
+
+                      do j = j_first, j_last
+
+                          print ('(/2x,a)'),
+     &        '-------------------------------------------------------'
+                          print ('(2x,a,4i4)'), 'next indices pairs:'//
+     &                      ' I, J, K, L = ',i,j,k,l
+                          print('(2x,a/)'),
+     &        '-------------------------------------------------------'
+!#ifdef LUCI_DEBUG
+                          print *, ' check current symmetries'
+                          print('(/a,4i6)'), 'isym,jsym,ksym,lsym',
+     &                                        isym,jsym,ksym,lsym
+                          print *, ' check current offsets'
+                          print('(/a,4i6)'), 'ioff,joff,koff,loff',
+     &                                        ioff,joff,koff,loff
+!#endif
+                          offset_ijkl = (ijsym-1)*nnashx + klsym
+                          print *, 'offset_ijkl =',offset_ijkl
+                          print *, 'ijsym, klsym, nnashx =',
+     &                              ijsym, klsym, nnashx
+*
+!                       IBLKOFF = IOFF12(KR(IIN),KR(JIN))
+!                       do INRUN=1,IBLLEN,1
+!                         if (KR(INDK(INRUN+IBLKOFF)).eq.KR(KIN).and.
+!    &                        KR(INDL(INRUN+IBLKOFF)).eq.KR(LIN))
+!    &                    then
+!                           TWELINT(ICT) = RKL(INRUN+IBLKOFF)
+!                           if (NTEST.ge.10) then
+!                             write(6,'(2x,a/,4i6,1F18.12/)')
+!    &                          ' integral fetched: integral number,'//
+!    &                          ' (IBLKOFF + INRUN) = offset on input'//
+!    &                          ' block, integral value:',ICT,
+!    &                            IBLKOFF,INRUN,IBLKOFF+INRUN,
+!    &                            TWELINT(ICT)
+!                           end if
+!                           ICT = ICT + 1
+!                           goto 10
+!                         end if
+!                       end do
+                      end do
+                    end do
+                  end do
+                end do
+*               ^ End loops over 4 indices
+              end if ! non-vanishing symmetry block
+              loff = loff + nr_act_lsym
+            end do ! l
+            koff = koff + nr_act_ksym
+          end do ! k
+          joff = joff + nr_act_jsym
+        end do ! j
+        ioff = ioff + nr_act_isym
+      end do ! i
 
       end
 ***********************************************************************
