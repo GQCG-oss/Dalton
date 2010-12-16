@@ -52,7 +52,6 @@ C
 C
 C LOOP OVER BLOCKS
 C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
  1000 CONTINUE
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
@@ -66,13 +65,9 @@ C?      write(6,*) ' COPVCD LBLK : ', LBLK
           ELSE
             KBLK = -1
           END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           NO_ZEROING = 1
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
-          IF(IAMPACK.NE.0) THEN
-C?          WRITE(6,*) ' COPVCD, IAMPACK,FILE = ', IAMPACK,LUIN
-          END IF
           IF(IMZERO.EQ.0) THEN
             IF(IAMPACK.EQ.0) THEN
               CALL TODSC_LUCI(SEGMNT,LBL,KBLK,LUOUT)
@@ -108,14 +103,12 @@ C
 C
 C LOOP OVER BLOCKS
 C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
  1000 CONTINUE
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
         ELSE
           READ(LUIN) LBL
           WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
         END IF
         IF( LBL .GE. 0 ) THEN
           IF(LBLK .GE.0 ) THEN
@@ -123,7 +116,6 @@ C?        write(6,*) ' COPVCD LBL : ', LBL
           ELSE
             KBLK = -1
           END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           CALL FRMDSC_LUCI(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
           CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
         END IF
@@ -146,6 +138,7 @@ C
 C LBLK DEFINES STRUCTURE OF FILES
 C
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION  VEC1(*),VEC2(*)
 C
       IF ( IREW .NE. 0 ) THEN
@@ -166,7 +159,7 @@ C
           WRITE(LU3) LBL1
         END IF
         IF(LBL1 .NE. LBL2 ) THEN
-          WRITE(6,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVCD : '
+          WRITE(lupri,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVCD : '
      &                     , LBL1,LBL2
           Call Abend2( ' DIFFERENT BLOCKSIZES IN DMTVCD ' )
         END IF
@@ -219,6 +212,7 @@ C
 * Overlap between input and output vector is also calculated
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION  VEC1(*),VEC2(*)
       DIMENSION  XSCAT(NSCAT),ISCAT(NSCAT)
 *
@@ -245,7 +239,7 @@ C
           WRITE(LU3) LBL1
         END IF
         IF(LBL1 .NE. LBL2 ) THEN
-          WRITE(6,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVSD : '
+          WRITE(lupri,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVSD : '
      &                     , LBL1,LBL2
           Call Abend2( ' DIFFERENT BLOCKSIZES IN DMTVSD ' )
         END IF
@@ -293,6 +287,7 @@ C
 *  in BLK_A
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. Output
       DIMENSION BLK_A(*)
 *. Scratch
@@ -332,11 +327,11 @@ C         CALL FRMDSC_LUCI(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
 *
       NTEST = 0
       IF(NTEST.GE.1) THEN
-        WRITE(6,'(A,I8,I8)')
+        WRITE(lupri,'(A,I8,I8)')
      &  ' FIND_A.... Number of total and active Blocks',NBLK,NBLK_A
       END IF
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Active blocks '
+        WRITE(lupri,*) ' Active blocks '
         CALL WRTMT_LU(BLK_A,1,NBLK,1,NBLK)
       END IF
 *
@@ -427,6 +422,7 @@ C    &     I_BLK_TO_CLS(IBLK)
 *       SUBVAL : VALUE OF SORTED ELEMENTS
 
       IMPLICIT REAL*8           ( A-H,O-Z)
+#include "priunit.h"
 #ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
@@ -455,8 +451,8 @@ C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
         END IF
         IBLK = IBLK + 1
         IF(NTEST.GE.10) THEN
-          WRITE(6,*) ' Info about block ',IBLK
-          WRITE(6,*) ' Number of elements ', LBL
+          WRITE(lupri,*) ' Info about block ',IBLK
+          WRITE(lupri,*) ' Number of elements ', LBL
         END IF
         IF(LBL .GE. 0 ) THEN
           IF(LBLK .GE.0 ) THEN
@@ -466,7 +462,7 @@ C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
           END IF
            CALL FRMDSC_LUCI(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
            IF(NTEST.GE.100) THEN
-             WRITE(6,*) ' Elements read in '
+             WRITE(lupri,*) ' Elements read in '
              CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
            END IF
            IF(LBL .GE. 0 ) THEN
@@ -476,7 +472,7 @@ C     SUBROUTINE SORLOW(WRK,STVAL,ISTART,KZVAR,KEXSTV,JEXSTV,IPRT)
              IF(LBL.GE.1) THEN
                CALL SORLOW(SEGMNT,SCR(1+LSUB),ISCR(1+LSUB),LBL,
      &                     MSUBMX,MSUB,NTEST)
-C              WRITE(6,*)
+C              WRITE(lupri,*)
 C    &       ' After SORLOW 1 , Scatter array for combined list '
 C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
              ELSE
@@ -484,7 +480,7 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
              END IF
              DO 10 I = 1, MSUB
    10        ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
-C            Write(6,*)
+C            Write(lupri,*)
 C    &       ' After 10 , Scatter array for combined list '
 C            call iwrtma(ISCR,1,LSUB+MSUB,1,LSUP+MSUP)
 * SORT COMBINED LIST
@@ -492,7 +488,7 @@ C            call iwrtma(ISCR,1,LSUB+MSUB,1,LSUP+MSUP)
              IF(MSUBMX.GT.0) THEN
              CALL SORLOW(SCR,SUBVAL,ISCAT,LSUB+MSUB,MSUBMX,LLSUB,
      &         NTEST)
-C              WRITE(6,*)
+C              WRITE(lupri,*)
 C    &       ' After SORLOW 2 , Scatter array for combined list '
 C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
              ELSE
@@ -507,8 +503,8 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
              CALL COPVEC(SUBVAL,SCR,LSUB)
              IBASE = IBASE + LBL
              IF(NTEST .GE. 20 ) THEN
-               WRITE(6,*) ' Lowest elements and their original place '
-               WRITE(6,*) ' Number of elements obtained ', LSUB
+               WRITE(lupri,*)' Lowest elements and their original place'
+               WRITE(lupri,*)' Number of elements obtained ', LSUB
                CALL WRTMT_LU(SUBVAL,1,LSUB,1,LSUB)
                CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
              END IF
@@ -521,12 +517,10 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
       NSUB = LSUB
       CALL ICOPVE(ISCR,ISCAT,NSUB)
       IF(NTEST .GE. 10) THEN
-        IF(MYPROC.EQ.MASTER) THEN
-          WRITE(6,*) ' Lowest elements and their original place '
-          WRITE(6,*) ' Number of elements obtained ', NSUB
-          CALL WRTMT_LU(SUBVAL,1,NSUB,1,NSUB)
-          CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
-        END IF
+        WRITE(lupri,*) ' Lowest elements and their original place '
+        WRITE(lupri,*) ' Number of elements obtained ', NSUB
+        CALL WRTMT_LU(SUBVAL,1,NSUB,1,NSUB)
+        CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
       END IF
 *
       END
@@ -1651,6 +1645,7 @@ C
 C LBLK DEFINES STRUCTURE OF FILES :
 C
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) REWIND LU
@@ -1672,7 +1667,7 @@ C
           END IF
            CALL FRMDSC_LUCI(SEGMNT,LBL ,KBLK,LU,IMZERO,IAMPACK)
            IF(LBL .GT. 0 ) THEN
-             WRITE(6,'(A,I3,A,I6)')
+             WRITE(lupri,'(A,I3,A,I6)')
      &       ' Number of elements in segment ',IBLK,' IS ',LBL
              CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
            END IF

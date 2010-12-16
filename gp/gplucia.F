@@ -2524,11 +2524,10 @@ C
       DIMENSION C(NCROW,NCCOL)
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
-      NTEST = 10
+#ifdef LUCI_DEBUG
+      NTEST = 00
       IF ( NTEST .NE. 0 ) THEN
-      WRITE(6,*)
       WRITE(6,*) ' Initial A, B and C MATRIX FROM MATML7 ' 
-      WRITE(6,*)
       WRITE(6,*)      ' NCROW NCCOL NAROW NACOL NBROW NBCOL ' 
       WRITE(6,'(6I6)')  NCROW,NCCOL,NAROW,NACOL,NBROW,NBCOL
       WRITE(6,*) ' ITRNSP : ', ITRNSP
@@ -2541,6 +2540,7 @@ C
       CALL WRTMT_LU(B,NBROW,NBCOL,NBROW,NBCOL)
       CALL WRTMT_LU(C,NCROW,NCCOL,NCROW,NCCOL)
       END IF
+#endif
 *. Statistics
       XNCALL = XNCALL + 1
       XLCROW = XLCROW + NCROW
@@ -2572,12 +2572,12 @@ C     output
      &                 B,LDB,FACTORC,C,LDC)
       END IF
 C
+#ifdef LUCI_DEBUG
       IF ( NTEST .NE. 0 ) THEN
-      WRITE(6,*)
       WRITE(6,*) ' Final C MATRIX FROM MATML7 ' 
-      WRITE(6,*)
       CALL WRTMT_LU(C,NCROW,NCCOL,NCROW,NCCOL)
       END IF
+#endif
 C
       T_END = Second()
       TMULT = TMULT + T_END - T_INI 
@@ -3716,9 +3716,6 @@ C?    LOGICAL DIAGBL
         WRITE(6,*) ' Information from SCDTTS '
         WRITE(6,*) ' ======================= '
         WRITE(6,*) ' Input vector '
-C     SUBROUTINE WRTTTS(BLOCKS,IBLOCK,NBLOCK,
-C    &                  NSMST,NOCTPA,NOCTPB,
-C    &                  NSASO,NSBSO,ISC,IPRNT)
         CALL WRTTTS(BLOCKS,IBLOCK,NBLOCK,
      &              NSMST,NOCTPA,NOCTPB,NSASO,NSBSO,2)
       END IF
@@ -4922,7 +4919,8 @@ C      WRITE(6*) 'found proc <--> block ',IPROC,N_BLK
 *
 *. Jeppe Olsen, August 1995
 *
-      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "implicit.h"
+#include "priunit.h"
 *. General input
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
 *.
@@ -4930,10 +4928,10 @@ C      WRITE(6*) 'found proc <--> block ',IPROC,N_BLK
       INTEGER IBLOCK(8,NBLOCK)
 *
 *
-      WRITE(6,*) '  Batch of blocks '
-      WRITE(6,*) ' ================= '
-      WRITE(6,*)
-      WRITE(6,'(A,I4)') ' Number of blocks in batch ', NBLOCK
+      WRITE(lupri,*) '  Batch of blocks '
+      WRITE(lupri,*) ' ================= '
+      WRITE(lupri,*)
+      WRITE(lupri,'(A,I4)') ' Number of blocks in batch ', NBLOCK
 *
       DO JBLOCK = 1, NBLOCK
 *
@@ -4963,18 +4961,18 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
         IF(IPACK.EQ.1) THEN
           NELMNT = NIA*(NIA+1)/2
           IF(NELMNT.NE.0) THEN
-            WRITE(6,'(A,3I3)')
+            WRITE(lupri,'(A,3I3)')
      &      '  Iasm iatp ibtp : ', IASM,IATP,IBTP
-            WRITE(6,'(A)')
+            WRITE(lupri,'(A)')
      &      '  ============================'
             CALL PRSM2(BLOCKS(IOFF) ,NIA)
           END IF
         ELSE
           NELMNT = NIA*NIB
           IF(NELMNT.NE.0) THEN
-            WRITE(6,'(A,3I3)')
+            WRITE(lupri,'(A,3I3)')
      &      '  Iasm iatp ibtp : ', IASM,IATP,IBTP
-            WRITE(6,'(A)')
+            WRITE(lupri,'(A)')
      &      '  ============================'
             CALL WRTMT_LU(BLOCKS(IOFF) ,NIA,NIB,NIA,NIB)
           END IF

@@ -46,7 +46,9 @@ C
 *
 * Jeppe Olsen, Winter of 1995
 *
+#ifdef VAR_MPI
       use file_io_model
+#endif
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLC2B, KLCIOIO,
      &          KLCBLTP, KLCI1BTSCR, KBSCLFC, KBLCKIF, KBLCKPD,
@@ -166,7 +168,8 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       WRITE(LUWRTOUT,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
-      WRITE(LUWRT,*) ' Number of determinants/combinations  ',NDET
+      WRITE(LUWRT,'(a,i14)') 
+     &     '  @@ Number of determinants/combinations: ',NDET
       IF(NDET.EQ.0) THEN
        WRITE(LUWRT,*) 'the number of determinants/combinations is zero.'
        WRITE(LUWRT,*) ' I am sure that fascinating discussions about '
@@ -174,7 +177,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
        WRITE(LUWRT,*) ' but I am just a dumb program, so I will stop'
        WRITE(LUWRT,*)
        WRITE(LUWRT,*) ' GASCI : Vanishing number of parameters '
-       Call Abend2(' GASCI : Vanishing number of parameters ')
+       call quit(' GASCI : Vanishing number of parameters ')
       END IF
 *.Transfer to CANDS
       ICSM  = ISM
@@ -283,7 +286,8 @@ C     transfer to common block in parluci.h
       NUM_BLOCKS  = NBLOCK
       NUM_BLOCKS2 = NUM_BLOCKS
 
-      WRITE(LUWRTOUT,*) '  ** total number of TTSS-blocks: ',NBLOCK
+      WRITE(LUWRTOUT,'(a,i22)') 
+     &     '  @@ total number of TTSS-blocks: ',NBLOCK
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
       CALL ICOPY(NTTS,WORK(KLCI1BT),1,WORK(KLCI1BTSCR),1)
 C     length of each block
@@ -554,21 +558,19 @@ C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 C
-      WRITE(LUWRTOUT,'(3X,/A)')
+      WRITE(LUWRTOUT,'(2X,A)')
      & '=============================================================='
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(2X,A)')
      & '==> allocation of two CI vectors and one resolution vector <=='
       write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+      WRITE(LUWRTOUT,'(2X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
-      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+      WRITE(LUWRTOUT,'(2X,A,1X,I15)')
      & 'allocate two CI vectors each of length:       ',LBLOCK
-      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+      WRITE(LUWRTOUT,'(2X,A,1X,I15)')
      & 'allocate resolution vector of length:         ',LSCR2
-      WRITE(LUWRTOUT,'(3X,A)')
+      WRITE(LUWRTOUT,'(2X,A/)')
      & '=============================================================='
-      write(LUWRTOUT,*) ' '
-      CALL FLSHFO(LUWRTOUT)
 C
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
@@ -988,8 +990,10 @@ C
       use lucita_cfg
       use lucita_orbital_spaces
 !     parallel lucita
+#ifdef VAR_MPI
       use communication_model
       use file_io_model
+#endif
 
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 k_offset, KADD, KPROCLIST, KGROUPLIST, 
@@ -1134,6 +1138,7 @@ C     memory on common block WORK: initialization and allocation
 C
 C     Compute offset from WRK to WORK
       CALL COMPOFF(WRK,WORK,K_OFFSET)
+!     CALL mycompoff(WRK,WORK,K_OFFSET)
 #ifdef integer_test
       ! integer   :: kbase_lucita
       ! integer*8 :: k8base_lucita
@@ -1165,9 +1170,12 @@ C     Compute offset from WRK to WORK
       KADD   = MXPWRD 
      &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
      &       - (max_subspace_dim*(max_subspace_dim+1)/2)
-     7       - 2 * max_subspace_dim**2
+     &       - 2 * max_subspace_dim**2
 
+      kisfree = 1
+      call memchk('inside lucita - check 1:',wrk,kisfree)
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+      call memchk('inside lucita - check 2:',wrk,kisfree)
 
       WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', KADD
@@ -1190,17 +1198,28 @@ C     check value for LCSBLK
       END IF
 C
 C     From shells to orbitals
+      call memchk('inside lucita - check 2.0.2:',wrk,kisfree)
       CALL ORBINF(LUOUT,IPRORB)
 C     Number of string types
+      call memchk('inside lucita - check 2.1:',wrk,kisfree)
       CALL STRTYP_GAS(IPRSTR)
 C     Divide orbital spaces into inactive/active/secondary
+      call memchk('inside lucita - check 2.1.2:',wrk,kisfree)
       CALL GASSPC()
 C     Symmetry information
+      call memchk('inside lucita - check 2.2:',wrk,kisfree)
       CALL SYMINF(IPRORB)
 C     Number of integrals
+      call memchk('inside lucita - check 2.3:',wrk,kisfree)
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
+      call memchk('inside lucita - check 2.4:',wrk,kisfree)
+      CALL MEMMAN(ktestme, 100,'ADDS  ',1,'testr8')
+      call dzero(work(ktestme),100)
+      call memchk('inside lucita - check 2.5:',wrk,kisfree)
       CALL ALLOC()
+      print *, ' *** LUCITA FAILS AFTER ALLOC!!! ***'
+      call memchk('inside lucita - check 3:',wrk,kisfree)
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
@@ -1229,15 +1248,15 @@ C
       DO JCMBSPC = 1, NCMBSPC
         ISKIPEI = 0
 *
-        WRITE(LUOUT,'(15X,/A)')
+        WRITE(luwrt,'(/15X,A)')
      &  '********************************'
-        WRITE(LUOUT,'(15X,A)')
+        WRITE(luwrt,'(15X,A)')
      &  ' ******************************'
-        WRITE(LUOUT,'(15X,/A,I3)')
+        WRITE(luwrt,'(15X,A,I3)')
      &  '   Calculations in space ', JCMBSPC
-        WRITE(LUOUT,'(15X,/A)')
+        WRITE(luwrt,'(15X,A)')
      &  ' ******************************'
-        WRITE(LUOUT,'(15X,A/)')
+        WRITE(luwrt,'(15X,A/)')
      &  '********************************'
 C       WRITE(LUOUT,'(A,I3)')
 C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
@@ -1373,9 +1392,11 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
         CALL TRAINT
       END IF
 *. Print info on matrix multiplier
+#ifdef LUCI_DEBUG
       IF(LUCI_MYPROC.EQ.LUCI_MASTER)THEN
         CALL PR_MATML_STAT
       END IF
+#endif
 *
 *
 *     eliminate scratch units:
@@ -1396,6 +1417,11 @@ C
 !     free memory
       deallocate(grouplist)
       deallocate(proclist)
+     
+!     do i = 1, 100
+!       WRK(i)  = i  
+!       WoRK(i) = i  
+!     end do
 
       write(luout,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
      &  ' finished with no errors.'
@@ -1503,7 +1529,6 @@ C
 *  Open file LUCIAIN from MOLUC conversion program
 *
       IN_MPINN ="LUCIAIN"
-#ifdef VAR_MPI
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NNIN_MPI,'(A7,A1,I1)') IN_MPINN,'.',LUCI_MYPROC
          IN_MPILL=9
@@ -1516,10 +1541,6 @@ C
       ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-#else
-      NNIN_MPI=IN_MPINN
-      IN_MPILL=7
-#endif
       open(unit=LUCMOL,file=NNIN_MPI(1:IN_MPILL),
      &     status='OLD',form='FORMATTED')
 *

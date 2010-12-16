@@ -2283,7 +2283,7 @@ csk     WRITE(LUWRT,*) ' ICOMPUTE is',ICOMPUTE
 #endif /* if def VAR_MPI */
 C       zero SB
         LS = LEBATS(JBATS)
-csk     WRITE(LUWRT,*) ' LS - sbtach length =',LS
+!       WRITE(LUWRT,*) ' LS - sbtach length =',LS
         CALL DZERO(SB,LS)
 C
         CALL SBLOCK(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
@@ -2438,7 +2438,7 @@ C
      &                  MXPNGAS,NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,H,
      &                  NSMOB,NSMST,NSMSX,MXPOBS,MOC,
-     &                  NSCOL,MXSXST,SCLFAC,
+     &                  NSCOL,SCLFAC,
      &                  IUSE_PH,IPHGAS,NTESTG)
 *
 * One electron excitations on column strings
@@ -2492,6 +2492,7 @@ C
 *              IUSE_PH added winter of 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       REAL*8 INPROD
 *. General input
       INTEGER ADSXA(MXPOBS,2*MXPOBS),SXSTST(NSMSX,NSMST),
@@ -2521,15 +2522,15 @@ C     MOC = 1
       NTESTL = 000
       NTEST = MAX(NTESTL,NTESTG)
       IF(NTEST.GE.500)THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ======================= '
-        WRITE(6,*) ' Information from RSBB1E '
-        WRITE(6,*) ' ======================= '
-        WRITE(6,*)
-        WRITE(6,*) ' RSBB1E : MOC,IUSE_PH ', MOC,IUSE_PH
-        WRITE(6,*) ' ISEL : '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ======================= '
+        WRITE(lupri,*) ' Information from RSBB1E '
+        WRITE(lupri,*) ' ======================= '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' RSBB1E : MOC,IUSE_PH ', MOC,IUSE_PH
+        WRITE(lupri,*) ' ISEL : '
         CALL IWRTMA(ISEL,1,NGAS,1,NGAS)
-        WRITE(6,*) ' ICEL : '
+        WRITE(lupri,*) ' ICEL : '
         CALL IWRTMA(ICEL,1,NGAS,1,NGAS)
       END IF
 *. Obtain groups
@@ -2548,7 +2549,7 @@ C     GET_SPGP_INF(ISPGP,ITP,IGRP)
         ITYP = ITP(IJTP)
         JTYP = JTP(IJTP)
         IF(NTEST.GE.2000)
-     &  write(6,*) ' ITYP JTYP ', ITYP,JTYP
+     &  write(lupri,*) ' ITYP JTYP ', ITYP,JTYP
 *. Is this combination of types allowed
         IJ_ACT = I_SX_ACT(ITYP,JTYP)
         IF(IJ_ACT.EQ.0) GOTO 900
@@ -2582,7 +2583,7 @@ C     GET_SPGP_INF(ISPGP,ITP,IGRP)
           KFRST = 1
           IF(JSM.EQ.0) GOTO 800
           IF(NTEST.GE.2000)
-     &    write(6,*) ' ISM JSM ', ISM,JSM
+     &    write(lupri,*) ' ISM JSM ', ISM,JSM
           NIORB = NOBPTS(ITYP,ISM)
           NJORB = NOBPTS(JTYP,JSM)
 *. Reorder
@@ -2624,7 +2625,7 @@ C     GET_SPGP_INF(ISPGP,ITP,IGRP)
 *. For operator connecting to |Ka> and |Ja> i.e. operator 2
           SCLFACS = SIGNIJ*SCLFAC
           IF(NTEST.GE.1000)
-     &    WRITE(6,*) ' IJ_SM,IJ_TP,IJ_AC',IJ_SM(2),IJ_TP(2),IJ_AC(2)
+     &    WRITE(lupri,*) ' IJ_SM,IJ_TP,IJ_AC',IJ_SM(2),IJ_TP(2),IJ_AC(2)
           CALL ADAST_GAS(IJ_SM(2),IJ_TP(2),NGAS,ICGRP,ICCSM,
      &         I1,XI1S,NKASTR,IEND,IFRST,KFRST,KACT,SCLFACS,IJ_AC(1))
 *. For operator connecting |Ka> and |Ia>, i.e. operator 1
@@ -2672,7 +2673,7 @@ C               CALL TRPMAT(HSCR,IJ_DIM(1),IJ_DIM(2),H)
 *. Problems when HOLE switches blocks around ?
 C               CALL GETH1(H,IJ_SM(2),IJ_TP(2),IJ_SM(1),IJ_TP(1))
                 IF(NTEST.GE.1000) THEN
-                  WRITE(6,*) ' RSBB1E H BLOCK '
+                  WRITE(lupri,*) ' RSBB1E H BLOCK '
                 CALL WRTMT_LU(H,IJ_DIM(2),IJ_DIM(1),IJ_DIM(2),IJ_DIM(1))
                 END IF
 *.Sscr(I,K,i) = CSCR(I,K,j)*h(j,i)
@@ -2680,14 +2681,14 @@ C               CALL GETH1(H,IJ_SM(2),IJ_TP(2),IJ_SM(1),IJ_TP(1))
                 FACTORC = 0.0D0
                 FACTORAB = 1.0D0
                 IF(NTEST.GE.2000) THEN
-                  WRITE(6,*) ' CSCR array,NIK X NJORB array '
+                  WRITE(lupri,*) ' CSCR array,NIK X NJORB array '
                   CALL WRTMT_LU(CSCR,NIK,IJ_DIM(2),NIK,IJ_DIM(2))
                 END IF
                 CALL MATML7(SSCR,CSCR,H,
      &               NIK,IJ_DIM(1),NIK,IJ_DIM(2),IJ_DIM(2),IJ_DIM(1),
      &               FACTORC,FACTORAB,0)
                 IF(NTEST.GE.2000) THEN
-                  WRITE(6,*) ' SSCR array,NIK X NIORB array '
+                  WRITE(lupri,*) ' SSCR array,NIK X NIORB array '
                   CALL WRTMT_LU(SSCR,NIK,IJ_DIM(1),NIK,IJ_DIM(1))
                 END IF
 *.S(I,a+ K) =  S(I, a+ K) + sgn*Sscr(I,K,i)
@@ -2726,7 +2727,7 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
      &                  NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &                  RIKSX,RKJSX,MXSXST,MXSXBL,IMOC,SCLFAC,NTESTG,
+     &                  RIKSX,RKJSX,MXSXBL,IMOC,SCLFAC,NTESTG,
      &                  NSEL2E,ISEL2E,IUSE_PH,IPHGAS,MXTSOB,SCR)
 *
 * two electron excitations on column strings
@@ -2778,6 +2779,7 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
 * Jeppe Olsen, Winter of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input
       INTEGER ADSXA(MXPOBS,2*MXPOBS),DXSTST(NSMDX,NSMST)
       INTEGER STSTDX(NSMST,NSMST)
@@ -2812,12 +2814,12 @@ CTF   COMMON/SOMESCR/SCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
       NTESTL = 000
       NTEST = MAX(NTESTG,NTESTL)
       IF(NTEST.GE.1000) THEN
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' RSBB2A speaking '
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' MXSXST MXSXBL = ', MXSXST,MXSXBL
-        WRITE(6,*) ' RSBB2A : IMOC,IUSE_PH ', IMOC, IUSE_PH
-        WRITE(6,*) ' ISOC and ICOC : '
+        WRITE(lupri,*) ' ================'
+        WRITE(lupri,*) ' RSBB2A speaking '
+        WRITE(lupri,*) ' ================'
+        WRITE(lupri,*) ' MXSXBL = ', MXSXBL
+        WRITE(lupri,*) ' RSBB2A : IMOC,IUSE_PH ', IMOC, IUSE_PH
+        WRITE(lupri,*) ' ISOC and ICOC : '
         CALL IWRTMA(ISOC,1,NGAS,1,NGAS)
         CALL IWRTMA(ICOC,1,NGAS,1,NGAS)
       END IF
@@ -2899,8 +2901,8 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
           I4_AC(IJKL) = ISCR(IJKL)
         END DO
         IF(NTEST.GE.100) THEN
-          WRITE(6,*) ' I4_AC, IT_TP  defined '
-          WRITE(6,*) ' I4_AC, I4_TP '
+          WRITE(lupri,*) ' I4_AC, IT_TP  defined '
+          WRITE(lupri,*) ' I4_AC, I4_TP '
           CALL IWRTMA(I4_AC,1,4,1,4)
           CALL IWRTMA(I4_TP,1,4,1,4)
         END IF
@@ -2936,7 +2938,8 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
 *. Symmetry of allowed Double excitation,loop over excitations
           DO 1950 IKOBSM = 1, NSMOB
             JLOBSM = SXDXSX(IKOBSM,IDXSM)
-            IF(NTEST.GE.100) WRITE(6,*) ' IKOBSM,JLOBSM', IKOBSM,JLOBSM
+            IF(NTEST.GE.100)
+     &      WRITE(lupri,*) ' IKOBSM,JLOBSM', IKOBSM,JLOBSM
             IF(JLOBSM.EQ.0) GOTO 1950
 *. types + symmetries defined => K strings are defined
             KFRST = 1
@@ -2951,7 +2954,7 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
               KSM = ADSXA(ISM,IKOBSM)
               NI = NOBPTS(ITYP,ISM)
               NK = NOBPTS(KTYP,KSM)
-              IF(NTEST.GE.100) write(6,*) ' NI, NK' , NI,NK
+              IF(NTEST.GE.100) write(lupri,*) ' NI, NK' , NI,NK
 *
               IF(ISM.EQ.KSM.AND.ITYP.EQ.KTYP) THEN
                 NIK = NI*(NI+1)/2
@@ -2987,13 +2990,13 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
 
 *.
             IF(NTEST.GE.2000) THEN
-              WRITE(6,*) ' ITYP, KTYP, IKOBSM,  NIKBT = ',
+              WRITE(lupri,*) ' ITYP, KTYP, IKOBSM,  NIKBT = ',
      &                     ITYP, KTYP, IKOBSM,  NIKBT
-              WRITE(6,*) ' IKBT : Offset, number, length '
+              WRITE(lupri,*) ' IKBT : Offset, number, length '
               DO JIKBT = 1, NIKBT
-                WRITE(6,'(3i3)') (IKBT(II,JIKBT), II = 1, 3)
+                WRITE(lupri,'(3i3)') (IKBT(II,JIKBT), II = 1, 3)
               END DO
-              WRITE(6,*) ' IKSMBT '
+              WRITE(lupri,*) ' IKSMBT '
               CALL IWRTMA(IKSMBT,2,NBLKT,2,8)
             END IF
 *
@@ -3041,19 +3044,19 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
             END IF
 *.
             IF(NTEST.GE.2000) THEN
-              WRITE(6,*) ' JTYP, LTYP, JLOBSM,  NJLBT = ',
+              WRITE(lupri,*) ' JTYP, LTYP, JLOBSM,  NJLBT = ',
      &                     JTYP, LTYP, JLOBSM,  NJLBT
-              WRITE(6,*) ' JLBT : Offset, number, length '
+              WRITE(lupri,*) ' JLBT : Offset, number, length '
               DO JJLBT = 1, NJLBT
-                WRITE(6,'(3i3)') (JLBT(II,JJLBT), II = 1, 3)
+                WRITE(lupri,'(3i3)') (JLBT(II,JJLBT), II = 1, 3)
               END DO
-              WRITE(6,*) ' JLSMBT '
+              WRITE(lupri,*) ' JLSMBT '
               CALL IWRTMA(JLSMBT,2,NBLKT,2,8)
             END IF
 *
 *. Loop over batches of IK strings
             DO 1940 IKBTC = 1, NIKBT
-              IF(NTEST.GE.1000) WRITE(6,*) ' IKBTC = ', IKBTC
+              IF(NTEST.GE.1000) WRITE(lupri,*) ' IKBTC = ', IKBTC
 *. Loop over batches of JL strings
               DO 1930 JLBTC = 1, NJLBT
                 IFIRST = 1
@@ -3061,7 +3064,7 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
                 NPART = NROW/MAXI
                 IF(NPART*MAXI.NE.NROW) NPART = NPART + 1
                 IF(NTEST.GE.2000)
-     &          write(6,*) ' NROW, MAXI NPART ',NROW,MAXI,NPART
+     &          write(lupri,*) ' NROW, MAXI NPART ',NROW,MAXI,NPART
                 DO 1801 IPART = 1, NPART
                   IBOT = 1+(IPART-1)*MAXI
                   ITOP = MIN(IBOT+MAXI-1,NROW)
@@ -3205,11 +3208,11 @@ CT                    CALL QEXIT ('MATCG')
 *.and now ,to the work
                     LIKB = NIBTC*NKBTC
                     IF(NTEST.GE.3000) THEN
-                     WRITE(6,*) ' Integral block '
+                     WRITE(lupri,*) ' Integral block '
                      CALL WRTMT_LU(XINT,NIKT,NJLT,NIKT,NJLT)
                     END IF
                     IF(NTEST.GE.3000) THEN
-                      WRITE(6,*) ' CSCR matrix '
+                      WRITE(lupri,*) ' CSCR matrix '
                       CALL WRTMT_LU(CSCR,LIKB,NJLT,LIKB,NJLT)
                     END IF
 *
@@ -3230,7 +3233,7 @@ C?                  END IF
      &                          LIKB,NIKT,LIKB,NJLT,NIKT,NJLT,
      &                          FACTORC,FACTORAB,2)
                     IF(NTEST.GE.3000) THEN
-                      WRITE(6,*) ' SSCR matrix '
+                      WRITE(lupri,*) ' SSCR matrix '
                       CALL WRTMT_LU(SSCR,LIKB,NIKT,LIKB,NIKT)
                     END IF
 * ============================
@@ -3342,7 +3345,7 @@ CT                    CALL QEXIT ('MATCS')
               KSM = ADSXA(ISM,IKOBSM)
               DO JSM = 1, NSMOB
                 LSM = ADSXA(JSM,JLOBSM)
-                IF(NTEST.GE.2000) WRITE(6,*) ' ISM KSM LSM JSM',
+                IF(NTEST.GE.2000) WRITE(lupri,*) ' ISM KSM LSM JSM',
      &          ISM,KSM,LSM,JSM
                 ISCR(I4_REO(1)) = ISM
                 ISCR(I4_REO(2)) = KSM
@@ -3390,7 +3393,7 @@ C               JSM = ISCR(I4_REO(4))
                 NPART = NROW/MAXI
                 IF(NPART*MAXI.NE.NROW) NPART = NPART + 1
                 IF(NTEST.GE.2000)
-     &          write(6,*) ' NROW, MAXI NPART ',NROW,MAXI,NPART
+     &          write(lupri,*) ' NROW, MAXI NPART ',NROW,MAXI,NPART
                 DO 2801 IPART = 1, NPART
                   IBOT = 1+(IPART-1)*MAXI
                   ITOP = MIN(IBOT+MAXI-1,NROW)
@@ -3477,7 +3480,7 @@ CT                  CALL QEXIT ('MATCG')
                         IXCHNG = 1
                         FACX = -1.0D0
                       END IF
-           IF( NTEST.GE.1000) WRITE(6,*)
+           IF( NTEST.GE.1000) WRITE(lupri,*)
      &   ' ITPSM_ORIG,KTPSM_ORIG,JTPSM_ORIG,LTPSM_ORIG,FACX',
      &     ITPSM_ORIG,KTPSM_ORIG,JTPSM_ORIG,LTPSM_ORIG,FACX
 *. fetch integrals
@@ -3496,11 +3499,11 @@ CT                  CALL QEXIT ('MATCG')
 *.and now ,to the work
                     LIKB = NIBTC*NKBTC
                     IF(NTEST.GE.3000) THEN
-                     WRITE(6,*) ' Integral block '
+                     WRITE(lupri,*) ' Integral block '
                      CALL WRTMT_LU(XINT,NIK,NJL,NIK,NJL)
                     END IF
                     IF(NTEST.GE.3000) THEN
-                      WRITE(6,*) ' CSCR matrix '
+                      WRITE(lupri,*) ' CSCR matrix '
                       CALL WRTMT_LU(CSCR,LIKB,NJL,LIKB,NJL)
                     END IF
 *
@@ -3521,7 +3524,7 @@ C?                  END IF
      &                          LIKB,NIK,LIKB,NJL,NIK,NJL,
      &                          FACTORC,FACTORAB,2)
                     IF(NTEST.GE.3000) THEN
-                      WRITE(6,*) ' SSCR matrix '
+                      WRITE(lupri,*) ' SSCR matrix '
                       CALL WRTMT_LU(SSCR,LIKB,NIK,LIKB,NIK)
                     END IF
 * ============================
@@ -3587,266 +3590,6 @@ CT                  CALL QEXIT ('MATCS')
 *
  2001 CONTINUE
       CALL QEXIT('RS2A ')
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE RSBB2B(IASM,IATP,IBSM,IBTP,NIA,NIB,
-     &                  JASM,JATP,JBSM,JBTP,NJA,NJB,
-     &                  IAGRP,IBGRP,NGAS,
-     &                  IAOC,IBOC,JAOC,JBOC,
-     &                  SB,CB,
-     &                  ADSXA,STSTSX,MXPNGAS,
-     &                  NOBPTS,IOBPTS,ITSOB,MAXK,
-     &                  SSCR,CSCR,I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
-     &                  XINT,
-     &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
-     &                  ICJKAIB,CJRES,SIRES,S2,SCLFAC,NTEST,
-     &                  NSEL2E,ISEL2E)
-*
-* Combined alpha-beta double excitation
-* contribution from given C block to given S block
-*. If IUSAB only half the terms are constructed
-* =====
-* Input
-* =====
-*
-* IASM,IATP : Symmetry and type of alpha  strings in sigma
-* IBSM,IBTP : Symmetry and type of beta   strings in sigma
-* JASM,JATP : Symmetry and type of alpha  strings in C
-* JBSM,JBTP : Symmetry and type of beta   strings in C
-* NIA,NIB : Number of alpha-(beta-) strings in sigma
-* NJA,NJB : Number of alpha-(beta-) strings in C
-* IAGRP : String group of alpha strings
-* IBGRP : String group of beta strings
-* IAEL1(3) : Number of electrons in RAS1(3) for alpha strings in sigma
-* IBEL1(3) : Number of electrons in RAS1(3) for beta  strings in sigma
-* JAEL1(3) : Number of electrons in RAS1(3) for alpha strings in C
-* JBEL1(3) : Number of electrons in RAS1(3) for beta  strings in C
-* CB   : Input C block
-* ADSXA : sym of a+, a+a => sym of a
-* STSTSX : Sym of !st>,sx!st'> => sym of sx so <st!sx!st'>
-* NTSOB  : Number of orbitals per type and symmetry
-* IBTSOB : base for orbitals of given type and symmetry
-* IBORB  : Orbitals of given type and symmetry
-* NSMOB,NSMST,NSMSX : Number of symmetries of orbitals,strings,
-*       single excitations
-* MAXK   : Largest number of inner resolution strings treated at simult.
-*
-* ICJKAIB =1 =>  construct C(Ka,Jb,j) and S(Ka,Ib,i) as intermediate
-*                 matrices in order to reduce overhead
-*
-* ======
-* Output
-* ======
-* SB : updated sigma block
-*
-* =======
-* Scratch
-* =======
-*
-* SSCR, CSCR : at least MAXIJ*MAXI*MAXK, where MAXIJ is the
-*              largest number of orbital pairs of given symmetries and
-*              types.
-* I1, XI1S   : at least MXSTSO : Largest number of strings of given
-*              type and symmetry
-* I2, XI2S   : at least MXSTSO : Largest number of strings of given
-*              type and symmetry
-* H : Space for two electron integrals
-*
-* Jeppe Olsen, Winter of 1991
-*
-* Feb 92 : Loops restructured ; Generation of I2,XI2S moved outside
-* October 1993 : IUSEAB added
-* January 1994 : Loop restructured + ICJKAIB introduced
-* February 1994 : Fetching and adding to transposed blocks
-*
-*. October 96 : New routines for accessing annihilation information
-*.              Cleaned and shaved, only IROUTE = 3 option active
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. General input
-      INTEGER ADSXA(MXPOBS,MXPOBS),STSTSX(NSMST,NSMST)
-      INTEGER NOBPTS(MXPNGAS,*),IOBPTS(MXPNGAS,*),ITSOB(*)
-*
-      INTEGER ISEL2E(*)
-C     INTEGER NTSOB(3,*),IBTSOB(3,*),ITSOB(*)
-*.Input
-      DIMENSION CB(*)
-*.Output
-      DIMENSION SB(*)
-*.Scratch
-      DIMENSION SSCR(*),CSCR(*)
-      DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
-      DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
-      DIMENSION XINT(*)
-      DIMENSION CJRES(*),SIRES(*)
-      DIMENSION S2(*)
-*.Local arrays
-      DIMENSION ITP(20),JTP(20),KTP(20),LTP(20)
-*
-*
-      CALL QENTER('RS2B ')
-C?    NTEST = 0
-C?    IF(SCLFAC.NE.1.0D0) THEN
-C?      WRITE(6,*) ' Warning : RSBB2B, SCLFAC .ne 1 '
-C?    END IF
-      IF(NTEST.GE.500) THEN
-        WRITE(6,*) ' =============== '
-        WRITE(6,*) ' RSBB2B speaking '
-        WRITE(6,*) ' =============== '
-      END IF
-      IROUTE = 3
-* IROUTE = 1 : Normal (i.e. old) route,
-* IROUTE = 2 : New route with j first
-* IROUTE = 3 : C(Ka,j,Jb)
-*
-*
-*. Symmetry of allowed excitations
-      IJSM = STSTSX(IASM,JASM)
-      KLSM = STSTSX(IBSM,JBSM)
-      IF(IJSM.EQ.0.OR.KLSM.EQ.0) GOTO 9999
-      IF(NTEST.GE.600) THEN
-        write(6,*) ' IASM JASM IJSM ',IASM,JASM,IJSM
-        write(6,*) ' IBSM JBSM KLSM ',IBSM,JBSM,KLSM
-      END IF
-*.Types of SX that connects the two strings
-      CALL SXTYP_GAS(NKLTYP,KTP,LTP,NGAS,IBOC,JBOC)
-      CALL SXTYP_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC)
-      IF(NIJTYP.EQ.0.OR.NKLTYP.EQ.0) GOTO 9999
-      DO 2001 IJTYP = 1, NIJTYP
-        ITYP = ITP(IJTYP)
-*
-        JTYP = JTP(IJTYP)
-        DO 1940 ISM = 1, NSMOB
-          JSM = ADSXA(ISM,IJSM)
-          IF(JSM.EQ.0) GOTO 1940
-          KAFRST = 1
-          if(ntest.ge.1500) write(6,*) ' ISM JSM ', ISM,JSM
-          IOFF = IOBPTS(ITYP,ISM)
-          JOFF = IOBPTS(JTYP,JSM)
-          NI = NOBPTS(ITYP,ISM)
-          NJ = NOBPTS(JTYP,JSM)
-          IF(NI.EQ.0.OR.NJ.EQ.0) GOTO 1940
-*. Generate annihilation mappings for all K strings
-*. a+j!ka> = +/-/0 * !Ja>
-          CALL ADSTN_GAS(JSM,JTYP,JATP,JASM,IAGRP,
-     &                   I1,XI1S,NKASTR,IEND,IFRST,KFRST,KACT,SCLFAC)
-*. a+i!ka> = +/-/0 * !Ia>
-          ONE = 1.0D0
-          CALL ADSTN_GAS(ISM,ITYP,IATP,IASM,IAGRP,
-     &                   I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE)
-*. Compress list to common nonvanishing elements
-          IDOCOMP = 1
-          IF(IDOCOMP.EQ.1) THEN
-C             COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
-              CALL COMPRS2LST(I1,XI1S,NJ,I3,XI3S,NI,NKASTR,NKAEFF)
-          ELSE
-              NKAEFF = NKASTR
-          END IF
-
-*. Loop over batches of KA strings
-          NKABTC = NKAEFF/MAXK
-          IF(NKABTC*MAXK.LT.NKAEFF) NKABTC = NKABTC + 1
-C         IF(NKABTC.GT.1) THEN
-C           WRITE(6,*) ' RSBB2B : NKABTC .GT. 1 '
-C           WRITE(6,*) ' I am not prepared for this '
-C           Call Abend2( 'RSBB2B :  NKABTC .GT. 1' )
-C         END IF
-          DO 1801 IKABTC = 1, NKABTC
-            KABOT = (IKABTC-1)*MAXK + 1
-            KATOP = MIN(KABOT+MAXK-1,NKAEFF)
-            LKABTC = KATOP-KABOT+1
-*. Obtain C(ka,J,JB) for Ka in batch
-            DO JJ = 1, NJ
-              CALL GET_CKAJJB(CB,NJ,NJA,CJRES,LKABTC,NJB,
-     &             JJ,I1(KABOT+(JJ-1)*NKASTR),
-     &             XI1S(KABOT+(JJ-1)*NKASTR))
-            END DO
-*
-            ZERO = 0.0D0
-            CALL SETVEC(SIRES,ZERO,NIB*LKABTC*NI)
-            FACS = 1.0D0
-*
-            DO 2000 KLTYP = 1, NKLTYP
-              KTYP = KTP(KLTYP)
-              LTYP = LTP(KLTYP)
-*. Should this group of excitations be included
-              IF(NSEL2E.NE.0) THEN
-               IAMOKAY=0
-               IF(ITYP.EQ.JTYP.AND.ITYP.EQ.KTYP.AND.ITYP.EQ.LTYP)THEN
-                 DO JSEL2E = 1, NSEL2E
-                   IF(ISEL2E(JSEL2E).EQ.ITYP)IAMOKAY = 1
-                 END DO
-               END IF
-               IF(IAMOKAY.EQ.0) GOTO 2000
-              END IF
-*
-              DO 1930 KSM = 1, NSMOB
-                IFIRST = 1
-                LSM = ADSXA(KSM,KLSM)
-                IF(LSM.EQ.0) GOTO 1930
-                KOFF = IOBPTS(KTYP,KSM)
-                LOFF = IOBPTS(LTYP,LSM)
-                NK = NOBPTS(KTYP,KSM)
-                NL = NOBPTS(LTYP,LSM)
-*. If IUSEAB is used, only terms with i.ge.k will be generated so
-                IKORD = 0
-                IF(IUSEAB.EQ.1.AND.ISM.GT.KSM) GOTO 1930
-                IF(IUSEAB.EQ.1.AND.ISM.EQ.KSM.AND.ITYP.LT.KTYP)
-     &          GOTO 1930
-                IF(IUSEAB.EQ.1.AND.ISM.EQ.KSM.AND.ITYP.EQ.KTYP)
-     &          IKORD = 1
-*
-                IF(NK.EQ.0.OR.NL.EQ.0) GOTO 1930
-*. Obtain all connections a+l!Kb> = +/-/0!Jb>
-                CALL ADSTN_GAS(LSM,LTYP,JBTP,JBSM,IBGRP,
-     &               I2,XI2S,NKBSTR,IEND,IFRST,KFRST,KACT,ONE   )
-                IF(NKBSTR.EQ.0) GOTO 1930
-*. Obtain all connections a+k!Kb> = +/-/0!Ib>
-                CALL ADSTN_GAS(KSM,KTYP,IBTP,IBSM,IBGRP,
-     &               I4,XI4S,NKBSTR,IEND,IFRST,KFRST,KACT,ONE   )
-                IF(NKBSTR.EQ.0) GOTO 1930
-*
-* Fetch Integrals as (j i k l )
-*
-                IXCHNG = 0
-                ICOUL = 1
-                CALL LGETINT(XINT,JTYP,JSM,ITYP,ISM,KTYP,KSM,
-     &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
-*
-* S(Ka,j,Ib) = sum(k,l,Jb)<Ib!a+kba lb!Jb>C(Ka,j,Jb)*(ji!kl)
-*
-          print*,'Calling SKICKJ with incomplete argument list.'
-          stop
-!               CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-!    &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
-!    &                      I4,XI4S,I2,XI2S,IKORD,
-!    &                      FACS,IROUTE )
-                FACS = 1.0D0
-*
- 1930         CONTINUE
- 2000       CONTINUE
-*
-*. Scatter out from s(Ka,Ib,i)
-*
-            DO II = 1, NI
-              CALL ADD_SKAIIB(SB,NI,NIA,SIRES,LKABTC,NIB,II,
-     &             I3(KABOT+(II-1)*NKASTR),
-     &             XI3S(KABOT+(II-1)*NKASTR))
-            END DO
- 1801     CONTINUE
-*. End of loop over partitioning of alpha strings
- 1940   CONTINUE
- 2001 CONTINUE
-*
- 9999 CONTINUE
-*
-*
-      CALL QEXIT('RS2B ')
       RETURN
       END
 ***********************************************************************
@@ -3924,6 +3667,7 @@ C         END IF
 * October   97 : allowing for N-1/N+1 switch
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input
       INTEGER ADSXA(MXPOBS,MXPOBS),STSTSX(NSMST,NSMST)
       INTEGER NOBPTS(MXPNGAS,*)
@@ -3962,9 +3706,9 @@ C    &          SIGNREO,NADOP,NADDEL,IADDEL,ADSIGN)
       NTEST = MAX(NTESTG,NTESTL)
 *
       IF(NTEST.GE.500) THEN
-        WRITE(6,*) ' =============== '
-        WRITE(6,*) ' RSBB2BN speaking '
-        WRITE(6,*) ' =============== '
+        WRITE(lupri,*) ' =============== '
+        WRITE(lupri,*) ' RSBB2BN speaking '
+        WRITE(lupri,*) ' =============== '
       END IF
 *. A few constants
       IONE = 1
@@ -3981,8 +3725,8 @@ C    &          SIGNREO,NADOP,NADDEL,IADDEL,ADSIGN)
       KLSM = STSTSX(IBSM,JBSM)
       IF(IJSM.EQ.0.OR.KLSM.EQ.0) GOTO 9999
       IF(NTEST.GE.600) THEN
-        write(6,*) ' IASM JASM IJSM ',IASM,JASM,IJSM
-        write(6,*) ' IBSM JBSM KLSM ',IBSM,JBSM,KLSM
+        write(lupri,*) ' IASM JASM IJSM ',IASM,JASM,IJSM
+        write(lupri,*) ' IBSM JBSM KLSM ',IBSM,JBSM,KLSM
       END IF
 *.Types of SX that connects the two strings
       CALL SXTYP2_GAS(NKLTYP,KTP,LTP,NGAS,IBOC,JBOC,IPHGAS)
@@ -4092,7 +3836,7 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
      &             XI1S(KABOT+(JJ-1)*NKASTR))
             END DO
             IF(NTEST.GE.500) THEN
-              WRITE(6,*) ' Updated CJRES as C(Kaj,Jb)'
+              WRITE(lupri,*) ' Updated CJRES as C(Kaj,Jb)'
               CALL WRTMT_LU(CJRES,NKASTR*NJ,NJB,NKASTR*NJ,NJB)
             END IF
 *
@@ -4107,7 +3851,7 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
               IJKL_ACT = I_DX_ACT(ITYP,KTYP,LTYP,JTYP)
               IF(IJKL_ACT.EQ.0) GOTO 2000
               IF(NTEST.GE.100) THEN
-                WRITE(6,*) ' KTYP, LTYP', KTYP, LTYP
+                WRITE(lupri,*) ' KTYP, LTYP', KTYP, LTYP
               END IF
 *. Should this group of excitations be included
               IF(NSEL2E.NE.0) THEN
@@ -4139,7 +3883,7 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
                 IFIRST = 1
                 LSM = ADSXA(KSM,KLSM)
                 IF(NTEST.GE.100) THEN
-                  WRITE(6,*) ' KSM, LSM', KSM, LSM
+                  WRITE(lupri,*) ' KSM, LSM', KSM, LSM
                 END IF
                 IF(LSM.EQ.0) GOTO 1930
                 NK = NOBPTS(KTYP,KSM)
@@ -4204,15 +3948,15 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
                 IJKL_DIM = IJ_DIM(1)*IJ_DIM(2)*KL_DIM(1)*KL_DIM(2)
                 IF(INPROD(XINT,XINT,IJKL_DIM).NE.0.0D0) THEN
                 IROUTE = 3
-!               CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-!    &               NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
-!    &               KL_DIM(1),KL_DIM(2),
-!    &               NKBSTR,I4,XI4S,I2,XI2S,IKORD,
-!    &               FACS,IROUTE,MXTSOB,XIJILS)
+                CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+     &               NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
+     &               KL_DIM(1),KL_DIM(2),
+     &               NKBSTR,I4,XI4S,I2,XI2S,IKORD,
+     &               FACS,IROUTE,MXTSOB,XIJILS)
                 END IF
 *
                 IF(NTEST.GE.500) THEN
-                  WRITE(6,*) ' Updated Sires as S(Kai,Ib)'
+                  WRITE(lupri,*) ' Updated Sires as S(Kai,Ib)'
                   CALL WRTMT_LU(SIRES,LKABTC*NI,NIB,LKABTC*NI,NIB)
                 END IF
 *
@@ -4224,7 +3968,7 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
 *. Scatter out from s(Ka,Ib,i)
 *
             IF(NTEST.GE.1000) THEN
-              WRITE(6,*) ' S(Ka,Ib,i) as S(Ka,Ibi)'
+              WRITE(lupri,*) ' S(Ka,Ib,i) as S(Ka,Ibi)'
               CALL WRTMT_LU(SIRES,LKABTC,NIB*IJ_DIM(1),LKABTC,IJ_DIM(1))
             END IF
 *
@@ -4688,19 +4432,19 @@ C           END IF
 *
                 IROUTE = 3
                 IF(IUSE_PA.EQ.0) THEN
-!                 CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-!    &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
-!    &                 KL_DIM(1),KL_DIM(2),
-!    &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
-!    &                 FACS,IROUTE,MXTSOB,XIJILS)
+                  CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+     &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
+     &                 KL_DIM(1),KL_DIM(2),
+     &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
+     &                 FACS,IROUTE,MXTSOB,XIJILS)
                 ELSE
-!                 CALL SKICKJ(SIRESPA(ISK_OFF),CJRESPA(ICK_OFF),
-!    &                 LKABTC*NJBPA_S(JBSM_AC),
-!    &                 NIBAC_S(IBSM_AC),NJBAC_S(JBSM_AC),
-!    &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
-!    &                 KL_DIM(1),KL_DIM(2),
-!    &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
-!    &                 FACS,IROUTE,MXTSOB,XIJILS)
+                  CALL SKICKJ(SIRESPA(ISK_OFF),CJRESPA(ICK_OFF),
+     &                 LKABTC*NJBPA_S(JBSM_AC),
+     &                 NIBAC_S(IBSM_AC),NJBAC_S(JBSM_AC),
+     &                 NKBSTR,XINT,IJ_DIM(1),IJ_DIM(2),
+     &                 KL_DIM(1),KL_DIM(2),
+     &                 NKBSTR,I4,XI4S,I2,XI2S,IKORD,
+     &                 FACS,IROUTE,MXTSOB,XIJILS)
                 END IF
 *               ^ End of switch IUSE_PA
  1912         CONTINUE
@@ -4745,10 +4489,6 @@ C?              WRITE(6,*) SIGNPA
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE RSSBCB2(IASM,IATP,IOCPTA,IBSM,IBTP,IOCTPB,
      &                  JASM,JATP,JBSM,JBTP,NGAS,
      &                  IAOC,IBOC,JAOC,JBOC,NAEL,NBEL,
@@ -4759,10 +4499,10 @@ C?              WRITE(6,*) SIGNPA
      &                  NSMOB,NSMST,NSMSX,NSMDX,
      &                  NIA,NIB,NJA,NJB,MXPOBS,IDC,PS,
      &                  ICJKAIB,CJRES,SIRES,I3,XI3S,I4,XI4S,
-     &                  MXSXBL,MXSXST,MOCAA,MOCAB,IAPR,IPRNT,IHAPR,
+     &                  MXSXBL,MOCAA,MOCAB,IAPR,IPRNT,IHAPR,
      &                  IPTSPC,JPTSPC,IJOP,NNSEL2E,ISEL2E,SCLFAC,
      &                  IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
-     &                  MXTSOB,SOMESCR,SOMEH,XIJILS)
+     &                  MXTSOB,SOMESCR,SOMEH,XIJILS,luwrt)
 *
 * Contributions to sigma block (iasm iatp, ibsm ibtp ) from
 * C block (jasm jatp , jbsm, jbtp)
@@ -4844,34 +4584,34 @@ C?              WRITE(6,*) SIGNPA
 *. For H(apr)
       DIMENSION ISEL2E(*)
 *
-      NTEST = 0
+      NTEST = 0000
       NTEST = MAX(NTEST,IPRNT)
 
 *
       IF(NTEST.GE.200) THEN
-        WRITE(6,*) ' ==============================='
-        WRITE(6,*) ' RSSBCB2 :  C block (transposed)'
-        WRITE(6,*) ' ================================'
-        CALL WRTMT_LU(CB,NJB,NJA,NJB,NJA)
-        WRITE(6,*) ' ======================================='
-        WRITE(6,*) ' RSSBCB2 : Initial  S block(transposed) '
-        WRITE(6,*) ' ======================================='
-        CALL WRTMT_LU(SB,NIA,NIB,NIA,NIB)
-        WRITE(6,*) ' Overall scalefactor ',SCLFAC
-        WRITE(6,*) ' IHAPR,JDOH2 = ', IHAPR,JDOH2
-        WRITE(6,*) ' IUSE_PH,I_RES_AB = ', IUSE_PH,I_RES_AB
+        WRITE(luwrt,*) ' ==============================='
+        WRITE(luwrt,*) ' RSSBCB2 :  C block (transposed)'
+        WRITE(luwrt,*) ' ================================'
+        CALL WRTMAT(CB,NJB,NJA,NJB,NJA)
+        WRITE(luwrt,*) ' ======================================='
+        WRITE(luwrt,*) ' RSSBCB2 : Initial  S block(transposed) '
+        WRITE(luwrt,*) ' ======================================='
+        CALL WRTMAT(SB,NIA,NIB,NIA,NIB)
+        WRITE(luwrt,*) ' Overall scalefactor ',SCLFAC
+        WRITE(luwrt,*) ' IHAPR,JDOH2 = ', IHAPR,JDOH2
+        WRITE(luwrt,*) ' IUSE_PH,I_RES_AB = ', IUSE_PH,I_RES_AB
       END IF
 *
       IF(NTEST.GE.500) THEN
-        WRITE(6,*) ' IAOC and IBOC '
+        WRITE(luwrt,*) ' IAOC and IBOC '
         CALL IWRTMA(IAOC,1,NGAS,1,NGAS)
         CALL IWRTMA(IBOC,1,NGAS,1,NGAS)
-        WRITE(6,*) ' JAOC and JBOC  : '
+        WRITE(luwrt,*) ' JAOC and JBOC  : '
         CALL IWRTMA(JAOC,1,NGAS,1,NGAS)
         CALL IWRTMA(JBOC,1,NGAS,1,NGAS)
-        WRITE(6,*) ' IASM IATP JASM JATP ', IASM,IATP,JASM,JATP
-        WRITE(6,*) ' IBSM IBTP JBSM JBTP ', IBSM,IBTP,JBSM,JBTP
-        WRITE(6,*) ' NAEL NBEL ', NAEL, NBEL
+        WRITE(luwrt,*) ' IASM IATP JASM JATP ', IASM,IATP,JASM,JATP
+        WRITE(luwrt,*) ' IBSM IBTP JBSM JBTP ', IBSM,IBTP,JBSM,JBTP
+        WRITE(luwrt,*) ' NAEL NBEL ', NAEL, NBEL
       END IF
 * Should the corresponding Hamiltonian matrix block be
 * calculated exactly or approximately
@@ -4880,7 +4620,7 @@ C?              WRITE(6,*) SIGNPA
      &               IPTSPC,JPTSPC,IJOP,IJOP,IIF,JDOH2,IDOH2,
      &               IMZERO,IDIAG)
         IF(NTEST.GE. 20)
-     &  WRITE(6,*) ' RSSBCBN : ', NNSEL2E, ISEL2E(1)
+     &  WRITE(luwrt,*) ' RSSBCBN : ', NNSEL2E, ISEL2E(1)
         NSEL2E = NNSEL2E
         IF(IMZERO.NE.0) GOTO 9999
       ELSE
@@ -4891,7 +4631,7 @@ C?              WRITE(6,*) SIGNPA
         NSEL2E = 0
       END IF
       IF(NTEST.GE. 20)
-     &WRITE(6,*) ' IHAPR, IDIAG IDOH2 ' , IHAPR,IDIAG, IDOH2
+     &WRITE(luwrt,*) ' IHAPR, IDIAG IDOH2 ' , IHAPR,IDIAG, IDOH2
 *
 *
       IF(IDC.EQ.2.AND.IATP.EQ.IBTP.AND.IASM.EQ.IBSM .AND.
@@ -4924,38 +4664,38 @@ C?              WRITE(6,*) SIGNPA
 
         IF(NBEL.GE.0) THEN
            IF(NTEST.GE.500) THEN
-             WRITE(6,*) ' SB before RSBB1E'
-             call WRTMT_LU(sb,nia,nib,nia,nib)
+             WRITE(luwrt,*) ' SB before RSBB1E'
+             call wrtmat(sb,nia,nib,nia,nib)
            END IF
           IF(NTEST.GE.101)
-     &    WRITE(6,*) ' I am going to call RSBB1E'
+     &    WRITE(luwrt,*) ' I am going to call RSBB1E'
           CALL RSBB1E(IBSM,IBTP,IOCTPB,JBSM,JBTP,IOCTPB,
      &                IJBGRP,NIA,NGAS,IBOC,JBOC,
      &                SB,CB,ADSXA,SXSTST,STSTSX,
      &                MXPNGAS,NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &                NIB,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
+     &                NIB,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.500) THEN
-             WRITE(6,*) ' SB after RSBB1E'
-             call WRTMT_LU(sb,nib,nia,nib,nia)
+             WRITE(luwrt,*) ' SB after RSBB1E'
+             call wrtmat(sb,nib,nia,nib,nia)
            END IF
         END IF
         IF(IDOH2.NE.0.AND.NBEL.GE.0) THEN
 *. Two electron part
           IF(NTEST.GE.101)
-     &    WRITE(6,*) ' I am going to call RSBB2A'
+     &    WRITE(luwrt,*) ' I am going to call RSBB2A'
           CALL RSBB2A(IBSM,IBTP,JBSM,JBTP,IJBGRP,NIA,NIB,
      &                NGAS,IBOC,JBOC,SB,CB,
      &                ADSXA,DXSTST,STSTDX,SXDXSX,MXPNGAS,
      &                NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,
+     &                CJRES,SIRES,MXSXBL,MOCAA,SCLFAC,NTEST,
      &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
            IF(NTEST.GE.500) THEN
-             WRITE(6,*) ' SB after RSBB2a'
-             call WRTMT_LU(sb,nib,nia,nib,nia)
+             WRITE(luwrt,*) ' SB after RSBB2a'
+             call wrtmat(sb,nib,nia,nib,nia)
            END IF
         END IF
         CALL TRPMT3(SB,NIA,NIB,C2)
@@ -4970,7 +4710,7 @@ C?              WRITE(6,*) SIGNPA
 *
       IF(IDOH2.NE.0.AND.NAEL.GE.0.AND.NBEL.GE.0) THEN
         IF(NTEST.GE.101)
-     &  WRITE(6,*) ' I am going to call RSBB2B'
+     &  WRITE(luwrt,*) ' I am going to call RSBB2B'
         IIITRNS = 1
         IF(IIITRNS.EQ.1) THEN
 *. Call advice routine
@@ -4986,7 +4726,7 @@ C     ADVICE_SIGMA(IAOCC,IBOCC,JAOCC,JBOCC,ITERM,LADVICE)
            JJJTRNS = 0
         END IF
 *
-C       WRITE(6,*) ' IUSE_PA = ', IUSE_PA
+C       WRITE(luwrt,*) ' IUSE_PA = ', IUSE_PA
 *
         IF (JJJTRNS.EQ.0) THEN
           IF( IUSE_PA.EQ.0 ) THEN
@@ -5000,7 +4740,7 @@ C       WRITE(6,*) ' IUSE_PA = ', IUSE_PA
      &         IUSEAB,CJRES,SIRES,SCLFAC,NTEST,0,0,IUSE_PH,IPHGAS,
      &         MXTSOB,SOMEH,XIJILS)
           ELSE IF ( IUSE_PA.EQ.1 ) THEN
-C         WRITE(6,*) ' RSBB2BVN will be called '
+C         WRITE(luwrt,*) ' RSBB2BVN will be called '
           CALL RSBB2BVN(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &         JASM,JATP,JBSM,JBTP,NJA,NJB,
      &         IJAGRP,IJBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -5019,7 +4759,7 @@ C         WRITE(6,*) ' RSBB2BVN will be called '
 *
           CALL TRPMT3(CB,NJB,NJA,C2)
           CALL COPVEC(C2,CB,NJA*NJB)
-C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
+C         WRITE(luwrt,*) ' RSSBCB2 : Transpose path choosen'
 *
           IF(IUSE_PA.EQ.0) THEN
 *. No division into active/passive
@@ -5052,12 +4792,12 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
           CALL COPVEC(C2,CB,NJA*NJB)
         END IF
            IF(NTEST.GE.101) THEN
-             WRITE(6,*) ' SB after RSBB2B, first element '
-             call WRTMT_LU(sb,1,1    ,nia,nib)
+             WRITE(luwrt,*) ' SB after RSBB2B, first element '
+             call wrtmat(sb,1,1    ,nia,nib)
            END IF
            IF(NTEST.GE.500) THEN
-             WRITE(6,*) ' SB after RSBB2b'
-             call WRTMT_LU(sb,nib,nia,nib,nia)
+             WRITE(luwrt,*) ' SB after RSBB2b'
+             call wrtmat(sb,nib,nia,nib,nia)
            END IF
       END IF
 *
@@ -5071,7 +4811,7 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
 * alpha single excitation
 *
         IF(NTEST.GE.101)
-     &  WRITE(6,*) ' I am going to call RSBB1E (last time )'
+     &  WRITE(luwrt,*) ' I am going to call RSBB1E (last time )'
         CALL RSBB1E(IASM,IATP,IOCTPA,JASM,JATP,IOCTPA,
      &              IJAGRP,NIB,
      &              NGAS,IAOC,JAOC,
@@ -5081,21 +4821,21 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
      &              ITSOB,MAXI,MAXK,
      &              SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &              NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &              NIA,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
+     &              NIA,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.101) THEN
-             WRITE(6,*) ' SB transposed after RSBB1, first element '
-             call WRTMT_LU(sb,1,1    ,nia,nib)
+             WRITE(luwrt,*) ' SB transposed after RSBB1, first element '
+             call wrtmat(sb,1,1    ,nia,nib)
            END IF
            IF(NTEST.GE.500) THEN
-             WRITE(6,*) ' SB transposed  after RSBB1E'
-             call WRTMT_LU(SB,nib,nia,nib,nia)
+             WRITE(luwrt,*) ' SB transposed  after RSBB1E'
+             call wrtmat(SB,nib,nia,nib,nia)
            END IF
 *
 * alpha double excitation
 *
         IF(IDOH2.NE.0.AND.NAEL.GE.0) THEN
           IF(NTEST.GE.101)
-     &    WRITE(6,*) ' I am going to call RSBB2A (last time )'
+     &    WRITE(luwrt,*) ' I am going to call RSBB2A (last time )'
           CALL RSBB2A(IASM,IATP,JASM,JATP,IJAGRP,NIB,NIA,
      &                NGAS,IAOC,JAOC,
      &                SB,CB,
@@ -5103,17 +4843,17 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
      &                NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,
+     &                CJRES,SIRES,MXSXBL,MOCAA,SCLFAC,NTEST,
      &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
         END IF
 *
            IF(NTEST.GE.101) THEN
-             WRITE(6,*) ' SB transposed after RSBB2A, first element '
-             call WRTMT_LU(sb,1,1    ,nia,nib)
+             WRITE(luwrt,*)' SB transposed after RSBB2A, first element '
+             call wrtmat(sb,1,1    ,nia,nib)
            END IF
         IF(NTEST.GE.500) THEN
-          WRITE(6,*) ' SB after RSBB2A'
-          call WRTMT_LU(sb,nia,nib,nia,nib)
+          WRITE(luwrt,*) ' SB after RSBB2A'
+          call wrtmat(sb,nia,nib,nia,nib)
         END IF
       END IF
 *
@@ -5132,14 +4872,14 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
        ELSE
          I12 = 2
        END IF
-C?     WRITE(6,*) ' IDOH2, I12 ', IDOH2,I12
+C?     WRITE(luwrt,*) ' IDOH2, I12 ', IDOH2,I12
        ITASK = 2
        FACTOR = 0.0D0
 *. Input is in det basis
        IIDC = 1
 *. Well, we are working with transposed matrices so
        CALL TRPMT3(CB,NIB,NIA,C2)
-C?     WRITE(6,*) ' DIATERM2_GAS will be called '
+C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
        CALL DIATERM2_GAS(FACTOR,ITASK,C2,1,IBLOCK,1,0,I12,IIDC)
        CALL TRPMT3(C2,NIA,NIB,CB)
        ONE = 1.0D0
@@ -5160,10 +4900,10 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
       END IF
 *
       IF(NTEST.GE.200) THEN
-        WRITE(6,*) ' ==================================='
-        WRITE(6,*) ' RSSBCB : Final S block (transposed)'
-        WRITE(6,*) ' ==================================='
-        CALL WRTMT_LU(SB,NIB,NIA,NIB,NIA)
+        WRITE(luwrt,*) ' ==================================='
+        WRITE(luwrt,*) ' RSSBCB : Final S block (transposed)'
+        WRITE(luwrt,*) ' ==================================='
+        CALL WRTMAT(SB,NIB,NIA,NIB,NIA)
       END IF
       NTESTO = NTEST
       RETURN
@@ -5490,7 +5230,7 @@ C
      &     WORK(KI2),WORK(KXI2S),IDOH2,MXPOBS,WORK(KSVST),
      &     PSSIGN,IPRDIA,LUC,ICJKAIB,WORK(KCJRES),
      &     WORK(KSIRES),WORK(KI3),WORK(KXI3S),
-     &     WORK(KI4),WORK(KXI4S),MXSXST,MXSXBL,
+     &     WORK(KI4),WORK(KXI4S),MXSXBL,
      &     MOCAA,MOCAB,IAPR,
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
      &     IRESTRICT,WORK(KCONSPA),WORK(KCONSPB),WORK(KLSCLFAC),
@@ -5538,7 +5278,7 @@ C
      &           MXTSOB,SOMESCR,SOMEH,XIJILS,
      &           I1,XI1S,I2,XI2S,IDOH2,MXPOBS,ISTRFL,
      &           PS,IPRNT,LUC,ICJKAIB,CJRES,SIRES,I3,XI3S,
-     &           I4,XI4S,MXSXST,MXSXBL,MOCAA,MOCAB,IAPR,
+     &           I4,XI4S,MXSXBL,MOCAA,MOCAB,IAPR,
      &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,IRESTRICT,
      &           ICONSPA,ICONSPB,SCLFAC,
      &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
@@ -5651,23 +5391,23 @@ C
 #include "comjep.inc"
 *
       CALL QENTER('SBLOC')
-      NTEST = 0
+      NTEST = 000
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' ================='
-        WRITE(6,*) ' SBLOCKS speaking :'
-        WRITE(6,*) ' ================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of sigma blocks to be calculated ',
+        WRITE(luwrt,*) ' ================='
+        WRITE(luwrt,*) ' SBLOCKS speaking :'
+        WRITE(luwrt,*) ' ================='
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of sigma blocks to be calculated ',
      &  NSBLOCK
-        WRITE(6,*) ' TTSS for each ACTIVE sigma block'
+        WRITE(luwrt,*) ' TTSS for each ACTIVE sigma block'
           DO IBLOCK = 1, NSBLOCK
             IF(ISBLOCK(1,IBLOCK).GT.0)
-     &      WRITE(6,'(10X,4I3,2I8)') (ISBLOCK(II,IBLOCK),II=1,4)
+     &      WRITE(luwrt,'(10X,4I3,2I8)') (ISBLOCK(II,IBLOCK),II=1,4)
           END DO
-          WRITE(6,*) ' IDC PS IPERTOP', IDC,PS,IPERTOP
-          WRITE(6,*) ' IDOH2 = ',IDOH2
-          WRITE(6,*) ' IRES_AB=',IRES_AB
+          WRITE(luwrt,*) ' IDC PS IPERTOP', IDC,PS,IPERTOP
+          WRITE(luwrt,*) ' IDOH2 = ',IDOH2
+          WRITE(luwrt,*) ' IRES_AB=',IRES_AB
       END IF
 C     copy scaling factors from restore array to working array
       CALL DCOPY(NUM_BLOCKS2,SSCLFAC,1,SCLFAC,1)
@@ -5887,10 +5627,10 @@ C
 *
           IF(NTEST.GE.100) THEN
             IF(INTERACT.EQ.1) THEN
-              WRITE(6,*) ' TTSS for C block read in  '
+              WRITE(luwrt,*) ' TTSS for C block read in  '
               CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
             ELSE
-              WRITE(6,*) ' TTSS for C block skipped  '
+              WRITE(luwrt,*) ' TTSS for C block skipped  '
               CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
             END IF
           END IF
@@ -5995,9 +5735,9 @@ C
                  IF(INTERACT.EQ.0) GOTO 10000
 
                  IF(NTEST.GE.100) THEN
-                   WRITE(6,*) ' Next s block in batch : '
-                   write(6,*) ' ISBLK IASM IBSM IATP IBTP'
-                   write(6,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
+                   WRITE(luwrt,*) ' Next s block in batch : '
+                   write(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
+                   write(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
                  END IF
 C
                 IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP.AND.
@@ -6066,10 +5806,10 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &               NSMOB,NSMST,NSMSX,NSMDX,
      &               NIA,NIB,NLLA,NLLB,MXPOBS,IDC,PS,
      &               ICJKAIB,CJRES,SIRES,I3,XI3S,I4,XI4S,
-     &               MXSXBL,MXSXST,MOCAA,MOCAB,IAPR,
+     &               MXSXBL,MOCAA,MOCAB,IAPR,
      &               IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,XFAC,
      &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
-     &               MXTSOB,SOMESCR,SOMEH,XIJILS)
+     &               MXTSOB,SOMESCR,SOMEH,XIJILS,luwrt)
 #ifdef VAR_MPI
                 IF (LUCI_NMPROC .GT. 1) THEN
                    xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
@@ -6118,11 +5858,9 @@ C
       END DO
 *
       IF(NTEST.GE.50) THEN
-        if(MYNEW_ID.EQ.0) then
-        WRITE(6,*) ' output blocks from SBLOCKS '
+        WRITE(luwrt,*) ' output blocks from SBLOCKS '
         CALL WRTTTS(SB,ISBLOCK,NSBLOCK,
      &              NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,1)
-        end if
       END IF
 C
       CALL QEXIT('SBLOC')

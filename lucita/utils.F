@@ -37,16 +37,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine center
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE CHAR_TO_INTEGER(CHAR_X,INT_X)
 
 *     Convert an integer number given as a string into

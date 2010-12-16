@@ -21,6 +21,9 @@ F90_MOD_OBJS = $(F90_MODS:.F90=.o)
 
 F90_OBJS = 
 
+#C_OBJS = mycompoff.o
+C_OBJS =
+
 F77_CPPS = $(F77_OBJS:.o=.i)
 
 pre:	$(F77_CPPS)
@@ -28,7 +31,7 @@ pre:	$(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-liblucita.a : $(F77_OBJS) $(F90_OBJS) $(F90_MOD_OBJS)
+liblucita.a : $(F77_OBJS) $(F90_OBJS) $(F90_MOD_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 

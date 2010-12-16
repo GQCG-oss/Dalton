@@ -1080,7 +1080,7 @@ C     REAL * 8  INPROD
 *. Output
       DIMENSION DIAG(*)
 *
-      NTEST =  20
+      NTEST =  00
       NTEST = MAX(NTEST,IPRNT)
       IF(PSSIGN.EQ.-1.0D0) THEN
          XADD = 1000000.0
@@ -1126,9 +1126,10 @@ C     REAL * 8  INPROD
       IF(LUDIA.NE.0) CALL REWINO(LUDIA)
 *
       DO IBLK = 1, NBLOCK
-#ifdef VAR_MPI
-         IF( NPARBLOCK( IBLK ) .ne. LUCI_MYPROC ) GOTO 2425
-#endif
+
+         if(LUCI_NMPROC .gt. 1)then
+           IF( NPARBLOCK( IBLK ) .ne. LUCI_MYPROC ) GOTO 2425
+         end if
 *
         IATP = IBLKFO(1,IBLK)
         IBTP = IBLKFO(2,IBLK)
@@ -1214,9 +1215,11 @@ C     REAL * 8  INPROD
 *       ^ End of loop over betastrings
 *. Yet a RAS block of the diagonal has been constructed
         IF(ICISTR.GE.2) THEN
-          IF(NTEST.GE.100) THEN
-            write(6,*) ' number of diagonal elements to disc ',IDET
-            CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
+          IF(NTEST.GE.20) THEN
+            if(IDET.gt.0)then
+             write(LUWRT,*) ' number of diagonal elements to disc ',IDET
+             CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
+            end if
           END IF
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -1240,7 +1243,7 @@ C            new offset
       IF(NTEST.GE.5) WRITE(LUWRT,*)
      &' Number of diagonal elements generated ',ITDET
 *
-      IF(NTEST .GE.100 .AND.ICISTR.LE.1 ) THEN
+      IF(NTEST .GE.20 .AND.ICISTR.LE.1 )THEN
         WRITE(LUWRT,*) ' CIDIAGONAL '
         CALL WRTMATMN(DIAG(1),1,IDET,1,IDET,LUWRT)
       END IF
@@ -1306,7 +1309,7 @@ C
 * ======
       DIMENSION DIAG(*)
 *
-      CALL QENTER('CIDIA')
+      CALL QENTER('GASDIAT')
 *
       NTEST = 00
       NTEST = MAX(NTEST,IPRDIA)
@@ -1324,12 +1327,12 @@ C
       IOCTPA = IBSPGPFTP(IATP)
       IOCTPB = IBSPGPFTP(IBTP)
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' GASDIA speaking '
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' IATP IBTP NAEL NBEL ',IATP,IBTP,NAEL,NBEL
-        write(6,*) ' NOCTPA NOCTPB  : ', NOCTPA,NOCTPB
-        write(6,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
+        WRITE(luwrt,*) ' ================'
+        WRITE(luwrt,*) ' GASDIA speaking '
+        WRITE(luwrt,*) ' ================'
+        WRITE(luwrt,*) ' IATP IBTP NAEL NBEL ',IATP,IBTP,NAEL,NBEL
+        write(luwrt,*) ' NOCTPA NOCTPB  : ', NOCTPA,NOCTPB
+        write(luwrt,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
       END IF
 *
 **. Local memory
@@ -1369,9 +1372,9 @@ C     END IF
      &     WORK(KLRJKA),I12,IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *.Flush local memory
       CALL MEMMAN(IDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
-      CALL QEXIT('CIDIA')
+      CALL QEXIT('GASDIAT')
+!     call quit('*** stefan forced me to stop after diagonal. ***')
 *
-C?    Call Abend2( ' Jeppe forced me to stop after GASDIA ' )
       END
 ***********************************************************************
 *                                                                     *
@@ -1416,8 +1419,8 @@ C            COPDIA(A,VEC,NDIM,IPACK)
       NTEST = 000
       IF(NTEST.GE.100) THEN
         NDIM = IELSUM(LBLOCK,NBLOCK)
-        WRITE(6,*) ' output matrix GET_DIAG_BLOC_MAT '
-        WRITE(6,*) ' ==============================='
+        WRITE(luwrt,*) ' output matrix GET_DIAG_BLOC_MAT '
+        WRITE(luwrt,*) ' ==============================='
         CALL WRTMT_LU(ADIAG,1,NDIM,1,NDIM)
       END IF
 *
@@ -1462,6 +1465,7 @@ CINA &            ISMFTO,IBSO,NACOB)
 * diagonal of one electron integrals over active orbitals
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *.Input
       INTEGER IREOTS(*),IPNT(*),ISMFTO(*),IBSO(*)
       DIMENSION H(*)
@@ -1479,7 +1483,7 @@ C?      WRITE(6,*)   IIOB,IOB,ISM,IOBREL
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' DIagonal one electron integrals '
+        WRITE(lupri,*) ' Diagonal one electron integrals '
         CALL WRTMT_LU(H1DIA,1,NACOB,1,NACOB)
       END IF
 *

@@ -100,6 +100,7 @@ C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
+      real(8), allocatable :: tmp_space(:)
  
 #include <sirbkd.h>
 C
@@ -358,7 +359,7 @@ C
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit' 
+     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
      *        ,' SCF convergence threshold:',THRGRD
      *        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
@@ -707,17 +708,46 @@ C
          WRITE (LUPRI,'(//A)')
      &      ' WARNING: LUCITA skipped because HF/MCSCF not converged.'
        ELSE
-         JRDMO = 9
-         KCMO  = 1
-         KWRK1 = KCMO  + NCMOT
-         LWRK1 = LWORK - KWRK1
-         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         kfirst_lucita = 1
+         JRDMO  = 9
+!        test - stefan - dec 2010
+         KFRSAV = 1
+         KFREE  = KFRSAV
+         LFREE  = LWORK
+         CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+
+!old     KCMO  = 1
+!old     KWRK1 = KCMO  + NCMOT
+!old     LWRK1 = LWORK - KWRK1
+
+         call MEMCHK('before READMO',WORK,KFREE)
+
+!old     CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
            ! orbital occupations for TRACTL
          JTRALVL = 0 ! all active orbitals for all four indices
          USEDRC = .FALSE.
-         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KWRK1),LWRK1)
-         CALL LUCITA(WORK,LWORK)
+         call MEMCHK('before TRACTL',WORK,KFREE)
+
+!old     CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KWRK1),LWRK1)
+         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
+
+         CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
+
+         call MEMCHK('before lucita',WORK,KFRSAV)
+         print *, ' LFREE is =',LFREE
+
+!        allocate(tmp_space(LFREE))
+         CALL LUCITA(WORK,LFREE)
+!        CALL LUCITA(tmp_space,LFREE)
+!        deallocate(tmp_space)
+
+!        do i = 1, 10
+!          print *, 'i: WORK(i) = ',i,WORK(i)
+!        end do
+         call MEMCHK('after lucita',WORK,KFRSAV)
          CALL SET_INFORB_LUCITA('RESET ')
        END IF
       END IF

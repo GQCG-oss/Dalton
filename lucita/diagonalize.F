@@ -60,6 +60,7 @@ C
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LU7LIST(*), LU6LIST(*)
 #endif
+#include "priunit.h"
 #include "parluci.h"
 #include "files.inc"
 #include "mxpdim.inc"
@@ -103,10 +104,8 @@ C     parameter used in parallel scheme /sk march 2007/
 C
       IAMSURE = 1
 *
-      IF( IPRT.GT. 1 )  WRITE(6,'(/A)')
+      IF( IPRT.GT. 1 )  WRITE(lupri,'(/A)')
      &'          *** information from ci diagonalization  ***'
-C?    WRITE(6,*)
-C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
       NTEST=0
 C
 C               ====================================
@@ -220,14 +219,11 @@ C
       CALL QENTER('CIEIG')
 * Inverse iteration modified Davidson with 2 vectors in core
       IF(IPRT .GE. 5 ) THEN
-         WRITE(LUCIWT,*)
-         WRITE(LUCIWT,'(A,I3)')
+         WRITE(lupri,'(A,I3)')
      &   '  Number of roots to be converged..  ',NROOTSL
-         WRITE(LUCIWT,*)
-C        WRITE(6,'(A,I3)')
-C    &   '  Largest allowed number of vectors..',MAXVEC
-         WRITE(LUCIWT,*)
-         WRITE(LUCIWT,'(A,I3)')
+         WRITE(lupri,'(A,I3)')
+     &   '  Largest allowed number of vectors..',MAXVEC
+         WRITE(lupri,'(A,I3)')
      &   '  Allowed number of CI iterations  ..',MXCIIT
       END IF
 
@@ -240,20 +236,20 @@ C    &   '  Largest allowed number of vectors..',MAXVEC
       KWORK  = KAVEC + MAXVEC ** 2
       KLFREE = KWORK + MAXVEC*(MAXVEC+1)
       IF( IPRT .GE. 5 ) THEN
-         WRITE(LUCIWT,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
-         WRITE(LUCIWT,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
+         WRITE(lupri,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
+         WRITE(lupri,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
       END IF
       IF( KLFREE-1 .GT. LLWRK) THEN
-           WRITE(LUCIWT,'(A,2I5)' )
+           WRITE(lupri,'(A,2I5)' )
      &     ' Not enough memory in CIEIG5 : neeeded and available ',
      &     KLFREE-1, LLWRK
-           WRITE(LUCIWT,'(A,2I5)' )
+           WRITE(lupri,'(A,2I5)' )
      &     ' Increase parameter LLWRK in CIEIG5 to   ', KLFREE-1
            Call Abend2( ' insufficient memory in cieig5 ' )
        END IF
 *
-#ifdef VAR_MPI
       IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
 C
 C     partition CI vector with max. batch length using LBLOCK
 C
@@ -319,7 +315,7 @@ C
      &             LUDIA,NROOTSL,
      &             MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &             H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
+     &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,lupri)
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 
       ENOT = SCR1(KFIN)
@@ -2914,13 +2910,11 @@ C
 *
        IPICO = 0
        IF(IPICO.NE.0) THEN
-C?       WRITE(6,*) ' Perturbative solver '
          MAXVEC = MIN(MAXVEC,2)
-       ELSE IF(IPICO.EQ.0) THEN
-C?       WRITE(6,*) ' Variational  solver '
        END IF
 *
-       IPRT = 000
+       IPRT = 0000
+       lbl  = 0
 c      IPRT = IPRTXX
 *
        IOLSTM = 1
@@ -2929,10 +2923,10 @@ c      IPRT = IPRTXX
        IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
      & WRITE(LUWRTOUT,*) ' Normal Davidson method '
        IF( MAXVEC .LT. 2 * NROOT ) THEN
-         WRITE(6,*) ' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
-         WRITE(6,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(6,*) ' Raise MXCIV to be at least 2 * Nroot '
-         WRITE(6,*) ' Enforced stop on MICDV6 '
+         WRITE(LUWRTOUT,*)' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
+         WRITE(LUWRTOUT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+         WRITE(LUWRTOUT,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRTOUT,*) ' Enforced stop on MICDV6 '
          Call Abend1( 20 )
        END IF
 *
@@ -2981,7 +2975,7 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
 *. end of initial loop
 *
        IF( IPRT .GE.5 ) THEN
-         WRITE(6,*) ' INITIAL PROJECTED MATRIX  '
+         WRITE(LUWRTOUT,*) ' INITIAL PROJECTED MATRIX  '
          CALL PRSYM(APROJ,NINVEC)
        END IF
 *. Diagonalize initial projected matrix
@@ -2992,12 +2986,13 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        END DO
 *
        IF(IPRT .GE. 3 ) THEN
-         WRITE(6,*) ' Eigenvalues of initial iteration (with shift)'
-         WRITE(6,'(5F18.13)')
+         WRITE(LUWRTOUT,*) 
+     &   ' Eigenvalues of initial iteration (with shift)'
+         WRITE(LUWRTOUT,'(5F18.13)')
      &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
        END IF
        IF( IPRT  .GE. 5 ) THEN
-         WRITE(6,*) ' Initial set of eigen values (no shift) '
+         WRITE(LUWRTOUT,*) ' Initial set of eigen values (no shift) '
          CALL WRTMT_LU(EIG(1,1),1,NROOT,MAXIT,NROOT)
        END IF
 *. Transform vectors on LU1 so they become the actual
@@ -3012,18 +3007,18 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
 *
        IF(IPRT.GE.600) THEN
         IF(MYPROC.EQ.MASTER) THEN
-         WRITE(6,*) ' Initial set of eigenvectors '
+         WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
          CALL REWINE(LU1,-1)
          DO IROOT = 1, NROOT
-           WRITE(6,1066) IROOT, LBLK, LBL
+           WRITE(LUWRTOUT,1066) IROOT, LBLK, LBL
  1066 FORMAT(/'lets see IROOT =', 3I4/)
            CALL WRTVCD(VEC1,LU1,0,LBLK)
          END DO
 *
-         WRITE(6,*) ' Initial set of sigma vectors '
+         WRITE(LUWRTOUT,*) ' Initial set of sigma vectors '
          CALL REWINE(LU2,-1)
          DO IROOT = 1, NROOT
-           WRITE(6,1067) IROOT
+           WRITE(LUWRTOUT,1067) IROOT
  1067 FORMAT(/'lets see IROOT again=', I4/)
            CALL WRTVCD(VEC1,LU2,0,LBLK)
          END DO
@@ -3049,9 +3044,9 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 *
  1000 CONTINUE
         CALL GETTIM(CPUITR1,WALLITR1)
-        write(6,*)
-        write(6,'(A21,3X,I3)') ' Info from iteration ',ITER
-        write(6,*) '_______________________'
+        write(LUWRTOUT,*)
+        write(LUWRTOUT,'(A21,3X,I3)') ' Info from iteration ',ITER
+        write(LUWRTOUT,*) '_______________________'
         ITER = ITER + 1
 *
 * ===============================
@@ -3083,16 +3078,16 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
          CALL VECSMD(VEC1,VEC2,ONE,FACTOR,LU2,LU7,LU5,0,LBLK)
 *
          IF ( IPRT  .GE. 10 ) THEN
-           WRITE(6,*) '  ( HX - EX ) '
+           WRITE(LUWRTOUT,*) '  ( HX - EX ) '
            CALL WRTVCD(VEC1,LU5,1,LBLK)
          END IF
 *  Strange place to put convergence but ....
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK) )
          RNRM(ITER-1,IROOT) = RNORM
-         WRITE(6,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+         WRITE(LUWRTOUT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
      &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
 *
-         CALL FLSHFO(6)
+         CALL FLSHFO(LUWRTOUT)
 *
          IF(RNORM.LT. TEST .OR.
      &      (ITER.GT.2.AND.
@@ -3110,7 +3105,7 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
          IF( .NOT. RTCNV(IROOT) ) THEN
            IF(IPRT.GE.3) THEN
-             WRITE(6,*) ' Correction vector added for root',IROOT
+             WRITE(LUWRTOUT,*) ' Correction vector added for root',IROOT
            END IF
            IADD = IADD + 1
            CALL REWINE(LUDIA,-1)
@@ -3123,7 +3118,7 @@ C     H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
 C    &                  H0,SHIFT,WORK,XH0PSX,
 C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
            IF ( IPRT  .GE. 600) THEN
-             WRITE(6,*) '  (D-E)-1 *( HX - EX ) '
+             WRITE(LUWRTOUT,*) '  (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU6,1,LBLK)
            END IF
 CSK        print*,'IOLSTM ',IOLSTM
@@ -3143,34 +3138,34 @@ CSK        print*,'IOLSTM ',IOLSTM
              CALL REWINE(LU5,-1)
              CALL REWINE(LU7,-1)
              GAMMA = INPRDD(VEC1,VEC2,LU5,LU7,0,LBLK)
-CSK             WRITE(6,*) ' Gamma = ', Gamma
-             IF(IPRT.GE.1000) WRITE(6,*) ' Gamma = ', Gamma
+CSK             WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
+             IF(IPRT.GE.1000) WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
 * is X an eigen vector for (H0 - 1 ) - 1
              CALL REWINE(LU5,-1)
              CALL REWINE(LU7,-1)
               VNORM =
      &        SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK))
-CSK              write(6,*) ' VNORM = ', VNORM
-              IF(IPRT.GE.1000) write(6,*) ' VNORM = ', VNORM
+CSK              write(LUWRTOUT,*) ' VNORM = ', VNORM
+              IF(IPRT.GE.1000) write(LUWRTOUT,*) ' VNORM = ', VNORM
               IF(VNORM .GT. 1.0D-7 ) THEN
                 IOLSAC = 1
               ELSE
                 IOLSAC = 0
               END IF
               IF(IOLSAC .EQ. 1 ) THEN
-                IF(IPRT.GE.5) WRITE(6,*) ' Olsen Correction active '
-CSK                WRITE(6,*) ' Olsen Correction active '
+             IF(IPRT.GE.5) WRITE(LUWRTOUT,*) ' Olsen Correction active '
+CSK                WRITE(LUWRTOUT,*) ' Olsen Correction active '
                 DELTA = INPRDD(VEC1,VEC2,LU7,LU6,1,LBLK)
                 FACTOR = -(DELTA/GAMMA)
-                IF(IPRT.GE.5) WRITE(6,*) ' DELTA,GAMMA,FACTOR'
-                IF(IPRT.GE.5) WRITE(6,*)   DELTA,GAMMA,FACTOR
-CSK                WRITE(6,*) ' DELTA,GAMMA,FACTOR'
-CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
+                IF(IPRT.GE.5) WRITE(LUWRTOUT,*) ' DELTA,GAMMA,FACTOR'
+                IF(IPRT.GE.5) WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
+CSK                WRITE(LUWRTOUT,*) ' DELTA,GAMMA,FACTOR'
+CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
                 CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU6,LU5,LU7,1,LBLK)
                 CALL COPVCD(LU7,LU6,VEC1,1,LBLK)
 *
                 IF(IPRT.GE.600) THEN
-                  WRITE(6,*) ' Modified trial vector '
+                  WRITE(LUWRTOUT,*) ' Modified trial vector '
                   CALL WRTVCD(VEC1,LU6,1,LBLK)
                 END IF
 *
@@ -3185,7 +3180,7 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
                WORK(IVEC) = -INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
            END DO
            IF(IPRT.GE.1000) THEN
-             Write(6,*) ' Overlap with vectors on LU1'
+             Write(LUWRTOUT,*) ' Overlap with vectors on LU1'
              call WRTMT_LU(work,1,nroot,1,nroot)
            END IF
            ONE = 1.0D0
@@ -3193,7 +3188,7 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
            CALL MVCSMD(LU1,WORK,LU7,LU5,VEC1,VEC2,NROOT,1,LBLK)
            CALL VECSMD(VEC1,VEC2,ONE,ONE,LU7,LU6,LU5,1,LBLK)
            IF(IPRT.GE.1000) THEN
-             write(6,*) ' orthogonalized to vectors on LU1'
+             write(LUWRTOUT,*) ' orthogonalized to vectors on LU1'
              CALL WRTVCD(VEC1,LU5,1,LBLK)
            END IF
 *.. Vectors on LU3
@@ -3219,7 +3214,7 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
            CALL SCLVCD(LU6,LU3,FACTOR,VEC1,0,LBLK)
            IF(IPRT.GE.600) THEN
              CALL SCLVCD(LU6,LU7,FACTOR,VEC1,1,LBLK)
-             WRITE(6,*) '   normalized     (D-E)-1 *( HX - EX ) '
+             WRITE(LUWRTOUT,*) '   normalized     (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU7,1,LBLK)
            END IF
 *
@@ -3244,8 +3239,8 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
 *
       IF(IPRT.GE.1000) THEN
        IF (MYPROC.EQ.MASTER) THEN
-        WRITE(6,*) ' Vectors on LU3'
-        WRITE(6,*) 'NVEC-NROOT+IADD =',NVEC-NROOT+IADD
+        WRITE(LUWRTOUT,*) ' Vectors on LU3'
+        WRITE(LUWRTOUT,*) 'NVEC-NROOT+IADD =',NVEC-NROOT+IADD
         CALL REWINE(LU3,-1)
         DO IVEC = 1, NVEC-NROOT+IADD
           CALL WRTVCD(VEC1,LU3,0,LBLK)
@@ -3267,8 +3262,8 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
         CALL GETTIM(CPUSIG2,WALLSIG2)
         CPUTID = SECTID(CPUSIG2-CPUSIG1)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
-*        WRITE(6,9400) CPUTID,WALLTID, MYPROC
-        WRITE(6,9400) CPUTID,WALLTID
+*        WRITE(LUWRTOUT,9400) CPUTID,WALLTID, MYPROC
+        WRITE(LUWRTOUT,9400) CPUTID,WALLTID
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
 *2.2 Augment projected matrix
@@ -3296,7 +3291,7 @@ C       DO JVEC = NROOT+1, NVEC+IADD
 *. Test : transform projected matrix
 C TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
 C     CALL TRAN_SYM_BLOC_MAT(APROJ,AVEC,1,NVEC,XJEP(1000),XJEP(1))
-C     WRITE(6,*) ' Explicitly transformed matrix'
+C     WRITE(LUWRTOUT,*) ' Explicitly transformed matrix'
 C     CALL PRSYM(XJEP(1000),NVEC)
 
       IF(IPICO.NE.0) THEN
@@ -3311,9 +3306,10 @@ C     CALL PRSYM(XJEP(1000),NVEC)
      &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
      &         + AVEC(2)**2*APROJ(3)
         WORK(KAPROJ) = E0PERT
-        WRITE(6,*) ' Var and Pert solution, energy and coefficients'
-        WRITE(6,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
-        WRITE(6,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
+        WRITE(LUWRTOUT,*) 
+     &  ' Var and Pert solution, energy and coefficients'
+        WRITE(LUWRTOUT,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
+        WRITE(LUWRTOUT,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
       END IF
 *
       IF(IROOTHOMING.EQ.1) THEN
@@ -3326,7 +3322,7 @@ C     CALL PRSYM(XJEP(1000),NVEC)
          XJEP(IVEC) = INPROD(AVEC(1+(IVEC-1)*NROOT),
      &                AVEC(1+(IVEC-1)*NROOT),NROOT)
        END DO
-       WRITE(6,*)
+       WRITE(LUWRTOUT,*)
      & ' Norm of projections to previous vector space '
        CALL WRTMT_LU(XJEP,1,NVEC,1,NVEC)
 *. My sorter arranges in increasing order, multiply with minus 1
@@ -3335,11 +3331,11 @@ C     CALL PRSYM(XJEP(1000),NVEC)
        CALL SCALVE(XJEP,ONEM,NVEC)
        CALL SORLOW(XJEP,XJEP(1+NVEC),IXJEP,NVEC,NVEC,NSORT,IPRT)
        IF(NSORT.LT.NVEC) THEN
-         WRITE(6,*) ' Warning : Some elements lost in sorting '
-         WRITE(6,*) ' NVEC,NSORT = ', NSORT,NVEC
+         WRITE(LUWRTOUT,*) ' Warning : Some elements lost in sorting '
+         WRITE(LUWRTOUT,*) ' NVEC,NSORT = ', NSORT,NVEC
        END IF
        IF(IPRT.GE.3) THEN
-         WRITE(6,*) ' New roots choosen as vectors '
+         WRITE(LUWRTOUT,*) ' New roots choosen as vectors '
          CALL IWRTMA(IXJEP,1,NROOT,1,NROOT)
        END IF
 *. Reorder
@@ -3357,7 +3353,7 @@ C     CALL PRSYM(XJEP(1000),NVEC)
        END DO
 *
        IF(IPRT.GE.3) THEN
-         WRITE(6,*) ' Reordered WORK and AVEC arrays '
+         WRITE(LUWRTOUT,*) ' Reordered WORK and AVEC arrays '
          CALL PRSYM(WORK,NVEC)
          CALL WRTMT_LU(AVEC,NVEC,NVEC,NVEC,NVEC)
        END IF
@@ -3369,18 +3365,18 @@ C     CALL PRSYM(XJEP(1000),NVEC)
       END DO
 *
       IF(IPRT .GE. 3 ) THEN
-        WRITE(6,'(A,I4)') ' Eigenvalues of iteration ..', ITER
-        WRITE(6,'(5F18.13)')
+        WRITE(LUWRTOUT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+        WRITE(LUWRTOUT,'(5F18.13)')
      &  ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
-        WRITE(6,'(A)') ' Norm of Residuals (Previous it) '
-        WRITE(6,'(5F18.13)')
+        WRITE(LUWRTOUT,'(A)') ' Norm of Residuals (Previous it) '
+        WRITE(LUWRTOUT,'(5F18.13)')
      &  ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
       END IF
 *
       IF( IPRT  .GE. 5 ) THEN
-        WRITE(6,*) ' Projected matrix and eigen pairs '
+        WRITE(LUWRTOUT,*) ' Projected matrix and eigen pairs '
         CALL PRSYM(APROJ,NVEC)
-        WRITE(6,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(LUWRTOUT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMT_LU(AVEC,NVEC,NROOT,NVEC,NROOT)
       END IF
 *
@@ -3406,16 +3402,16 @@ C     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
        CALL GETTIM(CPUSTEP3,WALLSTEP3)
 *
         IF(IPRT.GE.1000) THEN
-        write(6,*) ' I am going to reset '
-        write(6,*) ' nroot, nvec ', nroot,nvec
+        write(LUWRTOUT,*) ' I am going to reset '
+        write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
         END IF
         IF(IPRT.GE.1000) THEN
-          WRITE(6,*) ' Initial vectors on LU1'
+          WRITE(LUWRTOUT,*) ' Initial vectors on LU1'
           CALL REWINE(LU1,-1)
           DO IVEC = 1, NROOT
              CALL WRTVCD(VEC1,LU1,0,LBLK)
           END DO
-          WRITE(6,*) ' Initial vectors on LU3'
+          WRITE(LUWRTOUT,*) ' Initial vectors on LU3'
           CALL REWINE(LU3,-1)
           DO IVEC = 1, NROOT
              CALL WRTVCD(VEC1,LU3,0,LBLK)
@@ -3429,26 +3425,26 @@ C     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
           CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
      &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
           IF(IPRT.GE.1000)
-     &    write(6,*) ' end of c reset, part 1'
+     &    write(LUWRTOUT,*) ' end of c reset, part 1'
 *. and add LU3 to LU5
           CALL REWINE(LU3,-1)
           ONE = 1.0D0
           CALL MVCSMD2(LU3,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
      &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
           IF(IPRT.GE.1000)
-     &    write(6,*) ' end of c reset, part 2'
+     &    write(LUWRTOUT,*) ' end of c reset, part 2'
 C              MVCSMD2(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
 C    &         VEC1,VEC2,NVEC,IREW,LBLK)
           XNORM = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
           CALL REWINE(LU5,LBLK)
           SCALE  = 1.0D0/SQRT(XNORM)
-CSK          WRITE(6,*) ' SCALE = ', SCALE
+CSK          WRITE(LUWRTOUT,*) ' SCALE = ', SCALE
           WORK(IROOT) = SCALE
 *. scale LU5 => LU7
           CALL REWINE(LU5,-1)
           CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
           IF(IPRT.GE.1000)
-     &    write(6,*) ' end of c reset, part 3'
+     &    write(LUWRTOUT,*) ' end of c reset, part 3'
         END DO
 *. Transfer C vectors from LU7 to LU1
         CALL REWINE( LU7,LBLK)
@@ -3457,9 +3453,9 @@ CSK          WRITE(6,*) ' SCALE = ', SCALE
           CALL COPVCD(LU7,LU1,VEC1,0,LBLK)
         END DO
         IF(IPRT.GE.1000)
-     &  write(6,*) ' end of c reset, part 4'
+     &  write(LUWRTOUT,*) ' end of c reset, part 4'
         IF(IPRT.GE.1000) THEN
-          WRITE(6,*) ' Reset C-vectors on LU1 '
+          WRITE(LUWRTOUT,*) ' Reset C-vectors on LU1 '
           CALL REWINE(LU1,-1)
           DO IVEC = 1, NROOT
              CALL WRTVCD(VEC1,LU1,0,LBLK)
@@ -3473,19 +3469,19 @@ CSK          WRITE(6,*) ' SCALE = ', SCALE
           CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
      &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
           IF(IPRT.GE.1000)
-     &    write(6,*) ' end of s reset, part 1'
+     &    write(LUWRTOUT,*) ' end of s reset, part 1'
 *. and add LU4 to LU5
           CALL REWINE(LU4,-1)
           CALL MVCSMD2(LU4,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
      &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
           IF(IPRT.GE.1000)
-     &    write(6,*) ' end of s reset, part 2'
+     &    write(LUWRTOUT,*) ' end of s reset, part 2'
           SCALE  = WORK(IROOT)
 *. scale LU5 => LU7
           CALL REWINE(LU5,-1)
           CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
           IF(IPRT.GE.1000)
-     &    write(6,*) ' end of s reset, part 3'
+     &    write(LUWRTOUT,*) ' end of s reset, part 3'
         END DO
 *. Transfer sigma  vectors from LU7 to LU2
         CALL REWINE( LU7,LBLK)
@@ -3494,7 +3490,7 @@ CSK          WRITE(6,*) ' SCALE = ', SCALE
           CALL COPVCD(LU7,LU2,VEC1,0,LBLK)
         END DO
         IF(IPRT.GE.1000)
-     &  write(6,*) ' end of s reset, part 4'
+     &  write(LUWRTOUT,*) ' end of s reset, part 4'
         NNVEC = NROOT
 *. Overlap between first vectors on LU1 and LU2
         E11 = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
@@ -3515,7 +3511,7 @@ CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
             CALL REWINE(LU7,-1)
             CALL COPVCD(LU3,LU7,VEC1,0,LBLK)
             IF(IPRT.GE.1000) THEN
-            write(6,*) ' Initial vector on LU7'
+            write(LUWRTOUT,*) ' Initial vector on LU7'
             CALL WRTVCD(VEC1,LU7,1,LBLK)
             END IF
             CALL REWINE(LU1,-1)
@@ -3525,7 +3521,7 @@ CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
      &        -INPRDD(VEC1,VEC2,LU7,LU1,0,LBLK)
             END DO
             IF(IPRT.GE.1000)
-     &      write(6,*) ' c, part1 finito'
+     &      write(LUWRTOUT,*) ' c, part1 finito'
 *. And to trial vectors on LU5
             CALL REWINE(LU5,-1)
             DO KVEC = 1, JVEC-1
@@ -3535,7 +3531,7 @@ CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
             END DO
             WORK(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
             IF(IPRT.GE.1000)
-     &      write(6,*) ' c, part2 finito'
+     &      write(LUWRTOUT,*) ' c, part2 finito'
 *
             ONE = 1.0D0
             CALL MVCSMD2(LU1,WORK(1+(JVEC-1)*2*NROOT),ONE ,
@@ -3545,8 +3541,8 @@ CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
             CALL MVCSMD2(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
      &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
             IF(IPRT.GE.1000) THEN
-              write(6,*) ' c, part4 finito'
-              write(6,*) ' Vector after sec ort'
+              write(LUWRTOUT,*) ' c, part4 finito'
+              write(LUWRTOUT,*) ' Vector after sec ort'
               CALL WRTVCD(VEC1,LU7,1,LBLK)
             END IF
 *
@@ -3558,7 +3554,7 @@ CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
             CALL SCLVCD(LU7,LU5,SCALE,VEC1,0,LBLK)
 C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
            IF(IPRT.GE.1000)
-     &       write(6,*) ' c, part6 finito'
+     &       write(LUWRTOUT,*) ' c, part6 finito'
          END DO
 *        /\ End of loop over orthogonalized directions
 *. Transfer modified directions to LU3
@@ -3568,8 +3564,8 @@ C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
            CALL COPVCD(LU5,LU3,VEC1,0,LBLK)
          END DO
          IF(IPRT.GE.1000) THEN
-           write(6,*) ' c, part7 finito'
-           WRITE(6,*) ' Additional trial vectors on LU3'
+           write(LUWRTOUT,*) ' c, part7 finito'
+           WRITE(LUWRTOUT,*) ' Additional trial vectors on LU3'
            CALL REWINE(LU3,-1)
            DO JVEC = 1, IADD
             CALL WRTVCD(VEC1,LU3,0,LBLK)
@@ -3587,16 +3583,16 @@ C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
      &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
 *
             IF(IPRT.GE.1000)
-     &      write(6,*) ' s, part 1 finito '
+     &      write(LUWRTOUT,*) ' s, part 1 finito '
             ONE = 1.0D0
             CALL MVCSMD2(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
      &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
             IF(IPRT.GE.1000)
-     &      write(6,*) ' s, part 2 finito '
+     &      write(LUWRTOUT,*) ' s, part 2 finito '
             CALL REWINE(LU7,-1)
             CALL COPVCD(LU7,LU5,VEC1,0,LBLK)
             IF(IPRT.GE.1000)
-     &      write(6,*) ' s, part 3 finito '
+     &      write(LUWRTOUT,*) ' s, part 3 finito '
          END DO
 *        /\ End of loop over orthogonalized directions
 *. Copy back to LU4
@@ -3606,13 +3602,13 @@ C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
             CALL COPVCD(LU5,LU4,VEC1,0,LBLK)
          END DO
          IF(IPRT.GE.1000)
-     &   write(6,*) ' s, part 4 finito '
-C         WRITE(6,*) 'I was in 3.1 setting NNVEC=NROOT+IADD', 
+     &   write(LUWRTOUT,*) ' s, part 4 finito '
+C         WRITE(LUWRTOUT,*) 'I was in 3.1 setting NNVEC=NROOT+IADD', 
 C     &myproc,(NROOT + IADD)
          NNVEC = NROOT + IADD
        END IF
        IF(IPRT.GE.1000) THEN
-         WRITE(6,*) ' Additional sigma vectors on LU4'
+         WRITE(LUWRTOUT,*) ' Additional sigma vectors on LU4'
          CALL REWINE(LU4,-1)
          DO JVEC = 1, IADD
            CALL WRTVCD(VEC1,LU4,0,LBLK)
@@ -3621,17 +3617,17 @@ C     &myproc,(NROOT + IADD)
 *
 *      /\ End if more than NROOT vectors to be reset
        NVEC = NNVEC
-*       write(6,*)'NVEC(1)',NVEC NVEC = IADD (iadd can change!!!)+ NROOT
+*       write(LUWRTOUT,*)'NVEC(1)',NVEC NVEC = IADD (iadd can change!!!)+ NROOT
 C      END IF
 *.     ^ End if reset
 *. New subspace
 *. Calculate subspace Hamiltonian from actual vectors
 *. on disc
-       IF(IPRT.GE.1000) write(6,*) ' Subspace hamiltonian'
+       IF(IPRT.GE.1000) write(LUWRTOUT,*) ' Subspace hamiltonian'
        CALL REWINE(LU1,-1)
        CALL REWINE(LU3,-1)
 CSK       ididaproj = 0
-CSK       write(6,*)'NVEC = ', NVEC
+CSK       write(LUWRTOUT,*)'NVEC = ', NVEC
        DO IVEC = 1, NVEC
 *
          CALL REWINE(LU5,-1)
@@ -3656,16 +3652,16 @@ CSK       write(6,*)'NVEC = ', NVEC
 CSK        ididaproj = ididaproj + 1
        END DO
        if (IPRT.ge.2) then
-         write(6,*) ' Reset hamiltonian'
+         write(LUWRTOUT,*) ' Reset hamiltonian'
          call prsym(aproj,nvec)
        end if
-CSK       write(6,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
-CSK       write(6,*)'calculated elements of aproj',ididaproj
+CSK       write(LUWRTOUT,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
+CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
 *  check timing of part3 in loop iteration
        CALL GETTIM(CPUSTEP4,WALLSTEP4)
        CPUTSTEP = SECTID(CPUSTEP4-CPUSTEP3)
        WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
-       WRITE(6,9600) CPUTSTEP,WALLTSTEP
+       WRITE(LUWRTOUT,9600) CPUTSTEP,WALLTSTEP
 *
  998   CONTINUE
 *  Timing of this iteration
@@ -3751,7 +3747,7 @@ C
       END IF
       end if
 *
-      CALL FLSHFO(6)
+      CALL FLSHFO(LUWRTOUT)
 *
       Call Add_Info('E_CI',FINEIG,NROOT)
 *

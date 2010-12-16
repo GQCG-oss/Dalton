@@ -58,6 +58,7 @@ C
 #include "implicit.h"
 #include "mxpdim.inc"
 #include "crun.inc"
+      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 
       ENVIRO='DALTON'
 *
@@ -65,7 +66,7 @@ C
       call hello_dalton_lucita
 *
 *  Read symmetry info etc.
-      CALL GET_ORB_DIM_ENV(ECORE_ENV)
+      CALL GET_ORB_DIM_ENV(ECORE_ORIG)
 *
 *  Get it going:
       call dalton_lucita
@@ -529,7 +530,7 @@ C
 *. Output
       DIMENSION CMO(*)
 
-      write(lupri,*) 'GET_CMOAO: ENVIRO = ',ENVIRO !hjaaj DEBUG
+!     write(lupri,*) 'GET_CMOAO: ENVIRO = ',ENVIRO !hjaaj DEBUG
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         CALL GET_CMOAO_DALTON(CMO,NMOS_ENV(1),NAOS_ENV(1),NSMOB)
       ELSE IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
@@ -563,9 +564,9 @@ C
       DIMENSION CMO(*)
 *
 
-      write(lupri,*) 'GET_CMOAO_DALTON: NSM  = ',NSM         !hjaaj DEBUG
-      write(lupri,*) 'GET_CMOAO_DALTON: NBAS = ',NBAS(1:NSM) !hjaaj DEBUG
-      write(lupri,*) 'GET_CMOAO_DALTON: NMO  = ',NMO (1:NSM) !hjaaj DEBUG
+!     write(lupri,*) 'GET_CMOAO_DALTON: NSM  = ',NSM         !hjaaj DEBUG
+!     write(lupri,*) 'GET_CMOAO_DALTON: NBAS = ',NBAS(1:NSM) !hjaaj DEBUG
+!     write(lupri,*) 'GET_CMOAO_DALTON: NMO  = ',NMO (1:NSM) !hjaaj DEBUG
       ITAP30 = 16
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
@@ -589,7 +590,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
       READ (ITAP30) (CMO(I),I=1,NCOEF)
       CLOSE(ITAP30,STATUS='KEEP')
 *
-      NTEST = 100 ! hjaaj DEBUG
+!     NTEST = 100 ! hjaaj DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(lupri,*) '  MO - AO expansion matrix '
         WRITE(lupri,*) '============================='
@@ -1882,18 +1883,164 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
         I12S = 0
         I34S = 0
         I1234S = 1
-CINA    GTIJKL = GIJKLL(IREOTS(1+NINOB),WORK(KPINT2),WORK(KLSM2),
-CINA &           WORK(KINT2),
-CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
         GTIJKL = GIJKLL(IREOTS(1),WORK(KPINT2),WORK(KLSM2),
-     &           WORK(KINT2),
-     &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
-       ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
-*. MOLCAS OR SIRIUS IMPORT ( I hope integrals are in core !! )
-          CALL QUIT('GMIJKL not implemented in this version')
-       END IF
+     &                  WORK(KINT2),ISMFTO,IBSO,NACOB,NSMOB,
+     &                  NOCOBS,I,J,K,L)
+      ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
+!       sirius or dirac integral format
+        GTIJKL = GMIJKL(I,J,K,L,WORK(KINT2),WORK(KPINT2))
+      END IF
+
+      END
+
+***********************************************************************
+      FUNCTION GMIJKL(IORB,JORB,KORB,LORB,INTLST,IJKLOF)
 *
-      RETURN
+* Obtain integral (IORB JORB ! KORB LORB) MOLCAS version
+* Integrals assumed in core
+*
+* Version for integrals stored in INTLST
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "lucinp.inc"
+*. Integral list
+      Real * 8 Intlst(*)
+      Dimension IJKLOF(NsmOB,NsmOb,NsmOB)
+      Logical iSymj,kSyml,ISYMK,JSYML,ijSymkl,IKSYMJL
+      Logical ijklPerm
+*.
+      NTEST = 000
+*
+*. The orbital list corresponds to type ordered indeces, reform to
+*. symmetry ordering
+*
+      IABS = IREOTS(IORB)
+      ISM  = ISMFTO(IORB)
+      IOFF = IBSO(ISM)
+*
+      JABS = IREOTS(JORB)
+      JSM  = ISMFTO(JORB)
+      JOFF = IBSO(JSM)
+*
+      KABS = IREOTS(KORB)
+      KSM  = ISMFTO(KORB)
+      KOFF = IBSO(KSM)
+*
+      LABS = IREOTS(LORB)
+      LSM  = ISMFTO(LORB)
+      LOFF = IBSO(LSM)
+*
+      If( Ntest.ge. 100) THEN
+        write(6,*) ' GMIJKL at your service '
+        WRITE(6,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
+        WRITE(6,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
+        WRITE(6,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
+        WRITE(6,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
+      END IF
+*
+      If ( jSm.gt.iSm .or. ( iSm.eq.jSm .and. JABS.gt.IABS)) Then
+        iSym=jSm
+        jSym=iSm
+        I = JABS - JOFF + 1
+        J = IABS - IOFF + 1
+      Else
+        iSym=iSm
+        jSym=jSm
+        I = IABS - IOFF + 1
+        J = JABS - JOFF + 1
+      End If
+      ijBlk=jSym+iSym*(iSym-1)/2
+      If ( lSm.gt.kSm  .or. ( kSm.eq.lSm .and. LABS.gt.KABS)) Then
+        kSym=lSm
+        lSym=kSm
+        K = LABS -LOFF + 1
+        L = KABS - KOFF + 1
+      Else
+        kSym=kSm
+        lSym=lSm
+        K = KABS - KOFF + 1
+        L = LABS -LOFF + 1
+      End If
+      klBlk=lSym+kSym*(kSym-1)/2
+*
+      ijklPerm=.false.
+      If ( klBlk.gt.ijBlk ) Then
+        iTemp=iSym
+        iSym=kSym
+        kSym=iTemp
+        iTemp=jSym
+        jSym=lSym
+        lSym=iTemp
+        iTemp=ijBlk
+        ijBlk=klBlk
+        klBlk=iTemp
+        ijklPerm=.true.
+*
+        iTemp = i
+        i = k
+        k = itemp
+        iTemp = j
+        j = l
+        l = iTemp
+      End If
+      If(Ntest .ge. 100 ) then
+        write(6,*) ' i j k l ',i,j,k,l
+        write(6,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
+      End if
+*
+*  Define offset for given symmetry block
+      IBLoff = IJKLof(Isym,Jsym,Ksym)
+      If(ntest .ge. 100 )
+     &WRITE(6,*) ' IBLoff Isym Jsym Ksym ', IBLoff,ISym,Jsym,Ksym
+      iSymj=iSym.eq.jSym
+      kSyml=kSym.eq.lSym
+      iSymk=iSym.eq.kSym
+      jSyml=jSym.eq.lSym
+      ikSymjl=iSymk.and.jSyml
+      ijSymkl=iSymj.and.kSyml
+*
+      itOrb=NTOOBS(iSym)
+      jtOrb=NTOOBS(jSym)
+      ktOrb=NTOOBS(kSym)
+      ltOrb=NTOOBS(lSym)
+C?    print *,' itOrb,jtOrb,ktOrb,ltOrb',itOrb,jtOrb,ktOrb,ltOrb
+      If ( iSymj ) Then
+        ijPairs=itOrb*(itOrb+1)/2
+        ij=j+i*(i-1)/2
+      Else
+        ijPairs=itOrb*jtOrb
+        ij=j + (i-1)*jtOrb
+      End if
+*
+      IF(KSYML ) THEN
+        klPairs=ktOrb*(ktOrb+1)/2
+        kl=l+k*(k-1)/2
+      ELSE
+        klPairs=ktOrb*ltOrb
+        kl=l+(k-1)*ltOrb
+      End If
+C?    print *,' ijPairs,klPairs',ijPairs,klPairs
+*
+      If ( ikSymjl ) Then
+        If ( ij.gt.kl ) Then
+          klOff=kl+(kl-1)*(kl-2)/2-1
+          ijkl=ij+(kl-1)*ijPairs-klOff
+        Else
+          ijOff=ij+(ij-1)*(ij-2)/2-1
+          ijkl=kl+(ij-1)*klPairs-ijOff
+        End If
+      Else
+        ijkl=ij+(kl-1)*ijPairs
+      End If
+      If( ntest .ge. 100 )
+     & write(6,*) ' ijkl ', ijkl
+*
+      GMIJKL = Intlst(iblOff-1+ijkl)
+      If( ntest .ge. 100 )
+     & write(6,*) ' GMIJKL ', GMIJKL
+*
       END
 ***********************************************************************
       SUBROUTINE GTJK(RJ,RK,NTOOB,SCR,IREOTS)
@@ -2524,6 +2671,7 @@ C
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
+       real*8 einact
 
 *. : Pointers for symmetry blocks of integrals
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
@@ -2567,13 +2715,14 @@ C
 * ===============
 *
       ELSE IF (INTIMP .EQ. 5.AND.NOINT.EQ.0  ) THEN
-        WRITE(lupri,*) ' Integrals imported from DALTON/SIRIUS files'
+!       WRITE(lupri,*) ' Integrals imported from DALTON/SIRIUS files'
 *. Load one-electron integrals and two-electron integrals
         IF(INCORE.EQ.1) THEN
           CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
           LSCR = current_free_mem - 1000
-          CALL LUCITA_GETINT_DALTON(ECORE,WORK(KINT1),WORK(KINT2),LSCR)
+          CALL LUCITA_GETINT_DALTON(einact,WORK(KINT1),WORK(KINT2),LSCR)
 !         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, LWRK)
+          ecore = ecore_orig + einact
         ELSE
           CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
         END IF
@@ -2602,10 +2751,11 @@ C
 
       ECORE_ORIG = ECORE
       ECORE      = ECORE + ECORE_HEX
+#ifdef LUCI_DEBUG
       if(myproc.eq.luci_master)then
-        write(lupri,*) 'Updated core energy ',ECORE
+        write(lupri,'(/2x,e15.8)') 'Updated core energy: ',ECORE
       end if
-!     CALL LMEMCHK
+#endif
 *
       END
 ***********************************************************************
@@ -2932,9 +3082,9 @@ C
 *
 *
 !     NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
-      print *, '*** note from stefan: is it not dangerous 
-     &to re-set NSYM here in dalton2lucita??? NSYM is global in sirius!'
-      print *,'NSMOB is',NSMOB
+!     print *, '*** note from stefan: is it not dangerous 
+!    &to re-set NSYM here in dalton2lucita??? NSYM is global in sirius!'
+!     print *,'NSMOB is',NSMOB
 !
 !     set IRESDIM independent from ci type
       IRESDIM = 100 000
@@ -2947,8 +3097,8 @@ C
 *  Import required information from Dalton
 *------------------------------------------------------------------*
 *
-      print *, ' stefan: i think this call is now obsolete; we 
-     & obtain the info about nish, nash, etc. already at other places.'
+!     print *, ' stefan: i think this call is now obsolete; we 
+!    & obtain the info about nish, nash, etc. already at other places.'
       call get_dalton_inf(WAFFCT,IPRT,NACRAS)
 *
 *.................................................................
@@ -3430,12 +3580,12 @@ C
           end do
         end do
 
-        print *, ' shells per gas space in dalton2lucita:ngas,nsym',
-     &  ngas, nsym
-        do j = 1, ngas
-          print *, ' nshpgs per gas: ',
-     &    (nshpgs(j,i),i=1,nsym)
-        end do
+!       print *, ' shells per gas space in dalton2lucita:ngas,nsym',
+!    &  ngas, nsym
+!       do j = 1, ngas
+!         print *, ' nshpgs per gas: ',
+!    &    (nshpgs(j,i),i=1,nsym)
+!       end do
 
 *  NACTEL
         NTOOB = 0
@@ -4483,13 +4633,12 @@ C
          CALL GPCLOSE(LUINTM,'KEEP')
       END IF
 
-!     IF (IPR???) THEN
-         WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
-         CALL OUTPAK(fcac,NASHT,-1,LUPRI)
-         WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
-         CALL OUTPUT(h2ac,1,NNASHX,1,NNASHX,
-     &               NNASHX,NNASHX,-1,LUPRI)
-!     END IF
+#ifdef LUCI_DEBUG
+      WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
+      CALL OUTPAK(fcac,NASHT,-1,LUPRI)
+      WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
+      CALL OUTPUT(h2ac,1,NNASHX,1,NNASHX,NNASHX,NNASHX,-1,LUPRI)
+#endif
 
 !--------------------------------------------------------------
 !     transfer 1e- and 2e-integrals from Dalton to LUCITA order
@@ -4509,7 +4658,7 @@ C
       deallocate(cmo)
       deallocate(mult_ptg)
 
-      call quit('NEXT TO DO: store integrals in LUCITA packing')
+!     call quit('NEXT TO DO: store integrals in LUCITA packing')
 
       END
 
@@ -4555,12 +4704,12 @@ C
      &                    nnashx,nr_orb_per_sym,nr_sym,
      &                    max_orb_per_sym,nr_2int)
 
-!#ifdef LUCI_DEBUG
+#ifdef LUCI_DEBUG
       write(lupri,*) '  symmetry reduced 1-el'
       call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
       write(lupri,*) '  symmetry reduced 2-el'
       call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
-!#endif
+#endif
 
       end
 
@@ -4625,7 +4774,7 @@ C
 
         nr_act_isym = nr_orb_per_sym(isym)
         jsym        = return_sym_of_jorb(isym,ijsym)
-        print *,' isym, jsym',isym, jsym
+!       print *,' isym, jsym',isym, jsym
 
         if(jsym .ge. isym)then
 
@@ -4640,9 +4789,9 @@ C
   
               h1_out(offset_internal) = h1_in(offset_ij)
   
-              print *,'offset_ij, offset_internal,jsorb, h1',
-     &                 offset_ij, offset_internal,jsorb, 
-     &                 h1_out(offset_internal)
+!             print *,'offset_ij, offset_internal,jsorb, h1',
+!    &                 offset_ij, offset_internal,jsorb, 
+!    &                 h1_out(offset_internal)
 
 !             count the number of non-vanishing 1-electron integrals
               offset_internal = offset_internal + 1
@@ -4696,7 +4845,7 @@ C
       integer :: i, j, k, l, ij, kl
 !     -----------------------------------------------------------------
 
-!#ifdef LUCI_DEBUG
+#ifdef LUCI_DEBUG
       print *,' h2_in:'
       do isym = 1, nnashx
         do jsym = 1, nnashx
@@ -4711,7 +4860,7 @@ C
      &              mult_ptg(isym,jsym)
         end do
       end do
-!#endif
+#endif
 
 !     2-electron integrals
 !     --------------------
@@ -4735,20 +4884,20 @@ C
               nr_act_lsym = nr_orb_per_sym(lsym)
 
               ijsym   = mult_ptg(isym,jsym)
-              print *, ' isym, jsym',isym,jsym
+!             print *, ' isym, jsym',isym,jsym
               klsym   = mult_ptg(ksym,lsym)
-              print *, ' ksym, lsym',ksym,lsym
+!             print *, ' ksym, lsym',ksym,lsym
               ijklsym = mult_ptg(ijsym,klsym)
 
 !             restrict loop to non-vanishing symmetry combinations of (ij|kl)
 
               if(ijklsym .eq. 1)then
 
-!#ifdef LUCI_DEBUG
+#ifdef LUCI_DEBUG
                 print *, ' check current symmetries'
                 print('(/a,4i6)'), 'isym,jsym,ksym,lsym',
      &                              isym,jsym,ksym,lsym
-!#endif
+#endif
 
 !               index restrictions
                 if(isym .eq. jsym)then
@@ -4806,6 +4955,7 @@ C
 
                       do j = j_first, j_last
 
+#ifdef LUCI_DEBUG
                         print ('(/2x,a)'),
      &        '-------------------------------------------------------'
                         print ('(2x,a,2i4,a,2i4,a)'),'next integral:'//
@@ -4814,12 +4964,15 @@ C
      &        '-------------------------------------------------------'
                         print *, 'ij =',(i*(i-1))/2 + j
                         print *, 'kl =',(k*(k-1))/2 + l
+#endif
                         ij                      = (i*(i-1))/2 + j
                         kl                      = (k*(k-1))/2 + l
                         h2_out(offset_internal) = h2_in(ij,kl)
-                        print *, 'h2_out(offset_internal) =',
-     &                            h2_out(offset_internal)
                         offset_internal         = offset_internal + 1
+#ifdef LUCI_DEBUG
+                        print *, 'h2_out(offset_internal) =',
+     &                            h2_out(offset_internal-1)
+#endif
                       end do ! j
                     end do ! i
                   end do ! l

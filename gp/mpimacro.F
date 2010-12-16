@@ -215,10 +215,10 @@ C
       subroutine mpixprocname(process_name,process_name_length)
 C
       implicit none
-#ifdef VAR_MPI
-      include 'mpif.h'
       character*(*) process_name
       integer process_name_length, ierr
+#ifdef VAR_MPI
+      include 'mpif.h'
 C
       call mpi_get_processor_name(process_name,process_name_length,ierr)
 #endif

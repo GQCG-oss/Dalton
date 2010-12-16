@@ -1132,7 +1132,7 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
       CALL IAIBCM_GAS(LCMBSPC(ICI),ICMBSPC(1,ICI),
      &                IGSOCCX,NOCTPA,NOCTPB,
      &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
+     &                MXPNGAS,NGAS,WORK(KLIOIO),IPRNT)
 *
       DO  50 ISYM = 1, NSMCI
           if (IDC.eq.3.or.IDC.eq.4) then
@@ -1150,8 +1150,8 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
      &                LCOL,WORK(KLIOIO))
 
           XISPSM(ISYM,ICI) = XNCOMB
-          MXSOOB = MAX(MXSOOB,MXSOO)
-          MXSB = MAX(MXSB,MXS)
+          MXSOOB           = MAX(MXSOOB,MXSOO)
+          MXSB             = MAX(MXSB,MXS)
           NBLKIC(ISYM,ICI) = NTTSBL
           LCOLIC(ISYM,ICI) = LCOL
    50 CONTINUE
@@ -1160,33 +1160,29 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
       IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-        WRITE(6,*)
-        WRITE(6,*)
-        WRITE(6,*)
-     &' Number of internal combinations per symmetry '
-        WRITE(6,*)
+        WRITE(luwrt,'(/a)')
+     &'  Number of internal combinations per symmetry '
+        WRITE(luwrt,*)
      & ' =========================================== '
 *
         DO 200 ICI = 1, NCMBSPC
-            WRITE(6,*) ' CI space ', ICI
-            WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
+            WRITE(luwrt,*) ' CI space ', ICI
+            WRITE(luwrt,'(4E16.8)') (XISPSM(II,ICI),II=1,NSMCI)
 C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
   200   CONTINUE
        if (NTEST.ge.1) then
-          WRITE(6,*)
-          WRITE(6,*) ' Largest symmetry block           ',MXSB
-          WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
-          WRITE(6,*)
+          WRITE(luwrt,*) ' Largest symmetry block           ',MXSB
+          WRITE(luwrt,*) ' Largest Symmetry-type-type block ',MXSOOB
        end if
 *
        IF(NTEST.GE.5) THEN
-          WRITE(6,*)
+          WRITE(luwrt,*)
      &  ' Number of TTS subblocks per CI expansion '
-          WRITE(6,*)
+          WRITE(luwrt,*)
      &   ' ======================================== '
 *
           DO  ICI = 1,  NCMBSPC
-              WRITE(6,*) ' Internal CI space ', ICI
+              WRITE(luwrt,*) ' Internal CI space ', ICI
               CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
           END DO
         END IF
@@ -1202,18 +1198,18 @@ C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
 *
       IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
         if (NTEST.ge.1) then
-          WRITE(6,*) ' Largest number of blocks in CI expansion',
+          WRITE(luwrt,*) ' Largest number of blocks in CI expansion',
      &                 MXNTTS
         end if
 *
         IF(NTEST.GE.5) THEN
-        WRITE(6,*)
+        WRITE(luwrt,*)
      &' Number of columns per CI expansion '
-        WRITE(6,*)
+        WRITE(luwrt,*)
      & ' =================================== '
 *
         DO  ICI = 1,  NCMBSPC
-            WRITE(6,*) ' Internal CI space ', ICI
+            WRITE(luwrt,*) ' Internal CI space ', ICI
             CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
         END DO
         END IF

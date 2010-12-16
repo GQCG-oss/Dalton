@@ -11,4 +11,3 @@
      &              KMOAOIN,KMOAOUT,KRHO2,KLOCCLS,KPGINT1(MXPOBS),
      &              KINT1O,KFIO,KPGINT1A(MXPOBS),KCC1,KCC2,KCC3,
      &              KMOMO
-      
