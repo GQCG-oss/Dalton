@@ -734,6 +734,10 @@ C
 !old     CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
 
+         do i = 1, 10
+           WORK(KCMO+i-1) = i
+         end do
+
          CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
 
          call MEMCHK('before lucita',WORK,KFRSAV)

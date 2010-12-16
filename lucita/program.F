@@ -997,7 +997,7 @@ C
 
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 k_offset, KADD, KPROCLIST, KGROUPLIST, 
-     &          KGROUPLIST2, KPROCLENGTH, KVEC1
+     &          KGROUPLIST2, KPROCLENGTH, KVEC1, ktestme
 !               for addressing of WORK
 #include "infpar.h"
 #ifdef VAR_MPI
@@ -1021,6 +1021,7 @@ C
 #include "cgas.inc"
 *.Memory
 #include "wrkspc.inc"
+      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 
 ! LUCITA as MCSCF work-horse
 #include "mcscf_citask.h"
@@ -1039,10 +1040,18 @@ C     character line
 
       CALL QENTER('LUCITA_MASTER')
 
-      LUIN       = IUNIN
-      LUOUT      = IUNUT
-      LUCIWT     = LUOUT
-      LUWRT      = LUOUT
+!     initialize matmul stats
+      XNFLOP    = 0.0D0
+      XNCALL    = 0.0D0
+      XLCROW    = 0.0D0
+      XLCCOL    = 0.0D0
+      XLCROWCOL = 0.0D0
+      TMULT     = 0.0D0
+!     print units
+      LUIN      = IUNIN
+      LUOUT     = IUNUT
+      LUCIWT    = LUOUT
+      LUWRT     = LUOUT
 
 !     for now we set it here - SK Nov 2010
       citask_id = 'standard ci '
@@ -1139,7 +1148,7 @@ C
 C     Compute offset from WRK to WORK
       CALL COMPOFF(WRK,WORK,K_OFFSET)
 !     CALL mycompoff(WRK,WORK,K_OFFSET)
-#ifdef integer_test
+!#ifdef integer_test
       ! integer   :: kbase_lucita
       ! integer*8 :: k8base_lucita
       KBASE_LUCITA = K_OFFSET
@@ -1159,19 +1168,22 @@ C     Compute offset from WRK to WORK
      &   '(See code in lucita/program.F)'
          CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
       END IF
-#endif
+!#endif
 ! 
 !     subtract dynamically allocated memory
       max_num_ttss_blocks = 20 000
       max_subspace_dim    = 300
 !     the above values are based on an educated guess from my experience 
 !     - sk nov 2010
-      MXPWRD = LWRK
-      KADD   = MXPWRD 
+      KADD   = LWRK 
      &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
      &       - (max_subspace_dim*(max_subspace_dim+1)/2)
      &       - 2 * max_subspace_dim**2
+      MXPWRD = KADD
 
+      do i = 1, 10
+        print *, 'i: WRK(i) = ',i,WRK(i)
+      end do
       kisfree = 1
       call memchk('inside lucita - check 1:',wrk,kisfree)
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
@@ -1213,11 +1225,14 @@ C     Number of integrals
       call memchk('inside lucita - check 2.3:',wrk,kisfree)
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
-      call memchk('inside lucita - check 2.4:',wrk,kisfree)
-      CALL MEMMAN(ktestme, 100,'ADDS  ',1,'testr8')
-      call dzero(work(ktestme),100)
-      call memchk('inside lucita - check 2.5:',wrk,kisfree)
+!     call memchk('inside lucita - check 2.4:',wrk,kisfree)
+!     CALL MEMMAN(ktestme, 100,'ADDS  ',1,'testr8')
+!     call dzero(work(ktestme),100)
+!     call memchk('inside lucita - check 2.5:',wrk,kisfree)
       CALL ALLOC()
+      do i = 1, 10
+        print *, 'igen - i: WRK(i) = ',i,WRK(i)
+      end do
       print *, ' *** LUCITA FAILS AFTER ALLOC!!! ***'
       call memchk('inside lucita - check 3:',wrk,kisfree)
 C     Read in integrals
@@ -1423,7 +1438,7 @@ C
 !       WoRK(i) = i  
 !     end do
 
-      write(luout,'(/a,a12,a)') ' LUCITA run, task-id =',citask_id,
+      write(luout,'(/a,a12,a)') ' LUCITA run, task-id = ',citask_id,
      &  ' finished with no errors.'
 
       call qexit('LUCITA_MASTER')

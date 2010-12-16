@@ -97,6 +97,8 @@ C
       IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
          CALL MEMMAN(KINT2,NINT2,'ADDS  ',2,'INT2  ')
       END IF
+      print *, ' KINT1, KINT1O, KFI, KFIO are',
+     &           KINT1, KINT1O, KFI, KFIO
 *.    initialize
       CALL DZERO(WORK(KINT1) ,NTOOB**2)
       CALL DZERO(WORK(KFI)   ,NTOOB**2)
@@ -182,8 +184,7 @@ C
         KMOAOIN = 0
         KMOAOUT = 0
       END IF
-*. (more to come )
-      CALL MEMMAN(IDUMMY,IDUMMU,'CHECK',IDUMMY,'Dummy ')
+
       END
 ***********************************************************************
       SUBROUTINE LMEMCHK
@@ -239,8 +240,6 @@ C
 #include "mxpdim.inc"
 #include "SysDef.inc"
 #include "wrkspc.inc"
-*. Info from matml7
-      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
 CSK      write(6,*)'RtoI',RtoI,'for IR',IR
 CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
@@ -252,31 +251,23 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
 *
 **.Initialize
 *
-        NS = 0
-        NL = 0
-        NSNLI = 0
+        NS     = 0
+        NL     = 0
+        NSNLI  = 0
         KFREES = KBASE
         KFREEL = KBASE
 *
-        NM = 1
+        NM        = 1
         MARKC(NM) = '-INI--'
         IMARK(NM) = KFREEL
         MARKL(NM) = NL
         MARKS(NM) = NS
-*       NWORD = MXPWRD
 *
 *       Compute pointer to end element
 *
         NWORD = KBASE + MXPWRD-1
         IPRNTMP = 0
         ISTOP = 0
-*. Initialize info from matml7
-        XNFLOP = 0.0D0
-        XNCALL = 0.0D0
-        XLCROW = 0.0D0
-        XLCCOL = 0.0D0
-        XLCROWCOL = 0.0D0
-        TMULT     = 0.0D0
 *
 ** First free word
 *

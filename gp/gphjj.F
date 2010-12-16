@@ -1944,8 +1944,9 @@ C
       REAL*8 WRK(*), WORK(*)
       integer(8), intent(inout) :: kbase
       integer(8)                :: kaddr
-      KADDR = LOC(WRK) - LOC(WORK) + 1
+      KADDR = LOC(WRK)  - LOC(WORK) + 1
       KBASE = KADDR / 8
+!     KBASE = KADDR
       write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
       END
 #endif
