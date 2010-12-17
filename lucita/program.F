@@ -1425,15 +1425,17 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
       close(unit=LU91,status='DELETE')
 C
 #ifdef VAR_MPI
-!     close all remaining open parallel files (for GASCI: 1 --> ILU1)
-      files_to_close = 1
-      fh_offset      = 8
-      call close_file_io_model(files_to_close,fh_offset,fh_array)
-      deallocate(fh_array)
+      IF (LUCI_NMPROC .GT. 1) THEN
+!       close all remaining open parallel files (for GASCI: 1 --> ILU1)
+        files_to_close = 1
+        fh_offset      = 8
+        call close_file_io_model(files_to_close,fh_offset,fh_array)
+        deallocate(fh_array)
 
-!     reset communication groups
-      call close_communication_model(mynew_comm,icomm,mynew_comm_sm,
-     &                               mynew_comm_sm_c)
+!       reset communication groups
+        call close_communication_model(mynew_comm,icomm,mynew_comm_sm,
+     &                                 mynew_comm_sm_c)
+      END IF
 #endif
 
 !     free memory

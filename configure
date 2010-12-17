@@ -1075,7 +1075,7 @@ case "$WHICH" in
 		     ;;
                   *) march=" ";;
              esac
-             copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+             copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
 		 F90mod=-J../modules
              ;;
@@ -1137,7 +1137,7 @@ case "$WHICH" in
                        ;;
                     *) march=" ";;
                esac
-               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
+               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
 		   F90mod=-J../modules
                f90opt="$opt -I. -x f95-cpp-input"
