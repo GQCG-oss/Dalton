@@ -1070,7 +1070,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * Works only for ICISTR .ne. 1, i.e. pure memory version
 * has been eliminated.
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP
+      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP,
      &          KISCLFAC, KSCALLOC
 !               for addressing of WORK
 #ifdef VAR_MPI
@@ -1148,7 +1148,9 @@ C
          KSVST = 1
       END IF
 *     arrays giving block type
-      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
+      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
+      print *, 'KSBLTP is',KSBLTP
+      print *, 'NSMST  is',NSMST
       CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
 *     arrays for partitioning of sigma
       NTTS = MXNTTS
