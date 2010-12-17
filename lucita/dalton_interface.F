@@ -2497,7 +2497,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
 #include "priunit.h"
 *
-      INTEGER*8 current_free_mem
+      INTEGER*8 current_free_mem, kintdal_interface
       ! for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2561,8 +2561,17 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         IF(INCORE.EQ.1) THEN
           CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
           LSCR = current_free_mem - 1000
-          CALL LUCITA_GETINT_DALTON(einact,WORK(KINT1),WORK(KINT2),LSCR)
-!         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, LWRK)
+          idum = 0
+!         set local marker + allocate space for lucita-dalton integral interface
+          call memman(idum,idum,'MARK  ',idum,'dalint')
+          CALL memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+
+          CALL LUCITA_GETINT_DALTON(einact,WORK(KINT1),WORK(KINT2),
+     &                              WORK(kintdal_interface),LSCR)
+!         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, tmp_dal_work,LWRK)
+
+!         release memory
+          CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
           ecore = ecore_orig + einact
         ELSE
           CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
@@ -4407,13 +4416,14 @@ C
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
       END
 ***********************************************************************
-      SUBROUTINE LUCITA_GETINT_DALTON(EMY,X1INT,X2INT,LWORK)
+      SUBROUTINE LUCITA_GETINT_DALTON(EMY,X1INT,X2INT,
+     &                                tmp_dal_work,LWORK)
 C
 C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
 #include "implicit.h"
 
-      DIMENSION X1INT(*), X2INT(*)
+      DIMENSION X1INT(*), X2INT(*), tmp_dal_work(lwork)
  
 C Used from include files:
 C  priunit: LUPRI
@@ -4435,25 +4445,19 @@ C  orbinp: ntoobs
       LOGICAL CLOSE_MOTWOINT, DISKH2
 !     scratch space
       integer, allocatable :: mult_ptg(:,:)
-      real(8), allocatable :: cmo(:)
-      real(8), allocatable :: fcac(:)
-      real(8), allocatable :: h2ac(:,:)
-      real(8), allocatable :: tmp_work(:)
 C
 C     -------------------------------------------------------
 C
-!     allocate scratch matrices
+!     allocate scratch matrix
       allocate(mult_ptg(8,8))
-      allocate(cmo(ncmot))
-      allocate(fcac(nnashx))
-      allocate(h2ac(nnashx,nnashx))
 
-!     allocate work array to be used inside sirius routines
-      lfree = lwork - ncmot - nnashx**2 - nnashx - 8*8
-      allocate(tmp_work(lfree))
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
 
-!     read molecular orbital coefficients from file
-      CALL GET_CMOAO(cmo)
+!     read molecular orbital coefficients from dalton-sirius file
+      call memget('REAL',kcmo,ncmot,tmp_dal_work,kfree,lfree)
+      CALL GET_CMOAO(tmp_dal_work(kcmo))
 C
 C-----------------------------------
 C     Read MO integrals into memory.
@@ -4467,8 +4471,13 @@ C
           CLOSE_MOTWOINT = .FALSE.
       END IF
 
+!     allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
+      call memget('REAL',kfcac,nnashx   ,tmp_dal_work,kfree,lfree)
+      call memget('REAL',kh2ac,nnashx**2,tmp_dal_work,kfree,lfree)
+
       DISKH2 = .FALSE.
-      CALL CIINTS(DISKH2,cmo,EMY,fcac,h2ac,tmp_work,lfree)
+      CALL CIINTS(DISKH2,tmp_dal_work(kcmo),emy,tmp_dal_work(kfcac),
+     &            tmp_dal_work(kh2ac),tmp_dal_work(kfree),lfree)
 
       IF (CLOSE_MOTWOINT) THEN
          CALL GPCLOSE(LUINTM,'KEEP')
@@ -4476,9 +4485,10 @@ C
 
 #ifdef LUCI_DEBUG
       WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
-      CALL OUTPAK(fcac,NASHT,-1,LUPRI)
+      CALL OUTPAK(tmp_dal_work(kfcac),NASHT,-1,LUPRI)
       WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
-      CALL OUTPUT(h2ac,1,NNASHX,1,NNASHX,NNASHX,NNASHX,-1,LUPRI)
+      CALL OUTPUT(tmp_dal_work(kh2ac),1,NNASHX,1,NNASHX,NNASHX,
+     &            NNASHX,-1,LUPRI)
 #endif
 
 !--------------------------------------------------------------
@@ -4489,21 +4499,18 @@ C
       mult_ptg = 0
       call set_ptg_multiplication_table(mult_ptg,8)
 
-      call sirint2luint(fcac,h2ac,x1int,x2int,mult_ptg,adsxa,nasht,
-     &                  nnashx,ntoobs,nsym,mxpobs,nint1,nint2)
+      call sirint2luint(tmp_dal_work(kfcac),tmp_dal_work(kh2ac),
+     &                  x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
+     &                  ntoobs,nsym,mxpobs,nint1,nint2)
 
 !     release scratch space
-      deallocate(tmp_work)
-      deallocate(h2ac)
-      deallocate(fcac)
-      deallocate(cmo)
+      call memrel('lucita-dalton-1/2int-interface.done',tmp_dal_work,
+     &            kfrsav,kfrsav,kfree,lfree)
       deallocate(mult_ptg)
 
-!     call quit('NEXT TO DO: store integrals in LUCITA packing')
-
       END
-
 ***********************************************************************
+
       subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,mult_ptg,
      &                        return_sym_of_jorb,nr_actorb_tot,nnashx,
      &                        nr_orb_per_sym,nr_sym,max_orb_per_sym,
