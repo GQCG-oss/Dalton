@@ -1253,7 +1253,7 @@ C     Internal subspaces
 C     Symmetry of reference
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
       call memchk('inside lucita - check 7:',WRK_DALTON,kisfree)
-      call lmemchk('check 7')
+!     call lmemchk('check 7')
 C
 C     Last space where CI vectors were stored
 C
@@ -4556,8 +4556,13 @@ C        NERROR = NERROR + 1
       IF(NOINT.EQ.0) THEN
         CALL GET_ORB_DIM_ENV(ECORE_ENV)
         IF(ISETKW(46).EQ.2) ECORE = ECORE_ENV
-        if (ENVIRO(1:5).ne.'DIRAC') CALL CHK_ORBDIM(IGSFILL,NIRREP)
-C     CHK_ORBDIM(IGSFILL,NIRREP)
+#ifdef PRG_DIRAC
+        if(ENVIRO(1:5).ne.'DIRAC')
+     &    CALL CHK_ORBDIM(IGSFILL,NIRREP)
+#else
+        if(ENVIRO(1:5).ne.'DALTO')
+     &    CALL CHK_ORBDIM(IGSFILL,NIRREP)
+#endif
       ELSE
         WRITE(LUOUT,*) ' GETOBS not called since NOINT = 1'
         ECORE = 0.0D0

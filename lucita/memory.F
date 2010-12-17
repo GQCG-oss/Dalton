@@ -94,13 +94,10 @@ C
 !     KINT1O = 0
 !     KFIO   = 0
 *.2 : Two electron integrals
-      print *, 'NOINT, INCORE',NOINT,INCORE
       IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
          CALL MEMMAN(KINT2,NINT2,'ADDS  ',2,'INT2  ')
          CALL DZERO(WORK(KINT2) ,NINT2)
       END IF
-      print *, ' KINT1, KINT1O, KFI, KFIO are',
-     &           KINT1, KINT1O, KFI, KFIO
 *.    initialize
       CALL DZERO(WORK(KINT1) ,NTOOB**2)
       CALL DZERO(WORK(KFI)   ,NTOOB**2)
@@ -186,7 +183,7 @@ C
         KMOAOUT = 0
       END IF
 
-      call lmemchk('LUCITA_ALLOC')
+!     call lmemchk('LUCITA_ALLOC')
 
       END
 ***********************************************************************

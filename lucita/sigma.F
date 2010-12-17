@@ -1149,8 +1149,6 @@ C
       END IF
 *     arrays giving block type
       CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
-      print *, 'KSBLTP is',KSBLTP
-      print *, 'NSMST  is',NSMST
       CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
 *     arrays for partitioning of sigma
       NTTS = MXNTTS

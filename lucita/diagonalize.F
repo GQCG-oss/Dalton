@@ -106,7 +106,8 @@ C
 *
       IF( IPRT.GT. 1 )  WRITE(lupri,'(/A)')
      &'          *** information from ci diagonalization  ***'
-      NTEST = 9999 ! NTEST=0
+!     NTEST = 9999 ! NTEST=0
+      NTEST = 0
 C
 C               ====================================
 C  1 :               INITIAL VARIATIONAL SUBSPACE
@@ -2913,7 +2914,8 @@ C
          MAXVEC = MIN(MAXVEC,2)
        END IF
 *
-       IPRT=9999 ! IPRT = 0000  DEBUG
+!      IPRT = 9999 ! IPRT = 0000  DEBUG
+       IPRT = 0000
        lbl  = 0
 c      IPRT = IPRTXX
 !#ifdef DEBUG
@@ -2966,8 +2968,6 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
          IF(MYNEW_ID.EQ.0) THEN
             CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
          ENDIF
-       print *, 'loc vec1 vec2',loc(vec1), loc(vec2)
-       print *, 'lu5 lu6->MV7 ',lu5,lu6
          CALL MV7(VEC1,VEC2,LU5,LU6)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
          CALL REWINE(LU6,-1)

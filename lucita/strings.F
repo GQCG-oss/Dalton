@@ -752,6 +752,9 @@ C?            END IF
 * ======
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+      INTEGER*8 KLLOC, KLLZ, KLLREO
+!     for addressing of WORK
 #include "mxpdim.inc"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
@@ -793,8 +796,8 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *. Internal affairs
 *
       IF(I12.LE.4.AND.K12.LE.2) THEN
-        KLLOC = KLOCSTR(K12)
-        KLLZ = KLZ(I12)
+        KLLOC  = KLOCSTR(K12)
+        KLLZ   = KLZ(I12)
         KLLREO = KLREO(I12)
       ELSE
         WRITE(6,*) ' ADST_GAS : Illegal value of I12 = ', I12
@@ -1006,6 +1009,10 @@ C     CALL MEMCHK
 * ======
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+      INTEGER*8 KLLOC, KLLZ, KLLREO
+
+!     for addressing of WORK
 #include "mxpdim.inc"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
@@ -1047,8 +1054,8 @@ C?    END IF
 *. Internal affairs
 *
       IF(I12.LE.4.AND.K12.LE.2) THEN
-        KLLOC = KLOCSTR(K12)
-        KLLZ = KLZ(I12)
+        KLLOC  = KLOCSTR(K12)
+        KLLZ   = KLZ(I12)
         KLLREO = KLREO(I12)
       ELSE
         WRITE(6,*) ' ADST_GAS : Illegal value of I12 = ', I12
@@ -4363,7 +4370,7 @@ C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
       END DO
 *
 C     WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
-      CALL LMEMCHK('SIRINF_GAS')
+!     CALL LMEMCHK('STRINF_GAS')
 *
       CALL QEXIT('STRIN')
       RETURN
