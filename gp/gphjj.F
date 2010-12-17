@@ -1944,9 +1944,12 @@ C
       REAL*8 WRK(*), WORK(*)
       integer(8), intent(inout) :: kbase
       integer(8)                :: kaddr
-      KADDR = LOC(WRK)  - LOC(WORK) + 1
-      KBASE = KADDR / 8
-!     KBASE = KADDR
-      write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
+
+      !print *,'LOC(WRK) ',LOC(WRK)
+      !print *,'LOC(WORK)',LOC(WORK)
+      KADDR = LOC(WRK)  - LOC(WORK)
+      KBASE = KADDR / 8 + 1 ! from byte address to REAL*8 address
+
+      !print *,'COMPOFF: KADDR, KBASE', KADDR, KBASE, KBASE*8
       END
 #endif

@@ -970,7 +970,7 @@ C
       END
 ***********************************************************************
 *
-      SUBROUTINE LUCITA_MASTER(WRK,LWRK,IUNIN,IUNUT)
+      SUBROUTINE LUCITA_MASTER(WRK_DALTON,LWRK_DALTON,IUNIN,IUNUT)
 *
 * L U C I A
 *
@@ -1025,7 +1025,7 @@ C
 
 ! LUCITA as MCSCF work-horse
 #include "mcscf_citask.h"
-      DIMENSION WRK(LWRK)
+      DIMENSION WRK_DALTON(LWRK_DALTON)
 C     character line
       CHARACTER*72 CARD
       integer               :: kbase_lucita
@@ -1065,19 +1065,19 @@ C     character line
 
       allocate(proclist(luci_nmproc))
       allocate(grouplist(luci_nmproc))
-      allocate(grouplist_shared_mem(luci_nmproc))
 
       proclist             = -1
       grouplist            = -1
-      grouplist_shared_mem = -1
 
 !     currently we work with 9 scratch files (nr_files in parluci.h)
       nr_files = 9
 
 #ifdef VAR_MPI
-      
       IF (LUCI_NMPROC .GT. 1) THEN
 
+      allocate(grouplist_shared_mem(luci_nmproc))
+      grouplist_shared_mem = -1
+      
 !     setup the communication model.
 !     all important variables (input parameters to module) 
 !     are stored on common block /LUPARGROUP/
@@ -1136,19 +1136,22 @@ C     character line
       ILU2 = fh_array(8)
       ILU1 = fh_array(9)
 
+!     free currently unused shared-memory group list
+      deallocate(grouplist_shared_mem)
 
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
-
-!     free currently unused shared-memory group list
-      deallocate(grouplist_shared_mem)
 C
 C     memory on common block WORK: initialization and allocation
 C
-C     Compute offset from WRK to WORK
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-!     CALL mycompoff(WRK,WORK,K_OFFSET)
-!#ifdef integer_test
+C     Compute offset from WRK_DALTON to WORK
+      KFREE = 1
+      LFREE = LWRK_DALTON
+      CALL MEMGET('REAL',K1,2,WRK_DALTON,KFREE,LFREE)
+      print *,'before COMPOFF, KFREE,LFREE',KFREE,LFREE
+      CALL COMPOFF(WRK_DALTON(KFREE),WORK,K_OFFSET)
+      print *,'K_OFFSET      =',K_OFFSET
+#ifdef integer_test
       ! integer   :: kbase_lucita
       ! integer*8 :: k8base_lucita
       KBASE_LUCITA = K_OFFSET
@@ -1160,7 +1163,6 @@ C     Compute offset from WRK to WORK
       K8BASE_LUCITA = KBASE_LUCITA
       print *,'KBASE_LUCITA  =',KBASE_LUCITA
       print *,'K8BASE_LUCITA =',K8BASE_LUCITA
-      print *,'K_OFFSET      =',K_OFFSET
       IF (K8BASE_LUCITA .NE. K_OFFSET) THEN
          WRITE (LUOUT,'(/A/A,2I20//A)')
      &   'FATAL ERROR in LUCITA: offset is too big for i*4',
@@ -1168,26 +1170,27 @@ C     Compute offset from WRK to WORK
      &   '(See code in lucita/program.F)'
          CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
       END IF
-!#endif
+#endif
 ! 
 !     subtract dynamically allocated memory
       max_num_ttss_blocks = 20 000
       max_subspace_dim    = 300
 !     the above values are based on an educated guess from my experience 
 !     - sk nov 2010
-      KADD   = LWRK 
+      KADD   = LFREE
+      !KADD   = LWRK_DALTON 
      &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
      &       - (max_subspace_dim*(max_subspace_dim+1)/2)
      &       - 2 * max_subspace_dim**2
       MXPWRD = KADD
 
-      do i = 1, 10
-        print *, 'i: WRK(i) = ',i,WRK(i)
-      end do
+      !do i = 1, 20
+      !  print *, 'i: WRK_DALTON(i) = ',i,WRK_DALTON(i)
+      !end do
       kisfree = 1
-      call memchk('inside lucita - check 1:',wrk,kisfree)
+      call memchk('inside lucita - check 1:',WRK_DALTON,kisfree)
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
-      call memchk('inside lucita - check 2:',wrk,kisfree)
+      call memchk('inside lucita - check 2:',WRK_DALTON,kisfree)
 
       WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', KADD
@@ -1210,43 +1213,47 @@ C     check value for LCSBLK
       END IF
 C
 C     From shells to orbitals
-      call memchk('inside lucita - check 2.0.2:',wrk,kisfree)
+      call memchk('inside lucita - check 2.0.2:',WRK_DALTON,kisfree)
       CALL ORBINF(LUOUT,IPRORB)
 C     Number of string types
-      call memchk('inside lucita - check 2.1:',wrk,kisfree)
+      call memchk('inside lucita - check 2.1:',WRK_DALTON,kisfree)
       CALL STRTYP_GAS(IPRSTR)
 C     Divide orbital spaces into inactive/active/secondary
-      call memchk('inside lucita - check 2.1.2:',wrk,kisfree)
+      call memchk('inside lucita - check 2.1.2:',WRK_DALTON,kisfree)
       CALL GASSPC()
 C     Symmetry information
-      call memchk('inside lucita - check 2.2:',wrk,kisfree)
+      call memchk('inside lucita - check 2.2:',WRK_DALTON,kisfree)
       CALL SYMINF(IPRORB)
 C     Number of integrals
-      call memchk('inside lucita - check 2.3:',wrk,kisfree)
+      call memchk('inside lucita - check 2.3:',WRK_DALTON,kisfree)
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
-!     call memchk('inside lucita - check 2.4:',wrk,kisfree)
+!     call memchk('inside lucita - check 2.4:',WRK_DALTON,kisfree)
 !     CALL MEMMAN(ktestme, 100,'ADDS  ',1,'testr8')
 !     call dzero(work(ktestme),100)
-!     call memchk('inside lucita - check 2.5:',wrk,kisfree)
-      CALL ALLOC()
-      do i = 1, 10
-        print *, 'igen - i: WRK(i) = ',i,WRK(i)
-      end do
-      print *, ' *** LUCITA FAILS AFTER ALLOC!!! ***'
-      call memchk('inside lucita - check 3:',wrk,kisfree)
+!     call memchk('inside lucita - check 2.5:',WRK_DALTON,kisfree)
+      CALL LUCITA_ALLOC()
+      !do i = 1, 20
+      !  print *, 'igen - i: WRK_DALTON(i) = ',i,WRK_DALTON(i)
+      !end do
+      call memchk('inside lucita - check 3:',WRK_DALTON,kisfree)
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
       ELSE
         WRITE(LUOUT,*) ' No integrals imported '
       END IF
+      call memchk('inside lucita - check 4:',WRK_DALTON,kisfree)
 C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS(WORK,IPRSTR)
+      call memchk('inside lucita - check 5:',WRK_DALTON,kisfree)
 C     Internal subspaces
       CALL LCISPC(IPRCIX)
+      call memchk('inside lucita - check 6:',WRK_DALTON,kisfree)
 C     Symmetry of reference
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
+      call memchk('inside lucita - check 7:',WRK_DALTON,kisfree)
+      call lmemchk('check 7')
 C
 C     Last space where CI vectors were stored
 C
@@ -1434,7 +1441,7 @@ C
       deallocate(proclist)
      
 !     do i = 1, 100
-!       WRK(i)  = i  
+!       WRK_DALTON(i)  = i  
 !       WoRK(i) = i  
 !     end do
 

@@ -659,7 +659,7 @@ C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 C             GET_CMOMO(CMOMO)
         CALL GET_CMOMO(WORK(KLCMOMO))
         WRITE(6,*) ' Memcheck after GET_CMOMO'
-        CALL LMEMCHK
+        CALL LMEMCHK('TRACI_CTL')
 *
 *. Transform CI vector : Input on LUHC, output on LUDIA (!)
         CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)

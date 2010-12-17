@@ -37,7 +37,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE ALLOC
+      SUBROUTINE LUCITA_ALLOC
 *
 * Dimensions and
 * Allocation of static memory
@@ -94,15 +94,16 @@ C
 !     KINT1O = 0
 !     KFIO   = 0
 *.2 : Two electron integrals
+      print *, 'NOINT, INCORE',NOINT,INCORE
       IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
          CALL MEMMAN(KINT2,NINT2,'ADDS  ',2,'INT2  ')
+         CALL DZERO(WORK(KINT2) ,NINT2)
       END IF
       print *, ' KINT1, KINT1O, KFI, KFIO are',
      &           KINT1, KINT1O, KFI, KFIO
 *.    initialize
       CALL DZERO(WORK(KINT1) ,NTOOB**2)
       CALL DZERO(WORK(KFI)   ,NTOOB**2)
-      CALL DZERO(WORK(KINT2) ,NINT2)
       CALL DZERO(WORK(KFIO)  ,NTOOB**2)
       CALL DZERO(WORK(KINT1O),NTOOB**2)
 *. Pointers to symmetry block of integrals
@@ -185,11 +186,17 @@ C
         KMOAOUT = 0
       END IF
 
+      call lmemchk('LUCITA_ALLOC')
+
       END
 ***********************************************************************
-      SUBROUTINE LMEMCHK
+      SUBROUTINE LMEMCHK(TEXT)
+
+      CHARACTER*(*) TEXT
+#include "priunit.h"
 *
 * Check memory allocated  with the memory manager
+      write (lupri,'(/2A)') 'Memory check - ',TEXT
       CALL MEMMAN(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
 *
       END

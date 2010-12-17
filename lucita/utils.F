@@ -305,6 +305,8 @@
 *     absolute value of elements in integer vector IVEC
 *
       DIMENSION IVEC(1)
+
+#include "priunit.h"
 *
       IF(NDIM.GT.0) THEN
         IX = -1
@@ -327,7 +329,7 @@
       ELSE IF(NDIM.EQ.0) THEN
 *. No components : set to zero and write a warning
         IMNMX = 0
-        WRITE(6,*) ' Min/Max taken zero length vector set to zero'
+        WRITE(LUPRI,*) ' Min/Max taken zero length vector set to zero'
       END IF
 *
       RETURN

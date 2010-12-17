@@ -1408,7 +1408,7 @@ C     REORHO1(RHO1I,RHO1O,IRHO1SM)
      &            WORK(KLHNAT),WORK(KLOCC),NACOB,
      &            WORK(KLSCR),IPRDEN)
       WRITE(6,*) ' memchk 1 '
-      CALL LMEMCHK
+      CALL LMEMCHK('after LNATORB')
 *
       DO IPROP =1, NPROP
         WRITE(6,'(A,A)') ' Property to be calculated',
@@ -1477,7 +1477,7 @@ C               ELSE IF (LABEL2(1:3).EQ.'EFG' ) THEN
 C               END IF
 *. Obtain one-electron integrals
                 WRITE(6,*) ' memchk 2'
-                CALL LMEMCHK
+                CALL LMEMCHK('ONE_EL_PROP before GET_PROPINT')
                 CALL GET_PROPINT(WORK(KLHONE),IRHO1SM,LABEL,
      &               WORK(KLSCR),NTOOBS,NTOOBS,NSMOB,0)
 *. and then : Expectation value
@@ -1489,14 +1489,14 @@ C               END IF
                 CALL TRAN_SYM_BLOC_MAT2(WORK(KLHONE),WORK(KLXNAT),
      &               NSMOB,NTOOBS,WORK(KLHNAT),WORK(KLSCR),0)
                 WRITE(6,*) ' memchk 3'
-                CALL LMEMCHK
+                CALL LMEMCHK('ONE_EL_PROP after TRAN_SYM_BLOC_MAT2')
 *. Extract diagonal integrals
                 CALL GET_DIAG_BLOC_MAT(WORK(KLHNAT),WORK(KLHDIA),
      &               NSMOB,NTOOBS,0)
                 CALL PROP_NATORB(WORK(KLHDIA),WORK(KLOCC),
      &               NTOOBS,NSMOB)
                 WRITE(6,*) ' memchk 4'
-                CALL LMEMCHK
+                CALL LMEMCHK('ONE_EL_PROP after PROP_NATORB')
               END IF
             END DO
           END DO
@@ -1666,7 +1666,7 @@ C               END IF
         CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUN,LUSC1,WORK(KLVEC1),0,LBLK)
         WRITE(6,*) ' Memcheck I '
-        CALL LMEMCHK
+        CALL LMEMCHK('PROP_PERT I')
 *
         CALL REWINE(LUN,-1)
         DO J = 1, I
@@ -1676,7 +1676,7 @@ C               END IF
      &    INPRDD (WORK(KLVEC1),WORK(KLVEC2),LUSC1,LUN,0,LBLK)
         END DO
         WRITE(6,*) ' Memcheck II '
-        CALL LMEMCHK
+        CALL LMEMCHK('PROP_PERT II')
       END DO
 * SI(i) = sum(j=1,i-1)S(j,i-j)
       DO I = 1, N
@@ -1699,7 +1699,7 @@ C               END IF
         CALL WRTMT_LU(WORK(KLSI),N,1,N,1)
       END IF
         WRITE(6,*) ' Memcheck III '
-        CALL LMEMCHK
+        CALL LMEMCHK('PROP_PERT III')
 *
 * ===============================================
 * 2 : Construct density matrices through order N

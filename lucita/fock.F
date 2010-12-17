@@ -571,7 +571,7 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
       I12 = I12_SAVE
 *
       WRITE(6,*) ' Memtest 1 : '
-      CALL LMEMCHK
+      CALL LMEMCHK('PTFOCK')
 *
 * =====================================================
 * 3 : Construct for all orders Fock matrix with unpartioned Hamiltonian

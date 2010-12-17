@@ -715,43 +715,28 @@ C
          KFREE  = KFRSAV
          LFREE  = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-
-!old     KCMO  = 1
-!old     KWRK1 = KCMO  + NCMOT
-!old     LWRK1 = LWORK - KWRK1
-
-         call MEMCHK('before READMO',WORK,KFREE)
-
-!old     CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
          CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
            ! orbital occupations for TRACTL
          JTRALVL = 0 ! all active orbitals for all four indices
          USEDRC = .FALSE.
-         call MEMCHK('before TRACTL',WORK,KFREE)
 
-!old     CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
 
-         do i = 1, 10
-           WORK(KCMO+i-1) = i
+         CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
+         print *,'after lucita-tra',kfrsav,kfree,lfree
+
+         do i = 1, 20
+           WORK(i) = i
          end do
 
-         CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
+         CALL LUCITA(WORK(5),LFREE-4)
 
-         call MEMCHK('before lucita',WORK,KFRSAV)
-         print *, ' LFREE is =',LFREE
+         do i = 1, 20
+           print *, 'after LUCITA i: WORK(i) = ',i,WORK(i)
+         end do
 
-!        allocate(tmp_space(LFREE))
-         CALL LUCITA(WORK,LFREE)
-!        CALL LUCITA(tmp_space,LFREE)
-!        deallocate(tmp_space)
-
-!        do i = 1, 10
-!          print *, 'i: WORK(i) = ',i,WORK(i)
-!        end do
-         call MEMCHK('after lucita',WORK,KFRSAV)
          CALL SET_INFORB_LUCITA('RESET ')
        END IF
       END IF

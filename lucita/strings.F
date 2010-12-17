@@ -4363,7 +4363,7 @@ C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
       END DO
 *
 C     WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
-      CALL LMEMCHK
+      CALL LMEMCHK('SIRINF_GAS')
 *
       CALL QEXIT('STRIN')
       RETURN
