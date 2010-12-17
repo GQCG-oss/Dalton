@@ -1772,7 +1772,6 @@ C
 C
       CALL FLSHFO(LUWRT)
 C
-      Call Add_Info('E_CI',FINEIG,NROOT)
       deallocate(tmp_space2)
       deallocate(tmp_space1)
       deallocate(tmp_space0)

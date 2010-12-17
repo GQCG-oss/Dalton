@@ -1028,7 +1028,10 @@ C
       DIMENSION WRK_DALTON(LWRK_DALTON)
 C     character line
       CHARACTER*72 CARD
+#ifdef integer_test
+      integer(8)            :: k8base_lucita
       integer               :: kbase_lucita
+#endif
       integer               :: files_to_close
       integer               :: fh_offset
       integer               :: max_num_ttss_blocks
@@ -1145,9 +1148,10 @@ C
 C     memory on common block WORK: initialization and allocation
 C
 C     Compute offset from WRK_DALTON to WORK
-      KFREE = 1
-      LFREE = LWRK_DALTON
-      CALL MEMGET('REAL',K1,2,WRK_DALTON,KFREE,LFREE)
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWRK_DALTON
+      CALL MEMGET('REAL',K1,1,WRK_DALTON,KFREE,LFREE)
       print *,'before COMPOFF, KFREE,LFREE',KFREE,LFREE
       CALL COMPOFF(WRK_DALTON(KFREE),WORK,K_OFFSET)
       print *,'K_OFFSET      =',K_OFFSET
@@ -1187,10 +1191,8 @@ C     Compute offset from WRK_DALTON to WORK
       !do i = 1, 20
       !  print *, 'i: WRK_DALTON(i) = ',i,WRK_DALTON(i)
       !end do
-      kisfree = 1
-      call memchk('inside lucita - check 1:',WRK_DALTON,kisfree)
+
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
-      call memchk('inside lucita - check 2:',WRK_DALTON,kisfree)
 
       WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', KADD
@@ -1213,47 +1215,32 @@ C     check value for LCSBLK
       END IF
 C
 C     From shells to orbitals
-      call memchk('inside lucita - check 2.0.2:',WRK_DALTON,kisfree)
       CALL ORBINF(LUOUT,IPRORB)
 C     Number of string types
-      call memchk('inside lucita - check 2.1:',WRK_DALTON,kisfree)
       CALL STRTYP_GAS(IPRSTR)
 C     Divide orbital spaces into inactive/active/secondary
-      call memchk('inside lucita - check 2.1.2:',WRK_DALTON,kisfree)
       CALL GASSPC()
 C     Symmetry information
-      call memchk('inside lucita - check 2.2:',WRK_DALTON,kisfree)
       CALL SYMINF(IPRORB)
 C     Number of integrals
-      call memchk('inside lucita - check 2.3:',WRK_DALTON,kisfree)
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
-!     call memchk('inside lucita - check 2.4:',WRK_DALTON,kisfree)
-!     CALL MEMMAN(ktestme, 100,'ADDS  ',1,'testr8')
-!     call dzero(work(ktestme),100)
-!     call memchk('inside lucita - check 2.5:',WRK_DALTON,kisfree)
       CALL LUCITA_ALLOC()
       !do i = 1, 20
       !  print *, 'igen - i: WRK_DALTON(i) = ',i,WRK_DALTON(i)
       !end do
-      call memchk('inside lucita - check 3:',WRK_DALTON,kisfree)
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
       ELSE
         WRITE(LUOUT,*) ' No integrals imported '
       END IF
-      call memchk('inside lucita - check 4:',WRK_DALTON,kisfree)
 C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS(WORK,IPRSTR)
-      call memchk('inside lucita - check 5:',WRK_DALTON,kisfree)
 C     Internal subspaces
       CALL LCISPC(IPRCIX)
-      call memchk('inside lucita - check 6:',WRK_DALTON,kisfree)
 C     Symmetry of reference
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
-      call memchk('inside lucita - check 7:',WRK_DALTON,kisfree)
-!     call lmemchk('check 7')
 C
 C     Last space where CI vectors were stored
 C
@@ -1439,6 +1426,7 @@ C
 #endif
 
 !     free memory
+      call memrel('lucita.done',wrk_dalton,kfrsav,kfrsav,kfree,lfree)
       deallocate(grouplist)
       deallocate(proclist)
      

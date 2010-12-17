@@ -24,19 +24,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*  Dummy routine
-      subroutine add_info(ECI,FINEIG,NROOT)
-      implicit none
-      character*4 ECI
-      real*8 FINEIG
-      integer NROOT
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE CHAR_TO_INTEGER(CHAR_X,INT_X)
 
 *     Convert an integer number given as a string into
@@ -46,8 +33,6 @@
       INTEGER      INT_X
       CHARACTER*12 STRING
 
-      CALL STDFMT(CHAR_X,STRING)
-      CALL RIGHTAD(STRING)
       READ (STRING,'(I12)',IOSTAT=IOS,ERR=100,END=200) INT_X
       RETURN
 
@@ -147,8 +132,6 @@
       REAL*8       REAL_X
       CHARACTER*12 STRING
 
-      CALL STDFMT(CHAR_X,STRING)
-      CALL RIGHTAD(STRING)
       READ (STRING,'(F18.10)',IOSTAT=IOS,ERR=100,END=200) REAL_X
       RETURN
 
@@ -175,26 +158,6 @@
       CALL QUIT(16)
 
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine clscom
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine datimx
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -269,28 +232,18 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      subroutine finish(IDUMMY)
-      implicit none
-      integer IDUMMY
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      FUNCTION IFRMR(WORK,IROFF,IELMNT)
+      FUNCTION IFRMR(vector,IROFF,IELMNT)
 *
-* An integer array is stored in real array WORK,
-* starting from WORK(IROFF). Obtain element
+* An integer array is stored in real array vector,
+* starting from vector(IROFF). Obtain element
 * IELMNT of this array
 *
-      INTEGER WORK(*)
+      INTEGER vector(*)
 *
 #include "SysDef.inc"
-*. offset when work is integer array
+*. offset when vector is integer array
       IIOFF = 1 + RtoI * (IROFF-1)
-      IFRMR = WORK(IIOFF-1+IELMNT)
+      IFRMR = vector(IIOFF-1+IELMNT)
 *
       RETURN
       END
@@ -334,16 +287,6 @@
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine leftad
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -401,16 +344,6 @@
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine opncom
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -478,28 +411,6 @@ C
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine rdnlst
-      read(5,*)
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine rightad(string)
-      character*12 string
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -630,48 +541,6 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      subroutine start(CDUMMY)
-      implicit none
-      character*6 CDUMMY
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine stdfmt(char_x,string)
-      CHARACTER*72 CHAR_X
-      CHARACTER*12 STRING
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine stka
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine strnln
-      return
-      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

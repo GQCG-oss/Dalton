@@ -21,7 +21,6 @@ F90_MOD_OBJS = $(F90_MODS:.F90=.o)
 
 F90_OBJS = 
 
-#C_OBJS = mycompoff.o
 C_OBJS =
 
 F77_CPPS = $(F77_OBJS:.o=.i)

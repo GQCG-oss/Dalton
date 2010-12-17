@@ -730,7 +730,7 @@ C
 !          WORK(i) = i
 !        end do
 
-         CALL LUCITA(WORK(5),LFREE-4)
+         CALL LUCITA(WORK,LFREE)
 
 !        do i = 1, 20
 !          print *, 'after LUCITA i: WORK(i) = ',i,WORK(i)
