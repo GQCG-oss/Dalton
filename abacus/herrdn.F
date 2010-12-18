@@ -5122,14 +5122,8 @@ C  /* Deck rdcsp */
       END
 C  /* Deck rdline */
       SUBROUTINE RDLINE(LUINFO)
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "molinp.h"
-#include "infpar.h"
 C
-C     Reads a line from MOLECULE.INP
+C     Purpose: Read a line from MOLECULE.INP
 C
 C     We keep track of which line we've read last time (NMLN_LASTREAD).
 C     This allows some routines to read a line, check if it want to use
@@ -5138,13 +5132,25 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "molinp.h"
+#include "infpar.h"
+
+      CHARACTER*(120) NEXT_INPUT_LINE
+      INTEGER NMLN_LASTREAD
       DATA NMLN_LASTREAD /0/
       SAVE NMLN_LASTREAD
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
-      IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
+      IF ( NMLINE .EQ. 0) THEN
+         NMLN_LASTREAD = 0
+         LEN_MLINE = LEN( MLINE(1) )
+      END IF
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
@@ -5161,8 +5167,10 @@ C     Only the master in a parallel calc. reads the input file.
 C     The slaves get the input transferred from the master in
 C     the common block MOLINP. /hjaaj
 C
-      IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD)
-     &     READ (LUINFO,'(A)',END=12,ERR=11) MLINE(NMLINE)
+      IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD) THEN
+          READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
+          MLINE(NMLINE) = NEXT_INPUT_LINE
+      END IF
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
      &      ' READIN ERROR: Too many lines in input -,',
@@ -5172,18 +5180,27 @@ C
 
 #ifdef VAR_DEBUG
       write (lupri,*) 'debug output from RDLINE, nmline=',nmline
-      write (lupri,*) 'RDLINE>',MLINE(NMLINE)
+      write (lupri,*) 'on file>',NEXT_INPUT_LINE
+      write (lupri,*) 'RDLINE >',MLINE(NMLINE)
 #endif
 
       IF((MLINE(NMLINE)(1:1) .EQ. '#') .OR.
      &   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
      &   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
+
+      IF (LNBLNK(NEXT_INPUT_LINE) .GT. LEN_MLINE) THEN
+         WRITE(LUPRI,'(//A,I5/2A/2A)')
+     &   ' WARNING -- line in ".mol" file truncated, line',NMLINE,
+     &   ' Line from file: ',NEXT_INPUT_LINE,
+     &   ' Truncated line: ',MLINE(NMLINE)
+      END IF
+
       NMLN_LASTREAD = NMLINE
 
       RETURN
 
-   11 MLINE(NMLINE)='        '
-      WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL; '
+   11 MLINE(NMLINE)=' '
+      WRITE(LUPRI,*) 'ERROR: I/O error in reading of .mol file; '
      &     //'NODE=',MYNUM
       IF (NMLINE>1) THEN
         WRITE(LUPRI,*) 'Line=', NMLINE, 'Prev line:',
