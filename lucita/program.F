@@ -242,16 +242,16 @@ Cold     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 C     Information about block structure- needed by new PICO2 routine.
 C     Memory for partitioning of C vector
-      IATP = 1
-      IBTP = 2
+      IATP   = 1
+      IBTP   = 2
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
-      NTTS = MXNTTS
-      CALL MEMMAN(KLCLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
-      CALL MEMMAN(KLCLEBT ,NTTS  ,'ADDL  ',1,'CLEBT ')
-      CALL MEMMAN(KLCI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
-      CALL MEMMAN(KLCIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
+      NTTS   = MXNTTS
+      CALL MEMMAN(KLCLBT ,  NTTS,'ADDL  ',1,'CLBT  ')
+      CALL MEMMAN(KLCLEBT,  NTTS,'ADDL  ',1,'CLEBT ')
+      CALL MEMMAN(KLCI1BT,  NTTS,'ADDL  ',1,'CI1BT ')
       CALL MEMMAN(KLC2B  ,  NTTS,'ADDL  ',1,'C2BT  ')
+      CALL MEMMAN(KLCIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
 C
 C     Additional info required to construct partitioning
 C
@@ -912,7 +912,7 @@ C
       END
 ***********************************************************************
 C
-      SUBROUTINE LUCITA(WRK,LWRK)
+      SUBROUTINE LUCITA(WRK_DALTON,LWRK_DALTON)
 C
 C L U C I A
 C
@@ -927,7 +927,7 @@ C                          GAS version in action summer of 95
 C 
 C Parallel version: Stefan Knecht in spring - summer of 2006
 C
-C This routine is originally called from the Dirac menu.
+C This routine is originally called from dalton sirius.
 C In the case of a parallel run, the relevant nodes will be 
 C waken up and sent to sleep.
 C
@@ -939,7 +939,7 @@ C
 #include "infpar.h"
 #include "parluci.h"
 #include "priunit.h"
-      DIMENSION WRK(LWRK)
+      DIMENSION WRK_DALTON(LWRK_DALTON)
 *
 *----------------Executable code--------------------------------------
 *
@@ -950,27 +950,27 @@ C
 *     Add the master node
       LUCI_NMPROC = NODTOT + 1
 C
-C     summon the slaves, who are waiting in the general menu routine
-C     --------------------------------------------------------------
+C     summon the co-workers, who are waiting in the general menu routine
+C     ------------------------------------------------------------------
 #ifdef VAR_MPI
-      IF (LUCI_NMPROC .GT. 1) CALL LUMSTI
+      IF (LUCI_NMPROC .GT. 1) call lucita_start_cw
 #endif
 C
 C     Enter the generic LUCITA routine (master becomes 
 C     now somewhat like primus inter pares -- "first among equals")
 C     -------------------------------------------------------------
-      CALL LUCITA_MASTER(WRK,LWRK,IN,IW)
+      CALL LUCITA_DRIVER(WRK_DALTON,LWRK_DALTON,IN,IW)
 C
-C     return the slaves to the general menu routine
-C     ---------------------------------------------
+C     return the co-workers to the general menu routine
+C     -------------------------------------------------
 #ifdef VAR_MPI
-      IF (LUCI_NMPROC .GT. 1) CALL LUMSTE
+      IF (LUCI_NMPROC .GT. 1) call lucita_end_cw
 #endif
 C
       END
 ***********************************************************************
 *
-      SUBROUTINE LUCITA_MASTER(WRK_DALTON,LWRK_DALTON,IUNIN,IUNUT)
+      SUBROUTINE LUCITA_DRIVER(WRK_DALTON,LWRK_DALTON,IUNIN,IUNUT)
 *
 * L U C I A
 *
@@ -5378,12 +5378,12 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
         WRITE(LUOUT,*) '      on file 90 '
       END IF
       END
-
-#ifdef VAR_MPI
 ***********************************************************************
-      SUBROUTINE LUMSTI
-C
-C     wake-up the co-workers
+#ifdef VAR_MPI
+
+      subroutine lucita_start_cw
+!
+!     wake-up the co-workers
 ***********************************************************************
 #include "implicit.h"
 #include "parluci.h"
@@ -5397,22 +5397,23 @@ C
 C
       end
 ***********************************************************************
-      SUBROUTINE LUMSTE
-C
-C     Release the co-workers if we run in parallel
-C
-C     Adaption of the corresponding RELCCSD routine
-C     written by Luuk Visscher, August 1997
-C     LUCITA version by Stefan Knecht, Feb. 06
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      subroutine lucita_end_cw
+!
+!     release the co-workers if we run in parallel
+!
+!     adaption of the corresponding RELCCSD routine
+!     written by Luuk Visscher, August 1997
+!     LUCITA version by Stefan Knecht, Feb. 06
+!
+!***********************************************************************
 #include "implicit.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
 #include "parluci.h"
-C
-C     Find the co-workers and release them
+!
+!     Find the co-workers and release them
       NTEST = -1
       DO I = 1,LUCI_NMPROC-1
          CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
@@ -5423,26 +5424,24 @@ C     Find the co-workers and release them
       ENDDO
  
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck LUCINOD */
-      SUBROUTINE LUCINOD(WRK,LWRK)
-*
-*     LUCITA routine (DALTON interface) for the co-workers
-*
-*     adapted version of the co-workers LUCINOD in Dirac
-*     LUCITA version by Stefan Knecht, Feb. 06
-*
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      IMPLICIT REAL*8(A-H,O-Z)
+!***********************************************************************
+
+      subroutine lucita_coworker_main(work_dalton,lwork_dalton)
+!
+!     LUCITA routine (DALTON interface) for the co-workers
+!
+!     adapted version of the co-workers LUCINOD in Dirac
+!     LUCITA version by Stefan Knecht, Feb. 06
+!
+!***********************************************************************
+#include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION WRK(LWRK)
-      CHARACTER*10 INTFCE, WORD3*7
-      CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3,
-     &          LUCIFILN*14, LUCITABASF*10
-      LOGICAL CA,LUEND
+      dimension work_dalton(lwork_dalton)
+      character intfce*10, lucitabasf*10, lucifiln*24
+      logical   luend
       integer outfile_node
 *
 *
@@ -5455,89 +5454,49 @@ C     Add the master node, NODTOT = number of co-workers
       LUCI_NMPROC = NODTOT + 1
 C
       INTFCE = 'DALTON    '
-      print *, 
-     & '*** co-worker',LUCI_MYPROC,'has arrived. ***'
-      outfile_node = 3
-*
+      print *, '*** co-worker',LUCI_MYPROC,'has arrived. ***'
+
 *     create a node-unique filename as output file. Important on
 *     shared file systems. Otherwise all the output gets mingled in one
 *     file. You don't really want to do this.
 *
-      LUCITABASF="LUCITA.OUT"
+      lucitabasf   = "lucita-coworkers.out"
+      outfile_node = 6
 *
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (LUCIFILN,'(A10,A1,I1)') LUCITABASF,'.',LUCI_MYPROC
-         LUFIL=12
+         WRITE (LUCIFILN,'(A20,A1,I1)') LUCITABASF,'.',LUCI_MYPROC
+         LUFIL=22
       ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (LUCIFILN,'(A10,A1,I2)') LUCITABASF,'.',LUCI_MYPROC
-         LUFIL=13
+         WRITE (LUCIFILN,'(A20,A1,I2)') LUCITABASF,'.',LUCI_MYPROC
+         LUFIL=23
       ELSE IF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (LUCIFILN,'(A10,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
-         LUFIL=14
+         WRITE (LUCIFILN,'(A20,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
+         LUFIL=24
       ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         call quit("luci_nmproc.gt.1000! 
+     &              extend the lucita_coworker_main module")
       ENDIF
 *
 *     open the local input file and the node specific output file.
-*     Every access to the local stdout handle then automatically writes
+*     every access to the local stdout handle then automatically writes
 *     to the corresponding output file.
-*
-*
-!     OPEN(LUCMD,FILE = 'DIRAC.INP')
-      print *, 
-     & '*** co-worker',LUCI_MYPROC,'opens ',LUCIFILN(1:LUFIL)
-      OPEN(outfile_node,FILE = LUCIFILN(1:LUFIL))
-      print *, 
-     & '*** co-worker',LUCI_MYPROC,'has opened ',LUCIFILN(1:LUFIL)
-*
-*     ==============
-*     **** Find Lucita input *****
-*
-!     REWIND (LUCMD,IOSTAT=IOS)
-*     ... IOSTAT to avoid program abort on some systems
-*         if reading input from a terminal
-*
-*     ... IOSTAT to avoid program abort on some systems
-*         if reading input from a terminal
-! 900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-!     IF (WORD .EQ. '*LUCITA') THEN
-!        GO TO 930
-!     ELSE
-!        GO TO 900
-!     END IF
-! 910 CONTINUE
-!        CALL QUIT('End of file on LUCMD, no Lucita input found')
-! 920 CONTINUE
-!        CALL QUIT('Error reading LUCMD, no Lucita input found')
-! 930 CONTINUE
-!     WORD3 = WORD
-*
-*     pointer in DIRAC.INP should now be positioned behind *LUCITA
-*
-      print *, 
-     & '*** FIXME: INPUT READING FROM DALTON MENU FOR co-workers ***'
-!     CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
-!     CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
-*
-*     now let's call the working routine!
-*
-      CALL LUCITA_MASTER(WRK,LWRK,LUCMD,outfile_node)
-      CLOSE (outfile_node,STATUS='KEEP')
-!     CLOSE (LUCMD,STATUS='KEEP')
-*
-*
-*     The slave is finished, wait for the master
+      open(outfile_node,file=lucifiln(1:lufil))
+ 
+*     call the driver routine - joining with the master
+      call lucita_driver(work_dalton,lwork_dalton,lucmd,outfile_node)
 
+      close(outfile_node,status='KEEP')
 
+!     the co-workers have finished, waiting for the master
       LUEND = .FALSE.
-      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
+      CALL MPI_ISEND(LUCI_MYPROC,1,my_MPI_INTEGER,LUCI_MASTER,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
+         CALL MPI_IPROBE(LUCI_MASTER,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
          IF (.NOT.LUEND) GOTO 1
 
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,LUCI_MASTER,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
 C
       END

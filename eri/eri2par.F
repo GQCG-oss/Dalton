@@ -1053,7 +1053,7 @@ C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
          ELSE IF (IPRTYP .EQ. 41) THEN
             CALL QMMMB2_S4(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP .EQ. 42) THEN
-            call lucinod(work,mwork)
+            call lucita_coworker_main(work,mwork)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODEDRIVER) ERROR on slave',MYTID,
