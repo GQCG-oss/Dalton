@@ -20,9 +20,9 @@ module lucita_cfg
 
 ! character block
 
-  character (len = 72), public :: lucita_cfg_run_title = 'no title specified'
-  character (len = 72), public :: lucita_cfg_ini_wavef = 'none'
-  character (len = 72), public :: lucita_cfg_ci_type   = 'none'
+  character (len = 72), public :: lucita_cfg_run_title        = 'no title specified'
+  character (len = 72), public :: lucita_cfg_ini_wavef        = 'none'
+  character (len = 72), public :: lucita_cfg_ci_type          = 'none'
   character (len = 72), public :: lucita_cfg_calculation_size = 'NORMAL'
 
 ! logical block
@@ -32,7 +32,6 @@ module lucita_cfg
   logical, public :: lucita_cfg_ras1_set             =  .false.
   logical, public :: lucita_cfg_ras2_set             =  .false.
   logical, public :: lucita_cfg_ras3_set             =  .false.
-  logical, public :: lucita_cfg_abcd_transformation  =  .false.
 
 ! double precision block
 
@@ -47,6 +46,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_global_print_lvl     =  0
   integer, public :: lucita_cfg_local_print_lvl      =  0
   integer, public :: lucita_cfg_nr_gas_spaces        =  0
+  integer, public :: lucita_cfg_nr_ptg_irreps        =  0
   integer, public :: lucita_cfg_nr_calc_sequences    =  0
   integer, public :: lucita_cfg_max_holes_ras1       =  0
   integer, public :: lucita_cfg_max_e_ras3           =  0
@@ -56,10 +56,12 @@ module lucita_cfg
   integer, public :: lucita_cfg_max_nr_dav_ci_iter   =  30
   integer, public :: lucita_cfg_max_batch_size       =  100000000
   integer, public :: lucita_cfg_init_wave_f_type     =  0
+  integer, public :: lucita_cfg_init_input_type      =  0
   integer, public :: lucipar_cfg_ttss_dist_strategy  =  2
   integer, public :: lucipar_cfg_mem_reduction_multp =  3
 
 ! input orbital spaces
+  integer, public :: nish_lucita(max_number_of_ptg_irreps)
   integer, public :: nas1_lucita(max_number_of_ptg_irreps)
   integer, public :: nas2_lucita(max_number_of_ptg_irreps)
   integer, public :: nas3_lucita(max_number_of_ptg_irreps)
@@ -68,7 +70,6 @@ module lucita_cfg
 
 ! calculated orbital spaces based on input orbital spaces
   integer, public :: nfro_lucita(max_number_of_ptg_irreps) ! might become input in future
-  integer, public :: nish_lucita(max_number_of_ptg_irreps)
   integer, public :: nash_lucita(max_number_of_ptg_irreps)
   integer, public :: nocc_lucita(max_number_of_ptg_irreps)
 

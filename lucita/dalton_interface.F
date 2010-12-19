@@ -2493,12 +2493,14 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
 * Version : Fall 97
 *
-      IMPLICIT REAL*8(A-H,O-Z)
 *
-#include "priunit.h"
-*
+#ifdef VAR_MPI
+      use sync_coworkers
+#endif
+#include "implicit.h"
       INTEGER*8 current_free_mem, kintdal_interface
       ! for addressing of WORK
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
@@ -2559,20 +2561,30 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !       WRITE(lupri,*) ' Integrals imported from DALTON/SIRIUS files'
 *. Load one-electron integrals and two-electron integrals
         IF(INCORE.EQ.1) THEN
-          CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
-          LSCR = current_free_mem - 1000
-          idum = 0
-!         set local marker + allocate space for lucita-dalton integral interface
-          call memman(idum,idum,'MARK  ',idum,'dalint')
-          CALL memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+          if(luci_myproc .eq. luci_master)then
+            CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
+            LSCR = current_free_mem - 1000
+            idum = 0
+!           set local marker + allocate space for lucita-dalton integral interface
+            call memman(idum,idum,'MARK  ',idum,'dalint')
+            call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
 
-          CALL LUCITA_GETINT_DALTON(einact,WORK(KINT1),WORK(KINT2),
-     &                              WORK(kintdal_interface),LSCR)
-!         CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, tmp_dal_work,LWRK)
+            CALL LUCITA_GETINT_DALTON(einact,WORK(KINT1),WORK(KINT2),
+     &                                WORK(kintdal_interface),LSCR)
+!           CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, tmp_dal_work,LWRK)
 
-!         release memory
-          CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
-          ecore = ecore_orig + einact
+!           release memory
+            CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
+            ecore = ecore_orig + einact
+          end if
+#ifdef VAR_MPI
+          if(luci_nmproc .gt. 1)then
+!           synchronize the co-workers with the 1-/2-electron integrals
+            call sync_coworkers_cfg(3,work(kint1),work(kint2))
+!           set sync_ctrl option
+            sync_ctrl_array(3) = .false.
+          end if
+#endif
         ELSE
           CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
         END IF

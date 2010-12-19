@@ -2099,15 +2099,14 @@ C
       if(lucita_input_provided)then
 !        LUCITA input has been processed - 
 !        complete now the remaining compulsory settings
-!        this is lucita-ci, therefore init_input_type:
+!        this is lucita-ci, therefore:
 !        1: ci input
 !        2: mcscf input
-         init_input_type = 1
+         lucita_cfg_init_input_type = 1
 
          call define_lucita_orb_spaces(nsym,                        
      &                                 lucita_cfg_nr_gas_spaces,    
-     &                                 norb,                        
-     &                                 init_input_type,             
+     &                                 lucita_cfg_init_input_type,  
      &                                 lucita_cfg_init_wave_f_type)
       end if
 C

@@ -32,7 +32,6 @@ contains
  
   subroutine define_lucita_orb_spaces(number_of_ptg_irreps,        &
                                       number_of_gas_spaces,        &
-                                      nr_orb_tot,                  &
                                       init_input_type,             &
                                       init_wave_f_type)
 !*******************************************************************************
@@ -42,7 +41,6 @@ contains
 !*******************************************************************************
     integer, intent(in) :: number_of_ptg_irreps
     integer, intent(in) :: number_of_gas_spaces
-    integer, intent(in) :: nr_orb_tot(max_number_of_ptg_irreps)
     integer, intent(in) :: init_input_type
     integer, intent(in) :: init_wave_f_type
 !-------------------------------------------------------------------------------
@@ -64,7 +62,6 @@ contains
                                          number_of_gas_spaces,        &
                                          max_number_of_ptg_irreps,    &
                                          max_number_of_gas_spaces,    &
-                                         nr_orb_tot,                  &
                                          nish_lucita,                 &
                                          nash_lucita,                 &
                                          nocc_lucita,                 &
@@ -91,7 +88,6 @@ contains
                                        number_of_gas_spaces,        &
                                        mx_number_of_ptg_irreps,     &
                                        mx_number_of_gas_spaces,     &
-                                       nr_orb_tot,                  &
                                        is_nish_lucita,              &
                                        is_nash_lucita,              &
                                        is_nocc_lucita,              &
@@ -110,7 +106,6 @@ contains
     integer, intent(in)    :: number_of_gas_spaces
     integer, intent(in)    :: mx_number_of_ptg_irreps
     integer, intent(in)    :: mx_number_of_gas_spaces
-    integer, intent(in)    :: nr_orb_tot(mx_number_of_ptg_irreps)
     integer, intent(in)    :: init_wave_f_type
     integer, intent(in)    :: is_nish_lucita(mx_number_of_ptg_irreps)
     integer, intent(in)    :: is_nas1_lucita(mx_number_of_ptg_irreps)

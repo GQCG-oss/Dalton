@@ -47,6 +47,7 @@ module dalton_mpi
     module procedure dalton_mpi_bcast_l0
     module procedure dalton_mpi_bcast_l1
     module procedure dalton_mpi_bcast_l2
+    module procedure dalton_mpi_bcast_c0
   end interface
 
   interface dalton_mpi_reduce
@@ -230,6 +231,18 @@ contains
 !   ----------------------------------------------------------------------------
 
     call mpi_bcast(x, size(x), mpi_logical, root_proc, communicator, ierr)
+
+  end subroutine
+
+  subroutine dalton_mpi_bcast_c0(x,root_proc,communicator)
+
+!   ----------------------------------------------------------------------------
+    character (len=72) :: x
+    integer            :: root_proc
+    integer            :: communicator
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, 72, mpi_character, root_proc, communicator, ierr)
 
   end subroutine
 

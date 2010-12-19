@@ -931,7 +931,13 @@ C This routine is originally called from dalton sirius.
 C In the case of a parallel run, the relevant nodes will be 
 C waken up and sent to sleep.
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+      use lucita_mcscf_ci_task
+!     parallel lucita
+#ifdef VAR_MPI
+      use sync_coworkers
+#endif
+
+#include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -943,17 +949,31 @@ C
 *
 *----------------Executable code--------------------------------------
 *
-      IN = LUCMD
-      IW = LUPRI
+      IN          = LUCMD
+      IW          = LUPRI
       LUCI_MASTER = MASTER
       LUCI_MYPROC = MYTID
 *     Add the master node
       LUCI_NMPROC = NODTOT + 1
+
+!     for now (no mcscf-ci interface yet) we set the ci-task id here - stefan dec 2010
+      lucita_citask_id = 'standard ci '
 C
 C     summon the co-workers, who are waiting in the general menu routine
 C     ------------------------------------------------------------------
 #ifdef VAR_MPI
-      IF (LUCI_NMPROC .GT. 1) call lucita_start_cw
+      IF (LUCI_NMPROC .GT. 1) then 
+        call lucita_start_cw
+!       synchronize ci-task id with co-workers
+        call sync_coworkers_cfg(6)
+
+!       synchronize (if applicable) co-workers with ci/mcscf input data
+        if(lucita_citask_id .eq. 'standard ci ')then
+          call sync_coworkers_cfg(1)
+!         set sync_ctrl option
+          sync_ctrl_array(1) = .false.
+        end if
+      END IF
 #endif
 C
 C     Enter the generic LUCITA routine (master becomes 
@@ -989,10 +1009,12 @@ C
 !     common modules
       use lucita_cfg
       use lucita_orbital_spaces
+      use lucita_mcscf_ci_task
 !     parallel lucita
 #ifdef VAR_MPI
       use communication_model
       use file_io_model
+      use sync_coworkers
 #endif
 
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1023,8 +1045,6 @@ C
 #include "wrkspc.inc"
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 
-! LUCITA as MCSCF work-horse
-#include "mcscf_citask.h"
       DIMENSION WRK_DALTON(LWRK_DALTON)
 C     character line
       CHARACTER*72 CARD
@@ -1056,13 +1076,11 @@ C     character line
       LUCIWT    = LUOUT
       LUWRT     = LUOUT
 
-!     for now we set it here - SK Nov 2010
-      citask_id = 'standard ci '
 
       write(luout,'(/a)') 
      & '   ------------------------------------------------'
       write(luout,'(a,a12)') '   LUCITA module started with task-id = ',
-     &                           citask_id
+     &                           lucita_citask_id
       write(luout,'(a/)') 
      & '   ------------------------------------------------'
 
@@ -1078,69 +1096,71 @@ C     character line
 #ifdef VAR_MPI
       IF (LUCI_NMPROC .GT. 1) THEN
 
-      allocate(grouplist_shared_mem(luci_nmproc))
-      grouplist_shared_mem = -1
+        allocate(grouplist_shared_mem(luci_nmproc))
+        grouplist_shared_mem = -1
       
-!     setup the communication model.
-!     all important variables (input parameters to module) 
-!     are stored on common block /LUPARGROUP/
+!       setup the communication model.
+!       all important variables (input parameters to module) 
+!       are stored on common block /LUPARGROUP/
 
-      call setup_communication_model(nflgrps,
-     &                               iiomod,
-     &                               shared_m,
-     &                               it_shl,
-     &                               ic_shl,
-     &                               grouplist,
-     &                               proclist,
-     &                               grouplist_shared_mem,
-     &                               luci_myproc,
-     &                               luci_nmproc,
-     &                               mpi_comm_world,
-     &                               mynew_id,
-     &                               icomm_id,
-     &                               mynew_id_sm,
-     &                               mynew_id_sm_c,
-     &                               newcomm_proc,
-     &                               icomm_size,
-     &                               newcomm_proc_sm,
-     &                               newcomm_proc_sm_c,
-     &                               mynew_comm,
-     &                               icomm,
-     &                               mynew_comm_sm,
-     &                               mynew_comm_sm_c,
-     &                               my_groupn,
-     &                               n_master,
-     &                               n_master_sm,
-     &                               n_master_sm_c,
-     &                               luout)
+        call setup_communication_model(nflgrps,
+     &                                 iiomod,
+     &                                 shared_m,
+     &                                 it_shl,
+     &                                 ic_shl,
+     &                                 grouplist,
+     &                                 proclist,
+     &                                 grouplist_shared_mem,
+     &                                 luci_myproc,
+     &                                 luci_nmproc,
+     &                                 mpi_comm_world,
+     &                                 mynew_id,
+     &                                 icomm_id,
+     &                                 mynew_id_sm,
+     &                                 mynew_id_sm_c,
+     &                                 newcomm_proc,
+     &                                 icomm_size,
+     &                                 newcomm_proc_sm,
+     &                                 newcomm_proc_sm_c,
+     &                                 mynew_comm,
+     &                                 icomm,
+     &                                 mynew_comm_sm,
+     &                                 mynew_comm_sm_c,
+     &                                 my_groupn,
+     &                                 n_master,
+     &                                 n_master_sm,
+     &                                 n_master_sm_c,
+     &                                 luout)
 
-      allocate(fh_array(nr_files))
-      fh_array = 0
-      call  setup_file_io_model(mynew_comm,
-     &                          nr_files,
-     &                          fh_array,
-     &                          my_groupn,
-     &                          newcomm_proc,
-     &                          'parci',
-     &                          luout)
+        allocate(fh_array(nr_files))
+        fh_array = 0
+        call  setup_file_io_model(mynew_comm,
+     &                            nr_files,
+     &                            fh_array,
+     &                            my_groupn,
+     &                            newcomm_proc,
+     &                            'parci',
+     &                            luout)
+  
+!       transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
+!       ILU1 has to be the last in the row because it is supposed to be
+!       closed after we have copied the final solution vector back to
+!       sequential format. Before doing that we want to free disk space by
+!       deleting all other MPI-I/O files.
+        IDIA = fh_array(1)
+        ILUC = fh_array(2)
+        ILU7 = fh_array(3)
+        ILU6 = fh_array(4)
+        ILU5 = fh_array(5)
+        ILU4 = fh_array(6)
+        ILU3 = fh_array(7)
+        ILU2 = fh_array(8)
+        ILU1 = fh_array(9)
+  
+!       free currently unused shared-memory group list
+        deallocate(grouplist_shared_mem)
 
-!     transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
-!     ILU1 has to be the last in the row because it is supposed to be
-!     closed after we have copied the final solution vector back to
-!     sequential format. Before doing that we want to free disk space by
-!     deleting all other MPI-I/O files.
-      IDIA = fh_array(1)
-      ILUC = fh_array(2)
-      ILU7 = fh_array(3)
-      ILU6 = fh_array(4)
-      ILU5 = fh_array(5)
-      ILU4 = fh_array(6)
-      ILU3 = fh_array(7)
-      ILU2 = fh_array(8)
-      ILU1 = fh_array(9)
-
-!     free currently unused shared-memory group list
-      deallocate(grouplist_shared_mem)
+        call quit('stop after ini communication - checks go on.')
 
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
@@ -1182,22 +1202,18 @@ C     Compute offset from WRK_DALTON to WORK
 !     the above values are based on an educated guess from my experience 
 !     - sk nov 2010
       KADD   = LFREE
-      !KADD   = LWRK_DALTON 
      &       - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks
      &       - (max_subspace_dim*(max_subspace_dim+1)/2)
      &       - 2 * max_subspace_dim**2
       MXPWRD = KADD
 
-      !do i = 1, 20
-      !  print *, 'i: WRK_DALTON(i) = ',i,WRK_DALTON(i)
-      !end do
-
+!     initialize memory
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 
       WRITE(LUOUT,'(10X,A,I18)')
      &'Dimension of R*8 workspace : ', KADD
  
-C     LUCITA is used in SPINFREE calculations: no complex part
+C     LUCITA is used in real calculations: no complex part
       irc_save = 1
 
 C     assign serial I/O disk units
@@ -1435,8 +1451,8 @@ C
 !       WoRK(i) = i  
 !     end do
 
-      write(luout,'(/a,a12,a)') ' LUCITA run, task-id = ',citask_id,
-     &  ' finished with no errors.'
+      write(luout,'(/a,a12,a)') ' LUCITA run, task-id = ',
+     &      lucita_citask_id(1:12),' finished with no errors.'
 
       call qexit('LUCITA_MASTER')
 
@@ -5434,6 +5450,9 @@ C
 !     LUCITA version by Stefan Knecht, Feb. 06
 !
 !***********************************************************************
+      use sync_coworkers
+      use lucita_mcscf_ci_task
+      use lucita_orbital_spaces, only: define_lucita_orb_spaces
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
@@ -5481,6 +5500,22 @@ C
 *     every access to the local stdout handle then automatically writes
 *     to the corresponding output file.
       open(outfile_node,file=lucifiln(1:lufil))
+
+!     introduction to ci-task id from master
+      call sync_coworkers_cfg(6)
+
+!     synchronize (if applicable) with master the ci/mcscf input data
+      if(lucita_citask_id .eq. 'standard ci ')then
+        call sync_coworkers_cfg(1)
+!       set sync_ctrl option
+        sync_ctrl_array(1) = .false.
+      end if
+
+!     define the lucita orbital spaces
+      call define_lucita_orb_spaces(lucita_cfg_nr_ptg_irreps,
+     &                              lucita_cfg_nr_gas_spaces,
+     &                              lucita_cfg_init_input_type,
+     &                              lucita_cfg_init_wave_f_type)
  
 *     call the driver routine - joining with the master
       call lucita_driver(work_dalton,lwork_dalton,lucmd,outfile_node)
