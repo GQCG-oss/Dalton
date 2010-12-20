@@ -201,7 +201,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           dpt                  -- run all DPT testcases
           numder               -- run all numerical derivatives testcases
           geoopt               -- run all OPTIMIZE testcases
-	  aosoppa              -- run all AOSOPPA testcases
+          aosoppa              -- run all AOSOPPA testcases
           pcm                  -- run all pcm testcases
           perl                 -- run all perl-style testcases 
           all                  -- run all non-parallel testcases
@@ -418,6 +418,9 @@ while [ -n "$1" ]; do
    fi
    testcase="$testcase $1"; 
    shift ;;
+   *.tst )
+   perl_style_kwd="$perl_style_kwd $1";
+   shift ;;
    * )
    testcase="$testcase $1"; 
    shift ;;
@@ -523,7 +526,7 @@ do
           myprint "-----------------------------------------------------------"
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
-	  cp $item'__'$step'.dal' $item'.dal'
+          cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
@@ -544,7 +547,7 @@ do
           myprint "evaluate reference output file $reffile:"
           myprint "-----------------------------------------------------------"
           if [ ! -r $reffile ]; then
-	      cp ../trueresult/$reffile .
+             cp ../trueresult/$reffile .
           fi
           checkout=`$checkfile $reffile | tee -a $listing`
           if [ "$benchmark" = "true" ]; then
@@ -573,7 +576,7 @@ do
           grep -v '^$' | tee -a $listing
 
           if [ "$multi" -eq 1 ]; then
-	      cp $molfile'.log' $logfile
+             cp $molfile'.log' $logfile
           fi
           myprint ""
           myprint "evaluate output file $logfile:"
@@ -659,18 +662,18 @@ if [ "$perl_style" -gt 0 ]; then
     options=""
     parameters="--dalton=$DALTON --log=$perl_log --err=$perl_err"
     if [ "$keep" = "true" ]; then
-	parameters="$parameters --keep"
+       parameters="$parameters --keep"
     fi
     if [ "$reftest" = "true" ]; then
-	parameters="$parameters --checkref"
+       parameters="$parameters --checkref"
     fi
     if [ -n "$perl_style_kwd" ]; then
-	parameters="$parameters --keyword $perl_style_kwd"
+       parameters="$parameters --keyword $perl_style_kwd"
     else
-	parameters="$parameters --all"
+       parameters="$parameters --all"
     fi
     if [ "$paramlist" != "" ]; then
-	options="--options=$paramlist"
+       options="--options=$paramlist"
     fi
     perl_fail=""
     myprint "Perl-style testsuite invoked with the following parameters"
@@ -678,16 +681,16 @@ if [ "$perl_style" -gt 0 ]; then
     ./test.pl $parameters "$options"
     perl_exit=$?
     if [ $perl_exit -eq 0 ]; then
-	myprint "Perl-style tests computed successfully"
+       myprint "Perl-style tests computed successfully"
     elif [ $perl_exit -eq 1 ]; then
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
         perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
-	problems="$problems $perl_fail"
+        problems="$problems $perl_fail"
         myprint "THERE IS A PROBLEM in perl-style tests"
     else
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
-	myprint ""
-	myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+       myprint ""
+       myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
     fi
     myprint ""
     myprint "Perl-style tests finished!"
