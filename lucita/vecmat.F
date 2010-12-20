@@ -655,6 +655,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
 *.Input
 * =====
 *
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "strbas.inc"
@@ -690,12 +691,12 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       IOCTPB = IBSPGPFTP(IBTP)
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' GASANA speaking '
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' IATP IBTP NAEL NBEL '
-        WRITE(6,*)   IATP,IBTP,NAEL,NBEL
-        WRITE(6,*) ' NOCTPA NOCTPB ', NOCTPA,NOCTPB
+        WRITE(lupri,*) ' ================'
+        WRITE(lupri,*) ' GASANA speaking '
+        WRITE(lupri,*) ' ================'
+        WRITE(lupri,*) ' IATP IBTP NAEL NBEL '
+        WRITE(lupri,*)   IATP,IBTP,NAEL,NBEL
+        WRITE(lupri,*) ' NOCTPA NOCTPB ', NOCTPA,NOCTPB
       END IF
 *
 **. Info on block structure of space
@@ -703,16 +704,15 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
 *
       IF( ICISTR .NE. 1 ) CALL REWINE(LUC,-1)
 *. Number of terms to be printed
-C?    WRITE(6,*) ' GASANA : IPRNCIV = ', IPRNCIV
       IF (IPRNCIV.EQ.0) THEN
-        THRES = 2.0D-1
-        MAXTRM = 200
+        THRES  = 1.0D0
+        MAXTRM =  100
       ELSE IF (IPRNCIV.EQ.1) THEN
-        THRES = 2.0D-3
-        MAXTRM = 1000
+        THRES  = 5.0D-2
+        MAXTRM =  250
       ELSE IF (IPRNCIV.EQ.2) THEN
-        THRES = 2.0D-4
-        MAXTRM = 10000
+        THRES  = 5.0D-3
+        MAXTRM = 1000
       END IF
 *
       IUSLAB = 0
@@ -783,6 +783,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
 *  Orbitals
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION C(*)
 *. General input
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
@@ -799,12 +800,12 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *
 *
       IF(IUSLAB.NE.0) THEN
-       WRITE(6,*)
-       WRITE(6,*)
+       WRITE(lupri,*)
+       WRITE(lupri,*)
      & ' Labels for orbitals are of the type n l ml starting with n = 1'
-       WRITE(6,*)
+       WRITE(lupri,*)
      & ' so the user should not be  alarmed by labels like 1 f+3 '
-       WRITE(6,*)
+       WRITE(lupri,*)
       END IF
 
 C     WRITE(6,*) 'C(1) = ',C(1)
@@ -833,16 +834,15 @@ C     WRITE(6,*) 'C(1) = ',C(1)
        XMAX = 3006.1956
        XMIN = 0.0D0
       END IF
-      IDET = 0
+      IDET     = 0
+      ipot_max = 5
 C
-      WRITE(6,*)
-      WRITE(6,*)
-      WRITE(6,'(A,E10.4,A,E10.4)')
-     &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX
-      WRITE(6,'(A)')
-     &'  ========================================================='
-      WRITE(6,*)
+      WRITE(lupri,'(/A,E10.4,A,E10.4)')
+     &'   Printout of coefficients in interval  ',XMIN,' to ',XMAX
+      WRITE(lupri,'(A )')
+     &'   ========================================================='
 *
+      iprint_hline = 0
 C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
       DO JBLOCK = 1, NBLOCK
         IATP = IBLOCK(1,JBLOCK)
@@ -897,25 +897,26 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
               IIDET = IIDET + 1
               IF( ITRM .LE. MAXTRM ) THEN
                 CNORM = CNORM + C(IDET) ** 2
-                WRITE(6,'(A)')
-                WRITE(6,'(A)')
-     &          '                 =================== '
-                WRITE(6,*)
+                if(iprint_hline.gt.0)then
+                  WRITE(lupri,'(A )')
+     &            '                  =================== '
+                  iprint_hline = iprint_hline + 1
+                end if
 *
-                WRITE(6,'(A,I8,A,E14.8)')
-     &          '  Coefficient of combination ',IDET,' is ',
+                WRITE(lupri,'(A,I8,A,E14.8)')
+     &          '   Coefficient of combination ',IDET,' is ',
      &          C(IDET)
-                WRITE(6,'(A)')
-     &          '  Corresponding alpha - and beta string '
+                WRITE(lupri,'(A)')
+     &          '   Corresponding alpha - and beta string '
                 IF(IUSLAB.EQ.0) THEN
-                  WRITE(6,'(4X,10I4)')
+                  WRITE(lupri,'(4X,10I4)')
      &            (IASTR(IEL,IA),IEL = 1, NAEL )
-                  WRITE(6,'(4X,10I4)')
+                  WRITE(lupri,'(4X,10I4)')
      &            (IBSTR(IEL,IB),IEL = 1, NBEL )
                 ELSE
-                  WRITE(6,'(4X,10(1X,A6))')
+                  WRITE(lupri,'(4X,10(1X,A6))')
      &            (IOBLAB(IASTR(IEL,IA)),IEL = 1, NAEL )
-                  WRITE(6,'(4X,10(1X,A6))')
+                  WRITE(lupri,'(4X,10(1X,A6))')
      &            (IOBLAB(IBSTR(IEL,IB)),IEL = 1, NBEL )
                 END IF
               END IF
@@ -928,11 +929,11 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *       ^ End of if statement for nonvanishing blocks
         END DO
 *       ^ End of loop over blocks
-       IF(IIDET .EQ. 0 ) WRITE(6,*) '   ( no coefficients )'
+       IF(IIDET .EQ. 0 ) WRITE(lupri,*) '    ( no coefficients )'
        IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
 *
-       WRITE(6,'(A,E15.8)')
-     & '  Norm of printed CI vector .. ', CNORM
+       WRITE(lupri,'(A,E15.8)')
+     & '   Norm of printed CI vector .. ', CNORM
 *
 *.Size of CI coefficients
 *
@@ -984,7 +985,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
           END IF
           DO IA = MINIA,IABAS+NIA-1
             IDET = IDET + 1
-            DO IPOT = 1, 10
+            DO IPOT = 1, ipot_max
               IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IDET)).AND.
      &           ABS(C(IDET)).GT. 10.0D0 ** ( - IPOT )) THEN
                  NCPMT(IPOT,JOCCLS)= NCPMT(IPOT,JOCCLS)+ 1
@@ -1001,13 +1002,11 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
       END DO
 *     ^ End of loop over blocks
 *
-      WRITE(6,'(A)')
-      WRITE(6,'(A)') '   Magnitude of CI coefficients '
-      WRITE(6,'(A)') '  =============================='
-      WRITE(6,'(A)')
+      WRITE(lupri,'(/A)') '     Magnitude of CI coefficients '
+      WRITE(lupri,'(A/)') '    =============================='
       WACC = 0.0D0
       NACC = 0
-      DO 300 IPOT = 1, 10
+      DO 300 IPOT = 1, ipot_max
         W = 0.0D0
         N = 0
         DO 290 JOCCLS = 1, NOCCLS
@@ -1016,64 +1015,61 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
   290   CONTINUE
         WACC = WACC + W
         NACC = NACC + N
-        WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &  '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
+        WRITE(lupri,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
+     &  '   10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   300 CONTINUE
 *
-      WRITE(6,*) ' Number of coefficients less than  10-11',
-     &           ' IS  ',NCIVAR - NACC
+      WRITE(lupri,'(/4x,a,i9/)') 
+     & 'Number of coefficients less than 10^{-11} is ',NCIVAR-NACC
 *
       IF(NOCCLS.NE.1) THEN
-      WRITE(6,'(A)')
-      WRITE(6,'(A)')
-     & '   Magnitude of CI coefficients for each excitation level '
-      WRITE(6,'(A)')
-     & '  ========================================================='
-      WRITE(6,'(A)')
+      WRITE(lupri,'(A)')
+     & '    Magnitude of CI coefficients for each excitation level '
+      WRITE(lupri,'(A)')
+     & '   ========================================================='
       DO 400 JOCCLS = 1, NOCCLS
           N = 0
-          DO 380 IPOT = 1, 10
+          DO 380 IPOT = 1, ipot_max
             N = N + NCPMT(IPOT,JOCCLS)
   380     CONTINUE
           IF(N .NE. 0 ) THEN
-            WRITE(6,*)
-            WRITE(6,'(A,15I3)')'       Occupation of active sets :',
+            WRITE(lupri,'(/7X,A,15I3)')' Occupation of active sets :',
      &      (IOCCLS(IGAS,JOCCLS),IGAS=1, NGAS)
-            WRITE(6,'(A,I9)')
-     &      '         Number of coefficients larger than 10-11 ', N
-            WRITE(6,*)
+            WRITE(lupri,'(A,I9)')
+     &      '        Number of coefficients larger than 10^-{11}:', N
+            WRITE(lupri,*)
             WACC = 0.0D0
-            DO 370 IPOT = 1, 10
+            DO 370 IPOT = 1, ipot_max
               N =  NCPMT(IPOT,JOCCLS)
               W =  WCPMT(IPOT,JOCCLS)
               WACC = WACC + W
-              WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &        '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
+              WRITE(lupri,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
+     &        '   10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   370       CONTINUE
           END IF
   400 CONTINUE
 *
 *. Total weight and number of dets per excitation level
 *
-      WRITE(6,'(A)')
-      WRITE(6,'(A)')
-     & '   Total weight and number of SD''s (> 10 ** -11 )  : '
-      WRITE(6,'(A)')
-     & '  ================================================='
-      WRITE(6,'(A)')
-      WRITE(6,*) '        N      Weight      Acc. Weight   Occupation '
-      WRITE(6,*) ' ==================================================='
+      WRITE(lupri,'(/A)')
+     & '    Total weight and number of SD''s (> 10^{-11}):  '
+      WRITE(lupri,'(A)')
+     &  '  ================================================== '
+      WRITE(lupri,'(a)') 
+     & '         N      Weight      Acc. Weight   Occupation  '
+      WRITE(lupri,'(A)')
+     & '   ==================================================='
       WACC = 0.0D0
       DO 500 JOCCLS = 1, NOCCLS
           N = 0
           W = 0.0D0
-          DO 480 IPOT = 1, 10
+          DO 480 IPOT = 1, ipot_max
             N = N + NCPMT(IPOT,JOCCLS)
             W = W + WCPMT(IPOT,JOCCLS)
   480     CONTINUE
           WACC = WACC + W
           IF(N .NE. 0 ) THEN
-            WRITE(6,'(1X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))')
+            WRITE(lupri,'(2X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))')
      &      N,W,WACC,(IOCCLS(IGAS,JOCCLS),IGAS=1,NGAS)
           END IF
   500 CONTINUE
@@ -2153,7 +2149,7 @@ C     KLL = KFLREE
           END IF
           CALL FRMDSC_LUCI(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
           CALL SETVEC(SEGMNT,VALUE,LBL)
-          CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+          CALL todsc_luci(SEGMNT,LBL,KBLK,LUOUT)
         END IF
       IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
 *

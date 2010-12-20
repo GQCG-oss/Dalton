@@ -887,8 +887,8 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
 *     eigenvectors in iteration n+1 as the approximations
 *     with largest overlap with the previous space
 *
-      DIMENSION FINEIG(1)
-      LOGICAL CONVER,RTCNV(100)
+      DIMENSION FINEIG(NROOT)
+      LOGICAL CONVER
       REAL*8 INPRDD, INPROD 
       DOUBLE PRECISION tottime,endtime,starttime
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
@@ -900,6 +900,8 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
       INTEGER RCCTOS(*), IGROUPLIST(LUCI_NMPROC)
       DIMENSION IBLOCKL(*),NBLOCKDN(*), IPROCLIST(LUCI_NMPROC)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      character (len=13)   :: convergence
+      logical, allocatable :: rtcnv(:)
 *
       TIMING = .FALSE.
 
@@ -907,9 +909,11 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
       allocate(tmp_space0(maxvec*(maxvec+1)/2))
       allocate(tmp_space1(maxvec**2))
       allocate(tmp_space2(maxvec**2))
+      allocate(rtcnv(nroot))
       tmp_space0 = 0
       tmp_space1 = 0
       tmp_space2 = 0
+      rtcnv      = .false.
 *
 C
 C     set check point parameters - after every 6th iteration
@@ -1696,55 +1700,39 @@ C        CONVERGENCE WAS OBTAINED
          IF (IPRT .GE. 2 )
      &   WRITE(luwrt,1180) ITER
  1180    FORMAT(1X,' Convergence was obtained in ',I3,' iterations')
-        END IF
-C
-      IF ( IPRT .GT. 0 ) THEN
-        CALL REWINE(LU1,LBLK)
-        DO 1600 IROOT = 1, NROOT
-          write(luwrt,*) '------------------------'
-          write(luwrt,*) 'Root number  ',IROOT
-          write(luwrt,*) '------------------------'
-          DO I=1,ITER
-            WRITE(luwrt,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
-          end do
-          WRITE(luwrt,'(/A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(luwrt,*)
-     &    '============================================'
-          FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(luwrt,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
- 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
- 1600   CONTINUE
-      ELSE
- 1310   FORMAT
-     &  (1X,' Iteration point        Eigenvalue         Residual ')
-        DO IROOT = 1, NROOT
-          write(LUWRT,*) '------------------------'
-          write(LUWRT,*) 'Root number  ',IROOT
-          write(LUWRT,*) '------------------------'
-          DO I=1,ITER
-            WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
-          end do
-        end do
-        write(LUWRT,*) '**********************************'//
-     &             '**************************'
-        write(LUWRT,*) '   Iter  Root       Energy        '//
-     &             'RESIDUAL     RESRATIO '
-        write(LUWRT,*) '**********************************'//
-     &             '**************************'
-        DO 1601 IROOT = 1, NROOT
-           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-           WRITE(LUWRT,'(3X,I3,2X,I3,3X,F18.10,2X,E10.3,3X,E10.3)')
-     &               ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
-     &               RNRM(1,IROOT)/RNRM(ITER,IROOT)
-           write(LUWRT,'(A,F18.10)') 
-     &               ' Final energy ',FINEIG(IROOT)
- 1601   CONTINUE
       END IF
 C
-      CALL FLSHFO(LUWRT)
+      do iroot = 1, nroot
+        write(luwrt,'(/1x,a)')    '-------------------'
+        write(luwrt,'( 1x,a,i6)') 'root number =',IROOT
+        write(luwrt,'(1x,a/)')    '-------------------'
+        do i = 1, iter
+          write(luwrt,1340) i,eig(i,iroot)+eigshf,rnrm(i,iroot)
+        end do
+      end do
+ 1340 FORMAT(7X,I4,8X,F20.13,2X,E12.5)
+
+      write(LUWRT,'(/1x,a)') '**********************************'//
+     &           '**************************'
+      write(LUWRT,*) '  iter   root       energy        '//
+     &           'residual     convergence'
+      write(LUWRT,'(1x,a )') '**********************************'//
+     &           '**************************'
+      DO 1601 IROOT = 1, NROOT
+         FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+         if(rtcnv(iroot)) then 
+           convergence = ' converged'
+         else
+           convergence = 'not converged'
+         end if
+         WRITE(LUWRT,'(I7,I7,F16.10,4X,E10.3,4X,a)')
+     &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+     &         convergence
+!        write(LUWRT,'(A,F18.10)') 
+!    &             ' Final energy ',FINEIG(IROOT)
+ 1601 CONTINUE
 C
+      deallocate(rtcnv)
       deallocate(tmp_space2)
       deallocate(tmp_space1)
       deallocate(tmp_space0)

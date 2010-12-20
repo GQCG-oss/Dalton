@@ -127,8 +127,7 @@ C
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
        ENDIF
       Open(Unit=LUSCR_MPI,File=NLUSCR_MPI(1:LUSCR_MPIL),
-     &     Status='UNKNOWN',
-     &     Form='UNFORMATTED')
+     &     Status='UNKNOWN',Form='UNFORMATTED')
 
 * =================
 * Internal files
@@ -154,7 +153,7 @@ C
      &     Form='UNFORMATTED')
 *. CI vector
       LUC = 61
-      LUC_MPIN ="LUCVECT"
+      LUC_MPIN ="LUCITA_CVECS"
        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUC_MPI,'(A7,A1,I1)') LUC_MPIN,'.',LUCI_MYPROC
          LUC_MPIL=9

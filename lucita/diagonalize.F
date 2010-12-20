@@ -4399,7 +4399,7 @@ C
         CALL REWINE( LU3,-1)
         DO 2411 IVEC = 1,2
           CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU3,IMZERO,IAMPACK)
-          CALL TODSC (VEC1,NVAR,-1,  LU1)
+          CALL todsc_luci(VEC1,NVAR,-1,  LU1)
  2411   CONTINUE
 *. Corresponding sigma vectors
         CALL REWINE ( LU3,-1)
@@ -4424,7 +4424,7 @@ C
         CALL REWINE( LU3,-1)
         DO 2400 IVEC = 1,2
           CALL FRMDSC_LUCI(VEC2,NVAR,-1  ,LU3,IMZERO,IAMPACK)
-          CALL TODSC (VEC2,NVAR,-1  ,LU2)
+          CALL todsc_luci(VEC2,NVAR,-1  ,LU2)
  2400   CONTINUE
         NVEC = 2
 *
@@ -4464,7 +4464,7 @@ C
         CALL REWINE( LU3,-1)
         DO 411 IVEC = 1,NROOT
           CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU3,IMZERO,IAMPACK)
-          CALL TODSC (VEC1,NVAR,-1,  LU1)
+          CALL todsc_luci(VEC1,NVAR,-1,  LU1)
   411   CONTINUE
 * CORRESPONDING SIGMA VECTOR
         CALL REWINE ( LU3,-1)
@@ -4485,7 +4485,7 @@ C
         CALL REWINE( LU3,-1)
         DO 400 IVEC = 1,NROOT
           CALL FRMDSC_LUCI(VEC2,NVAR,-1  ,LU3,IMZERO,IAMPACK)
-          CALL TODSC (VEC2,NVAR,-1  ,LU2)
+          CALL todsc_luci(VEC2,NVAR,-1  ,LU2)
   400   CONTINUE
         NVEC = NROOT
 *

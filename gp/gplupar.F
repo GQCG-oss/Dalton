@@ -65,6 +65,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
 #include "implicit.h"
+#include "priunit.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -86,6 +87,15 @@ C     initialize slave tag
 C
       MYNSLV = 0
 C
+#ifdef LUCI_DEBUG
+      print *, 'I_RUN_CPLX',I_RUN_CPLX
+      print *, 'NBLOCK',NBLOCK
+      print *, 'par_dist list'
+      call iwrtma(NDISTND,1,NBLOCK,1,NBLOCK)
+      print *, 'lbl_dist list'
+      call iwrtma(LBLOCKL,1,NBLOCK,1,NBLOCK)
+#endif
+   
 C
 C     ================
 C      COMPLEX VECTOR
@@ -162,13 +172,17 @@ C
 C             read block in
                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
      &                               MPI_REAL8,ISTAT,IERR)
+#ifdef LUCI_DEBUG
+               print *,'master - read-in: my vector piece'
+               call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
+#endif
                IMZERO = 0
              ELSE
                IMZERO = 1
              END IF
 C
              IF(IMZERO.EQ.0) THEN
-                CALL TODSC (SEGMNT,LBL,-1,LUOUT)
+                CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
              ELSE
                 CALL ZERORC(LBL,LUOUT,0)
              END IF
@@ -209,6 +223,10 @@ C
      &                            MPI_REAL8,ISTAT,IERR)
             CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
      &                    JCOMM,IERR)
+#ifdef LUCI_DEBUG
+               print *,'co-worker - read-in: my vector piece'
+               call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
+#endif
 C
           END IF
           IOFFSET_SCRATCH = LBL
@@ -227,6 +245,10 @@ C
 C
             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
      &                     JCOMM,ISTAT,IERR)
+#ifdef LUCI_DEBUG
+            print *,'master- recieve: my vector piece'
+            call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
+#endif
             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
           ELSE
             CALL ZERORC(LBL,LUOUT,0)
@@ -329,7 +351,7 @@ C             read block in
              END IF
 C
              IF( IMZERO .eq. 0 ) THEN
-                CALL TODSC (SEGMNT,LBL,-1,LUOUT)
+                call todsc_luci(SEGMNT,LBL,-1,LUOUT)
              ELSE
                 CALL ZERORC(LBL,LUOUT,0)
              END IF

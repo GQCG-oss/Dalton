@@ -3739,16 +3739,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       end if
 *
 *.................................................................
-*  4) Number of roots
-*.................................................................
-*      on common block; passed to luciwrt directly
-*
-*.................................................................
-*  5) State symmetry
-*.................................................................
-*      on common block; passed to luciwrt directly
-*
-*.................................................................
 *  6) Print command
 *.................................................................
 *      resolve global print flags to LUCIA system
@@ -3818,7 +3808,10 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
          IPRNCIV = 5
       end if
 *
-      if (IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
+      if(IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
+
+!     make sure we analyze the final solution vector(s)
+      if(lucita_analyze_cvec .and. IPRNCIV .le. 0) IPRNCIV = 1
 *
 *--------------------------------------------------------------*
 *  Create input file for LUCIA

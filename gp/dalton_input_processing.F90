@@ -188,6 +188,10 @@ contains
       call kw_read(word, lucipar_cfg_mem_reduction_multp)
     end if
 
+    if (kw_matches(word, '.ANALYZ')) then
+      lucita_analyze_cvec = .true.
+    end if
+
     call check_whether_kw_found(word, kw_section)
 
   end subroutine

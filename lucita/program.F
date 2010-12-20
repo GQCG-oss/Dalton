@@ -711,7 +711,7 @@ C
 !     close parallel files that are no longer needed
       call close_file_io_model(nr_files-1,0,fh_array)
 C
-      IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
+      IF(IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
 C
 C     copy c-vectors from nodes and master back to the master
 C
@@ -724,10 +724,10 @@ C
      &                            par_dist_block_list,NUM_BLOCKS2,
      &                            block_list,
      &                            MPI_COMM_WORLD,-1,JROOT,
-     &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
+     &                            WORK(KILU1LIST),MY_LU1_OFF,1)
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-           CALL REWINE(LUSC41,-1)
-           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,-1)
+          CALL REWINE(LUSC41,-1)
+          CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,-1)
         END IF
       END DO
       CALL REWINE(LUC,-1)
@@ -749,7 +749,7 @@ C
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 C
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
+      IF(LUCI_MYPROC.EQ.LUCI_MASTER)THEN
 C
 C       new default: print always NO occ. numbers (IDENSI = 1)
 C                    which are useful for detailed analysis
@@ -762,20 +762,12 @@ C
         END IF
 C
       DO JROOT = 1, NROOT
-        if (IPRNCIV.ge.1) then
-          WRITE(LUWRT,'(/2X ,A)')
-     &    ' **************************************************'
-          WRITE(LUWRT,'(2X ,A,I3)')
-     &    ' Analysis of occupation for ROOT = ',JROOT
-          WRITE(LUWRT,'(2X ,A/)')
-     &    ' **************************************************'
-        end if
         if (IPRDEN.ge.1) then
           WRITE(LUWRT,'(/2X ,A)')
      &    ' **************************************************'
           WRITE(LUWRT,'(2X ,A,I3)')
-     &    ' Analysis of Density and occupation for ROOT = ',JROOT
-          WRITE(LUWRT,'(2X ,A/)')
+     &    ' natural orbital occupation numbers for ROOT = ',JROOT
+          WRITE(LUWRT,'(2X ,A)')
      &    ' **************************************************'
         end if
         IF(ICISTR.EQ.1) THEN
@@ -798,19 +790,23 @@ C
           CALL DENSI2(IDENSI,WORK(KRHO1),WORK(KRHO2),
      &          WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC,EXPS2)
 C
-          IF (NROOT.GT.1) THEN
-            if (IPRNCIV.ge.1) then
+          if (IPRNCIV.ge.1) then
+            WRITE(LUWRT,'(/2X ,A)')
+     &      ' **************************************************'
+            WRITE(LUWRT,'(2X ,A,I3)')
+     &      ' analysis of leading coefficients for ROOT = ',JROOT
+            WRITE(LUWRT,'(2X ,A)')
+     &      ' **************************************************'
+            IF (NROOT.GT.1) THEN
               CALL REWINO(LUSC1)
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
      &                    LUSC1,ICISTR)
-            end if
-          ELSE
-            if (IPRNCIV.ge.1) then
+            ELSE
               CALL REWINO(LUC)
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
      &                    LUC,ICISTR)
             end if
-          END IF
+          end if
 C
           IF (IPRNCIV.EQ.2) THEN
              WRITE(LUWRT,*)
@@ -839,7 +835,6 @@ C
 C
 C
 Cold   regenerate densities for reference root
-C
 C
 C      density matrices -- natural orbital occupation numbers 
 C               one- and two-body density matrix 
