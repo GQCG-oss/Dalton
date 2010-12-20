@@ -312,13 +312,13 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER('DALTON2010 - An electronic structure program',
+         CALL TITLER('DALTON2011 - An electronic structure program',
      &               '*',120)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2010 (Rev. 0, Dec. 2010)'
+     &'This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)'
 
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,69)
+         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
@@ -338,9 +338,9 @@ C
      &'an appropriate citation would be:',
      &' ',
      &'"Dalton, a molecular electronic structure program,',
-     &'Release DALTON2010 (2010), see http://daltonprogram.org"'
+     &'Release DALTON2011 (2010), see http://daltonprogram.org"'
 C
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,69)
+         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
          WRITE (LUPRI,'(T5,A//,(T3,A,T29,A,T59,A,T71,A))')
      *'Authors in alphabetical order '//
      &  '(major contribution(s) in parenthesis):',
@@ -378,7 +378,7 @@ C
      &  '(DFT cubic response)',
      *'Hans Joergen Aa. Jensen,','Univ. of Southern Denmark,','Denmark',
      &'(DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)'
-     *,'Dan Jonsson,','KTH Stockholm,','Sweden',
+     *,'Dan Jonsson,','University of Tromsoe,','Norway',
      &  '(cubic response in RESPONS module)',
      *'Poul Joergensen,','Aarhus University,','Denmark',
      &  '(RESPONS, ABACUS, and CC modules)',
@@ -399,6 +399,8 @@ C
      *'Ola B. Lutnaes,','University of Oslo,','Norway','(DFT Hessian)',
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF and QM/MM code)',
+     *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
+     &  '(QM/MM code)',
      *'Patrick Norman,','University of Linkoeping,','Sweden',
      &  '(cubic response and complex response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
@@ -421,9 +423,11 @@ C
      *'Trond Saue,','CNRS/ULP Toulouse,','France',
      &  '(direct Fock matrix construction)',
      *'Stephan P. A. Sauer,','University of Copenhagen,','Denmark',
-     &  '(AOSOPPA module, vibrational g-factors)',
+     &  '(SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)',
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
+     *'Arnfinn H. Steindal,','University of Tromsoe,','Norway',
+     &  '(parallel QM/MM)',
      *'K. O. Sylvester-Hvid,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF)',
      *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',
@@ -435,7 +439,7 @@ C
      *'Hans Agren,','KTH Stockholm,','Sweden',
      &  '(SIRIUS module, MC-SCRF solvation model)'
 C
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,69)
+         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
 C
 C     Stamp date and time and hostname to output
 C
