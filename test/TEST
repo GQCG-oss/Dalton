@@ -298,6 +298,7 @@ if   [ "$testcase" = "" ]; then
 fi
 testcase=""
 perl_style_kwd=""
+perl_style_list=""
 perl_style=0
 all_perl_style=0
 while [ -n "$1" ]; do
@@ -419,7 +420,7 @@ while [ -n "$1" ]; do
    testcase="$testcase $1"; 
    shift ;;
    *.tst )
-   perl_style_kwd="$perl_style_kwd $1";
+   perl_style_list="$perl_style_list ${1/.tst/}";
    shift ;;
    * )
    testcase="$testcase $1"; 
@@ -427,7 +428,7 @@ while [ -n "$1" ]; do
    esac
 done
 
-if [ -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
+if [ -n "$perl_style_list" -o -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
     perl_style=1
 fi
 
@@ -659,7 +660,6 @@ if [ "$perl_style" -gt 0 ]; then
     cp ../test.pl .    
     cp ../*.tst .
     cp ../checklist .
-    options=""
     parameters="--dalton=$DALTON --log=$perl_log --err=$perl_err"
     if [ "$keep" = "true" ]; then
        parameters="$parameters --keep"
@@ -667,11 +667,15 @@ if [ "$perl_style" -gt 0 ]; then
     if [ "$reftest" = "true" ]; then
        parameters="$parameters --checkref"
     fi
-    if [ -n "$perl_style_kwd" ]; then
-       parameters="$parameters --keyword $perl_style_kwd"
-    else
+    if [ "$all_perl_style" -eq 1 ]; then
        parameters="$parameters --all"
+    elif [ -n "$perl_style_kwd" ]; then
+       parameters="$parameters --keyword $perl_style_kwd"
     fi
+    if [ -n "$perl_style_list" ]; then
+       parameters="$parameters --list $perl_style_list "
+    fi
+    options=""
     if [ "$paramlist" != "" ]; then
        options="--options=$paramlist"
     fi
