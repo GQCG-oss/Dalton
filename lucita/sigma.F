@@ -1200,7 +1200,6 @@ C     ISCLFAC_GROUP array for c-blocks:
 C     0 = block is not active, > 0: block is active
 C
       CALL MEMMAN(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'KITCLL')
-*
       
       IF(ICISTR.EQ.1) THEN
         WRITE(6,*) 'ICISTR = 1 route currently not active'
@@ -2162,13 +2161,16 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       IBI_MULT_BL = 0
 *
       CALL QENTER('RASSG')
-      NTEST = 00
-C     NTEST = MAX(NTEST,IPRNT)
+
+      NTEST     = 0000 ! normal print level
+!     NTEST     = 9999 ! debug
+      NPTESTVAR = NTEST
+
       IF(NTEST.GE.20) THEN
-        WRITE(6,*) ' ================='
-        WRITE(6,*) ' RASSG3 speaking :'
-        WRITE(6,*) ' ================='
-        WRITE(6,*) ' RASSG3 : NBATS = ',NBATS
+        WRITE(luwrt,*) ' ================='
+        WRITE(luwrt,*) ' RASSG3 speaking :'
+        WRITE(luwrt,*) ' ================='
+        WRITE(luwrt,*) ' RASSG3 : NBATS = ',NBATS
       END IF
 *
       IF (LUCI_NMPROC .GT. 1) THEN
@@ -2188,7 +2190,6 @@ C     NTEST = MAX(NTEST,IPRNT)
 C
 C     debug printing of 'complete' C vector on node/global file
 C
-      NPTESTVAR = 00
       IF( NPTESTVAR .ge. 20 ) THEN
         IOFFSET_SCRATCH = 0
         WRITE(LUWRT,*) 'left vector = C-vector'
@@ -2206,7 +2207,6 @@ C
            IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
           END DO
       END IF
-      NPTESTVAR = 00
       IOFFSET_SCRATCH = 0
 C
 C     initialize writing of vector file
@@ -2231,7 +2231,6 @@ C
 C
 C     debug info
 C
-      NPTESTVAR = 00
       IF( NPTESTVAR .ge. 20 ) THEN
          WRITE(LUWRT,*) ' ISCLFAC_GROUP '
          CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
@@ -2304,18 +2303,14 @@ C
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif /* if def VAR_MPI */
 C
-        NTEST = 000
         if (NTEST.ge.100) then
-            WRITE(LUCIWT,*)
-            WRITE(LUCIWT,*) ' **********************************'
-            WRITE(LUCIWT,*) ' *                                *'
-            WRITE(LUCIWT,*) ' * Array containing final sbatch  *'
-            WRITE(LUCIWT,*) ' *                                *'
-            WRITE(LUCIWT,*) ' **********************************'
-            WRITE(LUCIWT,*)
+            WRITE(luwrt,*) ' **********************************'
+            WRITE(luwrt,*) ' *                                *'
+            WRITE(luwrt,*) ' * Array containing final sbatch  *'
+            WRITE(luwrt,*) ' *                                *'
+            WRITE(luwrt,*) ' **********************************'
             CALL WRTMATMN(SB,1,LS,1,LS,LUCIWT)
         end if
-        NTEST = 000
 C
         DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
            IOFF = IBATS(6,ISBLK)
@@ -2342,10 +2337,12 @@ C
            END IF
 *          transfer block to disc
            IF( WRITE_SB ) THEN
-csk     WRITE(LUCIWT,*) 'I transfer to file block ISBLK',
-csk  &                     ISBLK
-csk        CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,LUCIWT)
-csk        WRITE(LUCIWT,*) 'offset,length',IOFF_SCR1,LEN
+#ifdef LUCI_DEBUG
+              WRITE(luwrt,*) 'I transfer to file block ISBLK',
+     &                        ISBLK
+              CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,luwrt)
+              WRITE(luwrt,*) 'offset,length',IOFF_SCR1,LEN
+#endif
               CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
      &                               MPI_REAL8,ISTAT,IERR)
               ISI_CALC_BL = ISI_CALC_BL + 1

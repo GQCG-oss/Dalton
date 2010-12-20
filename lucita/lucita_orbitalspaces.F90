@@ -166,6 +166,7 @@ contains
       is_nfro_lucita(i) = 0
     end do
 
+#ifdef LUCI_DEBUG
     print *, ' debug print of orbital spaces:'
     print *, ' nfro_lucita        : ',(is_nfro_lucita(i),i=1,number_of_ptg_irreps)
     print *, ' nish_lucita        : ',(is_nish_lucita(i),i=1,number_of_ptg_irreps)
@@ -174,6 +175,7 @@ contains
     do j = 1, tmp_nr_gas_spaces
       print *, ' ngsh_lucita per gas: ',(is_ngsh_lucita(j,i),i=1,number_of_ptg_irreps)
     end do
+#endif
 
   end subroutine fill_lucita_orb_spaces_ci
 !*******************************************************************************

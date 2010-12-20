@@ -91,9 +91,6 @@ C
 *    Timo Fleig
       LUCMOL = 91
 *. Output file
-      print *,'LUCI_MYPROC =',LUCI_MYPROC
-      print *,'LUCI_MASTER =',LUCI_MASTER
-      print *,'lupri',lupri
       IF(LUCI_MYPROC.EQ.LUCI_MASTER)THEN
         luout = lupri
       END IF

@@ -1393,45 +1393,45 @@ C
           END IF
 C
 C         find the sending root processor
-csk       write(6,*) ' processor list:myproc,mynew_id,icomm_id',
-csk  &    myproc,mynew_id,icomm_id
-csk       CALL IWRTMAMN(IPROCLIST,1,LUCI_NMPROC,1,LUCI_NMPROC,6)
-csk       CALL MPI_BARRIER(ICOMM,IERR)
           ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
-csk       write(6,*)' ROOT proc should send: ICOMM_ID, ROOTPROC,LUCI_MYPROC',
-csk  &    ICOMM_ID,ROOTPROC,LUCI_MYPROC
 C
 C         decide whether it is necessary to take part in communication
-C
-          NNCOLOR = 0
-          NNKEY = 0
-          NNKEY = LUCI_MYPROC + 1
-          IF( LUCI_MYPROC .eq. ROOTPROC ) NNKEY = 0
-csk       WRITE(6,*) ' LUCI_MYPROC,ROOTPROC,NNKEY',LUCI_MYPROC,ROOTPROC,NNKEY
-          IF( ISCALFAC_GROUP(IBLK) .ne. 0 ) THEN
-            NNCOLOR = 7
-          ELSE
-            NNCOLOR = 8
-          END IF
-          CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
-C
-          IF( NNCOLOR .eq. 8 ) GOTO 200
+!
+!         stefan: i commented the split/free code out because of
+!         deadlock situations occuring with buggy mpi implementations on horseshoe
+!         at sdu in odense.
+!
+          NNKEY   = LUCI_MYPROC + 1
+          IF(LUCI_MYPROC .eq. ROOTPROC) NNKEY = 0
+          NNCOLOR = 8
+          IF(ISCALFAC_GROUP(IBLK) .ne. 0) NNCOLOR = 7
+
+!         CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+ 
+!         IF( NNCOLOR .eq. 8 ) GOTO 200
+
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+!         CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,JCOMM,IERR)
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
+
 C         transfer the recieved block to disk
-csk       WRITE(LUWRT,*)'THIS IS WHAT I GOT',ICOMM_ID
-csk       CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
-csk       WRITE(LUWRT,*) 'IOFFSET_OUT = ',IOFFSET_OUT
-          xrw_time = MPI_WTIME()
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                           MPI_REAL8,ISTAT,IERR)
-          read_write = read_write + MPI_WTIME() - xrw_time
-          IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
+#ifdef LUCI_DEBUG
+          WRITE(LUWRT,*)'THIS IS WHAT I GOT',ICOMM_ID
+          CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
+          WRITE(LUWRT,*) 'IOFFSET_OUT = ',IOFFSET_OUT
+#endif
+          if(NNCOLOR .eq. 7)then
+            xrw_time = MPI_WTIME()
+            CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
+     &                             MPI_REAL8,ISTAT,IERR)
+            read_write = read_write + MPI_WTIME() - xrw_time
+            IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
+          end if
 C
- 200      CONTINUE
-          CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
+!200      CONTINUE
+!         CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
 C
         ELSE 
 C         set local iscalfac to 0
@@ -1499,47 +1499,48 @@ C
           END IF
 C
 C         find the sending root processor
-CSK          write(LUWRT,*) ' processor list:myproc,mynew_id,icomm_id',
-CSK     &    myproc,mynew_id,icomm_id
-CSK          CALL IWRTMAMN(IPROCLIST,1,LUCI_NMPROC,1,LUCI_NMPROC,LUWRT)
-CSK          CALL MPI_BARRIER(ICOMM,IERR)
           ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
-CSK          write(LUWRT,*)' ROOT proc should send: ICOMM_ID, ROOTPROC',
-CSK     &    ICOMM_ID,ROOTPROC
 C
 C         decide whether it is necessary to take part in communication
-C
-          NNCOLOR = 0
-          NNKEY = 0
-          NNKEY = LUCI_MYPROC + 1
-          IF( LUCI_MYPROC .eq. ROOTPROC ) NNKEY = 0
-          IF( ISCALFAC_GROUP( IBLK + IOFF_BLOCK ) .ne. 0 ) THEN
-            NNCOLOR = 7
-          ELSE
-            NNCOLOR = 8
-          END IF
-          CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
-C
-          IF( NNCOLOR .eq. 8 ) GOTO 300
+!
+!         stefan: i commented the split/free code out because of
+!         deadlock situations occuring with buggy mpi implementations on horseshoe
+!         at sdu in odense.
+!
+          NNKEY   = LUCI_MYPROC + 1
+          IF(LUCI_MYPROC .eq. ROOTPROC) NNKEY = 0
+          NNCOLOR = 8
+          IF(ISCALFAC_GROUP(IOFF_BLOCK+IBLK) .ne. 0) NNCOLOR = 7
+
+!         CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+
+!         IF( NNCOLOR .eq. 8 ) GOTO 300
+
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+!         CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,JCOMM,IERR)
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
+
 C         transfer the recieved block to disk if necessary
-CSK            WRITE(LUWRT,*)'THIS IS WHAT I GOT from ROOTPROC',LUCI_MYPROC,
-CSK     &                     ROOTPROC
-CSK            CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
-CSK            WRITE(LUWRT,*) 'IOFFSET_OUT imag part = ',IOFFSET_OUT
-CSK            WRITE(LUWRT,*) 'block to write imag part',IBLK,
-CSK     &                      IBLK + IOFF_BLOCK
-          xrw_time = MPI_WTIME()
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                           MPI_REAL8,ISTAT,IERR)
-          read_write = read_write + MPI_WTIME() - xrw_time
-          IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
+          if(nncolor .eq. 7)then
+#ifdef LUCI_DEBUG
+            WRITE(LUWRT,*)'THIS IS WHAT I GOT from ROOTPROC',
+     &                     LUCI_MYPROC,ROOTPROC
+            CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,LUWRT)
+            WRITE(LUWRT,*) 'IOFFSET_OUT imag part = ',IOFFSET_OUT
+            WRITE(LUWRT,*) 'block to write imag part',IBLK,
+     &                      IBLK + IOFF_BLOCK
+#endif
+            xrw_time = MPI_WTIME()
+            CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
+     &                             MPI_REAL8,ISTAT,IERR)
+            read_write = read_write + MPI_WTIME() - xrw_time
+            IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
+          end if
 C
- 300      CONTINUE
-          CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
+!300      CONTINUE
+!         CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
 C
         ELSE 
 C         set local iscalfac to 0
@@ -1948,7 +1949,6 @@ C     file offset for each cpu is 0
 C
 C LOOP OVER BLOCKS
 C
-csk      write(6,*)'hurray ho, i am here!',myproc
       DO IBLK = 1, NBLOCK 
 C       get length of block
         LBL = IBLOCKL(IBLK)
@@ -1974,44 +1974,42 @@ C         find the sending root processor
 C
 C         decide whether it is necessary to take part in communication
 C
-          NNCOLOR = 0
-          NNKEY = 0
           NNKEY = LUCI_MYPROC + 1
-          IF( LUCI_MYPROC .eq. ROOTPROC ) NNKEY = 0
-          IF( SCALFAC_GROUP(IBLK) .ne. 0.0D0 ) THEN
-            NNCOLOR = 7
-          ELSE
-            NNCOLOR = 8
-          END IF
-          CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
-C
-          IF( NNCOLOR .eq. 8 ) GOTO 200
+          IF(LUCI_MYPROC .eq. ROOTPROC) NNKEY = 0
+          NNCOLOR = 8
+          IF(SCALFAC_GROUP(IBLK) .ne. 0.0D0) NNCOLOR = 7
+!
+!         stefan: i commented the split/free code out because of
+!         deadlock situation with buggy mpi implementations on horseshoe
+!         at sdu in odense.
+!
+!         CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+ 
+!         IF( NNCOLOR .eq. 8 ) GOTO 200
 C         broadcast the nonvanishing block
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,
-     &                   IBLOCKCOMM,IERR)
-CSK          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,ROOTPROC,
-CSK     &                   JCOMM,IERR)
-C         some test writing, enable for debugging!
-CSK          IF(LUCI_MYPROC.NE.IBLOCKD(IBLK)) THEN
-CSK          END IF
+!         CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,JCOMM,IERR)
+
 C         transfer the recieved block to disk if necessary
-          IF( SCALFAC_GROUP(IBLK) .ne. 0.0D0 ) THEN 
-CSKT            WRITE(6,*)'THIS IS WHAT I GOT',ICOMM_ID
-CSKT            CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
-CSKT            WRITE(6,*) 'IOFFSET_OUT = ',IOFFSET_OUT
+          if(nncolor .eq. 7)then 
+#ifdef LUCI_DEBUG
+            WRITE(luwrt,*)'THIS IS WHAT I GOT',LUCI_MYPROC
+            CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
+            WRITE(luwrt,*) 'IOFFSET_OUT = ',IOFFSET_OUT
+#endif
             CALL MPI_FILE_WRITE_AT(MPILUSCR,IOFFSET_OUT,SEGMNT,LBL,
      &                             MPI_REAL8,ISTAT,IERR)
-          END IF
+          end if
 C
- 200      CONTINUE
-          CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
+!200      CONTINUE
+!         CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
 C
         ELSE 
 C         set local scalfac to 0.0D0
           SCALFAC_GROUP(IBLK) = 0.0D0
         END IF
         IOFFSET_OUT = IOFFSET_OUT + LBL
-        IOFFSET_IN = IOFFSET_IN + LBL
+        IOFFSET_IN  = IOFFSET_IN  + LBL
 C
       END DO
 C
@@ -2032,7 +2030,6 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "../lucita/clunit.inc"
 *
       DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,LUCI_NMPROC)
 *. Scratch
@@ -2092,11 +2089,11 @@ CSK      NTEST = 10
 *
       IF(INONVAN.LT.LUCI_NMPROC) THEN
         IMINNP = MIN(INONVAN,LUCI_NMPROC)
-        write(6,'(/a,i6)') '*** error in distblknd:'//
+        write(luwrt,'(/a,i6)') '*** error in distblknd:'//
      &    ' number of active blocks lower than the total number of'//
      &    ' processes. please decrease the number of processes to:',
      &    IMINNP
-        write(6,'(/a)') ' alternatively change the GAS'//
+        write(luwrt,'(/a)') ' alternatively change the GAS'//
      &    ' specification (more GA spaces) to increase the number of'//
      &    ' TTSS blocks.***'
         call quit('*** error in distblknd: number of processes >
@@ -2153,7 +2150,7 @@ CSK      NTEST = 10
 *. calculation of block MXNUMB by proc IAMGPROC
         IF(NTEST.GT.0) THEN
           IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-            WRITE(6,*)'calculation of block MXNUMB by proc',MXNUMB,
+            WRITE(luwrt,*)'calculation of block MXNUMB by proc',MXNUMB,
      &      IAMGPROC-1
           END IF
         ENDIF
@@ -2170,17 +2167,15 @@ CSK      NTEST = 10
       GOTO 200
 *
 500   CONTINUE
-CSK      IF(NTEST.GT.0) THEN
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-          WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
-     &    LUCI_MYPROC:',LUCI_MYPROC
-          DO ISTI = 1, IMINNP
-            WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
-     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
-     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
-          END DO
-        END IF
-CSK      END IF
+CSK   IF(NTEST.GT.0) THEN
+      WRITE(luwrt,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+     &LUCI_MYPROC:',LUCI_MYPROC
+      DO ISTI = 1, IMINNP
+         WRITE(luwrt,'(3X,A,I17,A,I17,A,1X,I17)')
+     &  'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
+     &  ' blocks with a total length of',NPARBLKWT(2,ISTI)
+      END DO
+CSK   END IF
 1001  CONTINUE
 *      
       END 
@@ -2256,12 +2251,10 @@ C
       ITEMPW1 = MXSIZE
 C
       IF(NTEST.GT.0) THEN
-       IF(LUCI_MYPROC.EQ.0) THEN
-         WRITE(6,*) '  total number of processes to distribute on:',
-     &                 LUCI_NMPROC
-         WRITE(6,*) '  total number of active blocks:', ICOUNTABLK
-         WRITE(6,*) '  overall active block length:', ITOTBLCKL
-       END IF
+        WRITE(luwrt,*) '  total number of processes to distribute on:',
+     &                    LUCI_NMPROC
+        WRITE(luwrt,*) '  total number of active blocks:', ICOUNTABLK
+        WRITE(luwrt,*) '  overall active block length:', ITOTBLCKL
       END IF
 *
       
@@ -2270,11 +2263,11 @@ C
       NTEMPP = IMINNP
       IF(ICOUNTABLK.LT.LUCI_NMPROC) THEN
         IMINNP = MIN(ICOUNTABLK,IMINNP)
-        write(6,'(/a,i6)') '*** error in distblknd_1:'//
+        write(luwrt,'(/a,i6)') '*** error in distblknd_1:'//
      &    ' number of active blocks lower than the total number of'//
      &    ' processes. please decrease the number of processes to:',
      &    IMINNP
-        write(6,'(/a)') ' alternatively change the GAS'//
+        write(luwrt,'(/a)') ' alternatively change the GAS'//
      &    ' specification (more GA spaces) to increase the number of'//
      &    ' TTSS blocks.***'
         call quit('*** error in distblknd_1: number of processes >
@@ -2580,23 +2573,16 @@ C
       GOTO 600
 C
 1001  CONTINUE
-CSK      IF(NTEST.GT.0) THEN
-        IF(LUCI_MYPROC.EQ.0) THEN
-      WRITE(6,'(3X,A,I4)')
+CSK   IF(NTEST.GT.0) THEN
+      WRITE(luwrt,'(3X,A,I4)')
      &'SUMMATION OF EVEN DISTRIBUTION OF LUCI_MYPROC:',LUCI_MYPROC
       DO ISTI = 1, NTEMPP
-        WRITE(6,'(3X,A,I2,A,I5,A,1X,I17)')
+        WRITE(luwrt,'(3X,A,I2,A,I5,A,1X,I17)')
      & 'process',ISTI -1,' calculates',MWEIGHT(ISTI),' blocks with a
      & total length of',MMPINFA(ISTI)
       END DO
-        END IF
-CSK      END IF
+CSK   END IF
 
-C?      write(6,*) 'here i am',myproc
-C?      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C?        CALL IWRTMA(NPARBLOCK,1,NDIM,1,NDIM)
-C?      END IF
-C
       END
 ***********************************************************************
 *                                                                     *
@@ -2604,7 +2590,8 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE DISTBLKND_2(NDIM,ICWEIGHTF,NPARBLOCK,IBLOCKL)
+      SUBROUTINE DISTBLKND_2(NDIM,ICWEIGHTF,NPARBLOCK,IBLOCKL,
+     &                       JSYM_DISTBLK)
 *
 *. Find distribution for (nonvanishing blocks) among the nodes
 *. Non vanishing block has a nonzero blocklength
@@ -2620,13 +2607,14 @@ C     -----
 C     NDIM: total number of c-blocks
 C     IBLOCKL(NDIM): total length of each block
 C     ICWEIGHTF(NDIM): total 'weight factors' for each block
+C     JSYM_DISTBLK: symmetry irrep of right-hand side vector
 C
 C     ------
 C     OUTPUT
 C     ------
 *     NPARBLOCK(NDIM): list of blocks with the corresponding assigned node  
 *
-      INTEGER ICOUNTABLK, NTEST
+      INTEGER   ICOUNTABLK, NTEST
       DIMENSION ICWEIGHTF(NDIM)
       DIMENSION NPARBLOCK(NDIM),IBLOCKL(NDIM)
 C     -------
@@ -2639,74 +2627,85 @@ C     MMPINFA(*,2): total length ('weight') of the blocks
       INTEGER ITEMPN, IAMGPROC, IAMTPROC, MXNUMB, IRUN
       INTEGER(KIND=MPI_OFFSET_KIND) ITLTND,MXSIZE,MXSZTMP
       INTEGER(KIND=MPI_OFFSET_KIND) ITEMPL, ITEMPW1, ITEMPW2
-      INTEGER(KIND=MPI_OFFSET_KIND) ILEN, ITOTBLCKL 
+      INTEGER(KIND=MPI_OFFSET_KIND) ILEN, ITOTBLCKL, IILENGTH_MAX 
       INTEGER(KIND=MPI_OFFSET_KIND) IIWEIGHTBLK, IILENGTH 
 *
-      NTEST = 0
-      IIWEIGHTBLK = 0
-      IILENGTH = 0
-      ITLTND = 0
-      ICOUNTABLK = 0
-      MXSIZE = 0
-      MXSZTMP = 0
-      MXNUMB = 0
-      IRUN = 0
-      ITEMPW1 = 0
-      ITEMPW2 = 0
-      ITEMPN = 0
-      ITEMPL = 0
-      IAMGPROC = 0
-      IAMTPROC = 0
-      ITOTBLCKL = 0
-      ILEN = 0
+      NTEST        = 0
+
+      IIWEIGHTBLK  = 0
+      IILENGTH     = 0
+      ITLTND       = 0
+      ICOUNTABLK   = 0
+      MXSIZE       = 0
+      MXSZTMP      = 0
+      MXNUMB       = 0
+      IRUN         = 0
+      ITEMPW1      = 0
+      ITEMPW2      = 0
+      ITEMPN       = 0
+      ITEMPL       = 0
+      IAMGPROC     = 0
+      IAMTPROC     = 0
+      ITOTBLCKL    = 0
+      ILEN         = 0
+      IILENGTH_MAX = 0
+
 *. end of initialization
       DO ICBL = 1, NDIM
 C
         IIWEIGHTBLK = ICWEIGHTF(ICBL)
-        IILENGTH = IBLOCKL(ICBL) 
-C
-        ILEN = IILENGTH * IIWEIGHTBLK 
+        IILENGTH    = IBLOCKL(ICBL) 
+        ILEN        = IILENGTH * IIWEIGHTBLK
 C
         IF( ILEN .lt. 0 ) THEN 
-          WRITE(6,*)'Attention, minus block detected',ICBL
-          WRITE(6,*)'ILEN = ',ILEN
-          WRITE(6,*)'IBLOCKL(ICBL) = ',IBLOCKL(ICBL)
-          WRITE(6,*)'ICWEIGHTF(ICBL) = ',ICWEIGHTF(ICBL)
+          WRITE(luwrt,*)'Attention, minus block detected',ICBL
+          WRITE(luwrt,*)'ILEN = ',ILEN
+          WRITE(luwrt,*)'IBLOCKL(ICBL) = ',IBLOCKL(ICBL)
+          WRITE(luwrt,*)'ICWEIGHTF(ICBL) = ',ICWEIGHTF(ICBL)
         END IF
+
         IF(ILEN.ne.0) THEN
-           ICOUNTABLK = ICOUNTABLK + 1
-           ITOTBLCKL = ITOTBLCKL + ILEN
-           NPARBLOCK(ICBL) = -1
+          ICOUNTABLK = ICOUNTABLK + 1
+          ITOTBLCKL = ITOTBLCKL + ILEN
+          NPARBLOCK(ICBL) = -1
         END IF
-        IF(ILEN.GE.MXSIZE) MXSIZE = ILEN
-*
+
+        MXSIZE       = max(MXSIZE,ILEN)
+        IILENGTH_MAX = max(IILENGTH_MAX,IILENGTH)
       END DO
-*
-CSK      WRITE(6,*)'MXSIZE of LUCI_MYPROC',MXSIZE,LUCI_MYPROC
       ITEMPW1 = MXSIZE
-*
-      IF(NTEST.GT.0) THEN
-       IF(LUCI_MYPROC.EQ.0) THEN
-         WRITE(6,*) '  total number of processes to distribute on:',
-     &                 LUCI_NMPROC
-         WRITE(6,*) '  total number of blocks:', NDIM
-         CALL IWRTMA(NPARBLOCK,1,NDIM,1,NDIM)
-         WRITE(6,*) '  total number of active blocks:', ICOUNTABLK
-         WRITE(6,*) '  overall active block length  :', ITOTBLCKL
-         WRITE(6,*) '  Maximum block size           :', MXSIZE
-       END IF
-      END IF
+!
+!     print header for statistics
+!
+      WRITE(LUWRT,'(/7X,A)')
+     &  '==================================================='
+      WRITE(LUWRT,'(7X, A,I2)')
+     &  ' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
+      WRITE(LUWRT,'(7X,A/)')
+     &  '==================================================='
+      WRITE(LUWRT,'(A,I19)')
+     &'  total number of processes to distribute on :',LUCI_NMPROC
+      WRITE(LUWRT,'(A,I19)')
+     &'  total number of blocks                     :',NDIM
+      WRITE(LUWRT,'(A,I19)')
+     &'  total number of active blocks              :',ICOUNTABLK
+      WRITE(LUWRT,'(A,I19)')
+     &'  size of largest TTSS block                 :',IILENGTH_MAX
+      WRITE(LUWRT,'(A,I19)')
+     &'  overall weighted active block length       :',ITOTBLCKL
+      WRITE(LUWRT,'(A,I19)')
+     &'  Maximum weighted block size                :',MXSIZE
 *
       IAM_NOT_INV = 1
       IMINNP = LUCI_NMPROC
       NTEMPP = IMINNP
       IF( ICOUNTABLK .lt. LUCI_NMPROC) THEN
         IMINNP = MIN( ICOUNTABLK, IMINNP )
-        write(6,'(/a,i6)') '*** error in distblknd_2:'//
+        write(luwrt,'(/a,i6)') '*** error in distblknd_2:'//
      &    ' number of active blocks lower than the total number of'//
      &    ' processes. please decrease the number of processes to:',
      &    IMINNP
-        write(6,'(/a)') ' alternatively change the GAS'//
+        write(luwrt,'(/a)') ' alternatively change the GAS'//
      &    ' specification (more GA spaces) to increase the number of'//
      &    ' TTSS blocks.***'
         call quit('*** error in distblknd_2: number of processes >
@@ -2791,10 +2790,10 @@ CSK         IF(LUCI_MYPROC.EQ.0) WRITE(6,*)'ITEMPW1,IAMGPROC',ITEMPW1,IAMGPROC
 4000    CONTINUE
 *. now we should have found a proc and a block --> put both together !
 *
-*.      calculation of block MXNUMB by proc IAMGPROC -1 (M excl.)
+*.     calculation of block MXNUMB by proc IAMGPROC -1
        IF(NTEST.GT.0) THEN
-         IF(LUCI_MYPROC.EQ.0) 
-     & WRITE(6,*)'calculation of block MXNUMB by proc',MXNUMB,IAMGPROC-1
+         WRITE(luwrt,*)'calculation of block MXNUMB by proc',
+     &                  MXNUMB,IAMGPROC-1
        ENDIF
 *
 *.     raising MMPINFA(proc,1) by 1
@@ -2814,20 +2813,18 @@ C?       MMPINFA(IAMGPROC) = MMPINFA(IAMGPROC) + MXSZTMP
 *
 101   CONTINUE
 *
-CSK      IF(NTEST.GT.0) THEN
-        IF(LUCI_MYPROC.EQ.0) THEN
-        DO II = 1, NDIM
-         IF( NPARBLOCK(II) .eq. -1 ) THEN
-          WRITE(6,*) 'AAAHHHH, block',II,' is not distributed'
-          WRITE(6,*) 'Since I do not know how to proceed, I will stop!'
-            Call Abend2('NE DISTBLKND_2: Block not distributed')
-         END IF
-        END DO
-      WRITE(6,*)' '
-      WRITE(6,'(20X,A)')'================================'
-      WRITE(6,'(20X,A)')' Summation of even distribution '
-      WRITE(6,'(20X,A)')'================================'
-      WRITE(6,*)' '
+      DO II = 1, NDIM
+        IF(NPARBLOCK(II) .eq. -1)THEN
+          WRITE(luwrt,*) 'AAAHHHH, block',II,' is not distributed'
+          WRITE(luwrt,*) 'I do not know how to proceed, I will stop!'
+          call quit('NE DISTBLKND_2: Block not distributed')
+        END IF
+      END DO
+
+      WRITE(luwrt,'(/18X,A)')'================================'
+      WRITE(luwrt,'( 18X,A)')' summation of even distribution '
+      WRITE(luwrt,'(18X,A/)')'================================'
+
       DO ISTI = 1, NTEMPP
         ITLTND = 0
         ITLBND = 0
@@ -2841,15 +2838,10 @@ C
              ITLBND = ITLBND + 1
           END IF
         END DO
-        WRITE(6,'(3X,A,1X,I4,1X,A,1X,I6,1X,A,1X,I18)')
-     & 'CPU',ISTI-1,' computes',ITLBND,'blocks with a total weight of',
-     & ITLTND
+        WRITE(luwrt,'(2X,A,I4,A,I5,1X,A,I17)')
+     &  'CPU',ISTI-1,' computes',ITLBND,'blocks: total weight ==>',
+     &  ITLTND
       END DO
-*
-*      WRITE(6,'(3X,A)') 'even distribution finished!'
-*
-        END IF
-CSK      END IF
 *
       END
 ***********************************************************************
@@ -2869,7 +2861,6 @@ CSK      END IF
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "../lucita/clunit.inc"
 *
       DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,LUCI_NMPROC)
       DIMENSION LBATCH(*),LEBATCH(*),I1BATCH(*)
@@ -2925,12 +2916,13 @@ CSK      NTEST = 10
 *
 *. gather batch information for distribution of batches to cpu's (nodes)
 *
-         if(myproc.eq.master) then
-         write(6,*)'NUMBER OF BATCHES:', NBATCH
+         if(luci_myproc.eq.luci_master) then
+         write(luwrt,*)'NUMBER OF BATCHES:', NBATCH
          do II = 1, NBATCH
-         write(6,*)'TOTAL LENGTH OF BATCH:', II,LEBATCH(II)
-         write(6,*)'FIRST BLOCK OF THIS BATCH:', I1BATCH(II)
-         write(6,*)'TOTAL NUMBER OF BLOCKS FOR THIS BATCH:',LBATCH(II)
+         write(luwrt,*)'TOTAL LENGTH OF BATCH:', II,LEBATCH(II)
+         write(luwrt,*)'FIRST BLOCK OF THIS BATCH:', I1BATCH(II)
+         write(luwrt,*)'TOTAL NUMBER OF BLOCKS FOR THIS BATCH:',
+     &                  LBATCH(II)
          end do
          endif
 CSK      LEBATCHTOT = DASUM(NBATCH,LEBATCH,1)
@@ -2986,7 +2978,7 @@ CSK      LEBATCHAVE = LEBATCHTOT / LUCI_NMPROC
 *. calculation of batch JBATCH by proc IAMGPROC
         IF(NTEST.GT.0) THEN
           IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-            WRITE(6,*)'calculation of batch by proc',JBATCH,
+            WRITE(luwrt,*)'calculation of batch by proc',JBATCH,
      &      IAMGPROC-1
           END IF
         ENDIF
@@ -3013,16 +3005,14 @@ CSK      LEBATCHAVE = LEBATCHTOT / LUCI_NMPROC
 *
 500   CONTINUE
 CSK      IF(NTEST.GT.0) THEN
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-          WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
-     &    LUCI_MYPROC:',LUCI_MYPROC
-          DO ISTI = 1, LUCI_NMPROC
-            WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
-     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
-     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
-          END DO
-        END IF
-CSK      END IF
+      WRITE(luwrt,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
+     &LUCI_MYPROC:',LUCI_MYPROC
+      DO ISTI = 1, LUCI_NMPROC
+        WRITE(luwrt,'(3X,A,I17,A,I17,A,1X,I17)')
+     &  'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
+     &  ' blocks with a total length of',NPARBLKWT(2,ISTI)
+      END DO
+CSK   END IF
 1001  CONTINUE
 *      
       END 

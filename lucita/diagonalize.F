@@ -25,22 +25,22 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE CIEIG5(MV7,INICI,EROOTL,VEC1,
-     &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU41,
-     &           NDIM,NBLK,NROOTSL,MAXVEC,MXCIIT,LUINCI,
-     &           IPRT,PEIGVC,NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,
-     &           EIGSHF,ICISTR,LBLK,IDIAG,VEC3,THRES_E,
-     &           NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,INIDEG,
-     &           E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,IBLK_TO_CLS,
-     &           NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,CLS_A,ICLS_L,BLKS_A,
-     &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,MXLNG,
-     &           IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
-     &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,IBLOCKAR,
-     &           IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST
+     &                  VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
+     &                  LU41,NDIM,NBLK,NROOTSL,MAXVEC,MXCIIT,LUINCI,
+     &                  IPRT,PEIGVC,NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,
+     &                  EIGSHF,ICISTR,LBLK,IDIAG,VEC3,THRES_E,
+     &                  NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,INIDEG,
+     &                  E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,IBLK_TO_CLS,
+     &                  NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,CLS_A,ICLS_L,
+     &                  BLKS_A,CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,
+     &                  MXLNG,IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
+     &                  MULSPC,IPAT,LPAT,ISPC,IBLOCKAR,
+     &                  IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST
 #ifdef VAR_MPI
-     &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LU6LIST,
-     &           LU7LIST,LUCLIST
+     &                  ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                  LU6LIST,LU7LIST,LUCLIST
 #endif
-     &           )
+     &                  )
 
 *
 * Master routine for CI diagonalization
@@ -104,7 +104,7 @@ C     parameter used in parallel scheme /sk march 2007/
 C
       IAMSURE = 1
 *
-      IF( IPRT.GT. 1 )  WRITE(lupri,'(/A)')
+      IF( IPRT.GT. 1 )  WRITE(luwrt,'(/A)')
      &'          *** information from ci diagonalization  ***'
 !     NTEST = 9999 ! NTEST=0
       NTEST = 0
@@ -207,7 +207,7 @@ C
       IF( INICI .LT. 0 ) THEN
 *.      vectors assumed already in LU1/ILU1 (parallel)
         IF(IPRT.GT. 1 )
-     &  WRITE(LUWRTOUT,*)' Initial CI vector assumed in place '
+     &  WRITE(luwrt,*)' Initial CI vector assumed in place '
       END IF
 *
 *                 ========================
@@ -220,11 +220,11 @@ C
       CALL QENTER('CIEIG')
 * Inverse iteration modified Davidson with 2 vectors in core
       IF(IPRT .GE. 5 ) THEN
-         WRITE(lupri,'(A,I3)')
+         WRITE(luwrt,'(A,I3)')
      &   '  Number of roots to be converged..  ',NROOTSL
-         WRITE(lupri,'(A,I3)')
+         WRITE(luwrt,'(A,I3)')
      &   '  Largest allowed number of vectors..',MAXVEC
-         WRITE(lupri,'(A,I3)')
+         WRITE(luwrt,'(A,I3)')
      &   '  Allowed number of CI iterations  ..',MXCIIT
       END IF
 
@@ -237,14 +237,14 @@ C
       KWORK  = KAVEC + MAXVEC ** 2
       KLFREE = KWORK + MAXVEC*(MAXVEC+1)
       IF( IPRT .GE. 5 ) THEN
-         WRITE(lupri,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
-         WRITE(lupri,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
+         WRITE(luwrt,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
+         WRITE(luwrt,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
       END IF
       IF( KLFREE-1 .GT. LLWRK) THEN
-           WRITE(lupri,'(A,2I5)' )
+           WRITE(luwrt,'(A,2I5)' )
      &     ' Not enough memory in CIEIG5 : neeeded and available ',
      &     KLFREE-1, LLWRK
-           WRITE(lupri,'(A,2I5)' )
+           WRITE(luwrt,'(A,2I5)' )
      &     ' Increase parameter LLWRK in CIEIG5 to   ', KLFREE-1
            Call Abend2( ' insufficient memory in cieig5 ' )
        END IF
@@ -301,7 +301,7 @@ C
      &                 MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
      &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
-     &                 LUWRTOUT,IBLOCKAR,IBLKDSTND,
+     &                 luwrt,IBLOCKAR,IBLKDSTND,
      &                 RCCTOS,
      &                 LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                 LU6LIST,LU7LIST,LUCLIST,NBATCH,
@@ -316,7 +316,7 @@ C
      &             LUDIA,NROOTSL,
      &             MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,lupri)
+     &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt)
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 
       ENOT = SCR1(KFIN)
@@ -2900,14 +2900,12 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
 *
        LUCEND = .FALSE.
 C
-      WRITE(LUCIWT,'(10X,A)') '                           '
-      WRITE(LUCIWT,'(10X,A)')
+      WRITE(LUWRTOUT,'(/10X,A)')
      &' **************************************************'
-      WRITE(LUCIWT,'(10X,A)')
+      WRITE(LUWRTOUT,'(10X,A)')
      &'     entering MICDV6 (sequential solver routine)   '
-      WRITE(LUCIWT,'(10X,A)')
+      WRITE(LUWRTOUT,'(10X,A/)')
      &' **************************************************'
-      WRITE(LUCIWT,'(10X,A)') '                           '
 *
        IPICO = 0
        IF(IPICO.NE.0) THEN
@@ -2918,14 +2916,14 @@ C
        IPRT = 0000
        lbl  = 0
 c      IPRT = IPRTXX
-!#ifdef DEBUG
+#ifdef LUCI_DEBUG
          WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
          CALL REWINE(LU1,-1)
          DO IROOT = 1, NROOT
            WRITE(LUWRTOUT,1066) IROOT, LBLK, LBL
            CALL WRTVCD(VEC1,LU1,0,LBLK)
          END DO
-!#endif
+#endif
 *
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
@@ -2946,8 +2944,8 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
          WRITE(LUWRTOUT,*) ' Root homing performed '
        END IF
        KAPROJ = 1
-       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-4
+       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+       TEST   = 1.0D-4
        CONVER = .FALSE.
 *
 * ===================
@@ -2958,7 +2956,7 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        CALL REWINE(LU2,-1)
 *
        IF(IRUNPA.EQ.0) THEN
-         MYNEW_ID = MYPROC
+         MYNEW_ID   = luci_myproc
          MYNEW_COMM = 0
        END IF
 *
@@ -3002,8 +3000,9 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
      &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
        END IF
        IF( IPRT  .GE. 5 ) THEN
-         WRITE(LUWRTOUT,*) ' Initial set of eigen values (no shift) '
-         CALL WRTMT_LU(EIG(1,1),1,NROOT,MAXIT,NROOT)
+        WRITE(luwrt,*) ' Eigenvalues of initial iteration (no shift)'
+        WRITE(luwrt,'(5F18.13)')
+     &  ( EIG(1,IROOT),IROOT=1,NROOT)
        END IF
 *. Transform vectors on LU1 so they become the actual
 *. eigenvector approximations
@@ -3016,7 +3015,7 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
        CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU2,LU3,1,LBLK,LU4,LU5)
 *
        IF(IPRT.GE.600) THEN
-        IF(MYPROC.EQ.MASTER) THEN
+        IF(luci_MYPROC.EQ.luci_MASTER) THEN
          WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
          CALL REWINE(LU1,-1)
          DO IROOT = 1, NROOT
@@ -3248,7 +3247,7 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
 *  2.1: Multiply new directions with matrix
 *
       IF(IPRT.GE.1000) THEN
-       IF (MYPROC.EQ.MASTER) THEN
+       IF (luci_MYPROC.EQ.luci_MASTER) THEN
         WRITE(LUWRTOUT,*) ' Vectors on LU3'
         WRITE(LUWRTOUT,*) 'NVEC-NROOT+IADD =',NVEC-NROOT+IADD
         CALL REWINE(LU3,-1)
@@ -3272,7 +3271,7 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
         CALL GETTIM(CPUSIG2,WALLSIG2)
         CPUTID = SECTID(CPUSIG2-CPUSIG1)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
-*        WRITE(LUWRTOUT,9400) CPUTID,WALLTID, MYPROC
+*        WRITE(LUWRTOUT,9400) CPUTID,WALLTID, luci_MYPROC
         WRITE(LUWRTOUT,9400) CPUTID,WALLTID
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
@@ -3384,8 +3383,9 @@ C     CALL PRSYM(XJEP(1000),NVEC)
       END IF
 *
       IF( IPRT  .GE. 5 ) THEN
-        WRITE(LUWRTOUT,*) ' Projected matrix and eigen pairs '
+        WRITE(LUWRTOUT,*) ' Projected matrix'
         CALL PRSYM(APROJ,NVEC)
+        WRITE(LUWRTOUT,*) ' eigen pairs '
         WRITE(LUWRTOUT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMT_LU(AVEC,NVEC,NROOT,NVEC,NROOT)
       END IF
@@ -3614,7 +3614,7 @@ C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
          IF(IPRT.GE.1000)
      &   write(LUWRTOUT,*) ' s, part 4 finito '
 C         WRITE(LUWRTOUT,*) 'I was in 3.1 setting NNVEC=NROOT+IADD', 
-C     &myproc,(NROOT + IADD)
+C     &luci_myproc,(NROOT + IADD)
          NNVEC = NROOT + IADD
        END IF
        IF(IPRT.GE.1000) THEN
@@ -3699,7 +3699,7 @@ C
  1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
         END IF
 *
-      if (myproc.eq.master) then
+      if (luci_myproc.eq.luci_master) then
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
         DO 1600 IROOT = 1, NROOT
@@ -3721,10 +3721,10 @@ C
  1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
             WRITE(LUWRTOUT,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
+ 1200       FORMAT(' The final approximation to eigenvector')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
         write(LUWRTOUT,*)

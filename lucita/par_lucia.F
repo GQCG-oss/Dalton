@@ -1600,6 +1600,8 @@ C
 #include "mpif.h"
 #include "parluci.h"
 #include "wrkspc.inc"
+! from cands.inc: icsm
+#include "cands.inc"
       INTEGER*8 IABSOLUTE_WEIGHT
       IABSOLUTE_WEIGHT = 0
 C
@@ -1628,7 +1630,7 @@ C
      &                   WORK(KBLCKWT),NVAR,WORK(KICCTOS),IBLOCKL,
      &                   IPROCLIST,WORK(KCWEIGHT),IABSOLUTE_WEIGHT)
       ELSE
-        CALL DISTBLKND_2(NBLOCK,WORK(KCWEIGHTF),NBLOCKD,IBLOCKL)
+        CALL DISTBLKND_2(NBLOCK,WORK(KCWEIGHTF),NBLOCKD,IBLOCKL,icsm)
       END IF
 C
 C     find all c-blocks connecting to a given sigma-block,

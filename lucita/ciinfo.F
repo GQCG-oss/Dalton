@@ -1159,35 +1159,32 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-        WRITE(luwrt,'(/a)')
+      WRITE(luwrt,'(/a)')
      &'  Number of internal combinations per symmetry '
-        WRITE(luwrt,*)
+      WRITE(luwrt,*)
      & ' =========================================== '
 *
-        DO 200 ICI = 1, NCMBSPC
-            WRITE(luwrt,*) ' CI space ', ICI
-            WRITE(luwrt,'(4E16.8)') (XISPSM(II,ICI),II=1,NSMCI)
-C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
-  200   CONTINUE
-       if (NTEST.ge.1) then
-          WRITE(luwrt,*) ' Largest symmetry block           ',MXSB
-          WRITE(luwrt,*) ' Largest Symmetry-type-type block ',MXSOOB
-       end if
+      DO 200 ICI = 1, NCMBSPC
+         WRITE(luwrt,*) ' CI space ', ICI
+         WRITE(luwrt,'(4E16.8)') (XISPSM(II,ICI),II=1,NSMCI)
+C        CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
+  200 CONTINUE
+      if(NTEST.ge.1) then
+        WRITE(luwrt,*) ' Largest symmetry block           ',MXSB
+        WRITE(luwrt,*) ' Largest Symmetry-type-type block ',MXSOOB
+      end if
 *
-       IF(NTEST.GE.5) THEN
-          WRITE(luwrt,*)
+      IF(NTEST.GE.5) THEN
+        WRITE(luwrt,*)
      &  ' Number of TTS subblocks per CI expansion '
-          WRITE(luwrt,*)
-     &   ' ======================================== '
+        WRITE(luwrt,*)
+     &  ' ======================================== '
 *
-          DO  ICI = 1,  NCMBSPC
-              WRITE(luwrt,*) ' Internal CI space ', ICI
-              CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
-          END DO
-        END IF
+        DO ICI = 1,  NCMBSPC
+          WRITE(luwrt,*) ' Internal CI space ', ICI
+          CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
+        END DO
       END IF
-*.   /\ Master is writing
 *. Largest number of BLOCKS in a CI expansion
       MXNTTS = 0
       DO ICI = 1,NCMBSPC
@@ -1196,13 +1193,12 @@ C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
        END DO
       END DO
 *
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-        if (NTEST.ge.1) then
-          WRITE(luwrt,*) ' Largest number of blocks in CI expansion',
-     &                 MXNTTS
-        end if
+      if(NTEST.ge.1)then
+        WRITE(luwrt,*) ' Largest number of blocks in CI expansion',
+     &                   MXNTTS
+      end if
 *
-        IF(NTEST.GE.5) THEN
+      IF(NTEST.GE.5) THEN
         WRITE(luwrt,*)
      &' Number of columns per CI expansion '
         WRITE(luwrt,*)
@@ -1212,13 +1208,10 @@ C           CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
             WRITE(luwrt,*) ' Internal CI space ', ICI
             CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
         END DO
-        END IF
       END IF
-*.   /\ Master is writing
 *
       CALL QEXIT('LCISP')
 *
-      RETURN
       END
 ***********************************************************************
 *CADDB

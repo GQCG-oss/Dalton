@@ -35,7 +35,8 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig, 2001        *
-* Dalton adaptation by Jeppe Olsen and Hans Joergen Aa. Jensen May 08 *
+* Dalton adaptation by Jeppe Olsen, Hans Joergen Aa. Jensen and       *
+* Stefan Knecht May 08 - Dec 10.                                      *
 *                                                                     *
 ***********************************************************************
 **********************************************************************
@@ -52,51 +53,37 @@ C
 *
       subroutine dalton_lucita_input_interface
 !
-! Note that LUCITAINP has already been called before this call
-! where *LUCITA input options in .dal file has been read.
+!     Note that the lucita input has already been processed in the .dal 
+!     file with the input options within the *LUCITA deck.
 
 #include "implicit.h"
-#include "mxpdim.inc"
-#include "crun.inc"
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 
-      ENVIRO='DALTON'
-*
-*  Say hello:
+!     print header
       call hello_dalton_lucita
-*
-*  Read symmetry info etc.
+!
+!     cross-check symmetry info etc.
       CALL GET_ORB_DIM_ENV(ECORE_ORIG)
-*
-*  Get it going:
+!
+!     transfer dalton input variables to lucita internals.
       call dalton_lucita
-*
+ 
       end
-*********************************************************************
-*  Note concerning EXPERT mode:
-*   If you want to use it, the first 2 lines of your input for
-*   MOLUC-LUCIA (LUCITA) should be
-*       &LUCITA &END
-*      EXPERT
-*      * &LUCIA &END
-*       ...    (first line of regular input for LUCIA)
-*       ...    (regular input for LUCIA)
-*       ...
-*       END OF INPUT
-*   And ONE blank line after 'END OF INPUT'. This is essential,
-*   otherwise the program will crash.
-*
-*  Feb-Mar 1999,   Timo Fleig
-*  Feb     2000,   Timo Fleig
-*
-*  Modified for DIRAC - LUCITA information transfer.
-*  Dec-Mar 2001/02,   Timo Fleig
 *********************************************************************
 *
       subroutine dalton_lucita
-*
+*********************************************************************
+!
+!     purpose: transfer dalton/dirac input variables to lucita 
+!              internals.
+!
+!     original version written by T. Fleig for Dirac-Lucita.
+!     major revision by S. Knecht and H. J. Aa. Jensen for
+!     Dalton-Lucita/Dirac-Lucita.
+!
+*********************************************************************
       use lucita_cfg
-      implicit real*8 (A-H,O-Z)
+#include "implicit.h"
 #include "priunit.h"
 *
 #include "clunit.inc"
@@ -1057,10 +1044,16 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
 * Jeppe Olsen, December 97
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-
+#ifdef VAR_MPI
+      use dalton_mpi
+#endif
+#include "implicit.h"
 #include "priunit.h"
-
+#include "infpar.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -1068,27 +1061,38 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "lucinp.inc"
 #include "parluci.h"
 *
-      write(lupri,*) 'GET_ORB_DIM_ENV: ENVIRO = ',ENVIRO !hjaaj DEBUG
+      NTEST = 000
+!     NTEST = 9999 ! debug
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
         call quit( 'No MOLCAS ENVIRONMENT!')
       ELSE IF(ENVIRO(1:6).EQ.'DALTON' ) THEN
-        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSMOB)
+        call izero(naos_env,MXPOBS)
+        call izero(nmos_env,MXPOBS)
+        if(luci_myproc .eq. luci_master)then
+          CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSMOB)
+        end if
+#ifdef VAR_MPI
+        if(luci_nmproc .gt. 1)then
+          call dalton_mpi_bcast(nsmob,     luci_master, mpi_comm_world)
+          call dalton_mpi_bcast(ecore_env, luci_master, mpi_comm_world)
+          call dalton_mpi_bcast(naos_env,  luci_master, mpi_comm_world)
+          call dalton_mpi_bcast(nmos_env,  luci_master, mpi_comm_world)
+        end if
+#endif
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA') THEN
 *. Lucia : core energy is obtained from 2-e file
         CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
       else if (ENVIRO(1:5).eq.'DIRAC') then
-        if (myproc.eq.master) then
-        write(lupri,*) 'Integral import from DIRAC.'
-        write(lupri,*) 'No checking of environment dims.'
+        if (luci_myproc.eq.luci_master) then
+          write(lupri,*) 'Integral import from DIRAC.'
+          write(lupri,*) 'No checking of environment dims.'
         end if
       ELSE IF(ENVIRO(1:4).EQ.'NONE') THEN
 *. No environment,
-        WRITE(lupri,*) 'GET_ORB_DIM_ENV  in problems '
+        WRITE(lupri,*) 'GET_ORB_DIM_ENV in trouble. '
         WRITE(lupri,*) 'No ENVIRO parameter defined '
       END IF
 *
-      !hj DEBUG NTEST = 000
-      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(lupri,*) ' From GET_ORB_FROM_ENV : '
         WRITE(lupri,*) ' ======================='
@@ -1100,7 +1104,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
         WRITE(lupri,*) ' ECORE_ENV=', ECORE_ENV
       END IF
 *
-      RETURN
       END
 ***********************************************************************
 *
@@ -1771,34 +1774,57 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       END
 ***********************************************************************
 *
-      subroutine get_dalton_inf(WAFFCT,IPRT,NACRAS)
+      subroutine set_nracte_wf(waffct,nracte)
 *
-      implicit real*8 (A-H,O-Z)
-*
+#ifdef VAR_MPI
+      use dalton_mpi
+#endif
+#include "implicit.h"
 #include "priunit.h"
-*
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+#include "parluci.h"
+! from common block in infinp.h: NACTEL
+#include "maxorb.h"
+#include "mxcent.h"
+#include "infinp.h"
+
 *
       character*6 WAFFCT
-      character*8 FNCOM,FNIPH
 *
-#include "units.inc"
-*
-      write(lupri,*) 'GET_DALTON_INF called, we try doing a little!' !hjaaj DEBUG
-      write(lupri,*) 'WAFFCT = ',WAFFCT
-      if (WAFFCT.eq.'HF_SCF') then
-*
-*  1) DHFSCF wave function, closed shell
-!        call info_dirac(WAFFCT,NACRAS,IRETISH,IPRT)
-*
-      else if (WAFFCT.eq.'RASSCF') then
+!     write(lupri,*) 'set_nracte_wf called, we try doing a little!' !hjaaj DEBUG
+!     write(lupri,*) 'WAFFCT = ',WAFFCT
 
-*  2) DHFSCF wave function, open shell
-!        call info_dirac(WAFFCT,NACRAS,IRETISH,IPRT)
-      else
-         write(lupri,*) 'ERROR: unknown wave function type: ',WAFFCT
-         call quit('ERROR: unknown wave function type')
+      nracte = NACTEL
+
+#ifdef VAR_MPI      
+      if(luci_nmproc .gt. 1)then
+        call dalton_mpi_bcast(nracte, luci_master, mpi_comm_world)
       end if
-      return
+#endif
+
+      if(WAFFCT.eq.'HF_SCF') then
+        if(nracte .gt. 0)then
+          write(lupri,*) 'ERROR in set_nracte_wf:'//
+     &' # of active e- > 0 for closed-shell HF reference wave function.'
+          call quit('*** ERROR in set_nracte_wf: # of active e- > 0
+     & for closed-shell HF reference wave function.')
+        end if
+      else if(WAFFCT.eq.'RASSCF')then
+        if(nracte .gt. 0)then
+          write(lupri,*) 'ERROR in set_nracte_wf:'//
+     &' # of active e- = 0 for open-shell HF reference wave function.'
+          call quit('*** ERROR in set_nracte_wf: # of active e- = 0
+     & for open-shell HF reference wave function.')
+        end if
+      else
+        write(lupri,*) 'ERROR in set_nracte_wf:'//
+     &' unknown reference wave function: ',WAFFCT
+          call quit('*** ERROR in set_nracte_wf: 
+     & unknown reference wave function.')
+      end if
+
       end
 ***********************************************************************
       SUBROUTINE GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSYM_ENV)
@@ -1819,10 +1845,14 @@ C
       READ (ITAP30) NSYM,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYM),
      *              (NORB(I),I=1,NSYM),(NBAS(I),I=1,NSYM),
      *              POTNUC,EMCSCF
-      NSYM_ENV = NSYM
-      CALL ICOPVE(NORB,NMOS_ENV,NSYM)
-      CALL ICOPVE(NBAS,NAOS_ENV,NSYM)
+
+!     transfer to output variables
+      NSYM_ENV  = NSYM
       ECORE_ENV = POTNUC
+      CALL ICOPY(NSYM,NORB,1,NMOS_ENV,1)
+      CALL ICOPY(NSYM,NBAS,1,NAOS_ENV,1)
+
+#ifdef LUCI_DEBUG
 
       write(lupri,*) 'GETOBS_DALTON' !hjaaj DEBUG
       WRITE(lupri,*) ' Number of basis functions per sym '
@@ -1837,7 +1867,8 @@ C
       WRITE(lupri,*) ' from DALTON: NORBT, NBAST, NCMOT :',
      &   NORBT,NBAST,NCMOT
 
-      RETURN
+#endif
+
       END
 ***********************************************************************
        SUBROUTINE GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
@@ -2583,6 +2614,17 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
             call sync_coworkers_cfg(3,work(kint1),work(kint2))
 !           set sync_ctrl option
             sync_ctrl_array(3) = .false.
+
+#ifdef LUCI_DEBUG
+            if(luci_myproc .eq. luci_master+1)then
+              print *, '*** co-worker',luci_myproc,'reports 1-ints:',
+     &                      nint1
+              call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
+              print *, '*** co-worker',luci_myproc,'reports 2-ints:',
+     &                      nint2
+              call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+            end if ! debug print for co-worker-id luci_master+1
+#endif
           end if
 #endif
         ELSE
@@ -2614,7 +2656,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       ECORE_ORIG = ECORE
       ECORE      = ECORE + ECORE_HEX
 #ifdef LUCI_DEBUG
-      if(myproc.eq.luci_master)then
+      if(luci_myproc.eq.luci_master)then
         write(lupri,'(/2x,e15.8)') 'Updated core energy: ',ECORE
       end if
 #endif
@@ -2940,7 +2982,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
-      write(lupri,*) 'enter dalton2lucita'
 *
 *
 !     NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
@@ -2958,18 +2999,11 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *------------------------------------------------------------------*
 *  Import required information from Dalton
 *------------------------------------------------------------------*
-*
-!     print *, ' stefan: i think this call is now obsolete; we 
-!    & obtain the info about nish, nash, etc. already at other places.'
-      call get_dalton_inf(WAFFCT,IPRT,NACRAS)
+      call set_nracte_wf(WAFFCT,NACRAS)
+!     print *, ' stefan: define NACRAS for proper FCI/SDCI!!!***'
 *
 *.................................................................
-*  1) Type of wave function dependencies
-*.................................................................
-*      none (see get_dalton_inf above)
-*
-*.................................................................
-*  2) Inactive space as GAS 1 (if stated in input)
+*  1) Inactive space as GAS 1 (if stated in input)
 *.................................................................
 *
 *
@@ -2986,9 +3020,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       if(nsum.gt.0) iretish = 0
 *
 *.................................................................
-*  3) TYPE dependencies (keywords depending on type of CI chosen)
+*  2) TYPE dependencies (keywords depending on type of CI chosen)
 *.................................................................
-*
 *         ................
       if (TYPE.eq.'FCI   ') then
 *         ................
@@ -4025,409 +4058,9 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
       END DO
 *
       CALL QEXIT('PUTIN')
-      RETURN
       END
 ***********************************************************************
-***********************************************************************
-*  Import one-electron integrals from DALTON environment
-*
-*  based on rdone_dirac by Timo Fleig and
-*  MPI adaptation of rdone_dalton by Stefan Knecht, Feb. 2006
-*
-*  Master reads all the information in and braodcasts 
-*  everything to all nodes in MPI_COMM_WORLD
-*
-      subroutine rdone_dalton(ONEINT,LUONE,DIRACONE,MORB,NDIM,
-     &                       NBAS,ISPINFREE,IBOSYM,IDUMAR,DUMAR,
-     &                       NIRREP,NGSSH,NGAS,NSTR,
-     &                       IPGTYP,INVERSM,NFSYM,IPRINT)
-*
-      implicit real*8 (A-H,O-Z)
-*
-#include "mxpdim.inc"
-#include "parluci.h"
-#ifdef VAR_MPI
-#include "mpif.h"
 
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-*
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
-*
-      character*7 DIRACONE
-      character*14 DUMCHA(MXPIRR)
-      logical BREIT
-*
-      dimension IBOSYM(*),IDUMAR(*),NBAS(NIRREP),ICT(MXPIRR),
-     &          NGSSH(MXPIRR,MXPNGAS),IORBF(2),NSTR(NFSYM)
-      dimension ONEINT((2*NDIM)**2),DUMAR(*)
-*
-      write(6,*) 'RDONE_DALTON: ' !hjaaj DEBUG
-      NTESTL = 00
-      NTEST = max(NTESTL,IPRINT)
-*
-      IZERO = 0
-      call isetvc(ICT,IZERO,NIRREP)
-*
-*
-      IF (LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
-      open(LUONE,FILE=DIRACONE,FORM='UNFORMATTED')
-      read(LUONE) MORB,BREIT,ECORE_DIR
-      read(LUONE) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
-     &                   (IDUMAR(ID),ID=1,IDUMMY),
-     &                   (NSTR(I),I=1,NFSYM)
-      read(LUONE)
-      read(LUONE)
-      read(LUONE) (IDUMAR(ID),IDUMAR(ID),DUMAR(ID),ID=1,MORB,1),
-     &            (IBOSYM(I),I=1,MORB,1)
-*
-      if (NTEST.ge.3) then
-        write(6,*)
-        write(6,*) 'Testing read MRCONEE'
-        write(6,*) 'MORB = ',MORB
-        write(6,*) 'BREIT = ',BREIT
-        write(6,*) 'Boson symmetries of spinors:'
-        do IB=1,MORB,1
-          write(6,'(A11,I5,A3,I12)') 'Spinor no. ',IB,' : ',IBOSYM(IB)
-        end do
-        do IFS=1,NFSYM,1
-          write(6,'(A,I3,A,I5)')
-     &          'Dim. of ferm. sym. ',IFS,' : ',NSTR(IFS)
-        end do
-      end if
-*
-      END IF
-C    /\ read in master
-C
-C     Distribute the information read from MRCONEE
-C
-#ifdef VAR_MPI
-      IF (LUCI_NMPROC.GT.1) THEN
-         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,IDUMMY,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IBOSYM,MORB,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-      END IF
-#endif
-
-      IERROR = 0
-      NORBSM = 0
-      do ISPINOR=1,MORB,1
-        ISYM = IBOSYM(ISPINOR) + 1
-        ICT(ISYM) = ICT(ISYM) + 1
-      end do
-      do IRREP=1,NIRREP,1
-        do IGAS=1,NGAS,1
-          NORBSM = NORBSM + NGSSH(IRREP,IGAS)
-        end do
-        ICT(IRREP) = ICT(IRREP)/2
-        if (ICT(IRREP).ne.NORBSM) IERROR = IERROR + 1
-        NORBSM = 0
-      end do
-*
-      if (2*NDIM.ne.MORB) then
-        write(6,*) 'Orbital dimensions of '
-        write(6,*) 'DIRAC and input do not match.'
-        write(6,*) 'DIRAC : ',MORB,' spinors'
-        write(6,*) 'Input : ',NDIM,' orbitals'
-        call abend2('Quitting.')
-      end if
-      if (IERROR.ge.1) then
-        write(6,*) IERROR,' orbital dimensions not matching.'
-        write(6,*) 'Symmetry dimensions should be:'
-        call iwrtma(ICT,1,NIRREP,1,MXPIRR)
-        call abend2('Quitting.')
-      end if
-*
-      IF (LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-* Read the integrals and close file
-      read(LUONE) (ONEINT(I),TDUM,I=1,MORB*MORB)
-      close(LUONE)
-*
-
-      if (NTEST.ge.10) then
-        do IND=1,MORB,1
-          INOFF = (IND-1)*MORB
-          write(6,'(I4,1X,4F18.12)')
-     &          IND,(ONEINT(INOFF+JND),JND=1,MORB,1)
-        end do
-      end if
-      END IF
-C     /\ read in master
-C
-C     Distribute the information read from MRCONEE
-C
-#ifdef VAR_MPI
-      IF (LUCI_NMPROC.GT.1) THEN
-         CALL MPI_BCAST(ONEINT,MORB*MORB,MPI_DOUBLE_PRECISION,
-     &                  LUCI_MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(TDUM,1,my_MPI_INTEGER,LUCI_MASTER,
-     &                  MPI_COMM_WORLD,IERR)
-      END IF
-#endif
-*
-C     ...on here!
-C
-      if(luci_myproc.eq.luci_master)then
-      write(6,'(1X,A,1F18.10)') 'DIRAC core energy = ',ECORE_DIR
-      end if
-C
-      ECORE = ECORE_DIR
-*
-      end
-***********************************************************************
-*  Read DIRAC-COULOMB two-electron integrals
-*  (Later also BREIT integrals)
-*  (GAUNT integrals can be included in COULOMB type ints.,
-*  because they have the same symmetry.)
-*
-*  In case of a parallel calculation:
-*  Broadcasting of general data from master to nodes
-*  Integrals are read in by every node
-*  Stefan Knecht, Feb. 06
-*
-      subroutine rdtwo_dirac(RKLR,
-     &                       LUTWO,DIRACTWO,
-     &                       NDIM,ISPINFREE,MORB,
-     &                       KR,IOFF12,NUMINT,INDK,INDL,IPRINT)
-*
-      implicit real*8 (A-H,O-Z)
-*
-#include "parluci.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-ChjC#include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "files.inc"
-*
-      character*8 DIRACTWO
-      character*10 DATEX,TIMEX*8
-      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-*      New characters used for timing 
-      CHARACTER CPUSTEP*12, WALLSTEP*12, CPUSTEPX*12,WALLSTEPX*12
-c     logical BREIT
-*
-      dimension RKLR((2*NDIM)**4)
-      dimension KR(-NDIM:NDIM),INDK((2*NDIM)**4),INDL((2*NDIM)**4),
-     &          IOFF12(MORB,MORB),NUMINT(MORB,MORB)
-*
-     
-*
-* additionally inserted here because of the call from luciarel!
-#ifdef VAR_MPI
-      LUCI_MASTER = MPARID
-      LUCI_MYPROC = MYTID
-C     Add the master node
-      LUCI_NMPROC = NUMNOD + 1
-#else
-      LUCI_MASTER = 0
-      LUCI_MYPROC = 0
-      LUCI_NMPROC = 1
-#endif
-      NTESTL = 00
-      NTEST = max(NTESTL,IPRINT)
-*
-      TRESINT = 1.D-12
-      NINT = 0
-      N2EFIL = 0
-      ISYMOFF = 0
-*
-* Determine name of file (default is 'MDCINT  ')
-   30 if (N2EFIL.ge.1.and.N2EFIL.le.9) then
-        write(DIRACTWO,'(A7,I1)') 'MDCINT0',N2EFIL
-      else if (N2EFIL.ge.10.and.N2EFIL.le.99) then
-        write(DIRACTWO,'(A6,I2)') 'MDCINT',N2EFIL
-      end if
-*     
-      IF (LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
-* Open file (using same logical unit for all files)
-      open (LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
-      rewind (LUTWO)
-      END IF
-      if (N2EFIL.eq.0) then
-        if (myproc.eq.master) then
-          read (LUTWO) datex,timex,nkr,
-     &          (kr(i),kr(-i),i=1,nkr)
-        end if
-#ifdef VAR_MPI
-        if (luci_nmproc.gt.1) then
-           call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
-     &                    mpi_comm_world,ierr)
-           do j = 1, nkr
-             call mpi_bcast(kr(-j),1,my_MPI_INTEGER,master,
-     &                      mpi_comm_world,ierr)
-             call mpi_bcast(kr(j),1,my_MPI_INTEGER,master,
-     &                      mpi_comm_world,ierr)
-           end do
-        end if
-#endif
-      end if
-*
-      if (2*NKR.ne.MORB) then
-        if (myproc.eq.master) then
-          write(6,*) 'MRCONEE and MDCINT are incompatible.'
-          stop 'Quitting.'
-        else
-          write(12,*) 'MRCONEE and MDCINT are incompatible.'
-          stop 'Quitting.'
-        end if
-      end if
-      if (myproc.eq.master) then
-        write(6,*) 'Integrals have been calculated on the'
-        write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
-      end if
-      if (NTEST.ge.5) then
-        
-        write(6,*)
-        write(6,*) 'Info from MDCINT file'
-        write(6,*) 'NKR is (myproc)',NKR, myproc
-        write(6,*) 'KR array:(myproc)', myproc
-        do I=1,NKR,1
-          write(6,'(2I8)') KR(-I),KR(I)
-        end do
-      end if
-*
-*     -------------------------
-*     READ IN COULOMB INTEGRALS
-*     -------------------------
-*
-      if (myproc.eq.master) then
-        rewind (LUTWO)
-      else 
-        open(LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
-        rewind (LUTWO)
-      end if
-        if (N2EFIL.eq.0) read (LUTWO)
-*
-      IKR = 0
-      JKR = 0
-  10  IKR_SAVE = IKR
-      JKR_SAVE = JKR
-         read (LUTWO) IKR,JKR,NZ,
-     &               (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
-     &               (rklr(inz+ISYMOFF),inz=1,NZ,1)
-*
-      if (IKR.eq.0) then
-        if (myproc.eq. master) then
-          close (LUTWO)
-          write(6,*) 'End of file MDCINT.'
-        else 
-          close(LUTWO)
-         write(12,*) 'End of file MDCINT.' 
-        end if
-        if (JKR.eq.0) then
-          if (myproc.eq. master) then
-            write(6,*) 'Only or last 2-el. integral file.'
-          else 
-            write(12,*) 'Only or last 2-el. integral file.'
-          end if
-          goto 20
-        else if (JKR.ne.0) then
-          N2EFIL = N2EFIL + 1
-          if (myproc.eq.master) then
-            if (N2EFIL.le.9) then
-             write(6,'(A,A7,I1)') 'Reading next file ','MDCINT0',N2EFIL
-            else if (N2EFIL.gt.9.and.N2EFIL.le.99) then
-             write(6,'(A,A6,I2)') 'Reading next file ','MDCINT',N2EFIL
-            end if
-          else 
-            if (N2EFIL.le.9) then
-             write(12,'(A,A7,I1)') 'Reading next file ','MDCINT0',N2EFIL
-            else if (N2EFIL.gt.9.and.N2EFIL.le.99) then
-             write(12,'(A,A6,I2)') 'Reading next file ','MDCINT',N2EFIL
-            end if
-          end if
-          goto 30
-        end if
-      end if
-*
-      if (IKR.ne.IKR_SAVE.or.JKR.ne.JKR_SAVE) then
-*  Otherwise redundant Kramers block has been read (symmetric)
-        IOFF12(KR(IKR),KR(JKR)) = ISYMOFF
-        NUMINT(KR(IKR),KR(JKR)) = NZ
-      else
-        write(6,*) 'Redundant integral block detected.'
-        write(6,*) 'IKR,IKR_SAVE,JKR,JKR_SAVE ',
-     &              IKR,IKR_SAVE,JKR,JKR_SAVE
-        stop 'Quitting.'
-      end if
-*
-      if (NTEST.ge.10) then
-        write(6,'(A,2I6)') 'IKR,JKR : ',IKR,JKR
-        write(6,'(A,2I4,A,I6)')
-     &        'IOFF12(',KR(IKR),KR(JKR),') = ',IOFF12(KR(IKR),KR(JKR))
-        write(6,'(A,2I4,A,I6)')
-     &        'NUMINT(',KR(IKR),KR(JKR),') = ',NUMINT(KR(IKR),KR(JKR))
-        write(6,'(A,1X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
-        if (NTEST.ge.100) then
-          do INT=1,NZ,1
-            write(6,'(A,2I8,1X,1F18.12)')
-     &      'Indices K,L ',KR(INDK(INT+ISYMOFF)),KR(INDL(INT+ISYMOFF)),
-     &                     RKLR(INT+ISYMOFF)
-          end do
-        end if
-      end if
-*
-      ISYMOFF = ISYMOFF + NZ
-**
-      GOTO 10
-*
-   20 if (NTEST.ge.50) then
-        write(6,*)
-        write(6,*) '===================='
-        write(6,*) 'rdtwo_dirac speaking'
-        write(6,*) '===================='
-        write(6,*) 'Full two-electron integral list:'
-        do IJ=1,MORB,1
-          do II=1,MORB,1
-            write(6,*) 'Block :',II,IJ
-            do INT=1,NUMINT(II,IJ),1
-              write(6,'(2I4,2F18.12)')
-     &              KR(INDK(INT+IOFF12(II,IJ))),
-     &              KR(INDL(INT+IOFF12(II,IJ))),
-     &              RKLR(INT+IOFF12(II,IJ))
-            end do
-          end do
-        end do
-      end if
-*
-#ifdef VAR_MPI
-      if (LUCI_NMPROC .gt. 1)
-     &   CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
-#endif
-*
-      RETURN
- 1000 FORMAT (
-     &/I8,' Unique Coulomb integrals read from MDCINT (',A10,1X,A8,')'
-     &/I8,' Coulomb integrals written to MRCTWOE')
- 1001 FORMAT (
-     &/I8,' Unique Coulomb integrals read from MDCINT (',A10,1X,A8,')'
-     &/I8,' Unique Breit integrals read from MDBINT (',A10,1X,A8,')'
-     &/I8,' Combined integrals written to MRCTWOE')
- 1002 FORMAT (/' Real arithmetic will be used in EXPAND and TWOLIN')
- 1003 FORMAT (/' Complex arithmetic will be used')
- 1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
-      END
-***********************************************************************
       SUBROUTINE LUCITA_GETINT_DALTON(EMY,X1INT,X2INT,
      &                                tmp_dal_work,LWORK)
 C

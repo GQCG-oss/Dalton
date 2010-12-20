@@ -894,17 +894,12 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 *     characters used for timing
       CHARACTER WALLTSTEP*12,  WPART22*12
-*. Notice XJEP is also used for ROOTHOMING, should be allocated
-* outside (for roothoming :dim = 3*MAXVEC )
-      DIMENSION XJEP(10000)
-      INTEGER   IXJEP(10000)
+*     XJEP is used for ROOTHOMING
+      real(8), allocatable ::  xjep(:)
+      integer, allocatable :: ixjep(:)
       INTEGER RCCTOS(*), IGROUPLIST(LUCI_NMPROC)
       DIMENSION IBLOCKL(*),NBLOCKDN(*), IPROCLIST(LUCI_NMPROC)
-      INTEGER NDATATYPE, NREDTYPE, IONE, NZERO
-      REAL*8 REDSCRVAR
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-      IONE  = 1
-      NZERO = 0
 *
       TIMING = .FALSE.
 
@@ -926,43 +921,43 @@ C     of MAXIT
         ICHPARAM    = 6
       END IF
 
-      WRITE(LUCIWT,'(7X,A)') '                             '
-      WRITE(LUCIWT,'(7X,A)') 
+      WRITE(luwrt,'(/7X,A)') 
      &'  ***************************************************'
-      WRITE(LUCIWT,'(7X,A)') 
+      WRITE(luwrt,'(7X,A)') 
      &'     entering MICDV6_par (parallel solver routine)   '
-      WRITE(LUCIWT,'(7X,A)') 
+      WRITE(luwrt,'(7X,A/)') 
      &'  ***************************************************'
-      WRITE(LUCIWT,'(7X,A)') '                             '
 *
 C
 C     transfer root information to common block in parluci.h
-C
       NROOT_INFO = NROOT
 C
 *
       IPICO = 0
-      IPRT = 000
+      IPRT  = 0000
+!     IPRT  = 9999 ! debug
        
       IOLSTM = 1
       IF(IPRT.GT.1.AND.IOLSTM.NE.0)
-     &WRITE(LUCIWT,*) ' Inverse iteration modified Davidson '
+     &WRITE(luwrt,*) ' Inverse iteration modified Davidson '
       IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
-     &WRITE(LUCIWT,*) ' Normal Davidson method '
+     &WRITE(luwrt,*) ' Normal Davidson method '
       IF( MAXVEC .LT. 2 * NROOT ) THEN
-        WRITE(6,*) ' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
-        WRITE(6,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-        WRITE(6,*) ' Raise MXCIV to be at least 2 * Nroot '
-        WRITE(6,*) ' Enforced stop on MICDV6 '
+        WRITE(luwrt,*) ' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
+        WRITE(luwrt,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+        WRITE(luwrt,*) ' Raise MXCIV to be at least 2 * Nroot '
+        WRITE(luwrt,*) ' Enforced stop on MICDV6 '
         Call Abend1( 20 )
       END IF
 *
       IF(IROOTHOMING.EQ.1) THEN
-        WRITE(LUWRTOUT,*) ' Root homing performed '
+        WRITE(luwrt,*) ' Root homing performed '
+        allocate(xjep(maxvec*3))
+        allocate(ixjep(maxvec*3))
       END IF
       KAPROJ = 1
-      KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST = 1.0D-4
+      KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+      TEST   = 1.0D-4
       CONVER = .FALSE.
 C
 C     ===================
@@ -989,9 +984,9 @@ C
 *
         CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
-csk     WRITE(LUCIWT,*) 'LUCLIST for the 1st time:'
+csk     WRITE(luwrt,*) 'LUCLIST for the 1st time:'
 csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
-csk     WRITE(LUCIWT,*) 'LU1LIST for the 1st time:'
+csk     WRITE(luwrt,*) 'LU1LIST for the 1st time:'
 csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
         call mcci_cp_vcd_batch(ilu1,iluc,vec1,
@@ -1003,10 +998,10 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 !    &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
 !    &                      LUCLIST,IBLOCKL,IVEC-1)
 *
-csk     WRITE(LUCIWT,*) 'LUCLIST for the 2nd time:'
-csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
-csk     WRITE(LUCIWT,*) 'LU1LIST for the 2nd time:'
-csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
+!       WRITE(luwrt,*) 'LUCLIST for the 2nd time:'
+!       CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
+!       WRITE(luwrt,*) 'LU1LIST for the 2nd time:'
+!       CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
 *       set offset for sigma-file
 *
@@ -1030,8 +1025,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *       end of timing
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
-        WRITE(LUCIWT,9777) WALLTID
-        WRITE(LUCIWT,*) '   '
+        WRITE(luwrt,9777) WALLTID
 *
 *       projected matrix using batch structure of CI vector(s)
 *
@@ -1046,24 +1040,19 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *
       WALLITR2 = MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUCIWT,9888) WALLTID
-      WRITE(LUCIWT,*) '   '
+      WRITE(luwrt,9888) WALLTID
+ 
+!     synchronize MPI_COMM_WORLD
+      iredl = ninvec*(ninvec-1)/2 + ninvec
+      call mpi_allreduce(mpi_in_place,aproj,iredl,mpi_real8,
+     &                   mpi_sum,mpi_comm_world,ierr)
 *
-*     synchronize MPI_COMM_WORLD
-*
-      IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
-      call dzero(tmp_space0,iredl)
-!     CALL REDVEC_REL(APROJ,tmp_space0,IREDL,2,MPI_SUM,MPI_COMM_WORLD,-1)
-      call dalton_mpi_allreduce(aproj,tmp_space0,MPI_COMM_WORLD)
-      call dcopy(iredl,tmp_space0,1,aproj,1)
-*
-*
-csk   IPRT = 5
 *
       IF( IPRT .GE.5 ) THEN
-        WRITE(6,*) ' INITIAL PROJECTED MATRIX  '
+        WRITE(luwrt,*) ' INITIAL PROJECTED MATRIX  '
         CALL PRSYM(APROJ,NINVEC)
       END IF
+
 C     Diagonalize initial projected matrix
       CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NINVEC,0,1)
@@ -1072,14 +1061,15 @@ C     Diagonalize initial projected matrix
       END DO
 C
       IF(IPRT .GE. 3 ) THEN
-        WRITE(LUCIWT,*) ' Eigenvalues of initial iteration (with
+        WRITE(luwrt,*) ' Eigenvalues of initial iteration (with
      &  shift)'
-        WRITE(LUCIWT,'(5F18.13)')
+        WRITE(luwrt,'(5F18.13)')
      &  ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
       END IF
       IF( IPRT  .GE. 5 ) THEN
-        WRITE(LUCIWT,*) ' Initial set of eigen values (no shift) '
-        CALL WRTMATMN(EIG(1,1),1,NROOT,MAXIT,NROOT,LUCIWT)
+        WRITE(luwrt,*) ' Eigenvalues of initial iteration (no shift)'
+        WRITE(luwrt,'(5F18.13)')
+     &  ( EIG(1,IROOT),IROOT=1,NROOT)
       END IF
 C      
 C     transform vectors: C and sigma
@@ -1124,9 +1114,8 @@ C
       WALLITR1 = MPI_WTIME()
       starttime = MPI_WTIME()
 *
-      write(LUCIWT,*)
-      write(LUCIWT,'(A21,3X,I3)') ' Info from iteration ',ITER
-      write(LUCIWT,*) '_______________________'
+      write(luwrt,'(/A21,3X,I3)') ' Info from iteration ',ITER
+      write(luwrt,*) '_______________________'
       ITER = ITER + 1
       ITER_CHECKP = ITER_CHECKP + 1
 *
@@ -1278,10 +1267,10 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 !    &                      IBATV,MY_LU3_OFF,MY_LUC_OFF,LU3LIST,
 !    &                      LUCLIST,IBLOCKL,NVEC+IVEC-1-NROOT)
 *
-csk     WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
-csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-csk     WRITE(LUWRT,*) 'LU3LIST for the 2nd time:'
-csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
+!       WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
+!       CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
+!       WRITE(LUWRT,*) 'LU3LIST for the 2nd time:'
+!       CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *
 *       set offset for sigma-file
 *
@@ -1305,7 +1294,6 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9400) WALLTID
-        WRITE(LUWRT,*) '   '
 *
 *       augment projected matrix using batch structure of CI vector(s)
 *
@@ -1322,15 +1310,16 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *
       xidletime = MPI_WTIME()
       call dzero(aproj(istred),imustred)
-!     CALL REDVEC_REL(tmp_space0(ISTRED),APROJ(ISTRED),IMUSTRED,2,
-!    &                MPI_SUM,MPI_COMM_WORLD,-1)
-      call dalton_mpi_allreduce(tmp_space0(istred),aproj(istred),
-     &                          MPI_COMM_WORLD)
+      call mpi_allreduce(tmp_space0(istred),aproj(istred),imustred,
+     &                   mpi_real8,mpi_sum,mpi_comm_world,ierr)
       xixidletime = xixidletime - xidletime + MPI_WTIME()
-*
-csk   write(LUWRTOUT,*)'APROJ is'
-csk   CALL WRTMATMN(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,
-csk  &              MAXVEC*(MAXVEC+1)/2,LUWRT)
+ 
+#ifdef LUCI_DEBUG
+      write(luwrt,*)'APROJ is (MAXVEC*(MAXVEC+1)/2)',
+     &                         MAXVEC*(MAXVEC+1)/2
+      CALL WRTMATMN(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,
+     &              MAXVEC*(MAXVEC+1)/2,LUWRT)
+#endif
 
 *
 *     2.2: diagonalize projected matrix
@@ -1345,7 +1334,7 @@ csk  &              MAXVEC*(MAXVEC+1)/2,LUWRT)
       tottime      = endtime - starttime
 C     TIMING FOR PARTS 2.1 - 2.2 
       tottime_save = tottime
-      WALLTID = SECTID(tottime) 
+      WALLTID      = SECTID(tottime) 
       WRITE(LUWRT,9350) WALLTID
 C
       IF( TIMING )THEN
@@ -1432,11 +1421,10 @@ C
 C
       IF( IPRT  .GE. 5 ) THEN
         WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
-csk     CALL PRSYM(APROJ,NVEC)
+        CALL PRSYM(APROJ,NVEC)
         WRITE(LUWRT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMATMN(AVEC,NVEC,NROOT,NVEC,NROOT,LUWRT)
       END IF
-      IPRT = 0
 *
 *
 *     check timing
@@ -1635,27 +1623,23 @@ csk     CALL PRSYM(APROJ,NVEC)
 *
       call dzero(aproj(istred),imustred)
       starttime = MPI_WTIME()
-!     CALL REDVEC(tmp_space0,APROJ(ISTRED),IMUSTRED,2,MPI_SUM,
-!    &            MPI_COMM_WORLD,-1)
       call mpi_allreduce(tmp_space0,aproj(istred),imustred,
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,
-     &                   MPI_COMM_WORLD,IERR)
+     &                   mpi_real8,mpi_sum,mpi_comm_world,ierr)
       endtime = MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
-      IF( TIMING )
-     &WRITE(LUWRTOUT,9460)WALLTID
+      IF( TIMING ) WRITE(luwrt,9460) WALLTID
 *
 *     finish timing
 *
       timer3 = timer3 + MPI_WTIME() - starttimer
       WALLTSTEP = SECTID(timer3)
-      WRITE(LUWRTOUT,9600) WALLTSTEP
+      WRITE(luwrt,9600) WALLTSTEP
 *
 *     timing for this iteration
 *
       WALLITR2 = MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUWRTOUT,9300) WALLTID
+      WRITE(luwrt,9300) WALLTID
 *
 *     end of resetting business
 *
@@ -1673,12 +1657,12 @@ C       copy c-vectors from nodes and master back to the master
           CALL COPVCD_PAR_BDRIV_REL(ILU1,97,VEC1,NBLOCKDN,NUM_BLOCKS2,
      &                              IBLOCKL,MPI_COMM_WORLD,-1,JXROOT,
      &                              LU1LIST,MY_LU1_OFF,1)
-          IF(MYPROC .eq. MASTER) THEN
+          if(luci_myproc .eq. luci_master)then
              CALL REWINE(97,-1)
              CALL COPVCD(97,61,VEC1,0,-1)
-          END IF
+          end if
         END DO
-        IF(MYPROC .eq. MASTER) CALL REWINE(61,-1)
+        IF(luci_myproc .eq. luci_master) CALL REWINE(61,-1)
       END IF
 C
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
@@ -1699,51 +1683,42 @@ C
  1004  CONTINUE
 C
        IF( IPRT .gt. 100) 
-     &   WRITE(LUWRTOUT,*) 'SYNC. PROCESS HAS USED', TOTAL_TIME, 'SEC.'
+     &   WRITE(luwrt,*) 'SYNC. PROCESS HAS USED', TOTAL_TIME, 'SEC.'
 C
       IF( .NOT. CONVER ) THEN
 C        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
-     &   WRITE(LUWRTOUT,1170) MAXIT
+     &   WRITE(luwrt,1170) MAXIT
  1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
       ELSE
 C        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
-     &   WRITE(LUWRTOUT,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+     &   WRITE(luwrt,1180) ITER
+ 1180    FORMAT(1X,' Convergence was obtained in ',I3,' iterations')
         END IF
 C
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
         DO 1600 IROOT = 1, NROOT
-          write(LUWRTOUT,*)
-          write(LUWRTOUT,*) '------------------------'
-          write(LUWRTOUT,*) 'Root number  ',IROOT
-          write(LUWRTOUT,*) '------------------------'
+          write(luwrt,*) '------------------------'
+          write(luwrt,*) 'Root number  ',IROOT
+          write(luwrt,*) '------------------------'
           DO I=1,ITER
-            WRITE(LUWRTOUT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+            WRITE(luwrt,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
           end do
-          WRITE(LUWRTOUT,*)
-          WRITE(LUWRTOUT,'(A,I3)')
+          WRITE(luwrt,'(/A,I3)')
      &  ' Information about convergence for root... ' ,IROOT
-          WRITE(LUWRTOUT,*)
+          WRITE(luwrt,*)
      &    '============================================'
-          WRITE(LUWRTOUT,*)
           FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(LUWRTOUT,1190) FINEIG(IROOT)+EIGSHF
+          WRITE(luwrt,1190) FINEIG(IROOT)+EIGSHF
  1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
-          IF(IPRT.GE.400) THEN
-            WRITE(LUWRTOUT,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
-            CALL WRTVCD(VEC1,LU1,0,LBLK)
-          END IF
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
-        write(LUWRTOUT,*)
  1310   FORMAT
-     &  (1H0,' Iteration point        Eigenvalue         Residual ')
+     &  (1X,' Iteration point        Eigenvalue         Residual ')
         DO IROOT = 1, NROOT
           write(LUWRT,*) '------------------------'
           write(LUWRT,*) 'Root number  ',IROOT
@@ -1752,14 +1727,12 @@ C
             WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
           end do
         end do
-        write(LUWRT,*)
         write(LUWRT,*) '**********************************'//
      &             '**************************'
         write(LUWRT,*) '   Iter  Root       Energy        '//
      &             'RESIDUAL     RESRATIO '
         write(LUWRT,*) '**********************************'//
      &             '**************************'
-        write(LUWRT,*)
         DO 1601 IROOT = 1, NROOT
            FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
            WRITE(LUWRT,'(3X,I3,2X,I3,3X,F18.10,2X,E10.3,3X,E10.3)')
@@ -1775,10 +1748,15 @@ C
       deallocate(tmp_space2)
       deallocate(tmp_space1)
       deallocate(tmp_space0)
+
+      IF(IROOTHOMING.EQ.1) THEN
+        deallocate( xjep)
+        deallocate(ixjep)
+      END IF
 C
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(3X,I3,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
  9410 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH NROOT: ',A)
  9420 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
@@ -1790,12 +1768,12 @@ C
  9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
      & ',A,I4)
  9460 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     : ',A)
- 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A/)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9250 FORMAT(' >>>  WALL TIME IN STEP 1 OF CURRENT ITERATION   : ',A)
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
- 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
- 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A)
+ 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A/)
+ 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A/)
       END
 #else /* defined VAR_MPI*/
 ***********************************************************************

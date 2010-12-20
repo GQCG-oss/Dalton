@@ -1107,7 +1107,11 @@ C     REAL * 8  INPROD
           WRITE(LUWRT,'(10X,4I3,2I8)') (IBLKFO(II,IBLOCK),II=1,4)
         END DO
 *
-        WRITE(6,*) ' I12 = ',I12
+        WRITE(luwrt,*) ' I12 = ',I12
+        if(LUCI_NMPROC .gt. 1)then 
+          WRITE(LUWRT,*) ' NPARBLOCK:'
+          CALL IWRTMA(NPARBLOCK,1,NBLOCK,1,NBLOCK)
+        end if
       END IF
 *
 *  Diagonal elements according to Handys formulae

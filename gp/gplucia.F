@@ -2010,22 +2010,23 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 
 *
       IF(NTEST.GE.100) THEN
-        IF(MYPROC.EQ.MASTER) THEN
-          WRITE(6,*) ' IAIBCM_GAS entered '
-          WRITE(6,*) ' ==================='
-          WRITE(6,*)
-          WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
-          WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
-          WRITE(6,*)
+        IF(luci_MYPROC.EQ.luci_MASTER) THEN
+          WRITE(luwrt,*) ' IAIBCM_GAS entered '
+          WRITE(luwrt,*) ' ==================='
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Number of GAS spaces included ', LCMBSPC
+          WRITE(luwrt,*) ' GAS spaces included ',
+     &                     (ICMBSPC(II),II=1,LCMBSPC)
+          WRITE(luwrt,*)
           IF(NTEST.GE.400) THEN
-            WRITE(6,*) ' IOCA and IOCB '
+            WRITE(luwrt,*) ' IOCA and IOCB '
             CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NOCTPA)
             CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NOCTPB)
           END IF
         END IF
       END IF
 *
-      CALL ISETVC(IOCOC,0,NOCTPA*NOCTPB)
+      CALL IZERO(IOCOC,NOCTPA*NOCTPB)
       DO 100 IATP = 1, NOCTPA
          DO 90 IBTP = 1, NOCTPB
 *. is this combination allowed in any of the GAS spaces included
@@ -2053,11 +2054,9 @@ CMI        IF(INCLUDE .EQ.1) THEN
    90   CONTINUE
   100 CONTINUE
 *
-      IF ( NTEST .GE. 300 ) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' Matrix giving allowed combinations of types '
-          WRITE(6,*)
-          CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+      IF( NTEST .GE. 300 ) THEN
+        WRITE(luwrt,*) ' Matrix giving allowed combinations of types'
+        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
       END IF
 *
       RETURN

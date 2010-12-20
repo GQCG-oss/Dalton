@@ -38,7 +38,7 @@ C
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
+      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,IPROCLIST,
      &                 IGROUPLIST,fh_array)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
@@ -144,7 +144,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' Number of GAS spaces included '
      &,LCMBSPC(ISPC)
-        WRITE(LUWRTOUT,'(A,10I3)') '  GAS spaces included           ',
+        WRITE(LUWRT,'(A,10I3)') '  GAS spaces included           ',
      &               (ICMBSPC(II,ISPC),II=1,LCMBSPC(ISPC))
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' Occupation constraints : '
@@ -165,7 +165,6 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
 *
        END IF
 *
-      WRITE(LUWRTOUT,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
       WRITE(LUWRT,'(a,i14)') 
@@ -286,7 +285,7 @@ C     transfer to common block in parluci.h
       NUM_BLOCKS  = NBLOCK
       NUM_BLOCKS2 = NUM_BLOCKS
 
-      WRITE(LUWRTOUT,'(a,i22)') 
+      WRITE(LUWRT,'(a,i22)') 
      &     '  @@ total number of TTSS-blocks: ',NBLOCK
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
       CALL ICOPY(NTTS,WORK(KLCI1BT),1,WORK(KLCI1BTSCR),1)
@@ -520,7 +519,7 @@ C?        WRITE(6,*) ' MAXB1 2', MAXB1
           MAXB = MAX(MAXB,MAXB1)
         END IF
         MXSTBL = MAX(MAXA,MAXB,MXSTBL0)
-        IF(IPRCIX.GE.2 ) WRITE(LUWRTOUT,*)
+        IF(IPRCIX.GE.2 ) WRITE(LUWRT,*)
      &  ' Largest block of strings with given symmetry and type',MXSTBL
 *       largest number of resolution strings and spectator strings
 *       that can be treated simultaneously
@@ -537,9 +536,9 @@ C?        WRITE(6,*) ' MAXB1 2', MAXB1
      &                MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
      &                IPHGAS,NHLFSPGP,MNHL,IADVICE)
         IF(IPRCIX.GE.2) THEN
-        WRITE(LUWRTOUT,*) 'GASCI  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                              MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-        WRITE(LUWRTOUT,*) 'GASCI  : MXADKBLK ', MXADKBLK
+        WRITE(LUWRT,*) 'GASCI  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
+     &                           MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
+        WRITE(LUWRT,*) 'GASCI  : MXADKBLK ', MXADKBLK
         END IF
         LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
 C
@@ -558,18 +557,17 @@ C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 C
-      WRITE(LUWRTOUT,'(2X,A)')
+      WRITE(LUWRT,'(/2X,A)')
      & '=============================================================='
-      WRITE(LUWRTOUT,'(2X,A)')
+      WRITE(LUWRT,'(2X,A)')
      & '==> allocation of two CI vectors and one resolution vector <=='
-      write(LUWRTOUT,*) ' '
-      WRITE(LUWRTOUT,'(2X,A,1X,I15)')
+      WRITE(LUWRT,'(/2X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
-      WRITE(LUWRTOUT,'(2X,A,1X,I15)')
+      WRITE(LUWRT,'(2X,A,1X,I15)')
      & 'allocate two CI vectors each of length:       ',LBLOCK
-      WRITE(LUWRTOUT,'(2X,A,1X,I15)')
+      WRITE(LUWRT,'(2X,A,1X,I15)')
      & 'allocate resolution vector of length:         ',LSCR2
-      WRITE(LUWRTOUT,'(2X,A/)')
+      WRITE(LUWRT,'(2X,A/)')
      & '=============================================================='
 C
       IF(IDIAG.EQ.2) THEN
@@ -588,9 +586,9 @@ C       construct H diagonal
           CALL REWINO(LUDIA)
           CALL TODSC_LUCI(WORK(KVEC1),NVAR,-1,LUDIA)
         END IF
-        IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
+        IF(IPRCIX.GE.2) WRITE(LUWRT,*) ' Diagonal constructed  '
       ELSE
-         WRITE(LUWRTOUT,*) ' Diagonal not calculated '
+         WRITE(LUWRT,*) ' Diagonal not calculated '
       END IF
 #ifdef VAR_MPI
       IF (LUCI_NMPROC .GT. 1) THEN
@@ -654,7 +652,7 @@ C     copy restart vector to MPI-file format
 C
       IF( INICI .lt. 0) THEN
 C
-         WRITE(LUWRTOUT,'(2X,A)')
+         WRITE(LUWRT,'(2X,A)')
      &   ' restart file LUCVECT.0 will be copied to'//
      &   ' MPI-readable format ...'
 C
@@ -665,35 +663,35 @@ C
      &                         par_dist_block_list,block_list,
      &                         NBLOCK,NROOT,IRC_SAVE)
 C
-        WRITE(LUWRTOUT,'(2X,A)') ' restart file is now in place! '
+        WRITE(LUWRT,'(2X,A)') ' restart file is now in place! '
 C
       END IF
 C
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
-      CALL CIEIG5(MV7,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
-     &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,LUSC41,
-     &     NVAR,NBLK,NROOT,MXCIV,MAXIT,LUCIVI,IPRNT,WORK(KSBEVC),
-     &     NPRDET,WORK(KH0),WORK(KSBIDT),
-     &     MXP1,MXP2,MXQ,WORK(KH0SCR),ECORE,ICISTR,LBLK,
-     &     IDIAG,WORK(KVEC3),THRES_E,
-     &     NBATCH,WORK(KLCLBT),WORK(KLCLEBT),WORK(KLCI1BT),
-     &     WORK(KLCIBT),INIDEG,E_THRE,C_THRE,
-     &     E_CONV,C_CONV,ICLSSEL,WORK(KLBLKCLS),NOCCLS,
-     &     WORK(KLCLSC),WORK(KLCLSE), WORK(KLCLSCT),WORK(KLCLSET),
-     &     WORK(KLCLSA),WORK(KLCLSL),WORK(KLBLKA),
-     &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
-     &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
-     &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
-     &     block_list,par_dist_block_list,WORK(KRCCTOS),IPROCLIST,
-     &     IGROUPLIST
+      CALL CIEIG5(MV7,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),MINST,LUDIA,
+     &            LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,LUSC41,
+     &            NVAR,NBLK,NROOT,MXCIV,MAXIT,LUCIVI,IPRNT,WORK(KSBEVC),
+     &            NPRDET,WORK(KH0),WORK(KSBIDT),MXP1,MXP2,MXQ,
+     &            WORK(KH0SCR),ECORE,ICISTR,LBLK,IDIAG,WORK(KVEC3),
+     &            THRES_E,NBATCH,WORK(KLCLBT),WORK(KLCLEBT),
+     &            WORK(KLCI1BT),WORK(KLCIBT),INIDEG,E_THRE,C_THRE,
+     &            E_CONV,C_CONV,ICLSSEL,WORK(KLBLKCLS),NOCCLS,
+     &            WORK(KLCLSC),WORK(KLCLSE), WORK(KLCLSCT),
+     &            WORK(KLCLSET),WORK(KLCLSA),WORK(KLCLSL),WORK(KLBLKA),
+     &            WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),
+     &            WORK(KLCLSA2),LBLOCK,IROOTHOMING,WORK(KLBASSPC),
+     &            WORK(KLEBASC),WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,
+     &            ISPC,block_list,par_dist_block_list,WORK(KRCCTOS),
+     &            IPROCLIST,IGROUPLIST
 #ifdef VAR_MPI
-     &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
-     &     WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILU6LIST),
-     &     WORK(KILU7LIST),WORK(KILUCLIST)
+     &            ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
+     &            WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILU6LIST),
+     &            WORK(KILU7LIST),WORK(KILUCLIST)
 #endif
-     &     )
+     &            )
 C
+!     call quit('stop after ini cieig5 - checks go on.')
       EREF = EROOT(IRFROOT)
 CTF
 *  If TERACI has been chosen, only 1 root is determined.
@@ -765,24 +763,20 @@ C
 C
       DO JROOT = 1, NROOT
         if (IPRNCIV.ge.1) then
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,'(2X ,A,I3)')
+          WRITE(LUWRT,'(/2X ,A)')
      &    ' **************************************************'
           WRITE(LUWRT,'(2X ,A,I3)')
      &    ' Analysis of occupation for ROOT = ',JROOT
-          WRITE(LUWRT,'(2X ,A,I3)')
+          WRITE(LUWRT,'(2X ,A/)')
      &    ' **************************************************'
-          WRITE(LUWRT,*)
         end if
         if (IPRDEN.ge.1) then
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,'(2X ,A,I3)')
+          WRITE(LUWRT,'(/2X ,A)')
      &    ' **************************************************'
           WRITE(LUWRT,'(2X ,A,I3)')
      &    ' Analysis of Density and occupation for ROOT = ',JROOT
-          WRITE(LUWRT,'(2X ,A,I3)')
+          WRITE(LUWRT,'(2X ,A/)')
      &    ' **************************************************'
-          WRITE(LUWRT,*)
         end if
         IF(ICISTR.EQ.1) THEN
           CALL FRMDSC_LUCI(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
@@ -819,11 +813,11 @@ C
           END IF
 C
           IF (IPRNCIV.EQ.2) THEN
-             WRITE(LUWRTOUT,*)
-             WRITE(LUWRTOUT,*) ' ======================'
-             WRITE(LUWRTOUT,*) ' Complete CI expansion '
-             WRITE(LUWRTOUT,*) ' ======================'
-             WRITE(LUWRTOUT,*)
+             WRITE(LUWRT,*)
+             WRITE(LUWRT,*) ' ======================'
+             WRITE(LUWRT,*) ' Complete CI expansion '
+             WRITE(LUWRT,*) ' ======================'
+             WRITE(LUWRT,*)
              IF(NROOT.EQ.1) THEN
                CALL WRTVCD(WORK(KVEC1),LUC  ,1,-1)
              ELSE
@@ -1037,6 +1031,7 @@ C
 #include "cprnt.inc"
 #include "lucinp.inc"
 #include "cstate.inc"
+! contains enviro
 #include "crun.inc"
 #include "cicisp.inc"
 #include "oper.inc"
@@ -1063,6 +1058,9 @@ C     character line
 
       CALL QENTER('LUCITA_MASTER')
 
+!     initialize program environment
+      enviro(1:6) = 'DALTON'
+
 !     initialize matmul stats
       XNFLOP    = 0.0D0
       XNCALL    = 0.0D0
@@ -1070,7 +1068,8 @@ C     character line
       XLCCOL    = 0.0D0
       XLCROWCOL = 0.0D0
       TMULT     = 0.0D0
-!     print units
+
+!     set internal print units (luwrt on common block in parluci.h)
       LUIN      = IUNIN
       LUOUT     = IUNUT
       LUCIWT    = LUOUT
@@ -1160,8 +1159,6 @@ C     character line
 !       free currently unused shared-memory group list
         deallocate(grouplist_shared_mem)
 
-        call quit('stop after ini communication - checks go on.')
-
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 C
@@ -1172,10 +1169,10 @@ C     Compute offset from WRK_DALTON to WORK
       KFREE  = KFRSAV
       LFREE  = LWRK_DALTON
       CALL MEMGET('REAL',K1,1,WRK_DALTON,KFREE,LFREE)
-      print *,'before COMPOFF, KFREE,LFREE',KFREE,LFREE
       CALL COMPOFF(WRK_DALTON(KFREE),WORK,K_OFFSET)
-      print *,'K_OFFSET      =',K_OFFSET
 #ifdef integer_test
+      print *,'before COMPOFF, KFREE,LFREE',KFREE,LFREE
+      print *,'K_OFFSET      =',K_OFFSET
       ! integer   :: kbase_lucita
       ! integer*8 :: k8base_lucita
       KBASE_LUCITA = K_OFFSET
@@ -1270,6 +1267,7 @@ C     ==============================================================
 C
       ISKIPEI_INI = ISKIPEI
       I_HAVE_DONE_CC = 0
+
       DO JCMBSPC = 1, NCMBSPC
         ISKIPEI = 0
 *
@@ -1338,13 +1336,13 @@ C
             IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
 C             No restart from previous vectors - IRST2 has been set to zero
               IRESTR = 0
-              WRITE(6,*) ' No restart from previous vectors'
+              WRITE(LUOUT,*) ' No restart from previous vectors'
             END IF
 C           Good old normal CI !!!!
 C           do CI in space JCMBPSC
             MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
-            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT,
+            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,
      &                 proclist,grouplist,fh_array)
 C
 *. Modified one-electron operator in first it
@@ -1548,9 +1546,10 @@ C
       MOLCS = 1
 *
       NERROR = 0
-      NWARN = 0
+      NWARN  = 0
       EXTSPC = 0
-      IECHO = 1 ! hjaaj DEBUG , default 0
+      IECHO  = 0
+!     IECHO  = 1 ! hjaaj DEBUG , default 0
 * No cc as default
       I_DO_CC = 0
 *
@@ -1563,12 +1562,11 @@ C
       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NNIN_MPI,'(A7,A1,I2)') IN_MPINN,'.',LUCI_MYPROC
          IN_MPILL=10
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+      ELSE                                ! MPI ID has three digits
          WRITE (NNIN_MPI,'(A7,A1,I3)') IN_MPINN,'.',LUCI_MYPROC
          IN_MPILL=11
-      ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
+
       open(unit=LUCMOL,file=NNIN_MPI(1:IN_MPILL),
      &     status='OLD',form='FORMATTED')
 *
@@ -5454,14 +5452,17 @@ C
       use lucita_mcscf_ci_task
       use lucita_orbital_spaces, only: define_lucita_orb_spaces
 #include "implicit.h"
+#include "priunit.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
       dimension work_dalton(lwork_dalton)
-      character intfce*10, lucitabasf*10, lucifiln*24
+      character lucitabasf*20, lucifiln*24
       logical   luend
       integer outfile_node
+
+      call qenter('lucita_coworker_main')
 *
 *
 *     arrange for the MPI stuff and correct node number
@@ -5472,15 +5473,19 @@ C
 C     Add the master node, NODTOT = number of co-workers
       LUCI_NMPROC = NODTOT + 1
 C
-      INTFCE = 'DALTON    '
+#ifdef LUCI_DEBUG
       print *, '*** co-worker',LUCI_MYPROC,'has arrived. ***'
+      print *, '*** co-worker: priunit =',lupri,'***'
+#endif
 
 *     create a node-unique filename as output file. Important on
 *     shared file systems. Otherwise all the output gets mingled in one
 *     file. You don't really want to do this.
 *
       lucitabasf   = "lucita-coworkers.out"
+      lupri_save   = lupri
       outfile_node = 6
+      lupri        = outfile_node
 *
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (LUCIFILN,'(A20,A1,I1)') LUCITABASF,'.',LUCI_MYPROC
@@ -5534,5 +5539,7 @@ C
       CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,LUCI_MASTER,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
 C
+      call qexit('lucita_coworker_main')
+
       END
 #endif    /* ifdef VAR_MPI */
