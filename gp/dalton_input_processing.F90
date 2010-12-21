@@ -160,7 +160,7 @@ contains
       call kw_read(word, lucita_cfg_density_calc_lvl)
     end if
 
-    if (kw_matches(word, '.RSTRCI')) then
+    if (kw_matches(word, '.RSTART')) then
       call kw_read(word, lucita_cfg_restart_ci)
     end if
 

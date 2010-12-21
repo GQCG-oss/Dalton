@@ -650,21 +650,18 @@ C     check for restart without CI --> we want to run an analysis only
 C
 C     copy restart vector to MPI-file format
 C
-      IF( INICI .lt. 0) THEN
+      IF(INICI .lt. 0)THEN
 C
-         WRITE(LUWRT,'(2X,A)')
-     &   ' restart file LUCVECT.0 will be copied to'//
-     &   ' MPI-readable format ...'
+         WRITE(LUWRT,'(1X,A)')
+     &   ' restart file LUCITA_CVECS.x will be transformed'//
+     &   ' to MPIs file-i/o format ...'
 C
          IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,-1)
-C
          CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
      &                         WORK(KILU1LIST),
      &                         par_dist_block_list,block_list,
      &                         NBLOCK,NROOT,IRC_SAVE)
-C
-        WRITE(LUWRT,'(2X,A)') ' restart file is now in place! '
-C
+        WRITE(LUWRT,'(1X,A)') ' ... done! '
       END IF
 C
       END IF ! (LUCI_NMPROC .GT. 1) THEN
