@@ -363,6 +363,7 @@ C
 C           and max dimensions in /INFDIM/
 C
 #include <implicit.h>
+#include <priunit.h>
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -394,9 +395,13 @@ C
       N2ORBT = 0
       N2BAST = 0
       NCMOT  = 0
+
+      N_ERRORS = 0
+
       DO 100 I = 1,NSYM
          NOCC(I)  = NISH(I) + NASH(I)
          NSSH(I)  = NORB(I) - NOCC(I)
+         IF (NSSH(I) .LT. 0) N_ERRORS = N_ERRORS + 1
          NNORB(I) = (NORB(I)*(NORB(I)+1))/2
          NVIR(I)  = NORB(I) - NRHF(I)
          NNBAS(I) = (NBAS(I)*(NBAS(I)+1))/2
@@ -425,6 +430,20 @@ C
 C        For multiple basis sets (WK/UniKA/04-11-2002).
          NORB1(I) = NORB(I)       
   100 CONTINUE
+C
+      IF (N_ERRORS .GT. 0) THEN
+         WRITE(lupri,'(//A)') 'SETORB FATAL ERROR'//
+     &      ' Number of occupied orbitals bigger than total number'//
+     &      ' of orbitals !'
+         WRITE(lupri,*) 'NISH ',NISH
+         WRITE(lupri,*) 'NASH ',NASH
+         WRITE(lupri,*) 'NOCC ',NOCC
+         WRITE(lupri,*) 'NSSH ',NSSH
+         WRITE(lupri,*) 'NORB ',NORB
+         WRITE(lupri,*) 'NBAS ',NBAS
+         CALL QENTER('SETORB')
+         CALL QUIT('No. of occ. orb. > total no. of orb.')
+      END IF
 C
       IISH(1)  = 0
       IASH(1)  = 0

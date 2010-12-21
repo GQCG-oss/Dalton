@@ -207,7 +207,6 @@ contains
           NFRO(1:8) = 0
           NISH(1:8) = nish_lucita(1:8)
           NASH(1:8) = nash_lucita(1:8)
-          NASH(1:8) = nash_lucita(1:8)
 
           CALL SETORB ! set derived orbital spaces in inforb.h
           

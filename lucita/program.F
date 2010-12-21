@@ -1067,7 +1067,6 @@ C     character line
       LUCIWT    = LUOUT
       LUWRT     = LUOUT
 
-
       write(luout,'(/a)') 
      & '   ------------------------------------------------'
       write(luout,'(a,a12)') '   LUCITA module started with task-id = ',
