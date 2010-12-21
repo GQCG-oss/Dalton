@@ -1712,17 +1712,17 @@ C
         write(luwrt,'( 1x,a,i6)') 'root number =',IROOT
         write(luwrt,'(1x,a/)')    '-------------------'
         do i = 1, iter
-          write(luwrt,'( 1x,a9,i4,f16.10,4x,e10.3)') 
+          write(luwrt,'( 1x,a9,i4,f20.10,4x,1p,e10.3)') 
      & 'iteration',i,eig(i,iroot)+eigshf,rnrm(i,iroot)
         end do
       end do
 
       write(LUWRT,'(/1x,a)') '**********************************'//
-     &           '**************************'
-      write(LUWRT,*) '  iter   root       energy        '//
+     &           '******************************'
+      write(LUWRT,*) '  iter   root         energy          '//
      &           'residual     convergence'
       write(LUWRT,'(1x,a )') '**********************************'//
-     &           '**************************'
+     &           '******************************'
       DO 1601 IROOT = 1, NROOT
          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
          if(rtcnv(iroot)) then 
@@ -1730,7 +1730,7 @@ C
          else
            convergence = 'NOT converged'
          end if
-         WRITE(LUWRT,'(i7,i7,f16.10,4x,E10.3,4x,a)')
+         WRITE(LUWRT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
      &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &         convergence
  1601 CONTINUE

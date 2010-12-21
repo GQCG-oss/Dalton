@@ -3092,7 +3092,7 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 *  Strange place to put convergence but ....
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK) )
          RNRM(ITER-1,IROOT) = RNORM
-         WRITE(LUWRTOUT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+         WRITE(LUWRTOUT,'(A19,I8,1p,1E15.5,0p,3X,1F19.10)')
      &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
 *
          CALL FLSHFO(LUWRTOUT)
@@ -3703,17 +3703,17 @@ C
         write(LUWRTOUT,'( 1x,a,i6)') 'root number =',IROOT
         write(LUWRTOUT,'(1x,a/)')    '-------------------'
         do i = 1, iter
-          write(LUWRTOUT,'( 1x,a9,i4,f16.10,4x,e10.3)')
+          write(LUWRTOUT,'( 1x,a9,i4,f20.10,4x,1p,e10.3)')
      & 'iteration',i,eig(i,iroot)+eigshf,rnrm(i,iroot)
         end do
       end do
 
       write(LUWRTOUT,'(/1x,a)') '**********************************'//
-     &           '**************************'
-      write(LUWRTOUT,*) '  iter   root       energy        '//
+     &           '******************************'
+      write(LUWRTOUT,*) '  iter   root         energy          '//
      &           'residual     convergence'
       write(LUWRTOUT,'(1x,a )') '**********************************'//
-     &           '**************************'
+     &           '******************************'
       DO 1601 IROOT = 1, NROOT
          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
          if(rtcnv(iroot)) then
@@ -3721,7 +3721,7 @@ C
          else
            convergence = 'NOT converged'
          end if
-         WRITE(LUWRTOUT,'(i7,i7,f16.10,4x,E10.3,4x,a)')
+         WRITE(LUWRTOUT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
      &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &         convergence
  1601 CONTINUE

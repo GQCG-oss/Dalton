@@ -1899,6 +1899,7 @@ C
 * Type ordering
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
@@ -1919,6 +1920,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
       ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
 !       sirius or dirac integral format
         GTIJKL = GMIJKL(I,J,K,L,WORK(KINT2),WORK(KPINT2))
+!       write(lupri,*) '(IJ|KL) =',I,J,K,L,GTIJKL
       END IF
 
       END
@@ -1932,6 +1934,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
 * Version for integrals stored in INTLST
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
@@ -1963,11 +1966,11 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
       LOFF = IBSO(LSM)
 *
       If( Ntest.ge. 100) THEN
-        write(6,*) ' GMIJKL at your service '
-        WRITE(6,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
-        WRITE(6,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
-        WRITE(6,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
-        WRITE(6,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
+        write(lupri,*) ' GMIJKL at your service '
+        WRITE(lupri,*) ' IORB IABS ISM IOFF ',IORB,IABS,ISM,IOFF
+        WRITE(lupri,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
+        WRITE(lupri,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
+        WRITE(lupri,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
       END IF
 *
       If ( jSm.gt.iSm .or. ( iSm.eq.jSm .and. JABS.gt.IABS)) Then
@@ -2016,14 +2019,14 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
         l = iTemp
       End If
       If(Ntest .ge. 100 ) then
-        write(6,*) ' i j k l ',i,j,k,l
-        write(6,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
+        write(lupri,*) ' i j k l ',i,j,k,l
+        write(lupri,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
       End if
 *
 *  Define offset for given symmetry block
       IBLoff = IJKLof(Isym,Jsym,Ksym)
       If(ntest .ge. 100 )
-     &WRITE(6,*) ' IBLoff Isym Jsym Ksym ', IBLoff,ISym,Jsym,Ksym
+     &WRITE(lupri,*) ' IBLoff Isym Jsym Ksym ', IBLoff,ISym,Jsym,Ksym
       iSymj=iSym.eq.jSym
       kSyml=kSym.eq.lSym
       iSymk=iSym.eq.kSym
@@ -2065,11 +2068,11 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         ijkl=ij+(kl-1)*ijPairs
       End If
       If( ntest .ge. 100 )
-     & write(6,*) ' ijkl ', ijkl
+     & write(lupri,*) ' ijkl ', ijkl
 *
       GMIJKL = Intlst(iblOff-1+ijkl)
       If( ntest .ge. 100 )
-     & write(6,*) ' GMIJKL ', GMIJKL
+     & write(lupri,*) ' GMIJKL ', GMIJKL
 *
       END
 ***********************************************************************
@@ -2131,6 +2134,7 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
 *        exchange integrals (IJ!JI)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
 *
       DO 100 IORB = 1, NTOOB
@@ -4091,7 +4095,7 @@ C
 C     -------------------------------------------------------
 C
 !     allocate scratch matrix
-      allocate(mult_ptg(8,8))
+      allocate(mult_ptg(nsym,nsym))
 
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -4139,7 +4143,7 @@ C
 
 !     set multiplication table
       mult_ptg = 0
-      call set_ptg_multiplication_table(mult_ptg,8)
+      call set_ptg_multiplication_table(mult_ptg,nsym)
 
       call sirint2luint(tmp_dal_work(kfcac),tmp_dal_work(kh2ac),
      &                  x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
@@ -4335,6 +4339,7 @@ C
       integer :: i, j, k, l, ij, kl
 !     -----------------------------------------------------------------
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       print *,' h2_in:'
       do isym = 1, nnashx
@@ -4445,24 +4450,22 @@ C
 
                       do j = j_first, j_last
 
+                        ij                      = (i*(i-1))/2 + j
+                        kl                      = (k*(k-1))/2 + l
+                        h2_out(offset_internal) = h2_in(ij,kl)
 #ifdef LUCI_DEBUG
                         print ('(/2x,a)'),
      &        '-------------------------------------------------------'
                         print ('(2x,a,2i4,a,2i4,a)'),'next integral:'//
      &                    ' (ij|kl) = (',i,j,'|',k,l,')'
+                        print *, 'ij, kl =',ij, kl
+                        print *, 'offset_internal =',offset_internal
+                        print *, 'h2_out(offset_internal) =',
+     &                            h2_out(offset_internal)
                         print('(2x,a/)'),
      &        '-------------------------------------------------------'
-                        print *, 'ij =',(i*(i-1))/2 + j
-                        print *, 'kl =',(k*(k-1))/2 + l
 #endif
-                        ij                      = (i*(i-1))/2 + j
-                        kl                      = (k*(k-1))/2 + l
-                        h2_out(offset_internal) = h2_in(ij,kl)
                         offset_internal         = offset_internal + 1
-#ifdef LUCI_DEBUG
-                        print *, 'h2_out(offset_internal) =',
-     &                            h2_out(offset_internal-1)
-#endif
                       end do ! j
                     end do ! i
                   end do ! l
@@ -4495,12 +4498,15 @@ C
 !
 !     -----------------------------------------------------------------
       implicit none
-#include "priunit.h"
 #include "multd2h.inc"
-      integer :: nr_ptg_irreps
+      integer :: nr_ptg_irreps, i, j
       integer :: mult_ptg(nr_ptg_irreps,nr_ptg_irreps)
 !     -----------------------------------------------------------------
 
-      call icopy(nr_ptg_irreps*nr_ptg_irreps,multd2h,1,mult_ptg,1)
+      do j = 1, nr_ptg_irreps
+         do i = 1, nr_ptg_irreps
+            mult_ptg(i,j) = multd2h(i,j)
+         end do
+      end do
 
       end

@@ -184,7 +184,7 @@ C
 C
 C     print norm and eigenvalue
 C
-      WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+      WRITE(LUWRT,'(A19,I8,1p,1E15.5,0p,3X,1F19.10)')
      &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
       CALL FLSHFO(LUWRT)
 C
