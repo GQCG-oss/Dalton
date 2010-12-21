@@ -312,126 +312,134 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER('DALTON - An electronic structure program',
-     &               '*',111)
-C
-         WRITE (LUPRI,'(T5,A//,(T5,A))')
-     *  'This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)',
-     *  'Celestino Angeli,         University of Ferrara,'
-     &                      //'        Italy      ',
-     *  'Keld L. Bak,              UNI-C,                        '
-     &                      //'Denmark    ',
-     *  'Vebjoern Bakken,          University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Ove Christiansen,         Aarhus University,            '
-     &                      //'Denmark    ',
-     *  'Renzo Cimiraglia,         University of Ferrara,        '
-     &                      //'Italy      ',
-     *  'Sonia Coriani,            University of Trieste,        '
-     &                      //'Italy      ',
-     *  'Paal Dahle,               University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Erik K. Dalskov,          UNI-C,                        '
-     &                      //'Denmark    ',
-     *  'Thomas Enevoldsen,        SDU - Odense University,      '
-     &                      //'Denmark    ',
-     *  'Berta Fernandez,          U. of Santiago de Compostela, '
-     &                      //'Spain      ',
-     *  'Christof Haettig,         Forschungszentrum Karlsruhe,  '
-     &                      //'Germany    ',
-     *  'Kasper Hald,              Aarhus University,            '
-     &                      //'Denmark    ',
-     *  'Asger Halkier,            Aarhus University,            '
-     &                      //'Denmark    ',
-     *  'Hanne Heiberg,            University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Trygve Helgaker,          University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Hinne Hettema,            University of Auckland,       '
-     &                      //'New Zealand',
-     *  'Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    '
-     &                      //'Denmark    ',
-     *  'Dan Jonsson,              KTH Stockholm,                '
-     &                      //'Sweden     ',
-     *  'Poul Joergensen,          Aarhus University,            '
-     &                      //'Denmark    ',
-     *  'Sheela Kirpekar,          SDU - Odense University,      '
-     &                      //'Denmark    ',
-     *  'Wim Klopper,              University of Karlsruhe,      '
-     &                      //'Germany    ',
-     *  'Rika Kobayashi,           ANU Supercomputer Facility,   '
-     &                      //'Australia  ',
-     *  'Jacob Kongsted,           Univ. of Southern Denmark,    '
-     &                      //'Denmark    ',
-     *  'Henrik Koch,              University of Trondheim,      '
-     &                      //'Norway     ',
-     *  'Andrea Ligabue,           University of Modena,         '
-     &                      //'Italy      ',
-     *  'Ola B. Lutnaes,           University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Kurt V. Mikkelsen,        University of Copenhagen,     '
-     &                      //'Denmark    ',
-     *  'Patrick Norman,           University of Linkoeping,     '
-     &                      //'Sweden     ',
-     *  'Jeppe Olsen,              Aarhus University,            '
-     &                      //'Denmark    ',
-     *  'Anders Osted,             Copenhagen University,        '
-     &                      //'Denmark    ',
-     *  'Martin J. Packer,         University of Sheffield,      '
-     &                      //'UK         ',
-     *  'Thomas B. Pedersen,       University of Lund,           '
-     &                      //'Sweden     ',
-     *  'Zilvinas Rinkevicius,     KTH Stockholm,                '
-     &                      //'Sweden     ',
-     *  'Elias Rudberg,            KTH Stockholm,                '
-     &                      //'Sweden     ',
-     *  'Torgeir A. Ruden,         University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Kenneth Ruud,             University of Tromsoe,        '
-     &                      //'Norway     ',
-     *  'Pawel Salek,              KTH Stockholm,                '
-     &                      //'Sweden     ',
-     *  'Alfredo Sanchez de Meras, University of Valencia,       '
-     &                      //'Spain      ',
-     *  'Trond Saue,               University of Strasbourg,     '
-     &                      //'France     ',
-     *  'Stephan P. A. Sauer,      University of Copenhagen,     '
-     &                      //'Denmark    ',
-     *  'Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  '
-     &                      //'Germany     ',
-     *  'K. O. Sylvester-Hvid,     University of Copenhagen,     '
-     &                      //'Denmark    ',
-     *  'Peter R. Taylor,          University of Warwick,        '
-     &                      //'UK         ',
-     *  'Olav Vahtras,             KTH Stockholm,                '
-     &                      //'Sweden     ',
-     *  'David J. Wilson,          University of Oslo,           '
-     &                      //'Norway     ',
-     *  'Hans Agren,               KTH Stockholm,                '
-     &                      //'Sweden     '
-C
-C        Changed format (WK/UniKA/04-11-2002).
-         WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
-         WRITE (LUPRI,'(5X,A)')
+         CALL TITLER('DALTON2011 - An electronic structure program',
+     &               '*',120)
+
+         WRITE (LUPRI,'(T5,A)')
+     &'This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)'
+
+         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
      &'This is an experimental code for the evaluation of molecular',
-     &'properties using (MC)SCF and CC wave functions. The authors',
-     &'accept no responsibility for the performance of the code or',
-     &'for the correctness of the results.',
+     &'properties using (MC)SCF, DFT, CI, and CC wave functions.',
+     &'The authors accept no responsibility for the performance of',
+     &'the code or for the correctness of the results.',
      &' ',
      &'The code (in whole or part) is provided under a licence and',
      &'is not to be reproduced for further distribution without',
      &'the written permission of the authors or their representatives.',
      &' ',
-     &'See the home page "http://www.kjemi.uio.no/software/dalton"',
-     &'for further information.',
+     &'See the home page "http://daltonprogram.org"'
+     &//' for further information.',
      &' ',
      &'If results obtained with this code are published,',
      &'an appropriate citation would be:',
      &' ',
-     &'"Dalton, a molecular electronic structure program, Release 2.0',
-     &'(2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"'
+     &'"Dalton, a molecular electronic structure program,',
+     &'Release DALTON2011 (2010), see http://daltonprogram.org"'
+C
+         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(T5,A//,(T3,A,T29,A,T59,A,T71,A))')
+     *'Authors in alphabetical order '//
+     &  '(major contribution(s) in parenthesis):',
+     *'Celestino Angeli,','University of Ferrara,','Italy',
+     &  '(NEVPT2)',
+     *'Keld L. Bak,','UNI-C,','Denmark',
+     &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
+     *'Vebjoern Bakken,','University of Oslo,','Norway',
+     &  '(DALTON; geometry optimizer, symmetry detection)',
+     *'Ove Christiansen,','Aarhus University,','Denmark',
+     &  '(CC module)',
+     *'Renzo Cimiraglia,','University of Ferrara,','Italy','(NEVPT2)',
+     *'Sonia Coriani,','University of Trieste,','Italy',
+     &  '(CC module, MCD in RESPONS)',
+     *'Paal Dahle,','University of Oslo,','Norway','(Parallelization)',
+     *'Erik K. Dalskov,','UNI-C,','Denmark','(SOPPA)',
+     *'Thomas Enevoldsen,','SDU - Odense University,','Denmark',
+     &  '(SOPPA)',
+     *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
+     &  '(doublet spin, ESR in RESPONS)',
+     *'Lara Ferrighi,','Aarhus University,','Denmark',
+     &  '(PCM Cubic response)',
+     *'Luca Frediani,','University of Tromsoe,','Norway','(PCM)',
+     *'Christof Haettig,','Ruhr University Bochum,','Germany',
+     &  '(CC module)',
+     *'Kasper Hald,', 'Aarhus University,','Denmark','(CC module)',
+     *'Asger Halkier,','Aarhus University,','Denmark','(CC module)',
+     *'Hanne Heiberg,','University of Oslo,','Norway',
+     &  '(geometry analysis, selected one-electron integrals)',
+     *'Trygve Helgaker,','University of Oslo,','Norway',
+     &  '(DALTON; ABACUS, ERI, DFT modules and much more)',
+     *'Hinne Hettema,','University of Auckland,','New Zealand',
+     &  '(quadratic response in RESPONS; SIRIUS supersymmetry)',
+     *'Brano Jansik','University of Aarhus','Denmark',
+     &  '(DFT cubic response)',
+     *'Hans Joergen Aa. Jensen,','Univ. of Southern Denmark,','Denmark',
+     &'(DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)'
+     *,'Dan Jonsson,','University of Tromsoe,','Norway',
+     &  '(cubic response in RESPONS module)',
+     *'Poul Joergensen,','Aarhus University,','Denmark',
+     &  '(RESPONS, ABACUS, and CC modules)',
+     *'Sheela Kirpekar,','SDU - Odense University,','Denmark',
+     &  '(Mass-velocity & Darwin integrals)',
+     *'Wim Klopper,','University of Karlsruhe,','Germany',
+     &  '(R12 code in CC, SIRIUS, and ABACUS modules)',
+     *'Stefan Knecht,','Univ. of Southern Denmark,','Denmark',
+     &  '(Parallel CI)',
+     *'Rika Kobayashi,','ANU Supercomputer Facility,','Australia',
+     &  '(DIIS in CC, London in MCSCF)',
+     *'Jacob Kongsted,','Univ. of Southern Denmark,','Denmark',
+     &  '(QM/MM code)',
+     *'Henrik Koch,','University of Trondheim,','Norway',
+     &  '(CC module, Cholesky decomposition)',
+     *'Andrea Ligabue,','University of Modena,','Italy',
+     &  '(CTOCD, AOSOPPA)',
+     *'Ola B. Lutnaes,','University of Oslo,','Norway','(DFT Hessian)',
+     *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
+     &  '(MC-SCRF and QM/MM code)',
+     *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
+     &  '(QM/MM code)',
+     *'Patrick Norman,','University of Linkoeping,','Sweden',
+     &  '(cubic response and complex response in RESPONS)',
+     *'Jeppe Olsen,','Aarhus University,','Denmark',
+     &  '(SIRIUS CI/density modules)',
+     *'Anders Osted,','Copenhagen University,','Denmark','(QM/MM code)',
+     *'Martin J. Packer,','University of Sheffield,','UK',
+     &  '(SOPPA)',
+     *'Thomas B. Pedersen,','University of Oslo,','Norway',
+     &  '(Cholesky decomposition)',
+     *'Zilvinas Rinkevicius,','KTH Stockholm,','Sweden',
+     &  '(open-shell DFT, ESR)',
+     *'Elias Rudberg,','KTH Stockholm,','Sweden','(???)',
+     *'Torgeir A. Ruden,','University of Oslo,','Norway',
+     &  '(Numerical derivatives in ABACUS)',
+     *'Kenneth Ruud,','University of Tromsoe,','Norway',
+     &  '(DALTON; ABACUS magnetic properties and  much more)',
+     *'Pawel Salek,','KTH Stockholm,','Sweden','(DALTON; DFT code)',
+     *'Alfredo Sanchez de Meras,','University of Valencia,','Spain',
+     &  '(Cholesky decomposition)',
+     *'Trond Saue,','CNRS/ULP Toulouse,','France',
+     &  '(direct Fock matrix construction)',
+     *'Stephan P. A. Sauer,','University of Copenhagen,','Denmark',
+     &  '(SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)',
+     *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
+     &  'Germany','(AMFI module)',
+     *'Arnfinn H. Steindal,','University of Tromsoe,','Norway',
+     &  '(parallel QM/MM)',
+     *'K. O. Sylvester-Hvid,','University of Copenhagen,','Denmark',
+     &  '(MC-SCRF)',
+     *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',
+     &  '(Symmetry handling ABACUS, integral transformation)',
+     *'Olav Vahtras,','KTH Stockholm,','Sweden',
+     &  '(triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)',
+     *'David J. Wilson,','University of Oslo,','Norway',
+     &  '(DFT Hessian)',
+     *'Hans Agren,','KTH Stockholm,','Sweden',
+     &  '(SIRIUS module, MC-SCRF solvation model)'
+C
+         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
 C
 C     Stamp date and time and hostname to output
 C

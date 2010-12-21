@@ -300,7 +300,7 @@ C     ------
 C     Print.
 C     ------
 
-Casm  IF (IPRINT .GE. INFO) THEN
+      IF (IPRINT .GE. INFO) THEN
 
          CALL AROUND('Output from '//SECNAM)
 
@@ -321,7 +321,7 @@ Casm  IF (IPRINT .GE. INFO) THEN
 
          CALL FLSHFO(LUPRI)
 
-Casm  ENDIF
+      ENDIF
 
 C     Start batch loop over b.
 C     ------------------------
@@ -407,7 +407,7 @@ C        --------------------
 C        Print.
 C        ------
 
-Casm     IF (IPRINT .GE. INFO) THEN
+         IF (IPRINT .GE. INFO) THEN
             WRITE(LUPRI,'(5X,A,I6,A,/,5X,A)')
      &      'b-batch number ',IBATB,':',
      &      '======================'
@@ -426,7 +426,7 @@ Casm     IF (IPRINT .GE. INFO) THEN
      &      '------------------------------------------------------',
      &      '---------------'
             CALL FLSHFO(LUPRI)
-Casm     ENDIF
+         ENDIF
 
 C        Start batch loop over a.
 C        ------------------------
@@ -711,7 +711,7 @@ C           --------------------------
 C           Print information from this a batch.
 C           ------------------------------------
 
-Casm        IF (IPRINT .GE. INFO) THEN
+            IF (IPRINT .GE. INFO) THEN
                TABAT = SECOND() - TABAT
                XMUSE = (D100*MXMEML)/XLWORK
                LAFST = IOFA1(ISABEG)
@@ -721,7 +721,7 @@ Casm        IF (IPRINT .GE. INFO) THEN
     1          FORMAT(5X,I6,1X,I6,1X,I1,2X,I6,1X,I1,2X,F7.2,3X,F10.2,1X,
      &                F10.2,1X,F10.2)
                CALL FLSHFO(LUPRI)
-Casm        ENDIF
+            ENDIF
 
 C           Update memory info.
 C           -------------------
@@ -744,7 +744,7 @@ C        Print info for this b-batch and got to next.
 C        (Which will exit immediately if no more b's.)
 C        ---------------------------------------------
 
-Casm     IF (IPRINT .GE. INFO) THEN
+         IF (IPRINT .GE. INFO) THEN
             WRITE(LUPRI,'(5X,A,A,/)')
      &      '------------------------------------------------------',
      &      '---------------'
@@ -758,7 +758,7 @@ Casm     IF (IPRINT .GE. INFO) THEN
      &      'Minimum number of Cholesky batches: ',MNCHBT,
      &      'Maximum number of Cholesky batches: ',MXCHBT
             CALL FLSHFO(LUPRI)
-Casm     ENDIF
+         ENDIF
 
          GO TO 100
 

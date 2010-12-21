@@ -64,7 +64,10 @@ cc_rsp_twophot cc_rsp_twophot2 cc_rsp_gamma3 \
 cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
 cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file"
 #
-SHORT="$SHORTNOCC $SHORTCC $SHORTQM3"
+SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
+choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
+#
+SHORT="$SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -76,17 +79,21 @@ cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \
 cc_rsp_solv cc_energy_triplet3 cc2dc_energy cc2dc_resp cc2dc_exci cc2dc_resp_newlr \
 cc_beta_solv" 
 #
+MEDIUM_CHOLESKY="choles_cc2_polar"
+#
 MEDIUMQM3="ccsdmm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
 ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
 cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta"
 #
-MEDIUM="$MEDIUM $MEDIUMCC $MEDIUMQM3"
+MEDIUM="$MEDIUM $MEDIUMCC $MEDIUM_CHOLESKY $MEDIUMQM3"
 #
 LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
 #
 LONGCC="cc_geoopt2"
 #
-LONG="$LONG $LONGCC"
+LONG_CHOLESKY="choles_ccsdpt_energy"
+#
+LONG="$LONG $LONGCC $LONG_CHOLESKY"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
 dft_parallell_properties"
@@ -140,6 +147,7 @@ LONGCCR12="cc2_r12_aux_ch4_a2 cc2_r12_aux_ch4_sym_a2 \
 cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop cc3r12_n2_sym_exc \
 cc3r12_n2_sym_exc_lhtr cc2_r12_aux_ch4_cbs2a"
 #
+CHOLESKY="$SHORT_CHOLESKY $MEDIUM_CHOLESKY $LONG_CHOLESKY"
 #
 CCR12="$SHORTCCR12 $LONGCCR12"
 #
@@ -167,45 +175,44 @@ run_new=0;
 # function usage(): print usage information 
 #########################################################################
 usage() {
+# hjaaj: removed essential from usage because essential p.t. is empty
+#         essential            -- run a minimal set of essential testcases
  cat <<'%EOF%'
 usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
 
        -h | -help | --help  : show this help description
        -keep                : keep *.mol, *.dal, *.check and *.log files
-       -reftest             : test reference file(s); do not run any
-                              calculations
+       -reftest             : test reference file(s); do not run any calculations
        -bell                : sound bell each time a test fails
-       -benchmark           : print CPU time for each testcase as part of
-                              the summary
+       -benchmark           : print CPU time for each testcase as part of the summary
        -param "option list" : pass "option list" to dalton-script
        -dalton script       : use script instead of the default
                               dalton-script "`pwd`/../dalton" (absolute path) 
-       -log logfile         : write output into logfile instead of the
-                              default "TESTLOG"
+       -log logfile         : write output into logfile instead of the "TESTLOG"
 
        and where testcase might be one of the following:
-          essential            -- run a minimal set of essential testcases
-          parallel             -- run all parallel testcases
-          allcc                -- run all coupled-cluster testcases
           short                -- run all short testcases
           medium               -- run all medium length testcases
           long                 -- run all long testcases
+          all                  -- run all non-parallel testcases
+                                  (= short + medium + long)
+          parallel             -- run all parallel testcases
+          benchmark            -- run all BENCHMARK testcases
+          perl                 -- run all perl-style testcases 
           dft                  -- run all DFT testcases
+          allcc                -- run all coupled-cluster testcases
           r12                  -- run all R12 testcases
           ccr12                -- run all CC-R12 testcases
           mp2r12               -- run all MP2-R12 testcases
           shortccr12           -- run all short CC-R12 testcases
           longccr12            -- run all long CC-R12 testcases
-          benchmark            -- run all BENCHMARK testcases
+          aosoppa              -- run all AOSOPPA testcases
+          cholesky             -- run all Cholesky testcases
           dpt                  -- run all DPT testcases
-          numder               -- run all numerical derivatives testcases
           geoopt               -- run all OPTIMIZE testcases
-	  aosoppa              -- run all AOSOPPA testcases
+          numder               -- run all numerical derivatives testcases
           pcm                  -- run all pcm testcases
-          perl                 -- run all perl-style testcases 
-          all                  -- run all non-parallel testcases
-                                  (= short + medium + long)
           <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
@@ -298,6 +305,7 @@ if   [ "$testcase" = "" ]; then
 fi
 testcase=""
 perl_style_kwd=""
+perl_style_list=""
 perl_style=0
 all_perl_style=0
 while [ -n "$1" ]; do
@@ -409,6 +417,9 @@ while [ -n "$1" ]; do
    "aosoppa" )
    testcase="$testcase $AOSOPPA"; 
    shift ;;
+   "cholesky" )
+   testcase="$testcase $CHOLESKY"; 
+   shift ;;
    "qm3" )
    testcase="$testcase $QM3"; 
    shift ;;
@@ -418,13 +429,16 @@ while [ -n "$1" ]; do
    fi
    testcase="$testcase $1"; 
    shift ;;
+   *.tst )
+   perl_style_list="$perl_style_list ${1/.tst/}";
+   shift ;;
    * )
    testcase="$testcase $1"; 
    shift ;;
    esac
 done
 
-if [ -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
+if [ -n "$perl_style_list" -o -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
     perl_style=1
 fi
 
@@ -523,7 +537,7 @@ do
           myprint "-----------------------------------------------------------"
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
-	  cp $item'__'$step'.dal' $item'.dal'
+          cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
@@ -544,7 +558,7 @@ do
           myprint "evaluate reference output file $reffile:"
           myprint "-----------------------------------------------------------"
           if [ ! -r $reffile ]; then
-	      cp ../trueresult/$reffile .
+             cp ../trueresult/$reffile .
           fi
           checkout=`$checkfile $reffile | tee -a $listing`
           if [ "$benchmark" = "true" ]; then
@@ -573,7 +587,7 @@ do
           grep -v '^$' | tee -a $listing
 
           if [ "$multi" -eq 1 ]; then
-	      cp $molfile'.log' $logfile
+             cp $molfile'.log' $logfile
           fi
           myprint ""
           myprint "evaluate output file $logfile:"
@@ -656,21 +670,24 @@ if [ "$perl_style" -gt 0 ]; then
     cp ../test.pl .    
     cp ../*.tst .
     cp ../checklist .
-    options=""
     parameters="--dalton=$DALTON --log=$perl_log --err=$perl_err"
     if [ "$keep" = "true" ]; then
-	parameters="$parameters --keep"
+       parameters="$parameters --keep"
     fi
     if [ "$reftest" = "true" ]; then
-	parameters="$parameters --checkref"
+       parameters="$parameters --checkref"
     fi
-    if [ -n "$perl_style_kwd" ]; then
-	parameters="$parameters --keyword $perl_style_kwd"
-    else
-	parameters="$parameters --all"
+    if [ "$all_perl_style" -eq 1 ]; then
+       parameters="$parameters --all"
+    elif [ -n "$perl_style_kwd" ]; then
+       parameters="$parameters --keyword $perl_style_kwd"
     fi
+    if [ -n "$perl_style_list" ]; then
+       parameters="$parameters --list $perl_style_list "
+    fi
+    options=""
     if [ "$paramlist" != "" ]; then
-	options="--options=$paramlist"
+       options="--options=$paramlist"
     fi
     perl_fail=""
     myprint "Perl-style testsuite invoked with the following parameters"
@@ -678,16 +695,16 @@ if [ "$perl_style" -gt 0 ]; then
     ./test.pl $parameters "$options"
     perl_exit=$?
     if [ $perl_exit -eq 0 ]; then
-	myprint "Perl-style tests computed successfully"
+       myprint "Perl-style tests computed successfully"
     elif [ $perl_exit -eq 1 ]; then
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
         perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
-	problems="$problems $perl_fail"
+        problems="$problems $perl_fail"
         myprint "THERE IS A PROBLEM in perl-style tests"
     else
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
-	myprint ""
-	myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+       myprint ""
+       myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
     fi
     myprint ""
     myprint "Perl-style tests finished!"
