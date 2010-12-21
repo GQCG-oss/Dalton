@@ -47,9 +47,9 @@ libsirius.a : $(F_OBJS)
 #   always with SAFEFFLAGS, detfi and dets0 are anyway mostly integer arithmetic /hjaaj Sep07
 #
 detfi.o: detfi.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
 dets0.o: dets0.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
 
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
