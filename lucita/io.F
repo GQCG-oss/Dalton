@@ -170,7 +170,7 @@ C
         if(irefsm .le. 8)then
 !         on common block in parluci.h
           symflabel = symflab_data(irefsm)
-          write(lupri,*) ' symflabel is: ',symflabel
+!         write(lupri,*) ' symflabel is: ',symflabel
         else
           write(luwrt,*) '  *** error in set_file_handles: assignment'//
      &                   ' of a symmetry label to the LUCITA_CVECS'//

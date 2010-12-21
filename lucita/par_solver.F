@@ -48,7 +48,7 @@ C
 * written by S. Knecht  - Feb. 2007
 *
 #include "implicit.h"
-      INTEGER*8 KSIOIO, KSBLTP, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT
+      INTEGER*8 KSIOIO, KSBLTP, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT,
      &          KCONSPA, KCONSPB, KCBLTP, KCIOIO, KLLBT, KLLEBT, KLI1BT,
      &          KLIBT
 !               for addressing of WORK
