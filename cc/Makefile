@@ -76,9 +76,9 @@ ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > cc.ftnchek
 
 cc_ftstnew.o: cc_ftstnew.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_ftstnew.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_ftstnew.F 
 cc_r12ccsd.o: cc_r12ccsd.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_r12ccsd.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_r12ccsd.F 
 
 io : crayio.o
 

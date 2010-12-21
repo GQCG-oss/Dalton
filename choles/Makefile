@@ -18,7 +18,7 @@ ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > choles.ftnchek
 
 cc_chopt.o: cc_chopt.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_chopt.F
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_chopt.F
 
 libcholes.a : $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?

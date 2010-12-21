@@ -31,4 +31,4 @@ Makefile.depend depend: ../include/*.h
 
 include Makefile.depend
 eri2cft.o: eri2cft.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 

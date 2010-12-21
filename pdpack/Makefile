@@ -16,10 +16,10 @@ ftnchek: pre
 libpdpack.a: $(F_OBJS) $(C_OBJS) $(PDPACK_EXTRAS)
 	 $(AR) $(ARFLAGS) $@ $?
 
-# eispack.o has to be compiled without optimization under Linux/pgf77
+# eispack.o has to be compiled without optimization under Linux/pgf90
 
 eispack.o: eispack.F
-	$(F77) $(SAFEFFLAGS) -c $*.F
+	$(F90) $(SAFEFFLAGS) -c $*.F
 
 clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
