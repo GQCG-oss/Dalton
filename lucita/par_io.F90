@@ -55,7 +55,8 @@ contains
 !******************************************************************************
      real(8), intent(inout) :: xmat(*)
      integer, intent(in)    :: luin
-     integer, intent(in)    :: luout
+!    integer, intent(in)    :: luout ! stefan: open mpi 1.5 with f90-bindings complains here
+     integer                :: luout
      integer, intent(in)    :: nbatch
      integer, intent(in)    :: lbatch(*)
      integer, intent(in)    :: lebatch(*)
@@ -240,7 +241,8 @@ contains
 !
 !******************************************************************************
      real(8), intent(in)    :: xmat(*)
-     integer, intent(in)    :: luout
+!    integer, intent(in)    :: luout ! stefan: open mpi 1.5 with f90-bindings complains here
+     integer                :: luout
      integer, intent(in)    :: luoutlist(*)
      integer, intent(in)    :: num_blocks_in_batch
      integer, intent(in)    :: batch_info(8,*)
