@@ -49,6 +49,7 @@ C Used from common blocks:
 C   INFINP: ICI0,NROOCI,MXCIMA,THRCI,LSYM
 C   INFORB: NCMOT,NASHT
 C   INFDIM: LCINDX
+C   dftcom: DFTADD
 C
 #include <maxorb.h>
 #include <gnrinf.h>
@@ -355,11 +356,17 @@ C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
       END IF
       TIMITR = SECOND() - TIMITR
 C
-C     construct diagonal of CI matrix
+C     *** Obtain FCAC and H2AC integral matrices
 C
-      CALL CIINTS(DISKH2,CMO,INDXCI,WRK(KCDIAG),
+      CALL CIINTS(DISKH2,CMO,
      *            EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
-C     CALL CIINTS(DISKH2,CMO,INDXCI,DIAG,EMY,FCAC,H2AC,WRK,LFREE)
+C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
+C
+C     *** Calculate the diagonal of the CI matrix.
+C
+      CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
+     &            WRK(KCDIAG),WRK(KW1),LW1)
+C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C
       EMY = EMY + POTNUC
       DO 50 I = 0,NCONF-1
@@ -760,8 +767,19 @@ C                  transformation in CISAVE
                CALL TRACTL(0,CMO,WRK,LWRK)
 C              CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
                FLAG(14) = .TRUE.
-               CALL CIINTS(DISKH2,CMO,INDXCI,
-     *            WRK(KCDIAG),EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
+C
+C              *** Obtain FCAC and H2AC integral matrices
+C
+               CALL CIINTS(DISKH2,CMO,
+     *                     EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
+C              CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
+C
+C              *** Calculate the diagonal of the CI matrix.
+C
+               CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
+     &                     WRK(KCDIAG),WRK(KW1),LW1)
+C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
+C
                EMY = EMY + POTNUC
             ELSE
 C              subtract EMY from diagonal again, as expected in CIRSPS
@@ -819,29 +837,32 @@ C     *****************************************************************
 C
       END
 C  /* Deck ciints */
-      SUBROUTINE CIINTS(DISKH2,CMO,INDXCI,DIAG,EMY,FCAC,H2AC,WRK,LFREE)
+      SUBROUTINE CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 C Written by Hans Joergen Jensen 13-Dec-1984
-C No revisions.
+C Revision for LUCITA Dec 2010 /HJAaJ (moved CALL CIDIAG outside)
 C
 C Purpose:
 C  CIIN*: Calculate integrals needed for CI. EMY, FCAC and H2AC
 C         are needed by calling program.
 C
 #include <implicit.h>
-      DIMENSION INDXCI(*), CMO(*),DIAG(*),FCAC(*),H2AC(*),WRK(*)
+
+      DIMENSION CMO(*), FCAC(*),H2AC(*),WRK(*)
       LOGICAL   DISKH2
-#include <iratdef.h>
+
+#include <priunit.h>
 #include <dummy.h>
 C
 C Used from common blocks:
-C   INFINP : LSYM
 C   INFORB : NNASHX,NNBAST,NNORBT
+C   INFINP : SRHYBR
 C
 #include <maxorb.h>
-#include <infinp.h>
 #include <inforb.h>
-#include <dftcom.h>
+#include <infinp.h>
+
+      LOGICAL SRHYBR_SAVE
 C
       CALL QENTER('CIINTS')
 C
@@ -849,10 +870,12 @@ C *** Section 0 ***
 C
 C work space allocation:
 C
+      NF = 1
+      SRHYBR_SAVE = SRHYBR
       IF (SRHYBR) THEN
-         NF = 3
-      ELSE
-         NF = 1
+         SRHYBR = .FALSE.
+         WRITE(LUPRI,'(//A)') ' INFO: .SRHYBR ignored in CIINTS'
+!        NF = 3
       END IF
       KFC   = 1
       KW0   = KFC   + NF*NNORBT
@@ -879,22 +902,9 @@ C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
          CALL CIIN2A(H2AC,WRK(KW1),LW1)
       END IF
 C
-C     *** Make integral matrices as required by CI routines
-C
-      CALL GETFCI(FCAC,H2AC,WRK(KW1),LW1)
-C     CALL GETFCI(FCAC,H2AC,WRK,LFREE)
-C
-C
-C *** Section 2 ***
-C
-C  Calculate the diagonal of the CI matrix.
-C
-      CALL CIDIAG(LSYM,.FALSE.,FCAC,H2AC,INDXCI,DIAG,WRK(KW1),LW1)
-C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
-C
 C *** End of subroutine CIINTS
 C
-C
+      SRHYBR = SRHYBR_SAVE
       CALL QEXIT('CIINTS')
       RETURN
       END
@@ -925,11 +935,9 @@ C
 #include <infpri.h>
 #include <cbgetdis.h>
 C
-#include <line.h>
       DIMENSION NEEDMU(6)
       DATA NEEDMU /0,0,1,0,0,0/
 C     ... only active-active distributions needed (type 3)
-#include <line.h>
       CALL QENTER('CIIN2A')
 C
 C    get array of 2-electron integrals with active indices

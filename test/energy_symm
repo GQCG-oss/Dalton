@@ -31,14 +31,14 @@ cat > energy_symm.info <<'%EOF%'
 cat > energy_symm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
-Energy calculation with symmetry
-
-    2
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
+   Test Purpose:     Check energy calculation with symmetry
+    2                                                                            TEXT TO TEST FOR WARNING FOR LONG LINE
         8.    1
 O     0.0 -0.2249058930 0.0
         1.    2
-H     1.45235 0.899623 0.0
-H    -1.45235 0.899623 0.0
+H_a   1.45235 0.899623 0.0
+H_b  -1.45235 0.899623 0.0
 %EOF%
 
 #######################################################################
@@ -174,8 +174,15 @@ TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[9]=6  # 1 + 2 + 2 + 1
 ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
 
+# Check for WARNING for .mol line longer than 80 char
+#  WARNING -- line in ".mol" file truncated, line     5
+CRIT1=`$GREP "WARNING .* file truncated, line * 5" $log | wc -l`
+TEST[10]=`expr $CRIT1`
+CTRL[10]=1
+ERROR[10]="WARNING FOR LONG .MOL LINE NOT CORRECT"
+
 PASSED=1
-for i in 1 2 3 4 5 6 7 8 9
+for i in 1 2 3 4 5 6 7 8 9 10
 do
    if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "

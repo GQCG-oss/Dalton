@@ -1321,16 +1321,23 @@ C
          RHFWOP = .TRUE.
       END IF
 C
-      IPRENR = 0
       IF (ICONV .NE. 0. .AND. (IPRDIS .GT. 0 .OR.
-     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC)) ) IPRENR = 1
-      IWRIFC = 0
-Chj aug99:
-      IF ( ( FLAG(25) .OR. INERSI ) .AND.
-     &     (ICONV .NE. 0. .AND. .NOT. DOMC) ) THEN
+     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC)) ) THEN
+         IPRENR = 1
+      ELSE
+         IPRENR = 0
+      END IF
+
+!     IF ( ( FLAG(25) .OR. INERSI ) .AND.
+!    &     (ICONV .NE. 0. .AND. .NOT. DOMC) ) THEN
+      IF (ICONV .NE. 0) THEN
+      ! hjaaj nov 2010: now always write SIRIFC if converged - so we
+      ! have it available afterwards for post-SCF programs. This is more
+      ! modular than making dependent on explicit checking for a
+      ! post-SCF program, and we can use it in a restart of Dalton.
          IWRIFC = 1
-Chj   solvnt (flag(16)) not implemented for flag(25) here yet !!! aug 99
-Chj MAERKE
+      ELSE
+         IWRIFC = 0
       END IF
 C
       IF (IPRENR .GT. 0 .OR. IWRIFC .GT. 0) THEN
@@ -1342,7 +1349,6 @@ C
          CALL DAXPY(NNBAST,D1,H1AO,1,DCAO,1)
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
-Chj from siropt.F, should be modified
        END IF
 C
        IF (IPRENR .GT. 0) THEN

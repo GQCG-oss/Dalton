@@ -1120,6 +1120,7 @@ C   The [alpha^(-1)-T] matrix is symmetric therefore the general
 C   inversion routine was replaced with a more efficient routine
 C   designed for symmetric matrices.
 C
+
         IF (IPRINT.GT.1) CALL TIMER('START ',TIMSTR,TIMEND)
 
 C       Factorization of the symmetric [alpha^(-1)-T] matrix
@@ -5039,7 +5040,8 @@ C      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
 C     Start parallelized loop
       LRI = 1
@@ -5171,7 +5173,8 @@ C     Damping
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -5289,7 +5292,8 @@ C     <-
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
       LRI = 1   ! important should be zero due to the indexing used !
 
@@ -5400,7 +5404,8 @@ C     <-
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -5519,7 +5524,8 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
       IINIM = 0   ! important should be zero due to the indexing used !
 
@@ -5658,9 +5664,11 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
+      ! numbes are not relevant to transfer as they are local TODO
 
-C     Do the work
+C     Compute polarization contributions to the Fock/KS matrix and
+C     total solvation energy
 
       CALL DZERO(WRK(KTAO),NNBASX)
 

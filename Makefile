@@ -1,6 +1,7 @@
 include ./Makefile.config
 
-# DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
+# OBS! DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
+#
 DALTON_LIBS = \
 -Labacus -labacus	\
 -Lrsp -lrsp 		\
@@ -10,15 +11,16 @@ DALTON_LIBS = \
 -Ldensfit -ldensfit	\
 -Lcc  -lcc		\
 -Ldft -ldft		\
--Lsoppa -lsoppa		\
+-Lsoppa -lsoppa	\
+-Llucita -llucita	\
 -Lcholes -lcholes \
 -Lgp -lgp		\
 -Lpdpack -lpdpack
 
-MODULES = MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+MODULES = MAIN_OBJ ABA_OBJ LUCITA_OBJ GP_OBJ SIR_OBJ RSP_OBJ SLAVE_OBJ ERI_OBJ \
 	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ
 
-SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles
+SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles lucita
 
 OBJSLAVE = abacus/herpar.o eri/eri2par.o
 
@@ -27,6 +29,14 @@ OBJNODE = eri/eriprg.o
 OBJSAMFI = amfi/amfi.o amfi/symtra.o
 
 OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
+#
+#     Dalton script
+#
+dalton: $(INSTALLDIR)/dalton
+
+$(INSTALLDIR)/dalton: ./dalton.gnr $(INSTALLDIR)/dalton.setup
+	cat $(INSTALLDIR)/dalton.setup ./dalton.gnr > $(INSTALLDIR)/dalton
+	chmod 755 $(INSTALLDIR)/dalton
 #
 #     Most common build of Dalton
 #
@@ -108,6 +118,7 @@ depend :
 clean :
 	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done
 	$(RM) -f *~
+	$(RM) -f modules/*.mod
 #
 #	We remove the entire source code as well if we do not plan to debug
 #
@@ -119,6 +130,9 @@ MAIN_OBJ :
 
 ABA_OBJ :
 	cd abacus && $(MAKE) all
+
+LUCITA_OBJ :
+	cd lucita && $(MAKE) all
 
 SIR_OBJ :
 	cd sirius && $(MAKE) all
@@ -168,5 +182,6 @@ ftnchek: pre
 
 pre :
 	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done
+
 check:
 	cd test && ./TEST -y -q short

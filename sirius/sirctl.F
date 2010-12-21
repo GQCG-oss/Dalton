@@ -61,6 +61,9 @@ C   Box 518, S-75120 Uppsala
 C   Sweden
 C
 C
+
+      use lucita_orbital_spaces
+
 #include <implicit.h>
 C
       DIMENSION WORK(LWORK)
@@ -97,7 +100,8 @@ C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
-C
+      real(8), allocatable :: tmp_space(:)
+ 
 #include <sirbkd.h>
 C
 C *** Call setup to define limits and I/O units
@@ -355,7 +359,7 @@ C
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit' 
+     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
      *        ,' SCF convergence threshold:',THRGRD
      *        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
@@ -693,6 +697,40 @@ C            transformation  /hjaaj June 09
             CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
          END IF
          CALL KOOPRO4(WORK,LWORK)
+       END IF
+      END IF
+C
+C ***************************************************
+C     *** LUCITA ***
+C
+      IF (DOLUCITA) THEN
+       IF (ICONV .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' WARNING: LUCITA skipped because HF/MCSCF not converged.'
+       ELSE
+         kfirst_lucita = 1
+         JRDMO  = 9
+!        test - stefan - dec 2010
+         KFRSAV = 1
+         KFREE  = KFRSAV
+         LFREE  = LWORK
+         CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+
+         CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
+           ! orbital occupations for TRACTL
+         JTRALVL = 0 ! all active orbitals for all four indices
+         USEDRC = .FALSE.
+
+         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
+
+         CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+
+         CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
+
+         CALL LUCITA(WORK,LFREE)
+
+         CALL SET_INFORB_LUCITA('RESET ')
        END IF
       END IF
 C

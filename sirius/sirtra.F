@@ -1652,6 +1652,7 @@ CHJ-E-841125
 C        ***** LOOP OVER ORBITALS B AND ADD CONTRIBUTION *****
 C        ***** TO INTEGRALS (AB/CD)                      *****
          DO 135 NBR = NBRS,NBRE
+!           that could be done with daxpy, could not it?
             ABCD(JORBB+NBR,NA) = ABCD(JORBB+NBR,NA) + CMOP*PBCD(NBR)
   135    CONTINUE
   140 CONTINUE
@@ -1808,6 +1809,8 @@ C
          KFRSAV = 1
          KFREE  = 1
          LFREE  = KWORK
+!        problem here with lucita: nbast is 8 but down in TRAAB we
+!        access field #9...
          CALL MEMGET('INTE',KITSMO,NBAST,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KITSAO,NBAST,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KITSW ,NBAST,WORK,KFREE,LFREE)
@@ -1982,6 +1985,14 @@ C     Note: index on LUITM are wrong if MFRO(ISYM) .ne. 0 !!
          MSSH(ISYM) = NSSH(ISYM)
          MBAS(ISYM) = NBAS(ISYM)
     5 CONTINUE
+      IF (IPRTRA .GE. 5) THEN
+         WRITE(LUPRI,*) 'MSYM',MSYM
+         WRITE(LUPRI,*) 'MFRO',MFRO(1:8)
+         WRITE(LUPRI,*) 'MISH',MISH(1:8)
+         WRITE(LUPRI,*) 'MASH',MASH(1:8)
+         WRITE(LUPRI,*) 'MSSH',MSSH(1:8)
+         WRITE(LUPRI,*) 'MBAS',MBAS(1:8)
+      END IF
 C
 C     If first call of TRACTL_1 set up orbital information in /INTTRA/
 C        ... 890615 - hjaaj: in new combination runs
@@ -2008,6 +2019,7 @@ C     ***** SET UP ORBITAL DATA *****
    10    CONTINUE
 C
          MORBT=MOCCT+MSSHT
+         IF (MORBT .GT. MBAST) CALL QUIT('MORBT .gt. MBAST :(')
 CHJ-S-841208
          IF (MORBT.GT.255 .OR. MBAST.GT.255) THEN
             WRITE (LUPRI,*)
@@ -2326,7 +2338,8 @@ C        hjaaj 11-jan-2007: make sure AOTWOINT exists
          CALL MAKE_AOTWOINT(WORK,KWORK)
 
 C     HJ-840710 was: IF (JTER.EQ.1) THEN
-         CALL GPCLOSE(LUINTM,'DELETE')
+         CALL GPINQ(FNINTM,'EXIST',FEXIST)
+         if(FEXIST) CALL GPCLOSE(LUINTM,'DELETE')
          CALL GPOPEN(LUINTM,FNINTM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
 C        ... empty old mo integral file to save disk space during

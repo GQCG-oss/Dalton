@@ -1044,6 +1044,7 @@ C     added by Bin Gao, for effective core potentials, Dec. 6, 2010
 #include "aosotr.h"
 #include <ecpinf.h>
 #include "qm3.h"
+#include "infpar.h"
 C
 C     MBSIP = identifier for Previus basis-set identifier MBSI (WK/UniKA/04-11-2002).
       MBSIP     = 0
@@ -4244,8 +4245,6 @@ C            small molecules, otherwise just a lot of lines.
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
-      ICRY = 2
-      ICRZ = 3
       IPCMN= 0
       NATOMS = 0
       KMASS  = NCOOR + 1
@@ -4278,12 +4277,10 @@ C
             END IF
             WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
             NATOMS = NATOMS + 1
-            WORK(ICRX) = CORD(1,ICENT)
+            WORK(ICRX  ) = CORD(1,ICENT)
             WORK(ICRX+1) = CORD(2,ICENT)
             WORK(ICRX+2) = CORD(3,ICENT)
             ICRX = ICRX + 3
-            ICRY = ICRY + 3
-            ICRZ = ICRZ + 3
          ELSE
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
@@ -4299,15 +4296,12 @@ C
      *                        *CORD(2,ICENT)
                   WORK(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
-                  IF (IPREAD .GT. IPTEST) THEN
-                  WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
-     *                     NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
-     *                     ICRX+1,CHRXYZ(-2),WORK(ICRX+1),
-     *                     ICRX+2,CHRXYZ(-3),WORK(ICRX+2)
-                  END IF
+                  IF (IPREAD .GT. IPTEST)
+     &            WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
+     &               NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
+     &                        ICRX+1,CHRXYZ(-2),WORK(ICRX+1),
+     &                        ICRX+2,CHRXYZ(-3),WORK(ICRX+2)
                   ICRX = ICRX + 3
-                  ICRY = ICRY + 3
-                  ICRZ = ICRZ + 3
                END IF
   200       CONTINUE
          END IF
@@ -5128,14 +5122,8 @@ C  /* Deck rdcsp */
       END
 C  /* Deck rdline */
       SUBROUTINE RDLINE(LUINFO)
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "molinp.h"
-#include "infpar.h"
 C
-C     Reads a line from MOLECULE.INP
+C     Purpose: Read a line from MOLECULE.INP
 C
 C     We keep track of which line we've read last time (NMLN_LASTREAD).
 C     This allows some routines to read a line, check if it want to use
@@ -5144,13 +5132,25 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "molinp.h"
+#include "infpar.h"
+
+      CHARACTER*(120) NEXT_INPUT_LINE
+      INTEGER NMLN_LASTREAD
       DATA NMLN_LASTREAD /0/
       SAVE NMLN_LASTREAD
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
-      IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
+      IF ( NMLINE .EQ. 0) THEN
+         NMLN_LASTREAD = 0
+         LEN_MLINE = LEN( MLINE(1) )
+      END IF
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
@@ -5167,8 +5167,10 @@ C     Only the master in a parallel calc. reads the input file.
 C     The slaves get the input transferred from the master in
 C     the common block MOLINP. /hjaaj
 C
-      IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD)
-     &     READ (LUINFO,'(A)',END=12,ERR=11) MLINE(NMLINE)
+      IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD) THEN
+          READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
+          MLINE(NMLINE) = NEXT_INPUT_LINE
+      END IF
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
      &      ' READIN ERROR: Too many lines in input -,',
@@ -5178,18 +5180,27 @@ C
 
 #ifdef VAR_DEBUG
       write (lupri,*) 'debug output from RDLINE, nmline=',nmline
-      write (lupri,*) 'RDLINE>',MLINE(NMLINE)
+      write (lupri,*) 'on file>',NEXT_INPUT_LINE
+      write (lupri,*) 'RDLINE >',MLINE(NMLINE)
 #endif
 
       IF((MLINE(NMLINE)(1:1) .EQ. '#') .OR.
      &   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
      &   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
+
+      IF (LNBLNK(NEXT_INPUT_LINE) .GT. LEN_MLINE) THEN
+         WRITE(LUPRI,'(//A,I5/2A/2A)')
+     &   ' WARNING -- line in ".mol" file truncated, line',NMLINE,
+     &   ' Line from file: ',NEXT_INPUT_LINE,
+     &   ' Truncated line: ',MLINE(NMLINE)
+      END IF
+
       NMLN_LASTREAD = NMLINE
 
       RETURN
 
-   11 MLINE(NMLINE)='        '
-      WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL; '
+   11 MLINE(NMLINE)=' '
+      WRITE(LUPRI,*) 'ERROR: I/O error in reading of .mol file; '
      &     //'NODE=',MYNUM
       IF (NMLINE>1) THEN
         WRITE(LUPRI,*) 'Line=', NMLINE, 'Prev line:',
@@ -6288,7 +6299,7 @@ C     Number of different atom types
 C
 #ifdef VAR_DEBUG
 C     to test if .mol input transferred OK to slaves
-      write(0,'(I5,2A)') mynum,' LINE4: ',LINE
+      print *, mytid,' LINE4: ',LINE
 #endif
 
       IPOS = INDEX(LINE,'ATO')

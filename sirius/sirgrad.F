@@ -1629,11 +1629,6 @@ C        *** calculate active energy, before we (maybe) modify FCAC
 C
          EMCACT = ENRACT(DV,FCAC,FQ)
 C
-C        *** Modify integral matrices as expected by CI routines
-C
-         CALL GETFCI(FCAC,H2AC,WRK(KW3),LW3)
-C        CALL GETFCI(FCAC,H2AC,WRK,LFREE)
-C
       ELSE IF (HSROHF) THEN
          IF (ADDSRI) THEN
             call quit('Something needs to be done for srdft and hsrohf')
@@ -2734,11 +2729,6 @@ C
 C        *** calculate active energy, before we (maybe) modify FCAC
 C
          EMCACT = ENRACT(DV,WRK(KFCAC),FQ)
-C
-C        *** Modify integral matrices as expected by CI routines
-C
-         IF (DOCIGR) CALL GETFCI(WRK(KFCAC),WRK(KH2AC),WRK(KWRK3),LWRK3)
-C                    CALL GETFCI(FCAC,H2AC,WRK,LFREE)
       ELSE IF (NASHT .EQ. 1) THEN
          CALL DZERO(FQ,NORBT)
          EMCACT = ENRACT(DV,WRK(KFCAC),FQ)

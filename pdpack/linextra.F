@@ -915,7 +915,6 @@ C
          INTVEC(I) = 0
       END DO
 C
-      RETURN
       END
 
 

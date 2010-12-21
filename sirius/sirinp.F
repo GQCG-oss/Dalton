@@ -419,6 +419,7 @@ C
       DOCI      = .FALSE.
       DOMC      = .FALSE.
       DONEVPT   = .FALSE.
+      DOLUCITA  = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -747,7 +748,8 @@ C NUMRUN = number of wave functions (e.g. RHF + MP2 + MCSCF: NUMRUN=3)
 C
       INPERR = 0
       NUMRUN = 0
-      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
+      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) THEN
          DOCINO = .FALSE.
@@ -1807,7 +1809,7 @@ C     END OF SIRRDI.
 C
       END
 C  /* Deck newinp */
-      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
+      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 C
 C Revisions
 C    1-OCT-1987 HA     Keyword directed input for all parameters
@@ -1850,6 +1852,7 @@ C  *UPDATE
 C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
 C  *AUXILIARY INPUT
+C  *LUCITA CALCULATION     ! large-scale CI
 C  *END OF (marks end of keyword input)
 C
 C******************************************
@@ -1950,13 +1953,19 @@ C 80 OTRIAL=TRUE; use orbital trial vectors each macro     OPT : ORB_TR
 C
 C******************************************
 C
+      use keyword
+      use input_reader
+      use lucita_cfg
+      use lucita_orbital_spaces
 #include <implicit.h>
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 22)
+      PARAMETER (NTBMOD = 23)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
-      LOGICAL   ALLOPT, PTABMO
+      LOGICAL   ALLOPT, PTABMO, lucita_input_provided
+C needed for lucita: nsym, norb
+      DIMENSION NORB(*)
 C
 #include <priunit.h>
 #include <gnrinf.h>
@@ -1967,7 +1976,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*AUXILL','*END OF'/
+     *            '*AUXILL','*LUCITA','*END OF'/
 C
 C
 C  ***************************************************
@@ -1976,6 +1985,7 @@ C  ***************************************************
 C
       ALLOPT = .FALSE.
       PTABMO = .FALSE.
+      lucita_input_provided = .false.
 C
       WORD = '*GENERA'
       CALL SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
@@ -1986,7 +1996,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,8000), I
+     *                2900,3000,2400,3100,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2057,15 +2067,48 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
+!      this is to keep backwards compatibility - lucita input is now
+!      processed via the new input reader module.
+ 3100  lucita_input_provided = .true.
+       call move_to_next_star(word,lucmd)
+       GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
           CALL PRTAB(NTBMOD,TABMOD,'General Sirius input keywords',
      &               LUPRI)
        END IF
+
+!      read LUCITA input if applicable
+       if(lucita_input_provided)then
+         CALL GPCLOSE(LUCMD,'KEEP')
+
+!        read lucita input
+         call read_menu_input('*LUCITA',lucita_input_provided)
+         if (.not. lucita_input_provided) then
+         call quit('Oops, read_menu_input could not find *LUCITA input')
+         end if
+
+         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+       end if
+
 C
 C ********  END OF READ OF INPUT DATA  **********
 C
+      if(lucita_input_provided)then
+!        LUCITA input has been processed - 
+!        complete now the remaining compulsory settings
+!        this is lucita-ci, therefore:
+!        1: ci input
+!        2: mcscf input
+         lucita_cfg_init_input_type = 1
+
+         call define_lucita_orb_spaces(nsym,                        
+     &                                 lucita_cfg_nr_gas_spaces,    
+     &                                 lucita_cfg_init_input_type,  
+     &                                 lucita_cfg_init_wave_f_type)
+      end if
 C
 C     We anyway need to process CC default settings
 C
@@ -2116,7 +2159,7 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','xXXXXXX','xXXXXXX','xXXXXXX','xXXXXXX',
+     *            '.KSPT2 ','.LS CI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','xXXXXXX','xXXXXXX','xXXXXXX'/
 C
@@ -2395,8 +2438,11 @@ C *** Option 21: .KSPT2
         ADDMP2   = .TRUE.
         READ (LUCMD,*) WDFTMP
       GO TO 100
-C *** Options 22-25 not used
   122 CONTINUE
+        DOLUCITA = .TRUE.
+        NUMRUN   = NUMRUN + 1
+      GO TO 100
+C *** Options 23-25 not used
   123 CONTINUE
   124 CONTINUE
   125 CONTINUE
@@ -5050,7 +5096,12 @@ C
          WRITE (IWUNIT,1450) (NORBT,NORB(I),I=1,NSYM)
          WRITE (IWUNIT,1500) (NBAST,NBAS(I),I=1,NSYM)
          GO TO 8000
-      ELSE IF ( DOMC .OR. DOCI ) THEN
+      END IF
+      IF (DOLUCITA) THEN
+         WRITE (IWUNIT,1050) 'Generalized Active Space CI (with LUCITA)'
+         WRITE (IWUNIT,1051) 'preceded by :'
+      END IF
+      IF ( DOMC .OR. DOCI ) THEN
          IF ( DONEVPT ) then
 C Oct 2003 hjaaj: from koopro4.F:
 C     This program calculates the second order correction to the energy
