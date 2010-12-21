@@ -189,7 +189,11 @@ contains
     end if
 
     if (kw_matches(word, '.ANALYZ')) then
-      lucita_analyze_cvec = .true.
+      lucita_cfg_analyze_cvec = .true.
+    end if
+
+    if (kw_matches(word, '.TIMING')) then
+      lucita_cfg_timing_par   = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)

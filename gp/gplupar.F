@@ -1578,7 +1578,7 @@ C     ^ loop over blocks - imag part
 C
  1001 CONTINUE
 C
-      IF( TIMING ) THEN
+      IF( TIMING_par ) THEN
 C
 C       print statistics
 C
@@ -4835,7 +4835,7 @@ csk   WRITE(LUWRT,*) ' ISTRED, ISTRED2, NROOT, JOFF',
 csk  &                  ISTRED, ISTRED2, NROOT, JOFF-1
 csk   CALL WRTMATMN(SUBSPH(ISTRED),1,NROOT,1,NROOT,LUWRT)
 csk   CALL WRTMATMN(SUBSPH(ISTRED2),1,JOFF-1,1,JOFF-1,LUWRT)
-      IF( TIMING )
+      IF( TIMING_par )
      &WRITE(LUWRT,9450) WALLTID
  9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK                : ',A)
 C

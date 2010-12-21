@@ -38,13 +38,15 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE DISKUN
-      IMPLICIT REAL*8           (A-H,O-Z)
+      subroutine set_file_handles(irefsm)
 *
+#include "implicit.h"
 #include "priunit.h"
 #include "parluci.h"
 #include "files.inc"
 #include "clunit.inc"
+#include "units.inc"
+      integer irefsm
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL, LUDMMY_MPIL
       CHARACTER LUSCR_MPIN*11,NLUSCR_MPI*15,LUDMMY_MPIN*5, NLUDMMY_MPI*9
@@ -91,9 +93,7 @@ C
 *    Timo Fleig
       LUCMOL = 91
 *. Output file
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER)THEN
-        luout = lupri
-      END IF
+      luout = lupri
 * =================
 * Input information
 * =================
@@ -154,18 +154,32 @@ C
 *. CI vector
       LUC = 61
       LUC_MPIN ="LUCITA_CVECS"
-       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUC_MPI,'(A7,A1,I1)') LUC_MPIN,'.',LUCI_MYPROC
-         LUC_MPIL=9
-       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUC_MPI,'(A7,A1,I2)') LUC_MPIN,'.',LUCI_MYPROC
-         LUC_MPIL=10
-       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (NLUC_MPI,'(A7,A1,I3)') LUC_MPIN,'.',LUCI_MYPROC
-         LUC_MPIL=11
-       ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-       ENDIF
+      if(luci_myproc .gt. luci_master)then
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+          WRITE (NLUC_MPI,'(A12,A1,I1)') LUC_MPIN,'.',LUCI_MYPROC
+          LUC_MPIL = 14
+        ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+          WRITE (NLUC_MPI,'(A12,A1,I2)') LUC_MPIN,'.',LUCI_MYPROC
+          LUC_MPIL = 15
+        ELSE                                ! MPI ID has three digits
+          WRITE (NLUC_MPI,'(A12,A1,I3)') LUC_MPIN,'.',LUCI_MYPROC
+          LUC_MPIL = 16
+        ENDIF
+      else
+        luc_mpil = 14
+        if(irefsm .le. 8)then
+!         on common block in parluci.h
+          symflabel = symflab_data(irefsm)
+          write(lupri,*) ' symflabel is: ',symflabel
+        else
+          write(luwrt,*) '  *** error in set_file_handles: assignment'//
+     &                   ' of a symmetry label to the LUCITA_CVECS'//
+     &                   ' file failed. ***'
+          call quit('*** error in set_file_handles: assignment of
+     &    a symmetry label to the LUCITA_CVECS file failed. ***')
+        end if
+        write(nluc_mpi,'(a12,a1,a1)') luc_mpin,'.',symflabel
+      end if
 
       Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
@@ -178,11 +192,9 @@ C
        ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (NLUHC_MPI,'(A6,A1,I2)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=9
-       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+       ELSE                                ! MPI ID has three digits
          WRITE (NLUHC_MPI,'(A6,A1,I3)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=10
-       ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
        ENDIF
       Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
@@ -205,13 +217,11 @@ C
          WRITE (NLUSC2_MPI,'(A5,A1,I2)') LUSC2_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC3_MPI,'(A5,A1,I2)') LUSC3_MPIN,'.',LUCI_MYPROC
          LUSC123_MPIL=8
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+      ELSE                                ! MPI ID has three digits 
          WRITE (NLUSC1_MPI,'(A5,A1,I3)') LUSC1_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC2_MPI,'(A5,A1,I3)') LUSC2_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC3_MPI,'(A5,A1,I3)') LUSC3_MPIN,'.',LUCI_MYPROC
          LUSC123_MPIL=9
-      ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
       Open(Unit=LUSC1,File=NLUSC1_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
@@ -256,7 +266,7 @@ C
          WRITE (NLUSC40_MPI,'(A6,A1,I2)') LUSC40_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC41_MPI,'(A6,A1,I2)') LUSC41_MPIN,'.',LUCI_MYPROC
          LUSC344_MPIL=9
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+      ELSE                                ! MPI ID has three digits 
          WRITE (NLUSC34_MPI,'(A6,A1,I3)') LUSC34_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC35_MPI,'(A6,A1,I3)') LUSC35_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC36_MPI,'(A6,A1,I3)') LUSC36_MPIN,'.',LUCI_MYPROC
@@ -266,8 +276,6 @@ C
          WRITE (NLUSC40_MPI,'(A6,A1,I3)') LUSC40_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC41_MPI,'(A6,A1,I3)') LUSC41_MPIN,'.',LUCI_MYPROC
          LUSC344_MPIL=10
-      ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
 
       Open(Unit=LUSC34,File=NLUSC34_MPI(1:LUSC344_MPIL),
@@ -300,35 +308,18 @@ C
 * ( LU90 just defined here, it is not exported )
       LU90  = 88
 *. Dumping symmmetry info, MO-AO expansion matrix and property integral
-      LU91 = 69
+      LU91     = 69
+      LUSC_INT = LU91
 *. CC amplitudes in formatted form
       LU_CCAMP = 90
-*  LUCITA converted input unit for parallel calculations
-      LU_LUWRT = 95
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*
-      subroutine setunits
-*
-#include "clunit.inc"
-#include "units.inc"
-*
-* Scratch file
-      LUSC_INT = LU91
 * Input for LUCITA, converted
-      LUINP = LU_LUWRT
+      LUINP = 95
 * COMFILE from MOLCAS-SCF
       LUCOM = LUSC36
 * JOBIPH file from MOLCAS-RASSCF
       LUIPH = LUSC37
 *
-      return
-      end
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *

@@ -862,8 +862,7 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER STATUS_ARRAY(MPI_STATUS_SIZE,LUCI_NMPROC-1), IERR
-      INTEGER IREQ(LUCI_NMPROC-1)
+      INTEGER IERR
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
@@ -902,10 +901,8 @@ C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       character (len=13)   :: convergence
       logical, allocatable :: rtcnv(:)
-*
-      TIMING = .FALSE.
-
-!     scratch space
+ 
+!     allocate scratch space
       allocate(tmp_space0(maxvec*(maxvec+1)/2))
       allocate(tmp_space1(maxvec**2))
       allocate(tmp_space2(maxvec**2))
@@ -929,7 +926,7 @@ C     of MAXIT
      &'  ***************************************************'
       WRITE(luwrt,'(7X,A)') 
      &'     entering MICDV6_par (parallel solver routine)   '
-      WRITE(luwrt,'(7X,A/)') 
+      WRITE(luwrt,'(7X,A)') 
      &'  ***************************************************'
 *
 C
@@ -1029,7 +1026,11 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 *       end of timing
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
-        WRITE(luwrt,9777) WALLTID
+        if(IVEC .eq. 1)then
+          WRITE(luwrt,9777) WALLTID
+        else
+          WRITE(luwrt,9778) WALLTID
+        end if
 *
 *       projected matrix using batch structure of CI vector(s)
 *
@@ -1218,7 +1219,7 @@ csk       CSCREEN = .FALSE.
   100 CONTINUE
       endtime = MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
-      IF( TIMING )
+      IF( TIMING_par )
      &WRITE(LUWRT,9250)WALLTID
       IF( CONVER ) THEN
          GOTO  1001
@@ -1297,7 +1298,11 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
 *       end of timing
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
-        WRITE(LUWRT,9400) WALLTID
+        if(ivec.eq.1) then 
+          WRITE(LUWRT,9400) WALLTID
+        else
+          WRITE(LUWRT,9401) WALLTID
+        end if
 *
 *       augment projected matrix using batch structure of CI vector(s)
 *
@@ -1341,7 +1346,7 @@ C     TIMING FOR PARTS 2.1 - 2.2
       WALLTID      = SECTID(tottime) 
       WRITE(LUWRT,9350) WALLTID
 C
-      IF( TIMING )THEN
+      IF( TIMING_par )THEN
 C
         xixidletime_save = 0.0D0
         xixidletime_save = xixidletime
@@ -1631,7 +1636,7 @@ C
      &                   mpi_real8,mpi_sum,mpi_comm_world,ierr)
       endtime = MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
-      IF( TIMING ) WRITE(luwrt,9460) WALLTID
+      IF( TIMING_par ) WRITE(luwrt,9460) WALLTID
 *
 *     finish timing
 *
@@ -1707,10 +1712,10 @@ C
         write(luwrt,'( 1x,a,i6)') 'root number =',IROOT
         write(luwrt,'(1x,a/)')    '-------------------'
         do i = 1, iter
-          write(luwrt,1340) i,eig(i,iroot)+eigshf,rnrm(i,iroot)
+          write(luwrt,'( 1x,a9,i4,f16.10,4x,e10.3)') 
+     & 'iteration',i,eig(i,iroot)+eigshf,rnrm(i,iroot)
         end do
       end do
- 1340 FORMAT(7X,I4,8X,F20.13,2X,E12.5)
 
       write(LUWRT,'(/1x,a)') '**********************************'//
      &           '**************************'
@@ -1723,13 +1728,11 @@ C
          if(rtcnv(iroot)) then 
            convergence = ' converged'
          else
-           convergence = 'not converged'
+           convergence = 'NOT converged'
          end if
-         WRITE(LUWRT,'(I7,I7,F16.10,4X,E10.3,4X,a)')
+         WRITE(LUWRT,'(i7,i7,f16.10,4x,E10.3,4x,a)')
      &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &         convergence
-!        write(LUWRT,'(A,F18.10)') 
-!    &             ' Final energy ',FINEIG(IROOT)
  1601 CONTINUE
 C
       deallocate(rtcnv)
@@ -1756,12 +1759,14 @@ C
  9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :
      & ',A,I4)
  9460 FORMAT(' >>>  WALL TIME FOR REDUCING APROJ OF LENGTH     : ',A)
- 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A/)
+ 9400 FORMAT(/' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9401 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9250 FORMAT(' >>>  WALL TIME IN STEP 1 OF CURRENT ITERATION   : ',A)
- 9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
- 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A/)
- 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A/)
+ 9350 FORMAT(/' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
+ 9777 FORMAT(/' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9778 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9888 FORMAT(/' >>>  WALL TIME FOR INITIAL ITERATION            : ',A/)
       END
 #else /* defined VAR_MPI*/
 ***********************************************************************

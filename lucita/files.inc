@@ -3,7 +3,7 @@ C VERSION : $Revision: 1.1.2.1 $
 C DATE    : $Date: 2009-11-13 10:35:20 $
 C FILE    : files.inc
 C
-C     Files to be used in LUCITA ( afore RELCCSD)
+C     Files to be used in LUCITA
       PARAMETER (NCCFIL=11) ! Number of word addressable files
 C     Define the unit numbers
       PARAMETER (MSLVOUT = 12) ! Output from slaves
@@ -21,8 +21,8 @@ C     The standard input and output units may be redefined in the code
       CHARACTER*14 LUCIFILN    ! node-unique LUCITA output file name
       CHARACTER*5 LUDIA_MPIN
       CHARACTER*9 NLUDIA_MPI
-      CHARACTER*7 LUC_MPIN
-      CHARACTER*11 NLUC_MPI
+      CHARACTER*12 LUC_MPIN
+      CHARACTER*16 NLUC_MPI
       CHARACTER*6 LUHC_MPIN,NDUMPF
       CHARACTER*10 NLUHC_MPI
       CHARACTER*5 LUSC1_MPIN, LUSC2_MPIN, LUSC3_MPIN

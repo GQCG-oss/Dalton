@@ -1208,10 +1208,9 @@ C     Compute offset from WRK_DALTON to WORK
 C     LUCITA is used in real calculations: no complex part
       irc_save = 1
 
-C     assign serial I/O disk units
-      CALL DISKUN
-C
-C     input conversion (internal lucia input file will be written)
+!     input conversion (internal lucia input file will be written) and 
+!     file handles will be set for all relevant input/output management 
+!     of (temporary) data
       call dalton_lucita_input_interface
 C
 C     read internal input file, insert defaults and cross check user input

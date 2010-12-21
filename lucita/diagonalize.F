@@ -2859,12 +2859,6 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
 *
        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "parluci.h"
-#ifdef VAR_MPI
-#include "infpar.h"
-#include "mpif.h"
-       DIMENSION ISTAT(MPI_STATUS_SIZE)
-       INTEGER STATUS_ARRAY(MPI_STATUS_SIZE,LUCI_NMPROC-1), IERR
-#endif
        DIMENSION VEC1(*),VEC2(*)
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
@@ -2881,30 +2875,36 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
 *      eigenvectors in iteration n+1 as the approximations
 *      with largest overlap with the previous space
 *
-       DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(10),LUCEND
-       REAL*8 INPRDD, INPROD
-       DOUBLE PRECISION tottime,endtime,starttime
-       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-*      New characters used for timing in send of VEC from LU3
-       CHARACTER CPULUSTEP*12, WALLLUSTEP*12
-*      New characters used for timing in cpback of sigma vec and calc of
-*      aproj(ij)
-       CHARACTER CPUFSTEP*12, WALLFSTEP*12
-*      New characters used for timing in step3
-       CHARACTER CPUTSTEP*12, WALLTSTEP*12
-*. Notice XJEP is also used for ROOTHOMING, should be allocated
-* outside (for roothoming :dim = 3*MAXVEC )
-       DIMENSION XJEP(10000)
-       INTEGER   IXJEP(10000)
-*
-       LUCEND = .FALSE.
+      DIMENSION FINEIG(nroot)
+      LOGICAL CONVER,LUCEND
+      REAL*8 INPRDD, INPROD
+      DOUBLE PRECISION tottime,endtime,starttime
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+*     New characters used for timing in send of VEC from LU3
+      CHARACTER CPULUSTEP*12, WALLLUSTEP*12
+*     New characters used for timing in cpback of sigma vec and calc of
+*     aproj(ij)
+      CHARACTER CPUFSTEP*12, WALLFSTEP*12
+*     New characters used for timing in step3
+      CHARACTER CPUTSTEP*12, WALLTSTEP*12
+*     XJEP is used for ROOTHOMING
+      real(8), allocatable ::  xjep(:)
+      integer, allocatable :: ixjep(:)
+      character (len=13)   :: convergence
+      logical, allocatable :: rtcnv(:)
+
+      allocate(rtcnv(nroot))
+      rtcnv  = .false.
+      lucend = .FALSE.
+
+      MYNEW_ID   = 0
+      MYNEW_COMM = 0
 C
       WRITE(LUWRTOUT,'(/10X,A)')
      &' **************************************************'
       WRITE(LUWRTOUT,'(10X,A)')
      &'     entering MICDV6 (sequential solver routine)   '
-      WRITE(LUWRTOUT,'(10X,A/)')
+      WRITE(LUWRTOUT,'(10X,A )')
      &' **************************************************'
 *
        IPICO = 0
@@ -2938,49 +2938,51 @@ c      IPRT = IPRTXX
          Call Abend1( 20 )
        END IF
 *
-C?       WRITE(6,*) ' LU1 LU2 LU3 LU4 LU5 LU6,LU7',
-C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
-       IF(IROOTHOMING.EQ.1) THEN
-         WRITE(LUWRTOUT,*) ' Root homing performed '
-       END IF
-       KAPROJ = 1
-       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST   = 1.0D-4
-       CONVER = .FALSE.
+      if(iroothoming.eq.1)then
+        write(luwrtout,*) ' Root homing performed '
+        allocate(xjep( maxvec*3))
+        allocate(ixjep(maxvec*3))
+      end if
+*
+      KAPROJ = 1
+      KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+      TEST   = 1.0D-4
+      CONVER = .FALSE.
 *
 * ===================
 *.Initial iteration
 * ===================
-       ITER = 1
-       CALL REWINE(LU1,-1)
-       CALL REWINE(LU2,-1)
+      ITER = 1
+      CALL REWINE(LU1,-1)
+      CALL REWINE(LU2,-1)
 *
-       IF(IRUNPA.EQ.0) THEN
-         MYNEW_ID   = luci_myproc
-         MYNEW_COMM = 0
-       END IF
-*
-       DO IVEC = 1,NINVEC
-         CALL REWINE(LU5,-1)
-         CALL REWINE(LU6,-1)
-         IF(MYNEW_ID.EQ.0) THEN
-            CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-         ENDIF
-         CALL MV7(VEC1,VEC2,LU5,LU6)
+      DO IVEC = 1,NINVEC
+        CALL REWINE(LU5,-1)
+        CALL REWINE(LU6,-1)
+        CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
+*       Check timings for sigma vector generation
+        CALL GETTIM(CPUSIG1,WALLSIG1)
+
+        CALL MV7(VEC1,VEC2,LU5,LU6)
+
+        CALL GETTIM(CPUSIG2,WALLSIG2)
+        WALLTID = SECTID(WALLSIG2-WALLSIG1)
+        if(ivec .eq. 1)then
+          write(luwrtout,9777) WALLTID
+        else
+          write(luwrtout,9778) WALLTID
+        end if
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
-         CALL REWINE(LU6,-1)
-         CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
+        CALL REWINE(LU6,-1)
+        CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
 *. Projected matrix
-         CALL REWINE(LU2,-1)
-           DO JVEC = 1, IVEC
-              CALL REWINE(LU5,-1)
-              IJ = IVEC*(IVEC-1)/2 + JVEC
-              APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
-           END DO
-*          ^ End of loop over JVEC
-       END DO
-*      ^ End of loop over IVEC
-*. end of initial loop
+        CALL REWINE(LU2,-1)
+          DO JVEC = 1, IVEC
+             CALL REWINE(LU5,-1)
+             IJ = IVEC*(IVEC-1)/2 + JVEC
+             APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
+          END DO ! loop over IVEC
+       END DO ! loop over NINVEC
 *
        IF( IPRT .GE.5 ) THEN
          WRITE(LUWRTOUT,*) ' INITIAL PROJECTED MATRIX  '
@@ -3015,7 +3017,6 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
        CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU2,LU3,1,LBLK,LU4,LU5)
 *
        IF(IPRT.GE.600) THEN
-        IF(luci_MYPROC.EQ.luci_MASTER) THEN
          WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
          CALL REWINE(LU1,-1)
          DO IROOT = 1, NROOT
@@ -3031,12 +3032,10 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
  1067 FORMAT(/'lets see IROOT again=', I4/)
            CALL WRTVCD(VEC1,LU2,0,LBLK)
          END DO
-        END IF
        END IF
 *. And the corresponding Hamiltonian matrix, no problems
 *. with numerical stabilities, so just use eigenvalues
-       ZERO = 0.0D0
-       CALL SETVEC(APROJ,ZERO,NROOT*(NROOT+1)/2)
+       CALL dzero(APROJ,NROOT*(NROOT+1)/2)
        DO IROOT = 1, NROOT
         APROJ(IROOT*(IROOT+1)/2) = EIG(1,IROOT)
        END DO
@@ -3269,10 +3268,12 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
         CALL GETTIM(CPUSIG1,WALLSIG1)
         CALL MV7(VEC1,VEC2,LU5,LU6)
         CALL GETTIM(CPUSIG2,WALLSIG2)
-        CPUTID = SECTID(CPUSIG2-CPUSIG1)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
-*        WRITE(LUWRTOUT,9400) CPUTID,WALLTID, luci_MYPROC
-        WRITE(LUWRTOUT,9400) CPUTID,WALLTID
+        if(ivec .eq. 1)then
+          WRITE(LUWRTOUT,9400) WALLTID
+        else
+          WRITE(LUWRTOUT,9401) WALLTID
+        end if
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
 *2.2 Augment projected matrix
@@ -3669,16 +3670,14 @@ CSK       write(LUWRTOUT,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
 CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
 *  check timing of part3 in loop iteration
        CALL GETTIM(CPUSTEP4,WALLSTEP4)
-       CPUTSTEP = SECTID(CPUSTEP4-CPUSTEP3)
        WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
-       WRITE(LUWRTOUT,9600) CPUTSTEP,WALLTSTEP
+       WRITE(LUWRTOUT,9600) WALLTSTEP
 *
  998   CONTINUE
 *  Timing of this iteration
        CALL GETTIM(CPUITR2,WALLITR2)
-       CPUTID = SECTID(CPUITR2-CPUITR1)
        WALLTID = SECTID(WALLITR2-WALLITR1)
-       WRITE(LUWRTOUT,9300) CPUTID,WALLTID
+       WRITE(LUWRTOUT,9300) WALLTID
 *. End of resetting business
  999  CONTINUE
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
@@ -3687,90 +3686,61 @@ CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
 C
 C
       IF( .NOT. CONVER ) THEN
-*        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 2 )
-     &   WRITE(LUWRTOUT,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+*       CONVERGENCE WAS NOT OBTAINED
+        IF(IPRT .GE. 2 )
+     &  WRITE(LUWRTOUT,1170) MAXIT
+ 1170   FORMAT('   Convergence was not obtained in ',I3,' iterations')
       ELSE
-*        CONVERGENCE WAS OBTAINED
-         ITER = ITER - 1
-         IF (IPRT .GE. 2 )
-     &   WRITE(LUWRTOUT,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
-        END IF
-*
-      if (luci_myproc.eq.luci_master) then
-      IF ( IPRT .GT. 0 ) THEN
-        CALL REWINE(LU1,LBLK)
-        DO 1600 IROOT = 1, NROOT
-          write(LUWRTOUT,*)
-          write(LUWRTOUT,*) '------------------------'
-          write(LUWRTOUT,*) 'Root number  ',IROOT
-          write(LUWRTOUT,*) '------------------------'
-          DO I=1,ITER
-            WRITE(LUWRTOUT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
-          end do
-          WRITE(LUWRTOUT,*)
-          WRITE(LUWRTOUT,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(LUWRTOUT,*)
-     &    '============================================'
-          WRITE(LUWRTOUT,*)
-          FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(LUWRTOUT,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
-          IF(IPRT.GE.400) THEN
-            WRITE(LUWRTOUT,1200)
- 1200       FORMAT(' The final approximation to eigenvector')
-            CALL WRTVCD(VEC1,LU1,0,LBLK)
-          END IF
- 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
- 1600   CONTINUE
-      ELSE
-        write(LUWRTOUT,*)
- 1310   FORMAT
-     &  (1H0,' Iteration point        Eigenvalue         Residual ')
-        DO IROOT = 1, NROOT
-          write(LUWRTOUT,*) '------------------------'
-          write(LUWRTOUT,*) 'Root number  ',IROOT
-          write(LUWRTOUT,*) '------------------------'
-          DO I=1,ITER
-            WRITE(LUWRTOUT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
-          end do
-        end do
-        write(LUWRTOUT,*)
-        write(LUWRTOUT,*) '**********************************'//
-     &             '**************************'
-        write(LUWRTOUT,*) '   Iter  Root       Energy        '//
-     &             'RESIDUAL     RESRATIO '
-        write(LUWRTOUT,*) '**********************************'//
-     &             '**************************'
-        write(LUWRTOUT,*)
-        DO 1601 IROOT = 1, NROOT
-           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-           WRITE(LUWRTOUT,'(3X,I3,2X,I3,3X,F18.10,2X,E10.3,3X,E10.3)')
-     &               ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
-     &               RNRM(1,IROOT)/RNRM(ITER,IROOT)
-           write(LUWRTOUT,'(A,F18.10)') 
-     &               ' Final energy ',FINEIG(IROOT)
- 1601   CONTINUE
+*       CONVERGENCE WAS OBTAINED
+        ITER = ITER - 1
+        IF (IPRT .GE. 2 )
+     &  WRITE(LUWRTOUT,1180) ITER
+ 1180   FORMAT(1X,' Convergence was obtained in ',I3,' iterations')
       END IF
-      end if
 *
+      do iroot = 1, nroot
+        write(LUWRTOUT,'(/1x,a)')    '-------------------'
+        write(LUWRTOUT,'( 1x,a,i6)') 'root number =',IROOT
+        write(LUWRTOUT,'(1x,a/)')    '-------------------'
+        do i = 1, iter
+          write(LUWRTOUT,'( 1x,a9,i4,f16.10,4x,e10.3)')
+     & 'iteration',i,eig(i,iroot)+eigshf,rnrm(i,iroot)
+        end do
+      end do
+
+      write(LUWRTOUT,'(/1x,a)') '**********************************'//
+     &           '**************************'
+      write(LUWRTOUT,*) '  iter   root       energy        '//
+     &           'residual     convergence'
+      write(LUWRTOUT,'(1x,a )') '**********************************'//
+     &           '**************************'
+      DO 1601 IROOT = 1, NROOT
+         FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+         if(rtcnv(iroot)) then
+           convergence = ' converged'
+         else
+           convergence = 'NOT converged'
+         end if
+         WRITE(LUWRTOUT,'(i7,i7,f16.10,4x,E10.3,4x,a)')
+     &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+     &         convergence
+ 1601 CONTINUE
+*
+      if(iroothoming.eq.1)then
+        deallocate(ixjep)
+        deallocate( xjep)
+      end if
+      deallocate(rtcnv)
+
       CALL FLSHFO(LUWRTOUT)
 *
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
- 9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
- 9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL : ',
-     &A,'(',A,')')
- 9450 FORMAT(' >>>  CPU (WALL) TIME IN PARALLEL SIGMA VECTOR CALL: ',
-     &A,'(',A,')')
- 9500 FORMAT(' >>>  CPU (WALL) TIME IN CPBACK OF SIGMA VEC: ',A,
-     &'(',A,')')
- 9550 FORMAT(' >>>  CPU (WALL) TIME IN CP COEFF. TO NODES:',A,'(',A,')')
- 9600 FORMAT(' >>>  CPU (WALL) TIME IN STEP3 OF ILOOP: ',A,'(',A,')')
+ 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
+ 9400 FORMAT(/' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9401 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9600 FORMAT(/' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
+ 9777 FORMAT(/' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9778 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
       END
 ***********************************************************************
 *                                                                     *

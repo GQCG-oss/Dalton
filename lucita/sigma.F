@@ -2367,7 +2367,9 @@ C
 CSK too much information?                WALLTID  = SECTID(writetime)
             WALLTID2 = SECTID(sbatchtime)
 CSK too much information?                 WRITE(LUWRT,50000) WALLTID
-            WRITE(LUCIWT,60001) WALLTID2
+            IF( TIMING_par ) THEN
+              WRITE(LUWRT,60001) WALLTID2
+            END IF
 CSK         WRITE(LUWRT,60000) WALLTID2, JBATABS
           END IF
         END IF ! (LUCI_NMPROC .GT. 1) THEN
@@ -2378,7 +2380,9 @@ C
       IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
       WALLTID2 = SECTID(BLOCKTIME)
-      WRITE(LUWRT,80000) WALLTID2
+      IF( TIMING_par ) THEN
+        WRITE(LUWRT,80000) WALLTID2
+      END IF
 *
 50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
      & ',A)
@@ -2388,7 +2392,7 @@ C
      & ',A)
 *
 C
-      IF( TIMING ) THEN
+      IF( TIMING_par ) THEN
 C
 C       print statistics
 C

@@ -103,8 +103,6 @@ C
       character*72 LINE
 *
 *
-* Set logical units
-      call setunits
 *
 *----------------------------------------------------------------------*
 *     check input and print (error) messages where appropriate
@@ -456,10 +454,11 @@ C
 !     (lucita/orbinp.inc)
 !     values will be set in dalton2lucita for non-GAS calculations
       call izero(ninobs,mxpobs)
+
+!     set file handles for reading/writing, etc.
+      call set_file_handles(lucita_cfg_ptg_symmetry)
  
-*-----------------------------------------------------------------*
-*  Call conversion routine for creating LUCIA input
-*-----------------------------------------------------------------*
+!     conversion routine for creating LUCIA input
       call dalton2lucita(lucita_cfg_ptg_symmetry,lucita_cfg_nr_roots,
      &                   MULTIP,lucita_cfg_max_holes_ras1,
      &                   lucita_cfg_max_e_ras3,INACOB,
@@ -2973,6 +2972,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "SysDef.inc"
 *
 #include "inforb.h"
+#include "parluci.h"
 *
       logical MSCOMB
 *
@@ -3739,7 +3739,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       end if
 *
 *.................................................................
-*  6) Print command
+*  6) Print flags
 *.................................................................
 *      resolve global print flags to LUCIA system
 *
@@ -3811,7 +3811,11 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       if(IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
 
 !     make sure we analyze the final solution vector(s)
-      if(lucita_analyze_cvec .and. IPRNCIV .le. 0) IPRNCIV = 1
+      if(lucita_cfg_analyze_cvec .and. IPRNCIV .le. 0) IPRNCIV = 1
+
+!     set timing printouts for parallel calculations
+      timing_par = .false.
+      if(lucita_cfg_timing_par) timing_par = .true.
 *
 *--------------------------------------------------------------*
 *  Create input file for LUCIA
