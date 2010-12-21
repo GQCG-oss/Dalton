@@ -20,14 +20,9 @@
 # (uname -m) -mpentiumpro for i686, -mpentium for i586, and -m486 otherwise
 # 990831-ekd
 # Defined new VAR_PGF77 for Portland Group compiler on Linux systems (has 
-# POINTER statement, so memory allocation is easier) and VAR_G77 for g77 gnu
-# compiler 990831-ekd
+# POINTER statement, so memory allocation is easier)
 # More intelligent attempts at including pdpack files according to available
 # machine libraries
-# For Red Hat 7.0 the shipped compiler (gcc-g77-2.96-54) does not 
-# work properly ... test and issue warning. kh010302
-# Darwin (OS X) g77 support added 151202 tuh 
-# Darwin (OS X) Absoft f77 support added 030503 tuh 
 #
 
 # defaults section for quick config
@@ -61,8 +56,8 @@ get_yes_or_no() {
       if [ "$answer" = "" ]; then answer="$2"; fi
 #     standardize answer
       case $answer in
-	y* | Y*) answer="y" ;;
-	n* | N*) answer="n" ;;
+        y* | Y*) answer="y" ;;
+        n* | N*) answer="n" ;;
       esac
     done
 }
@@ -110,7 +105,7 @@ $ECHO '   Configuring the DALTON Makefile.config and "dalton" run script'
 $ECHO '------------------------------------------------------------------'
 $ECHO ''
 
-arclist='aix cray cray-t3d cray-t3e dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec darwin'
+arclist='aix cray cray-t3d cray-t3e cygwin dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec darwin'
 
 #
 # Attempting auto-configuration. The list of replies from uname should be
@@ -124,28 +119,30 @@ fi
 if [ -z "$1" ]; then
     case $MACHTYPE in
         AIX ) ARCH="-aix";;
-	Darwin ) ARCH="-darwin" ;;
+        CYGWIN* ) ARCH="-cygwin";;
+        Darwin ) ARCH="-darwin" ;;
         IRIX|IRIX64 ) ARCH="-sgi";;
-	Linux|FreeBSD ) if [ "`uname -m`" = alpha ]; then
-		ARCH="-linux-alpha"
-		$ECHO "* linux alpha tested only with COMPAQ fort compiler *\n"
-	    else 
-		ARCH="-linux"
-	    fi ;;
-	OSF1 ) ARCH="-dec-alpha";;
-	HP-UX ) ARCH="-hp";;
-	SunOS ) ARCH="-sun";;
+        Linux|FreeBSD ) if [ "`uname -m`" = alpha ]; then
+                ARCH="-linux-alpha"
+                $ECHO "* linux alpha tested only with COMPAQ fort compiler *\n"
+            else 
+                ARCH="-linux"
+            fi ;;
+        OSF1 ) ARCH="-dec-alpha";;
+        HP-UX ) ARCH="-hp";;
+        SunOS ) ARCH="-sun";;
         Darwin ) ARCH="-darwin";;
-    * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
+        * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nOnly the following architectures are defined:\n    $arclist"
         exit 1;;
     esac
     $ECHO "No architecture specified, attempting auto-configuration:"
     get_yes_or_no "This appears to be a $ARCH architecture. Is this correct?" y
     if [ "$answer" = "n" ]; then
-        $ECHO "\nPlease configure manually from command line: 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
+        $ECHO "\nPlease configure manually from command line: 'configure -<architecture>'\n
+where architecture is one of the following:\n    $arclist"
         exit 1
     else
-	$ECHO ""
+        $ECHO ""
     fi
 else
     ARCH="$1"
@@ -159,6 +156,7 @@ case $ARCH in
     -cray-t90 ) WHICH="cray_t90";;
     -cray-t3d ) WHICH="cray";;
     -cray-t3e ) WHICH="cray_t3e";;
+    -cygwin ) WHICH="cygwin";;
     -nec ) WHICH="nec";;
     -sun|-sun4 ) WHICH="sun4";;
     -dec-alpha|-alpha|-ultrix ) WHICH="alpha";;
@@ -167,9 +165,9 @@ case $ARCH in
     -linux ) WHICH="linux";;
     -hal ) WHICH="hal";;
     -darwin ) WHICH="darwin";;  
-    -?|-help ) $ECHO " Run from command line: 'configure -architecture'\n\n The following architectures are allowed:\n    $arclist"
+    -?|-help ) $ECHO " Run from command line: 'configure -<architecture>'\n\n Only the following architectures are defined:\n    $arclist"
         exit 1;;
-    * ) $ECHO "$1 is an unsupported architecture. Choose one of\n   $arclist\n\n NOTE: The syntax is 'configure -architecture'\n"
+    * ) $ECHO "$1 is an unsupported architecture. Choose one of\n   $arclist\n\n NOTE: The syntax is 'configure -<architecture>'\n"
         exit 1;;
 esac
 #
@@ -182,10 +180,10 @@ dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS /lib64 /usr/lib64 /us
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
-              complist='xlf f90 f77 g77'
+              complist='xlf f90 f77 gfortran'
               ccmplist='xlc cc gcc';;
     iris4d)   liblist='libcomplib.sgimath.a libblas.a'
-              complist='f90 f77 g77'
+              complist='f90 f77 gfortran'
               ccmplist='cc gcc';;
     cray)     liblist=''
               complist='cf90 f90 cf77 f77'
@@ -200,25 +198,20 @@ case $WHICH in
               complist='f77sx'
               ccmplist='ccsx';;
     alpha)    liblist='libblas.a libdxml.a'
-              complist='f90 f77 g77'
+              complist='f90 f77 gfortran'
               ccmplist='cc gcc';;
     linux-alpha) liblist='libcxml.a'
-              complist='fort g77'
+              complist='fort gfortran'
               ccmplist='ccc gcc';;
     sun4)     liblist='libblas.a'
-              complist='f90 f77 g77'
+              complist='f90 f77 gfortran'
               ccmplist='cc gcc';;
     paragon)  liblist='libmath.a libblas.a'
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
-    linux)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort ifc efc pgf77 gfortran g77'
+    linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
+              complist='ifort ifc efc pgf77 gfortran'
               ccmplist='icc ecc pgcc gcc';;
-    darwin)   liblist='libatlas.a libblas.a'
-              complist='xlf g77 gfortran'
-#             complist='xlf g77 f77'
-#                       f77 is the Absoft v8.0 compiler
-              ccmplist='xlc gcc';;
     hal)      liblist='libblas.a'
               complist='frt'
               ccmplist='cc';;
@@ -280,9 +273,9 @@ elif [ $WHICH = 'hp' ]; then
 elif [ $WHICH = 'rs6000' ]; then
     get_yes_or_no "Is this a 64-bit architecture?" y
     if [ "$answer" = "y" ]; then
-	bit='64'
+        bit='64'
     else
-	bit='32'
+        bit='32'
     fi
 fi
 
@@ -349,39 +342,39 @@ if [ "$answer" = "y" ]; then
 #
         if [ $parlib = 'yes' ]; then
             parlib=
-	    tmplib='libmpi.a libmpi.so'
-	    incfile='mpif.h'
-	    for testdir in $pardir; do
-	        for testlib in $tmplib; do
-	            if [ -f $testdir/$testlib ]; then
-	                parlib='-lmpi'
-		        parlibp=-L$testdir
-		        break
-	            fi
+            tmplib='libmpi.a libmpi.so'
+            incfile='mpif.h'
+            for testdir in $pardir; do
+                for testlib in $tmplib; do
+                    if [ -f $testdir/$testlib ]; then
+                        parlib='-lmpi'
+                        parlibp=-L$testdir
+                        break
+                    fi
                 done
-	        test -n "$parlib" && break
-	    done
+                test -n "$parlib" && break
+            done
 #
 # Now we try to find an include directory
 #
-	    for testdir in $incdir; do
-	        if [ -f $testdir/$incfile ]; then
-	            parinc=-I$testdir
-		    break
-	        fi
-	    done
+            for testdir in $incdir; do
+                if [ -f $testdir/$incfile ]; then
+                    parinc=-I$testdir
+                    break
+                fi
+            done
         elif [ "$parlib" = "no" ]; then
-	    parlib=
+            parlib=
         fi
 #
 # PVM settings, we need two PVM library files
 #
     elif [ $mesp = 'pvm' ]; then
-	parinc='-I$(PVM_ROOT)/include'
-	parlibp='-L$(PVM_ROOT)/lib/$(PVM_ARCH)'
-	parlib='-lfpvm3 -lpvm3'
-	parnodp='$(HOME)/pvm3/bin/$(PVM_ARCH)'
-	parnod='node.x'
+        parinc='-I$(PVM_ROOT)/include'
+        parlibp='-L$(PVM_ROOT)/lib/$(PVM_ARCH)'
+        parlib='-lfpvm3 -lpvm3'
+        parnodp='$(HOME)/pvm3/bin/$(PVM_ARCH)'
+        parnod='node.x'
     fi
 fi
 #
@@ -400,11 +393,11 @@ for comp in $complist; do
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if [ -f $ac_dir/$ac_word ]; then
-	  get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
-	  if [ $answer = 'y' ]; then
-	    ac_cv_prog_F77=$ac_word
-	    break
+        if [ -f $ac_dir/$ac_word ]; then
+          get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
+          if [ $answer = 'y' ]; then
+            ac_cv_prog_F77=$ac_word
+            break
           fi
         fi  
     done
@@ -412,8 +405,8 @@ for comp in $complist; do
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if [ -n "$F77" ]; then
-	$ECHO "\n-->Compiler $F77 found and accepted."
-	break
+        $ECHO "\n-->Compiler $F77 found and accepted."
+        break
     fi
 done
 if [ -z "$F77" ]; then
@@ -433,12 +426,10 @@ cat <<EOF > F90test.f
 EOF
 $F77 -o F90test.x F90test.f >/dev/null 2>&1
 if [ ! -r F90test.x ]; then
-    f90yes=" -DNO_F90"
-    rm -f F90test.x F90test.o F90test.f
-else
-    f90yes=""
-    rm -f F90test.x F90test.o F90test.f
+   $ECHO "$F77 does not have the necessary F90 support. Please specify another compiler"
+   exit 1
 fi
+rm -f F90test.x F90test.o F90test.f
 #
 $ECHO "\n   Checking for C compiler ..."
 $ECHO   "   from this list: $ccmplist \n"
@@ -449,13 +440,13 @@ for comp in $ccmplist; do
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if [ -f $ac_dir/$ac_word ]; then
-	  get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
+        if [ -f $ac_dir/$ac_word ]; then
+          get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
-	    ac_cv_prog_C=$ac_word
-	    break
+            ac_cv_prog_C=$ac_word
+            break
           fi
-	fi  
+        fi  
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_C" && ac_cv_prog_C=""
@@ -483,18 +474,18 @@ fi
 
 # Try to find paths to special libraries
 if [ $WHICH = "linux" ]; then
-	testdir=`locate libmkl.so libmkl_p3.a`
-	for i in $testdir; do
-	  dn=`dirname $i`; dirlist="$dn $dirlist"
-	done
-	testdir=`locate libatlas.a`
-	for i in $testdir; do
-	  dn=`dirname $i`; dirlist="$dn $dirlist"
-	done
+        testdir=`locate libmkl.so libmkl_p3.a`
+        for i in $testdir; do
+          dn=`dirname $i`; dirlist="$dn $dirlist"
+        done
+        testdir=`locate libatlas.a`
+        for i in $testdir; do
+          dn=`dirname $i`; dirlist="$dn $dirlist"
+        done
         if [ ! -z $PGI ]; then
-	if [ $PGI != "" ]; then
-	  dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
-	fi
+        if [ $PGI != "" ]; then
+          dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
+        fi
         fi
 fi
 # prepend LIBDIRS environment variable to add user library dirs.
@@ -518,53 +509,53 @@ for testlib in $liblist; do
    for testdir in $dirlist; do
 #     echo "testing existence of $testdir/$testlib"
       if [ -f $testdir/$testlib ]; then
-	get_yes_or_no "Found $testdir/$testlib, use it?" y
-	if [ $answer = 'y' ]; then
+        get_yes_or_no "Found $testdir/$testlib, use it?" y
+        if [ $answer = 'y' ]; then
           LIBDIR=$testdir
           case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;lapack=true;;
-	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
+            libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o";;
-	    libessl.a) LIB='-lessl'
-	               blas3="true" # - but not complete...
-		       # double-check dlapack.
+            libessl.a) LIB='-lessl'
+                       blas3="true" # - but not complete...
+                       # double-check dlapack.
                        pdpackextras="$pdpackextras gp_zlapack.o gp_zblas.o  gp_dlapack.o";;
-	    libesslp2.a) LIB='-lesslp2'
-	               blas3="true";;
+            libesslp2.a) LIB='-lesslp2'
+                       blas3="true";;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath'
-	                          blas3='true';;
+                                  blas3='true';;
             libmkl_p3.a) LIB="-lmkl_p3 -lguide -lpthread -static"
                          blas3="true";;
             libmkl.so) LIB="-Wl,--rpath=$testdir -lmkl -lguide -lpthread"
                          blas3="true";;
-	    lib[cd]xml.a) LIB='-ldxml'
-	               blas3="true"; lapack="true"
-	               cpp='-DVAR_DXML';;
+            lib[cd]xml.a) LIB='-ldxml'
+                       blas3="true"; lapack="true"
+                       cpp='-DVAR_DXML';;
             libblas.a) LIB='-lblas'
-	               if nm $testdir/$testlib | grep "gemm" > /dev/null
-		       then
-		          blas3="true"
+                       if nm $testdir/$testlib | grep "gemm" > /dev/null
+                       then
+                          blas3="true"
                        elif nm $testdir/$testlib | grep "gemv" > /dev/null
-		          then
-		          blas2="true"
-		       else
-		          blas="true"
-		       fi;;
+                          then
+                          blas2="true"
+                       else
+                          blas="true"
+                       fi;;
             libveclib.a) LIB='-lveclib -lm'
-	               if nm $testdir/$testlib | grep "gemm" > /dev/null 
-		       then
-		          blas3="true"
+                       if nm $testdir/$testlib | grep "gemm" > /dev/null 
+                       then
+                          blas3="true"
                        elif nm $testdir/$testlib | grep "gemv" > /dev/null
-		       then
-		          blas2="true"
-		       else
-		          blas="true"
-		       fi;;
+                       then
+                          blas2="true"
+                       else
+                          blas="true"
+                       fi;;
             libmath.a) LIB='-lmath -lm -nx';;
-	    libblas0_640.a) LIB="-l-lblas0_640 -l-leispack0_640 -l-llinpack0_640";;
+            libblas0_640.a) LIB="-l-lblas0_640 -l-leispack0_640 -l-llinpack0_640";;
           esac
-	  break
-	fi
+          break
+        fi
       fi
       test -n "$LIB" && break
       done
@@ -629,7 +620,7 @@ fi
 # Determine memory size, also ask whether user would like to active the
 # possibility of storing the two-electron integrals in memory 
 # Observe, that the minimal value is not 0, it is 1 because
-# some compilers (g77) do not like arrays with no elements.
+# some compilers do not like arrays with no elements.
 
 $ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static'
 $ECHO 'allocations, in addition to the dynamic allocation.'
@@ -697,7 +688,7 @@ do
     $ECHO '\n-->DALTON executable and script will be placed in '$INSTALL_DIR' directory\n'
     if [ ! -d "$INSTALL_DIR" ]; then
         $ECHO "ERROR: $INSTALL_DIR does not exist, will be created now."
-	mkdir "$INSTALL_DIR"; mkdir_ok=$?
+        mkdir "$INSTALL_DIR"; mkdir_ok=$?
         if [ $mkdir_ok ]; then answer="ok"
         else $ECHO "Sorry, the specified directory could not be created"; fi
     else
@@ -775,6 +766,8 @@ if [ "$mesp" = "mpi" ]; then
     parop='VAR_MPI'
 elif [ "$mesp" = "pvm" ]; then
     parop='VAR_PVM'
+    echo "Sorry, PVM is not supported any more"
+    exit 1
 else
     parop=
 fi
@@ -782,11 +775,11 @@ fi
 case "$WHICH" in
     rs6000)
           case $opsys in
-	  2)
+          2)
              cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
              if [ $split = 'true' ] ; then
                 cpp="$cpp -DVAR_SPLITFILES"
-	     fi
+             fi
              if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp -D$parop"
                 if [ "$mesp" = "mpi" ]; then
@@ -794,9 +787,9 @@ case "$WHICH" in
                 else
                    def='dalpvm.x'
                 fi
-	     fi
+             fi
              inc='-I../include'
-             cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
+             cpp=${cpp}" -DIMPLICIT_NONE";;
           *)
              cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_MMWORK=$incoresiz'"
              if [ $split = 'true' ] ; then
@@ -807,31 +800,28 @@ case "$WHICH" in
                 set_parallel_def $mesp
                 copt="$copt -DVAR_MPI"
              fi
-	     inc='-I../include'
+             inc='-I../include'
              cpp=${cpp}",-DIMPLICIT_NONE"
-	     if [ "$f90yes" = " -DNO_F90" ]; then
-	        cpp=${cpp}",-DNO_F90"
-	     fi
           esac
           copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
-	  opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -qextname'
-	  if [ $bit = '32' ]; then
-	     opt="$opt -bmaxdata:0x80000000 -bmaxstack:0x10000000"
-	  else
-	     copt="$copt -q64"
-	     opt="$opt -q64"
-	     cpp=${cpp}",-DVAR_INT64"
-	  fi;;
+          opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -qextname'
+          if [ $bit = '32' ]; then
+             opt="$opt -bmaxdata:0x80000000 -bmaxstack:0x10000000"
+          else
+             copt="$copt -q64"
+             opt="$opt -q64"
+             cpp=${cpp}",-DVAR_INT64"
+          fi;;
     iris4d)
           cpp="-DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           case $opsys in
                IRIX64)  opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0 -woff 2290'
                        copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0'
                         cpp="$cpp -DVAR_INT64";;
-	       *)  opt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0 -woff 2290'
+               *)  opt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0 -woff 2290'
                   copt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0';;
           esac
-	  if [ $F77 = 'f90' ]; then
+          if [ $F77 = 'f90' ]; then
                 F77="f90 -cpp"
                 cpp="$cpp -DVAR_MFDS"
           else
@@ -844,15 +834,15 @@ case "$WHICH" in
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
           fi
-	  inc='-I../include'
+          inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     cray)
           cpp="-DSYS_CRAY -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp $parop"
           fi
-	  inc='-I../include'
-	  cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          inc='-I../include'
+          cpp=${cpp}" -DIMPLICIT_NONE"
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
@@ -861,7 +851,7 @@ case "$WHICH" in
              cpp="$cpp $parop"
           fi
           inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
@@ -869,8 +859,8 @@ case "$WHICH" in
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
           fi
-	  inc='-I../include -I/opt/ctl/mpt/mpt/include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          inc='-I../include -I/opt/ctl/mpt/mpt/include'
+          cpp=${cpp}" -DIMPLICIT_NONE"
           opt="-dp -F -Oaggress,scalar3,vector3,unroll2,msgs,negmsgs"
           def='t3d.x'
           LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
@@ -879,22 +869,19 @@ case "$WHICH" in
           if [ "$mesp" = "dummy" ]; then
              cpp="-cpp $cpp"
           else
-	     set_parallel_def $mesp
-	  fi
+             set_parallel_def $mesp
+          fi
           inc='-I../include'
           cpp=${cpp}" DIMPLICIT_NONE"
-	  if [ "$f90yes" = " -DNO_F90" ]; then
-	     cpp=${cpp}" DNO_F90"
-	  fi
-	  opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
+          opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
     alpha)
           cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
              set_parallel_def $mesp
-	  fi
-	  inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          fi
+          inc='-I../include'
+          cpp=${cpp}" -DIMPLICIT_NONE"
           opt='-fast -fpe3 -warn nouncalled';;
     sun4)
           cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
@@ -903,7 +890,7 @@ case "$WHICH" in
           fi
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
-	     set_parallel_def $mesp
+             set_parallel_def $mesp
           fi
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"
@@ -912,7 +899,7 @@ case "$WHICH" in
           cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
-	      set_parallel_def $mesp
+              set_parallel_def $mesp
           fi
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"
@@ -927,7 +914,7 @@ case "$WHICH" in
                      64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
                          LIB="$LIB +U77 +DA2.0W"
                          copt='+DA2.0W +O3 +Onolimit +Ofastaccess'
-	 		 cpp=${cpp}" -DVAR_INT64";;
+                          cpp=${cpp}" -DVAR_INT64";;
                      *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
                          LIB="-lV7 +U77 $LIB"
                          copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
@@ -940,21 +927,21 @@ case "$WHICH" in
              fi
           fi
           copt=${copt}" -AC99"
-          cpp=${cpp}${f90yes};;
+          cpp=${cpp}$;;
     linux-alpha)
           cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
-	  if [ "$mesp" != "dummy" ]; then
+          if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
-	      set_def $mesp
-	  fi
+              set_def $mesp
+          fi
 #         opt='-fast -assume no2underscores -check nopower'
 #         hjaaj Oct 04: note that HAVE_GCPP is now used to tell c-routines
 #         that the fort fortran compiler can make 2 underscores
           opt='-fast -check nopower'
-	  inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          inc='-I../include'
+          cpp=${cpp}" -DIMPLICIT_NONE"
           copt='-fast';;
-    linux) 
+    linux|cygwin) 
           cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           if [ $split = 'true' ] ; then
              cpp="$cpp -DVAR_SPLITFILES"
@@ -969,9 +956,7 @@ case "$WHICH" in
           if [ "$F77" = mpif77 -o "$F77" = mpif90 ]; then
              if mpif77 -V 2>&1 | grep -q Intel 2> /dev/null; then
                 F77_be=ifort
-             elif mpif77 -v 2>&1 | grep -q 'gcc version 3' 2> /dev/null; then
-                F77_be=g77
-             elif mpif77 -v 2>&1 | grep -q 'gcc version 4' 2> /dev/null; then
+             elif mpif77 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
                 F77_be=gfortran
              else
                 # wild guess.
@@ -1019,57 +1004,29 @@ case "$WHICH" in
              copt="-fastsse -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
               opt="-fastsse -Munroll"; safe_opt="-fastsse"
              ;;
-          g77)
-              test_linux_g77="`$F77 -v 2>&1 | grep '2.96.54'`"
-              if [ $test_linux_g77 != "" ]; then
-                 $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                 $ECHO "There are problems with the native Red Hat 7.0 compiler."
-                 $ECHO "You should upgrade your gcc and gcc-g77-2.96.54 compiler to version 2.96.69 or later."
-                 $ECHO "Dalton does NOT run correct with the current compiler."
-                 $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-              fi
-              test_linux_g77="`$F77 -v 2>&1 | grep '3.3.3'`"
-              if [ "$test_linux_g77" != "" ]; then
-                $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                echo $test_linux_g77
-                $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                $ECHO "Version 3.3.3 is known to give erroneous Dalton code"
-                $ECHO "(e.g. for SuSe Linux 9.1, while 9.2 has 3.3.4 which is OK)"
-                $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-              fi
-              cpp="-DVAR_G77 $cpp"
-              case "$prc" in
-              alpha)  copt="-mieee";;
-              x86_64) copt="-march=x86-64"
-		      cpp=${cpp}" -DVAR_INT64";;
-                  *)  copt="-mcpu=$prc -malign-double";;
-              esac
-              copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-               opt="$copt -fno-globals -Wno-globals"
-              copt="$copt -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
-              ;;
           *)
-#            assuming gfortran
+#            assume gfortran also if not gfortran (but write a WARNING)
              if [ $F77_be = "gfortran" ]; then
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
-	     else
-	       gfver=400
-               echo "$F77_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
-	     fi
+             else
+               gfver=440
+               echo "WARNING: $F77_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
+               echo "Please check Makefile.config carefully and modify compiler options to the correct ones for your selected compiler."
+             fi
              cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                      march="-march=$prc";;
 #            x86_64) march="-march=x86-64 -fdefault-integer-8"
-#		     cpp="${cpp} -DVAR_INT64";;
+#                     cpp="${cpp} -DVAR_INT64";;
 # remove VAR_INT64 for gfortran - it breaks linking against
 # precompiled BLAS libraries./pawsa-Mar-08
              x86_64) march="-march=x86-64"
-		     ;;
+                     ;;
                   *) march=" ";;
              esac
-             copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+             copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
              ;;
           esac
@@ -1080,42 +1037,16 @@ case "$WHICH" in
               def='linuxparallel.x'
           fi
           inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
+          cpp=${cpp}" -DIMPLICIT_NONE";;
     darwin) 
           cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
           fi
-          if [ "$F77" = xlf ]; then
-               cpp="-WF,-DSYS_AIX,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_MMWORK=$incoresiz'"
-               copt='-qarch=auto -O3 -qtune=auto -qmaxmem=-1 -qunroll=yes'
-               opt="$copt -qextname -qstrict -noprebind"
-               def='dalton.x'
-               inc='-I../include'
-               LIB='-L/opt/ibmcmp/lib -L/opt/ibmcmp/xlf/8.1/lib -L/opt/ibmcmp/vacpp/6.0/lib'
-# Notes for xlf (8.1) under OS X 10.3:
-# Tested for G5 architecture (not G4). Significant speedup over g77 for G5. 
-# -prebind required for xlf fortran 8.1 on G5, for xlf 8.0 use -s and NOT -prebind
-# LIB may need to be modified depending on installation of the xlf compiler. 
-          elif [ "$F77" = g77 ]; then
-               cpp="-DVAR_G77 $cpp"
-               mcpu="-mcpu=7450"
-               copt="$mcpu -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-               copt2="$mcpu -O2 -ffast-math -fexpensive-optimizations -funroll-loops"
-               opt="$copt2 -fno-globals -Wno-globals"
-               copt="$copt -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
-               def='linux.x'
-               inc='-I../include'
-               LIB="-lcc_dynamic"
-               cpp=${cpp}" -DIMPLICIT_NONE"
-# Notes for g77 (3.4) under OS X 10.3:
-# For maximum performance, proceed as follows:
-#   1) set -O2 to -O3 in Makefile.config and run "make -k" 
-#   2) reset -O3 to -O2 and rerun "make" 
 #
 # gfortran: Bin Gao, Mar. 9, 2009
-          elif [ "$F77" = gfortran -o "$F77" = mpif90 ]; then
+          if [ "$F77" = gfortran -o "$F77" = mpif90 ]; then
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
                cpp="-DVAR_GFORTRAN -DGFORTRAN=$gfver $cpp"
@@ -1130,7 +1061,7 @@ case "$WHICH" in
                        ;;
                     *) march=" ";;
                esac
-               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
+               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
                f90opt="$opt -I. -x f95-cpp-input"
 #               cxx_ldflags="-lstdc++"
@@ -1147,16 +1078,7 @@ case "$WHICH" in
                pdpackextras='linpack.o eispack.o'
 # Done with Bin Gao
           else
-               cpp="-D SYS_LINUX -D VAR_ABSOFT -D NO_F90 -D 'INSTALL_WRKMEM=$memsiz' -D IMPLICIT_NONE"
-#              F90FLAGS = -YEXT_SFX=_ -YEXT_NAMES=LCS -s -w
-               copt="-mcpu=7450"
-               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops -std=c99"
-               opt="-N11 -N15 -f -N22 -N116 -s -w -N3 -O"
-               def='linux.x'
-               inc='-I../include'
-               LIB="-llapack -lblas -lf90math -lu77 -X -u -X _inidat_ -X -u -X _qbdinit_ -X -u -X _rspinf_ \
--X -u -X _oitbd_ -X -u -X _bdjep_ -X -u -X _bdtra_ -X -u -X _sbdorb_ -X -u -X _sbdtap_ \
--X -u -X _sbdgetd_ -X -u -X _sbdtra_ -X -u -X _sbddim_ -Lsirius -lsirius"
+             echo "$F77 compiler is not defined for Darwin yet"
           fi;;
     hal) 
           cpp="-DSYS_HAL -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz' -Wp,-P"
@@ -1165,7 +1087,7 @@ case "$WHICH" in
              def='parallel.x'
           fi
           inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
+          cpp=${cpp}" -DIMPLICIT_NONE"
           opt="-Kfast,gs,V8PLUS,eval -fs"
           LIB="$LIB -L/usr/ucblib -lucb"
 esac
@@ -1196,22 +1118,22 @@ rm conftest.c conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in DALTON
 # 1) Gen1Int
-get_yes_or_no "\nDo you want to install Gen1Int (see http://sourceforge.net/projects/gen1int)?" n
+get_yes_or_no "Do you want to install Gen1Int (see http://sourceforge.net/projects/gen1int)?" n
 if [ "$answer" = "y" ]; then
   $ECHO "\n-->Trying to find Gen1Int (libgen1int.a) ..."
   lib_genint=`locate libgen1int.a`
-  # asks user to manually provide the path of libgen1int.a
+  # ask user to manually provide the path of libgen1int.a
   if test ${#lib_genint} -eq 0; then
     $ECHO "\n-->Gen1int not found on the system. Please specify path of libgen1int.a, or enter to skip."
     read lib_genint
   fi
   # checks if there is Gen1Int on the system
   if test ${#lib_genint} -gt 0; then
-    $ECHO "\n-->Found Gen1Int ($lib_genint)"
+    $ECHO "\n-->Found Gen1Int $lib_genint"
     # everything is OK to install Gen1Int
     $ECHO "\n-->Modifying Makefile.config ..."
-    $ECHO "-->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
-    $ECHO "-->(2) Adding $lib_genint to LIBS"
+    $ECHO   "-->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
+    $ECHO   "-->(2) Adding $lib_genint to LIBS"
     cpp="-DBUILD_GEN1INT $cpp"
     LIB="$LIB $lib_genint"
   else
@@ -1349,23 +1271,6 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
     fi
 elif [ $WHICH = 'darwin' ]; then
-if [ "$F77" = g77 ]; then
-cat <<EOF>> Makefile.config
-#
-# Suffix rules
-#
-.SUFFIXES : .F .o .c .i
-
-.F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
-
-.c.o:
-$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
-
-.F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
-EOF
-else
 cat <<EOF>> Makefile.config
 #
 # Suffix rules
@@ -1381,14 +1286,13 @@ $tab\$(CC) \$(INCLUDES) -DSYS_LINUX \$(CFLAGS) -c \$*.c
 .F.i:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
-fi
 else cat <<EOF>> Makefile.config
 #
 # Suffix rules
 # hjaaj Oct 04: .g is a "cheat" suffix, for debugging.
 #               'make x.g' will create x.o from x.F or x.c with -g debug flag set.
 #
-.SUFFIXES : .F .c .o .i .g .s
+.SUFFIXES : .F .F90 .c .o .i .g .s
 
 .F.o:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
@@ -1401,6 +1305,18 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F
 
 .F.s:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
+
+.F90.o:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
+
+.F90.i:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
+
+.F90.g:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
+
+.F90.s:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
