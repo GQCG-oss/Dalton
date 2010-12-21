@@ -105,7 +105,7 @@ $ECHO '   Configuring the DALTON Makefile.config and "dalton" run script'
 $ECHO '------------------------------------------------------------------'
 $ECHO ''
 
-arclist='aix cray cray-t3d cray-t3e cygwin dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec darwin'
+arclist='aix cray cray-t3d cray-t3e cygwin dec-alpha linux-alpha linux paragon sgi sun hp cray-t90 nec darwin'
 
 #
 # Attempting auto-configuration. The list of replies from uname should be
@@ -163,7 +163,6 @@ case $ARCH in
     -linux-alpha ) WHICH="linux-alpha";;
     -hp ) WHICH="hp";;
     -linux ) WHICH="linux";;
-    -hal ) WHICH="hal";;
     -darwin ) WHICH="darwin";;  
     -?|-help ) $ECHO " Run from command line: 'configure -<architecture>'\n\n Only the following architectures are defined:\n    $arclist"
         exit 1;;
@@ -210,11 +209,8 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort ifc efc pgf77 gfortran'
+              complist='ifort pgf90 gfortran'
               ccmplist='icc ecc pgcc gcc';;
-    hal)      liblist='libblas.a'
-              complist='frt'
-              ccmplist='cc';;
     hp)       liblist='libblas.a libveclib.a'
               complist='f90 fort77 f77'
               ccmplist='cc'
@@ -313,13 +309,13 @@ if [ "$answer" = "y" ]; then
 # MPI code is IBMs xlf
 #
         if [ "$WHICH" = "rs6000" -o "$WHICH" = "darwin" ]; then
-            complist="mpxlf mpif90 mpif77 $complist"
+            complist="mpxlf mpif90 $complist"
             ccmplist="mpcc  mpicc  $ccmplist"
             parlib='no'
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
         else
-            complist="mpif90 mpif77 $complist"
+            complist="mpif90 $complist"
             ccmplist="mpicc  $ccmplist"
             parlib='yes'
         fi
@@ -403,13 +399,13 @@ for comp in $complist; do
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
-    F77="$ac_cv_prog_F77"
-    if [ -n "$F77" ]; then
-        $ECHO "\n-->Compiler $F77 found and accepted."
+    F90="$ac_cv_prog_F77"
+    if [ -n "$F90" ]; then
+        $ECHO "\n-->Compiler $F90 found and accepted."
         break
     fi
 done
-if [ -z "$F77" ]; then
+if [ -z "$F90" ]; then
     $ECHO "\n   No Fortran compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a Fortran compiler"
     exit 1
@@ -424,10 +420,11 @@ cat <<EOF > F90test.f
       ALLOCATE(WORK(199))
       END PROGRAM
 EOF
-$F77 -o F90test.x F90test.f >/dev/null 2>&1
+$F90 -o F90test.x F90test.f >/dev/null 2>&1
 if [ ! -r F90test.x ]; then
-   $ECHO "$F77 does not have the necessary F90 support. Please specify another compiler"
-   exit 1
+    $ECHO "$F90 does not have the necessary F90 support. Please specify another compiler"
+    exit 1
+    F90mod='F90mod_has_not_been_defined_for_this_compiler_in_configure_yet'
 fi
 rm -f F90test.x F90test.o F90test.f
 #
@@ -514,8 +511,8 @@ for testlib in $liblist; do
           LIBDIR=$testdir
           case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;lapack=true;;
-            libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
-                       pdpackextras="$pdpackextras gp_zlapack.o";;
+            libatlas.a) LIB='-llapack -lf77blas -latlas'; blas3='true'
+                       pdpackextras="$pdpackextras gp_zlapack.o gp_dlapack.o";;
             libessl.a) LIB='-lessl'
                        blas3="true" # - but not complete...
                        # double-check dlapack.
@@ -821,8 +818,8 @@ case "$WHICH" in
                *)  opt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0 -woff 2290'
                   copt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0';;
           esac
-          if [ $F77 = 'f90' ]; then
-                F77="f90 -cpp"
+          if [ $F90 = 'f90' ]; then
+                F90="f90 -cpp"
                 cpp="$cpp -DVAR_MFDS"
           else
                 cpp="$cpp -DNO_F90"
@@ -909,7 +906,7 @@ case "$WHICH" in
              LIB="$LIB"
              cpp=${cpp}" -DVAR_INT64"
           else
-             if [ $F77 = 'f90' ]; then
+             if [ $F90 = 'f90' ]; then
                  case $bit in
                      64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
                          LIB="$LIB +U77 +DA2.0W"
@@ -952,30 +949,32 @@ case "$WHICH" in
              cpp="$cpp -D$parop"
              set_parallel_def $mesp
           fi
-          # if we have mpif77 or mpif90, we need to find backend compiler to set the right options
-          if [ "$F77" = mpif77 -o "$F77" = mpif90 ]; then
-             if mpif77 -V 2>&1 | grep -q Intel 2> /dev/null; then
-                F77_be=ifort
-             elif mpif77 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
-                F77_be=gfortran
+          # if we have mpif90, we need to find backend compiler to set the right options
+          if [ "$F90" = mpif90 ]; then
+             if mpif90 -V 2>&1 | grep -q Intel 2> /dev/null; then
+                F90_be=ifort
+             elif mpif90 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
+                F90_be=gfortran
              else
                 # wild guess.
-                F77_be=pgf77
+                F90_be=pgf90
              fi
-             get_yes_or_no "Is backend compiler $F77_be ?" y
+             get_yes_or_no "Is backend compiler $F90_be ?" y
              if [ "$answer" = "n" ]; then
                 $ECHO 'Then please specify correct backend compiler : \c'
-                read F77_be
-                $ECHO "Continuing with backend compiler $F77_be"
+                read F90_be
+                $ECHO "Continuing with backend compiler $F90_be"
              fi
           else
-             F77_be=$F77
+             F90_be=$F90
           fi
-          case $F77_be in
-          [ei]fc|ifort)
-             if  grep -qw pni /proc/cpuinfo 2>/dev/null; then
-                 proc='-xP'
-             elif grep -qw sse2 /proc/cpuinfo 2>/dev/null; then
+          case $F90_be in
+          ifort)
+             # Dec 2010 Stefan: problems with -xP and LUCITA
+             #if  grep -qw pni /proc/cpuinfo 2>/dev/null; then
+             #    proc='-xP'
+             #elif 
+             if   grep -qw sse2 /proc/cpuinfo 2>/dev/null; then
                  proc='-xW'
              elif [ $prc = 'i686' ]; then
                  proc='-tpp6 -xK'
@@ -985,6 +984,7 @@ case "$WHICH" in
                  proc=''
              fi
              cpp="-DVAR_IFC $cpp"
+             F90mod='-module ../modules'
 #            Dec-07: do not use "-ip" option for interprecedural optimization within file
 #                    gives erroneous code in eri/, at least for ifort version 9.1 /hjaaj
 #                    (-ip will problably never give big speed-up, anyway)
@@ -996,22 +996,23 @@ case "$WHICH" in
                  [ie]cc|mpicc) copt="-O3 $proc -restrict -DRESTRICT=restrict";;
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
              esac
-             LIB="$LIB -Vaxlib"
+             #LIB="$LIB"
              ;;
-          pgf77)
+          pgf90)
              cpp="-DVAR_PGF77 $cpp"
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
              copt="-fastsse -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
               opt="-fastsse -Munroll"; safe_opt="-fastsse"
+             F90mod='-module ../modules'
              ;;
           *)
 #            assume gfortran also if not gfortran (but write a WARNING)
-             if [ $F77_be = "gfortran" ]; then
+             if [ $F90_be = "gfortran" ]; then
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
              else
                gfver=440
-               echo "WARNING: $F77_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
+               echo "WARNING: $F90_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
                echo "Please check Makefile.config carefully and modify compiler options to the correct ones for your selected compiler."
              fi
              cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
@@ -1028,6 +1029,7 @@ case "$WHICH" in
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
+		 F90mod=-J../modules
              ;;
           esac
 
@@ -1046,7 +1048,7 @@ case "$WHICH" in
           fi
 #
 # gfortran: Bin Gao, Mar. 9, 2009
-          if [ "$F77" = gfortran -o "$F77" = mpif90 ]; then
+          if [ "$F90" = gfortran -o "$F90" = mpif90 ]; then
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
                cpp="-DVAR_GFORTRAN -DGFORTRAN=$gfver $cpp"
@@ -1063,6 +1065,7 @@ case "$WHICH" in
                esac
                copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
+		   F90mod=-J../modules
                f90opt="$opt -I. -x f95-cpp-input"
 #               cxx_ldflags="-lstdc++"
                if [ "$mesp" != "dummy" ]; then
@@ -1078,18 +1081,8 @@ case "$WHICH" in
                pdpackextras='linpack.o eispack.o'
 # Done with Bin Gao
           else
-             echo "$F77 compiler is not defined for Darwin yet"
+             echo "$F90 compiler is not defined for Darwin yet"
           fi;;
-    hal) 
-          cpp="-DSYS_HAL -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz' -Wp,-P"
-          if [ "$mesp" != "dummy" ]; then
-             cpp="$cpp -D$parop"
-             def='parallel.x'
-          fi
-          inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"
-          opt="-Kfast,gs,V8PLUS,eval -fs"
-          LIB="$LIB -L/usr/ucblib -lucb"
 esac
 
 if [ "$WHICH" = "rs6000" -a "$bit" = "64" ]; then
@@ -1146,14 +1139,15 @@ ARCH        = $WHICH
 #
 #
 CPPFLAGS      = $cpp
-F77           = $F77
+F90           = $F90
 CC            = $CC
-LOADER        = $F77
+LOADER        = $F90
 RM            = rm -f
 FFLAGS        = $opt
 SAFEFFLAGS    = $safe_opt
 CFLAGS        = $copt
 INCLUDES      = $inc $parinc
+MODULES       = $F90mod
 LIBS          = $LIB $ldflags
 INSTALLDIR    = $INSTALL_DIR
 PDPACK_EXTRAS = $pdpackextras
@@ -1167,7 +1161,7 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 #
-default : $def
+default : dalton $def
 EOF
 
 # Intel compiler seems to be a bit less optimized for certain routines, at
@@ -1175,7 +1169,7 @@ EOF
 # PS: Which version? Are they assumed to be ethernally buggy? And
 # don't even THINK about modifying source files, including
 # Makefiles.
-if [ $F77 = 'ifc' -o $F77 = 'efc' -o $F77 = 'ifort' ]; then
+if [ $F90 = 'ifort' ]; then
 echo 'SAFE2_FFLAGS = $(SAFEFFLAGS)' >> Makefile.config
 else
 echo 'SAFE2_FFLAGS = $(FFLAGS)' >> Makefile.config
@@ -1216,24 +1210,7 @@ if [ "$WHICH" = "rs6000" -a "$opsys" = "2" ]; then
 fi
 
 
-if [ $WHICH = 'hal' ]; then
-   cat <<EOF >> Makefile.config
-#
-# Suffix rules
-#
-.SUFFIXES : .F .f .o .c .i
-
-.F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
-$tab\$(RM) \$*.f
-
-.c.o:
-$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.F 
-
-.F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
-EOF
-elif [ $WHICH = 'rs6000' ]; then
+if [ $WHICH = 'rs6000' ]; then
    if [ $opsys = '2' ]; then
 cat <<EOF>> Makefile.config
 CPP        = $cppuse
@@ -1245,14 +1222,14 @@ CPP        = $cppuse
 .F.o:
 $tab\$(CPP) \$(INCLUDES) \$(CPPFLAGS) \$*.F
 $tab mv \$*.i \$*.f
-$tab\$(F77) \$(FFLAGS) -c \$*.f 
+$tab\$(F90) \$(FFLAGS) -c \$*.f 
 $tab\$(RM) \$*.f
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) -c \$*.c
 
 .F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
     else cat <<EOF>> Makefile.config
 #
@@ -1261,13 +1238,13 @@ EOF
 .SUFFIXES : .F .o .c .i
 
 .F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) -c \$*.c 
 
 .F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
     fi
 elif [ $WHICH = 'darwin' ]; then
@@ -1275,16 +1252,19 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c .i
+.SUFFIXES : .F .F90 .o .c .i
 
 .F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+
+.F90.o:
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) -DSYS_LINUX \$(CFLAGS) -c \$*.c 
 
 .F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
 else cat <<EOF>> Makefile.config
 #
@@ -1295,28 +1275,28 @@ else cat <<EOF>> Makefile.config
 .SUFFIXES : .F .F90 .c .o .i .g .s
 
 .F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
 .F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F > \$*.i
 
 .F.g:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
 
 .F.s:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
 
 .F90.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
 
 .F90.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
 
 .F90.g:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
 
 .F90.s:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
@@ -1334,8 +1314,8 @@ fi
 #
 # Make sure Makefile.depend files exist
 #
-for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius choles; do
- touch $i/Makefile.depend
+for i in abacus amfi cc densfit dft eri gp pdpack rsp sirius soppa choles lucita ; do
+  touch $i/Makefile.depend
 done
 #
 # Update the DALTON run-script
@@ -1354,7 +1334,7 @@ if [ $mesp = 'pvm' ]; then
 fi
 mpirun=`which mpirun 2>/dev/null` || mpirun=mpirun
 
-cat <<EOF > $INSTALL_DIR/dalton
+cat <<EOF > $INSTALL_DIR/dalton.setup
 #!/bin/sh
 ################################################################################
 #                                                                              #
@@ -1379,7 +1359,7 @@ MPIRUN="$mpirun"
 
 INSTALL_BASDIR="$basdir"
 EOF
-cat dalton.gnr >> $INSTALL_DIR/dalton
+cat $INSTALL_DIR/dalton.setup dalton.gnr > $INSTALL_DIR/dalton
 
 chmod 755 $INSTALL_DIR/dalton
 
