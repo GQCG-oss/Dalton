@@ -988,12 +988,10 @@ case "$WHICH" in
 #            Dec-07: do not use "-ip" option for interprecedural optimization within file
 #                    gives erroneous code in eri/, at least for ifort version 9.1 /hjaaj
 #                    (-ip will problably never give big speed-up, anyway)
-             opt="-O3 $proc -w"
-#            opt="-O3 $proc -ip -w"
-             safe_opt="-O1 -w"
+             opt="-O3 $proc -ip -w -fpp -assume byterecl"
+             safe_opt="-O1 -w -fpp -assume byterecl"
              case $CC in
-#                [ie]cc|mpicc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
-                 [ie]cc|mpicc) copt="-O3 $proc -restrict -DRESTRICT=restrict";;
+                 icc|mpicc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
              esac
              #LIB="$LIB"
