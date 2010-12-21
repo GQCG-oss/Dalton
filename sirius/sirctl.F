@@ -724,17 +724,11 @@ C
 
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
 
+         CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+
          CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
 
-!        do i = 1, 20
-!          WORK(i) = i
-!        end do
-
          CALL LUCITA(WORK,LFREE)
-
-!        do i = 1, 20
-!          print *, 'after LUCITA i: WORK(i) = ',i,WORK(i)
-!        end do
 
          CALL SET_INFORB_LUCITA('RESET ')
        END IF

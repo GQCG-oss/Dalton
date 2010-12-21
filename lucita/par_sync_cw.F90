@@ -65,6 +65,9 @@ contains
       select case(need_sync)
         case(.true.)
 !         select synchronization module
+#ifdef LUCI_DEBUG
+          print *,' *** select_sync = ***',select_sync
+#endif
           select case(select_sync)
             case(1) ! CI default settings and input variables
               call sync_coworkers_ci_cfg()
@@ -90,6 +93,9 @@ contains
           print *,' *** sync_coworkers_cfg: synchronization requested but not needed, program continues. ***'
 #endif
       end select
+#ifdef LUCI_DEBUG
+          print *,' *** sync_coworkerscfg: synchronization done. ***'
+#endif
   end subroutine sync_coworkers_cfg
 
   subroutine sync_coworkers_ci_cfg()
@@ -177,6 +183,7 @@ contains
     COMMON/CECORE/ecore,ecore_orig,ecore_h,ecore_hex
     integer    :: i12s,i34s,i1234s,nint1,nint2,nbint1,nbint2
     COMMON/CINTFO/i12s,i34s,i1234s,nint1,nint2,nbint1,nbint2
+!#include "parluci.h"
 !-------------------------------------------------------------------------------
 
 !     total # 1-/2-electron integrals

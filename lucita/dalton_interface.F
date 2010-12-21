@@ -4060,6 +4060,74 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 *
       CALL QEXIT('PUTIN')
       END
+      SUBROUTINE MAKE_LUCITA_INTEGRALS(CMO,WORK,LWORK)
+C
+C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
+C
+#include "implicit.h"
+
+      DIMENSION CMO(*), WORK(LWORK)
+ 
+C Used from include files:
+C  priunit: LUPRI
+C  inforb: NCMOT, nsym
+C  inftap: LUINTM, FNINTM
+C  mxpdim: MXPOBS
+C  orbinp: ntoobs
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+
+      LOGICAL CLOSE_MOTWOINT, DISKH2
+C
+C     -------------------------------------------------------
+C
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
+C
+      IF (LUINTM .LE. 0) THEN
+          CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+          CLOSE_MOTWOINT = .TRUE.
+      ELSE
+          CLOSE_MOTWOINT = .FALSE.
+      END IF
+
+!     allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
+      call memget('REAL',kfcac,nnashx   ,WORK,kfree,lfree)
+      call memget('REAL',kh2ac,nnashx**2,WORK,kfree,lfree)
+
+      DISKH2 = .FALSE.
+      CALL CIINTS(DISKH2,CMO,emy,WORK(kfcac),
+     &            WORK(kh2ac),WORK(kfree),lfree)
+
+      IF (CLOSE_MOTWOINT) THEN
+         CALL GPCLOSE(LUINTM,'KEEP')
+      END IF
+
+#ifdef LUCI_DEBUG
+      WRITE(LUPRI,'(//A)') 'MAKE_LUCITA_INTEGRALS: FCAC matrix'
+      CALL OUTPAK(work(kfcac),NASHT,-1,LUPRI)
+      WRITE(LUPRI,'(//A)') 'MAKE_LUCITA_INTEGRALS: H2AC matrix'
+      CALL OUTPUT(work(kh2ac),1,NNASHX,1,NNASHX,NNASHX,
+     &            NNASHX,-1,LUPRI)
+#endif
+      LUINT_LUCITA = -1
+      CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','NEW',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIINTS'
+      WRITE (LUINT_LUCITA) EMY, NNASHX, NSYM, DUM, DUM
+      CALL WRITT(LUINT_LUCITA, NNASHX, WORK(KFCAC))
+      CALL WRITT(LUINT_LUCITA, NNASHX*NNASHX, WORK(KH2AC))
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+      CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
+
+!     release scratch space
+      call memrel('lucita-dalton-1/2int-write.done',WORK,
+     &            kfrsav,kfrsav,kfree,lfree)
+
+      END ! SUBROUTINE MAKE_LUCITA_INTEGRALS
 ***********************************************************************
 
       SUBROUTINE LUCITA_GETINT_DALTON(EMY,X1INT,X2INT,
@@ -4101,33 +4169,24 @@ C
       KFREE  = KFRSAV
       LFREE  = LWORK
 
-!     read molecular orbital coefficients from dalton-sirius file
-      call memget('REAL',kcmo,ncmot,tmp_dal_work,kfree,lfree)
-      CALL GET_CMOAO(tmp_dal_work(kcmo))
-C
-C-----------------------------------
-C     Read MO integrals into memory.
-C-----------------------------------
-C
-      IF (LUINTM .LE. 0) THEN
-          CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
-     &                'UNFORMATTED',IDUMMY,.FALSE.)
-          CLOSE_MOTWOINT = .TRUE.
-      ELSE
-          CLOSE_MOTWOINT = .FALSE.
-      END IF
-
 !     allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
       call memget('REAL',kfcac,nnashx   ,tmp_dal_work,kfree,lfree)
       call memget('REAL',kh2ac,nnashx**2,tmp_dal_work,kfree,lfree)
 
-      DISKH2 = .FALSE.
-      CALL CIINTS(DISKH2,tmp_dal_work(kcmo),emy,tmp_dal_work(kfcac),
-     &            tmp_dal_work(kh2ac),tmp_dal_work(kfree),lfree)
-
-      IF (CLOSE_MOTWOINT) THEN
-         CALL GPCLOSE(LUINTM,'KEEP')
+      LUINT_LUCITA = -1
+      CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','OLD',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+      CALL MOLLAB('LUCIINTS',LUINT_LUCITA,LUPRI)
+      READ (LUINT_LUCITA) EMY, NNASHX_x, NSYM_x
+      IF (NNASHX .NE. NNASHX_x) THEN
+         call quit('NNASHX in common .ne. NNASHX on INTEGRALS_LUCITA')
       END IF
+      IF (NSYM .NE. NSYM_x) THEN
+         call quit('NSYM in common .ne. NSYM on INTEGRALS_LUCITA')
+      END IF
+      CALL READT(LUINT_LUCITA, NNASHX, tmp_dal_WORK(KFCAC))
+      CALL READT(LUINT_LUCITA, NNASHX*NNASHX, tmp_dal_WORK(KH2AC))
+      CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
 
 #ifdef LUCI_DEBUG
       WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'

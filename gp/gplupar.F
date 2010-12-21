@@ -2863,7 +2863,9 @@ C
         WRITE(luwrt,'(2X,A,I4,A,I5,1X,A,I17)')
      &  'CPU',ISTI-1,' computes',ITLBND,'blocks: total weight ==>',
      &  ITLTND
+        call flshfo(luwrt)
       END DO
+      
 *
       END
 ***********************************************************************
