@@ -1015,7 +1015,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
   290   CONTINUE
         WACC = WACC + W
         NACC = NACC + N
-        WRITE(lupri,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
+        IF (N .GT. 0) WRITE(lupri,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
      &  '   10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   300 CONTINUE
 *
@@ -1043,8 +1043,9 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
               N =  NCPMT(IPOT,JOCCLS)
               W =  WCPMT(IPOT,JOCCLS)
               WACC = WACC + W
-              WRITE(lupri,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &        '   10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
+              IF (N .GT. 0)
+     &           WRITE(lupri,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
+     &           '   10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   370       CONTINUE
           END IF
   400 CONTINUE
@@ -1053,12 +1054,10 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
       WRITE(lupri,'(/A)')
      & '    Total weight and number of SD''s (> 10^{-11}):  '
-      WRITE(lupri,'(A)')
-     &  '  ================================================== '
-      WRITE(lupri,'(a)') 
-     & '         N      Weight      Acc. Weight   Occupation  '
-      WRITE(lupri,'(A)')
-     & '   ==================================================='
+      WRITE(lupri,'(A/A/A)')
+     &  '  =====================================================',
+     &  '         N        Weight    Acc. Weight   Occupation',
+     &  '  ====================================================='
       WACC = 0.0D0
       DO 500 JOCCLS = 1, NOCCLS
           N = 0
@@ -1069,7 +1068,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
   480     CONTINUE
           WACC = WACC + W
           IF(N .NE. 0 ) THEN
-            WRITE(lupri,'(2X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))')
+            WRITE(lupri,'(I11,F14.8,F14.8,2X,16I3)')
      &      N,W,WACC,(IOCCLS(IGAS,JOCCLS),IGAS=1,NGAS)
           END IF
   500 CONTINUE
