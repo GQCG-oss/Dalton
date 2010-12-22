@@ -1505,15 +1505,17 @@ C     fill complete local iscalfac arrays with zero's
       CALL IZERO(WORK(KSCALLOC3), NUM_BLOCKS2)
       CALL IZERO(ISCLFAC_GROUP  , NUM_BLOCKS2)
 C
-csk   WRITE(LUCIWT,*) '  start of subroutine UPDATE_LUC_LIST2 speaking'
-csk   WRITE(LUCIWT,*) 'LUCLIST:'
-csk   CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
-csk   WRITE(LUCIWT,*) 'ISCLFAC_GROUP:'
-csk   CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
-csk   WRITE(LUCIWT,*) 'WORK(KSCALLOC2):'
-csk   CALL IWRTMAMN(WORK(KSCALLOC2),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
-csk   WRITE(LUCIWT,*) 'WORK(KSCALLOC3):'
-csk   CALL IWRTMAMN(WORK(KSCALLOC3),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*) '  start of subroutine UPDATE_LUC_LIST2 speaking'
+      WRITE(luwrt,*) 'LUCLIST:'
+      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      WRITE(luwrt,*) 'ISCLFAC_GROUP:'
+      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      WRITE(luwrt,*) 'WORK(KSCALLOC2):'
+      CALL IWRTMAMN(WORK(KSCALLOC2),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      WRITE(luwrt,*) 'WORK(KSCALLOC3):'
+      CALL IWRTMAMN(WORK(KSCALLOC3),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+#endif
 C
       starttimer = MPI_WTIME()
 C
@@ -1533,6 +1535,13 @@ C
 C     case 2: number of CPUs in new group equal to total number
 C
 C
+#ifdef LUCI_DEBUG
+      write(luwrt,*) 'NEWCOMM_PROC,LUCI_NMPROC',NEWCOMM_PROC,LUCI_NMPROC
+      write(luwrt,*) 'ILUC',ILUC
+      write(luwrt,*) 'MYNEW_COMM',ILUC
+      write(luwrt,*) 'ICOMM',ICOMM
+      write(luwrt,*) 'ICOMM_id, ICOMM_SIZE',ICOMM_id,ICOMM_SIZE
+#endif
 *
       IF( NEWCOMM_PROC .ne. LUCI_NMPROC ) THEN
 *
@@ -1570,11 +1579,13 @@ C
       END IF
 C     ^ NEWCOMM_PROC == LUCI_NMPROC ?
 C
-csk   WRITE(LUCIWT,*) '  subroutine UPDATE_LUC_LIST2 speaking'
-csk   WRITE(LUCIWT,*) 'LUCLIST:'
-csk   CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
-csk   WRITE(LUCIWT,*) 'ISCLFAC_GROUP:'
-csk   CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*) '  subroutine UPDATE_LUC_LIST2 speaking'
+      WRITE(luwrt,*) 'LUCLIST:'
+      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,luwrt)
+      WRITE(luwrt,*) 'ISCLFAC_GROUP:'
+      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,luwrt)
+#endif
 C
 C     final timing for block distribution
       blocktime = blocktime + MPI_WTIME() - starttimer

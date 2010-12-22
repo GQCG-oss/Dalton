@@ -187,7 +187,11 @@ contains
                                                
       process_list_glb = -1
 
-!#ifdef SYS_LOCALDISKS                          
+!     set this flag for parallel global filesystems - e.g. on IBM clusters
+#ifdef VAR_PFS
+      nr_file_groups   =  1
+      process_list_glb =  1
+#else
                                                
 !     find system-dependent unique process name
       call mpixprocname(process_name,process_name_length)
@@ -261,12 +265,6 @@ contains
 
       end do
  
-!     report the count of intra-groups formed by all processes
-      if(my_process_id_glb == 0)then
-        write(print_unit,'(/a,i4,1x,a)')                                    &
-        '  *** final output from the group generator:',                     &
-        local_counter_file_groups,' intra-node group(s) (is) are built. ***'
-      end if
 
       nr_file_groups = local_counter_file_groups
  
@@ -276,10 +274,12 @@ contains
       deallocate(scr_arr_process_name)
       deallocate(scr_arr_name_length)
 
-!#else
-      nr_file_groups   = 1
-      process_list_glb = 1
-!#endif
+#endif /* VAR_PFS */
+
+!     report the count of intra-groups formed by all processes
+      write(print_unit,'(/a,i4,1x,a)')                                    &
+      '  *** final output from the group generator:',                     &
+      local_counter_file_groups,' intra-node group(s) (is) are built. ***'
 
   end subroutine set_file_groups
 !*******************************************************************************
@@ -382,7 +382,6 @@ contains
                                         my_inter_node_id,        &
                                         color,                   &
                                         key)
-
 !     c. shared memory communicator
 
 !     c.1. ijkl communicator

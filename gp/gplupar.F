@@ -1355,6 +1355,7 @@ C**********************************************************************
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCRATCH_P
       INTEGER IGROUPBLK, ROOTPROC, IOFF_BLOCK
+      integer is_new_rootproc_tmp, is_new_rootproc
       CHARACTER*12 WALLTID, SECTID
 C
       bcast_time = 0.0D0
@@ -1435,7 +1436,17 @@ C         decide whether it is necessary to take part in communication
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
 !         CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,JCOMM,IERR)
+
+!         new code without mpi_comm_split
+          is_new_rootproc     = 0
+          is_new_rootproc_tmp = 0
+          IF(LUCI_MYPROC .eq. ROOTPROC) is_new_rootproc_tmp = icomm_id
+          CALL MPI_ALLREDUCE(is_new_rootproc_tmp,is_new_rootproc,1,
+     &                       my_MPI_INTEGER,mpi_max,JCOMM,IERR)
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,is_new_rootproc,
+     &                   JCOMM,IERR)
+!         end of new code without mpi_comm_split
+
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 
 C         transfer the recieved block to disk
@@ -1541,7 +1552,16 @@ C         decide whether it is necessary to take part in communication
 C         broadcast the nonvanishing block
           xcast_time = MPI_WTIME()
 !         CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,JCOMM,IERR)
+
+!         new code without mpi_comm_split
+          is_new_rootproc     = 0
+          is_new_rootproc_tmp = 0
+          IF(LUCI_MYPROC .eq. ROOTPROC) is_new_rootproc_tmp = icomm_id
+          CALL MPI_ALLREDUCE(is_new_rootproc_tmp,is_new_rootproc,1,
+     &                       my_MPI_INTEGER,mpi_max,JCOMM,IERR)
+          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,is_new_rootproc,
+     &                   JCOMM,IERR)
+!         end of new code without mpi_comm_split
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 
 C         transfer the recieved block to disk if necessary
@@ -1933,107 +1953,6 @@ C
 C     ^ loop over vectors
 csk      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',LUCI_MYPROC
 csk      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PAR_BDRIV5(SEGMNT,IBLOCKD,SCALFAC,SCALFAC_GROUP,
-     &                             IBLOCKL,NBLOCK,JCOMM,
-     &                             IGROUPLIST,IPROCLIST)
-C
-C     Read blocks of the vector from disc file luin to array segment
-C     and broadcast to nodes that need the block, save on diskfile luout 
-C     if necessary. 
-C     Using communicator jcomm.
-C     OUTPUT: Blocks on LUOUT, modified SCALFAC_LOCAL.
-C
-C     Stefan Knecht, Odense, Feb07
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*),IBLOCKD(NBLOCK),IBLOCKL(NBLOCK)
-      DIMENSION SCALFAC(NBLOCK),SCALFAC_GROUP(NBLOCK)
-      DIMENSION IGROUPLIST(LUCI_NMPROC),IPROCLIST(LUCI_NMPROC)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
-      INTEGER IGROUPBLK,ROOTPROC
-C
-      ROOTPROC = 0
-C     file offset for each cpu is 0
-      IOFFSET_IN  = 0
-      IOFFSET_OUT = 0
-C
-C LOOP OVER BLOCKS
-C
-      DO IBLK = 1, NBLOCK 
-C       get length of block
-        LBL = IBLOCKL(IBLK)
-C        check if block is active
-        IF( SCALFAC(IBLK) .ne. 0.0D0 ) THEN
-C         check if block belongs to own group
-          IGROUPBLK = 0
-          ISCRNODE = IBLOCKD(IBLK)
-          DO IPROC = 1, NEWCOMM_PROC
-            IF( ISCRNODE .eq. IGROUPLIST(IPROC) ) IGROUPBLK = 1
-          END DO
-          IF( IGROUPBLK .eq. 1 ) THEN
-C
-CSKT            WRITE(6,*) 'ACTIVE BLOCK ',IBLK
-CSKT            WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
-            CALL MPI_FILE_READ_AT(MPILUSCR2,IOFFSET_IN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
-C
-          END IF
-C
-C         find the sending root processor
-          ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
-C
-C         decide whether it is necessary to take part in communication
-C
-          NNKEY = LUCI_MYPROC + 1
-          IF(LUCI_MYPROC .eq. ROOTPROC) NNKEY = 0
-          NNCOLOR = 8
-          IF(SCALFAC_GROUP(IBLK) .ne. 0.0D0) NNCOLOR = 7
-!
-!         stefan: i commented the split/free code out because of
-!         deadlock situation with buggy mpi implementations on horseshoe
-!         at sdu in odense.
-!
-!         CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
- 
-!         IF( NNCOLOR .eq. 8 ) GOTO 200
-C         broadcast the nonvanishing block
-!         CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,IBLOCKCOMM,IERR)
-          CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,0,JCOMM,IERR)
-
-C         transfer the recieved block to disk if necessary
-          if(nncolor .eq. 7)then 
-#ifdef LUCI_DEBUG
-            WRITE(luwrt,*)'THIS IS WHAT I GOT',LUCI_MYPROC
-            CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
-            WRITE(luwrt,*) 'IOFFSET_OUT = ',IOFFSET_OUT
-#endif
-            CALL MPI_FILE_WRITE_AT(MPILUSCR,IOFFSET_OUT,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
-          end if
-C
-!200      CONTINUE
-!         CALL MPI_COMM_FREE(IBLOCKCOMM,IERR)
-C
-        ELSE 
-C         set local scalfac to 0.0D0
-          SCALFAC_GROUP(IBLK) = 0.0D0
-        END IF
-        IOFFSET_OUT = IOFFSET_OUT + LBL
-        IOFFSET_IN  = IOFFSET_IN  + LBL
-C
-      END DO
 C
       END
 ***********************************************************************
