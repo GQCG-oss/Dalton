@@ -763,7 +763,7 @@ C
           WRITE(LUWRT,'(/2X ,A)')
      &    ' **************************************************'
           WRITE(LUWRT,'(2X ,A,I3)')
-     &    ' natural orbital occupation numbers for ROOT = ',JROOT
+     &    ' Natural orbital occupation numbers for ROOT = ',JROOT
           WRITE(LUWRT,'(2X ,A)')
      &    ' **************************************************'
         end if
@@ -791,7 +791,7 @@ C
             WRITE(LUWRT,'(/2X ,A)')
      &      ' **************************************************'
             WRITE(LUWRT,'(2X ,A,I3)')
-     &      ' analysis of leading coefficients for ROOT = ',JROOT
+     &      ' Analysis of leading coefficients for ROOT = ',JROOT
             WRITE(LUWRT,'(2X ,A)')
      &      ' **************************************************'
             IF (NROOT.GT.1) THEN
