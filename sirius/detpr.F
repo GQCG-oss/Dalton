@@ -160,12 +160,7 @@ c remco
 #include <infinp.h>
 #include <infvar.h>
 #include <priunit.h>
-#if (defined(VAR_G77))
-!     integer*8 i_detvec, i_cvec
-      dimension detvec(1),cvec(1)
-#elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
       allocatable detvec(:),cvec(:)
-#endif
 c einde remco
       IF(INCSFB.EQ.0) THEN
 C. SD basis
@@ -183,28 +178,18 @@ C. SD basis
 C. CSF basis (INCSFB .ne. 0)
         CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
      &              NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
-#if (defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77) || !defined (NO_F90))
         if (DONEVPT) then
            write(lupri,100)
-#if !(defined(VAR_G77))
            allocate(detvec(ncdets))
            allocate(cvec(ncdets))
            call dcopy(nconf,civec,1,cvec,1)
            call csdtvc(cvec,detvec,1,XNDXCI(KDTOC),
      *                XNDXCI(KICTS(1)),lsym,0,0)
-#else
-           i_detvec=iallor8(detvec,ncdets)
-           i_cvec=iallor8(cvec,ncdets)
-           call dcopy(nconf,civec,1,cvec(i_cvec),1)
-           call csdtvc(cvec(i_cvec),detvec(i_detvec),1,XNDXCI(KDTOC),
-     *                XNDXCI(KICTS(1)),lsym,0,0)
-#endif
            IF( ICOMBI .EQ. 0 ) THEN
               NCIVAR = NDTASM(ICSYM)
            ELSE
               NCIVAR = NCMASM(ICSYM)
            END IF
-#if !(defined(VAR_G77))
            CALL ANACI2(detvec,XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,
      &              NOCTPB,MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
      &              XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
@@ -212,16 +197,6 @@ C. CSF basis (INCSFB .ne. 0)
      &              XNDXCI(KLTSOB),IOUT)
            deallocate (detvec)
            deallocate (cvec)
-#else
-      CALL ANACI2(detvec(i_detvec),XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,
-     &              NOCTPB,MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
-     &              XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
-     &              NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
-     &              XNDXCI(KLTSOB),IOUT)
-           call memrelr8 (detvec(i_detvec))
-           call memrelr8 (cvec(i_cvec))
-#endif
-#endif
         endif
       END IF
 C

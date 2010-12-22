@@ -8348,7 +8348,7 @@ C Christof Haettig, Juni 1998
 
       DO I = 1,NX1LBL
          ! the following crappy comparison of LORX with LORXX1 was
-         ! necessary to get it through the G77 and the XLF compilers
+         ! necessary to get it through the XLF compilers
          LORX1 = (LORX.AND.LORXX1(I)) .OR.
      &           ((.NOT.LORX).AND.(.NOT.LORXX1(I)))
          IF ( (NEWLBL .EQ. LBLX1(I)) .AND. LORX1 .AND. 

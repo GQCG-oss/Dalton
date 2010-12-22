@@ -2580,11 +2580,7 @@ C
 
       CALL DAXPY(N4,DM1,WORK(KPVTMP),1,PVSQ,1)
       CALL DSCAL(N4,DP25,PVSQ,1)
-#if defined (NO_F90)
-      CALL QUIT('RESHAPE of PVSQ only in F90')
-#else
       PVSQ=RESHAPE(PVSQ,(/NASHT,NASHT,NASHT,NASHT/),ORDER=(/1,4,3,2/))
-#endif
       CALL DAXPY(N4,DP5,WORK(KPVTMP),1,PVSQ,1)
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('Complete PV matrix MAKPVM',-1)

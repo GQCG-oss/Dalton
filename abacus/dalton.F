@@ -104,12 +104,9 @@ Cef end
       DIMENSION WORK(2)
 #else
 #if defined (SYS_NEC) || defined (SYS_AIX)
-#if defined (NO_F90)
+
       POINTER (WADDR,WORK(1))
-#else
-      DOUBLE PRECISION , ALLOCATABLE , DIMENSION(:) :: WORK
-      INTEGER                           :: WADDR
-#endif
+
 #else
 C
 C     Static memory allocation
@@ -182,9 +179,6 @@ C
 #endif
 
 #if defined (SYS_NEC) || defined (SYS_AIX)
-#if defined (NO_F90)
-      WADDR = MALLOC(NBYTES)
-#else
       WADDR = 1
       ALLOCATE (WORK(LMWORK+2),STAT=I)
       IF (I .NE. 0) THEN
@@ -193,7 +187,6 @@ C
          WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
          CALL QUIT('Failed to allocate memory')
       END IF
-#endif
 #endif
       IF (WADDR .EQ. 0) THEN
          WRITE(LUERR,1000)
@@ -419,7 +412,7 @@ C
      &  '(DALTON; ABACUS magnetic properties and  much more)',
      *'Pawel Salek,','KTH Stockholm,','Sweden','(DALTON; DFT code)',
      *'Alfredo Sanchez de Meras,','University of Valencia,','Spain',
-     &  '(Cholesky decomposition)',
+     &  '(CC module, Cholesky decomposition)',
      *'Trond Saue,','CNRS/ULP Toulouse,','France',
      &  '(direct Fock matrix construction)',
      *'Stephan P. A. Sauer,','University of Copenhagen,','Denmark',

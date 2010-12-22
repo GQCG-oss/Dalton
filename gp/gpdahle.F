@@ -541,9 +541,7 @@ C  /* Deck getdate */
 #include <implicit.h>
 #include <priunit.h>
 #if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
-#if !defined (VAR_G77)
       CHARACTER*(24) FDATE
-#endif
 #endif
 #if defined (SYS_HAL)
       CHARACTER*(24) CFDATE

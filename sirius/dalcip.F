@@ -35,7 +35,7 @@ C
      *           inact,iact,nact,lfermi,nisht,nsym,LUN98,mult)
 #include <implicit.h>
 #include <priunit.h>
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)||defined(VAR_GFORTRAN)) && defined (NO_F90)
+#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_GFORTRAN))
       return
       end
 #else
@@ -49,10 +49,6 @@ c      integer*1 ast,bst
       integer astr(1600),bstr(1600),iecci(0:100)
       character*1 zwspin(600),zplus,zmoins
       dimension inact(8),iact(8)
-#ifdef VAR_G77
-      integer*1 occu
-      dimension occu(1),iel(1),npos(1000)
-#endif
 c     integer tri
 c     tri(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
       zplus='+'
@@ -106,16 +102,8 @@ c        elseif (mod((nela-nelb),2).eq.1)then !doublets, quartets,...
          nec=ne(idet)
          if(idet.lt.ndet)nd(idet+1)=nd(idet)+nec
         enddo
-#if !defined(VAR_G77)
       call ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
      $     ,mult,iorb,ispin)
-#else
-      i_occu=ialloi1(occu,norb*ndet)
-      i_iel=ialloi4(iel,norb)
-c      i_npos=ialloi4(npos,norb)
-      call ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
-     $     ,mult,iorb,ispin,occu(i_occu),iel(i_iel),npos)
-#endif
 c     if(nela.eq.nelb)then
 c      if(mult.eq.1)then
 c         call orderfe3(nexmax,iecci,ndet,c,nd,ne,trou,part,nm,ina,ast,
@@ -562,26 +550,16 @@ c
        return
        end
 c---------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
      $     ,mult,iorb,ispin)
 #include <implicit.h>
-#else
-      subroutine ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
-     $     ,mult,iorb,ispin,occu,iel,npos)
-#include <implicit.h>
-      integer*1 occu(norb,ndet)
-      dimension iel(*),npos(*)
-#endif
       DIMENSION c(*)
       dimension nd(*),ne(*),trou(*),part(*),iorb(*),ispin(*)
       integer*2 ne,trou,part,ibu(100),ipa(100),iorb,ispin
       integer iecci(0:100)
       integer*1 o
-#if !defined(VAR_G77)
       integer*1 occu
       allocatable occu(:,:),iel(:),npos(:)
-#endif
       nexmax=0
       do i=0,100
          iecci(i)=0
@@ -605,12 +583,10 @@ c---------------------------------------------------------------
       rewind lun15
       nd(1)=0
       idet1=1
-#if !defined(VAR_G77)
       allocate(occu(norb,ndet))
       allocate(iel(norb))
 c      allocate(npos(norb))   !wrong should be maximum of a deter space
       allocate(npos(1000))    !covers 12-open shell
-#endif
       do iec=0,nexmax
        do idet=idet1,idet1+iecci(iec)-1
         read(lun15)c(idet),nec,(ibu(i),ipa(i),i=1,nec)

@@ -277,7 +277,7 @@ C     ... define exit code to the environment for MPI_ABORT
 #endif
 C
       CALL TRACE
-#if defined(VAR_G77)||defined(VAR_IFC)||defined(SYS_IRIX)||defined(SYS_AIX)
+#if defined(VAR_IFC)||defined(SYS_IRIX)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
       STOP 100
@@ -371,7 +371,7 @@ C     Assume same for DEC    -- 21-May-1992 hjaaj
 C     Assume same for IRIX   --  3-Feb-1994 hjaaj; except recl in *4 words
 C     Assume same for PARAGON-- 13-Oct-1994 hjaaj
 C
-#if (defined (SYS_IRIX) && defined(NO_F90)) || defined (SYS_NEC)
+#if (defined (SYS_IRIX) || defined (SYS_NEC))
       LRECL  = NELEM
 #else
 #ifdef VAR_INT64

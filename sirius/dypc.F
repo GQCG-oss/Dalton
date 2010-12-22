@@ -63,7 +63,7 @@ C-----------------------------------------------------------------------
 #else
       IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
 #endif
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)) && defined (NO_F90)
+#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_GFORTRAN))
       return
       end
 #else
@@ -76,12 +76,7 @@ C-----------------------------------------------------------------------
       dimension id2n(*),in2d(*),onel(*)
       dimension WRK(LWRK)
       dimension itsym(*),its(8,8),zgel(*)
-#if !defined(VAR_G77)
       allocatable heffd(:),fmpb(:),igelo(:)
-#else
-      dimension heffd(1),fmpb(1),igelo(1),h2m(1),tint(1),tintar(1)
-     $,tintra(1),tinta(1),tintc(1),fock(1)
-#endif
 C
 C     Generalized Koopmans matrices
 C 
@@ -93,7 +88,6 @@ C     gk0pa = A matrix used for the 0' class (see report)
 C     gk0pd = D matrix used for the 0' class (see report)
 C     gk0pf = F matrix used for the 0' class (see report)
 C
-#if !defined(VAR_G77)
       allocatable gkp1a(:,:),gkm1a(:,:)
       allocatable gkp2aa(:,:,:,:)
       allocatable gkm2aa(:,:,:,:)
@@ -113,20 +107,6 @@ C
       allocatable da(:,:)
       allocatable daa(:,:,:,:)
       allocatable daat(:,:,:,:)
-#else
-      dimension gkp1a(1),gkm1a(1)
-      dimension gkp2aa(1)
-      dimension gkm2aa(1)
-      dimension gk0pa(1),gk0pd(1),gk0pf(1)
-      dimension ro3(1),amat(1),bmat(1),
-     *            cmat(1),dmat(1)
-      dimension atmat(1),btmat(1),
-     *            ctmat(1),dtmat(1)
-      dimension rho(1),w(1),work(1)
-      dimension da(1)
-      dimension daa(1)
-      dimension daat(1)
-#endif
 c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
       CALL QENTER('DYPC')
@@ -151,66 +131,34 @@ c      CALL OFILES
       E2SC(1)=0.d0
       E2PC(1)=0.d0
       call nwadd(nwall,norb*(8+1+4+1))
-#if !defined(VAR_G77)
       allocate(fmpb(norb))
-#else
-      i_fmpb=iallor8(fmpb,norb)
-#endif
 
       e(1)=escf
 
       call nwadd(nwall,nact**2*8)
-#if !defined(VAR_G77)
       allocate(da(1:nact,1:nact))
       read(lun31)
       read(lun31)((da(k,l),k=1,nact),l=1,nact)
-#else
-      i_da=iallor8(da,nact**2)
-      read(lun31)
-c      read(lun31)((da(k,l),k=1,nact),l=1,nact)
-      call rdd2(lun31,da(i_da),nact)
-#endif
 
 C
 C     Let us compute the inactive orbitals energies
 C
       call nwadd(nwall,(norb*(norb+1)/2)*8)
-#if !defined(VAR_G77)
       allocate(heffd(norb*(norb+1)/2))
       call getorbeps(WRK,LWRK,onel,heffd,fmpb,da,norb,nact,
      *               ncore,id2n,in2d)
-#else
-      i_heffd=iallor8(heffd,norb*(norb+1)/2)
-      i_h2m=iallor8(h2m,norb**2)
-      i_fock=iallor8(fock,norb**2)
-      call getorbeps(WRK,LWRK,onel,heffd(i_heffd),fmpb(i_fmpb),da(i_da)
-     $     ,norb,nact,ncore,id2n,in2d,h2m(i_h2m),fock(i_fock))
-      call memrelr8(fock(i_fock))
-#endif
 c
 c     Debug printing of the frozen core orbitals
 c
-#if !defined(VAR_G77)
        allocate (igelo(norb))
-#else
-        i_igelo=ialloi4(igelo,norb)
-#endif
        ngel=0
        do i=1,norb
        if (zgel(i)) then
         ngel=ngel+1
-#if !defined(VAR_G77)
         igelo(ngel)=i
-#else
-        igelo(i_igelo+ngel-1)=i
-#endif
        endif
        enddo
-#if !defined(VAR_G77)
       if (ngel.gt.0) write (lupri,271) (igelo(i),i=1,ngel)
-#else
-      if (ngel.gt.0) write (lupri,271) (igelo(i_igelo+i-1),i=1,ngel)
-#endif
   271 format(/'     FROZEN ORBITALS:'/10(5x,18i4/))
       write (lupri,*)
       write (lupri,*)
@@ -230,15 +178,8 @@ c
       nvirt=norb-ncoat     
       if(ncore.gt.0.and.nvirt.gt.0)then
          write (lupri,*)'V(0) class'
-#if !defined(VAR_G77)
          call v0(luintd,norb,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,
      *        fmpb,zgel,lupri,nwall)
-#else
-         i_tint=iallor8(tint,(norb-ncore-nact)**2)
-         call v0(luintd,norb,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,
-     *        fmpb(i_fmpb),zgel,lupri,nwall,h2m(i_h2m),tint(i_tint))
-         call memrelr8(tint(i_tint))
-#endif
          write (lupri,125)'E2SC =',e2scc(1)
          write (lupri,125)'E2PC =',e2pcc(1)
          write (lupri,125)'PSISC=',psiscc(1)
@@ -254,27 +195,12 @@ c
       if(ncore.gt.0.and.nvirt.gt.0)then
          write (lupri,*)'V(+1) class'
          call nwadd(nwall,nact**2*8)
-#if !defined(VAR_G77)
          allocate(gkp1a(1:nact,1:nact))
          read(lun31)((gkp1a(k,l),k=1,nact),l=1,nact)
          call v1k(luintd,da,gkp1a,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
          call nwdel(nwall,nact**2*8)
          deallocate (gkp1a)
-#else
-         i_gkp1a=iallor8(gkp1a,nact**2)
-c         read(lun31)((gkp1a(k,l),k=1,nact),l=1,nact)
-         call rdd2(lun31,gkp1a(i_gkp1a),nact)
-         i_tintar=iallor8(tintar,nact*(norb-ncore-nact))
-         i_tintra=iallor8(tintra,nact*(norb-ncore-nact))
-         call v1k(luintd,da(i_da),gkp1a(i_gkp1a),norb,ncore,nact,in2d
-     $        ,id2n,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel,lupri,nwall
-     $        ,h2m(i_h2m),tintar(i_tintar),tintra(i_tintra))
-         call nwdel(nwall,nact**2*8)
-         call memrelr8 (gkp1a(i_gkp1a))
-         call memrelr8 (tintra(i_tintra))
-         call memrelr8 (tintar(i_tintar))
-#endif
          write (lupri,125)'E2SC =',e2scc(2)
          write (lupri,125)'E2PC =',e2pcc(2)
          write (lupri,125)'PSISC=',psiscc(2)
@@ -293,25 +219,12 @@ c
       if(ncore.gt.0.and.nvirt.gt.0)then
          write (lupri,*)'V(-1) class'
          call nwadd(nwall,nact**2*8)
-#if !defined(VAR_G77)
          allocate(gkm1a(1:nact,1:nact))
          read(lun31)((gkm1a(k,l),k=1,nact),l=1,nact)
          call vm1k(da,gkm1a,norb,ncore,nact,in2d,id2n,itsym,its,
      *        wrk,lwrk,fmpb,zgel,lupri,nwall)
          call nwdel(nwall,nact**2*8)
          deallocate (gkm1a)
-#else
-         i_gkm1a=iallor8(gkm1a,nact**2)
-c         read(lun31)((gkm1a(k,l),k=1,nact),l=1,nact)
-         call rdd2(lun31,gkm1a(i_gkm1a),nact)
-         i_tint=iallor8(tint,(norb-ncore-nact)**2*ncore*nact)
-         call vm1k(da(i_da),gkm1a(i_gkm1a),norb,ncore,nact,in2d,id2n
-     $        ,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel,lupri,nwall
-     $        ,h2m(i_h2m),tint(i_tint))
-         call nwdel(nwall,nact**2*8)
-         call memrelr8 (gkm1a(i_gkm1a))
-         call memrelr8(tint(i_tint))
-#endif
          write (lupri,125)'E2SC =',e2scc(3)
          write (lupri,125)'E2PC =',e2pcc(3)
          write (lupri,125)'PSISC=',psiscc(3)
@@ -328,7 +241,6 @@ c
       if(ncore.gt.0)then
          write(lupri,*)'V(+2) class'
          call nwadd(nwall,2*nact**4*8)
-#if !defined(VAR_G77)
          allocate(gkp2aa(1:nact,1:nact,1:nact,1:nact))
          allocate(daat(1:nact,1:nact,1:nact,1:nact))
          do i=1,nact
@@ -346,30 +258,6 @@ c
          call nwdel(nwall,2*nact**4*8)
          deallocate (gkp2aa)
          deallocate (daat)
-#else
-         i_gkp2aa=iallor8(gkp2aa,nact**4)
-         i_daat=iallor8(daat,nact**4)
-         do i=1,nact
-            do j=1,nact
-c               read(lun31)((daat(i,j,k,l),k=1,nact),l=1,nact)
-               call rdd4(lun31,daat(i_daat),i,j,nact)
-            enddo
-         enddo
-         do i=1,nact
-            do j=1,nact
-c               read(lun31)((gkp2aa(i,j,k,l),k=1,nact),l=1,nact)
-               call rdd4(lun31,gkp2aa(i_gkp2aa),i,j,nact)
-            enddo
-         enddo
-         i_tint=iallor8(tint,nact**2*ncore**2)
-         call v2mod(gkp2aa(i_gkp2aa),daat(i_daat),norb,ncore,nact,in2d
-     $        ,id2n,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel,lupri,nwall
-     $        ,h2m(i_h2m),tint(i_tint))
-         call nwdel(nwall,2*nact**4*8)
-         call memrelr8 (gkp2aa(i_gkp2aa))
-         call memrelr8 (daat(i_daat))
-         call memrelr8(tint(i_tint))
-#endif
          write(lupri,125)'E2SC =',e2scc(4)
          write(lupri,125)'E2PC =',e2pcc(4)
          write(lupri,125)'PSISC=',psiscc(4)
@@ -388,26 +276,15 @@ c               read(lun31)((gkp2aa(i,j,k,l),k=1,nact),l=1,nact)
 c     
 c     V^(-2) term
 c
-#if !defined(VAR_G77)
       allocate(daa(1:nact,1:nact,1:nact,1:nact))
       do i=1,nact
       do j=1,nact
       read(lun31)((daa(i,j,k,l),k=1,nact),l=1,nact)
       enddo
       enddo
-#else
-      i_daa=iallor8(daa,nact**4)
-      do i=1,nact
-      do j=1,nact
-c      read(lun31)((daa(i,j,k,l),k=1,nact),l=1,nact)
-         call rdd4(lun31,daa(i_daa),i,j,nact)
-      enddo
-      enddo
-#endif
       if(nvirt.gt.0)then
          write (lupri,*)'V(-2) class'
          call nwadd(nwall,2*nact**4*8)
-#if !defined(VAR_G77)
          allocate(gkm2aa(1:nact,1:nact,1:nact,1:nact))
          do i=1,nact
             do j=1,nact
@@ -418,22 +295,6 @@ c      read(lun31)((daa(i,j,k,l),k=1,nact),l=1,nact)
      *        wrk,lwrk,fmpb,zgel,lupri,nwall)
          call nwdel(nwall,nact**4*8)
          deallocate (gkm2aa)
-#else
-         i_gkm2aa=iallor8(gkm2aa,nact**4)
-         do i=1,nact
-            do j=1,nact
-c               read(lun31)((gkm2aa(i,j,k,l),k=1,nact),l=1,nact)
-               call rdd4(lun31,gkm2aa(i_gkm2aa),i,j,nact)
-            enddo
-         enddo
-         i_tint=iallor8(tint,(norb-ncore-nact)**2*nact**2)
-         call vm2mod(daa(i_daa),gkm2aa(i_gkm2aa),norb,ncore,nact,in2d
-     $        ,id2n,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel,lupri,nwall
-     $        ,h2m(i_h2m),tint(i_tint))
-         call nwdel(nwall,nact**4*8)
-         call memrelr8 (gkm2aa(i_gkm2aa))
-         call memrelr8(tint(i_tint))
-#endif
          write (lupri,125)'E2SC= ',e2scc(5)
          write (lupri,125)'E2PC= ',e2pcc(5)
          write (lupri,125)'PSISC=',psiscc(5)
@@ -454,7 +315,6 @@ c
       if(ncore.gt.0.and.nvirt.gt.0)then
          write(lupri,*)'V(0'') class'
          call nwadd(nwall,2*nact**4*8)
-#if !defined(VAR_G77)
          allocate(gk0pa(1:nact,1:nact,1:nact,1:nact))
          allocate(gk0pd(1:nact,1:nact,1:nact,1:nact))
          call nwadd(nwall,nact**2*8)
@@ -473,35 +333,6 @@ c
          deallocate (gk0pd)
          call nwdel(nwall,nact**2*8)
          deallocate (gk0pf)
-#else
-         i_gk0pa=iallor8(gk0pa,nact**4)
-         i_gk0pd=iallor8(gk0pd,nact**4)
-         call nwadd(nwall,nact**2*8)
-         i_gk0pf=iallor8(gk0pf,nact**2)
-         do i=1,nact
-            do j=1,nact
-c               read(lun31)((gk0pa(i,j,k,l),k=1,nact),l=1,nact)
-c               read(lun31)((gk0pd(i,j,k,l),k=1,nact),l=1,nact)
-               call rdd4(lun31,gk0pa(i_gk0pa),i,j,nact)
-               call rdd4(lun31,gk0pd(i_gk0pd),i,j,nact)
-            enddo
-         enddo
-c         read(lun31)((gk0pf(k,l),k=1,nact),l=1,nact)
-         call rdd2(lun31,gk0pf(i_gk0pf),nact)
-         i_tinta=iallor8(tinta,(norb-ncore-nact)*ncore*nact**2)
-         i_tintc=iallor8(tintc,(norb-ncore-nact)*ncore*nact**2)
-         call v0pmod(da(i_da),daa(i_daa),gk0pa(i_gk0pa),gk0pd(i_gk0pd)
-     $        ,gk0pf(i_gk0pf),heffd(i_heffd),norb,ncore,nact,in2d,id2n
-     $        ,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel,lupri,nwall
-     $        ,h2m(i_h2m),tinta(i_tinta),tintc(i_tintc))
-         call nwdel(nwall,2*nact**4*8)
-         call memrelr8 (gk0pa(i_gk0pa))
-         call memrelr8 (gk0pd(i_gk0pd))
-         call nwdel(nwall,nact**2*8)
-         call memrelr8 (gk0pf(i_gk0pf))
-         call memrelr8 (tinta(i_tinta))
-         call memrelr8(tintc(i_tintc))
-#endif
          write(lupri,125)'E2SC =',e2scc(8)
          write(lupri,125)'E2PC =',e2pcc(8)
          write(lupri,125)'PSISC=',psiscc(8)
@@ -525,7 +356,6 @@ c
 
 
       call nwadd(nwall,2*nact**6*8)
-#if !defined(VAR_G77)
       allocate(ro3(1:nact,1:nact,1:nact,1:nact,1:nact,1:nact))
       allocate(amat(1:nact,1:nact,1:nact,1:nact,1:nact,1:nact))
       call nwadd(nwall,2*nact**4*8)
@@ -557,48 +387,6 @@ c----Reading of the dmat and dtmat matrices
          write (lupri,125)'V(-1)'' class'
          call vmupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,ncore,nact
      $        ,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      i_ro3=iallor8(ro3,nact**6)
-      i_amat=iallor8(amat,nact**6)
-      call nwadd(nwall,2*nact**4*8)
-      i_bmat=iallor8(bmat,nact**4)
-      i_cmat=iallor8(cmat,nact**4)
-      call nwadd(nwall,nact**2*8)
-      i_dmat=iallor8(dmat,nact**2)
-c-----Reading of the 3 part spinless matrix and amat matrix
-      do i=1,nact
-         do j=1,nact
-            do k=1,nact
-               do l=1,nact
-c                  read(lun31)((ro3(i,j,k,l,ip,jp),ip=1,nact),jp=1,nact)
-c                  read(lun31)((amat(i,j,k,l,ip,jp),ip=1,nact),jp=1,nact)
-               call rdd6(lun31,ro3(i_ro3),i,j,k,l,nact)
-               call rdd6(lun31,amat(i_amat),i,j,k,l,nact)
-               enddo
-            enddo
-         enddo
-      enddo
-c----Reading of the bmat, cmat, btmat and ctmat matrices
-      do i=1,nact
-         do j=1,nact
-c            read(lun31)((bmat(i,j,k,l),k=1,nact),l=1,nact)
-c            read(lun31)((cmat(i,j,k,l),k=1,nact),l=1,nact)
-               call rdd4(lun31,bmat(i_bmat),i,j,nact)
-               call rdd4(lun31,cmat(i_cmat),i,j,nact)
-         enddo
-      enddo
-c----Reading of the dmat and dtmat matrices
-c      read(lun31)((dmat(i,j),i=1,nact),j=1,nact)
-      call rdd2(lun31,dmat(i_dmat),nact)
-      if(nvirt.gt.0)then
-         write (lupri,125)'V(-1)'' class'
-         i_tint=iallor8(tint,(norb-ncore-nact)*nact**3)
-         call vmupE(ro3(i_ro3),amat(i_amat),bmat(i_bmat),cmat(i_cmat)
-     $        ,dmat(i_dmat),daa(i_daa),da(i_da),heffd(i_heffd),norb
-     $        ,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel
-     $        ,lupri,nwall,h2m(i_h2m),tint(i_tint))
-         call memrelr8(tint(i_tint))
-#endif
          write (lupri,125)'E2SC =',e2scc(7)
          write (lupri,125)'E2PC =',e2pcc(7)
          write (lupri,125)'PSISC=',psiscc(7)
@@ -615,7 +403,6 @@ c
       if(ncore.gt.0)then
          write (lupri,*)'V(+1)'' class'
 c-----Reading of the matrices for the V+1' term
-#if !defined(VAR_G77)
          do i=1,nact
             do j=1,nact
                do k=1,nact
@@ -637,38 +424,6 @@ c---- Reading of the dmat matrix
          read(lun31)((dmat(i,j),i=1,nact),j=1,nact)
          call vpupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,ncore,nact
      $        ,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-         do i=1,nact
-            do j=1,nact
-               do k=1,nact
-                  do l=1,nact
-c                     read(lun31)((amat(i,j,k,l,ip,jp),ip=1,nact),jp=1
-c     $                    ,nact)
-                     call rdd6(lun31,amat(i_amat),i,j,k,l,nact)
-                  enddo
-               enddo
-            enddo
-         enddo
-c---- Reading of the matrices bmat and cmat matrices
-         do i=1,nact
-            do j=1,nact
-c               read(lun31)((bmat(i,j,k,l),k=1,nact),l=1,nact)
-c               read(lun31)((cmat(i,j,k,l),k=1,nact),l=1,nact)
-               call rdd4(lun31,bmat(i_bmat),i,j,nact)
-               call rdd4(lun31,cmat(i_cmat),i,j,nact)
-            enddo
-         enddo
-c---- Reading of the dmat matrix
-c         read(lun31)((dmat(i,j),i=1,nact),j=1,nact)
-         call rdd2(lun31,dmat(i_dmat),nact)
-         i_tint=iallor8(tint,nact**3*ncore)
-         call vpupE(ro3(i_ro3),amat(i_amat),bmat(i_bmat),cmat(i_cmat)
-     $        ,dmat(i_dmat),daa(i_daa),da(i_da),heffd(i_heffd),norb
-     $        ,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb(i_fmpb),zgel
-     $        ,lupri,nwall,h2m(i_h2m),tint(i_tint))
-         call memrelr8(tint(i_tint))
-         call memrelr8(h2m(i_h2m))
-#endif
          write (lupri,125)'E2SC =',e2scc(6)
          write (lupri,125)'E2PC =',e2pcc(6)
          write (lupri,125)'PSISC=',psiscc(6)
@@ -679,11 +434,7 @@ c         read(lun31)((dmat(i,j),i=1,nact),j=1,nact)
 c
       endif
       call nwdel(nwall,(norb*(norb+1)/2)*8)
-#if !defined(VAR_G77)
       deallocate (heffd)
-#else
-      call memrelr8 (heffd(i_heffd))
-#endif
       write (lupri,*) ' Strongly Contracted and Partially Contracted ',
      * 'NEVPT2 results for each class'
       write (lupri,*) 
@@ -701,21 +452,12 @@ c
       write (lupri,123) 'Total',psisc(1),e2sc(1),psipc(1),e2pc(1)
   123 format (2x,A,4f15.10)
       
-#if !defined(VAR_G77)
       deallocate(ro3)
       deallocate(amat)
       deallocate(bmat)
       deallocate(cmat)
       deallocate(dmat)
       deallocate(daa)
-#else
-      call memrelr8(ro3(i_ro3))
-      call memrelr8(amat(i_amat))
-      call memrelr8(bmat(i_bmat))
-      call memrelr8(cmat(i_cmat))
-      call memrelr8(dmat(i_dmat))
-      call memrelr8(daa(i_daa))
-#endif
 cro      if(zro)then
 cro         allocate(rho(1:norb,1:norb))
 cro         call dzero(rho,norb**2)
@@ -783,43 +525,8 @@ c 1105 FORMAT (' REFERENCE: ',F16.8,//)
       return
       END
 c----------------------------------------------------------------------
-#if defined(VAR_G77)
-      subroutine rdd2(lun31,da,nact)
-#include <implicit.h>      
-      DIMENSION da(nact,nact)
-!     read(lun31)((da(i,j),i=1,nact),j=1,nact)
-      read(lun31) da
-      return
-      end
-      subroutine rdd4(lun31,daat,i,j,nact)
-#include <implicit.h>
-      DIMENSION daat(nact,nact,nact,nact)
-      read(lun31)((daat(i,j,k,l),k=1,nact),l=1,nact)
-      return
-      end
-      subroutine rdd6(lun31,amat,i,j,k,l,nact)
-#include <implicit.h>
-      DIMENSION amat(nact,nact,nact,nact,nact,nact)
-      read(lun31)((amat(i,j,k,l,ip,jp),ip=1,nact),jp=1,nact)
-      return
-      end
-#endif
-C***********************************************************************
-c      SUBROUTINE OFILES
-c      implicit character*64(f)
-c      file31='fort.31'
-c      open(31,file=file31,form='UNFORMATTED',status='OLD')
-c      rewind 31
-c      RETURN
-c      END
-C***********************************************************************
-#if !defined(VAR_G77)
       subroutine v0(luintd,norb,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,
      * fmpb,zgel,lupri,nwall)
-#else
-      subroutine v0(luintd,norb,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,
-     * fmpb,zgel,lupri,nwall,h2m,tint)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -830,11 +537,7 @@ C***********************************************************************
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
      *               ntotdet,ntotconf,ntotcap,zro
       dimension WRK(LWRK)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tint(:,:)
-#else
-      dimension h2m(norb,*),tint(norb-ncore-nact,*)
-#endif
       dimension fmpb(*),zgel(*)
 cele
 #include <dummy.h>
@@ -859,14 +562,10 @@ cele      needtp(4)=1
       needtp(1)=1
 cele      icount=0
       call nwadd(nwall,norb*norb*8)
-#if !defined(VAR_G77)
       allocate(h2m(norb,norb))
-#endif
       call nwadd(nwall,ncore*ncore*nvirt*8)
 cele      allocate(tint(ncore,ncore,nvirt))
-#if !defined(VAR_G77)
       allocate(tint(nvirt,nvirt))
-#endif
       call dzero(tint,nvirt*nvirt)
 cele  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
   900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
@@ -972,23 +671,16 @@ cele  800 enddo
       goto 900
  1000 continue
 
-#if !defined(VAR_G77)
       call nwdel(nwall,norb*norb*8)
       deallocate(h2m)
       call nwdel(nwall,ncore*ncore*nvirt*8)
       deallocate(tint)
-#endif
 
       return
       end
 c----------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine v1k(luintd,da,gkp1a,norb,ncore,nact,in2d,id2n,itsym,
      *               its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine v1k(luintd,da,gkp1a,norb,ncore,nact,in2d,id2n,itsym,
-     *its,wrk,lwrk,fmpb,zgel,lupri,nwall,h2m,tintar,tintra)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -1001,13 +693,8 @@ c----------------------------------------------------------------
      *               ntotdet,ntotconf,ntotcap,zro
       dimension WRK(LWRK)
       dimension fmpb(*),zgel(*)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tintar(:,:),tintra(:,:)
       allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),vct(:,:)
-#else
-      dimension h2m(norb,*),tintar(nact,*),tintra(norb-nact-ncore,*)
-      dimension s(1),coef(1),w(1),work(1),caux(1),vct(1)
-#endif
 #include <dummy.h>
       
       ncoat=ncore+nact
@@ -1016,31 +703,15 @@ c----------------------------------------------------------------
 c---- Initializating for partially contracted NEV-PT ------------------
       tini=second()
       call nwadd(nwall,(nact**2+4*nact)*8)
-#if !defined(VAR_G77)
       allocate(s(1:nact,1:nact))
       allocate(coef(1:nact,1:nact))
       allocate(vct(1:nact,1:nact))
       allocate(w(nact))
       allocate(work(3*nact))
-#else
-      i_s=iallor8(s,nact**2)
-      i_coef=iallor8(coef,nact**2)
-      i_vct=iallor8(vct,nact**2)
-      i_w=iallor8(w,nact)
-      i_work=iallor8(work,3*nact)
-#endif
-#if !defined(VAR_G77)
       call fill2(s,da,nact)
       call fill(coef,gkp1a,nact**2)
       call halve(coef,nact**2)
       call rs(nact,nact,s,w,1,vct,work,work(nact+1),ierr)  !eispack
-#else
-      call fill2(s(i_s),da,nact)
-      call fill(coef(i_coef),gkp1a,nact**2)
-      call halve(coef(i_coef),nact**2)
-      call rs(nact,nact,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $     ,work(i_work+nact),ierr) 
-#endif
 c      call dsyev('V','U',nact,s,nact,w,work,3*nact,info)  !lapack
 c      call dsygv(1,'V','U',nact,coef,nact,s,nact,w,work,3*nact,info)
 c      if(info.ne.0)then
@@ -1051,21 +722,11 @@ c      thr=1.d-8                 !perhaps too strict
       thr=1.d-6
       ndep=0
       do i=1,nact
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
         ndep=ndep+1
-#if !defined(VAR_G77)
         write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
      $           ,w(i)
         elseif(w(i).lt.thr)then
-#else
-        write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
-     $           ,w(i_w+i-1)
-        elseif(w(i_w+i-1).lt.thr)then
-#endif
             ndep=ndep+1
         endif
       enddo
@@ -1076,80 +737,39 @@ c      thr=1.d-8                 !perhaps too strict
       nnew=nact-ndep
 c--   costruzione della matrice di trasformazione
       call nwadd(nwall,(nact*nnew)*8)
-#if !defined(VAR_G77)
       allocate (caux(1:nact,1:nnew))
       call caux0p(caux,vct,w,nact,nnew,thr)
-#else
-       i_caux=iallor8(caux,nact*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact,nnew,thr)
-#endif
 c---  trasformazione della matrice K
 c---  moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact,nnew,1.d0,coef,nact,caux,nact,0.d0,s
      $     ,nact)
-#else
-      call dsymm('L','U',nact,nnew,1.d0,coef(i_coef),nact,caux(i_caux)
-     $,nact,0.d0,s(i_s),nact)
-#endif
 c---  moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact,1.d0,caux,nact,s,nact,0.d0
      $     ,coef,nact)
-#else
-      call dgemm('T','N',nnew,nnew,nact,1.d0,caux(i_caux),nact,s(i_s)
-     $,nact,0.d0,coef(i_coef),nact)
-#endif
 c--   diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact,w,work,3*nact,info)
-#if !defined(VAR_G77)
       call rs(nact,nnew,coef,w,1,vct,work,work(nact+1),ierr)  !eispack
-#else
-      call rs(nact,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact),ierr) 
-#endif
 c--   back transformation
 c--   moltiplico CAUX(nact,nnew) per coef(nnew,nnew)
 c--   e metto in S(nact,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact,nnew,nnew,1.d0,caux,nact,vct,nact,0
      $     .d0,s,nact)
-#else
-      call dgemm('N','N',nact,nnew,nnew,1.d0,caux(i_caux),nact,vct(i_vct
-     $),nact,0.d0,s(i_s),nact)
-#endif
 c--   metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact,nnew)
       call nwdel(nwall,(nact*nnew)*8)
       deallocate(caux)
       deallocate(vct)
-#else
-      call copia(coef(i_coef),s(i_s),nact,nnew)
-      call nwdel(nwall,(nact*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-#endif
 c---costruzione matrice S
       do ia=1,nact
          do mu=1,nnew
-#if !defined(VAR_G77)
             s(ia,mu)=0.d0
-#else
-            s(i_s+(mu-1)*nact+ia-1)=0.d0
-#endif
             do iap=1,nact
                if(iap.ne.ia)then
                   ro=-da(iap,ia)
                else
                   ro=2.d0-da(iap,ia)
                endif
-#if !defined(VAR_G77)
                s(ia,mu)=s(ia,mu)+ro*coef(iap,mu)
-#else
-      s(i_s+(mu-1)*nact+ia-1)=s(i_s+(mu-1)*nact+ia-1)+ro*coef(i_coef+(mu
-     $-1)*nact+iap-1)
-#endif
             enddo
          enddo
       enddo
@@ -1164,13 +784,11 @@ c------ two-electron part with Dirac distr (ii,ij|**)
       LFREE=LWRK
       IDIST = 0
       needtp(1)=1
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,2*nact*nvirt*8)
       allocate(tintar(nact,nvirt))
       allocate(tintra(nvirt,nact))
-#endif
       call dzero(tintar,nact*nvirt)
       call dzero(tintra,nact*nvirt)
   900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
@@ -1249,13 +867,8 @@ c  700 enddo
 c  800 enddo
 
 C --------- Partially Contracted -----------------
-#if !defined(VAR_G77)
       call e2p1cont(ii,ij,tintar,tintra,e2,psi2,coef,s,w,da,fmpb,
      *              nact,ncore,norb,nnew,zgel)
-#else
-      call e2p1cont(ii,ij,tintar,tintra,e2,psi2,coef(i_coef),s(i_s)
-     $,w(i_w),da,fmpb,nact,ncore,norb,nnew,zgel)
-#endif
       e2pcc(2)=e2pcc(2)+e2
       psipcc(2)=psipcc(2)+psi2
       e2pc(1)=e2pc(1)+e2
@@ -1264,7 +877,6 @@ C --------- Partially Contracted -----------------
       goto 900
  1000 continue
 
-#if !defined(VAR_G77)
       call nwdel(nwall,(nact**2+4*nact)*8)
       deallocate(s)
       deallocate(coef)
@@ -1275,15 +887,6 @@ C --------- Partially Contracted -----------------
       call nwdel(nwall,2*nact*nvirt*8)
       deallocate(tintar)
       deallocate(tintra)
-#else
-      call nwdel(nwall,(nact**2+4*nact)*8)
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-      call nwdel(nwall,norb*norb*8)
-#endif
-
 
       return
       end
@@ -1307,13 +910,8 @@ c----------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine vm1k(da,gkm1a,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine vm1k(da,gkm1a,norb,ncore,nact,in2d,id2n,itsym,its,
-     *          wrk,lwrk,fmpb,zgel,lupri,nwall,h2m,tint)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -1326,14 +924,8 @@ c-----------------------------------------------------------
      *               ntotdet,ntotconf,ntotcap,zro
       dimension WRK(LWRK)
       dimension fmpb(*),zgel(*)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tint(:,:,:,:)
       allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),vct(:,:)
-#else
-      dimension h2m(norb,*),tint(norb-ncore-nact,ncore,norb-ncore-nact
-     $     ,nact)
-      dimension s(1),coef(1),w(1),work(1),caux(1),vct(1)
-#endif
       
       ncoat=ncore+nact
       nvirt=norb-ncoat
@@ -1341,7 +933,6 @@ c-----------------------------------------------------------
 c---- Initializating for partially contracted NEV-PT ------------------
       tini=second()
       call nwadd(nwall,(nact**2+4*nact)*8)
-#if !defined(VAR_G77)
       allocate(s(1:nact,1:nact))
       allocate(coef(1:nact,1:nact))
       allocate(vct(1:nact,1:nact))
@@ -1351,18 +942,6 @@ c---- Initializating for partially contracted NEV-PT ------------------
       call fill(coef,gkm1a,nact**2)
       call halve(coef,nact**2)
       call rs(nact,nact,s,w,1,vct,work,work(nact+1),ierr)  !eispack
-#else
-      i_s=iallor8(s,nact**2)
-      i_coef=iallor8(coef,nact**2)
-      i_vct=iallor8(vct,nact**2)
-      i_w=iallor8(w,nact)
-      i_work=iallor8(work,3*nact)
-      call fill(s(i_s),da,nact**2)
-      call fill(coef(i_coef),gkm1a,nact**2)
-      call halve(coef(i_coef),nact**2)
-      call rs(nact,nact,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $     ,work(i_work+nact),ierr) 
-#endif
 c      call dsyev('V','U',nact,s,nact,w,work,3*nact,info)
 c      call dsygv(1,'V','U',nact,coef,nact,s,nact,w,work,3*nact,info)
 c      if(info.ne.0)then
@@ -1373,24 +952,11 @@ c      thr=1.d-8                 !perhaps too strict
       thr=1.d-6
       ndep=0
       do i=1,nact
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
         ndep=ndep+1
-#if !defined(VAR_G77)
         write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
      $           ,w(i)
-#else
-        write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
-     $           ,w(i_w+i-1)
-#endif
-#if !defined(VAR_G77)
         elseif(w(i).lt.thr)then
-#else
-        elseif(w(i_w+i-1).lt.thr)then
-#endif
             ndep=ndep+1
         endif
       enddo
@@ -1401,60 +967,28 @@ c      thr=1.d-8                 !perhaps too strict
       nnew=nact-ndep
 c--   costruzione della matrice di trasformazione
       call nwadd(nwall,(nact*nnew)*8)
-#if !defined(VAR_G77)
       allocate (caux(1:nact,1:nnew))
       call caux0p(caux,vct,w,nact,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact,nnew,thr)
-#endif
 c---  trasformazione della matrice K
 c---  moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact,nnew,1.d0,coef,nact,caux,nact,0.d0,s
      $     ,nact)
-#else
-      call dsymm('L','U',nact,nnew,1.d0,coef(i_coef),nact,caux(i_caux)
-     $,nact,0.d0,s(i_s),nact)
-#endif
 c---  moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact,1.d0,caux,nact,s,nact,0.d0
      $     ,coef,nact)
-#else
-      call dgemm('T','N',nnew,nnew,nact,1.d0,caux(i_caux),nact,s(i_s)
-     $,nact,0.d0,coef(i_coef),nact)
-#endif
 c--   diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact,w,work,3*nact,info)
-#if !defined(VAR_G77)
       call rs(nact,nnew,coef,w,1,vct,work,work(nact+1),ierr)  !eispack
-#else
-      call rs(nact,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact),ierr) 
-#endif
 c--   back transformation
 c--   moltiplico CAUX(nact,nnew) per coef(nnew,nnew)
 c--   e metto in S(nact,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact,nnew,nnew,1.d0,caux,nact,vct,nact,0
      $     .d0,s,nact)
-#else
-      call dgemm('N','N',nact,nnew,nnew,1.d0,caux(i_caux),nact,vct(i_vct
-     $),nact,0.d0,s(i_s),nact)
-#endif
 c--   metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact,nnew)
       call nwdel(nwall,(nact*nnew)*8)
       deallocate(caux)
       deallocate(vct)
-#else
-      call copia(coef(i_coef),s(i_s),nact,nnew)
-      call nwdel(nwall,(nact*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-#endif
 
       do i=1,6
        needtp(i)=0
@@ -1466,12 +1000,10 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       IDIST = 0
       needtp(4)=1
       L_tint=nvirt*ncore*nvirt*nact
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,ncore,nvirt,nact))
-#endif
       call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -1565,13 +1097,8 @@ C --------- Strongly Contracted -----------------
   800 continue
       enddo
 c----Partially contracted NEV-PT---------------------------------
-#if !defined(VAR_G77)
       call e2m1cont(tint,e2,psi2,coef,s,w,da,fmpb,nact,ncore,norb,nnew
      $     ,zgel)
-#else
-      call e2m1cont(tint,e2,psi2,coef(i_coef),s(i_s),w(i_w),da,fmpb,nact
-     $,ncore,norb,nnew,zgel)
-#endif
       e2pcc(3)=e2
       psipcc(3)=psi2
       e2pc(1)=e2pc(1)+e2
@@ -1579,7 +1106,6 @@ c----Partially contracted NEV-PT---------------------------------
 
 
       call nwdel(nwall,(nact**2+4*nact)*8)
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(coef)
       deallocate(w)
@@ -1588,12 +1114,6 @@ c----Partially contracted NEV-PT---------------------------------
       deallocate(h2m)
       call nwdel(nwall,ncore*nvirt*nact*8)
       deallocate(tint)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-#endif
       return
       end
 c-------------------------------------------------------------
@@ -1971,13 +1491,8 @@ c 2       enddo
       return
       end
 c------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine v2mod(gkp2aa,daat,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine v2mod(gkp2aa,daat,norb,ncore,nact,in2d,id2n,itsym,its,
-     *          wrk,lwrk,fmpb,zgel,lupri,nwall,h2m,tint)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -1992,13 +1507,8 @@ c      dimension da(nact,nact),gkm1a(nact,nact)
       dimension fmpb(*),zgel(*)
       dimension gkp2aa(nact,nact,nact,nact)
       dimension daat(nact,nact,nact,nact)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tint(:,:,:,:)
       allocatable coef(:,:),s(:,:),w(:),work(:),caux(:,:),vct(:,:)
-#else
-      dimension h2m(norb,*),tint(nact,ncore,nact,ncore)
-      dimension coef(1),s(1),w(1),work(1),caux(1),vct(1)
-#endif
       
       ncoat=ncore+nact
       nvirt=norb-ncoat
@@ -2013,12 +1523,10 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       IDIST = 0
       needtp(2)=1
       L_tint = nact*ncore*nact*ncore
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,L_tint*8)
       allocate(tint(nact,ncore,nact,ncore))
-#endif
       call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -2041,10 +1549,8 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       enddo
       goto 900
  1000 continue
-#if !defined(VAR_G77)
       call nwdel(nwall,norb*norb*8)
       deallocate(h2m)
-#endif
 
 c
 C --------- Strongly Contracted -----------------
@@ -2125,7 +1631,6 @@ c
 c---Partially contracted NEV-PT-----------------------------------
       tini=second()
       call nwadd(nwall,(nact**4+4*nact**2)*8)
-#if !defined(VAR_G77)
       allocate(s(1:nact**2,1:nact**2))
       allocate(coef(1:nact**2,1:nact**2))
       allocate(vct(1:nact**2,1:nact**2))
@@ -2133,43 +1638,19 @@ c---Partially contracted NEV-PT-----------------------------------
       allocate(work(3*nact**2))
       call fillcm2(s,daat,nact)
       call fillcm2(coef,gkp2aa,nact)
-#else
-      i_s=iallor8(s,nact**2*nact**2)
-      i_coef=iallor8(coef,nact**2*nact**2)
-      i_vct=iallor8(vct,nact**2*nact**2)
-      i_w=iallor8(w,nact**2)
-      i_work=iallor8(work,3*nact**2)
-      call fillcm2(s(i_s),daat,nact)
-      call fillcm2(coef(i_coef),gkp2aa,nact)
-#endif
       nnew=nact**2
       nact3=nact**2
 c      call dsyev('V','U',nact3,s,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nact3,s,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nact3,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c      thr=1.d-8                 !perhaps too strict
       thr=1.d-6
       ndep=0
       do i=1,nact3
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
         ndep=ndep+1
-#if !defined(VAR_G77)
         write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
      $           ,w(i)
         elseif(w(i).lt.thr)then
-#else
-        write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
-     $           ,w(i_w+i-1)
-        elseif(w(i_w+i-1).lt.thr)then
-#endif
             ndep=ndep+1
         endif
       enddo
@@ -2180,70 +1661,35 @@ c      thr=1.d-8                 !perhaps too strict
       nnew=nact3-ndep
 c--   costruzione della matrice di trasformazione
       call nwadd(nwall,(nact3*nnew)*8)
-#if !defined(VAR_G77)
       allocate (caux(1:nact3,1:nnew))
       call caux0p(caux,vct,w,nact3,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact3*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact3,nnew,thr)
-#endif
 c---  trasformazione della matrice K
 c---  moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact3,nnew,1.d0,coef,nact3,caux,nact3,0.d0,s
      $     ,nact3)
-#else
-      call dsymm('L','U',nact3,nnew,1.d0,coef(i_coef),nact3,caux(i_caux)
-     $,nact3,0.d0,s(i_s),nact3)
-#endif
 c---  moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact3,1.d0,caux,nact3,s,nact3,0.d0
      $     ,coef,nact3)
-#else
-      call dgemm('T','N',nnew,nnew,nact3,1.d0,caux(i_caux),nact3,s(i_s)
-     $,nact3,0.d0,coef(i_coef),nact3)
-#endif
 c--   diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nnew,coef,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c--   back transformation
 c--   moltiplico CAUX(nact3,nnew) per coef(nnew,nnew)
 c--   e metto in S(nact3,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact3,nnew,nnew,1.d0,caux,nact3,vct,nact3,0
      $     .d0,s,nact3)
-#else
-      call dgemm('N','N',nact3,nnew,nnew,1.d0,caux(i_caux),nact3
-     $,vct(i_vct),nact3,0.d0,s(i_s),nact3)
-#endif
 c--   metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact3,nnew)
       call nwdel(nwall,(nact3*nnew)*8)
       deallocate(caux)
       deallocate(vct)
       call e2p2cont(tint,e2,psi2,coef,s,w,daat,fmpb,nact,ncore,
      *              norb,nnew,zgel)
-#else
-      call copia(coef(i_coef),s(i_s),nact3,nnew)
-      call nwdel(nwall,(nact3*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call e2p2cont(tint,e2,psi2,coef(i_coef),s(i_s),w(i_w),daat,fmpb
-     $     ,nact,ncore,norb,nnew,zgel)
-#endif
       e2pcc(4)=e2
       psipcc(4)=psi2
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       nact2=nact*(nact+1)/2
-#if !defined(VAR_G77)
       call nwdel(nwall,(nact**4+4*nact**2)*8)
       deallocate(s)
       deallocate(coef)
@@ -2257,49 +1703,19 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
       allocate(work(1:3*nact2))
       call fillcm2p(s,daat,nact)
       call fillcm2p(coef,gkp2aa,nact)
-#else
-      call nwdel(nwall,(nact**4+4*nact**2)*8)
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-      call nwadd(nwall,(nact**4+4*nact**2)*8)
-      i_s=iallor8(s,nact2**2)
-      i_coef=iallor8(coef,nact2**2)
-      i_vct=iallor8(vct,nact2**2)
-      i_w=iallor8(w,nact2)
-      i_work=iallor8(work,3*nact2)
-      call fillcm2p(s(i_s),daat,nact)
-      call fillcm2p(coef(i_coef),gkp2aa,nact)
-#endif
       nact3=nact2
       nnew=nact2
 c      call dsyev('V','U',nact3,s,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nact3,s,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nact3,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c      thr=1.d-8                 !perhaps too strict
       thr=1.d-6
       ndep=0
       do i=1,nact3
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
          ndep=ndep+1
-#if !defined(VAR_G77)
         write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
      $           ,w(i)
        elseif(w(i).lt.thr)then
-#else
-        write (lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
-     $           ,w(i_w+i-1)
-       elseif(w(i_w+i-1).lt.thr)then
-#endif
          ndep=ndep+1
        endif
       enddo
@@ -2309,94 +1725,47 @@ c      thr=1.d-8                 !perhaps too strict
       endif
       nnew=nact3-ndep
 c--   costruzione della matrice di trasformazione
-#if !defined(VAR_G77)
       call nwadd(nwall,(nact3*nnew)*8)
       allocate (caux(1:nact3,1:nnew))
       call caux0p(caux,vct,w,nact3,nnew,thr)
-#else
-      call nwadd(nwall,(nact3*nnew)*8)
-      i_caux=iallor8(caux,nact3*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact3,nnew,thr)
-#endif
 c---  trasformazione della matrice K
 c---  moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact3,nnew,1.d0,coef,nact3,caux,nact3,0.d0,s
      $     ,nact3)
-#else
-      call dsymm('L','U',nact3,nnew,1.d0,coef(i_coef),nact3,caux(i_caux)
-     $,nact3,0.d0,s(i_s),nact3)
-#endif
 c---  moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact3,1.d0,caux,nact3,s,nact3,0.d0
      $     ,coef,nact3)
-#else
-      call dgemm('T','N',nnew,nnew,nact3,1.d0,caux(i_caux),nact3,s(i_s)
-     $,nact3,0.d0,coef(i_coef),nact3)
-#endif
 c--   diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nnew,coef,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c--   back transformation
 c--   moltiplico CAUX(nact3,nnew) per coef(nnew,nnew)
 c--   e metto in S(nact3,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact3,nnew,nnew,1.d0,caux,nact3,vct,nact3,0
      $     .d0,s,nact3)
-#else
-      call dgemm('N','N',nact3,nnew,nnew,1.d0,caux(i_caux),nact3
-     $,vct(i_vct),nact3,0.d0,s(i_s),nact3)
-#endif
 c--   metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact3,nnew)
       call nwdel(nwall,(nact3*nnew)*8)
       deallocate(caux)
       deallocate(vct)
       call e2p2contp(tint,e2,psi2,coef,s,w,daat,fmpb,nact,ncore,
      *               norb,nnew,zgel)
-#else
-      call copia(coef(i_coef),s(i_s),nact3,nnew)
-      call nwdel(nwall,(nact3*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call e2p2contp(tint,e2,psi2,coef(i_coef),s(i_s),w(i_w),daat,fmpb
-     $     ,nact,ncore,norb,nnew,zgel)
-#endif
       e2pcc(4)=e2pcc(4)+e2
       psipcc(4)=psi2+psipcc(4)
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       call nwdel(nwall,(nact**4+4*nact**2)*8)
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(coef)
       deallocate(w)
       deallocate(work)
       call nwdel(nwall,ncore*nact*nvirt*8)
       deallocate(tint)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-#endif
       return
       end
 cc----------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine vm2mod(daa,gkm2aa,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine vm2mod(daa,gkm2aa,norb,ncore,nact,in2d,id2n,itsym,its,
-     *          wrk,lwrk,fmpb,zgel,lupri,nwall,h2m,tint)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -2411,14 +1780,8 @@ c      dimension da(nact,nact),gkm1a(nact,nact)
       dimension fmpb(*),zgel(*)
       dimension daa(nact,nact,nact,nact)
       dimension gkm2aa(nact,nact,nact,nact)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tint(:,:,:,:)
       allocatable coef(:,:),s(:,:),w(:),work(:),caux(:,:),vct(:,:)
-#else
-      dimension h2m(norb,*),tint(norb-ncore-nact,nact,norb-ncore-nact
-     $,nact)
-      dimension coef(1),s(1),w(1),work(1),caux(1),vct(1)
-#endif
       
       ncoat=ncore+nact
       nvirt=norb-ncoat
@@ -2433,12 +1796,10 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       IDIST = 0
       needtp(5)=1
       L_tint = nvirt*nact*nvirt*nact
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nvirt,nact))
-#endif
       call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -2462,10 +1823,8 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       enddo
       goto 900
  1000 continue
-#if !defined(VAR_G77)
       call nwdel(nwall,norb*norb*8)
       deallocate(h2m)
-#endif
 C --------- Strongly Contracted -----------------
 
       do ir=ncore+nact+1,norb ! do 1800
@@ -2544,7 +1903,6 @@ c
 c---Partially contracted NEV-PT-----------------------------------
       tini=second()
       call nwadd(nwall,(nact**4+4*nact**2)*8)
-#if !defined(VAR_G77)
       allocate(s(1:nact**2,1:nact**2))
       allocate(coef(1:nact**2,1:nact**2))
       allocate(vct(1:nact**2,1:nact**2))
@@ -2552,43 +1910,19 @@ c---Partially contracted NEV-PT-----------------------------------
       allocate(work(3*nact**2))
       call fillcm2(s,daa,nact)
       call fillcm2(coef,gkm2aa,nact)
-#else
-      i_s=iallor8(s,nact**2*nact**2)
-      i_coef=iallor8(coef,nact**2*nact**2)
-      i_vct=iallor8(vct,nact**2*nact**2)
-      i_w=iallor8(w,nact**2)
-      i_work=iallor8(work,3*nact**2)
-      call fillcm2(s(i_s),daa,nact)
-      call fillcm2(coef(i_coef),gkm2aa,nact)
-#endif
       nnew=nact**2
       nact3=nact**2
 c      call dsyev('V','U',nact3,s,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nact3,s,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nact3,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c      thr=1.d-8                 !perhaps too strict
       thr=1.d-6
       ndep=0
       do i=1,nact3
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
          ndep=ndep+1
-#if !defined(VAR_G77)
          write(lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
      $        ,w(i)
        elseif(w(i).lt.thr)then
-#else
-         write(lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
-     $        ,w(i_w+i-1)
-       elseif(w(i_w+i-1).lt.thr)then
-#endif
           ndep=ndep+1
        endif
       enddo
@@ -2598,87 +1932,44 @@ c      thr=1.d-8                 !perhaps too strict
       endif
       nnew=nact3-ndep
       if(nnew.le.0)then
-#if !defined(VAR_G77)
          deallocate(s)
          deallocate(coef)
          deallocate(vct)
          deallocate(w)
          deallocate(work)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(vct(i_vct))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-#endif
          goto 123
       endif
 c--   costruzione della matrice di trasformazione
       call nwadd(nwall,(nact3*nnew)*8)
-#if !defined(VAR_G77)
       allocate (caux(1:nact3,1:nnew))
       call caux0p(caux,vct,w,nact3,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact3*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact3,nnew,thr)
-#endif
 c---  trasformazione della matrice K
 c---  moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact3,nnew,1.d0,coef,nact3,caux,nact3,0.d0,s
      $     ,nact3)
-#else
-      call dsymm('L','U',nact3,nnew,1.d0,coef(i_coef),nact3,caux(i_caux)
-     $,nact3,0.d0,s(i_s),nact3)
-#endif
 c---  moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact3,1.d0,caux,nact3,s,nact3,0.d0
      $     ,coef,nact3)
-#else
-      call dgemm('T','N',nnew,nnew,nact3,1.d0,caux(i_caux),nact3,s(i_s)
-     $,nact3,0.d0,coef(i_coef),nact3)
-#endif
 c--   diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nnew,coef,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c--   back transformation
 c--   moltiplico CAUX(nact3,nnew) per coef(nnew,nnew)
 c--   e metto in S(nact3,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact3,nnew,nnew,1.d0,caux,nact3,vct,nact3,0
      $     .d0,s,nact3)
-#else
-      call dgemm('N','N',nact3,nnew,nnew,1.d0,caux(i_caux),nact3
-     $,vct(i_vct),nact3,0.d0,s(i_s),nact3)
-#endif
 c--   metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact3,nnew)
       call nwdel(nwall,(nact3*nnew)*8)
       deallocate(caux)
       deallocate(vct)
       call e2m2cont(tint,e2,psi2,coef,s,w,daa,fmpb,nact,ncore,
      *              norb,nnew,zgel)
-#else
-      call copia(coef(i_coef),s(i_s),nact3,nnew)
-      call nwdel(nwall,(nact3*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call e2m2cont(tint,e2,psi2,coef(i_coef),s(i_s),w(i_w),daa,fmpb
-     $     ,nact,ncore,norb,nnew,zgel)
-#endif
       e2pcc(5)=e2
       psipcc(5)=psi2
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       call nwdel(nwall,(nact**4+4*nact**2)*8)
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(coef)
       deallocate(w)
@@ -2692,49 +1983,19 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
       allocate(work(1:3*nact2))
       call fillcm2p(s,daa,nact)
       call fillcm2p(coef,gkm2aa,nact)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
- 123  nact2=nact*(nact+1)/2
-      call nwadd(nwall,(nact**4+4*nact**2)*8)
-      i_s=iallor8(s,nact2**2)
-      i_coef=iallor8(coef,nact2**2)
-      i_vct=iallor8(vct,nact2**2)
-      i_w=iallor8(w,nact2)
-      i_work=iallor8(work,3*nact2)
-      call fillcm2p(s(i_s),daa,nact)
-      call fillcm2p(coef(i_coef),gkm2aa,nact)
-#endif
       nact3=nact2
       nnew=nact2
 c      call dsyev('V','U',nact3,s,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nact3,s,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nact3,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c      thr=1.d-8                 !perhaps too strict
       thr=1.d-6
       ndep=0
       do i=1,nact3
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
          ndep=ndep+1
-#if !defined(VAR_G77)
          write(lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
      $       ,w(i)
        elseif(w(i).lt.thr)then
-#else
-         write(lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
-     $       ,w(i_w+i-1)
-       elseif(w(i_w+i-1).lt.thr)then
-#endif
           ndep=ndep+1
        endif
       enddo
@@ -2744,99 +2005,50 @@ c      thr=1.d-8                 !perhaps too strict
       endif
       nnew=nact3-ndep
       if(nnew.le.0)then
-#if !defined(VAR_G77)
          deallocate(s)
          deallocate(coef)
          deallocate(vct)
          deallocate(w)
          deallocate(work)
-#else
-         call memrelr8(s(i_s))
-         call memrelr8(coef(i_coef))
-         call memrelr8(vct(i_vct))
-         call memrelr8(w(i_w))
-         call memrelr8(work(i_work))
-#endif
          return
       endif
 c--   costruzione della matrice di trasformazione
       call nwadd(nwall,(nact3*nnew)*8)
-#if !defined(VAR_G77)
       allocate (caux(1:nact3,1:nnew))
       call caux0p(caux,vct,w,nact3,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact3*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact3,nnew,thr)
-#endif
 c---  trasformazione della matrice K
 c---  moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact3,nnew,1.d0,coef,nact3,caux,nact3,0.d0,s
      $     ,nact3)
-#else
-      call dsymm('L','U',nact3,nnew,1.d0,coef(i_coef),nact3,caux(i_caux)
-     $,nact3,0.d0,s(i_s),nact3)
-#endif
 c---  moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact3,1.d0,caux,nact3,s,nact3,0.d0
      $     ,coef,nact3)
-#else
-      call dgemm('T','N',nnew,nnew,nact3,1.d0,caux(i_caux),nact3,s(i_s)
-     $,nact3,0.d0,coef(i_coef),nact3)
-#endif
 c--   diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nnew,coef,w,1,vct,work,work(nact3+1),ierr)  !eispack
-#else
-      call rs(nact3,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),ierr) 
-#endif
 c--   back transformation
 c--   moltiplico CAUX(nact3,nnew) per coef(nnew,nnew)
 c--   e metto in S(nact3,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact3,nnew,nnew,1.d0,caux,nact3,vct,nact3,0.d0
      $     ,s,nact3)
-#else
-      call dgemm('N','N',nact3,nnew,nnew,1.d0,caux(i_caux),nact3
-     $,vct(i_vct),nact3,0.d0,s(i_s),nact3)
-#endif
 c--   metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact3,nnew)
       call nwdel(nwall,(nact3*nnew)*8)
       deallocate(caux)
       deallocate(vct)
       call e2m2contp(tint,e2,psi2,coef,s,w,daa,fmpb,nact,ncore,
      *               norb,nnew,zgel)
-#else
-      call copia(coef(i_coef),s(i_s),nact3,nnew)
-      call nwdel(nwall,(nact3*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call e2m2contp(tint,e2,psi2,coef(i_coef),s(i_s),w(i_w),daa,fmpb
-     $     ,nact,ncore,norb,nnew,zgel)
-#endif
       e2pcc(5)=e2+e2pcc(5)
       psipcc(5)=psipcc(5)+psi2
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       call nwdel(nwall,(nact**4+4*nact**2)*8)
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(coef)
       deallocate(w)
       deallocate(work)
       call nwdel(nwall,nact*nact*nvirt*8)
       deallocate(tint)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-#endif
       return
       end
 c----------------------------------------------------------------
@@ -3009,14 +2221,8 @@ c----------------------------------------------------------------
       return
       end
 c---------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine v0pmod(da,daa,gk0pa,gk0pd,gk0pf,heffd,norb,ncore,
      *         nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine v0pmod(da,daa,gk0pa,gk0pd,gk0pf,heffd,norb,ncore,
-     *nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall,h2m,tinta
-     $,tintc)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -3028,23 +2234,14 @@ c---------------------------------------------------------------
      *               ntotdet,ntotconf,ntotcap,zro
       dimension WRK(LWRK)
       dimension fmpb(*),zgel(*)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tintc(:,:,:,:),tinta(:,:,:,:)
-#else
-      dimension h2m(norb,*),tintc(norb-ncore-nact,ncore,nact,nact)
-     $     ,tinta(norb-ncore-nact,nact,ncore,nact)
-#endif
       dimension heffd(*)
       dimension gk0pa(nact,nact,nact,nact),gk0pd(nact,nact,nact,nact),
      * gk0pf(nact,nact)
       dimension daa(nact,nact,nact,nact)
       dimension da(nact,nact)
-#if !defined(VAR_G77)
       allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),sp(:,:),spp(:
      $     ,:),vct(:,:)
-#else
-      dimension s(1),coef(1),w(1),work(1),caux(1),sp(1),spp(1),vct(1)
-#endif
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
       
       ncoat=ncore+nact
@@ -3061,12 +2258,10 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       IDIST = 0
       needtp(5)=1
       L_tinta = nvirt*nact*ncore*nact
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,L_tinta*8)
       allocate(tinta(nvirt,nact,ncore,nact))
-#endif
       CALL DZERO(tinta,L_tinta)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -3100,10 +2295,8 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       IDIST = 0
       needtp(4)=1
       L_tintc = nvirt*ncore*nact*nact
-#if !defined(VAR_G77)
       call nwadd(nwall,L_tintc*8)
       allocate(tintc(nvirt,ncore,nact,nact))
-#endif
       call dzero(tintc,L_tintc)
   910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1010
@@ -3127,9 +2320,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       goto 910
  1010 continue
       call nwdel(nwall,norb*norb*8)
-#if !defined(VAR_G77)
       deallocate(h2m)
-#endif
 C --------- Strongly Contracted -----------------
 
       do ii=1,ncore ! do 1800
@@ -3237,7 +2428,6 @@ c
 c---Partially contracted NEV-PT      
       nact2=2*nact**2
       call nwadd(nwall,(2*nact2**2+4*nact2)*8)
-#if !defined(VAR_G77)
       allocate(s(1:nact2,1:nact2))
       allocate(coef(1:nact2,1:nact2))
       allocate(vct(1:nact2,1:nact2))
@@ -3245,16 +2435,6 @@ c---Partially contracted NEV-PT
       allocate(work(3*nact2))
       call fillc0p(s,coef,gk0pa,gk0pd,daa,da,nact)
       call rs(nact2,nact2,s,w,1,vct,work,work(nact2+1),info)  !eispack
-#else
-      i_s=iallor8(s,nact2**2)
-      i_coef=iallor8(coef,nact2**2)
-      i_vct=iallor8(vct,nact2**2)
-      i_w=iallor8(w,nact2)
-      i_work=iallor8(work,3*nact2)
-      call fillc0p(s(i_s),coef(i_coef),gk0pa,gk0pd,daa,da,nact)
-      call rs(nact2,nact2,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $     ,work(i_work+nact2),info) 
-#endif
 c      call dsyev('V','U',nact2,s,nact2,w,work,3*nact2,info)
       if(info.ne.0)then
          write(lupri,*)'something wrong in diagonalization: sub v0pmod'
@@ -3264,19 +2444,11 @@ c      call dsyev('V','U',nact2,s,nact2,w,work,3*nact2,info)
 c      thr=1.d-8
       thr=1.d-6
       do i=1,nact2
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
         ndep=ndep+1
 c        write(lupri,'(a,i2,a,f12.8)')' Negative eigenvalue: eps(',i,')='
 c     $         ,w(ioffw+i-1)
-#if !defined(VAR_G77)
        elseif(w(i).lt.thr)then
-#else
-       elseif(w(i_w+i-1).lt.thr)then
-#endif
           ndep=ndep+1
        endif
       enddo
@@ -3287,38 +2459,18 @@ c     $         ,w(ioffw+i-1)
       nnew=nact2-ndep
 c--costruzione della matrice di trasformazione
       call nwadd(nwall,(nact2*nnew)*8)
-#if !defined(VAR_G77)
       allocate (caux(1:nact2,1:nnew))
       call caux0p(caux,vct,w,nact2,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact2*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact2,nnew,thr)
-#endif
 c---trasformazione della matrice K
 c---moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact2,nnew,1.d0,coef,nact2,caux,nact2,0.d0,s
      $     ,nact2)
-#else
-      call dsymm('L','U',nact2,nnew,1.d0,coef(i_coef),nact2,caux(i_caux)
-     $,nact2,0.d0,s(i_s),nact2)
-#endif
 c---moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact2,1.d0,caux,nact2,s,nact2,0.d0
      $     ,coef,nact2)
-#else
-      call dgemm('T','N',nnew,nnew,nact2,1.d0,caux(i_caux),nact2,s(i_s)
-     $,nact2,0.d0,coef(i_coef),nact2)
-#endif
 c--diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact2,w,work,3*nact2,info)
-#if !defined(VAR_G77)
       call rs(nact2,nnew,coef,w,1,vct,work,work(nact2+1),info)  !eispack
-#else
-      call rs(nact2,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact2),info) 
-#endif
       if(info.ne.0)then
          write(lupri,*)'Something wrong in diagonalization: sub v0pmod'
          CALL QUIT('There is a problem with diagonalization in v0pmod')
@@ -3327,22 +2479,12 @@ c      call dsyev('V','U',nnew,coef,nact2,w,work,3*nact2,info)
 c--back transformation
 c--moltiplico CAUX(nact2,nnew) per coef(nnew,nnew)
 c-- e metto in S(nact2,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact2,nnew,nnew,1.d0,caux,nact2,vct,nact2,0.d0
      $     ,s,nact2)
-#else
-      call dgemm('N','N',nact2,nnew,nnew,1.d0,caux(i_caux),nact2
-     $,vct(i_vct),nact2,0.d0,s(i_s),nact2)
-#endif
 c--metto in coef i coefficienti trasformati (for clarity sake)
-#if !defined(VAR_G77)
       call copia(coef,s,nact2,nnew)
-#else
-      call copia(coef(i_coef),s(i_s),nact2,nnew)
-#endif
 c--inizio il calcolo perturbativo
       call nwdel(nwall,(nact2**2)*8)
-#if !defined(VAR_G77)
       deallocate(s)
       call nwdel(nwall,(nact2*nnew)*8)
       deallocate(caux)
@@ -3353,25 +2495,11 @@ c--inizio il calcolo perturbativo
       allocate(spp(1:nact**2,1:nnew))
       call e20pcont(e2,psi2,heffd,coef,s,sp,spp,w,daa,da,fmpb,nact,ncore
      $     ,norb,nnew,zro,zgel,tintc,tinta)
-#else
-      call memrelr8(s(i_s))
-      call nwdel(nwall,(nact2*nnew)*8)
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call nwadd(nwall,3*(nact**2*nnew)*8)
-      i_s=iallor8(s,nact**2*nnew)
-      i_sp=iallor8(sp,nact**2*nnew)
-      i_spp=iallor8(spp,nact**2*nnew)
-      call e20pcont(e2,psi2,heffd,coef(i_coef),s(i_s),sp(i_sp),spp(i_spp
-     $     ),w(i_w),daa,da,fmpb,nact,ncore,norb,nnew,zro,zgel,tintc
-     $     ,tinta)
-#endif
       e2pcc(8)=e2
       psipcc(8)=psi2
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       call nwdel(nwall,3*(nact**2*nnew)*8)
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(sp)
       deallocate(spp)
@@ -3383,16 +2511,6 @@ c--inizio il calcolo perturbativo
       deallocate(tinta)
       call nwdel(nwall,nvirt*nact*ncore*nact*8)
       deallocate(tintc)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(sp(i_sp))
-      call memrelr8(spp(i_spp))
-      call nwadd(nwall,(nact2**2+4*nact2)*8)
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-      call nwdel(nwall,nvirt*nact*ncore*nact*8)
-#endif
       tpc=second()
       write (lupri,'(a,f8.2,a)')' Elapsed time for PC',tpc-tsc,' sec.'
       return
@@ -3733,14 +2851,8 @@ c      write(lupri,'(a,f8.2,a)')'time for pert. calcn. ',t5-t4,' sec.'
       return
       end
 c----------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine vpupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,
      * ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine vpupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,
-     *ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall,h2m
-     $,tint)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -3752,11 +2864,7 @@ c----------------------------------------------------------------
      *               ntotdet,ntotconf,ntotcap,zro
       dimension WRK(LWRK)
       dimension fmpb(*),zgel(*)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tint(:,:,:,:)
-#else
-      dimension h2m(norb,*),tint(ncore,nact,nact,nact)
-#endif
       dimension heffd(*)
       dimension ro3(nact,nact,nact,nact,nact,nact),
      *          amat(nact,nact,nact,nact,nact,nact),
@@ -3765,12 +2873,8 @@ c----------------------------------------------------------------
      *          daa(nact,nact,nact,nact),
      *          dmat(nact,nact),
      *          da(nact,nact)
-#if !defined(VAR_G77)
-      allocatable s(:,:),coef(:,:),sp(:,:),caux(:,:),w(:),work(:),vct(:
-     $     ,:)
-#else
-      dimension s(1),coef(1),sp(1),caux(1),w(1),work(1),vct(1)
-#endif
+      allocatable s(:,:),coef(:,:),sp(:,:),caux(:,:),w(:),work(:),
+     $     vct(:,:)
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
       
       tini=second()
@@ -3788,12 +2892,10 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       IDIST = 0
       needtp(2)=1
       L_tint = ncore*nact*nact*nact
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,L_tint*8)
       allocate(tint(ncore,nact,nact,nact))
-#endif
       call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -3816,10 +2918,8 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       enddo
       goto 900
  1000 continue
-#if !defined(VAR_G77)
       call nwdel(nwall,norb*norb*8)
       deallocate(h2m)
-#endif
 
 C --------- Strongly Contracted -----------------
 
@@ -3894,7 +2994,6 @@ c            dumk3=dumk3+dint*amat(iap,ibp,icp,ia,ib,ic)*dint2
 c--Partially contracted NEV-PT class (+1')
       nact3=nact**3
       call nwadd(nwall,(2*nact3**2+4*nact3*8))
-#if !defined(VAR_G77)
       allocate(s(1:nact3,1:nact3))
       allocate(coef(1:nact3,1:nact3))
       allocate(vct(1:nact3,1:nact3))
@@ -3902,16 +3001,6 @@ c--Partially contracted NEV-PT class (+1')
       allocate(work(3*nact3))
       call fillcp1p(s,coef,amat,ro3,daa,da,nact,nact3)
       call rs(nact3,nact3,s,w,1,vct,work,work(nact3+1),info)  !eispack
-#else
-      i_s=iallor8(s,nact3**2)
-      i_coef=iallor8(coef,nact3**2)
-      i_vct=iallor8(vct,nact3**2)
-      i_w=iallor8(w,nact3)
-      i_work=iallor8(work,3*nact3)
-      call fillcp1p(s(i_s),coef(i_coef),amat,ro3,daa,da,nact,nact3)
-      call rs(nact3,nact3,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $     ,work(i_work+nact3),info) 
-#endif
 c      call dsyev('V','U',nact3,s,nact3,w,work,3*nact3,info)
       if(info.ne.0)then
          write(lupri,*)'something wrong in diagonalization: sub vpupe'
@@ -3925,19 +3014,11 @@ c      thr=1.d-8  !perhaps too strict
 c      thr=1.d-5  !perhaps too large
       ndep=0
       do i=1,nact3
-#if !defined(VAR_G77)
        if(w(i).lt.0.d0)then
-#else
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
         ndep=ndep+1
 c        write(lupri,'(a,i3,a,f12.8)')'negative eigenvalue: eps(',i,')='
 c     $      ,w(ioffw+i-1)
-#if !defined(VAR_G77)
        elseif(w(i).lt.thr)then
-#else
-       elseif(w(i_w+i-1).lt.thr)then
-#endif
         ndep=ndep+1
        endif
       enddo
@@ -3948,40 +3029,20 @@ c     $      ,w(ioffw+i-1)
       nnew=nact3-ndep
 c--costruzione della matrice di trasformazione
       call nwadd(nwall,(nact3*nnew*8))
-#if !defined(VAR_G77)
       allocate (caux(1:nact3,1:nnew))
       call caux0p(caux,vct,w,nact3,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact3*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact3,nnew,thr)
-#endif
 c---trasformazione della matrice K
 c---moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact3,nnew,1.d0,coef,nact3,caux,nact3,0.d0,s
      $     ,nact3)
-#else
-      call dsymm('L','U',nact3,nnew,1.d0,coef(i_coef),nact3,caux(i_caux)
-     $,nact3,0.d0,s(i_s),nact3)
-#endif
 c---moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact3,1.d0,caux,nact3,s,nact3,0.d0
      $     ,coef,nact3)
-#else
-      call dgemm('T','N',nnew,nnew,nact3,1.d0,caux(i_caux),nact3,s(i_s)
-     $,nact3,0.d0,coef(i_coef),nact3)
-#endif
       t2=second()
       write(lupri,'(a,f8.2,a)')' Time for matrix transf.',t2-t,' sec.'
 c--diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nnew,coef,w,1,vct,work,work(nact3+1),info)  !eispack
-#else
-      call rs(nact3,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),info) 
-#endif
       if(info.ne.0)then
          write(lupri,*)'Something wrong in diagonalization: sub vpupe'
          CALL QUIT('There is a problem with diagonalization in vpupe')
@@ -3991,27 +3052,17 @@ c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
 c--back transformation
 c--moltiplico CAUX(nact3,nnew) per coef(nnew,nnew)
 c-- e metto in S(nact3,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact3,nnew,nnew,1.d0,caux,nact3,vct,nact3,0.d0
      $     ,s,nact3)
-#else
-      call dgemm('N','N',nact3,nnew,nnew,1.d0,caux(i_caux),nact3
-     $,vct(i_vct),nact3,0.d0,s(i_s),nact3)
-#endif
 c--metto in coef i coefficienti trasformati (for clarity sake)
       do mu=1,nnew
          do i=1,nact3
-#if !defined(VAR_G77)
             coef(mu,i)=s(i,mu)
-#else
-            coef(i_coef+(i-1)*nact3+mu-1)=s(i_s+(mu-1)*nact3+i-1)
-#endif
          enddo
       enddo
 c--inizio il calcolo perturbativo
 c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       call nwdel(nwall,(nact3**2))
-#if !defined(VAR_G77)
       deallocate(s)
       call nwdel(nwall,(nact3*nnew*8))
       deallocate(caux)
@@ -4021,23 +3072,11 @@ c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       allocate(sp(1:nnew,1:nact3))
       call e21pcont(e2,psi2,heffd,coef,s,sp,w,ro3,daa,da,fmpb,nact,ncore
      $     ,norb,nnew,zro,zgel,tint)
-#else
-      call memrelr8(s(i_s))
-      call nwdel(nwall,(nact3*nnew*8))
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call nwadd(nwall,2*(nact3*nnew*8))
-      i_s=iallor8(s,nnew*nact3)
-      i_sp=iallor8(sp,nnew*nact3)
-      call e21pcont(e2,psi2,heffd,coef(i_coef),s(i_s),sp(i_sp),w(i_w)
-     $     ,ro3,daa,da,fmpb,nact,ncore,norb,nnew,zro,zgel,tint)
-#endif
       e2pcc(6)=e2
       psipcc(6)=psi2
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       call nwdel(nwall,2*(nact3*nnew*8))
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(sp)
       call nwdel(nwall,(nact3**2+4*nact3*8))
@@ -4046,26 +3085,13 @@ c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       deallocate(work)
       call nwdel(nwall,ncore*nact*nact*nact*8)
       deallocate(tint)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(sp(i_sp))
-      call nwdel(nwall,(nact3**2+4*nact3*8))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-#endif
       tpc=second()
       write (lupri,'(a,f8.2,a)')' Elapsed time for PC',tpc-tsc,' sec.'
       return
       end
 c----------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine vmupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,ncore,
      *          nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#else
-      subroutine vmupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,ncore,
-     *nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall,h2m,tint)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
 #else
@@ -4077,11 +3103,7 @@ c----------------------------------------------------------------
      *               ntotdet,ntotconf,ntotcap,zro
       dimension WRK(LWRK)
       dimension fmpb(*),zgel(*)
-#if !defined(VAR_G77)
       allocatable h2m(:,:),tint(:,:,:,:)
-#else
-      dimension h2m(norb,norb),tint(norb-ncore-nact,nact,nact,nact)
-#endif
       dimension ro3(nact,nact,nact,nact,nact,nact),
      *          amat(nact,nact,nact,nact,nact,nact),
      *          bmat(nact,nact,nact,nact),
@@ -4090,12 +3112,8 @@ c----------------------------------------------------------------
      *          dmat(nact,nact),
      *          da(nact,nact)
       dimension heffd(*)
-#if !defined(VAR_G77)
-      allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),sp(:,:),vct(:
-     $     ,:)
-#else
-      dimension s(1),coef(1),w(1),work(1),caux(1),sp(1),vct(1)
-#endif
+      allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),sp(:,:),
+     $     vct(:,:)
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
       
       tini=second()
@@ -4113,12 +3131,10 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       IDIST = 0
       needtp(5)=1
       L_tint = nvirt*nact*nact*nact
-#if !defined(VAR_G77)
       call nwadd(nwall,norb*norb*8)
       allocate(h2m(norb,norb))
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nact,nact))
-#endif
       call dzero(tint,L_tint)
   900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
@@ -4142,10 +3158,8 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       enddo
       goto 900
  1000 continue
-#if !defined(VAR_G77)
       call nwdel(nwall,norb*norb*8)
       deallocate(h2m)
-#endif
 
 C --------- Strongly Contracted -----------------
 
@@ -4231,7 +3245,6 @@ c            dumk3=dumk3+dint*amat(iap,ibp,icp,ia,ib,ic)*dint2
 c--Partially contracted NEV-PT class (-1')
       nact3=nact**3
       call nwadd(nwall,(2*nact3**2+4*nact3*8))
-#if !defined(VAR_G77)
       allocate(s(1:nact3,1:nact3))
       allocate(coef(1:nact3,1:nact3))
       allocate(vct(1:nact3,1:nact3))
@@ -4240,17 +3253,6 @@ c--Partially contracted NEV-PT class (-1')
       call fillcm1p(s,coef,amat,ro3,daa,da,nact,nact3)
 c      call matout(nact3,nact3,s,nact3)   !renzo debug
       call rs(nact3,nact3,s,w,1,vct,work,work(nact3+1),info)  !eispack
-#else
-      i_s=iallor8(s,nact3**2)
-      i_coef=iallor8(coef,nact3**2)
-      i_vct=iallor8(vct,nact3**2)
-      i_w=iallor8(w,nact3)
-      i_work=iallor8(work,3*nact3)
-      call fillcm1p(s(i_s),coef(i_coef),amat,ro3,daa,da,nact,nact3)
-c      call matout(nact3,nact3,s(i_s),nact3)   !renzo debug
-      call rs(nact3,nact3,s(i_s),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $     ,work(i_work+nact3),info) 
-#endif
 c      call dsyev('V','U',nact3,s(i_s),nact3,w(i_w),work(i_work),3*nact3
 c     $,info)  !lapack
       if(info.ne.0)then
@@ -4264,21 +3266,12 @@ c      thr=1.d-8  !perhaps too strict
 c      thr=1.d-5  !perhaps too large
       ndep=0
       do i=1,nact3
-#if !defined(VAR_G77)
 c      write(lupri,'(f12.8)')w(i)    !renzo debug
        if(w(i).lt.0.d0)then
-#else
-c      write(lupri,'(f12.8)')w(i_w+i-1)    !renzo debug
-       if(w(i_w+i-1).lt.0.d0)then
-#endif
          ndep=ndep+1
 c        write(lupri,'(a,i3,a,f12.8)')' Negative eigenvalue: eps(',i,')='
 c     $        ,w(ioffw+i-1)
-#if !defined(VAR_G77)
        elseif(w(i).lt.thr)then
-#else
-       elseif(w(i_w+i-1).lt.thr)then
-#endif
          ndep=ndep+1
        endif
       enddo
@@ -4288,58 +3281,30 @@ c     $        ,w(ioffw+i-1)
       endif
       nnew=nact3-ndep
       if(nnew.le.0)then
-#if !defined(VAR_G77)
          deallocate(s)
          deallocate(coef)
          deallocate(vct)
          deallocate(w)
          deallocate(work)
-#else
-         call memrelr8(s(i_s))
-         call memrelr8(coef(i_coef))
-         call memrelr8(vct(i_vct))
-         call memrelr8(w(i_w))
-         call memrelr8(work(i_work))
-#endif
-      return
+         return
       endif
          
 c--costruzione della matrice di trasformazione
       call nwadd(nwall,(nact3*nnew*8))
-#if !defined(VAR_G77)
       allocate (caux(1:nact3,1:nnew))
       call caux0p(caux,vct,w,nact3,nnew,thr)
-#else
-      i_caux=iallor8(caux,nact3*nnew)
-      call caux0p(caux(i_caux),vct(i_vct),w(i_w),nact3,nnew,thr)
-#endif
 c---trasformazione della matrice K
 c---moltiplico K(coef) per CAUX e metto il risultato in S
-#if !defined(VAR_G77)
       call dsymm('L','U',nact3,nnew,1.d0,coef,nact3,caux,nact3,0.d0,s
      $     ,nact3)
-#else
-      call dsymm('L','U',nact3,nnew,1.d0,coef(i_coef),nact3,caux(i_caux)
-     $,nact3,0.d0,s(i_s),nact3)
-#endif
 c---moltiplico CAUX(tilde) per S e metto il risultato in coef
-#if !defined(VAR_G77)
       call dgemm('T','N',nnew,nnew,nact3,1.d0,caux,nact3,s,nact3,0.d0
      $     ,coef,nact3)
-#else
-      call dgemm('T','N',nnew,nnew,nact3,1.d0,caux(i_caux),nact3,s(i_s)
-     $,nact3,0.d0,coef(i_coef),nact3)
-#endif
       t2=second()
       write(lupri,'(a,f8.2,a)')' Time for matrix transf.',t2-t,' sec.'
 c--diagonalizzo la matrice coef(hamiltoniana trasformata)
 c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
-#if !defined(VAR_G77)
       call rs(nact3,nnew,coef,w,1,vct,work,work(nact3+1),info)  !eispack
-#else
-      call rs(nact3,nnew,coef(i_coef),w(i_w),1,vct(i_vct),work(i_work) !eispack
-     $,work(i_work+nact3),info) 
-#endif
       if(info.ne.0)then
          write(lupri,*)'something wrong in diagonalization: sub vmupe'
          CALL QUIT('There is a problem with diagonalization in vmupe')
@@ -4349,28 +3314,18 @@ c      call dsyev('V','U',nnew,coef,nact3,w,work,3*nact3,info)
 c--back transformation
 c--moltiplico CAUX(nact3,nnew) per coef(nnew,nnew)
 c-- e metto in S(nact3,nnew)
-#if !defined(VAR_G77)
       call dgemm('N','N',nact3,nnew,nnew,1.d0,caux,nact3,vct,nact3,0.d0
      $     ,s,nact3)
-#else
-      call dgemm('N','N',nact3,nnew,nnew,1.d0,caux(i_caux),nact3
-     $,vct(i_vct),nact3,0.d0,s(i_s),nact3)
-#endif
 c--metto in coef i coefficienti trasformati (for clarity sake)
 c      call copia(coef,s,nact3,nnew)
       do mu=1,nnew
          do i=1,nact3
-#if !defined(VAR_G77)
             coef(mu,i)=s(i,mu)
-#else
-            coef(i_coef+(i-1)*nact3+mu-1)=s(i_s+(mu-1)*nact3+i-1)
-#endif
          enddo
       enddo
 c--inizio il calcolo perturbativo
 c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       call nwdel(nwall,(nact3**2))
-#if !defined(VAR_G77)
       deallocate(s)
       call nwdel(nwall,(nact3*nnew*8))
       deallocate(caux)
@@ -4380,23 +3335,11 @@ c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       allocate(sp(1:nnew,1:nact3))
       call e2m1pcont(e2,psi2,heffd,coef,s,sp,w,ro3,daa,da,fmpb,nact
      $     ,ncore,norb,nnew,zro,zgel,tint)
-#else
-      call memrelr8(s(i_s))
-      call nwdel(nwall,(nact3*nnew*8))
-      call memrelr8(caux(i_caux))
-      call memrelr8(vct(i_vct))
-      call nwadd(nwall,2*(nact3*nnew*8))
-      i_s=iallor8(s,nnew*nact3)
-      i_sp=iallor8(sp,nnew*nact3)
-      call e2m1pcont(e2,psi2,heffd,coef(i_coef),s(i_s),sp(i_sp),w(i_w)
-     $     ,ro3,daa,da,fmpb,nact,ncore,norb,nnew,zro,zgel,tint)
-#endif
       e2pcc(7)=e2
       psipcc(7)=psi2
       e2pc(1)=e2pc(1)+e2
       psipc(1)=psipc(1)+psi2
       call nwdel(nwall,2*(nact3*nnew*8))
-#if !defined(VAR_G77)
       deallocate(s)
       deallocate(sp)
       call nwdel(nwall,(nact3**2+4*nact3*8))
@@ -4405,14 +3348,6 @@ c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       deallocate(work)
       call nwdel(nwall,nvirt*nact*nact*nact*8)
       deallocate(tint)
-#else
-      call memrelr8(s(i_s))
-      call memrelr8(sp(i_sp))
-      call nwdel(nwall,(nact3**2+4*nact3*8))
-      call memrelr8(coef(i_coef))
-      call memrelr8(w(i_w))
-      call memrelr8(work(i_work))
-#endif
       tpc=second()
       write (lupri,'(a,f8.2,a)')' Elapsed time for PC',tpc-tsc,' sec.'
       return
@@ -4431,23 +3366,14 @@ c-------------------------------------------------------------------
       return
       end
 c----------------------------------------------------
-#if !defined(VAR_G77)
       subroutine getorbeps(WRK,LWRK,onel,heffd,fmpb,da,norb,nact,ncore,
      *           id2n,in2d)
-#else
-      subroutine getorbeps(WRK,LWRK,onel,heffd,fmpb,da,norb,nact,ncore,
-     *           id2n,in2d,h2m,fock)
-#endif
 #include <implicit.h>
 #include <priunit.h>
       dimension onel(*),fmpb(*),da(nact,*),id2n(*),in2d(*),heffd(*)
       dimension wrk(lwrk),needtp(6)
-#if !defined(VAR_G77)
       allocatable h2m(:,:)
       allocatable fock(:,:)
-#else
-      dimension h2m(norb,norb),fock(norb,norb)
-#endif
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
 Cele-debug
@@ -4455,9 +3381,7 @@ C
 C     The Fock matrix is computed in order to verify that
 C     the core and virtual orbitals are canonical
 C
-#if !defined(VAR_G77)
       allocate (fock(norb,norb))
-#endif
 Cele-debug
        
       do i=1,6
@@ -4501,9 +3425,7 @@ c------ Virt
         fmpb(ir)=onel(indi)
       enddo
 
-#if !defined(VAR_G77)
       allocate (h2m(norb,norb))
-#endif
 c------ two-electron part with mulliken distr (ij|**)
       KFREE=1
       LFREE=LWRK
@@ -4805,10 +3727,8 @@ C--- Cele Debug
      *  ' Maximum value of virt F matrix is:',dum
       write(lupri,'(a,2i3)')
      *  ' for indices = ',in2d(im),in2d(jm)
-#if !defined(VAR_G77)
       deallocate (h2m)
       deallocate (fock)
-#endif
       return
       end
 #endif

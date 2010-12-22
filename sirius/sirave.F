@@ -158,15 +158,8 @@ C
       DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG),IDEGV(MAXDEG)
 C
 Chjaaj-may2000:
-#ifdef NO_F90
-      DIMENSION KLWOP(1,1)
-      CALL QUIT('AVERSS: automatic arrays not allowed')
-C if automatic arrays not allowed include #define NO_F90.
-C This means you cannot use .SUPSYM. /hjaaj may2000
-#else
 C     Dynamic allocation of KLWOP with adjustable run-time dimensions
       DIMENSION KLWOP(NOCCT,NORBT)
-#endif
 C
       CALL QENTER('AVERSS')
       CALL MAKE_KLWOP(KLWOP)
