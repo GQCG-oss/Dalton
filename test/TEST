@@ -25,8 +25,9 @@ DALTON="`pwd`/../bin/dalton"
 #########################################################################
 ESSENTIAL=""
 #
-SHORTENRGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
-energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc"
+SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
+energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
+energy_lucita_gasci"
 SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
@@ -49,7 +50,7 @@ SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibav
 SHORTREST="r12_sym dpt_h2s dft_qr_sym"
 AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa \
 prop_exci_aosoppcc"
-SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA"
+SHORTNOCC="$SHORT_ENERGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
@@ -315,7 +316,7 @@ while [ -n "$1" ]; do
    perl_style_kwd="$perl_style_kwd $1";
    shift ;;
   "energy" )
-   testcase="$testcase $SHORTENRGY"; 
+   testcase="$testcase $SHORT_ENERGY"; 
    perl_style_kwd="$perl_style_kwd $1";
    shift ;;
   "pcm" )
