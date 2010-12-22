@@ -913,7 +913,7 @@ C     Calculate offset for this l quantum number for ECP,
 C     where the lowest orbitals are excluded.
 C     If not ECP, i.e. IQCORE .eq. 0, then ILOFF will be zero.
 C
-      CALL ECPLCORE(IQCORE,IQM,ILOFF)
+      CALL ECP_LCORE(IQCORE,IQM,ILOFF)
       ISHL = ISHL1 + ILOFF
       IF (NQ .LE. 86) THEN
          HUCTER = -ENERGY(IOFF(IQM)+ISHL,NQ)

@@ -383,7 +383,7 @@ C
          CALL FINNQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,SEG,
      &               KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
-         CALL FINDEL(BASTMP,INTQ,LUBAS,IPRINT)
+         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT)
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
@@ -594,15 +594,15 @@ C
 C Reading the exponents
 C
       DIMENSION CPRIMU( KPRIM, KPRIM, KAOVEC), ALPHA(KPRIM, KAOVEC)
-C*************************************************************
-C* Variable declarations:                                    *
-C*     SIGN - Character that gives what kind of sentence it  *
-C*            is.                                            *
-C*     STRING - A character string that helps bulletproofing *
-C*             the subroutine                                *
-C*     BLANK - A logical variable that gives whether the line*
-C*             is blank or not.                              *
-C*************************************************************
+C**************************************************************
+C* Variable declarations:                                     *
+C*     SIGN   - Character that gives what kind of sentence    *
+C*              it is.                                        *
+C*     STRING - A character string that helps bulletproofing  *
+C*              the subroutine                                *
+C*     BLANK  - A logical variable that gives whether the line*
+C*              is blank or not.                              *
+C**************************************************************
       CHARACTER SIGN
       CHARACTER STRING*88, BASNAM*(*)
       LOGICAL BLANK, POLFUN
@@ -883,7 +883,7 @@ C
 C If ECP calculate number of core orbitals to exclude for each l-shell
 C This time we have l-shell number NBLOCK
 C
-      CALL ECPLCORE(IQCORE,NBLOCK,ILOFF)
+      CALL ECP_LCORE(IQCORE,NBLOCK,ILOFF)
 C
 C Reading the primitive and contracted coefficients
 C
@@ -962,15 +962,19 @@ C*             line is a blank one.                          *
 C*************************************************************
       SUBROUTINE CHBLANK(BLANK,STRING)
 C
-      CHARACTER*(*) STRING
       LOGICAL BLANK
+      CHARACTER*(*) STRING
 C
       BLANK = .TRUE.
 C
-      DO 100 J = 1, LEN(STRING)
-         BLANK = BLANK .AND. (STRING(J:J) .EQ. ' ')
- 100  CONTINUE
-      RETURN
+      DO J = 1, LEN(STRING)
+         IF (STRING(J:J) .NE. ' ') THEN
+            BLANK = .FALSE.
+            GO TO 9000
+         END IF
+      END DO
+
+ 9000 RETURN
       END
 C/* Deck conlin */
 C
@@ -1027,8 +1031,8 @@ C*********************************************************
 C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
-C/* Deck findel */
-      SUBROUTINE FINDEL(BASNAM,INTQ,LUBAS,IPRINT)
+C/* Deck FIND_ELEMENT */
+      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1039,7 +1043,7 @@ C*              proofing the subroutine.                 *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
-      CHARACTER*200 STRING  ! long because contains the full directory path
+      CHARACTER*88 STRING
       CHARACTER SIGN
 C
       CALL  FIND_BASFIL(BASNAM,LUBAS,IPRINT)
@@ -1053,7 +1057,7 @@ C
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
             READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
             IF (IOS.NE.0) THEN
-               CALL QUIT('FINDEL: Error in reading NUCEL')
+               CALL QUIT('FIND_ELEMENT: Error in reading NUCEL')
             ENDIF
  110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) RETURN
@@ -1066,9 +1070,9 @@ C
       INQUIRE (UNIT = LUBAS, NAME = STRING)
       IEND = INDEX(STRING(1:),' ') - 1
       WRITE (LUPRI,'(/2A/A,I5)')
-     &   'FINDEL: Error when reading from basis file ',STRING(1:IEND),
+     &   'FIND_ELEMENT: Error when reading from basis file ',BASNAM,
      &   ' IOSTAT =',IOERR
-      CALL QUIT('I/O error in FINDEL in HERBAS')
+      CALL QUIT('I/O error in FIND_ELEMENT in HERBAS')
  200  CONTINUE
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
@@ -1489,7 +1493,7 @@ C*              there exists a file with that name.      *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
-      CHARACTER*140 STRING
+      CHARACTER*200 STRING ! long because will contain full directory path
       LOGICAL EXST
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1592,8 +1596,8 @@ C
       END IF
       CALL QUIT('Non-existing basis set in HERBAS')
       END
-C/* Deck ECPLCORE */
-      SUBROUTINE ECPLCORE(IQCORE,IQM,ILOFF)
+C/* Deck ECP_LCORE */
+      SUBROUTINE ECP_LCORE(IQCORE,IQM,ILOFF)
 C
 C     Nov. 2003, Johan, Patrick and Hans Joergen.
 C
@@ -1609,8 +1613,8 @@ C
 C        only s, p. d, f (never g, h, ... core orbitals)
          IF (MOD(IQCORE,2) .NE. 0) THEN
             WRITE(LUPRI,'(/A,I5)')
-     &      'ECPLCORE ECP: odd number of core electrons',IQCORE
-            CALL QUIT('ECPLCORE ECP: odd number of core electrons ')
+     &      'ECP_LCORE ECP: odd number of core electrons',IQCORE
+            CALL QUIT('ECP_LCORE ECP: odd number of core electrons')
          END IF
          DO I = 1, 4
             ILCORE(I) = 0
