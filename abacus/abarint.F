@@ -3549,7 +3549,6 @@ C
 
       CALL DUNIT(DIdent,NCRDHS)
 
-#define VAR_DEBUG
 #ifdef VAR_DEBUG
 ! March 2010 - debugging gfortran problem with segmentation error in
 ! dsygv /hjaaj
