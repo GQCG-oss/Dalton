@@ -58,18 +58,7 @@ C        J. Chem. Phys., 117, 10525-10533, (2002)
 C        Spin free version of NEVPT
 C
 C-----------------------------------------------------------------------
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_GFORTRAN))
-      return
-      end
-#else
-#define GO_ON_COMP
-#endif      
-#ifdef GO_ON_COMP
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
      *               ntotdet,ntotconf,ntotcap ,zro
@@ -527,11 +516,7 @@ c 1105 FORMAT (' REFERENCE: ',F16.8,//)
 c----------------------------------------------------------------------
       subroutine v0(luintd,norb,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,
      * fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -681,11 +666,7 @@ cele  800 enddo
 c----------------------------------------------------------------
       subroutine v1k(luintd,da,gkp1a,norb,ncore,nact,in2d,id2n,itsym,
      *               its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
       dimension da(nact,nact),gkp1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
@@ -892,11 +873,7 @@ C --------- Partially Contracted -----------------
       end
 c----------------------------------------------------------------
       subroutine fill2 (s,da,nact)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension s(nact,nact),da(nact,nact)
       do i=1,nact
          do j=1,nact
@@ -912,11 +889,7 @@ c----------------------------------------------------------------
 c-----------------------------------------------------------
       subroutine vm1k(da,gkm1a,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
       dimension da(nact,nact),gkm1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
@@ -1137,11 +1110,7 @@ c----------------------------------------------
 c-----------------------------------------------------------
       subroutine e2m1cont(tint,e2,psi2,coef,s,w,da,eps,nact,ncore,
      *                    norb,nnew,zgel)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension w(*),eps(*),coef(nact,nact),s(nact,nact),da(nact,nact)
       dimension zgel(*),tint(norb-ncore-nact,ncore,norb-ncore-nact,nact)
       integer a,ap
@@ -1198,11 +1167,7 @@ c--------------------------------
 c-----------------------------------------------------------
       subroutine e2m2cont(tint,e2,psi2,coef,s,w,daa,eps,nact,ncore,
      *                    norb,nnew,zgel)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension w(*),eps(*),coef(nact**2,nact**2),s(nact**2,nact**2)
      $     ,daa(nact,nact,nact,nact),
      *      tint(norb-nact-ncore,nact,norb-nact-ncore,nact)
@@ -1255,11 +1220,7 @@ c--------------------------------
 c-----------------------------------------------------------
       subroutine e2m2contp(tint,e2,psi2,coef,s,w,daa,eps,nact,ncore,
      *                     norb,nnew,zgel)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension w(*),eps(*),coef(nact*(nact+1)/2,nact*(nact+1)/2),s(nact
      $     *(nact+1)/2,nact*(nact+1)/2),daa(nact,nact,nact,nact),
      *     tint(norb-nact-ncore,nact,norb-nact-ncore,nact)
@@ -1312,11 +1273,7 @@ c--------------------------------
 c-----------------------------------------------------------
       subroutine e2p2cont(tint,e2,psi2,coef,s,w,daa,eps,nact,ncore,
      *                    norb,nnew,zgel)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension w(*),eps(*),coef(nact**2,nact**2),s(nact**2,nact**2)
      $     ,daa(nact,nact,nact,nact),zgel(*),
      *      tint(nact,ncore,nact,ncore)
@@ -1369,11 +1326,7 @@ c--------------------------------
 c-----------------------------------------------------------
       subroutine e2p2contp(tint,e2,psi2,coef,s,w,daa,eps,nact,ncore,
      *                     norb,nnew,zgel)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension w(*),eps(*),coef(nact*(nact+1)/2,nact*(nact+1)/2),s(nact
      $    *(nact+1)/2,nact*(nact+1)/2),daa(nact,nact,nact,nact),zgel(*),
      *     tint(nact,ncore,nact,ncore)
@@ -1425,11 +1378,7 @@ c--------------------------------
 c----------------------------------------------------------------
       subroutine e2p1cont(ii,ij,tintar,tintra,e2,psi2,coef,s,w,da,eps,
      *                    nact,ncore,norb,nnew,zgel)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension w(*),eps(*),coef(nact,nact),s(nact,nact),da(nact,nact)
      $     ,zgel(*),tintar(nact,norb-nact-ncore),
      $      tintra(norb-nact-ncore,nact)
@@ -1493,11 +1442,7 @@ c 2       enddo
 c------------------------------------------------------
       subroutine v2mod(gkp2aa,daat,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
 c      dimension da(nact,nact),gkm1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
@@ -1766,11 +1711,7 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
 cc----------------------------------------------------------------
       subroutine vm2mod(daa,gkm2aa,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
 c      dimension da(nact,nact),gkm1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
@@ -2223,11 +2164,7 @@ c----------------------------------------------------------------
 c---------------------------------------------------------------
       subroutine v0pmod(da,daa,gk0pa,gk0pd,gk0pf,heffd,norb,ncore,
      *         nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -2853,11 +2790,7 @@ c      write(lupri,'(a,f8.2,a)')'time for pert. calcn. ',t5-t4,' sec.'
 c----------------------------------------------------------------
       subroutine vpupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,
      * ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -3092,11 +3025,7 @@ c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
 c----------------------------------------------------------------
       subroutine vmupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,ncore,
      *          nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -3354,11 +3283,7 @@ c--costruiamo le matrici ausiliarie S(abc,mu) e S'(a,mu)
       end
 c-------------------------------------------------------------------
       function ee2tl(a,b,c,d,taa,dal,nact)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
       integer a,b,c,d
       dimension taa(nact,nact,nact,nact),dal(nact,nact)
       ee2tl=-ee2(b,a,c,d,taa,dal,nact)
@@ -3438,22 +3363,22 @@ c------ two-electron part with mulliken distr (ij|**)
 
 c----- (tj,ju) part of heff (t=iar,u=i)
       if (ic.gt.id) then
-      ii=ic
-      ij=id
+        ii=ic
+        ij=id
       else
-      ii=id
-      ij=ic
+        ii=id
+        ij=ic
       endif
       iid=in2d(ii)
       ijd=in2d(ij)
       do it=1,norb 
-      itd=in2d(it)
-      jtj=indice(it,ij)
-      heffd(jtj)=heffd(jtj)-h2m(itd,iid)
-      if (ii.ne.ij) then
-      jti=indice(it,ii)
-      heffd(jti)=heffd(jti)-h2m(itd,ijd)
-      endif
+        itd=in2d(it)
+        jtj=indice(it,ij)
+        heffd(jtj)=heffd(jtj)-h2m(itd,iid)
+        if (ii.ne.ij) then
+          jti=indice(it,ii)
+          heffd(jti)=heffd(jti)-h2m(itd,ijd)
+        endif
       enddo
 
       if (ic.eq.id) then
@@ -3537,11 +3462,11 @@ c------ two-electron part with mulliken distr (ia|**)
       ic=id2n(icd)
       id=id2n(idd)
       if (ic.gt.id) then
-      ii=id
-      ia=ic-ncore
+        ii=id
+        ia=ic-ncore
       else
-      ii=ic
-      ia=id-ncore
+        ii=ic
+        ia=id-ncore
       endif
 c----- Core
       iid=in2d(ii)
@@ -3566,18 +3491,18 @@ c------ two-electron part with mulliken distr (ia,ib|**)
       id=id2n(idd)-ncore
 c----- Virt
       do ir=nact+ncore+1,norb
-      ird=in2d(ir)
-      dum=h2m(ird,ird)*da(ic,id)
-      if (ic.ne.id) dum=dum*2.d0
-      fmpb(ir)=fmpb(ir)+dum
-      fock(ir,ir)=fock(ir,ir)+dum                        
-      do is=ir+1,norb
-       isd=in2d(is)
-       dum=h2m(ird,isd)*da(ic,id)
-       if (ic.ne.id) dum=dum*2.d0
-       fock(ir,is)=fock(ir,is)+dum
-       fock(is,ir)=fock(is,ir)+dum
-      enddo
+        ird=in2d(ir)
+        dum=h2m(ird,ird)*da(ic,id)
+        if (ic.ne.id) dum=dum*2.d0
+        fmpb(ir)=fmpb(ir)+dum
+        fock(ir,ir)=fock(ir,ir)+dum                        
+        do is=ir+1,norb
+         isd=in2d(is)
+         dum=h2m(ird,isd)*da(ic,id)
+         if (ic.ne.id) dum=dum*2.d0
+         fock(ir,is)=fock(ir,is)+dum
+         fock(is,ir)=fock(is,ir)+dum
+        enddo
       enddo
       goto 500
   600 continue
@@ -3591,11 +3516,11 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       ic=id2n(icd)
       id=id2n(idd)
       if (ic.gt.id) then
-      ia=id-ncore
-      ir=ic
+        ia=id-ncore
+        ir=ic
       else
-      ia=ic-ncore
-      ir=id
+        ia=ic-ncore
+        ir=id
       endif
       ird=in2d(ir)
       do ib=1,nact
@@ -3610,9 +3535,9 @@ c------ two-electron part with mulliken distr (ir,ia|**)
 c----- (tj,ju) part of heff (t=r,u=a,j=b)
       iad=in2d(ia+ncore)
       do iu=ncore+1,ncore+nact
-      iud=in2d(iu)
-      iru=indice(ir,iu)
-      heffd(iru)=heffd(iru)-h2m(iad,iud)
+        iud=in2d(iu)
+        iru=indice(ir,iu)
+        heffd(iru)=heffd(iru)-h2m(iad,iud)
       enddo
       goto 700
   800 continue
@@ -3626,26 +3551,26 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       ic=id2n(icd)
       id=id2n(idd)
       if (ic.gt.id) then
-      ii=id
-      ir=ic
+        ii=id
+        ir=ic
       else
-      ii=ic
-      ir=id
+        ii=ic
+        ir=id
       endif
       ird=in2d(ir)
       iid=in2d(ii)
       fmpb(ir)=fmpb(ir)-h2m(ird,iid)
       fock(ir,ir)=fock(ir,ir)-h2m(ird,iid)
       do is=ir+1,norb
-      isd=in2d(is)
-      fock(ir,is)=fock(ir,is)-h2m(isd,iid)
+        isd=in2d(is)
+        fock(ir,is)=fock(ir,is)-h2m(isd,iid)
       enddo
 
 c----- (tj,ju) part of heff (t=r,u=a)
       do iu=ncore+1,ncore+nact
-      iud=in2d(iu)
-      iru=indice(ir,iu)
-      heffd(iru)=heffd(iru)-h2m(iid,iud)
+        iud=in2d(iu)
+        iru=indice(ir,iu)
+        heffd(iru)=heffd(iru)-h2m(iid,iud)
       enddo
       goto 900
  1000 continue
@@ -3701,9 +3626,9 @@ C--- Cele Debug
       do i=1,ncore
       do j=i+1,ncore
       if (abs(fock(i,j)).gt.dum)then
-      im=i
-      jm=j
-      dum=abs(fock(i,j))
+        im=i
+        jm=j
+        dum=abs(fock(i,j))
       endif
       enddo
       enddo
@@ -3717,9 +3642,9 @@ C--- Cele Debug
       do i=ncore+nact+1,norb
       do j=i+1,norb
       if (abs(fock(i,j)).gt.dum)then
-      im=i
-      jm=j
-      dum=abs(fock(i,j))
+        im=i
+        jm=j
+        dum=abs(fock(i,j))
       endif
       enddo
       enddo
@@ -3731,4 +3656,4 @@ C--- Cele Debug
       deallocate (fock)
       return
       end
-#endif
+! -- end of dypc.F --

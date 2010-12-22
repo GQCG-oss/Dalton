@@ -197,7 +197,6 @@ C     Getting the coefficients of the determinants
 C
       call nwadd(nwall,ncdets*8)
       allocate (cvec(ncdets))
-      i_cvec=1
       rewind (luit1)
       CALL MOLLB2 ('STARTVEC',RTNLBL,LUIT1,LUERR)
       if (.not.doci) then
@@ -226,14 +225,14 @@ C
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KDETVEC,NCDETS,WRK,KFREE,LFREE)
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-         CALL READT(LUIT1,NCONF,CVEC(i_CVEC))
-         call csdtvc(cvec(i_cvec),WRK(KDETVEC),1,WRK(KCINDX+KDTOC-1)
+         CALL READT(LUIT1,NCONF,CVEC)
+         call csdtvc(cvec,WRK(KDETVEC),1,WRK(KCINDX+KDTOC-1)
      $        ,WRK(KCINDX+KICTS(1)-1),lsym,1,0)
          CALL MEMREL('after csdtvc',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       else
-         CALL READT(LUIT1,NCDETS,CVEC(i_cvec))
+         CALL READT(LUIT1,NCDETS,CVEC)
       endif
-C     CALL WRTMAT(CVEC(i_cvec),1,NCDETS,1,NCDETS,0)
+C     CALL WRTMAT(CVEC,1,NCDETS,1,NCDETS,0)
 
 C
 C     Getting the one-particle density matrix
@@ -5154,14 +5153,7 @@ C
 C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 C
-
-C Manu b
-      write(lupri,*) 'VAR_G77 is NOT defined !' 
-C Manu e
-
-C
-C
-c      CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+c     CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
 
 C
 C************ NEVPT2-srDFT -- start ***************
@@ -5238,9 +5230,9 @@ C manu e
 
 C        Add the srH potential to the one-electron part of the Hamiltonian
 
-         CALL ADDSUSP(WRK(KVSRAO),H1AO)
+         CALL ADD_SU_SP(WRK(KVSRAO),H1AO)
 C manu b
-!        write(lupri,*) 'print H1AO after 1st call to addsusp'
+!        write(lupri,*) 'print H1AO after 1st call to ADD_SU_SP'
 !        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
        
 C manu e
@@ -5267,50 +5259,24 @@ C manu e
 
 C        Add the srxc potential to the one-electron part of the Hamiltonian
 
-         CALL ADDSUSP(WRK(KVSRAO),H1AO)
+         CALL ADD_SU_SP(WRK(KVSRAO),H1AO)
 
 C        Release memory
 
          CALL MEMREL('Releasing mem. used for DAO and VSRAO',
      &             WRK,KFRSAV,KDAO,KFREE,LFREE)  
-         
 
+C
+C************ NEVPT2-srDFT -- end ***************
+C
 #endif
       END IF 
-
-C Manu b       
-C     write(lupri,*) 'print H1AO before calling UTHUB'
-C     CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-C Manu e       
-
-C************ NEVPT2-srDFT -- end ***************
-C
-
-
+         
       CALL UTHUB(H1AO,H1MO,CMO,WRK(KFREE),NSYM,NBAS,NORB)
       CALL PKSYM1(onel,H1MO,NORB,NSYM,-1) ! Unpack H1MO in low tri onel
-c      CALL OUTPKB(H1MO,NORB,NSYM,1,LUPRI)
-c      CALL OUTPAK(onel,NORBT,1,LUPRI)
-
-C Manu b       
-C     write(lupri,*) 'print H1AO before calling UTHUB'
-C        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-C Manu e       
-
-C************ NEVPT2-srDFT -- end ***************
-C
-C
-      CALL UTHUB(H1AO(i_h1ao),H1MO(i_h1mo),CMO(i_cmo),WRK(KFREE),NSYM
-     $     ,NBAS,NORB)
-
-
-      CALL PKSYM1(onel,H1MO(i_h1mo),NORB,NSYM,-1) ! Unpack H1MO in low tri onel
-
-C Manu b
+c     CALL OUTPKB(H1MO,NORB,NSYM,1,LUPRI)
 !     write(lupri,*) 'print onel (unpacked H1MO)'
-!     CALL OUTPAK(onel,NORBT,1,LUPRI)
-C Manu e
-
+c     CALL OUTPAK(onel,NORBT,1,LUPRI)
 
 c----building Dyall's h eff in aj----------
       do a=1,nasht
@@ -5337,8 +5303,8 @@ c	    call flshfo(lupri)
       end
 
 c-----------------------------------------------------
-C  /* Deck addsusp */
-      SUBROUTINE ADDSUSP(VSRAO,H1AO)
+C  /* Deck ADD_SU_SP */
+      SUBROUTINE ADD_SU_SP(VSRAO,H1AO)
 C
 C April-2009 Emmanuel Fromager 
 C
@@ -5363,7 +5329,7 @@ C***********************************************************
             DO 2600 I = 1,NBASI 
                DO 2700 J = 1,I
 C Manu b
-C        write(lupri,*) 'debug printing in addsusp ...'
+C        write(lupri,*) 'debug printing in ADD_SU_SP ...'
 C        write(lupri,*) 'H1AO(',
 C    &   IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2),') =',
 C    &   H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2))
