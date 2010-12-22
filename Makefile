@@ -5,29 +5,34 @@ include ./Makefile.config
 
 # OBS! DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
 #
-DALTON_LIBS =     \
--Labacus -labacus	\
--Lrsp -lrsp 	\
--Lsirius -lsirius	\
--labacus	      \
--Leri -leri		\
--Ldensfit -ldensfit	\
--Lcc  -lcc		\
--Ldft -ldft		\
--Lsoppa -lsoppa	\
--Llucita -llucita	\
--Lcholes -lcholes \
--Lgp -lgp		\
+DALTON_LIBS =      \
+-Labacus -labacus  \
+-Lrsp -lrsp        \
+-Lsirius -lsirius  \
+-labacus           \
+-Leri -leri        \
+-Ldensfit -ldensfit\
+-Lcc  -lcc         \
+-Ldft -ldft        \
+-Lsoppa -lsoppa    \
+-Llucita -llucita  \
+-Lcholes -lcholes  \
+-Lgp -lgp          \
 -Lpdpack -lpdpack
+
+#NB! LUCITA_OBJ must be before GP_OBJ because it creates .mod files used in gp/
+#NB! GP_OBJ must be before SIR_OBJ because it creates .mod files used in sirius/
 
 MODULES = MAIN_OBJ ABA_OBJ LUCITA_OBJ GP_OBJ SIR_OBJ RSP_OBJ SLAVE_OBJ ERI_OBJ \
 	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ
 
 SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles lucita
 
+# ---------------
+
 OBJSLAVE = abacus/herpar.o eri/eri2par.o
 
-OBJNODE = eri/eriprg.o
+OBJNODE  = eri/eriprg.o
 
 OBJSAMFI = amfi/amfi.o amfi/symtra.o
 
@@ -57,7 +62,7 @@ Makefile.config: configure
 #
 #     Most common build of Dalton
 #
-dalton.x: $(MODULES) dalton
+dalton.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x ..."
 	$(LOADER) $(FFLAGS) \
 	-o ./dalton.x abacus/dalton.o $(OBJSLAVE) \
@@ -66,7 +71,7 @@ dalton.x: $(MODULES) dalton
 #
 #       Linux version of the program
 #
-linux.x: $(MODULES) dalton
+linux.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x for linux ..."
 	$(LOADER) $(FFLAGS) \
 	-o ./dalton.x abacus/dalton.o \
@@ -84,7 +89,7 @@ linuxparallel.x: linux.x
 #
 #	MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
-parallel.x: dalton.x dalton
+parallel.x: dalton.x
 	@echo "---------------> Linking parallel dalpar.x ..."
 	$(LOADER) $(FFLAGS) \
 	-o ./dalpar.x abacus/dalton.o $(OBJSLAVE) $(OBJSAMFI) \
@@ -96,7 +101,7 @@ parallel.x: dalton.x dalton
 #	We will never need MPILIB when using PVM
 #       First build master, then slave
 #
-dalpvm.x: $(MODULES) dalton
+dalpvm.x: $(MODULES)
 	$(LOADER) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalpvm.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) \
@@ -109,18 +114,18 @@ dalpvm.x: $(MODULES) dalton
 #	Not tested MPI on Cray yet. Thus no MPILIB, and no OBJSMXM nor
 #	OBJSEIS
 #
-cray.x: $(MODULES) dalton
+cray.x: $(MODULES)
 	$(LOADER) $(FFLAGS) -o $(INSTALLDIR)/dalton.x \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) $(DALTON_LIBS)
 #
 #	This is a proper build for the Cray-T3D
 #
-t3d.x: $(MODULES) dalton
+t3d.x: $(MODULES)
 	$(LOADER) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o $(INSTALLDIR)/dalpar.x $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
 
-t90.x: $(MODULES) dalton
+t90.x: $(MODULES)
 	$(LOADER) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o $(INSTALLDIR)/dalpar.x $(IO_OBJS) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
