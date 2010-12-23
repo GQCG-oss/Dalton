@@ -187,7 +187,7 @@ CRIT2=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;Y,Y\) =
 CRIT3=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(X;X,Y\) = * -9\.147" $log | wc -l`
 CRIT4=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(X;X,Y\) = *-10\.162" $log | wc -l`
 CRIT5=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Z;Z,Y\) = *  2\.931" $log | wc -l`
-CRIT6=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Z;Z,Y\) = *  2\.922" $log | wc -l`
+CRIT6=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Z;Z,Y\) = *  2\.92[12]" $log | wc -l`
 CRIT7=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(X;Y,X\) = beta\(X,X,Y\)" $log | wc -l`
 CRIT8=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(X;Y,X\) = beta\(X,X,Y\)" $log | wc -l`
 CRIT9=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Y;X,X\) = beta\(X,X,Y\)" $log | wc -l`

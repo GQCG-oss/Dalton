@@ -97,7 +97,7 @@ LONG_CHOLESKY="choles_ccsdpt_energy"
 LONG="$LONG $LONGCC $LONG_CHOLESKY"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
-dft_parallell_properties"
+dft_parallell_properties parallel_lucita_gasci"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
@@ -342,25 +342,25 @@ while [ -n "$1" ]; do
    shift ;;
   "parallel" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 4"
    fi
    testcase="$testcase $PARALLEL"; 
    shift ;;
   "parqmmm" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 4"
    fi
    testcase="$testcase $QMMM";
    shift ;;
   "parqm3" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 4"
    fi
    testcase="$testcase $PARQM3";
    shift ;;
   "debug" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 4"
    fi
    testcase="$testcase $DEBUG";
    shift ;;
@@ -369,7 +369,7 @@ while [ -n "$1" ]; do
    shift ;;
   "longpar" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 4"
    fi
    testcase="$testcase $LONGPAR";
    shift ;;
@@ -426,7 +426,7 @@ while [ -n "$1" ]; do
    shift ;;
    *paral* )  # assume parallel test if "paral" in name
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="-N 4"
    fi
    testcase="$testcase $1"; 
    shift ;;
