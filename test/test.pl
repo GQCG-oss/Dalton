@@ -1502,7 +1502,8 @@ continue {
 	push @failed_tests, $test;
     } else {
 	push @passed_tests, $test;
-	foreach my $file ($dalinp, $molinp, $dalout, $refout, $logdal, $errdal, $logfile, $errfile, $tgzfile) {
+	foreach my $file ($dalinp, $molinp, $potinp, $dalout, $refout, 
+			  $logdal, $errdal, $logfile, $errfile, $tgzfile) {
 	    system("rm $file") if ((-f $file) and (not $keep));
 	}
     }
