@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Shell script for configuring Makefile.config needed to build the DALTON
 # quantum chemistry code. 
@@ -92,7 +92,7 @@ blas2="false"
 blas3="false"
 lapack="false"
 MACHTYPE=`uname -s`
-if [ "$MACHTYPE" = 'Linux' -o "$MACHTYPE" = Darwin ]; then
+if [ "${MACHTYPE:0:5}" = 'Linux' -o "${MACHTYPE:0:6}" = Darwin -o "${MACHTYPE:0:6}" = "CYGWIN" ]; then
     ECHO='echo -e'
     if [ "`$ECHO`" = '-e' ]; then ECHO=echo; fi
     prc=`uname -m`
@@ -992,7 +992,8 @@ case "$WHICH" in
              safe_opt="-O1 -w -fpp -assume byterecl"
              case $CC in
                  icc|mpicc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
-                 gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
+                 gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict"
+                      [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__";;
              esac
              #LIB="$LIB"
              ;;
@@ -1026,8 +1027,9 @@ case "$WHICH" in
                   *) march=" ";;
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+                  [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__";;
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
-		 F90mod=-J../modules
+           F90mod=-J../modules
              ;;
           esac
 
@@ -1063,7 +1065,7 @@ case "$WHICH" in
                esac
                copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
-		   F90mod=-J../modules
+            F90mod=-J../modules
                f90opt="$opt -I. -x f95-cpp-input"
 #               cxx_ldflags="-lstdc++"
                if [ "$mesp" != "dummy" ]; then
