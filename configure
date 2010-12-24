@@ -1302,7 +1302,7 @@ $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
 
 .c.i:
-$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -E \$*.c > \$.i
+$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -E \$*.c > \$*.i
 
 .c.g:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -g -c \$*.c 
