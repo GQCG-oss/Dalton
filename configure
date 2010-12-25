@@ -1027,7 +1027,7 @@ case "$WHICH" in
                   *) march=" ";;
              esac
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-                  [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__";;
+                  [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
            F90mod=-J../modules
              ;;
