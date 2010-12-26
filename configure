@@ -315,8 +315,8 @@ if [ "$answer" = "y" ]; then
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
         else
-            complist="mpif90 $complist"
-            ccmplist="mpicc  $ccmplist"
+            complist="mpif90 mpiifort $complist"
+            ccmplist="mpicc  mpiicc $ccmplist"
             parlib='yes'
         fi
 #
@@ -965,6 +965,14 @@ case "$WHICH" in
                 read F90_be
                 $ECHO "Continuing with backend compiler $F90_be"
              fi
+          elif [ "$F90" = mpiifort ]; then
+             F90_be=ifort
+             get_yes_or_no "Is backend compiler $F90_be ?" y
+             if [ "$answer" = "n" ]; then
+                $ECHO 'Then please specify correct backend compiler : \c'
+                read F90_be
+                $ECHO "Continuing with backend compiler $F90_be"
+             fi
           else
              F90_be=$F90
           fi
@@ -991,7 +999,7 @@ case "$WHICH" in
              opt="-O3 $proc -ip -w -fpp -assume byterecl"
              safe_opt="-O1 -w -fpp -assume byterecl"
              case $CC in
-                 icc|mpicc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
+                 icc|mpicc|mpiicc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict"
                       [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__";;
              esac
