@@ -4546,8 +4546,8 @@ C        NERROR = NERROR + 1
 *. Open one-electron file to obtain core energy and
 *. Number of MO's and AO's
       IF(NOINT.EQ.0) THEN
-        CALL GET_ORB_DIM_ENV(ECORE_ENV)
-        IF(ISETKW(46).EQ.2) ECORE = ECORE_ENV
+!       CALL GET_ORB_DIM_ENV(ECORE_ENV)
+!       IF(ISETKW(46).EQ.2) ECORE = ECORE_ENV
 #ifdef PRG_DIRAC
         if(ENVIRO(1:5).ne.'DIRAC')
      &    CALL CHK_ORBDIM(IGSFILL,NIRREP)

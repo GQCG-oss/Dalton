@@ -187,8 +187,11 @@ contains
 !-------------------------------------------------------------------------------
 
 !     total # 1-/2-electron integrals
-      call dalton_mpi_bcast(nint1, 0, mpi_comm_world)
-      call dalton_mpi_bcast(nint2, 0, mpi_comm_world)
+      call dalton_mpi_bcast(nint1,      0, mpi_comm_world)
+      call dalton_mpi_bcast(nint2,      0, mpi_comm_world)
+!     core energy + inactive energy and core energy
+      call dalton_mpi_bcast(ecore,      0, mpi_comm_world)
+      call dalton_mpi_bcast(ecore_orig, 0, mpi_comm_world)
 
 !     synchronize the 1-electron integrals (use the generic bcast because
 !     the 1-/2-electron integral arrays have too large dimensions in the calling
