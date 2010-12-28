@@ -328,8 +328,9 @@ sub write_summary($$) {
     print $testfile "for i in";
     for ($i = 1; $i <= $numsets; $i++) { print $testfile " $i"; }
     print $testfile "\ndo\n";
-    print $testfile "   if [ \${TEST[i]} -ne \${CTRL[i]} ]; then\n";
-    print $testfile "      echo \${ERROR[i]}\n";
+
+    print $testfile "   if [ \${TEST[i]} -lt \${CTRL[i]} ]; then\n";
+    print $testfile "      echo \"\${ERROR[i]} ( test = \${TEST[i]}; control = \${CTRL[i]} );\"\n";
     print $testfile "      PASSED=0\n";
     print $testfile "   fi\n";
     print $testfile "done\n\n";
