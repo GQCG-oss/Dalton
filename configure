@@ -280,7 +280,13 @@ fi
 #
 
 mesp='dummy'
-get_yes_or_no 'Do you want to install the program in a parallel MPI version?' n
+if [ "$WHICH" = "cygwin" ]; then
+   $ECHO "Parallel MPI version not implemented for cygwin"
+   answer="n"
+else
+   get_yes_or_no 'Do you want to install the program in a parallel MPI version?' n
+fi
+
 if [ "$answer" = "y" ]; then
 #
 # Determine message passing protocol to be used
