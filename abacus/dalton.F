@@ -412,7 +412,7 @@ C
      &  '(DALTON; ABACUS magnetic properties and  much more)',
      *'Pawel Salek,','KTH Stockholm,','Sweden','(DALTON; DFT code)',
      *'Claire C.M. Samson','University of Karlsruhe','Germany',
-     &  '(Boys localization, r12 integrals in ERI),
+     &  '(Boys localization, r12 integrals in ERI)',
      *'Alfredo Sanchez de Meras,','University of Valencia,','Spain',
      &  '(CC module, Cholesky decomposition)',
      *'Trond Saue,','CNRS/ULP Toulouse,','France',
