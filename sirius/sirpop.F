@@ -35,8 +35,13 @@ C File: sirius/sirpop.F
 C
 #include <single.h>
 C
+C     MXCGTO = Max number of cgto's contributing to a symmetry orbital
+C              For D2h this is 8, for subgroups less than 8.
+C
+#define MXCGTO 8
+C
 C  /* Deck sirpop */
-      SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE)
+      SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE_INPUT)
 C
 C Nov-10-85 Hans Agren
 C l.r. 910708-hjaaj/0710-hjaaj
@@ -54,29 +59,23 @@ C  taken from the Stockholm CASSCF program (release 82 09 01) and
 C  modified for SIRIUS.)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*)   INP_POPKEY
       DIMENSION DV(*), WRK(*)
-C
-#include <iratdef.h>
-C
-C     MXCGTO = Max number of cgto's contributing to a symmetry orbital
-C
-      PARAMETER ( MXCGTO = 8 )
 C
 C   INFINP : FLAG(*)
 C   INFORB ? NBAST,
 C   INFPOP ?
 C   INFTAP : LUIT1
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
 #include "infpop.h"
-#include <inftap.h>
-#include <infpri.h>
+#include "inftap.h"
+#include "infpri.h"
 C
 C RESTRICTIONS: -THE MAXIMUM NUMBER OF ATOMS IS SET TO MXCENT
 C               -The highest L quantum number allowed for is F
@@ -105,9 +104,7 @@ C
          QUADRM = .false.
          MULLKM = .true.
       ELSE IF (POPKEY(1:5) .EQ. 'FINAL') THEN
-         WRITE (LUW4,'(//A/)')
-     &   ' <<< SIRIUS Population analysis. >>>'
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(//A/)')
+         WRITE (LUPRI,'(//A/)')
      &   ' <<< SIRIUS Population analysis. >>>'
          DIPOLM = .NOT.FLAG(71)
          QUADRM = .NOT.FLAG(72)
@@ -116,23 +113,13 @@ C
          CALL QUIT('Unrecognized POPKEY : '//POPKEY)
       END IF
 C
-      IF (NASHT .GT. 0) THEN
-         write (LUPRI,*) ' SIRPOP skipped because NASHT > 0'
-         go to 9999
-      END IF
-C
 C     *****   core allocation  *****
-C
-      MATCMO = 0
-      DO 10 ISYM = 1,NSYM
-         MATCMO = MATCMO + NBAS(ISYM)*(NISH(ISYM)+NASH(ISYM))
-   10 CONTINUE
 C
 C  ***---VIRIAL---POPTRA---***
 C
 C     The structure of the working area will be
 C
-C       1) CMO      MO coefficients (occupied only)
+C       1) CMO      MO coefficients
 C       2) OCCUP    occupation numbers (inactive and active only)
 C       3) IAMN     label of the center to which this cgto belongs
 C       4) IPR      index for the type of the cgto (s,x,y,...)
@@ -144,25 +131,21 @@ C       8) CTRAN    coefficients of the cgto's
 C       9) CMOCGT   MO coefficients in cgto basis
 C      10) SS       overlap matrix in cgto basis
 C
-      KCMO   = 1
-      KOCC   = KCMO   + MATCMO
-      KCMO1  = KOCC   + NOCCT
-      KAOCC  = KCMO1  + NCMOT
-      KWRK   = KAOCC  + NASHT
+      KFREE_INPUT = 1
+      KFREE = KFREE_INPUT
+      LFREE = LFREE_INPUT
+      CALL MEMGET('REAL',KAOCC,NASHT ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCC ,NOCCT ,WRK,KFREE,LFREE)
 C
-      KIAMN  = KCMO1
-      KIPR   = KIAMN  + NBAST
-      KOVLP  = KIPR   + NBAST
-      KJTRAN = KOVLP  + NNBAST
-      KITRAN = KJTRAN + NBAST
-      KCTRAN = KITRAN + NBAST*MXCGTO/IRAT
-      KWRK   = MAX(KCTRAN + NBAST*MXCGTO,KWRK)
-      KCMOCG = KWRK
-      KSS    = KCMOCG + NBAST*NOCCT
-      KWRK1  = KSS    + NBAST*(NBAST + 1)/2
-C
-      IF (KWRK1 .GT. KWRK) KWRK = KWRK1
-      IF (KWRK .GE. LFREE) CALL ERRWRK('SIRPOP-1',KWRK,LFREE)
+      CALL MEMGET('REAL',KIAMN,NBAST ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KIPR ,NBAST ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOVLP,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KJTRAN,NBAST,WRK,KFREE,LFREE)
+      CALL MEMGET('INT2',KITRAN,NBAST*MXCGTO,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCTRAN,NBAST*MXCGTO,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMOCG,NBAST*NOCCT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSS   ,N2BASX,WRK,KFREE,LFREE)
 C
 C     ***---MULLIK---***
 C
@@ -177,32 +160,21 @@ C     10') SS          - " -
 C     11') POPNET  net and overlap populations over cgto basis
 C                  functions - sum over all MO's
 C
-      KNAME  = KOVLP
+      KNAME  = KFREE
       KNUMB  = KNAME  + MXCENT
       KPOPNAB= KNUMB  + NBAST
       KPOPABI= KPOPNAB+ MXCENT*MXCENT
       KPOPCG = KPOPABI+ MXCENT*MXCENT
-      KPOPC  = KWRK1
+      KPOPC  = KPOPCG + NBAST
       KPPNET = KPOPC  + NBAST*NOCCT
       KWRK2  = KPPNET + NBAST*(NBAST + 1)/2
-      IF (KWRK2 .GE. LFREE) CALL ERRWRK('SIRPOP-2',KWRK2,LFREE)
-C
-C  ***---DIPMOM---QUADRP---***
-C
-C     3)  DIPMAT dipole moment matrix
-C     3') QUMAT  quadrupole moment matrix
-C
-      KDIPM  = KIAMN
-      KWRK3D = KDIPM  + NNBAST*3
-      KQUMAT = KIAMN
-      KWRK3Q = KQUMAT + NNBAST*6
-      KWRK3  = MAX(KWRK3D,KWRK3Q)
-      IF (KWRK3 .GE. LFREE) CALL ERRWRK('SIRPOP-3',KWRK3,LFREE)
+      IF (KWRK2 .GE. LFREE_INPUT)
+     &   CALL ERRWRK('SIRPOP-2',KWRK2,LFREE_INPUT)
 C
 C     ***** Get the MO coefficients and NO occupation numbers
 C
       REWIND LUIT1
-      CALL READMO (WRK(KCMO1),9,DUMMY,0)
+      CALL READMO (WRK(KCMO),9,DUMMY,0)
       IF (NASHT .LE. 1) THEN
          IF (NASHT .EQ. 1) WRK(KAOCC) = NACTEL
       ELSE IF ( FNDLAB('NATOCCAC',LUIT1) ) THEN
@@ -227,14 +199,10 @@ C
       END IF
 C
       IEOCC = 0
-      JCMO  = KCMO
       DO 40 ISYM = 1,NSYM
          NOCCI = NOCC(ISYM)
       IF (NOCCI.EQ.0)   GO TO 40
          NBASI = NBAS(ISYM)
-         CALL DCOPY(NOCCI*NBASI,WRK(KCMO1+ICMO(ISYM)),1,WRK(JCMO),1)
-         JCMO = JCMO + NOCCI*NBASI
-C
 C
 C     Get the occupation numbers for occupied orbitals
 C     (2 for inactive and from WRK(KAOCC) for active orbitals)
@@ -254,15 +222,13 @@ C
 C
 C     *****     Perform energy analysis   ****
 C
-      CALL VIRIAL (NNBAST,MXCGTO,MATCMO,
-     *             WRK(KCMO),WRK(KOCC),WRK(KIAMN),WRK(KIPR),
-     *             WRK(KOVLP),WRK(KJTRAN),WRK(KITRAN),WRK(KCTRAN))
+      CALL VIRIAL (WRK(KCMO),WRK(KOCC),WRK(KIAMN),WRK(KIPR),
+     &             WRK(KOVLP),WRK(KJTRAN),WRK(KITRAN),WRK(KCTRAN))
 C
 C     *****     Transform from symmetry orbital basis to cgto basis
 C
-      CALL POPTRA (NNBAST,MXCGTO,MATCMO,
-     *             WRK(KCMO),WRK(KOVLP),WRK(KJTRAN),WRK(KITRAN),
-     *             WRK(KCTRAN),WRK(KCMOCG),WRK(KSS))
+      CALL POPTRA (WRK(KCMO),WRK(KOVLP),WRK(KJTRAN),WRK(KITRAN),
+     &             WRK(KCTRAN),WRK(KCMOCG),WRK(KSS))
 C
 C     *****     Perform Mulliken population analysis  *****
 C
@@ -273,12 +239,24 @@ C
      *                WRK(KPPNET))
       END IF
 C
+C  ***---DIPMOM---QUADRP---***
+C
+C     3)  DIPMAT dipole moment matrix
+C     3') QUMAT  quadrupole moment matrix
+C
+      KDIPM  = KFREE
+      KWRK3D = KDIPM  + NNBAST*3
+      KQUMAT = KFREE
+      KWRK3Q = KQUMAT + NNBAST*6
+      KWRK3  = MAX(KWRK3D,KWRK3Q)
+      IF (KWRK3 .GE. LFREE) CALL ERRWRK('SIRPOP-3',KWRK3,LFREE)
+C
 C     *****     Dipole moments  *****
 C
       IF (DIPOLM) THEN
          write(lupri,'(/A)')
      &     'INFO: dipole moment not implemented in this version'
-c        CALL DIPMOM (NNBAST,MATCMO,WRK(KCMO),WRK(KOCC),WRK(KDIPM))
+c        CALL DIPMOM (NNBAST,WRK(KCMO),WRK(KOCC),WRK(KDIPM))
       END IF
 C
 C     *****     Quadrupole moments  *****
@@ -286,14 +264,14 @@ C
       IF (QUADRM) THEN
          write(lupri,'(/A)')
      &     'INFO: quadrupole moment not implemented in this version'
-         CALL QUADRP (NNBAST,MATCMO,WRK(KCMO),WRK(KOCC),WRK(KQUMAT))
+         CALL QUADRP (NNBAST,WRK(KCMO),WRK(KOCC),WRK(KQUMAT))
       END IF
  9999 CALL QEXIT('SIRPOP')
       IPPRMUL = IPRMUL_SAVE
       RETURN
       END
 C  /* Deck virial */
-      SUBROUTINE VIRIAL (MATDIM,MXCGTO,MATCMO,CMO,OCCUP,IAMN,IPR,
+      SUBROUTINE VIRIAL (CMO,OCCUP,IAMN,IPR,
      *                   T,JTRAN,ITRAN,CTRAN)
 C
 C Purpose:
@@ -303,7 +281,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 C
-      DIMENSION CMO(MATCMO),OCCUP(NOCCT),T(MATDIM),JTRAN(NBAST),
+      DIMENSION CMO(NCMOT),OCCUP(NOCCT),T(NNBAST),JTRAN(NBAST),
      *          ITRAN(NBAST,MXCGTO),CTRAN(NBAST,MXCGTO),
      *          IAMN(NBAST),IPR(NBAST)
 C
@@ -332,10 +310,8 @@ C     ***** Read the transformation info from unit LUONEL
 C
       CALL GPOPEN(LUONEL,FNONEL,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-#if !defined (VAR_FASTIO)
       REWIND LUONEL
       IF ( .NOT. FNDLAB('SCFINP  ',LUONEL)) THEN
-#endif
          WRITE (LUPRI,'(//A/2A/)')
      *     ' *** Label "SCFINP" not found on unit LUONEL,',
      *     '     basic information for VIRIAL and MULLIKEN routines',
@@ -351,6 +327,16 @@ C
      *              DIPOL,NNUC,((COOO,J=1,3),I=1,NNUC),IFXYZ,TPROP,
      *              QPOL,QQFAC,JFXYZ
       CALL GPCLOSE(LUONEL,'KEEP')
+      N_ERR = 0
+      IF (NBRO .NE. NBAST) N_ERR = N_ERR + 1
+      IF (NS   .NE. NSYM ) N_ERR = N_ERR + 1
+      IF (N_ERR .GT. 0) THEN
+         WRITE (LUPRI,'(//A//A,2I10/A,2I10)')
+     &      'FATAL ERROR sirpop.F:',
+     &      '  NBAST internal, AOONEINT:',NBAST,NBRO,
+     &      '  NSYM  internal, AOONEINT:',NSYM,NS
+         CALL QUIT('Inconsistency in sirpop.F')
+      END IF
 C
 C     **********     Kinetic energy
 C     Read kinetic energy matrix from unit LUONEL
@@ -380,12 +366,12 @@ C     IST    tells where the appropriate line in the T matrix starts.
 C
       TK = D0
       IP = 0
-      IPSTRT = 0
       MATBLK = 0
 C
       DO 50 ISYM = 1,NSYM
          NBASI = NBAS(ISYM)
          NOCCI = NOCC(ISYM)
+         IPSTRT = ICMO(ISYM)
 C
          DO 40 ICC = 1,NOCCI
             IP  = IP + 1
@@ -394,14 +380,14 @@ C
             DO 30 J = 1,NBASI
                JORB = IPSTRT + J
 C
-               DO 20 K = 1,J
+               DO 20 K = 1,J-1
                   TK = TK + D2*CMO(JORB)*CMO(IPSTRT+K)
      *                    * OCCUP(IP)*T(IST+K)
    20          CONTINUE
 C
 C              Take care of the case j = k
 C
-               TK = TK - CMO(JORB)*CMO(JORB)*OCCUP(IP)*T(IST+J)
+               TK = TK + CMO(JORB)*CMO(JORB)*OCCUP(IP)*T(IST+J)
                IST = IST + J
    30       CONTINUE
 C
@@ -416,7 +402,6 @@ C
       V   = EMCSCF - TK
       VIR = -V/TK
 c     WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
-c     IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
  1001 FORMAT(//' Energy analysis'
      *        /' ---------------'
      *        /' Total energy',T30,F18.10
@@ -427,43 +412,60 @@ c     IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
       RETURN
       END
 C  /* Deck poptra */
-      SUBROUTINE POPTRA (MATDIM,MXCGTO,MATCMO,CMO,S,JTRAN,ITRAN,CTRAN,
-     *                   CMOCGT,SS)
+      SUBROUTINE POPTRA (CMO,S,JTRAN,ITRAN,CTRAN,CMOCGT,SS)
 C
 C Purpose: transform the mo coefficients and overlap matrix
 C          from symmetry orbital basis to cgto basis.
 C          Called from MULLIK
 C          Based on release 82 08 31
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-      DIMENSION CMO(MATCMO),S(MATDIM),JTRAN(NBAST),
-     *          ITRAN(NBAST,MXCGTO),CTRAN(NBAST,MXCGTO),
-     *          CMOCGT(*),SS(*)
+      DIMENSION CMO(NCMOT),S(NBAST,NBAST),
+     *          JTRAN(NBAST),ITRAN(NBAST,MXCGTO),CTRAN(NBAST,MXCGTO),
+     *          CMOCGT(*),SS(NBAST,NBAST)
 C
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C   INFORB ? NBAST,NNBAST,
 C
-#include <mxcent.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "inforb.h"
 #include "infpop.h"
-#include <infpri.h>
+#include "infpri.h"
 C
       LOGICAL FOUND
 C
 C     *****   Read in overlap integrals from unit LUONEL
 C
       FOUND = .FALSE.
-      CALL RDONEL('OVERLAP ',FOUND,S,NNBAST)
-      IF ( .NOT. FOUND) THEN
-         WRITE (LUPRI,'(//A/A/)')
+C
+      IF (IPOPTYP .EQ. 1) THEN
+         CALL RDONEL('OVERLAP ',FOUND,S,NNBAST)
+         CALL PKSYM1(SS,S,NBAS,NSYM,-1)
+         CALL DSPTGE(NBAST,SS,S)
+         IF ( .NOT. FOUND) THEN
+            WRITE (LUPRI,'(//A/A/)')
      *     ' *** Label "OVERLAP" not found on unit LUONEL,',
      *     '     basic information for POPTRA is missing.'
-         RETURN
+            RETURN
+         END IF
+      ELSE IF (IPOPTYP .EQ. 2) THEN
+         CALL RDPROP('OVERLAP ',SS,FOUND)
+         CALL DSPTGE(NBAST,SS,S)
+      ELSE IF (IPOPTYP .EQ. 3) THEN
+         CALL RDPROP('POPOVLP ',S,FOUND)
+      ELSE
+         call quit('POPTRA: unknown IPOPTYP')
       END IF
+C
+
+      if (iprpop .ge. 10) then
+         write (luw4,*) 'Population overlap matrix type',ipoptyp
+         call output(S,1,nbast,1,nbast,nbast,nbast,-1,luw4)
+      end if
 C
 C
 C     *****     TRANSFORM THE MO COEFFICIENTS
@@ -497,7 +499,8 @@ C
                DO 30 JJ = 1,J
                   IA = ITRAN(KK,JJ)
                   CMOCGT(IPSTC+IA) =
-     1               CMO(IPSTS+K)*SIGN(D1,CTRAN(KK,JJ))
+     1               CMO(IPSTS+K)*CTRAN(KK,JJ)
+CHJ  1               CMO(IPSTS+K)*SIGN(D1,CTRAN(KK,JJ))
    30          CONTINUE
    40       CONTINUE
             IPSTS = IPSTS + NBASI
@@ -510,13 +513,12 @@ C     *****     Transform the integrals
 C
 C     Here we have
 C
-C             LOOP <a/b> = SUM D  * D  * <k/l>
-C              a,b         k,l  ka   lb
+C             LOOP <a/b> = SUM D  * <k/l> * D
+C              a,b         k,l  ka           lb
 C
 C     The order of the loops is k,a,l,b.
 C
-      IDIM = NBAST*(NBAST+1)/2
-      CALL DZERO(SS,IDIM)
+      CALL DZERO(SS,N2BASX)
 C
       INTBAS = 0
       KLSTRT = 0
@@ -525,7 +527,6 @@ C
          NBASI = NBAS(ISYM)
 C
          DO 110 K=1,NBASI
-            KROW = INTBAS + K*(K - 1)/2
             KK   = KLSTRT + K
             J    = JTRAN(KK)
             FACKA= J
@@ -533,10 +534,8 @@ C
 C
             DO 100 JJ = 1,J
                IA  = ITRAN(KK,JJ)
-               IIA = IA*(IA - 1)/2
 C
-               DO 90 L = 1,K
-                  IKL = KROW + L
+               DO 90 L = 1,NBASI
                   LL = KLSTRT + L
                   M  = JTRAN(LL)
                   FACLB = M
@@ -544,17 +543,14 @@ C
 C
                   DO 80 MM = 1,M
                      IB  = ITRAN(LL,MM)
-                  IF (IB.GT.IA) GO TO 80
-                     IND = IIA + IB
                      FAC = SIGN(FACKA,CTRAN(KK,JJ))
-     1                   * SIGN(FACLB,CTRAN(LL,MM))
-                     SS(IND) = SS(IND) + S(IKL)*FAC
+     &                   * SIGN(FACLB,CTRAN(LL,MM))
+                     SS(IA,IB) = SS(IA,IB) + S(KK,LL)*FAC
    80             CONTINUE
    90          CONTINUE
   100       CONTINUE
   110    CONTINUE
          KLSTRT = KLSTRT + NBASI
-         INTBAS = INTBAS + NBASI*(NBASI + 1)/2
   120 CONTINUE
 C
       RETURN
@@ -605,9 +601,9 @@ C
 C
 C     *****     Number of the centers
 C
-C     given the label of the center to which the cgto belongs, assign
-C     the center a number. also collect the different labels to a
-C     separate list
+C     Given the label of the center to which the cgto belongs, assign
+C     the center a number.
+C     Also collect the different labels to a separate list.
 C
       NNUC = 1
       NAME(1) = IAMN(1)
@@ -669,13 +665,13 @@ C
      &               .FALSE.)
          REWIND LUTEMP
       END IF
+      IPSTRT = 0
       DO 80 IP = 1,NOCCT
          DO 60 NUCB = 1,NNUC
             DO 60 NUCA = 1,NNUC
                POPABI(NUCA,NUCB) = D0
    60    CONTINUE
 C
-         IND = 0
          DO 70 IA = 1,NBAST
             DO 70 IB = 1,IA
                IND = IND + 1
@@ -1027,7 +1023,7 @@ C
       RETURN
       END
 C  /* Deck dipmom */
-      SUBROUTINE DIPMOM (MATDIM,MATCMO,CMO,OCCUP,DIPMAT)
+      SUBROUTINE DIPMOM (MATDIM,CMO,OCCUP,DIPMAT)
 C
 C PURPOSE:
 C       Compute the electronic and total dipole moments
@@ -1035,7 +1031,7 @@ C       Based on release 82 09 01
 C
 #include <implicit.h>
 C
-      DIMENSION CMO(MATCMO),DIPMAT(MATDIM,3),OCCUP(NOCCT)
+      DIMENSION CMO(NCMOT),DIPMAT(MATDIM,3),OCCUP(NOCCT)
 C
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
@@ -1157,7 +1153,7 @@ C
       RETURN
       END
 C  /* Deck quadrp */
-      SUBROUTINE QUADRP (MATDIM,MATCMO,CMO,OCCUP,QUMAT)
+      SUBROUTINE QUADRP (MATDIM,CMO,OCCUP,QUMAT)
 C
 C  Purpose: Compute the quadrupole moments
 C
@@ -1168,7 +1164,7 @@ C    relative to origo).  Print <r2>.
 C
 #include <implicit.h>
 C
-      DIMENSION CMO(MATCMO),QUMAT(MATDIM,6),OCCUP(NOCCT)
+      DIMENSION CMO(NCMOT),QUMAT(MATDIM,6),OCCUP(NOCCT)
 C
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
