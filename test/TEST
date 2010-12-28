@@ -16,7 +16,7 @@
 if [ -x '/usr/bin/time' ]; then
  TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
 else
- TIMING_OF="time"
+ TIMING_OF=" "
 fi
 DALTON="`pwd`/../bin/dalton"
 
