@@ -1,6 +1,6 @@
 C
 C
-C...   Dalton, Release 2.0
+C...   Dalton, Release DALTON2011
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
