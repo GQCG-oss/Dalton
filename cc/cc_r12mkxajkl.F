@@ -2231,7 +2231,7 @@ C  /* Deck r12exdens*/
 #include <inftap.h>
 #include <ccsdinp.h>
 c#include <inforb.h>
-      integer kcmo,lwork,kend1,lwrk1,kfvao,kfcao,kdcao,kdvao
+      integer kcmo,lwork,kfrsav,kfree,lfree,kfvao,kfcao,kdcao,kdvao,kdv
       integer pq,kcao,isym,ioff,ioff1,nnbast,kexia,isymi,NNORB1
       integer kctao,koff,index,ISYMAI,isyma,mbas1t
       integer kdens,idxkl,idxlk,idxij,idxji,idxklij,idxijkl,idxijlk
@@ -2243,12 +2243,7 @@ c
       integer icoun3,imatfq(8,8),kxij,kxijij,ncvij,nvirf(8)
 #include <maxorb.h>
 #include <infinp.h>
-#if defined (SYS_CRAY)
-      real res(*),cmo(*),emcmy,zero,one,two,work(*),dens(*),densx
-#else
-      double precision res(*),cmo(*),emcmy,zero,one,two,work(*),dens(*)
-     &                  ,densx
-#endif
+      real*8 res(*),cmo(*),emcmy,zero,one,two,work(*),dens(*),densx
       parameter (zero = 0.0d0,one = 1.0d0, two = 2.0d0)
       logical onlyfc
 
@@ -2315,24 +2310,23 @@ c
          noffset = noffset+nbas(isym)*nrhf(isym)
       enddo
 
-      
-
-      kfcao  = 1   
-      kfvao  = kfcao  + n2basx
-      kdcao  = kfvao  + n2basx
-      kdvao  = kdcao  + n2basx
-      kcmo   = kdvao  + n2basx
-      kexia  = kcmo   + nlamds 
-      kexfa  = kexia  + nnbast
-      kajfr  = kexfa  + nnbast
-      kxijij = kajfr  + ncfai
-      kxij   = kxijij + ncvij 
-      kend1  = kxij   + ncvij
-      lwrk1  = lwork  - kend1
-
+      kfrsav = 1
+      KFREE  = 1
+      LFREE  = lwork
+      CALL MEMGET('REAL',kfcao,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kfvao,     0,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kdcao,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kdvao,     0,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kdv  ,     0,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kcmo, nlamds,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kexia,nnbast,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kexfa,nnbast,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kajfr,ncfai ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kxijij,ncvij,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kxij  ,ncvij,WORK,KFREE,LFREE)
 
       call erisfk(dens,nbast,1)
-      call dscal(nbast**2,0.50d0,dens,1)
+      call dscal(n2basx,0.50d0,dens,1)
       
 
       DIRFCK = .TRUE.
@@ -2344,14 +2338,14 @@ c
 
       LUSUPM = -1
       call dzero(work(kfcao),n2basx)
-      call fckmao(.TRUE.,emcmy,work(kfcao),work(kfvao),
-     *     dens,work(kdvao),cmo(1+noffset),
-     &     work(kend1),lwrk1)
+      onlyfc = .TRUE.
+      call fckmao(onlyfc,emcmy,work(kfcao),work(kfvao),
+     &     dens,work(kdvao),work(kdv),cmo(1+noffset),work(kfree),lfree)
       
 
 c
-      WRITE(LUPRI,'(/A,I1,A)') ' Computation of exchange matrix'//
-     *                         ' done [',MBSMAX,']'
+      WRITE(LUPRI,'(/A,I1,A)')
+     &   ' Computation of exchange matrix done [',MBSMAX,']'
       
 
       R12INT = .TRUE.
@@ -2366,9 +2360,7 @@ c N2BASX = NBAST*NBAST!
       kexiaz = kexia
       koffc= 1
       CALL UTHUB(WORK(KFCAO),WORK(kexia),
-     *           CMO(1+noffset),
-     *           WORK(kend1),NSYM,
-     *           nbas,nvir)
+     *           CMO(1+noffset),WORK(kfree),NSYM,nbas,nvir)
 
 
       koff = 0
@@ -2407,6 +2399,7 @@ c N2BASX = NBAST*NBAST!
       endif 
 
 
+      CALL MEMREL('r12exdens',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       call qexit('r12exdens')
       end
 c--------------------------------------------------------------------------
