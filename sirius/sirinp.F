@@ -1996,7 +1996,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,3100,8000), I
+     *                2900,3000,2400,3200,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2069,7 +2069,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
 !      this is to keep backwards compatibility - lucita input is now
 !      processed via the new input reader module.
- 3100  lucita_input_provided = .true.
+ 3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
 C  Here if "*END OF"
@@ -4169,7 +4169,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTABLE = 10)
+      PARAMETER (NTABLE = 11)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
@@ -4178,13 +4178,16 @@ C
 C INFINP : FLAG(*)
 C INFPRI : IPRMUL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "infpop.h"
 C
       DATA TABLE /'.ALL   ','.DIPMOM','.GROSSA','.GROSSM','.MULLIK',
-     *            '.NETALL','.NETMO ','.QUADRP','.VIRIAL','.PRINT '/
+     *            '.NETALL','.NETMO ','.QUADRP','.VIRIAL','.PRINT ',
+     &            '.HJAAJP'/
 C
 C External flags
       FLAG( 6) = .TRUE.
@@ -4192,6 +4195,7 @@ C External flags
       FLAG(72) = .TRUE.
       FLAG(73) = .TRUE.
       FLAG(74) = .TRUE.
+      IPOPTYP  = 1
 C
 C     ***** PROCESS INPUT FOR POPINP *****
 C
@@ -4204,7 +4208,8 @@ C
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102,103,104,105,106,107,108,109,110), II
+                  GO TO (101,102,103,104,105,106,107,108,109,110,
+     &                   111), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -4274,6 +4279,12 @@ C
 C *** Option 10 >PRINT <  Print level
   110 READ(LUCMD,*) IPRXXX
       IPRMUL = MAX(IPRMUL,IPRXXX)
+      if (iprxxx .eq. 7) IPOPTYP = 2
+      GO TO 100
+C
+C *** Option 11 >HJAAJP<  HJAaJ population analysis
+  111 FLAG(73) = .FALSE.
+      IPOPTYP = 3
       GO TO 100
 C
       END

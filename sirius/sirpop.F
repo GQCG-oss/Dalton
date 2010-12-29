@@ -93,12 +93,15 @@ C
 C 
       POPKEY = INP_POPKEY
       IPRMUL_SAVE = IPRMUL
+      IPOPTYP_SAVE = IPOPTYP
       IF (POPKEY(1:4) .EQ. 'DIIS') THEN
+         IPOPTYP = 1
          iprmul = -lim_poppri
          DIPOLM = .false.
          QUADRM = .false.
          MULLKM = .true.
       ELSE IF (POPKEY(1:6) .EQ. 'MCITER') THEN
+         IPOPTYP = 1
          iprmul = -lim_poppri
          DIPOLM = .false.
          QUADRM = .false.
@@ -268,6 +271,7 @@ C
       END IF
  9999 CALL QEXIT('SIRPOP')
       IPPRMUL = IPRMUL_SAVE
+      IPOPTYP = IPOPTYP_SAVE
       RETURN
       END
 C  /* Deck virial */
