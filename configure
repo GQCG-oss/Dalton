@@ -99,6 +99,14 @@ if [ "${MACHTYPE:0:5}" = 'Linux' -o "${MACHTYPE:0:6}" = Darwin -o "${MACHTYPE:0:
 else
     ECHO=echo
 fi
+
+# radovan: how about this (this works on AIX, the above not)
+if [ "  " = "`echo '\t'`" ]; then
+   ECHO="echo"
+else
+   ECHO="echo -e"
+fi
+
 $ECHO ''
 $ECHO '------------------------------------------------------------------'
 $ECHO '   Configuring the DALTON Makefile.config and "dalton" run script'
