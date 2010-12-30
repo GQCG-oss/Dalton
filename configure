@@ -315,8 +315,8 @@ if [ "$answer" = "y" ]; then
 # MPI code is IBMs xlf
 #
         if [ "$WHICH" = "rs6000" -o "$WHICH" = "darwin" ]; then
-            complist="mpxlf mpif90 $complist"
-            ccmplist="mpcc  mpicc  $ccmplist"
+            complist="mpxlf mpxlf_r mpif90 $complist"
+            ccmplist="mpcc  mpcc_r mpicc  $ccmplist"
             parlib='no'
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
@@ -808,6 +808,7 @@ case "$WHICH" in
           esac
           copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
           opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -qextname'
+          F90mod="-qmoddir=../modules -qfree=f90"
           if [ $bit = '32' ]; then
              opt="$opt -bmaxdata:0x80000000 -bmaxstack:0x10000000"
           else
@@ -1043,7 +1044,7 @@ case "$WHICH" in
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
                   [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
-           F90mod=-J../modules
+           F90mod="-J../modules"
              ;;
           esac
 
@@ -1079,7 +1080,7 @@ case "$WHICH" in
                esac
                copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
-               F90mod=-J../modules
+               F90mod="-J../modules"
                f90opt="$opt -I. -x f95-cpp-input"
 #               cxx_ldflags="-lstdc++"
                if [ "$mesp" != "dummy" ]; then
@@ -1234,13 +1235,13 @@ CPP        = $cppuse
 .SUFFIXES : .F .F90 .o .c .i
 
 .F.o:
-$tab\$(CPP) \$(INCLUDES) \$(CPPFLAGS) \$*.F
+$tab\$(CPP) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$*.F
 $tab mv \$*.i \$*.f
 $tab\$(F90) \$(FFLAGS) \$(MODULES) -c \$*.f 
 $tab\$(RM) \$*.f
 
 .F90.o:
-$tab\$(CPP) \$(INCLUDES) \$(CPPFLAGS) \$*.F90
+$tab\$(CPP) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$*.F90
 $tab mv \$*.i \$*.f90
 $tab\$(F90) \$(FFLAGS) \$(MODULES) -c \$*.f90
 $tab\$(RM) \$*.f90
