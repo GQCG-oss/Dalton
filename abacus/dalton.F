@@ -30,38 +30,7 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
-C  /* Deck dalton */
       PROGRAM DALTON
-C
-C     NOTE
-C
-C     This is an experimental code for the evaluation of SCF, DFT, MCSCF
-C     and CC molecular properties as energy derivatives or response
-C     functions.  The authors accept no responsibility for the
-C     performance of the code or for the correctness of the results.
-C
-C     The code (in whole or part) is not to be reproduced for
-C     further distribution without the written permission of the authors.
-C
-C     If results obtained with this code are published, an appropriate
-C     citation would be:
-C
-C...   "DALTON, a molecular electronic structure program, Release 2.0
-C...   (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
-C
-C...   Authors: C. Angeli, K. L. Bak,  V. Bakken, O. Christiansen, 
-C...   R. Cimiraglia, S. Coriani, P. Dahle, E. K. Dalskov, 
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier, 
-C...   H. Heiberg, T. Helgaker, H. Hettema, H. J. Aa. Jensen, 
-C...   D. Jonsson, P. Joergensen, S. Kirpekar, W. Klopper, R.Kobayashi,
-C...   H. Koch, A. Ligabue, O. B. Lutnaes, K. V. Mikkelsen, P. Norman,
-C...   J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
-C...   K. O. Sylvester-Hvid, P. R. Taylor, O. Vahtras, D. J. Wilson,
-C...   H. Agren.
-C
-C     This note is not to be removed or altered.
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -76,23 +45,19 @@ C
 Cef begin
 #include <incore.h>
 Cef end
-      EXTERNAL EXEDRV
 #if defined (VAR_MPI)
-      EXTERNAL NODEDRIVER
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
-      CHARACTER*1 adummy
-      CHARACTER*14 FILNAM
       CHARACTER LABEL1*8, STHELP*10
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 
 !     this is the "static" work array
-      real(8), allocatable :: work(:)
+      real(8), allocatable :: WORK(:)
 
+!     memory-id tags for field 1 and 2+LMWORK
       DATA WRKDLM/12345678D0/
 C
-
       CALL QENTER('DALTON main')
 C
 C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
@@ -136,9 +101,11 @@ C
         WRITE(LUERR,'(/A,I12,A,F8.2,A)')' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',XMBYTES,' megabytes.'
       END IF
+ 
+!     allocate memory using f90 utilities
+      allocate(work(lmwork+2),stat=i)
 
-      ALLOCATE (WORK(LMWORK+2),STAT=I)
-      IF (I .NE. 0) THEN
+      IF(I .NE. 0)THEN
          WRITE (LUERR,*) 'ALLOCATE command failed to allocate the '//
      &        'requested memory'
          WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
@@ -154,16 +121,16 @@ C the chunk of array WORK which is reserved for incore-calculations.
 C The variable IEIR in incore.h must also be set to a large enough positive 
 C integer (we used IEIR=3000000).
 
-      JSCORE = 1
-      LMCORE = MMWORK 
-      ISCORE = JSCORE
-      MMCORE = LMCORE
-      N_SHL = 1
-      AOSAVE = (MMWORK.GT.1)
-      INITX = .FALSE.
-      MSAVE = .TRUE.
-      LINTSV = .FALSE.
-      LINTMP = .FALSE.
+      JSCORE    = 1
+      ISCORE    = JSCORE
+      LMCORE    = MMWORK 
+      MMCORE    = LMCORE
+      N_SHL     = 1
+      AOSAVE    = (MMWORK.GT.1)
+      INITX     = .FALSE.
+      MSAVE     = .TRUE.
+      LINTSV    = .FALSE.
+      LINTMP    = .FALSE.
       INDX_SHL1 = 0
       INDX_SHL2 = 0
       INDX_SHL3 = 0
@@ -172,7 +139,6 @@ C integer (we used IEIR=3000000).
       CALL IZERO(INDX_SHL,MXSHL_KEEP)
 #endif
 C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
-C
       IF (MMWORK .NE. MMCORE) THEN
          CALL QUIT('MMCORE must equal MMWORK.')
       END IF
@@ -188,18 +154,6 @@ C
       WORK(1)        = WRKDLM
       WORK(2+LMWORK) = WRKDLM
 C
-C     Next 20+ lines commented out, does not work for general parallel
-C     calculations.
-C
-c#if defined (VAR_MPI)
-c#if defined (SYS_CRAY)
-c      CALL INFO = ISHELL('mkdir $SCRATCHDIR')
-c      CALL INFO = ISHELL('cd $SCRATCHDIR')
-c#else
-c      CALL SYSTEM('mkdir $SCRATCHDIR')
-c      CALL SYSTEM('cd $SCRATCHDIR')
-c#endif
-C
 C     Allowing now for parallelization over different molecular geometries,
 C     we must first check if this calculation indeed is of that kind.
 C     We do this by letting the Master node read DALTON.INP, searching for
@@ -213,8 +167,6 @@ c         ELSE
 c            CALL PARION
 c         END IF
 c      END IF
-C#endif
-C
 C
       CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
@@ -415,7 +367,10 @@ C
       END IF
 #else /* VAR_MPI */
          CALL RECVNAMES
-         CALL EXEDRV(WORK, LMWORK, WRKDLM)
+!
+!        call main driver routine
+         call exedrv(work,lmwork,wrkdlm)
+
          CALL FLSHFO(LUPRI)
 
          LABEL1 = 'ALL_DONE'
@@ -456,7 +411,10 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
-            CALL EXEDRV(WORK, LMWORK,WRKDLM)
+
+!           call main driver routine (co-workers do it as well if PARIO == .true.)
+            call exedrv(work,lmwork,wrkdlm)
+
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
             CALL WRIPRO(0.0D0,STHELP,666,
@@ -479,13 +437,15 @@ C
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
-#if defined (SYS_LINUX)
-            CALL CEXE(NODEDRIVER,LMWORK,WRKDLM)
-#else
-            CALL NODEDRIVER(WORK,LMWORK,WRKDLM)
-#endif
+
+!           call main co-workers driver routine
+            call nodedriver(work,lmwork,wrkdlm)
          END IF
       END IF
+
+!     release dynamically allocated memory
+      deallocate(work)
+
       CALL MPIXFINALIZE
 C
 C     All below is not relevant for MPI as all proc. has stopped
@@ -504,7 +464,17 @@ C
       END IF
 #endif
 #if !defined (VAR_MPI)
-      CALL EXEDRV(WORK, LMWORK,WRKDLM)
+!     allocate memory using f90 utilities
+      allocate(work(lmwork+2),stat=i)
+      work(1)        = wrkdlm
+      work(2+lmwork) = wrkdlm
+
+!     call main co-workers driver routine
+      call exedrv(work,lmwork,wrkdlm)
+
+!     release dynamically allocated memory
+      deallocate(work)
+
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '
       CALL WRIPRO(0.0D0,STHELP,666,
@@ -533,8 +503,11 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+
+
       CALL QEXIT('DALTON main')
       END
+
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
 #include <implicit.h>
 #include <priunit.h>
