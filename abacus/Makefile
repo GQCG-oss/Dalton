@@ -24,8 +24,6 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abactocd.o   abaqpg.o     abapcm.o     abaqm3.o\
 	abaqmmm.o    gen1int_prop.o    gen1int_ecp.o
 
-C_OBJS = linux_mem_allo.o
-
 F_CPPS = $(F_OBJS:.o=.i) dalton.i 
 
 pre: $(F_CPPS)
@@ -33,7 +31,7 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > abacus.ftnchek
 
-libabacus.a: $(F_OBJS) $(C_OBJS)
+libabacus.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 main  : dalton.o

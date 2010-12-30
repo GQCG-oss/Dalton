@@ -86,24 +86,10 @@ Cef end
       CHARACTER*14 FILNAM
       CHARACTER LABEL1*8, STHELP*10
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
-#if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
-      POINTER (WADDR,WORK(1))
-#else
-#if (defined (SYS_LINUX))
-      DIMENSION WORK(2)
-#else
-#if defined (SYS_NEC) || defined (SYS_AIX)
 
-      POINTER (WADDR,WORK(1))
+!     this is the "static" work array
+      real(8), allocatable :: work(:)
 
-#else
-C
-C     Static memory allocation
-C
-      DIMENSION WORK(LWORK_DEF+2)
-#endif
-#endif
-#endif
       DATA WRKDLM/12345678D0/
 C
 
@@ -150,25 +136,7 @@ C
         WRITE(LUERR,'(/A,I12,A,F8.2,A)')' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',XMBYTES,' megabytes.'
       END IF
-C
-C    Dynamic memory allocation
-C
- 1000 FORMAT(/' >>> DALTON: requested memory could not be allocated.'
-     &      ,/'     Probable causes:',
-     &       /'       (1) Insufficient free memory+page+swap space',
-     &       /'       (2) "datasize" resource limit too small.')
-C
-#if defined (SYS_IRIX) || defined (SYS_AIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_HAL) || defined (SYS_DEC)
 
-#if defined (SYS_LINUX)
-      WADDR = 1
-#endif
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT)
-      WADDR = MALLOC(NBYTES)
-#endif
-
-#if defined (SYS_NEC) || defined (SYS_AIX)
-      WADDR = 1
       ALLOCATE (WORK(LMWORK+2),STAT=I)
       IF (I .NE. 0) THEN
          WRITE (LUERR,*) 'ALLOCATE command failed to allocate the '//
@@ -176,29 +144,6 @@ C
          WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
          CALL QUIT('Failed to allocate memory')
       END IF
-#endif
-      IF (WADDR .EQ. 0) THEN
-         WRITE(LUERR,1000)
-         IF (LUERR .NE. 0) WRITE(0,1000)
-         CALL QUIT(' DALTON: memory allocation failure')
-      END IF
-#endif
-
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-C
-      IABORT = 0
-      CALL HPALLOC(WADDR,LMWORK+2,IERR,IABORT)
-      IF (IERR .LT. 0) THEN
-         WRITE(LUERR,*) ' >>> Cray HPALLOC failure; IERR   = ', IERR
-         IF (LUERR .NE. 0)
-     &   WRITE(0,*) ' >>> Cray HPALLOC failure; IERR   = ', IERR
-         IF (IERR .EQ. -2) THEN
-            WRITE(LUERR,1000)
-            IF (LUERR .NE. 0) WRITE(0,1000)
-         END IF
-         CALL QUIT(' DALTON: Core HPALLOC failure')
-      END IF
-#endif
 
 Cef begin
 C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
@@ -240,10 +185,8 @@ Cef end
 C
 C     Set memory traps and initialize unit numbers
 C
-#if !(defined (SYS_LINUX))
       WORK(1)        = WRKDLM
       WORK(2+LMWORK) = WRKDLM
-#endif
 C
 C     Next 20+ lines commented out, does not work for general parallel
 C     calculations.
@@ -472,11 +415,7 @@ C
       END IF
 #else /* VAR_MPI */
          CALL RECVNAMES
-#if defined (SYS_LINUX)
-         CALL CEXE(EXEDRV, LMWORK, WRKDLM)
-#else
          CALL EXEDRV(WORK, LMWORK, WRKDLM)
-#endif
          CALL FLSHFO(LUPRI)
 
          LABEL1 = 'ALL_DONE'
@@ -517,11 +456,7 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
-#if defined (SYS_LINUX)
-            CALL CEXE(EXEDRV, LMWORK, WRKDLM)
-#else
             CALL EXEDRV(WORK, LMWORK,WRKDLM)
-#endif
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
             CALL WRIPRO(0.0D0,STHELP,666,
@@ -569,11 +504,7 @@ C
       END IF
 #endif
 #if !defined (VAR_MPI)
-#if defined (SYS_LINUX)
-      CALL CEXE(EXEDRV, LMWORK, WRKDLM)
-#else
       CALL EXEDRV(WORK, LMWORK,WRKDLM)
-#endif
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '
       CALL WRIPRO(0.0D0,STHELP,666,
