@@ -1,5 +1,6 @@
 #!/bin/sh
 # test function definitions for dalton
+# Originally by Pawel Salek (2003)
 
 # check_gen_input:
 # generate several input and description files.
