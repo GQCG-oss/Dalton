@@ -1079,7 +1079,7 @@ case "$WHICH" in
                esac
                copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="$march -O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
-            F90mod=-J../modules
+               F90mod=-J../modules
                f90opt="$opt -I. -x f95-cpp-input"
 #               cxx_ldflags="-lstdc++"
                if [ "$mesp" != "dummy" ]; then
@@ -1269,7 +1269,7 @@ cat <<EOF>> Makefile.config
 .SUFFIXES : .F .F90 .o .c .i
 
 .F.o:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
 .F90.o:
 $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90 
