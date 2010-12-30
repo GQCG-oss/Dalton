@@ -1038,7 +1038,7 @@ C
 !           -- Configuration trial vector; shift the starting point
                IBVEC = IBVEC + KZCONF
             ELSE IF (IBTYP(NBPREV+IRX) .EQ. JBONDX) THEN
-               WRITE (LUPRI,*) 'RSPNOR: Supersymmetry????'
+               WRITE (LUPRI,*) 'RSPNOR: Supersymmetry\?'
 !           -- Orbital trial vector; do the averaging
                CALL RSPAVE(BVECS(IBVEC),KZWOPT,2)
                IBVEC = IBVEC + KZYWOP
@@ -1194,10 +1194,10 @@ C
             ELSE
                T1 =  DDOT(LBZY,BVECS(JBVEC),1,BVECS(JBVEC),1)
                TT = -DDOT(LBZY,BVECS(JBVEC),1,BVECS(IBVEC),1)/T1
-               write(lupri,*)'RSPNOR: should I enter here???'
+               write(lupri,*)'RSPNOR: should I enter here\?'
                CALL DAXPY(LBZY,TT,BVECS(JBVEC),1,BVECS(IBVEC),1)
                IF (IBTYPI.EQ.JBONDX) THEN
-               write(lupri,*)'RSPNOR: and should I enter here???'
+               write(lupri,*)'RSPNOR: and should I enter here\?'
                   TT=(-DDOT(LBZ,BVECS(JBVEC+LBZ),1,BVECS(IBVEC),1)
      *                -DDOT(LBZ,BVECS(JBVEC),1,BVECS(IBVEC+LBZ),1))/T1
                   CALL DAXPY(LBZ,TT,BVECS(JBVEC+LBZ),1,BVECS(IBVEC),1)
