@@ -1231,28 +1231,37 @@ CPP        = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c .i
+.SUFFIXES : .F .F90 .o .c .i
 
 .F.o:
 $tab\$(CPP) \$(INCLUDES) \$(CPPFLAGS) \$*.F
 $tab mv \$*.i \$*.f
-$tab\$(F90) \$(FFLAGS) -c \$*.f 
+$tab\$(F90) \$(FFLAGS) \$(MODULES) -c \$*.f 
 $tab\$(RM) \$*.f
+
+.F90.o:
+$tab\$(CPP) \$(INCLUDES) \$(CPPFLAGS) \$*.F90
+$tab mv \$*.i \$*.f90
+$tab\$(F90) \$(FFLAGS) \$(MODULES) -c \$*.f90
+$tab\$(RM) \$*.f90
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) -c \$*.c
 
 .F.i:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
     else cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c .i
+.SUFFIXES : .F .F90 .o .c .i
 
 .F.o:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
+
+.F90.o:
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) -c \$*.c 
@@ -1278,7 +1287,7 @@ $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90
 $tab\$(CC) \$(INCLUDES) -DSYS_LINUX \$(CFLAGS) -c \$*.c 
 
 .F.i:
-$tab\$(F90) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
 else cat <<EOF>> Makefile.config
 #
