@@ -817,7 +817,10 @@ case "$WHICH" in
           copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
           opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -qextname'
 #         stefan dec 2010: in DIRAC this seems to be required for f90 mods 
-          F90mod="-qmoddir=../modules -qfree=f90 -I../modules"
+#radovan: the following fails on AIX (njord)
+#         F90mod="-qmoddir=../modules -qfree=f90 -I../modules"
+#radovan:                                     i changed it to:
+          F90mod="-qmoddir=../modules            -I../modules"
           if [ $bit = '32' ]; then
              opt="$opt -bmaxdata:0x80000000 -bmaxstack:0x10000000"
           else
