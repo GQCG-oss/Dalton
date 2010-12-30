@@ -599,12 +599,13 @@ C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
 C  Note: integer divide by zero is the only error which
 C        always will cause an exception
 C
-      include 'fexcp.h'
-      save i,j
-      data i,j /1,0/
-C
-      call SIGNAL(SIGTRAP,xl__trce)
-      i = i/j
+!radovan: sorry but this does not compile with xlf:
+!     include 'fexcp.h'
+!     save i,j
+!     data i,j /1,0/
+!
+!     call SIGNAL(SIGTRAP,xl__trce)
+!     i = i/j
 #endif
 Chjaaj apr06:
 C     Use stderr on unix/linux systems, if LUPRI not defined yet.
