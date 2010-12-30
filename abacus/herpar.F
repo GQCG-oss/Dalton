@@ -1235,14 +1235,8 @@ C     (only # of QM atom types, not # of MM atom types)
       AUTOSY = .FALSE.
       NOSYM  = NSYMOP.EQ.0
 !
-!     FIXME: stefan: i commented out the following input line conversion 
-!     because it led to crashes on the co-workers with my parallel Dalton 
-!     installation. In READ_MOL the zmat variable was magically set
-!     to .true. after calling LINE4 where it was .false. before and it
-!     does not enter the LINE4 routine... - Nov 2010.
-!
-!     CALL LINE4W(MLINE(NMLAU),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
-!    &            NOSYM,KASYM,ID3,DOCART,DOOWN)
+      CALL LINE4W(MLINE(NMLAU),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
+     &            NOSYM,KASYM,ID3,DOCART,DOOWN)
 C
 C     Retain information from PARINT.
 C
