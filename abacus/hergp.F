@@ -320,7 +320,7 @@ C
          DO 400 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               WRITE (LU,'(A))') NAMDEP(IATOM)
+               WRITE (LU,'(A)') NAMDEP(IATOM)
             END IF
   400    CONTINUE
   300 CONTINUE
