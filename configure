@@ -87,31 +87,26 @@ backup () {
 if [ "$2" = "" ]; then pref=dalton; else pref="$2"; fi
 def="$pref.x"
 
-blas="false"
-blas2="false"
-blas3="false"
-lapack="false"
-MACHTYPE=`uname -s`
-if [ "${MACHTYPE:0:5}" = 'Linux' -o "${MACHTYPE:0:6}" = Darwin -o "${MACHTYPE:0:6}" = "CYGWIN" ]; then
-    ECHO='echo -e'
-    if [ "`$ECHO`" = '-e' ]; then ECHO=echo; fi
-    prc=`uname -m`
-else
-    ECHO=echo
-fi
-
-# radovan: how about this (this works on AIX, the above not)
-if [ "  " = "`echo '\t'`" ]; then
+if [ "-e" = "`echo -e`" ]; then
    ECHO="echo"
 else
    ECHO="echo -e"
 fi
 
-$ECHO ''
-$ECHO '------------------------------------------------------------------'
-$ECHO '   Configuring the DALTON Makefile.config and "dalton" run script'
-$ECHO '------------------------------------------------------------------'
-$ECHO ''
+$ECHO '\n------------------------------------------------------------------'
+$ECHO   '   Configuring the DALTON Makefile.config and "dalton" run script'
+$ECHO   '------------------------------------------------------------------\n'
+
+blas="false"
+blas2="false"
+blas3="false"
+lapack="false"
+opsys=`uname -s`
+    $ECHO "INFO: Operating system from 'uname -s' : $opsys"
+if [ "${opsys:0:5}" = 'Linux' -o "${opsys:0:6}" = Darwin -o "${opsys:0:6}" = "CYGWIN" ]; then
+    prc=`uname -m`
+    $ECHO "INFO: Processor type   from 'uname -m' : $prc"
+fi
 
 arclist='aix cray cray-t3d cray-t3e cygwin dec-alpha linux-alpha linux paragon sgi sun hp cray-t90 nec darwin'
 
@@ -125,21 +120,21 @@ if test x"$1" = x-q -o x"$1" = x--quick; then
 fi
 
 if [ -z "$1" ]; then
-    case $MACHTYPE in
-        AIX ) ARCH="-aix";;
+    case $opsys in
+        AIX )     ARCH="-aix";;
         CYGWIN* ) ARCH="-cygwin";;
-        Darwin ) ARCH="-darwin" ;;
+        Darwin )  ARCH="-darwin" ;;
         IRIX|IRIX64 ) ARCH="-sgi";;
         Linux|FreeBSD ) if [ "`uname -m`" = alpha ]; then
-                ARCH="-linux-alpha"
-                $ECHO "* linux alpha tested only with COMPAQ fort compiler *\n"
+                  ARCH="-linux-alpha"
+                  $ECHO "* linux alpha tested only with COMPAQ fort compiler *\n"
             else 
-                ARCH="-linux"
+                  ARCH="-linux"
             fi ;;
-        OSF1 ) ARCH="-dec-alpha";;
-        HP-UX ) ARCH="-hp";;
-        SunOS ) ARCH="-sun";;
-        Darwin ) ARCH="-darwin";;
+        OSF1 )    ARCH="-dec-alpha";;
+        HP-UX )   ARCH="-hp";;
+        SunOS )   ARCH="-sun";;
+        Darwin )  ARCH="-darwin";;
         * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nOnly the following architectures are defined:\n    $arclist"
         exit 1;;
     esac
@@ -155,7 +150,7 @@ where architecture is one of the following:\n    $arclist"
 else
     ARCH="$1"
 fi
-$ECHO "-->Installing DALTON on a $ARCH computer\n"
+$ECHO "--> Installing DALTON on a $ARCH computer\n"
 case $ARCH in
     -aix|-rs6000 ) WHICH="rs6000";;
     -sgi|-iris4d|-irix ) WHICH="iris4d";;
@@ -224,33 +219,33 @@ case $WHICH in
               ccmplist='cc'
 esac
 #
-# For AIX systems we need to know which version of the operating system we
-# have.
+# $opsys defined above with 'uname -s'; however, for
+# AIX systems we need to know which version of the operating system we have.
 #
-opsys=
 if [ $WHICH = 'rs6000' ]; then
    opsys=`uname -v`
+   $ECHO "INFO: Operating system version from 'uname -v' : $opsys"
 fi
 #
 # For SGI and HP we need to know if this is a 64 or 32 bits computer
 # If one wants 32-bit code on a 64-bit machine, just answer 'n' to
 # the question.
 #
+$ECHO "\nNote that 64-bit integers are desirable for Cholesky and very
+large scale CI, otherwise the most importat effect is that some files will be bigger.\n"
 
 if [ $WHICH = 'iris4d' ]; then
-    opsys=`uname -s`
-    if [ $opsys = 'IRIX' ]; then
-      bit='32'
-    else
-      bit='64'
-    fi
-    get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?" y
-    if [ "$answer" = "n" ]; then
-      if [ $bit = '64' ]; then
-        opsys='IRIX'
+    if [ $opsys = 'IRIX64' ]; then
+      get_yes_or_no "This appears to be a 64-bit architecture. Do you want 64-bit integers?" n
+      if [ "$answer" = "n" ]; then
+        bit='64'
       else
-        opsys='IRIX64'
+        opsys='IRIX'
+        bit='32'
       fi
+    else
+      opsys='IRIX'
+      bit='32'
     fi
 elif [ $WHICH = 'hp' ]; then
     spec=`uname -m`
@@ -265,17 +260,22 @@ elif [ $WHICH = 'hp' ]; then
       arch='hpux'
     fi
     if [ $arch = "hpux" ]; then
-       get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?" y
+       get_yes_or_no "This appears to be a $bit-bit architecture. Do you want 64 integers?" n
        if [ "$answer" = "n" ]; then
-         if [ $bit = '64' ]; then
-           bit='32'
-         else
-           bit='64'
-         fi
+         bit='32'
+       else
+         bit='64'
        fi
     fi
 elif [ $WHICH = 'rs6000' ]; then
-    get_yes_or_no "Is this a 64-bit architecture?" y
+    get_yes_or_no "Do you want 64-bit integers?" n
+    if [ "$answer" = "y" ]; then
+        bit='64'
+    else
+        bit='32'
+    fi
+else
+    get_yes_or_no "Do you want 64-bit integers?" n
     if [ "$answer" = "y" ]; then
         bit='64'
     else
@@ -380,11 +380,12 @@ if [ "$answer" = "y" ]; then
 # PVM settings, we need two PVM library files
 #
     elif [ $mesp = 'pvm' ]; then
-        parinc='-I$(PVM_ROOT)/include'
-        parlibp='-L$(PVM_ROOT)/lib/$(PVM_ARCH)'
-        parlib='-lfpvm3 -lpvm3'
-        parnodp='$(HOME)/pvm3/bin/$(PVM_ARCH)'
-        parnod='node.x'
+         $ECHO 'Sorry, PVM not implemented in this version.'
+#        parinc='-I$(PVM_ROOT)/include'
+#        parlibp='-L$(PVM_ROOT)/lib/$(PVM_ARCH)'
+#        parlib='-lfpvm3 -lpvm3'
+#        parnodp='$(HOME)/pvm3/bin/$(PVM_ARCH)'
+#        parnod='node.x'
     fi
 fi
 #
@@ -1045,18 +1046,25 @@ case "$WHICH" in
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                      march="-march=$prc";;
-#            x86_64) march="-march=x86-64 -fdefault-integer-8"
-#                     cpp="${cpp} -DVAR_INT64";;
 # remove VAR_INT64 for gfortran - it breaks linking against
 # precompiled BLAS libraries./pawsa-Mar-08
-             x86_64) march="-march=x86-64"
-                     ;;
+             x86_64) march="-march=x86-64";;
                   *) march=" ";;
              esac
+
              copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
                   [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__"
               opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fbacktrace"
            F90mod="-J../modules"
+             if [ $bit = "64" ]; then
+               cpp="${cpp} -DVAR_INT64"
+               opt="$opt -fdefault-integer-8"
+               $ECHO "INFO: Compiling with 64-bit integers."
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
+             else
+               $ECHO "INFO: Compiling with 32-bit integers."
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 32-bit integers!!!\n"
+             fi
              ;;
           esac
 
@@ -1122,19 +1130,20 @@ fi
 if [ -z "$safe_opt" ]; then safe_opt="$opt"; fi
 
 # Check for existence of lseek64 library call.
-cat <<EOF >> conftest.c
+cat <<EOF >> configure_conftest.c
 #define _LARGEFILE64_SOURCE
 #include <sys/types.h>
 #include <unistd.h>
 int main(){ off64_t l = lseek64(1,0,SEEK_SET); } 
 EOF
-if $CC $copt conftest.c -o conftest > config.log 2>&1; then
+if $CC $copt configure_conftest.c -o configure_conftest > configure_conftest.log 2>&1; then
   echo "Proper 64-bit file access detected."
 else
   cpp="$cpp -DHAVE_NO_LSEEK64"
-  echo "Use default file access routines and hope for the best."
+  echo "WARNING: Proper 64-bit file access (lseek64) was NOT detected."
+  echo "WARNING: Using default file access routines and hoping for the best."
 fi
-rm conftest.c conftest > /dev/null 2>&1
+rm configure_conftest.c configure_conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in DALTON
 # 1) Gen1Int
