@@ -1237,8 +1237,8 @@ if [ "$WHICH" = "rs6000" -a "$opsys" = "2" ]; then
 fi
 
 
-if [ $WHICH = 'rs6000' ]; then
-   if [ $opsys = '2' ]; then
+if [ "$WHICH" = 'rs6000' ]; then
+   if [ "$opsys" = '2' ]; then
 cat <<EOF>> Makefile.config
 CPP        = $cppuse
 #
