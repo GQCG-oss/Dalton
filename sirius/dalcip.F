@@ -669,6 +669,7 @@ c     close(15,status='DELETE')
       return
       end
 c****************************************************************
+#endif
       integer function noverk(n,k)
       if(k.eq.0)then
          noverk=1
@@ -687,4 +688,3 @@ c****************************************************************
          return
       endif
       end
-#endif
