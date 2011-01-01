@@ -261,7 +261,7 @@ C     ... define exit code to the environment for MPI_ABORT
 #endif
 C
       CALL our_own_traceback
-#if defined(VAR_IFC)||defined(SYS_IRIX)||defined(SYS_AIX)
+#if defined(VAR_IFORT)||defined(SYS_IRIX)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
       STOP 100

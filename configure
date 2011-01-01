@@ -19,7 +19,7 @@
 # Check specific processor for optimization flags for linux machines 
 # (uname -m) -mpentiumpro for i686, -mpentium for i586, and -m486 otherwise
 # 990831-ekd
-# Defined new VAR_PGF77 for Portland Group compiler on Linux systems (has 
+# Defined new VAR_PGF90 for Portland Group compiler on Linux systems (has 
 # POINTER statement, so memory allocation is easier)
 # More intelligent attempts at including pdpack files according to available
 # machine libraries
@@ -1011,7 +1011,7 @@ case "$WHICH" in
              else
                  proc=''
              fi
-             cpp="-DVAR_IFC $cpp"
+             cpp="-DVAR_IFORT $cpp"
              F90mod='-module ../modules'
 #            Dec-07: do not use "-ip" option for interprecedural optimization within file
 #                    gives erroneous code in eri/, at least for ifort version 9.1 /hjaaj
@@ -1026,7 +1026,7 @@ case "$WHICH" in
              #LIB="$LIB"
              ;;
           pgf90)
-             cpp="-DVAR_PGF77 $cpp"
+             cpp="-DVAR_PGF90 $cpp"
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
              copt="-fastsse -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
               opt="-fastsse -Munroll"; safe_opt="-fastsse"

@@ -145,7 +145,7 @@ C
 #else
 #if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
  || defined (SYS_SUN) || defined (SYS_HAL) \
- || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT) \
+ || (defined (SYS_LINUX) && defined (VAR_PGF90)) || defined(VAR_ABSOFT) \
  || defined (SYS_DEC) || defined (SYS_SX)
 #if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) \
  || defined (SYS_SX)  || defined (SYS_AIX)
@@ -168,7 +168,7 @@ C
       itimwl = time() - iwall0
       TIMWAL = itimwl
 #else
-#if (defined (SYS_LINUX) && defined (VAR_IFC))
+#if (defined (SYS_LINUX) && defined (VAR_IFORT))
       integer time,darr(9)
       real*4  etime, tarray(2)
       logical first
@@ -215,7 +215,7 @@ C insert appropriate routine to get elapsed real time (wall time)
 C here
       TIMWAL = D0
 #endif  /* VAR_GFORTRAN */
-#endif  /* VAR_IFC */
+#endif  /* VAR_IFORT */
 #endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
 #endif  /* SYS_NEC */
 #endif  /* SYS_CRAY etc. */
@@ -223,7 +223,7 @@ C
       RETURN
       END
 C  /* Deck settim */
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC)) || defined (SYS_AIX)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF90))||(defined (SYS_LINUX) && defined (VAR_IFORT)) || defined (SYS_AIX)
       SUBROUTINE SETTIM
 C
 C  Unix timing routines emulating Lund IBM timing routines
@@ -1639,7 +1639,7 @@ C  /* Deck second */
 #if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
  || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
  || defined (SYS_T3D) || defined (SYS_HAL)  || defined (SYS_SX)   \
- || (defined (SYS_LINUX) && (defined(VAR_PGF77)||defined(VAR_IFC)))
+ || (defined (SYS_LINUX) && (defined(VAR_PGF90)||defined(VAR_IFORT)))
 #include "implicit.h"
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)

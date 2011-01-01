@@ -829,7 +829,7 @@ C
          LCONV2 = OMNM .LT. THRVEC
          LCONVG = LCONV1 .AND. LCONV2
 
-#if defined (VAR_IFC)
+#if defined (VAR_IFORT)
 Casm     Silly code that solves an strange bug in ifort compiler
 
          luwast = -1
