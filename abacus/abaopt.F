@@ -1534,7 +1534,6 @@ C
       ACTIVE = .FALSE.
       KEPTIT = 0
       GEINFO(0,5) = TRSTRA
-      IWOFF = 0
 C
 C     Perform preoptimization if requested.
 C
@@ -1553,13 +1552,13 @@ C     first order method with initial Hessian.
 C
       IF (NEWTON .OR. INITHS) THEN
          CALL GTHESS(EGRAD,WORK(KEHESS),WORK(KALHES),EXHER,EXSIR,EXABA,
-     &        WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+     &        WORK(KWRK1),LWRK1,WRKDLM)
 C
 C     First order methods only require the energy and the gradient.
 C
       ELSE
          CALL GTGRAD(EGRAD, EXHER,EXSIR,EXABA,
-     &        WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+     &        WORK(KWRK1),LWRK1,WRKDLM)
       END IF
 C
 C     Make VRML-file of initial geometry if requested.
@@ -1570,8 +1569,8 @@ C
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
          KWRK2  = KEVC2  + MXCOOR
-         LWRK   = LWORK  - (KWRK2 - IWOFF) + 1
-         IF (KWRK2-IWOFF .GT. LWORK) CALL STOPIT('RUNOPT',' ',
+         LWRK   = LWORK  - KWRK2 + 1
+         IF (KWRK2 .GT. LWORK) CALL STOPIT('RUNOPT',' ',
      &        KWRK2,LWORK)
          CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
      &        WORK(KEVC1),WORK(KEVC2))
@@ -1661,8 +1660,7 @@ C emg -----------------------------------------------------------------
             CALL TRAHES(HESMOL,MXCOOR,WORK(KH2),WORK(KCSTRA),
      &                  WORK(KSCTRA),MXCOOR,NUCDEP*3,1)
          ENDIF 
-         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &              IWOFF,WRKDLM)
+         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          CALL GPOPEN(LUHES,'midasifc.ederivs','UNKNOWN',' ',
      &            'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUHES,'(I6)') 3*NUCDEP
@@ -1779,7 +1777,7 @@ C
 C
       IF (.NOT. GECONV) CALL FNDGEO(CSTEP,EGRAD,WORK(KTEMP1),
      &     WORK(KTEMP2),EXHER,EXSIR,EXABA,WORK(KWRK2),LWRK2,
-     &     IWOFF,WRKDLM,IREJ,GEINFO,NEWSTP)
+     &     WRKDLM,IREJ,GEINFO,NEWSTP)
       IF (NEWSTP) GOTO 755
       GEINFO(0,2) = GRADNM
       GEINFO(0,4) = STPNRM
@@ -1869,10 +1867,10 @@ C     We go through the same procedure as for the first iteration.
 C
          IF (NEWTON) THEN
             CALL GTHESS(EGRAD,WORK(KEHESS),WORK(KALHES),
-     &           EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+     &           EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          ELSE
-            CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &           IWOFF,WRKDLM)
+            CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,
+     &           WORK(KWRK1),LWRK1,WRKDLM)
          END IF
 C hj aug 99: reset hermit/abacus print to lower level for following iter.
          IPRUSR = IPRUSR_reduced
@@ -1998,7 +1996,7 @@ C
          NEWSTP = .FALSE.
          IF ((.NOT. GECONV) .AND. ((.NOT. BRKSYM) .OR. NOBRKS))
      &        CALL FNDGEO(CSTEP,EGRAD,WORK(KTEMP1),WORK(KTEMP2),EXHER,
-     &        EXSIR,EXABA,WORK(KWRK2),LWRK2,IWOFF,WRKDLM,IREJ,
+     &        EXSIR,EXABA,WORK(KWRK2),LWRK2,WRKDLM,IREJ,
      &        GEINFO,NEWSTP)
          IF (NEWSTP) GOTO 756
          GEINFO(ITRNMR,2) = GRADNM
@@ -2114,13 +2112,13 @@ C
 C
 C     We check to see if there is any properties to be calculated
 C
-         WORK(IWOFF+1) = WRKDLM
+         WORK(1) = WRKDLM
          WRINDX = .TRUE.
 Chj aug 99: reset IPRUSR to original level
          IPRUSR = IPRUSR_orig
          IPREAD = IPREAD_orig
-         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
-         CALL EXEABA(WORK,LWORK,WRKDLM)
+         CALL ABAINP('**PROPE',WORK(2),LWORK)
+         CALL EXEABA(WORK,LWORK-1,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C
@@ -2135,10 +2133,10 @@ C
          IF (WRDRSP .EQ. '**RESPO') THEN
             REWIND (LUCMD)
             RNRESP = .TRUE.
-            CALL SETSIR(WORK(IWOFF + 2),LWORK)
+            CALL SETSIR(WORK(2),LWORK)
             CALL GPCLOSE(LUSIFC,'KEEP')
             CALL GPCLOSE(LUCMD,'KEEP')
-            CALL RSPDRV(WORK(IWOFF + 2),LWORK)
+            CALL RSPDRV(WORK(2),LWORK)
          ELSE
             GOTO 133
          END IF
@@ -2147,15 +2145,15 @@ C
 C
 C     Single point energy is calculated if requested.
 C
-         WORK(IWOFF+1) = WRKDLM
+         WORK(1) = WRKDLM
          IF (DOSPE) CALL SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,
-     &           LWORK,IWOFF,WRKDLM)
+     &           LWORK,WRKDLM)
 C
 C     Final results are printed, partially through PRIINF.
 C
          IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
          CALL TITLER(' End of Optimization ','<',120)
-         CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
+         CALL PRIINF(GEINFO,WORK(2),LWORK)
          WRITE(LUPRI,*)
          IF (CONOPT) THEN
             WRITE(LUPRI,*) 'Constrained optimization converged in ',
@@ -2216,7 +2214,7 @@ C     No single point energy has been calculated.
          TMPLOG = DOSPE
          DOSPE = .FALSE.
          CALL TITLER('Optimization Control Center','<',120)
-         CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
+         CALL PRIINF(GEINFO,WORK(2),LWORK)
          DOSPE = TMPLOG
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'WARNING: Geometry has NOT converged!'
@@ -2413,7 +2411,7 @@ C
       END
 
 C  /* Deck gtnrgy */
-      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
@@ -2451,9 +2449,9 @@ C added by Bin Gao, Dec. 5, 2010
       DIMENSION WORK(LWORK)
       REAL EXCQQ2
       CALL QENTER('GTNRGY')
-      WORK(IWOFF+1) = WRKDLM
+      WORK(1) = WRKDLM
       IF (.NOT. EXHER) THEN
-         CALL EXEHER(WORK,LWORK,WRKDLM)
+         CALL EXEHER(WORK,LWORK-1,WRKDLM)
 #ifdef BUILD_GEN1INT
          call gen1int_prop(WORK(10), LMWORK-9)
 #endif
@@ -2490,14 +2488,14 @@ C        *** reassign the symmetry of the frozen core    ***
 C        *** orbitals. tar 01-2001                       ***
 C
          IF (NMWALK.AND.DOCCSD) THEN
-            KWORD = IWOFF + 2
+            KWORD = 2
             KLAST = KWORD + 80*KMLINE
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
      &                                       'in fndexs.')
             CALL FNDEXS(WORK(KWORD),IPRINT)
          END IF
 C
-         CALL EXESIR(WORK,LWORK,WRKDLM)
+         CALL EXESIR(WORK,LWORK-1,WRKDLM)
 C
 C        Reduce gradient criterion for DFT optimization
 C
@@ -2521,13 +2519,13 @@ C
 #ifdef VAR_LINSCA
 #ifdef MOD_CC
             CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK,WRKDLM)
+            CALL EXECC(WORK,LWORK-1,WRKDLM)
 #else
             CALL QUIT('CC disabled in this build')
 #endif
 #else
             CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK,WRKDLM)
+            CALL EXECC(WORK,LWORK-1,WRKDLM)
 #endif
          ENDIF
          EXSIR = .TRUE.
@@ -2623,7 +2621,7 @@ Cdj moved from gtgrad
       END
 
 C  /* Deck gtgrad */
-      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2653,14 +2651,14 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
       CALL QENTER('GTGRAD')
-      WORK(IWOFF+1) = WRKDLM
-      KFREE = IWOFF + 2
+      WORK(1) = WRKDLM
+      KFREE = 2
       LFREE = LWORK - KFREE + 1
       CALL DZERO(EGRAD,MXCOOR)
       
       EXESG = FNDKEY('*ESG   ')
       IF ((.NOT.PARIO) .OR. (MYNUM .EQ. 0)) THEN
-         CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
+         CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,WRKDLM)
       ELSE
 chj-s-090516
 chj      HRINPC = .FALSE.
@@ -2692,7 +2690,7 @@ C
          CALL FNDANA(NAORDR)
 C
          IF (NAORDR.EQ.0) THEN 
-            CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+            CALL NUMGRD(WORK,LWORK,WRKDLM)
          ELSE
             WRINDX = .TRUE.
             MOLGRD = .TRUE.
@@ -2718,16 +2716,16 @@ C
 #ifdef VAR_LINSCA
 #ifdef MOD_CC
                CALL CC_GEOFLAG
-               CALL EXECC(WORK,LWORK,WRKDLM)
+               CALL EXECC(WORK,LWORK-1,WRKDLM)
 #else
                CALL QUIT('CC disabled in this build')
 #endif
 #else
                CALL CC_GEOFLAG
-               CALL EXECC(WORK,LWORK,WRKDLM)
+               CALL EXECC(WORK,LWORK-1,WRKDLM)
 #endif
             ELSE
-               CALL EXEABA(WORK,LWORK,WRKDLM)
+               CALL EXEABA(WORK,LWORK-1,WRKDLM)
             END IF
             EXABA = .TRUE.
             MOLGRD = .FALSE.
@@ -2747,7 +2745,7 @@ C
 
 C  /* Deck gthess */
       SUBROUTINE GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA,
-     &                                 WORK,LWORK,IWOFF,WRKDLM)
+     &                                 WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2771,12 +2769,12 @@ C
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
       CALL QENTER('GTHESS')
-      WORK(IWOFF+1) = WRKDLM
-      KFREE = IWOFF + 2
+      WORK(1) = WRKDLM
+      KFREE = 2
       LFREE = LWORK - KFREE + 1
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
-      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
 #ifdef VAR_LINSCA
       CLOSE (13)
 #endif
@@ -2802,7 +2800,7 @@ C
          CALL NVBPIN(IPRINT)
       END IF
 C
-      CALL EXEABA(WORK,LWORK,WRKDLM)
+      CALL EXEABA(WORK,LWORK-1,WRKDLM)
       EXABA = .TRUE.
       START = .FALSE.
       MOLGRD = .FALSE.
@@ -6392,7 +6390,7 @@ C
       
 C  /* Deck fndgeo */
       SUBROUTINE FNDGEO(CSTEP,EGRAD,COONEW,COOOLD,EXHER,EXSIR,EXABA,
-     &     WORK,LWORK,IWOFF,WRKDLM,IREJ,GEINFO,NEWSTP)
+     &     WORK,LWORK,WRKDLM,IREJ,GEINFO,NEWSTP)
 C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
@@ -6480,7 +6478,7 @@ C
 C
 C     Memory trap has to be reinitialized.
 C
-         WORK(IWOFF+1) = WRKDLM
+         WORK(1) = WRKDLM
 C
 C     Calculate energy at new geometry, which is compared to predicted
 C     energy(change) in UPTRAD.
@@ -6488,7 +6486,7 @@ C     The temporary update of ITRNMR is in case the molecule input is
 C     provided in the DALTON input file
 C
          ITRNMR = ITRNMR + 1
-         CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+         CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
          ITRNMR = ITRNMR - 1
          IF (IREJ .EQ. 0 .AND. .NOT. ESG) THEN
             CALL UPTRAD(REJGEO)
@@ -6653,7 +6651,7 @@ C
 C     Otherwise we give up...
 C
          ELSE
-            CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
+            CALL PRIINF(GEINFO,WORK(2),LWORK)
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &        ') reached.'
             WRITE(LUPRI,'(A)') 'No acceptable step found. Aborting.'
@@ -7386,8 +7384,7 @@ C
       END
 
 C  /* Deck spnrgy */
-      SUBROUTINE SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,LWORK,
-     &                                                IWOFF,WRKDLM)
+      SUBROUTINE SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,LWORK,WRKDLM)
 C
 C     Calculates single point energy with another basis if requested.
 C
@@ -7415,10 +7412,10 @@ C
 C
 C     Initialization of new memory trap for programs.
 C
-      WORK(IWOFF+1) = WRKDLM
+      WORK(1) = WRKDLM
 C
       NEWSYM = .TRUE.
-      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
       GEINFO(ITRNMR+1,1) = ENERGY
       RETURN
       END
@@ -7909,7 +7906,7 @@ C
       END
 
 C  /* Deck numgrd */
-      SUBROUTINE NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE NUMGRD(WORK,LWORK,WRKDLM)
 C
 C     Performs a numerical differentiation in order to get an
 C     finite-difference molecular gradient for use in geometry optimization
@@ -7977,7 +7974,6 @@ C
 C
 C     Call new numerical derivative routines.
 C
-      IWOTMP = IWOFF
       CALL NMDINI(IPRINT)
       IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',
      &   ' ','FORMATTED',IDUMMY,.FALSE.)
@@ -7990,8 +7986,7 @@ C
  1110 CALL GPCLOSE(LUCMD,'KEEP')
       FCLASS = GROUP
       IF (NMORDR .LT. 1) NMORDR = 1
-      CALL NUMDRV(WORK,LWORK,IWOFF,IPRINT,WRKDLM)
-      IF (IWOTMP .NE. IWOFF) IWOFF = IWOTMP
+      CALL NUMDRV(WORK,LWORK,IPRINT,WRKDLM)
 C
       CALL QEXIT('NUMGRD')
       RETURN

@@ -446,7 +446,7 @@ C
 C        ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C        for transformation control, old AO/MO files cannot be used any more.
 C     ***************************************************************
-         CALL BNDCHK(WORK, LMWORK+2, WRKDLM, 'HERMIT')
+         CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'HERMIT')
          CALL TITLER('End of Integral Section (HERMIT)',' ',200)
          CALL FLSHFO(LUPRI)
       END IF
@@ -807,7 +807,7 @@ C
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL NUMDRV(WORK(1),LMWORK,0,IPRINT,WRKDLM)
+               CALL NUMDRV(WORK(1),LMWORK,IPRINT,WRKDLM)
                GEOCNV = .TRUE.
 c#if defined (VAR_MPI)
 c               IF (NODTOT .GE. 1 .AND. MYNUM .EQ. 0) THEN

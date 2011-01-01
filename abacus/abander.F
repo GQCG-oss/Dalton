@@ -463,7 +463,7 @@ C
 C
 C
 C     /* Deck numdrv */
-      SUBROUTINE NUMDRV(WORK,LWORK,IWOFF,IPRINT,WRKDLM)
+      SUBROUTINE NUMDRV(WORK,LWORK,IPRINT,WRKDLM)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -537,7 +537,7 @@ C
          NDIME = NDIME + 2*NCOOR
       END IF
 C
-      KTEST  = IWOFF  + 2
+      KTEST  = 2
 Chjaaj-Oct07: KTEST a simple device to check if arrays which
 C     supposedly not are used, are used anyway.
       KDERIV = KTEST  + 1
@@ -618,9 +618,8 @@ C
       KICRIR = KCHRCT + NGORDR*NCVERT
       KLAST  = KICRIR + 2*NCOOR
 C
-      LWRK1 = LWORK - (KLAST - IWOFF) + 1
+      LWRK1 = LWORK - KLAST + 1
 C
-      IWSAV = IWOFF
 Chjaaj-Oct07: KTEST is a simple device to check if arrays which
 C     supposedly not are used, are used anyway.
       WORK(KTEST) = -999.9D0
@@ -629,7 +628,7 @@ C     supposedly not are used, are used anyway.
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC),
      &            WORK(KTRMSS),WORK(KDKIN) ,WORK(KFREQ), WORK(KRNNRM),
      &            WORK(KLAST) ,WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),
-     &            WORK(KISOTP),WORK(KMBKLN),LWRK1,IWOFF,NDERIV,NDIME,
+     &            WORK(KISOTP),WORK(KMBKLN),LWRK1,NDERIV,NDIME,
      &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
       IF (WORK(KTEST) .NE. -999.9D0) THEN
          CALL QUIT('WORK(KTEST) has been modified!')
@@ -647,7 +646,7 @@ c     &                 MPI_COMM_WORLD,IERR)
 c         IF (NTASK .EQ. 1) THEN
 c            CALL PARION
 c            RDINPC = .FALSE.
-c            CALL READIN(WORK(IWOFF),LWORK,.FALSE.)
+c            CALL READIN(WORK,LWORK,.FALSE.)
 c            GOTO 100
 c         ELSE IF (NTASK .EQ. 0) THEN
 c            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
@@ -678,7 +677,7 @@ C  /* Deck numdr1 */
       SUBROUTINE NUMDR1(DERIV,FUVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
      &                  TSTSDR,ENTST,GRIREP,CHRCTR,TRNCCR,TRAMSS,DKIN,
      &                  FREQ,RNNORM,WORK,KDPMTX,NMIDPC,ICRIRP,ISOTMP,
-     &                  MBKLIN,LWORK,IWOFF,NDERIV,NDIME,NINTIN,MAXADR,
+     &                  MBKLIN,LWORK,NDERIV,NDIME,NINTIN,MAXADR,
      &                  LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
 #include <implicit.h>
 #include <priunit.h>
@@ -800,7 +799,7 @@ C
 C        *** Restart for property derivatives. ***
 C
          IF (NPRPDR.AND..NOT.NRMCRD) THEN
-            KSTRT = IWOFF + 2
+            KSTRT = 2
             LWRK1 = LWORK - KSTRT
             CALL PRPRER(WORK(KSTRT),IDIMAX,IDIMIN,LURSTR,LWRK1)
          END IF
@@ -847,7 +846,7 @@ C
 C
          END IF
 C
-         KIADRS = IWOFF + 2
+         KIADRS = 2
          KINDST = KIADRS + MAXADR
          KNPRTN = KINDST + NMORDR
          KINDTM = KNPRTN + NMORDR
@@ -873,7 +872,7 @@ C
      &        KDPMTX,NMIDPC,WORK(KIADRS),WORK(KINDST),WORK(KINDTM),
      &        WORK(KNPRTN),WORK(KIDCMP),WORK(KIEQVG),WORK(KICIN),
      &        WORK(KIRPID),MBKLIN,NMBKLN,NDERIV,LWRK,NDIME,NINTIN,
-     &        MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,IDIMIN,
+     &        MAXADR,LDPMTX,IFRSTD,MAXINR,LTHTST,IDIMAX,IDIMIN,
      &        LURSTR,IPRINT,WRKDLM,
 c#if defined (VAR_MPI)
 c     &        WORK(KFTVAL),SYMDET,RSTDON)
@@ -933,7 +932,7 @@ C
          KTDRS  = 1
          KFDRS  = KTDRS + NDIMT
 C
-         KTTMPD = IWOFF + 2
+         KTTMPD = 2
          KFTMPD = KTTMPD + NCOOR**3
          KLAST  = KFTMPD + NCOOR**4
          LWRK   = LWORK - KLAST + 1
@@ -943,7 +942,7 @@ C
      &       LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
 C
          IF (SDRTST) THEN
-            KTMPGD = IWOFF + 2
+            KTMPGD = 2
             KTMPHS = KTMPGD + MXCOOR
             KBKPGD = KTMPHS + NCOOR**2
             KBKPHS = KBKPGD + NCOOR
@@ -952,7 +951,7 @@ C
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in SDERTT')
             CALL SDERTT(TSTSDR,TSTGDR,SYMCOR,WORK(KTMPGD),WORK(KTMPHS),
      &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,
-     &           IWOFF,WRKDLM,IPRINT)
+     &           WRKDLM,IPRINT)
          END IF
 C
 C     *** Reevaluate restart parameter ***
@@ -966,7 +965,7 @@ C
          IF ((NAORDR+NMORDR).GT.1) THEN
             IF (.NOT.DRYRUN) THEN
                IF (HARMON) THEN
-                  KBKPHS = IWOFF+2
+                  KBKPHS = 2
                   KTRAMT = KBKPHS + MXCOOR**2
                   KTMPHS = KTRAMT + NCOOR**2
                   KLAST  = KTMPHS + NCOOR**2
@@ -988,11 +987,11 @@ C              *** If we are not doing things in normal coordinates ***
 C              *** we need to save the symmetry coordinates.        ***
 C
                IF (.NOT. NRMCRD) THEN
-                  KSYCAR = IWOFF + 2
+                  KSYCAR = 2
                   KEIGNV = KSYCAR + NCOOR**2
                   CALL DCOPY(NCOOR**2,SYMCOR,1,WORK(KSYCAR),1)
                ELSE
-                  KEIGNV = IWOFF + 2
+                  KEIGNV = 2
                END IF
 C
                IF (.NOT.RESTRT) THEN
@@ -1025,7 +1024,7 @@ C
                   KTDRS  = 1
                   KFDRS  = KTDRS + NDIMT
 C
-                  KSYCAR = IWOFF + 2
+                  KSYCAR = 2
                   KHSNRM = KSYCAR + NCOOR**2
                   KCRTNM = KHSNRM + NCOOR**2
                   KTNRMD = KCRTNM + NCOOR**2
@@ -1070,7 +1069,7 @@ C
 C           *** Restart for property derivatives. ***
 C
             IF (NPRPDR) THEN
-               KSTRT = IWOFF + 2
+               KSTRT = 2
                LWRK1 = LWORK - KSTRT
                CALL PRPRER(WORK(KSTRT),IDIMAX,IDIMIN,LURSTR,LWRK1)
             END IF
@@ -1111,7 +1110,7 @@ C
          MAXINR = 2**NMORDR
          NTORDR = NMORDR+NAORDR
 C
-         KIADRS = IWOFF + 2
+         KIADRS = 2
          KINDST = KIADRS + MAXADR
          KNPRTN = KINDST + NTORDR
          KINDTM = KNPRTN + NTORDR
@@ -1136,7 +1135,7 @@ C
      &              KDPMTX,NMIDPC,WORK(KIADRS),WORK(KINDST),
      &              WORK(KINDTM),WORK(KNPRTN),WORK(KIDCMP),WORK(KIEQVG),
      &              WORK(KICIN),WORK(KIRPID),MBKLIN,NMBKLN,NDERIV,LWRK,
-     &              NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,
+     &              NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,MAXINR,
      &              LTHTST,IDIMAX,IDIMIN,LURSTR,IPRINT,WRKDLM,
 c#if defined (VAR_MPI)
 c     &              WORK(KFTVAL),SYMDET,RSTDON)
@@ -1165,7 +1164,7 @@ C
             KTDRS  = 1
             KFDRS  = KTDRS + NDIMT
 C
-            KTTMPD = IWOFF + 2
+            KTTMPD = 2
             KFTMPD = KTTMPD + NCOOR**3
             KLAST  = KFTMPD + NCOOR**4
             LWRK   = LWORK - KLAST + 1
@@ -1176,7 +1175,7 @@ C
 C
 C           *** Isotope analysis. ***
 C
-c            KTPGRD = IWOFF  + 2
+c            KTPGRD = 2
 c            KTPHES = KTPGRD + NCOOR
 c            KTPMSS = KTPHES + NCOOR**2
 c            KTPTD1 = KTPMSS + NCOOR
@@ -1227,7 +1226,7 @@ C  /* Deck nmder */
      &                 GRIREP,CHRCTR,EGRAD,EHESS,WORK,ICRIRP,KDPMTX,
      &                 NMIDPC,IADRSS,INDSTP,INDTMP,NPRTNR,IDCOMP,
      &                 IEQVGM,ICIN,IRPIND,MBKLIN,NMBKLN,NDERIV,LWORK,
-     &                 NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,
+     &                 NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,MAXINR,
      &                 LTHTST,IDIMAX,IDIMIN,LURSTR,IPRINT,WRKDLM,
 c#if defined (VAR_MPI)
 c     &                 FTVAL,SYMDET,RSTDON)
@@ -1480,7 +1479,7 @@ C
      &                       NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,LDPMTX,
      &                       IFRSTD,NLDPMX,IORDR,IRSRDR,IINNER,NMPRTN,
      &                       NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,
-     &                       NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
+     &                       NINTIN,IDIMAX,IDIMIN,LURSTR,
 c#if defined (VAR_MPI)
 c     &                       FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
@@ -1511,9 +1510,9 @@ C
      &        LDPMTX,IFRSTD,NLDPMX,0,IRSRDR,IINNER,NMPRTN,NDIME,
      &        MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,NINTIN,IDIMAX,IDIMIN,
 c#if defined (VAR_MPI)
-c     &        LURSTR,IWOFF,FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c     &        LURSTR,FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
-     &        LURSTR,IWOFF,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+     &        LURSTR,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 C
 c#if defined (VAR_MPI)
@@ -1704,7 +1703,7 @@ C  /* Deck gtnpnt */
      &                  WORK,WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,
      &                  IRPIND,IDCOMP,LDPMTX,IFRSTD,NLDPMX,IORDR,IRSRDR,
      &                  IINNER,NMPRTN,NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,
-     &                  IDIME,NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
+     &                  IDIME,NINTIN,IDIMAX,IDIMIN,LURSTR,
 c#if defined (VAR_MPI)
 c     &                  FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
@@ -1890,7 +1889,7 @@ C              *** Find the energy, gradient or hessian ***
 C
                IF (NAORDR .EQ. 0) THEN
                   CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,
-     $                 WORK,LWORK,IWOFF,WRKDLM)
+     $                 WORK,LWORK,WRKDLM)
 c#if defined (VAR_MPI)
 c                  FTVAL(1,IDIME) = ENERGY
 c#else
@@ -1920,9 +1919,9 @@ C
                      DOWALK = .FALSE.
                      WRINDX = .TRUE.
                      LUSUPM = -1
-                     WORK(IWOFF+1) = WRKDLM
-                     CALL ABAINP('**PROPE',WORK(IWOFF+2),LWORK)
-                     CALL EXEABA(WORK(1+IWOFF),LWORK,WRKDLM)
+                     WORK(1) = WRKDLM
+                     CALL ABAINP('**PROPE',WORK(2),LWORK)
+                     CALL EXEABA(WORK(1),LWORK-1,WRKDLM)
 C
                      KTRAMT = 1
                      KCRTPR = KTRAMT + NCOOR**2
@@ -1936,7 +1935,7 @@ C                 *** If gradient is used, property calculations are ***
 C                 *** run through GTGRAD.                            ***
 C                 ******************************************************
 C
-                  CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,
+                  CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,
      &                        WRKDLM)
 C
                   KSEGRD = 1
@@ -1968,7 +1967,7 @@ C
                   KLAST  = KAHESS + NCOOR**2
                   LWRK   = LWORK - KLAST +1
                   CALL GTHESS(EGRAD,EHESS,WORK(KAHESS),EXHER,EXSIR,
-     &                        EXABA,WORK(KLAST),LWRK,IWOFF,WRKDLM)
+     &                        EXABA,WORK(KLAST),LWRK,WRKDLM)
 C
                   KSEHSS = 1
                   KLAST  = KSEHSS + NCOOR**2
@@ -4621,7 +4620,7 @@ C
 C
 C     /*Deck sdertt*/
       SUBROUTINE SDERTT(TSTSDR,TSTGDR,SYMCOR,TMPGRD,TMPHES,BKPGRD,
-     &                  BKPHES,WORK,LWORK,IWOFF,WRKDLM,IPRINT)
+     &                  BKPHES,WORK,LWORK,WRKDLM,IPRINT)
 C     *******************************************************************
 C     *** This routine tests the numerical derivatives with available ***
 C     ***                   analytical derivatives.                   ***
@@ -4681,9 +4680,9 @@ C
       FTRONV = .TRUE.
       DOWALK = .FALSE.
       LUSUPM = -1
-      WORK(IWOFF+1) = WRKDLM
-      CALL ABAINP('**PROPE',WORK(IWOFF+2),LWORK)
-      CALL EXEABA(WORK(1+IWOFF),LWORK,WRKDLM)
+      WORK(1) = WRKDLM
+      CALL ABAINP('**PROPE',WORK(2),LWORK)
+      CALL EXEABA(WORK(1),LWORK-1,WRKDLM)
 C
 C     *** Transforming the analytical derivatives into ***
 C     ***               cartesian basis.               ***
