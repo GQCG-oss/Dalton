@@ -578,37 +578,42 @@ C
    10 CONTINUE
       RETURN
       END
-C  /* Deck trace */
-      SUBROUTINE TRACE
+C  /* Deck our_own_traceback */
+      SUBROUTINE OUR_OWN_TRACEBACK
 C
-C Written 4-Dec-1983 hjaaj
+C Written 4-Dec-1983 hjaaj; last revision Jan. 2011
 C
 #include "implicit.h"
 #include "priunit.h"
-!#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) \
-!  && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D)   \
-!  && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) \
-!  && !defined (SYS_HAL) && !defined (SYS_T90)
-!radovan: why is the above commented?
-#ifndef SYS_AIX
+
+#if defined (SYS_AIX)
+      include 'fexcp.h'
+#endif
+
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/
-      C = C + A/B
-#endif
-!#endif
 
-#if defined (SYS_AIX)
 C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
+C  and some other operating systems
 C  Note: integer divide by zero is the only error which
 C        always will cause an exception
 C
-      include 'fexcp.h'
-      save i,j
-      data i,j /1,0/
  
+#if defined (SYS_AIX)
       call SIGNAL(SIGTRAP,xl__trce)
-      i = i/j
+#elif defined (VAR_SECSEC)
+      CALL STRACE
+#elif defined (SYS_NEC)
+      CALL ABORT()
+#elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+      CALL TRBK()
+#else
+
+      C = C + A/B
+
+C The print statements below will onl be printed if the integer divide by zero
+C code above does not cause the program to exit.
 #endif
 
 Chjaaj apr06:
@@ -626,22 +631,12 @@ C     Use stderr on unix/linux systems, if LUPRI not defined yet.
 #if defined (SYS_HPUX)
       WRITE(LUPRI,*) 'HP-UX has no obvious system traceback facility.'
 #endif
-#if defined (SYS_HAL)
-      WRITE(LUPRI,*) 'HAL has no obvious system traceback facility.'
-#endif
-#if defined (VAR_SECSEC)
-      CALL STRACE
-#endif
-#if defined (SYS_NEC)
-      CALL ABORT()
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      CALL TRBK()
-#endif
+
       RETURN
       END
 C  /* Deck canon */
       SUBROUTINE CANON(I,J,K,L)
+C     reorder I, J, K, L to canonical 2-electron integral order
 #include "implicit.h"
       IP=MAX(I,J)
       JP=I+J-IP
@@ -1925,17 +1920,14 @@ C
   140 CONTINUE
       RETURN
       END
-c     LOC() is not provided by gfortran-4.0.2 and this routine is not
-c     used at all in ther code.
-#if !(defined(GFORTRAN) && GFORTRAN <= 402)
       SUBROUTINE COMPOFF(WRK, WORK, KBASE)
 C
-C     Nov. 2004 Hans Joergen Aa. Jensen
+C     Nov. 2004 Hans Joergen Aa. Jensen; revised Dec. 2010
 C
 C     COMPOFF - Compute off-set from WORK to WRK
 C               i.e. WRK(I) = WORK(KBASE+I)
 C
-      REAL*8 WRK(*), WORK(*)
+      REAL*8                    :: WRK(*), WORK(*)
       integer(8), intent(inout) :: kbase
       integer(8)                :: kaddr
 
@@ -1946,4 +1938,3 @@ C
 
       !print *,'COMPOFF: KADDR, KBASE', KADDR, KBASE, KBASE*8
       END
-#endif

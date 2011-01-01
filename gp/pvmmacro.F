@@ -149,12 +149,15 @@ C
       INCLUDE 'fpvm3.h'
 #endif
       CHARACTER*6 TYPE
-      INTEGER DATATYPE, COUNT, STRIDE
+      INTEGER   DATATYPE, COUNT, STRIDE
       DIMENSION BUFFER(*)
 C
 #if defined (VAR_PVM)
       IF      (TYPE .EQ. 'INTEGE' .OR. TYPE .EQ. 'LOGICA') THEN
          DATATYPE = INTEGER4
+#ifdef VAR_INT64
+  ERROR: INTEGER*8 not implemented in pvmmacro.F routines
+#endif
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
          DATATYPE = REAL8
       ELSE IF (TYPE .EQ. 'STRING') THEN
@@ -185,6 +188,9 @@ C
 #if defined (VAR_PVM)
       IF      (TYPE .EQ. 'INTEGE' .OR. TYPE .EQ. 'LOGICA') THEN
          DATATYPE = INTEGER4
+#ifdef VAR_INT64
+  ERROR: INTEGER*8 not implemented in pvmmacro.F routines
+#endif
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
          DATATYPE = REAL8
       ELSE IF (TYPE .EQ. 'STRING') THEN

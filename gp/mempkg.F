@@ -125,9 +125,6 @@ C        length error check:
 
 C        Error check, memory check of WORK(KFREE) OK ? :
 
-C hjaaj Sep 2008: rewritten code - hope GFORTRAN>=4100 error gone
-C hjaaj           otherwise check out version from before Sep08
-
          WMEMCK = WORK(KFREE-1)
          IF (MEMCK .NE. MEMID) GO TO 8002
 C        ... comparing integers, to be sure no renormalization of float

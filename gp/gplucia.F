@@ -2533,7 +2533,7 @@ C
         IF (NCROW .lt. 0 .or. NCCOL .lt. 0 .or. NAROW .lt. 0 .or.
      &      NACOL .lt. 0 .or. NBROW .lt. 0 .or. NBCOL .lt. 0) THEN
            WRITE(6,'(/A)') 'FATAL ERROR in MATML7, neagtive dimensions'
-           call trace
+           call our_own_traceback
         END IF
       CALL WRTMT_LU(A,NAROW,NACOL,NAROW,NACOL)
       CALL WRTMT_LU(B,NBROW,NBCOL,NBROW,NBCOL)

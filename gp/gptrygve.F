@@ -24,13 +24,8 @@ C
 C FILE    : gptrygve.F
 C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
-! If one set then set the other:
 #ifdef INT_STAR8
 #define VAR_INT64
-#else
-#ifdef VAR_INT64
-*define INT_STAR8
-#endif
 #endif
 !
 #include <single.h>
@@ -265,7 +260,7 @@ C     ... define exit code to the environment for MPI_ABORT
       CALL PVMXHALT
 #endif
 C
-      CALL TRACE
+      CALL our_own_traceback
 #if defined(VAR_IFC)||defined(SYS_IRIX)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
@@ -649,7 +644,7 @@ C
             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
           END DO
         ELSE IF (NBITS .EQ. 16) THEN
-#ifdef INT_STAR8
+#ifdef VAR_INT64
           DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
