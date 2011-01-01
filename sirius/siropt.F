@@ -1711,7 +1711,8 @@ C
          IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
             READ (LUIT1,END=490,ERR=490)
          IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
-         IF ( ICI0.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ') FLAG(39) = .TRUE.
+         IF ( ICSTRT.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ')
+     &      FLAG(39) = .TRUE.
 C        ... if user has specified .RESTART, then respect shift to NR
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
@@ -1779,7 +1780,7 @@ C        1) get trust radius and beta
 C        2) if (absorption) check if absorption switched off
          IF ( .NOT.FNDLB2(TABLE(5),LBLINF,LUIT1) ) THEN
           WRITE (LUPRI,'(//A)')
-     &    ' (OPTST) Error, restart information not found on SRIUS.RST.'
+     &    ' (OPTST) Error, restart information not found on SIRIUS.RST.'
           CALL QUIT(
      &    '(OPTST) Error, restart information not found on SIRIUS.RST.')
          END IF
