@@ -1054,17 +1054,15 @@ C
          END IF
       END IF
 C
-#ifdef VAR_LINSCA
-      IF (BAKER) THEN
-         WRITE(LUPRI,'(/,A)')' ERROR! Can not use .BAKER when ' //
-     &        'running linsca. Only NATNRM can be used!'
-         CALL QUIT('Conflicting specifications of ' //
-     &        'convergence setup in '//WORD1)
-      END IF
-#endif     
       IF (BAKER) THEN
          WRITE(LUPRI,'(/A/)')
      &        ' Baker''s convergence criteria will be used.'
+#ifdef VAR_LINSCA
+         WRITE(LUPRI,'(/A)')' ERROR! Can not use .BAKER when ' //
+     &        'running linsca. Only NATNRM can be used!'
+         CALL QUIT('Conflicting specifications of ' //
+     &        'convergence setup in '//WORD1)
+#endif     
          IF (NATNRM) THEN
             WRITE(LUPRI,'(/A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
