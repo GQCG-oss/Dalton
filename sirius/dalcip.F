@@ -24,12 +24,17 @@
      *           inact,iact,nact,lfermi,nisht,nsym,LUN98,mult)
 #include <implicit.h>
 #include <priunit.h>
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_GFORTRAN))
-      return
-      end
-#else
+
+! ** The nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
+! ** Now code is compiled for all compilers, if your compiler cannot handle
+! ** the code then do NOT #define GO_ON_COMP in dalcip.F (below) and koopro4.F /Jan. 2011
+
+! #if !(defined(VAR_IFORT)||defined(VAR_PGF90)||defined(VAR_GFORTRAN))
+!       return
+!       end
+! #else
 #define GO_ON_COMP
-#endif      
+! #endif      
 #ifdef GO_ON_COMP
       dimension c(*),ne(*),trou(*),part(*),nd(*)
 c      dimension c(*),ast(nela,*),bst(nelb,*),ne(*),trou(*),part(*),nd(*)
@@ -669,7 +674,6 @@ c     close(15,status='DELETE')
       return
       end
 c****************************************************************
-#endif
       integer function noverk(n,k)
       if(k.eq.0)then
          noverk=1
@@ -688,3 +692,4 @@ c****************************************************************
          return
       endif
       end
+#endif

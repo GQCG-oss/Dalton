@@ -59,6 +59,10 @@ C-----------------------------------------------------------------------
 #include <dummy.h>
 #include <csfbas.h>
 
+! ** The nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
+! ** Now code is compiled for all compilers, if your compiler cannot handle
+! ** the code then do NOT #define GO_ON_COMP in dalcip.F and koopro4.F (below) /Jan. 2011
+
 #define GO_ON_COMP
 
 #ifdef GO_ON_COMP
