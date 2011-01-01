@@ -151,7 +151,7 @@ C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
-#if defined (VAR_INT64) || defined (INT_STAR8)
+#if defined (VAR_INT64)
          LRECL = LBFINP + LBFINP + 1
 #elif defined (SYS_NEC)
          LRECL = LBFINP + LBFINP/IRAT + 1
