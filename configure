@@ -510,7 +510,7 @@ $ECHO   "Directory search list for libraries:"
 $ECHO   " $dirlist \n"
 get_yes_or_no "Do you want to replace this with your own directory search list?" n
 if [ $answer = 'y' ]; then
-   $ECHO   "OK, please enter it : \c"
+   $ECHO   "OK, please enter it : \c "
    read dirlist
    $ECHO   "Revised directory search list for libraries:"
    $ECHO   " $dirlist \n"
@@ -653,6 +653,8 @@ if [ "$answer" = "y" ]; then
 #      check that user hasn't just hit return (giving an empty string)
        if [ "$incoresiz" = "" ]; then incoresiz=0; fi
        incoresiz=`expr $incoresiz \* 1000000`
+#      in case $incoresize was not a number it will now be an empty string, if so reset to zero.
+       if [ "$incoresiz" = "" ]; then incoresiz=0; fi
     done
     $ECHO '\n-->Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
     
@@ -680,6 +682,8 @@ do
 #   check that user hasn't just hit return (giving an empty string)
     if [ "$memsiz" = "" ]; then memsiz=0; fi
     memsiz=`expr $memsiz \* 1000000`
+#   in case $memsiz was not a number it will now be an empty string, if so reset to zero.
+    if [ "$memsiz" = "" ]; then memsiz=0; fi
 done
 $ECHO '\n-->Program will be installed with a default work memory of '$memsiz' words'
 
