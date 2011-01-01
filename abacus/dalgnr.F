@@ -632,8 +632,17 @@ C
 C added by Bin Gao, Dec. 5, 2010
 #include "gen1int.h"
 #endif
-!     DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
-      DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
+!
+! Programmers please note:
+!   WORK(0) and WORK(LMOWRK+1) are allocated and contain the value
+!   WRKDLM (set in main program). This is a simple (not fool-proof) test
+!   that Dalton has not been out of bounds. Thus all subroutines called
+!   here needs to be called with WORK(1) (and not just WORK), __except__
+!   the subroutines EXE*. In these driver routines for some of the
+!   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
+!   in this file). /HJAaJ, Jan. 2011
+!
+      DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
       CALL QENTER('DALTON')
@@ -651,7 +660,7 @@ C
 #endif
          RNABAC = .TRUE.
          DOWALK = .FALSE.
-         CALL OPTMIN(WORK,LMWORK,WRKDLM)
+         CALL OPTMIN(WORK(1),LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
          RNHERM = .TRUE.
 #ifdef BUILD_GEN1INT
@@ -798,7 +807,7 @@ C
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL NUMDRV(WORK,LMWORK,0,IPRINT,WRKDLM)
+               CALL NUMDRV(WORK(1),LMWORK,0,IPRINT,WRKDLM)
                GEOCNV = .TRUE.
 c#if defined (VAR_MPI)
 c               IF (NODTOT .GE. 1 .AND. MYNUM .EQ. 0) THEN
@@ -1069,13 +1078,13 @@ C
 C     We finally punch information for Gamess-US graphic packages
 C
       IF (SOLVNT) NUCIND = NUCIND - 1
-      IKIND = 1
-      IKOL  = IKIND + MXCENT
-      KLAST = IKOL  + MXCENT
+      KKIND = 1
+      KKOL  = KKIND + MXCENT
+      KLAST = KKOL  + MXCENT
       LLEFT = LMWORK - KLAST
 C
-      CALL MOLPLT(WORK(IKIND),WORK(IKOL),TITMOL,WORK(KLAST),LLEFT)
-      CALL PLTORB(WORK(IKIND),LMWORK)
+      CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
+      CALL PLTORB(WORK(KKIND),LMWORK)
 C
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
