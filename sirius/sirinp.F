@@ -741,11 +741,11 @@ C
 
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) THEN
+C     .. ignore .CINO if no CI calculation
          DOCINO = .FALSE.
          DOFCI  = .FALSE.
          DOCISD = .FALSE.
       END IF
-C     .. ignore .CINO etc. if no CI calculation
       IF (.NOT.DOMC .AND. .NOT.DOCI) MCTYPE = 0
 C     ... ignore any *CONFIGURATION input
 C         if neither DOMC nor DOCI /hjaaj aug 2005
@@ -5154,7 +5154,7 @@ C     formulation of NEVPT.
          ELSE
 C          hjaaj Aug 2005 - program validity check, should not be possible
 C          to get here unless someone modifies SIRIUS incorrectly
-           CALL QUIT('ERROR - MCTYPE invalid for DOMC/DOCI')
+           CALL QUIT('SIR_PRTINP ERROR - MCTYPE invalid for DOMC/DOCI')
          END IF
          IF (FLAG(23)) THEN
             WRITE(IWUNIT,1051)
@@ -5199,11 +5199,11 @@ C          to get here unless someone modifies SIRIUS incorrectly
          IF (DONEVPT) IRUN = 2
          IF (DOSCF) THEN
             IF (HSROHF) THEN
-               WRITE(IWUNIT,1054) 'an restricted, high spin open shell'
+               WRITE(IWUNIT,1054) 'a restricted, high spin open shell'
             ELSE IF (IOPRHF .EQ. 0) THEN
-               WRITE(IWUNIT,1054) 'an restricted, closed shell'
+               WRITE(IWUNIT,1054) 'a restricted, closed shell'
             ELSE
-               WRITE(IWUNIT,1054) 'an restricted, one open shell'
+               WRITE(IWUNIT,1054) 'a restricted, one open shell'
             END IF
             IF (DOHFSRDFT) THEN
                WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation'

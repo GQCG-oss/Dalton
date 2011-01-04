@@ -655,7 +655,7 @@ C             PCMNE = sum_i [Vnuc(i) * QSE(i)]
 C     PCMEE = interaction solute electrons - polarization electronic charges
 C             PCMEE = sum_i [Vel(i) * QSE(i)]
 C
-      IF(.NOT.MOBAS) THEN
+      IF (.NOT.MOBAS) THEN
          PCMEE = D0
          PCMNE = D0
          PCMEN = D0
@@ -671,10 +671,9 @@ C
 C     
 C        Nuclear energy divided by two for backward compatibility /lf
 C     
-         PCMNN = PCMNN / 2.0D0 
+         PCMNN = PCMNN * 0.5D0
 C
-c        IF (IPRINT .GT. 2) WRITE(LUPRI,'(A,5F12.5)')
-         IF (.true.) WRITE(LUPRI,'(A,5F12.5)')
+         IF (IPRINT .GT. 1) WRITE(LUPRI,'(A,5F12.5)')
      &   'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
      &            PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
       END IF
@@ -1374,24 +1373,24 @@ C
          UELOR   = UELOR   + QSEGR(ITS) * SSN
       END DO
 C
-C  SYMMETRY NORMALIZATION OF UELOR E UEOLOR0
+C  SYMMETRY NORMALIZATION OF UELOR AND UEOLOR0
 C
       UELOR  = UELOR  * (MAXREP + 1)
       UELOR0 = UELOR0 * (MAXREP + 1)
 
 
 C     
-      PORT =(VTOT0QS+UELOR0)*DP5*FACSLO
-      QSSLW = (UELOR+VTOTQS)*DP5*FACSLO
+      PORT  = (VTOT0QS+UELOR0)*DP5*FACSLO
+      QSSLW = (UELOR+VTOTQS)  *DP5*FACSLO
 c     lf         IF (IPRPCM .GE. 6) THEN
-      WRITE(LUPRI,*)'GS(EL+N)-QS',VTOT0QS*FACSLO
+      WRITE(LUPRI,*)'GS(EL+N)-QS ',VTOT0QS*FACSLO
       WRITE(LUPRI,*)'EXC(EL+N)-QS',VTOTQS*FACSLO
       WRITE(LUPRI,*)'QF(GS)-QS   = UELOR0 ',UELOR0*FACSLO
-      WRITE(LUPRI,*)'QF(EXC)-QS = UELOR ',UELOR*FACSLO
-      WRITE(LUPRI,*)'PORT =',PORT,' QSSLW = ',QSSLW
-      WRITE(LUPRI,*)'PCMNE=', PCMNE, '  PCMNN=', PCMNN
+      WRITE(LUPRI,*)'QF(EXC)-QS  = UELOR  ',UELOR*FACSLO
+      WRITE(LUPRI,*)'PORT =', PORT, ' QSSLW = ',QSSLW
+      WRITE(LUPRI,*)'PCMNE=', PCMNE,' PCMNN =', PCMNN
       WRITE(LUPRI,*)
-      WRITE(LUPRI,*)'ESOLT', ESOLT
+      WRITE(LUPRI,*)'ESOLT =', ESOLT
       WRITE(LUPRI,*)'CORRECTION TO ESOLT', QSSLW-PORT
 c     lf         END IF
 C

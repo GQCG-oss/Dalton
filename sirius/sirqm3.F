@@ -1209,11 +1209,11 @@ C-------------------------------------
               DO 121 K = 1, NUALIS(I)
                 KS = KS+1
                 RAT = 0.0D0
-                RAT =  0.5D0 * ALPIMM(I,K) * WRK(KRAx + KS - 1) *
+                RAT = 0.5D0 * ALPIMM(I,K) * WRK(KRAx + KS - 1) *
      &                (WRK(KRAx + KS - 1) + WRK(KOMMSx + KS - 1))
-     &               + 0.5D0 * ALPIMM(I,K) * WRK(KRAy + KS - 1) *
+     &              + 0.5D0 * ALPIMM(I,K) * WRK(KRAy + KS - 1) *
      &                (WRK(KRAy + KS - 1) + WRK(KOMMSy + KS - 1))
-     &               + 0.5D0 * ALPIMM(I,K) * WRK(KRAz + KS - 1) *
+     &              + 0.5D0 * ALPIMM(I,K) * WRK(KRAz + KS - 1) *
      &                (WRK(KRAz + KS - 1) + WRK(KOMMSz + KS - 1))
                 EQM3T = EQM3T - RAT
   121         CONTINUE
@@ -1228,7 +1228,7 @@ C-------------------------------------
       ELSE
 
         OTILDE = 0.0D0
-        TEMP1 = 0.0D0
+        TEMP1  = 0.0D0
 
       END IF
 

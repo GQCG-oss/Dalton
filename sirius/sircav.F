@@ -1821,7 +1821,11 @@ C
         ENDDO
         DIFF2=(P4(1)-XE(NS))**2 + (P4(2)-YE(NS))**2 + (P4(3)-ZE(NS))**2
         DIFF = SQRT(DIFF2) - RE(NS)
+
+C     Converged ??
       IF(ABS(DIFF).LT.TOL) GOTO 100
+C      No ...
+
         IF(I.EQ.0) THEN
          IF(DIFF.GT.0.0D+00) DELTA = 1.0D+00/(2.0D+00**DBLE(M+1))
          IF(DIFF.LT.0.0D+00) DELTA = - 1.0D+00/(2.0D+00**DBLE(M+1))
