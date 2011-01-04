@@ -1144,19 +1144,19 @@ C
 c               IF (I2TYP .EQ. 4) THEN
 C
 c                 IF (DIASC1(ISHELA,ISHELB) .EQ. ZERO) THEN
-c                    write(6,*) 'Ishelab screening:',ishela,ishelb
+c                    write(LUPRI,*) 'Ishelab screening:',ishela,ishelb
 c                    IALSKP = IALSKP + 1
 c                    GOTO 400
 c                 ENDIF
 c
 c                 IF (DIASC1(ISHELC,ISHELD) .EQ. ZERO) THEN
-c                    write(6,*) 'Ishelcd screening:',ishelc,isheld
-c                    write(6,*) 'Other indices:',ishela,ishelb
+c                    write(LUPRI,*) 'Ishelcd screening:',ishelc,isheld
+c                    write(LUPRI,*) 'Other indices:',ishela,ishelb
 c                    IALSKP = IALSKP + 1
 c                    GOTO 400
 c                 ENDIF
 C
-c                 write(6,*) 'Distribution calculated',ishela,ishelb,
+c                 write(LUPRI,*) 'Distribution calculated',ishela,ishelb,
 c    &                        ishelc,isheld
 c                 IALDON = IALDON + 1
 C

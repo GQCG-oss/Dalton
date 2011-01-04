@@ -135,8 +135,8 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      IF (ONEPRP .OR. DOHUCKEL .OR. DKTRAN) CALL GPOPEN(LUPROP,
-     &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      IF (ONEPRP .OR. DOHUCKEL .OR. DKTRAN)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -1402,7 +1402,7 @@ cLig <<
          IF (HDOBRT) WRITE (LUPRI,'(10X,A)')
      &        '- Test of ket-diff. hdo-integrals with respect to B'
          IF (SQHDOL) WRITE (LUPRI,'(10X,A)')
-     &        '- Bra differentiated half-derivative overlap matrix'
+     &      '- Bra differentiated half-derivative overlap matrix'
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &      '- Ket differentiated half-derivative overlap matrix'
          IF (SQHD2O) WRITE (LUPRI,'(10X,A)')
@@ -2269,10 +2269,10 @@ C
             CALL TIMER('HUCKEL',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF
-         IF (ONEPRP) THEN
 C
 C           ***** Overlap integrals *****
 C
+! HJAaJ Jan 2011: Always calculate overlap integrals
             CALL TIMER('START ',TIMSTR,TIMEND)
             CALL PR1INT('OVERLAP ',WORK,LWORK,IDUMMY,
      &                  IDUMMY,TRIANG,PROPRI,IPRONE)
@@ -2283,15 +2283,54 @@ C
               CALL QUITMM('Overlap integrals calculated')
             END IF
 C
+C           ***** Modified overlap integrals *****
+C                 for population analysis /hjaaj Mar 2006
+C
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL PR1INT('POPOVLP',WORK,LWORK,IDUMMY,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL TIMER('POPOVLP',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+C
 C           ***** Dipole length integrals *****
 C
-            IF (DIPLEN) THEN
+! HJAaJ Jan 2011: Always calculate dipole and quadrupole integrals
+!                 and kinetic energy integrals
+!                 (For wave function analysis in sirpop.F and RESPONS)
+!           IF (DIPLEN) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('DIPLEN ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('DIPLEN',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
-            END IF
+!           END IF
+C
+C           ***** Quadrupole integrals *****
+C
+!           IF (QUADRU) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('QUADRUP',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('QUADRUP',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+!           END IF
+C
+C           ***** Kinetic energy integrals *****
+C
+!           IF (KINENE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('KINENER',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('KINENE',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+!           END IF
+
+C        ------------------------------------------------------
+
+         IF (ONEPRP) THEN
+
+C        ------------------------------------------------------
+
 C
 C           ***** Dipole velocity integrals *****
 C
@@ -2304,14 +2343,8 @@ C
             END IF
 C
 C           ***** Quadrupole integrals *****
+C                 (Other than 'QUADRUP'
 C
-            IF (QUADRU) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('QUADRUP',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('QUADRUP',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
             IF (THETA) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('THETA  ',WORK,LWORK,IDUMMY,
@@ -2340,16 +2373,6 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
-C           ***** Kinetic energy integrals *****
-C
-            IF (KINENE) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('KINENER',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('KINENE',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
 C           ***** Potential energy integrals *****
 C
             IF (POTENE) THEN
@@ -2360,7 +2383,7 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
-C           ***** Douglas-Kroll pVp integrals *****
+C           ***** Douglas-Kroll-Hess pVp integrals *****
 C
             IF (PVPINT) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -3133,7 +3156,7 @@ C
 C           ****Mean-field spin-orbit integrals                     ****
 C           
             IF (MNF_SO) THEN
-               CALL AMFIIN(PROPRI,IPRONE,WORK,LWORK)
+               CALL AMFIINTEGRALS(PROPRI,IPRONE,WORK,LWORK)
             END IF
 C
 C           ****   First electric derivative of overlap integrals    ****
@@ -3371,7 +3394,7 @@ C
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                  .FALSE.)
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            CALL TIMER('TWOINT short-range',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             SRINTS = .FALSE.
@@ -3408,8 +3431,8 @@ C
             CALL GETTIM(SO2CPU,SO2WAL)
             SOCPU=SO2CPU-SO1CPU
             SOWAL=SO2WAL-SO1WAL
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
-            WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
+            CALL TIMER('TWOINT 2-el spin-orbit',TIMSTR,TIMEND)
+            WRITE(LUPRI,'(2(/A),2(/A,F7.0,A))')
      &      '   Two-electron spin-orbit integrals',
      &      '   =================================',
      &      '   Spin-orbit 2-electron CPU  time ',SOCPU,' seconds',
@@ -3454,7 +3477,7 @@ C
             CALL GETTIM(DA2CPU,DA2WAL)
             DACPU=DA2CPU-DA1CPU
             DAWAL=DA2WAL-DA1WAL
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            CALL TIMER('TWOINT 2-el Darwin',TIMSTR,TIMEND)
             WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
      &      '   Two-electron Darwin integrals',
      &      '   =================================',
@@ -3979,7 +4002,7 @@ C
       RETURN
       END
 C/* Deck amfiin */
-      SUBROUTINE AMFIIN(PROPRI,IPRINT,WORK,LWORK)
+      SUBROUTINE AMFIINTEGRALS(PROPRI,IPRINT,WORK,LWORK)
 C
 C     Interface to B.Schimmelpfennig's atomic mean-field integral code
 C     Written by K.Ruud in northern Norway in January 2001.

@@ -79,7 +79,7 @@ C     Set control variables in "mxsymm.h"
       CALL MEMGET('REAL',KTEMP2,6*(MXCENT+1),WORK,KFREE,LFREE)
       CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
-     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK,KFREE,LFREE)
+     &            KATOM,KASYM,LENTMP,CLASS,VRML_SYM,WORK,KFREE,LFREE)
       CALL MEMREL('SYMADD',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('SYMADD')
       RETURN
@@ -191,7 +191,7 @@ C        Determine molecular point group
 C ::: If requested, a VRML representation of :::
 C ::: the symmetry elements is constructed.  :::
          IF (VRML_SYM) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
-     &                          DMRPLN,MAXMIR,WORK(KFREE),LFREE)
+     &                             DMRPLN,MAXMIR,WORK(KFREE),LFREE)
 C
          IF( MYNUM .eq. MASTER ) 
      &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
@@ -326,7 +326,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
          DO 400 I = 1, NCTOT
-            NCI = NCLINE(I)
+            NCI   = NCLINE(I)
             TMPLN = MLINE(NCI)
             IF (ABS(CORD(1,I)).ge.100.0D0 .OR.
      &          ABS(CORD(2,I)).ge.100.0D0 .OR.
@@ -347,18 +347,18 @@ C ::: Finally the number of atoms are updated. :::
          I = 1
          J = NINT(ATMARR(4,I))
          DO 500 K = 1, NONTYP
-            NCI = NCLINE(I) - 1
+            NCI   = NCLINE(I) - 1
             TMPLN = MLINE(NCI)
             CALL UPCASE(TMPLN)
             IF (INDEX(TMPLN,'CHA') .EQ. 0) THEN
                WRITE(TMPLN(12:15),'(I4)') NONT(K)
             ELSE
-               CALL LINE5(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,
+               CALL LINE5R(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,
      &                    BASIS,ATOMBA,LMULBS,BSNM,
-     &                 RADIUS_PCM, ALPHA_PCM)
+     &                    RADIUS_PCM, ALPHA_PCM)
                CALL LINE5W(TMPLN,Q,NONT(K),MBSI,BASIS,ATOMBA,LMULBS,
      &                    BSNM,IQM,JCO,MXAQN,
-     &              RADIUS_PCM, ALPHA_PCM)
+     &                    RADIUS_PCM, ALPHA_PCM)
             END IF
             MLINE(NCI) = TMPLN
  510        CONTINUE
@@ -642,7 +642,7 @@ C                 ... J and J+1 are NOT in correct order, switch them
                      SORTED = .FALSE.
   310             CONTINUE
                ELSE
-C                  ... sort axes
+C                 ... sort axes
                   IF (ARR(4,J+1) .GT. ARR(4,J)) THEN
 C                 ... J and J+1 are NOT in correct order, switch them
                      DO K = 1, 5

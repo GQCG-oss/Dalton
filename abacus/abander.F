@@ -159,7 +159,7 @@ C
             READ (LUCMD, *) XTHR
             THRMID = ABS(XTHR)
  21      CONTINUE
-            MINOUT = .TRUE.   
+            MINOUT = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -247,8 +247,8 @@ C
      &                  'will be generated.'
             WRITE (LUPRI,'(5x,A,A,E24.10)')
      &             'Threshold for term coefficient relative to largest',
-     &             ' harmonic term: ',THRMID 
-         ENDIF 
+     &             ' harmonic term: ',THRMID
+         ENDIF
       END IF
 C
 C
@@ -330,13 +330,13 @@ C
 #endif
 C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
-     &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
-     &    CCR1A .OR. CCR1B .OR. CCT .OR.
+     &    CCD   .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
+     &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
-     &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
+     &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR.
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
      &        DPCM .OR. DOROHF) THEN
          NAORDR = 1
@@ -351,18 +351,17 @@ C
       RETURN
       END
 C
-C
 C     /* Deck wavtp */
       LOGICAL FUNCTION WAVTP(STRING)
 C     **************************************************************
 C     *** Workaround to many common variables with the same name ***
 C     *** MCSCF is set to DOMC (in infinp.h) through the logical ***
-C     *** function WAVMC.                                        ***
+C     *** function WAVTP.                                        ***
 C     **************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include "pcmlog.h"
 #include <maxorb.h>
+#include "pcmlog.h"
 #include <infinp.h>
       CHARACTER*(*) STRING
 C
@@ -387,6 +386,7 @@ C
      &   'Undefined string in WAVTP :', STRING
          CALL QUIT('Wrong string in WAVTP')
       END IF
+      write(lupri,*) 'WAVE FUNCTION TYPE ', STRING,' : ', WAVTP
 C
       RETURN
       END
@@ -421,7 +421,7 @@ C     /CBINUM/
       SPECTR = .FALSE.
       MIDAS  = .FALSE.
       MINOUT = .FALSE.
-      THRMID = 1.0D-15 
+      THRMID = 1.0D-15
 C
 C     /NUMDER/
       NMORDR = 0
@@ -1740,8 +1740,8 @@ c#endif
 #include <gnrinf.h>
 #include <nuclei.h>
 c
-#include <huckel.h>      
-      LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG, 
+#include <huckel.h>
+      LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
      &        ALRCAL, PRPCAL, FNDKEY
       CHARACTER*80 MBKLIN
       DIMENSION MBKLIN(NMBKLN)
@@ -1884,7 +1884,7 @@ C
                CALL NDER_RESET(EXHER,EXSIR,EXABA)
 cdj
                EXESG = FNDKEY('*ESG   ')
-C     
+C
 C              *** Find the energy, gradient or hessian ***
 C
                IF (NAORDR .EQ. 0) THEN
@@ -2150,7 +2150,7 @@ C
                   IF (MLINE(1)(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
                   IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
                   CALL UPCASE(MLINE(NCLINE(ICENT1)-1))
-                  CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
+                  CALL LINE5R(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
      &                 IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &                 RADIUS_PCM, ALPHA_PCM)
                   CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
@@ -2176,7 +2176,7 @@ C
  1100    CONTINUE
          IF (NEWINP) THEN
             CALL UPCASE(MLINE(NCLINE(KCENT1)-1))
-            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
+            CALL LINE5R(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
      &           IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &           RADIUS_PCM, ALPHA_PCM)
             CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,
@@ -3257,7 +3257,7 @@ C
          CALL TRATDR(SYMCOR,SYMTDR,TDER,NCOOR,NCOOR,NCOOR,TEXT,LTXT,
      &               IPRINT)
 C
-         IF (.NOT.MINOUT) 
+         IF (.NOT.MINOUT)
      &            CALL PRTDER(TDER,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
       ELSE
          CALL DCOPY(NCOOR**3,SYMTDR,1,TDER,1)
@@ -3983,7 +3983,7 @@ C
          CALL TRATDR(CRTNRM,WORK(KTMPTD),TNRMDR,NCOOR,NDCOOR,NCOOR,
      &               TEXT,LTXT,IPRINT)
 C
-         IF (.NOT.MINOUT) 
+         IF (.NOT.MINOUT)
      &            CALL PRTDER(TNRMDR,NCOOR,NDCOOR,TEXT,LTXT,IPRINT)
       END IF
 C
@@ -7109,8 +7109,8 @@ C     /* Deck wrimop */
 **************************************************************
 *** Writes necessary information to DALTON.MOP :           ***
 *** An operator file to be read in by MidasCpp             ***
-*** Ove Christiansen based on Torgeirs WRISPC 
-*** At this stage it makes only sense with norm. coord. 
+*** Ove Christiansen based on Torgeirs WRISPC
+*** At this stage it makes only sense with norm. coord.
 **************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -7120,7 +7120,7 @@ C     /* Deck wrimop */
      &          QUARTC(NCOOR,NCOOR,NCOOR,NCOOR)
       LOGICAL USESYM
       SAVE FRQLAR
-      USESYM = .TRUE. 
+      USESYM = .TRUE.
 
       NTOT  = 0
       NWRIT = 0
@@ -7155,8 +7155,8 @@ C           *** Writing frequencies. ***
 C
 C        WRITE (LMIDAS,*) 'Frequencies'
             DO I = 1, NDCOOR
-               WRITE (LMIDAS,'(E23.16,2(1X,I5))') 
-     *               FAC*FREQ(I)*FREQ(I),I,I 
+               WRITE (LMIDAS,'(E23.16,2(1X,I5))')
+     *               FAC*FREQ(I)*FREQ(I),I,I
 c               WRITE (LMIDAS,'(F18.10)') FREQ(I)
             END DO
 C
@@ -7168,7 +7168,7 @@ C
             END DO
 C
 C         ELSE
-C            RETURN 
+C            RETURN
          END IF
 C
 C
@@ -7183,15 +7183,15 @@ C        *** Forwarding to the end of the file if necesary. ***
                READ(LMIDAS,*)
             END DO
          ELSE
-            RETURN 
+            RETURN
          END IF
 C
-C        Prepare screening and count of significant terms 
+C        Prepare screening and count of significant terms
 C        Threshold: do not write out things that are
-C        THRMID times smaller than the larges frequency. 
+C        THRMID times smaller than the larges frequency.
 C
-         NTOT   = NDCOOR 
-         NWRIT  = NDCOOR 
+         NTOT   = NDCOOR
+         NWRIT  = NDCOOR
          THRTRM = FAC*FRQLAR*FRQLAR*THRMID
 C        WRITE(LUPRI,'(A,E23.16)') " FRQLAR " ,FRQLAR
 C        WRITE(LUPRI,'(A,E23.16)') " FAC    " ,FAC
@@ -7203,17 +7203,17 @@ C        Note scaling with norms and symmetry factors!
 C
 C         WRITE (LMIDAS,*) 'Cubic force field'
          SUM_QUANT = 0.0D0
-         IF (.NOT.USESYM) THEN 
+         IF (.NOT.USESYM) THEN
             FAC=1.0D0/6.0D0
             DO 100 K = 1, NDCOOR
             DO 100 J = 1, NDCOOR
             DO 100 I = 1, NDCOOR
                QUANT =  FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K)
                NTOT=NTOT+1
-               IF (ABS(QUANT).GE.THRTRM) THEN 
-                  
+               IF (ABS(QUANT).GE.THRTRM) THEN
+
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+                  WRITE (LMIDAS,'(E23.16,3(1X,I5))')
      *              QUANT, I, J, K
                   NWRIT=NWRIT+1
                ENDIF
@@ -7230,22 +7230,22 @@ C           WRITE (LMIDAS,*) 'Quartic force field'
                QUANT = FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
      *           RNNORM(K)*RNNORM(L)
                NTOT=NTOT+1
-               IF (ABS(QUANT).GE.THRTRM) THEN 
+               IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
      *            QUANT,I, J, K, L
                   NWRIT=NWRIT+1
                ENDIF
  200        CONTINUE
-         ELSE 
-C one mode 
+         ELSE
+C one mode
             FAC=1.0D0/6.0D0
             DO 110 I = 1, NDCOOR
                QUANT =  FAC*QUBIC(I,I,I)*RNNORM(I)*RNNORM(I)*RNNORM(I)
                NTOT=NTOT+1
-               IF (ABS(QUANT).GE.THRTRM) THEN 
+               IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+                  WRITE (LMIDAS,'(E23.16,3(1X,I5))')
      *               QUANT, I, I, I
                   NWRIT=NWRIT+1
                ENDIF
@@ -7255,56 +7255,56 @@ C one mode
                NTOT=NTOT+1
                QUANT = FAC*QUARTC(I,I,I,I)*RNNORM(I)*RNNORM(I)*
      *              RNNORM(I)*RNNORM(I)
-               IF (ABS(QUANT).GE.THRTRM) THEN 
+               IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
      *              QUANT,I,I,I,I
                   NWRIT=NWRIT+1
                ENDIF
  210        CONTINUE
 C two mode coupling
             FAC=1.0D0/2.0D0
-            DO 120 J = 1, NDCOOR 
-            DO 120 I = 1, NDCOOR 
-               IF (I.NE.J) THEN 
+            DO 120 J = 1, NDCOOR
+            DO 120 I = 1, NDCOOR
+               IF (I.NE.J) THEN
                   NTOT=NTOT+1
                   QUANT = FAC*QUBIC(I,J,J)*RNNORM(I)
      *                       *RNNORM(J)*RNNORM(J)
-                  IF (ABS(QUANT).GE.THRTRM) THEN 
+                  IF (ABS(QUANT).GE.THRTRM) THEN
                      SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                     WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+                     WRITE (LMIDAS,'(E23.16,3(1X,I5))')
      *                 QUANT, I, J, J
 
                      NWRIT=NWRIT+1
-                  ENDIF 
-               ENDIF 
+                  ENDIF
+               ENDIF
  120        CONTINUE
             FAC=1.0D0/4.0D0
-            DO 220 J = 1, NDCOOR 
-            DO 220 I = 1, J-1 
+            DO 220 J = 1, NDCOOR
+            DO 220 I = 1, J-1
                NTOT=NTOT+1
                QUANT = FAC*QUARTC(I,I,J,J)*RNNORM(I)*RNNORM(I)*
      *           RNNORM(J)*RNNORM(J)
-               IF (ABS(QUANT).GE.THRTRM) THEN 
+               IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
      *               QUANT, I, I, J, J
                   NWRIT=NWRIT+1
-               ENDIF 
+               ENDIF
  220        CONTINUE
             FAC=1.0D0/6.0D0
-            DO 221 J = 1, NDCOOR 
-            DO 221 I = 1, NDCOOR 
-               IF (I.NE.J) THEN 
+            DO 221 J = 1, NDCOOR
+            DO 221 I = 1, NDCOOR
+               IF (I.NE.J) THEN
                   NTOT=NTOT+1
                   QUANT = FAC*QUARTC(I,J,J,J)*RNNORM(I)*RNNORM(J)*
      *                    RNNORM(J)*RNNORM(J)
-                  IF (ABS(QUANT).GE.THRTRM) THEN 
+                  IF (ABS(QUANT).GE.THRTRM) THEN
                      SUM_QUANT=SUM_QUANT+ABS(QUANT)
                      WRITE (LMIDAS,'(E23.16,4(1X,I5))') QUANT,I,J,J,J
                      NWRIT=NWRIT+1
-                  ENDIF 
-               ENDIF 
+                  ENDIF
+               ENDIF
  221        CONTINUE
 C three mode coupling
             FAC=1.0D0
@@ -7313,27 +7313,27 @@ C three mode coupling
             DO 130 I = 1, J-1
                NTOT=NTOT+1
                QUANT = FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K)
-               IF (ABS(QUANT).GE.THRTRM) THEN 
+               IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
                   WRITE (LMIDAS,'(E23.16,3(1X,I5))') QUANT,I,J,K
                   NWRIT=NWRIT+1
-               ENDIF 
+               ENDIF
  130        CONTINUE
             FAC=1.0D0/2.0D0
             DO 230 K = 1, NDCOOR
             DO 230 J = 1, K-1
             DO 230 I = 1, NDCOOR
-               IF ((I.NE.J).AND.(I.NE.K)) THEN 
+               IF ((I.NE.J).AND.(I.NE.K)) THEN
                   NTOT=NTOT+1
                   QUANT = FAC*QUARTC(I,I,J,K)*RNNORM(I)*RNNORM(I)*
      *               RNNORM(J)*RNNORM(K)
-                  IF (ABS(QUANT).GE.THRTRM) THEN 
+                  IF (ABS(QUANT).GE.THRTRM) THEN
                      SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                     WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+                     WRITE (LMIDAS,'(E23.16,4(1X,I5))')
      *               QUANT, I, I, J, K
                      NWRIT=NWRIT+1
-                  ENDIF 
-               ENDIF 
+                  ENDIF
+               ENDIF
  230        CONTINUE
 C
 C four mode coupling
@@ -7345,16 +7345,16 @@ C four mode coupling
                NTOT=NTOT+1
                QUANT = FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
      *           RNNORM(K)*RNNORM(L)
-               IF (ABS(QUANT).GE.THRTRM) THEN 
+               IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
      *             QUANT,I, J, K, L
                   NWRIT=NWRIT+1
-               ENDIF 
+               END IF
  240        CONTINUE
          END IF
 C
-C Count terms if permut symmetry was not used 
+C Count terms if permutation symmetry was not used
 C
          NUNCON=0
          DO 250 L = 1, NDCOOR
@@ -7362,23 +7362,23 @@ C
                DO 270 J = 1, NDCOOR
                   DO 280 I = 1, NDCOOR
                      NUNCON=NUNCON+1
- 280              ENDDO 
+ 280              ENDDO
                   NUNCON=NUNCON+1
- 270           ENDDO 
- 260        ENDDO 
+ 270           ENDDO
+ 260        ENDDO
             NUNCON=NUNCON+1
- 250     ENDDO 
+ 250     ENDDO
          WRITE (LUPRI,'(/,A,3(/,A,I8))')
-     *    " Force field has been written to Midas Operator File " , 
-     *    " Number of terms without use of perm sym =    " , NUNCON, 
+     *    " Force field has been written to Midas Operator File " ,
+     *    " Number of terms without use of perm sym =    " , NUNCON,
      *    " Number of terms in total using pert sym =    " , NTOT,
      *    " Number of signficant terms written      =    " , NWRIT
          WRITE (LUPRI,'(A,E20.13,/,A)')
-     *    " Only terms with coefficients greater than    " ,THRTRM , 
+     *    " Only terms with coefficients greater than    " ,THRTRM ,
      *    " is written to operator file "
          WRITE (LUPRI,'(A,E20.13,/,A,/)')
      *    " Sum of absolute values of coefficients:      " ,SUM_QUANT,
-     *    " for the anharmonic part                      " 
+     *    " for the anharmonic part                      "
       END IF
 C
 C     *** CLOSING FILE. ***

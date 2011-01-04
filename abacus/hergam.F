@@ -58,7 +58,15 @@ C
 C
 #include <sdpre.h>
 C
-      IPOINT = NINT(D10*MIN(WVAL,TEN6))
+      IPOINT = 10*MIN(WVAL,TEN6)
+      IF (IPOINT .LT. 0) THEN
+         write (0,*) 'GAMFUN warning, ipoint=',ipoint
+         write (0,*) 'd10,wval, ten6',d10,wval,ten6
+         write (0,*) d10*min(wval,ten6)
+         write (0,*) nint(d10*min(wval,ten6))
+         call quit('fatal error in gamfun')
+
+      END IF
       IF (IPOINT .LT. 120) THEN
          ISTART = 1 + 121*JMAX0 + IPOINT
          WDIF = WVAL - TENTH*SDPRE(IPOINT)

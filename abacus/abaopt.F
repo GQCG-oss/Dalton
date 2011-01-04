@@ -20,9 +20,9 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include "single.h"
 C
 C FILE: abaopt.F
+#include "single.h"
 C
 C 950915-vebjornb: New module taking care of optimizations.
 C                  It uses both the old cbiwlk.h and the new optinf.h
@@ -6858,9 +6858,9 @@ C
       DO 50 J = 1, NONTYP
          CALL UPCASE(MLINE(I))
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
-            CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
+            CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
      &                 BASIS,ATOMBA,LMULBS,BSNM,
-     &           RADIUS_PCM(J), ALPHA_PCM(J))
+     &                 RADIUS_PCM(J), ALPHA_PCM(J))
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -7991,3 +7991,4 @@ C
       CALL QEXIT('NUMGRD')
       RETURN
       END
+C --- end of abaopt.F ---

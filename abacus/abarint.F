@@ -4624,9 +4624,9 @@ C
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
-            CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,LMULBS,BSNM,
-     &           RADIUS_PCM(J), ALPHA_PCM(J))
+            CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),
+     &                  MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
+     &                  RADIUS_PCM(J), ALPHA_PCM(J))
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -4634,7 +4634,7 @@ C
          I = NCLINE(IATOM)-1
  50   CONTINUE
 C
-C     We run over all atom types and all symmetry independant centres and
+C     We run over all atom types and all symmetry independent centers and
 C     and expand them to all atoms. The molecule input is modified
 C     according to this.
 C
@@ -4681,7 +4681,7 @@ C
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
-     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH,
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
      &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
           ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA

@@ -127,7 +127,8 @@ C   DOMOM1: true  - do < ( x  )**j A | ... | B>
 C           false - do <           A | ... | ( x  )**j B>
 C   (comment added Nov. 2002 / HJAaJ)
 C
-      IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45) THEN
+      IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45 .OR.
+     &    INTTYP .EQ. 1001) THEN
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -347,7 +348,7 @@ C
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-C     type 45 already defined
+C     type 45 already defined together with type 1
       ELSE IF (INTTYP .EQ.46) THEN
          JMAXD  = 0
          JMAXM  = 1 + IORDER
@@ -576,6 +577,7 @@ cLig <<
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
       ELSE
+         WRITE(LUPRI,*) 'PR1DR1 - Unknown INTTYP : ',INTTYP
          CALL QUIT('PR1DR1: Unknown INTTYP')
       END IF
 C
@@ -1592,6 +1594,14 @@ C
          IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45) THEN
             CALL OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,HUCFAC,
      &                  SHGTF,SHLINT,INTTYP)
+C          
+C        POPOVLP /hjaaj Mar 2006
+C        Modified Overlap integrals for population analysis
+C        --------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 1001) THEN
+            CALL POPOVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &                     EXPBPI,SHGTF,SHLINT,INTTYP)
 C
 C        Dipole length integrals
 C        -----------------------
@@ -2510,6 +2520,42 @@ C
   100 CONTINUE
       RETURN
       END
+C  /* Deck popovlint */
+      SUBROUTINE POPOVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &                     EXPBPI,SHGTF,SHLINT,INTTYP)
+C
+C     Mar 2006 hjaaj -- POPOVLP type for population analysis
+C     Based on subr. OVLINT
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,2)
+#include <onecom.h>
+#include <lmns.h>
+C
+      FAC = 2*EXPBPI
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+C
+         SHLINT(INT,1) = SHLINT(INT,1) - SX0*SY0*SZ0*FAC
+  100 CONTINUE
+      RETURN
+      END
 C  /* Deck dplint */
       SUBROUTINE DPLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,ORIGIN)
@@ -2700,7 +2746,7 @@ C
 C  /* Deck mvlint */
       SUBROUTINE MVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C     shki. jan. 93 (based on KININT by K. Ruud, which is based on CINT0)
+C     Sheela Kirpekar  jan. 93 (based on KININT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -3619,8 +3665,9 @@ C  /* Deck mm1int */
 C
 C     K.Ruud, Feb. 1992
 C
-C     INTTYP to decide whether to calculate only the potential contribution
-C     or also the kinetic inergy contribution
+C     INTTYP decides whether to calculate only the potential contribution
+C     or also the kinetic energy contribution
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3947,6 +3994,7 @@ C
 C
 C  .... when wished, calculate the kinetic energy contribution
 C       Skip the Kinetic contribution if PCM type integral 67
+C
        IF (INTTYP .NE. 67) THEN
 
          SX0  = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
@@ -8839,7 +8887,7 @@ C
 C     Calculation of the (r-r')l' integrals for determination of
 C     magnetizability in an analytical way
 C
-C     A.Ligabue Nov. 1999
+C     A. Ligabue Nov. 1999
 C
 #include "implicit.h"
 #include "priunit.h"

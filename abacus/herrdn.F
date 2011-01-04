@@ -130,7 +130,7 @@ C  /* Deck reainp */
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
 #include "cbirea.h"
-#include <r12int.h>
+#include "r12int.h"
 #include "qm3.h"
 C
       DATA TABLE /'.PRINT ', 'xXXXXXX', '.MAXPRI', '.BIGVEC',
@@ -235,6 +235,8 @@ C          (renamed from .AUXBAS) /hjaaj
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
          END IF
+         IF (ONLYOV) WRITE (LUPRI,'(A)')
+     &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
             WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOL_SYMADD
          END IF
@@ -301,6 +303,7 @@ C
       SAVE    FIRST_CALL
       DATA    FIRST_CALL/.TRUE./
 #ifdef VAR_DEBUG
+#include "infpar.h"
 
       write(0,*) 'info, REAINI called by node ',mynum
       write(0,*) 'info, REAINI    FIRST_CALL  ',FIRST_CALL
@@ -1023,7 +1026,7 @@ C     added by Bin Gao, for effective core potentials, Dec. 6, 2010
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 #include "molinp.h"
 #include "ccom.h"
@@ -1031,11 +1034,11 @@ C     added by Bin Gao, for effective core potentials, Dec. 6, 2010
 #include "huckel.h"
 #include "cbisol.h"
 #include "aosotr.h"
-#include <ecpinf.h>
+#include "ecpinf.h"
 #include "qm3.h"
 #include "infpar.h"
 C
-C     MBSIP = identifier for Previus basis-set identifier MBSI (WK/UniKA/04-11-2002).
+C     MBSIP = identifier for Previous basis-set identifier MBSI (WK/UniKA/04-11-2002).
       MBSIP     = 0
 C
       NUCIND    = 0
@@ -1050,9 +1053,6 @@ C
       BSET_is_GENCON(-mxbsets:mxbsets) = .FALSE.
 #endif
 
-C
-Clf initialize KSPH for PCM input
-      KSPH=0
 C
 C     Initialize NSETS and BSET for Dalton,
 C     if (DIRAC) these will be modified below:
@@ -1139,11 +1139,13 @@ C
 C        New or old input style ?
 C
          IF (INDEX(BKPLIN,'CHA') .NE. 0) THEN
-            CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),JCO(1,I,1),
-     &                 KANG,BASIS,ATOMBA,LMULBS,BASNAMSAVE,
-     &           RADIUS_PCM, ALPHA_PCM)
-            Q_EXPONENT = D0 ! hjaaj: should be introuduced in LINE5; GNU=
+C           ... New input style
+            CALL LINE5R(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
+     &                  JCO(1,I,1),KANG,BASIS,ATOMBA,LMULBS,
+     &                  BASNAMSAVE,RADIUS_PCM, ALPHA_PCM)
+            Q_EXPONENT = D0 ! hjaaj: should be introuduced in LINE5R; GNU=
          ELSE
+C           ... Old input style
             Q_EXPONENT = D0
 C
 C        Read/process data on centers/blocks (old input style)
@@ -1406,10 +1408,10 @@ C                  removes ECP information
                               CALL QUIT('Incorrect input for '//
      &                             'auxiliary basis set name')
                            ELSE
-                             AUXNAM = MLINE(NMLINE-NONT(I))
-     &                                                ((IPOS3+IPOS4):)
-                             BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2)
-     &                                                       :IPOS3-1)
+                             AUXNAM =
+     &                       MLINE(NMLINE-NONT(I))((IPOS3+IPOS4):)
+                             BASNAM =
+     &                       MLINE(NMLINE-NONT(I))((IPOS+IPOS2):IPOS3-1)
                            ENDIF
                          ELSE
                            WRITE (LUPRI,'(A,I4,A/A)') 'No auxiliary ' //
@@ -1605,8 +1607,8 @@ C           then it may have a different basis set
 C           and FNDSYM routine can currently not detect that
 C           (e.g. if some Carbon have STO-3G and others have
 C           6-31G**) /hjaaj Mar 2004
-C           We skip point charges/MM atoms (IZATOM -1234567890) and multiple
-C           basis set (IZATOM -Z) for this test, because they
+C           We skip point charges/MM atoms (IZATOM = -1234567890) and multiple
+C           basis set (IZATOM = -Z) for this test, because they
 C           cannot destroy symmetry check (either no basis fu.
 C           thus same basis set on all point charges (!)
 C           or - for multiple basis set - already checked for
@@ -1625,8 +1627,7 @@ C
      &        ' Please specify the molecular symmetry in the input'//
      &        ' or do not use different atom types for the same atom',
      &        ' and be welcome back !'
-              CALL QUIT('Symmetry cannot be determined when'//
-     &             ' INTGRL or ATOMBASIS is used')
+              CALL QUIT('Symmetry cannot be determined -- see output')
             END IF
          END IF
   100 CONTINUE
@@ -1746,8 +1747,8 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include <dummy.h>
-#include <codata.h>
+#include "dummy.h"
+#include "codata.h"
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #include "cbirea.h"
 C
@@ -1757,13 +1758,13 @@ C
 C     include character ASYMB(0:NSYMB)*2 with atomic symbols
 #include "asymb.h"
 
-#include <gnrinf.h>
+#include "gnrinf.h"
 
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include <r12int.h>
+#include "r12int.h"
 #include "pcmdef.h"
 #include "pcmlog.h"
 #include "pcm.h"
@@ -1871,10 +1872,10 @@ C
 #endif
         IF (PCM .AND. (RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN
            IDXSPH(NCTOT) = 1
-           RSPH(NCTOT)=RADIUS_PCM * ALPHA_PCM
+           RSPH(NCTOT)   = RADIUS_PCM * ALPHA_PCM
         ELSE
            IDXSPH(NCTOT) = 0
-           RSPH(NCTOT) = 0.0D0
+           RSPH(NCTOT)   = 0.0D0
         END IF
         IF (ISUBSY(NCTOT) .EQ. 0) NUCIND = NUCIND + 1
         IPOS = INDEX(MLINE(NMLINE),'Isotope=')
@@ -1887,7 +1888,7 @@ C
         END IF
 C
         IF (IPREAD .GT. 3) THEN
-            WRITE(LUPRI,'(6X,A4,3F20.15)') NAMN(NCTOT),
+           WRITE(LUPRI,'(6X,A4,3F20.15)') NAMN(NCTOT),
      &          (CORD(J,NCTOT), J = 1,3)
         ENDIF
 C
@@ -2002,7 +2003,7 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
       CHARACTER*1 SPDCAR
 
-#include <gnrinf.h>
+#include "gnrinf.h"
 
 #include "ccom.h"
 #include "nuclei.h"
@@ -2012,7 +2013,7 @@ C
 #include "huckel.h"
 #include "aosotr.h"
 
-#include <veclen.h>
+#include "veclen.h"
 
 #include "ibtfun.h"
 C
@@ -2525,7 +2526,7 @@ C
       IF (HERMIT) CALL MAGCOR(IPREAD)
 C
 C     *************************************************
-C     ***** Determine IAOAO and JAOAO in aosotr.h *****
+C     ***** Determine IAOAO and its inverse JAOAO in aosotr.h
 C     *************************************************
 C
       CALL AOTOAO(IAOAO,JAOAO,IPREAD)
@@ -2599,14 +2600,14 @@ C*****************************************************************************
 C * S H E L L S:
 C*****************************************************************************
       IBLOCK = 0
-      NCONT = 0
+      NCONT  = 0
       DO 400 I = 1,IQM
          ISHELL = 0
          NCOMP = KHK(I)
          DO 500 J = 1,JCO(I)
             IBLOCK = IBLOCK + 1
-            ISHELL  = ISHELL  + NRC(IBLOCK)
-            NCONT = NCONT + NCOMP*NRC(IBLOCK)
+            ISHELL = ISHELL + NRC(IBLOCK)
+            NCONT  = NCONT  + NCOMP*NRC(IBLOCK)
   500    CONTINUE
          IF(ISHELL.GT.0) THEN
             NDIG = 3
@@ -2727,8 +2728,8 @@ C
 C           Normalize orbitals
 C
             CALL NRMORB(I,NRCIJ,NUCIJ,ALPHA(1,NBLOCK),
-     &                  CPRIM(1,1,NBLOCK),
-     &                  CPRIMU(1,1,NBLOCK),KPRIM,NBLOCK)
+     &                  CPRIM(1,1,NBLOCK),CPRIMU(1,1,NBLOCK),
+     &                  KPRIM,NBLOCK)
 C
             NUC(NBLOCK) = NUCIJ
             NRC(NBLOCK) = NRCIJ
@@ -3169,7 +3170,7 @@ C
    10 CONTINUE ! DO 10 I = 1,NONTYP
 C
       !Add exp(0) function (needed in 2- and 3-index integrals)
-      !as an extra "0" class
+      !as an extra "0" class for ATOMDF case
       IF (LCOMP .EQ. 3) THEN
          ISHELL = ISHELL + 1
          NUCO  (ISHELL) = 1
@@ -3454,7 +3455,7 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include <pcmlog.h>
+#include "pcmlog.h"
 #include "qm3.h"
 C
 C
@@ -5835,14 +5836,12 @@ C     TODO : define multiple basis sets and point charges
      &     CRT,NONTYP,KCHARG,NSYMOP,THRS
       NMLINE = 6
       NHTYP  = 0
-      NSETS = 1
+      NSETS  = 1
       IF (DOHUCKEL) THEN
          NSETS = NSETS + 1
          ISETHUCKEL = NSETS
       END IF
-      DO J = 1, NSETS
-         IBLOCK(J) = 1
-      END DO
+      IBLOCK(1:NSETS) = 1
 
       IATOM = 1
       DO 605 I = 1, NONTYP
@@ -6531,8 +6530,8 @@ C
       RETURN
       END
 C
-      SUBROUTINE LINE5(TMPLN,Q,NONT,MBSI,IQM,JCO,KANG,
-     &                 BASIS,ATOMBA,LMULBS,BASNAM,RADIUS_PCM,ALPHA_PCM)
+      SUBROUTINE LINE5R(TMPLN,Q,NONT,MBSI,IQM,JCO,KANG,BASIS,ATOMBA,
+     &                  LMULBS,BASNAM,RADIUS_PCM,ALPHA_PCM)
 C
 C     Read the atom-specific information in new input style
 C
@@ -6544,7 +6543,8 @@ C
       LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
       DIMENSION JCO(KANG)
 C
-      
+      CALL QENTER('LINE5R')
+
       RADIUS_PCM = 0.0D0
       ALPHA_PCM = 0.0D0
 
@@ -6553,7 +6553,8 @@ C
       IPOS = INDEX(BKPLIN,'CHA')
       IPOS2 = INDEX(BKPLIN(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
-         WRITE (LUPRI,*) 'Incorrect input for atomic charge'
+         WRITE (LUPRI,*) 'Incorrect input for atomic charge in'
+         WRITE (LUPRI,*) TMPLN
          WRITE (LUPRI,*) 'Format is "Charge=?"'
          CALL QUIT('Incorrect input for atomic charge')
       ELSE
@@ -6562,7 +6563,8 @@ C
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(BKPLIN(IPOS:),'=')
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
-               WRITE (LUPRI,*) 'Incorrect input for # of atoms'
+               WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
+               WRITE (LUPRI,*) TMPLN
                WRITE (LUPRI,*) 'Format is "Atoms=?"'
                CALL QUIT('Incorrect input for # of atoms')
             ELSE
@@ -6578,7 +6580,8 @@ C
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2. GT. 5)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for # of '//
-     &                 'basis sets'
+     &                 'basis sets in'
+                  WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Sets=?"'
                   CALL QUIT('Incorrect input for # of '//
      &                 'basis sets')
@@ -6601,7 +6604,8 @@ C
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for # of '//
-     &                 'integral blocks'
+     &                 'integral blocks in'
+                  WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
                   CALL QUIT('Incorrect input for # of '//
      &                 'integral blocks')
@@ -6620,7 +6624,8 @@ C
                IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for choice '//
-     &                 'of atomic basis set'
+     &                 'of atomic basis set in'
+                  WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
                   WRITE (LUPRI,*) 'Input line was:'
                   WRITE (LUPRI,*) BKPLIN
@@ -6647,13 +6652,14 @@ C
                END IF
             ELSE
                WRITE (LUPRI,*) 'ATOMBASIS selected, but no '//
-     &              'atomic basis set specified for one atom type'
+     &           'atomic basis set specified for one atom type in'
+               WRITE (LUPRI,*) TMPLN
                CALL QUIT( 'ATOMBASIS selected, but no '//
      &              'atomic basis set specified for one atom type')
             END IF
          END IF
 C
-C read in cavity information
+C Read in cavity information
 C
          FOUNDR = .FALSE.
          FOUNDA = .FALSE.
@@ -6687,11 +6693,12 @@ C
             IF(FOUNDR .AND. .NOT. FOUNDA) ALPHA_PCM = 1.0
          END IF
       END IF
+      CALL QEXIT('LINE5R')
       RETURN
       END
 C
       SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,BASIS,ATOMBA,LMULBS,
-     &                  BASNAM,IQM,JCO,KANG,RADUS_PCM, ALPHA_PCM)
+     &                  BASNAM,IQM,JCO,KANG,RADUS_PCM,ALPHA_PCM)
 C
 C     Write out atom-specific input line in new format
 C     
@@ -6705,8 +6712,19 @@ C
          WRITE (LINE(I:),'(A10)') '          '
       END DO
 C
-      WRITE (LINE,'(A7,F8.4)') 'Charge=', Q
       ISTART = 17
+      IF (ABS(CHARGE) .LT. 1.0D1) THEN
+         WRITE (LINE,'(A7,F8.5)') 'Charge=', Q
+      ELSE IF (ABS(CHARGE) .LT. 1.0D2) THEN
+         WRITE (LINE,'(A7,F8.4)') 'Charge=', Q
+      ELSE IF (ABS(CHARGE) .LT. 1.0D4) THEN
+         WRITE (LINE,'(A7,F8.2)') 'Charge=', Q
+      ELSE IF (ABS(CHARGE) .LT. 1.0D6) THEN
+         WRITE (LINE,'(A7,F8.0)') 'Charge=', Q
+      ELSE
+         WRITE (LINE,'(A7,1P,D13.6)') 'Charge=', Q
+         ISTART = 22
+      END IF
 C
       IF (NONT .LT. 10) THEN
          WRITE (LINE(ISTART:),'(A6,I1)') 'Atoms=', NONT
