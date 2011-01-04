@@ -97,7 +97,7 @@ C
          MULLKM = .true.
       ELSE IF (POPKEY(1:5) .EQ. 'FINAL') THEN
          WRITE (LUPRI,'(//A/)')
-     &   ' <<< SIRIUS Population analysis. >>>'
+     &   ' <<< SIRIUS Population Analysis. >>>'
          DIPOLM = .NOT.FLAG(71)
          QUADRM = .NOT.FLAG(72)
          MULLKM = .NOT.FLAG(73)
@@ -152,16 +152,13 @@ C     10') SS          - " -
 C     11') POPNET  net and overlap populations over cgto basis
 C                  functions - sum over all MO's
 C
-      KNAME  = KFREE
-      KNUMB  = KNAME  + MXCENT
-      KPOPNAB= KNUMB  + NBAST
-      KPOPABI= KPOPNAB+ MXCENT*MXCENT
-      KPOPCG = KPOPABI+ MXCENT*MXCENT
-      KPOPC  = KPOPCG + NBAST
-      KPPNET = KPOPC  + NBAST*NOCCT
-      KWRK2  = KPPNET + NBAST*(NBAST + 1)/2
-      IF (KWRK2 .GE. LFREE_INPUT)
-     &   CALL ERRWRK('SIRPOP-2',KWRK2,LFREE_INPUT)
+      CALL MEMGET('REAL',KNAME  ,MXCENT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNUMB  ,NBAST ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPOPNAB,MXCENT*MXCENT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPOPABI,MXCENT*MXCENT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPOPCG ,NBAST,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPOPC  ,NBAST*NOCCT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPPNET ,N2BASX,WRK,KFREE,LFREE)
 C
 C     ***** Get the MO coefficients and NO occupation numbers
 C
@@ -231,34 +228,31 @@ C
      *                WRK(KPPNET))
       END IF
 C
-C  ***---DIPMOM---QUADRP---***
-C
-C     3)  DIPMAT dipole moment matrix
-C     3') QUMAT  quadrupole moment matrix
-C
-      KDIPM  = KFREE
-      KWRK3D = KDIPM  + NNBAST*3
-      KQUMAT = KFREE
-      KWRK3Q = KQUMAT + NNBAST*6
-      KWRK3  = MAX(KWRK3D,KWRK3Q)
-      IF (KWRK3 .GE. LFREE) CALL ERRWRK('SIRPOP-3',KWRK3,LFREE)
-C
 C     *****     Dipole moments  *****
+C     3)  DIPMAT dipole moment matrix
 C
       IF (DIPOLM) THEN
          write(lupri,'(/A)')
      &     'INFO: dipole moment not implemented in this version'
+         KDIPM  = KFREE
+         KWRK3D = KDIPM  + NNBAST*3
 c        CALL DIPMOM (NNBAST,WRK(KCMO),WRK(KOCC),WRK(KDIPM))
       END IF
 C
 C     *****     Quadrupole moments  *****
+C     3') QUMAT  quadrupole moment matrix
 C
       IF (QUADRM) THEN
          write(lupri,'(/A)')
      &     'INFO: quadrupole moment not implemented in this version'
-         CALL QUADRP (NNBAST,WRK(KCMO),WRK(KOCC),WRK(KQUMAT))
+         KQUMAT = KFREE
+         KWRK3Q = KQUMAT + NNBAST*6
+c        CALL QUADRP (NNBAST,WRK(KCMO),WRK(KOCC),WRK(KQUMAT))
       END IF
- 9999 CALL QEXIT('SIRPOP')
+C
+ 9999 CONTINUE
+      CALL MEMREL('SIRPOP',WRK,1,1,KFREE,LFREE)
+      CALL QEXIT('SIRPOP')
       IPPRMUL = IPRMUL_SAVE
       IPOPTYP = IPOPTYP_SAVE
       RETURN
@@ -394,7 +388,8 @@ C     **********     Energy analysis and virial theorem     **********
 C
       V   = EMCSCF - TK
       VIR = -V/TK
-c     WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
+      WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
+      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
  1001 FORMAT(//' Energy analysis'
      *        /' ---------------'
      *        /' Total energy',T30,F18.10
@@ -476,12 +471,12 @@ C     examined.
 C
       KSTART = 0
       IPSTC  = 0
-      IPSTS  = 0
 C
       CALL DZERO(CMOCGT,NORBT*NBAST)
       DO 60 ISYM = 1,NSYM
          NBASI = NBAS(ISYM)
          NOCCI = NOCC(ISYM)
+         IPSTS = ICMO(ISYM)
 C
          DO 50 ICC = 1,NOCCI
 C
@@ -513,7 +508,6 @@ C     The order of the loops is k,a,l,b.
 C
       CALL DZERO(SS,N2BASX)
 C
-      INTBAS = 0
       KLSTRT = 0
 C
       DO 120 ISYM = 1,NSYM
@@ -566,7 +560,7 @@ C
      &          IPR(NBAST),NUMBER(NBAST),
      &          POPNAB(MXCENT,MXCENT),POPABI(MXCENT,MXCENT),
      &          POPCGT(NBAST),POPC(NBAST,NOCCT),CMOCGT(NBAST,NOCCT),
-     &          SS(*),POPNET(*)
+     &          SS(NBAST,NBAST),POPNET(NBAST,NBAST)
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
 C
@@ -631,12 +625,9 @@ C
             POPNAB(NUCA,NUCB) = D0
    30 CONTINUE
 C
+      CALL DZERO(POPNET,N2BASX)
       CALL DZERO(POPCGT,NBAST)
-C
-      IND = NNUC * (NNUC + 1) / 2
-      CALL DZERO(POPNET,IND)
-C
-      CALL DZERO(POPC, NOCCT*NBAST )
+      CALL DZERO(POPC, NBAST*NOCCT )
 C
 C     *****     Prepare the raw material
 C
@@ -658,7 +649,6 @@ C
      &               .FALSE.)
          REWIND LUTEMP
       END IF
-      IPSTRT = 0
       DO 80 IP = 1,NOCCT
          DO 60 NUCB = 1,NNUC
             DO 60 NUCA = 1,NNUC
@@ -666,32 +656,25 @@ C
    60    CONTINUE
 C
          DO 70 IA = 1,NBAST
-            DO 70 IB = 1,IA
-               IND = IND + 1
+            NUCA = NUMBER(IA)
+            POPAB_FAC = CMOCGT(IA,IP)*OCCUP(IP)
+            DO 70 IB = 1,NBAST
 C
-               NUCA = NUMBER(IA)
                NUCB = NUMBER(IB)
-               IF ( NUCA.LT.NUCB ) THEN
-                  NUC  = NUCA
-                  NUCA = NUCB
-                  NUCB = NUC
-               END IF
 C
-               POPAB = CMOCGT(IA,IP)*CMOCGT(IB,IP)
-     *               * OCCUP(IP)*SS(IND)
-               IF (IA.NE.IB)   POPAB = D2*POPAB
+C              hjaaj Mar 2006: The factor in her1int:POPOVLINT corresponds
+C                              to using SS(IB,IA) here.
+               POPAB = POPAB_FAC * CMOCGT(IB,IP) * SS(IB,IA)
 C
 C              Distribute
 C
                POPNAB(NUCA,NUCB) = POPNAB(NUCA,NUCB) + POPAB
                POPABI(NUCA,NUCB) = POPABI(NUCA,NUCB) + POPAB
-               POPNET (IND)      = POPNET(IND)       + POPAB
+               POPNET(IA,IB)     = POPNET(IA,IB)     + POPAB
 C
 C              (gross populations follow)
 C
-               POPAB = DP5 * POPAB
                POPC(IA,IP) = POPC(IA,IP) + POPAB
-               POPC(IB,IP) = POPC(IB,IP) + POPAB
    70    CONTINUE
 C
          IF (IPRMUL .GE. 5) WRITE (LUTEMP) POPABI
@@ -724,9 +707,8 @@ C
          POPAB = D0
          DO 105 NUCB = 1,NNUC
             POPAB = POPAB + POPNAB(NUCA,NUCB)
-     1                    + POPNAB(NUCB,NUCA)
   105    CONTINUE
-         POPNUC(NUCA) = DP5 * POPAB
+         POPNUC(NUCA) = POPAB
   110 CONTINUE
 C
 C     *****     Now just write everything out in neat order
@@ -811,12 +793,17 @@ C
  1006    FORMAT (6(I4,F8.4))
       END IF
 C
+      POPTOT = DSUM(NBAST,POPCGT,1)
       if (iprmul .ge. 3) then
       WRITE (LUPRI,1007)
       WRITE (LUPRI,1006) (IA,POPCGT(IA),IA = 1,NBAST)
+      WRITE (LUPRI,'(/A,F10.4)')
+     &   ' Sum = total electronic charge:',POPTOT
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,1007)
          WRITE (LUW4,1006) (IA,POPCGT(IA),IA = 1,NBAST)
+         WRITE (LUW4,'(/A,F10.4)')
+     &   ' Sum = total electronic charge:',POPTOT
       END IF
       end if
  1007 FORMAT(//6X,
@@ -952,6 +939,7 @@ c1015     FORMAT (4(3X,A4,F10.4))
   240 CONTINUE
       END IF
 C
+      POPTOT = DSUM(NNUC,POPNUC,1)
 C     ... only print max -iprmul populations in each iteration
       IF (iprmul .lt. 0) then
          mnuc = min(nnuc,-iprmul)
@@ -960,10 +948,13 @@ C     ... only print max -iprmul populations in each iteration
       else
          WRITE (LUPRI,1016)
          WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
-         WRITE (LUPRI,'()')
+         WRITE (LUPRI,'(/A,F10.4)')
+     &   ' Sum = total electronic charge:',POPTOT
          IF (LUW4 .NE. LUPRI) THEN
             WRITE (LUW4,1016)
             WRITE (LUW4,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
+            WRITE (LUW4,'(/A,F10.4)')
+     &      ' Sum = total electronic charge:',POPTOT
          END IF
       end if
  1016 FORMAT (/' Mulliken total gross populations')
@@ -992,7 +983,7 @@ C        IEND = MIN(NBAST, IEND + 7)
             INDSTA = INDEND + IST
             INDE = INDEND + MIN (IA,IEND)
             INDEND = INDEND + IA
-            WRITE (LUW4,1019) IA,(POPNET(IND),IND=INDSTA,INDE)
+            WRITE (LUW4,1019) IA,(POPNET(IB,IA),IB=1,NBAST)
  1019       FORMAT (I7,5X,10F9.4)
   250    CONTINUE
          IF (IEND.LT.NBAST)   GO TO 12
