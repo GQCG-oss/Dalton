@@ -580,6 +580,8 @@ CHJAaJ-e
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
+      CALL DZERO(DFTNS,MXQM3)
+
       DO 525 I = 1, ISYTP
          IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
             CALL QM3_NSPM(IPRTYP,DCAO,DFTNS,WRK(KWRK1),
@@ -591,8 +593,6 @@ CHJAaJ-e
       DIPORG(1) = OBKPX
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
-
-
 
 C-------------------
 C     Print section:
@@ -663,8 +663,9 @@ C     The master routine
      &     'for storing NS-integrals on disk')
 
       KDCAO=1
-      KDFTNS=KDCAO+NNBASX
-      KLAST=KDFTNS+MXQM3
+      KDFTNS1=KDCAO+NNBASX
+      KDFTNS2=KDFTNS1+MXQM3
+      KLAST=KDFTNS2+MXQM3
       LWRK1=LWRK-KLAST+1
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
@@ -684,8 +685,6 @@ C
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
-      CALL DZERO(DFTNS,MXQM3)
 
 C     Loop over all MM nuclei
 
@@ -711,10 +710,15 @@ C     Send end message to all slaves
       END DO
 
 C     Collect data from all slaves      
-      CALL DZERO(WRK(KDFTNS),MXQM3)
-      CALL MPI_REDUCE(WRK(KDFTNS),DFTNS,MXQM3,
+      CALL DZERO(WRK(KDFTNS1),MXQM3)
+      CALL DZERO(WRK(KDFTNS2),MXQM3)
+      CALL MPI_REDUCE(WRK(KDFTNS1),WRK(KDFTNS2),MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+      DO I = 1, MXQM3
+        DFTNS(I) = DFTNS(I) + WRK(KDFTNS2 + I - 1)
+      END DO
+
       RETURN
       END
 
@@ -818,7 +822,6 @@ C Run loop over MM nuclear charges
       END IF
 
 C     No more Ns to calculate
-
       CALL MPI_REDUCE(WRK(KDFTNS),WRK(KDFTNS),MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
@@ -1202,7 +1205,6 @@ C-------------------------------------
      *                WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
         KS = 0
-
         DO 110 I = 1, ISYTP
           IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
             DO 120 J = NSYSBG(I), NSYSED(I)
@@ -1234,7 +1236,6 @@ C-------------------------------------
 
       EQM3T = EQM3T + OTILDE
       EPOL = EQM3T
-
 C--------
 C 2) Eel:
 C--------
