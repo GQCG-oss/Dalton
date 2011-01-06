@@ -158,9 +158,9 @@ CTRL[3]=7
 ERROR[3]="MOLECULAR GEOMETRY NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Total energy * \-152\.810086303[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-4158\.1738515[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-401202\.824[0-9] kJ\/mol" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-152\.810086303.* au \(Hartrees\)" $log | wc -l`
+CRIT2=`$GREP "\-4158\.173969.* eV" $log | wc -l`
+CRIT3=`$GREP "\-401202\.819.* kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"
@@ -321,7 +321,7 @@ CRIT12=`$GREP "12 * 1185\.79 *   (0| )\.000 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT13=`$GREP "13 *  965\.66 *  22\.51. * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT14=`$GREP "14 *  960\.4(2|3) *   7\.089 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT15=`$GREP "15 *  957\.42 * 417\.46. * (\-0|\-|0| )\.000" $log | wc -l`
-CRIT16=`$GREP " 1 * 3259\.27 *  72\.561 * 27\.232" $log | wc -l`
+CRIT16=`$GREP " 1 * 3259\.27 *  72\.56. * 27\.232" $log | wc -l`
 CRIT17=`$GREP " 2 * 3256\.7(1|2) *   5\.841 * \-22\.11(3|4)" $log | wc -l`
 CRIT18=`$GREP " 3 * 2406\.34 *   7\.064 * 11\.285" $log | wc -l`
 CRIT19=`$GREP " 4 * 2384\.28 *  60\.222 * \-12\.272" $log | wc -l`

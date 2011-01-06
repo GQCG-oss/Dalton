@@ -118,12 +118,12 @@ CTRL[4]=7
 ERROR[4]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moments
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.61165..[0-9] * \*ENERGY\(eV\)\: * 10\.39534[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.54007..[0-9] * \*ENERGY\(eV\)\: * 17\.40219[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.50061..[0-9] * \*ENERGY\(eV\)\: * 12\.46520[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.91781..[0-9] * \*ENERGY\(eV\)\: * 14\.37195[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.36245..[0-9] * \*ENERGY\(eV\)\: * 7\.754448[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.34551..[0-9] * \*ENERGY\(eV\)\: * 23\.02376[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.61165... * \*ENERGY\(eV\)\: * 10\.39534" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.54007... * \*ENERGY\(eV\)\: * 17\.40219" $log | wc -l`
+CRIT3=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.50061... * \*ENERGY\(eV\)\: * 12\.46520" $log | wc -l`
+CRIT4=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.91781... * \*ENERGY\(eV\)\: * 14\.37195" $log | wc -l`
+CRIT5=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.36245... * \*ENERGY\(eV\)\: * 7\.75444[89]" $log | wc -l`
+CRIT6=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.34551... * \*ENERGY\(eV\)\: * 23\.02376" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="TRANSITION MOMENTS NOT CORRECT"

@@ -185,7 +185,7 @@ TEST[12]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
-# Quadropole moment:
+# Quadrupole moment:
 CRIT1=`$GREP "Ex * \-1\.75566. * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * 1\.93853. * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (\-0|\-)\.1828(6|7)." $log | wc -l`
