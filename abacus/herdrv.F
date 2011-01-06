@@ -135,8 +135,7 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      IF (ONEPRP .OR. DOHUCKEL .OR. DKTRAN)
-     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -1249,7 +1248,8 @@ cLig <>
      &    ' (perturbation parameter * c^{-2} = ',DPTFAC*ALPHAC**2,')'
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
-     &  ' The following one-electron property integrals are calculated:'
+     &      ' The following one-electron property integrals are'
+     &    //' calculated as requested:'
                      WRITE (LUPRI,'(10X,A)') '- overlap integrals'
          IF (DIPLEN) WRITE (LUPRI,'(10X,A)') '- dipole length integrals'
          IF (DIPVEL) WRITE (LUPRI,'(10X,A)')
