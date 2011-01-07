@@ -294,10 +294,13 @@ atoms of this kind).
   \verb|Basis=pointcharge|\index{point charge}, the
   atoms in this block will be treated as point charges, that is,
   having only a charge but no basis functions attached to
-  them. Stuttgart effective core potentials (ECP) with corresponding
+  them.
+
+  Different effective core potentials (ECP) could be used when \verb|ATOMBASIS|
+  is specified. For instance, Stuttgart ECPs with corresponding
   Stuttgart double zeta basis sets\index{effective core
-  potentials}\index{ECP} can also by used by specifying
-  \verb|Basis=ecp-sdd-DZ|.
+  potentials}\index{ECP} can be used by specifying
+  \verb|Basis=ecp-sdd-DZ| \verb|ECP=ecp-sdd-DZ|.
 \item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
 Ignored if library basis sets are being used (\verb|BASIS| or
@@ -915,14 +918,57 @@ ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
 raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
  & Po, Th, U & \\
 \hline
-\multicolumn{3}{l}{\bf{\emph{Stuttgart effective core potentials}}} \\
-\multicolumn{3}{l}{\emph{(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html)}} \\
-ecp-sdd-DZ & Li--Bi & Stuttgart ECP valence basis sets  \\
-           & \multicolumn{2}{l}{(some elements excluded)}  \\
-ecp-sdd-pseudo & H--Rn & Stuttgart ECPs. \\
-           & \multicolumn{2}{l}{(some elements excluded)}  \\
+%\multicolumn{3}{l}{\bf{\emph{Stuttgart effective core potentials}}} \\
+%\multicolumn{3}{l}{\emph{(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html)}} \\
+%ecp-sdd-DZ & Li--Bi & Stuttgart ECP valence basis sets  \\
+%           & \multicolumn{2}{l}{(some elements excluded)}  \\
+%ecp-sdd-pseudo & H--Rn & Stuttgart ECPs. \\
+%           & \multicolumn{2}{l}{(some elements excluded)}  \\
+\multicolumn{3}{l}{\bf{\emph{Effective core potentials}}} \\
+aug\_cc\_pv5z\_pp & & aug-cc-pV5Z-PP\\
+aug\_cc\_pvdz\_pp & & aug-cc-pVDZ-PP\\
+aug\_cc\_pvqz\_pp & & aug-cc-pVQZ-PP\\
+aug\_cc\_pvtz\_pp & & aug-cc-pVTZ-PP\\
+cc\_pv5z\_pp & & cc-pV5Z-PP\\
+cc\_pvdz\_pp & & cc-pVDZ-PP\\
+cc\_pvqz\_pp & & cc-pVQZ-PP\\
+cc\_pvtz\_pp & & cc-pVTZ-PP\\
+cc\_pwcv5z\_pp & & cc-pwCV5Z-PP\\
+cc\_pwcvdz\_pp & & cc-pwCVDZ-PP\\
+cc\_pwcvqz\_pp & & cc-pwCVQZ-PP\\
+cc\_pwcvtz\_pp & & cc-pwCVTZ-PP\\
+crenbl\_ecp & & CRENBL ECP\\
+crenbs\_ecp & & CRENBS ECP\\
+def2\_qzvp & & Def2-QZVP\\
+def2\_qzvpp & & Def2-QZVPP\\
+def2\_sv\_p & & Def2-SV(P)\\
+def2\_svp & & Def2-SVP\\
+def2\_tzvp & & Def2-TZVP\\
+def2\_tzvpp & & Def2-TZVPP\\
+dzq & & DZQ\\
+ecp-sdd-DZ & & Stuttgart ECPs\\
+hay\_wadt\_mb\_n1\_ecp & & Hay-Wadt MB (n+1) ECP\\
+hay\_wadt\_vdz\_n1\_ecp & & Hay-Wadt VDZ (n+1) ECP\\
+lanl08 & & LANL08\\
+lanl08\_f & & LANL08(f)\\
+lanl08\_p & & LANL08+\\
+lanl08d & & LANL08d\\
+lanl2dz\_ecp & & LANL2DZ ECP\\
+lanl2dzdp\_ecp & & LANL2DZdp ECP\\
+lanl2tz & & LANL2TZ\\
+lanl2tz\_f & & LANL2TZ(f)\\
+lanl2tz\_p & & LANL2TZ+\\
+modified\_lanl2dz & & modified LANL2DZ\\
+sbkjc\_polarized\_p\_2d\_lfk & & SBKJC Polarized (p,2d) - LFK\\
+sbkjc\_vdz\_ecp & & SBKJC VDZ ECP\\
+sdb\_aug\_cc\_pvqz & & SDB-aug-cc-pVQZ\\
+sdb\_aug\_cc\_pvtz & & SDB-aug-cc-pVTZ\\
+sdb\_cc\_pvqz & & SDB-cc-pVQZ\\
+sdb\_cc\_pvtz & & SDB-cc-pVTZ\\
+stuttgart\_rlc\_ecp & & Stuttgart RLC ECP\\
+stuttgart\_rsc\_1997\_ecp & & Stuttgart RSC 1997 ECP\\
+stuttgart\_rsc\_ano\_ecp & & Stuttgart RSC ANO/ECP\\
+stuttgart\_rsc\_segmented\_ecp & & Stuttgart RSC Segmented/ECP\\
 \hline
 \end{longtable}
-
-
 

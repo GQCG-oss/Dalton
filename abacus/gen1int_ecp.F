@@ -19,23 +19,24 @@ C
 C  2010-12-06, Bin Gao
 C  * first version
 
-C>    \brief reads ECP information
+C>    \brief calculates ECP integrals
 C>    \detail modified files include
-C>            (1) abacus/herrdn.F  -- adding interface of calling gen1int_ecpinp()
+C>            (1) abacus/her1car.F -- adding interface of calling gen1int_ecpint()
 C>    \author Bin Gao
-C>    \date 2010-12-06
+C>    \date 2010-12-19
 C>    \param idx_atom is the index of ECP atom in all atom list
 C>    \param anum_atom is the atomic number of this ECP atom
 C>    \param ecp_name is the ECP name
-      subroutine gen1int_ecpinp(idx_atom, anum_atom, ecp_name)
-      implicit none
+      subroutine gen1int_ecpint(idx_atom, anum_atom, ecp_name)
+#include "implicit.h"
       integer idx_atom
       integer anum_atom
       character*(*) ecp_name
 #ifdef BUILD_GEN1INT
 #include "gen1int.h"
+#include "ecpinf.h"
       return
 #else
       call QUIT("Gen1Int is not installed")
 #endif
-      end subroutine gen1int_ecpinp
+      end subroutine gen1int_ecpint

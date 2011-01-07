@@ -22,7 +22,7 @@
 !
 #include <single.h>
 C
-      SUBROUTINE ECPINP(Q,QEFF,IATOM,IPRINT)
+      SUBROUTINE ECPINP(Q,QEFF,IATOM,IPRINT,ECPNAME)
 C
 C Purpose:
 C     Find the atom corresponding to charge Q in the ecp pseudo
@@ -40,6 +40,10 @@ C
 C
       CHARACTER*80 STRING
       CHARACTER LAB
+C#ifdef BUILD_GEN1INT
+C...  added by Bin Gao, for effective core potentials, Dec. 30, 2010
+      character*(*) ECPNAME
+C#endif
 C
 C     Slaves can return here.
 C
@@ -52,7 +56,9 @@ C
          ECP = .TRUE.
       END IF
 C
-      STRING = 'ecp-sdd-pseudo '
+C...  modified by Bin Gao, Dec. 30, 2010
+C...      STRING = 'ecp-sdd-pseudo '
+      STRING = "ecp_data/"//trim(ECPNAME)
       LEN_STRING = LNBLNK(STRING)
       LU = -1
       CALL FIND_BASFIL(STRING(1:LEN_STRING),LU,IPRINT)

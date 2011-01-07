@@ -1017,10 +1017,10 @@ C***********************************************************************
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), ISGEN(KBLOCK)
       CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BKPLIN*80, TSTCHA*2
       CHARACTER*80 BASNAM, AUXNAM, BASNAMSAVE
-#ifdef BUILD_GEN1INT
-C     added by Bin Gao, for effective core potentials, Dec. 6, 2010
+C#ifdef BUILD_GEN1INT
+C...  added by Bin Gao, for effective core potentials, Dec. 6, 2010
       character*80 ECPNAME
-#endif
+C#endif
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS_TOT)
 #ifdef PRG_DIRAC
@@ -1353,15 +1353,23 @@ C                ... tell BASLIB that this is for Huckel
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
               ELSE IF (ATOMBA) THEN
-#ifdef BUILD_GEN1INT
-C                added by Bin Gao, for effective core potentials, Dec. 6, 2010
-C                sets the ECP
+
+C#ifdef BUILD_GEN1INT
+C...             added by Bin Gao, for effective core potentials, Dec. 6, 2010
+C...             sets the ECP
                  IPOS = index(BKPLIN, 'ECP=')
-                 if (IPOS.ne.0) then
-C                  tries to find the name of ECP
+                 if (IPOS.ne.0 .and. J.eq.1) then
+C     Read effective core potential information from file for atom. 
+C     The charge of atom type will be set to the effective charge below
+C     after J=2: reading Huckel basis (if DOHUCKEL)
+                   if(ADDSYM) call QUIT('ECP not implemented '//
+     &               'with auto-detected symmetry.')
+C...               tries to find the name of ECP
+                   IPOS = IPOS+index(MLINE(NMLINE-NONT(I))(IPOS:), '=')
+C...               removes extra spaces
                    IPOS2 = 0
-                   do IPOS3 = IPOS+4, len(BKPLIN)
-                     if (BKPLIN(IPOS3:IPOS3).ne.' ') then
+                   do IPOS3 = IPOS, len(MLINE(NMLINE-NONT(I)))
+                     if (MLINE(NMLINE-NONT(I))(IPOS3:IPOS3).ne.' ') then
                        IPOS2 = IPOS3
                        exit
                      end if
@@ -1373,17 +1381,25 @@ C                  tries to find the name of ECP
      &                 ' Format is "ECP=?"'
                      call QUIT('Incorrect input for ECP name')
                    end if
-                   IPOS3 = index(trim(BKPLIN(IPOS2:)), ' ')
-                   if (IPOS3.eq.0) IPOS3 = len_trim(BKPLIN(IPOS2:))
+C...               gets the name of ECP
+                   IPOS3 = index(trim(MLINE(NMLINE-NONT(I))(IPOS2:)),
+     &                           ' ')
+                   if (IPOS3.eq.0)
+     &               IPOS3 = len_trim(MLINE(NMLINE-NONT(I))(IPOS2:))
                    IPOS3 = IPOS3+IPOS2-1
-                   ECPNAME = BKPLIN(IPOS2:IPOS3)
-                   call gen1int_ecpinp(I, int(Q), ECPNAME)
-C                  removes ECP information
-                   BKPLIN(IPOS:IPOS3) = ' '
-                   IPOS2 = index(MLINE(NMLINE-NONT(I)), 'ECP=')
-                   MLINE(NMLINE-NONT(I))(IPOS2:IPOS3+IPOS2-IPOS) = ' '
+                   ECPNAME = MLINE(NMLINE-NONT(I))(IPOS2:IPOS3)
+C...               reads in ECP data
+                   call ECPINP(Q, QEFF, I, IPREAD, ECPNAME)
+                   INDECP(NTYECP) = NCTOT+1 - NONT(I)
+                   NECP(NTYECP)   = NONT(I)
+                   if (NECP(NTYECP).gt.MXNONT) then
+                     write(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ',
+     &                 NTYECP, ' EXCEEDS MXNONT=', MXNONT
+                     call QUIT('Too many ECP atoms of this type')
+                   end if
                  end if
-#endif
+C#endif
+
                  IPOS = INDEX(BKPLIN,'BAS')
                  IF (IPOS .NE. 0) THEN
                     IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')
@@ -1421,7 +1437,12 @@ C                  removes ECP information
      &                          'auxiliary basis set name')
                          ENDIF
                        ELSE
-                         BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
+C...                     modified by Bin Gao, Jan. 5, 2011
+                         IPOS3 = IPOS+IPOS2
+                         IPOS4 = IPOS3
+     &                     +index(MLINE(NMLINE-NONT(I))(IPOS3:), ' ')-1
+                         BASNAM = MLINE(NMLINE-NONT(I))(IPOS3:IPOS4)
+C...                         BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
                        ENDIF
                     END IF
                  ELSE
@@ -1457,11 +1478,11 @@ C                  removes ECP information
                     ELSE IF (BASNAM(1:2) .EQ. 'MM') THEN
                        WRITE (LUPRI,'(2X,A)')
      &                    'This is an MM atom without basis functions.'
-                    ELSE IF (INDEX(BASNAM,'ecp') .NE. 0) THEN
-                       WRITE (LUPRI,'(2X,3A)')
-     &                 'Basis set : '//
-     &                 'the effective core potential basis set "',
-     &                 BASNAM(1:LBASNAM),'"'
+C                    ELSE IF (INDEX(BASNAM,'ecp') .NE. 0) THEN
+C                       WRITE (LUPRI,'(2X,3A)')
+C     &                 'Basis set : '//
+C     &                 'the effective core potential basis set "',
+C     &                 BASNAM(1:LBASNAM),'"'
                     ELSE IF (ATOMDF) THEN
                        LAUXNAM = LNBLNK(AUXNAM)
                        WRITE (LUPRI,'(2X,3A)')
@@ -1492,21 +1513,22 @@ C                Use DIRAC style format for specifying IQM and JCO.
      &                 BASNAM(1: 2) .EQ. 'MM') THEN
                  IQM(I,J) = 0 ! tell later sections that no basis functions
               ELSE
-                 IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
-C     Read effective core potential information from file for atom. 
-C     The charge of atom type will be set to the effective charge below
-C     after J=2: reading Huckel basis (if DOHUCKEL)
-                    IF(ADDSYM) CALL QUIT('ECP not implemented '//
-     &                   'with auto-detected symmetry.')
-                    CALL ECPINP(Q,QEFF,I,IPREAD)
-                    INDECP(NTYECP) = NCTOT+1 - NONT(I)
-                    NECP(NTYECP)   = NONT(I)
-                    IF (NECP(NTYECP).GT.MXNONT) THEN
-                       WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ', 
-     &                      NTYECP, ' EXCEEDS MXNONT=',MXNONT
-                       CALL QUIT('Too many ECP atoms of this type')
-                    END IF
-                 END IF
+C...  removed by Bin Gao, Dec. 29, 2010
+C...                 IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
+C...C     Read effective core potential information from file for atom. 
+C...C     The charge of atom type will be set to the effective charge below
+C...C     after J=2: reading Huckel basis (if DOHUCKEL)
+C...                    IF(ADDSYM) CALL QUIT('ECP not implemented '//
+C...     &                   'with auto-detected symmetry.')
+C...                    CALL ECPINP(Q,QEFF,I,IPREAD)
+C...                    INDECP(NTYECP) = NCTOT+1 - NONT(I)
+C...                    NECP(NTYECP)   = NONT(I)
+C...                    IF (NECP(NTYECP).GT.MXNONT) THEN
+C...                       WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ', 
+C...     &                      NTYECP, ' EXCEEDS MXNONT=',MXNONT
+C...                       CALL QUIT('Too many ECP atoms of this type')
+C...                    END IF
+C...                 END IF
 C
                  IF (ATOMDF .AND. (J .EQ. 3)) THEN
                     BASNAMSAVE = BASNAM
