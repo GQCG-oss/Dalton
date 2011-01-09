@@ -1437,12 +1437,7 @@ C#endif
      &                          'auxiliary basis set name')
                          ENDIF
                        ELSE
-C...                     modified by Bin Gao, Jan. 5, 2011
-                         IPOS3 = IPOS+IPOS2
-                         IPOS4 = IPOS3
-     &                     +index(MLINE(NMLINE-NONT(I))(IPOS3:), ' ')-1
-                         BASNAM = MLINE(NMLINE-NONT(I))(IPOS3:IPOS4)
-C...                         BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
+                         BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
                        ENDIF
                     END IF
                  ELSE
