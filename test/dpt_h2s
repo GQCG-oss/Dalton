@@ -112,22 +112,22 @@ fi
 #        2-elec. Darwin term:      -0.034102620
 #        Total relativistic correction:      -1.109506782
 
-CRIT1=`$GREP "Total first-order DPT correction:     \-1\.10956731" $log | wc -l`
+CRIT1=`$GREP "Total first-order DPT correction:     \-1\.1095673" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="CCS first-order DPT correction not correct"
 
-CRIT2=`$GREP "Total first-order DPT correction:     \-1\.10951759" $log | wc -l`
+CRIT2=`$GREP "Total first-order DPT correction:     \-1\.1095175" $log | wc -l`
 TEST[2]=`expr   $CRIT2`
 CTRL[2]=1
 ERROR[2]="CCSD first-order DPT correction not correct"
 
-CRIT3=`$GREP "Total relativistic correction:      \-1\.10954758" $log | wc -l`
+CRIT3=`$GREP "Total relativistic correction:      \-1\.1095475" $log | wc -l`
 TEST[3]=`expr   $CRIT3`
 CTRL[3]=1
 ERROR[3]="CCS first-order Pauli correction not correct"
 
-CRIT4=`$GREP "Total relativistic correction:      \-1\.10950678" $log | wc -l`
+CRIT4=`$GREP "Total relativistic correction:      \-1\.1095067" $log | wc -l`
 TEST[4]=`expr   $CRIT4`
 CTRL[4]=1
 ERROR[4]="CCSD first-order Pauli correction not correct"

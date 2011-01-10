@@ -148,7 +148,7 @@ ERROR[6]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-76\.051459519[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-2069\.4654247[0-9] eV" $log | wc -l`
+CRIT2=`$GREP "\-2069\.4654847[0-9] eV" $log | wc -l`
 CRIT3=`$GREP "\-199673\.076[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3

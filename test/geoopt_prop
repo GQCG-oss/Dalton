@@ -113,8 +113,8 @@ ERROR[3]="SYMMETRY IS NOT CORRECT"
 
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-76\.051459519[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-2069\.4654259[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-199673\.078[0-9] kJ\/mol" $log | wc -l`
+CRIT2=`$GREP "\-2069\.4654847[0-9] eV" $log | wc -l`
+CRIT3=`$GREP "\-199673\.076[0-9] kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
@@ -179,10 +179,8 @@ ERROR[11]="FINAL GEOMETRY NOT CORRECT"
 
 # Final SCF energy:
 CRIT1=`$GREP "Total energy * \-76\.053423553[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-2069\.5188700[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-199678\.234[0-9] kJ\/mol" $log | wc -l`
-TEST[12]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[12]=3
+TEST[12]=`expr $CRIT1`
+CTRL[12]=1
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
 # Quadrupole moment:

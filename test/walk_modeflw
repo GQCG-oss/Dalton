@@ -295,7 +295,7 @@ CTRL[21]=3
 ERROR[21]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Rotational constants
-CRIT1=`$GREP "343489\.06.. * 343489\.0(5|6).. * 171744\.53.. MHz" $log | wc -l`
+CRIT1=`$GREP "343489\.0[56].. * 343489\.0[56].. * 171744\.5[23].. MHz" $log | wc -l`
 CRIT2=`$GREP "11\.45756. * 11\.45756. * 5\.72878. cm\-1" $log | wc -l`
 TEST[22]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[22]=2
