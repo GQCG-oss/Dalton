@@ -105,7 +105,6 @@ C
 #include <infpri.h>
 #include <pcm.h>
 #include <pcmlog.h>
-#include "sdpre.h"
 
 C
       DIMENSION VTEX(NTS,NCSIM)

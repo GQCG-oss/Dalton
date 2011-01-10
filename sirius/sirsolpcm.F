@@ -504,7 +504,6 @@ C
       LOGICAL     FIRST
       SAVE        FIRST
       DATA        FIRST/.TRUE./
-#include <sdpre.h>
 C
 C     Statement functions;
 C     define automatic arrays (dynamic core allocation)
