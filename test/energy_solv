@@ -116,7 +116,7 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
-CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
+CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- dipole length integrals" $log | wc -l`
 CRIT5=`$GREP "\- dipole velocity integrals" $log | wc -l`
