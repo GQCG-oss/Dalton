@@ -151,8 +151,8 @@ ERROR[4]="INITIAL OCCUPANCY NOT CORRECT"
 
 # Energy
 CRIT1=`$GREP "Total energy * \-224\.510748516[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-6109\.2480637[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589452\.885[0-9] kJ\/mol" $log | wc -l`
+CRIT2=`$GREP "\-6109\.2482371[0-9] eV" $log | wc -l`
+CRIT3=`$GREP "\-589452\.879[0-9] kJ\/mol" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=3
 ERROR[5]="INITIAL ENERGY NOT CORRECT"
