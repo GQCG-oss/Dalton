@@ -101,7 +101,7 @@ fi
 # Test af Energies
 #
 
-CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.4948864024" $log | wc -l`
+CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy = * \-112\.49488640" $log | wc -l`
 TEST[1]=` expr $CRIT1 ` 
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"

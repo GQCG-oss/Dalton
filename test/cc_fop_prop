@@ -102,7 +102,7 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CCS first order properties :
-CRIT1=`$GREP  "z * ( |0)\.1022163[0-9] * ( |0)\.2598080[0-9] * ( |0)\.8666263[0-9]" $log | wc -l`
+CRIT1=`$GREP  "z * 0*\.1022163[0-9] * 0*\.2598080[0-9] * 0*\.866626[34]" $log | wc -l`
 CRIT2=`$GREP  "1 * ( |0)\.7910107. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
 CRIT3=`$GREP  "2 * ( |0)\.0000000. * ( |0)\.7910107. * ( |0)\.0000000" $log | wc -l`
 CRIT4=`$GREP  "3 * ( |0)\.0000000. * ( |0)\.0000000. * -1\.5820214" $log | wc -l`
@@ -122,7 +122,7 @@ CRIT17=`$GREP "3 * ( |0)\.0000000. * ( |0)\.0000000. * ( -|-0)\.5197280" $log | 
 CRIT18=`$GREP "O * 17 * Vx = * ( |0)\.25986. * \-1\.56188. * (\-|\-0)\.55796." $log | wc -l`
 CRIT19=`$GREP "O * 17 * Vy = * ( |0)\.25986. * \-1\.56188. * (\-|\-0)\.55796." $log | wc -l`
 CRIT20=`$GREP "O * 17 * Vz = * (\-|\-0)\.51972. * 3\.12377. * 1\.11593." $log | wc -l`
-CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26055216[0-9]" $log | wc -l`
+CRIT21=`$GREP "   1-elec\. Darwin term: * 0*\.26055216[0-9]" $log | wc -l`
 CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32718385[0-9]" $log | wc -l`
 CRIT23=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.06663168[0-9]" $log | wc -l`
 CRIT24=`$GREP "Ecorr = * -112\.75469112100" $log | wc -l`
@@ -155,10 +155,10 @@ CRIT17=`$GREP "3 * ( |0)\.0000000. * ( |0)\.0000000. * ( -|-0)\.5612620" $log | 
 CRIT18=`$GREP "O * 17 * Vx = * ( |0)\.28063[0-9] * \-1\.68670[0-9] * (\-|\-0)\.60255[0-9]" $log | wc -l`
 CRIT19=`$GREP "O * 17 * Vy = * ( |0)\.28063[0-9] * \-1\.68670[0-9] * (\-|\-0)\.60255[0-9]" $log | wc -l`
 CRIT20=`$GREP "O * 17 * Vz = * (\-|\-0)\.56126[0-9] * 3\.37340[0-9] * 1\.20511[0-9]" $log | wc -l`
-CRIT21=`$GREP "1-elec\. Darwin term: * ( |0)\.26048655[0-9]" $log | wc -l`
-CRIT22=`$GREP "Mass-Velocity term: * (\-|\-0)\.32719552[0-9]" $log | wc -l`
-CRIT23=`$GREP "Mass-Velocity \+ 1\-elec\. Darwin terms\: * (\-|\-0)\.06670897[0-9]" $log | wc -l`
-CRIT24=`$GREP "Ecorr = * -113\.06579816745" $log | wc -l`
+CRIT21=`$GREP "1-elec\. Darwin term: * 0*\.2604865[45]" $log | wc -l`
+CRIT22=`$GREP "Mass-Velocity term: * \-0*\.32719552" $log | wc -l`
+CRIT23=`$GREP "Mass-Velocity \+ 1\-elec\. Darwin terms\: * \-0*\.06670897" $log | wc -l`
+CRIT24=`$GREP "Ecorr = * -113\.0657981674" $log | wc -l`
 TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
               $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
