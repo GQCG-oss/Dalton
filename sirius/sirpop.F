@@ -1,5 +1,3 @@
-!
-!...   Copyright (c) 2010 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
@@ -81,7 +79,7 @@ C
       CALL QENTER('SIRPOP')
 C 
       POPKEY = INP_POPKEY
-      IPRMUL_SAVE = IPRMUL
+      IPRMUL_SAVE  = IPRMUL
       IPOPTYP_SAVE = IPOPTYP
       IF (POPKEY(1:4) .EQ. 'DIIS') THEN
          IPOPTYP = 1
@@ -388,8 +386,12 @@ C     **********     Energy analysis and virial theorem     **********
 C
       V   = EMCSCF - TK
       VIR = -V/TK
-      WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
+      IF (IPRMUL .GE. 0 .OR. IPRMUL .LT. -30) THEN
+         WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
+         IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
+      ELSE IF (IPRMUL .NE. 0) THEN
+         WRITE(LUPRI,'(/A,F14.6)') ' Virial theorem: -V/T =',VIR
+      END IF
  1001 FORMAT(//' Energy analysis'
      *        /' ---------------'
      *        /' Total energy',T30,F18.10
@@ -450,7 +452,7 @@ C
       END IF
 C
 
-      if (iprpop .ge. 10) then
+      if (iprmul .ge. 10) then
          write (luw4,*) 'Population overlap matrix type',ipoptyp
          call output(S,1,nbast,1,nbast,nbast,nbast,-1,luw4)
       end if
