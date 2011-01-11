@@ -1,3 +1,9 @@
+#define OLD_DIAINT
+!- 11-jan-2011 hjaaj: test geoopt_redintmin gives segmentation fault
+!                     in DSYR2 called by DSYGS2 - DSYGST - DSYGV -
+!                     DIATINT below. I have no time to debug this now,
+!                     so therefore I activate OLD_DIAINT
+! -------------------------------------------------------------------------
 !
 !...   Copyright (c) 2010 by the authors of Dalton (see below).
 !...   All Rights Reserved.
