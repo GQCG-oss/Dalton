@@ -140,7 +140,7 @@ CRIT3=`$GREP "H * ( \-|\-0)\.00473117.. * (\-0|\-| |0)\.0000000000 * ( |0)\.0140
 CRIT4=`$GREP "H * ( |0)\.00473117.. * (\-0|\-| |0)\.0000000000 * ( |0)\.01404906.." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[2]=4
-ERROR[2]="THE TOTAL MOLECULAR GRADIENT IS NOT ORRECT"
+ERROR[2]="THE TOTAL MOLECULAR GRADIENT IS NOT CORRECT"
 
 # CCSD (frozen core) nuclear repulsion gradient: 
 CRIT1=`$GREP "N * 8\.6244264117 * (\-0|\-| |0)\.0000000000 * 1\.8692673216" $log | wc -l`
@@ -149,34 +149,34 @@ CRIT3=`$GREP "H * 1\.1532073922 * (\-0|\-| |0)\.0000000000 * \-1\.8692673216" $l
 CRIT4=`$GREP "H * \-1\.1532073922 * (\-0|\-| |0)\.0000000000 * \-1\.8692673216" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[3]=4
-ERROR[3]="THE NUCLEAR REPULSION GRADIENT IS NOT ORRECT"
+ERROR[3]="THE NUCLEAR REPULSION GRADIENT IS NOT CORRECT"
 
 # CCSD (frozen core) one-electron integral gradient: 
-CRIT1=`$GREP "N * \-19\.3442745623 * (\-0|\-| |0)\.0000000000 * \-4\.8619669660" $log | wc -l`
-CRIT2=`$GREP "N * 19\.3442745623 * (\-0|\-| |0)\.0000000000 * \-4\.8619669660" $log | wc -l`
-CRIT3=`$GREP "H * \-2\.6838566773 * (\-0|\-| |0)\.0000000000 * 4\.8619669660" $log | wc -l`
-CRIT4=`$GREP "H * 2\.6838566773 * (\-0|\-| |0)\.0000000000 * 4\.8619669660" $log | wc -l`
+CRIT1=`$GREP "N * \-19\.34427456.. * (\-0|\-| |0)\.0000000000 * \-4\.8619669660" $log | wc -l`
+CRIT2=`$GREP "N *   19\.34427456.. * (\-0|\-| |0)\.0000000000 * \-4\.8619669660" $log | wc -l`
+CRIT3=`$GREP "H *  \-2\.68385667.. * (\-0|\-| |0)\.0000000000 *   4\.8619669660" $log | wc -l`
+CRIT4=`$GREP "H *    2\.68385667.. * (\-0|\-| |0)\.0000000000 *   4\.8619669660" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[4]=4
-ERROR[4]="THE ONE-ELECTRON INTEGRAL GRADIENT IS NOT ORRECT"
+ERROR[4]="THE ONE-ELECTRON INTEGRAL GRADIENT IS NOT CORRECT"
 
 # CCSD (frozen core) nuclear two-electron integral gradient: 
-CRIT1=`$GREP "N * 10\.2559733709 * (\-0|\-| |0)\.0000000000 * 2\.7172591024" $log | wc -l`
-CRIT2=`$GREP "N * \-10\.2559733709 * (\-0|\-| |0)\.0000000000 * 2\.7172591024" $log | wc -l`
-CRIT3=`$GREP "H * 1\.4327633052 * (\-0|\-| |0)\.0000000000 * \-2\.7172591024" $log | wc -l`
-CRIT4=`$GREP "H * \-1\.4327633052 * (\-0|\-| |0)\.0000000000 * \-2\.7172591024" $log | wc -l`
+CRIT1=`$GREP "N *   10\.25597337.. * (\-0|\-| |0)\.0000000000 *   2\.7172591024" $log | wc -l`
+CRIT2=`$GREP "N * \-10\.25597337.. * (\-0|\-| |0)\.0000000000 *   2\.7172591024" $log | wc -l`
+CRIT3=`$GREP "H *    1\.4327633052 * (\-0|\-| |0)\.0000000000 * \-2\.7172591024" $log | wc -l`
+CRIT4=`$GREP "H *  \-1\.4327633052 * (\-0|\-| |0)\.0000000000 * \-2\.7172591024" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[5]=4
-ERROR[5]="THE TWO-ELECTRON INTEGRAL GRADIENT IS NOT ORRECT"
+ERROR[5]="THE TWO-ELECTRON INTEGRAL GRADIENT IS NOT CORRECT"
 
 # CCSD (frozen core) nuclear reorthonormalization gradient: 
-CRIT1=`$GREP "N * ( |0)\.4698459344 * (\-0|\-| |0)\.0000000000 * ( |0)\.2613914785" $log | wc -l`
-CRIT2=`$GREP "N * ( \-|\-0)\.4698459344 * (\-0|\-| |0)\.0000000000 * ( |0)\.2613914785" $log | wc -l`
-CRIT3=`$GREP "H * ( |0)\.0931548012 * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.2613914785" $log | wc -l`
+CRIT1=`$GREP "N *     ( |0)\.469845934. * (\-0|\-| |0)\.0000000000 * ( |0)\.2613914785" $log | wc -l`
+CRIT2=`$GREP "N * ( \-|\-0)\.469845934. * (\-0|\-| |0)\.0000000000 * ( |0)\.2613914785" $log | wc -l`
+CRIT3=`$GREP "H *     ( |0)\.0931548012 * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.2613914785" $log | wc -l`
 CRIT4=`$GREP "H * ( \-|\-0)\.0931548012 * (\-0|\-| |0)\.0000000000 * ( \-|\-0)\.2613914785" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[6]=4
-ERROR[6]="THE REORTHONORMALIZATION GRADIENT IS NOT ORRECT"
+ERROR[6]="THE REORTHONORMALIZATION GRADIENT IS NOT CORRECT"
 
 
 PASSED=1

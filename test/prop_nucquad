@@ -119,7 +119,7 @@ ERROR[3]="ENERGY NOT CORRECT"
 # Cl quadrupole coupling
 CRIT1=`$GREP "Spin * \: * 1\.5 * Quadrupole moment\:\-\.08165000" $log | wc -l`
 CRIT2=`$GREP "Cl * 35 * Vx \= * (\-0|\-)\.272172 * 5\.22158. * 1\.86535." $log | wc -l`
-CRIT3=`$GREP "Cl * 35 * Vy \= * \-2\.39441. * 45\.93653. * 16\.41030." $log | wc -l`
+CRIT3=`$GREP "Cl * 35 * Vy \= * \-2\.39441. * 45\.9365[23]. * 16\.41030." $log | wc -l`
 CRIT4=`$GREP "Cl * 35 * Vz \= * 2\.66658. * \-51\.15811. * \-18\.27565." $log | wc -l`
 CRIT5=`$GREP "Auxiliary value au * 1\/T * (0| )\.57413(6|7)(D|E)\-02" $log | wc -l`
 CRIT6=`$GREP "Spin * \: * 1\.5 * Quadrupole moment\:\-\.06435000" $log | wc -l`
