@@ -29,7 +29,7 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT -91.324723125306 1e-11
+check_scf_energy DFT -91.324723125271 1e-9
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
