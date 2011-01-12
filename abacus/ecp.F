@@ -637,8 +637,9 @@ c     ----- estimate radial integrals and compare to threshold -----
      1   alpha,rc,rka,rkb,arc2,prd,qsum)
       go to 64
 c     ----- use partially asymptotic method -----
-   60 call qpasy(npi,l,lit,ljt,ltot1,lmalo,lmahi,lmblo,lmbhi,
-     1   alpha,rka,rkb,fctr2*ccr(kcr),dum+arc2,qsum)
+   60 prd_init = fctr2*ccr(kcr)
+      call qpasy(npi,l,lit,ljt,ltot1,lmalo,lmahi,lmblo,lmbhi,
+     1   alpha,rka,rkb,prd_init,dum+arc2,qsum)
    64 continue
 c*    CALL RAD2(CCR,KCRL,KCRU,L,LMAHI,LMALO,LMBHI,LMBLO,NCR,QSUM,
 c*   1   RKA,RKB,ZCR)
