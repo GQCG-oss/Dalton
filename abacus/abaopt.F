@@ -43,24 +43,24 @@ C  /* Deck opinpu */
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE FIRST
-      DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
-     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
-     &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
-     &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
-     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG',
-     &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', 
-     &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ',
-     &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
-     &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES',
-     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
-     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES',
-     &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD',
-     &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
-     &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
-     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
-     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA',
-     &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM',
-     &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT',
+      DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', !  4
+     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY', !  8
+     &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA', ! 12
+     &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ', ! 16
+     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG', ! 20
+     &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', ! 24
+     &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ', ! 28
+     &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG', ! 32
+     &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES', ! 36
+     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', ! 40
+     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES', ! 44
+     &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD', ! 48
+     &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE', ! 52
+     &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ', ! 56
+     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL', ! 60
+     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA', ! 64
+     &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM', ! 68
+     &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', ! 72
      &            '.NOHSWR', '.FREEZE', '.FRZITR'/
 C
       DATA FIRST /.TRUE./
@@ -138,7 +138,7 @@ C
       VREIGV = .FALSE.
       VRCORD = .FALSE.
       VRVIBA = .FALSE.
-      VRSYMM = .FALSE.
+      VRML_SYM = .FALSE.
       TRSTCH = .FALSE.
       TRSTFC = .FALSE.
       IPRINT = 0
@@ -401,7 +401,8 @@ C
             GOTO 100
  54         VRVIBA = .TRUE.
             GOTO 100
- 55         VRSYMM = .TRUE.
+C           .VR-SYM
+ 55         VRML_SYM = .TRUE.
             GOTO 100
  56         MULTI = .TRUE.
             PSB = .TRUE.
@@ -529,7 +530,7 @@ C
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
-         IF (VRSYMM) THEN
+         IF (VRML_SYM) THEN
             WRITE(LUPRI,'(A/A)')
      &        ' Symmetry elements will be visualized.',
      &        ' Please note that symmetry should NOT be explicitly' //
@@ -1295,7 +1296,7 @@ C
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
-         IF (VRSYMM) THEN
+         IF (VRML_SYM) THEN
             WRITE(LUPRI,'(A/A)')
      &        ' Symmetry elements will be visualized.',
      &        ' Please note that symmetry should NOT be explicitly' //
