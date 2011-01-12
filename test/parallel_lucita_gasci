@@ -120,7 +120,7 @@ ERROR[1]="BASIS SET LIBRARY NOT SET UP CORRECTLY"
 # Reading molecular geometry:
 CRIT1=`$GREP " H .* 1 * x * 0*\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * 0*\.0000000000" $log | wc -l`
-CRIT3=`$GREP "3 * z *  2\.6728872253" $log | wc -l`
+CRIT3=`$GREP "3 * z *  2\.6728872127" $log | wc -l`
 CRIT4=`$GREP " Br .* 4 * x * 0*\.0000000000" $log | wc -l`
 CRIT5=`$GREP "5 * y * 0*\.0000000000" $log | wc -l`
 CRIT6=`$GREP "6 * z * 0*\.0000000000" $log | wc -l`
@@ -131,7 +131,7 @@ CTRL[2]=7
 ERROR[2]="MOLECULAR GEOMETRY NOT READ CORRECTLY"
 
 # Nuclear repulsion energy:
-CRIT1=`$GREP "Nuclear repulsion energy : * 13.0944544417" $log | wc -l`
+CRIT1=`$GREP "Nuclear repulsion energy : * 13.0944545036" $log | wc -l`
 TEST[3]=`expr $CRIT1`
 CTRL[3]=1
 ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
