@@ -147,7 +147,7 @@ C
       TRSTDE = 0.7D0
       RTENBD = 0.4D0
       RTENGD = 0.8D0
-      RTRJMN = -0.1D0
+      RTRJMN = 0.1D0
       RTRJMX = 3.0D0
       LNSRCH = .FALSE.
       RATFUN = .FALSE.
