@@ -4,6 +4,8 @@
 #
 # Shell script for running DALTON perl-based tests 
 #
+# The tests are defined in the file "checklist".
+#
 # First version by Luca Frediani, 2006
 #
 #########################################################################
