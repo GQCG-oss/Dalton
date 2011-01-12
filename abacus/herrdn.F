@@ -5149,15 +5149,15 @@ C
       CHARACTER*(120) NEXT_INPUT_LINE
       INTEGER NMLN_LASTREAD
       DATA NMLN_LASTREAD /0/
-      SAVE NMLN_LASTREAD
+      SAVE NMLN_LASTREAD, LEN_MLINE
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
       IF ( NMLINE .EQ. 0) THEN
          NMLN_LASTREAD = 0
+         LEN_MLINE = LEN( MLINE(1) )
       END IF
-      LEN_MLINE = LEN( MLINE(1) )
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
@@ -6715,7 +6715,7 @@ C
       END
 C
       SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,BASIS,ATOMBA,LMULBS,
-     &                  BASNAM,IQM,JCO,KANG,RADUS_PCM,ALPHA_PCM)
+     &                  BASNAM,IQM,JCO,KANG,RADIUS_PCM,ALPHA_PCM)
 C
 C     Write out atom-specific input line in new format
 C     
@@ -6730,13 +6730,13 @@ C
       END DO
 C
       ISTART = 17
-      IF (ABS(CHARGE) .LT. 1.0D1) THEN
+      IF (ABS(Q) .LT. 1.0D1) THEN
          WRITE (LINE,'(A7,F8.5)') 'Charge=', Q
-      ELSE IF (ABS(CHARGE) .LT. 1.0D2) THEN
+      ELSE IF (ABS(Q) .LT. 1.0D2) THEN
          WRITE (LINE,'(A7,F8.4)') 'Charge=', Q
-      ELSE IF (ABS(CHARGE) .LT. 1.0D4) THEN
+      ELSE IF (ABS(Q) .LT. 1.0D4) THEN
          WRITE (LINE,'(A7,F8.2)') 'Charge=', Q
-      ELSE IF (ABS(CHARGE) .LT. 1.0D6) THEN
+      ELSE IF (ABS(Q) .LT. 1.0D6) THEN
          WRITE (LINE,'(A7,F8.0)') 'Charge=', Q
       ELSE
          WRITE (LINE,'(A7,1P,D13.6)') 'Charge=', Q
