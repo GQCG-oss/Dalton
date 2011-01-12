@@ -113,7 +113,7 @@ TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="CCS first-order DPT correction not correct"
 
-CRIT2=`$GREP "Total first-order DPT correction: * (\-0|\-)\.09120918" $log | wc -l`
+CRIT2=`$GREP "Total first-order DPT correction: * (\-0|\-)\.0912091[78]" $log | wc -l`
 TEST[2]=`expr   $CRIT2`
 CTRL[2]=1
 ERROR[2]="CCSD first-order DPT correction not correct"
