@@ -84,9 +84,9 @@ fi
 
 # Starting geometry and energy
 CRIT1=`$GREP "bond distance\: * O * C * 1\.145481" $log | wc -l`
-CRIT2=`$GREP "Final * HF energy\: * \-111\.225449514136" $log | wc -l`
+CRIT2=`$GREP "Final * HF energy\: * \-111\.22544951413[67]" $log | wc -l`
 CRIT3=`$GREP "Nuclear repulsion\: * 22\.174535444365" $log | wc -l`
-CRIT4=`$GREP "Electronic energy\: * \-133\.399984958501" $log | wc -l`
+CRIT4=`$GREP "Electronic energy\: * \-133\.39998495850[12]" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=20
 ERROR[1]="STARTING GEOMETRY/ENERGY NOT CORRECT"
