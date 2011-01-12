@@ -4454,6 +4454,7 @@ C           *** No hessian specified, we can safely write to file. ***
             IF (.NOT. HESEXS) THEN
 C
 C              *** Open hessian file. ***
+               LUHES = -1
                CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
 C
@@ -4483,12 +4484,11 @@ C
  800              CONTINUE
                END IF
             ELSE
-               WRITE (LUHES,'(A)') '                                '
-               WRITE (LUHES,'(A)') 'Hessian file already exist. This' //
-     &               ' file will NOT be overwritten.'
-               WRITE (LUHES,'(A)') 'Please restart the calculation ' //
-     &               'without this file.'
-               WRITE (LUHES,'(A)') '                                '
+               WRITE (LUPRI,'(//A/A//)')
+     &            'Hessian file "DALTON.HES" already exists.' //
+     &              ' This file will NOT be overwritten.',
+     &            'Please restart the calculation without this file.'
+               CALL QUIT('"DALTON.HES" already exists. See output.')
             END IF
          END IF
 C
@@ -5212,6 +5212,7 @@ C     *** No hessian specified, we can safely write to file. ***
       IF (.NOT. HESEXS) THEN
 C
 C        *** Open hessian file. ***
+         LUHES = -1
          CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
 C
@@ -5227,12 +5228,11 @@ C
             WRITE (LUHES,'(A)') '                               '
  1800    CONTINUE
       ELSE
-         WRITE (LUHES,'(A)') '                                '
-         WRITE (LUHES,'(A)') 'Hessian file already exist. This' //
-     &        ' file will NOT be overwritten.'
-         WRITE (LUHES,'(A)') 'Please restart the calculation ' //
-     &        'without this file.'
-         WRITE (LUHES,'(A)') '                                '
+         WRITE (LUPRI,'(//A/A//)')
+     &      'Hessian file "DALTON.HES" already exists.' //
+     &        ' This file will NOT be overwritten.',
+     &      'Please restart the calculation without this file.'
+            CALL QUIT('"DALTON.HES" already exists. See output.')
       END IF
 C
 C     *** Print section. ***
