@@ -80,7 +80,7 @@ C     Then we draw bonds between the atoms if this is requested.
 C
       IF (VRBOND) CALL DRWBND(LUVRML,INDX,IATOM,.FALSE.,ATMARR)
 C
-C     If the coordinate axes are requested they're drawn
+C     If the coordinate axes are requested they are drawn
 C
       IF (VRCORD) CALL DRWAXS(LUVRML,INDX,IATOM,ATMARR,EVEC)
       CALL VREND(LUVRML)
@@ -151,7 +151,7 @@ C  /* Deck mkvrvb */
       SUBROUTINE MKVRVB(NCORD,IATOM,GVEC,EVEC,ATCHRG,
      &     MODENR,FREQ,WORK,LWORK)
 C     
-C     Make VRML representation of symmetry elements.
+C     Make VRML representation of normal modes.
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -161,16 +161,16 @@ C
       KATMAR = 1
       KLAST = KATMAR + 8*MXCENT
       IF (KLAST .GT. LWORK) CALL STOPIT('MKVRVB',' ',KLAST,LWORK) 
-      CALL MKVRV1(NCORD,IATOM,GVEC,EVEC,ATCHRG,MODENR,FREQ,
+      CALL MKVRVB_1(NCORD,IATOM,GVEC,EVEC,ATCHRG,MODENR,FREQ,
      &     WORK(KATMAR))
       RETURN
       END
 
-C  /* Deck mkvrv1 */
-      SUBROUTINE MKVRV1(NCORD,IATOM,GVEC,EVEC,ATCHRG,
+C  /* Deck MKVRVB_1 */
+      SUBROUTINE MKVRVB_1(NCORD,IATOM,GVEC,EVEC,ATCHRG,
      &     MODENR,FREQ,ATMARR)
 C     
-C     Punch out geometry to VRML-file
+C     See MKVRVB.
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -191,7 +191,7 @@ C
 C
 C     This factor is a humble attempt to give the vectors a nice length
 C
-      FAC = 0.5D0*SQRT(1.0D0*NUCDEP)
+!     FAC = 0.5D0*SQRT(1.0D0*NUCDEP)
       FAC = 0.25D0*NUCDEP
 C
 C     Initialize the ATMARR array. The first index runs over all
@@ -278,15 +278,14 @@ C
       KATMAR = 1
       KLAST  = KATMAR + 8*MXCENT
       IF (KLAST .GT. LWORK) CALL STOPIT('MKVRSY',' ',KLAST,LWORK)
-      CALL MKVRS1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,
-     &     WORK(KATMAR))
+      CALL MKVRSY_1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,WORK(KATMAR))
       RETURN
       END
 
-C  /* Deck mkvrs1 */
-      SUBROUTINE MKVRS1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,ATMARR)
+C  /* Deck MKVRSY_1 */
+      SUBROUTINE MKVRSY_1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,ATMARR)
 C     
-C     Punch out geometry to VRML-file
+C     See MKVRSY.
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -312,8 +311,8 @@ C     We copy the contents of ATM to ATMARR
 C
       CALL DZERO(ATMARR,8*MXCENT)
       IATOM = NINT(ATM(1,0))
-      NAXS = NINT(DRTAXS(1,0))
-      NPLN = NINT(DMRPLN(1,0))
+      NAXS  = NINT(DRTAXS(1,0))
+      NPLN  = NINT(DMRPLN(1,0))
       DO 10 I = 1, IATOM
          DO 15 J = 1, 3
             ATMARR(I,J+1) = ATM(J,I)*XTANG

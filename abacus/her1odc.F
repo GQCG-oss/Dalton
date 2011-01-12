@@ -173,7 +173,9 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
 #include <onecom.h>
-#include <sdpre.h>
+
+      SDPRE(I) = (1.0D0*I)
+
 C
       PAX = CORPX - CORAX
       PAY = CORPY - CORAY
@@ -247,12 +249,11 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
 C
       TEXPA1 = EXPA + EXPA
       DO 10 D = 1, JMAXD
          DO 20 A = 0, JMAXAP
-            FAC10A = SDPRE(A)
+            FAC10A = A
             DO 30 B = 0, JMAXBP
                DO 40 T = 0, A + B + D
                DO 40 X = 1, 3
@@ -296,13 +297,12 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
 C
       TEXPB1 = EXPB + EXPB
       DO 10 D = 1, JMAXD
          DO 20 A = 0, JMAXAP
             DO 30 B = 0, JMAXBP
-               FAC10B = SDPRE(B)
+               FAC10B = B
                DO 40 T = 0, A + B + D
                DO 40 X = 1, 3
                   ODCUND(A,B,T,D,0,X) = TEXPB1*ODCUND(A,B + 1,T,D-1,0,X)
@@ -458,7 +458,9 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
+
+      SDPRE(I) = (1.0D0*I)
+
       TEXPA1 = EXPA + EXPA
       TEXPA2 = TEXPA1*TEXPA1
       IF (JMAXD .LT. 2) THEN
@@ -515,12 +517,11 @@ C
 #include <pi.h>
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
 #include <onecom.h>
-#include <sdpre.h>
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*SDPRE(A) + 1)/(D2*EXPA)
+         FA = (D2*A + 1)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*SDPRE(B) + 1)/(D2*EXPB)
+            FB = (D2*B + 1)/(D2*EXPB)
             DO 30 T = 0 , JMAXTP
                ODCUND(A,B,T,0,1,1) = FA*ODCUND(A + 1,B,T,0,0,1)
      &                             + FB*ODCUND(A,B + 1,T,0,0,1)
@@ -566,12 +567,11 @@ C
 #include <pi.h>
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
 #include <onecom.h>
-#include <sdpre.h>
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*SDPRE(A) + 1)/(D2*EXPA)
+         FA = (D2*A + 1)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*SDPRE(B) + 1)/(D2*EXPB)
+            FB = (D2*B + 1)/(D2*EXPB)
                ODCUND(A,B,0,2,1,1) = FA*ODCUND(A + 1,B,0,2,0,1)
      &                             + FB*ODCUND(A,B + 1,0,2,0,1)
                ODCUND(A,B,0,2,1,2) = FA*ODCUND(A + 1,B,0,2,0,2)
@@ -616,14 +616,13 @@ C
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include <onecom.h>
-#include <sdpre.h>
 C
       TEXPB1 = EXPB + EXPB
       DO 10 M = 1, JMAXM
          DO 20 A = 0, JMAXAP
             DO 30 B = 0, JMAXBP
                DO 40 D = 0, JMAXD
-               FAC10B = SDPRE(B)
+               FAC10B = B
                DO 40 T = 0, A + B + D + M
                DO 40 X = 1, 3
                   ODCUND(A,B,T,D,M,X) = TEXPB1*ODCUND(A,B + 1,T,D,M-1,X)

@@ -272,7 +272,6 @@ C
 #include <twosta.h>
 #include <dftcom.h>
 #include <subdir.h>
-#include <sdpre.h>
 C-----------------------------------------------------------------------
 C
 C     *****************
@@ -447,7 +446,7 @@ C
                END DO
             ELSE IF (AD2DAR) THEN
                DO J = 1, JMAX
-                  FAC = D1/SDPRE(2*J + 1)
+                  FAC = D1/(2.0D0*J + 1.0D0)
                   DO I = 1, NUABCD
                      RJ000(I,J) = (FAC+DRWFAC*TALPHA(I,1))*SCLFAC(I,1)
                      SCLFAC(I,1) = TALPHA(I,1)*SCLFAC(I,1)
@@ -461,7 +460,7 @@ C
                IF (SRINTS) THEN
 C             ... Calculate SJ000 for short-range integrals
                   DO J = 1, JMAX
-                     FAC = D1/SDPRE(2*J + 1)
+                     FAC = D1/(2.0D0*J + 1.0D0)
                      DO I = 1, NUABCD
                         SJ000(I,J) = FAC*SCLFAC(I,2)*SJ000(I,0)
                         SCLFAC(I,2) = TALPHA(I,2)*SCLFAC(I,2)
@@ -479,7 +478,7 @@ C             ... Calculate EJ000 for long-range integrals
                END IF
 C             ... Calculate regular two-electron integrals
                DO J = 1, JMAX
-                  FAC = D1/SDPRE(2*J + 1)
+                  FAC = D1/(2.0D0*J + 1.0D0)
                   DO I = 1, NUABCD
                      RJ000(I,J) = FAC*SCLFAC(I,1)*RJ000(I,0)
                      SCLFAC(I,1) = TALPHA(I,1)*SCLFAC(I,1)
@@ -871,13 +870,12 @@ C  /* Deck getgam */
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),
      &          WVALU(*), RJ000(NUABCD,0:JMAX), INDADS(NODS,3),
      &          WVALS(NODS,3), REXPW(NODS)
-#include <sdpre.h>
 C-----------------------------------------------------------------------
 C
       NODS1 = 0
       NODS2 = 0
       NODS3 = 0
-      D2JP36 = SDPRE(2*JMAX + 36)
+      D2JP36 = 2.0D0*JMAX + 36.0D0
 C NECgh980808 As sth suggested, this loop DO 100 can savely 
 C             be vectorized.
 #include <ivdep.h>
@@ -905,7 +903,7 @@ C
          DO 200 I = 1, NODS1
             WVAL = WVALS(I,1)
             IPNT = NINT(D10*WVAL)
-            WDIF = WVAL - TENTH*SDPRE(IPNT)
+            WDIF = WVAL - TENTH*IPNT
             ISTART = ISTRT0 + IPNT
             FJWS(I,JMAX) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
      &                         + COEF5*TABFJW(ISTART + 605))*WDIF
@@ -920,7 +918,7 @@ C
                REXPW(I) = HALF*EXP(-WVALS(I,1))
   300       CONTINUE
             DO 310 J = JMAX - 1, 0, -1
-               FCT = D2/SDPRE(2*J + 1)
+               FCT = D2/(2.0D0*J + 1.0D0)
                DO 320 I = 1, NODS1
                   FJWS(I,J) = FCT*(WVALS(I,1)*FJWS(I,J+1) + REXPW(I))
   320          CONTINUE
@@ -953,7 +951,7 @@ C
             RJ000(INDADS(I,2),0) = FJWS(I,0)
   420    CONTINUE
          DO 430 J = 1, JMAX
-            FCT = SDPRE(J) - HALF
+            FCT = J - HALF
             DO 440 I = 1, NODS2
                FJWS(I,J) = (FCT*FJWS(I,J-1) - REXPW(I))*WVALS(I,2)
   440       CONTINUE
@@ -976,7 +974,7 @@ C
             RJ000(INDADS(I,3),0) = FJWS(I,0)
   520    CONTINUE
          DO 530 J = 1, JMAX
-            FACTOR = PID4I*(SDPRE(J) - HALF)
+            FACTOR = PID4I*(J - HALF)
             DO 540 I = 1, NODS3
                FJWS(I,J) = FACTOR*FJWS(I,J-1)*WVALS(I,3)
   540       CONTINUE
@@ -1098,7 +1096,6 @@ C
 #include <hertop.h>
 C
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -1147,7 +1144,7 @@ C
                CUR(I,2) = PQX(I)*OLD(I,1)
   200       CONTINUE
             DO 300 T = 2, MIN(MAXT,JVAL)
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = T - 1.0D0
                TUV   = INDHER(T  ,0,0)
                M1T   = INDHER(T-1,0,0)
                M2T   = INDHER(T-2,0,0)
@@ -1157,7 +1154,7 @@ C
   300       CONTINUE
          ELSE
             DO 400 T = 2, MIN(MAXT,JVAL), 2
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = T - 1.0D0
                TUV   = INDHER(T  ,0,0)
                M2T   = INDHER(T-2,0,0)
                DO 410 I = 1, NUABCD
@@ -1177,7 +1174,7 @@ C
   510          CONTINUE
   500       CONTINUE
             DO 600 U = 2, MIN(MAXU,JVAL)
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = U - 1.0D0
                DO 610 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M1U = INDHER(T,U-1,0)
@@ -1189,7 +1186,7 @@ C
   600       CONTINUE
          ELSE
             DO 700 U = 2, MIN(MAXU,JVAL), 2
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = U - 1.0D0
                DO 710 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M2U = INDHER(T,U-2,0)
@@ -1214,7 +1211,7 @@ C
   810          CONTINUE
   800       CONTINUE
             DO 900 V = 2, MIN(MAXV,JVAL)
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  =  V - 1.0D0
                IUMAX  = JVAL - V
                DO 910 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 920 T = 0, MIN(MAXT,IUMAX - U), IPQX
@@ -1229,7 +1226,7 @@ C
   900       CONTINUE
          ELSE
             DO 1000 V = 2, MIN(MAXV,JVAL), 2
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = V - 1.0D0
                IUMAX  = JVAL - V
                DO 1010 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 1020 T = 0, MIN(MAXT,IUMAX - U), IPQX

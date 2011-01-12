@@ -56,8 +56,6 @@ C
       SAVE MAXJ0
       DATA MAXJ0 /-1/
 C
-#include <sdpre.h>
-C
       IPOINT = 10*MIN(WVAL,TEN6)
       IF (IPOINT .LT. 0) THEN
          write (0,*) 'GAMFUN warning, ipoint=',ipoint
@@ -69,7 +67,7 @@ C
       END IF
       IF (IPOINT .LT. 120) THEN
          ISTART = 1 + 121*JMAX0 + IPOINT
-         WDIF = WVAL - TENTH*SDPRE(IPOINT)
+         WDIF = WVAL - TENTH*IPOINT
          FJW(JMAX0) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
      *                   + COEF5*TABFJW(ISTART + 605))*WDIF
      *                    + COEF4*TABFJW(ISTART + 484))*WDIF
@@ -79,7 +77,7 @@ C
      *                        + TABFJW(ISTART)
          D2WAL = D2*WVAL
          REXPW = EXP(-WVAL)
-         DENOM = SDPRE(2*JMAX0 + 1)
+         DENOM = 2.0D0*JMAX0 + 1.0D0
          DO 100 J = JMAX0, 1, -1
             DENOM = DENOM - D2
             FJW(J - 1) = (D2WAL*FJW(J) + REXPW)/DENOM
@@ -138,10 +136,10 @@ C
 C     WVAL = 0.1, 0.2, 0.3,... 12.0
 C
       IADR = IADR - 121
-      D2MAX1 = SDPRE(JMAX + JMAX + 1)
+      D2MAX1 = 2.0D0*JMAX + 1.0D0
       R2MAX1 = D1/D2MAX1
       DO 800 IPOINT = 1,120
-         WVAL = TENTH*SDPRE(IPOINT)
+         WVAL = TENTH*IPOINT
          D2WAL = WVAL + WVAL
          IADR = IADR + 1
          TERM = R2MAX1

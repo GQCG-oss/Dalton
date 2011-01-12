@@ -216,7 +216,9 @@ C
       DATA PRTHRS/1D-13/
 C
 #include <ibtfun.h>
-#include <sdpre.h>
+
+      SDPRE(I) = (1.0D0*I)
+
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -581,7 +583,9 @@ C
       DATA ICOOR1/2,3,1/,ICOOR2/3,1,2/
 C
 #include <ibtfun.h>
-#include <sdpre.h>
+
+      SDPRE(I) = (1.0D0*I)
+
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0

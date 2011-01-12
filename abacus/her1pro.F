@@ -4529,7 +4529,6 @@ C  /* Deck sphco1 */
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
-#include "sdpre.h"
 C
       LVAL1 = LVAL + 1
 C
@@ -4538,8 +4537,8 @@ C     ---------------------
 C
       CALL DZERO(PL(0),LVAL1)
       DO 100 K = 0, LVAL/2
-         PL(LVAL-2*K) = (SDPRE((-1)**K)/SDPRE(2**LVAL))
-     &                    *BINOM(LVAL,K)*BINOM(2*(LVAL-K),LVAL)
+         PL(LVAL-2*K) = (((-1.0D0)**K) * (2.0D0**(-LVAL)))
+     &                * BINOM(LVAL,K) * BINOM(2*(LVAL-K),LVAL)
   100 CONTINUE
 C
 C     Cosine and sine coefficients
@@ -4549,7 +4548,7 @@ C
       DO 200 M = 0, LVAL
          COSSIN(M,0) = D1
          DO 210 K = 1, M
-            COSSIN(M,K) = COSSIN(M-1,K-1)*SDPRE((-1)**(K-1))
+            COSSIN(M,K) = COSSIN(M-1,K-1)*((-1.0D0)**(K-1))
             IF (M .GT. K) COSSIN(M,K) = COSSIN(M,K) + COSSIN(M-1,K)
   210    CONTINUE
   200 CONTINUE

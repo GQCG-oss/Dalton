@@ -50,9 +50,8 @@ C
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
       DATA LAB123/'********','        ','        '/
       DATA TITLES/'OVERLAP '/, TITLEH/'ONEHAMIL'/, TITLET/'KINETINT'/
-#include <sdpre.h>
 c     ITRI(I,J) = I*(I-1)/2 + J
-      INDEX1(IJ) = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+      INDEX1(IJ) = INT(SQRT((2.0D0*IJ) + 0.25D0) + 0.4999D0)
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
       IF (IPRINT .GE. 4) CALL TITLER('Output from WRTUND','*',103)
@@ -126,7 +125,8 @@ C
   500        CONTINUE
          END IF
          WRITE (LUONEL) BUF, IBUF, -1
-         PERCNT = SDPRE(100*NCOUNT) / SDPRE(IAB)
+         PERCNT = 100.0D0*NCOUNT
+         PERCNT = PERCNT / IAB
          IF (IPRINT .GE. 3) THEN
             IF (ITYPE .EQ. 1) THEN
                WRITE (LUPRI,'(/I6,A,I4,A)') NCOUNT,

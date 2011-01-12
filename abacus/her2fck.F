@@ -715,7 +715,6 @@ C
 #include <pincom.h>
 #include <shells.h>
 #include <ibtfun.h>
-#include <sdpre.h>
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -878,7 +877,7 @@ C           NMAT SKLTON matrices for IXYZ .ne. 0  /961114-hjaaj
   430       CONTINUE
          END IF
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1 / (1.0D0 + MAXREP)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrix in SKLFC1",1)
@@ -1027,7 +1026,6 @@ C
      &          IPOINT(3*NUCDEP,0:MAXREP), CSTRA(*), SCTRA(*)
 #include <energy.h>
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1096,7 +1094,7 @@ C
                GRADEE(AP) = GRADEE(AP) + FACTOR(A,ISYMOP)*SKLTON(A,1)
   310       CONTINUE
   300    CONTINUE
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1 / (MAXREP + 1.0D0)
          CALL DSCAL(MXCOOR,   FAC,GRADEE,1)
 C
 C        Construct full Hessian from skeleton
@@ -1112,7 +1110,7 @@ C
                   HESSEE(AP,BP) = HESSEE(AP,BP) + FAC*SKLTON(A,B)
   410          CONTINUE
   400       CONTINUE
-            FAC = D1/SDPRE(MAXREP + 1)
+            FAC = D1/(MAXREP + D1)
             CALL DSCAL(MXCOOR**2,FAC,HESSEE,1)
          END IF
 C
@@ -1216,7 +1214,6 @@ C
 #include <pincom.h>
 #include <shells.h>
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C
@@ -1323,7 +1320,7 @@ C
   610       CONTINUE
   600    CONTINUE
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/(MAXREP + D1)
          CALL DSCAL(NFMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)

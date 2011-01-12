@@ -5192,7 +5192,9 @@ C
 #include "onecom.h"
 #include "lmns.h"
 C
-#include "sdpre.h"
+
+      SDPRE(I) = (1.0D0*I)
+
 C
 C     Hermitian integrals
 C     -------------------
@@ -5472,7 +5474,9 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 C
-#include "sdpre.h"
+
+      SDPRE(I) = (1.0D0*I)
+
 #include "ibtfun.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -6995,7 +6999,9 @@ C
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
-#include "sdpre.h"
+
+      SDPRE(I) = (1.0D0*I)
+
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7537,7 +7543,9 @@ C
 #include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "sdpre.h"
+
+      SDPRE(I) = (1.0D0*I)
+
       EXPPIH = EXPPI/D2
       DO 100 IA = 0, JMAXA
          DO 200 IB = 0, JMAXB
@@ -7638,7 +7646,6 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "lmns.h"
-#include "sdpre.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7719,7 +7726,6 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "lmns.h"
-#include "sdpre.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -8049,7 +8055,6 @@ C
 #include "orgcom.h"
 #include "mgsolt.h"
 C
-#include "sdpre.h"
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)
@@ -8173,7 +8178,6 @@ C
 #include "orgcom.h"
 #include "mgsolt.h"
 C
-#include "sdpre.h"
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)

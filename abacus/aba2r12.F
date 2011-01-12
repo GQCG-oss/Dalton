@@ -168,7 +168,6 @@ C  /* Deck r12wrt */
 #include <chrnos.h>
 #endif
 #include <ibtfun.h>
-#include <sdpre.h>
 C
        IF (ITYPE .EQ. -1) THEN
          IDUM = 0
@@ -464,7 +463,6 @@ C
 #include <r12int.h>
 C
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       IF (LBUF .NE. LDSBUF) THEN
         WRITE (LUPRI,*) 'LBUF  :',LBUF
@@ -700,7 +698,8 @@ C
      &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
   400    CONTINUE
          NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
-         PERCNT = SDPRE(100*NWRIT) / SDPRE(NALL)
+         PERCNT = 100.D0*NWRIT
+         PERCNT = PERCNT / NALL
          IF (IPRINT.GT.0) WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
      &         'Number of two-electron integrals written:',NWRIT,
      &         ' (',PERCNT,'%)'
@@ -726,7 +725,6 @@ C  /* Deck un2wru */
 #include <nuclei.h>
 #include <symmet.h>
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       NBUFX(0) = NBUFX(0) + 1
 C

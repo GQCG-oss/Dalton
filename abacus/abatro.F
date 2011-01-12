@@ -1486,7 +1486,6 @@ C
 #include <trkoor.h>
 #include <symmet.h>
 C
-#include <sdpre.h>
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
          WRITE (LUPRI,'(/A,2I5)') ' NROW, NCOL ', NROW, NCOL
@@ -1616,9 +1615,9 @@ C
                ELSE IF (DODMAT) THEN
                   IF (ISYMAX(ITRO,1) .EQ. IREP) THEN
                      IF (TC) THEN
-                        AMAT(ITR,IPTCOL(IPTAX(ITRO,1))) = SDPRE(ICHRGE)
+                        AMAT(ITR,IPTCOL(IPTAX(ITRO,1))) = ICHRGE
                      ELSE
-                        AMAT(IPTCOL(IPTAX(ITRO,1)),ITR) = SDPRE(ICHRGE)
+                        AMAT(IPTCOL(IPTAX(ITRO,1)),ITR) = ICHRGE
                      END IF
                   END IF
                END IF

@@ -953,10 +953,9 @@ C
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
       COMMON /PTRTOT/ NPTOT
 #include <ibtfun.h>
-#include <sdpre.h>
 C
       LBYTE(LABV,LOCV) = IBTAND(IBTSHR(LABV,IFIELD*LOCV),IBIT08)
-      UNPAKK(IJ) = SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0
+      UNPAKK(IJ) = SQRT(2.0D0*IJ + 0.25D0) + 0.4999D0
 C
       CALL QENTER('PT2TRA')
       L2BUF = MX2BUF + IRAT*MX2BUF + 1
@@ -1346,7 +1345,6 @@ C
 #include <symmet.h>
       COMMON /PTRTOT/ NPTOTR
 #include <ibtfun.h>
-#include <sdpre.h>
 C
 C     Statement functions
 C
@@ -1354,7 +1352,7 @@ c     ISHELL(I) = IBTAND(IBTSHR(I,IFIELD),IBIT08)
 c     ICOMP(I)  = IBTAND(IBTSHR(I,4),IBIT04)
 c     PAKK(I,J,K,L) = IBTOR(IBTSHL(I,3*IFIELD),IBTOR(IBTSHL(J,2*IFIELD),
 c    *                IBTOR(IBTSHL(K,IFIELD),L)))
-c     UNPAKK(IJ) = SQRT(SDPRE(IJ + IJ) + 0.25D0) + 0.4999D0
+c     UNPAKK(IJ) = SQRT(2.0D0*IJ + 0.25D0) + 0.4999D0
 C
       CALL QENTER('PSORG')
       IF (IPRINT .GT. 2) WRITE (LUPRI, 1000)
