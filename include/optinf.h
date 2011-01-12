@@ -8,7 +8,7 @@
       CHARACTER*80    SPBSTX, PREBTX
       LOGICAL GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM, DOSPE,  DOPRE,
      &                FINPRE, VRML,   VRBOND, VREIGV, VRCORD, VRVIBA,
-     &                VRSYMM, VISUAL, BOFILL, INITHS, HSFILE, BFGSR1,
+     &                VRML_SYM, VISUAL, BOFILL, INITHS, HSFILE, BFGSR1,
      &                STEEPD, RANKON, PSB,    DFP,    BFGS,   SCHLEG, 
      &                NEWTON, QUADSD, KEEPHE, BAKER,  REDINT, CARTCO,
      &                INRDHS, FSTORD, SNDORD, REJINI, GRDINI, MULTI,
@@ -35,7 +35,7 @@
      &                PREBTX(MAXPRE),
      &                SPBSTX, GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM,
      &                DOSPE,  DOPRE,  FINPRE, VRML,   VRBOND, VREIGV,
-     &                VRCORD, VRVIBA, VRSYMM, VISUAL, INITHS, HSFILE,
+     &                VRCORD, VRVIBA, VRML_SYM, VISUAL, INITHS, HSFILE,
      &                BFGSR1, STEEPD, RANKON, PSB   , DFP,    BFGS,
      &                SCHLEG, NEWTON, QUADSD, KEEPHE, BAKER,  REDINT,
      &                CARTCO, INRDHS, FSTORD, SNDORD, REJINI, GRDINI,
