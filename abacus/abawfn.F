@@ -112,8 +112,8 @@ C     ----------------------------------------------------------------
       KPTYPE  = KCNTASS + NPRIM
       KEXPON  = KPTYPE  + NPRIM
       KOCCNUM = KEXPON  + NPRIM
-      KENERGY = KOCCNUM + NBASIS
-      KPOSAO  = KENERGY + NBASIS
+      KORBENE = KOCCNUM + NBASIS
+      KPOSAO  = KORBENE + NBASIS
       KSCR    = KPOSAO  + NBASIS * NPRIM
       KEND    = KSCR    + NBASIS * NPRIM 
 
@@ -126,7 +126,7 @@ C     ----------------------------------------------------
 C     set occupation numbers and orbital energies to zero:
 C     ----------------------------------------------------
       CALL DZERO(WORK(KOCCNUM),NBASIS)
-      CALL DZERO(WORK(KENERGY),NBASIS)
+      CALL DZERO(WORK(KORBENE),NBASIS)
 
 C     ----------------------------------------------------------------
 C     compute primitive to SAO transformation matrix:
