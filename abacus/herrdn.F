@@ -5156,8 +5156,8 @@ C     e.g. during a geometry optimization.
 C
       IF ( NMLINE .EQ. 0) THEN
          NMLN_LASTREAD = 0
-         LEN_MLINE = LEN( MLINE(1) )
       END IF
+      LEN_MLINE = LEN( MLINE(1) )
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
