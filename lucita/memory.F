@@ -241,12 +241,11 @@ C
       DATA PAD1/0.123456789D0/
       DATA PAD2/0.987654321D0/
 *
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "SysDef.inc"
 #include "wrkspc.inc"
 *
-CSK      write(6,*)'RtoI',RtoI,'for IR',IR
-CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ISTOP = 0
       ITSOK  = 1
       IPRNTMP = 0
@@ -272,6 +271,8 @@ CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
         NWORD = KBASE + MXPWRD-1
         IPRNTMP = 0
         ISTOP = 0
+
+!       write(lupri,*)'RtoI',RtoI,'for IR',IR
 *
 ** First free word
 *

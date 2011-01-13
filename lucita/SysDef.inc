@@ -7,7 +7,7 @@
 *----------------------------------------------------------------------*
       Integer    ItoB,      RtoB,      RtoI
 
-#if defined(INT_STAR8)
+#ifdef VAR_INT64
       Parameter( ItoB = 8 , RtoB = 8 , RtoI = 1  )
 #else
       Parameter( ItoB = 4 , RtoB = 8 , RtoI = 2  )

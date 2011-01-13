@@ -1239,7 +1239,7 @@ C     Read in integrals
         WRITE(luwrt,*) ' No integrals imported '
       END IF
 C     Internal string information (stored in WORK, bases in /STRBAS/)
-      CALL STRINF_GAS(WORK,IPRSTR)
+      CALL STRINF_GAS(IPRSTR)
 C     Internal subspaces
       CALL LCISPC(IPRCIX)
 C     Symmetry of reference

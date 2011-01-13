@@ -1664,13 +1664,14 @@ C           IJKLO = KL*(KL-1)/2+IJ + IPNTR(ISM,JSM,KSM)-1
 * Jeppe Olsen
 *
        IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
        INTEGER W(NORB+1,NEL+1)
        INTEGER Y(NORB,NEL)
        INTEGER MAXEL(NORB),MINEL(NORB)
 *
 C      NTEST = 0
-       CALL ISETVC(W,0,(NEL+1)*(NORB+1) )
-       CALL ISETVC(Y,0,NEL*NORB)
+       call izero(W,(NEL+1)*(NORB+1))
+       call izero(Y,NEL*NORB)
 *
 *================
 *  Vertex weights
@@ -1710,8 +1711,8 @@ C      NTEST = 0
 C       WRITE(6,'(A)') ' Matrix of vertex weights '
 C       WRITE(6,'(A)') ' ========================'
 C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
-        WRITE(6,'(A)') '  Matrix for arc weights  '
-        WRITE(6,'(A)') '  ======================'
+        WRITE(lupri,'(A)') '  Matrix for arc weights  '
+        WRITE(lupri,'(A)') '  ======================'
         CALL IWRTMA(Y,NORB,NEL,NORB,NEL)
       END IF
 *

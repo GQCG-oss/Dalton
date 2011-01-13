@@ -2824,7 +2824,7 @@ C?        write(6,*) ' before call to add_str_group '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MEMSTR_GAS
+      SUBROUTINE MEMSTR_GAS(NTEST)
 *
 *
 * Construct pointers for saving information about strings and
@@ -2847,21 +2847,19 @@ C?        write(6,*) ' before call to add_str_group '
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "strbas.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "stinf.inc"
 
-*
 *. Start of string information
       CALL MEMMAN(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      NTEST = 0
-      IF(NTEST.GE.10)
-     &WRITE(6,*) ' First word with string information',KSTINF
+      IF(iprint.GE.10)
+     &WRITE(lupri,*) ' First word with string information',KSTINF
 *
 *.  Offsets for occupation and reorder array of strings
 *
@@ -2940,11 +2938,11 @@ C?        write(6,*) ' before call to add_str_group '
 *. Last word of string information
 *
       CALL MEMMAN(KSTINE,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      IF(NTEST.GE.10)
-     &WRITE(6,*) ' Last word with string information',KSTINE-1
-      IF( NTEST .NE. 0 ) THEN
-        WRITE(6,*) ' R*8 words used for storing Strinformation ',
-     &               KSTINE - KSTINF
+      IF(iprint.GE.10)
+     &  WRITE(lupri,*) ' Last word with string information',KSTINE-1
+      IF(iprint.NE.0) THEN
+      WRITE(lupri,*) ' R*8 words used for storing string information ',
+     &                 KSTINE - KSTINF
       END IF
 *
       RETURN
@@ -4048,7 +4046,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE STRINF_GAS(STIN,IPRNT)
+      SUBROUTINE STRINF_GAS(IPRNT)
 *
 * Obtain string information for GAS expansion
 *
@@ -4067,6 +4065,7 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KFREEL
 !               for addressing of WORK
+#include "priunit.h"
 #include "parluci.h"
 *. Input
 *     (and /LUCINP/ not occuring here )
@@ -4083,7 +4082,6 @@ C
 *
 #include "wrkspc.inc"
 *
-      DIMENSION STIN(*)
 *. A bit of scratch
 C     DIMENSION IOCTYP(MXPNGAS)
 *
@@ -4095,16 +4093,17 @@ C     DIMENSION IOCTYP(MXPNGAS)
 **.2 : Number of classes per string type and mappings between
 **.    string types (/STINF/)
 *
-      CALL ZSTINF_GAS(IPRNT)
+      CALL ZSTINF_GAS(NTEST)
 *
 **.3 : Static memory for string information
 *
-      CALL MEMSTR_GAS
+      CALL MEMSTR_GAS(NTEST)
 *
 ** 4 : Info about group of strings
 *
 *.First free address
       CALL MEMMAN(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
+
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -4123,31 +4122,31 @@ C     DIMENSION IOCTYP(MXPNGAS)
         IEL = NELFGP(IGRP)
         IOCTYPX = 1
 *. Reverse lexical adresing schemes for each group of string
-        CALL WEIGHT_LUCI(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
-     &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),IPRNT )
+        CALL WEIGHT_LUCI(WORK(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
+     &                   MNRS1X,MXRS1X,MNRS3X,MXRS3X,
+     &                   WORK(KFREEL),NTEST)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS(IEL,NORB1,NORB2,NORB3,
      &              MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KFREEL),NACOB,
-     &              STIN(KNSTSGP(1)),
-     &              STIN(KISTSGP(1)),
-     &              IOCTYPX,NSMST,IGRP,IPRNT)
+     &              WORK(KFREEL),NACOB,
+     &              WORK(KNSTSGP(1)),
+     &              WORK(KISTSGP(1)),
+     &              IOCTYPX,NSMST,IGRP,NTEST)
 *. Construct the strings ordered by symmetry
         CALL GENSTR_GAS(IEL,MNRS1X,MXRS1X,MNRS3X,MXRS3X,
-     &              STIN(KISTSGP(1)),IGRP,
-     &              IOCTYPX,NSMST,STIN(KZ(IGRP)),STIN(KFREEL),
-     &              STIN(KSTREO(IGRP)),STIN(KOCSTR(IGRP)),
-     &              STIN(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
+     &              WORK(KISTSGP(1)),IGRP,
+     &              IOCTYPX,NSMST,WORK(KZ(IGRP)),WORK(KFREEL),
+     &              WORK(KSTREO(IGRP)),WORK(KOCSTR(IGRP)),
+     &              WORK(KFREEL+IOCTYPX*NSMST),IGRP,NTEST)
 *
-       CALL ICOPVE2(STIN(KNSTSGP(1)),1+(IGRP-1)*NSMST,NSMST,
+       CALL ICOPVE2(WORK(KNSTSGP(1)),1+(IGRP-1)*NSMST,NSMST,
      &              NSTFSMGP(1,IGRP))
       END DO
 *
       IF(NTEST.GE.10) THEN
-      WRITE(6,*) ' Number of strings per group and symmetry '
-      CALL IWRTMA10(STIN(KNSTSGP(1)),NSMST,NGRP,NSMST,NGRP)
-      WRITE(6,*) ' Number of strings per group and symmetry(2) '
+      WRITE(lupri,*) ' Number of strings per group and symmetry '
+      CALL IWRTMA10(WORK(KNSTSGP(1)),NSMST,NGRP,NSMST,NGRP)
+      WRITE(lupri,*) ' Number of strings per group and symmetry(2) '
       CALL IWRTMA10(NSTFSMGP,NSMST,NGRP,MXPNSMST,NGRP)
       END IF
 *
@@ -4169,8 +4168,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
       END DO
       IF(NTEST.GT.5) THEN
-        WRITE(6,*) ' MINMAX array for sym of groups '
-        WRITE(6,*) ' =============================='
+        WRITE(lupri,*) ' MINMAX array for sym of groups '
+        WRITE(lupri,*) ' =============================='
         CALL IWRTMA(MINMAX_SM_GP,1,NSMST,1,NSMST)
       END IF
 *
@@ -4211,25 +4210,24 @@ C     DIMENSION IOCTYP(MXPNGAS)
         END IF
 *. Zero
         IF(LAC.NE.0) THEN
-          IZERO = 0
-          CALL ISETVC(STIN(KSTSTM(IGRP,1)),IZERO,LROW*NSTINI)
-          CALL ISETVC(STIN(KSTSTM(IGRP,2)),IZERO,LROW*NSTINI)
+          CALL IZERO(WORK(KSTSTM(IGRP,1)),LROW*NSTINI)
+          CALL IZERO(WORK(KSTSTM(IGRP,2)),LROW*NSTINI)
         END IF
 *
         IF(ISTAC(IGRP,2).NE.0) THEN
           JGRP = ISTAC(IGRP,2)
-          CALL CRESTR_GAS(STIN(KOCSTR(IGRP)),NSTFGP(IGRP),
-     &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,STIN(KZ(JGRP)),
-     &         STIN(KSTREO(JGRP)),0,IDUM,IDUM,
-     &         STIN(KSTSTM(IGRP,1)),STIN(KSTSTM(IGRP,2)),NACOB,IPRNT)
+          CALL CRESTR_GAS(WORK(KOCSTR(IGRP)),NSTFGP(IGRP),
+     &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,WORK(KZ(JGRP)),
+     &         WORK(KSTREO(JGRP)),0,IDUM,IDUM,
+     &         WORK(KSTSTM(IGRP,1)),WORK(KSTSTM(IGRP,2)),NACOB,NTEST)
         END IF
         IF(ISTAC(IGRP,1).NE.0) THEN
           JGRP = ISTAC(IGRP,1)
-          CALL ANNSTR_GAS(STIN(KOCSTR(IGRP)),NSTFGP(IGRP),
-     &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,STIN(KZ(JGRP)),
-     &         STIN(KSTREO(JGRP)),0,IDUM,IDUM,
-     &         STIN(KSTSTM(IGRP,1)),STIN(KSTSTM(IGRP,2)),NACOB,IEC,
-     /         LROW,IPRNT)
+          CALL ANNSTR_GAS(WORK(KOCSTR(IGRP)),NSTFGP(IGRP),
+     &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,WORK(KZ(JGRP)),
+     &         WORK(KSTREO(JGRP)),0,IDUM,IDUM,
+     &         WORK(KSTSTM(IGRP,1)),WORK(KSTSTM(IGRP,2)),NACOB,IEC,
+     /         LROW,NTEST)
         END IF
       END DO
 *
@@ -4265,20 +4263,19 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
        IF(NTEST.GE.5) THEN
         IF(LUCI_MYPROC.EQ.LUCI_MASTER)THEN
-          WRITE(6,*)
+          WRITE(lupri,*)
      &    ' Number of strings per sym (row) and supergroup(column)',
      &    ' for type = ', ITP
           CALL IWRTMA(WORK(KNSTSO(ITP)),NSMST,NSPGPFTP(ITP),
      &                NSMST,NSPGPFTP(ITP))
-          WRITE(6,'(A,3I6)') ' NSMCLS,NSMCLSE,NSMCLSE1=',
+          WRITE(lupri,'(A,3I6)') ' NSMCLS,NSMCLSE,NSMCLSE1=',
      &                         NSMCLS,NSMCLSE,NSMCLSE1
-          WRITE(6,*)
         ENDIF
        END IF
 *
       END DO
 *. Number of electron in each AS for each supergroup
-      CALL ZNELFSPGP(IPRNT)
+      CALL ZNELFSPGP(NTEST)
 *
 * Number of holes per supergroup
       DO IISPGP = 1, NTSPGP
@@ -4289,17 +4286,18 @@ C     DIMENSION IOCTYP(MXPNGAS)
         NHLFSPGP(IISPGP) = NHOLE
       END DO
       IF(NTEST.GE.10) THEN
-      WRITE(6,*) ' Number of electrons in hole spaces per supergroup '
-      CALL IWRTMA(NHLFSPGP,1,NTSPGP,1,NTSPGP)
+        WRITE(lupri,*) 
+     &  ' Number of electrons in hole spaces per supergroup '
+        CALL IWRTMA(NHLFSPGP,1,NTSPGP,1,NTSPGP)
       END IF
 *. Largest number of strings belonging to given supergroup
 *. Largest Occupation block for given supergroup and sym
       MAX_STR_OC_BLK = -1
       MAX_STR_SPGP = 0
       DO ISPGP = 1, NTSPGP
-        NSTR = IELSUM(NSTFSMSPGP(1,ISPGP),NSMST)
+        NSTR         = IELSUM(NSTFSMSPGP(1,ISPGP),NSMST)
+        NEL          = IELSUM(NELFSPGP(1,ISPGP),NGAS)
         MAX_STR_SPGP = MAX(MAX_STR_SPGP,NSTR)
-        NEL = IELSUM(NELFSPGP(1,ISPGP),NGAS)
         DO ISTSM = 1, NSMST
           MAX_STR_OC_BLK
      &  = MAX(MAX_STR_OC_BLK,(NEL+4)*NSTFSMSPGP(ISTSM,ISPGP))
@@ -4308,31 +4306,27 @@ CMOD &  = MAX(MAX_STR_OC_BLK,NEL*NSTFSMSPGP(ISTSM,ISPGP))
       END DO
 *
       IF(NTEST.GE.2) THEN
-      WRITE(6,*)
+      WRITE(lupri,*)
      & ' Largest number of strings of given supergroup        ',
      & MAX_STR_SPGP
-      WRITE(6,*) ' Largest block of string occupations ',
+      WRITE(lupri,*) ' Largest block of string occupations ',
      &              MAX_STR_OC_BLK
 *
-      WRITE(6,*)
+      WRITE(lupri,*)
      & ' Largest number of strings of given supergroup and sym', MXNSTR
       END IF
-C?    WRITE(6,'(A,3I6)') ' MXSMCLS,MXSMCLSE,MXSMCLSE1 = ',
-C?   &                     MXSMCLS,MXSMCLSE,MXSMCLSE1
 *
 *
 * Possible occupation classes
 *
       CALL OCCLS(2,NMXOCCLS,WORK(KIOCLS),NACTEL,NGAS,
-     &           IGSOCC(1,1),IGSOCC(1,2),
-     &           0,0)
+     &           IGSOCC(1,1),IGSOCC(1,2),0,0)
 *
 * Maps creation/annihilation of given gas orb from given supergroup
 * gives new supergroup.
 *
-      IZERO = 0
-      CALL ISETVC(WORK(KSPGPCR),IZERO,NGAS*NTSPGP)
-      CALL ISETVC(WORK(KSPGPAN),IZERO,NGAS*NTSPGP)
+      CALL IZERO(WORK(KSPGPCR),NGAS*NTSPGP)
+      CALL IZERO(WORK(KSPGPAN),NGAS*NTSPGP)
 *
       DO ISTTYP = 1,NSTTYP
 *. Creation map from this type
@@ -4347,7 +4341,7 @@ C?      WRITE(6,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
         IF(NSPGPFTP(ISTTYP).GT.0) THEN
 *
         IF(ISTTYPC.GE.1.AND.NSPGPFTP(ISTTYPC).GT.0) THEN
-           CALL SPGP_AC(NELFSPGP(1,1), NSPGPFTP(ISTTYP),
+           CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
      &                  NELFSPGP(1,1),NSPGPFTP(ISTTYPC),
      &                  NGAS,MXPNGAS,2,WORK(KSPGPCR),
      &                  IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPC))
@@ -4361,7 +4355,7 @@ C?      WRITE(6,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
         END DO
 C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
         IF(ISTTYPA.GE.1 .AND.NSPGPFTP(ISTTYPA).GT.0) THEN
-           CALL SPGP_AC(NELFSPGP(1,1), NSPGPFTP(ISTTYP),
+           CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
      &                  NELFSPGP(1,1),NSPGPFTP(ISTTYPA),
      &                  NGAS,MXPNGAS,1,WORK(KSPGPAN),
      &                  IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPA))
@@ -4369,11 +4363,7 @@ C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
         END IF
       END DO
 *
-C     WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
-!     CALL LMEMCHK('STRINF_GAS')
-*
       CALL QEXIT('STRIN')
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -5097,7 +5087,7 @@ C       END DO
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WEIGHT_LUCI(Z,NEL,NORB1,NORB2,NORB3,
-     &                  MNRS1,MXRS1,MNRS3,MXRS3,ISCR,NTEST)
+     &                       MNRS1,MXRS1,MNRS3,MXRS3,ISCR,NTEST)
 *
 * construct vertex weights
 *
@@ -5116,21 +5106,21 @@ C       END DO
       END IF
 *
       KLFREE = 1
-      KLMAX = KLFREE
+      KLMAX  = KLFREE
       KLFREE = KLFREE + NORB
 *
-      KLMIN = KLFREE
+      KLMIN  = KLFREE
       KLFREE = KLFREE + NORB
 *
-      KW = KLFREE
+      KW     = KLFREE
       KLFREE = KW + (NEL+1)*(NORB+1)
 *.Max and min arrays for strings
       CALL RSMXMN_LUCI(ISCR(KLMAX),ISCR(KLMIN),NORB1,NORB2,NORB3,
-     &            NEL,MNRS1,MXRS1,MNRS3,MXRS3,NTEST)
+     &                 NEL,MNRS1,MXRS1,MNRS3,MXRS3,NTEST)
 *. Arc weights
-      CALL GRAPW_LUCI(ISCR(KW),Z,ISCR(KLMIN),ISCR(KLMAX),NORB,NEL,NTEST)
+      CALL GRAPW_LUCI(ISCR(KW),Z(1),ISCR(KLMIN),ISCR(KLMAX),NORB,
+     &                NEL,NTEST)
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
