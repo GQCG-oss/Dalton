@@ -309,8 +309,8 @@ C
       I2TYP = 0
       IF (IPRALL .GE. 1) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
-         WRITE (LUPRI,'(A,/)')
-     *     '1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> '
+         WRITE (LUPRI,'(/A/)')
+     *     '  <<<<<<<<<< Output from TWOEXP >>>>>>>>>> '
       END IF
 C
 C     No active orbitals
@@ -649,10 +649,13 @@ C  /* Deck getdmt */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      LOGICAL NODC, NODV, SYMUNQ
-      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK)
+
 #include <abainf.h>
 #include <inforb.h>
+
+      LOGICAL NODC, NODV, SYMUNQ
+      DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK)
+
       CALL QENTER('GETDMT')
       IF (IPRINT .GT. 5) CALL TITLER('Output from GETDMT','*',103)
 C
@@ -714,7 +717,7 @@ C
 C     Print Section
 C
       IF (IPRINT .GT. 03) THEN
-         WRITE (LUPRI, '(//,A,/)') ' <<<<< Subroutine ONEDSF >>>>>'
+         WRITE (LUPRI, '(//A/)') ' <<<<< Subroutine ONEDSF >>>>>'
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NASH ', (NASH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NOCC ', (NOCC(I),I = 1,NSYM)
@@ -810,3 +813,4 @@ C
       CALL QEXIT('ONEDSF')
       RETURN
       END
+! --- end of aba2tex.F ---

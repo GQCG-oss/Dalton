@@ -41,7 +41,7 @@ C
       DIMENSION SOINT(NELMNT,NOPTYP), INTREP(NOPTYP),
      &          WORK(LWORK), INTADR(*), EXPVAL(NOPTYP), DENMAT(*)
 C
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(A,/)')
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
       IF (INTTYP .EQ. 12 .OR. INTTYP .EQ. 96) THEN
          NPOINT = NPQUAD
@@ -5192,10 +5192,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
 C
-
-      SDPRE(I) = (1.0D0*I)
-
-C
 C     Hermitian integrals
 C     -------------------
 C
@@ -5208,9 +5204,10 @@ C
             HY = D0
             HZ = D0
             IF (IT .GT. 0) THEN
-               HX = HX + SDPRE(IT)*HMULT(1,IO-1,IT-1)
-               HY = HY + SDPRE(IT)*HMULT(2,IO-1,IT-1)
-               HZ = HZ + SDPRE(IT)*HMULT(3,IO-1,IT-1)
+               X_IT = IT
+               HX = HX + X_IT*HMULT(1,IO-1,IT-1)
+               HY = HY + X_IT*HMULT(2,IO-1,IT-1)
+               HZ = HZ + X_IT*HMULT(3,IO-1,IT-1)
             END IF
             IF (IT .LE. IO-1) THEN
                HX = HX + (CORPX - ORIGIN(1))*HMULT(1,IO-1,IT)
@@ -5474,9 +5471,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 C
-
-      SDPRE(I) = (1.0D0*I)
-
 #include "ibtfun.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -5530,8 +5524,8 @@ C
 C     Differentiated contribution from center B
 C
                   IF (LVALB .GT. 0) THEN
-                     XFINT = - D2*EXPB*SDPRE(2*LVALB + 1)*
-     &                                      ((XC-CORBX)**LVALB)
+                     XFINT = - D2*EXPB*((XC-CORBX)**LVALB)
+                     XFINT = (2.0D0*LVALB + 1.0D0)*XFINT
                   ELSE
                      XFINT = - D2*EXPB
                   END IF
@@ -5539,14 +5533,14 @@ C
      &                  + D4*EXPB*EXPB*((XC - CORBX)**(LVALB + 2))
                   IF (LVALB .GT. 2) THEN
                     XFINT = XFINT +
-     &              SDPRE(LVALB*(LVALB - 1))*((XC - CORBX)**(LVALB - 2))
+     &                (LVALB*(LVALB-1.0D0)) * ((XC-CORBX)**(LVALB-2))
                   ELSE IF (LVALB .EQ. 2) THEN
                      XFINT = XFINT + D2
                   END IF
 C
                   IF (MVALB .GT. 0) THEN
-                     YFINT = - D2*EXPB*SDPRE(2*MVALB + 1)*
-     &                                      ((YC-CORBY)**MVALB)
+                     YFINT = - D2*EXPB*((YC-CORBY)**MVALB)
+                     YFINT = (2.0D0*MVALB + 1.0D0)*YFINT
                   ELSE
                      YFINT = - D2*EXPB
                   END IF
@@ -5554,22 +5548,22 @@ C
      &                  + D4*EXPB*EXPB*((YC - CORBY)**(MVALB + 2))
                   IF (MVALB .GT. 2) THEN
                     YFINT = YFINT +
-     &              SDPRE(MVALB*(MVALB - 1))*((YC - CORBY)**(MVALB - 2))
+     &                (MVALB*(MVALB-1.0D0)) * ((YC-CORBY)**(MVALB-2))
                   ELSE IF (MVALB .EQ. 2) THEN
                      YFINT = YFINT + D2
                   END IF
 C
                   IF (NVALB .GT. 0) THEN
-                     ZFINT = - D2*EXPB*SDPRE(2*NVALB + 1)*
-     &                                      ((ZC-CORBZ)**NVALB)
+                     ZFINT = - D2*EXPB*((ZC-CORBZ)**NVALB)
+                     ZFINT = (2*NVALB + 1) * ZFINT
                   ELSE
                      ZFINT = - D2*EXPB
                   END IF
                   ZFINT = ZFINT
      &                  + D4*EXPB*EXPB*((ZC - CORBZ)**(NVALB + 2))
                   IF (NVALB .GT. 2) THEN
-                    ZFINT = ZFINT +
-     &              SDPRE(NVALB*(NVALB - 1))*((ZC - CORBZ)**(NVALB - 2))
+                     ZFINT = ZFINT +
+     &                 (NVALB*(NVALB-1.0D0)) * ((ZC-CORBZ)**(NVALB-2))
                   ELSE IF (NVALB .EQ. 2) THEN
                      ZFINT = ZFINT + D2
                   END IF
@@ -7000,8 +6994,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
 
-      SDPRE(I) = (1.0D0*I)
-
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7057,40 +7049,43 @@ C
 C     Differentiated contribution from center B
 C
             IF (LVALB .GT. 0) THEN
-               XFINT = - D2*EXPB*SDPRE(2*LVALB + 1)*((XC-CORBX)**LVALB)
+               XFINT = - D2*EXPB*((XC-CORBX)**LVALB)
+               XFINT = (2*LVALB + 1) * XFINT
             ELSE
                XFINT = - D2*EXPB
             END IF
             XFINT = XFINT + D4*EXPB*EXPB*((XC - CORBX)**(LVALB + 2))
             IF (LVALB .GT. 2) THEN
                XFINT = XFINT +
-     &              SDPRE(LVALB*(LVALB - 1))*((XC - CORBX)**(LVALB - 2))
+     &              (LVALB*(LVALB-1.0D0)) * ((XC-CORBX)**(LVALB-2))
             ELSE IF (LVALB .EQ. 2) THEN
                XFINT = XFINT + D2
             END IF
 C
             IF (MVALB .GT. 0) THEN
-               YFINT = - D2*EXPB*SDPRE(2*MVALB + 1)*((YC-CORBY)**MVALB)
+               YFINT = - D2*EXPB*((YC-CORBY)**MVALB)
+               YFINT = (2*MVALB + 1) * YFINT
             ELSE
                YFINT = - D2*EXPB
             END IF
             YFINT = YFINT + D4*EXPB*EXPB*((YC - CORBY)**(MVALB + 2))
             IF (MVALB .GT. 2) THEN
                YFINT = YFINT +
-     &              SDPRE(MVALB*(MVALB - 1))*((YC - CORBY)**(MVALB - 2))
+     &              (MVALB*(MVALB-1.0D0)) * ((YC-CORBY)**(MVALB-2))
             ELSE IF (MVALB .EQ. 2) THEN
                YFINT = YFINT + D2
             END IF
 C
             IF (NVALB .GT. 0) THEN
-               ZFINT = - D2*EXPB*SDPRE(2*NVALB + 1)*((ZC-CORBZ)**NVALB)
+               ZFINT = - D2*EXPB*((ZC-CORBZ)**NVALB)
+               ZFINT = (2*NVALB + 1) * ZFINT
             ELSE
                ZFINT = - D2*EXPB
             END IF
             ZFINT = ZFINT + D4*EXPB*EXPB*((ZC - CORBZ)**(NVALB + 2))
             IF (NVALB .GT. 2) THEN
                ZFINT = ZFINT +
-     &              SDPRE(NVALB*(NVALB - 1))*((ZC - CORBZ)**(NVALB - 2))
+     &              (NVALB*(NVALB-1.0D0)) * ((ZC-CORBZ)**(NVALB-2))
             ELSE IF (NVALB .EQ. 2) THEN
                ZFINT = ZFINT + D2
             END IF
@@ -7544,8 +7539,6 @@ C
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 
-      SDPRE(I) = (1.0D0*I)
-
       EXPPIH = EXPPI/D2
       DO 100 IA = 0, JMAXA
          DO 200 IB = 0, JMAXB
@@ -7553,6 +7546,7 @@ C
                FX = D0
                FY = D0
                FZ = D0
+               X_IP1 = I + 1
                IF (I .LE. IA + IB) THEN
                   FX = FX + DIFPDX*ODC(IA,IB,I,0,0,1)
                   FY = FY + DIFPDY*ODC(IA,IB,I,0,0,2)
@@ -7564,9 +7558,9 @@ C
                   FZ = FZ + EXPPIH*ODC(IA,IB,I - 1,0,0,3)
                END IF
                IF (I .LT. IA + IB) THEN
-                  FX = FX + SDPRE(I + 1)*ODC(IA,IB,I + 1,0,0,1)
-                  FY = FY + SDPRE(I + 1)*ODC(IA,IB,I + 1,0,0,2)
-                  FZ = FZ + SDPRE(I + 1)*ODC(IA,IB,I + 1,0,0,3)
+                  FX = FX + X_IP1*ODC(IA,IB,I + 1,0,0,1)
+                  FY = FY + X_IP1*ODC(IA,IB,I + 1,0,0,2)
+                  FZ = FZ + X_IP1*ODC(IA,IB,I + 1,0,0,3)
                END IF
                IF (INTTYP .EQ. 96) THEN
                   ODC(IA,IB,I,0,1,1) = FX
@@ -7586,9 +7580,9 @@ C
                      FZ = FZ + EXPPIH*ODC(IA,IB,I - 1,2,0,3)
                   END IF
                   IF (I .LT. IA + IB) THEN
-                     FX = FX + SDPRE(I + 1)*ODC(IA,IB,I + 1,2,0,1)
-                     FY = FY + SDPRE(I + 1)*ODC(IA,IB,I + 1,2,0,2)
-                     FZ = FZ + SDPRE(I + 1)*ODC(IA,IB,I + 1,2,0,3)
+                     FX = FX + X_IP1*ODC(IA,IB,I + 1,2,0,1)
+                     FY = FY + X_IP1*ODC(IA,IB,I + 1,2,0,2)
+                     FZ = FZ + X_IP1*ODC(IA,IB,I + 1,2,0,3)
                   END IF
                   ODC(IA,IB,I,2,1,1) = FX
                   ODC(IA,IB,I,2,1,2) = FY
@@ -8055,7 +8049,6 @@ C
 #include "orgcom.h"
 #include "mgsolt.h"
 C
-C
       INT = 0
       ADX = CORAX - ORIGIN(1)
       ADY = CORAY - ORIGIN(2)
@@ -8177,7 +8170,6 @@ C
 #include "lmns.h"
 #include "orgcom.h"
 #include "mgsolt.h"
-C
 C
       INT = 0
       ADX = CORAX - ORIGIN(1)

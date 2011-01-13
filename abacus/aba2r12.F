@@ -90,40 +90,24 @@ C     Copy of R0001 for use with R12EIN (WK/UniKA/20-11-2002).
             SGN34Z = SIGNT(3)
          END IF
 C
-C	It turns out 64-bits IRIX compiler misinterprets this statement with
-C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
-#if defined (SYS_IRIX)
          IODS  = 1
          NODS  = 1
-#else
-         IODS  = 0
-         NODS  = 0
-#endif
          DO 300 IOD12 = 1, NUC12
             PX     = SGN12X*COOR12(IOD12,1)
             PY     = SGN12Y*COOR12(IOD12,2)
             PZ     = SGN12Z*COOR12(IOD12,3)
             DO 310 IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
-               IODS = IODS + 1
-               NODS = NODS + 1
-#endif
                PQXI = PX - SGN34X*COOR34(IOD34,1)
                PQYI = PY - SGN34Y*COOR34(IOD34,2)
                PQZI = PZ - SGN34Z*COOR34(IOD34,3)
                PQX(IODS) = PQXI
                PQY(IODS) = PQYI
                PQZ(IODS) = PQZI
-#if defined (SYS_IRIX)
                IODS = IODS + 1
                NODS = NODS + 1
-#endif
   310       CONTINUE
   300    CONTINUE
-#if defined (SYS_IRIX)
-         IODS = IODS - 1
-         NODS = NODS - 1
-#endif
+
          IPQ0X = 1
          IPQ0Y = 1
          IPQ0Z = 1
@@ -138,8 +122,8 @@ C
          DO IOD34 = 1, NUC34
             IJ = IJ + 1
             FACINT(IJ) = FAC * FAC34(IOD34)
-            HEXPP(IJ) = EXP12(IOD12)
-            HEXPQ(IJ) = EXP34(IOD34)
+            HEXPP(IJ)  = EXP12(IOD12)
+            HEXPQ(IJ)  = EXP34(IOD34)
          END DO
       END DO
       RETURN
@@ -388,7 +372,7 @@ C
                      DO IOPP = 1, NOPP12
                         BUF(ICOUNT,IOPP+1) = SO(ISOFF+INT,IOPP)
                      END DO
-                     IF (ICOUNT. EQ. LBUF) THEN
+                     IF (ICOUNT .EQ. LBUF) THEN
                         CALL R12WRT(BUF,LBUF,ICOUNT,0,0,IPRINT)
                         NBUFCL = NBUFCL + 1
                      END IF
@@ -462,12 +446,13 @@ C
 #include <drw2el.h>
 #include <r12int.h>
 C
+      INTEGER*8 NWRIT
+C
 #include <ibtfun.h>
 C
       IF (LBUF .NE. LDSBUF) THEN
-        WRITE (LUPRI,*) 'LBUF  :',LBUF
-        WRITE (LUPRI,*) 'LDSBUF:',LDSBUF
-        CALL QUIT('Error in US2OU1')
+        WRITE (LUPRI,*) 'LBUF .ne. LDSBUF :',LBUF,LDSBUF
+        CALL QUIT('Error in US2OU1, LBUF .ne. LDSBUF')
       END IF
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine US2OUT',-1)
@@ -633,7 +618,7 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                   END IF
                   SOINT1 = SO(ISOFF+INT,1)
                   SOINT2 = SO(ISOFF+INT,2)
-                  IF (ABS(SOINT1) .GT. THRESH. OR.
+                  IF (ABS(SOINT1) .GT. THRESH .OR.
      &                ABS(SOINT2) .GT. THRESH) THEN
                      IF (NIBUF .EQ. 1) THEN
                        NCOUNT(IDIST) = NCOUNT(IDIST) + 1
@@ -697,9 +682,11 @@ C
             CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),IBUF(1,1,IDIST),
      &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
   400    CONTINUE
-         NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
-         PERCNT = 100.D0*NWRIT
-         PERCNT = PERCNT / NALL
+         FNALL  = (NBASIS*(NBASIS + 1))/2
+         FNALL  = FNALL*NBASIS
+         FNALL  = FNALL*NDIST
+         PERCNT = NWRIT
+         PERCNT = 100.D0*PERCNT / FNALL
          IF (IPRINT.GT.0) WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
      &         'Number of two-electron integrals written:',NWRIT,
      &         ' (',PERCNT,'%)'

@@ -145,7 +145,7 @@ C
          TERM = R2MAX1
          SUM = TERM
          DENOM = D2MAX1
-         DO 810 IORDER = 2,200
+         DO 810 IORDER = 2, 200
             DENOM = DENOM + D2
             TERM = TERM*D2WAL/DENOM
             SUM = SUM + TERM

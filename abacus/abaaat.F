@@ -387,15 +387,16 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 C
+#include <inforb.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <abainf.h>
+C
       PARAMETER (D05 = 0.5D0)
       INTEGER X
       CHARACTER*8 LABINT(*)
       DIMENSION DBR(NORBT,NORBT), CMO(*), INTREP(*), INTADR(*),
      &          WORK(LWORK)
-#include <inforb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <abainf.h>
 C
       CALL QENTER('DBDR1 ')
 C
@@ -455,10 +456,10 @@ C***********************************************************************
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION DTOT(NORBT,NORBT), WORK(LWORK)
 #include <inforb.h>
+      DIMENSION DTOT(NORBT,NORBT), WORK(LWORK)
 C
-      KDV = 1
+      KDV   = 1
       KLAST = KDV + NNASHX
       IF (KLAST .GT. LWORK) CALL STOPIT('MKDENS',' ',LWORK,KLAST)
       CALL MKDEN1(DTOT,WORK(KDV),IPRINT)
@@ -473,15 +474,16 @@ C
 #include <priunit.h>
 #include <maxorb.h>
 #include <maxash.h>
-      PARAMETER(D2 = 2.D0)
 C
-      INTEGER U, U1, U2, V, V1, V2, UV
-      DIMENSION DV(NNASHX), DTOT(NORBT,NORBT)
-      LOGICAL FOUND
 #include <inftap.h>
 #include <inforb.h>
 #include <infind.h>
 #include <iratdef.h>
+C
+      PARAMETER (D2 = 2.D0)
+      INTEGER   U, U1, U2, V, V1, V2, UV
+      DIMENSION DV(NNASHX), DTOT(NORBT,NORBT)
+      LOGICAL   FOUND
 C
       IF (NASHT .GT. 0) THEN
          CALL RDSIFC('DV',FOUND,DV,DTOT,N2ORBX)
@@ -567,16 +569,17 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 C
-      INTEGER X, XS
-      CHARACTER*8 LABINT(*)
-      DIMENSION DTOT(NORBT,NORBT), DBR(NORBT,NORBT), CMO(*),
-     &          INTREP(*), INTADR(*), WORK(LWORK), DS1(N2ORBX,3),
-     &          CSTRA(*), SCTRA(*)
 #include <inforb.h>
 #include <nuclei.h>
 #include <aatens.h>
 #include <symmet.h>
 #include <abainf.h>
+C
+      INTEGER X, XS
+      CHARACTER*8 LABINT(*)
+      DIMENSION DTOT(NORBT,NORBT), DBR(NORBT,NORBT), CMO(*),
+     &          INTREP(*), INTADR(*), WORK(LWORK), DS1(N2ORBX,3),
+     &          CSTRA(*), SCTRA(*)
 C
       CALL QENTER('AATSE1')
       KLAST = 1
@@ -688,6 +691,7 @@ C
 #include <infvar.h>
 #include <inflin.h>
       DIMENSION UNPACK(NORBT,NORBT),PACKED(NWOPT)
+C
       CALL DZERO(UNPACK,N2ORBX)
       IF (ANTI) THEN
          DO 100 IG = 1,NWOPPT
@@ -731,11 +735,13 @@ C***********************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 #include <iratdef.h>
-      DIMENSION DTOT(NORBT,NORBT),CMO(*),CSTRA(*),SCTRA(*),WORK(LWORK)
-      CHARACTER*8 LABINT(*)
+
 #include <inforb.h>
 #include <inflin.h>
 #include <nuclei.h>
+
+      DIMENSION DTOT(NORBT,NORBT),CMO(*),CSTRA(*),SCTRA(*),WORK(LWORK)
+      CHARACTER*8 LABINT(*)
 C
       NCART  = 3*NUCDEP
 C
@@ -781,6 +787,13 @@ C***********************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 #include <iratdef.h>
+
+#include <inftap.h>
+#include <inforb.h>
+#include <inflin.h>
+#include <abainf.h>
+#include <aatens.h>
+
       PARAMETER (D05 = 0.5D0)
       INTEGER B, R
       CHARACTER*8 LABINT(*)
@@ -792,11 +805,6 @@ C***********************************************************************
      &          AATOK(3,NCART), AATOD(3,NCART), AATS1(3,NCART),
      &          AATS2(3,NCART), AATOT(3,NCART), AATALL(3,NCART),
      &          CSTRA(*), SCTRA(*), WORK(LWORK)
-#include <inftap.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <abainf.h>
-#include <aatens.h>
 C
 C     DB integrals
 C     ============
@@ -1287,11 +1295,11 @@ C OUTPUT : ONEACT ( TRANSITION VALUE )
 C
 #include <implicit.h>
 C
-      DIMENSION PRPMO(NORBT,2),DVT(NASHDI,2)
-C
 #include <priunit.h>
 #include <inforb.h>
 #include <infdim.h>
+C
+      DIMENSION PRPMO(NORBT,2),DVT(NASHDI,2)
 C
       PARAMETER (  D0 = 0.0D0 )
       PARAMETER ( BIGLIM = 100000.0D0, SMLLIM = 0.01D0 )

@@ -185,12 +185,6 @@ C
 #include <nuclei.h>
 #include <iratdef.h>
       PARAMETER (DM1 = -1.0D0)
-C
-      CHARACTER*8 LABINT(3*MXCOOR)
-      DIMENSION CMO(NCMOT), DVSP(NNASHX), DV(NASHT,NASHT),
-     *          SOPACK(NNBASX,3), DIPRHS(NVARMA), DIPREO(3*NUCDEP),
-     *          WORK(LWORK), SOINT(NBAST,NBAST)
-C
 #include <dipole.h>
 #include <orgcom.h>
 #include <moldip.h>
@@ -206,6 +200,12 @@ C
 #include <infdim.h>
 #include <infinp.h>
 #include <inflin.h>
+C
+      CHARACTER*8 LABINT(3*MXCOOR)
+      DIMENSION CMO(NCMOT), DVSP(NNASHX), DV(NASHT,NASHT),
+     *          SOPACK(NNBASX,3), DIPRHS(NVARMA), DIPREO(3*NUCDEP),
+     *          WORK(LWORK), SOINT(NBAST,NBAST)
+C
       LOGICAL OLDDX
 #include <chrxyz.h>
 C

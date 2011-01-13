@@ -1589,14 +1589,13 @@ C
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
 #include <ibtfun.h>
-
-      SDPRE(I) = (1.0D0*I)
-
 C
       DO 100 A = 0, MAX1
          AGT0 = A .GT. 0
+         XA_TRI = A*(A-1.0D0)
          DO 200 B = 0, MAX2
             BGT0 = B .GT. 0
+            XB_TRI = B*(B-1.0D0)
             AB = A + B
             DO 300 T = IBTAND(AB,I120), AB + 2, I120 + 1
 C
@@ -1608,12 +1607,12 @@ C
                      DO 400 I = 1, NUC12
                        ACOEF(I,T,A,B) = AXP(I)*(AXP(I)*UCOEF(I,T,A+2,B)
      &                               - (2.0D0*A+1.0D0)*UCOEF(I,T,A,  B))
-     &                                + SDPRE(A*(A-1))*UCOEF(I,T,A-2,B)
+     &                                + XA_TRI        *UCOEF(I,T,A-2,B)
   400                CONTINUE
                   ELSE IF (T .LE. AB) THEN
                      DO 410 I = 1, NUC12
                        ACOEF(I,T,A,B) = AXP(I)*(AXP(I)*UCOEF(I,T,A+2,B)
-     &                                  - SDPRE(2*A+1)*UCOEF(I,T,A,  B))
+     &                               - (2.0D0*A+1.0D0)*UCOEF(I,T,A,  B))
   410                CONTINUE
                   ELSE
                      DO 420 I = 1, NUC12
@@ -1630,7 +1629,7 @@ C
                      DO 500 I = 1, NUC12
                        BCOEF(I,T,A,B) = BXP(I)*(BXP(I)*UCOEF(I,T,A,B+2)
      &                               - (2.0D0*B+1.0D0)*UCOEF(I,T,A,B  ))
-     &                                + SDPRE(B*(B-1))*UCOEF(I,T,A,B-2)
+     &                                + XB_TRI        *UCOEF(I,T,A,B-2)
   500                CONTINUE
                   ELSE IF (T .LE. AB) THEN
                      DO 510 I = 1, NUC12
@@ -1658,18 +1657,18 @@ C
                   ELSE IF (AGT0 .AND. BGT0 .AND. T.LE.AB) THEN
                      DO 610 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*B*UCOEF(I,T,A+1,B-1)
-     &                              - BXP(I)*A*UCOEF(I,T,A-1,B+1)
+     &                                - AXP(I)*B     *UCOEF(I,T,A+1,B-1)
+     &                                - A     *BXP(I)*UCOEF(I,T,A-1,B+1)
   610                CONTINUE
                   ELSE IF (AGT0 .AND. T.LE.AB) THEN
                      DO 620 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - BXP(I)*A*UCOEF(I,T,A-1,B+1)
+     &                                - A     *BXP(I)*UCOEF(I,T,A-1,B+1)
   620                CONTINUE
                   ELSE IF (BGT0 .AND. T.LE.AB) THEN
                      DO 630 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*B*UCOEF(I,T,A+1,B-1)
+     &                                - AXP(I)*B     *UCOEF(I,T,A+1,B-1)
   630                CONTINUE
                   ELSE
                      DO 640 I = 1, NUC12
@@ -1848,7 +1847,7 @@ C
                ELSE
                   DO 410 I = 1, NUC12
                      ABCOEF(I,T,A,B) = AXP(I)*UCOEF(I,T,A+1,B)
-     &                               - A*UCOEF(I,T,A-1,B)
+     &                               - A     *UCOEF(I,T,A-1,B)
   410             CONTINUE
                END IF
                IF ((B .EQ. 0) .OR. (T .GE. AB)) THEN
@@ -1860,7 +1859,7 @@ C
                   DO 510 I = 1, NUC12
                      ABCOEF(I,T,A,B) = ABCOEF(I,T,A,B) 
      &                               + BXP(I)*UCOEF(I,T,A,B+1)
-     &                               - B*UCOEF(I,T,A,B-1)
+     &                               - B     *UCOEF(I,T,A,B-1)
   510             CONTINUE
                END IF
   300       CONTINUE

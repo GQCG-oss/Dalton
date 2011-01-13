@@ -4529,7 +4529,6 @@ C  /* Deck sphco1 */
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
-C
       LVAL1 = LVAL + 1
 C
 C     Legendre coefficients
@@ -4619,7 +4618,7 @@ C
       RETURN
       END
 C  /* Deck facult */
-      FUNCTION FACULT(N)
+      REAL*8 FUNCTION FACULT(N)
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
@@ -4677,7 +4676,7 @@ C
       RETURN
       END
 C  /* Deck binom */
-      FUNCTION BINOM(I,J)
+      REAL*8 FUNCTION BINOM(I,J)
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
@@ -4728,6 +4727,9 @@ C        New AOPROPER, open file
 #else
 C     Dalton: Please note that we now require LUPROP to be open
 C     when reaching this routine.
+         IF (LUPROP .LT. 0) THEN
+            CALL QUIT('Programming error, AOPROPER not open in WRTPRO')
+         END IF
 #endif
          REWIND LUPROP
       ELSE

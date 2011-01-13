@@ -248,7 +248,7 @@ C           ...  Lr
             BASNAM = 'HUCKEL    7 6 4 2'
 C Manu end
          ELSE 
-            CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.103')
+            CALL QUIT('BASLIB error: HUCKEL not defined for Z > 103')
          END IF
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
@@ -513,10 +513,6 @@ C
          END IF
       END IF
 C
-C Find reference information for the basis set. 
-C
-      CALL FINREF (BASREF,LUBAS,BASSAV)
-C
       IF (NBLOCK .EQ. 0) THEN
          WRITE (LUPRI,'(/A,I5,A/3X,A)')
      &   'ERROR No basis functions found for element',INTQ,' in basis:',
@@ -534,6 +530,10 @@ C
       DO I = 1, IQM
          JCO(I) = 1
       END DO
+C
+C Find reference information for the basis set. 
+C
+      CALL FINREF (BASREF,LUBAS,BASSAV)
 C
 C Close basis set file
 C

@@ -173,9 +173,6 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
 #include <onecom.h>
-
-      SDPRE(I) = (1.0D0*I)
-
 C
       PAX = CORPX - CORAX
       PAY = CORPY - CORAY
@@ -191,30 +188,32 @@ C
             ODCUND(0,0,0,0,0,3) = FAC
          ELSE
             DO 200 T = 0, A
+               X_TP1 = T + 1
                ODCUND(A,0,T,0,0,1) = EXPPIH*ODCUND(A-1,0,T-1,0,0,1)
-     *                            + PAX*ODCUND(A-1,0,T  ,0,0,1)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,1)
+     *                                + PAX*ODCUND(A-1,0,T  ,0,0,1)
+     *                              + X_TP1*ODCUND(A-1,0,T+1,0,0,1)
                ODCUND(A,0,T,0,0,2) = EXPPIH*ODCUND(A-1,0,T-1,0,0,2)
-     *                            + PAY*ODCUND(A-1,0,T  ,0,0,2)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,2)
+     *                                + PAY*ODCUND(A-1,0,T  ,0,0,2)
+     *                              + X_TP1*ODCUND(A-1,0,T+1,0,0,2)
                ODCUND(A,0,T,0,0,3) = EXPPIH*ODCUND(A-1,0,T-1,0,0,3)
-     *                            + PAZ*ODCUND(A-1,0,T  ,0,0,3)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,3)
+     *                                + PAZ*ODCUND(A-1,0,T  ,0,0,3)
+     *                              + X_TP1*ODCUND(A-1,0,T+1,0,0,3)
   200       CONTINUE
          END IF
          DO 300 B = 1, JMAXBP
             AB = A + B
 C
             DO 400 T = 0, AB
+               X_TP1 = T + 1
                ODCUND(A,B,T,0,0,1) = EXPPIH*ODCUND(A,B-1,T-1,0,0,1)
-     &                            + PBX*ODCUND(A,B-1,T  ,0,0,1)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,1)
+     &                                + PBX*ODCUND(A,B-1,T  ,0,0,1)
+     &                              + X_TP1*ODCUND(A,B-1,T+1,0,0,1)
                ODCUND(A,B,T,0,0,2) = EXPPIH*ODCUND(A,B-1,T-1,0,0,2)
-     &                            + PBY*ODCUND(A,B-1,T  ,0,0,2)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,2)
+     &                                + PBY*ODCUND(A,B-1,T  ,0,0,2)
+     &                              + X_TP1*ODCUND(A,B-1,T+1,0,0,2)
                ODCUND(A,B,T,0,0,3) = EXPPIH*ODCUND(A,B-1,T-1,0,0,3)
-     &                            + PBZ*ODCUND(A,B-1,T  ,0,0,3)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,3)
+     &                                + PBZ*ODCUND(A,B-1,T  ,0,0,3)
+     &                              + X_TP1*ODCUND(A,B-1,T+1,0,0,3)
   400          CONTINUE
   300    CONTINUE
   100 CONTINUE
@@ -459,8 +458,6 @@ C
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 
-      SDPRE(I) = (1.0D0*I)
-
       TEXPA1 = EXPA + EXPA
       TEXPA2 = TEXPA1*TEXPA1
       IF (JMAXD .LT. 2) THEN
@@ -470,7 +467,7 @@ C
          CALL QUIT('JMAXD too small in TODC')
       END IF
       DO 100 A = 0, JMAXA
-         FAC21A = TEXPA1*SDPRE(2*A + 1)
+         FAC21A = (2.0D0*A + 1.0D0) *  TEXPA1
          IF (A .LT. 2) THEN
             DO 200 B = 0, JMAXB
                ODC(A,B,0,2,0,1) = TEXPA2*ODCUND(A+2,B,0,0,0,1)
@@ -481,7 +478,7 @@ C
      &                          - FAC21A*ODCUND(A  ,B,0,0,0,3)
   200       CONTINUE
          ELSE
-            FAC20A = SDPRE(A*(A - 1))
+            FAC20A = (A*(A - 1.0D0))
             DO 300 B = 0, JMAXB
                ODC(A,B,0,2,0,1) = TEXPA2*ODCUND(A+2,B,0,0,0,1)
      &                        - FAC21A*ODCUND(A  ,B,0,0,0,1)
@@ -519,9 +516,9 @@ C
 #include <onecom.h>
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*A + 1)/(D2*EXPA)
+         FA = (D2*A + 1.0D0)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*B + 1)/(D2*EXPB)
+            FB = (D2*B + 1.0D0)/(D2*EXPB)
             DO 30 T = 0 , JMAXTP
                ODCUND(A,B,T,0,1,1) = FA*ODCUND(A + 1,B,T,0,0,1)
      &                             + FB*ODCUND(A,B + 1,T,0,0,1)
@@ -569,9 +566,9 @@ C
 #include <onecom.h>
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*A + 1)/(D2*EXPA)
+         FA = (D2*A + 1.0D0)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*B + 1)/(D2*EXPB)
+            FB = (D2*B + 1.0D0)/(D2*EXPB)
                ODCUND(A,B,0,2,1,1) = FA*ODCUND(A + 1,B,0,2,0,1)
      &                             + FB*ODCUND(A,B + 1,0,2,0,1)
                ODCUND(A,B,0,2,1,2) = FA*ODCUND(A + 1,B,0,2,0,2)

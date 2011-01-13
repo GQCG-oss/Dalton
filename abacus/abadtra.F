@@ -187,9 +187,6 @@ C  WRK(LWRK)
 C
 #include <implicit.h>
 #include <iratdef.h>
-      DIMENSION H2DAC(*), FQD(*), CMO(*), PV(NNASHX,NNASHX)
-      DIMENSION WRK(LWRK)
-C
 C Used from common blocks:
 C  INFORB : NASHT,NBAST,N2BASX,N2ASHX,NNASHX
 C  INFIND : NSM(),IROW()
@@ -201,6 +198,9 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include "inftrl.h"
+C
+      DIMENSION H2DAC(*), FQD(*), CMO(*), PV(NNASHX,NNASHX)
+      DIMENSION WRK(LWRK)
 C
       CALL QENTER('TRDNEW')
       if (iprint .gt. 6) then
@@ -374,9 +374,6 @@ C 2.Oct.1992 hjaaj
 C
 #include <implicit.h>
 #include <iratdef.h>
-      DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
-      DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
-      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C
 C Used from common blocks:
 C   INFORB : NCMOT,NBAST,NASHT,...
@@ -391,6 +388,9 @@ C
 #include <infind.h>
 #include "inftrl.h"
 C
+      DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
+      DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
+      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C-B-HJTEMP-MAERKE
       PARAMETER (LBINT = 600)
 C-E-HJTEMP-MAERKE
@@ -602,7 +602,6 @@ C IH1XX(IBSYM,IABSYM) is off-set for block (IASYM,IBSYM) in H1XX
 C                     of symmetry IABSYM (IASYM = MULD2H(IBSYM,IABSYM))
 C
 #include <implicit.h>
-      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C
 C Used from common blocks
 C   INFORB: NSYM, NASH(8), NBAS(8), MULD2H(8,8)
@@ -612,7 +611,9 @@ C
 #include <inforb.h>
 #include "inftrl.h"
 C
-      PARAMETER (IMEMERR = -999 999 999)
+      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
+C
+      PARAMETER (IMEMERR = -999999999)
 C
       MXNDAO = 0
       MXNDAC = 0
@@ -727,9 +728,6 @@ C Output: H2DBUF(uv,indrs) = (uv / rs)
 C
 #include <implicit.h>
 C
-      DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
-      DIMENSION INDDIS(NBAST,NBAST), H2DWRK(*)
-C
 C Used from common blocks:
 C   INFORB : NBAST, NCMOT
 C   INFIND : ISAO(*)
@@ -741,6 +739,9 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include "inftrl.h"
+C
+      DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
+      DIMENSION INDDIS(NBAST,NBAST), H2DWRK(*)
 C
       DO 800 KR = 1,NBAST
          KRSYM = ISAO(KR)
@@ -793,7 +794,6 @@ C Output: H2CDAC(u.v) = (u v | c d) =
 C         sum(b) [ sum(a) [ CMO(a,u) H2CDAO(a.b) ] CMO(b,v) ]
 C
 #include <implicit.h>
-      DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
@@ -801,6 +801,8 @@ C  INFTRL : IH1AO(8,8), IH1AC(8,8)
 C
 #include <inforb.h>
 #include "inftrl.h"
+C
+      DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
 C
 C     Allocation for IABSYM .eq. 1
       KAC = 1
@@ -860,8 +862,6 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
-      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
-      DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
@@ -874,6 +874,9 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include "inftrl.h"
+C
+      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
+      DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C     Local variables:
 C
@@ -957,12 +960,13 @@ C         = 654321 for sym.dist. not needed
 C   ICASE .le. 0: new round
 C
 #include <implicit.h>
-      DIMENSION INDRS(8,8), INDDIS(NBAST,NBAST)
 C
 C Used from common blocks:
 C   INFORB : NBAST, N2BASX
 C
 #include <inforb.h>
+C
+      DIMENSION INDRS(8,8), INDDIS(NBAST,NBAST)
 C
       IF (ICASE .LE. 0) THEN
 C     ... if (first)
@@ -1063,6 +1067,15 @@ C 'AH2' for Add to H2DAC
 C Add (uv / rs) contribution to (uv / xy) (x .ge. y)
 C
 #include <implicit.h>
+C
+C Used from common blocks:
+C   INFORB : ??
+C   INFTRL : NDAC(8),MXNDAO,NXNDAC
+C
+#include <priunit.h>
+#include <inforb.h>
+#include "inftrl.h"
+C
       DIMENSION CMOR(NBASR,NASHR), CMOS(NBASS,NASHS)
       DIMENSION INDDIS(NBAST,NBAST)
 #if defined (VAR_H2DPACK)
@@ -1072,14 +1085,6 @@ C
 #endif
       DIMENSION H2UVRY(MXNDAC)
       PARAMETER ( DP5 = 0.5D0, D0 = 0.0D0 )
-C
-C Used from common blocks:
-C   INFORB : ??
-C   INFTRL : NDAC(8),MXNDAO,NXNDAC
-C
-#include <priunit.h>
-#include <inforb.h>
-#include "inftrl.h"
 C
 #if defined (VAR_H2DPACK)
       IROW(I) = (I*(I-1))/2
@@ -1149,12 +1154,6 @@ C
 C 6-Oct-1992 hjaaj
 C
 #include <implicit.h>
-#if defined (VAR_H2DPACK)
-      DIMENSION H2DAC(NNASHX,NNASHX)
-#else
-      DIMENSION H2DAC(N2ASHX,NASHT,NASHT)
-#endif
-      DIMENSION INDAC(NASHT,NASHT), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NASHT,NASH(),IASH()
@@ -1166,6 +1165,13 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include "inftrl.h"
+C
+#if defined (VAR_H2DPACK)
+      DIMENSION H2DAC(NNASHX,NNASHX)
+#else
+      DIMENSION H2DAC(N2ASHX,NASHT,NASHT)
+#endif
+      DIMENSION INDAC(NASHT,NASHT), WRK(*)
 C
       PARAMETER (IWAY = -1, D2 = 2.0D0)
 C     ... IWAY=-1 to unpack
@@ -1216,9 +1222,6 @@ C
 C PVXS(uv) =  sum(y) PVF(uv,x,y) * CMO(s,y) =  [uv|xs]
 C
 #include <implicit.h>
-      DIMENSION CMOS(NBASS,NASHS), PVF(NNASHX,NNASHX)
-      DIMENSION PVXS(MXNDAC)
-C
 C
 C Used from common blocks:
 C  INFORB : NASHT
@@ -1226,6 +1229,9 @@ C  INFTRL : NDAC(8)
 C
 #include <inforb.h>
 #include "inftrl.h"
+C
+      DIMENSION CMOS(NBASS,NASHS), PVF(NNASHX,NNASHX)
+      DIMENSION PVXS(MXNDAC)
 C
       NDACUV = NDAC(KUVSYM)
       CALL DZERO(PVXS,MXNDAC)
@@ -1252,12 +1258,13 @@ C
 C FQD(a,x) = sum(r) FQAOAC(r,x) * CMO(r,a)
 C
 #include <implicit.h>
-      DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
 C Used from common blocks:
 C  INFORB : NORBT,NASHT,NBAST,NCMOT,NSYM
 C
 #include <inforb.h>
+C
+      DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
       DO 800 KSYM = 1,NSYM
          NASHK  = NASH(KSYM)
@@ -1288,12 +1295,13 @@ C IWAY .ge. 0 : Pack H1SP in H1PK
 C      else   : Unpack H1PK in H1SP
 C
 #include <implicit.h>
-      DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
 C
 C Used from common blocks:
 C   INFORB : NSYM,MULD2H
 C
 #include <inforb.h>
+C
+      DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
 C
       IF (IH1SYM .EQ. 1) THEN
          CALL PKSYM1(H1SP,H1PK,NBLK,NSYM,IWAY)
