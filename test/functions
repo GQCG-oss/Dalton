@@ -19,6 +19,11 @@ else
    CHECK_SHELL='#!/bin/sh'
 fi
 
+# Make sure user is not using German (DE) or another European LOCALE
+# where "," and "." are switched in numbers (US 0.456 = DE 0,456).
+# Otherwise gawk will not work!!!
+export LANG=en_US
+
 # Prefer gawk - we know exactly what it can do.
 # awk on Sun does not support functions, need to use nawk for this
 if gawk '{print 1}'</dev/null > /dev/null 2>&1; then
