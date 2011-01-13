@@ -213,11 +213,11 @@ CTRL[2]=3
 ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Static dipole-dipole polarizability compared:
-CRIT1=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 19\.92943." $log | wc -l`
+CRIT1=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 19\.92943.." $log | wc -l`
 CRIT2=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839." $log | wc -l`
-CRIT3=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.874623.." $log | wc -l`
-CRIT4=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839.. $log | wc -l`
-CRIT5=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 7\.112276.. $log | wc -l`
+CRIT3=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-0*\.874623." $log | wc -l`
+CRIT4=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839." $log | wc -l`
+CRIT5=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 7\.112276." $log | wc -l`
 CRIT6=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.706409.." $log | wc -l`
 CRIT7=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.874623.." $log | wc -l`
 CRIT8=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.706409.." $log | wc -l`
