@@ -67,7 +67,7 @@
   type   => 0, 
   string => "Final DFT", 
   pos    => 1, 
-  thr    => 1.0e-10};
+  thr    => 1.0e-9};
 }
 ## enedft end  #################################
 
@@ -77,7 +77,7 @@
   type   => 0,
   string => "Final HF",
   pos    => 1,
-  thr    => 1.0e-10};
+  thr    => 1.0e-9};
 }
 ## enehf end  #################################
 
@@ -87,7 +87,7 @@
   type   => 0,
   string => "Final MCSCF",
   pos    => 1,
-  thr    => 1.0e-10};
+  thr    => 1.0e-8};
 }
 ## enemc end  #################################
 
