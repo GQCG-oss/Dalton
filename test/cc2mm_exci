@@ -195,7 +195,7 @@ CTRL[2]=2
 ERROR[2]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.69249491 * 1\.76014638" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.6924949. * 1\.7601463." $log | wc -l`
 CRIT2=`$GREP "y * (\-|\-0)\.00334991 * (\-|\-0)\.00851461" $log | wc -l`
 CRIT3=`$GREP "z * ( |0)\.00062181 * ( |0)\.00158049" $log | wc -l` 
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
