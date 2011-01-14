@@ -349,16 +349,13 @@ C
             NASHI = NASH(ISYM)
             NISHI = NISH(ISYM)
             IORBI = IORB(ISYM)
-            IASHI = IASH(ISYM)
             NASHJ = NASH(JSYM)
             NISHJ = NISH(JSYM)
             IORBJ = IORB(JSYM)
-            IASHJ = IASH(JSYM)
             DO 70 JA = 1,NASHJ
                DO 60 IA = 1,NASHI
-                  IJ = (IA+IASHI-1) * NASHT + JA + IASHJ
-                  WRK(KUPRP-1+IJ) =
-     *                  PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
+                  WRK(KUPRP-1+(IA+IASH(ISYM)-1)*NASHT+JA+IASH(JSYM)) =
+     &                PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
  60            CONTINUE
  70         CONTINUE
  50      CONTINUE
@@ -408,16 +405,14 @@ C
             NASHI = NASH(ISYM)
             NISHI = NISH(ISYM)
             IORBI = IORB(ISYM)
-            IASHI = IASH(ISYM)
             NASHJ = NASH(JSYM)
             NISHJ = NISH(JSYM)
             IORBJ = IORB(JSYM)
             IASHJ = IASH(JSYM)
             DO 170 JA = 1,NASHJ
                DO 160 IA = 1,NASHI
-                  IJ = (JA+IASHJ-1) * NASHT + IA + IASHI
-                  WRK(KUPRP-1+IJ) =
-     *                  PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
+                  WRK(KUPRP-1+(JA+IASH(JSYM)-1)*NASHT+IA+IASH(ISYM)) =
+     *                PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
  160           CONTINUE
  170        CONTINUE
  150     CONTINUE
