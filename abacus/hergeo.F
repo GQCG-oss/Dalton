@@ -584,10 +584,12 @@ C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include <implicit.h>
 #include <priunit.h>
+C
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable
 C     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,
 C              such that H2 is printed as bonded ;-) .
+C
       DIMENSION RAD(100)
       DATA (RAD(I), I = 1, 100)/
      &        40.,  155.,  160.,  110.,
@@ -612,16 +614,16 @@ C              such that H2 is printed as bonded ;-) .
      & -100.,   -100.,   -100.,   -100.,   -100.,
      & -100./
 C
-      IF (NCHARGE .GE. -2 .AND. NCHARGE .LE. 0) THEN
+      IF (NCHARGE .LE. 0) THEN
 Chj      =  0: solvent cavity center or floating orbital
-Chj      = -1: multiple basis for r12 methods
-Chj      = -2: point charges
+Chj      = -Z: multiple basis for r12 methods for nuclear charge Z
+Chj      = -1234567890: point charges
 C
          RADIUS = -1.0D0
       ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
          WRITE (LUPRI,*) 
-     &          'ERROR, RADIUS called with NCHARGE =',NCHARGE
-         CALL QUIT('RADIUS called with illegal NCHARGE')
+     &          'ERROR, RADIUS called with CHARGE =',NCHARGE
+         CALL QUIT('RADIUS called with unvalid CHARGE')
       ELSE
          RADIUS = 0.01D0 * RAD(NCHARGE)
       END IF
@@ -657,15 +659,15 @@ C     Returns -1 where data is inavailable
      & -100.,   -100.,   -100.,   -100.,   -100.,
      & -100./
 C
-      IF (NCHARGE .GE. -2 .AND. NCHARGE .LE. 0) THEN
+      IF (NCHARGE .LE. 0) THEN
 Chj      =  0: solvent cavity center or floating orbital
-Chj      = -1: multiple basis for r12 methods
-Chj      = -2: point charges
+Chj      = -Z: multiple basis for r12 methods for nuclear charge Z
+Chj      = -1234567890: point charges
 C
          VDWRAD = -1.0D0
-      ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
-         WRITE (LUPRI,*) 'ERROR, VDWRAD called with NCHARGE =',NCHARGE
-         CALL QUIT('VDWRAD called with illegal NCHARGE')
+      ELSE IF (NCHARGE .GT. 100) THEN
+         WRITE (LUPRI,*) 'ERROR, VDWRAD called with CHARGE =',NCHARGE
+         CALL QUIT('VDWRAD called with illegal CHARGE')
       ELSE
          VDWRAD = 0.01D0 * RAD(NCHARGE)
          IF (VDWRAD .LT. 0.0D0) THEN
