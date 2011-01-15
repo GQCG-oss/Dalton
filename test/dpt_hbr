@@ -114,8 +114,6 @@ TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="CCS first-order DPT correction not correct"
 
-CCS first-order DPT correction not correct ( test = 0; control = 1 ); CCSD first-order DPT correction not correct ( test = 0; control = 1 ); CCS first-order Pauli correction not correct ( test = 0; control = 1 ); CCSD first-order Pauli correction not correct ( test = 0; control = 1 ); THERE IS A PROBLEM
-
 CRIT2=`$GREP "Total first-order DPT correction:    \-31\.389664" $log | wc -l`
 TEST[2]=`expr   $CRIT2`
 CTRL[2]=1
