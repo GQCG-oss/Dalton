@@ -275,7 +275,7 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
           WRITE(6,*) '  ITYP KTYP LTYP JTYP '
           WRITE(6,*) '  ===================='
           DO  IDX = 1,NDXTP
-            WRITE(6,'(1H ,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
+            WRITE(6,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
           END DO
         END IF
       END IF
@@ -2069,12 +2069,12 @@ CMI     IF(INCLUDE.EQ.1) THEN
           WRITE(LUOUT,*) ' Number of orbitals per symmetry :'
           WRITE(LUOUT,*) ' ================================='
           WRITE(LUOUT,*)
-          WRITE(LUOUT,'(1H ,A,10I4,A)')
+          WRITE(LUOUT,'(1X,A,10I4,A)')
      &    '            Symmetry  ',(I,I = 1,NSMOB)
-          WRITE(LUOUT,'(1H ,A,2X,10A)')
+          WRITE(LUOUT,'(1X,A,2X,10A)')
      &    '           ========== ',('====',I = 1,NSMOB)
           DO IGAS = 1, NGAS
-            WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
+            WRITE(LUOUT,'(1X,A,I3,7X,A,10I4,8X,I3)')
      &      '   GAS',IGAS,'      ',(NGSOB(I,IGAS),I=1,NSMOB),
      &      NGSOBT(IGAS)
           END DO
@@ -2678,7 +2678,7 @@ C?    CALL IWRTMA(NO4PS,1,NSMOB,1,NSMOB)
               IOFF=  IOFF+ N12*(N12-1)/2
             END IF
 C?          WRITE(6,*) ' I1SM I2SM I3SM I4SM    IOFF'
-C?          WRITE(6,'(1H ,4I4,I9)')   I1SM,I2SM,I3SM,I4SM,IOFF
+C?          WRITE(6,'(1X,4I4,I9)')   I1SM,I2SM,I3SM,I4SM,IOFF
    30       CONTINUE
    20     CONTINUE
    10   CONTINUE
