@@ -1631,6 +1631,8 @@ C
 C     Purpose: Read information for MO decomposition.
 C
 #include <implicit.h>
+#include <priunit.h>
+
       INTEGER NTOVEC(NSYM), NCOLUM(NSYM)
       DIMENSION XDIANL(3,NSYM)
       CHARACTER*(*) FILSAV, SECALL

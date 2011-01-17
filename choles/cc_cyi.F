@@ -164,8 +164,8 @@ C     ---------------------------
      &               ISYINT)
       IF (IERR .NE. 0) CALL QUIT('Inconsistent input in '//SECNAM)
 
-C     Issue warnings for small scaling factors, but don't stop.
-C     ---------------------------------------------------------
+C     Issue warnings for small scaling factors, but do not stop.
+C     ----------------------------------------------------------
 
       IF (NUMP12 .GT. 0) THEN
          IF (DABS(FAC1) .LE. SMALL) THEN
@@ -2415,7 +2415,7 @@ C           -------------------------------------
                WRITE(LUPRI,'(//,5X,A,A)')
      &         'Insufficient memory in ',SECNAM
                WRITE(LUPRI,'(5X,A,I10,/,5X,A,I10,/)')
-     &         'Need (more than): ',NEED,
+     &         'Need (more than): ',KEND1,
      &         'Available       : ',LWORK
                CALL QUIT('Insufficient memory in '//SECNAM)
             ENDIF
@@ -2997,7 +2997,6 @@ C     -------------------------------
       MIOSAV = CIAMIO
       INXSAV = INXINT
       GTMSAV = GETMNM
-      SCDSAV = SCD
 
 C     Configure CC_CIA for (i#a|j#b) calculation.
 C     -------------------------------------------
@@ -3059,7 +3058,6 @@ C     ---------------
       CIAMIO = MIOSAV
       INXINT = INXSAV
       GETMNM = GTMSAV
-      SCD    = SCDSAV
 
       RETURN
       END

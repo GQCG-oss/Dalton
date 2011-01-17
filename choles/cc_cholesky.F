@@ -304,7 +304,7 @@ C
 C
       IF (NCHORD .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. NCHORD :',NCHORD
-         STOP 'Not enough space in CC_CHOLESKY'
+         CALL QUIT('Not enough space in CC_CHOLESKY')
       END IF
 C
       LCHO2 = LENAB*NCHORD + MXNNBS
@@ -320,7 +320,7 @@ C
 C
       IF (MAXSEL .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. MAXSEL :',MAXSEL
-         STOP 'Not enough space in CC_CHOLESKY'
+         CALL QUIT('Not enough space in CC_CHOLESKY')
       END IF
 C
       IF (IPRINT .GT. 2) THEN
@@ -509,7 +509,7 @@ C
          KIREC = KINT1 + NNBST(ISYMAB)*NUMAB
          KEND1 = KIREC + (NBUFX(0) - 1)/IRAT + 1
          LWRK1 = LWORK - KEND1
-         IF (LWRK1 .LT. 0) STOP 'Not enough space for CC_RDAON'
+         IF (LWRK1 .LT. 0) CALL QUIT('Not enough space for CC_RDAON')
 C
          NEWDIS = .TRUE.
          CALL CC_RDAON(WORK(KINT1),IQUVEA(I,ISYMAB),IQUVEB(I,ISYMAB),
@@ -602,7 +602,7 @@ c
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Insufficient work space in CC_CHOLESKY.1'
             WRITE(LUPRI,*) 'Needed and available memory',KEND1,LWORK
-            STOP 'Insufficient work space in CC_CHOLESKY.1'
+            CALL QUIT('Insufficient work space in CC_CHOLESKY.1')
          ENDIF
 C
 C        Read integrals from disk. 
@@ -983,7 +983,9 @@ C
       LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient space for allocation in CC_RDAO'
+         write(lupri,*) 'Insufficient space for allocation in CC_RDAO',
+     &      KEND1,' > ',LWORK
+         CALL QUIT('Insufficient space for allocation in CC_RDAO')
       END IF
 C
       CALL CC_INX(WORK(KADR2),ISYMGD)
@@ -1007,7 +1009,9 @@ C
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
-         STOP 'Insufiicient work space in CC_RDAO'
+         write(lupri,*) 'Insufficient space for allocation in CC_RDAO',
+     &      KEND2,' > ',LWORK
+         CALL QUIT('Insufficient work space in CC_RDAO')
       ENDIF
 C
       CALL CC_RDA1(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IGAM,
@@ -1141,7 +1145,7 @@ C
       CALL GPCLOSE(LUAORC(0),'KEEP')
 C
       RETURN
- 2000 STOP 'Error reading AOTWODIS'
+ 2000 CALL QUIT('Error reading AOTWODIS')
       END
 C  /* Deck ccrd_init */
       SUBROUTINE CC_INX(KADR2,ISYMAB)
@@ -1260,7 +1264,7 @@ C
             KIREC = KDIAG + NUMDIA*NUMDIB
             KEND1 = KIREC + (NBUFX(0) - 1)/IRAT + 1
             LWRK1 = LWORK - KEND1 + 1
-            IF (LWRK1 .LT. 0) STOP 'Not enough space in CC_GAB'
+            IF (LWRK1 .LT. 0) CALL QUIT('Not enough space in CC_GAB')
 C
             NEWDIS = .TRUE.
             CALL CC_RDAOX(WORK(KDIAG),NUMDIA,NUMDIB,JNDEXA,JNDEXB,
@@ -1376,7 +1380,7 @@ C
       KIND  = KOLD  + NDIAG
       KEND  = KIND  + NSYM * ((LREDU-1)/IRAT + 1)
       LWRK  = LWORK - KEND
-      IF (LWRK .LT. 0) STOP 'Not enough space in CC_CHODRV'
+      IF (LWRK .LT. 0) CALL QUIT('Not enough space in CC_CHODRV')
 C
       CALL DZERO(WORK(KDIAG),NDIAG)
 C
@@ -1399,17 +1403,16 @@ C
       IF (RSTCHO .OR. SKIP) THEN
 C
          IF (SKIP) THEN
-            WRITE (LUPRI,'(//,A,/,A,//)') 
-     &            'Cholesky decomposition skipped',
-     &            'It is assumed that was completed previously'
+            WRITE (LUPRI,'(//A/A//)') 
+     &         ' Cholesky decomposition skipped;',
+     &         ' it is assumed that it was completed previously.'
 C
          ELSE
 C
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*) '        -------------------------'
-            WRITE(LUPRI,*) '          Restarted calculation'
-            WRITE(LUPRI,*) '        -------------------------'
-            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(//A/A/A//)') 
+     &         '        -------------------------',
+     &         '          Restarted calculation',
+     &         '        -------------------------'
 C
          END IF
 C
@@ -1430,9 +1433,9 @@ C
          DO I = 1,NSYM
             IF (MMBST(I) .NE. NNBST(I)) THEN
                WRITE(LUPRI,*) 'Error in basis checking at restart'
-               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',I,
+               WRITE(LUPRI,'(A,I2,1X,A,I10)') 'Symmetry',I,
      &                         'NNBST expected :',NNBST(I)
-               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',I,
+               WRITE(LUPRI,'(A,I2,1X,A,I10)') 'Symmetry',I,
      &                         'NNBST read     :',MMBST(I)
                GOTO 666
             END IF
@@ -1475,16 +1478,16 @@ C
             WRITE(LUPRI,*) 'Error in symmetry checking at restart'
             WRITE(LUPRI,*) 'NSYM expected :',NSYM
             WRITE(LUPRI,*) 'NSYM read     :',MSYM
-            STOP 'Error in symmetry checking at restart'
+            CALL QUIT('Error in symmetry checking at restart')
          END IF
          DO I = 1,NSYM
             IF (MMBST(I) .NE. NNBST(I)) THEN
                WRITE(LUPRI,*) 'Error in basis checking at restart'
-               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',ISYM,
+               WRITE(LUPRI,'(A,I2,1X,A,I10)') 'Symmetry',ISYM,
      &                         'NNBST expected :',NNBST(ISYM)
-               WRITE(LUPRI,'(A,I2,X,A,I10)') 'Symmetry',ISYM,
+               WRITE(LUPRI,'(A,I2,1X,A,I10)') 'Symmetry',ISYM,
      &                         'NNBST read     :',MMBST(ISYM)
-               STOP 'Error in basis checking at restart'
+               CALL QUIT('Error in basis checking at restart')
             END IF
          END DO
 C
@@ -1512,8 +1515,8 @@ C
 C
 C     Poor man check result.
 C
-      IF (IPRINT .GE. 0) THEN
-         WRITE(LUPRI,'(//,A,//)') 'Poor man check of decomposition'
+      IF (IPRCHO .GE. 0) THEN
+         WRITE(LUPRI,'(//A//)') 'Poor man check of decomposition'
          CALL CHO_RESTART(WORK(KDIAG),WORK(KIND),WORK(KEND),LWRK)
       END IF
 C
@@ -1536,9 +1539,7 @@ C
       LUSEL = 98
       CALL WCLOSE2(LUSEL,'CHOLES_SEL','DELETE')
 C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(//)')
 C
       RETURN
       END
@@ -1645,10 +1646,10 @@ C
             END IF
          END DO
          WRITE(LUPRI,*) 'Illegal keyword in input: ',WORD
-         STOP 'Illegal keyword in input'
+         CALL QUIT('Illegal keyword in input')
       ELSE
          WRITE(LUPRI,*) 'Illegal prompt in input'
-         STOP 'Illegal prompt in input'
+         CALL QUIT('Illegal prompt in input')
       END IF
 
 C
@@ -2166,12 +2167,14 @@ C
 C
       PARAMETER (ZERO = 0.0D0)
 C
-      DIMENSION CHOVEC(NDIM),scrcd(2,2)
+      DIMENSION CHOVEC(NDIM)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C
-      stop 'non-implemented choscr called'
+      CALL QUIT('non-implemented choscr called')
+
+#ifdef NONIMPLEMENTED
 c
       ISYMOP = 1
       JSYMCD = MULD2H(ISYMOP,ISYMAB)
@@ -2220,6 +2223,7 @@ C
   100 CONTINUE
 C
    99 format(a,7i5,d20.8)
+#endif
       RETURN
       END
 C
@@ -2282,7 +2286,8 @@ C
          KEND1 = KDIAG + NDIM
          LWRK1 = LWORK - KEND1
 C
-         IF (LWRK1 .LT. 0) STOP 'Not enough space in CHO_RESTART.1'
+         IF (LWRK1 .LT. 0)
+     &   CALL QUIT('Not enough space in CHO_RESTART.1')
 C
          CALL DZERO(WORK(KDIAG),NDIM)
 C
@@ -2305,7 +2310,8 @@ C
          NRDMX  = LWRKX / LENAB
          NRDMX1 = 268435456 / LENAB
          NRDMX  = MIN(NRDMX,NRDMX1)
-         IF (NRDMX .LT. 1) STOP 'Allocation failure in CHO_RESTART'
+         IF (NRDMX .LT. 1)
+     &      CALL QUIT('Allocation failure in CHO_RESTART')
 C
          NBAT = (NVEC-1)/NRDMX + 1
 C
@@ -2334,7 +2340,8 @@ C
             KEND2 = KCHO2 + LCHO2
 C
             LWRK2 = LWORK - KEND2
-            IF (LWRK2 .LT. 0) STOP 'Not enough space in CHO_RESTART.2'
+            IF (LWRK2 .LT. 0)
+     &         CALL QUIT('Not enough space in CHO_RESTART.2')
 C
             CALL CC_GETCHO(WORK(KCHO1),NREAD,ISYMAB,
      &                        IFIRST,INDRED,WORK(KCHO2),LCHO2)
@@ -2625,10 +2632,10 @@ C
 C
       ELSE
 C
-         WRITE(LUPRI,'(3A,/,A)') 'Task ',TASK,
-     &                        ' not implemented in CHO_NAME',
-     &                        'Program will stop'
-         STOP 'Error in CHO_NAME'
+         WRITE(LUPRI,'(//3A/A)')
+     &      ' Task ',TASK,' not implemented in CHO_NAME',
+     &      ' Program will stop.'
+         CALL QUIT('Error in CHO_NAME')
 C
       END IF
 C
@@ -2690,7 +2697,7 @@ C
       IEND  = ISTART + NR - 1
 C
       IF (IOPT .EQ. 1) THEN
-         STOP 'IOPT = 1 not yet implemented'
+         CALL QUIT('IOPT = 1 not yet implemented')
       END IF
 C
       IF ((IOPT.EQ.2) .OR. (IOPT.EQ.3)) THEN
@@ -2738,7 +2745,7 @@ C
                WRITE(LUPRI,*) 'Not enough space in cho_read'
                WRITE(LUPRI,'(A,I10)') 'Needed    :',LENTOT
                WRITE(LUPRI,'(A,I10)') 'Available :',LWORK
-               STOP 'Not enough space in cho_read'
+               CALL QUIT('Not enough space in cho_read')
             END IF
   210       CONTINUE
 C
@@ -2754,12 +2761,14 @@ C_16Gb            LENADD = 0
 C_16Gb            GOTO 220
 C_16Gb         END IF
 C
-               LENTMP = LENTOT + INCLEN
+!              LENTMP = LENTOT + INCLEN
+! INCLEN undefined
                IF (LENTMP .LT. LWORK) THEN
-                   IREAD  = IREAD + 1
-                   LENTOT = LENTMP
-                   LENADD = LETEMP
-                   GOTO 210
+                  IREAD  = IREAD + 1
+                  LENTOT = LENTMP
+!                 LENADD = LETEMP
+! LETEMP undefined
+                  GOTO 210
                END IF
 C
   220       CONTINUE
@@ -2782,7 +2791,7 @@ C
                KOFVE2 = KOFIND + (NUMEL - 1)/IRAT + 1
 C
                xnrm = ddot(ndim,chovec(1,ir),1,chovec(1,ir),1)
-               if (xnrm .ne. zero) then
+               if (xnrm .ne. 0.0D0) then
                   write(lupri,*) 'Bug!!!'
                   write(lupri,*) 'Vector,isymab,norm :',ir,isymab,xnrm
                end if
@@ -2794,7 +2803,7 @@ C
             END DO
 C
          IF (ILAST .LT. IEND) GOTO 200
-         IF (IR .NE. NR) STOP 'Error in reading'
+         IF (IR .NE. NR) CALL QUIT('CHO_READ: Error in reading')
 C
 C        IOPT=3: don't square!
 C
@@ -2809,7 +2818,7 @@ C
             WRITE(LUPRI,*) 'Symmetry of vectors     : ',ISYMAB
             WRITE(LUPRI,*) 'Memory needed (words)   : ',N2BST(ISYMAB)
             WRITE(LUPRI,*) 'Memory available (words): ',LWORK
-            STOP ' Insufficient memory in cho_read '
+            CALL QUIT(' Insufficient memory in cho_read ')
          ENDIF
 C
          DO I = 1,NR
@@ -2910,7 +2919,7 @@ C
       LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient space for allocation in CC_RDAO'
+         CALL QUIT('Insufficient space for allocation in CC_RDAO')
       END IF
 C
       CALL CC_INXN(WORK(KADR2),ISYMGD)
@@ -2935,7 +2944,7 @@ C
       KEND2 = KGAM  + (2*NUMPR-1)/IRAT + 1 
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
-         STOP 'Insufiicient work space in CC_RDAO'
+         CALL QUIT('Insufiicient work space in CC_RDAO')
       ENDIF
 C
       CALL CC_RDA1N(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IGAM,
@@ -3105,7 +3114,7 @@ C
       ENDIF
 C
       RETURN
- 2000 STOP 'Error reading AOTWODIS'
+ 2000 CALL QUIT('Error reading AOTWODIS')
       END
 C  /* Deck ccrd_inxn */
       SUBROUTINE CC_INXN(KADR2,ISYMAB)
@@ -3209,7 +3218,7 @@ C
          WRITE(LUPRI,'(A,I3)') 'Too many vectors for symmetry',ISYMAB
          WRITE(LUPRI,'(2(A,I7,/))') 'Required :', NUMCH0,
      &                          'Maximum  :', MXCHVC
-         STOP 'Too many Cholesky vectors'
+         CALL QUIT('Too many Cholesky vectors')
       ELSE
          NUMCHO(ISYMAB) = NUMCH0
       END IF
@@ -3278,7 +3287,7 @@ C
          KWRIT = 1
          KEND  = KWRIT + LENTOT
          LWRK  = LWORK - KEND + 1
-         IF (LWRK .LT. 0) STOP 'Not enough space in CC_PUTCHO'
+         IF (LWRK .LT. 0) CALL QUIT('Not enough space in CC_PUTCHO')
 C
          KOFF1 = KWRIT
          KOFF2 = 1
@@ -3341,7 +3350,7 @@ C
          KWRIT = 1
          KEND  = KWRIT + LENTOT
          LWRK  = LWORK - KEND + 1
-         IF (LWRK .LT. 0) STOP 'Not enough space in CC_PUTCHO'
+         IF (LWRK .LT. 0) CALL QUIT('Not enough space in CC_PUTCHO')
 C
          KOFF1 = KWRIT
          KOFF2 = 1 + NFIL1 * NNBST(ISYMAB)
@@ -3484,7 +3493,7 @@ C
       IF (LWRK .LT. 0) THEN
          WRITE(LUPRI,*) 'Not enough space in CHO_PACK.1'
          WRITE(LUPRI,'(A,2I10)')'Available,needed:',LWRK,KEND
-         STOP 'Not enough space in CHO_PACK'
+         CALL QUIT('Not enough space in CHO_PACK')
       END IF
 C
       CALL CHO_PACK1(THRSEL,NDIM,CHOVEC,WORK(KCHISE),WORK(KCHSAV),
@@ -3493,7 +3502,7 @@ C
       IF (LWRK .LT. NUM) THEN
          WRITE(LUPRI,*) 'Not enough space in CHO_PACK.2'
          WRITE(LUPRI,'(A,2I10)')'Available,needed:',LWRK,NUM
-         STOP 'Not enough space in CHO_PACK'
+         CALL QUIT('Not enough space in CHO_PACK')
       END IF
 C
       WORK(KCHLEN) = DFLOAT(NUM)
@@ -3670,7 +3679,7 @@ C
           KREAD = 1
           KEND  = KREAD + LENTOT
           LWRK  = LWORK - KEND + 1
-          IF (LWRK .LT. 0) STOP 'Not enough space in CC_GETCHO'
+          IF (LWRK .LT. 0) CALL QUIT('Not enough space in CC_GETCHO')
 C
           CALL DZERO(CHOVEC,LENGTH)
           IF (NFIL2 .EQ. 0) THEN
@@ -3737,7 +3746,7 @@ C
       KEND1 = KREAD + LENTOT
       LWRK1 = LWORK - KEND1 + 1
 C
-      IF (LWRK1 .LT. 0) STOP 'Not enough space in cc_getcho'
+      IF (LWRK1 .LT. 0) CALL QUIT('Not enough space in cc_getcho')
 C
       CALL DZERO(CHOVEC,LENGTH)
       IF (LENGT2 .EQ. 0) THEN
@@ -4055,7 +4064,7 @@ C
      &                              '------------------'
 c     WRITE(LUPRI,'(6X,A,8X,A,3(9X,A))') 'ISAB','Reduced','Real 0',
 c    &                                   'Zeroed','Non zero'
-      WRITE(LUPRI,'(6X,A,7X,A,X,2(9X,A))') 'ISAB','Reduced','Real 0',
+      WRITE(LUPRI,'(6X,A,7X,A,1X,2(9X,A))') 'ISAB','Reduced','Real 0',
      &                                   'Non zero'
       DO ISYM = 1,NSYM
          XELEM = DFLOAT(NUMCHO(ISYM))*DFLOAT(NREDUC(ISYM))
@@ -4242,7 +4251,7 @@ C
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
-         STOP 'Insufiicient work space in CC_RDAO'
+         CALL QUIT('Insufiicient work space in CC_RDAO')
       ENDIF
 C
       CALL CC_RDAOX1(XINT,WORK(KIBUF),WORK(KRBUF),NUMDIA,NUMDIB,
@@ -4377,7 +4386,7 @@ C
       CALL GPCLOSE(LUAORC(0),'KEEP')
 C
       RETURN
- 2000 STOP 'Error reading AOTWODIS'
+ 2000 CALL QUIT('Error reading AOTWODIS')
       END
 C
 C  /* Deck cc_gabold */
@@ -4439,7 +4448,8 @@ C
                   KIREC  = KCHO1 + NNBST(ISYMAB)
                   KEND2  = KIREC + (NBUFX(0) - 1)/IRAT + 1
                   LWORK2 = LWORK - KEND2
-                  IF (LWORK2 .LT. 0) STOP 'Not enough space in CC_GAB'
+                  IF (LWORK2 .LT. 0)
+     &            CALL QUIT('Not enough space in CC_GAB')
 C
                   NEWDIS = .TRUE.
                   CALL CC_RDAO(WORK(KCHO1),IA,IB,WORK(KEND2),LWORK2,

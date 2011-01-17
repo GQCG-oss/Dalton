@@ -992,7 +992,7 @@ C        -------------------------------
             KLAST  = KENDE - 1
             MXMEML = MAX(MXMEML,KLAST)
 
-            IF (LWKRE .LT. 0) THEN
+            IF (LWRKE .LT. 0) THEN
                WRITE(LUPRI,'(//,5X,A,A,A)')
      &         'Insufficient memory in ',SECNAM,
      &         ' - Allocation: T2 subblock'
@@ -1579,7 +1579,7 @@ C     ----------------------------------------------
          KLAST  = KENDE - 1
          MXMEMT = MAX(MXMEMT,KLAST)
 
-         IF (LWKRE .LT. 0) THEN
+         IF (LWRKE .LT. 0) THEN
             WRITE(LUPRI,'(//,5X,A,A,A)')
      &      'Insufficient memory in ',SECNAM,
      &      ' - Allocation: T2 subblock'

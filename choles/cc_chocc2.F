@@ -1154,11 +1154,7 @@ C           --------------------
                   WRITE(LUPRI,*)
      &            'IBATCH, NBATCH: ',IBATCH,NBATCH
                   WRITE(LUPRI,*)
-     &            'LTRAC         : ',LTRAC
-                  WRITE(LUPRI,*)
      &            'LWRK1, MINMEM : ',LWRK1,MINMEM
-                  WRITE(LUPRI,*)
-     &            'LTRAC         : ',LTRAC
                   WRITE(LUPRI,*)
      &            'LWORK, KEND1-1: ',LWORK,KEND1-1
                   CALL QUIT('Error in '//SECNAM)

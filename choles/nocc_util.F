@@ -355,6 +355,7 @@ C
 C     NOTE: No header is written - must be done in calling routine!
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <maxorb.h>
 #include <ccsdsym.h>
 #include <ccorb.h>

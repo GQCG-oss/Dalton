@@ -147,7 +147,7 @@ C
          WRITE(LUPRI,*) 'Insufficient memory in CC_CHOPT'
          WRITE(LUPRI,*) 'Need (*much* more than): ',KEND0-1
          WRITE(LUPRI,*) 'Available              : ',LWORK
-         STOP ' Insufficient memory in CC_CHOPT '
+         CALL QUIT(' Insufficient memory in CC_CHOPT ')
       ENDIF
 C
 C------------------------------------------------------------
@@ -186,7 +186,7 @@ C
       KEND1 = KIAJB + MAX(NT2AM(ISYMT2),NT2AM(ISYMOP))
       LWRK1 = LWORK - KEND1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient memory in CC_CHOPT'
+         CALL QUIT('Insufficient memory in CC_CHOPT')
       ENDIF
 
 C
@@ -329,7 +329,7 @@ C
          NUMB  = MIN(NVIRB,LWRK/LENB)
          IF (NUMB .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMB .EQ. 0 in CC_CHOPT'
-            STOP 'Not enough space in CC_CHOPT'
+            CALL QUIT('Not enough space in CC_CHOPT')
          END IF
 C
          NBATB = (NVIRB-1)/NUMB + 1
@@ -379,7 +379,7 @@ C
             KENDB1 = KT2AM4 + NCKI(ISYMB)*NUMIB
             LWRKB1 = LWORK  - KENDB1
             IF (LWRKB1 .LT. 0) THEN
-               STOP 'Insufficient memory in CC_CHOPT'
+               CALL QUIT('Insufficient memory in CC_CHOPT')
             ENDIF
 C
 C-------------------------------------------------------
@@ -471,7 +471,8 @@ C
                KCHOVE = KENDB1
                KENDCH = KCHOVE + LENCHO
                LWRKCH = LWORK  - KENDCH
-               IF (LWRKCH .LT. 0) STOP 'Not enough space in CC_CHOPT'
+               IF (LWRKCH .LT. 0)
+     &         CALL QUIT('Not enough space in CC_CHOPT')
 C
 C---------------------------------
 C              Batch over a index.
@@ -491,7 +492,7 @@ C
                NUMA  = MIN(NVIR(ISYMA),LWORKA/LENA)
                IF (NUMA .EQ. 0) THEN
                   WRITE(LUPRI,*) 'NUMA .EQ. 0 in CC_CHOPT'
-                  STOP 'Not enough space in CC_CHOPT'
+                  CALL QUIT('Not enough space in CC_CHOPT')
                END IF
 C
                NBATA = (NVIR(ISYMA)-1)/NUMA + 1
@@ -553,7 +554,8 @@ C
                   KRMAT  = KQMAT  + MAXIJ*NUMIB*NUMIA
                   KENDA1 = KRMAT  + MAXIJ*NUMIB*NUMIA
                   LWRKA1 = LWORK  - KENDA1
-                  IF (LWRKA1 .LT. 0) STOP'Not enough space in CC_CHOPT'
+                  IF (LWRKA1 .LT. 0)
+     &            CALL QUIT('Not enough space in CC_CHOPT')
 C
 C--------------------------------
 C                 Read integrals.
@@ -754,7 +756,8 @@ C
                         ISYMC  = MULD2H(ISYMD,ISYMCD)
 C
                         JSYEMC = MULD2H(ISYMEM,ISYMC)
-                        IF (JSYEMC .NE. ISYEMC) STOP 'That is fishy'
+                        IF (JSYEMC .NE. ISYEMC)
+     &                  CALL QUIT('That is fishy')
 C
                         NC   = NVIR(ISYMC)
                         ND   = NVIR(ISYMD)
@@ -1732,7 +1735,7 @@ c           call  flshfo(lupri)
          END DO
          IF (LRD2 .NE. NTOTOC(1)) THEN
             WRITE(LUPRI,*) 'Error reading CCSDT_OC'
-            STOP 'Error reading CCSDT_OC'
+            CALL QUIT('Error reading CCSDT_OC')
          END IF
          CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
       ENDIF
@@ -1874,7 +1877,7 @@ C
 C
          LENMIN = NCKA(ISYEMD) + NCKATR(ISYEMD)
          NUMB   = MIN(NVIRB,LWORK/LENMIN)
-         IF (NUMB .EQ. 0) STOP 'Not enough space in CCHO_TRINT1'
+         IF (NUMB .EQ. 0) CALL QUIT('Not enough space in CCHO_TRINT1')
 C
 Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
 C
@@ -2013,7 +2016,7 @@ C
                      ISYMB  = MULD2H(ISYMA,ISYMAB)
                      ISYMAI = MULD2H(ISYMA,ISYMI)
                      ISYMBJ = MULD2H(ISYMB,ISYMJ)
-                     IF (ISYMAI .NE. ISYMBJ) STOP 'Problem'
+                     IF (ISYMAI .NE. ISYMBJ) CALL QUIT('Problem')
                      DO A = 1,NVIR(ISYMA)
                         DO B = 1,NVIR(ISYMB)
                            NAI = IT1AM(ISYMA,ISYMI) 
@@ -2204,7 +2207,8 @@ C
 C
          IOFF   = ICKBD(ISYEMC,ISYMA) + NCKATR(ISYEMC)*(IA - 1) + 1
          LENGTH = NCKATR(ISYEMC)
-         IF (LWORK .LT. LENGTH) STOP 'Not enough space in CCHO_RDKIN'
+         IF (LWORK .LT. LENGTH)
+     &   CALL QUIT('Not enough space in CCHO_RDKIN')
 C
          IF (LENGTH .GT. 0) THEN
             CALL GETWA2(LUNIT,FILNAM,WORK,IOFF,LENGTH)
@@ -2276,7 +2280,7 @@ C
       KEND1 = KOMEG + NDIMP
       LWRK1 = LWORK - KEND1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient space in CCHO_INIT'
+         CALL QUIT('Insufficient space in CCHO_INIT')
       ENDIF
 C
       IO = 0
@@ -2400,7 +2404,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
       NIJ = NMATIJ(ISYMIJ)
@@ -2865,7 +2869,7 @@ C
       KEND1 = KINTJ + NCKATR(ISINTJ)
       LWRK1 = LWORK - KEND1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient memory in CCHO_ETERM'
+         CALL QUIT('Insufficient memory in CCHO_ETERM')
       ENDIF
 C
       DO 100 ISYMI = 1,NSYM
@@ -2899,7 +2903,7 @@ C
          NUMI = MIN(NRHF(ISYMI),LWRKB/LENWRK)
          IF (NUMI .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMI .EQ. 0 in CC_ETERM'
-            STOP 'Not enough space in CC_ETERM'
+            CALL QUIT('Not enough space in CC_ETERM')
          END IF
 C
          NBATI = (NRHF(ISYMI)-1)/NUMI + 1
@@ -2973,7 +2977,7 @@ C
 C
             LWRK2 = LWORK - KEND2 + 1
             IF (LWRK2 .LT. 0) THEN
-               STOP 'Insufficient memory in CCHO_ETERM'
+               CALL QUIT('Insufficient memory in CCHO_ETERM')
             ENDIF
 C
 C-----------------------------------
@@ -3294,7 +3298,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -3619,7 +3623,7 @@ C
          NUMI = MIN(NRHF(ISYMI),LWRK2/LENWRK)
          IF (NUMI .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMI .EQ. 0 in CC_ETERM2'
-            STOP 'Not enough space in CC_ETERM2'
+            CALL QUIT('Not enough space in CC_ETERM2')
          END IF
 C
          NBATI = (NRHF(ISYMI)-1)/NUMI + 1
@@ -3686,7 +3690,7 @@ C
 C
             IF (LWRK3 .LT. 0) THEN
                WRITE(LUPRI,*) 'Batching problem in CCHO_ETERM2 !!!!'
-               STOP 'Batching bug in CCHO_ETERM2 !!!!'
+               CALL QUIT('Batching bug in CCHO_ETERM2 !!!!')
             ENDIF
 C
 C---------------------------------
@@ -4123,7 +4127,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -4304,7 +4308,7 @@ C
       KEND1 = KCHOV + NCKATR(ISYCJB)
       LWRK1 = LWORK - KEND1 + 1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient memory in CCHO_DTERM'
+         CALL QUIT('Insufficient memory in CCHO_DTERM')
       ENDIF
 C
 C----------------------
@@ -4327,7 +4331,7 @@ C
       NUMI = MIN(NRHF(ISYMI),LWRK1/LENWRK)
       IF (NUMI .EQ. 0) THEN
          WRITE(LUPRI,*) 'NUMI .EQ. 0 in CCHO_DTERM'
-         STOP 'Not enough space in CCHO_DTERM'
+         CALL QUIT('Not enough space in CCHO_DTERM')
       END IF
 C
       NBATI = (NRHF(ISYMI)-1)/NUMI + 1
@@ -4371,7 +4375,7 @@ C
          KEND2 = KWMAT + NUMIA*NUMII
          LWRK2 = LWORK - KEND2 + 1
          IF (LWRK2 .LT. 0) THEN
-            STOP 'Batching bug in CCHO_DTERM !!!!'
+            CALL QUIT('Batching bug in CCHO_DTERM !!!!')
          ENDIF
 C
 C-------------------------
@@ -4520,7 +4524,7 @@ c        KCHOV = KCHOO + NCKATR(ISYCJB)
 c        KEND1 = KCHOV + NCKATR(ISYDLK)
 c        LWRK1 = LWORK - KEND1 + 1
 c        IF (LWRK1 .LT. 0) THEN
-c           STOP 'Insufficient memory in CCHO_DTERM'
+c           CALL QUIT('Insufficient memory in CCHO_DTERM')
 c        ENDIF
 C
 C----------------------
@@ -4539,7 +4543,7 @@ C
 c        NUMI = MIN(NRHF(ISYMI),LWRKIJ/LEWRKI)
 c        IF (NUMI .EQ. 0) THEN
 c           WRITE(LUPRI,*) 'NUMI .EQ. 0 in CC_A1TERM'
-c           STOP 'Not enough space in CC_A1TERM'
+c           CALL QUIT('Not enough space in CC_A1TERM')
 c        END IF
 C
 c        NBATI = (NRHF(ISYMI)-1)/NUMI + 1
@@ -4563,7 +4567,7 @@ c           KWMAT = KVMAT + NUMIA*NUMII
 c           KEND2 = KWMAT + NUMIA*NUMII
 c           LWRK2 = LWORK - KEND2 + 1
 c           IF (LWRK2 .LT. 0) THEN
-c              STOP 'Batching problem in CCHO_A1TERM'
+c              CALL QUIT('Batching problem in CCHO_A1TERM')
 c           ENDIF
 C
 C-------------------------------------------
@@ -4582,7 +4586,7 @@ C
 c              NUMJ = MIN(NRHF(ISYMJ),LWRK2/LEWRKJ)
 c              IF (NUMJ .EQ. 0) THEN
 c                 WRITE(LUPRI,*) 'NUMJ .EQ. 0 in CC_A1TERM'
-c                 STOP 'Not enough space in CC_A1TERM'
+c                 CALL QUIT('Not enough space in CC_A1TERM')
 c              END IF
 C
 c              NBATJ = (NRHF(ISYMJ)-1)/NUMJ + 1
@@ -4941,7 +4945,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -5075,7 +5079,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -6271,7 +6275,7 @@ C
 c     ndim = NCKATR(ISYDEI)*NUMIB
 c     if (ICOUNT .NE. ndim) then
 c        write(LUPRI,*) '   JRSRT: ICOUNT,ndim: ',ICOUNT,ndim
-c        stop ' dimension problem in JRSRT '
+c        CALL QUIT(' dimension problem in JRSRT ')
 c     endif
 c     write(LUPRI,*) '   JRSRT: IOFF2: ',(IOFF2(ISYM),ISYM=1,NSYM)
 C
@@ -6431,7 +6435,7 @@ C
 c     if (ICOUNT .NE. LENTOT) then
 c        write(LUPRI,*) '   IX2CME: Dimension problem, ICOUNT,LENTOT: ',
 c    &              ICOUNT,LENTOT
-c        stop ' dimension problem in IX2CME '
+c        CALL QUIT(' dimension problem in IX2CME ')
 c     endif
 c     write(LUPRI,*) '   IX2CME: IOFF3: ',(IOFF3(ISYM),ISYM=1,NSYM)
 C
@@ -6656,7 +6660,7 @@ C
 c     ndim = NCKI(ISYCKI)*NUMIA
 c     if (ICOUNT .NE. ndim) then
 c        write(LUPRI,*) '   IXT2: dim. error: ICOUNT,ndim: ',ICOUNT,ndim
-c        stop ' dimension problem in IXT2 '
+c        CALL QUIT(' dimension problem in IXT2 ')
 c     endif
 c     write(LUPRI,*) '   IXT2: IOFF5: ',(IOFF5(ISYM),ISYM=1,NSYM)
 C
@@ -7142,7 +7146,7 @@ c     xjnorm = dnorm2(lenj,XJINT,1)
 c     xt2nrm = dnorm2(lent2,T2VO,1)
 c     xt1nrm = dnorm2(lent1,T1AM,1)
 c     xniajb = dnorm2(liajb,XIAJB,1)
-c     if (lwork .lt. nt2sq(1)) stop ' crappy test in GTERM '
+c     if (lwork .lt. nt2sq(1)) CALL QUIT(' crappy test in GTERM ')
 c     call cc_t2sq(XIAJB,WORK,1)
 c     xsiajb = dnorm2(nt2sq(1),WORK,1)
 c     write(LUPRI,*)
@@ -7188,7 +7192,7 @@ C
          WRITE(LUPRI,*) 'Insufficient memory in CCHO_GTERM'
          WRITE(LUPRI,*) 'Need (more than): ',KEND1-1
          WRITE(LUPRI,*) 'Available       : ',LWORK
-         STOP ' Insufficient memory in CCHO_GTERM '
+         CALL QUIT(' Insufficient memory in CCHO_GTERM ')
       ENDIF
 C
 C--------------------------------------------------
@@ -7243,7 +7247,7 @@ C
             WRITE(LUPRI,*) 'Number of occ. and sym.: ',NRHF(ISYMI),ISYMI
             WRITE(LUPRI,*) 'Min. mem. for batch    : ',MINMEM
             WRITE(LUPRI,*) 'Available for batch    : ',LWRKB
-            STOP ' Insufficient memory in CCHO_GTERM '
+            CALL QUIT(' Insufficient memory in CCHO_GTERM ')
          ENDIF
 C
          NBATCH = (NRHF(ISYMI) - 1)/NUMI + 1
@@ -7303,7 +7307,7 @@ C
 C
             IF (LWRK2 .LT. 0) THEN
                WRITE(LUPRI,*) 'Batching bug in CCHO_GTERM'
-               STOP ' Error in CCHO_GTERM '
+               CALL QUIT(' Error in CCHO_GTERM ')
             ENDIF
 C
 C-----------------------------------------------------------
@@ -7549,11 +7553,11 @@ c     lenr = NBIK*NJ
 c     lmax = NUMIB*NUMII*MAXKJ
 c     if (lenx .NE. lenr) then
 c        write(LUPRI,*) '   GTERM: lenx,lenr: ',lenx,lenr
-c        stop ' lenx .NE. lenr '
+c        CALL QUIT(' lenx .NE. lenr ')
 c     endif
 c     if (lenx .GT. lmax) then
 c        write(LUPRI,*) '   GTERM: lenx,lmax: ',lenx,lmax
-c        stop ' lenx .GT. lmax '
+c        CALL QUIT(' lenx .GT. lmax ')
 c     endif
 c     xnorm = dnorm2(lenx,WORK(KXMAT),1)
 c     rnorm = dnorm2(lenr,WORK(KRMAT),1)
@@ -7657,7 +7661,7 @@ c     lenx1 = NBJ*NUMII*NRHF(ISYMK)
 c     lenr1 = NBI*NRHF(ISYMK)*NRHF(ISYMJ)
 c     if (lenx1 .NE. lenr1) then
 c        write(LUPRI,*) '   GTERM: lenx1,lenr1: ',lenx1,lenr1
-c        stop ' lenx1 .NE. lenr1 '
+c        CALL QUIT(' lenx1 .NE. lenr1 ')
 c     endif
 c     xnorm = dnorm2(lenx1,WORK(KXMAT),1)
 c     rnorm = dnorm2(lenr1,WORK(KRMAT),1)
@@ -7799,7 +7803,7 @@ c     xjnorm = dnorm2(lenj,XJINT,1)
 c     xt2nrm = dnorm2(lent2,T2VO,1)
 c     xt1nrm = dnorm2(lent1,T1AM,1)
 c     xniajb = dnorm2(liajb,XIAJB,1)
-c     if (lwork .lt. nt2sq(1)) stop ' crappy test in GTERM '
+c     if (lwork .lt. nt2sq(1)) CALL QUIT(' crappy test in GTERM ')
 c     call cc_t2sq(XIAJB,WORK,1)
 c     xsiajb = dnorm2(nt2sq(1),WORK,1)
 c     write(LUPRI,*)
@@ -8697,7 +8701,7 @@ C
          WRITE(LUPRI,*) 'Insufficient memory in CCHO_G1TERM'
          WRITE(LUPRI,*) 'Need (more than): ',KEND1-1
          WRITE(LUPRI,*) 'Available       : ',LWORK
-         STOP ' Insufficient memory in CCHO_G1TERM '
+         CALL QUIT(' Insufficient memory in CCHO_G1TERM ')
       ENDIF
 C
 C--------------------------
@@ -8733,7 +8737,7 @@ C
          WRITE(LUPRI,*) 'Memory available in total : ',LWORK
          WRITE(LUPRI,*) 'NUMA, NVIR(ISYMA), ISYMA  : ',NUMA,NVIR(ISYMA),
      &              ISYMA
-         STOP ' Insufficient memory in CCHO_G1TERM '
+         CALL QUIT(' Insufficient memory in CCHO_G1TERM ')
       ENDIF
 C
       NBATCH = (NVIR(ISYMA) - 1)/NUMA + 1
@@ -8791,7 +8795,7 @@ C
 C
          IF (LWRK2 .LT. 0) THEN
             WRITE(LUPRI,*) 'Batching bug in CCHO_G1TERM'
-            STOP ' Error in CCHO_G1TERM '
+            CALL QUIT(' Error in CCHO_G1TERM ')
          ENDIF
 C
 C----------------------------------------------
@@ -9229,7 +9233,7 @@ C
       IF (LWRKI .LE. 0) THEN
          WRITE(LUPRI,*) 'Insufficient memory in CCHO_HTERM'
          WRITE(LUPRI,*) 'Memory available: ',LWORK
-         STOP ' Insufficient memory in CCHO_HTERM '
+         CALL QUIT(' Insufficient memory in CCHO_HTERM ')
       ENDIF
 C
 C----------------------------
@@ -9260,7 +9264,7 @@ C
      &                 ' (for ISYMI = ',ISYMI,')'
             WRITE(LUPRI,*) 'Memory available for batch: ',LWRKB
             WRITE(LUPRI,*) 'Memory available in total : ',LWORK
-            STOP ' Insufficient memory in CCHO_HTERM '
+            CALL QUIT(' Insufficient memory in CCHO_HTERM ')
          ENDIF
 C
          NBATI = (NRHF(ISYMI) - 1)/NUMI + 1
@@ -9306,7 +9310,7 @@ C
 C
             IF (LWRK1 .LT. 0) THEN
                WRITE(LUPRI,*) 'Batching bug in CCHO_HTERM (1)'
-               STOP ' Batching error in CCHO_HTERM '
+               CALL QUIT(' Batching error in CCHO_HTERM ')
             ENDIF
 C
 C--------------------------------------------------
@@ -9368,7 +9372,7 @@ C
                   WRITE(LUPRI,*) 'Insufficient memory in CCHO_HTERM'
                   WRITE(LUPRI,*) 'Need (more than): ',KEND2-1
                   WRITE(LUPRI,*) 'Available       : ',LWORK
-                  STOP ' Insufficient memory in CCHO_HTERM '
+                  CALL QUIT(' Insufficient memory in CCHO_HTERM ')
                ENDIF
 C
 C---------------------------
@@ -9401,7 +9405,7 @@ C
      &            ' (for ISYMI,ISYMK = ',ISYMI,ISYMK,')'
                   WRITE(LUPRI,*) 'Memory available for batch: ',LWRK2
                   WRITE(LUPRI,*) 'Memory available in total : ',LWORK
-                  STOP ' Insufficient memory in CCHO_HTERM '
+                  CALL QUIT(' Insufficient memory in CCHO_HTERM ')
                ENDIF
 C
                NBATK = (NRHF(ISYMK) - 1)/NUMK + 1
@@ -9464,7 +9468,7 @@ C
 C
                   IF (LWRK3 .LT. 0) THEN
                      WRITE(LUPRI,*) 'Batching bug in CCHO_HTERM (2)'
-                     STOP ' Batching error in CCHO_HTERM '
+                     CALL QUIT(' Batching error in CCHO_HTERM ')
                   ENDIF
 C
 C------------------------------------------------------------------
@@ -10586,7 +10590,7 @@ C
 
 c     if (JKLD.GT.NTRAOC(1)) then
 c        write(LUPRI,*) '...JKLD = ',JKLD,' but NTRAOC(1) = ',NTRAOC(1)
-c        stop ' jkld out of bounds in HXK12 '
+c        CALL QUIT(' jkld out of bounds in HXK12 ')
 c     endif
 C
                            XK1(DLJK) = XKINT(LKJD)
@@ -10754,7 +10758,7 @@ c     write(LUPRI,*) '      HXM123: IOFM3  (end): ',
 c    &                          (IOFM3(JSYM),JSYM=1,NSYM),ICOUN3
 c     if (icoun1 .ne. icoun3) then
 c        write(LUPRI,*) '      HXM123: ICOUN1 .ne. ICOUN3: ',ICOUN1,ICOUN3
-c        stop ' hxm123: jodido '
+c        CALL QUIT(' hxm123: jodido ')
 c     endif
 C
 C-------------
@@ -11028,7 +11032,7 @@ C
             WRITE(LUPRI,*) 'Insufficient memory in CCHO_H1TERM'
             WRITE(LUPRI,*) 'Need (more than): ',KEND1-1
             WRITE(LUPRI,*) 'Available       : ',LWORK
-            STOP ' Insufficient memory in CCHO_H1TERM '
+            CALL QUIT(' Insufficient memory in CCHO_H1TERM ')
          ENDIF
 C
          LWRKA = LWRK1/2
@@ -11037,7 +11041,7 @@ C
             WRITE(LUPRI,*) 'Insufficient memory in CCHO_H1TERM'
             WRITE(LUPRI,*) 'Memory available for batching: ',LWRKA
             WRITE(LUPRI,*) 'Total memory available       : ',LWORK
-            STOP ' Insufficient memory in CCHO_H1TERM '
+            CALL QUIT(' Insufficient memory in CCHO_H1TERM ')
          ENDIF
 C
 C----------------------------
@@ -11058,7 +11062,7 @@ C
             WRITE(LUPRI,*) 'NUMA = ',NUMA,' (ISYMA = ',ISYMA,')'
             WRITE(LUPRI,*) 'Memory available for batch: ',LWRKA
             WRITE(LUPRI,*) 'Minimum memory required   : ',MINMEM
-            STOP ' Insufficient memory in CCHO_H1TERM '
+            CALL QUIT(' Insufficient memory in CCHO_H1TERM ')
          ENDIF
 C
          NBATA = (NVIR(ISYMA) - 1)/NUMA + 1
@@ -11103,7 +11107,7 @@ C
 C
             IF (LWRK2 .LT. 0) THEN
                WRITE(LUPRI,*) 'Batching bug in CCHO_H1TERM (1)'
-               STOP ' Batching error in CCHO_H1TERM '
+               CALL QUIT(' Batching error in CCHO_H1TERM ')
             ENDIF
 C
 C-----------------------------------------------
@@ -11139,7 +11143,7 @@ C
                WRITE(LUPRI,*) 'Minimum memory required   : ',MINMEM
                WRITE(LUPRI,*) 'Memory available for batch: ',LWRK2
                WRITE(LUPRI,*) 'Total memory available    : ',LWORK
-               STOP ' Insufficient memory in CCHO_H1TERM '
+               CALL QUIT(' Insufficient memory in CCHO_H1TERM ')
             ENDIF
 C
             NBATI = (NRHF(ISYMI) - 1)/NUMI + 1
@@ -11167,10 +11171,10 @@ C
 C
                IF (PRINT) THEN
                   WRITE(LUPRI,'(12X,A,I10,A,/,12X,A)')
-     &            'K-batch number ',IBATK,':',
+     &            'I-batch number ',IBATI,':',
      &            '--------------------------'
                   WRITE(LUPRI,'(12X,A,I10,1X,I10,/)')
-     &            'First and last K: ',IK1,IK1+NUMIK-1
+     &            'First and last I: ',II1,II1+NUMII-1
                ENDIF
 C
 C-------------------------
@@ -11186,7 +11190,7 @@ C
 C
                IF (LWRK3 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Batching bug in CCHO_H1TERM (2)'
-                  STOP ' Batching error in CCHO_H1TERM '
+                  CALL QUIT(' Batching error in CCHO_H1TERM ')
                ENDIF
 C
 C---------------------------------------------------------
@@ -11521,7 +11525,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C------------------------
@@ -11752,7 +11756,7 @@ C
      &              ' to converge the decomposition to 1.0D-13'
 
 
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-----------------------
@@ -11927,7 +11931,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------------
@@ -12126,7 +12130,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C--------------------------
@@ -12341,7 +12345,7 @@ C
          NUMJ = MIN(NRHF(ISYMJ),LWORKJ/LENJ)
          IF (NUMJ .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMJ .EQ. 0 IN CC_CHOPTF1'
-            STOP 'NOT ENOUGH SPACE IN CC_CHOPTF1 !!'
+            CALL QUIT('NOT ENOUGH SPACE IN CC_CHOPTF1 !!')
          ENDIF
 C         
          NBATJ = (NRHF(ISYMJ)-1)/NUMJ + 1
@@ -12394,8 +12398,8 @@ C
             KJTINT  = KITINT + NCKI(ISYMEMI)*NUMIJ
             KENDJ   = KJTINT + NCKI(ISYMEMI)*NUMIJ
             LWRKJ   = LWORKJ - KENDJ + 1
-            IF (LWRKJ .LT. O) THEN
-               STOP 'Insufficient memory in CC_CHOPTF1'
+            IF (LWRKJ .LT. 0) THEN
+               CALL QUIT('Insufficient memory in CC_CHOPTF1')
             ENDIF
 C             
 C------------------------------------------------------------------
@@ -12445,7 +12449,7 @@ C
                NUMA = MIN(NVIR(ISYMA),NAVAIL/LENA)
                IF (NUMA .EQ. 0) THEN
                   WRITE(LUPRI,*) 'NUMA .EQ. 0 in CC_CHOPTF1'
-                  STOP 'Not enough space in CC_CHOPTF1'
+                  CALL QUIT('Not enough space in CC_CHOPTF1')
                ENDIF
 C                 
                NBATA = (NVIR(ISYMA)-1)/NUMA + 1
@@ -12503,8 +12507,7 @@ C
                   KENDA =  KEMAT + MXKAI*NUMIA
                   LWRKA =  LWORK - KENDA + 1
                   IF (LWRKA .LT. 0) THEN
-                     STOP 'Insufficient memory in CC_CHOPTF1 in 
-     &                     BATCH A'
+               CALL QUIT('Insufficient memory in CC_CHOPTF1 in BATCH A')
                   ENDIF
 C                     
 C--------------------------------------------------- 
@@ -13068,7 +13071,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -13290,7 +13293,7 @@ C
 *     print *,'KSMAT = ',ksmat         
 *     print *,'KEND1 = ',kend1         
          IF (LWRK1 .LT. 0) THEN
-            STOP 'Insufficient memory in CC_CHOPTF2'
+            CALL QUIT('Insufficient memory in CC_CHOPTF2')
          ENDIF
 C         
 C----------------------------------------
@@ -13346,7 +13349,7 @@ C
             LWRK2 = LWORK - KEND2 + 1
 *     print *,'KCHOV = ',kchov,'  KCHOO = ',kchoo,' KEND2 = ',kend2
             IF (LWRK2 .LT. 0) THEN
-               STOP 'Not enough space in CC_CHOPTF2'
+               CALL QUIT('Not enough space in CC_CHOPTF2')
             ENDIF
 C            
 C------------------------
@@ -13357,7 +13360,7 @@ C
             NUMA = MIN(NVIR(ISYMA),LWRK2/LENA)
             IF (NUMA .EQ. 0) THEN
                WRITE(LUPRI,*) 'NUMA .EQ. 0 in CC_CHOPTF2'
-               STOP 'Not enough space in CC_CHOPTF2'
+               CALL QUIT('Not enough space in CC_CHOPTF2')
             ENDIF
 C           
             NBATA = (NVIR(ISYMA)-1)/NUMA + 1
@@ -13388,8 +13391,7 @@ C
 *     print *,'KT22  = ',kt22
 *     print *,'KENDA = ',kenda
                IF (LWRKA .LT. 0) THEN
-                  STOP 'Insufficient memory in CC_CHOPTF2 in
-     &                  BATCH A'
+               CALL QUIT('Insufficient memory in CC_CHOPTF2 in BATCH A')
                ENDIF
 C               
 C---------------------------------------------------------
@@ -14080,7 +14082,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -14315,7 +14317,7 @@ C
       KEND1 = KSMAT + MXJKI
       LWRK1 = LWORK - KEND1 + 1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient memory in CCHO_FTERM2'
+         CALL QUIT('Insufficient memory in CCHO_FTERM2')
       ENDIF
 C         
 C----------------------------------------
@@ -14337,7 +14339,7 @@ C
             KEND2 = KCHOO + LENCHOO
             LWRK2 = LWORK - KEND2 + 1
             IF (LWRK2 .LT. 0) THEN
-               STOP 'Not enough space in CC_CHOPTF2'
+               CALL QUIT('Not enough space in CC_CHOPTF2')
             ENDIF
 C                    
 C---------------------------------
@@ -14351,8 +14353,7 @@ C
                KENDA = KT22   + NCKI(ISYMDLI)*NUMIA
                LWRKA = LWORK  - KENDA + 1
                IF (LWRKA .LT. 0) THEN
-                  STOP 'Insufficient memory in CC_CHOPTF2 in
-     &                  BATCH A'
+               CALL QUIT('Insufficient memory in CC_CHOPTF2 in BATCH A')
                ENDIF
 C               
 C---------------------------------------------------------
@@ -14865,7 +14866,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -15118,7 +15119,7 @@ C
          NUMI = MIN(NRHF(ISYMI),LWORKI/LENI)
          IF (NUMI .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMI .EQ. 0 IN CC_CHOPTC1'
-            STOP 'NOT ENOUGH SPACE IN CC_CHOPTC1 !!'
+            CALL QUIT('NOT ENOUGH SPACE IN CC_CHOPTC1 !!')
          ENDIF
 C         
          NBATI = (NRHF(ISYMI)-1)/NUMI + 1
@@ -15172,8 +15173,8 @@ C
             KMINT = KLINT + NCKI(ISYMCMK)*NUMII
             KENDI = KMINT + NCKI(ISYMCMK)*NUMII
             LWRKI = LWORKI - KENDI + 1
-            IF (LWRKI .LT. O) THEN
-               STOP 'Allocation bug in CC_CHOC1TERM in the I batch'
+            IF (LWRKI .LT. 0) THEN
+            CALL QUIT('Allocation bug in CC_CHOC1TERM in the I Cbatch')
             ENDIF
 C             
 C------------------------------------------------------------------
@@ -15249,7 +15250,7 @@ C              -----------------------------------------
                KENDO = KCHOO + NCKI(ISYMCML)
                LWRKO = LWORK - KENDO + 1
                IF (LWRKO .LT. 0) THEN
-                  STOP 'Insufficient memory in CC_CHOC1TERM in #J1'
+                CALL QUIT('Insufficient memory in CC_CHOC1TERM in C#J1')
                ENDIF
 C              
 C              MXKL is the biggest block inside the KL matrix with
@@ -15278,7 +15279,7 @@ C
                NUMJ = MIN(NRHF(ISYMJ),LWORKJ/LENJ)
                IF (NUMJ .EQ. 0) THEN
                   WRITE(LUPRI,*) 'NUMJ .EQ. 0 in CC_CHOPTC1'
-                  STOP 'Not enough space in CC_CHOPTC1'
+                  CALL QUIT('Not enough space in CC_CHOPTC1')
                ENDIF
 C                 
                NBATJ = (NRHF(ISYMJ)-1)/NUMJ + 1
@@ -15334,7 +15335,7 @@ C
                   KENDJ  = KBMAT  + MXKL*NUMII*NUMIJ
                   LWRKJ  = LWORK  - KENDJ + 1
                   IF (LWRKJ .LT. 0) THEN
-                     STOP 'Insufficient memory in CC_CHOC1TERM in #J2'
+                 CALL QUIT('Insufficient memory in CC_CHOC1TERM in #J2')
                   ENDIF
 C             
 C------------------------------------------------------------------
@@ -15912,7 +15913,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------
@@ -16205,7 +16206,7 @@ C        ----------------------------------------
          KEND1 = KCHOO + NCKI(ISYMCLM)
          LWRK1 = LWORK - KEND1 + 1
          IF (LWRK1 .LT. 0) THEN
-             STOP 'Insufficient memory in CC_CHOC2TERM d'
+             CALL QUIT('Insufficient memory in CC_CHOC2TERM d')
          ENDIF
 C                
          LWORKI = LWRK1/2
@@ -16223,7 +16224,7 @@ C
          NUMI = MIN(NRHF(ISYMI),LWORKI/LENI)
          IF (NUMI .EQ. 0) THEN
             WRITE(LUPRI,*) 'NUMI .EQ. 0 IN CC_CHOPTC1'
-            STOP 'NOT ENOUGH SPACE IN CC_CHOPTC1 !!'
+            CALL QUIT('NOT ENOUGH SPACE IN CC_CHOPTC1 !!')
          ENDIF
 C         
          NBATI = (NRHF(ISYMI)-1)/NUMI + 1
@@ -16286,8 +16287,8 @@ C
             KIINT = KT21 + NCKASR(ISYMABK)*NUMII
             KENDI = KIINT + NCKI(ISYMCLM)*NUMII
             LWRKI = LWORK - KENDI + 1
-            IF (LWRKI .LT. O) THEN
-               STOP 'Insufficient memory in CC_CHOC2TERM in the I batch'
+            IF (LWRKI .LT. 0) THEN
+         CALL QUIT('Insufficient memory in CC_CHOC2TERM in the I batch')
             ENDIF
 C            
 C-----------------------------------------
@@ -16331,7 +16332,7 @@ C
             NUMJ = MIN(NRHF(ISYMJ),LWORKJ/LENJ)
             IF (NUMJ .EQ. 0) THEN
                WRITE(LUPRI,*) 'NUMJ .EQ. 0 in CC_CHOPTC2'
-               STOP 'Not enough space in CC_CHOPTC2'
+               CALL QUIT('Not enough space in CC_CHOPTC2')
             ENDIF
 C                 
             NBATJ = (NRHF(ISYMJ)-1)/NUMJ + 1
@@ -16394,7 +16395,7 @@ C
                KENDJ = KBMAT + NUMII*NUMIJ
                LWRKJ = LWORK - KENDJ + 1
                IF (LWRKJ .LT. 0) THEN
-                  STOP 'Insufficient memory in CC_CHOC2TERM in #J'
+                  CALL QUIT('Insufficient memory in CC_CHOC2TERM in #J')
                ENDIF
 C               
 C--------------------------------------------
@@ -16772,7 +16773,7 @@ C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
      &              ' to converge the decomposition to 1.0D-13'
-         STOP 'Too many vectors required'
+         CALL QUIT('Too many vectors required')
       END IF
 C
 C-------------------

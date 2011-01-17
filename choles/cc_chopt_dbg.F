@@ -2119,7 +2119,6 @@ C     ------------------------------------
             KOFFV = NTOT1*(B - 1)
      &            + IOFT1(ISYMDJ) + NDJ
             TEST  = CHOL(KOFFC) - VICHO(KOFFV)
-            NTST  = NTST + 1
             IF (DABS(TEST) .GT. 1.0D-15) THEN
                WRITE(6,*) 'CHK_VEC2: Error: ISYMDJ,DJ,B: ',
      &                    ISYMDJ,NDJ,B,' CHOL - VICHO: ',TEST

@@ -1945,7 +1945,7 @@ C           ------------------------------------------------------------
                      ENDDO
                   ENDDO
                ENDDO
-               VAL = HALF*DDOT(N2BST(1),WORK(KONEP),1,DENAO,1)
+               VAL = 0.5D0 * DDOT(N2BST(1),WORK(KONEP),1,DENAO,1)
             ELSE
                VAL = ZERO
             ENDIF

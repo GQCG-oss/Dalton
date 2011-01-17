@@ -174,6 +174,7 @@ C     -------------------
       TIMCHOL = ZERO
       TIMRDAO = ZERO
       TIMCRAO = ZERO
+      TIMDIS  = ZERO
 
       CALL AROUND('START OF '//SECNAM)
 
@@ -269,7 +270,7 @@ C        Allocation needed for CCRDAO.
 C        -----------------------------
 
          KRECNR = KEND1
-         KEND1  = KRECNR + (NBUF - 1)/IRAT + 1
+         KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
          LWRK1  = LWORK  - KEND1
 
          IF (LWRK1 .LT. 0) THEN
@@ -450,11 +451,8 @@ C     --------------------------------
       WRITE(LUPRI,'(5X,A,//)')
      & '---------------------------------------------------------'
 C
-      WRITE(LUPRI,'(4(/,A,D25.15))')' SUMDIR : ',SUMDIR,
-     &                          ' SUMCHO : ',SUMCHO,
-     &                          ' SUMVEC : ',SUMVE1,
-     &                          ' SUMVE2 : ',SUMVE2
-      WRITE(LUPRI,'(//)')
+      WRITE(LUPRI,'(2(/A,D25.15)//)')' SUMDIR : ',SUMDIR,
+     &                          ' SUMCHO : ',SUMCHO
 C
       TIMTOT = SECOND() - TIMTOT
       CALL HEADER('Timing Report from '//SECNAM,-1)

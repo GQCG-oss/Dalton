@@ -1364,10 +1364,6 @@ C        -------------
      &      'Insufficient memory for Cholesky batch in ',SECNAM
             WRITE(LUPRI,'(5X,A,9X,I1)')
      &      'Cholesky symmetry                : ',ISYCHO
-            WRITE(LUPRI,'(5X,A,9X,I1)')
-     &      'Symmetry of ai                   : ',ISYMAI
-            WRITE(LUPRI,'(5X,A,9X,I1)')
-     &      'Symmetry of bj                   : ',ISYMBJ
             WRITE(LUPRI,'(5X,A,I10,/,5X,A,I10,/)')
      &      'Memory left for Cholesky batch   : ',LWRK1,
      &      'Minimum required (pref. multiple): ',MINMEM
