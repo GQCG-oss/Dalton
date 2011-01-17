@@ -1620,7 +1620,7 @@ C
       IF(NORBT .LT.0 .OR.NORBT .GT.MXCORB) CALL ERRINP( 8,INPERR)
       IF (IORTO .EQ. 1) GO TO 8000
 C
-      IF (NUMRUN .GT. 0) THEN
+      IF (DOSCF .OR. DOCI .OR. DOMC) THEN
          IF(MAXMAC.LE.0 .OR.MAXMAC.GT.200) CALL ERRINP( 5,INPERR)
          IF(THRGRD.LT.D0.OR.THRGRD.GT.D1)  CALL ERRINP( 7,INPERR)
       END IF
@@ -1631,10 +1631,10 @@ C
 !        WRITE (LUPRI,'(/A)') 'ERROR: HF occupation must be specified'//
 !    *         ' when SCF followed by CI or MCSCF'
 !     END IF
-      IF(NOCCT .LT.1 .OR. NOCCT .GT.MAXOCC) THEN
+      IF(NOCCT .LT.0 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
          WRITE(LUPRI,'(/A,I5/A,I5)') 'ERROR: Number of occ. orbitals :',
-     *      NOCCT,' is .lt. 1 or .gt. MAXOCC :',MAXOCC
+     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC
       END IF
       IF(NSSHT .LT.0 .OR.NSSHT .GT.MXCORB) CALL ERRINP(11,INPERR)
 C
@@ -2148,7 +2148,7 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.LS CI ','xXXXXXX','xXXXXXX','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','xXXXXXX','xXXXXXX','xXXXXXX'/
 C
@@ -2403,7 +2403,7 @@ C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
          END IF
       GO TO 100
 C
-C *** Option NEW NEVPT2
+C *** Option 18: NEVPT2
   118 CONTINUE
          DONEVPT  = .TRUE.
          NUMRUN = NUMRUN + 1
@@ -2427,6 +2427,7 @@ C *** Option 21: .KSPT2
         ADDMP2   = .TRUE.
         READ (LUCMD,*) WDFTMP
       GO TO 100
+C *** Option 22: .GASCI
   122 CONTINUE
         DOLUCITA = .TRUE.
         NUMRUN   = NUMRUN + 1
@@ -5005,6 +5006,7 @@ C
 #include <dftacb.h>
 C
       CHARACTER*6 RDMOLB(12)
+      CHARACTER*8  WFTYPE
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'EHT   ','EWMO  '/
@@ -5087,7 +5089,7 @@ C
  1050 FORMAT(/T6,A/)
  1051 FORMAT(T16,A)
  1052 FORMAT(/T6,A,$)
- 1053 FORMAT(A/)
+ 1053 FORMAT(A)
  1054 FORMAT(T16,A,$)
       IF (IORTO .EQ. 1) THEN
          WRITE (IWUNIT,1050) 'Orthonormalization of molecular orbitals.'
@@ -5097,12 +5099,16 @@ C
          WRITE (IWUNIT,1500) (NBAST,NBAS(I),I=1,NSYM)
          GO TO 8000
       END IF
+      WFTYPE = ' '
+      NUMRUN_LOCAL = NUMRUN
       IF (DOLUCITA) THEN
          WRITE (IWUNIT,1050) 'Generalized Active Space CI (with LUCITA)'
-         WRITE (IWUNIT,1051) 'preceded by :'
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+         IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
       END IF
       IF ( DOMC .OR. DOCI ) THEN
          IF ( DONEVPT ) then
+            IF (WFTYPE .EQ. ' ') WFTYPE='NEVPT2'
 C Oct 2003 hjaaj: from koopro4.F:
 C     This program calculates the second order correction to the energy
 C     using the n-electron valence state perturbation theory (NEVPT)
@@ -5113,13 +5119,17 @@ C     formulation of NEVPT.
            WRITE (IWUNIT,1050)
      &     "N-electron valence state 2. order perturbation theory "//
      &     "using Ken Dyall's zeroth-order Hamiltonian"
-           WRITE (IWUNIT,1051) 'preceded by :'
+           NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+           IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
          ENDIF
          IF ( DOMC ) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Multi-configurational response calculation.'
          ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='CI'
             IF (DOCINO) THEN
                WRITE (IWUNIT,1050) 'CI-NO calculation.'
             ELSE
@@ -5136,6 +5146,7 @@ C     formulation of NEVPT.
                WRITE (IWUNIT,1050)
      &           'CI type: user specified active spaces.'
             END IF
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          END IF
          IF (MCTYPE .EQ. 2) THEN
             IF (CORRLX) THEN
@@ -5161,10 +5172,13 @@ C          to get here unless someone modifies SIRIUS incorrectly
      *      '      Selected active-active rotations included by user.'
          END IF
       ELSE IF ( DOMP2 ) THEN
+         IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
          WRITE (IWUNIT,1050)
      &      ' MP2, Moeller-Plesset second-order calculation.'
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOCCSD) THEN
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOSCF ) THEN
          IF (HSROHF) THEN
             WRITE(IWUNIT,1052) 'Restricted, high spin open shell'
@@ -5174,29 +5188,31 @@ C          to get here unless someone modifies SIRIUS incorrectly
             WRITE(IWUNIT,1052) 'Restricted, one open shell'
          END IF
          IF (DOHFSRDFT) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='HF-srDFT'
             WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *      'Time-dependent HF-srDFT calculation (response properties).'
          ELSE IF (DODFT) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
             WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
          ELSE
+            IF (WFTYPE .EQ. ' ') WFTYPE='HF'
             WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Time-dependent Hartree-Fock calculation '//
      *         '(random phase approximation).'
          END IF
+         NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE
          WRITE (IWUNIT,1050) 'No wave function optimization.'
          IF ( DORSP ) WRITE (IWUNIT,1050)
      *      'Response calculation.'
       END IF
-      IF (NUMRUN .GE. 2) THEN
+      IF (NUMRUN_LOCAL .GT. 0) THEN
          WRITE(IWUNIT,1050)
      *      'This is a combination run starting with'
-         IRUN = 1
-         IF (DONEVPT) IRUN = 2
          IF (DOSCF) THEN
             IF (HSROHF) THEN
                WRITE(IWUNIT,1054) 'a restricted, high spin open shell'
@@ -5212,9 +5228,9 @@ C          to get here unless someone modifies SIRIUS incorrectly
             ELSE
                WRITE (IWUNIT,1053) ' Hartree-Fock calculation'
             END IF
-            IRUN = IRUN + 1
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          END IF
-         IF (DOMP2 .AND. IRUN .LT. NUMRUN) THEN
+         IF (DOMP2 .AND. NUMRUN_LOCAL .GT. 0) THEN
             IF (MP2_SCS) THEN
                WRITE(IWUNIT,1051) 'an SCS-MP2 calculation'
             ELSE IF (MP2_SOS) THEN
@@ -5223,7 +5239,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
                WRITE(IWUNIT,1051) 'an MP2 calculation'
             END IF
             IF (MP2_TDA) WRITE(IWUNIT,1051) '   (saving for TDA-SOPPA)'
-            IRUN = IRUN + 1
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          END IF
          IF (FCVORB) THEN
             IF (NMVOT .EQ. 0) THEN
@@ -5232,13 +5248,13 @@ C          to get here unless someone modifies SIRIUS incorrectly
                WRITE(IWUNIT,1051)'diagonal FC(MVO) virtual orbitals'
             END IF
          END IF
-         IF (DOCI .AND. IRUN .LT. NUMRUN) THEN
+         IF (DOCI .AND. NUMRUN_LOCAL .GT. 0) THEN
             IF (DOCINO) THEN
                WRITE(IWUNIT,1051) 'a CI-NO calculation'
             ELSE
                WRITE(IWUNIT,1051) 'a CI calculation'
             END IF
-            IRUN = IRUN + 1
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          END IF
          WRITE (IWUNIT,'()')
       END IF
@@ -5313,12 +5329,25 @@ C
 C
 C ***** Wave function specifications
 C
+      WRITE(IWUNIT,1000)
+      IF (DOCCSD) THEN
+         WRITE(IWUNIT,'(/5X,A/)')
+     &   'For the specification of the Coupled Cluster: see later.'
+      END IF
+      IF (DOLUCITA) THEN
+         WRITE(IWUNIT,'(/5X,A/)')
+     &   'For the specification of the GAS CI in LUCITA: see later.'
+      END IF
+C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)
 C     ... get total charge
-      WRITE(IWUNIT,1000) NINEL,NACTEL,ICHARG,ISPIN,NSYM,LSYM
+      IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) THEN
+         WRITE(IWUNIT,1002) WFTYPE,NINEL,NACTEL,ICHARG,ISPIN,NSYM,LSYM
+      END IF
  1000 FORMAT(/5X,'Wave function specification'
-     *       /5X,'============================',
+     *       /5X,'============================')
+ 1002 FORMAT( 5X,'For the wave function of type :      >>> ',A,' <<<',
      *       /5X,'Number of closed shell electrons',I11,
      *       /5X,'Number of electrons in active shells',I7,
      *       /5X,'Total charge of the molecule',I15,
@@ -5679,3 +5708,4 @@ C
          THRNEVPT = THRNEVPT*THR_REDFAC
       END IF
       END
+C --- end of sirinp.F ---
