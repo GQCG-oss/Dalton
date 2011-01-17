@@ -143,13 +143,13 @@ TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="STATIC POLARIZABILITIES NOT CORRECT"
 
-# Frequency-dependant polarizabilities
+# Frequency-dependent polarizabilities
 CRIT1=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 2\.8520........(D|E)\+01" $log | wc -l`
 CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 3\.3212........(D|E)\+01" $log | wc -l`
 CRIT3=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 3\.3212........(D|E)\+01" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
-ERROR[7]="FREQUENCY-DEPENDANT POLARIZABILITIES NOT CORRECT"
+ERROR[7]="FREQUENCY-DEPENDENT POLARIZABILITIES NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7
