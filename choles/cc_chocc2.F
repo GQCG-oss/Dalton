@@ -4423,7 +4423,7 @@ C
       KEND0  = KLAMDH + NLAMDT
       LWRK0  = LWORK  - KEND0 + 1
 C
-      IF (LWRK0 .LT. 0) STOP 'Not enough space in CHO_FCKH.0'
+      IF (LWRK0 .LT. 0) CALL QUIT('Not enough space in CHO_FCKH.0')
 C
 C------------------------------
 C     Construct density matrix
@@ -4451,7 +4451,7 @@ C
       KEND1 = KFOCK + N2BST(ISYDEN)
       LWRK1 = LWORK - KEND1 + 1
 C
-      IF (LWRK1 .LT. 0) STOP 'Not enough space in CHO_FCKH.1'
+      IF (LWRK1 .LT. 0) CALL QUIT('Not enough space in CHO_FCKH.1')
 C
 C--------------------------
 C     Construct Fock matrix

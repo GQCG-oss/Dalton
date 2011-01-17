@@ -1354,7 +1354,7 @@ C           ---------------------
 
                NEED = NBAS(ISYMG)*NVIR(ISYMB)
 
-               IF (NEED .GT. LWRK1) STOP ' WORK 1 '
+               IF (NEED .GT. LWRK1) CALL QUIT(' WORK 1')
 
                NTOTG = MAX(NBAS(ISYMG),1)
                NTOTD = MAX(NBAS(ISYMD),1)
@@ -1397,7 +1397,7 @@ C           =====================
 
                   NEED = NVIR(ISYMA)*NRHF(ISYMJ)
 
-                  IF (NEED .GT. LWRK1) STOP ' WORK 2 '
+                  IF (NEED .GT. LWRK1) CALL QUIT(' WORK 2')
 
                   KOFF1 = KCHAB + IMATAB(ISYMB,ISYMA)
                   KOFF2 = IT1AM(ISYMB,ISYMJ) + 1
@@ -1495,7 +1495,7 @@ C           ======================================
 
                   NEED = NRHF(ISYMI)*NRHF(ISYMJ)
 
-                  IF (NEED .GT. LWRK1) STOP ' WORK 3 '
+                  IF (NEED .GT. LWRK1) CALL QUIT(' WORK 3')
 
                   KOFF1 = KCHIA + IT1AM(ISYMB,ISYMI)
                   KOFF2 = IT1AM(ISYMB,ISYMJ) + 1

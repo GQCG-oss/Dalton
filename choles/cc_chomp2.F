@@ -2297,7 +2297,7 @@ C     -------------------
   100 IF (LSTOP) THEN
          WRITE(LUPRI,'(//,5X,A,A,A)')
      &   '- ',SECNAM,' stops execution on request...'
-         STOP ' ***** Execution Killed on Request ***** '
+         CALL QUIT(' ***** Execution Killed on Request ***** ')
       ENDIF
 
       RETURN

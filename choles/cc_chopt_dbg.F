@@ -1087,7 +1087,7 @@ c     KRMAT = 1
 c     KXMAT = KRMAT + NVIRT*NRHFT*NRHFT*NRHFT
 c     KEND  = KXMAT + NVIRT*NRHFT*NRHFT*NRHFT
 c     LWRK  = LWORK - KEND + 1
-c     IF (LWRK .LT. 0) STOP ' Insufficient memory in CCHO_GTERM_DBG '
+c     IF (LWRK.LT.0) CALL QUIT('Insufficient memory in CCHO_GTERM_DBG')
 c     CALL CCHO_RXMAT_DBG(T1AM,T2AM,XAIBJ,XAIBC,NVIRT,NRHFT,
 c    &                    WORK(KRMAT),WORK(KXMAT))
 C
@@ -2141,7 +2141,7 @@ C     ------------
       KEND  = KCHOO + MAXCKI
       LWRK  = LWORK - KEND + 1
 
-      IF (LWRK .LT. 0) STOP ' crappy test in CHK_VEC2 '
+      IF (LWRK .LT. 0) CALL QUIT(' crappy test in CHK_VEC2')
 
       DUMMY = 0.0D0
       IDUM1 = -1
@@ -2185,7 +2185,7 @@ C     ------------
       KEND  = KCHOV + NTOT1*NUMIB
       LWRK  = LWORK - KEND + 1
 
-      IF (LWRK .LT. 0) STOP ' crappy test in CHK_VEC2 (virt.) '
+      IF (LWRK .LT. 0) CALL QUIT(' crappy test in CHK_VEC2 (virt.)')
 
       CALL CCHO_DECHO(FOCKD,CHOELE,NUMCHO,ICHO,WORK(KCHOO),WORK(KCHOV),
      &                IB1,NUMIB,ISYMB,II1,NUMII,ISYMI)

@@ -53,7 +53,7 @@ C     ===================
          IF (STAOIN) THEN
             WRITE(LUPRI,'(//,5X,A,A,A)')
      &      '- ',SECNAM,' stops execution on request...'
-            STOP ' ***** Execution Killed on Request ***** '
+            CALL QUIT(' ***** Execution Killed on Request *****')
          ENDIF
 
       ENDIF
@@ -104,7 +104,7 @@ C        ----------------------------------------------
          IF (STIAJB) THEN
             WRITE(LUPRI,'(//,5X,A,A,A)')
      &      '- ',SECNAM,' stops execution on request...'
-            STOP ' ***** Execution Killed on Request ***** '
+            CALL QUIT(' ***** Execution Killed on Request *****')
          ENDIF
 
       ENDIF
@@ -403,7 +403,7 @@ c    &                  IABMX,ISABMX,IGMX,ISGMX)
                WRITE(LUPRI,'(5X,A,I10,4X,I1,/)')
      &         'Location: gamma, sym. gamma    : ',IG,ISYMG
             ENDIF
-c     stop 'End of test'
+c     CALL QUIT( 'End of test' )
 
             IF (DABS(VAL) .GT. XMXERR) THEN
                XMXERR = DABS(VAL)
@@ -1269,7 +1269,7 @@ C     ---------
       ENDDO
 
 c
-c     stop 'End of test'
+c     CALL QUIT( 'End of test' )
       RETURN
       END
 

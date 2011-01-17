@@ -2733,7 +2733,7 @@ C     ------------------
 
       IF (STPDBG) THEN
          WRITE(LUPRI,*) SECNAM,': Stopping as requested!'
-         STOP ' ON REQUEST '
+         CALL QUIT('STOP in CC_CHOR1DBGAO as requested')
       ENDIF
 
       RETURN
@@ -2970,7 +2970,7 @@ C     ------------------
 
       IF (STPDBG) THEN
          WRITE(LUPRI,*) SECNAM,': Stopping as requested!'
-         STOP ' ON REQUEST '
+         CALL QUIT(' STOP AS REQUESTED ')
       ENDIF
 
       RETURN
