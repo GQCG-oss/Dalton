@@ -873,7 +873,7 @@ C                '.D01SKI'
  117           CONTINUE 
 C                '*ACTIVE'
                  ACTIVE = .TRUE.
-                 CALL CC_ACTINP(WORD)
+                 CALL CC_ACTINP(WORD,MSYM)
                GO TO 1000
  118           CONTINUE 
 C                '.CHO(T)'
@@ -9739,7 +9739,7 @@ C
       RETURN
       END
 C  /* Deck cc_actinp */
-      SUBROUTINE CC_ACTINP(WORD)
+      SUBROUTINE CC_ACTINP(WORD,MSYM)
 C
 C     Alfredo Sanchez de Meras. May 2008
 C
@@ -9865,7 +9865,7 @@ C                    '.DIFADD'
 C                    Include in active space selected (diffuse) basis
                      DIFADD = .TRUE.
                      CHKACT = .TRUE.
-                     DO ISYM = 1,NSYM
+                     DO ISYM = 1,MSYM
                         READ(LUCMD,*) NEXTBS(ISYM)
                         READ(LUCMD,*) (IEXTBS(I,ISYM), I=1,NEXTBS(ISYM))
                      END DO

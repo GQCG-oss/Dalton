@@ -691,7 +691,7 @@ C
      *    MODEL(1:6),
      *    'Transition strength matrix for (',ISYMI,',',IEXI,') -> (', 
      *    ISYMF,',',IEXF,') transition',
-     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI     
+     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI
       IF (LDIP) THEN
          WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
       ELSE
@@ -738,11 +738,11 @@ C
      *    MODEL(1:6),
      *    'Oscillator strength matrix for (',ISYMI,',',IEXI,') -> (', 
      *    ISYMF,',',IEXF,') transition',
-     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI     
+     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI
       CALL OUTPUT(OSC,1,3,1,3,3,3,1,LUPRI)
-      CALL  TNSRAN(OSC,PVAL,PAXIS,
-     *             ALFSQ,BETSQ,ITST,ITST2,
-     *             APAR2,APEN2,XKAPPA,IPAR)
+      CALL TNSRAN(OSC,PVAL,PAXIS,
+     *            ALFSQ,BETSQ,ITST,ITST2,
+     *            APAR2,APEN2,XKAPPA,IPAR)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal values of diagonalized oscillator strength matrix:'
       WRITE(LUPRI,'(1X,A)') '            a.u.               '

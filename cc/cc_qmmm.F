@@ -71,11 +71,10 @@ C
 C
       PARAMETER (ZERO = 0.0D0, MONE=-1.0D0 ,ONE = 1.0D0,
      &             IZERO = 0 , TWO = 2.0D0)
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
       DIMENSION WORK(LWORK),FOCK(*)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB
+      LOGICAL TOFILE,TRIMAT,EXP1VL
 C
       CHARACTER*8 LABEL
 C
@@ -90,9 +89,9 @@ C       Dynamical allocation
 C--------------------------
 C
       KTAO  =  1 
-      KINT = KTAO + NNBASX
+      KINT  = KTAO + NNBASX
       KWRK1 = KINT + N2BST(ISYMOP)
-      LWRK1   = LWORK   - KWRK1
+      LWRK1 = LWORK   - KWRK1
 
       IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CCMM_ADDG' )
         
@@ -222,7 +221,6 @@ C
 
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
       INTEGER NDIM
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),CTR2(*)
@@ -231,6 +229,7 @@ C
 C
       CHARACTER MODEL*10 
       LOGICAL LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
 C
       CHARACTER*8 LABEL,LR*(1), LIST*(2)
 C
@@ -412,6 +411,7 @@ C
       CHARACTER*(*) LISTB
       INTEGER IDLSTB, ISYMTB
       LOGICAL LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LR*1
 C
@@ -702,6 +702,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION ELF(*),INDMOM(*)
       LOGICAL LOCDEB,FNDLAB
+      PARAMETER (LOCDEB=.FALSE.)
       PARAMETER (ZERO=0.0D0, ONE=1.0D0)
       INTEGER NDIM
 
@@ -710,8 +711,8 @@ C
       NDIM=3*NNZAL
 
       KRELAY=1
-      KWRK1=KRELAY+NDIM*NDIM
-      LWRK1=LWORK-KWRK1
+      KWRK1 =KRELAY+NDIM*NDIM
+      LWRK1 =LWORK-KWRK1
       IF (LWRK1.LT.0) CALL QUIT('Too little work in CCMM_F2DIP')
 
       CALL DZERO(WORK(KRELAY),NDIM*NDIM)
@@ -861,7 +862,7 @@ C
       KMULTI = 1
       KWRK = KMULTI + NNBASX
       LWRK = LWORK - KWRK
-      IF (LWRK1.LT.0) CALL QUIT('Too little work in CCMM_ELSTAT')
+      IF (LWRK.LT.0) CALL QUIT('Too little work in CCMM_ELSTAT')
       CALL DZERO(WORK(KMULTI),NNBASX)
 
       IF (NMULT .GE. 0) THEN
@@ -976,9 +977,8 @@ C
 C
       DIMENSION WORK(LWORK), DENS(*), ELF(*)
       INTEGER NDIM
-      LOGICAL LOCDEB, LSKIP 
+      LOGICAL LSKIP 
       CHARACTER*8 LABEL
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 C
       CALL QENTER('CCMM_DENS2F')
 C
@@ -1085,8 +1085,6 @@ C
       DIMENSION GPOL(*)
       INTEGER NDIM
       LOGICAL LSKIP
-      LOGICAL LOCDEB 
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('CCMM_POL')
       
@@ -1222,13 +1220,12 @@ C
       DIMENSION ELF(*),AODEN(*)
       INTEGER NDIM
       LOGICAL LOCDEB, LSKIP
+      PARAMETER (LOCDEB=.FALSE.)
       CHARACTER LABEL*8
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
    
       CALL QENTER('CCMM_FSTATIC')
 
       NDIM=3*NNZAL
-      LOCDEB=.FALSE.
       ISYMOP=1
 
       KEPSAO=1
@@ -1276,12 +1273,10 @@ C Dot with the AO density
          EYELCO = DDOT(N2BST(ISYMOP),AODEN,1,WORK(KEPSy),1)
          EZELCO = DDOT(N2BST(ISYMOP),AODEN,1,WORK(KEPSz),1)
 
-C         LOCDEB=.TRUE.
          IF (LOCDEB) THEN
-            WRITE(LUPRI,*) 'At MM site ', I, ' the field due to the QM
-     &   electrons: ',EXELCO,EYELCO,EZELCO
+            WRITE(LUPRI,*) 'At MM site ', I, ' the field due to the QM',
+     &      ' electrons: ',EXELCO,EYELCO,EZELCO
          END IF
-C         LOCDEB=.FALSE.
  
 C Add to the electric field from the multipoles 
          ELF(LRI+0) = ELF(LRI+0) + EXELCO
@@ -1386,11 +1381,13 @@ C     a possible storage-problem when working with large systems.
 #include <qm3.h>
 #include <cclr.h>
 
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
       DIMENSION WORK(LWORK)
       DIMENSION EPSAO(*)
       INTEGER SITE
       LOGICAL LSKIP
       LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB 
+      PARAMETER (LOCDEB=.FALSE.)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
 
@@ -1464,7 +1461,7 @@ C
             TEMPI = POLIMM(SITE)
           ENDIF 
           TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-          SIJ = 2.1304*DIST/TEMP
+          SIJ = 2.1304D0*DIST/TEMP
           DFACT = 1.0D0 - (1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
         ELSE
           DFACT = (1-exp(-ADAMP*DIST))**3
@@ -1499,7 +1496,7 @@ C
 C     In new QMMM implementation (NYQMMM) the strategy is as follows
 C     1) Calculate F^sta=F^el+F^mul+F^nuc
 C     2) Calculate induced dipole by transforming with relay 
-C     matrix(MMMAT) or by iterative means (MMITER)
+C        matrix (MMMAT) or by iterative means (MMITER)
 C     3) Put induced moments to file
 C     4) Calculate Epol=-1/2sum_a\mu^ind_aF^sta_a
 C     5) Calculate Eelesta=-sum_s<N_s>
@@ -1537,6 +1534,7 @@ C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB, FNDLAB, EXCENT
+      PARAMETER (LOCDEB=.FALSE.)
       DIMENSION WORK(LWORK),AODEN(*)
       CHARACTER LABEL*8
       INTEGER NTOTI
@@ -1546,7 +1544,6 @@ C------------------------------------------------------------------
 C       Init parameters
 C------------------------------------------------------------------
 
-      LOCDEB=.FALSE.
       ISYMOP = 1
 C
 C------------------------------------------------------------------
@@ -1699,6 +1696,7 @@ C
       DIMENSION ELF(*)
       INTEGER SITEI, SITEJ, LRI
       LOGICAL LOCDEB, EXCENT
+      PARAMETER (LOCDEB=.FALSE.)
 
       CALL QENTER('CCMM_FMUL')
 
@@ -1712,8 +1710,8 @@ C
 
           IF(DIST .GT. RCUTMM) THEN
             IF (LOCDEB) THEN
-              WRITE(LUPRI,*) 'Skipping element 
-     &                        in T2 CC', SITEI,SITEJ
+              WRITE(LUPRI,*)
+     &           'Skipping element in T2 CC', SITEI,SITEJ
             ENDIF
             GOTO 200
           ENDIF
@@ -1836,6 +1834,8 @@ C
       DIMENSION ELF(*)
       INTEGER SITEI, LRI, SITEJ
       LOGICAL LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
+
       TJKX = 0.0D0
       TJKY = 0.0D0
       TJKZ = 0.0D0
@@ -1874,6 +1874,7 @@ C
                DIQM = SQRT(DIQM)
 
           IF (IDAMP .EQ. 3) THEN
+            call quit('please fix: variable I is not defined')
             IF (IPOLTP .EQ. 2) THEN
               TEMPI =D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
             ELSE IF (IPOLTP .EQ. 1) THEN
@@ -1960,7 +1961,6 @@ C
 
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -1969,13 +1969,14 @@ C
       INTEGER ISYCB, ISYRES, ISYMTB, ISYMTC
       CHARACTER MODEL*10 
       LOGICAL LOCDEB, LSAME
+      SAVE LOCDEB
+      DATA LOCDEB /.FALSE./
       CHARACTER*(2) LISTL
 C
       CHARACTER*8 LABEL,DENTYP*(1),RSPTYP*(1) 
 C
 C
       CALL QENTER('CCMM_QRTRANSFORMER')
-C      LOCDEB=.TRUE.
       LISTL='L0'
 
       IF (CCS)  CALL QUIT('CCMM_QRTRANS: Not implemented for CCS')
@@ -2105,13 +2106,13 @@ C Dynamical memory allocation to store the response transformed operator
 
 C Print section
       LOCDEB=.TRUE.
-      IF(LOCDEB .OR. IPQMMM .GT. 14) THEN
+      IF (LOCDEB .OR. IPQMMM .GT. 14) THEN
          TAL1= DDOT(NT1AM(ISYCB),WORK(KETA1),1,WORK(KETA1),1)
          TAL2= DDOT(NT2AM(ISYCB),WORK(KETA2),1,WORK(KETA2),1)
          WRITE(LUPRI,*) 'Printing transformed G^B*C contribution. 
      &                     Norm2 of singles: ', TAL1,
      &                    'Norm2 of doubles: ', TAL2
-        END IF
+      END IF
       LOCDEB=.FALSE.
 
 C Note that if B=C then we just multiply the already found contribution by 2
@@ -2622,6 +2623,7 @@ C and the related contribution
       IOPT = 1
 
 C Read singles to be used for construction of Lambda matrices
+      KDUM = KWRK3
       CALL CC_RDRSP('R0',1,ISYMR,IOPT,MODDUM,
      *             WORK(KT1AM),WORK(KDUM))
 

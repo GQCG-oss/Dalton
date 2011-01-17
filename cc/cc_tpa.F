@@ -595,7 +595,7 @@ C          IF (ISAMA*ISAMB.EQ.0) SIGN = +ONE
            STRN  = TM0F * TMF0
           
            WRITE(LUPRI,
-     &       '(3x,"| ",2(a8,x),"|",2(f15.8,x,"|"),f15.8," |")')
+     &       '("   | ",2(a8,1x),"|",2(f15.8," |"),f15.8," |")')
      &        LABELA,LABELB,TM0F,TMF0,STRN
 
          ELSE
@@ -604,7 +604,7 @@ C          IF (ISAMA*ISAMB.EQ.0) SIGN = +ONE
            STRN  = ZERO
           
            WRITE(LUPRI,
-     &       '(3x,"| ",2(a8,x),"|",2(6x,a,7x,"|"),6x,a,7x"|")')
+     &       '("   | ",2(a8,1x),"|",2(6x,a,7x,"|"),6x,a,7x"|")')
      &        LABELA,LABELB,'---','---','---'
          END IF
 

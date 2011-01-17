@@ -374,10 +374,10 @@ C-tbp:
         EIGV    = DABS(EIGVI-EIGVF)
 
         WRITE(LUPRI,'(//5X,A)') 'Transition from excited state:'
-        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,1X,I1)')
      &    'number, multiplicity, symmetry :',ISTATEI,IMULI,REP(ISYMI-1)
         WRITE(LUPRI,'(5X,A)') 'to state:'
-        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,1X,I1)')
      &    'number, multiplicity, symmetry :',ISTATEF,IMULF,REP(ISYMF-1)
         WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
      &    'transition frequency :',EIGV, ' a.u.  ',
@@ -393,7 +393,7 @@ C-tbp:
         EIGV   = EIGVAL(ISTATE)
         
         WRITE(LUPRI,'(//5X,A)') 'Transition from ground state to:'
-        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,1X,I1)')
      &    'number, multiplicity, symmetry :',ISTATE,IMULE,REP(ISYME-1)
         WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
      &    'frequency :',EIGV, ' a.u.  ',
@@ -437,7 +437,7 @@ C-tbp:
          STRN  = TM0F * TMF0
 
          WRITE(LUPRI,
-     &     '(5x,"| ",a8,2x,"|",2(x,f15.8,x,"|"),2x,f15.8,4x,"|")')
+     &     '(5x,"| ",a8,2x,"|",2(1x,f15.8,1x,"|"),2x,f15.8,4x,"|")')
      &      LABEL,TMF0,TM0F,STRN
 
          

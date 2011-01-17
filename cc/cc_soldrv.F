@@ -696,7 +696,7 @@ C              -----------------
      *                  'Analysis of CC Response/Cauchy vector:'
                         WRITE(LUPRI,'(1X,A)')
      *                  '--------------------------------------'
-                        CALL CC_PRAM(WORK(KT1),PT1,ISYM)
+                        CALL CC_PRAM(WORK(KT1),PT1,ISYM,.FALSE.)
                      ENDIF
                      IF ((IPRINT.GT.10).OR.DEBUG) THEN
                         RHO1N = DDOT(NT1AM(ISYM),WORK(KT1),1,

@@ -54,13 +54,8 @@ C
       INTEGER NBYTE, NDATA
       INTEGER IPCKTABLE(0:255)
 C
-#if defined (SYS_CRAY)
-      REAL BUFFER(NDATA)
-      REAL ZERO
-#else
-      DOUBLE PRECISION BUFFER(NDATA)
-      DOUBLE PRECISION R8WORD, ZERO
-#endif
+      REAL*8 BUFFER(NDATA)
+      REAL*8 R8WORD, ZERO
 C
       PARAMETER (ZERO = 0.0D0)
 C
@@ -478,26 +473,20 @@ C
 C
 #include <priunit.h>
 C
-#if defined (SYS_CRAY)
-      REAL R8WORD, COPY
-#else
-      DOUBLE PRECISION R8WORD, COPY
-#endif
-      INTEGER K, J, ICOPY(2)
+      REAL*8    R8WORD, R8COPY
+      INTEGER*8 K, J, I8COPY
       CHARACTER*64 STRING
 
-      EQUIVALENCE (COPY,ICOPY)
+      EQUIVALENCE (R8COPY,I8COPY)
 
-      COPY = R8WORD
+      R8COPY = R8WORD
 
-      DO K = 1, 2
-        DO J = 1, 32
-          IF ( BTEST(ICOPY(K),J-1) )  THEN
-             STRING((32*(K-1)+J):(32*(K-1)+J)) = '1'
-          ELSE
-             STRING((32*(K-1)+J):(32*(K-1)+J)) = '0'
-          END IF
-        END DO
+      DO J = 1, 64
+         IF ( BTEST(I8COPY,J-1) )  THEN
+            STRING(J:J) = '1'
+         ELSE
+            STRING(J:J) = '0'
+         END IF
       END DO
 
       WRITE (LUPRI,'(4(1X,A16))') STRING(01:16), STRING(17:32),
@@ -518,14 +507,14 @@ C
 C
 #include <priunit.h>      
 C
-      INTEGER I4WORD, ICOPY
+      INTEGER*4 I4WORD, I4COPY
       INTEGER J
       CHARACTER*32 STRING
 
-      ICOPY = I4WORD
+      I4COPY = I4WORD
 
       DO J = 1, 32
-        IF ( BTEST(ICOPY,J-1) )  THEN
+        IF ( BTEST(I4COPY,J-1) )  THEN
            STRING(J:J) = '1'
         ELSE
            STRING(J:J) = '0'
@@ -533,7 +522,7 @@ C
       END DO
 
       WRITE (LUPRI,'(2(1X,A16))') STRING(1:16), STRING(17:32)
-      WRITE (LUPRI,*) ICOPY
+      WRITE (LUPRI,*) I4COPY
 
       RETURN
       END 

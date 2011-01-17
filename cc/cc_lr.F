@@ -2881,6 +2881,9 @@ C------------------------------------------
 C     write out transition strength matrix.
 C------------------------------------------
 C
+
+      IMULT = 1  ! force singlet spin symmetry...
+
       IF (LCALC) THEN
 C
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
@@ -2898,15 +2901,15 @@ C
       ENDIF
       CALL OUTPUT(TRS,1,3,1,3,3,3,1,LUPRI)
 C
-      CALL  TNSRAN(TRS,PVAL,PAXIS,
-     *             ALFSQ,BETSQ,ITST,ITST2,
-     *             APAR1,APEN1,XKAPPA,IPAR)
+      CALL TNSRAN(TRS,PVAL,PAXIS,
+     *            ALFSQ,BETSQ,ITST,ITST2,
+     *            APAR1,APEN1,XKAPPA,IPAR)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal values of diagonalized transition strength matrix:'
       WRITE(LUPRI,'(1X,A)') '            a.u.               '
-      WRITE(LUPRI,'(1X,A,F12.8)') '1     ',PVAL(1)
-      WRITE(LUPRI,'(1X,A,F12.8)') '2     ',PVAL(2)
-      WRITE(LUPRI,'(1X,A,F12.8)') '3     ',PVAL(3)
+      WRITE(LUPRI,'(1X,A,F16.8)') '1 ',PVAL(1)
+      WRITE(LUPRI,'(1X,A,F16.8)') '2 ',PVAL(2)
+      WRITE(LUPRI,'(1X,A,F16.8)') '3 ',PVAL(3)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal axis of diagonalized transition strength matrix:'
       CALL OUTPUT(PAXIS,1,3,1,3,3,3,1,LUPRI)
@@ -2928,12 +2931,12 @@ C
       ENDIF
       CALL DSCAL(3*3,FACT,OSC,1)
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
-     *    'oscillator strength matrix for state nr.',IEX,
-     *     ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
+     *    ' oscillator strength matrix for state nr.',IEX,
+     *    ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
       CALL OUTPUT(OSC,1,3,1,3,3,3,1,LUPRI)
-      CALL  TNSRAN(OSC,PVAL,PAXIS,
-     *             ALFSQ,BETSQ,ITST,ITST2,
-     *             APAR2,APEN2,XKAPPA,IPAR)
+      CALL TNSRAN(OSC,PVAL,PAXIS,
+     *            ALFSQ,BETSQ,ITST,ITST2,
+     *            APAR2,APEN2,XKAPPA,IPAR)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal values of diagonalized oscillator strength matrix:'
       WRITE(LUPRI,'(1X,A)') '            a.u.               '
@@ -2962,20 +2965,19 @@ c
 c     IF ( IEX .EQ. 1) THEN
 C IMULT = 1 is hardwired in since for linear response residues
 C only singlet states have a non-vanishing oscillator strength anyway
-         IMULT = 1
          WRITE(LUOSC,9988) IMULT,REP(ISYM-1),IEX,TRA,OSCS,CDIP
 c     ELSE
 c        WRITE(LUOSC,9989) IEX,TRA,OSCS,CDIP
 c     ENDIF
 C
       ELSE IF (.NOT.LCALC) THEN
-        CDIP = '   ?   '
-c       IF ( IEX .EQ. 1) THEN
+         CDIP = '   ?   '
+c        IF ( IEX .EQ. 1) THEN
            WRITE(LUOSC,9986) IMULT,REP(ISYM-1),IEX,'Not calculated',
      *                       'Not calculated',CDIP
-c       ELSE
+c        ELSE
 c          WRITE(LUOSC,9987) IEX,'Not calculated','Not calculated',CDIP
-c       ENDIF
+c        ENDIF
       ENDIF
 C
  9986 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',A16,4X,

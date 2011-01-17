@@ -2172,8 +2172,8 @@ C              WRITE (LUPRI,*) 'IOPER,LABELH:',IOPER,LABELH
 C              WRITE (LUPRI,*) 'LTWOEL,IRELAX:',LTWOEL,IRELAX
 C              IF ( LTWOEL .OR. (IRELAX.GE.1)) THEN
 C                 WRITE (LUPRI,*) 'RBIM matrix:'
-C                 CALL OUTPUT(WORK(KRBIM(ITRAN)),1,NVIR,1,NBAS,
-C    &                        NVIR,NBAS,1,LUPRI)
+C                 CALL OUTPUT(WORK(KRBIM(ITRAN)),1,NVIRT,1,NBAST,
+C    &                        NVIRT,NBAST,1,LUPRI)
 C              END IF
 C           END DO
 
@@ -2386,11 +2386,11 @@ C                ----------------------------------------------------
                   WRITE (LUPRI,*) 'LTWOEL,IRELAX :',LTWOEL,IRELAX
                   WRITE (LUPRI,*) 'IDLSTL,SKIPETA:',IDLSTL,SKIPETA
                   WRITE (LUPRI,*) 'RZeta0 matrix:',KRZ0I(ITRAN)
-                  CALL OUTPUT(WORK(KRZ0I(ITRAN)),1,NVIR,1,NBAS,
-     &                        NVIR,NBAS,1,LUPRI)
+                  CALL OUTPUT(WORK(KRZ0I(ITRAN)),1,NVIRT,1,NBAST,
+     &                        NVIRT,NBAST,1,LUPRI)
                   WRITE (LUPRI,*) 'RZetaB matrix:',KRZBI(ITRAN)
-                  CALL OUTPUT(WORK(KRZBI(ITRAN)),1,NVIR,1,NBAS,
-     &                        NVIR,NBAS,1,LUPRI)
+                  CALL OUTPUT(WORK(KRZBI(ITRAN)),1,NVIRT,1,NBAST,
+     &                        NVIRT,NBAST,1,LUPRI)
                END IF
             END DO
          END IF

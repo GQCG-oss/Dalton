@@ -419,7 +419,6 @@ C
       PARAMETER (HALF = 1.0D0/2.0D0)
       PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 C
-      LOGICAL LOCDEB
       DIMENSION WORK(LWORK),AODEN(*)
       CHARACTER LABEL*8
 
@@ -431,7 +430,6 @@ C------------------------------------------------------------------
 C       Init parameters
 C------------------------------------------------------------------
 
-      LOCDEB=.FALSE.
       ISYMOP = 1
 C
 C------------------------------------------------------------------
@@ -2655,6 +2653,7 @@ C
       CHARACTER*8 LABEL,LR*(2),LIST
       CHARACTER*(8) FILMME, FILMMX
       LOGICAL LEXIST, LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
 C
 C
       IF (IPRINT.GT.10) THEN
@@ -3149,6 +3148,7 @@ C
       CHARACTER*8 LABEL
       CHARACTER MODEL*10
       LOGICAL LEXIST, LSAME, LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
       INTEGER IDLSTA, IDLSTB, ISYMAB, ISYMA, ISYMB
       PARAMETER( KDUM = +99 999 999 ) ! dummy address for work space
 C
@@ -3573,6 +3573,7 @@ C
       CHARACTER*8 LABEL
       CHARACTER MODEL*10
       LOGICAL LEXIST, LSAME, LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
       INTEGER ISYCB,ISYRES,ISYMTA,ISYMTB,ISYMTC
       INTEGER IDLSTA,IDLSTB,IDLSTC
       INTEGER FACTSL
