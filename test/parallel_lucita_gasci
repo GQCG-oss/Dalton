@@ -50,7 +50,7 @@ cat > parallel_lucita_gasci.dal <<'%EOF%'
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
 .HF
-.LS CI
+.GASCI
 *SCF INPUT
 .DOUBLY OCCUPIED
  9 4 4 1
