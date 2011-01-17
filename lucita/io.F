@@ -156,13 +156,13 @@ C
       LUC_MPIN ="LUCITA_CVECS"
       if(luci_myproc .gt. luci_master)then
         IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-          WRITE (NLUC_MPI,'(A12,A1,I1)') LUC_MPIN,'.',LUCI_MYPROC
+          WRITE (NLUC_MPI,'(A12,A1,I1)') LUC_MPIN,'_',LUCI_MYPROC
           LUC_MPIL = 14
         ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-          WRITE (NLUC_MPI,'(A12,A1,I2)') LUC_MPIN,'.',LUCI_MYPROC
+          WRITE (NLUC_MPI,'(A12,A1,I2)') LUC_MPIN,'_',LUCI_MYPROC
           LUC_MPIL = 15
         ELSE                                ! MPI ID has three digits
-          WRITE (NLUC_MPI,'(A12,A1,I3)') LUC_MPIN,'.',LUCI_MYPROC
+          WRITE (NLUC_MPI,'(A12,A1,I3)') LUC_MPIN,'_',LUCI_MYPROC
           LUC_MPIL = 16
         ENDIF
       else
