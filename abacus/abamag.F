@@ -1585,7 +1585,7 @@ C
       PARAMETER (DM1 = -1.0D0)
       CHARACTER OPLBL(8)*8, SDLAB(9*MXCENT)*8, FCLAB(MXCENT)*8,
      &          LABEL(9*MXCENT)*8
-      LOGICAL OLDDX, FOUND
+      LOGICAL   OLDDX, FOUND
       DIMENSION ISDREP(*), IFCREP(*), WORK(LWORK), INTADR(*),
      &          XINDX(*), CMO(*), UDV(*), PV(*)
 C
@@ -1841,7 +1841,7 @@ C  /* Deck trprs1 */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
-      LOGICAL INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM, EXCLC
+      LOGICAL   INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM, EXCLC, OLDDX
       PARAMETER (D10 = 10.0D0, DPM5 = -0.50D0)
       DIMENSION WORK(LWORK), NABATY(*), ZERNRM(*)
 C
@@ -1865,13 +1865,13 @@ C
       EXVAL  = 0.0D0
       NEXVAL = 1
 C
-C     Open direct access file
+C     Open direct access files
 C
       LUGDVE = -1
       LUSOVE = -1
       LUREVE = -1
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
-C     ...changed NREC to 2*NREC to cover residuals
+C     LURDT: ...changed NREC to 2*NREC to cover residuals
       CALL GPOPEN(LURDT,ABARDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -1954,8 +1954,7 @@ C
                   CALL READT(LUREVE,NVARPT,WORK(NVARPT+1))
                END IF
 C
-C                 Divide solution by 2 in accordance with ABACUS
-C                 solver
+C     Divide solution by 2 in accordance with ABACUS solver
 C
                CALL DSCAL(NVARPT,DPM5,WORK,1)
 C
@@ -1966,7 +1965,7 @@ C
 ckr               IDORCT(IREC) = 1
                CALL ABAWRITRS
                IF (IPRTRP .GT. 5) THEN
-                  CALL HEADER('Response and residuum vectors in '//
+                  CALL HEADER('Response and residual vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)
                   WRITE (LUPRI,'(A,I5)') ' Coordinate:',ICOOR
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC

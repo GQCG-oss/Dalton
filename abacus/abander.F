@@ -382,7 +382,7 @@ C
          WAVTP = DOMCSRDFT
 #endif
       ELSE
-         WRITE (LUPRI,'(A2A)')
+         WRITE (LUPRI,'(/2A)')
      &   'Undefined string in WAVTP :', STRING
          CALL QUIT('Wrong string in WAVTP')
       END IF

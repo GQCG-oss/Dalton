@@ -595,8 +595,8 @@ C
 #include <priunit.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-      DIMENSION CMO(*),CREF(*),DV(*),PV(*),FC(*),FV(*),FCAC(*),
-     *          H2AC(*),GORB(*),WRK(*)
+      DIMENSION CMO(*),CREF(*),DV(*),PV(*),FOCK(*),
+     *          FC(*),FV(*),FCAC(*),H2AC(*),GORB(*),WRK(*)
 C
 C Used from common blocks:
 C  INFINP : LSYM,FLAG(1:NFLAG)

@@ -1804,8 +1804,8 @@ C
 #include <nuclei.h>
 C
       CHARACTER UNITC*3, UNITF*9, UNITD*5
-      DIMENSION HESS(NCORD,NCORD), DGRAD(3,NCORD), CAAT(3,NCORD),
-     &          BMAT(NINTER,NCORD), BADJIN(NINTER,NCORD),
+      DIMENSION GRAD(NCORD), HESS(NCORD,NCORD), DGRAD(3,NCORD),
+     &          CAAT(3,NCORD), BMAT(NINTER,NCORD), BADJIN(NINTER,NCORD),
      &          QMAT(NINTER,NINTER), QINV(NINTER,NINTER),
      &          HESCOR(NCORD,*), BHES(NINTER,NCORD),
      &          FINT(NINTER), DINT(NINTER,3), HINT(NINTER,NINTER),
@@ -4291,11 +4291,7 @@ C
             WRITE (LUPRI,181)       NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
          END IF
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (3X,I3,1H.,4X,A4,5X,4(A6,2X),F10.5,F12.6)
-#else
-  180 FORMAT (3X,I3,1H.,A8,5X,4(A6,2X),F10.5,F12.6)
-#endif
+  180 FORMAT (I6,'.',4X,A4,5X,4(A6,2X),F10.5,F12.6)
   181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
 C
 C     Test that all specified atoms are well defined

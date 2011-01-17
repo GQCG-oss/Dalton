@@ -161,14 +161,14 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
       PARAMETER (IBIT10 = 1023, IBUFMX = 600, NBUF = 1202)
-      LOGICAL OLDDX
-      DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
-     *          IBUFDA(IRAT*NBUF)
+      LOGICAL   OLDDX
+      DIMENSION SOINT(LSOINT), BUF(600), IBUF(600)
 C
 #include <inftap.h>
 #include <symmet.h>
 #include <ccom.h>
 #include <oneadr.h>
+      DIMENSION BUFDA(NBUF), IBUFDA(IRAT*NBUF)
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
 #include <ibtfun.h>
 C

@@ -1308,10 +1308,6 @@ C         Construct basis set for center of mass centers if requested
 C         ===========================================================
 C         Center of mass centers are designated with 'x' or 'X'
 C
-Chj: changed to correspond to input manual 970926
-Chj  (Otherwise floating orbitals will not work with .CM FUN)
-Chj         NQ = NINT(Q + 0.01)
-Chj         IF ((LCMMAX .GT. -1) .AND. (NQ .EQ. 0)) THEN
             IF ((LCMMAX .GT. -1) .AND. (NONT(I) .EQ. 1) .AND.
      &          (INDEX('   X   ',NAMN(NCTOT)) .GT. 0 .OR.
      &           INDEX('   x   ',NAMN(NCTOT)) .GT. 0)) THEN
@@ -1597,6 +1593,7 @@ C
                ! .. necessary to get nuclear repulsion, nuclear dipole
                ! moment etc. right - this nucleus is already added
                ! for MBSI.eq.1
+               NQ = NINT(Q)
                IZATOM(K+INUC) = -NQ
                ! .. code -Z to tell MBSI.gt.1 (value of 0 is floating orbitals)
                GNUEXP(K+INUC) = D0

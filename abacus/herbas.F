@@ -732,7 +732,7 @@ C
                            ENDIF
                            IF (IPRINT.GE.6) THEN
                              WRITE(LUPRI,*) 
-     &                       J,NLBLOCK,' CPRIMU(J,M,NBLOCK):'
+     &                       J,NBLOCK,' CPRIMU(J,M,NBLOCK):'
                              WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
      &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
                            ENDIF

@@ -4410,7 +4410,7 @@ C
   200       CONTINUE
             IF (NINTI .GT. 0) THEN
                PERCNT = D100*NINTI
-               PERCNT = PERCNMT / NINTOT
+               PERCNT = PERCNT / NINTOT
                PERINT = (DMEGA*TIMEI) / NINTI
                WRITE (LUPRI,2000) ' j =',I,
      &             NINTI, ' (',PERCNT,'%)',
