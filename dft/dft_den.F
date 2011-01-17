@@ -338,6 +338,9 @@ C
       PARAMETER ( D1 = 1.0D0, DP5 =0.5D0)
       LOGICAL CLOSED
 C
+C used from infvar.h: JWOPSY
+#include <infvar.h>
+C
       CALL QENTER('DFTDNSAB')
 C
       KFREE = 1
@@ -347,8 +350,7 @@ C
 C    
       CLOSED=LUSIFC.LT.0
       IF (CLOSED) CALL GPOPEN(
-     &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.
-     &   )
+     &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUSIFC)
       CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       READ(LUSIFC)
@@ -386,4 +388,4 @@ C
 C      
       END
 
-
+C -- end of dft_den.F --
