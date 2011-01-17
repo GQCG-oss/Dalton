@@ -633,9 +633,6 @@ C  /* Deck qmmm_polari */
       SUBROUTINE QMMM_POLARI(DCAO,ESOLT,TAO,LOCDEB,
      &                       WRK,LWRK,IPRINT)
 C
-C Nov. 2009: JMO
-C   See comments below for info on what has been changed
-C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -722,29 +719,12 @@ c     list for this center and if not touched upon leave zero
 
       IF (MMMAT) THEN
 
-C       There is no need to construct ALPHA^(-1) and T matrices
-C       explicitly, we can directly form the [ALPHA^(-1)-T] matrix
-C
-C Nov. 2009: JMO
-C   Instead of allocating memory for both the [ALPHA^(-1)-T],
-C   [ALPHA^(-1)-T]^(-1) and UMAT matrices, it now only allocates space
-C   for one matrix in which the [ALPHA^(-1)-T] matrix is formed and
-C   subsequently overwritten with the [ALPHA^(-1)-T]^(-1) matrix.
-C
-        KINVAMT   = 1
-        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
-          KALINMT = KINVAMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T]^(-1) matrix
-          KUMAT   = KALINMT + (3*NNZAL)*(3*NNZAL) ! [ALPHA^(-1)-T] matrix
-          KINDMOM = KUMAT   + (3*NNZAL)*(3*NNZAL) ! UMAT is for testing
-        ELSE
-          KALINMT = 0
-          KUMAT   = 0
-          KINDMOM = KINVAMT + (3*NNZAL)*(3*NNZAL) ! both matrices
-        ENDIF
-        KMAT      = KINDMOM + (3*NNZAL) ! List for induced dipoles
-        KIPVT     = KMAT    + (3*NNBASX) ! For Rr_a integrals
-        KWRKV     = KIPVT   + (3*NNZAL) ! For matrix inv.
-        KTAO      = KWRKV   + (64*3*NNZAL) ! For matrix inv.
+        KINVMAT   = 1
+        KINDMOM   = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2 ! for packed response matrix
+        KMAT      = KINDMOM + 3*NNZAL ! List for induced dipoles
+        KIPVT     = KMAT    + 3*NNBASX ! For Rr_a integrals
+        KWRKV     = KIPVT   + 3*NNZAL ! For matrix inv.
+        KTAO      = KWRKV   + 3*NNZAL ! For matrix inv.
         KWRK2     = KTAO    + NNBASX
         LWRK2     = LWRK    - KWRK2 + 1
 
@@ -752,24 +732,18 @@ C
           CALL ERRWRK('QMMM_POLARI 1',-KWRK2,LWRK)
         ENDIF
 
-        CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
-        IF ((IPRINT.GT.15).OR.(LOCDEB)) THEN
-          CALL DZERO(WRK(KALINMT),(3*NNZAL)*(3*NNZAL))
-          CALL DZERO(WRK(KUMAT),(3*NNZAL)*(3*NNZAL))
-        ENDIF
-        CALL DZERO(WRK(KINDMOM),(3*NNZAL))
-        CALL DZERO(WRK(KIPVT),(3*NNZAL))
-        CALL DZERO(WRK(KWRKV),(64*3*NNZAL))
-        CALL DZERO(WRK(KMAT),(3*NNBASX))
+        CALL DZERO(WRK(KINVMAT), 3*NNZAL*(3*NNZAL+1)/2)
+        CALL DZERO(WRK(KINDMOM), 3*NNZAL)
+        CALL DZERO(WRK(KIPVT), 3*NNZAL)
+        CALL DZERO(WRK(KWRKV), 3*NNZAL)
+        CALL DZERO(WRK(KMAT), 3*NNBASX)
 
 C       FIXDIP assumes induced dipoles are calculated in a previous run.
 C       Mainly due to debugging. Assumes identical molecules and order
 C       of atoms in previous and current run.
 
         IF (.NOT. FIXDIP) THEN
-          CALL GET_IND_DIPOLES_1(DCAO,NNZAL,
-     &                           WRK(KALINMT),WRK(KINVAMT),WRK(KUMAT),
-     &                           WRK(KINDMOM),
+          CALL GET_IND_DIPOLES_1(DCAO,NNZAL,WRK(KINVMAT),WRK(KINDMOM),
      &                           WRK(KWRK2),WRK(KIPVT),WRK(KWRKV),
      &                           LWRK2,IPRINT)
         ELSE
@@ -779,8 +753,8 @@ C       of atoms in previous and current run.
       ELSE IF (MMITER) THEN
 
         KINDMOM = 1                               ! List for induced dipoles
-        KMAT    = KINDMOM + (3*NNZAL)
-        KTAO    = KMAT    + (3*NNBASX)             
+        KMAT    = KINDMOM + 3*NNZAL
+        KTAO    = KMAT    + 3*NNBASX
         KWRK2   = KTAO    + NNBASX
         LWRK2   = LWRK    - KWRK2 + 1
 
@@ -940,21 +914,20 @@ C
       END
 C**************************************************************************************
 C  /* Deck GET_IND_DIPOLES_1 */
-      SUBROUTINE GET_IND_DIPOLES_1(DCAO,POLDIM,ALINMT,INVAMT,UMAT,
-     &                             INDMOM,WRK,IPVT,WRKV,LWRK,IPRINT)
+      SUBROUTINE GET_IND_DIPOLES_1(DCAO,POLDIM,INVMAT,INDMOM,WRK,IPVT,
+     &                             WRKV,LWRK,IPRINT)
 C
 C A subroutine to calculate induced dipole moments
 C
 C Input:
 C
 C   DCAO    - density matrix in AO basis
-C   POLDIM  - a number of polarizable MM centers. Actually in common as
+C   POLDIM  - number of polarizable MM centers. Actually in common as
 C             NNZAL.
 C
 C Output:
 C
-C   ALINMT  - [ALPHA^(-1) - T] matrix
-C   INVAMT  - [ALPHA^(-1) - T]^(-1) matrix
+C   INVMAT  - the classical response matrix, i.e. [ALPHA^(-1) - T]^(-1)
 C   INDMOM  - a vector containing induced dipole moments
 C
 C From Common   
@@ -963,12 +936,15 @@ C   ZEROAL  - a vector containing +1 for polarizable MM centers and -1
 C             for non-polarizable
 C
 C Oct. 2009: JMO
-C   Changed the routines used to invert the relay matrix to more
-C   efficient ones that use the fact that the relay matrix is symmetric.
+C   Changed the routines used to construct the classical response matrix to more
+C   efficient ones that use the fact that it is symmetric.
 C Sep 2010: JMO & KS
 C   Starting sharing of DFT/MM and CC/MM field routines
 C Oct 2010: AES
 C   Sharing of parallel and serial routines
+C Jan 2011: JMO
+C   Construct the classical response matrix using packed storage.
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -993,21 +969,17 @@ C   Sharing of parallel and serial routines
       CHARACTER LLAB
       LOGICAL EXCENT,FNDLAB, LSKIP
       LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB
-      INTEGER POLDIM
-      DOUBLE PRECISION ALINMT,INVAMT,INDMOM
-      DIMENSION ALINMT((3*POLDIM),(3*POLDIM))
-      DIMENSION INVAMT((3*POLDIM),(3*POLDIM))
+      INTEGER POLDIM, IPVT
+      DOUBLE PRECISION WRK, INVMAT, INDMOM, WRKV
+      DIMENSION INVMAT(3*POLDIM*(3*POLDIM+1)/2)
       DIMENSION INDMOM(3*POLDIM)
-      DIMENSION IPVT(3*POLDIM),WRK(LWRK), DCAO(*)
-      DIMENSION WRKV(64*3*POLDIM)
+      DIMENSION IPVT(3*POLDIM)
+      DIMENSION WRKV(3*POLDIM)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      DIMENSION WRK(LWRK)
+      DIMENSION DCAO(*)
 
       CHARACTER*8 LABINT(9*MXCENT)
-
-      DOUBLE PRECISION AMATS,AMATSI
-      DIMENSION AMATS(3,3),AMATSI(3,3)
-      DOUBLE PRECISION UMAT
-      DIMENSION UMAT((3*POLDIM),(3*POLDIM))
 
       PARAMETER ( D2 = 2.0D0, D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -1048,8 +1020,6 @@ C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M1! AH
         CALL DZERO(WRK(KIMELD),3*POLDIM)
       ENDIF
 
-      CALL MAKE_MATRIX(INVAMT,POLDIM,WRK(KEND),LWRK1) ! Construct [ALPHA^(-1) - T] matrix
-
 C     Form F vector due to permanent MM moments
       IF (NODTOT .GE. 1) THEN
         CALL QMMM_POLARI_M1(DCAO,WRK(KELF),POLDIM,
@@ -1080,91 +1050,51 @@ C     Form F vector due to permanent MM moments
  777    CONTINUE
       ENDIF
 
-C     If needed, invert the [ALPHA^(-1) - T] matrix and write it to 
+C     If needed, construct the [ALPHA^(-1) - T]^(-1) matrix and write it to 
 C     file. ELSE: read matrix from the file. CONMAT = CONstruct MATrix
 
       IF (CONMAT) THEN
 
+        CALL MAKE_MATRIX(INVMAT,POLDIM) ! Construct inverse response matrix
+
         IF (IPRINT .GT. 1) THEN
           WRITE(LUPRI,*)
-          WRITE(LUPRI,*) ' The Relay matrix is'//
+          WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' explicitly constructed. '
           WRITE(LUPRI,*) ' Dimension is: ',NDIM
           WRITE(LUPRI,*)
         ENDIF
 
         IF ((IPRINT.GT.15) .OR. (LOCDEB)) THEN
-          DO I=1,NDIM
-            DO J=1,NDIM
-              ALINMT(I,J) = INVAMT(I,J)
-            ENDDO
-          ENDDO
           WRITE(LUPRI,*)'Matrix to be inverted: '
-          CALL OUTPUT(ALINMT,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+          DO I = 1, NDIM*(NDIM+1)/2
+            WRITE(LUPRI,*) INVMAT(I)
+          END DO
         END IF
-
-C
-C   Nov. 2009: JMO 
-C   The [alpha^(-1)-T] matrix is symmetric therefore the general
-C   inversion routine was replaced with a more efficient routine
-C   designed for symmetric matrices.
-C
 
         IF (IPRINT.GT.1) CALL TIMER('START ',TIMSTR,TIMEND)
 
-C       Factorization of the symmetric [alpha^(-1)-T] matrix
-        CALL DSYTRF('L',NDIM,INVAMT,NDIM,IPVT,WRKV,64*NDIM,INFO)
-        IF (INFO .LT. 0) THEN
-          CALL QUIT('ERROR: Illegal value encountered during'//
-     &              ' factorization of the [alpha^(-1)-T] matrix.')
-        ELSE IF (INFO .GT. 0) THEN
-          WRITE(LUPRI,'(A,I8,A)') 'The', INFO,'th diagonal element'//
-     &                            ' of the [alpha^(-1)-T] matrix is'//
-     &                            ' zero,'
-          WRITE(LUPRI,'(A)') 'therefore the matrix is singular and'//
-     &                       ' cannot be inverted.'
-          CALL QUIT('ERROR: [alpha^(-1)-T] matrix is singular.')
-        ENDIF
-
-C       Inversion of the factorized relay matrix
-        CALL DSYTRI('L',NDIM,INVAMT,NDIM,IPVT,WRKV(1:64*NDIM),INFO)
-        IF (INFO .LT. 0) THEN
-          CALL QUIT('ERROR: Illegal value encountered during'// 
-     &              ' inversion of the factorized [alpha^(-1)-T]'//
-     &              ' matrix.')
-        ELSE IF (INFO .GT. 0) THEN
-C         This should never happen (see factorization above)
-          CALL QUIT('ERROR: [alpha^(-1)-T] matrix is singular.')
+C       Construct the classical response matrix
+        CALL DSPTRF('L', NDIM, INVMAT, IPVT, INFO)
+        IF (INFO .NE. 0) THEN
+          CALL QUIT('ERROR: construction of the classical'//
+     &              ' response matrix failed!')
         END IF
-
-        DO I=2,NDIM
-          DO J=1,I-1
-            INVAMT(J,I) = INVAMT(I,J)
-          ENDDO
-        ENDDO
-
+        CALL DSPTRI('L', NDIM, INVMAT, IPVT, WRKV, INFO)
+        IF (INFO .NE. 0) THEN
+          CALL QUIT('ERROR: construction of the classical response'// 
+     &              ' matrix failed!')
+        END IF
         IF(IPRINT.GT.1) CALL TIMER('MATINV',TIMSTR,TIMEND)
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
- 
-          WRITE(LUPRI,*)'Inverted matrix (Relay matrix): '
-          CALL OUTPUT(INVAMT,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
-
-          DO 999 I=1,NDIM
-            DO 998 J=1,NDIM
-              UMAT(I,J) = 0.0D0
-              DO 997 K=1,NDIM
-                UMAT(I,J) = UMAT(I,J) + ALINMT(I,K)*INVAMT(K,J)
- 997          CONTINUE
- 998        CONTINUE
- 999      CONTINUE
-
-          WRITE(LUPRI,*)'A * Ainv : '
-          CALL OUTPUT(UMAT,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
-
+          WRITE(LUPRI,*)'Classical response matrix: '
+          DO I = 1, NDIM*(NDIM+1)/2
+            WRITE(LUPRI,*) INVMAT(I)
+          END DO
         END IF
 
-C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
+C       We write the classical response matrix to file
 
         LUQMMM = -1
         IF (LUQMMM .LT. 0) THEN
@@ -1173,12 +1103,12 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
         ENDIF
 
         REWIND(LUQMMM)
-        CALL WRTIEF(INVAMT,NDIM*NDIM,'QQMMMMAT',LUQMMM)
+        CALL WRTIEF(INVMAT,NDIM*(NDIM+1)/2,'QQMMMMAT',LUQMMM)
         CALL GPCLOSE(LUQMMM,'KEEP')
 
         IF (RELMAT) THEN
          WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Relay matrix saved in QMMMIM.'
+         WRITE(LUPRI,*) 'The classical response matrix saved in QMMMIM.'
          WRITE(LUPRI,*)
          STOP
         ENDIF
@@ -1189,7 +1119,7 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
 
         IF (IPRINT .GT. 5) THEN
           WRITE(LUPRI,*)
-          WRITE(LUPRI,*) ' The Relay matrix is'//
+          WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from the file. '
           WRITE(LUPRI,*)
         ENDIF
@@ -1201,24 +1131,23 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
         ENDIF
         REWIND(LUQMMM)
 
-        DO I=1,NDIM
-          DO J=1,NDIM
-            INVAMT(I,J) = 0.0D0
-          ENDDO
-        ENDDO
-
+        CALL DZERO(INVMAT, NDIM*(NDIM+1)/2)
+        
         IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-          CALL READT(LUQMMM,NDIM*NDIM,INVAMT)
+          CALL READT(LUQMMM,NDIM*(NDIM+1)/2,INVMAT)
         ELSE
-          CALL QUIT('Problem reading the Relay matrix from QMMMIM file')
+          CALL QUIT('Problem reading the classical response matrix'//
+     &              ' from QMMMIM file')
         ENDIF
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
         IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
-          WRITE(LUPRI,*) ' The Relay matrix is'//
+          WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from the QMMMIM file: '
-          CALL OUTPUT(INVAMT,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+          DO I = 1, NDIM*(NDIM+1)/2
+            WRITE(LUPRI,*) INVMAT(I)
+          END DO
         ENDIF
 
       ENDIF
@@ -1239,20 +1168,16 @@ C       We write the [ALPHA^(-1) - T]^(-1) matrix to file
 
       ENDIF
 
-      DO 400 I=1,NDIM
-        DO 410 J=1,NDIM
-          IF (SPLDIP) THEN
-            WRK(KIMMUL+I-1) = WRK(KIMMUL+I-1) +
-     &                        INVAMT(I,J)*WRK(KELF+J-1)
-            WRK(KIMNUC+I-1) = WRK(KIMNUC+I-1) +
-     &                        INVAMT(I,J)*WRK(KELFNU+J-1)
-            WRK(KIMELD+I-1) = WRK(KIMELD+I-1) +
-     &                        INVAMT(I,J)*WRK(KELFEL+J-1)
-          ELSE
-            INDMOM(I) = INDMOM(I) + INVAMT(I,J)*WRK(KELF+J-1)
-          ENDIF
- 410    CONTINUE
- 400  CONTINUE
+      IF (SPLDIP) THEN
+        CALL DSPMV('L', NDIM, D1, INVMAT, WRK(KELF), 1, D0,
+     &             WRK(KIMMUL), 1)
+        CALL DSPMV('L', NDIM, D1, INVMAT, WRK(KELFNU), 1, D0,
+     &             WRK(KIMNUC), 1)
+        CALL DSPMV('L', NDIM, D1, INVMAT, WRK(KELFEL), 1, D0,
+     &             WRK(KIMELD), 1)
+      ELSE
+        CALL DSPMV('L', NDIM, D1, INVMAT, WRK(KELF), 1, D0, INDMOM, 1)
+      ENDIF
 
 C     Write the nonzero induced dipoles to files. Only if not fixdip.
       IF ( (.NOT. FIXDIP) .AND. (SPLDIP) ) THEN
@@ -1750,8 +1675,9 @@ C
       WRITE(LUPRI,*) ' ---------------------------------------'
       WRITE(LUPRI,*)
 
-      KINVAMT    = 1
-      KBMATS     = KINVAMT  + (3*NNZAL)*(3*NNZAL)
+      KINVMAT    = 1
+      KFULLMAT   = KINVMAT  + 3*NNZAL*(3*NNZAL+1)/2
+      KBMATS     = KFULLMAT  + (3*NNZAL)*(3*NNZAL)
       KPOLMAT    = KBMATS   + (3*NNZAL)*3
       KPOLCORD   = KPOLMAT  + 3*3
       KEND       = KPOLCORD + 3*NNZAL
@@ -1759,17 +1685,18 @@ C
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('MM_PROPS',-KEND,LWRK)
 
-      CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
+      CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
+      CALL DZERO(WRK(KFULLMAT),(3*NNZAL)*(3*NNZAL))
       CALL DZERO(WRK(KBMATS),(3*NNZAL)*3)
       CALL DZERO(WRK(KPOLMAT),(3*3))
 
       CALL MM_DIPANDCHARGE(WRK(KEND),LWRK1,IPRINT)
 
       IF (MMMAT) THEN
-        CALL MM_POLARIZABILITY(WRK(KINVAMT),WRK(KBMATS),
+        CALL MM_POLARIZABILITY(WRK(KINVMAT),WRK(KFULLMAT),WRK(KBMATS),
      &                         WRK(KPOLMAT),IPRINT)
 
-        CALL MM_OPTROT(WRK(KINVAMT),WRK(KPOLCORD),IPRINT)
+        CALL MM_OPTROT(WRK(KINVMAT),WRK(KFULLMAT),WRK(KPOLCORD),IPRINT)
       ELSE 
         WRITE(LUPRI,*) 'MM properties skipped since MMITER' 
       ENDIF
@@ -1783,7 +1710,7 @@ C
 
 C**************************************************************************************
 C  /* Deck MM_POLARIZABILITY */
-      SUBROUTINE MM_POLARIZABILITY(INVAMT,BMATS,POLMAT,IPRINT)
+      SUBROUTINE MM_POLARIZABILITY(INVMAT,FULLMAT,BMATS,POLMAT,IPRINT)
 C
 C  Contracts the Relay matrix to the group and molecular
 C  polarizabilities
@@ -1796,8 +1723,9 @@ C
 #include <qm3.h>
 
       LOGICAL FNDLAB,LOCDEB
-      DOUBLE PRECISION INVAMT,BMATS,POLMAT
-      DIMENSION INVAMT(3*NNZAL,3*NNZAL)
+      DOUBLE PRECISION INVMAT,FULLMAT,BMATS,POLMAT
+      DIMENSION INVMAT(3*NNZAL*(3*NNZAL+1)/2)
+      DIMENSION FULLMAT(3*NNZAL,3*NNZAL)
       DIMENSION BMATS(3*NNZAL,3)
       DIMENSION POLMAT(3,3)
 
@@ -1819,16 +1747,33 @@ C     Read the relay matrix from file
 
       N = 3*NNZAL
       IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-        CALL READT(LUQMMM,N*N,INVAMT)
+        CALL READT(LUQMMM,N*(N+1)/2,INVMAT)
       ELSE
         CALL QUIT('Problem reading the matrix from the QMMMIM file.')
       ENDIF
 
       CALL GPCLOSE(LUQMMM,'KEEP')
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      L = 1
+      DO J = 1, N
+        K = J*(J-1)/2
+        DO I = J, N
+          FULLMAT(I,J) = INVMAT(L)
+          L = L + 1
+        END DO
+        M = J*N-K
+        L = 1 + M
+      END DO
+
+      DO I = 2, N
+        DO J = 1, I-1
+          FULLMAT(J,I) = FULLMAT(I,J)
+        ENDDO
+      ENDDO
+
+      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*) 'Relay mat. is read from file MM_POLARIZABILITY'
-        CALL OUTPUT(INVAMT,1,N,1,N,N,N,1,LUPRI)
+        CALL OUTPUT(FULLMAT,1,N,1,N,N,N,1,LUPRI)
       ENDIF
 
 C     Contract the Relay matrix
@@ -1837,15 +1782,15 @@ C     Contract the Relay matrix
       DO 100 K = 1,NNZAL
         J1 = 1
         DO 101 J = 1,NNZAL
-          BMATS(K1,1)    = BMATS(K1,1) + INVAMT(K1,J1)
-          BMATS(K1,2)    = BMATS(K1,2) + INVAMT(K1,J1+1)
-          BMATS(K1,3)    = BMATS(K1,3) + INVAMT(K1,J1+2)
-          BMATS(K1+1,1)  = BMATS(K1+1,1) + INVAMT(K1+1,J1)
-          BMATS(K1+1,2)  = BMATS(K1+1,2) + INVAMT(K1+1,J1+1)
-          BMATS(K1+1,3)  = BMATS(K1+1,3) + INVAMT(K1+1,J1+2)
-          BMATS(K1+2,1)  = BMATS(K1+2,1) + INVAMT(K1+2,J1)
-          BMATS(K1+2,2)  = BMATS(K1+2,2) + INVAMT(K1+2,J1+1)
-          BMATS(K1+2,3)  = BMATS(K1+2,3) + INVAMT(K1+2,J1+2)
+          BMATS(K1,1)    = BMATS(K1,1) + FULLMAT(K1,J1)
+          BMATS(K1,2)    = BMATS(K1,2) + FULLMAT(K1,J1+1)
+          BMATS(K1,3)    = BMATS(K1,3) + FULLMAT(K1,J1+2)
+          BMATS(K1+1,1)  = BMATS(K1+1,1) + FULLMAT(K1+1,J1)
+          BMATS(K1+1,2)  = BMATS(K1+1,2) + FULLMAT(K1+1,J1+1)
+          BMATS(K1+1,3)  = BMATS(K1+1,3) + FULLMAT(K1+1,J1+2)
+          BMATS(K1+2,1)  = BMATS(K1+2,1) + FULLMAT(K1+2,J1)
+          BMATS(K1+2,2)  = BMATS(K1+2,2) + FULLMAT(K1+2,J1+1)
+          BMATS(K1+2,3)  = BMATS(K1+2,3) + FULLMAT(K1+2,J1+2)
           J1 = J1 + 3
   101   CONTINUE
 
@@ -1931,7 +1876,7 @@ C
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('MM_DIPANDCHARGE',-KLAST,LWRK)
 
-      CALL DZERO(WRK(KINDMOM),(3*NNZAL))
+      CALL DZERO(WRK(KINDMOM),3*NNZAL)
 
       XDIPIND = 0.0D0
       YDIPIND = 0.0D0
@@ -2035,7 +1980,7 @@ C     Add all contributions to the dipule moment
 
 C**************************************************************************************
 C  /* Deck MM_OPTROT */
-      SUBROUTINE MM_OPTROT(INVAMT,POLCORD,IPRINT)
+      SUBROUTINE MM_OPTROT(INVMAT,FULLMAT,POLCORD,IPRINT)
 C
 C  Contracts the Relay matrix to the molecular optical rotation (beta)
 C
@@ -2047,9 +1992,10 @@ C
 #include <qm3.h>
 
       LOGICAL FNDLAB,LOCDEB
-      DOUBLE PRECISION INVAMT,BMAT
-      DIMENSION INVAMT(3*NNZAL,3*NNZAL)
+      DOUBLE PRECISION INVMAT,FULLMAT,BMAT,TEMP
+      DIMENSION FULLMAT(3*NNZAL,3*NNZAL)
       DIMENSION POLCORD(3,NNZAL),BMAT(3,3)
+      DIMENSION INVMAT(3*NNZAL*(3*NNZAL+1)/2)
 
       PARAMETER ( D2 = 2.0D0, D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0) 
@@ -2069,16 +2015,33 @@ C     Read the relay matrix from file
 
       N = 3*NNZAL
       IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-        CALL READT(LUQMMM,N*N,INVAMT)
+        CALL READT(LUQMMM,N*(N+1)/2,INVMAT)
       ELSE
         CALL QUIT('Problem reading the matrix from the QMMMIM file.')
       ENDIF
 
       CALL GPCLOSE(LUQMMM,'KEEP')
 
+      L = 1
+      DO J = 1, N
+        K = J*(J-1)/2
+        DO I = J, N
+          FULLMAT(I,J) = INVMAT(L)
+          L = L + 1
+        END DO
+        M = J*N-K
+        L = 1 + M
+      END DO
+
+      DO I = 2, N
+        DO J = 1, I-1
+          FULLMAT(J,I) = FULLMAT(I,J)
+        ENDDO
+      ENDDO
+
       IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
-        WRITE(LUPRI,*) 'Relay mat. is read from file MM_OPTROT'
-        CALL OUTPUT(INVAMT,1,N,1,N,N,N,1,LUPRI)
+        WRITE(LUPRI,*) 'Response mat. is read from file MM_OPTROT'
+        CALL OUTPUT(FULLMAT,1,N,1,N,N,N,1,LUPRI)
       ENDIF
 
 C     Construct an array of coordinates having polarizabilities
@@ -2106,15 +2069,15 @@ C     Construct an array of coordinates having polarizabilities
     
           K=(I-1)*3+1
           L=(J-1)*3+1
-          BMAT(1,1) = INVAMT(K,L)
-          BMAT(1,2) = INVAMT(K,L+1)
-          BMAT(1,3) = INVAMT(K,L+2)
-          BMAT(2,1) = INVAMT(K+1,L)
-          BMAT(2,2) = INVAMT(K+1,L+1)
-          BMAT(2,3) = INVAMT(K+1,L+2)
-          BMAT(3,1) = INVAMT(K+2,L)
-          BMAT(3,2) = INVAMT(K+2,L+1)
-          BMAT(3,3) = INVAMT(K+2,L+2)
+          BMAT(1,1) = FULLMAT(K,L)
+          BMAT(1,2) = FULLMAT(K,L+1)
+          BMAT(1,3) = FULLMAT(K,L+2)
+          BMAT(2,1) = FULLMAT(K+1,L)
+          BMAT(2,2) = FULLMAT(K+1,L+1)
+          BMAT(2,3) = FULLMAT(K+1,L+2)
+          BMAT(3,1) = FULLMAT(K+2,L)
+          BMAT(3,2) = FULLMAT(K+2,L+1)
+          BMAT(3,3) = FULLMAT(K+2,L+2)
           XDIST = POLCORD(1,J) - POLCORD(1,I)
           YDIST = POLCORD(2,J) - POLCORD(2,I)
           ZDIST = POLCORD(3,J) - POLCORD(3,I)
@@ -3224,7 +3187,7 @@ C
 
 C*********************************************************************************************************
 C  /* Deck make_matrix */
-      SUBROUTINE MAKE_MATRIX(INVAMT,POLDIM,WRK,LWRK)
+      SUBROUTINE MAKE_MATRIX(INVMAT,POLDIM)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -3246,158 +3209,167 @@ C
 #include <nuclei.h>
 #include <codata.h>
 C
-      DIMENSION WRK(LWRK)
-      DOUBLE PRECISION AMATS,AMATSI
-      DIMENSION AMATS(3,3),AMATSI(3,3)
+      DOUBLE PRECISION AMATS
+      DIMENSION AMATS(6)
       LOGICAL EXCENT
       INTEGER POLDIM
-      DOUBLE PRECISION INVAMT
-      DIMENSION INVAMT((3*POLDIM),(3*POLDIM))
+      DOUBLE PRECISION INVMAT
+      DIMENSION INVMAT(3*POLDIM*(3*POLDIM+1)/2)
 
-      PARAMETER ( D2 = 2.0D0, D0 = 0.0D0, D1 = 1.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('MAKE_MATRIX')
 
-      DO 100 I=1,3
-        DO 110 J=1,3
-          AMATS(I,J)  = 0.0D0
-          AMATSI(I,J) = 0.0D0
- 110    CONTINUE
- 100  CONTINUE
+      DO I=1,6
+          AMATS(I)  = 0.0D0
+      END DO
 
-C     Construct [ALPHA^(-1) - T] matrix
+C     Construct packed inverse response matrix
 
-      LRI = 1   ! Row index in the large matrix
+      M = 0
 
-      DO 200 I=1,MMCENT
+200   DO I = 1, MMCENT
 
-         IF (ZEROAL(I) .EQ. -1) GOTO 200
+        IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-         IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
-            DO 210 J=1,3
-               AMATSI(J,J) = 1.0/POLIMM(I)
- 210        CONTINUE
-         ENDIF
+C       Isotropic polarizability is easy to invert
+        IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
+          AMATS(1) = 1.0D0/POLIMM(I)
+          AMATS(4) = 1.0D0/POLIMM(I)
+          AMATS(6) = 1.0D0/POLIMM(I)
+        ENDIF
 
-         IF ((IPOLTP .EQ. 2) .AND. (CONMAT)) THEN
-            AMATS(1,1) = POLMM(1,I)
-            AMATS(1,2) = POLMM(2,I)
-            AMATS(1,3) = POLMM(3,I)
-            AMATS(2,1) = POLMM(2,I)
-            AMATS(2,2) = POLMM(4,I)
-            AMATS(2,3) = POLMM(5,I)
-            AMATS(3,1) = POLMM(3,I)
-            AMATS(3,2) = POLMM(5,I)
-            AMATS(3,3) = POLMM(6,I)
-            CALL DF_MATINV(AMATS,AMATSI,3)
-         ENDIF
+C       Anisotropic polarizability inversion
+        IF ((IPOLTP .EQ. 2) .AND. (CONMAT)) THEN
+          AMATS(1) = POLMM(1,I)
+          AMATS(2) = POLMM(2,I)
+          AMATS(3) = POLMM(3,I)
+          AMATS(4) = POLMM(4,I)
+          AMATS(5) = POLMM(5,I)
+          AMATS(6) = POLMM(6,I)
 
-         LCI = 1                ! Column index in the large matrix
+C         Factorization
+          CALL DPPTRF('L', 3, AMATS, INFO)
+          IF (INFO .LT. 0) THEN
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,*) 'WARNING: Non-positive-definite
+     & polarizability at site ', I
+            WRITE(LUPRI,*) 'Polarizability (xx, xy, xz, yy, yz, zz):'
+            DO K = 1, 6
+              WRITE(LUPRI,*) POLMM(K,I)
+            END DO
+            WRITE(LUPRI,*) 'Skipping the offending polarizability!'
+            GOTO 200
+          ELSE IF (INFO .GT. 0) THEN
+            CALL QUIT('Error during factorization of polarizability!')
+          END IF
 
-         DO 300 J=1,MMCENT
+C         Inversion
+          CALL DPPTRI('L', 3, AMATS, INFO)
+          IF (INFO .NE. 0) THEN
+            CALL QUIT('Error during inversion of local polarizability')
+          END IF
+        ENDIF
 
-            IF ((J .EQ. I) .AND. (CONMAT)) THEN
+        DO L = 3, 1, -1
+300       DO J = I, MMCENT
+            IF (ZEROAL(J) .EQ. -1) GOTO 300
+            IF (J .EQ. I) THEN
+              IF (L .EQ. 3) THEN
+                DO K = 1, L
+                  INVMAT(M+K) = AMATS(K)
+                END DO
+              ELSE IF (L .EQ. 2) THEN
+                DO K = 1, L
+                  INVMAT(M+K) = AMATS(3+K)
+                END DO
+              ELSE IF (L .EQ. 1) THEN
+                  INVMAT(M+1) = AMATS(5+1)
+              END IF
+              M = M + L
+            ELSE
+              R = 0.0D0; R2 = 0.0D0
+              R2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
+     &             (MMCORD(2,I)-MMCORD(2,J))**2 +
+     &             (MMCORD(3,I)-MMCORD(3,J))**2
+              R = SQRT(R2)
+              R3 = R**3
+              R5 = R**5
 
-               IF (ZEROAL(J) .EQ. -1) GOTO 300
+              IF (R .GT. RCUTMM) THEN
+                M = M + 3
+                GOTO 300
+              ENDIF
 
-               DO 310 K=1,3
-                  DO 311 L=1,3
-                     INVAMT(LRI+K-1,LCI+L-1) = AMATSI(K,L)
- 311              CONTINUE
- 310           CONTINUE
-               
-            ENDIF
+              EXCENT = .FALSE.
+              DO N = 1, NEXLST
+                IF (EXLIST(N,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+              END DO
 
-            IF (J .NE. I) THEN
+              IF (EXCENT) THEN
 
-               DIST2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
-     *                 (MMCORD(2,I)-MMCORD(2,J))**2 +
-     *                 (MMCORD(3,I)-MMCORD(3,J))**2 
-               DIST = SQRT(DIST2)
+                DO K = 1, 3
+                  INVMAT(M+K) = 0.0D0
+                END DO
+                M = M + 3
 
-               IF (DIST .GT. RCUTMM) THEN
-                  LCI = LCI + 3
-                  GOTO 300
-               ENDIF
-               
-               EXCENT = .FALSE.
-               
-               DO 321 L=1,NEXLST
-                  IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
- 321           CONTINUE
-
-
-               IF ((ZEROAL(J) .EQ. -1) .OR. (.NOT. (CONMAT))) GOTO 300
-
-               IF (EXCENT) THEN
-
-                  DO 330 K=1,3
-                     DO 331 L=1,3
-                        INVAMT(LRI+K-1,LCI+L-1) = 0.0D0
- 331                 CONTINUE
- 330              CONTINUE
-
-               ELSE
-
-                  DIST2 = 0.0D0
-                  DO 340 K=1,3
-                     DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
- 340              CONTINUE
-                  DIST  = SQRT(DIST2)
-                  DIST3 = DIST**3
-                  DIST5 = DIST**5
-
-                  DO 350 K=1,3
-                     DO 351 L=1,3
+              ELSE
 
 C               Include damping in the exponential form
-C               JPC A 102 (1998) 2399
+C               JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                IF (MMDAMP) THEN
+                  IF (IPOLTP .EQ. 1) THEN
+                    TEMPI = POLIMM(I)
+                    TEMPJ = POLIMM(J)
+                  ELSE IF (IPOLTP .EQ. 2) THEN
+                    TEMPI =  (POLMM(1,I)+POLMM(4,I)
+     &                       +POLMM(6,I))*D3I
+                    TEMPJ =  (POLMM(1,J)+POLMM(4,J)
+     &                       +POLMM(6,J))*D3I
+                  ENDIF
+                  TEMP = (TEMPI*TEMPJ)**D6I
+                  SCREEN = 2.1304*R/TEMP
+                  FE = 1.0D0-(1.0D0 + SCREEN + 0.5D0*SCREEN**2)
+     &                       *EXP(-SCREEN)
+                  FT = FE - (D6I*SCREEN**3)*EXP(-SCREEN)
+                ELSE
+                  FE = 1.0D0
+                  FT = 1.0D0
+                ENDIF
 
-                        IF (MMDAMP) THEN
-                           IF (IPOLTP .EQ. 1) THEN
-                              TEMPI = POLIMM(I)
-                              TEMPJ = POLIMM(J)
-                           ELSE IF (IPOLTP .EQ. 2) THEN
-                              TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)
-     &                                 +POLMM(6,I))
-                              TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)
-     &                                 +POLMM(6,J))
-                           ENDIF
-                           TEMP = (TEMPI*TEMPJ)**(D6I)
-                           SCREEN = 2.1304*DIST/TEMP
-                           FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
-     &                          *EXP(-SCREEN)
-                           FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
-     &                          *EXP(-SCREEN)
-                        ELSE
-                           FEIJ = D1
-                           FTIJ = D1
-                        ENDIF
+                IF (L .EQ. 3) THEN
 
-                        ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
-     &                          (MMCORD(L,I) - MMCORD(L,J))
-                        ELEM = ELEM/DIST5
-                        IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
-                        ELEM = -1.0*ELEM
+                  DO K = 1, 3
+                    T = FT*3.0D0*(MMCORD(1,I) - MMCORD(1,J))*
+     &                        (MMCORD(K,I) - MMCORD(K,J))
+                    T = T/R5
+                    IF (K .EQ. 1) T = T - FE*1.0D0/R3
+                    INVMAT(M+K) = -1.0D0*T
+                  END DO
 
-                        INVAMT(LRI+K-1,LCI+L-1) = ELEM
-
- 351                 CONTINUE
- 350              CONTINUE
-                  
-               ENDIF
-
-            ENDIF
-
-            LCI = LCI + 3
-
- 300     CONTINUE
-
-
-         LRI = LRI + 3
-
- 200  CONTINUE
+                ELSE IF (L .EQ. 2) THEN
+                  DO K = 1, 3
+                    T = FT*3.0D0*(MMCORD(2,I) - MMCORD(2,J))*
+     &                        (MMCORD(K,I) - MMCORD(K,J))
+                    T = T/R5
+                    IF (K .EQ. 2) T = T - FE*1.0D0/R3
+                    INVMAT(M+K) = -1.0D0*T
+                  END DO
+                ELSE IF (L .EQ. 1) THEN
+                  DO K = 1, 3
+                    T = FT*3.0D0*(MMCORD(3,I) - MMCORD(3,J))*
+     &                        (MMCORD(K,I) - MMCORD(K,J))
+                    T = T/R5
+                    IF (K .EQ. 3) T = T - FE*1.0D0/R3
+                    INVMAT(M+K) = -1.0D0*T
+                  END DO
+                END IF
+                M = M + 3
+              END IF
+            END IF
+          END DO
+        END DO
+      END DO
 
       CALL QEXIT('MAKE_MATRIX')
 

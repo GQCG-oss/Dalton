@@ -108,8 +108,8 @@ C                                                   can arrise in that case
       KEFIELD = KUTRX   + N2ORBX
       KINDMOM = KEFIELD + 3*NNZAL
       IF (MMMAT) THEN
-        KINVAMT = KINDMOM + 3*NNZAL
-        KLAST    = KINVAMT + (3*NNZAL)*(3*NNZAL)
+        KINVMAT = KINDMOM + 3*NNZAL
+        KLAST    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
       ELSE IF (MMITER) THEN
         KLAST    = KINDMOM + 3*NNZAL
       ENDIF
@@ -129,7 +129,7 @@ C                                                   can arrise in that case
       CALL DZERO(WRK(KUTRX),N2ORBX)
       CALL DZERO(WRK(KEFIELD),3*NNZAL)
       CALL DZERO(WRK(KINDMOM),3*NNZAL)
-      IF (MMMAT) CALL DZERO(WRK(KINVAMT),(3*NNZAL)*(3*NNZAL))
+      IF (MMMAT) CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
 
 C     Read the relay matrix from file
 
@@ -144,7 +144,7 @@ C     Read the relay matrix from file
         REWIND(LUQMMM)
 
         IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-          CALL READT(LUQMMM,N*N,WRK(KINVAMT))
+          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
         ELSE
           CALL QUIT('Problem reading the matrix from the QMMMIM file.')
         ENDIF
@@ -152,8 +152,11 @@ C     Read the relay matrix from file
         CALL GPCLOSE(LUQMMM,'KEEP')
 
         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
-          WRITE(LUPRI,*) ' The Relay matrix is read from file'
-          CALL OUTPUT(WRK(KINVAMT),1,N,1,N,N,N,1,LUPRI)
+          WRITE(LUPRI,*) ' The classical response matrix is'//
+     &                   ' read from file'
+          DO I = 1, N*(N+1)/2
+            WRITE(LUPRI,*) WRK(KINVMAT+I-1)
+          END DO
         ENDIF
       ENDIF
 
@@ -215,8 +218,8 @@ C-------------------------------------------------------
 C        Calculate the induced dipoles corresponding to this field
 
          IF (MMMAT) THEN
-           CALL DGEMV('N',NDIM,NDIM,ONE,WRK(KINVAMT),
-     *                NTOTI,WRK(KEFIELD),1,ZERO,WRK(KINDMOM),1)
+           CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEFIELD), 1,
+     &                ZERO, WRK(KINDMOM), 1)
          ELSE IF (MMITER) THEN
            IOPT = 2 ! Do not read from file any previuos induced moments
            CALL F2QMMM(WRK(KEFIELD),NNZAL,WRK(KINDMOM),WRK(KLAST),LWRK1,
@@ -352,8 +355,8 @@ C
       KTRMO   = KTLMB   + N2ORBX
       KUTR    = KTRMO   + NNORBX
       IF (MMMAT) THEN
-        KINVAMT = KUTR    + N2ORBX
-        KEF1    = KINVAMT + (3*NNZAL)*(3*NNZAL)
+        KINVMAT = KUTR    + N2ORBX
+        KEF1    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
       ELSE
         KEF1    = KUTR    + N2ORBX
       ENDIF
@@ -372,7 +375,7 @@ C
       CALL DZERO(WRK(KTLMB),N2ORBX)
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-      IF (MMMAT) CALL DZERO(WRK(KINVAMT),3*NNZAL*3*NNZAL)
+      IF (MMMAT) CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
       CALL DZERO(WRK(KEF1),3*NNZAL)
       CALL DZERO(WRK(KEF2),3*NNZAL)
       CALL DZERO(WRK(KIND1),3*NNZAL)
@@ -402,8 +405,6 @@ C     Unpack symmetry blocked CMO
 
       IF (MMMAT) THEN
 
-C       Read the relay matrix from file
-
         LUQMMM = -1
         IF (LUQMMM .LT. 0) THEN
           CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
@@ -412,7 +413,7 @@ C       Read the relay matrix from file
         REWIND(LUQMMM)
 
         IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-          CALL READT(LUQMMM,N*N,WRK(KINVAMT))
+          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
         ELSE
           CALL QUIT('Problem reading the matrix from the QMMMIM file.')
         ENDIF
@@ -420,11 +421,14 @@ C       Read the relay matrix from file
         CALL GPCLOSE(LUQMMM,'KEEP')
 
         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
-          WRITE(LUPRI,*) ' The Relay matrix is read from file'
-          CALL OUTPUT(WRK(KINVAMT),1,N,1,N,N,N,1,LUPRI)
+          WRITE(LUPRI,*) ' The classical response matrix is'//
+     &                   ' read from file'
+          DO I = 1, N*(N+1)/2
+            WRITE(LUPRI,*) WRK(KINVMAT+I-1)
+          END DO
         ENDIF
 
-      ENDIF ! MMMAT
+      ENDIF
 
       KMAT = KWRK
       KLAST = KMAT + 3*NNBASX
@@ -465,8 +469,8 @@ C     (transformed) fields 1 and 2
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DGEMV('N',NDIM,NDIM,ONE,WRK(KINVAMT),
-     *             NTOTI,WRK(KEF1),1,ZERO,WRK(KIND1),1)
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF1), 1, ZERO,
+     &             WRK(KIND1), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF1),NNZAL,WRK(KIND1),WRK(KLAST),LWRK2,
@@ -479,9 +483,9 @@ C     (transformed) fields 1 and 2
         WRITE(LUPRI,*)
       ENDIF
 
-       IF (MMMAT) THEN
-         CALL DGEMV('N',NDIM,NDIM,ONE,WRK(KINVAMT),
-     *             NTOTI,WRK(KEF2),1,ZERO,WRK(KIND2),1)
+      IF (MMMAT) THEN
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF2), 1, ZERO, 
+     &             WRK(KIND2), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF2),NNZAL,WRK(KIND2),WRK(KLAST),LWRK2,
@@ -617,8 +621,8 @@ C Change here KTLMC
       KTRMO   = KTLMC   + N2ORBX
       KUTR    = KTRMO   + NNORBX
       IF (MMMAT) THEN
-        KINVAMT = KUTR    + N2ORBX
-        KEF1    = KINVAMT + (3*NNZAL)*(3*NNZAL)
+        KINVMAT = KUTR    + N2ORBX
+        KEF1    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
       ELSE
         KEF1    = KUTR    + N2ORBX
       ENDIF
@@ -639,7 +643,7 @@ C Change here KTLMC
       CALL DZERO(WRK(KTLMB),N2ORBX)
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-      IF (MMMAT) CALL DZERO(WRK(KINVAMT),3*NNZAL*3*NNZAL)
+      IF (MMMAT) CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
       CALL DZERO(WRK(KEF1),3*NNZAL)
       CALL DZERO(WRK(KEF2),3*NNZAL)
       CALL DZERO(WRK(KEF3),3*NNZAL)
@@ -672,8 +676,6 @@ C     Unpack symmetry blocked CMO
 
       IF (MMMAT) THEN
 
-C       Read the relay matrix from file        
-
         LUQMMM = -1
         IF (LUQMMM .LT. 0) THEN
           CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
@@ -682,7 +684,7 @@ C       Read the relay matrix from file
         REWIND(LUQMMM)
 
         IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-          CALL READT(LUQMMM,N*N,WRK(KINVAMT))
+          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
         ELSE
           CALL QUIT('Problem reading the matrix from the QMMMIM file.')
         ENDIF
@@ -690,8 +692,11 @@ C       Read the relay matrix from file
         CALL GPCLOSE(LUQMMM,'KEEP')
 
         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
-          WRITE(LUPRI,*) ' The Relay matrix is read from file'
-          CALL OUTPUT(WRK(KINVAMT),1,N,1,N,N,N,1,LUPRI)
+          WRITE(LUPRI,*) ' The classical response matrix is'//
+     &                   ' read from file'
+          DO I = 1, N*(N+1)/2
+            WRITE(LUPRI,*) WRK(KINVMAT+I-1)
+          END DO
         ENDIF
 
       ENDIF 
@@ -744,8 +749,8 @@ C     iteratively.
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DGEMV('N',NDIM,NDIM,ONE,WRK(KINVAMT),
-     *             NTOTI,WRK(KEF1),1,ZERO,WRK(KIND1),1)
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF1), 1, ZERO, 
+     &             WRK(KIND1), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF1),NNZAL,WRK(KIND1),WRK(KLAST),LWRK2,
@@ -759,8 +764,8 @@ C     iteratively.
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DGEMV('N',NDIM,NDIM,ONE,WRK(KINVAMT),
-     *             NTOTI,WRK(KEF2),1,ZERO,WRK(KIND2),1)
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF2), 1, ZERO, 
+     &             WRK(KIND2), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF2),NNZAL,WRK(KIND2),WRK(KLAST),LWRK2,
@@ -774,8 +779,8 @@ C     iteratively.
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DGEMV('N',NDIM,NDIM,ONE,WRK(KINVAMT),
-     *            NTOTI,WRK(KEF3),1,ZERO,WRK(KIND3),1)
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF3), 1, ZERO, 
+     &             WRK(KIND3), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
         CALL F2QMMM(WRK(KEF3),NNZAL,WRK(KIND3),WRK(KLAST),LWRK2,
