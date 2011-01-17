@@ -1002,9 +1002,10 @@ C
            IF( CSCREEN) THEN
 C             set proper truncation factor
               THR_TRUNC  = TRUNC_FAC * RNORM_FAC
-              THR_ETRUNC = 1.0D-7 * THRES_E
+!             THR_ETRUNC = 1.0D-7 * THRES_E
+! THRES_E is not defined
 Chj           14-jun-07:   disable THR_ETRUNC
-!             THR_ETRUNC = -1.0D0
+              THR_ETRUNC = -1.0D0
 !testprint    WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
               CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
      &                          THR_TRUNC,THR_ETRUNC)
@@ -5862,7 +5863,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
         WRITE(LUWRT,1010) I,(A(J),J=JSTART,JSTOP)
   100 CONTINUE
       RETURN
- 1010 FORMAT(1H0,2X,I3,5(1X,E13.7),/,(1H ,5X,5(1X,E13.7)))
+ 1010 FORMAT(/I6,5E14.7,/,(6X,1P,5E14.7) )
       END
 ***********************************************************************
 *                                                                     *

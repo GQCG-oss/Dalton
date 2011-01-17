@@ -38,6 +38,7 @@ C
 c maxorb for symmet.h
 #include "maxorb.h"
 #include "dummy.h"
+#include "codata.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
       CHARACTER*(*) TITMOL(2)
@@ -161,8 +162,7 @@ C
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
-C
-#include "pi.h"
+#include "codata.h"
 C
       PARAMETER (ONE=1.0D+00, HALF=0.5D+00, PT75 = 0.75D+00, 
      *           PT187 = 1.875D+00,
