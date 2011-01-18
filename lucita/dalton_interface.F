@@ -1773,7 +1773,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       END
 ***********************************************************************
 *
-      subroutine set_nracte_wf(waffct,nracte)
+      subroutine set_nracte_wf(citype,waffct,nracte)
 *
 #ifdef VAR_MPI
       use dalton_mpi
@@ -1784,18 +1784,37 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 #include "mpif.h"
 #endif
 #include "parluci.h"
-! from common block in infinp.h: NACTEL
+! from common block in infinp.h: NACTEL, FLAG(13): MO restart yes/no
 #include "maxorb.h"
 #include "mxcent.h"
 #include "infinp.h"
 
 *
-      character*6 WAFFCT
+      character*6 WAFFCT, citype
 *
 !     write(lupri,*) 'set_nracte_wf called, we try doing a little!' !hjaaj DEBUG
 !     write(lupri,*) 'WAFFCT = ',WAFFCT
-
       nracte = NACTEL
+
+!     set # of active e- always to zero if MO restart but no
+!     mcscf/hf because then NACTEL is not set and issue a warning
+!     for citypes other than GASCI! stefan - jan 2011
+      if(luci_myproc .eq. 0)then
+        if(flag(13).and..not.(doscf.or.domc))then 
+          nracte = 0
+          if(citype.ne.'GASCI ')then
+            write(lupri,'(/a)') ' *** WARNING from set_nracte_wf:'
+            write(lupri,'(a )') ' number of active e- is unknown if'//
+     &    ' the MO restart option is used but not a single ensuing'//
+     &    ' HF/MCSCF iteration has been performed.'
+            write(lupri,'(a/)') ' Since the number of active e- is'//
+     &    ' essential to the following CI setup LUCITA will stop here.'
+            call quit('*** ERROR in set_nracte_wf: # of active e- is 
+     &      required for CI types other than GASCI. ***')
+          end if
+        end if
+      end if
+
 
 #ifdef VAR_MPI      
       if(luci_nmproc .gt. 1)then
@@ -1808,20 +1827,23 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
           write(lupri,*) 'ERROR in set_nracte_wf:'//
      &' # of active e- > 0 for closed-shell HF reference wave function.'
           call quit('*** ERROR in set_nracte_wf: # of active e- > 0
-     & for closed-shell HF reference wave function.')
+     & for closed-shell HF reference wave function. ***')
         end if
       else if(WAFFCT.eq.'RASSCF')then
-        if(nracte .gt. 0)then
-          write(lupri,*) 'ERROR in set_nracte_wf:'//
-     &' # of active e- = 0 for open-shell HF reference wave function.'
-          call quit('*** ERROR in set_nracte_wf: # of active e- = 0
-     & for open-shell HF reference wave function.')
+        if(citype.ne.'GASCI ')then
+          if(nracte .le. 0)then
+            write(lupri,*) 'ERROR in set_nracte_wf:'//
+     &'     # of active e- = 0 for open-shell HF/MCSCF'//
+     &      ' reference wave function.'
+            call quit('*** ERROR in set_nracte_wf: # of active e- = 0
+     &      for open-shell HF/MCSCF reference wave function. ***')
+          end if
         end if
       else
         write(lupri,*) 'ERROR in set_nracte_wf:'//
      &' unknown reference wave function: ',WAFFCT
           call quit('*** ERROR in set_nracte_wf: 
-     & unknown reference wave function.')
+     & unknown reference wave function. ***')
       end if
 
       end
@@ -3000,7 +3022,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *------------------------------------------------------------------*
 *  Import required information from Dalton
 *------------------------------------------------------------------*
-      call set_nracte_wf(WAFFCT,NACRAS)
+      call set_nracte_wf(type,WAFFCT,NACRAS)
 !     print *, ' stefan: define NACRAS for proper FCI/SDCI!!!***'
 *
 *.................................................................

@@ -1798,8 +1798,6 @@ C
          KFRSAV = 1
          KFREE  = 1
          LFREE  = KWORK
-!        problem here with lucita: nbast is 8 but down in TRAAB we
-!        access field #9...
          CALL MEMGET('INTE',KITSMO,NBAST,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KITSAO,NBAST,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KITSW ,NBAST,WORK,KFREE,LFREE)
