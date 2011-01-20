@@ -1853,7 +1853,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
       INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
-      DIMENSION CMO(*), WORK(KWORK)
+      DIMENSION CMO(*), WORK(KWORK), MISH_TEST(8), MASH_TEST(8)
 #include <iratdef.h>
 #include <thrzer.h>
 #include <lbmxsq.h>
@@ -2278,7 +2278,14 @@ C           and subtract from input CMO matrix
             READ  (LUINTM) (WORK(I),I=1,NCMOT)
             CALL DAXPY(NCMOT,DM1,CMO,1,WORK,1)
             I = IDAMAX(NCMOT,WORK,1)
-            IF (ABS(WORK(I)) .LE. THRZER) THEN
+            READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
+            MISH_TEST(1:8) = MISH_TEST(1:8) - MISH(1:8)
+            MASH_TEST(1:8) = MASH_TEST(1:8) - MASH(1:8)
+            J = 0
+            DO ISYM = 1,8
+               J = J + ABS(MISH_TEST(ISYM)) + ABS(MASH_TEST(ISYM))
+            END DO
+            IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
                IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
      *            ' TRACTL_1: Integral transformation abandoned,',
      *            ' the required MO integrals are already available.'
@@ -2444,6 +2451,7 @@ C 831014-hjaaj: maybe here also save LUINTM buffer length
 C 860731-hjaaj: done
       WRITE (LUINTM) LBINTM,ITRLVL,NSYM,NORB,NBAS
       WRITE (LUINTM) (CMO(I),I=1,NCMOT)
+      WRITE (LUINTM) MISH(1:8), MASH(1:8)
 C
       CALL TRAAB(ITRLVL,LUDA2,WORK(LW1),WORK(LW2),WORK(LW2),
      &           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6),

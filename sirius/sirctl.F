@@ -85,8 +85,6 @@ C
 #include <pcmlog.h>
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
 #include <dftcom.h>
-! exeinf.h: FTRCTL
-#include <exeinf.h>
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
@@ -711,10 +709,6 @@ C
                                           ! orbital occupations for TRACTL
          JTRALVL = 0 ! all active orbitals for all four indices
          USEDRC = .FALSE.
-
-!        make sure we perform a new integral transformation if LUCITA
-!        follows an MCSCF calculation. stefan - jan 2011
-         FTRCTL = .true.
 
 !        integral transformation
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
