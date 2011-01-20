@@ -2031,16 +2031,15 @@ CSK      NTEST = 10
 *
       IF(INONVAN.LT.LUCI_NMPROC) THEN
         IMINNP = MIN(INONVAN,LUCI_NMPROC)
-        write(luwrt,'(/a,i6)') '*** error in distblknd:'//
-     &    ' number of active blocks lower than the total number of'//
-     &    ' processes. please decrease the number of processes to:',
-     &    IMINNP
-        write(luwrt,'(/a)') ' alternatively change the GAS'//
-     &    ' specification (more GA spaces) to increase the number of'//
-     &    ' TTSS blocks.***'
-        call quit('*** error in distblknd: number of processes >
-     & number of active TTSS blocks. the distribution algorithm
-     & will therefore fail (see output for more information).***')
+        write(luwrt,'(/a)') '  INFO from distblknd:'
+        write(luwrt,'( a)')
+     &    '  INFO: # of active blocks < total # of processes.' 
+        write(luwrt,'(a,i6)') '  INFO: consider to decrease the'//
+     &    ' # of processes to:',IMINNP
+        write(luwrt,'(a)') '  INFO: alternatively change the GAS'//
+     &    ' specification (more GA spaces).'
+        write(luwrt,'(a/)') '  INFO: this ensures an increase'//
+     &    ' in the number of active TTSS blocks.'
         IF(LUCI_MYPROC.GE.INONVAN) GOTO 1001
       ELSE
         IMINNP = LUCI_NMPROC
@@ -2205,16 +2204,15 @@ C
       NTEMPP = IMINNP
       IF(ICOUNTABLK.LT.LUCI_NMPROC) THEN
         IMINNP = MIN(ICOUNTABLK,IMINNP)
-        write(luwrt,'(/a,i6)') '*** error in distblknd_1:'//
-     &    ' number of active blocks lower than the total number of'//
-     &    ' processes. please decrease the number of processes to:',
-     &    IMINNP
-        write(luwrt,'(/a)') ' alternatively change the GAS'//
-     &    ' specification (more GA spaces) to increase the number of'//
-     &    ' TTSS blocks.***'
-        call quit('*** error in distblknd_1: number of processes >
-     & number of active TTSS blocks. the distribution algorithm
-     & will therefore fail (see output for more information).***')
+        write(luwrt,'(/a)') '  INFO from distblknd_1:'
+        write(luwrt,'( a)')
+     &    '  INFO: # of active blocks < total # of processes.' 
+        write(luwrt,'(a,i6)') '  INFO: consider to decrease the'//
+     &    ' # of processes to:',IMINNP
+        write(luwrt,'(a)') '  INFO: alternatively change the GAS'//
+     &    ' specification (more GA spaces).'
+        write(luwrt,'(a/)') '  INFO: this ensures an increase'//
+     &    ' in the number of active TTSS blocks.'
         NTEMPP = IMINNP
         IF(LUCI_MYPROC.GE.ICOUNTABLK) THEN
           IAM_NOT_INV =   0
@@ -2643,16 +2641,15 @@ C
       NTEMPP = IMINNP
       IF( ICOUNTABLK .lt. LUCI_NMPROC) THEN
         IMINNP = MIN( ICOUNTABLK, IMINNP )
-        write(luwrt,'(/a,i6)') '*** error in distblknd_2:'//
-     &    ' number of active blocks lower than the total number of'//
-     &    ' processes. please decrease the number of processes to:',
-     &    IMINNP
-        write(luwrt,'(/a)') ' alternatively change the GAS'//
-     &    ' specification (more GA spaces) to increase the number of'//
-     &    ' TTSS blocks.***'
-        call quit('*** error in distblknd_2: number of processes >
-     & number of active TTSS blocks. the distribution algorithm
-     & will therefore fail (see output for more information).***')
+        write(luwrt,'(/a)') '  INFO from distblknd_2:'
+        write(luwrt,'( a)')
+     &    '  INFO: # of active blocks < total # of processes.' 
+        write(luwrt,'(a,i6)') '  INFO: consider to decrease the'//
+     &    ' # of processes to:',IMINNP
+        write(luwrt,'(a)') '  INFO: alternatively change the GAS'//
+     &    ' specification (more GA spaces).'
+        write(luwrt,'(a/)') '  INFO: this ensures an increase'//
+     &    ' in the number of active TTSS blocks.'
         NTEMPP = IMINNP
         IF( LUCI_MYPROC .ge. ICOUNTABLK ) THEN
           IAM_NOT_INV =   0

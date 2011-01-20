@@ -708,7 +708,7 @@ C
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
          JTRALVL = 0 ! all active orbitals for all four indices
-         USEDRC = .FALSE.
+         USEDRC  = .FALSE.
 
 !        integral transformation
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
