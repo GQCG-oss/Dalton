@@ -1236,7 +1236,7 @@ C     ***** CI information *****
 C     **************************
 C
 C     920217-hjaaj: ICSYM=IHCSYM=LSYMRF means that .TOTSYM
-C        always will work for CSF's.  (Both ICSYM and IHCSYM have
+C        always will work for CSFs.  (Both ICSYM and IHCSYM have
 C        no effect for determinants: they are overwritten by
 C        CALL ABAVAR(ISYM) below.  However, only one CSF <-> det
 C        transformation is defined in the current version.)
@@ -2642,35 +2642,40 @@ C
          CALL OUTPUT(UMOGA,1,N2ORBX,1,N2ORBX,N2ORBX,N2ORBX,1,LUPRI)
       END IF
 C
+      DO 40 D=1,NBAST
+      DO 40 C=1,NBAST
+      DO 40 B=1,NBAST
       DO 40 P=1,NORBT
       DO 40 A=1,NBAST
-      DO 40 B=1,NBAST
-      DO 40 C=1,NBAST
-      DO 40 D=1,NBAST
-40       GWORK(P,B,C,D)=GWORK(P,B,C,D)+UMOGA(A,B,C,D)*CMO(A,P)
+         GWORK(P,B,C,D)=GWORK(P,B,C,D)+UMOGA(A,B,C,D)*CMO(A,P)
+   40 CONTINUE
 C
       CALL DZERO(UMOGA,N2ORBX*N2ORBX)
-      DO 42 P=1,NORBT
+      DO 42 D=1,NBAST
+      DO 42 C=1,NBAST
       DO 42 Q=1,NORBT
       DO 42 B=1,NBAST
-      DO 42 C=1,NBAST
-      DO 42 D=1,NBAST
-42       UMOGA(P,Q,C,D)=UMOGA(P,Q,C,D)+GWORK(P,B,C,D)*CMO(B,Q)
+      DO 42 P=1,NORBT
+         UMOGA(P,Q,C,D)=UMOGA(P,Q,C,D)+GWORK(P,B,C,D)*CMO(B,Q)
+   42 CONTINUE
+C
       CALL DZERO(GWORK,N2ORBX*N2ORBX)
-      DO 44 P=1,NORBT
-      DO 44 Q=1,NORBT
+      DO 44 D=1,NBAST
       DO 44 R=1,NORBT
       DO 44 C=1,NBAST
-      DO 44 D=1,NBAST
-44       GWORK(P,Q,R,D)=GWORK(P,Q,R,D)+UMOGA(P,Q,C,D)*CMO(C,R)
+      DO 44 Q=1,NORBT
+      DO 44 P=1,NORBT
+         GWORK(P,Q,R,D)=GWORK(P,Q,R,D)+UMOGA(P,Q,C,D)*CMO(C,R)
+   44 CONTINUE
 C
       CALL DZERO(UMOGA,N2ORBX*N2ORBX)
-      DO 46 P=1,NORBT
-      DO 46 Q=1,NORBT
-      DO 46 R=1,NORBT
-      DO 46 S=1,NORBT
       DO 46 D=1,NBAST
-46       UMOGA(P,Q,R,S)=UMOGA(P,Q,R,S)+GWORK(P,Q,R,D)*CMO(D,S)
+      DO 46 S=1,NORBT
+      DO 46 R=1,NORBT
+      DO 46 Q=1,NORBT
+      DO 46 P=1,NORBT
+         UMOGA(P,Q,R,S)=UMOGA(P,Q,R,S)+GWORK(P,Q,R,D)*CMO(D,S)
+   46 CONTINUE
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('Differentiated two-electron MO Hamiltonian',-1)
          CALL OUTPUT(UMOGA,1,N2ORBX,1,N2ORBX,N2ORBX,N2ORBX,1,LUPRI)
@@ -2683,9 +2688,9 @@ C
 C     Form {S,h} in HWORK and {S,g} into GWORK
 C
       CALL DZERO(HWORK,N2ORBX)
-      DO 60 P=1,NORBT
       DO 60 Q=1,NORBT
       DO 60 A=1,NORBT
+      DO 60 P=1,NORBT
          HWORK(P,Q)=HWORK(P,Q)-0.5D0*(SXMAT(P,A,X)*UMOH(A,Q)
      +                               -SXMAT(Q,A,X)*UMOH(P,A))
 60    CONTINUE
@@ -2998,28 +3003,28 @@ C
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
  150  CONTINUE
 #if defined (VAR_SPLITFILES)         
-      CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
+         CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
 #else
-      CALL READI(LU2DER,LENINT,WORK(KINT))
+         CALL READI(LU2DER,LENINT,WORK(KINT))
 #endif
-      CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
-      IF (LENGTH .GT. 0) THEN
-         DO 100 I = 1, LENGTH
-            LABEL = IBUF(I)
-            VALUE = WORK(KINT + I - 1)
-            S = IBTAND(LABEL,255)
-            IF (S .EQ. 0) THEN
-               ICOMP = IBTAND(IBTSHR(LABEL,8),255)
-            ELSE IF (ICOMP .EQ. X) THEN
-               P = IBTAND(IBTSHR(LABEL,24),255)
-               Q = IBTAND(IBTSHR(LABEL,16),255)
-               R = IBTAND(IBTSHR(LABEL, 8),255)
-               UMOGA(P,Q,R,S) = VALUE
-               UMOGA(R,S,P,Q) = VALUE
-               UMOGA(Q,P,S,R) = -VALUE
-               UMOGA(S,R,Q,P) = -VALUE
-            END IF
- 100     CONTINUE
+         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         IF (LENGTH .GT. 0) THEN
+            DO 100 I = 1, LENGTH
+               LABEL = IBUF(I)
+               VALUE = WORK(KINT + I - 1)
+               S = IBTAND(LABEL,255)
+               IF (S .EQ. 0) THEN
+                  ICOMP = IBTAND(IBTSHR(LABEL,8),255)
+               ELSE IF (ICOMP .EQ. X) THEN
+                  P = IBTAND(IBTSHR(LABEL,24),255)
+                  Q = IBTAND(IBTSHR(LABEL,16),255)
+                  R = IBTAND(IBTSHR(LABEL, 8),255)
+                  UMOGA(P,Q,R,S) = VALUE
+                  UMOGA(R,S,P,Q) = VALUE
+                  UMOGA(Q,P,S,R) = -VALUE
+                  UMOGA(S,R,Q,P) = -VALUE
+               END IF
+ 100        CONTINUE
          ELSE IF (LENGTH .LT. 0) THEN
             GOTO 300
          END IF

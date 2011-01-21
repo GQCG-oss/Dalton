@@ -59,9 +59,12 @@ C
          DOINT(2,1) = .TRUE.
          DOINT(1,2) = .TRUE.
          DOINT(2,2) = .TRUE.
-         KMAX   = NLRGSH + NSMLSH
-         NBASIS = NLARGE + NSMALL
-         NPBAS  = NPLRG + NPSML
+                                  ! note that relativistic 4-c small
+                                  ! component dimensions have been used
+                                  ! for Huckel dimensions
+         KMAX   = NLRGSH + NSMLSH ! NSMLSH is really "NHUCSH"
+         NBASIS = NLARGE + NSMALL ! NSMALL is really "NHUCBA"
+         NPBAS  = NPLRG  + NPSML  ! NPSML  is really "NPHUC "
 C
          KKVAL = 1
          KMVAL = KKVAL + MXAQN

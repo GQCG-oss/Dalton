@@ -657,7 +657,7 @@ C
             CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,2,SPNORB,
      &                  IPRINT)
             NBUFCL = 0
-            IREPX = IPTREP(IREPE,2)
+            IREPX  = IPTREP(IREPE,2)
             NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
             DO 300 I = 1, NINTSR(IREPX)
                NSTRNA = IPNTNO(1,I,IREPX)
@@ -695,7 +695,7 @@ C
                               END IF
                               IABCD = INDAB*65536 + INDCD
                            ELSE
-                              INDCD  = MAX(INDC,INDD)*255 + INDC + INDD
+                              INDCD = MAX(INDC,INDD)*255 + INDC + INDD
                               IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
@@ -756,7 +756,7 @@ C
                               END IF
                               IABCD = INDAB*65536 + INDCD
                            ELSE
-                              INDCD  = MAX(INDC,INDD)*255 + INDC + INDD
+                              INDCD = MAX(INDC,INDD)*255 + INDC + INDD
                               IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1

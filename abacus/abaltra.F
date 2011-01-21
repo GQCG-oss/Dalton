@@ -674,18 +674,19 @@ C
       CALL REWSPL(LULONA)
       KEY = 'AO2MGINT'
       CALL MOLLAB(KEY,LULONA,LUPRI)
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
+!!#if defined (VAR_INT64)
+!!    NIBUF = 1
+!!    NBITS = 16
+!!#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
-         NIBUF = 2
-         NBITS = 16
+         call quit('TRLRAO only implemented for < 256 basis functions')
+!!       NIBUF = 2
+!!       NBITS = 16
       END IF
-#endif
+!!#endif
       LBUF = 600
       JBUF = 256
 C

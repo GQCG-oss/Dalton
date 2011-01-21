@@ -492,11 +492,7 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
+      PARAMETER (IFIELD = 8)
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0)
       PARAMETER (D2 = 2.D0)
 C
@@ -756,11 +752,6 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <maxorb.h>
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
       LOGICAL OLDDX
 C
       INTEGER ISORT(1), IBUF(1), IT(1), ALPHA, BETA, GAMMA,
@@ -775,8 +766,11 @@ C
       CHARACTER*6 TITLE, RUNTP
       COMMON /PTRCHR/ TITLE(12), RUNTP
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
+
+      PARAMETER (IBIT08 = 255, IFIELD = 8)
 #include <ibtfun.h>
       LBYTE(LABV,LOCV) = IBTAND(IBTSHR(LABV,IFIELD*LOCV),IBIT08)
+
       CALL QENTER('PT1SOR')
 C
 C....    COMPUTE ARRAY (EXPANDED TO A SQUARE) OF BLOCK LENGTHS
@@ -925,11 +919,6 @@ C
 #include <dummy.h>
 #include <iratdef.h>
 C
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
       PARAMETER (D0 = 0.0D0)
 #include <maxorb.h>
 #include <mxcent.h>
@@ -952,9 +941,12 @@ C
       COMMON /PTRCHR/ TITLE(12), RUNTP
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
       COMMON /PTRTOT/ NPTOT
+
+      PARAMETER (IBIT08 = 255, IFIELD = 8)
 #include <ibtfun.h>
 C
       LBYTE(LABV,LOCV) = IBTAND(IBTSHR(LABV,IFIELD*LOCV),IBIT08)
+
       UNPAKK(IJ) = SQRT(2.0D0*IJ + 0.25D0) + 0.4999D0
 C
       CALL QENTER('PT2TRA')
@@ -1313,13 +1305,6 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 C
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
-      PARAMETER ( IBIT04 = 15, D0 = 0.0D0 )
-C
 C     If MAXBUF is changed be sure to make the corresponding change
 C     of MX2BUF in PTRAN (used in PT2TRA) and in DISINT.  Also, for
 C     efficiency on 32 bit machines MAXBUF should be an even number.
@@ -1333,8 +1318,7 @@ C
      *            IBUFMN = 200,   MXMAX = 2000 )
 C
       LOGICAL ANTI, PANTI, OLDDX
-      INTEGER RSP(300), IOFFRS(1830),
-     *        P, Q, R, S, PQST1, PQST, PQFIN, PQ,
+      INTEGER P, Q, R, S, PQST1, PQST, PQFIN, PQ,
      *        RS, RSMIN1, RSMIN, RSMAX,
      *        PAKK
       DIMENSION WORK(LWORK), IWORK(IRAT*LWORK), NCONTS(MXSHEL,MXAOVC,2)
@@ -1344,16 +1328,19 @@ C
 #include <pincom.h>
 #include <symmet.h>
       COMMON /PTRTOT/ NPTOTR
-#include <ibtfun.h>
 C
 C     Statement functions
 C
+c #include <ibtfun.h>
+c     PARAMETER (IBIT08 = 255, IFIELD = 8)
+c     PARAMETER (IBIT04 = 15)
 c     ISHELL(I) = IBTAND(IBTSHR(I,IFIELD),IBIT08)
 c     ICOMP(I)  = IBTAND(IBTSHR(I,4),IBIT04)
 c     PAKK(I,J,K,L) = IBTOR(IBTSHL(I,3*IFIELD),IBTOR(IBTSHL(J,2*IFIELD),
 c    *                IBTOR(IBTSHL(K,IFIELD),L)))
 c     UNPAKK(IJ) = SQRT(2.0D0*IJ + 0.25D0) + 0.4999D0
 C
+
       CALL QENTER('PSORG')
       IF (IPRINT .GT. 2) WRITE (LUPRI, 1000)
 CHJ-860802:  find MEMS = available space for SORT(*), ISORT(*)
@@ -1549,30 +1536,26 @@ C
 #include <2gbdef.h>
       CHARACTER*80 FNNAME, FNNM2
 #endif
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
 #include <blocks.h>
 #include <pincom.h>
 #include <symmet.h>
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-      DIMENSION IBUF(1), BUF(1), IBIN(1), BIN(1), SORT(LSORT)
-      DIMENSION LASTAD(1), ITAB(1), NTOP(1), IPOINT(NPS1,2)
+      DIMENSION IBUF(*), BUF(*), IBIN(*), BIN(*), SORT(LSORT)
+      DIMENSION LASTAD(*), ITAB(*), NTOP(*), IPOINT(NPS1,2)
       INTEGER P, Q, R, S, PQ, RS, PQRS
       LOGICAL PEQQ, REQS, PQEQRS, ANTI, PANTI
+#include <inftap.h>
+#include <chrnos.h>
 C
 C     *****************************************************************
 C     **  STATEMENT FUNCTIONS FOR PACKING, UNPACKING AND ADDRESSING  **
 C     *****************************************************************
 C
-#include <inftap.h>
-#include <chrnos.h>
+      PARAMETER (IBIT08 = 255, IFIELD = 8)
 #include <ibtfun.h>
       IPART(I,J) = IBTAND(IBTSHR(I,IFIELD*(J-1)),IBIT08)
-      ISHLL(I)   = IBTAND(I,IBIT08)
-      ICONTR(I)  = IBTAND(IBTSHR(I,IFIELD),IBIT08)
+      ISHLL(I)   = IBTAND(       I,          IBIT08)
+      ICONTR(I)  = IBTAND(IBTSHR(I,  IFIELD),IBIT08)
       IANG(I)    = IBTAND(IBTSHR(I,2*IFIELD),IBIT08)
       IRREP(I)   = IBTAND(IBTSHR(I,3*IFIELD),IBIT08)
       ICR(I,J,K,L)  = NRCP*(NRCQ*(NRCR*(L-1)+K-1)+J-1)+I
@@ -1996,15 +1979,12 @@ C  /* Deck psrset */
 #include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
       DIMENSION IRREP(MXCORB)
 #include <shells.h>
 #include <symmet.h>
 #include <pincom.h>
+
+      PARAMETER (IFIELD = 8)
 #include <ibtfun.h>
 C
       CALL QENTER('PSRSET')
@@ -2194,11 +2174,6 @@ C  /* Deck pvcmp */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#if defined (VAR_INT64)
-      PARAMETER (IBIT08 = 65535, IFIELD = 16)
-#else
-      PARAMETER (IBIT08 = 255, IFIELD = 8)
-#endif
       PARAMETER (D1 = 1.0D0)
       LOGICAL ANTI, PANTI
       INTEGER P,Q,R,S
@@ -2207,6 +2182,8 @@ C  /* Deck pvcmp */
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include <ccom.h>
 #include <inforb.h>
+
+      PARAMETER (IBIT08 = 255, IFIELD = 8)
 #include <ibtfun.h>
 C
       CALL QENTER('PVCMP')
@@ -2227,7 +2204,7 @@ C
          P = IBTAND(IBTSHR(IBUF(I),3*IFIELD),IBIT08)
          Q = IBTAND(IBTSHR(IBUF(I),2*IFIELD),IBIT08)
          R = IBTAND(IBTSHR(IBUF(I),  IFIELD),IBIT08)
-         S = IBTAND(       IBUF(I)    ,IBIT08)
+         S = IBTAND(       IBUF(I)          ,IBIT08)
          PVTRA(P,Q,R,S) =      BUF(I)
          PVTRA(P,Q,S,R) = SGN*BUF(I)
          PVTRA(Q,P,R,S) = SGN*BUF(I)

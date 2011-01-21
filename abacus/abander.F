@@ -386,7 +386,8 @@ C
      &   'Undefined string in WAVTP :', STRING
          CALL QUIT('Wrong string in WAVTP')
       END IF
-      write(lupri,*) 'WAVE FUNCTION TYPE ', STRING,' : ', WAVTP
+!     write(lupri,'(2A,T30,A,L10)')
+!    &   'WAVE FUNCTION TYPE ', STRING,' : ', WAVTP
 C
       RETURN
       END

@@ -2053,24 +2053,27 @@ C                 Basic operation LL moves coordinate M
             II = II + 1
  110     CONTINUE
  100  CONTINUE
+
 C*****************************************************************************
-C       Set various basis parameters
+C     Set various basis parameters
 C*****************************************************************************
       CALL BASPAR(NSYMOP)
+
 C*****************************************************************************
-C       Process nuclear data
+C     Process nuclear data
 C*****************************************************************************
       CALL NUCPRO(WORK,LWORK)
+
 C*****************************************************************************
-C       Process orbital data for large components
+C     Process orbital data for large components
 C*****************************************************************************
-      LCOMP  = 1
       ISHELL = 0
       IPRIM  = 0
       IPRIMD = 0
       IORB   = 0
       IORBD  = 0
 
+      LCOMP  = 1
       CALL ORBPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
      &            NRC(1,1),SEG(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
@@ -2098,8 +2101,8 @@ C
 C*****************************************************************************
 C       Process orbital data for small components or Huckel
 C*****************************************************************************
-      LCOMP = 2
 
+      LCOMP = 2
       CALL ORBPRO(NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
      &            NRC(1,2),SEG(1,2),
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
@@ -2109,19 +2112,14 @@ C*****************************************************************************
          IF (ISHELL .GT. MXSHEL) GOTO 5040
          IF (IORBD  .GT. MXCORB) GOTO 5050
          IF (IPRIMD .GT. MXPRIM) GOTO 5060
-         NSMLSH = ISHELL - NLRGSH
+         NSMLSH = ISHELL - NLRGSH ! really "NHUCSH", reusing small comp. variable from Dirac
          NORBS  = IORB
-         NSMALL = IORBD - NLARGE
-         NPSML  = IPRIMD - NPLRG
-         NPSHEL = IPRIM - NPLRG
+         NSMALL = IORBD  - NLARGE ! really "NHUCBA", reusing small comp. variable from Dirac
+         NPSML  = IPRIMD - NPLRG  ! really "NPHUC ", reusing small comp. variable from Dirac
 C
          KMAX   = NLRGSH
          NBASIS = NLARGE
          NPBAS  = NPLRG
-C
-         NHUCSH = NSMLSH
-         NHUCBA = NSMALL
-         NHUCNP = NPSML
 C
       ELSE
          KMAX   = ISHELL
@@ -2137,7 +2135,6 @@ C
          NSMALL = NBASIS - NLARGE
          NPBAS  = IPRIMD
          IF (NPBAS .GT. MXPRIM)  GOTO 5020
-         NPSHEL  = IPRIM
          NPSML   = IPRIMD - NPLRG
       END IF
 C*****************************************************************************
@@ -2150,26 +2147,27 @@ C*****************************************************************************
      &               ALPHA(1,1,3),CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
      &               KATOM,KANG,KBLOCK,KPRIM,
      &               ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-         NAUXSH = ISHELL - NSMLSH - NLRGSH -1
-         NAUX   = IORBD  - NLARGE - NSMALL
-         NORBAUX  = IORB
-         NPAUX  = IPRIMD - NPLRG - NPSML-1
-         NPAUXSH  = IPRIM - NPSHEL - NPLSH -1
+         NAUXSH    = ISHELL - NSMLSH - NLRGSH - 1
+         NAUX      = IORBD  - NLARGE - NSMALL
+         NORBAUX   = IORB
+         NPAUX     = IPRIMD - NPLRG  - NPSML  - 1
          KMAXAUX   = NAUXSH
          NBASISAUX = NAUX
          NPBASAUX  = NPAUX
-         KMAXTOT = ISHELL
+         KMAXTOT   = ISHELL
       ELSE
-         NAUXSH = 0
-         NAUX   = 0 
-         NORBAUX  = 0
-         NPAUX  = 0 
-         NPAUXSH  = 0 
+         NAUXSH    = 0
+         NAUX      = 0 
+         NORBAUX   = 0
+         NPAUX     = 0 
          KMAXAUX   = 0 
          NBASISAUX = 0 
          NPBASAUX  = 0 
-         KMAXTOT = KMAX  
+         KMAXTOT   = KMAX  
       END IF
+
+      NPSHEL = IPRIM ! total number of primitive shells
+
 CNECgh980808
       NODD = 1 - MOD(NBASIS,2)
 C
@@ -4870,9 +4868,9 @@ C
             CALL HEADER('Transformation from rotational cartesian '//
      &                  'to symmetry coordinates',-1)
          END IF
-         DO 200 ISYM = 1, NCOOR
-            WRITE (LUPRI,'(9F6.2)') (CSTRA(ISYM,J),J=1,NCOOR)
- 200     CONTINUE
+         DO ISYM = 1, NCOOR
+            WRITE (LUPRI,'(10F6.2)') (CSTRA(ISYM,J),J=1,NCOOR)
+         END DO
       END IF
 C
 C     Inverted matrix
@@ -4893,6 +4891,14 @@ C
             SCTRA(IROW,ICOL) = SCTRA(IROW,ICOL)/SUM1
   250    CONTINUE
   230 CONTINUE
+C
+      IF (IPRINT .GE. 20) THEN
+         CALL HEADER(
+     &      'The inverted matrix: symmetry to Cartesian',-1)
+         DO ISYM = 1, NCOOR
+            WRITE (LUPRI,'(10F6.2)') (CSTRA(ISYM,J),J=1,NCOOR)
+         END DO
+      END IF
 C
       RETURN
       END
@@ -5402,14 +5408,14 @@ C
       WRITE(LUPRI,*) 'namdep',(namdep(i),i=1,nucdep)
       WRITE(LUPRI,*) 'namdpx',(namdpx(i),i=1,nucdep)
       call header('priexp',-1)
-      call output(priexp,1,1,1,mxprim,1,mxprim,1,lupri)
+      call output(priexp,1,1,1,npshel,1,mxprim,-1,lupri)
       call header('priccf',-1)
-      call output(priccf,1,mxprim,1,mxcont,mxprim,mxcont,1,lupri)
+      call output(priccf,1,npshel,1,mxcont,mxprim,mxcont,-1,lupri)
       call header('pricrx',-1)
-      call output(pricrx,1,mxprim,1,3,mxprim,3,1,lupri)
+      call output(pricrx,1,npshel,1,3,mxprim,3,1,-lupri)
       WRITE(LUPRI,*) ' kmax ', kmax
       call header('cent',-1)
-      call output(cent,1,kmax,1,3,kmax,3,1,lupri)
+      call output(cent,1,kmax,1,3,mxshel,3,1,lupri)
       WRITE(LUPRI,*) ' nhkt ',(nhkt(i),i=1,kmax)
       WRITE(LUPRI,*) ' khkt ',(khkt(i),i=1,kmax)
       WRITE(LUPRI,*) ' kckt ',(kckt(i),i=1,kmax)

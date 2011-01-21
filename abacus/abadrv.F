@@ -978,41 +978,40 @@ C
      *         ' Keyword ',WORD,' not recognized in ABAINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in ABAINP.')
-  101    CONTINUE
+
+  101    CONTINUE !        .PRINT
             READ (LUCMD,*) IPRDEF
             GO TO 100
-  102    CONTINUE
+  102    CONTINUE !        .MOLGRA
             MOLGRD = .TRUE.
             GRDINP = .TRUE.
             GO TO 100
-  103    CONTINUE
+  103    CONTINUE !        .SELECT
             READ (LUCMD,*) NPERT
             READ (LUCMD, *) (IPOINT(I),I=1,NPERT)
             CALL HEADER('In this run only the following '//
      *                  'perturbations are considered:',1)
-            WRITE (LUPRI,'(1X,10I5)') (IPOINT(I), I = 1, NPERT)
+            WRITE (LUPRI,'(5I5,5X,5I5)') (IPOINT(I), I = 1, NPERT)
             WRITE (LUPRI,'()')
-            DO 1030 I = 1,3*MXCENT
-               DOPERT(I,1) = .FALSE.
- 1030       CONTINUE
-            DO 1031 I = 1, NPERT
+            DOPERT(:,1) = .FALSE.
+            DO I = 1, NPERT
                DOPERT(IPOINT(I),1) = .TRUE.
- 1031       CONTINUE
+            END DO
             GO TO 100
-  104    CONTINUE
+  104    CONTINUE !        .DIPTRA
             DIPDER = .TRUE.
             GO TO 100
-  105    CONTINUE
+  105    CONTINUE !        .POLARI
             POLAR = .TRUE.
             GO TO 100
-  106    CONTINUE
+  106    CONTINUE !        .MOLHES
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
             GO TO 100
-  107    CONTINUE
+  107    CONTINUE !        .INPTES
             TSTINP = .TRUE.
             GO TO 100
-  108    CONTINUE
+  108    CONTINUE !        .VIBANA
             VIB    = .TRUE.
             IF (IWKTYP .EQ. 6) THEN
                MOLGRD = .TRUE.
@@ -1024,7 +1023,7 @@ C
             END IF
             IF (MOLHES) DIPDER = .TRUE.
             GO TO 100
-  109    CONTINUE
+  109    CONTINUE !        .RESTAR
             RESTAR = .TRUE.
             READ (LUCMD,'(A12)') REWORD
             CALL UPCASE(REWORD)
@@ -1042,48 +1041,46 @@ C
                END IF
             END IF
          GO TO 100
-  110    CONTINUE
+  110    CONTINUE !        .OPTROT
             OPTROT = .TRUE.
             ABALNR = .TRUE.
          GO TO 100
-  111    CONTINUE
+  111    CONTINUE !        .LINEAR
             VIB    = .TRUE.
             LINCPL = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .FALSE.
          GO TO 100
-  112    CONTINUE
+  112    CONTINUE !        .REPS  
             READ (LUCMD,*) NREPS
             READ (LUCMD,*) (IDOSYM(I),I=1,NREPS)
-            DO 1120 ISYM = 1, 8
-               DOSYM(ISYM) = .FALSE.
- 1120       CONTINUE
-            DO 1121 ISYM = 1, NREPS
+            DOSYM(:) = .FALSE.
+            DO ISYM = 1, NREPS
                DOSYM(IDOSYM(ISYM)) = .TRUE.
- 1121       CONTINUE
+            END DO
             INPSYM = INPSYM + 1
          GO TO 100
-  113    CONTINUE
+  113    CONTINUE !        .NUMHES
             NUMHES = .TRUE.
          GO TO 100
-  114    CONTINUE
+  114    CONTINUE !        .POPANA
             POPULA = .TRUE.
             DIPDER = .TRUE.
             POLAR  = .TRUE.
          GO TO 100
-  115    CONTINUE
+  115    CONTINUE !        .OECD
             OECD   = .TRUE.
             NOCMC  = .TRUE.
             ECD    = .TRUE.
             DOEXCI = .TRUE.
          GO TO 100
-  116    CONTINUE
+  116    CONTINUE !        .EXCITA
             DOEXCI = .TRUE.
          GO TO 100
-  117    CONTINUE
+  117    CONTINUE !        .SHIELD
             SHIELD = .TRUE.
          GO TO 100
-  118    CONTINUE
+  118    CONTINUE !        .VCD
             VCD    = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
@@ -1091,7 +1088,7 @@ C
             VIB    = .TRUE.
             NOCMC  = .TRUE.
          GO TO 100
-  119    CONTINUE
+  119    CONTINUE !        .MAGNET
             MAGSUS = .TRUE.
             MOLGFA = .TRUE.
          GO TO 100
@@ -1456,7 +1453,7 @@ C
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
       WRITE (LUPRI,'(A,I5/)') ' Default print level:    ',IPRDEF
-      IF (TSTINP) WRITE (LUPRI,'(/A/)')  ' Input test run only '
+      IF (TSTINP) WRITE (LUPRI,'(/A/)')  ' *** Input test run only ***'
       IF (MOLGRD) WRITE (LUPRI,'(5X,A)') ' The molecular gradient'
       IF (MOLHES) WRITE (LUPRI,'(5X,A)') ' The molecular Hessian'
       IF (DOWALK) WRITE (LUPRI,'(5X,A)') ' Geometry optimization'
