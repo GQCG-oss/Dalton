@@ -1322,7 +1322,7 @@ C
 C  /* Deck iweylf */
       FUNCTION IWEYLF(NOPEN,MULTS)
 C
-C NUMBER OF CSF'S WITH NOPEN ORBITALS AND TOTAL MULTIPLICITY
+C NUMBER OF CSF:S WITH NOPEN ORBITALS AND TOTAL MULTIPLICITY
 C MULTS ACCORDING TO WEYLS FORMULAE
 C
 C     (2S+1)/(NOPEN+1) * BION(NOPEN+1/0.5NOPEN-S)
@@ -1396,6 +1396,7 @@ C D  CONTAIN NEW CONFIGURATION TRIAL VECTOR (can use the same
 C                                   locations as xvec,res,or diag)
 C
 #include <implicit.h>
+#include <priunit.h>
 C
 #include <phpinf.h>
 C
@@ -1403,6 +1404,10 @@ C
 C
       DIMENSION D(*),XVEC(*),RES(*),DIAG(*),WRK(*)
 C
+      IF (IPRPHP .GE. 50) THEN
+         WRITE(LUPRI,*) 'NEWCI: OLSEN =',OLSEN
+         WRITE(LUPRI,*) 'NEWCI: ENER  =',ENER
+      END IF
       KFREE = 1
       LFREE = LWRK
       IF (OLSEN) THEN
@@ -1538,7 +1543,7 @@ C
 C
       IF ( ICCSF .EQ. 0 ) THEN
 C     IF ( determinants ) THEN
-C     980820-hjaaj: CSF's only for symm. LSYM in this version
+C     980820-hjaaj: CSFs only for symm. LSYM in this version
          IHSYM = 1
 C        ... PHP matrix is symmetric
          PSIGN = IPSIGN
