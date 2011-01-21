@@ -172,7 +172,7 @@ C
 c Jeppe Olsen
 #include <implicit.h>
 #include <priunit.h>
-      INTEGER ADD
+      INTEGER   ADD
       DIMENSION IABDET(NOPEN,*),IABUPP(NOPEN,*)
       DIMENSION IWORK(*)
 C
@@ -629,7 +629,7 @@ C
 #include <strnum.h>
 #include <inforb.h>
       DIMENSION IASTR(*),IBSTR(*),XNDXCI(*)
-      INTEGER ORBSYM(2)
+      INTEGER   ORBSYM(*)
 C
       IABNUM = IABNUS(IASTR,IBSTR,NAEL,NBEL,XNDXCI(KCOFF),MULD2H,
      &                XNDXCI(KIPNSA),XNDXCI(KIPNSB),XNDXCI(KZA),
@@ -1683,20 +1683,22 @@ c
 c
       IF( INVCOR .EQ. 0 ) THEN
 c (H0 - E ) **(-1) * G , store in D
-C       SUBROUTINE GPRCTV(DIAG,VECIN,VECUT,NVAR,NPRDIM,IPNTR,
-C    &                    PEIGVL,PEIGVC,SHIFT,WORK,NTEST)
-        CALL GPRCTV(DIAG,G,D,NVAR,NPRDIM,IPNTR,PEIGVL,PEIGVC,
-     &              -E,WORK,XDUMMY,NTEST)
+C       CALL GPRCTV(DIAG,VECIN,VECUT,NVAR,NPRDIM,IPNTR,
+C    &              PEIGVL,PEIGVC,SHIFT,WORK,NTEST)
+        CALL GPRCTV(DIAG,G,D,NVAR,NPRDIM,IPNTR,
+     &              PEIGVL,PEIGVC,-E,WORK,XDUMMY,NTEST)
         IF(NTEST.GE.50) THEN
           WRITE(LUPRI,*) ' Information from NEWDIR'
           WRITE(LUPRI,*) ' ======================='
           WRITE(LUPRI,*) ' New direction = (H0 - E) **(-1) * RESIDUAL'
+          WRITE(LUPRI,*) ' E = ',E
           CALL WRTMAT(D,1,NVAR,1,NVAR,0)
         END IF
       ELSE
         IF(NTEST.GT.5) THEN
           WRITE(LUPRI,*) ' Information from NEWDIR'
           WRITE(LUPRI,*) ' ======================='
+          WRITE(LUPRI,*) ' E = ',E
         END IF
 c (H0 - E ) **(-1) * G , store in G
         CALL GPRCTV(DIAG,G,G,NVAR,NPRDIM,IPNTR,PEIGVL,PEIGVC,
@@ -1830,6 +1832,8 @@ c
 C
       IF( NTEST .GE. 50 ) THEN
         WRITE(LUPRI,*) ' OUTPUT FROM SBINTV, VECTOR IN GATHERED FORM '
+        write(lupri,*) ' Shift =',SHIFT
+        write(lupri,*) ' INDEX =',(INDEX(I),I=1,NSBDIM)
         CALL WRTMAT(X1,1,NSBDIM,1,NSBDIM,0)
       END IF
 C
@@ -4103,7 +4107,7 @@ c     NRFTP(*) : number of strings in R per type of R
 c     NTERM :  number of strings in L and R
 c     IBRFTP : First string in R of given type
 c
-c     Jeppe Olsen , Sept '89
+c     Jeppe Olsen , Sept 1989
 c
 #include <implicit.h>
 c
@@ -4217,7 +4221,7 @@ c         should be be performed by proper arguments.
 c     3 : Full string number is defined relative to first
 c         string in symmetry block.
 c
-c     Jeppe Olsen , sept '89
+c     Jeppe Olsen , sept 1989
 c
 c Direct access of integrals version
 c
@@ -4536,8 +4540,8 @@ c NRFTP(*) : number of strings in R per type of R
 c NTERM :  number of strings in L and R
 c IBRFTP : First string in R of given type
 c
-c Jeppe Olsen , Sept '89 , LRFEX5 version july 1990
-c               Sept '90 , ADDON added
+c Jeppe Olsen , Sept 1989 , LRFEX5 version july 1990
+c               Sept 1990 , ADDON added
 c
 #include <implicit.h>
       INTEGER R
@@ -4641,7 +4645,7 @@ c LSTRIN : NUMBER OF STRINGS WITH IORB OCCUPIED
 c ISCAT(I) : EXPANDED NUMBER OF STRING I WITH IORB OCCUPIED
 c NSCPTP   : Number of strings on ISCAT per type
 c
-c JEPPE OLSEN , SLC, DEC '89, Revised July 1990
+c JEPPE OLSEN , SLC, DEC 1989, Revised July 1990
 c
 #include <implicit.h>
 #include <priunit.h>
@@ -4700,7 +4704,7 @@ c LSTRIN : NUMBER OF STRINGS WITH IORB OCCUPIED
 c ISCAT(I) : EXPANDED NUMBER OF STRING I WITH IORB OCCUPIED
 c NSCPTP   : Number of strings on ISCAT per type
 c
-c JEPPE OLSEN , SLC, DEC '89, Revised July 1990
+c JEPPE OLSEN , SLC, DEC 1989, Revised July 1990
 c                                     Sept. 1990 ( Addon added
 c
 #include <implicit.h>
@@ -5012,7 +5016,7 @@ c LSTRIN : NUMBER OF STRINGS WITH IORB OCCUPIED
 c ISCAT(I) : EXPANDED NUMBER OF STRING I WITH IORB OCCUPIED
 c NSCPTP   : Number of strings on ISCAT per type
 c
-c JEPPE OLSEN , SLC, DEC '89, Revised July 1990
+c JEPPE OLSEN , SLC, DEC 1989, Revised July 1990
 c
 #include <implicit.h>
 #include <priunit.h>
@@ -5348,8 +5352,8 @@ C
 #include <maxash.h>
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
      &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
-      INTEGER R,DISSYM(*),SXSTSM(NSMSX,*)
-      DIMENSION  NSSO(NTYPE,*),ISSO(NTYPE,*)
+      INTEGER   R,DISSYM(*),SXSTSM(NSMSX,*)
+      DIMENSION NSSO(NTYPE,*),ISSO(NTYPE,*)
       DIMENSION ITO(*),IIJ(*),ITYPST(*),
      &          IEXPSM(NSMSX+1,*)
       DIMENSION L(*),R(*),SIGN(*),NLFTP(*),NRFTP(*),IBRFTP(*),
@@ -5671,9 +5675,9 @@ c.Input string information
       DIMENSION ISSOB(NOCTPB,*),NSSOB(NOCTPB,*)
       DIMENSION ILOCOC(NOCTPA,NOCTPB),IROCOC(NOCTPA,NOCTPB)
       INTEGER   DISSYM(*),SXSTSM(NSMSX,NSMST)
-      INTEGER ICREA(*),IANNI(*),ITPFOB(*)
-      INTEGER  ILSMOS(*),IRSMOS(*)
-      INTEGER ILTSOB(*),ISTLOB(*)
+      INTEGER   ICREA(*),IANNI(*),ITPFOB(*)
+      INTEGER   ILSMOS(*),IRSMOS(*)
+      INTEGER   ILTSOB(*),ISTLOB(*)
 c
 c. Detailed string information for lower level routines
       DIMENSION XNDXCI(*)
@@ -5689,13 +5693,13 @@ c. Scratch blocks
       DIMENSION ILTFRT(MXPTP),IBRFTP(MXPTP)
       DIMENSION RHOW(*)
 c. Largest number of strings of a given symmetry
-      INTEGER L(MXPST),R(MXPST)
-      DIMENSION  SIGNAR(MXPST),SGNAR2(MXPST)
-      INTEGER IIJSX(MXPST),ITOSX(MXPST)
+      INTEGER   L(MXPST),R(MXPST)
+      DIMENSION SIGNAR(MXPST),SGNAR2(MXPST)
+      INTEGER   IIJSX(MXPST),ITOSX(MXPST)
       DIMENSION VEC1(MXPST),SCR1(MXPST)
-      INTEGER NSXPTP(MXPTP)
-      INTEGER KOC(2*MXPST )
-      INTEGER NFTPK(MXPTP)
+      INTEGER   NSXPTP(MXPTP)
+      INTEGER   KOC(2*MXPST )
+      INTEGER   NFTPK(MXPTP)
 c
       DIMENSION RHO1A(MAXASH ** 2),RHO1B(MAXASH ** 2)
       DIMENSION RHO2A(MAXASH ** 2),RHO2B(MAXASH ** 2)
