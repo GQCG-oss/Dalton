@@ -114,7 +114,6 @@ C
 #include <dftcom.h>
 #include <expopt.h>
 C
-#include <sdpre.h>
 #include <ibtfun.h>
 C
       DO IREPA = 0, MAXREP
@@ -177,7 +176,7 @@ C
                      L = LVALUA(ICOMPA)
                      M = MVALUA(ICOMPA)
                      N = NVALUA(ICOMPA)
-                     C1 = (D2*SDPRE(L+M+N) + D3)/(D4*ALPHA) - PA2
+                     C1 = (D2*(L+M+N) + D3)/(D4*ALPHA) - PA2
                      CI = (PAX**L)*(PAY**M)*(PAZ**N)*C1*GA
                      IF (SPHRA) THEN
                         IOFF = ISPADR(NHKTA) + (ICOMPA-1)*KHKTA - 1 
@@ -198,24 +197,24 @@ C
                         L = LVALUA(ICOMPA)
                         M = MVALUA(ICOMPA)
                         N = NVALUA(ICOMPA)
-                        TR = GA*((D2*SDPRE(L+M+N) + D3)/(D4*ALPHA)-PA2)
+                        TR = GA*((D2*(L+M+N) + D3)/(D4*ALPHA)-PA2)
                         TS = -D2*(ALPHA*TR + GA)
                         IF (L.EQ.0) THEN
                            TX = TS*PAX*(PAY**M)*(PAZ**N)
                         ELSE
-                           TX = (PX2*TS + SDPRE(L)*TR)
+                           TX = (PX2*TS + L*TR)
      &                         *(PAX**(L-1))*(PAY**M)*(PAZ**N)
                         END IF
                         IF (M.EQ.0) THEN
                            TY = TS*(PAX**L)*PAY*(PAZ**N)
                         ELSE
-                           TY = (PY2*TS + SDPRE(M)*TR)
+                           TY = (PY2*TS + M*TR)
      &                         *(PAX**L)*(PAY**(M-1))*(PAZ**N)
                         END IF
                         IF (N.EQ.0) THEN
                            TZ = TS*(PAX**L)*(PAY**M)*PAZ
                         ELSE
-                           TZ = (PZ2*TS + SDPRE(N)*TR)
+                           TZ = (PZ2*TS + N*TR)
      &                         *(PAX**L)*(PAY**M)*(PAZ**(N-1))
                         END IF
                         CI = RHX*TX + RHY*TY + RHZ*TZ

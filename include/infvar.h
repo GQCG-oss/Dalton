@@ -15,7 +15,7 @@ C     JWOPSY = symmetry of orbital rotations
 C     NWOPH  = NWOPT + no. of active-active rotations needed for Hessian
 C     NVARH  = NCONF + NWOPH
 C
-      PARAMETER ( MAXWOP = 200 000 )
+      PARAMETER ( MAXWOP = 200000 )
       COMMON /INFVAR/ NCONF,NWOPT,NVAR,JWOPSY,NWOPH,NVARH,NCDETS,
      &                JWOP(2,MAXWOP)
 C --- end of infvar.h ---

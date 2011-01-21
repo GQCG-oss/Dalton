@@ -152,8 +152,6 @@ C
      &          C2(NORBT),DMAGAO(NBAST), HES(NOCCT,NVIRT,NOCCT,NVIRT), 
      &          RHG(3), WORK(LWORK), VX(DERVS1), COR(3)
 C
-#include <sdpre.h>
-C
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
       IF (IPRINT .GT. 100) THEN
@@ -1523,7 +1521,7 @@ C
 C     Some symmetry ralated things
 C     
 C     GETGA1
-C     JSTA,NUCA,LMNVALUA,SDPRE 
+C     JSTA,NUCA,LMNVALUA
 c     IPTCNT(3*MXCENT,0:7,2)
 C     IPTSYM(MXCORB,0:7)
 C     MULD2H(8,8)

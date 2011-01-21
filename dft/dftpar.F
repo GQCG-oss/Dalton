@@ -451,10 +451,10 @@ C
       CALL MPI_BCAST(PRIEXP,MXPRIM,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
-C     Some symmetry ralated things
+C     Some symmetry related things
 C     
 C     GETGA1
-C     JSTA,NUCA,LMNVALUA,SDPRE 
+C     JSTA,NUCA,LMNVALUA
 c     IPTCNT(3*MXCENT,0:7,2)
 C     IPTSYM(MXCORB,0:7)
 C     MULD2H(8,8)

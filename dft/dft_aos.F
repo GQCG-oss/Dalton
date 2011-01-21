@@ -274,8 +274,6 @@ C
 #include <onecom.h>
 #include <primit.h>
 C
-#include <sdpre.h>
-C
 C     loop over primitives
 C
       GA = D0
@@ -333,11 +331,11 @@ C
                GAY = FY*P0
                GAZ = FZ*P0
                IF(L.GT.0) GAX = GAX
-     &                    + SDPRE(L)*(PAX**(L-1))*(PAY**M)*(PAZ**N)*GA
+     &                    + L*(PAX**(L-1))*(PAY**M)*(PAZ**N)*GA
                IF(M.GT.0) GAY = GAY
-     &                    + SDPRE(M)*(PAX**L)*(PAY**(M-1))*(PAZ**N)*GA
+     &                    + M*(PAX**L)*(PAY**(M-1))*(PAZ**N)*GA
                IF(N.GT.0) GAZ = GAZ
-     &                    + SDPRE(N)*(PAX**L)*(PAY**M)*(PAZ**(N-1))*GA
+     &                    + N*(PAX**L)*(PAY**M)*(PAZ**(N-1))*GA
                IF (SPHRA) THEN
                   CAO (ICOMPA) = GA*P0
                   CAOX(ICOMPA) = GAX
@@ -424,8 +422,6 @@ C
 #include <onecom.h>
 #include <primit.h>
 C
-#include <sdpre.h>
-C
       IF (SPHRA) THEN
          DO I=1,KCKTA
             CAOXX(I) = D0
@@ -452,15 +448,15 @@ C
                PXD = D0
                PYD = D0
                PZD = D0
-               IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PAX**(L-2))
-               IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PAY**(M-2))
-               IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PAZ**(N-2))
+               IF (L.GT.1) PXD = (L*(L-1))*(PAX**(L-2))
+               IF (M.GT.1) PYD = (M*(M-1))*(PAY**(M-2))
+               IF (N.GT.1) PZD = (N*(N-1))*(PAZ**(N-2))
                PXM = D0
                PYM = D0
                PZM = D0
-               IF (L.GT.0) PXM = SDPRE(L)*(PAX**(L-1))
-               IF (M.GT.0) PYM = SDPRE(M)*(PAY**(M-1))
-               IF (N.GT.0) PZM = SDPRE(N)*(PAZ**(N-1))
+               IF (L.GT.0) PXM = L*(PAX**(L-1))
+               IF (M.GT.0) PYM = M*(PAY**(M-1))
+               IF (N.GT.0) PZM = N*(PAZ**(N-1))
                PX0 = PAX**L
                PY0 = PAY**M
                PZ0 = PAZ**N
@@ -469,9 +465,9 @@ C
                PZP = TAPAZ*PZ0
                P000 = PX0*PY0*PZ0 
 C
-               GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000 + PXD*PY0*PZ0
-               GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000 + PX0*PYD*PZ0
-               GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000 + PX0*PY0*PZD
+               GAXX = (TAPAX**2 + TALPH*(2*L+1))*P000 + PXD*PY0*PZ0
+               GAYY = (TAPAY**2 + TALPH*(2*M+1))*P000 + PX0*PYD*PZ0
+               GAZZ = (TAPAZ**2 + TALPH*(2*N+1))*P000 + PX0*PY0*PZD
                GAXY = TAPAX*TAPAY*P000 + (PXP*PYM+PXM*PYP+PXM*PYM)*PZ0
                GAXZ = TAPAX*TAPAZ*P000 + (PXP*PZM+PXM*PZP+PXM*PZM)*PY0
                GAYZ = TAPAY*TAPAZ*P000 + (PYP*PZM+PYM*PZP+PYM*PZM)*PX0
@@ -958,8 +954,6 @@ C
 #include <onecom.h>
 #include <primit.h>
 C
-#include <sdpre.h>
-C
 C     loop over primitives
 C
       DO K = 1, NVCLEN
@@ -1019,9 +1013,9 @@ C
             N = NVALUA(ICOMPA)
             DO K = 1, NVCLEN
                P0(K)  = 1D0
-               GAX(K) = GA(K)*SDPRE(L)
-               GAY(K) = GA(K)*SDPRE(M)
-               GAZ(K) = GA(K)*SDPRE(N)
+               GAX(K) = GA(K)*L
+               GAY(K) = GA(K)*M
+               GAZ(K) = GA(K)*N
             END DO
             IF(L.GT.0) THEN
                DO K = 1, NVCLEN
@@ -1170,8 +1164,6 @@ C
 #include <onecom.h>
 #include <primit.h>
 C
-#include <sdpre.h>
-C
       DO IV = 1, NVCLEN
          IF (SPHRA) THEN
             DO I=1,KCKTA
@@ -1199,15 +1191,15 @@ C
                   PXD = D0
                   PYD = D0
                   PZD = D0
-                  IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PA(1,IV)**(L-2))
-                  IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PA(2,IV)**(M-2))
-                  IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PA(3,IV)**(N-2))
+                  IF (L.GT.1) PXD = (L*(L-1))*(PA(1,IV)**(L-2))
+                  IF (M.GT.1) PYD = (M*(M-1))*(PA(2,IV)**(M-2))
+                  IF (N.GT.1) PZD = (N*(N-1))*(PA(3,IV)**(N-2))
                   PXM = D0
                   PYM = D0
                   PZM = D0
-                  IF (L.GT.0) PXM = SDPRE(L)*(PA(1,IV)**(L-1))
-                  IF (M.GT.0) PYM = SDPRE(M)*(PA(2,IV)**(M-1))
-                  IF (N.GT.0) PZM = SDPRE(N)*(PA(3,IV)**(N-1))
+                  IF (L.GT.0) PXM = L*(PA(1,IV)**(L-1))
+                  IF (M.GT.0) PYM = M*(PA(2,IV)**(M-1))
+                  IF (N.GT.0) PZM = N*(PA(3,IV)**(N-1))
                   PX0 = PA(1,IV)**L
                   PY0 = PA(2,IV)**M
                   PZ0 = PA(3,IV)**N
@@ -1225,9 +1217,9 @@ C      s orbitals
                      GAYZ = TAPAY*TAPAZ
 C      p orbitals
                   ELSE IF (NHKTA.EQ.2) THEN
-                     GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
-                     GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
-                     GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
+                     GAXX = (TAPAX**2 + TALPH*(2*L+1))*P000
+                     GAYY = (TAPAY**2 + TALPH*(2*M+1))*P000
+                     GAZZ = (TAPAZ**2 + TALPH*(2*N+1))*P000
 
                      GAXY = TAPAX*TAPAY*P000
      &                    + (PXP*PYM + PXM*PYP)*PZ0
@@ -1237,11 +1229,11 @@ C      p orbitals
      &                    + (PYP*PZM + PYM*PZP)*PX0
 C      d and higher orbitals
                   ELSE 
-                     GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
+                     GAXX = (TAPAX**2 + TALPH*(2*L+1))*P000
      &                    + PXD*PY0*PZ0
-                     GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
+                     GAYY = (TAPAY**2 + TALPH*(2*M+1))*P000
      &                    + PX0*PYD*PZ0
-                     GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
+                     GAZZ = (TAPAZ**2 + TALPH*(2*N+1))*P000
      &                    + PX0*PY0*PZD
                      GAXY = TAPAX*TAPAY*P000
      &                    + (PXP*PYM+PXM*PYP+PXM*PYM)*PZ0
@@ -1331,7 +1323,6 @@ C
 #include <lmns.h>
 #include <onecom.h>
 #include <primit.h>
-#include <sdpre.h>
 C
       DO IV = 1, NVCLEN
          IF (SPHRA) THEN
@@ -1372,21 +1363,21 @@ C
                   PXT = D0
                   PYT = D0
                   PZT = D0
-                  IF (L.GT.2) PXT=SDPRE(L*(L-1)*(L-2))*(PA(1,IV)**(L-3))
-                  IF (M.GT.2) PYT=SDPRE(M*(M-1)*(M-2))*(PA(2,IV)**(M-3))
-                  IF (N.GT.2) PZT=SDPRE(N*(N-1)*(N-2))*(PA(3,IV)**(N-3))
+                  IF (L.GT.2) PXT=(L*(L-1)*(L-2))*(PA(1,IV)**(L-3))
+                  IF (M.GT.2) PYT=(M*(M-1)*(M-2))*(PA(2,IV)**(M-3))
+                  IF (N.GT.2) PZT=(N*(N-1)*(N-2))*(PA(3,IV)**(N-3))
                   PXD = D0
                   PYD = D0
                   PZD = D0
-                  IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PA(1,IV)**(L-2))
-                  IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PA(2,IV)**(M-2))
-                  IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PA(3,IV)**(N-2))
+                  IF (L.GT.1) PXD = (L*(L-1))*(PA(1,IV)**(L-2))
+                  IF (M.GT.1) PYD = (M*(M-1))*(PA(2,IV)**(M-2))
+                  IF (N.GT.1) PZD = (N*(N-1))*(PA(3,IV)**(N-2))
                   PXM = D0
                   PYM = D0
                   PZM = D0
-                  IF (L.GT.0) PXM = SDPRE(L)*(PA(1,IV)**(L-1))
-                  IF (M.GT.0) PYM = SDPRE(M)*(PA(2,IV)**(M-1))
-                  IF (N.GT.0) PZM = SDPRE(N)*(PA(3,IV)**(N-1))
+                  IF (L.GT.0) PXM = L*(PA(1,IV)**(L-1))
+                  IF (M.GT.0) PYM = M*(PA(2,IV)**(M-1))
+                  IF (N.GT.0) PZM = N*(PA(3,IV)**(N-1))
                   PX0  = PA(1,IV)**L
                   PY0  = PA(2,IV)**M
                   PZ0  = PA(3,IV)**N
@@ -1411,51 +1402,51 @@ C       s orbitals
                   GAXYZ = TAPAX*TAPAY*TAPAZ
 C       p orbitals
                   ELSE IF (NHKTA.EQ.2) THEN
-                  GAXXX = (TAPAX**3 + SDPRE(3*L+3)*TALPH*TAPAX)*P000
+                  GAXXX = (TAPAX**3 + (3*L+3)*TALPH*TAPAX)*P000
      &                  + D3*TALPH*PXM*PY0*PZ0
-                  GAYYY = (TAPAY**3 + SDPRE(3*M+3)*TALPH*TAPAY)*P000
+                  GAYYY = (TAPAY**3 + (3*M+3)*TALPH*TAPAY)*P000
      &                  + D3*TALPH*PYM*PX0*PZ0
-                  GAZZZ = (TAPAZ**3 + SDPRE(3*N+3)*TALPH*TAPAZ)*P000
+                  GAZZZ = (TAPAZ**3 + (3*N+3)*TALPH*TAPAZ)*P000
      &                  + D3*TALPH*PZM*PX0*PY0
                   GAXXY = TAPAX**2*TAPAY*P000 + TAPAX*PXP*PYM*PZ0
-     &                  + SDPRE(2*L+1)*TALPH*PX0*PZ0*PYPM
+     &                  + (2*L+1)*TALPH*PX0*PZ0*PYPM
                   GAXXZ = TAPAX**2*TAPAZ*P000 + TAPAX*PXP*PZM*PY0
-     &                  + SDPRE(2*L+1)*TALPH*PX0*PY0*PZPM
+     &                  + (2*L+1)*TALPH*PX0*PY0*PZPM
                   GAXYY = TAPAX*TAPAY**2*P000 + TAPAY*PYP*PXM*PZ0
-     &                  + SDPRE(2*M+1)*TALPH*PY0*PZ0*PXPM
+     &                  + (2*M+1)*TALPH*PY0*PZ0*PXPM
                   GAXZZ = TAPAX*TAPAZ**2*P000 + TAPAZ*PZP*PXM*PY0
-     &                  + SDPRE(2*N+1)*TALPH*PZ0*PY0*PXPM
+     &                  + (2*N+1)*TALPH*PZ0*PY0*PXPM
                   GAYYZ = TAPAY**2*TAPAZ*P000 + TAPAY*PYP*PZM*PX0
-     &                  + SDPRE(2*M+1)*TALPH*PY0*PX0*PZPM
+     &                  + (2*M+1)*TALPH*PY0*PX0*PZPM
                   GAYZZ = TAPAY*TAPAZ**2*P000 + TAPAZ*PZP*PYM*PX0
-     &                  + SDPRE(2*N+1)*TALPH*PZ0*PX0*PYPM
+     &                  + (2*N+1)*TALPH*PZ0*PX0*PYPM
                   GAXYZ = TAPAX*TAPAY*TAPAZ*P000 + PXM*PYP*PZP
      &                  + PXP*PYM*PZP + PXP*PYP*PZM
 C       d and higher orbitals
                   ELSE  
-                  GAXXX = (TAPAX**3 + SDPRE(3*L+3)*TALPH*TAPAX)*P000
-     &                  + (PXT + SDPRE(3*L)*TALPH*PXM)*PY0*PZ0 
-                  GAYYY = (TAPAY**3 + SDPRE(3*M+3)*TALPH*TAPAY)*P000
-     &                  + (PYT + SDPRE(3*M)*TALPH*PYM)*PX0*PZ0 
-                  GAZZZ = (TAPAZ**3 + SDPRE(3*N+3)*TALPH*TAPAZ)*P000
-     &                  + (PZT + SDPRE(3*N)*TALPH*PZM)*PX0*PY0
+                  GAXXX = (TAPAX**3 + (3*L+3)*TALPH*TAPAX)*P000
+     &                  + (PXT + (3*L)*TALPH*PXM)*PY0*PZ0 
+                  GAYYY = (TAPAY**3 + (3*M+3)*TALPH*TAPAY)*P000
+     &                  + (PYT + (3*M)*TALPH*PYM)*PX0*PZ0 
+                  GAZZZ = (TAPAZ**3 + (3*N+3)*TALPH*TAPAZ)*P000
+     &                  + (PZT + (3*N)*TALPH*PZM)*PX0*PY0
                   GAXXY = TAPAX**2*TAPAY*P000
-     &                  + (PXD + SDPRE(2*L+1)*TALPH*PX0)*PZ0*PYPM
+     &                  + (PXD + (2*L+1)*TALPH*PX0)*PZ0*PYPM
      &                  + PXP*TAPAX*PYM*PZ0
                   GAXXZ = TAPAX**2*TAPAZ*P000
-     &                  + (PXD + SDPRE(2*L+1)*TALPH*PX0)*PY0*PZPM
+     &                  + (PXD + (2*L+1)*TALPH*PX0)*PY0*PZPM
      &                  + PXP*TAPAX*PY0*PZM
                   GAXYY = TAPAX*TAPAY**2*P000
-     &                  + (PYD + SDPRE(2*M+1)*TALPH*PY0)*PZ0*PXPM
+     &                  + (PYD + (2*M+1)*TALPH*PY0)*PZ0*PXPM
      &                  + PYP*TAPAY*PXM*PZ0
                   GAXZZ = TAPAX*TAPAZ**2*P000
-     &                  + (PZD + SDPRE(2*N+1)*TALPH*PZ0)*PY0*PXPM
+     &                  + (PZD + (2*N+1)*TALPH*PZ0)*PY0*PXPM
      &                  + PZP*TAPAZ*PXM*PY0
                   GAYYZ = TAPAY**2*TAPAZ*P000
-     &                  + (PYD + SDPRE(2*M+1)*TALPH*PY0)*PX0*PZPM
+     &                  + (PYD + (2*M+1)*TALPH*PY0)*PX0*PZPM
      &                  + PYP*TAPAY*PZM*PX0
                   GAYZZ = TAPAY*TAPAZ**2*P000
-     &                  + (PZD + SDPRE(2*N+1)*TALPH*PZ0)*PX0*PYPM
+     &                  + (PZD + (2*N+1)*TALPH*PZ0)*PX0*PYPM
      &                  + PZP*TAPAZ*PYM*PX0
                   GAXYZ = TAPAX*TAPAY*TAPAZ*P000
      &                  + PXM*PYM*PZM
