@@ -1160,7 +1160,7 @@ C
          LWRK1  = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('RSPNEX 2',KWRK1-1,LWRK)
 C
-C CONSTRUCT  E[2]*X(I) WHERE X(I) IS THE I'TH
+C CONSTRUCT  E[2]*X(I) WHERE X(I) IS THE I:th
 C EIGENVECTOR AND EIGENVALUE RESPECTIVELY OF THE REDUCED
 C RSP PROBLEM
 C
@@ -1387,10 +1387,10 @@ C
 C              USE DAVIDSON ALGORITHM TO FORM NEW TRIAL VECTORS
 C
                   IF ( QCZNOR .GT. QCYNOR ) THEN
-                     IOFF = 0
+                     IOFF  = 0
                      EXITA =   EXCITA
                   ELSE
-                     IOFF = KZVAR
+                     IOFF  = KZVAR
                      EXITA =  -EXCITA
                   END IF
                   IF ((.NOT.LINEQ).AND.OLSEN) THEN
@@ -1413,9 +1413,9 @@ C
                      CALL RSPEDG(BVECS(KDIAE))
                   END IF
                   CALL NEXCI(OLSEN1,EXITA,KZCONF,BVECS(KCOFF+1),
-     *            BVECS(KCVEC),BVECS(JROFF+IOFF+1),BVECS(KDIAE),IPRRSP,
-     *            BVECS(KTOT),LTOT)
-C                 CALL NEXCI(OLSEN,ENER,NCVAR,D,XVEC,RES,
+     *               BVECS(KCVEC),BVECS(JROFF+IOFF+1),
+     *               BVECS(KDIAE),IPRRSP,BVECS(KTOT),LTOT)
+C                 CALL NEXCI(OLSEN,ENER,NCVAR,D,  XVEC,RES,
 C    &                 DIAG,IPRPHP,WRK,LWRK)
                   KCOFF = KCOFF + KZCONF
                ELSE
@@ -1528,7 +1528,8 @@ C
 C        ORTHOGONALIZE TRIAL VECTORS AND EXAMINE FOR LINEAR DEPENDENCE
 C
          NFIN = NCSIM + NOSIM
-         CALL RSPORT(BVECS,NFIN,(KZRED+NTEST+KOFFTY),IBTYP,
+         NBPREV_here = KZRED + NTEST + KOFFTY
+         CALL RSPORT(BVECS,NFIN,NBPREV_here,IBTYP,
      *               THRLDP,BVECS(KTOT),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
 C
@@ -2244,7 +2245,7 @@ C     Set NBNEW to actual number of new trial vectors
 C
       IF (IBPREV-NBPREV .NE. NBNEW) THEN
          WRITE(LUPRI,'(A,I5,A,I5,A)')
-     &      'RSPORT:',NBNEW - IPREV + NBPREV,' out of',
+     &      'RSPORT:',NBNEW - IBPREV + NBPREV,' out of',
      &       NBNEW,' new trial vectors linear dependent'
       END IF
       NBNEW = IBPREV - NBPREV

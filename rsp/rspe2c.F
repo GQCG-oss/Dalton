@@ -95,12 +95,9 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-C Manu debug
-C     IPRRSP=201
-C Manu debug
 #include <ibndxdef.h>
 C
-      WRITE (LUPRI,'(//A/)') ' Test output requested with .ABSYM'
+      CALL HEADER('Test output requested with .ABSYM',-1)
 C
 C DETERMINE NUMBER OF ORBITAL AND CSF TRIAL VECTORS
 C
@@ -1515,7 +1512,7 @@ C
                END IF
                CALL NEXCI(.FALSE.,WVAL,KZCONF,WRK(ISTBC),DUMMY,
      *                    GD(KGDC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
-               NCSIM  = NCSIM  + 1
+               NCSIM = NCSIM + 1
                ISTBC = ISTBC + KZCONF
             ENDIF
             IF (KZWOPT.GE.1) THEN
@@ -1574,12 +1571,12 @@ C
                WRK(ISTBO-1+I) = WRK(KBOVEC-1+I)
             END DO
          END IF
-         CALL RSPORT(WRK(KBCVEC),NLSIM,(KOFFTY+KZRED+NTSIM),IBTYP,
+         NBPREV_here = KOFFTY + KZRED + NTSYM
+         CALL RSPORT(WRK(KBCVEC),NLSIM,NBPREV_here,IBTYP,
      *               THRLDV,WRK(KWRK1),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
          IF (IPRRSP.GT.80) THEN
-            WRITE(LUPRI,'(/A)')' AFTER RSPORT IN LRST'
-            WRITE(LUPRI,'(/A,I5)')
+            WRITE(LUPRI,'(/A//A,I5)')' AFTER RSPORT IN LRST',
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM=',NLSIM
             DO 3008 I=1+KOFFTY,NLSIM+KOFFTY
                WRITE(LUPRI,'(I5,I10)')I,IBTYP(I)
@@ -2725,8 +2722,10 @@ C
 C
 C     SET UP INITIAL TRIAL VECTORS
 C
-      IF (IPRRSP.GT.15)
-     *   WRITE(LUPRI,*)' LINEQ,RESTPP,ORBSPC',LINEQ,RESTPP,ORBSPC
+      IF (IPRRSP.GT.15) THEN
+         WRITE(LUPRI,*)' LINEQ,RESTPP,ORBSPC',LINEQ,RESTPP,ORBSPC
+         IF (LINEQ) WRITE(LUPRI,*) ' FREQ =',(EIVAL(I),I=1,MAXSIM)
+      END IF
 C
       IF (LINEQ) THEN
          CALL LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
@@ -4199,7 +4198,7 @@ C
 C
 C     NOSEL is activated if we have a converged response vector on file,
 C     but then obviously no residuals. We calculate in this case the
-C     property without the use of Sellers' formula.
+C     property without the use of Sellers formula.
 C
       KREDE  = 1
       KREDS  = KREDE  + MAXRM*MAXRM
@@ -4263,12 +4262,12 @@ C
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      *               WRK(KGD),LWRK1)
          DNORM = DNRM2(KZYVAR,WRK(KGD),1)
+         write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
             CALL HEADER('Gradient vectors in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
+            WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-            DNORM = DNRM2(KZYVAR,WRK(KGD),1)
-            WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM
          END IF
          JFREQ  = 0
          CALL DZERO(WRK(KEIVAL),NFREQ)
@@ -4278,21 +4277,21 @@ C
      &                  BLANK,FREQ(I),D0,KSYMOP,0,THCLR,
      &                  FOUND,CONV,ANTSYM)
             IF (FOUND .AND. CONV) THEN
-               WRITE(LUPRI,'(/A,/A12,A10,/A42)')
+               WRITE(LUPRI,'(/A,/A12,A10,F22.6,/A42)')
      *              ' Converged solution vector already on file',
-     *              LBLLR(KSYMOP,IOP),'freq',
+     *               LBLLR(KSYMOP,IOP),' freq',FREQ(I),
      *              ' -----------------------------------------'
-               WRITE(LUPRI,'(F22.6)') FREQ(I)
             ELSE
-               DO IJ = 0, NFREQ
-                  IF (ABS(WRK(KEIVAL+IJ)-AFRQ) .LT. THRZER .AND.
-     &                 .NOT. AFRQ .LT. THRZER) GOTO 410
+C              ! Remove duplicates, they will cause linear dependency
+               DO IJ = 0, JFREQ-1
+                  IF (ABS(WRK(KEIVAL+IJ)-AFRQ) .LT. THRZER) GOTO 410
                END DO
                WRK(KEIVAL+JFREQ) = FREQ(I)
                JFREQ = JFREQ + 1
             END IF
  410     CONTINUE
          IF (JFREQ .EQ. 0) THEN
+            ! Found converged solution vectors, Sellers formula not possible
             NOSEL = .TRUE.
             GOTO 600
          END IF
@@ -4302,7 +4301,7 @@ C
             WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
      &                      ' is only',DNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
-            DO 450 IFREQ = 1,NFREQ
+            DO 450 IFREQ = 1,JFREQ
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LBLLR(KSYMOP,IOP),
      *                     BLANK,WRK(KEIVAL-1+IFREQ),D0,KSYMOP,0,D0,
      *                     ANTSYM)
@@ -4314,8 +4313,8 @@ C
             GO TO 600
          END IF
 C
-         KEXSIM = NFREQ
-         KEXCNV = NFREQ
+         KEXSIM = JFREQ
+         KEXCNV = JFREQ
 C
          CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               .TRUE.,LBLLR(KSYMOP,IOP),BLANK,WRK(KGD),
@@ -4326,8 +4325,8 @@ C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C                    LINEQ,GD,REDGD,REDE,REDS,
 C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
-         DO 700 IFREQ = 1,NFREQ,MXFREQ
-            NBX = MIN(MXFREQ,(NFREQ+1-IFREQ))
+         DO 700 IFREQ = 1,JFREQ,MXFREQ
+            NBX = MIN(MXFREQ,(JFREQ+1-IFREQ))
             IBOFF = IFREQ - 1
             CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      *                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
@@ -5846,7 +5845,7 @@ C
 C
 C PURPOSE:
 C CALCULATION OF LINEAR POLARIZABILITIES WITHOUT USING
-C SELLERS' FORMULA.
+C SELLERS FORMULA.
 C
 C Modified version of LRHYP, done by K.Ruud on the plane from SLC to SAN
 C on July 1, 2000
