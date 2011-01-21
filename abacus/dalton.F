@@ -314,8 +314,8 @@ C
      &  '(Symmetry handling ABACUS, integral transformation)',
      *'Olav Vahtras,','KTH Stockholm,','Sweden',
      &  '(triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)',
-     *'David J. Wilson,','University of Oslo,','Norway',
-     &  '(DFT Hessian)',
+     *'David J. Wilson,','La Trobe University,','Australia',
+     &  '(DFT Hessian and DFT magnetizabilities)',
      *'Hans Agren,','KTH Stockholm,','Sweden',
      &  '(SIRIUS module, MC-SCRF solvation model)'
 C
