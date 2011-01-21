@@ -1439,8 +1439,6 @@ C
       LOGICAL LOCDBG, TINFO
       PARAMETER (LOCDBG = .FALSE., TINFO = .FALSE.)
 
-      INTEGER*8 IADR
-C
       LOGICAL IOPTVP
 C
 C
@@ -1547,7 +1545,6 @@ C     -------------------------------------------------------
             ICOUNT = ICOUNT + NBAS(ISYM)*NVECD(ISYM)
          ENDDO
          LEN  = ICOUNT
-         IADR = 1
 
          KVECD = KEND1
          KEND2 = KVECD + LEN
@@ -1564,6 +1561,7 @@ C     -------------------------------------------------------
          ENDIF
 
          CALL WOPEN2(LUCCMO,FCCMO,64,0)
+         IADR = 1
          CALL GETWA2(LUCCMO,FCCMO,WORK(KVECD),IADR,LEN)
          CALL WCLOSE2(LUCCMO,FCCMO,'KEEP')
 
