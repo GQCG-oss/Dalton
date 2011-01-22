@@ -1538,7 +1538,7 @@ C
       QTENS(1,3) = QXZ
       QTENS(2,1) = QXY
       QTENS(2,2) = QYY
-      QTENS(2,3) = QXZ
+      QTENS(2,3) = QYZ
       QTENS(3,1) = QXZ
       QTENS(3,2) = QYZ
       QTENS(3,3) = QZZ
