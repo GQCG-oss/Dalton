@@ -3228,9 +3228,9 @@ C     Construct packed inverse response matrix
 
       M = 0
 
-200   DO I = 1, MMCENT
+      DO I = 1, MMCENT
 
-        IF (ZEROAL(I) .EQ. -1) GOTO 200
+        IF (ZEROAL(I) .EQ. -1) CYCLE
 
 C       Isotropic polarizability is easy to invert
         IF ((IPOLTP .EQ. 1) .AND. (CONMAT)) THEN
@@ -3250,18 +3250,29 @@ C       Anisotropic polarizability inversion
 
 C         Factorization
           CALL DPPTRF('L', 3, AMATS, INFO)
-          IF (INFO .LT. 0) THEN
+          IF (INFO .NE. 0) THEN
+            DIST1 = 1E50
+            DO O = 1, NUCIND
+              DIST2 = SQRT((CORD(1,O)-MMCORD(1,I))**2 +
+     *                     (CORD(2,O)-MMCORD(2,I))**2 +
+     *                     (CORD(3,O)-MMCORD(3,I))**2)
+              IF (DIST2 .LT. DIST1) THEN
+                CLDIST = DIST2
+                DIST1 = DIST2
+              END IF
+            END DO
+            CLDIST = CLDIST*0.5291772108
             WRITE(LUPRI,*) ' '
-            WRITE(LUPRI,*) 'WARNING: Non-positive-definite
-     & polarizability at site ', I
+            WRITE(LUPRI,*) 'WARNING: problems with
+     & polarizability at site:', I
+            WRITE(LUPRI,*) 'Distance to closest QM nucleus is (Å):',
+     & CLDIST
             WRITE(LUPRI,*) 'Polarizability (xx, xy, xz, yy, yz, zz):'
             DO K = 1, 6
               WRITE(LUPRI,*) POLMM(K,I)
             END DO
             WRITE(LUPRI,*) 'Skipping the offending polarizability!'
-            GOTO 200
-          ELSE IF (INFO .GT. 0) THEN
-            CALL QUIT('Error during factorization of polarizability!')
+            CYCLE
           END IF
 
 C         Inversion
@@ -3272,8 +3283,8 @@ C         Inversion
         ENDIF
 
         DO L = 3, 1, -1
-300       DO J = I, MMCENT
-            IF (ZEROAL(J) .EQ. -1) GOTO 300
+          DO J = I, MMCENT
+            IF (ZEROAL(J) .EQ. -1) CYCLE
             IF (J .EQ. I) THEN
               IF (L .EQ. 3) THEN
                 DO K = 1, L
@@ -3298,7 +3309,7 @@ C         Inversion
 
               IF (R .GT. RCUTMM) THEN
                 M = M + 3
-                GOTO 300
+                CYCLE
               ENDIF
 
               EXCENT = .FALSE.
