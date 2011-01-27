@@ -3251,11 +3251,11 @@ C       Anisotropic polarizability inversion
 C         Factorization
           CALL DPPTRF('L', 3, AMATS, INFO)
           IF (INFO .NE. 0) THEN
-            DIST1 = 1E50
-            DO O = 1, NUCIND
-              DIST2 = SQRT((CORD(1,O)-MMCORD(1,I))**2 +
-     *                     (CORD(2,O)-MMCORD(2,I))**2 +
-     *                     (CORD(3,O)-MMCORD(3,I))**2)
+            DIST1 = 1.0D50
+            DO K = 1, NUCIND
+              DIST2 = SQRT((CORD(1,K)-MMCORD(1,I))**2 +
+     *                     (CORD(2,K)-MMCORD(2,I))**2 +
+     *                     (CORD(3,K)-MMCORD(3,I))**2)
               IF (DIST2 .LT. DIST1) THEN
                 CLDIST = DIST2
                 DIST1 = DIST2
