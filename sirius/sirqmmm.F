@@ -3212,9 +3212,11 @@ C
       DOUBLE PRECISION AMATS
       DIMENSION AMATS(6)
       LOGICAL EXCENT
-      INTEGER POLDIM
-      DOUBLE PRECISION INVMAT
+      INTEGER POLDIM, IPVT
+      DOUBLE PRECISION INVMAT, WRKV
       DIMENSION INVMAT(3*POLDIM*(3*POLDIM+1)/2)
+      DIMENSION IPVT(3)
+      DIMENSION WRKV(3)
 
       PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
@@ -3249,7 +3251,7 @@ C       Anisotropic polarizability inversion
           AMATS(6) = POLMM(6,I)
 
 C         Factorization
-          CALL DPPTRF('L', 3, AMATS, INFO)
+          CALL DSPTRF('L', 3, AMATS, IPVT, INFO)
           IF (INFO .NE. 0) THEN
             DIST1 = 1.0D50
             DO K = 1, NUCIND
@@ -3271,12 +3273,11 @@ C         Factorization
             DO K = 1, 6
               WRITE(LUPRI,*) POLMM(K,I)
             END DO
-            WRITE(LUPRI,*) 'Skipping the offending polarizability!'
-            CYCLE
+            CALL QUIT('Error during factorization of polarizability!')
           END IF
 
 C         Inversion
-          CALL DPPTRI('L', 3, AMATS, INFO)
+          CALL DSPTRI('L', 3, AMATS, IPVT, WRKV, INFO)
           IF (INFO .NE. 0) THEN
             CALL QUIT('Error during inversion of local polarizability')
           END IF
