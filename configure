@@ -212,7 +212,7 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort pgf90 gfortran'
+              complist='ifort pgf90 pgf95 gfortran'
               ccmplist='icc ecc pgcc gcc';;
     hp)       liblist='libblas.a libveclib.a'
               complist='f90 fort77 f77'
