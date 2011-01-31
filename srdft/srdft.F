@@ -483,7 +483,6 @@ C
       CHARACTER*16 QUADNAME
 C
 #include <chrnos.h>
-#include <sdpre.h>
 C
 CFRAN DEBUG
       WRITE(LUPRI,*) 'SRDFT1: entering, ND_SIM=',ND_SIM  !JT
@@ -1184,7 +1183,6 @@ C
       CHARACTER*16 QUADNAME
 C
 #include <chrnos.h>
-#include <sdpre.h>
 C
 C     =============================
 C     Open file for dumping density

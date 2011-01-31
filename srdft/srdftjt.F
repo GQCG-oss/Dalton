@@ -76,7 +76,6 @@ C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
 C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
       CHARACTER*16 QUADNAME
-#include <sdpre.h>
 
 #ifdef SRDFT_DEBUG
 !     Debug

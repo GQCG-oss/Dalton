@@ -174,7 +174,6 @@ C
       CHARACTER*16 QUADNAME
 C
 #include <chrnos.h>
-#include <sdpre.h>
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
       QUADNAME='                '

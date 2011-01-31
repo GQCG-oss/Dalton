@@ -259,7 +259,6 @@ CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
 C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
 
-#include <sdpre.h>
 #include <ibtfun.h>
 
 C
@@ -465,7 +464,7 @@ CVT         NTOTAL = NTOTAL + IPT
          END IF
          IF(NDEG.GT.0) THEN
 C          Scale weights with multiplicity of center
-           FAC = SDPRE(NDEG) 
+           FAC = NDEG 
            CALL DSCAL(NTHIS,FAC,WT8,1)
          ENDIF
          NTHAT = NTHIS
@@ -932,8 +931,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
-#include <sdpre.h>
-
       J = 0
       DO I = 1, NPOINT
          NDEG = MLTPNT(X(I),Y(I),Z(I))
@@ -942,7 +939,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
             X(J) = X(I)
             Y(J) = Y(I)
             Z(J) = Z(I)
-            WT(J) = SDPRE(NDEG)*WT(I) 
+            WT(J) = NDEG*WT(I) 
          END IF
       END DO
       KPOINT = J
