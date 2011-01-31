@@ -1027,6 +1027,16 @@ case "$WHICH" in
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict"
                       [ $WHICH = "cygwin" ] && copt=${copt}" -U__STRICT_ANSI__";;
              esac
+             if [ $bit = "64" ]; then
+               cpp="${cpp} -DVAR_INT64"
+               opt="$opt -i8"
+               safe_opt="$safe_opt -i8"
+               $ECHO "INFO: Compiling with 64-bit integers."
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
+             else
+               $ECHO "INFO: Compiling with 32-bit integers."
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 32-bit integers!!!\n"
+             fi
              #LIB="$LIB"
              ;;
           pgf90)
@@ -1063,6 +1073,7 @@ case "$WHICH" in
              if [ $bit = "64" ]; then
                cpp="${cpp} -DVAR_INT64"
                opt="$opt -fdefault-integer-8"
+               safe_opt="$safe_opt -fdefault-integer-8"
                $ECHO "INFO: Compiling with 64-bit integers."
                $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
              else
