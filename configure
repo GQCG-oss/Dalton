@@ -231,8 +231,11 @@ fi
 # If one wants 32-bit code on a 64-bit machine, just answer 'n' to
 # the question.
 #
-$ECHO "\nNote that 64-bit integers are desirable for Cholesky and very
-large scale CI, otherwise the most importat effect is that some files will be bigger.\n"
+$ECHO "\nNote that 64-bit integers are desirable for Cholesky and very large
+scale CI, otherwise the most important effect is that some files will be bigger.
+
+If you choose 64-bit integers, be careful that any system library
+routines (incl. MPI) also use 64-bit integers!\n"
 
 if [ $WHICH = 'iris4d' ]; then
     if [ $opsys = 'IRIX64' ]; then
@@ -292,7 +295,7 @@ if [ "$WHICH" = "cygwin" ]; then
    $ECHO "Parallel MPI version not implemented for cygwin"
    answer="n"
 else
-   get_yes_or_no 'Do you want to install the program in a parallel MPI version?' n
+   get_yes_or_no 'Do you want to install the program in a parallel MPI version?' y
 fi
 
 if [ "$answer" = "y" ]; then
@@ -620,12 +623,14 @@ fi
 # for him/her (if his/her filesystem only files less than 2Gb in size).
 #
 
-split="false"
+splitfiles="false"
 if [ $WHICH = 'rs6000' -o $WHICH = 'sun4' -o $WHICH = 'iris4d' -o $WHICH = 'linux' ] ; then
+if [ $prc != 'x86_64' ]; then
     get_yes_or_no "Does your file system allow files bigger than 2 Gb?" y
     if [ "$answer" = "n" ]; then
-       split="true"
+       splitfiles="true"
     fi
+fi
 fi
 
 #
@@ -720,7 +725,7 @@ fi
 #
 
 basdir=$curr'/basis/'
-$ECHO '\n-->Default basis set directory will be '$basdir'\n'
+$ECHO '\n-->Default basis set directory will be '$basdir''
 if [ -d "$basdir" ]; then 
   get_yes_or_no '\nUse this directory as default basis set directory?' y
 else
@@ -793,7 +798,7 @@ case "$WHICH" in
           case $opsys in
           2)
              cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
-             if [ $split = 'true' ] ; then
+             if [ $splitfiles = 'true' ] ; then
                 cpp="$cpp -DVAR_SPLITFILES"
              fi
              if [ "$mesp" != "dummy" ]; then
@@ -808,7 +813,7 @@ case "$WHICH" in
              cpp=${cpp}" -DIMPLICIT_NONE";;
           *)
              cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_MMWORK=$incoresiz'"
-             if [ $split = 'true' ] ; then
+             if [ $splitfiles = 'true' ] ; then
                 cpp="$cpp,-DVAR_SPLITFILES"
              fi
              if [ "$mesp" != "dummy" ]; then
@@ -848,7 +853,7 @@ case "$WHICH" in
           else
                 cpp="$cpp -DNO_F90"
           fi
-          if [ $split = 'true' ] ; then
+          if [ $splitfiles = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
           if [ "$mesp" != "dummy" ]; then
@@ -906,7 +911,7 @@ case "$WHICH" in
           opt='-fast -fpe3 -warn nouncalled';;
     sun4)
           cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
-          if [ $split = 'true' ] ; then
+          if [ $splitfiles = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
           if [ "$mesp" != "dummy" ]; then
@@ -964,7 +969,7 @@ case "$WHICH" in
           copt='-fast';;
     linux|cygwin) 
           cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
-          if [ $split = 'true' ] ; then
+          if [ $splitfiles = 'true' ] ; then
              cpp="$cpp -DVAR_SPLITFILES"
           else
              cpp="$cpp -D_FILE_OFFSET_BITS=64"
@@ -1032,10 +1037,10 @@ case "$WHICH" in
                opt="$opt -i8"
                safe_opt="$safe_opt -i8"
                $ECHO "INFO: Compiling with 64-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 64-bit integers!!!\n"
              else
                $ECHO "INFO: Compiling with 32-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 32-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 32-bit integers!!!\n"
              fi
              #LIB="$LIB"
              ;;
@@ -1050,11 +1055,11 @@ case "$WHICH" in
 #            assume gfortran also if not gfortran (but write a WARNING)
              if [ $F90_be = "gfortran" ]; then
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-               echo "gfortran version $gfver prc=$prc"
+               $ECHO "gfortran version $gfver prc=$prc"
              else
-               gfver=440
-               echo "WARNING: $F90_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
-               echo "Please check Makefile.config carefully and modify compiler options to the correct ones for your selected compiler."
+               gfver=450
+               $ECHO "\nWARNING: $F90_be compiler is not defined in configure. Will be treated as gfortran version $gfver prc=$prc"
+               $ECHO "Please check Makefile.config carefully and modify compiler options to the correct ones for your selected compiler.\n"
              fi
              cpp="-DVAR_GFORTRAN $cpp -DGFORTRAN=$gfver"
              case $prc in
@@ -1062,6 +1067,7 @@ case "$WHICH" in
                      march="-march=$prc";;
 # remove VAR_INT64 for gfortran - it breaks linking against
 # precompiled BLAS libraries./pawsa-Mar-08
+# hjaaj Jan 2011: instead we now ask the user explicitly
              x86_64) march="-march=x86-64";;
                   *) march=" ";;
              esac
@@ -1075,10 +1081,10 @@ case "$WHICH" in
                opt="$opt -fdefault-integer-8"
                safe_opt="$safe_opt -fdefault-integer-8"
                $ECHO "INFO: Compiling with 64-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 64-bit integers!!!\n"
              else
                $ECHO "INFO: Compiling with 32-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 32-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 32-bit integers!!!\n"
              fi
              ;;
           esac
