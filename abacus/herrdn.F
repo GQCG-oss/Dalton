@@ -288,6 +288,7 @@ C     Initialize /CBIREA/, control variables in ecpinf.h,
 C     and parts of qm3.h
 C
 #include "implicit.h"
+#include "maxorb.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
 #include "maxaqn.h"
@@ -302,9 +303,8 @@ C
       LOGICAL FIRST_CALL
       SAVE    FIRST_CALL
       DATA    FIRST_CALL/.TRUE./
-#ifdef VAR_DEBUG
-#include "infpar.h"
 
+#ifdef VAR_DEBUG
       write(0,*) 'info, REAINI called by node ',mynum
       write(0,*) 'info, REAINI    FIRST_CALL  ',FIRST_CALL
 #endif

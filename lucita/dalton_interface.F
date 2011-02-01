@@ -1048,6 +1048,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #endif
 #include "implicit.h"
 #include "priunit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"

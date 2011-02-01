@@ -214,6 +214,7 @@ C  /* Deck quit */
       INCLUDE 'mpif.h'
 #endif
 #include <priunit.h>
+#include <maxorb.h>
 C INFPAR: MYNUM
 #include <infpar.h>
       CHARACTER TEXT*(*)
@@ -725,6 +726,7 @@ C
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
 #include <gnrinf.h>
+#include <maxorb.h>
 #include <infpar.h>
       DATA FIRST /.TRUE./
       SAVE FIRST
@@ -1308,6 +1310,7 @@ C
       INTEGER FILELN
       LOGICAL VALUE
 #include <chrnos.h>
+#include <maxorb.h>
 #include <infpar.h>
 C
       FILELN = LNBLNK(FILENM)

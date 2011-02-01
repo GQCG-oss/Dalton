@@ -1323,7 +1323,7 @@ C
       RETURN
 C
     3 IF (LUERR.LT.0) THEN
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -1419,7 +1419,7 @@ C
          RETURN
 C
     3 IF (LUERR.LT.0) THEN
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -1472,7 +1472,7 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -1507,7 +1507,7 @@ C
       IF (IRDERR .LT. 5) GO TO 1 
       GO TO 8 
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -1542,7 +1542,7 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.

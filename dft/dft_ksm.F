@@ -26,6 +26,7 @@ C     P. Salek and T. Helgaker October 2003
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <inforb.h>
       DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)

@@ -2354,10 +2354,10 @@ C Largest exchange contribution
           IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. 
      &        DIRFCK .AND. HFXMU .EQ. D0) THEN
              I_SHL = I_SHL + 1
-             IF (I_SHL .GT. MXSHL_KEEP) THEN
+             IF (I_SHL .GT. MXTSK) THEN
                 write(lupri,*) 'Received quit because '//
-     &               'I_SHL exceeds MXSHL_KEEP',I_SHL,MXSHL_KEEP
-                CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+     &               'I_SHL exceeds MXTSK',I_SHL,MXTSK
+                CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
              END IF
 #else
                   IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND. 
@@ -2443,7 +2443,7 @@ C     &                 ISYMR,ISYMS
                      KAOINT = 1
 C
                      CALL DCOPY(NCCINT*NINTYP,
-     &                    CORE(INDX_SHL(I_SHL)),1,WORK(KAOINT),1)  
+     &                    AOINTSCORE(INDX_SHL(I_SHL)),1,WORK(KAOINT),1)
 C                     write(lupri,*) 'I_SHL,INDX_SHL(I_SHL)', 
 C     &                    I_SHL,INDX_SHL(I_SHL)
 C
@@ -2457,10 +2457,10 @@ C     &                    II=0,NCCINT-1)
      &                    (LWORK-NCCINT*NINTYP))
 C
                      I_SHL = I_SHL + 1
-                     IF (I_SHL .GT. MXSHL_KEEP) THEN
+                     IF (I_SHL .GT. MXTSK) THEN
                         write(lupri,*) 'Received quit because '//
-     &                       'I_SHL exceeds MXSHL_KEEP',I_SHL,MXSHL_KEEP
-                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+     &                       'I_SHL exceeds MXTSK',I_SHL,MXTSK
+                        CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
                      END IF
 C
                      GOTO 300
@@ -2475,14 +2475,11 @@ C     &                 maxder
                IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0 .AND.
      &             HFXMU .EQ. D0) THEN
                   NINTYP = 1
-C                  IF (INDX_SHL(1,1) .GE. ISHELA .AND. 
-C     &                 INDX_SHL(2,1) .GE. ISHELB .AND.
-C     &                 INDX_SHL(3,1) .GE. ISHELC .AND. 
-C     &                 INDX_SHL(4,1) .GE. ISHELD) THEN
+
                   IF (INDX_SHL1 .GE. ISHELA .AND. 
-     &                 INDX_SHL2 .GE. ISHELB .AND.
-     &                 INDX_SHL3 .GE. ISHELC .AND. 
-     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1) THEN
+     &                INDX_SHL2 .GE. ISHELB .AND.
+     &                INDX_SHL3 .GE. ISHELC .AND. 
+     &                INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1) THEN
 C
 C                  IF (LINTSV) THEN
 C                   write(lupri,*)'ISHELA/B/C/D,INDX_SHL1/2/3/4,lintsv',
@@ -2493,7 +2490,7 @@ C
                      KAOINT = 1 
 C
                      CALL DCOPY(NCCINT*NINTYP,
-     &                    CORE(I_SHL),1,WORK(KAOINT),1)   
+     &                    AOINTSCORE(I_SHL),1,WORK(KAOINT),1)   
 C
                      CALL INTFCK(FMAT,WORK(KAOINT),DMAT,NDMAT,
      &                    NCCINT,NINTYP,ICORBA,ICORBB,ICORBC,ICORBD,
@@ -2568,16 +2565,17 @@ C
 C               
 C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
 C     &                    II=1,NCCINT)
-               IF (N_SHL .GT. MXSHL_KEEP) THEN
+               IF (N_SHL .GT. MXTSK) THEN
                   write(lupri,*) 'Received quit because '//
-     &                 'N_SHL exceeds MXSHL_KEEP',N_SHL,MXSHL_KEEP
-                  CALL QUIT('N_SHL exceeds MXSHL_KEEP')
+     &                 'N_SHL exceeds MXTSK',N_SHL,MXTSK
+                  CALL QUIT('AOSAVE: N_SHL exceeds MXTSK')
                END IF 
                ITOTNT = ITOTNT + NINTYP*NCCINT
-               IF (AOSAVE .AND. MMCORE .GT. (NCCINT*NINTYP)
-     &              .AND. N_SHL .LE. MXSHL_KEEP 
-     &              .AND. MSAVE .AND. MAXDER .EQ. 0
-     &              .AND. HFXMU .EQ. D0) THEN
+               IF (AOSAVE
+     &              .AND. MMCORE .GT. (NCCINT*NINTYP)
+     &              .AND. N_SHL  .LE.  MXTSK
+     &              .AND. MSAVE  .AND. MAXDER .EQ. 0
+     &              .AND. HFXMU  .EQ.  D0) THEN
 C
 C                  write(lupri,*) 'SAV:LINTSV,ISHELA/B/C/D,ISYMR,ISYMS',
 C     &                 LINTSV,ISHELA,ISHELB,ISHELC,ISHELD,
@@ -2585,7 +2583,7 @@ C     &                 ISYMR,ISYMS
                   LINTMP = .TRUE.
                   MMCORE = MMCORE - (NCCINT*NINTYP)
                   CALL DCOPY((NCCINT*NINTYP),WORK(KAOINT),1,
-     &                 CORE(ISCORE),1)
+     &               AOINTSCORE(ISCORE),1)
 C                  INDX_SHL(1,1) = ISHELA
 C                  INDX_SHL(2,1) = ISHELB
 C                  INDX_SHL(3,1) = ISHELC
@@ -2603,15 +2601,16 @@ C                  INDX_SHL(4,1) = ISHELD
 C                  write (lupri,*) 'n_shl,indx',n_shl,indx_shl(n_shl)
                   N_SHL = N_SHL + 1
                   ISCORE = ISCORE + (NINTYP*NCCINT)
-                  IF (N_SHL .GT. (MXSHL_KEEP+1)) THEN
+                  IF (N_SHL .GT. (MXTSK+1)) THEN
                      write(lupri,*) 'Received quit because '//
-     &                  'N_SHL exceeds MXSHL_KEEP+1',N_SHL,MXSHL_KEEP+1
-                     CALL QUIT('N_SHL exceeds MXSHL_KEEP+1.')
+     &                  'N_SHL exceeds MXTSK+1',N_SHL,MXTSK+1
+                     CALL QUIT('AOSAVE: N_SHL exceeds MXTSK+1.')
                   END IF
 #else
                   ISCORE = ISCORE + (NINTYP*NCCINT)
 #endif                  
 C     Lagrer integraler i minne: Oppdaterer array med beregnede ishela/b/c/d
+C  =  Store integrals in memory: Update array with calculated ishela/b/c/d
                ELSE
                   IF (MAXDER .GT. 0) THEN
                      LINTMP = LINTSV

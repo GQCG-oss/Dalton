@@ -1074,6 +1074,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
      &          KISCLFAC, KSCALLOC
 !               for addressing of WORK
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2136,6 +2137,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4949,6 +4951,7 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
       INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
 !               for addressing of WORK
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5341,6 +5344,7 @@ C
 *                                                 * <Iblk!H!Jblk>C(Jblk)
       IMPLICIT REAL*8(A-H,O-Z)
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

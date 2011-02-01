@@ -1060,6 +1060,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 *
       IMPLICIT REAL*8           (A-H,O-Z)
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1298,6 +1299,7 @@ C            new offset
 #include "gasstr.inc"
 C
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

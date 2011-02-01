@@ -62,7 +62,6 @@ C NUCLEI: NUCDEG
 C INFORB: NNBASX,N2BASX
 C
 #include <infpar.h>
-      PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
 #include <blocks.h>
 #include <nuclei.h>
 #include <inforb.h>
@@ -251,7 +250,6 @@ Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL   FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
-      PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
@@ -350,8 +348,8 @@ C
 C
 C     This subroutine determines in which order integrals will be calculated.
 C
-      IF (AOSAVE .AND. NINDEX .GT. (MIN(MXTSK,IEIR))) THEN
-         CALL QUIT('INDX_C must be enlarged.')
+      IF (AOSAVE .AND. NINDEX .GT. MXTSK) THEN
+         CALL QUIT('INDX_C in incore.h must be enlarged.')
       END IF
 C     Avoid reinitialization of INDEX when it has been initialized in
 C     a previous iteration
@@ -566,8 +564,8 @@ C
 C
 Cef begin 
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
-C      IF (AOSAVE .AND. NEWGEO) THEN
-C         CALL IZERO(INDX_SHL,MXSHL_KEEP)
+C     IF (AOSAVE .AND. NEWGEO) THEN
+C         CALL IZERO(INDX_SHL,MXTSK)
          LINTSV = .FALSE.
          LINTMP = .FALSE.
          INITX = .FALSE.
@@ -1130,7 +1128,7 @@ C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
 C     IF (AOSAVE .AND. NEWGEO) THEN
-C     CALL IZERO(INDX_SHL,MXSHL_KEEP)
+C     CALL IZERO(INDX_SHL,MXTSK)
          LINTSV = .FALSE.
          LINTMP = .FALSE.
          INITX = .FALSE.

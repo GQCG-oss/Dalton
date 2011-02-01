@@ -286,9 +286,9 @@ do_error_exit(const char* s)
 {
   char ss[888];
   sprintf(ss, "error_exit: %s\n", s);
-  printf(ss);
+  printf("%s\n",ss);
   do_output_2(0, ss);
-  fprintf(stderr, ss);
+  fprintf(stderr,"%s\n", ss);
   exit(1);
 }
 

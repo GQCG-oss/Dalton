@@ -66,6 +66,7 @@ C
 ************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -457,6 +458,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
 #include "implicit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -747,6 +749,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
 #include "implicit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -907,6 +910,7 @@ C      LUOUT       LUDIA        LUIN
 C
 C**********************************************************************
 #include "implicit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1064,7 +1068,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1184,7 +1189,8 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1265,7 +1271,8 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1346,6 +1353,7 @@ C     Written by  S. Knecht         - May 23 2007
 C
 C**********************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1646,6 +1654,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
 #include "implicit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1968,6 +1977,7 @@ C
 *. Non vanishing block has a nonzero blocklength
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2134,6 +2144,7 @@ CSK   END IF
 *. Non vanishing block has a nonzero blocklength
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2537,6 +2548,7 @@ CSK   END IF
 *. Non vanishing block has a nonzero blocklength
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2798,6 +2810,7 @@ C
 *. Non vanishing block has a nonzero blocklength
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2987,6 +3000,7 @@ CSK   END IF
 * Overlap between input and output vector is also calculated
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3099,6 +3113,7 @@ CSK   END IF
 * Overlap between input and output vector is also calculated
 *
 #include "implicit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3215,6 +3230,7 @@ CSK            END IF
 *. Connection is marked by 1.
 *
       IMPLICIT REAL*8           ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3258,6 +3274,7 @@ CSK            END IF
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3371,6 +3388,7 @@ C
 * Jeppe Olsen, September 1993
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3519,7 +3537,7 @@ C
 C LUOUT AND LUSCR ARE INITIALLY REWOUND
 C NVEC = NROOT resp. NVEC - NROOT
 C
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
       DIMENSION VEC1(1),VEC2(1)
       DIMENSION FAC(NVEC)
 C
@@ -3580,7 +3598,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3778,7 +3797,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3873,7 +3893,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4036,7 +4057,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4103,7 +4125,8 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4164,7 +4187,8 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4230,7 +4254,8 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4296,7 +4321,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4355,7 +4381,8 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4413,7 +4440,8 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4532,7 +4560,8 @@ C
 C     Last revision:     S. Knecht       - April  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4585,7 +4614,8 @@ C
 C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4784,7 +4814,8 @@ C
 C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5053,7 +5084,8 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5233,7 +5265,8 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5431,6 +5464,7 @@ C     Last revision:     S. Knecht       - March  2007
 C
 ************************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5608,6 +5642,7 @@ C     Last revision:     S. Knecht       - March  2007
 C
 ************************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5780,6 +5815,7 @@ C
      &           IABSOLUTE_WEIGHT)
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5876,6 +5912,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 *. used in the reduce-call. NOP is the reduce-operation.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5924,6 +5961,7 @@ CSK        DATATYPE = MPI_REAL8
 *. used in the reduce-call. NOP is the reduce-operation.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5976,6 +6014,7 @@ C     Last revision:     S. Knecht       - April  2007
 C
 ************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -6014,6 +6053,7 @@ C     Last revision:     S. Knecht       - April  2007
 C
 ************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -6054,6 +6094,7 @@ C     Last revision:     S. Knecht       - March  2007
 C
 ************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -6191,6 +6232,7 @@ C
 * LU1LIST is the MPI file list.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -6317,7 +6359,8 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

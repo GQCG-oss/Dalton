@@ -265,13 +265,13 @@ C     Number of (class|class) integrals
 C
       MXCLS2 = NODCLS*(NODCLS + 1)/2
 C
-      IF (MXCLS2 .GT. MAXCL2) THEN
+      IF (MXCLS2 .GT. MAXTSK) THEN
          WRITE(LUPRI,'(/1X,A,/1X,A,/1X,2(A,I5))')
      &      'Number of actual (class1|class2) integrals too large.',
      &      'Recompilation necessary!',
-     &      'MXCLS2 =',MXCLS2,' MAXCL2 =',MAXCL2
+     &      'MXCLS2 =',MXCLS2,' MAXTSK =',MAXTSK
          CALL RECOMPI
-         CALL QUIT('ERROR: MXCLS2 greater than MAXCL2 in ERI_PARDRV')
+         CALL QUIT('ERROR: MXCLS2 greater than MAXTSK in ERI_PARDRV')
       END IF
 C
 C     Dimension of array INDEX
@@ -502,7 +502,7 @@ C
 C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS
 C SIRIPC : NEWGEO
-C INFPAR : NODTOT, NTASK, TIMING, MAXCL2
+C INFPAR : NODTOT, NTASK, TIMING, MAXTSK
 C
 #include <gnrinf.h>
 #include <siripc.h>
@@ -513,7 +513,7 @@ Cef end
 C
 C     NPOS must be saved and therefore statically allocated.
 C
-      DIMENSION NPOS(0:MAXCL2+1)
+      DIMENSION NPOS(0:MAXTSK+1)
       SAVE NPOS
 C
       CALL QENTER('ERI_PARDR1')
@@ -657,9 +657,8 @@ C
 C     
                IPLACQ = IPLACQ - 1  
             ELSE IF ((INDEX(3,IPLACE) .EQ. 1 
-     &              .AND. INDEX(2,IPLACE) .EQ. NWHO)
-     &              .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
-            
+     &          .AND. INDEX(2,IPLACE) .EQ. NWHO)
+     &          .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
 C
                CALL MPIXSEND(INDEX(1,IPLACE),NTASK,'INTEGER',NWHO,
      &              MTAG61)
@@ -745,8 +744,8 @@ C
 #endif
  210  CONTINUE
 C
-      IF (MXBTCH .GT. MIN(MXTSK,IEIR)) THEN
-          CALL QUIT('INDX_C must be enlarged.')
+      IF (MXBTCH .GT. MXTSK) THEN
+          CALL QUIT('INDX_C in incore.h must be enlarged.')
        END IF
        CALL ICOPY((3*MXBTCH),INDEX(1,1),1,INDX_C(1,1),1)
 C      write(lupri,*) 'INDX_C'

@@ -82,6 +82,7 @@ C
 #include "comjep.inc"
 #include "cc_exc.inc"
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -928,6 +929,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "maxorb.h"
 #include "infpar.h"
 #include "parluci.h"
 #include "priunit.h"
@@ -1007,6 +1009,7 @@ C
       INTEGER*8 k_offset, KADD, KPROCLIST, KGROUPLIST, 
      &          KGROUPLIST2, KPROCLENGTH, KVEC1, ktestme
 !               for addressing of WORK
+#include "maxorb.h"
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -1521,6 +1524,7 @@ C
 #include "cgas.inc"
 #include "oper.inc"
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5414,6 +5418,7 @@ C
 #include "implicit.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "maxorb.h"
 #include "infpar.h"
 #include "parluci.h"
 !
@@ -5443,6 +5448,7 @@ C
       use lucita_orbital_spaces, only: define_lucita_orb_spaces
 #include "implicit.h"
 #include "priunit.h"
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

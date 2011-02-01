@@ -92,11 +92,12 @@ C  /* Deck qmmm_fck_ao */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -211,11 +212,12 @@ C  /* Deck qmmm_charge */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -318,11 +320,12 @@ C  /* Deck qmmm_dipole */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -424,11 +427,12 @@ C  /* Deck qmmm_quadpole */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -530,11 +534,12 @@ C  /* Deck qmmm_octupole */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -637,11 +642,12 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -949,11 +955,12 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -2127,11 +2134,12 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -4611,6 +4619,8 @@ C  /* Deck parqmmm_m */
 !               exlist
 #include <qmmm.h>
 C ----
+#include "maxorb.h"
+! MXSHEL
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
@@ -4766,6 +4776,8 @@ C  /* Deck parqmmm_s */
 ! From potfile: mmcent, nmult, ipoltp, nexlst, neleme
 !               exlist
 #include <qmmm.h>
+#include "maxorb.h"
+! MXSHEL
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
@@ -4935,11 +4947,12 @@ C  /* Deck qmmm_polari_m1 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -5069,11 +5082,12 @@ C  /* Deck qmmm_polari_s1 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -5199,11 +5213,12 @@ C  /* Deck qmmm_polari_m2 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -5310,11 +5325,12 @@ C  /* Deck qmmm_polari_s2 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -5417,11 +5433,12 @@ C  /* Deck qmmm_polari_m3 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -5567,11 +5584,12 @@ C  /* Deck qmmm_polari_s3 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
+
+#include <qmmm.h>
+#include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>

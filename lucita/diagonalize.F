@@ -53,6 +53,7 @@
 !               for addressing of WORK
 C
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

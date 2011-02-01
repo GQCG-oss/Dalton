@@ -92,6 +92,8 @@ C  /* Deck fndsym */
 #include <maxaqn.h>
 #include <mxsymm.h>
 #include <mxcent.h>
+#include <maxorb.h>
+
 #include <nuclei.h>
 #include <r12int.h>
 #include <priunit.h>

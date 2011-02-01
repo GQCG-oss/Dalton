@@ -136,7 +136,7 @@ C integer (we used IEIR=3000000).
       INDX_SHL3 = 0
       INDX_SHL4 = 0
 #if defined (VAR_MPI)
-      CALL IZERO(INDX_SHL,MXSHL_KEEP)
+      CALL IZERO(INDX_SHL,MXTSK)
 #endif
 C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
       IF (MMWORK .NE. MMCORE) THEN

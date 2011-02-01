@@ -424,6 +424,7 @@ C    &     I_BLK_TO_CLS(IBLK)
       IMPLICIT REAL*8           ( A-H,O-Z)
 #include "priunit.h"
 #ifdef VAR_MPI
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

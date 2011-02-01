@@ -63,6 +63,7 @@ C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -240,6 +241,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -615,6 +617,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1114,6 +1117,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1296,6 +1300,7 @@ C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1476,6 +1481,7 @@ C**********************************************************************
 #include "implicit.h"
       INTEGER*8 KSCALLOC2, KSCALLOC3
 !               for addressing of WORK
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1607,6 +1613,7 @@ C
 #include "implicit.h"
       INTEGER*8 KICCTOS, KCWEIGHT, KCWEIGHTF, KBLCKWT, KIBTOTW
 !               for addressing of WORK
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "parluci.h"
@@ -1673,6 +1680,7 @@ C
       DIMENSION BLK_A(*)
 *. Scratch
       DIMENSION SEGMNT(*)
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1746,6 +1754,7 @@ C
       IMPLICIT REAL*8           ( A-H,O-Z)
       INTEGER*8 KGATHERA, KGATHERB, KGATHERC, KGATHERD, KGATHERE
 !               for addressing of WORK
+#include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
