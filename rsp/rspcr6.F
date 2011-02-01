@@ -695,8 +695,8 @@ C
          END IF
          GOTO 346
  347     CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
-         BACKSPACE LURSPRES
+#if defined (VAR_MFDS)
+         BACKSPACE (LURSPRES)
 #endif
       END IF
 
