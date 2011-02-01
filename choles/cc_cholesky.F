@@ -1068,25 +1068,16 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C    
-#if defined (SYS_CRAY) || defined (SYS_T90)
+#if defined (VAR_INT64)
             LRECL = LBFINP + LBFINP + 1
-#endif
-#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_IRIX) || defined (SYS_DEC)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
             LRECL = LBFINP + LBFINP/IRAT + 1
+#else
+            IF (NBASIS .LE. 255) THEN
+               LRECL = 2*LBFINP + LBFINP + 1
+            ELSE
+               LRECL = 2*LBFINP + 2*LBFINP + 1
+            END IF
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -3034,25 +3025,16 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C
-#if defined (SYS_CRAY) || defined (SYS_T90)
+#if defined (VAR_INT64)
             LRECL = LBFINP + LBFINP + 1
-#endif
-#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_IRIX) || defined (SYS_DEC)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
             LRECL = LBFINP + LBFINP/IRAT + 1
+#else
+            IF (NBASIS .LE. 255) THEN
+               LRECL = 2*LBFINP + LBFINP + 1
+            ELSE
+               LRECL = 2*LBFINP + 2*LBFINP + 1
+            END IF
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -4336,25 +4318,16 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C    
-#if defined (SYS_CRAY) || defined (SYS_T90)
+#if defined (VAR_INT64)
             LRECL = LBFINP + LBFINP + 1
-#endif
-#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_IRIX) || defined (SYS_DEC)
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
-#endif
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
             LRECL = LBFINP + LBFINP/IRAT + 1
+#else
+            IF (NBASIS .LE. 255) THEN
+               LRECL = 2*LBFINP + LBFINP + 1
+            ELSE
+               LRECL = 2*LBFINP + 2*LBFINP + 1
+            END IF
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
