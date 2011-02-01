@@ -77,17 +77,6 @@ C
       XDISC   = 0.0D0
       XNDISC  = 0.0D0
 C
-      IF (IPRINT .GT. 0) THEN
-          WRITE(LUPRI,'(//,2(9X,A,/))') 'Initial diagonal information',
-     &                          '----------------------------'
-          WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB',' NNBST ','IDIAG '
-          DO ISYM = 1,NSYM
-             WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),IDIAG(ISYM)
-          END DO
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A,I10)') 'Number of diagonal elements:',NDIAG
-          CALL FLSHFO(LUPRI)
-      END IF
 C
 C
 C     Open files for storing the Cholesky vectors.
@@ -162,19 +151,6 @@ C
       ENDDO
       END IF
 C
-c     do i = 1,ndiag
-c        write(lupri,*) 'Diagonal: ',i,diag(i)
-c     enddo
-C
-C     Analyse the diagonal.
-C     ---------------------
-C
-      IF (IPRINT .GT. 2) THEN
-         WRITE(LUPRI,'(//,A,/)') '>>> Checking initial diagonal'
-         CALL CC_ANADI(DIAG,.TRUE.)
-      END IF
-      TIMDIA = SECOND() - TIMDIA
-C
 C     Zero out converged elements.
 C     ----------------------------
 C
@@ -220,21 +196,44 @@ C
             NREDUC(ISYM) = ICOUNT
             LRDTOT = LRDTOT + NREDUC(ISYM)
          END DO
+C
+         IF (IPRINT .GT. 0) THEN
+             WRITE(LUPRI,'(//,2(9X,A,/))') 'Diagonal information',
+     &                                     '--------------------'
+             WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB',' NNBST ','NREDUC'
+             DO ISYM = 1,NSYM
+                WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),
+     &                                      NREDUC(ISYM)
+             END DO
+             WRITE(LUPRI,*)
+             WRITE(LUPRI,'(4X,A5,2I16)') 'Total', NDIAG, LRDTOT
+             CALL FLSHFO(LUPRI)
+         END IF
          LRDTOT = LREDU * NSYM
 C
       ELSE
+         IF (IPRINT .GT. 0) THEN
+             WRITE(LUPRI,'(//,2(9X,A,/))') 'Diagonal information',
+     &                                     '--------------------'
+             WRITE(LUPRI,'(6X,A,8X,A,7X,A)') 'ISAB',' NNBST '
+             DO ISYM = 1,NSYM
+                WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM)
+             END DO
+             WRITE(LUPRI,*)
+             WRITE(LUPRI,'(4X,A5,2I16)') 'Total', NDIAG
+             CALL FLSHFO(LUPRI)
+         END IF
          LRDTOT = 1
       END IF
 C
-      IF (IPRINT .GT. 0) THEN
-         IF (SCDIAG) WRITE(LUPRI,'(/,A,I10)') 
-     &                     'Zeroed initial diagonals : ',IZER
-         IF (REDUCE) THEN
-            WRITE(LUPRI,'(A,I10)') 'LRDTOT :',LRDTOT
-            WRITE(LUPRI,'(A,8I8,/)') 'NREDUC :',(NREDUC(I),I=1,NSYM)
-         END IF
-         CALL FLSHFO(LUPRI)
+C     Analyse the diagonal.
+C     ---------------------
+C
+      IF (IPRINT .GT. 2) THEN
+         WRITE(LUPRI,'(//,A,/)') '>>> Checking initial diagonal'
+         CALL CC_ANADI(DIAG,.TRUE.)
       END IF
+      TIMDIA = SECOND() - TIMDIA
 C
 C     Setup index information.
 C     ------------------------
@@ -729,12 +728,12 @@ C
                II = IDIAG(ISYMAB) + I
                KOFF = KINT1 + NNBST(ISYMAB)*(IC-1) + I - 1
                IF (DIAG(II) .EQ. ZERO) WORK(KOFF) = ZERO
-               IF (WORK(KOFF) .EQ. ZERO) THEN
-                  YSEL1 = YSEL1 + 1.0D0
-               ELSE IF (ABS(WORK(KOFF)) .LT. THRSEL) THEN
-                  WORK(KOFF) = ZERO
-                  XSEL1 = XSEL1 + 1.0D0
-               END IF
+c              IF (WORK(KOFF) .EQ. ZERO) THEN
+c                 YSEL1 = YSEL1 + 1.0D0
+c              ELSE IF (ABS(WORK(KOFF)) .LT. THRSEL) THEN
+c                 WORK(KOFF) = ZERO
+c                 XSEL1 = XSEL1 + 1.0D0
+c              END IF
             END DO
 C
             XZERO = NNBST(ISYMAB) - NREDUC(ISYMAB)
@@ -743,11 +742,11 @@ C
             XSEL0(ISYMAB) = XSEL0(ISYMAB) + XSEL1
             YSEL0(ISYMAB) = YSEL0(ISYMAB) + YSEL1
 C
-            IF (IPRINT .GT. 15) WRITE(LUPRI,'(A,3X,2(A,F8.0,2X),A,I8)')
-     &                              'Elementents in vector',
-     &                              'Real 0 :',YSEL1,
-     &                              'Zeroed :',XSEL1,
-     &                              'Length :',LENAB
+c           IF (IPRINT .GT. 15) WRITE(LUPRI,'(A,3X,2(A,F8.0,2X),A,I8)')
+c    &                              'Elementents in vector',
+c    &                              'Real 0 :',YSEL1,
+c    &                              'Zeroed :',XSEL1,
+c    &                              'Length :',LENAB
 C
 C           Update diagonal
 C
@@ -1331,7 +1330,7 @@ C
       DIMENSION TITMOL(12,2)
       DIMENSION WORK(LWORK)
       DIMENSION MMBST(8)
-      LOGICAL   LDUM
+      LOGICAL   LDUM, FEXIST
 C
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1341,6 +1340,31 @@ C
 C
 #include <mxcent.h>
 #include <eribuf.h>
+C
+C
+C------------------------------------------
+C     Suggest to use 64 bit integer version
+C------------------------------------------
+C
+#if !defined (VAR_INT64)
+      WRITE(LUPRI,'(///,80A1,/)') ('=',I=1,80)
+      WRITE(LUPRI,'(38X,A,/)') 'WARNING'
+      WRITE(LUPRI,'(2X,A,A,/,2X,A,/)')
+     &            'Full advantage of Cholesky decomposition based-',
+     &            'methods is accomplished only ',
+     &            'if 64-bit integers are used.'
+      WRITE(LUPRI,'(2X,A,A,/,2X,A,A)')
+     &            'Therefore, if you plan an intensive use of ',
+     &            'Cholesky routines, rebuild Dalton ',
+     &            'code with -DVAR_INT64 directive and ',
+     &            '-i8 option.'
+      WRITE(LUPRI,'(2X,A,A,/)') '(Remember to link to the proper ',
+     &                          '64-bit libraries)'
+      WRITE(LUPRI,'(2X,A,A)')
+     &            'Note, however, that some other ',
+     &            'functionalities do not work in this mode.'
+      WRITE(LUPRI,'(/,80A1,///)') ('=',I=1,80)
+#endif
 C
 C------------------------------------------------------
 C     Get basis information and construct index arrays.
@@ -1539,6 +1563,11 @@ C
       LUSEL = 98
       CALL WCLOSE2(LUSEL,'CHOLES_SEL','DELETE')
 C
+      CALL GPINQ('AOTWOINT','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         CALL SYSTEM('rm -f AOTWOINT')
+      END IF
+C
       WRITE(LUPRI,'(//)')
 C
       RETURN
@@ -1572,7 +1601,7 @@ C
       DATA SET /.FALSE./
       DATA TABLE /'.THINDI','.THSUDI','.NOSCDI','.NOCOMP','.THRCOM',
      &            '.LENBUF','.RSTDIA','.RSTCHO','.SPANDI','.DENDEC',
-     &            '.THRSTR','.REDUCE','.SKIP  ','.PRINT ','.XXXXXX'/
+     &            '.THRSTR','.REDUCE','.SKIP  ','.PRINT ','.COMPLE'/
 C
 C
       IF (SET) RETURN
@@ -1584,7 +1613,7 @@ C---------------------
 C
       IPRCHO = MAX(1,IPRUSR)
 C
-      THINDI = 1.0D+3
+      THINDI = 1.0D0 
       THSUDI = 1.0D+3
       THRDEF = 1.0D-8
       SPAN   = 1.0D-3
@@ -1593,7 +1622,7 @@ C
 C
       RSTDIA = .FALSE.
       RSTCHO = .FALSE.
-      REDUCE = .FALSE.
+      REDUCE = .TRUE.
       COMP   = .FALSE.
       SCDIAG = .TRUE.
 C
@@ -1751,9 +1780,10 @@ C
          READ(LUCMD,*) IPRCHO
       GOTO 200
 C
-C     not used
+C     comple  
 C
    15 CONTINUE
+         REDUCE = .FALSE.
       GOTO 200
 C
 C------------------------------------------------------
@@ -4060,20 +4090,20 @@ C
          WRITE(LUPRI,'(7X,I2,2I16)') ISYM,NNBST(ISYM),NUMCHO(ISYM)
       END DO
 C
-      WRITE(LUPRI,'(//,2(9X,A,/))') 'Number of elements',
-     &                              '------------------'
+c     WRITE(LUPRI,'(//,2(9X,A,/))') 'Number of elements',
+c    &                              '------------------'
 c     WRITE(LUPRI,'(6X,A,8X,A,3(9X,A))') 'ISAB','Reduced','Real 0',
 c    &                                   'Zeroed','Non zero'
-      WRITE(LUPRI,'(6X,A,7X,A,1X,2(9X,A))') 'ISAB','Reduced','Real 0',
-     &                                   'Non zero'
-      DO ISYM = 1,NSYM
-         XELEM = DFLOAT(NUMCHO(ISYM))*DFLOAT(NREDUC(ISYM))
-         YELEM = XELEM - YSEL0(ISYM) - XSEL0(ISYM)
+c     WRITE(LUPRI,'(6X,A,7X,A,1X,2(9X,A))') 'ISAB','Reduced','Real 0',
+c    &                                   'Non zero'
+c     DO ISYM = 1,NSYM
+c        XELEM = DFLOAT(NUMCHO(ISYM))*DFLOAT(NREDUC(ISYM))
+c        YELEM = XELEM - YSEL0(ISYM) - XSEL0(ISYM)
 c        WRITE(LUPRI,'(7X,I2,4F16.0)') ISYM,XELEM,YSEL0(ISYM),
 c    &                                 XSEL0(ISYM),YELEM
-         WRITE(LUPRI,'(7X,I2,4F16.0)') ISYM,XELEM,YSEL0(ISYM),
-     &                                 YELEM
-      END DO
+c        WRITE(LUPRI,'(7X,I2,4F16.0)') ISYM,XELEM,YSEL0(ISYM),
+c    &                                 YELEM
+c     END DO
 C
       WRITE(LUPRI,'(//,A,D15.5)') 
      *     'Largest absolute element in diagonal:',DIAG(IY)
