@@ -28,11 +28,8 @@ c----------------------------------------------------------------------
       integer nr12orb(8),nrhforb(8),irhforb(8),ir12orb(8),
      &        nkj(8),ikj(8,8),nkilj(8),ikilj(8,8),nr12t
 
-#if defined (SYS_CRAY)
-      real sing(*),trip(*),vpck(*),ffkl,ff,half
-#else
-      double precision sing(*),trip(*),vpck(*),ffkl,ff,half
-#endif
+      real*8 sing(*),trip(*),vpck(*),ffkl,ff,half
+
       logical locdbg
       parameter (locdbg = .false.)
       parameter (half = 0.5D0)
@@ -237,11 +234,8 @@ c----------------------------------------------------------------------
       integer nr12orb(8),ir12orb(8),nr12t
       logical locdbg 
       parameter (locdbg = .false.)
-#if defined (SYS_CRAY)
-      real sing(*),trip(*),vpck(*),ffkl,ff,vklij,vlkij
-#else
-      double precision sing(*),trip(*),vpck(*),ffkl,ff,vklij,vlkij
-#endif
+
+      real*8 sing(*),trip(*),vpck(*),ffkl,ff,vklij,vlkij
 
       integer index 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j  
@@ -409,11 +403,8 @@ c---------------------------------------------------------------------
 #include <ccorb.h>
 #include <ccsdsym.h>
 
-#if defined (SYS_CRAY)
-      real tampr12(*),fac
-#else
-      double precision tampr12(*),fac
-#endif
+      real*8 tampr12(*),fac
+
       integer isymt,isymlj,idxlj,idxljlj
  
       if (isymt.eq.1) then
@@ -469,12 +460,9 @@ c----------------------------------------------------------------------
      &        ixtf1(8,8),igamxtf(8,8),lwork,isyma,isymkl,isymm,nkl,nm,
      &        koff1,koff2,ntotkl,ntota,ntotm,krtf,isymn,isymmn,idxmn,
      &        idxdn,nb1(8),na,m,n 
-#if defined (SYS_CRAY)
-      real xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,one,zero
-#else
-      double precision xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,
-     &                 one,zero
-#endif
+
+      real*8 xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,one,zero
+
       parameter(one = 1.0d0, zero = 0.0d0)
       call qenter('generaltf')
 
@@ -588,11 +576,8 @@ C----------------------------------------------------------------------
       logical lproj, locdbg
       PARAMETER (locdbg = .FALSE.)      
 
-#if defined (SYS_CRAY)
-      real precision vpck(*), vunpck(*)
-#else
-      double precision vpck(*), vunpck(*)
-#endif
+      real*8 vpck(*), vunpck(*)
+
       integer index 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j  
       
@@ -761,11 +746,8 @@ C----------------------------------------------------------------------
       logical locdbg
       PARAMETER (locdbg = .false.)      
 
-#if defined (SYS_CRAY)
-      real precision vpck(*), vunpck(*)
-#else
-      double precision vpck(*), vunpck(*)
-#endif
+      real*8 vpck(*), vunpck(*)
+
       integer index 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j  
       
@@ -934,11 +916,8 @@ c---------------------------------------------------------------------
 #include <ccorb.h>
 #include <ccsdsym.h>
 
-#if defined (SYS_CRAY)
-      real tampr12(*),fac
-#else
-      double precision tampr12(*),fac
-#endif
+      real*8 tampr12(*),fac
+
       integer isymt,isymki,isymlj,idxki,idxlj,idxkilj
       integer index
 

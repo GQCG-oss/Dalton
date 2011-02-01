@@ -808,12 +808,17 @@ C
         CALL DSCAL(NSPAIR*NSPAIR,2.0D0,VT11,1)
         CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,VT11,1)
         CALL CCR12PCK(WORK(KSCR),1,VS11,VT11,NRHF,NRHFA,NKILJ)
+
         CALL GPOPEN(LU43,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
  1244   READ(LU43,END=1243) IDUM
         READ(LU43) 
         GOTO 1244
  1243   CONTINUE
+#ifdef VAR_MFDS
+!       backspace if multifile dataset
+        BACKSPACE (LU43)
+#endif
         WRITE(LU43) IANSAZ
         WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1))
         CALL GPCLOSE(LU43,'KEEP') 
@@ -839,6 +844,10 @@ C
          READ(LU43) 
          GOTO 1246
  1245    CONTINUE
+#ifdef VAR_MFDS
+!        backspace if multifile dataset
+         BACKSPACE (LU43)
+#endif
         END IF
         WRITE(LU43) IANSAZ
         WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1)) 
@@ -857,6 +866,10 @@ C
          READ(LU44) 
          GOTO 1248
  1247    CONTINUE
+#ifdef VAR_MFDS
+!        backspace if multifile dataset
+         BACKSPACE (LU44)
+#endif
         END IF
         CALL GPOPEN(LU45,FCCR12D,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
@@ -865,6 +878,10 @@ C
          READ(LU45) 
          GOTO 1250
  1249    CONTINUE
+#ifdef VAR_MFDS
+!        backspace if multifile dataset
+         BACKSPACE (LU45)
+#endif
         END IF
          FRSTWR = .FALSE.
       END IF
