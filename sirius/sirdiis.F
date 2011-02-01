@@ -438,10 +438,7 @@ C
       IF (ONLYFC) THEN
 C        DV(1) = D0
          NDMAT = 1
-      ELSE IF (NASHT .EQ. 1) THEN
-         DV(1) = D1
-         NDMAT = 2
-      ELSE IF (HSROHF) THEN
+      ELSE IF (NASHT .EQ. 1 .OR. HSROHF) THEN
          CALL DZERO(DV,NNASHX)
          DO I = 1, NASHT
             II = I*(I+1)/2
@@ -464,7 +461,7 @@ C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
       SHFTLVL = DEFLVL
-      SHFTFAC = 0.4D0 
+      SHFTFAC = 0.7D0 
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
 C     SCRFAC = 100*NBAST
@@ -536,9 +533,8 @@ C      IF (QMMM .AND. NODTOT .GE. 1) CALL PARQMMM_INIT()
          INDEVC = MOD(JTDIIS-1,MXERRV) + 1
          NEVC   = MIN(MXERRV,JTDIIS)
 C
-Cholesky  No screening.
+Cholesky (CHOINT): No screening.
 C
-Chol     IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)) THEN
          IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)
      &              .AND. (.NOT. CHOINT)) THEN
             WRITE (LUPRI,'(I4,A,I5,L5)') 
