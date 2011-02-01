@@ -182,40 +182,40 @@ dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS /lib64 /usr/lib64 /us
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
-              complist='xlf f90 f77 gfortran'
+              complist='xlf f90 gfortran'
               ccmplist='xlc cc gcc';;
     iris4d)   liblist='libcomplib.sgimath.a libblas.a'
-              complist='f90 f77 gfortran'
+              complist='f90 gfortran'
               ccmplist='cc gcc';;
     cray)     liblist=''
-              complist='cf90 f90 cf77 f77'
+              complist='cf90 f90'
               ccmplist='cc';;
     cray_t90) liblist=''
               complist='f90 cf90'
               ccmplist='cc';;
     cray_t3e) liblist=''
-              complist='f90 cf90 cf77 f77'
+              complist='f90 cf90'
               ccmplist='cc';;
     nec)      liblist='libblas0_640.a libeispack0_640.a liblinpack0_640.a'
               complist='f77sx'
               ccmplist='ccsx';;
     alpha)    liblist='libblas.a libdxml.a'
-              complist='f90 f77 gfortran'
+              complist='f90 gfortran'
               ccmplist='cc gcc';;
     linux-alpha) liblist='libcxml.a'
               complist='fort gfortran'
               ccmplist='ccc gcc';;
     sun4)     liblist='libblas.a'
-              complist='f90 f77 gfortran'
+              complist='f90 gfortran'
               ccmplist='cc gcc';;
     paragon)  liblist='libmath.a libblas.a'
-              complist='if90 if77 f90 f77'
+              complist='if90 f90'
               ccmplist='cc';;
     linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort pgf90 pgf95 gfortran'
+              complist='ifort pgf95 pgf90 gfortran'
               ccmplist='icc ecc pgcc gcc';;
     hp)       liblist='libblas.a libveclib.a'
-              complist='f90 fort77 f77'
+              complist='f90'
               ccmplist='cc'
 esac
 #
@@ -407,14 +407,14 @@ for comp in $complist; do
         if [ -f $ac_dir/$ac_word ]; then
           get_yes_or_no "Compiler $ac_dir/$ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
-            ac_cv_prog_F77=$ac_word
+            ac_cv_prog_F90=$ac_word
             break
           fi
         fi  
     done
     IFS="$ac_save_ifs"
-    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
-    F90="$ac_cv_prog_F77"
+    test -z "$ac_cv_prog_F90" && ac_cv_prog_F90=""
+    F90="$ac_cv_prog_F90"
     if [ -n "$F90" ]; then
         $ECHO "\n-->Compiler $F90 found and accepted."
         break
