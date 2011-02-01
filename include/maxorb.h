@@ -2,6 +2,7 @@ C
 C     File: maxorb.h
 C
 C     MXSHEL = maximum number of shells (insert shell definition here).
+C              (if modified: also  change MXSHEL for __CVERSION__ in infpar.h)
 C     MXPRIM = maximum number of primitives.
 C     MXCORB = maximum number of orbitals (possibly contracted).
 C     MAXOCC = maximum number of occupied orbitals
@@ -11,4 +12,5 @@ C     and then rebuild the program using the command "make".
 C
       INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MAXOCC
       PARAMETER (MXSHEL = 750, MXPRIM = 8000, MXCORB = 1200,
-     *           MAXOCC = 400, MXORBT = MXCORB*(MXCORB + 1)/2)
+     &           MAXOCC = 400, MXORBT = MXCORB*(MXCORB + 1)/2)
+C     -- end of maxorb.h --

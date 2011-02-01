@@ -11,9 +11,13 @@
 #endif
 
 #if defined(__CVERSION__)
+#ifdef COMMENT
+ NOTE : MXSHEL should have value of MXSHEL in maxorb.h
+#endif
+#define MXSHEL 750
 #define MAXNOD 200
-#define MAXCL2 10000
 #define NPARI  ((MAXNOD + 1) + 6)
+#define MAXTSK ( MXSHEL * (MXSHEL + 1) / 2 )
 extern struct common_infpar {
 #if defined (VAR_INT64)
     long iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
@@ -36,9 +40,9 @@ C           Logicals  (TIMING,SLAVE)
 C           Character (NODNAM,MYNAME) should NOT be sent to slaves
 C     THUS: NPARI is length from NODTOT,...,PARIO
 C
-      INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
-      PARAMETER (NPARI = (MAXNOD + 1) + 6)
+      INTEGER   MAXNOD, NPARI, MAXTSK
+      PARAMETER ( MAXNOD = 200, NPARI = (MAXNOD + 1) + 6 )
+      PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
       LOGICAL PARHER, PARIO, DEBUG,     TIMING, SLAVE
