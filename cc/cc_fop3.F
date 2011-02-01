@@ -57,7 +57,6 @@ C
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-#include <khaldtemp.h>
 COMMENT COMMENT COMMENT
 CCN #include <infind.h> not compatible with R12!
 #include <ccisao.h>
@@ -92,15 +91,6 @@ COMMENT COMMENT
       write(lupri,*) 'NORBT  = ',norbt
       write(lupri,*) 'NORBTS = ',norbts
       call flshfo(lupri)
-COMMENT COMMENT
-COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT Initialise nnbast!!
-COMMENT COMMENT COMMENT
-      call init_khald(nnbast)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
 C------------------------
 C     Dynamic Allocation.
 C------------------------
@@ -737,7 +727,6 @@ C
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-#include <khaldtemp.h>
 COMMENT COMMENT COMMENT
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -746,7 +735,7 @@ C
 COMMENT COMMENT
 COMMENT COMMENT
       write(lupri,*) 'NRHFT, NVIRT, NT1AMX : ',nrhft,nvirt,nt1amx
-      write(lupri,*) 'NORBT, NBAST, NNBAST : ',norbt,nbast,nnbast
+      write(lupri,*) 'NORBT, NBAST         : ',norbt,nbast
 COMMENT COMMENT
 COMMENT COMMENT
 C
@@ -808,7 +797,6 @@ C
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-#include <khaldtemp.h>
 COMMENT COMMENT COMMENT
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -1159,7 +1147,6 @@ C
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-#include <khaldtemp.h>
 COMMENT COMMENT COMMENT
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -1247,7 +1234,6 @@ C
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-#include <khaldtemp.h>
 COMMENT COMMENT COMMENT
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -2767,16 +2753,4 @@ C
 C
       RETURN
       END
-C  /* Deck init_khald */
-      SUBROUTINE INIT_KHALD(NNBASTIN)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-C
-      INTEGER NNBASTIN
-C
-      NNBASTIN = NNBAST
-C
-      RETURN
-      END
+C -- end of cc_fop3.F --
