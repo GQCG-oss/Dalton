@@ -2329,10 +2329,17 @@ cF90     IF (LENGTH.LE.0) EXIT
 cF90     BUFFER: DO IB=1,LENGTH
          DO IB=1,LENGTH
             LABEL=IBUF(IB)
+#ifdef VAR_INT64
+            I = IBITS(LABEL,48,16)
+            J = IBITS(LABEL,32,16)
+            K = IBITS(LABEL,16,16)
+            L = IBITS(LABEL, 0,16)
+#else
             I = IBITS(LABEL,24,8)
             J = IBITS(LABEL,16,8)
             K = IBITS(LABEL, 8,8)
             L = IBITS(LABEL, 0,8)
+#endif
             IF (L.EQ.0) THEN
                ICOOR = K
 cF90           CYCLE BUFFER
