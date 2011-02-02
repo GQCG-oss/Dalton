@@ -33,10 +33,10 @@ extern "C" {
       XC_VWN5C,
       XC_PBEC,
       XC_PBEX,
-      /*XC_BECKEX,
+      XC_BECKEX,
       XC_BECKECORRX,
       XC_BECKESRX,
-      XC_OPTX, */
+      /*      XC_OPTX, */
       XC_LYPC,
       /*
       XC_REVPBEX,
