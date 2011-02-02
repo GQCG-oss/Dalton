@@ -824,26 +824,10 @@ C          Save new R12 amplitudes on disk:
 C
          CALL FLSHFO(LUPRI)
 C
-         LCONV1 = DABS(EN2-EN1) .LT. THRENR .AND.
-     &        DABS(EN2R12-EN1R12).LT.THRENR
-         LCONV2 = OMNM .LT. THRVEC
+         LCONV1 = DABS(EN2-EN1)      .LT. THRENR .AND.
+     &            DABS(EN2R12-EN1R12).LT. THRENR
+         LCONV2 = OMNM    .LT. THRVEC
          LCONVG = LCONV1 .AND. LCONV2
-
-#if defined (VAR_IFORT)
-Casm     Silly code that solves an strange bug in ifort compiler
-
-         luwast = -1
-         call gpopen(luwast,'WASTE.OUT','UNKNOWN','SEQUENTIAL',
-     &               'formatted',idum,ldum)
-         write(luwast,*) 'lconv1 : ',lconv1
-         write(luwast,*) 'en1 : ',en1
-         write(luwast,*) 'en2 : ',en2
-         write(luwast,*) 'dif : ',dabs(en1-en2)
-         write(luwast,*) 'the : ',THRENR
-         write(luwast,*) 'lconv2 : ',lconv2
-         write(luwast,*) 'lconvg : ',lconvg
-         call gpclose(luwast,'DELETE')
-#endif
 
          ITER = ITER+1
          IF (ITER .GT. MAXITE) THEN
@@ -853,6 +837,7 @@ Casm     Silly code that solves an strange bug in ifort compiler
          ENDIF
 C
          NSLVINIT = NSLVINIT + 1
+
          IF (CCSLV.AND.((ITER-1).GE.MXTINIT)) THEN
            WRITE(LUPRI,241) ETY2
  241       FORMAT(/,1x,A5,
