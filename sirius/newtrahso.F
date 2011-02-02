@@ -268,20 +268,20 @@ C
                   ICOOR = IBUF(3,I)
                   DOCOOR = ICOOR.EQ.ILXYZ
                ELSE IF (DOCOOR) THEN
-                  JP = IBUF(1,I)
+                  JP  = IBUF(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
-                  JQ = IBUF(2,I)
+                  JQ  = IBUF(2,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 100
-                  JR = IBUF(3,I)
+                  JR  = IBUF(3,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 100
-                  JSS = ISAO(JS)
+                  JSS  = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 100
 C
-                  MP = JP - IBASP
-                  MQ = JQ - IBASQ
+                  MP  = JP - IBASP
+                  MQ  = JQ - IBASQ
                   IF (ISP .EQ. ISQ) THEN
                      MPQ = IROW(MP) + MQ - MPQOFF
                   ELSE

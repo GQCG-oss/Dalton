@@ -630,6 +630,7 @@ C
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
+#include <nuclei.h>
 #include <twocom.h>
 #include <dorps.h>
 #include <symmet.h>
@@ -639,6 +640,25 @@ C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
+C
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
+#else
+      IF (NBASIS .LE. 255) THEN
+         NIBUF = 1
+         NBITS = 8
+      ELSE
+         NIBUF = 2
+         NBITS = 16
+         CALL QUIT('More than 255 basis functions and spin-orbit not'//
+     &   ' implemented for 32-bit integers, use 64-bit integers')
+!        hjaaj Feb 2011: the problem is that NIBUF=2 is not implemented
+!        here, see DS2OU1 for how to implement if you have the time ...
+      END IF
+#endif
+      IBIT1 = 2**NBITS     - 1
+      IBIT2 = 2**(2*NBITS) - 1
 C
       IF (FIRST) CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,-1,
      &                       SPNORB,IPRINT)
@@ -675,7 +695,7 @@ C
                      IB = KHKTB*(NINDAB(IAB,2) - 1)
                      INDA = IPTSYM(NSTRNA + IA,IREPA)
                      INDB = IPTSYM(NSTRNB + IB,IREPB)
-                     INDAB = MAX(INDA,INDB)*255 + INDA + INDB
+                     INDAB = MAX(INDA,INDB)*IBIT1 + INDA + INDB
                      DO 410 ICD = 1, NORBCD
                         INT = INT + 1
                         SOINT = SO(ISOFF+INT)
@@ -686,17 +706,17 @@ C
                            INDD = IPTSYM(NSTRND + ID,IREPD)
                            IF (SQ12EL) THEN
                               IF (INDC .GT. INDD) THEN
-                                 INDCD  = INDC*256 + INDD
+                                 INDCD  = INDC*(IBIT1+1) + INDD
                               ELSE IF (SPNORB) THEN
                                  SOINT = - SOINT
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               ELSE
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               END IF
-                              IABCD = INDAB*65536 + INDCD
+                              IABCD = INDAB*(IBIT2+1) + INDCD
                            ELSE
-                              INDCD = MAX(INDC,INDD)*255 + INDC + INDD
-                              IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
+                              INDCD = MAX(INDC,INDD)*IBIT1 + INDC + INDD
+                              IABCD = MAX(INDAB,INDCD)*IBIT2+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
                            BUF (ICOUNT) = SOINT
@@ -728,7 +748,7 @@ C
                      END IF
                      INDA = IPTSYM(NSTRNA + IA,IREPA)
                      INDB = IPTSYM(NSTRNB + IB,IREPB)
-                     INDAB = MAX(INDA,INDB)*255 + INDA + INDB
+                     INDAB = MAX(INDA,INDB)*IBIT1 + INDA + INDB
                      DO 510 ICD = 1,NORBCD
                         IC = KHKTC*(NINDCD(ICD,1) - 1)
                         ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -747,17 +767,17 @@ C
                            INDD = IPTSYM(NSTRND + ID,IREPD)
                            IF (SQ12EL) THEN
                               IF (INDC .GT. INDD) THEN
-                                 INDCD  = INDC*256 + INDD
+                                 INDCD  = INDC*(IBIT1+1) + INDD
                               ELSE IF (SPNORB) THEN
                                  SOINT = - SOINT
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               ELSE
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               END IF
-                              IABCD = INDAB*65536 + INDCD
+                              IABCD = INDAB*(IBIT2+1) + INDCD
                            ELSE
-                              INDCD = MAX(INDC,INDD)*255 + INDC + INDD
-                              IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
+                              INDCD = MAX(INDC,INDD)*IBIT1 + INDC + INDD
+                              IABCD = MAX(INDAB,INDCD)*IBIT2+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
                            BUF (ICOUNT) = SOINT
@@ -825,10 +845,10 @@ C
             IF (LU2DER .LE. 0) THEN
                CALL QUIT('illegal unit number LU2DER in DR2WRT')
             ENDIF
-C
             CALL REWSPL(LU2DER)
          END IF
-         JBUF = 256
+C
+         JBUF   = 256
          ICOUNT =  0
          ICTOLD =  0
          NBUF   =  0
@@ -899,7 +919,11 @@ C
      &                       NDSINT(ICROLD,IRPOLD) + INTS
             ICOUNT = ICOUNT + 1
             BUF(ICOUNT)  = TEN14
+#ifdef VAR_INT64
+            IBUF(ICOUNT) = IATOM*2**48+IREPE*2**32+ICOOR*2**16
+#else
             IBUF(ICOUNT) = IATOM*2**24+IREPE*2**16+ICOOR*2**8
+#endif
             ICTOLD = ICOUNT
             NBFOLD = NBUF
             IRPOLD = IREPE
@@ -1081,6 +1105,7 @@ C
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
+#include <nuclei.h>
 #include <twocom.h>
 #include <dorps.h>
 #include <symmet.h>
@@ -1090,6 +1115,9 @@ C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
+
+      IF (NBASIS .GT. 255) CALL QUIT(
+     &   'Sorry, more than 255 basis fu. not implemented in MG2OUT')
 C
       IATOM = 0
       SPNORB = .FALSE.
