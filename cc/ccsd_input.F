@@ -9311,7 +9311,7 @@ C     Initialize chomp2.h
 #include <chomp2.h>
 
       MP2SAV = .FALSE.
-      CHOMO  = .TRUE.
+      CHOMO  = .FALSE.
       SKIPTR = .FALSE.
       SKIPCH = .FALSE.
       THRMP2 = -1.0D8
