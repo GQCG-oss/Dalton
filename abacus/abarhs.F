@@ -1166,7 +1166,7 @@ C
       CALL QENTER('MAKEGD')
       SUSCEP = IATOM .EQ. 0 .AND. (MAGSUS .OR. MOLGFA)
 C
-      IF (IPRMAX .GT. 0) WRITE (LUPRI,'(A/)')
+      IF (IPRMAX .GT. 0) WRITE (LUPRI,'(/A/)')
      &   '  <<<<<<<<<< Output from MAKEGD >>>>>>>>>>'
       IF (IPRMAX .GT. 5) THEN
          WRITE (LUPRI,'(1X,A,I5)')  ' IATOM ', IATOM
@@ -1453,13 +1453,23 @@ C
             IF (NOORTH) THEN
                CALL DZERO(WORK(KTDSQ),N2ORBX)
             ELSE
+               IF (IPRMAX .GT. 10)
+     &            WRITE(LUPRI,'(/A)') 'Calling FXFDTD with TD'
                CALL EXFDTD(TD(1,ICOOR),WORK(KTDSQ),ISYM,IPRMAX)
             END IF
+
+            IF (IPRMAX .GT. 10)
+     &         WRITE(LUPRI,'(/A)') 'Calling FXFDTD with FDC'
             CALL EXFDTD(FDC(1,ICOOR),WORK(KFDCSQ),ISYM,IPRMAX)
+
             IF (DFTADD) THEN
+               IF (IPRMAX .GT. 10)
+     &            WRITE(LUPRI,'(/A)') 'Calling FXFDTD with DFTFD'
                CALL EXFDTD(DFTFD(1,ICOOR),WORK(KDFTSQ),ISYM,IPRMAX)
             END IF
             IF (NASHT .GT. 0) THEN
+               IF (IPRMAX .GT. 10)
+     &            WRITE(LUPRI,'(/A)') 'Calling FXFDTD with FDV'
                CALL EXFDTD(FDV(1,ICOOR),WORK(KFDVSQ),ISYM,IPRMAX)
             ELSE
                CALL DZERO(WORK(KFDVSQ),N2ORBX)
@@ -1756,7 +1766,7 @@ C
   100 CONTINUE
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from EXFDTD',-1)
-         WRITE (LUPRI, '(1X,A,I5)') ' Symmetry of perturbation:',ISYM
+         WRITE (LUPRI, '(A,I5)') '  Symmetry of perturbation:',ISYM
          CALL OUTPUT(SQMAT,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
       RETURN

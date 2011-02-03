@@ -124,19 +124,19 @@ C
          WRITE (LUPRI, '(A,L5)') ' NODV  ', NODV
          WRITE (LUPRI, '(A,L5)') ' AOMAT ', AOMAT
       END IF
-!!#if defined (VAR_INT64)
-!!    NIBUF = 1
-!!    NBITS = 16
-!!#else
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
+#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
          call quit('GETFD1 only implemented for < 256 basis functions')
-!!       NIBUF = 2
-!!       NBITS = 16
+         NIBUF = 2
+         NBITS = 16
       END IF
-!!#endif
+#endif
       LBUF = 600
       JBUF = 256
 C
