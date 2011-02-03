@@ -888,19 +888,19 @@ C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
 C     CALL MOLLAB(KEY,LUDERA,LUPRI)
-!!#if defined (VAR_INT64)
-!!      NIBUF = 1
-!!      NBITS = 16
-!!#else
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
+#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
-!!       NIBUF = 2
-!!       NBITS = 16
+         NIBUF = 2
+         NBITS = 16
          call quit('TRDRAO only implement for .le. 255 basis functions')
       END IF
-!!#endif
+#endif
       LBUF = 600
       JBUF = 256
 C

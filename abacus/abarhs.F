@@ -2998,6 +2998,10 @@ C
 C
       CALL DZERO(UMOGA,NORBT**4)
       IF (NOH2 .OR. NOLOND) RETURN
+#if defined (VAR_INT64)
+      call quit('RUMOGA1: NBITS=16 not implemented here yet')
+!     Feb 2011 TODO : see her2out.F for how LU2DER is written
+#endif
 C
       CALL REWSPL(LU2DER)
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
