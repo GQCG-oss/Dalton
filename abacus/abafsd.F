@@ -956,7 +956,9 @@ C
          NIBUF = 1
          NBITS = 8
       ELSE
-         NIBUF = 2
+         call quit('FCKMG2: NBASIS .ge. 256 not implemented yet'//
+     &     ' for 32-bit integers. Use 64-bit integers.')
+         NIBUF = 2 ! NIBUF .eq. 2 not implemented in her2out.F
          NBITS = 16
       END IF
 #endif

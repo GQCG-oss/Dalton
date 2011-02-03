@@ -336,10 +336,10 @@ C
                   K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
                   L = IBTAND(       IBUF(INT,1),         IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-                  J = IBTAND(       IBUF(INT,1),       IBIT1)
-                  K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-                  L = IBTAND(       IBUF(INT,2),       IBIT1)
+                  I = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
+                  J = IBTAND(       IBUF(INT,1),         IBIT1)
+                  K = IBTAND(IBTSHR(IBUF(INT,2),  NBITS),IBIT1)
+                  L = IBTAND(       IBUF(INT,2),         IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
@@ -1116,8 +1116,24 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
 
-      IF (NBASIS .GT. 255) CALL QUIT(
-     &   'Sorry, more than 255 basis fu. not implemented in MG2OUT')
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
+#else
+      IF (NBASIS .LE. 255) THEN
+         NIBUF = 1
+         NBITS = 8
+      ELSE
+         NIBUF = 2
+         NBITS = 16
+         CALL QUIT('More than 255 basis functions and mag.der. not'//
+     &   ' implemented for 32-bit integers, use 64-bit integers')
+!        hjaaj Feb 2011: the problem is that NIBUF=2 is not implemented
+!        here, see DS2OU1 for how to implement if you have the time ...
+      END IF
+#endif
+      IBIT1 = 2**NBITS     - 1
+      IBIT2 = 2**(2*NBITS) - 1
 C
       IATOM = 0
       SPNORB = .FALSE.
@@ -1158,11 +1174,11 @@ C
                      INT = INT + 1
                      SOINT = SO(ISOFF1 + INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                        INDAB = INDA*256 + INDB
-                        INDCD = INDC*256 + INDD
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDCD = INDC*(IBIT1+1) + INDD
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDCD
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1171,11 +1187,11 @@ C
                      END IF
                      SOINT = SO(ISOFF2 + INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                        INDAB = INDA*256 + INDB
-                        INDCD = INDD*256 + INDC
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDCD = INDD*(IBIT1+1) + INDC
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDCD
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1203,7 +1219,7 @@ C
                   END IF
                   INDA = IPTSYM(NSTRNA + IA,IREPA)
                   INDB = IPTSYM(NSTRNB + IB,IREPB)
-                  INDAB = MAX(INDA,INDB)*256 + INDA + INDB
+                  INDAB = MAX(INDA,INDB)*(IBIT1+1) + INDA + INDB
                   DO 510 ICD = 1,NORBCD
                      IC   = KHKTC*(NINDCD(ICD,1) - 1)
                      ID   = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1220,11 +1236,11 @@ C
                      END IF
                      SOINT = SO(ISOFF1 + INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                        INDAB = INDA*256 + INDB
-                        INDCD = INDC*256 + INDD
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDCD = INDC*(IBIT1+1) + INDD
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDCD
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1235,11 +1251,11 @@ C
                      IF (ABS(SOINT) .GT. THRESH) THEN
                      IF (INDA .EQ. INDB) GO TO 510
                      IF (INDC .EQ. INDD) GO TO 510
-                        INDAB = INDA*256 + INDB
-                        INDDC = INDD*256 + INDC
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDDC = INDD*(IBIT1+1) + INDC
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDDC
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDDC
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
