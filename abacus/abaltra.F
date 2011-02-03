@@ -675,8 +675,8 @@ C
       KEY = 'AO2MGINT'
       CALL MOLLAB(KEY,LULONA,LUPRI)
 #if defined (VAR_INT64)
-    NIBUF = 1
-    NBITS = 16
+      NIBUF = 1
+      NBITS = 16
 #else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
