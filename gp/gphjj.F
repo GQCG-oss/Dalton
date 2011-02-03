@@ -153,11 +153,11 @@ C...  SGI IRIX  etc. code
       external time
 C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
 #endif
-      integer time
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0,TCPU0
-      data    first /.true./
+      integer*4 time
+      real*4    etime, tarray(2)
+      logical   first
+      save      first,iwall0,TCPU0
+      data      first /.true./
 C
       if (first) then
          first = .false.
@@ -169,11 +169,11 @@ C
       TIMWAL = itimwl
 #else
 #if (defined (SYS_LINUX) && defined (VAR_IFORT))
-      integer time,darr(9)
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0,TCPU0
-      data    first /.true./
+      integer*4 darr(9)
+      real*4    etime, tarray(2)
+      logical   first
+      save      first,iwall0,TCPU0
+      data      first /.true./
 C
       if (first) then
          first = .false.
