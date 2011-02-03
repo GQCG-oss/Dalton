@@ -78,13 +78,13 @@ struct dso_data {
 #ifdef VAR_MPI
 #include <mpi.h>
 
-void FSYM(getdsosz)(int *dsodim);
+void FSYM(getdsosz)(integer *dsodim);
 void
 numdso_slave(real* work, integer* lwork, const integer* iprint)
 {
-    int sz, new_lwork;
+    integer sz, new_lwork;
     integer dsodim;
-    int nucind;            /* IN: will be synced from master */
+    integer nucind;            /* IN: will be synced from master */
     real *spndso;
     
     FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
@@ -95,13 +95,13 @@ numdso_slave(real* work, integer* lwork, const integer* iprint)
     FSYM(dzero)(work, &sz);
     FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
 }
-void FSYM(dsosyncslaves)(real *dmat,int *nucind,real *work,int *lwork);
+void FSYM(dsosyncslaves)(real *dmat,integer *nucind,real *work,integer *lwork);
 #define numdso_sync_slaves(dmat,nucind,work,lwork) \
         FSYM(dsosyncslaves)(dmat,nucind,work,lwork)
 static void
-numdso_collect_info(real *spndso, real *work, int lwork)
+numdso_collect_info(real *spndso, real *work, integer lwork)
 {
-    int dsodim,sz;
+    integer dsodim,sz;
 
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz <=1) return;
@@ -121,11 +121,12 @@ static void
 dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
        int bllen, int blstart, int blend, struct dso_data* dso)
 {
-    extern void FSYM(dsocb)(real*, const int*, real (*coor)[3],
+    extern void FSYM(dsocb)(real*, const integer*, real (*coor)[3],
                             const real*rho,const real* wght,
                             real(*rvec)[3], real*r3i);
     int off = grid->curr_point;
-    FSYM(dsocb)(dso->dso, &bllen,
+    integer bllen_copy = bllen; /* conversion needed for VAR_INT64 */
+    FSYM(dsocb)(dso->dso, &bllen_copy,
            grid->coor+off, grid->r.rho,
            grid->weight+off, dso->rvec, dso->r3i);
 }
@@ -145,7 +146,7 @@ extern void FSYM2(numdso_finish)(real* spndso);
 void
 FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
 {
-    extern void dunfld_(const int* n, const real* dsp, real* dge);
+    extern void FSYM(dunfld)(const integer* n, const real* dsp, real* dge);
     struct tms starttm, endtm; clock_t utm;
     struct dso_data dso;
     real electrons, *dmat;
