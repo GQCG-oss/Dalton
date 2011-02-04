@@ -1,3 +1,4 @@
+#define DEBUG_RSPOLI
 !
 !...   Copyright (c) 2010 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -632,8 +633,9 @@ C
 #ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
-      write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDVAO,KDTOTAO,kfree',
-     &                          KDXCAO,KDXVAO,KDTCAO,KDVAO,KDTOTAO,KFREE
+      write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
+     &                        KDTOTAO,kfree',
+     &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
 #endif
 
 #ifdef MOD_SRDFT
@@ -643,13 +645,29 @@ C        Get DtotAO, allocation for DXtotAO in SIRFCK.SRDFT can here be
 C        used temporarily for DVAO if NASHT.gt.0
 C
          IF (IPRRSP .GT. 50) THEN
+            WRITE(LUPRI,*) 'SRDFT: DTCAO matrix'
+            CALL OUTPUT(WRK(KDTCAO),1,NBAST,1,NBAST,
+     &         NBAST,NBAST,-1,LUPRI)
+            WRITE(LUPRI,*) 'SRDFT: DTVAO matrix'
+            CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,
+     &         NBAST,NBAST,-1,LUPRI)
             WRITE(LUPRI,*) 'SRDFT: total density matrix AO basis DTOTAO'
             CALL OUTPUT(WRK(KDTOTAO),1,NBAST,1,NBAST,
      &         NBAST,NBAST,-1,LUPRI)
          END IF
       END IF
 #endif
-
+C
+C
+C Manu about MC-srDFT: Note that for ncsim >0 and doftc 
+C       the core transition DM (DTCAO) is set 
+C       to zero --> the corresponding IFCTYP will therefore be zero.
+C       When calculating the srH contribution to the Hessian in sirfck
+C       DTVAO is added to DTCAO and the srH term calculated with IFCTYP=0, in
+C       other words nothing is calculated ... IFCTYP must be modified before
+C       calling sirfck. see the next "Manu about srdft" ...   
+C
+C
 C     Transform any transition DMs to the AO basis 
       IF (NCSIM.GT.0) THEN
          IF (DOFTC) CALL DZERO(WRK(KDTCAO),NCSIM*N2BASX)
@@ -662,6 +680,21 @@ C     Transform any transition DMs to the AO basis
             JMO = JMO + N2ASHX
          END DO
       END IF
+
+#ifdef DEBUG_RSPOLI
+      IF (IPRRSP .GT. 50) THEN
+            write(lupri,*) 'after calling fckden2'
+            WRITE(LUPRI,*) 'SRDFT: DTCAO matrix'
+            CALL OUTPUT(WRK(KDTCAO),1,NBAST,1,NBAST,
+     &         NBAST,NBAST,-1,LUPRI)
+            WRITE(LUPRI,*) 'SRDFT: DTVAO matrix'
+            CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,
+     &         NBAST,NBAST,-1,LUPRI)
+            WRITE(LUPRI,*) 'SRDFT: total density matrix AO basis DTOTAO'
+            CALL OUTPUT(WRK(KDTOTAO),1,NBAST,1,NBAST,
+     &         NBAST,NBAST,-1,LUPRI)
+      END IF
+#endif
 C
 C Construct NOSIM Inactive and Active density matrices according to eq.27
 C in Chem Phys 119, 227 (1988).
@@ -717,6 +750,10 @@ C
          IX = 10 * MATSYM(NBAST,NBAST,WRK(JDXCAO),THRZER)
 C        INTEGER FUNCTION MATSYM(N,NDIM,AMAT,THRZER)
 C
+         IF (IPRRSP .GT. 60) THEN
+         write(lupri,*) 'I, IX = ', I, IX 
+         END IF 
+C
          IF (IX .EQ. 30) THEN
 C           zero density matrix, do nothing !
             IFCTYP(I) = 0
@@ -732,6 +769,23 @@ C           Coulomb+exchange
          END IF
          JDXCAO = JDXCAO + N2BASX
       END DO ! I = 1,NFMAT
+
+#ifdef MOD_SRDFT
+C
+C Manu about MC-srDFT: in order to calculate the srH Kernel we must reset all values of
+C      IFCTYP for FTCAO to the one obtained for FTVAO (because when calculating
+C      IFCTYP, DTVAO should be considered, and not DTCAO (which is set to zero !) 
+C
+#ifdef DEBUG_RSPOLI
+      write(lupri,*) '****** IFCTYP modified for srH Kernel !!!!' 
+#endif
+      IF ((NCSIM.GT.0).AND.DOFTC.AND.DOMCSRDFT) THEN     
+         DO I=1,NCSIM
+            IFCTYP(NFMAT-2*NCSIM+I)=IFCTYP(NFMAT-NCSIM+I) 
+         END DO
+      END IF
+#endif
+C
 C
       IF (ROKS.OR.HSROHF) THEN
 C     Change IFCTYP for all Fa matrices 
@@ -764,6 +818,9 @@ C     Change IFCTYP for all Fa matrices
       write(lupri,*) 'RSPOLI: before calling sirfck'
       write(lupri,*) 'RSPOLI: '
 #endif
+C Manu test !!!!!!!!!!!
+C     IFCTYP(1)=1  
+C Manu test !!!!!!!!!!!
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
 #ifdef DEBUG_RSPOLI
@@ -860,6 +917,20 @@ C
 C
       CALL MEMREL('RSPOLI.sirfck',WRK,KFRSAV,KWRK0,KFREE,LFREE)
 C
+C Manu debug1
+         IF (IPRRSP.GT.30) THEN
+            DO 1015 ICSIM = 1,NCSIM
+            WRITE(LUPRI,'(/2A,I5)')' FVTD before aotomo'
+     *         ,' FOR VECTOR ',ICSIM
+            CALL OUTPUT(FVTD(1,1,ICSIM),
+     *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+            WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc before aotomo'
+     *         ,' FOR VECTOR ',ICSIM
+            CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
+     *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+ 1015       CONTINUE
+         END IF
+C Manu debug2
 C
 C The following would comply for a call from LAGRAN in HF
 C
@@ -1044,6 +1115,10 @@ C
             WRITE(LUPRI,'(/2A,I5)')' FVTD total contribution'
      *         ,' FOR VECTOR ',ICSIM
             CALL OUTPUT(FVTD(1,1,ICSIM),
+     *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+            WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc total contribution'
+     *         ,' FOR VECTOR ',ICSIM
+            CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
  1014       CONTINUE
          END IF
