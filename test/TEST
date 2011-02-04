@@ -641,11 +641,12 @@ do
             problems="$problems $item"
         fi
       elif [ "$keep" = "false" ]; then
-          rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
-          if [ "$step" -eq "$numsteps" ]; then
-#         only delete restart files in last step of multistep test !!!
-             rm -f $dalfile.tar.gz
-          fi
+        #rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
+        rm -f $dalfile.dal $dalfile.BAS $checkfile $item.info # keep $logfile, can be interesting to look closer at
+        if [ "$step" -eq "$numsteps" ]; then
+#       only delete restart files in last step of multistep test !!!
+           rm -f $dalfile.tar.gz
+        fi
 #     else everything OK and -keep defined
       fi
     step=`expr $step \+ 1`
@@ -704,8 +705,8 @@ if [ "$perl_style" -gt 0 ]; then
         myprint "THERE IS A PROBLEM in perl-style tests"
     else
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
-       myprint ""
-       myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+        myprint ""
+        myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
     fi
     myprint ""
     myprint "Perl-style tests finished!"
