@@ -215,8 +215,8 @@ dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp,
    to rho and zeta=|\nabla\rho|
 */
 void
-dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
-         int triplet)
+dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, integer isgga,
+         integer triplet)
 {
     FunThirdFuncDrv drvs;
 
