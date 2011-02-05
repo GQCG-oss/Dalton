@@ -65,6 +65,7 @@ const static int DFTMAG_DEBUG = 0;
 
 #if defined(VAR_MPI)
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #define MASTER_NO 0
 #endif
 #if 0 && defined(VAR_MPI)
@@ -95,7 +96,7 @@ static __inline__ void
 dft_kohn_sham_collect_info(real*ksm, real* energy, real* work, integer lwork)
 {
     real tmp = *energy;
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz <=1) return;
     CHECK_WRKMEM(inforb_.n2basx, lwork);
@@ -254,9 +255,9 @@ dft_lin_resp_sync_slaves(real* cmo, integer *nvec, real**zymat,
                          real **work, integer lwork)
 {
     static SyncData data2[] = 
-    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT},
-      {NULL, 0, MPI_INT} };
-    MPI_Bcast(nvec, 1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, fortran_MPI_INT},
+      {NULL, 0, fortran_MPI_INT} };
+    MPI_Bcast(nvec, 1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     FSYM(dftlrsync)();
     if(*zymat == NULL) { /* we are a slave */
         if(lwork<*nvec*inforb_.n2orbx)
@@ -275,23 +276,25 @@ dft_lin_resp_sync_slaves(real* cmo, integer *nvec, real**zymat,
 static __inline__ void
 dft_lin_resp_collect_info(integer nvec, real* fmat, real*work, integer lwork)
 {
-    integer sz = 0;
-    MPI_Comm_size(MPI_COMM_WORLD, &sz);
-    if(sz<=1) return;
+    int sz_mpi = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
+    if(sz_mpi<=1) return;
 
-    sz = nvec*inforb_.n2basx;
+    integer sz = nvec*inforb_.n2basx;
+    sz_mpi = sz;
     if(sz>lwork) {
         CHECK_WRKMEM(inforb_.n2basx,lwork);
         for(sz=0; sz<nvec; sz++) {
             dcopy_(&inforb_.n2basx, fmat + sz*inforb_.n2basx,
                    &ONEI, work, &ONEI);
-            MPI_Reduce(work, fmat+sz*inforb_.n2basx, inforb_.n2basx,
+            int len_for_reduce = inforb_.n2basx;
+            MPI_Reduce(work, fmat+sz*inforb_.n2basx, len_for_reduce,
                        MPI_DOUBLE, MPI_SUM, MASTER_NO, MPI_COMM_WORLD);
         }
     } else {
         CHECK_WRKMEM(sz, lwork);
         dcopy_(&sz, fmat, &ONEI, work, &ONEI);
-        MPI_Reduce(work, fmat, sz, MPI_DOUBLE, MPI_SUM, 
+        MPI_Reduce(work, fmat, sz_mpi, MPI_DOUBLE, MPI_SUM, 
                    MASTER_NO, MPI_COMM_WORLD);
     }
 }
@@ -408,11 +411,12 @@ FSYM2(dft_lin_resp)(real* fmat, real *cmo, real *zymat, integer *trplet,
     DftCallbackData cbdata[1];
     DftDensity dens = { dft_dens_restricted, NULL, NULL };
     real dummy;
-    int i=1, j;
+    integer nvec1=1;
+    int i, j;
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)dft_lin_resp_);    /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop,
+    dft_lin_resp_sync_slaves(cmo,&nvec1,&zymat,trplet,ksymop,
                              &work, *lwork);              /* NO-OP in serial */
 
     times(&starttm);
@@ -625,13 +629,14 @@ static __inline__ void
 dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work, integer lwork)
 {
     real tmp = *energy;
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
 
     sz = 2*inforb_.n2basx;
+    integer sz_ftn = sz;
     CHECK_WRKMEM(sz,lwork);
-    dcopy_(&sz, ksm,&ONEI, work, &ONEI);
+    dcopy_(&sz_ftn, ksm, &ONEI, work, &ONEI);
     MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
     MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
@@ -801,13 +806,14 @@ dft_lin_respab_slave(real* work, integer* lwork, const integer* iprint)
 static __inline__ void
 dft_lin_respab_collect_info(real* fmat, real*work, integer lwork)
 {
-    integer sz = 0;
+    int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
 
     sz = 2*inforb_.n2orbx; 
+    integer sz_ftn =sz;
     CHECK_WRKMEM(sz,lwork);
-    dcopy_(&sz, fmat,&ONEI, work, &ONEI);
+    dcopy_(&sz_ftn, fmat, &ONEI, work, &ONEI);
     MPI_Reduce(work, fmat, sz, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
 }
@@ -1066,6 +1072,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
     LinRespDataab lr_data;
     DftCallbackData cbdata[1];
     int i=1, j, ioff, joff, norbi, norbj;
+    integer nvec1=1;
     real averag;
     real *fmata, *fmatb; 
     real *runit;
@@ -1074,7 +1081,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet, ksymop,
+    dft_lin_resp_sync_slaves(cmo,&nvec1,&zymat,trplet, ksymop,
                              &work, *lwork);              /* NO-OP in serial */
 
     times(&starttm);
@@ -1686,12 +1693,13 @@ static void
 dft_kohn_shamab_b_collect(real *energy, real *ksm, real* work, integer lwork)
 {
   real tmp = *energy;
-  integer sz = 0;
+  int sz = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &sz);
   if(sz <=1) return; 
   sz = 2*inforb_.n2basx;
+  integer sz_ftn = sz;
   CHECK_WRKMEM(sz, lwork);
-  dcopy_(&sz, ksm,&ONEI, work, &ONEI);
+  dcopy_(&sz_ftn, ksm,&ONEI, work, &ONEI);
   MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM, 
              MASTER_NO, MPI_COMM_WORLD);
   MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
@@ -1977,11 +1985,12 @@ dft_lin_respab_b_slave(real* work, integer* lwork, const integer* iprint)
 static  void
 dft_lin_respab_b_collect(integer nvec, real* fmata, real* fmatb,  real *work, integer lwork)
 {
-  integer sz = 0;
+  int sz = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &sz);
   if(sz<=1) return;
 
   sz = nvec*inforb_.n2basx;
+  integer sz_ftn =sz;
   if(sz>lwork) {
     CHECK_WRKMEM(inforb_.n2basx,lwork);
     for(sz=0; sz<nvec; sz++) {
@@ -1998,10 +2007,10 @@ dft_lin_respab_b_collect(integer nvec, real* fmata, real* fmatb,  real *work, in
     }
   } else {
     CHECK_WRKMEM(sz, lwork);
-    dcopy_(&sz, fmata, &ONEI, work, &ONEI);
+    dcopy_(&sz_ftn, fmata, &ONEI, work, &ONEI);
     MPI_Reduce(work, fmata, sz, MPI_DOUBLE, MPI_SUM, 
                MASTER_NO, MPI_COMM_WORLD);
-    dcopy_(&sz, fmatb, &ONEI, work, &ONEI);
+    dcopy_(&sz_ftn, fmatb, &ONEI, work, &ONEI);
     MPI_Reduce(work, fmatb, sz, MPI_DOUBLE, MPI_SUM,
                MASTER_NO, MPI_COMM_WORLD); 
   }

@@ -106,13 +106,15 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #if defined (VAR_MPI)
+#include <maxorb.h>
+#include <infpar.h>
       INCLUDE 'mpif.h'
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, ROOT
       DIMENSION BUFFER(*)
 C
       IF      (TYPE .EQ. 'INTEGE') THEN
-         DATATYPE = MPI_INTEGER
+         DATATYPE = my_MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
          DATATYPE = MPI_LOGICAL
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
@@ -135,6 +137,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #if defined (VAR_MPI)
+#include <maxorb.h>
+#include <infpar.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       CHARACTER*6 TYPE
@@ -142,7 +146,7 @@ C
       DIMENSION BUFFER(*)
 C
       IF      (TYPE .EQ. 'INTEGE') THEN
-         DATATYPE = MPI_INTEGER
+         DATATYPE = my_MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
          DATATYPE = MPI_LOGICAL
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
@@ -172,13 +176,15 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #if defined (VAR_MPI)
+#include <maxorb.h>
+#include <infpar.h>
       INCLUDE 'mpif.h'
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, DEST, TAG
       DIMENSION BUFFER(*)
 C
       IF      (TYPE .EQ. 'INTEGE') THEN
-         DATATYPE = MPI_INTEGER
+         DATATYPE = my_MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
          DATATYPE = MPI_LOGICAL
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN

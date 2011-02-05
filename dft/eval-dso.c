@@ -101,10 +101,11 @@ void FSYM(dsosyncslaves)(real *dmat,integer *nucind,real *work,integer *lwork);
 static void
 numdso_collect_info(real *spndso, real *work, integer lwork)
 {
-    integer dsodim,sz;
+    integer dsodim, sz;
+    int     sz_mpi;
 
-    MPI_Comm_size(MPI_COMM_WORLD, &sz);
-    if(sz <=1) return;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
+    if(sz_mpi <=1) return;
 
     FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
     dcopy_(&sz, spndso, &ONEI, work, &ONEI);

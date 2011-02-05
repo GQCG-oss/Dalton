@@ -1204,17 +1204,18 @@ fast_callback(DftGrid* grid, CubeFastData* data)
 
 #ifdef VAR_MPI
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #include "infpar.h"
 
 void
-dft_cr_resp_slave(real* work, int* lwork, const int* iprint)
+dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint)
 {
     real* fi    = calloc(inforb_.n2orbx, sizeof(real));              /* OUT */
     real *cmo = dal_malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /*IN */
     real *kappaB= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
     real *kappaC= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
     real *kappaD= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
-    int  symB, symC, symD;                                            /*IN */
+    integer  symB, symC, symD;                                        /*IN */
     dftcrcf_(fi,     cmo,
              kappaB, &symB,
              kappaC, &symC,
@@ -1230,13 +1231,13 @@ dft_cr_resp_slave(real* work, int* lwork, const int* iprint)
 
 static void
 dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
-                        int* symB, int* symC, int* symD)
+                        integer* symB, integer* symC, integer* symD)
 {
     static const SyncData sync_data[] = {
-        { inforb_.nocc,   8, MPI_INT },
-        { inforb_.nvir,   8, MPI_INT },
-        { &inforb_.nocct, 1, MPI_INT },
-        { &inforb_.nvirt, 1, MPI_INT },
+        { inforb_.nocc,   8, fortran_MPI_INT },
+        { inforb_.nvir,   8, fortran_MPI_INT },
+        { &inforb_.nocct, 1, fortran_MPI_INT },
+        { &inforb_.nvirt, 1, fortran_MPI_INT },
     };
 #ifdef C99_COMPILER
     const SyncData data2[] = {
@@ -1244,16 +1245,16 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
         { kappaB,  inforb_.n2orbx,             MPI_DOUBLE },
         { kappaC,  inforb_.n2orbx,             MPI_DOUBLE },
         { kappaD,  inforb_.n2orbx,             MPI_DOUBLE },
-        { symB,    1,                          MPI_INT    },
-        { symC,    1,                          MPI_INT    },
-        { symD,    1,                          MPI_INT    },
+        { symB,    1,                          fortran_MPI_INT    },
+        { symC,    1,                          fortran_MPI_INT    },
+        { symD,    1,                          fortran_MPI_INT    },
     };
 #else /* C99_COMPILER */
     /* this is more error-prone but some compilers (HP/UX)... */
     static SyncData data2[] =
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE},
       {NULL, 0, MPI_DOUBLE},
-      {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   }};
+      {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }};
     data2[0].data = cmo;     data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = kappaB;  data2[1].count = inforb_.n2orbx;
     data2[2].data = kappaC;  data2[2].count = inforb_.n2orbx;

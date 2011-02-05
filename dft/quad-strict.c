@@ -70,8 +70,8 @@
 struct QuadStrictData_ {
     /* pointers to external data (data is not owned) */
     const real* kappaY, *kappaZ; 
-    int ispinY,ispinZ; /* rank of kappa vectors */
-    int addfock; /* add fock contribution */
+    integer ispinY,ispinZ; /* rank of kappa vectors */
+    integer addfock; /* add fock contribution */
 
     /* temporary variables */
     real grada[3]; /* alpha density gradients */
@@ -107,8 +107,8 @@ struct QuadStrictData_ {
 typedef struct QuadStrictData_ QuadStrictData;
 
 static QuadStrictData*
-quadstrict_data_new(const real* kY, const real* kZ, int ispinY, int ispinZ,
-                    int addfock)
+quadstrict_data_new(const real* kY, const real* kZ, integer ispinY, integer ispinZ,
+                    integer addfock)
 {
     QuadStrictData* res = malloc(sizeof(QuadStrictData));
 

@@ -266,30 +266,30 @@ c
 #include <symmet.h>
 #include <xyzpow.h>
 c     sync inforb:
-      CALL MPI_Bcast(muld2h, 8*8,   MPI_INTEGER,
+      CALL MPI_Bcast(muld2h, 8*8,   my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(nbas,   8,     MPI_INTEGER,
+      CALL MPI_Bcast(nbas,   8,     my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(nsym,   1,     MPI_INTEGER,
+      CALL MPI_Bcast(nsym,   1,     my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(NBAST, 1, MPI_INTEGER,
+      CALL MPI_Bcast(NBAST, 1, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(N2BASX, 1, MPI_INTEGER,
+      CALL MPI_Bcast(N2BASX, 1, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
 c     /lmns/
-      CALL MPI_Bcast(lvalua, MXAQN, MPI_INTEGER,
+      CALL MPI_Bcast(lvalua, MXAQN, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(mvalua, MXAQN, MPI_INTEGER,
+      CALL MPI_Bcast(mvalua, MXAQN, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(nvalua, MXAQN, MPI_INTEGER,
+      CALL MPI_Bcast(nvalua, MXAQN, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
 c     /ONECOM/
-      CALL MPI_Bcast(jsta,   1,     MPI_INTEGER,
+      CALL MPI_Bcast(jsta,   1,     my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(nuca,   1,     MPI_INTEGER,
+      CALL MPI_Bcast(nuca,   1,     my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
 c     /PINCOM/
-      CALL MPI_Bcast(ipind,  MXCORB, MPI_INTEGER,
+      CALL MPI_Bcast(ipind,  MXCORB, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
 c     /PRIMIT/
       NPRICCF = MXCONT*MXPRIM
@@ -300,55 +300,55 @@ c     /PRIMIT/
 c     /SHELLS/
       CALL MPI_Bcast(cent, MXSHEL*2*3, MPI_DOUBLE_PRECISION,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(istbao, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(istbao, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(jstrt, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(jstrt, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(kckt, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(kckt, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(khkt, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(khkt, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(kmax, 1, MPI_INTEGER,
+      CALL MPI_Bcast(kmax, 1, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(kstrt, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(kstrt, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(nhkt, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(nhkt, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(nuco, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(nuco, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(numcf, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(numcf, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(sphr, MXSHEL, MPI_INTEGER,
+      CALL MPI_Bcast(sphr, MXSHEL, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
 c     /SPHTRM/
       CALL MPI_Bcast(csp, NCSP, MPI_DOUBLE_PRECISION,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(ispadr, MXQN,       MPI_INTEGER,
+      CALL MPI_Bcast(ispadr, MXQN,       my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
       NPTCNT = 3*MXCENT*8*2
-      CALL MPI_Bcast(iptcnt, NPTCNT,     MPI_INTEGER,
+      CALL MPI_Bcast(iptcnt, NPTCNT,     my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(iptsym, MXCORB*8,   MPI_INTEGER,
+      CALL MPI_Bcast(iptsym, MXCORB*8,   my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
 c     /SYMMET/
-      CALL MPI_Bcast(isymao, MXAQN*MXQN, MPI_INTEGER,
+      CALL MPI_Bcast(isymao, MXAQN*MXQN, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(isymax, 3*2, MPI_INTEGER,
+      CALL MPI_Bcast(isymax, 3*2, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(maxopr, 1, MPI_INTEGER,
+      CALL MPI_Bcast(maxopr, 1, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(maxrep, 1, MPI_INTEGER,
+      CALL MPI_Bcast(maxrep, 1, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(naos, 8, MPI_INTEGER,
+      CALL MPI_Bcast(naos, 8, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
       CALL MPI_Bcast(pt, 8, MPI_DOUBLE_PRECISION,
      &               0, MPI_COMM_WORLD,ie)
 c     /XYZPOW/
-      CALL MPI_Bcast(istep, MXAQNM, MPI_INTEGER,
+      CALL MPI_Bcast(istep, MXAQNM, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(mval, MXAQNM, MPI_INTEGER,
+      CALL MPI_Bcast(mval, MXAQNM, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
-      CALL MPI_Bcast(nval, MXAQNM, MPI_INTEGER,
+      CALL MPI_Bcast(nval, MXAQNM, my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
 c     /DFTCOM/
       CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
@@ -372,6 +372,8 @@ c
 c
 #include <implicit.h>
 #include <mpif.h>
+#include <maxorb.h>
+#include <infpar.h>
       A = ELECTRONS
       CALL MPI_Reduce(A,ELECTRONS,1,MPI_DOUBLE_PRECISION,MPI_SUM,
      &                0,MPI_COMM_WORLD,IERR)

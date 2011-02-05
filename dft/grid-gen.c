@@ -96,7 +96,7 @@ struct GridGenAtomGrid_ {
 };  
 
 struct GridGenMolGrid_ {
-    int atom_cnt;                  /* number of atoms grid is generated for*/
+    integer atom_cnt;                  /* number of atoms grid is generated for*/
     const GridGenAtom* atom_coords;/* array with atom data */
     GridGenAtomGrid**   atom_grids;/* array of atom grids */
     real* rij;  /* triangular array of inverse distances between atoms */
@@ -993,12 +993,13 @@ comp_weight(const void *a, const void *b)
 }
 #endif
 static void
-write_final_coords_and_weights(int cnt, int nblocks, integer (*shlblocks)[2],
+write_final_coords_and_weights(int cnt, integer nblocks, integer (*shlblocks)[2],
 			       real *coorw, FILE *f)
 {
     int i;
     if(cnt <= 0) return;
-    if(fwrite(&cnt, sizeof(cnt), 1, f)!=1) {
+    integer cnt_ll = cnt;
+    if(fwrite(&cnt_ll, sizeof(cnt_ll), 1, f)!=1) {
         fprintf(stderr, "GRIDGEN: 'too short write' error.\n");
         dalton_quit("GRIDGEN: 'too short write' error.\n");
     }
@@ -1016,7 +1017,7 @@ write_final_coords_and_weights(int cnt, int nblocks, integer (*shlblocks)[2],
 
 static void
 boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
-                        int nblocks, integer (*shlblocks)[2],
+                        integer nblocks, integer (*shlblocks)[2],
                         real *center, const int *atom_nums,
                         real *coorw)
 {
@@ -1031,6 +1032,7 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
 
 #ifdef VAR_MPI
 #include <mpi.h>
+#include <our_extra_mpi.h>
 static int mynum, nodes, last;
 static void
 grid_par_init(real *radint, int *angmin, int *angint, int *grdone) {
@@ -1050,6 +1052,9 @@ grid_par_init(real *radint, int *angmin, int *angint, int *grdone) {
     MPI_Bcast(arr,    ELEMENTS(arr), MPI_INT,    0, MPI_COMM_WORLD);
     *angmin = arr[0];
     *angint = arr[1];
+    /* 
+    printf("angmin %i angint %i for mynum %i",arr[0], arr[1], mynum);
+    */
     switch(arr[2]) {
     case 0: selected_partitioning = &partitioning_becke_orig; break;
     case 1: selected_partitioning = &partitioning_becke_corr; break;
@@ -1074,7 +1079,7 @@ grid_get_fname(const char *base, int filenum)
 #define M(s) {if((s) != MPI_SUCCESS) printf("MPI comm failed at %d\n", __LINE__); }
 static void
 boxify_save_batch(GridGenMolGrid *mg, FILE *f, int cnt, 
-                  int nbl, int shlbl[][2],
+                  integer nbl, integer shlbl[][2],
                   real *center, int *atom_nums, real *coorw)
 {
     /* PARBLLEN must be low multiplicity of dftcom:MAXBLLEN
@@ -1091,7 +1096,7 @@ boxify_save_batch(GridGenMolGrid *mg, FILE *f, int cnt,
         else {
             int arr[2]; arr[0] = bcnt; arr[1] = nbl;
             M(MPI_Send(arr,     2,      MPI_INT,   last, 1, MPI_COMM_WORLD));
-            M(MPI_Send(shlbl,   2*nbl,  MPI_INT,   last, 2, MPI_COMM_WORLD));
+            M(MPI_Send(shlbl,   2*nbl,  fortran_MPI_INT,   last, 2, MPI_COMM_WORLD));
             M(MPI_Send(coorw+i*4,4*bcnt,MPI_DOUBLE,last, 3, MPI_COMM_WORLD));
             M(MPI_Send(center,  3,      MPI_DOUBLE,last, 4, MPI_COMM_WORLD));
             M(MPI_Send(atom_nums+i,bcnt, MPI_INT,  last, 5, MPI_COMM_WORLD));
@@ -1171,13 +1176,18 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
         if(nblocks==0) continue;        
 
         if(0) {
+        int nblocks_int = nblocks;
         printf("box [%5.1f,%5.1f,%5.1f] nt=%5d "
                "%f <r<%f [%5.1f,%5.1f,%5.1f] %d\n",
                center[0], center[1], center[2], cnt,
                sqrt(mindist), sqrt(maxdist),
-               sx/cnt, sy/cnt, sz/cnt, nblocks);
+               sx/cnt, sy/cnt, sz/cnt, nblocks_int);
         for(i=0; i<nblocks; i++)
+#ifdef VAR_INT64
+            printf("(%lld,%lld)",shlblocks[i][0], shlblocks[i][1]);
+#else
             printf("(%d,%d)",shlblocks[i][0], shlblocks[i][1]);
+#endif
         puts("");
         }
 
@@ -1221,7 +1231,7 @@ ggen_work_release(GridGenWork* ggw)
 }
 
 static GridGenMolGrid*
-mgrid_new(int atom_cnt, const GridGenAtom* atoms)
+mgrid_new(integer atom_cnt, const GridGenAtom* atoms)
 {
     int i, j, index, paircnt;
     GridGenMolGrid* mg = dal_new(1, GridGenMolGrid);
@@ -1481,7 +1491,7 @@ mgrid_boxify(GridGenMolGrid *mg, const char* fname,
    returns number of grid points.
 */
 int
-grid_generate(const char* filename, int atom_cnt, 
+grid_generate(const char* filename, integer atom_cnt, 
               const GridGenAtom* atom_arr, real threshold,
               GridGeneratingFunc generating_function, void* arg,
               int minang, int maxang, real* work, integer *lwork)
@@ -1683,14 +1693,14 @@ grid_par_shutdown(void)
 static void
 grid_par_slave(const char *fname, real threshold)
 {
-    integer *shlblocks;
+    integer (*shlblocks)[2];
     MPI_Status s;
     char *     nm = grid_get_fname(fname, mynum);
     FILE *f;
-    int ishlcnt = FSYM2(ishell_cnt)();
+    integer ishlcnt = FSYM2(ishell_cnt)();
     real *dt = NULL;
     int   dt_sz = 0;
-    int atom_cnt, point_cnt=0;
+    integer atom_cnt, point_cnt=0;
     GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
     GridGenMolGrid* mg =  mgrid_new(atom_cnt, atoms);
     int *atom_nums = NULL;
@@ -1701,11 +1711,12 @@ grid_par_slave(const char *fname, real threshold)
     shlblocks = malloc(2*ishlcnt*sizeof(integer));
     do {
         int arr[2], lda;
+        integer arr_integer;
         real center[3];
         M(MPI_Recv(arr, 2, MPI_INT, 0, 1, MPI_COMM_WORLD, &s));
         if(arr[0] == 0)break; /* End Of Job */
 
-        M(MPI_Recv(shlblocks, 2*arr[1], MPI_INT, 0, 2, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(shlblocks, 2*arr[1], fortran_MPI_INT, 0, 2, MPI_COMM_WORLD, &s));
         if(arr[0]>dt_sz) {
             dt = realloc(dt, 4*arr[0]*sizeof(real));
             atom_nums = realloc(atom_nums, arr[0]*sizeof(int));
@@ -1717,7 +1728,8 @@ grid_par_slave(const char *fname, real threshold)
         if(selected_partitioning->postprocess)
             arr[0] = selected_partitioning->postprocess
                 (mg, center, arr[0], atom_nums,  (real(*)[4])dt);
-        write_final_coords_and_weights(arr[0], arr [1], shlblocks, dt, f);
+        arr_integer = arr [1];
+        write_final_coords_and_weights(arr[0], arr_integer, shlblocks, dt, f);
         point_cnt += arr[0];
     } while(1);
     fclose(f);
@@ -1739,7 +1751,7 @@ void FSYM2(get_grid_paras)(int *grdone, real *radint, int *angmin, int *angint);
 void FSYM2(set_grid_done)(void);
 
 DftGridReader*
-grid_open(int nbast, real *dmat, real *work, integer *lwork)
+grid_open(integer nbast, real *dmat, real *work, integer *lwork)
 {
     DftGridReader *res = dal_new(1, DftGridReader);
     int grdone, angmin, angint;
@@ -1819,7 +1831,7 @@ grid_open(int nbast, real *dmat, real *work, integer *lwork)
 
 
 DftGridReader*
-grid_open_cmo(int nbast, const real *cmo, real *work, integer *lwork)
+grid_open_cmo(integer nbast, const real *cmo, real *work, integer *lwork)
 {
     real *dmat = dal_new(nbast*nbast, real);
     DftGridReader *reader;
@@ -1834,25 +1846,33 @@ grid_open_cmo(int nbast, const real *cmo, real *work, integer *lwork)
     information if only nblocks and shlblocks are provided.
  */
 int
-grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
+grid_getchunk_blocked(DftGridReader* rawgrid, integer maxlen,
                       integer *nblocks, integer (*shlblocks)[2],
                       real (*coor)[3], real *weight)
 {
-    int sz = 0, rc, bl_cnt;
+    integer sz = 0, rc, bl_cnt;
     FILE *f = rawgrid->f;
 
-    if(fread(&sz, sizeof(int), 1, f) <1)
+    if(fread(&sz, sizeof(integer), 1, f) <1)
         return -1; /* end of file */
     if(sz>maxlen) {
+#ifdef VAR_INT64
+        fprintf(stderr,
+                "grid_getchunk: too long vector length in file: %lld > %lld\n"
+                "Calculation will stop.\n", sz, maxlen);
+        dalton_quit("grid_getchunk: too long vector length in file: %lld > %lld\n"
+                "Calculation will stop.\n", sz, maxlen);
+#else
         fprintf(stderr,
                 "grid_getchunk: too long vector length in file: %d > %d\n"
                 "Calculation will stop.\n", sz, maxlen);
         dalton_quit("grid_getchunk: too long vector length in file: %d > %d\n"
                 "Calculation will stop.\n", sz, maxlen);
+#endif
         return -1; /* stop this! */
     }
 
-    if(fread(&bl_cnt, sizeof(int), 1, f) <1) {
+    if(fread(&bl_cnt, sizeof(integer), 1, f) <1) {
         puts("OCNT reading error."); return -1;
     }
     if(nblocks) *nblocks = bl_cnt;
@@ -1870,9 +1890,15 @@ grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
         }
     }
     if(rc<1) {
+#ifdef VAR_INT64
+        fprintf(stderr,
+                "IBLOCKS reading error: failed to read %lld blocks.\n",
+                *nblocks);
+#else
         fprintf(stderr,
                 "IBLOCKS reading error: failed to read %d blocks.\n",
                 *nblocks);
+#endif
         return -1; 
     }
 
@@ -1925,7 +1951,7 @@ typedef struct TestMolecule_ TestMolecule;
 struct TestMolecule_ {
     const GridGenAtom* atoms;
     const real* overlaps;
-    int atom_cnt;
+    integer atom_cnt;
 };
 
 

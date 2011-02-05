@@ -1455,7 +1455,7 @@ C
 C#if defined (VAR_MPI)
 C      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
 C         IJOB = 0
-C         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
+C         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
 C     &                  MPI_COMM_WORLD,IERR)
 C      END IF
 C#endif      
@@ -7953,7 +7953,7 @@ C
             FIRST = .FALSE.
          ELSE
             IJOB = 1
-            CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
+            CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
      &                     MPI_COMM_WORLD,IERR)
             CALL PARIOT
          END IF

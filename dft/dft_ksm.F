@@ -344,9 +344,9 @@ c     do nothing when running serial code.
       IF(MYNUM.EQ.MASTER) THEN
 c        IPRTYP=4 is registered for KSM Slave driver.
          IPRTYP = 4
-         CALL MPI_Bcast(iprtyp,1, MPI_INTEGER,
+         CALL MPI_Bcast(iprtyp,1, my_MPI_INTEGER,
      &                  MASTER, MPI_COMM_WORLD,IERR)
-         CALL MPI_Bcast(iprint,1, MPI_INTEGER,
+         CALL MPI_Bcast(iprint,1, my_MPI_INTEGER,
      &                  MASTER, MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)

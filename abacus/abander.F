@@ -642,7 +642,7 @@ cC     We let the slaves wait for the Master to tell them whether to pick up
 cC     a new geometry or to end this calculation
 cC
 c      IF (MYNUM .GT. 0) THEN
-c         CALL MPI_BCAST(NTASK,1,MPI_INTEGER,NODEID(MASTER),
+c         CALL MPI_BCAST(NTASK,1,my_MPI_INTEGER,NODEID(MASTER),
 c     &                 MPI_COMM_WORLD,IERR)
 c         IF (NTASK .EQ. 1) THEN
 c            CALL PARION
@@ -1543,7 +1543,7 @@ cC
 c      IF (MYNUM .EQ. 0) THEN
 c         CALL DCOPY(NDIME,FTVAL,1,FUVAL,1)
 c         DO IWHO = 1, NODTOT
-c            CALL MPI_RECV(NWHO,1,MPI_INTEGER,MPI_ANY_SOURCE,65,
+c            CALL MPI_RECV(NWHO,1,my_MPI_INTEGER,MPI_ANY_SOURCE,65,
 c     &                    MPI_COMM_WORLD,ISTAT,IERR)
 c            CALL MPI_RECV(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NWHO,65,
 c     &                    MPI_COMM_WORLD,ISTAT,IERR)
@@ -1556,7 +1556,7 @@ c     &              FUVAL(IPOS) = FTVAL(IPOS)
 c            END DO
 c         END DO
 c      ELSE
-c         CALL MPI_SEND(MYNUM,1,MPI_INTEGER,NODEID(MASTER),
+c         CALL MPI_SEND(MYNUM,1,my_MPI_INTEGER,NODEID(MASTER),
 c     &                 65,MPI_COMM_WORLD,IERR)
 c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
 c     &                 65,MPI_COMM_WORLD,IERR)

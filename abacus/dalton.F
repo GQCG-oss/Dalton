@@ -58,12 +58,13 @@ Cef end
 !     memory-id tags for field 1 and 2+LMWORK
       DATA WRKDLM/12345678D0/
 C
-      CALL QENTER('DALTON main')
 C
 C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
 C If not MPI, MPIXINIT defines: MYNUM  = 0; MASTER = 0; NODTOT = 0
 C
       CALL MPIXINIT
+
+      CALL QENTER('DALTON main')
       PARIO = .FALSE.
 C
 C     Define SLAVE variable (only false for MASTER, MYNUM.eq.0)

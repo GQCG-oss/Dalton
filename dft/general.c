@@ -525,6 +525,7 @@ dft_dens_unrestricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
 
 #if defined(VAR_MPI)
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #define MASTER_NO 0
 /* =================================================================== */
 /* General parallel routines.
@@ -578,8 +579,8 @@ mpi_sync_data(const SyncData* data, int count)
 void
 dft_wake_slaves(DFTPropEvalMaster evaluator)
 {
-    static int iprtyp = 5; /* magic DFT/C number */
-    static int iprint = 0;
+    static integer iprtyp = 5; /* magic DFT/C number */
+    static integer iprint = 0;
     int id, mynum;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
@@ -598,9 +599,15 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
         return;
     }
     /* ignore MPI errors */
-    MPI_Bcast(&iprtyp,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&iprint,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&id,    1, MPI_INT, 0, MPI_COMM_WORLD);
+    /*
+    printf("waking up slaves with iprtyp %lld and iprint %lld",iprtyp, iprint);
+    */
+    MPI_Bcast(&iprtyp,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    MPI_Bcast(&iprint,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    MPI_Bcast(&id,    1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    /*
+    printf("id %d bcast",id);
+    */
     void FSYM(dftintbcast)();
 }
 
@@ -619,6 +626,9 @@ FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
     else {
         int id;
         MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+        /*
+        printf("done id bcast: id = %i mynum = %i; size = %i .\n", id, rank, size);
+        */
         void FSYM(dftintbcast)();
         (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
     }
@@ -681,13 +691,13 @@ FSYM(dftfuncsync)(integer *mynum, integer *nodes)
     if(done) return;
     MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if(len>0) {
-        int res;
+        integer res;
         char *line = malloc(len);
         if(*mynum == 0)
             strcpy(line, DftConfString);
         MPI_Bcast(line, len, MPI_CHAR, 0, MPI_COMM_WORLD);
         if(*mynum != 0) {
-            int res;
+            integer res;
             FSYM(dftsetfunc)(line, &res, len);
         }
         free(line);

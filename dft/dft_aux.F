@@ -316,20 +316,23 @@ c
       SUBROUTINE DFTLRSYNC
 #include <implicit.h>
 #include <mpif.h>
+#include <maxorb.h>
+#include <infpar.h>
 #include <inforb.h>
 #include <infvar.h>
 #include <wrkrsp.h>
-      CALL MPI_Bcast(NASHT, 1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(NISHT, 1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(JWOPSY,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(ICMO,  8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(IORB,  8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(IASH,  8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(NASH,  8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(NISH,  8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(NORB,  8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(KSYMOP,8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(MULD2H,8*8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(NASHT, 1,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(NISHT, 1,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(JWOPSY,1,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(ICMO,  8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(IORB,  8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(IASH,  8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(NASH,  8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(NISH,  8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(NORB,  8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(KSYMOP,8,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(MULD2H,8*8,my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+!     print *, 'done with sync mytid',mytid
       END
 #endif
       SUBROUTINE GETSHELLSCNT(nshells)
