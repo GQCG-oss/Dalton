@@ -66,7 +66,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -244,7 +244,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -620,7 +620,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -1120,7 +1120,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -1303,7 +1303,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -1484,7 +1484,7 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
@@ -1683,7 +1683,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION IBLOCKD(NBLOCK)
 *
@@ -1757,7 +1757,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       
@@ -1796,7 +1796,7 @@ C
           END IF
           IF( IBLOCKD(II) .eq. LUCI_MYPROC )THEN 
              CALL MPI_FILE_READ_AT(IDIA,IOFF_SCR,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
           ENDIF
           IF(NTEST.GE.100) THEN
             WRITE(LUWRT,*) ' Elements read in '

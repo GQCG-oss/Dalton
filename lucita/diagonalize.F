@@ -56,7 +56,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LU7LIST(*), LU6LIST(*)

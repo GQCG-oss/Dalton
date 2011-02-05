@@ -30,7 +30,7 @@ C    easier and more transparent because:
 C
 C    a) Less arguments to MPIX... calls than to MPI_... calls
 C    b) No need to specify the mpif.h include file or array
-C       ISTAT(MPI_SOURCE) in the calling subroutine.
+C       my_STATUS(MPI_SOURCE) in the calling subroutine.
 C    c) Error handling is automatically taken care of.
 C-------------------------------------------------------------
 C
@@ -140,7 +140,7 @@ C
 #include <maxorb.h>
 #include <infpar.h>
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, SOURCE, TAG
       DIMENSION BUFFER(*)
@@ -159,11 +159,11 @@ C
       END IF
       IF (SOURCE.EQ.-1) THEN
          CALL MPI_RECV(BUFFER,COUNT,DATATYPE,MPI_ANY_SOURCE,TAG,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         SOURCE = ISTAT(MPI_SOURCE)
+     &                 MPI_COMM_WORLD,my_STATUS,IERR)
+         SOURCE = my_STATUS(MPI_SOURCE)
       ELSE
          CALL MPI_RECV(BUFFER,COUNT,DATATYPE,SOURCE,TAG,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+     &                 MPI_COMM_WORLD,my_STATUS,IERR)
       END IF
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
 #endif

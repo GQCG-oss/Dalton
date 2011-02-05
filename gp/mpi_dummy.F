@@ -88,7 +88,7 @@ C        ... normal exit of sequential calculation
       RETURN
       END
       SUBROUTINE MPI_RECV(BUFFER,COUNT,DATATYPE,MPI_ANY_SOURCE,TAG,
-     &                    MPI_COMM_WORLD,ISTAT,IERR)
+     &                    MPI_COMM_WORLD,my_STATUS,IERR)
          IERR = 0
 #ifdef MPI_DEBUG
          WRITE (LUPRI_MPI,*)

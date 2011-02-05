@@ -59,15 +59,15 @@ C
 #endif
 
 #if defined (VAR_INT64)
-!     integer array ISTAT contains MPI_SOURCE information.
-!     Proper use of ISTAT on 64-bit machines in 
+!     integer array my_STATUS contains MPI_SOURCE information.
+!     Proper use of my_STATUS on 64-bit machines in 
 !     combination with VAR_INT64 requires explicit declaration 
 !     as INTEGER*4 /March-2007 sk - This is only true for 
 !     32-bit MPI libraries.
-!     64-bit MPI libraries require INTEGER ISTAT (which will then be INTEGER*8)
+!     64-bit MPI libraries require INTEGER my_STATUS (which will then be INTEGER*8)
 !
 #endif
-      INTEGER ISTAT
+      INTEGER my_STATUS
 
 ! -- end of infpar.h --
 #endif

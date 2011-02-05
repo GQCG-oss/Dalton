@@ -1241,7 +1241,7 @@ c#endif
       PARAMETER (D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0, DMAX=1.0D-15)
 c#if defined (VAR_MPI)
 c      INCLUDE 'mpif.h'
-c      DIMENSION ISTAT(MPI_STATUS_SIZE)
+c      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 c      DIMENSION FTVAL(NINTIN,NDIME)
 c#endif
 c#if defined (VAR_MPI2)

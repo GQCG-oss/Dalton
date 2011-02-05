@@ -1077,7 +1077,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -2140,7 +2140,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
       INTEGER IPROCLIST(*), RCCTOS(*)
@@ -2201,7 +2201,7 @@ C
 C
            IF( ISCLFAC_GROUP( IBLK ) .ne. 0 ) THEN
              CALL MPI_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,LENGTH_BLK,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
              WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &             IOFFSET_SCRATCH,'for block', IBLK, LENGTH_BLK
              CALL WRTMATMN(CB,1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
@@ -2346,7 +2346,7 @@ C
               WRITE(luwrt,*) 'offset,length',IOFF_SCR1,LEN
 #endif
               CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
-     &                               MPI_REAL8,ISTAT,IERR)
+     &                               MPI_REAL8,my_STATUS,IERR)
               ISI_CALC_BL = ISI_CALC_BL + 1
            END IF
 *          keep track of correct offset
@@ -4954,7 +4954,7 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -5347,7 +5347,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *. Specific input
@@ -5582,7 +5582,7 @@ C
 csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
              xxxreadtime = MPI_WTIME()
              CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
-     &                             LBL,MPI_REAL8,ISTAT,IERR)
+     &                             LBL,MPI_REAL8,my_STATUS,IERR)
 csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
              xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
              IBI_MULT_BL = IBI_MULT_BL + 1

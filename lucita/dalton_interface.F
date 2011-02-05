@@ -1052,7 +1052,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "mxpdim.inc"
 #include "wrkspc.inc"

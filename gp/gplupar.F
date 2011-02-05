@@ -69,7 +69,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
       DIMENSION LUINLIST(*)
@@ -172,7 +172,7 @@ C
 C
 C             read block in
                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,ISTAT,IERR)
+     &                               MPI_REAL8,my_STATUS,IERR)
 #ifdef LUCI_DEBUG
                print *,'master - read-in: my vector piece'
                call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
@@ -221,7 +221,7 @@ C
           IF( ISENDTOM .gt. 0 ) THEN
 C
             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+     &                            MPI_REAL8,my_STATUS,IERR)
             CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
      &                    JCOMM,IERR)
 #ifdef LUCI_DEBUG
@@ -240,12 +240,12 @@ C
           ISENDTOM = 0
 C
           CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,90,
-     &                  JCOMM,ISTAT,IERR)
+     &                  JCOMM,my_STATUS,IERR)
 C
           IF( ISENDTOM .gt. 0 ) THEN
 C
             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                     JCOMM,ISTAT,IERR)
+     &                     JCOMM,my_STATUS,IERR)
 #ifdef LUCI_DEBUG
             print *,'master- recieve: my vector piece'
             call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
@@ -345,7 +345,7 @@ C
 C
 C             read block in
                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,ISTAT,IERR)
+     &                               MPI_REAL8,my_STATUS,IERR)
                IMZERO = 0
              ELSE
                IMZERO = 1
@@ -390,7 +390,7 @@ C
             IF( ISENDTOM .gt. 0 ) THEN
 C
               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                              MPI_REAL8,ISTAT,IERR)
+     &                              MPI_REAL8,my_STATUS,IERR)
               CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,94,
      &                      JCOMM,IERR)
 C
@@ -405,12 +405,12 @@ C
             ISENDTOM = 0
 C
             CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,93,
-     &                    JCOMM,ISTAT,IERR)
+     &                    JCOMM,my_STATUS,IERR)
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
               CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
-     &                       JCOMM,ISTAT,IERR)
+     &                       JCOMM,my_STATUS,IERR)
               CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
             ELSE
               CALL ZERORC(LBL,LUOUT,0)
@@ -461,7 +461,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
@@ -545,7 +545,7 @@ C
 C
 C            read block in
              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
 C
              CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
@@ -573,7 +573,7 @@ C
         IF(LUCI_MYPROC.NE.LUCI_MASTER) THEN
 C
           CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                          MPI_REAL8,ISTAT,IERR)
+     &                          MPI_REAL8,my_STATUS,IERR)
           CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
      &                  JCOMM,IERR)
 C
@@ -584,7 +584,7 @@ C
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 C
           CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                  JCOMM,ISTAT,IERR)
+     &                  JCOMM,my_STATUS,IERR)
           CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
           IOFFSET_SCRATCH = 0
@@ -668,7 +668,7 @@ C
 C
 C            read block in
              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
              CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
              IOFFSET_SCRATCH = LBL
@@ -695,7 +695,7 @@ C
           IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
 C
             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+     &                            MPI_REAL8,my_STATUS,IERR)
             CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,94,
      &                    JCOMM,IERR)
 C
@@ -706,7 +706,7 @@ C
           IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
 C
             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
-     &                    JCOMM,ISTAT,IERR)
+     &                    JCOMM,my_STATUS,IERR)
             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
             IOFFSET_SCRATCH = 0
@@ -752,7 +752,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
@@ -825,7 +825,7 @@ C
 C
 C            read block in
              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
 C
              CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
@@ -853,7 +853,7 @@ C
         IF(LUCI_MYPROC.NE.LUCI_MASTER) THEN
 C
           CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                          MPI_REAL8,ISTAT,IERR)
+     &                          MPI_REAL8,my_STATUS,IERR)
           CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
      &                  JCOMM,IERR)
 C
@@ -864,7 +864,7 @@ C
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
 C
           CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                  JCOMM,ISTAT,IERR)
+     &                  JCOMM,my_STATUS,IERR)
           CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
 C
           IOFFSET_SCRATCH = 0
@@ -913,7 +913,7 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 * =====
@@ -1072,7 +1072,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -1193,7 +1193,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
       DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
@@ -1229,7 +1229,7 @@ C
 C           read vector
 C
               CALL MPI_FILE_READ_AT(LUIN,IOFFSET,SCR(JOFF),
-     &                              ILEN2,MPI_REAL8,ISTAT,IERR)
+     &                              ILEN2,MPI_REAL8,my_STATUS,IERR)
 C
 CSK              WRITE(LUWRT,'(2X,A,1X,I12,1X,A,1X,I6,1X,I6)') 
 CSK     & 'Read-in from ILU1 at',IOFFSET,'for block',IOFFSET_INT_OUT +
@@ -1275,7 +1275,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -1314,7 +1314,7 @@ csk  &       IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
 csk       CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
 C
           CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
-     &                           LENGTH,MPI_REAL8,ISTAT,IERR)
+     &                           LENGTH,MPI_REAL8,my_STATUS,IERR)
 C
 C
  100    CONTINUE  ! skip zero blocks on file
@@ -1356,7 +1356,7 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
       DIMENSION ISCALFAC(*), ISCALFAC_GROUP(*)
@@ -1416,7 +1416,7 @@ csk         WRITE(6,*) 'ACTIVE BLOCK ',IBLK
 csk         WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
             xrw_time = MPI_WTIME()
             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+     &                            MPI_REAL8,my_STATUS,IERR)
 csk         WRITE(6,*) 'MY read-in result '
 csk         CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,6)
             read_write = read_write + MPI_WTIME() - xrw_time
@@ -1467,7 +1467,7 @@ C         transfer the recieved block to disk
           if(NNCOLOR .eq. 7)then
             xrw_time = MPI_WTIME()
             CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
             read_write = read_write + MPI_WTIME() - xrw_time
             IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
           end if
@@ -1534,7 +1534,7 @@ CSK            WRITE(LUWRT,*) 'START READING AT IOFFSET_IN imag part = ',
 CSK     &                      IOFFSET_IN
             xrw_time = MPI_WTIME()
             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
-     &                            MPI_REAL8,ISTAT,IERR)
+     &                            MPI_REAL8,my_STATUS,IERR)
             read_write = read_write + MPI_WTIME() - xrw_time
             IBI_DIST_NBLOCKS = IBI_DIST_NBLOCKS + 1
 C
@@ -1585,7 +1585,7 @@ C         transfer the recieved block to disk if necessary
 #endif
             xrw_time = MPI_WTIME()
             CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_OUT,SEGMNT,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
             read_write = read_write + MPI_WTIME() - xrw_time
             IBI_RECV_NBLOCKS = IBI_RECV_NBLOCKS + 1
           end if
@@ -1657,7 +1657,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LUOUTLIST(*), NPARBLOCK(*), IBLOCKL(*)
@@ -1727,19 +1727,19 @@ C
               IMZERO = 0
 C
               CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,90,
-     &                      MPI_COMM_WORLD,ISTAT,IERR)
+     &                      MPI_COMM_WORLD,my_STATUS,IERR)
 C
               IF( IMZERO .eq. 0 ) THEN
 C
 C               recieve block and transfer to file
                 CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,91,
-     &                        MPI_COMM_WORLD,ISTAT,IERR)
+     &                        MPI_COMM_WORLD,my_STATUS,IERR)
                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
 csk                WRITE(6,*) ' S will write this to disk for block',
 csk     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
 csk                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
                 CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,ISTAT,IERR)
+     &                                 MPI_REAL8,my_STATUS,IERR)
 C
               ELSE
 C
@@ -1788,7 +1788,7 @@ csk     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
 csk                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
 C
                   CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,ISTAT,IERR)
+     &                                 MPI_REAL8,my_STATUS,IERR)
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                 ELSE
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
@@ -1868,16 +1868,16 @@ C
                 IMZERO = 0
 C
                 CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,93,
-     &                        MPI_COMM_WORLD,ISTAT,IERR)
+     &                        MPI_COMM_WORLD,my_STATUS,IERR)
 C
                 IF( IMZERO .eq. 0 ) THEN
 C
 C                 recieve block and transfer to file
                   CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,94,
-     &                          MPI_COMM_WORLD,ISTAT,IERR)
+     &                          MPI_COMM_WORLD,my_STATUS,IERR)
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                   CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                   MPI_REAL8,ISTAT,IERR)
+     &                                   MPI_REAL8,my_STATUS,IERR)
 C
                 ELSE
 C
@@ -1922,7 +1922,7 @@ C
                   IF( IMZERO .eq. 0 ) THEN
 C
                     CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
-     &                                     ILEN,MPI_REAL8,ISTAT,IERR)
+     &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
                   ELSE
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
@@ -1980,7 +1980,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
       DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,LUCI_NMPROC)
@@ -2147,7 +2147,7 @@ CSK   END IF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     INPUT
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
@@ -2551,7 +2551,7 @@ CSK   END IF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     -----
 C     INPUT
@@ -2813,7 +2813,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *
       DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,LUCI_NMPROC)
@@ -3003,7 +3003,7 @@ CSK   END IF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION  VEC1(*),VEC2(*)
       DIMENSION  XSCAT(NSCAT),ISCAT(NSCAT)
@@ -3116,7 +3116,7 @@ CSK   END IF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "../lucita/mxpdim.inc"
 #include "../lucita/crun.inc"
@@ -3233,7 +3233,7 @@ CSK            END IF
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *     ==========
 *       INPUT
@@ -3277,7 +3277,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(LUCI_NMPROC),NAMELENGTHLIST(LUCI_NMPROC)
@@ -3391,7 +3391,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *. Input
       INTEGER IGAT(NGAT)
@@ -3602,7 +3602,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -3801,7 +3801,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3897,7 +3897,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4061,7 +4061,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -4097,7 +4097,7 @@ CSK     &         IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
 CSK          CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
 C
           CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
-     &                           LENGTH,MPI_REAL8,ISTAT,IERR)
+     &                           LENGTH,MPI_REAL8,my_STATUS,IERR)
 C
 C
  100    CONTINUE  ! skip zero blocks on file
@@ -4129,7 +4129,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -4156,7 +4156,7 @@ C
 CSK              WRITE(LUWRT,*) 'JOFF,ILEN2,ILEN again for block 
 CSK     & IOFFSET_INT+ NUM_A_B -1',JOFF,ILEN2,ILEN,IOFFSET_INT+ NUM_A_B -1
               CALL MPI_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
-     &                              ILEN2,MPI_REAL8,ISTAT,IERR)
+     &                              ILEN2,MPI_REAL8,my_STATUS,IERR)
 CSK              WRITE(LUWRT,*) ' my block'
 CSK              CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
             ENDIF 
@@ -4191,7 +4191,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -4224,7 +4224,7 @@ C
 CSK              WRITE(LUWRT,*) 'JOFF,ILEN2,ILEN again for block 
 CSK     & IOFFSET_INT+ NUM_A_B -1',JOFF,ILEN2,ILEN,IOFFSET_INT+ NUM_A_B -1
               CALL MPI_FILE_WRITE_AT(MY_LUOUT,IOFFSET,SCR(JOFF),
-     &                               ILEN2,MPI_REAL8,ISTAT,IERR)
+     &                               ILEN2,MPI_REAL8,my_STATUS,IERR)
 C
  100        CONTINUE
 C
@@ -4258,7 +4258,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -4295,7 +4295,7 @@ C
               CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
             END IF
             CALL MPI_FILE_WRITE_AT(MY_LUOUT,IOFFSET,SCR(JOFF),
-     &                             ILEN2,MPI_REAL8,ISTAT,IERR)
+     &                             ILEN2,MPI_REAL8,my_STATUS,IERR)
 C
  100        CONTINUE
 C
@@ -4325,7 +4325,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -4345,7 +4345,7 @@ C
             JOFF = NBATCH_INF(6,IBLK)
 C
             CALL MPI_FILE_READ_AT(MY_LUIN,IOFFSET,SCR(JOFF),
-     &                            ILEN2,MPI_REAL8,ISTAT,IERR)
+     &                            ILEN2,MPI_REAL8,my_STATUS,IERR)
 C
           ENDIF 
 C
@@ -4385,7 +4385,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XMAT(NVEC,NVEC2)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4444,7 +4444,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), FAC(NVEC)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4564,7 +4564,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION NBATCH_INF(8,*), IVCOFF(*), SCR(*) 
       INTEGER JOFF,ILEN
@@ -4618,7 +4618,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SUBSPH(*), SCRRED(*), SCRRED2(*)
@@ -4818,7 +4818,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -5088,7 +5088,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION FACIN1(*), FACIN3(1)
@@ -5269,7 +5269,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SCRRED(*)
@@ -5467,7 +5467,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -5645,7 +5645,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -5818,7 +5818,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
@@ -5915,7 +5915,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
@@ -5964,7 +5964,7 @@ CSK        DATATYPE = MPI_REAL8
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
 *
@@ -6017,7 +6017,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
       INTEGER JOFF,ILEN
@@ -6056,7 +6056,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
       INTEGER JOFF,ILEN
@@ -6097,7 +6097,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC(NDIM), IAMACTIVE(NDIM)
 C
@@ -6235,7 +6235,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 *     input
       DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)
@@ -6320,7 +6320,7 @@ csk         WRITE(LUWRT,*) 'OFFSET',IOFF_SCR1
 csk         WRITE(LUWRT,*) 'INT_IOFF1 is ',INT_IOFF1
             LU1LIST( INT_IOFF1 ) = IONE
             CALL MPI_FILE_WRITE_AT(ILU1,IOFF_SCR1,VEC1,LBL,
-     &                             MPI_REAL8,ISTAT,IERR)
+     &                             MPI_REAL8,my_STATUS,IERR)
           END IF
 C
           FOUND_ONE = .FALSE.
@@ -6363,7 +6363,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)

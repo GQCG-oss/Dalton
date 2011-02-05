@@ -85,7 +85,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
       integer                                   :: file_offset_off
       integer,                      allocatable :: file_offset_fac_i4(:)
@@ -605,7 +605,7 @@ C     debug printing
             IF( LUCI_MYPROC .eq. IPROC ) THEN
               CALL GET_BLOCK_LENGTH(block_list,IIBLK,ILEN)
               CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
-     &                              MPI_REAL8,ISTAT,IERR)
+     &                              MPI_REAL8,my_STATUS,IERR)
               WRITE(LUWRT,*) ' Diagonal elements',ILEN
               CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
               ITEST_OFF = ITEST_OFF + ILEN
@@ -927,7 +927,7 @@ C
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "maxorb.h"
 #include "infpar.h"
@@ -1013,7 +1013,7 @@ C
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files.inc"
@@ -1527,7 +1527,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 *./CECORE/
@@ -5417,7 +5417,7 @@ C
 !***********************************************************************
 #include "implicit.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "maxorb.h"
 #include "infpar.h"
 #include "parluci.h"
@@ -5427,7 +5427,7 @@ C
       DO I = 1,LUCI_NMPROC-1
          CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,ISTAT,IERR)
+         CALL MPI_WAIT(IREQ,my_STATUS,IERR)
          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
       ENDDO
@@ -5451,7 +5451,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       dimension work_dalton(lwork_dalton)
       character lucitabasf*20, lucifiln*24
@@ -5529,11 +5529,12 @@ C
      &              MPI_COMM_WORLD,IREQ,IERR)
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(LUCI_MASTER,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
+         CALL MPI_IPROBE(LUCI_MASTER,30,MPI_COMM_WORLD,
+     &                   LUEND,my_STATUS,IERR)
          IF (.NOT.LUEND) GOTO 1
 
       CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,LUCI_MASTER,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
+     &               MPI_COMM_WORLD,my_STATUS,IERR)
 C
       call qexit('lucita_coworker_main')
 
