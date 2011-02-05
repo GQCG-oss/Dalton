@@ -1,4 +1,4 @@
-#define DEBUG_RSPOLI
+!#define DEBUG_RSPOLI
 !
 !...   Copyright (c) 2010 by the authors of Dalton (see below).
 !...   All Rights Reserved.
