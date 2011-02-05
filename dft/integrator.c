@@ -501,14 +501,14 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
                 for(j=0; j<len; j++)
                     electrons += grid->weight[ipnt+j]*grid->r.rho[j+roff];
             }
-#if 0
+/*#if 0
             for(lo=0; lo<len && grid->rhoa[lo]<1e-10; lo++)
                 ;
             for(hi=len-1; hi>lo && grid->rhoa[hi]<1e-10; hi--)
                 ;
-#else
+#else */
             lo = 0; hi = len-1;
-#endif
+/*#endif */
             npoints += len;
             if(lo<=hi)
                 cb(grid, dmagao, len, lo, hi+1, cb_data);
@@ -516,6 +516,9 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
     }
     grid_close(rawgrid);
 #ifdef VAR_MPI
+/*
+    printf("collecting e- \n");
+*/
     FSYM(dftintcollect)(&electrons);
 #endif
     free(dmagao);

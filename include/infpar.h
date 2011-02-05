@@ -66,8 +66,8 @@ C
 !     32-bit MPI libraries.
 !     64-bit MPI libraries require INTEGER ISTAT (which will then be INTEGER*8)
 !
-      INTEGER*4 ISTAT
 #endif
+      INTEGER ISTAT
 
 ! -- end of infpar.h --
 #endif

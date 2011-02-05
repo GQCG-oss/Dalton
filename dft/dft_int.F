@@ -237,8 +237,8 @@ c     ===============================================================
 c     MPI-related routines.
 c     They are responsible for data distribution and collection.
 c     ===============================================================
-#ifdef VAR_MPI
       SUBROUTINE DFTINTBCAST
+#ifdef VAR_MPI
 c     Equivalent of lifesupport from dft-qr: synchronizes all data needed
 c     for evaluation of basis functions.  One probably wants to call it
 c     as early as possible so that slaves can take right decisions
@@ -246,6 +246,7 @@ c     regarding which functionals to run etc.
 c     
 c     NORBT, N2ORBX,NOCCT, NVIRT are needed for....?
 #include <implicit.h>
+#include <priunit.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <maxmom.h>
@@ -266,6 +267,7 @@ c
 #include <symmet.h>
 #include <xyzpow.h>
 c     sync inforb:
+!     write(lupri,*) ' arrived in DFTINTBCAST', mytid
       CALL MPI_Bcast(muld2h, 8*8,   my_MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ierr)
       CALL MPI_Bcast(nbas,   8,     my_MPI_INTEGER,
@@ -362,10 +364,11 @@ c     /DFTCOM/
      &                       0, mpi_comm_world, ie)
 
 c     sync functionals, too.
+!     print *, 'calling DFTFUNCSYNC for mytid',mytid, NODTOT
       CALL DFTFUNCSYNC(MYNUM,NODTOT)
 c      
-      END
 #endif
+      END
 c
       SUBROUTINE DFTINTCOLLECT(ELECTRONS)
 #ifdef VAR_MPI
@@ -375,6 +378,7 @@ c
 #include <maxorb.h>
 #include <infpar.h>
       A = ELECTRONS
+!     print *, 'A is for mytid',mytid
       CALL MPI_Reduce(A,ELECTRONS,1,MPI_DOUBLE_PRECISION,MPI_SUM,
      &                0,MPI_COMM_WORLD,IERR)
 #endif

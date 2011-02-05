@@ -964,6 +964,7 @@ C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
+!     print *,'mytid got from master IPRTYP',mytid, IPRTYP
       IF (IPRTYP.GT.0) THEN
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C

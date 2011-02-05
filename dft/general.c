@@ -599,16 +599,25 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
         return;
     }
     /* ignore MPI errors */
-    /*
-    printf("waking up slaves with iprtyp %lld and iprint %lld",iprtyp, iprint);
-    */
+#ifdef VAR_INT64      
+/*        
+    printf("waking up slaves with iprtyp %lld and iprint %lld \n",iprtyp, iprint);
+    printf(" id is %lld \n",id);
+*/
+#else
+/*        
+    printf("waking up slaves with iprtyp %d and iprint %d \n",iprtyp, iprint);
+    printf(" id is %d \n",id);
+*/
+#endif
+      
     MPI_Bcast(&iprtyp,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     MPI_Bcast(&iprint,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     MPI_Bcast(&id,    1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
     /*
     printf("id %d bcast",id);
     */
-    void FSYM(dftintbcast)();
+    FSYM(dftintbcast)();
 }
 
 /* dft_cslave:
@@ -626,10 +635,10 @@ FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
     else {
         int id;
         MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-        /*
+/*        
         printf("done id bcast: id = %i mynum = %i; size = %i .\n", id, rank, size);
-        */
-        void FSYM(dftintbcast)();
+*/        
+        FSYM(dftintbcast)();
         (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
     }
 }
@@ -696,6 +705,9 @@ FSYM(dftfuncsync)(integer *mynum, integer *nodes)
         if(*mynum == 0)
             strcpy(line, DftConfString);
         MPI_Bcast(line, len, MPI_CHAR, 0, MPI_COMM_WORLD);
+/*        
+        printf("my line is %s its length is %i",line, len);
+*/
         if(*mynum != 0) {
             integer res;
             FSYM(dftsetfunc)(line, &res, len);
