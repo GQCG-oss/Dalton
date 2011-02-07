@@ -465,6 +465,10 @@ C
 C
 C     /* Deck numdrv */
       SUBROUTINE NUMDRV(WORK,LWORK,IPRINT,WRKDLM)
+C
+C     Driver routine for numerical differentiation
+C
+
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -476,6 +480,7 @@ c#if defined (VAR_MPI)
 c      INCLUDE 'mpif.h'
 c      LOGICAL FINISH
 c#endif
+#include <cbirea.h>
 #include <cbiwlk.h>
 #include <cbinum.h>
 #include <trkoor.h>
@@ -491,6 +496,23 @@ c#endif
       CHARACTER WORD*7
 C
       CALL QENTER('NUMDRV')
+C
+C     feb 11 - hjaaj
+C     cut down on hermit and abacus output during numerical
+C     differentiation
+C
+      IPRUSR_orig = IPRUSR
+      IPREAD_orig = IPREAD
+      IF (USRIPR) THEN
+C        if user has asked for higher print level, no change
+         IPRUSR_reduced = IPRUSR
+         IPREAD_reduced = IPREAD
+      ELSE
+         IPRUSR_reduced = -2
+         IPREAD_reduced = -2
+      END IF
+      IPRUSR = IPRUSR_reduced
+      IPREAD = IPREAD_reduced
 C
 C 100  CONTINUE
 C

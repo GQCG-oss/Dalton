@@ -2706,8 +2706,8 @@ C
 #endif
             END IF
 C        *** For numerical differentiation (vibrational ***
-C        *** average), we don't nescesary calculate all ***
-C        *** properties.                                ***
+C        *** average), we don't nescesarily calculate   ***
+C        *** all properties.                            ***
 C
             IF (.NOT.CNMPRP) THEN
                CALL NVBPIN(IPRINT)

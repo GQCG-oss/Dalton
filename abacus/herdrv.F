@@ -158,29 +158,48 @@ C
 C
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
-C        Delete old MO integrals and AOSUP integrals
-         IF (USE_INTSORT) THEN
-            IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
-                               CALL DARMOV(LUORDA)
-            IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
-                               CALL DARMOV(LUMINT)
-         ELSE
-            CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
-            IF (FEXIST) THEN
-               CALL SYSTEM('rm -f AOSRTINT.DA*')
-            END IF
-            CALL GPINQ('MOTWOINT','EXIST',FEXIST)
-            IF (FEXIST) THEN
-               CALL GPOPEN(LUINTM,'MOTWOINT',
-     &              'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-               CALL GPCLOSE(LUINTM,'DELETE')
-            END IF
+
+C     Delete old MO integrals integrals
+      IF (USE_INTSORT) THEN
+         IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
+                            CALL DARMOV(LUORDA)
+         IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+                            CALL DARMOV(LUMINT)
+      ELSE
+         CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            CALL SYSTEM('rm -f AOSRTINT.DA*')
          END IF
-         CALL GPOPEN(LUSUPM,'AOSUPINT',
+         CALL GPINQ('MOTWOINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            CALL GPOPEN(LUINTM,'MOTWOINT',
      &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUSUPM,'DELETE')
-C        Open LUINTA for new integrals
+            CALL GPCLOSE(LUINTM,'DELETE')
+         END IF
+      END IF
+
+C     Delete any existing old 2-el. AO integrals
+C     (they may have been generated with the MAKE_AOTWOINT routine,
+C      even if RUNTWO is .false. now ! This will for example be
+C      the case if DIRCAL and DOMP2))
+
+      CALL GPOPEN(LUINTA,'AOTWOINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPCLOSE(LUINTA,'DELETE')
+      IF (DOSRIN) THEN
+         CALL GPOPEN(LUSRINT,'AO2SRINT',
+     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUSRINT,'DELETE')
+      END IF
+      CALL GPOPEN(LUSUPM,'AOSUPINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPCLOSE(LUSUPM,'DELETE')
+
+C     IF (RUNTWO .or. RUNERI) :
+C        Open LUINTA and LUSRINT for new 2-el. integrals
+C        to be calculated in the CALL HERINT call below
+
+      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
          CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          IF (DOSRIN) CALL
      &      GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -189,6 +208,7 @@ C
       CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ',' ',IDUMMY,.FALSE.)
       CALL MOLLAB('INTEGRAL',LUONEL,LUPRI)
       CALL HERINT(WORK,LWORK)
+
       IF (PCM) THEN
          CALL IEFMAT(WORK,LWORK)
       END IF
@@ -245,10 +265,12 @@ C     ******************************
 C
       CALL GPCLOSE(LUONEL,'KEEP')
       IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-      IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
       IF (LUQM3E .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
       IF (LUQM3P .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
       IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
+C
+      IF (LUINTA  .GT. 0) CALL GPCLOSE(LUINTA ,'KEEP')
+      IF (LUSRINT .GT. 0) CALL GPCLOSE(LUSRINT,'KEEP')
 C
       IF (RUNTWO .OR. RUNERI) FTRCTL = .TRUE.
 C     ..transformation control, old AO/MO files cannot be used any more.

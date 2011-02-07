@@ -281,7 +281,7 @@ C
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL DDFOCK, NOBLK, ZFS2EL
+      LOGICAL DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
       INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
 C
 C     Control routine for calculation of expectation values
@@ -466,9 +466,14 @@ C           dimension ISYMDM(MXDMAT), IFCTYP(MXDMAT)
             END DO
          END IF
 C
+C        Is it OK to do parallel calculation here ??
+         PARCAL_IS_OK = PARCAL ! has user wanted PARCAL ?
+         IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
+     &      PARCAL_IS_OK = .FALSE. ! parallel TWOEXP only for SCF 
+C
 C        ERI can only be used for Hartree-Fock gradients
 C
-         DOERI = RUNERI .AND. .NOT.PARCAL .AND. NODV .AND. NOPV
+         DOERI = RUNERI .AND. .NOT. PARCAL_IS_OK .AND. NODV .AND. NOPV
      &                  .AND. ITYPE.EQ.2 .AND. MAXDIF .LT. 2
 C
          CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,NODC,NODV,
@@ -481,7 +486,7 @@ C
      &               LWRK)
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (PARCAL) THEN
+         IF (PARCAL_IS_OK) THEN
             IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
      &         CALL QUIT(' ERROR in TWOEXP: PARCAL only'// 
      &                   ' implemented for SCF')
@@ -527,6 +532,8 @@ C
                HFXFAC = HFXFC0
             END IF
          ELSE
+            PARCAL_SAVE = PARCAL
+            PARCAL = .FALSE.
 #endif
             IF (DOERI) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -569,6 +576,7 @@ C
      &         CALL TIMER('TWOEXP/TWOINT',TIMSTR,TIMEND)
             END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
+            PARCAL = PARCAL_SAVE
          END IF
 #endif
 CTROND

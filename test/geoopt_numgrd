@@ -87,21 +87,21 @@ CRIT1=`$GREP "H1 * 2 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
 CRIT2=`$GREP "O * 1 * 8\.0000 * 22 * 9 * \[10s4p\|3s2p\]" $log | wc -l`
 CRIT3=`$GREP "total\: * 3 * 10\.0000 * 30 * 13" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[2]=24
+CTRL[2]=3
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "2 * y * \-1\.4476145000" $log | wc -l`
 CRIT2=`$GREP "5 * y * 1\.4476145000" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[3]=4
+CTRL[3]=2
 ERROR[3]="GEOMETRY NOT CORRECT"
 
 # Symmetry
 CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry\: * 7 * 2 * 4 * 0" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[4]=16
+CTRL[4]=2
 ERROR[4]="SYMMETRY NOT CORRECT"
 
 # Initial energies

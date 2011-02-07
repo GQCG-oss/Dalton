@@ -533,7 +533,8 @@ C
 C
 C Find reference information for the basis set. 
 C
-      CALL FINREF (BASREF,LUBAS,BASSAV)
+      IF (IPRINT .GT. 0)
+     &   CALL FINREF (BASREF,LUBAS,BASSAV)
 C
 C Close basis set file
 C
