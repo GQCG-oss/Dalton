@@ -15,8 +15,8 @@ extern "C" {
 #define XC_NO_REGULARIZATION
 
 #define XC_EORDER 1 // Invalid order for given mode and vars
-#define XC_EVARS 2 // Invalid vars for functional type (ie. lda vars for gga)
-#define XC_EMODE 4 // Invalid mode for functional type (ie. potential for mgga)
+#define XC_EVARS  2 // Invalid vars for functional type (ie. lda vars for gga)
+#define XC_EMODE  4 // Invalid mode for functional type (ie. potential for mgga)
   
   enum xc_mode
     {
@@ -160,6 +160,7 @@ extern "C" {
   const char *xc_short_description(int param);
   // Long description of the setting, ends with a \n
   const char *xc_long_description(int param);
+
 
 #ifdef __cplusplus
 } // End of extern "C"

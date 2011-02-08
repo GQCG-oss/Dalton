@@ -9,7 +9,7 @@ program xc_example
    implicit none
 
    character(1000)      :: text
-   integer              :: id, order, ilen, olen
+   integer              :: id, order, ilen, olen, res
    integer              :: i, k, ipoint, nr_points, block_length, max_block_length
    real(8)              :: derivative_nn_ab, derivative_ss_ab
    real(8)              :: derivative_nn_rs, derivative_ss_rs
@@ -44,6 +44,14 @@ program xc_example
 
 !  let's get derivatives to second order
    order = 2
+   res = xc_eval_setup(id, XC_A_B_GAA_GAB_GBB, XC_PARTIAL_DERIVATIVES, order)
+   if (res.eq.0) then
+      print *,'xc_eval_setup ok ',res
+   else
+      print *,'xc_eval_setup failed with error ',res
+   endif
+
+#if 0
    print *, 'Order:', order
    if (.not.xc_try_order(id,order)) then
       print *, 'Could not set order ',order
@@ -145,5 +153,5 @@ program xc_example
 
    deallocate(density_variables)
    deallocate(derivatives)
-
+#endif
 end program

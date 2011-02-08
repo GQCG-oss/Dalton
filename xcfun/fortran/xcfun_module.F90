@@ -1,15 +1,11 @@
-
 module xcfun
   use xcfun_autogen
   implicit none
-! These parameters should mirror those in xcfun.h
-  integer, parameter ::  XC_VARS_A  = 0
-  integer, parameter ::  XC_VARS_N  = 1
-  integer, parameter ::  XC_VARS_AB = 2
-  integer, parameter ::  XC_VARS_NS = 3
-  integer, parameter ::  XC_LDA  = 0
-  integer, parameter ::  XC_GGA  = 1
-  integer, parameter ::  XC_MGGA = 2
+! Evaluation modes
+  integer, parameter :: XC_PARTIAL_DERIVATIVES = 0
+  integer, parameter :: XC_POTENTIAL = 1
+  integer, parameter :: XC_CONTRACTED = 2
+
 ! Indices into the output array of derivatives. Fortran numbering.
   integer, parameter :: XC_D0 = 1
   integer, parameter :: XC_D1 = 2
@@ -149,10 +145,10 @@ contains
 
   function xc_get(funid, param)
     integer, intent(in) :: funid, param
-    double precision xcgets, xc_get_param
-    xc_get_param = xcgets(funid,param)
-  end function xc_get
-#if 0
+    double precision xcgets, xc_get
+    xc_get = xcgets(funid,param)
+      end function xc_get
+#ifdef XXX
   subroutine xc_short_description(param,description)
     integer, intent(in) :: param
     character, intent(out) :: description*(*)
@@ -171,57 +167,25 @@ contains
     le = len(description)+1
     call xcslon(idescr,le,param)
     call ints2str(idescr,description)
-  end subroutine
+  end subroutine xc_long_description
 #endif
-  subroutine xc_set_mode(funid, mode)
-    integer, intent(in) :: funid, mode
-    call xcsmod(funid,mode)
-  end subroutine xc_set_mode
-
-  function xc_try_vars(funid, vars)
-    integer, intent(in) :: funid, vars
-    logical :: xc_try_vars
-    integer :: xcgett
-    if (xctryv(funid,vars).eq.0) then 
-       xc_try_vars = .false.
-    else
-       xc_try_vars = .true.
-    endif
-  end function xc_try_vars
-
-  function xc_try_order(funid, order)
-    integer, intent(in) :: funid, order
-    logical :: xc_try_order
-    integer :: xcgett
-    if (xctryo(funid,order).eq.0) then 
-       xc_try_order = .false.
-    else
-       xc_try_order = .true.
-    endif
-  end function xc_try_order
-
+  function xc_eval_setup(funid, vars, mode, order)
+    integer :: funid, vars, mode, order, xc_eval_setup, xcevse
+    xc_eval_setup = xcevse(funid,vars,mode,order)
+  end function xc_eval_setup
   subroutine xc_eval(funid, npoints, densities, results)
-    integer, intent(in) :: funid, order, npoints
+    integer, intent(in) :: funid, npoints
 !radovan: trying to get it explicitly
 !         maybe later we go back to implicit
 !   integer :: npoints
     double precision, intent(in) :: densities(:,:)
     double precision, intent(out) :: results(:,:)
 !   npoints = size(densities,2)
-    call xceval(funid,order,npoints,densities(1,1),densities(1,2),&
+    call xceval(funid,npoints,densities(1,1),densities(1,2),&
          results(1,1),results(1,2))
   end subroutine xc_eval
 
-  subroutine xc_potential(funid, density, energy, potentials)
-    integer, intent(in) :: funid    
-!radovan: trying to get it explicitly
-!         maybe later we go back to implicit
-!   integer :: npoints
-    double precision, intent(in) :: density(:)
-    double precision, intent(out) :: energy, potentials(:)
-    call xcpotential(funid,density,energy,potentials)
-  end subroutine xc_potential
-
+#if 0
   function xc_index(funid, exponents)
     integer, intent(in) :: exponents(*)
     integer funid,xc_index, xcdind
@@ -233,19 +197,14 @@ contains
 !   xc_index = xcdind(funid,exponents)
     xc_index = xcdind(funid,exponents) + 1
   end function xc_index
-
-  function xc_input_length(funid)
-    integer, intent(in) :: funid
-    integer xc_input_length, xcinle
-    xc_input_length = xcinle(funid)
-  end function xc_input_length
+#endif
 
   function xc_output_length(funid, order)
     integer, intent(in) :: funid, order
     integer xc_output_length, xcoule
     xc_output_length = xcoule(funid,order)
   end function xc_output_length
-
+#if 0
   subroutine xc_param_name(setting_nr, name)
     integer, intent(in) :: setting_nr
     character, intent(out) :: name*(*)
@@ -255,4 +214,5 @@ contains
     call xcsnam(ibuf,le,setting_nr)
     call ints2str(ibuf,name)
   end subroutine xc_param_name
+#endif
 end module

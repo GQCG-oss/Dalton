@@ -54,6 +54,19 @@ void xc_set(xc_functional fun, int item, double value)
     }
 }
 
+double xc_get(xc_functional fun, int item)
+{
+  if (item >= 0 && item < XC_NR_PARAMETERS_AND_FUNCTIONALS)
+    {
+      return fun->settings[item];
+    }
+  else
+    {
+      xcint_die("Invalid item to xc_get():",item);
+      return 0;
+    }
+}
+
 int xc_output_length(xc_functional fun)
 {
   if (fun->mode == XC_MODE_UNSET)
@@ -482,7 +495,7 @@ int xc_eval_setup(xc_functional fun,
 		  int order)
 {
   // Check that vars are enough for the functional
-  if ((fun->depends & xcint_vars[vars].provides) ^ fun->depends)
+  if ((fun->depends & xcint_vars[vars].provides) == fun->depends)
     return XC_EVARS;
   if ((order < 0 || order > XC_MAX_ORDER) ||
       (mode == XC_PARTIAL_DERIVATIVES && order > 2))
@@ -519,3 +532,4 @@ const char *xc_name(int param)
 const char *xc_short_description(int param);
 // Long description of the setting, ends with a \n
 const char *xc_long_description(int param);
+

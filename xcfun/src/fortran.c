@@ -1,8 +1,7 @@
-#include "xcfun.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include "xcfun.h"
 /*
   Functions used by the Fortran interface. Use single underscore 
   convention. Do _not_ put underscores in the names except for
@@ -68,34 +67,24 @@ void FSYM(xceval)FCSYM(XCEVAL)(int *fun,
 	      first_result, rpitch);
 }
 
-void FSYM(xcsmod)FCSYM(XCSMOD)(int *fun, int *mode)
-{
-  assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
-  xc_set_mode(fortran_functionals[*fun], *mode);
-}
-
 int FSYM(xcoule)FCSYM(XCOULE)(int *fun, int *order)
 {
   assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
   return xc_output_length(fortran_functionals[*fun]);
 }
 
+#if 0
 int FSYM(xcdind)FCSYM(XCDIND)(int *fun, const int *derivative)
 {
   assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
   return xc_derivative_index(fortran_functionals[*fun],derivative);
 }
+#endif
 
-int FSYM(xctryv)FCSYM(XCTRYV)(int *fun, const int *vars)
+int FSYM(xcevse)FCSYM(XCTRYV)(int *fun, const int *vars, const int *mode, const int *order)
 {
   assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
-  return xc_try_vars(fortran_functionals[*fun],*vars);
-}
-
-int FSYM(xctryo)FCSYM(XCTRYV)(int *fun, const int *order)
-{
-  assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
-  return xc_try_vars(fortran_functionals[*fun],*order);
+  return xc_eval_setup(fortran_functionals[*fun], *vars, *mode, *order);
 }
 
 static void str2ints(int ints[], int len, const char *s)
@@ -170,3 +159,4 @@ double FSYM(xcgets)FCSYM(XCGETS)(int *fun, int *n)
   assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
   return xc_get(fortran_functionals[*fun],*n);
 }
+

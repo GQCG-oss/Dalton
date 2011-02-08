@@ -90,6 +90,7 @@ evaluator xcint_get_evaluator(enum xc_mode mode,
 			      int order);
 
 void xcint_die(const char *message, int code);
+int xcint_write_fortran_module();
 
 static inline int taylorlen(int nvar, int ndeg)
 {
