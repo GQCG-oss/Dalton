@@ -1165,8 +1165,21 @@ C
                JSPIN1 = 0
                JSPIN2 = 0
 C
+#ifdef DEBUG_RSPOLI
+               IF (IPRRSP.GT.101) THEN
+                  WRITE(LUPRI,*)
+     *            ' Z CONF  PART OF LINEAR TRANSFORMED',
+     *            ' before Vsr[2c] contr.',
+     *            'CONF TRIAL VECTOR'
+                  CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
+     *                                        KZVAR,2,1,LUPRI)
+                  write(lupri,*) 'kzvar = ', kzvar  
+                END IF
+#endif
+C
 C     Z part of linear transformation (operator: V[2c])
-C     (The Y part configuration contribution is zero)
+C     (The Y part configuration contribution is zero) <<<---- Manu: no, it is
+C                                                                   NOT !
 C
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      &                  EVECS(JEVECS),WRK(KSRW),DUMMY,
@@ -1185,6 +1198,43 @@ C
      *                                        KZVAR,2,1,LUPRI)
                   END IF
                END IF
+C
+C
+! Manu: build the Y part of the sigma vector (due to the Vsr[2c] operator)
+C
+C
+               JYEVECS=JEVECS+KZVAR  ! Manu: not sure this will work when there
+!                                            is both a conf and orbital part ... 
+C
+C        
+!#ifdef compile
+               CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
+     &                  EVECS(JYEVECS),WRK(KSRW),DUMMY,
+     &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
+     &                  WRK(KFREE),LFREE)
+               IF (IREFSY .EQ. KSYMST) THEN
+                  FAC = DDOT(KZCONF,EVECS(JYEVECS),1,WRK(KCREF),1)
+                  CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JYEVECS),
+     &                       1)
+!
+!               For the Y conf. part, the transition density matrix changes sign.
+!               Therefore we have to multiply the Vsr[2c] contribution to 
+!               the Y part of the sigma vector by -1 
+!
+                  CALL DSCAL(KZCONF,DM1,EVECS(JYEVECS),1)
+
+                  IF (IPRRSP.GT.101) THEN
+                    WRITE(LUPRI,*)
+     *              ' srDFT Z and Y CONF  PART OF LINEAR TRANSFORMED ',
+     *              'CONF TRIAL VECTOR'
+                    WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT',
+     &              ', factor = ',-FAC
+                    CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
+     *                                        KZVAR,2,1,LUPRI)
+                  END IF
+               END IF
+!#endif 
+C
 C
 C     Special MCSRDFT correction, corresponding to the effective operator
 C        V^([2c],xc-SR)
