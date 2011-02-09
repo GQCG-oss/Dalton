@@ -487,15 +487,6 @@ C
 #include "blocks.h"
 #include "r12int.h"
 C
-#if defined (SYS_T3e)
-C
-C     This kludge fixes the current non-implementation of MPI_CHARACTER on
-C     the Cray-T3E, K.Ruud-Nov.96
-C
-      DIMENSION ITMP(4000)
-      EQUIVALENCE (ITMP,MLINE)
-#endif
-C
 #include <cbisol.h>
 C
 Cef begin
@@ -593,11 +584,7 @@ C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
          CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-#if defined (SYS_T3e)
-         CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
-#else
          CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
-#endif
 C  /cbirea/
          CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
@@ -1078,14 +1065,6 @@ C
 #include "parint.h"
 #include "r12int.h"
 C
-#if defined (SYS_T3E)
-C
-C     This kludge fixes the current non-implementation of MPI_CHARACTER on
-C     the Cray-T3E, K.Ruud-Nov.96
-C
-      DIMENSION ITMP(4000)
-      EQUIVALENCE (ITMP,MLINE)
-#endif
 #include "cbisol.h"
 Cef begin
 #include "incore.h"
@@ -1158,11 +1137,7 @@ C Arnfinn nov -08: Receiving number of QM atom types:
             CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
             CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-#if defined (SYS_T3e)
-            CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
-#else
             CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
-#endif
 C  /cbirea/
             CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/

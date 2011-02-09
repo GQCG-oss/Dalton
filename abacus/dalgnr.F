@@ -1759,7 +1759,7 @@ C
       CALL QEXIT('DALTON_GNRLINP')
       RETURN
       END
-#if defined (VAR_MPI)
+#if defined (VAR_PARIO)
 C  /* Deck pariot */
       SUBROUTINE PARIOT
 C
@@ -1933,7 +1933,7 @@ C
       END IF
       RETURN
       END
-#endif
+#endif /* VAR_PARIO WARNING: DO NOT activate VAR_PARIO without fixing the PARIO code */
 C
 Cholesky
 C  /* Deck execho */

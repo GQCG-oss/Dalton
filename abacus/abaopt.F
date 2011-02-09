@@ -7943,22 +7943,23 @@ C
 #include "gnrinf.h"
 #include "optinf.h"
 #include "infopt.h"
+
+#if defined (VAR_PARIO)
       SAVE FIRST
       DATA FIRST /.TRUE./
 C
-      CALL QENTER('NUMGRD')
-#if defined (VAR_MPI)
+! WARNING! do not activate VAR_PARIO without fixing
+!          the PARIO code !!!! /Feb 2011 hjaaj
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IF (FIRST) THEN
             FIRST = .FALSE.
          ELSE
-            IJOB = 1
-            CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
-     &                     MPI_COMM_WORLD,IERR)
             CALL PARIOT
          END IF
       END IF
 #endif
+
+      CALL QENTER('NUMGRD')
       IF (.NOT. CHGRDT) THEN
          GRDTHR = 1.0D-4
          THRSTP = GRDTHR
