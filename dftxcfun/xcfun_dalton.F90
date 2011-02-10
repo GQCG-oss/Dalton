@@ -7,10 +7,8 @@ contains
     integer xcfun_select_by_name
     character(*) conf_string
     funobj = xc_new_functional()
-    print *,'select by name',conf_string
     select case(trim(adjustl(conf_string)))
     case ('LDA')
-       print *,'got LDA'
        call xc_set(funobj,XC_SLATERX,1.0D0);
        call xc_set(funobj,XC_VWN5C,1.0D0);
     case ('BLYP')
@@ -20,7 +18,7 @@ contains
        call xc_set(funobj,XC_PBEX,1.0D0);
        call xc_set(funobj,XC_PBEC,1.0D0);
     case DEFAULT
-       print *,'Unknown functional in xcfun_select_by_name()'
+       print *,'Unknown functional in xcfun_select_by_name()', conf_string
        call xc_free_functional(funobj)
        funobj = -1
        xcfun_select_by_name = -1       

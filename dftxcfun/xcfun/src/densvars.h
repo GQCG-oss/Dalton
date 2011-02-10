@@ -3,6 +3,21 @@
 #error Implement regularization properly, what about the non-constant terms when setting something to 0?
 #endif
 
+// When regularizing we shouldn't touch the higher order
+// parts of the density, so we need this.
+template<class T, int N>
+void regularize(ctaylor<T,N> &x)
+{
+  if (x < XC_TINY_DENSITY)
+    x.set(0,XC_TINY_DENSITY);
+}
+
+static void regularize(double &x)
+{
+  if (x < XC_TINY_DENSITY)
+    x = XC_TINY_DENSITY;
+}
+
 // Variables for expressing functionals, these are redundant because
 // different functionals have different needs.
 template<class T>
@@ -25,7 +40,8 @@ struct densvars
       case XC_A:
 	b = 0;
 	n = a;
-	s = a;
+	regularize(n);
+	s = n;
 	break;
       case XC_A_B_GAA_GAB_GBB:
 	gaa = d[2];
@@ -36,9 +52,25 @@ struct densvars
 	gns  = gaa - gbb;
       case XC_A_B:
 	a = d[0];
+	regularize(a);
 	b = d[1];
+	regularize(b);
 	n = a+b;
 	s = a-b;
+	break;
+      case XC_N_GNN:
+	gnn = d[1];
+	gss = 0;
+	gns = 0;
+	gaa = 0.25*gnn;
+	gab = gaa;
+	gbb = gaa;
+      case XC_N:
+	n = d[0];
+	regularize(n);
+	s = 0;
+	a = 0.5*n;
+	b = a;
 	break;
       default:
 	xcint_die("Illegal vars value in densvars()",parent->vars);	

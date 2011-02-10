@@ -223,6 +223,7 @@ void xc_eval(xc_functional_obj *f, const double *input, double *output)
 		output[2*j+1] = out2.get(VAR0); // First derivatives
 		output[2*j+2] = out2.get(VAR1); // First derivatives
 	      }
+	    output[0] = out2.get(CNST); // Energy
 	  }
 	  if (inlen & 1)
 	  {

@@ -10,7 +10,7 @@ extern "C" {
 #define XC_MAX_ORDER 3
 
 // Used for regularizing input
-#define XC_TINY_DENS 1e-14
+#define XC_TINY_DENSITY 1e-14
 
 #define XC_NO_REGULARIZATION
 
