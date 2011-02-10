@@ -830,7 +830,8 @@ case "$WHICH" in
 #radovan: the following fails on AIX (njord)
 #         F90mod="-qmoddir=../modules -qfree=f90 -I../modules"
 #radovan:                                     i changed it to:
-          F90mod="-qmoddir=../modules            -I../modules"
+#stefan :          hopefully adding -qsuffix=cpp=F90 helps to solve Sonias compilation issues on Sleipner in Aarhus.
+          F90mod="-qmoddir=../modules -qsuffix=cpp=F90 -I../modules"
           if [ $bit = '32' ]; then
              opt="$opt -bmaxdata:0x80000000 -bmaxstack:0x10000000"
           else
