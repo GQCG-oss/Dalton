@@ -110,10 +110,7 @@ C
          ENERGY_DFTKSM = ENERGY_DFTKSM
      &        + DFTENE(RHOA(IPNT),DUMMY)*WGHT(IPNT)
          VXC(IPNT) = 2D0*VX(1)
-         print *,'ulf VXC(IPNT) = ',VXC(IPNT)
       END DO
-      print *,'ENERGY_DFTKSM = ',ENERGY_DFTKSM
-      stop
       CALL DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &     VXC,GAO,FKSM)
 c     CALL QEXIT('DFTKSMLDA')
@@ -151,10 +148,7 @@ C
          ELSE
             VXC(2,IPNT) = 0D0
          END IF
-         print *,'ulf VXC(*,IPNT) = ',VXC(1,IPNT),VXC(2,IPNT)
       END DO
-      print *,'ENERGY_DFTKSM = ',ENERGY_DFTKSM
-      stop
       CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,FKSM)
 c     CALL QEXIT('DFTKSMGGA')
