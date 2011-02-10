@@ -2658,8 +2658,13 @@ C
       CALL DZERO(EGRAD,MXCOOR)
       
       EXESG = FNDKEY('*ESG   ')
+#if defined (VAR_PARIO)
+! WARNING! do not activate VAR_PARIO without fixing
+!          the PARIO code !!!! /Feb 2011 hjaaj
       IF ((.NOT.PARIO) .OR. (MYNUM .EQ. 0)) THEN
+#endif
          CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,WRKDLM)
+#if defined (VAR_PARIO)
       ELSE
 chj-s-090516
 chj      HRINPC = .FALSE.
@@ -2672,6 +2677,7 @@ C        indicates that LUONEL will NOT be written.
          CALL READIN(WORK(KFREE),LFREE,.FALSE.)
 chj-e-090516
       END IF
+#endif
 C
 C     Find out if we are running an excited state calculation
 #ifdef VAR_LINSCA
@@ -7121,6 +7127,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
+      NEWBAS = .TRUE.
       KEEPHE = .TRUE.
       ERGOLD =  ENERGY
       CALL IZERO(NUCNUM, MXCENT*8)

@@ -137,11 +137,11 @@ CTRL[5]=5
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Excitation energy (ZDIPLEN)
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )1\.07134.. * \*ENERGY\(eV\)\: * 3\.25433.." $log | wc -l`
-CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.119594.. * au" $log | wc -l`
-CRIT3=`$GREP "\@ *Total energy \: * \-7\.874535. * au" $log | wc -l`
-CRIT4=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 9\.151.....E\-02" $log | wc -l`
-CRIT5=`$GREP "Transition moment.* \: * \-*1\.07134.." $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )1\.071[3-5].* \*ENERGY\(eV\)\: * 3\.25[45]" $log | wc -l`
+CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.119[56].* au" $log | wc -l`
+CRIT3=`$GREP "\@ *Total energy \: * \-7\.874[45].* au" $log | wc -l`
+CRIT4=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 9\.15.*E\-02" $log | wc -l`
+CRIT5=`$GREP "Transition moment.* \: * \-*1\.071[3-5]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[6]=5
 ERROR[6]="EXCITATION ENERGY (ZDIPLEN) NOT CORRECT"

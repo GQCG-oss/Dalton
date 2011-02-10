@@ -691,6 +691,8 @@ C
 C     *** No more numerical derivative. ***
 C
       NMWALK = .FALSE.
+      IPRUSR = IPRUSR_orig
+      IPREAD = IPREAD_orig
 C
       CALL QEXIT('NUMDRV')
       RETURN

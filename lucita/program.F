@@ -940,7 +940,7 @@ C
       IN          = LUCMD
       IW          = LUPRI
       LUCI_MASTER = MASTER
-      LUCI_MYPROC = MYTID
+      LUCI_MYPROC = MYNUM
 *     Add the master node
       LUCI_NMPROC = NODTOT + 1
 
@@ -5465,7 +5465,7 @@ C
 *     to the total number of running invocations.
 *
       LUCI_MASTER = MASTER
-      LUCI_MYPROC = MYTID
+      LUCI_MYPROC = MYNUM
 C     Add the master node, NODTOT = number of co-workers
       LUCI_NMPROC = NODTOT + 1
 C

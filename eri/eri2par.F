@@ -52,6 +52,7 @@ C
 C
       CALL QENTER('PARDRV')
 C
+!     IPRPAR = 11
       IPRINT = MAX(IPRINT,IPRPAR)
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from PARDRV','*',103)
@@ -140,6 +141,7 @@ C
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from RVTIM','*',103)
 C
+
       DO 100 I = 1,NODTOT
 #if defined (VAR_MPI)
          NWHO = -1
@@ -964,7 +966,6 @@ C     Get calculation type (IPRTYP)
 C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
-!     print *,'mytid got from master IPRTYP',mytid, IPRTYP
       IF (IPRTYP.GT.0) THEN
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C
