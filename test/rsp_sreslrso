@@ -140,7 +140,7 @@ CRIT4=`$GREP "1 Excitation energies are calculated for symmetry no\. * 2" $log |
 CRIT5=`$GREP "1 property residues are calculated with labels\:" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[5]=4
-ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECLY"
+ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Excitation energy
 CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.1006360[0-9] * au" $log | wc -l`
