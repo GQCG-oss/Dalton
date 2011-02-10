@@ -495,7 +495,7 @@ int xc_eval_setup(xc_functional fun,
 		  int order)
 {
   // Check that vars are enough for the functional
-  if ((fun->depends & xcint_vars[vars].provides) == fun->depends)
+  if ((fun->depends & xcint_vars[vars].provides) != fun->depends)
     return XC_EVARS;
   if ((order < 0 || order > XC_MAX_ORDER) ||
       (mode == XC_PARTIAL_DERIVATIVES && order > 2))

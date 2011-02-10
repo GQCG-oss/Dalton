@@ -2395,6 +2395,9 @@ C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
          END IF
          WDFTMP = 0.0D0
          CALL DFTsetFunc(TITLIN,INPERR)
+#ifdef MOD_XCFUN
+         CALL xcfun_select(TITLIN)
+#endif
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.

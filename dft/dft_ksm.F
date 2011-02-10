@@ -33,6 +33,10 @@ C
       EXTERNAL DFTKSMGGA,DFTKSMLDA
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
+#ifdef MOD_XCFUN
+      external xcfun_KSMLDA
+      external xcfun_KSMGGA
+#endif
       COMMON /DKSMPRIV/ ENERGY_DFTKSM
 C      
       CALL QENTER('DFTKSMb')
@@ -41,14 +45,24 @@ C
       DOGGA = DFT_ISGGA()
       ENERGY_DFTKSM = 0.D0
       IF(DOGGA) THEN
+#ifdef MOD_XCFUN
+         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
+     &               xcfun_KSMGGA,FKSM,ELE)
+#else
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMGGA,FKSM,ELE)
+#endif
       ELSE
          DO I = 1, NBAST
             FKSM(I,I) = FKSM(I,I)*2.0D0
          END DO
+#ifdef MOD_XCFUN
+         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
+     &               xcfun_KSMLDA,FKSM,ELE)
+#else
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMLDA,FKSM,ELE)
+#endif
 C
       END IF
       IF (NODTOT.gt.0) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
@@ -96,7 +110,10 @@ C
          ENERGY_DFTKSM = ENERGY_DFTKSM
      &        + DFTENE(RHOA(IPNT),DUMMY)*WGHT(IPNT)
          VXC(IPNT) = 2D0*VX(1)
+         print *,'ulf VXC(IPNT) = ',VXC(IPNT)
       END DO
+      print *,'ENERGY_DFTKSM = ',ENERGY_DFTKSM
+      stop
       CALL DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &     VXC,GAO,FKSM)
 c     CALL QEXIT('DFTKSMLDA')
@@ -134,7 +151,10 @@ C
          ELSE
             VXC(2,IPNT) = 0D0
          END IF
+         print *,'ulf VXC(*,IPNT) = ',VXC(1,IPNT),VXC(2,IPNT)
       END DO
+      print *,'ENERGY_DFTKSM = ',ENERGY_DFTKSM
+      stop
       CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,FKSM)
 c     CALL QEXIT('DFTKSMGGA')
