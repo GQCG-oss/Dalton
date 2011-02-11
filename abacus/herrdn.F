@@ -3930,6 +3930,9 @@ C
       CHARACTER COMP(-MXBSETS:MXBSETS)
 #include <r12int.h>
 #include <huckel.h>
+casm
+#include <suscc.h>
+casm
 
 C
 C     Write SYMINFO file
@@ -4087,6 +4090,26 @@ C
  1070 FORMAT(I5,13I6)
       WRITE (LUSYMF,'(A)') 'END'
       CALL GPCLOSE(LUSYMF,'KEEP')
+C
+Casm
+C
+C     CC paramagnetic susceptibilty stuff
+C
+      DO I = 1,3
+         KSYMAG(I) = ISYMAX(I,2) + 1
+         KXYZ(I) = I
+      END DO
+C
+      DO I = 3,1,-1
+         DO J = I-1,1,-1
+            IF (KSYMAG(J) .GT. KSYMAG(I)) THEN
+               ITMP = KXYZ(I)
+               KXYZ(I) = KXYZ(J)
+               KXYZ(J) = ITMP
+            END IF
+         END DO
+      END DO
+C
       RETURN
       END
 C  /* Deck symnco */
