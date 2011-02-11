@@ -4893,6 +4893,13 @@ C
          IF (IGNCHO(2) .NE. 0) CALL QUIT('Error in '//SECNAM)
       ENDIF
 C
+C--------------------------------------
+C     Include operator pairs for CTOCD.
+C--------------------------------------
+C
+      CTOMAG = CTOSUS .OR. CTOSHI
+      IF (CTOMAG) CALL CC_CTOMAG
+C
 C------------------------------------------------------------
 C     Check if commutator terms are to be included in OR VEL:
 C------------------------------------------------------------
@@ -4912,13 +4919,6 @@ C
         IF (NLROP .EQ.0) WRITE(LUPRI,'(/A)')
      &     '(*CCLR   input ignored, because no operators requested.)'
       END IF
-C
-C--------------------------------------
-C     Include operator pairs for CTOCD.
-C--------------------------------------
-C
-      CTOMAG = CTOSUS .OR. CTOSHI
-      IF (CTOMAG) CALL CC_CTOMAG
 C
 C----------------------------
 C     Make wa frequency list. 
