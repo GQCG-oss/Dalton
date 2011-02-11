@@ -3106,7 +3106,8 @@ C
       IF (NOLOND) THEN
          WRITE (LUPRI,'(/,1X,A)')' Calculation without London orbitals.'
       ELSE
-         WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
+         IF (.NOT. (CTOCD .OR. CTOMAG))
+     &      WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
       END IF
 cLig >> added a print statement
       IF (CTOCD .OR. CTOMAG) THEN
