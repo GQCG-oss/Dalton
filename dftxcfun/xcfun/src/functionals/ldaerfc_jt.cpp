@@ -33,7 +33,7 @@ static num c2(const densvars<num> &d)
 }
 
 template<class num>
-static num ENERGY_FUNCTION(XC_LDAERFC_JT)(const densvars<num> &d)
+static num ldaerfc_jt(const densvars<num> &d)
 {
   double mu          = d.get_param(XC_RANGESEP_MU);
   num    denominator = 1.0 + c1(d.r_s)*mu + c2(d)*mu*mu;
@@ -42,15 +42,16 @@ static num ENERGY_FUNCTION(XC_LDAERFC_JT)(const densvars<num> &d)
   return result;
 }
 
-NEW_LDA_FUNCTIONAL(XC_LDAERFC_JT);
-SHORT_DESCRIPTION(XC_LDAERFC_JT) = "Short-range spin-unpolarized LDA correlation functional";
-LONG_DESCRIPTION(XC_LDAERFC_JT) =
-	     "Short-range spin-unpolarized LDA correlation functional of\n"
-	     "Julien Toulouse et al.\n"
-	     "Written by Radovan Bast based on the Ph.D. thesis of Julien Toulouse (page 159)\n"
-	     "and the Dalton implementation by Julien Toulouse.\n"
-	     "Range separation parameter is XC_RANGESEP_MU\n";
-NO_TEST(XC_LDAERFC_JT);
+FUNCTIONAL(XC_LDAERFC_JT) = {
+  "Short-range spin-unpolarized LDA correlation functional",
+  "Short-range spin-unpolarized LDA correlation functional of\n"
+  "Julien Toulouse et al.\n"
+  "Written by Radovan Bast based on the Ph.D. thesis of Julien Toulouse (page 159)\n"
+  "and the Dalton implementation by Julien Toulouse.\n"
+  "Range separation parameter is XC_RANGESEP_MU\n",
+  XC_DENSITY,
+  ENERGY_FUNCTION(ldaerfc_jt)
+};
 
 // radovan:
 // selftest yet to be written. i have compared SCF energy with Dalton

@@ -98,34 +98,36 @@ static num ecorrlr(const densvars<num> &d, parameter mu, const num &ec)
 	  a4*pow(mu,6) + pow(b0*mu,8)*ec)/pow(1 + pow(b0*mu,2),4);
 }
 template<class num>
-static num ENERGY_FUNCTION(XC_LDAERFC)(const densvars<num> &d)
+static num ldaerfc(const densvars<num> &d)
 {
   double mu = d.get_param(XC_RANGESEP_MU);
   num eps = pw92eps::pw92eps(d);
   return d.n*(eps - ecorrlr(d,mu,eps));
 }
 
-NEW_LDA_FUNCTIONAL(XC_LDAERFC);
-SHORT_DESCRIPTION(XC_LDAERFC) = "Short-range spin-dependent LDA correlation functional";
-LONG_DESCRIPTION(XC_LDAERFC) =	     "Short-range spin-dependent LDA correlation functional from\n"
-	     "Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)"
-	     "Adapted from Gori-Giorgi and MOLPRO by Ulf Ekstrom\n"
-	     "Test case from Gori-Giorgi (personal communication),\n"
-	     "up to 10^-7, then xcfun decimals due to more accurate pw92c.\n"
-	     "Range separation parameter is XC_RANGESEP_MU\n";
-TEST_VARS(XC_LDAERFC) = XC_A_B;
-TEST_ORDER(XC_LDAERFC) = 2;
-TEST_MODE(XC_LDAERFC) = XC_PARTIAL_DERIVATIVES;
-TEST_THRESHOLD(XC_LDAERFC) = 1e-7;
-TEST_IN(XC_LDAERFC) = {1.1, 1.0};
-TEST_OUT(XC_LDAERFC) = {    
-      -1.4579390272267870e-01,
-      -7.7624817385549980e-02,
-      -8.2132052511772885e-02,
-      +1.5795011054215363e-02,
-      -2.7440928179985190e-02,
-      +1.9539616096309973e-02,
-    };
+FUNCTIONAL(XC_LDAERFC) = {
+  "Short-range spin-dependent LDA correlation functional",
+  "Short-range spin-dependent LDA correlation functional from\n"
+  "Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)"
+  "Adapted from Gori-Giorgi and MOLPRO by Ulf Ekstrom\n"
+  "Test case from Gori-Giorgi (personal communication),\n"
+  "up to 10^-7, then xcfun decimals due to more accurate pw92c.\n"
+  "Range separation parameter is XC_RANGESEP_MU\n",
+  XC_DENSITY,
+  ENERGY_FUNCTION(ldaerfc)
+  XC_A_B,
+  XC_PARTIAL_DERIVATIVES,
+  2,
+  1e-7,
+  {1.1, 1.0},
+  { -1.4579390272267870e-01,
+    -7.7624817385549980e-02,
+    -8.2132052511772885e-02,
+    +1.5795011054215363e-02,
+    -2.7440928179985190e-02,
+    +1.9539616096309973e-02,
+  }
+};
   /* Original numbers from Paola, with inaccurate pw92c 
   const double ref[] = 
     {

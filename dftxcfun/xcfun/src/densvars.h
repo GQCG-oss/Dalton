@@ -12,7 +12,8 @@ void regularize(ctaylor<T,N> &x)
     x.set(0,XC_TINY_DENSITY);
 }
 
-static void regularize(double &x)
+template<class T>
+static void regularize(T &x)
 {
   if (x < XC_TINY_DENSITY)
     x = XC_TINY_DENSITY;
