@@ -67,6 +67,7 @@
   type   => 0, 
   string => "Final DFT", 
   pos    => 1, 
+  rel    => 1,
   thr    => 1.0e-9};
 }
 ## enedft end  #################################

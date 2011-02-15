@@ -75,89 +75,102 @@ END MOLINP
 START REFOUT
 
 
-         ****************************************************************
-         *********** DALTON - An electronic structure program ***********
-         ****************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Jacob Kongsted,           Univ. of Southern Denmark,    Denmark    
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Anders Osted,             Copenhagen University,        Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2010), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Dec 10 15:03:23 2010
-     Host name              : stallo-2.local                          
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Tue Feb 15 12:38:50 2011 
+     Host name              : stanley                                 
 
  * Work memory size             :   100000000 =  762.94 megabytes.
 
  * Directories for basis set searches:
-   1) /home/luca/programs/dalton/trunk/test/perl-pid.24302__2010_12_10__15.3
-   2) /home/luca/programs/dalton/trunk/basis/
+   1) /home/arnfinn/jobb/dalton/svn/pure_trunk/test/perl-pid.6105__2011_2_15__12.26
+   2) /home/arnfinn/jobb/dalton/svn/pure_trunk/basis/
 
 
        *******************************************************************
@@ -207,6 +220,7 @@ START REFOUT
    *************** Output of molecule and basis set information ***************
    ****************************************************************************
 
+
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
  1:                                                                         
@@ -219,23 +233,26 @@ START REFOUT
   Atomic type no.    1
   --------------------
   Nuclear charge:   6.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   Used basis set file for basis set for elements with Z =   6 :
-     "/home/luca/programs/dalton/trunk/basis/STO-3G"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   8.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/luca/programs/dalton/trunk/basis/STO-3G"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:   1.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/luca/programs/dalton/trunk/basis/STO-3G"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -277,9 +294,9 @@ Point group: C2v
  ********SPHERES IN PCMSPHGEN************
  INDEX        X        Y         Z        R
    1    0.0000000000e+00    0.0000000000e+00    0.0000000000e+00    1.7000000000e+00
-   2    0.0000000000e+00    0.0000000000e+00    2.3054658834e+00    1.5000000000e+00
-   3    1.7822044964e+00    0.0000000000e+00   -1.0289558799e+00    1.2000000000e+00
-   4   -1.7822044964e+00    0.0000000000e+00   -1.0289558799e+00    1.2000000000e+00
+   2    0.0000000000e+00    0.0000000000e+00    2.3054658725e+00    1.5000000000e+00
+   3    1.7822044879e+00    0.0000000000e+00   -1.0289558751e+00    1.2000000000e+00
+   4   -1.7822044879e+00    0.0000000000e+00   -1.0289558751e+00    1.2000000000e+00
 
 
                                  Isotopic Masses
@@ -299,7 +316,7 @@ Point group: C2v
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     3
+  Number of atom types :    3
   Total number of atoms:    4
 
   Basis set used is "STO-3G" from the basis set library.
@@ -321,9 +338,9 @@ Point group: C2v
 
   Total number of coordinates:   12
   C       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
-  O       :     4  x   0.0000000000    5  y   0.0000000000    6  z   2.3054658834
-  H   / 1 :     7  x   1.7822044964    8  y   0.0000000000    9  z  -1.0289558799
-  H   / 2 :    10  x  -1.7822044964   11  y   0.0000000000   12  z  -1.0289558799
+  O       :     4  x   0.0000000000    5  y   0.0000000000    6  z   2.3054658725
+  H   / 1 :     7  x   1.7822044879    8  y   0.0000000000    9  z  -1.0289558751
+  H   / 2 :    10  x  -1.7822044879   11  y   0.0000000000   12  z  -1.0289558751
 
 
   Symmetry Coordinates
@@ -408,11 +425,11 @@ Point group: C2v
 
                A                   B                   C
 
-         281893.2924          38569.4057          33927.3707 MHz
+         281893.2926          38569.4058          33927.3708 MHz
             9.402948            1.286537            1.131695 cm-1
 
 
-@  Nuclear repulsion energy :   31.163673581965
+@  Nuclear repulsion energy :   31.163673729192
 
 
   Symmetry Orbitals
@@ -469,11 +486,11 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      1.159648807704
+ Center of mass  (bohr):      0.000000000000      0.000000000000      1.159648802225
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -505,9 +522,9 @@ Point group: C2v
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
- 
+
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -543,8 +560,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Dec 10 15:03:23 2010
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Tue Feb 15 12:38:50 2011 
+     Host name              : stanley                                 
 
  Title lines from ".mol" input file:
                                                                              
@@ -555,15 +572,15 @@ Point group: C2v
 
      Restricted, closed shell Kohn-Sham DFT calculation.
 
-
      Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         16
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -583,7 +600,7 @@ Point group: C2v
 
       ** Automatic occupation of RKS orbitals **
 
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
      Occupied SCF orbitals               8 |    5    2    1    0
 
@@ -622,42 +639,50 @@ Point group: C2v
  Atom:    2*1 points=18280 compressed from 18280 ( 92 radial)
  Atom:    3*2 points=18150 compressed from 18150 ( 75 radial)
  Number of grid points:    55106 Grid generation time:       0.0 s
-K-S energy, electrons, error :    -13.964563268538  16.0000008466    8.47e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.68972    60.58642    60.58632   -30.26166    -0.02015
-   1  -111.730265027     -2.014834300902e-02   2.59e+00  -1.12e+02    5  2  1  0
-      MULPOP C    23.87; O     5.51; H     4.28; 
-K-S energy, electrons, error :    -13.683589306844  16.0000010604    1.06e-06
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.27464    60.35152    60.35164   -30.26166    -0.04740
-   2  -111.069683961     -4.739886941358e-02   3.47e+00   6.61e-01    5  2  1  0
-      MULPOP C    30.44; O     5.92; H     3.78; 
-K-S energy, electrons, error :    -13.972447264461  16.0000009048    9.05e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.78057    60.63369    60.63363   -30.26166    -0.01828
-   3  -111.918604624     -1.827882230703e-02   1.17e+00  -8.49e-01    5  2  1  0
-      MULPOP C    23.43; O     5.39; H     4.35; 
-K-S energy, electrons, error :    -13.813173325637  16.0000009343    9.34e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.55603    60.53861    60.53859   -30.26166    -0.00107
-   4  -112.031958946     -1.071362887835e-03   1.49e-01  -1.13e-01    5  2  1  0
-      MULPOP C    25.38; O     5.57; H     4.19; 
-K-S energy, electrons, error :    -13.837346284078  16.0000009364    9.36e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.59447    60.55675    60.55673   -30.26166    -0.00215
-   5  -112.033866468     -2.150639284714e-03   2.04e-02  -1.91e-03    5  2  1  0
-      MULPOP C    25.23; O     5.54; H     4.21; 
-K-S energy, electrons, error :    -13.834172652964  16.0000009352    9.35e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58891    60.55410    60.55408   -30.26166    -0.00202
-   6  -112.033907918     -2.019985311012e-03   2.67e-03  -4.15e-05    5  2  1  0
-      MULPOP C    25.24; O     5.55; H     4.20; 
-K-S energy, electrons, error :    -13.834464062208  16.0000009352    9.35e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58937    60.55432    60.55430   -30.26166    -0.00204
-   7  -112.033908473     -2.037037342962e-03   4.48e-04  -5.54e-07    5  2  1  0
-      MULPOP C    25.23; O     5.55; H     4.20; 
-K-S energy, electrons, error :    -13.834501696302  16.0000009351    9.35e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   -30.26166    -0.00204
-   8  -112.033908488     -2.039508846991e-03   3.16e-05  -1.50e-08    5  2  1  0
-      MULPOP C    25.23; O     5.55; H     4.20; 
-K-S energy, electrons, error :    -13.834504384336  16.0000009351    9.35e-07
-PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   -30.26166    -0.00204
-   9  -112.033908488     -2.039687623228e-03   1.13e-06  -7.13e-11    5  2  1  0
+K-S energy, electrons, error :    -13.964563272998  16.0000008466    8.47e-07
+   1  -111.730265028     -2.014834295274e-02   2.59e+00  -1.12e+02    5  2  1  0
+
+ Virial theorem: -V/T =      1.996185
+      MULPOP C     6.89; O     5.84; H     3.27; 
+K-S energy, electrons, error :    -13.683589314664  16.0000010604    1.06e-06
+   2  -111.069683994     -4.739886745395e-02   3.47e+00   6.61e-01    5  2  1  0
+
+ Virial theorem: -V/T =      2.003390
+      MULPOP C     7.20; O     6.01; H     2.79; 
+K-S energy, electrons, error :    -13.972447269642  16.0000009048    9.05e-07
+   3  -111.918604622     -1.827882238132e-02   1.17e+00  -8.49e-01    5  2  1  0
+
+ Virial theorem: -V/T =      1.999485
+      MULPOP C     7.01; O     5.65; H     3.34; 
+K-S energy, electrons, error :    -13.813173332331  16.0000009343    9.34e-07
+   4  -112.031958945     -1.071362942152e-03   1.49e-01  -1.13e-01    5  2  1  0
+
+ Virial theorem: -V/T =      2.007778
+      MULPOP C     7.02; O     5.79; H     3.19; 
+K-S energy, electrons, error :    -13.837346289814  16.0000009364    9.36e-07
+   5  -112.033866467     -2.150639307185e-03   2.04e-02  -1.91e-03    5  2  1  0
+
+ Virial theorem: -V/T =      2.006504
+      MULPOP C     7.04; O     5.76; H     3.20; 
+K-S energy, electrons, error :    -13.834172658732  16.0000009352    9.35e-07
+   6  -112.033907917     -2.019985333284e-03   2.67e-03  -4.15e-05    5  2  1  0
+
+ Virial theorem: -V/T =      2.006688
+      MULPOP C     7.04; O     5.76; H     3.20; 
+K-S energy, electrons, error :    -13.834464067940  16.0000009352    9.35e-07
+   7  -112.033908471     -2.037037363159e-03   4.48e-04  -5.54e-07    5  2  1  0
+
+ Virial theorem: -V/T =      2.006674
+      MULPOP C     7.04; O     5.76; H     3.20; 
+K-S energy, electrons, error :    -13.834501702028  16.0000009351    9.35e-07
+   8  -112.033908486     -2.039508866872e-03   3.16e-05  -1.50e-08    5  2  1  0
+
+ Virial theorem: -V/T =      2.006672
+      MULPOP C     7.04; O     5.76; H     3.20; 
+K-S energy, electrons, error :    -13.834504390062  16.0000009351    9.35e-07
+   9  -112.033908486     -2.039687643126e-03   1.13e-06  -7.15e-11    5  2  1  0
  DIIS converged in   9 iterations !
+ - total time used in SIRFCK        :       0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -671,11 +696,11 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  Sym       Kohn-Sham orbital energies
 
   1    -18.36962419    -9.66197370    -0.90481816    -0.50692414    -0.27783877
-         0.36676366     0.53279077
+         0.36676367     0.53279078
 
-  2     -0.38754497    -0.09325530     0.46802257
+  2     -0.38754498    -0.09325530     0.46802258
 
-  3     -0.27474219     0.02488546
+  3     -0.27474220     0.02488546
 
     E(LUMO) :     0.02488546 au (symmetry 3)
   - E(HOMO) :    -0.09325530 au (symmetry 2)
@@ -694,15 +719,15 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
      SOLVATION MODEL: polarizable continuum model (PCM),
           dielectric constant =   78.390000
 
-     Final DFT energy:           -112.033908487735                 
-     Nuclear repulsion:            31.163673581965
-     Electronic energy:          -143.195542382077
+     Final DFT energy:           -112.033908486407                 
+     Nuclear repulsion:            31.163673729192
+     Electronic energy:          -143.195542527956
 
      Final gradient norm:           0.000001128393
 
  
-     Date and time (Linux)  : Fri Dec 10 15:03:24 2010
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Tue Feb 15 12:38:52 2011 
+     Host name              : stanley                                 
 
  (Only coefficients >0.0100 are printed.)
 
@@ -735,12 +760,12 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.15 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.22 seconds
+ >>>> Total wall time used in SIRIUS :      2.00 seconds
 
  
-     Date and time (Linux)  : Fri Dec 10 15:03:24 2010
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Tue Feb 15 12:38:52 2011 
+     Host name              : stanley                                 
 
 
                      .---------------------------------------.
@@ -797,9 +822,9 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
       2 Excitation energies are calculated for symmetry no.    4
 
 
-   SCF energy         :     -112.033908487735161
- -- inactive part     :     -143.195542382077065
- -- nuclear repulsion :       31.163673581965142
+   SCF energy         :     -112.033908486406801
+ -- inactive part     :     -143.195542527955837
+ -- nuclear repulsion :       31.163673729192165
 
 
                     *****************************************
@@ -821,7 +846,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  Orbital variables.         KZWOPT:      13
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      13
- Electrons in DFTMOMO:   16.00000093514775
+ Electrons in DFTMOMO:   16.00000093514768
 
 
 
@@ -829,11 +854,11 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*1 evaluation time:       0.1 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
@@ -846,8 +871,8 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    ZDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  0.60223618     *ENERGY(eV):   11.976359    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.64913498     *ENERGY(eV):   16.960763    
+@ STATE NO:    1 *TRANSITION MOMENT:  0.60223618     *ENERGY(eV):   11.976360    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.64913499     *ENERGY(eV):   16.960763    
 
 
   ******************************************************************************
@@ -859,9 +884,9 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  @ Excited state no:    1 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.44012312    au
-@                      11.976359     eV
-@                      96595.860     cm-1
+@ Excitation energy :  0.44012313    au
+@                      11.976360     eV
+@                      96595.861     cm-1
                        1155.5431     kJ / mol
 
 @ Total energy :      -111.59379     au
@@ -876,13 +901,13 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
   Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
              J Chem Phys 128, 044118 (2008)
 
-                         Lambda:     0.0635542947
+                         Lambda:     0.0635542937
 
 
  @ Excited state no:    2 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.62329659    au
+@ Excitation energy :  0.62329660    au
 @                      16.960763     eV
 @                      136797.79     cm-1
                        1636.4650     kJ / mol
@@ -890,7 +915,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 @ Total energy :      -111.41061     au
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.17509491      (Transition moment :  0.64913498     )
+@ Oscillator strength (LENGTH)   :  0.17509492      (Transition moment :  0.64913499     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -899,10 +924,10 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
   Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
              J Chem Phys 128, 044118 (2008)
 
-                         Lambda:     0.1613756756
+                         Lambda:     0.1613756739
 
 
- Time used in polarization propagator calculation is      1.15 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      2.30 CPU seconds for symmetry 1
 
 
  >>>>>>>>>> Linear response calculation
@@ -918,7 +943,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  Orbital variables.         KZWOPT:       9
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       9
- Electrons in DFTMOMO:   16.00000093514775
+ Electrons in DFTMOMO:   16.00000093514768
 
 
 
@@ -926,9 +951,9 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
@@ -954,7 +979,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  @ Excited state no:    1 in symmetry  2
  ---------------------------------------
 
-@ Excitation energy :  0.48799632    au
+@ Excitation energy :  0.48799633    au
 @                      13.279055     eV
 @                      107102.81     cm-1
                        1281.2342     kJ / mol
@@ -971,13 +996,13 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
   Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
              J Chem Phys 128, 044118 (2008)
 
-                         Lambda:     0.7451204338
+                         Lambda:     0.7451204282
 
 
  @ Excited state no:    2 in symmetry  2
  ---------------------------------------
 
-@ Excitation energy :  0.65789016    au
+@ Excitation energy :  0.65789017    au
 @                      17.902102     eV
 @                      144390.20     cm-1
                        1727.2904     kJ / mol
@@ -985,7 +1010,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 @ Total energy :      -111.37602     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.64135840e-03  (Transition moment :  0.11341246     )
+@ Oscillator strength (LENGTH)   :  5.64135822e-03  (Transition moment :  0.11341246     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -994,10 +1019,10 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
   Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
              J Chem Phys 128, 044118 (2008)
 
-                         Lambda:     0.6758683484
+                         Lambda:     0.6758683463
 
 
- Time used in polarization propagator calculation is      0.81 CPU seconds for symmetry 2
+ Time used in polarization propagator calculation is      1.51 CPU seconds for symmetry 2
 
 
  >>>>>>>>>> Linear response calculation
@@ -1013,7 +1038,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  Orbital variables.         KZWOPT:       7
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       7
- Electrons in DFTMOMO:   16.00000093514775
+ Electrons in DFTMOMO:   16.00000093514768
 
 
 
@@ -1021,9 +1046,9 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
@@ -1036,8 +1061,8 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  0.18087490     *ENERGY(eV):   9.3145409    
-@ STATE NO:    2 *TRANSITION MOMENT: -0.61568796     *ENERGY(eV):   16.017150    
+@ STATE NO:    1 *TRANSITION MOMENT:  0.18087491     *ENERGY(eV):   9.3145413    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.61568797     *ENERGY(eV):   16.017150    
 
 
   ******************************************************************************
@@ -1050,14 +1075,14 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  ---------------------------------------
 
 @ Excitation energy :  0.34230310    au
-@                      9.3145409     eV
+@                      9.3145413     eV
 @                      75126.847     cm-1
                        898.71666     kJ / mol
 
 @ Total energy :      -111.69161     au
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.46579734e-03  (Transition moment :  0.18087490     )
+@ Oscillator strength (LENGTH)   :  7.46579755e-03  (Transition moment :  0.18087491     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1080,7 +1105,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 @ Total energy :      -111.44529     au
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.14875264      (Transition moment : -0.61568796     )
+@ Oscillator strength (LENGTH)   :  0.14875265      (Transition moment : -0.61568797     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1089,10 +1114,10 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
   Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
              J Chem Phys 128, 044118 (2008)
 
-                         Lambda:     0.0084107380
+                         Lambda:     0.0084107381
 
 
- Time used in polarization propagator calculation is      0.79 CPU seconds for symmetry 3
+ Time used in polarization propagator calculation is      1.49 CPU seconds for symmetry 3
 
 
  >>>>>>>>>> Linear response calculation
@@ -1108,7 +1133,7 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
  Orbital variables.         KZWOPT:       3
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       3
- Electrons in DFTMOMO:   16.00000093514775
+ Electrons in DFTMOMO:   16.00000093514768
 
 
 
@@ -1116,9 +1141,9 @@ PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT   -60.58943    60.55434    60.55432   
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.2 s
-RSPORT:    4 out of    2 new trial vectors linear dependent
- Electrons: 16.000001( 9.35e-07): LR-DFT*1 evaluation time:       0.1 s
+ Electrons: 16.000001( 9.35e-07): LR-DFT*2 evaluation time:       0.4 s
+RSPORT:    1 out of    2 new trial vectors linear dependent
+ Electrons: 16.000001( 9.35e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
@@ -1141,7 +1166,7 @@ RSPORT:    4 out of    2 new trial vectors linear dependent
  ---------------------------------------
 
 @ Excitation energy :  0.13701204    au
-@                      3.7282872     eV
+@                      3.7282874     eV
 @                      30070.668     cm-1
                        359.72507     kJ / mol
 
@@ -1160,7 +1185,7 @@ RSPORT:    4 out of    2 new trial vectors linear dependent
  @ Excited state no:    2 in symmetry  4
  ---------------------------------------
 
-@ Excitation energy :  0.42490158    au
+@ Excitation energy :  0.42490159    au
 @                      11.562160     eV
 @                      93255.118     cm-1
                        1115.5789     kJ / mol
@@ -1177,21 +1202,21 @@ RSPORT:    4 out of    2 new trial vectors linear dependent
                          Lambda:     0.0039777580
 
 
- Time used in polarization propagator calculation is      0.43 CPU seconds for symmetry 4
+ Time used in polarization propagator calculation is      0.87 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   3.19 seconds
- >>>> Total wall time used in RESPONSE:   4.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   6.17 seconds
+ >>>> Total wall time used in RESPONSE:   7.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   4.44 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   8.46 seconds
+ >>>> Total wall time used in DALTON:   9.00 seconds
 
  
-     Date and time (Linux)  : Fri Dec 10 15:03:28 2010
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Tue Feb 15 12:38:59 2011 
+     Host name              : stanley                                 
 END REFOUT
 

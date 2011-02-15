@@ -1439,7 +1439,6 @@ C
          PCMCORD(2,I)=CORD(2,N)
          PCMCORD(3,I)=CORD(3,N)
          PCMCHG(I)=CHARGE(N)
-         print *, 'nucind',i,rsph(n)
       END DO
       DO K = 1, MAXREP
          DO N = 1, NUCIND

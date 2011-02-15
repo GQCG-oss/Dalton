@@ -119,89 +119,102 @@ END POTINP
 START REFOUT
 
 
-         ****************************************************************
-         *********** DALTON - An electronic structure program ***********
-         ****************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Jacob Kongsted,           Univ. of Southern Denmark,    Denmark    
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Anders Osted,             Copenhagen University,        Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2010), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sat Dec 11 20:39:48 2010
-     Host name              : stallo-1.local                          
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Tue Feb 15 12:42:25 2011 
+     Host name              : stanley                                 
 
  * Work memory size             :   100000000 =  762.94 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/program/dalton/svn/pure_trunk/test/perl-pid.13663__2010_12_11__20.39
-   2) /home/arnfinn/program/dalton/svn/pure_trunk/basis/
+   1) /home/arnfinn/jobb/dalton/svn/pure_trunk/test/perl-pid.6105__2011_2_15__12.26
+   2) /home/arnfinn/jobb/dalton/svn/pure_trunk/basis/
 
 
        *******************************************************************
@@ -262,6 +275,7 @@ START REFOUT
    *************** Output of molecule and basis set information ***************
    ****************************************************************************
 
+
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
  1: CH2O PLUS 2 WATERS                                                      
@@ -274,37 +288,42 @@ START REFOUT
   Atomic type no.    1
   --------------------
   Nuclear charge:   6.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Used basis set file for basis set for elements with Z =   6 :
-     "/home/arnfinn/program/dalton/svn/pure_trunk/basis/STO-3G"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   8.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/arnfinn/program/dalton/svn/pure_trunk/basis/STO-3G"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:   1.00000
-  Number of symmetry independent centres:    2
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/arnfinn/program/dalton/svn/pure_trunk/basis/STO-3G"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/STO-3G"
 
   Atomic type no.    4
   --------------------
   Nuclear charge:  -0.66900
-  Number of symmetry independent centres:    2
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
   This is an MM atom without basis functions.
 
   Atomic type no.    5
   --------------------
   Nuclear charge:   0.33450
-  Number of symmetry independent centres:    4
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
   This is an MM atom without basis functions.
 
 
@@ -331,7 +350,7 @@ Point group: C1
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     6
+  Number of atom types :    6
   Total number of atoms:   12
 
   label    atoms   charge   prim   cont     basis
@@ -353,10 +372,10 @@ Point group: C1
   ----------------------------
 
   Total number of coordinates:   36
-  C       :     1  x  -3.0015786302    2  y  -1.4563174451    3  z   0.0550080380
-  O       :     4  x  -3.1314330512    5  y   0.8240509855    6  z  -0.0184248298
-  H       :     7  x  -1.1728925401    8  y  -2.4468589722    9  z   0.1025195325
-  H       :    10  x  -4.7395144021   11  y  -2.6116034068   12  z   0.0761219481
+  C       :     1  x  -3.0015786160    2  y  -1.4563174382    3  z   0.0550080378
+  O       :     4  x  -3.1314330364    5  y   0.8240509816    6  z  -0.0184248297
+  H       :     7  x  -1.1728925345    8  y  -2.4468589606    9  z   0.1025195320
+  H       :    10  x  -4.7395143797   11  y  -2.6116033945   12  z   0.0761219478
 
 
    Interatomic separations (in Angstrom):
@@ -411,14 +430,14 @@ Point group: C1
 
                A                   B                   C
 
-         280942.3013          38847.8806          34128.6681 MHz
+         280942.3015          38847.8806          34128.6681 MHz
             9.371226            1.295826            1.138410 cm-1
 
 
-@  Nuclear repulsion energy :   31.249215168341
+@  Nuclear repulsion energy :   31.249215315972
 
  QM3 induced dipole vector converged in  13 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.020409711440023
+ Final norm2 of QM3 induced dipole moment vector:    0.020409711895445
 
 
     **************************************************************************
@@ -470,13 +489,13 @@ Point group: C1
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Electric field at the nuclei
           - Potential energy at the nuclei
 
- Center of mass  (bohr):     -3.067740329786     -0.312997396742      0.018174673484
+ Center of mass  (bohr):     -3.067740315293     -0.312997395263      0.018174673399
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -497,7 +516,7 @@ Point group: C1
  Number of two-electron integrals written:        2907 ( 94.4% )
  Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -528,8 +547,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Sat Dec 11 20:39:48 2010
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Tue Feb 15 12:42:25 2011 
+     Host name              : stanley                                 
 
  Title lines from ".mol" input file:
      CH2O PLUS 2 WATERS                                                      
@@ -540,12 +559,12 @@ Point group: C1
 
      Restricted, closed shell Kohn-Sham DFT calculation.
 
-
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         16
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -606,48 +625,60 @@ Point group: C1
  Atom:    2*1 points=18280 compressed from 18280 ( 92 radial)
  Atom:    3*1 points=18150 compressed from 18150 ( 75 radial)
  Atom:    4*1 points=18150 compressed from 18150 ( 75 radial)
- Number of grid points:    73256 Grid generation time:       0.1 s
-K-S energy, electrons, error :    -11.975378041393  16.0000012547    1.25e-06
+ Number of grid points:    73256 Grid generation time:       0.0 s
+K-S energy, electrons, error :    -11.975378044871  16.0000012547    1.25e-06
 
  QM3 induced Dipole vector converged in  13 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.068478738902117
-   1  -112.623001714     -1.770440365548e-02    2.45334e+00   -1.13e+02
-      MULPOP C     5.02; O    16.31; H     2.28; 
-K-S energy, electrons, error :    -11.746476967977  16.0000013834    1.38e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.068478740049335
+   1  -112.623001715     -1.770440366844e-02    2.45334e+00   -1.13e+02
+
+ Virial theorem: -V/T =      2.004423
+      MULPOP C     5.01; O     8.72; H     2.27; 
+K-S energy, electrons, error :    -11.746476974085  16.0000013834    1.38e-06
 
  QM3 induced Dipole vector converged in  13 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.009770909979341
-   2  -112.274338902      1.474130243148e-02    2.94671e+00    3.49e-01
-      MULPOP C     7.49; O    14.60; H     1.62; 
-K-S energy, electrons, error :    -11.950280239732  16.0000013090    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.009770909930516
+   2  -112.274338924      1.474130203950e-02    2.94671e+00    3.49e-01
+
+ Virial theorem: -V/T =      2.014367
+      MULPOP C     7.47; O     6.91; H     1.62; 
+K-S energy, electrons, error :    -11.950280243881  16.0000013090    1.31e-06
 
  QM3 induced Dipole vector converged in  13 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.064920294806720
-   3  -112.842566660     -1.706188241371e-02    8.61243e-01   -5.68e-01
-      MULPOP C     5.61; O    15.92; H     1.81; 
-K-S energy, electrons, error :    -11.862966932890  16.0000013128    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.064920296142570
+   3  -112.842566659     -1.706188249596e-02    8.61243e-01   -5.68e-01
+
+ Virial theorem: -V/T =      2.008819
+      MULPOP C     5.60; O     8.60; H     1.81; 
+K-S energy, electrons, error :    -11.862966937643  16.0000013128    1.31e-06
 
  QM3 induced Dipole vector converged in  12 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.035118618121378
-   4  -112.900301896     -7.461039424276e-03    6.75709e-02   -5.77e-02
-      MULPOP C     6.00; O    15.83; H     1.86; 
-K-S energy, electrons, error :    -11.871215579687  16.0000013154    1.32e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.035118619007372
+   4  -112.900301894     -7.461039508864e-03    6.75708e-02   -5.77e-02
+
+ Virial theorem: -V/T =      2.014234
+      MULPOP C     5.98; O     8.16; H     1.86; 
+K-S energy, electrons, error :    -11.871215584161  16.0000013154    1.32e-06
 
  QM3 induced Dipole vector converged in  11 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037464088579593
-   5  -112.900644179     -8.363423585919e-03    1.32509e-02   -3.42e-04
-      MULPOP C     6.00; O    15.81; H     1.82; 
-K-S energy, electrons, error :    -11.870525884180  16.0000013146    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037464089436606
+   5  -112.900644177     -8.363423644800e-03    1.32509e-02   -3.42e-04
+
+ Virial theorem: -V/T =      2.013667
+      MULPOP C     5.99; O     8.19; H     1.82; 
+K-S energy, electrons, error :    -11.870525888676  16.0000013146    1.31e-06
 
  QM3 induced Dipole vector converged in  10 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037301621718752
-   6  -112.900659093     -8.300430608597e-03    3.33594e-03   -1.49e-05
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870722893551  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037301622577169
+   6  -112.900659092     -8.300430669006e-03    3.33594e-03   -1.49e-05
+
+ Virial theorem: -V/T =      2.013731
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870722898031  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in  10 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037363405920166
-   7  -112.900659035     -8.323409781308e-03    4.54921e-04    5.87e-08
+ Final norm2 of QM3 induced dipole moment vector:    0.037363406774960
+   7  -112.900659033     -8.323409840008e-03    4.54921e-04    5.87e-08
 
 !!! Info: DIIS restarted because it was stalled ...
  - energy changed by    5.874e-08
@@ -657,74 +688,97 @@ K-S energy, electrons, error :    -11.870722893551  16.0000013145    1.31e-06
     0.929867
 
 ! Backstep to previous Fock matrix because energy increased.
-      MULPOP C     6.00; O    15.82; H     1.83; 
-   7  Level shift: occupied orbital energies shifted by    0.0000
-K-S energy, electrons, error :    -11.871217027125  16.0000013144    1.31e-06
+
+ Virial theorem: -V/T =      2.013731
+      MULPOP C     5.98; O     8.19; H     1.83; 
+   7  Level shift: occupied orbital energies shifted by   -0.0000
+K-S energy, electrons, error :    -11.871217031561  16.0000013144    1.31e-06
 
  QM3 induced Dipole vector converged in  10 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037524385612735
-   8  -112.900654010     -8.382979259313e-03    6.48038e-03    5.03e-06
-      MULPOP C     5.99; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.869827554015  16.0000013147    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037524386456465
+   8  -112.900654008     -8.382979312985e-03    6.48038e-03    5.03e-06
+
+ Virial theorem: -V/T =      2.013694
+      MULPOP C     5.97; O     8.20; H     1.83; 
+K-S energy, electrons, error :    -11.869827558590  16.0000013147    1.31e-06
 
  QM3 induced Dipole vector converged in  11 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037072605673195
-   9  -112.900650801     -8.215429745224e-03    1.30479e-02    3.21e-06
-      MULPOP C     6.00; O    15.81; H     1.83; 
-K-S energy, electrons, error :    -11.870752918494  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037072606552240
+   9  -112.900650799     -8.215429814656e-03    1.30479e-02    3.21e-06
+
+ Virial theorem: -V/T =      2.013768
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870752922972  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in  10 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037373699695971
-  10  -112.900658917     -8.327223911504e-03    2.26417e-05   -8.12e-06
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754232049  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037373700550206
+  10  -112.900658916     -8.327223969935e-03    2.26417e-05   -8.12e-06
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754236527  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   7 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374037804598
-  11  -112.900658913     -8.327350907024e-03    2.55380e-06    4.39e-09
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754385757  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374038658788
+  11  -112.900658911     -8.327350965437e-03    2.55380e-06    4.39e-09
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754390235  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   6 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107379982
-  12  -112.900658912     -8.327376547050e-03    3.89640e-08    8.77e-10
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754387749  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108234176
+  12  -112.900658910     -8.327376605464e-03    3.89640e-08    8.77e-10
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754392227  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   4 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107680715
-  13  -112.900658912     -8.327376694033e-03    1.23229e-08    2.73e-12
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754386325  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108534911
+  13  -112.900658910     -8.327376752449e-03    1.23229e-08    2.29e-12
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754390803  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   4 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107283510
-  14  -112.900658912     -8.327376547890e-03    3.15778e-09   -4.95e-12
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754386665  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108137702
+  14  -112.900658910     -8.327376606300e-03    3.15780e-09   -4.52e-12
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754391143  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   3 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107382257
-  15  -112.900658912     -8.327376587732e-03    5.45596e-10    1.28e-12
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754386619  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108236450
+  15  -112.900658910     -8.327376646144e-03    5.45654e-10    9.95e-13
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754391097  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   3 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107367741
-  16  -112.900658912     -8.327376582488e-03    1.89123e-11   -3.13e-13
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108221936
+  16  -112.900658910     -8.327376640901e-03    1.89154e-11   -4.26e-14
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754391096  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   2 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107367388
-  17  -112.900658912     -8.327376582338e-03    1.17106e-12    8.53e-14
-      MULPOP C     6.00; O    15.82; H     1.83; 
-K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108221579
+  17  -112.900658910     -8.327376640752e-03    1.17553e-12   -7.11e-14
+
+ Virial theorem: -V/T =      2.013719
+      MULPOP C     5.98; O     8.19; H     1.83; 
+K-S energy, electrons, error :    -11.870754391096  16.0000013145    1.31e-06
 
  QM3 induced Dipole vector converged in   2 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.037374107367411
-  18  -112.900658912     -8.327376582353e-03    3.34857e-13   -2.84e-14
+ Final norm2 of QM3 induced dipole moment vector:    0.037374108221603
+  18  -112.900658910     -8.327376640763e-03    3.13400e-13    7.11e-14
  DIIS converged in  18 iterations !
+ - total time used in SIRFCK        :       0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -737,9 +791,9 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
  Sym       Kohn-Sham orbital energies
 
-  1    -18.91905091   -10.08389823    -1.01341480    -0.57687160    -0.44434716
-        -0.35005810    -0.32119123    -0.16543924     0.06967467     0.39381259
-         0.49744572     0.61388889
+  1    -18.91905092   -10.08389823    -1.01341480    -0.57687160    -0.44434717
+        -0.35005810    -0.32119123    -0.16543924     0.06967467     0.39381260
+         0.49744573     0.61388890
 
     E(LUMO) :     0.06967467 au (symmetry 1)
   - E(HOMO) :    -0.16543924 au (symmetry 1)
@@ -757,20 +811,20 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
      QM/MM calculation converged :
 
-        Electrostatic energy:      -0.007810375391
-        Polarization energy:       -0.000517001192
+        Electrostatic energy:      -0.007810375438
+        Polarization energy:       -0.000517001203
         van der Waals energy:       0.000000000000
-        Total QM/MM energy:        -0.008327376582
+        Total QM/MM energy:        -0.008327376641
 
-     Final DFT energy:           -112.900658911690                 
-     Nuclear repulsion:            31.249215168341
-     Electronic energy:          -144.141546703449
+     Final DFT energy:           -112.900658910455                 
+     Nuclear repulsion:            31.249215315972
+     Electronic energy:          -144.141546849787
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Sat Dec 11 20:39:52 2010
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Tue Feb 15 12:42:34 2011 
+     Host name              : stanley                                 
 
  (Only coefficients >0.0100 are printed.)
 
@@ -782,7 +836,7 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
    2 C   :1s    -0.0089   0.0406   0.2852   0.5872   0.0194  -0.1271   0.0005
    3 C   :2px    0.0005  -0.0001  -0.0092   0.0045   0.5760   0.0146  -0.0069
    4 C   :2py   -0.0078   0.0011   0.1690  -0.2633   0.0169  -0.4223   0.0232
-   5 C   :2pz    0.0002   0.0000  -0.0046   0.0109   0.0065   0.0182   0.6014
+   5 C   :2pz    0.0002  -0.0000  -0.0046   0.0109   0.0065   0.0182   0.6014
    6 O   :1s     0.9935   0.0005  -0.2149   0.0979   0.0016  -0.1122   0.0012
    7 O   :1s     0.0296  -0.0081   0.7388  -0.4138  -0.0050   0.5655  -0.0059
    8 O   :2px    0.0004  -0.0002   0.0186  -0.0051   0.3295  -0.0220  -0.0067
@@ -807,12 +861,12 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
 
 
- >>>> Total CPU  time used in SIRIUS :      3.95 seconds
- >>>> Total wall time used in SIRIUS :      4.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      8.97 seconds
+ >>>> Total wall time used in SIRIUS :      9.00 seconds
 
  
-     Date and time (Linux)  : Sat Dec 11 20:39:52 2010
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Tue Feb 15 12:42:34 2011 
+     Host name              : stanley                                 
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -858,21 +912,21 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
 
  
-     Date and time (Linux)  : Sat Dec 11 20:39:52 2010
-     Host name              : stallo-1.local                          
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.5 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.3 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.3 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.3 s
- Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.3 s
- >>> Time used in EXCITA is   4.94 seconds
+     Date and time (Linux)  : Tue Feb 15 12:42:34 2011 
+     Host name              : stanley                                 
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.8 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.9 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.9 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.9 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.9 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.8 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.9 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.9 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.5 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.5 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.5 s
+ Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.5 s
+ >>> Time used in EXCITA is   8.96 seconds
 
 
    ***************************************************************************
@@ -881,17 +935,17 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
 
  
-     Date and time (Linux)  : Sat Dec 11 20:39:57 2010
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Tue Feb 15 12:42:43 2011 
+     Host name              : stanley                                 
 
 
                              Molecular geometry (au)
                              -----------------------
 
- C         -3.0015786302           -1.4563174451            0.0550080380
- O         -3.1314330512            0.8240509855           -0.0184248298
- H         -1.1728925401           -2.4468589722            0.1025195325
- H         -4.7395144021           -2.6116034068            0.0761219481
+ C         -3.0015786160           -1.4563174382            0.0550080378
+ O         -3.1314330364            0.8240509816           -0.0184248297
+ H         -1.1728925345           -2.4468589606            0.1025195320
+ H         -4.7395143797           -2.6116033945            0.0761219478
 
 
 
@@ -902,19 +956,19 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy       -112.9006589117 au (Hartrees)
-                         -3072.18312003 eV
-                           -296420.6374 kJ/mol
+     Total energy       -112.9006589105 au (Hartrees)
+                         -3072.18320717 eV
+                           -296420.6343 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1684489058 au
-     Mass-velocity correction:                  -0.2161794680 au
+     Darwin correction:                          0.1684489044 au
+     Mass-velocity correction:                  -0.2161794662 au
 
-     Total relativistic correction:             -0.0477305622 au (0.0423%)
-     Non-relativistic + relativistic energy:  -112.9483894739 au
+     Total relativistic correction:             -0.0477305618 au (0.0423%)
+     Non-relativistic + relativistic energy:  -112.9483894723 au
 
 
 
@@ -931,9 +985,9 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07940303         0.20182234         0.67320685
-      y     -0.60934621        -1.54880340        -5.16625206
-      z      0.01438066         0.03655198         0.12192427
+      x      0.07940303         0.20182235         0.67320688
+      y     -0.60934621        -1.54880347        -5.16625228
+      z      0.01438066         0.03655198         0.12192428
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -948,7 +1002,7 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
                  Sym.   Mode   Frequency    Frequency
                 ex. st.  No.      (au)          (eV)
                 =======================================
-                   1        1    0.150234    4.088065
+                   1        1    0.150234    4.088066
                    1        2    0.349273    9.504191
                 ---------------------------------------
 
@@ -993,24 +1047,24 @@ K-S energy, electrons, error :    -11.870754386618  16.0000013145    1.31e-06
  CPU time statistics for ABACUS
  ------------------------------
 
- EXCITA     00:00:05     100 %
+ EXCITA     00:00:09     100 %
 
- TOTAL      00:00:05     100 %
+ TOTAL      00:00:09     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   4.95 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.97 seconds
+ >>>> Total wall time used in ABACUS:   9.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   8.93 seconds
- >>>> Total wall time used in DALTON:   9.00 seconds
+ >>>> Total CPU  time used in DALTON:  17.96 seconds
+ >>>> Total wall time used in DALTON:  18.00 seconds
 
  
-     Date and time (Linux)  : Sat Dec 11 20:39:57 2010
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Tue Feb 15 12:42:43 2011 
+     Host name              : stanley                                 
 END REFOUT
 
