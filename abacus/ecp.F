@@ -40,10 +40,9 @@ C
 C
       CHARACTER*80 STRING
       CHARACTER LAB
-C#ifdef BUILD_GEN1INT
 C...  added by Bin Gao, for effective core potentials, Dec. 30, 2010
       character*(*) ECPNAME
-C#endif
+C...
 C
 C     Slaves can return here.
 C

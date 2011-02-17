@@ -851,6 +851,12 @@ C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,DOOWN)
+
+#ifdef BUILD_GEN1INT
+C...  added by Bin Gao, Feb. 16, 2011
+C...  sets the AO blocks for Gen1Int
+      call gen1int_block
+#endif
 C
 C     ***********************************
 C     ***** Process PCM speres data *****
@@ -1017,10 +1023,9 @@ C***********************************************************************
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), ISGEN(KBLOCK)
       CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BKPLIN*80, TSTCHA*2
       CHARACTER*80 BASNAM, AUXNAM, BASNAMSAVE
-C#ifdef BUILD_GEN1INT
 C...  added by Bin Gao, for effective core potentials, Dec. 6, 2010
       character*80 ECPNAME
-C#endif
+C...
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS_TOT)
 #ifdef PRG_DIRAC
@@ -1350,7 +1355,6 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
               ELSE IF (ATOMBA) THEN
 
-C#ifdef BUILD_GEN1INT
 C...             added by Bin Gao, for effective core potentials, Dec. 6, 2010
 C...             sets the ECP
                  IPOS = index(BKPLIN, 'ECP=')
@@ -1394,8 +1398,7 @@ C...               reads in ECP data
                      call QUIT('Too many ECP atoms of this type')
                    end if
                  end if
-C#endif
-
+C...
                  IPOS = INDEX(BKPLIN,'BAS')
                  IF (IPOS .NE. 0) THEN
                     IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')

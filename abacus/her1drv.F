@@ -368,6 +368,9 @@ C
 #include <esg.h>
 C
 #include "ibtfun.h"
+C... added by Bin Gao, Feb. 16, 2011
+C... for ECP
+#include "ecpinf.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -545,6 +548,30 @@ C
       END IF
       CALL DZERO(STHMAT,N_STHMA*NNBASX)
       CALL IZERO(ISOFRA, 8)
+
+#ifdef BUILD_GEN1INT
+C...  added by Bin Gao, Feb. 15, 2011
+      if (ECP) then
+C...    computes expectation values
+        if (PROPTY) then
+C FIXME: seperately?
+C...      first- and second-order geometric derivatives, and ECP integrals?
+          if (SECDER) then
+            call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT, .true.,
+     &                           HESSNA, LWORK, WORK)
+C...      first-order geometric derivatives and ECP integrals
+          else
+            call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT, .true.,
+     &                           GRADNA, LWORK, WORK)
+          end if
+C...    ECP integrals, GRADNA is dummy here
+        else
+          call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT, .false.,
+     &                         GRADNA, LWORK, WORK)
+        end if
+      end if
+#endif
+
       IDENA = 0
       DO 100 ISHELA = 1,KMAX
          NHKTA = NHKT(ISHELA)

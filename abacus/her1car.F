@@ -337,8 +337,12 @@ C
      &                     EXPDER(1,1,1,IPRIMA,IPRIMB),SHGTF,AHGTF,
      &                     NATOMC)
             ELSE IF (PROPTY) THEN
+C...           modified by Bin Gao, Jan. 18, 2011
+C...           ECP will be computed through gen1int_wrapper()
+#ifndef BUILD_GEN1INT
                IF (ECP) CALL QUIT(
      &            'ECP not implemented yet in ONEPR1 for "PROPTY" !')
+#endif
                IF (ONECEN) THEN
                   CALL CINT1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,ADER,
      &                       AHGTF,NCENTC,NATOMC,SECDER)
@@ -353,11 +357,15 @@ C
             ELSE
                CALL CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
      &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
+C...           modified by Bin Gao, Jan. 18, 2011
+C...           ECP will be computed through gen1int_wrapper()
+#ifndef BUILD_GEN1INT
                IF (ECP) THEN
                   CALL ECPINT(CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,
      &                 EXPA,EXPB,JMAXA,JMAXB,CONTA,CONTB,ADER,
      &                 WORK,LWORK,IPRINT)
                END IF
+#endif
             END IF
             IF (SOLVNT) THEN
                CALL SOLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,

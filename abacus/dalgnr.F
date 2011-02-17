@@ -628,10 +628,6 @@ Cholesky
 #include <center.h>
 Cholesky
 C
-#ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-#include "gen1int.h"
-#endif
 !
 ! Programmers please note:
 !   WORK(0) and WORK(LMOWRK+1) are allocated and contain the value
@@ -655,17 +651,11 @@ C
          IF (QM3)
      &      CALL QUIT('Geometry optimization not implemented for .QM3')
          RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-         RUN_GENINT = .true.
-#endif
          RNABAC = .TRUE.
          DOWALK = .FALSE.
          CALL OPTMIN(WORK(1),LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
          RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-         RUN_GENINT = .true.
-#endif
          RNABAC = .TRUE.
          IF (.NOT. NMWALK) THEN
             DOWALK = .TRUE.
@@ -693,9 +683,6 @@ C        ---------------------------------------
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
      &       ' <<<<<<<<<<'
             CALL EXEHER(WORK,LMWORK,WRKDLM)
-#ifdef BUILD_GEN1INT
-            call gen1int_prop(WORK(10), LMWORK-9)
-#endif
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
             WLKREJ = .FALSE.
@@ -919,9 +906,6 @@ C
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
                CALL EXEHER(WORK,LMWORK,WRKDLM)
-#ifdef BUILD_GEN1INT
-               call gen1int_prop(WORK(10), LMWORK-9)
-#endif
                CALL EXESIR(WORK,LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
@@ -995,9 +979,6 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
          CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
-#ifdef BUILD_GEN1INT
-         call gen1int_prop(WORK(10), LMWORK-9)
-#endif
 C
 Cholesky
          IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM)
@@ -1134,11 +1115,7 @@ Cholesky
 #include <ccdeco.h>
 #include <center.h>
 C
-#ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-#include "gen1int.h"
-#endif
-      PARAMETER (NDIR = 11, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 10, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1150,8 +1127,7 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN',
-     &            '*GEN1IN'/
+     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1203,9 +1179,6 @@ C
       OPTWLK = .FALSE.
       USRIPR = .FALSE.
       RNHERM = .FALSE.
-#ifdef BUILD_GEN1INT
-      RUN_GENINT = .false.
-#endif
       RUNERI = .FALSE.
       RNSIRI = .FALSE.
       RNABAC = .FALSE.
@@ -1368,9 +1341,6 @@ C
             GO TO 100
   104    CONTINUE
             RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-            RUN_GENINT = .true.
-#endif
             GO TO 100
   105    CONTINUE
             RNSIRI = .TRUE.
@@ -1401,25 +1371,16 @@ C        ".WALK  "
          GO TO 100
   113    CONTINUE
             RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-            RUN_GENINT = .true.
-#endif
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
          GO TO 100
   114    CONTINUE
             RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-            RUN_GENINT = .true.
-#endif
             RNSIRI = .TRUE.
             RNRESP = .TRUE.
          GO TO 100
  115     CONTINUE
             RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-            RUN_GENINT = .true.
-#endif
             RNSIRI = .TRUE.
          GO TO 100
  116     CONTINUE
@@ -1458,9 +1419,6 @@ C        .NEWTRA
          GO TO 100
  128     CONTINUE
             RNHERM = .TRUE.
-#ifdef BUILD_GEN1INT
-            RUN_GENINT = .true.
-#endif
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
             RNRESP = .TRUE.
@@ -1551,9 +1509,6 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
      &     'HERMIT 1- and 2-electron integral sections will be executed'
-#ifdef BUILD_GEN1INT
-      if (RUN_GENINT) write(LUPRI,'(4X,A)') 'Gen1Int will be executed'
-#endif
       IF (RUNERI) THEN
          WRITE (LUPRI,'(4X,A)')
      &     '2-elctron integrals are calculated using ERI '//
@@ -1613,7 +1568,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11), I
+               GOTO (1,2,3,4,5,6,7,8,9,10), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1689,16 +1644,6 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
         WRITE(LUPRI,'(//A/)')
      &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
       GO TO 6
-C     added by Bin Gao, Dec. 5, 2010
-   11 continue
-        do while (.true.)
-          read(LUCMD, '(A7)') WORD
-          call UPCASE(WORD)
-          if (WORD.EQ.TABDIR(1)) then
-            exit
-          end if
-        end do
-      go to 200
 
 C     "*END OF" or "**something"
     1 CONTINUE

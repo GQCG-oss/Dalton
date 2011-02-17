@@ -2442,10 +2442,6 @@ Cef begin
 #include <incore.h>
 #endif
 Cef end
-#ifdef BUILD_GEN1INT
-C added by Bin Gao, Dec. 5, 2010
-#include "gen1int.h"
-#endif
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       REAL EXCQQ2
@@ -2453,9 +2449,6 @@ C added by Bin Gao, Dec. 5, 2010
       WORK(1) = WRKDLM
       IF (.NOT. EXHER) THEN
          CALL EXEHER(WORK,LWORK-1,WRKDLM)
-#ifdef BUILD_GEN1INT
-         call gen1int_prop(WORK(10), LMWORK-9)
-#endif
          EXHER  = .TRUE.
          NEWGEO = .TRUE.
          NPCMIN = .TRUE.
