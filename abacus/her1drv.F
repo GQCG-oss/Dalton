@@ -554,20 +554,23 @@ C...  added by Bin Gao, Feb. 15, 2011
       if (ECP) then
 C...    computes expectation values
         if (PROPTY) then
-C FIXME: seperately?
-C...      first- and second-order geometric derivatives, and ECP integrals?
+C... FIXME: seperately? DUMMY?
+C...      expectation values from ECP integrals
+          call gen1int_wrapper('ECP', 0, 0, (/DUMMY/), .true.,
+     &                         WORK(KLAST:KLAST), LWRK-1, WORK(KLAST+1))
+          ENERNA = ENERNA+WORK(KLAST)
+C...      expectation values of first-order geometric derivatives
+          call gen1int_wrapper('ECP', MAXDIF, 0, (/DUMMY/), .true.,
+     &                         GRADNA, LWRK, WORK(KLAST))
+C...      expectation values of second-order geometric derivatives
           if (SECDER) then
-            call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT, .true.,
-     &                           HESSNA, LWORK, WORK)
-C...      first-order geometric derivatives and ECP integrals
-          else
-            call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT, .true.,
-     &                           GRADNA, LWORK, WORK)
+            call gen1int_wrapper('ECP', MAXDIF, 0, (/DUMMY/), .true.,
+     &                           HESSNA, LWRK, WORK(KLAST))
           end if
-C...    ECP integrals, GRADNA is dummy here
+C...    ECP integrals
         else
-          call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT, .false.,
-     &                         GRADNA, LWORK, WORK)
+          call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT(:,2), .false.,
+     &                         (/DUMMY/), LWRK, WORK(KLAST))
         end if
       end if
 #endif
