@@ -239,11 +239,12 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
        RETURN
        END
 
-      SUBROUTINE MOMOS(ITASK,ORVAL,OCCUP,ORBTRA,UNPAK,ORBVEC)
+      SUBROUTINE MOMOS(ITASK,CMO,OCCUP,ORBTRA,UCMO,ORBVEC)
 C
-C ORVAL  =  contains MO coefficients
+C CMO    =  contains MO coefficients, symmetry packed
+C UCMO   =  contains MO coefficients, symmetry unpacked
 C itask  =  1 print everything to file
-C           2 save orbital energies in ORVAL
+C           2 save orbital energies in CMO
 
 #include <implicit.h>
 #include <priunit.h>
@@ -260,7 +261,8 @@ C           2 save orbital energies in ORVAL
 #include <pgroup.h>
     
       LOGICAL WRTELEM,WRTZERO
-      DIMENSION ORVAL(*), OCCUP(*), ORBTRA(*), UNPAK(*), ORBVEC(*)
+      DIMENSION CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
+      DIMENSION ORBVEC(*)
 
 #include <chrsgn.h>
 
@@ -271,15 +273,15 @@ C           2 save orbital energies in ORVAL
             WRITE(LUMOLDEN,'(/A)') '[MO]' 
 C           call traorb to generate SO to AO transformation
             CALL TRAORB(ORBTRA,NBAST,-1,MOPRIN)
-            CALL DZERO(UNPAK, NBAST * NORBT)
+            CALL DZERO(UCMO,  NBAST * NORBT)
             CALL DZERO(ORBVEC,NBAST)
-            CALL UPKCMO(ORVAL,UNPAK)
+            CALL UPKCMO(CMO,UCMO)
             JOCC = 0
-            IIO = 0
+            jORB = 0
             DO ISYM = 1,NSYM
                NOCCI = NOCC(ISYM)
                DO I=1,NORB(ISYM)
-                  IIO = IIO + 1
+                  jORB = jORB + 1
                   II = IORB(ISYM) + I         
                   WRITE(LUMOLDEN,'(2A)')     'Sym= ',REP(ISYM-1)
                   WRITE(LUMOLDEN,'(A,F9.4)') 'Ene= ',OREN(II)
@@ -290,10 +292,9 @@ C           call traorb to generate SO to AO transformation
                   ELSE
                      WRITE(LUMOLDEN,'(A     )') 'Occup= 0.0000'
                   END IF
-                  JJO = 1 + (IIO-1) * NBAST
                   ICENT = IPCEN(I)
                   CALL DGEMV('T',NBAST,NBAST,1.0D0,ORBTRA,NBAST,
-     $                 UNPAK(JJO),1,0.0D0,ORBVEC,1)
+     $                 UCMO(1,jORB),1,0.0D0,ORBVEC,1)
                   DO IB=1,NBAST
                      WRITE(LUMOLDEN,'(I5,1X,2F15.6)') 
      $                    IB,ORBVEC(JAOAO(IB,1)+JAOAO(IB,2))
@@ -307,7 +308,7 @@ C           call traorb to generate SO to AO transformation
 
       IF (ITASK .EQ. 2) THEN
          DO I = 1, NORBT
-            OREN(I)=ORVAL(I)
+            OREN(I)=CMO(I)
          ENDDO
       END IF
       CALL FLSHFO(LUMOLDEN)

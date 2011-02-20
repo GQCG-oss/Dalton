@@ -5312,14 +5312,14 @@ C
   100 CONTINUE
 C
       I = 0
-      DO 200 ISYMOP = 0, MAXREP
+      DO ISYMOP = 0, MAXREP
          NBI = NAOS(ISYMOP+1)
-         DO 220 L = 1,NBI
+         DO L = 1,NBI
             I = I + 1
             READ(  NAMN(IPCEN(I)),'(A4)',IOSTAT=IOS) INAMN(I)
             READ(GTOTYP(IPTYP(I)),'(A4)',IOSTAT=IOS) IGTO(I)
-  220    CONTINUE
-  200 CONTINUE
+         END DO
+      END DO
 C
       IF (LUONEL .LE. 0)
      &   CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)

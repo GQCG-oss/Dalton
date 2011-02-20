@@ -425,7 +425,7 @@ C
      &           WEWMAT,NBAST)
       CALL DSCAL(N2BASX,-1.0D0,WEWMAT,1)
 C
-C     -1/2WWE - 1/2 EWW - WEW
+C     -1/2 WWE - 1/2 EWW - WEW
 C
 C
 C     We now backtransform the various matrices to primitive basis
@@ -801,16 +801,16 @@ C
       RETURN
       END
 C/* Deck READ_CBIHER */
-      SUBROUTINE READ_CBIHER(IPDF, INTST)
+      SUBROUTINE READ_CBIHER(IPRDEF_HER, TSTINP_HER)
 C
 C Fetch two definitions from cbiher.h
 C
 #include <implicit.h>
 #include <mxcent.h>
 #include <cbiher.h>
-      LOGICAL INTST
-      IPDF  = IPRDEF
-      INTST = TSTINP
+      LOGICAL TSTINP_HER
+      IPRDEF_HER = IPRDEF
+      TSTINP_HER = TSTINP
       RETURN
       END
 C /* Deck dktrf */

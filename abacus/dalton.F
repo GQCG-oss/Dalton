@@ -194,7 +194,7 @@ C
      &               '*',120)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)'
+     &'This is output from DALTON Release 2011 (Rev. 0, Feb. 2011)'
 
          WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
          WRITE (LUPRI,'(T5,A)')
@@ -216,7 +216,7 @@ C
      &'an appropriate citation would be:',
      &' ',
      &'"Dalton, a molecular electronic structure program,',
-     &'Release DALTON2011 (2010), see http://daltonprogram.org"'
+     &'Release DALTON2011 (2011), see http://daltonprogram.org"'
 C
          WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
          WRITE (LUPRI,'(T5,A//,(T3,A,T29,A,T59,A,T71,A))')
