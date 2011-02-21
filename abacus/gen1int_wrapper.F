@@ -34,7 +34,7 @@ C>            (4) include/gen1int.h: saves AO block information for Gen1Int
 C>    \author Bin Gao
 C>    \date 2010-07-28
       subroutine gen1int_wrapper(prop_name, order_geo, order_mag,
-     &                           vals_int, propty, vals_expect,
+     &                           getint, vals_int, propty, vals_expect,
      &                           doint, len_work, work)
 #include "implicit.h"
 C     name of property integrals to calculated
@@ -43,6 +43,8 @@ C     order of geometric derivatives
       integer order_geo
 C     order of magnetic derivaives
       integer order_mag
+C     if getting integrals back
+      logical getint
 C     integrals
       dimension vals_int(*)
 C     if calculating expectation values
@@ -83,20 +85,19 @@ C     end of contractions
 C     incremental recorders over AO-blocks
       integer ibra, iket
 C     Dalton stuff
-      call QENTER('gen1int_wrapper')
+      call QENTER("gen1int_wrapper")
       call GETTIM(TIMHER, WALHER)
-      call FLSHFO(LUPRI)
-      call TITLER('Gen1Int calculates '//trim(prop_name), '*', 120)
+      call HEADER("Gen1Int calculates "//trim(prop_name),-1)
 C     sets up the order of geometric derivatives
-C      IA0000 =  1
-C      IA0X00 =  2
-C      IA0Y00 =  3
-C      IA0Z00 =  4
-C      IAXX00 =  5
-C      IAXY00 =  6
-C      IAXZ00 =  7
-C      IAYY00 =  8
-C      IAYZ00 =  9
+C-      IA0000 =  1
+C-      IA0X00 =  2
+C-      IA0Y00 =  3
+C-      IA0Z00 =  4
+C-      IAXX00 =  5
+C-      IAXY00 =  6
+C-      IAXZ00 =  7
+C-      IAYY00 =  8
+C-      IAYZ00 =  9
 
       IDENA = 0
       call IZERO(ISOFRA, 8)
@@ -117,7 +118,7 @@ C     loops over blocks of bra
         NUMCFA = NUMCF(ISHELA)      !index of shell in AO-block
         NRCA   = NRCO(ISHELA)       !number of contracted functions
 C FIXME: JSTA, NBCH, NUMCF
-        JSTA   = JSTRT(ISHELA)      !
+        JSTA   = JSTRT(ISHELA)      !start index of the AO-block
         CORAX  = CENT(ISHELA,1,1)   !coordinates of center
         CORAY  = CENT(ISHELA,2,1)
         CORAZ  = CENT(ISHELA,3,1)
@@ -146,23 +147,19 @@ C FIXME: INDFA used in SYM1S, SYM1N, SYM1NC
           end do
         end do
 #ifdef GEN1INT_DEBUG
-
-        write(LUPRI,'(A,I4)') 'IA address offsets for shell ', ISHELA
-        do NA = 1,KHKTA
-          write(LUPRI,'(8(1X,I5))') (INDFA(I,NA), I = 1, MAXREP+1)
-        end do
-
-        write(LUPRI,9000) "Center of bra:", NCENT(IDX_SHELL(ibra))
-        write(LUPRI,9100) "Coordinates of bra",
-     &                    CENT(IDX_SHELL(ibra),:,1)
-        write(LUPRI,9000) "Angular number of bra:",
-     &                    NHKT(IDX_SHELL(ibra))-1
-        write(LUPRI,9000) "Number of bra prim.:",
-     &                    NUCO(IDX_SHELL(ibra))
-        write(LUPRI,9000) "Number of bra contr.:",
-     &                    NRCO(IDX_SHELL(ibra))
-        write(LUPRI,9000) "Number of bra Cart.:",
-     &                    KCKT(IDX_SHELL(ibra))
+        write(LUPRI,9000) "Center of bra:", NCENTA
+        write(LUPRI,9000) "ICENTA: ", ICENTA
+        write(LUPRI,9000) "Class of bra: ", ICA
+        write(LUPRI,9100) "Coordinates of bra:", CORAX, CORAY, CORAZ
+        write(LUPRI,9000) "Angular number of bra:", NHKTA
+        write(LUPRI,9000) "Number of bra prim.:", NUCA
+        write(LUPRI,9000) "Number of bra contr.:", NRCA
+        if (SPHRA) then
+          write(LUPRI,9000) "Number of bra spher. components: ", KHKTA
+        else
+          write(LUPRI,9000) "Number of bra Cart. components: ", KHKTA
+        end if
+        write(LUPRI,9000) "Number of bra Cart.:", KCKTA
         write(LUPRI,9000) "Start of bra prim.:", st_bra_prim
         write(LUPRI,9000) "End of bra prim.:", end_bra_prim
         write(LUPRI,9200) PRIEXP(st_bra_prim:end_bra_prim)
@@ -170,13 +167,17 @@ C FIXME: INDFA used in SYM1S, SYM1N, SYM1NC
         write(LUPRI,9000) "End of bra contr.:", end_bra_contr
         write(LUPRI,9300) PRICCF(st_bra_prim:end_bra_prim,
      &                           st_bra_contr:end_bra_contr)
+        write(LUPRI,9000) "IA address offsets for bra block: ", ISHELA
+        do NA = 1,KHKTA
+          write(LUPRI,'(8(1X,I8))') (INDFA(irep,NA),irep=1,MAXREP+1)
+        end do
 #endif
 C FIXME: lower triangular?
 C       loops over shells of ket
         do iket = 1, NUM_BLOCK
 
           ISHELB = IDX_SHELL(iket)
-          LDIAG = ISHELA.eq.ISHELB        !
+          LDIAG = ISHELA.eq.ISHELB        !lower triangle (.true.) or full square block
           NHKTB = NHKT(ISHELB)
           KHKTB = KHKT(ISHELB)
           KCKTB = KCKT(ISHELB)
@@ -196,8 +197,8 @@ C       loops over shells of ket
           CORBZ0 = CENT(ISHELB,3,1)
           KHKTAB = KHKTA*KHKTB
           KCKTAB = KCKTA*KCKTB
-          MAB    = IBTOR(MULA,MULB)       !
-          KAB    = IBTAND(MULA,MULB)      !
+          MAB    = IBTOR(MULA,MULB)       !stabliser
+          KAB    = IBTAND(MULA,MULB)      !multiplicity to multiplied with the integral
           HKAB   = FMULT(KAB)             !symmetry factor, which determines how many different integrals
 C
           SPHRAB = SPHRA .OR. SPHRB
@@ -227,7 +228,6 @@ C         note that at present this assumes all components from a shell are incl
 
           if (.not.doint(ICA,ICB)) cycle
 
-C FIXME: extra calculations, ECP with symmetry
 C         loops over symmetry operations
 
           IDENB = IDENB0 - KHKTB
@@ -235,16 +235,15 @@ C         loops over symmetry operations
             if (IBTAND(isymop,MAB).eq.0) then
 
               IDENB  = IDENB + KHKTB
-              ICENTB = NUCNUM(NCENTB,ISYMOP+1)
+              ICENTB = NUCNUM(NCENTB,isymop+1)
               ONECEN = ICENTA .eq. ICENTB
-              SIGNBX = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-              SIGNBY = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-              SIGNBZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+              SIGNBX = PT(IBTAND(ISYMAX(1,1),isymop))
+              SIGNBY = PT(IBTAND(ISYMAX(2,1),isymop))
+              SIGNBZ = PT(IBTAND(ISYMAX(3,1),isymop))
               CORBX  = SIGNBX*CORBX0
               CORBY  = SIGNBY*CORBY0
               CORBZ  = SIGNBZ*CORBZ0
 
-              select case(trim(prop_name))
 C (a) contr_cgto_carmom: Cartesian multipole moments
 C (b) contr_cgto_delta:  Delta function
 C (c) contr_cgto_nucpot: nuclear attraction potential
@@ -257,30 +256,45 @@ C     &    ' Center of mass  (bohr):', (CMXYZ(I),I=1,3),
 C     &    ' Operator center (bohr):', (ORIGIN(I),I=1,3),
 C     &    ' Gauge origin    (bohr):', (GAGORG(I),I=1,3),
 C     &    ' Dipole origin   (bohr):', (DIPORG(I),I=1,3)
+              select case(trim(prop_name))
               case('.OVERLAP')
-                call contr_cgto_carmom(NCENT(IDX_SHELL(ibra)),
-     &            CENT(IDX_SHELL(ibra),:,1),
-     &            NHKT(IDX_SHELL(ibra))-1, NUCO(IDX_SHELL(ibra)),
-     &            PRIEXP(st_bra_prim:end_bra_prim),
-     &            NRCO(IDX_SHELL(ibra)),
-     &            PRICCF(st_bra_prim:end_bra_prim,
-     &                   st_bra_contr:end_bra_contr),
-     &            NCENT(IDX_SHELL(iket)), CENT(IDX_SHELL(iket),:,1),
-     &            NHKT(IDX_SHELL(iket))-1, NUCO(IDX_SHELL(iket)),
-     &            PRIEXP(st_ket_prim:end_ket_prim),
-     &            NRCO(IDX_SHELL(iket)),
-     &            PRICCF(st_ket_prim:end_ket_prim,
-     &                   st_ket_contr:end_ket_contr), DIPORG)
+C-                call contr_cgto_carmom(NCENTA, CORAX, CORAY, CORAZ,
+C-     &            NHKTA-1, NUCA, PRIEXP(st_bra_prim:end_bra_prim),
+C-     &            NRCA, PRICCF(st_bra_prim:end_bra_prim,
+C-     &                         st_bra_contr:end_bra_contr),
+C-     &            NCENTB, CORBX, CORBY, CORBZ,
+C-     &            NHKTB-1, NUCB, PRIEXP(st_ket_prim:end_ket_prim),
+C-     &            NRCB, PRICCF(st_ket_prim:end_ket_prim,
+C-     &                         st_ket_contr:end_ket_contr), DIPORG)
+              case('.ECP')
+C               loops over number of all ECP centers
+C-                do ITYP = 1, NTYECP
+C-                  do INONT = 1, NECP(ITYP)
+C-                    IATOM = INDECP(ITYP)+INONT-1  !
+C-                    KCRS = ITYP                   !
+C-                    LCRU = LCR(ITYP)              !
+C-                    XCI = CORD(1,IATOM)           !
+C-                    YCI = CORD(2,IATOM)
+C-                    ZCI = CORD(3,IATOM)
+C-                    do jsymop = 0, MAXOPR
+C-                      if (IBTAND(jsymop,ISTBNU(IATOM)).eq.0) then
+C-                        XC = PT(IBTAND(ISYMAX(1,1),jsymop))*XCI
+C-                        YC = PT(IBTAND(ISYMAX(2,1),jsymop))*YCI
+C-                        ZC = PT(IBTAND(ISYMAX(3,1),jsymop))*ZCI
+C-C                        call PSEUD1(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
+C-C                        call PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
+C-                      end if
+C-                    end do
+C-                  end do
+C-                end do
               end select
 C             transforms to spherical harmonic basis
-C              if (SPHR(IDX_SHELL(iket))) then
+C              if (SPHRA) then
 C                call cgto_to_sgto()
 C              endif
-C              if (SPHR(IDX_SHELL(ibra))) then
+C              if (SPHRB) then
 C                call cgto_to_sgto()
 C              end if
-C              or
-C              call SPHRM1()
 C             computes expectation values
 C              if (propty) then
 C                collects density and Fock elements
@@ -291,8 +305,8 @@ C              FULMAT = .TRUE.
 C              ANTI   = .FALSE.
 C              call SYM1S() or SYM1N() by MAXREP(irreps of the differentiation operator)
 C FIXME:
-C             writes differentiated integrals on file?
-C              if (propty .and. (SECDER .OR. DIFDIP .OR. DIFQDP)) then
+C             writes differentiated integrals on file for the right-hand side
+C              if (getint) then
 C              end if
             end if
           end do
@@ -307,13 +321,12 @@ C     Dalton stuff
       TIMHER = TEND-TIMHER
       WALHER = WEND-WALHER
       write(LUPRI,'()')
-      call TIMTXT('>>>> Total CPU  time used in Gen1Int:',
+      call TIMTXT(">>>> Total CPU  time used in Gen1Int:",
      &            TIMHER, LUPRI)
-      call TIMTXT('>>>> Total wall time used in Gen1Int:',
+      call TIMTXT(">>>> Total wall time used in Gen1Int:",
      &            WALHER, LUPRI)
-      call TITLER('End of Gen1Int', '*', 120)
-      call FLSHFO(LUPRI)
-      call QEXIT('gen1int_wrapper')
+      call HEADER("End of Gen1Int",-1)
+      call QEXIT("gen1int_wrapper")
       return
 #ifdef GEN1INT_DEBUG
 9000  format("GEN1INT_DEBUG>> ",A,I8)

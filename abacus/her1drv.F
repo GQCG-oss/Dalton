@@ -556,21 +556,32 @@ C...    computes expectation values
         if (PROPTY) then
 C... FIXME: seperately? DUMMY?
 C...      expectation values from ECP integrals
-          call gen1int_wrapper('ECP', 0, 0, (/DUMMY/), .true.,
-     &                         WORK(KLAST:KLAST), LWRK-1, WORK(KLAST+1))
+          call gen1int_wrapper('.ECP', 0, 0, .false., (/DUMMY/), .true.,
+     &                         WORK(KLAST:KLAST), DOINT, LWRK-1,
+     &                         WORK(KLAST+1))
           ENERNA = ENERNA+WORK(KLAST)
+C...      expectation values and integrals of first-order geometric derivatives
+          if (SECDER .OR. DIFDIP .OR. DIFQDP) then
+            call gen1int_wrapper('.ECP', MAXDIF, 0, .true., STHMAT(:,2),
+     &                           .true., GRADNA, DOINT, LWRK,
+     &                           WORK(KLAST))
 C...      expectation values of first-order geometric derivatives
-          call gen1int_wrapper('ECP', MAXDIF, 0, (/DUMMY/), .true.,
-     &                         GRADNA, LWRK, WORK(KLAST))
+          else
+            call gen1int_wrapper('.ECP', MAXDIF, 0, .false., (/DUMMY/),
+     &                           .true., GRADNA, DOINT, LWRK,
+     &                           WORK(KLAST))
+          end if
 C...      expectation values of second-order geometric derivatives
           if (SECDER) then
-            call gen1int_wrapper('ECP', MAXDIF, 0, (/DUMMY/), .true.,
-     &                           HESSNA, LWRK, WORK(KLAST))
+            call gen1int_wrapper('.ECP', MAXDIF, 0, .false., (/DUMMY/),
+     &                           .true., HESSNA, DOINT, LWRK,
+     &                           WORK(KLAST))
           end if
 C...    ECP integrals
         else
-          call gen1int_wrapper('ECP', MAXDIF, 0, STHMAT(:,2), .false.,
-     &                         (/DUMMY/), LWRK, WORK(KLAST))
+          call gen1int_wrapper('.ECP', MAXDIF, 0, .true., STHMAT(:,2),
+     &                         .false., (/DUMMY/), DOINT, LWRK,
+     &                         WORK(KLAST))
         end if
       end if
 #endif
@@ -594,6 +605,24 @@ C...    ECP integrals
          CORAY  = CENT(ISHELA,2,1)
          CORAZ  = CENT(ISHELA,3,1)
          IDENB0 = 0
+
+         print *,'ISHELA', ISHELA
+         print *,'NHKTA  ',HKTA 
+         print *,'KHKTA  ',KHKTA 
+         print *,'KCKTA  ',KCKTA 
+         print *,'ICA    ',ICA   
+         print *,'SPHRA  ',SPHRA 
+         print *,'NCENTA ',NCENTA
+         print *,'ICENTA ',ICENTA
+         print *,'MULA   ',MULA  
+         print *,'MULTA  ',MULTA 
+         print *,'NUCA   ',NUCA  
+         print *,'NUMCFA ',NUMCFA
+         print *,'JSTA   ',JSTA  
+         print *,'CORAX  ',CORAX 
+         print *,'CORAY  ',CORAY 
+         print *,'CORAZ  ',CORAZ 
+
 C
 C        Compute symmetry integral pointers for contributions
 C        from this block.  Note that at present this assumes all
@@ -613,12 +642,12 @@ C
             END IF
 630         CONTINUE
 620      CONTINUE
-         IF (IPRINT .GT. 20) THEN
+C         IF (IPRINT .GT. 20) THEN
             WRITE(LUPRI,'(A,I4)')' IA address offsets for shell ',ISHELA
             DO 640 NA = 1,KHKTA
                WRITE(LUPRI,'(8(1X,I5))') (INDFA(I,NA), I = 1,MAXREP+1)
 640         CONTINUE
-         END IF
+C         END IF
       DO 110 ISHELB = 1,ISHELA
          LDIAG = ISHELA .EQ. ISHELB
          NHKTB = NHKT(ISHELB)
