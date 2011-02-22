@@ -554,7 +554,6 @@ C...  added by Bin Gao, Feb. 15, 2011
       if (ECP) then
 C...    computes expectation values
         if (PROPTY) then
-C... FIXME: seperately? DUMMY?
 C...      expectation values from ECP integrals
           call gen1int_wrapper('.ECP', 0, 0, .false., (/DUMMY/), .true.,
      &                         WORK(KLAST:KLAST), DOINT, LWRK-1,
@@ -605,24 +604,6 @@ C...    ECP integrals
          CORAY  = CENT(ISHELA,2,1)
          CORAZ  = CENT(ISHELA,3,1)
          IDENB0 = 0
-
-         print *,'ISHELA', ISHELA
-         print *,'NHKTA  ',HKTA 
-         print *,'KHKTA  ',KHKTA 
-         print *,'KCKTA  ',KCKTA 
-         print *,'ICA    ',ICA   
-         print *,'SPHRA  ',SPHRA 
-         print *,'NCENTA ',NCENTA
-         print *,'ICENTA ',ICENTA
-         print *,'MULA   ',MULA  
-         print *,'MULTA  ',MULTA 
-         print *,'NUCA   ',NUCA  
-         print *,'NUMCFA ',NUMCFA
-         print *,'JSTA   ',JSTA  
-         print *,'CORAX  ',CORAX 
-         print *,'CORAY  ',CORAY 
-         print *,'CORAZ  ',CORAZ 
-
 C
 C        Compute symmetry integral pointers for contributions
 C        from this block.  Note that at present this assumes all
@@ -642,12 +623,12 @@ C
             END IF
 630         CONTINUE
 620      CONTINUE
-C         IF (IPRINT .GT. 20) THEN
+         IF (IPRINT .GT. 20) THEN
             WRITE(LUPRI,'(A,I4)')' IA address offsets for shell ',ISHELA
             DO 640 NA = 1,KHKTA
                WRITE(LUPRI,'(8(1X,I5))') (INDFA(I,NA), I = 1,MAXREP+1)
 640         CONTINUE
-C         END IF
+         END IF
       DO 110 ISHELB = 1,ISHELA
          LDIAG = ISHELA .EQ. ISHELB
          NHKTB = NHKT(ISHELB)
