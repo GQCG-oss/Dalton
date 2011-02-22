@@ -776,12 +776,27 @@ C Manu about MC-srDFT: in order to calculate the srH Kernel we must reset all va
 C      IFCTYP for FTCAO to the one obtained for FTVAO (because when calculating
 C      IFCTYP, DTVAO should be considered, and not DTCAO (which is set to zero !) 
 C
-#ifdef DEBUG_RSPOLI
-      write(lupri,*) '****** IFCTYP modified for srH Kernel !!!!' 
-#endif
       IF ((NCSIM.GT.0).AND.DOFTC.AND.DOMCSRDFT) THEN     
+#ifdef DEBUG_RSPOLI
+         write(lupri,*) '****** IFCTYP modified for srH Kernel !!!!' 
+         write(lupri,*) '****** with DOFTC true                !!!!' 
+#endif
          DO I=1,NCSIM
             IFCTYP(NFMAT-2*NCSIM+I)=IFCTYP(NFMAT-NCSIM+I) 
+         END DO
+      END IF
+C
+C
+C Manu about MC-srDFT: used same trick in order to calculate the srH contribution to
+C                      the sigma vector when there is an orbital trial vector
+C
+      IF ((NOSIM.GT.0).AND.DOFXC.AND.DOMCSRDFT) THEN     
+#ifdef DEBUG_RSPOLI
+         write(lupri,*) '****** IFCTYP modified for srH Kernel !!!!' 
+         write(lupri,*) '****** with DOFXC true                !!!!' 
+#endif
+         DO I=1,NOSIM
+            IFCTYP(I)=IFCTYP(NOSIM+I) 
          END DO
       END IF
 #endif
