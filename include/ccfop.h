@@ -7,9 +7,10 @@
       LOGICAL DIPMOM, QUADRU, NQCC, TSTDEN, RELCOR, RELORB, SECMOM
       LOGICAL DAR2EL, DPTECO
       LOGICAL BP2EOO
+      LOGICAL CORRONLY
 
       COMMON /INFFOP/ NAFOP, IAFOP(MAFOP),
      *                NABFOP, IACFOP(MABFOP), IBCFOP(MABFOP),
      *                DIPMOM, QUADRU, NQCC, TSTDEN, RELCOR, RELORB,
      *                SECMOM, DAR2EL, DPTECO,
-     *                BP2EOO
+     *                BP2EOO, CORRONLY
