@@ -5668,3 +5668,69 @@ C
 C
       RETURN
       END
+C  /* Deck cc_d2HFao */
+      SUBROUTINE CC_D2HFAO(AODEN,DENIJ,CMO,WORK,LWORK,ISDEN)
+C
+C     Written by Sonia Coriani 20/11/2008
+C     Used to obtain the correlation gradient in Incremental Scheme
+C     Version: 1.0, based on CCMP_DAO
+C
+C     Purpose: To transform the blocks of the CCS/HF (1 block) 
+C              two electron density (IJ_GAMMA_DELTA) to AO-basis
+C              and subtract the results!
+C
+#include <implicit.h>
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION AODEN(*), DENIJ(*)
+      DIMENSION CMO(*), WORK(LWORK)
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <ccfro.h>
+      CALL QENTER('CC_D2HFAO')
+C
+      DO 100 ISYM1 = 1,NSYM
+C
+         ISYM2 = MULD2H(ISDEN,ISYM1)
+C
+         LNEED = NBAS(ISYM1)*NRHFS(ISYM2)
+C
+         IF (LWORK .LT. LNEED) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', LNEED
+            CALL QUIT('Insufficient work space in CCMP_DAO')
+         ENDIF
+C
+         CALL DZERO(WORK,LNEED)
+C
+C------------------------------------------
+C        Transform occupied-occupied block.
+C------------------------------------------
+C
+         KOFF1  = ILRHSI(ISYM1) + 1
+         KOFF2  = IFROIJ(ISYM1,ISYM2) + 1
+C
+         NTOBA1 = MAX(NBAS(ISYM1),1)
+         NTORH1 = MAX(NRHFS(ISYM1),1)
+C
+         CALL DGEMM('N','N',NBAS(ISYM1),NRHFS(ISYM2),NRHFS(ISYM1),
+     *              ONE,CMO(KOFF1),NTOBA1,DENIJ(KOFF2),NTORH1,
+     *              ZERO,WORK,NTOBA1)
+C
+         KOFF3  = ILRHSI(ISYM2) + 1
+         KOFF4  = IAODIS(ISYM1,ISYM2) + 1
+C
+         NTOBA1 = MAX(NBAS(ISYM1),1)
+         NTOBA2 = MAX(NBAS(ISYM2),1)
+C
+         CALL DGEMM('N','T',NBAS(ISYM1),NBAS(ISYM2),NRHFS(ISYM2),
+     *              -ONE,WORK,NTOBA1,CMO(KOFF3),NTOBA2,ONE,
+     *              AODEN(KOFF4),NTOBA1)
+C
+  100 CONTINUE
+C
+      CALL QEXIT('CC_D2HFAO')
+C
+      RETURN
+      END
+
