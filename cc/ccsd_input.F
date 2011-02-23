@@ -3946,7 +3946,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_FOPINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 13)
+      PARAMETER (NTABLE = 14)
 
 * variables:
       LOGICAL SET
@@ -3965,7 +3965,7 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.DIPMOM','.QUADRU','.NQCC  ','.TSTDEN','.ALLONE',
      *            '.NONREL','.RELCOR','.OPERAT','.SECMOM','.2ELDAR',
-     *            '.DPTECO','.BPH2OO','.BPH2SS'/
+     *            '.DPTECO','.BPH2OO','.BPH2SS','.CRONLY'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -3988,6 +3988,7 @@ C
       DAR2EL = .FALSE.
       DPTECO = .FALSE.
       BP2EOO = .FALSE.
+      CORRONLY = .FALSE.
 C
 *---------------------------------------------------------------------*
 * read input:
@@ -4015,7 +4016,7 @@ c         table look up:
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_FOPINP.')
       
 C
@@ -4179,8 +4180,14 @@ C
 
 13         CONTINUE
                DAR2EL = .TRUE.
+           GO TO 100
+C
+14         CONTINUE
+               !removes Hartree-Fock part of densities 
+               !yields correlation only contribution to
+               !FOP properties
+               CORRONLY  = .TRUE.
             GO TO 100
-
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
