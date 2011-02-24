@@ -66,7 +66,6 @@ C     workspace of Dalton
 #include "onecom.h"
 #include "aovec.h"
 #include "symmet.h"
-#include "symind.h"
 #include "primit.h"
 #include "lmns.h"
 #include "shells.h"
@@ -82,8 +81,14 @@ C     start of contractions
       integer st_bra_contr, st_ket_contr
 C     end of contractions
       integer end_bra_contr, end_ket_contr
+C     incremental recorders over spherical (Cartesian) components
+      integer icomp, jcomp
+C     incremental recorders over contractions
+      integer icontr, jcontr
+C     incremental recorders over AO-shells
+      integer ishell, jshell
 C     incremental recorders over AO-blocks
-      integer ibra, iket
+      integer iblock, jblock
 C     Dalton stuff
       call QENTER("gen1int_wrapper")
       call GETTIM(TIMHER, WALHER)
@@ -102,26 +107,26 @@ C-      IAYZ00 =  9
       IDENA = 0
       call IZERO(ISOFRA, 8)
 C     loops over blocks of bra
-      do ibra = 1, NUM_BLOCK
-        ISHELA = IDX_SHELL(ibra)
-        NHKTA = NHKT(ISHELA)        !angular quantum number (s=1,p=2,d=3 etc.)
-        KHKTA = KHKT(ISHELA)        !number of spherical (Cartesian) components
-        KCKTA = KCKT(ISHELA)        !number of Cartesian components
-        ICA   = LCLASS(ISHELA)      !class: large component (1), small or Huckel(2), density fitting (0)
-        SPHRA = SPHR(ISHELA)        !if spherical Gaussians
+      do iblock = 1, NUM_BLOCK
+        ishell = IDX_SHELL(iblock)
+        NHKTA = NHKT(ishell)        !angular quantum number (s=1,p=2,d=3 etc.)
+        KHKTA = KHKT(ishell)        !number of spherical (Cartesian) components
+        KCKTA = KCKT(ishell)        !number of Cartesian components
+        ICA   = LCLASS(ishell)      !class: large component (1), small or Huckel(2), density fitting (0)
+        SPHRA = SPHR(ishell)        !if spherical Gaussians
         call LMNVAL(NHKTA, KCKTA, LVALUA, MVALUA, NVALUA)
-        NCENTA = NCENT(ISHELA)      !index of symmetry independent center
+        NCENTA = NCENT(ishell)      !index of symmetry independent center
         ICENTA = NUCNUM(NCENTA,1)   !total number of nuclei
-        MULA   = ISTBAO(ISHELA)     !stabiliser: basic sym. op. that do not move center
+        MULA   = ISTBAO(ishell)     !stabiliser: basic sym. op. that do not move center
         MULTA  = MULT(MULA)         !multiplicity of center
-        NUCA   = NUCO(ISHELA)       !number of uncontracted functions
-        NUMCFA = NUMCF(ISHELA)      !index of shell in AO-block
-        NRCA   = NRCO(ISHELA)       !number of contracted functions
+        NUCA   = NUCO(ishell)       !number of uncontracted functions
+        NUMCFA = NUMCF(ishell)      !index of shell in AO-block
+        NRCA   = NRCO(ishell)       !number of contracted functions
 C FIXME: JSTA, NBCH, NUMCF
-        JSTA   = JSTRT(ISHELA)      !start index of the AO-block
-        CORAX  = CENT(ISHELA,1,1)   !coordinates of center
-        CORAY  = CENT(ISHELA,2,1)
-        CORAZ  = CENT(ISHELA,3,1)
+        JSTA   = JSTRT(ishell)      !start index of the AO-block
+        CORAX  = CENT(ishell,1,1)   !coordinates of center
+        CORAY  = CENT(ishell,2,1)
+        CORAZ  = CENT(ishell,3,1)
         IDENB0 = 0
 
         st_bra_prim = JSTA+1
@@ -130,22 +135,25 @@ C FIXME: JSTA, NBCH, NUMCF
         end_bra_contr = NUMCFA+NRCA-1
 C       computes symmetry integral pointers for contributions from this block
 C       note that at present this assumes all components from a shell are included
-        do I = 1, 8
-          ISOFRB(I) = 0
-C         loops over maximum number of Cartesian powers
-          do ixyz = 1, MXAQN
-            INDFA(I,ixyz) = -10 000 000
+
+        call IZERO(ISOFRB, 8)
+        do icontr = 1, NRCA
+          do icomp = 1, MXAQN
+            INDFA(:,icomp,icontr) = -10 000 000
           end do
         end do
-C FIXME: INDFA used in SYM1S, SYM1N, SYM1NC
-        do NA = 1, KHKTA
-          do irep = 0, MAXREP
-            if (IBTAND(MULA,IBTXOR(irep,ISYMAO(NHKTA,NA))).eq.0) then
-              ISOFRA(irep+1) = ISOFRA(irep+1)+1
-              INDFA(irep+1,NA) = ISOFRA(irep+1)
-            end if
+        do icontr = 1, NRCA
+          do icomp = 1, KHKTA
+            do irep = 0, MAXREP
+              if (IBTAND(MULA,IBTXOR(irep,ISYMAO(NHKTB,icomp)))
+     &            .eq.0) then
+                ISOFRA(irep+1) = ISOFRA(irep+1)+1
+                INDFA(irep+1,icomp,icontr) = ISOFRB(irep+1)
+              end if
+            end do
           end do
         end do
+
 #ifdef GEN1INT_DEBUG
         write(LUPRI,9000) "Center of bra:", NCENTA
         write(LUPRI,9000) "ICENTA: ", ICENTA
@@ -167,34 +175,38 @@ C FIXME: INDFA used in SYM1S, SYM1N, SYM1NC
         write(LUPRI,9000) "End of bra contr.:", end_bra_contr
         write(LUPRI,9300) PRICCF(st_bra_prim:end_bra_prim,
      &                           st_bra_contr:end_bra_contr)
-        write(LUPRI,9000) "IA address offsets for bra block: ", ISHELA
-        do NA = 1,KHKTA
-          write(LUPRI,'(8(1X,I8))') (INDFA(irep,NA),irep=1,MAXREP+1)
+        do icontr = 1, NRCA
+          write(LUPRI,9000) "IA address offsets for bra contraction: ",
+     &                      icontr
+          do icomp = 1, KHKTA
+            write(LUPRI,'(8(1X,I8))')
+     &        (INDFA(irep,icomp,icontr),irep=1,MAXREP+1)
+          end do
         end do
 #endif
 C FIXME: lower triangular?
 C       loops over shells of ket
-        do iket = 1, NUM_BLOCK
+        do jblock = 1, NUM_BLOCK
 
-          ISHELB = IDX_SHELL(iket)
-          LDIAG = ISHELA.eq.ISHELB        !lower triangle (.true.) or full square block
-          NHKTB = NHKT(ISHELB)
-          KHKTB = KHKT(ISHELB)
-          KCKTB = KCKT(ISHELB)
-          ICB   = LCLASS(ISHELB)
-          SPHRB = SPHR(ISHELB)
+          jshell = IDX_SHELL(jblock)
+          LDIAG = ishell.eq.jshell        !lower triangle (.true.) or full square block
+          NHKTB = NHKT(jshell)            !angular quantum number (s=1,p=2,d=3 etc.)
+          KHKTB = KHKT(jshell)            !number of spherical (Cartesian) components
+          KCKTB = KCKT(jshell)            !number of Cartesian components
+          ICB   = LCLASS(jshell)          !class: large component (1), small or Huckel(2), density fitting (0)
+          SPHRB = SPHR(jshell)            !if spherical Gaussians
           CALL LMNVAL(NHKTB,KCKTB,LVALUB,MVALUB,NVALUB)
-          NCENTB = NCENT(ISHELB)
-          NHKTAB = NHKTA + NHKTB
-          MULB   = ISTBAO(ISHELB)
-          MULTB  = MULT(MULB)
-          NUCB   = NUCO(ISHELB)
-          NUMCFB = NUMCF(ISHELB)
-          NRCB   = NRCO(ISHELB)
-          JSTB   = JSTRT(ISHELB)
-          CORBX0 = CENT(ISHELB,1,1)
-          CORBY0 = CENT(ISHELB,2,1)
-          CORBZ0 = CENT(ISHELB,3,1)
+          NCENTB = NCENT(jshell)          !index of symmetry independent center
+          NHKTAB = NHKTA+NHKTB
+          MULB   = ISTBAO(jshell)         !stabiliser: basic sym. op. that do not move center
+          MULTB  = MULT(MULB)             !multiplicity of center
+          NUCB   = NUCO(jshell)           !number of uncontracted functions
+          NUMCFB = NUMCF(jshell)          !index of shell in AO-block
+          NRCB   = NRCO(jshell)           !number of contracted functions
+          JSTB   = JSTRT(jshell)          !start index of the AO-block
+          CORBX0 = CENT(jshell,1,1)       !coordinates of center
+          CORBY0 = CENT(jshell,2,1)
+          CORBZ0 = CENT(jshell,3,1)
           KHKTAB = KHKTA*KHKTB
           KCKTAB = KCKTA*KCKTB
           MAB    = IBTOR(MULA,MULB)       !stabliser
@@ -212,17 +224,20 @@ C         generates the Cartesian powers
 
 C         computes symmetry integral pointers for contributions from this block
 C         note that at present this assumes all components from a shell are included
-          do I = 1, 8
-            do ixyz = 1, MXAQN
-              INDFB(I,ixyz) = -10 000 000
+          do jcontr = 1, NRCB
+            do jcomp = 1, MXAQN
+              INDFB(:,jcomp,jcontr) = -10 000 000
             end do
           end do
-          do NB = 1, KHKTB
-            do irep = 0, MAXREP
-              if (IBTAND(MULB,IBTXOR(irep,ISYMAO(NHKTB,NB))).eq.0) then
-                ISOFRB(irep+1) = ISOFRB(irep+1)+1
-                INDFB(irep+1,NB) = ISOFRB(irep+1)
-              end if
+          do jcontr = 1, NRCB
+            do jcomp = 1, KHKTB
+              do irep = 0, MAXREP
+                if (IBTAND(MULB,IBTXOR(irep,ISYMAO(NHKTB,jcomp)))
+     &              .eq.0) then
+                  ISOFRB(irep+1) = ISOFRB(irep+1)+1
+                  INDFB(irep+1,jcomp,jcontr) = ISOFRB(irep+1)
+                end if
+              end do
             end do
           end do
 
@@ -230,13 +245,13 @@ C         note that at present this assumes all components from a shell are incl
 
 C         loops over symmetry operations
 
-          IDENB = IDENB0 - KHKTB
+          IDENB = IDENB0-KHKTB
           do isymop = 0, MAXOPR
             if (IBTAND(isymop,MAB).eq.0) then
 
-              IDENB  = IDENB + KHKTB
-              ICENTB = NUCNUM(NCENTB,isymop+1)
-              ONECEN = ICENTA .eq. ICENTB
+              IDENB  = IDENB+KHKTB
+              ICENTB = NUCNUM(NCENTB,isymop+1)   !total number of nuclei? FIXME
+              ONECEN = ICENTA.eq.ICENTB
               SIGNBX = PT(IBTAND(ISYMAX(1,1),isymop))
               SIGNBY = PT(IBTAND(ISYMAX(2,1),isymop))
               SIGNBZ = PT(IBTAND(ISYMAX(3,1),isymop))
@@ -296,24 +311,40 @@ C              if (SPHRB) then
 C                call cgto_to_sgto()
 C              end if
 C             computes expectation values
-C              if (propty) then
-C                collects density and Fock elements
-C              end if
+C-             if (propty) then
+C-               collects density and Fock elements
+C-               MAXCMP = 0
+C-               DO 200 IORBA = IDENA + 1, IDENA + KHKTA
+C-                  DO 250 IORBB = IDENB + 1, IDENB + KHKTB
+C-                     FAC = D1
+C-                     IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = DP5
+C-                     MAXCMP = MAXCMP + 1
+C-                     IORBAB = ITRI(IORBA,IORBB)
+C-                     DSHELL(MAXCMP) = FAC*DENMAT(IORBAB)
+C-                     FSHELL(MAXCMP) = FAC*FOCMAT(IORBAB)
+C-  250             CONTINUE
+C-  200          CONTINUE
+C-             end if
 C FIXME: if undifferentiated, first- and second-order derivatives are calculated seperately
 C             transforms integrals to SO basis
-C              FULMAT = .TRUE.
-C              ANTI   = .FALSE.
-C              call SYM1S() or SYM1N() by MAXREP(irreps of the differentiation operator)
+C              FULMAT = .true.
+C              ANTI   = .false.
+C              call SYM1S(ADER,STHMAT(1,2),ISYMOP,MULA,MULB,NHKTA,NHKTB,
+C     &                   KHKTA,KHKTB,HKAB,LDIAG,FULMAT,DUMMY,IDUMMY,
+C     &                   IPRINT)
 C FIXME:
 C             writes differentiated integrals on file for the right-hand side
-C              if (getint) then
-C              end if
+C-             if (getint) then
+C-               vals_int() = work()
+C-               call WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
+C-    &                      ISYMOP,NATOMC,IPRINT,PCM)
+C-             end if
             end if
-          end do
+          end do  !loops over symmetry operations
           IDENB0 = IDENB0+KHKTB*MULTB
-        end do
+        end do  !loops over shells of ket
         IDENA = IDENA+KHKTA*MULTA
-      end do
+      end do  !loops over shells of bra
 C     cleans
       call IZERO(ISOFRA, 8)
 C     Dalton stuff

@@ -26,8 +26,10 @@ C>    \date 2010-12-06
 #ifdef BUILD_GEN1INT
 #include "implicit.h"
 #include "priunit.h"
+#include "maxaqn.h"
 #include "maxorb.h"
 #include "shells.h"
+#include "aovec.h"
 #include "gen1int.h"
 C     incremental recorder over shells
       integer ibra
