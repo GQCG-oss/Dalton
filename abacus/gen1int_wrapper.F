@@ -148,7 +148,7 @@ C       note that at present this assumes all components from a shell are includ
               if (IBTAND(MULA,IBTXOR(irep,ISYMAO(NHKTB,icomp)))
      &            .eq.0) then
                 ISOFRA(irep+1) = ISOFRA(irep+1)+1
-                INDFA(irep+1,icomp,icontr) = ISOFRB(irep+1)
+                INDFA(irep+1,icomp,icontr) = ISOFRA(irep+1)
               end if
             end do
           end do
