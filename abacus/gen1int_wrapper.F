@@ -33,39 +33,50 @@ C>            (3) abacus/her1drv.F: adds the interface of calling gen1int_wrappe
 C>            (4) include/gen1int.h: saves AO block information for Gen1Int
 C>    \author Bin Gao
 C>    \date 2010-07-28
+C>    \param prop_name is the name of property integrals to calculated
+C>    \param order_geo is the order of geometric derivatives
+C>    \param order_mag is the order of magnetic derivaives
+C>    \param getint indicates if getting integrals back
+C>    \param wrtint indicates if writing integrals to file
+C>    \param propty indicates if calculating expectation values
+C>    \param ndens is the number of AO density matrices
+C>    \param ao_dens contains the AO density matrices
+C>    \param doint indicates if calculating the integrals for each AO block
+C>    \param len_work is the length of Dalton workspace
+C>    \param dal_work is the Dalton workspace
+C>    \param level_print is the level of print
+C>    \return vals_int contains the calculated integrals
+C>    \return vals_expect contains the calculated expectation values
       subroutine gen1int_wrapper(prop_name, order_geo, order_mag,
-     &                           getint, vals_int, propty, vals_expect,
-     &                           doint, len_work, work)
+     &                           getint, wrtint, vals_int, propty,
+     &                           ndens, ao_dens, vals_expect,
+     &                           doint, len_work, dal_work, level_print)
 #include "implicit.h"
-C     name of property integrals to calculated
+#include "inforb.h"
       character*(*) prop_name
-C     order of geometric derivatives
       integer order_geo
-C     order of magnetic derivaives
       integer order_mag
-C     if getting integrals back
       logical getint
-C     integrals
+      logical wrtint
       dimension vals_int(*)
-C     if calculating expectation values
       logical propty
-C     expectation values
+      integer ndens
+      dimension ao_dens(NNBASX,ndens)
       dimension vals_expect(*)
-C     if doing calculations
       logical doint(2,2)
-C     workspace of Dalton
       integer len_work
-      dimension work(len_work)
+      dimension dal_work(len_work)
+      integer level_print
 #ifdef BUILD_GEN1INT
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "nuclei.h"
-#include "inforb.h"
 #include "onecom.h"
 #include "aovec.h"
 #include "symmet.h"
+#include "symind.h"
 #include "primit.h"
 #include "lmns.h"
 #include "shells.h"
@@ -73,14 +84,9 @@ C     workspace of Dalton
 #include "ecpinf.h"
 #include "orgcom.h"
 #include "ibtfun.h"
-C     start of primitives
-      integer st_bra_prim, st_ket_prim
-C     end of primitives
-      integer end_bra_prim, end_ket_prim
-C     start of contractions
-      integer st_bra_contr, st_ket_contr
-C     end of contractions
-      integer end_bra_contr, end_ket_contr
+#include "dummy.h"
+C     symmetry integral pointers for AO-blocks
+      integer BLOCK_INDFA(8,MXAQN,MXCONT), BLOCK_INDFB(8,MXAQN,MXCONT)
 C     incremental recorders over spherical (Cartesian) components
       integer icomp, jcomp
 C     incremental recorders over contractions
@@ -89,21 +95,64 @@ C     incremental recorders over AO-shells
       integer ishell, jshell
 C     incremental recorders over AO-blocks
       integer iblock, jblock
+C     if in the format of full matrix
+      logical full_matrix
+C     if anti-symmetric matrix
+      logical anti_matrix
+C     number of AO shells in the AO block
+      integer nbra_shell, nket_shell
+C     number of centers in the operator
+      integer num_op_cents
+C     maximum number of centers in the integral
+      parameter(MAX_NCENT = 4)
+C     orders of geometric derivatives of centers, the first two are bra and ket
+      integer order_cent(MAX_NCENT)
+C     number of geometric differentiated centers
+      integer num_cents
+C     number of geometric derivatives
+      integer num_dgeo
+C     number of magnetic derivatives
+      integer num_dmag
+C     number of integrals
+      integer num_ints
+C     number of derivatives
+      integer num_deriv
 C     Dalton stuff
       call QENTER("gen1int_wrapper")
       call GETTIM(TIMHER, WALHER)
       call HEADER("Gen1Int calculates "//trim(prop_name),-1)
-C     sets up the order of geometric derivatives
-C-      IA0000 =  1
-C-      IA0X00 =  2
-C-      IA0Y00 =  3
-C-      IA0Z00 =  4
-C-      IAXX00 =  5
-C-      IAXY00 =  6
-C-      IAXZ00 =  7
-C-      IAYY00 =  8
-C-      IAYZ00 =  9
-
+C     dumps to check
+      write(LUPRI,1000) "Order of geometric derivatives:", order_geo
+      write(LUPRI,1000) "Order of magnetic derivaives:", order_mag
+      if (getint) then
+        write(LUPRI,1000) "Integrals are returned."
+      else
+        write(LUPRI,1000) "Integrals are not returned."
+      end if
+      if (propty) then
+        write(LUPRI,1000) "Calculate expectation values."
+        write(LUPRI,1000) "Number of AO density matrices:", ndens
+      end if
+      write(LUPRI,1001) "Length of Dalton workspace:", len_work
+      write(LUPRI,"()")
+C     number of the magnetic derivatives
+      num_dmag = (order_mag+1)*(order_mag+2)/2
+C     number of centers in the operator
+      select case(trim(prop_name))
+C     two center operators
+      case('.DSO')
+        num_op_cents = 2
+C     without any center
+      case('.ANGLON','.ANGMOM','.CARMOM','.DIPLEN','.DIPVEL','.DPTOVL',
+     &     '.DSUSNL','.KINENE','.MASSVE','.OVERLAP','.S1MAG','.SECMOM',
+     &     '.SQHDOL','.SQHDOR','.THETA','.THIRDM','.2NDMM','.3RDMM')
+        num_op_cents = 0
+C     one-center operators
+      case default
+        num_op_cents = 1
+      end select
+C     doing the calculation now ...
+C FIXME
       IDENA = 0
       call IZERO(ISOFRA, 8)
 C     loops over blocks of bra
@@ -114,6 +163,7 @@ C     loops over blocks of bra
         KCKTA = KCKT(ishell)        !number of Cartesian components
         ICA   = LCLASS(ishell)      !class: large component (1), small or Huckel(2), density fitting (0)
         SPHRA = SPHR(ishell)        !if spherical Gaussians
+C       generates the Cartesian powers
         call LMNVAL(NHKTA, KCKTA, LVALUA, MVALUA, NVALUA)
         NCENTA = NCENT(ishell)      !index of symmetry independent center
         ICENTA = NUCNUM(NCENTA,1)   !total number of nuclei
@@ -122,38 +172,33 @@ C     loops over blocks of bra
         NUCA   = NUCO(ishell)       !number of uncontracted functions
         NUMCFA = NUMCF(ishell)      !index of shell in AO-block
         NRCA   = NRCO(ishell)       !number of contracted functions
-C FIXME: JSTA, NBCH, NUMCF
         JSTA   = JSTRT(ishell)      !start index of the AO-block
         CORAX  = CENT(ishell,1,1)   !coordinates of center
         CORAY  = CENT(ishell,2,1)
         CORAZ  = CENT(ishell,3,1)
+C
         IDENB0 = 0
-
-        st_bra_prim = JSTA+1
-        end_bra_prim = JSTA+NUCA
-        st_bra_contr = NUMCFA
-        end_bra_contr = NUMCFA+NRCA-1
 C       computes symmetry integral pointers for contributions from this block
 C       note that at present this assumes all components from a shell are included
-
         call IZERO(ISOFRB, 8)
         do icontr = 1, NRCA
           do icomp = 1, MXAQN
-            INDFA(:,icomp,icontr) = -10 000 000
+            BLOCK_INDFA(:,icomp,icontr) = -10 000 000
           end do
         end do
         do icontr = 1, NRCA
           do icomp = 1, KHKTA
             do irep = 0, MAXREP
-              if (IBTAND(MULA,IBTXOR(irep,ISYMAO(NHKTB,icomp)))
+              if (IBTAND(MULA,IBTXOR(irep,ISYMAO(NHKTA,icomp)))
      &            .eq.0) then
                 ISOFRA(irep+1) = ISOFRA(irep+1)+1
-                INDFA(irep+1,icomp,icontr) = ISOFRA(irep+1)
+                BLOCK_INDFA(irep+1,icomp,icontr) = ISOFRA(irep+1)
               end if
             end do
           end do
         end do
-
+C       number of the AO shells
+        nbra_shell = KCKTA*NRCA
 #ifdef GEN1INT_DEBUG
         write(LUPRI,9000) "Center of bra:", NCENTA
         write(LUPRI,9000) "ICENTA: ", ICENTA
@@ -168,28 +213,25 @@ C       note that at present this assumes all components from a shell are includ
           write(LUPRI,9000) "Number of bra Cart. components: ", KHKTA
         end if
         write(LUPRI,9000) "Number of bra Cart.:", KCKTA
-        write(LUPRI,9000) "Start of bra prim.:", st_bra_prim
-        write(LUPRI,9000) "End of bra prim.:", end_bra_prim
-        write(LUPRI,9200) PRIEXP(st_bra_prim:end_bra_prim)
-        write(LUPRI,9000) "Start of bra contr.:", st_bra_contr
-        write(LUPRI,9000) "End of bra contr.:", end_bra_contr
-        write(LUPRI,9300) PRICCF(st_bra_prim:end_bra_prim,
-     &                           st_bra_contr:end_bra_contr)
+        write(LUPRI,9000) "Start of bra prim.:", JSTA+1
+        write(LUPRI,9000) "End of bra prim.:", JSTA+NUCA
+        write(LUPRI,9200) PRIEXP(JSTA+1:JSTA+NUCA)
+        write(LUPRI,9000) "Start of bra contr.:", NUMCFA
+        write(LUPRI,9000) "End of bra contr.:", NUMCFA+NRCA-1
+        write(LUPRI,9300) PRICCF(JSTA+1:JSTA+NUCA,NUMCFA:NUMCFA+NRCA-1)
         do icontr = 1, NRCA
           write(LUPRI,9000) "IA address offsets for bra contraction: ",
      &                      icontr
           do icomp = 1, KHKTA
             write(LUPRI,'(8(1X,I8))')
-     &        (INDFA(irep,icomp,icontr),irep=1,MAXREP+1)
+     &        (BLOCK_INDFA(irep,icomp,icontr),irep=1,MAXREP+1)
           end do
         end do
 #endif
 C FIXME: lower triangular?
 C       loops over shells of ket
-        do jblock = 1, NUM_BLOCK
-
+        do jblock = 1, iblock
           jshell = IDX_SHELL(jblock)
-          LDIAG = ishell.eq.jshell        !lower triangle (.true.) or full square block
           NHKTB = NHKT(jshell)            !angular quantum number (s=1,p=2,d=3 etc.)
           KHKTB = KHKT(jshell)            !number of spherical (Cartesian) components
           KCKTB = KCKT(jshell)            !number of Cartesian components
@@ -197,7 +239,6 @@ C       loops over shells of ket
           SPHRB = SPHR(jshell)            !if spherical Gaussians
           CALL LMNVAL(NHKTB,KCKTB,LVALUB,MVALUB,NVALUB)
           NCENTB = NCENT(jshell)          !index of symmetry independent center
-          NHKTAB = NHKTA+NHKTB
           MULB   = ISTBAO(jshell)         !stabiliser: basic sym. op. that do not move center
           MULTB  = MULT(MULB)             !multiplicity of center
           NUCB   = NUCO(jshell)           !number of uncontracted functions
@@ -212,21 +253,13 @@ C       loops over shells of ket
           MAB    = IBTOR(MULA,MULB)       !stabliser
           KAB    = IBTAND(MULA,MULB)      !multiplicity to multiplied with the integral
           HKAB   = FMULT(KAB)             !symmetry factor, which determines how many different integrals
-C
-          SPHRAB = SPHRA .OR. SPHRB
 C         generates the Cartesian powers
           call LMNVAL(NHKTB, KCKTB, LVALUB, MVALUB, NVALUB)
-
-          st_ket_prim = JSTB+1
-          end_ket_prim = JSTB+NUCB
-          st_ket_contr = NUMCFB
-          end_ket_contr = NUMCFB+NRCB-1
-
 C         computes symmetry integral pointers for contributions from this block
 C         note that at present this assumes all components from a shell are included
           do jcontr = 1, NRCB
             do jcomp = 1, MXAQN
-              INDFB(:,jcomp,jcontr) = -10 000 000
+              BLOCK_INDFB(:,jcomp,jcontr) = -10 000 000
             end do
           end do
           do jcontr = 1, NRCB
@@ -235,23 +268,27 @@ C         note that at present this assumes all components from a shell are incl
                 if (IBTAND(MULB,IBTXOR(irep,ISYMAO(NHKTB,jcomp)))
      &              .eq.0) then
                   ISOFRB(irep+1) = ISOFRB(irep+1)+1
-                  INDFB(irep+1,jcomp,jcontr) = ISOFRB(irep+1)
+                  BLOCK_INDFB(irep+1,jcomp,jcontr) = ISOFRB(irep+1)
                 end if
               end do
             end do
           end do
-
+C         cycles if skipping the integrals of these two blocks
           if (.not.doint(ICA,ICB)) cycle
-
+C         number of the AO shells
+          nket_shell = KCKTB*NRCB
+C         initializes the number of integrals
+          num_ints = nbra_shell*nket_shell*num_dmag
 C         loops over symmetry operations
-
+C FIXME
           IDENB = IDENB0-KHKTB
           do isymop = 0, MAXOPR
             if (IBTAND(isymop,MAB).eq.0) then
-
+C FIXME
               IDENB  = IDENB+KHKTB
               ICENTB = NUCNUM(NCENTB,isymop+1)   !total number of nuclei? FIXME
               ONECEN = ICENTA.eq.ICENTB
+
               SIGNBX = PT(IBTAND(ISYMAX(1,1),isymop))
               SIGNBY = PT(IBTAND(ISYMAX(2,1),isymop))
               SIGNBZ = PT(IBTAND(ISYMAX(3,1),isymop))
@@ -259,91 +296,119 @@ C         loops over symmetry operations
               CORBY  = SIGNBY*CORBY0
               CORBZ  = SIGNBZ*CORBZ0
 
-C (a) contr_cgto_carmom: Cartesian multipole moments
-C (b) contr_cgto_delta:  Delta function
-C (c) contr_cgto_nucpot: nuclear attraction potential
-C (d) contr_cgto_isdpot: inverse square distance potential
-C (e) contr_cgto_gaupot: Gaussian charge potential
-C (f) contr_cgto_dso:    diamagnetic spin-orbit coupling
-C (g) contr_cgto_ecp:    effective core potential
-C (h) contr_cgto_mcp1:   model core potential (Version 1)
-C     &    ' Center of mass  (bohr):', (CMXYZ(I),I=1,3),
-C     &    ' Operator center (bohr):', (ORIGIN(I),I=1,3),
-C     &    ' Gauge origin    (bohr):', (GAGORG(I),I=1,3),
-C     &    ' Dipole origin   (bohr):', (DIPORG(I),I=1,3)
+C             number of centers
+              if (ICENTA.eq.ICENTB) then
+                num_cents = num_op_cents+1
+              else
+                num_cents = num_op_cents+2
+              end if
+
+C             loops over geometric derivatives
+
+C             generates the differentiated centers and their orders
+C-              call geo_deriv(num_cents, order_cent, num_dgeo)
+C-              num_deriv = num_dgeo*num_dmag
+C-              num_ints = num_ints*num_dgeo
+
+C             different property integrals using Gen1Int
+C             we may also use the following origins
+C             (1) center of mass : CMXYZ
+C             (2) operator center: ORIGIN
+C             (3) gauge origin   : GAGORG
+C             (4) dipole origin  : DIPORG
               select case(trim(prop_name))
               case('.OVERLAP')
-C-                call contr_cgto_carmom(NCENTA, CORAX, CORAY, CORAZ,
-C-     &            NHKTA-1, NUCA, PRIEXP(st_bra_prim:end_bra_prim),
-C-     &            NRCA, PRICCF(st_bra_prim:end_bra_prim,
-C-     &                         st_bra_contr:end_bra_contr),
-C-     &            NCENTB, CORBX, CORBY, CORBZ,
-C-     &            NHKTB-1, NUCB, PRIEXP(st_ket_prim:end_ket_prim),
-C-     &            NRCB, PRICCF(st_ket_prim:end_ket_prim,
-C-     &                         st_ket_contr:end_ket_contr), DIPORG)
+C               computes the contracted integrals
+                call lcgto_zero_carmom(ICENTA, (/CORAX,CORAY,CORAZ/),
+     &            NHKTA-1, NUCA, PRIEXP(JSTA+1:JSTA+NUCA),
+     &            NRCA, PRICCF(JSTA+1:JSTA+NUCA,NUMCFA:NUMCFA+NRCA-1),
+     &            ICENTB, (/CORBX,CORBY,CORBZ/), NHKTB-1,
+     &            NUCB, PRIEXP(JSTB+1:JSTB+NUCB), NRCB,
+     &            PRICCF(JSTB+1:JSTB+NUCB,NUMCFB:NUMCFB+NRCB-1),
+     &            DIPORG, 0, num_ints, dal_work)
               case('.ECP')
 C               loops over number of all ECP centers
-C-                do ITYP = 1, NTYECP
-C-                  do INONT = 1, NECP(ITYP)
-C-                    IATOM = INDECP(ITYP)+INONT-1  !
-C-                    KCRS = ITYP                   !
-C-                    LCRU = LCR(ITYP)              !
-C-                    XCI = CORD(1,IATOM)           !
-C-                    YCI = CORD(2,IATOM)
-C-                    ZCI = CORD(3,IATOM)
-C-                    do jsymop = 0, MAXOPR
-C-                      if (IBTAND(jsymop,ISTBNU(IATOM)).eq.0) then
-C-                        XC = PT(IBTAND(ISYMAX(1,1),jsymop))*XCI
-C-                        YC = PT(IBTAND(ISYMAX(2,1),jsymop))*YCI
-C-                        ZC = PT(IBTAND(ISYMAX(3,1),jsymop))*ZCI
-C-C                        call PSEUD1(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
-C-C                        call PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
-C-                      end if
-C-                    end do
-C-                  end do
-C-                end do
+                do ITYP = 1, NTYECP
+                  do INONT = 1, NECP(ITYP)
+                    IATOM = INDECP(ITYP)+INONT-1  !
+C FIXME                    KCRS = ITYP                   !
+C FIXME                    LCRU = LCR(ITYP)              !
+                    XCI = CORD(1,IATOM)           !coordinates of ECP center
+                    YCI = CORD(2,IATOM)
+                    ZCI = CORD(3,IATOM)
+                    do jsymop = 0, MAXOPR
+                      if (IBTAND(jsymop,ISTBNU(IATOM)).eq.0) then
+                        XC = PT(IBTAND(ISYMAX(1,1),jsymop))*XCI
+                        YC = PT(IBTAND(ISYMAX(2,1),jsymop))*YCI
+                        ZC = PT(IBTAND(ISYMAX(3,1),jsymop))*ZCI
+C                        call PSEUD1(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
+C                        call PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
+                      end if
+                    end do
+                  end do
+                end do
               end select
-C             transforms to spherical harmonic basis
-C              if (SPHRA) then
-C                call cgto_to_sgto()
-C              endif
-C              if (SPHRB) then
-C                call cgto_to_sgto()
-C              end if
-C             computes expectation values
-C-             if (propty) then
-C-               collects density and Fock elements
-C-               MAXCMP = 0
-C-               DO 200 IORBA = IDENA + 1, IDENA + KHKTA
-C-                  DO 250 IORBB = IDENB + 1, IDENB + KHKTB
-C-                     FAC = D1
-C-                     IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = DP5
-C-                     MAXCMP = MAXCMP + 1
-C-                     IORBAB = ITRI(IORBA,IORBB)
-C-                     DSHELL(MAXCMP) = FAC*DENMAT(IORBAB)
-C-                     FSHELL(MAXCMP) = FAC*FOCMAT(IORBAB)
-C-  250             CONTINUE
-C-  200          CONTINUE
-C-             end if
-C FIXME: if undifferentiated, first- and second-order derivatives are calculated seperately
-C             transforms integrals to SO basis
-C              FULMAT = .true.
-C              ANTI   = .false.
-C              call SYM1S(ADER,STHMAT(1,2),ISYMOP,MULA,MULB,NHKTA,NHKTB,
-C     &                   KHKTA,KHKTB,HKAB,LDIAG,FULMAT,DUMMY,IDUMMY,
-C     &                   IPRINT)
+C             transforms to spherical Gaussian integrals
+              if (SPHRB) then
+                call cgto_to_sgto(NHKTB-1,
+     &                            (/nbra_shell,KCKTB,NRCB*num_deriv/),
+     &                            dal_work)
+              end if
+              if (SPHRA) then
+                call cgto_to_sgto(NHKTA-1,
+     &                            (/1,KCKTA,NRCA*nket_shell*num_deriv/),
+     &                            dal_work)
+              endif
+C
+              full_matrix = .true.
+              anti_matrix = .false.
+              do icontr = 1, NRCA
+                INDFA = BLOCK_INDFA(:,:,icontr)
+                do jcontr = 1, NRCB
+                  LDIAG = icontr.eq.jcontr  !lower triangle (.true.) or full square block
+                  INDFB = BLOCK_INDFB(:,:,jcontr)
+C                 computes expectation values
+                  if (propty) then
+C                   collects density elements
+                    do iden = 1, ndens
+                      MAXCMP = 0
+                      do IORBA = IDENA+1, IDENA+KHKTA
+                         do IORBB = IDENB+1, IDENB+KHKTB
+                            MAXCMP = MAXCMP+1
+                            MAXAB = max(IORBA,IORBB)
+                            MINAB = min(IORBA,IORBB)
+                            IORBAB = MAXAB*(MAXAB-1)/2+MINAB
+                            if (ONECEN .and. LDIAG .and.
+     &                          IORBB.ne.IORBA) then
+                              dal_work(MAXCMP)
+     &                          = 5.0D-01*ao_dens(IORBAB,iden)
+                            else
+                              dal_work(MAXCMP) = ao_dens(IORBAB,iden)
+                            end if
+                         end do
+                      end do
+                    end do
+C
+                  end if
 C FIXME:
-C             writes differentiated integrals on file for the right-hand side
 C-             if (getint) then
-C-               vals_int() = work()
+C             transforms integrals to SO basis
+C                call SYM1S(ADER, vals_int, isymop, MULA, MULB, NHKTA, NHKTB,
+C     &                     KHKTA, KHKTB, HKAB, LDIAG, FULMAT, DUMMY, IDUMMY,
+C     &                     level_print)
+C              end if
+C              if (wrtint) then
+C                writes differentiated integrals on file for the right-hand side
 C-               call WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
 C-    &                      ISYMOP,NATOMC,IPRINT,PCM)
 C-             end if
+                end do
+              end do
             end if
           end do  !loops over symmetry operations
-          IDENB0 = IDENB0+KHKTB*MULTB
+          IDENB0 = IDENB0+NUCB*KHKTB*MULTB
         end do  !loops over shells of ket
-        IDENA = IDENA+KHKTA*MULTA
+        IDENA = IDENA+NUCA*KHKTA*MULTA
       end do  !loops over shells of bra
 C     cleans
       call IZERO(ISOFRA, 8)
@@ -351,7 +416,7 @@ C     Dalton stuff
       call GETTIM(TEND, WEND)
       TIMHER = TEND-TIMHER
       WALHER = WEND-WALHER
-      write(LUPRI,'()')
+      write(LUPRI,"()")
       call TIMTXT(">>>> Total CPU  time used in Gen1Int:",
      &            TIMHER, LUPRI)
       call TIMTXT(">>>> Total wall time used in Gen1Int:",
@@ -359,6 +424,8 @@ C     Dalton stuff
       call HEADER("End of Gen1Int",-1)
       call QEXIT("gen1int_wrapper")
       return
+1000  format("GEN1INT_INFO>> ",A,I4)
+1001  format("GEN1INT_INFO>> ",A,I12)
 #ifdef GEN1INT_DEBUG
 9000  format("GEN1INT_DEBUG>> ",A,I8)
 9100  format("GEN1INT_DEBUG>> ",A,3F16.8)
