@@ -1,3 +1,5 @@
+#ifdef TODO
+/* Needs some work to work with ctaylor */
 #include "functional.h"
 #include "slater.h"
 
@@ -122,3 +124,4 @@ LONG_DESCRIPTION(XC_BRX) =
 	     "Implemented by Ulf Ekstrom\n";
 NO_TEST(XC_BRX);
 
+#endif

@@ -40,7 +40,7 @@ extern "C" {
       XC_LDAERFC,
       XC_LDAERFC_JT,
       XC_LYPC,
-      /*      XC_OPTX, 
+      XC_OPTX, 
       XC_REVPBEX,
       XC_RPBEX,
       XC_SPBEC,
@@ -56,7 +56,7 @@ extern "C" {
       XC_M06X2X,
       XC_M06LX,
       XC_M06HFX,
-      XC_BRX,
+      /*   XC_BRX, must fix this to work with ctaylor */
       XC_M05X2C,
       XC_M05C,
       XC_M06C,
@@ -65,7 +65,7 @@ extern "C" {
       XC_TPSSC,
       XC_TPSSX,
       XC_REVTPSSC,
-      XC_REVTPSSX,*/
+      XC_REVTPSSX,
       XC_NR_FUNCTIONALS
     };
 

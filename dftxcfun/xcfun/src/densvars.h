@@ -21,7 +21,7 @@ static void regularize(T &x)
 
 // Variables for expressing functionals, these are redundant because
 // different functionals have different needs.
-template<class T>
+template<typename T>
 struct densvars
 {
   // Fills all density variables that can be filled from vars. Length of d

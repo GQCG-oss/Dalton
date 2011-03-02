@@ -478,21 +478,33 @@ static bool operator<(const S &x, const ctaylor<T, Nvar> &t)
 }
 
 template<class S, class T, int Nvar>
+static bool operator<(const ctaylor<T, Nvar> &t, const S &x)
+{
+  return t.c[0] < x;
+}
+
+template<class T, int Nvar>
+static bool operator<(const ctaylor<T, Nvar> &t1, const ctaylor<T, Nvar> &t2)
+{
+  return t1.c[0] < t2.c[0];
+}
+
+template<class S, class T, int Nvar>
 static bool operator>(const S &x, const ctaylor<T, Nvar> &t)
 {
   return x > t.c[0];
 }
 
 template<class S, class T, int Nvar>
-static bool operator<(const ctaylor<T, Nvar> &t, const S &x)
-{
-  return t.c[0] < x;
-}
-
-template<class S, class T, int Nvar>
 static bool operator>(const ctaylor<T, Nvar> &t, const S &x)
 {
   return t.c[0] > x;
+}
+
+template<class T, int Nvar>
+static bool operator>(const ctaylor<T, Nvar> &t1, const ctaylor<T, Nvar> &t2)
+{
+  return t1.c[0] > t2.c[0];
 }
 
 template<class S, class T, int Nvar>
