@@ -20,7 +20,7 @@ extern "C" {
   
   enum xc_mode
     {
-      XC_MODE_UNSET = -1,
+      XC_MODE_UNSET = 0, // Need to be zero for default initialized structs
       XC_PARTIAL_DERIVATIVES,
       XC_POTENTIAL,
       XC_CONTRACTED,

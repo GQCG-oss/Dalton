@@ -11,7 +11,7 @@ static num tpssx(const densvars<num> &d)
   num epsxunif_a = fx_unif(2*d.a);
   num Fxb = F_x(2*d.b,4*d.gbb,2*d.taub);
   num epsxunif_b = fx_unif(2*d.b);
-  return (epsxunif_a*Fxa + epsxunif_b*Fxb)/2;
+  return 0.5*(epsxunif_a*Fxa + epsxunif_b*Fxb);
 }
 
 FUNCTIONAL(XC_TPSSX) = {

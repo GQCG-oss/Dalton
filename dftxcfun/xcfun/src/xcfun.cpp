@@ -12,6 +12,7 @@ xc_functional xc_new_functional()
   fun->mode = XC_MODE_UNSET;
   fun->vars = XC_VARS_UNSET;
   fun->order = -1;
+  fun->depends = 0;
   for (int i=0;i<XC_NR_FUNCTIONALS;i++)
     fun->settings[i] = 0;
   for (int i=XC_NR_FUNCTIONALS;i<XC_NR_PARAMETERS_AND_FUNCTIONALS;i++)
@@ -95,8 +96,7 @@ int xc_output_length(xc_functional fun)
 
 int xcfun_test(void)
 {
-  int nfail = 0;
-#ifdef TODO
+  int nfail = 0, res;
   for (int f=0;f<XC_NR_FUNCTIONALS;f++)
     {
       xc_functional fun = xc_new_functional();
@@ -104,55 +104,49 @@ int xcfun_test(void)
       const functional_data *fd = &xcint_funs[f];
       if (fd->test_mode != XC_MODE_UNSET)
 	{
-	  xc_set_mode(fun, fd->test_mode);
-	  if (xc_try_vars(fun, fd->test_vars))
+	  if ((res = xc_eval_setup(fun,fd->test_vars,fd->test_mode,fd->test_order)) == 0)
 	    {
-	      if (xc_try_order(fun,fd->test_order))
+	      int n = xc_output_length(fun);
+	      double *out = 
+		reinterpret_cast<double *>( malloc(sizeof(*out)*n) );
+	      if (!fd->test_in)
+		xcint_die("Functional has no test input!",f);
+	      xc_eval(fun,fd->test_in,out);
+	      int nerr = 0;
+	      for (int i=0;i<n;i++)
+		if (fabs(out[i] - fd->test_out[i]) > 
+		    fabs(fd->test_out[i]*fd->test_threshold))
+		  nerr++;
+	      if (nerr > 0)
 		{
-		  int n = xc_output_length(fun);
-		  double *out = 
-		    reinterpret_cast<double *>( malloc(sizeof(*out)*n) );
-		  if (!fd->test_in)
-		    xcint_die("Functional has no test input!",f);
-		  xc_eval(fun,fd->test_in,out);
-		  int nerr = 0;
+		  fprintf(stderr,"Error detected in functional %s with tolerance %g:\n",
+			  fd->symbol, fd->test_threshold);
+		  fprintf(stderr,"Abs.Error \tComputed              Reference\n");
 		  for (int i=0;i<n;i++)
-		    if (fabs(out[i] - fd->test_out[i]) > 
-			fabs(fd->test_out[i]*fd->test_threshold))
-		      nerr++;
-		  if (nerr > 0)
 		    {
-		      fprintf(stderr,"Error detected in functional %s with tolerance %g:\n",
-			      fd->symbol, fd->test_threshold);
-		      fprintf(stderr,"Abs.Error \tComputed              Reference\n");
-		      for (int i=0;i<n;i++)
-			{
-			  fprintf(stderr,"%.1e",fabs(out[i]-fd->test_out[i]));
-			  fprintf(stderr,"    %+.16e \t%+.16e",out[i],fd->test_out[i]);
-			  if (fabs(out[i] - fd->test_out[i]) > 
-			      fabs(fd->test_out[i]*fd->test_threshold))
-			    fprintf(stderr," *");
-			  fprintf(stderr,"\n");
-			}
-		      nfail++;
+		      fprintf(stderr,"%.1e",fabs(out[i]-fd->test_out[i]));
+		      fprintf(stderr,"    %+.16e \t%+.16e",out[i],fd->test_out[i]);
+		      if (fabs(out[i] - fd->test_out[i]) > 
+			  fabs(fd->test_out[i]*fd->test_threshold))
+			fprintf(stderr," *");
+		      fprintf(stderr,"\n");
 		    }
-		  free((void *)out);
-		}
-	      else
-		{
-		  fprintf(stderr,"Functional %i not supporting its own test (order)\n",f);
 		  nfail++;
 		}
+	      free((void *)out);
 	    }
 	  else
 	    {
-	      fprintf(stderr,"Functional %i not supporting its own test (vars)\n",f);
+	      fprintf(stderr,"Functional %s not supporting its own test, error %i\n",fd->symbol,res);
 	      nfail++;
 	    }
 	}
+      else
+	{
+	  fprintf(stderr,"%s has no test\n",fd->symbol);
+	}
       xc_free_functional(fun);
     }
-#endif
   return nfail;
 }
 
@@ -497,18 +491,21 @@ int xc_eval_setup(xc_functional fun,
 {
   // Check that vars are enough for the functional
   if ((fun->depends & xcint_vars[vars].provides) != fun->depends)
-    return XC_EVARS;
+    {
+      printf("depends %i, provides %i\n",fun->depends,xcint_vars[vars].provides);
+      return XC_EVARS;
+    }
   if ((order < 0 || order > XC_MAX_ORDER) ||
       (mode == XC_PARTIAL_DERIVATIVES && order > 2))
     return XC_EORDER;
   if (mode == XC_POTENTIAL)
     {
       // GGA potential needs full laplacian
-      if (fun->depends & XC_GRADIENT && !(vars == XC_A_2ND_TAYLOR ||
-				  vars == XC_A_B_2ND_TAYLOR ||
-				  vars == XC_N_2ND_TAYLOR ||
-				  vars == XC_N_S_2ND_TAYLOR))
-	return XC_EVARS;
+      if ((fun->depends & XC_GRADIENT) && !(vars == XC_A_2ND_TAYLOR ||
+					    vars == XC_A_B_2ND_TAYLOR ||
+					    vars == XC_N_2ND_TAYLOR ||
+					    vars == XC_N_S_2ND_TAYLOR))
+	return XC_EVARS | XC_EMODE;
       // No potential for meta gga's
       if (fun->depends & (XC_LAPLACIAN | XC_KINETIC))
 	return XC_EMODE;

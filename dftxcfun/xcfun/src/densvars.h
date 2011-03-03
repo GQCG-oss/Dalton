@@ -44,6 +44,10 @@ struct densvars
 	regularize(n);
 	s = n;
 	break;
+      case XC_A_B_GAA_GAB_GBB_TAUA_TAUB:
+	taua = d[5];
+	taub = d[6];
+	tau = taua + taub;
       case XC_A_B_GAA_GAB_GBB:
 	gaa = d[2];
 	gab = d[3];

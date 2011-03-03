@@ -89,16 +89,15 @@ FUNCTIONAL(XC_PBEC) = {
    -0.216571369852E-12, }
 };
 
-#if 0
-NEW_GGA_FUNCTIONAL(XC_VWN_PBEC);
-SHORT_DESCRIPTION(XC_VWN_PBEC) = "PBE correlation functional using VWN LDA correlation.";
-LONG_DESCRIPTION(XC_VWN_PBEC) =
-	     "PBE correlation functional with VWN LDA correlation.\n"
-	     "J.P. Perdew, K. Burke, and M. Ernzerhof, Generalized\n"
-	     "gradient approximation made simple, "
-	     "Phys. Rev. Lett. 77 (1996) 3865-3868\n"
-	     "This version of PBEc used VWN instead of PW92 as the LDA\n"
-	     "correlation energy.\n"
-	     "Implemented by Ulf Ekstrom\n";
-NO_TEST(XC_VWN_PBEC); 
-#endif
+FUNCTIONAL(XC_VWN_PBEC) = {
+  "PBE correlation functional using VWN LDA correlation.",
+  "PBE correlation functional with VWN LDA correlation.\n"
+  "J.P. Perdew, K. Burke, and M. Ernzerhof, Generalized\n"
+  "gradient approximation made simple, "
+  "Phys. Rev. Lett. 77 (1996) 3865-3868\n"
+  "This version of PBEc used VWN instead of PW92 as the LDA\n"
+  "correlation energy.\n"
+  "Implemented by Ulf Ekstrom\n",
+  XC_DENSITY | XC_GRADIENT,
+  ENERGY_FUNCTION(vwn_pbec)
+};

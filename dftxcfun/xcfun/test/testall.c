@@ -9,7 +9,7 @@
 
 int main(void)
 {
-  int i = 0;
+  int res;
   printf("%s",xcfun_splash());
   printf("XCFun version: %g\n",xcfun_version());
   /*  printf("\nAvailable functionals and settings:\n");
@@ -26,14 +26,14 @@ int main(void)
       printf("\n");
       } */
   printf("Running tests..\n");
-  if (xcfun_test() == 0)
+  if ((res = xcfun_test()) == 0)
     {
       printf("All tests ok\n");
       return 0;
     }
   else
     {
-      printf("Some tests failed\n");
-      return -1;
+      printf("%i tests failed\n",res);
+      return res;
     }
 }
