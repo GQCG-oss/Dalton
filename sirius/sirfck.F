@@ -1,4 +1,4 @@
-
+!#define SIRFCK_DEBUG
 !
 !...   Copyright (c) 2010 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -297,6 +297,8 @@ C           this is e.g. PREHF, i.e. standard HF
             CHIVAL = -1.0D0
          END IF
 #ifdef SIRFCK_DEBUG
+         write(lupri,*) 'sirfck: before calling herfck ...'
+         write(lupri,*) 'SIRFCK: ADDSRI =', ADDSRI
          write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
          write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
          write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
@@ -342,6 +344,9 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
 C
 C        Add Short-range integrals (HF/MC-SRDFT hybrid model)
 C
+#ifdef SIRFCK_DEBUG
+         write(lupri,*) 'add direct sr integrals ? ADDSRI = ', ADDSRI 
+#endif 
          IF (ADDSRI .AND. (DOHFSRDFT.OR.DOMCSRDFT)) THEN
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT))THEN
 C              ... get total DMAT = DC + DV if NASHT.gt.0
@@ -352,8 +357,18 @@ C                  for Hartree SR term
                   JFMAT = 2
                END IF
                DO I = 1,NSR_DMAT
-                  CALL DAXPY(N2BASX,D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+!!! new code !!!
+C
+                  CALL DAXPY(N2BASX,D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
 C                 ... add DV(I) to DC(I)
+!
+! Manu: the core one-index transformed and transition density matrices
+!       now contains the total ones 
+
+!!!!! inital code !!!
+!                 CALL DAXPY(N2BASX,D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+C                 ... add DV(I) to DC(I)
+!!!!!!!!!!!!!!!!!!!!!
                END DO
             ELSE
 C              ... total DMAT = DC when NASHT.eq.0 or CISRDFT
@@ -392,30 +407,102 @@ C              remove any "do exchange" bits
          end do
 #endif
             IF (NSYM.GT.1) THEN
+
+!!!! start new code for symmetry !!!
+                KDMAT = KLAST
+                KLAST = KDMAT + NSR_DMAT*N2BASX
+                LWRK  = LWORK - KLAST + 1
+                IF (KLAST.GT.LWORK)
+     &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
+C
+                DO ISRMAT = 1, NSR_DMAT
+                   IDMAT = JFMAT*(ISRMAT-1) +1
+                   KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
+                   CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
+!                  CALL DAXPY(N2BASX,D1,DMAT(1,IDMAT+1),1,
+!    &                              WRK(KIDMAT),1)
+                END DO 
+C
+                if (atomdf .AND. CHIVAL .LT. D0) then
+C                  hjaaj mar 2006: dens_fit not for short range integrals (yet)
+                   call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
+     &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+                else
+                   CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
+     &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+                end if
+
+!!!! end new code for symmetry !!!
+
+!!!!! start initial code !!!!!!!
 C              HERFCK destroys DMAT when called with symmetry
 C              We need DMAT for the "CALL SRDFT" below
-               KDMAT = KLAST
-               KLAST = KDMAT + NSR_DMAT*N2BASX
-               LWRK  = LWORK - KLAST + 1
-               IF (KLAST.GT.LWORK)
-     &         CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
-               CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
-               if (atomdf .AND. CHIVAL .LT. D0) then
+!*             KDMAT = KLAST
+!*             KLAST = KDMAT + NSR_DMAT*N2BASX
+!*             LWRK  = LWORK - KLAST + 1
+!*             IF (KLAST.GT.LWORK)
+!*   &         CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
+!*             CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
+!*             if (atomdf .AND. CHIVAL .LT. D0) then
 C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
-                 call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
-     &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-               else
-                 CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
-     &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-               end if
+!*               call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
+!*   &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+!*             else
+!*               CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
+!*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+!*             end if
+!!!!! end initial code !!!!!!!
             ELSE
+C
+C Manu - march 2011: allocation of additional memory 
+C                    for total one-index transformed 
+C                    and transition density matrices 
+C                    in order to calculate the corresponding 
+C                    srH Kernel contributions to the hessian. 
+C                    The initial implementation, that used 
+C                    directly DMAT, did not work when the two
+C                    matrices were non-zero (which happens in the linear
+C                    response when the trial vector has both an orbital AND a
+C                    configuration part) because they were not ordered
+C                    one after the other (DTVAO "stands" in between)  
+C                         
+C
+#ifdef SIRFCK_DEBUG
+                write(lupri,*) 'JFMAT =', JFMAT
+#endif 
+                   KDMAT = KLAST
+                   KLAST = KDMAT + NSR_DMAT*N2BASX
+                   LWRK  = LWORK - KLAST + 1
+                   IF (KLAST.GT.LWORK)
+     &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
+C
+                   DO ISRMAT = 1, NSR_DMAT
+                      IDMAT = JFMAT*(ISRMAT-1) +1
+                      KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
+                      CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
+!                     CALL DAXPY(N2BASX,D1,DMAT(1,IDMAT+1),1,
+!    &                              WRK(KIDMAT),1)
+                   END DO 
+
+C
                if (atomdf .AND. CHIVAL .LT. D0) then
 C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
                  call dens_fit(wrk(KFSRAO),dmat,NSR_DMAT,
      &                         ISYMDM,IFCTYP,IPRHER,wrk(KLAST),LWRK)
                else
-                 CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
+#ifdef SIRFCK_DEBUG
+                   write(lupri,*) 'calling herfck with no symmetry!'     
+                   write(lupri,*) 'NSR_DMAT = ', NSR_DMAT
+#endif
+C
+C 
+                       CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
      &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+
+! initial code (DMAT was used instead of WRK(KDMAT))
+!
+!*                     CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
+!*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
                end if
             END IF
 C
@@ -430,6 +517,7 @@ C
             IF (JFMAT .EQ. 1) THEN
                CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1)
             ELSE
+C
                DO I = 1,NSR_DMAT
                   JFSRAO = KFSRAO + (I-1)*N2BASX
                   JF = JFMAT*(I-1)+ 1
@@ -439,8 +527,17 @@ C
             SRINTS = .FALSE.
             IF (NASHT.GT.0) THEN
                DO I = 1,NSR_DMAT
-                 CALL DAXPY(N2BASX,-D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+!!!! new code !!!!!!
+                 CALL DAXPY(N2BASX,-D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
 C                 ... restore DC(I) = DTOT(I) -  DV(I)
+!
+! Manu: the core one-index transformed and transition density matrices
+!       are now restored. 
+!
+!!!! initial code !!!
+C                CALL DAXPY(N2BASX,-D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+C                 ... restore DC(I) = DTOT(I) -  DV(I)
+!!!!!!!!!!!!!!!!!!!!!!!
                END DO
             END IF
          ENDIF
@@ -448,9 +545,12 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
 #ifdef SIRFCK_DEBUG
-           write(lupri,*)
-     &     'SIRFCK: direct short-range contribution to FMAT'
-           call output(WRK(KFSRAO),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+           do i = 1,nsr_dmat
+              write(lupri,*)
+     &        'SIRFCK: direct short-range contribution to FMAT no.', i
+           call output(WRK(KFSRAO+n2basx*(i-1)),1,nbast,1,nbast,
+     &                 nbast,nbast,-1,lupri)
+           end do
            write(lupri,*) 'SIRFCK: FMAT (lr + sr)'
            call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
@@ -693,6 +793,17 @@ C
          DO JSRMAT = 1, NSR_DMAT
           JDMAT = NDOFF*(JSRMAT-1) + 1
           IF (DOATR) THEN
+#ifdef SIRFCK_DEBUG
+              write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
+              write(lupri,*) 'JDMAT = ', JDMAT
+              write(lupri,*) 'JDXAO = ', JDXAO
+              WRITE(LUPRI,*) 'DMAT(1,JDMAT)'
+              call output(DMAT(1,JDMAT),1,NBAST,1,NBAST,NBAST,
+     &                    NBAST,-1,lupri)
+              WRITE(LUPRI,*) 'DMAT(1,JDMAT+1)'
+              call output(DMAT(1,JDMAT+1),1,NBAST,1,NBAST,NBAST,
+     &                NBAST,-1,lupri)
+#endif
 C           we need the symmetric part of DXTOTAO in DMAT(1,JDXAO) for SRDFT :
             IF (NDOFF .EQ. 1) THEN
 C              closed shell SCF case
@@ -724,8 +835,11 @@ C           ... get total DMAT = DC + DV if NASHT .gt. 0
 C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #ifdef SIRFCK_DEBUG
           WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
-!         WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
-!         call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
+          WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
+          call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
+          WRITE(LUPRI,*) 'DMAT(1,JDAO+1), JDAO+1 =',JDAO+1
+          call output(DMAT(1,JDAO+1),1,NBAST,1,NBAST,NBAST,
+     &                NBAST,-1,lupri)
           WRITE(LUPRI,*) 'SIRFCK: DFT_SPINDNS = ', DFT_SPINDNS, 
      &                   'BEFORE SRDFT'
 #endif
