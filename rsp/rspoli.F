@@ -833,9 +833,50 @@ C     Change IFCTYP for all Fa matrices
       write(lupri,*) 'RSPOLI: before calling sirfck'
       write(lupri,*) 'RSPOLI: '
 #endif
-C Manu test !!!!!!!!!!!
-C     IFCTYP(1)=1  
-C Manu test !!!!!!!!!!!
+! Manu test !!!!!!!!!!!
+!     IFCTYP(1)=1  
+!     IFCTYP(3)=1  
+!     ISYMDM(1)=5 
+#ifdef DEBUG_RSPOLI
+      print *, 'just called SIRFCK'
+      write(lupri,*) 'before call sirfck in rspoli'
+      IF (DOFXC.AND.NOSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KFXCAO)='
+       CALL OUTPUT(WRK(KFXCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (DOFXV.and.NOSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KFXVAO)='
+       CALL OUTPUT(WRK(KFXVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (DOFTC.and.NCSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KFTCAO)='
+       CALL OUTPUT(WRK(KFTCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (NCSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KFTVAO)='
+       CALL OUTPUT(WRK(KFTVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+!!!   
+!!!   print also density matrices
+!!!
+      IF (DOFXC.AND.NOSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KDXCAO)='
+       CALL OUTPUT(WRK(KDXCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (DOFXV.and.NOSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KDXVAO)='
+       CALL OUTPUT(WRK(KDXVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (DOFTC.and.NCSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KDTCAO)='
+       CALL OUTPUT(WRK(KDTCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+      IF (NCSIM.gt.0) THEN
+       write(lupri,*) 'WRK(KDTVAO)='
+       CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+#endif
+! Manu test !!!!!!!!!!!
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
 #ifdef DEBUG_RSPOLI
@@ -1189,6 +1230,7 @@ C
                   CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
      *                                        KZVAR,2,1,LUPRI)
                   write(lupri,*) 'kzvar = ', kzvar  
+                  write(lupri,*) 'kzconf = ', kzconf  
                 END IF
 #endif
 C
@@ -1200,10 +1242,18 @@ C
      &                  EVECS(JEVECS),WRK(KSRW),DUMMY,
      &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
      &                  WRK(KFREE),LFREE)
+#ifdef DEBUG_RSPOLI
+               write(lupri,*) 'Z part ... V[2c]'
+               write(lupri,*) 'IREFSY = ', IREFSY
+               write(lupri,*) 'KSYMST = ', KSYMST
+#endif
+
                IF (IREFSY .EQ. KSYMST) THEN
                   FAC = DDOT(KZCONF,EVECS(JEVECS),1,WRK(KCREF),1)
                   CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JEVECS),1)
-                  IF (IPRRSP.GT.101) THEN
+               END IF
+C
+               IF (IPRRSP.GT.101) THEN
                     WRITE(LUPRI,*)
      *              ' srDFT Z CONF  PART OF LINEAR TRANSFORMED ',
      *              'CONF TRIAL VECTOR'
@@ -1211,18 +1261,15 @@ C
      &              ', factor = ',-FAC
                     CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
      *                                        KZVAR,2,1,LUPRI)
-                  END IF
                END IF
-C
 C
 ! Manu: build the Y part of the sigma vector (due to the Vsr[2c] operator)
 C
 C
-               JYEVECS=JEVECS+KZVAR  ! Manu: not sure this will work when there
-!                                            is both a conf and orbital part ... 
+               JYEVECS=JEVECS+KZVAR  
+!                                         
 C
 C        
-!#ifdef compile
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      &                  EVECS(JYEVECS),WRK(KSRW),DUMMY,
      &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
@@ -1232,13 +1279,17 @@ C
                   CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JYEVECS),
      &                       1)
 !
-!               For the Y conf. part, the transition density matrix changes sign.
-!               Therefore we have to multiply the Vsr[2c] contribution to 
-!               the Y part of the sigma vector by -1 
 !
-                  CALL DSCAL(KZCONF,DM1,EVECS(JYEVECS),1)
 
-                  IF (IPRRSP.GT.101) THEN
+               END IF
+!
+! Manu:        For the Y conf. part, the transition density matrix changes sign.
+!              Therefore we have to multiply the Vsr[2c] contribution to 
+!              the Y part of the sigma vector by -1 
+!
+               CALL DSCAL(KZCONF,DM1,EVECS(JYEVECS),1)  
+!
+               IF (IPRRSP.GT.101) THEN
                     WRITE(LUPRI,*)
      *              ' srDFT Z and Y CONF  PART OF LINEAR TRANSFORMED ',
      *              'CONF TRIAL VECTOR'
@@ -1246,9 +1297,7 @@ C
      &              ', factor = ',-FAC
                     CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
      *                                        KZVAR,2,1,LUPRI)
-                  END IF
                END IF
-!#endif 
 C
 C
 C     Special MCSRDFT correction, corresponding to the effective operator
