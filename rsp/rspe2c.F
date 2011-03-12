@@ -1571,7 +1571,7 @@ C
                WRK(ISTBO-1+I) = WRK(KBOVEC-1+I)
             END DO
          END IF
-         NBPREV_here = KOFFTY + KZRED + NTSYM
+         NBPREV_here = KOFFTY + KZRED + NTSIM
          CALL RSPORT(WRK(KBCVEC),NLSIM,NBPREV_here,IBTYP,
      *               THRLDV,WRK(KWRK1),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
