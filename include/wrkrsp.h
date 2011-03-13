@@ -4,12 +4,12 @@
 #else
       DOUBLE PRECISION AFREQ
 #endif
-      INTEGER
-     *                KSYMOP, KZVAR,  KZYVAR, KZCONF, KZYCON, KZWOPT, 
-     *                KZYWOP, KZRED , KZYRED, KEXCNV, KEXSIM, KEXSTV,
-     *                KLRSTV, JEXSIM, KOFFTY, KCONV,  KSYMST
-      COMMON /WRKRSP/ AFREQ,  
-     *                KSYMOP, KZVAR,  KZYVAR, KZCONF, KZYCON, KZWOPT, 
-     *                KZYWOP, KZRED , KZYRED, KEXCNV, KEXSIM, KEXSTV,
-     *                KLRSTV, JEXSIM, KOFFTY, KCONV,  KSYMST, 
-     *                RESTPP, ABCHK,  ABSYM,  RESTLR, RESTC6, DETERM
+      INTEGER                                                           &
+     &                KSYMOP, KZVAR,  KZYVAR, KZCONF, KZYCON, KZWOPT,   &
+     &                KZYWOP, KZRED , KZYRED, KEXCNV, KEXSIM, KEXSTV,   &
+     &                KLRSTV, JEXSIM, KOFFTY, KCONV,  KSYMST
+      COMMON /WRKRSP/ AFREQ,                                            &
+     &                KSYMOP, KZVAR,  KZYVAR, KZCONF, KZYCON, KZWOPT,   &
+     &                KZYWOP, KZRED , KZYRED, KEXCNV, KEXSIM, KEXSTV,   &
+     &                KLRSTV, JEXSIM, KOFFTY, KCONV,  KSYMST,           &
+     &                RESTPP, ABCHK,  ABSYM,  RESTLR, RESTC6, DETERM
