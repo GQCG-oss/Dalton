@@ -1694,7 +1694,7 @@ C  /* Deck r12gradbd */
       integer lwork,kxmujkl,kxdmmu,kend1,nmum,luvajkl
       integer isymkl,isymij,isymi,isymj,idxkl,koffd,isymaj
       integer isymai,icou3,imatmuj(8,8),ntota,ntoti,ntotj,isyml
-      integer mbas1t,smujkl,koffc,lusifc,lwrk1,kcmo,ntota1,kxdnumu
+      integer smujkl,koffc,lusifc,lwrk1,kcmo,ntota1,kxdnumu
       integer kxpjkl,ntklpj,isymmua,iglmrv(8,8),isymmu
       integer kxajkl,ntotmu,isymmuj,kxpjklz,icount2,icou2,icount7
       integer nr1xbas(8),koff,idxji,idxij,kzmunu,kxdpmu,ir1bas(8,8)
@@ -1794,10 +1794,8 @@ C  /* Deck r12gradbd */
       end do
  
       nr1bast = 0
-      mbas1t  = 0
       do isyma = 1,nsym
          nr1bast = nr1bast + nr1bas(isyma)
-         mbas1t   = mbas1t   + mbas1(isyma) 
       enddo
 
       ntklpj = 0
@@ -2211,8 +2209,7 @@ c---------------------------------------------------------------------
       call cc_r12fsym(imatmunu,work(kzmunu),work(dens))
 
        
-      call r12exdens(res,work(kcmo),work(dens),work(kend1),mbas1t,
-     &               lwrk1)
+      call r12exdens(res,work(kcmo),work(dens),work(kend1),lwrk1)
 
  
       call qexit('r12gradbd')
@@ -2220,7 +2217,7 @@ c---------------------------------------------------------------------
 c------------------------------------------------------------------------
 C=====================================================================*
 C  /* Deck r12exdens*/
-      subroutine r12exdens(res,cmo,dens,work,mbas1t,lwork)
+      subroutine r12exdens(res,cmo,dens,work,lwork)
       implicit none
 #include <ccsdsym.h>
 #include <ccorb.h>
@@ -2233,7 +2230,7 @@ C  /* Deck r12exdens*/
 c#include <inforb.h>
       integer kcmo,lwork,kfrsav,kfree,lfree,kfvao,kfcao,kdcao,kdvao,kdv
       integer pq,kcao,isym,ioff,ioff1,nnbast,kexia,isymi,NNORB1
-      integer kctao,koff,index,ISYMAI,isyma,mbas1t
+      integer kctao,koff,index,ISYMAI,isyma
       integer kdens,idxkl,idxlk,idxij,idxji,idxklij,idxijkl,idxijlk
       integer idxjikl,isymj,isymij,isymkl,isymk,isyml,idxklji
       integer koffc,kexiaz,noffset,nvir0(8),kextia,kfctao

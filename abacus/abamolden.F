@@ -297,7 +297,7 @@ C           call traorb to generate SO to AO transformation
      $                 UCMO(1,jORB),1,0.0D0,ORBVEC,1)
                   DO IB=1,NBAST
                      WRITE(LUMOLDEN,'(I5,1X,2F15.6)') 
-     $                    IB,ORBVEC(JAOAO(IB,1)+JAOAO(IB,2))
+     $                    IB,ORBVEC(JAOAO(IB,2))
                   END DO
                END DO
             END DO

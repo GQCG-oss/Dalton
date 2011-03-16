@@ -29,40 +29,16 @@ C
 !  then check all setting of MXDIIS = 0 and MAXFCK = 0 (I think MAXFCK
 !  also will work if .FREEZE implemented in FCKEIG).
 !
-!
-!Revision 1.13  2001/03/12 09:03:22  hjj
-!version sendt til Patrick 12.mar.2001
-!
-!Revision 1.12  2001/02/21 12:39:18  hjj
-!version sendt til Patrick 21.feb.2001
-!
 !Revision 1.9  2001/02/01 17:30:12  hjj
 !restart DIIS if DIIS is stalled ...
 !
 !Revision 1.8  2001/01/31 13:49:00  hjj
 !allocate FQ matrix for open shell before WRSIFC
 !
-!Revision 1.7  2001/01/31 13:43:48  hjj
-!dalton1.1 beta 01aug2000
-!
 !Revision 1.6  2000/05/24 12:28:27  hjj
 !1) fixed solvent calculations (DIFDEN must be false for solvent)
 !2) fixed WRSIFC call for open shell and solvent
 !   (required change in SOLFCK also)
-!
-!Revision 1.5  2000/05/16 08:31:17  hjj
-!bugfix, s/WORK,LWORK/WRK(KFREE),LFREE/ (bug found with ftnchek)
-!
-!Revision 1.4  2000/05/01 13:22:04  hjj
-!removed obsolete KAVER test.
-!
-!revision 1.2 + 1.3 April 2000 hjj
-!1)bug fix from bug made by hjaaj in aug 99:
-!  DIFDEN was not reset to false when threshold was changed.
-!2)corrected error in print statement
-!3)comments and polishing
-!4)restructured test of if new LUINDX file needs to be written
-! (removed again IOPRH1 and FLAGSV in parameter list, this is more "clean").
 !=============================================================================
 !970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC and more
 !  oscillations)
@@ -75,8 +51,6 @@ C
 !FCKEIG: also AUTOCC for open shell plus smaller changes.
 !9505-k.ruud
 !c: implemented AUTOCC option
-!950517-hjaaj
-!DISCTL: fixed MEMCHK error caused in RHFENR section; new call to READMO
 !940916-hjaaj
 !DISCTL: changed print of energy from F18.12 to F22.12
 !  (to avoid stars for e.g. Pb)
@@ -406,29 +380,23 @@ C
       END IF
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
-         WRITE (LUW4,'(/A/A)')
+         WRITE (LUW4,'(/A)')
      &      ' Iter      Total energy        Error norm    Delta(E)'//
-     &      '  DIIS dim.',
-     &      ' ----------------------------------------------------'//
-     &      '-----------'
+     &      '  DIIS dim.'
       ELSE IF (IOPRHF .EQ. 0) THEN
-         WRITE (LUW4,'(/A,I4,A//A/A)')
+         WRITE (LUW4,'(/A,I4,A//A)')
      &      ' Automatic occupation of symmetries with',NRHFEL,
      &      ' electrons.',
      &      ' Iter     Total energy    Error norm  Delta(E)  '//
-     &      '  HF occupation',
-     &      ' -----------------------------------------------------'//
-     &      '------------------------'
+     &      '  HF occupation'
       ELSE
-         WRITE (LUW4,'(/A,I4,A/A//A/A)')
+         WRITE (LUW4,'(/A,I4,A/A//A)')
      &      ' Automatic occupation of symmetries with',NRHFEL,
      &      ' electrons.',
      &      ' "sym." is the symmetry of the one open shell orbital '//
      &      'in table below.',
      &      ' Iter     Total energy    Error norm  Delta(E)  '//
-     &      'sym.  closed shell occupation',
-     &      ' -----------------------------------------------------'//
-     &      '------------------------'
+     &      'sym.  closed shell occupation'
       END IF
       END IF
       END IF
@@ -532,6 +500,9 @@ C      IF (QMMM .AND. NODTOT .GE. 1) CALL PARQMMM_INIT()
          ITNOCC = ITNOCC + 1
          INDEVC = MOD(JTDIIS-1,MXERRV) + 1
          NEVC   = MIN(MXERRV,JTDIIS)
+         WRITE(LUW4,'(A)')
+     &      ' -----------------------------------------------------'//
+     &      '------------------------'
 C
 Cholesky (CHOINT): No screening.
 C
@@ -909,10 +880,10 @@ C           Too many DIIS iterations, save final CMO before exit
 C           ... REWIT1 false: do not destroy any GEOWALK information
             GO TO 1100
          END IF
- 4110 FORMAT(' DIIS converged in',I4,' iterations !')
- 4115 FORMAT(' - total time used in SIRFCK        : ',F10.2,' seconds')
- 4116 FORMAT(' - total time used for ',A13,': ',F10.2,' seconds')
- 4120 FORMAT(' DIIS aborted because max DIIS iterations reached !')
+ 4110 FORMAT(/' *** DIIS converged in',I4,' iterations !')
+ 4115 FORMAT( '   - total time used in SIRFCK :'  ,F18.2,' seconds')
+ 4116 FORMAT( '   - total time used for ',A13,': ',F10.2,' seconds')
+ 4120 FORMAT(/' !!! DIIS aborted because max DIIS iterations reached !')
 C
 Chj 990819: use DIFDEN more often
 Chj was: IF (IFTHRS .GE. 12 .AND. .NOT. FLAG(49)) DIFDEN = .TRUE.

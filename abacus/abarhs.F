@@ -343,7 +343,7 @@ C
                WRITE (LUPRI,'(A,I5)') ' Print level in PTRAN:',IPRPTR
             END IF
             IF (IPRSOR .NE. IPRDEF) THEN
-               WRITE (LUPRI,'(A,I5)') ' Print level in PSRT :',IPRSOR
+               WRITE (LUPRI,'(A,I5)') ' Print level in PSORT:',IPRSOR
             END IF
             IF (NODPTR) WRITE(LUPRI,'(A)')
      &         ' Test calculation transformed two-electron densities.'

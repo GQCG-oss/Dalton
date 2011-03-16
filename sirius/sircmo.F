@@ -1447,8 +1447,8 @@ C *** FORMAT statements
 C
  2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
      &       /' ------------------------------------------')
- 2600 FORMAT(/' Orbital   ',7I9)
- 2620 FORMAT( ' Sup.sym.  ',7I9)
+ 2600 FORMAT(/'    Orbital ',7I9)
+ 2620 FORMAT( '    Sup.sym.',7I9)
  2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
 C
 C *** Print molecular orbitals

@@ -2197,15 +2197,14 @@ C
             END IF
          END IF
 C
-C     Gradient
+C     Orbital exponent gradient or molecular gradient
 C
          IF (EXPGRD) THEN
             CALL HEADER(
      &         'Orbital-exponent gradient for all atoms (au)',-1)
-            WRITE (LUPRI,'(4X,2A)') ' #   atom Z   deg l       ',
+            WRITE (LUPRI,'(4X,2A/)') ' #   atom Z   deg l       ',
      &          '        exponent           grad'//
      &          '           grad ln          grad ln'
-            WRITE (LUPRI,'()')
             JCNT = 1
             ALPNRM = D0
             ALPNRL = D0
@@ -2221,8 +2220,8 @@ C
                GRDL = GRAD*PRIEXP(I)
 C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
                WRITE (LUPRI,
-     &              '(1X,A,I3,3X,A,I2,I5,2X,A,F23.10,2F17.10,1P,D17.8)')
-     &              '##',I,NAMDEP(ICNT)(1:4),ICHRG,
+     &              '(A,I3,3X,A,I2,I5,2X,A,F23.10,2F17.10,1P,D17.8)')
+     &              ' ##',I,NAMDEP(ICNT)(1:4),ICHRG,
      &               MLT,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL,GRDL
                ALPNRM = ALPNRM + FLOAT(MLT)*GRAD*GRAD 
                ALPNRL = ALPNRL + FLOAT(MLT)*GRDL*GRDL 
@@ -2303,7 +2302,7 @@ C
             CALL PRIGRD(GRDMOL,CSTRA,SCTRA)
          END IF
 C
-C     Hessian
+C     Molecular Hessian
 C
 C
 C     *****************************************************************
@@ -2522,7 +2521,7 @@ C
       ENDIF
 cLig <<
 C
-C     Susceptibilities
+C     Magnetic Susceptibilities
 C
       IF (MAGSUS) THEN
          CALL SUSRES(IPRDEF)

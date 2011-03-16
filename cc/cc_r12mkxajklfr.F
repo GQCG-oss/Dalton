@@ -1292,7 +1292,7 @@ C  /* Deck r12gradbfr */
       integer idxjikl,idxijkl,idxijlk,koff,ntota,ntoti
       integer kuajkl,ktajkl,ktijal,kcuia,kcuai,lcuai,lcuia
       integer kssijal,ksrajkl,kstijal,idxklji,koff1,kdjikl
-      integer kcmo,dens,nrhffrt,kuijals,kqijals,kssajkl,mbas1t
+      integer kcmo,dens,nrhffrt,kuijals,kqijals,kssajkl
 
       integer kccr12,krsing,krtrip,kctil,lccr12,lctil
       integer lusifc,nrhftria,n2,lu43,ntotk
@@ -1312,10 +1312,8 @@ C  /* Deck r12gradbfr */
 
 
       nrhffrt = 0
-      mbas1t  = 0
       do isym = 1, nsym
-         nrhffrt     = nrhffrt+ nrhffr(isym)
-         mbas1t      = mbas1t + mbas1(isym)
+         nrhffrt = nrhffrt + nrhffr(isym)
       end do
 
       icou3 = 0

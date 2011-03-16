@@ -721,7 +721,7 @@ c---------------------------------------------------------------------
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym
       integer kt,idx,koffj,koffa,koffk,koffl
-      integer mbas1t,ibasi(8),icoun1,kl,aj,iorb1(8),ajkl
+      integer ibasi(8),icoun1,kl,aj,iorb1(8),ajkl
       integer imatmunu(8,8)
 #if defined (SYS_CRAY)
       real blajkl(*),sajkl(*)
@@ -732,10 +732,8 @@ c
       call qenter('cc_r12fsym')
 c
       nbast = 0
-      mbas1t = 0
       do isym = 1, nsym
          nbast      = nbast + nbas(isym)
-         mbas1t    = mbas1t + mbas1(isym)
       end do
 
       icoun1 = 0

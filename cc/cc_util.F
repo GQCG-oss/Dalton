@@ -87,7 +87,7 @@ C#include <implicit.h>
       LOGICAL   R12CON
       INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
      &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
-      integer isaibj, mbas1t, icoun1, icoun2, isym, isym1, isym2,
+      integer isaibj, icoun1, icoun2, isym, isym1, isym2,
      &        isymbj, isymck, isymdk, nt1ai, lenai, lenmin, ndisai,
      &        nbatai, ilstai, ibatai, ifstai, kscr1, kscr2,
      &        kscr3, kend, lwrk1, koff1, isymk, idelta, id, ioff, klen,
@@ -125,7 +125,6 @@ C     Define offsets/dimensions:
         CALL ICOPY(64,IT1AM,1,IT1CK,1)
         CALL ICOPY(64,IT2SQ,1,IT2SQP,1)
       END IF
-      MBAS1T = 0
       ICOUN1 = 0
       ICOUN2 = 0
       DO ISYM = 1, NSYM
@@ -147,7 +146,6 @@ C     Define offsets/dimensions:
           NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
         END DO
 
-        MBAS1T = MBAS1T + MBAS1(ISYM)
         IBASX(ISYM) = ICOUN1
         ILAMDX(ISYM) = ICOUN2
         ICOUN1 = ICOUN1 + MBAS2(ISYM)
@@ -600,7 +598,6 @@ C     Define offsets/dimensions:
         CALL ICOPY(64,IT1AM,1,IT1CK,1)
         CALL ICOPY(64,IT2SQ,1,IT2SQP,1)
       END IF
-      MBAS1T = 0
       ICOUN1 = 0
       ICOUN2 = 0
       DO ISYM = 1, NSYM
@@ -622,7 +619,6 @@ C     Define offsets/dimensions:
           NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
         END DO
 
-        MBAS1T = MBAS1T + MBAS1(ISYM)
         IBASX(ISYM) = ICOUN1
         ILAMDX(ISYM) = ICOUN2
         ICOUN1 = ICOUN1 + MBAS2(ISYM)
@@ -1366,7 +1362,7 @@ c /* deck cc_iajb2 */
       
       INTEGER ISYMB0, ISYMBB, ISYDEL, ISY0IAJ, ISYBIAJ, IRECORD
       INTEGER LEN0,IADR0,LENB,IADRB,KEND1,LWRK1,KX0IAJ,KXBIAJ,
-     &        IBASTYP, IBASTYPST, IBASTYPND, MBAS1T, IBASX(8), ISYM, 
+     &        IBASTYP, IBASTYPST, IBASTYPND, IBASX(8), ISYM, 
      &        IDST, IDND
 
 *---------------------------------------------------------------------*
@@ -1377,10 +1373,8 @@ c /* deck cc_iajb2 */
         IBASTYPND = 2 
 
         IBASX(1) = 0
-        MBAS1T = 0
         DO ISYM = 1,NSYM
           IF (ISYM.GT.1) IBASX(ISYM) = IBASX(ISYM-1)+MBAS2(ISYM-1)
-          MBAS1T = MBAS1T + MBAS1(ISYM) ! # primary. AOs in total
         END DO
   
       ELSE ! default: delta runs over orbital basis 1...nbas

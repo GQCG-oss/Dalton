@@ -26,24 +26,24 @@ c===========================================================================
 c/* Comdeck comments */
 c  950505-hjaaj: changed print such that no print if IPRINT .le. 2
 c  *** PRT_COMMENTS
-c  910207  PSORG/PSRT error for cases in which NBLOCK is very large
+c  910207  PSORG/PSORT error for cases in which NBLOCK is very large
 c          but NUMP is relatively small (many centres with small
 c          basis sets).  This is a failure to reset the slice and pass
 c          counts (if necessary) if the number of blocks in one
 c          slice exceeds MAXLOC.  This involves extending the tests
 c          in the loop nest in PSORG and changing pointer assignments
-c          in PSRT
-c  910105  Corrected error in PSORG (PSRT was called with MEMS
+c          in PSORT
+c  910105  Corrected error in PSORG (PSORT was called with MEMS
 c          as available memory instead of MEMMAX) and two errors
-c          in PSRT.  First was test on computed ITAB(ITABI), which
+c          in PSORT.  First was test on computed ITAB(ITABI), which
 c          was reset if .LT. 0 --- should have been .LE. 0.
 c          Second was that if LASTAD() was -1, the whole write of
 c          the P block was skipped --- must write zero block.  We
 c          need to look at compression for this.  Also, HJJ:s comment
 c          of 890529 should be looked at closely.
 c  *** hj_comments
-c  900508: Corrected error in PSRT. IPQRS set to 0 at 1000
-c  890529: something is very fishy about PSRT for multiple passes,
+c  900508: Corrected error in PSORT. IPQRS set to 0 at 1000
+c  890529: something is very fishy about PSORT for multiple passes,
 c          (I think), from a quick glance it seems as if IPQRS is
 c          only compared to a lower limit:
 c                  IF (IPQRS .LT. IPQRST) GOTO 40
@@ -1453,8 +1453,8 @@ C
       JSORT  = JBIN   + LDABUG
       JSORT  = IRAT*(JSORT/IRAT) + 1
       LSORT  = LWORK  - (JSORT/IRAT - 1)
-      CALL PSRSET(IPRINT)
-      CALL PSRT(IWORK(JBUF),IWORK(JRBUF),LBUF,
+      CALL PSORT_SET(IPRINT)
+      CALL PSORT(IWORK(JBUF),IWORK(JRBUF),LBUF,
      1          IWORK(JBIN),IWORK(JBIN),LDABUF,
      2          IWORK(JPOINT),IWORK(JLSTD),IWORK(JITAB),
      3          IWORK(JNTOP),IWORK(JSORT),MAXBIN,NPS,NPS1,
@@ -1520,8 +1520,8 @@ C
       CALL QEXIT('PSIZE')
       RETURN
       END
-C  /* Deck psrt */
-      SUBROUTINE PSRT(IBUF,BUF,LBUF,IBIN,BIN,LDABUF,IPOINT,LASTAD,
+C  /* Deck PSORT */
+      SUBROUTINE PSORT(IBUF,BUF,LBUF,IBIN,BIN,LDABUF,IPOINT,LASTAD,
      1                ITAB,NTOP,SORT,MAXBIN,NPOINT,NPS1,
      2                MEMS,NPTOT,IPRINT,LSORT,ANTI,PANTI)
 #include <implicit.h>
@@ -1567,7 +1567,7 @@ C
       LIOFF(I)  = NDIMI*(I-1) + NOFFR
       LISOFF(I) = NDIMI*(I-1)
 C
-      CALL QENTER('PSRT')
+      CALL QENTER('PSORT')
 C
       LDABUG = LDABUF + IRAT*LDABUF + 2
 C
@@ -1887,7 +1887,7 @@ C
          DO 83 I = 1,NTAB
             IFIN = IFIN + ITAB(I)
 83       CONTINUE
-         IF (IFIN .GT. LSORT) CALL STOPIT('PSRT',' ',IFIN,LSORT)
+         IF (IFIN .GT. LSORT) CALL STOPIT('PSORT',' ',IFIN,LSORT)
          CALL DZERO(SORT,IFIN)
          IF (LASTAD(ICHAIN) .EQ. -1) GOTO 95
 C
@@ -1969,11 +1969,11 @@ C
          LUPAO = LUPMAT
       END IF
 #endif
-      CALL QEXIT('PSRT')
+      CALL QEXIT('PSORT')
       RETURN
       END
-C  /* Deck psrset */
-      SUBROUTINE PSRSET(IPRINT)
+C  /* Deck PSORT_SET */
+      SUBROUTINE PSORT_SET(IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
@@ -1987,7 +1987,7 @@ C  /* Deck psrset */
       PARAMETER (IFIELD = 8)
 #include <ibtfun.h>
 C
-      CALL QENTER('PSRSET')
+      CALL QENTER('PSORT_SET')
       NORB = 0
       CALL IZERO(IRREP,MXCORB)
       DO 100 IREP = 0, MAXREP
@@ -2006,7 +2006,7 @@ C
   300       CONTINUE
   200    CONTINUE
   100 CONTINUE
-      CALL QEXIT('PSRSET')
+      CALL QEXIT('PSORT_SET')
       RETURN
       END
 C  /* Deck ptrtst */

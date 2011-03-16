@@ -609,7 +609,7 @@ C       KPRIM   - max number of primitives
 C
 C      (Large/small)
 C       NONT            (KATOM)         - number of symmetry independent
-C                                         centres for this atomic type
+C                                         centers for this atomic type
 C       IQM             (KATOM)         - highest L-value
 C       NBLCK           (KATOM)         - number of AO-blocks for a given
 C                                         atomic type
@@ -1666,7 +1666,7 @@ C
      &                'the QM system.')
           END IF
 C
-C 1: Testing if number of QM nuclei exceeds MXCENT_QM=120(default)
+C 1: Testing if number of QM nuclei exceeds MXCENT_QM in mxcent.h
 C
           JK = 0
           DO 655 IK = 1, NCTOT
@@ -1752,11 +1752,10 @@ C
       END ! SUBROUTINE BASINP
 C  /* Deck cntinp */
       SUBROUTINE CNTINP(LUINFO,NONT,Q,Q_EXPONENT,NSYMOP,ANG,MBSI,
-     $     RADIUS_PCM, ALPHA_PCM)
-C     MBSI has been added (WK/UniKA/04-11-2002).
+     &                  RADIUS_PCM, ALPHA_PCM)
 C*****************************************************************************
 C
-C        Read and process data about symmetry independent centers
+C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1766,9 +1765,9 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "dummy.h"
 #include "codata.h"
-      PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #include "cbirea.h"
 C
+      PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
       LOGICAL ANG
       CHARACTER*4 FRMT
 
@@ -1790,13 +1789,13 @@ C
       NQ = NINT(Q)
 C
       IF (GAUNUC.AND.(NQ.GT.0)) THEN
-        IF(Q_EXPONENT.LE.D0) THEN
-           CALL NUCSIZ(NQ,GEXP)
-        ELSE
-           GEXP = Q_EXPONENT
-        ENDIF
-        IF (IPREAD.GE.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
-     &  '  : Exponent for nuclear gaussian charge distribution : ',GEXP
+         IF(Q_EXPONENT.LE.D0) THEN
+            CALL NUCSIZ(NQ,GEXP)
+         ELSE
+            GEXP = Q_EXPONENT
+         ENDIF
+         IF (IPREAD.GE.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
+     &   '  : Exponent for nuclear gaussian charge distribution : ',GEXP
       ELSE
          GEXP = D0
       END IF
@@ -1832,7 +1831,7 @@ C       sep05-hjaaj: allow both e.g. 'H ' and ' H' as names
         READ (MLINE(NMLINE),FRMT) NAMN(NCTOT)
         IF (NAMN(NCTOT)(1:4) .EQ. '    ' .AND.
      &      NQ .GE. 0 .AND. NQ .LE.NSYMB) THEN
-           NAMN(NCTOT)(1:2) = ASYMB(NQ)
+           WRITE(NAMN(NCTOT),'(A2,I2)') ASYMB(NQ), N
         END IF
 C
 C       951115-hjaaj: NAMN() must never be read with free format
@@ -2018,7 +2017,6 @@ C
      &          SEG(KBLOCK,3),
      &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
-      CHARACTER*1 SPDCAR
 
 #include "gnrinf.h"
 
@@ -2264,7 +2262,7 @@ C*****************************************************************************
      &          CPRIM (KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
-      CHARACTER*1  SPDCAR, KASYM(3,3)
+      CHARACTER*1  KASYM(3,3)
       CHARACTER*(6*MXQN+3) TSTRING(MXBSETS_TOT)
       CHARACTER*37 SET_TYPE(MXBSETS_TOT)
       DIMENSION NPRIM(MXBSETS_TOT), NCONT(MXBSETS_TOT)
@@ -2563,7 +2561,8 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "maxaqn.h"
-      CHARACTER TSTRING*(6*MXAQN+3),SPDCAR*1
+      CHARACTER TSTRING*(6*MXAQN+3)
+      CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include "ccom.h"
 C*****************************************************************************
@@ -2572,7 +2571,7 @@ C*****************************************************************************
 C*****************************************************************************
 C * P R I M I T I V E S:
 C*****************************************************************************
-      IBLOCK = 0
+      JBLOCK = 0
       NPRIM = 0
       DO 100 I = 1,IQM
          IPRIM  = 0
@@ -2580,9 +2579,9 @@ C*****************************************************************************
          NCOMP = KHK(I)
 C
          DO 200 J = 1,JCO(I)
-            IBLOCK = IBLOCK + 1
-            IPRIM  = IPRIM  + NUC(IBLOCK)
-            NPRIM  = NPRIM  + NCOMP*NUC(IBLOCK)
+            JBLOCK = JBLOCK + 1
+            IPRIM  = IPRIM  + NUC(JBLOCK)
+            NPRIM  = NPRIM  + NCOMP*NUC(JBLOCK)
   200    CONTINUE
 C
          IF (IPRIM.GT.0) THEN
@@ -2614,15 +2613,15 @@ C*****************************************************************************
 C*****************************************************************************
 C * S H E L L S:
 C*****************************************************************************
-      IBLOCK = 0
+      JBLOCK = 0
       NCONT  = 0
       DO 400 I = 1,IQM
          ISHELL = 0
          NCOMP = KHK(I)
          DO 500 J = 1,JCO(I)
-            IBLOCK = IBLOCK + 1
-            ISHELL = ISHELL + NRC(IBLOCK)
-            NCONT  = NCONT  + NCOMP*NRC(IBLOCK)
+            JBLOCK = JBLOCK + 1
+            ISHELL = ISHELL + NRC(JBLOCK)
+            NCONT  = NCONT  + NCOMP*NRC(JBLOCK)
   500    CONTINUE
          IF(ISHELL.GT.0) THEN
             NDIG = 3
@@ -2661,7 +2660,7 @@ C  /* Deck gtoinp */
 #include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
-      CHARACTER*1 SPDCAR, FRMT
+      CHARACTER*1 FRMT
       CHARACTER*8 FMT1
       CHARACTER*12 FMT2
 C
@@ -3087,24 +3086,25 @@ C
 C
       IFSTSHAUX = 0
       ICENT  = 0
-      IBLOCK = 0
-      DO 10 I = 1,NONTYP
-         DO 20 N = 1,NONT(I)
+      JBLOCK = 0
+      DO 10 I = 1,NONTYP ! number of atomic types
+         DO 20 N = 1,NONT(I) ! number of symmetry independent centers of
+                             ! this type
             ICENT = ICENT + 1
-            KBCH = IBLOCK
+            KBCH = JBLOCK
             NDEG = NUCDEG(ICENT)
-            DO 30 J = 1,IQM(I)
+            DO 30 J = 1,IQM(I) ! ang.mom. 1=s, 2=p, 3=d, etc.
                KKK = 0
                NCOMP = KHK(J)
                NCCMP = KCK(J)
                SPHER = SPH(J)
-               DO 40 K = 1, JCO(J,I)
-                  KBCH = KBCH + 1
+               DO 40 K = 1, JCO(J,I) ! number of CGTOs in this AO block for this ang.mom.
+                  KBCH  = KBCH + 1 ! next block
                   NCONT = NRC(KBCH)
                   IF(NCONT.GT.MXCONT) GOTO 5000
-                  DO 50 KK = 1, NCONT
-                     KKK = KKK + 1
-                     ISHELL = ISHELL + 1
+                  DO 50 KK = 1, NCONT ! AO shell conunter for this block
+                     KKK    = KKK + 1 ! local AO shell counter for this ang.mom.
+                     ISHELL = ISHELL + 1 ! global AO shell couunter
                      !set the pointer to the first shell for density-fitting
                      !auxiliary basis
                      IF ( (LCOMP.EQ.3) .AND. (IFSTSHAUX.EQ.0) ) THEN
@@ -3116,9 +3116,9 @@ C       NUCO    - number of uncontracted functions
 C       NRCO    - number of contracted functions
 C     Data on a given shell in an AO-block:
 C       NCENT   - index of symmetry independent center
-C       NUMCF   - index of shell in AO-block
+C       NUMCF   - index of contracted function (shell) in AO-block
+C       NUMCFT  - total index of contracted function (shell) in AO-blocks of this ang.mom.
 C       NBCH    - index of block in AO-vector
-C       LAMN    - name of center
 C       ISTBAO  - stabiliser: basic sym. op. that do not move center
 C       NHKT    - angular quantum number (s=1,p=2,d=3 etc.)
 C       KHKT    - number of spherical (Cartesian) components
@@ -3181,7 +3181,7 @@ C
    40          CONTINUE ! DO 40 K = 1, JCO(J,I)
    30       CONTINUE ! DO 30 J = 1,IQM(I)
    20    CONTINUE ! DO 20 N = 1,NONT(I)
-         IBLOCK = IBLOCK + NBLCK(I)
+         JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE ! DO 10 I = 1,NONTYP
 C
       !Add exp(0) function (needed in 2- and 3-index integrals)
@@ -3277,12 +3277,12 @@ C
       IPRIMD = 0
       IPRIM =  0
       ICENT  = 0
-      IBLOCK = 0
+      JBLOCK = 0
       DO 100 I = 1, NONTYP
          DO 110 N = 1, NONT(I)
             ICENT = ICENT + 1
             NDEG  = NUCDEG(ICENT)
-            KBCH  = IBLOCK
+            KBCH  = JBLOCK
             DO 200 J = 1, IQM(I)
             DO 200 K = 1, JCO(J,I)
                KBCH = KBCH + 1
@@ -3358,7 +3358,7 @@ C
                END IF
  200        CONTINUE
  110     CONTINUE
-         IBLOCK = IBLOCK + NBLCK(I)
+         JBLOCK = JBLOCK + NBLCK(I)
  100  CONTINUE
  1000 FORMAT(/2X,A4,A1,I1,1X,A4,I5,F16.6,2X,5F10.4)
  1010 FORMAT(/2X,A4,3X,      A4,I5,F16.6,2X,5F10.4)
@@ -3387,12 +3387,12 @@ C
       IPRIM   = 0
       IORB    = 0
       ICENT   = 0
-      IBLOCK  = 0
+      JBLOCK  = 0
       DO 500 I = 1,NONTYP
          DO 510 N = 1,NONT(I)
             ICENT = ICENT + 1
             NDEG  = NUCDEG(ICENT)
-            KBCH  = IBLOCK
+            KBCH  = JBLOCK
             DO 600 J = 1,IQM(I)
                NCOMP = KHK(J)
                DO 610 K = 1,JCO(J,I)
@@ -3436,7 +3436,7 @@ C
   610          CONTINUE
   600       CONTINUE
   510    CONTINUE
-         IBLOCK = IBLOCK + NBLCK(I)
+         JBLOCK = JBLOCK + NBLCK(I)
   500 CONTINUE
       WRITE (LUPRI,'(/)')
  1040 FORMAT(I5,2X,A4,A1,I1,2X,A4,24I5)
@@ -3509,8 +3509,13 @@ C
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
-         IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav')
-     &      NFLOAT = NFLOAT + 1
+         IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav') THEN
+            NFLOAT = NFLOAT + 1
+         ELSE IF (NFLOAT .GT. 0) THEN
+            CALL QUIT(
+     &      'All nuclei MUST come before floating orbital centers')
+!           So 1:NATOMS run over the real nuclei
+         END IF
          IF ( ISUBSY(N) .EQ. 0 ) THEN
 C        ... only QM atoms contribute to nuclear dipole moment
             DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
@@ -3532,7 +3537,7 @@ C        ... only QM atoms contribute to nuclear dipole moment
                   NDEGNM(NCDTOT)     = 1
                ELSE
                   ICHARD = ICHAR('0') + II
-                  NAMDEP(NCDTOT)     = NAMN(N)//' '//CHAR(ICHARD)
+                  NAMDEP(NCDTOT)     = NAMN(N)//'_'//CHAR(ICHARD)
                   NAMDPX(3*NCDTOT-2) = NAMDEP(NCDTOT)//' x'
                   NAMDPX(3*NCDTOT-1) = NAMDEP(NCDTOT)//' y'
                   NAMDPX(3*NCDTOT  ) = NAMDEP(NCDTOT)//' z'
@@ -3654,8 +3659,7 @@ C     MAMN    -  name of AO centre
 C     NPARNU  -  offset pointer from non-symmetric operators for given
 C                irrep
 C     NPARSU  -  offset pointer for symmetry dependent AOs for given irrep
-C     NSORB    -  number of symmetry dependent AOs
-C     NSYM    -  number of irreps that the AOs contribute to
+C     NSORB   -  number of symmetry dependent AOs
 C*************************************************************************
 C
 C     The code originally resided inside READIN
@@ -3772,34 +3776,31 @@ C               of symmetry operations transforming between symmetry
 C               dependent centers
 C   * Counting variables:
 C       NSORB   - SO orbital number
-C       NAORBD  -
-C       NAORB   - AO orbital number
+C       NAORBD  - AO orbital number
+C       NAORB   - AO orbital shell number
 C       NAA     -
-C       NSORBD  -
 C       JKB     -
 C       IRREPN  -
 C*****************************************************************************
       IHNMAO    = 0
-      NSORB     = 0
       NPARSU(1) = 0
-      NSYM      = 0
-      CALL IZERO(NAOS,8)
-      CALL IZERO(NCOS,8*MXBSETS_TOT)
-      CALL IZERO(IRREP,MXCORB)
+      CALL IZERO(NAOS ,8)
+      CALL IZERO(NCOS ,8*MXBSETS_TOT)
       CALL DZERO(CTRAN,8*MXCORB)
       CALL IZERO(ITRAN,8*MXCORB)
+
+      CALL IZERO(IRREP,MXCORB)
 C
-C     Run over Irreducible Representations LAMBDA
+C     Run over Irreducible Representations LA (for LAMBDA)
 C
+      NSORB     = 0 ! counter for total SO number over all symmetries
       DO 400 LA = 0, MAXREP
-         NAORBD = 0
-         NAORB  = 0
-         IBLOCK = 0
+         NAORBD = 0 ! counter for symmetry dependent   total AO number
+         NAORB  = 0 ! counter for symmetry independent total AO number
          DO 410 IA = 1, KMAX
             MULA   = ISTBAO(IA)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
-            NUMCFA = NUMCF(IA)
             IC     = LCLASS(IA)
             IF (DIRAC) THEN
                JC = IC
@@ -3821,9 +3822,8 @@ C              Dimensions of COMP(-MXBSETS:MXBSETS) and NCOS(8,-MXBSETS:MXBSETS)
 C              for abs(JC) .gt. MXBSETS /hjaaj Oct 2007
                CALL QUIT('abs(JC) .gt. MXBSETS is not implemented')
             END IF
-            IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
-            DO 420 NA = 1, KHKTA
-               NAORB = NAORB+1
+            DO 420 NA = 1, KHKTA ! loop over m_l components of this orbital shell
+               NAORB = NAORB + 1
                IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
 C
 C              If orbital contributes to this representation:
@@ -3836,25 +3836,40 @@ C                operations with different parities must then
 C                not be part of the stabilizer of the center
 C                for the AO).
 C
-               IF (IBTAND(MULA,IVARB) .EQ. 0) THEN
+               IF (IBTAND(MULA,IVARB) .NE. 0) THEN
+                  IPTSYM(NAORB,LA) = 0
+                  NAORBD = NAORBD + MULT(MULA)
+               ELSE
                   NSORB = NSORB + 1
-                  JKB = 0
-C
-C                 loop over symmetry dependent centers
-C
-                  DO KB = 0, MAXREP
-                     IF (IBTAND(KB,MULA) .EQ. 0) THEN
-                        JKB              = JKB + 1
-                        NAORBD           = NAORBD + 1
-                        CTRAN(NSORB,JKB) = PT(IBTAND(KB,IVARB))
-                        ITRAN(NSORB,JKB) = NAORBD
-                     END IF
-                  END DO
-                  NAOS(LA+1)    = NAOS(LA+1) + 1
-                  IF (JC .GE. 0) NCOS(LA+1,JC) = NCOS(LA+1,JC) + 1
+                  IPTSYM(NAORB,LA) = NSORB
+
+                  IRREPN        = IRREP(NAORB)
+                  IRREP(NAORB)  = IRREPN + 1
+
                   IPTYP(NSORB)  = NHKOFF(NHKTA) + NA
                   IPCEN(NSORB)  = NCENT(IA)
                   ICLASS(NSORB) = JC
+                  IPIND(NSORB)  = IA*2**16 + NA*2**8 + IRREPN ! IA: AO shell, NA: component of this shell
+                  NAOS(LA+1)    = NAOS(LA+1) + 1
+                  IF (JC .GE. 0) NCOS(LA+1,JC) = NCOS(LA+1,JC) + 1
+C
+C                 loop over symmetry dependent centers
+C
+                  JKB = 0
+                  DO KB = 0, MAXREP
+                     IF (IBTAND(KB,MULA) .EQ. 0) THEN
+                        JKB              = JKB    + 1
+                        NAORBD           = NAORBD + 1
+                        CTRAN(NSORB,JKB) = PT(IBTAND(KB,IVARB))
+                        ITRAN(NSORB,JKB) = NAORBD
+
+                        IAOINFO(NAORBD,1) = IA                     !  sym. indep. AO index
+                        IAOINFO(NAORBD,2) = NUCNUM(NCENT(IA),KB+1) !  sym. dep. atom index (e.g. to NAMDEP)
+                        IAOINFO(NAORBD,3) = NHKOFF(NHKTA) + NA     !  orbital type
+
+                     END IF
+                  END DO
+                  JTRAN(NSORB) = JKB ! number of AOs contributing to this SO
 
                   IF (IC .EQ. ISETHUCKEL) THEN
                      NQ     = IZATOM(NCENT(IA))
@@ -3874,21 +3889,10 @@ C                    ... .gt. 0 if ECP otherwise .eq. 0
                    END IF
                   END IF
 
-                  IRREPN        = IRREP(NAORB)
-                  IRREP(NAORB)  = IRREPN + 1
-                  IPIND(NSORB)  = IA*2**16 + NA*2**8 + IRREPN
-                  JTRAN(NSORB)  = JKB
-                  INDGEN(NSORB) = IRREPN*2**24 + NA*2**16 + NUMCFA*2**8
-     &                                                    + IBLOCK
-                  IPTSYM(NAORB,LA) = NSORB
-               ELSE
-                  IPTSYM(NAORB,LA) = 0
-                  NAORBD = NAORBD + MULT(MULA)
                END IF
   420       CONTINUE
   410    CONTINUE
          NBASI  = NAOS(LA+1)
-         IF (NBASI .GT. 0) NSYM = NSYM + 1
          NPARLA = NBASI*(NBASI + 1)/2
          IF (LA .LT. MAXREP) NPARSU(LA+2) = NPARSU(LA+1) + NPARLA
   400 CONTINUE
@@ -3981,9 +3985,13 @@ C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
      *          '  Number of auxiliary functions in each symmetry: ',
      &          (NCOS(I,2),I=1,MAXREP+1)
         END IF
+        MBAS1T = 0
+        MBAS2T = 0
         DO I=1,MAXREP+1
           MBAS1(I) = NCOS(I,1)
+          MBAS1T   = MBAS1T + MBAS1(I)
           MBAS2(I) = NCOS(I,2)
+          MBAS2T   = MBAS2T + MBAS1(I)
         END DO
       ELSE
         COMP(1) = ' '
@@ -4066,21 +4074,21 @@ C
             IPLBKP = IPL
             ICNTBK = ICENT
             WRITE (LUSYMF,1070) I, ICENT, IPL, IPM, IPNUM,
-     *           J, (NINT(CTRAN(I,K)),K=1,J)
+     &           J, (NINT(CTRAN(I,K)),K=1,J)
    20     CONTINUE
         ELSE
            IF (MAXREP.GT.0.AND.IPREAD.GT.0)
      &        WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1)')
-     *        'No orbitals in symmetry',REP(LA-1),'(',LA,')'
+     &        'No orbitals in symmetry',REP(LA-1),'(',LA,')'
         END IF
   10  CONTINUE
+      IF (NFLOAT .GT. 0) WRITE (LUPRI,'(/A,I5)')
+     &   '  Number of floating/multiple basis set orbitals :',NFLOAT
       IF (MAXREP .GT. 0 .AND. IPREAD .GT. 0) THEN
          IF (IPREAD .GE. 10) THEN
             WRITE(LUPRI,'(10X,A/)') 'Symmetry pointer indices'
             WRITE(LUPRI,'(4X,8I5)')
      &           ((IPTSYM(I,J),J = 0,MAXREP),I=1,NORBS)
-            IF (NFLOAT .GT. 0) WRITE (LUPRI,'(/10X,A,I5)')
-     *           'Number of floating orbitals :',NFLOAT
          END IF
          WRITE (LUPRI,'(/A,3(2X,A3,A1,I1,A1))')
      &        '  Symmetries of electric field:',
@@ -4093,8 +4101,6 @@ C
  1070 FORMAT(I5,13I6)
       WRITE (LUSYMF,'(A)') 'END'
       CALL GPCLOSE(LUSYMF,'KEEP')
-C
-Casm
 C
 C     CC paramagnetic susceptibilty stuff
 C
@@ -4273,9 +4279,6 @@ C            small molecules, otherwise just a lot of lines.
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
-      IPCMN= 0
-      NATOMS = 0
-      KMASS  = NCOOR + 1
 
 C
 C        MIDAS Interface, write out input coordinates for midas.sym
@@ -4290,8 +4293,11 @@ C
       ENDIF 
 C
 C
+      IPCMN  = 0
+      NCENTS = 0
+      KMASS  = NCOOR + 1
 C
-      ICRX = 1
+      ICRX   = 1
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
@@ -4303,8 +4309,8 @@ C
      *                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
      *                    ICRX+2, CHRXYZ(-3), CORD(3,ICENT)
             END IF
-            WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
-            NATOMS = NATOMS + 1
+            WORK(KMASS + NCENTS) = DISOTP(IZATOM(ICENT),1,'MASS')
+            NCENTS = NCENTS + 1
             WORK(ICRX  ) = CORD(1,ICENT)
             WORK(ICRX+1) = CORD(2,ICENT)
             WORK(ICRX+2) = CORD(3,ICENT)
@@ -4315,9 +4321,9 @@ C
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   IPCMN = IPCMN + 1
                   JATOM  = JATOM + 1
-                  WORK(KMASS + NATOMS) = 
+                  WORK(KMASS + NCENTS) = 
      *                 DISOTP(IZATOM(ICENT),1,'MASS')
-                  NATOMS = NATOMS + 1
+                  NCENTS = NCENTS + 1
                   WORK(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
      *                        *CORD(1,ICENT)
                   WORK(ICRX+1) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
@@ -4340,7 +4346,7 @@ C     ********************************
 C     ***** Symmetry Coordinates *****
 C     ********************************
 C
-      ISTRT = NCOOR + NATOMS + 1
+      ISTRT = NCOOR + NCENTS + 1
       IF (LWORK .LT. 2*NCOOR*NCOOR) CALL STOPIT('PRICAR','TRACOR',
      &                                          2*NCOOR*NCOOR,LWORK)
       CALL TRACOR(WORK(ISTRT),WORK(ISTRT + NCOOR*NCOOR),1,NCOOR,IPREAD)
@@ -4402,7 +4408,7 @@ C
 C        As a new default, we (almost) always print a rotational analysis, kr-02
 C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
-     &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NATOMS,NCOOR,IPREAD)
+     &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12)')
      &   '@  Nuclear repulsion energy :',POTNUC
@@ -4633,7 +4639,8 @@ C
          JAOAO(I,2) = 0
       END DO
 C
-C     Loop over all atoms
+C     JATOM: Loop over all atoms
+C     IAO  : Loop over AO's in atom order (C1 order)
 C
       IAO   = 0
       JATOM = 0
@@ -4644,20 +4651,13 @@ C
             JATOM = JATOM + 1
 C
 C           Loop over all orbitals
+C           JAO  : AO's in order when symmetry
 C
             JAO = 0
             DO 300 ISHELL = 1, KMAX
                ICENT  = NCENT(ISHELL)
                ISTABO = ISTBAO(ISHELL)
                DO 400 ICMP = 1, KHKT(ISHELL)
-                  DO 500 JSYMOP = 0, MAXREP
-                  IF (IBTAND(JSYMOP,ISTABO) .EQ. 0) THEN
-                     JAO = JAO + 1
-                     JCENT = NUCNUM(ICENT,JSYMOP+1)
-                     IF (JATOM .EQ. JCENT) THEN
-                        IAO = IAO + 1
-                        IAOAO(JAO) = IAO
-                        JAOAO(IAO,1) = JAO
 Clf
 Clf Molden needs d, f,.. functions ordered in the following way
 Clf 0,+1,-1,+2,-2,+3,-3 etc...
@@ -4667,22 +4667,40 @@ Clf The shift index is ISHIFT and it has to be placed
 Clf in KAO=IAO-ISHIFT
 Clf WARNING: this only works for spherical functions 
 Clf and not for cartesians. 
+!
+!   Example - f-orbital, LMAX=3
+!      index         :  1,  2,  3,  4,  5,  6,  7
+!      standard order: -3, -2, -1,  0, +1, +2, +3  is LZ + LMAX + 1
+!      molden   order:  0, +1, -1, +2, -2, +3, -3  is 2*LZ, for LZ.gt.0; -2*LZ + 1 for LZ.le.0
+!      LZ:       -3 -2 -1  0 +1 +2 +3
+!      ISHIFT:   -6 -3  0 +3 +3 +2 +1
+!
 Clf
-                        IF(KHKT(ISHELL) .GE. 5) THEN
-                           LMAX = (KHKT(ISHELL)-1)/2
-                           LZ   = ICMP - 1 - LMAX
-                           IF (LZ .EQ. 0) THEN
-                              ISHIFT = LMAX
-                           ELSE
-                              ISGN   = ISIGN(1,LZ)
-                              ISHIFT = LMAX + LZ - 2*ABS(LZ) +
-     $                          (ISGN+1) * ISGN**2 / 2
-                           END IF
-                           KAO = IAO - ISHIFT
-                           JAOAO(KAO,2) = ISHIFT
-                        ELSE
-                           JAOAO(IAO,2) = 0
-                        END IF
+                  IF(KHKT(ISHELL) .GE. 5) THEN
+                     LMAX = (KHKT(ISHELL)-1)/2
+                     LZ   = ICMP - 1 - LMAX
+                     IF (LZ .EQ. 0) THEN
+                        ISHIFT = LMAX
+                     ELSE IF (LZ .GT. 0) THEN
+                        ISHIFT = LMAX - LZ + 1
+                     ELSE
+                        ISHIFT = LMAX + 3*LZ
+                     END IF
+                  ELSE
+                     ISHIFT = 0
+                  END IF
+
+                  DO 500 JSYMOP = 0, MAXREP
+                  IF (IBTAND(JSYMOP,ISTABO) .EQ. 0) THEN
+                     JAO = JAO + 1
+                     JCENT = NUCNUM(ICENT,JSYMOP+1)
+                     IF (JATOM .EQ. JCENT) THEN
+                        IAO = IAO + 1
+                        IAOAO(JAO) = IAO
+                        JAOAO(IAO,1) = JAO
+
+                        KAO = IAO - ISHIFT ! for molden
+                        JAOAO(KAO,2) = JAOAO(KAO,1) + ISHIFT ! for molden
                      END IF
                   END IF
   500             CONTINUE
@@ -4699,9 +4717,9 @@ C     End loop over atoms
 C
       IF (IPREAD .GE. 10) THEN
          CALL HEADER('i -> IAOAO(i), JAOAO(i,1:2)',6)
-         DO 600 I = 1, IAO
+         DO I = 1, IAO
             WRITE (LUPRI,'(I9,3I6)') I, IAOAO(I), JAOAO(I,1), JAOAO(I,2)
-  600    CONTINUE
+         END DO
       END IF
       RETURN
       END
@@ -4709,6 +4727,9 @@ C/* Deck cntao */
       SUBROUTINE CNTAO(IPRINT)
 C 
 C     tuh
+C     ICNTAO is used in eri.
+C     ICNTAO contains index for sym. indep. center of this symmetry
+C     orbital (SO, not AO!!!)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -5480,8 +5501,10 @@ C
       WRITE(LUPRI,*) ' iptnuc ',((iptnuc(i,j),i=1,nucdep),j=0,7)
       call header('ctran',-1)
       call output(ctran,1,nbasis,1,8,mxcorb,8,1,lupri)
-      WRITE(LUPRI,*) ' itran ',((itran(i,j),i=1,nbasis),j=1,8)
-      WRITE(LUPRI,*) ' iaoao ',(iaoao(i),i=1,nbasis)
+      do i = 1,nbasis
+         write(LUPRI,*) ' itran  ',i,jtran(i),':',(itran(i,j),j=1,8)
+      end do
+      WRITE(LUPRI,*) ' iaoao  ',(iaoao(i),i=1,nbasis)
       WRITE(LUPRI,*) ' jaoao1 ',(jaoao(i,1),i=1,nbasis)
       WRITE(LUPRI,*) ' jaoao2 ',(jaoao(i,2),i=1,nbasis)
       return
@@ -6080,16 +6103,16 @@ C
       LUTMP1 = -1
       LUTMP2 = -1
       LUSHB  = -1
-      CALL GPOPEN(LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
-      CALL GPOPEN(LUTMP2,'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(
+     &          LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUTMP2, 'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
 C    
       IPRIMD = 0
       IPRIM =  0
       ICENT  = 0
-      IBLOCK = 0
+      JBLOCK = 0
 C hj-aug99: find title lines, first skip initial comments
       ILINE = 1
    10 IF((MLINE(ILINE)(1:1).EQ.'#') .OR. (MLINE(ILINE)(1:1).EQ.'!'))THEN
@@ -6137,7 +6160,7 @@ Chj:  skip any additional comment lines before title lines
          DO 110 N = 1, NONT(I)
             ICENT = ICENT + 1
             NDEG  = NUCDEG(ICENT)
-            KBCH  = IBLOCK
+            KBCH  = JBLOCK
             WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
             II = 0
             DO 200 J = 1, IQM(I)
@@ -6200,7 +6223,7 @@ Chj:  skip any additional comment lines before title lines
  210           CONTINUE
  200        CONTINUE
  110     CONTINUE
-         IBLOCK = IBLOCK + NBLCK(I)
+         JBLOCK = JBLOCK + NBLCK(I)
  100  CONTINUE
 C
       WRITE (LUTMP2,'(A)') 'END'

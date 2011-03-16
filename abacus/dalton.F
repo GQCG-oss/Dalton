@@ -194,7 +194,7 @@ C
      &               '*',120)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2011 (Rev. 0, Feb. 2011)'
+     &'This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)'
 
          WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
          WRITE (LUPRI,'(T5,A)')

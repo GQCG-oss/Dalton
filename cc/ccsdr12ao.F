@@ -59,7 +59,7 @@
 * local
       logical lauxg, temp_direct
       integer indexa(mxcorb)
-      integer ioff, ibasx(8), mbas1t, kend1, lwrk1, kendsv, lwrksv,
+      integer ioff, ibasx(8), kend1, lwrk1, kendsv, lwrksv,
      &        icdel1, isymd1, ntot, illl, numdis, idel2, idel, isymd,
      &        isydis, irecord, leniaj, isygam, isyalbe, igam, iadr,
      &        icon, iv, isym, nviraop(8), iviraop(8,8), isym1, isym2,
@@ -94,7 +94,6 @@
 
       ioff    = 0
       ibasx(1) = 0
-      mbas1t = 0
       do isym = 1,nsym
         if (isym.gt.1) ibasx(isym) = ibasx(isym-1)+mbas2(isym-1)
         if(ioff+mbas1(isym)+mbas2(isym).gt.mxcorb)call quit('CCSDR12AO')
@@ -102,7 +101,6 @@
           ioff = ioff + 1
           isao(ioff) = isym
         end do
-        mbas1t = mbas1t + mbas1(isym) ! # primary. AOs in total
       end do
 
       kend1 = 1

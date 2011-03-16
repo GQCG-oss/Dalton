@@ -92,14 +92,19 @@ C
 C
       CALL QENTER('FORMSUP')
 C
-      WRITE (LUPRI,'(/A)') ' Precalculated two-electron integrals'
-     &   //' are transformed to P-supermatrix elements.'
       IF (IPRINT .GT. 1) THEN
          CALL TITLER('Output from FORMSUP','*',125)
-         WRITE (LUPRI,'(A,L10)') ' NOSYM : ',NOSYM
+         WRITE (LUPRI,'(A/A,1P,D10.2/A,L10)')
+     &   '    Precalculated two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.',
+     &   '    Threshold for discarding integrals            :',THRESH,
+     &   '    Include integrals for general density matrices:',NOSYM
+      ELSE
+         WRITE (LUPRI,'(A/A,1P,D10.2,A)')
+     &   '     (Precalculated two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.',
+     &   '      Threshold for discarding integrals :',THRESH,' )'
       END IF
-      IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,1P,D10.2)')
-     *   ' Threshold for discarding integrals :',THRESH
 C
 C*** Allocate memory for IT vector in IWORK
 C
