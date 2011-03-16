@@ -195,15 +195,15 @@ CTRL[10]=3
 ERROR[10]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "OP * 1 * (0| )\.0043859..[0-9] * (0| )\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "OP * 2 * (0| )\.0043859..[0-9] * (\-0|\-)\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "OP *_1 * (0| )\.0043859..[0-9] * (0| )\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "OP *_2 * (0| )\.0043859..[0-9] * (\-0|\-)\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2`
 CTRL[11]=4
 ERROR[11]="INITIAL STEP NOT CORRECT"
 
 # Geometry, 2nd iteration:
-CRIT1=`$GREP "OP * 1 * 1\.2678362..[0-9] * 2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "OP * 2 * 1\.2678362..[0-9] * \-2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "OP *_1 * 1\.2678362..[0-9] * 2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "OP *_2 * 1\.2678362..[0-9] * \-2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
 TEST[12]=`expr $CRIT1  \+ $CRIT2`
 CTRL[12]=4
 ERROR[12]="SECOND GEOMETRY NOT CORRECT"
@@ -264,8 +264,8 @@ ERROR[17]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 
 # Cioslowski charges:
 CRIT1=`$GREP "OS * (0| )\.38364[0-9]" $log | wc -l`
-CRIT2=`$GREP "OP * 1 * (\-0|\-)\.19182[0-9]" $log | wc -l`
-CRIT3=`$GREP "OP * 2 * (\-0|\-)\.19182[0-9]" $log | wc -l`
+CRIT2=`$GREP "OP *_1 * (\-0|\-)\.19182[0-9]" $log | wc -l`
+CRIT3=`$GREP "OP *_2 * (\-0|\-)\.19182[0-9]" $log | wc -l`
 TEST[18]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[18]=3
 ERROR[18]="CIOSLOWSKI CHARGES NOT CORRECT"

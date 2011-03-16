@@ -116,8 +116,8 @@ ERROR[2]="SYMMETRY NOT CORRECT"
 
 # isotopes, harm. frequencies, 
 CRIT1=`$GREP "O * 17\.999159" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1\.007825" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1\.007825" $log | wc -l`
+CRIT2=`$GREP "H *_1 * 1\.007825" $log | wc -l`
+CRIT3=`$GREP "H *_2 * 1\.007825" $log | wc -l`
 CRIT4=`$GREP "1 * 4130\.[0-9][0-9] * (0| )\.0188[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "1 * 2161\.[0-9][0-9] * (0| )\.0098[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "4 * 4374\.[0-9][0-9] * (0| )\.0199[0-9][0-9]" $log | wc -l`

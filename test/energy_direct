@@ -51,6 +51,11 @@ cat > energy_direct.dal <<'%EOF%'
 .DiRECT
 **WAVE FUNCTIONS
 .HF
+*POPULA
+.PRINT
+   3
+.GROSSA
+.HJAAJPOP
 **end of input
 %EOF%
 #######################################################################

@@ -132,9 +132,9 @@ ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 CRIT1=`$GREP "O * z * \-0*\.04102" $log | wc -l`
 CRIT2=`$GREP "H * y *   0*\.04951" $log | wc -l`
 CRIT3=`$GREP "H * z *   0*\.04102" $log | wc -l`
-CRIT4=`$GREP "O *     0*\.0000000000 *   0*\.0000000000 * \-0*\.04102" $log | wc -l`
-CRIT5=`$GREP "H * 1 * 0*\.0000000000 *   0*\.02475..... *   0*\.02051" $log | wc -l`
-CRIT6=`$GREP "H * 2 * 0*\.0000000000 * \-0*\.02475..... *   0*\.02051" $log | wc -l`
+CRIT4=`$GREP "O *      0*\.0000000000 *   0*\.0000000000 * \-0*\.04102" $log | wc -l`
+CRIT5=`$GREP "H * _1 * 0*\.0000000000 *   0*\.02475..... *   0*\.02051" $log | wc -l`
+CRIT6=`$GREP "H * _2 * 0*\.0000000000 * \-0*\.02475..... *   0*\.02051" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[6]=6
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
@@ -146,9 +146,9 @@ CTRL[7]=1
 ERROR[7]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O *     0*\.0000000000 *  0*\.0000000000 * \-0*\.10366" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 0*\.0000000000 *   1\.41819..... *   0*\.98758" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 0*\.0000000000 * \-1\.41819..... *   0*\.98758" $log | wc -l`
+CRIT1=`$GREP "O *      0*\.0000000000 *  0*\.0000000000 * \-0*\.10366" $log | wc -l`
+CRIT2=`$GREP "H * _1 * 0*\.0000000000 *   1\.41819..... *   0*\.98758" $log | wc -l`
+CRIT3=`$GREP "H * _2 * 0*\.0000000000 * \-1\.41819..... *   0*\.98758" $log | wc -l`
 TEST[8]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="INITIAL STEP NOT CORRECT"
@@ -170,9 +170,9 @@ CTRL[10]=3
 ERROR[10]="THIRD ITERATION NOT CORRECT"
 
 # Final geometry:
-CRIT1=`$GREP "O *     0*\.0000000000 *  0*\.0000000000 * \-0*\.0879638" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 0*\.0000000000 *   1\.4225656... *   0*\.9797335" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 0*\.0000000000 * \-1\.4225656... *   0*\.9797335" $log | wc -l`
+CRIT1=`$GREP "O *      0*\.0000000000 *  0*\.0000000000 * \-0*\.0879638" $log | wc -l`
+CRIT2=`$GREP "H * _1 * 0*\.0000000000 *   1\.4225656... *   0*\.9797335" $log | wc -l`
+CRIT3=`$GREP "H * _2 * 0*\.0000000000 * \-1\.4225656... *   0*\.9797335" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
@@ -231,9 +231,9 @@ CRIT7=`$GREP "Anisotropy\: * 20\.546. ppm" $log | wc -l`
 CRIT8=`$GREP "Asymmetry\: * (0| )\.0968" $log | wc -l`
 CRIT9=`$GREP "S parameter\: * 20\.578. ppm" $log | wc -l`
 CRIT10=`$GREP "A parameter\: * (0| )\.6772 ppm" $log | wc -l`
-CRIT11=`$GREP "\@1 *O * 334\.25[3-4][0-9] * 417\.2752 * \-83\.022. * (0| )\.611[0-1] * 58\.78[1-3][0-9] * 53\.06[5-6][0-9] * (0| )\.323[1-2]" $log | wc -l`
-CRIT12=`$GREP "\@1 *H * 1 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.546(7|8) * (0| )\.0968" $log | wc -l`
-CRIT13=`$GREP "\@1 *H * 2 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.546(7|8) * (0| )\.0968" $log | wc -l`
+CRIT11=`$GREP "\@1 *O *     334\.25[3-4][0-9] * 417\.2752 * \-83\.022. * (0| )\.611[0-1] * 58\.78[1-3][0-9] * 53\.06[5-6][0-9] * (0| )\.323[1-2]" $log | wc -l`
+CRIT12=`$GREP "\@1 *H * _1 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.546(7|8) * (0| )\.0968" $log | wc -l`
+CRIT13=`$GREP "\@1 *H * _2 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.546(7|8) * (0| )\.0968" $log | wc -l`
 TEST[16]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
                $CRIT11 \+ $CRIT12 \+ $CRIT13`

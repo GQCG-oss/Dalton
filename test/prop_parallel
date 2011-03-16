@@ -147,12 +147,12 @@ ERROR[2]="SYMMETRY IS NOT CORRECT"
 
 # Molecular geometry:
 CRIT1=`$GREP "O\#1 * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.5122110000" $log | wc -l`
-CRIT2=`$GREP "C\#2 * 1 * (0| )\.0000000000 * \-1\.3813900000 * \-1\.8059400000" $log | wc -l`
-CRIT3=`$GREP "C\#2 * 2 * (0| )\.0000000000 * 1\.3813900000 * \-1\.8059400000" $log | wc -l`
-CRIT4=`$GREP "H\#4 * 1 * \-1\.7489340000 * \-2\.3794680000 * \-2\.2018790000" $log | wc -l`
-CRIT5=`$GREP "H\#4 * 2 * 1\.7489340000 * \-2\.3794680000 * \-2\.2018790000" $log | wc -l`
-CRIT6=`$GREP "H\#4 * 3 * \-1\.7489340000 * 2\.3794680000 * \-2\.2018790000" $log | wc -l`
-CRIT7=`$GREP "H\#4 * 4 * 1\.7489340000 * 2\.3794680000 * \-2\.2018790000" $log | wc -l`
+CRIT2=`$GREP "C\#2 *_1 * (0| )\.0000000000 * \-1\.3813900000 * \-1\.8059400000" $log | wc -l`
+CRIT3=`$GREP "C\#2 *_2 * (0| )\.0000000000 * 1\.3813900000 * \-1\.8059400000" $log | wc -l`
+CRIT4=`$GREP "H\#4 *_1 * \-1\.7489340000 * \-2\.3794680000 * \-2\.2018790000" $log | wc -l`
+CRIT5=`$GREP "H\#4 *_2 * 1\.7489340000 * \-2\.3794680000 * \-2\.2018790000" $log | wc -l`
+CRIT6=`$GREP "H\#4 *_3 * \-1\.7489340000 * 2\.3794680000 * \-2\.2018790000" $log | wc -l`
+CRIT7=`$GREP "H\#4 *_4 * 1\.7489340000 * 2\.3794680000 * \-2\.2018790000" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \
            \+ $CRIT7`
 CTRL[3]=7
@@ -241,29 +241,29 @@ ERROR[8]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 
 # Cioslowski charges:
 CRIT1=`$GREP "O\#1 * (\-0|\-)\.6274" $log | wc -l`
-CRIT2=`$GREP "C\#2 * 1 * (0| )\.3350" $log | wc -l`
-CRIT3=`$GREP "C\#2 * 2 * (0| )\.3350" $log | wc -l`
-CRIT4=`$GREP "H\#4 * 1 * (\-0|\-)\.0106" $log | wc -l`
-CRIT5=`$GREP "H\#4 * 2 * (\-0|\-)\.0106" $log | wc -l`
-CRIT6=`$GREP "H\#4 * 3 * (\-0|\-)\.0106" $log | wc -l`
-CRIT7=`$GREP "H\#4 * 4 * (\-0|\-)\.0106" $log | wc -l`
+CRIT2=`$GREP "C\#2 *_1 * (0| )\.3350" $log | wc -l`
+CRIT3=`$GREP "C\#2 *_2 * (0| )\.3350" $log | wc -l`
+CRIT4=`$GREP "H\#4 *_1 * (\-0|\-)\.0106" $log | wc -l`
+CRIT5=`$GREP "H\#4 *_2 * (\-0|\-)\.0106" $log | wc -l`
+CRIT6=`$GREP "H\#4 *_3 * (\-0|\-)\.0106" $log | wc -l`
+CRIT7=`$GREP "H\#4 *_4 * (\-0|\-)\.0106" $log | wc -l`
 TEST[9]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7`
 CTRL[9]=7
 ERROR[9]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 # Isotopic substitutions:
-CRIT1=`$GREP "O\#1 * 15\.994915" $log | wc -l`
-CRIT2=`$GREP "C\#2 * 1 * 12\.000000" $log | wc -l`
-CRIT3=`$GREP "C\#2 * 2 * 12\.000000" $log | wc -l`
-CRIT4=`$GREP "H\#4 * 1 * 1\.007825" $log | wc -l`
-CRIT5=`$GREP "H\#4 * 2 * 1\.007825" $log | wc -l`
-CRIT6=`$GREP "H\#4 * 3 * 1\.007825" $log | wc -l`
-CRIT7=`$GREP "H\#4 * 4 * 1\.007825" $log | wc -l`
-CRIT8=`$GREP "H\#4 * 2 * 2\.014102" $log | wc -l`
-CRIT9=`$GREP "H\#4 * 3 * 2\.014102" $log | wc -l`
+CRIT1=`$GREP "O\#1 *     15\.994915" $log | wc -l`
+CRIT2=`$GREP "C\#2 *_1 * 12\.000000" $log | wc -l`
+CRIT3=`$GREP "C\#2 *_2 * 12\.000000" $log | wc -l`
+CRIT4=`$GREP "H\#4 *_1 *  1\.007825" $log | wc -l`
+CRIT5=`$GREP "H\#4 *_2 *  1\.007825" $log | wc -l`
+CRIT6=`$GREP "H\#4 *_3 *  1\.007825" $log | wc -l`
+CRIT7=`$GREP "H\#4 *_4 *  1\.007825" $log | wc -l`
+CRIT8=`$GREP "H\#4 *_2 *  2\.014102" $log | wc -l`
+CRIT9=`$GREP "H\#4 *_3 *  2\.014102" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
-              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
+               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 CTRL[10]=21
 ERROR[10]="ISOTOPIC SUBSTITUTIONS NOT CORRECT"
 

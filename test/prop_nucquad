@@ -135,12 +135,12 @@ ERROR[4]="Cl QUADRUPOLE COUPLING NOT CORRECT"
 
 # O quadrupole coupling
 CRIT1=`$GREP "Spin * \: * 2\.5 * Quadrupole moment\:\-\.02558000" $log | wc -l`
-CRIT2=`$GREP "O1 * 1 17 * Vx \= * (\-0|\-)\.49479. * 2\.97388. * 1\.06238." $log | wc -l`
-CRIT3=`$GREP "O1 * 1 17 * Vy \= * \-1\.18583. * 7\.12736. * 2\.54617." $log | wc -l`
-CRIT4=`$GREP "O1 * 1 17 * Vz \= * 1\.6806(2|3). * \-10\.10125. * \-3\.608558" $log | wc -l`
-CRIT5=`$GREP "O1 * 2 17 * Vx \= * (\-0|\-)\.49479. * 2\.97388. * 1\.06238." $log | wc -l`
-CRIT6=`$GREP "O1 * 2 17 * Vy \= * \-1\.18583. * 7\.12736. * 2\.54617." $log | wc -l`
-CRIT7=`$GREP "O1 * 2 17 * Vz \= * 1\.6806(2|3). * \-10\.10125. * \-3\.608558" $log | wc -l`
+CRIT2=`$GREP "O1 *_1 17 * Vx \= * (\-0|\-)\.49479. * 2\.97388. * 1\.06238." $log | wc -l`
+CRIT3=`$GREP "O1 *_1 17 * Vy \= * \-1\.18583. * 7\.12736. * 2\.54617." $log | wc -l`
+CRIT4=`$GREP "O1 *_1 17 * Vz \= * 1\.6806(2|3). * \-10\.10125. * \-3\.608558" $log | wc -l`
+CRIT5=`$GREP "O1 *_2 17 * Vx \= * (\-0|\-)\.49479. * 2\.97388. * 1\.06238." $log | wc -l`
+CRIT6=`$GREP "O1 *_2 17 * Vy \= * \-1\.18583. * 7\.12736. * 2\.54617." $log | wc -l`
+CRIT7=`$GREP "O1 *_2 17 * Vz \= * 1\.6806(2|3). * \-10\.10125. * \-3\.608558" $log | wc -l`
 CRIT8=`$GREP "Asymmetry constant eta\: * (0| )\.41118." $log | wc -l`
 CRIT9=`$GREP "Auxiliary value au * 1\/T * (0| )\.468562(D|E)\-04" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \

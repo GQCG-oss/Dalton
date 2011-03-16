@@ -160,9 +160,9 @@ CTRL[8]=1
 ERROR[8]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O *     (0| )\.0000000000 *  0*\.0000000000 * \-0*\.0863" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 *   1\.41658..... *   0*\.97890" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.41658..... *   0*\.97890" $log | wc -l`
+CRIT1=`$GREP "O *      (0| )\.0000000000 *  0*\.0000000000 * \-0*\.0863" $log | wc -l`
+CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.41658..... *   0*\.97890" $log | wc -l`
+CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.41658..... *   0*\.97890" $log | wc -l`
 TEST[9]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="INITIAL STEP NOT CORRECT"
@@ -176,9 +176,9 @@ CTRL[10]=3
 ERROR[10]="SECOND ITERATION NOT CORRECT"
 
 # Final geometry:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087918...[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.422524...[0-9] * (0| )\.979710...[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.422524...[0-9] * (0| )\.979710...[0-9]" $log | wc -l`
+CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087918...[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * _1 * (0| )\.0000000000 * 1\.422524...[0-9] * (0| )\.979710...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.422524...[0-9] * (0| )\.979710...[0-9]" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
