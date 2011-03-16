@@ -332,7 +332,7 @@ C
          WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
          IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
       ELSE IF (IPRMUL .NE. 0) THEN
-         WRITE(LUPRI,'(A,F14.6)') '    Virial theorem: -V/T =',VIR
+         WRITE(LUPRI,'(T7,A,F14.6)') 'Virial theorem: -V/T =',VIR
       END IF
  1001 FORMAT(/18X,'               Energy analysis'
      &       /18X,'-----------------------------------------------'

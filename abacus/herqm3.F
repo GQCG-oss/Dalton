@@ -2043,14 +2043,14 @@ C
 C
           IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
             DIPCON = .TRUE.
-            WRITE(LUPRI,'(/A,I4,A/A,F20.15)')
-     *      ' QM3 induced dipole vector converged in',LM,' iterations.',
-     *      ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
+            WRITE(LUPRI,'(T7,A,I4,A/T7,A,F20.15)')
+     *      'QM3 induced dipole vector converged in',LM,' iterations.',
+     *      'Final norm2 of QM3 induced dipole moment vector: ',XDIP2
             GOTO 1000
           ELSE
             XDIP1 = XDIP2
-            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
-     *      ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
+            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(T9,A,F20.15)')
+     *      'Norm2 of QM3 induced dipole moment vector:       ',XDIP2
           END IF
 C
   999   CONTINUE
@@ -2059,8 +2059,8 @@ C
 C
         IF (LOEC3L) THEN
           LOMIND = .TRUE.
-          WRITE(LUPRI,'(/A/)')
-     *    ' QM3 Epol is calculated according to scheme C3'
+          WRITE(LUPRI,'(/T7,A/)')
+     *    'QM3 Epol is calculated according to scheme C3'
           GOTO 116
         END IF
  
@@ -2071,8 +2071,8 @@ C
 
       END IF
 C
-      IF (.NOT. DIPCON) WRITE(LUPRI,'(/A)')
-     *   ' QM3 induced dipole moment not converged self-consistently'
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(/T7,A)')
+     *   'QM3 induced dipole moment not converged self-consistently'
 C
  117  CONTINUE
 C
@@ -2539,14 +2539,14 @@ C
 C
           IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
             DIPCON = .TRUE.
-            WRITE(LUPRI,'(/A,I3,A/A,F20.15)')
-     *     ' QM3 induced Dipole vector converged in ',LM,' iterations.',
-     *     ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
+            WRITE(LUPRI,'(T7,A,I3,A/T7,A,F20.15)')
+     *     'QM3 induced Dipole vector converged in ',LM,' iterations.',
+     *     'Final norm2 of QM3 induced dipole moment vector: ',XDIP2
             GOTO 1000
           ELSE
             XDIP1 = XDIP2
-            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
-     *       ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
+            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(T7,A,F20.15)')
+     *       'Norm2 of QM3 induced dipole moment vector:       ',XDIP2
           END IF
 C
   999 CONTINUE
@@ -2554,8 +2554,8 @@ C
 
       END IF
 C
-      IF (.NOT. DIPCON) WRITE(LUPRI,'(A/)')
-     *   ' QM3 induced dipole moment not converged self-consistently'
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(T7,A/)')
+     *   'QM3 induced dipole moment not converged self-consistently'
 C
 C     **********************************************************
 C     Print section. Printing if PRINT .GT. 1.

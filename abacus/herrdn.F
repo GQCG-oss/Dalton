@@ -3509,8 +3509,9 @@ C
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
-         IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav') THEN
-            NFLOAT = NFLOAT + 1
+         IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav' .AND.
+     &       N .LE. NUCIND) THEN
+            NFLOAT = NFLOAT + NDEG
          ELSE IF (NFLOAT .GT. 0) THEN
             CALL QUIT(
      &      'All nuclei MUST come before floating orbital centers')

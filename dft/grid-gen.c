@@ -247,7 +247,7 @@ gen_lmg_init(void)
     lmg->nucorb = malloc(2*lmg->maxl*nucind*sizeof(integer));
     lmg->aa     = calloc(4*lmg->maxl*nucind,sizeof(real));
     if(!lmg->nucorb|| !lmg->aa) {
-        fprintf(stderr,"no enough memory. in gen_lmg_init.\n");
+        fprintf(stderr,"not enough memory. in gen_lmg_init.\n");
         exit(1);
     }
     FSYM(nucbas)(lmg->nucorb, lmg->aa, &ONEI); 
@@ -1407,7 +1407,7 @@ mgrid_compute_coords_worker(GridGenMolGrid* mgrid)
         /* cnt = compress_grid(idx, ggw.x, ggw.y, ggw.z, ggw.wg); */
 	cnt = idx;
         if(mgrid->verbose)
-            fort_print("Atom: %4d*%d points=%5d compressed from %5d (%3d radial)", 
+            fort_print("        DFT grid generation - Atom: %4d*%d points=%6d compressed from%6d (%3d radial)", 
                        atom+1, mult, cnt, idx, grid->pnt);
         if(cnt>0) {
             int i;
@@ -1499,10 +1499,10 @@ grid_generate(const char* filename, integer atom_cnt,
     int res;
     struct tms starttm, endtm; clock_t utm;
     GridGenMolGrid* mgrid =  mgrid_new(atom_cnt, atom_arr);
-    fort_print("Radial Quadrature : %s", radial_quad->name);
-    fort_print("Space partitioning: %s", selected_partitioning->name);
-    fort_print("Radial integration threshold: %g", threshold);
-    fort_print("Angular polynomials in range [%i %i]", minang, maxang);
+    fort_print("        DFT grid generation - Radial Quadrature  : %s", radial_quad->name);
+    fort_print("        DFT grid generation -  partitioning : %s", selected_partitioning->name);
+    fort_print("        DFT grid generation - Radial integration threshold: %g", threshold);
+    fort_print("        DFT grid generation - Angular polynomials in range [%i %i]", minang, maxang);
 
     times(&starttm);
     mgrid->verbose = 1; /* to increase verbosity */
@@ -1521,7 +1521,7 @@ grid_generate(const char* filename, integer atom_cnt,
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
 
-    fort_print("Number of grid points: %8d Grid generation time: %9.1f s", 
+    fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s", 
                res, utm/(double)sysconf(_SC_CLK_TCK));
     return res;
 }

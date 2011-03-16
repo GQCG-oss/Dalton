@@ -262,7 +262,7 @@ C
 C
       JCENT = 0
       JPRIM = -1
-      JC = -1
+      JC    = -1
       JLVAL = -1
       DO ISHELL = 1,KMAX
         ICENT = NCENT(ISHELL)
