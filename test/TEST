@@ -498,6 +498,7 @@ myprint "test cases            : $testcase"
 passedall="ALL TESTS ENDED PROPERLY!"
 problems=""
 numresult=0
+num_reftests_not_found=0
 for item in ${testcase}
 do
   trouble=0
@@ -542,7 +543,7 @@ do
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
-          reffile=./$item'__'$step.ref
+          reffile=../trueresult/$item'__'$step'_'$item.*ref
           moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
@@ -550,7 +551,7 @@ do
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
-          reffile=./$item.ref
+          reffile=../trueresult/$item.*ref
           moldenfile=./$item.molden
       fi
 # If it's a reftest, no calculation is performed
@@ -559,18 +560,22 @@ do
           myprint "evaluate reference output file $reffile:"
           myprint "-----------------------------------------------------------"
           if [ ! -r $reffile ]; then
-             cp ../trueresult/$reffile .
-          fi
-          checkout=`$checkfile $reffile | tee -a $listing`
-          if [ "$benchmark" = "true" ]; then
-              if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
-                  CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
-              else
-                  CPU_usage="N/A"
-              fi
-          fi
-          if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+              myprint "PROBLEM: reference output $reffile is not available"
+              myprint "-----------------------------------------------------------"
+              num_reftests_not_found=`expr $num_reftests_not_found \+ 1`
               checkout="TEST ENDED PROPERLY"
+          else
+              checkout=`$checkfile $reffile | tee -a $listing`
+              if [ "$benchmark" = "true" ]; then
+                 if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
+                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                 else
+                     CPU_usage="N/A"
+                 fi
+              fi
+              if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+                 checkout="TEST ENDED PROPERLY"
+              fi
           fi
       else
           failed=false
@@ -734,12 +739,21 @@ if [ "$benchmark" = "true" ]; then
         awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null >> $listing
         ind=`expr $ind \+ 1`
       done
-      echo
+      myprint ""
     fi
 fi
 
+if [ "$reftest" = "true" ]; then
+   myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
+   myprint ""
+fi
 myprint "$passedall"
 myprint "$problems"
+if [ "$num_reftests_not_found" -gt 0  ]; then
+   myprint ""
+   myprint "WARNING: $num_reftests_not_found reference outputs were not found."
+   myprint ""
+fi
 rm "$tmpfile"
 myprint "date and time         : `date`"
 
