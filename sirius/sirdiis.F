@@ -1024,8 +1024,9 @@ C        Do not try that with open-shell - it does not work./pawsa
          IF (JTDIIS.GT.1 .AND.
      &       EMCDIF.GT.5D-5) THEN
 #else
-          IF (ONLYFC .AND.JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-     &         GRDNRM .LE. 10.0D0 .AND.
+!  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT 
+          IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+     &        GRDNRM .LE. 10.0D0 .AND. ABS(EMCDIF) .GT. 1.0D-5 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
