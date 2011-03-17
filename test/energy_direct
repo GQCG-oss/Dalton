@@ -55,7 +55,6 @@ cat > energy_direct.dal <<'%EOF%'
 .PRINT
    3
 .GROSSA
-.HJAAJPOP
 **end of input
 %EOF%
 #######################################################################
